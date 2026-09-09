@@ -1,0 +1,25 @@
+{
+  "title": "{{subject}} 신고",
+  "prompt": "신고하는 이유를 선택해 주세요.",
+  "backdrop": {
+    "dismiss": "신고 취소"
+  },
+  "reason": {
+    "spam": "스팸",
+    "harassment": "괴롭힘",
+    "hate": "혐오 발언",
+    "sexual": "성적 콘텐츠",
+    "violence": "폭력",
+    "misinformation": "허위 정보",
+    "self_harm": "자해",
+    "other": "기타"
+  },
+  "details": {
+    "placeholder": "세부 내용 추가 (선택)",
+    "a11y": "신고 세부 내용 (선택)"
+  },
+  "actions": {
+    "cancel": "취소",
+    "submit": "제출"
+  }
+}

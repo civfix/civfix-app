@@ -1,0 +1,123 @@
+{
+  "state": {
+    "loading": "Check-in wird geladen…",
+    "error_title": "Der Check-in ist nicht verfügbar",
+    "error_body": "Wir konnten diese Veranstaltung nicht laden. Prüfe deine Verbindung und versuche es erneut.",
+    "denied_title": "Nicht im Einlassteam",
+    "denied_body": "Nur Hosts und das Team der Veranstaltung können Teilnehmende einchecken."
+  },
+  "action": {
+    "scan": "Ticket scannen",
+    "scan_unavailable": "Scannen ist auf diesem Gerät nicht möglich. Gib stattdessen den Ticketcode ein."
+  },
+  "manual": {
+    "label": "Ticketcode",
+    "placeholder": "Code auf dem Ticket eingeben",
+    "submit": "Einchecken",
+    "title": "Jemanden einchecken",
+    "hint": "Gib den vollständigen Code vom Ticket ein. Gescannt wird in der civfix-App."
+  },
+  "outbox": {
+    "queued": "Gespeichert. Wird gesendet, sobald du wieder online bist.",
+    "pending_one": "{{count}} Check-in wartet auf den Versand",
+    "pending_other": "{{count}} Check-ins warten auf den Versand",
+    "retry": "Jetzt erneut versuchen"
+  },
+  "replay": {
+    "title": "Versandbericht",
+    "sent_one": "{{count}} wartender Check-in wurde übermittelt.",
+    "sent_other": "{{count}} wartende Check-ins wurden übermittelt.",
+    "refused_line_one": "{{count}} Ticket: {{label}}",
+    "refused_line_other": "{{count}} Tickets: {{label}}",
+    "forbidden_one": "{{count}} Check-in konnte nicht übermittelt werden: Du hast keinen Check-in-Zugriff mehr.",
+    "forbidden_other": "{{count}} Check-ins konnten nicht übermittelt werden: Du hast keinen Check-in-Zugriff mehr.",
+    "discarded_one": "{{count}} Check-in konnte nicht gesendet werden und wurde verworfen.",
+    "discarded_other": "{{count}} Check-ins konnten nicht gesendet werden und wurden verworfen.",
+    "held_one": "{{count}} Check-in wartet weiterhin. Melde dich erneut an, um ihn abzuschließen.",
+    "held_other": "{{count}} Check-ins warten weiterhin. Melde dich erneut an, um sie abzuschließen.",
+    "dismiss": "Schließen"
+  },
+  "result": {
+    "checked_in_title": "Eingecheckt",
+    "checked_in_body": "Dieses Ticket ist jetzt eingecheckt.",
+    "already_title": "Bereits eingecheckt",
+    "already_body": "Dieses Ticket wurde vorher schon gescannt.",
+    "waitlisted_title": "Auf der Warteliste",
+    "waitlisted_body": "Diese Person steht auf der Warteliste und hat noch keinen Platz.",
+    "cancelled_title": "Storniertes Ticket",
+    "cancelled_body": "Diese Anmeldung wurde storniert.",
+    "no_show_title": "Als nicht erschienen markiert",
+    "no_show_body": "Dieses Ticket wurde nach der Veranstaltung als nicht erschienen markiert.",
+    "wrong_event_title": "Nicht für diese Veranstaltung",
+    "wrong_event_body": "Dieses Ticket gehört zu einer anderen Veranstaltung.",
+    "unknown_title": "Ticket nicht erkannt",
+    "unknown_body": "Wir erkennen diesen Code für diese Veranstaltung nicht.",
+    "party_one": "{{count}} Platz",
+    "party_other": "{{count}} Plätze",
+    "undo": "Rückgängig",
+    "undo_done": "Check-in rückgängig gemacht.",
+    "dismiss": "Schließen",
+    "unknown_token_title": "Ticket nicht erkannt",
+    "unknown_token_body": "Wir erkennen diesen Code für diese Veranstaltung nicht."
+  },
+  "error": {
+    "code_length": "Dieser Code sieht nicht richtig aus. Prüfe ihn und versuche es erneut.",
+    "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+  },
+  "counters": {
+    "heading": "Live-Zähler",
+    "registered": "Angemeldet",
+    "checked_in": "Eingecheckt",
+    "waitlist": "Warteliste",
+    "no_show": "Nicht erschienen",
+    "as_of": "Stand {{time}}",
+    "units": "Angemeldet und Warteliste zählen Plätze; eingecheckt und nicht erschienen zählen Personen."
+  },
+  "roster": {
+    "title": "Noch nicht eingecheckt",
+    "search": "Nach Namen suchen",
+    "check_in": "Einchecken",
+    "guest": "Gast",
+    "deleted": "Gelöschtes Konto",
+    "empty_title": "Alle sind da",
+    "empty_body": "Auf der Liste wartet niemand mehr auf den Check-in."
+  },
+  "arrivals": {
+    "title": "Ankünfte",
+    "value": "Check-ins",
+    "a11y": "Check-ins im Zeitverlauf",
+    "buckets": "In 15-Minuten-Blöcken, in der lokalen Zeit der Veranstaltung.",
+    "empty": "Bisher ist noch niemand eingecheckt."
+  },
+  "by_type": {
+    "title": "Nach Ticketart",
+    "a11y": "Check-ins nach Ticketart",
+    "empty": "Diese Veranstaltung hat keine Ticketarten."
+  },
+  "walkup": {
+    "open": "Vor Ort",
+    "title": "Person vor Ort hinzufügen",
+    "notice": "Das legt eine Anmeldung an der Tür an und checkt die Person direkt ein. civfix speichert dabei keine Kontaktdaten.",
+    "name": "Name",
+    "party": "Plätze",
+    "ticket_type": "Ticketart",
+    "ticket_placeholder": "Ticketart wählen",
+    "submit": "Hinzufügen und einchecken",
+    "done": "{{name}} ist eingecheckt",
+    "outcome_full": "Diese Ticketart ist ausgebucht.",
+    "outcome_party_too_large": "Das sind mehr Plätze, als diese Ticketart erlaubt.",
+    "outcome_sales_closed": "Diese Ticketart ist nicht mehr verfügbar.",
+    "outcome_registration_closed": "Die Anmeldung für diese Veranstaltung ist geschlossen.",
+    "outcome_ticket_type_not_found": "Wähle eine Ticketart.",
+    "outcome_closed": "Diese Veranstaltung ist geschlossen.",
+    "outcome_banned": "Diese Person kann nicht zu dieser Veranstaltung hinzugefügt werden.",
+    "outcome_already_registered": "Diese Person ist bereits angemeldet.",
+    "outcome_access_code_required": "Diese Ticketart braucht einen Zugangscode.",
+    "outcome_access_code_invalid": "Dieser Zugangscode ist nicht gültig.",
+    "outcome_answers_invalid": "Diese Ticketart stellt Fragen, die sich an der Tür nicht beantworten lassen.",
+    "outcome_waitlisted": "Die Person kam stattdessen auf die Warteliste.",
+    "outcome_not_found": "Diese Veranstaltung wurde nicht gefunden.",
+    "outcome_registered": "Hinzugefügt.",
+    "outcome_replayed": "War bereits hinzugefügt."
+  }
+}

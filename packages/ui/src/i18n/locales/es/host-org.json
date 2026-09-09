@@ -1,0 +1,49 @@
+{
+  "state": {
+    "loading": "Cargando la organización…",
+    "error_title": "Organización no disponible",
+    "error_body": "No pudimos cargar esta organización. Revisa tu conexión e inténtalo de nuevo."
+  },
+  "header": {
+    "slug": "@{{slug}}"
+  },
+  "links": {
+    "website": "Sitio web",
+    "website_a11y": "Abrir el sitio web de la organización"
+  },
+  "stats": {
+    "events_one": "{{count}} evento",
+    "events_other": "{{count}} eventos",
+    "members_one": "{{count}} miembro",
+    "members_other": "{{count}} miembros"
+  },
+  "actions": {
+    "share": "Compartir esta organización",
+    "share_a11y": "Compartir un enlace a esta organización"
+  },
+  "breadcrumb": {
+    "events": "Eventos"
+  },
+  "not_found_title": "Organización no encontrada",
+  "not_found_body": "Esta organización no existe o ya no eres miembro de ella.",
+  "nav": {
+    "events": "Eventos",
+    "overview": "Resumen",
+    "members": "Miembros",
+    "payments": "Pagos"
+  },
+  "overview": {
+    "title": "Organización",
+    "events": "Eventos",
+    "members": "Miembros",
+    "created": "Creada",
+    "donations": "Donaciones",
+    "donations_on": "Acepta donaciones",
+    "donations_off": "No acepta donaciones"
+  },
+  "members": {
+    "title": "Miembros",
+    "joined": "Se unió {{when}}",
+    "read_only": "Solo la persona propietaria puede cambiar quién pertenece a esta organización."
+  }
+}

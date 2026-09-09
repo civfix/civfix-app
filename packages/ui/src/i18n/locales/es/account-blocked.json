@@ -1,0 +1,16 @@
+{
+  "row": {
+    "unblock": "Desbloquear",
+    "unblocking": "Desbloqueando...",
+    "unblockA11y": "Desbloquear a {{name}}",
+    "unblockError": "No se pudo desbloquear. Revisa tu conexión e inténtalo de nuevo."
+  },
+  "error": {
+    "title": "No se pudo cargar",
+    "body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo."
+  },
+  "empty": {
+    "title": "Sin cuentas bloqueadas",
+    "body": "Las personas que bloquees no podrán enviarte mensajes. Aparecerán aquí."
+  }
+}

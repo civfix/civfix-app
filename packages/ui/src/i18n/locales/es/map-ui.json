@@ -1,0 +1,97 @@
+{
+  "brand": {
+    "home": "inicio de civfix"
+  },
+  "layers": {
+    "toggle": "Capas del mapa",
+    "events": "Eventos",
+    "eventsA11y": "Capa de eventos",
+    "shown": "Visibles",
+    "hidden": "Ocultos",
+    "reports": "Reportes",
+    "reportsA11y": "Categorías de reportes",
+    "summaryNone": "Ninguna visible",
+    "summaryAll": "Todas las categorías",
+    "summarySome": "{{shown}} de {{total}} categorías",
+    "selectAll": "Seleccionar todo",
+    "clearAll": "Desmarcar todo",
+    "selectAllA11y": "Seleccionar todas las categorías",
+    "clearAllA11y": "Desmarcar todas las categorías",
+    "categoryPinsA11y": "Marcadores de {{category}}",
+    "nearby_one": "{{count}} cerca",
+    "nearby_other": "{{count}} cerca"
+  },
+  "actions": {
+    "locate": "Volver a mi ubicación",
+    "notifications": "Notificaciones",
+    "reset": "Restablecer"
+  },
+  "appearance": {
+    "toggle": "Apariencia",
+    "dismiss": "Cerrar el menú de apariencia"
+  },
+  "stack": {
+    "events": "Eventos y limpiezas",
+    "messages": "Mensajes",
+    "social": "Descubrir personas",
+    "reports": "Mis reportes",
+    "report": "Reportar un problema"
+  },
+  "profile": {
+    "signIn": "Iniciar sesión",
+    "open": "Ver tu perfil"
+  },
+  "a11y": {
+    "attribution": "CARTO / OSM",
+    "miniMap": "Mapa que muestra la ubicación",
+    "homeMap": "Mapa de reportes y eventos",
+    "picker": "Toca el mapa para colocar el marcador de ubicación, o arrástralo para ajustarlo",
+    "userLocation": "Tu ubicación"
+  },
+  "hint": {
+    "place": "Toca el mapa para colocar el marcador",
+    "move": "Toca para mover el marcador",
+    "moveMainMap": "Toca el mapa para mover el marcador",
+    "empty": "Aún no hay ubicación seleccionada"
+  },
+  "pickStep": {
+    "title": "Establece la ubicación",
+    "open": "Elegir ubicación en el mapa",
+    "openA11y": "Elegir la ubicación en el mapa completo",
+    "confirm": "Usar esta ubicación",
+    "confirmA11y": "Confirmar la ubicación elegida",
+    "cancel": "Cancelar",
+    "cancelA11y": "Cancelar la elección de ubicación",
+    "needPin": "Toca el mapa para establecer una ubicación primero"
+  },
+  "linkPanel": {
+    "preview": "Vista previa del reporte",
+    "title": "Reporte",
+    "close": "Cerrar la vista previa del reporte",
+    "noDescription": "Sin descripción.",
+    "viewDetails": "Ver detalles del reporte",
+    "add": "Añadir este reporte",
+    "remove": "Quitar",
+    "addA11y": "Añadir este reporte al evento",
+    "removeA11y": "Quitar este reporte del evento"
+  },
+  "dropPin": {
+    "locationA11y": "Ubicación seleccionada",
+    "report": {
+      "title": "Reportar un problema aquí",
+      "sub": "Inicia un reporte en este lugar"
+    },
+    "host": {
+      "title": "Organizar un evento aquí",
+      "sub": "Planea una limpieza o un encuentro en este lugar"
+    },
+    "cancel": "Cancelar",
+    "cancelA11y": "Cancelar y quitar el pin colocado",
+    "confirm": {
+      "title": "¿Iniciar un nuevo reporte aquí?",
+      "body": "Tu reporte sin terminar se descartará.",
+      "discard": "Descartar y empezar aquí",
+      "keep": "Seguir editando"
+    }
+  }
+}

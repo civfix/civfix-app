@@ -1,0 +1,35 @@
+{
+  "state": {
+    "loading": "Veranstaltung wird geladen…",
+    "error_title": "Der Host-Modus ist nicht verfügbar",
+    "error_body": "Wir konnten diese Veranstaltung nicht laden. Prüfe deine Verbindung und versuche es erneut.",
+    "denied_title": "Hier kein Host",
+    "denied_body": "Nur Hosts und das Team der Veranstaltung können den Host-Modus öffnen."
+  },
+  "action": {
+    "scan": "Tickets scannen",
+    "scan_a11y": "Den Ticket-Scanner öffnen",
+    "checkin": "Check-in",
+    "checkin_a11y": "Den Check-in-Bildschirm öffnen",
+    "quick_message": "Kurznachricht",
+    "quick_message_a11y": "Eine Kurznachricht an die Teilnehmenden senden",
+    "walkup": "Vor Ort anmelden",
+    "walkup_a11y": "Jemanden an der Tür anmelden"
+  },
+  "roster": {
+    "heading": "Teilnehmende"
+  },
+  "walkup": {
+    "title": "Anmeldung an der Tür",
+    "caption": "Melde jemanden an der Tür an. Die Person wird sofort eingecheckt.",
+    "dismiss_a11y": "Anmeldung an der Tür schließen",
+    "name_label": "Name",
+    "name_placeholder": "Name der Person",
+    "type_label": "Ticketart",
+    "cancel": "Abbrechen",
+    "submit": "Hinzufügen und einchecken",
+    "success": "{{name}} ist eingecheckt.",
+    "error": "Diese Anmeldung konnte nicht hinzugefügt werden.",
+    "error_forbidden": "Dazu hast du keine Berechtigung."
+  }
+}

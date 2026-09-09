@@ -1,0 +1,47 @@
+{
+  "state": {
+    "loading": "단체 정보를 불러오는 중…",
+    "error_title": "단체 정보를 사용할 수 없습니다",
+    "error_body": "이 단체를 불러오지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요."
+  },
+  "header": {
+    "slug": "@{{slug}}"
+  },
+  "links": {
+    "website": "웹사이트",
+    "website_a11y": "단체 웹사이트 열기"
+  },
+  "stats": {
+    "events_other": "행사 {{count}}건",
+    "members_other": "구성원 {{count}}명"
+  },
+  "actions": {
+    "share": "이 단체 공유하기",
+    "share_a11y": "이 단체 링크 공유하기"
+  },
+  "breadcrumb": {
+    "events": "행사"
+  },
+  "not_found_title": "단체를 찾을 수 없습니다",
+  "not_found_body": "이 단체가 존재하지 않거나, 더 이상 구성원이 아닙니다.",
+  "nav": {
+    "events": "행사",
+    "overview": "개요",
+    "members": "구성원",
+    "payments": "결제"
+  },
+  "overview": {
+    "title": "단체",
+    "events": "행사",
+    "members": "구성원",
+    "created": "생성일",
+    "donations": "기부",
+    "donations_on": "기부를 받는 중",
+    "donations_off": "기부를 받지 않음"
+  },
+  "members": {
+    "title": "구성원",
+    "joined": "{{when}} 합류",
+    "read_only": "이 단체에 누가 속할지는 소유자만 변경할 수 있습니다."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Appearance",
+  "subtitle": "Choose how civfix looks. System follows your device setting.",
+  "option": {
+    "system": "System",
+    "system_sub": "Match your device",
+    "light": "Light",
+    "dark": "Dark",
+    "dark_beta": "Beta",
+    "dark_sub": "Dark mode is experimental; some screens may look off."
+  },
+  "selected": "Selected"
+}

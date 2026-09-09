@@ -1,0 +1,26 @@
+{
+  "section_title": "Your reports",
+  "signin": {
+    "title": "Sign in to see your reports",
+    "body": "Track the issues you have filed and follow their city-routing status, all in one place."
+  },
+  "search": {
+    "placeholder": "Search your reports",
+    "a11y": "Search your reports",
+    "clear_a11y": "Clear search"
+  },
+  "empty": {
+    "no_match": {
+      "title": "No reports match your search",
+      "body": "None of your reports match \"{{query}}\". Try a different word, place, or category."
+    },
+    "none": {
+      "title": "No reports yet",
+      "body": "When you file a report it shows up here so you can follow what gets fixed."
+    }
+  },
+  "error": {
+    "title": "Could not load",
+    "body": "We could not reach civfix. Check your connection and try again."
+  }
+}

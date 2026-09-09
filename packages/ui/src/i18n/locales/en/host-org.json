@@ -1,0 +1,49 @@
+{
+  "state": {
+    "loading": "Loading the organization…",
+    "error_title": "Organization unavailable",
+    "error_body": "We could not load this organization. Check your connection and try again."
+  },
+  "header": {
+    "slug": "@{{slug}}"
+  },
+  "links": {
+    "website": "Website",
+    "website_a11y": "Open the organization's website"
+  },
+  "stats": {
+    "events_one": "{{count}} event",
+    "events_other": "{{count}} events",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members"
+  },
+  "actions": {
+    "share": "Share this organization",
+    "share_a11y": "Share a link to this organization"
+  },
+  "breadcrumb": {
+    "events": "Events"
+  },
+  "not_found_title": "Organization not found",
+  "not_found_body": "This organization does not exist, or you are not a member of it.",
+  "nav": {
+    "events": "Events",
+    "overview": "Overview",
+    "members": "Members",
+    "payments": "Payments"
+  },
+  "overview": {
+    "title": "Organization",
+    "events": "Events",
+    "members": "Members",
+    "created": "Created",
+    "donations": "Donations",
+    "donations_on": "Accepting donations",
+    "donations_off": "Not accepting donations"
+  },
+  "members": {
+    "title": "Members",
+    "joined": "Joined {{when}}",
+    "read_only": "Only the owner can change who belongs to this organization."
+  }
+}

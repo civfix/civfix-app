@@ -1,0 +1,34 @@
+{
+  "just_now": "ahora",
+  "unit_minute": "m",
+  "unit_hour": "h",
+  "unit_day": "d",
+  "unit_week": "sem",
+  "weekdays": ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+  "day": {
+    "today": "Hoy",
+    "yesterday": "Ayer"
+  },
+  "title": {
+    "date": "Elige una fecha",
+    "time": "Elige una hora"
+  },
+  "placeholder": {
+    "pick_date": "Elige una fecha",
+    "pick_time": "Elige una hora"
+  },
+  "action": {
+    "done": "Listo"
+  },
+  "calendar": {
+    "weekday_initials": ["D", "L", "M", "X", "J", "V", "S"]
+  },
+  "a11y": {
+    "dismiss": "Cerrar",
+    "close": "Cerrar",
+    "previous_month": "Mes anterior",
+    "next_month": "Mes siguiente",
+    "date_field": "Fecha: {{value}}",
+    "time_field": "Hora: {{value}}"
+  }
+}

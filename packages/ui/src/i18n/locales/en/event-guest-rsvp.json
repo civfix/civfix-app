@@ -1,0 +1,55 @@
+{
+  "title": "RSVP to this event",
+  "dismiss_a11y": "Dismiss RSVP",
+  "choice": {
+    "caption": "Save your spot. An account keeps every event you join in one place - or RSVP as a guest and we'll send your confirmation by email or text.",
+    "sign_in": "Sign in or create account",
+    "guest": "Continue as guest"
+  },
+  "form": {
+    "caption": "We'll send a one-time code to confirm it's you.",
+    "name_label": "Your name",
+    "name_placeholder": "Name the host will see",
+    "name_a11y": "Your name",
+    "channel_label": "Send the code to",
+    "channel_email": "Email",
+    "channel_sms": "Text message",
+    "email_label": "Email address",
+    "email_placeholder": "you@example.com",
+    "phone_label": "Mobile number",
+    "phone_placeholder": "(555) 123-4567",
+    "sms_consent": "Message and data rates may apply. We send a one-time code and updates about this event only. Reply STOP to opt out.",
+    "sms_unavailable": "Text messages aren't available right now. We've switched you to email.",
+    "submit": "Send code",
+    "cancel": "Cancel",
+    "ticket_label": "Ticket type"
+  },
+  "code": {
+    "caption_email": "Enter the 6-digit code we sent to {{contact}}.",
+    "caption_sms": "Enter the 6-digit code we texted to {{contact}}.",
+    "resend": "Resend code",
+    "resend_wait": "Resend in {{seconds}}s",
+    "resend_a11y": "Resend the verification code",
+    "back": "Back",
+    "submit": "Confirm RSVP",
+    "start_over": "Start over"
+  },
+  "success": {
+    "title": "You're on the list",
+    "body_email": "We emailed your confirmation to {{contact}}. It has a link to cancel if your plans change.",
+    "body_sms": "We texted your confirmation to {{contact}}. It has a link to cancel if your plans change.",
+    "done": "Done"
+  },
+  "error": {
+    "rate_limited": "Too many requests. Wait a moment and try again.",
+    "turnstile": "We couldn't verify you're human. Try again.",
+    "invalid_contact": "Check that name and contact and try again.",
+    "event_gone": "This event is no longer available.",
+    "closed": "This event is closed to new RSVPs.",
+    "bad_code": "That code isn't right, or it may have expired. Check it and try again.",
+    "attempts_exhausted": "Too many tries. Start over to get a new code.",
+    "generic": "Something went wrong. Try again.",
+    "questions_required": "Please answer the required questions.",
+    "consent_required": "Please agree to the Terms and Privacy Policy to register."
+  }
+}

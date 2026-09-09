@@ -1,0 +1,10 @@
+{
+  "title": "Solicitar recursos",
+  "dismiss_a11y": "Cerrar solicitud de recursos",
+  "caption": "Dile a {{city}} qué necesita tu evento (materiales, contenedores, cierres de calles). Lo enviamos directamente a su bandeja de entrada.",
+  "city_fallback": "la ciudad",
+  "message_placeholder": "¿Qué necesitas de la ciudad?",
+  "message_a11y": "Mensaje de solicitud de recursos",
+  "cancel": "Cancelar",
+  "submit": "Enviar solicitud"
+}

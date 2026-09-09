@@ -1,0 +1,28 @@
+{
+  "search": {
+    "placeholder": "Buscar por nombre o @handle",
+    "a11y": "Buscar personas por nombre o handle",
+    "clear_a11y": "Borrar búsqueda"
+  },
+  "row": {
+    "open_a11y": "{{name}}, ver perfil"
+  },
+  "no_matches": {
+    "title": "Sin resultados",
+    "body": "Nadie en esta lista coincide con \"{{query}}\"."
+  },
+  "error": {
+    "title": "No se pudo cargar",
+    "body": "No pudimos conectar con civfix. Comprueba tu conexión e inténtalo de nuevo."
+  },
+  "empty": {
+    "followers": {
+      "title": "Aún sin seguidores",
+      "body": "Cuando alguien siga esta cuenta, aparecerá aquí."
+    },
+    "following": {
+      "title": "Aún no sigue a nadie",
+      "body": "Las cuentas que sigue esta persona aparecerán aquí."
+    }
+  }
+}

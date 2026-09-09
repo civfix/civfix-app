@@ -1,0 +1,52 @@
+{
+  "row": {
+    "a11y_unread": "{{title}}, 읽지 않은 메시지 {{count}}개",
+    "a11y_muted": "음소거됨",
+    "members_one": "멤버 {{count}}명",
+    "members_other": "멤버 {{count}}명",
+    "subscribers_one": "구독자 {{count}}명",
+    "subscribers_other": "구독자 {{count}}명",
+    "a11y_channel": "채널",
+    "action": {
+      "mute": "음소거",
+      "unmute": "음소거 해제",
+      "mark_read": "읽음으로 표시",
+      "more": "대화 작업",
+      "delete": "삭제",
+      "delete_a11y": "대화 삭제"
+    }
+  },
+  "preview": {
+    "new_conversation": "새 대화",
+    "from_me": "나: {{text}}"
+  },
+  "search": {
+    "placeholder": "메시지 검색",
+    "a11y": "메시지 검색",
+    "clear_a11y": "검색 지우기"
+  },
+  "signed_out": {
+    "title": "이웃과 메시지를 나누려면 로그인하세요",
+    "body_before": "",
+    "body_link": "로그인",
+    "body_after": "하면 이벤트 단체 채팅과 다이렉트 메시지를 여기서 확인할 수 있어요."
+  },
+  "error": {
+    "title": "메시지를 불러올 수 없어요",
+    "body": "civfix에 연결할 수 없어요. 네트워크를 확인하고 다시 시도해 주세요."
+  },
+  "empty": {
+    "title": "아직 메시지가 없어요",
+    "body": "이벤트에 참가 신청을 하면 단체 채팅에 참여할 수 있어요. 또는 이웃의 프로필에서 메시지를 보내세요.",
+    "no_match": {
+      "title": "검색 결과가 없어요",
+      "body": "\"{{query}}\"와 일치하는 대화가 없습니다. 이름이나 메시지에 있는 단어로 검색해 보세요."
+    }
+  },
+  "new_menu": {
+    "message": "새 메시지",
+    "group": "새 그룹",
+    "channel": "새 채널",
+    "a11y": "새 대화 시작"
+  }
+}

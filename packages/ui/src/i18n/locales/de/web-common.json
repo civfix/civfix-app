@@ -1,0 +1,24 @@
+{
+  "a11y": {
+    "skip_to_content": "Zum Inhalt springen",
+    "map_controls": "Kartensteuerung"
+  },
+  "boot": {
+    "loading_label": "civfix wird geladen"
+  },
+  "detail": {
+    "back": "Zurück"
+  },
+  "sign_in_prompt": {
+    "cta": "Anmelden"
+  },
+  "app_promo": {
+    "banner_title": "civfix",
+    "banner_subtitle": "Probleme schneller melden – in der App",
+    "card_title": "Hol dir die civfix-App",
+    "card_body": "Melde Probleme, verfolge Reparaturen und mach bei Aufräumaktionen mit – direkt vom Handy.",
+    "dismiss": "Schließen",
+    "badge_app_store": "civfix im App Store laden",
+    "badge_google_play": "civfix bei Google Play holen"
+  }
+}

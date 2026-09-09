@@ -1,0 +1,193 @@
+{
+  "category": {
+    "trash": "Basura",
+    "recycling": "Reciclaje",
+    "graffiti": "Grafiti",
+    "hazard": "Peligro",
+    "encampment": "Campamento",
+    "water": "Agua",
+    "other": "Otro"
+  },
+  "status": {
+    "submitted": "Enviado",
+    "held": "En revisión",
+    "published": "Publicado",
+    "acknowledged": "Reconocido",
+    "in_progress": "En proceso",
+    "resolved": "Resuelto",
+    "rejected": "Rechazado"
+  },
+  "eventType": {
+    "cleanup": "Limpieza",
+    "other_volunteer": "Otro voluntariado"
+  },
+  "eventKind": {
+    "cleanup": "Limpieza",
+    "other_volunteer": "Otro voluntariado"
+  },
+  "reportType": {
+    "dump": "Vertedero",
+    "encampment": "Campamento",
+    "graffiti": "Grafiti",
+    "infrastructure": "Infraestructura dañada",
+    "pavement": "Pavimento deteriorado",
+    "vegetation": "Vegetación sin podar",
+    "other": "Otro"
+  },
+  "eventStatus": {
+    "upcoming": "Próximo",
+    "active": "Activo",
+    "done": "Finalizado",
+    "cancelled": "Cancelado"
+  },
+  "registrationStatus": {
+    "registered": "Inscrito",
+    "cancelled": "Cancelado",
+    "transferred": "Transferido"
+  },
+  "registrationSource": {
+    "self": "Propia",
+    "waitlist": "Desde la lista de espera",
+    "walkup": "En la puerta",
+    "transfer": "Transferida"
+  },
+  "seatStatus": {
+    "active": "Activa",
+    "cancelled": "Cancelada"
+  },
+  "checkinMethod": {
+    "scan": "Escaneada",
+    "manual": "Manual",
+    "self": "Autoregistro",
+    "walkup": "En la puerta"
+  },
+  "waitlistStatus": {
+    "waiting": "En espera",
+    "offered": "Ofrecida",
+    "claimed": "Reclamada",
+    "expired": "Caducada",
+    "cancelled": "Cancelada"
+  },
+  "ticketTypeVisibility": {
+    "public": "Pública",
+    "hidden": "Oculta",
+    "access_code": "Código de acceso"
+  },
+  "eventVisibility": {
+    "public": "Público",
+    "unlisted": "No listado",
+    "private": "Privado"
+  },
+  "eventPageStatus": {
+    "draft": "Borrador",
+    "published": "Publicada",
+    "unpublished": "Despublicada"
+  },
+  "registrationState": {
+    "open": "Abierta",
+    "not_yet_open": "Aún no abierta",
+    "closed": "Cerrada",
+    "full": "Completo",
+    "waitlist": "Lista de espera"
+  },
+  "cleanupMemberRole": {
+    "organizer": "Organizador",
+    "cohost": "Coanfitrión",
+    "member": "Asistente",
+    "staff": "Personal"
+  },
+  "organizationMemberRole": {
+    "owner": "Propietario",
+    "admin": "Administrador",
+    "member": "Miembro"
+  },
+  "orgVerificationStatus": {
+    "unverified": "Sin verificar",
+    "pending": "En revisión",
+    "verified": "Verificada",
+    "rejected": "Rechazada"
+  },
+  "orgVerificationKind": {
+    "nonprofit": "Sin ánimo de lucro",
+    "government": "Administración pública",
+    "community": "Grupo comunitario"
+  },
+  "broadcastKind": {
+    "host_broadcast": "Mensaje del anfitrión",
+    "confirmation": "Confirmación",
+    "waitlist_promoted": "Plaza de lista de espera",
+    "reminder": "Recordatorio",
+    "event_updated": "Evento actualizado",
+    "event_cancelled": "Evento cancelado",
+    "thank_you": "Agradecimiento"
+  },
+  "broadcastStatus": {
+    "draft": "Borrador",
+    "scheduled": "Programado",
+    "sending": "Enviando",
+    "sent": "Enviado",
+    "cancelled": "Cancelado",
+    "failed": "Fallido"
+  },
+  "broadcastChannel": {
+    "inapp": "En la app",
+    "push": "Notificación",
+    "email": "Correo",
+    "sms": "SMS"
+  },
+  "broadcastSegment": {
+    "all_registered": "Todos los inscritos",
+    "ticket_types": "Por tipo de entrada",
+    "slots": "Por turno",
+    "waitlist": "Lista de espera",
+    "checked_in": "Registrados",
+    "not_checked_in": "Sin registrar",
+    "guests_only": "Solo invitados"
+  },
+  "deliveryStatus": {
+    "pending": "Pendiente",
+    "in_flight": "Enviando",
+    "sent": "Enviado",
+    "failed": "Fallido",
+    "suppressed": "Suprimido",
+    "skipped": "Omitido"
+  },
+  "donationStatus": {
+    "pending": "Pendiente",
+    "succeeded": "Completada",
+    "failed": "Fallida",
+    "refunded": "Reembolsada",
+    "partially_refunded": "Reembolsada en parte"
+  },
+  "donationDisputeState": {
+    "none": "Ninguna",
+    "open": "Abierta",
+    "won": "Ganada",
+    "lost": "Perdida",
+    "warning": "Aviso"
+  },
+  "orgPaymentsState": {
+    "not_started": "Sin empezar",
+    "onboarding": "En curso",
+    "ready": "Lista",
+    "at_risk": "Requiere atención",
+    "blocked": "Bloqueada"
+  },
+  "donateState": {
+    "READY": "Aceptando donaciones",
+    "AT_RISK": "Requiere atención",
+    "BLOCKED": "Bloqueada",
+    "OFF": "Desactivada"
+  },
+  "attendeeKind": {
+    "member": "Miembro",
+    "guest": "Invitado"
+  },
+  "hostExportStatus": {
+    "queued": "En cola",
+    "running": "Generando",
+    "ready": "Listo",
+    "failed": "Fallido",
+    "expired": "Caducado"
+  }
+}

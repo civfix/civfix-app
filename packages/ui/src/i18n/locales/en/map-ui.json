@@ -1,0 +1,97 @@
+{
+  "brand": {
+    "home": "civfix home"
+  },
+  "layers": {
+    "toggle": "Map layers",
+    "events": "Events",
+    "eventsA11y": "Events layer",
+    "shown": "Shown",
+    "hidden": "Hidden",
+    "reports": "Reports",
+    "reportsA11y": "Report categories",
+    "summaryNone": "None shown",
+    "summaryAll": "All categories",
+    "summarySome": "{{shown}} of {{total}} categories",
+    "selectAll": "Select all",
+    "clearAll": "Clear all",
+    "selectAllA11y": "Select all categories",
+    "clearAllA11y": "Clear all categories",
+    "categoryPinsA11y": "{{category}} pins",
+    "nearby_one": "{{count}} nearby",
+    "nearby_other": "{{count}} nearby"
+  },
+  "actions": {
+    "locate": "Recenter on my location",
+    "notifications": "Notifications",
+    "reset": "Reset"
+  },
+  "appearance": {
+    "toggle": "Appearance",
+    "dismiss": "Dismiss appearance menu"
+  },
+  "stack": {
+    "events": "Events and cleanups",
+    "messages": "Messages",
+    "social": "Discover people",
+    "reports": "My reports",
+    "report": "Report an issue"
+  },
+  "profile": {
+    "signIn": "Sign in",
+    "open": "Open your profile"
+  },
+  "a11y": {
+    "attribution": "CARTO / OSM",
+    "miniMap": "Map showing the location",
+    "homeMap": "Map of reports and events",
+    "picker": "Tap the map to place the location pin, or drag the pin to fine-tune",
+    "userLocation": "Your location"
+  },
+  "hint": {
+    "place": "Tap the map to place the pin",
+    "move": "Tap to move the pin",
+    "moveMainMap": "Tap the map to move the pin",
+    "empty": "No location set yet"
+  },
+  "pickStep": {
+    "title": "Set the location",
+    "open": "Choose location on map",
+    "openA11y": "Choose the location on the full map",
+    "confirm": "Use this location",
+    "confirmA11y": "Confirm the chosen location",
+    "cancel": "Cancel",
+    "cancelA11y": "Cancel choosing a location",
+    "needPin": "Tap the map to set a location first"
+  },
+  "linkPanel": {
+    "preview": "Report preview",
+    "title": "Report",
+    "close": "Close report preview",
+    "noDescription": "No description provided.",
+    "viewDetails": "View report details",
+    "add": "Add this report",
+    "remove": "Remove",
+    "addA11y": "Add this report to the event",
+    "removeA11y": "Remove this report from the event"
+  },
+  "dropPin": {
+    "locationA11y": "Selected location",
+    "report": {
+      "title": "Report an issue here",
+      "sub": "Start a report at this spot"
+    },
+    "host": {
+      "title": "Host an event here",
+      "sub": "Plan a cleanup or meetup at this spot"
+    },
+    "cancel": "Cancel",
+    "cancelA11y": "Cancel and remove the dropped pin",
+    "confirm": {
+      "title": "Start a new report here?",
+      "body": "Your unfinished report will be discarded.",
+      "discard": "Discard and start here",
+      "keep": "Keep editing"
+    }
+  }
+}

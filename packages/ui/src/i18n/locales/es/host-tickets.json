@@ -1,0 +1,83 @@
+{
+  "saved": "Tipo de entrada guardado",
+  "created": "Tipo de entrada creado",
+  "deleted": "Tipo de entrada eliminado",
+  "types": {
+    "title": "Tipos de entrada",
+    "count": "{{count}} de {{max}}",
+    "add": "Añadir un tipo de entrada",
+    "edit_a11y": "Editar {{name}}",
+    "move_up": "Subir",
+    "move_down": "Bajar",
+    "delete": "Eliminar",
+    "sold": "{{sold}} de {{capacity}} reservadas",
+    "unlimited": "sin límite",
+    "party": "hasta {{max}} por inscripción",
+    "empty_title": "Todavía no hay tipos de entrada",
+    "empty_body": "Añade uno para que la gente elija cómo participa. Sin tipos de entrada, el evento usa una confirmación sencilla."
+  },
+  "drawer": {
+    "new_title": "Nuevo tipo de entrada",
+    "edit_title": "Editar el tipo de entrada"
+  },
+  "field": {
+    "name": "Nombre",
+    "description": "Descripción",
+    "capacity": "Aforo",
+    "capacity_hint": "Déjalo vacío para plazas ilimitadas.",
+    "sales_opens": "Apertura de reservas",
+    "sales_closes": "Cierre de reservas",
+    "visibility": "Visibilidad",
+    "access_code": "Código de acceso",
+    "access_code_hint": "Hace falta este código para ver y reservar este tipo de entrada.",
+    "access_code_set": "Ya hay un código configurado. Escribe otro para reemplazarlo.",
+    "max_party": "Plazas por inscripción",
+    "max_party_hint": "Entre 1 y {{max}}.",
+    "waitlist": "Lista de espera",
+    "waitlist_hint": "Permite apuntarse a una lista de espera cuando este tipo se llena.",
+    "accessCode": "Código de acceso",
+    "maxPartySize": "Plazas por inscripción",
+    "salesOpensAt": "Apertura de reservas",
+    "salesClosesAt": "Cierre de reservas",
+    "ticketTypeIds": "Orden"
+  },
+  "visibility": {
+    "public": "Pública",
+    "hidden": "Oculta",
+    "access_code": "Código de acceso"
+  },
+  "delete": {
+    "title": "¿Eliminar este tipo de entrada?",
+    "body": "{{name}} desaparecerá de la página de inscripción.",
+    "banner": "Un tipo de entrada con inscripciones no se puede eliminar. Cierra sus reservas en su lugar.",
+    "confirm": "Eliminar",
+    "in_use": "Ya hay gente inscrita en este tipo. Cierra sus reservas en lugar de eliminarlo."
+  },
+  "questions": {
+    "title": "Preguntas de la inscripción",
+    "hint": "Las respuestas solo las ven los anfitriones con permiso y se eliminan 30 días después del evento.",
+    "archive_note": "Al quitar una pregunta se archiva. Las respuestas ya dadas se conservan.",
+    "empty": "Todavía no hay preguntas.",
+    "saved": "Preguntas guardadas",
+    "add": "Añadir una pregunta",
+    "remove": "Quitar esta pregunta",
+    "move_up": "Subir",
+    "move_down": "Bajar",
+    "prompt": "Pregunta",
+    "kind": "Tipo",
+    "kind_short_text": "Texto corto",
+    "kind_long_text": "Texto largo",
+    "kind_single_select": "Elegir una",
+    "kind_multi_select": "Elegir varias",
+    "kind_checkbox": "Casilla",
+    "kind_consent": "Consentimiento",
+    "options": "Opciones",
+    "options_hint": "Una opción por línea.",
+    "consent_text": "Texto del consentimiento",
+    "help": "Texto de ayuda",
+    "required": "Obligatoria",
+    "ticket_scope": "Preguntar solo para",
+    "ticket_all": "Todos los tipos de entrada",
+    "ticket_scope_hint": "Una pregunta limitada a un tipo de entrada solo se hace cuando alguien elige ese tipo, así que nunca se hace si ocultas todos los tipos. Déjala en todos los tipos para preguntarla siempre."
+  }
+}

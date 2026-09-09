@@ -1,0 +1,67 @@
+{
+  "hero": {
+    "share_a11y": "Profil teilen",
+    "close_a11y": "Profil schließen"
+  },
+  "stats": {
+    "following": "Gefolgt",
+    "followers_one": "Follower",
+    "followers_other": "Follower",
+    "reports": "Meldungen",
+    "fixed": "Behoben",
+    "cleanups": "Einsätze"
+  },
+  "events": {
+    "section": "Events",
+    "tab_upcoming": "Demnächst",
+    "tab_past": "Vergangen",
+    "subhead_hosting": "Organisiert",
+    "subhead_attending": "Nimmt teil",
+    "subhead_hosted": "Organisiert",
+    "subhead_attended": "Teilgenommen",
+    "badge_host": "Gastgeber",
+    "badge_going": "Dabei",
+    "badge_hosted": "Veranstaltet",
+    "badge_went": "War dabei",
+    "empty_upcoming": "Noch keine bevorstehenden Events.",
+    "empty_none": "Noch nichts.",
+    "row_a11y": "{{title}}, {{badge}}",
+    "load_more": "Mehr laden",
+    "loading_more": "Wird geladen...",
+    "load_more_a11y": "Mehr vergangene Events laden",
+    "load_more_error": "Weitere Events konnten nicht geladen werden.",
+    "load_more_retry": "Erneut versuchen"
+  },
+  "tabs": {
+    "posts": "Beiträge",
+    "events": "Events",
+    "hours": "Stunden",
+    "reports": "Meldungen",
+    "a11y": "Profilbereiche"
+  },
+  "social": {
+    "link_a11y": "{{platform}} öffnen"
+  },
+  "reports": {
+    "section": "Deine Meldungen",
+    "loading": "Meldungen werden geladen…",
+    "error": "Meldungen konnten nicht geladen werden.",
+    "empty": "Noch keine Meldungen.",
+    "see_all": "Alle {{count}} Meldungen ansehen",
+    "see_all_a11y": "Alle Meldungen ansehen",
+    "row_untitled": "Meldung aus der Nachbarschaft",
+    "row_location_pending": "Ort noch offen",
+    "row_a11y": "{{title}}, {{status}}"
+  },
+  "posts": {
+    "section": "Beiträge",
+    "loading": "Beiträge werden geladen…",
+    "error": "Beiträge konnten nicht geladen werden.",
+    "empty": "Noch keine Beiträge.",
+    "load_more": "Mehr laden",
+    "loading_more": "Wird geladen…",
+    "load_more_a11y": "Mehr Beiträge laden",
+    "saved": "Gespeicherte Beiträge",
+    "saved_a11y": "Gespeicherte Beiträge öffnen"
+  }
+}

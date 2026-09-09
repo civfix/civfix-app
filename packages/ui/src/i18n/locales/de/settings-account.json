@@ -1,0 +1,127 @@
+{
+  "signedOut": {
+    "title": "Anmelden, um dein Konto zu verwalten",
+    "body": "Handle, soziale Links, Datenexport und Kontolöschung findest du hier."
+  },
+  "error": {
+    "title": "Konto konnte nicht geladen werden",
+    "body": "civfix ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "section": {
+    "identity": "Identität",
+    "data": "Deine Daten"
+  },
+  "avatar": {
+    "change": "Profilbild",
+    "sub": "Tippen, um ein neues Foto zu wählen",
+    "uploading": "Wird hochgeladen…",
+    "change_a11y": "Profilbild ändern",
+    "error": {
+      "rejected": "Dieses Foto konnte nicht verwendet werden. Probier ein anderes Bild.",
+      "rate_limited": "Zu viele Versuche. Warte kurz und versuch es nochmal.",
+      "generic": "Dein Foto konnte nicht aktualisiert werden. Versuch es nochmal."
+    }
+  },
+  "name": {
+    "change": "Anzeigename",
+    "note": "Diesen Namen sehen Nachbarn in deinem Profil.",
+    "placeholder": "Dein Name",
+    "field_label": "Anzeigename",
+    "save": "Namen speichern",
+    "cancel": "Abbrechen",
+    "hint": {
+      "length": "Verwende 1-80 Zeichen.",
+      "current": "Das ist dein aktueller Name."
+    },
+    "error": {
+      "generic": "Name konnte nicht gespeichert werden. Versuch es nochmal."
+    },
+    "dismiss": "Anzeigename-Editor schließen"
+  },
+  "bio": {
+    "label": "Bio",
+    "add": "Bio hinzufügen",
+    "note": "Erzähl deinen Nachbar*innen etwas über dich.",
+    "placeholder": "Erzähl deinen Nachbar*innen etwas über dich.",
+    "field_label": "Bio",
+    "count": "{{current}}/{{max}}",
+    "save": "Bio speichern",
+    "cancel": "Abbrechen",
+    "dismiss": "Bio-Editor schließen",
+    "error": {
+      "generic": "Bio konnte nicht gespeichert werden. Versuch es nochmal."
+    }
+  },
+  "email": {
+    "label": "E-Mail",
+    "none": "Keine E-Mail hinterlegt"
+  },
+  "handle": {
+    "change": "Handle ändern",
+    "set": "Handle festlegen",
+    "placeholder": "handle",
+    "field_label": "Handle",
+    "save": "Handle speichern",
+    "cancel": "Abbrechen",
+    "cooldown_note": "Du kannst deinen Handle nur einmal alle 30 Tage ändern.",
+    "cooldown_locked": "Handle-Änderung einmal alle 30 Tage – nächste Änderung am {{date}}.",
+    "hint": {
+      "choose": "Wähle einen Handle mit 3–20 Zeichen.",
+      "invalid_format": "Nur 3–20 Buchstaben, Zahlen oder Unterstriche.",
+      "current": "Das ist dein aktueller Handle.",
+      "checking": "Verfügbarkeit prüfen...",
+      "available": "Verfügbar"
+    },
+    "availability": {
+      "reserved": "Dieser Handle ist reserviert.",
+      "invalid": "Dieser Handle ist nicht erlaubt.",
+      "taken": "Dieser Handle ist bereits vergeben."
+    },
+    "error": {
+      "rate_limited": "Du kannst deinen Handle nur einmal alle 30 Tage ändern. Versuche es später.",
+      "taken": "Dieser Handle ist bereits vergeben.",
+      "not_allowed": "Dieser Handle ist nicht erlaubt.",
+      "generic": "Handle konnte gerade nicht geändert werden. Bitte versuche es erneut."
+    },
+    "dismiss": "Handle-Editor schließen"
+  },
+  "social": {
+    "title": "Soziale Links",
+    "add": "Füge deine sozialen Links hinzu",
+    "count_one": "{{count}} Link hinzugefügt",
+    "count_other": "{{count}} Links hinzugefügt",
+    "note": "Gib für jede nur deinen Nutzernamen ein (Nummer für WhatsApp) - wir erstellen den Link.",
+    "placeholder_handle": "Nutzername",
+    "placeholder_phone": "Telefonnummer",
+    "save": "Links speichern",
+    "error": {
+      "invalid": "Prüfe deine Eingaben - nur den Nutzernamen verwenden, keine Links oder Leerzeichen.",
+      "save": "Deine Links konnten nicht gespeichert werden. Prüfe deine Verbindung und versuche es erneut."
+    },
+    "dismiss": "Editor für soziale Links schließen"
+  },
+  "data_export": {
+    "request": "Meine Daten anfordern",
+    "requesting": "Wird angefordert...",
+    "request_a11y": "Kopie meiner Daten anfordern",
+    "sub": "Wir schicken dir eine Kopie per E-Mail",
+    "note": {
+      "success_email": "Wir haben eine Kopie deiner Daten an {{email}} gesendet.",
+      "success": "Wir schicken dir eine Kopie deiner Daten per E-Mail."
+    },
+    "announce": {
+      "success_email": "Eine Kopie deiner Daten wurde an {{email}} gesendet.",
+      "success": "Eine Kopie deiner Daten wurde per E-Mail gesendet.",
+      "failed": "Datenexport fehlgeschlagen."
+    },
+    "error": {
+      "no_email": "Füge zuerst eine verifizierte E-Mail-Adresse hinzu und versuche es erneut.",
+      "rate_limited": "Zu viele Anfragen. Bitte warte kurz und versuche es erneut.",
+      "generic": "Datenexport gerade nicht möglich. Bitte versuche es erneut."
+    }
+  },
+  "delete_account": {
+    "label": "Konto löschen",
+    "sub": "civfix-Konto dauerhaft entfernen"
+  }
+}

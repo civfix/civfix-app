@@ -1,0 +1,27 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["27SWKQ5NF4.org.civfix.community"],
+        "components": [
+          { "/": "/legal/*", "exclude": true },
+          { "/": "/service-record/*", "exclude": true },
+          { "/": "/guest*", "exclude": true },
+          { "/": "/claim*", "exclude": true },
+          { "/": "/.well-known/*", "exclude": true },
+          { "/": "/landscape*", "exclude": true },
+          { "/": "/skeleton*", "exclude": true },
+          { "/": "/bodies*", "exclude": true },
+          { "/": "/manage*", "exclude": true },
+          { "/": "/e/*", "exclude": true },
+          { "/": "/donate/*", "exclude": true },
+          { "/": "/unsubscribe*", "exclude": true },
+          { "/": "/*" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["27SWKQ5NF4.org.civfix.community"]
+  }
+}

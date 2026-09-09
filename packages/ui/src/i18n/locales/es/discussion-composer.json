@@ -1,0 +1,8 @@
+{
+  "placeholder": "Añade a la discusión",
+  "city_fallback": "la ciudad",
+  "forward_disclaimer": "Mencionar a {{mention}} enviará tu comentario a {{city}}.",
+  "attach_a11y": "Adjuntar una foto o video",
+  "input_a11y": "Campo de mensaje en la discusión",
+  "send_a11y": "Publicar mensaje"
+}

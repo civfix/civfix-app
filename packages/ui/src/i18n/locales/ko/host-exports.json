@@ -1,0 +1,18 @@
+{
+  "title": "내보내기",
+  "action": "내보내기",
+  "new_export": "새 내보내기",
+  "recent": "최근 내보내기",
+  "none": "아직 내보낸 파일이 없습니다.",
+  "download": "다운로드",
+  "truncated": "일부만 포함",
+  "requested": "내보내기를 요청했습니다",
+  "requested_hint": "준비되면 여기에 표시됩니다. 다운로드 링크는 금방 만료되니 서둘러 받아 주세요.",
+  "privacy_note": "{{title}} 내보내기에는 참가자 답변이 포함됩니다. 보관하고 공유할 때 주의해 주세요.",
+  "kind": {
+    "roster": "참가자",
+    "answers": "답변",
+    "checkins": "체크인",
+    "donations": "기부"
+  }
+}

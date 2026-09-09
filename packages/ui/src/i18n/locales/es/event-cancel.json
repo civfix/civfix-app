@@ -1,0 +1,15 @@
+{
+  "title": "¿Cancelar este evento?",
+  "caption": "Se notificará a los asistentes y se eliminará del mapa. Esta acción no se puede deshacer.",
+  "reason": {
+    "placeholder": "Añadir un motivo (opcional)",
+    "a11y": "Motivo de cancelación (opcional)"
+  },
+  "actions": {
+    "keep": "Mantener evento",
+    "confirm": "Cancelar evento"
+  },
+  "a11y": {
+    "dismiss": "Cerrar cancelación de evento"
+  }
+}

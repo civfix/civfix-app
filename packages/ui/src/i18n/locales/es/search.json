@@ -1,0 +1,38 @@
+{
+  "field": {
+    "placeholder": "Buscar personas por @handle",
+    "a11y": "Buscar personas por handle",
+    "clear_a11y": "Borrar búsqueda"
+  },
+  "suggestions": {
+    "title": "Sugerencias para ti"
+  },
+  "leaderboard": {
+    "title": "Clasificación de voluntarios",
+    "subtitle": "Mejores voluntarios de tu zona",
+    "a11y": "Abrir la clasificación de voluntarios"
+  },
+  "results": {
+    "title": "Resultados de búsqueda",
+    "count_one": "{{count}} coincidencia",
+    "count_other": "{{count}} coincidencias"
+  },
+  "row": {
+    "view_profile_a11y": "{{name}}, ver perfil",
+    "message_a11y": "Enviar mensaje a {{name}}"
+  },
+  "empty": {
+    "prompt": {
+      "title": "Aún no hay sugerencias",
+      "body": "Busca personas por nombre o @handle."
+    },
+    "error": {
+      "title": "No se pudo buscar",
+      "body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo."
+    },
+    "no_results": {
+      "title": "Sin resultados",
+      "body": "Ninguna cuenta coincide con \"@{{handle}}\". Revisa la ortografía o prueba con otro handle."
+    }
+  }
+}

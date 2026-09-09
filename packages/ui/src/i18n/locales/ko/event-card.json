@@ -1,0 +1,18 @@
+{
+  "joined_tag": "참여 중",
+  "going_one": "{{count}}명 참여",
+  "going_other": "{{count}}명 참여",
+  "organizer": {
+    "by_prefix": "주최:"
+  },
+  "a11y": {
+    "card_one": "{{title}}, {{count}}명 참여",
+    "card_other": "{{title}}, {{count}}명 참여"
+  },
+  "linked": {
+    "schedule_unavailable": "일정 정보 없음",
+    "location_fallback": "이벤트를 열어 장소 확인",
+    "a11y_card": "{{month}} {{day}}. {{title}}. {{schedule}}. {{location}}. {{going}}.",
+    "a11y_remove": "{{title}} 제거"
+  }
+}

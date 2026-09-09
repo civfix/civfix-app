@@ -1,0 +1,27 @@
+{
+  "explainer": "Das Verifiziert-Abzeichen ist für erfahrene Community-Organisatoren und lokale Führungspersonen. Nach einem 10-minütigen Gespräch mit unserem Gründer fügen wir es deinem Konto hinzu.",
+  "section": {
+    "label": "Wer kann verifiziert werden"
+  },
+  "criteria": "Erfahrener Community-Organisator oder lokale Führungsperson.",
+  "examples": {
+    "hint": "Zum Beispiel:",
+    "items": {
+      "volunteer": "Regelmäßiger Organisator von Freiwilligen-Events",
+      "nonprofit": "Vertreter einer gemeinnützigen Organisation",
+      "leader": "Gewählte oder ernannte lokale Vertretungsperson"
+    }
+  },
+  "schedule": {
+    "button": "10-Minuten-Gespräch buchen",
+    "a11yLabel": "10-Minuten-Gespräch mit unserem Gründer buchen",
+    "footnote": "Öffnet unsere Buchungsseite im Browser.",
+    "open_error": "Die Buchungsseite konnte nicht geöffnet werden. Versuche es erneut.",
+    "link_label": "Buchungslink",
+    "copy_a11y": "Buchungslink kopieren",
+    "copied": "Link kopiert"
+  },
+  "badge": {
+    "label": "Verifiziert"
+  }
+}

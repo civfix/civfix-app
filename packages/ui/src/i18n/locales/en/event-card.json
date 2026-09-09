@@ -1,0 +1,18 @@
+{
+  "joined_tag": "You're in",
+  "going_one": "{{count}} going",
+  "going_other": "{{count}} going",
+  "organizer": {
+    "by_prefix": "by"
+  },
+  "a11y": {
+    "card_one": "{{title}}, {{count}} going",
+    "card_other": "{{title}}, {{count}} going"
+  },
+  "linked": {
+    "schedule_unavailable": "Schedule unavailable",
+    "location_fallback": "Open event for location",
+    "a11y_card": "{{month}} {{day}}. {{title}}. {{schedule}}. {{location}}. {{going}}.",
+    "a11y_remove": "Remove {{title}}"
+  }
+}

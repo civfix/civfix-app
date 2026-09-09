@@ -1,0 +1,26 @@
+{
+  "section_title": "Tus reportes",
+  "signin": {
+    "title": "Inicia sesión para ver tus reportes",
+    "body": "Haz seguimiento de los problemas que has reportado y consulta su estado de gestión municipal, todo en un mismo lugar."
+  },
+  "search": {
+    "placeholder": "Buscar tus reportes",
+    "a11y": "Buscar tus reportes",
+    "clear_a11y": "Borrar búsqueda"
+  },
+  "empty": {
+    "no_match": {
+      "title": "Ningún reporte coincide con tu búsqueda",
+      "body": "Ninguno de tus reportes coincide con \"{{query}}\". Prueba con otra palabra, lugar o categoría."
+    },
+    "none": {
+      "title": "Aún no hay reportes",
+      "body": "Cuando hagas un reporte aparecerá aquí para que puedas ver qué se va resolviendo."
+    }
+  },
+  "error": {
+    "title": "No se pudo cargar",
+    "body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo."
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "title": "Confirma tu asistencia",
+  "dismiss_a11y": "Cerrar confirmación de asistencia",
+  "choice": {
+    "caption": "Reserva tu lugar. Con una cuenta tendrás todos tus eventos en un solo sitio, o confirma como invitado y te enviaremos la confirmación por correo o mensaje.",
+    "sign_in": "Iniciar sesión o crear cuenta",
+    "guest": "Continuar como invitado"
+  },
+  "form": {
+    "caption": "Te enviaremos un código de un solo uso para confirmar que eres tú.",
+    "name_label": "Tu nombre",
+    "name_placeholder": "El nombre que verá el organizador",
+    "name_a11y": "Tu nombre",
+    "channel_label": "Enviar el código a",
+    "channel_email": "Correo",
+    "channel_sms": "Mensaje de texto",
+    "email_label": "Correo electrónico",
+    "email_placeholder": "tu@ejemplo.com",
+    "phone_label": "Número de móvil",
+    "phone_placeholder": "(555) 123-4567",
+    "sms_consent": "Pueden aplicarse tarifas de mensajes y datos. Solo enviamos un código de un solo uso y avisos sobre este evento. Responde STOP para darte de baja.",
+    "sms_unavailable": "Los mensajes de texto no están disponibles ahora mismo. Te hemos cambiado al correo.",
+    "submit": "Enviar código",
+    "cancel": "Cancelar",
+    "ticket_label": "Tipo de entrada"
+  },
+  "code": {
+    "caption_email": "Escribe el código de 6 dígitos que enviamos a {{contact}}.",
+    "caption_sms": "Escribe el código de 6 dígitos que enviamos por mensaje a {{contact}}.",
+    "resend": "Reenviar código",
+    "resend_wait": "Reenviar en {{seconds}} s",
+    "resend_a11y": "Reenviar el código de verificación",
+    "back": "Atrás",
+    "submit": "Confirmar asistencia",
+    "start_over": "Empezar de nuevo"
+  },
+  "success": {
+    "title": "Estás en la lista",
+    "body_email": "Enviamos tu confirmación a {{contact}}. Incluye un enlace para cancelar si cambian tus planes.",
+    "body_sms": "Enviamos tu confirmación por mensaje a {{contact}}. Incluye un enlace para cancelar si cambian tus planes.",
+    "done": "Listo"
+  },
+  "error": {
+    "rate_limited": "Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.",
+    "turnstile": "No pudimos verificar que eres humano. Inténtalo de nuevo.",
+    "invalid_contact": "Revisa el nombre y el contacto e inténtalo de nuevo.",
+    "event_gone": "Este evento ya no está disponible.",
+    "closed": "Este evento no acepta nuevas confirmaciones.",
+    "bad_code": "Ese código no es correcto o pudo haber caducado. Revísalo e inténtalo de nuevo.",
+    "attempts_exhausted": "Demasiados intentos. Empieza de nuevo para recibir otro código.",
+    "generic": "Algo salió mal. Inténtalo de nuevo.",
+    "questions_required": "Responde las preguntas obligatorias.",
+    "consent_required": "Acepta los Términos y la Política de Privacidad para inscribirte."
+  }
+}

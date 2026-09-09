@@ -1,0 +1,50 @@
+{
+  "search": {
+    "placeholder": "Search events, people, places",
+    "clear_a11y": "Clear search",
+    "no_matches": "No matches for \"{{query}}\".",
+    "no_results_title": "No results",
+    "error": "Search could not be reached. Check your connection and try again.",
+    "retry": "Try again",
+    "error_title": "Search unavailable",
+    "loading_a11y": "Searching",
+    "announce": {
+      "results_one": "{{count}} result",
+      "results_other": "{{count}} results"
+    }
+  },
+  "create": {
+    "report": "Report an issue",
+    "event": "Host an event"
+  },
+  "results": {
+    "people": "People",
+    "events": "Events",
+    "reports": "Reports"
+  },
+  "search_page": {
+    "title": "Search",
+    "recent": "Recently searched",
+    "recent_empty": "Your recent searches will appear here.",
+    "recent_a11y": "Search for {{query}}",
+    "clear": "Clear",
+    "clear_a11y": "Clear recent searches",
+    "suggested_people": "Suggested people",
+    "events_near": "Events in your area",
+    "leaderboard": "Volunteer leaderboard",
+    "leaderboard_in": "Top volunteers in {{name}}",
+    "leaderboard_see_all_a11y": "See the full volunteer leaderboard",
+    "leaderboard_you": "You",
+    "reports_near": "Reports nearby",
+    "see_all": "See all",
+    "see_all_events_a11y": "See all events",
+    "browse": "Browse",
+    "browse_a11y": "Browse {{label}}"
+  },
+  "reports": {
+    "empty": "You haven't filed any reports yet. Tap “Report an issue” to start."
+  },
+  "person": {
+    "view_profile_a11y": "{{name}}, view profile"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "explainer": "The verified badge is for established community organizers and local leaders. After a quick 10-minute call with our founder, we'll add it to your account.",
+  "section": {
+    "label": "Who can get verified"
+  },
+  "criteria": "Be an established and experienced community organizer or local leader.",
+  "examples": {
+    "hint": "For example:",
+    "items": {
+      "volunteer": "Frequent community volunteer event organizer",
+      "nonprofit": "Representative of a non-profit or charitable organization",
+      "leader": "Local representative or community elected/appointed leader"
+    }
+  },
+  "schedule": {
+    "button": "Schedule a 10-minute call",
+    "a11yLabel": "Schedule a 10-minute call with our founder",
+    "footnote": "Opens our scheduling page in your browser.",
+    "open_error": "Couldn't open the scheduling page. Please try again.",
+    "link_label": "Scheduling link",
+    "copy_a11y": "Copy the scheduling link",
+    "copied": "Link copied"
+  },
+  "badge": {
+    "label": "Verified"
+  }
+}

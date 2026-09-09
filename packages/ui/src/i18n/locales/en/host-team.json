@@ -1,0 +1,47 @@
+{
+  "members": {
+    "title": "Team",
+    "joined": "Joined {{when}}",
+    "empty_title": "No team members yet",
+    "empty_body": "Invite a co-host to share the work, or staff to help at the door."
+  },
+  "role": {
+    "cohost": "Co-host",
+    "staff": "Staff",
+    "member": "Attendee",
+    "updated": "Role updated",
+    "change_a11y": "Change {{name}}'s role",
+    "confirm_title": "Change this role?",
+    "confirm_body": "{{name}} becomes {{role}} for this event. You can change it again at any time.",
+    "confirm_action": "Change role",
+    "error_conflict": "That person's role changed before you did. Reload the team and try again.",
+    "error_forbidden": "You cannot change that person's role on this event."
+  },
+  "invite": {
+    "action": "Invite",
+    "title": "Invite someone",
+    "identifier_kind": "Invite by",
+    "by_handle": "Handle",
+    "by_email": "Email",
+    "handle": "Handle",
+    "email": "Email address",
+    "role": "Role",
+    "role_hint": "Co-hosts can manage the event. Staff can check people in and see a contact-free roster.",
+    "send": "Send the invite",
+    "sent": "Invite sent",
+    "revoked": "Invite revoked",
+    "privacy_note": "An invited email is stored masked. You will never see the full address."
+  },
+  "invites": {
+    "title": "Pending invites",
+    "unknown": "Invited person",
+    "sent": "Invited {{when}}",
+    "revoke": "Revoke",
+    "revoke_title": "Revoke this invite?",
+    "revoke_body": "The link stops working immediately.",
+    "status_pending": "Pending",
+    "status_accepted": "Accepted",
+    "status_revoked": "Revoked",
+    "status_expired": "Expired"
+  }
+}

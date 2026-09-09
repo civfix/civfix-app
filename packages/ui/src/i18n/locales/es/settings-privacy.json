@@ -1,0 +1,22 @@
+{
+  "signedOut": {
+    "title": "Inicia sesión para gestionar la privacidad",
+    "body": "Elige quién puede escribirte, qué muestra tu perfil y a quién has bloqueado."
+  },
+  "section": {
+    "visibility": "Visibilidad",
+    "safety": "Seguridad"
+  },
+  "allowDms": {
+    "label": "Permitir mensajes directos",
+    "helper": "Si está desactivado, no apareces en las búsquedas y nadie puede iniciar nuevas conversaciones contigo. Los chats existentes permanecen abiertos."
+  },
+  "showHours": {
+    "label": "Mostrar mi registro de servicio",
+    "helper": "Cuando está activado, tu perfil público muestra cada evento acreditado: la fecha, la comunidad y quién lo acreditó. Cuando está desactivado, tu total de horas también se oculta de tu perfil y sales de las clasificaciones de la comunidad."
+  },
+  "blocked": {
+    "label": "Cuentas bloqueadas",
+    "sub": "Personas que has bloqueado"
+  }
+}

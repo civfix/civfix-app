@@ -1,0 +1,37 @@
+{
+  "back": "Zurück",
+  "close": "Schließen",
+  "choices": {
+    "title": "Willkommen bei civfix",
+    "subtitle": "Events entdecken, Neuigkeiten folgen, Nachbarn schreiben. Kein Passwort — wähle deine Anmeldeoption.",
+    "continue_apple": "Mit Apple fortfahren",
+    "continue_google": "Mit Google fortfahren",
+    "divider": "ODER",
+    "continue_email": "Mit E-Mail fortfahren",
+    "trust": "civfix ist gemeinnützig. Wir verkaufen deine Daten nie."
+  },
+  "email": {
+    "title": "Wie lautet deine E-Mail?",
+    "subtitle": "Wir senden dir einen 6-stelligen Code. Kein Passwort nötig.",
+    "placeholder": "du@mail.de",
+    "aria_label": "E-Mail-Adresse",
+    "submit": "Code senden"
+  },
+  "code": {
+    "title": "Posteingang prüfen",
+    "subtitle": "Code gesendet an <0>{{email}}</0> — gültig 5 Min.",
+    "group_aria_label": "6-stelliger Bestätigungscode",
+    "digit_aria_label": "Ziffer {{position}}",
+    "verifying": "Wird geprüft...",
+    "verify": "Code bestätigen",
+    "resend_prompt": "Nichts erhalten?",
+    "resend": "Erneut senden",
+    "resend_countdown": "Erneut senden in {{count}}s",
+    "use_different_email": "Andere E-Mail verwenden"
+  },
+  "errors": {
+    "VALIDATION": "Dieser Code sieht nicht richtig aus. Bitte prüfen und erneut versuchen.",
+    "RATE_LIMITED": "Zu viele Versuche. Bitte kurz warten und erneut versuchen.",
+    "UNAUTHORIZED": "Dieser Code ist ungültig oder abgelaufen. Bitte neuen Code anfordern."
+  }
+}

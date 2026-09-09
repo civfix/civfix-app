@@ -1,0 +1,193 @@
+{
+  "category": {
+    "trash": "쓰레기",
+    "recycling": "재활용",
+    "graffiti": "낙서",
+    "hazard": "위험",
+    "encampment": "노숙지",
+    "water": "수도",
+    "other": "기타"
+  },
+  "status": {
+    "submitted": "제출됨",
+    "held": "검토 중",
+    "published": "게시됨",
+    "acknowledged": "접수됨",
+    "in_progress": "처리 중",
+    "resolved": "해결됨",
+    "rejected": "반려됨"
+  },
+  "eventType": {
+    "cleanup": "청소 활동",
+    "other_volunteer": "기타 봉사"
+  },
+  "eventKind": {
+    "cleanup": "청소 활동",
+    "other_volunteer": "기타 봉사"
+  },
+  "reportType": {
+    "dump": "불법 투기",
+    "encampment": "노숙지",
+    "graffiti": "낙서",
+    "infrastructure": "시설 파손",
+    "pavement": "도로 손상",
+    "vegetation": "잡초 과다",
+    "other": "기타"
+  },
+  "eventStatus": {
+    "upcoming": "예정",
+    "active": "진행 중",
+    "done": "완료",
+    "cancelled": "취소됨"
+  },
+  "registrationStatus": {
+    "registered": "등록됨",
+    "cancelled": "취소됨",
+    "transferred": "양도됨"
+  },
+  "registrationSource": {
+    "self": "직접 등록",
+    "waitlist": "대기자에서 전환",
+    "walkup": "현장 등록",
+    "transfer": "양도"
+  },
+  "seatStatus": {
+    "active": "유효",
+    "cancelled": "취소됨"
+  },
+  "checkinMethod": {
+    "scan": "스캔",
+    "manual": "수동",
+    "self": "셀프 체크인",
+    "walkup": "현장"
+  },
+  "waitlistStatus": {
+    "waiting": "대기 중",
+    "offered": "자리 제안됨",
+    "claimed": "수락됨",
+    "expired": "만료됨",
+    "cancelled": "취소됨"
+  },
+  "ticketTypeVisibility": {
+    "public": "공개",
+    "hidden": "비공개",
+    "access_code": "액세스 코드"
+  },
+  "eventVisibility": {
+    "public": "공개",
+    "unlisted": "목록 비공개",
+    "private": "비공개"
+  },
+  "eventPageStatus": {
+    "draft": "초안",
+    "published": "게시됨",
+    "unpublished": "게시 취소됨"
+  },
+  "registrationState": {
+    "open": "접수 중",
+    "not_yet_open": "접수 전",
+    "closed": "마감",
+    "full": "정원 마감",
+    "waitlist": "대기자"
+  },
+  "cleanupMemberRole": {
+    "organizer": "주최자",
+    "cohost": "공동 호스트",
+    "member": "참가자",
+    "staff": "스태프"
+  },
+  "organizationMemberRole": {
+    "owner": "소유자",
+    "admin": "관리자",
+    "member": "구성원"
+  },
+  "orgVerificationStatus": {
+    "unverified": "미인증",
+    "pending": "검토 중",
+    "verified": "인증됨",
+    "rejected": "거부됨"
+  },
+  "orgVerificationKind": {
+    "nonprofit": "비영리",
+    "government": "공공기관",
+    "community": "커뮤니티 단체"
+  },
+  "broadcastKind": {
+    "host_broadcast": "호스트 메시지",
+    "confirmation": "확인 안내",
+    "waitlist_promoted": "대기자 자리 안내",
+    "reminder": "리마인더",
+    "event_updated": "행사 변경",
+    "event_cancelled": "행사 취소",
+    "thank_you": "감사 인사"
+  },
+  "broadcastStatus": {
+    "draft": "초안",
+    "scheduled": "예약됨",
+    "sending": "전송 중",
+    "sent": "전송됨",
+    "cancelled": "취소됨",
+    "failed": "실패"
+  },
+  "broadcastChannel": {
+    "inapp": "앱 내",
+    "push": "푸시",
+    "email": "이메일",
+    "sms": "문자"
+  },
+  "broadcastSegment": {
+    "all_registered": "등록자 전체",
+    "ticket_types": "티켓 종류별",
+    "slots": "교대별",
+    "waitlist": "대기자",
+    "checked_in": "체크인 완료",
+    "not_checked_in": "미체크인",
+    "guests_only": "게스트만"
+  },
+  "deliveryStatus": {
+    "pending": "대기",
+    "in_flight": "전송 중",
+    "sent": "전송됨",
+    "failed": "실패",
+    "suppressed": "차단됨",
+    "skipped": "건너뜀"
+  },
+  "donationStatus": {
+    "pending": "처리 중",
+    "succeeded": "완료",
+    "failed": "실패",
+    "refunded": "환불됨",
+    "partially_refunded": "부분 환불"
+  },
+  "donationDisputeState": {
+    "none": "없음",
+    "open": "진행 중",
+    "won": "승소",
+    "lost": "패소",
+    "warning": "경고"
+  },
+  "orgPaymentsState": {
+    "not_started": "시작 전",
+    "onboarding": "진행 중",
+    "ready": "준비 완료",
+    "at_risk": "확인 필요",
+    "blocked": "차단됨"
+  },
+  "donateState": {
+    "READY": "후원 받는 중",
+    "AT_RISK": "확인 필요",
+    "BLOCKED": "차단됨",
+    "OFF": "사용 안 함"
+  },
+  "attendeeKind": {
+    "member": "회원",
+    "guest": "게스트"
+  },
+  "hostExportStatus": {
+    "queued": "대기 중",
+    "running": "생성 중",
+    "ready": "준비 완료",
+    "failed": "실패",
+    "expired": "만료됨"
+  }
+}

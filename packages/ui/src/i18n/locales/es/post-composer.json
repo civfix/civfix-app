@@ -1,0 +1,60 @@
+{
+  "add_media_a11y": "Añadir una foto o un video",
+  "section": {
+    "events": "Tus eventos",
+    "reports": "Tus denuncias",
+    "show_more": "Mostrar más",
+    "show_more_count": "Mostrar más ({{count}})",
+    "show_fewer": "Mostrar menos"
+  },
+  "pills": {
+    "event": "Evento",
+    "report": "Denuncia",
+    "event_a11y": "Adjuntar un evento",
+    "report_a11y": "Adjuntar una denuncia"
+  },
+  "empty_events": "Los eventos a los que asistes u organizas aparecerán aquí.",
+  "empty_reports": "Las denuncias que presentes aparecerán aquí.",
+  "mode": {
+    "post": {
+      "title": "Nueva publicación",
+      "placeholder": "Comparte una novedad con tu vecindario..."
+    },
+    "reply": {
+      "title": "Responder",
+      "placeholder": "Escribe una respuesta..."
+    },
+    "quote": {
+      "title": "Citar publicación",
+      "placeholder": "Añade tu comentario..."
+    }
+  },
+  "action": {
+    "post": "Publicar",
+    "reply": "Responder",
+    "posting": "Publicando..."
+  },
+  "input_a11y": "Mensaje de la publicación",
+  "close_a11y": "Cerrar el editor",
+  "submit_error": "No se pudo publicar. Inténtalo de nuevo.",
+  "media_dropped": "Algunos archivos no terminaron de subirse. Añádelos de nuevo.",
+  "reply": {
+    "placeholder_named": "Escribe tu respuesta",
+    "context": "Respondiendo a {{handle}}",
+    "signed_out": "Inicia sesion para responder",
+    "attach_a11y": "Anadir a tu respuesta",
+    "expand_a11y": "Escribir una respuesta",
+    "chars_left": "Quedan {{count}}",
+    "remove_event_a11y": "Quitar el evento adjunto",
+    "remove_report_a11y": "Quitar la denuncia adjunta"
+  },
+  "attach": {
+    "title": "Anadir a tu respuesta",
+    "photo": "Foto o video",
+    "camera": "Camara",
+    "event": "Adjuntar un evento",
+    "report": "Adjuntar una denuncia",
+    "back": "Atras",
+    "dismiss": "Cerrar"
+  }
+}

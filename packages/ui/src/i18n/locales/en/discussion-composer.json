@@ -1,0 +1,8 @@
+{
+  "placeholder": "Add to the discussion",
+  "city_fallback": "the city",
+  "forward_disclaimer": "Tagging {{mention}} forwards your comment to {{city}}.",
+  "attach_a11y": "Attach a photo or video",
+  "input_a11y": "Discussion message input",
+  "send_a11y": "Post message"
+}

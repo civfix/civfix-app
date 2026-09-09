@@ -1,0 +1,72 @@
+{
+  "title": {
+    "pin": "Report",
+    "cleanups": "Events",
+    "myreports": "Your reports",
+    "cleanup": "Event",
+    "messages": "Messages",
+    "new_msg": "New message",
+    "people": "People",
+    "person": "Profile",
+    "followers": "Followers",
+    "following": "Following",
+    "activity": "Notifications",
+    "notification_prefs": "Notifications",
+    "profile": "You",
+    "blocked": "Blocked accounts",
+    "language_settings": "Language",
+    "appearance_settings": "Appearance",
+    "settings": "Settings",
+    "settings_account": "Account",
+    "settings_privacy": "Privacy & safety",
+    "create_cleanup": "Host an event",
+    "edit_cleanup": "Edit event",
+    "verify": "Get verified",
+    "leaderboard": "Leaderboard",
+    "cluster_one": "{{count}} report",
+    "cluster_other": "{{count}} reports",
+    "members": "Members",
+    "group_info": "Group info",
+    "chat_info": "Chat info",
+    "post": "Post",
+    "post_thread": "Conversation",
+    "post_composer": "New post",
+    "saves": "Saved",
+    "drop_pin": "Add here",
+    "host_mode": "Host mode",
+    "host_checkin": "Check-in",
+    "host_broadcast_quick": "Quick message",
+    "my_ticket": "Your ticket",
+    "org": "Organization",
+    "my_donations": "Your donations"
+  },
+  "tab": {
+    "home": "Home",
+    "map": "Map",
+    "messages": "Messages",
+    "report": "Create",
+    "search": "Search"
+  },
+  "create": {
+    "report": "Create a report",
+    "event": "Create an event",
+    "post": "Create a post"
+  },
+  "placeholder": {
+    "people": "Search people",
+    "reports": "Search your reports",
+    "places_events": "Search places & events",
+    "search": "Events, reports, streets…"
+  },
+  "a11y": {
+    "back": "Back",
+    "close": "Close",
+    "settings": "Settings",
+    "home": "Home",
+    "resize_sidebar": "Resize sidebar",
+    "drag_handle": "Drag handle",
+    "create_menu": "Create",
+    "dismiss_create_menu": "Dismiss create menu"
+  },
+  "fallback_you": "You"
+}

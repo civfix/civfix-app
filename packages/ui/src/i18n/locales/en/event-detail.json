@@ -1,0 +1,153 @@
+{
+  "status": {
+    "hosting": "You're hosting",
+    "cohosting": "You're co-hosting",
+    "cancelled": "Cancelled by the host",
+    "ended": "This event has ended"
+  },
+  "going": {
+    "heading": "Going",
+    "count_one": "{{count}} going",
+    "count_other": "{{count}} going",
+    "empty": "No one's going yet.",
+    "you": "You",
+    "names_following": "You follow {{names}}",
+    "names": "{{names}}",
+    "view_all": "View all",
+    "a11y_show_fewer": "Show fewer names",
+    "a11y_show_everyone": "Show everyone going",
+    "a11y_view_everyone": "View everyone going"
+  },
+  "actions": {
+    "share": "Share",
+    "share_a11y": "Share this event",
+    "edit": "Edit event",
+    "edit_a11y": "Edit this event",
+    "report": "Report event",
+    "report_a11y": "Report this event",
+    "message_crew": "Message crew",
+    "message_crew_a11y": "Message the event crew",
+    "message_crew_hint": "RSVP to join the chat",
+    "cancel_event": "Cancel event",
+    "cancel_event_a11y": "Cancel this event",
+    "invite": "Invite",
+    "invite_a11y": "Invite people to this event",
+    "repost": "Repost",
+    "repost_a11y": "Repost this event"
+  },
+  "where": {
+    "route": "Route cleanup",
+    "meeting_point": "Meeting point on the map",
+    "distance_away": "{{dist}} away"
+  },
+  "bring": {
+    "heading": "What to bring"
+  },
+  "linked_reports": {
+    "heading": "Reports we'll handle"
+  },
+  "host": {
+    "heading": "Host",
+    "neighbor": "Neighbor",
+    "verify_nudge": "Get verified to build trust with attendees",
+    "verify_nudge_a11y": "Get verified",
+    "request_resources": "Request city resources",
+    "request_resources_a11y": "Request resources from the city",
+    "request_resources_no_city": "No city is mapped to this location yet",
+    "request_resources_locked": "Verify your account to request city resources",
+    "dashboard": "Host dashboard",
+    "dashboard_a11y": "Open the host dashboard for this event",
+    "check_in": "Check in attendees",
+    "check_in_a11y": "Open check-in for this event"
+  },
+  "report_sheet": {
+    "subject": "this event",
+    "submit_error": "Couldn't submit your report. Try again.",
+    "success_toast": "Report submitted - thanks"
+  },
+  "cancel_sheet": {
+    "error": "Could not cancel the event. Try again."
+  },
+  "resources_sheet": {
+    "error": "Couldn't send your request. Try again.",
+    "success_toast": "Request sent to the city"
+  },
+  "state": {
+    "unavailable_title": "Event unavailable",
+    "unavailable_body": "Couldn't load this event."
+  },
+  "complete": {
+    "action": "Mark as completed",
+    "action_a11y": "Mark this event as completed",
+    "too_early": "Available once the event starts",
+    "success_toast": "Marked completed. You can log hours now."
+  },
+  "complete_sheet": {
+    "title": "Mark this event as completed?",
+    "dismiss_a11y": "Dismiss mark completed",
+    "body": "Do this once everyone has wrapped up.",
+    "point_visible": "Attendees will see the event as finished.",
+    "point_hours": "You can credit volunteer hours to everyone who showed up.",
+    "point_final": "This cannot be undone.",
+    "confirm": "Mark completed",
+    "cancel": "Not yet",
+    "error": "Couldn't update this event. Try again."
+  },
+  "receipt": {
+    "pending": "The host hasn't logged volunteer hours yet.",
+    "credited": "You were credited {{hours}} volunteer hours",
+    "credited_a11y": "You were credited {{hours}} volunteer hours. View your service record.",
+    "not_credited": "No volunteer hours were logged for you at this event."
+  },
+  "log_hours": {
+    "action": "Log volunteer hours",
+    "action_a11y": "Log volunteer hours for attendees",
+    "placeholder": "e.g. 2.5",
+    "invalid": "Enter hours between 0 and {{max}}.",
+    "save": "Log hours",
+    "save_a11y": "Submit volunteer hours",
+    "cancel": "Cancel",
+    "cancel_a11y": "Cancel logging hours",
+    "success_toast_one": "Logged hours for {{count}} attendee",
+    "success_toast_other": "Logged hours for {{count}} attendees",
+    "error_toast": "Couldn't log hours. Please try again.",
+    "default_label": "Hours for everyone",
+    "default_a11y": "Default volunteer hours to apply to every attendee",
+    "apply_all": "Apply to all",
+    "apply_all_a11y": "Apply the default hours to every attendee",
+    "row_placeholder": "0",
+    "row_a11y": "Volunteer hours for {{name}}",
+    "loading_roster": "Loading attendees...",
+    "empty_roster": "No attendees to credit yet.",
+    "verify_gate": "Get verified as a community organizer to log volunteer hours for attendees.",
+    "verify_gate_a11y": "Get verified to log volunteer hours",
+    "summary_eyebrow": "Volunteer hours",
+    "summary_total": "{{hours}} hrs credited",
+    "summary_count_one": "for {{count}} attendee",
+    "summary_count_other": "for {{count}} attendees",
+    "summary_edit": "Edit",
+    "summary_edit_a11y": "Edit the volunteer hours you logged",
+    "row_logged": "logged {{ago}}",
+    "row_unknown": "Former attendee",
+    "blank_hint": "Leave a row blank for anyone who did not attend.",
+    "blank_hint_edit": "Type a new number to correct hours already credited. A blank row is skipped: clearing it does not remove hours someone already has.",
+    "self_note": "Your own hours aren't listed here. Another host has to credit you."
+  },
+  "guests": {
+    "heading": "Guests",
+    "count_one": "{{count}} guest",
+    "count_other": "{{count}} guests",
+    "expand_a11y": "Show the guest list",
+    "collapse_a11y": "Hide the guest list",
+    "empty": "No guests yet.",
+    "loading": "Loading...",
+    "error": "Couldn't load guests.",
+    "load_more": "Load more",
+    "loading_more": "Loading...",
+    "load_more_a11y": "Load more guests",
+    "cancelled": "Cancelled",
+    "contact_scrubbed": "—",
+    "contact_a11y": "Contact {{name}}",
+    "contact_hidden": "Contact hidden"
+  }
+}

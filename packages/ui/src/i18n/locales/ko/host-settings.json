@@ -1,0 +1,44 @@
+{
+  "saved": "설정을 저장했습니다",
+  "visibility": {
+    "public": "공개",
+    "unlisted": "목록 비공개",
+    "private": "비공개"
+  },
+  "registration": {
+    "title": "등록",
+    "visibility": "이 행사를 찾을 수 있는 사람",
+    "opens": "등록 시작",
+    "closes": "등록 마감"
+  },
+  "messaging": {
+    "title": "메시지",
+    "reminders": "리마인더",
+    "reminders_hint": "civfix가 행사 전 아래 각 시점에 등록한 모든 분께 리마인더를 보냅니다.",
+    "offset_60": "1시간 전",
+    "offset_180": "3시간 전",
+    "offset_1440": "1일 전",
+    "offset_2880": "2일 전",
+    "offset_10080": "1주 전",
+    "reply_to": "회신 주소",
+    "reply_to_placeholder": "you@example.org",
+    "reply_to_unverified": "아직 회신이 호스트 주소로 전달되지는 않습니다. 해당 기능이 준비될 때를 대비해 저장해 둡니다."
+  },
+  "donations": {
+    "title": "기부",
+    "link": "기부 링크",
+    "link_hint": "행사 페이지에 표시되는 https 링크입니다.",
+    "org_note": "이 행사의 기부는 {{org}}에서 처리합니다."
+  },
+  "danger": {
+    "title": "위험 구역",
+    "body": "행사를 취소하면 등록한 모든 분께 알림이 가며, 되돌릴 수 없습니다.",
+    "cancel_event": "행사 취소",
+    "cancelled": "행사를 취소했습니다",
+    "reason": "사유 (참가자에게 공유됩니다)",
+    "confirm_title": "이 행사를 취소할까요?",
+    "confirm_body": "등록한 모든 분께 알림이 갑니다. 행사는 취소됨 상태로 계속 표시됩니다.",
+    "confirm_banner": "되돌릴 수 없습니다.",
+    "agreement": "등록한 모든 분께 알림이 간다는 점을 이해합니다."
+  }
+}

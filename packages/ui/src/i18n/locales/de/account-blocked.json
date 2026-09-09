@@ -1,0 +1,16 @@
+{
+  "row": {
+    "unblock": "Entsperren",
+    "unblocking": "Wird entsperrt...",
+    "unblockA11y": "{{name}} entsperren",
+    "unblockError": "Entsperren fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "error": {
+    "title": "Laden fehlgeschlagen",
+    "body": "civfix konnte nicht erreicht werden. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "empty": {
+    "title": "Keine gesperrten Accounts",
+    "body": "Gesperrte Personen können dir keine Nachrichten schicken. Sie erscheinen hier."
+  }
+}

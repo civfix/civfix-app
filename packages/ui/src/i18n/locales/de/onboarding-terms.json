@@ -1,0 +1,14 @@
+{
+  "a11y": {
+    "affirmation": "Ich stimme den Nutzungsbedingungen und der Datenschutzrichtlinie zu.",
+    "terms_link": "Nutzungsbedingungen",
+    "privacy_link": "Datenschutzrichtlinie"
+  },
+  "label": {
+    "lead": "Ich stimme den ",
+    "terms": "Nutzungsbedingungen",
+    "conjunction": " und der ",
+    "privacy": "Datenschutzrichtlinie",
+    "trailing": " zu."
+  }
+}

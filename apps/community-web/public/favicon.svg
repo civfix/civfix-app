@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <mask id="hole">
+      <rect width="64" height="64" fill="#fff"></rect>
+      <circle cx="32" cy="25.75" r="8.5" fill="#000"></circle>
+    </mask>
+  </defs>
+  <path d="M32 5 C43.6 5 53.25 14.6 53.25 26.25 C53.25 38.75 38.75 53.75 33.5 61 C32.75 61.9 31.25 61.9 30.5 61 C25.25 53.75 10.75 38.75 10.75 26.25 C10.75 14.6 20.4 5 32 5 Z" fill="#EA4F3D" mask="url(#hole)"></path>
+</svg>

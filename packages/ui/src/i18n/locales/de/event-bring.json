@@ -1,0 +1,20 @@
+{
+  "input": {
+    "a11y_label": "Artikel zum Mitbringen hinzufügen",
+    "placeholder": "Artikel eingeben und Return drücken",
+    "add_a11y": "Artikel hinzufügen"
+  },
+  "chip": {
+    "remove_a11y": "{{item}} entfernen"
+  },
+  "suggestions": {
+    "label": "Vorschläge",
+    "add_a11y": "{{item}} hinzufügen",
+    "work_gloves": "Arbeitshandschuhe",
+    "water_bottle": "Trinkflasche",
+    "hat_sunscreen": "Mütze & Sonnencreme",
+    "sturdy_shoes": "Festes Schuhwerk",
+    "trash_grabber": "Greifzange",
+    "reusable_bags": "Wiederverwendbare Taschen"
+  }
+}

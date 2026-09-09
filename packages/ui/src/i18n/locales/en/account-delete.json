@@ -1,0 +1,47 @@
+{
+  "title": "Delete account",
+  "emailFallback": "your account email",
+  "warn": {
+    "permanentPre": "This ",
+    "permanentEmphasis": "permanently",
+    "permanentPost": " deletes your account. Your profile, name, and photo are removed and you'll be signed out. This can't be undone.",
+    "contentRemains": "Your past reports and posts stay, shown as \"Deleted User.\""
+  },
+  "intro": {
+    "sendPre": "To confirm it's really you, we'll email a 6-digit code to ",
+    "sendPost": "."
+  },
+  "noEmail": {
+    "body": "Your account has no email address, so we can't verify deletion. Add and verify an email first, then delete your account."
+  },
+  "verify": {
+    "enterPre": "Enter the 6-digit code we emailed to ",
+    "enterPost": "."
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "emailCode": "Email me a code",
+    "resend": "Resend code",
+    "sending": "Sending...",
+    "deleteConfirm": "Permanently delete"
+  },
+  "a11y": {
+    "dismiss": "Dismiss",
+    "emailCode": "Email me a verification code",
+    "verificationCode": "Verification code",
+    "resend": "Resend code",
+    "deleteConfirm": "Permanently delete my account"
+  },
+  "sendError": {
+    "rateLimited": "Please wait a bit before requesting another code.",
+    "validation": "We couldn't send a code to your account email. Try again.",
+    "generic": "We couldn't send a code right now. Please try again."
+  },
+  "deleteError": {
+    "unauthorized": "That code isn't right or has expired. Check it and try again, or resend a new one.",
+    "rateLimited": "Too many attempts. Please wait a bit and try again.",
+    "validation": "Your account has no email address to verify deletion with.",
+    "generic": "We couldn't delete your account right now. Please try again."
+  }
+}

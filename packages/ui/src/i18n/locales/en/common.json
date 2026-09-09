@@ -1,0 +1,40 @@
+{
+  "continue": "Continue",
+  "back": "Back",
+  "cancel": "Cancel",
+  "save": "Save",
+  "close": "Close",
+  "done": "Done",
+  "dismiss": "Dismiss",
+  "sign_out": "Sign out",
+  "sign_in": "Sign in",
+  "edit": "Edit",
+  "delete": "Delete",
+  "loading": "Loading…",
+  "error_generic": "Something went wrong",
+  "dismiss_menu": "Dismiss menu",
+  "media": {
+    "photo": "Photo",
+    "video": "Video",
+    "image_unavailable": "Image unavailable",
+    "video_unavailable": "Video unavailable",
+    "remove_attachment": "Remove attachment"
+  },
+  "verification_code": {
+    "label": "Verification code",
+    "hint": "Opens the keyboard to enter the code"
+  },
+  "post_actions": {
+    "like": "Like",
+    "repost": "Repost",
+    "comment": "Comment",
+    "save": "Save",
+    "share": "Share",
+    "undo_repost": "Undo repost",
+    "quote_post": "Quote post",
+    "menu_label": "Repost options",
+    "menu_dismiss": "Dismiss repost menu",
+    "default_title": "CivFix post"
+  },
+  "wizard_step_count": "Step {{current}} of {{total}}"
+}

@@ -1,0 +1,50 @@
+{
+  "search": {
+    "placeholder": "Events, Personen, Orte suchen",
+    "clear_a11y": "Suche löschen",
+    "no_matches": "Keine Treffer für „{{query}}“.",
+    "no_results_title": "Keine Ergebnisse",
+    "error": "Die Suche konnte nicht erreicht werden. Prüfe deine Verbindung und versuche es erneut.",
+    "retry": "Erneut versuchen",
+    "error_title": "Suche nicht verfügbar",
+    "loading_a11y": "Suche läuft",
+    "announce": {
+      "results_one": "{{count}} Ergebnis",
+      "results_other": "{{count}} Ergebnisse"
+    }
+  },
+  "create": {
+    "report": "Problem melden",
+    "event": "Event erstellen"
+  },
+  "results": {
+    "people": "Personen",
+    "events": "Events",
+    "reports": "Meldungen"
+  },
+  "search_page": {
+    "title": "Suche",
+    "recent": "Zuletzt gesucht",
+    "recent_empty": "Deine letzten Suchen erscheinen hier.",
+    "recent_a11y": "Nach {{query}} suchen",
+    "clear": "Löschen",
+    "clear_a11y": "Letzte Suchen löschen",
+    "suggested_people": "Vorgeschlagene Personen",
+    "events_near": "Events in deiner Nähe",
+    "leaderboard": "Bestenliste",
+    "leaderboard_in": "Top-Freiwillige in {{name}}",
+    "leaderboard_see_all_a11y": "Vollständige Bestenliste ansehen",
+    "leaderboard_you": "Du",
+    "reports_near": "Meldungen in der Nähe",
+    "see_all": "Alle anzeigen",
+    "see_all_events_a11y": "Alle Events anzeigen",
+    "browse": "Entdecken",
+    "browse_a11y": "{{label}} entdecken"
+  },
+  "reports": {
+    "empty": "Noch keine Meldungen. Tippe auf „Problem melden“, um zu starten."
+  },
+  "person": {
+    "view_profile_a11y": "{{name}}, Profil ansehen"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "saved": "Página guardada",
+  "published": "Página publicada",
+  "unpublished": "Página despublicada",
+  "publish": "Publicar",
+  "unpublish": "Despublicar",
+  "publish_blocked": "Primero indica una dirección y añade al menos un bloque.",
+  "flagged": "En revisión por civfix",
+  "settings": {
+    "title": "Ajustes de la página"
+  },
+  "slug": {
+    "label": "Dirección de la página",
+    "hint": "Letras minúsculas, números y guiones. Se convierte en civfix.org/e/tu-direccion.",
+    "checking": "Comprobando disponibilidad…",
+    "available": "Esa dirección está libre.",
+    "current": "Esta es la dirección actual.",
+    "invalid": "Usa de 3 a 60 letras minúsculas, números y guiones simples.",
+    "taken_with_suggestion": "Esa dirección está ocupada. {{suggestion}} puede estar libre.",
+    "reason_taken": "Esa dirección está ocupada.",
+    "reason_reserved": "Esa dirección está reservada.",
+    "reason_invalid": "Esa dirección no es válida."
+  },
+  "theme": {
+    "label": "Color de acento",
+    "bloom": "Coral",
+    "moss": "Musgo",
+    "sun": "Sol",
+    "sky": "Cielo",
+    "lilac": "Lila"
+  },
+  "cover": {
+    "label": "Imagen de portada",
+    "hint": "Se muestra en la parte superior de la página y en las vistas previas de los enlaces.",
+    "add": "Añadir una imagen de portada"
+  },
+  "logo": {
+    "add": "Añadir un logotipo"
+  },
+  "gallery": {
+    "add": "Añadir fotos"
+  },
+  "seo": {
+    "noindex": "Ocultar de los buscadores",
+    "noindex_hint": "La página sigue funcionando para cualquiera que tenga el enlace."
+  },
+  "blocks": {
+    "title": "Contenido de la página",
+    "add": "Añadir",
+    "add_kind": "Tipo de bloque",
+    "empty": "Todavía no hay bloques. Añade uno para empezar a construir la página.",
+    "move_up": "Subir",
+    "move_down": "Bajar",
+    "remove": "Quitar este bloque"
+  },
+  "block": {
+    "title": "Encabezado",
+    "kind": {
+      "hero": "Portada",
+      "about": "Sobre el evento",
+      "agenda": "Programa",
+      "hosts": "Anfitriones",
+      "faq": "Preguntas frecuentes",
+      "location": "Ubicación",
+      "sponsors": "Patrocinadores",
+      "donate": "Donar",
+      "registration": "Inscripción",
+      "contact": "Contacto"
+    },
+    "hero": {
+      "headline": "Titular",
+      "subhead": "Subtítulo"
+    },
+    "about": {
+      "body": "Texto"
+    },
+    "agenda": {
+      "item": "Punto {{n}}",
+      "time": "Hora",
+      "item_title": "Qué pasa",
+      "item_description": "Detalles",
+      "add": "Añadir un punto"
+    },
+    "hosts": {
+      "entry": "Anfitrión {{n}}",
+      "name": "Nombre",
+      "role": "Rol",
+      "bio": "Biografía breve",
+      "add": "Añadir un anfitrión"
+    },
+    "faq": {
+      "item": "Pregunta {{n}}",
+      "question": "Pregunta",
+      "answer": "Respuesta",
+      "add": "Añadir una pregunta"
+    },
+    "location": {
+      "note": "Cómo llegar",
+      "show_map": "Mostrar un mapa"
+    },
+    "sponsors": {
+      "entry": "Patrocinador {{n}}",
+      "name": "Nombre",
+      "url": "Enlace",
+      "add": "Añadir un patrocinador"
+    },
+    "donate": {
+      "blurb": "Para qué sirven las donaciones",
+      "url": "Enlace de donación",
+      "url_hint": "Déjalo vacío para usar la página de donaciones de tu organización en civfix."
+    },
+    "registration": {
+      "note": "Nota encima del formulario de inscripción"
+    },
+    "contact": {
+      "body": "Datos de contacto",
+      "reply_to": "Dirección de respuesta",
+      "reply_to_hint": "Se muestra en la página para que la gente pueda escribirte."
+    }
+  },
+  "preview": {
+    "title": "Vista previa",
+    "empty": "Añade un bloque para ver cómo toma forma la página.",
+    "map_placeholder": "Aquí aparece un mapa con la ubicación del evento.",
+    "registration_placeholder": "Aquí aparece el formulario de inscripción."
+  },
+  "unpublish_confirm": {
+    "title": "¿Despublicar esta página?",
+    "body": "La dirección deja de funcionar para todo el mundo que no sea del equipo anfitrión. La inscripción desde la app no se ve afectada."
+  }
+}

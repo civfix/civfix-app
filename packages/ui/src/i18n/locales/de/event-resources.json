@@ -1,0 +1,10 @@
+{
+  "title": "Ressourcen anfragen",
+  "dismiss_a11y": "Ressourcenanfrage schließen",
+  "caption": "Teile {{city}} mit, was dein Event braucht (Material, Container, Straßensperrungen). Wir leiten das direkt weiter.",
+  "city_fallback": "die Stadt",
+  "message_placeholder": "Was brauchst du von der Stadt?",
+  "message_a11y": "Nachricht zur Ressourcenanfrage",
+  "cancel": "Abbrechen",
+  "submit": "Anfrage senden"
+}

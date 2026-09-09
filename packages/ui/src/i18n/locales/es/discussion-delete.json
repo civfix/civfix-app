@@ -1,0 +1,12 @@
+{
+  "title": "¿Eliminar comentario?",
+  "caption": "Esta acción no se puede deshacer.",
+  "backdrop": {
+    "dismiss": "Cerrar"
+  },
+  "actions": {
+    "cancel": "Cancelar",
+    "confirm": "Eliminar",
+    "confirmA11y": "Eliminar este comentario"
+  }
+}

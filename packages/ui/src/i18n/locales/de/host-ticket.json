@@ -1,0 +1,109 @@
+{
+  "picker": {
+    "heading": "Ticketart",
+    "sold_out": "Ausverkauft",
+    "closed": "Nicht im Verkauf",
+    "remaining_one": "Noch {{count}} frei",
+    "remaining_other": "Noch {{count}} frei"
+  },
+  "party": {
+    "label": "Wie viele Personen?",
+    "hint_one": "Bis zu {{count}} Person pro Anmeldung",
+    "hint_other": "Bis zu {{count}} Personen pro Anmeldung",
+    "decrement_a11y": "Eine Person weniger",
+    "increment_a11y": "Eine Person mehr",
+    "value_a11y_one": "{{count}} Person",
+    "value_a11y_other": "{{count}} Personen"
+  },
+  "questions": {
+    "text_placeholder": "Deine Antwort",
+    "required_error": "Diese Antwort ist erforderlich.",
+    "required_summary": "Bitte beantworte die Pflichtfragen.",
+    "loading": "Fragen werden geladen…",
+    "error": "Die Fragen konnten nicht geladen werden."
+  },
+  "consent": {
+    "terms_lead": "Ich stimme den ",
+    "terms_link": "Nutzungsbedingungen",
+    "terms_conjunction": " und der ",
+    "privacy_link": "Datenschutzerklärung",
+    "terms_trailing": " zu.",
+    "terms_a11y": "Den Nutzungsbedingungen und der Datenschutzerklärung zustimmen",
+    "host_contact": "Meinen Namen mit dem Host teilen, damit er mich zu dieser Veranstaltung kontaktieren kann.",
+    "host_contact_a11y": "Meinen Namen mit dem Host teilen",
+    "sms": "Schickt mir Updates zu dieser Veranstaltung per SMS. Es können Nachrichten- und Datengebühren anfallen.",
+    "sms_a11y": "SMS-Updates zu dieser Veranstaltung erhalten",
+    "version": "Nutzungsbedingungen Version {{version}}",
+    "required_error": "Bitte stimme den Nutzungsbedingungen und der Datenschutzerklärung zu, um dich anzumelden."
+  },
+  "form": {
+    "heading": "Anmelden",
+    "access_code_label": "Zugangscode",
+    "access_code_placeholder": "Gib den erhaltenen Code ein",
+    "submit": "Anmelden"
+  },
+  "mine": {
+    "title": "Du bist dabei",
+    "waitlisted_title": "Du stehst auf der Warteliste",
+    "cancelled_title": "Anmeldung storniert",
+    "cancelled_body": "Du hast diese Anmeldung storniert. Solange Plätze frei sind, kannst du dich erneut anmelden.",
+    "seats_one": "{{count}} Platz",
+    "seats_other": "{{count}} Plätze",
+    "position": "Wartelistenplatz {{position}}",
+    "view_ticket": "Ticket ansehen",
+    "cancel": "Anmeldung stornieren"
+  },
+  "state": {
+    "loading": "Dein Ticket wird geladen…",
+    "error_title": "Ticket nicht verfügbar",
+    "error_body": "Wir konnten dieses Ticket nicht laden. Prüfe deine Verbindung und versuche es erneut.",
+    "no_seats": "Diese Anmeldung hat noch keine Plätze.",
+    "closed_title": "Die Anmeldung ist geschlossen",
+    "closed_body": "Diese Veranstaltung nimmt keine Anmeldungen mehr an.",
+    "not_yet_open_title": "Die Anmeldung ist noch nicht offen",
+    "not_yet_open_body": "Schau wieder vorbei, sobald der Host die Anmeldung öffnet."
+  },
+  "waitlist": {
+    "title": "Auf die Warteliste",
+    "body": "Diese Veranstaltung ist ausgebucht. Setz dich auf die Warteliste - wir melden uns, wenn ein Platz frei wird.",
+    "joined_title": "Du stehst auf der Warteliste",
+    "joined_body": "Wir melden uns, wenn ein Platz frei wird.",
+    "joined_position": "Du bist Nummer {{position}} auf der Warteliste.",
+    "join": "Auf die Warteliste",
+    "leave": "Warteliste verlassen"
+  },
+  "qr": {
+    "a11y": "Ticket-QR-Code {{index}} von {{total}}",
+    "page": "Ticket {{index}} von {{total}}",
+    "seat": "Platz {{index}}",
+    "checked_in": "Eingecheckt"
+  },
+  "calendar": {
+    "add": "Zum Kalender hinzufügen",
+    "error": "Wir konnten keine Kalenderdatei für diese Veranstaltung erstellen.",
+    "unavailable": "Das Hinzufügen zum Kalender ist auf diesem Gerät nicht möglich."
+  },
+  "toast": {
+    "registered": "Du bist angemeldet.",
+    "waitlisted": "Du stehst auf der Warteliste.",
+    "cancelled": "Anmeldung storniert."
+  },
+  "outcome": {
+    "already_registered": "Du bist für diese Veranstaltung bereits angemeldet.",
+    "full": "Diese Veranstaltung ist ausgebucht.",
+    "party_too_large": "Das sind mehr Personen, als diese Ticketart erlaubt.",
+    "sales_closed": "Diese Ticketart ist gerade nicht im Verkauf.",
+    "registration_closed": "Die Anmeldung für diese Veranstaltung ist geschlossen.",
+    "ticket_type_not_found": "Diese Ticketart ist nicht mehr verfügbar.",
+    "access_code_required": "Für diese Ticketart wird ein Zugangscode benötigt.",
+    "access_code_invalid": "Dieser Zugangscode ist ungültig.",
+    "answers_invalid": "Bitte prüfe deine Antworten und versuche es erneut.",
+    "banned": "Du kannst dich für diese Veranstaltung nicht anmelden.",
+    "closed": "Anmeldungen können für diese Veranstaltung nicht mehr geändert werden.",
+    "not_found": "Diese Veranstaltung ist nicht mehr verfügbar."
+  },
+  "error": {
+    "rate_limited": "Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.",
+    "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+  }
+}

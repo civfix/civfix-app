@@ -1,0 +1,55 @@
+{
+  "row": {
+    "viewProfileA11y": "{{name}}, Profil ansehen",
+    "moreOptionsA11y": "Weitere Optionen für {{name}}"
+  },
+  "cta": {
+    "view_report": "Meldung ansehen",
+    "view_report_a11y": "Die verknüpfte Meldung ansehen",
+    "view_event": "Event ansehen",
+    "view_event_a11y": "Das verknüpfte Event ansehen"
+  },
+  "hero": {
+    "report_fallback": "Meldungs-Chat",
+    "members_one": "{{count}} Mitglied",
+    "members_other": "{{count}} Mitglieder"
+  },
+  "action": {
+    "mute": "Stummschalten",
+    "unmute": "Stummschaltung aufheben",
+    "leave": "Chat verlassen"
+  },
+  "section": {
+    "members": "Mitglieder"
+  },
+  "leave": {
+    "confirm": "Du erhältst keine Nachrichten mehr aus dem Chat dieser Meldung. Du kannst jederzeit wieder beitreten.",
+    "action": "Verlassen",
+    "cancel": "Abbrechen",
+    "dismiss": "Schließen"
+  },
+  "block": {
+    "action": "Blockieren",
+    "cancel": "Abbrechen",
+    "confirm": "Person blockieren"
+  },
+  "error": {
+    "title": "Laden fehlgeschlagen",
+    "body": "civfix konnte nicht erreicht werden. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "empty": {
+    "title": "Noch keine Mitglieder",
+    "body": "Personen, die zu diesem Event kommen, erscheinen hier."
+  },
+  "role": {
+    "host": "Host",
+    "cohost": "Co-Host"
+  },
+  "manage": {
+    "makeCohost": "Zum Co-Host machen",
+    "removeCohost": "Co-Host entfernen",
+    "remove": "Vom Event entfernen",
+    "removeCancel": "Abbrechen",
+    "removeConfirm": "Vom Event entfernen"
+  }
+}

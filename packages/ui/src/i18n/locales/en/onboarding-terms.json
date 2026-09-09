@@ -1,0 +1,14 @@
+{
+  "a11y": {
+    "affirmation": "I agree to the Terms and Privacy Policy.",
+    "terms_link": "Terms of Service",
+    "privacy_link": "Privacy Policy"
+  },
+  "label": {
+    "lead": "I agree to the ",
+    "terms": "Terms",
+    "conjunction": " and ",
+    "privacy": "Privacy Policy",
+    "trailing": "."
+  }
+}

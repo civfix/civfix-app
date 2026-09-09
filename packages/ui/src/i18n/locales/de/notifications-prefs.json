@@ -1,0 +1,34 @@
+{
+  "signedOut": {
+    "title": "Anmelden, um Benachrichtigungen zu verwalten",
+    "body": "Lege fest, worüber civfix dich informiert, und stelle deine Datenschutzeinstellungen nach der Anmeldung ein."
+  },
+  "error": {
+    "title": "Einstellungen konnten nicht geladen werden",
+    "body": "Verbindung zu civfix fehlgeschlagen. Überprüfe deine Verbindung und versuche es erneut."
+  },
+  "push": {
+    "section": "Push",
+    "label": "Push-Benachrichtigungen",
+    "helper": "Erlaube civfix, Benachrichtigungen an dieses Gerät zu senden."
+  },
+  "categories": {
+    "section": "Worüber du informiert wirst",
+    "reportUpdates": {
+      "label": "Meldungs-Updates",
+      "helper": "Statusänderungen bei Meldungen, die du erstellt oder abonniert hast."
+    },
+    "eventChat": {
+      "label": "Gruppenchats",
+      "helper": "Neue Nachrichten in deinen Veranstaltungs- und Gruppenchats."
+    },
+    "mentions": {
+      "label": "Erwähnungen",
+      "helper": "Wenn jemand dich in einem Kommentar oder Chat @-erwähnt."
+    },
+    "follows": {
+      "label": "Neue Follower",
+      "helper": "Wenn jemand dir auf civfix folgt."
+    }
+  }
+}

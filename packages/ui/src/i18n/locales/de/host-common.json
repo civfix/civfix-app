@@ -1,0 +1,151 @@
+{
+  "counters": {
+    "a11y": "Live-Zähler der Veranstaltung",
+    "checked_in": "Eingecheckt",
+    "registered": "Angemeldet",
+    "waitlist": "Warteliste",
+    "no_show": "Nicht erschienen",
+    "error": "Die Zähler sind gerade nicht verfügbar."
+  },
+  "roster": {
+    "search_placeholder": "Nach Namen suchen",
+    "search_a11y": "Teilnehmerliste nach Namen durchsuchen",
+    "filter_a11y": "Teilnehmerliste filtern",
+    "filter": {
+      "all": "Alle",
+      "not_checked_in": "Nicht eingecheckt",
+      "checked_in": "Eingecheckt",
+      "waitlisted": "Warteliste"
+    },
+    "seats_one": "{{count}} Platz",
+    "seats_other": "{{count}} Plätze",
+    "guest": "Gast",
+    "waitlist_position": "Warteliste Nr. {{position}}",
+    "check_in": "Einchecken",
+    "check_in_a11y": "{{name}} einchecken",
+    "undo": "Rückgängig",
+    "undo_a11y": "Check-in von {{name}} rückgängig machen",
+    "loading": "Teilnehmerliste wird geladen…",
+    "loading_more": "Wird geladen…",
+    "load_more": "Mehr laden",
+    "load_more_a11y": "Weitere Teilnehmende laden",
+    "empty": "Zu diesem Filter passt noch niemand.",
+    "error": "Die Teilnehmerliste konnte nicht geladen werden.",
+    "error_forbidden": "Dazu hast du keine Berechtigung."
+  },
+  "state": {
+    "loading": "Wird geladen…",
+    "empty_title": "Hier ist noch nichts",
+    "empty_body": "Auf diesem Bildschirm gibt es nichts anzuzeigen.",
+    "empty_filtered_title": "Keine Treffer",
+    "empty_filtered_body": "Zu den gesetzten Filtern passen keine Ergebnisse.",
+    "error_title": "Etwas ist schiefgelaufen",
+    "error_body": "Wir konnten das nicht laden. Versuche es gleich noch einmal.",
+    "offline_title": "Du bist offline",
+    "offline_body": "Verbinde dich wieder, dann machen wir dort weiter, wo du aufgehört hast.",
+    "no_access_title": "Du hast keinen Zugriff",
+    "no_access_body": "Bitte eine organisierende Person, dir die passende Rolle zu geben.",
+    "not_found_title": "Nicht gefunden",
+    "not_found_body": "Diese Seite existiert nicht oder wurde entfernt."
+  },
+  "action": {
+    "back": "Zurück",
+    "back_to_events": "Zurück zu den Veranstaltungen",
+    "cancel": "Abbrechen",
+    "clear_filters": "Filter zurücksetzen",
+    "close": "Schließen",
+    "copy_link": "Link kopieren",
+    "dismiss": "Ausblenden",
+    "load_more": "Mehr laden",
+    "loading": "Wird geladen…",
+    "open_full_page": "Als ganze Seite öffnen",
+    "retry": "Erneut versuchen",
+    "save": "Speichern",
+    "undo": "Rückgängig"
+  },
+  "auth": {
+    "signed_out_title": "Melde dich an, um deine Veranstaltungen zu verwalten",
+    "signed_out_body": "Die Host-Konsole steht nur Menschen offen, die selbst Veranstaltungen ausrichten.",
+    "go_home": "Zu civfix"
+  },
+  "common": {
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "shell": {
+    "skip_to_content": "Zum Inhalt springen",
+    "sections": "Bereiche der Konsole",
+    "breadcrumbs": "Navigationspfad"
+  },
+  "table": {
+    "select_all": "Alle Zeilen auswählen",
+    "select_row": "Diese Zeile auswählen",
+    "selected_one": "{{count}} ausgewählt",
+    "selected_other": "{{count}} ausgewählt",
+    "clear_selection": "Auswahl aufheben",
+    "sort_by": "Nach {{column}} sortieren"
+  },
+  "filter": {
+    "search_placeholder": "Suchen",
+    "reset": "Zurücksetzen",
+    "clear_all": "Alle entfernen",
+    "remove_chip": "{{label}} entfernen"
+  },
+  "form": {
+    "optional": "optional",
+    "error_summary_title": "Behebe das vor dem Speichern",
+    "draft_restored": "Wir haben deinen nicht gespeicherten Entwurf wiederhergestellt.",
+    "draft_discard": "Verwerfen",
+    "range_7d": "7 Tage",
+    "range_30d": "30 Tage",
+    "range_90d": "90 Tage",
+    "range_all": "Alle",
+    "range_custom": "Eigener Zeitraum",
+    "range_from": "Von",
+    "range_to": "Bis"
+  },
+  "editor": {
+    "toolbar": "Formatierung",
+    "bold": "Fett",
+    "italic": "Kursiv",
+    "link": "Link einfügen",
+    "bullet_list": "Aufzählung",
+    "ordered_list": "Nummerierte Liste",
+    "link_prompt": "Füge einen https-Link ein",
+    "link_invalid": "Es lassen sich nur https-Links einfügen.",
+    "preview": "Vorschau",
+    "preview_empty": "Dein Text erscheint hier."
+  },
+  "upload": {
+    "hint": "Zieh ein Bild hierher oder klicke, um eins auszuwählen.",
+    "in_progress": "Wird hochgeladen…",
+    "failed": "Dieses Bild konnte nicht hochgeladen werden.",
+    "remove": "Dieses Bild entfernen"
+  },
+  "guided": {
+    "blockers": "Bevor du weitermachst",
+    "fix": "Beheben"
+  },
+  "timeline": {
+    "internal": "Das sieht nur das Host-Team",
+    "show_less": "Weniger anzeigen",
+    "show_more_one": "Noch {{count}} anzeigen",
+    "show_more_other": "Noch {{count}} anzeigen"
+  },
+  "error": {
+    "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "validation": "Einige Angaben sind nicht gültig. Prüfe die markierten Felder.",
+    "rate_limited": "Das ist viel Aktivität auf einmal. Warte einen Moment und versuche es erneut.",
+    "unauthorized": "Melde dich erneut an, um fortzufahren.",
+    "forbidden": "Dazu hast du keine Berechtigung.",
+    "conflict": "Jemand hat das vor dir geändert. Lade neu und versuche es erneut.",
+    "not_found": "Wir konnten das nicht finden.",
+    "abuse_held": "Das wird geprüft, bevor es rausgeht.",
+    "payment_unavailable": "Zahlungen sind vorübergehend nicht verfügbar. Es wurde nichts abgebucht."
+  },
+  "crash": {
+    "title": "In der Konsole ist ein Fehler aufgetreten",
+    "body": "Auf dem Server ging nichts verloren. Lade diese Ansicht neu, um weiterzumachen.",
+    "retry": "Ansicht neu laden"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "header": {
+    "title": "Reportar un pin"
+  },
+  "gate": {
+    "camera": {
+      "title": "Acceso a la cámara",
+      "body": "civfix usa tu cámara para capturar el problema cívico que estás reportando. También puedes adjuntar una foto o video existente.",
+      "continue": "Continuar",
+      "open_settings": "Abrir ajustes"
+    },
+    "no_camera": {
+      "title": "No se encontró cámara",
+      "body": "Este dispositivo no tiene cámara disponible. Adjunta una foto o video existente."
+    },
+    "choose_library": "Elegir de la galería"
+  },
+  "timer": {
+    "elapsed": "{{elapsed}}s / 10s"
+  },
+  "mode": {
+    "photo": "FOTO",
+    "video": "VIDEO · 10s"
+  },
+  "shutter": {
+    "take_photo": "Tomar foto",
+    "stop_recording": "Detener grabación",
+    "start_recording": "Iniciar grabación"
+  }
+}

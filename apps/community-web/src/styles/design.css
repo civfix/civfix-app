@@ -1,0 +1,3044 @@
+/* =========================================================================
+   civfix Web - design system, ported from the real PinIt Web handoff
+   Source of truth:
+     civfix Web (User)-handoff/civfix-web-user/project/ds/colors_and_type.css
+     civfix Web (User)-handoff/civfix-web-user/project/styles.css
+   This file brings the design's ACTUAL CSS (tokens + shell/component classes)
+   into the app. Where the design and the app's Tailwind/globals conflict for
+   the shell, the design CSS wins. Class names mirror the handoff so the ported
+   JSX structure maps 1:1.
+
+   Font reconciliation: globals.css owns --font-display / --font-body /
+   --font-mono and points UI text to self-hosted Hanken Grotesk. Every design
+   class that reads var(--font-display) therefore resolves to that UI family.
+   ========================================================================= */
+
+:root {
+  /* ====================================================================
+     COLOR - Brand (verbatim from colors_and_type.css)
+     ==================================================================== */
+  --bloom-50:  #FFEDE9;
+  --bloom-100: #FFD5CD;
+  --bloom-300: #FFA89A;
+  --bloom:     #FF7A6B;
+  --bloom-600: #E55F50;
+  --bloom-700: #B8463A;
+
+  --moss-50:   #E8F3E8;
+  --moss-100:  #CDE5CD;
+  --moss-300:  #9BCF9B;
+  --moss:      #6FB36F;
+  --moss-600:  #4F9551;
+  --moss-700:  #347338;
+
+  --sun-50:    #FFF6DA;
+  --sun-100:   #FFE9A4;
+  --sun-300:   #FFD668;
+  --sun:       #FFCB47;
+  --sun-600:   #E5AE1C;
+  --sun-700:   #A77B0A;
+
+  --sky-50:    #E6F2FB;
+  --sky-100:   #C9E3F4;
+  --sky-300:   #A0CDE9;
+  --sky:       #6FB1DC;
+  --sky-600:   #3F8DC0;
+  --sky-700:   #2A6996;
+
+  --lilac-50:  #F0EBFB;
+  --lilac-100: #DED2F5;
+  --lilac-300: #BFA9EC;
+  --lilac:     #9C82DE;
+  --lilac-600: #7657C2;
+
+  /* ====================================================================
+     COLOR - Neutrals (warm)
+     ==================================================================== */
+  --paper:    #FBF7F0;
+  --paper-2:  #F4EFE6;
+  --card:     #FFFFFF;
+  --card-tint:#FCFAF6;
+
+  --ink:      #1A1714;
+  --ink-2:    #4A453F;
+  --ink-3:    #8A8378;
+  --ink-4:    #C9C2B5;
+  --ink-5:    #E8E2D5;
+
+  /* ====================================================================
+     COLOR - Semantic
+     ==================================================================== */
+  --fg-1: var(--ink);
+  --fg-2: var(--ink-2);
+  --fg-3: var(--ink-3);
+  --fg-on-color: #FFFFFF;
+
+  --bg-1: var(--paper);
+  --bg-2: var(--paper-2);
+  --bg-card: var(--card);
+
+  --border-soft: rgba(26, 23, 20, 0.06);
+  --border:      rgba(26, 23, 20, 0.10);
+  --border-strong: rgba(26, 23, 20, 0.16);
+
+  /* Surfaces that are NOT a flat token: the frosted top-bar pills, the media-overlay chips, the
+     modal scrim, the switch track, and the foreground that sits on an INVERTED fill (an --ink or
+     *-700 background). Each one is a var so the .dark block at the foot of this file can flip it;
+     none of them may be written as a literal in a rule again. */
+  --glass:            rgba(255,255,255,0.96);
+  --glass-hover:      #FFFFFF;
+  --glass-soft:       rgba(255,255,255,0.7);
+  --glass-soft-hover: rgba(255,255,255,0.95);
+  --glass-strong:     rgba(255,255,255,0.92);
+  --scrim:            rgba(26,23,20,0.32);
+  --track:            rgba(26,23,20,0.18);
+  --fg-on-inverse:    #FFFFFF;
+
+  --accent:   var(--bloom);
+  --accent-fg:#FFFFFF;
+  --success:  var(--moss);
+  --warning:  var(--sun-600);
+  --info:     var(--sky);
+  --danger:   var(--bloom-600);
+
+  /* Map / category colors - used for pin types */
+  --cat-trash:      #8A8378;
+  --cat-recycling:  var(--moss);
+  --cat-graffiti:   var(--lilac);
+  --cat-hazard:     var(--bloom);
+  --cat-cleanup:    var(--sun-600);
+  --cat-water:      var(--sky);
+
+  /* ====================================================================
+     TYPOGRAPHY - scale + metrics (families come from next/font)
+     ==================================================================== */
+  --fs-12: 0.75rem;
+  --fs-13: 0.8125rem;
+  --fs-14: 0.875rem;
+  --fs-15: 0.9375rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-30: 1.875rem;
+  --fs-38: 2.375rem;
+  --fs-48: 3rem;
+  --fs-64: 4rem;
+
+  --lh-tight: 1.05;
+  --lh-snug:  1.2;
+  --lh-base:  1.45;
+  --lh-loose: 1.6;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug:  -0.01em;
+  --tracking-base:   0;
+  --tracking-wide:   0.06em;
+
+  /* ====================================================================
+     SHAPE & SPACE
+     ==================================================================== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
+  --radius-pill: 999px;
+  --radius-pin: 50% 50% 50% 6px;
+
+  /* ====================================================================
+     ELEVATION - layered warm-tinted shadows
+     ==================================================================== */
+  --shadow-1: 0 1px 0 rgba(26,23,20,0.04),
+              0 1px 2px rgba(26,23,20,0.05);
+
+  --shadow-2: 0 1px 0 rgba(26,23,20,0.03),
+              0 2px 4px rgba(26,23,20,0.04),
+              0 8px 16px -6px rgba(26,23,20,0.08);
+
+  --shadow-3: 0 1px 0 rgba(26,23,20,0.03),
+              0 4px 8px rgba(26,23,20,0.05),
+              0 18px 32px -10px rgba(26,23,20,0.12);
+
+  --shadow-4: 0 2px 4px rgba(26,23,20,0.05),
+              0 12px 20px rgba(26,23,20,0.08),
+              0 32px 56px -16px rgba(26,23,20,0.18);
+
+  --sheen-top: inset 0 1px 0 rgba(255,255,255,0.6);
+
+  --shadow-pin: 0 6px 10px -2px rgba(255,122,107,0.45),
+                0 2px 4px rgba(26,23,20,0.20);
+
+  --ring: 0 0 0 3px rgba(255,122,107,0.30);
+
+  /* ====================================================================
+     MOTION
+     ==================================================================== */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --dur-4: 500ms;
+
+  /* The layout vars (--sidebar-w / --sidebar-gap) are GONE: the landscape card is a react-native-web
+     surface sized by shell/sidebarStore (drag-resizable, persisted), and the only CSS that needed its
+     geometry - the maplibre attribution offset in globals.css - reads the live --cf-occlusion-left the
+     shell publishes. A frozen 384px copy here could only ever drift out of agreement with it. */
+}
+
+/* =========================================================================
+   SEMANTIC TYPE STYLES on the design classes (families resolve via next/font)
+   These intentionally only target design classes / scoped elements so the
+   rest of the Tailwind app is untouched.
+   ========================================================================= */
+.cf-design .display {
+  font-family: var(--font-display);
+  font-size: var(--fs-64);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 700;
+  font-variation-settings: "opsz" 72, "wdth" 95;
+  color: var(--fg-1);
+}
+.cf-design .num,
+.cf-design .stat {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 48, "wdth" 85;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* =========================================================================
+   SHELL LAYOUT - the make-or-break composition
+   The map is full-bleed behind everything; the sidebar is a floating rounded
+   paper card; the top bar is a transparent strip of floating frosted pills.
+   ========================================================================= */
+
+/* The fixed root the shell mounts into. */
+.cf-shell {
+  position: fixed;
+  inset: 0;
+  background: var(--paper);
+  overflow: hidden;
+}
+
+/*
+ * NOTE (FH-09, the card's desktop scroll affordance): there is deliberately NO scrollbar rule here.
+ * The landscape card's timeline styles its own bar from the list that owns it - `WEB_THIN_SCROLLBAR`
+ * in @civfix/ui `bodies/FeedBody.tsx` passes `scrollbarWidth: "thin"` + `scrollbarColor: borderStrong
+ * (= neutral.ink4) transparent` through react-native-web, gated on `Platform.OS === "web"` AND the
+ * expanded (landscape) layout mode. A host rule here would need a DOM hook the shared component does
+ * not expose, would duplicate a treatment that already lands, and could only ever drift from it.
+ * Verified computed on the feed scroller at 1440x900: scrollbar-width "thin",
+ * scrollbar-color "rgb(189,181,166) rgba(0,0,0,0)"; portrait keeps "none".
+ */
+
+/* ---- Skip link (WCAG 2.4.1) --------------------------------------------- */
+/*
+ * A keyboard-only "Skip to content" affordance: the first focusable element in the shell, visually
+ * hidden off-screen until it receives focus, at which point it slides on-screen as a coral pill that
+ * jumps the caret/scroll to <main id="main">. Pointer users never see it; Tab from a fresh load lands
+ * here first.
+ */
+.cf-skip-link {
+  position: absolute;
+  top: -40px;
+  left: 8px;
+  z-index: 1000;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--bloom-700);
+  color: var(--fg-on-inverse);
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-2);
+  transition: top 120ms ease;
+}
+.cf-skip-link:focus {
+  top: 8px;
+  outline: none;
+  box-shadow: var(--ring), var(--shadow-2);
+}
+
+/* ---- Map ---------------------------------------------------------------- */
+.cf-map {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  background: var(--paper);
+  z-index: 0;
+  overflow: hidden;
+}
+
+/*
+ * The shared @civfix/ui Map (.web seam) renders its maplibre-gl container as `.cf-map-canvas`. It must
+ * fill the `.cf-map` slot (maplibre needs an explicitly-sized container). UI-unification slice 5A.
+ */
+.cf-map-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /*
+   * Map long-press "drop a pin" (Area 3): iOS Safari pops its own callout/selection UI on a long press
+   * over a canvas, which would fight the gesture. The .web Map seam deliberately never calls
+   * preventDefault() on touchstart (that marks the handler active and resets pan/zoom), so the callout is
+   * suppressed here in CSS instead.
+   */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.cf-map-canvas canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/*
+ * The user-location dot the shared Map draws on web (the native map uses the OS location dot). A coral
+ * dot with a soft ring, mirroring the design's location puck.
+ */
+.cf-map-user-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--bloom, #ff5a4d);
+  border: 3px solid var(--card);
+  box-shadow: 0 0 0 2px rgba(255, 90, 77, 0.35), var(--shadow-2);
+}
+
+/* ---- Top bar (floats over the map; transparent strip) ------------------- */
+.top-bar {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+.top-bar > * { pointer-events: auto; }
+
+.logo-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 10px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 999px;
+  box-shadow: var(--shadow-2), var(--sheen-top);
+  border: 1px solid var(--border-soft);
+  height: 44px;
+  cursor: pointer;
+  transition: transform 120ms var(--ease-spring);
+}
+.logo-card:hover { transform: translateY(-1px); }
+.logo-card:active { transform: scale(0.98); }
+
+/* civfix per-letter wordmark (mirrors the mobile handoff brand.jsx + CSS) */
+.cf-logo {
+  font-family: "Baloo2_800ExtraBold", var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variation-settings: "wdth" 100, "opsz" 24;
+  line-height: 1;
+  display: inline-flex;
+  white-space: nowrap;
+}
+.cf-logo .ch { display: inline-block; }
+.cf-logo .ch > b { display: inline-block; font-weight: inherit; }
+.cf-logo .s1 { color: var(--bloom); }
+.cf-logo .s2 { color: var(--sun-600); }
+.cf-logo .s3 { color: var(--moss); }
+.cf-logo .s4 { color: var(--sky); }
+.cf-logo .s5 { color: var(--lilac); }
+.cf-logo .s6 { color: var(--bloom); }
+.cf-logo--card { font-size: 22px; }
+
+/* Cold-boot splash brand (components/boot-splash) — a larger, centered wordmark on first load. */
+.cf-splash-mark { font-size: 44px; }
+
+.top-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+  align-items: center;
+}
+.icon-btn {
+  width: 44px; height: 44px;
+  border-radius: 999px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-1), var(--sheen-top);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 120ms var(--ease-spring), background 120ms var(--ease-out);
+  position: relative;
+}
+.icon-btn:hover { transform: translateY(-1px); background: var(--glass-hover); }
+.icon-btn:active { transform: scale(0.94); }
+.icon-btn.has-dot::after {
+  content: '';
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 8px; height: 8px;
+  background: var(--bloom);
+  border-radius: 50%;
+  border: 2px solid var(--card);
+}
+.icon-btn.active {
+  background: var(--ink);
+  color: var(--fg-on-inverse);
+  border-color: var(--ink);
+}
+
+.signin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--fg-on-inverse);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-2);
+  transition: transform 120ms var(--ease-spring), background 120ms;
+}
+.signin-btn:hover { transform: translateY(-1px); background: var(--ink-2); }
+.signin-btn:active { transform: scale(0.97); }
+
+.avatar-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+  cursor: pointer;
+  box-shadow: var(--shadow-2);
+  background: linear-gradient(135deg, var(--moss-300), var(--bloom-300));
+  color: var(--fg-on-color);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms var(--ease-spring);
+  overflow: hidden;
+}
+.avatar-btn:hover { transform: translateY(-1px); }
+
+/* ---- Reports dropdown (multi-select, in the top bar) -------------------- */
+.reports-dd { position: relative; flex-shrink: 0; }
+.reports-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-1), var(--sheen-top);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 120ms var(--ease-spring), background 120ms var(--ease-out), border-color 120ms;
+}
+.reports-trigger svg { color: var(--ink-2); flex-shrink: 0; }
+.reports-trigger:hover { transform: translateY(-1px); background: var(--glass-hover); }
+.reports-trigger:active { transform: scale(0.97); }
+.reports-trigger.is-active {
+  background: var(--bloom-50);
+  border-color: var(--bloom-300);
+  color: var(--bloom-700);
+}
+.reports-trigger.is-active svg { color: var(--bloom-700); }
+.reports-trigger .dd-caret {
+  transition: transform 160ms var(--ease-out);
+  color: var(--ink-3);
+}
+.reports-trigger.is-open .dd-caret { transform: rotate(180deg); }
+.dd-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--bloom);
+  color: var(--fg-on-color);
+  font-size: 11px;
+  font-weight: 700;
+  font-feature-settings: "tnum";
+}
+
+/* ---- Map layers control (top-bar popover; web-native — matches the bell/account dropdowns) ----
+   Rebuilt on the web app's own popover chrome (radix PopoverContent) instead of the old 1:1 port of
+   the mobile LayersPopover card. Events is a real on/off switch; report categories are a flat list. */
+.cf-lyr-head {
+  padding: 6px 8px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 4px;
+}
+.cf-lyr-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 9px 8px;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  transition: background 120ms var(--ease-out);
+}
+.cf-lyr-row:hover {
+  background: var(--paper-2);
+}
+.cf-lyr-tile {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.cf-lyr-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.cf-lyr-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.cf-lyr-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  margin-top: 1px;
+}
+/* Real on/off switch for the Events layer (moss when on; the knob slides right). */
+.cf-lyr-switch {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--track);
+  flex-shrink: 0;
+  transition: background 160ms var(--ease-out);
+}
+.cf-lyr-switch.is-on {
+  background: var(--moss);
+}
+.cf-lyr-switch .knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--shadow-1);
+  transition: left 160ms var(--ease-out);
+}
+.cf-lyr-switch.is-on .knob {
+  left: 18px;
+}
+.cf-lyr-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 8px 4px;
+  margin-top: 2px;
+}
+.cf-lyr-seclabel {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.cf-lyr-link {
+  border: none;
+  background: none;
+  color: var(--bloom-700);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 6px;
+}
+.cf-lyr-link:hover {
+  background: var(--bloom-50);
+}
+.cf-lyr-cat {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 7px 8px;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  transition: background 120ms var(--ease-out);
+}
+.cf-lyr-cat:hover {
+  background: var(--paper-2);
+}
+/* Teardrop category pin (the civfix rotated-rounded-square marker), tinted per category. */
+.cf-lyr-pin {
+  width: 13px;
+  height: 13px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-1);
+}
+.cf-lyr-catlabel {
+  flex: 1;
+  text-align: left;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.cf-lyr-check {
+  width: 19px;
+  height: 19px;
+  border-radius: 6px;
+  border: 1.75px solid var(--border-strong);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-on-color);
+  flex-shrink: 0;
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out);
+}
+
+.dd-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+  width: 248px;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-4), var(--sheen-top);
+  padding: 6px;
+  z-index: 70;
+}
+.dd-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 4px;
+}
+.dd-link {
+  border: none;
+  background: none;
+  color: var(--bloom-700);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+.dd-link:hover { background: var(--bloom-50); }
+.dd-options { display: flex; flex-direction: column; gap: 1px; }
+.dd-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 8px;
+  border: none;
+  background: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  width: 100%;
+  transition: background 120ms;
+}
+.dd-option:hover { background: var(--paper-2); }
+.dd-check {
+  width: 18px; height: 18px;
+  border-radius: 6px;
+  border: 1.75px solid var(--border-strong);
+  background: var(--card);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-on-color);
+  flex-shrink: 0;
+}
+.dd-option .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dd-label { flex: 1; min-width: 0; }
+.dd-option .count {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-feature-settings: "tnum";
+  font-weight: 600;
+}
+
+/* ---- Modal -------------------------------------------------------------- */
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 70;
+}
+.modal-card {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 440px;
+  max-width: calc(100vw - 28px);
+  max-height: calc(100vh - 56px);
+  background: var(--paper);
+  border-radius: 24px;
+  box-shadow: var(--shadow-4), var(--sheen-top);
+  z-index: 71;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+/* ---- Post-drop nudge (success modal) ----------------------------------- */
+.cf-nudge-hero {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.cf-nudge-bug {
+  width: 56px;
+  height: 66px;
+  background: var(--moss);
+  border-radius: var(--radius-pin);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-on-color);
+}
+.cf-nudge-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.cf-nudge-sub {
+  text-align: center;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+.cf-nudge-event {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  margin-bottom: 14px;
+  background: var(--sun-50);
+  border: 1px solid var(--sun-100);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.cf-nudge-event-pin {
+  width: 30px;
+  flex-shrink: 0;
+}
+.cf-nudge-event-meta {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--sun-700);
+  line-height: 1.4;
+}
+.cf-nudge-event-cta {
+  flex-shrink: 0;
+}
+.cf-nudge-account {
+  padding: 14px;
+  background: var(--card-tint);
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  margin-bottom: 14px;
+}
+.cf-nudge-account-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.cf-nudge-account-body {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+/* ---- Pin (report) detail ----------------------------------------------- */
+.cf-pin-hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-1);
+  background-size: cover;
+  background-position: center;
+}
+.cf-pin-hero-sheen {
+  position: absolute;
+  inset: 0;
+}
+.cf-pin-hero-pin {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  opacity: 0.92;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.25));
+}
+.cf-pin-hero-status {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+}
+.cf-pin-hero-chip {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: var(--glass-strong);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.cf-pin-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.cf-pin-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+  line-height: 1.16;
+  margin: 4px 0 4px;
+  text-wrap: pretty;
+  color: var(--ink);
+}
+.cf-pin-addr {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin-bottom: 12px;
+}
+.cf-pin-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  margin-bottom: 16px;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+}
+.cf-pin-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cf-pin-meta-icon {
+  color: var(--ink-3);
+}
+.cf-pin-meta-muted {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cf-pin-meta-spacer {
+  margin-left: auto;
+}
+.cf-pin-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin-bottom: 18px;
+  text-wrap: pretty;
+  white-space: pre-wrap;
+}
+.cf-pin-actions {
+  margin-top: 4px;
+}
+.cf-pin-hint {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.cf-pin-error {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--bloom-700);
+}
+
+/* Vertical status timeline (22px nodes + connector rails) */
+.cf-pin-timeline-wrap {
+  margin-bottom: 18px;
+}
+.cf-pin-timeline-head {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 12px;
+}
+.cf-tl-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+.cf-tl-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+.cf-tl-node {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cf-tl-node[data-state="done"] {
+  background: var(--moss);
+}
+.cf-tl-node[data-state="now"] {
+  background: var(--bloom);
+}
+.cf-tl-check {
+  color: var(--fg-on-color);
+}
+.cf-tl-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fg-on-color);
+}
+.cf-tl-line {
+  flex: 1;
+  width: 2px;
+  min-height: 14px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  background: var(--border-soft);
+}
+.cf-tl-line[data-done="true"] {
+  background: var(--moss-300);
+}
+.cf-tl-body {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 16px;
+}
+.cf-tl-body[data-last="true"] {
+  padding-bottom: 0;
+}
+.cf-tl-what {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.cf-tl-what[data-active="true"] {
+  color: var(--ink);
+}
+.cf-tl-when {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.cf-tl-note {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* Follow-up composer (your own reports) */
+.cf-followup {
+  padding: 12px;
+  background: var(--card);
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+}
+.cf-followup-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* ---- Buttons ------------------------------------------------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  border: none;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 120ms var(--ease-out);
+  box-shadow: var(--shadow-1);
+  white-space: nowrap;
+  line-height: 1;
+}
+.btn.primary {
+  background: var(--bloom);
+  color: var(--fg-on-color);
+  box-shadow: 0 4px 10px -2px rgba(255,122,107,0.4), var(--sheen-top);
+}
+.btn.primary:hover { background: var(--bloom-600); transform: translateY(-1px); }
+.btn.primary:active { transform: scale(0.97); }
+.btn.secondary {
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--border);
+}
+.btn.secondary:hover { background: var(--paper-2); }
+.btn.ghost { background: transparent; box-shadow: none; color: var(--ink-2); }
+.btn.ghost:hover { background: var(--paper-2); }
+.btn.success { background: var(--moss); color: var(--fg-on-color); }
+.btn.success:hover { background: var(--moss-600); }
+.btn.danger { background: var(--bloom-50); color: var(--bloom-700); border: 1px solid var(--bloom-300); }
+.btn.block { width: 100%; }
+.btn.lg { padding: 14px 26px; font-size: 15px; }
+.btn.sm { padding: 7px 14px; font-size: 12px; }
+.btn.icon-only { padding: 0; width: 38px; height: 38px; flex-shrink: 0; }
+.btn.sm.icon-only { width: 34px; height: 34px; }
+.btn.disabled, .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.disabled:hover, .btn:disabled:hover { transform: none; }
+
+/* ---- Badge -------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+/* ---- Form fields (report / host flows) --------------------------------- */
+.input,
+textarea.input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 120ms, box-shadow 120ms;
+  resize: none;
+}
+.input:focus { border-color: var(--bloom); box-shadow: var(--ring); }
+.input::placeholder { color: var(--ink-3); }
+.input-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+.field { margin-bottom: 14px; }
+.help {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* ---- Report-type rows (report flow step 1) ----------------------------- */
+.rt-list { display: flex; flex-direction: column; gap: 7px; }
+.rt-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  transition: transform 120ms var(--ease-spring), box-shadow 120ms, border-color 120ms,
+    background 120ms;
+}
+.rt-row:hover { transform: translateY(-1px); box-shadow: var(--shadow-1); }
+.rt-row:active { transform: scale(0.99); }
+.rt-pin { width: 30px; height: auto; flex-shrink: 0; }
+.rt-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.rt-label { font-size: 14px; font-weight: 700; color: var(--ink); }
+.rt-sub { font-size: 12px; color: var(--ink-3); }
+.rt-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--ink-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-on-color);
+  flex-shrink: 0;
+}
+
+/* ---- Step rail (3-step report wizard) ---------------------------------- */
+.step-rail {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+.step-rail .step {
+  flex: 1;
+  height: 4px;
+  background: var(--ink-5);
+  border-radius: 999px;
+  transition: background 240ms;
+}
+.step-rail .step.active { background: var(--bloom); }
+.step-rail .step.done { background: var(--moss); }
+
+/* ---- Photo drop area --------------------------------------------------- */
+.photo-drop {
+  border: 2px dashed var(--ink-4);
+  border-radius: 14px;
+  padding: 26px 16px;
+  text-align: center;
+  background: var(--card-tint);
+  color: var(--ink-3);
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
+  transition: all 120ms;
+}
+.photo-drop:hover {
+  border-color: var(--bloom);
+  background: var(--bloom-50);
+  color: var(--bloom-700);
+}
+.photo-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: 14px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+.photo-thumb .remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--fg-on-color);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.cf-photo-name {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: var(--glass-strong);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.cf-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.cf-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.cf-loc-map {
+  margin-top: 8px;
+}
+/* The actual map surface; the picker now stacks a search box above it inside .cf-loc-map. */
+.cf-loc-mapbox {
+  height: 180px;
+  margin-top: 8px;
+}
+/* Address / coordinate search box above the map; live suggestions float over the map below it. */
+.cf-loc-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.cf-loc-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+.cf-loc-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 34px 10px 34px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 120ms, box-shadow 120ms;
+}
+.cf-loc-search-input:focus {
+  border-color: var(--bloom);
+  box-shadow: var(--ring);
+}
+.cf-loc-search-input::placeholder {
+  color: var(--ink-3);
+}
+.cf-loc-search-spin {
+  position: absolute;
+  right: 12px;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+/* The suggestions dropdown, absolutely anchored under the input so it overlays the map. */
+.cf-loc-suggest {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 232px;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-3);
+}
+.cf-loc-suggest-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.cf-loc-suggest-item.active {
+  background: var(--paper, rgba(26, 23, 20, 0.05));
+}
+.cf-loc-suggest-icon {
+  flex-shrink: 0;
+  color: var(--ink-3);
+}
+.cf-loc-suggest-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.cf-loc-suggest-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cf-loc-suggest-sub {
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cf-loc-suggest-empty {
+  padding: 10px;
+  font-size: 12px;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+
+/* ---- Report drop wizard (in-sidebar panel) ----------------------------- */
+.cf-report-nav {
+  display: flex;
+  gap: 6px;
+  margin-top: 22px;
+}
+.cf-spin {
+  animation: cf-spin 0.8s linear infinite;
+}
+@keyframes cf-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.cf-loc-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--card-tint);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-soft);
+}
+.cf-loc-pin {
+  color: var(--bloom);
+  flex-shrink: 0;
+}
+.cf-loc-meta {
+  flex: 1;
+  min-width: 0;
+}
+.cf-loc-place {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.cf-loc-coords {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+}
+.cf-anon-note {
+  padding: 12px;
+  background: var(--bloom-50);
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--bloom-700);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.45;
+}
+.cf-anon-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.cf-routing {
+  padding: 12px;
+  background: var(--card-tint);
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+}
+.cf-routing-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cf-routing-meta {
+  flex: 1;
+  min-width: 0;
+}
+.cf-routing-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.cf-routing-email {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cf-routing-note {
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+.cf-turnstile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+.cf-report-error {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--bloom-700);
+}
+.cf-submit-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.cf-submit-hint svg {
+  color: var(--moss-700);
+  flex-shrink: 0;
+}
+
+/* ---- Avatar ------------------------------------------------------------- */
+.cf-avatar {
+  border-radius: 50%;
+  color: var(--fg-on-color);
+  font-family: var(--font-body);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* ---- Account gate (anon users) ----------------------------------------- */
+.gate {
+  background: var(--card-tint);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+}
+.gate h4 {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  margin: 6px 0 4px;
+  letter-spacing: -0.01em;
+}
+.gate p {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin: 0 0 12px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+/* ---- Toast -------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink);
+  color: var(--fg-on-inverse);
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-3);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms, transform 240ms var(--ease-spring);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.toast.success { background: var(--moss-700); }
+
+/* ---- Events list (Going / Past / Suggested) + cleanup detail ----------- */
+.event-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--paper-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.event-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: background 120ms, color 120ms;
+}
+.event-tab .n {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-4);
+  font-feature-settings: "tnum";
+}
+.event-tab.on {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+}
+.event-tab.on .n { color: var(--bloom); }
+.event-tab:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.event-list { display: flex; flex-direction: column; gap: 8px; }
+.event-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  transition: transform 120ms var(--ease-out), box-shadow 120ms;
+}
+.event-row:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); }
+.event-row:focus-visible { outline: none; box-shadow: var(--ring); }
+.event-row.past { cursor: default; opacity: 0.92; }
+.event-row.past:hover { transform: none; box-shadow: var(--shadow-1); }
+.event-row-main { flex: 1; min-width: 0; }
+.event-row-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin-bottom: 4px;
+  color: var(--ink);
+}
+.event-row-sub { font-size: 11px; color: var(--ink-3); margin-bottom: 8px; }
+.event-row-foot { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.event-row-avatars { display: inline-flex; }
+.event-row-avatars > span {
+  width: 22px; height: 22px; border-radius: 50%;
+  color: var(--fg-on-color); font-size: 9px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid var(--card);
+}
+.event-row-avatars > span + span { margin-left: -6px; }
+.event-row-count { color: var(--ink-2); }
+.event-row-count b { color: var(--ink); }
+
+.going-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--moss-50);
+  border: 1px solid var(--moss-300);
+  color: var(--moss-700);
+  font-size: 10px;
+  font-weight: 700;
+}
+.hosting-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--bloom-50);
+  border: 1px solid var(--bloom-300);
+  color: var(--bloom-700);
+  font-size: 10px;
+  font-weight: 700;
+}
+.role-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.role-tag.host { background: var(--bloom-50); color: var(--bloom-700); border: 1px solid var(--bloom-300); }
+.role-tag.attended { background: var(--sky-50); color: var(--sky-700); border: 1px solid var(--sky-300); }
+
+.event-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* Cleanup detail */
+.cf-clean-hero {
+  padding: 16px;
+  background: linear-gradient(135deg, var(--sun-50), var(--moss-50));
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  margin-bottom: 16px;
+}
+.cf-clean-hero-row { display: flex; align-items: flex-start; gap: 14px; }
+.cf-clean-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 6px 0 4px;
+  color: var(--ink);
+}
+.cf-clean-when { font-size: 12px; color: var(--ink-2); line-height: 1.45; }
+.cf-clean-where { font-size: 12px; color: var(--ink-2); }
+.cf-clean-desc {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  white-space: pre-line;
+  margin: 4px 0 16px;
+}
+.cf-clean-organizer {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px;
+  background: var(--card-tint);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.cf-clean-organizer-meta { flex: 1; min-width: 0; }
+.cf-clean-organizer-label {
+  font-size: 10px; color: var(--ink-3); font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+.cf-clean-organizer-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+.cf-clean-section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px;
+}
+.friends-going {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--moss-50);
+  border: 1px solid var(--moss-300);
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+.friends-going-text { font-size: 12.5px; color: var(--ink-2); }
+.friends-going-text b { color: var(--ink); }
+/* The going pill stacks the count over the optional "who's going" names line. */
+.friends-going-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.cf-attendees {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 6px;
+  font-size: 12px; line-height: 1.4; color: var(--ink-2); min-width: 0;
+}
+.cf-attendees-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+/* Collapsed: a single ellipsized line; expanded lifts the clamp so every name wraps into view. */
+.cf-attendees-names { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.cf-attendees.expanded .cf-attendees-names { white-space: normal; overflow: visible; }
+.cf-attendees-more {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font-size: 12px; font-weight: 600; color: var(--moss-700);
+}
+.cf-attendees-more:hover { text-decoration: underline; }
+.cf-clean-bring { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+.cf-clean-bring-chip {
+  padding: 5px 11px;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.cf-clean-ended {
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: var(--paper-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--ink-3);
+  text-align: center;
+}
+.cf-clean-locked {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.cf-clean-actions-row { display: flex; gap: 6px; margin-bottom: 6px; }
+.cf-clean-actions-row > .btn { flex: 1; }
+.cf-clean-error { text-align: center; font-size: 12px; color: var(--bloom-700); margin-top: 8px; }
+
+/* Host an event (create-cleanup panel) */
+.cf-host-note {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 12px; margin-bottom: 16px;
+  background: var(--card-tint);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  font-size: 12.5px; color: var(--ink-2); line-height: 1.4;
+}
+.cf-host-note svg { color: var(--ink-3); flex-shrink: 0; }
+.cf-host-row { display: flex; gap: 10px; }
+.cf-host-row > .field { flex: 1; }
+.cf-host-gate { padding-top: 8px; }
+
+/* What-to-bring chip builder (host flow) */
+.bring-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.bring-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 6px 5px 11px;
+  background: var(--moss-50);
+  border: 1px solid var(--moss-300);
+  border-radius: 999px;
+  font-size: 12px; font-weight: 600; color: var(--moss-700);
+}
+.bring-chip button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  border: none; cursor: pointer;
+  background: var(--moss-300); color: var(--fg-on-color);
+}
+.bring-input { position: relative; }
+.bring-input .input { padding-right: 44px; }
+.bring-add {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  width: 30px; height: 30px; border-radius: 9px;
+  border: none; cursor: pointer;
+  background: var(--bloom); color: var(--fg-on-color);
+  display: flex; align-items: center; justify-content: center;
+}
+.bring-suggest { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.bring-suggest button {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px 5px 8px;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  font-family: inherit; font-size: 12px; font-weight: 600; color: var(--ink-2);
+  cursor: pointer;
+  transition: transform 120ms var(--ease-spring), border-color 120ms;
+}
+.bring-suggest button svg { color: var(--ink-3); }
+.bring-suggest button:hover { transform: translateY(-1px); border-color: var(--moss-300); }
+.bring-suggest button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* =========================================================================
+   PEOPLE discovery + PERSON / OWN profile + ACTIVITY feed
+   Ported from styles.css (.people-search, .follow-card, .event-mini,
+   .person-row, .live-dot) + the panels-social/panels-cleanups inline styles.
+   ========================================================================= */
+
+/* People search box (discovery) */
+.people-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 42px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  color: var(--ink-3);
+  transition: border-color 120ms, box-shadow 120ms;
+}
+.people-search:focus-within { border-color: var(--bloom); box-shadow: var(--ring); }
+.people-search svg { flex-shrink: 0; }
+.people-search input {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  min-width: 0;
+}
+.people-search input::placeholder { color: var(--ink-3); }
+.people-search .clear {
+  border: none;
+  background: var(--paper-2);
+  color: var(--ink-3);
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.people-search .clear:hover { background: var(--border-soft); color: var(--ink); }
+
+/* Section label (uppercase, tracked) shared across the social panels */
+.cf-social-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 8px;
+}
+.cf-social-sub {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin: -4px 0 12px;
+  line-height: 1.4;
+}
+
+/* List wrappers in the social panels */
+.cf-people-list { display: flex; flex-direction: column; gap: 4px; }
+.cf-follow-list { display: flex; flex-direction: column; gap: 10px; }
+.cf-mini-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+
+/* A person result row (search results + suggestions) */
+.person-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  align-items: flex-start;
+  border-radius: 14px;
+}
+.person-row .cf-person-tap {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+.person-row .cf-person-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.person-row .cf-person-handle { font-size: 11px; color: var(--ink-3); }
+.person-row .cf-person-bio {
+  font-size: 12px;
+  color: var(--ink-2);
+  margin-top: 3px;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+/* Following card - a person + the events they are going to */
+.follow-card {
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  padding: 12px;
+}
+.follow-card-head { display: flex; align-items: center; }
+.follow-card-head .cf-person-tap {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+.follow-card-events {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.follow-card-empty { font-size: 12px; color: var(--ink-3); padding: 4px 2px 2px; }
+
+/* Mini event row (a cleanup someone is going to) */
+.event-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--paper-2);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  transition: background 120ms, border-color 120ms;
+}
+.event-mini:hover { background: var(--sun-50); border-color: var(--sun-300); }
+.event-mini:focus-visible { outline: none; box-shadow: var(--ring); }
+.event-mini-badge {
+  flex-shrink: 0;
+  width: 38px; height: 40px;
+  border-radius: 9px;
+  background: var(--sun-50);
+  border: 1px solid var(--sun-300);
+  color: var(--sun-700);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  line-height: 1;
+}
+.event-mini-badge .d { font-size: 8px; font-weight: 700; letter-spacing: 0.08em; }
+.event-mini-badge .n {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  font-variation-settings: "wdth" 85;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+}
+.event-mini-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.event-mini-meta .t {
+  font-size: 13px; font-weight: 700; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.event-mini-meta .s {
+  font-size: 11px; color: var(--ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.event-mini > svg { color: var(--ink-4); flex-shrink: 0; }
+
+/* Profile cover / identity (person + own) */
+.cf-profile-cover {
+  padding: 18px;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+/* Person profile cover carries a soft hairline (the design's PersonProfile); the own-profile cover
+   (MyProfile) has none. */
+.cf-profile-cover.person {
+  background: linear-gradient(135deg, var(--moss-50), var(--sun-50));
+  border: 1px solid var(--border-soft);
+}
+.cf-profile-cover.me { background: linear-gradient(135deg, var(--bloom-50), var(--sun-50)); }
+.cf-profile-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+  margin: 10px 0 2px;
+  color: var(--ink);
+}
+.cf-profile-handle { font-size: 12px; color: var(--ink-3); }
+.cf-profile-bio {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin: 8px auto 12px;
+  max-width: 260px;
+  text-wrap: pretty;
+  line-height: 1.4;
+}
+.cf-profile-actions { display: flex; gap: 8px; justify-content: center; }
+.cf-profile-actions .btn { flex-shrink: 0; }
+
+/* Profile stat strip (Followers / Following large numbers) */
+.cf-profile-stats {
+  display: flex;
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 16px;
+}
+.cf-stat { flex: 1; padding: 2px 6px; }
+.cf-stat + .cf-stat { text-align: center; border-left: 1px solid var(--border-soft); }
+.cf-stat-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  font-variation-settings: "wdth" 85;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink);
+}
+.cf-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 4px;
+}
+
+/* Own-profile navigation rows (My reports / My events / Following / Settings) */
+.cf-nav-list { display: flex; flex-direction: column; gap: 2px; }
+.cf-nav-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  align-items: center;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  transition: background 120ms;
+}
+.cf-nav-row:hover { background: var(--paper-2); }
+.cf-nav-row:focus-visible { outline: none; box-shadow: var(--ring); }
+.cf-nav-icon {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: var(--card-tint);
+  border: 1px solid var(--border-soft);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-2);
+  flex-shrink: 0;
+}
+.cf-nav-meta { flex: 1; min-width: 0; }
+.cf-nav-label { font-size: 14px; font-weight: 700; color: var(--ink); }
+.cf-nav-sub { font-size: 11px; color: var(--ink-3); }
+.cf-nav-row > svg { color: var(--ink-3); flex-shrink: 0; }
+
+/* Activity feed */
+.live-dot {
+  width: 6px; height: 6px;
+  background: var(--moss);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  animation: cf-pulse 1.8s ease-in-out infinite;
+}
+@keyframes cf-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+.cf-activity-live {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 8px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+}
+.cf-activity-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+.cf-activity-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  align-items: flex-start;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  position: relative;
+  transition: background 120ms;
+}
+.cf-activity-row:hover { background: var(--paper-2); }
+.cf-activity-row:focus-visible { outline: none; box-shadow: var(--ring); }
+.cf-activity-row.unread { background: var(--bloom-50); }
+.cf-activity-row.unread:hover { background: var(--bloom-50); }
+.cf-activity-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cf-activity-icon.pin-update   { background: var(--bloom-50); color: var(--bloom-700); }
+.cf-activity-icon.cleanup-msg  { background: var(--sun-50);   color: var(--sun-700); }
+.cf-activity-icon.cleanup-rsvp { background: var(--sun-50);   color: var(--sun-700); }
+.cf-activity-icon.follow       { background: var(--moss-50);  color: var(--moss-700); }
+.cf-activity-icon.mention      { background: var(--lilac-50); color: var(--lilac-600); }
+.cf-activity-icon.system       { background: var(--paper-2);  color: var(--ink-3); }
+.cf-activity-body { flex: 1; min-width: 0; }
+.cf-activity-text {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.cf-activity-text b { font-weight: 700; }
+.cf-activity-when { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+.cf-activity-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--bloom);
+  flex-shrink: 0;
+  margin-top: 12px;
+}
+.cf-activity-empty {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* =========================================================================
+   MESSAGES - inbox thread rows, conversation bubbles, composer
+   Ported from styles.css (.thread-row, .group-tag, .unread-pill, .msg,
+   .msg-composer) + the panels-social.jsx ThreadView header. The bubble/
+   composer presentation is faithful to the design; the day divider, the
+   "New message" entry, and the pending/failed send affordances back the
+   real WS chat (useChat) and are styled in the same language.
+   ========================================================================= */
+
+/* Inbox: "New message" entry button (secondary pill, label left + chevron). */
+.cf-inbox-new {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 10px 16px;
+}
+.cf-inbox-new > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Optional All / Direct / Group filter strip above the inbox list. */
+.cf-inbox-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.cf-inbox-filter button {
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: var(--card);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.cf-inbox-filter button:hover { color: var(--ink-2); }
+.cf-inbox-filter button.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--fg-on-inverse);
+}
+.cf-inbox-filter button:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.cf-inbox-list { display: flex; flex-direction: column; }
+.cf-inbox-empty {
+  padding: 32px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+/* Thread row (inbox). */
+.thread-row {
+  display: flex;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  align-items: center;
+  position: relative;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  transition: background 120ms;
+}
+.thread-row:hover { background: var(--paper-2); }
+.thread-row:focus-visible { outline: none; box-shadow: var(--ring); }
+.thread-row .cf-thread-main { flex: 1; min-width: 0; }
+.thread-row .who {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.thread-row .who .cf-thread-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.thread-row .group-tag {
+  flex-shrink: 0;
+  font-size: 9px;
+  color: var(--ink-3);
+  background: var(--paper-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-feature-settings: "tnum";
+}
+.thread-row .preview {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+}
+.thread-row .preview .cf-you { color: var(--ink-3); }
+.thread-row .when {
+  position: absolute;
+  top: 14px; right: 14px;
+  font-size: 10px;
+  color: var(--ink-3);
+}
+.thread-row .unread-pill {
+  position: absolute;
+  bottom: 12px; right: 14px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  background: var(--bloom);
+  color: var(--fg-on-color);
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-feature-settings: "tnum";
+}
+
+/* Group avatar tile (inbox + conversation header), when a thread has no DM avatar. */
+.cf-thread-group {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--sun-300), var(--moss-300));
+  color: var(--fg-on-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- Conversation (thread) view --------------------------------------- */
+.cf-thread {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.cf-thread-header {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--paper);
+  flex-shrink: 0;
+}
+.cf-thread-header .cf-thread-id { flex: 1; min-width: 0; }
+.cf-thread-header .cf-thread-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cf-thread-header .cf-thread-sub {
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cf-thread-header .cf-thread-link {
+  background: none;
+  border: none;
+  color: var(--bloom);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-size: 11px;
+  font-family: inherit;
+}
+/* Live "N online" presence chip in the thread sub-line: a small green dot + the count. */
+.cf-thread-header .cf-online {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.cf-thread-header .cf-online-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+.cf-thread-group--sm { width: 36px; height: 36px; }
+
+.cf-thread-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 18px 20px;
+  background: var(--paper-2);
+}
+.cf-thread-loading {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+  color: var(--ink-3);
+}
+.cf-thread-notice {
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 13px;
+  padding: 28px 16px;
+  line-height: 1.5;
+}
+.cf-thread-notice .cf-thread-notice-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+/* Day divider between message groups. */
+.cf-msg-day {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 12px;
+  color: var(--ink-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.cf-msg-day::before, .cf-msg-day::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-soft);
+}
+
+/* Message bubble. Each row settles in with a small fade + rise on mount (transform-only, so it never
+   shifts scrollHeight and the auto-scroll-to-bottom stays accurate). */
+.msg {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: flex-end;
+  animation: cf-msg-in 0.24s ease-out;
+}
+.msg .bubble {
+  padding: 8px 12px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  font-size: 14px;
+  color: var(--ink);
+  max-width: 78%;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  box-shadow: var(--shadow-1);
+}
+.msg .bubble .cf-msg-text { white-space: pre-wrap; }
+.msg .bubble .cf-msg-sender {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-3);
+  margin-bottom: 2px;
+}
+.msg.me { flex-direction: row-reverse; }
+.msg.me .bubble {
+  background: var(--bloom);
+  color: var(--fg-on-color);
+  border-color: var(--bloom);
+  border-bottom-right-radius: 4px;
+}
+.msg.me .bubble.pending { opacity: 0.7; }
+.msg:not(.me) .bubble { border-bottom-left-radius: 4px; }
+.msg .when {
+  font-size: 10px;
+  color: var(--ink-3);
+  align-self: flex-end;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.msg .when.failed {
+  color: var(--bloom-700);
+  font-weight: 700;
+}
+.msg .when .cf-retry {
+  background: none;
+  border: none;
+  color: var(--bloom-700);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Composer (footer pill input + round coral send). */
+.msg-composer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.msg-composer textarea,
+.msg-composer input {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  resize: none;
+  max-height: 96px;
+  min-width: 0;
+}
+.msg-composer textarea::placeholder,
+.msg-composer input::placeholder { color: var(--ink-3); }
+.msg-composer textarea:focus,
+.msg-composer input:focus {
+  border-color: var(--bloom);
+  box-shadow: var(--ring);
+}
+.msg-composer textarea:disabled,
+.msg-composer input:disabled { opacity: 0.5; cursor: not-allowed; }
+.msg-composer .send {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--bloom);
+  color: var(--fg-on-color);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 120ms, transform 120ms ease-out;
+}
+.msg-composer .send:hover { background: var(--bloom-600); }
+/* A small tactile pop on hover and squash on press (only while enabled). */
+.msg-composer .send:not(:disabled):hover { transform: scale(1.06); }
+.msg-composer .send:not(:disabled):active { transform: scale(0.9); }
+.msg-composer .send:disabled { opacity: 0.4; cursor: not-allowed; }
+.cf-composer-offline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+/* "X is typing" hint above the composer: animated bouncing dots + a muted label, the whole row easing
+   in. Subtle/muted to match .cf-composer-offline. */
+.cf-typing {
+  margin: 0 0 6px;
+  padding: 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--ink-3);
+  animation: cf-fade-rise 0.2s ease-out;
+}
+.cf-typing-text {
+  font-style: italic;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Three dots that bounce in sequence — the classic "typing" pulse. */
+.cf-typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.cf-typing-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  animation: cf-typing-bounce 1.3s ease-in-out infinite;
+}
+.cf-typing-dots span:nth-child(2) { animation-delay: 0.16s; }
+.cf-typing-dots span:nth-child(3) { animation-delay: 0.32s; }
+@keyframes cf-typing-bounce {
+  0%, 70%, 100% { transform: translateY(0); opacity: 0.45; }
+  35%           { transform: translateY(-4px); opacity: 1; }
+}
+/* Shared "settle in" entrance: a small fade + rise. Used by the typing row and each message bubble. */
+@keyframes cf-fade-rise {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes cf-msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* New-message multi-select picker. */
+.cf-newmsg-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+.cf-newmsg-label .cf-newmsg-count { color: var(--ink-4); }
+.cf-newmsg-list { display: flex; flex-direction: column; }
+.cf-newmsg-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  align-items: center;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  transition: background 120ms;
+}
+.cf-newmsg-row:hover { background: var(--paper-2); }
+.cf-newmsg-row.on, .cf-newmsg-row.on:hover { background: var(--bloom-50); }
+.cf-newmsg-row:focus-visible { outline: none; box-shadow: var(--ring); }
+.cf-newmsg-meta { flex: 1; min-width: 0; }
+.cf-newmsg-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.cf-newmsg-handle { font-size: 11px; color: var(--ink-3); }
+.cf-newmsg-check {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid var(--ink-5);
+  background: transparent;
+  color: var(--fg-on-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cf-newmsg-row.on .cf-newmsg-check {
+  border-color: var(--bloom);
+  background: var(--bloom);
+}
+
+/* =========================================================================
+   AUTH MODAL - gradient header band + provider pills + OTP grid
+   Ported from styles.css (.auth-method, .auth-divider, .otp-row, .otp-cell)
+   and the panels-social.jsx AuthModal (gradient header + moss teardrop).
+   ========================================================================= */
+.cf-auth-header {
+  padding: 28px 28px 22px;
+  background: var(--paper);
+  text-align: center;
+  position: relative;
+}
+.cf-auth-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 32px; height: 32px;
+  border: none;
+  background: var(--glass-soft);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-2);
+  transition: background 120ms;
+}
+.cf-auth-close:hover { background: var(--glass-soft-hover); color: var(--ink); }
+.cf-auth-back {
+  position: absolute;
+  top: 14px; left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: background 120ms, color 120ms;
+}
+.cf-auth-back:hover { background: var(--glass-soft); color: var(--ink); }
+.cf-auth-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.cf-auth-sub {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin: 0;
+  line-height: 1.45;
+}
+.cf-auth-body { padding: 18px 28px 22px; }
+.cf-auth-methods { display: flex; flex-direction: column; gap: 8px; }
+
+.auth-method {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 120ms, transform 120ms;
+}
+.auth-method:hover { background: var(--paper-2); transform: translateY(-1px); }
+.auth-method:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.auth-method.apple { background: #000; color: #fff; border-color: #000; }
+.auth-method.apple:hover { background: #1a1a1a; }
+.auth-method.email-pill { background: var(--paper-2); }
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+  color: var(--ink-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.auth-divider::before, .auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ink-5);
+}
+.cf-auth-trust {
+  font-size: 11px;
+  color: var(--ink-3);
+  text-align: center;
+  margin-top: 14px;
+  line-height: 1.5;
+}
+.cf-auth-form { display: flex; flex-direction: column; gap: 12px; }
+.cf-auth-email-input {
+  font-size: 16px;
+  padding: 14px 16px;
+}
+
+/* OTP 6-cell grid. */
+.otp-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.otp-cell {
+  width: 44px; height: 54px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 24px;
+  text-align: center;
+  color: var(--ink);
+  outline: none;
+}
+.otp-cell:focus {
+  border-color: var(--bloom);
+  box-shadow: var(--ring);
+}
+.cf-auth-resend {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 4px;
+}
+.cf-auth-resend button {
+  background: none;
+  border: none;
+  color: var(--bloom);
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+}
+.cf-auth-resend button:disabled { opacity: 0.5; cursor: not-allowed; color: var(--ink-3); }
+.cf-auth-error {
+  font-size: 13px;
+  color: var(--bloom-700);
+  text-align: center;
+  margin: 0;
+}
+
+/* ---- Universal map: brand teardrop pin markers (MapLibre custom markers) - */
+.pi-map-pin {
+  position: relative;
+  cursor: pointer;
+  filter: drop-shadow(0 5px 6px var(--pin-glow, rgba(26,23,20,0.3)));
+  transition: transform 160ms var(--ease-spring), filter 160ms var(--ease-out);
+  transform-origin: 50% 100%;
+}
+.pi-map-pin img { display: block; width: 100%; height: auto; pointer-events: none; }
+.pi-map-pin:hover { transform: translateY(-2px) scale(1.08); }
+.pi-cleanup-pin .pi-cleanup-count {
+  position: absolute;
+  top: -6px; right: -7px;
+  min-width: 18px; height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--fg-on-inverse);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 18px;
+  text-align: center;
+  border: 1.5px solid var(--card);
+  box-shadow: var(--shadow-2);
+  font-feature-settings: "tnum";
+}
+
+/* MapLibre cluster bubble, styled to the brand. */
+.pi-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--card);
+  border: 2px solid var(--ink-5);
+  box-shadow: var(--shadow-2);
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* MapLibre control + attribution styling now lives solely in app/globals.css, orientation-gated so the
+   bottom-left offset clears the landscape rail + card in landscape only. The copy that used to live here
+   applied that offset UNCONDITIONALLY (and the <=720px block below repositioned the controls for the
+   old 56vh DOM sheet), which fought the orientation-selected shell - both were removed. */
+
+/* =========================================================================
+   NARROW (<=720px)
+   What is left of the old "sidebar becomes a bottom sheet" block. The sheet it
+   described is gone: narrow viewports render the shared CompactShell (a
+   react-native-web surface with its own detents), not a 56vh .side-panel, and
+   the top bar it also retuned was the ported DOM chrome the shared MapControls
+   replaced. Every rule for those - and the no-op `.cf-map { left: 0 }`, which
+   only ever undid a sidebar offset the base rule (`inset: 0`) no longer has -
+   went with them. The auth modal is still real DOM, so its rule stays.
+   ========================================================================= */
+@media (max-width: 720px) {
+  .modal-card {
+    width: calc(100vw - 16px);
+    max-width: 100%;
+    border-radius: 22px;
+  }
+}
+
+/* ---- Inline middot separator (ASCII-safe) ------------------------------ */
+/* A small round dot used between inline meta runs (time, place, counts) where
+   the design renders a middot glyph. Reproduces the look with a styled element
+   so the source stays ASCII-only. Decorative: always pair with aria-hidden. */
+.cf-dot {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin: 0 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* `.side-panel *` was dropped with the class itself - the landscape card is a react-native-web surface
+     now, and it reads `prefers-reduced-motion` in JS (theme/motion) rather than through this sweep. */
+  .cf-design *, .top-bar *, .pi-map-pin, .cf-thread * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* =========================================================================
+   DARK SCHEME
+   Every color-bearing custom property above, re-stated for the dark scheme. The values are the
+   SAME hexes the shared dark theme uses (@civfix/shared tokens `darkColor` / `darkShadow`, plus the
+   scheme extras in @civfix/ui theme/schemes.ts), so the host CSS and the react-native-web components
+   that mount inside it cannot disagree. Note the tint ramps INVERT in dark (a *-700 is the LIGHTEST
+   step): rules that fill with --ink or a *-700 therefore read their foreground from
+   --fg-on-inverse, which flips to near-black here.
+
+   The `.dark` class is put on <html> before first paint by the inline script in app/layout.tsx and
+   kept in sync by ThemeDomBinding (components/providers.tsx). :root.dark outranks the :root block.
+   ========================================================================= */
+:root.dark {
+  --bloom-50:  #3A211E;
+  --bloom-100: #4C2A26;
+  --bloom-300: #B25549;
+  --bloom:     #F4796C;
+  --bloom-600: #F79185;
+  --bloom-700: #FAB0A7;
+
+  --moss-50:   #1F2E1D;
+  --moss-100:  #2A3F27;
+  --moss-300:  #5E8F57;
+  --moss:      #78B56E;
+  --moss-600:  #93C78A;
+  --moss-700:  #A9D6A1;
+
+  --sun-50:    #332A14;
+  --sun-100:   #4A3C18;
+  --sun-300:   #B08A28;
+  --sun:       #E3B138;
+  --sun-600:   #F0C455;
+  --sun-700:   #F5D27A;
+
+  --sky-50:    #1B2733;
+  --sky-100:   #243646;
+  --sky-300:   #5A87B0;
+  --sky:       #8BB9E2;
+  --sky-600:   #A6CAEA;
+  --sky-700:   #C2DBF1;
+
+  --lilac-50:  #2B2438;
+  --lilac-100: #3A2F4C;
+  --lilac-300: #7B63B0;
+  --lilac:     #AE95E2;
+  --lilac-600: #C3B0EB;
+
+  --paper:    #17130E;
+  --paper-2:  #211C15;
+  --card:     #2A241C;
+  --card-tint:#332C22;
+
+  --ink:      #F1EAE0;
+  --ink-2:    #BDB4A4;
+  --ink-3:    #948C7F;
+  --ink-4:    #4F473C;
+  --ink-5:    #332D25;
+
+  --border-soft:   rgba(255,255,255,0.07);
+  --border:        rgba(255,255,255,0.12);
+  --border-strong: rgba(255,255,255,0.18);
+
+  --cat-trash:      #A89C8E;
+  --cat-recycling:  #78B56E;
+  --cat-graffiti:   #B79FE6;
+  --cat-hazard:     #F4796C;
+  --cat-cleanup:    #E3B138;
+  --cat-water:      #8BB9E2;
+
+  --glass:            rgba(42,36,28,0.96);
+  --glass-hover:      #352E24;
+  --glass-soft:       rgba(255,255,255,0.08);
+  --glass-soft-hover: rgba(255,255,255,0.14);
+  --glass-strong:     rgba(42,36,28,0.92);
+  --scrim:            rgba(0,0,0,0.50);
+  --track:            rgba(255,255,255,0.22);
+  --fg-on-inverse:    #17130E;
+  --fg-on-color:      #17130E;
+  --accent-fg:        #17130E;
+
+  --shadow-1: 0 1px 0 rgba(0,0,0,0.25),
+              0 1px 2px rgba(0,0,0,0.35);
+
+  --shadow-2: 0 1px 0 rgba(0,0,0,0.2),
+              0 2px 4px rgba(0,0,0,0.3),
+              0 8px 16px -6px rgba(0,0,0,0.45);
+
+  --shadow-3: 0 1px 0 rgba(0,0,0,0.2),
+              0 4px 8px rgba(0,0,0,0.35),
+              0 18px 32px -10px rgba(0,0,0,0.55);
+
+  --shadow-4: 0 2px 4px rgba(0,0,0,0.35),
+              0 12px 20px rgba(0,0,0,0.45),
+              0 32px 56px -16px rgba(0,0,0,0.65);
+
+  --sheen-top: inset 0 1px 0 rgba(255,255,255,0.08);
+
+  --shadow-pin: 0 6px 10px -2px rgba(244,121,108,0.45),
+                0 2px 4px rgba(0,0,0,0.50);
+
+  --ring: 0 0 0 3px rgba(244,121,108,0.40);
+}
+
+/* The one fill that is a vendor mark rather than a token: Apple's sign-in pill is black-on-light and
+   white-on-dark per Apple's own guidelines, so it inverts instead of following --card. */
+.dark .auth-method.apple {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.dark .auth-method.apple:hover { background: var(--ink-2); }

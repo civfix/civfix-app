@@ -1,0 +1,127 @@
+{
+  "signedOut": {
+    "title": "Sign in to manage your account",
+    "body": "Your handle, social links, data export and account deletion live here."
+  },
+  "error": {
+    "title": "Could not load your account",
+    "body": "We could not reach civfix. Check your connection and try again."
+  },
+  "section": {
+    "identity": "Identity",
+    "data": "Your data"
+  },
+  "avatar": {
+    "change": "Profile photo",
+    "sub": "Tap to choose a new photo",
+    "uploading": "Uploading...",
+    "change_a11y": "Change profile photo",
+    "error": {
+      "rejected": "That photo couldn't be used. Try a different image.",
+      "rate_limited": "Too many tries. Wait a moment and try again.",
+      "generic": "Couldn't update your photo. Try again."
+    }
+  },
+  "name": {
+    "change": "Display name",
+    "note": "This is the name neighbors see on your profile.",
+    "placeholder": "Your name",
+    "field_label": "Display name",
+    "save": "Save name",
+    "cancel": "Cancel",
+    "hint": {
+      "length": "Use 1-80 characters.",
+      "current": "This is your current name."
+    },
+    "error": {
+      "generic": "Couldn't save your name. Try again."
+    },
+    "dismiss": "Close the display name editor"
+  },
+  "bio": {
+    "label": "Bio",
+    "add": "Add a bio",
+    "note": "Tell your neighbors a little about yourself.",
+    "placeholder": "Tell your neighbors a little about yourself.",
+    "field_label": "Bio",
+    "count": "{{current}}/{{max}}",
+    "save": "Save bio",
+    "cancel": "Cancel",
+    "dismiss": "Close the bio editor",
+    "error": {
+      "generic": "Couldn't save your bio. Try again."
+    }
+  },
+  "email": {
+    "label": "Email",
+    "none": "No email on file"
+  },
+  "handle": {
+    "change": "Change handle",
+    "set": "Set a handle",
+    "placeholder": "handle",
+    "field_label": "Handle",
+    "save": "Save handle",
+    "cancel": "Cancel",
+    "cooldown_note": "You can only change your handle once every 30 days.",
+    "cooldown_locked": "You can change your handle once every 30 days - next change on {{date}}.",
+    "hint": {
+      "choose": "Choose a handle 3-20 characters.",
+      "invalid_format": "Use 3-20 letters, numbers, or underscores.",
+      "current": "This is your current handle.",
+      "checking": "Checking availability...",
+      "available": "Available"
+    },
+    "availability": {
+      "reserved": "That handle is reserved.",
+      "invalid": "That handle isn't allowed.",
+      "taken": "That handle is taken."
+    },
+    "error": {
+      "rate_limited": "You can only change your handle once every 30 days. Try again later.",
+      "taken": "That handle is taken.",
+      "not_allowed": "That handle isn't allowed.",
+      "generic": "We couldn't change your handle right now. Please try again."
+    },
+    "dismiss": "Close the handle editor"
+  },
+  "social": {
+    "title": "Social links",
+    "add": "Add your social links",
+    "count_one": "{{count}} link added",
+    "count_other": "{{count}} links added",
+    "note": "Enter just your username for each (number for WhatsApp) - we'll build the link.",
+    "placeholder_handle": "username",
+    "placeholder_phone": "phone number",
+    "save": "Save links",
+    "error": {
+      "invalid": "Check your entries - use just your username, no links or spaces.",
+      "save": "Could not save your links. Check your connection and try again."
+    },
+    "dismiss": "Close the social links editor"
+  },
+  "data_export": {
+    "request": "Request my data",
+    "requesting": "Requesting...",
+    "request_a11y": "Request a copy of my data",
+    "sub": "We'll email you a copy",
+    "note": {
+      "success_email": "We emailed a copy of your data to {{email}}.",
+      "success": "We'll email you a copy of your data."
+    },
+    "announce": {
+      "success_email": "We've emailed a copy of your data to {{email}}.",
+      "success": "We've emailed a copy of your data.",
+      "failed": "Data export failed."
+    },
+    "error": {
+      "no_email": "Add and verify an email address to your account first, then try again.",
+      "rate_limited": "Too many requests. Please wait a bit and try again.",
+      "generic": "We couldn't send your data export right now. Please try again."
+    }
+  },
+  "delete_account": {
+    "label": "Delete account",
+    "sub": "Permanently remove your civfix account"
+  }
+}

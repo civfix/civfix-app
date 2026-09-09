@@ -1,0 +1,60 @@
+{
+  "add_media_a11y": "Add a photo or video",
+  "section": {
+    "events": "Your events",
+    "reports": "Your reports",
+    "show_more": "Show more",
+    "show_more_count": "Show more ({{count}})",
+    "show_fewer": "Show fewer"
+  },
+  "pills": {
+    "event": "Event",
+    "report": "Report",
+    "event_a11y": "Attach an event",
+    "report_a11y": "Attach a report"
+  },
+  "empty_events": "Events you attend or host will appear here.",
+  "empty_reports": "Reports you file will appear here.",
+  "mode": {
+    "post": {
+      "title": "New post",
+      "placeholder": "Share an update with your neighborhood..."
+    },
+    "reply": {
+      "title": "Reply",
+      "placeholder": "Write a reply..."
+    },
+    "quote": {
+      "title": "Quote post",
+      "placeholder": "Add your take..."
+    }
+  },
+  "action": {
+    "post": "Post",
+    "reply": "Reply",
+    "posting": "Posting..."
+  },
+  "input_a11y": "Post message",
+  "close_a11y": "Close composer",
+  "submit_error": "Post couldn't be published. Try again.",
+  "media_dropped": "Some attachments didn't finish uploading. Add them again.",
+  "reply": {
+    "placeholder_named": "Post your reply",
+    "context": "Replying to {{handle}}",
+    "signed_out": "Sign in to reply",
+    "attach_a11y": "Add to your reply",
+    "expand_a11y": "Write a reply",
+    "chars_left": "{{count}} left",
+    "remove_event_a11y": "Remove the attached event",
+    "remove_report_a11y": "Remove the attached report"
+  },
+  "attach": {
+    "title": "Add to your reply",
+    "photo": "Photo or video",
+    "camera": "Camera",
+    "event": "Attach an event",
+    "report": "Attach a report",
+    "back": "Back",
+    "dismiss": "Dismiss"
+  }
+}

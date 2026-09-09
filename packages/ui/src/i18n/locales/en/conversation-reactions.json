@@ -1,0 +1,15 @@
+{
+  "label": {
+    "like": "Like",
+    "heart": "Love",
+    "celebrate": "Celebrate",
+    "support": "Support",
+    "insightful": "Insightful",
+    "concerned": "Concerned",
+    "laugh": "Laugh",
+    "sad": "Sad"
+  },
+  "chip": {
+    "a11y": "{{label}}, {{count}}"
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "export_csv": "Exportar CSV",
+  "tab": {
+    "label": "Sección de estadísticas",
+    "registration": "Inscripción",
+    "attendance": "Asistencia",
+    "messaging": "Mensajes",
+    "page": "Página de inscripción"
+  },
+  "range": {
+    "label": "Periodo",
+    "7d": "7 días",
+    "30d": "30 días",
+    "90d": "90 días",
+    "all": "Hasta un año",
+    "whole_event": "Todo el evento"
+  },
+  "kpi": {
+    "registered": "Inscritos",
+    "checked_in": "Registrados",
+    "check_in_rate": "Tasa de registro",
+    "page_views": "Visitas a la página"
+  },
+  "funnel": {
+    "a11y": "De la visita a la página al registro de entrada"
+  },
+  "suppressed": {
+    "explain": "Oculto porque en este grupo hay menos de {{k}} personas.",
+    "note": "Los grupos de menos de {{k}} personas se ocultan. Una celda en blanco no es un cero.",
+    "panel": "Este desglose está oculto porque los grupos tienen menos de {{k}} personas.",
+    "point": "Oculto (grupo demasiado pequeño)"
+  },
+  "registration": {
+    "over_time": "Inscripciones a lo largo del tiempo",
+    "over_time_a11y": "Inscripciones nuevas y acumuladas por día",
+    "new": "Nuevas",
+    "cumulative": "Acumuladas",
+    "cancellations": "Cancelaciones",
+    "cancellations_a11y": "Cancelaciones por día",
+    "cancelled": "Canceladas",
+    "breakdowns": "Desgloses",
+    "by_ticket_type": "Por tipo de entrada",
+    "by_audience": "Miembros e invitados"
+  },
+  "attendance": {
+    "arrivals": "Cuándo llegó la gente",
+    "arrivals_hint": "Minutos respecto al inicio del evento; los valores negativos son llegadas anticipadas. Este gráfico siempre cubre todo el evento, sea cual sea el periodo elegido.",
+    "arrivals_a11y": "Registros de entrada por minutos desde el inicio del evento",
+    "arrivals_value": "Registros de entrada",
+    "minute": "{{minutes}} min",
+    "rates": "Tasas",
+    "check_in_rate": "Tasa de registro",
+    "no_show_rate": "Tasa de ausencias",
+    "breakdowns": "Desgloses",
+    "by_ticket_type": "Por tipo de entrada",
+    "by_slot": "Por turno"
+  },
+  "messaging": {
+    "totals": "Mensajes",
+    "active_days": "Días con envíos",
+    "recipients": "Destinatarios",
+    "unsubscribes": "Bajas",
+    "no_tracking": "civfix no rastrea aperturas ni clics, así que aquí no hay nada que mostrar.",
+    "by_channel": "Por canal",
+    "by_channel_a11y": "Enviados, fallidos y suprimidos por canal",
+    "sent": "Enviados",
+    "failed": "Fallidos",
+    "suppressed": "Suprimidos",
+    "over_time": "Envíos a lo largo del tiempo",
+    "over_time_a11y": "Envíos por día",
+    "sends": "Envíos"
+  },
+  "page": {
+    "views": "Visitas a la página",
+    "views_a11y": "Visitas diarias a la página de inscripción",
+    "by_source": "De dónde llegaron las visitas",
+    "donation_clicks": "Clics en donar"
+  },
+  "csv": {
+    "source": "Fuente",
+    "reference": "Referencia del evento",
+    "generated_at": "Generado",
+    "filters": "Filtros",
+    "none": "ninguno",
+    "suppression_k": "Umbral de supresión (k)",
+    "note": "Nota",
+    "k_note": "Las celdas en blanco están ocultas porque el grupo tiene menos de {{k}} personas. Un blanco no es un cero.",
+    "day": "Día",
+    "registrations": "Inscripciones",
+    "cumulative": "Acumuladas",
+    "minute_offset": "Minutos desde el inicio",
+    "arrivals": "Registros de entrada",
+    "channel": "Canal",
+    "sent": "Enviados",
+    "failed": "Fallidos",
+    "suppressed": "Suprimidos",
+    "page_views": "Visitas a la página"
+  }
+}

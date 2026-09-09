@@ -1,0 +1,37 @@
+{
+  "back": "Atrás",
+  "close": "Cerrar",
+  "choices": {
+    "title": "Bienvenido a civfix",
+    "subtitle": "Únete a eventos, sigue novedades y escribe a tus vecinos. Sin contraseñas: elige cómo quieres entrar.",
+    "continue_apple": "Continuar con Apple",
+    "continue_google": "Continuar con Google",
+    "divider": "O",
+    "continue_email": "Continuar con correo",
+    "trust": "civfix es una organización sin fines de lucro. Nunca vendemos tus datos."
+  },
+  "email": {
+    "title": "¿Cuál es tu correo?",
+    "subtitle": "Te enviamos un código de 6 dígitos. Sin contraseña que recordar.",
+    "placeholder": "tu@correo.com",
+    "aria_label": "Dirección de correo electrónico",
+    "submit": "Enviarme un código"
+  },
+  "code": {
+    "title": "Revisa tu bandeja",
+    "subtitle": "Código enviado a <0>{{email}}</0> — vence en 5 min",
+    "group_aria_label": "Código de verificación de 6 dígitos",
+    "digit_aria_label": "Dígito {{position}}",
+    "verifying": "Verificando...",
+    "verify": "Verificar código",
+    "resend_prompt": "¿No lo recibiste?",
+    "resend": "Reenviar",
+    "resend_countdown": "Reenviar en {{count}}s",
+    "use_different_email": "Usar otro correo"
+  },
+  "errors": {
+    "VALIDATION": "Ese código no parece correcto. Revísalo e inténtalo de nuevo.",
+    "RATE_LIMITED": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+    "UNAUTHORIZED": "Ese código no es válido o ha vencido. Solicita uno nuevo."
+  }
+}

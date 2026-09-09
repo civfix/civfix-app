@@ -1,0 +1,10 @@
+{
+  "button": {
+    "label": "공유",
+    "accessibilityLabel": "이 항목 공유",
+    "copied": "링크 복사됨"
+  },
+  "sheet": {
+    "message": "{{title}}\n{{url}}"
+  }
+}

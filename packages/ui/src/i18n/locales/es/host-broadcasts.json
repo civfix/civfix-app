@@ -1,0 +1,158 @@
+{
+  "state": {
+    "error_title": "La mensajería no está disponible",
+    "error_body": "No pudimos cargar este evento. Revisa tu conexión e inténtalo de nuevo.",
+    "denied_title": "No puedes enviar mensajes",
+    "denied_body": "Solo los anfitriones del evento pueden escribir a los asistentes."
+  },
+  "quick": {
+    "caption": "Un mensaje corto para la gente de tu evento. Solo en la app y por notificación.",
+    "subject_label": "Asunto",
+    "subject_placeholder": "¿De qué se trata?",
+    "body_label": "Mensaje",
+    "body_placeholder": "Escribe tu mensaje…",
+    "markdown_hint": "Puedes usar **negrita**, *cursiva*, enlaces y listas.",
+    "preview": "Vista previa",
+    "edit": "Editar",
+    "preview_on_a11y": "Ver la vista previa del mensaje",
+    "preview_off_a11y": "Volver a editar el mensaje",
+    "preview_empty": "Todavía no hay nada que previsualizar.",
+    "audience_label": "Quién lo recibe",
+    "send": "Enviar ahora",
+    "retry_note": "Al enviar de nuevo se reutiliza el mismo borrador y se aplican los cambios que hayas hecho. No puede enviarse dos veces.",
+    "discard": "Descartar borrador",
+    "discard_already_sending": "Ese mensaje ya empezó a enviarse, así que no se puede descartar.",
+    "edits_lost": "La versión anterior de este mensaje ya se envió. Los cambios que acabas de hacer no se enviaron.",
+    "channels_note": "Se envía en la app y como notificación. El correo y la programación están en el panel de anfitrión."
+  },
+  "toast": {
+    "sent": "Tu mensaje está en camino.",
+    "discarded": "Borrador descartado."
+  },
+  "error": {
+    "rate_limited": "Has enviado muchos mensajes hace poco. Espera antes de enviar otro.",
+    "forbidden": "No tienes permiso para escribir a este evento.",
+    "conflict": "Este evento está cerrado a mensajes.",
+    "validation": "Revisa el asunto, el mensaje y los enlaces.",
+    "held": "Este mensaje quedó retenido para revisión.",
+    "generic": "No se pudo enviar tu mensaje. Inténtalo de nuevo."
+  },
+  "confirm": {
+    "title": "¿Enviar este mensaje?",
+    "subject": "Asunto: {{subject}}",
+    "body": "Se enviará ahora a {{audience}}, en la app y como notificación. No se puede deshacer.",
+    "send": "Enviar",
+    "cancel": "Volver",
+    "dismiss_a11y": "Cerrar la confirmación de envío"
+  },
+  "cancelled": "Mensaje cancelado",
+  "list": {
+    "title": "Mensajes",
+    "hint": "civfix retransmite tu mensaje. Nunca ves la dirección de un asistente, y cualquiera puede darse de baja de estos mensajes.",
+    "new": "Nuevo mensaje",
+    "untitled": "Mensaje sin asunto",
+    "open": "Abrir {{subject}}",
+    "deliveries": "Envíos",
+    "counts": "{{sent}} de {{recipients}} enviados",
+    "failed_one": "{{count}} fallido",
+    "failed_other": "{{count}} fallidos",
+    "empty_title": "Todavía no hay mensajes",
+    "empty_body": "Envía una novedad, un recordatorio o un agradecimiento a quienes se han inscrito."
+  },
+  "composer": {
+    "subject": "Asunto",
+    "body": "Mensaje",
+    "body_hint": "Solo negrita, cursiva, enlaces y listas. Los enlaces deben ser https.",
+    "cta_label": "Texto del botón",
+    "cta_url": "Enlace del botón",
+    "cta_url_hint": "Debe empezar por https://",
+    "audience": "Quién lo recibe",
+    "audience_ticket_types": "Tipos de entrada",
+    "audience_slots": "Turnos",
+    "slots_members_only": "Los invitados no ocupan turnos, así que una audiencia por turno llega solo a los miembros.",
+    "channels": "Canales",
+    "preview": "Vista previa",
+    "recipients": "{{count}} personas recibirán esto",
+    "test_send": "Enviar una prueba",
+    "test_sent": "Prueba enviada a tu cuenta",
+    "test_cap": "Has agotado los envíos de prueba de esta hora.",
+    "test_rate_limited": "Has alcanzado el límite de envíos de prueba de esta hora.",
+    "send": "Enviar ahora",
+    "sending": "Enviando…",
+    "saved": "Borrador guardado",
+    "schedule": "Programar",
+    "schedule_at": "Fecha de envío",
+    "schedule_action": "Programar",
+    "scheduled": "Mensaje programado",
+    "scheduled_for": "Programado para {{when}}",
+    "error_subject": "Añade un asunto.",
+    "error_body": "Escribe el mensaje.",
+    "error_audience": "Elige quién lo recibe.",
+    "error_channels": "Elige al menos un canal."
+  },
+  "audience": {
+    "all_registered": "Todos los inscritos",
+    "ticket_types": "Por tipo de entrada",
+    "slots": "Por turno",
+    "waitlist": "Lista de espera",
+    "checked_in": "Registrados",
+    "not_checked_in": "Sin registrar",
+    "guests_only": "Solo invitados"
+  },
+  "channel": {
+    "inapp": "En la app",
+    "push": "Notificación",
+    "email": "Correo"
+  },
+  "delivery_status": {
+    "pending": "Pendiente",
+    "in_flight": "Enviando",
+    "sent": "Enviado",
+    "failed": "Fallido",
+    "suppressed": "Suprimido",
+    "skipped": "Omitido"
+  },
+  "suppression": {
+    "unsubscribed": "se dio de baja",
+    "muted": "silenció este evento",
+    "prefs_off": "lo desactivó",
+    "stop_listed": "pidió no recibir mensajes",
+    "bounce_suppressed": "la dirección rebotó",
+    "no_contact": "sin contacto registrado",
+    "contact_scrubbed": "contacto eliminado",
+    "kill_switch": "envíos detenidos",
+    "banned": "expulsado del evento",
+    "deleted_user": "cuenta eliminada",
+    "cap": "límite diario alcanzado"
+  },
+  "failure": {
+    "transient": "problema temporal",
+    "permanent": "imposible de entregar",
+    "auth": "envío no autorizado",
+    "oversize": "mensaje demasiado grande",
+    "unknown": "problema desconocido"
+  },
+  "deliveries": {
+    "title": "Envíos",
+    "filter": "Estado del envío",
+    "all": "Todos",
+    "not_sent": "Sin enviar",
+    "attempts": "{{n}} intentos",
+    "privacy_note": "Los envíos solo registran si un mensaje salió. civfix no guarda aquí ninguna dirección ni copia del contenido, y quien se dio de baja nunca aparece en esta lista.",
+    "empty_title": "Todavía no hay envíos",
+    "empty_body": "Los envíos aparecen en cuanto el mensaje empieza a salir."
+  },
+  "send_confirm": {
+    "title": "¿Enviar este mensaje?",
+    "body": "Llega a {{count}} personas y no se puede recuperar.",
+    "banner": "A partir de este mensaje, cualquier destinatario puede darse de baja de los tuyos.",
+    "agreement": "He leído el mensaje y quiero enviarlo ahora.",
+    "confirm": "Enviar"
+  },
+  "cancel_confirm": {
+    "title": "¿Cancelar este mensaje?",
+    "body": "Lo que ya se ha enviado sigue enviado.",
+    "banner": "Los envíos pendientes se detienen y quedan registrados como suprimidos.",
+    "confirm": "Cancelar el mensaje"
+  }
+}

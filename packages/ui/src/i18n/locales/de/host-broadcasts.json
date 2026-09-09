@@ -1,0 +1,158 @@
+{
+  "state": {
+    "error_title": "Nachrichten sind nicht verfügbar",
+    "error_body": "Wir konnten diese Veranstaltung nicht laden. Prüfe deine Verbindung und versuche es erneut.",
+    "denied_title": "Keine Berechtigung zum Schreiben",
+    "denied_body": "Nur die Hosts der Veranstaltung können Teilnehmenden schreiben."
+  },
+  "quick": {
+    "caption": "Eine kurze Nachricht an die Leute bei deiner Veranstaltung. Nur in der App und als Push.",
+    "subject_label": "Betreff",
+    "subject_placeholder": "Worum geht es?",
+    "body_label": "Nachricht",
+    "body_placeholder": "Schreibe deine Nachricht…",
+    "markdown_hint": "Du kannst **fett**, *kursiv*, Links und Listen verwenden.",
+    "preview": "Vorschau",
+    "edit": "Bearbeiten",
+    "preview_on_a11y": "Vorschau der Nachricht anzeigen",
+    "preview_off_a11y": "Zurück zum Bearbeiten der Nachricht",
+    "preview_empty": "Noch nichts zum Anzeigen.",
+    "audience_label": "Wer das bekommt",
+    "send": "Jetzt senden",
+    "retry_note": "Erneutes Senden verwendet denselben Entwurf und übernimmt deine Änderungen. Sie kann nicht zweimal rausgehen.",
+    "discard": "Entwurf verwerfen",
+    "discard_already_sending": "Diese Nachricht wird bereits gesendet und lässt sich nicht mehr verwerfen.",
+    "edits_lost": "Die frühere Fassung dieser Nachricht ist bereits rausgegangen. Deine gerade gemachten Änderungen wurden nicht gesendet.",
+    "channels_note": "Wird in der App und als Push gesendet. E-Mail und Zeitplanung findest du im Host-Dashboard."
+  },
+  "toast": {
+    "sent": "Deine Nachricht ist unterwegs.",
+    "discarded": "Entwurf verworfen."
+  },
+  "error": {
+    "rate_limited": "Du hast in letzter Zeit viele Nachrichten gesendet. Bitte warte, bevor du eine weitere sendest.",
+    "forbidden": "Du hast keine Berechtigung, dieser Veranstaltung zu schreiben.",
+    "conflict": "Für diese Veranstaltung sind Nachrichten geschlossen.",
+    "validation": "Bitte prüfe Betreff, Nachricht und die Links.",
+    "held": "Diese Nachricht wurde zur Prüfung zurückgehalten.",
+    "generic": "Deine Nachricht konnte nicht gesendet werden. Bitte versuche es erneut."
+  },
+  "confirm": {
+    "title": "Diese Nachricht senden?",
+    "subject": "Betreff: {{subject}}",
+    "body": "Sie geht jetzt an {{audience}} - in der App und als Push. Sie lässt sich nicht zurückholen.",
+    "send": "Senden",
+    "cancel": "Zurück",
+    "dismiss_a11y": "Sendebestätigung schließen"
+  },
+  "cancelled": "Nachricht abgebrochen",
+  "list": {
+    "title": "Nachrichten",
+    "hint": "civfix leitet deine Nachricht weiter. Du siehst nie die Adresse einer teilnehmenden Person, und alle können sich jederzeit abmelden.",
+    "new": "Neue Nachricht",
+    "untitled": "Nachricht ohne Betreff",
+    "open": "{{subject}} öffnen",
+    "deliveries": "Zustellungen",
+    "counts": "{{sent}} von {{recipients}} gesendet",
+    "failed_one": "{{count}} fehlgeschlagen",
+    "failed_other": "{{count}} fehlgeschlagen",
+    "empty_title": "Noch keine Nachrichten",
+    "empty_body": "Schick den Angemeldeten ein Update, eine Erinnerung oder ein Dankeschön."
+  },
+  "composer": {
+    "subject": "Betreff",
+    "body": "Nachricht",
+    "body_hint": "Nur fett, kursiv, Links und Listen. Links müssen https sein.",
+    "cta_label": "Beschriftung der Schaltfläche",
+    "cta_url": "Link der Schaltfläche",
+    "cta_url_hint": "Muss mit https:// beginnen",
+    "audience": "Wer das bekommt",
+    "audience_ticket_types": "Ticketarten",
+    "audience_slots": "Schichten",
+    "slots_members_only": "Gäste übernehmen keine Schichten, deshalb erreicht eine Schicht-Zielgruppe nur Mitglieder.",
+    "channels": "Kanäle",
+    "preview": "Vorschau",
+    "recipients": "{{count}} Personen erhalten das",
+    "test_send": "Testnachricht senden",
+    "test_sent": "Test an dich gesendet",
+    "test_cap": "Du hast die Testsendungen dieser Stunde aufgebraucht.",
+    "test_rate_limited": "Du hast das Limit für Testsendungen in dieser Stunde erreicht.",
+    "send": "Jetzt senden",
+    "sending": "Wird gesendet…",
+    "saved": "Entwurf gespeichert",
+    "schedule": "Planen",
+    "schedule_at": "Sendezeitpunkt",
+    "schedule_action": "Planen",
+    "scheduled": "Nachricht geplant",
+    "scheduled_for": "Geplant für {{when}}",
+    "error_subject": "Gib einen Betreff ein.",
+    "error_body": "Schreibe die Nachricht.",
+    "error_audience": "Wähle aus, wer das bekommt.",
+    "error_channels": "Wähle mindestens einen Kanal."
+  },
+  "audience": {
+    "all_registered": "Alle Angemeldeten",
+    "ticket_types": "Nach Ticketart",
+    "slots": "Nach Schicht",
+    "waitlist": "Warteliste",
+    "checked_in": "Eingecheckt",
+    "not_checked_in": "Nicht eingecheckt",
+    "guests_only": "Nur Gäste"
+  },
+  "channel": {
+    "inapp": "In der App",
+    "push": "Push",
+    "email": "E-Mail"
+  },
+  "delivery_status": {
+    "pending": "Ausstehend",
+    "in_flight": "Wird gesendet",
+    "sent": "Gesendet",
+    "failed": "Fehlgeschlagen",
+    "suppressed": "Unterdrückt",
+    "skipped": "Übersprungen"
+  },
+  "suppression": {
+    "unsubscribed": "hat sich abgemeldet",
+    "muted": "hat diese Veranstaltung stummgeschaltet",
+    "prefs_off": "hat das deaktiviert",
+    "stop_listed": "hat Nachrichten gestoppt",
+    "bounce_suppressed": "Adresse nicht zustellbar",
+    "no_contact": "kein Kontakt hinterlegt",
+    "contact_scrubbed": "Kontakt gelöscht",
+    "kill_switch": "Versand gestoppt",
+    "banned": "aus der Veranstaltung entfernt",
+    "deleted_user": "Konto gelöscht",
+    "cap": "Tageslimit erreicht"
+  },
+  "failure": {
+    "transient": "vorübergehendes Problem",
+    "permanent": "dauerhaft nicht zustellbar",
+    "auth": "Zustellung nicht autorisiert",
+    "oversize": "Nachricht zu groß",
+    "unknown": "unbekanntes Problem"
+  },
+  "deliveries": {
+    "title": "Zustellungen",
+    "filter": "Zustellstatus",
+    "all": "Alle",
+    "not_sent": "Nicht gesendet",
+    "attempts": "{{n}} Versuche",
+    "privacy_note": "Zustellungen halten nur fest, ob eine Nachricht rausging. civfix speichert hier weder eine Adresse noch eine Kopie des Textes, und wer sich abgemeldet hat, taucht in dieser Liste nie auf.",
+    "empty_title": "Noch keine Zustellungen",
+    "empty_body": "Zustellungen erscheinen, sobald die Nachricht versendet wird."
+  },
+  "send_confirm": {
+    "title": "Diese Nachricht senden?",
+    "body": "Sie geht an {{count}} Personen und lässt sich nicht zurückholen.",
+    "banner": "Ab dieser Nachricht kann sich jede empfangende Person von deinen Nachrichten abmelden.",
+    "agreement": "Ich habe die Nachricht gelesen und möchte sie jetzt senden.",
+    "confirm": "Senden"
+  },
+  "cancel_confirm": {
+    "title": "Diese Nachricht abbrechen?",
+    "body": "Was bereits gesendet wurde, bleibt gesendet.",
+    "banner": "Ausstehende Zustellungen werden gestoppt und als unterdrückt vermerkt.",
+    "confirm": "Nachricht abbrechen"
+  }
+}

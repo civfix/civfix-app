@@ -1,0 +1,149 @@
+/*
+ * Self-hosted @font-face declarations for the web font contract.
+ *
+ * The unified @civfix/ui components render via react-native-web, which emits raw runtime names such as
+ * `font-family: "HankenGrotesk_600SemiBold"`. The web host registers those names and retains the legacy
+ * Manrope and Bricolage Grotesque aliases for compatibility, mapping every UI alias to the licensed
+ * Hanken Grotesk variable asset at an explicit weight. Baloo 2 remains a separate, brand-only face.
+ *
+ * Absolute /fonts/... URLs resolve identically in `next dev` and in the static export (output: "export")
+ * with no bundler URL rewriting. font-display: swap avoids blocking first paint.
+ */
+
+/* Hanken Grotesk - the variable UI face used directly by host CSS. */
+@font-face {
+  font-family: "HankenGrotesk";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+
+/* Current shared runtime aliases, each pinned to its intended variable-font weight. */
+@font-face {
+  font-family: "HankenGrotesk_400Regular";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "HankenGrotesk_500Medium";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "HankenGrotesk_600SemiBold";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "HankenGrotesk_700Bold";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "HankenGrotesk_800ExtraBold";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+
+/* Legacy shared display aliases, intentionally backed by Hanken Grotesk on web. */
+@font-face {
+  font-family: "BricolageGrotesque_400Regular";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "BricolageGrotesque_500Medium";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "BricolageGrotesque_600SemiBold";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "BricolageGrotesque_700Bold";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+
+/* Legacy shared body aliases, also backed by Hanken Grotesk on web. */
+@font-face {
+  font-family: "Manrope_400Regular";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Manrope_500Medium";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Manrope_600SemiBold";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Manrope_700Bold";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Manrope_800ExtraBold";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
+}
+
+/* JetBrains Mono (numeric / mono) */
+@font-face {
+  font-family: "JetBrainsMono_400Regular";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/JetBrainsMono_400Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrainsMono_500Medium";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/JetBrainsMono_500Medium.woff2") format("woff2");
+}
+
+/* Baloo 2 800 - the per-letter "civfix" wordmark */
+@font-face {
+  font-family: "Baloo2_800ExtraBold";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/fonts/Baloo2_800ExtraBold.woff2") format("woff2");
+}

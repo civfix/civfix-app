@@ -1,0 +1,21 @@
+{
+  "title": "Neuer Kanal",
+  "visibility_title": "Wer beitreten kann",
+  "add_members": "Abonnenten hinzufügen",
+  "subscriber_prompt": "Suche per @Handle, um Abonnenten zu deinem Kanal hinzuzufügen.",
+  "back_a11y": "Zurück",
+  "skip": "Überspringen",
+  "next": "Weiter",
+  "create": "Kanal erstellen",
+  "create_error": "Der Kanal konnte nicht erstellt werden. Bitte versuche es erneut.",
+  "name_label": "Kanalname",
+  "name_placeholder": "Benenne deinen Kanal",
+  "description_label": "Beschreibung (optional)",
+  "description_placeholder": "Worum geht es in diesem Kanal?",
+  "avatar_a11y": "Kanalfoto auswählen",
+  "avatar_clear_a11y": "Kanalfoto entfernen",
+  "private_label": "Privat",
+  "private_hint": "Nur Personen, die du hinzufügst, können ihn sehen",
+  "public_label": "Öffentlich",
+  "public_hint": "Jeder kann beitreten"
+}

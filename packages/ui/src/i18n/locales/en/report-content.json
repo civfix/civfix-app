@@ -1,0 +1,25 @@
+{
+  "title": "Report {{subject}}",
+  "prompt": "Why are you reporting this?",
+  "backdrop": {
+    "dismiss": "Dismiss report"
+  },
+  "reason": {
+    "spam": "Spam",
+    "harassment": "Harassment",
+    "hate": "Hate speech",
+    "sexual": "Sexual content",
+    "violence": "Violence",
+    "misinformation": "Misinformation",
+    "self_harm": "Self-harm",
+    "other": "Other"
+  },
+  "details": {
+    "placeholder": "Add details (optional)",
+    "a11y": "Report details (optional)"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "submit": "Submit"
+  }
+}

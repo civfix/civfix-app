@@ -1,0 +1,97 @@
+{
+  "brand": {
+    "home": "civfix 홈"
+  },
+  "layers": {
+    "toggle": "지도 레이어",
+    "events": "이벤트",
+    "eventsA11y": "이벤트 레이어",
+    "shown": "표시 중",
+    "hidden": "숨김",
+    "reports": "제보",
+    "reportsA11y": "제보 카테고리",
+    "summaryNone": "표시 안 함",
+    "summaryAll": "모든 카테고리",
+    "summarySome": "카테고리 {{total}}개 중 {{shown}}개",
+    "selectAll": "전체 선택",
+    "clearAll": "전체 해제",
+    "selectAllA11y": "모든 카테고리 선택",
+    "clearAllA11y": "모든 카테고리 해제",
+    "categoryPinsA11y": "{{category}} 핀",
+    "nearby_one": "근처 {{count}}개",
+    "nearby_other": "근처 {{count}}개"
+  },
+  "actions": {
+    "locate": "내 위치로 이동",
+    "notifications": "알림",
+    "reset": "초기화"
+  },
+  "appearance": {
+    "toggle": "화면 모드",
+    "dismiss": "화면 모드 메뉴 닫기"
+  },
+  "stack": {
+    "events": "이벤트 및 정화 활동",
+    "messages": "메시지",
+    "social": "이웃 찾기",
+    "reports": "내 제보",
+    "report": "문제 제보하기"
+  },
+  "profile": {
+    "signIn": "로그인",
+    "open": "내 프로필 보기"
+  },
+  "a11y": {
+    "attribution": "CARTO / OSM",
+    "miniMap": "위치를 표시하는 지도",
+    "homeMap": "제보 및 이벤트 지도",
+    "picker": "지도를 탭하여 위치 핀을 놓거나, 핀을 드래그하여 미세 조정하세요",
+    "userLocation": "내 위치"
+  },
+  "hint": {
+    "place": "지도를 탭하여 핀을 놓으세요",
+    "move": "탭하여 핀을 이동하세요",
+    "moveMainMap": "지도를 탭하여 핀을 이동하세요",
+    "empty": "아직 설정된 위치가 없습니다"
+  },
+  "pickStep": {
+    "title": "위치 설정",
+    "open": "지도에서 위치 선택",
+    "openA11y": "전체 지도에서 위치 선택",
+    "confirm": "이 위치 사용",
+    "confirmA11y": "선택한 위치 확인",
+    "cancel": "취소",
+    "cancelA11y": "위치 선택 취소",
+    "needPin": "먼저 지도를 탭하여 위치를 설정하세요"
+  },
+  "linkPanel": {
+    "preview": "제보 미리보기",
+    "title": "제보",
+    "close": "제보 미리보기 닫기",
+    "noDescription": "설명이 없습니다.",
+    "viewDetails": "제보 상세 보기",
+    "add": "이 제보 추가",
+    "remove": "제거",
+    "addA11y": "이 제보를 이벤트에 추가",
+    "removeA11y": "이 제보를 이벤트에서 제거"
+  },
+  "dropPin": {
+    "locationA11y": "선택한 위치",
+    "report": {
+      "title": "여기에 문제 신고",
+      "sub": "이 지점에서 신고를 시작해요"
+    },
+    "host": {
+      "title": "여기에서 이벤트 열기",
+      "sub": "이 지점에서 청소나 모임을 계획해요"
+    },
+    "cancel": "취소",
+    "cancelA11y": "취소하고 놓은 핀 제거",
+    "confirm": {
+      "title": "여기에서 새 신고를 시작할까요?",
+      "body": "작성 중인 신고는 삭제돼요.",
+      "discard": "삭제하고 여기서 시작",
+      "keep": "계속 편집"
+    }
+  }
+}

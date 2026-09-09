@@ -1,0 +1,6 @@
+{
+  "card": {
+    "a11yLabel": "{{title}}, {{category}}",
+    "removeA11yLabel": "{{title}} aus diesem Event entfernen"
+  }
+}

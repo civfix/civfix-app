@@ -1,0 +1,24 @@
+{
+  "notification_channel_default": "Standard",
+  "crash": {
+    "title": "Etwas ist schiefgelaufen",
+    "body": "In civfix ist ein unerwartetes Problem aufgetreten. Ein Neustart löscht die gespeicherten Daten und versucht es erneut.",
+    "action": "civfix neu starten"
+  },
+  "notification_channel_host_broadcasts": "Veranstaltungsnachrichten",
+  "notification_channel_event_reminders": "Veranstaltungserinnerungen",
+  "notification_action_view_ticket": "Ticket ansehen",
+  "notification_action_open_event": "Veranstaltung öffnen",
+  "scan": {
+    "title": "Ticket scannen",
+    "hint": "Richte die Kamera auf den QR-Code auf dem Ticket der teilnehmenden Person.",
+    "gate": {
+      "title": "Kamerazugriff",
+      "body": "civfix nutzt die Kamera, um beim Check-in den QR-Code auf einem Ticket zu lesen.",
+      "continue": "Kamera erlauben",
+      "open_settings": "Einstellungen öffnen",
+      "no_camera_title": "Keine Kamera gefunden",
+      "no_camera_body": "Dieses Gerät hat keine verfügbare Kamera. Gib stattdessen den Ticketcode ein."
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "title": "{{name}} Bestenliste",
+  "title_generic": "Bestenliste",
+  "hours_unit": "{{hours}} Std.",
+  "row": {
+    "a11y": "Platz {{rank}}: {{name}}, {{hours}} Freiwilligenstunden",
+    "you": "Du"
+  },
+  "empty": {
+    "title": "Noch keine Stunden erfasst",
+    "body": "Wenn Nachbarn hier Freiwilligenstunden erfassen, füllt sich die Bestenliste."
+  },
+  "error": {
+    "title": "Konnte nicht geladen werden",
+    "body": "civfix ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
+  }
+}

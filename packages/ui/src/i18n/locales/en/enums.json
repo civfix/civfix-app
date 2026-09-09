@@ -1,0 +1,193 @@
+{
+  "category": {
+    "trash": "Trash",
+    "recycling": "Recycling",
+    "graffiti": "Graffiti",
+    "hazard": "Hazard",
+    "encampment": "Encampment",
+    "water": "Water",
+    "other": "Other"
+  },
+  "status": {
+    "submitted": "Submitted",
+    "held": "Under review",
+    "published": "Published",
+    "acknowledged": "Acknowledged",
+    "in_progress": "In progress",
+    "resolved": "Resolved",
+    "rejected": "Rejected"
+  },
+  "eventType": {
+    "cleanup": "Cleanup",
+    "other_volunteer": "Other Volunteer"
+  },
+  "eventKind": {
+    "cleanup": "Cleanup",
+    "other_volunteer": "Other Volunteer"
+  },
+  "reportType": {
+    "dump": "Dump",
+    "encampment": "Encampment",
+    "graffiti": "Graffiti",
+    "infrastructure": "Broken infrastructure",
+    "pavement": "Pavement distress",
+    "vegetation": "Overgrown vegetation",
+    "other": "Other"
+  },
+  "eventStatus": {
+    "upcoming": "Upcoming",
+    "active": "Active",
+    "done": "Done",
+    "cancelled": "Cancelled"
+  },
+  "registrationStatus": {
+    "registered": "Registered",
+    "cancelled": "Cancelled",
+    "transferred": "Transferred"
+  },
+  "registrationSource": {
+    "self": "Self",
+    "waitlist": "From waitlist",
+    "walkup": "Walk-up",
+    "transfer": "Transferred"
+  },
+  "seatStatus": {
+    "active": "Active",
+    "cancelled": "Cancelled"
+  },
+  "checkinMethod": {
+    "scan": "Scanned",
+    "manual": "Manual",
+    "self": "Self check-in",
+    "walkup": "Walk-up"
+  },
+  "waitlistStatus": {
+    "waiting": "Waiting",
+    "offered": "Offered",
+    "claimed": "Claimed",
+    "expired": "Expired",
+    "cancelled": "Cancelled"
+  },
+  "ticketTypeVisibility": {
+    "public": "Public",
+    "hidden": "Hidden",
+    "access_code": "Access code"
+  },
+  "eventVisibility": {
+    "public": "Public",
+    "unlisted": "Unlisted",
+    "private": "Private"
+  },
+  "eventPageStatus": {
+    "draft": "Draft",
+    "published": "Published",
+    "unpublished": "Unpublished"
+  },
+  "registrationState": {
+    "open": "Open",
+    "not_yet_open": "Not yet open",
+    "closed": "Closed",
+    "full": "Full",
+    "waitlist": "Waitlist"
+  },
+  "cleanupMemberRole": {
+    "organizer": "Organizer",
+    "cohost": "Co-host",
+    "member": "Attendee",
+    "staff": "Staff"
+  },
+  "organizationMemberRole": {
+    "owner": "Owner",
+    "admin": "Admin",
+    "member": "Member"
+  },
+  "orgVerificationStatus": {
+    "unverified": "Unverified",
+    "pending": "Under review",
+    "verified": "Verified",
+    "rejected": "Rejected"
+  },
+  "orgVerificationKind": {
+    "nonprofit": "Nonprofit",
+    "government": "Government",
+    "community": "Community group"
+  },
+  "broadcastKind": {
+    "host_broadcast": "Host message",
+    "confirmation": "Confirmation",
+    "waitlist_promoted": "Waitlist offer",
+    "reminder": "Reminder",
+    "event_updated": "Event updated",
+    "event_cancelled": "Event cancelled",
+    "thank_you": "Thank you"
+  },
+  "broadcastStatus": {
+    "draft": "Draft",
+    "scheduled": "Scheduled",
+    "sending": "Sending",
+    "sent": "Sent",
+    "cancelled": "Cancelled",
+    "failed": "Failed"
+  },
+  "broadcastChannel": {
+    "inapp": "In app",
+    "push": "Push",
+    "email": "Email",
+    "sms": "Text"
+  },
+  "broadcastSegment": {
+    "all_registered": "Everyone registered",
+    "ticket_types": "By ticket type",
+    "slots": "By shift",
+    "waitlist": "Waitlist",
+    "checked_in": "Checked in",
+    "not_checked_in": "Not checked in",
+    "guests_only": "Guests only"
+  },
+  "deliveryStatus": {
+    "pending": "Pending",
+    "in_flight": "Sending",
+    "sent": "Sent",
+    "failed": "Failed",
+    "suppressed": "Suppressed",
+    "skipped": "Skipped"
+  },
+  "donationStatus": {
+    "pending": "Pending",
+    "succeeded": "Completed",
+    "failed": "Failed",
+    "refunded": "Refunded",
+    "partially_refunded": "Partly refunded"
+  },
+  "donationDisputeState": {
+    "none": "None",
+    "open": "Open",
+    "won": "Won",
+    "lost": "Lost",
+    "warning": "Warning"
+  },
+  "orgPaymentsState": {
+    "not_started": "Not started",
+    "onboarding": "In progress",
+    "ready": "Ready",
+    "at_risk": "Needs attention",
+    "blocked": "Blocked"
+  },
+  "donateState": {
+    "READY": "Accepting donations",
+    "AT_RISK": "Needs attention",
+    "BLOCKED": "Blocked",
+    "OFF": "Off"
+  },
+  "attendeeKind": {
+    "member": "Member",
+    "guest": "Guest"
+  },
+  "hostExportStatus": {
+    "queued": "Queued",
+    "running": "Building",
+    "ready": "Ready",
+    "failed": "Failed",
+    "expired": "Expired"
+  }
+}

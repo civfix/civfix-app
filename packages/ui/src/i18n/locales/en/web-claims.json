@@ -1,0 +1,37 @@
+{
+  "backToMap": "Back to map",
+  "linking": "Linking your report...",
+  "empty": {
+    "title": "Nothing to claim",
+    "body": "We couldn't find a report to link. Submit a report first, then come back to claim it.",
+    "action": "Go to the map"
+  },
+  "intro": {
+    "title": "Claim your report",
+    "body": "Link this report to an account so you can track its status, get updates, and reply to the city.",
+    "signIn": "Sign in to claim",
+    "value": {
+      "status": "Follow status from submitted to resolved",
+      "notified": "Get notified when the city responds",
+      "onePlace": "Keep all your reports in one place"
+    }
+  },
+  "linked": {
+    "title": "Report linked",
+    "body": "This report is now in your account. We'll keep you posted.",
+    "viewReport": "View report",
+    "yourReports": "Go to Your reports"
+  },
+  "error": {
+    "generic": "We couldn't link that report.",
+    "title": "Couldn't link the report",
+    "retry": "Try again",
+    "code": {
+      "notFound": "That claim code is invalid or has already been used.",
+      "validation": "That claim code looks incorrect or has expired. Submit a new report to get a fresh one.",
+      "conflict": "This report is already linked to an account.",
+      "unauthorized": "Please sign in again to link this report.",
+      "fallback": "Something went wrong linking the report. Please try again."
+    }
+  }
+}

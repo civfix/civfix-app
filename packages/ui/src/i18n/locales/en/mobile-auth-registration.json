@@ -1,0 +1,30 @@
+{
+  "title": "Finish setting up your account",
+  "subtitle": "Pick a username and confirm your name so neighbors can recognize you.",
+  "field": {
+    "first_name": {
+      "label": "First name",
+      "placeholder": "First"
+    },
+    "last_name": {
+      "label": "Last name",
+      "placeholder": "Last (optional)"
+    },
+    "username": {
+      "label": "Username",
+      "placeholder": "username"
+    }
+  },
+  "handle": {
+    "rule": "3-20 letters, numbers, or underscores.",
+    "rule_invalid": "Use 3-20 letters, numbers, or underscores.",
+    "checking": "Checking...",
+    "available": "@{{handle}} is available",
+    "taken": "@{{handle}} is taken"
+  },
+  "continue": "Continue",
+  "signout": {
+    "prompt": "Not you?",
+    "action": "Sign out"
+  }
+}

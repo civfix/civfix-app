@@ -1,0 +1,20 @@
+{
+  "row": {
+    "unreadSuffix": "{{title}}, no leído"
+  },
+  "actions": {
+    "markAllRead": "Marcar todo como leído"
+  },
+  "signedOut": {
+    "title": "Inicia sesión para ver notificaciones",
+    "body": "Recibe actualizaciones sobre los reportes que sigues, recordatorios de eventos y nuevos seguidores, todo en un solo lugar."
+  },
+  "error": {
+    "title": "No se pudieron cargar las notificaciones",
+    "body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo."
+  },
+  "empty": {
+    "title": "Estás al día",
+    "body": "Las actualizaciones de tus reportes, eventos y seguidores aparecerán aquí."
+  }
+}

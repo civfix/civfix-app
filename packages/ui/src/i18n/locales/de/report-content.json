@@ -1,0 +1,25 @@
+{
+  "title": "{{subject}} melden",
+  "prompt": "Warum möchtest du das melden?",
+  "backdrop": {
+    "dismiss": "Meldung abbrechen"
+  },
+  "reason": {
+    "spam": "Spam",
+    "harassment": "Belästigung",
+    "hate": "Hassrede",
+    "sexual": "Sexuelle Inhalte",
+    "violence": "Gewalt",
+    "misinformation": "Fehlinformation",
+    "self_harm": "Selbstverletzung",
+    "other": "Sonstiges"
+  },
+  "details": {
+    "placeholder": "Details hinzufügen (optional)",
+    "a11y": "Meldedetails (optional)"
+  },
+  "actions": {
+    "cancel": "Abbrechen",
+    "submit": "Senden"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "title_members": "멤버 추가",
+  "title_identity": "새 그룹",
+  "back_a11y": "뒤로",
+  "search_placeholder": "@핸들로 사람 검색",
+  "next": "다음",
+  "create": "그룹 만들기",
+  "create_error": "그룹을 만들지 못했습니다. 다시 시도해 주세요.",
+  "name_label": "그룹 이름",
+  "name_placeholder": "그룹 이름을 입력하세요",
+  "description_label": "설명 (선택)",
+  "description_placeholder": "어떤 그룹인가요?",
+  "avatar_a11y": "그룹 사진 선택",
+  "avatar_clear_a11y": "그룹 사진 제거",
+  "chip": {
+    "remove_a11y": "{{name}} 제거"
+  },
+  "row": {
+    "toggle_a11y": "{{name}} 선택"
+  },
+  "empty": {
+    "prompt": {
+      "title": "추가할 사람 찾기",
+      "body": "@핸들로 검색해 이웃을 그룹에 추가하세요."
+    },
+    "error": {
+      "title": "검색할 수 없음",
+      "body": "civfix에 연결할 수 없습니다. 연결 상태를 확인하고 다시 시도해 주세요."
+    },
+    "no_results": {
+      "title": "찾은 사람이 없음",
+      "body": "@{{handle}}에 해당하는 사람이 없습니다."
+    }
+  }
+}

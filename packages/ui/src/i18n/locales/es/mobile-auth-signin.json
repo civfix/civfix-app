@@ -1,0 +1,16 @@
+{
+  "button": {
+    "apple": "Continuar con Apple",
+    "google": "Continuar con Google",
+    "email": "Continuar con email"
+  },
+  "email": {
+    "label": "Email",
+    "placeholder": "tu@ejemplo.com",
+    "send_code": "Enviarme un código",
+    "invalid": "Por favor, introduce una dirección de email válida."
+  },
+  "privacy": {
+    "disclaimer": "Nunca compartimos tu email. Solo se usa para proteger tu cuenta."
+  }
+}

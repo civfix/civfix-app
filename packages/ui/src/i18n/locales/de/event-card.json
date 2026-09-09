@@ -1,0 +1,18 @@
+{
+  "joined_tag": "Dabei",
+  "going_one": "{{count}} Teilnehmer",
+  "going_other": "{{count}} Teilnehmer",
+  "organizer": {
+    "by_prefix": "von"
+  },
+  "a11y": {
+    "card_one": "{{title}}, {{count}} Teilnehmer",
+    "card_other": "{{title}}, {{count}} Teilnehmer"
+  },
+  "linked": {
+    "schedule_unavailable": "Termin nicht verfügbar",
+    "location_fallback": "Event öffnen für den Treffpunkt",
+    "a11y_card": "{{day}}. {{month}}, {{title}}. {{schedule}}. {{location}}. {{going}}.",
+    "a11y_remove": "{{title}} entfernen"
+  }
+}

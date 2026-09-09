@@ -1,0 +1,494 @@
+/* =========================================================================
+   Donation checkout: /donate/<orgSlug> and /donate/<orgSlug>/complete.
+
+   A standalone DOM route (the /legal and /service-record precedent), NOT a
+   react-native-web body. Three reasons this page is plain DOM:
+
+     1. The Stripe Payment Element is an iframe. It has to sit in a normal
+        document flow that a screen reader and the keyboard can walk in DOM
+        order; RN-web's absolutely-positioned flex scaffolding fights that.
+     2. WCAG 3.3.4 requires a reviewable confirmation step before a financial
+        commitment, and Berman v. Freedom Financial requires the assent notice
+        to sit ABOVE the button in body-size text. Both are statements about
+        DOM ORDER, so DOM order is the layout.
+     3. The donation page is the one route allowed to load Stripe.js. Keeping
+        it a leaf route keeps that blast radius one route wide.
+
+   Every value below is a design token from src/styles/design.css, which
+   already flips for `.dark`; there are no literal colors here.
+   ========================================================================= */
+
+.donate-page {
+  min-height: 100dvh;
+  background: var(--bg-1);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  line-height: var(--lh-base);
+}
+
+.donate-shell {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ---- Organization identity ---- */
+.donate-org {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+.donate-org-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--bg-2);
+  flex: none;
+}
+.donate-org-identity h1 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-snug);
+}
+.donate-org-verified {
+  color: var(--moss-600);
+  flex: none;
+}
+.donate-org-legal,
+.donate-org-event {
+  margin: var(--space-1) 0 0;
+  color: var(--fg-2);
+  font-size: var(--fs-14);
+}
+
+/* ---- A banner for the AT_RISK state (donations still work) ---- */
+.donate-banner {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--sun-100);
+  background: var(--sun-50);
+  color: var(--fg-1);
+  font-size: var(--fs-14);
+}
+
+/* ---- Section chrome shared by amount / donor / fees / disclosures ---- */
+.donate-page h2 {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--fs-18);
+  line-height: var(--lh-snug);
+}
+
+.donate-amount,
+.donate-donor,
+.donate-fees,
+.donate-disclosures,
+.donate-payment {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-1);
+}
+
+/* ---- Amount: native radios in a fieldset, plus free entry ----
+   Native radios in a fieldset, visually presented as chips.
+   Deliberately NOT role="radio" buttons: the browser then owns arrow-key
+   navigation, roving focus and the group's accessible name for free, which an
+   ARIA reimplementation has to get right by hand and usually does not. The
+   input is visually hidden but still focusable, and the label is the chip - so
+   the focus ring is drawn on the chip via :has(). */
+.donate-amount-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+.donate-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.donate-amount-preset {
+  position: relative;
+}
+.donate-amount-preset input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.donate-amount-preset label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--dur-1) var(--ease-out), background var(--dur-1) var(--ease-out);
+}
+.donate-amount-preset[data-checked="true"] label {
+  border-color: var(--accent);
+  background: var(--bloom-50);
+}
+.donate-amount-preset:has(input:focus-visible) label {
+  box-shadow: var(--ring);
+}
+.donate-amount-presets:disabled .donate-amount-preset label {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.donate-continue:focus-visible,
+.donate-pay:focus-visible,
+.donate-secondary:focus-visible,
+.donate-page input:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.donate-amount-custom {
+  margin-top: var(--space-4);
+}
+.donate-amount-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+}
+.donate-amount-input-wrap span {
+  color: var(--fg-3);
+  font-size: var(--fs-16);
+}
+.donate-amount-input-wrap input {
+  flex: 1;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-20);
+  font-weight: 600;
+}
+
+/* ---- Donor fields ---- */
+.donate-field + .donate-field {
+  margin-top: var(--space-4);
+}
+.donate-page label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-14);
+  font-weight: 600;
+  color: var(--fg-2);
+}
+.donate-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+}
+
+.donate-field-hint {
+  margin: var(--space-2) 0 0;
+  color: var(--fg-3);
+  font-size: var(--fs-13);
+  line-height: var(--lh-base);
+}
+.donate-field-error {
+  margin: var(--space-2) 0 0;
+  color: var(--danger);
+  font-size: var(--fs-13);
+  font-weight: 600;
+}
+
+/* ---- Fee breakdown: itemized, per Gov. Code section 12599.9(e)(4) ---- */
+.donate-fees dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.donate-fee-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--fs-14);
+}
+.donate-fee-row dt {
+  color: var(--fg-2);
+}
+.donate-fee-row dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.donate-fee-total {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-16);
+  font-weight: 700;
+}
+.donate-fee-total dt {
+  color: var(--fg-1);
+}
+.donate-fee-note {
+  color: var(--fg-3);
+  font-weight: 400;
+  font-size: var(--fs-13);
+}
+.donate-fees-empty {
+  margin: 0;
+  color: var(--fg-3);
+  font-size: var(--fs-14);
+}
+
+/* ---- Disclosures: adjacent, never collapsed, always above the pay button ---- */
+.donate-disclosures p {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-14);
+  line-height: var(--lh-base);
+}
+.donate-disclosures p:last-child {
+  margin-bottom: 0;
+}
+.donate-disclosures ul {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+  font-size: var(--fs-14);
+  color: var(--fg-2);
+}
+
+/* ---- Consent checkboxes: native inputs, body-size labels, unchecked at rest ---- */
+.donate-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+}
+.donate-check input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex: none;
+  accent-color: var(--accent);
+}
+.donate-check label {
+  margin-bottom: 0;
+  font-size: var(--fs-15);
+  font-weight: 400;
+  color: var(--fg-1);
+}
+
+/* ---- Commit + pay ---- */
+.donate-continue,
+.donate-pay {
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  font-weight: 700;
+  cursor: pointer;
+}
+.donate-continue:disabled,
+.donate-pay:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.donate-pay {
+  margin-top: var(--space-4);
+}
+.donate-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.donate-payment .donate-fees {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background: var(--bg-2);
+  box-shadow: none;
+}
+
+/* ---- Confirmation + terminal states ---- */
+.donate-state {
+  align-items: center;
+  text-align: center;
+  padding-top: var(--space-16);
+}
+.donate-state h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+}
+.donate-state p {
+  margin: 0;
+  color: var(--fg-2);
+}
+.donate-complete-icon[data-icon="success"] {
+  color: var(--moss-600);
+}
+.donate-complete-icon[data-icon="alert"] {
+  color: var(--danger);
+}
+.donate-complete-icon[data-icon="pending"] {
+  color: var(--fg-3);
+}
+.donate-complete-icon[data-icon="none"] {
+  display: none;
+}
+.donate-complete .donate-shell {
+  align-items: center;
+  text-align: center;
+  padding-top: var(--space-12);
+}
+.donate-complete h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-30);
+}
+.donate-complete-lead {
+  font-size: var(--fs-18);
+}
+.donate-complete-facts {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 360px;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  text-align: left;
+}
+.donate-complete-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--fs-14);
+}
+.donate-complete-facts dt {
+  color: var(--fg-2);
+}
+.donate-complete-facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+.donate-complete-links,
+.donate-foot {
+  color: var(--fg-3);
+  font-size: var(--fs-13);
+}
+.donate-page a {
+  color: var(--bloom-600);
+}
+
+.donate-spin {
+  animation: donate-spin 900ms linear infinite;
+}
+
+@keyframes donate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donate-spin {
+    animation: none;
+  }
+  .donate-amount-preset label,
+  .donate-continue,
+  .donate-pay {
+    transition: none;
+  }
+}
+
+/* 320px reflow: nothing may scroll horizontally at the narrowest supported width. */
+@media (max-width: 380px) {
+  .donate-shell {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+  .donate-fee-row {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .donate-fee-row dd {
+    align-self: flex-start;
+  }
+}
+
+/* Print: force the LIGHT palette regardless of the viewer's scheme, because a dark-mode receipt
+   prints as a black rectangle. These are the light-scheme token values, restated because a print
+   stylesheet cannot re-enter the :root.dark cascade. */
+@media print {
+  .donate-complete-actions,
+  .donate-complete-links {
+    display: none;
+  }
+  .donate-page {
+    background: var(--card);
+    color: var(--ink);
+  }
+  .donate-complete-facts {
+    border-color: var(--ink-4);
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "picker": {
+    "heading": "Tipo de entrada",
+    "sold_out": "Agotado",
+    "closed": "No está a la venta",
+    "remaining_one": "Queda {{count}}",
+    "remaining_other": "Quedan {{count}}"
+  },
+  "party": {
+    "label": "¿Cuántas personas?",
+    "hint_one": "Hasta {{count}} persona por inscripción",
+    "hint_other": "Hasta {{count}} personas por inscripción",
+    "decrement_a11y": "Una persona menos",
+    "increment_a11y": "Una persona más",
+    "value_a11y_one": "{{count}} persona",
+    "value_a11y_other": "{{count}} personas"
+  },
+  "questions": {
+    "text_placeholder": "Tu respuesta",
+    "required_error": "Esta respuesta es obligatoria.",
+    "required_summary": "Responde las preguntas obligatorias.",
+    "loading": "Cargando las preguntas…",
+    "error": "No se pudieron cargar las preguntas."
+  },
+  "consent": {
+    "terms_lead": "Acepto los ",
+    "terms_link": "Términos",
+    "terms_conjunction": " y la ",
+    "privacy_link": "Política de Privacidad",
+    "terms_trailing": ".",
+    "terms_a11y": "Aceptar los Términos y la Política de Privacidad",
+    "host_contact": "Comparte mi nombre con el anfitrión para que pueda contactarme sobre este evento.",
+    "host_contact_a11y": "Compartir mi nombre con el anfitrión",
+    "sms": "Envíame novedades de este evento por SMS. Se pueden aplicar tarifas de mensajes y datos.",
+    "sms_a11y": "Recibir novedades de este evento por SMS",
+    "version": "Términos versión {{version}}",
+    "required_error": "Acepta los Términos y la Política de Privacidad para inscribirte."
+  },
+  "form": {
+    "heading": "Inscribirse",
+    "access_code_label": "Código de acceso",
+    "access_code_placeholder": "Introduce el código que te dieron",
+    "submit": "Inscribirme"
+  },
+  "mine": {
+    "title": "Vas a asistir",
+    "waitlisted_title": "Estás en lista de espera",
+    "cancelled_title": "Inscripción cancelada",
+    "cancelled_body": "Cancelaste esta inscripción. Puedes volver a inscribirte mientras queden plazas.",
+    "seats_one": "{{count}} plaza",
+    "seats_other": "{{count}} plazas",
+    "position": "Posición {{position}} en la lista de espera",
+    "view_ticket": "Ver entrada",
+    "cancel": "Cancelar inscripción"
+  },
+  "state": {
+    "loading": "Cargando tu entrada…",
+    "error_title": "Entrada no disponible",
+    "error_body": "No pudimos cargar esta entrada. Revisa tu conexión e inténtalo de nuevo.",
+    "no_seats": "Esta inscripción todavía no tiene plazas.",
+    "closed_title": "Las inscripciones están cerradas",
+    "closed_body": "Este evento ya no acepta inscripciones.",
+    "not_yet_open_title": "Las inscripciones aún no están abiertas",
+    "not_yet_open_body": "Vuelve cuando el anfitrión abra las inscripciones."
+  },
+  "waitlist": {
+    "title": "Únete a la lista de espera",
+    "body": "Este evento está lleno. Únete a la lista de espera y te avisaremos si se libera una plaza.",
+    "joined_title": "Estás en lista de espera",
+    "joined_body": "Te avisaremos si se libera una plaza.",
+    "joined_position": "Eres el número {{position}} de la lista de espera.",
+    "join": "Unirme a la lista de espera",
+    "leave": "Salir de la lista de espera"
+  },
+  "qr": {
+    "a11y": "Código QR de la entrada {{index}} de {{total}}",
+    "page": "Entrada {{index}} de {{total}}",
+    "seat": "Plaza {{index}}",
+    "checked_in": "Registrada"
+  },
+  "calendar": {
+    "add": "Añadir al calendario",
+    "error": "No pudimos generar el archivo de calendario para este evento.",
+    "unavailable": "Añadir al calendario no está disponible en este dispositivo."
+  },
+  "toast": {
+    "registered": "Ya estás inscrito.",
+    "waitlisted": "Estás en la lista de espera.",
+    "cancelled": "Inscripción cancelada."
+  },
+  "outcome": {
+    "already_registered": "Ya estás inscrito en este evento.",
+    "full": "Este evento está lleno.",
+    "party_too_large": "Son más personas de las que permite este tipo de entrada.",
+    "sales_closed": "Este tipo de entrada no está a la venta ahora mismo.",
+    "registration_closed": "Las inscripciones de este evento están cerradas.",
+    "ticket_type_not_found": "Ese tipo de entrada ya no está disponible.",
+    "access_code_required": "Este tipo de entrada necesita un código de acceso.",
+    "access_code_invalid": "Ese código de acceso no es válido.",
+    "answers_invalid": "Revisa tus respuestas e inténtalo de nuevo.",
+    "banned": "No puedes inscribirte en este evento.",
+    "closed": "Este evento no admite cambios de inscripción.",
+    "not_found": "Este evento ya no está disponible."
+  },
+  "error": {
+    "rate_limited": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+    "generic": "Algo salió mal. Inténtalo de nuevo."
+  }
+}

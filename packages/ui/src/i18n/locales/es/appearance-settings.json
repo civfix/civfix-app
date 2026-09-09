@@ -1,0 +1,13 @@
+{
+  "title": "Apariencia",
+  "subtitle": "Elige cómo se ve civfix. El sistema sigue la configuración de tu dispositivo.",
+  "option": {
+    "system": "Sistema",
+    "system_sub": "Igual que tu dispositivo",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "dark_beta": "Beta",
+    "dark_sub": "El modo oscuro es experimental; algunas pantallas pueden verse mal."
+  },
+  "selected": "Seleccionado"
+}

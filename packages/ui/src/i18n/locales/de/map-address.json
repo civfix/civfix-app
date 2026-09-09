@@ -1,0 +1,12 @@
+{
+  "input": {
+    "placeholder": "Adresse suchen oder lat, lng einfügen",
+    "clear": "Löschen"
+  },
+  "coordinate": {
+    "exact": "Genaue Koordinaten"
+  },
+  "empty": {
+    "noMatches": "Keine Treffer. Versuche eine genauere Adresse oder füge \"lat, lng\" ein."
+  }
+}

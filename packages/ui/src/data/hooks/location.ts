@@ -1,0 +1,97 @@
+/**
+ * `useUserLocation` - the viewer's one-shot BEST-KNOWN position, shared across the bodies that
+ * proximity-bias their data (the home sidebar's "Events near you", Discovery's nearby reports, and the
+ * jurisdiction its leaderboard names). It wraps the `useGeolocation()` platform capability in a React
+ * Query so the fix is resolved AT MOST ONCE per session and DEDUPED across every consumer (one cache
+ * entry, no repeated permission prompts).
+ *
+ *   - queryKey `queryKeys.userLocation` (`["user-location"]`), shared by all callers.
+ *   - `staleTime`/`gcTime` Infinity + `retry: false`: the queryFn runs once, the result is reused forever
+ *     for the session, and a rejection (denied/unavailable) is NOT retried (which would re-prompt).
+ *   - The queryFn NEVER throws: unavailable / denied / no fix at all resolves to `null` (so the query
+ *     lands in `success` with `data: null`), letting consumers cleanly distinguish "still resolving"
+ *     (`isPending`) from "no location" (`data === null`) from "have location" (`data` is a `LatLng`).
+ *
+ * DEGRADATION ORDER (this used to be device GPS or nothing, which is why Discovery so often had no
+ * location at all - and with no location there is no jurisdiction, so its leaderboard and its nearby
+ * reports both silently vanished for the whole session):
+ *
+ *   1. the injected device fix, capped at {@link DEVICE_FIX_TIMEOUT_MS}. The capability has no timeout of
+ *      its own and a first fix can hang for many seconds (worst right after launch / indoors / on a
+ *      simulator), and with `retry: false` + an infinite staleTime ONE slow fix was permanent for the
+ *      session. The cap is the same 4 s the mobile app's own location hook already applies.
+ *   2. `ipLocate()` - key-less, permissionless, city-accurate. This mirrors `resolveApproxCenter`
+ *      (bodies/ReportFlowBody.tsx) and AddressSearch's "use my location", i.e. the robust pattern
+ *      @civfix/ui already shipped everywhere EXCEPT here. Coarse, and consumers should read it as
+ *      "roughly which city", not "which street".
+ *   3. whatever point is ALREADY cached under this key - a host that seeded it (the mobile map home
+ *      publishes its own resolved point here) must not be overwritten with `null` by a resolve that
+ *      merely lost a race.
+ *   4. `null`.
+ *
+ * IT NEVER REQUESTS ANYTHING ITSELF. Every step above goes through the injected capability or a plain
+ * network call; this hook adds no permission prompt of its own, deliberately - see civfix-shared 1dc7e41
+ * for why an eager `requestForegroundPermissions` on a shared mount path blacks out the report camera.
+ *
+ * This lives apart from feed.ts (which is deliberately capability-free) because it depends on the platform
+ * capability seam; feed.ts stays framework-light and just accepts the resolved `near` as a plain argument.
+ */
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import type { LatLng } from "@civfix/shared"
+import { ipLocate } from "@civfix/shared/geocode"
+import { useGeolocation } from "../../capabilities"
+import { queryKeys } from "../keys"
+
+/** How long a FRESH device fix gets before we stop waiting and fall back to IP. */
+const DEVICE_FIX_TIMEOUT_MS = 4000
+
+/** Resolve to the promise's value, or to `null` if it rejects or does not settle within `ms`. */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  return new Promise((settle) => {
+    const timer = setTimeout(() => settle(null), ms)
+    promise.then(
+      (value) => {
+        clearTimeout(timer)
+        settle(value)
+      },
+      () => {
+        clearTimeout(timer)
+        settle(null)
+      },
+    )
+  })
+}
+
+/**
+ * The viewer's best-known position as a shared `LatLng`, or `null` when nothing at all could be resolved.
+ * Consumers read `data` (`LatLng | null | undefined`) and `isPending`:
+ *   - `isPending` true                 -> still resolving (never flash a proximity section yet).
+ *   - `data === null`                  -> denied/unavailable (hide proximity-only UI).
+ *   - `data` is a `LatLng`             -> bias + filter by it. May be a city-accurate IP estimate.
+ */
+export function useUserLocation() {
+  const geo = useGeolocation()
+  const qc = useQueryClient()
+  return useQuery<LatLng | null>({
+    queryKey: queryKeys.userLocation,
+    // Resolve once and reuse forever this session; never retry a denial (would re-prompt).
+    staleTime: Infinity,
+    gcTime: Infinity,
+    retry: false,
+    queryFn: async () => {
+      // `withTimeout` swallows the rejection too, so a denial falls through to IP exactly like a hang.
+      const fix = geo.isAvailable()
+        ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)
+        : null
+      if (fix) return { lat: fix.latitude, lng: fix.longitude }
+      try {
+        const ip = await ipLocate()
+        if (ip) return ip
+      } catch {
+        // Offline / lookup unavailable: fall through rather than throw, so the section hides cleanly.
+      }
+      // Never DOWNGRADE a point someone already put in this cache entry (see step 3 above).
+      return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null
+    },
+  })
+}

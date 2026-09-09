@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "include": ["/pin/*", "/cleanups/*", "/people/*", "/e/*", "/orgs/*"],
+  "exclude": ["/cleanups/", "/people/"]
+}

@@ -1,0 +1,109 @@
+{
+  "picker": {
+    "heading": "Ticket type",
+    "sold_out": "Sold out",
+    "closed": "Not on sale",
+    "remaining_one": "{{count}} left",
+    "remaining_other": "{{count}} left"
+  },
+  "party": {
+    "label": "How many people?",
+    "hint_one": "Up to {{count}} person on one registration",
+    "hint_other": "Up to {{count}} people on one registration",
+    "decrement_a11y": "One fewer person",
+    "increment_a11y": "One more person",
+    "value_a11y_one": "{{count}} person",
+    "value_a11y_other": "{{count}} people"
+  },
+  "questions": {
+    "text_placeholder": "Your answer",
+    "required_error": "This answer is required.",
+    "required_summary": "Please answer the required questions.",
+    "loading": "Loading the questions…",
+    "error": "The questions could not be loaded."
+  },
+  "consent": {
+    "terms_lead": "I agree to the ",
+    "terms_link": "Terms",
+    "terms_conjunction": " and the ",
+    "privacy_link": "Privacy Policy",
+    "terms_trailing": ".",
+    "terms_a11y": "Agree to the Terms and Privacy Policy",
+    "host_contact": "Share my name with the host so they can contact me about this event.",
+    "host_contact_a11y": "Share my name with the host",
+    "sms": "Text me updates about this event. Message and data rates may apply.",
+    "sms_a11y": "Receive text updates about this event",
+    "version": "Terms version {{version}}",
+    "required_error": "Please agree to the Terms and Privacy Policy to register."
+  },
+  "form": {
+    "heading": "Register",
+    "access_code_label": "Access code",
+    "access_code_placeholder": "Enter the code you were given",
+    "submit": "Register"
+  },
+  "mine": {
+    "title": "You're going",
+    "waitlisted_title": "You're on the waitlist",
+    "cancelled_title": "Registration cancelled",
+    "cancelled_body": "You cancelled this registration. You can register again while seats last.",
+    "seats_one": "{{count}} seat",
+    "seats_other": "{{count}} seats",
+    "position": "Waitlist position {{position}}",
+    "view_ticket": "View ticket",
+    "cancel": "Cancel registration"
+  },
+  "state": {
+    "loading": "Loading your ticket…",
+    "error_title": "Ticket unavailable",
+    "error_body": "We could not load this ticket. Check your connection and try again.",
+    "no_seats": "This registration has no seats yet.",
+    "closed_title": "Registration is closed",
+    "closed_body": "This event is no longer taking registrations.",
+    "not_yet_open_title": "Registration has not opened",
+    "not_yet_open_body": "Check back when the host opens registration."
+  },
+  "waitlist": {
+    "title": "Join the waitlist",
+    "body": "This event is full. Join the waitlist and we will let you know if a seat opens up.",
+    "joined_title": "You're on the waitlist",
+    "joined_body": "We will let you know if a seat opens up.",
+    "joined_position": "You are number {{position}} on the waitlist.",
+    "join": "Join the waitlist",
+    "leave": "Leave the waitlist"
+  },
+  "qr": {
+    "a11y": "Ticket QR code {{index}} of {{total}}",
+    "page": "Ticket {{index}} of {{total}}",
+    "seat": "Seat {{index}}",
+    "checked_in": "Checked in"
+  },
+  "calendar": {
+    "add": "Add to calendar",
+    "error": "We could not build a calendar file for this event.",
+    "unavailable": "Adding to a calendar is not available on this device."
+  },
+  "toast": {
+    "registered": "You're registered.",
+    "waitlisted": "You're on the waitlist.",
+    "cancelled": "Registration cancelled."
+  },
+  "outcome": {
+    "already_registered": "You are already registered for this event.",
+    "full": "This event is full.",
+    "party_too_large": "That is more people than this ticket type allows.",
+    "sales_closed": "This ticket type is not on sale right now.",
+    "registration_closed": "Registration for this event is closed.",
+    "ticket_type_not_found": "That ticket type is no longer available.",
+    "access_code_required": "This ticket type needs an access code.",
+    "access_code_invalid": "That access code is not valid.",
+    "answers_invalid": "Please check your answers and try again.",
+    "banned": "You cannot register for this event.",
+    "closed": "This event is closed to registration changes.",
+    "not_found": "This event is no longer available."
+  },
+  "error": {
+    "rate_limited": "Too many attempts. Please wait a moment and try again.",
+    "generic": "Something went wrong. Please try again."
+  }
+}

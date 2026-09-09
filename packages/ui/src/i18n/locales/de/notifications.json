@@ -1,0 +1,20 @@
+{
+  "row": {
+    "unreadSuffix": "{{title}}, ungelesen"
+  },
+  "actions": {
+    "markAllRead": "Alle als gelesen markieren"
+  },
+  "signedOut": {
+    "title": "Anmelden für Benachrichtigungen",
+    "body": "Erhalte Updates zu deinen Meldungen, Erinnerungen an Events und neue Follower – alles an einem Ort."
+  },
+  "error": {
+    "title": "Benachrichtigungen nicht geladen",
+    "body": "civfix war nicht erreichbar. Verbindung prüfen und erneut versuchen."
+  },
+  "empty": {
+    "title": "Alles auf dem neuesten Stand",
+    "body": "Updates zu deinen Meldungen, Events und Followern erscheinen hier."
+  }
+}

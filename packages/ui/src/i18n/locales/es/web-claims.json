@@ -1,0 +1,37 @@
+{
+  "backToMap": "Volver al mapa",
+  "linking": "Vinculando tu reporte...",
+  "empty": {
+    "title": "Nada que reclamar",
+    "body": "No encontramos un reporte para vincular. Envía un reporte primero y luego regresa para reclamarlo.",
+    "action": "Ir al mapa"
+  },
+  "intro": {
+    "title": "Reclama tu reporte",
+    "body": "Vincula este reporte a una cuenta para hacer seguimiento de su estado, recibir actualizaciones y responder a la ciudad.",
+    "signIn": "Inicia sesión para reclamar",
+    "value": {
+      "status": "Sigue el estado desde enviado hasta resuelto",
+      "notified": "Recibe avisos cuando la ciudad responda",
+      "onePlace": "Mantén todos tus reportes en un solo lugar"
+    }
+  },
+  "linked": {
+    "title": "Reporte vinculado",
+    "body": "Este reporte ya está en tu cuenta. Te mantendremos informado.",
+    "viewReport": "Ver reporte",
+    "yourReports": "Ir a Mis reportes"
+  },
+  "error": {
+    "generic": "No pudimos vincular ese reporte.",
+    "title": "No se pudo vincular el reporte",
+    "retry": "Intentar de nuevo",
+    "code": {
+      "notFound": "Ese código de reclamación no es válido o ya fue usado.",
+      "validation": "Ese código de reclamación parece incorrecto o ha expirado. Envía un nuevo reporte para obtener uno nuevo.",
+      "conflict": "Este reporte ya está vinculado a una cuenta.",
+      "unauthorized": "Por favor, inicia sesión de nuevo para vincular este reporte.",
+      "fallback": "Algo salió mal al vincular el reporte. Por favor, inténtalo de nuevo."
+    }
+  }
+}

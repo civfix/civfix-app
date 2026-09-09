@@ -1,0 +1,49 @@
+{
+  "state": {
+    "loading": "Organisation wird geladen…",
+    "error_title": "Organisation nicht verfügbar",
+    "error_body": "Wir konnten diese Organisation nicht laden. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "header": {
+    "slug": "@{{slug}}"
+  },
+  "links": {
+    "website": "Website",
+    "website_a11y": "Die Website der Organisation öffnen"
+  },
+  "stats": {
+    "events_one": "{{count}} Veranstaltung",
+    "events_other": "{{count}} Veranstaltungen",
+    "members_one": "{{count}} Mitglied",
+    "members_other": "{{count}} Mitglieder"
+  },
+  "actions": {
+    "share": "Diese Organisation teilen",
+    "share_a11y": "Einen Link zu dieser Organisation teilen"
+  },
+  "breadcrumb": {
+    "events": "Veranstaltungen"
+  },
+  "not_found_title": "Organisation nicht gefunden",
+  "not_found_body": "Diese Organisation existiert nicht, oder du bist kein Mitglied mehr.",
+  "nav": {
+    "events": "Veranstaltungen",
+    "overview": "Überblick",
+    "members": "Mitglieder",
+    "payments": "Zahlungen"
+  },
+  "overview": {
+    "title": "Organisation",
+    "events": "Veranstaltungen",
+    "members": "Mitglieder",
+    "created": "Erstellt",
+    "donations": "Spenden",
+    "donations_on": "Nimmt Spenden an",
+    "donations_off": "Nimmt keine Spenden an"
+  },
+  "members": {
+    "title": "Mitglieder",
+    "joined": "Dabei seit {{when}}",
+    "read_only": "Nur Inhaber*innen können ändern, wer zu dieser Organisation gehört."
+  }
+}

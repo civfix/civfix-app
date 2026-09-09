@@ -1,0 +1,21 @@
+{
+  "title": "Nuevo canal",
+  "visibility_title": "Quién puede unirse",
+  "add_members": "Agregar suscriptores",
+  "subscriber_prompt": "Busca por @usuario para agregar suscriptores a tu canal.",
+  "back_a11y": "Atrás",
+  "skip": "Omitir",
+  "next": "Siguiente",
+  "create": "Crear canal",
+  "create_error": "No se pudo crear el canal. Inténtalo de nuevo.",
+  "name_label": "Nombre del canal",
+  "name_placeholder": "Nombra tu canal",
+  "description_label": "Descripción (opcional)",
+  "description_placeholder": "¿De qué trata este canal?",
+  "avatar_a11y": "Elegir una foto del canal",
+  "avatar_clear_a11y": "Quitar la foto del canal",
+  "private_label": "Privado",
+  "private_hint": "Solo las personas que agregues pueden verlo",
+  "public_label": "Público",
+  "public_hint": "Cualquiera puede unirse"
+}

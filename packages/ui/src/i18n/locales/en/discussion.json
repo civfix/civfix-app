@@ -1,0 +1,21 @@
+{
+  "removed": "This message was removed",
+  "edited": "(edited)",
+  "forwarded": {
+    "named": "Forwarded to {{name}}",
+    "generic": "Forwarded to the city"
+  },
+  "action": {
+    "reply": "Reply",
+    "edit": "Edit",
+    "delete": "Delete",
+    "report": "Report"
+  },
+  "a11y": {
+    "view_attachment": "View attachment",
+    "report_photo": "Report this photo",
+    "edit": "Edit this message",
+    "delete": "Delete this message",
+    "report": "Report this message"
+  }
+}

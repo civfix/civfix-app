@@ -1,0 +1,26 @@
+{
+  "title": "Finish setting up your account",
+  "subtitle": "Pick a username and confirm your name so neighbors can recognize you.",
+  "first_name_label": "First name",
+  "first_name_placeholder": "First",
+  "last_name_label": "Last name",
+  "last_name_placeholder": "Last (optional)",
+  "username_label": "Username",
+  "username_placeholder": "username",
+  "handle": {
+    "rule": "3-20 letters, numbers, or underscores.",
+    "invalid": "Use 3-20 letters, numbers, or underscores.",
+    "checking": "Checking...",
+    "available": "@{{handle}} is available",
+    "taken": "@{{handle}} is taken"
+  },
+  "error": {
+    "validation": "Please check your username and name, then try again.",
+    "conflict": "That username was just taken. Try another.",
+    "fallback": "We couldn't save your profile. Please try again."
+  },
+  "saving": "Saving...",
+  "continue": "Continue",
+  "not_you": "Not you?",
+  "sign_out": "Sign out"
+}

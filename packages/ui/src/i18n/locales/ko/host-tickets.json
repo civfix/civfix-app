@@ -1,0 +1,83 @@
+{
+  "saved": "티켓 종류를 저장했습니다",
+  "created": "티켓 종류를 만들었습니다",
+  "deleted": "티켓 종류를 삭제했습니다",
+  "types": {
+    "title": "티켓 종류",
+    "count": "{{max}}개 중 {{count}}개",
+    "add": "티켓 종류 추가",
+    "edit_a11y": "{{name}} 편집",
+    "move_up": "위로",
+    "move_down": "아래로",
+    "delete": "삭제",
+    "sold": "{{capacity}}자리 중 {{sold}}자리 확보",
+    "unlimited": "제한 없음",
+    "party": "1회 등록당 최대 {{max}}자리",
+    "empty_title": "아직 티켓 종류가 없습니다",
+    "empty_body": "참여 방식을 고를 수 있도록 하나 추가해 보세요. 티켓 종류가 없으면 행사는 간단한 참가 신청으로 진행됩니다."
+  },
+  "drawer": {
+    "new_title": "새 티켓 종류",
+    "edit_title": "티켓 종류 편집"
+  },
+  "field": {
+    "name": "이름",
+    "description": "설명",
+    "capacity": "정원",
+    "capacity_hint": "비워 두면 자리 수에 제한이 없습니다.",
+    "sales_opens": "신청 시작",
+    "sales_closes": "신청 마감",
+    "visibility": "공개 범위",
+    "access_code": "액세스 코드",
+    "access_code_hint": "이 코드를 알아야 이 티켓 종류를 보고 신청할 수 있습니다.",
+    "access_code_set": "이미 코드가 설정되어 있습니다. 새 코드를 입력하면 교체됩니다.",
+    "max_party": "1회 등록당 자리 수",
+    "max_party_hint": "1에서 {{max}} 사이로 지정하세요.",
+    "waitlist": "대기자 명단",
+    "waitlist_hint": "이 종류가 마감되면 대기자 명단에 등록할 수 있게 합니다.",
+    "accessCode": "액세스 코드",
+    "maxPartySize": "1회 등록당 자리 수",
+    "salesOpensAt": "신청 시작",
+    "salesClosesAt": "신청 마감",
+    "ticketTypeIds": "순서"
+  },
+  "visibility": {
+    "public": "공개",
+    "hidden": "숨김",
+    "access_code": "액세스 코드"
+  },
+  "delete": {
+    "title": "이 티켓 종류를 삭제할까요?",
+    "body": "{{name}}이(가) 신청 페이지에서 사라집니다.",
+    "banner": "등록자가 있는 티켓 종류는 삭제할 수 없습니다. 대신 신청을 마감하세요.",
+    "confirm": "삭제",
+    "in_use": "이미 이 종류로 등록한 사람이 있습니다. 삭제하는 대신 신청을 마감하세요."
+  },
+  "questions": {
+    "title": "등록 질문",
+    "hint": "답변은 권한이 있는 호스트만 볼 수 있으며, 행사가 끝나고 30일 뒤에 삭제됩니다.",
+    "archive_note": "질문을 제거하면 보관 처리됩니다. 이미 받은 답변은 그대로 유지됩니다.",
+    "empty": "아직 질문이 없습니다.",
+    "saved": "질문을 저장했습니다",
+    "add": "질문 추가",
+    "remove": "이 질문 제거",
+    "move_up": "위로",
+    "move_down": "아래로",
+    "prompt": "질문",
+    "kind": "유형",
+    "kind_short_text": "단답형",
+    "kind_long_text": "장문형",
+    "kind_single_select": "하나 선택",
+    "kind_multi_select": "여러 개 선택",
+    "kind_checkbox": "체크박스",
+    "kind_consent": "동의",
+    "options": "선택지",
+    "options_hint": "한 줄에 하나씩 입력하세요.",
+    "consent_text": "동의 문구",
+    "help": "도움말",
+    "required": "필수",
+    "ticket_scope": "다음에만 질문",
+    "ticket_all": "모든 티켓 종류",
+    "ticket_scope_hint": "특정 티켓 유형으로 제한한 질문은 그 유형을 선택했을 때만 표시되므로, 모든 유형을 숨기면 전혀 표시되지 않습니다. 항상 묻고 싶다면 모든 티켓 유형으로 두세요."
+  }
+}

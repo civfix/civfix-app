@@ -1,0 +1,24 @@
+{
+  "notification_channel_default": "기본",
+  "crash": {
+    "title": "문제가 발생했습니다",
+    "body": "civfix에 예기치 않은 문제가 발생했습니다. 다시 시작하면 저장된 데이터를 지우고 재시도합니다.",
+    "action": "civfix 다시 시작"
+  },
+  "notification_channel_host_broadcasts": "행사 메시지",
+  "notification_channel_event_reminders": "행사 알림",
+  "notification_action_view_ticket": "티켓 보기",
+  "notification_action_open_event": "행사 열기",
+  "scan": {
+    "title": "티켓 스캔",
+    "hint": "참가자 티켓의 QR 코드에 카메라를 맞춰 주세요.",
+    "gate": {
+      "title": "카메라 접근 권한",
+      "body": "civfix는 체크인할 때 참가자 티켓의 QR 코드를 읽기 위해 카메라를 사용합니다.",
+      "continue": "카메라 허용",
+      "open_settings": "설정 열기",
+      "no_camera_title": "카메라를 찾을 수 없습니다",
+      "no_camera_body": "이 기기에는 사용할 수 있는 카메라가 없습니다. 대신 티켓 코드를 입력해 주세요."
+    }
+  }
+}

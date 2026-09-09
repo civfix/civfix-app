@@ -1,0 +1,37 @@
+{
+  "back": "Back",
+  "close": "Close",
+  "choices": {
+    "title": "Welcome to civfix",
+    "subtitle": "Join events, follow updates, message neighbors. No passwords - pick how you would like to sign in.",
+    "continue_apple": "Continue with Apple",
+    "continue_google": "Continue with Google",
+    "divider": "OR",
+    "continue_email": "Continue with email",
+    "trust": "civfix is a non-profit. We never sell your data."
+  },
+  "email": {
+    "title": "What's your email?",
+    "subtitle": "We'll send a 6-digit code. No password to remember.",
+    "placeholder": "you@email.com",
+    "aria_label": "Email address",
+    "submit": "Send me a code"
+  },
+  "code": {
+    "title": "Check your inbox",
+    "subtitle": "Code sent to <0>{{email}}</0> - expires in 5 min",
+    "group_aria_label": "6-digit verification code",
+    "digit_aria_label": "Digit {{position}}",
+    "verifying": "Verifying...",
+    "verify": "Verify code",
+    "resend_prompt": "Didn't get it?",
+    "resend": "Resend",
+    "resend_countdown": "Resend in {{count}}s",
+    "use_different_email": "Use a different email"
+  },
+  "errors": {
+    "VALIDATION": "That code does not look right. Please check and try again.",
+    "RATE_LIMITED": "Too many attempts. Please wait a moment and try again.",
+    "UNAUTHORIZED": "That code is invalid or expired. Request a new one."
+  }
+}

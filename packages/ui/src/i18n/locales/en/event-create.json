@@ -1,0 +1,65 @@
+{
+  "signIn": {
+    "title": "Sign in to host an event",
+    "body": "Pick a spot, set a time, and invite your neighbors. You will be the organizer."
+  },
+  "verification": {
+    "verified": "Your account is verified - attendees will see a verified badge on this event.",
+    "pending": "Your verification is pending review. Events you host stay unverified until it is approved.",
+    "unverified": "Your event will be marked as unverified. Get verified to build trust with attendees.",
+    "getVerified": "Get verified"
+  },
+  "followersNote": "Your followers get notified when you publish.",
+  "wizard": {
+    "back": "Back",
+    "next": "Next",
+    "edit": "Edit",
+    "editA11y": "Edit {{section}}",
+    "empty": "Not set",
+    "announceStep": "Step {{current}} of {{total}}. {{title}}",
+    "basics": {
+      "title": "What's happening?",
+      "help": "Name it and pick the kind of event.",
+      "error": "Add a title for your event."
+    },
+    "when": {
+      "title": "When is it?",
+      "help": "Pick a day and a start time.",
+      "error": "Pick a date and start time in the future."
+    },
+    "where": {
+      "title": "Where do you meet?",
+      "help": "Drop the pin where neighbors should show up.",
+      "error": "Set the meeting point on the map."
+    },
+    "details": {
+      "title": "Anything to bring?",
+      "help": "Optional - supplies and jobs people can claim.",
+      "error": "Give every signup slot a name and a valid capacity."
+    },
+    "review": {
+      "title": "Ready to publish?",
+      "help": "Check the details, then publish.",
+      "error": "Add a title, a meeting point, a date, and a time to publish."
+    },
+    "summary": {
+      "what": "What",
+      "when": "When",
+      "extras": "Details",
+      "noExtras": "Nothing extra"
+    }
+  },
+  "publish": {
+    "label": "Publish event",
+    "pending": "Publishing..."
+  },
+  "announce": {
+    "publishFailed": "Event could not be published. {{error}}"
+  },
+  "error": {
+    "validation": "Please double-check the event details and try again.",
+    "rateLimited": "Too many attempts. Please wait a moment and try again.",
+    "session": "Your session may have expired. Sign in again and retry.",
+    "generic": "We could not publish right now. Please try again."
+  }
+}

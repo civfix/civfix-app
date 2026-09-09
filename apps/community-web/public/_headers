@@ -1,0 +1,118 @@
+# Cloudflare Pages response headers for the civfix community web static export.
+#
+# Lives in public/ and is copied verbatim into the export output (out/_headers); Cloudflare
+# consumes it at deploy time and it is NOT served as a static asset.
+# Docs: https://developers.cloudflare.com/pages/configuration/headers/
+#
+# IMPORTANT: these headers ONLY take effect on Cloudflare Pages. `next dev` and a local static
+# file server (e.g. `python -m http.server --directory out`) ignore this file, so local
+# development and local export previews are unaffected.
+#
+# MERGE SEMANTICS: a request that matches several rules inherits ALL of their headers, and a
+# header set by two matching rules is comma-JOINED (not overridden). Because `/*` matches
+# everything (including /_next/static/*), we must not set Cache-Control on both `/*` and
+# `/_next/static/*` or the asset cache header becomes a corrupt, joined value. The `/_next/static/*`
+# block therefore drops the inherited Cache-Control with `! Cache-Control` before setting its own.
+
+# --- Pervasive defaults: applied to every response. ---
+# Short, revalidated caching for the HTML shells so a new deploy is picked up promptly (ETag/304
+# keeps revalidation cheap). Security headers ride on every response.
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Strict-Transport-Security: max-age=31536000
+  Permissions-Policy: accelerometer=(), autoplay=(self), camera=(), fullscreen=(self), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=()
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: wss:; worker-src 'self' blob:; frame-src https://challenges.cloudflare.com
+
+# --- Content-hashed build assets: cache immutably for a year. ---
+# Files under /_next/static carry a content hash in their name, so a given URL never changes.
+# Drop the inherited short-cache from `/*` first (see MERGE SEMANTICS above), then cache hard.
+/_next/static/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+
+# --- Donation checkout: the ONLY route Stripe.js is allowed to run on. ---
+#
+# Cloudflare comma-JOINS a header set by two matching rules, and two comma-joined CSP headers are
+# INTERSECTED by the browser - so simply adding a second Content-Security-Policy here would produce a
+# policy no stricter than the pervasive one and Stripe would still be blocked. The `!` drops remove the
+# inherited value first (same mechanism the /_next/static/* Cache-Control block uses), then the full
+# policy is RESTATED with the Stripe origins folded in. Verify on staging with
+# `curl -sI https://civfix.dev/donate/x/ | grep -ci content-security-policy` - it must print 1.
+#
+# What changes vs. the pervasive policy, and why:
+#   script-src  += js.stripe.com, *.js.stripe.com   Stripe.js itself (loaded lazily; see src/lib/stripe-js.ts)
+#   frame-src   += js.stripe.com, *.js.stripe.com, hooks.stripe.com
+#                                                   the Payment Element iframe + the 3DS challenge frame
+#   form-action += hooks.stripe.com, *.js.stripe.com
+#                                                   redirect-based methods POST the buyer back through Stripe
+#   Permissions-Policy payment=(self "https://js.stripe.com")
+#                                                   the pervasive `payment=()` HARD-BLOCKS Apple Pay,
+#                                                   Google Pay and Link. This is the only route that
+#                                                   may use the Payment Request API.
+# connect-src already allows `https:` (api/m/q/errors.stripe.com are covered). frame-ancestors stays
+# 'none' and COOP stays same-origin-allow-popups (correct for the 3DS popup; Connect embedded
+# components are NOT used).
+#
+# X-Robots-Tag: noindex - a donation form has no business in a search index, and there is no OG
+# function for /donate/* in v1.
+#
+# There is deliberately NO Content-Security-Policy-Report-Only line here. A Report-Only copy of an
+# identical policy collects nothing without a report-to/report-uri endpoint, and civfix runs no CSP
+# report collector (adding one would be a new third-party data flow and a privacy decision). The
+# staging device matrix - desktop Chrome/Safari, iOS Safari + in-app browser, Android Custom Tab;
+# 4242..., 3DS 4000002500003155, decline 4000000000000002, Apple Pay on a real device, Google Pay -
+# is walked with the browser console open instead, and any violation shows there against the
+# enforcing policy below.
+/donate/*
+  ! Content-Security-Policy
+  ! Permissions-Policy
+  Permissions-Policy: accelerometer=(), autoplay=(self), camera=(), fullscreen=(self), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(self "https://js.stripe.com"), usb=()
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://hooks.stripe.com https://*.js.stripe.com; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://js.stripe.com https://*.js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: wss:; worker-src 'self' blob:; frame-src https://challenges.cloudflare.com https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com
+  X-Robots-Tag: noindex
+
+# --- Broadcast unsubscribe: never indexed (the URL carries a one-click token). ---
+/unsubscribe*
+  X-Robots-Tag: noindex
+
+# --- Apple universal-link association file. ---
+# iOS fetches /.well-known/apple-app-site-association (no extension) and REQUIRES an
+# application/json content type; Cloudflare would otherwise guess from the missing extension. Only
+# Content-Type is set here, and no other matching rule sets it, so the comma-join described in MERGE
+# SEMANTICS above cannot corrupt it (the inherited Cache-Control from `/*` is deliberately kept:
+# short, revalidated caching is what we want for this file).
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+
+# --- Apple Pay merchant-domain association file. ---
+# Stripe registers civfix.org as a payment_method_domain per CONNECTED ACCOUNT, and Apple fetches
+# /.well-known/apple-developer-merchantid-domain-association to verify it. The file has no extension
+# and is plain text; Cloudflare would otherwise guess a content type from the missing extension, and a
+# text/html guess fails Apple's verification silently (the wallet just never appears). Only
+# Content-Type is set here, so the comma-join described in MERGE SEMANTICS cannot corrupt it.
+# The committed file is a PLACEHOLDER until the real contents are pasted from the Stripe Dashboard.
+# scripts/cf-pages-postbuild.mjs warns about the placeholder on a non-production build and FAILS the
+# build on a production one, so this cannot reach civfix.org unresolved.
+/.well-known/apple-developer-merchantid-domain-association
+  Content-Type: text/plain
+
+# --- Share-card artwork: pin the image content type. ---
+# iMessage/WhatsApp only render a link card when the og:image answers with an image content type on
+# the FIRST response (no redirect, no sniffing), so state it explicitly rather than trusting the
+# extension guess. Only Content-Type is set here, so the comma-join described in MERGE SEMANTICS
+# cannot corrupt it (the short, revalidated Cache-Control inherited from `/*` is deliberately kept).
+/og.png
+  Content-Type: image/png
+
+/apple-touch-icon.png
+  Content-Type: image/png
+
+# --- Internal SPA browse-fallback copies: keep them out of search indexes. ---
+# scripts/cf-pages-postbuild.mjs copies each browse page to /__spa/<route>/ so the _redirects
+# protective rules have a non-looping target. They duplicate the canonical /<route>/ page, so tell
+# crawlers not to index them (nothing links here; this is belt-and-suspenders against duplicates).
+/__spa/*
+  X-Robots-Tag: noindex

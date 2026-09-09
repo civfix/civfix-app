@@ -1,0 +1,14 @@
+{
+  "a11y": {
+    "affirmation": "이용약관 및 개인정보처리방침에 동의합니다.",
+    "terms_link": "이용약관",
+    "privacy_link": "개인정보처리방침"
+  },
+  "label": {
+    "lead": "",
+    "terms": "이용약관",
+    "conjunction": " 및 ",
+    "privacy": "개인정보처리방침",
+    "trailing": "에 동의합니다."
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "header": {
+    "title": "문제 신고",
+    "back": "뒤로"
+  },
+  "wizard": {
+    "announceStep": "{{total}}단계 중 {{current}}단계. {{title}}",
+    "capture": {
+      "title": "문제를 보여주세요",
+      "help": "사진 한 장이나 짧은 영상이면 충분해요."
+    },
+    "location": {
+      "title": "어디에 있나요?",
+      "help": "문제가 있는 위치에 핀을 놓으세요."
+    },
+    "category": {
+      "title": "어떤 문제인가요?",
+      "help": "가장 가까운 항목을 선택하세요."
+    },
+    "details": {
+      "title": "자세히 알려주세요",
+      "help": "짧은 제목과 시가 알아야 할 내용을 적으세요."
+    },
+    "review": {
+      "title": "보낼 준비가 됐나요?",
+      "help": "확인한 뒤 핀을 놓으세요."
+    }
+  },
+  "footer": {
+    "continue": "계속",
+    "drop_pin": "핀 꽂기"
+  },
+  "capture": {
+    "label_filled": "첨부한 파일",
+    "drop_title": "문제 촬영",
+    "drop_sub": "필수 · 동영상 최대 10초 · 촬영 시 GPS 기록",
+    "capture_a11y": "사진 또는 동영상 촬영",
+    "choose_library": "라이브러리에서 선택",
+    "choose_library_a11y": "라이브러리에서 선택",
+    "drag_hint": "또는 여기로 사진을 끌어다 놓으세요",
+    "remove_item_a11y": "이 항목 제거",
+    "add_camera_a11y": "카메라로 추가",
+    "add_library_a11y": "라이브러리에서 추가",
+    "camera": "카메라",
+    "library": "라이브러리",
+    "hint_at_cap": "최대 {{max}}개입니다. 하나를 제거한 후 추가하세요.",
+    "hint_add_more_one": "사진 또는 동영상을 {{count}}개까지 추가할 수 있어요.",
+    "hint_add_more_other": "사진 또는 동영상을 {{count}}개까지 추가할 수 있어요.",
+    "camera_error": "카메라를 열 수 없어요. 라이브러리에서 선택해 보세요."
+  },
+  "details": {
+    "title_label": "제목",
+    "title_placeholder": "간단한 요약",
+    "description_label": "설명",
+    "description_placeholder": "발견한 내용을 설명해 주세요 — 언제 시작됐는지, 시청이 알아야 할 사항 등.",
+    "flag_blocking": "인도 또는 도로를 막고 있음",
+    "flag_safety": "안전 위험 요소임"
+  },
+  "review": {
+    "untitled": "제목 없는 신고",
+    "where_label": "어디에 있나요?",
+    "no_location": "위치가 캡처되지 않았어요. 주소를 검색하거나 지도를 탭해서 위치를 설정해 주세요.",
+    "where_placeholder": "위치 설명, 예: 북쪽 인도",
+    "route_label": "접수처",
+    "route_no_point": "지도에 핀을 꽂으면 신고가 어디로 전달되는지 확인할 수 있어요.",
+    "route_routable": "검토 후 자동 전달 — 보통 1~3 영업일 소요.",
+    "route_new_area": "새 지역 — {{cityState}}은(는) 아직 자동 전달이 설정되지 않았어요. 수동으로 검토 후 전달하겠습니다.",
+    "route_uncovered": "아직 해당 지역을 지원하지 않지만, 신고는 기록되어 수동으로 검토됩니다.",
+    "route_resolving": "접수처를 확인하는 중..."
+  },
+  "submit": {
+    "submitting_title": "신고 제출 중",
+    "submitting_body": "미디어를 업로드하고 담당 기관에 전달하고 있어요. 잠시만 기다려 주세요.",
+    "error_title": "제출 실패",
+    "try_again": "다시 시도",
+    "success_title": "핀이 꽂혔어요. 처리할게요.",
+    "success_body_held": "빠른 검토 후 전달 예정이에요. 내 신고에서 확인하세요.",
+    "success_body_live": "검토 후 전달됩니다 — 보통 1~3 영업일 소요. 내 신고에서 확인하세요.",
+    "view_report": "내 신고 보기",
+    "back_to_map": "지도로 돌아가기",
+    "announce_error": "신고를 제출할 수 없어요. {{detail}}",
+    "announce_held": "핀이 꽂혔고 검토 대기 중이에요.",
+    "announce_live": "핀이 꽂혔어요. 신고가 제출됐어요."
+  },
+  "errors": {
+    "no_category": "제출하기 전에 카테고리를 선택해 주세요.",
+    "no_location": "이 신고의 위치가 설정되지 않았어요. 문제가 있는 곳에 핀을 놓아 주세요.",
+    "no_media": "제출하기 전에 사진이나 동영상을 촬영해 주세요.",
+    "validation": "사진과 위치를 확인한 후 다시 시도해 주세요.",
+    "rate_limited": "시도 횟수가 너무 많아요. 잠시 후 다시 시도해 주세요.",
+    "turnstile_failed": "사람임을 확인할 수 없어요. 페이지를 새로고침하고 인증을 다시 완료해 주세요.",
+    "media_rejected": "해당 사진을 사용할 수 없어요. 다른 사진으로 시도해 주세요.",
+    "unauthorized": "세션이 만료됐을 수 있어요. 다시 로그인한 후 시도해 주세요.",
+    "generic": "지금은 제출할 수 없어요. 다시 시도해 주세요."
+  },
+  "share": {
+    "label": "피드에 공유",
+    "helper": "이웃과 팔로워에게 표시돼요.",
+    "caption_placeholder": "이웃에게 알리고 싶은 내용은?",
+    "caption_a11y": "피드 게시물 문구",
+    "now": "방금",
+    "posted_heading": "피드에 공유됨",
+    "fixes_hint": "해결되면 해결됨 탭으로 이동해요.",
+    "failed": "신고는 접수됐지만 피드 게시물은 올라가지 않았어요.",
+    "failed_rejected": "이 문구는 게시할 수 없어요.",
+    "failed_rate_limited": "게시물이 너무 많아요. 잠시 후 다시 시도해 주세요.",
+    "retry": "다시 시도",
+    "signed_out_hint": "계정을 만들면 신고를 피드에 공유할 수 있어요."
+  }
+}

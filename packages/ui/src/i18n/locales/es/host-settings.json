@@ -1,0 +1,44 @@
+{
+  "saved": "Ajustes guardados",
+  "visibility": {
+    "public": "Público",
+    "unlisted": "No listado",
+    "private": "Privado"
+  },
+  "registration": {
+    "title": "Inscripción",
+    "visibility": "Quién puede encontrar este evento",
+    "opens": "La inscripción abre",
+    "closes": "La inscripción cierra"
+  },
+  "messaging": {
+    "title": "Mensajes",
+    "reminders": "Recordatorios",
+    "reminders_hint": "civfix envía un recordatorio a todas las personas inscritas en cada uno de estos momentos antes del evento.",
+    "offset_60": "1 hora antes",
+    "offset_180": "3 horas antes",
+    "offset_1440": "1 día antes",
+    "offset_2880": "2 días antes",
+    "offset_10080": "1 semana antes",
+    "reply_to": "Dirección de respuesta",
+    "reply_to_placeholder": "tu@ejemplo.org",
+    "reply_to_unverified": "Las respuestas todavía no llegan a una dirección del anfitrión; esto se guarda para cuando esa función esté lista."
+  },
+  "donations": {
+    "title": "Donaciones",
+    "link": "Enlace de donación",
+    "link_hint": "Un enlace https que se muestra en la página del evento.",
+    "org_note": "Las donaciones de este evento las gestiona {{org}}."
+  },
+  "danger": {
+    "title": "Zona de riesgo",
+    "body": "Cancelar avisa a todas las personas inscritas y no se puede deshacer.",
+    "cancel_event": "Cancelar el evento",
+    "cancelled": "Evento cancelado",
+    "reason": "Motivo (se comparte con los asistentes)",
+    "confirm_title": "¿Cancelar este evento?",
+    "confirm_body": "Se avisa a todas las personas inscritas. El evento sigue visible como cancelado.",
+    "confirm_banner": "Esto no se puede deshacer.",
+    "agreement": "Entiendo que esto avisa a todas las personas inscritas."
+  }
+}

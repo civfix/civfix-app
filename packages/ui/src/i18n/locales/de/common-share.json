@@ -1,0 +1,10 @@
+{
+  "button": {
+    "label": "Teilen",
+    "accessibilityLabel": "Dies teilen",
+    "copied": "Link kopiert"
+  },
+  "sheet": {
+    "message": "{{title}}\n{{url}}"
+  }
+}

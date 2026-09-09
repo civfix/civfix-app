@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "events": "행사"
+  },
+  "not_found_title": "행사를 찾을 수 없습니다",
+  "not_found_body": "이 행사가 존재하지 않거나, 더 이상 접근 권한이 없습니다.",
+  "no_access_title": "이 섹션에 접근할 수 없습니다",
+  "no_access_body": "권한이 필요하면 주최자에게 역할 변경을 요청하세요.",
+  "nav": {
+    "overview": "개요",
+    "page": "신청 페이지",
+    "tickets": "티켓",
+    "attendees": "참가자",
+    "checkin": "체크인",
+    "broadcasts": "메시지",
+    "analytics": "분석",
+    "team": "팀",
+    "settings": "설정"
+  },
+  "counters": {
+    "heading": "실시간 집계",
+    "registered": "등록",
+    "checked_in": "체크인",
+    "waitlist": "대기자",
+    "no_show": "불참",
+    "capacity": "정원",
+    "unlimited": "제한 없음",
+    "as_of": "{{time}} 기준",
+    "units": "등록과 대기자는 자리 수, 체크인과 불참은 사람 수로 셉니다."
+  },
+  "details": {
+    "title": "행사 정보",
+    "when": "일시",
+    "timezone": "시간대",
+    "where": "장소",
+    "no_address": "주소가 없습니다",
+    "registration": "등록 기간",
+    "registration_open": "현재 접수 중",
+    "team": "팀 구성원",
+    "organization": "단체"
+  },
+  "page": {
+    "title": "신청 페이지",
+    "none": "아직 신청 페이지가 없습니다",
+    "edit": "페이지 편집"
+  },
+  "tickets": {
+    "title": "티켓",
+    "none": "이 행사에는 티켓 종류가 없습니다.",
+    "sold": "확보됨",
+    "a11y": "티켓 종류별 확보된 자리"
+  },
+  "quick": {
+    "heading": "바로가기",
+    "attendees": "참가자",
+    "tickets": "티켓",
+    "public_view": "참가자 화면으로 보기"
+  },
+  "switcher": {
+    "label": "행사 전환",
+    "empty": "예정된 다른 행사가 없습니다.",
+    "personal": "개인 행사"
+  }
+}

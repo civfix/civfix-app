@@ -1,0 +1,118 @@
+{
+  "loading_error": {
+    "title": "Report unavailable",
+    "body": "We could not load this report. It may have been removed, or you may be offline."
+  },
+  "actions": {
+    "notify": "Notify me",
+    "notifying": "Notifying",
+    "notify_a11y_on": "Notifying you of updates",
+    "notify_a11y_off": "Notify me of updates",
+    "host_event": "Host an event",
+    "mark_resolved": "Mark as resolved",
+    "reopen": "Reopen report",
+    "mark_resolved_a11y": "Mark this report as resolved",
+    "reopen_a11y": "Reopen this report",
+    "add_to_event": "Add to event",
+    "added": "Added",
+    "add_to_event_a11y": "Add this report to the event",
+    "added_a11y": "Added to event"
+  },
+  "title_menu": {
+    "options_a11y": "Report options",
+    "hide_from_map": "Hide from map",
+    "show_on_map_again": "Show on map again",
+    "report_this": "Report this report"
+  },
+  "hidden_banner": "Hidden from the map - only you can see this.",
+  "subject_label": {
+    "report": "this report",
+    "comment": "this comment",
+    "photo": "this photo",
+    "content": "this content",
+    "message": "this message"
+  },
+  "content_report": {
+    "submitted_toast": "Report submitted - thanks",
+    "error": "Couldn't submit your report. Try again."
+  },
+  "gallery": {
+    "processing_title": "Photos are still processing...",
+    "processing_body_one": "It will appear here once it finishes processing.",
+    "processing_body_other": "{{count}} photos will appear here once they finish processing.",
+    "processing_a11y": "Photos are still processing",
+    "tile_processing": "Processing...",
+    "tile_rejected": "Couldn't be posted",
+    "tile_held": "Under review",
+    "view_fullscreen_a11y": "View media full screen",
+    "report_photo_a11y": "Report this photo",
+    "thumb_a11y": "Show {{kind}} {{index}} of {{total}}"
+  },
+  "category_tag_a11y": "{{category}}",
+  "timeline": {
+    "label": "UPDATES",
+    "reported_by_you": "You reported this",
+    "reported_by_neighbor": "Reported by a neighbor",
+    "forwarded_to_city": "Forwarded to the city agency",
+    "pending_submission": "Pending submission to city",
+    "pending_a11y": "Why is this pending?",
+    "pending_note": "We have not mapped this city's contact yet. After a report, that usually takes us 1 to 3 business days.",
+    "reopened": "Reopened",
+    "hidden_from_map": "Hidden from the map",
+    "shown_on_map_again": "Shown on the map again",
+    "update": "Update",
+    "reply_from_city": "Reply from the city",
+    "show_full_message": "Show full message",
+    "hide_message": "Hide message",
+    "show_full_message_a11y": "Show full message",
+    "hide_full_message_a11y": "Hide full message",
+    "linked_to_cleanup": "Linked to cleanup '{{title}}'",
+    "linked_to_cleanup_detail": "{{organizer}} is organizing a cleanup for this.",
+    "status": {
+      "not_forwarded": "Not yet forwarded",
+      "in_progress": "In progress",
+      "resolved": "Resolved",
+      "under_review": "Under review",
+      "removed": "Removed"
+    }
+  },
+  "updates_label": "UPDATES",
+  "linked_events": {
+    "heading": "CLEANUP EVENTS"
+  },
+  "tabs": {
+    "timeline": "Timeline",
+    "chat": "Chat"
+  },
+  "discussion": {
+    "count_one": "{{count}} comment",
+    "count_other": "{{count}} comments",
+    "empty": "No comments yet. Start the conversation about this report.",
+    "load_earlier": "Load earlier comments",
+    "load_earlier_a11y": "Load earlier comments",
+    "loading": "Loading...",
+    "edit_title": "Edit comment",
+    "edit_error": "Could not save your edit. Please try again.",
+    "sign_in_cta": "Sign in to join the discussion",
+    "sign_in_cta_a11y": "Sign in to join the discussion"
+  },
+  "hostDraft": {
+    "back": "Back to your event ({{count}})",
+    "add": "Add to event",
+    "remove": "Remove"
+  },
+  "chat": {
+    "heading": "Chat",
+    "empty": "No messages yet. Start the conversation about this report.",
+    "loading": "Loading...",
+    "load_earlier": "Load earlier messages",
+    "load_earlier_a11y": "Load earlier messages",
+    "error": "Couldn't load the chat.",
+    "sign_in_cta": "Sign in to chat",
+    "sign_in_cta_a11y": "Sign in to join the chat",
+    "composer_placeholder": "Write a message...",
+    "view_chat": "View chat",
+    "view_chat_meta": "{{members}} members · {{messages}} messages",
+    "view_chat_a11y": "View the chat for this report"
+  }
+}

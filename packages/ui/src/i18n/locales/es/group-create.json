@@ -1,0 +1,35 @@
+{
+  "title_members": "Agregar miembros",
+  "title_identity": "Nuevo grupo",
+  "back_a11y": "Atrás",
+  "search_placeholder": "Busca personas por @usuario",
+  "next": "Siguiente",
+  "create": "Crear grupo",
+  "create_error": "No se pudo crear el grupo. Inténtalo de nuevo.",
+  "name_label": "Nombre del grupo",
+  "name_placeholder": "Ponle nombre a tu grupo",
+  "description_label": "Descripción (opcional)",
+  "description_placeholder": "¿De qué trata este grupo?",
+  "avatar_a11y": "Elegir una foto del grupo",
+  "avatar_clear_a11y": "Quitar la foto del grupo",
+  "chip": {
+    "remove_a11y": "Quitar a {{name}}"
+  },
+  "row": {
+    "toggle_a11y": "Seleccionar a {{name}}"
+  },
+  "empty": {
+    "prompt": {
+      "title": "Encuentra personas para agregar",
+      "body": "Busca por @usuario para agregar vecinos a tu grupo."
+    },
+    "error": {
+      "title": "No se pudo buscar",
+      "body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo."
+    },
+    "no_results": {
+      "title": "No se encontró a nadie",
+      "body": "Nadie coincide con @{{handle}}."
+    }
+  }
+}

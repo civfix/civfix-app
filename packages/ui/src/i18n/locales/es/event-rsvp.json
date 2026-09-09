@@ -1,0 +1,15 @@
+{
+  "label": {
+    "rsvp": "Confirmar asistencia",
+    "going": "Voy"
+  },
+  "a11y": {
+    "rsvp": "Confirmar asistencia",
+    "going": "Vas a ir. Toca para cancelar"
+  },
+  "error": {
+    "closed": "Este evento está cerrado.",
+    "not_allowed": "No puedes confirmar asistencia a este evento.",
+    "generic": "No se pudo actualizar tu asistencia. Inténtalo de nuevo."
+  }
+}

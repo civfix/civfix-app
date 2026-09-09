@@ -1,0 +1,28 @@
+{
+  "title": "코드를 입력하세요",
+  "subtitle": "6자리 코드를 보냈습니다",
+  "reviewer": {
+    "subtitle": "검토자 액세스 코드를 입력하세요",
+    "label": "검토자 액세스 코드",
+    "placeholder": "액세스 코드를 붙여넣으세요",
+    "helper": "앱 검토를 위해 이 빌드와 함께 제공됩니다."
+  },
+  "verify": {
+    "label": "확인",
+    "incomplete": "6자리를 모두 입력하세요.",
+    "too_short": "검토자 액세스 코드를 모두 입력하세요.",
+    "fallback_reason": "코드가 올바르지 않습니다.",
+    "rate_limited": "시도 횟수가 초과되었습니다. 재전송을 눌러 새 코드를 받으세요.",
+    "locked": "{{reason}} 재전송을 눌러 새 코드를 받으세요.",
+    "wrong_with_attempts_one": "{{reason}} {{count}}번 남았습니다.",
+    "wrong_with_attempts_other": "{{reason}} {{count}}번 남았습니다."
+  },
+  "attempts_left_one": "{{count}}번 남음",
+  "attempts_left_other": "{{count}}번 남음",
+  "resend": {
+    "prompt": "코드를 받지 못하셨나요? ",
+    "cooldown": "{{cooldown}}초 후 재전송",
+    "sending": "전송 중...",
+    "action": "코드 재전송"
+  }
+}

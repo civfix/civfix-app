@@ -1,0 +1,30 @@
+{
+  "header": {
+    "title": "Pin melden"
+  },
+  "gate": {
+    "camera": {
+      "title": "Kamerazugriff",
+      "body": "civfix nutzt deine Kamera, um das gemeldete Problem zu erfassen. Du kannst auch ein vorhandenes Foto oder Video anhängen.",
+      "continue": "Weiter",
+      "open_settings": "Einstellungen öffnen"
+    },
+    "no_camera": {
+      "title": "Keine Kamera gefunden",
+      "body": "Dieses Gerät hat keine verfügbare Kamera. Hänge ein vorhandenes Foto oder Video an."
+    },
+    "choose_library": "Aus Bibliothek wählen"
+  },
+  "timer": {
+    "elapsed": "{{elapsed}}s / 10s"
+  },
+  "mode": {
+    "photo": "FOTO",
+    "video": "VIDEO · 10s"
+  },
+  "shutter": {
+    "take_photo": "Foto aufnehmen",
+    "stop_recording": "Aufnahme stoppen",
+    "start_recording": "Aufnahme starten"
+  }
+}

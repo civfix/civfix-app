@@ -1,0 +1,24 @@
+{
+  "a11y": {
+    "skip_to_content": "Skip to content",
+    "map_controls": "Map controls"
+  },
+  "boot": {
+    "loading_label": "Loading civfix"
+  },
+  "detail": {
+    "back": "Back"
+  },
+  "sign_in_prompt": {
+    "cta": "Sign in"
+  },
+  "app_promo": {
+    "banner_title": "civfix",
+    "banner_subtitle": "Faster reporting in the app",
+    "card_title": "Get the civfix app",
+    "card_body": "Report issues, track fixes, and join cleanups from your phone.",
+    "dismiss": "Dismiss",
+    "badge_app_store": "Download civfix on the App Store",
+    "badge_google_play": "Get civfix on Google Play"
+  }
+}

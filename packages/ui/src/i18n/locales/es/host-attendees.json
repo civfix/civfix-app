@@ -1,0 +1,119 @@
+{
+  "waitlist_notice": "Las entradas en lista de espera todavía no son inscripciones, así que aquí no hay acciones por asistente.",
+  "row": {
+    "guest": "Invitado",
+    "deleted_user": "Usuario eliminado"
+  },
+  "chip": {
+    "checked_in": "Registrado",
+    "not_checked_in": "Sin registrar",
+    "no_show": "No asistió"
+  },
+  "action": {
+    "message": "Escribir a los asistentes"
+  },
+  "filter": {
+    "tabs": "Filtros de asistentes",
+    "search": "Buscar",
+    "search_placeholder": "Buscar por nombre",
+    "ticket_type": "Tipo de entrada",
+    "all": "Todos",
+    "registered": "Inscritos",
+    "checked_in": "Registrados",
+    "not_checked_in": "Sin registrar",
+    "no_show": "No asistieron",
+    "waitlisted": "Lista de espera",
+    "cancelled": "Canceladas",
+    "guests": "Invitados",
+    "members": "Miembros"
+  },
+  "column": {
+    "name": "Nombre",
+    "kind": "Tipo",
+    "ticket_type": "Entrada",
+    "seats": "Plazas",
+    "attendance": "Asistencia",
+    "registered_at": "Inscripción",
+    "checked_in_at": "Registro de entrada"
+  },
+  "table": {
+    "caption": "Asistentes",
+    "select_row": "Seleccionar a {{name}}",
+    "open_row": "Abrir la ficha de {{name}}"
+  },
+  "summary": {
+    "shown": "Mostrando {{shown}}",
+    "event_total": "{{total}} inscritos en todo el evento"
+  },
+  "empty": {
+    "title": "Todavía no hay nadie",
+    "body": "Las inscripciones aparecen aquí en cuanto alguien se apunta."
+  },
+  "source": {
+    "self": "Se apuntó",
+    "waitlist": "Desde la lista de espera",
+    "walkup": "En la puerta",
+    "transfer": "Transferida"
+  },
+  "history": {
+    "registered": "se inscribió",
+    "checked_in": "registró su entrada",
+    "cancelled": "canceló"
+  },
+  "drawer": {
+    "registration": "Inscripción",
+    "ticket_type": "Tipo de entrada",
+    "party": "Plazas",
+    "registered_at": "Inscripción",
+    "slot": "Turno",
+    "source": "Cómo se apuntó",
+    "no_contact": "civfix nunca muestra a los anfitriones el correo ni el teléfono de un miembro.",
+    "seats": "Plazas",
+    "seat_n": "Plaza {{n}}",
+    "no_seats": "Esta inscripción no tiene plazas.",
+    "check_in": "Registrar",
+    "check_in_all": "Registrar las {{count}}",
+    "checked_in": "Registrado",
+    "check_in_undone": "Registro deshecho",
+    "answers": "Respuestas",
+    "no_answers": "No se dio ninguna respuesta.",
+    "answer_scrubbed": "Eliminada después del evento",
+    "move_label": "Mover a otro tipo de entrada",
+    "move_placeholder": "Elige un tipo de entrada",
+    "move": "Mover",
+    "moved": "Inscripción movida",
+    "move_conflict": "Ese tipo de entrada está completo, o el grupo es demasiado grande para él.",
+    "note_label": "Nota privada",
+    "note_hint": "Solo la ven los anfitriones. Se elimina 90 días después del evento.",
+    "note_saved": "Nota guardada",
+    "history": "Historial",
+    "remove": "Quitar del evento",
+    "removed": "Inscripción eliminada"
+  },
+  "remove": {
+    "title": "¿Quitar esta inscripción?",
+    "body": "{{name}} perderá sus plazas. Puede volver a apuntarse mientras la inscripción siga abierta.",
+    "reason": "Motivo",
+    "confirm": "Quitar"
+  },
+  "no_show": {
+    "title": "¿Marcar como no asistidas?",
+    "body": "Se marcarán {{count}} inscripciones como no asistidas. Si registras a alguien después, se deshace.",
+    "confirm": "Marcar como no asistidas"
+  },
+  "bulk": {
+    "check_in": "Registrar",
+    "mark_no_show": "Marcar no asistencia",
+    "remove": "Quitar",
+    "checked_in_one": "{{count}} plaza registrada",
+    "checked_in_other": "{{count}} plazas registradas",
+    "no_show_one": "{{count}} plaza marcada como no asistida",
+    "no_show_other": "{{count}} plazas marcadas como no asistidas",
+    "removed_one": "{{count}} inscripción eliminada",
+    "removed_other": "{{count}} inscripciones eliminadas",
+    "partial_one": "{{count}} no se pudo completar.",
+    "partial_other": "{{count}} no se pudieron completar.",
+    "export_hint": "Exportar",
+    "export_reason": "Las exportaciones cubren todo el evento, no una selección. Usa el botón Exportar de arriba."
+  }
+}

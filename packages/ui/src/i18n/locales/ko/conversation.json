@@ -1,0 +1,158 @@
+{
+  "header": {
+    "back": "뒤로",
+    "view_members": "멤버 보기",
+    "more_options": "더 보기",
+    "crew_chat": "그룹 채팅",
+    "direct_message": "다이렉트 메시지",
+    "members_one": "멤버 {{count}}명",
+    "members_other": "멤버 {{count}}명",
+    "members_with_online_one": "멤버 {{count}}명 · 온라인 {{online}}명",
+    "members_with_online_other": "멤버 {{count}}명 · 온라인 {{online}}명",
+    "crew_chat_with_online": "그룹 채팅 · 온라인 {{online}}명",
+    "online": "온라인",
+    "report_chat": "신고 채팅",
+    "group_chat": "그룹 채팅",
+    "open_group_info": "그룹 정보 열기"
+  },
+  "typing": {
+    "indicator": "입력 중",
+    "indicator_named": "{{name}}님이 입력 중",
+    "names_one": "{{name}}",
+    "names_two": "{{first}}, {{second}}",
+    "names_several": "여러 명",
+    "someone": "누군가"
+  },
+  "room_error": {
+    "dm_not_accepting": "{{name}}님은 메시지를 받지 않습니다.",
+    "group_no_access": "이 대화에 접근할 수 없어요.",
+    "dm_unavailable": "{{name}}님은 더 이상 이용할 수 없어요.",
+    "group_unavailable": "이 대화는 더 이상 이용할 수 없어요.",
+    "generic": "지금은 이 곳에서 메시지를 보낼 수 없어요.",
+    "transient": "메시지를 보내지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
+    "rate_limited": "메시지를 너무 빠르게 보내고 있어요. 조금 천천히 보내 주세요.",
+    "blocked": "이 메시지에는 허용되지 않는 표현이 포함되어 있어요.",
+    "read_only": "이 채널에는 소유자와 관리자만 게시할 수 있어요.",
+    "reply_unavailable": "그 메시지에는 더 이상 답장할 수 없어요.",
+    "send_rejected": "메시지를 보내지 못했어요."
+  },
+  "attachment": {
+    "view": "첨부 파일 보기",
+    "report_photo": "이 사진 신고하기"
+  },
+  "attach": {
+    "photo": "사진 보관함",
+    "camera": "카메라",
+    "poll": "투표",
+    "dismiss": "메뉴 닫기"
+  },
+  "bubble": {
+    "removed": "삭제된 메시지",
+    "failed_retry": "실패 · 탭하여 재시도",
+    "sending": "전송 중",
+    "edited": "(수정됨)",
+    "retry_sending": "다시 보내기",
+    "message_actions": "메시지 작업",
+    "announce_failed": "메시지를 보내지 못했어요. 탭하여 재시도하세요.",
+    "reply_deleted": "삭제된 메시지",
+    "reply_media": "사진",
+    "reply_unknown_author": "삭제된 계정",
+    "reply_quote_a11y": "{{name}}님에게 답장: {{excerpt}}"
+  },
+  "menu": {
+    "cancel": "취소",
+    "delete_message": "메시지 삭제",
+    "delete_failed": "메시지를 삭제하지 못했습니다. 다시 시도해 주세요."
+  },
+  "overflow": {
+    "open_profile": "프로필 보기",
+    "block": "차단",
+    "open_profile_label": "프로필 보기",
+    "block_label": "이 사람 차단하기",
+    "close_menu": "메뉴 닫기",
+    "view_report": "신고 보기",
+    "view_report_label": "신고 열기",
+    "mute": "채팅 음소거",
+    "unmute": "음소거 해제",
+    "mute_label": "이 채팅 음소거",
+    "unmute_label": "이 채팅 음소거 해제",
+    "leave": "채팅 나가기",
+    "leave_label": "이 채팅 나가기"
+  },
+  "join": {
+    "prompt": "이 채팅에 답장하려면 참여하세요",
+    "action": "채팅 참여"
+  },
+  "block_confirm": {
+    "prompt_dm": "{{name}}님을 차단할까요? 더 이상 메시지를 받지 않으며 이 대화가 숨겨집니다.",
+    "prompt_group": "{{name}}님을 차단할까요? 더 이상 메시지를 받지 않아요.",
+    "this_person": "이 사람",
+    "cancel": "취소",
+    "block": "차단"
+  },
+  "list": {
+    "loading": "불러오는 중...",
+    "error_title": "채팅을 불러올 수 없어요",
+    "error_body": "civfix에 연결할 수 없어요. 보내는 메시지는 저장되었다가 온라인 상태가 되면 전달됩니다.",
+    "empty_title": "인사해 보세요",
+    "empty_body_group": "그룹 채팅이 시작됐어요. 계획, 장비, 소식을 나눠보세요.",
+    "empty_body_dm": "대화가 시작됐어요. 안녕이라고 먼저 말해보세요.",
+    "new_messages": "새 메시지",
+    "jump_to_newest": "최신 메시지로 이동"
+  },
+  "jump": {
+    "back_to_latest": "최신 메시지로 돌아가기",
+    "failed": "메시지로 이동할 수 없어요"
+  },
+  "connection": {
+    "reconnecting": "재연결 중 · 온라인 상태가 되면 메시지가 전송됩니다.",
+    "offline": "오프라인 · 연결되면 메시지가 전송됩니다."
+  },
+  "composer": {
+    "placeholder_unavailable": "메시지 전송 불가",
+    "placeholder_group": "그룹에 메시지 보내기",
+    "placeholder_dm": "{{name}}님에게 메시지 보내기",
+    "attach": "사진 또는 동영상 첨부",
+    "input": "메시지 입력",
+    "send": "메시지 보내기",
+    "edit_title": "메시지 수정",
+    "cancel_edit": "수정 취소",
+    "save_error": "수정 내용을 저장하지 못했어요. 다시 시도해 주세요.",
+    "reply_title": "{{name}}님에게 답장",
+    "cancel_reply": "답장 취소"
+  },
+  "report": {
+    "subject_message": "이 메시지",
+    "subject_photo": "이 사진",
+    "submitted": "신고 접수됨 · 감사합니다",
+    "submit_error": "신고를 제출하지 못했어요. 다시 시도해 주세요."
+  },
+  "context_menu": {
+    "reply": "답장",
+    "copy": "복사",
+    "edit": "수정",
+    "pin": "고정",
+    "unpin": "고정 해제",
+    "delete": "삭제",
+    "report": "신고",
+    "block": "차단",
+    "copied": "복사됨",
+    "dismiss": "메뉴 닫기",
+    "reactions": "이 메시지에 반응하기"
+  },
+  "pins": {
+    "bar_label": "고정된 메시지",
+    "a11y_bar": "고정된 메시지 {{count}}개 중 {{index}}번째: {{excerpt}}. 탭하면 해당 메시지로 이동합니다.",
+    "a11y_open_list": "고정된 메시지 모두 보기",
+    "action_failed": "고정 상태를 변경하지 못했습니다. 다시 시도해 주세요.",
+    "view_title": "고정된 메시지",
+    "empty": "고정된 메시지가 없습니다",
+    "jump": "메시지로 이동"
+  },
+  "channel": {
+    "join": "채널 참여",
+    "mute": "음소거",
+    "unmute": "음소거 해제",
+    "read_only": "관리자만 게시할 수 있습니다"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "section": {
+    "attending": "Attending",
+    "inYourArea": "In your area"
+  },
+  "search": {
+    "placeholder": "Search events",
+    "a11y": "Search events",
+    "clear_a11y": "Clear search"
+  },
+  "card": {
+    "going_one": "{{count}} going",
+    "going_other": "{{count}} going",
+    "a11y_one": "{{title}}, {{count}} going",
+    "a11y_other": "{{title}}, {{count}} going"
+  },
+  "empty": {
+    "error": {
+      "title": "Could not load events",
+      "body": "We could not reach civfix. Check your connection and try again."
+    },
+    "search": {
+      "title": "No events match your search",
+      "body": "No upcoming events match \"{{query}}\". Try a different title or place."
+    },
+    "none": {
+      "title": "No events nearby yet",
+      "body": "Be the first to organize one. Pick a spot, set a time, and invite your neighbors."
+    }
+  }
+}

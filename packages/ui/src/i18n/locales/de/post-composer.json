@@ -1,0 +1,60 @@
+{
+  "add_media_a11y": "Foto oder Video hinzufügen",
+  "section": {
+    "events": "Deine Veranstaltungen",
+    "reports": "Deine Meldungen",
+    "show_more": "Mehr anzeigen",
+    "show_more_count": "Mehr anzeigen ({{count}})",
+    "show_fewer": "Weniger anzeigen"
+  },
+  "pills": {
+    "event": "Veranstaltung",
+    "report": "Meldung",
+    "event_a11y": "Veranstaltung anhängen",
+    "report_a11y": "Meldung anhängen"
+  },
+  "empty_events": "Veranstaltungen, an denen du teilnimmst oder die du organisierst, erscheinen hier.",
+  "empty_reports": "Meldungen, die du einreichst, erscheinen hier.",
+  "mode": {
+    "post": {
+      "title": "Neuer Beitrag",
+      "placeholder": "Teile eine Neuigkeit aus deiner Nachbarschaft..."
+    },
+    "reply": {
+      "title": "Antworten",
+      "placeholder": "Schreib eine Antwort..."
+    },
+    "quote": {
+      "title": "Beitrag zitieren",
+      "placeholder": "Füge deine Sicht hinzu..."
+    }
+  },
+  "action": {
+    "post": "Posten",
+    "reply": "Antworten",
+    "posting": "Wird gepostet..."
+  },
+  "input_a11y": "Beitragstext",
+  "close_a11y": "Editor schließen",
+  "submit_error": "Beitrag konnte nicht veröffentlicht werden. Bitte erneut versuchen.",
+  "media_dropped": "Einige Anhänge wurden nicht fertig hochgeladen. Füge sie erneut hinzu.",
+  "reply": {
+    "placeholder_named": "Schreib deine Antwort",
+    "context": "Antwort an {{handle}}",
+    "signed_out": "Zum Antworten anmelden",
+    "attach_a11y": "Zu deiner Antwort hinzufuegen",
+    "expand_a11y": "Antwort schreiben",
+    "chars_left": "Noch {{count}}",
+    "remove_event_a11y": "Angehaengte Veranstaltung entfernen",
+    "remove_report_a11y": "Angehaengte Meldung entfernen"
+  },
+  "attach": {
+    "title": "Zu deiner Antwort hinzufuegen",
+    "photo": "Foto oder Video",
+    "camera": "Kamera",
+    "event": "Veranstaltung anhaengen",
+    "report": "Meldung anhaengen",
+    "back": "Zurueck",
+    "dismiss": "Schliessen"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "eyebrow": "App by Reach Out Los Angeles, a registered 501({{zwnj}}c)(3) non-profit",
+  "lede": "civfix connects citizens with each other and their local governments, bridging the gap between community concerns and real civic action.",
+  "close": "Close",
+  "support_civfix": "Support civfix",
+  "support_civfix_a11y": "Support civfix through Reach Out Los Angeles",
+  "legal": {
+    "terms": "Terms",
+    "terms_a11y": "Terms of Service",
+    "privacy": "Privacy",
+    "privacy_a11y": "Privacy Policy"
+  }
+}

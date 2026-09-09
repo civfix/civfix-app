@@ -1,0 +1,28 @@
+{
+  "search": {
+    "placeholder": "Search by name or @handle",
+    "a11y": "Search people by name or handle",
+    "clear_a11y": "Clear search"
+  },
+  "row": {
+    "open_a11y": "{{name}}, view profile"
+  },
+  "no_matches": {
+    "title": "No matches",
+    "body": "No one in this list matches \"{{query}}\"."
+  },
+  "error": {
+    "title": "Could not load",
+    "body": "We could not reach civfix. Check your connection and try again."
+  },
+  "empty": {
+    "followers": {
+      "title": "No followers yet",
+      "body": "When people follow this account, they'll show up here."
+    },
+    "following": {
+      "title": "Not following anyone yet",
+      "body": "Accounts this person follows will show up here."
+    }
+  }
+}

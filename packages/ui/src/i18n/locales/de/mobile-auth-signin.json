@@ -1,0 +1,16 @@
+{
+  "button": {
+    "apple": "Mit Apple fortfahren",
+    "google": "Mit Google fortfahren",
+    "email": "Mit E-Mail fortfahren"
+  },
+  "email": {
+    "label": "E-Mail",
+    "placeholder": "du@beispiel.de",
+    "send_code": "Code zusenden",
+    "invalid": "Bitte gib eine gültige E-Mail-Adresse ein."
+  },
+  "privacy": {
+    "disclaimer": "Deine E-Mail wird nicht weitergegeben und nur zur Kontosicherung genutzt."
+  }
+}

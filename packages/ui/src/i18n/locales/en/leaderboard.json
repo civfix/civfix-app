@@ -1,0 +1,17 @@
+{
+  "title": "{{name}} leaderboard",
+  "title_generic": "Leaderboard",
+  "hours_unit": "{{hours}} hrs",
+  "row": {
+    "a11y": "Rank {{rank}}: {{name}}, {{hours}} volunteer hours",
+    "you": "You"
+  },
+  "empty": {
+    "title": "No hours logged yet",
+    "body": "When neighbors log volunteer hours here, the leaderboard will fill up."
+  },
+  "error": {
+    "title": "Could not load",
+    "body": "We could not reach civfix. Check your connection and try again."
+  }
+}

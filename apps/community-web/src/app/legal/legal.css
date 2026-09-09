@@ -1,0 +1,232 @@
+/* =========================================================================
+   Legal pages: readable long-form document styling for /legal/*
+   (Terms, Privacy Policy, Cookies, Sub-processors).
+
+   These are static, content-only routes (no data fetching), so the styling is
+   a small descendant-selector "prose" block driven entirely by the design
+   tokens defined in design.css (var(--ink), var(--font-display), etc.). That
+   keeps the four documents consistent and on-brand without repeating Tailwind
+   utilities on every heading / paragraph / list item.
+   ========================================================================= */
+
+.legal-page {
+  min-height: 100dvh;
+  background: var(--bg-1);
+  color: var(--fg-1);
+}
+
+/* The centered, comfortably-narrow reading column. */
+.legal-shell {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-16);
+}
+
+/* ---- Header: brand + back-to-app + cross-document nav ---- */
+.legal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-2) 0 var(--space-6);
+}
+
+/* The brand wordmark in the legal header, larger than its default inherited size. */
+.legal-top .cf-logo {
+  font-size: 30px;
+}
+
+.legal-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  font-weight: 600;
+  color: var(--fg-2);
+  text-decoration: none;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.legal-back:hover {
+  color: var(--fg-1);
+  border-color: var(--border-strong);
+}
+
+.legal-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+.legal-nav a {
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  font-weight: 600;
+  color: var(--fg-2);
+  text-decoration: none;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+.legal-nav a:hover {
+  color: var(--fg-1);
+  border-color: var(--border-strong);
+}
+.legal-nav a[aria-current="page"] {
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-color: transparent;
+}
+
+/* ---- Document title block ---- */
+.legal-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-38);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0 0 var(--space-2);
+}
+.legal-meta {
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  color: var(--fg-3);
+  margin: 0 0 var(--space-6);
+}
+
+/* ---- Long-form prose ---- */
+.legal-prose {
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  line-height: var(--lh-loose);
+  color: var(--fg-1);
+}
+.legal-prose > section + section {
+  margin-top: var(--space-8);
+}
+.legal-prose h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-24);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-snug);
+  margin: 0 0 var(--space-3);
+  padding-top: var(--space-2);
+}
+.legal-prose h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-18);
+  line-height: var(--lh-snug);
+  margin: var(--space-5) 0 var(--space-2);
+}
+.legal-prose p {
+  margin: 0 0 var(--space-4);
+}
+.legal-prose ul,
+.legal-prose ol {
+  margin: 0 0 var(--space-4);
+  padding-left: var(--space-6);
+}
+.legal-prose li {
+  margin: 0 0 var(--space-2);
+}
+.legal-prose li::marker {
+  color: var(--fg-3);
+}
+.legal-prose a {
+  color: var(--bloom-600);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.legal-prose a:hover {
+  color: var(--bloom-700);
+}
+.legal-prose strong {
+  font-weight: 700;
+  color: var(--fg-1);
+}
+.legal-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--bg-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xs);
+  padding: 0.05em 0.35em;
+}
+
+/* A subtle callout for definitions / important notes inside a document. */
+.legal-prose .legal-note {
+  background: var(--bg-2);
+  border-left: 3px solid var(--ink-4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-4);
+  color: var(--ink-2);
+}
+
+/* ---- Tables (sub-processors) ---- */
+.legal-prose .legal-table-wrap {
+  overflow-x: auto;
+  margin: 0 0 var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.legal-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-14);
+  line-height: var(--lh-base);
+}
+.legal-prose thead th {
+  text-align: left;
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--fg-2);
+  background: var(--bg-2);
+  padding: var(--space-3) var(--space-4);
+  white-space: nowrap;
+}
+.legal-prose tbody td {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+.legal-prose tbody tr:nth-child(even) td {
+  background: var(--card-tint);
+}
+
+/* ---- Footer ---- */
+.legal-foot {
+  margin-top: var(--space-12);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  color: var(--fg-3);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.legal-foot nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.legal-foot a {
+  color: var(--fg-2);
+  text-decoration: none;
+  font-weight: 600;
+}
+.legal-foot a:hover {
+  color: var(--fg-1);
+  text-decoration: underline;
+}

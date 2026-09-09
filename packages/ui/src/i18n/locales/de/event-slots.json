@@ -1,0 +1,61 @@
+{
+  "block": {
+    "heading": "Aufgaben",
+    "claim_joins_hint": "Mit einer Aufgabe sagst du zugleich zu.",
+    "filled": "{{claimed}}/{{capacity}} Plätze belegt"
+  },
+  "row": {
+    "open": "Frei",
+    "remaining_one": "Noch {{count}} Platz frei",
+    "remaining_other": "Noch {{count}} Plätze frei",
+    "full": "Voll",
+    "full_sub": "Alle Plätze vergeben",
+    "you_claimed": "Du hast diese Aufgabe",
+    "claimed_count_one": "{{count}} Person",
+    "claimed_count_other": "{{count}} Personen",
+    "claim": "Übernehmen",
+    "claimed": "Übernommen",
+    "switch": "Wechseln",
+    "claim_a11y": "Aufgabe {{title}} übernehmen",
+    "release_a11y": "Aufgabe {{title}} abgeben",
+    "switch_a11y": "Zu Aufgabe {{title}} wechseln"
+  },
+  "editor": {
+    "add_first": "Aufgabe hinzufügen",
+    "add_first_a11y": "Eine Aufgabe hinzufügen",
+    "add_more": "Weitere Aufgabe hinzufügen",
+    "cap_reached": "Du kannst bis zu {{max}} Aufgaben anlegen.",
+    "title_placeholder": "z. B. Anmeldetisch",
+    "title_a11y": "Name der Aufgabe {{index}}",
+    "description_placeholder": "Worum es bei dieser Aufgabe geht (optional)",
+    "description_a11y": "Beschreibung der Aufgabe {{index}}",
+    "capacity_label": "Plätze",
+    "capacity_any": "Beliebig",
+    "capacity_a11y": "Anzahl der Plätze für Aufgabe {{index}}",
+    "capacity_more_a11y": "Platz hinzufügen",
+    "capacity_less_a11y": "Platz entfernen",
+    "move_up_a11y": "Aufgabe {{index}} nach oben",
+    "move_down_a11y": "Aufgabe {{index}} nach unten",
+    "remove_a11y": "Aufgabe {{index}} entfernen",
+    "claimed_count_one": "{{count}} vergeben",
+    "claimed_count_other": "{{count}} vergeben",
+    "remove_warning_one": "Beim Entfernen verliert {{count}} Person ihre Zuteilung.",
+    "remove_warning_other": "Beim Entfernen verlieren {{count}} Personen ihre Zuteilung."
+  },
+  "error": {
+    "empty_title": "Gib dieser Aufgabe einen Namen.",
+    "title_too_long": "Bitte unter {{max}} Zeichen bleiben.",
+    "capacity_invalid": "Gib eine Anzahl an Plätzen ein oder lass das Feld leer.",
+    "capacity_below_claimed": "{{count}} Personen haben diese Aufgabe bereits übernommen.",
+    "full": "Diese Aufgabe wurde gerade vergeben.",
+    "generic": "Aufgabe konnte nicht aktualisiert werden. Versuche es erneut."
+  },
+  "roster": {
+    "unassigned": "Keine Aufgabe",
+    "empty_slot": "Noch niemand"
+  },
+  "toast": {
+    "claimed": "Aufgabe übernommen",
+    "released": "Deine Aufgabe wurde freigegeben"
+  }
+}

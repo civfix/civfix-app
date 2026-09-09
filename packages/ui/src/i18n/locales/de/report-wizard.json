@@ -1,0 +1,110 @@
+{
+  "header": {
+    "title": "Problem melden",
+    "back": "Zurück"
+  },
+  "wizard": {
+    "announceStep": "Schritt {{current}} von {{total}}. {{title}}",
+    "capture": {
+      "title": "Zeig uns das Problem",
+      "help": "Ein Foto oder ein kurzes Video genügt."
+    },
+    "location": {
+      "title": "Wo ist es?",
+      "help": "Setze den Pin dorthin, wo das Problem ist."
+    },
+    "category": {
+      "title": "Was ist es?",
+      "help": "Wähle die passendste Option."
+    },
+    "details": {
+      "title": "Details ergänzen",
+      "help": "Ein kurzer Titel und was die Stadt wissen sollte."
+    },
+    "review": {
+      "title": "Bereit zum Senden?",
+      "help": "Prüfe alles und setze den Pin."
+    }
+  },
+  "footer": {
+    "continue": "Weiter",
+    "drop_pin": "Pin setzen"
+  },
+  "capture": {
+    "label_filled": "Deine Aufnahmen",
+    "drop_title": "Problem aufnehmen",
+    "drop_sub": "Pflichtfeld · Max. 10s Video · GPS beim Auslösen erfasst",
+    "capture_a11y": "Foto oder Video aufnehmen",
+    "choose_library": "Aus Bibliothek wählen",
+    "choose_library_a11y": "Aus Bibliothek wählen",
+    "drag_hint": "oder Fotos hierher ziehen",
+    "remove_item_a11y": "Element entfernen",
+    "add_camera_a11y": "Von Kamera hinzufügen",
+    "add_library_a11y": "Aus Bibliothek hinzufügen",
+    "camera": "Kamera",
+    "library": "Bibliothek",
+    "hint_at_cap": "Maximal {{max}} Dateien. Entferne eine, um eine weitere hinzuzufügen.",
+    "hint_add_more_one": "Bis zu {{count}} Foto oder Video hinzufügen.",
+    "hint_add_more_other": "Bis zu {{count}} Fotos oder Videos hinzufügen.",
+    "camera_error": "Kamera konnte nicht geöffnet werden. Versuche es über die Bibliothek."
+  },
+  "details": {
+    "title_label": "Titel",
+    "title_placeholder": "Kurze Zusammenfassung",
+    "description_label": "Beschreibung",
+    "description_placeholder": "Beschreibe, was du siehst – seit wann es besteht und was die Stadt wissen sollte.",
+    "flag_blocking": "Blockiert Gehweg oder Straße",
+    "flag_safety": "Sicherheitsrisiko"
+  },
+  "review": {
+    "untitled": "Unbenannter Bericht",
+    "where_label": "Wo ist es?",
+    "no_location": "Kein Standort erfasst. Suche eine Adresse oder tippe auf die Karte.",
+    "where_placeholder": "Standort beschreiben, z. B. Nordgehweg",
+    "route_label": "Wohin wird es weitergeleitet",
+    "route_no_point": "Setze den Pin auf der Karte, um die Weiterleitung zu sehen.",
+    "route_routable": "Automatisch weitergeleitet nach Prüfung – meist 1–3 Werktage.",
+    "route_new_area": "Neues Gebiet – {{cityState}} ist noch nicht für die automatische Weiterleitung eingerichtet. Wir prüfen und leiten manuell weiter.",
+    "route_uncovered": "Dieses Gebiet decken wir noch nicht ab, aber dein Bericht wird gespeichert und manuell geprüft.",
+    "route_resolving": "Weiterleitung wird ermittelt..."
+  },
+  "submit": {
+    "submitting_title": "Bericht wird eingereicht",
+    "submitting_body": "Medien werden hochgeladen und weitergeleitet. Einen Moment bitte.",
+    "error_title": "Einreichung fehlgeschlagen",
+    "try_again": "Erneut versuchen",
+    "success_title": "Pin gesetzt. Wir kümmern uns darum.",
+    "success_body_held": "In der Warteschlange zur Prüfung, dann Weiterleitung. Verfolge es in deinen Berichten.",
+    "success_body_live": "Wir leiten es nach Prüfung weiter – meist 1–3 Werktage. Verfolge es in deinen Berichten.",
+    "view_report": "Meinen Bericht ansehen",
+    "back_to_map": "Zurück zur Karte",
+    "announce_error": "Bericht konnte nicht eingereicht werden. {{detail}}",
+    "announce_held": "Pin gesetzt und in der Warteschlange zur Prüfung.",
+    "announce_live": "Pin gesetzt. Bericht eingereicht."
+  },
+  "errors": {
+    "no_category": "Bitte vor dem Senden eine Kategorie auswählen.",
+    "no_location": "Für diese Meldung wurde kein Standort festgelegt. Setze die Markierung dorthin, wo das Problem ist.",
+    "no_media": "Bitte vor dem Senden ein Foto oder Video aufnehmen.",
+    "validation": "Bitte Foto und Standort prüfen und erneut versuchen.",
+    "rate_limited": "Zu viele Versuche. Bitte kurz warten und erneut versuchen.",
+    "turnstile_failed": "Wir konnten nicht bestätigen, dass du ein Mensch bist. Seite neu laden und Prüfung wiederholen.",
+    "media_rejected": "Dieses Foto konnte nicht akzeptiert werden. Versuche ein anderes.",
+    "unauthorized": "Deine Sitzung ist möglicherweise abgelaufen. Erneut anmelden und wiederholen.",
+    "generic": "Einreichung gerade nicht möglich. Bitte erneut versuchen."
+  },
+  "share": {
+    "label": "Im Feed teilen",
+    "helper": "Nachbarn und deine Follower sehen es.",
+    "caption_placeholder": "Was sollten Nachbarn wissen?",
+    "caption_a11y": "Text deines Feed-Beitrags",
+    "now": "jetzt",
+    "posted_heading": "Im Feed geteilt",
+    "fixes_hint": "Wandert zu Behoben, sobald das erledigt ist.",
+    "failed": "Bericht eingereicht, aber der Feed-Beitrag ging nicht raus.",
+    "failed_rejected": "Dieser Text konnte nicht gepostet werden.",
+    "failed_rate_limited": "Zu viele Beiträge. Versuch es in einer Minute.",
+    "retry": "Erneut versuchen",
+    "signed_out_hint": "Erstelle ein Konto, um Berichte im Feed zu teilen."
+  }
+}

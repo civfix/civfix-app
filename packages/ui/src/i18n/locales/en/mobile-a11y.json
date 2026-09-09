@@ -1,0 +1,5 @@
+{
+  "button_close": "Close",
+  "button_back": "Go back",
+  "step_progress": "Step {{phase}} of 3"
+}

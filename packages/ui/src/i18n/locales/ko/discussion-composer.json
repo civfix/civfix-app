@@ -1,0 +1,8 @@
+{
+  "placeholder": "토론에 참여하세요",
+  "city_fallback": "시청",
+  "forward_disclaimer": "{{mention}}을 태그하면 댓글이 {{city}}에 전달됩니다.",
+  "attach_a11y": "사진 또는 동영상 첨부",
+  "input_a11y": "토론 메시지 입력",
+  "send_a11y": "메시지 게시"
+}

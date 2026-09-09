@@ -1,0 +1,91 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "pnpm": "9.12.0",
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development",
+      "env": {
+        "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "521996499476-d86mdmhsuopfp9gmqf7qarc2ousv6sqt.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME": "com.googleusercontent.apps.521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t"
+      }
+    },
+    "preview": {
+      "pnpm": "9.12.0",
+      "distribution": "internal",
+      "channel": "preview",
+      "ios": {
+        "simulator": false
+      },
+      "env": {
+        "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "521996499476-d86mdmhsuopfp9gmqf7qarc2ousv6sqt.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME": "com.googleusercontent.apps.521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t"
+      }
+    },
+    "testflight": {
+      "extends": "production",
+      "channel": "testflight",
+      "autoIncrement": true,
+      "env": {
+        "//api": "Dev/TestFlight testing builds bake the staging API base URL. App Store releases use the production profile, which sets no EXPO_PUBLIC_API_URL and therefore falls back to https://api.civfix.org (src/lib/apiUrl.ts).",
+        "//donate": "How a donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. OTA-flippable with `eas update` if App Review treats the in-app browser as in-app purchasing (see APP-REVIEW-NOTES.md).",
+        "EXPO_PUBLIC_DONATE_BROWSER_MODE": "in-app",
+        "RCT_USE_PREBUILT_RNCORE": "0",
+        "RCT_USE_RN_DEP": "0",
+        "EXPO_PUBLIC_API_URL": "https://api.civfix.dev",
+        "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "521996499476-d86mdmhsuopfp9gmqf7qarc2ousv6sqt.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME": "com.googleusercontent.apps.521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t"
+      }
+    },
+    "staging": {
+      "extends": "preview",
+      "channel": "staging",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.civfix.dev",
+        "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf"
+      }
+    },
+    "production": {
+      "pnpm": "9.12.0",
+      "channel": "production",
+      "autoIncrement": true,
+      "env": {
+        "//donate": "How a donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. OTA-flippable with `eas update` if App Review treats the in-app browser as in-app purchasing (see APP-REVIEW-NOTES.md).",
+        "EXPO_PUBLIC_DONATE_BROWSER_MODE": "in-app",
+        "//dsym": "Build React core + its C++ deps from source (instead of the prebuilt Maven tarballs) so Xcode generates React.framework / ReactNativeDependencies.framework dSYMs and App Store Connect stops warning 'Upload Symbols Failed' for them. Tradeoff: slower iOS builds. hermes.framework and MapLibre.framework remain prebuilt with no dSYM and will still warn — those are non-blocking and unavoidable in a managed Expo build.",
+        "RCT_USE_PREBUILT_RNCORE": "0",
+        "RCT_USE_RN_DEP": "0",
+        "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "521996499476-d86mdmhsuopfp9gmqf7qarc2ousv6sqt.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME": "com.googleusercontent.apps.521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t"
+      }
+    }
+  },
+  "submit": {
+    "testflight": {
+      "extends": "production"
+    },
+    "production": {
+      "ios": {
+        "appleId": "romanaytur@gmail.com",
+        "ascAppId": "6781838072",
+        "appleTeamId": "27SWKQ5NF4"
+      },
+      "android": {
+        "serviceAccountKeyPath": "REPLACE_WITH_PATH_TO_PLAY_SERVICE_ACCOUNT_JSON",
+        "track": "internal"
+      }
+    }
+  }
+}

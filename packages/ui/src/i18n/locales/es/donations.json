@@ -1,0 +1,34 @@
+{
+  "block": {
+    "heading": "Apoya a esta organización",
+    "body": "Las donaciones van a {{org}}. civfix traslada tu donativo y nunca retiene los fondos.",
+    "cta": "Donar a {{org}}",
+    "cta_a11y": "Donar a {{org}}",
+    "merchant_of_record": "civfix facilita este pago. {{org}} es el comerciante registrado.",
+    "fee_note": "Se aplican una comisión de procesamiento de tarjeta, que paga la organización, y una comisión de plataforma de civfix del 5%."
+  },
+  "list": {
+    "load_more": "Cargar más",
+    "loading_more": "Cargando…",
+    "load_more_a11y": "Cargar más donaciones",
+    "footnote": "civfix emite los recibos como agente autorizado de la organización. Los reembolsos los gestiona la organización."
+  },
+  "row": {
+    "refunded": "{{amount}} reembolsados"
+  },
+  "receipt": {
+    "download": "Ver recibo",
+    "download_a11y": "Abrir el recibo de esta donación",
+    "error": "No pudimos obtener ese recibo. Inténtalo de nuevo.",
+    "unavailable": "Este dispositivo no puede abrir el recibo."
+  },
+  "state": {
+    "loading": "Cargando tus donaciones…",
+    "error_title": "Donaciones no disponibles",
+    "error_body": "No pudimos cargar tus donaciones. Revisa tu conexión e inténtalo de nuevo.",
+    "empty_title": "Todavía no hay donaciones",
+    "empty_body": "Cuando dones a una organización en civfix, aparecerá aquí con su recibo.",
+    "signed_out_title": "Inicia sesión para ver tus donaciones",
+    "signed_out_body": "Tu historial de donaciones y tus recibos están vinculados a tu cuenta."
+  }
+}

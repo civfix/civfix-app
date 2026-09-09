@@ -1,0 +1,15 @@
+{
+  "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+  "generic_fallback": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+  "network_request_failed": "Netzwerkanfrage fehlgeschlagen",
+  "unknown_error": "Unbekannter Fehler",
+  "code": {
+    "VALIDATION": "Bitte überprüfe deine Eingabe und versuche es erneut.",
+    "RATE_LIMITED": "Zu viele Versuche. Warte kurz und versuche es erneut.",
+    "UNAUTHORIZED": "Bitte melde dich an und versuche es erneut.",
+    "FORBIDDEN": "Dafür fehlt dir die Berechtigung.",
+    "CONFLICT": "Das steht im Konflikt mit einem vorhandenen Eintrag.",
+    "NOT_FOUND": "Wir konnten das Gesuchte nicht finden.",
+    "TURNSTILE_FAILED": "Wir konnten nicht bestätigen, dass du ein Mensch bist. Bitte versuche es erneut."
+  }
+}

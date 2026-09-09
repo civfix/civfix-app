@@ -1,0 +1,52 @@
+{
+  "row": {
+    "a11y_unread": "{{title}}, {{count}} unread",
+    "a11y_muted": "Muted",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "subscribers_one": "{{count}} subscriber",
+    "subscribers_other": "{{count}} subscribers",
+    "a11y_channel": "Channel",
+    "action": {
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "mark_read": "Mark read",
+      "more": "Conversation actions",
+      "delete": "Delete",
+      "delete_a11y": "Delete conversation"
+    }
+  },
+  "preview": {
+    "new_conversation": "New conversation",
+    "from_me": "You: {{text}}"
+  },
+  "search": {
+    "placeholder": "Search messages",
+    "a11y": "Search messages",
+    "clear_a11y": "Clear search"
+  },
+  "signed_out": {
+    "title": "Sign in to message neighbors",
+    "body_before": "Your event crews and direct messages live here once you are ",
+    "body_link": "signed in",
+    "body_after": "."
+  },
+  "error": {
+    "title": "Could not load messages",
+    "body": "We could not reach civfix. Check your connection and try again."
+  },
+  "empty": {
+    "title": "No messages yet",
+    "body": "RSVP to an event to join its crew chat, or message a neighbor from their profile.",
+    "no_match": {
+      "title": "No conversations match your search",
+      "body": "No conversations match \"{{query}}\". Try a name, or a word from the message."
+    }
+  },
+  "new_menu": {
+    "message": "New message",
+    "group": "New group",
+    "channel": "New channel",
+    "a11y": "Start a new conversation"
+  }
+}

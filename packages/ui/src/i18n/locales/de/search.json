@@ -1,0 +1,38 @@
+{
+  "field": {
+    "placeholder": "Personen per @handle suchen",
+    "a11y": "Personen per Handle suchen",
+    "clear_a11y": "Suche löschen"
+  },
+  "suggestions": {
+    "title": "Vorschläge für dich"
+  },
+  "leaderboard": {
+    "title": "Freiwilligen-Bestenliste",
+    "subtitle": "Top-Freiwillige in deiner Umgebung",
+    "a11y": "Freiwilligen-Bestenliste öffnen"
+  },
+  "results": {
+    "title": "Suchergebnisse",
+    "count_one": "{{count}} Treffer",
+    "count_other": "{{count}} Treffer"
+  },
+  "row": {
+    "view_profile_a11y": "{{name}}, Profil anzeigen",
+    "message_a11y": "Nachricht an {{name}}"
+  },
+  "empty": {
+    "prompt": {
+      "title": "Noch keine Vorschläge",
+      "body": "Suche Personen nach Name oder @handle."
+    },
+    "error": {
+      "title": "Suche fehlgeschlagen",
+      "body": "civfix konnte nicht erreicht werden. Überprüfe deine Verbindung und versuche es erneut."
+    },
+    "no_results": {
+      "title": "Niemanden gefunden",
+      "body": "Kein Konto entspricht \"@{{handle}}\". Prüfe die Schreibweise oder probiere einen anderen Handle."
+    }
+  }
+}

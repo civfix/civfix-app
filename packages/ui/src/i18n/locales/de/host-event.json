@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "events": "Veranstaltungen"
+  },
+  "not_found_title": "Veranstaltung nicht gefunden",
+  "not_found_body": "Diese Veranstaltung existiert nicht, oder du hast keinen Zugriff mehr darauf.",
+  "no_access_title": "Du hast keinen Zugriff auf diesen Bereich",
+  "no_access_body": "Bitte eine organisierende Person, deine Rolle zu ändern, wenn du ihn brauchst.",
+  "nav": {
+    "overview": "Überblick",
+    "page": "Anmeldeseite",
+    "tickets": "Tickets",
+    "attendees": "Teilnehmende",
+    "checkin": "Check-in",
+    "broadcasts": "Nachrichten",
+    "analytics": "Auswertung",
+    "team": "Team",
+    "settings": "Einstellungen"
+  },
+  "counters": {
+    "heading": "Live-Zähler",
+    "registered": "Angemeldet",
+    "checked_in": "Eingecheckt",
+    "waitlist": "Warteliste",
+    "no_show": "Nicht erschienen",
+    "capacity": "Kapazität",
+    "unlimited": "Unbegrenzt",
+    "as_of": "Stand {{time}}",
+    "units": "Angemeldet und Warteliste zählen Plätze; eingecheckt und nicht erschienen zählen Personen."
+  },
+  "details": {
+    "title": "Details zur Veranstaltung",
+    "when": "Wann",
+    "timezone": "Zeitzone",
+    "where": "Wo",
+    "no_address": "Keine Adresse hinterlegt",
+    "registration": "Anmeldezeitraum",
+    "registration_open": "Jetzt geöffnet",
+    "team": "Teammitglieder",
+    "organization": "Organisation"
+  },
+  "page": {
+    "title": "Anmeldeseite",
+    "none": "Noch keine Anmeldeseite",
+    "edit": "Seite bearbeiten"
+  },
+  "tickets": {
+    "title": "Tickets",
+    "none": "Diese Veranstaltung hat keine Ticketarten.",
+    "sold": "vergeben",
+    "a11y": "Vergebene Plätze nach Ticketart"
+  },
+  "quick": {
+    "heading": "Schnellzugriff",
+    "attendees": "Teilnehmende",
+    "tickets": "Tickets",
+    "public_view": "Als teilnehmende Person ansehen"
+  },
+  "switcher": {
+    "label": "Veranstaltung wechseln",
+    "empty": "Keine weiteren anstehenden Veranstaltungen.",
+    "personal": "Persönliche Veranstaltung"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "signedOut": {
+    "title": "Sign in to civfix",
+    "body": "Sign in to manage your account, notifications and privacy."
+  },
+  "section": {
+    "account": "Account",
+    "app": "App",
+    "about": "About"
+  },
+  "account": {
+    "label": "Account",
+    "sub": "@handle, social links, your data"
+  },
+  "notifications": {
+    "label": "Notifications",
+    "sub": "Push alerts and what you hear about"
+  },
+  "privacy": {
+    "label": "Privacy & safety",
+    "sub": "Messages, your record and blocked accounts"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "appearance": {
+    "label": "Appearance"
+  },
+  "tour": {
+    "label": "Take the tour",
+    "sub": "Replay the welcome walkthrough"
+  },
+  "support_civfix": "Support civfix",
+  "terms": "Terms of service",
+  "privacy_policy": "Privacy policy",
+  "sign_out": "Sign out",
+  "donations": {
+    "label": "Donations",
+    "sub": "Your donation history and receipts"
+  }
+}

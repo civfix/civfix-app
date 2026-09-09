@@ -1,0 +1,131 @@
+{
+  "saved": "Page saved",
+  "published": "Page published",
+  "unpublished": "Page unpublished",
+  "publish": "Publish",
+  "unpublish": "Unpublish",
+  "publish_blocked": "Set an address and add at least one block first.",
+  "flagged": "Under review by civfix",
+  "settings": {
+    "title": "Page settings"
+  },
+  "slug": {
+    "label": "Page address",
+    "hint": "Lowercase letters, numbers and hyphens. This becomes civfix.org/e/your-address.",
+    "checking": "Checking availability…",
+    "available": "That address is free.",
+    "current": "This is the current address.",
+    "invalid": "Use 3–60 lowercase letters, numbers and single hyphens.",
+    "taken_with_suggestion": "That address is taken. {{suggestion}} may be free.",
+    "reason_taken": "That address is taken.",
+    "reason_reserved": "That address is reserved.",
+    "reason_invalid": "That address is not valid."
+  },
+  "theme": {
+    "label": "Accent colour",
+    "bloom": "Coral",
+    "moss": "Moss",
+    "sun": "Sun",
+    "sky": "Sky",
+    "lilac": "Lilac"
+  },
+  "cover": {
+    "label": "Cover image",
+    "hint": "Shown at the top of the page and in link previews.",
+    "add": "Add a cover image"
+  },
+  "logo": {
+    "add": "Add a logo"
+  },
+  "gallery": {
+    "add": "Add photos"
+  },
+  "seo": {
+    "noindex": "Hide from search engines",
+    "noindex_hint": "The page still works for anyone with the link."
+  },
+  "blocks": {
+    "title": "Page content",
+    "add": "Add",
+    "add_kind": "Block type",
+    "empty": "No blocks yet. Add one to start building the page.",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "remove": "Remove this block"
+  },
+  "block": {
+    "title": "Heading",
+    "kind": {
+      "hero": "Hero",
+      "about": "About",
+      "agenda": "Agenda",
+      "hosts": "Hosts",
+      "faq": "FAQ",
+      "location": "Location",
+      "sponsors": "Sponsors",
+      "donate": "Donate",
+      "registration": "Registration",
+      "contact": "Contact"
+    },
+    "hero": {
+      "headline": "Headline",
+      "subhead": "Sub-headline"
+    },
+    "about": {
+      "body": "Body"
+    },
+    "agenda": {
+      "item": "Item {{n}}",
+      "time": "Time",
+      "item_title": "What happens",
+      "item_description": "Details",
+      "add": "Add an item"
+    },
+    "hosts": {
+      "entry": "Host {{n}}",
+      "name": "Name",
+      "role": "Role",
+      "bio": "Short bio",
+      "add": "Add a host"
+    },
+    "faq": {
+      "item": "Question {{n}}",
+      "question": "Question",
+      "answer": "Answer",
+      "add": "Add a question"
+    },
+    "location": {
+      "note": "Directions",
+      "show_map": "Show a map"
+    },
+    "sponsors": {
+      "entry": "Sponsor {{n}}",
+      "name": "Name",
+      "url": "Link",
+      "add": "Add a sponsor"
+    },
+    "donate": {
+      "blurb": "Why donations help",
+      "url": "Donation link",
+      "url_hint": "Leave empty to use your organization's civfix donation page."
+    },
+    "registration": {
+      "note": "Note above the signup form"
+    },
+    "contact": {
+      "body": "Contact details",
+      "reply_to": "Reply-to address",
+      "reply_to_hint": "Shown on the page so people can reach you."
+    }
+  },
+  "preview": {
+    "title": "Preview",
+    "empty": "Add a block to see the page take shape.",
+    "map_placeholder": "A map of the event location appears here.",
+    "registration_placeholder": "The signup form appears here."
+  },
+  "unpublish_confirm": {
+    "title": "Unpublish this page?",
+    "body": "The address stops working for anyone who is not on the host team. Registration through the app is unaffected."
+  }
+}

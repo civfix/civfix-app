@@ -1,0 +1,26 @@
+{
+  "section_title": "Deine Meldungen",
+  "signin": {
+    "title": "Anmelden, um deine Meldungen zu sehen",
+    "body": "Verfolge deine eingereichten Probleme und ihren Bearbeitungsstatus – alles an einem Ort."
+  },
+  "search": {
+    "placeholder": "Meldungen durchsuchen",
+    "a11y": "Meldungen durchsuchen",
+    "clear_a11y": "Suche löschen"
+  },
+  "empty": {
+    "no_match": {
+      "title": "Keine Meldungen gefunden",
+      "body": "Keine deiner Meldungen passt zu „{{query}}“. Versuche ein anderes Wort, einen Ort oder eine Kategorie."
+    },
+    "none": {
+      "title": "Noch keine Meldungen",
+      "body": "Sobald du eine Meldung einreichst, erscheint sie hier – so siehst du, was behoben wird."
+    }
+  },
+  "error": {
+    "title": "Laden fehlgeschlagen",
+    "body": "civfix war nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
+  }
+}

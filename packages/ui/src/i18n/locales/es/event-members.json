@@ -1,0 +1,55 @@
+{
+  "row": {
+    "viewProfileA11y": "{{name}}, ver perfil",
+    "moreOptionsA11y": "Más opciones para {{name}}"
+  },
+  "cta": {
+    "view_report": "Ver reporte",
+    "view_report_a11y": "Ver el reporte vinculado",
+    "view_event": "Ver evento",
+    "view_event_a11y": "Ver el evento vinculado"
+  },
+  "hero": {
+    "report_fallback": "Chat del reporte",
+    "members_one": "{{count}} miembro",
+    "members_other": "{{count}} miembros"
+  },
+  "action": {
+    "mute": "Silenciar",
+    "unmute": "Activar sonido",
+    "leave": "Salir del chat"
+  },
+  "section": {
+    "members": "Miembros"
+  },
+  "leave": {
+    "confirm": "Dejarás de recibir mensajes del chat de este reporte. Puedes volver a unirte cuando quieras.",
+    "action": "Salir",
+    "cancel": "Cancelar",
+    "dismiss": "Descartar"
+  },
+  "block": {
+    "action": "Bloquear",
+    "cancel": "Cancelar",
+    "confirm": "Bloquear a esta persona"
+  },
+  "error": {
+    "title": "No se pudo cargar",
+    "body": "No pudimos conectar con civfix. Comprueba tu conexión e inténtalo de nuevo."
+  },
+  "empty": {
+    "title": "Aún no hay miembros",
+    "body": "Las personas que van a este evento aparecerán aquí."
+  },
+  "role": {
+    "host": "Anfitrión",
+    "cohost": "Coanfitrión"
+  },
+  "manage": {
+    "makeCohost": "Hacer coanfitrión",
+    "removeCohost": "Quitar coanfitrión",
+    "remove": "Eliminar del evento",
+    "removeCancel": "Cancelar",
+    "removeConfirm": "Eliminar del evento"
+  }
+}

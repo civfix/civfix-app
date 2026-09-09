@@ -1,0 +1,110 @@
+{
+  "header": {
+    "title": "Report an issue",
+    "back": "Back"
+  },
+  "wizard": {
+    "announceStep": "Step {{current}} of {{total}}. {{title}}",
+    "capture": {
+      "title": "Show us the issue",
+      "help": "One photo or a short video is enough."
+    },
+    "location": {
+      "title": "Where is it?",
+      "help": "Drop the pin where the issue is."
+    },
+    "category": {
+      "title": "What is it?",
+      "help": "Pick the closest match."
+    },
+    "details": {
+      "title": "Add the details",
+      "help": "A short title, plus anything the city should know."
+    },
+    "review": {
+      "title": "Ready to send?",
+      "help": "Check it over, then drop the pin."
+    }
+  },
+  "footer": {
+    "continue": "Continue",
+    "drop_pin": "Drop pin"
+  },
+  "capture": {
+    "label_filled": "Your captures",
+    "drop_title": "Capture the issue",
+    "drop_sub": "Required · 10s video max · GPS captured at the shutter",
+    "capture_a11y": "Capture a photo or video",
+    "choose_library": "Choose from library",
+    "choose_library_a11y": "Choose from library",
+    "drag_hint": "or drag photos here",
+    "remove_item_a11y": "Remove this item",
+    "add_camera_a11y": "Add from camera",
+    "add_library_a11y": "Add from library",
+    "camera": "Camera",
+    "library": "Library",
+    "hint_at_cap": "That's the max of {{max}}. Remove one to add another.",
+    "hint_add_more_one": "Add up to {{count}} photo or video.",
+    "hint_add_more_other": "Add up to {{count}} photos or videos.",
+    "camera_error": "Could not open the camera. Try choosing from your library."
+  },
+  "details": {
+    "title_label": "Title",
+    "title_placeholder": "Short summary",
+    "description_label": "Description",
+    "description_placeholder": "Describe what you are seeing - when it started, anything the city should know.",
+    "flag_blocking": "Blocking the sidewalk or road",
+    "flag_safety": "It is a safety hazard"
+  },
+  "review": {
+    "untitled": "Untitled report",
+    "where_label": "Where is it?",
+    "no_location": "No location captured - search an address or tap the map to set where the issue is.",
+    "where_placeholder": "Describe where - e.g. north sidewalk",
+    "route_label": "Where this goes",
+    "route_no_point": "Place the pin on the map to see where this report routes.",
+    "route_routable": "Auto-forwarded once verified - usually 1-3 business days.",
+    "route_new_area": "New area - {{cityState}} is not set up for automatic routing yet. We will review and forward it manually.",
+    "route_uncovered": "We do not cover this area yet, but your report is logged and reviewed manually.",
+    "route_resolving": "Resolving where this routes..."
+  },
+  "submit": {
+    "submitting_title": "Filing your report",
+    "submitting_body": "Uploading your media and sending it to the right place. This takes a moment.",
+    "error_title": "Could not submit",
+    "try_again": "Try again",
+    "success_title": "Pin dropped. We're on it.",
+    "success_body_held": "Queued for a quick review, then forwarded. Track it in your reports.",
+    "success_body_live": "We will forward it once it is verified - usually 1-3 business days. Track it in your reports.",
+    "view_report": "View my report",
+    "back_to_map": "Back to map",
+    "announce_error": "Could not submit your report. {{detail}}",
+    "announce_held": "Pin dropped and queued for review.",
+    "announce_live": "Pin dropped. Report submitted."
+  },
+  "errors": {
+    "no_category": "Pick a category before submitting.",
+    "no_location": "No location was set for this report. Place the pin where the issue is.",
+    "no_media": "Capture a photo or video before submitting.",
+    "validation": "Please check the photo and location, then try again.",
+    "rate_limited": "Too many attempts. Please wait a moment and try again.",
+    "turnstile_failed": "We could not verify you are human. Refresh and complete the check again.",
+    "media_rejected": "That photo could not be accepted. Try a different one.",
+    "unauthorized": "Your session may have expired. Sign in again and retry.",
+    "generic": "We could not submit right now. Please try again."
+  },
+  "share": {
+    "label": "Share to the feed",
+    "helper": "Neighbors and your followers will see it.",
+    "caption_placeholder": "What should neighbors know?",
+    "caption_a11y": "Caption for your feed post",
+    "now": "now",
+    "posted_heading": "Shared to the feed",
+    "fixes_hint": "It'll move to Fixes when this is resolved.",
+    "failed": "Report filed, but the feed post did not go out.",
+    "failed_rejected": "That caption could not be posted.",
+    "failed_rate_limited": "Too many posts. Try again in a minute.",
+    "retry": "Retry",
+    "signed_out_hint": "Create an account to share reports to the feed."
+  }
+}

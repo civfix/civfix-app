@@ -1,0 +1,86 @@
+{
+  "a11y": {
+    "skip": "Tour überspringen",
+    "next": "Nächste Seite",
+    "back": "Vorherige Seite",
+    "page_announce": "Seite {{index}} von {{count}}. {{title}}",
+    "progress": "Schritt {{index}} von {{count}}",
+    "language": "Sprache ändern",
+    "stage_report": "Ein Foto wird aufgenommen, eine Kategorie gewählt, und ein Pin landet auf der Karte. Der Bericht wird eingereicht.",
+    "stage_track": "Pins in verschiedenen Kategoriefarben landen auf einer Nachbarschaftskarte. Der Status eines Berichts wechselt von Veröffentlicht zu In Bearbeitung und dann zu Erledigt.",
+    "stage_together": "Eine Karte für eine Aufräumaktion mit zugesagten Nachbarn, ein kurzer Chat zwischen zwei Nachbarn und ein Profil mit Nutzernamen.",
+    "stage_theme": "Eine Vorschaukarte im gewählten Erscheinungsbild, mit einer Melde-Nadel.",
+    "stage_ready": "Dein Profilbild und ein Platzhalter für deinen Nutzernamen."
+  },
+  "nav": {
+    "skip": "Überspringen",
+    "next": "Weiter",
+    "back": "Zurück",
+    "done": "Fertig"
+  },
+  "report": {
+    "title": "Sehen. Knipsen. Pinnen.",
+    "body": "Foto, was es ist, wo es ist. Drei Tipps und dein Bericht steht auf der Karte.",
+    "caption": "Notfall? Wähle 911. civfix ist nicht für Notfälle.",
+    "stage": {
+      "capture": "Problem aufnehmen",
+      "what": "Was ist es?"
+    }
+  },
+  "track": {
+    "title": "Dein Kiez, live.",
+    "body": "Jeder Pin ist der Bericht einer Nachbarin oder eines Nachbarn. Die Farben sind Kategorien. Tippe auf einen, um Fotos, Updates und die Unterhaltung zu sehen.",
+    "caption": "Stöbern geht auch ohne Konto.",
+    "stage": {
+      "row_title": "Matratze auf der 4th St abgeladen",
+      "row_subtitle": "Von einem Nachbarn gemeldet",
+      "row_when": "vor 2 Stunden",
+      "legend_cleanup": "Aufräumaktion"
+    }
+  },
+  "together": {
+    "title": "Mitmachen. Miteinander reden.",
+    "body": "Bei Aufräumaktionen mitmachen, eine Schicht übernehmen, Stunden erfassen. Schreib Nachbarn zu einem Bericht oder im Team-Chat.",
+    "caption": "Für Zusagen, Nachrichten und eigene Aktionen brauchst du ein Konto.",
+    "stage": {
+      "event_title": "Aufräumaktion im Echo Park",
+      "event_address": "Echo Park Lake",
+      "going": "{{count}} Nachbarn kommen",
+      "hours": "{{hours}} Std. gutgeschrieben",
+      "chat_1": "Sieht noch jemand, dass die Laterne auf der 6th aus ist?",
+      "chat_2": "Ist gemeldet. Der Pin steht auf der Karte.",
+      "organizer": "Community-Organisator"
+    }
+  },
+  "theme": {
+    "title": "Hell oder dunkel, du entscheidest.",
+    "body": "Wähle, wie civfix aussieht. Heute hell, dunkel wann immer du magst.",
+    "caption": "Du kannst das jederzeit in den Einstellungen ändern."
+  },
+  "ready": {
+    "title": "Bereit, wenn du es bist.",
+    "title_authed": "Alles bereit.",
+    "body": "Mit einem Konto bekommst du ein Profil, das deine Nachbarn wiedererkennen, den Verlauf deiner Berichte, Nachrichten und Zusagen. Oder schau dich erst einmal um.",
+    "body_authed": "Melde Probleme, sag Aufräumaktionen zu und schreib Nachbarn, direkt von der Karte aus.",
+    "guest": "Erst umsehen",
+    "handle_ghost": "@du",
+    "trust": {
+      "nonprofit": "Entwickelt von Reach Out Los Angeles, gemeinnützig nach 501(c)(3).",
+      "tracking": "Keine Werbung, keine Analytics, keine Tracker.",
+      "photos": "Aus Fotos werden GPS- und Kameradaten entfernt, bevor sie hochgeladen werden."
+    },
+    "legal": {
+      "terms": "Nutzungsbedingungen",
+      "privacy": "Datenschutz",
+      "separator": " · "
+    }
+  },
+  "location": {
+    "title": "Sehen, was in deiner Nähe passiert?",
+    "body": "Dein Standort zentriert die Karte auf deinen Kiez. Er wird nur verwendet, während du die App nutzt, und melden kannst du auch ohne ihn.",
+    "use": "Meinen Standort verwenden",
+    "address": "Adresse eingeben",
+    "later": "Jetzt nicht",
+    "a11y_dismiss": "Schließen"
+  }
+}

@@ -1,0 +1,184 @@
+import { readFileSync } from "node:fs"
+import { describe, expect, it } from "vitest"
+import type { TFunction } from "i18next"
+import {
+  FEED_ROW_BATCH_MS,
+  FEED_ROW_STAGGER_MAX_MS,
+  FEED_ROW_STAGGER_MS,
+  buildFeedMotionModel,
+  buildFeedHeaderModel,
+  createFeedEntranceTracker,
+  feedViewState,
+} from "../feedModel"
+
+const EN: Record<string, string> = {
+  "feed.title": "Your Feed",
+}
+
+const t = ((key: string) => {
+  const resolved = EN[key]
+  if (resolved == null) throw new Error(`missing translation: ${key}`)
+  return resolved
+}) as unknown as TFunction
+
+describe("FeedBody feed model", () => {
+  it("titles the root from the catalog and offers the composer only to a signed-in reader", () => {
+    expect(buildFeedHeaderModel({ isAuthenticated: true }, t)).toEqual({
+      title: "Your Feed",
+      showComposer: true,
+    })
+    expect(buildFeedHeaderModel({ isAuthenticated: false }, t).showComposer).toBe(false)
+  })
+
+  it("uses a 200ms ease-out transition unless reduced motion is enabled", () => {
+    expect(buildFeedMotionModel(false)).toEqual({ duration: 200, easing: "ease-out", animated: true })
+    expect(buildFeedMotionModel(true)).toEqual({ duration: 0, easing: "linear", animated: false })
+  })
+
+  it("assembles a whole batch inside the ~350ms 'this list is here' threshold", () => {
+    expect(FEED_ROW_STAGGER_MAX_MS + buildFeedMotionModel(false).duration).toBeLessThanOrEqual(350)
+  })
+
+  it("derives loading, error, empty, and loaded states without hiding loaded posts", () => {
+    expect(feedViewState({ isLoading: true, isError: false, postCount: 0 })).toBe("loading")
+    expect(feedViewState({ isLoading: false, isError: true, postCount: 0 })).toBe("error")
+    expect(feedViewState({ isLoading: false, isError: false, postCount: 0 })).toBe("empty")
+    expect(feedViewState({ isLoading: true, isError: false, postCount: 2 })).toBe("loaded")
+  })
+})
+
+describe("feed row entrance tracker", () => {
+  it("animates a post exactly once, however often virtualization remounts its row", () => {
+    const tracker = createFeedEntranceTracker()
+    expect(tracker.hasShown("p1")).toBe(false)
+    expect(tracker.claim("p1", 1_000)).toEqual({ animate: true, delay: 0 })
+    expect(tracker.hasShown("p1")).toBe(true)
+    expect(tracker.claim("p1", 9_000)).toEqual({ animate: false, delay: 0 })
+  })
+
+  it("staggers rows windowed in the same batch", () => {
+    const tracker = createFeedEntranceTracker()
+    expect(tracker.claim("p1", 1_000).delay).toBe(0)
+    expect(tracker.claim("p2", 1_000).delay).toBe(FEED_ROW_STAGGER_MS)
+    expect(tracker.claim("p3", 1_010).delay).toBe(FEED_ROW_STAGGER_MS * 2)
+  })
+
+  it("caps the stagger so no row in one batch waits longer than the cap", () => {
+    const tracker = createFeedEntranceTracker()
+    const delays = Array.from({ length: 12 }, (_, i) => tracker.claim(`p${i}`, 1_000).delay)
+    expect(Math.max(...delays)).toBe(FEED_ROW_STAGGER_MAX_MS)
+  })
+
+  it("restarts the stagger at zero for a batch windowed later in the scroll", () => {
+    const tracker = createFeedEntranceTracker()
+    for (let i = 0; i < 8; i++) tracker.claim(`first-${i}`, 1_000)
+    expect(tracker.claim("later", 1_000 + FEED_ROW_BATCH_MS + 1).delay).toBe(0)
+    expect(tracker.claim("later-2", 1_000 + FEED_ROW_BATCH_MS + 1).delay).toBe(FEED_ROW_STAGGER_MS)
+  })
+})
+
+describe("the feed header's compose control", () => {
+  const FEED_SOURCE = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
+  const INBOX_SOURCE = readFileSync(new URL("../MessagingListBody.tsx", import.meta.url), "utf8")
+  const BUTTON_SOURCE = readFileSync(new URL("../HeaderIconButton.tsx", import.meta.url), "utf8")
+
+  const actionsRow = (src: string) => {
+    const from = src.indexOf("<View style={styles.headerActions}>")
+    expect(from, "the header's trailing-actions row must still be findable").toBeGreaterThan(-1)
+    return src.slice(from, src.indexOf("</View>", from))
+  }
+
+  it("is the shared header icon button on both roots, not a bespoke pill on one of them", () => {
+    expect(FEED_SOURCE).toContain(
+      '<HeaderIconButton icon="Plus" label={composeLabel} onPress={openComposer} />',
+    )
+    expect(INBOX_SOURCE).toContain('icon="SquarePen"')
+    for (const src of [FEED_SOURCE, INBOX_SOURCE]) {
+      expect(src).toContain('import { HeaderIconButton } from "./HeaderIconButton"')
+    }
+    expect(FEED_SOURCE).not.toContain("composeButton")
+    expect(FEED_SOURCE).not.toContain("composeLabel:")
+    expect(FEED_SOURCE).not.toContain("iconMap.Megaphone")
+    expect(INBOX_SOURCE).not.toContain("composeBtn")
+  })
+
+  it("keeps the composer's own label behind the glyph", () => {
+    expect(FEED_SOURCE).toContain('const composeLabel = useT("nav").t("title.post_composer")')
+    expect(INBOX_SOURCE).toContain('label={t("new_menu.a11y")}')
+  })
+
+  it("sits immediately LEFT of the profile button, on Home and in the inbox alike", () => {
+    const roots: ReadonlyArray<[string, string]> = [
+      [FEED_SOURCE, "<HeaderIconButton"],
+      [INBOX_SOURCE, "<ComposeButton />"],
+    ]
+    for (const [src, compose] of roots) {
+      const row = actionsRow(src)
+      expect(row).toContain(compose)
+      expect(row).toContain("<HeaderProfileButton />")
+      expect(row.indexOf(compose)).toBeLessThan(row.indexOf("<HeaderProfileButton />"))
+    }
+  })
+
+  it("clears 44pt with the 38pt chip the profile control already uses", () => {
+    expect(BUTTON_SOURCE).toContain("export const HEADER_ICON_BUTTON_TARGET = 44")
+    expect(BUTTON_SOURCE).toContain("export const HEADER_ICON_BUTTON_CHIP = 38")
+    expect(BUTTON_SOURCE).toContain("backgroundColor: t.glass.sheet.input")
+    const profile = readFileSync(new URL("../HeaderProfileButton.tsx", import.meta.url), "utf8")
+    expect(profile).toContain("backgroundColor: t.glass.sheet.input")
+  })
+})
+
+describe("the feed's timeline is unfiltered", () => {
+  const SRC = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
+  const MODEL = readFileSync(new URL("../feedModel.ts", import.meta.url), "utf8")
+
+  it("draws no tablist, and asks the hook for the default feed", () => {
+    expect(SRC).not.toContain('accessibilityRole="tablist"')
+    expect(SRC).not.toContain("FeedFilterChip")
+    expect(SRC).not.toContain("styles.filter")
+    expect(SRC).toContain("const feed = useHomeFeed()")
+  })
+
+  it("leaves no filter model behind for a chip row to be rebuilt from", () => {
+    for (const gone of ["FEED_FILTER_OPTIONS", "buildFeedFilterModels", "nextFeedFilter"]) {
+      expect(MODEL, `${gone} still exists - the chip row can grow back from it`).not.toContain(gone)
+      expect(SRC).not.toContain(gone)
+    }
+  })
+
+  it("carries no orphaned filter copy in any of the four catalogs", () => {
+    for (const locale of ["en", "es", "de", "ko"]) {
+      const catalog = JSON.parse(
+        readFileSync(new URL(`../../i18n/locales/${locale}/home-feed.json`, import.meta.url), "utf8"),
+      ) as { feed: { title: string; filter?: unknown } }
+      expect(catalog.feed.filter, `${locale} still ships feed.filter`).toBeUndefined()
+      expect(typeof catalog.feed.title).toBe("string")
+    }
+  })
+})
+
+describe("the tab-root title is a heading", () => {
+  const SRC = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
+
+  it("names itself the way the other five view roots do", () => {
+    expect(SRC).toMatch(/<Text style=\{styles\.heading\} accessibilityRole="header">/)
+  })
+})
+
+describe("the card's timeline has no scrollbar, and a fade instead", () => {
+  const SRC = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
+
+  it("never asks for a scroll indicator on either surface", () => {
+    expect(SRC).toContain("showsVerticalScrollIndicator={false}")
+    expect(SRC).not.toContain("scrollbarWidth")
+  })
+
+  it("terminates the list with a gradient that cannot itself become a false affordance", () => {
+    expect(SRC).toContain("linear-gradient(to bottom")
+    expect(SRC).toMatch(/<View pointerEvents="none" style=\{fadeStyle\}/)
+    expect(SRC).toMatch(/const fadeStyle = useMemo\(\s*\(\) => \[styles\.scrollFade/)
+    expect(SRC).toContain("{ bottom: promoHeight }")
+    expect(SRC).toContain("if (!isExpanded || !IS_WEB) return list")
+  })
+})

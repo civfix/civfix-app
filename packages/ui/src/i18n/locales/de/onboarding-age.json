@@ -1,0 +1,7 @@
+{
+  "affirmation": "Ich bin 13 Jahre oder älter.",
+  "under13": {
+    "declare": "Ich bin unter 13",
+    "message": "Danke für deine Angabe. civfix richtet sich an Nutzer ab 13 Jahren, daher kannst du noch kein Konto erstellen. Wir freuen uns, dich später wiederzusehen!"
+  }
+}

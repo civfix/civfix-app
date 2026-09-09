@@ -1,0 +1,21 @@
+{
+  "removed": "Diese Nachricht wurde entfernt",
+  "edited": "(bearbeitet)",
+  "forwarded": {
+    "named": "Weitergeleitet an {{name}}",
+    "generic": "An die Stadt weitergeleitet"
+  },
+  "action": {
+    "reply": "Antworten",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "report": "Melden"
+  },
+  "a11y": {
+    "view_attachment": "Anhang ansehen",
+    "report_photo": "Foto melden",
+    "edit": "Nachricht bearbeiten",
+    "delete": "Nachricht löschen",
+    "report": "Nachricht melden"
+  }
+}

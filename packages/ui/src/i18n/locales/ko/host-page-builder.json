@@ -1,0 +1,131 @@
+{
+  "saved": "페이지를 저장했습니다",
+  "published": "페이지를 게시했습니다",
+  "unpublished": "페이지 게시를 취소했습니다",
+  "publish": "게시",
+  "unpublish": "게시 취소",
+  "publish_blocked": "먼저 주소를 정하고 블록을 하나 이상 추가하세요.",
+  "flagged": "civfix에서 검토 중",
+  "settings": {
+    "title": "페이지 설정"
+  },
+  "slug": {
+    "label": "페이지 주소",
+    "hint": "영문 소문자, 숫자, 하이픈만 사용할 수 있습니다. civfix.org/e/내-주소 형태가 됩니다.",
+    "checking": "사용 가능 여부를 확인하는 중…",
+    "available": "사용할 수 있는 주소입니다.",
+    "current": "현재 사용 중인 주소입니다.",
+    "invalid": "영문 소문자, 숫자, 하이픈 하나를 사용해 3~60자로 입력하세요.",
+    "taken_with_suggestion": "이미 사용 중인 주소입니다. {{suggestion}}은(는) 사용할 수 있을지도 모릅니다.",
+    "reason_taken": "이미 사용 중인 주소입니다.",
+    "reason_reserved": "예약된 주소입니다.",
+    "reason_invalid": "올바른 주소가 아닙니다."
+  },
+  "theme": {
+    "label": "강조 색상",
+    "bloom": "코랄",
+    "moss": "모스",
+    "sun": "선",
+    "sky": "스카이",
+    "lilac": "라일락"
+  },
+  "cover": {
+    "label": "커버 이미지",
+    "hint": "페이지 상단과 링크 미리보기에 표시됩니다.",
+    "add": "커버 이미지 추가"
+  },
+  "logo": {
+    "add": "로고 추가"
+  },
+  "gallery": {
+    "add": "사진 추가"
+  },
+  "seo": {
+    "noindex": "검색엔진에 노출하지 않기",
+    "noindex_hint": "링크를 아는 사람은 그대로 페이지를 볼 수 있습니다."
+  },
+  "blocks": {
+    "title": "페이지 내용",
+    "add": "추가",
+    "add_kind": "블록 종류",
+    "empty": "아직 블록이 없습니다. 하나 추가해 페이지를 만들어 보세요.",
+    "move_up": "위로",
+    "move_down": "아래로",
+    "remove": "이 블록 제거"
+  },
+  "block": {
+    "title": "제목",
+    "kind": {
+      "hero": "히어로",
+      "about": "행사 소개",
+      "agenda": "일정",
+      "hosts": "호스트",
+      "faq": "자주 묻는 질문",
+      "location": "장소",
+      "sponsors": "후원사",
+      "donate": "기부",
+      "registration": "등록",
+      "contact": "문의"
+    },
+    "hero": {
+      "headline": "헤드라인",
+      "subhead": "서브헤드라인"
+    },
+    "about": {
+      "body": "본문"
+    },
+    "agenda": {
+      "item": "{{n}}번 항목",
+      "time": "시간",
+      "item_title": "진행 내용",
+      "item_description": "세부 설명",
+      "add": "항목 추가"
+    },
+    "hosts": {
+      "entry": "호스트 {{n}}",
+      "name": "이름",
+      "role": "역할",
+      "bio": "간단한 소개",
+      "add": "호스트 추가"
+    },
+    "faq": {
+      "item": "질문 {{n}}",
+      "question": "질문",
+      "answer": "답변",
+      "add": "질문 추가"
+    },
+    "location": {
+      "note": "찾아오는 길",
+      "show_map": "지도 표시"
+    },
+    "sponsors": {
+      "entry": "후원사 {{n}}",
+      "name": "이름",
+      "url": "링크",
+      "add": "후원사 추가"
+    },
+    "donate": {
+      "blurb": "기부가 어떻게 쓰이는지",
+      "url": "기부 링크",
+      "url_hint": "비워 두면 단체의 civfix 기부 페이지를 사용합니다."
+    },
+    "registration": {
+      "note": "신청 양식 위에 표시할 안내"
+    },
+    "contact": {
+      "body": "연락처 정보",
+      "reply_to": "회신 주소",
+      "reply_to_hint": "참가자가 연락할 수 있도록 페이지에 표시됩니다."
+    }
+  },
+  "preview": {
+    "title": "미리보기",
+    "empty": "블록을 추가하면 페이지가 어떻게 완성되는지 볼 수 있습니다.",
+    "map_placeholder": "행사 장소 지도가 여기에 표시됩니다.",
+    "registration_placeholder": "신청 양식이 여기에 표시됩니다."
+  },
+  "unpublish_confirm": {
+    "title": "이 페이지 게시를 취소할까요?",
+    "body": "호스트 팀이 아닌 사람에게는 주소가 더 이상 열리지 않습니다. 앱을 통한 등록에는 영향이 없습니다."
+  }
+}

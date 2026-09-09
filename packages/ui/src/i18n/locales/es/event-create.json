@@ -1,0 +1,65 @@
+{
+  "signIn": {
+    "title": "Inicia sesión para organizar un evento",
+    "body": "Elige un lugar, fija una hora e invita a tus vecinos. Tú serás el organizador."
+  },
+  "verification": {
+    "verified": "Tu cuenta está verificada — los asistentes verán una insignia de verificación en este evento.",
+    "pending": "Tu verificación está pendiente de revisión. Los eventos que organices quedarán sin verificar hasta que se apruebe.",
+    "unverified": "Tu evento aparecerá como no verificado. Verifícate para generar confianza entre los asistentes.",
+    "getVerified": "Verificarme"
+  },
+  "followersNote": "Tus seguidores recibirán una notificación cuando publiques.",
+  "wizard": {
+    "back": "Atrás",
+    "next": "Siguiente",
+    "edit": "Editar",
+    "editA11y": "Editar {{section}}",
+    "empty": "Sin definir",
+    "announceStep": "Paso {{current}} de {{total}}. {{title}}",
+    "basics": {
+      "title": "¿Qué vas a hacer?",
+      "help": "Ponle nombre y elige el tipo de evento.",
+      "error": "Añade un título para tu evento."
+    },
+    "when": {
+      "title": "¿Cuándo es?",
+      "help": "Elige un día y una hora de inicio.",
+      "error": "Elige una fecha y una hora futuras."
+    },
+    "where": {
+      "title": "¿Dónde es el encuentro?",
+      "help": "Marca en el mapa dónde deben llegar tus vecinos.",
+      "error": "Marca el punto de encuentro en el mapa."
+    },
+    "details": {
+      "title": "¿Algo que llevar?",
+      "help": "Opcional: materiales y tareas que otros pueden asumir.",
+      "error": "Da un nombre y un cupo válido a cada tarea."
+    },
+    "review": {
+      "title": "¿Todo listo?",
+      "help": "Revisa los detalles y publica.",
+      "error": "Añade un título, un punto de encuentro, una fecha y una hora para publicar."
+    },
+    "summary": {
+      "what": "Qué",
+      "when": "Cuándo",
+      "extras": "Detalles",
+      "noExtras": "Sin extras"
+    }
+  },
+  "publish": {
+    "label": "Publicar evento",
+    "pending": "Publicando..."
+  },
+  "announce": {
+    "publishFailed": "No se pudo publicar el evento. {{error}}"
+  },
+  "error": {
+    "validation": "Revisa los detalles del evento e inténtalo de nuevo.",
+    "rateLimited": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+    "session": "Es posible que tu sesión haya expirado. Vuelve a iniciar sesión e inténtalo.",
+    "generic": "No pudimos publicar en este momento. Inténtalo de nuevo."
+  }
+}

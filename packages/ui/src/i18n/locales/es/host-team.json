@@ -1,0 +1,47 @@
+{
+  "members": {
+    "title": "Equipo",
+    "joined": "Se unió {{when}}",
+    "empty_title": "Todavía no hay nadie en el equipo",
+    "empty_body": "Invita a un coanfitrión para repartir el trabajo, o a personal para echar una mano en la puerta."
+  },
+  "role": {
+    "cohost": "Coanfitrión",
+    "staff": "Personal",
+    "member": "Asistente",
+    "updated": "Rol actualizado",
+    "change_a11y": "Cambiar el rol de {{name}}",
+    "confirm_title": "¿Cambiar este rol?",
+    "confirm_body": "{{name}} pasará a ser {{role}} en este evento. Puedes volver a cambiarlo cuando quieras.",
+    "confirm_action": "Cambiar rol",
+    "error_conflict": "El rol de esa persona cambió antes que el tuyo. Recarga el equipo e inténtalo de nuevo.",
+    "error_forbidden": "No puedes cambiar el rol de esa persona en este evento."
+  },
+  "invite": {
+    "action": "Invitar",
+    "title": "Invitar a alguien",
+    "identifier_kind": "Invitar por",
+    "by_handle": "Handle",
+    "by_email": "Correo",
+    "handle": "Handle",
+    "email": "Dirección de correo",
+    "role": "Rol",
+    "role_hint": "Los coanfitriones pueden gestionar el evento. El personal puede registrar entradas y ver una lista sin datos de contacto.",
+    "send": "Enviar la invitación",
+    "sent": "Invitación enviada",
+    "revoked": "Invitación revocada",
+    "privacy_note": "El correo al que invitas se guarda enmascarado. Nunca verás la dirección completa."
+  },
+  "invites": {
+    "title": "Invitaciones pendientes",
+    "unknown": "Persona invitada",
+    "sent": "Invitada {{when}}",
+    "revoke": "Revocar",
+    "revoke_title": "¿Revocar esta invitación?",
+    "revoke_body": "El enlace deja de funcionar de inmediato.",
+    "status_pending": "Pendiente",
+    "status_accepted": "Aceptada",
+    "status_revoked": "Revocada",
+    "status_expired": "Caducada"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "community-web-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "community-web", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "community-web-export",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "4173", "--directory", "apps/community-web/out"],
+      "port": 4173
+    }
+  ]
+}

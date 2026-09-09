@@ -1,0 +1,80 @@
+import assert from "node:assert/strict"
+import { readFileSync } from "node:fs"
+import { test } from "node:test"
+
+const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
+const home = readFileSync(new URL("../app/index.tsx", import.meta.url), "utf8")
+const config = readFileSync(new URL("../src/config.ts", import.meta.url), "utf8")
+const apiUrlModule = readFileSync(new URL("../src/lib/apiUrl.ts", import.meta.url), "utf8")
+const appConfig = readFileSync(new URL("../app.config.js", import.meta.url), "utf8")
+
+test("the root layout exports an ErrorBoundary so expo-router can catch a boot crash", () => {
+  assert.match(layout, /export function ErrorBoundary\(\{ error, retry \}: ErrorBoundaryProps\)/)
+})
+
+test("the root layout anchors every deep link under the home route", () => {
+  assert.match(layout, /export const unstable_settings = \{ anchor: "index" \}/)
+})
+
+test("the focused root clears the nested-shell signal and any torn-down shell-hosted seed", () => {
+  assert.match(home, /clearNestedShellHosts\(\)/)
+  assert.match(home, /stackWithoutShellHosted\(nav\.stack\)/)
+  assert.match(home, /navTeardownEpoch\(\)/)
+})
+
+test("the crash retry drops the persisted AND in-memory cache before re-rendering", () => {
+  const body = layout.slice(layout.indexOf("export function ErrorBoundary"))
+  const purge = body.indexOf("purgeQueryCache(queryClient)")
+  const again = body.indexOf("void retry()")
+
+  assert.ok(purge > -1 && again > purge)
+})
+
+test("the splash is bounded by a watchdog, so a stalled font load cannot hold it forever", () => {
+  assert.match(layout, /const SPLASH_WATCHDOG_MS = \d+/)
+  assert.match(layout, /setTimeout\(\(\) => setFontWaitElapsed\(true\), SPLASH_WATCHDOG_MS\)/)
+  assert.match(layout, /SplashScreen\.hideAsync\(\)\.catch\(/)
+})
+
+test("the loading gate stops hit-testing the moment it starts fading out", () => {
+  assert.match(layout, /pointerEvents=\{gateActive \? "auto" : "none"\}/)
+  assert.doesNotMatch(layout, /exiting=\{FadeOut/)
+})
+
+test("push registration latches on a terminal outcome, never before the async work", () => {
+  const hook = layout.slice(layout.indexOf("function usePushOnSignIn"))
+  assert.match(hook, /if \(!shouldAttemptPushRegistration\(state\)\) return/)
+  assert.match(hook, /if \(isPushOutcomeTerminal\(result\.status\)\) \{\n\s+state\.settled = true/)
+  assert.match(hook, /if \(isForegroundEdge\(attemptRef\.current, next\)\) attempt\(\)/)
+})
+
+test("every external URL is validated before it reaches Linking.openURL", () => {
+  const capability = layout.slice(layout.indexOf("openExternal: {"))
+  const guard = capability.indexOf("if (!isExternalUrl(url))")
+  const open = capability.indexOf("Linking.openURL(url)")
+  assert.ok(guard > -1 && open > guard)
+})
+
+test("a bare dev bundle points at localhost, never silently at production", () => {
+  assert.match(apiUrlModule, /export const DEV_API_URL = "http:\/\/localhost:8080"/)
+  assert.match(apiUrlModule, /export const PROD_API_URL = "https:\/\/api\.civfix\.org"/)
+})
+
+test("the base URL goes through the guarded resolver, never a bare ?? on the baked value", () => {
+  assert.match(config, /resolveApiUrl\(extra\.apiUrl, __DEV__\)/)
+  assert.doesNotMatch(config, /extra\.apiUrl \?\?/)
+  assert.match(apiUrlModule, /typeof configured === "string"/)
+})
+
+test("the app config OMITS apiUrl when unset rather than baking a null Expo turns into {}", () => {
+  assert.match(appConfig, /\.\.\.\(API_URL \? \{ apiUrl: API_URL \} : \{\}\)/)
+  assert.doesNotMatch(appConfig, /^\s+apiUrl: API_URL,\s*$/m)
+})
+
+test("the About presenter is registered for the ROUTER's lifetime, not a leaf screen's", () => {
+  assert.match(layout, /function BrandAboutBridge\(\): null \{/)
+  assert.match(layout, /setBrandAboutPresenter\(\(\) => router\.push\("\/about"\)\)/)
+  assert.match(layout, /return \(\) => setBrandAboutPresenter\(null\)/)
+  assert.match(layout, /<BrandAboutBridge \/>/)
+  assert.doesNotMatch(home, /setBrandAboutPresenter/)
+})

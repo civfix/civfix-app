@@ -1,0 +1,34 @@
+{
+  "block": {
+    "heading": "이 단체를 후원하세요",
+    "body": "후원금은 {{org}}에 전달됩니다. civfix는 후원금을 전달할 뿐 보관하지 않습니다.",
+    "cta": "{{org}}에 후원하기",
+    "cta_a11y": "{{org}}에 후원하기",
+    "merchant_of_record": "civfix는 결제를 중개합니다. 판매자(Merchant of Record)는 {{org}}입니다.",
+    "fee_note": "단체가 부담하는 카드 결제 수수료와 civfix 플랫폼 수수료 5%가 적용됩니다."
+  },
+  "list": {
+    "load_more": "더 보기",
+    "loading_more": "불러오는 중…",
+    "load_more_a11y": "후원 내역 더 불러오기",
+    "footnote": "영수증은 civfix가 단체의 위임 대리인으로서 발행합니다. 환불은 단체가 처리합니다."
+  },
+  "row": {
+    "refunded": "{{amount}} 환불됨"
+  },
+  "receipt": {
+    "download": "영수증 보기",
+    "download_a11y": "이 후원의 영수증 열기",
+    "error": "영수증을 가져오지 못했습니다. 다시 시도해 주세요.",
+    "unavailable": "이 기기에서는 영수증을 열 수 없습니다."
+  },
+  "state": {
+    "loading": "후원 내역을 불러오는 중…",
+    "error_title": "후원 내역을 사용할 수 없습니다",
+    "error_body": "후원 내역을 불러오지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.",
+    "empty_title": "아직 후원 내역이 없습니다",
+    "empty_body": "civfix에서 단체에 후원하면 영수증과 함께 여기에 표시됩니다.",
+    "signed_out_title": "로그인하면 후원 내역을 볼 수 있습니다",
+    "signed_out_body": "후원 내역과 영수증은 계정에 연결되어 있습니다."
+  }
+}

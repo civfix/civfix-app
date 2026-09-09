@@ -1,0 +1,83 @@
+# Cloudflare Pages routing for the civfix community web static export.
+#
+# Next STATIC EXPORT (output: "export", trailingSlash: true): every route is a directory with an
+# index.html in out/. The dynamic DETAIL routes are catch-alls (app/<route>/[...id]/page.tsx) whose
+# generateStaticParams emit a single placeholder shell at out/<route>/_/index.html; the real id is
+# read from the live URL at runtime (src/hooks/use-detail-id.ts). Cloudflare cannot know real ids,
+# so it must serve that placeholder shell for every /<route>/<id> deep link with a 200 (rewrite,
+# not redirect) so the SPA boots and resolves the id client-side.
+#
+# Two Cloudflare Pages behaviors shape these rules. BOTH were verified against `wrangler pages dev`
+# (the real Pages routing engine), because the official docs leave them unspecified:
+#
+#  1. A _redirects rule is followed even when a static asset matches the request, AND the `*` splat
+#     also matches the EMPTY remainder. So `/cleanups/* ... 200` matches the bare `/cleanups/` too
+#     and would shadow the real browse page exported at out/cleanups/index.html (serving the empty
+#     detail shell instead of the listing).
+#     => We add higher-priority protective rules for the colliding browse routes (cleanups, people,
+#        messages). Cloudflare evaluates static (splat-free) rules before splat rules, so they win.
+#
+#  2. Cloudflare IGNORES any redirect whose destination is canonicalized by stripping `/index.html`
+#     (it reports "infinite loop detected" and drops the rule). So a destination must be a DIRECTORY
+#     ( /foo/ ), never /foo/index.html. The detail shells already live at the directory
+#     out/<route>/_/, so the deep-link rules target /<route>/_/ directly. The browse pages live at
+#     out/<route>/index.html, which we cannot point at; a post-build step
+#     (scripts/cf-pages-postbuild.mjs) copies each browse page to out/__spa/<route>/index.html so the
+#     protective rule can target the directory /__spa/<route>/.
+#
+# /pin has no browse page, so it needs no protective rule. This file is copied into out/_redirects by
+# the export; Cloudflare consumes it at deploy time (it is not served as an asset). After deploying,
+# verify: curl -sI https://<host>/cleanups/ (browse) and curl -sI https://<host>/cleanups/<id>/ (detail).
+
+# 1) Protect the real browse/index pages (served from their /__spa/<route>/ copy; see note 2 above).
+/cleanups/   /__spa/cleanups/   200
+/people/     /__spa/people/     200
+/messages/   /__spa/messages/   200
+/compose/    /__spa/compose/    200
+
+# 2) SPA fallback for dynamic detail deep links (directory-form destination = no infinite-loop).
+# /groups and /channels (Telegram-style chat) have no browse page - like /pin - so they need only the
+# fallback rule, no protective /__spa/ rule. They cover /groups/new, /groups/<id>/info and
+# /channels/new; a channel CONVERSATION rides the group rails as /messages/group/<id>, so it is served
+# by the /messages/* rule below. Pinned-messages (/messages/pins/...) is also under /messages/*.
+/pin/*        /pin/_/        200
+/cleanups/*   /cleanups/_/   200
+/people/*     /people/_/     200
+/messages/*   /messages/_/   200
+/groups/*     /groups/_/     200
+/channels/*   /channels/_/   200
+/post/*       /post/_/       200
+/compose/*    /compose/_/    200
+
+# /leaderboard/<geoid> (the jurisdiction service-hours leaderboard) and /service-record/<code> (the
+# PUBLIC certificate verification page a school registrar lands on from a printed transcript). Like /pin,
+# /groups and /channels, NEITHER has a browse page exported at out/<route>/index.html, so neither needs a
+# protective /__spa/ rule: the collision detector in scripts/cf-pages-postbuild.mjs never fires for them.
+# (That detector EXITS 1 when a protective rule IS required and missing, so a future browse page added
+# under either prefix breaks the build rather than silently shadowing itself in production.)
+/leaderboard/*      /leaderboard/_/      200
+/service-record/*   /service-record/_/   200
+
+# 3) Host-platform routes added by the events overhaul. All four are catch-all placeholder shells with
+# NO browse page at out/<route>/index.html, so - like /pin, /groups and /channels - none needs a
+# protective /__spa/ rule (the collision detector in scripts/cf-pages-postbuild.mjs never fires for
+# them, and the new SPA-fallback-completeness gate proves the reverse: every emitted /_/ shell HAS a
+# rule here).
+#
+#   /manage/*     the host console (src/app/manage/[...path]), event id in the path
+#   /e/*          the public signup page (src/app/e/[...slug]); ALSO routed through
+#                 functions/e/[[path]].ts for per-event link previews, hence the _routes.json include
+#   /donate/*     the donation checkout + its /complete return view (src/app/donate/[...slug])
+#
+# /unsubscribe deliberately has NO rule: it is a STATIC page (out/unsubscribe/index.html) whose token
+# rides in the query string, so a splat rule here would shadow the page it points at and Cloudflare
+# would drop it as an infinite loop.
+/manage/*     /manage/_/     200
+/e/*          /e/_/          200
+/donate/*     /donate/_/     200
+
+# /orgs/<slug> is the PUBLIC organization page (src/app/orgs/[...slug]); the in-app nav also maps
+# /orgs/<slug> to the shared org panel, so a cold load boots this standalone shell and a warm click
+# stays inside the app. No browse page, so no protective rule; routed through functions/orgs/[[path]].ts
+# for per-organization link previews, hence the _routes.json include.
+/orgs/*       /orgs/_/       200

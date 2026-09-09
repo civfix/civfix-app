@@ -1,0 +1,55 @@
+{
+  "row": {
+    "viewProfileA11y": "{{name}}, view profile",
+    "moreOptionsA11y": "More options for {{name}}"
+  },
+  "cta": {
+    "view_report": "View report",
+    "view_report_a11y": "View the linked report",
+    "view_event": "View event",
+    "view_event_a11y": "View the linked event"
+  },
+  "hero": {
+    "report_fallback": "Report chat",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members"
+  },
+  "action": {
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "leave": "Leave chat"
+  },
+  "section": {
+    "members": "Members"
+  },
+  "leave": {
+    "confirm": "You will stop receiving messages from this report's chat. You can join again at any time.",
+    "action": "Leave",
+    "cancel": "Cancel",
+    "dismiss": "Dismiss"
+  },
+  "block": {
+    "action": "Block",
+    "cancel": "Cancel",
+    "confirm": "Block this person"
+  },
+  "error": {
+    "title": "Could not load",
+    "body": "We could not reach civfix. Check your connection and try again."
+  },
+  "empty": {
+    "title": "No members yet",
+    "body": "People going to this event will show up here."
+  },
+  "role": {
+    "host": "Host",
+    "cohost": "Co-host"
+  },
+  "manage": {
+    "makeCohost": "Make co-host",
+    "removeCohost": "Remove co-host",
+    "remove": "Remove from event",
+    "removeCancel": "Cancel",
+    "removeConfirm": "Remove from event"
+  }
+}

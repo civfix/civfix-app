@@ -1,0 +1,15 @@
+{
+  "signin": {
+    "title": "Sign in to civfix",
+    "body": "Track your reports, RSVP to events, and follow neighbors - all in one place."
+  },
+  "error": {
+    "title": "Could not load your profile",
+    "body": "We could not reach civfix. Check your connection and try again."
+  },
+  "verification": {
+    "verified": "Verified community organizer",
+    "get_verified": "Get verified",
+    "get_verified_sub": "Build trust with your neighbors"
+  }
+}

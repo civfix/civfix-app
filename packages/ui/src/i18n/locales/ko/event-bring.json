@@ -1,0 +1,20 @@
+{
+  "input": {
+    "a11y_label": "가져올 항목 추가",
+    "placeholder": "항목을 입력하고 Enter를 누르세요",
+    "add_a11y": "항목 추가"
+  },
+  "chip": {
+    "remove_a11y": "{{item}} 제거"
+  },
+  "suggestions": {
+    "label": "추천 항목",
+    "add_a11y": "{{item}} 추가",
+    "work_gloves": "작업용 장갑",
+    "water_bottle": "물병",
+    "hat_sunscreen": "모자 & 선크림",
+    "sturdy_shoes": "튼튼한 신발",
+    "trash_grabber": "집게",
+    "reusable_bags": "재사용 가방"
+  }
+}

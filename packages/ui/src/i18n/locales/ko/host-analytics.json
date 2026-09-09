@@ -1,0 +1,99 @@
+{
+  "export_csv": "CSV 내보내기",
+  "tab": {
+    "label": "분석 섹션",
+    "registration": "등록",
+    "attendance": "참석",
+    "messaging": "메시지",
+    "page": "신청 페이지"
+  },
+  "range": {
+    "label": "기간",
+    "7d": "7일",
+    "30d": "30일",
+    "90d": "90일",
+    "all": "최대 1년",
+    "whole_event": "행사 전체"
+  },
+  "kpi": {
+    "registered": "등록",
+    "checked_in": "체크인",
+    "check_in_rate": "체크인율",
+    "page_views": "페이지 조회수"
+  },
+  "funnel": {
+    "a11y": "페이지 조회부터 체크인까지"
+  },
+  "suppressed": {
+    "explain": "이 그룹의 인원이 {{k}}명 미만이라 숨겼습니다.",
+    "note": "인원이 {{k}}명 미만인 그룹은 숨깁니다. 빈 칸은 0이 아니라 숨겨졌다는 뜻입니다.",
+    "panel": "그룹 인원이 {{k}}명 미만이어서 이 분류는 숨겼습니다.",
+    "point": "숨김 (그룹이 너무 작음)"
+  },
+  "registration": {
+    "over_time": "기간별 등록 추이",
+    "over_time_a11y": "일별 신규 등록과 누적 등록",
+    "new": "신규",
+    "cumulative": "누적",
+    "cancellations": "취소",
+    "cancellations_a11y": "일별 취소",
+    "cancelled": "취소됨",
+    "breakdowns": "세부 분류",
+    "by_ticket_type": "티켓 종류별",
+    "by_audience": "회원과 게스트"
+  },
+  "attendance": {
+    "arrivals": "참가자 도착 시각",
+    "arrivals_hint": "행사 시작 시각을 기준으로 한 분 단위이며, 음수는 일찍 도착한 경우입니다. 이 차트는 선택한 기간과 관계없이 항상 행사 전체를 보여 줍니다.",
+    "arrivals_a11y": "행사 시작 이후 분 단위 체크인",
+    "arrivals_value": "체크인",
+    "minute": "{{minutes}}분",
+    "rates": "비율",
+    "check_in_rate": "체크인율",
+    "no_show_rate": "불참률",
+    "breakdowns": "세부 분류",
+    "by_ticket_type": "티켓 종류별",
+    "by_slot": "교대별"
+  },
+  "messaging": {
+    "totals": "메시지",
+    "active_days": "전송한 날",
+    "recipients": "수신자",
+    "unsubscribes": "수신 거부",
+    "no_tracking": "civfix는 열람이나 클릭을 추적하지 않으므로 여기에 표시할 내용이 없습니다.",
+    "by_channel": "채널별",
+    "by_channel_a11y": "채널별 전송·실패·차단",
+    "sent": "전송됨",
+    "failed": "실패",
+    "suppressed": "차단됨",
+    "over_time": "기간별 전송 추이",
+    "over_time_a11y": "일별 전송",
+    "sends": "전송"
+  },
+  "page": {
+    "views": "페이지 조회수",
+    "views_a11y": "일별 신청 페이지 조회수",
+    "by_source": "방문 유입 경로",
+    "donation_clicks": "기부 클릭"
+  },
+  "csv": {
+    "source": "출처",
+    "reference": "행사 참조 번호",
+    "generated_at": "생성 시각",
+    "filters": "필터",
+    "none": "없음",
+    "suppression_k": "비공개 처리 기준 (k)",
+    "note": "참고",
+    "k_note": "그룹 인원이 {{k}}명 미만이면 빈 칸으로 숨깁니다. 빈 칸은 0이 아닙니다.",
+    "day": "날짜",
+    "registrations": "등록",
+    "cumulative": "누적",
+    "minute_offset": "시작 후 경과 분",
+    "arrivals": "체크인",
+    "channel": "채널",
+    "sent": "전송됨",
+    "failed": "실패",
+    "suppressed": "차단됨",
+    "page_views": "페이지 조회수"
+  }
+}

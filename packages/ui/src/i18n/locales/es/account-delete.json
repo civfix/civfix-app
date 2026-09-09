@@ -1,0 +1,47 @@
+{
+  "title": "Eliminar cuenta",
+  "emailFallback": "el correo de tu cuenta",
+  "warn": {
+    "permanentPre": "Esto ",
+    "permanentEmphasis": "elimina de forma permanente",
+    "permanentPost": " tu cuenta. Tu perfil, nombre y foto se borran y se cerrará tu sesión. No se puede deshacer.",
+    "contentRemains": "Tus reportes y publicaciones anteriores permanecen, mostrados como \"Usuario eliminado\"."
+  },
+  "intro": {
+    "sendPre": "Para confirmar que eres tú, te enviaremos un código de 6 dígitos a ",
+    "sendPost": "."
+  },
+  "noEmail": {
+    "body": "Tu cuenta no tiene dirección de correo electrónico, por lo que no podemos verificar la eliminación. Agrega y verifica un correo primero, luego elimina tu cuenta."
+  },
+  "verify": {
+    "enterPre": "Ingresa el código de 6 dígitos que enviamos a ",
+    "enterPost": "."
+  },
+  "actions": {
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "emailCode": "Enviarme un código",
+    "resend": "Reenviar código",
+    "sending": "Enviando...",
+    "deleteConfirm": "Eliminar permanentemente"
+  },
+  "a11y": {
+    "dismiss": "Descartar",
+    "emailCode": "Enviarme un código de verificación",
+    "verificationCode": "Código de verificación",
+    "resend": "Reenviar código",
+    "deleteConfirm": "Eliminar mi cuenta permanentemente"
+  },
+  "sendError": {
+    "rateLimited": "Espera un momento antes de solicitar otro código.",
+    "validation": "No pudimos enviar un código al correo de tu cuenta. Intenta de nuevo.",
+    "generic": "No pudimos enviar un código en este momento. Por favor, intenta de nuevo."
+  },
+  "deleteError": {
+    "unauthorized": "Ese código no es correcto o ha expirado. Verifícalo e intenta de nuevo, o reenvía uno nuevo.",
+    "rateLimited": "Demasiados intentos. Espera un momento e intenta de nuevo.",
+    "validation": "Tu cuenta no tiene dirección de correo para verificar la eliminación.",
+    "generic": "No pudimos eliminar tu cuenta en este momento. Por favor, intenta de nuevo."
+  }
+}

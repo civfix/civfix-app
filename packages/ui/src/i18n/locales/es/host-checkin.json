@@ -1,0 +1,123 @@
+{
+  "state": {
+    "loading": "Cargando el registro de entrada…",
+    "error_title": "El registro de entrada no está disponible",
+    "error_body": "No pudimos cargar este evento. Revisa tu conexión e inténtalo de nuevo.",
+    "denied_title": "No estás en el equipo de puerta",
+    "denied_body": "Solo los anfitriones y el personal del evento pueden registrar asistentes."
+  },
+  "action": {
+    "scan": "Escanear una entrada",
+    "scan_unavailable": "El escaneo no está disponible en este dispositivo. Escribe el código de la entrada."
+  },
+  "manual": {
+    "label": "Código de la entrada",
+    "placeholder": "Escribe el código de la entrada",
+    "submit": "Registrar",
+    "title": "Registrar a alguien",
+    "hint": "Escribe el código completo impreso en la entrada. El escaneo se hace en la app de civfix."
+  },
+  "outbox": {
+    "queued": "Guardado. Se enviará cuando vuelvas a tener conexión.",
+    "pending_one": "{{count}} registro pendiente de enviar",
+    "pending_other": "{{count}} registros pendientes de enviar",
+    "retry": "Reintentar ahora"
+  },
+  "replay": {
+    "title": "Informe de envío",
+    "sent_one": "{{count}} registro pendiente se completó.",
+    "sent_other": "{{count}} registros pendientes se completaron.",
+    "refused_line_one": "{{count}} entrada: {{label}}",
+    "refused_line_other": "{{count}} entradas: {{label}}",
+    "forbidden_one": "No se pudo completar {{count}} registro: ya no tienes acceso al control de entrada.",
+    "forbidden_other": "No se pudieron completar {{count}} registros: ya no tienes acceso al control de entrada.",
+    "discarded_one": "No se pudo enviar {{count}} registro y se descartó.",
+    "discarded_other": "No se pudieron enviar {{count}} registros y se descartaron.",
+    "held_one": "{{count}} registro sigue pendiente. Vuelve a iniciar sesión para completarlo.",
+    "held_other": "{{count}} registros siguen pendientes. Vuelve a iniciar sesión para completarlos.",
+    "dismiss": "Descartar"
+  },
+  "result": {
+    "checked_in_title": "Entrada registrada",
+    "checked_in_body": "Esta entrada ya está registrada.",
+    "already_title": "Ya estaba registrada",
+    "already_body": "Esta entrada se escaneó antes.",
+    "waitlisted_title": "En lista de espera",
+    "waitlisted_body": "Esta persona está en lista de espera y todavía no tiene plaza.",
+    "cancelled_title": "Entrada cancelada",
+    "cancelled_body": "Esta inscripción se canceló.",
+    "no_show_title": "Marcada como no asistida",
+    "no_show_body": "Esta entrada se marcó como no asistida después del evento.",
+    "wrong_event_title": "No es de este evento",
+    "wrong_event_body": "Esta entrada pertenece a otro evento.",
+    "unknown_title": "Entrada no reconocida",
+    "unknown_body": "No reconocemos este código para este evento.",
+    "party_one": "{{count}} plaza",
+    "party_other": "{{count}} plazas",
+    "undo": "Deshacer",
+    "undo_done": "Registro deshecho.",
+    "dismiss": "Descartar",
+    "unknown_token_title": "Entrada no reconocida",
+    "unknown_token_body": "No reconocemos este código para este evento."
+  },
+  "error": {
+    "code_length": "Ese código no parece correcto. Revísalo e inténtalo de nuevo.",
+    "generic": "Algo salió mal. Inténtalo de nuevo."
+  },
+  "counters": {
+    "heading": "Contadores en vivo",
+    "registered": "Inscritos",
+    "checked_in": "Registrados",
+    "waitlist": "Lista de espera",
+    "no_show": "No asistieron",
+    "as_of": "A las {{time}}",
+    "units": "Los inscritos y la lista de espera cuentan plazas; los registrados y las ausencias cuentan personas."
+  },
+  "roster": {
+    "title": "Aún sin registrar",
+    "search": "Buscar por nombre",
+    "check_in": "Registrar",
+    "guest": "Invitado",
+    "deleted": "Usuario eliminado",
+    "empty_title": "Ya está todo el mundo",
+    "empty_body": "Nadie de la lista queda por registrar."
+  },
+  "arrivals": {
+    "title": "Llegadas",
+    "value": "Registros de entrada",
+    "a11y": "Registros de entrada a lo largo del tiempo",
+    "buckets": "Agrupados en bloques de 15 minutos, en la hora local del evento.",
+    "empty": "Todavía no ha llegado nadie."
+  },
+  "by_type": {
+    "title": "Por tipo de entrada",
+    "a11y": "Registros de entrada por tipo de entrada",
+    "empty": "Este evento no tiene tipos de entrada."
+  },
+  "walkup": {
+    "open": "En la puerta",
+    "title": "Añadir a alguien que llega sin inscripción",
+    "notice": "Esto crea una inscripción en la puerta y la registra al momento. civfix no guarda ningún dato de contacto de estas personas.",
+    "name": "Nombre",
+    "party": "Plazas",
+    "ticket_type": "Tipo de entrada",
+    "ticket_placeholder": "Elige un tipo de entrada",
+    "submit": "Añadir y registrar",
+    "done": "{{name}} ya está registrado",
+    "outcome_full": "Ese tipo de entrada está completo.",
+    "outcome_party_too_large": "Son más plazas de las que permite ese tipo de entrada.",
+    "outcome_sales_closed": "Ese tipo de entrada ya no está disponible.",
+    "outcome_registration_closed": "Las inscripciones de este evento están cerradas.",
+    "outcome_ticket_type_not_found": "Elige un tipo de entrada.",
+    "outcome_closed": "Este evento está cerrado.",
+    "outcome_banned": "Esa persona no se puede añadir a este evento.",
+    "outcome_already_registered": "Esa persona ya está inscrita.",
+    "outcome_access_code_required": "Ese tipo de entrada necesita un código de acceso.",
+    "outcome_access_code_invalid": "Ese código de acceso no es válido.",
+    "outcome_answers_invalid": "Ese tipo de entrada incluye preguntas que no se pueden responder en la puerta.",
+    "outcome_waitlisted": "Se ha añadido a la lista de espera.",
+    "outcome_not_found": "No se ha encontrado este evento.",
+    "outcome_registered": "Añadido.",
+    "outcome_replayed": "Ya estaba añadido."
+  }
+}

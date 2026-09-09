@@ -1,0 +1,17 @@
+{
+  "generic": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo.",
+  "oauth_failed": "No se pudo completar el inicio de sesión con {{provider}}. Por favor, inténtalo de nuevo.",
+  "code": {
+    "UNAUTHORIZED": "Inicia sesión para continuar.",
+    "FORBIDDEN": "No tienes permiso para hacer eso.",
+    "NOT_FOUND": "No encontramos lo que buscas.",
+    "VALIDATION": "Hay algo en el formulario que necesita corrección.",
+    "RATE_LIMITED": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+    "ABUSE_HELD": "Gracias - esto está en revisión y aparecerá una vez aprobado.",
+    "GPS_IMPLAUSIBLE": "Esa ubicación no parece correcta. Intenta capturar de nuevo dónde está el problema.",
+    "MEDIA_REJECTED": "No se pudo aceptar esa foto o video. Intenta con otro.",
+    "CONFLICT": "Esa acción entra en conflicto con algo. Actualiza e inténtalo de nuevo.",
+    "TURNSTILE_FAILED": "No pudimos verificar esta solicitud. Por favor, inténtalo de nuevo.",
+    "INTERNAL": "Algo salió mal de nuestro lado. Por favor, inténtalo de nuevo."
+  }
+}

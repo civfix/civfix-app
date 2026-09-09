@@ -1,0 +1,28 @@
+{
+  "title": "Enter your code",
+  "subtitle": "We sent a 6-digit code to",
+  "reviewer": {
+    "subtitle": "Enter the reviewer access code for",
+    "label": "Reviewer access code",
+    "placeholder": "Paste the access code",
+    "helper": "Provided with this build for app review."
+  },
+  "verify": {
+    "label": "Verify",
+    "incomplete": "Enter all 6 digits.",
+    "too_short": "Enter the full reviewer access code.",
+    "fallback_reason": "That code did not work.",
+    "rate_limited": "Too many attempts. Tap resend to get a new code.",
+    "locked": "{{reason}} Tap resend to get a new code.",
+    "wrong_with_attempts_one": "{{reason}} {{count}} try left.",
+    "wrong_with_attempts_other": "{{reason}} {{count}} tries left."
+  },
+  "attempts_left_one": "{{count}} try left",
+  "attempts_left_other": "{{count}} tries left",
+  "resend": {
+    "prompt": "Did not get it? ",
+    "cooldown": "Resend in {{cooldown}}s",
+    "sending": "Sending...",
+    "action": "Resend code"
+  }
+}

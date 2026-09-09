@@ -1,0 +1,23 @@
+{
+  "save": {
+    "button": "Änderungen speichern",
+    "saving": "Wird gespeichert...",
+    "error": {
+      "validation": "Bitte überprüfe die Veranstaltungsdetails und versuche es erneut.",
+      "rate_limited": "Zu viele Versuche. Warte kurz und versuche es erneut.",
+      "forbidden": "Nur der Organisator kann diese Veranstaltung bearbeiten.",
+      "generic": "Speichern fehlgeschlagen. Bitte versuche es erneut."
+    }
+  },
+  "validation": {
+    "incomplete": "Eine Veranstaltung braucht Titel, Treffpunkt, Datum und Uhrzeit."
+  },
+  "unavailable": {
+    "title": "Veranstaltung nicht verfügbar",
+    "body": "Diese Veranstaltung konnte nicht geladen werden. Sie wurde möglicherweise entfernt, oder du bist offline."
+  },
+  "denied": {
+    "title": "Nur der Organisator kann diese Veranstaltung bearbeiten",
+    "body": "Bitte den Gastgeber, die Details zu aktualisieren, oder melde dich auf der Veranstaltungsseite an."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "label": {
+    "like": "좋아요",
+    "heart": "사랑해요",
+    "celebrate": "축하해요",
+    "support": "응원해요",
+    "insightful": "유익해요",
+    "concerned": "걱정돼요",
+    "laugh": "웃겨요",
+    "sad": "슬퍼요"
+  },
+  "chip": {
+    "a11y": "{{label}}, {{count}}"
+  }
+}

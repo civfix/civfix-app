@@ -1,0 +1,21 @@
+{
+  "title": "New channel",
+  "visibility_title": "Who can join",
+  "add_members": "Add subscribers",
+  "subscriber_prompt": "Search by @handle to add subscribers to your channel.",
+  "back_a11y": "Back",
+  "skip": "Skip",
+  "next": "Next",
+  "create": "Create channel",
+  "create_error": "Could not create the channel. Please try again.",
+  "name_label": "Channel name",
+  "name_placeholder": "Name your channel",
+  "description_label": "Description (optional)",
+  "description_placeholder": "What is this channel about?",
+  "avatar_a11y": "Choose a channel photo",
+  "avatar_clear_a11y": "Remove the channel photo",
+  "private_label": "Private",
+  "private_hint": "Only people you add can see it",
+  "public_label": "Public",
+  "public_hint": "Anyone can join"
+}

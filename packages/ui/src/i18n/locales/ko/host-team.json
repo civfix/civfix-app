@@ -1,0 +1,47 @@
+{
+  "members": {
+    "title": "팀",
+    "joined": "{{when}} 합류",
+    "empty_title": "아직 팀 구성원이 없습니다",
+    "empty_body": "함께 준비할 공동 호스트를 초대하거나, 입장을 도와줄 스태프를 초대해 보세요."
+  },
+  "role": {
+    "cohost": "공동 호스트",
+    "staff": "스태프",
+    "member": "참가자",
+    "updated": "역할을 변경했습니다",
+    "change_a11y": "{{name}} 님의 역할 변경",
+    "confirm_title": "이 역할을 변경할까요?",
+    "confirm_body": "{{name}}님이 이 행사에서 {{role}}(으)로 바뀝니다. 언제든지 다시 바꿀 수 있습니다.",
+    "confirm_action": "역할 변경",
+    "error_conflict": "다른 사람이 먼저 이 역할을 변경했습니다. 팀을 새로 고친 뒤 다시 시도하세요.",
+    "error_forbidden": "이 행사에서 해당 사용자의 역할을 변경할 수 없습니다."
+  },
+  "invite": {
+    "action": "초대",
+    "title": "초대하기",
+    "identifier_kind": "초대 방법",
+    "by_handle": "핸들",
+    "by_email": "이메일",
+    "handle": "핸들",
+    "email": "이메일 주소",
+    "role": "역할",
+    "role_hint": "공동 호스트는 행사를 관리할 수 있습니다. 스태프는 체크인을 처리하고 연락처가 없는 참가자 명단을 볼 수 있습니다.",
+    "send": "초대 보내기",
+    "sent": "초대를 보냈습니다",
+    "revoked": "초대를 취소했습니다",
+    "privacy_note": "초대한 이메일은 가려진 형태로 저장됩니다. 전체 주소는 볼 수 없습니다."
+  },
+  "invites": {
+    "title": "대기 중인 초대",
+    "unknown": "초대받은 사람",
+    "sent": "{{when}} 초대함",
+    "revoke": "취소",
+    "revoke_title": "이 초대를 취소할까요?",
+    "revoke_body": "링크가 즉시 작동하지 않게 됩니다.",
+    "status_pending": "대기 중",
+    "status_accepted": "수락됨",
+    "status_revoked": "취소됨",
+    "status_expired": "만료됨"
+  }
+}

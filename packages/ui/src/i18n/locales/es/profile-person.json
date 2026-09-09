@@ -1,0 +1,56 @@
+{
+  "error": {
+    "title": "Perfil no disponible",
+    "body": "Es posible que esta persona ya no esté en civfix o que no tengas conexión."
+  },
+  "actions": {
+    "message": "Mensaje",
+    "message_a11y": "Enviar mensaje a {{name}}",
+    "more_options": "Más opciones"
+  },
+  "menu": {
+    "block": "Bloquear",
+    "unblock": "Desbloquear",
+    "report": "Reportar"
+  },
+  "events": {
+    "label": "EVENTOS",
+    "empty": "Aún no hay eventos.",
+    "role_hosting": "Organizando",
+    "role_going": "Asistiendo",
+    "row_a11y": "{{title}}, {{role}}",
+    "group_upcoming": "PRÓXIMOS",
+    "group_past": "PASADOS",
+    "load_more": "Cargar más",
+    "loading_more": "Cargando...",
+    "load_more_a11y": "Cargar más eventos pasados",
+    "load_more_error": "No se pudieron cargar más eventos.",
+    "load_more_retry": "Reintentar"
+  },
+  "block": {
+    "confirm_message": "¿Bloquear a {{name}}? No podrá enviarte mensajes y su perfil quedará oculto.",
+    "cancel": "Cancelar",
+    "confirm": "Bloquear",
+    "error": "No se pudo bloquear a esta persona. Inténtalo de nuevo."
+  },
+  "blocked": {
+    "label": "Bloqueaste a esta persona.",
+    "unblock_error": "No se pudo desbloquear a esta persona. Inténtalo de nuevo."
+  },
+  "report": {
+    "subject_label": "este perfil",
+    "error": "No se pudo enviar tu reporte. Inténtalo de nuevo.",
+    "toast_submitted": "Reporte enviado - gracias"
+  },
+  "hours": {
+    "eyebrow": "Horas de voluntariado"
+  },
+  "posts": {
+    "loading": "Cargando publicaciones...",
+    "error": "No se pudieron cargar las publicaciones.",
+    "empty": "Sin publicaciones todavía.",
+    "load_more": "Cargar más",
+    "loading_more": "Cargando...",
+    "load_more_a11y": "Cargar más publicaciones"
+  }
+}

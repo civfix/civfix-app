@@ -1,0 +1,153 @@
+{
+  "status": {
+    "hosting": "Tú organizas",
+    "cohosting": "Eres coanfitrión",
+    "cancelled": "Cancelado por el organizador",
+    "ended": "Este evento ya terminó"
+  },
+  "going": {
+    "heading": "Asistentes",
+    "count_one": "{{count}} asistente",
+    "count_other": "{{count}} asistentes",
+    "empty": "Todavía no va nadie.",
+    "you": "Tú",
+    "names_following": "Sigues a {{names}}",
+    "names": "{{names}}",
+    "view_all": "Ver todos",
+    "a11y_show_fewer": "Mostrar menos nombres",
+    "a11y_show_everyone": "Mostrar todos los asistentes",
+    "a11y_view_everyone": "Ver todos los asistentes"
+  },
+  "actions": {
+    "share": "Compartir",
+    "share_a11y": "Compartir este evento",
+    "edit": "Editar evento",
+    "edit_a11y": "Editar este evento",
+    "report": "Reportar evento",
+    "report_a11y": "Reportar este evento",
+    "message_crew": "Mensaje al grupo",
+    "message_crew_a11y": "Enviar mensaje al equipo del evento",
+    "message_crew_hint": "Confirma tu asistencia para entrar al chat",
+    "cancel_event": "Cancelar evento",
+    "cancel_event_a11y": "Cancelar este evento",
+    "invite": "Invitar",
+    "invite_a11y": "Invita a gente a este evento",
+    "repost": "Republicar",
+    "repost_a11y": "Republicar este evento"
+  },
+  "where": {
+    "route": "Ruta de limpieza",
+    "meeting_point": "Punto de encuentro en el mapa",
+    "distance_away": "a {{dist}}"
+  },
+  "bring": {
+    "heading": "Qué llevar"
+  },
+  "linked_reports": {
+    "heading": "Reportes que atenderemos"
+  },
+  "host": {
+    "heading": "Organizador",
+    "neighbor": "Vecino",
+    "verify_nudge": "Verifícate para generar confianza con los asistentes",
+    "verify_nudge_a11y": "Verificar cuenta",
+    "request_resources": "Solicitar recursos a la ciudad",
+    "request_resources_a11y": "Solicitar recursos a la ciudad",
+    "request_resources_no_city": "Aún no hay una ciudad asignada a esta ubicación",
+    "request_resources_locked": "Verifica tu cuenta para solicitar recursos a la ciudad",
+    "dashboard": "Panel de anfitrión",
+    "dashboard_a11y": "Abrir el panel de anfitrión de este evento",
+    "check_in": "Registrar asistentes",
+    "check_in_a11y": "Abrir el registro de entrada de este evento"
+  },
+  "report_sheet": {
+    "subject": "este evento",
+    "submit_error": "No se pudo enviar el reporte. Inténtalo de nuevo.",
+    "success_toast": "Reporte enviado - gracias"
+  },
+  "cancel_sheet": {
+    "error": "No se pudo cancelar el evento. Inténtalo de nuevo."
+  },
+  "resources_sheet": {
+    "error": "No se pudo enviar tu solicitud. Inténtalo de nuevo.",
+    "success_toast": "Solicitud enviada a la ciudad"
+  },
+  "state": {
+    "unavailable_title": "Evento no disponible",
+    "unavailable_body": "No pudimos cargar este evento."
+  },
+  "complete": {
+    "action": "Marcar como completado",
+    "action_a11y": "Marcar este evento como completado",
+    "too_early": "Disponible cuando empiece el evento",
+    "success_toast": "Marcado como completado. Ya puedes registrar horas."
+  },
+  "complete_sheet": {
+    "title": "¿Marcar este evento como completado?",
+    "dismiss_a11y": "Cerrar marcar como completado",
+    "body": "Hazlo cuando todo el mundo haya terminado.",
+    "point_visible": "Las personas asistentes verán el evento como finalizado.",
+    "point_hours": "Podrás acreditar horas de voluntariado a quienes asistieron.",
+    "point_final": "Esta acción no se puede deshacer.",
+    "confirm": "Marcar completado",
+    "cancel": "Todavía no",
+    "error": "No se pudo actualizar el evento. Inténtalo de nuevo."
+  },
+  "receipt": {
+    "pending": "La persona anfitriona aún no ha registrado las horas de voluntariado.",
+    "credited": "Se te acreditaron {{hours}} horas de voluntariado",
+    "credited_a11y": "Se te acreditaron {{hours}} horas de voluntariado. Ver tu registro de servicio.",
+    "not_credited": "No se registraron horas de voluntariado para ti en este evento."
+  },
+  "log_hours": {
+    "action": "Registrar horas de voluntariado",
+    "action_a11y": "Registrar horas de voluntariado para los asistentes",
+    "placeholder": "p. ej. 2.5",
+    "invalid": "Introduce horas entre 0 y {{max}}.",
+    "save": "Registrar horas",
+    "save_a11y": "Enviar horas de voluntariado",
+    "cancel": "Cancelar",
+    "cancel_a11y": "Cancelar el registro de horas",
+    "success_toast_one": "Horas registradas para {{count}} asistente",
+    "success_toast_other": "Horas registradas para {{count}} asistentes",
+    "error_toast": "No se pudieron registrar las horas. Inténtalo de nuevo.",
+    "default_label": "Horas para todos",
+    "default_a11y": "Horas de voluntariado predeterminadas para aplicar a cada asistente",
+    "apply_all": "Aplicar a todos",
+    "apply_all_a11y": "Aplicar las horas predeterminadas a todos los asistentes",
+    "row_placeholder": "0",
+    "row_a11y": "Horas de voluntariado de {{name}}",
+    "loading_roster": "Cargando asistentes...",
+    "empty_roster": "Aún no hay asistentes a quienes acreditar.",
+    "verify_gate": "Verifícate como organizador comunitario para registrar las horas de voluntariado de los asistentes.",
+    "verify_gate_a11y": "Verifícate para registrar horas de voluntariado",
+    "summary_eyebrow": "Horas de voluntariado",
+    "summary_total": "{{hours}} h acreditadas",
+    "summary_count_one": "para {{count}} asistente",
+    "summary_count_other": "para {{count}} asistentes",
+    "summary_edit": "Editar",
+    "summary_edit_a11y": "Editar las horas de voluntariado registradas",
+    "row_logged": "registrado {{ago}}",
+    "row_unknown": "Antiguo asistente",
+    "blank_hint": "Deja una fila en blanco para quien no haya asistido.",
+    "blank_hint_edit": "Escribe un número nuevo para corregir las horas ya acreditadas. Una fila en blanco se omite: borrarla no elimina las horas que ya se acreditaron.",
+    "self_note": "Tus propias horas no aparecen aquí. Otra persona anfitriona tiene que acreditártelas."
+  },
+  "guests": {
+    "heading": "Invitados",
+    "count_one": "{{count}} invitado",
+    "count_other": "{{count}} invitados",
+    "expand_a11y": "Mostrar la lista de invitados",
+    "collapse_a11y": "Ocultar la lista de invitados",
+    "empty": "Aún no hay invitados.",
+    "loading": "Cargando...",
+    "error": "No se pudieron cargar los invitados.",
+    "load_more": "Cargar más",
+    "loading_more": "Cargando...",
+    "load_more_a11y": "Cargar más invitados",
+    "cancelled": "Cancelado",
+    "contact_scrubbed": "—",
+    "contact_a11y": "Contactar a {{name}}",
+    "contact_hidden": "Contacto oculto"
+  }
+}

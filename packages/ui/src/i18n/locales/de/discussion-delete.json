@@ -1,0 +1,12 @@
+{
+  "title": "Kommentar löschen?",
+  "caption": "Dies kann nicht rückgängig gemacht werden.",
+  "backdrop": {
+    "dismiss": "Schließen"
+  },
+  "actions": {
+    "cancel": "Abbrechen",
+    "confirm": "Löschen",
+    "confirmA11y": "Diesen Kommentar löschen"
+  }
+}

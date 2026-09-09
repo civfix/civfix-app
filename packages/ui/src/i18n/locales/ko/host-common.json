@@ -1,0 +1,148 @@
+{
+  "counters": {
+    "a11y": "실시간 행사 집계",
+    "checked_in": "체크인",
+    "registered": "등록",
+    "waitlist": "대기자",
+    "no_show": "불참",
+    "error": "지금은 집계를 볼 수 없습니다."
+  },
+  "roster": {
+    "search_placeholder": "이름으로 검색",
+    "search_a11y": "이름으로 참가자 목록 검색",
+    "filter_a11y": "참가자 목록 필터",
+    "filter": {
+      "all": "전체",
+      "not_checked_in": "미체크인",
+      "checked_in": "체크인 완료",
+      "waitlisted": "대기자"
+    },
+    "seats_other": "{{count}}자리",
+    "guest": "게스트",
+    "waitlist_position": "대기 {{position}}번",
+    "check_in": "체크인",
+    "check_in_a11y": "{{name}} 체크인",
+    "undo": "실행 취소",
+    "undo_a11y": "{{name}}의 체크인 취소",
+    "loading": "참가자 목록을 불러오는 중…",
+    "loading_more": "불러오는 중…",
+    "load_more": "더 보기",
+    "load_more_a11y": "참가자 더 불러오기",
+    "empty": "이 필터에 해당하는 사람이 아직 없습니다.",
+    "error": "참가자 목록을 불러오지 못했습니다.",
+    "error_forbidden": "그 작업을 수행할 권한이 없습니다."
+  },
+  "state": {
+    "loading": "불러오는 중…",
+    "empty_title": "아직 아무것도 없습니다",
+    "empty_body": "이 화면에 표시할 내용이 없습니다.",
+    "empty_filtered_title": "결과 없음",
+    "empty_filtered_body": "적용한 필터와 일치하는 결과가 없습니다.",
+    "error_title": "문제가 발생했습니다",
+    "error_body": "이 내용을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    "offline_title": "오프라인 상태입니다",
+    "offline_body": "다시 연결하면 하던 곳부터 이어서 진행됩니다.",
+    "no_access_title": "접근 권한이 없습니다",
+    "no_access_body": "필요한 역할을 받으려면 주최자에게 요청하세요.",
+    "not_found_title": "찾을 수 없습니다",
+    "not_found_body": "이 페이지가 존재하지 않거나 삭제되었습니다."
+  },
+  "action": {
+    "back": "뒤로",
+    "back_to_events": "행사 목록으로",
+    "cancel": "취소",
+    "clear_filters": "필터 지우기",
+    "close": "닫기",
+    "copy_link": "링크 복사",
+    "dismiss": "닫기",
+    "load_more": "더 보기",
+    "loading": "불러오는 중…",
+    "open_full_page": "전체 페이지로 열기",
+    "retry": "다시 시도",
+    "save": "저장",
+    "undo": "실행 취소"
+  },
+  "auth": {
+    "signed_out_title": "행사를 관리하려면 로그인하세요",
+    "signed_out_body": "호스트 콘솔은 행사를 주최하는 분만 사용할 수 있습니다.",
+    "go_home": "civfix로 이동"
+  },
+  "common": {
+    "yes": "예",
+    "no": "아니요"
+  },
+  "shell": {
+    "skip_to_content": "본문으로 건너뛰기",
+    "sections": "콘솔 섹션",
+    "breadcrumbs": "탐색 경로"
+  },
+  "table": {
+    "select_all": "모든 행 선택",
+    "select_row": "이 행 선택",
+    "selected_other": "{{count}}개 선택됨",
+    "clear_selection": "선택 해제",
+    "sort_by": "{{column}} 기준으로 정렬"
+  },
+  "filter": {
+    "search_placeholder": "검색",
+    "reset": "초기화",
+    "clear_all": "모두 지우기",
+    "remove_chip": "{{label}} 제거"
+  },
+  "form": {
+    "optional": "선택 사항",
+    "error_summary_title": "저장하기 전에 다음을 수정하세요",
+    "draft_restored": "저장하지 않은 초안을 복구했습니다.",
+    "draft_discard": "초안 버리기",
+    "range_7d": "7일",
+    "range_30d": "30일",
+    "range_90d": "90일",
+    "range_all": "전체",
+    "range_custom": "직접 설정",
+    "range_from": "시작",
+    "range_to": "종료"
+  },
+  "editor": {
+    "toolbar": "서식",
+    "bold": "굵게",
+    "italic": "기울임",
+    "link": "링크 추가",
+    "bullet_list": "글머리 기호 목록",
+    "ordered_list": "번호 매기기 목록",
+    "link_prompt": "https 링크를 붙여넣으세요",
+    "link_invalid": "https 링크만 추가할 수 있습니다.",
+    "preview": "미리보기",
+    "preview_empty": "작성한 내용이 여기에 표시됩니다."
+  },
+  "upload": {
+    "hint": "이미지를 여기에 끌어다 놓거나 클릭해서 선택하세요.",
+    "in_progress": "업로드 중…",
+    "failed": "이 이미지를 업로드하지 못했습니다.",
+    "remove": "이 이미지 제거"
+  },
+  "guided": {
+    "blockers": "계속하기 전에",
+    "fix": "수정"
+  },
+  "timeline": {
+    "internal": "호스트 팀만 볼 수 있습니다",
+    "show_less": "간략히 보기",
+    "show_more_other": "{{count}}개 더 보기"
+  },
+  "error": {
+    "generic": "문제가 발생했습니다. 다시 시도해 주세요.",
+    "validation": "일부 항목이 올바르지 않습니다. 표시된 필드를 확인해 주세요.",
+    "rate_limited": "한 번에 너무 많은 요청이 있었습니다. 잠시 기다렸다가 다시 시도해 주세요.",
+    "unauthorized": "계속하려면 다시 로그인해 주세요.",
+    "forbidden": "그 작업을 수행할 권한이 없습니다.",
+    "conflict": "다른 사람이 먼저 변경했습니다. 새로고침한 뒤 다시 시도해 주세요.",
+    "not_found": "해당 항목을 찾지 못했습니다.",
+    "abuse_held": "전송 전에 검토를 진행하고 있습니다.",
+    "payment_unavailable": "결제를 일시적으로 사용할 수 없습니다. 청구된 금액은 없습니다."
+  },
+  "crash": {
+    "title": "콘솔에 문제가 발생했습니다",
+    "body": "서버에 저장된 내용은 사라지지 않았습니다. 이 화면을 새로 고쳐 계속하세요.",
+    "retry": "화면 새로 고침"
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "header": {
+    "back": "Atrás",
+    "view_members": "Ver miembros",
+    "more_options": "Más opciones",
+    "crew_chat": "Chat de grupo",
+    "direct_message": "Mensaje directo",
+    "members_one": "{{count}} miembro",
+    "members_other": "{{count}} miembros",
+    "members_with_online_one": "{{count}} miembro · {{online}} en línea",
+    "members_with_online_other": "{{count}} miembros · {{online}} en línea",
+    "crew_chat_with_online": "Chat de grupo · {{online}} en línea",
+    "online": "En línea",
+    "report_chat": "Chat del reporte",
+    "group_chat": "Chat de grupo",
+    "open_group_info": "Abrir la información del grupo"
+  },
+  "typing": {
+    "indicator": "Escribiendo",
+    "indicator_named": "{{name}} está escribiendo",
+    "names_one": "{{name}}",
+    "names_two": "{{first}} y {{second}}",
+    "names_several": "Varias personas",
+    "someone": "Alguien"
+  },
+  "room_error": {
+    "dm_not_accepting": "{{name}} no está aceptando mensajes.",
+    "group_no_access": "No tienes acceso a esta conversación.",
+    "dm_unavailable": "{{name}} ya no está disponible.",
+    "group_unavailable": "Esta conversación ya no está disponible.",
+    "generic": "Ahora mismo no puedes enviar mensajes aquí.",
+    "transient": "No se envió el mensaje. Revisa tu conexión e inténtalo de nuevo.",
+    "rate_limited": "Estás enviando mensajes demasiado rápido. Ve más despacio.",
+    "blocked": "Este mensaje contiene lenguaje que no está permitido.",
+    "read_only": "Solo los propietarios y administradores pueden publicar en este canal.",
+    "reply_unavailable": "Ya no se puede responder a ese mensaje.",
+    "send_rejected": "No se envió el mensaje."
+  },
+  "attachment": {
+    "view": "Ver archivo adjunto",
+    "report_photo": "Reportar esta foto"
+  },
+  "attach": {
+    "photo": "Fototeca",
+    "camera": "Cámara",
+    "poll": "Encuesta",
+    "dismiss": "Cerrar menú"
+  },
+  "bubble": {
+    "removed": "Mensaje eliminado",
+    "failed_retry": "Error · toca para reintentar",
+    "sending": "Enviando",
+    "edited": "(editado)",
+    "retry_sending": "Reintentar envío",
+    "message_actions": "Acciones del mensaje",
+    "announce_failed": "El mensaje no se pudo enviar. Toca para reintentar.",
+    "reply_deleted": "Mensaje eliminado",
+    "reply_media": "Foto",
+    "reply_unknown_author": "Cuenta eliminada",
+    "reply_quote_a11y": "En respuesta a {{name}}: {{excerpt}}"
+  },
+  "menu": {
+    "cancel": "Cancelar",
+    "delete_message": "Eliminar mensaje",
+    "delete_failed": "No se pudo eliminar el mensaje. Inténtalo de nuevo."
+  },
+  "overflow": {
+    "open_profile": "Ver perfil",
+    "block": "Bloquear",
+    "open_profile_label": "Ver perfil",
+    "block_label": "Bloquear a esta persona",
+    "close_menu": "Cerrar menú",
+    "view_report": "Ver reporte",
+    "view_report_label": "Abrir el reporte",
+    "mute": "Silenciar chat",
+    "unmute": "Reactivar chat",
+    "mute_label": "Silenciar este chat",
+    "unmute_label": "Reactivar este chat",
+    "leave": "Salir del chat",
+    "leave_label": "Salir de este chat"
+  },
+  "join": {
+    "prompt": "Únete para responder en este chat",
+    "action": "Unirse al chat"
+  },
+  "block_confirm": {
+    "prompt_dm": "¿Bloquear a {{name}}? No podrá enviarte mensajes y esta conversación quedará oculta.",
+    "prompt_group": "¿Bloquear a {{name}}? No podrá enviarte mensajes.",
+    "this_person": "esta persona",
+    "cancel": "Cancelar",
+    "block": "Bloquear"
+  },
+  "list": {
+    "loading": "Cargando...",
+    "error_title": "No se pudo cargar el chat",
+    "error_body": "No pudimos conectar con civfix. Los mensajes que envíes se guardarán y se entregarán cuando vuelvas a estar en línea.",
+    "empty_title": "Di hola",
+    "empty_body_group": "Aquí empieza tu chat de grupo. Comparte planes, recursos y novedades.",
+    "empty_body_dm": "Aquí empieza tu conversación. Saluda para romper el hielo.",
+    "new_messages": "Mensajes nuevos",
+    "jump_to_newest": "Ir a los mensajes más recientes"
+  },
+  "jump": {
+    "back_to_latest": "Volver a lo más reciente",
+    "failed": "No se pudo ir al mensaje"
+  },
+  "connection": {
+    "reconnecting": "Reconectando · los mensajes se enviarán cuando vuelvas a estar en línea.",
+    "offline": "Sin conexión · los mensajes se enviarán cuando te reconectes."
+  },
+  "composer": {
+    "placeholder_unavailable": "Mensajería no disponible",
+    "placeholder_group": "Mensaje al grupo",
+    "placeholder_dm": "Mensaje a {{name}}",
+    "attach": "Adjuntar foto o video",
+    "input": "Campo de mensaje",
+    "send": "Enviar mensaje",
+    "edit_title": "Editar mensaje",
+    "cancel_edit": "Cancelar edición",
+    "save_error": "No se pudo guardar el cambio. Inténtalo de nuevo.",
+    "reply_title": "Responder a {{name}}",
+    "cancel_reply": "Cancelar respuesta"
+  },
+  "report": {
+    "subject_message": "este mensaje",
+    "subject_photo": "esta foto",
+    "submitted": "Reporte enviado · gracias",
+    "submit_error": "No se pudo enviar el reporte. Inténtalo de nuevo."
+  },
+  "context_menu": {
+    "reply": "Responder",
+    "copy": "Copiar",
+    "edit": "Editar",
+    "pin": "Fijar",
+    "unpin": "Dejar de fijar",
+    "delete": "Eliminar",
+    "report": "Reportar",
+    "block": "Bloquear",
+    "copied": "Copiado",
+    "dismiss": "Cerrar menú",
+    "reactions": "Reaccionar a este mensaje"
+  },
+  "pins": {
+    "bar_label": "Mensaje fijado",
+    "a11y_bar": "Mensaje fijado {{index}} de {{count}}: {{excerpt}}. Toca para ir a él.",
+    "a11y_open_list": "Ver todos los mensajes fijados",
+    "action_failed": "No se pudo actualizar el mensaje fijado. Inténtalo de nuevo.",
+    "view_title": "Mensajes fijados",
+    "empty": "No hay mensajes fijados",
+    "jump": "Ir al mensaje"
+  },
+  "channel": {
+    "join": "Unirse al canal",
+    "mute": "Silenciar",
+    "unmute": "Reactivar",
+    "read_only": "Solo los administradores pueden publicar"
+  }
+}

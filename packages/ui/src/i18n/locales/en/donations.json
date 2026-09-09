@@ -1,0 +1,34 @@
+{
+  "block": {
+    "heading": "Support this organization",
+    "body": "Donations go to {{org}}. civfix passes your gift on and never holds the funds.",
+    "cta": "Donate to {{org}}",
+    "cta_a11y": "Donate to {{org}}",
+    "merchant_of_record": "civfix facilitates this payment. {{org}} is the merchant of record.",
+    "fee_note": "A card processing fee, paid by the organization, and a 5% civfix platform fee apply."
+  },
+  "list": {
+    "load_more": "Load more",
+    "loading_more": "Loading…",
+    "load_more_a11y": "Load more donations",
+    "footnote": "Receipts are issued by civfix as the organization's authorized agent. Refunds are handled by the organization."
+  },
+  "row": {
+    "refunded": "{{amount}} refunded"
+  },
+  "receipt": {
+    "download": "Get receipt",
+    "download_a11y": "Open the receipt for this donation",
+    "error": "We could not fetch that receipt. Please try again.",
+    "unavailable": "This device cannot open the receipt."
+  },
+  "state": {
+    "loading": "Loading your donations…",
+    "error_title": "Donations unavailable",
+    "error_body": "We could not load your donations. Check your connection and try again.",
+    "empty_title": "No donations yet",
+    "empty_body": "When you donate to an organization on civfix, it will show up here with its receipt.",
+    "signed_out_title": "Sign in to see your donations",
+    "signed_out_body": "Your donation history and receipts are tied to your account."
+  }
+}

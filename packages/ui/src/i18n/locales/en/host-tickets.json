@@ -1,0 +1,83 @@
+{
+  "saved": "Ticket type saved",
+  "created": "Ticket type created",
+  "deleted": "Ticket type deleted",
+  "types": {
+    "title": "Ticket types",
+    "count": "{{count}} of {{max}}",
+    "add": "Add a ticket type",
+    "edit_a11y": "Edit {{name}}",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "delete": "Delete",
+    "sold": "{{sold}} of {{capacity}} claimed",
+    "unlimited": "unlimited",
+    "party": "up to {{max}} per registration",
+    "empty_title": "No ticket types yet",
+    "empty_body": "Add one so people can choose how they take part. Without ticket types the event uses a simple RSVP."
+  },
+  "drawer": {
+    "new_title": "New ticket type",
+    "edit_title": "Edit ticket type"
+  },
+  "field": {
+    "name": "Name",
+    "description": "Description",
+    "capacity": "Capacity",
+    "capacity_hint": "Leave empty for unlimited seats.",
+    "sales_opens": "Sales open",
+    "sales_closes": "Sales close",
+    "visibility": "Visibility",
+    "access_code": "Access code",
+    "access_code_hint": "People need this code to see and claim this ticket type.",
+    "access_code_set": "A code is already set. Type a new one to replace it.",
+    "max_party": "Seats per registration",
+    "max_party_hint": "Between 1 and {{max}}.",
+    "waitlist": "Waitlist",
+    "waitlist_hint": "Let people join a waitlist once this type is full.",
+    "accessCode": "Access code",
+    "maxPartySize": "Seats per registration",
+    "salesOpensAt": "Sales open",
+    "salesClosesAt": "Sales close",
+    "ticketTypeIds": "Order"
+  },
+  "visibility": {
+    "public": "Public",
+    "hidden": "Hidden",
+    "access_code": "Access code"
+  },
+  "delete": {
+    "title": "Delete this ticket type?",
+    "body": "{{name}} will be removed from the signup page.",
+    "banner": "A ticket type with registrations cannot be deleted. Close its sales instead.",
+    "confirm": "Delete",
+    "in_use": "People have already registered for this type. Close its sales instead of deleting it."
+  },
+  "questions": {
+    "title": "Registration questions",
+    "hint": "Answers are visible only to hosts with permission, and are removed 30 days after the event.",
+    "archive_note": "Removing a question archives it. Answers already given are kept.",
+    "empty": "No questions yet.",
+    "saved": "Questions saved",
+    "add": "Add a question",
+    "remove": "Remove this question",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "prompt": "Question",
+    "kind": "Type",
+    "kind_short_text": "Short text",
+    "kind_long_text": "Long text",
+    "kind_single_select": "Choose one",
+    "kind_multi_select": "Choose several",
+    "kind_checkbox": "Checkbox",
+    "kind_consent": "Consent",
+    "options": "Options",
+    "options_hint": "One option per line.",
+    "consent_text": "Consent text",
+    "help": "Helper text",
+    "required": "Required",
+    "ticket_scope": "Ask only for",
+    "ticket_all": "Every ticket type",
+    "ticket_scope_hint": "A question limited to one ticket type is asked only when someone picks that type — so it is never asked if every type is hidden. Leave it on every ticket type to always ask it."
+  }
+}

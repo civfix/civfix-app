@@ -1,0 +1,17 @@
+{
+  // Cloudflare Pages project config: CI builds the static export and ships it with
+  // `wrangler pages deploy` (Direct Upload, not Cloudflare's native Git build); this file supplies
+  // the project name and prebuilt output dir so the deploy step needs no arguments, and makes
+  // `wrangler pages dev` serve out/ through the real Pages routing engine (_redirects / _headers).
+  "name": "civfix-web",
+  "pages_build_output_dir": "out",
+  // The export is static, but the sibling functions/ dir ships the Pages Functions that inject
+  // per-entity Open Graph / Twitter meta into the detail-route shells (see
+  // apps/community-web/README.md, "Rich link previews"). `wrangler pages deploy` picks up
+  // ./functions relative to the cwd the deploy runs in (this app directory, see
+  // .github/workflows/deploy-web.yml), and apps/community-web/public/_routes.json narrows invocation to
+  // /pin/*, /cleanups/*, /people/*, /e/* and /orgs/* so every other request still goes straight to the asset server
+  // (and its _redirects / _headers). compatibility_date pins the Workers runtime those Functions run
+  // on; HTMLRewriter, AbortSignal.timeout and caches.default are all available at this date.
+  "compatibility_date": "2024-12-01"
+}

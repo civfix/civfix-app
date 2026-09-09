@@ -1,0 +1,28 @@
+{
+  "title": "Introduce tu código",
+  "subtitle": "Enviamos un código de 6 dígitos a",
+  "reviewer": {
+    "subtitle": "Introduce el código de acceso de revisión para",
+    "label": "Código de acceso de revisión",
+    "placeholder": "Pega el código de acceso",
+    "helper": "Se proporciona con esta versión para la revisión de la app."
+  },
+  "verify": {
+    "label": "Verificar",
+    "incomplete": "Introduce los 6 dígitos.",
+    "too_short": "Introduce el código de acceso de revisión completo.",
+    "fallback_reason": "Ese código no funcionó.",
+    "rate_limited": "Demasiados intentos. Toca reenviar para obtener un nuevo código.",
+    "locked": "{{reason}} Toca reenviar para obtener un nuevo código.",
+    "wrong_with_attempts_one": "{{reason}} Te queda {{count}} intento.",
+    "wrong_with_attempts_other": "{{reason}} Te quedan {{count}} intentos."
+  },
+  "attempts_left_one": "{{count}} intento restante",
+  "attempts_left_other": "{{count}} intentos restantes",
+  "resend": {
+    "prompt": "¿No lo recibiste? ",
+    "cooldown": "Reenviar en {{cooldown}}s",
+    "sending": "Enviando...",
+    "action": "Reenviar código"
+  }
+}

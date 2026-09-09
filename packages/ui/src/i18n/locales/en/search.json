@@ -1,0 +1,38 @@
+{
+  "field": {
+    "placeholder": "Search people by @handle",
+    "a11y": "Search people by handle",
+    "clear_a11y": "Clear search"
+  },
+  "suggestions": {
+    "title": "Suggested for you"
+  },
+  "leaderboard": {
+    "title": "Volunteer leaderboard",
+    "subtitle": "Top volunteers in your area",
+    "a11y": "Open the volunteer leaderboard"
+  },
+  "results": {
+    "title": "Search results",
+    "count_one": "{{count}} match",
+    "count_other": "{{count}} matches"
+  },
+  "row": {
+    "view_profile_a11y": "{{name}}, view profile",
+    "message_a11y": "Message {{name}}"
+  },
+  "empty": {
+    "prompt": {
+      "title": "No suggestions yet",
+      "body": "Search for people by name or @handle."
+    },
+    "error": {
+      "title": "Could not search",
+      "body": "We could not reach civfix. Check your connection and try again."
+    },
+    "no_results": {
+      "title": "No one found",
+      "body": "No accounts match \"@{{handle}}\". Check the spelling or try a different handle."
+    }
+  }
+}

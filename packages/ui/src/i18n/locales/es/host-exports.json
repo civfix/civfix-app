@@ -1,0 +1,18 @@
+{
+  "title": "Exportaciones",
+  "action": "Exportar",
+  "new_export": "Nueva exportación",
+  "recent": "Exportaciones recientes",
+  "none": "Todavía no hay exportaciones.",
+  "download": "Descargar",
+  "truncated": "recortada",
+  "requested": "Exportación solicitada",
+  "requested_hint": "Aparecerá aquí cuando esté lista. Las descargas caducan pronto, así que no tardes en cogerla.",
+  "privacy_note": "Las exportaciones de {{title}} incluyen las respuestas de los asistentes. Guárdalas y compártelas con cuidado.",
+  "kind": {
+    "roster": "Asistentes",
+    "answers": "Respuestas",
+    "checkins": "Registros de entrada",
+    "donations": "Donaciones"
+  }
+}

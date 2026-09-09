@@ -1,0 +1,712 @@
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import { View, Pressable, StyleSheet, Platform, Animated, Dimensions } from "react-native"
+import type { PressableStateCallbackType, ViewProps, ViewStyle } from "react-native"
+import { type ChatItem, type ChatMessageDTO, type UserMentionDTO, type ReactionEmoji, type MediaDTO } from "@civfix/shared"
+import { useTheme, webCursorPointer, webTransition, webHover, focusRingProps } from "../../theme"
+import { Text, Icon, iconMap } from "../../typography"
+import type { LucideIcon } from "../../typography"
+import { MessageContextMenu, ReactionChips, ReplyQuote, MediaPreview, PopoverMenu, usePopoverAnchor, useDoubleTap, useSwipeReply, useToast, PollBubble } from "../../primitives"
+import type { PopoverMenuItem, AnchorRect, ContextMenuAction } from "../../primitives"
+import { buildReactionChipModel } from "../../primitives/reactionChipModel"
+import { useClipboard } from "../../capabilities"
+import { useLightbox } from "../../lightbox"
+import { announce } from "../../announce"
+import { useT } from "../../i18n"
+import { buildMessageActions, type MessageActionKey } from "../messageActions"
+import { clockTime } from "../relativeTime"
+import { mentionScanRegex, normalizeHandle } from "./mentionMatch"
+import { senderColor } from "./conversationModel"
+import { useConversationStyles } from "./styles"
+
+export const FLASH_DURATION_MS = 900
+
+function webFocused(state: PressableStateCallbackType): boolean {
+  if (Platform.OS !== "web") return false
+  return (state as PressableStateCallbackType & { focused?: boolean }).focused === true
+}
+
+function actionBtnReveal(shown: boolean): ViewStyle {
+  return { opacity: shown ? 1 : 0, pointerEvents: shown ? "auto" : "none" }
+}
+
+export function renderChatBody(
+  body: string,
+  mentions: UserMentionDTO[] | undefined,
+  tintStyle: object,
+  onOpenPerson: (target: { id: string; handle?: string | null }) => void,
+  cityHandle?: string | null,
+): React.ReactNode {
+  const byHandle = new Map<string, { kind: "city" } | { kind: "user"; id: string }>()
+  if (cityHandle) {
+    const c = normalizeHandle(cityHandle)
+    if (c.length > 0) byHandle.set(c, { kind: "city" })
+  }
+  for (const m of mentions ?? []) {
+    const h = normalizeHandle(m.handle)
+    if (h.length > 0 && !byHandle.has(h)) byHandle.set(h, { kind: "user", id: m.id })
+  }
+  if (byHandle.size === 0) return body
+  const re = mentionScanRegex([...byHandle.keys()])
+  const out: React.ReactNode[] = []
+  let last = 0
+  let match: RegExpExecArray | null
+  let i = 0
+  while ((match = re.exec(body)) !== null) {
+    const start = match.index + (match[1] ?? "").length
+    if (start > last) out.push(body.slice(last, start))
+    const handle = match[2]!
+    const action = byHandle.get(handle)!
+    const token = `@${handle}`
+    if (action.kind === "user") {
+      const userId = action.id
+      out.push(
+        <Text key={`m${i}`} style={tintStyle} onPress={() => onOpenPerson({ id: userId, handle })}>
+          {token}
+        </Text>,
+      )
+    } else {
+      out.push(
+        <Text key={`m${i}`} style={tintStyle}>
+          {token}
+        </Text>,
+      )
+    }
+    last = re.lastIndex
+    i++
+  }
+  if (out.length === 0) return body
+  if (last < body.length) out.push(body.slice(last))
+  return out
+}
+
+export const BubbleAttachments = React.memo(function BubbleAttachments({
+  attachments,
+  mine,
+  onReportPhoto,
+  onLongPress,
+}: {
+  attachments: MediaDTO[] | null | undefined
+  mine: boolean
+  onReportPhoto?: (mediaId: string) => void
+  onLongPress?: () => void
+}) {
+  const styles = useConversationStyles()
+  const th = useTheme()
+  const { open } = useLightbox()
+  const { t } = useT("conversation")
+  if (!attachments || attachments.length === 0) return null
+  const lightboxItems = attachments.map((m) => ({
+    url: m.url,
+    kind: m.kind === "video" ? ("video" as const) : ("image" as const),
+    thumbUrl: m.thumbUrl ?? null,
+    width: m.width ?? null,
+    height: m.height ?? null,
+  }))
+  return (
+    <View style={[styles.attachments, mine ? styles.attachmentsMine : styles.attachmentsTheirs]}>
+      {attachments.map((m, i) => {
+        const canReportPhoto = !mine && !!onReportPhoto && m.kind !== "video"
+        return (
+          <View key={m.id} style={styles.attachmentWrap}>
+            <Pressable
+              onPress={() => open(lightboxItems, i)}
+              onLongPress={onLongPress}
+              delayLongPress={300}
+              accessibilityRole="button"
+              accessibilityLabel={t("attachment.view")}
+              {...focusRingProps}
+              style={styles.attachmentTap}
+            >
+              <MediaPreview
+                uri={m.url}
+                kind={m.kind === "video" ? "video" : "image"}
+                posterUri={m.thumbUrl ?? null}
+                thumbUri={m.thumbUrl ?? null}
+                aspectRatio={4 / 3}
+                style={styles.attachment}
+              />
+            </Pressable>
+            {canReportPhoto ? (
+              <Pressable
+                onPress={() => onReportPhoto?.(m.id)}
+                accessibilityRole="button"
+                accessibilityLabel={t("attachment.report_photo")}
+                hitSlop={6}
+                {...focusRingProps}
+                style={(state) => [
+                  styles.photoReportBtn,
+                  webTransition,
+                  webCursorPointer,
+                  webHover(state) ? styles.photoReportBtnHovered : null,
+                  state.pressed ? styles.pressed : null,
+                ]}
+              >
+                <Icon icon={iconMap.Flag} size={13} color={th.colors.onScrim} />
+              </Pressable>
+            ) : null}
+          </View>
+        )
+      })}
+    </View>
+  )
+})
+
+function FlashOverlay({ mine, rounded }: { mine: boolean; rounded?: boolean }) {
+  const styles = useConversationStyles()
+  const v = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    const useNative = Platform.OS !== "web"
+    const anim = Animated.sequence([
+      Animated.timing(v, { toValue: 1, duration: 200, useNativeDriver: useNative }),
+      Animated.timing(v, { toValue: 0, duration: FLASH_DURATION_MS - 200, useNativeDriver: useNative }),
+    ])
+    anim.start()
+    return () => anim.stop()
+  }, [v])
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        StyleSheet.absoluteFillObject,
+        rounded ? styles.flashOverlayRounded : styles.flashOverlayBubble,
+        mine ? styles.flashOverlayMine : styles.flashOverlayTheirs,
+        { opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0, mine ? 0.35 : 0.16] }) },
+      ]}
+    />
+  )
+}
+
+interface MenuModel {
+  menuActions: ContextMenuAction[]
+  confirmItems: PopoverMenuItem[]
+  stopConfirmItems: PopoverMenuItem[]
+}
+
+export interface BubbleProps {
+  item: ChatItem
+  showName: boolean
+  groupStart: boolean
+  groupEnd: boolean
+  isGroup: boolean
+  canEdit: boolean
+  canDelete: boolean
+  canPin?: boolean
+  canDeleteOthers?: boolean
+  canModeratePoll?: boolean
+  canReact: boolean
+  canReply: boolean
+  canVote: boolean
+  onRetry: (clientId: string) => void
+  onEdit: (message: ChatMessageDTO) => void
+  onReply: (message: ChatMessageDTO) => void
+  onDelete: (messageId: string) => void
+  onSetPinned?: (messageId: string, pinned: boolean) => void
+  onVotePoll?: (messageId: string, optionIdxs: number[]) => void
+  onStopPoll?: (messageId: string) => void
+  onReport: (messageId: string) => void
+  onReportPhoto?: (mediaId: string) => void
+  onBlock?: (author: { id: string; name?: string | null }) => void
+  onToggleReaction: (messageId: string, emoji: ReactionEmoji) => void
+  onOpenPerson: (target: { id: string; handle?: string | null; deleted?: boolean }) => void
+  flash?: boolean
+  onJumpToMessage?: (messageId: string) => void
+  jumpLoading?: boolean
+  pinnedOnlyView?: boolean
+  onJumpFromPinned?: (messageId: string) => void
+}
+
+function bubblePropsEqual(prev: BubbleProps, next: BubbleProps): boolean {
+  const a = prev.item
+  const b = next.item
+  if (
+    a !== b &&
+    (a.message !== b.message || a.mine !== b.mine || a.pending !== b.pending || a.failed !== b.failed)
+  ) {
+    return false
+  }
+  const keys = Object.keys(next) as (keyof BubbleProps)[]
+  if (keys.length !== Object.keys(prev).length) return false
+  for (const key of keys) {
+    if (key === "item") continue
+    if (!Object.is(prev[key], next[key])) return false
+  }
+  return true
+}
+
+export const Bubble = React.memo(function Bubble({
+  item,
+  showName,
+  groupStart,
+  groupEnd,
+  isGroup,
+  canEdit,
+  canDelete,
+  canPin = false,
+  canDeleteOthers = false,
+  canModeratePoll = false,
+  canReact,
+  canReply,
+  canVote,
+  onRetry,
+  onEdit,
+  onReply,
+  onDelete,
+  onSetPinned,
+  onVotePoll,
+  onStopPoll,
+  onReport,
+  onReportPhoto,
+  onBlock,
+  onToggleReaction,
+  onOpenPerson,
+  flash = false,
+  onJumpToMessage,
+  jumpLoading = false,
+  pinnedOnlyView = false,
+  onJumpFromPinned,
+}: BubbleProps) {
+  const styles = useConversationStyles()
+  const th = useTheme()
+  const { t } = useT("conversation")
+  const { t: td } = useT("discussion")
+  const { t: tp } = useT("conversation-polls")
+  const { message, mine, pending, failed } = item
+  const body = message.body ?? ""
+  const edited = Boolean(message.editedAt)
+  useEffect(() => {
+    if (failed) announce(t("bubble.announce_failed"))
+  }, [failed, t])
+  const wrapGap = groupStart ? styles.bubbleWrapGroupStart : null
+  const isWeb = Platform.OS === "web"
+  const [hovered, setHovered] = useState(false)
+  const [menuMode, setMenuMode] = useState<"closed" | "menu" | "confirm" | "confirm-stop">("closed")
+  const [menuEverOpened, setMenuEverOpened] = useState(false)
+  const [menuRect, setMenuRect] = useState<AnchorRect | null>(null)
+  const { ref: menuAnchorRef, measure: measureMenu } = usePopoverAnchor((rect) => {
+    setMenuRect(rect)
+    setMenuMode("menu")
+  })
+  useEffect(() => {
+    if (menuMode === "closed") return
+    const sub = Dimensions.addEventListener("change", () => setMenuMode("closed"))
+    return () => sub.remove()
+  }, [menuMode])
+  const clipboard = useClipboard()
+  const toast = useToast()
+  const openEdit = useCallback(() => {
+    if (canEdit && message.id) onEdit(message)
+  }, [canEdit, message, onEdit])
+  const reactable = canReact && !pending && !failed
+  const removed = message.deletedAt != null
+  const { onPress: onBubblePress } = useDoubleTap({
+    onDoubleTap:
+      reactable && message.id ? () => onToggleReaction(message.id, "like") : undefined,
+  })
+
+  const quotedId = message.replyTo?.id
+  const onQuotePress =
+    quotedId && onJumpToMessage ? () => onJumpToMessage(quotedId) : undefined
+
+  const swipe = useSwipeReply({
+    enabled:
+      canReply && !pending && !failed && !removed && message.kind !== "system" && Boolean(message.id),
+    onTrigger: () => onReply(message),
+  })
+
+  if (removed && !(mine && (pending || failed))) {
+    return (
+      <View style={[styles.bubbleWrap, mine ? styles.bubbleWrapMine : styles.bubbleWrapTheirs, wrapGap]}>
+        <View style={styles.tombstoneBubble}>
+          <Icon icon={iconMap.Ban} size={13} color={th.colors.textSubtle} />
+          <Text style={styles.tombstoneBubbleText}>{t("bubble.removed")}</Text>
+        </View>
+        {flash ? <FlashOverlay mine={false} rounded /> : null}
+      </View>
+    )
+  }
+
+  const from = message.from
+  const poll = message.kind === "poll" ? message.poll ?? null : null
+  const isPoll = poll != null
+  const descriptors = buildMessageActions({
+    mine,
+    isSystem: message.kind === "system",
+    isGroupRoom: isGroup,
+    pendingOrFailed: pending || failed,
+    deleted: removed,
+    hasMessageId: Boolean(message.id),
+    hasBody: body.length > 0,
+    hasClipboard: Boolean(clipboard),
+    canEdit,
+    canDelete,
+    canPin: canPin && Boolean(onSetPinned),
+    isPinned: Boolean(message.pinnedAt),
+    canDeleteOthers,
+    authorBlockable: Boolean(from && from.id && !from.deleted),
+    canReply,
+    pinnedOnlyView,
+    isPoll,
+    pollClosed: Boolean(poll?.closed),
+    hasVoted: Boolean(poll && poll.myVote.length > 0) && canVote && Boolean(onVotePoll),
+    canModeratePoll: canModeratePoll && Boolean(onStopPoll),
+  })
+  const menuAvailable = descriptors.length > 0 || reactable
+  const buildMenuModel = (): MenuModel => {
+    const actionLabel: Record<MessageActionKey, string> = {
+      reply: t("context_menu.reply"),
+      copy: t("context_menu.copy"),
+      edit: t("context_menu.edit"),
+      pin: t("context_menu.pin"),
+      unpin: t("context_menu.unpin"),
+      jump: t("pins.jump"),
+      delete: t("context_menu.delete"),
+      report: t("context_menu.report"),
+      block: t("context_menu.block"),
+      retractVote: tp("retract"),
+      stopPoll: tp("stop"),
+    }
+    const actionIcon: Record<MessageActionKey, LucideIcon> = {
+      reply: iconMap.CornerUpLeft,
+      copy: iconMap.Copy,
+      edit: iconMap.Pencil,
+      pin: iconMap.Pin,
+      unpin: iconMap.PinOff,
+      jump: iconMap.ArrowRight,
+      delete: iconMap.Trash2,
+      report: iconMap.Flag,
+      block: iconMap.Ban,
+      retractVote: iconMap.Close,
+      stopPoll: iconMap.Lock,
+    }
+    const actionPress: Record<MessageActionKey, () => void> = {
+      reply: () => onReply(message),
+      copy: () => {
+        if (!clipboard) return
+        void clipboard
+          .setString(body)
+          .then(() => toast.show(t("context_menu.copied"), { variant: "success" }))
+          .catch(() => {})
+      },
+      edit: openEdit,
+      pin: () => {
+        if (message.id) onSetPinned?.(message.id, true)
+      },
+      unpin: () => {
+        if (message.id) onSetPinned?.(message.id, false)
+      },
+      jump: () => {
+        if (message.id) onJumpFromPinned?.(message.id)
+      },
+      delete: () => setMenuMode("confirm"),
+      report: () => {
+        if (message.id) onReport(message.id)
+      },
+      block: () => {
+        if (from && from.id) onBlock?.({ id: from.id, name: from.name })
+      },
+      retractVote: () => {
+        if (message.id) onVotePoll?.(message.id, [])
+      },
+      stopPoll: () => {
+        if (onStopPoll) setMenuMode("confirm-stop")
+      },
+    }
+    return {
+      menuActions: descriptors.map((d) => ({
+        key: d.key,
+        label: actionLabel[d.key],
+        icon: actionIcon[d.key],
+        destructive: d.destructive,
+        onPress: actionPress[d.key],
+      })),
+      confirmItems: [
+        { key: "cancel", label: t("menu.cancel"), onPress: () => {} },
+        {
+          key: "confirm-delete",
+          label: t("menu.delete_message"),
+          icon: "Trash2",
+          destructive: true,
+          onPress: () => {
+            if (message.id) onDelete(message.id)
+          },
+        },
+      ],
+      stopConfirmItems: [
+        { key: "cancel", label: t("menu.cancel"), onPress: () => {} },
+        {
+          key: "confirm-stop",
+          label: tp("stop_confirm"),
+          icon: "Lock",
+          onPress: () => {
+            if (message.id) onStopPoll?.(message.id)
+          },
+        },
+      ],
+    }
+  }
+  const openContextMenu = () => {
+    setMenuEverOpened(true)
+    const node = menuAnchorRef.current
+    if (node && typeof node.measureInWindow === "function") {
+      measureMenu()
+    } else {
+      setMenuRect(null)
+      setMenuMode("menu")
+    }
+  }
+  const closeContextMenu = () => setMenuMode((m) => (m === "menu" ? "closed" : m))
+  const reactions = message.reactions ?? []
+  const bodyContent = renderChatBody(
+    body,
+    message.mentions,
+    mine ? styles.mentionTokenMine : styles.mentionToken,
+    onOpenPerson,
+    message.cityMention?.handle ?? null,
+  )
+  const atts = message.attachments ?? []
+  const hasBody = body.length > 0
+  const toggleReaction = (emoji: ReactionEmoji) => onToggleReaction(message.id, emoji)
+
+  if (mine && (pending || failed)) {
+    return (
+      <View style={[styles.bubbleWrap, styles.bubbleWrapMine, wrapGap]}>
+        {hasBody ? (
+          <View style={[styles.bubble, styles.bubbleMine, failed ? styles.bubbleFailed : null]}>
+            {message.replyTo ? <ReplyQuote replyTo={message.replyTo} mine onPress={onQuotePress} loading={jumpLoading} /> : null}
+            <Text style={[styles.bubbleBody, styles.bubbleBodyMine]}>{body}</Text>
+          </View>
+        ) : null}
+        <BubbleAttachments attachments={atts} mine />
+        {failed ? (
+          <Pressable
+            onPress={() => message.clientId && onRetry(message.clientId)}
+            accessibilityRole="button"
+            accessibilityLabel={t("bubble.retry_sending")}
+            hitSlop={6}
+            {...focusRingProps}
+            style={styles.statusLine}
+          >
+            <Icon icon={iconMap.RefreshCw} size={11} color={th.colors.bloom["600"]} />
+            <Text style={[styles.timeText, styles.failedText]}>{t("bubble.failed_retry")}</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.statusLine}>
+            <Icon icon={iconMap.Clock} size={11} color={th.colors.textSubtle} />
+            <Text style={styles.timeText}>{t("bubble.sending")}</Text>
+          </View>
+        )}
+      </View>
+    )
+  }
+
+  const bubbleInner = (
+    <>
+      {message.replyTo ? <ReplyQuote replyTo={message.replyTo} mine={mine} onPress={onQuotePress} loading={jumpLoading} /> : null}
+      {isPoll && poll ? (
+        <PollBubble
+          poll={poll}
+          mine={mine}
+          disabled={!onVotePoll || !canVote}
+          onVote={(idxs) => {
+            if (message.id) onVotePoll?.(message.id, idxs)
+          }}
+        />
+      ) : (
+        <Text style={[styles.bubbleBody, mine ? styles.bubbleBodyMine : styles.bubbleBodyTheirs]}>
+          {bodyContent}
+        </Text>
+      )}
+      <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={mine} disabled={!reactable} />
+    </>
+  )
+  const bubbleClone = !menuEverOpened ? null : hasBody ? (
+    <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>{bubbleInner}</View>
+  ) : (
+    <BubbleAttachments attachments={atts} mine={mine} />
+  )
+  const menuReactions = buildReactionChipModel(reactions).map((c) => ({ emoji: c.emoji, mine: c.mine }))
+  const webContextMenuProps =
+    isWeb && menuAvailable
+      ? ({
+          onContextMenu: (e: { preventDefault?: () => void }) => {
+            e.preventDefault?.()
+            openContextMenu()
+          },
+        } as unknown as Partial<ViewProps>)
+      : null
+
+  const rowContent = (
+    <>
+      {showName && message.from ? (() => {
+        const from = message.from
+        return (
+          <Text
+            style={[styles.who, { color: senderColor(from.id) }]}
+            numberOfLines={1}
+            onPress={from.deleted ? undefined : () => onOpenPerson(from)}
+            accessibilityRole={from.deleted ? undefined : "button"}
+            {...(from.deleted ? null : focusRingProps)}
+          >
+            {from.name}
+          </Text>
+        )
+      })() : null}
+      {message.forwardedToCity ? (
+        <View style={styles.forwardPill}>
+          <Icon icon={iconMap.Mail} size={12} color={th.colors.brand.moss} />
+          <Text style={styles.forwardPillText} numberOfLines={1}>
+            {message.cityMention?.name
+              ? td("forwarded.named", { name: message.cityMention.name })
+              : td("forwarded.generic")}
+          </Text>
+        </View>
+      ) : null}
+      <View style={styles.bubbleRow}>
+        {!hasBody ? null : isWeb ? (
+          <View ref={menuAnchorRef} style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
+            {bubbleInner}
+            {flash ? <FlashOverlay mine={mine} /> : null}
+          </View>
+        ) : (
+          <Pressable
+            ref={menuAnchorRef}
+            onPress={onBubblePress}
+            onLongPress={menuAvailable ? openContextMenu : undefined}
+            delayLongPress={300}
+            {...focusRingProps}
+            style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}
+          >
+            {bubbleInner}
+            {flash ? <FlashOverlay mine={mine} /> : null}
+          </Pressable>
+        )}
+        {isWeb && menuAvailable ? (
+          <>
+            {reactable ? (
+              <Pressable
+                onPress={openContextMenu}
+                onHoverIn={() => setHovered(true)}
+                onHoverOut={() => setHovered(false)}
+                accessibilityRole="button"
+                accessibilityLabel={t("context_menu.reactions")}
+                hitSlop={6}
+                {...focusRingProps}
+                style={(state) => [
+                  styles.hoverActionBtn,
+                  actionBtnReveal(hovered || webFocused(state)),
+                  state.pressed ? styles.pressed : null,
+                ]}
+              >
+                <Icon icon={iconMap.SmilePlus} size={14} color={th.colors.textSubtle} />
+              </Pressable>
+            ) : null}
+            <Pressable
+              onPress={openContextMenu}
+              onHoverIn={() => setHovered(true)}
+              onHoverOut={() => setHovered(false)}
+              accessibilityRole="button"
+              accessibilityLabel={t("bubble.message_actions")}
+              accessibilityState={{ expanded: menuMode !== "closed" }}
+              hitSlop={6}
+              {...focusRingProps}
+              style={(state) => [
+                styles.hoverActionBtn,
+                actionBtnReveal(hovered || webFocused(state)),
+                state.pressed ? styles.pressed : null,
+              ]}
+            >
+              <Icon icon={iconMap.Ellipsis} size={15} color={th.colors.textSubtle} />
+            </Pressable>
+          </>
+        ) : null}
+      </View>
+
+      <BubbleAttachments
+        attachments={atts}
+        mine={mine}
+        onReportPhoto={onReportPhoto}
+        onLongPress={!isWeb && menuAvailable ? openContextMenu : undefined}
+      />
+      {!hasBody ? (
+        <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={false} disabled={!reactable} />
+      ) : null}
+      {flash && !hasBody ? <FlashOverlay mine={false} rounded /> : null}
+
+      {menuAvailable && menuEverOpened ? (() => {
+        const model = buildMenuModel()
+        return (
+          <>
+            <MessageContextMenu
+              visible={menuMode === "menu"}
+              onClose={closeContextMenu}
+              anchor={menuRect}
+              bubble={bubbleClone}
+              mine={mine}
+              reactions={menuReactions}
+              onReact={toggleReaction}
+              actions={model.menuActions}
+              showReactions={reactable}
+            />
+            <PopoverMenu
+              visible={menuMode === "confirm"}
+              anchorRect={menuRect}
+              onClose={() => setMenuMode("closed")}
+              items={model.confirmItems}
+            />
+            <PopoverMenu
+              visible={menuMode === "confirm-stop"}
+              anchorRect={menuRect}
+              onClose={() => setMenuMode("closed")}
+              items={model.stopConfirmItems}
+            />
+          </>
+        )
+      })() : null}
+      {groupEnd || edited ? (
+        <View style={styles.metaLine}>
+          {groupEnd ? <Text style={styles.timeText}>{clockTime(message.createdAt)}</Text> : null}
+          {edited ? <Text style={styles.editedText}>{t("bubble.edited")}</Text> : null}
+        </View>
+      ) : null}
+    </>
+  )
+
+  return (
+    <View
+      ref={hasBody ? undefined : menuAnchorRef}
+      style={[styles.bubbleWrap, mine ? styles.bubbleWrapMine : styles.bubbleWrapTheirs, wrapGap]}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
+      {...webContextMenuProps}
+      {...(swipe.active ? swipe.panHandlers : null)}
+    >
+      {swipe.active ? (
+        <>
+          <Animated.View pointerEvents="none" style={[styles.swipeReplyHint, { opacity: swipe.progress }]}>
+            <Icon icon={iconMap.CornerUpLeft} size={16} color={th.colors.textSubtle} />
+          </Animated.View>
+          <Animated.View
+            style={[
+              styles.swipeShift,
+              mine ? styles.swipeShiftMine : styles.swipeShiftTheirs,
+              { transform: [{ translateX: swipe.translateX }] },
+            ]}
+          >
+            {rowContent}
+          </Animated.View>
+        </>
+      ) : (
+        rowContent
+      )}
+    </View>
+  )
+}, bubblePropsEqual)
+
+export const DaySeparator = React.memo(function DaySeparator({ label }: { label: string }) {
+  const styles = useConversationStyles()
+  return (
+    <View style={styles.sepRow}>
+      <Text style={styles.sepText}>{label}</Text>
+    </View>
+  )
+})

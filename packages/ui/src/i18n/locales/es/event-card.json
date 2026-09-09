@@ -1,0 +1,18 @@
+{
+  "joined_tag": "Ya estás",
+  "going_one": "{{count}} asistente",
+  "going_other": "{{count}} asistentes",
+  "organizer": {
+    "by_prefix": "por"
+  },
+  "a11y": {
+    "card_one": "{{title}}, {{count}} asistente",
+    "card_other": "{{title}}, {{count}} asistentes"
+  },
+  "linked": {
+    "schedule_unavailable": "Horario no disponible",
+    "location_fallback": "Abre el evento para ver el lugar",
+    "a11y_card": "{{day}} {{month}}, {{title}}. {{schedule}}. {{location}}. {{going}}.",
+    "a11y_remove": "Quitar {{title}}"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "removed": "삭제된 메시지입니다",
+  "edited": "(수정됨)",
+  "forwarded": {
+    "named": "{{name}}에게 전달됨",
+    "generic": "시청에 전달됨"
+  },
+  "action": {
+    "reply": "답글",
+    "edit": "수정",
+    "delete": "삭제",
+    "report": "신고"
+  },
+  "a11y": {
+    "view_attachment": "첨부파일 보기",
+    "report_photo": "이 사진 신고",
+    "edit": "이 메시지 수정",
+    "delete": "이 메시지 삭제",
+    "report": "이 메시지 신고"
+  }
+}

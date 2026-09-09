@@ -1,0 +1,58 @@
+/**
+ * Unit test for `resolvePostSubmit` - the pure post-composer submit reducer (U40). Mirrors the chat
+ * composer's `composerSubmit.test.ts`: it exercises the (draft, hasReadyMedia) -> action map without any
+ * React / transport, so `PostComposer`'s press handler + Post-button `disabled` prop share one truth.
+ */
+import { describe, expect, it } from "vitest"
+import { resolvePostSubmit, type PostDraft } from "../postComposerSubmit"
+
+/** A blank draft; each test overrides only the fields it cares about. */
+function draft(overrides: Partial<PostDraft> = {}): PostDraft {
+  return { body: "", ...overrides }
+}
+
+describe("resolvePostSubmit", () => {
+  it("blocks an entirely empty draft (no body, no attachment, no media)", () => {
+    expect(resolvePostSubmit(draft())).toEqual({ action: "blocked-empty" })
+    // Whitespace-only body is still empty.
+    expect(resolvePostSubmit(draft({ body: "   " }))).toEqual({ action: "blocked-empty" })
+  })
+
+  it("blocks while staged media is still uploading (media-pending)", () => {
+    const res = resolvePostSubmit(draft({ mediaCount: 1 }), /* hasReadyMedia */ false)
+    expect(res).toEqual({ action: "blocked-media-pending" })
+  })
+
+  it("submits a text-only post, trimming the body", () => {
+    const res = resolvePostSubmit(draft({ body: "  hello river  " }))
+    expect(res.action).toBe("submit")
+    if (res.action !== "submit") throw new Error("expected submit")
+    expect(res.input).toMatchObject({ kind: "post", body: "hello river", mediaUploadIds: [], mentionedUserIds: [] })
+  })
+
+  it("submits an event-only post (no body) via the attachment", () => {
+    const res = resolvePostSubmit(draft({ eventId: "evt_1" }))
+    expect(res.action).toBe("submit")
+    if (res.action !== "submit") throw new Error("expected submit")
+    expect(res.input).toMatchObject({ kind: "post", eventId: "evt_1" })
+    expect(res.input.body).toBeUndefined()
+  })
+
+  it("submits once staged media has finished uploading, carrying the finalized ids", () => {
+    const res = resolvePostSubmit(
+      draft({ mediaCount: 2, mediaUploadIds: ["m1", "m2"] }),
+      /* hasReadyMedia */ true,
+    )
+    expect(res.action).toBe("submit")
+    if (res.action !== "submit") throw new Error("expected submit")
+    expect(res.input.mediaUploadIds).toEqual(["m1", "m2"])
+  })
+
+  it("carries the reference fields for a reply", () => {
+    const res = resolvePostSubmit(draft({ body: "count me in", kind: "reply", replyToId: "post_1" }))
+    expect(res.action).toBe("submit")
+    if (res.action !== "submit") throw new Error("expected submit")
+    expect(res.input).toMatchObject({ kind: "reply", replyToId: "post_1", body: "count me in" })
+  })
+
+})

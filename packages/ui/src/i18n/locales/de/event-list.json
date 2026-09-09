@@ -1,0 +1,31 @@
+{
+  "section": {
+    "attending": "Du nimmst teil",
+    "inYourArea": "In deiner Nähe"
+  },
+  "search": {
+    "placeholder": "Events suchen",
+    "a11y": "Events suchen",
+    "clear_a11y": "Suche löschen"
+  },
+  "card": {
+    "going_one": "{{count}} Teilnehmer",
+    "going_other": "{{count}} Teilnehmer",
+    "a11y_one": "{{title}}, {{count}} Teilnehmer",
+    "a11y_other": "{{title}}, {{count}} Teilnehmer"
+  },
+  "empty": {
+    "error": {
+      "title": "Events konnten nicht geladen werden",
+      "body": "civfix ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
+    },
+    "search": {
+      "title": "Keine Events gefunden",
+      "body": "Keine bevorstehenden Events für \"{{query}}\". Versuche einen anderen Titel oder Ort."
+    },
+    "none": {
+      "title": "Noch keine Events in der Nähe",
+      "body": "Sei der Erste und organisiere eines. Wähle einen Ort, lege eine Zeit fest und lade deine Nachbarn ein."
+    }
+  }
+}

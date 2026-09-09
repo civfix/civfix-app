@@ -1,0 +1,115 @@
+{
+  "waitlist_notice": "대기자 항목은 아직 등록이 아니므로, 여기서는 참가자별 작업을 할 수 없습니다.",
+  "row": {
+    "guest": "게스트",
+    "deleted_user": "삭제된 사용자"
+  },
+  "chip": {
+    "checked_in": "체크인 완료",
+    "not_checked_in": "미체크인",
+    "no_show": "불참"
+  },
+  "action": {
+    "message": "참가자에게 메시지 보내기"
+  },
+  "filter": {
+    "tabs": "참가자 필터",
+    "search": "검색",
+    "search_placeholder": "이름으로 검색",
+    "ticket_type": "티켓 종류",
+    "all": "전체",
+    "registered": "등록",
+    "checked_in": "체크인 완료",
+    "not_checked_in": "미체크인",
+    "no_show": "불참",
+    "waitlisted": "대기자",
+    "cancelled": "취소됨",
+    "guests": "게스트",
+    "members": "회원"
+  },
+  "column": {
+    "name": "이름",
+    "kind": "구분",
+    "ticket_type": "티켓",
+    "seats": "자리 수",
+    "attendance": "참석",
+    "registered_at": "등록일",
+    "checked_in_at": "체크인"
+  },
+  "table": {
+    "caption": "참가자",
+    "select_row": "{{name}} 선택",
+    "open_row": "{{name}} 열기"
+  },
+  "summary": {
+    "shown": "{{shown}} 표시 중",
+    "event_total": "행사 전체 등록 {{total}}"
+  },
+  "empty": {
+    "title": "아직 아무도 없습니다",
+    "body": "누군가 신청하면 여기에 바로 표시됩니다."
+  },
+  "source": {
+    "self": "직접 등록",
+    "waitlist": "대기자에서 전환",
+    "walkup": "현장 등록",
+    "transfer": "양도"
+  },
+  "history": {
+    "registered": "등록함",
+    "checked_in": "체크인함",
+    "cancelled": "취소함"
+  },
+  "drawer": {
+    "registration": "등록",
+    "ticket_type": "티켓 종류",
+    "party": "자리 수",
+    "registered_at": "등록일",
+    "slot": "교대",
+    "source": "등록 경로",
+    "no_contact": "civfix는 회원의 이메일이나 전화번호를 호스트에게 절대 보여주지 않습니다.",
+    "seats": "자리",
+    "seat_n": "{{n}}번 자리",
+    "no_seats": "이 등록에는 자리가 없습니다.",
+    "check_in": "체크인",
+    "check_in_all": "{{count}}자리 모두 체크인",
+    "checked_in": "체크인 완료",
+    "check_in_undone": "체크인을 취소했습니다",
+    "answers": "답변",
+    "no_answers": "제출된 답변이 없습니다.",
+    "answer_scrubbed": "행사 후 삭제됨",
+    "move_label": "다른 티켓 종류로 이동",
+    "move_placeholder": "티켓 종류를 선택하세요",
+    "move": "이동",
+    "moved": "등록을 이동했습니다",
+    "move_conflict": "해당 티켓 종류가 마감되었거나, 인원이 허용 범위를 넘습니다.",
+    "note_label": "비공개 메모",
+    "note_hint": "호스트만 볼 수 있습니다. 행사가 끝나고 90일 뒤에 삭제됩니다.",
+    "note_saved": "메모를 저장했습니다",
+    "history": "기록",
+    "remove": "행사에서 제외",
+    "removed": "등록을 삭제했습니다"
+  },
+  "remove": {
+    "title": "이 등록을 삭제할까요?",
+    "body": "{{name}} 님의 자리가 사라집니다. 등록이 마감되지 않았다면 다시 신청할 수 있습니다.",
+    "reason": "사유",
+    "confirm": "삭제"
+  },
+  "no_show": {
+    "title": "불참으로 표시할까요?",
+    "body": "등록 {{count}}건이 불참으로 표시됩니다. 나중에 체크인하면 자동으로 해제됩니다.",
+    "confirm": "불참으로 표시"
+  },
+  "bulk": {
+    "check_in": "체크인",
+    "mark_no_show": "불참 표시",
+    "remove": "삭제",
+    "checked_in_other": "{{count}}자리를 체크인했습니다",
+    "no_show_other": "{{count}}자리를 불참으로 표시했습니다",
+    "removed_other": "등록 {{count}}건을 삭제했습니다",
+    "partial_other": "{{count}}건은 처리하지 못했습니다.",
+    "export_hint": "내보내기",
+    "export_reason": "내보내기는 선택 항목이 아니라 행사 전체를 대상으로 합니다. 위의 내보내기 버튼을 사용하세요."
+  }
+}

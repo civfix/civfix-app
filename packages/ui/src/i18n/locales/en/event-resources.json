@@ -1,0 +1,10 @@
+{
+  "title": "Request resources",
+  "dismiss_a11y": "Dismiss resource request",
+  "caption": "Tell {{city}} what your event needs (supplies, dumpsters, road closures). We forward this to their inbox.",
+  "city_fallback": "the city",
+  "message_placeholder": "What do you need from the city?",
+  "message_a11y": "Resource request message",
+  "cancel": "Cancel",
+  "submit": "Send request"
+}

@@ -1,0 +1,30 @@
+{
+  "header": {
+    "title": "Report a pin"
+  },
+  "gate": {
+    "camera": {
+      "title": "Camera access",
+      "body": "civfix uses your camera to capture the civic issue you are reporting. You can also attach an existing photo or video instead.",
+      "continue": "Continue",
+      "open_settings": "Open settings"
+    },
+    "no_camera": {
+      "title": "No camera found",
+      "body": "This device has no available camera. Attach an existing photo or video instead."
+    },
+    "choose_library": "Choose from library"
+  },
+  "timer": {
+    "elapsed": "{{elapsed}}s / 10s"
+  },
+  "mode": {
+    "photo": "PHOTO",
+    "video": "VIDEO · 10s"
+  },
+  "shutter": {
+    "take_photo": "Take photo",
+    "stop_recording": "Stop recording",
+    "start_recording": "Start recording"
+  }
+}

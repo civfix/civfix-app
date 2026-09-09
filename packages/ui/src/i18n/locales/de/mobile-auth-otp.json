@@ -1,0 +1,28 @@
+{
+  "title": "Code eingeben",
+  "subtitle": "Wir haben einen 6-stelligen Code gesendet an",
+  "reviewer": {
+    "subtitle": "Prüfer-Zugangscode eingeben für",
+    "label": "Prüfer-Zugangscode",
+    "placeholder": "Zugangscode einfügen",
+    "helper": "Wird mit diesem Build für die App-Prüfung bereitgestellt."
+  },
+  "verify": {
+    "label": "Bestätigen",
+    "incomplete": "Alle 6 Ziffern eingeben.",
+    "too_short": "Vollständigen Prüfer-Zugangscode eingeben.",
+    "fallback_reason": "Dieser Code hat nicht funktioniert.",
+    "rate_limited": "Zu viele Versuche. Tippe auf Erneut senden.",
+    "locked": "{{reason}} Tippe auf Erneut senden für einen neuen Code.",
+    "wrong_with_attempts_one": "{{reason}} Noch {{count}} Versuch.",
+    "wrong_with_attempts_other": "{{reason}} Noch {{count}} Versuche."
+  },
+  "attempts_left_one": "{{count}} Versuch übrig",
+  "attempts_left_other": "{{count}} Versuche übrig",
+  "resend": {
+    "prompt": "Nichts erhalten? ",
+    "cooldown": "Erneut senden in {{cooldown}}s",
+    "sending": "Wird gesendet...",
+    "action": "Code erneut senden"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "saved": "Einstellungen gespeichert",
+  "visibility": {
+    "public": "Öffentlich",
+    "unlisted": "Nicht gelistet",
+    "private": "Privat"
+  },
+  "registration": {
+    "title": "Anmeldung",
+    "visibility": "Wer diese Veranstaltung finden kann",
+    "opens": "Anmeldung öffnet",
+    "closes": "Anmeldung schließt"
+  },
+  "messaging": {
+    "title": "Nachrichten",
+    "reminders": "Erinnerungen",
+    "reminders_hint": "civfix schickt allen Angemeldeten zu jedem dieser Zeitpunkte vor der Veranstaltung eine Erinnerung.",
+    "offset_60": "1 Stunde vorher",
+    "offset_180": "3 Stunden vorher",
+    "offset_1440": "1 Tag vorher",
+    "offset_2880": "2 Tage vorher",
+    "offset_10080": "1 Woche vorher",
+    "reply_to": "Antwortadresse",
+    "reply_to_placeholder": "du@beispiel.org",
+    "reply_to_unverified": "Antworten werden noch nicht an eine Host-Adresse zugestellt; wir speichern das für den Zeitpunkt, an dem die Funktion kommt."
+  },
+  "donations": {
+    "title": "Spenden",
+    "link": "Spendenlink",
+    "link_hint": "Ein https-Link, der auf der Veranstaltungsseite erscheint.",
+    "org_note": "Die Spenden für diese Veranstaltung laufen über {{org}}."
+  },
+  "danger": {
+    "title": "Gefahrenzone",
+    "body": "Eine Absage benachrichtigt alle Angemeldeten und lässt sich nicht rückgängig machen.",
+    "cancel_event": "Veranstaltung absagen",
+    "cancelled": "Veranstaltung abgesagt",
+    "reason": "Grund (wird den Teilnehmenden mitgeteilt)",
+    "confirm_title": "Diese Veranstaltung absagen?",
+    "confirm_body": "Alle Angemeldeten werden benachrichtigt. Die Veranstaltung bleibt als abgesagt sichtbar.",
+    "confirm_banner": "Das lässt sich nicht rückgängig machen.",
+    "agreement": "Mir ist klar, dass dadurch alle Angemeldeten benachrichtigt werden."
+  }
+}

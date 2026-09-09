@@ -1,0 +1,26 @@
+{
+  "title": "계정 설정 완료",
+  "subtitle": "사용자 이름을 선택하고 이름을 확인하여 이웃들이 알아볼 수 있도록 해주세요.",
+  "first_name_label": "이름",
+  "first_name_placeholder": "이름",
+  "last_name_label": "성",
+  "last_name_placeholder": "성 (선택사항)",
+  "username_label": "사용자 이름",
+  "username_placeholder": "사용자 이름",
+  "handle": {
+    "rule": "영문자, 숫자, 밑줄로 3~20자.",
+    "invalid": "영문자, 숫자, 밑줄로 3~20자를 사용하세요.",
+    "checking": "확인 중...",
+    "available": "@{{handle}} 사용 가능",
+    "taken": "@{{handle}} 이미 사용 중"
+  },
+  "error": {
+    "validation": "사용자 이름과 이름을 확인한 후 다시 시도해 주세요.",
+    "conflict": "방금 다른 사람이 해당 사용자 이름을 사용했어요. 다른 이름을 시도해 주세요.",
+    "fallback": "프로필을 저장하지 못했어요. 다시 시도해 주세요."
+  },
+  "saving": "저장 중...",
+  "continue": "계속",
+  "not_you": "본인이 아닌가요?",
+  "sign_out": "로그아웃"
+}

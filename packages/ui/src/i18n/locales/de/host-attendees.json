@@ -1,0 +1,119 @@
+{
+  "waitlist_notice": "Wartelisteneinträge sind noch keine Anmeldungen, deshalb gibt es hier keine Aktionen pro Person.",
+  "row": {
+    "guest": "Gast",
+    "deleted_user": "Gelöschtes Konto"
+  },
+  "chip": {
+    "checked_in": "Eingecheckt",
+    "not_checked_in": "Nicht eingecheckt",
+    "no_show": "Nicht erschienen"
+  },
+  "action": {
+    "message": "Teilnehmenden schreiben"
+  },
+  "filter": {
+    "tabs": "Filter für Teilnehmende",
+    "search": "Suchen",
+    "search_placeholder": "Nach Namen suchen",
+    "ticket_type": "Ticketart",
+    "all": "Alle",
+    "registered": "Angemeldet",
+    "checked_in": "Eingecheckt",
+    "not_checked_in": "Nicht eingecheckt",
+    "no_show": "Nicht erschienen",
+    "waitlisted": "Warteliste",
+    "cancelled": "Storniert",
+    "guests": "Gäste",
+    "members": "Mitglieder"
+  },
+  "column": {
+    "name": "Name",
+    "kind": "Art",
+    "ticket_type": "Ticket",
+    "seats": "Plätze",
+    "attendance": "Teilnahme",
+    "registered_at": "Angemeldet",
+    "checked_in_at": "Eingecheckt"
+  },
+  "table": {
+    "caption": "Teilnehmende",
+    "select_row": "{{name}} auswählen",
+    "open_row": "{{name}} öffnen"
+  },
+  "summary": {
+    "shown": "{{shown}} werden angezeigt",
+    "event_total": "{{total}} angemeldet in der gesamten Veranstaltung"
+  },
+  "empty": {
+    "title": "Hier ist noch niemand",
+    "body": "Anmeldungen erscheinen hier, sobald sich Leute eintragen."
+  },
+  "source": {
+    "self": "Selbst angemeldet",
+    "waitlist": "Von der Warteliste",
+    "walkup": "Vor Ort",
+    "transfer": "Übertragen"
+  },
+  "history": {
+    "registered": "hat sich angemeldet",
+    "checked_in": "wurde eingecheckt",
+    "cancelled": "hat storniert"
+  },
+  "drawer": {
+    "registration": "Anmeldung",
+    "ticket_type": "Ticketart",
+    "party": "Plätze",
+    "registered_at": "Angemeldet",
+    "slot": "Schicht",
+    "source": "Wie die Anmeldung kam",
+    "no_contact": "civfix zeigt Hosts nie die E-Mail-Adresse oder Telefonnummer eines Mitglieds.",
+    "seats": "Plätze",
+    "seat_n": "Platz {{n}}",
+    "no_seats": "Diese Anmeldung hat keine Plätze.",
+    "check_in": "Einchecken",
+    "check_in_all": "Alle {{count}} einchecken",
+    "checked_in": "Eingecheckt",
+    "check_in_undone": "Check-in rückgängig gemacht",
+    "answers": "Antworten",
+    "no_answers": "Es wurden keine Antworten gegeben.",
+    "answer_scrubbed": "Nach der Veranstaltung gelöscht",
+    "move_label": "In eine andere Ticketart verschieben",
+    "move_placeholder": "Ticketart wählen",
+    "move": "Verschieben",
+    "moved": "Anmeldung verschoben",
+    "move_conflict": "Diese Ticketart ist ausgebucht, oder die Gruppe ist dafür zu groß.",
+    "note_label": "Interne Notiz",
+    "note_hint": "Das sehen nur Hosts. Es wird 90 Tage nach der Veranstaltung gelöscht.",
+    "note_saved": "Notiz gespeichert",
+    "history": "Verlauf",
+    "remove": "Aus der Veranstaltung entfernen",
+    "removed": "Anmeldung entfernt"
+  },
+  "remove": {
+    "title": "Diese Anmeldung entfernen?",
+    "body": "{{name}} verliert die Plätze. Eine erneute Anmeldung ist möglich, solange die Anmeldung offen ist.",
+    "reason": "Grund",
+    "confirm": "Entfernen"
+  },
+  "no_show": {
+    "title": "Als nicht erschienen markieren?",
+    "body": "{{count}} Anmeldungen werden als nicht erschienen markiert. Ein späterer Check-in hebt das wieder auf.",
+    "confirm": "Als nicht erschienen markieren"
+  },
+  "bulk": {
+    "check_in": "Einchecken",
+    "mark_no_show": "Als nicht erschienen markieren",
+    "remove": "Entfernen",
+    "checked_in_one": "{{count}} Platz eingecheckt",
+    "checked_in_other": "{{count}} Plätze eingecheckt",
+    "no_show_one": "{{count}} Platz als nicht erschienen markiert",
+    "no_show_other": "{{count}} Plätze als nicht erschienen markiert",
+    "removed_one": "{{count}} Anmeldung entfernt",
+    "removed_other": "{{count}} Anmeldungen entfernt",
+    "partial_one": "{{count}} konnte nicht ausgeführt werden.",
+    "partial_other": "{{count}} konnten nicht ausgeführt werden.",
+    "export_hint": "Exportieren",
+    "export_reason": "Exporte umfassen immer die ganze Veranstaltung, nicht eine Auswahl. Nutze oben die Schaltfläche Exportieren."
+  }
+}

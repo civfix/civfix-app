@@ -1,0 +1,50 @@
+{
+  "search": {
+    "placeholder": "Buscar eventos, personas, lugares",
+    "clear_a11y": "Borrar búsqueda",
+    "no_matches": "Sin resultados para \"{{query}}\".",
+    "no_results_title": "Sin resultados",
+    "error": "No se pudo completar la búsqueda. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "error_title": "Búsqueda no disponible",
+    "loading_a11y": "Buscando",
+    "announce": {
+      "results_one": "{{count}} resultado",
+      "results_other": "{{count}} resultados"
+    }
+  },
+  "create": {
+    "report": "Reportar un problema",
+    "event": "Organizar un evento"
+  },
+  "results": {
+    "people": "Personas",
+    "events": "Eventos",
+    "reports": "Reportes"
+  },
+  "search_page": {
+    "title": "Buscar",
+    "recent": "Búsquedas recientes",
+    "recent_empty": "Tus búsquedas recientes aparecerán aquí.",
+    "recent_a11y": "Buscar {{query}}",
+    "clear": "Borrar",
+    "clear_a11y": "Borrar búsquedas recientes",
+    "suggested_people": "Personas sugeridas",
+    "events_near": "Eventos en tu zona",
+    "leaderboard": "Clasificación de voluntariado",
+    "leaderboard_in": "Mejores voluntarios en {{name}}",
+    "leaderboard_see_all_a11y": "Ver la clasificación completa",
+    "leaderboard_you": "Tú",
+    "reports_near": "Reportes cercanos",
+    "see_all": "Ver todo",
+    "see_all_events_a11y": "Ver todos los eventos",
+    "browse": "Explorar",
+    "browse_a11y": "Explorar {{label}}"
+  },
+  "reports": {
+    "empty": "Aún no has enviado ningún reporte. Toca «Reportar un problema» para empezar."
+  },
+  "person": {
+    "view_profile_a11y": "{{name}}, ver perfil"
+  }
+}

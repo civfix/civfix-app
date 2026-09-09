@@ -1,0 +1,123 @@
+{
+  "state": {
+    "loading": "Loading check-in…",
+    "error_title": "Check-in is unavailable",
+    "error_body": "We could not load this event. Check your connection and try again.",
+    "denied_title": "Not on the door team",
+    "denied_body": "Only the event's hosts and staff can check attendees in."
+  },
+  "action": {
+    "scan": "Scan a ticket",
+    "scan_unavailable": "Scanning is not available on this device. Type the ticket code instead."
+  },
+  "manual": {
+    "label": "Ticket code",
+    "placeholder": "Ticket code",
+    "submit": "Check in",
+    "title": "Check someone in",
+    "hint": "Type the full code printed on the ticket. Scanning happens in the civfix app."
+  },
+  "outbox": {
+    "queued": "Saved. It will be sent when you are back online.",
+    "pending_one": "{{count}} check-in waiting to send",
+    "pending_other": "{{count}} check-ins waiting to send",
+    "retry": "Retry now"
+  },
+  "replay": {
+    "title": "Replay report",
+    "sent_one": "{{count}} queued check-in went through.",
+    "sent_other": "{{count}} queued check-ins went through.",
+    "refused_line_one": "{{count}} ticket: {{label}}",
+    "refused_line_other": "{{count}} tickets: {{label}}",
+    "forbidden_one": "{{count}} check-in could not be replayed: you no longer have check-in access.",
+    "forbidden_other": "{{count}} check-ins could not be replayed: you no longer have check-in access.",
+    "discarded_one": "{{count}} check-in could not be sent and was discarded.",
+    "discarded_other": "{{count}} check-ins could not be sent and were discarded.",
+    "held_one": "{{count}} check-in is still waiting. Sign in again to finish it.",
+    "held_other": "{{count}} check-ins are still waiting. Sign in again to finish them.",
+    "dismiss": "Dismiss"
+  },
+  "result": {
+    "checked_in_title": "Checked in",
+    "checked_in_body": "This ticket is now checked in.",
+    "already_title": "Already checked in",
+    "already_body": "This ticket was scanned earlier.",
+    "waitlisted_title": "On the waitlist",
+    "waitlisted_body": "This person is on the waitlist and has no seat yet.",
+    "cancelled_title": "Cancelled ticket",
+    "cancelled_body": "This registration was cancelled.",
+    "no_show_title": "Marked as a no-show",
+    "no_show_body": "This ticket was marked as a no-show after the event.",
+    "wrong_event_title": "Not for this event",
+    "wrong_event_body": "This ticket belongs to a different event.",
+    "unknown_title": "Ticket not recognised",
+    "unknown_body": "We do not recognise this code for this event.",
+    "party_one": "{{count}} seat",
+    "party_other": "{{count}} seats",
+    "undo": "Undo",
+    "undo_done": "Check-in undone.",
+    "dismiss": "Dismiss",
+    "unknown_token_title": "Ticket not recognised",
+    "unknown_token_body": "We do not recognise this code for this event."
+  },
+  "error": {
+    "code_length": "That code does not look right. Check it and try again.",
+    "generic": "Something went wrong. Please try again."
+  },
+  "counters": {
+    "heading": "Live counters",
+    "registered": "Registered",
+    "checked_in": "Checked in",
+    "waitlist": "Waitlist",
+    "no_show": "No-show",
+    "as_of": "As of {{time}}",
+    "units": "Registered and waitlist count seats; checked in and no-show count people."
+  },
+  "roster": {
+    "title": "Not checked in yet",
+    "search": "Search by name",
+    "check_in": "Check in",
+    "guest": "Guest",
+    "deleted": "Deleted user",
+    "empty_title": "Everyone is in",
+    "empty_body": "Nobody on the list is still waiting to be checked in."
+  },
+  "arrivals": {
+    "title": "Arrivals",
+    "value": "Check-ins",
+    "a11y": "Check-ins over time",
+    "buckets": "Grouped into 15-minute blocks, in the event's local time.",
+    "empty": "Nobody has checked in yet."
+  },
+  "by_type": {
+    "title": "By ticket type",
+    "a11y": "Check-ins by ticket type",
+    "empty": "This event has no ticket types."
+  },
+  "walkup": {
+    "open": "Walk-up",
+    "title": "Add a walk-up attendee",
+    "notice": "This creates a registration at the door and checks them in. civfix records no contact details for a walk-up.",
+    "name": "Name",
+    "party": "Seats",
+    "ticket_type": "Ticket type",
+    "ticket_placeholder": "Choose a ticket type",
+    "submit": "Add and check in",
+    "done": "{{name}} is checked in",
+    "outcome_full": "That ticket type is full.",
+    "outcome_party_too_large": "That is more seats than this ticket type allows.",
+    "outcome_sales_closed": "Sales for that ticket type are closed.",
+    "outcome_registration_closed": "Registration for this event is closed.",
+    "outcome_ticket_type_not_found": "Choose a ticket type.",
+    "outcome_closed": "This event is closed.",
+    "outcome_banned": "That person cannot be added to this event.",
+    "outcome_already_registered": "That person is already registered.",
+    "outcome_access_code_required": "That ticket type needs an access code.",
+    "outcome_access_code_invalid": "That access code is not valid.",
+    "outcome_answers_invalid": "That ticket type asks questions that cannot be answered at the door.",
+    "outcome_waitlisted": "They were added to the waitlist instead.",
+    "outcome_not_found": "This event could not be found.",
+    "outcome_registered": "Added.",
+    "outcome_replayed": "Already added."
+  }
+}

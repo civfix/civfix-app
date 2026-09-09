@@ -1,0 +1,56 @@
+{
+  "error": {
+    "title": "Profile unavailable",
+    "body": "This person may no longer be on civfix, or you may be offline."
+  },
+  "actions": {
+    "message": "Message",
+    "message_a11y": "Message {{name}}",
+    "more_options": "More options"
+  },
+  "menu": {
+    "block": "Block",
+    "unblock": "Unblock",
+    "report": "Report"
+  },
+  "events": {
+    "label": "EVENTS",
+    "empty": "No events yet.",
+    "role_hosting": "Hosting",
+    "role_going": "Going",
+    "row_a11y": "{{title}}, {{role}}",
+    "group_upcoming": "UPCOMING",
+    "group_past": "PAST",
+    "load_more": "Load more",
+    "loading_more": "Loading...",
+    "load_more_a11y": "Load more past events",
+    "load_more_error": "Couldn't load more events.",
+    "load_more_retry": "Try again"
+  },
+  "block": {
+    "confirm_message": "Block {{name}}? They won't be able to message you, and this profile will be hidden.",
+    "cancel": "Cancel",
+    "confirm": "Block",
+    "error": "Couldn't block this person. Try again."
+  },
+  "blocked": {
+    "label": "You blocked this person.",
+    "unblock_error": "Couldn't unblock this person. Try again."
+  },
+  "report": {
+    "subject_label": "this profile",
+    "error": "Couldn't submit your report. Try again.",
+    "toast_submitted": "Report submitted - thanks"
+  },
+  "hours": {
+    "eyebrow": "Volunteer hours"
+  },
+  "posts": {
+    "loading": "Loading posts...",
+    "error": "Posts couldn't be loaded.",
+    "empty": "No posts yet.",
+    "load_more": "Load more",
+    "loading_more": "Loading...",
+    "load_more_a11y": "Load more posts"
+  }
+}

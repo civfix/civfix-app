@@ -1,0 +1,83 @@
+{
+  "saved": "Ticketart gespeichert",
+  "created": "Ticketart erstellt",
+  "deleted": "Ticketart gelöscht",
+  "types": {
+    "title": "Ticketarten",
+    "count": "{{count}} von {{max}}",
+    "add": "Ticketart hinzufügen",
+    "edit_a11y": "{{name}} bearbeiten",
+    "move_up": "Nach oben",
+    "move_down": "Nach unten",
+    "delete": "Löschen",
+    "sold": "{{sold}} von {{capacity}} vergeben",
+    "unlimited": "unbegrenzt",
+    "party": "bis zu {{max}} pro Anmeldung",
+    "empty_title": "Noch keine Ticketarten",
+    "empty_body": "Leg eine an, damit Leute wählen können, wie sie mitmachen. Ohne Ticketarten läuft die Veranstaltung über eine einfache Zusage."
+  },
+  "drawer": {
+    "new_title": "Neue Ticketart",
+    "edit_title": "Ticketart bearbeiten"
+  },
+  "field": {
+    "name": "Name",
+    "description": "Beschreibung",
+    "capacity": "Kapazität",
+    "capacity_hint": "Leer lassen für unbegrenzt viele Plätze.",
+    "sales_opens": "Vergabe startet",
+    "sales_closes": "Vergabe endet",
+    "visibility": "Sichtbarkeit",
+    "access_code": "Zugangscode",
+    "access_code_hint": "Ohne diesen Code sieht und bekommt niemand diese Ticketart.",
+    "access_code_set": "Es ist bereits ein Code hinterlegt. Gib einen neuen ein, um ihn zu ersetzen.",
+    "max_party": "Plätze pro Anmeldung",
+    "max_party_hint": "Zwischen 1 und {{max}}.",
+    "waitlist": "Warteliste",
+    "waitlist_hint": "Lass Leute auf eine Warteliste, sobald diese Art ausgebucht ist.",
+    "accessCode": "Zugangscode",
+    "maxPartySize": "Plätze pro Anmeldung",
+    "salesOpensAt": "Vergabe startet",
+    "salesClosesAt": "Vergabe endet",
+    "ticketTypeIds": "Reihenfolge"
+  },
+  "visibility": {
+    "public": "Öffentlich",
+    "hidden": "Versteckt",
+    "access_code": "Zugangscode"
+  },
+  "delete": {
+    "title": "Diese Ticketart löschen?",
+    "body": "{{name}} verschwindet von der Anmeldeseite.",
+    "banner": "Eine Ticketart mit Anmeldungen lässt sich nicht löschen. Beende stattdessen ihre Vergabe.",
+    "confirm": "Löschen",
+    "in_use": "Für diese Art haben sich schon Leute angemeldet. Beende ihre Vergabe, statt sie zu löschen."
+  },
+  "questions": {
+    "title": "Fragen bei der Anmeldung",
+    "hint": "Die Antworten sehen nur Hosts mit Berechtigung, und 30 Tage nach der Veranstaltung werden sie gelöscht.",
+    "archive_note": "Eine entfernte Frage wird archiviert. Bereits gegebene Antworten bleiben erhalten.",
+    "empty": "Noch keine Fragen.",
+    "saved": "Fragen gespeichert",
+    "add": "Frage hinzufügen",
+    "remove": "Diese Frage entfernen",
+    "move_up": "Nach oben",
+    "move_down": "Nach unten",
+    "prompt": "Frage",
+    "kind": "Art",
+    "kind_short_text": "Kurzer Text",
+    "kind_long_text": "Langer Text",
+    "kind_single_select": "Eine auswählen",
+    "kind_multi_select": "Mehrere auswählen",
+    "kind_checkbox": "Kontrollkästchen",
+    "kind_consent": "Einwilligung",
+    "options": "Optionen",
+    "options_hint": "Eine Option pro Zeile.",
+    "consent_text": "Text der Einwilligung",
+    "help": "Hilfetext",
+    "required": "Pflichtfeld",
+    "ticket_scope": "Nur fragen bei",
+    "ticket_all": "Allen Ticketarten",
+    "ticket_scope_hint": "Eine Frage, die auf einen Ticket-Typ beschränkt ist, wird nur gestellt, wenn jemand diesen Typ wählt – also nie, wenn alle Typen ausgeblendet sind. Lass sie auf allen Ticket-Typen, damit sie immer gestellt wird."
+  }
+}

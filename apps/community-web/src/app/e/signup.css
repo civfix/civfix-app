@@ -1,0 +1,435 @@
+/* =========================================================================
+   Public signup page: /e/<pageSlug>
+
+   A standalone DOM route (the /legal and /service-record precedent), NOT a
+   react-native-web body. The audience is an anonymous visitor arriving from a
+   shared link, often on mobile data, who has never heard of civfix - so the
+   page is plain semantic HTML that paints without the app shell, the map or
+   the RN stack.
+
+   THEME ACCENT: the host picks one of five accents. Rather than five sets of
+   rules, the page publishes `--signup-accent*` custom properties on the <main>
+   element (features/signup-page/page-theme.ts) that alias the design-token
+   ramps in src/styles/design.css. Those ramps already flip under `.dark`, so
+   the accent follows the viewer's color scheme with no per-scheme branch here.
+   ========================================================================= */
+
+.signup-page {
+  --signup-accent: var(--bloom);
+  --signup-accent-50: var(--bloom-50);
+  --signup-accent-100: var(--bloom-100);
+  --signup-accent-300: var(--bloom-300);
+  --signup-accent-600: var(--bloom-600);
+
+  min-height: 100dvh;
+  background: var(--bg-1);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  line-height: var(--lh-base);
+}
+
+.signup-shell {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 var(--space-5) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ---- Hero ---- */
+.signup-hero {
+  margin: 0 calc(var(--space-5) * -1);
+}
+.signup-hero-cover {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--bg-2);
+}
+.signup-hero-body {
+  padding: var(--space-6) var(--space-5) 0;
+}
+.signup-hero-org {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  color: var(--fg-2);
+  font-size: var(--fs-14);
+  font-weight: 600;
+}
+.signup-hero-org img {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-xs);
+  object-fit: cover;
+}
+.signup-hero h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-30);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+}
+.signup-hero-when {
+  margin: var(--space-3) 0 0;
+  color: var(--signup-accent-600);
+  font-weight: 700;
+}
+.signup-hero-subhead {
+  margin: var(--space-2) 0 0;
+  color: var(--fg-2);
+  font-size: var(--fs-18);
+}
+
+/* ---- Content blocks ---- */
+.signup-block h2,
+.signup-block-title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  line-height: var(--lh-snug);
+}
+.signup-block p {
+  margin: 0 0 var(--space-3);
+}
+.signup-block p:last-child {
+  margin-bottom: 0;
+}
+
+.signup-prose ul,
+.signup-prose ol {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+}
+.signup-prose a,
+.signup-block a,
+.signup-foot a {
+  color: var(--signup-accent-600);
+}
+
+.signup-agenda {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.signup-agenda li {
+  display: flex;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+.signup-agenda li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.signup-agenda-time {
+  flex: none;
+  min-width: 84px;
+  color: var(--fg-2);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-14);
+  font-weight: 600;
+}
+.signup-agenda em,
+.signup-hosts em {
+  display: block;
+  font-style: normal;
+  color: var(--fg-2);
+  font-size: var(--fs-14);
+}
+
+.signup-hosts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.signup-hosts li {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+.signup-hosts img {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  object-fit: cover;
+  flex: none;
+}
+.signup-host-bio {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--fg-2);
+  font-size: var(--fs-14);
+}
+
+.signup-faq {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.signup-faq dt {
+  font-weight: 700;
+}
+.signup-faq dd {
+  margin: var(--space-1) 0 0;
+  color: var(--fg-2);
+}
+
+.signup-sponsors {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+}
+.signup-sponsors img {
+  max-height: 40px;
+  width: auto;
+}
+
+.signup-address {
+  font-weight: 600;
+}
+
+.signup-donate-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--signup-accent);
+  color: var(--fg-on-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* ---- Registration widget ---- */
+.signup-widget {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-2);
+}
+.signup-widget h2 {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+}
+.signup-widget-notice {
+  text-align: center;
+}
+.signup-widget-notice[data-tone="success"] {
+  border-color: var(--moss-100);
+  background: var(--moss-50);
+}
+.signup-widget-notice[data-tone="alert"] {
+  border-color: var(--bloom-100);
+  background: var(--bloom-50);
+}
+
+.signup-tickets {
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  border: none;
+}
+.signup-tickets legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-14);
+  font-weight: 600;
+  color: var(--fg-2);
+}
+.signup-ticket {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  margin-bottom: var(--space-2);
+}
+.signup-ticket[data-sold-out="true"] {
+  opacity: 0.6;
+}
+.signup-ticket em {
+  display: block;
+  font-style: normal;
+  color: var(--fg-2);
+  font-size: var(--fs-14);
+}
+
+.signup-field {
+  margin-bottom: var(--space-4);
+  border: none;
+  padding: 0;
+}
+.signup-field label,
+.signup-field legend {
+  display: block;
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-size: var(--fs-14);
+  font-weight: 600;
+  color: var(--fg-2);
+}
+.signup-field input,
+.signup-field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+}
+.signup-field input[type="radio"],
+.signup-field input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+}
+
+.signup-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.signup-check input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex: none;
+  accent-color: var(--signup-accent);
+}
+.signup-check label,
+.signup-check span {
+  margin: 0;
+  font-size: var(--fs-15);
+  font-weight: 400;
+  color: var(--fg-1);
+}
+
+.signup-hint {
+  margin: var(--space-2) 0 0;
+  color: var(--fg-3);
+  font-size: var(--fs-13);
+}
+.signup-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+  color: var(--danger);
+  font-size: var(--fs-14);
+  font-weight: 600;
+}
+
+.signup-submit {
+  width: 100%;
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--signup-accent);
+  color: var(--fg-on-color);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  font-weight: 700;
+  cursor: pointer;
+}
+.signup-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.signup-secondary {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  font-weight: 600;
+  cursor: pointer;
+}
+.signup-submit:focus-visible,
+.signup-secondary:focus-visible,
+.signup-page input:focus-visible,
+.signup-page textarea:focus-visible,
+.signup-page a:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.signup-state {
+  align-items: center;
+  text-align: center;
+  padding-top: var(--space-16);
+}
+.signup-state h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+}
+.signup-state p {
+  margin: 0;
+  color: var(--fg-2);
+}
+
+.signup-foot {
+  color: var(--fg-3);
+  font-size: var(--fs-13);
+}
+
+.signup-spin {
+  animation: signup-spin 900ms linear infinite;
+}
+
+@keyframes signup-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signup-spin {
+    animation: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .signup-shell {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+  .signup-agenda li {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "title": "Für dieses Event zusagen",
+  "dismiss_a11y": "Zusage schließen",
+  "choice": {
+    "caption": "Sichere dir deinen Platz. Mit einem Konto hast du alle deine Events an einem Ort - oder sage als Gast zu und wir schicken dir die Bestätigung per E-Mail oder SMS.",
+    "sign_in": "Anmelden oder Konto erstellen",
+    "guest": "Als Gast fortfahren"
+  },
+  "form": {
+    "caption": "Wir senden dir einen Einmalcode, um zu bestätigen, dass du es bist.",
+    "name_label": "Dein Name",
+    "name_placeholder": "Name, den der Gastgeber sieht",
+    "name_a11y": "Dein Name",
+    "channel_label": "Code senden an",
+    "channel_email": "E-Mail",
+    "channel_sms": "SMS",
+    "email_label": "E-Mail-Adresse",
+    "email_placeholder": "du@beispiel.de",
+    "phone_label": "Mobilnummer",
+    "phone_placeholder": "(555) 123-4567",
+    "sms_consent": "Es können Nachrichten- und Datengebühren anfallen. Wir senden nur einen Einmalcode und Updates zu diesem Event. Antworte mit STOP, um dich abzumelden.",
+    "sms_unavailable": "SMS sind gerade nicht verfügbar. Wir haben auf E-Mail umgestellt.",
+    "submit": "Code senden",
+    "cancel": "Abbrechen",
+    "ticket_label": "Ticketart"
+  },
+  "code": {
+    "caption_email": "Gib den 6-stelligen Code ein, den wir an {{contact}} geschickt haben.",
+    "caption_sms": "Gib den 6-stelligen Code ein, den wir per SMS an {{contact}} geschickt haben.",
+    "resend": "Code erneut senden",
+    "resend_wait": "Erneut senden in {{seconds}} s",
+    "resend_a11y": "Bestätigungscode erneut senden",
+    "back": "Zurück",
+    "submit": "Zusage bestätigen",
+    "start_over": "Neu starten"
+  },
+  "success": {
+    "title": "Du bist auf der Liste",
+    "body_email": "Wir haben deine Bestätigung an {{contact}} geschickt. Sie enthält einen Link zum Absagen, falls sich deine Pläne ändern.",
+    "body_sms": "Wir haben deine Bestätigung per SMS an {{contact}} geschickt. Sie enthält einen Link zum Absagen, falls sich deine Pläne ändern.",
+    "done": "Fertig"
+  },
+  "error": {
+    "rate_limited": "Zu viele Anfragen. Warte kurz und versuche es erneut.",
+    "turnstile": "Wir konnten nicht bestätigen, dass du ein Mensch bist. Bitte erneut versuchen.",
+    "invalid_contact": "Prüfe Name und Kontaktdaten und versuche es erneut.",
+    "event_gone": "Dieses Event ist nicht mehr verfügbar.",
+    "closed": "Dieses Event nimmt keine neuen Zusagen an.",
+    "bad_code": "Dieser Code stimmt nicht oder ist abgelaufen. Prüfe ihn und versuche es erneut.",
+    "attempts_exhausted": "Zu viele Versuche. Starte neu, um einen neuen Code zu erhalten.",
+    "generic": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+    "questions_required": "Bitte beantworte die Pflichtfragen.",
+    "consent_required": "Bitte stimme den Nutzungsbedingungen und der Datenschutzerklärung zu, um dich anzumelden."
+  }
+}

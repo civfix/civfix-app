@@ -1,0 +1,17 @@
+{
+  "generic": "civfix ist nicht erreichbar. Bitte Verbindung prüfen und erneut versuchen.",
+  "oauth_failed": "{{provider}}-Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
+  "code": {
+    "UNAUTHORIZED": "Bitte anmelden, um fortzufahren.",
+    "FORBIDDEN": "Dafür fehlt dir die Berechtigung.",
+    "NOT_FOUND": "Das konnten wir nicht finden.",
+    "VALIDATION": "Im Formular gibt es einen Fehler. Bitte prüfen.",
+    "RATE_LIMITED": "Zu viele Versuche. Kurz warten und erneut versuchen.",
+    "ABUSE_HELD": "Danke – der Beitrag wird geprüft und erscheint nach Freigabe.",
+    "GPS_IMPLAUSIBLE": "Dieser Standort wirkt unplausibel. Bitte erneut erfassen.",
+    "MEDIA_REJECTED": "Foto oder Video konnte nicht akzeptiert werden. Anderes probieren.",
+    "CONFLICT": "Diese Aktion führt zu einem Konflikt. Seite neu laden und erneut versuchen.",
+    "TURNSTILE_FAILED": "Anfrage konnte nicht verifiziert werden. Bitte erneut versuchen.",
+    "INTERNAL": "Bei uns ist ein Fehler aufgetreten. Bitte erneut versuchen."
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "brand": {
+    "home": "civfix Startseite"
+  },
+  "layers": {
+    "toggle": "Kartenebenen",
+    "events": "Events",
+    "eventsA11y": "Event-Ebene",
+    "shown": "Sichtbar",
+    "hidden": "Ausgeblendet",
+    "reports": "Meldungen",
+    "reportsA11y": "Meldungskategorien",
+    "summaryNone": "Keine sichtbar",
+    "summaryAll": "Alle Kategorien",
+    "summarySome": "{{shown}} von {{total}} Kategorien",
+    "selectAll": "Alle auswählen",
+    "clearAll": "Alle abwählen",
+    "selectAllA11y": "Alle Kategorien auswählen",
+    "clearAllA11y": "Alle Kategorien abwählen",
+    "categoryPinsA11y": "Markierungen für {{category}}",
+    "nearby_one": "{{count}} in der Nähe",
+    "nearby_other": "{{count}} in der Nähe"
+  },
+  "actions": {
+    "locate": "Zu meinem Standort",
+    "notifications": "Benachrichtigungen",
+    "reset": "Zurücksetzen"
+  },
+  "appearance": {
+    "toggle": "Erscheinungsbild",
+    "dismiss": "Erscheinungsbild-Menü schließen"
+  },
+  "stack": {
+    "events": "Aktionen & Events",
+    "messages": "Nachrichten",
+    "social": "Personen entdecken",
+    "reports": "Meine Meldungen",
+    "report": "Problem melden"
+  },
+  "profile": {
+    "signIn": "Anmelden",
+    "open": "Mein Profil"
+  },
+  "a11y": {
+    "attribution": "CARTO / OSM",
+    "miniMap": "Karte mit dem Standort",
+    "homeMap": "Karte mit Meldungen und Events",
+    "picker": "Tippe auf die Karte, um die Standortmarkierung zu setzen, oder ziehe sie zum Feinjustieren",
+    "userLocation": "Dein Standort"
+  },
+  "hint": {
+    "place": "Tippe auf die Karte, um die Markierung zu setzen",
+    "move": "Tippen, um die Markierung zu verschieben",
+    "moveMainMap": "Tippe auf die Karte, um die Markierung zu verschieben",
+    "empty": "Noch kein Standort festgelegt"
+  },
+  "pickStep": {
+    "title": "Standort festlegen",
+    "open": "Standort auf der Karte wählen",
+    "openA11y": "Den Standort auf der ganzen Karte wählen",
+    "confirm": "Diesen Standort verwenden",
+    "confirmA11y": "Den gewählten Standort bestätigen",
+    "cancel": "Abbrechen",
+    "cancelA11y": "Standortauswahl abbrechen",
+    "needPin": "Tippe zuerst auf die Karte, um einen Standort festzulegen"
+  },
+  "linkPanel": {
+    "preview": "Meldungsvorschau",
+    "title": "Meldung",
+    "close": "Meldungsvorschau schließen",
+    "noDescription": "Keine Beschreibung vorhanden.",
+    "viewDetails": "Meldungsdetails ansehen",
+    "add": "Diese Meldung hinzufügen",
+    "remove": "Entfernen",
+    "addA11y": "Diese Meldung zum Event hinzufügen",
+    "removeA11y": "Diese Meldung aus dem Event entfernen"
+  },
+  "dropPin": {
+    "locationA11y": "Ausgewählter Standort",
+    "report": {
+      "title": "Hier ein Problem melden",
+      "sub": "Eine Meldung an dieser Stelle beginnen"
+    },
+    "host": {
+      "title": "Hier eine Veranstaltung erstellen",
+      "sub": "Eine Putzaktion oder ein Treffen an dieser Stelle planen"
+    },
+    "cancel": "Abbrechen",
+    "cancelA11y": "Abbrechen und den gesetzten Pin entfernen",
+    "confirm": {
+      "title": "Hier eine neue Meldung beginnen?",
+      "body": "Deine unfertige Meldung wird verworfen.",
+      "discard": "Verwerfen und hier beginnen",
+      "keep": "Weiter bearbeiten"
+    }
+  }
+}

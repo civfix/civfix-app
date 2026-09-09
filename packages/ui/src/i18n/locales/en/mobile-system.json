@@ -1,0 +1,24 @@
+{
+  "notification_channel_default": "Default",
+  "crash": {
+    "title": "Something went wrong",
+    "body": "civfix hit an unexpected problem. Restarting clears the data it had saved and tries again.",
+    "action": "Restart civfix"
+  },
+  "notification_channel_host_broadcasts": "Event messages",
+  "notification_channel_event_reminders": "Event reminders",
+  "notification_action_view_ticket": "View ticket",
+  "notification_action_open_event": "Open event",
+  "scan": {
+    "title": "Scan a ticket",
+    "hint": "Point the camera at the QR code on the attendee's ticket.",
+    "gate": {
+      "title": "Camera access",
+      "body": "civfix uses the camera to read the QR code on an attendee's ticket at check-in.",
+      "continue": "Allow camera",
+      "open_settings": "Open settings",
+      "no_camera_title": "No camera found",
+      "no_camera_body": "This device has no available camera. Type the ticket code instead."
+    }
+  }
+}

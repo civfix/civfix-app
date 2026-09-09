@@ -1,0 +1,111 @@
+# EAS build + update (EXAMPLE - not active)
+#
+# This file is intentionally named *.yml.example so GitHub Actions does NOT pick
+# it up. It documents how to ship the app to devices (native dev-client / store
+# builds) and push OTA updates via EAS, once the prerequisites below are set.
+#
+# To activate: rename to eas-build.yml and complete the prerequisites.
+#
+# Prerequisites (none are wired yet - this lint/typecheck CI does not need them):
+#   1. EXPO_TOKEN repository secret
+#        Expo access token (https://expo.dev -> Account -> Access tokens).
+#        Add at: repo Settings -> Secrets and variables -> Actions -> New secret.
+#        Name: EXPO_TOKEN
+#   2. EAS project id
+#        Run `eas init` in apps/community-mobile. It replaces the placeholder
+#        00000000-0000-0000-0000-000000000000 in app.config.ts
+#        (extra.eas.projectId, and the updates.url host) with the real project id.
+#   3. eas.json build profiles (development / preview / production)
+#        Created by `eas build:configure` in apps/community-mobile.
+#   4. Credentials
+#        iOS distribution cert / provisioning profile and Android keystore,
+#        managed by EAS (`eas credentials`) or supplied as additional secrets.
+#
+# Native iOS/Android builds require the native toolchains and run on EAS cloud
+# builders, NOT on the lint/typecheck CI runner.
+
+name: EAS Build and Update
+
+on:
+  # Build dev clients / store binaries on demand.
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        required: true
+        default: development
+        type: choice
+        options: [development, preview, testflight, production]
+  # Publish an OTA JS update on every push to main (no native rebuild needed
+  # when only JS/assets change and the runtimeVersion is unchanged).
+  push:
+    branches: [main]
+
+concurrency:
+  group: eas-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: eas build (${{ github.event.inputs.profile || 'development' }})
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup EAS / Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: EAS build
+        working-directory: apps/community-mobile
+        run: eas build --platform all --profile ${{ github.event.inputs.profile }} --non-interactive --no-wait
+
+  update:
+    name: eas update (OTA)
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup EAS / Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Publish OTA update
+        working-directory: apps/community-mobile
+        run: eas update --branch main --message "${{ github.event.head_commit.message }}" --non-interactive

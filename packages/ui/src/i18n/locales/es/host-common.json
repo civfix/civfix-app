@@ -1,0 +1,151 @@
+{
+  "counters": {
+    "a11y": "Contadores del evento en vivo",
+    "checked_in": "Registrados",
+    "registered": "Inscritos",
+    "waitlist": "Lista de espera",
+    "no_show": "No asistieron",
+    "error": "Los contadores no están disponibles ahora mismo."
+  },
+  "roster": {
+    "search_placeholder": "Buscar por nombre",
+    "search_a11y": "Buscar en la lista por nombre",
+    "filter_a11y": "Filtrar la lista",
+    "filter": {
+      "all": "Todos",
+      "not_checked_in": "Sin registrar",
+      "checked_in": "Registrados",
+      "waitlisted": "Lista de espera"
+    },
+    "seats_one": "{{count}} plaza",
+    "seats_other": "{{count}} plazas",
+    "guest": "Invitado",
+    "waitlist_position": "Lista de espera n.º {{position}}",
+    "check_in": "Registrar",
+    "check_in_a11y": "Registrar la entrada de {{name}}",
+    "undo": "Deshacer",
+    "undo_a11y": "Deshacer el registro de entrada de {{name}}",
+    "loading": "Cargando la lista…",
+    "loading_more": "Cargando…",
+    "load_more": "Cargar más",
+    "load_more_a11y": "Cargar más asistentes",
+    "empty": "Todavía no hay nadie con este filtro.",
+    "error": "No se pudo cargar la lista.",
+    "error_forbidden": "No tienes permiso para hacer eso."
+  },
+  "state": {
+    "loading": "Cargando…",
+    "empty_title": "Todavía no hay nada aquí",
+    "empty_body": "No hay nada que mostrar en esta pantalla.",
+    "empty_filtered_title": "Sin resultados",
+    "empty_filtered_body": "Ningún resultado coincide con los filtros que has aplicado.",
+    "error_title": "Algo salió mal",
+    "error_body": "No pudimos cargar esto. Inténtalo de nuevo en un momento.",
+    "offline_title": "Estás sin conexión",
+    "offline_body": "Vuelve a conectarte y seguiremos donde lo dejaste.",
+    "no_access_title": "No tienes acceso",
+    "no_access_body": "Pide a una persona organizadora que te dé el rol adecuado.",
+    "not_found_title": "No encontrado",
+    "not_found_body": "Esta página no existe o se ha eliminado."
+  },
+  "action": {
+    "back": "Volver",
+    "back_to_events": "Volver a los eventos",
+    "cancel": "Cancelar",
+    "clear_filters": "Quitar filtros",
+    "close": "Cerrar",
+    "copy_link": "Copiar enlace",
+    "dismiss": "Descartar",
+    "load_more": "Cargar más",
+    "loading": "Cargando…",
+    "open_full_page": "Abrir en una página completa",
+    "retry": "Reintentar",
+    "save": "Guardar",
+    "undo": "Deshacer"
+  },
+  "auth": {
+    "signed_out_title": "Inicia sesión para gestionar tus eventos",
+    "signed_out_body": "La consola de anfitrión solo está disponible para quienes organizan eventos.",
+    "go_home": "Ir a civfix"
+  },
+  "common": {
+    "yes": "Sí",
+    "no": "No"
+  },
+  "shell": {
+    "skip_to_content": "Saltar al contenido",
+    "sections": "Secciones de la consola",
+    "breadcrumbs": "Ruta de navegación"
+  },
+  "table": {
+    "select_all": "Seleccionar todas las filas",
+    "select_row": "Seleccionar esta fila",
+    "selected_one": "{{count}} seleccionado",
+    "selected_other": "{{count}} seleccionados",
+    "clear_selection": "Quitar la selección",
+    "sort_by": "Ordenar por {{column}}"
+  },
+  "filter": {
+    "search_placeholder": "Buscar",
+    "reset": "Restablecer",
+    "clear_all": "Quitar todo",
+    "remove_chip": "Quitar {{label}}"
+  },
+  "form": {
+    "optional": "opcional",
+    "error_summary_title": "Corrige esto antes de guardar",
+    "draft_restored": "Hemos recuperado tu borrador sin guardar.",
+    "draft_discard": "Descartarlo",
+    "range_7d": "7 días",
+    "range_30d": "30 días",
+    "range_90d": "90 días",
+    "range_all": "Todo",
+    "range_custom": "Personalizado",
+    "range_from": "Desde",
+    "range_to": "Hasta"
+  },
+  "editor": {
+    "toolbar": "Formato",
+    "bold": "Negrita",
+    "italic": "Cursiva",
+    "link": "Añadir un enlace",
+    "bullet_list": "Lista con viñetas",
+    "ordered_list": "Lista numerada",
+    "link_prompt": "Pega un enlace https",
+    "link_invalid": "Solo se pueden añadir enlaces https.",
+    "preview": "Vista previa",
+    "preview_empty": "Tu texto aparecerá aquí."
+  },
+  "upload": {
+    "hint": "Arrastra una imagen aquí o haz clic para elegir una.",
+    "in_progress": "Subiendo…",
+    "failed": "No se pudo subir esa imagen.",
+    "remove": "Quitar esta imagen"
+  },
+  "guided": {
+    "blockers": "Antes de continuar",
+    "fix": "Corregir"
+  },
+  "timeline": {
+    "internal": "Esto solo lo ve el equipo anfitrión",
+    "show_less": "Ver menos",
+    "show_more_one": "Ver {{count}} más",
+    "show_more_other": "Ver {{count}} más"
+  },
+  "error": {
+    "generic": "Algo salió mal. Inténtalo de nuevo.",
+    "validation": "Algunos datos no son válidos. Revisa los campos marcados.",
+    "rate_limited": "Es mucha actividad de golpe. Espera un momento e inténtalo de nuevo.",
+    "unauthorized": "Vuelve a iniciar sesión para continuar.",
+    "forbidden": "No tienes permiso para hacer eso.",
+    "conflict": "Alguien cambió esto antes que tú. Recarga la página e inténtalo de nuevo.",
+    "not_found": "No pudimos encontrar eso.",
+    "abuse_held": "Esto está en revisión antes de enviarse.",
+    "payment_unavailable": "Los pagos no están disponibles temporalmente. No se ha cobrado nada."
+  },
+  "crash": {
+    "title": "La consola tuvo un problema",
+    "body": "No se perdió nada en el servidor. Vuelve a cargar esta pantalla para continuar.",
+    "retry": "Recargar la pantalla"
+  }
+}

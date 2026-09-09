@@ -1,0 +1,48 @@
+{
+  "field": {
+    "title": "Título del evento",
+    "titlePlaceholder": "p. ej. Limpieza del parque Riverside",
+    "description": "Descripción",
+    "descriptionPlaceholder": "¿Qué deben traer los vecinos? ¿Qué vamos a hacer?",
+    "eventType": "Tipo de evento",
+    "meetLocation": "Lugar de encuentro",
+    "spotPlaceholder": "Nombra el lugar, p. ej. Muelle del embarcadero",
+    "dateTime": "Fecha y hora",
+    "whatToBring": "Qué traer",
+    "slots": "Puestos disponibles",
+    "slotsHelp": "Ofrece tareas concretas que la gente pueda tomar.",
+    "optional": "opcional"
+  },
+  "linkedReports": {
+    "label": "Reportes que este evento atenderá",
+    "filterByType": "Filtrar por {{type}}",
+    "searchPlaceholder": "Buscar reportes por título o detalle",
+    "searching": "Buscando reportes...",
+    "loadError": "No se pudieron cargar los reportes. Intenta de nuevo.",
+    "emptyNoMatch": "Ningún reporte coincide con tu búsqueda.",
+    "emptyNone": "Aún no hay reportes publicados.",
+    "showMore": "Mostrar {{count}} más",
+    "showMoreA11y": "Mostrar más reportes",
+    "loadMore": "Cargar más",
+    "loadMoreA11y": "Cargar más reportes",
+    "loading": "Cargando...",
+    "selectedCount_one": "{{count}} reporte seleccionado",
+    "selectedCount_other": "{{count}} reportes seleccionados"
+  },
+  "pickOnMap": {
+    "start": "Elegir en el mapa",
+    "startA11y": "Elegir reportes en el mapa",
+    "hint": "Toca los marcadores del mapa para vincularlos y luego vuelve a abrir esta pantalla.",
+    "done": "Listo",
+    "doneA11y": "Listo, terminar de elegir reportes en el mapa"
+  },
+  "share": {
+    "label": "Anunciar en el feed",
+    "helper": "Tus seguidores ya reciben aviso. Una publicación permite que cualquiera lo encuentre.",
+    "caption_placeholder": "Cuenta por qué deberían venir.",
+    "caption_a11y": "Texto de tu publicación en el feed",
+    "now": "ahora",
+    "card_placeholder": "Aquí aparecerá la tarjeta de tu evento",
+    "event_failed": "Evento publicado. La publicación del feed no se creó."
+  }
+}

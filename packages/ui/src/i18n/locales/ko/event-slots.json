@@ -1,0 +1,57 @@
+{
+  "block": {
+    "heading": "참여 역할",
+    "claim_joins_hint": "역할을 맡으면 참석도 함께 확정됩니다.",
+    "filled": "{{capacity}}자리 중 {{claimed}}자리 참여"
+  },
+  "row": {
+    "open": "모집 중",
+    "remaining_other": "{{count}}자리 남음",
+    "full": "마감",
+    "full_sub": "자리가 모두 찼습니다",
+    "you_claimed": "내가 맡은 역할",
+    "claimed_count_other": "{{count}}명",
+    "claim": "맡기",
+    "claimed": "맡음",
+    "switch": "변경",
+    "claim_a11y": "{{title}} 역할 맡기",
+    "release_a11y": "{{title}} 역할 취소",
+    "switch_a11y": "{{title}} 역할로 변경"
+  },
+  "editor": {
+    "add_first": "역할 추가",
+    "add_first_a11y": "참여 역할 추가",
+    "add_more": "역할 더 추가",
+    "cap_reached": "역할은 최대 {{max}}개까지 추가할 수 있습니다.",
+    "title_placeholder": "예: 접수 테이블",
+    "title_a11y": "{{index}}번 역할 이름",
+    "description_placeholder": "이 역할에 대한 설명 (선택)",
+    "description_a11y": "{{index}}번 역할 설명",
+    "capacity_label": "인원",
+    "capacity_any": "제한 없음",
+    "capacity_a11y": "{{index}}번 역할 인원 수",
+    "capacity_more_a11y": "인원 늘리기",
+    "capacity_less_a11y": "인원 줄이기",
+    "move_up_a11y": "{{index}}번 역할 위로",
+    "move_down_a11y": "{{index}}번 역할 아래로",
+    "remove_a11y": "{{index}}번 역할 삭제",
+    "claimed_count_other": "{{count}}명 신청",
+    "remove_warning_other": "역할을 삭제하면 신청한 {{count}}명의 배정이 해제됩니다."
+  },
+  "error": {
+    "empty_title": "역할 이름을 입력하세요.",
+    "title_too_long": "{{max}}자 이내로 입력하세요.",
+    "capacity_invalid": "인원 수를 입력하거나 비워 두세요.",
+    "capacity_below_claimed": "이미 {{count}}명이 이 역할을 맡았습니다.",
+    "full": "방금 자리가 모두 찼습니다.",
+    "generic": "역할을 변경하지 못했습니다. 다시 시도해 주세요."
+  },
+  "roster": {
+    "unassigned": "역할 없음",
+    "empty_slot": "아직 없음"
+  },
+  "toast": {
+    "claimed": "역할을 맡았습니다",
+    "released": "역할이 해제되었습니다"
+  }
+}

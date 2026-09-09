@@ -1,0 +1,54 @@
+{
+  "name": "civfix-app",
+  "version": "0.0.0",
+  "private": true,
+  "description": "civfix consumer plane: the @civfix/shared contract, the @civfix/ui component set, the community web app and the community mobile app.",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9 <10"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "i18n:check": "turbo run i18n:check",
+    "clean": "turbo run clean",
+    "doctor": "cd apps/community-mobile && npx expo-doctor",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "turbo": "^2.3.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0",
+      "react-native": "0.81.5",
+      "tsup>esbuild": ">=0.28.1 <0.29",
+      "vite": ">=7.3.6 <8",
+      "js-yaml@3": ">=3.15.1 <4",
+      "js-yaml@4": ">=4.3.1 <5",
+      "brace-expansion@1": ">=1.1.18 <2",
+      "brace-expansion@2": ">=2.1.4 <3",
+      "brace-expansion@5": ">=5.0.9 <6",
+      "shell-quote": ">=1.10.0 <2",
+      "nanoid@3": ">=3.3.18 <4",
+      "postcss": ">=8.5.28 <9",
+      "postcss-selector-parser@6": ">=6.1.4 <7",
+      "browserslist": ">=4.28.9 <5",
+      "uuid": ">=11.1.1 <12",
+      "@xmldom/xmldom@0.8": ">=0.8.15 <0.9",
+      "@xmldom/xmldom@0.9": ">=0.9.12 <0.10",
+      "fast-uri": ">=3.1.6 <4",
+      "tar": ">=7.5.21 <8",
+      "undici": ">=6.28.0 <7"
+    }
+  }
+}

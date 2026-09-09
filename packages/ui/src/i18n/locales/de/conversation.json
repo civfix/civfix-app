@@ -1,0 +1,158 @@
+{
+  "header": {
+    "back": "Zurück",
+    "view_members": "Mitglieder",
+    "more_options": "Mehr",
+    "crew_chat": "Gruppen-Chat",
+    "direct_message": "Direktnachricht",
+    "members_one": "{{count}} Mitglied",
+    "members_other": "{{count}} Mitglieder",
+    "members_with_online_one": "{{count}} Mitglied · {{online}} online",
+    "members_with_online_other": "{{count}} Mitglieder · {{online}} online",
+    "crew_chat_with_online": "Gruppen-Chat · {{online}} online",
+    "online": "Online",
+    "report_chat": "Meldungs-Chat",
+    "group_chat": "Gruppen-Chat",
+    "open_group_info": "Gruppeninfo öffnen"
+  },
+  "typing": {
+    "indicator": "Tippt",
+    "indicator_named": "{{name}} tippt",
+    "names_one": "{{name}}",
+    "names_two": "{{first}} & {{second}}",
+    "names_several": "Mehrere Personen",
+    "someone": "Jemand"
+  },
+  "room_error": {
+    "dm_not_accepting": "{{name}} empfängt keine Nachrichten.",
+    "group_no_access": "Du hast keinen Zugriff auf diese Unterhaltung.",
+    "dm_unavailable": "{{name}} ist nicht mehr verfügbar.",
+    "group_unavailable": "Diese Unterhaltung ist nicht mehr verfügbar.",
+    "generic": "Hier können gerade keine Nachrichten gesendet werden.",
+    "transient": "Nachricht nicht gesendet. Prüfe deine Verbindung und versuche es erneut.",
+    "rate_limited": "Du sendest Nachrichten zu schnell. Bitte etwas langsamer.",
+    "blocked": "Diese Nachricht enthält Sprache, die nicht erlaubt ist.",
+    "read_only": "In diesem Kanal können nur Inhaber und Admins posten.",
+    "reply_unavailable": "Auf diese Nachricht kann nicht mehr geantwortet werden.",
+    "send_rejected": "Nachricht nicht gesendet."
+  },
+  "attachment": {
+    "view": "Anhang öffnen",
+    "report_photo": "Foto melden"
+  },
+  "attach": {
+    "photo": "Fotomediathek",
+    "camera": "Kamera",
+    "poll": "Umfrage",
+    "dismiss": "Menü schließen"
+  },
+  "bubble": {
+    "removed": "Nachricht gelöscht",
+    "failed_retry": "Fehler · tippen zum Wiederholen",
+    "sending": "Wird gesendet",
+    "edited": "(bearbeitet)",
+    "retry_sending": "Erneut senden",
+    "message_actions": "Nachrichtenoptionen",
+    "announce_failed": "Nachricht konnte nicht gesendet werden. Tippen zum Wiederholen.",
+    "reply_deleted": "Nachricht gelöscht",
+    "reply_media": "Foto",
+    "reply_unknown_author": "Gelöschtes Konto",
+    "reply_quote_a11y": "Antwort auf {{name}}: {{excerpt}}"
+  },
+  "menu": {
+    "cancel": "Abbrechen",
+    "delete_message": "Nachricht löschen",
+    "delete_failed": "Nachricht konnte nicht gelöscht werden. Versuche es erneut."
+  },
+  "overflow": {
+    "open_profile": "Profil öffnen",
+    "block": "Blockieren",
+    "open_profile_label": "Profil öffnen",
+    "block_label": "Person blockieren",
+    "close_menu": "Menü schließen",
+    "view_report": "Meldung ansehen",
+    "view_report_label": "Meldung öffnen",
+    "mute": "Chat stummschalten",
+    "unmute": "Stummschaltung aufheben",
+    "mute_label": "Diesen Chat stummschalten",
+    "unmute_label": "Stummschaltung dieses Chats aufheben",
+    "leave": "Chat verlassen",
+    "leave_label": "Diesen Chat verlassen"
+  },
+  "join": {
+    "prompt": "Tritt bei, um in diesem Chat zu antworten",
+    "action": "Chat beitreten"
+  },
+  "block_confirm": {
+    "prompt_dm": "{{name}} blockieren? Die Person kann dir nicht mehr schreiben und diese Unterhaltung wird ausgeblendet.",
+    "prompt_group": "{{name}} blockieren? Die Person kann dir nicht mehr schreiben.",
+    "this_person": "diese Person",
+    "cancel": "Abbrechen",
+    "block": "Blockieren"
+  },
+  "list": {
+    "loading": "Lädt...",
+    "error_title": "Chat konnte nicht geladen werden",
+    "error_body": "civfix ist nicht erreichbar. Nachrichten werden gespeichert und zugestellt, sobald du wieder online bist.",
+    "empty_title": "Sag Hallo",
+    "empty_body_group": "Hier beginnt euer Gruppen-Chat. Teilt Pläne, Ausrüstung und Updates.",
+    "empty_body_dm": "Hier beginnt eure Unterhaltung. Schreib einfach Hallo.",
+    "new_messages": "Neue Nachrichten",
+    "jump_to_newest": "Zu neuen Nachrichten"
+  },
+  "jump": {
+    "back_to_latest": "Zurück zum Neuesten",
+    "failed": "Sprung zur Nachricht nicht möglich"
+  },
+  "connection": {
+    "reconnecting": "Verbinde neu · Nachrichten werden gesendet, sobald du online bist.",
+    "offline": "Offline · Nachrichten werden gesendet, wenn du dich verbindest."
+  },
+  "composer": {
+    "placeholder_unavailable": "Nachrichtenversand nicht verfügbar",
+    "placeholder_group": "Gruppe schreiben",
+    "placeholder_dm": "{{name}} schreiben",
+    "attach": "Foto oder Video anhängen",
+    "input": "Nachrichteneingabe",
+    "send": "Senden",
+    "edit_title": "Nachricht bearbeiten",
+    "cancel_edit": "Bearbeiten abbrechen",
+    "save_error": "Änderung konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "reply_title": "Antwort an {{name}}",
+    "cancel_reply": "Antwort abbrechen"
+  },
+  "report": {
+    "subject_message": "diese Nachricht",
+    "subject_photo": "dieses Foto",
+    "submitted": "Meldung eingereicht · danke",
+    "submit_error": "Meldung konnte nicht gesendet werden. Bitte erneut versuchen."
+  },
+  "context_menu": {
+    "reply": "Antworten",
+    "copy": "Kopieren",
+    "edit": "Bearbeiten",
+    "pin": "Anheften",
+    "unpin": "Nicht mehr anheften",
+    "delete": "Löschen",
+    "report": "Melden",
+    "block": "Blockieren",
+    "copied": "Kopiert",
+    "dismiss": "Menü schließen",
+    "reactions": "Auf diese Nachricht reagieren"
+  },
+  "pins": {
+    "bar_label": "Angeheftete Nachricht",
+    "a11y_bar": "Angeheftete Nachricht {{index}} von {{count}}: {{excerpt}}. Zum Springen antippen.",
+    "a11y_open_list": "Alle angehefteten Nachrichten anzeigen",
+    "action_failed": "Anheften konnte nicht aktualisiert werden. Versuche es erneut.",
+    "view_title": "Angeheftete Nachrichten",
+    "empty": "Keine angehefteten Nachrichten",
+    "jump": "Zur Nachricht"
+  },
+  "channel": {
+    "join": "Kanal beitreten",
+    "mute": "Stummschalten",
+    "unmute": "Stummschaltung aufheben",
+    "read_only": "Nur Admins können posten"
+  }
+}

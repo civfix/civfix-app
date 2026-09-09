@@ -1,0 +1,13 @@
+{
+  "title": "Erscheinungsbild",
+  "subtitle": "Wähle, wie civfix aussieht. System folgt der Einstellung deines Geräts.",
+  "option": {
+    "system": "System",
+    "system_sub": "Wie dein Gerät",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "dark_beta": "Beta",
+    "dark_sub": "Der Dunkelmodus ist experimentell; manche Ansichten sehen noch seltsam aus."
+  },
+  "selected": "Ausgewählt"
+}

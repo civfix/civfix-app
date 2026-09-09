@@ -1,0 +1,15 @@
+{
+  "label": {
+    "rsvp": "Zusagen",
+    "going": "Dabei"
+  },
+  "a11y": {
+    "rsvp": "Zusagen",
+    "going": "Du nimmst teil. Tippe zum Absagen"
+  },
+  "error": {
+    "closed": "Dieses Event ist geschlossen.",
+    "not_allowed": "Du kannst diesem Event nicht zusagen.",
+    "generic": "Zusage konnte nicht aktualisiert werden. Versuche es erneut."
+  }
+}

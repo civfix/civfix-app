@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "events": "Eventos"
+  },
+  "not_found_title": "Evento no encontrado",
+  "not_found_body": "Este evento no existe o ya no tienes acceso a él.",
+  "no_access_title": "No tienes acceso a esta sección",
+  "no_access_body": "Pide a una persona organizadora que cambie tu rol si lo necesitas.",
+  "nav": {
+    "overview": "Resumen",
+    "page": "Página de inscripción",
+    "tickets": "Entradas",
+    "attendees": "Asistentes",
+    "checkin": "Registro de entrada",
+    "broadcasts": "Mensajes",
+    "analytics": "Estadísticas",
+    "team": "Equipo",
+    "settings": "Ajustes"
+  },
+  "counters": {
+    "heading": "Contadores en vivo",
+    "registered": "Inscritos",
+    "checked_in": "Registrados",
+    "waitlist": "Lista de espera",
+    "no_show": "No asistieron",
+    "capacity": "Aforo",
+    "unlimited": "Sin límite",
+    "as_of": "A las {{time}}",
+    "units": "Los inscritos y la lista de espera cuentan plazas; los registrados y las ausencias cuentan personas."
+  },
+  "details": {
+    "title": "Detalles del evento",
+    "when": "Cuándo",
+    "timezone": "Zona horaria",
+    "where": "Dónde",
+    "no_address": "Sin dirección",
+    "registration": "Periodo de inscripción",
+    "registration_open": "Abierto ahora",
+    "team": "Miembros del equipo",
+    "organization": "Organización"
+  },
+  "page": {
+    "title": "Página de inscripción",
+    "none": "Todavía no hay página de inscripción",
+    "edit": "Editar la página"
+  },
+  "tickets": {
+    "title": "Entradas",
+    "none": "Este evento no tiene tipos de entrada.",
+    "sold": "reservadas",
+    "a11y": "Plazas reservadas por tipo de entrada"
+  },
+  "quick": {
+    "heading": "Accesos rápidos",
+    "attendees": "Asistentes",
+    "tickets": "Entradas",
+    "public_view": "Ver como asistente"
+  },
+  "switcher": {
+    "label": "Cambiar de evento",
+    "empty": "No hay más eventos próximos.",
+    "personal": "Evento personal"
+  }
+}

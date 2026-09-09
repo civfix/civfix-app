@@ -1,0 +1,110 @@
+{
+  "header": {
+    "title": "Reportar un problema",
+    "back": "Atrás"
+  },
+  "wizard": {
+    "announceStep": "Paso {{current}} de {{total}}. {{title}}",
+    "capture": {
+      "title": "Muéstranos el problema",
+      "help": "Basta con una foto o un video corto."
+    },
+    "location": {
+      "title": "¿Dónde está?",
+      "help": "Marca en el mapa dónde está el problema."
+    },
+    "category": {
+      "title": "¿Qué es?",
+      "help": "Elige la opción más parecida."
+    },
+    "details": {
+      "title": "Añade los detalles",
+      "help": "Un título corto y lo que la ciudad deba saber."
+    },
+    "review": {
+      "title": "¿Listo para enviar?",
+      "help": "Revísalo y suelta el pin."
+    }
+  },
+  "footer": {
+    "continue": "Continuar",
+    "drop_pin": "Colocar pin"
+  },
+  "capture": {
+    "label_filled": "Tus capturas",
+    "drop_title": "Captura el problema",
+    "drop_sub": "Obligatorio · Máx. 10s de video · GPS capturado al tomar",
+    "capture_a11y": "Capturar una foto o video",
+    "choose_library": "Elegir de la biblioteca",
+    "choose_library_a11y": "Elegir de la biblioteca",
+    "drag_hint": "o arrastra fotos aquí",
+    "remove_item_a11y": "Eliminar este elemento",
+    "add_camera_a11y": "Agregar desde la cámara",
+    "add_library_a11y": "Agregar desde la biblioteca",
+    "camera": "Cámara",
+    "library": "Biblioteca",
+    "hint_at_cap": "Ese es el máximo de {{max}}. Elimina uno para agregar otro.",
+    "hint_add_more_one": "Agrega hasta {{count}} foto o video.",
+    "hint_add_more_other": "Agrega hasta {{count}} fotos o videos.",
+    "camera_error": "No se pudo abrir la cámara. Intenta elegir desde tu biblioteca."
+  },
+  "details": {
+    "title_label": "Título",
+    "title_placeholder": "Resumen breve",
+    "description_label": "Descripción",
+    "description_placeholder": "Describe lo que ves: cuándo comenzó y cualquier detalle que la ciudad deba saber.",
+    "flag_blocking": "Obstruye la acera o la vía",
+    "flag_safety": "Es un riesgo para la seguridad"
+  },
+  "review": {
+    "untitled": "Reporte sin título",
+    "where_label": "¿Dónde está?",
+    "no_location": "No se capturó ubicación. Busca una dirección o toca el mapa para indicar dónde está el problema.",
+    "where_placeholder": "Describe el lugar, p. ej. acera norte",
+    "route_label": "A dónde se envía",
+    "route_no_point": "Coloca el pin en el mapa para ver a dónde se enviará este reporte.",
+    "route_routable": "Se reenvía automáticamente una vez verificado, normalmente en 1–3 días hábiles.",
+    "route_new_area": "Área nueva: {{cityState}} aún no está configurado para el envío automático. Lo revisaremos y reenviaremos manualmente.",
+    "route_uncovered": "Todavía no cubrimos esta área, pero tu reporte queda registrado y se revisa manualmente.",
+    "route_resolving": "Determinando a dónde se envía..."
+  },
+  "submit": {
+    "submitting_title": "Enviando tu reporte",
+    "submitting_body": "Subiendo tu contenido y enviándolo al lugar correcto. Toma un momento.",
+    "error_title": "No se pudo enviar",
+    "try_again": "Intentar de nuevo",
+    "success_title": "Pin colocado. Lo atendemos.",
+    "success_body_held": "En cola para revisión rápida y luego se reenvía. Síguelo en tus reportes.",
+    "success_body_live": "Lo reenviaremos una vez verificado, normalmente en 1–3 días hábiles. Síguelo en tus reportes.",
+    "view_report": "Ver mi reporte",
+    "back_to_map": "Volver al mapa",
+    "announce_error": "No se pudo enviar tu reporte. {{detail}}",
+    "announce_held": "Pin colocado y en cola para revisión.",
+    "announce_live": "Pin colocado. Reporte enviado."
+  },
+  "errors": {
+    "no_category": "Elige una categoría antes de enviar.",
+    "no_location": "No se estableció ninguna ubicación para este reporte. Coloca el pin donde está el problema.",
+    "no_media": "Captura una foto o un video antes de enviar.",
+    "validation": "Revisa la foto y la ubicación, luego intenta de nuevo.",
+    "rate_limited": "Demasiados intentos. Espera un momento e intenta de nuevo.",
+    "turnstile_failed": "No pudimos verificar que eres humano. Recarga la página y completa la verificación de nuevo.",
+    "media_rejected": "No se pudo aceptar esa foto. Prueba con una diferente.",
+    "unauthorized": "Tu sesión puede haber expirado. Inicia sesión de nuevo e intenta otra vez.",
+    "generic": "No pudimos enviar el reporte ahora. Por favor intenta de nuevo."
+  },
+  "share": {
+    "label": "Compartir en el feed",
+    "helper": "Tus vecinos y tus seguidores lo verán.",
+    "caption_placeholder": "¿Qué deberían saber tus vecinos?",
+    "caption_a11y": "Texto de tu publicación en el feed",
+    "now": "ahora",
+    "posted_heading": "Compartido en el feed",
+    "fixes_hint": "Pasará a Resueltos cuando se resuelva.",
+    "failed": "Reporte enviado, pero la publicación no se pudo crear.",
+    "failed_rejected": "No se pudo publicar ese texto.",
+    "failed_rate_limited": "Demasiadas publicaciones. Inténtalo en un minuto.",
+    "retry": "Reintentar",
+    "signed_out_hint": "Crea una cuenta para compartir reportes en el feed."
+  }
+}

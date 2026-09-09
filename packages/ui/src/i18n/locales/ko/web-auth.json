@@ -1,0 +1,37 @@
+{
+  "back": "뒤로",
+  "close": "닫기",
+  "choices": {
+    "title": "civfix에 오신 것을 환영해요",
+    "subtitle": "이벤트 참여, 소식 구독, 이웃과 대화. 비밀번호 없이 로그인 방법을 선택하세요.",
+    "continue_apple": "Apple로 계속하기",
+    "continue_google": "Google로 계속하기",
+    "divider": "또는",
+    "continue_email": "이메일로 계속하기",
+    "trust": "civfix는 비영리 단체입니다. 회원님의 데이터를 판매하지 않아요."
+  },
+  "email": {
+    "title": "이메일 주소를 알려주세요",
+    "subtitle": "6자리 코드를 보내드려요. 비밀번호가 필요 없어요.",
+    "placeholder": "you@email.com",
+    "aria_label": "이메일 주소",
+    "submit": "코드 받기"
+  },
+  "code": {
+    "title": "받은 편지함을 확인하세요",
+    "subtitle": "<0>{{email}}</0>으로 코드를 보냈어요 — 5분 후 만료",
+    "group_aria_label": "6자리 인증 코드",
+    "digit_aria_label": "{{position}}번째 숫자",
+    "verifying": "확인 중...",
+    "verify": "코드 인증",
+    "resend_prompt": "받지 못하셨나요?",
+    "resend": "재발송",
+    "resend_countdown": "{{count}}초 후 재발송",
+    "use_different_email": "다른 이메일 사용"
+  },
+  "errors": {
+    "VALIDATION": "코드가 올바르지 않아요. 확인 후 다시 시도해 주세요.",
+    "RATE_LIMITED": "시도 횟수가 너무 많아요. 잠시 후 다시 시도해 주세요.",
+    "UNAUTHORIZED": "코드가 유효하지 않거나 만료되었어요. 새 코드를 요청해 주세요."
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "breadcrumb": {
+    "events": "Events"
+  },
+  "not_found_title": "Event not found",
+  "not_found_body": "This event does not exist, or you no longer have access to it.",
+  "no_access_title": "You do not have access to this section",
+  "no_access_body": "Ask an organizer to change your role if you need it.",
+  "nav": {
+    "overview": "Overview",
+    "page": "Signup page",
+    "tickets": "Tickets",
+    "attendees": "Attendees",
+    "checkin": "Check-in",
+    "broadcasts": "Messages",
+    "analytics": "Analytics",
+    "team": "Team",
+    "settings": "Settings"
+  },
+  "counters": {
+    "heading": "Live counters",
+    "registered": "Registered",
+    "checked_in": "Checked in",
+    "waitlist": "Waitlist",
+    "no_show": "No-show",
+    "capacity": "Capacity",
+    "unlimited": "Unlimited",
+    "as_of": "As of {{time}}",
+    "units": "Registered and waitlist count seats; checked in and no-show count people."
+  },
+  "details": {
+    "title": "Event details",
+    "when": "When",
+    "timezone": "Time zone",
+    "where": "Where",
+    "no_address": "No address set",
+    "registration": "Registration window",
+    "registration_open": "Open now",
+    "team": "Team members",
+    "organization": "Organization"
+  },
+  "page": {
+    "title": "Signup page",
+    "none": "No signup page yet",
+    "edit": "Edit the page"
+  },
+  "tickets": {
+    "title": "Tickets",
+    "none": "This event has no ticket types.",
+    "sold": "claimed",
+    "a11y": "Seats claimed by ticket type"
+  },
+  "quick": {
+    "heading": "Shortcuts",
+    "attendees": "Attendees",
+    "tickets": "Tickets",
+    "public_view": "View as an attendee"
+  },
+  "switcher": {
+    "label": "Switch event",
+    "empty": "No other upcoming events.",
+    "personal": "Personal event"
+  }
+}

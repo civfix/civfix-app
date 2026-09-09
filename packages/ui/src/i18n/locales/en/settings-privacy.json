@@ -1,0 +1,22 @@
+{
+  "signedOut": {
+    "title": "Sign in to manage privacy",
+    "body": "Choose who can message you, what your profile shows, and who you've blocked."
+  },
+  "section": {
+    "visibility": "Visibility",
+    "safety": "Safety"
+  },
+  "allowDms": {
+    "label": "Allow direct messages",
+    "helper": "When off, you are hidden from search and people can't start new conversations with you. Existing chats stay open."
+  },
+  "showHours": {
+    "label": "Show my service record",
+    "helper": "When on, your public profile lists each event you were credited for - the date, the community and who credited it. When off, your total hours are hidden from your profile too, and you drop off community leaderboards."
+  },
+  "blocked": {
+    "label": "Blocked accounts",
+    "sub": "People you've blocked"
+  }
+}

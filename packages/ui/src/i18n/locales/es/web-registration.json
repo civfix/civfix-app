@@ -1,0 +1,26 @@
+{
+  "title": "Termina de configurar tu cuenta",
+  "subtitle": "Elige un nombre de usuario y confirma tu nombre para que tus vecinos puedan reconocerte.",
+  "first_name_label": "Nombre",
+  "first_name_placeholder": "Nombre",
+  "last_name_label": "Apellido",
+  "last_name_placeholder": "Apellido (opcional)",
+  "username_label": "Nombre de usuario",
+  "username_placeholder": "nombre de usuario",
+  "handle": {
+    "rule": "Entre 3 y 20 letras, números o guiones bajos.",
+    "invalid": "Usa entre 3 y 20 letras, números o guiones bajos.",
+    "checking": "Verificando...",
+    "available": "@{{handle}} está disponible",
+    "taken": "@{{handle}} no está disponible"
+  },
+  "error": {
+    "validation": "Revisa tu nombre de usuario y tu nombre, luego inténtalo de nuevo.",
+    "conflict": "Ese nombre de usuario acaba de ser tomado. Prueba con otro.",
+    "fallback": "No pudimos guardar tu perfil. Inténtalo de nuevo."
+  },
+  "saving": "Guardando...",
+  "continue": "Continuar",
+  "not_you": "¿No eres tú?",
+  "sign_out": "Cerrar sesión"
+}

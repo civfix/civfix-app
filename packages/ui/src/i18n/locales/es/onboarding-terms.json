@@ -1,0 +1,14 @@
+{
+  "a11y": {
+    "affirmation": "Acepto los Términos y la Política de privacidad.",
+    "terms_link": "Términos de servicio",
+    "privacy_link": "Política de privacidad"
+  },
+  "label": {
+    "lead": "Acepto los ",
+    "terms": "Términos",
+    "conjunction": " y la ",
+    "privacy": "Política de privacidad",
+    "trailing": "."
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "search": {
+    "placeholder": "Nach Name oder @handle suchen",
+    "a11y": "Personen nach Name oder Handle suchen",
+    "clear_a11y": "Suche löschen"
+  },
+  "row": {
+    "open_a11y": "{{name}}, Profil anzeigen"
+  },
+  "no_matches": {
+    "title": "Keine Treffer",
+    "body": "Niemand in dieser Liste stimmt mit \"{{query}}\" überein."
+  },
+  "error": {
+    "title": "Laden fehlgeschlagen",
+    "body": "civfix konnte nicht erreicht werden. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "empty": {
+    "followers": {
+      "title": "Noch keine Follower",
+      "body": "Sobald jemand diesem Konto folgt, erscheint er hier."
+    },
+    "following": {
+      "title": "Folgt noch niemandem",
+      "body": "Konten, denen diese Person folgt, erscheinen hier."
+    }
+  }
+}

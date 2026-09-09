@@ -1,0 +1,56 @@
+{
+  "error": {
+    "title": "Profil nicht verfügbar",
+    "body": "Diese Person ist möglicherweise nicht mehr auf civfix oder du bist offline."
+  },
+  "actions": {
+    "message": "Nachricht",
+    "message_a11y": "Nachricht an {{name}}",
+    "more_options": "Weitere Optionen"
+  },
+  "menu": {
+    "block": "Blockieren",
+    "unblock": "Blockierung aufheben",
+    "report": "Melden"
+  },
+  "events": {
+    "label": "EVENTS",
+    "empty": "Noch keine Events.",
+    "role_hosting": "Veranstalter",
+    "role_going": "Teilnehmer",
+    "row_a11y": "{{title}}, {{role}}",
+    "group_upcoming": "DEMNÄCHST",
+    "group_past": "VERGANGEN",
+    "load_more": "Mehr laden",
+    "loading_more": "Wird geladen...",
+    "load_more_a11y": "Mehr vergangene Events laden",
+    "load_more_error": "Weitere Events konnten nicht geladen werden.",
+    "load_more_retry": "Erneut versuchen"
+  },
+  "block": {
+    "confirm_message": "{{name}} blockieren? Er/sie kann dir dann keine Nachrichten mehr senden und das Profil wird ausgeblendet.",
+    "cancel": "Abbrechen",
+    "confirm": "Blockieren",
+    "error": "Die Person konnte nicht blockiert werden. Versuch es erneut."
+  },
+  "blocked": {
+    "label": "Du hast diese Person blockiert.",
+    "unblock_error": "Die Blockierung konnte nicht aufgehoben werden. Versuch es erneut."
+  },
+  "report": {
+    "subject_label": "dieses Profil",
+    "error": "Deine Meldung konnte nicht gesendet werden. Versuch es erneut.",
+    "toast_submitted": "Meldung eingereicht – danke"
+  },
+  "hours": {
+    "eyebrow": "Freiwilligenstunden"
+  },
+  "posts": {
+    "loading": "Beiträge werden geladen…",
+    "error": "Beiträge konnten nicht geladen werden.",
+    "empty": "Noch keine Beiträge.",
+    "load_more": "Mehr laden",
+    "loading_more": "Wird geladen…",
+    "load_more_a11y": "Mehr Beiträge laden"
+  }
+}

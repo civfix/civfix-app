@@ -1,0 +1,99 @@
+{
+  "export_csv": "CSV exportieren",
+  "tab": {
+    "label": "Bereich der Auswertung",
+    "registration": "Anmeldung",
+    "attendance": "Teilnahme",
+    "messaging": "Nachrichten",
+    "page": "Anmeldeseite"
+  },
+  "range": {
+    "label": "Zeitraum",
+    "7d": "7 Tage",
+    "30d": "30 Tage",
+    "90d": "90 Tage",
+    "all": "Bis zu einem Jahr",
+    "whole_event": "Gesamte Veranstaltung"
+  },
+  "kpi": {
+    "registered": "Angemeldet",
+    "checked_in": "Eingecheckt",
+    "check_in_rate": "Check-in-Quote",
+    "page_views": "Seitenaufrufe"
+  },
+  "funnel": {
+    "a11y": "Vom Seitenaufruf bis zum Check-in"
+  },
+  "suppressed": {
+    "explain": "Ausgeblendet, weil in dieser Gruppe weniger als {{k}} Personen sind.",
+    "note": "Gruppen mit weniger als {{k}} Personen werden ausgeblendet. Eine leere Zelle ist keine Null.",
+    "panel": "Diese Aufschlüsselung ist ausgeblendet, weil die Gruppen kleiner als {{k}} Personen sind.",
+    "point": "Ausgeblendet (Gruppe zu klein)"
+  },
+  "registration": {
+    "over_time": "Anmeldungen im Zeitverlauf",
+    "over_time_a11y": "Neue und kumulierte Anmeldungen pro Tag",
+    "new": "Neu",
+    "cumulative": "Kumuliert",
+    "cancellations": "Stornierungen",
+    "cancellations_a11y": "Stornierungen pro Tag",
+    "cancelled": "Storniert",
+    "breakdowns": "Aufschlüsselungen",
+    "by_ticket_type": "Nach Ticketart",
+    "by_audience": "Mitglieder und Gäste"
+  },
+  "attendance": {
+    "arrivals": "Wann die Leute kamen",
+    "arrivals_hint": "Minuten relativ zum Start der Veranstaltung; negative Werte sind frühe Ankünfte. Dieses Diagramm umfasst immer die ganze Veranstaltung, egal welcher Zeitraum gewählt ist.",
+    "arrivals_a11y": "Check-ins nach Minuten ab Veranstaltungsbeginn",
+    "arrivals_value": "Check-ins",
+    "minute": "{{minutes}} Min.",
+    "rates": "Quoten",
+    "check_in_rate": "Check-in-Quote",
+    "no_show_rate": "Quote nicht erschienen",
+    "breakdowns": "Aufschlüsselungen",
+    "by_ticket_type": "Nach Ticketart",
+    "by_slot": "Nach Schicht"
+  },
+  "messaging": {
+    "totals": "Nachrichten",
+    "active_days": "Tage mit Versand",
+    "recipients": "Empfänger*innen",
+    "unsubscribes": "Abmeldungen",
+    "no_tracking": "civfix erfasst weder Öffnungen noch Klicks, deshalb gibt es hier nichts zu berichten.",
+    "by_channel": "Nach Kanal",
+    "by_channel_a11y": "Gesendet, fehlgeschlagen und unterdrückt nach Kanal",
+    "sent": "Gesendet",
+    "failed": "Fehlgeschlagen",
+    "suppressed": "Unterdrückt",
+    "over_time": "Versand im Zeitverlauf",
+    "over_time_a11y": "Versand pro Tag",
+    "sends": "Sendungen"
+  },
+  "page": {
+    "views": "Seitenaufrufe",
+    "views_a11y": "Aufrufe der Anmeldeseite pro Tag",
+    "by_source": "Woher die Besuche kamen",
+    "donation_clicks": "Klicks auf Spenden"
+  },
+  "csv": {
+    "source": "Quelle",
+    "reference": "Referenz der Veranstaltung",
+    "generated_at": "Erstellt",
+    "filters": "Filter",
+    "none": "keine",
+    "suppression_k": "Schwelle für Unterdrückung (k)",
+    "note": "Hinweis",
+    "k_note": "Leere Zellen sind ausgeblendet, weil die Gruppe kleiner als {{k}} Personen ist. Leer ist keine Null.",
+    "day": "Tag",
+    "registrations": "Anmeldungen",
+    "cumulative": "Kumuliert",
+    "minute_offset": "Minuten ab Start",
+    "arrivals": "Check-ins",
+    "channel": "Kanal",
+    "sent": "Gesendet",
+    "failed": "Fehlgeschlagen",
+    "suppressed": "Unterdrückt",
+    "page_views": "Seitenaufrufe"
+  }
+}

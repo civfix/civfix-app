@@ -1,0 +1,35 @@
+{
+  "state": {
+    "loading": "Cargando el evento…",
+    "error_title": "El modo anfitrión no está disponible",
+    "error_body": "No pudimos cargar este evento. Revisa tu conexión e inténtalo de nuevo.",
+    "denied_title": "No eres anfitrión aquí",
+    "denied_body": "Solo los anfitriones y el personal del evento pueden abrir el modo anfitrión."
+  },
+  "action": {
+    "scan": "Escanear entradas",
+    "scan_a11y": "Abrir el escáner de entradas",
+    "checkin": "Registro de entrada",
+    "checkin_a11y": "Abrir la pantalla de registro de entrada",
+    "quick_message": "Mensaje rápido",
+    "quick_message_a11y": "Enviar un mensaje rápido a los asistentes",
+    "walkup": "Añadir sin cita",
+    "walkup_a11y": "Inscribir a alguien en la puerta"
+  },
+  "roster": {
+    "heading": "Asistentes"
+  },
+  "walkup": {
+    "title": "Inscripción en la puerta",
+    "caption": "Inscribe a alguien en la puerta. Queda registrado de inmediato.",
+    "dismiss_a11y": "Cerrar la inscripción en la puerta",
+    "name_label": "Nombre",
+    "name_placeholder": "Su nombre",
+    "type_label": "Tipo de entrada",
+    "cancel": "Cancelar",
+    "submit": "Añadir y registrar",
+    "success": "{{name}} ya está registrado.",
+    "error": "No se pudo añadir esa inscripción.",
+    "error_forbidden": "No tienes permiso para añadir inscripciones en la puerta."
+  }
+}

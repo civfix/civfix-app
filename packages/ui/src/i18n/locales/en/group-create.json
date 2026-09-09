@@ -1,0 +1,35 @@
+{
+  "title_members": "Add members",
+  "title_identity": "New group",
+  "back_a11y": "Back",
+  "search_placeholder": "Search people by @handle",
+  "next": "Next",
+  "create": "Create group",
+  "create_error": "Could not create the group. Please try again.",
+  "name_label": "Group name",
+  "name_placeholder": "Name your group",
+  "description_label": "Description (optional)",
+  "description_placeholder": "What is this group about?",
+  "avatar_a11y": "Choose a group photo",
+  "avatar_clear_a11y": "Remove the group photo",
+  "chip": {
+    "remove_a11y": "Remove {{name}}"
+  },
+  "row": {
+    "toggle_a11y": "Select {{name}}"
+  },
+  "empty": {
+    "prompt": {
+      "title": "Find people to add",
+      "body": "Search by @handle to add neighbors to your group."
+    },
+    "error": {
+      "title": "Could not search",
+      "body": "We could not reach civfix. Check your connection and try again."
+    },
+    "no_results": {
+      "title": "No one found",
+      "body": "No people match @{{handle}}."
+    }
+  }
+}

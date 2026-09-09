@@ -1,0 +1,42 @@
+{
+  "title": "Tus eventos",
+  "subtitle": "Todo lo que organizas, en un solo sitio.",
+  "unknown_route": "Esa página de la consola no existe ({{path}}). Aquí tienes tu lista de eventos.",
+  "nav": {
+    "events": "Eventos"
+  },
+  "kpis": {
+    "heading": "Resumen de tu actividad",
+    "events_hosted": "Eventos organizados",
+    "upcoming": "Próximos",
+    "registrations": "Inscripciones",
+    "checked_in": "Registrados",
+    "this_page": "en esta página"
+  },
+  "trend": {
+    "title": "Inscripciones a lo largo del tiempo",
+    "range": "Últimos 90 días",
+    "a11y": "Inscripciones del {{from}} al {{to}}",
+    "not_enough_data": "Todavía no hay suficiente historial para dibujar una tendencia.",
+    "registrations": "Inscripciones",
+    "unique": "Asistentes únicos",
+    "check_in_rate": "Tasa media de registro",
+    "by_event": "Eventos con más movimiento",
+    "by_event_a11y": "Inscripciones por evento"
+  },
+  "list": {
+    "title": "Eventos",
+    "when": "Periodo",
+    "when_upcoming": "Próximos",
+    "when_past": "Pasados",
+    "when_all": "Todos",
+    "org_filter": "Organización",
+    "all_orgs": "Todas",
+    "open": "Abrir {{title}}",
+    "counts": "{{registered}} inscritos · {{checked}} registrados",
+    "waitlist": "{{count}} en lista de espera",
+    "empty_title": "Todavía no hay eventos aquí",
+    "empty_body": "Los eventos que organices aparecen aquí en cuanto creas uno.",
+    "create": "Crear un evento"
+  }
+}

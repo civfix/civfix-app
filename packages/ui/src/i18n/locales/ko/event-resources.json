@@ -1,0 +1,10 @@
+{
+  "title": "자원 요청",
+  "dismiss_a11y": "자원 요청 닫기",
+  "caption": "{{city}}에 이벤트에 필요한 것(물품, 쓰레기통, 도로 통제 등)을 알려주세요. 담당 부서로 바로 전달해 드립니다.",
+  "city_fallback": "시청",
+  "message_placeholder": "시청에 무엇이 필요한지 알려주세요",
+  "message_a11y": "자원 요청 메시지",
+  "cancel": "취소",
+  "submit": "요청 보내기"
+}

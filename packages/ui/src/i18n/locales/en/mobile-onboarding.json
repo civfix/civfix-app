@@ -1,0 +1,86 @@
+{
+  "a11y": {
+    "skip": "Skip the tour",
+    "next": "Next page",
+    "back": "Previous page",
+    "page_announce": "Page {{index}} of {{count}}. {{title}}",
+    "progress": "Step {{index}} of {{count}}",
+    "language": "Change language",
+    "stage_report": "A photo is taken, a category is chosen, and a pin lands on the map. The report is submitted.",
+    "stage_track": "Report pins in different category colors land on a neighborhood map. One report's status moves from Published to In progress to Resolved.",
+    "stage_together": "A cleanup event card with neighbors going, a short chat between two neighbors, and a profile with a username.",
+    "stage_theme": "A preview card in the look you picked, with a report pin.",
+    "stage_ready": "Your profile avatar and username placeholder."
+  },
+  "nav": {
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Back",
+    "done": "Done"
+  },
+  "report": {
+    "title": "See it. Snap it. Pin it.",
+    "body": "Photo, what it is, where it is. Three taps and your report is on the map.",
+    "caption": "Emergency? Call 911. civfix is not for emergencies.",
+    "stage": {
+      "capture": "Capture the issue",
+      "what": "What is it?"
+    }
+  },
+  "track": {
+    "title": "Your block, live.",
+    "body": "Every pin is a neighbor's report. Colors are categories. Tap one to see photos, updates, and the conversation.",
+    "caption": "Browse without an account.",
+    "stage": {
+      "row_title": "Mattress dumped on 4th St",
+      "row_subtitle": "Reported by a neighbor",
+      "row_when": "2 hours ago",
+      "legend_cleanup": "Cleanup"
+    }
+  },
+  "together": {
+    "title": "Show up. Talk it through.",
+    "body": "Join cleanups, claim a shift, log hours. Message neighbors on a report or in a crew chat.",
+    "caption": "RSVP, messages, and hosting need an account.",
+    "stage": {
+      "event_title": "Echo Park cleanup",
+      "event_address": "Echo Park Lake",
+      "going": "{{count}} neighbors going",
+      "hours": "{{hours}} hrs credited",
+      "chat_1": "Anyone else see the light out on 6th?",
+      "chat_2": "Reported it. The pin is on the map.",
+      "organizer": "Community organizer"
+    }
+  },
+  "theme": {
+    "title": "Light, dark, your call.",
+    "body": "Pick how civfix looks. Light today, dark whenever you want it.",
+    "caption": "You can change this any time in Settings."
+  },
+  "ready": {
+    "title": "Ready when you are.",
+    "title_authed": "You're all set.",
+    "body": "An account gives you a profile neighbors recognize, your reports timeline, messages, and RSVPs. Or just look around first.",
+    "body_authed": "Report problems, RSVP to cleanups, and message neighbors, right from the map.",
+    "guest": "Look around first",
+    "handle_ghost": "@you",
+    "trust": {
+      "nonprofit": "Built by Reach Out Los Angeles, a 501(c)(3) non-profit.",
+      "tracking": "No ads, no analytics, no trackers.",
+      "photos": "Photos have GPS and camera data removed before upload."
+    },
+    "legal": {
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "separator": " · "
+    }
+  },
+  "location": {
+    "title": "See what's happening near you?",
+    "body": "Your location centers the map on your block. It is used only while you use the app, and you can report without it.",
+    "use": "Use my location",
+    "address": "Enter an address",
+    "later": "Not now",
+    "a11y_dismiss": "Close"
+  }
+}

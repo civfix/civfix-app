@@ -1,0 +1,103 @@
+import type { DetailKind, View } from "../nav"
+
+export type BodyId =
+  | "feed"
+  | "events"
+  | "messagingList"
+  | "social"
+  | "reports"
+  | "personDetail"
+  | "profile"
+  | "reportDetail"
+  | "eventDetail"
+  | "createCleanup"
+  | "editCleanup"
+  | "notifications"
+  | "notificationPrefs"
+  | "conversation"
+  | "pinnedMessages"
+  | "newGroup"
+  | "newChannel"
+  | "groupInfo"
+  | "reportFlow"
+  | "clusterReports"
+  | "getVerified"
+  | "connections"
+  | "leaderboard"
+  | "members"
+  | "blockedAccounts"
+  | "languageSettings"
+  | "appearanceSettings"
+  | "settings"
+  | "settingsAccount"
+  | "settingsPrivacy"
+  | "mapView"
+  | "search"
+  | "post"
+  | "postThread"
+  | "postComposer"
+  | "saves"
+  | "dropPin"
+  | "hostMode"
+  | "hostCheckin"
+  | "hostBroadcastQuick"
+  | "myTicket"
+  | "orgPage"
+  | "myDonations"
+  | "stub"
+
+export const VIEW_BODY: Record<View, BodyId> = {
+  home: "feed",
+  map: "mapView",
+  events: "events",
+  messaging: "messagingList",
+  social: "social",
+  reports: "reports",
+  search: "search",
+  report: "reportFlow",
+}
+
+export const DETAIL_BODY: Record<DetailKind, BodyId> = {
+  pin: "reportDetail",
+  cleanup: "eventDetail",
+  person: "personDetail",
+  thread: "conversation",
+  myreports: "reports",
+  cleanups: "events",
+  people: "social",
+  messages: "messagingList",
+  "new-msg": "stub",
+  activity: "notifications",
+  "notification-prefs": "notificationPrefs",
+  profile: "profile",
+  "create-cleanup": "createCleanup",
+  "edit-cleanup": "editCleanup",
+  cluster: "clusterReports",
+  blend: "clusterReports",
+  verify: "getVerified",
+  followers: "connections",
+  following: "connections",
+  leaderboard: "leaderboard",
+  members: "members",
+  blocked: "blockedAccounts",
+  "language-settings": "languageSettings",
+  "appearance-settings": "appearanceSettings",
+  settings: "settings",
+  "settings-account": "settingsAccount",
+  "settings-privacy": "settingsPrivacy",
+  "pinned-messages": "pinnedMessages",
+  "new-group": "newGroup",
+  "new-channel": "newChannel",
+  "group-info": "groupInfo",
+  post: "post",
+  "post-thread": "postThread",
+  composer: "postComposer",
+  saves: "saves",
+  "drop-pin": "dropPin",
+  "host-mode": "hostMode",
+  "host-checkin": "hostCheckin",
+  "host-broadcast-quick": "hostBroadcastQuick",
+  "my-ticket": "myTicket",
+  org: "orgPage",
+  "my-donations": "myDonations",
+}

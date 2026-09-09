@@ -1,0 +1,18 @@
+{
+  "title": "Exports",
+  "action": "Export",
+  "new_export": "New export",
+  "recent": "Recent exports",
+  "none": "No exports yet.",
+  "download": "Download",
+  "truncated": "truncated",
+  "requested": "Export requested",
+  "requested_hint": "It will appear here when it is ready. Downloads expire quickly, so grab it soon.",
+  "privacy_note": "Exports of {{title}} include attendee answers. Store and share them carefully.",
+  "kind": {
+    "roster": "Attendees",
+    "answers": "Answers",
+    "checkins": "Check-ins",
+    "donations": "Donations"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Cancel this event?",
+  "caption": "Attendees will be notified and it will be removed from the map. This cannot be undone.",
+  "reason": {
+    "placeholder": "Add a reason (optional)",
+    "a11y": "Cancel reason (optional)"
+  },
+  "actions": {
+    "keep": "Keep event",
+    "confirm": "Cancel event"
+  },
+  "a11y": {
+    "dismiss": "Dismiss cancel event"
+  }
+}

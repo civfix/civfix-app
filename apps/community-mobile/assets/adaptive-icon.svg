@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!--
+    Android adaptive-icon FOREGROUND (source for adaptive-icon.png).
+    Transparent bleed on purpose: the coral field comes from app.config.ts
+    android.adaptiveIcon.backgroundColor (#EA4F3D, matching app-icon.svg). The white civfix
+    teardrop carries a real coral hole (cut with fill-rule=evenodd so the background shows
+    through), so the masked result reads identically to app-icon.svg. The pin (from
+    app-icon.svg, centre 256,269) is scaled to 0.75 and recentred to the canvas centre
+    (256,256) so it stays inside the adaptive safe zone and no launcher mask clips its tip.
+  -->
+  <g transform="translate(256 256) scale(0.75) translate(-256 -269)">
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M256 66 C338 66 406 134 406 217 C406 305 304 410 266 472 C261 478 251 478 246 472 C208 410 106 305 106 217 C106 134 174 66 256 66 Z M196 213 a60 60 0 1 0 120 0 a60 60 0 1 0 -120 0 Z"></path>
+  </g>
+</svg>

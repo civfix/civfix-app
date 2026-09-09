@@ -1,0 +1,21 @@
+{
+  "removed": "Este mensaje fue eliminado",
+  "edited": "(editado)",
+  "forwarded": {
+    "named": "Reenviado a {{name}}",
+    "generic": "Reenviado a la ciudad"
+  },
+  "action": {
+    "reply": "Responder",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "report": "Denunciar"
+  },
+  "a11y": {
+    "view_attachment": "Ver archivo adjunto",
+    "report_photo": "Denunciar esta foto",
+    "edit": "Editar este mensaje",
+    "delete": "Eliminar este mensaje",
+    "report": "Denunciar este mensaje"
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "header": {
+    "back": "Back",
+    "view_members": "View members",
+    "more_options": "More options",
+    "crew_chat": "Crew chat",
+    "direct_message": "Direct message",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "members_with_online_one": "{{count}} member - {{online}} online",
+    "members_with_online_other": "{{count}} members - {{online}} online",
+    "crew_chat_with_online": "Crew chat - {{online}} online",
+    "online": "Online",
+    "report_chat": "Report chat",
+    "group_chat": "Group chat",
+    "open_group_info": "Open group info"
+  },
+  "typing": {
+    "indicator": "Typing",
+    "indicator_named": "{{name}} is typing",
+    "names_one": "{{name}}",
+    "names_two": "{{first}} & {{second}}",
+    "names_several": "Several people",
+    "someone": "Someone"
+  },
+  "room_error": {
+    "dm_not_accepting": "{{name}} isn't accepting messages.",
+    "group_no_access": "You don't have access to this conversation.",
+    "dm_unavailable": "{{name}} is no longer available.",
+    "group_unavailable": "This conversation is no longer available.",
+    "generic": "You can't send messages here right now.",
+    "transient": "Message not sent. Check your connection and try again.",
+    "rate_limited": "You're sending messages too fast. Please slow down.",
+    "blocked": "This message contains language that isn't allowed.",
+    "read_only": "Only owners and admins can post in this channel.",
+    "reply_unavailable": "That message can no longer be replied to.",
+    "send_rejected": "Message not sent."
+  },
+  "attachment": {
+    "view": "View attachment",
+    "report_photo": "Report this photo"
+  },
+  "attach": {
+    "photo": "Photo library",
+    "camera": "Camera",
+    "poll": "Poll",
+    "dismiss": "Dismiss menu"
+  },
+  "bubble": {
+    "removed": "Message removed",
+    "failed_retry": "Failed - tap to retry",
+    "sending": "Sending",
+    "edited": "(edited)",
+    "retry_sending": "Retry sending",
+    "message_actions": "Message actions",
+    "announce_failed": "Message failed to send. Tap to retry.",
+    "reply_deleted": "Message deleted",
+    "reply_media": "Photo",
+    "reply_unknown_author": "Deleted account",
+    "reply_quote_a11y": "In reply to {{name}}: {{excerpt}}"
+  },
+  "menu": {
+    "cancel": "Cancel",
+    "delete_message": "Delete message",
+    "delete_failed": "Couldn't delete the message. Try again."
+  },
+  "overflow": {
+    "open_profile": "Open profile",
+    "block": "Block",
+    "open_profile_label": "Open profile",
+    "block_label": "Block this person",
+    "close_menu": "Close menu",
+    "view_report": "View report",
+    "view_report_label": "Open the report",
+    "mute": "Mute chat",
+    "unmute": "Unmute chat",
+    "mute_label": "Mute this chat",
+    "unmute_label": "Unmute this chat",
+    "leave": "Leave chat",
+    "leave_label": "Leave this chat"
+  },
+  "join": {
+    "prompt": "Join to reply in this chat",
+    "action": "Join the chat"
+  },
+  "block_confirm": {
+    "prompt_dm": "Block {{name}}? They will not be able to message you, and this conversation will be hidden.",
+    "prompt_group": "Block {{name}}? They will not be able to message you.",
+    "this_person": "this person",
+    "cancel": "Cancel",
+    "block": "Block"
+  },
+  "list": {
+    "loading": "Loading...",
+    "error_title": "Could not load this chat",
+    "error_body": "We could not reach civfix. Messages you send will queue and deliver once you are back online.",
+    "empty_title": "Say hello",
+    "empty_body_group": "This is the start of your crew chat. Share plans, gear, and updates here.",
+    "empty_body_dm": "This is the start of your conversation. Say hi to break the ice.",
+    "new_messages": "New messages",
+    "jump_to_newest": "Jump to newest messages"
+  },
+  "jump": {
+    "back_to_latest": "Back to latest",
+    "failed": "Couldn't jump to message"
+  },
+  "connection": {
+    "reconnecting": "Reconnecting - messages will send once you are back online.",
+    "offline": "Offline - messages will send when you reconnect."
+  },
+  "composer": {
+    "placeholder_unavailable": "Messaging unavailable",
+    "placeholder_group": "Message the crew",
+    "placeholder_dm": "Message {{name}}",
+    "attach": "Attach a photo or video",
+    "input": "Message input",
+    "send": "Send message",
+    "edit_title": "Edit message",
+    "cancel_edit": "Cancel editing",
+    "save_error": "Couldn't save your edit. Try again.",
+    "reply_title": "Reply to {{name}}",
+    "cancel_reply": "Cancel reply"
+  },
+  "report": {
+    "subject_message": "this message",
+    "subject_photo": "this photo",
+    "submitted": "Report submitted - thanks",
+    "submit_error": "Couldn't submit your report. Try again."
+  },
+  "context_menu": {
+    "reply": "Reply",
+    "copy": "Copy",
+    "edit": "Edit",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "delete": "Delete",
+    "report": "Report",
+    "block": "Block",
+    "copied": "Copied",
+    "dismiss": "Dismiss menu",
+    "reactions": "React to this message"
+  },
+  "pins": {
+    "bar_label": "Pinned message",
+    "a11y_bar": "Pinned message {{index}} of {{count}}: {{excerpt}}. Tap to jump to it.",
+    "a11y_open_list": "View all pinned messages",
+    "action_failed": "Couldn't update the pin. Try again.",
+    "view_title": "Pinned Messages",
+    "empty": "No pinned messages",
+    "jump": "Go to message"
+  },
+  "channel": {
+    "join": "Join channel",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "read_only": "Only admins can post"
+  }
+}

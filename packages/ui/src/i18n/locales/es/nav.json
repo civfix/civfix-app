@@ -1,0 +1,72 @@
+{
+  "title": {
+    "pin": "Denuncia",
+    "cleanups": "Eventos",
+    "myreports": "Tus denuncias",
+    "cleanup": "Evento",
+    "messages": "Mensajes",
+    "new_msg": "Nuevo mensaje",
+    "people": "Personas",
+    "person": "Perfil",
+    "followers": "Seguidores",
+    "following": "Siguiendo",
+    "activity": "Notificaciones",
+    "notification_prefs": "Notificaciones",
+    "profile": "Tú",
+    "blocked": "Cuentas bloqueadas",
+    "language_settings": "Idioma",
+    "appearance_settings": "Apariencia",
+    "settings": "Ajustes",
+    "settings_account": "Cuenta",
+    "settings_privacy": "Privacidad y seguridad",
+    "create_cleanup": "Organizar un evento",
+    "edit_cleanup": "Editar evento",
+    "verify": "Verificarse",
+    "leaderboard": "Clasificación",
+    "cluster_one": "{{count}} denuncia",
+    "cluster_other": "{{count}} denuncias",
+    "members": "Miembros",
+    "group_info": "Información del grupo",
+    "chat_info": "Información del chat",
+    "post": "Publicación",
+    "post_thread": "Conversación",
+    "post_composer": "Nueva publicación",
+    "saves": "Guardado",
+    "drop_pin": "Añadir aquí",
+    "host_mode": "Modo anfitrión",
+    "host_checkin": "Registro de entrada",
+    "host_broadcast_quick": "Mensaje rápido",
+    "my_ticket": "Tu entrada",
+    "org": "Organización",
+    "my_donations": "Tus donaciones"
+  },
+  "tab": {
+    "home": "Inicio",
+    "map": "Mapa",
+    "messages": "Mensajes",
+    "report": "Crear",
+    "search": "Buscar"
+  },
+  "create": {
+    "report": "Crear un reporte",
+    "event": "Crear un evento",
+    "post": "Crear una publicación"
+  },
+  "placeholder": {
+    "people": "Buscar personas",
+    "reports": "Buscar tus denuncias",
+    "places_events": "Buscar lugares y eventos",
+    "search": "Eventos, denuncias, calles…"
+  },
+  "a11y": {
+    "back": "Atrás",
+    "close": "Cerrar",
+    "settings": "Ajustes",
+    "home": "Inicio",
+    "resize_sidebar": "Redimensionar barra lateral",
+    "drag_handle": "Controlador de arrastre",
+    "create_menu": "Crear",
+    "dismiss_create_menu": "Cerrar el menú de creación"
+  },
+  "fallback_you": "Tú"
+}

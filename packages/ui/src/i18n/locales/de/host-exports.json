@@ -1,0 +1,18 @@
+{
+  "title": "Exporte",
+  "action": "Exportieren",
+  "new_export": "Neuer Export",
+  "recent": "Letzte Exporte",
+  "none": "Noch keine Exporte.",
+  "download": "Herunterladen",
+  "truncated": "gekürzt",
+  "requested": "Export angefordert",
+  "requested_hint": "Er erscheint hier, sobald er fertig ist. Downloads laufen schnell ab, hol ihn dir also bald.",
+  "privacy_note": "Exporte von {{title}} enthalten die Antworten der Teilnehmenden. Bewahre sie sorgfältig auf und teile sie mit Bedacht.",
+  "kind": {
+    "roster": "Teilnehmende",
+    "answers": "Antworten",
+    "checkins": "Check-ins",
+    "donations": "Spenden"
+  }
+}

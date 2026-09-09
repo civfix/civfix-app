@@ -1,0 +1,42 @@
+{
+  "title": "Your events",
+  "subtitle": "Everything you host, in one place.",
+  "unknown_route": "That console page does not exist ({{path}}). Here is your event list instead.",
+  "nav": {
+    "events": "Events"
+  },
+  "kpis": {
+    "heading": "Hosting summary",
+    "events_hosted": "Events hosted",
+    "upcoming": "Upcoming",
+    "registrations": "Registrations",
+    "checked_in": "Checked in",
+    "this_page": "on this page"
+  },
+  "trend": {
+    "title": "Registrations over time",
+    "range": "Last 90 days",
+    "a11y": "Registrations from {{from}} to {{to}}",
+    "not_enough_data": "There is not enough history yet to draw a trend.",
+    "registrations": "Registrations",
+    "unique": "Unique attendees",
+    "check_in_rate": "Average check-in rate",
+    "by_event": "Busiest events",
+    "by_event_a11y": "Registrations by event"
+  },
+  "list": {
+    "title": "Events",
+    "when": "Time window",
+    "when_upcoming": "Upcoming",
+    "when_past": "Past",
+    "when_all": "All",
+    "org_filter": "Organization",
+    "all_orgs": "All",
+    "open": "Open {{title}}",
+    "counts": "{{registered}} registered · {{checked}} checked in",
+    "waitlist": "{{count}} on the waitlist",
+    "empty_title": "No events here yet",
+    "empty_body": "Events you host appear here as soon as you create one.",
+    "create": "Create an event"
+  }
+}

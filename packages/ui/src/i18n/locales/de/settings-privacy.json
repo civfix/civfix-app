@@ -1,0 +1,22 @@
+{
+  "signedOut": {
+    "title": "Anmelden, um Datenschutz zu verwalten",
+    "body": "Lege fest, wer dir schreiben darf, was dein Profil zeigt und wen du blockiert hast."
+  },
+  "section": {
+    "visibility": "Sichtbarkeit",
+    "safety": "Sicherheit"
+  },
+  "allowDms": {
+    "label": "Direktnachrichten erlauben",
+    "helper": "Deaktiviert: Du erscheinst nicht in der Suche, und niemand kann neue Unterhaltungen mit dir starten. Bestehende Chats bleiben erhalten."
+  },
+  "showHours": {
+    "label": "Meinen Einsatznachweis zeigen",
+    "helper": "Wenn aktiviert, listet dein öffentliches Profil jeden gutgeschriebenen Einsatz auf - Datum, Community und wer ihn gutgeschrieben hat. Wenn deaktiviert, sind auch deine Gesamtstunden auf deinem Profil verborgen, und du erscheinst nicht mehr in den Bestenlisten der Community."
+  },
+  "blocked": {
+    "label": "Blockierte Konten",
+    "sub": "Personen, die du blockiert hast"
+  }
+}

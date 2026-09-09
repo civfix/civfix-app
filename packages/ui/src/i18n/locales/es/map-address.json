@@ -1,0 +1,12 @@
+{
+  "input": {
+    "placeholder": "Busca una dirección o pega lat, lng",
+    "clear": "Borrar"
+  },
+  "coordinate": {
+    "exact": "Coordenadas exactas"
+  },
+  "empty": {
+    "noMatches": "Sin resultados. Prueba con una dirección más específica o pega \"lat, lng\"."
+  }
+}

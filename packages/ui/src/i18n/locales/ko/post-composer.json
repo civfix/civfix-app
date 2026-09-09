@@ -1,0 +1,60 @@
+{
+  "add_media_a11y": "사진 또는 동영상 추가",
+  "section": {
+    "events": "내 이벤트",
+    "reports": "내 신고",
+    "show_more": "더 보기",
+    "show_more_count": "더 보기 ({{count}})",
+    "show_fewer": "접기"
+  },
+  "pills": {
+    "event": "이벤트",
+    "report": "신고",
+    "event_a11y": "이벤트 첨부",
+    "report_a11y": "신고 첨부"
+  },
+  "empty_events": "참가하거나 주최하는 이벤트가 여기에 표시됩니다.",
+  "empty_reports": "내가 제출한 신고가 여기에 표시돼요.",
+  "mode": {
+    "post": {
+      "title": "새 게시물",
+      "placeholder": "우리 동네 소식을 공유해 보세요..."
+    },
+    "reply": {
+      "title": "답글",
+      "placeholder": "답글을 작성하세요..."
+    },
+    "quote": {
+      "title": "게시물 인용",
+      "placeholder": "의견을 덧붙여 보세요..."
+    }
+  },
+  "action": {
+    "post": "게시",
+    "reply": "답글",
+    "posting": "게시 중..."
+  },
+  "input_a11y": "게시물 입력란",
+  "close_a11y": "작성 화면 닫기",
+  "submit_error": "게시하지 못했어요. 다시 시도해 주세요.",
+  "media_dropped": "일부 첨부 파일이 업로드를 완료하지 못했어요. 다시 추가해 주세요.",
+  "reply": {
+    "placeholder_named": "답글을 남겨 보세요",
+    "context": "{{handle}}님에게 답글",
+    "signed_out": "답글을 남기려면 로그인하세요",
+    "attach_a11y": "답글에 추가",
+    "expand_a11y": "답글 작성",
+    "chars_left": "{{count}}자 남음",
+    "remove_event_a11y": "첨부한 이벤트 제거",
+    "remove_report_a11y": "첨부한 신고 제거"
+  },
+  "attach": {
+    "title": "답글에 추가",
+    "photo": "사진 또는 동영상",
+    "camera": "카메라",
+    "event": "이벤트 첨부",
+    "report": "신고 첨부",
+    "back": "뒤로",
+    "dismiss": "닫기"
+  }
+}

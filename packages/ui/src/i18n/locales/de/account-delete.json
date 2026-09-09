@@ -1,0 +1,47 @@
+{
+  "title": "Konto löschen",
+  "emailFallback": "deine Konto-E-Mail",
+  "warn": {
+    "permanentPre": "Dein Konto wird ",
+    "permanentEmphasis": "dauerhaft",
+    "permanentPost": " gelöscht. Profil, Name und Foto werden entfernt und du wirst abgemeldet. Dies lässt sich nicht rückgängig machen.",
+    "contentRemains": "Deine bisherigen Meldungen und Beiträge bleiben erhalten, angezeigt als \"Gelöschter Nutzer\"."
+  },
+  "intro": {
+    "sendPre": "Zur Bestätigung senden wir einen 6-stelligen Code an ",
+    "sendPost": "."
+  },
+  "noEmail": {
+    "body": "Dein Konto hat keine E-Mail-Adresse, daher können wir das Löschen nicht bestätigen. Füge zuerst eine E-Mail-Adresse hinzu und verifiziere sie."
+  },
+  "verify": {
+    "enterPre": "Gib den 6-stelligen Code ein, den wir an ",
+    "enterPost": " gesendet haben."
+  },
+  "actions": {
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "emailCode": "Code senden",
+    "resend": "Code erneut senden",
+    "sending": "Wird gesendet...",
+    "deleteConfirm": "Dauerhaft löschen"
+  },
+  "a11y": {
+    "dismiss": "Schließen",
+    "emailCode": "Bestätigungscode per E-Mail senden",
+    "verificationCode": "Bestätigungscode",
+    "resend": "Code erneut senden",
+    "deleteConfirm": "Mein Konto dauerhaft löschen"
+  },
+  "sendError": {
+    "rateLimited": "Bitte warte kurz, bevor du einen neuen Code anforderst.",
+    "validation": "Wir konnten keinen Code an deine Konto-E-Mail senden. Versuche es erneut.",
+    "generic": "Code konnte gerade nicht gesendet werden. Bitte versuche es erneut."
+  },
+  "deleteError": {
+    "unauthorized": "Der Code ist falsch oder abgelaufen. Überprüfe ihn und versuche es erneut, oder fordere einen neuen an.",
+    "rateLimited": "Zu viele Versuche. Warte kurz und versuche es erneut.",
+    "validation": "Dein Konto hat keine E-Mail-Adresse zur Bestätigung.",
+    "generic": "Konto konnte gerade nicht gelöscht werden. Bitte versuche es erneut."
+  }
+}

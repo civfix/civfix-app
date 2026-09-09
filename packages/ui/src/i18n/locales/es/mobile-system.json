@@ -1,0 +1,24 @@
+{
+  "notification_channel_default": "Predeterminado",
+  "crash": {
+    "title": "Algo salió mal",
+    "body": "civfix tuvo un problema inesperado. Al reiniciar se borran los datos guardados y se vuelve a intentar.",
+    "action": "Reiniciar civfix"
+  },
+  "notification_channel_host_broadcasts": "Mensajes del evento",
+  "notification_channel_event_reminders": "Recordatorios de eventos",
+  "notification_action_view_ticket": "Ver entrada",
+  "notification_action_open_event": "Abrir evento",
+  "scan": {
+    "title": "Escanear una entrada",
+    "hint": "Apunta la cámara al código QR de la entrada de la persona asistente.",
+    "gate": {
+      "title": "Acceso a la cámara",
+      "body": "civfix usa la cámara para leer el código QR de la entrada al hacer el registro.",
+      "continue": "Permitir la cámara",
+      "open_settings": "Abrir ajustes",
+      "no_camera_title": "No se encontró ninguna cámara",
+      "no_camera_body": "Este dispositivo no tiene ninguna cámara disponible. Escribe el código de la entrada."
+    }
+  }
+}

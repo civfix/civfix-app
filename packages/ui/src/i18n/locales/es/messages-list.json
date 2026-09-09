@@ -1,0 +1,52 @@
+{
+  "row": {
+    "a11y_unread": "{{title}}, {{count}} sin leer",
+    "a11y_muted": "Silenciado",
+    "members_one": "{{count}} miembro",
+    "members_other": "{{count}} miembros",
+    "subscribers_one": "{{count}} suscriptor",
+    "subscribers_other": "{{count}} suscriptores",
+    "a11y_channel": "Canal",
+    "action": {
+      "mute": "Silenciar",
+      "unmute": "Reactivar",
+      "mark_read": "Marcar como leído",
+      "more": "Acciones de la conversación",
+      "delete": "Eliminar",
+      "delete_a11y": "Eliminar conversación"
+    }
+  },
+  "preview": {
+    "new_conversation": "Nueva conversación",
+    "from_me": "Tú: {{text}}"
+  },
+  "search": {
+    "placeholder": "Buscar mensajes",
+    "a11y": "Buscar mensajes",
+    "clear_a11y": "Borrar búsqueda"
+  },
+  "signed_out": {
+    "title": "Inicia sesión para escribir a tus vecinos",
+    "body_before": "Los chats de tus eventos y los mensajes directos aparecerán aquí una vez que hayas ",
+    "body_link": "iniciado sesión",
+    "body_after": "."
+  },
+  "error": {
+    "title": "No se pudieron cargar los mensajes",
+    "body": "No pudimos conectar con civfix. Comprueba tu conexión e inténtalo de nuevo."
+  },
+  "empty": {
+    "title": "Aún no hay mensajes",
+    "body": "Confirma tu asistencia a un evento para unirte a su chat, o escríbele a un vecino desde su perfil.",
+    "no_match": {
+      "title": "Ninguna conversación coincide con tu búsqueda",
+      "body": "Ninguna conversación coincide con \"{{query}}\". Prueba con un nombre o una palabra del mensaje."
+    }
+  },
+  "new_menu": {
+    "message": "Nuevo mensaje",
+    "group": "Nuevo grupo",
+    "channel": "Nuevo canal",
+    "a11y": "Iniciar una conversación nueva"
+  }
+}

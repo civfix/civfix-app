@@ -1,0 +1,99 @@
+{
+  "export_csv": "Export CSV",
+  "tab": {
+    "label": "Analytics section",
+    "registration": "Registration",
+    "attendance": "Attendance",
+    "messaging": "Messaging",
+    "page": "Signup page"
+  },
+  "range": {
+    "label": "Range",
+    "7d": "7 days",
+    "30d": "30 days",
+    "90d": "90 days",
+    "all": "Up to a year",
+    "whole_event": "Whole event"
+  },
+  "kpi": {
+    "registered": "Registered",
+    "checked_in": "Checked in",
+    "check_in_rate": "Check-in rate",
+    "page_views": "Page views"
+  },
+  "funnel": {
+    "a11y": "From page view to check-in"
+  },
+  "suppressed": {
+    "explain": "Hidden because fewer than {{k}} people are in this group.",
+    "note": "Groups smaller than {{k}} people are hidden. A blank cell is not a zero.",
+    "panel": "This breakdown is hidden because the groups are smaller than {{k}} people.",
+    "point": "Hidden (group too small)"
+  },
+  "registration": {
+    "over_time": "Registrations over time",
+    "over_time_a11y": "New and cumulative registrations per day",
+    "new": "New",
+    "cumulative": "Cumulative",
+    "cancellations": "Cancellations",
+    "cancellations_a11y": "Cancellations per day",
+    "cancelled": "Cancelled",
+    "breakdowns": "Breakdowns",
+    "by_ticket_type": "By ticket type",
+    "by_audience": "Members and guests"
+  },
+  "attendance": {
+    "arrivals": "When people arrived",
+    "arrivals_hint": "Minutes relative to the event start; negative values are early arrivals. This chart always covers the whole event, whatever range is selected.",
+    "arrivals_a11y": "Check-ins by minutes from the event start",
+    "arrivals_value": "Check-ins",
+    "minute": "{{minutes}} min",
+    "rates": "Rates",
+    "check_in_rate": "Check-in rate",
+    "no_show_rate": "No-show rate",
+    "breakdowns": "Breakdowns",
+    "by_ticket_type": "By ticket type",
+    "by_slot": "By shift"
+  },
+  "messaging": {
+    "totals": "Messaging",
+    "active_days": "Days with a send",
+    "recipients": "Recipients",
+    "unsubscribes": "Unsubscribes",
+    "no_tracking": "civfix does not track opens or clicks, so there is nothing here to report.",
+    "by_channel": "By channel",
+    "by_channel_a11y": "Sent, failed and suppressed by channel",
+    "sent": "Sent",
+    "failed": "Failed",
+    "suppressed": "Suppressed",
+    "over_time": "Sends over time",
+    "over_time_a11y": "Sends per day",
+    "sends": "Sends"
+  },
+  "page": {
+    "views": "Page views",
+    "views_a11y": "Signup page views per day",
+    "by_source": "Where visitors came from",
+    "donation_clicks": "Donation clicks"
+  },
+  "csv": {
+    "source": "Source",
+    "reference": "Event reference",
+    "generated_at": "Generated",
+    "filters": "Filters",
+    "none": "none",
+    "suppression_k": "Suppression threshold (k)",
+    "note": "Note",
+    "k_note": "Blank cells are hidden because the group is smaller than {{k}} people. A blank is not a zero.",
+    "day": "Day",
+    "registrations": "Registrations",
+    "cumulative": "Cumulative",
+    "minute_offset": "Minutes from start",
+    "arrivals": "Check-ins",
+    "channel": "Channel",
+    "sent": "Sent",
+    "failed": "Failed",
+    "suppressed": "Suppressed",
+    "page_views": "Page views"
+  }
+}

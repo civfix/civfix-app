@@ -1,0 +1,61 @@
+{
+  "block": {
+    "heading": "Puestos disponibles",
+    "claim_joins_hint": "Al tomar un puesto también confirmas tu asistencia.",
+    "filled": "{{claimed}}/{{capacity}} lugares ocupados"
+  },
+  "row": {
+    "open": "Disponible",
+    "remaining_one": "Queda {{count}} lugar",
+    "remaining_other": "Quedan {{count}} lugares",
+    "full": "Completo",
+    "full_sub": "No quedan lugares",
+    "you_claimed": "Tienes este puesto",
+    "claimed_count_one": "{{count}} persona",
+    "claimed_count_other": "{{count}} personas",
+    "claim": "Tomar",
+    "claimed": "Tomado",
+    "switch": "Cambiar",
+    "claim_a11y": "Tomar el puesto {{title}}",
+    "release_a11y": "Dejar el puesto {{title}}",
+    "switch_a11y": "Cambiar al puesto {{title}}"
+  },
+  "editor": {
+    "add_first": "Añadir un puesto",
+    "add_first_a11y": "Añadir un puesto de inscripción",
+    "add_more": "Añadir otro puesto",
+    "cap_reached": "Puedes añadir hasta {{max}} puestos.",
+    "title_placeholder": "p. ej. Mesa de registro",
+    "title_a11y": "Nombre del puesto {{index}}",
+    "description_placeholder": "En qué consiste este puesto (opcional)",
+    "description_a11y": "Descripción del puesto {{index}}",
+    "capacity_label": "Lugares",
+    "capacity_any": "Sin límite",
+    "capacity_a11y": "Número de lugares del puesto {{index}}",
+    "capacity_more_a11y": "Añadir un lugar",
+    "capacity_less_a11y": "Quitar un lugar",
+    "move_up_a11y": "Subir el puesto {{index}}",
+    "move_down_a11y": "Bajar el puesto {{index}}",
+    "remove_a11y": "Eliminar el puesto {{index}}",
+    "claimed_count_one": "{{count}} tomado",
+    "claimed_count_other": "{{count}} tomados",
+    "remove_warning_one": "Eliminar un puesto deja sin asignar a {{count}} persona que lo tomó.",
+    "remove_warning_other": "Eliminar un puesto deja sin asignar a {{count}} personas que lo tomaron."
+  },
+  "error": {
+    "empty_title": "Ponle un nombre a este puesto.",
+    "title_too_long": "Usa menos de {{max}} caracteres.",
+    "capacity_invalid": "Escribe un número de lugares o déjalo en blanco.",
+    "capacity_below_claimed": "{{count}} personas ya tomaron este puesto.",
+    "full": "Ese puesto se acaba de llenar.",
+    "generic": "No se pudo actualizar tu puesto. Inténtalo de nuevo."
+  },
+  "roster": {
+    "unassigned": "Sin puesto",
+    "empty_slot": "Nadie todavía"
+  },
+  "toast": {
+    "claimed": "Puesto tomado",
+    "released": "Se liberó tu puesto"
+  }
+}

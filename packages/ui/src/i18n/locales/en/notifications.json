@@ -1,0 +1,20 @@
+{
+  "row": {
+    "unreadSuffix": "{{title}}, unread"
+  },
+  "actions": {
+    "markAllRead": "Mark all read"
+  },
+  "signedOut": {
+    "title": "Sign in for notifications",
+    "body": "Get updates on the reports you follow, event reminders, and new followers - all in one place."
+  },
+  "error": {
+    "title": "Could not load notifications",
+    "body": "We could not reach civfix. Check your connection and try again."
+  },
+  "empty": {
+    "title": "You are all caught up",
+    "body": "Updates on your reports, events, and followers will show up here."
+  }
+}

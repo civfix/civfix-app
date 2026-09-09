@@ -1,0 +1,40 @@
+{
+  "continue": "Continuar",
+  "back": "Atrás",
+  "cancel": "Cancelar",
+  "save": "Guardar",
+  "close": "Cerrar",
+  "done": "Listo",
+  "dismiss": "Descartar",
+  "sign_out": "Cerrar sesión",
+  "sign_in": "Iniciar sesión",
+  "edit": "Editar",
+  "delete": "Eliminar",
+  "loading": "Cargando…",
+  "error_generic": "Algo salió mal",
+  "dismiss_menu": "Cerrar menú",
+  "media": {
+    "photo": "Foto",
+    "video": "Video",
+    "image_unavailable": "Imagen no disponible",
+    "video_unavailable": "Video no disponible",
+    "remove_attachment": "Quitar adjunto"
+  },
+  "verification_code": {
+    "label": "Código de verificación",
+    "hint": "Abre el teclado para escribir el código"
+  },
+  "post_actions": {
+    "like": "Me gusta",
+    "repost": "Republicar",
+    "comment": "Comentar",
+    "save": "Guardar",
+    "share": "Compartir",
+    "undo_repost": "Deshacer republicación",
+    "quote_post": "Citar publicación",
+    "menu_label": "Opciones de republicación",
+    "menu_dismiss": "Cerrar el menú de republicación",
+    "default_title": "Publicación de CivFix"
+  },
+  "wizard_step_count": "Paso {{current}} de {{total}}"
+}

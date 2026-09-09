@@ -1,0 +1,40 @@
+{
+  "continue": "Weiter",
+  "back": "Zurück",
+  "cancel": "Abbrechen",
+  "save": "Speichern",
+  "close": "Schließen",
+  "done": "Fertig",
+  "dismiss": "Schließen",
+  "sign_out": "Abmelden",
+  "sign_in": "Anmelden",
+  "edit": "Bearbeiten",
+  "delete": "Löschen",
+  "loading": "Laden…",
+  "error_generic": "Etwas ist schiefgelaufen",
+  "dismiss_menu": "Menü schließen",
+  "media": {
+    "photo": "Foto",
+    "video": "Video",
+    "image_unavailable": "Bild nicht verfügbar",
+    "video_unavailable": "Video nicht verfügbar",
+    "remove_attachment": "Anhang entfernen"
+  },
+  "verification_code": {
+    "label": "Bestätigungscode",
+    "hint": "Öffnet die Tastatur zur Eingabe des Codes"
+  },
+  "post_actions": {
+    "like": "Gefällt mir",
+    "repost": "Reposten",
+    "comment": "Kommentieren",
+    "save": "Speichern",
+    "share": "Teilen",
+    "undo_repost": "Repost zurücknehmen",
+    "quote_post": "Beitrag zitieren",
+    "menu_label": "Repost-Optionen",
+    "menu_dismiss": "Repost-Menü schließen",
+    "default_title": "CivFix-Beitrag"
+  },
+  "wizard_step_count": "Schritt {{current}} von {{total}}"
+}

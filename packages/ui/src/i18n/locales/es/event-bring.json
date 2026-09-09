@@ -1,0 +1,20 @@
+{
+  "input": {
+    "a11y_label": "Añadir un artículo para traer",
+    "placeholder": "Añade un artículo y pulsa Intro",
+    "add_a11y": "Añadir artículo"
+  },
+  "chip": {
+    "remove_a11y": "Quitar {{item}}"
+  },
+  "suggestions": {
+    "label": "Sugerencias",
+    "add_a11y": "Añadir {{item}}",
+    "work_gloves": "Guantes de trabajo",
+    "water_bottle": "Botella de agua",
+    "hat_sunscreen": "Gorra y protector solar",
+    "sturdy_shoes": "Calzado resistente",
+    "trash_grabber": "Pinza recogedor",
+    "reusable_bags": "Bolsas reutilizables"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "state": {
+    "loading": "Loading the event…",
+    "error_title": "Host mode is unavailable",
+    "error_body": "We could not load this event. Check your connection and try again.",
+    "denied_title": "Not a host here",
+    "denied_body": "Only the event's hosts and staff can open host mode."
+  },
+  "action": {
+    "scan": "Scan tickets",
+    "scan_a11y": "Open the ticket scanner",
+    "checkin": "Check-in",
+    "checkin_a11y": "Open the check-in screen",
+    "quick_message": "Quick message",
+    "quick_message_a11y": "Send a quick message to attendees",
+    "walkup": "Add a walk-up",
+    "walkup_a11y": "Register someone at the door"
+  },
+  "roster": {
+    "heading": "Attendees"
+  },
+  "walkup": {
+    "title": "Walk-up registration",
+    "caption": "Register someone at the door. They are checked in straight away.",
+    "dismiss_a11y": "Close walk-up registration",
+    "name_label": "Name",
+    "name_placeholder": "Their name",
+    "type_label": "Ticket type",
+    "cancel": "Cancel",
+    "submit": "Add and check in",
+    "success": "{{name}} is checked in.",
+    "error": "That walk-up could not be added.",
+    "error_forbidden": "You do not have permission to add a walk-up."
+  }
+}

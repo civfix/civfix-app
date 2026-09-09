@@ -1,0 +1,49 @@
+{
+  "search": {
+    "placeholder": "이벤트, 사람, 장소 검색",
+    "clear_a11y": "검색 지우기",
+    "no_matches": "\"{{query}}\"에 대한 결과가 없어요.",
+    "no_results_title": "결과 없음",
+    "error": "검색을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.",
+    "retry": "다시 시도",
+    "error_title": "검색을 사용할 수 없어요",
+    "loading_a11y": "검색 중",
+    "announce": {
+      "results_other": "결과 {{count}}개"
+    }
+  },
+  "create": {
+    "report": "문제 신고하기",
+    "event": "이벤트 만들기"
+  },
+  "results": {
+    "people": "사람",
+    "events": "이벤트",
+    "reports": "신고"
+  },
+  "search_page": {
+    "title": "검색",
+    "recent": "최근 검색",
+    "recent_empty": "최근 검색 기록이 여기에 표시됩니다.",
+    "recent_a11y": "{{query}} 검색",
+    "clear": "지우기",
+    "clear_a11y": "최근 검색 기록 지우기",
+    "suggested_people": "추천 사용자",
+    "events_near": "내 주변 이벤트",
+    "leaderboard": "봉사 리더보드",
+    "leaderboard_in": "{{name}} 최고 봉사자",
+    "leaderboard_see_all_a11y": "전체 리더보드 보기",
+    "leaderboard_you": "나",
+    "reports_near": "근처 신고",
+    "see_all": "전체 보기",
+    "see_all_events_a11y": "모든 이벤트 보기",
+    "browse": "둘러보기",
+    "browse_a11y": "{{label}} 둘러보기"
+  },
+  "reports": {
+    "empty": "아직 신고한 내역이 없어요. '문제 신고하기'를 눌러 시작해 보세요."
+  },
+  "person": {
+    "view_profile_a11y": "{{name}}, 프로필 보기"
+  }
+}

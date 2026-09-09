@@ -1,0 +1,65 @@
+{
+  "signIn": {
+    "title": "Anmelden, um ein Event zu erstellen",
+    "body": "Ort wählen, Uhrzeit festlegen und Nachbarn einladen. Du bist der Organisator."
+  },
+  "verification": {
+    "verified": "Dein Konto ist verifiziert — Teilnehmer sehen ein Verifikations-Badge bei diesem Event.",
+    "pending": "Deine Verifizierung wird geprüft. Deine Events bleiben unverifiziert, bis sie genehmigt wird.",
+    "unverified": "Dein Event wird als unverifiziert markiert. Lass dich verifizieren, um Vertrauen aufzubauen.",
+    "getVerified": "Verifizieren"
+  },
+  "followersNote": "Deine Follower werden beim Veröffentlichen benachrichtigt.",
+  "wizard": {
+    "back": "Zurück",
+    "next": "Weiter",
+    "edit": "Bearbeiten",
+    "editA11y": "{{section}} bearbeiten",
+    "empty": "Nicht festgelegt",
+    "announceStep": "Schritt {{current}} von {{total}}. {{title}}",
+    "basics": {
+      "title": "Was ist geplant?",
+      "help": "Gib dem Event einen Namen und wähle die Art.",
+      "error": "Gib deinem Event einen Titel."
+    },
+    "when": {
+      "title": "Wann ist es?",
+      "help": "Wähle einen Tag und eine Startzeit.",
+      "error": "Wähle Datum und Startzeit in der Zukunft."
+    },
+    "where": {
+      "title": "Wo trefft ihr euch?",
+      "help": "Setze den Pin dorthin, wo alle hinkommen sollen.",
+      "error": "Setze den Treffpunkt auf der Karte."
+    },
+    "details": {
+      "title": "Noch etwas?",
+      "help": "Optional: Material und Aufgaben zum Übernehmen.",
+      "error": "Jede Aufgabe braucht einen Namen und eine gültige Anzahl."
+    },
+    "review": {
+      "title": "Bereit zum Veröffentlichen?",
+      "help": "Details prüfen, dann veröffentlichen.",
+      "error": "Titel, Treffpunkt, Datum und Uhrzeit angeben, um zu veröffentlichen."
+    },
+    "summary": {
+      "what": "Was",
+      "when": "Wann",
+      "extras": "Details",
+      "noExtras": "Nichts weiter"
+    }
+  },
+  "publish": {
+    "label": "Event veröffentlichen",
+    "pending": "Wird veröffentlicht..."
+  },
+  "announce": {
+    "publishFailed": "Event konnte nicht veröffentlicht werden. {{error}}"
+  },
+  "error": {
+    "validation": "Bitte die Event-Details prüfen und erneut versuchen.",
+    "rateLimited": "Zu viele Versuche. Kurz warten und erneut versuchen.",
+    "session": "Deine Sitzung ist möglicherweise abgelaufen. Erneut anmelden und wiederholen.",
+    "generic": "Veröffentlichen gerade nicht möglich. Bitte erneut versuchen."
+  }
+}

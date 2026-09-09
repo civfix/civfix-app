@@ -1,0 +1,99 @@
+import type { LayoutMode } from "../theme"
+import type { DraftReport } from "./draftStore"
+
+export type Step = "capture" | "location" | "category" | "details" | "review"
+
+export const STEP_ORDER_EXPANDED: Step[] = ["capture", "category", "details", "review"]
+export const STEP_ORDER_COMPACT: Step[] = ["capture", "location", "category", "details", "review"]
+
+
+export interface StepOrderOptions {
+  skipLocation?: boolean
+}
+
+export function stepOrderFor(mode: LayoutMode, opts?: StepOrderOptions): Step[] {
+  if (mode !== "compact") return STEP_ORDER_EXPANDED
+  return opts?.skipLocation ? STEP_ORDER_COMPACT.filter((s) => s !== "location") : STEP_ORDER_COMPACT
+}
+
+export function resumeStep(
+  draft: Pick<DraftReport, "media" | "lat" | "lng" | "reportTypeId" | "title">,
+  mode: LayoutMode,
+): Step {
+  if (draft.media.length === 0) return "capture"
+  const hasLocation = draft.lat != null && draft.lng != null
+  if (mode === "compact" && !hasLocation) return "location"
+  if (draft.reportTypeId === null) return "category"
+  if (draft.title.trim().length === 0) return "details"
+  return "review"
+}
+
+export function stepAfterCapture(
+  draft: Pick<DraftReport, "media" | "lat" | "lng" | "reportTypeId" | "title">,
+  mode: LayoutMode,
+  order: Step[],
+): Step {
+  const resumed = resumeStep(draft, mode)
+  if (resumed !== "capture" && order.includes(resumed)) return resumed
+  const i = order.indexOf("capture")
+  return (order[i + 1] as Step | undefined) ?? "capture"
+}
+
+export function showsWizardFooter(step: Step, hasMedia: boolean): boolean {
+  return step === "capture" ? hasMedia : true
+}
+
+export type WizardHeaderMode = "tab-root" | "detail"
+
+export function wizardHeaderMode(
+  mode: LayoutMode,
+  showBack: boolean,
+  atViewRoot: boolean,
+): WizardHeaderMode {
+  if (mode === "expanded") return atViewRoot ? "tab-root" : "detail"
+  return showBack ? "detail" : "tab-root"
+}
+
+export function rendersEmbeddedViewfinder(
+  step: Step,
+  hasMedia: boolean,
+  hasViewfinder: boolean,
+  mode: LayoutMode,
+): boolean {
+  return mode === "compact" && hasViewfinder && step === "capture" && !hasMedia
+}
+
+export function showsCaptureCard(
+  step: Step,
+  hasMedia: boolean,
+  hasViewfinder: boolean,
+  mode: LayoutMode,
+): boolean {
+  return step === "capture" && !hasMedia && !rendersEmbeddedViewfinder(step, hasMedia, hasViewfinder, mode)
+}
+
+export function viewfinderSessionActive(
+  step: Step,
+  viewfinderMounted: boolean,
+  coveredByDetail: boolean,
+  isReportView: boolean,
+): boolean {
+  return viewfinderMounted && step === "capture" && !coveredByDetail && isReportView
+}
+
+export function viewfinderResumeGraceEligible(
+  step: Step,
+  viewfinderMounted: boolean,
+  coveredByDetail: boolean,
+  isReportView: boolean,
+): boolean {
+  return !isReportView && viewfinderSessionActive(step, viewfinderMounted, coveredByDetail, true)
+}
+
+export function pickLayerVisible(
+  picking: boolean,
+  coveredByDetail: boolean,
+  isReportView: boolean,
+): boolean {
+  return picking && !coveredByDetail && isReportView
+}

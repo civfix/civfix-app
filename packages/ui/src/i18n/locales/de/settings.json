@@ -1,0 +1,41 @@
+{
+  "signedOut": {
+    "title": "Bei civfix anmelden",
+    "body": "Melde dich an, um Konto, Benachrichtigungen und Datenschutz zu verwalten."
+  },
+  "section": {
+    "account": "Konto",
+    "app": "App",
+    "about": "Über civfix"
+  },
+  "account": {
+    "label": "Konto",
+    "sub": "@handle, soziale Links, deine Daten"
+  },
+  "notifications": {
+    "label": "Benachrichtigungen",
+    "sub": "Push-Hinweise und worüber du hörst"
+  },
+  "privacy": {
+    "label": "Privatsphäre & Sicherheit",
+    "sub": "Nachrichten, dein Nachweis und blockierte Konten"
+  },
+  "language": {
+    "label": "Sprache"
+  },
+  "appearance": {
+    "label": "Erscheinungsbild"
+  },
+  "tour": {
+    "label": "Tour ansehen",
+    "sub": "Die Willkommenstour erneut abspielen"
+  },
+  "support_civfix": "civfix unterstützen",
+  "terms": "Nutzungsbedingungen",
+  "privacy_policy": "Datenschutzerklärung",
+  "sign_out": "Abmelden",
+  "donations": {
+    "label": "Spenden",
+    "sub": "Deine Spendenhistorie und Belege"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "error": {
+    "title": "프로필을 불러올 수 없어요",
+    "body": "이 사용자가 civfix에 없거나 오프라인 상태일 수 있어요."
+  },
+  "actions": {
+    "message": "메시지",
+    "message_a11y": "{{name}}에게 메시지 보내기",
+    "more_options": "더보기"
+  },
+  "menu": {
+    "block": "차단",
+    "unblock": "차단 해제",
+    "report": "신고"
+  },
+  "events": {
+    "label": "이벤트",
+    "empty": "아직 이벤트가 없습니다.",
+    "role_hosting": "주최",
+    "role_going": "참가",
+    "row_a11y": "{{title}}, {{role}}",
+    "group_upcoming": "예정",
+    "group_past": "지난",
+    "load_more": "더 불러오기",
+    "loading_more": "불러오는 중...",
+    "load_more_a11y": "지난 이벤트 더 불러오기",
+    "load_more_error": "이벤트를 더 불러오지 못했어요.",
+    "load_more_retry": "다시 시도"
+  },
+  "block": {
+    "confirm_message": "{{name}}님을 차단할까요? 메시지를 보낼 수 없게 되고 프로필이 숨겨져요.",
+    "cancel": "취소",
+    "confirm": "차단",
+    "error": "차단하지 못했어요. 다시 시도해 주세요."
+  },
+  "blocked": {
+    "label": "이 사람을 차단했습니다.",
+    "unblock_error": "차단을 해제하지 못했어요. 다시 시도해 주세요."
+  },
+  "report": {
+    "subject_label": "이 프로필",
+    "error": "신고를 제출하지 못했어요. 다시 시도해 주세요.",
+    "toast_submitted": "신고가 접수됐어요 - 감사합니다"
+  },
+  "hours": {
+    "eyebrow": "봉사 시간"
+  },
+  "posts": {
+    "loading": "게시물을 불러오는 중...",
+    "error": "게시물을 불러올 수 없어요.",
+    "empty": "아직 게시물이 없어요.",
+    "load_more": "더 불러오기",
+    "loading_more": "불러오는 중...",
+    "load_more_a11y": "게시물 더 불러오기"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "signedOut": {
+    "title": "civfix에 로그인",
+    "body": "로그인하면 계정, 알림, 개인정보 설정을 관리할 수 있어요."
+  },
+  "section": {
+    "account": "계정",
+    "app": "앱",
+    "about": "civfix 소개"
+  },
+  "account": {
+    "label": "계정",
+    "sub": "@핸들, 소셜 링크, 내 데이터"
+  },
+  "notifications": {
+    "label": "알림",
+    "sub": "푸시 알림과 받을 소식"
+  },
+  "privacy": {
+    "label": "개인정보 및 안전",
+    "sub": "메시지, 봉사 기록, 차단한 계정"
+  },
+  "language": {
+    "label": "언어"
+  },
+  "appearance": {
+    "label": "화면 모드"
+  },
+  "tour": {
+    "label": "둘러보기",
+    "sub": "환영 안내를 다시 봐요"
+  },
+  "support_civfix": "civfix 후원하기",
+  "terms": "서비스 약관",
+  "privacy_policy": "개인정보 처리방침",
+  "sign_out": "로그아웃",
+  "donations": {
+    "label": "후원",
+    "sub": "내 후원 내역과 영수증"
+  }
+}

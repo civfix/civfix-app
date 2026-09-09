@@ -1,0 +1,306 @@
+/*
+ * Global styles for community-web.
+ *
+ * The CSS custom properties below are the shadcn/ui semantic theme. Every value is the HSL form of
+ * a hex in @civfix/shared tokens (the source hex is named in the trailing comment so the mapping
+ * back to the single source of truth is auditable). Tailwind utilities read these via
+ * hsl(var(--token)) in tailwind.config.ts. We do not introduce any color that is not a token.
+ */
+
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Surfaces. background = paper (#FBF7F0); card = white (#FFFFFF). */
+    --background: 38.2 57.9% 96.3%; /* neutral.paper  #FBF7F0 */
+    --foreground: 30.0 13.0% 9.0%; /* neutral.ink    #1A1714 */
+
+    --card: 0 0% 100%; /* neutral.card   #FFFFFF */
+    --card-foreground: 30.0 13.0% 9.0%; /* neutral.ink */
+
+    --popover: 0 0% 100%; /* neutral.card   #FFFFFF */
+    --popover-foreground: 30.0 13.0% 9.0%; /* neutral.ink */
+
+    /* Primary = bloom/coral (#FF7A6B) on white. */
+    --primary: 6.1 100% 71%; /* bloom.500      #FF7A6B */
+    --primary-foreground: 0 0% 100%; /* white */
+
+    /* Secondary = paper2 surface with ink text. */
+    --secondary: 38.6 38.9% 92.9%; /* neutral.paper2 #F4EFE6 */
+    --secondary-foreground: 30.0 13.0% 9.0%; /* neutral.ink */
+
+    /* Muted = paper2 with ink3 text. */
+    --muted: 38.6 38.9% 92.9%; /* neutral.paper2 #F4EFE6 */
+    --muted-foreground: 36.7 7.1% 50.6%; /* neutral.ink3   #8A8378 */
+
+    /* Accent = sun (#FFCB47) with ink text (host-event accent). */
+    --accent: 43.0 100% 63.9%; /* sun.500        #FFCB47 */
+    --accent-foreground: 30.0 13.0% 9.0%; /* neutral.ink */
+
+    /* Destructive = bloom.600 (#E55F50). */
+    --destructive: 6.0 74.1% 60.6%; /* bloom.600      #E55F50 */
+    --destructive-foreground: 0 0% 100%; /* white */
+
+    --border: 41.1 29.2% 87.3%; /* neutral.ink5   #E8E2D5 (hairlines) */
+    --input: 41.1 29.2% 87.3%; /* neutral.ink5   #E8E2D5 */
+    --ring: 6.1 100% 71%; /* bloom.500 focus ring */
+
+    /* Radius base for shadcn components; matches token radius.lg (20px). */
+    --radius: 20px;
+
+    /* Hanken Grotesk is self-hosted in contract-fonts.css. Baloo 2 is reserved for the Brand primitive. */
+    --font-display: "HankenGrotesk";
+    --font-body: "HankenGrotesk";
+    --font-mono: "JetBrainsMono_400Regular";
+    --font-display-stack: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    --font-body-stack: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    --font-mono-stack: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+
+    /*
+     * ----- Host Console semantic surface layer (`/manage/*`) -----
+     *
+     * The raw Tailwind token scales (bg-cardflat, text-ink-3, bg-sun-50) are LIGHT-ONLY literals, so a
+     * surface built out of them renders a white card on a dark page. The console is the one screen set
+     * that has to be scheme-correct without a per-component branch, so it consumes this semantic layer
+     * through the `console.*` Tailwind color group instead of the raw scales.
+     *
+     * Every value below is a `colorSchemes[scheme]` entry from @civfix/shared/tokens; the hue pairs are
+     * `color[hue][50]` (soft) over `color.chipInk[hue]` (strong), the one pair that clears WCAG AA in
+     * BOTH schemes. src/components/console/console-tokens.test.ts parses this file and asserts every
+     * value against the contract, so these literals cannot drift.
+     */
+    --console-canvas: #EDE6D8;
+    --console-surface: #FFFDF8;
+    --console-surface-alt: #E5DDCD;
+    --console-tint: #F8F1E4;
+    --console-line: #ECE5D8;
+    --console-line-strong: #BDB5A6;
+    --console-ink: #211B13;
+    --console-ink-2: #5C5546;
+    --console-ink-3: #8D8577;
+    --console-accent: #F0685C;
+    --console-scrim: rgba(33, 27, 19, 0.35);
+    --console-toast-surface: #211B13;
+    --console-toast-ink: #EDE6D8;
+    --console-toast-ink-dim: #8D8577;
+    --console-hue-bloom-soft: #FDEAE7;
+    --console-hue-bloom-strong: #BD4234;
+    --console-hue-moss-soft: #EAF3E8;
+    --console-hue-moss-strong: #2D7743;
+    --console-hue-sun-soft: #F8EED3;
+    --console-hue-sun-strong: #81610E;
+    --console-hue-sky-soft: #E9F1FA;
+    --console-hue-sky-strong: #356291;
+    --console-hue-lilac-soft: #F0EAFA;
+    --console-hue-lilac-strong: #7457B6;
+    --console-shadow-1: 0 1px 0 rgba(26,23,20,0.04), 0 1px 2px rgba(26,23,20,0.05);
+    --console-shadow-2: 0 1px 0 rgba(26,23,20,0.03), 0 2px 4px rgba(26,23,20,0.04), 0 8px 16px -6px rgba(26,23,20,0.08);
+    --console-shadow-3: 0 1px 0 rgba(26,23,20,0.03), 0 4px 8px rgba(26,23,20,0.05), 0 18px 32px -10px rgba(26,23,20,0.12);
+    --console-shadow-4: 0 2px 4px rgba(26,23,20,0.05), 0 12px 20px rgba(26,23,20,0.08), 0 32px 56px -16px rgba(26,23,20,0.18);
+    --console-shadow-ring: 0 0 0 3px rgba(240,104,92,0.30);
+  }
+
+  .dark {
+    --background: 33.3 24.3% 7.3%; /* darkColor.neutral.paper  #17130E */
+    --foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink    #F1EAE0 */
+
+    --card: 34.3 20.0% 13.7%; /* darkColor.neutral.card   #2A241C */
+    --card-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
+
+    --popover: 34.3 20.0% 13.7%; /* darkColor.neutral.card   #2A241C */
+    --popover-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
+
+    --primary: 5.7 86.1% 69.0%; /* darkColor.bloom.500      #F4796C */
+    --primary-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper  #17130E (6.87:1 on primary) */
+
+    --secondary: 35.0 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
+    --secondary-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
+
+    --muted: 35.0 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
+    --muted-foreground: 37.1 8.9% 53.9%; /* darkColor.neutral.ink3   #948C7F */
+
+    --accent: 42.5 75.3% 55.5%; /* darkColor.sun.500        #E3B138 */
+    --accent-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper */
+
+    --destructive: 6.3 87.7% 74.5%; /* darkColor.bloom.600      #F79185 */
+    --destructive-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper */
+
+    --border: 34.3 15.9% 17.3%; /* darkColor.neutral.ink5   #332D25 (hairlines) */
+    --input: 34.3 15.9% 17.3%; /* darkColor.neutral.ink5   #332D25 */
+    --ring: 6.3 87.7% 74.5%; /* darkColor.bloom.600 #F79185 = FOCUS_RING_COLOR_DARK */
+
+    /* Host Console semantic surface layer - dark twins of the `:root` block above. */
+    --console-canvas: #17130E;
+    --console-surface: #2A241C;
+    --console-surface-alt: #211C15;
+    --console-tint: #332C22;
+    --console-line: #332D25;
+    --console-line-strong: #4F473C;
+    --console-ink: #F1EAE0;
+    --console-ink-2: #BDB4A4;
+    --console-ink-3: #948C7F;
+    --console-accent: #F4796C;
+    --console-scrim: rgba(0, 0, 0, 0.55);
+    --console-toast-surface: #332C22;
+    --console-toast-ink: #F1EAE0;
+    --console-toast-ink-dim: #BDB4A4;
+    --console-hue-bloom-soft: #3A211E;
+    --console-hue-bloom-strong: #FAB0A7;
+    --console-hue-moss-soft: #1F2E1D;
+    --console-hue-moss-strong: #A9D6A1;
+    --console-hue-sun-soft: #332A14;
+    --console-hue-sun-strong: #F5D480;
+    --console-hue-sky-soft: #1B2733;
+    --console-hue-sky-strong: #C2DBF1;
+    --console-hue-lilac-soft: #2B2438;
+    --console-hue-lilac-strong: #D5C7F1;
+    --console-shadow-1: 0 1px 0 rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.35);
+    --console-shadow-2: 0 1px 0 rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.3), 0 8px 16px -6px rgba(0,0,0,0.45);
+    --console-shadow-3: 0 1px 0 rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.35), 0 18px 32px -10px rgba(0,0,0,0.55);
+    --console-shadow-4: 0 2px 4px rgba(0,0,0,0.35), 0 12px 20px rgba(0,0,0,0.45), 0 32px 56px -16px rgba(0,0,0,0.65);
+    --console-shadow-ring: 0 0 0 3px rgba(244,121,108,0.40);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-paper text-ink;
+    font-family: var(--font-body-stack);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: var(--font-display-stack);
+    letter-spacing: -0.01em;
+  }
+
+  /* Respect users who prefer reduced motion across our transitions/animations. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /*
+   * Teardrop pin shape used by map markers and the header create buttons' decorative dots.
+   * Mirrors tokens.radius.pin = "50% 50% 50% 6px" but as a utility so it is reusable in JSX.
+   */
+  .rounded-pin {
+    border-radius: 50% 50% 50% 6px;
+  }
+
+  /* Hide scrollbars on the sidebar scroll area while keeping it scrollable. */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/*
+ * The "Skip to content" landing zone (components/home/home-shell.tsx).
+ *
+ * The link resolves its target when it is activated and focuses the CARD's own scroll region - a
+ * container, not a control - after tagging it with this attribute. Chrome answers programmatic focus
+ * that arrived from a keyboard activation with its default blue ring, which would paint a 440x872 UA
+ * rectangle across the whole card on a surface whose focus vocabulary is the shared coral ring, with
+ * square corners inside the card's rounded mask. The skip is confirmed by the very next Tab arriving on
+ * the card's first control - and, for assistive tech, by the reading position moving into the card - so
+ * the container answers focus with nothing painted, the treatment GOV.UK's skip-link target uses. Only
+ * container landings are tagged: when the card is hidden (the Map surface) the link falls back to the
+ * rail, and a real control keeps its own ring.
+ */
+[data-cf-skip-target]:focus {
+  outline: none;
+}
+
+/* The MapLibre canvas should never trap text selection cursors over UI chrome. */
+.maplibregl-map {
+  font-family: var(--font-body-stack);
+}
+
+/*
+ * MapLibre control + attribution restyle to match the brand over warm paper (--radius-md, --shadow-2 from
+ * design.css). The zoom group + the compact attribution badge are added by the shared @civfix/ui Map
+ * (.web seam) ONLY in the expanded layout; the compact layout gets a chrome-free map. The control STYLING
+ * is unconditional, but the bottom-left LEFT OFFSET (to clear the expanded card) is applied ONLY under the
+ * `data-cf-layout` the shell publishes from useLayoutMode() - the same answer the JS shell branches on.
+ */
+.cf-shell .maplibregl-ctrl-group {
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+}
+.cf-shell .maplibregl-ctrl-group button {
+  background: #fff;
+  width: 32px; height: 32px;
+}
+.cf-shell .maplibregl-ctrl-attrib.maplibregl-compact {
+  background: rgba(251,247,240,0.85);
+  border-radius: 6px;
+}
+/*
+ * The attribution follows the shell's LIVE left occlusion instead of a hardcoded width. `.cf-shell`
+ * carries `--cf-occlusion-left` = the frame plan's `occlusionLeft` (the card's own 14px left inset plus
+ * the card's width, or the bare inset in map mode where the card is hidden - the top nav strip is a
+ * horizontal bar now and costs the map no LEFT-edge space of its own), rewritten per frame while the
+ * resize handle is dragged - so the badge tracks the card's edge live and never snaps on release. The
+ * `+ 14px` is the shell's own card-inset family, keeping the badge off the card's edge.
+ *
+ * FALLBACK 454px = 14 + the 440 default card, i.e. exactly where a first paint sits before the host has
+ * written the property (and where the badge stays if it never does) - the old literal went stale the
+ * moment the default width moved, which is the bug class this replaces.
+ *
+ * DELIBERATELY NOT TRANSITIONED: this rule is driven per-frame during a drag, so easing `left` would
+ * make the badge lag the handle by the whole duration. It steps instantly with the var - on the card's
+ * hide/show it simply arrives before the card finishes sliding, which is the cheaper mismatch.
+ *
+ * ...and it is BOUNDED ON THE RIGHT by the zoom group. Left-anchoring alone let the badge keep its
+ * intrinsic single-line width (284px), which could run into the bottom-right +/- group at the smallest
+ * legal expanded width. `right` gives the bottom-left container a DEFINITE width - the live clear strip
+ * minus the zoom group - so the badge shrink-wraps to what is actually free and the credit reflows to a
+ * second line instead of being occluded. 56px = the group's 32px buttons + its own 10px margin + the
+ * same 14px inset the left edge uses, so badge and zoom group are 14px apart at every width.
+ */
+.cf-shell[data-cf-layout="expanded"] .maplibregl-ctrl-bottom-left {
+  left: calc(var(--cf-occlusion-left, 454px) + 14px);
+  right: 56px;
+}
+/* Wrap inside the bounded strip rather than overflowing it; the credit stays fully readable. */
+.cf-shell[data-cf-layout="expanded"] .maplibregl-ctrl-attrib.maplibregl-compact .maplibregl-ctrl-attrib-inner {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+/* Compact is the mobile sheet over a chrome-free map (no zoom group; the attribution is the only
+   control). Tuck the required attribution up into the peek sheet's footprint so the translucent
+   sheet covers it, matching the mobile design where no control badge floats over the map - rather
+   than letting it sit as a readable strip in the gap below the sheet. */
+.cf-shell[data-cf-layout="compact"] .maplibregl-ctrl-bottom-left { left: 16px; bottom: 28px; }

@@ -1,0 +1,231 @@
+/* =========================================================================
+   Public organization page: /orgs/<slug>
+
+   A standalone DOM route in the /e and /donate mould: the audience is a
+   visitor arriving from a shared link (often signed out, often on a phone),
+   so the page is plain semantic HTML that paints without the app shell, the
+   map or the RN stack. In-app navigation to an organization still opens the
+   shared OrgPageBody inside the shell; this is the cold-load surface.
+
+   Every value is a design token from src/styles/design.css, which already
+   flips for `.dark`; there are no literal colors here.
+   ========================================================================= */
+
+.orgpage {
+  min-height: 100dvh;
+  background: var(--bg-1);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
+  line-height: var(--lh-base);
+}
+
+.orgpage-shell {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-5) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ---- Identity ---- */
+.orgpage-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+.orgpage-logo {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  background: var(--bg-2);
+  border: 1px solid var(--border-soft);
+  flex: none;
+}
+.orgpage-logo-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-30);
+  font-weight: 700;
+  color: var(--fg-3);
+}
+.orgpage-identity {
+  min-width: 0;
+  flex: 1;
+}
+.orgpage-identity h1 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-snug);
+  overflow-wrap: anywhere;
+}
+.orgpage-verified {
+  color: var(--moss-600);
+  flex: none;
+}
+.orgpage-handle {
+  margin: var(--space-1) 0 0;
+  color: var(--fg-3);
+  font-size: var(--fs-14);
+}
+.orgpage-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.orgpage-stat {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--fg-2);
+  font-size: var(--fs-13);
+  font-weight: 600;
+}
+.orgpage-stat-verified {
+  border-color: var(--moss-100);
+  background: var(--moss-50);
+  color: var(--moss-600);
+}
+
+/* ---- Donate CTA ---- */
+.orgpage-donate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow-2);
+}
+.orgpage-donate:hover {
+  filter: brightness(0.95);
+}
+.orgpage-donate:focus-visible,
+.orgpage-link:focus-visible,
+.orgpage-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- Sections ---- */
+.orgpage-section {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-1);
+}
+.orgpage-prose p {
+  margin: 0 0 var(--space-3);
+}
+.orgpage-prose p:last-child {
+  margin-bottom: 0;
+}
+.orgpage-prose ul,
+.orgpage-prose ol {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-5);
+}
+.orgpage-prose a {
+  color: var(--accent);
+}
+
+.orgpage-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.orgpage-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  color: var(--fg-1);
+  font-size: var(--fs-14);
+  font-weight: 600;
+  text-decoration: none;
+}
+.orgpage-link:hover {
+  background: var(--bg-2);
+}
+
+/* ---- Footer / states ---- */
+.orgpage-foot {
+  color: var(--fg-3);
+  font-size: var(--fs-13);
+}
+.orgpage-foot p {
+  margin: 0 0 var(--space-1);
+}
+.orgpage-foot a,
+.orgpage-state a {
+  color: var(--fg-2);
+}
+
+.orgpage-state {
+  align-items: center;
+  text-align: center;
+  padding-top: var(--space-16);
+}
+.orgpage-state h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+}
+.orgpage-state p {
+  margin: 0;
+  color: var(--fg-2);
+}
+.orgpage-button {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--fg-1);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.orgpage-spin {
+  animation: orgpage-spin 900ms linear infinite;
+}
+@keyframes orgpage-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orgpage-spin {
+    animation: none;
+  }
+}

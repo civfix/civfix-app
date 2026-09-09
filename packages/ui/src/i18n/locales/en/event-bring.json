@@ -1,0 +1,20 @@
+{
+  "input": {
+    "a11y_label": "Add an item to bring",
+    "placeholder": "Add an item and press return",
+    "add_a11y": "Add item"
+  },
+  "chip": {
+    "remove_a11y": "Remove {{item}}"
+  },
+  "suggestions": {
+    "label": "Suggestions",
+    "add_a11y": "Add {{item}}",
+    "work_gloves": "Work gloves",
+    "water_bottle": "Water bottle",
+    "hat_sunscreen": "Hat & sunscreen",
+    "sturdy_shoes": "Sturdy shoes",
+    "trash_grabber": "Trash grabber",
+    "reusable_bags": "Reusable bags"
+  }
+}

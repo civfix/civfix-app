@@ -1,0 +1,34 @@
+{
+  "signedOut": {
+    "title": "Sign in to manage notifications",
+    "body": "Choose what civfix notifies you about and set your privacy preferences once you sign in."
+  },
+  "error": {
+    "title": "Could not load preferences",
+    "body": "We could not reach civfix. Check your connection and try again."
+  },
+  "push": {
+    "section": "Push",
+    "label": "Push notifications",
+    "helper": "Allow civfix to send notifications to this device."
+  },
+  "categories": {
+    "section": "What you hear about",
+    "reportUpdates": {
+      "label": "Report updates",
+      "helper": "Status changes on issues you reported or follow."
+    },
+    "eventChat": {
+      "label": "Group chats",
+      "helper": "New messages in your event and group chats."
+    },
+    "mentions": {
+      "label": "Mentions",
+      "helper": "When someone @-mentions you in a comment or chat."
+    },
+    "follows": {
+      "label": "New followers",
+      "helper": "When someone follows you on civfix."
+    }
+  }
+}

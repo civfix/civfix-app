@@ -1,0 +1,48 @@
+{
+  "field": {
+    "title": "Titel der Veranstaltung",
+    "titlePlaceholder": "z. B. Aufräumaktion am Riverside Park",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Was sollen Nachbarn mitbringen? Was nehmen wir in Angriff?",
+    "eventType": "Art der Veranstaltung",
+    "meetLocation": "Treffpunkt",
+    "spotPlaceholder": "Ort benennen, z. B. Bootshaus-Steg",
+    "dateTime": "Datum und Uhrzeit",
+    "whatToBring": "Was mitbringen",
+    "slots": "Aufgaben",
+    "slotsHelp": "Biete konkrete Aufgaben zum Übernehmen an.",
+    "optional": "optional"
+  },
+  "linkedReports": {
+    "label": "Meldungen, die dieses Event bearbeitet",
+    "filterByType": "Nach {{type}} filtern",
+    "searchPlaceholder": "Meldungen nach Titel oder Details suchen",
+    "searching": "Suche läuft...",
+    "loadError": "Meldungen konnten nicht geladen werden. Erneut versuchen.",
+    "emptyNoMatch": "Keine Meldungen entsprechen der Suche.",
+    "emptyNone": "Noch keine veröffentlichten Meldungen.",
+    "showMore": "{{count}} weitere anzeigen",
+    "showMoreA11y": "Weitere Meldungen anzeigen",
+    "loadMore": "Mehr laden",
+    "loadMoreA11y": "Weitere Meldungen laden",
+    "loading": "Wird geladen...",
+    "selectedCount_one": "{{count}} Meldung ausgewählt",
+    "selectedCount_other": "{{count}} Meldungen ausgewählt"
+  },
+  "pickOnMap": {
+    "start": "Auf Karte wählen",
+    "startA11y": "Meldungen auf der Karte auswählen",
+    "hint": "Tippe auf Meldungs-Pins in der Karte, um sie zu verknüpfen, und ziehe dieses Fenster dann wieder hoch.",
+    "done": "Fertig",
+    "doneA11y": "Fertig – Meldungen auf der Karte auswählen beenden"
+  },
+  "share": {
+    "label": "Im Feed ankündigen",
+    "helper": "Follower werden ohnehin benachrichtigt. Ein Beitrag macht es für alle auffindbar.",
+    "caption_placeholder": "Sag, warum man kommen sollte.",
+    "caption_a11y": "Text deines Feed-Beitrags",
+    "now": "jetzt",
+    "card_placeholder": "Hier erscheint deine Event-Karte",
+    "event_failed": "Event veröffentlicht. Der Feed-Beitrag ging nicht raus."
+  }
+}

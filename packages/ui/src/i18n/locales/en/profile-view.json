@@ -1,0 +1,67 @@
+{
+  "hero": {
+    "share_a11y": "Share profile",
+    "close_a11y": "Close profile"
+  },
+  "stats": {
+    "following": "Following",
+    "followers_one": "Follower",
+    "followers_other": "Followers",
+    "reports": "Reports",
+    "fixed": "Fixed",
+    "cleanups": "Cleanups"
+  },
+  "events": {
+    "section": "Events",
+    "tab_upcoming": "Upcoming",
+    "tab_past": "Past",
+    "subhead_hosting": "Hosting",
+    "subhead_attending": "Attending",
+    "subhead_hosted": "Hosted",
+    "subhead_attended": "Attended",
+    "badge_host": "Host",
+    "badge_going": "Going",
+    "badge_hosted": "Hosted",
+    "badge_went": "Went",
+    "empty_upcoming": "No upcoming events yet.",
+    "empty_none": "Nothing yet.",
+    "row_a11y": "{{title}}, {{badge}}",
+    "load_more": "Load more",
+    "loading_more": "Loading...",
+    "load_more_a11y": "Load more past events",
+    "load_more_error": "Couldn't load more events.",
+    "load_more_retry": "Try again"
+  },
+  "tabs": {
+    "posts": "Posts",
+    "events": "Events",
+    "hours": "Hours",
+    "reports": "Reports",
+    "a11y": "Profile sections"
+  },
+  "social": {
+    "link_a11y": "Open {{platform}}"
+  },
+  "reports": {
+    "section": "Your reports",
+    "loading": "Loading reports...",
+    "error": "Reports could not be loaded.",
+    "empty": "No reports yet.",
+    "see_all": "See all {{count}} reports",
+    "see_all_a11y": "See all reports",
+    "row_untitled": "Community report",
+    "row_location_pending": "Location pending",
+    "row_a11y": "{{title}}, {{status}}"
+  },
+  "posts": {
+    "section": "Posts",
+    "loading": "Loading posts...",
+    "error": "Posts could not be loaded.",
+    "empty": "No posts yet.",
+    "load_more": "Load more",
+    "loading_more": "Loading...",
+    "load_more_a11y": "Load more posts",
+    "saved": "Saved posts",
+    "saved_a11y": "Open saved posts"
+  }
+}

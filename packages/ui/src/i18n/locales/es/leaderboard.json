@@ -1,0 +1,17 @@
+{
+  "title": "Clasificación de {{name}}",
+  "title_generic": "Clasificación",
+  "hours_unit": "{{hours}} h",
+  "row": {
+    "a11y": "Puesto {{rank}}: {{name}}, {{hours}} horas de voluntariado",
+    "you": "Tú"
+  },
+  "empty": {
+    "title": "Aún no hay horas registradas",
+    "body": "Cuando los vecinos registren horas de voluntariado aquí, la clasificación se llenará."
+  },
+  "error": {
+    "title": "No se pudo cargar",
+    "body": "No pudimos conectar con civfix. Comprueba tu conexión e inténtalo de nuevo."
+  }
+}

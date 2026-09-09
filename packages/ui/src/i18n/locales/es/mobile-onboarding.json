@@ -1,0 +1,86 @@
+{
+  "a11y": {
+    "skip": "Saltar el recorrido",
+    "next": "Página siguiente",
+    "back": "Página anterior",
+    "page_announce": "Página {{index}} de {{count}}. {{title}}",
+    "progress": "Paso {{index}} de {{count}}",
+    "language": "Cambiar idioma",
+    "stage_report": "Se toma una foto, se elige una categoría y un pin cae en el mapa. El reporte se envía.",
+    "stage_track": "Pines de reportes con distintos colores de categoría caen sobre el mapa de un barrio. El estado de un reporte pasa de Publicado a En proceso y luego a Resuelto.",
+    "stage_together": "Una tarjeta de limpieza con vecinos que asistirán, un chat breve entre dos vecinos y un perfil con nombre de usuario.",
+    "stage_theme": "Una tarjeta de vista previa con el aspecto elegido y un pin de reporte.",
+    "stage_ready": "El avatar de tu perfil y un nombre de usuario de ejemplo."
+  },
+  "nav": {
+    "skip": "Saltar",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "done": "Listo"
+  },
+  "report": {
+    "title": "Lo ves. Lo fotografías. Lo marcas.",
+    "body": "Foto, qué es y dónde está. Tres toques y tu reporte está en el mapa.",
+    "caption": "¿Es una emergencia? Llama al 911. civfix no es para emergencias.",
+    "stage": {
+      "capture": "Captura el problema",
+      "what": "¿Qué es?"
+    }
+  },
+  "track": {
+    "title": "Tu barrio, en vivo.",
+    "body": "Cada pin es el reporte de un vecino. Los colores son las categorías. Toca uno para ver fotos, actualizaciones y la conversación.",
+    "caption": "Explora sin tener cuenta.",
+    "stage": {
+      "row_title": "Colchón abandonado en la calle 4",
+      "row_subtitle": "Reportado por un vecino",
+      "row_when": "hace 2 horas",
+      "legend_cleanup": "Limpieza"
+    }
+  },
+  "together": {
+    "title": "Participa. Habla con tu barrio.",
+    "body": "Únete a limpiezas, apúntate a un turno y registra tus horas. Escribe a tus vecinos en un reporte o en el chat del equipo.",
+    "caption": "Confirmar asistencia, enviar mensajes y organizar requieren una cuenta.",
+    "stage": {
+      "event_title": "Limpieza en Echo Park",
+      "event_address": "Echo Park Lake",
+      "going": "{{count}} vecinos asistirán",
+      "hours": "{{hours}} h acreditadas",
+      "chat_1": "¿Alguien más vio la luz apagada en la calle 6?",
+      "chat_2": "Ya lo reporté. El pin está en el mapa.",
+      "organizer": "Organizador comunitario"
+    }
+  },
+  "theme": {
+    "title": "Claro u oscuro, tú decides.",
+    "body": "Elige cómo se ve civfix. Claro por ahora, oscuro cuando quieras.",
+    "caption": "Puedes cambiarlo cuando quieras en Ajustes."
+  },
+  "ready": {
+    "title": "Cuando quieras, empezamos.",
+    "title_authed": "Ya está todo listo.",
+    "body": "Con una cuenta tienes un perfil que tus vecinos reconocen, el historial de tus reportes, mensajes y confirmaciones de asistencia. O primero echa un vistazo.",
+    "body_authed": "Reporta problemas, confirma tu asistencia a limpiezas y escribe a tus vecinos, todo desde el mapa.",
+    "guest": "Primero echar un vistazo",
+    "handle_ghost": "@tú",
+    "trust": {
+      "nonprofit": "Creado por Reach Out Los Angeles, una organización sin fines de lucro 501(c)(3).",
+      "tracking": "Sin anuncios, sin analíticas, sin rastreadores.",
+      "photos": "A las fotos se les quita el GPS y los datos de la cámara antes de subirlas."
+    },
+    "legal": {
+      "terms": "Términos",
+      "privacy": "Privacidad",
+      "separator": " · "
+    }
+  },
+  "location": {
+    "title": "¿Ver lo que pasa cerca de ti?",
+    "body": "Tu ubicación centra el mapa en tu barrio. Solo se usa mientras usas la app y puedes reportar sin ella.",
+    "use": "Usar mi ubicación",
+    "address": "Ingresar una dirección",
+    "later": "Ahora no",
+    "a11y_dismiss": "Cerrar"
+  }
+}

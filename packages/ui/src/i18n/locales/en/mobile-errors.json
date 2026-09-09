@@ -1,0 +1,17 @@
+{
+  "generic": "We could not reach civfix. Check your connection and try again.",
+  "oauth_failed": "{{provider}} sign-in could not be completed. Please try again.",
+  "code": {
+    "UNAUTHORIZED": "Please sign in to continue.",
+    "FORBIDDEN": "You do not have access to do that.",
+    "NOT_FOUND": "We could not find that.",
+    "VALIDATION": "Something in the form needs a quick fix.",
+    "RATE_LIMITED": "Too many tries. Please wait a moment and try again.",
+    "ABUSE_HELD": "Thanks - this is in review and will appear once approved.",
+    "GPS_IMPLAUSIBLE": "That location looks off. Try recapturing where the issue is.",
+    "MEDIA_REJECTED": "That photo or video could not be accepted. Try another.",
+    "CONFLICT": "That action conflicts with something. Refresh and try again.",
+    "TURNSTILE_FAILED": "We could not verify this request. Please try again.",
+    "INTERNAL": "Something went wrong on our end. Please try again."
+  }
+}

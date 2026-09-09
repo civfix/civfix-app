@@ -1,0 +1,41 @@
+{
+  "signedOut": {
+    "title": "Inicia sesión en civfix",
+    "body": "Inicia sesión para gestionar tu cuenta, tus notificaciones y tu privacidad."
+  },
+  "section": {
+    "account": "Cuenta",
+    "app": "Aplicación",
+    "about": "Acerca de"
+  },
+  "account": {
+    "label": "Cuenta",
+    "sub": "@handle, redes sociales, tus datos"
+  },
+  "notifications": {
+    "label": "Notificaciones",
+    "sub": "Avisos push y de qué te enteras"
+  },
+  "privacy": {
+    "label": "Privacidad y seguridad",
+    "sub": "Mensajes, tu registro y cuentas bloqueadas"
+  },
+  "language": {
+    "label": "Idioma"
+  },
+  "appearance": {
+    "label": "Apariencia"
+  },
+  "tour": {
+    "label": "Ver el recorrido",
+    "sub": "Repite el recorrido de bienvenida"
+  },
+  "support_civfix": "Apoya a civfix",
+  "terms": "Términos del servicio",
+  "privacy_policy": "Política de privacidad",
+  "sign_out": "Cerrar sesión",
+  "donations": {
+    "label": "Donaciones",
+    "sub": "Tu historial de donaciones y tus recibos"
+  }
+}

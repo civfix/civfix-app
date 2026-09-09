@@ -1,0 +1,210 @@
+{
+  "name": "@civfix/shared",
+  "version": "0.41.0",
+  "description": "civfix shared contract package: zod schemas, domain types, vendor interfaces, in-memory fakes, design tokens, and a typed API client. Single source of truth for backend, web, and mobile.",
+  "license": "UNLICENSED",
+  "private": false,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./tokens": {
+      "import": {
+        "types": "./dist/tokens/design-tokens.d.ts",
+        "default": "./dist/tokens/design-tokens.js"
+      },
+      "require": {
+        "types": "./dist/tokens/design-tokens.d.cts",
+        "default": "./dist/tokens/design-tokens.cjs"
+      }
+    },
+    "./interfaces": {
+      "import": {
+        "types": "./dist/interfaces/index.d.ts",
+        "default": "./dist/interfaces/index.js"
+      },
+      "require": {
+        "types": "./dist/interfaces/index.d.cts",
+        "default": "./dist/interfaces/index.cjs"
+      }
+    },
+    "./fakes": {
+      "import": {
+        "types": "./dist/fakes/index.d.ts",
+        "default": "./dist/fakes/index.js"
+      },
+      "require": {
+        "types": "./dist/fakes/index.d.cts",
+        "default": "./dist/fakes/index.cjs"
+      }
+    },
+    "./client": {
+      "import": {
+        "types": "./dist/client/index.d.ts",
+        "default": "./dist/client/index.js"
+      },
+      "require": {
+        "types": "./dist/client/index.d.cts",
+        "default": "./dist/client/index.cjs"
+      }
+    },
+    "./avatar": {
+      "import": {
+        "types": "./dist/avatar.d.ts",
+        "default": "./dist/avatar.js"
+      },
+      "require": {
+        "types": "./dist/avatar.d.cts",
+        "default": "./dist/avatar.cjs"
+      }
+    },
+    "./datetime": {
+      "import": {
+        "types": "./dist/datetime.d.ts",
+        "default": "./dist/datetime.js"
+      },
+      "require": {
+        "types": "./dist/datetime.d.cts",
+        "default": "./dist/datetime.cjs"
+      }
+    },
+    "./geocode": {
+      "import": {
+        "types": "./dist/geocode.d.ts",
+        "default": "./dist/geocode.js"
+      },
+      "require": {
+        "types": "./dist/geocode.d.cts",
+        "default": "./dist/geocode.cjs"
+      }
+    },
+    "./chat": {
+      "import": {
+        "types": "./dist/chat/index.d.ts",
+        "default": "./dist/chat/index.js"
+      },
+      "require": {
+        "types": "./dist/chat/index.d.cts",
+        "default": "./dist/chat/index.cjs"
+      }
+    },
+    "./ws": {
+      "import": {
+        "types": "./dist/ws/index.d.ts",
+        "default": "./dist/ws/index.js"
+      },
+      "require": {
+        "types": "./dist/ws/index.d.cts",
+        "default": "./dist/ws/index.cjs"
+      }
+    },
+    "./host": {
+      "import": {
+        "types": "./dist/host/index.d.ts",
+        "default": "./dist/host/index.js"
+      },
+      "require": {
+        "types": "./dist/host/index.d.cts",
+        "default": "./dist/host/index.cjs"
+      }
+    },
+    "./markdown": {
+      "import": {
+        "types": "./dist/markdown/index.d.ts",
+        "default": "./dist/markdown/index.js"
+      },
+      "require": {
+        "types": "./dist/markdown/index.d.cts",
+        "default": "./dist/markdown/index.cjs"
+      }
+    },
+    "./ics": {
+      "import": {
+        "types": "./dist/ics/index.d.ts",
+        "default": "./dist/ics/index.js"
+      },
+      "require": {
+        "types": "./dist/ics/index.d.cts",
+        "default": "./dist/ics/index.cjs"
+      }
+    },
+    "./payments": {
+      "import": {
+        "types": "./dist/payments/index.d.ts",
+        "default": "./dist/payments/index.js"
+      },
+      "require": {
+        "types": "./dist/payments/index.d.cts",
+        "default": "./dist/payments/index.cjs"
+      }
+    },
+    "./legal": {
+      "import": {
+        "types": "./dist/legal/index.d.ts",
+        "default": "./dist/legal/index.js"
+      },
+      "require": {
+        "types": "./dist/legal/index.d.cts",
+        "default": "./dist/legal/index.cjs"
+      }
+    },
+    "./chip-contrast": {
+      "import": {
+        "types": "./dist/tokens/chip-contrast.d.ts",
+        "default": "./dist/tokens/chip-contrast.js"
+      },
+      "require": {
+        "types": "./dist/tokens/chip-contrast.d.cts",
+        "default": "./dist/tokens/chip-contrast.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "pnpm build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "zod": "^3.23"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^9.16.0",
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^3.2.7"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "registry": "https://repo.civfix.org",
+    "access": "public"
+  }
+}

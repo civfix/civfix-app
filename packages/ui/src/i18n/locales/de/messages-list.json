@@ -1,0 +1,52 @@
+{
+  "row": {
+    "a11y_unread": "{{title}}, {{count}} ungelesen",
+    "a11y_muted": "Stummgeschaltet",
+    "members_one": "{{count}} Mitglied",
+    "members_other": "{{count}} Mitglieder",
+    "subscribers_one": "{{count}} Abonnent",
+    "subscribers_other": "{{count}} Abonnenten",
+    "a11y_channel": "Kanal",
+    "action": {
+      "mute": "Stummschalten",
+      "unmute": "Stummschaltung aufheben",
+      "mark_read": "Als gelesen markieren",
+      "more": "Unterhaltungsaktionen",
+      "delete": "Löschen",
+      "delete_a11y": "Unterhaltung löschen"
+    }
+  },
+  "preview": {
+    "new_conversation": "Neue Unterhaltung",
+    "from_me": "Du: {{text}}"
+  },
+  "search": {
+    "placeholder": "Nachrichten durchsuchen",
+    "a11y": "Nachrichten durchsuchen",
+    "clear_a11y": "Suche löschen"
+  },
+  "signed_out": {
+    "title": "Melde dich an, um Nachrichten zu senden",
+    "body_before": "Deine Event-Chats und Direktnachrichten erscheinen hier nach der ",
+    "body_link": "Anmeldung",
+    "body_after": "."
+  },
+  "error": {
+    "title": "Nachrichten konnten nicht geladen werden",
+    "body": "civfix ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "empty": {
+    "title": "Noch keine Nachrichten",
+    "body": "Melde dich für ein Event an, um dem Chat beizutreten, oder schreib einem Nachbarn über sein Profil.",
+    "no_match": {
+      "title": "Keine Unterhaltungen gefunden",
+      "body": "Keine Unterhaltung passt zu „{{query}}“. Versuche einen Namen oder ein Wort aus der Nachricht."
+    }
+  },
+  "new_menu": {
+    "message": "Neue Nachricht",
+    "group": "Neue Gruppe",
+    "channel": "Neuer Kanal",
+    "a11y": "Neue Unterhaltung beginnen"
+  }
+}

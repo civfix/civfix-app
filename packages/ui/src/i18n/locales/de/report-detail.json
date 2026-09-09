@@ -1,0 +1,118 @@
+{
+  "loading_error": {
+    "title": "Meldung nicht verfügbar",
+    "body": "Diese Meldung konnte nicht geladen werden. Sie wurde möglicherweise entfernt, oder du bist offline."
+  },
+  "actions": {
+    "notify": "Benachrichtigen",
+    "notifying": "Benachrichtigend",
+    "notify_a11y_on": "Du wirst über Updates benachrichtigt",
+    "notify_a11y_off": "Bei Updates benachrichtigen",
+    "host_event": "Event organisieren",
+    "mark_resolved": "Als gelöst markieren",
+    "reopen": "Meldung wieder öffnen",
+    "mark_resolved_a11y": "Diese Meldung als gelöst markieren",
+    "reopen_a11y": "Diese Meldung wieder öffnen",
+    "add_to_event": "Zum Event hinzufügen",
+    "added": "Hinzugefügt",
+    "add_to_event_a11y": "Diese Meldung zum Event hinzufügen",
+    "added_a11y": "Zum Event hinzugefügt"
+  },
+  "title_menu": {
+    "options_a11y": "Meldungsoptionen",
+    "hide_from_map": "Von Karte ausblenden",
+    "show_on_map_again": "Wieder auf Karte zeigen",
+    "report_this": "Meldung melden"
+  },
+  "hidden_banner": "Von der Karte ausgeblendet - nur du siehst das.",
+  "subject_label": {
+    "report": "diese Meldung",
+    "comment": "diesen Kommentar",
+    "photo": "dieses Foto",
+    "content": "diesen Inhalt",
+    "message": "diese Nachricht"
+  },
+  "content_report": {
+    "submitted_toast": "Meldung eingereicht - danke",
+    "error": "Meldung konnte nicht gesendet werden. Bitte erneut versuchen."
+  },
+  "gallery": {
+    "processing_title": "Fotos werden noch verarbeitet...",
+    "processing_body_one": "Es erscheint hier, sobald die Verarbeitung abgeschlossen ist.",
+    "processing_body_other": "{{count}} Fotos erscheinen hier nach der Verarbeitung.",
+    "processing_a11y": "Fotos werden noch verarbeitet",
+    "tile_processing": "Wird verarbeitet...",
+    "tile_rejected": "Konnte nicht gepostet werden",
+    "tile_held": "In Prüfung",
+    "view_fullscreen_a11y": "Medien im Vollbild anzeigen",
+    "report_photo_a11y": "Dieses Foto melden",
+    "thumb_a11y": "{{kind}} {{index}} von {{total}} anzeigen"
+  },
+  "category_tag_a11y": "{{category}}",
+  "timeline": {
+    "label": "UPDATES",
+    "reported_by_you": "Von dir gemeldet",
+    "reported_by_neighbor": "Von einem Nachbarn gemeldet",
+    "forwarded_to_city": "An die Stadtverwaltung weitergeleitet",
+    "pending_submission": "Ausstehende Weiterleitung an die Stadt",
+    "pending_a11y": "Warum ist das ausstehend?",
+    "pending_note": "Wir haben den Kontakt dieser Stadt noch nicht erfasst. Nach einer Meldung dauert das in der Regel 1 bis 3 Werktage.",
+    "reopened": "Wieder geöffnet",
+    "hidden_from_map": "Von der Karte ausgeblendet",
+    "shown_on_map_again": "Wieder auf der Karte sichtbar",
+    "update": "Aktualisierung",
+    "reply_from_city": "Antwort der Stadt",
+    "show_full_message": "Vollständige Nachricht anzeigen",
+    "hide_message": "Nachricht ausblenden",
+    "show_full_message_a11y": "Vollständige Nachricht anzeigen",
+    "hide_full_message_a11y": "Vollständige Nachricht ausblenden",
+    "linked_to_cleanup": "Verknüpft mit Aktion '{{title}}'",
+    "linked_to_cleanup_detail": "{{organizer}} organisiert dafür eine Aufräumaktion.",
+    "status": {
+      "not_forwarded": "Noch nicht weitergeleitet",
+      "in_progress": "In Bearbeitung",
+      "resolved": "Gelöst",
+      "under_review": "In Prüfung",
+      "removed": "Entfernt"
+    }
+  },
+  "updates_label": "UPDATES",
+  "linked_events": {
+    "heading": "AUFRÄUMAKTIONEN"
+  },
+  "tabs": {
+    "timeline": "Verlauf",
+    "chat": "Chat"
+  },
+  "discussion": {
+    "count_one": "{{count}} Kommentar",
+    "count_other": "{{count}} Kommentare",
+    "empty": "Noch keine Kommentare. Starte die Diskussion zu dieser Meldung.",
+    "load_earlier": "Ältere Kommentare laden",
+    "load_earlier_a11y": "Ältere Kommentare laden",
+    "loading": "Wird geladen...",
+    "edit_title": "Kommentar bearbeiten",
+    "edit_error": "Bearbeitung konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "sign_in_cta": "Anmelden, um mitzudiskutieren",
+    "sign_in_cta_a11y": "Anmelden, um mitzudiskutieren"
+  },
+  "hostDraft": {
+    "back": "Zurück zu deinem Event ({{count}})",
+    "add": "Zum Event hinzufügen",
+    "remove": "Entfernen"
+  },
+  "chat": {
+    "heading": "Chat",
+    "empty": "Noch keine Nachrichten. Starte das Gespräch über diese Meldung.",
+    "loading": "Wird geladen...",
+    "load_earlier": "Frühere Nachrichten laden",
+    "load_earlier_a11y": "Frühere Nachrichten laden",
+    "error": "Chat konnte nicht geladen werden.",
+    "sign_in_cta": "Zum Chatten anmelden",
+    "sign_in_cta_a11y": "Anmelden, um am Chat teilzunehmen",
+    "composer_placeholder": "Nachricht schreiben...",
+    "view_chat": "Chat ansehen",
+    "view_chat_meta": "{{members}} Mitglieder · {{messages}} Nachrichten",
+    "view_chat_a11y": "Chat zu dieser Meldung ansehen"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Event absagen?",
+  "caption": "Teilnehmer werden benachrichtigt und es wird von der Karte entfernt. Dies kann nicht rückgängig gemacht werden.",
+  "reason": {
+    "placeholder": "Grund angeben (optional)",
+    "a11y": "Absagegrund (optional)"
+  },
+  "actions": {
+    "keep": "Behalten",
+    "confirm": "Event absagen"
+  },
+  "a11y": {
+    "dismiss": "Absage schließen"
+  }
+}

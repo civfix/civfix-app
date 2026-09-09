@@ -1,0 +1,103 @@
+/**
+ * The attendee-facing slot picker's pure model. The load-bearing rules: ownership comes off
+ * `slot.mine`, an unlimited slot is never full, and `mine` outranks `full` (the person who took the
+ * last spot must still be able to release it).
+ */
+import { describe, expect, it } from "vitest"
+import type { EventSlotDTO } from "@civfix/shared"
+import {
+  mySlotId,
+  slotRemaining,
+  slotRowState,
+  slotsFilledSummary,
+  sortSlots,
+} from "../eventSlotsModel"
+
+function slot(id: string, over: Partial<EventSlotDTO> = {}): EventSlotDTO {
+  return { id, title: `Slot ${id}`, claimed: 0, sortOrder: 0, ...over }
+}
+
+describe("mySlotId", () => {
+  it("returns the id of the slot flagged mine, or null", () => {
+    expect(mySlotId([slot("a"), slot("b", { mine: true })])).toBe("b")
+    expect(mySlotId([slot("a"), slot("b", { mine: false })])).toBeNull()
+    expect(mySlotId([])).toBeNull()
+  })
+})
+
+describe("slotRemaining", () => {
+  it("returns null for an unlimited slot", () => {
+    expect(slotRemaining(slot("a"))).toBeNull()
+    expect(slotRemaining(slot("a", { capacity: null }))).toBeNull()
+  })
+
+  it("returns the spots left, clamped at zero when claims exceed capacity", () => {
+    expect(slotRemaining(slot("a", { capacity: 4, claimed: 1 }))).toBe(3)
+    expect(slotRemaining(slot("a", { capacity: 4, claimed: 4 }))).toBe(0)
+    expect(slotRemaining(slot("a", { capacity: 2, claimed: 6 }))).toBe(0)
+  })
+})
+
+describe("slotRowState", () => {
+  it("is open when the slot has room and the viewer holds nothing", () => {
+    expect(slotRowState(slot("a", { capacity: 4, claimed: 1 }), null, false)).toBe("open")
+  })
+
+  it("treats a slot with no capacity as never full", () => {
+    expect(slotRowState(slot("a", { claimed: 99 }), null, false)).toBe("open")
+  })
+
+  it("is full when a capped slot has no room left", () => {
+    expect(slotRowState(slot("a", { capacity: 2, claimed: 2 }), null, false)).toBe("full")
+  })
+
+  it("is mine for the viewer's own slot, even when that slot is full", () => {
+    expect(slotRowState(slot("a", { capacity: 2, claimed: 2, mine: true }), "a", false)).toBe("mine")
+  })
+
+  it("is switch for another open slot while the viewer holds one", () => {
+    expect(slotRowState(slot("b", { capacity: 4, claimed: 1 }), "a", false)).toBe("switch")
+  })
+
+  it("still reports full for another slot with no room, even while holding one", () => {
+    expect(slotRowState(slot("b", { capacity: 1, claimed: 1 }), "a", false)).toBe("full")
+  })
+
+  it("collapses every state to readonly on a past event", () => {
+    expect(slotRowState(slot("a", { mine: true }), "a", true)).toBe("readonly")
+    expect(slotRowState(slot("b", { capacity: 1, claimed: 1 }), null, true)).toBe("readonly")
+  })
+})
+
+describe("slotsFilledSummary", () => {
+  it("sums claims and capacities", () => {
+    expect(
+      slotsFilledSummary([
+        slot("a", { capacity: 4, claimed: 2 }),
+        slot("b", { capacity: 2, claimed: 1 }),
+      ]),
+    ).toEqual({ claimed: 3, capacity: 6 })
+  })
+
+  it("reports a null capacity when ANY slot is unlimited", () => {
+    expect(
+      slotsFilledSummary([slot("a", { capacity: 4, claimed: 2 }), slot("b", { claimed: 5 })]),
+    ).toEqual({ claimed: 7, capacity: null })
+  })
+
+  it("is zero/zero for no slots", () => {
+    expect(slotsFilledSummary([])).toEqual({ claimed: 0, capacity: 0 })
+  })
+})
+
+describe("sortSlots", () => {
+  it("sorts by sortOrder, then title, without mutating the input", () => {
+    const input = [
+      slot("a", { title: "Zebra", sortOrder: 1 }),
+      slot("b", { title: "Apple", sortOrder: 1 }),
+      slot("c", { title: "Middle", sortOrder: 0 }),
+    ]
+    expect(sortSlots(input).map((s) => s.id)).toEqual(["c", "b", "a"])
+    expect(input.map((s) => s.id)).toEqual(["a", "b", "c"])
+  })
+})

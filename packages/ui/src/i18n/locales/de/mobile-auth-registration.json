@@ -1,0 +1,30 @@
+{
+  "title": "Konto einrichten",
+  "subtitle": "Wähle einen Benutzernamen und bestätige deinen Namen, damit Nachbarn dich erkennen.",
+  "field": {
+    "first_name": {
+      "label": "Vorname",
+      "placeholder": "Vorname"
+    },
+    "last_name": {
+      "label": "Nachname",
+      "placeholder": "Nachname (optional)"
+    },
+    "username": {
+      "label": "Benutzername",
+      "placeholder": "benutzername"
+    }
+  },
+  "handle": {
+    "rule": "3–20 Buchstaben, Zahlen oder Unterstriche.",
+    "rule_invalid": "Verwende 3–20 Buchstaben, Zahlen oder Unterstriche.",
+    "checking": "Wird geprüft...",
+    "available": "@{{handle}} ist verfügbar",
+    "taken": "@{{handle}} ist vergeben"
+  },
+  "continue": "Weiter",
+  "signout": {
+    "prompt": "Nicht du?",
+    "action": "Abmelden"
+  }
+}

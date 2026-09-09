@@ -1,0 +1,157 @@
+import React, { useCallback, useEffect, useState } from "react"
+import { View, TextInput } from "react-native"
+import type { TicketTypeDTO } from "@civfix/shared"
+import { MAX_ATTENDEE_NAME } from "@civfix/shared"
+import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { Text } from "../../typography"
+import {
+  ModalCardSheet,
+  PrimaryButton,
+  SecondaryButton,
+  modalSheetInputFocusedStyle,
+  modalSheetInputStyle,
+  useToast,
+} from "../../primitives"
+import { useT } from "../../i18n"
+import { useWalkupRegistration } from "../../data/hooks/host"
+import { appErrorCode } from "../errorCode"
+import { TicketTypePicker } from "./registration/TicketTypePicker"
+import { PartySizeStepper, clampPartySize } from "./registration/PartySizeStepper"
+import { defaultTicketTypeId, registerOutcomeKey, selectableTicketTypes } from "./registration/registrationModel"
+
+export interface HostWalkupSheetProps {
+  visible: boolean
+  cleanupId: string
+  ticketTypes: readonly TicketTypeDTO[]
+  onClose: () => void
+}
+
+export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: HostWalkupSheetProps) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("host-mode")
+  const toast = useToast()
+  const walkup = useWalkupRegistration(cleanupId)
+
+  const types = selectableTicketTypes(ticketTypes)
+  const [name, setName] = useState("")
+  const [ticketTypeId, setTicketTypeId] = useState<string | null>(null)
+  const [partySize, setPartySize] = useState(1)
+  const [focused, setFocused] = useState(false)
+  const [errorText, setErrorText] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!visible) return
+    setName("")
+    setPartySize(1)
+    setErrorText(null)
+    setTicketTypeId(defaultTicketTypeId(types))
+    walkup.reset()
+  }, [visible])
+
+  const selected = types.find((type) => type.id === ticketTypeId) ?? null
+  const trimmed = name.trim()
+  const canSubmit = trimmed.length > 0 && !walkup.isPending
+
+  const submit = useCallback(() => {
+    if (!canSubmit) return
+    setErrorText(null)
+    walkup.mutate(
+      {
+        name: trimmed,
+        partySize: selected ? clampPartySize(partySize, selected.maxPartySize) : 1,
+        checkInNow: true,
+        ...(selected ? { ticketTypeId: selected.id } : {}),
+      },
+      {
+        onSuccess: (res) => {
+          const key = registerOutcomeKey(res.outcome)
+          if (key) {
+            setErrorText(t(`host-ticket:${key}`))
+            return
+          }
+          toast.show(t("walkup.success", { name: trimmed }), { variant: "success" })
+          onClose()
+        },
+        onError: (err) =>
+          setErrorText(appErrorCode(err) === "FORBIDDEN" ? t("walkup.error_forbidden") : t("walkup.error")),
+      },
+    )
+  }, [canSubmit, onClose, partySize, selected, t, toast, trimmed, walkup])
+
+  return (
+    <ModalCardSheet
+      visible={visible}
+      onClose={onClose}
+      onCommit={submit}
+      headerIcon="UserPlus"
+      headerIconColor={th.colors.moss["700"]}
+      title={t("walkup.title")}
+      dismissLabel={t("walkup.dismiss_a11y")}
+      backdropDismissDisabled={walkup.isPending}
+      error={errorText}
+      actions={
+        <>
+          <SecondaryButton label={t("walkup.cancel")} onPress={onClose} size="sm" disabled={walkup.isPending} />
+          <PrimaryButton
+            label={t("walkup.submit")}
+            onPress={submit}
+            loading={walkup.isPending}
+            disabled={!canSubmit}
+          />
+        </>
+      }
+    >
+      <Text variant="caption" color={th.colors.textSubtle}>
+        {t("walkup.caption")}
+      </Text>
+
+      <Text variant="label">{t("walkup.name_label")}</Text>
+      <TextInput
+        value={name}
+        onChangeText={(next) => setName(next.slice(0, MAX_ATTENDEE_NAME))}
+        editable={!walkup.isPending}
+        maxLength={MAX_ATTENDEE_NAME}
+        placeholder={t("walkup.name_placeholder")}
+        placeholderTextColor={th.colors.textSubtle}
+        accessibilityLabel={t("walkup.name_label")}
+        autoCapitalize="words"
+        autoCorrect={false}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+      />
+
+      {types.length > 1 ? (
+        <View style={styles.section}>
+          <Text variant="label">{t("walkup.type_label")}</Text>
+          <TicketTypePicker
+            ticketTypes={types}
+            selectedId={ticketTypeId}
+            onSelect={setTicketTypeId}
+            disabled={walkup.isPending}
+          />
+        </View>
+      ) : null}
+
+      {selected ? (
+        <PartySizeStepper
+          value={partySize}
+          max={selected.maxPartySize}
+          onChange={setPartySize}
+          disabled={walkup.isPending}
+        />
+      ) : null}
+    </ModalCardSheet>
+  )
+}
+
+const useStyles = makeThemedStyles((t) => ({
+  input: {
+    ...modalSheetInputStyle(t),
+    minHeight: 42,
+  },
+  section: {
+    gap: t.space["2"],
+  },
+}))

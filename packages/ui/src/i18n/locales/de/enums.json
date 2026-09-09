@@ -1,0 +1,193 @@
+{
+  "category": {
+    "trash": "Müll",
+    "recycling": "Recycling",
+    "graffiti": "Graffiti",
+    "hazard": "Gefahr",
+    "encampment": "Lager",
+    "water": "Wasser",
+    "other": "Sonstiges"
+  },
+  "status": {
+    "submitted": "Eingereicht",
+    "held": "In Prüfung",
+    "published": "Veröffentlicht",
+    "acknowledged": "Bestätigt",
+    "in_progress": "In Bearbeitung",
+    "resolved": "Erledigt",
+    "rejected": "Abgelehnt"
+  },
+  "eventType": {
+    "cleanup": "Aufräumaktion",
+    "other_volunteer": "Andere Freiwilligenarbeit"
+  },
+  "eventKind": {
+    "cleanup": "Aufräumaktion",
+    "other_volunteer": "Andere Freiwilligenarbeit"
+  },
+  "reportType": {
+    "dump": "Müllablagerung",
+    "encampment": "Lager",
+    "graffiti": "Graffiti",
+    "infrastructure": "Beschädigte Infrastruktur",
+    "pavement": "Straßenschäden",
+    "vegetation": "Überwucherung",
+    "other": "Sonstiges"
+  },
+  "eventStatus": {
+    "upcoming": "Bevorstehend",
+    "active": "Aktiv",
+    "done": "Abgeschlossen",
+    "cancelled": "Abgesagt"
+  },
+  "registrationStatus": {
+    "registered": "Angemeldet",
+    "cancelled": "Storniert",
+    "transferred": "Übertragen"
+  },
+  "registrationSource": {
+    "self": "Selbst",
+    "waitlist": "Von der Warteliste",
+    "walkup": "Vor Ort",
+    "transfer": "Übertragen"
+  },
+  "seatStatus": {
+    "active": "Aktiv",
+    "cancelled": "Storniert"
+  },
+  "checkinMethod": {
+    "scan": "Gescannt",
+    "manual": "Manuell",
+    "self": "Selbst-Check-in",
+    "walkup": "Vor Ort"
+  },
+  "waitlistStatus": {
+    "waiting": "Wartend",
+    "offered": "Angeboten",
+    "claimed": "Angenommen",
+    "expired": "Abgelaufen",
+    "cancelled": "Storniert"
+  },
+  "ticketTypeVisibility": {
+    "public": "Öffentlich",
+    "hidden": "Versteckt",
+    "access_code": "Zugangscode"
+  },
+  "eventVisibility": {
+    "public": "Öffentlich",
+    "unlisted": "Nicht gelistet",
+    "private": "Privat"
+  },
+  "eventPageStatus": {
+    "draft": "Entwurf",
+    "published": "Veröffentlicht",
+    "unpublished": "Zurückgezogen"
+  },
+  "registrationState": {
+    "open": "Offen",
+    "not_yet_open": "Noch nicht offen",
+    "closed": "Geschlossen",
+    "full": "Ausgebucht",
+    "waitlist": "Warteliste"
+  },
+  "cleanupMemberRole": {
+    "organizer": "Organisator*in",
+    "cohost": "Co-Host",
+    "member": "Teilnehmende*r",
+    "staff": "Team"
+  },
+  "organizationMemberRole": {
+    "owner": "Inhaber*in",
+    "admin": "Administrator*in",
+    "member": "Mitglied"
+  },
+  "orgVerificationStatus": {
+    "unverified": "Nicht verifiziert",
+    "pending": "In Prüfung",
+    "verified": "Verifiziert",
+    "rejected": "Abgelehnt"
+  },
+  "orgVerificationKind": {
+    "nonprofit": "Gemeinnützig",
+    "government": "Behörde",
+    "community": "Gemeinschaftsgruppe"
+  },
+  "broadcastKind": {
+    "host_broadcast": "Host-Nachricht",
+    "confirmation": "Bestätigung",
+    "waitlist_promoted": "Wartelistenplatz",
+    "reminder": "Erinnerung",
+    "event_updated": "Veranstaltung geändert",
+    "event_cancelled": "Veranstaltung abgesagt",
+    "thank_you": "Dankeschön"
+  },
+  "broadcastStatus": {
+    "draft": "Entwurf",
+    "scheduled": "Geplant",
+    "sending": "Wird gesendet",
+    "sent": "Gesendet",
+    "cancelled": "Abgebrochen",
+    "failed": "Fehlgeschlagen"
+  },
+  "broadcastChannel": {
+    "inapp": "In der App",
+    "push": "Push",
+    "email": "E-Mail",
+    "sms": "SMS"
+  },
+  "broadcastSegment": {
+    "all_registered": "Alle Angemeldeten",
+    "ticket_types": "Nach Ticketart",
+    "slots": "Nach Schicht",
+    "waitlist": "Warteliste",
+    "checked_in": "Eingecheckt",
+    "not_checked_in": "Nicht eingecheckt",
+    "guests_only": "Nur Gäste"
+  },
+  "deliveryStatus": {
+    "pending": "Ausstehend",
+    "in_flight": "Wird gesendet",
+    "sent": "Gesendet",
+    "failed": "Fehlgeschlagen",
+    "suppressed": "Unterdrückt",
+    "skipped": "Übersprungen"
+  },
+  "donationStatus": {
+    "pending": "Ausstehend",
+    "succeeded": "Abgeschlossen",
+    "failed": "Fehlgeschlagen",
+    "refunded": "Erstattet",
+    "partially_refunded": "Teilweise erstattet"
+  },
+  "donationDisputeState": {
+    "none": "Keine",
+    "open": "Offen",
+    "won": "Gewonnen",
+    "lost": "Verloren",
+    "warning": "Warnung"
+  },
+  "orgPaymentsState": {
+    "not_started": "Nicht begonnen",
+    "onboarding": "In Bearbeitung",
+    "ready": "Bereit",
+    "at_risk": "Handlungsbedarf",
+    "blocked": "Gesperrt"
+  },
+  "donateState": {
+    "READY": "Nimmt Spenden an",
+    "AT_RISK": "Handlungsbedarf",
+    "BLOCKED": "Gesperrt",
+    "OFF": "Aus"
+  },
+  "attendeeKind": {
+    "member": "Mitglied",
+    "guest": "Gast"
+  },
+  "hostExportStatus": {
+    "queued": "In der Warteschlange",
+    "running": "Wird erstellt",
+    "ready": "Bereit",
+    "failed": "Fehlgeschlagen",
+    "expired": "Abgelaufen"
+  }
+}

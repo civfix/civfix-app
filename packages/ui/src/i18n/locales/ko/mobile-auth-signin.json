@@ -1,0 +1,16 @@
+{
+  "button": {
+    "apple": "Apple로 계속하기",
+    "google": "Google로 계속하기",
+    "email": "이메일로 계속하기"
+  },
+  "email": {
+    "label": "이메일",
+    "placeholder": "you@example.com",
+    "send_code": "인증 코드 보내기",
+    "invalid": "유효한 이메일 주소를 입력해 주세요."
+  },
+  "privacy": {
+    "disclaimer": "이메일은 외부에 공유되지 않으며 계정 보안에만 사용됩니다."
+  }
+}

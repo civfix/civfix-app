@@ -1,0 +1,72 @@
+{
+  "title": {
+    "pin": "Melden",
+    "cleanups": "Veranstaltungen",
+    "myreports": "Deine Meldungen",
+    "cleanup": "Veranstaltung",
+    "messages": "Nachrichten",
+    "new_msg": "Neue Nachricht",
+    "people": "Personen",
+    "person": "Profil",
+    "followers": "Follower",
+    "following": "Gefolgt",
+    "activity": "Benachrichtigungen",
+    "notification_prefs": "Benachrichtigungen",
+    "profile": "Du",
+    "blocked": "Gesperrte Konten",
+    "language_settings": "Sprache",
+    "appearance_settings": "Erscheinungsbild",
+    "settings": "Einstellungen",
+    "settings_account": "Konto",
+    "settings_privacy": "Privatsphäre & Sicherheit",
+    "create_cleanup": "Veranstaltung erstellen",
+    "edit_cleanup": "Veranstaltung bearbeiten",
+    "verify": "Verifizieren",
+    "leaderboard": "Bestenliste",
+    "cluster_one": "{{count}} Meldung",
+    "cluster_other": "{{count}} Meldungen",
+    "members": "Mitglieder",
+    "group_info": "Gruppeninfo",
+    "chat_info": "Chat-Info",
+    "post": "Beitrag",
+    "post_thread": "Unterhaltung",
+    "post_composer": "Neuer Beitrag",
+    "saves": "Gespeichert",
+    "drop_pin": "Hier hinzufügen",
+    "host_mode": "Host-Modus",
+    "host_checkin": "Check-in",
+    "host_broadcast_quick": "Kurznachricht",
+    "my_ticket": "Dein Ticket",
+    "org": "Organisation",
+    "my_donations": "Deine Spenden"
+  },
+  "tab": {
+    "home": "Start",
+    "map": "Karte",
+    "messages": "Nachrichten",
+    "report": "Erstellen",
+    "search": "Suchen"
+  },
+  "create": {
+    "report": "Meldung erstellen",
+    "event": "Veranstaltung erstellen",
+    "post": "Beitrag erstellen"
+  },
+  "placeholder": {
+    "people": "Personen suchen",
+    "reports": "Meldungen suchen",
+    "places_events": "Orte & Veranstaltungen suchen",
+    "search": "Veranstaltungen, Meldungen, Straßen…"
+  },
+  "a11y": {
+    "back": "Zurück",
+    "close": "Schließen",
+    "settings": "Einstellungen",
+    "home": "Startseite",
+    "resize_sidebar": "Seitenleiste anpassen",
+    "drag_handle": "Ziehpunkt",
+    "create_menu": "Erstellen",
+    "dismiss_create_menu": "Erstellen-Menü schließen"
+  },
+  "fallback_you": "Du"
+}

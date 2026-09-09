@@ -1,0 +1,131 @@
+{
+  "saved": "Seite gespeichert",
+  "published": "Seite veröffentlicht",
+  "unpublished": "Seite zurückgezogen",
+  "publish": "Veröffentlichen",
+  "unpublish": "Zurückziehen",
+  "publish_blocked": "Lege zuerst eine Adresse fest und füge mindestens einen Block hinzu.",
+  "flagged": "Wird von civfix geprüft",
+  "settings": {
+    "title": "Seiteneinstellungen"
+  },
+  "slug": {
+    "label": "Adresse der Seite",
+    "hint": "Kleinbuchstaben, Zahlen und Bindestriche. Daraus wird civfix.org/e/deine-adresse.",
+    "checking": "Verfügbarkeit wird geprüft…",
+    "available": "Diese Adresse ist frei.",
+    "current": "Das ist die aktuelle Adresse.",
+    "invalid": "Nutze 3–60 Kleinbuchstaben, Zahlen und einzelne Bindestriche.",
+    "taken_with_suggestion": "Diese Adresse ist vergeben. {{suggestion}} könnte frei sein.",
+    "reason_taken": "Diese Adresse ist vergeben.",
+    "reason_reserved": "Diese Adresse ist reserviert.",
+    "reason_invalid": "Diese Adresse ist nicht gültig."
+  },
+  "theme": {
+    "label": "Akzentfarbe",
+    "bloom": "Koralle",
+    "moss": "Moos",
+    "sun": "Sonne",
+    "sky": "Himmel",
+    "lilac": "Flieder"
+  },
+  "cover": {
+    "label": "Titelbild",
+    "hint": "Erscheint oben auf der Seite und in Linkvorschauen.",
+    "add": "Titelbild hinzufügen"
+  },
+  "logo": {
+    "add": "Logo hinzufügen"
+  },
+  "gallery": {
+    "add": "Fotos hinzufügen"
+  },
+  "seo": {
+    "noindex": "Vor Suchmaschinen verbergen",
+    "noindex_hint": "Für alle mit dem Link funktioniert die Seite weiterhin."
+  },
+  "blocks": {
+    "title": "Seiteninhalt",
+    "add": "Hinzufügen",
+    "add_kind": "Blockart",
+    "empty": "Noch keine Blöcke. Füge einen hinzu, um mit der Seite zu starten.",
+    "move_up": "Nach oben",
+    "move_down": "Nach unten",
+    "remove": "Diesen Block entfernen"
+  },
+  "block": {
+    "title": "Überschrift",
+    "kind": {
+      "hero": "Kopfbereich",
+      "about": "Über die Veranstaltung",
+      "agenda": "Programm",
+      "hosts": "Hosts",
+      "faq": "FAQ",
+      "location": "Ort",
+      "sponsors": "Sponsoren",
+      "donate": "Spenden",
+      "registration": "Anmeldung",
+      "contact": "Kontakt"
+    },
+    "hero": {
+      "headline": "Überschrift",
+      "subhead": "Unterzeile"
+    },
+    "about": {
+      "body": "Text"
+    },
+    "agenda": {
+      "item": "Punkt {{n}}",
+      "time": "Uhrzeit",
+      "item_title": "Was passiert",
+      "item_description": "Details",
+      "add": "Punkt hinzufügen"
+    },
+    "hosts": {
+      "entry": "Host {{n}}",
+      "name": "Name",
+      "role": "Rolle",
+      "bio": "Kurze Beschreibung",
+      "add": "Host hinzufügen"
+    },
+    "faq": {
+      "item": "Frage {{n}}",
+      "question": "Frage",
+      "answer": "Antwort",
+      "add": "Frage hinzufügen"
+    },
+    "location": {
+      "note": "Anfahrt",
+      "show_map": "Karte anzeigen"
+    },
+    "sponsors": {
+      "entry": "Sponsor {{n}}",
+      "name": "Name",
+      "url": "Link",
+      "add": "Sponsor hinzufügen"
+    },
+    "donate": {
+      "blurb": "Wofür Spenden gebraucht werden",
+      "url": "Spendenlink",
+      "url_hint": "Leer lassen, um die civfix-Spendenseite deiner Organisation zu verwenden."
+    },
+    "registration": {
+      "note": "Hinweis über dem Anmeldeformular"
+    },
+    "contact": {
+      "body": "Kontaktdaten",
+      "reply_to": "Antwortadresse",
+      "reply_to_hint": "Wird auf der Seite angezeigt, damit Leute dich erreichen können."
+    }
+  },
+  "preview": {
+    "title": "Vorschau",
+    "empty": "Füge einen Block hinzu, um die Seite Gestalt annehmen zu sehen.",
+    "map_placeholder": "Hier erscheint eine Karte mit dem Veranstaltungsort.",
+    "registration_placeholder": "Hier erscheint das Anmeldeformular."
+  },
+  "unpublish_confirm": {
+    "title": "Diese Seite zurückziehen?",
+    "body": "Die Adresse funktioniert für alle außerhalb des Host-Teams nicht mehr. Die Anmeldung über die App bleibt davon unberührt."
+  }
+}

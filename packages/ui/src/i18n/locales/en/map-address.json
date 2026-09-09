@@ -1,0 +1,12 @@
+{
+  "input": {
+    "placeholder": "Search an address or paste lat, lng",
+    "clear": "Clear"
+  },
+  "coordinate": {
+    "exact": "Exact coordinates"
+  },
+  "empty": {
+    "noMatches": "No matches. Try a more specific address, or paste \"lat, lng\"."
+  }
+}

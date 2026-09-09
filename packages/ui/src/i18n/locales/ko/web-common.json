@@ -1,0 +1,24 @@
+{
+  "a11y": {
+    "skip_to_content": "본문으로 건너뛰기",
+    "map_controls": "지도 컨트롤"
+  },
+  "boot": {
+    "loading_label": "civfix 불러오는 중"
+  },
+  "detail": {
+    "back": "뒤로"
+  },
+  "sign_in_prompt": {
+    "cta": "로그인"
+  },
+  "app_promo": {
+    "banner_title": "civfix",
+    "banner_subtitle": "앱에서 더 빠르게 신고하세요",
+    "card_title": "civfix 앱 받기",
+    "card_body": "휴대폰에서 문제를 신고하고, 처리 상황을 확인하고, 정화 활동에 참여하세요.",
+    "dismiss": "닫기",
+    "badge_app_store": "App Store에서 civfix 다운로드",
+    "badge_google_play": "Google Play에서 civfix 받기"
+  }
+}

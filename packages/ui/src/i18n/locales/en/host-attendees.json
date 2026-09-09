@@ -1,0 +1,119 @@
+{
+  "waitlist_notice": "Waitlist entries are not registrations yet, so per-attendee actions are unavailable here.",
+  "row": {
+    "guest": "Guest",
+    "deleted_user": "Deleted user"
+  },
+  "chip": {
+    "checked_in": "Checked in",
+    "not_checked_in": "Not checked in",
+    "no_show": "No-show"
+  },
+  "action": {
+    "message": "Message attendees"
+  },
+  "filter": {
+    "tabs": "Attendee filters",
+    "search": "Search",
+    "search_placeholder": "Search by name",
+    "ticket_type": "Ticket type",
+    "all": "Everyone",
+    "registered": "Registered",
+    "checked_in": "Checked in",
+    "not_checked_in": "Not checked in",
+    "no_show": "No-show",
+    "waitlisted": "Waitlist",
+    "cancelled": "Cancelled",
+    "guests": "Guests",
+    "members": "Members"
+  },
+  "column": {
+    "name": "Name",
+    "kind": "Type",
+    "ticket_type": "Ticket",
+    "seats": "Seats",
+    "attendance": "Attendance",
+    "registered_at": "Registered",
+    "checked_in_at": "Checked in"
+  },
+  "table": {
+    "caption": "Attendees",
+    "select_row": "Select {{name}}",
+    "open_row": "Open {{name}}"
+  },
+  "summary": {
+    "shown": "Showing {{shown}}",
+    "event_total": "{{total}} registered across the whole event"
+  },
+  "empty": {
+    "title": "Nobody here yet",
+    "body": "Registrations appear here as soon as people sign up."
+  },
+  "source": {
+    "self": "Signed up",
+    "waitlist": "From the waitlist",
+    "walkup": "Walk-up",
+    "transfer": "Transferred"
+  },
+  "history": {
+    "registered": "registered",
+    "checked_in": "checked in",
+    "cancelled": "cancelled"
+  },
+  "drawer": {
+    "registration": "Registration",
+    "ticket_type": "Ticket type",
+    "party": "Seats",
+    "registered_at": "Registered",
+    "slot": "Shift",
+    "source": "How they signed up",
+    "no_contact": "civfix never shows a member's email or phone to hosts.",
+    "seats": "Seats",
+    "seat_n": "Seat {{n}}",
+    "no_seats": "This registration has no seats.",
+    "check_in": "Check in",
+    "check_in_all": "Check in all {{count}}",
+    "checked_in": "Checked in",
+    "check_in_undone": "Check-in undone",
+    "answers": "Answers",
+    "no_answers": "No answers were given.",
+    "answer_scrubbed": "Removed after the event",
+    "move_label": "Move to another ticket type",
+    "move_placeholder": "Choose a ticket type",
+    "move": "Move",
+    "moved": "Registration moved",
+    "move_conflict": "That ticket type is full, or the party is too large for it.",
+    "note_label": "Private note",
+    "note_hint": "Only hosts see this. It is deleted 90 days after the event.",
+    "note_saved": "Note saved",
+    "history": "History",
+    "remove": "Remove from the event",
+    "removed": "Registration removed"
+  },
+  "remove": {
+    "title": "Remove this registration?",
+    "body": "{{name}} will lose their seats. They can sign up again unless registration is closed.",
+    "reason": "Reason",
+    "confirm": "Remove"
+  },
+  "no_show": {
+    "title": "Mark as no-show?",
+    "body": "{{count}} registrations will be marked as no-shows. Checking someone in afterwards clears it.",
+    "confirm": "Mark as no-show"
+  },
+  "bulk": {
+    "check_in": "Check in",
+    "mark_no_show": "Mark no-show",
+    "remove": "Remove",
+    "checked_in_one": "{{count}} seat checked in",
+    "checked_in_other": "{{count}} seats checked in",
+    "no_show_one": "{{count}} seat marked as a no-show",
+    "no_show_other": "{{count}} seats marked as no-shows",
+    "removed_one": "{{count}} registration removed",
+    "removed_other": "{{count}} registrations removed",
+    "partial_one": "{{count}} could not be done.",
+    "partial_other": "{{count}} could not be done.",
+    "export_hint": "Export",
+    "export_reason": "Exports cover the whole event, not a selection. Use the Export button above."
+  }
+}

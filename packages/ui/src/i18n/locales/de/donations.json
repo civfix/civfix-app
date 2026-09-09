@@ -1,0 +1,34 @@
+{
+  "block": {
+    "heading": "Diese Organisation unterstützen",
+    "body": "Spenden gehen an {{org}}. civfix leitet deine Spende weiter und hält die Mittel nie.",
+    "cta": "An {{org}} spenden",
+    "cta_a11y": "An {{org}} spenden",
+    "merchant_of_record": "civfix wickelt diese Zahlung ab. {{org}} ist der Merchant of Record.",
+    "fee_note": "Es fallen eine von der Organisation getragene Kartengebühr und eine civfix-Plattformgebühr von 5% an."
+  },
+  "list": {
+    "load_more": "Mehr laden",
+    "loading_more": "Wird geladen…",
+    "load_more_a11y": "Weitere Spenden laden",
+    "footnote": "civfix stellt die Belege als bevollmächtigter Vertreter der Organisation aus. Rückerstattungen übernimmt die Organisation."
+  },
+  "row": {
+    "refunded": "{{amount}} erstattet"
+  },
+  "receipt": {
+    "download": "Beleg ansehen",
+    "download_a11y": "Den Beleg zu dieser Spende öffnen",
+    "error": "Wir konnten diesen Beleg nicht abrufen. Bitte versuche es erneut.",
+    "unavailable": "Dieses Gerät kann den Beleg nicht öffnen."
+  },
+  "state": {
+    "loading": "Deine Spenden werden geladen…",
+    "error_title": "Spenden nicht verfügbar",
+    "error_body": "Wir konnten deine Spenden nicht laden. Prüfe deine Verbindung und versuche es erneut.",
+    "empty_title": "Noch keine Spenden",
+    "empty_body": "Wenn du auf civfix an eine Organisation spendest, erscheint sie hier mit ihrem Beleg.",
+    "signed_out_title": "Melde dich an, um deine Spenden zu sehen",
+    "signed_out_body": "Deine Spendenhistorie und deine Belege sind mit deinem Konto verknüpft."
+  }
+}

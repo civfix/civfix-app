@@ -1,0 +1,82 @@
+import type { RoomKind } from "@civfix/shared"
+
+export const queryKeys = {
+  session: ["session"] as const,
+  mapReports: (bbox: unknown, categories: readonly string[]) =>
+    ["map", "reports", bbox, categories] as const,
+  nearbyReportPins: (lat: number, lng: number) => ["map", "reports", "picker", lat, lng] as const,
+  jurisdiction: (lat: number, lng: number) => ["jurisdiction", lat, lng] as const,
+  cleanups: (when: string, limit: number) => ["cleanups", when, limit] as const,
+  cleanupsNearby: (when: string, limit: number, lat: number, lng: number) =>
+    ["cleanups", when, "nearby", lat, lng, limit] as const,
+  cleanup: (id: string) => ["cleanup", id] as const,
+  cleanupAttendees: (id: string) => ["cleanup", id, "attendees"] as const,
+  cleanupGuests: (id: string) => ["cleanup", id, "guests"] as const,
+  report: (id: string) => ["report", id] as const,
+  reportChatParticipants: (id: string) => ["report", id, "chat-participants"] as const,
+  reportSearch: (q: string, categories: readonly string[]) =>
+    ["reports", "search", q, categories] as const,
+  myReportsRoot: ["reports", "mine"] as const,
+  myReports: (limit: number) => ["reports", "mine", limit] as const,
+  threads: ["threads"] as const,
+  threadsUnread: ["threads", "unread"] as const,
+  chatHistory: (roomId: string, roomKind: RoomKind = "cleanup") =>
+    ["chat", roomKind, roomId] as const,
+  groupInfo: (id: string) => ["group", id] as const,
+  groupMembers: (id: string) => ["group", id, "members"] as const,
+  blocks: ["blocks"] as const,
+  userSearch: (q: string) => ["users", "search", q] as const,
+  mentionSearch: (q: string) => ["users", "mention-search", q] as const,
+  notificationsRoot: ["notifications"] as const,
+  notifications: (limit: number) => ["notifications", limit] as const,
+  notificationPrefs: ["notifications", "prefs"] as const,
+  people: (q: string) => ["people", q] as const,
+  peopleSearch: (q: string) => ["people", "search", q] as const,
+  followSuggestions: ["people", "suggestions"] as const,
+  profileRoot: ["profile"] as const,
+  profile: (id: string) => ["profile", id] as const,
+  myProfile: ["profile", "me"] as const,
+  profileEvents: (id: string, anchor: string | null) =>
+    ["profile", id, "events", anchor] as const,
+  myVerification: ["verification", "me"] as const,
+  followers: (id: string) => ["connections", "followers", id] as const,
+  following: (id: string) => ["connections", "following", id] as const,
+  userLocation: ["user-location"] as const,
+
+  postsRoot: ["posts"] as const,
+  homeFeedRoot: (filter: string) => ["posts", "feed", filter] as const,
+  homeFeed: (filter: string, scope: "me" | "public") =>
+    ["posts", "feed", filter, scope] as const,
+  postReplies: (id: string) => ["posts", "replies", id] as const,
+  userPosts: (id: string) => ["posts", "user", id] as const,
+  saves: ["posts", "saves"] as const,
+  post: (id: string) => ["post", id] as const,
+
+  volunteerMe: ["volunteer", "me"] as const,
+  volunteerEntries: ["volunteer", "me", "entries"] as const,
+  volunteerUserEntries: (id: string) => ["volunteer", "user", id] as const,
+  volunteerLeaderboard: (geoid: string, limit: number) =>
+    ["volunteer", "leaderboard", geoid, limit] as const,
+  volunteerLeaderboardAll: ["volunteer", "leaderboard"] as const,
+  eventHours: (id: string) => ["volunteer", "event", id] as const,
+  myCertificates: ["certificates", "mine"] as const,
+
+  hostEvent: (id: string) => ["host", id] as const,
+  hostCounters: (id: string) => ["host", id, "counters"] as const,
+  hostRoster: (id: string, filter: string, q: string) =>
+    ["host", id, "roster", filter, q] as const,
+  hostTicketTypes: (id: string) => ["host", id, "ticket-types"] as const,
+  hostQuestions: (id: string) => ["host", id, "questions"] as const,
+  hostTeam: (id: string) => ["host", id, "team"] as const,
+  hostWaitlist: (id: string) => ["host", id, "waitlist"] as const,
+  myRegistration: (id: string) => ["host", id, "my-registration"] as const,
+  myTickets: (id: string) => ["tickets", "mine", id] as const,
+  eventIcs: (id: string) => ["cleanup", id, "ics"] as const,
+  org: (slug: string) => ["org", slug] as const,
+  myOrganizations: ["orgs", "mine"] as const,
+  hostedEvents: (when: string, orgId: string | null) =>
+    ["hosted-events", when, orgId ?? "all"] as const,
+  myDonations: ["donations", "mine"] as const,
+  orgDonate: (slug: string) => ["donations", "org", slug] as const,
+  orgDonationExports: (orgId: string) => ["host-exports", "org", orgId] as const,
+}

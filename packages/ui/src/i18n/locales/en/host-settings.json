@@ -1,0 +1,44 @@
+{
+  "saved": "Settings saved",
+  "visibility": {
+    "public": "Public",
+    "unlisted": "Unlisted",
+    "private": "Private"
+  },
+  "registration": {
+    "title": "Registration",
+    "visibility": "Who can find this event",
+    "opens": "Registration opens",
+    "closes": "Registration closes"
+  },
+  "messaging": {
+    "title": "Messaging",
+    "reminders": "Reminders",
+    "reminders_hint": "civfix sends a reminder to everyone registered at each of these times before the event.",
+    "offset_60": "1 hour before",
+    "offset_180": "3 hours before",
+    "offset_1440": "1 day before",
+    "offset_2880": "2 days before",
+    "offset_10080": "1 week before",
+    "reply_to": "Reply-to address",
+    "reply_to_placeholder": "you@example.org",
+    "reply_to_unverified": "Replies are not yet delivered to a host address; this is stored for when that ships."
+  },
+  "donations": {
+    "title": "Donations",
+    "link": "Donation link",
+    "link_hint": "An https link shown on the event page.",
+    "org_note": "Donations for this event are handled by {{org}}."
+  },
+  "danger": {
+    "title": "Danger zone",
+    "body": "Cancelling tells everyone who registered and cannot be undone.",
+    "cancel_event": "Cancel the event",
+    "cancelled": "Event cancelled",
+    "reason": "Reason (shared with attendees)",
+    "confirm_title": "Cancel this event?",
+    "confirm_body": "Everyone registered is notified. The event stays visible as cancelled.",
+    "confirm_banner": "This cannot be undone.",
+    "agreement": "I understand this notifies everyone who registered."
+  }
+}

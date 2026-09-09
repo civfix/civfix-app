@@ -1,0 +1,15 @@
+{
+  "label": {
+    "like": "Me gusta",
+    "heart": "Me encanta",
+    "celebrate": "Celebrar",
+    "support": "Apoyar",
+    "insightful": "Útil",
+    "concerned": "Preocupado",
+    "laugh": "Divertido",
+    "sad": "Triste"
+  },
+  "chip": {
+    "a11y": "{{label}}, {{count}}"
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "state": {
+    "error_title": "Messaging is unavailable",
+    "error_body": "We could not load this event. Check your connection and try again.",
+    "denied_title": "Not allowed to message",
+    "denied_body": "Only the event's hosts can message attendees."
+  },
+  "quick": {
+    "caption": "A short message to the people at your event. In-app and push only.",
+    "subject_label": "Subject",
+    "subject_placeholder": "What is this about?",
+    "body_label": "Message",
+    "body_placeholder": "Write your message…",
+    "markdown_hint": "You can use **bold**, *italic*, links and lists.",
+    "preview": "Preview",
+    "edit": "Edit",
+    "preview_on_a11y": "Preview the message",
+    "preview_off_a11y": "Back to editing the message",
+    "preview_empty": "Nothing to preview yet.",
+    "audience_label": "Who gets this",
+    "send": "Send now",
+    "retry_note": "Sending again reuses the same draft, applying any edits you made. It cannot go out twice.",
+    "discard": "Discard draft",
+    "discard_already_sending": "That message already started sending, so it cannot be discarded.",
+    "edits_lost": "The earlier version of this message already went out. The edits you just made were not sent.",
+    "channels_note": "Sent in the app and as a push notification. Email and scheduling live in the host dashboard."
+  },
+  "toast": {
+    "sent": "Your message is on its way.",
+    "discarded": "Draft discarded."
+  },
+  "error": {
+    "rate_limited": "You have sent a lot of messages recently. Please wait before sending another.",
+    "forbidden": "You do not have permission to message this event.",
+    "conflict": "This event is closed to messaging.",
+    "validation": "Please check the subject, the message and any links.",
+    "held": "This message was held for review.",
+    "generic": "Your message could not be sent. Please try again."
+  },
+  "confirm": {
+    "title": "Send this message?",
+    "subject": "Subject: {{subject}}",
+    "body": "This goes to {{audience}} now, in the app and as a push notification. It cannot be unsent.",
+    "send": "Send",
+    "cancel": "Back",
+    "dismiss_a11y": "Close the send confirmation"
+  },
+  "cancelled": "Message cancelled",
+  "list": {
+    "title": "Messages",
+    "hint": "civfix relays your message. You never see an attendee's address, and they can unsubscribe from any of them.",
+    "new": "New message",
+    "untitled": "Untitled message",
+    "open": "Open {{subject}}",
+    "deliveries": "Deliveries",
+    "counts": "{{sent}} of {{recipients}} sent",
+    "failed_one": "{{count}} failed",
+    "failed_other": "{{count}} failed",
+    "empty_title": "No messages yet",
+    "empty_body": "Send an update, a reminder or a thank-you to the people who signed up."
+  },
+  "composer": {
+    "subject": "Subject",
+    "body": "Message",
+    "body_hint": "Bold, italics, links and lists only. Links must be https.",
+    "cta_label": "Button label",
+    "cta_url": "Button link",
+    "cta_url_hint": "Must start with https://",
+    "audience": "Who receives this",
+    "audience_ticket_types": "Ticket types",
+    "audience_slots": "Shifts",
+    "slots_members_only": "Guests do not hold shifts, so a shift audience reaches members only.",
+    "channels": "Channels",
+    "preview": "Preview",
+    "recipients": "{{count}} people will receive this",
+    "test_send": "Send a test",
+    "test_sent": "Test sent to you",
+    "test_cap": "You have used this hour's test sends.",
+    "test_rate_limited": "You have reached the test-send limit for this hour.",
+    "send": "Send now",
+    "sending": "Sending…",
+    "saved": "Draft saved",
+    "schedule": "Schedule",
+    "schedule_at": "Send at",
+    "schedule_action": "Schedule",
+    "scheduled": "Message scheduled",
+    "scheduled_for": "Scheduled for {{when}}",
+    "error_subject": "Add a subject.",
+    "error_body": "Write the message.",
+    "error_audience": "Choose who receives this.",
+    "error_channels": "Choose at least one channel."
+  },
+  "audience": {
+    "all_registered": "Everyone registered",
+    "ticket_types": "By ticket type",
+    "slots": "By shift",
+    "waitlist": "Waitlist",
+    "checked_in": "Checked in",
+    "not_checked_in": "Not checked in",
+    "guests_only": "Guests only"
+  },
+  "channel": {
+    "inapp": "In app",
+    "push": "Push",
+    "email": "Email"
+  },
+  "delivery_status": {
+    "pending": "Pending",
+    "in_flight": "Sending",
+    "sent": "Sent",
+    "failed": "Failed",
+    "suppressed": "Suppressed",
+    "skipped": "Skipped"
+  },
+  "suppression": {
+    "unsubscribed": "unsubscribed",
+    "muted": "muted this event",
+    "prefs_off": "turned this off",
+    "stop_listed": "stopped messages",
+    "bounce_suppressed": "address bounced",
+    "no_contact": "no contact on file",
+    "contact_scrubbed": "contact removed",
+    "kill_switch": "sending stopped",
+    "banned": "removed from the event",
+    "deleted_user": "account deleted",
+    "cap": "daily limit reached"
+  },
+  "failure": {
+    "transient": "temporary problem",
+    "permanent": "permanently undeliverable",
+    "auth": "delivery not authorized",
+    "oversize": "message too large",
+    "unknown": "unknown problem"
+  },
+  "deliveries": {
+    "title": "Deliveries",
+    "filter": "Delivery status",
+    "all": "All",
+    "not_sent": "Not sent",
+    "attempts": "{{n}} attempts",
+    "privacy_note": "Deliveries record only whether a message went out. civfix stores no address and no copy of the body here, and anyone who unsubscribed never appears in this list.",
+    "empty_title": "No deliveries yet",
+    "empty_body": "Deliveries appear once the message starts sending."
+  },
+  "send_confirm": {
+    "title": "Send this message?",
+    "body": "It goes to {{count}} people and cannot be recalled.",
+    "banner": "Every recipient can unsubscribe from your messages after this one.",
+    "agreement": "I have read the message and want to send it now.",
+    "confirm": "Send"
+  },
+  "cancel_confirm": {
+    "title": "Cancel this message?",
+    "body": "Anything already sent stays sent.",
+    "banner": "Remaining deliveries are stopped and recorded as suppressed.",
+    "confirm": "Cancel the message"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "placeholder": "An Diskussion teilnehmen",
+  "city_fallback": "die Stadt",
+  "forward_disclaimer": "Durch Erwähnen von {{mention}} wird dein Kommentar an {{city}} weitergeleitet.",
+  "attach_a11y": "Foto oder Video anhängen",
+  "input_a11y": "Nachrichtenfeld der Diskussion",
+  "send_a11y": "Nachricht senden"
+}

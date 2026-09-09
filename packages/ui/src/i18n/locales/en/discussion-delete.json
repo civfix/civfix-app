@@ -1,0 +1,12 @@
+{
+  "title": "Delete comment?",
+  "caption": "This can't be undone.",
+  "backdrop": {
+    "dismiss": "Dismiss"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "confirmA11y": "Delete this comment"
+  }
+}

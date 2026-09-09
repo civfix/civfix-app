@@ -1,0 +1,25 @@
+{
+  "title": "Reportar {{subject}}",
+  "prompt": "¿Por qué quieres reportar esto?",
+  "backdrop": {
+    "dismiss": "Cancelar reporte"
+  },
+  "reason": {
+    "spam": "Spam",
+    "harassment": "Acoso",
+    "hate": "Discurso de odio",
+    "sexual": "Contenido sexual",
+    "violence": "Violencia",
+    "misinformation": "Desinformación",
+    "self_harm": "Autolesión",
+    "other": "Otro"
+  },
+  "details": {
+    "placeholder": "Añade detalles (opcional)",
+    "a11y": "Detalles del reporte (opcional)"
+  },
+  "actions": {
+    "cancel": "Cancelar",
+    "submit": "Enviar"
+  }
+}

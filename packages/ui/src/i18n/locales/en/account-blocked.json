@@ -1,0 +1,16 @@
+{
+  "row": {
+    "unblock": "Unblock",
+    "unblocking": "Unblocking...",
+    "unblockA11y": "Unblock {{name}}",
+    "unblockError": "Could not unblock. Check your connection and try again."
+  },
+  "error": {
+    "title": "Could not load",
+    "body": "We could not reach civfix. Check your connection and try again."
+  },
+  "empty": {
+    "title": "No blocked accounts",
+    "body": "People you block won't be able to message you. They'll show up here."
+  }
+}

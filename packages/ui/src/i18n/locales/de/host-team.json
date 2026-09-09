@@ -1,0 +1,47 @@
+{
+  "members": {
+    "title": "Team",
+    "joined": "Dabei seit {{when}}",
+    "empty_title": "Noch keine Teammitglieder",
+    "empty_body": "Lade eine*n Co-Host ein, um dir die Arbeit zu teilen, oder Team-Leute, die an der Tür helfen."
+  },
+  "role": {
+    "cohost": "Co-Host",
+    "staff": "Team",
+    "member": "Teilnehmende*r",
+    "updated": "Rolle aktualisiert",
+    "change_a11y": "Rolle von {{name}} ändern",
+    "confirm_title": "Diese Rolle ändern?",
+    "confirm_body": "{{name}} wird für dieses Event {{role}}. Du kannst das jederzeit wieder ändern.",
+    "confirm_action": "Rolle ändern",
+    "error_conflict": "Die Rolle dieser Person wurde vor dir geändert. Lade das Team neu und versuche es erneut.",
+    "error_forbidden": "Du kannst die Rolle dieser Person bei diesem Event nicht ändern."
+  },
+  "invite": {
+    "action": "Einladen",
+    "title": "Jemanden einladen",
+    "identifier_kind": "Einladen per",
+    "by_handle": "Handle",
+    "by_email": "E-Mail",
+    "handle": "Handle",
+    "email": "E-Mail-Adresse",
+    "role": "Rolle",
+    "role_hint": "Co-Hosts können die Veranstaltung verwalten. Team-Leute können Personen einchecken und sehen eine Liste ohne Kontaktdaten.",
+    "send": "Einladung senden",
+    "sent": "Einladung gesendet",
+    "revoked": "Einladung zurückgezogen",
+    "privacy_note": "Eine eingeladene E-Mail-Adresse wird maskiert gespeichert. Du siehst nie die vollständige Adresse."
+  },
+  "invites": {
+    "title": "Offene Einladungen",
+    "unknown": "Eingeladene Person",
+    "sent": "Eingeladen {{when}}",
+    "revoke": "Zurückziehen",
+    "revoke_title": "Diese Einladung zurückziehen?",
+    "revoke_body": "Der Link funktioniert sofort nicht mehr.",
+    "status_pending": "Offen",
+    "status_accepted": "Angenommen",
+    "status_revoked": "Zurückgezogen",
+    "status_expired": "Abgelaufen"
+  }
+}

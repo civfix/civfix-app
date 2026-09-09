@@ -1,0 +1,31 @@
+{
+  "section": {
+    "attending": "Asistirás",
+    "inYourArea": "Cerca de ti"
+  },
+  "search": {
+    "placeholder": "Buscar eventos",
+    "a11y": "Buscar eventos",
+    "clear_a11y": "Borrar búsqueda"
+  },
+  "card": {
+    "going_one": "{{count}} asistente",
+    "going_other": "{{count}} asistentes",
+    "a11y_one": "{{title}}, {{count}} asistente",
+    "a11y_other": "{{title}}, {{count}} asistentes"
+  },
+  "empty": {
+    "error": {
+      "title": "No se pudieron cargar los eventos",
+      "body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo."
+    },
+    "search": {
+      "title": "Ningún evento coincide con tu búsqueda",
+      "body": "No hay eventos próximos que coincidan con \"{{query}}\". Prueba con otro título o lugar."
+    },
+    "none": {
+      "title": "Aún no hay eventos cerca",
+      "body": "Sé el primero en organizar uno. Elige un lugar, fija una hora e invita a tus vecinos."
+    }
+  }
+}

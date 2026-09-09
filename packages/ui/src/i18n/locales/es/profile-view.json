@@ -1,0 +1,67 @@
+{
+  "hero": {
+    "share_a11y": "Compartir perfil",
+    "close_a11y": "Cerrar perfil"
+  },
+  "stats": {
+    "following": "Siguiendo",
+    "followers_one": "Seguidor",
+    "followers_other": "Seguidores",
+    "reports": "Reportes",
+    "fixed": "Resueltos",
+    "cleanups": "Limpiezas"
+  },
+  "events": {
+    "section": "Eventos",
+    "tab_upcoming": "Próximos",
+    "tab_past": "Pasados",
+    "subhead_hosting": "Organizando",
+    "subhead_attending": "Asistiendo",
+    "subhead_hosted": "Organizados",
+    "subhead_attended": "Asistidos",
+    "badge_host": "Organizador",
+    "badge_going": "Asistiré",
+    "badge_hosted": "Organizó",
+    "badge_went": "Asistió",
+    "empty_upcoming": "Sin próximos eventos.",
+    "empty_none": "Nada aún.",
+    "row_a11y": "{{title}}, {{badge}}",
+    "load_more": "Cargar más",
+    "loading_more": "Cargando...",
+    "load_more_a11y": "Cargar más eventos pasados",
+    "load_more_error": "No se pudieron cargar más eventos.",
+    "load_more_retry": "Reintentar"
+  },
+  "tabs": {
+    "posts": "Posts",
+    "events": "Eventos",
+    "hours": "Horas",
+    "reports": "Reportes",
+    "a11y": "Secciones del perfil"
+  },
+  "social": {
+    "link_a11y": "Abrir {{platform}}"
+  },
+  "reports": {
+    "section": "Tus reportes",
+    "loading": "Cargando reportes...",
+    "error": "No se pudieron cargar los reportes.",
+    "empty": "Sin reportes todavía.",
+    "see_all": "Ver los {{count}} reportes",
+    "see_all_a11y": "Ver todos los reportes",
+    "row_untitled": "Reporte comunitario",
+    "row_location_pending": "Ubicación pendiente",
+    "row_a11y": "{{title}}, {{status}}"
+  },
+  "posts": {
+    "section": "Publicaciones",
+    "loading": "Cargando publicaciones...",
+    "error": "No se pudieron cargar las publicaciones.",
+    "empty": "Sin publicaciones todavía.",
+    "load_more": "Cargar más",
+    "loading_more": "Cargando...",
+    "load_more_a11y": "Cargar más publicaciones",
+    "saved": "Publicaciones guardadas",
+    "saved_a11y": "Abrir publicaciones guardadas"
+  }
+}

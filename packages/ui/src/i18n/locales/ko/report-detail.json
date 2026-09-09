@@ -1,0 +1,118 @@
+{
+  "loading_error": {
+    "title": "신고를 불러올 수 없어요",
+    "body": "이 신고를 불러오지 못했어요. 삭제되었거나 오프라인 상태일 수 있어요."
+  },
+  "actions": {
+    "notify": "알림 받기",
+    "notifying": "알림 설정됨",
+    "notify_a11y_on": "업데이트 알림을 받고 있어요",
+    "notify_a11y_off": "업데이트 알림 받기",
+    "host_event": "이벤트 주최하기",
+    "mark_resolved": "해결됨으로 표시",
+    "reopen": "신고 다시 열기",
+    "mark_resolved_a11y": "이 신고를 해결됨으로 표시",
+    "reopen_a11y": "이 신고 다시 열기",
+    "add_to_event": "이벤트에 추가",
+    "added": "추가됨",
+    "add_to_event_a11y": "이 신고를 이벤트에 추가",
+    "added_a11y": "이벤트에 추가됨"
+  },
+  "title_menu": {
+    "options_a11y": "신고 옵션",
+    "hide_from_map": "지도에서 숨기기",
+    "show_on_map_again": "지도에 다시 표시",
+    "report_this": "이 신고 신고하기"
+  },
+  "hidden_banner": "지도에서 숨겨졌어요 - 나만 볼 수 있어요.",
+  "subject_label": {
+    "report": "이 신고",
+    "comment": "이 댓글",
+    "photo": "이 사진",
+    "content": "이 콘텐츠",
+    "message": "이 메시지"
+  },
+  "content_report": {
+    "submitted_toast": "신고가 접수됐어요 - 감사해요",
+    "error": "신고를 제출하지 못했어요. 다시 시도해 주세요."
+  },
+  "gallery": {
+    "processing_title": "사진을 처리하는 중이에요...",
+    "processing_body_one": "처리가 완료되면 여기에 표시돼요.",
+    "processing_body_other": "처리가 완료되면 여기에 표시돼요.",
+    "processing_a11y": "사진을 처리하는 중이에요",
+    "tile_processing": "처리 중...",
+    "tile_rejected": "게시할 수 없어요",
+    "tile_held": "검토 중",
+    "view_fullscreen_a11y": "전체 화면으로 보기",
+    "report_photo_a11y": "이 사진 신고하기",
+    "thumb_a11y": "{{total}} 중 {{index}}번째 {{kind}} 보기"
+  },
+  "category_tag_a11y": "{{category}}",
+  "timeline": {
+    "label": "업데이트",
+    "reported_by_you": "내가 신고했어요",
+    "reported_by_neighbor": "이웃이 신고했어요",
+    "forwarded_to_city": "시청 담당 기관에 전달됐어요",
+    "pending_submission": "시청 전달 대기 중",
+    "pending_a11y": "왜 대기 중인가요?",
+    "pending_note": "아직 이 도시의 담당 연락처가 등록되지 않았어요. 신고 후 보통 1~3 영업일 내에 처리돼요.",
+    "reopened": "다시 열림",
+    "hidden_from_map": "지도에서 숨김",
+    "shown_on_map_again": "지도에 다시 표시됨",
+    "update": "업데이트",
+    "reply_from_city": "시청 답변",
+    "show_full_message": "전체 메시지 보기",
+    "hide_message": "메시지 숨기기",
+    "show_full_message_a11y": "전체 메시지 보기",
+    "hide_full_message_a11y": "전체 메시지 숨기기",
+    "linked_to_cleanup": "'{{title}}' 청소 활동과 연결됨",
+    "linked_to_cleanup_detail": "{{organizer}}님이 청소 활동을 준비하고 있어요.",
+    "status": {
+      "not_forwarded": "아직 전달되지 않음",
+      "in_progress": "처리 중",
+      "resolved": "해결됨",
+      "under_review": "검토 중",
+      "removed": "삭제됨"
+    }
+  },
+  "updates_label": "업데이트",
+  "linked_events": {
+    "heading": "청소 이벤트"
+  },
+  "tabs": {
+    "timeline": "타임라인",
+    "chat": "채팅"
+  },
+  "discussion": {
+    "count_one": "댓글 {{count}}개",
+    "count_other": "댓글 {{count}}개",
+    "empty": "아직 댓글이 없어요. 이 신고에 대해 대화를 시작해 보세요.",
+    "load_earlier": "이전 댓글 불러오기",
+    "load_earlier_a11y": "이전 댓글 불러오기",
+    "loading": "불러오는 중...",
+    "edit_title": "댓글 수정",
+    "edit_error": "수정 내용을 저장하지 못했어요. 다시 시도해 주세요.",
+    "sign_in_cta": "로그인하고 대화에 참여하세요",
+    "sign_in_cta_a11y": "로그인하고 대화에 참여하세요"
+  },
+  "hostDraft": {
+    "back": "내 이벤트로 돌아가기 ({{count}})",
+    "add": "이벤트에 추가",
+    "remove": "제거"
+  },
+  "chat": {
+    "heading": "채팅",
+    "empty": "아직 메시지가 없습니다. 이 신고에 대한 대화를 시작해 보세요.",
+    "loading": "불러오는 중...",
+    "load_earlier": "이전 메시지 불러오기",
+    "load_earlier_a11y": "이전 메시지 불러오기",
+    "error": "채팅을 불러올 수 없습니다.",
+    "sign_in_cta": "채팅하려면 로그인하세요",
+    "sign_in_cta_a11y": "채팅에 참여하려면 로그인하세요",
+    "composer_placeholder": "메시지 작성...",
+    "view_chat": "채팅 보기",
+    "view_chat_meta": "멤버 {{members}}명 · 메시지 {{messages}}개",
+    "view_chat_a11y": "이 신고의 채팅 보기"
+  }
+}

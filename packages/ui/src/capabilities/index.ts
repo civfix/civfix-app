@@ -1,0 +1,47 @@
+export { CapabilitiesProvider, useCapabilities } from "./context"
+export type { CapabilitiesProviderProps } from "./context"
+export {
+  useCamera,
+  useGeolocation,
+  usePush,
+  useSecureStore,
+  usePersistence,
+  useBlurSurface,
+  useHaptics,
+  useOpenExternal,
+  useContactsInvite,
+  useClipboard,
+  useCalendarFile,
+} from "./hooks"
+export type {
+  PlatformCapabilities,
+  CameraCapability,
+  CameraViewfinderProps,
+  GeolocationCapability,
+  PushCapability,
+  SecureStoreCapability,
+  PersistenceCapability,
+  BlurSurfaceCapability,
+  HapticsCapability,
+  OpenExternalCapability,
+  ContactsInviteAdapter,
+  ClipboardCapability,
+  CalendarFileCapability,
+  CapturedMedia,
+  PreparedUpload,
+  GeoPosition,
+} from "./types"
+export { webClipboardCapability } from "./webClipboard"
+export {
+  makeFakeCapabilities,
+  FakeCamera,
+  FakeGeolocation,
+  FakePush,
+  FakeSecureStore,
+  FakePersistence,
+  FakeClipboard,
+  fakeBlurSurface,
+  fakeHaptics,
+  fakeOpenExternal,
+  FakeContactsInvite,
+} from "./fakes"

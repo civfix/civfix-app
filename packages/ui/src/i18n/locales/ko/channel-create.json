@@ -1,0 +1,21 @@
+{
+  "title": "새 채널",
+  "visibility_title": "참여할 수 있는 사람",
+  "add_members": "구독자 추가",
+  "subscriber_prompt": "@핸들로 검색해 구독자를 채널에 추가하세요.",
+  "back_a11y": "뒤로",
+  "skip": "건너뛰기",
+  "next": "다음",
+  "create": "채널 만들기",
+  "create_error": "채널을 만들 수 없습니다. 다시 시도해 주세요.",
+  "name_label": "채널 이름",
+  "name_placeholder": "채널 이름을 입력하세요",
+  "description_label": "설명 (선택)",
+  "description_placeholder": "이 채널은 무엇에 관한 것인가요?",
+  "avatar_a11y": "채널 사진 선택",
+  "avatar_clear_a11y": "채널 사진 제거",
+  "private_label": "비공개",
+  "private_hint": "추가한 사람만 볼 수 있습니다",
+  "public_label": "공개",
+  "public_hint": "누구나 참여할 수 있습니다"
+}

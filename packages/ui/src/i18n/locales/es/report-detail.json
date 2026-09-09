@@ -1,0 +1,118 @@
+{
+  "loading_error": {
+    "title": "Reporte no disponible",
+    "body": "No pudimos cargar este reporte. Es posible que haya sido eliminado o que no tengas conexión."
+  },
+  "actions": {
+    "notify": "Notificarme",
+    "notifying": "Notificando",
+    "notify_a11y_on": "Recibirás notificaciones de actualizaciones",
+    "notify_a11y_off": "Notificarme de actualizaciones",
+    "host_event": "Organizar un evento",
+    "mark_resolved": "Marcar como resuelto",
+    "reopen": "Reabrir reporte",
+    "mark_resolved_a11y": "Marcar este reporte como resuelto",
+    "reopen_a11y": "Reabrir este reporte",
+    "add_to_event": "Añadir al evento",
+    "added": "Añadido",
+    "add_to_event_a11y": "Añadir este reporte al evento",
+    "added_a11y": "Añadido al evento"
+  },
+  "title_menu": {
+    "options_a11y": "Opciones del reporte",
+    "hide_from_map": "Ocultar del mapa",
+    "show_on_map_again": "Mostrar en el mapa de nuevo",
+    "report_this": "Denunciar este reporte"
+  },
+  "hidden_banner": "Oculto del mapa - solo tú puedes verlo.",
+  "subject_label": {
+    "report": "este reporte",
+    "comment": "este comentario",
+    "photo": "esta foto",
+    "content": "este contenido",
+    "message": "este mensaje"
+  },
+  "content_report": {
+    "submitted_toast": "Denuncia enviada - gracias",
+    "error": "No se pudo enviar tu denuncia. Inténtalo de nuevo."
+  },
+  "gallery": {
+    "processing_title": "Las fotos aún se están procesando...",
+    "processing_body_one": "Aparecerá aquí cuando termine de procesarse.",
+    "processing_body_other": "{{count}} fotos aparecerán aquí cuando terminen de procesarse.",
+    "processing_a11y": "Las fotos aún se están procesando",
+    "tile_processing": "Procesando...",
+    "tile_rejected": "No se pudo publicar",
+    "tile_held": "En revisión",
+    "view_fullscreen_a11y": "Ver en pantalla completa",
+    "report_photo_a11y": "Denunciar esta foto",
+    "thumb_a11y": "Mostrar {{kind}} {{index}} de {{total}}"
+  },
+  "category_tag_a11y": "{{category}}",
+  "timeline": {
+    "label": "ACTUALIZACIONES",
+    "reported_by_you": "Tú reportaste esto",
+    "reported_by_neighbor": "Reportado por un vecino",
+    "forwarded_to_city": "Enviado a la agencia municipal",
+    "pending_submission": "Pendiente de envío a la ciudad",
+    "pending_a11y": "¿Por qué está pendiente?",
+    "pending_note": "Aún no tenemos el contacto de esta ciudad registrado. Tras un reporte, normalmente tardamos entre 1 y 3 días hábiles.",
+    "reopened": "Reabierto",
+    "hidden_from_map": "Oculto del mapa",
+    "shown_on_map_again": "Visible en el mapa de nuevo",
+    "update": "Actualización",
+    "reply_from_city": "Respuesta de la ciudad",
+    "show_full_message": "Ver mensaje completo",
+    "hide_message": "Ocultar mensaje",
+    "show_full_message_a11y": "Ver mensaje completo",
+    "hide_full_message_a11y": "Ocultar mensaje completo",
+    "linked_to_cleanup": "Vinculado a la limpieza '{{title}}'",
+    "linked_to_cleanup_detail": "{{organizer}} está organizando una limpieza para esto.",
+    "status": {
+      "not_forwarded": "Aún no enviado",
+      "in_progress": "En proceso",
+      "resolved": "Resuelto",
+      "under_review": "En revisión",
+      "removed": "Eliminado"
+    }
+  },
+  "updates_label": "ACTUALIZACIONES",
+  "linked_events": {
+    "heading": "EVENTOS DE LIMPIEZA"
+  },
+  "tabs": {
+    "timeline": "Cronología",
+    "chat": "Chat"
+  },
+  "discussion": {
+    "count_one": "{{count}} comentario",
+    "count_other": "{{count}} comentarios",
+    "empty": "Aún no hay comentarios. Inicia la conversación sobre este reporte.",
+    "load_earlier": "Cargar comentarios anteriores",
+    "load_earlier_a11y": "Cargar comentarios anteriores",
+    "loading": "Cargando...",
+    "edit_title": "Editar comentario",
+    "edit_error": "No se pudo guardar tu edición. Inténtalo de nuevo.",
+    "sign_in_cta": "Inicia sesión para unirte a la conversación",
+    "sign_in_cta_a11y": "Inicia sesión para unirte a la conversación"
+  },
+  "hostDraft": {
+    "back": "Volver a tu evento ({{count}})",
+    "add": "Añadir al evento",
+    "remove": "Quitar"
+  },
+  "chat": {
+    "heading": "Chat",
+    "empty": "Aún no hay mensajes. Inicia la conversación sobre este informe.",
+    "loading": "Cargando...",
+    "load_earlier": "Cargar mensajes anteriores",
+    "load_earlier_a11y": "Cargar mensajes anteriores",
+    "error": "No se pudo cargar el chat.",
+    "sign_in_cta": "Inicia sesión para chatear",
+    "sign_in_cta_a11y": "Inicia sesión para unirte al chat",
+    "composer_placeholder": "Escribe un mensaje...",
+    "view_chat": "Ver chat",
+    "view_chat_meta": "{{members}} miembros · {{messages}} mensajes",
+    "view_chat_a11y": "Ver el chat de este informe"
+  }
+}

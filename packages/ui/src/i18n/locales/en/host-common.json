@@ -1,0 +1,151 @@
+{
+  "counters": {
+    "a11y": "Live event counters",
+    "checked_in": "Checked in",
+    "registered": "Registered",
+    "waitlist": "Waitlist",
+    "no_show": "No-show",
+    "error": "Counters are unavailable right now."
+  },
+  "roster": {
+    "search_placeholder": "Search by name",
+    "search_a11y": "Search the roster by name",
+    "filter_a11y": "Filter the roster",
+    "filter": {
+      "all": "Everyone",
+      "not_checked_in": "Not checked in",
+      "checked_in": "Checked in",
+      "waitlisted": "Waitlist"
+    },
+    "seats_one": "{{count}} seat",
+    "seats_other": "{{count}} seats",
+    "guest": "Guest",
+    "waitlist_position": "Waitlist #{{position}}",
+    "check_in": "Check in",
+    "check_in_a11y": "Check in {{name}}",
+    "undo": "Undo",
+    "undo_a11y": "Undo the check-in for {{name}}",
+    "loading": "Loading the roster…",
+    "loading_more": "Loading…",
+    "load_more": "Load more",
+    "load_more_a11y": "Load more attendees",
+    "empty": "Nobody matches this filter yet.",
+    "error": "The roster could not be loaded.",
+    "error_forbidden": "You do not have permission to do that."
+  },
+  "state": {
+    "loading": "Loading…",
+    "empty_title": "Nothing here yet",
+    "empty_body": "There is nothing to show on this screen.",
+    "empty_filtered_title": "No matches",
+    "empty_filtered_body": "No results match the filters you have applied.",
+    "error_title": "Something went wrong",
+    "error_body": "We could not load this. Try again in a moment.",
+    "offline_title": "You are offline",
+    "offline_body": "Reconnect and we will pick up where you left off.",
+    "no_access_title": "You do not have access",
+    "no_access_body": "Ask an organizer to give you the right role.",
+    "not_found_title": "Not found",
+    "not_found_body": "This page does not exist, or it has been removed."
+  },
+  "action": {
+    "back": "Back",
+    "back_to_events": "Back to events",
+    "cancel": "Cancel",
+    "clear_filters": "Clear filters",
+    "close": "Close",
+    "copy_link": "Copy link",
+    "dismiss": "Dismiss",
+    "load_more": "Load more",
+    "loading": "Loading…",
+    "open_full_page": "Open as a full page",
+    "retry": "Try again",
+    "save": "Save",
+    "undo": "Undo"
+  },
+  "auth": {
+    "signed_out_title": "Sign in to manage your events",
+    "signed_out_body": "The host console is only available to people who host events.",
+    "go_home": "Go to civfix"
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No"
+  },
+  "shell": {
+    "skip_to_content": "Skip to content",
+    "sections": "Console sections",
+    "breadcrumbs": "Breadcrumbs"
+  },
+  "table": {
+    "select_all": "Select every row",
+    "select_row": "Select this row",
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected",
+    "clear_selection": "Clear the selection",
+    "sort_by": "Sort by {{column}}"
+  },
+  "filter": {
+    "search_placeholder": "Search",
+    "reset": "Reset",
+    "clear_all": "Clear all",
+    "remove_chip": "Remove {{label}}"
+  },
+  "form": {
+    "optional": "optional",
+    "error_summary_title": "Fix these before saving",
+    "draft_restored": "We restored your unsaved draft.",
+    "draft_discard": "Discard it",
+    "range_7d": "7 days",
+    "range_30d": "30 days",
+    "range_90d": "90 days",
+    "range_all": "All",
+    "range_custom": "Custom",
+    "range_from": "From",
+    "range_to": "To"
+  },
+  "editor": {
+    "toolbar": "Formatting",
+    "bold": "Bold",
+    "italic": "Italic",
+    "link": "Add a link",
+    "bullet_list": "Bulleted list",
+    "ordered_list": "Numbered list",
+    "link_prompt": "Paste an https link",
+    "link_invalid": "Only https links can be added.",
+    "preview": "Preview",
+    "preview_empty": "Your text will appear here."
+  },
+  "upload": {
+    "hint": "Drop an image here, or click to choose one.",
+    "in_progress": "Uploading…",
+    "failed": "That image could not be uploaded.",
+    "remove": "Remove this image"
+  },
+  "guided": {
+    "blockers": "Before you continue",
+    "fix": "Fix"
+  },
+  "timeline": {
+    "internal": "Only the host team can see this",
+    "show_less": "Show less",
+    "show_more_one": "Show {{count}} more",
+    "show_more_other": "Show {{count}} more"
+  },
+  "error": {
+    "generic": "Something went wrong. Please try again.",
+    "validation": "Some of the details are not valid. Check the highlighted fields.",
+    "rate_limited": "That is a lot of activity at once. Wait a moment and try again.",
+    "unauthorized": "Sign in again to continue.",
+    "forbidden": "You do not have permission to do that.",
+    "conflict": "Someone changed this before you did. Reload and try again.",
+    "not_found": "We could not find that.",
+    "abuse_held": "This is being reviewed before it goes out.",
+    "payment_unavailable": "Payments are temporarily unavailable. Nothing was charged."
+  },
+  "crash": {
+    "title": "The console hit a problem",
+    "body": "Nothing you did was lost on the server. Reload this screen to carry on.",
+    "retry": "Reload this screen"
+  }
+}

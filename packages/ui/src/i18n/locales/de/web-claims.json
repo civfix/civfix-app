@@ -1,0 +1,37 @@
+{
+  "backToMap": "Zur Karte",
+  "linking": "Meldung wird verknüpft...",
+  "empty": {
+    "title": "Nichts zum Beanspruchen",
+    "body": "Wir konnten keine Meldung zum Verknüpfen finden. Erstelle zuerst eine Meldung und komm dann zurück.",
+    "action": "Zur Karte"
+  },
+  "intro": {
+    "title": "Meldung beanspruchen",
+    "body": "Verknüpfe diese Meldung mit einem Konto, um den Status zu verfolgen, Updates zu erhalten und der Stadt zu antworten.",
+    "signIn": "Anmelden und beanspruchen",
+    "value": {
+      "status": "Status von eingereicht bis gelöst verfolgen",
+      "notified": "Benachrichtigungen bei Stadtantworten",
+      "onePlace": "Alle Meldungen an einem Ort"
+    }
+  },
+  "linked": {
+    "title": "Meldung verknüpft",
+    "body": "Diese Meldung ist jetzt in deinem Konto. Wir halten dich auf dem Laufenden.",
+    "viewReport": "Meldung ansehen",
+    "yourReports": "Zu meinen Meldungen"
+  },
+  "error": {
+    "generic": "Die Meldung konnte nicht verknüpft werden.",
+    "title": "Verknüpfung fehlgeschlagen",
+    "retry": "Erneut versuchen",
+    "code": {
+      "notFound": "Dieser Anspruchscode ist ungültig oder wurde bereits verwendet.",
+      "validation": "Dieser Anspruchscode scheint falsch oder abgelaufen zu sein. Erstelle eine neue Meldung für einen neuen Code.",
+      "conflict": "Diese Meldung ist bereits mit einem Konto verknüpft.",
+      "unauthorized": "Bitte melde dich erneut an, um die Meldung zu verknüpfen.",
+      "fallback": "Beim Verknüpfen ist ein Fehler aufgetreten. Bitte versuche es erneut."
+    }
+  }
+}

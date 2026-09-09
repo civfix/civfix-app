@@ -1,0 +1,61 @@
+{
+  "block": {
+    "heading": "Signup slots",
+    "claim_joins_hint": "Claiming a slot also RSVPs you.",
+    "filled": "{{claimed}}/{{capacity}} spots filled"
+  },
+  "row": {
+    "open": "Open",
+    "remaining_one": "{{count}} spot left",
+    "remaining_other": "{{count}} spots left",
+    "full": "Full",
+    "full_sub": "All spots taken",
+    "you_claimed": "You have this slot",
+    "claimed_count_one": "{{count}} person",
+    "claimed_count_other": "{{count}} people",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "switch": "Switch",
+    "claim_a11y": "Claim the {{title}} slot",
+    "release_a11y": "Give up the {{title}} slot",
+    "switch_a11y": "Switch to the {{title}} slot"
+  },
+  "editor": {
+    "add_first": "Add a slot",
+    "add_first_a11y": "Add a signup slot",
+    "add_more": "Add another slot",
+    "cap_reached": "You can add up to {{max}} slots.",
+    "title_placeholder": "e.g. Check-in table",
+    "title_a11y": "Slot {{index}} name",
+    "description_placeholder": "What this slot involves (optional)",
+    "description_a11y": "Slot {{index}} description",
+    "capacity_label": "Spots",
+    "capacity_any": "Any",
+    "capacity_a11y": "Number of spots for slot {{index}}",
+    "capacity_more_a11y": "Add a spot",
+    "capacity_less_a11y": "Remove a spot",
+    "move_up_a11y": "Move slot {{index}} up",
+    "move_down_a11y": "Move slot {{index}} down",
+    "remove_a11y": "Remove slot {{index}}",
+    "claimed_count_one": "{{count}} claimed",
+    "claimed_count_other": "{{count}} claimed",
+    "remove_warning_one": "Removing a slot un-assigns {{count}} person who claimed it.",
+    "remove_warning_other": "Removing a slot un-assigns {{count}} people who claimed it."
+  },
+  "error": {
+    "empty_title": "Give this slot a name.",
+    "title_too_long": "Keep the name under {{max}} characters.",
+    "capacity_invalid": "Enter a number of spots, or leave it blank for any.",
+    "capacity_below_claimed": "{{count}} people already claimed this slot.",
+    "full": "That slot just filled up.",
+    "generic": "Couldn't update your slot. Try again."
+  },
+  "roster": {
+    "unassigned": "No slot",
+    "empty_slot": "Nobody yet"
+  },
+  "toast": {
+    "claimed": "Slot claimed",
+    "released": "Your slot was released"
+  }
+}

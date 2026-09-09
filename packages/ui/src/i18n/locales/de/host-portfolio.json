@@ -1,0 +1,42 @@
+{
+  "title": "Deine Veranstaltungen",
+  "subtitle": "Alles, was du ausrichtest, an einem Ort.",
+  "unknown_route": "Diese Seite der Konsole gibt es nicht ({{path}}). Hier ist stattdessen deine Veranstaltungsliste.",
+  "nav": {
+    "events": "Veranstaltungen"
+  },
+  "kpis": {
+    "heading": "Überblick zu deinen Veranstaltungen",
+    "events_hosted": "Ausgerichtete Veranstaltungen",
+    "upcoming": "Anstehend",
+    "registrations": "Anmeldungen",
+    "checked_in": "Eingecheckt",
+    "this_page": "auf dieser Seite"
+  },
+  "trend": {
+    "title": "Anmeldungen im Zeitverlauf",
+    "range": "Letzte 90 Tage",
+    "a11y": "Anmeldungen von {{from}} bis {{to}}",
+    "not_enough_data": "Es gibt noch zu wenig Verlauf, um einen Trend zu zeichnen.",
+    "registrations": "Anmeldungen",
+    "unique": "Verschiedene Teilnehmende",
+    "check_in_rate": "Durchschnittliche Check-in-Quote",
+    "by_event": "Veranstaltungen mit dem meisten Andrang",
+    "by_event_a11y": "Anmeldungen nach Veranstaltung"
+  },
+  "list": {
+    "title": "Veranstaltungen",
+    "when": "Zeitraum",
+    "when_upcoming": "Anstehend",
+    "when_past": "Vergangen",
+    "when_all": "Alle",
+    "org_filter": "Organisation",
+    "all_orgs": "Alle",
+    "open": "{{title}} öffnen",
+    "counts": "{{registered}} angemeldet · {{checked}} eingecheckt",
+    "waitlist": "{{count}} auf der Warteliste",
+    "empty_title": "Hier gibt es noch keine Veranstaltungen",
+    "empty_body": "Veranstaltungen, die du ausrichtest, erscheinen hier, sobald du eine anlegst.",
+    "create": "Veranstaltung erstellen"
+  }
+}
