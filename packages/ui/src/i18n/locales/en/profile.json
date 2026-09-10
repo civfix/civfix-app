@@ -11,5 +11,9 @@
     "verified": "Verified community organizer",
     "get_verified": "Get verified",
     "get_verified_sub": "Build trust with your neighbors"
+  },
+  "dashboard": {
+    "title": "Event dashboard",
+    "sub": "Your events, analytics and tools"
   }
 }

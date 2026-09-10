@@ -11,5 +11,9 @@
     "verified": "Organizador comunitario verificado",
     "get_verified": "Verificarme",
     "get_verified_sub": "Gana la confianza de tus vecinos"
+  },
+  "dashboard": {
+    "title": "Panel de eventos",
+    "sub": "Tus eventos, estadísticas y herramientas"
   }
 }

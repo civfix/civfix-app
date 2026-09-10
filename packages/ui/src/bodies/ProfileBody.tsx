@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo } from "react"
+import { View, Pressable, StyleSheet } from "react-native"
 import type { CleanupDTO, ReportDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme } from "../theme"
-import { iconMap } from "../typography"
+import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { Text, Icon, iconMap } from "../typography"
 import { EmptyState, SignInPrompt } from "../primitives"
 import {
   useMyProfile,
@@ -21,6 +22,32 @@ import {
 } from "./ProfileView"
 import { ServiceHoursSection } from "./profile/ServiceHoursSection"
 import { pushCleanup } from "./navHelpers"
+
+function DashboardRow({ onOpen }: { onOpen: () => void }) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("profile")
+  return (
+    <Pressable
+      onPress={onOpen}
+      accessibilityRole="button"
+      accessibilityLabel={t("dashboard.title")}
+      {...focusRingProps}
+      style={({ pressed }) => [styles.dashboardRow, pressed ? styles.dashboardRowPressed : null]}
+    >
+      <View style={styles.dashboardIcon}>
+        <Icon icon={iconMap.Calendar} size={16} color={th.colors.brand.sky} />
+      </View>
+      <View style={styles.dashboardMeta}>
+        <Text style={styles.dashboardTitle}>{t("dashboard.title")}</Text>
+        <Text style={styles.dashboardSub} numberOfLines={1}>
+          {t("dashboard.sub")}
+        </Text>
+      </View>
+      <Icon icon={iconMap.ChevronRight} size={18} color={th.colors.textSubtle} />
+    </Pressable>
+  )
+}
 
 export function ProfileBody() {
   const styles = useStyles()
@@ -57,6 +84,10 @@ export function ProfileBody() {
   }, [])
 
   const onOpenSaved = useCallback(() => pushKind("saves"), [pushKind])
+
+  const onOpenDashboard = useCallback(() => {
+    requireAuth(() => pushKind("event-dashboard"), { next: "/dashboard" })
+  }, [pushKind, requireAuth])
 
   const profileReports: ProfileReports = useMemo(
     () => ({
@@ -142,6 +173,7 @@ export function ProfileBody() {
         onOpenSaved={onOpenSaved}
         reports={profileReports}
         hours={<ServiceHoursSection variant="own" totalHours={profile.volunteerHours} />}
+        verificationSlot={<DashboardRow onOpen={onOpenDashboard} />}
       />
     </ScrollView>
   )
@@ -160,5 +192,45 @@ const useStyles = makeThemedStyles((t) => ({
   stateContent: {
     flexGrow: 1,
     justifyContent: "center",
+  },
+  dashboardRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["2"] + 2,
+    borderRadius: t.radius.lg,
+    paddingVertical: t.space["3"],
+    paddingHorizontal: t.space["3"] + 1,
+    backgroundColor: t.colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
+    ...t.shadows.s1,
+  },
+  dashboardRowPressed: {
+    opacity: 0.92,
+    transform: [{ scale: 0.99 }],
+  },
+  dashboardIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: t.radius.md,
+    flexShrink: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: t.colors.sky["50"],
+  },
+  dashboardMeta: {
+    flex: 1,
+    minWidth: 0,
+  },
+  dashboardTitle: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: 14,
+    color: t.colors.text,
+  },
+  dashboardSub: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: 12,
+    color: t.colors.textSubtle,
+    marginTop: 1,
   },
 }))

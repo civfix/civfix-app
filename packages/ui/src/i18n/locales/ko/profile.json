@@ -11,5 +11,9 @@
     "verified": "인증된 커뮤니티 주최자",
     "get_verified": "인증받기",
     "get_verified_sub": "이웃들과 신뢰를 쌓아보세요"
+  },
+  "dashboard": {
+    "title": "이벤트 대시보드",
+    "sub": "내 이벤트, 통계, 호스트 도구"
   }
 }
