@@ -18,9 +18,9 @@
  * THREAD AFFINITY — THE RULE: **every factory in this module is JS-THREAD ONLY.** Call them in render,
  * useMemo or useEffect and CAPTURE the returned object; NEVER call one from inside a worklet (a
  * Gesture callback, useAnimatedStyle, useDerivedValue, useAnimatedReaction, useAnimatedScrollHandler).
- * None of them is a worklet and none CAN be: they are expression-bodied arrows over `timingConfig` /
- * `springConfig`, which reach through the whole `theme` object — adding the directive would drag every
- * design token into the closure of each calling worklet, on every gesture rebuild.
+ * None of them is a worklet and none CAN be: they are expression-bodied arrows over `timingConfig`,
+ * which reaches through the whole `theme` object — adding the directive would drag every design token
+ * into the closure of each calling worklet, on every gesture rebuild.
  *
  * WHY IT MATTERS, precisely: the Babel plugin captures the free identifier into the worklet's
  * `__closure`; react-native-worklets sees a function with no `__workletHash` and serializes it via
@@ -43,26 +43,17 @@
  * reduce-motion on, `withTiming` completes instantly AND still invokes the completion callback, so
  * gorhom's `onClose` fires immediately and the presence gate tears down cleanly.
  */
-import { Easing, type WithSpringConfig, type WithTimingConfig } from "react-native-reanimated"
+import { Easing, type WithTimingConfig } from "react-native-reanimated"
 import { theme } from "../theme"
-import type { SpringRecipe, TimingRecipe } from "../theme/motion"
+import type { TimingRecipe } from "../theme/motion"
 
 export function timingConfig(r: TimingRecipe): WithTimingConfig {
   return { duration: r.duration, easing: Easing.bezier(...r.easing) }
 }
-export function springConfig(r: SpringRecipe): WithSpringConfig {
-  return {
-    mass: r.mass,
-    stiffness: r.stiffness,
-    damping: r.damping,
-    overshootClamping: r.overshootClamping,
-    energyThreshold: r.energyThreshold,
-  }
-}
 
 export const sheetMoveConfig = (): WithTimingConfig => timingConfig(theme.motion.sheetMove)
 export const sheetDismissConfig = (): WithTimingConfig => timingConfig(theme.motion.sheetDismiss)
-export const dockMorphInConfig = (): WithSpringConfig => springConfig(theme.motion.dockMorphIn)
+export const dockMorphInConfig = (): WithTimingConfig => timingConfig(theme.motion.dockMorphIn)
 export const dockMorphOutConfig = (): WithTimingConfig => timingConfig(theme.motion.dockMorphOut)
 export const dockFocusConfig = (): WithTimingConfig => timingConfig(theme.motion.dockFocus)
 export const dockMinimizeConfig = (): WithTimingConfig => timingConfig(theme.motion.dockMinimize)

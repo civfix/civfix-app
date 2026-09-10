@@ -16,7 +16,6 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
-  withSpring,
   withTiming,
   type DerivedValue,
   type SharedValue,
@@ -221,7 +220,7 @@ export function TabBar() {
     }
     p.value =
       target === 1
-        ? withSpring(target, { ...dockMorphInConfig(), reduceMotion: ReduceMotion.System })
+        ? withTiming(target, { ...dockMorphInConfig(), reduceMotion: ReduceMotion.System })
         : withTiming(target, { ...dockMorphOutConfig(), reduceMotion: ReduceMotion.System }, (finished) => {
             "worklet"
             if (finished) runOnJS(setSearchExitSettled)(true)

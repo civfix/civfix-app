@@ -79,22 +79,20 @@ describe("map-first tab bar model", () => {
     expect(compactBottomChrome("map")).toBe("tabs")
   })
 
-  it("enters the search morph on a physical spring that is underdamped but no longer slow", () => {
-    const spring = MOTION.dockMorphIn
-    expect(spring).toMatchObject({ mass: 1, stiffness: 90, damping: 13, overshootClamping: false })
-    const zeta = spring.damping / (2 * Math.sqrt(spring.stiffness * spring.mass))
-    expect(zeta).toBeGreaterThan(0.55)
-    expect(zeta).toBeLessThan(0.75)
-    const omegaN = Math.sqrt(spring.stiffness / spring.mass)
-    expect(omegaN).toBeGreaterThan(8)
-    expect(omegaN).toBeLessThan(12)
-    expect(spring.energyThreshold).toBeGreaterThan(0)
-  })
-
-  it("leaves the search morph on a deterministic timing with no tail", () => {
-    expect(MOTION.dockMorphOut.duration).toBeLessThanOrEqual(220)
-    expect(MOTION.dockMorphOut.easing).toEqual([0.22, 1, 0.36, 1])
-    expect(MOTION.dockMorphOut.duration).toBeLessThanOrEqual(MOTION.tabPill.duration)
+  it("enters and leaves the search morph on ONE deterministic timing, with no tail either way", () => {
+    for (const recipe of [MOTION.dockMorphIn, MOTION.dockMorphOut]) {
+      expect(recipe.duration).toBe(200)
+      expect(recipe.easing).toEqual([0.22, 1, 0.36, 1])
+      expect(recipe.duration).toBeLessThanOrEqual(MOTION.tabPill.duration)
+    }
+    const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
+    expect(native).not.toContain("withSpring")
+    expect(native).toMatch(/withTiming\(target, \{ \.\.\.dockMorphInConfig\(\)/)
+    expect(native).toMatch(/withTiming\(target, \{ \.\.\.dockMorphOutConfig\(\)/)
+    const configs = readFileSync(new URL("../motionConfigs.native.ts", import.meta.url), "utf8")
+    expect(configs).toContain(
+      "export const dockMorphInConfig = (): WithTimingConfig => timingConfig(theme.motion.dockMorphIn)",
+    )
   })
 
   it("renders ICONS-ONLY tab cells (no text labels) with bolder band-centered glyphs", () => {

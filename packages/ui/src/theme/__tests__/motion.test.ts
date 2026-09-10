@@ -19,6 +19,7 @@ const OPENS: ReadonlyArray<[string, TimingRecipe]> = [
   ["sheetMove", MOTION.sheetMove],
   ["bodyPush", MOTION.bodyPush],
   ["dockMount", MOTION.dockMount],
+  ["dockMorphIn", MOTION.dockMorphIn],
   ["tabPill", MOTION.tabPill],
   ["pagePush", MOTION.pagePush],
 ]
@@ -33,7 +34,7 @@ const EXIT_PAIRS: ReadonlyArray<[string, TimingRecipe, TimingRecipe]> = [
   ["sheet", MOTION.sheetDismiss, MOTION.sheetMove],
   ["body drill", MOTION.bodyExit, MOTION.bodyPush],
   ["body replace", MOTION.bodyExit, MOTION.bodyReplace],
-  ["dock morph", MOTION.dockMorphOut, MOTION.dockMount],
+  ["dock morph", MOTION.dockMorphOut, MOTION.dockMorphIn],
   ["page drill", MOTION.pagePop, MOTION.pagePush],
 ]
 
@@ -95,30 +96,19 @@ describe("motion vocabulary — the sheet teardown guard is a fallback, not the 
   })
 })
 
-describe("motion vocabulary — springs", () => {
-  it("gives every spring an explicit energyThreshold and no reanimated-3 rest keys", () => {
+describe("motion vocabulary — nothing in it is a spring any more", () => {
+  it("keeps every recipe a deterministic timing, so no curve carries a tail", () => {
     const springs = (Object.entries(MOTION) as ReadonlyArray<[string, unknown]>).filter(
       (entry): entry is [string, Record<string, unknown>] =>
         typeof entry[1] === "object" && entry[1] !== null && "stiffness" in entry[1],
     )
-    expect(springs.length).toBeGreaterThan(0)
-    for (const [, s] of springs) {
-      expect(typeof s.energyThreshold).toBe("number")
-      expect(s.energyThreshold as number).toBeGreaterThan(0)
-      expect(s.restDisplacementThreshold).toBeUndefined()
-      expect(s.restSpeedThreshold).toBeUndefined()
-    }
+    expect(springs).toEqual([])
   })
 
-  it("keeps the dock morph spring underdamped so the liquid settle survives", () => {
-    const { mass, stiffness, damping, overshootClamping } = MOTION.dockMorphIn
-    const zeta = damping / (2 * Math.sqrt(stiffness * mass))
-    const omegaN = Math.sqrt(stiffness / mass)
-    expect(zeta).toBeGreaterThan(0.55)
-    expect(zeta).toBeLessThan(0.75)
-    expect(omegaN).toBeGreaterThan(8)
-    expect(omegaN).toBeLessThan(12)
-    expect(overshootClamping).toBe(false)
+  it("opens and closes the search morph on the SAME curve", () => {
+    expect(MOTION.dockMorphIn).toEqual(MOTION.dockMorphOut)
+    expect(MOTION.dockMorphIn.duration).toBe(200)
+    expect(MOTION.dockMorphIn.easing).toEqual(EASE_STANDARD)
   })
 })
 
