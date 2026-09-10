@@ -42,6 +42,7 @@ import {
   HostModeBody,
   HostCheckinBody,
   HostBroadcastQuickBody,
+  HostTeamBody,
   MyTicketBody,
   OrgPageBody,
   MyDonationsBody,
@@ -163,6 +164,8 @@ function renderBodyId(id: BodyId, entry: DetailEntry | null): React.ReactNode {
       return <HostCheckinBody id={entry?.id ?? ""} />
     case "hostBroadcastQuick":
       return <HostBroadcastQuickBody id={entry?.id ?? ""} />
+    case "hostTeam":
+      return <HostTeamBody id={entry?.id ?? ""} />
     case "myTicket":
       return (
         <MyTicketBody id={entry?.id ?? ""} {...(entry?.seatId ? { seatId: entry.seatId } : {})} />

@@ -249,6 +249,17 @@ export type { AddressSearchProps, AddressPick } from "./AddressSearch"
 export { InlineDateTimePicker } from "./InlineDateTimePicker"
 export type { InlineDateTimePickerProps } from "./InlineDateTimePicker"
 
+export { RoleChip } from "./RoleChip"
+export type { RoleChipProps, RoleChipTone } from "./RoleChip"
+
 export * from "./host"
 export { openHostDashboard } from "./hostDashboardTarget"
 export type { HostDashboardTarget } from "./hostDashboardTarget.types"
+
+export { YourEventsSection } from "./feed/YourEventsSection"
+export {
+  YOUR_EVENTS_COLLAPSED_COUNT,
+  buildYourEventsModel,
+  yourEventsSectionVisible,
+} from "./feed/yourEventsModel"
+export type { YourEventsInput, YourEventsModel } from "./feed/yourEventsModel"

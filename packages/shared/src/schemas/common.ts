@@ -192,7 +192,13 @@ export type PushPlatform = z.infer<typeof PushPlatformSchema>
 export const OAuthProviderSchema = z.enum(["apple", "google", "email"])
 export type OAuthProvider = z.infer<typeof OAuthProviderSchema>
 
-export const CleanupMemberRoleSchema = z.enum(["organizer", "cohost", "member", "staff"])
+export const CleanupMemberRoleSchema = z.enum([
+  "organizer",
+  "cohost",
+  "member",
+  "staff",
+  "coordinator",
+])
 export type CleanupMemberRole = z.infer<typeof CleanupMemberRoleSchema>
 
 export const AbuseSubjectTypeSchema = z.enum(["report", "media", "user", "anon_token"])

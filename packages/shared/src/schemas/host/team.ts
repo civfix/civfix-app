@@ -1,11 +1,20 @@
 import { z } from "zod"
-import { CleanupMemberRoleSchema, IdSchema, ISODateSchema } from "../common.js"
-import { PersonDTOSchema } from "../entities.js"
+import {
+  CleanupMemberRoleSchema,
+  IdSchema,
+  ISODateSchema,
+  pageResponse,
+  PaginationQuerySchema,
+} from "../common.js"
+import { CleanupDTOSchema, InviteEventRefSchema, PersonDTOSchema } from "../entities.js"
 
+
+export { InviteEventRefSchema } from "../entities.js"
+export type { InviteEventRef } from "../entities.js"
 
 export const MAX_TEAM_INVITES_PER_EVENT = 50
 
-export const EventTeamRoleSchema = z.enum(["cohost", "staff"])
+export const EventTeamRoleSchema = z.enum(["cohost", "staff", "coordinator"])
 export type EventTeamRole = z.infer<typeof EventTeamRoleSchema>
 
 export const EventTeamInviteStatusSchema = z.enum([
@@ -13,6 +22,7 @@ export const EventTeamInviteStatusSchema = z.enum([
   "accepted",
   "revoked",
   "expired",
+  "declined",
 ])
 export type EventTeamInviteStatus = z.infer<typeof EventTeamInviteStatusSchema>
 
@@ -102,3 +112,43 @@ const AcceptEventTeamInviteResponseObjectSchema = z.object({
 export type AcceptEventTeamInviteResponse = z.infer<typeof AcceptEventTeamInviteResponseObjectSchema>
 export const AcceptEventTeamInviteResponseSchema: z.ZodType<AcceptEventTeamInviteResponse, z.ZodTypeDef, unknown> =
   AcceptEventTeamInviteResponseObjectSchema
+
+const PendingEventTeamInviteDTOObjectSchema = z.object({
+  id: IdSchema,
+  role: EventTeamRoleSchema,
+  event: InviteEventRefSchema,
+  invitedBy: PersonDTOSchema.nullable(),
+  createdAt: ISODateSchema,
+  expiresAt: ISODateSchema,
+})
+export type PendingEventTeamInviteDTO = z.infer<typeof PendingEventTeamInviteDTOObjectSchema>
+export const PendingEventTeamInviteDTOSchema: z.ZodType<PendingEventTeamInviteDTO, z.ZodTypeDef, unknown> =
+  PendingEventTeamInviteDTOObjectSchema
+
+export const ListMyEventInvitesRequestSchema = PaginationQuerySchema.strict()
+export type ListMyEventInvitesRequest = z.infer<typeof ListMyEventInvitesRequestSchema>
+
+const ListMyEventInvitesResponseObjectSchema = pageResponse(PendingEventTeamInviteDTOSchema)
+export type ListMyEventInvitesResponse = z.infer<typeof ListMyEventInvitesResponseObjectSchema>
+export const ListMyEventInvitesResponseSchema: z.ZodType<ListMyEventInvitesResponse, z.ZodTypeDef, unknown> =
+  ListMyEventInvitesResponseObjectSchema
+
+export const AcceptMyEventInviteRequestSchema = z.object({ inviteId: IdSchema }).strict()
+export type AcceptMyEventInviteRequest = z.infer<typeof AcceptMyEventInviteRequestSchema>
+
+const AcceptMyEventInviteResponseObjectSchema = z.object({
+  ok: z.literal(true),
+  role: CleanupMemberRoleSchema,
+  event: CleanupDTOSchema,
+})
+export type AcceptMyEventInviteResponse = z.infer<typeof AcceptMyEventInviteResponseObjectSchema>
+export const AcceptMyEventInviteResponseSchema: z.ZodType<AcceptMyEventInviteResponse, z.ZodTypeDef, unknown> =
+  AcceptMyEventInviteResponseObjectSchema
+
+export const DeclineMyEventInviteRequestSchema = z.object({ inviteId: IdSchema }).strict()
+export type DeclineMyEventInviteRequest = z.infer<typeof DeclineMyEventInviteRequestSchema>
+
+const DeclineMyEventInviteResponseObjectSchema = z.object({ ok: z.literal(true) })
+export type DeclineMyEventInviteResponse = z.infer<typeof DeclineMyEventInviteResponseObjectSchema>
+export const DeclineMyEventInviteResponseSchema: z.ZodType<DeclineMyEventInviteResponse, z.ZodTypeDef, unknown> =
+  DeclineMyEventInviteResponseObjectSchema

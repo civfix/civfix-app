@@ -184,7 +184,7 @@ export const SetMemberRoleRequestSchema = z
   .object({
     id: IdSchema,
     userId: IdSchema,
-    role: z.enum(["cohost", "staff", "member"]),
+    role: z.enum(["cohost", "staff", "coordinator", "member"]),
   })
   .strict()
 export type SetMemberRoleRequest = z.infer<typeof SetMemberRoleRequestSchema>

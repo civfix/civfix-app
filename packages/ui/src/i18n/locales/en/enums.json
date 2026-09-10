@@ -94,7 +94,8 @@
     "organizer": "Organizer",
     "cohost": "Co-host",
     "member": "Attendee",
-    "staff": "Staff"
+    "staff": "Staff",
+    "coordinator": "Coordinator"
   },
   "organizationMemberRole": {
     "owner": "Owner",

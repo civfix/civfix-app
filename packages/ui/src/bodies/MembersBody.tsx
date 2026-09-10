@@ -29,7 +29,13 @@ import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { RosterRow, type RosterRowMenu } from "./RosterRow"
+import { RoleChip } from "./RoleChip"
 import { canLeaveChat, chatMemberCount, isChatInfoRoomKind } from "./chatInfoSurface"
+import { cleanupHostStanding, hasHostCapability } from "../data/hooks/host"
+import {
+  settableRolesOtherThan,
+  type SettableEventMemberRole,
+} from "./host/eventTeamTiers"
 import { groupRosterBySlot, rosterListKey, type RosterListItem } from "./rosterSlotGroups"
 
 type RosterPerson = PersonDTO & { role?: CleanupMemberRole; slot?: EventSlotRef | null }
@@ -46,7 +52,8 @@ function rosterItemKey(item: RosterItem): string {
 const MemberRow = memo(function MemberRow({
   person,
   viewerId,
-  viewerRole,
+  viewerManagesTeam,
+  viewerManagesEvent,
   onOpenPerson,
   onBlock,
   onSetRole,
@@ -57,10 +64,11 @@ const MemberRow = memo(function MemberRow({
 }: {
   person: RosterPerson
   viewerId: string | null
-  viewerRole: CleanupMemberRole | null
+  viewerManagesTeam: boolean
+  viewerManagesEvent: boolean
   onOpenPerson: (navId: string) => void
   onBlock: (personId: string) => void
-  onSetRole: (personId: string, role: "cohost" | "member") => void
+  onSetRole: (personId: string, role: SettableEventMemberRole) => void
   onRemove: (personId: string) => void
   blockPending: boolean
   managePending: boolean
@@ -68,16 +76,16 @@ const MemberRow = memo(function MemberRow({
 }) {
   const styles = useStyles()
   const { t } = useT("event-members")
+  const { t: tEnums } = useT("enums")
 
   const canBlock = !person.deleted && !!viewerId && person.id !== viewerId
   const targetRole: CleanupMemberRole | undefined = person.role
   const isSelf = !!viewerId && person.id === viewerId
   const manageable =
     !person.deleted && !isSelf && !!viewerId && targetRole != null && targetRole !== "organizer"
-  const canSetRole = manageable && viewerRole === "organizer"
+  const canSetRole = manageable && viewerManagesTeam
   const canRemove =
-    manageable &&
-    (viewerRole === "organizer" || (viewerRole === "cohost" && targetRole === "member"))
+    manageable && (viewerManagesTeam || (viewerManagesEvent && targetRole === "member"))
   const hasKebab = canBlock || canSetRole || canRemove
 
   const menu: RosterRowMenu | null = hasKebab
@@ -85,23 +93,13 @@ const MemberRow = memo(function MemberRow({
         a11yLabel: t("row.moreOptionsA11y", { name: person.name }),
         buildItems: (goToConfirm) => [
           ...(canSetRole
-            ? [
-                targetRole === "cohost"
-                  ? {
-                      key: "demote",
-                      label: t("manage.removeCohost"),
-                      icon: "UserMinus" as const,
-                      disabled: managePending,
-                      onPress: () => onSetRole(person.id, "member"),
-                    }
-                  : {
-                      key: "promote",
-                      label: t("manage.makeCohost"),
-                      icon: "UserPlus" as const,
-                      disabled: managePending,
-                      onPress: () => onSetRole(person.id, "cohost"),
-                    },
-              ]
+            ? settableRolesOtherThan(targetRole).map((role) => ({
+                key: `role-${role}`,
+                label: t("manage.make_role", { role: tEnums(`cleanupMemberRole.${role}`) }),
+                icon: role === "member" ? ("UserMinus" as IconName) : ("UserPlus" as IconName),
+                disabled: managePending,
+                onPress: () => onSetRole(person.id, role),
+              }))
             : []),
           ...(canRemove
             ? [
@@ -155,23 +153,13 @@ const MemberRow = memo(function MemberRow({
 
   const roleChip =
     targetRole === "organizer" ? (
-      <View style={[styles.roleChip, styles.roleChipHost]}>
-        <Text style={[styles.roleChipText, styles.roleChipHostText]}>{t("role.host")}</Text>
-      </View>
-    ) : targetRole === "cohost" ? (
-      <View style={styles.roleChip}>
-        <Text style={styles.roleChipText}>{t("role.cohost")}</Text>
-      </View>
+      <RoleChip label={t("role.host")} tone="lead" />
+    ) : targetRole != null && targetRole !== "member" ? (
+      <RoleChip label={tEnums(`cleanupMemberRole.${targetRole}`)} />
     ) : null
 
   const slotTitle = showSlotChip ? person.slot?.title : undefined
-  const slotChip = slotTitle ? (
-    <View style={[styles.roleChip, styles.roleChipSlot]}>
-      <Text style={[styles.roleChipText, styles.roleChipSlotText]} numberOfLines={1}>
-        {slotTitle}
-      </Text>
-    </View>
-  ) : null
+  const slotChip = slotTitle ? <RoleChip label={slotTitle} tone="slot" /> : null
 
   return (
     <RosterRow
@@ -373,18 +361,15 @@ export function MembersBody({
   const blockUser = useBlockUser()
 
   const cleanupQuery = useCleanup(roomKind === "cleanup" ? id : undefined)
-  const viewerRole: CleanupMemberRole | null =
-    cleanupQuery.data?.myRole ??
-    (viewerId && cleanupQuery.data?.organizer.id === viewerId ? "organizer" : null)
+  const viewerStanding = cleanupHostStanding(cleanupQuery.data, viewerId)
+  const viewerManagesTeam = hasHostCapability(viewerStanding, "manage_team")
+  const viewerManagesEvent = hasHostCapability(viewerStanding, "manage_event")
   const setMemberRole = useSetMemberRole()
   const removeMember = useRemoveMember()
   const managePending = setMemberRole.isPending || removeMember.isPending
 
   const cleanupSlots: readonly EventSlotDTO[] = cleanupQuery.data?.slots ?? NO_SLOTS
-  const grouped =
-    roomKind === "cleanup" &&
-    (viewerRole === "organizer" || viewerRole === "cohost") &&
-    cleanupSlots.length > 0
+  const grouped = roomKind === "cleanup" && viewerManagesEvent && cleanupSlots.length > 0
   const data: RosterItem[] = useMemo(
     () =>
       grouped
@@ -467,7 +452,7 @@ export function MembersBody({
   )
 
   const onSetRole = useCallback(
-    (personId: string, role: "cohost" | "member") => {
+    (personId: string, role: SettableEventMemberRole) => {
       setMemberRole.mutate({ id, userId: personId, role }, { onError: onMutationError })
     },
     [setMemberRole, id, onMutationError],
@@ -497,7 +482,8 @@ export function MembersBody({
         <MemberRow
           person={person}
           viewerId={viewerId}
-          viewerRole={viewerRole}
+          viewerManagesTeam={viewerManagesTeam}
+          viewerManagesEvent={viewerManagesEvent}
           onOpenPerson={onOpenPerson}
           onBlock={onBlock}
           onSetRole={onSetRole}
@@ -514,7 +500,8 @@ export function MembersBody({
       onSetRole,
       onRemove,
       viewerId,
-      viewerRole,
+      viewerManagesTeam,
+      viewerManagesEvent,
       blockUser.isPending,
       managePending,
       grouped,
@@ -811,37 +798,6 @@ const useStyles = makeThemedStyles((t) => ({
   listEmpty: {
     flexGrow: 1,
     paddingHorizontal: t.space["4"],
-  },
-  roleChip: {
-    flexShrink: 0,
-    paddingHorizontal: t.space["2"],
-    paddingVertical: 2,
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.bgAlt,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-  },
-  roleChipHost: {
-    backgroundColor: t.colors.moss["50"],
-    borderColor: t.colors.moss["100"],
-  },
-  roleChipText: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 9.5,
-    letterSpacing: 0.4,
-    color: t.colors.textMuted,
-  },
-  roleChipHostText: {
-    color: t.colors.moss["700"],
-  },
-  roleChipSlot: {
-    flexShrink: 1,
-    maxWidth: 120,
-    backgroundColor: t.colors.sky["50"],
-    borderColor: t.colors.sky["100"],
-  },
-  roleChipSlotText: {
-    color: t.colors.sky["700"],
   },
   chipRow: {
     flexDirection: "row",

@@ -53,6 +53,7 @@ export type DetailKind =
   | "host-mode"
   | "host-checkin"
   | "host-broadcast-quick"
+  | "host-team"
   | "my-ticket"
   | "org"
   | "my-donations"
@@ -97,6 +98,7 @@ export const ALL_DETAIL_KINDS = [
   "host-mode",
   "host-checkin",
   "host-broadcast-quick",
+  "host-team",
   "my-ticket",
   "org",
   "my-donations",

@@ -7,6 +7,7 @@ import type {
   UpdateCleanupRequest,
   JoinCleanupResponse,
   RequestEventResourcesResponse,
+  SetMemberRoleRequest,
   SetMemberRoleResponse,
   RemoveMemberResponse,
   GuestRsvpRequestRequest,
@@ -357,7 +358,7 @@ export function useClaimEventSlot(cleanupId: string) {
 export interface SetMemberRoleVars {
   id: string
   userId: string
-  role: "cohost" | "member"
+  role: SetMemberRoleRequest["role"]
 }
 
 export function useSetMemberRole() {

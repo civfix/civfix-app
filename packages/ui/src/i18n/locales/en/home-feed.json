@@ -6,21 +6,24 @@
     "claim_available": "Claim available",
     "system": "civfix"
   },
-  "your_feed": {
-    "title": "Your feed",
-    "error": "We could not load your activity. Check your connection and try again.",
-    "empty": "Activity from events you follow and reports you watch shows up here."
-  },
-  "suggested": {
-    "title": "Suggested events",
-    "near_you_one": "{{count}} near you",
-    "near_you_other": "{{count}} near you",
-    "error": "We could not load nearby events. Check your connection and try again.",
-    "empty": "No events nearby yet. Be the first to host one.",
-    "host_fallback": "A neighbor",
-    "hosting": "{{name}} is hosting {{title}}",
-    "going_one": "{{count}} going",
-    "going_other": "{{count}} going"
+  "your_events": {
+    "section": "Your events",
+    "invited_as": "{{name}} invited you as {{role}}",
+    "invited_by_unknown": "A host",
+    "invites_error_title": "Invitations could not load",
+    "invites_error_body": "Check your connection and try again.",
+    "invites_retry": "Try again",
+    "accept": "Accept",
+    "accept_a11y": "Accept the invitation to help run {{title}}",
+    "decline": "Decline",
+    "decline_a11y": "Decline the invitation to help run {{title}}",
+    "open_dashboard_a11y": "Open the host dashboard for {{title}}",
+    "show_more_one": "Show {{count}} more",
+    "show_more_other": "Show {{count}} more",
+    "show_more_a11y_one": "Show {{count}} more event you are hosting",
+    "show_more_a11y_other": "Show {{count}} more events you are hosting",
+    "show_fewer": "Show fewer",
+    "action_error": "That did not go through. Check your connection and try again."
   },
   "feed": {
     "title": "Your Feed",

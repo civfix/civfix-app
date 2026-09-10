@@ -25,6 +25,7 @@ const composer = (mode?: "post" | "quote" | "reply", targetPostId?: string): Det
 })
 const hostMode = (id: string): DetailEntry => ({ kind: "host-mode", id })
 const hostCheckin = (id: string): DetailEntry => ({ kind: "host-checkin", id })
+const hostTeam = (id: string): DetailEntry => ({ kind: "host-team", id })
 const myTicket = (id: string, seatId?: string): DetailEntry => ({
   kind: "my-ticket",
   id,
@@ -55,6 +56,7 @@ test("only the full-screen kinds have a bridge key", () => {
   assert.equal(bridgeKey({ kind: "cleanup", id: "c1" }), null)
   assert.equal(bridgeKey(hostMode("c1")), "host-mode:c1")
   assert.equal(bridgeKey(hostCheckin("c1")), "host-checkin:c1")
+  assert.equal(bridgeKey(hostTeam("c1")), "host-team:c1")
   assert.equal(bridgeKey(myTicket("c1")), "my-ticket:c1:")
   assert.equal(bridgeKey(myTicket("c1", "s1")), "my-ticket:c1:s1")
   assert.equal(bridgeKey(org("acme")), "org:acme")
@@ -225,6 +227,7 @@ test("every bridged route reads its own name back as the key that produced it", 
 
   assert.equal(bridgeRoute(hostMode("c1"))?.pathname, `/${BRIDGE_ROUTE_NAMES.hostMode}`)
   assert.equal(bridgeRoute(hostCheckin("c1"))?.pathname, `/${BRIDGE_ROUTE_NAMES.hostCheckin}`)
+  assert.equal(bridgeRoute(hostTeam("c1"))?.pathname, `/${BRIDGE_ROUTE_NAMES.hostTeam}`)
   assert.equal(bridgeRoute(myTicket("c1", "s1"))?.pathname, `/${BRIDGE_ROUTE_NAMES.myTicketSeat}`)
   assert.equal(bridgeRoute(org("acme"))?.pathname, `/${BRIDGE_ROUTE_NAMES.org}`)
 
@@ -235,6 +238,7 @@ test("every bridged route reads its own name back as the key that produced it", 
     composer(),
     hostMode("c1"),
     hostCheckin("c1"),
+    hostTeam("c1"),
     myTicket("c1"),
     myTicket("c1", "s1"),
     org("acme"),
@@ -319,6 +323,7 @@ test("stackWithoutBridged removes the LAST match and reports nothing to do when 
 test("the day-of host surfaces are their own full-screen routes, keyed by event", () => {
   assert.equal(bridgeRoute(hostMode("c1"))?.params.id, "c1")
   assert.equal(bridgeRoute(hostCheckin("c1"))?.params.id, "c1")
+  assert.equal(bridgeRoute(hostTeam("c1"))?.params.id, "c1")
   assert.equal(bridgeRoute(org("acme"))?.params.slug, "acme")
   assert.deepEqual(bridgeRoute(myTicket("c1"))?.params, { id: "c1" })
   assert.deepEqual(bridgeRoute(myTicket("c1", "s2"))?.params, { id: "c1", seatId: "s2" })
@@ -334,7 +339,13 @@ test("the seat is a path segment on both sides, so one seat is one screen", () =
 })
 
 test("a screen that HOSTS the shared shell keeps its entry when it is already on top", () => {
-  for (const entry of [hostMode("c1"), hostCheckin("c1"), myTicket("c1", "s1"), org("acme")]) {
+  for (const entry of [
+    hostMode("c1"),
+    hostCheckin("c1"),
+    hostTeam("c1"),
+    myTicket("c1", "s1"),
+    org("acme"),
+  ]) {
     const key = bridgeKey(entry)
     assert.ok(key)
     assert.ok(SHELL_HOSTED_BRIDGE_KINDS.includes(entry.kind))
@@ -355,6 +366,8 @@ test("a screen that renders its OWN body still drops the entry when it is alread
 test("an id-less host entry and a slug-less org are never bridged", () => {
   assert.equal(bridgeKey({ kind: "host-mode" }), null)
   assert.equal(bridgeKey({ kind: "host-checkin" }), null)
+  assert.equal(bridgeKey({ kind: "host-team" }), null)
+  assert.equal(bridgeRoute({ kind: "host-team" }), null)
   assert.equal(bridgeKey({ kind: "my-ticket" }), null)
   assert.equal(bridgeKey({ kind: "org" }), null)
   assert.equal(bridgeRoute({ kind: "my-ticket" }), null)

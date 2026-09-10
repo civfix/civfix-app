@@ -10,6 +10,7 @@ import {
   SkeletonText,
 } from "../primitives"
 import { useCleanup, useUpdateCleanup, useAuthState } from "../data"
+import { cleanupHostStanding, managesEvent } from "../data/hooks/host"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
@@ -204,9 +205,7 @@ export function EditCleanupBody({ id }: { id: string }) {
     )
   }
 
-  const myRole =
-    query.data.myRole ?? (!!user && user.id === query.data.organizer.id ? "organizer" : null)
-  const isHost = myRole === "organizer" || myRole === "cohost"
+  const isHost = managesEvent(cleanupHostStanding(query.data, user?.id ?? null))
   if (!isHost) {
     return (
       <View style={styles.stateFill}>

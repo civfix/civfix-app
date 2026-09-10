@@ -5,7 +5,7 @@
     "error": {
       "validation": "Bitte überprüfe die Veranstaltungsdetails und versuche es erneut.",
       "rate_limited": "Zu viele Versuche. Warte kurz und versuche es erneut.",
-      "forbidden": "Nur der Organisator kann diese Veranstaltung bearbeiten.",
+      "forbidden": "Nur Hosts, die diese Veranstaltung verwalten dürfen, können sie bearbeiten.",
       "generic": "Speichern fehlgeschlagen. Bitte versuche es erneut."
     }
   },
@@ -17,7 +17,7 @@
     "body": "Diese Veranstaltung konnte nicht geladen werden. Sie wurde möglicherweise entfernt, oder du bist offline."
   },
   "denied": {
-    "title": "Nur der Organisator kann diese Veranstaltung bearbeiten",
+    "title": "Nur Hosts, die diese Veranstaltung verwalten dürfen, können sie bearbeiten",
     "body": "Bitte den Gastgeber, die Details zu aktualisieren, oder melde dich auf der Veranstaltungsseite an."
   }
 }

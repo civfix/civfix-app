@@ -14,7 +14,9 @@
     "quick_message": "Mensaje rápido",
     "quick_message_a11y": "Enviar un mensaje rápido a los asistentes",
     "walkup": "Añadir sin cita",
-    "walkup_a11y": "Inscribir a alguien en la puerta"
+    "walkup_a11y": "Inscribir a alguien en la puerta",
+    "team": "Equipo",
+    "team_a11y": "Gestionar el equipo del evento"
   },
   "roster": {
     "heading": "Asistentes"

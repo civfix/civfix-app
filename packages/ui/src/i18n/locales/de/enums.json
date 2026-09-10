@@ -94,7 +94,8 @@
     "organizer": "Organisator*in",
     "cohost": "Co-Host",
     "member": "Teilnehmende*r",
-    "staff": "Team"
+    "staff": "Team",
+    "coordinator": "Koordinator*in"
   },
   "organizationMemberRole": {
     "owner": "Inhaber*in",

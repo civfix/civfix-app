@@ -6,21 +6,22 @@
     "claim_available": "참여 가능",
     "system": "civfix"
   },
-  "your_feed": {
-    "title": "내 피드",
-    "error": "활동을 불러오지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.",
-    "empty": "팔로우한 이벤트와 관심 제보의 활동이 여기에 표시돼요."
-  },
-  "suggested": {
-    "title": "추천 이벤트",
-    "near_you_one": "근처 {{count}}개",
-    "near_you_other": "근처 {{count}}개",
-    "error": "주변 이벤트를 불러오지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.",
-    "empty": "아직 근처에 이벤트가 없어요. 첫 번째로 개최해 보세요.",
-    "host_fallback": "이웃 주민",
-    "hosting": "{{name}}님이 {{title}}을(를) 개최해요",
-    "going_one": "{{count}}명 참여 예정",
-    "going_other": "{{count}}명 참여 예정"
+  "your_events": {
+    "section": "내 이벤트",
+    "invited_as": "{{name}}님이 {{role}}(으)로 초대했어요",
+    "invited_by_unknown": "주최자",
+    "invites_error_title": "초대를 불러오지 못했어요",
+    "invites_error_body": "연결 상태를 확인하고 다시 시도해 주세요.",
+    "invites_retry": "다시 시도",
+    "accept": "수락",
+    "accept_a11y": "{{title}} 운영을 돕는 초대 수락",
+    "decline": "거절",
+    "decline_a11y": "{{title}} 운영을 돕는 초대 거절",
+    "open_dashboard_a11y": "{{title}} 호스트 대시보드 열기",
+    "show_more_other": "{{count}}개 더 보기",
+    "show_more_a11y_other": "내가 개최하는 이벤트 {{count}}개 더 보기",
+    "show_fewer": "간략히 보기",
+    "action_error": "처리하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요."
   },
   "feed": {
     "title": "내 피드",

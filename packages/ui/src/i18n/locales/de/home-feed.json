@@ -6,21 +6,24 @@
     "claim_available": "Aufgabe verfügbar",
     "system": "civfix"
   },
-  "your_feed": {
-    "title": "Dein Feed",
-    "error": "Aktivitäten konnten nicht geladen werden. Verbindung prüfen und erneut versuchen.",
-    "empty": "Hier siehst du Aktivitäten aus Events, denen du folgst, und Meldungen, die du beobachtest."
-  },
-  "suggested": {
-    "title": "Vorgeschlagene Events",
-    "near_you_one": "{{count}} in der Nähe",
-    "near_you_other": "{{count}} in der Nähe",
-    "error": "Nearby-Events konnten nicht geladen werden. Verbindung prüfen und erneut versuchen.",
-    "empty": "Noch keine Events in der Nähe. Sei der Erste und veranstalte eins.",
-    "host_fallback": "Ein Nachbar",
-    "hosting": "{{name}} veranstaltet {{title}}",
-    "going_one": "{{count}} nimmt teil",
-    "going_other": "{{count}} nehmen teil"
+  "your_events": {
+    "section": "Deine Events",
+    "invited_as": "{{name}} hat dich als {{role}} eingeladen",
+    "invited_by_unknown": "Ein*e Veranstalter*in",
+    "invites_error_title": "Einladungen konnten nicht geladen werden",
+    "invites_error_body": "Verbindung prüfen und erneut versuchen.",
+    "invites_retry": "Erneut versuchen",
+    "accept": "Annehmen",
+    "accept_a11y": "Die Einladung annehmen, {{title}} mit zu leiten",
+    "decline": "Ablehnen",
+    "decline_a11y": "Die Einladung ablehnen, {{title}} mit zu leiten",
+    "open_dashboard_a11y": "Host-Dashboard für {{title}} öffnen",
+    "show_more_one": "{{count}} weiteres anzeigen",
+    "show_more_other": "{{count}} weitere anzeigen",
+    "show_more_a11y_one": "{{count}} weiteres Event anzeigen, das du veranstaltest",
+    "show_more_a11y_other": "{{count}} weitere Events anzeigen, die du veranstaltest",
+    "show_fewer": "Weniger anzeigen",
+    "action_error": "Das hat nicht geklappt. Verbindung prüfen und erneut versuchen."
   },
   "feed": {
     "title": "Dein Feed",

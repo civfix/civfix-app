@@ -23,6 +23,10 @@ function normalizePath(path: string): string {
     : withoutQuery
 }
 
+export function isRootLink(path: string | null | undefined): boolean {
+  return path === "/"
+}
+
 export function entryFromPath(path: string | null | undefined): DetailEntry | null {
   if (!path) return null
   const normalized = normalizePath(path)
@@ -43,6 +47,7 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
       if (sub === "host") return { kind: "host-mode", id }
       if (sub === "checkin") return { kind: "host-checkin", id }
       if (sub === "broadcast") return { kind: "host-broadcast-quick", id }
+      if (sub === "team") return { kind: "host-team", id }
       if (sub === "ticket") {
         const seatId = parts[3]
         return seatId ? { kind: "my-ticket", id, seatId } : { kind: "my-ticket", id }
@@ -151,6 +156,8 @@ export function pathForEntry(entry: DetailEntry | null): string {
       return entry.id ? `/cleanups/${entry.id}/checkin` : "/cleanups"
     case "host-broadcast-quick":
       return entry.id ? `/cleanups/${entry.id}/broadcast` : "/cleanups"
+    case "host-team":
+      return entry.id ? `/cleanups/${entry.id}/team` : "/cleanups"
     case "my-ticket":
       if (!entry.id) return "/cleanups"
       return entry.seatId
@@ -311,6 +318,8 @@ export function titleForEntry(entry: DetailEntry | null): string {
       return "title.host_checkin"
     case "host-broadcast-quick":
       return "title.host_broadcast_quick"
+    case "host-team":
+      return "title.host_team"
     case "my-ticket":
       return "title.my_ticket"
     case "org":
@@ -411,6 +420,7 @@ export function parentViewForEntry(entry: DetailEntry | null): View | null {
     case "host-mode":
     case "host-checkin":
     case "host-broadcast-quick":
+    case "host-team":
     case "my-ticket":
     case "org":
       return "events"

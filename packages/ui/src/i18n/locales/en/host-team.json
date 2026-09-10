@@ -1,4 +1,18 @@
 {
+  "state": {
+    "loading": "Loading the team…",
+    "error_title": "The team is unavailable",
+    "error_body": "We could not load this event's team. Check your connection and try again.",
+    "denied_title": "Not a host here",
+    "denied_body": "Only hosts who can manage the team can open this screen."
+  },
+  "accept": {
+    "joined": "You joined the team as {{role}}",
+    "error_invalid": "That invitation is no longer valid. It may have been used, withdrawn, or sent to a different account.",
+    "error_unavailable": "That invitation can no longer be accepted. Ask the host to send a new one.",
+    "error_removed": "A host removed you from this event, so you can't rejoin it.",
+    "error_generic": "We could not accept that invitation. Open the link again."
+  },
   "members": {
     "title": "Team",
     "joined": "Joined {{when}}",
@@ -7,6 +21,7 @@
   },
   "role": {
     "cohost": "Co-host",
+    "coordinator": "Coordinator",
     "staff": "Staff",
     "member": "Attendee",
     "updated": "Role updated",
@@ -15,7 +30,16 @@
     "confirm_body": "{{name}} becomes {{role}} for this event. You can change it again at any time.",
     "confirm_action": "Change role",
     "error_conflict": "That person's role changed before you did. Reload the team and try again.",
-    "error_forbidden": "You cannot change that person's role on this event."
+    "error_forbidden": "You cannot change that person's role on this event.",
+    "hint_cohost": "Runs the event with you: edits the details, the tickets and the page, and sees guest contact details.",
+    "hint_coordinator": "Runs the day: the roster, the answers, check-in, the broadcast and the chat. Changes nothing, and never sees an email or a phone number.",
+    "hint_staff": "Helps at the door: a contact-free roster and check-in, nothing else."
+  },
+  "manage": {
+    "error_generic": "That change did not go through. Try again.",
+    "error_conflict": "This team changed before you did. Reload it and try again.",
+    "error_forbidden": "You cannot make that change on this event.",
+    "error_gone": "That is no longer on this team."
   },
   "invite": {
     "action": "Invite",
@@ -26,11 +50,20 @@
     "handle": "Handle",
     "email": "Email address",
     "role": "Role",
-    "role_hint": "Co-hosts can manage the event. Staff can check people in and see a contact-free roster.",
     "send": "Send the invite",
     "sent": "Invite sent",
     "revoked": "Invite revoked",
-    "privacy_note": "An invited email is stored masked. You will never see the full address."
+    "privacy_note": "An invited email is stored masked. You will never see the full address.",
+    "dismiss_a11y": "Close the invite form",
+    "limit_reached": "This event already has the maximum number of open invitations.",
+    "handle_invalid": "A handle is 3 to 20 letters, numbers or underscores.",
+    "email_invalid": "Enter a complete email address.",
+    "error_generic": "That invite could not be sent.",
+    "error_no_account": "No account matches that handle.",
+    "error_conflict": "That person is already on the team, or already has an open invite.",
+    "error_forbidden": "That person cannot be invited to this event.",
+    "error_rate_limited": "This event has sent too many invites today. Try again tomorrow.",
+    "error_invalid": "Check the handle or email address and try again."
   },
   "invites": {
     "title": "Pending invites",
@@ -42,6 +75,8 @@
     "status_pending": "Pending",
     "status_accepted": "Accepted",
     "status_revoked": "Revoked",
-    "status_expired": "Expired"
+    "status_declined": "Declined",
+    "status_expired": "Expired",
+    "expires": "Expires {{when}}"
   }
 }

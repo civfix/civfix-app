@@ -1,5 +1,37 @@
 # @civfix/shared
 
+## 0.42.0
+
+### Minor Changes
+
+- Event collaborators: a third invitable tier and an invitee-side invite inbox. Additive: 3 new
+  endpoints (registry 334 -> 337, of which 108 are admin), no existing shape tightened. Every new
+  response field is optional, nullable or defaulted, so a payload from a 0.41.0 server still parses.
+
+  Enums (mirrored byte-identical by the backend value arrays): `CleanupMemberRoleSchema` appends
+  `coordinator` LAST (the day-of tier between `cohost` and `staff`); `EventTeamRoleSchema` becomes
+  `cohost | staff | coordinator`, still append-last and still a subset of `CleanupMemberRole` in the
+  same relative order; `EventTeamInviteStatusSchema` appends `declined` LAST (the invitee refusing,
+  distinct from the host's `revoked`); `NotificationTypeSchema` appends `event_team_invite`;
+  `SetMemberRoleRequestSchema.role` accepts `coordinator`.
+
+  Capabilities (`host/capabilities.ts`, DECISIONS §33): `coordinator` holds `view_event_private`,
+  `view_roster`, `view_answers`, `view_analytics`, `check_in`, `broadcast`, `moderate_chat` - derived
+  as `COHOST_CAPABILITIES` minus `view_guest_contact`, `manage_event`, `manage_tickets`,
+  `manage_page`, `export`. It never reads attendee contact details and can never export.
+  `HostCapability` itself is unchanged (still 18 values).
+
+  Invitee inbox (`schemas/host/team.ts`, `hostEndpoints`): `PendingEventTeamInviteDTO`
+  (`{ id, role, event, invitedBy, createdAt, expiresAt }`, no email field) over the new
+  `InviteEventRef` in `schemas/entities.ts` (`id`, `title`, `startsAt`, `endsAt`, `status`,
+  `coverThumbUrl`, `address`), `listMyEventInvites` (`GET /me/event-invites`, paginated),
+  `acceptMyEventInvite` (`POST /me/event-invites/:inviteId/accept`, token-free, answers the SEATED
+  role plus the `CleanupDTO`), `declineMyEventInvite`
+  (`POST /me/event-invites/:inviteId/decline`). `acceptEventTeamInvite` (the emailed token path) is
+  unchanged.
+
+  Consumes `@civfix/shared` `^0.42.0`.
+
 ## 0.41.0
 
 ### Minor Changes
@@ -752,6 +784,7 @@ hidden }`, `.strict()`) and `ToggleHiddenResponseSchema`/`ToggleHiddenResponse` 
 - App-Store remediation batch (+ analytics new-users + pin-glow).
 
   Contract (@civfix/shared):
+
   - New owner endpoint `unlistReport` (`POST /reports/:id/unlist`) — reporter hides/re-lists their own report (toggles `reports.visibility`), never deletes.
   - New host endpoint `cancelCleanup` (`POST /cleanups/:id/cancel`) — organizer cancels an event; the server notifies attendees + writes a timeline row + unlists from the map.
   - `NotificationTypeSchema` += `"cleanup_cancelled"`; `NotificationPrefsDTOSchema` += `mentions` (mentions mute).
@@ -759,6 +792,7 @@ hidden }`, `.strict()`) and `ToggleHiddenResponseSchema`/`ToggleHiddenResponse` 
   - Analytics: home/KPI "Volunteers" → "New users".
 
   UI (@civfix/ui):
+
   - Report detail: owner-only "Hide from map / Show on map again" + hidden banner.
   - Event detail: host "Cancel event" + CancelEventSheet + "Cancelled" banner.
   - Guest browsing supported end-to-end (every account action funnels through requireAuth/SignInPrompt).
@@ -860,6 +894,7 @@ bounced, threadId, routedTo, routedAt }`); the timeline `kind` enum gains `reply
 - a316a4e: Add event<->report linking (contract + community UI).
 
   UI (@civfix/ui):
+
   - shared CleanupForm (used by Create + the new host-gated EditCleanupBody) with a Cleanup|Other Volunteer kind selector, a "Meet location" relabel, and an inline cleanup-only linked-reports picker.
   - EventDetailBody "Reports we'll handle" gallery + host Edit affordance; ReportDetailBody "Host an event" pill (auth-gated) + "Cleanup events" gallery + a synthesized "Linked to cleanup" timeline node from ReportDTO.linkedEvents.
   - map: EventPin diverges by eventKind (cleanup gold calendar vs other_volunteer marker) and the Map.web marker signature includes eventKind; new nav DetailKind "edit-cleanup" (/cleanups/:id/edit) + a reportId thread-through for host-from-report; useUpdateCleanup hook.
@@ -885,6 +920,7 @@ bounced, threadId, routedTo, routedAt }`); the timeline `kind` enum gains `reply
 - 04a348d: Add a public per-report DISCUSSION, separate from the status timeline (additive, backward-compatible).
 
   @civfix/shared (contract):
+
   - entities (new, cross-domain): DiscussionMessageDTO (id, reportId, parentId, author, body, attachments: MediaDTO[], reactions, replyCount, cityMention, forwardedToCity, timestamps, mine), DiscussionAuthorDTO, ReactionSummaryDTO, CityMentionDTO.
   - discussion (new module): CreateDiscussionMessageRequest, ToggleReactionRequest, the history query/page schemas, DISCUSSION_BODY_MAX (4000), REACTION_EMOJIS (the 6 ASCII reaction names) + ReactionEmoji.
   - reports: ReportDTO gains optional discussionCount, cityHandle, cityName, canForwardToCity (powers the Discussion tab + the @city chip without a second fetch).
@@ -892,6 +928,7 @@ bounced, threadId, routedTo, routedAt }`); the timeline `kind` enum gains `reply
   - client: new endpoints getReportDiscussion, getDiscussionReplies, postDiscussionMessage, toggleDiscussionReaction, deleteDiscussionMessage (public read, sign-in to write), plus admin getAdminReportDiscussion + removeDiscussionMessage.
 
   @civfix/ui (community UI):
+
   - ReportDetailBody gains a "Timeline | Discussion" segmented tab. Timeline = the existing status-update rail (unchanged); Discussion = the new public thread. The dead client-only "Send a follow-up" composer + its synthesized timeline node were removed.
   - New data hooks (useReportDiscussion / useDiscussionReplies / usePostDiscussionMessage / useToggleReaction / useDeleteDiscussionMessage) under a dedicated ["discussions", ...] query-key namespace, plus realtime refresh over the existing chat WebSocket (a public report_discussion room).
   - New primitives: ReactionBar/ReactionChip, DiscussionMessageRow, DiscussionComposer (threaded replies, reactions, media attachments, and a report-scoped @city mention chip that forwards to the report's own jurisdiction by email).

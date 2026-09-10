@@ -5,7 +5,7 @@
     "error": {
       "validation": "Please double-check the event details and try again.",
       "rate_limited": "Too many attempts. Please wait a moment and try again.",
-      "forbidden": "Only the event's organizer can edit it.",
+      "forbidden": "Only hosts who can manage this event can edit it.",
       "generic": "We could not save right now. Please try again."
     }
   },
@@ -17,7 +17,7 @@
     "body": "We could not load this event. It may have been removed, or you may be offline."
   },
   "denied": {
-    "title": "Only the organizer can edit this event",
+    "title": "Only hosts who can manage this event can edit it",
     "body": "Ask the host to update the details, or RSVP to join from the event page."
   }
 }

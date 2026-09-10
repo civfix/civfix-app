@@ -602,6 +602,20 @@ export type EventPageDTO = z.infer<typeof EventPageObjectSchema>
 export const EventPageDTOSchema: z.ZodType<EventPageDTO, z.ZodTypeDef, unknown> =
   EventPageObjectSchema
 
+const InviteEventRefObjectSchema = z.object({
+  id: IdSchema,
+  title: z.string(),
+  startsAt: ISODateSchema,
+  endsAt: ISODateSchema.nullable().optional(),
+  status: CleanupStatusSchema,
+  coverThumbUrl: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+})
+export type InviteEventRef = z.infer<typeof InviteEventRefObjectSchema>
+
+export const InviteEventRefSchema: z.ZodType<InviteEventRef, z.ZodTypeDef, unknown> =
+  InviteEventRefObjectSchema
+
 const HostedEventObjectSchema = z.object({
   id: IdSchema,
   referenceCode: z.string().nullable().optional(),

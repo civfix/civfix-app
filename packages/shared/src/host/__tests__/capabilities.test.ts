@@ -21,6 +21,20 @@ const NOT_COHOST: HostCapability[] = [
   "request_resources",
 ]
 
+const COORDINATOR: HostCapability[] = [
+  "view_event_private",
+  "view_roster",
+  "view_answers",
+  "view_analytics",
+  "check_in",
+  "broadcast",
+  "moderate_chat",
+]
+
+const NOT_COORDINATOR: HostCapability[] = ALL_CAPABILITIES.filter(
+  (cap) => !COORDINATOR.includes(cap),
+)
+
 function sorted(set: ReadonlySet<HostCapability>): HostCapability[] {
   return [...set].sort()
 }
@@ -32,6 +46,7 @@ function expected(standing: HostStanding): HostCapability[] {
   if (standing.eventRole === "cohost") {
     for (const cap of eventCaps) if (!NOT_COHOST.includes(cap)) out.add(cap)
   }
+  if (standing.eventRole === "coordinator") for (const cap of COORDINATOR) out.add(cap)
   if (standing.eventRole === "staff") {
     out.add("view_event_private")
     out.add("view_roster")
@@ -76,18 +91,57 @@ describe("hostCapabilities", () => {
     expect(caps.has("broadcast")).toBe(true)
   })
 
+  it("seats a coordinator on exactly the seven day-of capabilities", () => {
+    expect(sorted(hostCapabilities({ eventRole: "coordinator", orgRole: null }))).toEqual(
+      [...COORDINATOR].sort(),
+    )
+  })
+
+  it("never lets a coordinator read guest contact details, export or change the event", () => {
+    const caps = hostCapabilities({ eventRole: "coordinator", orgRole: null })
+    expect(NOT_COORDINATOR).toEqual(
+      expect.arrayContaining([
+        "view_guest_contact",
+        "export",
+        "manage_event",
+        "manage_tickets",
+        "manage_page",
+        "manage_team",
+        "cancel_event",
+        "manage_org_link",
+        "request_resources",
+        "manage_payments",
+        "view_donations",
+      ]),
+    )
+    for (const cap of NOT_COORDINATOR) expect(caps.has(cap), cap).toBe(false)
+  })
+
+  it("sits a coordinator strictly between staff and cohost", () => {
+    const staff = hostCapabilities({ eventRole: "staff", orgRole: null })
+    const coordinator = hostCapabilities({ eventRole: "coordinator", orgRole: null })
+    const cohost = hostCapabilities({ eventRole: "cohost", orgRole: null })
+    for (const cap of staff) expect(coordinator.has(cap), cap).toBe(true)
+    for (const cap of coordinator) expect(cohost.has(cap), cap).toBe(true)
+    expect(coordinator.size).toBeGreaterThan(staff.size)
+    expect(coordinator.size).toBeLessThan(cohost.size)
+  })
+
   it("limits staff to roster and check-in", () => {
     expect(sorted(hostCapabilities({ eventRole: "staff", orgRole: null }))).toEqual(
       ["check_in", "view_event_private", "view_roster"].sort(),
     )
   })
 
-  it("gives view_analytics to organizer, cohost, org owner and org admin only", () => {
+  it("gives view_analytics to organizer, cohost, coordinator, org owner and org admin only", () => {
     const holders = EVENT_ROLES.flatMap((eventRole) =>
       ORG_ROLES.map((orgRole) => ({ eventRole, orgRole })),
     ).filter((standing) => can(standing, "view_analytics"))
     for (const standing of holders) {
-      const viaEvent = standing.eventRole === "organizer" || standing.eventRole === "cohost"
+      const viaEvent =
+        standing.eventRole === "organizer" ||
+        standing.eventRole === "cohost" ||
+        standing.eventRole === "coordinator"
       const viaOrg = standing.orgRole === "owner" || standing.orgRole === "admin"
       expect(viaEvent || viaOrg).toBe(true)
     }
