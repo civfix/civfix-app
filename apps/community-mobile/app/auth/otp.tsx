@@ -1,13 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import {
-  View,
-  ScrollView,
-  Pressable,
-  KeyboardAvoidingView,
-  Platform,
-  AppState,
-  useWindowDimensions,
-} from "react-native"
+import { View, Pressable, KeyboardAvoidingView, Platform, AppState, useWindowDimensions } from "react-native"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
@@ -18,10 +10,12 @@ import {
 } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "@/theme"
 import {
-  Text,
+  PLAIN_SCROLL_HOST,
   PrimaryButton,
   SegmentedCodeInput,
+  Text,
   TextField,
+  makeKeyboardAwareScrollHost,
   type SegmentedCodeInputHandle,
 } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
@@ -37,6 +31,8 @@ import {
   resendDeadline,
   resendSecondsLeft,
 } from "@/lib/otpCooldown"
+
+const { ScrollView: OtpScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 const MAX_ATTEMPTS = 3
 const CODE_LENGTH = 6
@@ -162,7 +158,7 @@ export default function OtpScreen() {
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScreenHeader />
-      <ScrollView
+      <OtpScrollView
         contentContainerStyle={[
           styles.scroll,
           landscape && styles.scrollLandscape,
@@ -272,7 +268,7 @@ export default function OtpScreen() {
             </Pressable>
           </View>
         </View>
-      </ScrollView>
+      </OtpScrollView>
     </KeyboardAvoidingView>
   )
 }

@@ -14,7 +14,7 @@ import { tokens } from "@civfix/shared/tokens"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { PrimaryButton, SecondaryButton } from "../primitives"
-import { useKeyboardInset } from "../shell/useKeyboardInset"
+import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 import { useRequestEmailCode, useDeleteAccount } from "../data"
 import { appErrorCode } from "./errorCode"
 import { useT } from "../i18n"
@@ -62,7 +62,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
   const [error, setError] = useState<string | null>(null)
   const [codeFocused, setCodeFocused] = useState(false)
   const codeRef = useRef<RNTextInput>(null)
-  const kbInset = useKeyboardInset()
+  const kbReserve = useKeyboardReserve({ enabled: visible })
 
   useEffect(() => {
     if (visible) {
@@ -114,8 +114,8 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
           {...webScrimProps}
         />
         <KeyboardAvoidingView
-          style={[styles.avoider, kbInset > 0 ? { paddingBottom: th.space["4"] + kbInset } : null]}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={[styles.avoider, kbReserve > 0 ? { paddingBottom: th.space["4"] + kbReserve } : null]}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <View style={styles.card}>
             <View style={styles.header}>

@@ -8,6 +8,7 @@ import { useComposerAttachments } from "../primitives/useComposerAttachments"
 import { useCreateGroup, useAuthState } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
+import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 import { useT } from "../i18n"
 import { MemberPicker } from "./MemberPicker"
 import { GroupIdentityFields } from "./GroupIdentityFields"
@@ -22,6 +23,7 @@ export function NewGroupBody() {
   const styles = useStyles()
   const th = useTheme()
   const { ScrollView } = useScrollHost()
+  const kbReserve = useKeyboardReserve()
   const { t } = useT("group-create")
   const { user } = useAuthState()
   const viewerId = user?.id ?? null
@@ -99,7 +101,7 @@ export function NewGroupBody() {
           <View style={styles.pickerFill}>
             <MemberPicker selected={selected} onChange={setSelected} excludeIds={excludeIds} />
           </View>
-          <View style={styles.footer}>
+          <View style={[styles.footer, kbReserve > 0 ? { marginBottom: kbReserve } : null]}>
             <PrimaryButton label={t("next")} onPress={onNext} disabled={nextDisabled} />
           </View>
         </>
@@ -128,7 +130,7 @@ export function NewGroupBody() {
             />
             {submitError ? <Text style={styles.errorText}>{t("create_error")}</Text> : null}
           </ScrollView>
-          <View style={styles.footer}>
+          <View style={[styles.footer, kbReserve > 0 ? { marginBottom: kbReserve } : null]}>
             <PrimaryButton
               label={t("create")}
               onPress={onCreate}

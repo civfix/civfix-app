@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
 import type { CleanupDTO } from "@civfix/shared"
@@ -92,21 +93,56 @@ describe("PostComposer presentation model", () => {
   // The `owner` field and the `compact: true` case are GONE with the compact composer itself. The
   // docked reply bar is now bodies/thread/ReplyComposer, which owns its keyboard inset via
   // `useReplyDockInset` instead of declaring a host that could not honor it on native.
-  it("owns full-screen keyboard avoidance itself (the /compose route mounts outside the portrait shell)", () => {
+  it("leaves the keyboard plan free of iOS-only scroll insets on every platform", () => {
     expect(buildPostComposerKeyboardPlan({ platform: "ios" })).toEqual({
-      scrollView: {
-        automaticallyAdjustKeyboardInsets: true,
-        keyboardDismissMode: "interactive",
-      },
+      scrollView: { keyboardDismissMode: "interactive" },
     })
-    // Android relies on adjustResize and web on the browser viewport; neither wants iOS-style insets.
     expect(buildPostComposerKeyboardPlan({ platform: "android" })).toEqual({
-      scrollView: {
-        automaticallyAdjustKeyboardInsets: false,
-        keyboardDismissMode: "on-drag",
-      },
+      scrollView: { keyboardDismissMode: "on-drag" },
     })
-    expect(buildPostComposerKeyboardPlan({ platform: "web" }).scrollView.automaticallyAdjustKeyboardInsets).toBe(false)
+    expect(buildPostComposerKeyboardPlan({ platform: "web" })).toEqual({
+      scrollView: { keyboardDismissMode: "on-drag" },
+    })
+  })
+
+  it("takes its keyboard-aware host ONLY on the standalone route, and the injected one in the shell", () => {
+    const source = readFileSync(new URL("../PostComposer.tsx", import.meta.url), "utf8")
+    expect(source).toMatch(
+      /^const STANDALONE_SCROLL_HOST = makeKeyboardAwareScrollHost\(PLAIN_SCROLL_HOST\)$/m,
+    )
+    expect(source).toMatch(/const isStandalone = standalone !== undefined/)
+    expect(source).toMatch(
+      /const \{ ScrollView: ComposerScrollView \} = isStandalone\s*\n\s*\? STANDALONE_SCROLL_HOST\s*\n\s*: inheritedScrollHost/,
+    )
+    expect(source).toMatch(/const inheritedScrollHost = useScrollHost\(\)/)
+    expect(source).toMatch(/<ComposerScrollView/)
+    expect(source).not.toMatch(/automaticallyAdjustKeyboardInsets/)
+  })
+
+  it("reads standalone-ness from an explicit host prop, never from a nav guess", () => {
+    const source = readFileSync(new URL("../PostComposer.tsx", import.meta.url), "utf8")
+    expect(source).toMatch(/export interface PostComposerStandaloneHost \{\s*\n\s*onBack: \(\) => void/)
+    expect(source).toMatch(/standalone\?: PostComposerStandaloneHost/)
+    expect(source).not.toMatch(/^\s*onBack\?: \(\) => void$/m)
+    const route = readFileSync(
+      new URL("../../../../../apps/community-mobile/app/compose.tsx", import.meta.url),
+      "utf8",
+    )
+    expect(route).toMatch(/standalone=\{\{ onBack: back \}\}/)
+  })
+
+  it("never double-reserves in the shell: the shell reserves for the composer and injects a PLAIN host", () => {
+    const layout = readFileSync(new URL("../../shell/bodyLayout.ts", import.meta.url), "utf8")
+    expect(layout).toMatch(/surfaceKeyboardAvoidance: active\?\.kind === "composer"/)
+    const shell = readFileSync(new URL("../../shell/PortraitShell.shared.tsx", import.meta.url), "utf8")
+    expect(shell).toMatch(
+      /const overlayScrollHost = frame\.overlay\.keyboardAvoidance\s*\n?\s*\? PLAIN_SCROLL_HOST/,
+    )
+    expect(shell).toMatch(
+      /frame\.overlay\.keyboardAvoidance && keyboardInset > 0 \? \{ paddingBottom: keyboardInset \} : null/,
+    )
+    const web = readFileSync(new URL("../../shell/KeyboardAwareScroll.web.tsx", import.meta.url), "utf8")
+    expect(web).toMatch(/reserveKeyboardPadding/)
   })
 
   it("keeps the pill panels one-at-a-time via explicit toggles", () => {

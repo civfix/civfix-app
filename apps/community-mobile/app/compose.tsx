@@ -19,7 +19,7 @@ export default function ComposeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: th.colors.bg, paddingTop: insets.top }}>
       {composerMounted ? (
-        <PostComposer mode={mode ?? "post"} targetPostId={targetPostId} onBack={back} />
+        <PostComposer mode={mode ?? "post"} targetPostId={targetPostId} standalone={{ onBack: back }} />
       ) : null}
     </View>
   )

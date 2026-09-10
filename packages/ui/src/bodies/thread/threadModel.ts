@@ -141,16 +141,6 @@ export function replyComposerState(input: {
 }
 
 
-export function androidKeyboardInset(
-  keyboardHeight: number,
-  restingWindowHeight: number,
-  currentWindowHeight: number,
-): number {
-  const shrunk = Math.max(0, restingWindowHeight - currentWindowHeight)
-  return Math.max(0, Math.round(keyboardHeight - shrunk))
-}
-
-
 export const THREAD_MAX_INLINE_DEPTH = 2
 
 export const THREAD_RAIL_COLUMN_W = 36

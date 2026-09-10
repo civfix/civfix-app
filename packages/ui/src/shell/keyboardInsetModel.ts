@@ -72,6 +72,66 @@ export function keyboardOverlapFrom(
   return Math.max(0, endCoordinates?.height ?? 0)
 }
 
+export function androidKeyboardInset(
+  keyboardHeight: number,
+  restingWindowHeight: number,
+  currentWindowHeight: number,
+): number {
+  const shrunk = Math.max(0, restingWindowHeight - currentWindowHeight)
+  return Math.max(0, Math.round(keyboardHeight - shrunk))
+}
+
+export interface KeyboardViewportOverlapInput {
+  endCoordinates: { screenY?: number; height?: number } | undefined
+  windowHeight: number
+  restingWindowHeight: number
+  platform: "ios" | "android" | "other"
+  systemBarInset: number
+}
+
+export function keyboardViewportOverlap({
+  endCoordinates,
+  windowHeight,
+  restingWindowHeight,
+  platform,
+  systemBarInset,
+}: KeyboardViewportOverlapInput): number {
+  if (platform !== "android") return keyboardOverlapFrom(endCoordinates, windowHeight, platform)
+  const height = endCoordinates?.height ?? 0
+  if (height <= 0) return 0
+  return androidKeyboardInset(height + systemBarInset, restingWindowHeight, windowHeight)
+}
+
+export interface KeyboardMirrorOverlapInput {
+  reanimatedHeight: number
+  systemBarInset: number
+  edgeToEdge: boolean
+}
+
+export function keyboardMirrorOverlap({
+  reanimatedHeight,
+  systemBarInset,
+  edgeToEdge,
+}: KeyboardMirrorOverlapInput): number {
+  "worklet"
+  if (reanimatedHeight <= 0) return 0
+  return edgeToEdge ? reanimatedHeight : reanimatedHeight + systemBarInset
+}
+
+export interface RestingHeightRecaptureInput {
+  keyboardOpen: boolean
+  prevWidth: number
+  nextWidth: number
+}
+
+export function shouldRecaptureRestingHeight({
+  keyboardOpen,
+  prevWidth,
+  nextWidth,
+}: RestingHeightRecaptureInput): boolean {
+  return !keyboardOpen || prevWidth !== nextWidth
+}
+
 // ----- Ownership state machine (pure). -----
 export type KeyboardPhase = "idle" | "engaged"
 export type KeyboardSignal =

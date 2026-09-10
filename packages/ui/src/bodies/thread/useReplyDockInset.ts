@@ -41,8 +41,12 @@
 import { useContext, useEffect, useRef, useState } from "react"
 import { Dimensions, Keyboard, Platform, type KeyboardEvent } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
+import { keyboardViewportOverlap } from "../../shell/keyboardInsetModel"
 import { useKeyboardInset } from "../../shell/useKeyboardInset"
-import { androidKeyboardInset } from "./threadModel"
+import { useRestingWindowHeight } from "../../shell/useRestingWindowHeight"
+
+const PLATFORM: "ios" | "android" | "other" =
+  Platform.OS === "ios" ? "ios" : Platform.OS === "android" ? "android" : "other"
 
 export interface ReplyDockInset {
   /** px to lift the docked surface by (applied as `marginBottom`). 0 when the keyboard is closed. */
@@ -60,13 +64,20 @@ export function useReplyDockInset(): ReplyDockInset {
   // hook throws. The context form degrades to zeros, exactly like ConversationBody does.
   const insets = useContext(SafeAreaInsetsContext)
   const [own, setOwn] = useState(0)
-  /**
-   * The window height with NO keyboard up, for the Android decision function. Captured at mount and
-   * re-captured on every `keyboardDidHide` (rotation / multi-window change it).
-   */
-  const restingWindowHeight = useRef(Dimensions.get("window").height)
+  const restingWindowHeight = useRestingWindowHeight()
+  const systemBarInsetRef = useRef(insets?.bottom ?? 0)
+  systemBarInsetRef.current = insets?.bottom ?? 0
 
   useEffect(() => {
+    const overlapOf = (event: KeyboardEvent) =>
+      keyboardViewportOverlap({
+        endCoordinates: event.endCoordinates,
+        windowHeight: Dimensions.get("window").height,
+        restingWindowHeight: restingWindowHeight.current,
+        platform: PLATFORM,
+        systemBarInset: systemBarInsetRef.current,
+      })
+
     // Web has no RN Keyboard events at all; `shell` is the only source there and it is already read above.
     if (Platform.OS !== "ios" && Platform.OS !== "android") return
     const subs: { remove(): void }[] = []
@@ -74,31 +85,15 @@ export function useReplyDockInset(): ReplyDockInset {
       // WILL_show/hide, not DID: iOS posts them at the START of the ~0.25s keyboard animation, so the
       // dock is already in place by the time the keyboard arrives instead of jumping after it lands.
       subs.push(
-        Keyboard.addListener("keyboardWillShow", (event: KeyboardEvent) => {
-          setOwn(Math.max(0, Math.round(event.endCoordinates.height)))
-        }),
+        Keyboard.addListener("keyboardWillShow", (event: KeyboardEvent) => setOwn(overlapOf(event))),
       )
       subs.push(Keyboard.addListener("keyboardWillHide", () => setOwn(0)))
     } else {
-      // Android has no reliable will* pair (its reported duration is documented "always 0"), and
-      // `adjustResize` may or may not have already shrunk the JS layout - see `androidKeyboardInset`.
+      // Android has no reliable will* pair (its reported duration is documented "always 0").
       subs.push(
-        Keyboard.addListener("keyboardDidShow", (event: KeyboardEvent) => {
-          setOwn(
-            androidKeyboardInset(
-              event.endCoordinates.height,
-              restingWindowHeight.current,
-              Dimensions.get("window").height,
-            ),
-          )
-        }),
+        Keyboard.addListener("keyboardDidShow", (event: KeyboardEvent) => setOwn(overlapOf(event))),
       )
-      subs.push(
-        Keyboard.addListener("keyboardDidHide", () => {
-          restingWindowHeight.current = Dimensions.get("window").height
-          setOwn(0)
-        }),
-      )
+      subs.push(Keyboard.addListener("keyboardDidHide", () => setOwn(0)))
     }
     return () => {
       for (const sub of subs) sub.remove()

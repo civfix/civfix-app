@@ -1,14 +1,26 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { View, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native"
+import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
 import { isValidHandle } from "@civfix/shared"
 import { makeThemedStyles, theme, useTheme } from "@/theme"
-import { Text, TextField, PrimaryButton, Avatar, AgeConfirmation, TermsConfirmation } from "@civfix/ui"
+import {
+  AgeConfirmation,
+  Avatar,
+  PLAIN_SCROLL_HOST,
+  PrimaryButton,
+  TermsConfirmation,
+  Text,
+  TextField,
+  makeKeyboardAwareScrollHost,
+  useKeyboardReserve,
+} from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { api } from "@/api/client"
 import { useAuthStore } from "@/store/authStore"
 import { friendlyError } from "@/lib/errors"
+
+const { ScrollView: FirstRunScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 export function FirstRunGate() {
   const status = useAuthStore((s) => s.status)
@@ -30,6 +42,7 @@ function FirstRunForm() {
   const th = useTheme()
   const styles = useStyles()
   const insets = useSafeAreaInsets()
+  const kbReserve = useKeyboardReserve()
   const user = useAuthStore((s) => s.user)
   const setUser = useAuthStore((s) => s.setUser)
   const signOut = useAuthStore((s) => s.signOut)
@@ -90,7 +103,7 @@ function FirstRunForm() {
   return (
     <View style={styles.overlay}>
       <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView
+        <FirstRunScrollView
           contentContainerStyle={[styles.scroll, { paddingTop: insets.top + theme.space["6"] }]}
           keyboardShouldPersistTaps="handled"
         >
@@ -157,9 +170,17 @@ function FirstRunForm() {
             <AgeConfirmation confirmed={ageConfirmed} onConfirmedChange={setAgeConfirmed} />
             <TermsConfirmation confirmed={termsConfirmed} onConfirmedChange={setTermsConfirmed} />
           </View>
-        </ScrollView>
+        </FirstRunScrollView>
 
-        <View style={[styles.footer, { paddingBottom: insets.bottom + theme.space["3"] }]}>
+        <View
+          style={[
+            styles.footer,
+            {
+              marginBottom: kbReserve,
+              paddingBottom: (kbReserve > 0 ? 0 : insets.bottom) + theme.space["3"],
+            },
+          ]}
+        >
           <PrimaryButton label={t("continue")} loading={submitting} disabled={!canSubmit} onPress={() => void onSubmit()} />
           <Text
             variant="caption"

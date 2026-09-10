@@ -41,6 +41,11 @@ export { BODY_LAYOUT, SHEET_ONLY_KINDS, fullEntryStack, resolveBodyLayout } from
 export type { BodyLayout } from "./bodyLayout"
 export { ScrollHostProvider, useScrollHost, PLAIN_SCROLL_HOST } from "./ScrollHost"
 export type { ScrollHostValue, ScrollHostProviderProps } from "./ScrollHost"
+export { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
+export type {
+  KeyboardAwareScrollHostFlag,
+  KeyboardAwareScrollHostOptions,
+} from "./KeyboardAwareScroll.types"
 export { useKeyboardVisible } from "./useKeyboardVisible"
 export {
   useSidebarStore,
@@ -73,6 +78,8 @@ export { useKeyboardAnchor } from "./useKeyboardAnchor"
 export type { KeyboardAnchor, KeyboardAnchorOptions } from "./useKeyboardAnchor.types"
 export { KeyboardAnchorView } from "./KeyboardAnchorView"
 export type { KeyboardAnchorViewProps } from "./KeyboardAnchorView.types"
+export { useKeyboardReserve } from "./useKeyboardReserve"
+export type { KeyboardReserveOptions, WebOnlyKeyboardReserveOptions } from "./useKeyboardReserve.types"
 export {
   KEYBOARD_SURFACE_GAP,
   keyboardLift,

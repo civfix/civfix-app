@@ -9,6 +9,7 @@ import { useComposerAttachments } from "../primitives/useComposerAttachments"
 import { useCreateGroup, useAuthState } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
+import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 import { useT } from "../i18n"
 import { MemberPicker } from "./MemberPicker"
 import { GroupIdentityFields } from "./GroupIdentityFields"
@@ -31,6 +32,7 @@ export function NewChannelBody() {
   const styles = useStyles()
   const th = useTheme()
   const { ScrollView } = useScrollHost()
+  const kbReserve = useKeyboardReserve()
   const { t } = useT("channel-create")
   const { user } = useAuthState()
   const viewerId = user?.id ?? null
@@ -148,7 +150,7 @@ export function NewChannelBody() {
               }}
             />
           </ScrollView>
-          <View style={styles.footer}>
+          <View style={[styles.footer, kbReserve > 0 ? { marginBottom: kbReserve } : null]}>
             <PrimaryButton label={t("next")} onPress={onNextIdentity} disabled={identityNextDisabled} />
           </View>
         </>
@@ -192,7 +194,7 @@ export function NewChannelBody() {
               )
             })}
           </ScrollView>
-          <View style={styles.footer}>
+          <View style={[styles.footer, kbReserve > 0 ? { marginBottom: kbReserve } : null]}>
             <PrimaryButton label={t("next")} onPress={() => setStep("members")} />
           </View>
         </>
@@ -207,7 +209,7 @@ export function NewChannelBody() {
             />
           </View>
           {submitError ? <Text style={[styles.errorText, styles.submitError]}>{t("create_error")}</Text> : null}
-          <View style={styles.footer}>
+          <View style={[styles.footer, kbReserve > 0 ? { marginBottom: kbReserve } : null]}>
             <PrimaryButton
               label={t("create")}
               onPress={onCreate}
