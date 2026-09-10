@@ -4,7 +4,7 @@ import type { PersonDTO } from "@civfix/shared"
 import { DELETED_USER_LABEL } from "@civfix/shared"
 import { makeThemedStyles, useTheme, webTransition, webHover, webCursorPointer, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { Avatar, PopoverMenu, usePopoverAnchor } from "../primitives"
+import { Avatar, OrgAffiliationBadge, PopoverMenu, usePopoverAnchor } from "../primitives"
 import type { PopoverMenuItem, AnchorRect } from "../primitives"
 
 export interface RosterRowMenu {
@@ -83,6 +83,9 @@ export function RosterRow({
             <Text style={styles.name} numberOfLines={1}>
               {person.name}
             </Text>
+            {person.organization ? (
+              <OrgAffiliationBadge organization={person.organization} size="sm" />
+            ) : null}
             {nameSuffix}
           </View>
           {person.handle ? (

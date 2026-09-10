@@ -63,5 +63,9 @@
     "load_more_a11y": "Load more posts",
     "saved": "Saved posts",
     "saved_a11y": "Open saved posts"
+  },
+  "affiliation": {
+    "label": "Affiliation",
+    "open_a11y": "Open {{name}}"
   }
 }

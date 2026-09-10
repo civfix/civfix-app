@@ -117,6 +117,8 @@
       "report_failed": "Meldung konnte nicht gesendet werden",
       "reported": "Meldung gesendet"
     },
-    "replying_to": "Antwort an {{handle}}"
+    "replying_to": "Antwort an {{handle}}",
+    "via": "über {{handle}}",
+    "org_a11y": "{{name}} öffnen"
   }
 }

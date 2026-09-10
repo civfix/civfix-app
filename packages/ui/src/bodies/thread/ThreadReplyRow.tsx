@@ -5,6 +5,7 @@ import { focusRingProps, makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
+import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
 import {
   PostActionBar,
   postActionGlyphInset,
@@ -16,7 +17,12 @@ import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
 import { PostMediaGrid } from "../PostMediaGrid"
-import { repostSubjectAuthorId, splitPostBodyMentions } from "../postCardModel"
+import {
+  buildPostIdentity,
+  identityA11yLabel,
+  repostSubjectAuthorId,
+  splitPostBodyMentions,
+} from "../postCardModel"
 import { useListTimeAgo } from "../useListTimeAgo"
 import {
   THREAD_RAIL_COLUMN_W,
@@ -73,8 +79,19 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
     [openEntry, post.id],
   )
   const timeAgo = useListTimeAgo()
-  const handle = post.author.handle?.replace(/^@/, "") ?? null
-  const metaTail = `${handle ? `@${handle} · ` : ""}${isOptimistic ? t("thread.sending") : timeAgo(post.createdAt)}`
+  const identity = React.useMemo(
+    () => buildPostIdentity(post.author, post.organization, t, t("post_card.deleted_account")),
+    [post.author, post.organization, t],
+  )
+  const openIdentity = React.useCallback(() => {
+    if (identity.organization) {
+      openEntry({ kind: "org", slug: identity.organization.slug })
+      return
+    }
+    if (identity.personId) openPerson(identity.personId)
+  }, [identity, openEntry, openPerson])
+  const identityTail = identity.viaLabel ?? identity.handleLabel
+  const metaTail = `${identityTail ? `${identityTail} · ` : ""}${isOptimistic ? t("thread.sending") : timeAgo(post.createdAt)}`
 
   const control: ThreadRowExpansion =
     expansion ?? (!isOptimistic && post.counts.replies > 0 ? "navigate" : "none")
@@ -92,17 +109,17 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
         <View style={styles.railColumn}>
           {rail.above ? <View style={styles.railAbove} /> : null}
           <Pressable
-            onPress={() => openPerson(post.author.id)}
+            onPress={openIdentity}
             accessibilityRole="button"
-            accessibilityLabel={t("post_card.profile_a11y", { name: post.author.name })}
+            accessibilityLabel={identityA11yLabel(identity, t)}
             hitSlop={5}
             {...focusRingProps}
           >
             <Avatar
-              name={post.author.name}
-              seed={post.author.id}
-              photoUrl={post.author.avatarUrl}
-              gradient={post.author.avatar ?? null}
+              name={identity.avatarName}
+              seed={identity.avatarSeed}
+              photoUrl={identity.avatarUrl}
+              gradient={identity.avatarGradient}
               size={36}
               decorative
             />
@@ -113,8 +130,11 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
         <View style={styles.content}>
           <View style={styles.metaRow}>
             <Text numberOfLines={1} style={styles.metaName}>
-              {post.author.name}
+              {identity.name}
             </Text>
+            {identity.affiliation ? (
+              <OrgAffiliationBadge organization={identity.affiliation} size="sm" />
+            ) : null}
             <Text numberOfLines={1} style={styles.metaTail}>
               {metaTail}
             </Text>

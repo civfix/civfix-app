@@ -1,5 +1,11 @@
 import type { TFunction } from "i18next"
-import type { PostDTO, PostRefDTO, UserMentionDTO } from "@civfix/shared"
+import type {
+  OrganizationRefDTO,
+  PersonDTO,
+  PostDTO,
+  PostRefDTO,
+  UserMentionDTO,
+} from "@civfix/shared"
 import { listTimeAgo } from "./relativeTime"
 
 export type PostCardVariant = "post" | "event" | "repost" | "quote" | "reply" | "fix-confirmed"
@@ -12,8 +18,53 @@ export interface PostCardModelOptions {
   timeAgo?: (iso: string) => string
 }
 
+export interface PostIdentity {
+  organization: OrganizationRefDTO | null
+  affiliation: OrganizationRefDTO | null
+  name: string
+  personName: string
+  handleLabel: string | null
+  viaLabel: string | null
+  personId: string | null
+  avatarName: string
+  avatarSeed: string
+  avatarUrl: string | null
+  avatarGradient: PersonDTO["avatar"]
+}
+
+export function buildPostIdentity(
+  author: PersonDTO | null | undefined,
+  organization: OrganizationRefDTO | null | undefined,
+  t: TFunction,
+  fallbackName: string,
+): PostIdentity {
+  const org = organization ?? null
+  const handle = author?.handle?.replace(/^@/, "").trim() || null
+  const personName = author?.name ?? fallbackName
+  return {
+    organization: org,
+    affiliation: org ? null : (author?.organization ?? null),
+    name: org ? org.name : personName,
+    personName,
+    handleLabel: org || !handle ? null : `@${handle}`,
+    viaLabel: org ? t("post_card.via", { handle: handle ? `@${handle}` : personName }) : null,
+    personId: author?.id ?? null,
+    avatarName: org ? org.name : personName,
+    avatarSeed: org ? org.id : (author?.id ?? fallbackName),
+    avatarUrl: org ? (org.logoUrl ?? null) : (author?.avatarUrl ?? null),
+    avatarGradient: org ? null : (author?.avatar ?? null),
+  }
+}
+
+export function identityA11yLabel(identity: PostIdentity, t: TFunction): string {
+  return identity.organization
+    ? t("post_card.org_a11y", { name: identity.name })
+    : t("post_card.profile_a11y", { name: identity.name })
+}
+
 export interface PostCardModel {
   variant: PostCardVariant
+  identity: PostIdentity
   showOrganizerBadge: boolean
   metaLabel: string
   repostAttribution: string | null
@@ -99,7 +150,12 @@ export function buildPostCardModel(
   const timeLabel = (options.timeAgo ?? listTimeAgo)(post.createdAt)
   const contextLabel = options.neighborhood?.trim() || null
   const metaLabel = [timeLabel, contextLabel].filter(Boolean).join(" · ")
-  const handle = post.author.handle?.replace(/^@/, "").trim()
+  const identity = buildPostIdentity(
+    post.author,
+    post.organization,
+    t,
+    t("post_card.deleted_account"),
+  )
   const embedded = post.repostOf ?? null
   const body =
     variant === "repost" && embedded ? repostBodyText(embedded) : post.body ?? ""
@@ -113,6 +169,7 @@ export function buildPostCardModel(
   const showOrganizerBadge = Boolean(post.event && post.event.organizer.id === post.author.id)
   return {
     variant,
+    identity,
     showOrganizerBadge,
     metaLabel,
     repostAttribution: post.kind === "repost"
@@ -128,7 +185,7 @@ export function buildPostCardModel(
       ? options.resolutionLabel?.trim()
         || (post.event ? t("post_card.cleared_at", { title: post.event.title }) : null)
       : null,
-    handleLabel: handle && !showOrganizerBadge ? `@${handle}` : null,
+    handleLabel: showOrganizerBadge ? null : identity.handleLabel,
     timeLabel,
     contextLabel,
     bodyExpandable: body.length > BODY_CLAMP_CHARS

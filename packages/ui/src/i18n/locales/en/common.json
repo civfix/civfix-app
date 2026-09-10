@@ -37,5 +37,6 @@
     "default_title": "CivFix post"
   },
   "wizard_step_count": "Step {{current}} of {{total}}",
-  "verified_badge": "Verified"
+  "verified_badge": "Verified",
+  "org_affiliation": "Affiliated with {{name}}"
 }

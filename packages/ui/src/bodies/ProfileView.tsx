@@ -7,11 +7,13 @@ import {
   type SocialLinks,
   type UserProfileDTO,
   type CleanupDTO,
+  type OrganizationRefDTO,
 } from "@civfix/shared"
 import { makeThemedStyles, theme, useTheme, noShadow, focusRingProps, headingLevel } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
+  OrgAffiliationBadge,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
@@ -19,6 +21,7 @@ import {
 } from "../primitives"
 import { useNavStore } from "../nav"
 import { useT } from "../i18n"
+import { AffiliationRow } from "./AffiliationRow"
 import { ProfileStatsRow } from "./ProfileStatsRow"
 import {
   PROFILE_DEFAULT_TAB,
@@ -76,6 +79,7 @@ export interface ProfileViewProps {
   onOpenEvent?: (event: CleanupDTO) => void
   onOpenConnections?: (which: "followers" | "following") => void
   actions?: React.ReactNode
+  organization?: OrganizationRefDTO | null
   verificationSlot?: React.ReactNode
   posts?: ProfilePosts
   onOpenSaved?: () => void
@@ -91,6 +95,7 @@ export function ProfileView({
   onOpenEvent,
   onOpenConnections,
   actions,
+  organization,
   verificationSlot,
   posts,
   onOpenSaved,
@@ -113,6 +118,7 @@ export function ProfileView({
     consumedNavTabRef.current = navProfileTab
     setRequestedTab(navProfileTab)
   }, [navProfileTab])
+  const affiliation = organization ?? profile.organization ?? null
   const heroSub = subtitle ?? (profile.handle ? `@${profile.handle}` : "")
 
   const pastEvents = useProfilePastEvents(profile)
@@ -167,6 +173,7 @@ export function ProfileView({
             <Text style={styles.heroName} numberOfLines={1} accessibilityRole="header" {...headingLevel(2)}>
               {profile.name}
             </Text>
+            {affiliation ? <OrgAffiliationBadge organization={affiliation} size="md" /> : null}
           </View>
           {heroSub ? (
             <Text style={styles.heroSub} numberOfLines={1}>
@@ -201,6 +208,8 @@ export function ProfileView({
       </View>
 
       {profile.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
+
+      {affiliation ? <AffiliationRow organization={affiliation} style={styles.affiliation} /> : null}
 
       <ProfileStatsRow
         followers={profile.followers}
@@ -325,6 +334,10 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: 13.5,
     lineHeight: 19,
     color: t.colors.textMuted,
+    marginTop: HEADER_BLOCK_GAP,
+  },
+
+  affiliation: {
     marginTop: HEADER_BLOCK_GAP,
   },
 
