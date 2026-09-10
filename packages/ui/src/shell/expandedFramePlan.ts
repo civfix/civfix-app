@@ -28,6 +28,7 @@
  */
 import { space } from "@civfix/shared/tokens"
 import { parentViewForEntry, type DetailEntry, type View } from "../nav"
+import { HEADER_CONTROL_SIZE } from "../bodies/headerControls"
 
 /** The nav strip's left inset - the card's own left inset, and the civfix wordmark's original position. */
 export const NAV_LEFT = 14
@@ -76,7 +77,7 @@ export const RAIL_BRAND_PAD_H = space["5"]
 export const RAIL_BRAND_GLYPH_EM = 2.6
 export const RAIL_BRAND_W = Math.ceil(RAIL_BRAND_PAD_H * 2 + RAIL_BRAND_SIZE * RAIL_BRAND_GLYPH_EM)
 
-export const MAP_ACTION_SIZE = 42
+export const MAP_ACTION_SIZE = HEADER_CONTROL_SIZE
 export const MAP_ACTION_GAP = space["2"]
 export const MAP_ACTION_COUNT = 5
 export const MAP_ACTIONS_RIGHT = space["3"]

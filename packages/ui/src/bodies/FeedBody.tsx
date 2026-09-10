@@ -19,6 +19,7 @@ import { alpha } from "../theme/alpha"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useAppPromoStore } from "../promo"
+import { HEADER_CONTROL_SIZE } from "./headerControls"
 import { HeaderIconButton } from "./HeaderIconButton"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedNotice } from "./FeedNotice"
@@ -383,7 +384,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   contentExpanded: { paddingTop: 14 },
   headerInset: { paddingHorizontal: POST_SURFACE === "flat" ? POST_CARD_RHYTHM.rowPaddingH : 0 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: 44, marginBottom: t.space["3"] },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: HEADER_CONTROL_SIZE, marginBottom: t.space["3"] },
   heading: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 32, lineHeight: 39, letterSpacing: -0.5, color: t.colors.text },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 9 },
   list: { gap: POST_SURFACE === "flat" ? 0 : 12 },
