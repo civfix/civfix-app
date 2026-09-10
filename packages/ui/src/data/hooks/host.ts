@@ -18,6 +18,7 @@ import type {
   EventTeamRole,
   EventQuestionDTO,
   EventWaitlistEntryDTO,
+  HostBroadcastChannel,
   HostCapability,
   HostedEventDTO,
   InviteEventTeamMemberResponse,
@@ -443,14 +444,20 @@ export async function discardQuickBroadcast(
   }
 }
 
-export function useQuickBroadcast(id: string) {
+export const DEFAULT_QUICK_CHANNELS: readonly HostBroadcastChannel[] = ["inapp", "push"]
+
+export function useQuickBroadcast(
+  id: string,
+  opts: { channels?: readonly HostBroadcastChannel[] } = {},
+) {
   const api = useApi()
   const qc = useQueryClient()
+  const channels = opts.channels ?? DEFAULT_QUICK_CHANNELS
   const draftRef = useRef<RetainedQuickDraft | null>(null)
   const [retainedDraft, setRetainedDraft] = useState<RetainedQuickDraft | null>(null)
   const ports: QuickBroadcastPorts = {
     createDraft: ({ subject, bodyMd, segment }) =>
-      api.createEventBroadcast({ id, subject, bodyMd, segment, channels: ["inapp", "push"] }),
+      api.createEventBroadcast({ id, subject, bodyMd, segment, channels: [...channels] }),
     update: (broadcastId, { subject, bodyMd, segment }) =>
       api.updateEventBroadcast({ id, broadcastId, subject, bodyMd, segment }),
     send: (broadcastId) => api.sendEventBroadcast({ id, broadcastId }),
