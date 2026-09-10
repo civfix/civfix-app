@@ -3,12 +3,6 @@
     "title": "Sign in to host an event",
     "body": "Pick a spot, set a time, and invite your neighbors. You will be the organizer."
   },
-  "verification": {
-    "verified": "Your account is verified - attendees will see a verified badge on this event.",
-    "pending": "Your verification is pending review. Events you host stay unverified until it is approved.",
-    "unverified": "Your event will be marked as unverified. Get verified to build trust with attendees.",
-    "getVerified": "Get verified"
-  },
   "followersNote": "Your followers get notified when you publish.",
   "wizard": {
     "back": "Back",

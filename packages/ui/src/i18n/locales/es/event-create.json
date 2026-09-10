@@ -3,12 +3,6 @@
     "title": "Inicia sesión para organizar un evento",
     "body": "Elige un lugar, fija una hora e invita a tus vecinos. Tú serás el organizador."
   },
-  "verification": {
-    "verified": "Tu cuenta está verificada — los asistentes verán una insignia de verificación en este evento.",
-    "pending": "Tu verificación está pendiente de revisión. Los eventos que organices quedarán sin verificar hasta que se apruebe.",
-    "unverified": "Tu evento aparecerá como no verificado. Verifícate para generar confianza entre los asistentes.",
-    "getVerified": "Verificarme"
-  },
   "followersNote": "Tus seguidores recibirán una notificación cuando publiques.",
   "wizard": {
     "back": "Atrás",

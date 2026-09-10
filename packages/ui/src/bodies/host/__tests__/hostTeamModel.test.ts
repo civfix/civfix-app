@@ -31,7 +31,7 @@ function member(
   over: Partial<EventTeamMemberDTO> = {},
 ): EventTeamMemberDTO {
   return {
-    person: { id, name: id, handle: id, verified: false, deleted: false },
+    person: { id, name: id, handle: id, deleted: false },
     role,
     joinedAt: null,
     canRemove: true,
