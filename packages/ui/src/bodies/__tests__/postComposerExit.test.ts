@@ -963,8 +963,6 @@ describe("the wiring (source-pinned)", () => {
       { file: "../DropPinBody.tsx", from: "./composerCreateFlow" },
       // The dock's (and, through `useTabBarModel`, the rail's) Report tab - the original repro's entry.
       { file: "../../shell/TabBar.shared.tsx", from: "../bodies/composerCreateFlow" },
-      // The map's top-right plus button (the compact map header actions).
-      { file: "../../map/MapHeaderActions.tsx", from: "../bodies/composerCreateFlow" },
     ]
     for (const { file, from } of entries) {
       const source = readSource(file)

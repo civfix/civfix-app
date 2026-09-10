@@ -1,0 +1,4 @@
+export const HEADER_CONTROL_SIZE = 52
+export const HEADER_GLYPH_SIZE = 26
+export const HEADER_AVATAR_SIZE = 52
+export const HEADER_CONTROL_RADIUS = HEADER_CONTROL_SIZE / 2

@@ -619,8 +619,7 @@ describe("shouldRestoreDropPinCamera: a dismissal restores, a COMMITMENT does no
   })
 
   it("does NOT restore on the [drop-pin, cleanup] PUBLISH-THEN-DISMISS trap", () => {
-    // Host-an-event from a drop pin: DropPinBody.onHost (DropPinBody.tsx:127) pushes ->
-    // [drop-pin, create-cleanup]. On publish `stackAfterFlowPublished`
+    // A create flow stacked over the pin publishes into [drop-pin, cleanup]: `stackAfterFlowPublished`
     // (bodies/composerCreateFlow.ts:125-134) truncates only up to the topmost FLOW kind, leaving
     // [drop-pin, cleanup] - which is exactly why CreateCleanupBody.tsx:357 clears the marker BY HAND
     // there. The drop-pin entry finally leaves the stack when that EVENT detail is dismissed, and

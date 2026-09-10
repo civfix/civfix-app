@@ -1,10 +1,8 @@
 import React from "react"
 import { StyleSheet, View } from "react-native"
 import { theme } from "../theme"
-import { HEADER_ICON_BUTTON_TARGET, HeaderIconButton } from "../bodies/HeaderIconButton"
+import { HEADER_CONTROL_SIZE } from "../bodies/headerControls"
 import { HeaderProfileButton } from "../bodies/HeaderProfileButton"
-import { openReportFlow } from "../bodies/composerCreateFlow"
-import { useT } from "../i18n"
 import { MapThemeToggle } from "./MapThemeToggle"
 import { GLASS_CONTROL_SIZE } from "./MapControls"
 
@@ -13,18 +11,11 @@ export interface MapHeaderActionsProps {
 }
 
 export function MapHeaderActions({ topInset = 0 }: MapHeaderActionsProps) {
-  const { t } = useT("nav")
-  const rowCenterOffset = (GLASS_CONTROL_SIZE - HEADER_ICON_BUTTON_TARGET) / 2
+  const rowCenterOffset = (GLASS_CONTROL_SIZE - HEADER_CONTROL_SIZE) / 2
   return (
     <View style={[styles.root, { top: topInset + theme.space["2"] + rowCenterOffset }]}>
       <View style={styles.actions}>
         <MapThemeToggle variant="solid" />
-        <HeaderIconButton
-          icon="Plus"
-          label={t("create.report")}
-          onPress={openReportFlow}
-          surface="solid"
-        />
         <HeaderProfileButton surface="solid" />
       </View>
     </View>

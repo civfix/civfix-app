@@ -81,10 +81,6 @@
       "title": "Reportar un problema aquí",
       "sub": "Inicia un reporte en este lugar"
     },
-    "host": {
-      "title": "Organizar un evento aquí",
-      "sub": "Planea una limpieza o un encuentro en este lugar"
-    },
     "cancel": "Cancelar",
     "cancelA11y": "Cancelar y quitar el pin colocado",
     "confirm": {
