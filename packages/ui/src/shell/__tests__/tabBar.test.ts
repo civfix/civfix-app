@@ -845,6 +845,8 @@ describe("hostReserved is a WEB-only option the native seam never forwards", () 
     const native = read("../useKeyboardReserve.native.ts")
     expect(native).not.toMatch(/hostReserved/)
     expect(native).not.toMatch(/WebOnlyKeyboardReserveOptions = \{\}/)
+  })
+})
 
 describe("tab divider is a soft rule, not an icon-weight bar", () => {
   const dividerBlocks = ["TabBar.shared.tsx", "TabBar.native.tsx", "Rail.tsx"].map((file) => {
