@@ -31,7 +31,6 @@ import { useT } from "../i18n"
 import { Avatar } from "../primitives/Avatar"
 import { MediaPreview } from "../primitives/MediaPreview"
 import { PostActionBar } from "../primitives/PostActionBar"
-import { VerifiedBadge } from "../primitives/VerifiedBadge"
 import { useNavStore } from "../nav/useNavStore"
 import { useLightbox } from "../lightbox"
 import { LinkedEventCard } from "./LinkedEventCard"
@@ -195,7 +194,6 @@ function MetaRow({
         <Text variant="bodyStrong" numberOfLines={1} style={styles.authorName}>
           {post.author.name}
         </Text>
-        {post.author.verified ? <VerifiedBadge size="sm" /> : null}
         {model.handleLabel ? (
           <Text numberOfLines={1} style={styles.handle}>
             {model.handleLabel}
@@ -413,7 +411,6 @@ function EmbeddedPost({
         <Text variant="bodyStrong" numberOfLines={1} style={styles.embeddedAuthor}>
           {post.author?.name ?? t("post_card.deleted_account")}
         </Text>
-        {post.author?.verified ? <VerifiedBadge size="sm" /> : null}
         {post.author?.handle ? (
           <Text numberOfLines={1} style={styles.embeddedHandle}>
             {`@${post.author.handle.replace(/^@/, "")}`}
@@ -766,7 +763,6 @@ function EmbeddedPostMeta({
         <Text variant="bodyStrong" numberOfLines={1} style={styles.authorName}>
           {post.author?.name ?? t("post_card.deleted_account")}
         </Text>
-        {post.author?.verified ? <VerifiedBadge size="sm" /> : null}
         {post.author?.handle ? (
           <Text numberOfLines={1} style={styles.handle}>
             {`@${post.author.handle.replace(/^@/, "")}`}

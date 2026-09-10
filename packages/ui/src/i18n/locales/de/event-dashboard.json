@@ -1,0 +1,7 @@
+{
+  "title": "Event-Dashboard",
+  "tabs": {
+    "personal": "Persönlich",
+    "org": "Organisation"
+  }
+}

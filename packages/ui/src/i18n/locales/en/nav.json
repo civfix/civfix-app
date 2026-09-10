@@ -21,7 +21,6 @@
     "settings_privacy": "Privacy & safety",
     "create_cleanup": "Host an event",
     "edit_cleanup": "Edit event",
-    "verify": "Get verified",
     "leaderboard": "Leaderboard",
     "cluster_one": "{{count}} report",
     "cluster_other": "{{count}} reports",
@@ -39,7 +38,8 @@
     "host_team": "Team",
     "my_ticket": "Your ticket",
     "org": "Organization",
-    "my_donations": "Your donations"
+    "my_donations": "Your donations",
+    "event_dashboard": "Event dashboard"
   },
   "tab": {
     "home": "Home",

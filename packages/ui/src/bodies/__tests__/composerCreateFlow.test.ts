@@ -4,7 +4,6 @@ import type { DetailEntry } from "../../nav"
 import { useNavStore } from "../../nav"
 import {
   clearStaleReportIntentAtComposerMount,
-  hostFormNavEscape,
   openReportFlow,
   stackAfterComposerReturn,
   stackAfterFlowPublished,
@@ -45,32 +44,12 @@ describe("the removed composer -> host-event presentation seam", () => {
   })
 })
 
-describe("hostFormNavEscape", () => {
-  it("keeps the nav store for an IN-SHELL form, where the form IS an entry", () => {
-    expect(hostFormNavEscape({ standalone: false, hasHostCallback: false })).toBe("nav-store")
-    // An in-shell form ignores a host callback entirely: its own entry is the correct destination anchor.
-    expect(hostFormNavEscape({ standalone: true, hasHostCallback: false })).not.toBe("nav-store")
-    expect(hostFormNavEscape({ standalone: false, hasHostCallback: true })).toBe("nav-store")
-  })
-
-  it("NEVER returns the nav store for a standalone form - that is the whole rule", () => {
-    // The regression this exists to make impossible: a standalone host screen sits above the whole shell,
-    // so `useNavStore.push` from there is a DEAD tap that also leaves a stray entry on the hidden stack.
-    // There is no input for which a standalone form may write that store.
-    for (const hasHostCallback of [true, false]) {
-      expect(hostFormNavEscape({ standalone: true, hasHostCallback })).not.toBe("nav-store")
-    }
-    expect(hostFormNavEscape({ standalone: true, hasHostCallback: true })).toBe("host")
-    expect(hostFormNavEscape({ standalone: true, hasHostCallback: false })).toBe("inert")
-  })
-})
-
 describe("stackAfterComposerReturn", () => {
   it("truncates back to the WAITING composer in one step, at any depth", () => {
     expect(stackAfterComposerReturn([composer, hostForm])).toEqual([composer])
-    // The host form can push forward first ("Get verified", a linked report's detail), so a single `back()`
-    // would leave the user parked mid-flow. Truncating is correct however deep it went.
-    expect(stackAfterComposerReturn([composer, hostForm, { kind: "verify" }])).toEqual([composer])
+    // The host form can push forward first (a linked report's detail), so a single `back()` would leave
+    // the user parked mid-flow. Truncating is correct however deep it went.
+    expect(stackAfterComposerReturn([composer, hostForm, { kind: "pin", id: "r1" }])).toEqual([composer])
     expect(
       stackAfterComposerReturn([{ kind: "post", id: "p1" }, composer, hostForm]),
     ).toEqual([{ kind: "post", id: "p1" }, composer])
@@ -275,25 +254,6 @@ describe("the standalone host form's wiring (source-pinned)", () => {
     expect(text).toMatch(/<ScrollHostProvider value=\{scrollHost\}>/)
   })
 
-  it("routes EVERY nav-store escape through the host when standalone", () => {
-    // FINDING 2: `standalone` used to suppress the nav-entry SEEDS but not the OUTBOUND navigation, so the
-    // "Get verified" banner still pushed onto the shell's hidden stack — a dead tap that also left a stray
-    // `verify` entry behind. Both escapes must now be gated, and the gate must be the shared rule.
-    const text = source()
-    expect(text).toMatch(/import \{ hostFormNavEscape, stackAfterFlowPublished \} from "\.\/composerCreateFlow"/)
-    expect(text).toMatch(/const verifyEscape = hostFormNavEscape\(\{/)
-    expect(text).toMatch(/verifyEscape === "nav-store" \? pushVerifyEntry/)
-    expect(text).toMatch(/verifyEscape === "host" \? hostGetVerified : undefined/)
-    // Every `push` onto the shell store sits AFTER a `standalone` bail-out. Asserted positionally because
-    // the failure mode is a bare fallthrough, not a wrong call.
-    const publishReturn = text.indexOf("standalone.onComposerReturn()")
-    const pushEvent = text.indexOf("pushCleanup(cleanup)")
-    expect(publishReturn).toBeGreaterThan(-1)
-    expect(pushEvent).toBeGreaterThan(-1)
-    expect(text.lastIndexOf("standalone.onComposerReturn()")).toBeLessThan(pushEvent)
-    expect(text.match(/standalone\.onComposerReturn\(\)/g) ?? []).toHaveLength(1)
-  })
-
   it("takes the escapes and the flag as ONE object, so a host cannot declare one without the other", () => {
     const text = source()
     expect(text).toMatch(/export interface CreateCleanupStandaloneHost \{/)
@@ -315,9 +275,9 @@ describe("stackAfterFlowPublished", () => {
   })
 
   it("takes anything the flow pushed on top with it", () => {
-    // The form can push `verify` (the unverified-host banner) or a linked report's detail before publishing.
-    const verify: DetailEntry = { kind: "verify" }
-    expect(stackAfterFlowPublished([hostForm, verify], created)).toEqual([created])
+    // The form can push a linked report's detail before publishing.
+    const linkedReport: DetailEntry = { kind: "pin", id: "r1" }
+    expect(stackAfterFlowPublished([hostForm, linkedReport], created)).toEqual([created])
   })
 
   it("keeps entries BELOW the flow, which are somebody else's stack", () => {

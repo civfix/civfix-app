@@ -13,7 +13,6 @@ export {
 } from "./social"
 export type { ProfilePastEvents } from "./social"
 
-export { useMyVerification } from "./verification"
 
 export {
   useUserSearch,

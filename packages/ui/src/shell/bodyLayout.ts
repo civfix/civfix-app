@@ -27,7 +27,6 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
   "edit-cleanup": "scroll",
   cluster: "scroll",
   blend: "scroll",
-  verify: "scroll",
   followers: "scroll",
   following: "scroll",
   leaderboard: "scroll",
@@ -47,6 +46,7 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
   "my-ticket": "scroll",
   org: "scroll",
   "my-donations": "scroll",
+  "event-dashboard": "scroll",
   "home-view": "scroll",
 }
 

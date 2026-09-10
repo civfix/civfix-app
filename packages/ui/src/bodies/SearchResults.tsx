@@ -17,7 +17,6 @@ import {
   SkeletonGroup,
   SkeletonList,
   SkeletonText,
-  VerifiedBadge,
 } from "../primitives"
 import { Icon, iconMap, Text } from "../typography"
 import {
@@ -190,7 +189,6 @@ export function LeaderboardHitRow({
       <View style={styles.rowCopy}>
         <View style={styles.leaderNameRow}>
           <Text style={[styles.rowTitle, styles.leaderName]} numberOfLines={1}>{name}</Text>
-          {entry.verified && !you ? <VerifiedBadge size="sm" /> : null}
         </View>
         {entry.handle ? <Text style={styles.leaderHandle} numberOfLines={1}>@{entry.handle}</Text> : null}
       </View>

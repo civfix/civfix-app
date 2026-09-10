@@ -78,7 +78,7 @@ function fakePerson(
 }
 
 const FAKE_VIEWER = fakePerson("me", "You", "you")
-const FAKE_MAYA = fakePerson("u_maya", "Maya Ortiz", "maya", { verified: true, followers: 812 })
+const FAKE_MAYA = fakePerson("u_maya", "Maya Ortiz", "maya", { followers: 812 })
 const FAKE_LUIS = fakePerson("u_luis", "Luis Park", "luisp", { followers: 128 })
 const FAKE_DANA = fakePerson("u_dana", "Dana Reyes", "danar", { followers: 57 })
 

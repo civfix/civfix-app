@@ -5,7 +5,6 @@ import { focusRingProps, makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
-import { VerifiedBadge } from "../../primitives/VerifiedBadge"
 import {
   PostActionBar,
   postActionGlyphInset,
@@ -116,7 +115,6 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
             <Text numberOfLines={1} style={styles.metaName}>
               {post.author.name}
             </Text>
-            {post.author.verified ? <VerifiedBadge size="sm" /> : null}
             <Text numberOfLines={1} style={styles.metaTail}>
               {metaTail}
             </Text>

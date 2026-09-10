@@ -1,0 +1,7 @@
+{
+  "title": "Event dashboard",
+  "tabs": {
+    "personal": "Personal",
+    "org": "Organization"
+  }
+}

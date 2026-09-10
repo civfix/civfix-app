@@ -972,7 +972,7 @@ describe("seed derives the detent from the PRISTINE store (a cold compact web lo
     ["/host", { kind: "create-cleanup" } as DetailEntry],
     ["/settings", { kind: "settings" } as DetailEntry],
     ["/settings/privacy", { kind: "settings-privacy" } as DetailEntry],
-    ["/verify", { kind: "verify" } as DetailEntry],
+    ["/dashboard", { kind: "event-dashboard" } as DetailEntry],
     ["/profile", { kind: "profile" } as DetailEntry],
     ["/leaderboard/0644000", { kind: "leaderboard", geoid: "0644000" } as DetailEntry],
     ["/people/u1/followers", { kind: "followers", id: "u1" } as DetailEntry],

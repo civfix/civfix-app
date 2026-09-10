@@ -332,7 +332,11 @@ describe("fullEntryStack - the page stack itself", () => {
 
   it("preserves BOTTOM-first order - the layers are mounted in the order they were pushed", () => {
     // Reversed, `entries[entries.length - 1]` would be the ROOT and every push would animate backwards.
-    const stack: DetailEntry[] = [{ kind: "profile" }, { kind: "followers", id: "u1" }, { kind: "verify" }]
+    const stack: DetailEntry[] = [
+      { kind: "profile" },
+      { kind: "followers", id: "u1" },
+      { kind: "event-dashboard" },
+    ]
     expect(fullEntryStack(stack, true)).toEqual(stack)
   })
 

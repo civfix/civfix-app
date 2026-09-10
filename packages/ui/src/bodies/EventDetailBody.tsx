@@ -13,7 +13,6 @@ import {
   SkeletonGroup,
   SkeletonList,
   SkeletonText,
-  VerifiedBadge,
   ReportContentSheet,
   CancelEventSheet,
   RequestResourcesSheet,
@@ -32,7 +31,6 @@ import {
   useRequireAuth,
   useGetTurnstileToken,
   useProfile,
-  useMyVerification,
   useReportContent,
   useCancelCleanup,
   useCompleteCleanup,
@@ -179,7 +177,6 @@ function HostIdentity({ cleanup, isOrganizer }: { cleanup: CleanupDTO; isOrganiz
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-detail")
-  const verified = cleanup.organizer.verified ?? false
   return (
     <>
       <Avatar
@@ -194,7 +191,6 @@ function HostIdentity({ cleanup, isOrganizer }: { cleanup: CleanupDTO; isOrganiz
           <Text style={styles.hostName} numberOfLines={1}>
             {isOrganizer ? t("going.you") : cleanup.organizer.name}
           </Text>
-          {verified ? <VerifiedBadge size="sm" /> : null}
         </View>
         {cleanup.organizer.handle || cleanup.organizer.bio ? (
           <View style={styles.hostSubRow}>
@@ -305,16 +301,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   }, [isActive, cleanup.id, cleanup.lat, cleanup.lng, cleanup.eventKind])
 
   const organizerProfile = useProfile(isOrganizer ? undefined : cleanup.organizer.id)
-
-  const organizerVerified = cleanup.organizer.verified ?? false
-  const myVerification = useMyVerification()
-  const identityVerified = myVerification.data?.verification.status === "verified"
-  const hostShouldVerify =
-    isOrganizer && !organizerVerified && myVerification.data != null && !identityVerified
-
-  const onGetVerified = useCallback(() => {
-    useNavStore.getState().push({ kind: "verify" })
-  }, [])
 
   const { day, month } = eventChip(cleanup.scheduledAt, locale)
   const where = cleanup.address?.trim()
@@ -619,28 +605,17 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
                 onPress={onCompleteEvent}
               />
             )}
-            {isOrganizer && myVerification.data != null ? (
+            {isOrganizer && cleanup.organization ? (
               <EventActionRow
                 icon={iconMap.Building2}
                 label={t("host.request_resources")}
                 accessibilityLabel={t("host.request_resources_a11y")}
-                disabled={!identityVerified}
                 hint={
-                  !identityVerified
-                    ? t("host.request_resources_locked")
-                    : cleanup.jurisdictionGeoid == null
-                      ? t("host.request_resources_no_city")
-                      : undefined
+                  cleanup.jurisdictionGeoid == null
+                    ? t("host.request_resources_no_city")
+                    : undefined
                 }
                 onPress={onRequestResources}
-              />
-            ) : null}
-            {hostShouldVerify ? (
-              <EventActionRow
-                icon={iconMap.ShieldCheck}
-                label={t("host.verify_nudge")}
-                accessibilityLabel={t("host.verify_nudge_a11y")}
-                onPress={onGetVerified}
               />
             ) : null}
           </EventActionRows>
@@ -704,9 +679,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
             cleanupId={cleanup.id}
             actsAsHost={actsAsHost}
             joined={going}
-            identityVerified={identityVerified}
-            verificationLoaded={myVerification.data != null}
-            onGetVerified={onGetVerified}
           />
         </View>
       ) : null}

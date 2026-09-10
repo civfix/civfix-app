@@ -36,5 +36,6 @@
     "menu_dismiss": "Dismiss repost menu",
     "default_title": "CivFix post"
   },
-  "wizard_step_count": "Step {{current}} of {{total}}"
+  "wizard_step_count": "Step {{current}} of {{total}}",
+  "verified_badge": "Verified"
 }

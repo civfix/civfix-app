@@ -36,7 +36,6 @@ const author: PostDTO["author"] = {
   followers: 42,
   following: 7,
   isFollowing: false,
-  verified: true,
 }
 
 const media = (id: string): MediaDTO => ({

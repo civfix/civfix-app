@@ -36,5 +36,6 @@
     "menu_dismiss": "Cerrar el menú de republicación",
     "default_title": "Publicación de CivFix"
   },
-  "wizard_step_count": "Paso {{current}} de {{total}}"
+  "wizard_step_count": "Paso {{current}} de {{total}}",
+  "verified_badge": "Verificado"
 }

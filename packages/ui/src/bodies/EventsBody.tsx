@@ -15,7 +15,7 @@ import {
   webTransition,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { MetaDot, RsvpPill, EmptyState, VerifiedBadge } from "../primitives"
+import { MetaDot, RsvpPill, EmptyState } from "../primitives"
 import { useCleanups, useJoinCleanup, useAttendingCleanups, useUserLocation, useAuthState } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
@@ -84,7 +84,6 @@ const SheetEventCard = React.memo(function SheetEventCard({
             <Text style={styles.title} numberOfLines={1}>
               {cleanup.title}
             </Text>
-            {cleanup.organizer?.verified ? <VerifiedBadge size="sm" /> : null}
           </View>
 
           <View style={styles.sub}>

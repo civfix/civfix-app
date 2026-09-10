@@ -21,7 +21,6 @@
     "settings_privacy": "개인정보 및 안전",
     "create_cleanup": "이벤트 만들기",
     "edit_cleanup": "이벤트 수정",
-    "verify": "인증받기",
     "leaderboard": "리더보드",
     "cluster_other": "신고 {{count}}건",
     "members": "멤버",
@@ -38,7 +37,8 @@
     "host_team": "팀",
     "my_ticket": "내 티켓",
     "org": "단체",
-    "my_donations": "내 후원 내역"
+    "my_donations": "내 후원 내역",
+    "event_dashboard": "이벤트 대시보드"
   },
   "tab": {
     "home": "홈",

@@ -7,7 +7,6 @@ import { makeThemedStyles, useTheme, categoryColor, focusRingProps, wash, webCur
 import { Text, Icon } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
-import { VerifiedBadge } from "../../primitives/VerifiedBadge"
 import {
   PostActionBar,
   formatPostActionCount,
@@ -122,7 +121,6 @@ function EmbeddedPost({
         <Text variant="bodyStrong" numberOfLines={1} style={styles.embeddedAuthor}>
           {post.author?.name ?? t("post_card.deleted_account")}
         </Text>
-        {post.author?.verified ? <VerifiedBadge size="sm" /> : null}
         <Text variant="caption" color={th.colors.textSubtle}>
           {timeAgo(post.createdAt)}
         </Text>
@@ -199,7 +197,6 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
             <Text numberOfLines={1} style={styles.authorName}>
               {post.author.name}
             </Text>
-            {post.author.verified ? <VerifiedBadge size="sm" /> : null}
             {model.showOrganizerBadge ? <OrganizerBadge t={t} /> : null}
           </View>
           {handle ? (

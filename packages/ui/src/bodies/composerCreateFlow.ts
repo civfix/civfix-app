@@ -25,8 +25,8 @@
  *   - `openDetail({kind:"create-cleanup"})` instead of `push`: `openDetail` REPLACES the stack, which
  *     destroys the very composer entry the overlay layer needs. `push` APPENDS in both shell modes.
  *   - a single `nav.back()` on the return leg instead of {@link stackAfterComposerReturn}: correct only when
- *     the host form is exactly one entry deep. The form can push `verify` ("Get verified" banner) or a
- *     linked report's detail first, and one `back()` would then leave the user parked mid-flow. Truncating
+ *     the host form is exactly one entry deep. The form can push a linked report's
+ *     detail first, and one `back()` would then leave the user parked mid-flow. Truncating
  *     to the waiting composer is correct at ANY depth.
  *
  * No react-native import, so this module unit-tests directly under vitest. The one VALUE it imports is
@@ -80,7 +80,7 @@ export function stackAfterComposerReturn(
  * belongs here rather than in the collapse guard: the guard is right that a live flow must not be
  * collapsed away, and widening or narrowing it would only trade this bug for the draft-loss it prevents.
  *
- * Everything above the flow entry goes too (the form can push `verify` or a linked report's detail first),
+ * Everything above the flow entry goes too (the form can push a linked report's detail first),
  * which is the same truncate-at-any-depth reasoning as {@link stackAfterComposerReturn}.
  *
  * Returns `null` when there is no flow entry to replace - a caller that reaches this with a
@@ -195,35 +195,3 @@ export function clearStaleReportIntentAtComposerMount(): void {
   dropReportCreateIntent()
 }
 
-/**
- * WHAT A NAV-STORE ESCAPE INSIDE THE HOST FORM IS ALLOWED TO DO.
- *
- * THE RULE: a form rendered STANDALONE - outside the shell's nav stack - must NEVER write to the shell's nav
- * store. Not for its return leg, and not for any forward navigation either. Every escape has to go through a
- * callback the HOST supplied, or not happen at all.
- *
- * WHY, concretely. A standalone host is an expo-router SCREEN sitting above the whole shell, and
- * `MobileNavAdapter` bridges only `composer`, `post-thread` and `thread` out to routes. A
- * `push({kind:"verify"})` from there is therefore doubly wrong: nothing appears (the tap is dead), AND a
- * `verify` entry is silently left on the hidden shell's stack, which surfaces later as a pull-up the user
- * never asked for. The publish return leg already had a host callback for exactly this reason; this rule is
- * that seam generalised to every escape, so the next one added cannot regress the same way.
- *
- *   - "nav-store" - in-shell: the form IS a nav entry, so `useNavStore.push` is correct and the pushed body
- *     lands on top of it. Unchanged behaviour, and the case for every host in the app today.
- *   - "host"      - standalone AND the host supplied a callback for this destination: call it.
- *   - "inert"     - standalone with NO callback: render the affordance as a NON-interactive notice. Deliberate
- *     and strictly better than the alternatives: a pressable that does nothing is a lie, and reaching the
- *     shell's verify sheet from a standalone host means tearing down that screen (throwing away the
- *     half-filled host form) for a banner the user can also reach from their profile at any time. VerificationNotice already renders exactly this shape when it is given no
- *     `onPress` (no chevron, no Pressable) - it is the same thing a "pending" host sees.
- */
-export type HostFormNavEscape = "nav-store" | "host" | "inert"
-
-export function hostFormNavEscape(input: {
-  standalone: boolean
-  hasHostCallback: boolean
-}): HostFormNavEscape {
-  if (!input.standalone) return "nav-store"
-  return input.hasHostCallback ? "host" : "inert"
-}

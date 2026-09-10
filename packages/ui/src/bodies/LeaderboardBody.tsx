@@ -3,7 +3,7 @@ import { View, StyleSheet, ActivityIndicator } from "react-native"
 import type { LeaderboardEntryDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Text, iconMap } from "../typography"
-import { Avatar, VerifiedBadge, EmptyState, LoadingState } from "../primitives"
+import { Avatar, EmptyState, LoadingState } from "../primitives"
 import { useJurisdictionLeaderboard } from "../data"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useLocale, useT } from "../i18n"
@@ -39,7 +39,6 @@ const LeaderboardRow = memo(function LeaderboardRow({ entry }: { entry: Leaderbo
           <Text style={styles.name} numberOfLines={1}>
             {entry.name}
           </Text>
-          {entry.verified ? <VerifiedBadge size="sm" /> : null}
         </View>
         {entry.handle ? (
           <Text style={styles.handle} numberOfLines={1}>

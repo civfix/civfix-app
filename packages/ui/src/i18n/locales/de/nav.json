@@ -21,7 +21,6 @@
     "settings_privacy": "Privatsphäre & Sicherheit",
     "create_cleanup": "Veranstaltung erstellen",
     "edit_cleanup": "Veranstaltung bearbeiten",
-    "verify": "Verifizieren",
     "leaderboard": "Bestenliste",
     "cluster_one": "{{count}} Meldung",
     "cluster_other": "{{count}} Meldungen",
@@ -39,7 +38,8 @@
     "host_team": "Team",
     "my_ticket": "Dein Ticket",
     "org": "Organisation",
-    "my_donations": "Deine Spenden"
+    "my_donations": "Deine Spenden",
+    "event_dashboard": "Event-Dashboard"
   },
   "tab": {
     "home": "Start",

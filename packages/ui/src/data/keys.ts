@@ -38,7 +38,6 @@ export const queryKeys = {
   myProfile: ["profile", "me"] as const,
   profileEvents: (id: string, anchor: string | null) =>
     ["profile", id, "events", anchor] as const,
-  myVerification: ["verification", "me"] as const,
   followers: (id: string) => ["connections", "followers", id] as const,
   following: (id: string) => ["connections", "following", id] as const,
   userLocation: ["user-location"] as const,

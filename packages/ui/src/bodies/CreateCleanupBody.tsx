@@ -17,14 +17,12 @@ import {
   SkeletonBlock,
   SkeletonGroup,
   SkeletonText,
-  VerificationNotice,
   useToast,
 } from "../primitives"
 import {
   useCreateCleanup,
   useAuthState,
   useRequireAuth,
-  useMyVerification,
   useReport,
   useReverseLabel,
   reverseLabelText,
@@ -50,7 +48,7 @@ import {
   type HostDraftMountPlan,
   type HostSeedPoint,
 } from "./cleanupDraftExit"
-import { hostFormNavEscape, stackAfterFlowPublished } from "./composerCreateFlow"
+import { stackAfterFlowPublished } from "./composerCreateFlow"
 import { useDroppedPin } from "../map/droppedPinStore"
 import {
   CleanupForm,
@@ -274,9 +272,6 @@ function HostForm({
   const toast = useToast()
   const geo = useGeolocation()
   const haptics = useHaptics()
-  const verification = useMyVerification()
-  const verificationStatus = verification.data?.verification.status
-
   const [initialCenter, setInitialCenter] = useState<LatLng | null>(
     seedPoint ? { lat: seedPoint.lat, lng: seedPoint.lng } : null,
   )
@@ -477,37 +472,6 @@ function HostForm({
     )
   }, [canPublish, create, createPostAsync, form, haptics, scheduledAt, standalone, t, tShare, toast])
 
-  const hostGetVerified = standalone?.onGetVerified
-  const verifyEscape = hostFormNavEscape({
-    standalone: standalone !== undefined,
-    hasHostCallback: hostGetVerified !== undefined,
-  })
-  const pushVerifyEntry = useCallback(() => {
-    useNavStore.getState().push({ kind: "verify" })
-  }, [])
-  const onGetVerified =
-    verifyEscape === "nav-store" ? pushVerifyEntry : verifyEscape === "host" ? hostGetVerified : undefined
-
-  let verificationBanner: React.ReactNode = null
-  if (verificationStatus === "verified") {
-    verificationBanner = (
-      <VerificationNotice verified message={t("verification.verified")} />
-    )
-  } else if (verificationStatus === "pending") {
-    verificationBanner = (
-      <VerificationNotice verified={false} message={t("verification.pending")} />
-    )
-  } else if (verificationStatus === "unverified" || verificationStatus === "rejected") {
-    verificationBanner = (
-      <VerificationNotice
-        verified={false}
-        message={t("verification.unverified")}
-        onPress={onGetVerified}
-        accessibilityLabel={t("verification.getVerified")}
-      />
-    )
-  }
-
   return (
     <ScrollView
       ref={scrollRef}
@@ -530,8 +494,6 @@ function HostForm({
       <StepTransition transitionKey={step} direction={stepDirection} style={styles.stepHost}>
         {isReview ? (
           <>
-            {verificationBanner}
-
             <ReviewSummary value={form} onEdit={editStep} />
 
             <CleanupForm
@@ -646,7 +608,6 @@ function HostForm({
 
 export interface CreateCleanupStandaloneHost {
   onComposerReturn: () => void
-  onGetVerified?: () => void
 }
 
 export interface CreateCleanupBodyProps {

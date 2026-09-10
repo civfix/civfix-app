@@ -46,7 +46,6 @@ const event: LinkedEventRef = {
     followers: 42,
     following: 7,
     isFollowing: false,
-    verified: true,
   },
   linkedAt: "2026-07-20T12:00:00.000Z",
 }

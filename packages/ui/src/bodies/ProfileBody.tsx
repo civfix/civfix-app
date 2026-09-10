@@ -1,18 +1,12 @@
 import React, { useCallback, useMemo } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
-import type { CleanupDTO, ReportDTO, VerificationStatus } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
-import {
-  EmptyState,
-  SignInPrompt,
-  VerifiedBadge,
-} from "../primitives"
+import type { CleanupDTO, ReportDTO } from "@civfix/shared"
+import { makeThemedStyles, useTheme } from "../theme"
+import { iconMap } from "../typography"
+import { EmptyState, SignInPrompt } from "../primitives"
 import {
   useMyProfile,
   useAuthState,
   useRequireAuth,
-  useMyVerification,
   useMyReports,
 } from "../data"
 import { useUserPosts } from "../data/hooks/posts"
@@ -28,46 +22,6 @@ import {
 import { ServiceHoursSection } from "./profile/ServiceHoursSection"
 import { pushCleanup } from "./navHelpers"
 
-function VerificationRow({
-  status,
-  onGetVerified,
-}: {
-  status: VerificationStatus
-  onGetVerified: () => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("profile")
-  if (status === "verified") {
-    return (
-      <View style={[styles.verifyRow, styles.verifyVerified]}>
-        <VerifiedBadge size="sm" />
-        <Text style={styles.verifyVerifiedText}>{t("verification.verified")}</Text>
-      </View>
-    )
-  }
-  return (
-    <Pressable
-      onPress={onGetVerified}
-      accessibilityRole="button"
-      accessibilityLabel={t("verification.get_verified")}
-      {...focusRingProps}
-      style={({ pressed }) => [styles.verifyRow, styles.verifyApply, pressed ? styles.verifyApplyPressed : null]}
-    >
-      <View style={styles.verifyApplyIcon}>
-        <Icon icon={iconMap.CheckCircle2} size={16} color={th.colors.brand.sky} />
-      </View>
-      <View style={styles.verifyApplyMeta}>
-        <Text style={styles.verifyApplyTitle}>{t("verification.get_verified")}</Text>
-        <Text style={styles.verifyApplySub} numberOfLines={1}>
-          {t("verification.get_verified_sub")}
-        </Text>
-      </View>
-      <Icon icon={iconMap.ChevronRight} size={18} color={th.colors.textSubtle} />
-    </Pressable>
-  )
-}
-
 export function ProfileBody() {
   const styles = useStyles()
   const th = useTheme()
@@ -78,7 +32,6 @@ export function ProfileBody() {
   const query = useMyProfile()
   const profile = query.data?.profile
 
-  const verification = useMyVerification()
   const postsQuery = useUserPosts(profile?.id)
   const reportsQuery = useMyReports(3)
 
@@ -89,10 +42,6 @@ export function ProfileBody() {
     },
     [profile],
   )
-
-  const onGetVerified = useCallback(() => {
-    useNavStore.getState().push({ kind: "verify" })
-  }, [])
 
   const onOpenEvent = useCallback((event: CleanupDTO) => {
     pushCleanup(event)
@@ -193,14 +142,6 @@ export function ProfileBody() {
         onOpenSaved={onOpenSaved}
         reports={profileReports}
         hours={<ServiceHoursSection variant="own" totalHours={profile.volunteerHours} />}
-        verificationSlot={
-          verification.data ? (
-            <VerificationRow
-              status={verification.data.verification.status}
-              onGetVerified={onGetVerified}
-            />
-          ) : null
-        }
       />
     </ScrollView>
   )
@@ -219,56 +160,5 @@ const useStyles = makeThemedStyles((t) => ({
   stateContent: {
     flexGrow: 1,
     justifyContent: "center",
-  },
-
-  verifyRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"] + 2,
-    borderRadius: t.radius.lg,
-    paddingVertical: t.space["3"],
-    paddingHorizontal: t.space["3"] + 1,
-  },
-  verifyVerified: {
-    backgroundColor: t.colors.moss["50"],
-  },
-  verifyVerifiedText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13.5,
-    color: t.colors.moss["700"],
-  },
-  verifyApply: {
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s1,
-  },
-  verifyApplyPressed: {
-    opacity: 0.92,
-    transform: [{ scale: 0.99 }],
-  },
-  verifyApplyIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: t.radius.md,
-    flexShrink: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.sky["50"],
-  },
-  verifyApplyMeta: {
-    flex: 1,
-    minWidth: 0,
-  },
-  verifyApplyTitle: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 14,
-    color: t.colors.text,
-  },
-  verifyApplySub: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
-    color: t.colors.textSubtle,
-    marginTop: 1,
   },
 }))

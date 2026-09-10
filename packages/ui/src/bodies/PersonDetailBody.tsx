@@ -13,7 +13,6 @@ import {
   MetaDot,
   FollowButton,
   EmptyState,
-  VerifiedBadge,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
@@ -423,7 +422,6 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
               <Text style={styles.name} numberOfLines={1}>
                 {profile.name}
               </Text>
-              {profile.verified ? <VerifiedBadge size="md" /> : null}
             </View>
             {profile.handle ? (
               <View style={styles.handleRow}>

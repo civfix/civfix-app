@@ -52,7 +52,6 @@ export {
   useProfilePastEvents,
 } from "./hooks"
 export type { ProfilePastEvents } from "./hooks"
-export { useMyVerification } from "./hooks"
 export {
   useUserSearch,
   normalizeUserSearchTerm,

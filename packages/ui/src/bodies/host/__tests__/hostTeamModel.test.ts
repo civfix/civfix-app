@@ -126,7 +126,7 @@ describe("who a manager may act on", () => {
 
   it("never offers an action on a deleted account", () => {
     const deleted = member("gone", "staff", {
-      person: { id: "gone", name: "gone", handle: null, verified: false, deleted: true },
+      person: { id: "gone", name: "gone", handle: null, deleted: true },
     } as Partial<EventTeamMemberDTO>)
     expect(
       teamMemberHasActions(teamMemberActions({ member: deleted, viewerId, canManageTeam: true })),
@@ -177,7 +177,7 @@ describe("pending invites", () => {
     expect(
       inviteDisplayName(
         invite("a", {
-          invitee: { id: "u1", name: "Ada", handle: "ada", verified: false, deleted: false },
+          invitee: { id: "u1", name: "Ada", handle: "ada", deleted: false },
         } as Partial<EventTeamInviteDTO>),
         "fallback",
       ),

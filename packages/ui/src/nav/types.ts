@@ -30,7 +30,6 @@ export type DetailKind =
   | "edit-cleanup"
   | "cluster"
   | "blend"
-  | "verify"
   | "followers"
   | "following"
   | "leaderboard"
@@ -57,6 +56,7 @@ export type DetailKind =
   | "my-ticket"
   | "org"
   | "my-donations"
+  | "event-dashboard"
 
 export const ALL_DETAIL_KINDS = [
   "pin",
@@ -75,7 +75,6 @@ export const ALL_DETAIL_KINDS = [
   "edit-cleanup",
   "cluster",
   "blend",
-  "verify",
   "followers",
   "following",
   "leaderboard",
@@ -102,6 +101,7 @@ export const ALL_DETAIL_KINDS = [
   "my-ticket",
   "org",
   "my-donations",
+  "event-dashboard",
 ] as const satisfies readonly DetailKind[]
 
 export const DEAD_DETAIL_KINDS = ["new-msg"] as const satisfies readonly DetailKind[]
@@ -137,6 +137,7 @@ export interface DetailEntry {
   profileTab?: "posts" | "events" | "hours" | "reports"
   slug?: string
   seatId?: string
+  organizationId?: string
 }
 
 export type Snap = 0 | 1 | 2

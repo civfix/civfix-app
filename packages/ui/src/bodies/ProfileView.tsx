@@ -12,7 +12,6 @@ import { makeThemedStyles, theme, useTheme, noShadow, focusRingProps, headingLev
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
-  VerifiedBadge,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
@@ -77,7 +76,6 @@ export interface ProfileViewProps {
   onOpenEvent?: (event: CleanupDTO) => void
   onOpenConnections?: (which: "followers" | "following") => void
   actions?: React.ReactNode
-  verified?: boolean
   verificationSlot?: React.ReactNode
   posts?: ProfilePosts
   onOpenSaved?: () => void
@@ -93,7 +91,6 @@ export function ProfileView({
   onOpenEvent,
   onOpenConnections,
   actions,
-  verified,
   verificationSlot,
   posts,
   onOpenSaved,
@@ -116,7 +113,6 @@ export function ProfileView({
     consumedNavTabRef.current = navProfileTab
     setRequestedTab(navProfileTab)
   }, [navProfileTab])
-  const isVerified = verified ?? profile.verified ?? false
   const heroSub = subtitle ?? (profile.handle ? `@${profile.handle}` : "")
 
   const pastEvents = useProfilePastEvents(profile)
@@ -171,7 +167,6 @@ export function ProfileView({
             <Text style={styles.heroName} numberOfLines={1} accessibilityRole="header" {...headingLevel(2)}>
               {profile.name}
             </Text>
-            {isVerified ? <VerifiedBadge size="md" /> : null}
           </View>
           {heroSub ? (
             <Text style={styles.heroSub} numberOfLines={1}>

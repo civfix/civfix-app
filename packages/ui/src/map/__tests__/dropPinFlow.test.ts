@@ -14,8 +14,8 @@
  * in the 328px strip that leaves. `dropPinCamera.test.ts` holds the matching screen-y assertions.
  *
  * WHY THE DECLINE CASE SEEDS `create-cleanup` AND NOT SOME OTHER KIND: the guard reads
- * `nav/flowKinds.FLOW_KINDS`, whose membership is deliberately volatile (`verify` was a member and was
- * removed once GetVerifiedBody became static content - see that module's header). `create-cleanup` is the
+ * `nav/flowKinds.FLOW_KINDS`, whose membership is deliberately volatile (kinds have joined and left it as
+ * their bodies gained or lost a draft to protect). `create-cleanup` is the
  * ORIGINAL, load-bearing member: it is the host-an-event form whose meet-location step collapses the sheet
  * to peek precisely so the map underneath is long-pressable, which is the whole reason the guard exists. A
  * test seeded with a kind that later leaves the set would fail for a reason that has nothing to do with

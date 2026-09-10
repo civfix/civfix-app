@@ -6,7 +6,6 @@ import type {
   CleanupAttendeesResponse,
   CleanupDTO,
   GetMyHoursResponse,
-  GetMyVerificationResponse,
   GetProfileResponse,
   JurisdictionDTO,
   LeaderboardResponse,
@@ -44,7 +43,7 @@ function person(id: string, name: string, handle: string, extra: Partial<PersonD
   }
 }
 
-const ANN = person("p-ann", "Ann Rivera", "annrivera", { followers: 128, verified: true })
+const ANN = person("p-ann", "Ann Rivera", "annrivera", { followers: 128 })
 const LEE = person("p-lee", "Lee Tran", "leetran")
 const MEI = person("p-mei", "Mei Wong", "meiwong")
 
@@ -338,7 +337,7 @@ const LEADERBOARD: LeaderboardResponse = {
   geoid: "0667000",
   jurisdictionName: "San Francisco",
   entries: [
-    { rank: 1, userId: "p-ann", name: "Ann Rivera", handle: "annrivera", avatar: null, avatarUrl: null, verified: true, hours: 61.5 },
+    { rank: 1, userId: "p-ann", name: "Ann Rivera", handle: "annrivera", avatar: null, avatarUrl: null, hours: 61.5 },
     { rank: 2, userId: "p-lee", name: "Lee Tran", handle: "leetran", avatar: null, avatarUrl: null, hours: 48 },
     { rank: 3, userId: "p-mei", name: "Mei Wong", handle: "meiwong", avatar: null, avatarUrl: null, hours: 39.25 },
   ],
@@ -406,7 +405,6 @@ const canned: Record<string, (args?: Record<string, unknown>) => Promise<unknown
   getMyHoursEntries: async () => ({ items: [], nextCursor: null }),
   getPublicVolunteerHours: async () => ({ items: [], nextCursor: null }),
   getJurisdictionLeaderboard: async () => LEADERBOARD,
-  myVerification: async (): Promise<GetMyVerificationResponse> => ({ verification: { status: "verified" } }),
 }
 
 export const landscapeFakeApi: ApiClient = new Proxy(

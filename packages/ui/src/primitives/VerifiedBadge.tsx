@@ -15,14 +15,14 @@ export interface VerifiedBadgeProps {
 const SIZES: Record<VerifiedBadgeSize, number> = { sm: 14, md: 18 }
 
 export function VerifiedBadge({ size = "sm", color, label }: VerifiedBadgeProps) {
-  const { t } = useT("profile-verify")
+  const { t } = useT("common")
   const th = useTheme()
   const glyph = SIZES[size]
   return (
     <View
       style={styles.wrap}
       accessibilityRole="image"
-      accessibilityLabel={label ?? t("badge.label")}
+      accessibilityLabel={label ?? t("verified_badge")}
     >
       <BadgeCheck size={glyph} color={color ?? th.colors.brand.sky} strokeWidth={2.25} />
     </View>

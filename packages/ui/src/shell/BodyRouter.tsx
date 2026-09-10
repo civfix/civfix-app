@@ -22,7 +22,6 @@ import {
   ConversationBody,
   ReportFlowBody,
   ClusterReportsBody,
-  GetVerifiedBody,
   BlockedAccountsBody,
   LanguageSettingsBody,
   AppearanceSettingsBody,
@@ -46,6 +45,7 @@ import {
   MyTicketBody,
   OrgPageBody,
   MyDonationsBody,
+  EventDashboardBody,
 } from "../bodies"
 import type { DetailEntry, View as NavView } from "../nav"
 import { VIEW_BODY, DETAIL_BODY, type BodyId } from "./bodyRoutes"
@@ -117,8 +117,6 @@ function renderBodyId(id: BodyId, entry: DetailEntry | null): React.ReactNode {
       return <ReportFlowBody />
     case "clusterReports":
       return <ClusterReportsBody reports={entry?.reports ?? []} event={entry?.event ?? null} />
-    case "getVerified":
-      return <GetVerifiedBody />
     case "connections":
       return (
         <ConnectionsBody
@@ -174,6 +172,8 @@ function renderBodyId(id: BodyId, entry: DetailEntry | null): React.ReactNode {
       return <OrgPageBody slug={entry?.slug ?? ""} />
     case "myDonations":
       return <MyDonationsBody />
+    case "eventDashboard":
+      return <EventDashboardBody />
     case "stub": {
       const label = entry ? (entry.id ? `${entry.kind} #${entry.id}` : entry.kind) : "stub"
       return <Stub label={label} />
