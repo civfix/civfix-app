@@ -908,13 +908,14 @@ describe("the wiring (source-pinned)", () => {
     expect(source).toMatch(/readView: \(\) => useNavStore\.getState\(\)\.view/)
   })
 
-  it("the dock's create menu opens the wizard through openReportFlow, not a bare selectView", () => {
-    // The entry point in the repro. The Report TAB now opens the anchored create bubble; the bubble's
-    // "Create a report" row is the wizard's entry, and `openReportFlow` self-heals a leaked claim (and a
-    // stale armed intent) there, which is the belt to the cleanup's braces.
-    const source = readSource("../../shell/CreateMenu.tsx")
+  it("the dock's Report tab opens the wizard through openReportFlow, not a bare selectView", () => {
+    // The entry point in the repro. The Report TAB is the wizard's entry again, and `openReportFlow`
+    // self-heals a leaked claim (and a stale armed intent) there, which is the belt to the cleanup's
+    // braces. The rail's Report item renders this same handler, so it inherits the self-heal.
+    const source = readSource("../../shell/TabBar.shared.tsx")
     expect(source).toMatch(/import \{ openReportFlow \} from "\.\.\/bodies\/composerCreateFlow"/)
-    expect(source).toMatch(/onPress: openReportFlow/)
+    expect(source).toMatch(/if \(tab\.id === "report"\) \{[\s\S]*?openReportFlow\(\)/)
+    expect(source).not.toMatch(/selectView\("report"\)/)
   })
 
   it("ReportFlowBody routes on THIS RUN'S claim and threads it, never re-reading the latch", () => {
@@ -950,19 +951,18 @@ describe("the wiring (source-pinned)", () => {
    *     re-exported from `bodies/index.ts` (asserted below).
    *   - web routes, which reach the view through `useNavStore.seed` on a cold start / popstate, where the
    *     module-level composer draft is brand new and there is nothing to inherit.
-   *   - the landscape RAIL's Report tab (`shell/Rail.tsx`), which is not a third call site: the rail renders
-   *     `useTabBarModel().onTab` from `TabBar.shared` verbatim, so it is already covered by the dock's row
-   *     below. That reuse is the point of `TabBar.shared` owning the handler - see `Rail.tsx`'s header.
-   *     The old `HomeSidebarBody` row is gone with the file: the landscape redesign deleted the web sidebar
-   *     and re-homed its Report CTA onto that same rail tab.
+   *   - the landscape RAIL's Report tab (`shell/Rail.tsx`), which is not a second call site: the rail
+   *     renders `useTabBarModel().onTab` from `TabBar.shared` verbatim, so it is already covered by the
+   *     dock's row below. That reuse is the point of `TabBar.shared` owning the handler - see `Rail.tsx`'s
+   *     header. The old `HomeSidebarBody` row is gone with the file: the landscape redesign deleted the web
+   *     sidebar and re-homed its Report CTA onto that same rail tab.
    */
   it("every report entry point in this package goes through openReportFlow", () => {
     const entries = [
       // The map long-press "Report an issue here".
       { file: "../DropPinBody.tsx", from: "./composerCreateFlow" },
-      // The create bubble the dock's (and, through `useTabBarModel`, the rail's) Report tab opens - the
-      // original repro's entry.
-      { file: "../../shell/CreateMenu.tsx", from: "../bodies/composerCreateFlow" },
+      // The dock's (and, through `useTabBarModel`, the rail's) Report tab - the original repro's entry.
+      { file: "../../shell/TabBar.shared.tsx", from: "../bodies/composerCreateFlow" },
       // The map's top-right plus button (the compact map header actions).
       { file: "../../map/MapHeaderActions.tsx", from: "../bodies/composerCreateFlow" },
     ]

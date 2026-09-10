@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   Platform,
   Pressable,
   StyleSheet,
   View,
-  type View as RNView,
   type ViewStyle,
 } from "react-native"
 import {
@@ -26,10 +25,8 @@ import { useNavStore } from "../nav"
 import {
   TABS,
   TAB_DIVIDER_WIDTH,
-  useTabAnchors,
   useTabBarModel,
   type TabDef,
-  type TabRefRegistrar,
 } from "./TabBar.shared"
 import { useSearchBarStore } from "./searchBarStore"
 import { searchPressOpensSearch } from "./shellKeyModel"
@@ -86,7 +83,6 @@ export function Rail() {
   const { t } = useT("nav")
   const { t: tMap } = useT("map-ui")
   const { onTab, onSearch, view } = useTabBarModel()
-  const { registerTabRef, pressTab } = useTabAnchors(onTab)
   const active = useNavStore((s) => s.active)
   const stackLength = useNavStore((s) => s.stack.length)
   const requestSearchFocus = useSearchBarStore((s) => s.requestSearchFocus)
@@ -159,8 +155,7 @@ export function Rail() {
               key={tab.id}
               tab={tab}
               selected={i === index}
-              onPress={() => pressTab(tab)}
-              registerRef={registerTabRef}
+              onPress={() => onTab(tab)}
             />
           ))}
         </View>
@@ -202,23 +197,16 @@ function RailTab({
   tab,
   selected,
   onPress,
-  registerRef,
 }: {
   tab: TabDef
   selected: boolean
   onPress: () => void
-  registerRef: TabRefRegistrar
 }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("nav")
-  const setNode = useCallback(
-    (node: RNView | null) => registerRef(tab.id, node),
-    [registerRef, tab.id],
-  )
   return (
     <Pressable
-      ref={setNode}
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected }}

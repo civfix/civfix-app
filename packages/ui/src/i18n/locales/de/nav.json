@@ -45,13 +45,8 @@
     "home": "Start",
     "map": "Karte",
     "messages": "Nachrichten",
-    "report": "Erstellen",
+    "report": "Melden",
     "search": "Suchen"
-  },
-  "create": {
-    "report": "Meldung erstellen",
-    "event": "Veranstaltung erstellen",
-    "post": "Beitrag erstellen"
   },
   "placeholder": {
     "people": "Personen suchen",
@@ -65,9 +60,7 @@
     "settings": "Einstellungen",
     "home": "Startseite",
     "resize_sidebar": "Seitenleiste anpassen",
-    "drag_handle": "Ziehpunkt",
-    "create_menu": "Erstellen",
-    "dismiss_create_menu": "Erstellen-Menü schließen"
+    "drag_handle": "Ziehpunkt"
   },
   "fallback_you": "Du"
 }

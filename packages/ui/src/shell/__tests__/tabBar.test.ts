@@ -125,6 +125,33 @@ describe("map-first tab bar model", () => {
     }
   })
 
+  it("puts a camera on the centre tab and opens the report wizard straight from it", () => {
+    const shared = readFileSync(new URL("../TabBar.shared.tsx", import.meta.url), "utf8")
+    expect(shared).toContain('report: { icon: iconMap.Camera, labelKey: "tab.report" }')
+    expect(shared).toContain('import { openReportFlow } from "../bodies/composerCreateFlow"')
+    expect(shared).toMatch(/if \(tab\.id === "report"\) \{[\s\S]*?openReportFlow\(\)/)
+    for (const locale of ["en", "es", "de", "ko"]) {
+      const nav = JSON.parse(
+        readFileSync(new URL(`../../i18n/locales/${locale}/nav.json`, import.meta.url), "utf8"),
+      ) as { tab: { report: string }; create?: unknown; a11y: Record<string, string> }
+      expect(typeof nav.tab.report).toBe("string")
+      expect(nav.create, `${locale} still ships the create-menu copy`).toBeUndefined()
+      expect(nav.a11y.create_menu).toBeUndefined()
+      expect(nav.a11y.dismiss_create_menu).toBeUndefined()
+    }
+  })
+
+  it("keeps no create-menu machinery for the centre tab to grow a bubble back from", () => {
+    const dir = fileURLToPath(new URL("..", import.meta.url))
+    const left = readdirSync(dir).filter((name) => name.toLowerCase().startsWith("createmenu"))
+    expect(left, "a CreateMenu module survived the revert").toEqual([])
+    for (const file of ["../TabBar.shared.tsx", "../TabBar.web.tsx", "../TabBar.native.tsx", "../Rail.tsx", "../AppShell.tsx"]) {
+      const source = readFileSync(new URL(file, import.meta.url), "utf8")
+      expect(source, file).not.toContain("CreateMenu")
+      expect(source, file).not.toContain("useTabAnchors")
+    }
+  })
+
   it("no longer draws a separate docked-search glass set (one morph owns the shapes)", () => {
     const header = readFileSync(new URL("../SearchHeader.native.tsx", import.meta.url), "utf8")
     expect(header).not.toMatch(/function DockedSearchBar/)
