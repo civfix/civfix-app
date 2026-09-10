@@ -1,9 +1,14 @@
 import { z } from "zod"
-import { CleanupMemberRoleSchema, ReportCategorySchema, ISODateSchema, IdSchema } from "../common.js"
+import {
+  CleanupMemberRoleSchema,
+  ReportCategorySchema,
+  ISODateSchema,
+  IdSchema,
+  OrganizationMemberRoleSchema,
+} from "../common.js"
 import { pageResponse } from "../common.js"
 import { AvatarPairSchema } from "../entities.js"
 import { RoleSchema } from "../../types/roles.js"
-import { VerificationStatusSchema } from "../verification.js"
 import {
   AdminListQuerySchema,
   AdminReportStatusSchema,
@@ -99,12 +104,21 @@ export type AdminUserListResponse = z.infer<typeof AdminUserListResponseSchema>
 export const AdminUserDTOSchema = AdminUserListItemDTOSchema.extend({
   role: RoleSchema,
   messages: z.number().int().nonnegative(),
-  // Document-verification status (the admin user detail shows it + deep-links to the verification
-  // queue). Optional + omittable so an older server that does not yet compute it still parses.
-  verificationStatus: VerificationStatusSchema.optional(),
-  // Whether the user has earned the report-verified state (distinct from the identity "verified
-  // neighbor"; drives the report-verified badge + toggle). Optional + additive so older servers parse.
+  // Whether the user has earned the report-verified state (drives the report-verified badge +
+  // toggle). Optional + additive so older servers parse.
   reportVerified: z.boolean().optional(),
+  // 0.43.0: the organizations this user belongs to, so the Users page can show affiliations without a
+  // second call. The badge fields only (name links to the org detail); optional + additive.
+  organizations: z
+    .array(
+      z.object({
+        id: IdSchema,
+        slug: z.string(),
+        name: z.string(),
+        role: OrganizationMemberRoleSchema,
+      }),
+    )
+    .optional(),
 }).strict()
 export type AdminUserDTO = z.infer<typeof AdminUserDTOSchema>
 
@@ -217,24 +231,9 @@ export const SetRoleRequestSchema = z
 export type SetRoleRequest = z.infer<typeof SetRoleRequestSchema>
 
 /**
- * Set the user's "verified community organizer" status (POST /admin/users/:id/verify). An operator flips this
- * directly from the Users section after a verification call - there is no in-app application/review
- * queue. `verified:true` marks the account verified; `verified:false` clears it. `id` consumes the path
- * param. Returns the shared AdminOkResponse.
- */
-export const SetUserVerifiedRequestSchema = z
-  .object({
-    id: z.string(),
-    verified: z.boolean(),
-  })
-  .strict()
-export type SetUserVerifiedRequest = z.infer<typeof SetUserVerifiedRequestSchema>
-
-/**
- * Set the user's "report-verified" state (POST /admin/users/:id/report-verify), distinct from the
- * identity "verified community organizer" toggle above. `value:true` marks the account report-verified;
- * `value:false` clears it. `id` consumes the path param (mirrors SetUserVerifiedRequest). Returns the
- * shared AdminOkResponse.
+ * Set the user's "report-verified" state (POST /admin/users/:id/report-verify). `value:true` marks the
+ * account report-verified; `value:false` clears it. `id` consumes the path param. Returns the shared
+ * AdminOkResponse.
  */
 export const SetUserReportVerifiedRequestSchema = z
   .object({

@@ -57,6 +57,7 @@ function expected(standing: HostStanding): HostCapability[] {
   }
   if (standing.orgRole === "admin") {
     for (const cap of eventCaps) if (!NOT_COHOST.includes(cap) && cap !== "export") out.add(cap)
+    out.add("manage_team")
     out.add("view_donations")
   }
   return [...out].sort()
@@ -167,11 +168,15 @@ describe("hostCapabilities", () => {
     }
   })
 
-  it("withholds export, manage_team, cancel_event, manage_org_link, request_resources and manage_payments from an org admin", () => {
+  it("withholds export, cancel_event, manage_org_link, request_resources and manage_payments from an org admin, but grants manage_team", () => {
     const caps = hostCapabilities({ eventRole: null, orgRole: "admin" })
-    for (const cap of ["export", ...NOT_COHOST, "manage_payments"] as HostCapability[]) {
+    const withheld = ["export", ...NOT_COHOST, "manage_payments"].filter(
+      (cap) => cap !== "manage_team",
+    ) as HostCapability[]
+    for (const cap of withheld) {
       expect(caps.has(cap)).toBe(false)
     }
+    expect(caps.has("manage_team")).toBe(true)
   })
 
   it("adds org standing on top of event standing", () => {

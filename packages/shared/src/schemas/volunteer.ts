@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { IdSchema, ISODateSchema } from "./common.js"
-import { AvatarPairSchema } from "./entities.js"
+import { AvatarPairSchema, OrganizationRefDTOSchema } from "./entities.js"
 
 /**
  * `"report"` is HISTORICAL ONLY and must stay in this list. Nothing writes a report credit any more
@@ -55,7 +55,11 @@ export const VolunteerHoursCreditorSchema = z.object({
   id: IdSchema,
   name: z.string(),
   handle: z.string().nullable().optional(),
-  verified: z.boolean().optional(),
+  /**
+   * 0.43.0: the creditor's primary organization affiliation (DECISIONS §34), replacing the retired
+   * `verified` neighbor flag. Null when the creditor belongs to no organization.
+   */
+  organization: OrganizationRefDTOSchema.nullable().optional(),
 })
 export type VolunteerHoursCreditor = z.infer<typeof VolunteerHoursCreditorSchema>
 
@@ -136,7 +140,6 @@ export const LeaderboardEntryDTOSchema = z.object({
   handle: z.string().nullable().optional(),
   avatar: AvatarPairSchema,
   avatarUrl: z.string().nullable().optional(),
-  verified: z.boolean().optional(),
   hours: z.number().nonnegative(),
 })
 export type LeaderboardEntryDTO = z.infer<typeof LeaderboardEntryDTOSchema>
@@ -194,8 +197,7 @@ export type EventHoursEntry = z.infer<typeof EventHoursEntrySchema>
 
 /**
  * POST /cleanups/:id/hours (route path unchanged) - PER-ATTENDEE hours: the acting host (organizer or
- * cohost, who must THEMSELVES be a verified community organizer) credits each listed attendee
- * individually. Every entry's userId must be a member of the cleanup; re-logging upserts per row.
+ * cohost, gated on their standing on the event) credits each listed attendee individually. Every entry's userId must be a member of the cleanup; re-logging upserts per row.
  * This replaced the v1 flat `{ id, hours }` body that credited the same hours to all members - apps
  * and backend move in lockstep, no fallback. `id` consumes the `:id` path param (merge pattern as
  * CancelCleanupRequest). strict() rejects any other key.

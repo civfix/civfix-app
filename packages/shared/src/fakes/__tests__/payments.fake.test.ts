@@ -347,3 +347,89 @@ describe("FakePayments webhook signatures", () => {
     ).toThrow(/JSON/)
   })
 })
+
+describe("FakePayments balance and payouts", () => {
+  let payments: FakePayments
+  let accountId: string
+
+  beforeEach(async () => {
+    payments = new FakePayments()
+    const account = await payments.createConnectedAccount(ACCOUNT_INPUT)
+    accountId = account.accountId
+    payments.settleAccount(accountId)
+  })
+
+  it("reports zero available until a charge settles, then the net of that charge", async () => {
+    const empty = await payments.retrieveBalance(accountId)
+    expect(empty.availableMinor).toBe(0)
+    expect(empty.pendingMinor).toBe(0)
+    expect(empty.payoutsEnabled).toBe(true)
+    expect(empty.payoutSchedule).toEqual({ interval: "manual" })
+
+    const session = await payments.createDonationCheckout(checkoutInput(accountId))
+    payments.completeCheckout(session.sessionId, { stripeFeeMinor: 175 })
+    const funded = await payments.retrieveBalance(accountId)
+    expect(funded.availableMinor).toBe(5000 - 175 - 250)
+  })
+
+  it("moves available funds, is idempotent per key, and refuses to overdraw", async () => {
+    const session = await payments.createDonationCheckout(checkoutInput(accountId))
+    payments.completeCheckout(session.sessionId, { stripeFeeMinor: 175 })
+
+    const payout = await payments.createPayout(accountId, {
+      amountMinor: 1000,
+      currency: "usd",
+      idempotencyKey: "payout:org-1:v1",
+    })
+    expect(payout.status).toBe("pending")
+    expect(payout.amountMinor).toBe(1000)
+
+    const replay = await payments.createPayout(accountId, {
+      amountMinor: 1000,
+      currency: "usd",
+      idempotencyKey: "payout:org-1:v1",
+    })
+    expect(replay.id).toBe(payout.id)
+
+    expect((await payments.retrieveBalance(accountId)).availableMinor).toBe(5000 - 175 - 250 - 1000)
+    await expect(
+      payments.createPayout(accountId, {
+        amountMinor: 999_999,
+        currency: "usd",
+        idempotencyKey: "payout:org-1:v2",
+      }),
+    ).rejects.toThrow(/balance_insufficient/)
+  })
+
+  it("refuses a payout while payouts are disabled on the account", async () => {
+    payments.settleAccount(accountId, { payoutsEnabled: false })
+    await expect(
+      payments.createPayout(accountId, {
+        amountMinor: 100,
+        currency: "usd",
+        idempotencyKey: "payout:org-1:v3",
+      }),
+    ).rejects.toThrow(/payouts_not_allowed/)
+  })
+
+  it("lists payouts newest first and pages with startingAfter", async () => {
+    const session = await payments.createDonationCheckout(checkoutInput(accountId))
+    payments.completeCheckout(session.sessionId, { stripeFeeMinor: 175 })
+    const first = await payments.createPayout(accountId, {
+      amountMinor: 100,
+      currency: "usd",
+      idempotencyKey: "payout:a",
+    })
+    const second = await payments.createPayout(accountId, {
+      amountMinor: 200,
+      currency: "usd",
+      idempotencyKey: "payout:b",
+    })
+    const page = await payments.listPayouts(accountId, { limit: 1 })
+    expect(page.items.map((item) => item.id)).toEqual([second.id])
+    expect(page.nextCursor).toBe(second.id)
+    const rest = await payments.listPayouts(accountId, { startingAfter: page.nextCursor })
+    expect(rest.items.map((item) => item.id)).toEqual([first.id])
+    expect(rest.nextCursor).toBeNull()
+  })
+})

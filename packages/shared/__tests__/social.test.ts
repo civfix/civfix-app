@@ -108,16 +108,17 @@ describe("NotificationTypeSchema — appended service-hours types", () => {
 
   it("appends them LAST, in this order (the backend mirror is byte-identical)", () => {
     const options = NotificationTypeSchema.options
-    expect(options.at(-1)).toBe("event_team_invite")
-    expect(options.at(-2)).toBe("event_broadcast")
-    expect(options.at(-3)).toBe("hours_logged")
-    expect(options.at(-4)).toBe("cleanup_slot")
-    expect(options.at(-5)).toBe("post_mention")
+    expect(options.at(-1)).toBe("org_invite")
+    expect(options.at(-2)).toBe("event_team_invite")
+    expect(options.at(-3)).toBe("event_broadcast")
+    expect(options.at(-4)).toBe("hours_logged")
+    expect(options.at(-5)).toBe("cleanup_slot")
+    expect(options.at(-6)).toBe("post_mention")
   })
 
   it("keeps every pre-existing value and its position", () => {
     const options = NotificationTypeSchema.options
-    expect(options.slice(0, -4)).toEqual([
+    expect(options.slice(0, -5)).toEqual([
       "report_update",
       "cleanup_chat",
       "cleanup_reminder",

@@ -178,7 +178,6 @@ export type MediaStatus = z.infer<typeof MediaStatusSchema>
 
 export const MediaPurposeSchema = z.enum([
   "report",
-  "verification",
   "post",
   "event_cover",
   "event_gallery",
@@ -409,6 +408,9 @@ export const DonationStatusSchema = z.enum([
   "partially_refunded",
 ])
 export type DonationStatus = z.infer<typeof DonationStatusSchema>
+
+export const PayoutStatusSchema = z.enum(["pending", "in_transit", "paid", "failed", "canceled"])
+export type PayoutStatus = z.infer<typeof PayoutStatusSchema>
 
 export const DonationDisputeStateSchema = z.enum(["none", "open", "won", "lost", "warning"])
 export type DonationDisputeState = z.infer<typeof DonationDisputeStateSchema>

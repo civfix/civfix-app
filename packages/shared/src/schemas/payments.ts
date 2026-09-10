@@ -10,6 +10,7 @@ import {
   ISODateSchema,
   OrgPaymentsStateSchema,
   PaginationQuerySchema,
+  PayoutStatusSchema,
   pageResponse,
 } from "./common.js"
 import {
@@ -165,6 +166,77 @@ export type GetOrgPaymentsStatusRequest = z.infer<typeof GetOrgPaymentsStatusReq
 
 export const GetOrgPaymentsStatusResponseSchema = OrgPaymentsStatusDTOSchema
 export type GetOrgPaymentsStatusResponse = z.infer<typeof GetOrgPaymentsStatusResponseSchema>
+
+/**
+ * One payout from the org's connected account to its own bank (0.43.0, DECISIONS §34). civfix never
+ * holds the money (§26 stands): the payout is executed ON the connected account, and this row is an
+ * audit mirror of the Stripe object so the app can show history without a Stripe round trip.
+ */
+const PayoutDTOObjectSchema = z.object({
+  id: IdSchema,
+  stripePayoutId: z.string(),
+  amount: MoneyDTOSchema,
+  status: PayoutStatusSchema,
+  arrivalDate: ISODateSchema.nullable().optional(),
+  createdAt: ISODateSchema,
+  failureMessage: z.string().nullable().optional(),
+})
+export type PayoutDTO = z.infer<typeof PayoutDTOObjectSchema>
+export const PayoutDTOSchema: z.ZodType<PayoutDTO, z.ZodTypeDef, unknown> = PayoutDTOObjectSchema
+
+/**
+ * The connected account's balance and payout schedule. `available` is the only amount a manual
+ * payout can move; a Standard account on an automatic schedule usually holds ~0 there, which is why
+ * the schedule travels with the balance instead of the client guessing why the button is disabled.
+ */
+const OrgBalanceDTOObjectSchema = z.object({
+  available: MoneyDTOSchema,
+  pending: MoneyDTOSchema,
+  payoutsEnabled: z.boolean().default(false),
+  payoutSchedule: z
+    .object({
+      interval: z.enum(["daily", "weekly", "monthly", "manual"]),
+      delayDays: z.number().int().nonnegative().optional(),
+    })
+    .nullable(),
+  lastSyncedAt: ISODateSchema,
+})
+export type OrgBalanceDTO = z.infer<typeof OrgBalanceDTOObjectSchema>
+export const OrgBalanceDTOSchema: z.ZodType<OrgBalanceDTO, z.ZodTypeDef, unknown> =
+  OrgBalanceDTOObjectSchema
+
+export const GetOrgBalanceRequestSchema = z.object({ id: IdSchema }).strict()
+export type GetOrgBalanceRequest = z.infer<typeof GetOrgBalanceRequestSchema>
+
+export const GetOrgBalanceResponseSchema = OrgBalanceDTOSchema
+export type GetOrgBalanceResponse = z.infer<typeof GetOrgBalanceResponseSchema>
+
+/**
+ * `amountMinor` absent means "pay out the whole available balance". `idempotencyKey` is required, not
+ * optional: a retried payout is real money moving twice.
+ */
+export const CreateOrgPayoutRequestSchema = z
+  .object({
+    id: IdSchema,
+    amountMinor: z.number().int().positive().optional(),
+    currency: z.literal("USD").default("USD"),
+    idempotencyKey: z.string().uuid(),
+  })
+  .strict()
+export type CreateOrgPayoutRequest = z.infer<typeof CreateOrgPayoutRequestSchema>
+
+const CreateOrgPayoutResponseObjectSchema = z.object({ payout: PayoutDTOSchema })
+export type CreateOrgPayoutResponse = z.infer<typeof CreateOrgPayoutResponseObjectSchema>
+export const CreateOrgPayoutResponseSchema: z.ZodType<CreateOrgPayoutResponse, z.ZodTypeDef, unknown> =
+  CreateOrgPayoutResponseObjectSchema
+
+export const ListOrgPayoutsRequestSchema = PaginationQuerySchema.extend({ id: IdSchema }).strict()
+export type ListOrgPayoutsRequest = z.infer<typeof ListOrgPayoutsRequestSchema>
+
+const ListOrgPayoutsResponseObjectSchema = pageResponse(PayoutDTOSchema)
+export type ListOrgPayoutsResponse = z.infer<typeof ListOrgPayoutsResponseObjectSchema>
+export const ListOrgPayoutsResponseSchema: z.ZodType<ListOrgPayoutsResponse, z.ZodTypeDef, unknown> =
+  ListOrgPayoutsResponseObjectSchema
 
 const OrgDonationSettingsDTOObjectSchema = z.object({
   organizationId: IdSchema,

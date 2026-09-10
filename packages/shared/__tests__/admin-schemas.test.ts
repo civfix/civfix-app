@@ -62,6 +62,7 @@ import {
   AdminUpdateOrgRequestSchema,
 } from "../src/schemas/admin/orgs.js"
 import {
+  AdminUserDTOSchema,
   AdminUserListItemDTOSchema,
   SetUserStatusRequestSchema,
   UserMessagesResponseSchema,
@@ -679,6 +680,26 @@ describe("users schemas", () => {
     flagged: false,
     flagReason: null,
   }
+
+  it("lists a user's org memberships and no longer carries a verification status", () => {
+    const detail = { ...listItem, role: "citizen", messages: 3 }
+    expect(AdminUserDTOSchema.parse(detail).organizations).toBeUndefined()
+    const withOrgs = AdminUserDTOSchema.parse({
+      ...detail,
+      organizations: [{ id: UUID, slug: "reach-out-la", name: "Reach Out LA", role: "admin" }],
+    })
+    expect(withOrgs.organizations?.[0]?.role).toBe("admin")
+    expect(
+      AdminUserDTOSchema.safeParse({ ...detail, verificationStatus: "verified" }).success,
+    ).toBe(false)
+    expect(AdminUserDTOSchema.safeParse({ ...detail, reportVerified: true }).success).toBe(true)
+    expect(
+      AdminUserDTOSchema.safeParse({
+        ...detail,
+        organizations: [{ id: UUID, slug: "reach-out-la", name: "Reach Out LA", role: "boss" }],
+      }).success,
+    ).toBe(false)
+  })
 
   it("round-trips a user list item and a paginated sub-activity list", () => {
     expect(AdminUserListItemDTOSchema.safeParse(listItem).success).toBe(true)

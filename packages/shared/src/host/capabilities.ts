@@ -61,6 +61,7 @@ const ORG_OWNER_CAPABILITIES: readonly HostCapability[] = [
 
 const ORG_ADMIN_CAPABILITIES: readonly HostCapability[] = [
   ...COHOST_CAPABILITIES.filter((cap) => cap !== "export"),
+  "manage_team",
   "view_donations",
 ]
 

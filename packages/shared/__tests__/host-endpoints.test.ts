@@ -24,10 +24,10 @@ const CSRF_FREE_MUTATIONS = new Set([
 ])
 
 describe("host platform endpoint registry", () => {
-  it("adds 126 endpoints, of which 30 are admin", () => {
-    expect(NEW_NAMES).toHaveLength(126)
-    expect(Object.keys(hostEndpoints)).toHaveLength(80)
-    expect(Object.keys(paymentsEndpoints)).toHaveLength(16)
+  it("adds 133 endpoints, of which 30 are admin", () => {
+    expect(NEW_NAMES).toHaveLength(133)
+    expect(Object.keys(hostEndpoints)).toHaveLength(84)
+    expect(Object.keys(paymentsEndpoints)).toHaveLength(19)
     expect(Object.keys(hostAdminEndpoints)).toHaveLength(30)
     for (const name of Object.keys(hostAdminEndpoints)) {
       expect(endpoints[name as keyof typeof endpoints].path.startsWith("/admin"), name).toBe(true)

@@ -126,6 +126,10 @@ export const UserDTOSchema = z.object({
   // responses predate this column, so tolerate a missing/unknown value by defaulting to "en": `.catch`
   // coerces an out-of-domain value, `.default` fills an absent one. Either way a built consumer parses.
   locale: LocaleEnum.catch("en").default("en"),
+  // 0.43.0: which organization membership is published as the profile affiliation badge (DECISIONS
+  // §34). null = auto (the earliest membership). Written via PUT /me/settings. Optional so older
+  // servers/clients parse.
+  primaryOrganizationId: IdSchema.nullable().optional(),
   role: RoleSchema,
   createdAt: ISODateSchema,
 })

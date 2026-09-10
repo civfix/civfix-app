@@ -1,5 +1,59 @@
 # @civfix/shared
 
+## 0.43.0
+
+### Minor Changes
+
+- Organization affiliation, the event dashboard contract and org payouts; the "verified community
+  organizer" system is retired. Registry 337 -> 343 (of which 107 are admin, down from 108):
+  `myVerification` and `setUserVerified` REMOVED, `listOrganizationEvents`, `duplicateCleanup`,
+  `listMyOrgInvites`, `acceptMyOrgInvite`, `declineMyOrgInvite`, `getOrgBalance`, `createOrgPayout`
+  and `listOrgPayouts` ADDED. See DECISIONS §34.
+
+  BREAKING within 0.x (deliberate, §34): `schemas/verification.ts` is deleted
+  (`VerificationStatusSchema`, `MyVerificationDTOSchema`, `GetMyVerificationResponseSchema`), along
+  with `SetUserVerifiedRequest`, `PersonDTO.verified`, `LeaderboardEntryDTO.verified`,
+  `AdminUserDTO.verificationStatus` and the `verification` value of `MediaPurpose`.
+  `VolunteerHoursCreditor.verified` becomes `organization?: OrganizationRefDTO | null`. ORG
+  verification (`OrgVerificationStatus`/`Kind`, `OrganizationRefDTO.verified`, the admin queue, the
+  donations gate) and `reportVerified` are UNCHANGED.
+
+  Affiliation: `PersonDTO.organization?: OrganizationRefDTO | null` (the primary affiliation badge),
+  `UserDTO.primaryOrganizationId?: string | null`, `UpdateSettingsRequest.primaryOrganizationId`.
+  Posting as an org: `PostComposeInput.organizationId?` (refused on `kind:"repost"` by a
+  `superRefine`), `PostDTO.organization?` and `PostRefDTO.organization?`.
+
+  Enums (mirrored byte-identical by the backend value arrays): `OrganizationInviteStatusSchema`
+  appends `declined` LAST; `NotificationTypeSchema` appends `org_invite` LAST; new
+  `PayoutStatusSchema = pending | in_transit | paid | failed | canceled`. `MediaPurposeSchema` drops
+  `verification` (the one non-append change, per §34).
+
+  Capabilities (`host/capabilities.ts`): `ORG_ADMIN` gains `manage_team`, so org admins can run the
+  collaborator list from the app. `HostCapability` itself is unchanged (still 18 values).
+
+  Org invite inbox (`schemas/host/organizations.ts`), mirroring §33's event-invite trio:
+  `PendingOrganizationInviteDTO` (`{ id, organization, role, invitedBy, createdAt, expiresAt }`, no
+  email field), `listMyOrgInvites` (`GET /me/org-invites`), `acceptMyOrgInvite`
+  (`POST /me/org-invites/:inviteId/accept`, token-free, answers `AcceptOrganizationInviteResponse`),
+  `declineMyOrgInvite` (`POST /me/org-invites/:inviteId/decline`). The emailed
+  `acceptOrganizationInvite` token path is unchanged.
+
+  Public org events: `listOrganizationEvents` (`GET /orgs/by-slug/:slug/events`, auth optional,
+  `when=upcoming|past`, keyset-paged, limit <= 50) -> `pageResponse(CleanupDTO)`, public visibility
+  only, §32 suspension rule.
+
+  Duplicate event: `duplicateCleanup` (`POST /cleanups/:id/duplicate`) with
+  `DuplicateCleanupRequestSchema` (`{ id, scheduledAt, endsAt?, includeTicketTypes = true,
+  includeQuestions = true, includePage = false }`), answering the same shape as `createCleanup`.
+
+  Payments (`schemas/payments.ts`, §26 amended by §34 - civfix still never holds funds): `PayoutDTO`,
+  `OrgBalanceDTO`, `getOrgBalance`, `createOrgPayout` (required uuid `idempotencyKey`) and
+  `listOrgPayouts`. The `Payments` seam gains `retrieveBalance`, `createPayout` and `listPayouts`,
+  all executed on the org's connected account, with matching `FakePayments` implementations.
+
+  Admin: `AdminUserDTO.organizations?` (`{ id, slug, name, role }[]`) replaces the removed
+  `verificationStatus`.
+
 ## 0.42.0
 
 ### Minor Changes

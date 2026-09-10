@@ -7,17 +7,24 @@ import {
   EligibilitySourceSchema,
   EligibilityVerdictSchema,
   OrgPaymentsStateSchema,
+  PayoutStatusSchema,
 } from "../src/schemas/common.js"
 import { FeeBreakdownDTOSchema, LegalDocumentVersionDTOSchema } from "../src/schemas/entities.js"
 import {
   AcceptOrgDonationAgreementRequestSchema,
   CreateDonationCheckoutRequestSchema,
+  CreateOrgPayoutRequestSchema,
   DonationPageDTOSchema,
   GetDonationStatusRequestSchema,
+  ListOrgPayoutsRequestSchema,
+  ListOrgPayoutsResponseSchema,
+  OrgBalanceDTOSchema,
   OrgPaymentsStatusDTOSchema,
+  PayoutDTOSchema,
 } from "../src/schemas/payments.js"
 import { GetLegalVersionsResponseSchema } from "../src/schemas/legal.js"
 import { SetOrgDonationsEnabledRequestSchema } from "../src/schemas/admin/payments.js"
+import { endpoints } from "../src/client/endpoints.js"
 
 const UUID = "123e4567-e89b-12d3-a456-426614174000"
 const ISO = "2026-09-01T10:00:00.000Z"
@@ -325,5 +332,106 @@ describe("legal versions", () => {
     expect(
       GetLegalVersionsResponseSchema.parse({ documents: [doc], generatedAt: ISO }).documents,
     ).toHaveLength(1)
+  })
+})
+
+describe("org balance and payouts (0.43.0)", () => {
+  const money = { amountMinor: 12500, currency: "USD" }
+
+  it("keeps PayoutStatus in Stripe's own order", () => {
+    expect([...PayoutStatusSchema.options]).toEqual([
+      "pending",
+      "in_transit",
+      "paid",
+      "failed",
+      "canceled",
+    ])
+  })
+
+  it("round-trips a payout row and tolerates an unscheduled arrival", () => {
+    const payout = {
+      id: UUID,
+      stripePayoutId: "po_1",
+      amount: money,
+      status: "pending",
+      createdAt: ISO,
+    }
+    const parsed = PayoutDTOSchema.parse(payout)
+    expect(parsed.arrivalDate).toBeUndefined()
+    expect(parsed.failureMessage).toBeUndefined()
+    expect(
+      PayoutDTOSchema.safeParse({
+        ...payout,
+        status: "failed",
+        arrivalDate: null,
+        failureMessage: "Account closed",
+      }).success,
+    ).toBe(true)
+    expect(PayoutDTOSchema.safeParse({ ...payout, status: "settled" }).success).toBe(false)
+  })
+
+  it("carries the schedule with the balance so the client can explain a disabled button", () => {
+    const balance = {
+      available: money,
+      pending: { amountMinor: 0, currency: "USD" },
+      payoutsEnabled: true,
+      payoutSchedule: { interval: "daily", delayDays: 2 },
+      lastSyncedAt: ISO,
+    }
+    expect(OrgBalanceDTOSchema.parse(balance).payoutSchedule?.interval).toBe("daily")
+    expect(OrgBalanceDTOSchema.safeParse({ ...balance, payoutSchedule: null }).success).toBe(true)
+    expect(
+      OrgBalanceDTOSchema.parse({ ...balance, payoutsEnabled: undefined }).payoutsEnabled,
+    ).toBe(false)
+    expect(
+      OrgBalanceDTOSchema.safeParse({ ...balance, payoutSchedule: { interval: "hourly" } }).success,
+    ).toBe(false)
+    expect(OrgBalanceDTOSchema.safeParse({ ...balance, lastSyncedAt: undefined }).success).toBe(
+      false,
+    )
+  })
+
+  it("requires an idempotency key and treats an absent amount as the whole balance", () => {
+    expect(
+      CreateOrgPayoutRequestSchema.parse({ id: UUID, idempotencyKey: UUID }),
+    ).toEqual({ id: UUID, currency: "USD", idempotencyKey: UUID })
+    expect(CreateOrgPayoutRequestSchema.safeParse({ id: UUID }).success).toBe(false)
+    expect(
+      CreateOrgPayoutRequestSchema.safeParse({ id: UUID, idempotencyKey: "not-a-uuid" }).success,
+    ).toBe(false)
+    expect(
+      CreateOrgPayoutRequestSchema.safeParse({ id: UUID, idempotencyKey: UUID, amountMinor: 0 })
+        .success,
+    ).toBe(false)
+    expect(
+      CreateOrgPayoutRequestSchema.safeParse({ id: UUID, idempotencyKey: UUID, currency: "EUR" })
+        .success,
+    ).toBe(false)
+    expect(
+      CreateOrgPayoutRequestSchema.safeParse({ id: UUID, idempotencyKey: UUID, extra: 1 }).success,
+    ).toBe(false)
+  })
+
+  it("pages payouts like every other org list", () => {
+    expect(ListOrgPayoutsRequestSchema.parse({ id: UUID, limit: "10" })).toEqual({
+      id: UUID,
+      limit: 10,
+    })
+    expect(ListOrgPayoutsRequestSchema.safeParse({ id: UUID, limit: 51 }).success).toBe(false)
+    expect(ListOrgPayoutsResponseSchema.safeParse({ items: [], nextCursor: null }).success).toBe(
+      true,
+    )
+  })
+
+  it("registers the three payout endpoints under /orgs/:id/payments", () => {
+    expect(endpoints.getOrgBalance.path).toBe("/orgs/:id/payments/balance")
+    expect(endpoints.getOrgBalance.method).toBe("GET")
+    expect(endpoints.getOrgBalance.csrf).toBe(false)
+    expect(endpoints.createOrgPayout.path).toBe("/orgs/:id/payments/payouts")
+    expect(endpoints.createOrgPayout.method).toBe("POST")
+    expect(endpoints.createOrgPayout.csrf).toBe(true)
+    expect(endpoints.listOrgPayouts.path).toBe("/orgs/:id/payments/payouts")
+    expect(endpoints.listOrgPayouts.method).toBe("GET")
+    expect(endpoints.listOrgPayouts.auth).toBe("required")
   })
 })
