@@ -45,5 +45,17 @@
     "title": "Miembros",
     "joined": "Se unió {{when}}",
     "read_only": "Solo la persona propietaria puede cambiar quién pertenece a esta organización."
+  },
+  "events": {
+    "upcoming": "Próximos eventos",
+    "past": "Eventos pasados",
+    "empty_upcoming": "Aún no hay próximos eventos.",
+    "empty_past": "Aún no hay eventos pasados.",
+    "loading": "Cargando eventos…",
+    "error": "No se pudieron cargar los eventos.",
+    "show_more": "Ver más",
+    "loading_more": "Cargando…",
+    "show_more_upcoming_a11y": "Ver más próximos eventos",
+    "show_more_past_a11y": "Ver más eventos pasados"
   }
 }

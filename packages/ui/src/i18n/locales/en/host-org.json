@@ -45,5 +45,17 @@
     "title": "Members",
     "joined": "Joined {{when}}",
     "read_only": "Only the owner can change who belongs to this organization."
+  },
+  "events": {
+    "upcoming": "Upcoming events",
+    "past": "Past events",
+    "empty_upcoming": "No upcoming events yet.",
+    "empty_past": "No past events yet.",
+    "loading": "Loading events…",
+    "error": "Couldn't load events.",
+    "show_more": "Show more",
+    "loading_more": "Loading…",
+    "show_more_upcoming_a11y": "Show more upcoming events",
+    "show_more_past_a11y": "Show more past events"
   }
 }

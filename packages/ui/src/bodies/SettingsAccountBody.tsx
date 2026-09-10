@@ -33,6 +33,7 @@ import { avatarErrorMessage, uploadAvatar } from "./settings/avatarUpload"
 import { BioEditor } from "./settings/BioEditor"
 import { ChangeUsernameEditor } from "./settings/ChangeUsernameEditor"
 import { DisplayNameEditor } from "./settings/DisplayNameEditor"
+import { PrimaryOrganizationPicker } from "./settings/PrimaryOrganizationPicker"
 import { SocialLinksEditor } from "./settings/SocialLinksEditor"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
@@ -245,6 +246,8 @@ export function SettingsAccountBody() {
           onSave={onSaveSocialLinks}
         />
       </SettingsSection>
+
+      <PrimaryOrganizationPicker style={styles.sectionGap} />
 
       <SettingsSection label={t("section.data")} style={styles.sectionGap}>
         <SettingsRow

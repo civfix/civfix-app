@@ -99,10 +99,13 @@ export type PrivacySettingsVars =
   | {
       allowDirectMessages?: boolean
       showVolunteerHours?: boolean
+      primaryOrganizationId?: string | null
     }
 
 interface PrivacySettingsCtx {
-  previous?: Partial<Pick<UserDTO, "allowDirectMessages" | "showVolunteerHours">>
+  previous?: Partial<
+    Pick<UserDTO, "allowDirectMessages" | "showVolunteerHours" | "primaryOrganizationId">
+  >
 }
 
 function privacySettingsPatch(next: PrivacySettingsVars): UpdateSettingsRequest {
@@ -131,6 +134,9 @@ export function useUpdatePrivacySettings() {
       if (patch.showVolunteerHours !== undefined) {
         previous.showVolunteerHours = current.showVolunteerHours
       }
+      if (patch.primaryOrganizationId !== undefined) {
+        previous.primaryOrganizationId = current.primaryOrganizationId ?? null
+      }
       onUserUpdated({ ...current, ...patch })
       return { previous }
     },
@@ -140,7 +146,7 @@ export function useUpdatePrivacySettings() {
       if (!previous || !current || !onUserUpdated) return
       onUserUpdated({ ...current, ...previous })
     },
-    onSuccess: (res) => {
+    onSuccess: (res, next) => {
       onUserUpdated?.(res.user)
       qc.setQueryData<GetProfileResponse>(queryKeys.myProfile, (prev) =>
         prev
@@ -150,6 +156,9 @@ export function useUpdatePrivacySettings() {
       void qc.invalidateQueries({ queryKey: queryKeys.myProfile })
       void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.id) })
       if (res.user.handle) void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.handle) })
+      if (privacySettingsPatch(next).primaryOrganizationId !== undefined) {
+        void qc.invalidateQueries({ queryKey: ["posts"] })
+      }
       void qc.invalidateQueries({ queryKey: queryKeys.session })
     },
   })
