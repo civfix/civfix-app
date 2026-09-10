@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { entryFromPath, pathForEntry, parentViewForEntry, titleForEntry } from "../routes"
+import { entryFromPath, isRootLink, pathForEntry, parentViewForEntry, titleForEntry } from "../routes"
 import { ALL_DETAIL_KINDS, type DetailEntry } from "../types"
 import { FLOW_KINDS } from "../flowKinds"
 import { DETAIL_BODY } from "../../shell/bodyRoutes"
@@ -9,6 +9,7 @@ const HOST_KINDS = [
   "host-mode",
   "host-checkin",
   "host-broadcast-quick",
+  "host-team",
   "my-ticket",
   "org",
   "my-donations",
@@ -35,6 +36,7 @@ describe("URL round trip", () => {
     ["/cleanups/e1/host", { kind: "host-mode", id: "e1" }],
     ["/cleanups/e1/checkin", { kind: "host-checkin", id: "e1" }],
     ["/cleanups/e1/broadcast", { kind: "host-broadcast-quick", id: "e1" }],
+    ["/cleanups/e1/team", { kind: "host-team", id: "e1" }],
     ["/cleanups/e1/ticket", { kind: "my-ticket", id: "e1" }],
     ["/cleanups/e1/ticket/seat-9", { kind: "my-ticket", id: "e1", seatId: "seat-9" }],
     ["/orgs/river-keepers", { kind: "org", slug: "river-keepers" }],
@@ -65,6 +67,7 @@ describe("URL round trip", () => {
     expect(entryFromPath("/me")).toBeNull()
     expect(entryFromPath("/me/anything-else")).toBeNull()
     expect(pathForEntry({ kind: "host-mode" })).toBe("/cleanups")
+    expect(pathForEntry({ kind: "host-team" })).toBe("/cleanups")
     expect(pathForEntry({ kind: "org" })).toBe("/")
   })
 
@@ -75,15 +78,58 @@ describe("URL round trip", () => {
 
 describe("parent view + flow protection", () => {
   it("puts every event-scoped host surface under the events view", () => {
-    for (const kind of ["host-mode", "host-checkin", "host-broadcast-quick", "my-ticket", "org"] as const) {
+    for (const kind of [
+      "host-mode",
+      "host-checkin",
+      "host-broadcast-quick",
+      "host-team",
+      "my-ticket",
+      "org",
+    ] as const) {
       expect(parentViewForEntry({ kind } as DetailEntry), kind).toBe("events")
     }
   })
 
   it("protects the quick broadcast draft - and ONLY it - among the new kinds", () => {
     expect(FLOW_KINDS.has("host-broadcast-quick")).toBe(true)
-    for (const kind of ["host-mode", "host-checkin", "my-ticket", "org", "my-donations"] as const) {
+    for (const kind of [
+      "host-mode",
+      "host-checkin",
+      "host-team",
+      "my-ticket",
+      "org",
+      "my-donations",
+    ] as const) {
       expect(FLOW_KINDS.has(kind), kind).toBe(false)
+    }
+  })
+})
+
+describe("the home-feed link a team invite notification carries", () => {
+  it("has no addressable detail entry, which is why the tap needs its own verb", () => {
+    expect(entryFromPath("/")).toBeNull()
+  })
+
+  it("recognises the bare root link, which is the only shape the server emits", () => {
+    expect(isRootLink("/")).toBe(true)
+  })
+
+  it("recognises nothing else as the root, so no other link silently opens home", () => {
+    for (const path of [
+      "",
+      "//",
+      "//evil.example",
+      "/?from=push",
+      "/?next=%2Fsettings",
+      "/#top",
+      "/?from=push#top",
+      " /",
+      "/cleanups/e1",
+      "/notifications",
+      null,
+      undefined,
+    ]) {
+      expect(isRootLink(path), String(path)).toBe(false)
     }
   })
 })

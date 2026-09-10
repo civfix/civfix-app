@@ -94,7 +94,8 @@
     "organizer": "주최자",
     "cohost": "공동 호스트",
     "member": "참가자",
-    "staff": "스태프"
+    "staff": "스태프",
+    "coordinator": "코디네이터"
   },
   "organizationMemberRole": {
     "owner": "소유자",

@@ -14,7 +14,9 @@
     "quick_message": "Kurznachricht",
     "quick_message_a11y": "Eine Kurznachricht an die Teilnehmenden senden",
     "walkup": "Vor Ort anmelden",
-    "walkup_a11y": "Jemanden an der Tür anmelden"
+    "walkup_a11y": "Jemanden an der Tür anmelden",
+    "team": "Team",
+    "team_a11y": "Das Event-Team verwalten"
   },
   "roster": {
     "heading": "Teilnehmende"

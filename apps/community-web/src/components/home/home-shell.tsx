@@ -7,6 +7,7 @@ import { useT } from "@civfix/ui/i18n"
 
 import { AuthModal } from "@/components/auth/auth-modal"
 import { useWebNavAdapter } from "@/components/home/use-web-nav-adapter"
+import { useTeamInviteAccept } from "@/components/home/use-team-invite-accept"
 
 /**
  * The shared @civfix/ui Map (via the web data wrapper HomeMap). maplibre-gl touches `window` and pulls
@@ -91,6 +92,8 @@ const AppDownloadBanner = dynamic(
  * HomeShell only owns the AuthModal mount (open state lives in the UI store). That wiring is preserved.
  */
 export function HomeShell() {
+  useTeamInviteAccept()
+
   // URL <-> store bridge (seed on mount, pushState on nav, re-seed on popstate). Owns window.history.
   useWebNavAdapter()
 

@@ -294,7 +294,7 @@ const useStyles = makeThemedStyles((t) => ({
     top: RAIL_DIVIDER_TOP,
     width: TAB_DIVIDER_WIDTH,
     height: RAIL_DIVIDER_H,
-    backgroundColor: t.colors.textMuted,
+    backgroundColor: t.colors.borderStrong,
   },
   lozenge: {
     position: "absolute",

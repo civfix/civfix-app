@@ -222,6 +222,10 @@ test("an event's host surfaces each keep their own in-app route", () => {
     resolveIncomingPath("https://civfix.org/cleanups/c1/checkin"),
     internal("/cleanups/c1/checkin"),
   )
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/cleanups/c1/team"),
+    internal("/cleanups/c1/team"),
+  )
   assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/edit"), internal("/cleanups/c1/edit"))
   assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/nope"), internal("/cleanups/c1"))
 })
@@ -250,4 +254,48 @@ test("an organization page and the donation history are addressable", () => {
   assert.deepEqual(resolveIncomingPath("https://civfix.org/me/donations"), internal("/me/donations"))
   assert.deepEqual(resolveIncomingPath("https://civfix.org/me"), home)
   assert.deepEqual(resolveIncomingPath("https://civfix.org/me/anything-else"), home)
+})
+
+test("an emailed team-invite link opens the event and never carries the token into a route", () => {
+  const token = "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
+  assert.deepEqual(
+    resolveIncomingPath(`https://civfix.org/cleanups/c1#teamInvite=${token}`),
+    internal("/cleanups/c1"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath(`https://civfix.org/cleanups/c1?teamInvite=${token}`),
+    internal("/cleanups/c1"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath(`https://civfix.org/cleanups/c1/?from=email&teamInvite=${token}`),
+    internal("/cleanups/c1?from=email"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath(`https://civfix.org/cleanups/c1?teamInvite=${token}#teamInvite=${token}`),
+    internal("/cleanups/c1"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath(`civfix://cleanups/c1?teamInvite=${token}`),
+    internal("/cleanups/c1"),
+  )
+})
+
+test("an unrecognized app-scheme root never carries an invite token into the route", () => {
+  const token = "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
+  assert.deepEqual(
+    resolveIncomingPath(`org.civfix.community://oauth?code=abc&teamInvite=${token}`),
+    internal("org.civfix.community://oauth?code=abc"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath(`civfix://oauth?teamInvite=${token}`),
+    internal("civfix://oauth"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath(`civfix://oauth?teamInvite=${token}#top`),
+    internal("civfix://oauth#top"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath("org.civfix.community://oauth?code=abc"),
+    internal("org.civfix.community://oauth?code=abc"),
+  )
 })

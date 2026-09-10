@@ -14,7 +14,9 @@
     "quick_message": "빠른 메시지",
     "quick_message_a11y": "참가자에게 빠른 메시지 보내기",
     "walkup": "현장 등록 추가",
-    "walkup_a11y": "현장에서 참가자 등록하기"
+    "walkup_a11y": "현장에서 참가자 등록하기",
+    "team": "팀",
+    "team_a11y": "행사 팀 관리"
   },
   "roster": {
     "heading": "참가자"

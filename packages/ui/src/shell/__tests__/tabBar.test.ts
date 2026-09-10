@@ -33,6 +33,7 @@ import {
   SHEET_REF_FULL,
   seedPreviousView,
   selectedPillRect,
+  tabDividerRect,
   tabIconMorph,
   tabPillTransition,
   travelFactor,
@@ -844,5 +845,31 @@ describe("hostReserved is a WEB-only option the native seam never forwards", () 
     const native = read("../useKeyboardReserve.native.ts")
     expect(native).not.toMatch(/hostReserved/)
     expect(native).not.toMatch(/WebOnlyKeyboardReserveOptions = \{\}/)
+
+describe("tab divider is a soft rule, not an icon-weight bar", () => {
+  const dividerBlocks = ["TabBar.shared.tsx", "TabBar.native.tsx", "Rail.tsx"].map((file) => {
+    const src = readFileSync(new URL(`../${file}`, import.meta.url), "utf8")
+    const start = src.indexOf("  divider: {")
+    if (start < 0) throw new Error(`no divider style block in ${file}`)
+    const end = src.indexOf("\n  },", start)
+    if (end < 0) throw new Error(`unterminated divider style block in ${file}`)
+    return { file, block: src.slice(start, end) }
+  })
+
+  it("paints the rule with the hairline-rule token on every seam that draws it", () => {
+    for (const { file, block } of dividerBlocks) {
+      expect(block, file).toMatch(/backgroundColor: t\.colors\.borderStrong/)
+    }
+  })
+
+  it("never reuses the icon token, so the rule stays subtler than the glyphs it separates", () => {
+    for (const { file, block } of dividerBlocks) {
+      expect(block, file).not.toMatch(/t\.colors\.textMuted/)
+    }
+  })
+
+  it("spans 60% of the bar height, rounded, centered, and sits on the report seam", () => {
+    expect(tabDividerRect(80, 64)).toEqual({ left: 239.25, top: 13, height: 38 })
+    expect(tabDividerRect(80, 60)).toEqual({ left: 239.25, top: 12, height: 36 })
   })
 })

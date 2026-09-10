@@ -40,6 +40,7 @@ import {
   CircleOff,
   CirclePause,
   CircleSlash,
+  ClipboardList,
   Clock,
   Eye,
   EyeOff,
@@ -165,6 +166,7 @@ const eventStatus = {
 const teamRole = {
   organizer: { hue: "lilac", icon: ShieldCheck, labelKey: "enums:cleanupMemberRole.organizer" },
   cohost: { hue: "sky", icon: UserCog, labelKey: "enums:cleanupMemberRole.cohost" },
+  coordinator: { hue: "sun", icon: ClipboardList, labelKey: "enums:cleanupMemberRole.coordinator" },
   staff: { hue: "moss", icon: BadgeCheck, labelKey: "enums:cleanupMemberRole.staff" },
   member: { hue: "neutral", icon: Users, labelKey: "enums:cleanupMemberRole.member" },
 } satisfies Record<CleanupMemberRole, ChipKindEntry>

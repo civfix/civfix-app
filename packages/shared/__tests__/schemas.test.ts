@@ -503,12 +503,13 @@ describe("new standalone enums", () => {
     expect(OAuthProviderSchema.safeParse("facebook").success).toBe(false)
   })
 
-  it("CleanupMemberRoleSchema = organizer|cohost|member|staff (order mirrored by backend enums.test.ts)", () => {
+  it("CleanupMemberRoleSchema = organizer|cohost|member|staff|coordinator (order mirrored by backend enums.test.ts)", () => {
     expect([...CleanupMemberRoleSchema.options]).toEqual([
       "organizer",
       "cohost",
       "member",
       "staff",
+      "coordinator",
     ])
     expect(CleanupMemberRoleSchema.safeParse("attendee").success).toBe(false)
   })

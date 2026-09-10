@@ -152,3 +152,16 @@ test("every host surface of an event stays inside the cleanups prefix", () => {
   assert.equal(isInternalLink("/cleanups/c1/checkin"), true)
   assert.equal(isInternalLink("/cleanups/c1/ticket/s1"), true)
 })
+
+test("the team-invite notification's home link is an internal push target", () => {
+  assert.equal(isInternalLink("/"), true)
+  assert.equal(toInternalHref("/"), "/")
+})
+
+test("only the bare root opens home - no other unlisted route rides in on it", () => {
+  assert.equal(isInternalLink("//evil.example"), false)
+  assert.equal(isInternalLink("/?next=/manage"), false)
+  assert.equal(isInternalLink("/#top"), false)
+  assert.equal(isInternalLink("/manage"), false)
+  assert.equal(ALLOWED_LINK_PREFIXES.includes("/" as never), false)
+})

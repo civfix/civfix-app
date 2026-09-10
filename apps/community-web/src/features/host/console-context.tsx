@@ -8,7 +8,7 @@ import type {
   OrganizationDTO,
   OrganizationMemberRole,
 } from "@civfix/shared"
-import { hasHostCapability } from "@civfix/ui/data"
+import { cleanupHostStanding, hasHostCapability, useAuthState } from "@civfix/ui/data"
 
 import {
   hrefForRoute,
@@ -76,14 +76,15 @@ export function ConsoleEventProvider({
   event: CleanupDTO | null
   children: ReactNode
 }) {
-  const value = useMemo<ConsoleEventContext>(
-    () => ({
+  const viewerId = useAuthState().user?.id ?? null
+  const value = useMemo<ConsoleEventContext>(() => {
+    const standing = cleanupHostStanding(event, viewerId)
+    return {
       eventId,
       event,
-      can: (capability: HostCapability) => hasHostCapability(event, capability),
-    }),
-    [eventId, event],
-  )
+      can: (capability: HostCapability) => hasHostCapability(standing, capability),
+    }
+  }, [eventId, event, viewerId])
   return <EventContext.Provider value={value}>{children}</EventContext.Provider>
 }
 

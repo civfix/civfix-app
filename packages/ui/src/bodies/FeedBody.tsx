@@ -9,11 +9,13 @@ import {
 } from "react-native"
 import type { ViewStyle } from "react-native"
 import type { PostDTO } from "@civfix/shared"
+import { useQueryClient } from "@tanstack/react-query"
 import { POST_SURFACE, makeThemedStyles, useLayoutMode, useTheme, type Theme } from "../theme"
 import { Text } from "../typography"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
 import { useHomeFeed } from "../data/hooks/posts"
+import { invalidateMyEventInvites } from "../data/hooks/host"
 import { useNavStore } from "../nav"
 import { alpha } from "../theme/alpha"
 import { useReducedMotion } from "../theme/useReducedMotion"
@@ -23,6 +25,7 @@ import { HeaderIconButton } from "./HeaderIconButton"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedNotice } from "./FeedNotice"
 import { PostCard } from "./PostCard"
+import { YourEventsSection } from "./feed/YourEventsSection"
 import { POST_CARD_RHYTHM } from "./postCardRhythm"
 import {
   buildFeedHeaderModel,
@@ -189,11 +192,13 @@ export function FeedBody() {
   const requireAuth = useRequireAuth()
   const signIn = useCallback(() => requireAuth(() => undefined), [requireAuth])
   const refetch = feed.refetch
+  const queryClient = useQueryClient()
   const [refreshing, setRefreshing] = useState(false)
   const onRefresh = useCallback(() => {
     setRefreshing(true)
+    invalidateMyEventInvites(queryClient)
     void Promise.resolve(refetch()).finally(() => setRefreshing(false))
-  }, [refetch])
+  }, [queryClient, refetch])
   const fetchNextPage = feed.fetchNextPage
   const hasNextPage = feed.hasNextPage
   const isFetchingNextPage = feed.isFetchingNextPage
@@ -231,6 +236,7 @@ export function FeedBody() {
             <HeaderProfileButton />
           </View>
         </View>
+        <YourEventsSection />
       </Animated.View>
     ),
     [headerStyle, headerModel.title, headerModel.showComposer, composeLabel, openComposer],

@@ -42,12 +42,11 @@
     "body": "People going to this event will show up here."
   },
   "role": {
-    "host": "Host",
-    "cohost": "Co-host"
+    "host": "Host"
   },
   "manage": {
-    "makeCohost": "Make co-host",
-    "removeCohost": "Remove co-host",
+    "make_role": "Make {{role}}",
+    "set_role_a11y": "Change {{name}}'s role on this event",
     "remove": "Remove from event",
     "removeCancel": "Cancel",
     "removeConfirm": "Remove from event"

@@ -1108,3 +1108,78 @@ the per-org pending cap, which is address-independent. A handle is a public iden
 invite seats the account directly and may return the member row. `invited` and `member` on the
 invite response keep their 0.40.0 meaning; `invite` is additive and nullable so an older server's
 payload still parses.
+
+## 33. Event collaborators: a seated team member, and the invite is an inbox item, not just an email (0.42.0)
+
+0.40.0 shipped two invitable event tiers around the immutable `organizer`: `cohost` (everything the
+organizer can do except disband the team, cancel, relink the org or request resources) and `staff`
+(roster + check-in on the day). The gap between them is the whole job of running an event: the
+person who works the roster, answers the questions, watches the numbers, sends the day-of broadcast
+and keeps the chat civil, and who should nonetheless be unable to CHANGE anything or to see who the
+attendees are off-platform. `CleanupMemberRole` therefore appends `coordinator` LAST (after `staff`,
+per §23's rule; the backend `CLEANUP_MEMBER_ROLE_VALUES` mirror must stay byte-identical) and
+`EventTeamRole` becomes `cohost | staff | coordinator` - also append-last, so the invitable tuple
+stays a subset of `CleanupMemberRole` in the same relative order and the backend's
+`EVENT_TEAM_ROLE_VALUES` mirror moves the same way. Presentation order (most to least privileged) is
+a client concern, not a tuple concern.
+
+**A coordinator runs the day and changes nothing.** The row is derived, not typed out:
+`COORDINATOR_CAPABILITIES` is `COHOST_CAPABILITIES` minus `view_guest_contact`, `manage_event`,
+`manage_tickets`, `manage_page` and `export`, which leaves exactly `view_event_private`,
+`view_roster`, `view_answers`, `view_analytics`, `check_in`, `broadcast`, `moderate_chat`. The
+privacy line is the point of the tier and it is drawn in two places at once: a coordinator can see
+that a person is coming and what they answered, and can never see an email or a phone number
+(`view_guest_contact`) and can never take the roster off the platform (`export`). Withholding one
+without the other would be theatre - an export IS the contact sheet. `manage_payments` and
+`view_donations` stay org-only, as for every event role.
+
+**Re-inviting an already-invited user is idempotent, not a 409.** `inviteEventTeamMember` follows
+§32's org-invite rule rather than inventing a second one: a repeat invite to the same identifier
+returns the OPEN pending invite instead of an error, because "this address already has an invite"
+and "this address has no account" are the two answers that turn an invite endpoint into an
+account-existence oracle. The partial unique indexes on `cleanup_team_invites`
+(`cleanup_id, invited_user_id` and `cleanup_id, invited_email`, both `where status = 'pending'`)
+make that the natural implementation and keep the per-event cap
+(`MAX_TEAM_INVITES_PER_EVENT = 50`) address-independent.
+
+**Accept is token-free on `/me/event-invites`; the email link keeps the token path.** An invite
+addressed to an account is already authenticated by the session: ownership is
+`cleanup_team_invites.invited_user_id = the viewer`, so `acceptMyEventInvite`
+(`POST /me/event-invites/:inviteId/accept`) and `declineMyEventInvite` need nothing but the invite
+id, and handing the client a capability token to hand straight back would be a secret in flight for
+no gain. `acceptEventTeamInvite` (`POST /cleanups/:id/team/invites/accept`, `{ id, token }`) is
+UNCHANGED and remains the path for the emailed link, where there may be no session and no
+`invited_user_id` yet; as in §32 the email carries the token in the URL FRAGMENT
+(`/cleanups/<cleanupId>#teamInvite=<token>`) so it never reaches a server log. The web shell takes
+that token at boot and `replaceState`s it out of the address bar before anything can copy, share or
+re-send the URL. The FRAGMENT is the only form the client redeems: the older `?teamInvite=` QUERY
+form was emitted by a backend that only ever ran on staging, so no production mail carries it and no
+grace period is owed. A query-borne token is still scrubbed out of the address bar the same way, but
+it is never read and never sent to the accept endpoint. Mobile has no token path at all: the
+universal link opens the event and the token is dropped rather than carried into a route (a
+deep-link path is not a private place for a capability token either), and an invitee on mobile
+accepts from `/me/event-invites`, which needs no token. `GET /me/event-invites` is a static sibling of `/me/hosted-events`, and like
+`acceptOrganizationInvite`'s response the accept reports the SEATED role - accepting never
+downgrades an existing seat, so a cohost who accepts a `staff` invite is still a cohost - plus the
+`CleanupDTO` itself, so the client can open that event's dashboard from the inbox without a second
+round trip.
+
+**`declined` is a terminal status distinct from `revoked`.** `EventTeamInviteStatus` appends
+`declined` LAST. Collapsing it into `revoked` would lose who acted: `revoked` is the HOST withdrawing
+the offer, `declined` is the INVITEE refusing it, and the two need different copy on the team screen
+and different re-invite ergonomics (declining does not blocklist the person - the row is no longer
+`pending`, so the host may invite again, which is exactly what the partial unique indexes allow).
+Neither is `expired`, which is the clock acting and nobody deciding.
+
+**The invitee-side DTO carries no email, and no host counters.** `PendingEventTeamInviteDTO` is
+`{ id, role, event, invitedBy, createdAt, expiresAt }`. It has no `email` field for the same reason
+§23 gives for `EventRegistrationDTO`: the person reading this row is the invitee, who already knows
+their own address, and the only other thing an email field could carry is somebody else's - so the
+field does not exist rather than existing and being null. `event` is the new `InviteEventRef`
+(`id`, `title`, `startsAt`, `endsAt`, `status`, `coverThumbUrl`, `address`), NOT `HostedEventDTO`:
+the invitee is not yet seated, and `HostedEventDTO`'s `registeredCount` / `checkedInCount` /
+`waitlistCount` all default to `0`, so reusing it would force the backend to choose between leaking
+host numbers to a stranger and sending zeros that are lies. `expiresAt` is required (as on
+`OrganizationInviteDTO`) because an inbox item whose deadline is unknown cannot be triaged, and the
+column is `not null` already. The seat itself is announced by `NotificationType`'s appended
+`event_team_invite`.

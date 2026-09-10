@@ -25,7 +25,7 @@ export const TAB_SPECS = [
 ] as const satisfies readonly TabSpec[]
 
 export const TAB_DIVIDER_INDEX = TAB_SPECS.findIndex((tab) => tab.id === "report")
-export const TAB_DIVIDER_HEIGHT_RATIO = 0.5
+export const TAB_DIVIDER_HEIGHT_RATIO = 0.6
 export const TAB_DIVIDER_WIDTH = 1.5
 
 export const TAB_PILL_LOCK_COUNT = TAB_DIVIDER_INDEX
