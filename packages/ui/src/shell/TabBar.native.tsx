@@ -582,7 +582,7 @@ const useStyles = makeThemedStyles((t) => ({
   divider: {
     position: "absolute",
     width: TAB_DIVIDER_WIDTH,
-    backgroundColor: t.colors.textMuted,
+    backgroundColor: t.colors.borderStrong,
   },
   pill: {
     position: "absolute",

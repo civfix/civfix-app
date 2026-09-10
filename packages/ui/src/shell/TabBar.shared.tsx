@@ -210,7 +210,7 @@ export const useTabBarStyles = makeThemedStyles((t) => ({
   divider: {
     position: "absolute",
     width: TAB_DIVIDER_WIDTH,
-    backgroundColor: t.colors.textMuted,
+    backgroundColor: t.colors.borderStrong,
     pointerEvents: "none",
   },
   pill: {
