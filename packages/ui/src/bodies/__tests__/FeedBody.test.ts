@@ -22,12 +22,25 @@ const t = ((key: string) => {
 }) as unknown as TFunction
 
 describe("FeedBody feed model", () => {
-  it("titles the root from the catalog and offers the composer only to a signed-in reader", () => {
-    expect(buildFeedHeaderModel({ isAuthenticated: true }, t)).toEqual({
+  it("titles the root from the catalog and offers a composer only to a signed-in reader", () => {
+    expect(buildFeedHeaderModel({ isAuthenticated: true, layout: "compact" }, t)).toEqual({
       title: "Your Feed",
       showComposer: true,
+      showInlineComposer: false,
     })
-    expect(buildFeedHeaderModel({ isAuthenticated: false }, t).showComposer).toBe(false)
+    for (const layout of ["compact", "expanded"] as const) {
+      const model = buildFeedHeaderModel({ isAuthenticated: false, layout }, t)
+      expect(model.showComposer).toBe(false)
+      expect(model.showInlineComposer).toBe(false)
+    }
+  })
+
+  it("swaps the header glyph for the inline card when the shell is expanded", () => {
+    expect(buildFeedHeaderModel({ isAuthenticated: true, layout: "expanded" }, t)).toEqual({
+      title: "Your Feed",
+      showComposer: false,
+      showInlineComposer: true,
+    })
   })
 
   it("uses a 200ms ease-out transition unless reduced motion is enabled", () => {
