@@ -35,6 +35,7 @@ const APP_LINK_PATH_PREFIXES = [
   "/notifications",
   "/settings",
   "/profile",
+  "/dashboard",
   "/saves",
   "/map",
   "/search",

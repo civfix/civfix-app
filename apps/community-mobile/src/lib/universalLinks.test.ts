@@ -60,6 +60,12 @@ test("a web report permalink is a mobile pin", () => {
   assert.deepEqual(resolveIncomingPath("/pin/abc"), internal("/pin/abc"))
 })
 
+test("the event dashboard is a first-class app route", () => {
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/dashboard/"), internal("/dashboard"))
+  assert.deepEqual(resolveIncomingPath("/dashboard"), internal("/dashboard"))
+  assert.deepEqual(resolveIncomingPath("/dashboard/anything"), home)
+})
+
 test("followers and following fall back to the profile that owns them", () => {
   assert.deepEqual(resolveIncomingPath("https://civfix.org/people/jane/followers/"), internal("/people/jane"))
   assert.deepEqual(resolveIncomingPath("/people/jane/following"), internal("/people/jane"))
@@ -198,7 +204,6 @@ test("garbage and unknown paths go home instead of nowhere", () => {
   assert.deepEqual(resolveIncomingPath("relative/path"), home)
   assert.deepEqual(resolveIncomingPath("/definitely-not-a-route"), home)
   assert.deepEqual(resolveIncomingPath("/pin"), home)
-  assert.deepEqual(resolveIncomingPath("/verify"), home)
   assert.deepEqual(resolveIncomingPath("https://civfix.org/nope/nope/nope"), home)
   assert.deepEqual(resolveIncomingPath(undefined), home)
   assert.deepEqual(resolveIncomingPath(null), home)

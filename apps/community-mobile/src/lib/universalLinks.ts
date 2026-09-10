@@ -130,6 +130,7 @@ function internalPathFor(parts: readonly string[]): string | null {
     case "search":
     case "about":
     case "profile":
+    case "dashboard":
     case "discover":
     case "saves":
     case "report":
