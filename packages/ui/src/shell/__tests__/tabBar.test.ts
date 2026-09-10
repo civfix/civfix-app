@@ -1,4 +1,6 @@
-import { readFileSync } from "node:fs"
+import { readFileSync, readdirSync } from "node:fs"
+import { basename, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { beforeEach, describe, expect, it } from "vitest"
 import { MOTION } from "../../theme/motion"
 import {
@@ -608,7 +610,7 @@ describe("dock + sheet animation cost", () => {
     expect(portrait).toMatch(/Platform\.OS !== "web" && useNavStore\.getState\(\)\.view === "search"/)
     const kbNative = readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
     expect(kbNative).toMatch(/\|\| !ownsFocusedInput\(\)\) return/)
-    expect(kbNative).toMatch(/reserveKeyboardPadding\(\) && Platform\.OS === "ios"/)
+    expect(kbNative).toMatch(/pageActiveRef\.current && reserveKeyboardPadding\(\) \? overlapOf\(e\) : 0/)
     const thread = readFileSync(new URL("../../bodies/PostThreadBody.tsx", import.meta.url), "utf8")
     expect(thread).not.toMatch(/^import[^\n]*useKeyboardInset/m)
     expect(thread).not.toMatch(/useKeyboardInset\s*\(/)
@@ -655,6 +657,194 @@ describe("tab-strip drag: gesture callbacks stay UI-thread safe", () => {
   it("records THE RULE where the next person will read it", () => {
     const configs = readFileSync(new URL("../motionConfigs.native.ts", import.meta.url), "utf8")
     expect(configs).toMatch(/JS-THREAD ONLY/)
+  })
+})
+
+describe("the keyboard-aware scroll seam measures the keyboard instead of trusting the window", () => {
+  const seam = () => readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
+
+  it("never reads endCoordinates.screenY — on Android it is the window bottom, not the keyboard top", () => {
+    expect(seam()).not.toMatch(/screenY/)
+  })
+
+  it("reserves on EVERY platform, through the pure model", () => {
+    const text = seam()
+    expect(text).toMatch(/import \{ keyboardViewportOverlap \} from "\.\/keyboardInsetModel"/)
+    expect(text).not.toMatch(/Platform\.OS === "ios"\s*\n?\s*\? \(e\.endCoordinates/)
+    expect(text).toMatch(/setBottomReserve\(pageActiveRef\.current && reserveKeyboardPadding\(\) \? overlapOf\(e\) : 0\)/)
+  })
+
+  it("derives the keyboard top from the measured overlap", () => {
+    expect(seam()).toMatch(/const top = Dimensions\.get\("window"\)\.height - overlapOf\(e\)/)
+  })
+})
+
+describe("ONE overlap model: every keyboard measurement in the package goes through keyboardViewportOverlap", () => {
+  const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
+
+  it.each([
+    ["../KeyboardAwareScroll.native.tsx"],
+    ["../useKeyboardAnchor.native.ts"],
+    ["../../bodies/thread/useReplyDockInset.ts"],
+  ])("%s measures through the model and re-derives nothing of its own", (rel) => {
+    const text = read(rel)
+    expect(text).toMatch(/keyboardViewportOverlap\(\{/)
+    expect(text).not.toMatch(/endCoordinates\.height\s*[-+]/)
+    expect(text).not.toMatch(/androidKeyboardInset\(/)
+  })
+
+  it("gives the anchor's JS branch the SAME resting-window correction the seam has", () => {
+    const anchor = read("../useKeyboardAnchor.native.ts")
+    expect(anchor).not.toMatch(/keyboardOverlapFrom/)
+    expect(anchor).toMatch(/restingWindowHeight: restingWindowHeight\.current/)
+    expect(anchor).toMatch(/systemBarInset: systemBarRef\.current/)
+  })
+
+  it("routes the anchor's UI-thread mirror through keyboardMirrorOverlap, never through its own arithmetic", () => {
+    const anchor = read("../useKeyboardAnchor.native.ts")
+    expect(anchor).toMatch(/const systemBarInset = PLATFORM === "android" \? safeAreaBottom : 0/)
+    expect(anchor).toMatch(/import \{ isEdgeToEdge \} from "react-native-is-edge-to-edge"/)
+    expect(anchor).toMatch(/^const EDGE_TO_EDGE = isEdgeToEdge\(\)$/m)
+    expect(anchor).toMatch(
+      /overlap\.value = keyboardMirrorOverlap\(\{\s*\n\s*reanimatedHeight: h,\s*\n\s*systemBarInset: systemBarSv\.value,\s*\n\s*edgeToEdge: EDGE_TO_EDGE,\s*\n\s*\}\)/,
+    )
+    expect(anchor).not.toMatch(/h \+ systemBarSv\.value/)
+  })
+
+  it("captures the resting window height ONCE, in a shared helper both seams call", () => {
+    const helper = read("../useRestingWindowHeight.ts")
+    expect(helper).toMatch(/Dimensions\.addEventListener\("change"/)
+    expect(helper).toMatch(/Keyboard\.isVisible\(\)/)
+    expect(helper).toMatch(/import \{ shouldRecaptureRestingHeight \} from "\.\/keyboardInsetModel"/)
+    expect(helper).toMatch(/prevWidth: restingWindowWidth\.current/)
+    expect(helper).toMatch(/nextWidth: window\.width/)
+    for (const rel of [
+      "../KeyboardAwareScroll.native.tsx",
+      "../useKeyboardAnchor.native.ts",
+      "../../bodies/thread/useReplyDockInset.ts",
+    ]) {
+      expect(read(rel)).toMatch(/useRestingWindowHeight\(\)/)
+      expect(read(rel)).not.toMatch(/restingWindowHeight\.current = /)
+    }
+  })
+})
+
+describe("useKeyboardReserve is a seam pair, and iOS pays nothing for it", () => {
+  const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
+
+  it("picks the iOS no-op at MODULE scope, so no hook is called conditionally", () => {
+    const native = read("../useKeyboardReserve.native.ts")
+    expect(native).toMatch(
+      /export const useKeyboardReserve: \(options\?: KeyboardReserveOptions\) => number =\s*\n\s*Platform\.OS === "ios" \? useZeroReserve : useWindowOverlapReserve/,
+    )
+    expect(native).toMatch(/function useZeroReserve\([^)]*\): number \{\s*\n\s*return 0\s*\n\s*\}/)
+    expect(native).not.toMatch(/useKeyboardAnchor\(\{[^}]*\}\)[\s\S]*insets/)
+  })
+
+  it("reserves the anchor's overlap with the gap zeroed, on BOTH seams", () => {
+    expect(read("../useKeyboardReserve.native.ts")).toMatch(
+      /useKeyboardAnchor\(\{ enabled, restOffset, gap: 0 \}\)\.reserved/,
+    )
+    expect(read("../useKeyboardReserve.web.ts")).toMatch(
+      /useKeyboardAnchor\(\{ enabled, restOffset, gap: 0, hostReserved \}\)\.reserved/,
+    )
+  })
+
+  it("adds NOTHING of its own on top of the anchor — the safe-area pad is an explicit restOffset", () => {
+    const native = read("../useKeyboardReserve.native.ts")
+    expect(native).not.toMatch(/SafeAreaInsetsContext/)
+    expect(native).not.toMatch(/reserved \+ /)
+    expect(read("../useKeyboardReserve.types.ts")).toMatch(/restOffset\?: number/)
+    expect(read("../useKeyboardReserve.types.ts")).toMatch(/hostReserved\?: boolean/)
+  })
+
+  it("resolves the extension-less selector to the WEB seam, like every other seam here", () => {
+    expect(read("../useKeyboardReserve.ts")).toMatch(
+      /export \{ useKeyboardReserve \} from "\.\/useKeyboardReserve\.web"/,
+    )
+  })
+})
+
+describe("the pinned wizard footers reserve for the Android keyboard nothing else reserves for them", () => {
+  const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
+
+  it.each([
+    ["../../bodies/NewGroupBody.tsx", 2],
+    ["../../bodies/NewChannelBody.tsx", 3],
+  ])("%s lifts every pinned footer", (rel, footers) => {
+    const text = read(rel)
+    expect(text).toMatch(/import \{ useKeyboardReserve \} from "\.\.\/shell\/useKeyboardReserve"/)
+    expect(text).toMatch(/const kbReserve = useKeyboardReserve\(\)/)
+    expect(
+      text.match(/<View style=\{\[styles\.footer, kbReserve > 0 \? \{ marginBottom: kbReserve \} : null\]\}>/g),
+    ).toHaveLength(footers)
+    expect(text).not.toMatch(/<View style=\{styles\.footer\}>/)
+  })
+
+  it("still declares itself keyboardAvoidance:false, so the reserve is the ONLY owner", () => {
+    const layout = read("../bodyLayout.ts")
+    expect(layout).toMatch(/"new-group": "full"/)
+    expect(layout).toMatch(/"new-channel": "full"/)
+    expect(layout).toMatch(/surfaceKeyboardAvoidance: active\?\.kind === "composer"/)
+  })
+})
+
+describe("ONE Android owner per surface: the reserve, never a live KeyboardAvoidingView beside it", () => {
+  const PRUNED = new Set(["node_modules", "__tests__", "ios", "android", ".expo", "dist", "dist-types", "out", ".next"])
+  const ROOTS = [
+    fileURLToPath(new URL("../../", import.meta.url)),
+    fileURLToPath(new URL("../../../../../apps/community-mobile/", import.meta.url)),
+  ]
+  const NEUTRAL_BEHAVIOR = '{Platform.OS === "ios" ? "padding" : undefined}'
+
+  const walk = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      if (PRUNED.has(entry.name)) return []
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) return walk(full)
+      return entry.isFile() && /\.tsx?$/.test(entry.name) ? [full] : []
+    })
+
+  const consumers = () =>
+    ROOTS.flatMap(walk).filter((file) => /const \w+ = useKeyboardReserve\(/.test(readFileSync(file, "utf8")))
+
+  it("sees every surface that reads the reserve", () => {
+    expect(consumers().map((file) => basename(file)).sort()).toEqual([
+      "ConversationBody.tsx",
+      "DeleteAccountModal.tsx",
+      "FirstRunGate.tsx",
+      "ModalCardSheet.tsx",
+      "NewChannelBody.tsx",
+      "NewGroupBody.tsx",
+      "ReportFlowBody.tsx",
+    ])
+  })
+
+  it("gives none of them a KeyboardAvoidingView that is live on Android", () => {
+    for (const file of consumers()) {
+      for (const [, behavior] of readFileSync(file, "utf8").matchAll(/behavior=(\{[^}]*\}|"[^"]*")/g)) {
+        expect([basename(file), behavior]).toEqual([basename(file), NEUTRAL_BEHAVIOR])
+      }
+    }
+  })
+})
+
+describe("hostReserved is a WEB-only option the native seam never forwards", () => {
+  const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
+
+  it("says so in the TYPE NAME: only the web-only option type carries hostReserved", () => {
+    const types = read("../useKeyboardReserve.types.ts")
+    expect(types).toMatch(
+      /export interface WebOnlyKeyboardReserveOptions extends KeyboardReserveOptions \{\s*\n\s*hostReserved\?: boolean\s*\n\s*\}/,
+    )
+    expect(types).not.toMatch(/interface KeyboardReserveOptions \{[^}]*hostReserved/)
+    expect(read("../useKeyboardReserve.web.ts")).toMatch(/\}: WebOnlyKeyboardReserveOptions = \{\}\): number/)
+  })
+
+  it("never reaches the native anchor, which has no ancestor to double-count", () => {
+    const native = read("../useKeyboardReserve.native.ts")
+    expect(native).not.toMatch(/hostReserved/)
+    expect(native).not.toMatch(/WebOnlyKeyboardReserveOptions = \{\}/)
   })
 })
 

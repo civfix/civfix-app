@@ -18,7 +18,7 @@ import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useKeyboardVisible } from "../shell/useKeyboardVisible"
-import { useKeyboardInset } from "../shell/useKeyboardInset"
+import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 import { DETAIL_BACK_ICON_SIZE } from "../shell/detailHeader"
 import { idKeyExtractor, openPinnedMessages, openGroupInfo, clearThreadJumpParam } from "./navHelpers"
 import { todayKey, withinEditWindow, type DayLabelOptions } from "./relativeTime"
@@ -123,7 +123,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 }
   const keyboardVisible = useKeyboardVisible()
   const mode = useLayoutMode()
-  const kbInset = useKeyboardInset()
+  const kbReserve = useKeyboardReserve()
 
   const meta = useConvoMeta(id, roomKind, peer, chat.items)
   const isReport = meta.kind === "report"
@@ -581,9 +581,12 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   )
 
   const slotBottomStyle = fullScreen
-    ? { paddingBottom: keyboardVisible ? theme.space["3"] : insets.bottom + theme.space["3"] }
-    : kbInset > 0
-      ? { marginBottom: kbInset }
+    ? {
+        paddingBottom: keyboardVisible ? theme.space["3"] : insets.bottom + theme.space["3"],
+        marginBottom: kbReserve,
+      }
+    : kbReserve > 0
+      ? { marginBottom: kbReserve }
       : null
 
   const content = (
@@ -823,7 +826,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
       {fullScreen ? (
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={0}
         >
           {content}

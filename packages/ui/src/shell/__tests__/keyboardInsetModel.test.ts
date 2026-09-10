@@ -6,6 +6,7 @@
  * Geometry of record (iPhone 17 Pro, 874pt window, 34pt bottom inset, 345pt keyboard):
  *   keyboard top y529 -> overlap 345; dock rest offset 36 -> lift 317; risen bar bottom y521.
  */
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import {
   KEYBOARD_SURFACE_GAP,
@@ -14,11 +15,31 @@ import {
   isRedundantClose,
   keyboardAnimationDuration,
   keyboardLift,
+  androidKeyboardInset,
+  keyboardMirrorOverlap,
   keyboardOverlapFrom,
+  keyboardViewportOverlap,
   reduceKeyboard,
+  shouldRecaptureRestingHeight,
   type KeyboardCommand,
   type KeyboardPhase,
 } from "../keyboardInsetModel"
+
+describe("the pure model stays the RN-free leaf both platform seams consume", () => {
+  const model = () => readFileSync(new URL("../keyboardInsetModel.ts", import.meta.url), "utf8")
+
+  it("imports nothing at all — every platform fact arrives as a parameter", () => {
+    expect(model()).not.toMatch(/^import /m)
+    expect(model()).not.toMatch(/from "react-native"/)
+  })
+
+  it("takes the system-bar inset as a REQUIRED input, never an implicit default", () => {
+    expect(model()).toMatch(
+      /export interface KeyboardViewportOverlapInput \{[\s\S]*?\n {2}systemBarInset: number\n\}/,
+    )
+    expect(model()).not.toMatch(/systemBarInset: number = /)
+  })
+})
 
 describe("keyboardLift", () => {
   it("is zero with no keyboard", () => {
@@ -70,14 +91,224 @@ describe("keyboardOverlapFrom", () => {
     expect(keyboardOverlapFrom({ screenY: 529, height: 345 }, 874, "ios")).toBe(345)
     expect(keyboardOverlapFrom({ screenY: 874 }, 874, "ios")).toBe(0)
   })
-  it("takes the HEIGHT branch on Android — the window already excludes the keyboard", () => {
-    // `winH - screenY` would DOUBLE-COUNT under adjustResize (KeyboardAwareScroll.native.tsx:94-97).
+  it("takes the HEIGHT branch on Android — screenY is the window bottom, not the keyboard top", () => {
     expect(keyboardOverlapFrom({ screenY: 529, height: 345 }, 874, "android")).toBe(345)
   })
   it("is zero for a missing event", () => {
     expect(keyboardOverlapFrom(undefined, 874, "ios")).toBe(0)
     expect(keyboardOverlapFrom(undefined, 874, "android")).toBe(0)
     expect(keyboardOverlapFrom({}, 874, "other")).toBe(0)
+  })
+})
+
+describe("androidKeyboardInset", () => {
+  it("keeps the full keyboard when edge-to-edge nullified adjustResize", () => {
+    expect(androidKeyboardInset(345, 874, 874)).toBe(345)
+  })
+
+  it("keeps nothing when the window already resized by the whole keyboard", () => {
+    expect(androidKeyboardInset(345, 874, 529)).toBe(0)
+  })
+
+  it("keeps the remainder on a partial resize", () => {
+    expect(androidKeyboardInset(345, 874, 700)).toBe(171)
+  })
+
+  it("never reserves on a closed keyboard", () => {
+    expect(androidKeyboardInset(0, 874, 874)).toBe(0)
+  })
+})
+
+describe("keyboardViewportOverlap", () => {
+  const android = (
+    endCoordinates: { screenY?: number; height?: number } | undefined,
+    windowHeight: number,
+    restingWindowHeight: number,
+    systemBarInset: number,
+  ) =>
+    keyboardViewportOverlap({
+      endCoordinates,
+      windowHeight,
+      restingWindowHeight,
+      platform: "android",
+      systemBarInset,
+    })
+
+  it("is keyboardOverlapFrom on iOS — the screenY branch, resting height and system bar ignored", () => {
+    const ios = (
+      endCoordinates: { screenY?: number; height?: number } | undefined,
+      windowHeight: number,
+      restingWindowHeight: number,
+      systemBarInset: number,
+    ) =>
+      keyboardViewportOverlap({
+        endCoordinates,
+        windowHeight,
+        restingWindowHeight,
+        platform: "ios",
+        systemBarInset,
+      })
+    expect(ios({ screenY: 529, height: 345 }, 874, 874, 0)).toBe(345)
+    expect(ios({ screenY: 529, height: 345 }, 874, 700, 34)).toBe(345)
+    expect(ios({ screenY: 874 }, 874, 874, 0)).toBe(0)
+  })
+
+  it("covers the WHOLE keyboard on an Android window edge-to-edge never resized", () => {
+    expect(android({ screenY: 874, height: 297 }, 874, 874, 48)).toBe(345)
+    expect(android({ screenY: 874, height: 297 }, 874, 874, 0)).toBe(297)
+  })
+
+  it("covers NOTHING on a legacy Android window that genuinely resized", () => {
+    expect(android({ screenY: 529, height: 345 }, 529, 874, 0)).toBe(0)
+  })
+
+  it("covers the remainder when the window resized only partly", () => {
+    expect(android({ screenY: 700, height: 345 }, 700, 874, 0)).toBe(171)
+  })
+
+  it("is zero for a missing or closed keyboard on every platform", () => {
+    expect(android(undefined, 874, 874, 48)).toBe(0)
+    expect(android({ height: 0 }, 874, 874, 48)).toBe(0)
+    expect(
+      keyboardViewportOverlap({
+        endCoordinates: undefined,
+        windowHeight: 874,
+        restingWindowHeight: 874,
+        platform: "ios",
+        systemBarInset: 0,
+      }),
+    ).toBe(0)
+    expect(
+      keyboardViewportOverlap({
+        endCoordinates: {},
+        windowHeight: 874,
+        restingWindowHeight: 874,
+        platform: "other",
+        systemBarInset: 0,
+      }),
+    ).toBe(0)
+  })
+})
+
+describe("keyboardMirrorOverlap — the UI-thread mirror lands in the JS thread's units", () => {
+  const NAV_BAR = 48
+  const WINDOW = 874
+  const IME_BOTTOM_INSET = 345
+  const RN_EVENT_HEIGHT = IME_BOTTOM_INSET - NAV_BAR
+
+  const jsReserve = () =>
+    keyboardViewportOverlap({
+      endCoordinates: { height: RN_EVENT_HEIGHT },
+      windowHeight: WINDOW,
+      restingWindowHeight: WINDOW,
+      platform: "android",
+      systemBarInset: NAV_BAR,
+    })
+
+  it("agrees with the JS reservation under edge-to-edge, where reanimated already counted the nav bar", () => {
+    const uiMirror = keyboardMirrorOverlap({
+      reanimatedHeight: IME_BOTTOM_INSET,
+      systemBarInset: NAV_BAR,
+      edgeToEdge: true,
+    })
+    expect(uiMirror).toBe(jsReserve())
+    expect(uiMirror).toBe(345)
+  })
+
+  it("agrees with it OFF edge-to-edge too, where reanimated subtracted the nav bar exactly as RN did", () => {
+    const uiMirror = keyboardMirrorOverlap({
+      reanimatedHeight: RN_EVENT_HEIGHT,
+      systemBarInset: NAV_BAR,
+      edgeToEdge: false,
+    })
+    expect(uiMirror).toBe(jsReserve())
+    expect(uiMirror).toBe(345)
+  })
+
+  it("lands the docked search bar KEYBOARD_SURFACE_GAP above the keyboard from EITHER source", () => {
+    const restOffset = NAV_BAR + 8 + (36 - 34)
+    const fromMirror = keyboardLift(
+      keyboardMirrorOverlap({ reanimatedHeight: IME_BOTTOM_INSET, systemBarInset: NAV_BAR, edgeToEdge: true }),
+      restOffset,
+      KEYBOARD_SURFACE_GAP,
+    )
+    expect(fromMirror).toBe(keyboardLift(jsReserve(), restOffset, KEYBOARD_SURFACE_GAP))
+    expect(fromMirror).toBe(295)
+  })
+
+  it("is zero for a closed keyboard, so the nav bar is never published as a phantom overlap", () => {
+    expect(keyboardMirrorOverlap({ reanimatedHeight: 0, systemBarInset: NAV_BAR, edgeToEdge: true })).toBe(0)
+    expect(keyboardMirrorOverlap({ reanimatedHeight: 0, systemBarInset: NAV_BAR, edgeToEdge: false })).toBe(0)
+  })
+
+  it("has no nav bar to add on iOS, where the mirror and the event already agree", () => {
+    expect(keyboardMirrorOverlap({ reanimatedHeight: 345, systemBarInset: 0, edgeToEdge: false })).toBe(345)
+  })
+})
+
+describe("shouldRecaptureRestingHeight — a rotation is not a keyboard", () => {
+  it("takes any resize while the keyboard is closed", () => {
+    expect(shouldRecaptureRestingHeight({ keyboardOpen: false, prevWidth: 402, nextWidth: 402 })).toBe(true)
+    expect(shouldRecaptureRestingHeight({ keyboardOpen: false, prevWidth: 402, nextWidth: 874 })).toBe(true)
+  })
+
+  it("REFUSES the keyboard's own resize — same width, only the height moved", () => {
+    expect(shouldRecaptureRestingHeight({ keyboardOpen: true, prevWidth: 402, nextWidth: 402 })).toBe(false)
+  })
+
+  it("takes a rotation even with the keyboard up, or the lift stays clamped to 0 until it closes", () => {
+    expect(shouldRecaptureRestingHeight({ keyboardOpen: true, prevWidth: 402, nextWidth: 874 })).toBe(true)
+  })
+})
+
+describe("the Android reserve useKeyboardReserve applies (keyboardViewportOverlap -> keyboardLift, gap 0)", () => {
+  const reserve = (restOffset: number, systemBarInset: number) =>
+    keyboardLift(
+      keyboardViewportOverlap({
+        endCoordinates: { screenY: 874, height: 297 },
+        windowHeight: 874,
+        restingWindowHeight: 874,
+        platform: "android",
+        systemBarInset,
+      }),
+      restOffset,
+      0,
+    )
+
+  it("lifts a surface that DROPS its safe-area pad by the whole window overlap", () => {
+    expect(reserve(0, 48)).toBe(345)
+  })
+
+  it("lifts a surface that KEEPS its safe-area pad by the overlap ABOVE that pad", () => {
+    expect(reserve(48, 48)).toBe(297)
+  })
+
+  it("lands the docked search bar exactly on the keyboard, nav bar included", () => {
+    const overlap = keyboardViewportOverlap({
+      endCoordinates: { screenY: 874, height: 297 },
+      windowHeight: 874,
+      restingWindowHeight: 874,
+      platform: "android",
+      systemBarInset: 48,
+    })
+    expect(keyboardLift(overlap, 48 + 8 + (36 - 34), KEYBOARD_SURFACE_GAP)).toBe(295)
+  })
+
+  it("reserves NOTHING with the keyboard closed, whatever the pad", () => {
+    expect(reserve(0, 48)).toBeGreaterThan(0)
+    expect(
+      keyboardLift(
+        keyboardViewportOverlap({
+          endCoordinates: { height: 0 },
+          windowHeight: 874,
+          restingWindowHeight: 874,
+          platform: "android",
+          systemBarInset: 48,
+        }),
+        0,
+        0,
+      ),
+    ).toBe(0)
   })
 })
 

@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
 import type { PostCounts } from "@civfix/shared"
 import {
-  androidKeyboardInset,
   buildFocalPostStats,
   buildReplyComposerHeightPlan,
   buildThreadRailPlan,
@@ -237,24 +236,6 @@ describe("replyComposerState", () => {
     expect(replyComposerState({ ...base, hasDraft: true })).toBe("expanded")
     expect(replyComposerState({ ...base, hasAttachments: true })).toBe("expanded")
     expect(replyComposerState({ ...base, hasError: true })).toBe("expanded")
-  })
-})
-
-describe("androidKeyboardInset", () => {
-  it("lifts the full keyboard when edge-to-edge nullified adjustResize", () => {
-    expect(androidKeyboardInset(345, 874, 874)).toBe(345)
-  })
-
-  it("lifts nothing when the window already resized by the whole keyboard", () => {
-    expect(androidKeyboardInset(345, 874, 529)).toBe(0)
-  })
-
-  it("lifts the remainder on a partial resize", () => {
-    expect(androidKeyboardInset(345, 874, 700)).toBe(171)
-  })
-
-  it("never lifts on a closed keyboard", () => {
-    expect(androidKeyboardInset(0, 874, 874)).toBe(0)
   })
 })
 

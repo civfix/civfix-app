@@ -34,6 +34,8 @@ import { useT } from "../i18n"
 import { useHaptics } from "../capabilities"
 import { useCreatePost } from "../data/hooks/posts"
 import { useNavStore } from "../nav"
+import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
+import { PLAIN_SCROLL_HOST, useScrollHost } from "../shell/ScrollHost"
 import { LinkedEventCard } from "./LinkedEventCard"
 import { LinkedReportCard } from "./LinkedReportCard"
 import { clearStaleReportIntentAtComposerMount } from "./composerCreateFlow"
@@ -73,12 +75,18 @@ import {
   type PostComposerMode,
 } from "./postComposerStore"
 
+export interface PostComposerStandaloneHost {
+  onBack: () => void
+}
+
 export interface PostComposerProps {
   mode?: PostComposerMode
   targetPostId?: string
   onPosted?: (post: PostDTO) => void
-  onBack?: () => void
+  standalone?: PostComposerStandaloneHost
 }
+
+const STANDALONE_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 const EXIT_HOST: PostComposerExitHost = {
   readIntent: () => {
@@ -138,7 +146,7 @@ function useComposerEntrance(): Animated.WithAnimatedValue<ViewStyle> {
   }
 }
 
-export function PostComposer({ mode = "post", targetPostId, onPosted, onBack }: PostComposerProps) {
+export function PostComposer({ mode = "post", targetPostId, onPosted, standalone }: PostComposerProps) {
   const styles = useStyles()
   const th = useTheme()
   const back = useNavStore((state) => state.back)
@@ -149,6 +157,12 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, onBack }: 
     ? Platform.OS
     : "other"
   const keyboard = buildPostComposerKeyboardPlan({ platform })
+  const isStandalone = standalone !== undefined
+  const onBack = standalone?.onBack
+  const inheritedScrollHost = useScrollHost()
+  const { ScrollView: ComposerScrollView } = isStandalone
+    ? STANDALONE_SCROLL_HOST
+    : inheritedScrollHost
   const entranceStyle = useComposerEntrance()
   const { height: windowHeight } = useWindowDimensions()
   const inputMaxHeight = Math.round(windowHeight * 0.4)
@@ -764,17 +778,16 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, onBack }: 
           <Text style={[styles.postButtonText, submitDisabled ? styles.postButtonTextDisabled : null]}>{create.isPending ? t("action.posting") : presentation.submitLabel}</Text>
         </Pressable>
       </View>
-      <ScrollView
+      <ComposerScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode={keyboard.scrollView.keyboardDismissMode}
-        automaticallyAdjustKeyboardInsets={keyboard.scrollView.automaticallyAdjustKeyboardInsets}
         contentInsetAdjustmentBehavior="automatic"
       >
         {fields}
-      </ScrollView>
+      </ComposerScrollView>
     </Animated.View>
   )
 }

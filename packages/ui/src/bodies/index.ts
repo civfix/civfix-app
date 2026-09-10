@@ -92,7 +92,6 @@ export {
   THREAD_RAIL_GAP,
   THREAD_RAIL_STUB_H,
   THREAD_RAIL_W,
-  androidKeyboardInset,
   buildFocalPostStats,
   buildReplyComposerHeightPlan,
   buildThreadRailPlan,

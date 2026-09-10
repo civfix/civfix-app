@@ -14,7 +14,6 @@ export type PostComposerAttachmentPanel = "events" | "reports" | null
 
 export interface PostComposerKeyboardPlan {
   scrollView: {
-    automaticallyAdjustKeyboardInsets: boolean
     keyboardDismissMode: "interactive" | "on-drag"
   }
 }
@@ -67,7 +66,6 @@ export function buildPostComposerKeyboardPlan({
 }): PostComposerKeyboardPlan {
   return {
     scrollView: {
-      automaticallyAdjustKeyboardInsets: platform === "ios",
       keyboardDismissMode: platform === "ios" ? "interactive" : "on-drag",
     },
   }

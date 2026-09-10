@@ -44,21 +44,29 @@
  * The web sibling (KeyboardAwareScroll.web) does the same job off `window.visualViewport` (RN `Keyboard`
  * events never fire on rn-web); the `.ts` default re-exports the web one for tooling.
  */
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { forwardRef, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import {
+  Dimensions,
   Keyboard,
   Platform,
   StyleSheet,
   TextInput,
+  type KeyboardEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native"
+import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { ScrollHostValue } from "./ScrollHost"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
+import { keyboardViewportOverlap } from "./keyboardInsetModel"
 import { usePageIsActive } from "./pageActive"
+import { useRestingWindowHeight } from "./useRestingWindowHeight"
 
 /** Gap (px) kept between the bottom of the focused field and the top of the keyboard once revealed. */
 const KEYBOARD_MARGIN = 16
+
+const PLATFORM: "ios" | "android" | "other" =
+  Platform.OS === "ios" ? "ios" : Platform.OS === "android" ? "android" : "other"
 
 /**
  * Wrap a base ScrollView component (gorhom's BottomSheetScrollView or RN's ScrollView) into one that keeps
@@ -83,12 +91,11 @@ function makeKeyboardAwareScrollView(
     // absolute scrollTo target can be computed by delta from the focused field's window position).
     const innerRef = useRef<any>(null)
     const offsetRef = useRef(0)
-    // Bottom padding to RESERVE so the lowest field can scroll up past the keyboard. Only iOS needs it: the
-    // keyboard FLOATS over a full-height window there, so the scroll viewport extends under it. On Android
-    // this app runs windowSoftInputMode=adjustResize (+ edge-to-edge), so the OS already shrinks the window
-    // when the keyboard opens - the viewport bottom is already the keyboard top, and adding padding would be
-    // a phantom over-scroll gutter. So 0 on Android.
     const [bottomReserve, setBottomReserve] = useState(0)
+    const restingWindowHeight = useRestingWindowHeight()
+    const insets = useContext(SafeAreaInsetsContext)
+    const bottomInsetRef = useRef(insets?.bottom ?? 0)
+    bottomInsetRef.current = insets?.bottom ?? 0
 
     // ----- PER-INSTANCE ACTIVITY GATE (the second half of "both heuristics are GLOBAL"). -----
     //
@@ -134,13 +141,6 @@ function makeKeyboardAwareScrollView(
       [onScroll],
     )
 
-    // Measure the currently-focused field in the window; if it overlaps the keyboard, scroll up by exactly
-    // the overlap (+ margin) so its bottom edge sits just above the keyboard. Driven off the GLOBAL focused
-    // input (TextInput.State) so no body has to forward a ref to its field. `keyboardTop` is the keyboard's
-    // top edge in SCREEN coords (endCoordinates.screenY) - this is correct on BOTH iOS (keyboard floats over
-    // a full-height window, screenY = screenHeight - kbHeight) AND Android adjustResize (the window shrank, so
-    // measureInWindow y shares the screen origin and screenY is the resized-window bottom). Using winH - kbH
-    // instead would double-count the keyboard height on Android (the window already excludes it).
     const revealFocused = useCallback((keyboardTop: number) => {
       const scroll = innerRef.current
       const focused: any = TextInput.State.currentlyFocusedInput?.()
@@ -155,32 +155,25 @@ function makeKeyboardAwareScrollView(
     }, [])
 
     useEffect(() => {
-      // PADDING + host-grow: iOS exposes will* (fires in sync with the keyboard animation, smoother padding),
-      // Android only has did*. Reserve the iOS-only keyboard-height bottom padding and ask the host to grow.
-      // The reserve is gated on `reserveKeyboardPadding`: a host whose ancestor already reserves the overlap
-      // would otherwise be double-inset (see SearchBodyReveal.native).
       const showEvt = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
       const hideEvt = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
-      // ...and gated on the ACTIVITY signal too: a buried page layer must not reserve for a keyboard it
-      // did not raise (see the per-instance gate above). The reserve is what gives a buried scroller the
-      // range for the `scrollTo` below to actually move it, so this half is not merely cosmetic.
+      const overlapOf = (e: KeyboardEvent) =>
+        keyboardViewportOverlap({
+          endCoordinates: e.endCoordinates,
+          windowHeight: Dimensions.get("window").height,
+          restingWindowHeight: restingWindowHeight.current,
+          platform: PLATFORM,
+          systemBarInset: bottomInsetRef.current,
+        })
       const showSub = Keyboard.addListener(showEvt, (e) => {
-        setBottomReserve(
-          pageActiveRef.current && reserveKeyboardPadding() && Platform.OS === "ios"
-            ? (e.endCoordinates?.height ?? 0)
-            : 0,
-        )
+        setBottomReserve(pageActiveRef.current && reserveKeyboardPadding() ? overlapOf(e) : 0)
         options.onKeyboardShow?.()
       })
       const hideSub = Keyboard.addListener(hideEvt, () => setBottomReserve(0))
-      // SCROLL-TO-FOCUS: measure once the keyboard is fully shown (didShow on both platforms) so the field's
-      // position is final - the host-grow + padding have settled. A frame of slack lets that layout commit
-      // before we measure. The keyboard top comes from endCoordinates.screenY (see revealFocused). Skipped
-      // entirely when this host declares it owns no input: the globally-focused field is somebody else's.
       // Always SUBSCRIBED; the ownership question is asked per event, because the answer may be a thunk.
       const didShowSub = Keyboard.addListener("keyboardDidShow", (e) => {
         if (!pageActiveRef.current || !ownsFocusedInput()) return
-        const top = e.endCoordinates?.screenY ?? 0
+        const top = Dimensions.get("window").height - overlapOf(e)
         if (top > 0) requestAnimationFrame(() => revealFocused(top))
       })
       return () => {
@@ -190,8 +183,6 @@ function makeKeyboardAwareScrollView(
       }
     }, [revealFocused])
 
-    // Reserve bottom padding (iOS only) so the lowest field can scroll up past the floating keyboard. Read the
-    // caller's existing paddingBottom (flattened) and ADD to it, so the form's own bottom gutter is kept.
     const mergedContentStyle = useMemo(() => {
       const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
       const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0

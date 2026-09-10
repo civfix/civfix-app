@@ -19,7 +19,7 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
-import { useKeyboardInset } from "../shell/useKeyboardInset"
+import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 import {
   DETAIL_BACK_SIZE,
   DETAIL_BACK_RADIUS,
@@ -827,7 +827,7 @@ export function ReportFlowBody() {
   const th = useTheme()
   const { t } = useT("report-wizard")
   const { ScrollView } = useScrollHost()
-  const kbInset = useKeyboardInset()
+  const kbReserve = useKeyboardReserve()
   const fromComposer = usePostComposerStore((s) => s.claimedCreate) === "report"
   const submit = useReportSubmit({ forComposer: fromComposer })
   const reset = useDraftReportStore((s) => s.reset)
@@ -1170,7 +1170,7 @@ export function ReportFlowBody() {
       )}
 
       {showsWizardFooter(activeStep, hasMedia) ? (
-        <View style={[styles.footer, kbInset > 0 ? { marginBottom: kbInset } : null]}>
+        <View style={[styles.footer, kbReserve > 0 ? { marginBottom: kbReserve } : null]}>
           <Pressable
             onPress={onNext}
             disabled={!canAdvance}

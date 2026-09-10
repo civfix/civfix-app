@@ -15,7 +15,7 @@
  * THREADING INVARIANT (frozen, see useKeyboardAnchor.types.ts): `lift` is per-frame on the UI thread;
  * `reserved` is per-transition on the JS thread. Never conflate them.
  */
-import { useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import {
   Keyboard,
   Platform,
@@ -24,6 +24,8 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native"
+import { isEdgeToEdge } from "react-native-is-edge-to-edge"
+import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import {
   ReduceMotion,
   useAnimatedKeyboard,
@@ -42,15 +44,19 @@ import {
   isRedundantClose,
   keyboardAnimationDuration,
   keyboardLift,
-  keyboardOverlapFrom,
+  keyboardMirrorOverlap,
+  keyboardViewportOverlap,
   reduceKeyboard,
   type KeyboardCommand,
   type KeyboardPhase,
 } from "./keyboardInsetModel"
 import type { KeyboardAnchor, KeyboardAnchorOptions } from "./useKeyboardAnchor.types"
+import { useRestingWindowHeight } from "./useRestingWindowHeight"
 
 const PLATFORM: "ios" | "android" | "other" =
   Platform.OS === "ios" ? "ios" : Platform.OS === "android" ? "android" : "other"
+
+const EDGE_TO_EDGE = isEdgeToEdge()
 
 export function useKeyboardAnchor({
   enabled = true,
@@ -59,6 +65,9 @@ export function useKeyboardAnchor({
 }: KeyboardAnchorOptions = {}): KeyboardAnchor {
   const kb = useAnimatedKeyboard()
   const windowH = useWindowDimensions().height
+  const restingWindowHeight = useRestingWindowHeight()
+  const safeAreaBottom = useContext(SafeAreaInsetsContext)?.bottom ?? 0
+  const systemBarInset = PLATFORM === "android" ? safeAreaBottom : 0
 
   const overlap = useSharedValue(0)
   const owned = useSharedValue(0)
@@ -66,8 +75,12 @@ export function useKeyboardAnchor({
    *  keyboard's live height the instant `owned` clears, and the dock rides up for every TextField in
    *  the app. The pure reducer CANNOT express this — it is a UI-thread invariant. */
   const enabledSv = useSharedValue(enabled ? 1 : 0)
+  const systemBarSv = useSharedValue(systemBarInset)
   const restSv = useSharedValue(restOffset)
   const gapSv = useSharedValue(gap)
+  useEffect(() => {
+    systemBarSv.value = systemBarInset
+  }, [systemBarInset, systemBarSv])
   useEffect(() => {
     restSv.value = restOffset
   }, [restOffset, restSv])
@@ -79,6 +92,18 @@ export function useKeyboardAnchor({
   const enabledRef = useRef(enabled)
   const winRef = useRef(windowH)
   winRef.current = windowH
+  const systemBarRef = useRef(systemBarInset)
+  systemBarRef.current = systemBarInset
+
+  const measuredOverlap = (endCoordinates: { screenY?: number; height?: number } | undefined) =>
+    keyboardViewportOverlap({
+      endCoordinates,
+      windowHeight: winRef.current,
+      restingWindowHeight: restingWindowHeight.current,
+      platform: PLATFORM,
+      systemBarInset: systemBarRef.current,
+    })
+
   /** The OVERLAP currently reserved (not the derived lift) — replayed into `will-hide` as `reserveHint`
    *  so the reservation is HELD through the close animation instead of collapsing a frame after blur. */
   const reserveOverlapRef = useRef(0)
@@ -112,7 +137,12 @@ export function useKeyboardAnchor({
         if (owned.value === 0) overlap.value = 0
         return
       }
-      if (owned.value === 0) overlap.value = h
+      if (owned.value === 0)
+        overlap.value = keyboardMirrorOverlap({
+          reanimatedHeight: h,
+          systemBarInset: systemBarSv.value,
+          edgeToEdge: EDGE_TO_EDGE,
+        })
     },
   )
 
@@ -151,7 +181,7 @@ export function useKeyboardAnchor({
     if (Platform.OS === "ios") {
       subs.push(
         Keyboard.addListener("keyboardWillShow", (e: KeyboardEvent) => {
-          const overlapPt = keyboardOverlapFrom(e.endCoordinates, winRef.current, PLATFORM)
+          const overlapPt = measuredOverlap(e.endCoordinates)
           lastWillShow.current = { overlap: overlapPt, duration: dur(e), at: Date.now() }
           apply(
             reduceKeyboard(phase.current, {
@@ -183,7 +213,7 @@ export function useKeyboardAnchor({
         apply(
           reduceKeyboard(phase.current, {
             type: "did-settle",
-            overlap: keyboardOverlapFrom(e.endCoordinates, winRef.current, PLATFORM),
+            overlap: measuredOverlap(e.endCoordinates),
             enabled: enabledRef.current,
           }),
           false,
@@ -224,7 +254,7 @@ export function useKeyboardAnchor({
       )
       return
     }
-    const live = keyboardOverlapFrom(Keyboard.metrics(), winRef.current, PLATFORM)
+    const live = measuredOverlap(Keyboard.metrics())
     apply(
       reduceKeyboard(phase.current, {
         type: "ownership",

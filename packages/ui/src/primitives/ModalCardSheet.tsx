@@ -14,7 +14,7 @@ import { tokens } from "@civfix/shared/tokens"
 import { makeThemedStyles, useTheme, webScrimProps, type Theme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
-import { useKeyboardInset } from "../shell/useKeyboardInset"
+import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 
 export function useDialogWebKeys({
   visible,
@@ -75,7 +75,7 @@ export function ModalCardSheet({
 }: ModalCardSheetProps) {
   const styles = useStyles()
   const t = useTheme()
-  const kbInset = useKeyboardInset()
+  const kbReserve = useKeyboardReserve({ enabled: visible })
   useDialogWebKeys({ visible, onCommit, onClose })
 
   return (
@@ -90,8 +90,8 @@ export function ModalCardSheet({
           {...webScrimProps}
         />
         <KeyboardAvoidingView
-          style={[styles.avoider, kbInset > 0 ? { paddingBottom: t.space["4"] + kbInset } : null]}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={[styles.avoider, kbReserve > 0 ? { paddingBottom: t.space["4"] + kbReserve } : null]}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <View style={styles.card}>
             <View style={styles.header}>

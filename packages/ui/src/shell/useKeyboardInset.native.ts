@@ -13,10 +13,8 @@
  * SUPERSEDED by `useKeyboardAnchor` (shell/useKeyboardAnchor.*), the canonical keyboard primitive: it
  * tracks the keyboard continuously on the UI thread on native, GATES on which surface owns the focused
  * input, and returns the resting-offset-corrected LIFT rather than the raw overlap. New surfaces MUST
- * use the anchor. This hook remains for the legacy consumers (ConversationBody, DeleteAccountModal,
- * ReportFlowBody, ModalCardSheet, PortraitShell.web) until each is migrated — flipping this native
- * constant-0 would silently alter all five at once. The web seam is additionally an internal dependency
- * of useKeyboardAnchor.web and must keep its exact
+ * use the anchor. This hook remains for PortraitShell.web and useReplyDockInset; the web seam is
+ * additionally an internal dependency of useKeyboardAnchor.web and must keep its exact
  * `overlap = innerHeight - vv.height - vv.offsetTop` semantics.
  */
 export function useKeyboardInset(): number {
