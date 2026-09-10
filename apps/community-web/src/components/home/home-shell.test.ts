@@ -25,6 +25,12 @@ vi.mock("@/components/home/use-web-nav-adapter", () => ({
   useWebNavAdapter: vi.fn(),
 }))
 
+const teamInviteAccept = vi.hoisted(() => vi.fn())
+
+vi.mock("@/components/home/use-team-invite-accept", () => ({
+  useTeamInviteAccept: teamInviteAccept,
+}))
+
 const { HomeShell, AppShellFrame } = await import("./home-shell")
 
 type AppShellSlots = {
@@ -69,6 +75,15 @@ function lazySlotType(slot: React.ReactNode): React.ReactElement["type"] {
   const wrapper = asElement<{ children: React.ReactNode }>(slot)
   return asElement(wrapper.props.children).type
 }
+
+describe("HomeShell boot wiring", () => {
+  it("takes the emailed team-invite token out of the URL on every boot", () => {
+    teamInviteAccept.mockClear()
+    renderShell()
+
+    expect(teamInviteAccept).toHaveBeenCalled()
+  })
+})
 
 describe("HomeShell map composition", () => {
   it("constructs distinct lazy map slots without evaluating their modules", () => {

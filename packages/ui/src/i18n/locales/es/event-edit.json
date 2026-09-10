@@ -5,7 +5,7 @@
     "error": {
       "validation": "Revisa los detalles del evento e inténtalo de nuevo.",
       "rate_limited": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
-      "forbidden": "Solo el organizador del evento puede editarlo.",
+      "forbidden": "Solo los anfitriones que pueden gestionar este evento pueden editarlo.",
       "generic": "No pudimos guardar ahora mismo. Inténtalo de nuevo."
     }
   },
@@ -17,7 +17,7 @@
     "body": "No pudimos cargar este evento. Es posible que haya sido eliminado o que estés sin conexión."
   },
   "denied": {
-    "title": "Solo el organizador puede editar este evento",
+    "title": "Solo los anfitriones que pueden gestionar este evento pueden editarlo",
     "body": "Pídele al anfitrión que actualice los detalles, o confirma tu asistencia desde la página del evento."
   }
 }

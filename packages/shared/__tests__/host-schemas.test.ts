@@ -69,19 +69,35 @@ import {
   EventAnalyticsOverviewResponseSchema,
   SuppressedRateSchema,
 } from "../src/schemas/host/analytics.js"
-import { GuestRsvpVerifyResponseSchema } from "../src/schemas/cleanups.js"
+import {
+  GuestRsvpVerifyResponseSchema,
+  SetMemberRoleRequestSchema,
+} from "../src/schemas/cleanups.js"
+import {
+  AcceptMyEventInviteRequestSchema,
+  AcceptMyEventInviteResponseSchema,
+  DeclineMyEventInviteRequestSchema,
+  DeclineMyEventInviteResponseSchema,
+  EventTeamInviteStatusSchema,
+  EventTeamRoleSchema,
+  InviteEventTeamMemberRequestSchema,
+  ListMyEventInvitesRequestSchema,
+  ListMyEventInvitesResponseSchema,
+  PendingEventTeamInviteDTOSchema,
+} from "../src/schemas/host/team.js"
 
 const UUID = "123e4567-e89b-12d3-a456-426614174000"
 const UUID2 = "123e4567-e89b-12d3-a456-426614174001"
 const ISO = "2026-09-01T10:00:00.000Z"
 
 describe("host platform enum tuples (mirrored byte-identical by the backend)", () => {
-  it("appends staff LAST to CleanupMemberRole", () => {
+  it("appends staff then coordinator LAST to CleanupMemberRole", () => {
     expect([...CleanupMemberRoleSchema.options]).toEqual([
       "organizer",
       "cohost",
       "member",
       "staff",
+      "coordinator",
     ])
   })
 
@@ -96,8 +112,9 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
     ])
   })
 
-  it("appends event_broadcast LAST to NotificationType and host LAST to SignalTopic", () => {
-    expect(NotificationTypeSchema.options.at(-1)).toBe("event_broadcast")
+  it("keeps event_broadcast then event_team_invite at the tail of NotificationType and host LAST in SignalTopic", () => {
+    expect(NotificationTypeSchema.options.at(-2)).toBe("event_broadcast")
+    expect(NotificationTypeSchema.options.at(-1)).toBe("event_team_invite")
     expect([...SignalTopicSchema.options]).toEqual([
       "notifications",
       "threads",
@@ -696,5 +713,162 @@ describe("TS7056-prone schemas keep a usable inferred type", () => {
       segment: BroadcastSegmentSchema,
     })
     expect(wrapper.safeParse({}).success).toBe(false)
+  })
+})
+
+describe("event collaborators: the coordinator tier and the invitee inbox (DECISIONS §33)", () => {
+  const eventRef = {
+    id: UUID2,
+    title: "Ballona Creek sweep",
+    startsAt: ISO,
+    status: "upcoming",
+  }
+
+  const pendingInvite = {
+    id: UUID,
+    role: "coordinator",
+    event: eventRef,
+    invitedBy: null,
+    createdAt: ISO,
+    expiresAt: ISO,
+  }
+
+  const minimalCleanup = {
+    id: UUID2,
+    title: "Ballona Creek sweep",
+    type: "site",
+    scheduledAt: ISO,
+    status: "upcoming",
+    organizer: { id: UUID, name: "Org", followers: 0, following: 0, isFollowing: false },
+    going: 0,
+    joined: false,
+    bring: [],
+    lat: 34,
+    lng: -118,
+  }
+
+  it("offers three invitable tiers and appends coordinator LAST", () => {
+    expect([...EventTeamRoleSchema.options]).toEqual(["cohost", "staff", "coordinator"])
+    expect(EventTeamRoleSchema.safeParse("organizer").success).toBe(false)
+    expect(EventTeamRoleSchema.safeParse("member").success).toBe(false)
+    for (const role of EventTeamRoleSchema.options) {
+      expect(CleanupMemberRoleSchema.safeParse(role).success, role).toBe(true)
+    }
+  })
+
+  it("appends declined LAST to the invite status, beside revoked", () => {
+    expect([...EventTeamInviteStatusSchema.options]).toEqual([
+      "pending",
+      "accepted",
+      "revoked",
+      "expired",
+      "declined",
+    ])
+  })
+
+  it("lets a host invite and seat a coordinator", () => {
+    expect(
+      InviteEventTeamMemberRequestSchema.safeParse({
+        id: UUID,
+        identifierKind: "handle",
+        identifier: "ada",
+        role: "coordinator",
+      }).success,
+    ).toBe(true)
+    expect(
+      SetMemberRoleRequestSchema.safeParse({ id: UUID, userId: UUID2, role: "coordinator" }).success,
+    ).toBe(true)
+    expect(
+      SetMemberRoleRequestSchema.safeParse({ id: UUID, userId: UUID2, role: "organizer" }).success,
+    ).toBe(false)
+  })
+
+  it("carries no email on the invitee-side DTO", () => {
+    const parsed = PendingEventTeamInviteDTOSchema.parse(pendingInvite)
+    expect(Object.keys(parsed).sort()).toEqual([
+      "createdAt",
+      "event",
+      "expiresAt",
+      "id",
+      "invitedBy",
+      "role",
+    ])
+    expect(
+      PendingEventTeamInviteDTOSchema.safeParse({
+        ...pendingInvite,
+        email: "ada@example.org",
+      }).success,
+    ).toBe(true)
+    expect((PendingEventTeamInviteDTOSchema.parse({
+      ...pendingInvite,
+      email: "ada@example.org",
+    }) as Record<string, unknown>).email).toBeUndefined()
+  })
+
+  it("keeps the invited event a lean ref: no roster counters, no capabilities", () => {
+    const parsed = PendingEventTeamInviteDTOSchema.parse({
+      ...pendingInvite,
+      event: { ...eventRef, endsAt: ISO, coverThumbUrl: "https://cdn/x.jpg", address: "Playa" },
+    })
+    expect(Object.keys(parsed.event).sort()).toEqual([
+      "address",
+      "coverThumbUrl",
+      "endsAt",
+      "id",
+      "startsAt",
+      "status",
+      "title",
+    ])
+    expect(PendingEventTeamInviteDTOSchema.parse(pendingInvite).event.address).toBeUndefined()
+  })
+
+  it("requires an expiry and an id, and rejects an unseatable role", () => {
+    const { expiresAt: _expiresAt, ...noExpiry } = pendingInvite
+    expect(PendingEventTeamInviteDTOSchema.safeParse(noExpiry).success).toBe(false)
+    expect(
+      PendingEventTeamInviteDTOSchema.safeParse({ ...pendingInvite, role: "organizer" }).success,
+    ).toBe(false)
+  })
+
+  it("pages the inbox with the shared cursor helpers and rejects unknown query keys", () => {
+    expect(ListMyEventInvitesRequestSchema.safeParse({}).success).toBe(true)
+    expect(ListMyEventInvitesRequestSchema.safeParse({ cursor: "c", limit: 20 }).success).toBe(true)
+    expect(ListMyEventInvitesRequestSchema.safeParse({ limit: 51 }).success).toBe(false)
+    expect(ListMyEventInvitesRequestSchema.safeParse({ eventId: UUID }).success).toBe(false)
+    expect(
+      ListMyEventInvitesResponseSchema.safeParse({ items: [pendingInvite], nextCursor: null })
+        .success,
+    ).toBe(true)
+  })
+
+  it("accepts and declines by invite id alone, strictly", () => {
+    for (const schema of [AcceptMyEventInviteRequestSchema, DeclineMyEventInviteRequestSchema]) {
+      expect(schema.safeParse({ inviteId: UUID }).success).toBe(true)
+      expect(schema.safeParse({}).success).toBe(false)
+      expect(schema.safeParse({ inviteId: UUID, token: "a".repeat(32) }).success).toBe(false)
+      expect(schema.safeParse({ inviteId: UUID, id: UUID2 }).success).toBe(false)
+      expect(schema.safeParse({ inviteId: "not-a-uuid" }).success).toBe(false)
+    }
+  })
+
+  it("answers an accept with the SEATED role and the full event", () => {
+    const ok = AcceptMyEventInviteResponseSchema.safeParse({
+      ok: true,
+      role: "coordinator",
+      event: minimalCleanup,
+    })
+    expect(ok.success).toBe(true)
+    expect(
+      AcceptMyEventInviteResponseSchema.safeParse({
+        ok: true,
+        role: "organizer",
+        event: minimalCleanup,
+      }).success,
+    ).toBe(true)
+    expect(
+      AcceptMyEventInviteResponseSchema.safeParse({ ok: true, role: "coordinator" }).success,
+    ).toBe(false)
+    expect(DeclineMyEventInviteResponseSchema.safeParse({ ok: true }).success).toBe(true)
+    expect(DeclineMyEventInviteResponseSchema.safeParse({ ok: false }).success).toBe(false)
   })
 })

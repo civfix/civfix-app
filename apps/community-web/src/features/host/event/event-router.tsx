@@ -13,7 +13,7 @@ import {
   UserCog,
 } from "lucide-react"
 import type { HostCapability } from "@civfix/shared"
-import { useCleanup, hasHostCapability } from "@civfix/ui/data"
+import { cleanupHostStanding, useAuthState, useCleanup, hasHostCapability } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
 import { hrefForRoute, railSectionForRoute } from "@/components/console/route"
@@ -104,12 +104,14 @@ export function EventRouter({ route }: { route: ConsoleRoute }) {
   const cleanup = useCleanup(eventId)
   const gate = useGate(cleanup)
   const event = cleanup.data ?? null
+  const viewerId = useAuthState().user?.id ?? null
+  const standing = useMemo(() => cleanupHostStanding(event, viewerId), [event, viewerId])
   const section = railSectionForRoute(route)
 
   const navItems = useMemo<ConsoleNavItem[]>(() => {
     if (!event) return []
     return (Object.keys(SECTION_CAPABILITY) as EventSection[])
-      .filter((id) => hasHostCapability(event, SECTION_CAPABILITY[id]))
+      .filter((id) => hasHostCapability(standing, SECTION_CAPABILITY[id]))
       .map((id) => ({
         id,
         label: t(`nav.${id}`),
@@ -119,7 +121,7 @@ export function EventRouter({ route }: { route: ConsoleRoute }) {
             ? hrefForRoute({ kind: "broadcasts", eventId })
             : hrefForRoute({ kind: "event", eventId, section: id }),
       }))
-  }, [event, eventId, t])
+  }, [event, eventId, standing, t])
 
   const bottomTabs = useMemo(
     () =>
@@ -130,7 +132,7 @@ export function EventRouter({ route }: { route: ConsoleRoute }) {
   )
 
   const allowed =
-    section !== null && event !== null && hasHostCapability(event, SECTION_CAPABILITY[section])
+    section !== null && event !== null && hasHostCapability(standing, SECTION_CAPABILITY[section])
 
   return (
     <ConsoleShell

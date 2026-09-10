@@ -5,7 +5,7 @@ import { focusRingProps, makeThemedStyles, useLayoutMode, useTheme, webHover, we
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import { EmptyState, LoadingState, SignInPrompt } from "../primitives"
 import { useNotifications, useMarkNotificationsRead, useAuthState, useRequireAuth } from "../data"
-import { useNavStore, entryFromPath } from "../nav"
+import { useNavStore, entryFromPath, isRootLink } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { idKeyExtractor } from "./navHelpers"
@@ -29,6 +29,8 @@ function typeMeta(type: NotificationType, t: Theme): { glyph: IconName; color: s
       return { glyph: "Award", color: t.colors.brand.bloom, tint: t.colors.bloom["50"] }
     case "hours_logged":
       return { glyph: "Award", color: t.colors.brand.bloom, tint: t.colors.bloom["50"] }
+    case "event_team_invite":
+      return { glyph: "ClipboardList", color: t.colors.brand.sun, tint: t.colors.sun["50"] }
     case "cleanup_slot":
       return {
         glyph: "ClipboardList",
@@ -120,6 +122,7 @@ export function NotificationsBody() {
       if (!item.read) mutateRead([item.id])
       const entry = entryFromPath(item.link)
       if (entry) useNavStore.getState().push(entry)
+      else if (isRootLink(item.link)) useNavStore.getState().selectView("home")
     },
     [mutateRead],
   )

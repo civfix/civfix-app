@@ -7,12 +7,12 @@
  * Mirror of the server matrix (P3 backend; group lane P4):
  *   pin/unpin:
  *     - dm:      either participant (rendering the room at all implies participation).
- *     - cleanup: the organizer only.
+ *     - cleanup: whoever holds `moderate_chat` - organizer, co-host or coordinator.
  *     - report:  the report-chat OWNER (the report's creator, auto-joined as owner) OR an operator.
  *     - group:   the group's owner or an admin (the viewer's `myRole` off GET /groups/:id).
  *   delete others' messages:
  *     - dm:      never (each side deletes only their own).
- *     - cleanup: the organizer.
+ *     - cleanup: whoever holds `moderate_chat`.
  *     - report:  an OPERATOR only - the report owner does NOT get moderator delete.
  *     - group:   the group's owner or an admin (same lane as pin - group moderation is role-driven,
  *                platform operators get no implicit group power client-side).
@@ -23,8 +23,8 @@ export interface ChatPowerSignals {
   roomKind: RoomKind
   /** The viewer is one of the DM thread's two participants. */
   isDmParticipant: boolean
-  /** The viewer organizes this cleanup (cleanup.organizer.id === viewer id). */
-  isCleanupOrganizer: boolean
+  /** The viewer holds `moderate_chat` on this cleanup (capability set, legacy role fallback included). */
+  canModerateCleanupChat: boolean
   /** The viewer created the report behind this report chat (report.mine - the creator joins as owner). */
   isReportChatOwner: boolean
   /** The viewer's account role is "operator" (session UserDTO.role). */
@@ -47,7 +47,7 @@ export function canPinIn(s: ChatPowerSignals): boolean {
     case "dm":
       return s.isDmParticipant
     case "cleanup":
-      return s.isCleanupOrganizer
+      return s.canModerateCleanupChat
     case "report":
       return s.isReportChatOwner || s.isOperator
     case "group":
@@ -63,7 +63,7 @@ export function canDeleteOthersIn(s: ChatPowerSignals): boolean {
     case "dm":
       return false
     case "cleanup":
-      return s.isCleanupOrganizer
+      return s.canModerateCleanupChat
     case "report":
       // Deliberately NOT the report owner: only operators moderate report-chat messages.
       return s.isOperator

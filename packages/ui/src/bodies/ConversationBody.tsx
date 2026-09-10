@@ -13,6 +13,7 @@ import { resolveMentionSource, type MentionSource } from "./mentionSource"
 import { useChat, useBlockUser, useReportContent, useCleanup, useCleanupAttendees, useAuthState, useReport, useJoinReportChat, useLeaveReportChat, useToggleMute, useGroupInfo, useGroupMembers, useJoinGroup } from "../data"
 import type { ContentReportReason, ContentReportSubject } from "@civfix/shared"
 import type { UseChatResult } from "../data"
+import { cleanupHostStanding, hasHostCapability } from "../data/hooks/host"
 import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
 import { useScrollHost } from "../shell/ScrollHost"
@@ -165,8 +166,9 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
     () => ({
       roomKind,
       isDmParticipant: roomKind === "dm",
-      isCleanupOrganizer:
-        roomKind === "cleanup" && viewerId !== null && cleanup.data?.organizer.id === viewerId,
+      canModerateCleanupChat:
+        roomKind === "cleanup" &&
+        hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), "moderate_chat"),
       isReportChatOwner: isReport && report.data?.mine === true,
       isOperator: authUser?.role === "operator",
       myGroupRole: roomKind === "group" ? groupInfo.data?.myRole ?? null : null,

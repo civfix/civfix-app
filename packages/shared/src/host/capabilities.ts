@@ -39,6 +39,18 @@ const COHOST_CAPABILITIES: readonly HostCapability[] = ORGANIZER_CAPABILITIES.fi
   (cap) => !COHOST_ONLY_TO_ORGANIZER.includes(cap),
 )
 
+const COORDINATOR_ONLY_TO_COHOST: readonly HostCapability[] = [
+  "view_guest_contact",
+  "manage_event",
+  "manage_tickets",
+  "manage_page",
+  "export",
+]
+
+const COORDINATOR_CAPABILITIES: readonly HostCapability[] = COHOST_CAPABILITIES.filter(
+  (cap) => !COORDINATOR_ONLY_TO_COHOST.includes(cap),
+)
+
 const STAFF_CAPABILITIES: readonly HostCapability[] = ["view_event_private", "view_roster", "check_in"]
 
 const ORG_OWNER_CAPABILITIES: readonly HostCapability[] = [
@@ -55,6 +67,7 @@ const ORG_ADMIN_CAPABILITIES: readonly HostCapability[] = [
 const EVENT_ROLE_CAPABILITIES: Readonly<Record<CleanupMemberRole, readonly HostCapability[]>> = {
   organizer: ORGANIZER_CAPABILITIES,
   cohost: COHOST_CAPABILITIES,
+  coordinator: COORDINATOR_CAPABILITIES,
   staff: STAFF_CAPABILITIES,
   member: [],
 }

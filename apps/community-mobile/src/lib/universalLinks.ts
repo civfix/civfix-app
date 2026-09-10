@@ -57,6 +57,35 @@ function isWebHost(authority: string): boolean {
   return WEB_HOSTS.has(host.endsWith(":443") ? host.slice(0, -":443".length) : host)
 }
 
+const TEAM_INVITE_PARAM = "teamInvite"
+
+function decodeParamName(raw: string): string {
+  try {
+    return decodeURIComponent(raw.replace(/\+/g, " "))
+  } catch {
+    return raw
+  }
+}
+
+function internalQuery(query: string): string {
+  if (query === "") return ""
+  const kept = query
+    .slice(1)
+    .split("&")
+    .filter((pair) => pair !== "" && decodeParamName(pair.split("=")[0] ?? "") !== TEAM_INVITE_PARAM)
+  return kept.length === 0 ? "" : `?${kept.join("&")}`
+}
+
+function rawWithoutInviteToken(raw: string): string {
+  const hashAt = raw.indexOf("#")
+  const hash = hashAt === -1 ? "" : raw.slice(hashAt)
+  const withoutHash = hashAt === -1 ? raw : raw.slice(0, hashAt)
+  const queryAt = withoutHash.indexOf("?")
+  if (queryAt === -1) return raw
+  const kept = internalQuery(withoutHash.slice(queryAt))
+  return `${withoutHash.slice(0, queryAt)}${kept}${hash}`
+}
+
 function splitPath(raw: string): { parts: string[]; query: string } {
   const hashAt = raw.indexOf("#")
   const withoutHash = hashAt === -1 ? raw : raw.slice(0, hashAt)
@@ -75,7 +104,7 @@ function fromPath(raw: string, originalUrl: string | null): IncomingLink {
 
   const path = internalPathFor(parts)
   if (path === null || path === "/") return { type: "home" }
-  return { type: "internal", path: `${path}${query}` }
+  return { type: "internal", path: `${path}${internalQuery(query)}` }
 }
 
 function fromAppSchemeUrl(raw: string, afterScheme: string): IncomingLink {
@@ -86,9 +115,9 @@ function fromAppSchemeUrl(raw: string, afterScheme: string): IncomingLink {
   if (BROWSER_ONLY_ROOTS.has(parts[0] ?? "")) return { type: "home" }
 
   const path = internalPathFor(parts)
-  if (path === null) return { type: "internal", path: raw }
+  if (path === null) return { type: "internal", path: rawWithoutInviteToken(raw) }
   if (path === "/") return { type: "home" }
-  return { type: "internal", path: `${path}${query}` }
+  return { type: "internal", path: `${path}${internalQuery(query)}` }
 }
 
 function internalPathFor(parts: readonly string[]): string | null {
@@ -149,7 +178,7 @@ function internalPathFor(parts: readonly string[]): string | null {
   }
 }
 
-const CLEANUP_CHILDREN = new Set(["edit", "host", "checkin"])
+const CLEANUP_CHILDREN = new Set(["edit", "host", "checkin", "team"])
 
 function cleanupPathFor(
   id: string,

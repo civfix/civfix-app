@@ -3,8 +3,8 @@ import { View } from "react-native"
 import { makeThemedStyles } from "../../theme"
 import { Text, iconMap } from "../../typography"
 import { useScannerAvailable } from "../../primitives/useScannerAvailable"
-import { useCleanup } from "../../data"
-import { hasHostCapability, useHostCounters } from "../../data/hooks/host"
+import { useAuthState, useCleanup } from "../../data"
+import { cleanupHostStanding, hasHostCapability, useHostCounters } from "../../data/hooks/host"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
@@ -23,10 +23,13 @@ export function HostModeBody({ id }: { id: string }) {
   const [walkupOpen, setWalkupOpen] = useState(false)
   const canScan = useScannerAvailable()
 
-  const canCheckIn = hasHostCapability(cleanup.data, "check_in")
-  const canViewRoster = hasHostCapability(cleanup.data, "view_roster")
-  const canBroadcast = hasHostCapability(cleanup.data, "broadcast")
-  const canManageTickets = hasHostCapability(cleanup.data, "manage_tickets")
+  const viewerId = useAuthState().user?.id ?? null
+  const standing = cleanupHostStanding(cleanup.data, viewerId)
+  const canCheckIn = hasHostCapability(standing, "check_in")
+  const canViewRoster = hasHostCapability(standing, "view_roster")
+  const canBroadcast = hasHostCapability(standing, "broadcast")
+  const canManageTickets = hasHostCapability(standing, "manage_tickets")
+  const canManageTeam = hasHostCapability(standing, "manage_team")
   const counters = useHostCounters(id, { enabled: canCheckIn })
 
   const openCheckin = useCallback(() => {
@@ -35,6 +38,10 @@ export function HostModeBody({ id }: { id: string }) {
 
   const openBroadcast = useCallback(() => {
     useNavStore.getState().push({ kind: "host-broadcast-quick", id })
+  }, [id])
+
+  const openTeam = useCallback(() => {
+    useNavStore.getState().push({ kind: "host-team", id })
   }, [id])
 
   if (cleanup.isLoading) {
@@ -97,6 +104,14 @@ export function HostModeBody({ id }: { id: string }) {
             label={t("action.walkup")}
             accessibilityLabel={t("action.walkup_a11y")}
             onPress={() => setWalkupOpen(true)}
+          />
+        ) : null}
+        {canManageTeam ? (
+          <EventActionRow
+            icon={iconMap.Users}
+            label={t("action.team")}
+            accessibilityLabel={t("action.team_a11y")}
+            onPress={openTeam}
           />
         ) : null}
       </EventActionRows>

@@ -2,6 +2,8 @@ import { useRef, useState } from "react"
 import type { QueryClient } from "@tanstack/react-query"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
+  AcceptEventTeamInviteResponse,
+  AcceptMyEventInviteResponse,
   BroadcastDTO,
   BroadcastSegment,
   BroadcastStatus,
@@ -9,21 +11,29 @@ import type {
   CleanupMemberRole,
   CreateWalkupRegistrationRequest,
   CreateWalkupRegistrationResponse,
+  DeclineMyEventInviteResponse,
   EventCheckinCountersDTO,
   EventRegistrationDTO,
-  EventTeamMemberDTO,
+  EventTeamInviteIdentifierKind,
+  EventTeamRole,
   EventQuestionDTO,
   EventWaitlistEntryDTO,
   HostCapability,
   HostedEventDTO,
+  InviteEventTeamMemberResponse,
   ListEventRegistrationsResponse,
+  ListEventTeamResponse,
+  ListMyEventInvitesResponse,
   ListMyHostedEventsResponse,
   MyEventTicketDTO,
+  PendingEventTeamInviteDTO,
   RegisterForEventRequest,
   RegisterForEventResponse,
   RegistrationRosterFilter,
+  RevokeEventTeamInviteResponse,
   TicketTypeDTO,
 } from "@civfix/shared"
+import { hostCapabilities } from "@civfix/shared/host"
 import { appErrorCode } from "../../bodies/errorCode"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
@@ -38,13 +48,23 @@ export interface HostStandingView {
   myRole?: CleanupMemberRole | null | undefined
 }
 
+const NO_LEGACY_CAPABILITIES: ReadonlySet<HostCapability> = hostCapabilities({
+  eventRole: null,
+  orgRole: null,
+})
+
+export function legacyRoleCapabilities(cleanup: HostStandingView): ReadonlySet<HostCapability> {
+  if (cleanup.myCapabilities.length > 0) return NO_LEGACY_CAPABILITIES
+  return hostCapabilities({ eventRole: cleanup.myRole ?? null, orgRole: null })
+}
+
 export function hasHostCapability(
   cleanup: HostStandingView | null | undefined,
   capability: HostCapability,
 ): boolean {
   if (!cleanup) return false
   if (cleanup.myCapabilities.includes(capability)) return true
-  return cleanup.myCapabilities.length === 0 && cleanup.myRole === "organizer"
+  return legacyRoleCapabilities(cleanup).has(capability)
 }
 
 export function actsAsHost(cleanup: HostStandingView | null | undefined): boolean {
@@ -52,12 +72,26 @@ export function actsAsHost(cleanup: HostStandingView | null | undefined): boolea
 }
 
 export function managesEvent(cleanup: HostStandingView | null | undefined): boolean {
-  if (!cleanup) return false
-  if (hasHostCapability(cleanup, "manage_event")) return true
-  return (
-    cleanup.myCapabilities.length === 0 &&
-    (cleanup.myRole === "organizer" || cleanup.myRole === "cohost")
-  )
+  return hasHostCapability(cleanup, "manage_event")
+}
+
+export interface CleanupStandingSource {
+  myCapabilities: readonly HostCapability[]
+  myRole?: CleanupMemberRole | null | undefined
+  organizer: { id: string }
+}
+
+export function cleanupHostStanding(
+  cleanup: CleanupStandingSource | null | undefined,
+  viewerId: string | null | undefined,
+): HostStandingView | null {
+  if (!cleanup) return null
+  const fallbackRole: CleanupMemberRole | null =
+    !!viewerId && cleanup.organizer.id === viewerId ? "organizer" : null
+  return {
+    myCapabilities: cleanup.myCapabilities,
+    myRole: cleanup.myRole ?? fallbackRole,
+  }
 }
 
 export function invalidateHostEvent(qc: QueryClient, cleanupId: string): void {
@@ -135,11 +169,54 @@ export function useEventQuestions(id: string | undefined, opts: { enabled?: bool
 export function useHostTeam(id: string | undefined, opts: { enabled?: boolean } = {}) {
   const api = useApi()
   const { isAuthenticated } = useAuthState()
-  return useQuery<EventTeamMemberDTO[]>({
+  return useQuery<ListEventTeamResponse>({
     queryKey: queryKeys.hostTeam(id ?? "unknown"),
     enabled: !!id && isAuthenticated && (opts.enabled ?? true),
-    queryFn: async () => (await api.listEventTeam({ id: id as string })).members,
+    queryFn: () => api.listEventTeam({ id: id as string }),
     retry: false,
+  })
+}
+
+export interface InviteEventTeamMemberVars {
+  identifierKind: EventTeamInviteIdentifierKind
+  identifier: string
+  role: EventTeamRole
+}
+
+export function useInviteEventTeamMember(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation<InviteEventTeamMemberResponse, unknown, InviteEventTeamMemberVars>({
+    mutationFn: (vars) => api.inviteEventTeamMember({ ...vars, id }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.hostTeam(id) })
+      invalidateHostEvent(qc, id)
+    },
+  })
+}
+
+export function useRevokeEventTeamInvite(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation<RevokeEventTeamInviteResponse, unknown, { inviteId: string }>({
+    mutationFn: ({ inviteId }) => api.revokeEventTeamInvite({ id, inviteId }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.hostTeam(id) })
+      invalidateHostEvent(qc, id)
+    },
+  })
+}
+
+export function useAcceptEventTeamInvite(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation<AcceptEventTeamInviteResponse, unknown, { token: string }>({
+    mutationFn: ({ token }) => api.acceptEventTeamInvite({ id, token }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.hostTeam(id) })
+      invalidateMyEventInvites(qc)
+      invalidateHostEvent(qc, id)
+    },
   })
 }
 
@@ -435,4 +512,50 @@ export function hostedEventRows(
   pages: readonly ListMyHostedEventsResponse[] | undefined,
 ): HostedEventDTO[] {
   return (pages ?? []).flatMap((page) => page.items)
+}
+
+export function invalidateMyEventInvites(qc: QueryClient): void {
+  void qc.invalidateQueries({ queryKey: queryKeys.myEventInvites })
+  void qc.invalidateQueries({ queryKey: queryKeys.hostedEventsRoot })
+  void qc.invalidateQueries({ queryKey: queryKeys.notificationsRoot })
+}
+
+export const MY_EVENT_INVITES_PAGE_SIZE = 50
+
+export function useMyEventInvites(opts: { enabled?: boolean } = {}) {
+  const api = useApi()
+  const { isAuthenticated } = useAuthState()
+  return useQuery<ListMyEventInvitesResponse>({
+    queryKey: queryKeys.myEventInvites,
+    enabled: isAuthenticated && (opts.enabled ?? true),
+    queryFn: () => api.listMyEventInvites({ limit: MY_EVENT_INVITES_PAGE_SIZE }),
+    retry: false,
+  })
+}
+
+export function myEventInviteRows(
+  page: ListMyEventInvitesResponse | undefined,
+): PendingEventTeamInviteDTO[] {
+  return page?.items ?? []
+}
+
+export function useAcceptMyEventInvite() {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation<AcceptMyEventInviteResponse, unknown, { inviteId: string }>({
+    mutationFn: ({ inviteId }) => api.acceptMyEventInvite({ inviteId }),
+    onSuccess: (res) => {
+      invalidateMyEventInvites(qc)
+      invalidateHostEvent(qc, res.event.id)
+    },
+  })
+}
+
+export function useDeclineMyEventInvite() {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation<DeclineMyEventInviteResponse, unknown, { inviteId: string }>({
+    mutationFn: ({ inviteId }) => api.declineMyEventInvite({ inviteId }),
+    onSuccess: () => invalidateMyEventInvites(qc),
+  })
 }

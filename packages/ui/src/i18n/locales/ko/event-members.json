@@ -42,12 +42,11 @@
     "body": "이 이벤트에 참여하는 사람들이 여기에 표시됩니다."
   },
   "role": {
-    "host": "주최자",
-    "cohost": "공동 주최자"
+    "host": "주최자"
   },
   "manage": {
-    "makeCohost": "공동 주최자로 지정",
-    "removeCohost": "공동 주최자 해제",
+    "make_role": "{{role}}(으)로 지정",
+    "set_role_a11y": "이 이벤트에서 {{name}} 님의 역할 변경",
     "remove": "이벤트에서 내보내기",
     "removeCancel": "취소",
     "removeConfirm": "이벤트에서 내보내기"

@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { useNavigationContainerRef, useRouter } from "expo-router"
-import { useNavStore, entryFromPath, type DetailEntry } from "@civfix/ui"
+import { useNavStore, entryFromPath, isRootLink, type DetailEntry } from "@civfix/ui"
 import { toInternalHref } from "@/lib/links"
 import {
   INITIAL_BRIDGE_GUARD,
@@ -21,7 +21,10 @@ let readFocusedBridgeKey: () => string | null = () => null
 export function applyInternalHref(href: string): DetailEntry | null {
   if (!toInternalHref(href)) return null
   const entry = entryFromPath(href)
-  if (!entry) return null
+  if (!entry) {
+    if (isRootLink(href)) useNavStore.getState().selectView("home")
+    return null
+  }
   const key = bridgeKey(entry)
   if (key !== null && key === readFocusedBridgeKey()) return entry
   useNavStore.getState().navigateTo(entry, "compact")

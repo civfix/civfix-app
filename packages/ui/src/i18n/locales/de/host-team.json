@@ -1,4 +1,18 @@
 {
+  "state": {
+    "loading": "Team wird geladen …",
+    "error_title": "Das Team ist nicht verfügbar",
+    "error_body": "Wir konnten das Team dieses Events nicht laden. Prüfe deine Verbindung und versuche es erneut.",
+    "denied_title": "Hier kein*e Host",
+    "denied_body": "Nur Hosts, die das Team verwalten dürfen, öffnen diesen Bildschirm."
+  },
+  "accept": {
+    "joined": "Du bist dem Team als {{role}} beigetreten",
+    "error_invalid": "Diese Einladung ist nicht mehr gültig. Sie wurde möglicherweise bereits verwendet, zurückgezogen oder an ein anderes Konto gesendet.",
+    "error_unavailable": "Diese Einladung kann nicht mehr angenommen werden. Bitte den Host um eine neue.",
+    "error_removed": "Ein Host hat dich aus diesem Event entfernt, daher kannst du ihm nicht erneut beitreten.",
+    "error_generic": "Die Einladung konnte nicht angenommen werden. Öffne den Link erneut."
+  },
   "members": {
     "title": "Team",
     "joined": "Dabei seit {{when}}",
@@ -7,6 +21,7 @@
   },
   "role": {
     "cohost": "Co-Host",
+    "coordinator": "Koordinator*in",
     "staff": "Team",
     "member": "Teilnehmende*r",
     "updated": "Rolle aktualisiert",
@@ -15,7 +30,16 @@
     "confirm_body": "{{name}} wird für dieses Event {{role}}. Du kannst das jederzeit wieder ändern.",
     "confirm_action": "Rolle ändern",
     "error_conflict": "Die Rolle dieser Person wurde vor dir geändert. Lade das Team neu und versuche es erneut.",
-    "error_forbidden": "Du kannst die Rolle dieser Person bei diesem Event nicht ändern."
+    "error_forbidden": "Du kannst die Rolle dieser Person bei diesem Event nicht ändern.",
+    "hint_cohost": "Leitet das Event mit dir: bearbeitet Details, Tickets und Seite und sieht die Kontaktdaten der Gäste.",
+    "hint_coordinator": "Leitet den Tag: Teilnahmeliste, Antworten, Check-in, Rundnachrichten und Chat. Ändert nichts und sieht nie eine E-Mail-Adresse oder Telefonnummer.",
+    "hint_staff": "Hilft an der Tür: Liste ohne Kontaktdaten und Check-in, mehr nicht."
+  },
+  "manage": {
+    "error_generic": "Diese Änderung ist nicht durchgegangen. Versuche es erneut.",
+    "error_conflict": "Dieses Team wurde vor dir geändert. Lade es neu und versuche es erneut.",
+    "error_forbidden": "Du kannst diese Änderung bei diesem Event nicht vornehmen.",
+    "error_gone": "Das gehört nicht mehr zu diesem Team."
   },
   "invite": {
     "action": "Einladen",
@@ -26,11 +50,20 @@
     "handle": "Handle",
     "email": "E-Mail-Adresse",
     "role": "Rolle",
-    "role_hint": "Co-Hosts können die Veranstaltung verwalten. Team-Leute können Personen einchecken und sehen eine Liste ohne Kontaktdaten.",
     "send": "Einladung senden",
     "sent": "Einladung gesendet",
     "revoked": "Einladung zurückgezogen",
-    "privacy_note": "Eine eingeladene E-Mail-Adresse wird maskiert gespeichert. Du siehst nie die vollständige Adresse."
+    "privacy_note": "Eine eingeladene E-Mail-Adresse wird maskiert gespeichert. Du siehst nie die vollständige Adresse.",
+    "dismiss_a11y": "Einladungsformular schließen",
+    "limit_reached": "Dieses Event hat bereits die maximale Zahl offener Einladungen.",
+    "handle_invalid": "Ein Handle besteht aus 3 bis 20 Buchstaben, Ziffern oder Unterstrichen.",
+    "email_invalid": "Gib eine vollständige E-Mail-Adresse ein.",
+    "error_generic": "Diese Einladung konnte nicht gesendet werden.",
+    "error_no_account": "Zu diesem Handle gibt es kein Konto.",
+    "error_conflict": "Diese Person ist schon im Team oder hat schon eine offene Einladung.",
+    "error_forbidden": "Diese Person kann nicht zu diesem Event eingeladen werden.",
+    "error_rate_limited": "Dieses Event hat heute zu viele Einladungen gesendet. Versuche es morgen erneut.",
+    "error_invalid": "Prüfe das Handle oder die E-Mail-Adresse und versuche es erneut."
   },
   "invites": {
     "title": "Offene Einladungen",
@@ -42,6 +75,8 @@
     "status_pending": "Offen",
     "status_accepted": "Angenommen",
     "status_revoked": "Zurückgezogen",
-    "status_expired": "Abgelaufen"
+    "status_declined": "Abgelehnt",
+    "status_expired": "Abgelaufen",
+    "expires": "Läuft am {{when}} ab"
   }
 }

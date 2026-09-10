@@ -74,8 +74,10 @@ export const queryKeys = {
   eventIcs: (id: string) => ["cleanup", id, "ics"] as const,
   org: (slug: string) => ["org", slug] as const,
   myOrganizations: ["orgs", "mine"] as const,
+  hostedEventsRoot: ["hosted-events"] as const,
   hostedEvents: (when: string, orgId: string | null) =>
     ["hosted-events", when, orgId ?? "all"] as const,
+  myEventInvites: ["event-invites", "mine"] as const,
   myDonations: ["donations", "mine"] as const,
   orgDonate: (slug: string) => ["donations", "org", slug] as const,
   orgDonationExports: (orgId: string) => ["host-exports", "org", orgId] as const,

@@ -3,8 +3,13 @@
 import { useState } from "react"
 import { UserPlus } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { SetMemberRoleRequest } from "@civfix/shared"
-import { useApi } from "@civfix/ui/data"
+import type { EventTeamRole } from "@civfix/shared"
+import {
+  INVITABLE_EVENT_TEAM_ROLES,
+  SETTABLE_EVENT_MEMBER_ROLES,
+  useApi,
+  type SettableEventMemberRole,
+} from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
 import { useGate, fieldErrorsFrom } from "@/components/console/query-state"
@@ -25,14 +30,10 @@ import { useConsoleErrors } from "../error-copy"
 import { useConsoleFormat } from "../format"
 import { invalidateEvent } from "../console-invalidate"
 
-type SettableRole = SetMemberRoleRequest["role"]
-
-export const SETTABLE_ROLES = ["cohost", "staff", "member"] as const satisfies readonly SettableRole[]
-
 interface PendingRoleChange {
   userId: string
   name: string
-  role: SettableRole
+  role: SettableEventMemberRole
 }
 
 export function TeamScreen() {
@@ -51,7 +52,7 @@ export function TeamScreen() {
   const [inviteOpen, setInviteOpen] = useState(false)
   const [identifierKind, setIdentifierKind] = useState<"handle" | "email">("handle")
   const [identifier, setIdentifier] = useState("")
-  const [role, setRole] = useState<"cohost" | "staff">("staff")
+  const [role, setRole] = useState<EventTeamRole>("staff")
   const [fields, setFields] = useState<Record<string, string>>({})
   const [pendingRevoke, setPendingRevoke] = useState<string | null>(null)
   const [pendingRole, setPendingRole] = useState<PendingRoleChange | null>(null)
@@ -149,10 +150,10 @@ export function TeamScreen() {
                       setPendingRole({
                         userId: member.person.id,
                         name: member.person.name,
-                        role: event.target.value as SettableRole,
+                        role: event.target.value as SettableEventMemberRole,
                       })
                     }
-                    options={SETTABLE_ROLES.map((value) => ({
+                    options={SETTABLE_EVENT_MEMBER_ROLES.map((value) => ({
                       value,
                       label: t(`role.${value}`),
                     }))}
@@ -240,15 +241,15 @@ export function TeamScreen() {
               onChange={(event) => setIdentifier(event.target.value)}
             />
           </Field>
-          <Field label={t("invite.role")} htmlFor="invite-role" hint={t("invite.role_hint")}>
+          <Field label={t("invite.role")} htmlFor="invite-role" hint={t(`role.hint_${role}`)}>
             <Select
               id="invite-role"
               value={role}
-              onChange={(event) => setRole(event.target.value as "cohost" | "staff")}
-              options={[
-                { value: "cohost", label: t("role.cohost") },
-                { value: "staff", label: t("role.staff") },
-              ]}
+              onChange={(event) => setRole(event.target.value as EventTeamRole)}
+              options={INVITABLE_EVENT_TEAM_ROLES.map((value) => ({
+                value,
+                label: t(`role.${value}`),
+              }))}
             />
           </Field>
           <p className="text-token-12 text-console-ink-3">{t("invite.privacy_note")}</p>

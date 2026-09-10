@@ -1,4 +1,18 @@
 {
+  "state": {
+    "loading": "Cargando el equipo…",
+    "error_title": "El equipo no está disponible",
+    "error_body": "No pudimos cargar el equipo de este evento. Revisa tu conexión e inténtalo de nuevo.",
+    "denied_title": "No eres anfitrión aquí",
+    "denied_body": "Solo los anfitriones que pueden gestionar el equipo abren esta pantalla."
+  },
+  "accept": {
+    "joined": "Te has unido al equipo como {{role}}",
+    "error_invalid": "Esa invitación ya no es válida. Puede que se haya usado, se haya retirado o se haya enviado a otra cuenta.",
+    "error_unavailable": "Esa invitación ya no se puede aceptar. Pide al anfitrión que te envíe otra.",
+    "error_removed": "Un anfitrión te expulsó de este evento, así que no puedes volver a unirte.",
+    "error_generic": "No pudimos aceptar esa invitación. Vuelve a abrir el enlace."
+  },
   "members": {
     "title": "Equipo",
     "joined": "Se unió {{when}}",
@@ -7,6 +21,7 @@
   },
   "role": {
     "cohost": "Coanfitrión",
+    "coordinator": "Coordinador",
     "staff": "Personal",
     "member": "Asistente",
     "updated": "Rol actualizado",
@@ -15,7 +30,16 @@
     "confirm_body": "{{name}} pasará a ser {{role}} en este evento. Puedes volver a cambiarlo cuando quieras.",
     "confirm_action": "Cambiar rol",
     "error_conflict": "El rol de esa persona cambió antes que el tuyo. Recarga el equipo e inténtalo de nuevo.",
-    "error_forbidden": "No puedes cambiar el rol de esa persona en este evento."
+    "error_forbidden": "No puedes cambiar el rol de esa persona en este evento.",
+    "hint_cohost": "Organiza el evento contigo: edita los detalles, las entradas y la página, y ve los datos de contacto.",
+    "hint_coordinator": "Lleva la jornada: la lista, las respuestas, el registro de entrada, los avisos y el chat. No cambia nada y nunca ve un correo ni un teléfono.",
+    "hint_staff": "Ayuda en la puerta: una lista sin datos de contacto y el registro de entrada, nada más."
+  },
+  "manage": {
+    "error_generic": "Ese cambio no se aplicó. Inténtalo de nuevo.",
+    "error_conflict": "Este equipo cambió antes que tú. Recárgalo e inténtalo de nuevo.",
+    "error_forbidden": "No puedes hacer ese cambio en este evento.",
+    "error_gone": "Eso ya no está en este equipo."
   },
   "invite": {
     "action": "Invitar",
@@ -26,11 +50,20 @@
     "handle": "Handle",
     "email": "Dirección de correo",
     "role": "Rol",
-    "role_hint": "Los coanfitriones pueden gestionar el evento. El personal puede registrar entradas y ver una lista sin datos de contacto.",
     "send": "Enviar la invitación",
     "sent": "Invitación enviada",
     "revoked": "Invitación revocada",
-    "privacy_note": "El correo al que invitas se guarda enmascarado. Nunca verás la dirección completa."
+    "privacy_note": "El correo al que invitas se guarda enmascarado. Nunca verás la dirección completa.",
+    "dismiss_a11y": "Cerrar el formulario de invitación",
+    "limit_reached": "Este evento ya tiene el máximo de invitaciones abiertas.",
+    "handle_invalid": "Un handle son de 3 a 20 letras, números o guiones bajos.",
+    "email_invalid": "Escribe una dirección de correo completa.",
+    "error_generic": "No se pudo enviar la invitación.",
+    "error_no_account": "Ninguna cuenta coincide con ese handle.",
+    "error_conflict": "Esa persona ya está en el equipo o ya tiene una invitación abierta.",
+    "error_forbidden": "No se puede invitar a esa persona a este evento.",
+    "error_rate_limited": "Este evento ya envió demasiadas invitaciones hoy. Inténtalo mañana.",
+    "error_invalid": "Revisa el handle o el correo e inténtalo de nuevo."
   },
   "invites": {
     "title": "Invitaciones pendientes",
@@ -42,6 +75,8 @@
     "status_pending": "Pendiente",
     "status_accepted": "Aceptada",
     "status_revoked": "Revocada",
-    "status_expired": "Caducada"
+    "status_declined": "Rechazada",
+    "status_expired": "Caducada",
+    "expires": "Caduca el {{when}}"
   }
 }

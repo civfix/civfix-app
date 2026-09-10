@@ -14,7 +14,9 @@
     "quick_message": "Quick message",
     "quick_message_a11y": "Send a quick message to attendees",
     "walkup": "Add a walk-up",
-    "walkup_a11y": "Register someone at the door"
+    "walkup_a11y": "Register someone at the door",
+    "team": "Team",
+    "team_a11y": "Manage the event team"
   },
   "roster": {
     "heading": "Attendees"

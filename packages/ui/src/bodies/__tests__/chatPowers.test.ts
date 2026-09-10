@@ -10,7 +10,7 @@ function signals(overrides: Partial<ChatPowerSignals> = {}): ChatPowerSignals {
   return {
     roomKind: "cleanup",
     isDmParticipant: false,
-    isCleanupOrganizer: false,
+    canModerateCleanupChat: false,
     isReportChatOwner: false,
     isOperator: false,
     ...overrides,
@@ -27,7 +27,7 @@ describe("canPinIn", () => {
   })
 
   it("cleanup: the organizer may pin", () => {
-    expect(canPinIn(signals({ roomKind: "cleanup", isCleanupOrganizer: true }))).toBe(true)
+    expect(canPinIn(signals({ roomKind: "cleanup", canModerateCleanupChat: true }))).toBe(true)
   })
 
   it("cleanup: an ordinary member may not", () => {
@@ -75,7 +75,7 @@ describe("canDeleteOthersIn", () => {
   })
 
   it("cleanup: the organizer may delete others' messages", () => {
-    expect(canDeleteOthersIn(signals({ roomKind: "cleanup", isCleanupOrganizer: true }))).toBe(true)
+    expect(canDeleteOthersIn(signals({ roomKind: "cleanup", canModerateCleanupChat: true }))).toBe(true)
   })
 
   it("cleanup: an ordinary member may not", () => {

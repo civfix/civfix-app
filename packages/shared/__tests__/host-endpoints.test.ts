@@ -24,9 +24,9 @@ const CSRF_FREE_MUTATIONS = new Set([
 ])
 
 describe("host platform endpoint registry", () => {
-  it("adds 123 endpoints, of which 30 are admin", () => {
-    expect(NEW_NAMES).toHaveLength(123)
-    expect(Object.keys(hostEndpoints)).toHaveLength(77)
+  it("adds 126 endpoints, of which 30 are admin", () => {
+    expect(NEW_NAMES).toHaveLength(126)
+    expect(Object.keys(hostEndpoints)).toHaveLength(80)
     expect(Object.keys(paymentsEndpoints)).toHaveLength(16)
     expect(Object.keys(hostAdminEndpoints)).toHaveLength(30)
     for (const name of Object.keys(hostAdminEndpoints)) {
@@ -206,6 +206,26 @@ describe("host platform endpoint registry", () => {
     expect(endpoints.hostedEventsAnalytics.path).toBe("/me/hosted-events/analytics")
     expect(endpoints.listMyHostedEvents.path).not.toMatch(/:[A-Za-z0-9_]+/)
     expect(endpoints.hostedEventsAnalytics.path).not.toMatch(/:[A-Za-z0-9_]+/)
+  })
+
+  it("seats the invitee inbox under /me, token-free, with the id in the path (DECISIONS §33)", () => {
+    expect(endpoints.listMyEventInvites.method).toBe("GET")
+    expect(endpoints.listMyEventInvites.path).toBe("/me/event-invites")
+    expect(endpoints.listMyEventInvites.path).not.toMatch(/:[A-Za-z0-9_]+/)
+    expect(endpoints.listMyEventInvites.auth).toBe("required")
+    expect(endpoints.listMyEventInvites.csrf).toBe(false)
+    for (const name of ["acceptMyEventInvite", "declineMyEventInvite"] as const) {
+      const e = endpoints[name]
+      expect(e.method, name).toBe("POST")
+      expect(e.auth, name).toBe("required")
+      expect(e.csrf, name).toBe(true)
+      const { params, consumedKeys } = extractParams(e.path, { inviteId: UUID })
+      expect(params, name).toEqual({ inviteId: UUID })
+      expect(consumedKeys.has("inviteId"), name).toBe(true)
+      expect(fillPath(e.path, params), name).toBe(`/me/event-invites/${UUID}/${name === "acceptMyEventInvite" ? "accept" : "decline"}`)
+    }
+    expect(endpoints.acceptEventTeamInvite.path).toBe("/cleanups/:id/team/invites/accept")
+    expect(endpoints.acceptMyEventInvite.path.startsWith("/cleanups/")).toBe(false)
   })
 
   it("serves the five per-event analytics panels off one request schema", () => {

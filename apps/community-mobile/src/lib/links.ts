@@ -14,9 +14,12 @@ export const ALLOWED_LINK_PREFIXES = [
   "/settings",
 ] as const
 
+export const ROOT_LINK = "/"
+
 export function isInternalLink(link: string): boolean {
   if (!link.startsWith("/")) return false
   if (link.startsWith("//")) return false
+  if (link === ROOT_LINK) return true
   return ALLOWED_LINK_PREFIXES.some((prefix) => {
     if (prefix.endsWith("/")) return link.startsWith(prefix)
     if (link === prefix) return true

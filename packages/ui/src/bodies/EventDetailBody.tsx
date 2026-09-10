@@ -38,7 +38,12 @@ import {
   useCompleteCleanup,
   useRequestEventResources,
 } from "../data"
-import { hasHostCapability, managesEvent, useEventQuestions } from "../data/hooks/host"
+import {
+  cleanupHostStanding,
+  hasHostCapability,
+  managesEvent,
+  useEventQuestions,
+} from "../data/hooks/host"
 import { useOrgDonationPage } from "../data/hooks/donations"
 import { useNavStore } from "../nav"
 import { useOpenExternal } from "../capabilities"
@@ -255,11 +260,10 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const join = useJoinCleanup(cleanup.id)
 
   const going = cleanup.joined
-  const myRole =
-    cleanup.myRole ?? (!!user && user.id === cleanup.organizer.id ? "organizer" : null)
+  const capabilityCleanup = cleanupHostStanding(cleanup, user?.id ?? null)
+  const myRole = capabilityCleanup?.myRole ?? null
   const isOrganizer = myRole === "organizer"
   const isCohost = myRole === "cohost"
-  const capabilityCleanup = { myCapabilities: cleanup.myCapabilities, myRole }
   const canCheckIn = hasHostCapability(capabilityCleanup, "check_in")
   const canViewGuestContact = hasHostCapability(capabilityCleanup, "view_guest_contact")
   const canViewRoster = hasHostCapability(capabilityCleanup, "view_roster")

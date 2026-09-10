@@ -42,12 +42,11 @@
     "body": "Las personas que van a este evento aparecerán aquí."
   },
   "role": {
-    "host": "Anfitrión",
-    "cohost": "Coanfitrión"
+    "host": "Anfitrión"
   },
   "manage": {
-    "makeCohost": "Hacer coanfitrión",
-    "removeCohost": "Quitar coanfitrión",
+    "make_role": "Hacer {{role}}",
+    "set_role_a11y": "Cambiar el rol de {{name}} en este evento",
     "remove": "Eliminar del evento",
     "removeCancel": "Cancelar",
     "removeConfirm": "Eliminar del evento"

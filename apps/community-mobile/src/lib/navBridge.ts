@@ -8,6 +8,7 @@ export const BRIDGE_ROUTE_NAMES = {
   composer: "compose",
   hostMode: "cleanups/[id]/host",
   hostCheckin: "cleanups/[id]/checkin",
+  hostTeam: "cleanups/[id]/team",
   myTicket: "cleanups/[id]/ticket",
   myTicketSeat: "cleanups/[id]/ticket/[seatId]",
   org: "orgs/[slug]",
@@ -22,6 +23,7 @@ export const MY_TICKET_ROUTE_NAMES: readonly string[] = [
 export const SHELL_HOSTED_BRIDGE_KINDS: readonly string[] = [
   "host-mode",
   "host-checkin",
+  "host-team",
   "my-ticket",
   "org",
 ]
@@ -67,6 +69,7 @@ export function bridgeKey(entry: DetailEntry | null | undefined): string | null 
   if (entry.kind === "thread") return entry.id ? `thread:${entry.id}` : null
   if (entry.kind === "host-mode") return entry.id ? `host-mode:${entry.id}` : null
   if (entry.kind === "host-checkin") return entry.id ? `host-checkin:${entry.id}` : null
+  if (entry.kind === "host-team") return entry.id ? `host-team:${entry.id}` : null
   if (entry.kind === "my-ticket") return entry.id ? `my-ticket:${entry.id}:${entry.seatId ?? ""}` : null
   if (entry.kind === "org") return entry.slug ? `org:${entry.slug}` : null
   return null
@@ -99,6 +102,10 @@ export function nativeBridgeKey(route: NativeRoute | null | undefined): string |
     const id = routeParam(route.params, "id")
     return id ? `host-checkin:${id}` : null
   }
+  if (route.name === BRIDGE_ROUTE_NAMES.hostTeam) {
+    const id = routeParam(route.params, "id")
+    return id ? `host-team:${id}` : null
+  }
   if (MY_TICKET_ROUTE_NAMES.includes(route.name)) {
     const id = routeParam(route.params, "id")
     return id ? `my-ticket:${id}:${routeParam(route.params, "seatId")}` : null
@@ -128,6 +135,9 @@ export function bridgeRoute(entry: DetailEntry): BridgeRoute | null {
   }
   if (entry.kind === "host-checkin") {
     return entry.id ? { pathname: `/${BRIDGE_ROUTE_NAMES.hostCheckin}`, params: { id: entry.id } } : null
+  }
+  if (entry.kind === "host-team") {
+    return entry.id ? { pathname: `/${BRIDGE_ROUTE_NAMES.hostTeam}`, params: { id: entry.id } } : null
   }
   if (entry.kind === "my-ticket") {
     if (!entry.id) return null
