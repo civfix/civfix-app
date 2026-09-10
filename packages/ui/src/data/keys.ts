@@ -76,7 +76,17 @@ export const queryKeys = {
   hostedEventsRoot: ["hosted-events"] as const,
   hostedEvents: (when: string, orgId: string | null) =>
     ["hosted-events", when, orgId ?? "all"] as const,
+  hostedEventsAnalytics: (range: string, orgId: string | null) =>
+    ["hosted-events", "analytics", range, orgId ?? "all"] as const,
   myEventInvites: ["event-invites", "mine"] as const,
+  myOrgInvites: ["org-invites", "mine"] as const,
+  orgMembers: (orgId: string) => ["org", orgId, "members"] as const,
+  orgInvites: (orgId: string) => ["org", orgId, "invites"] as const,
+  orgPayments: (orgId: string) => ["org", orgId, "payments"] as const,
+  orgBalance: (orgId: string) => ["org", orgId, "payments", "balance"] as const,
+  orgPayouts: (orgId: string) => ["org", orgId, "payments", "payouts"] as const,
+  orgDonationSummary: (orgId: string, from: string | null, to: string | null) =>
+    ["org", orgId, "donations", "summary", from ?? "all", to ?? "now"] as const,
   myDonations: ["donations", "mine"] as const,
   orgDonate: (slug: string) => ["donations", "org", slug] as const,
   orgDonationExports: (orgId: string) => ["host-exports", "org", orgId] as const,
