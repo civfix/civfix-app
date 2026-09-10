@@ -4,6 +4,7 @@ import type {
   CleanupDTO,
   CleanupAttendeesResponse,
   CreateCleanupRequest,
+  DuplicateCleanupRequest,
   UpdateCleanupRequest,
   JoinCleanupResponse,
   RequestEventResourcesResponse,
@@ -226,6 +227,22 @@ export function useCreateCleanup() {
     onSuccess: (cleanup) => {
       qc.setQueryData<CleanupDTO>(queryKeys.cleanup(cleanup.id), cleanup)
       void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+    },
+  })
+}
+
+export type DuplicateCleanupVars = Omit<DuplicateCleanupRequest, "id"> & { id: string }
+
+export function useDuplicateCleanup() {
+  const api = useApi()
+  const qc = useQueryClient()
+
+  return useMutation<CleanupDTO, unknown, DuplicateCleanupVars>({
+    mutationFn: (input) => api.duplicateCleanup(input),
+    onSuccess: (cleanup) => {
+      qc.setQueryData<CleanupDTO>(queryKeys.cleanup(cleanup.id), cleanup)
+      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      void qc.invalidateQueries({ queryKey: queryKeys.hostedEventsRoot })
     },
   })
 }

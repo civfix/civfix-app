@@ -1,0 +1,129 @@
+import { useRef } from "react"
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import type {
+  CreateOrgPayoutResponse,
+  CreateOrgStripeAccountLinkResponse,
+  ListOrgPayoutsResponse,
+  OrgBalanceDTO,
+  OrgDonationSummaryDTO,
+  OrgPaymentsStatusDTO,
+  PayoutDTO,
+} from "@civfix/shared"
+import { useApi, useAuthState } from "../context"
+import { queryKeys } from "../keys"
+import { randomId } from "../randomId"
+
+export interface OrgDonationSummaryRange {
+  from?: string
+  to?: string
+}
+
+export function useOrgPaymentsStatus(orgId: string | undefined, opts: { enabled?: boolean } = {}) {
+  const api = useApi()
+  const { isAuthenticated } = useAuthState()
+  return useQuery<OrgPaymentsStatusDTO>({
+    queryKey: queryKeys.orgPaymentsStatus(orgId ?? "unknown"),
+    enabled: !!orgId && isAuthenticated && (opts.enabled ?? true),
+    queryFn: () => api.getOrgPaymentsStatus({ id: orgId as string }),
+    retry: false,
+  })
+}
+
+export function useOrgDonationSummary(
+  orgId: string | undefined,
+  range: OrgDonationSummaryRange = {},
+  opts: { enabled?: boolean } = {},
+) {
+  const api = useApi()
+  const { isAuthenticated } = useAuthState()
+  return useQuery<OrgDonationSummaryDTO>({
+    queryKey: queryKeys.orgDonationSummary(orgId ?? "unknown", range.from ?? "all", range.to ?? "now"),
+    enabled: !!orgId && isAuthenticated && (opts.enabled ?? true),
+    queryFn: () =>
+      api.getOrgDonationSummary({
+        id: orgId as string,
+        ...(range.from ? { from: range.from } : {}),
+        ...(range.to ? { to: range.to } : {}),
+      }),
+    retry: false,
+  })
+}
+
+export function useOrgBalance(orgId: string | undefined, opts: { enabled?: boolean } = {}) {
+  const api = useApi()
+  const { isAuthenticated } = useAuthState()
+  return useQuery<OrgBalanceDTO>({
+    queryKey: queryKeys.orgBalance(orgId ?? "unknown"),
+    enabled: !!orgId && isAuthenticated && (opts.enabled ?? true),
+    queryFn: () => api.getOrgBalance({ id: orgId as string }),
+    retry: false,
+  })
+}
+
+export const ORG_PAYOUTS_PAGE_SIZE = 20
+
+export function useOrgPayouts(orgId: string | undefined, opts: { enabled?: boolean } = {}) {
+  const api = useApi()
+  const { isAuthenticated } = useAuthState()
+  return useInfiniteQuery<ListOrgPayoutsResponse>({
+    queryKey: queryKeys.orgPayouts(orgId ?? "unknown"),
+    enabled: !!orgId && isAuthenticated && (opts.enabled ?? true),
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
+      api.listOrgPayouts({
+        id: orgId as string,
+        limit: ORG_PAYOUTS_PAGE_SIZE,
+        ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
+      }),
+    getNextPageParam: (lastPage: ListOrgPayoutsResponse) => lastPage.nextCursor ?? undefined,
+    retry: false,
+  })
+}
+
+export function payoutRows(pages: readonly ListOrgPayoutsResponse[] | undefined): PayoutDTO[] {
+  return (pages ?? []).flatMap((page) => page.items)
+}
+
+export interface CreateOrgPayoutVars {
+  amountMinor?: number
+  idempotencyKey?: string
+}
+
+export function useCreateOrgPayout(orgId: string | undefined) {
+  const api = useApi()
+  const qc = useQueryClient()
+  const attemptKey = useRef(randomId())
+  return useMutation<CreateOrgPayoutResponse, unknown, CreateOrgPayoutVars | void>({
+    mutationFn: (vars) =>
+      api.createOrgPayout({
+        id: orgId as string,
+        currency: "USD",
+        idempotencyKey: vars?.idempotencyKey ?? attemptKey.current,
+        ...(vars?.amountMinor ? { amountMinor: vars.amountMinor } : {}),
+      }),
+    onSuccess: () => {
+      attemptKey.current = randomId()
+      if (!orgId) return
+      void qc.invalidateQueries({ queryKey: queryKeys.orgBalance(orgId) })
+      void qc.invalidateQueries({ queryKey: queryKeys.orgPayouts(orgId) })
+    },
+  })
+}
+
+export type OrgStripeAccountLinkKind = "onboarding" | "update"
+
+export function useCreateOrgStripeAccountLink(orgId: string | undefined) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation<
+    CreateOrgStripeAccountLinkResponse,
+    unknown,
+    { type?: OrgStripeAccountLinkKind } | void
+  >({
+    mutationFn: (vars) =>
+      api.createOrgStripeAccountLink({ id: orgId as string, type: vars?.type ?? "onboarding" }),
+    onSuccess: () => {
+      if (orgId) void qc.invalidateQueries({ queryKey: queryKeys.orgPaymentsStatus(orgId) })
+    },
+  })
+}
