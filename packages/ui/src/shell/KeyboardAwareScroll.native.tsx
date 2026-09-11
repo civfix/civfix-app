@@ -45,14 +45,22 @@ const PLATFORM: "ios" | "android" | "other" =
 const SHOW_EVENT = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow"
 const HIDE_EVENT = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide"
 
-type ScrollCommand = (node: any, offset: number) => void
-
-const scrollViewCommand: ScrollCommand = (node, offset) => {
-  if (typeof node?.scrollTo === "function") node.scrollTo({ y: offset, animated: true })
+interface ScrollableAdapter {
+  scrollToOffset: (node: any, offset: number) => void
+  scrollEventThrottle?: number
 }
 
-const flatListCommand: ScrollCommand = (node, offset) => {
-  if (typeof node?.scrollToOffset === "function") node.scrollToOffset({ offset, animated: true })
+const SCROLL_VIEW: ScrollableAdapter = {
+  scrollToOffset: (node, offset) => {
+    if (typeof node?.scrollTo === "function") node.scrollTo({ y: offset, animated: true })
+  },
+  scrollEventThrottle: 16,
+}
+
+const FLAT_LIST: ScrollableAdapter = {
+  scrollToOffset: (node, offset) => {
+    if (typeof node?.scrollToOffset === "function") node.scrollToOffset({ offset, animated: true })
+  },
 }
 
 function measureViewportTop(node: any, apply: (top: number) => void): void {
@@ -68,7 +76,7 @@ function measureViewportTop(node: any, apply: (top: number) => void): void {
 function makeKeyboardAwareScrollable(
   Base: React.ComponentType<any>,
   options: KeyboardAwareScrollHostOptions,
-  scrollToOffset: ScrollCommand,
+  adapter: ScrollableAdapter,
 ): React.ComponentType<any> {
   const ownsFocusedInput = resolveHostFlag(options.ownsFocusedInput)
   const reserveKeyboardPadding = resolveHostFlag(options.reserveKeyboardPadding)
@@ -182,7 +190,7 @@ function makeKeyboardAwareScrollable(
             visibleTop,
             margin: KEYBOARD_REVEAL_MARGIN,
           })
-          if (delta > 0) scrollToOffset(node, revealScrollTarget(offsetRef.current, delta))
+          if (delta > 0) adapter.scrollToOffset(node, revealScrollTarget(offsetRef.current, delta))
         })
       })
     }, [state.overlap, state.reserve, state.revealVersion])
@@ -199,7 +207,7 @@ function makeKeyboardAwareScrollable(
           ref={setRefs}
           contentContainerStyle={mergedContentStyle}
           onScroll={handleScroll}
-          scrollEventThrottle={scrollEventThrottle ?? 16}
+          scrollEventThrottle={scrollEventThrottle ?? adapter.scrollEventThrottle}
           {...rest}
         />
       </KeyboardScrollScopeProvider>
@@ -214,7 +222,7 @@ export function makeKeyboardAwareScrollHost(
   options: KeyboardAwareScrollHostOptions = {},
 ): ScrollHostValue {
   return {
-    ScrollView: makeKeyboardAwareScrollable(base.ScrollView, options, scrollViewCommand),
-    FlatList: makeKeyboardAwareScrollable(base.FlatList, options, flatListCommand),
+    ScrollView: makeKeyboardAwareScrollable(base.ScrollView, options, SCROLL_VIEW),
+    FlatList: makeKeyboardAwareScrollable(base.FlatList, options, FLAT_LIST),
   }
 }

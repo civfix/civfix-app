@@ -166,7 +166,7 @@ describe("I5 no scroller outside the shell is left undecorated", () => {
   it("decorates the FlatList as well as the ScrollView, so a list header field is owned too", () => {
     const seam = readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
     expect(seam).toMatch(
-      /ScrollView: makeKeyboardAwareScrollable\(base\.ScrollView, options, scrollViewCommand\),\s*\n\s*FlatList: makeKeyboardAwareScrollable\(base\.FlatList, options, flatListCommand\),/,
+      /ScrollView: makeKeyboardAwareScrollable\(base\.ScrollView, options, SCROLL_VIEW\),\s*\n\s*FlatList: makeKeyboardAwareScrollable\(base\.FlatList, options, FLAT_LIST\),/,
     )
     expect(seam).toMatch(/<KeyboardScrollScopeProvider value=\{scopeId\}>/)
   })
