@@ -28,7 +28,8 @@ describe("the author pickers are wired to the stored selection", () => {
   const form = readFileSync(new URL("../CleanupForm.tsx", import.meta.url), "utf8")
 
   it("the post composer sends the guarded selection, not the raw draft field", () => {
-    expect(composer).toContain("authorAsSelection(draft.organizationId, myOrgs.data)")
+    expect(composer).toContain("actableOrganizations(myOrgs.data)")
+    expect(composer).toContain("authorAsSelection(draft.organizationId, postAsOrganizations)")
     expect(composer).toContain("organizationId: postAsOrganizationId,")
   })
 

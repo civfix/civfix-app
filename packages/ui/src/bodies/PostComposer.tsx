@@ -31,6 +31,7 @@ import { Text, Icon, iconMap } from "../typography"
 import {
   useAttendingCleanups,
   useAuthState,
+  actableOrganizations,
   useMyOrganizations,
   useMyProfile,
   useMyReports,
@@ -317,8 +318,8 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
     [draft.body, draft.mentionedUsers],
   )
   const myOrgs = useMyOrganizations()
-  const postAsOrganizations = myOrgs.data ?? []
-  const postAsOrganizationId = authorAsSelection(draft.organizationId, myOrgs.data)
+  const postAsOrganizations = actableOrganizations(myOrgs.data)
+  const postAsOrganizationId = authorAsSelection(draft.organizationId, postAsOrganizations)
   useEffect(() => {
     if (draft.organizationId !== null && postAsOrganizationId === null) setOrganizationId(null)
   }, [draft.organizationId, postAsOrganizationId, setOrganizationId])

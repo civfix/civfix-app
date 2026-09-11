@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
-import { buildInlineComposerModel, inlineComposerClosesOnBlur } from "../inlineComposerModel"
+import {
+  buildInlineComposerModel,
+  inlineComposerClosesOnBlur,
+  inlineComposerOwnsDraft,
+} from "../inlineComposerModel"
 
 const EN: Record<string, string> = {
   "mode.post.placeholder": "Share an update with your neighborhood...",
@@ -34,11 +38,31 @@ describe("the feed's inline composer model", () => {
   })
 
   it("holds Post for an empty draft, for media still uploading, and while one is in flight", () => {
-    expect(model().submitDisabled).toBe(false)
-    expect(model({ resolution: "blocked-empty" }).submitDisabled).toBe(true)
-    expect(model({ resolution: "blocked-media-pending" }).submitDisabled).toBe(true)
-    expect(model({ sending: true }).submitDisabled).toBe(true)
-    expect(model({ hasAuthor: false }).submitDisabled).toBe(true)
+    expect(model({ open: true }).submitDisabled).toBe(false)
+    expect(model({ open: true, resolution: "blocked-empty" }).submitDisabled).toBe(true)
+    expect(model({ open: true, resolution: "blocked-media-pending" }).submitDisabled).toBe(true)
+    expect(model({ open: true, sending: true }).submitDisabled).toBe(true)
+    expect(model({ open: true, hasAuthor: false }).submitDisabled).toBe(true)
+  })
+
+  it("never posts text the reader is not looking at", () => {
+    expect(model({ open: false, resolution: "submit" }).submitDisabled).toBe(true)
+  })
+
+  it("claims the shared draft only when it is a plain, unattached post", () => {
+    const plain = {
+      mode: "post",
+      replyToPostId: null,
+      quotePostId: null,
+      attachedEventId: null,
+      attachedReportId: null,
+    }
+    expect(inlineComposerOwnsDraft(plain)).toBe(true)
+    expect(inlineComposerOwnsDraft({ ...plain, mode: "reply" })).toBe(false)
+    expect(inlineComposerOwnsDraft({ ...plain, replyToPostId: "post-1" })).toBe(false)
+    expect(inlineComposerOwnsDraft({ ...plain, quotePostId: "post-1" })).toBe(false)
+    expect(inlineComposerOwnsDraft({ ...plain, attachedEventId: "event-1" })).toBe(false)
+    expect(inlineComposerOwnsDraft({ ...plain, attachedReportId: "report-1" })).toBe(false)
   })
 
   it("collapses on blur only when nothing the reader staged would be lost", () => {
@@ -57,6 +81,17 @@ describe("the inline composer rides the full composer's store and submit path", 
     expect(SRC).toContain('from "../postComposerStore"')
     expect(SRC).toContain('import { useCreatePost } from "../../data/hooks/posts"')
     expect(SRC).not.toMatch(/body\.trim\(\)\.length/)
+  })
+
+  it("hands a draft it does not own back to the full composer instead of publishing it", () => {
+    expect(SRC).toContain("if (!inlineComposerOwnsDraft(usePostComposerStore.getState().draft))")
+    expect(SRC).toContain('useNavStore.getState().push({ kind: "composer" })')
+    expect(SRC).toContain("if (!open || !ownsDraft) return")
+  })
+
+  it("offers the same post-as choice the full composer offers", () => {
+    expect(SRC).toContain("AuthorAsChips")
+    expect(SRC).toContain("organizationId: postAsOrganizationId")
   })
 
   it("mirrors staged media into the shared draft ONLY while it is open", () => {

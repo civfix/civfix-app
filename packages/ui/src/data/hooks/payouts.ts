@@ -11,6 +11,7 @@ import type {
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 import { randomId } from "../randomId"
+import { appErrorCode } from "../../bodies/errorCode"
 
 export interface OrgDonationSummaryRange {
   from?: string
@@ -106,6 +107,28 @@ export function releasePayoutIntent(intent: string): void {
   payoutIntentKeys.delete(intent)
 }
 
+export function clearPayoutIntents(): void {
+  payoutIntentKeys.clear()
+}
+
+const SETTLED_PAYOUT_REFUSALS: ReadonlySet<string> = new Set([
+  "VALIDATION",
+  "CONFLICT",
+  "FORBIDDEN",
+  "NOT_FOUND",
+  "RATE_LIMITED",
+])
+
+/**
+ * A refusal the server ANSWERED is a settled outcome - no money moved, and the backend has already
+ * spent this key on a failed row it will replay forever. The key has to rotate or the button is dead.
+ * A transport failure carries no code: the request may have landed, so the key is held for the retry.
+ */
+export function payoutIntentSettledBy(err: unknown): boolean {
+  const code = appErrorCode(err)
+  return code !== undefined && SETTLED_PAYOUT_REFUSALS.has(code)
+}
+
 export function useCreateOrgPayout(orgId: string | undefined) {
   const api = useApi()
   const qc = useQueryClient()
@@ -125,6 +148,12 @@ export function useCreateOrgPayout(orgId: string | undefined) {
       if (!orgId) return
       void qc.invalidateQueries({ queryKey: queryKeys.orgBalance(orgId) })
       void qc.invalidateQueries({ queryKey: queryKeys.orgPayouts(orgId) })
+      void qc.invalidateQueries({ queryKey: queryKeys.orgDonationSummaryRoot(orgId) })
+    },
+    onError: (err, vars) => {
+      if (payoutIntentSettledBy(err)) {
+        releasePayoutIntent(payoutIntent(orgId as string, vars?.amountMinor))
+      }
     },
   })
 }

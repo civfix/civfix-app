@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import type { OrganizationDTO, OrganizationInviteDTO, OrganizationMemberDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, headingLevel } from "../../../theme"
-import { Text, iconMap, Icon } from "../../../typography"
+import { Text, TextLink, iconMap, Icon } from "../../../typography"
 import type { IconName } from "../../../typography"
 import {
   PrimaryButton,
@@ -30,6 +30,7 @@ import { teamDateLabel } from "../hostTeamModel"
 import { OrgInviteSheet } from "./OrgInviteSheet"
 import {
   canManageOrgTeam,
+  canSeatOrgMembers,
   collaboratorErrorKey,
   orderedOrgMembers,
   orgInviteQuotaReached,
@@ -43,6 +44,7 @@ function CollaboratorRow({
   member,
   viewerId,
   canManage,
+  canSeat,
   pending,
   onOpenPerson,
   onSetRole,
@@ -51,6 +53,7 @@ function CollaboratorRow({
   member: OrganizationMemberDTO
   viewerId: string | null
   canManage: boolean
+  canSeat: boolean
   pending: boolean
   onOpenPerson: (navId: string) => void
   onSetRole: (userId: string, role: OrgSettableRole) => void
@@ -58,7 +61,7 @@ function CollaboratorRow({
 }) {
   const { t } = useT("event-dashboard")
   const { t: tEnums } = useT("enums")
-  const actions = orgMemberActions({ member, viewerId, canManage })
+  const actions = orgMemberActions({ member, viewerId, canManage, canSeat })
   const person = member.person
 
   const menu: RosterRowMenu | null = orgMemberHasActions(actions)
@@ -169,6 +172,7 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
   const toast = useToast()
 
   const canManage = canManageOrgTeam(org.myRole)
+  const canSeat = canSeatOrgMembers(org.myRole)
   const viewerId = useAuthState().user?.id ?? null
 
   const membersQuery = useOrganizationMembers(org.id, { enabled: canManage })
@@ -271,12 +275,30 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
           member={member}
           viewerId={viewerId}
           canManage={canManage}
+          canSeat={canSeat}
           pending={managePending}
           onOpenPerson={onOpenPerson}
           onSetRole={onSetRole}
           onRemove={onRemove}
         />
       ))}
+
+      {membersQuery.hasNextPage ? (
+        <TextLink
+          variant="label"
+          standalone
+          accessibilityLabel={t("team.show_more_a11y")}
+          onPress={() => {
+            void membersQuery.fetchNextPage()
+          }}
+        >
+          {membersQuery.isFetchingNextPage ? t("team.loading_more") : t("team.show_more")}
+        </TextLink>
+      ) : null}
+
+      {invitesQuery.isError ? (
+        <Text style={styles.empty}>{t("team.invites_error")}</Text>
+      ) : null}
 
       {invites.length > 0 ? (
         <View style={styles.invites}>

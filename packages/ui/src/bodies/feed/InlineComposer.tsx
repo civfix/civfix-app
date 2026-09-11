@@ -7,7 +7,7 @@ import type { MentionCandidate } from "../../primitives"
 import { ComposerThumbs } from "../../primitives/ComposerThumbs"
 import { useComposerAttachments } from "../../primitives/useComposerAttachments"
 import { Icon, Text, iconMap } from "../../typography"
-import { useMyProfile } from "../../data"
+import { actableOrganizations, useMyOrganizations, useMyProfile } from "../../data"
 import { useCreatePost } from "../../data/hooks/posts"
 import { useT } from "../../i18n"
 import { useHaptics } from "../../capabilities"
@@ -21,7 +21,13 @@ import {
 } from "../postComposerMedia"
 import { resolvePostSubmit } from "../postComposerSubmit"
 import { usePostComposerStore, type PostComposerMedia } from "../postComposerStore"
-import { buildInlineComposerModel, inlineComposerClosesOnBlur } from "./inlineComposerModel"
+import { AuthorAsChips, authorAsSelection } from "../AuthorAsChips"
+import { useNavStore } from "../../nav"
+import {
+  buildInlineComposerModel,
+  inlineComposerClosesOnBlur,
+  inlineComposerOwnsDraft,
+} from "./inlineComposerModel"
 
 const AVATAR_SIZE = 40
 
@@ -41,6 +47,15 @@ export function InlineComposer() {
   const setBody = usePostComposerStore((state) => state.setBody)
   const setMentionedUsers = usePostComposerStore((state) => state.setMentionedUsers)
   const setMedia = usePostComposerStore((state) => state.setMedia)
+  const setOrganizationId = usePostComposerStore((state) => state.setOrganizationId)
+  const draftOrganizationId = usePostComposerStore((state) => state.draft.organizationId)
+  const ownsDraft = usePostComposerStore((state) => inlineComposerOwnsDraft(state.draft))
+
+  const myOrgs = useMyOrganizations()
+  const postAsOrganizations = actableOrganizations(myOrgs.data)
+  const postAsOrganizationId = authorAsSelection(draftOrganizationId, postAsOrganizations)
+  const postAsOrganization =
+    postAsOrganizations.find((org) => org.id === postAsOrganizationId) ?? null
 
   const [open, setOpen] = useState(false)
   const [carriedMedia, setCarriedMedia] = useState<PostComposerMedia[]>([])
@@ -60,6 +75,14 @@ export function InlineComposer() {
     setMedia(composerMedia)
   }, [open, composerMedia, setMedia])
 
+  useEffect(() => {
+    if (open && !ownsDraft) setOpen(false)
+  }, [open, ownsDraft])
+
+  useEffect(() => {
+    if (draftOrganizationId !== null && postAsOrganizationId === null) setOrganizationId(null)
+  }, [draftOrganizationId, postAsOrganizationId, setOrganizationId])
+
   const mediaUploadIds = useMemo(
     () => composerMedia.flatMap((media) => (media.uploadId ? [media.uploadId] : [])),
     [composerMedia],
@@ -77,6 +100,7 @@ export function InlineComposer() {
       mediaUploadIds,
       kind: "post",
       mentionedUserIds: activeMentions.map((user) => user.id),
+      organizationId: postAsOrganizationId,
     },
     hasReadyMedia,
   )
@@ -91,6 +115,10 @@ export function InlineComposer() {
   )
 
   const openComposer = useCallback(() => {
+    if (!inlineComposerOwnsDraft(usePostComposerStore.getState().draft)) {
+      useNavStore.getState().push({ kind: "composer" })
+      return
+    }
     const snapshot = snapshotCarriedMedia(usePostComposerStore.getState().draft.media)
     setCarriedMedia(snapshot.carried)
     setDroppedMedia(snapshot.dropped)
@@ -136,11 +164,24 @@ export function InlineComposer() {
 
   const submit = useCallback(() => {
     if (submittingRef.current) return
+    if (!open || !ownsDraft) return
     if (!profile || resolution.action !== "submit") return
     submittingRef.current = true
     const optimistic: PostDTO = {
       id: `optimistic-${Date.now()}`,
       author: profile,
+      organization: postAsOrganization
+        ? {
+            id: postAsOrganization.id,
+            slug: postAsOrganization.slug,
+            name: postAsOrganization.name,
+            logoUrl: postAsOrganization.logoUrl ?? null,
+            verified: postAsOrganization.verifiedStatus === "verified",
+            ...(postAsOrganization.verifiedKind
+              ? { verifiedKind: postAsOrganization.verifiedKind }
+              : {}),
+          }
+        : null,
       kind: resolution.input.kind,
       body: resolution.input.body ?? null,
       createdAt: new Date().toISOString(),
@@ -188,7 +229,18 @@ export function InlineComposer() {
         },
       },
     )
-  }, [activeMentions, attachments, composerMedia, create, haptics, profile, resolution])
+  }, [
+    activeMentions,
+    attachments,
+    composerMedia,
+    create,
+    haptics,
+    open,
+    ownsDraft,
+    postAsOrganization,
+    profile,
+    resolution,
+  ])
 
   if (!profile) return null
 
@@ -271,6 +323,18 @@ export function InlineComposer() {
         </View>
         {attachments.attachError ? (
           <Text style={styles.error}>{attachments.attachError}</Text>
+        ) : null}
+        {postAsOrganizations.length > 0 ? (
+          <AuthorAsChips
+            organizations={postAsOrganizations}
+            value={postAsOrganizationId}
+            onChange={setOrganizationId}
+            label={t("post_as.label")}
+            personalLabel={t("post_as.personal")}
+            chipA11y={(name) => t("post_as.a11y", { name })}
+            groupA11y={t("post_as.group_a11y")}
+            disabled={create.isPending}
+          />
         ) : null}
         {droppedMedia > 0 ? <Text style={styles.error}>{t("media_dropped")}</Text> : null}
         {create.isError ? <Text style={styles.error}>{t("submit_error")}</Text> : null}

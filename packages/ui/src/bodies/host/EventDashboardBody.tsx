@@ -9,10 +9,10 @@ import {
   webHover,
   webTransition,
 } from "../../theme"
-import { Text, iconMap } from "../../typography"
+import { Text, TextLink, iconMap } from "../../typography"
 import { Avatar, PrimaryButton, SignInPrompt, SkeletonGroup, SkeletonList, useToast } from "../../primitives"
 import { useAuthState, useRequireAuth } from "../../data"
-import { useMyOrganizations } from "../../data/hooks/orgs"
+import { actableOrganizations, useMyOrganizations } from "../../data/hooks/orgs"
 import {
   hostedEventRows,
   myEventInviteRows,
@@ -109,7 +109,7 @@ export function EventDashboardBody() {
   const [duplicating, setDuplicating] = useState<HostedEventDTO | null>(null)
 
   const orgsQuery = useMyOrganizations()
-  const orgs = useMemo(() => orgsQuery.data ?? [], [orgsQuery.data])
+  const orgs = useMemo(() => actableOrganizations(orgsQuery.data), [orgsQuery.data])
   const tabs = useMemo(
     () => buildDashboardTabs({ orgs, requestedTab: tab, requestedOrgId: orgId }),
     [orgId, orgs, tab],
@@ -226,7 +226,10 @@ export function EventDashboardBody() {
     )
   }
 
-  const invitesVisible = pendingEventInvites.length > 0 || pendingOrgInviteRows.length > 0
+  const invitesPending = eventInvites.isPending || orgInvites.isPending
+  const invitesError = eventInvites.isError || orgInvites.isError
+  const invitesVisible =
+    pendingEventInvites.length > 0 || pendingOrgInviteRows.length > 0 || invitesPending || invitesError
 
   return (
     <ScrollView
@@ -298,6 +301,23 @@ export function EventDashboardBody() {
           <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(2)}>
             {t("invites.section")}
           </Text>
+          {invitesError ? (
+            <FeedNotice
+              icon="CloudOff"
+              title={t("invites.error_title")}
+              body={t("invites.error_body")}
+              actionLabel={t("invites.retry")}
+              onAction={() => {
+                if (eventInvites.isError) void eventInvites.refetch()
+                if (orgInvites.isError) void orgInvites.refetch()
+              }}
+            />
+          ) : null}
+          {!invitesError && invitesPending ? (
+            <SkeletonGroup>
+              <SkeletonList kind="person" rows={2} />
+            </SkeletonGroup>
+          ) : null}
           {pendingEventInvites.map((invite) => (
             <EventInviteRow
               key={invite.id}
@@ -368,15 +388,16 @@ export function EventDashboardBody() {
         ))}
 
         {hosted.hasNextPage ? (
-          <Pressable
-            onPress={() => void hosted.fetchNextPage()}
-            accessibilityRole="button"
+          <TextLink
+            variant="label"
+            standalone
             accessibilityLabel={t("events.show_more")}
-            {...focusRingProps}
-            style={styles.more}
+            onPress={() => {
+              void hosted.fetchNextPage()
+            }}
           >
-            <Text style={styles.moreText}>{t("events.show_more")}</Text>
-          </Pressable>
+            {hosted.isFetchingNextPage ? t("events.loading_more") : t("events.show_more")}
+          </TextLink>
         ) : null}
       </View>
 
@@ -393,6 +414,8 @@ export function EventDashboardBody() {
     </ScrollView>
   )
 }
+
+const MIN_TOUCH_TARGET = 44
 
 const useStyles = makeThemedStyles((t) => ({
   scroll: {
@@ -422,7 +445,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   segment: {
     flex: 1,
-    minHeight: 36,
+    minHeight: MIN_TOUCH_TARGET,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: t.radius.pill,
@@ -451,7 +474,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["2"],
-    minHeight: 34,
+    minHeight: MIN_TOUCH_TARGET,
     paddingRight: t.space["3"],
     paddingLeft: t.space["1"],
     borderRadius: t.radius.pill,
@@ -471,16 +494,5 @@ const useStyles = makeThemedStyles((t) => ({
   },
   orgChipTextOn: {
     color: t.colors.text,
-  },
-  more: {
-    alignSelf: "flex-start",
-    marginTop: t.space["1"],
-    paddingVertical: t.space["1"],
-    borderRadius: t.radius.sm,
-  },
-  moreText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.accentText,
   },
 }))

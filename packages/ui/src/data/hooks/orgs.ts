@@ -61,6 +61,16 @@ export function useMyOrganizations() {
   })
 }
 
+/**
+ * The organizations a viewer can currently ACT AS. A suspended org refuses every write the pickers
+ * lead to (DECISIONS §32), so offering it only produces a refusal the reader cannot act on.
+ */
+export function actableOrganizations(
+  orgs: readonly OrganizationDTO[] | undefined,
+): OrganizationDTO[] {
+  return (orgs ?? []).filter((org) => org.suspended !== true)
+}
+
 export function useOrgDonationExports(
   orgId: string | undefined,
   opts: { enabled?: boolean; pollMs?: number } = {},

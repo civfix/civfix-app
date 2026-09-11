@@ -59,7 +59,8 @@
     "duplicate_error_gone": "Ese evento ya no está disponible.",
     "duplicate_error_rate_limited": "Demasiados eventos por ahora. Inténtalo más tarde.",
     "duplicate_error_invalid": "Revisa la fecha y la hora e inténtalo de nuevo.",
-    "duplicate_error_generic": "No se pudo duplicar el evento. Inténtalo de nuevo."
+    "duplicate_error_generic": "No se pudo duplicar el evento. Inténtalo de nuevo.",
+    "loading_more": "Cargando…"
   },
   "invites": {
     "section": "Invitaciones",
@@ -70,7 +71,10 @@
     "decline": "Rechazar",
     "accept_a11y": "Aceptar la invitación a {{title}}",
     "decline_a11y": "Rechazar la invitación a {{title}}",
-    "error": "No funcionó. Inténtalo de nuevo."
+    "error": "No funcionó. Inténtalo de nuevo.",
+    "error_title": "No se pudieron cargar tus invitaciones",
+    "error_body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar"
   },
   "money": {
     "section": "Dinero",
@@ -156,7 +160,11 @@
     "error_conflict": "Ese cambio ya no aplica.",
     "error_forbidden": "No tienes permiso para eso.",
     "error_gone": "Esa persona ya no está en esta organización.",
-    "error_generic": "No funcionó. Inténtalo de nuevo."
+    "error_generic": "No funcionó. Inténtalo de nuevo.",
+    "show_more": "Mostrar más",
+    "loading_more": "Cargando…",
+    "show_more_a11y": "Mostrar más colaboradores",
+    "invites_error": "No se pudieron cargar las invitaciones pendientes."
   },
   "console": {
     "open": "Abrir la consola completa",

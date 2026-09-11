@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useRef, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import type { OrganizationDTO, PayoutDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, headingLevel } from "../../../theme"
@@ -90,6 +90,7 @@ export function MoneySection({ org, range }: MoneySectionProps) {
   const accountLink = useCreateOrgStripeAccountLink(org.id)
 
   const [confirming, setConfirming] = useState(false)
+  const sendingRef = useRef(false)
 
   const canManage = canManageOrgPayments(org.myRole)
   const button = payoutButtonModel({
@@ -124,7 +125,8 @@ export function MoneySection({ org, range }: MoneySectionProps) {
   }, [button.enabled])
 
   const confirmPayout = useCallback(() => {
-    if (createPayout.isPending) return
+    if (sendingRef.current) return
+    sendingRef.current = true
     createPayout.mutate(
       {},
       {
@@ -135,6 +137,9 @@ export function MoneySection({ org, range }: MoneySectionProps) {
         onError: (err) => {
           setConfirming(false)
           toast.show(t(payoutErrorKey(appErrorCode(err))), { variant: "error" })
+        },
+        onSettled: () => {
+          sendingRef.current = false
         },
       },
     )

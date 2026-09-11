@@ -114,7 +114,16 @@ export function orgRoleCan(
 }
 
 export function canManageOrgTeam(role: OrganizationMemberRole | null | undefined): boolean {
-  return orgRoleCan(role, "manage_team")
+  return orgRoleCan(role, "manage_org_members")
+}
+
+/**
+ * Seating and unseating collaborators is OWNER-shaped, matching the web console's
+ * "Only the owner can change roles." refusal. An admin may invite; only the owner may
+ * demote or eject the people already in the organization.
+ */
+export function canSeatOrgMembers(role: OrganizationMemberRole | null | undefined): boolean {
+  return role === "owner"
 }
 
 export function canViewOrgMoney(role: OrganizationMemberRole | null | undefined): boolean {
@@ -228,9 +237,10 @@ export function orgMemberActions(input: {
   member: OrganizationMemberDTO
   viewerId: string | null
   canManage: boolean
+  canSeat: boolean
 }): OrgMemberActions {
-  const { member, viewerId, canManage } = input
-  if (!canManage) return NO_ORG_MEMBER_ACTIONS
+  const { member, viewerId, canManage, canSeat } = input
+  if (!canManage || !canSeat) return NO_ORG_MEMBER_ACTIONS
   if (member.person.deleted) return NO_ORG_MEMBER_ACTIONS
   if (member.role === "owner") return NO_ORG_MEMBER_ACTIONS
   if (viewerId !== null && member.person.id === viewerId) return NO_ORG_MEMBER_ACTIONS
@@ -244,8 +254,14 @@ export function orgMemberHasActions(actions: OrgMemberActions): boolean {
   return actions.roles.length > 0 || actions.canRemove
 }
 
+/**
+ * The start of the donation window, floored to the UTC day so the value - and the cache key built
+ * from it - is stable for every mount within the same day rather than minting a fresh key per render.
+ */
 export function donationSummaryFrom(range: DashboardRange, now: Date): string {
-  return new Date(now.getTime() - RANGE_DAYS[range] * DAY_MS).toISOString()
+  const start = new Date(now.getTime() - RANGE_DAYS[range] * DAY_MS)
+  start.setUTCHours(0, 0, 0, 0)
+  return start.toISOString()
 }
 
 export function nextDuplicateStart(startsAt: string, now: Date): Date {
@@ -253,7 +269,9 @@ export function nextDuplicateStart(startsAt: string, now: Date): Date {
   if (Number.isNaN(original.getTime())) return new Date(now.getTime() + 7 * DAY_MS)
   if (original.getTime() > now.getTime()) return original
   const weeks = Math.ceil((now.getTime() - original.getTime()) / (7 * DAY_MS))
-  return new Date(original.getTime() + weeks * 7 * DAY_MS)
+  const rolled = new Date(original)
+  rolled.setDate(rolled.getDate() + weeks * 7)
+  return rolled
 }
 
 export function duplicateReady(date: Date | null, time: Date | null, now: Date): boolean {

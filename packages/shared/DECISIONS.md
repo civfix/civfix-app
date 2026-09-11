@@ -1258,10 +1258,29 @@ revoked-vs-declined distinction §33 draws for events. `NotificationType` append
 replacing the generic `system` type org invites used to borrow - a notification the client cannot
 route is a notification it cannot deep-link.
 
-`ORG_ADMIN` capabilities gain `manage_team`. An org admin who can edit the org, run its events and
-read its donations but cannot add the second staffer is an admin in name only; the org owner keeps
-the powers that are genuinely owner-shaped (`manage_payments`, `cancel_event`, `manage_org_link`,
-`request_resources`, `export`).
+`ORG_ADMIN` capabilities gain a NEW capability, `manage_org_members` (appended LAST to
+`HostCapability`), not the existing `manage_team`. An org admin who can edit the org, run its events
+and read its donations but cannot add the second staffer is an admin in name only - but
+`manage_team` is the EVENT-team token, and `hostCapabilities` merges the org role into the event
+standing, so granting it would have given every org admin the power to seat a `cohost` on any org
+event, and `COHOST_CAPABILITIES` carries `export` - the attendee contact roster this same paragraph
+withholds from admins. The two jobs needed two tokens: `manage_org_members` governs the ORG roster
+(list, invite, revoke, role, remove) and is held by owner and admin; `manage_team` stays
+event-shaped and organizer/owner-only. The org owner keeps the powers that are genuinely
+owner-shaped (`manage_payments`, `cancel_event`, `manage_org_link`, `request_resources`, `export`,
+`manage_team`). SEATING is narrower than managing: inviting is `manage_org_members`, but changing a
+member's role and removing a member are OWNER-only, which is what the web console has always
+enforced ("Only the owner can change roles."). The backend gates `inviteOrganizationMember`,
+`listOrganizationMembers`, `listOrganizationInvites` and `revokeOrganizationInvite` on
+`manage_org_members`, and `setOrganizationMemberRole` / `removeOrganizationMember` on ownership.
+
+**A suspended org stops speaking for its members.** §32 makes a suspended org's public page a 404
+and refuses its writes; affiliation must honour the same line or suspension stops being a remedy.
+Resolving `PersonDTO.organization` (and `PostDTO`/`PostRefDTO.organization` for public readers)
+EXCLUDES suspended organizations, so a suspended org's name, logo and verified mark stop appearing
+next to its members' names everywhere the platform projects a person. The clients filter suspended
+orgs out of the "Post as", "Host as", affiliation and dashboard-organization pickers for the same
+reason: offering a choice the server refuses is a dead end, not a feature.
 
 **Duplicating an event copies content, never identity or history.** `duplicateCleanup`
 (`POST /cleanups/:id/duplicate`) exists because a recurring cleanup is retyped every month today.

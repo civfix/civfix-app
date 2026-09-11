@@ -89,6 +89,7 @@ export const queryKeys = {
   orgInvites: (orgId: string) => ["org-admin", orgId, "invites"] as const,
   myOrgInvites: ["org-invites", "mine"] as const,
   orgPaymentsStatus: (orgId: string) => ["org-admin", orgId, "payments"] as const,
+  orgDonationSummaryRoot: (orgId: string) => ["org-admin", orgId, "donation-summary"] as const,
   orgDonationSummary: (orgId: string, from: string, to: string) =>
     ["org-admin", orgId, "donation-summary", from, to] as const,
   orgBalance: (orgId: string) => ["org-admin", orgId, "balance"] as const,

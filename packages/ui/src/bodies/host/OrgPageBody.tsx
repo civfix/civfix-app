@@ -280,6 +280,8 @@ export function OrgPageBody({ slug }: { slug: string }) {
   )
 }
 
+const MIN_TOUCH_TARGET = 44
+
 const useStyles = makeThemedStyles((t) => ({
   scroll: {
     flex: 1,
@@ -337,7 +339,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    minHeight: 32,
+    minHeight: MIN_TOUCH_TARGET,
   },
   sectionTogglePressed: {
     opacity: 0.7,
@@ -348,7 +350,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["2"],
   },
   linkChip: {
-    minHeight: 32,
+    minHeight: MIN_TOUCH_TARGET,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,

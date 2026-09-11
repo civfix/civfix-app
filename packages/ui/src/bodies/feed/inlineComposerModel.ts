@@ -3,6 +3,24 @@ import type { PostSubmitResolution } from "../postComposerSubmit"
 
 export type InlineComposerState = "collapsed" | "open"
 
+export interface InlineComposerDraftOwnership {
+  mode: string
+  replyToPostId: string | null
+  quotePostId: string | null
+  attachedEventId: string | null
+  attachedReportId: string | null
+}
+
+export function inlineComposerOwnsDraft(draft: InlineComposerDraftOwnership): boolean {
+  return (
+    draft.mode === "post" &&
+    draft.replyToPostId === null &&
+    draft.quotePostId === null &&
+    draft.attachedEventId === null &&
+    draft.attachedReportId === null
+  )
+}
+
 export interface InlineComposerModel {
   state: InlineComposerState
   placeholder: string
@@ -19,11 +37,12 @@ export function buildInlineComposerModel(
   },
   t: TFunction,
 ): InlineComposerModel {
+  const open = input.open
   return {
-    state: input.open ? "open" : "collapsed",
+    state: open ? "open" : "collapsed",
     placeholder: t("mode.post.placeholder"),
     submitLabel: input.sending ? t("action.posting") : t("action.post"),
-    submitDisabled: !input.hasAuthor || input.sending || input.resolution !== "submit",
+    submitDisabled: !open || !input.hasAuthor || input.sending || input.resolution !== "submit",
   }
 }
 

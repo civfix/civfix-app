@@ -59,7 +59,8 @@
     "duplicate_error_gone": "해당 이벤트를 더 이상 이용할 수 없습니다.",
     "duplicate_error_rate_limited": "지금은 이벤트가 너무 많습니다. 나중에 다시 시도해 주세요.",
     "duplicate_error_invalid": "날짜와 시간을 확인한 뒤 다시 시도해 주세요.",
-    "duplicate_error_generic": "이벤트를 복제하지 못했습니다. 다시 시도해 주세요."
+    "duplicate_error_generic": "이벤트를 복제하지 못했습니다. 다시 시도해 주세요.",
+    "loading_more": "불러오는 중…"
   },
   "invites": {
     "section": "초대",
@@ -70,7 +71,10 @@
     "decline": "거절",
     "accept_a11y": "{{title}} 초대 수락",
     "decline_a11y": "{{title}} 초대 거절",
-    "error": "처리하지 못했습니다. 다시 시도해 주세요."
+    "error": "처리하지 못했습니다. 다시 시도해 주세요.",
+    "error_title": "초대를 불러올 수 없어요",
+    "error_body": "civfix에 연결하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.",
+    "retry": "다시 시도"
   },
   "money": {
     "section": "정산",
@@ -156,7 +160,11 @@
     "error_conflict": "해당 변경은 더 이상 적용되지 않습니다.",
     "error_forbidden": "그 작업에 대한 권한이 없습니다.",
     "error_gone": "이 사람은 더 이상 이 단체에 없습니다.",
-    "error_generic": "처리하지 못했습니다. 다시 시도해 주세요."
+    "error_generic": "처리하지 못했습니다. 다시 시도해 주세요.",
+    "show_more": "더 보기",
+    "loading_more": "불러오는 중…",
+    "show_more_a11y": "협력자 더 보기",
+    "invites_error": "대기 중인 초대를 불러오지 못했어요."
   },
   "console": {
     "open": "전체 콘솔 열기",

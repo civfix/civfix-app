@@ -335,6 +335,7 @@ export const HostCapabilitySchema = z.enum([
   "request_resources",
   "manage_payments",
   "view_donations",
+  "manage_org_members",
 ])
 export type HostCapability = z.infer<typeof HostCapabilitySchema>
 

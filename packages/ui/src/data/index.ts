@@ -209,6 +209,7 @@ export {
   ORG_DONATION_EXPORTS_POLL_MS,
   ORG_MEMBERS_PAGE_SIZE,
   exportsPollInterval,
+  actableOrganizations,
   invalidateMyOrgInvites,
   organizationEventRows,
   organizationMemberRows,
@@ -236,6 +237,7 @@ export { useHostedEventsAnalytics } from "./hooks/dashboard"
 
 export {
   ORG_PAYOUTS_PAGE_SIZE,
+  clearPayoutIntents,
   payoutRows,
   useCreateOrgPayout,
   useCreateOrgStripeAccountLink,

@@ -157,6 +157,8 @@ export function KpiStrip({
   )
 }
 
+const MIN_TOUCH_TARGET = 44
+
 const useStyles = makeThemedStyles((t) => ({
   section: {
     gap: t.space["2"],
@@ -166,7 +168,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["2"],
   },
   chip: {
-    minHeight: 30,
+    minHeight: MIN_TOUCH_TARGET,
     justifyContent: "center",
     paddingHorizontal: t.space["3"],
     borderRadius: t.radius.pill,

@@ -10,7 +10,7 @@ import {
 import { focusRingProps, makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { Avatar, SettingsSection, useToast } from "../../primitives"
-import { useAuthState, useMyOrganizations, useUpdatePrivacySettings } from "../../data"
+import { actableOrganizations, useAuthState, useMyOrganizations, useUpdatePrivacySettings } from "../../data"
 import { useT } from "../../i18n"
 
 export const PRIMARY_ORGANIZATION_AUTOMATIC = "automatic"
@@ -91,7 +91,7 @@ export function PrimaryOrganizationPicker({ style }: { style?: StyleProp<ViewSty
   const toast = useToast()
   const orgs = useMyOrganizations()
   const update = useUpdatePrivacySettings()
-  const rows = orgs.data ?? []
+  const rows = actableOrganizations(orgs.data)
   const current = user?.primaryOrganizationId ?? null
   const inFlight =
     update.isPending && typeof update.variables === "object" && update.variables !== null

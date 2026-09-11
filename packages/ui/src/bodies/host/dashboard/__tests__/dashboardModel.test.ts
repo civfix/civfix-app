@@ -9,12 +9,14 @@ import type {
   SeriesPoint,
 } from "@civfix/shared"
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
+import { can } from "@civfix/shared/host"
 import {
   DASHBOARD_RANGES,
   DEFAULT_DASHBOARD_RANGE,
   buildDashboardTabs,
   canManageOrgPayments,
   canManageOrgTeam,
+  canSeatOrgMembers,
   canViewOrgMoney,
   collaboratorErrorKey,
   donationSummaryFrom,
@@ -276,26 +278,42 @@ describe("payout button", () => {
 })
 
 describe("collaborator actions", () => {
+  it("reserves seating and unseating for the owner, matching the web console's refusal", () => {
+    expect(canSeatOrgMembers("owner")).toBe(true)
+    expect(canSeatOrgMembers("admin")).toBe(false)
+    expect(canSeatOrgMembers("member")).toBe(false)
+    expect(
+      orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true, canSeat: false }),
+    ).toEqual({ roles: [], canRemove: false })
+  })
+
+  it("lets an org admin manage the roster without inheriting the event team", () => {
+    expect(canManageOrgTeam("admin")).toBe(true)
+    expect(can({ eventRole: null, orgRole: "admin" }, "manage_org_members")).toBe(true)
+    expect(can({ eventRole: null, orgRole: "admin" }, "manage_team")).toBe(false)
+    expect(can({ eventRole: null, orgRole: "owner" }, "manage_org_members")).toBe(true)
+  })
+
   it("offers nothing to a member who cannot manage the team", () => {
-    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: false }))
+    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: false, canSeat: false }))
       .toEqual({ roles: [], canRemove: false })
   })
 
   it("never offers actions on the owner or on yourself", () => {
     expect(
       orgMemberHasActions(
-        orgMemberActions({ member: member("u1", "owner"), viewerId: "u9", canManage: true }),
+        orgMemberActions({ member: member("u1", "owner"), viewerId: "u9", canManage: true, canSeat: true }),
       ),
     ).toBe(false)
     expect(
       orgMemberHasActions(
-        orgMemberActions({ member: member("u9", "admin"), viewerId: "u9", canManage: true }),
+        orgMemberActions({ member: member("u9", "admin"), viewerId: "u9", canManage: true, canSeat: true }),
       ),
     ).toBe(false)
   })
 
   it("offers the other role and removal to a manager", () => {
-    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true }))
+    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true, canSeat: true }))
       .toEqual({ roles: ["admin"], canRemove: true })
   })
 
@@ -304,6 +322,7 @@ describe("collaborator actions", () => {
       member: member("u1", "admin", { canRemove: false }),
       viewerId: "u9",
       canManage: true,
+      canSeat: true,
     })
     expect(actions).toEqual({ roles: ["member"], canRemove: false })
   })

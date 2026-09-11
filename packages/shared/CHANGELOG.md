@@ -28,8 +28,11 @@
   `PayoutStatusSchema = pending | in_transit | paid | failed | canceled`. `MediaPurposeSchema` drops
   `verification` (the one non-append change, per §34).
 
-  Capabilities (`host/capabilities.ts`): `ORG_ADMIN` gains `manage_team`, so org admins can run the
-  collaborator list from the app. `HostCapability` itself is unchanged (still 18 values).
+  Capabilities: `HostCapabilitySchema` appends `manage_org_members` LAST (19 values), and
+  `ORG_ADMIN` gains that - NOT the event-team `manage_team`, which would have let an org admin seat
+  a cohost on any org event and inherit the `export` this release withholds from admins. Org owner
+  and admin hold `manage_org_members` (list / invite / revoke the org roster); role changes and
+  removals stay owner-only, matching the web console. See §34.
 
   Org invite inbox (`schemas/host/organizations.ts`), mirroring §33's event-invite trio:
   `PendingOrganizationInviteDTO` (`{ id, organization, role, invitedBy, createdAt, expiresAt }`, no

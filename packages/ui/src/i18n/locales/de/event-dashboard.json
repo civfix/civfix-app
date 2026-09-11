@@ -59,7 +59,8 @@
     "duplicate_error_gone": "Dieses Event gibt es nicht mehr.",
     "duplicate_error_rate_limited": "Vorerst zu viele Events. Versuche es später erneut.",
     "duplicate_error_invalid": "Prüfe Datum und Uhrzeit und versuche es erneut.",
-    "duplicate_error_generic": "Das Event konnte nicht dupliziert werden. Versuche es erneut."
+    "duplicate_error_generic": "Das Event konnte nicht dupliziert werden. Versuche es erneut.",
+    "loading_more": "Wird geladen…"
   },
   "invites": {
     "section": "Einladungen",
@@ -70,7 +71,10 @@
     "decline": "Ablehnen",
     "accept_a11y": "Einladung zu {{title}} annehmen",
     "decline_a11y": "Einladung zu {{title}} ablehnen",
-    "error": "Das hat nicht geklappt. Versuche es erneut."
+    "error": "Das hat nicht geklappt. Versuche es erneut.",
+    "error_title": "Einladungen konnten nicht geladen werden",
+    "error_body": "civfix ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut.",
+    "retry": "Erneut versuchen"
   },
   "money": {
     "section": "Geld",
@@ -156,7 +160,11 @@
     "error_conflict": "Diese Änderung gilt nicht mehr.",
     "error_forbidden": "Dafür fehlt dir die Berechtigung.",
     "error_gone": "Diese Person ist nicht mehr in dieser Organisation.",
-    "error_generic": "Das hat nicht geklappt. Versuche es erneut."
+    "error_generic": "Das hat nicht geklappt. Versuche es erneut.",
+    "show_more": "Mehr anzeigen",
+    "loading_more": "Wird geladen…",
+    "show_more_a11y": "Mehr Mitwirkende anzeigen",
+    "invites_error": "Offene Einladungen konnten nicht geladen werden."
   },
   "console": {
     "open": "Vollständige Konsole öffnen",

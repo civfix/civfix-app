@@ -256,12 +256,13 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
     ])
   })
 
-  it("enumerates the 18 host capabilities in a stable order", () => {
-    expect(HOST_CAPABILITY_VALUES).toHaveLength(18)
+  it("enumerates the 19 host capabilities in a stable order", () => {
+    expect(HOST_CAPABILITY_VALUES).toHaveLength(19)
     expect(HOST_CAPABILITY_VALUES).toBe(HostCapabilitySchema.options)
     expect(HOST_CAPABILITY_VALUES[0]).toBe("view_event_private")
-    expect(HOST_CAPABILITY_VALUES.at(-2)).toBe("manage_payments")
-    expect(HOST_CAPABILITY_VALUES.at(-1)).toBe("view_donations")
+    expect(HOST_CAPABILITY_VALUES.at(-3)).toBe("manage_payments")
+    expect(HOST_CAPABILITY_VALUES.at(-2)).toBe("view_donations")
+    expect(HOST_CAPABILITY_VALUES.at(-1)).toBe("manage_org_members")
     expect(HostCapabilitySchema.safeParse("delete_everything").success).toBe(false)
   })
 })

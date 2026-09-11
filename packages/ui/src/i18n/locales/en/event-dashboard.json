@@ -59,7 +59,8 @@
     "duplicate_error_gone": "That event is no longer available.",
     "duplicate_error_rate_limited": "Too many events for now. Try again later.",
     "duplicate_error_invalid": "Check the date and time and try again.",
-    "duplicate_error_generic": "Could not duplicate the event. Try again."
+    "duplicate_error_generic": "Could not duplicate the event. Try again.",
+    "loading_more": "Loading…"
   },
   "invites": {
     "section": "Invitations",
@@ -70,7 +71,10 @@
     "decline": "Decline",
     "accept_a11y": "Accept the invitation to {{title}}",
     "decline_a11y": "Decline the invitation to {{title}}",
-    "error": "That did not work. Try again."
+    "error": "That did not work. Try again.",
+    "error_title": "Could not load your invitations",
+    "error_body": "We could not reach civfix. Check your connection and try again.",
+    "retry": "Try again"
   },
   "money": {
     "section": "Money",
@@ -156,7 +160,11 @@
     "error_conflict": "That change no longer applies.",
     "error_forbidden": "You do not have permission for that.",
     "error_gone": "That person is no longer in this organization.",
-    "error_generic": "That did not work. Try again."
+    "error_generic": "That did not work. Try again.",
+    "show_more": "Show more",
+    "loading_more": "Loading…",
+    "show_more_a11y": "Show more collaborators",
+    "invites_error": "Could not load pending invitations."
   },
   "console": {
     "open": "Open full console",

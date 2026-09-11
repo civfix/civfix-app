@@ -9,6 +9,7 @@ import { headerAuthAffordance } from "../shell/headerAuthAffordance"
 import { useT } from "../i18n"
 import {
   HEADER_AVATAR_SIZE,
+  HEADER_BADGED_AVATAR_SIZE,
   HEADER_CONTROL_RADIUS,
   HEADER_CONTROL_SIZE,
   HEADER_GLYPH_SIZE,
@@ -57,7 +58,7 @@ export function HeaderProfileButton({ surface = "glass" }: HeaderProfileButtonPr
       seed={user?.id}
       photoUrl={user?.avatarUrl ?? null}
       gradient={null}
-      size={HEADER_AVATAR_SIZE}
+      size={surface === "solid" ? HEADER_BADGED_AVATAR_SIZE : HEADER_AVATAR_SIZE}
     />
   )
 

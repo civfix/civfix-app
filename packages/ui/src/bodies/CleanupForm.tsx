@@ -20,7 +20,7 @@ import {
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField, BringInput, MetaDot } from "../primitives"
-import { useMyOrganizations, useReport, useReverseLabel, reverseLabelText } from "../data"
+import { actableOrganizations, useMyOrganizations, useReport, useReverseLabel, reverseLabelText } from "../data"
 import { LocationPicker, PortraitMapPickStep, useLocationPick } from "../map"
 import { useLocale, useT } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
@@ -344,7 +344,7 @@ export function CleanupForm({
 
   const myOrgs = useMyOrganizations()
   const hostOrganizations = useMemo<AuthorAsOption[]>(() => {
-    const rows: AuthorAsOption[] = (myOrgs.data ?? []).map((org) => ({
+    const rows: AuthorAsOption[] = actableOrganizations(myOrgs.data).map((org) => ({
       id: org.id,
       name: org.name,
       logoUrl: org.logoUrl ?? null,
