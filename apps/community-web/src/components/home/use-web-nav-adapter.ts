@@ -5,29 +5,42 @@ import {
   useNavStore,
   entryFromPath,
   layoutModeFor,
-  pathForEntry,
-  type DetailKind,
-  type NavState,
-  type View,
+  takeNavSnapshot,
+  ROOT_NAV_SNAPSHOT,
+  type NavSnapshot,
 } from "@civfix/ui"
 
+import {
+  pathForSnapshot,
+  readNavHistory,
+  reconcilePlan,
+  snapshotEquals,
+  stampNavHistory,
+  traversalFor,
+  type NavHistoryEntry,
+} from "./nav-history"
+
 /**
- * The WEB deep-link / URL adapter for the unified nav store (UI-unification, stage 3B-2).
+ * The WEB deep-link / URL adapter for the unified nav store.
  *
  * The shared @civfix/ui nav store + shell are platform-agnostic and NEVER touch window.history; this
- * web-app-side hook owns the URL <-> store bridge, lifting the logic that used to live in
- * home-shell.tsx (seed-on-mount + popstate re-seed) and use-panel-nav.ts (syncUrl on push). It:
+ * web-app-side hook owns the URL <-> store bridge. Every history entry the shell writes carries a
+ * `civfixNav` stamp (a nav SNAPSHOT plus its in-session depth), so the browser's Back button and the
+ * in-app chevron land on the same surface:
  *
- *   (a) seeds the store from the LIVE window.location.pathname on mount (handling the static-export
- *       SPA-fallback placeholder segments like "/pin/_"),
- *   (b) subscribes to the store's active entry and history.pushState's the canonical path on change,
- *   (c) on popstate, re-seeds the store from the new pathname.
+ *   (a) on mount it either RESTORES the stamped snapshot (reload, bfcache, a return from /manage) or
+ *       seeds from the live pathname, writing a synthetic in-app root beneath any cold deep link so the
+ *       first browser Back stays on the site,
+ *   (b) it maps the store's transition log onto history: forward transitions push, lateral ones replace,
+ *       and a POP TRAVERSES (`history.go(-n)`) instead of pushing a new entry,
+ *   (c) a user-initiated popstate restores the landed snapshot into the store; a popstate landing from
+ *       our own traversal reconciles the entry with whatever the store already is.
  *
- * URL sync uses raw history.pushState/replaceState (NOT next/navigation) on purpose, matching the
- * deliberate choice in the old use-panel-nav.ts: a Next client navigation to /pin/<id> would unmount
- * the shell (and the map) and mount the catch-all route shell. We want the opposite - keep the shell,
- * swap the active panel, and merely reflect the URL. The catch-all routes still exist for cold deep
- * links / SPA fallback; when one boots it renders HomeShell, which calls this hook to seed the store.
+ * URL sync uses raw history.pushState/replaceState (NOT next/navigation) on purpose: a Next client
+ * navigation to /pin/<id> would unmount the shell (and the map) and mount the catch-all route shell. We
+ * want the opposite - keep the shell, swap the active panel, and merely reflect the URL. Every write
+ * SPREADS the existing window.history.state, because Next's app router keeps its own tree there and hard
+ * reloads on a popstate whose state lacks it.
  */
 
 /**
@@ -43,7 +56,7 @@ function liveMode(): "compact" | "expanded" {
 /**
  * Resolve the pathname to seed from. Under output:"export" a fallback-served deep link arrives at the
  * placeholder route ("/pin/_") while window.location holds the real "/pin/<id>"; prefer the live
- * location unless it is itself a placeholder ("/.../_/..."). Mirrors the old HomeShell seed logic.
+ * location unless it is itself a placeholder ("/.../_/...").
  */
 function seedPathname(): string {
   if (typeof window === "undefined") return "/"
@@ -52,108 +65,178 @@ function seedPathname(): string {
 }
 
 /**
- * Seed (replace) the whole store from a pathname, branching list-kind vs detail by the live mode.
- *
- * The store's `seed` ACTION owns the seeding invariant (apply `seedFor`, re-derive `active` from the
- * resulting stack, and clear a stale panel on a home/unmapped path) - this adapter only decides WHICH
- * entry and WHICH layout mode. It used to hand-merge the partial through a raw `setState`, which
- * shallow-merges without running reducers and so had to repair `active` itself.
+ * Seed (replace) the whole store from a pathname, branching list-kind vs detail by the live mode. The
+ * store's `seed` ACTION owns the seeding invariant - this adapter only decides WHICH entry and WHICH
+ * layout mode.
  */
 function seedStoreFromPath(pathname: string): void {
   useNavStore.getState().seed(entryFromPath(pathname), liveMode())
 }
 
-/**
- * The list DetailKind that a `View` maps to (the inverse of the shared `viewForEntry`). A selected list
- * lives in `view` with no active detail in BOTH layouts now that `seedFor` unified the list kinds onto
- * their views, so this is the only way those four URLs are derived. "home" has no URL of its own (it is
- * "/"), so it is absent here.
- */
-const LIST_KIND_FOR_VIEW: Partial<Record<View, DetailKind>> = {
-  events: "cleanups",
-  messaging: "messages",
-  social: "people",
-  reports: "myreports",
+function liveSnapshot(): NavSnapshot {
+  return takeNavSnapshot(useNavStore.getState())
+}
+
+function isRootSnapshot(snapshot: NavSnapshot): boolean {
+  return snapshot.view === "home" && snapshot.stack.length === 0
+}
+
+interface NavController {
+  seq: number
+  adapterDriven: boolean
+  pendingTraversals: number
+  handledSeq: number
 }
 
 /**
- * The canonical URL for the current nav state. An active detail/panel wins (`pathForEntry(active)`);
- * otherwise a non-home list `view` maps to its list URL; otherwise home. Both layouts select a seeded list
- * as `view`, so this is what round-trips `/cleanups` `/people` `/reports` `/messages` in either mode. A
- * list that a flow still PUSHES (a stacked drill-down) is an `active` entry and takes the first branch.
+ * The return-depth pair an entry carries while a report run is live: the depth of the surface the wizard
+ * was launched from, so one traversal unwinds the whole report -> search -> report detour. Inherited
+ * while the capture token is unchanged, re-anchored on a fresh capture, absent with no run.
  */
-function pathForState(state: NavState): string {
-  // The drop-pin menu is a TRANSIENT map affordance, not an addressable page — `pathForEntry` returns
-  // "/map" for it on the assumption that the address bar already shows /map, so syncUrl's same-path skip
-  // suppresses the write. That only holds on COMPACT. On EXPANDED the map is mounted for every view
-  // (AppShell: `mountMap = mode === "expanded" || …`), so a desktop right-click from, say, "/" would
-  // pushState("/map") and Cancel would push a second entry back — leaving a browser Back that lands on
-  // the Map view instead of where the user was, and a reload that boots into Map with no menu. Fall
-  // through to the view-derived path instead, so the skip fires on BOTH layouts.
-  if (state.active && state.active.kind !== "drop-pin") return pathForEntry(state.active)
-  if (state.view === "map") return "/map"
-  if (state.view === "search") return "/search"
-  const listKind = LIST_KIND_FOR_VIEW[state.view]
-  return listKind ? pathForEntry({ kind: listKind }) : "/"
-}
-
-/** The canonical path of the in-progress report wizard ("drop"); see `pathForEntry({ kind: "drop" })`. */
-const REPORT_FLOW_PATH = "/report"
-
-/**
- * Push `path` into the address bar (replicates use-panel-nav.ts syncUrl). Skips the write when the bar
- * already matches (so a popstate-driven re-seed does not push a duplicate entry, and a no-op store
- * change does not spam history).
- *
- * REPLACE-on-leaving-the-report-flow: the report success CTAs ("View my report", "Back to map") leave the
- * in-progress "drop" flow via the store's `reset()` (+ `push`), so the nav transitions OUT of `/report`.
- * If that left `/report` underneath the new entry, a browser/OS Back from the report detail would popstate
- * back INTO the (now-finished, empty) wizard. So when the bar currently shows `/report` and we are moving
- * away from it, REPLACE that history entry instead of pushing - the `/report` URL is overwritten, so Back
- * from `/pin/<id>` lands on `/` (home). This is a general rule (any departure from the flow replaces it),
- * not a per-CTA special case, and never fires on normal navigation (map pin -> detail -> back), where the
- * bar is never on `/report` when the next entry is pushed.
- */
-function syncUrl(path: string): void {
-  if (typeof window === "undefined") return
-  const current = window.location.pathname.replace(/\/$/, "") || "/"
-  const next = path.replace(/\/$/, "") || "/"
-  if (current === next) return
-  if (current === REPORT_FLOW_PATH) {
-    window.history.replaceState(window.history.state, "", path)
-    return
-  }
-  window.history.pushState(window.history.state, "", path)
+function returnFields(
+  current: NavHistoryEntry | null,
+  snapshot: NavSnapshot,
+): Pick<NavHistoryEntry, "returnDepth" | "returnToken"> {
+  const reportReturn = snapshot.reportReturn
+  if (!reportReturn) return {}
+  if (current && current.returnToken === reportReturn.token && current.returnDepth !== undefined)
+    return { returnDepth: current.returnDepth, returnToken: current.returnToken }
+  return { returnDepth: current?.depth ?? 0, returnToken: reportReturn.token }
 }
 
 export function useWebNavAdapter(): void {
-  // (a) Seed once on mount from the live URL. Done in a LAYOUT effect (not useEffect) so the store is
-  // seeded BEFORE the first paint of the shell - otherwise a deep link would flash the map-only home for
-  // one frame before the panel opens. Safe with no SSR guard: this hook only runs inside HomeShell,
-  // which is mounted via dynamic(ssr:false), so useLayoutEffect never fires during the static export.
+  const controllerRef = React.useRef<NavController>({
+    seq: 0,
+    adapterDriven: false,
+    pendingTraversals: 0,
+    handledSeq: 0,
+  })
+
+  const write = React.useCallback(
+    (
+      mode: "push" | "replace",
+      depth: number,
+      snapshot: NavSnapshot,
+      current: NavHistoryEntry | null,
+    ) => {
+      const controller = controllerRef.current
+      controller.seq += 1
+      const entry: NavHistoryEntry = {
+        v: 1,
+        seq: controller.seq,
+        depth,
+        ...returnFields(current, snapshot),
+        snapshot,
+      }
+      const state = stampNavHistory(window.history.state, entry)
+      const path = pathForSnapshot(snapshot)
+      if (mode === "push") window.history.pushState(state, "", path)
+      else window.history.replaceState(state, "", path)
+    },
+    [],
+  )
+
+  const drive = React.useCallback((run: () => void) => {
+    const controller = controllerRef.current
+    controller.adapterDriven = true
+    try {
+      run()
+    } finally {
+      controller.adapterDriven = false
+    }
+    controller.handledSeq = useNavStore.getState().navSeq
+  }, [])
+
+  // (a) Seed once on mount from the stamped history entry, or from the live URL. Done in a LAYOUT effect
+  // (not useEffect) so the store is seeded BEFORE the first paint of the shell - otherwise a deep link
+  // would flash the map-only home for one frame before the panel opens. Safe with no SSR guard: this hook
+  // only runs inside HomeShell, which is mounted via dynamic(ssr:false).
   React.useLayoutEffect(() => {
-    seedStoreFromPath(seedPathname())
+    const controller = controllerRef.current
+    const existing = readNavHistory(window.history.state)
+    if (existing) {
+      controller.seq = existing.seq
+      drive(() => useNavStore.getState().restore(existing.snapshot))
+      return
+    }
+    drive(() => seedStoreFromPath(seedPathname()))
+    const live = liveSnapshot()
+    if (isRootSnapshot(live)) {
+      write("replace", 0, live, null)
+      return
+    }
+    // A COLD DEEP LINK has no in-app entry beneath it, so the first browser Back would leave the site.
+    // Write the in-app root underneath it, then push the deep-linked state on top: the address bar still
+    // ends on the deep link, and Back lands on the home feed instead of the previous website.
+    write("replace", 0, ROOT_NAV_SNAPSHOT, null)
+    write("push", 1, live, readNavHistory(window.history.state))
     // Mount-only: subsequent changes flow through the subscription below / popstate.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // (b) Reflect the nav state in the address bar. Subscribe to the store and push the canonical path
-  // whenever it changes (an active detail, or a compact list `view`). We compare against the live
-  // pathname inside syncUrl so a re-seed from popstate is a no-op (no duplicate history entry).
+  // (b) Map the store's transition log onto history. A forward move pushes, a lateral one replaces, and a
+  // POP traverses - which is the whole point: the in-app chevron must consume a history entry rather than
+  // append one, or browser Back would walk straight back into the surface the user just left.
   React.useEffect(() => {
     const unsub = useNavStore.subscribe((state) => {
-      syncUrl(pathForState(state))
+      const controller = controllerRef.current
+      if (controller.adapterDriven) return
+      if (state.navSeq === controller.handledSeq) return
+      controller.handledSeq = state.navSeq
+      const transition = state.lastTransition
+      if (!transition || transition.type === "restore") return
+      const current = readNavHistory(window.history.state)
+      const live = takeNavSnapshot(state)
+      if (transition.type === "pop") {
+        const steps = traversalFor(transition, current)
+        if (steps === 0) {
+          write("replace", current?.depth ?? 0, live, current)
+          return
+        }
+        controller.pendingTraversals += 1
+        window.history.go(-steps)
+        return
+      }
+      if (transition.type === "replace") {
+        write("replace", current?.depth ?? 0, live, current)
+        return
+      }
+      if (current && snapshotEquals(current.snapshot, live)) return
+      write("push", (current?.depth ?? 0) + 1, live, current)
     })
     return unsub
-  }, [])
+  }, [write])
 
-  // (c) Browser Back/Forward: re-seed the store from the new path so the address bar and the visible
-  // panel stay in sync. Popping a pushState entry lands on the matching panel (or home).
+  // (c) Browser Back/Forward restores the landed snapshot into the store. A popstate that is the landing
+  // of OUR OWN traversal is the other direction: the store is already right, so the entry is reconciled to
+  // it instead (coalesced traversals reconcile once, on the final landing).
   React.useEffect(() => {
-    const onPop = () => seedStoreFromPath(window.location.pathname)
+    const onPop = (event: PopStateEvent) => {
+      const controller = controllerRef.current
+      const landed = readNavHistory(event.state)
+      if (controller.pendingTraversals > 0) {
+        controller.pendingTraversals -= 1
+        if (controller.pendingTraversals > 0) return
+        const live = liveSnapshot()
+        const plan = reconcilePlan(landed?.snapshot ?? ROOT_NAV_SNAPSHOT, live)
+        if (plan.type === "none") return
+        const depth = landed?.depth ?? 0
+        if (plan.type === "push") write("push", depth + 1, live, landed)
+        else write("replace", depth, live, landed)
+        return
+      }
+      if (landed) {
+        drive(() => useNavStore.getState().restore(landed.snapshot))
+        return
+      }
+      // An entry this controller never wrote (a tab opened against an older build). Seed from its path,
+      // then stamp it so the next pop has a depth to traverse against.
+      drive(() => seedStoreFromPath(window.location.pathname))
+      write("replace", 0, liveSnapshot(), null)
+    }
     window.addEventListener("popstate", onPop)
     return () => window.removeEventListener("popstate", onPop)
-  }, [])
+  }, [drive, write])
 
   // (d) Move focus to the active panel's heading on route change (WCAG 2.4.3). When the store gains a
   // NEW active detail entry, jump keyboard focus to the panel heading the shared shell marks with
