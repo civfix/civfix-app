@@ -1321,3 +1321,42 @@ vocabulary so the `payout.paid|failed|canceled` webhooks need no translation tab
 `AdminUserDTO.organizations` (`{ id, slug, name, role }[]`, optional) lets the Users page answer
 "who is this person affiliated with" in the same request as the rest of the detail, resolved in one
 query. It replaces `verificationStatus`, which named a system that no longer exists.
+
+## 35. Per-event insights are exact for roster-capable viewers (0.44.0)
+
+`getEventInsights` (`GET /cleanups/:id/insights`) returns one per-event read for the host surface:
+`phase`, a `clock`, seat counts, a registration trend, per-ticket-type and per-source seats, the
+broadcast log, arrival offsets, credited hours, donations and returning volunteers. Every number in
+it is EXACT. There is no `suppressed` flag, no `k`, and no nullable count standing in for a hidden
+one - the nullability in the response means "this host cannot see donations" (`money`) or "there is
+no comparison set" (`returning`), never "this number was withheld".
+
+That is a deliberate departure from §25, and it is narrow. §25's k-suppression protects a host from
+recovering an individual out of an aggregate. It cannot do that here, because the viewer of this
+endpoint can already page every attendee by name through `listEventRegistrations`: the authorization
+is `view_analytics` AND an explicit `view_roster` check, and in `host/capabilities.ts` every standing
+that holds `view_analytics` (organizer, cohost, coordinator, org owner, org admin) also holds
+`view_roster`. Staff holds `view_roster` without `view_analytics`; member holds neither. An aggregate
+computed over a roster its reader may already enumerate discloses nothing new, so suppression here
+bought no privacy and cost legibility - a 14-person cleanup rendered as a wall of dashes.
+
+The invariant is load-bearing, so it is tested rather than trusted: `__tests__/host-insights.test.ts`
+walks every `(eventRole, orgRole)` pair and asserts `can(s, "view_analytics") ⇒ can(s, "view_roster")`.
+If a future role ever holds analytics without the roster, that test fails first and the endpoint must
+grow suppression before that role ships.
+
+The same argument carries the portfolio read: `hostedEventsAnalytics` aggregates only events the
+viewer organizes, co-hosts, coordinates or owns/administers through an org, so its reader holds
+`view_roster` on every event in the set and it reports exact values with `suppressed: false`. Its
+SHAPE is unchanged - the counts stay nullable and `k` stays in the envelope - because a workspace UI
+and a registry backend can skew for a deploy window, and an old server must still be able to answer
+with suppressed cells. The five `eventAnalytics*` panels and the `seriesClosure` machinery behind
+them are untouched and stay for the console and the CSV exports; §25 continues to govern them.
+
+`EventPhase` (`upcoming | live | ended | cancelled`) is the one phase vocabulary, and `eventPhase()`
+in `@civfix/shared/host` is the one implementation: `cancelled` from the status, `ended` from a `done`
+status or two hours past the end (an absent `endsAt` means a four-hour event), `live` from two hours
+before the start, `upcoming` otherwise - and `upcoming` for a clock that will not parse, matching the
+fail-closed stance of the completion helpers. Server and client compute it from the same inputs
+(`CleanupDTO.status`/`scheduledAt`/`endsAt`), so the header can render a phase before the insights
+arrive and agree with `insights.phase` once they do.
