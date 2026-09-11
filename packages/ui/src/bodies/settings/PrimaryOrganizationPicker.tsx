@@ -2,6 +2,7 @@ import React, { useCallback } from "react"
 import {
   View,
   Pressable,
+  StyleSheet,
   ActivityIndicator,
   type StyleProp,
   type ViewStyle,
@@ -116,27 +117,31 @@ export function PrimaryOrganizationPicker({ style }: { style?: StyleProp<ViewSty
   return (
     <SettingsSection label={t("section.affiliation")} style={style}>
       <Text style={styles.helper}>{t("affiliation.helper")}</Text>
-      <OptionRow
-        label={t("affiliation.automatic")}
-        sub={t("affiliation.automatic_sub")}
-        selected={current === null}
-        pending={pendingId === PRIMARY_ORGANIZATION_AUTOMATIC}
-        selectedLabel={t("affiliation.selected")}
-        onSelect={() => onSelect(null)}
-      />
-      {rows.map((org) => (
+      <View accessibilityRole="radiogroup" aria-label={t("affiliation.label")}>
         <OptionRow
-          key={org.id}
-          label={org.name}
-          logoName={org.name}
-          logoSeed={org.id}
-          logoUrl={org.logoUrl ?? null}
-          selected={current === org.id}
-          pending={pendingId === org.id}
+          label={t("affiliation.automatic")}
+          sub={t("affiliation.automatic_sub")}
+          selected={current === null}
+          pending={pendingId === PRIMARY_ORGANIZATION_AUTOMATIC}
           selectedLabel={t("affiliation.selected")}
-          onSelect={() => onSelect(org.id)}
+          onSelect={() => onSelect(null)}
         />
-      ))}
+        {rows.map((org) => (
+          <React.Fragment key={org.id}>
+            <View style={styles.divider} />
+            <OptionRow
+              label={org.name}
+              logoName={org.name}
+              logoSeed={org.id}
+              logoUrl={org.logoUrl ?? null}
+              selected={current === org.id}
+              pending={pendingId === org.id}
+              selectedLabel={t("affiliation.selected")}
+              onSelect={() => onSelect(org.id)}
+            />
+          </React.Fragment>
+        ))}
+      </View>
     </SettingsSection>
   )
 }
@@ -194,5 +199,9 @@ const useStyles = makeThemedStyles((t) => ({
     height: 24,
     alignItems: "flex-end",
     justifyContent: "center",
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: t.colors.border,
   },
 }))
