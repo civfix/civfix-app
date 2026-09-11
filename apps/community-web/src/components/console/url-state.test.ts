@@ -5,6 +5,7 @@ import {
   CONSOLE_REPLACE_PARAM_KEYS,
   applyConsolePatch,
   consoleHref,
+  drawerClosePlan,
   isDrawerParamKey,
   parseConsoleSearch,
   serializeConsoleParams,
@@ -48,6 +49,15 @@ describe("console url state", () => {
   it("classifies every push key as a drawer key and no replace key as one", () => {
     for (const key of CONSOLE_PUSH_PARAM_KEYS) expect(isDrawerParamKey(key)).toBe(true)
     for (const key of CONSOLE_REPLACE_PARAM_KEYS) expect(isDrawerParamKey(key)).toBe(false)
+  })
+
+  it("closes a drawer the console PUSHED by traversing, and any other entry by replacing", () => {
+    expect(drawerClosePlan({ consoleDrawer: true })).toBe("back")
+    expect(drawerClosePlan({ __NA: true, consoleDrawer: true })).toBe("back")
+    expect(drawerClosePlan({ consoleDrawer: false })).toBe("replace")
+    expect(drawerClosePlan({ __NA: true })).toBe("replace")
+    expect(drawerClosePlan(null)).toBe("replace")
+    expect(drawerClosePlan(undefined)).toBe("replace")
   })
 
   it("builds hrefs from a pathname plus params", () => {

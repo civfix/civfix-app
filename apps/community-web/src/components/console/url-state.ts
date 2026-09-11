@@ -160,9 +160,34 @@ export function setConsoleParams(patch: ConsoleParamPatch, mode?: UrlWriteMode):
   const next = applyConsolePatch(paramsSnapshot(), patch)
   const href = `${window.location.pathname}${serializeConsoleParams(next)}${window.location.hash}`
   const resolved = mode ?? writeModeForPatch(patch)
-  if (resolved === "push") window.history.pushState(null, "", href)
-  else window.history.replaceState(null, "", href)
+  if (resolved === "push")
+    window.history.pushState({ ...window.history.state, consoleDrawer: true }, "", href)
+  else window.history.replaceState(window.history.state, "", href)
   window.dispatchEvent(new Event(URL_STATE_EVENT))
+}
+
+export type DrawerClosePlan = "back" | "replace"
+
+/**
+ * HOW A DRAWER CLOSES. Opening one PUSHES a history entry (its param is in CONSOLE_PUSH_PARAM_KEYS), so
+ * dropping the param with a replace would leave that entry behind and a browser Back would re-open the
+ * drawer instead of returning to the previous console screen. When the current entry is the drawer's own,
+ * closing is a real traversal; only an entry this console did not push falls back to the replace patch.
+ */
+export function drawerClosePlan(state: unknown): DrawerClosePlan {
+  if (typeof state !== "object" || state === null) return "replace"
+  return (state as Record<string, unknown>).consoleDrawer === true ? "back" : "replace"
+}
+
+export function closeConsoleDrawer(keys: readonly ConsoleParamKey[]): void {
+  if (typeof window === "undefined") return
+  if (drawerClosePlan(window.history.state) === "back") {
+    window.history.back()
+    return
+  }
+  const patch: ConsoleParamPatch = {}
+  for (const key of keys) patch[key] = null
+  setConsoleParams(patch, "replace")
 }
 
 export function navigateConsole(pathname: string, params: ConsoleParams = {}): void {
