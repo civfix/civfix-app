@@ -13,7 +13,6 @@ import {
   MetaDot,
   FollowButton,
   EmptyState,
-  OrgAffiliationBadge,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
@@ -424,9 +423,6 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
               <Text style={styles.name} numberOfLines={1}>
                 {profile.name}
               </Text>
-              {profile.organization ? (
-                <OrgAffiliationBadge organization={profile.organization} size="md" />
-              ) : null}
             </View>
             {profile.handle ? (
               <View style={styles.handleRow}>

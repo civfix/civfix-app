@@ -13,7 +13,6 @@ import { makeThemedStyles, theme, useTheme, noShadow, focusRingProps, headingLev
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
-  OrgAffiliationBadge,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
@@ -80,7 +79,7 @@ export interface ProfileViewProps {
   onOpenConnections?: (which: "followers" | "following") => void
   actions?: React.ReactNode
   organization?: OrganizationRefDTO | null
-  verificationSlot?: React.ReactNode
+  dashboardSlot?: React.ReactNode
   posts?: ProfilePosts
   onOpenSaved?: () => void
   reports?: ProfileReports
@@ -96,7 +95,7 @@ export function ProfileView({
   onOpenConnections,
   actions,
   organization,
-  verificationSlot,
+  dashboardSlot,
   posts,
   onOpenSaved,
   reports,
@@ -173,7 +172,6 @@ export function ProfileView({
             <Text style={styles.heroName} numberOfLines={1} accessibilityRole="header" {...headingLevel(2)}>
               {profile.name}
             </Text>
-            {affiliation ? <OrgAffiliationBadge organization={affiliation} size="md" /> : null}
           </View>
           {heroSub ? (
             <Text style={styles.heroSub} numberOfLines={1}>
@@ -220,7 +218,7 @@ export function ProfileView({
 
       <SocialLinksRow links={profile.socialLinks} />
 
-      {verificationSlot ? <View style={styles.verifySlot}>{verificationSlot}</View> : null}
+      {dashboardSlot ? <View style={styles.dashboardSlot}>{dashboardSlot}</View> : null}
 
       {actions ? <View style={styles.actions}>{actions}</View> : null}
 
@@ -364,7 +362,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.accentText,
   },
 
-  verifySlot: {
+  dashboardSlot: {
     marginTop: HEADER_CLUSTER_GAP,
   },
 

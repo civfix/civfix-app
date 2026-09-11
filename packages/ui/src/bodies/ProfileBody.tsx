@@ -173,7 +173,7 @@ export function ProfileBody() {
         onOpenSaved={onOpenSaved}
         reports={profileReports}
         hours={<ServiceHoursSection variant="own" totalHours={profile.volunteerHours} />}
-        verificationSlot={<DashboardRow onOpen={onOpenDashboard} />}
+        dashboardSlot={<DashboardRow onOpen={onOpenDashboard} />}
       />
     </ScrollView>
   )
