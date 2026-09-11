@@ -28,18 +28,23 @@ export function reduceScrollKeyboard(
     case "focus": {
       const owned = signal.scope !== null && signal.scope === state.scope
       if (owned) {
+        if (state.focusedScope === signal.scope && state.overlap <= 0) return state
         return {
           ...state,
           focusedScope: signal.scope,
           revealVersion: state.overlap > 0 ? state.revealVersion + 1 : state.revealVersion,
         }
       }
-      if (signal.scope === null) return { ...state, focusedScope: null }
-      return { ...state, focusedScope: signal.scope, reserve: 0, holding: false }
+      if (signal.scope === null) {
+        return state.focusedScope === null ? state : { ...state, focusedScope: null }
+      }
+      if (state.focusedScope === null && state.reserve === 0 && !state.holding) return state
+      return { ...state, focusedScope: null, reserve: 0, holding: false }
     }
     case "show": {
       const owned = state.focusedScope !== null && state.focusedScope === state.scope
       if (!owned) {
+        if (state.overlap === signal.overlap && state.reserve === 0 && !state.holding) return state
         return { ...state, overlap: signal.overlap, reserve: 0, holding: false }
       }
       return {
@@ -51,7 +56,9 @@ export function reduceScrollKeyboard(
       }
     }
     case "hide":
-      if (state.reserve <= 0) return { ...state, overlap: 0, holding: false }
+      if (state.reserve <= 0) {
+        return state.overlap === 0 && !state.holding ? state : { ...state, overlap: 0, holding: false }
+      }
       return { ...state, overlap: 0, holding: true }
     case "hold-expired":
       if (!state.holding) return state

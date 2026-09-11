@@ -1,5 +1,4 @@
 import { readFileSync, readdirSync } from "node:fs"
-import { basename, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { beforeEach, describe, expect, it } from "vitest"
 import { MOTION } from "../../theme/motion"
@@ -694,7 +693,7 @@ describe("the keyboard-aware scroll seam measures the keyboard instead of trusti
 
   it("reserves on EVERY platform, through the pure model", () => {
     const text = seam()
-    expect(text).toMatch(/\n  keyboardViewportOverlap,\n[\s\S]*?\} from "\.\/keyboardInsetModel"/)
+    expect(text).toMatch(/\n {2}keyboardViewportOverlap,\n[\s\S]*?\} from "\.\/keyboardInsetModel"/)
     expect(text).not.toMatch(/Platform\.OS === "ios"\s*\n?\s*\? \(e\.endCoordinates/)
     expect(text).toMatch(/reserves: pageActiveRef\.current && reserveKeyboardPadding\(\),/)
   })

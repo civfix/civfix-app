@@ -15,6 +15,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
   const scope = useKeyboardScrollScope()
   const nodeRef = useRef<KeyboardFocusNode | null>(null)
   const focusedRef = useRef(false)
+  const contentHeightRef = useRef(0)
 
   const setRefs = useCallback(
     (node: RNTextInput | null) => {
@@ -52,7 +53,11 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
 
   const handleContentSizeChange = useCallback<ContentSizeHandler>(
     (event) => {
-      if (focusedRef.current) keyboardFocusStore.bump()
+      const height = event.nativeEvent.contentSize.height
+      if (height !== contentHeightRef.current) {
+        contentHeightRef.current = height
+        if (focusedRef.current) keyboardFocusStore.bump()
+      }
       onContentSizeChange?.(event)
     },
     [onContentSizeChange],

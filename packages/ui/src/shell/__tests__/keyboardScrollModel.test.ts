@@ -80,6 +80,17 @@ describe("reduceScrollKeyboard", () => {
     ).toBe(1)
   })
 
+  it("returns the SAME state for a signal that changes nothing, so no scroller re-renders", () => {
+    const idle = initialScrollKeyboardState(MINE)
+    expect(reduceScrollKeyboard(idle, { type: "focus", scope: null, version: 1 })).toBe(idle)
+    expect(reduceScrollKeyboard(idle, { type: "focus", scope: "scope-other", version: 1 })).toBe(idle)
+    expect(reduceScrollKeyboard(idle, { type: "content-grew" })).toBe(idle)
+    expect(reduceScrollKeyboard(idle, { type: "hide" })).toBe(idle)
+    expect(reduceScrollKeyboard(idle, { type: "hold-expired" })).toBe(idle)
+    const focused = run(idle, { type: "focus", scope: MINE, version: 1 })
+    expect(reduceScrollKeyboard(focused, { type: "focus", scope: MINE, version: 2 })).toBe(focused)
+  })
+
   it("still reveals for a host whose ANCESTOR reserves the space (reserves: false)", () => {
     const next = opened(false)
     expect(next.reserve).toBe(0)
