@@ -143,6 +143,9 @@ describe("PostComposer presentation model", () => {
     )
     const web = readFileSync(new URL("../../shell/KeyboardAwareScroll.web.tsx", import.meta.url), "utf8")
     expect(web).toMatch(/reserveKeyboardPadding/)
+    const native = readFileSync(new URL("../../shell/PageStack.native.tsx", import.meta.url), "utf8")
+    expect(native).toMatch(/const keyboardReserve = useKeyboardReserve\(\{ enabled: keyboardAvoidance \}\)/)
+    expect(native).toMatch(/paddingBottom: paddingBottom \+ keyboardReserve/)
   })
 
   it("keeps the pill panels one-at-a-time via explicit toggles", () => {

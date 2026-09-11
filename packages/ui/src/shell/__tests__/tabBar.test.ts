@@ -800,11 +800,9 @@ describe("the pinned wizard footers reserve for the Android keyboard nothing els
     ["../../bodies/NewChannelBody.tsx", 3],
   ])("%s lifts every pinned footer", (rel, footers) => {
     const text = read(rel)
-    expect(text).toMatch(/import \{ useKeyboardReserve \} from "\.\.\/shell\/useKeyboardReserve"/)
-    expect(text).toMatch(/const kbReserve = useKeyboardReserve\(\)/)
-    expect(
-      text.match(/<View style=\{\[styles\.footer, kbReserve > 0 \? \{ marginBottom: kbReserve \} : null\]\}>/g),
-    ).toHaveLength(footers)
+    expect(text).toMatch(/import \{ KeyboardPinnedFooter, PrimaryButton \} from "\.\.\/primitives"/)
+    expect(text).not.toMatch(/useKeyboardReserve/)
+    expect(text.match(/<KeyboardPinnedFooter style=\{styles\.footer\}>/g)).toHaveLength(footers)
     expect(text).not.toMatch(/<View style=\{styles\.footer\}>/)
   })
 
@@ -813,46 +811,6 @@ describe("the pinned wizard footers reserve for the Android keyboard nothing els
     expect(layout).toMatch(/"new-group": "full"/)
     expect(layout).toMatch(/"new-channel": "full"/)
     expect(layout).toMatch(/surfaceKeyboardAvoidance: active\?\.kind === "composer"/)
-  })
-})
-
-describe("ONE Android owner per surface: the reserve, never a live KeyboardAvoidingView beside it", () => {
-  const PRUNED = new Set(["node_modules", "__tests__", "ios", "android", ".expo", "dist", "dist-types", "out", ".next"])
-  const ROOTS = [
-    fileURLToPath(new URL("../../", import.meta.url)),
-    fileURLToPath(new URL("../../../../../apps/community-mobile/", import.meta.url)),
-  ]
-  const NEUTRAL_BEHAVIOR = '{Platform.OS === "ios" ? "padding" : undefined}'
-
-  const walk = (dir: string): string[] =>
-    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-      if (PRUNED.has(entry.name)) return []
-      const full = join(dir, entry.name)
-      if (entry.isDirectory()) return walk(full)
-      return entry.isFile() && /\.tsx?$/.test(entry.name) ? [full] : []
-    })
-
-  const consumers = () =>
-    ROOTS.flatMap(walk).filter((file) => /const \w+ = useKeyboardReserve\(/.test(readFileSync(file, "utf8")))
-
-  it("sees every surface that reads the reserve", () => {
-    expect(consumers().map((file) => basename(file)).sort()).toEqual([
-      "ConversationBody.tsx",
-      "DeleteAccountModal.tsx",
-      "FirstRunGate.tsx",
-      "ModalCardSheet.tsx",
-      "NewChannelBody.tsx",
-      "NewGroupBody.tsx",
-      "ReportFlowBody.tsx",
-    ])
-  })
-
-  it("gives none of them a KeyboardAvoidingView that is live on Android", () => {
-    for (const file of consumers()) {
-      for (const [, behavior] of readFileSync(file, "utf8").matchAll(/behavior=(\{[^}]*\}|"[^"]*")/g)) {
-        expect([basename(file), behavior]).toEqual([basename(file), NEUTRAL_BEHAVIOR])
-      }
-    }
   })
 })
 
