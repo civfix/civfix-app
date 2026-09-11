@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { OrganizationDTO, SocialLinks } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../theme"
@@ -52,11 +52,21 @@ function OrgHeader({ org }: { org: OrganizationDTO }) {
   )
 }
 
-function OrgEventsSection({ slug, when }: { slug: string; when: OrganizationEventsWindow }) {
+function OrgEventsSection({
+  slug,
+  when,
+  collapsible = false,
+}: {
+  slug: string
+  when: OrganizationEventsWindow
+  collapsible?: boolean
+}) {
   const styles = useStyles()
+  const th = useTheme()
   const { t } = useT("host-org")
   const push = useNavStore((state) => state.push)
-  const query = useOrganizationEvents(slug, when)
+  const [open, setOpen] = useState(!collapsible)
+  const query = useOrganizationEvents(slug, when, { enabled: open })
   const rows = useMemo(
     () => organizationEventRows(query.data?.pages),
     [query.data?.pages],
@@ -98,12 +108,39 @@ function OrgEventsSection({ slug, when }: { slug: string; when: OrganizationEven
     </>
   )
 
+  const title = when === "upcoming" ? t("events.upcoming") : t("events.past")
+
+  if (!collapsible) {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        {body}
+      </View>
+    )
+  }
+
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>
-        {when === "upcoming" ? t("events.upcoming") : t("events.past")}
-      </Text>
-      {body}
+      <Pressable
+        onPress={() => setOpen((current) => !current)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        accessibilityLabel={title}
+        {...focusRingProps}
+        style={(state) => [
+          styles.sectionToggle,
+          webCursor(),
+          state.pressed ? styles.sectionTogglePressed : null,
+        ]}
+      >
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <Icon
+          icon={open ? iconMap.ChevronUp : iconMap.ChevronDown}
+          size={16}
+          color={th.colors.textMuted}
+        />
+      </Pressable>
+      {open ? body : null}
     </View>
   )
 }
@@ -220,7 +257,7 @@ export function OrgPageBody({ slug }: { slug: string }) {
       </View>
 
       <OrgEventsSection slug={slug} when="upcoming" />
-      <OrgEventsSection slug={slug} when="past" />
+      <OrgEventsSection slug={slug} when="past" collapsible />
 
       {donationsOffered(donate.data?.donateState) && donate.data ? (
         <DonateBlock
@@ -295,6 +332,15 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.displayBold,
     fontSize: t.fontSize["16"],
     color: t.colors.text,
+  },
+  sectionToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 32,
+  },
+  sectionTogglePressed: {
+    opacity: 0.7,
   },
   links: {
     flexDirection: "row",
