@@ -388,7 +388,7 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
     const kb = readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
     expect(kb).toContain("const pageActive = usePageIsActive()")
     expect(kb).toMatch(/if \(!pageActiveRef\.current \|\| !ownsFocusedInput\(\)\) return/)
-    expect(kb).toMatch(/pageActiveRef\.current && reserveKeyboardPadding\(\) \? overlapOf\(e\) : 0/)
+    expect(kb).toMatch(/reserves: pageActiveRef\.current && reserveKeyboardPadding\(\),/)
     expect(src).toMatch(/<ScrollHostProvider value=\{scrollHost\}>\s*\n\s*<PageActiveProvider value=\{active\}>/)
   })
 

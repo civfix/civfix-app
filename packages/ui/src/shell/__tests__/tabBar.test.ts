@@ -635,7 +635,7 @@ describe("dock + sheet animation cost", () => {
     expect(portrait).toMatch(/Platform\.OS !== "web" && useNavStore\.getState\(\)\.view === "search"/)
     const kbNative = readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
     expect(kbNative).toMatch(/\|\| !ownsFocusedInput\(\)\) return/)
-    expect(kbNative).toMatch(/pageActiveRef\.current && reserveKeyboardPadding\(\) \? overlapOf\(e\) : 0/)
+    expect(kbNative).toMatch(/reserves: pageActiveRef\.current && reserveKeyboardPadding\(\),/)
     const thread = readFileSync(new URL("../../bodies/PostThreadBody.tsx", import.meta.url), "utf8")
     expect(thread).not.toMatch(/^import[^\n]*useKeyboardInset/m)
     expect(thread).not.toMatch(/useKeyboardInset\s*\(/)
@@ -694,13 +694,15 @@ describe("the keyboard-aware scroll seam measures the keyboard instead of trusti
 
   it("reserves on EVERY platform, through the pure model", () => {
     const text = seam()
-    expect(text).toMatch(/import \{ keyboardViewportOverlap \} from "\.\/keyboardInsetModel"/)
+    expect(text).toMatch(/\n  keyboardViewportOverlap,\n[\s\S]*?\} from "\.\/keyboardInsetModel"/)
     expect(text).not.toMatch(/Platform\.OS === "ios"\s*\n?\s*\? \(e\.endCoordinates/)
-    expect(text).toMatch(/setBottomReserve\(pageActiveRef\.current && reserveKeyboardPadding\(\) \? overlapOf\(e\) : 0\)/)
+    expect(text).toMatch(/reserves: pageActiveRef\.current && reserveKeyboardPadding\(\),/)
   })
 
   it("derives the keyboard top from the measured overlap", () => {
-    expect(seam()).toMatch(/const top = Dimensions\.get\("window"\)\.height - overlapOf\(e\)/)
+    expect(seam()).toMatch(
+      /const keyboardTop = keyboardTopInWindow\(Dimensions\.get\("window"\)\.height, state\.overlap\)/,
+    )
   })
 })
 
