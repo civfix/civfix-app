@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { View, TextInput, Pressable } from "react-native"
+import { View, Pressable } from "react-native"
+import { TextInput } from "./TextInput"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useT } from "../i18n"

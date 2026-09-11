@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react"
 import {
   Modal,
   View,
-  TextInput,
   Pressable,
   StyleSheet,
   Platform,
@@ -10,6 +9,7 @@ import {
   type TextInput as RNTextInput,
   type ViewStyle,
 } from "react-native"
+import { TextInput } from "../primitives/TextInput"
 import { tokens } from "@civfix/shared/tokens"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"

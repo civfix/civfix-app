@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from "react"
-import { View, TextInput } from "react-native"
+import { View } from "react-native"
+import { TextInput } from "../../primitives/TextInput"
 import type { CheckinResultDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"

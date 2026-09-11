@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { View, TextInput, Pressable, ActivityIndicator, Platform, StyleSheet, type ViewStyle } from "react-native"
+import { View, Pressable, ActivityIndicator, Platform, StyleSheet, type ViewStyle } from "react-native"
+import { TextInput } from "../primitives/TextInput"
 import { tokens } from "@civfix/shared/tokens"
 import { parseLatLng, ipLocate, type GeoSuggestion, type LatLng } from "@civfix/shared/geocode"
 import { makeThemedStyles, useTheme, focusRingProps, webInputReset } from "../theme"

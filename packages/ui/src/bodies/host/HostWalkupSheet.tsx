@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { View, TextInput } from "react-native"
+import { View } from "react-native"
+import { TextInput } from "../../primitives/TextInput"
 import type { TicketTypeDTO } from "@civfix/shared"
 import { MAX_ATTENDEE_NAME } from "@civfix/shared"
 import { makeThemedStyles, useTheme, webInputReset } from "../../theme"

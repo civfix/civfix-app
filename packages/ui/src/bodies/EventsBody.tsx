@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { View, Pressable, TextInput, StyleSheet, Platform } from "react-native"
+import { View, Pressable, StyleSheet, Platform } from "react-native"
+import { TextInput } from "../primitives/TextInput"
 import type { ViewStyle } from "react-native"
 import { haversineMeters } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"

@@ -4,12 +4,13 @@ import {
   Pressable,
   ScrollView as RNScrollView,
   StyleSheet,
-  TextInput,
   View,
   type NativeSyntheticEvent,
+  type TextInput as RNTextInput,
   type TextInputKeyPressEventData,
   type ViewStyle,
 } from "react-native"
+import { TextInput } from "../primitives/TextInput"
 import type { CleanupDTO, LeaderboardEntryDTO, PersonDTO, ReportPinDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import { focusRingProps, makeThemedStyles, theme, useTheme, wash, useLayoutMode, webHover, webInputReset, webTransition, headingLevel } from "../theme"
@@ -151,7 +152,7 @@ function ExpandedSearchField() {
   const setPinned = useSearchBarStore((s) => s.setPinned)
   const focusNonce = useSearchBarStore((s) => s.focusNonce)
   const consumeSearchFocus = useSearchBarStore((s) => s.consumeSearchFocus)
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<RNTextInput>(null)
   const [focused, setFocused] = useState(false)
 
   const pinned = focused || query.trim().length > 0
