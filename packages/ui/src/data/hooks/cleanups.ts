@@ -27,6 +27,11 @@ import { queryKeys } from "../keys"
 
 const CLEANUPS_LIST_PREFIX = ["cleanups"] as const
 
+function invalidateCleanupLists(qc: QueryClient): void {
+  void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+  void qc.invalidateQueries({ queryKey: queryKeys.orgEventsRoot })
+}
+
 export function cleanupDetailFilters(id: string): QueryFilters {
   return {
     predicate: (query: Query) => {
@@ -188,7 +193,7 @@ export function joinCleanupMutationOptions(
     },
     onSettled: () => {
       void qc.invalidateQueries(cleanupDetailFilters(id))
-      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      invalidateCleanupLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(id) })
     },
   }
@@ -226,7 +231,7 @@ export function useCreateCleanup() {
     mutationFn: (input) => api.createCleanup(input),
     onSuccess: (cleanup) => {
       qc.setQueryData<CleanupDTO>(queryKeys.cleanup(cleanup.id), cleanup)
-      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      invalidateCleanupLists(qc)
     },
   })
 }
@@ -241,7 +246,7 @@ export function useDuplicateCleanup() {
     mutationFn: (input) => api.duplicateCleanup(input),
     onSuccess: (cleanup) => {
       qc.setQueryData<CleanupDTO>(queryKeys.cleanup(cleanup.id), cleanup)
-      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      invalidateCleanupLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.hostedEventsRoot })
     },
   })
@@ -277,14 +282,14 @@ export function useUpdateCleanup() {
     },
     onError: (_err, _vars, ctx) => {
       if (ctx) for (const [key, data] of ctx.prevDetails) qc.setQueryData(key as unknown[], data)
-      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      invalidateCleanupLists(qc)
     },
     onSuccess: (cleanup) => {
       reconcileCleanupDetails(qc, cleanup.id, cleanup)
     },
     onSettled: (_data, _err, { id }) => {
       void qc.invalidateQueries(cleanupDetailFilters(id))
-      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      invalidateCleanupLists(qc)
     },
   })
 }
@@ -303,7 +308,7 @@ export function useCancelCleanup() {
       api.cancelCleanup({ id, ...(reason ? { reason } : {}) }),
     onSuccess: (cleanup) => {
       reconcileCleanupDetails(qc, cleanup.id, cleanup)
-      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      invalidateCleanupLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(cleanup.id) })
     },
   })
@@ -323,7 +328,7 @@ export function completeCleanupMutationOptions(
     onSuccess: (res, { id }) => {
       reconcileCleanupDetails(qc, id, res)
       void qc.invalidateQueries(cleanupDetailFilters(id))
-      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      invalidateCleanupLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(id) })
       void qc.invalidateQueries({ queryKey: queryKeys.eventHours(id) })
     },
@@ -355,7 +360,7 @@ export function claimEventSlotMutationOptions(
     onSuccess: (res) => {
       reconcileCleanupDetails(qc, cleanupId, res)
       patchCleanupInFlatLists(qc, cleanupId, { joined: res.joined, going: res.going })
-      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      invalidateCleanupLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(cleanupId) })
     },
   }
@@ -418,7 +423,7 @@ export function useRemoveMember() {
       patchCleanupDetails(qc, id, (prev) => ({ ...prev, going: res.going }))
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(id) })
       void qc.invalidateQueries(cleanupDetailFilters(id))
-      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      invalidateCleanupLists(qc)
     },
   })
 }
@@ -470,7 +475,7 @@ export function guestRsvpVerifyMutationOptions(
     onSuccess: (res) => {
       applyGuestRsvpToCaches(qc, id, res.going)
       void qc.invalidateQueries(cleanupDetailFilters(id))
-      void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
+      invalidateCleanupLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(id) })
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupGuests(id) })
     },

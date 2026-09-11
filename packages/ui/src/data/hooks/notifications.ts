@@ -157,7 +157,8 @@ export function useUpdatePrivacySettings() {
       void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.id) })
       if (res.user.handle) void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.handle) })
       if (privacySettingsPatch(next).primaryOrganizationId !== undefined) {
-        void qc.invalidateQueries({ queryKey: ["posts"] })
+        void qc.invalidateQueries({ queryKey: queryKeys.postsRoot })
+        void qc.invalidateQueries({ queryKey: queryKeys.postRoot })
       }
       void qc.invalidateQueries({ queryKey: queryKeys.session })
     },
