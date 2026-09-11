@@ -1321,3 +1321,30 @@ vocabulary so the `payout.paid|failed|canceled` webhooks need no translation tab
 `AdminUserDTO.organizations` (`{ id, slug, name, role }[]`, optional) lets the Users page answer
 "who is this person affiliated with" in the same request as the rest of the detail, resolved in one
 query. It replaces `verificationStatus`, which named a system that no longer exists.
+
+## 36. Semantic colour tokens split role from brand hue (0.44.0)
+
+`brand.bloom` was simultaneously the accent, the primary-CTA fill, every selection fill and the
+destructive colour, so "the one thing to do" and "this deletes something" looked identical, and white
+on the light coral measured 3.07:1. `tokens.color.semantic` is an additive group in BOTH schemes (the
+§22 mirror rule and `tokens-dark-scheme.test.ts` still hold) that names the role instead of the hue:
+`selectedFill`/`selectedInk` (neutral selection, the `glass.active` idiom), `dangerInk`/`dangerFill`/
+`onDanger`/`dangerWash` (a deeper crimson than coral, so red only ever means destruction),
+`successInk`/`successWash`, and `chartInk`/`chartInkMuted`/`chartTrack` (the single chart series).
+Nothing is removed or re-valued: `brand.bloom`, `bloom.*` and `accentText` keep their values and
+their 113 existing usages.
+
+- **Every semantic pair has a contrast floor asserted in `__tests__/tokens.test.ts`, per scheme.**
+  `dangerInk` clears 4.5:1 on `neutral.card` and `neutral.paper` (light 6.77, dark 9.04), `onDanger`
+  clears 4.5:1 on `dangerFill` (6.88 / 10.89), `selectedInk` on `selectedFill` (16.78 / 12.86),
+  `successInk` on the card (4.99 / 9.37), and `chartInk` clears the 3:1 non-text floor against all
+  four surfaces and against its own track (4.10 / 4.87 on the card). A new pair is added to that test,
+  not eyeballed.
+- **The chart ink is chosen against the chart surface, not borrowed from a chip ramp.** Light is
+  `moss.600` and dark is a step that exists nowhere else (`#5FA05A`): the dark `moss` ramp is tuned
+  for text and chips and fails the perceptual lightness band for a chart mark. One series only — no
+  dark two-series palette clears the chroma floor against `neutral.card`.
+- **The CTA keeps the coral fill and takes an ink label.** `@civfix/ui` derives `onCta` from the
+  scheme's neutrals (light `neutral.ink` on `brand.bloom` = 5.56:1, dark `neutral.paper` = 6.87:1)
+  rather than moving the brand hue to `bloom.700`, which would have made the accent read as danger —
+  the exact confusion this group removes. `onAccent` is unchanged; §22's on-accent floor is unaffected.
