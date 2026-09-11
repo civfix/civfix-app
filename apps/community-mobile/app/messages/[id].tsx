@@ -1,10 +1,13 @@
-import React, { useMemo } from "react"
-import { View } from "react-native"
-import { useLocalSearchParams, useRouter } from "expo-router"
-import { ConversationBody } from "@civfix/ui"
+import React, { useCallback, useMemo } from "react"
+import { BackHandler, View } from "react-native"
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router"
+import { ConversationBody, useNavStore } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import type { PersonDTO, RoomKind } from "@civfix/shared"
+import { conversationExitPlan } from "@/lib/conversationExit"
+import { goHome } from "@/lib/goHome"
 import { parseRoomKind } from "@/lib/roomKind"
+import { rootShellSeen } from "@/lib/rootShellSeen"
 import { useTheme } from "@/theme"
 
 export default function ConversationScreen() {
@@ -36,6 +39,26 @@ export default function ConversationScreen() {
     } as PersonDTO
   }, [roomKind, peerId, peerName, peerHandle, t])
 
+  const onBack = useCallback(() => {
+    const plan = conversationExitPlan({
+      canGoBack: router.canGoBack(),
+      rootShellSeen: rootShellSeen(),
+    })
+    if (plan.seedView) useNavStore.getState().selectView(plan.seedView)
+    if (plan.type === "back") router.back()
+    else goHome(router)
+  }, [router])
+
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+        onBack()
+        return true
+      })
+      return () => subscription.remove()
+    }, [onBack]),
+  )
+
   return (
     <View style={{ flex: 1, backgroundColor: th.colors.bg }}>
       <ConversationBody
@@ -43,7 +66,7 @@ export default function ConversationScreen() {
         roomKind={roomKind}
         {...(peer ? { peer } : {})}
         fullScreen
-        onBack={() => (router.canGoBack() ? router.back() : router.replace("/"))}
+        onBack={onBack}
         onOpenProfile={(personId) => router.push({ pathname: "/people/[id]", params: { id: personId } })}
         onOpenMembers={() =>
           router.push({

@@ -40,6 +40,7 @@ import { navTeardownEpoch } from "@/lib/goHome"
 import { stackWithoutShellHosted } from "@/lib/navBridge"
 import { LocationPrimerSheet } from "@/components/LocationPrimerSheet"
 import { useAndroidBackHandler } from "@/hooks/useAndroidBackHandler"
+import { markRootShellSeen } from "@/lib/rootShellSeen"
 import { PRECISE_ZOOM, APPROX_ZOOM } from "@/config"
 import { useUserLocation, type ResolvedLocation } from "@/hooks/useUserLocation"
 import { decideRegionFetch } from "@/lib/mapRegion"
@@ -307,6 +308,7 @@ export default function MapHomeScreen() {
   useFocusEffect(
     useCallback(() => {
       setRouteFocused(true)
+      markRootShellSeen()
       return () => setRouteFocused(false)
     }, []),
   )
