@@ -1,14 +1,232 @@
-import React from "react"
-import { View } from "react-native"
-import { makeThemedStyles } from "../../theme"
-import { Text } from "../../typography"
+import React, { useCallback, useMemo, useState } from "react"
+import { Pressable, View } from "react-native"
+import type { CleanupMemberRole, HostedEventDTO } from "@civfix/shared"
+import {
+  focusRingProps,
+  headingLevel,
+  makeThemedStyles,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../../theme"
+import { Text, iconMap } from "../../typography"
+import { Avatar, PrimaryButton, SignInPrompt, SkeletonGroup, SkeletonList, useToast } from "../../primitives"
+import { useAuthState, useRequireAuth } from "../../data"
+import { useMyOrganizations } from "../../data/hooks/orgs"
+import {
+  hostedEventRows,
+  myEventInviteRows,
+  useAcceptMyEventInvite,
+  useDeclineMyEventInvite,
+  useMyEventInvites,
+  useMyHostedEvents,
+} from "../../data/hooks/host"
+import { useHostedEventsAnalytics } from "../../data/hooks/dashboard"
+import {
+  useAcceptMyOrgInvite,
+  useDeclineMyOrgInvite,
+  useMyOrgInvites,
+} from "../../data/hooks/orgs"
 import { useT } from "../../i18n"
+import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
+import { FeedNotice } from "../FeedNotice"
+import { openHostDashboard } from "../hostDashboardTarget"
+import { useOpenExternal } from "../../capabilities"
+import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
+import { ConsoleLinkRow } from "./dashboard/ConsoleLinkRow"
+import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
+import { EventInviteRow, OrgInviteRow } from "./dashboard/InviteRows"
+import { HostedEventRow } from "./dashboard/HostedEventRow"
+import { KpiStrip } from "./dashboard/KpiStrip"
+import { MoneySection } from "./dashboard/MoneySection"
+import { buildDashboardTabs, DASHBOARD_TABS, type DashboardTab } from "./dashboard/dashboardModel"
+import { emailAttendeesPreset, useDashboardStore } from "./dashboard/dashboardStore"
+
+type EventWindow = "upcoming" | "past"
+
+const EVENT_WINDOWS: readonly EventWindow[] = ["upcoming", "past"]
+
+function SegmentedRow({
+  options,
+  selected,
+  label,
+  onSelect,
+}: {
+  options: readonly { key: string; label: string }[]
+  selected: string
+  label: string
+  onSelect: (key: string) => void
+}) {
+  const styles = useStyles()
+  return (
+    <View style={styles.segments} accessibilityRole="radiogroup" accessibilityLabel={label}>
+      {options.map((option) => {
+        const on = option.key === selected
+        return (
+          <Pressable
+            key={option.key}
+            onPress={() => onSelect(option.key)}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: on }}
+            accessibilityLabel={option.label}
+            {...focusRingProps}
+            style={(state) => [
+              styles.segment,
+              webTransition,
+              webCursor(),
+              on ? styles.segmentOn : null,
+              !on && webHover(state) ? styles.segmentHovered : null,
+            ]}
+          >
+            <Text style={[styles.segmentText, on ? styles.segmentTextOn : null]}>{option.label}</Text>
+          </Pressable>
+        )
+      })}
+    </View>
+  )
+}
 
 export function EventDashboardBody() {
-  const { ScrollView } = useScrollHost()
   const styles = useStyles()
+  const { ScrollView } = useScrollHost()
   const { t } = useT("event-dashboard")
+  const { t: tEnums } = useT("enums")
+  const toast = useToast()
+  const openExternal = useOpenExternal()
+  const { isAuthenticated, isPending: authPending } = useAuthState()
+  const requireAuth = useRequireAuth()
+
+  const tab = useDashboardStore((s) => s.tab)
+  const orgId = useDashboardStore((s) => s.orgId)
+  const range = useDashboardStore((s) => s.range)
+  const setTab = useDashboardStore((s) => s.setTab)
+  const setOrgId = useDashboardStore((s) => s.setOrgId)
+  const setRange = useDashboardStore((s) => s.setRange)
+  const setBroadcastPreset = useDashboardStore((s) => s.setBroadcastPreset)
+
+  const [eventWindow, setEventWindow] = useState<EventWindow>("upcoming")
+  const [duplicating, setDuplicating] = useState<HostedEventDTO | null>(null)
+
+  const orgsQuery = useMyOrganizations()
+  const orgs = useMemo(() => orgsQuery.data ?? [], [orgsQuery.data])
+  const tabs = useMemo(
+    () => buildDashboardTabs({ orgs, requestedTab: tab, requestedOrgId: orgId }),
+    [orgId, orgs, tab],
+  )
+  const activeOrgId = tabs.tab === "org" ? tabs.selectedOrgId : null
+
+  const analytics = useHostedEventsAnalytics(range, activeOrgId)
+  const hosted = useMyHostedEvents(eventWindow, activeOrgId)
+  const eventInvites = useMyEventInvites()
+  const orgInvites = useMyOrgInvites()
+  const acceptEvent = useAcceptMyEventInvite()
+  const declineEvent = useDeclineMyEventInvite()
+  const acceptOrg = useAcceptMyOrgInvite()
+  const declineOrg = useDeclineMyOrgInvite()
+
+  const events = useMemo(() => hostedEventRows(hosted.data?.pages), [hosted.data])
+  const pendingEventInvites = useMemo(
+    () => myEventInviteRows(eventInvites.data),
+    [eventInvites.data],
+  )
+  const pendingOrgInviteRows = useMemo(() => orgInvites.data ?? [], [orgInvites.data])
+
+  const roleLabel = useCallback(
+    (role: CleanupMemberRole) => tEnums(`cleanupMemberRole.${role}`),
+    [tEnums],
+  )
+
+  const onCreate = useCallback(() => {
+    requireAuth(
+      () => {
+        useNavStore.getState().push({
+          kind: "create-cleanup",
+          ...(activeOrgId ? { organizationId: activeOrgId } : {}),
+        })
+      },
+      { next: "/host" },
+    )
+  }, [activeOrgId, requireAuth])
+
+  const onOpenEvent = useCallback((event: HostedEventDTO) => {
+    useNavStore.getState().push({ kind: "cleanup", id: event.id, title: event.title })
+  }, [])
+
+  const onHostTools = useCallback(
+    (event: HostedEventDTO) => {
+      openHostDashboard({ eventId: event.id, openExternal })
+    },
+    [openExternal],
+  )
+
+  const onEmailAttendees = useCallback(
+    (event: HostedEventDTO) => {
+      setBroadcastPreset(emailAttendeesPreset(event.id))
+      useNavStore.getState().push({ kind: "host-broadcast-quick", id: event.id })
+    },
+    [setBroadcastPreset],
+  )
+
+  const onEdit = useCallback((event: HostedEventDTO) => {
+    useNavStore.getState().push({ kind: "edit-cleanup", id: event.id })
+  }, [])
+
+  const onInviteError = useCallback(() => {
+    toast.show(t("invites.error"), { variant: "error" })
+  }, [t, toast])
+
+  const acceptEventMutate = acceptEvent.mutate
+  const declineEventMutate = declineEvent.mutate
+  const acceptOrgMutate = acceptOrg.mutate
+  const declineOrgMutate = declineOrg.mutate
+
+  const onAcceptEventInvite = useCallback(
+    (inviteId: string) => acceptEventMutate({ inviteId }, { onError: onInviteError }),
+    [acceptEventMutate, onInviteError],
+  )
+  const onDeclineEventInvite = useCallback(
+    (inviteId: string) => declineEventMutate({ inviteId }, { onError: onInviteError }),
+    [declineEventMutate, onInviteError],
+  )
+  const onAcceptOrgInvite = useCallback(
+    (inviteId: string) => acceptOrgMutate({ inviteId }, { onError: onInviteError }),
+    [acceptOrgMutate, onInviteError],
+  )
+  const onDeclineOrgInvite = useCallback(
+    (inviteId: string) => declineOrgMutate({ inviteId }, { onError: onInviteError }),
+    [declineOrgMutate, onInviteError],
+  )
+
+  const pendingEventInviteId =
+    (acceptEvent.isPending ? acceptEvent.variables?.inviteId : undefined) ??
+    (declineEvent.isPending ? declineEvent.variables?.inviteId : undefined) ??
+    null
+  const pendingOrgInviteId =
+    (acceptOrg.isPending ? acceptOrg.variables?.inviteId : undefined) ??
+    (declineOrg.isPending ? declineOrg.variables?.inviteId : undefined) ??
+    null
+
+  if (!isAuthenticated && !authPending) {
+    return (
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.stateContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <SignInPrompt
+          icon={iconMap.Calendar}
+          iconSize={32}
+          variant="detail"
+          title={t("state.signin_title")}
+          body={t("state.signin_body")}
+          onSignIn={() => requireAuth(() => {}, { next: "/dashboard" })}
+        />
+      </ScrollView>
+    )
+  }
+
+  const invitesVisible = pendingEventInvites.length > 0 || pendingOrgInviteRows.length > 0
 
   return (
     <ScrollView
@@ -16,11 +234,162 @@ export function EventDashboardBody() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>{t("title")}</Text>
-      <View style={styles.tabs}>
-        <Text style={styles.tab}>{t("tabs.personal")}</Text>
-        <Text style={styles.tab}>{t("tabs.org")}</Text>
+      {tabs.orgTabVisible ? (
+        <SegmentedRow
+          label={t("tabs.label")}
+          selected={tabs.tab}
+          onSelect={(key) => setTab(key as DashboardTab)}
+          options={DASHBOARD_TABS.map((key) => ({ key, label: t(`tabs.${key}`) }))}
+        />
+      ) : null}
+
+      {tabs.orgPickerVisible ? (
+        <View style={styles.orgRow} accessibilityRole="radiogroup" accessibilityLabel={t("org_picker.label")}>
+          {orgs.map((org) => {
+            const on = org.id === tabs.selectedOrgId
+            return (
+              <Pressable
+                key={org.id}
+                onPress={() => setOrgId(org.id)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: on }}
+                accessibilityLabel={org.name}
+                {...focusRingProps}
+                style={(state) => [
+                  styles.orgChip,
+                  webTransition,
+                  webCursor(),
+                  on ? styles.orgChipOn : null,
+                  !on && webHover(state) ? styles.orgChipHovered : null,
+                ]}
+              >
+                <Avatar name={org.name} seed={org.id} photoUrl={org.logoUrl ?? null} size={20} />
+                <Text style={[styles.orgChipText, on ? styles.orgChipTextOn : null]} numberOfLines={1}>
+                  {org.name}
+                </Text>
+              </Pressable>
+            )
+          })}
+        </View>
+      ) : null}
+
+      <KpiStrip
+        analytics={analytics.data}
+        isPending={analytics.isPending}
+        isError={analytics.isError}
+        range={range}
+        onRange={setRange}
+        onRetry={() => void analytics.refetch()}
+      />
+
+      <PrimaryButton
+        label={t("create.action")}
+        icon={iconMap.Plus}
+        accessibilityLabel={
+          tabs.tab === "org" && tabs.selectedOrg
+            ? t("create.a11y_org", { org: tabs.selectedOrg.name })
+            : t("create.a11y_personal")
+        }
+        onPress={onCreate}
+      />
+
+      {invitesVisible ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(2)}>
+            {t("invites.section")}
+          </Text>
+          {pendingEventInvites.map((invite) => (
+            <EventInviteRow
+              key={invite.id}
+              invite={invite}
+              roleLabel={roleLabel(invite.role)}
+              pending={pendingEventInviteId === invite.id}
+              onAccept={onAcceptEventInvite}
+              onDecline={onDeclineEventInvite}
+            />
+          ))}
+          {pendingOrgInviteRows.map((invite) => (
+            <OrgInviteRow
+              key={invite.id}
+              invite={invite}
+              roleLabel={tEnums(`organizationMemberRole.${invite.role}`)}
+              pending={pendingOrgInviteId === invite.id}
+              onAccept={onAcceptOrgInvite}
+              onDecline={onDeclineOrgInvite}
+            />
+          ))}
+        </View>
+      ) : null}
+
+      <View style={styles.section}>
+        <SegmentedRow
+          label={t("events.label")}
+          selected={eventWindow}
+          onSelect={(key) => setEventWindow(key as EventWindow)}
+          options={EVENT_WINDOWS.map((key) => ({ key, label: t(`events.${key}`) }))}
+        />
+
+        {hosted.isError ? (
+          <FeedNotice
+            icon="CloudOff"
+            title={t("events.error_title")}
+            body={t("events.error_body")}
+            actionLabel={t("events.retry")}
+            onAction={() => void hosted.refetch()}
+          />
+        ) : null}
+
+        {hosted.isPending ? (
+          <SkeletonGroup>
+            <SkeletonList kind="report" rows={3} />
+          </SkeletonGroup>
+        ) : null}
+
+        {!hosted.isPending && !hosted.isError && events.length === 0 ? (
+          <FeedNotice
+            plain
+            icon="Calendar"
+            title={t(`events.empty_${eventWindow}_title`)}
+            body={t(`events.empty_${eventWindow}_body`)}
+          />
+        ) : null}
+
+        {events.map((event) => (
+          <HostedEventRow
+            key={event.id}
+            event={event}
+            roleLabel={roleLabel}
+            onOpen={onOpenEvent}
+            onHostTools={onHostTools}
+            onEmailAttendees={onEmailAttendees}
+            onDuplicate={setDuplicating}
+            onEdit={onEdit}
+          />
+        ))}
+
+        {hosted.hasNextPage ? (
+          <Pressable
+            onPress={() => void hosted.fetchNextPage()}
+            accessibilityRole="button"
+            accessibilityLabel={t("events.show_more")}
+            {...focusRingProps}
+            style={styles.more}
+          >
+            <Text style={styles.moreText}>{t("events.show_more")}</Text>
+          </Pressable>
+        ) : null}
       </View>
+
+      {tabs.tab === "org" && tabs.selectedOrg ? (
+        <>
+          <MoneySection org={tabs.selectedOrg} range={range} />
+          <CollaboratorsSection org={tabs.selectedOrg} />
+        </>
+      ) : null}
+
+      <ConsoleLinkRow orgId={activeOrgId} />
+
+      <DuplicateEventSheet event={duplicating} onClose={() => setDuplicating(null)} />
     </ScrollView>
   )
 }
@@ -33,20 +402,85 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["3"],
     paddingBottom: t.space["10"],
-    gap: t.space["3"],
+    gap: t.space["4"],
   },
-  title: {
+  stateContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+  section: {
+    gap: t.space["2"],
+  },
+  sectionTitle: {
     fontFamily: t.fontFamily.displayBold,
-    fontSize: t.fontSize["20"],
+    fontSize: t.fontSize["16"],
     color: t.colors.text,
   },
-  tabs: {
+  segments: {
     flexDirection: "row",
-    gap: t.space["3"],
+    gap: t.space["2"],
   },
-  tab: {
+  segment: {
+    flex: 1,
+    minHeight: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: t.radius.pill,
+    backgroundColor: t.colors.bgAlt,
+  },
+  segmentOn: {
+    backgroundColor: t.colors.brand.bloom,
+  },
+  segmentHovered: {
+    backgroundColor: t.colors.surfaceTint,
+  },
+  segmentText: {
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
+  },
+  segmentTextOn: {
+    color: t.colors.onAccent,
+  },
+  orgRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: t.space["2"],
+  },
+  orgChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["2"],
+    minHeight: 34,
+    paddingRight: t.space["3"],
+    paddingLeft: t.space["1"],
+    borderRadius: t.radius.pill,
+    backgroundColor: t.colors.bgAlt,
+  },
+  orgChipOn: {
+    backgroundColor: t.colors.surfaceTint,
+  },
+  orgChipHovered: {
+    backgroundColor: t.colors.surfaceTint,
+  },
+  orgChipText: {
+    maxWidth: 160,
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["12"],
+    color: t.colors.textMuted,
+  },
+  orgChipTextOn: {
+    color: t.colors.text,
+  },
+  more: {
+    alignSelf: "flex-start",
+    marginTop: t.space["1"],
+    paddingVertical: t.space["1"],
+    borderRadius: t.radius.sm,
+  },
+  moreText: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: t.fontSize["13"],
+    color: t.colors.accentText,
   },
 }))

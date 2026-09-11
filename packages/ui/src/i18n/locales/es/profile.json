@@ -6,5 +6,9 @@
   "error": {
     "title": "No se pudo cargar tu perfil",
     "body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo."
+  },
+  "dashboard": {
+    "title": "Panel de eventos",
+    "sub": "Tus eventos, estadísticas y herramientas"
   }
 }

@@ -89,6 +89,8 @@ export {
   donateUrl,
   managePath,
   manageUrl,
+  manageOrgPath,
+  managePortfolioPath,
   orgPagePath,
   signupPagePath,
 } from "./externalUrls"

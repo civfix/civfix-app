@@ -232,6 +232,8 @@ export type {
   SetOrganizationMemberRoleVars,
 } from "./hooks/orgs"
 
+export { useHostedEventsAnalytics } from "./hooks/dashboard"
+
 export {
   ORG_PAYOUTS_PAGE_SIZE,
   payoutRows,

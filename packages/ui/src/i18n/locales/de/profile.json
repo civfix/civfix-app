@@ -6,5 +6,9 @@
   "error": {
     "title": "Profil konnte nicht geladen werden",
     "body": "civfix ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
+  },
+  "dashboard": {
+    "title": "Event-Dashboard",
+    "sub": "Deine Events, Auswertungen und Werkzeuge"
   }
 }

@@ -77,6 +77,8 @@ export const queryKeys = {
   hostedEventsRoot: ["hosted-events"] as const,
   hostedEvents: (when: string, orgId: string | null) =>
     ["hosted-events", when, orgId ?? "all"] as const,
+  hostedEventsAnalytics: (range: string, orgId: string | null) =>
+    ["hosted-events", "analytics", range, orgId ?? "all"] as const,
   myEventInvites: ["event-invites", "mine"] as const,
   myDonations: ["donations", "mine"] as const,
   orgDonate: (slug: string) => ["donations", "org", slug] as const,

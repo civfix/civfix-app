@@ -6,5 +6,9 @@
   "error": {
     "title": "Could not load your profile",
     "body": "We could not reach civfix. Check your connection and try again."
+  },
+  "dashboard": {
+    "title": "Event dashboard",
+    "sub": "Your events, analytics and tools"
   }
 }

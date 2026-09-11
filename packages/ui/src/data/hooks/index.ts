@@ -160,6 +160,8 @@ export type {
   SetOrganizationMemberRoleVars,
 } from "./orgs"
 
+export { useHostedEventsAnalytics } from "./dashboard"
+
 export {
   ORG_PAYOUTS_PAGE_SIZE,
   payoutRows,
