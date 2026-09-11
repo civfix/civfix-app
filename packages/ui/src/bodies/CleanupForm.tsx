@@ -358,7 +358,10 @@ export function CleanupForm({
     }
     return rows
   }, [myOrgs.data, currentOrganization])
-  const hostOrganizationId = authorAsSelection(value.organizationId, myOrgs.data && hostOrganizations)
+  const hostOrganizationId = authorAsSelection(
+    value.organizationId,
+    myOrgs.isSuccess ? hostOrganizations : undefined,
+  )
 
   const eventPreview = useMemo(() => {
     const ref = buildEventPreviewCard(value, PREVIEW_ORGANIZER)
