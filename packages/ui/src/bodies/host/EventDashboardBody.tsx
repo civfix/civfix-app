@@ -109,7 +109,7 @@ export function EventDashboardBody() {
   const [duplicating, setDuplicating] = useState<HostedEventDTO | null>(null)
 
   const orgsQuery = useMyOrganizations()
-  const orgs = useMemo(() => actableOrganizations(orgsQuery.data), [orgsQuery.data])
+  const orgs = useMemo(() => actableOrganizations(orgsQuery.data) ?? [], [orgsQuery.data])
   const tabs = useMemo(
     () => buildDashboardTabs({ orgs, requestedTab: tab, requestedOrgId: orgId }),
     [orgId, orgs, tab],

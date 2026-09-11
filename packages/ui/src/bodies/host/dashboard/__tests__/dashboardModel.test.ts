@@ -16,7 +16,7 @@ import {
   buildDashboardTabs,
   canManageOrgPayments,
   canManageOrgTeam,
-  canSeatOrgMembers,
+  canSetOrgMemberRole,
   canViewOrgMoney,
   collaboratorErrorKey,
   donationSummaryFrom,
@@ -278,12 +278,25 @@ describe("payout button", () => {
 })
 
 describe("collaborator actions", () => {
-  it("reserves seating and unseating for the owner, matching the web console's refusal", () => {
-    expect(canSeatOrgMembers("owner")).toBe(true)
-    expect(canSeatOrgMembers("admin")).toBe(false)
-    expect(canSeatOrgMembers("member")).toBe(false)
+  it("reserves the ROLE change for the owner and leaves removal to any manager, as the console does", () => {
+    expect(canSetOrgMemberRole("owner")).toBe(true)
+    expect(canSetOrgMemberRole("admin")).toBe(false)
+    expect(canSetOrgMemberRole("member")).toBe(false)
     expect(
-      orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true, canSeat: false }),
+      orgMemberActions({
+        member: member("u1", "member"),
+        viewerId: "u9",
+        canManage: true,
+        canSetRole: false,
+      }),
+    ).toEqual({ roles: [], canRemove: true })
+    expect(
+      orgMemberActions({
+        member: member("u1", "member", { canRemove: false }),
+        viewerId: "u9",
+        canManage: true,
+        canSetRole: false,
+      }),
     ).toEqual({ roles: [], canRemove: false })
   })
 
@@ -295,25 +308,25 @@ describe("collaborator actions", () => {
   })
 
   it("offers nothing to a member who cannot manage the team", () => {
-    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: false, canSeat: false }))
+    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: false, canSetRole: false }))
       .toEqual({ roles: [], canRemove: false })
   })
 
   it("never offers actions on the owner or on yourself", () => {
     expect(
       orgMemberHasActions(
-        orgMemberActions({ member: member("u1", "owner"), viewerId: "u9", canManage: true, canSeat: true }),
+        orgMemberActions({ member: member("u1", "owner"), viewerId: "u9", canManage: true, canSetRole: true }),
       ),
     ).toBe(false)
     expect(
       orgMemberHasActions(
-        orgMemberActions({ member: member("u9", "admin"), viewerId: "u9", canManage: true, canSeat: true }),
+        orgMemberActions({ member: member("u9", "admin"), viewerId: "u9", canManage: true, canSetRole: true }),
       ),
     ).toBe(false)
   })
 
   it("offers the other role and removal to a manager", () => {
-    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true, canSeat: true }))
+    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true, canSetRole: true }))
       .toEqual({ roles: ["admin"], canRemove: true })
   })
 
@@ -322,7 +335,7 @@ describe("collaborator actions", () => {
       member: member("u1", "admin", { canRemove: false }),
       viewerId: "u9",
       canManage: true,
-      canSeat: true,
+      canSetRole: true,
     })
     expect(actions).toEqual({ roles: ["member"], canRemove: false })
   })
@@ -385,10 +398,20 @@ describe("duplicate scheduling", () => {
     )
   })
 
-  it("rolls a past start forward in whole weeks so the weekday survives", () => {
-    const seeded = nextDuplicateStart("2026-08-20T17:00:00.000Z", now)
+  it("rolls a past start forward in whole weeks so the weekday and the wall clock survive", () => {
+    const original = "2026-08-20T17:00:00.000Z"
+    const seeded = nextDuplicateStart(original, now)
     expect(seeded.getTime()).toBeGreaterThan(now.getTime())
-    expect((seeded.getTime() - new Date("2026-08-20T17:00:00.000Z").getTime()) % (7 * DAY_MS)).toBe(0)
+    expect(seeded.getDay()).toBe(new Date(original).getDay())
+    expect(seeded.getHours()).toBe(new Date(original).getHours())
+    expect(seeded.getMinutes()).toBe(new Date(original).getMinutes())
+  })
+
+  it("still lands in the future when the roll crosses a daylight-saving boundary", () => {
+    const acrossDst = new Date("2027-03-15T17:30:00.000Z")
+    const seeded = nextDuplicateStart("2027-03-01T18:00:00.000Z", acrossDst)
+    expect(seeded.getTime()).toBeGreaterThan(acrossDst.getTime())
+    expect(duplicateReady(seeded, seeded, acrossDst)).toBe(true)
   })
 
   it("refuses a copy scheduled in the past", () => {

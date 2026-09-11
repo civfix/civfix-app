@@ -118,11 +118,11 @@ export function canManageOrgTeam(role: OrganizationMemberRole | null | undefined
 }
 
 /**
- * Seating and unseating collaborators is OWNER-shaped, matching the web console's
- * "Only the owner can change roles." refusal. An admin may invite; only the owner may
- * demote or eject the people already in the organization.
+ * Changing a member's ROLE is owner-shaped, matching the web console's
+ * "Only the owner can change roles." refusal. Removal is not: the console lets any manager remove
+ * a member the server marked `canRemove`, and the two surfaces have to agree.
  */
-export function canSeatOrgMembers(role: OrganizationMemberRole | null | undefined): boolean {
+export function canSetOrgMemberRole(role: OrganizationMemberRole | null | undefined): boolean {
   return role === "owner"
 }
 
@@ -237,15 +237,15 @@ export function orgMemberActions(input: {
   member: OrganizationMemberDTO
   viewerId: string | null
   canManage: boolean
-  canSeat: boolean
+  canSetRole: boolean
 }): OrgMemberActions {
-  const { member, viewerId, canManage, canSeat } = input
-  if (!canManage || !canSeat) return NO_ORG_MEMBER_ACTIONS
+  const { member, viewerId, canManage, canSetRole } = input
+  if (!canManage) return NO_ORG_MEMBER_ACTIONS
   if (member.person.deleted) return NO_ORG_MEMBER_ACTIONS
   if (member.role === "owner") return NO_ORG_MEMBER_ACTIONS
   if (viewerId !== null && member.person.id === viewerId) return NO_ORG_MEMBER_ACTIONS
   return {
-    roles: ORG_SETTABLE_ROLES.filter((role) => role !== member.role),
+    roles: canSetRole ? ORG_SETTABLE_ROLES.filter((role) => role !== member.role) : [],
     canRemove: member.canRemove,
   }
 }
@@ -271,6 +271,7 @@ export function nextDuplicateStart(startsAt: string, now: Date): Date {
   const weeks = Math.ceil((now.getTime() - original.getTime()) / (7 * DAY_MS))
   const rolled = new Date(original)
   rolled.setDate(rolled.getDate() + weeks * 7)
+  while (rolled.getTime() <= now.getTime()) rolled.setDate(rolled.getDate() + 7)
   return rolled
 }
 

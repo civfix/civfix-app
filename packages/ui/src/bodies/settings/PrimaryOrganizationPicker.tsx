@@ -91,7 +91,7 @@ export function PrimaryOrganizationPicker({ style }: { style?: StyleProp<ViewSty
   const toast = useToast()
   const orgs = useMyOrganizations()
   const update = useUpdatePrivacySettings()
-  const rows = actableOrganizations(orgs.data)
+  const rows = actableOrganizations(orgs.data) ?? []
   const current = user?.primaryOrganizationId ?? null
   const inFlight =
     update.isPending && typeof update.variables === "object" && update.variables !== null

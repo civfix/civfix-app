@@ -30,7 +30,7 @@ import { teamDateLabel } from "../hostTeamModel"
 import { OrgInviteSheet } from "./OrgInviteSheet"
 import {
   canManageOrgTeam,
-  canSeatOrgMembers,
+  canSetOrgMemberRole,
   collaboratorErrorKey,
   orderedOrgMembers,
   orgInviteQuotaReached,
@@ -44,7 +44,7 @@ function CollaboratorRow({
   member,
   viewerId,
   canManage,
-  canSeat,
+  canSetRole,
   pending,
   onOpenPerson,
   onSetRole,
@@ -53,7 +53,7 @@ function CollaboratorRow({
   member: OrganizationMemberDTO
   viewerId: string | null
   canManage: boolean
-  canSeat: boolean
+  canSetRole: boolean
   pending: boolean
   onOpenPerson: (navId: string) => void
   onSetRole: (userId: string, role: OrgSettableRole) => void
@@ -61,7 +61,7 @@ function CollaboratorRow({
 }) {
   const { t } = useT("event-dashboard")
   const { t: tEnums } = useT("enums")
-  const actions = orgMemberActions({ member, viewerId, canManage, canSeat })
+  const actions = orgMemberActions({ member, viewerId, canManage, canSetRole })
   const person = member.person
 
   const menu: RosterRowMenu | null = orgMemberHasActions(actions)
@@ -172,7 +172,7 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
   const toast = useToast()
 
   const canManage = canManageOrgTeam(org.myRole)
-  const canSeat = canSeatOrgMembers(org.myRole)
+  const canSetRole = canSetOrgMemberRole(org.myRole)
   const viewerId = useAuthState().user?.id ?? null
 
   const membersQuery = useOrganizationMembers(org.id, { enabled: canManage })
@@ -275,7 +275,7 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
           member={member}
           viewerId={viewerId}
           canManage={canManage}
-          canSeat={canSeat}
+          canSetRole={canSetRole}
           pending={managePending}
           onOpenPerson={onOpenPerson}
           onSetRole={onSetRole}

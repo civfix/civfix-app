@@ -344,7 +344,7 @@ export function CleanupForm({
 
   const myOrgs = useMyOrganizations()
   const hostOrganizations = useMemo<AuthorAsOption[]>(() => {
-    const rows: AuthorAsOption[] = actableOrganizations(myOrgs.data).map((org) => ({
+    const rows: AuthorAsOption[] = (actableOrganizations(myOrgs.data) ?? []).map((org) => ({
       id: org.id,
       name: org.name,
       logoUrl: org.logoUrl ?? null,

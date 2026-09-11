@@ -25,6 +25,7 @@ import { AuthorAsChips, authorAsSelection } from "../AuthorAsChips"
 import { useNavStore } from "../../nav"
 import {
   buildInlineComposerModel,
+  composerEntryFor,
   inlineComposerClosesOnBlur,
   inlineComposerOwnsDraft,
 } from "./inlineComposerModel"
@@ -52,8 +53,9 @@ export function InlineComposer() {
   const ownsDraft = usePostComposerStore((state) => inlineComposerOwnsDraft(state.draft))
 
   const myOrgs = useMyOrganizations()
-  const postAsOrganizations = actableOrganizations(myOrgs.data)
-  const postAsOrganizationId = authorAsSelection(draftOrganizationId, postAsOrganizations)
+  const actableOrgs = actableOrganizations(myOrgs.data)
+  const postAsOrganizations = actableOrgs ?? []
+  const postAsOrganizationId = authorAsSelection(draftOrganizationId, actableOrgs)
   const postAsOrganization =
     postAsOrganizations.find((org) => org.id === postAsOrganizationId) ?? null
 
@@ -74,10 +76,6 @@ export function InlineComposer() {
     if (!open) return
     setMedia(composerMedia)
   }, [open, composerMedia, setMedia])
-
-  useEffect(() => {
-    if (open && !ownsDraft) setOpen(false)
-  }, [open, ownsDraft])
 
   useEffect(() => {
     if (draftOrganizationId !== null && postAsOrganizationId === null) setOrganizationId(null)
@@ -115,8 +113,9 @@ export function InlineComposer() {
   )
 
   const openComposer = useCallback(() => {
-    if (!inlineComposerOwnsDraft(usePostComposerStore.getState().draft)) {
-      useNavStore.getState().push({ kind: "composer" })
+    const draft = usePostComposerStore.getState().draft
+    if (!inlineComposerOwnsDraft(draft)) {
+      useNavStore.getState().push({ kind: "composer", ...composerEntryFor(draft) })
       return
     }
     const snapshot = snapshotCarriedMedia(usePostComposerStore.getState().draft.media)
@@ -131,6 +130,10 @@ export function InlineComposer() {
     setDroppedMedia(0)
     setOpen(false)
   }, [attachments])
+
+  useEffect(() => {
+    if (open && !ownsDraft) closeComposer()
+  }, [open, ownsDraft, closeComposer])
 
   const onBlur = useCallback(() => {
     if (inlineComposerClosesOnBlur({ body, mediaCount: composerMedia.length })) closeComposer()

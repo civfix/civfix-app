@@ -318,8 +318,9 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
     [draft.body, draft.mentionedUsers],
   )
   const myOrgs = useMyOrganizations()
-  const postAsOrganizations = actableOrganizations(myOrgs.data)
-  const postAsOrganizationId = authorAsSelection(draft.organizationId, postAsOrganizations)
+  const actableOrgs = actableOrganizations(myOrgs.data)
+  const postAsOrganizations = actableOrgs ?? []
+  const postAsOrganizationId = authorAsSelection(draft.organizationId, actableOrgs)
   useEffect(() => {
     if (draft.organizationId !== null && postAsOrganizationId === null) setOrganizationId(null)
   }, [draft.organizationId, postAsOrganizationId, setOrganizationId])

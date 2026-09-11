@@ -1269,10 +1269,15 @@ withholds from admins. The two jobs needed two tokens: `manage_org_members` gove
 event-shaped and organizer/owner-only. The org owner keeps the powers that are genuinely
 owner-shaped (`manage_payments`, `cancel_event`, `manage_org_link`, `request_resources`, `export`,
 `manage_team`). SEATING is narrower than managing: inviting is `manage_org_members`, but changing a
-member's role and removing a member are OWNER-only, which is what the web console has always
-enforced ("Only the owner can change roles."). The backend gates `inviteOrganizationMember`,
-`listOrganizationMembers`, `listOrganizationInvites` and `revokeOrganizationInvite` on
-`manage_org_members`, and `setOrganizationMemberRole` / `removeOrganizationMember` on ownership.
+member's ROLE is OWNER-only, which is what the web console has always enforced ("Only the owner can
+change roles."); REMOVAL stays with any manager on a member the server marked `canRemove`, which is
+also what the console does. The backend that ADOPTS 0.43.0 must move its gates with it:
+`inviteOrganizationMember`, `listOrganizationMembers`, `listOrganizationInvites` and
+`revokeOrganizationInvite` onto `manage_org_members`, `setOrganizationMemberRole` onto ownership,
+and `removeOrganizationMember` onto `manage_org_members`. Until that adoption lands the backend is
+on 0.42.0 and still reads `manage_team`, so the split is inert rather than breaking - but the two
+halves must ship together, because an adopting backend that kept the old gates would refuse every
+org admin the capability set says can act.
 
 **A suspended org stops speaking for its members.** §32 makes a suspended org's public page a 404
 and refuses its writes; affiliation must honour the same line or suspension stops being a remedy.

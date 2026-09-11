@@ -11,6 +11,19 @@ export interface InlineComposerDraftOwnership {
   attachedReportId: string | null
 }
 
+/**
+ * The nav entry that re-opens a draft the inline composer does not own IN THE MODE IT WAS WRITTEN.
+ * `PostComposer` re-stamps mode and target from its props on mount, so pushing a bare composer entry
+ * would rewrite a reply into a top-level post - the exact conversion `reset(keep)` exists to prevent.
+ */
+export function composerEntryFor(
+  draft: InlineComposerDraftOwnership,
+): { composerMode: "post" | "quote" | "reply"; targetPostId?: string } {
+  const mode = draft.mode === "reply" || draft.mode === "quote" ? draft.mode : "post"
+  const target = mode === "reply" ? draft.replyToPostId : mode === "quote" ? draft.quotePostId : null
+  return { composerMode: mode, ...(target ? { targetPostId: target } : {}) }
+}
+
 export function inlineComposerOwnsDraft(draft: InlineComposerDraftOwnership): boolean {
   return (
     draft.mode === "post" &&

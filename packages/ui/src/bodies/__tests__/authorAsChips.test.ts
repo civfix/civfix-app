@@ -29,7 +29,7 @@ describe("the author pickers are wired to the stored selection", () => {
 
   it("the post composer sends the guarded selection, not the raw draft field", () => {
     expect(composer).toContain("actableOrganizations(myOrgs.data)")
-    expect(composer).toContain("authorAsSelection(draft.organizationId, postAsOrganizations)")
+    expect(composer).toContain("authorAsSelection(draft.organizationId, actableOrgs)")
     expect(composer).toContain("organizationId: postAsOrganizationId,")
   })
 

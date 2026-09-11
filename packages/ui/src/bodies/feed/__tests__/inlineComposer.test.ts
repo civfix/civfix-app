@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
 import {
   buildInlineComposerModel,
+  composerEntryFor,
   inlineComposerClosesOnBlur,
   inlineComposerOwnsDraft,
 } from "../inlineComposerModel"
@@ -84,9 +85,26 @@ describe("the inline composer rides the full composer's store and submit path", 
   })
 
   it("hands a draft it does not own back to the full composer instead of publishing it", () => {
-    expect(SRC).toContain("if (!inlineComposerOwnsDraft(usePostComposerStore.getState().draft))")
-    expect(SRC).toContain('useNavStore.getState().push({ kind: "composer" })')
+    expect(SRC).toContain("if (!inlineComposerOwnsDraft(draft))")
+    expect(SRC).toContain('push({ kind: "composer", ...composerEntryFor(draft) })')
     expect(SRC).toContain("if (!open || !ownsDraft) return")
+  })
+
+  it("re-opens a handed-off draft in the mode it was written, not as a new top-level post", () => {
+    const reply = {
+      mode: "reply",
+      replyToPostId: "post-1",
+      quotePostId: null,
+      attachedEventId: null,
+      attachedReportId: null,
+    }
+    expect(composerEntryFor(reply)).toEqual({ composerMode: "reply", targetPostId: "post-1" })
+    expect(
+      composerEntryFor({ ...reply, mode: "quote", replyToPostId: null, quotePostId: "post-2" }),
+    ).toEqual({ composerMode: "quote", targetPostId: "post-2" })
+    expect(composerEntryFor({ ...reply, mode: "post", replyToPostId: null })).toEqual({
+      composerMode: "post",
+    })
   })
 
   it("offers the same post-as choice the full composer offers", () => {
