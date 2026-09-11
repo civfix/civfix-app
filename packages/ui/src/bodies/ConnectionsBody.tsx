@@ -42,7 +42,7 @@ const ConnectionRow = memo(function ConnectionRow({
               {person.name}
             </Text>
             {person.organization ? (
-              <OrgAffiliationBadge organization={person.organization} size="sm" />
+              <OrgAffiliationBadge organization={person.organization} size="sm" interactive={false} />
             ) : null}
           </View>
           {person.handle ? (

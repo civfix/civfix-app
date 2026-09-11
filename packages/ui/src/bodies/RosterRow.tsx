@@ -84,7 +84,7 @@ export function RosterRow({
               {person.name}
             </Text>
             {person.organization ? (
-              <OrgAffiliationBadge organization={person.organization} size="sm" />
+              <OrgAffiliationBadge organization={person.organization} size="sm" interactive={false} />
             ) : null}
             {nameSuffix}
           </View>

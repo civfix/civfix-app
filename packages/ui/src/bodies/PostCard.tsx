@@ -200,7 +200,7 @@ function MetaRow({
           {identity.name}
         </Text>
         {identity.affiliation ? (
-          <OrgAffiliationBadge organization={identity.affiliation} size="sm" />
+          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
         ) : null}
         {model.handleLabel ? (
           <Text numberOfLines={1} style={styles.handle}>
@@ -449,7 +449,7 @@ function EmbeddedPost({
           {identity.name}
         </Text>
         {identity.affiliation ? (
-          <OrgAffiliationBadge organization={identity.affiliation} size="sm" />
+          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
         ) : null}
         {identity.handleLabel ? (
           <Text numberOfLines={1} style={styles.embeddedHandle}>
@@ -829,7 +829,7 @@ function EmbeddedPostMeta({
           {identity.name}
         </Text>
         {identity.affiliation ? (
-          <OrgAffiliationBadge organization={identity.affiliation} size="sm" />
+          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
         ) : null}
         {identity.handleLabel ? (
           <Text numberOfLines={1} style={styles.handle}>

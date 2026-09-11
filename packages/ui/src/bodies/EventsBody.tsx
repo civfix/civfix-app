@@ -85,7 +85,7 @@ const SheetEventCard = React.memo(function SheetEventCard({
               {cleanup.title}
             </Text>
             {cleanup.organization ? (
-              <OrgAffiliationBadge organization={cleanup.organization} size="sm" />
+              <OrgAffiliationBadge organization={cleanup.organization} size="sm" interactive={false} />
             ) : null}
           </View>
 

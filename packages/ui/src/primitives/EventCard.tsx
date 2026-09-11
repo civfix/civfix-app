@@ -77,9 +77,9 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
             </Text>
           </Text>
           {cleanup.organization ? (
-            <OrgAffiliationBadge organization={cleanup.organization} size="sm" />
+            <OrgAffiliationBadge organization={cleanup.organization} size="sm" interactive={false} />
           ) : cleanup.organizer.organization ? (
-            <OrgAffiliationBadge organization={cleanup.organizer.organization} size="sm" />
+            <OrgAffiliationBadge organization={cleanup.organizer.organization} size="sm" interactive={false} />
           ) : null}
         </View>
       </View>
