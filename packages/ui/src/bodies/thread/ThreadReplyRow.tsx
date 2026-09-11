@@ -90,8 +90,10 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
     }
     if (identity.personId) openPerson(identity.personId)
   }, [identity, openEntry, openPerson])
-  const identityTail = identity.viaLabel ?? identity.handleLabel
-  const metaTail = `${identityTail ? `${identityTail} · ` : ""}${isOptimistic ? t("thread.sending") : timeAgo(post.createdAt)}`
+  const openActingPerson = React.useCallback(() => {
+    if (identity.personId) openPerson(identity.personId)
+  }, [identity, openPerson])
+  const metaTail = `${identity.handleLabel ? `${identity.handleLabel} · ` : ""}${isOptimistic ? t("thread.sending") : timeAgo(post.createdAt)}`
 
   const control: ThreadRowExpansion =
     expansion ?? (!isOptimistic && post.counts.replies > 0 ? "navigate" : "none")
@@ -134,7 +136,22 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               {identity.name}
             </Text>
             {identity.affiliation ? (
-              <OrgAffiliationBadge organization={identity.affiliation} size="sm" />
+              <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+            ) : null}
+            {identity.viaLabel ? (
+              <Pressable
+                onPress={openActingPerson}
+                disabled={!identity.personId}
+                accessibilityRole="button"
+                accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}
+                hitSlop={4}
+                {...focusRingProps}
+                style={({ pressed }) => [styles.viaTail, pressed ? styles.pressed : null]}
+              >
+                <Text numberOfLines={1} style={styles.metaTail}>
+                  {`${identity.viaLabel} · `}
+                </Text>
+              </Pressable>
             ) : null}
             <Text numberOfLines={1} style={styles.metaTail}>
               {metaTail}
@@ -241,6 +258,10 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
 const useStyles = makeThemedStyles((t) => ({
   orgAvatar: {
     borderRadius: t.radius.sm,
+  },
+  viaTail: {
+    flexShrink: 1,
+    minWidth: 0,
   },
   outer: {},
   outerRule: {

@@ -134,7 +134,7 @@ function EmbeddedPost({
           {identity.name}
         </Text>
         {identity.affiliation ? (
-          <OrgAffiliationBadge organization={identity.affiliation} size="sm" />
+          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
         ) : null}
         {identity.viaLabel ? (
           <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
@@ -180,6 +180,9 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
   const isFix = model.variant === "fix-confirmed"
   const isRepost = model.variant === "repost" && model.embeddedPost != null
   const identity = model.identity
+  const openActingPerson = React.useCallback(() => {
+    if (identity.personId) openPerson(identity.personId)
+  }, [identity, openPerson])
   const openIdentity = React.useCallback(() => {
     if (identity.organization) {
       openEntry({ kind: "org", slug: identity.organization.slug })
@@ -226,17 +229,33 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
               {identity.name}
             </Text>
             {identity.affiliation ? (
-              <OrgAffiliationBadge organization={identity.affiliation} size="sm" />
+              <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
             ) : null}
             {model.showOrganizerBadge ? <OrganizerBadge t={t} /> : null}
           </View>
-          {identity.viaLabel ?? identity.handleLabel ? (
+          {identity.handleLabel ? (
             <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
-              {identity.viaLabel ?? identity.handleLabel}
+              {identity.handleLabel}
             </Text>
           ) : null}
         </View>
       </Pressable>
+
+      {identity.viaLabel ? (
+        <Pressable
+          onPress={openActingPerson}
+          disabled={!identity.personId}
+          accessibilityRole="button"
+          accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}
+          hitSlop={5}
+          {...focusRingProps}
+          style={({ pressed }) => [styles.viaRow, pressed ? styles.pressed : null]}
+        >
+          <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
+            {identity.viaLabel}
+          </Text>
+        </Pressable>
+      ) : null}
 
       {!isFix && !isRepost && bodySegments.length > 0 ? (
         <Text style={styles.body}>
@@ -384,6 +403,10 @@ export function ThreadFocalSkeleton() {
 const useStyles = makeThemedStyles((t) => ({
   orgAvatar: {
     borderRadius: t.radius.sm,
+  },
+  viaRow: {
+    alignSelf: "flex-start",
+    marginTop: 2,
   },
   root: {
     paddingHorizontal: t.space["4"],
