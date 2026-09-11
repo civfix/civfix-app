@@ -460,7 +460,6 @@ export function seedFor(
   }
   const view = viewForEntry(entry)
   if (view) return { view, stack: [] }
-  return mode === "expanded"
-    ? { stack: [entry] }
-    : { stack: [entry], view: baseViewForSeed(currentView) }
+  void mode
+  return { stack: [entry], view: baseViewForSeed(currentView) }
 }
