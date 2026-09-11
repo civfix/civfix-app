@@ -76,8 +76,8 @@ describe("failures are surfaced, not swallowed", () => {
 
 describe("the keyboard is avoided on BOTH platforms, by ONE owner each", () => {
   it("gives iOS the KeyboardAvoidingView and Android the reserve, never both at once", () => {
-    expect(CONVERSATION).toMatch(/behavior=\{Platform\.OS === "ios" \? "padding" : undefined\}/)
-    expect(CONVERSATION).not.toMatch(/behavior=\{Platform\.OS === "ios" \? "padding" : "height"\}/)
+    expect(CONVERSATION).toMatch(/<IosKeyboardAvoidingView style=\{styles\.flex\} keyboardVerticalOffset=\{0\}>/)
+    expect(CONVERSATION).not.toMatch(/behavior=/)
     expect(CONVERSATION).toMatch(/const kbReserve = useKeyboardReserve\(\)/)
     expect(CONVERSATION).toMatch(/marginBottom: kbReserve/)
   })

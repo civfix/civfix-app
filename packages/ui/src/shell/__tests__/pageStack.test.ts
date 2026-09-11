@@ -450,7 +450,9 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
 
   it("puts the safe-area padding INSIDE the layer, on its own box", () => {
     expect(src).toMatch(/style=\{\[styles\.layer, layerStyle\]\}/)
-    expect(src).toMatch(/<View style=\{\[styles\.layerContent, \{ paddingBottom, paddingTop \}\]\}>/)
+    expect(src).toMatch(
+      /<View style=\{\[styles\.layerContent, \{ paddingBottom: paddingBottom \+ keyboardReserve, paddingTop \}\]\}>/,
+    )
     expect(src).toMatch(/layer: \{\s*\.\.\.StyleSheet\.absoluteFillObject,\s*backgroundColor: t\.colors\.bg,/)
     const portrait = readFileSync(new URL("../PortraitShell.shared.tsx", import.meta.url), "utf8")
     expect(portrait).toMatch(/insets=\{overlayInsets\}/)

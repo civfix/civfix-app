@@ -14,7 +14,13 @@ import { makeThemedStyles, useTheme, webScrimProps, type Theme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { IosKeyboardAvoidingView } from "../shell/IosKeyboardAvoidingView"
+import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
+import { PLAIN_SCROLL_HOST, ScrollHostProvider } from "../shell/ScrollHost"
 import { useKeyboardReserve } from "../shell/useKeyboardReserve"
+
+const MODAL_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
+  reserveKeyboardPadding: false,
+})
 
 export function useDialogWebKeys({
   visible,
@@ -55,7 +61,9 @@ export interface ModalCardSheetProps {
   backdropDismissDisabled?: boolean
   error?: string | null
   actions: React.ReactNode
+  bodyLayout?: "scroll" | "fill"
   bodyContentStyle?: StyleProp<ViewStyle>
+  cardStyle?: StyleProp<ViewStyle>
   children: React.ReactNode
 }
 
@@ -70,7 +78,9 @@ export function ModalCardSheet({
   backdropDismissDisabled = false,
   error,
   actions,
+  bodyLayout = "scroll",
   bodyContentStyle,
+  cardStyle,
   children,
 }: ModalCardSheetProps) {
   const styles = useStyles()
@@ -92,7 +102,7 @@ export function ModalCardSheet({
         <IosKeyboardAvoidingView
           style={[styles.avoider, kbReserve > 0 ? { paddingBottom: t.space["4"] + kbReserve } : null]}
         >
-          <View style={styles.card}>
+          <View style={[styles.card, cardStyle]}>
             <View style={styles.header}>
               <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.text} />
               <Text variant="bodyStrong" color={t.colors.text} style={styles.title}>
@@ -100,20 +110,26 @@ export function ModalCardSheet({
               </Text>
             </View>
 
-            <ScrollView
-              style={styles.bodyScroll}
-              contentContainerStyle={[styles.bodyContent, bodyContentStyle]}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              {children}
+            {bodyLayout === "fill" ? (
+              <View style={[styles.bodyFill, bodyContentStyle]}>
+                <ScrollHostProvider value={MODAL_SCROLL_HOST}>{children}</ScrollHostProvider>
+              </View>
+            ) : (
+              <ScrollView
+                style={styles.bodyScroll}
+                contentContainerStyle={[styles.bodyContent, bodyContentStyle]}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {children}
+              </ScrollView>
+            )}
 
-              {error ? (
-                <Text variant="caption" color={t.colors.bloom["600"]} numberOfLines={2}>
-                  {error}
-                </Text>
-              ) : null}
-            </ScrollView>
+            {error ? (
+              <Text variant="caption" color={t.colors.bloom["600"]} numberOfLines={2}>
+                {error}
+              </Text>
+            ) : null}
 
             <View style={styles.actions}>{actions}</View>
           </View>
@@ -164,6 +180,10 @@ const useStyles = makeThemedStyles((t) => ({
   },
   bodyContent: {
     gap: t.space["3"],
+  },
+  bodyFill: {
+    flex: 1,
+    minHeight: 0,
   },
   card: {
     width: "100%",
