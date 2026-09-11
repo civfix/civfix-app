@@ -65,6 +65,9 @@ export type { TimelineEntryRender, TimelineVisibilityKind } from "./report-timel
 
 export { MetaDot } from "./MetaDot"
 
+export { TextInput } from "./TextInput"
+export type { TextInputProps, TextInputHandle } from "./TextInput.types"
+
 export { TextField } from "./TextField"
 export type { TextFieldProps } from "./TextField"
 
