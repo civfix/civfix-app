@@ -7,7 +7,6 @@ import React, {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react"
 import {
   Dimensions,
@@ -119,18 +118,22 @@ function makeKeyboardAwareScrollable(
       [onScroll],
     )
 
-    const focus = useSyncExternalStore(keyboardFocusStore.subscribe, keyboardFocusStore.getState)
     const seenFocusRef = useRef<{ node: unknown; scope: string | null }>({ node: null, scope: null })
 
     useEffect(() => {
-      const seen = seenFocusRef.current
-      seenFocusRef.current = { node: focus.node, scope: focus.scope }
-      if (seen.node === focus.node && seen.scope === focus.scope) {
-        dispatch({ type: "content-grew" })
-        return
+      const apply = () => {
+        const focus = keyboardFocusStore.getState()
+        const seen = seenFocusRef.current
+        seenFocusRef.current = { node: focus.node, scope: focus.scope }
+        if (seen.node === focus.node && seen.scope === focus.scope) {
+          dispatch({ type: "content-grew" })
+          return
+        }
+        dispatch({ type: "focus", scope: focus.scope, version: focus.version })
       }
-      dispatch({ type: "focus", scope: focus.scope, version: focus.version })
-    }, [dispatch, focus])
+      apply()
+      return keyboardFocusStore.subscribe(apply)
+    }, [dispatch])
 
     useEffect(() => {
       const overlapOf = (e: KeyboardEvent) =>
