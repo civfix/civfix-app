@@ -315,3 +315,54 @@ export type {
   SkeletonGroupProps,
   SkeletonDetailProps,
 } from "./skeleton"
+
+export { SectionCard } from "./SectionCard"
+export type { SectionCardProps } from "./SectionCard"
+
+export { SegmentedControl, SEGMENTED_MIN_TOUCH_TARGET } from "./SegmentedControl"
+export type {
+  SegmentedControlProps,
+  SegmentedControlSize,
+  SegmentedOption,
+} from "./SegmentedControl"
+
+export { FilterChip, FILTER_CHIP_MIN_TOUCH_TARGET } from "./FilterChip"
+export type { FilterChipProps } from "./FilterChip"
+
+export { StatTile, StatTileRow } from "./StatTile"
+export type { StatTileProps, StatTileRowProps, StatTone } from "./StatTile"
+export {
+  formatRate,
+  formatStatValue,
+  statTileColumns,
+  STAT_TILE_WIDE_AT,
+  STAT_VALUE_UNKNOWN,
+} from "./statTileModel"
+export type { StatTileColumns } from "./statTileModel"
+
+export { HeroStat } from "./HeroStat"
+export type { HeroStatProps } from "./HeroStat"
+
+export { Meter, METER_HEIGHT } from "./Meter"
+export type { MeterProps } from "./Meter"
+export { meterFill, METER_WARN_AT } from "./meterModel"
+export type { MeterFill, MeterState } from "./meterModel"
+
+export { TrendSparkline } from "./TrendSparkline"
+export type {
+  TrendSparklineProps,
+  TrendSparklineKind,
+  TrendSparklineHeight,
+} from "./TrendSparkline"
+export {
+  sparklineGeometry,
+  sparklinePoints,
+  suppressedSparkKeys,
+  SPARK_BAR_GAP,
+  SPARK_BAR_MAX_WIDTH,
+  SPARK_BAR_MIN_HEIGHT,
+  SPARK_BAR_RADIUS,
+  SPARK_END_DOT_RADIUS,
+  SPARK_LINE_WIDTH,
+} from "./trendSparklineModel"
+export type { SparkBar, SparkPoint, SparkVertex, SparklineGeometry } from "./trendSparklineModel"
