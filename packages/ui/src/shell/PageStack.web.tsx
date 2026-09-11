@@ -14,8 +14,9 @@
  * react-native-gesture-handler.
  */
 import React, { useMemo } from "react"
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native"
+import { StyleSheet, View } from "react-native"
 import { BodyTransition } from "./BodyTransition"
+import { IosKeyboardAvoidingView } from "./IosKeyboardAvoidingView"
 import type { PageStackProps } from "./PageStack.types"
 import { ScrollHostProvider } from "./ScrollHost"
 import { DetailHeader, hasDetailHeader } from "./SheetHeader.shared"
@@ -42,11 +43,7 @@ export function PageStack({
   )
   return (
     <View style={[styles.host, insets]}>
-      <KeyboardAvoidingView
-        style={[styles.hostContent, webKeyboardInset]}
-        behavior={keyboardAvoidance && Platform.OS === "ios" ? "padding" : undefined}
-        enabled={keyboardAvoidance}
-      >
+      <IosKeyboardAvoidingView style={[styles.hostContent, webKeyboardInset]} enabled={keyboardAvoidance}>
         {/* THE SHELL-LEVEL PAGE HEADER. It is what lets a "scroll" body become a full page with NO edit
             of its own: the sheet gave it a DetailBar (title + leading chip) from CompactShell, and the
             overlay layer used to give it nothing at all - a page with no title and, worse, no way off.
@@ -65,7 +62,7 @@ export function PageStack({
             {body}
           </BodyTransition>
         </ScrollHostProvider>
-      </KeyboardAvoidingView>
+      </IosKeyboardAvoidingView>
     </View>
   )
 }

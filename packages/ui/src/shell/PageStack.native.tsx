@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import {
   AccessibilityInfo,
-  KeyboardAvoidingView,
   Platform,
   StyleSheet,
   useWindowDimensions,
@@ -25,6 +24,7 @@ import {
   pageSwipeSettleConfig,
   timingConfig,
 } from "./motionConfigs.native"
+import { IosKeyboardAvoidingView } from "./IosKeyboardAvoidingView"
 import { useNestedShellHost } from "./nestedShellHost"
 import { PageActiveProvider } from "./pageActive"
 import type { PageStackProps, PageStackRenderBody } from "./PageStack.types"
@@ -42,6 +42,7 @@ import {
   type SwipeBackTokens,
 } from "./pageStackModel"
 import { ScrollHostProvider, type ScrollHostValue } from "./ScrollHost"
+import { useKeyboardReserve } from "./useKeyboardReserve"
 import { DetailHeader, hasDetailHeader } from "./SheetHeader.shared"
 
 const PUSH_CFG = pagePushConfig()
@@ -355,6 +356,7 @@ const PageLayer = memo(function PageLayer({
 }: PageLayerProps) {
   const styles = useStyles()
   const body = useMemo(() => renderBody(entry, view), [entry, renderBody, view])
+  const keyboardReserve = useKeyboardReserve({ enabled: keyboardAvoidance })
 
   const layerStyle = useAnimatedStyle(() => {
     const ownProgress = own === "exit" ? exit.value : own === "front" ? front.value : 0
@@ -381,12 +383,8 @@ const PageLayer = memo(function PageLayer({
       accessibilityElementsHidden={!active}
       importantForAccessibility={active ? "auto" : "no-hide-descendants"}
     >
-      <View style={[styles.layerContent, { paddingBottom, paddingTop }]}>
-        <KeyboardAvoidingView
-          style={styles.layerContent}
-          behavior={keyboardAvoidance && Platform.OS === "ios" ? "padding" : undefined}
-          enabled={keyboardAvoidance}
-        >
+      <View style={[styles.layerContent, { paddingBottom: paddingBottom + keyboardReserve, paddingTop }]}>
+        <IosKeyboardAvoidingView style={styles.layerContent} enabled={keyboardAvoidance}>
           {hasDetailHeader(entry) ? (
             <View style={styles.header}>
               <DetailHeader active={entry} stack={stack} dismissGesture={false} />
@@ -395,7 +393,7 @@ const PageLayer = memo(function PageLayer({
           <ScrollHostProvider value={scrollHost}>
             <PageActiveProvider value={active}>{body}</PageActiveProvider>
           </ScrollHostProvider>
-        </KeyboardAvoidingView>
+        </IosKeyboardAvoidingView>
       </View>
       {above === "one" ? null : <Animated.View style={[styles.scrim, scrimStyle]} pointerEvents="none" />}
     </Animated.View>

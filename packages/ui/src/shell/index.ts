@@ -76,6 +76,8 @@ export type { AppShellProps } from "./types"
 
 export { useKeyboardAnchor } from "./useKeyboardAnchor"
 export type { KeyboardAnchor, KeyboardAnchorOptions } from "./useKeyboardAnchor.types"
+export { IosKeyboardAvoidingView } from "./IosKeyboardAvoidingView"
+export type { IosKeyboardAvoidingViewProps } from "./IosKeyboardAvoidingView.types"
 export { KeyboardAnchorView } from "./KeyboardAnchorView"
 export type { KeyboardAnchorViewProps } from "./KeyboardAnchorView.types"
 export { useKeyboardReserve } from "./useKeyboardReserve"

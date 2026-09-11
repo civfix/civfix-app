@@ -6,7 +6,6 @@ import {
   Pressable,
   StyleSheet,
   Platform,
-  KeyboardAvoidingView,
   type StyleProp,
   type ViewStyle,
 } from "react-native"
@@ -14,6 +13,7 @@ import { tokens } from "@civfix/shared/tokens"
 import { makeThemedStyles, useTheme, webScrimProps, type Theme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
+import { IosKeyboardAvoidingView } from "../shell/IosKeyboardAvoidingView"
 import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 
 export function useDialogWebKeys({
@@ -89,9 +89,8 @@ export function ModalCardSheet({
           onPress={backdropDismissDisabled ? undefined : onClose}
           {...webScrimProps}
         />
-        <KeyboardAvoidingView
+        <IosKeyboardAvoidingView
           style={[styles.avoider, kbReserve > 0 ? { paddingBottom: t.space["4"] + kbReserve } : null]}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <View style={styles.card}>
             <View style={styles.header}>
@@ -118,7 +117,7 @@ export function ModalCardSheet({
 
             <View style={styles.actions}>{actions}</View>
           </View>
-        </KeyboardAvoidingView>
+        </IosKeyboardAvoidingView>
       </View>
     </Modal>
   )

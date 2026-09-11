@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native"
+import { View, StyleSheet, ActivityIndicator } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
 import { isValidHandle } from "@civfix/shared"
@@ -7,6 +7,7 @@ import { makeThemedStyles, theme, useTheme } from "@/theme"
 import {
   AgeConfirmation,
   Avatar,
+  IosKeyboardAvoidingView,
   PLAIN_SCROLL_HOST,
   PrimaryButton,
   TermsConfirmation,
@@ -102,7 +103,7 @@ function FirstRunForm() {
 
   return (
     <View style={styles.overlay}>
-      <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <IosKeyboardAvoidingView style={styles.root}>
         <FirstRunScrollView
           contentContainerStyle={[styles.scroll, { paddingTop: insets.top + theme.space["6"] }]}
           keyboardShouldPersistTaps="handled"
@@ -191,7 +192,7 @@ function FirstRunForm() {
             {t("signout.prompt")} {t("signout.action")}
           </Text>
         </View>
-      </KeyboardAvoidingView>
+      </IosKeyboardAvoidingView>
     </View>
   )
 }

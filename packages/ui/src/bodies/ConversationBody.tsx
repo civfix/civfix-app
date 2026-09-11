@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, KeyboardAvoidingView, Platform } from "react-native"
+import { View, Pressable, Platform } from "react-native"
 import type { FlatList as RNFlatList, NativeScrollEvent, NativeSyntheticEvent } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { PersonDTO, ReactionEmoji, RoomKind } from "@civfix/shared"
@@ -16,6 +16,7 @@ import type { UseChatResult } from "../data"
 import { cleanupHostStanding, hasHostCapability } from "../data/hooks/host"
 import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
+import { IosKeyboardAvoidingView } from "../shell/IosKeyboardAvoidingView"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useKeyboardVisible } from "../shell/useKeyboardVisible"
 import { useKeyboardReserve } from "../shell/useKeyboardReserve"
@@ -824,13 +825,9 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
       )}
 
       {fullScreen ? (
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={0}
-        >
+        <IosKeyboardAvoidingView style={styles.flex} keyboardVerticalOffset={0}>
           {content}
-        </KeyboardAvoidingView>
+        </IosKeyboardAvoidingView>
       ) : (
         content
       )}
