@@ -145,9 +145,10 @@ export type DetailLeadingAffordance = "back" | "close" | "none"
  *                      feed). ExpandedShell's own header hides its Home chip at this depth for exactly
  *                      this reason: "Back already returns to the home card".
  *   - EMPTY stack   -> a top-level VIEW is filling the card (the landscape report wizard at step 1, which
- *                      owns its header and passes `stepIndex`). Its Back is `useNavStore.reset()`, i.e.
- *                      view -> "home" with an empty stack, which is the SAME card swapping in the home
- *                      feed. Nothing is dismissed, the user is moved between surfaces - a chevron.
+ *                      owns its header and passes `stepIndex`). Its Back is
+ *                      `useNavStore.leaveReportFlow()`, i.e. the view + stack the wizard was launched
+ *                      from, restored into the SAME card. Nothing is dismissed, the user is moved between
+ *                      surfaces - a chevron.
  *
  * So do not "simplify" this to close-on-any-root, and do not narrow it to `stack.length === 1`: an X on
  * either would claim the landscape card can be closed, and it cannot be.
