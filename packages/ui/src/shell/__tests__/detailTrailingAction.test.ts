@@ -14,6 +14,7 @@ const PAGE_NATIVE = read("../PageStack.native.tsx")
 const PAGE_WEB = read("../PageStack.web.tsx")
 const HEADER_ICON_BUTTON = read("../../bodies/HeaderIconButton.tsx")
 const GEOMETRY = read("../detailHeader.ts")
+const CONTROLS = read("../../bodies/headerControls.ts")
 
 const MIN_TOUCH_TARGET = 44
 
@@ -78,20 +79,22 @@ describe("the trailing chip", () => {
     expect(BUTTON).toContain("if (!action) return null")
   })
 
-  it("takes the header row's 36pt geometry, not HeaderIconButton's 44pt target", () => {
-    expect(num(GEOMETRY, "DETAIL_BACK_SIZE")).toBe(36)
+  it("takes its geometry from the ONE header-control token set, like every other top row", () => {
+    expect(num(CONTROLS, "HEADER_CONTROL_SIZE")).toBe(52)
+    expect(num(CONTROLS, "HEADER_GLYPH_SIZE")).toBe(26)
+    expect(GEOMETRY).toContain("export const DETAIL_BACK_SIZE = HEADER_CONTROL_SIZE")
+    expect(GEOMETRY).toContain("export const DETAIL_BACK_RADIUS = HEADER_CONTROL_RADIUS")
     expect(GEOMETRY).toContain("export const DETAIL_ACTION_SIZE = DETAIL_BACK_SIZE")
     expect(GEOMETRY).toContain("export const DETAIL_ACTION_RADIUS = DETAIL_BACK_RADIUS")
     expect(BUTTON).toContain("width: DETAIL_ACTION_SIZE")
     expect(BUTTON).toContain("borderRadius: DETAIL_ACTION_RADIUS")
-    expect(num(HEADER_ICON_BUTTON, "HEADER_ICON_BUTTON_TARGET")).toBe(MIN_TOUCH_TARGET)
+    expect(HEADER_ICON_BUTTON).toContain("width: HEADER_CONTROL_SIZE")
+    expect(HEADER_ICON_BUTTON).toContain("borderRadius: HEADER_CONTROL_RADIUS")
   })
 
-  it("reaches the 44pt touch minimum through hitSlop", () => {
+  it("clears the 44pt touch minimum in the BOX, with hitSlop left as headroom", () => {
     expect(BUTTON).toContain("hitSlop={DETAIL_ACTION_HIT_SLOP}")
-    const size = num(GEOMETRY, "DETAIL_BACK_SIZE")
-    const slop = num(GEOMETRY, "DETAIL_ACTION_HIT_SLOP")
-    expect(size + slop * 2).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET)
+    expect(num(CONTROLS, "HEADER_CONTROL_SIZE")).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET)
   })
 
   it("wears the list roots' header-chip skin, glyph size included", () => {
@@ -99,8 +102,8 @@ describe("the trailing chip", () => {
     expect(HEADER_ICON_BUTTON).toContain("backgroundColor: t.glass.sheet.input")
     expect(BUTTON).toContain("chipHovered: { backgroundColor: t.colors.surfaceTint }")
     expect(HEADER_ICON_BUTTON).toContain("chipHovered: { backgroundColor: t.colors.surfaceTint }")
-    expect(num(GEOMETRY, "DETAIL_ACTION_ICON_SIZE")).toBe(num(HEADER_ICON_BUTTON, "HEADER_ICON_BUTTON_GLYPH"))
-    expect(num(GEOMETRY, "DETAIL_ACTION_ICON_SIZE")).toBe(18)
+    expect(GEOMETRY).toContain("export const DETAIL_ACTION_ICON_SIZE = HEADER_GLYPH_SIZE")
+    expect(HEADER_ICON_BUTTON).toContain("size={HEADER_GLYPH_SIZE}")
   })
 
   it("shows the keyboard focus ring like every other header chip", () => {

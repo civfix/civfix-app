@@ -1,4 +1,5 @@
 import type { TFunction } from "i18next"
+import type { LayoutMode } from "../shell/expandedFramePlan"
 
 export type FeedViewState = "loading" | "error" | "empty" | "loaded"
 
@@ -14,10 +15,14 @@ export function buildFeedMotionModel(reducedMotion: boolean) {
     : { duration: 200, easing: "ease-out" as const, animated: true }
 }
 
-export function buildFeedHeaderModel({ isAuthenticated }: { isAuthenticated: boolean }, t: TFunction) {
+export function buildFeedHeaderModel(
+  { isAuthenticated, layout }: { isAuthenticated: boolean; layout: LayoutMode },
+  t: TFunction,
+) {
   return {
     title: t("feed.title"),
-    showComposer: isAuthenticated,
+    showComposer: isAuthenticated && layout === "compact",
+    showInlineComposer: isAuthenticated && layout === "expanded",
   }
 }
 

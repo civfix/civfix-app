@@ -30,6 +30,7 @@ import { useScrollHost } from "../shell/ScrollHost"
 import { useSearchBarStore } from "../shell/searchBarStore"
 import { searchFieldEscape } from "../shell/shellKeyModel"
 import { useT } from "../i18n"
+import { HEADER_CONTROL_SIZE } from "./headerControls"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { EventHitRow, LeaderboardHitRow, ReportHitRow, SearchResults } from "./SearchResults"
 import { SEARCH_RESULT_CARD_LAYOUT } from "./searchResultsModel"
@@ -638,7 +639,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: t.space["5"],
-    minHeight: 44,
+    minHeight: HEADER_CONTROL_SIZE,
   },
   title: {
     color: t.colors.text,

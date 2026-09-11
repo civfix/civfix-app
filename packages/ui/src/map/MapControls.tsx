@@ -11,6 +11,7 @@ import { MapHeaderActions } from "./MapHeaderActions"
 import { MapThemeToggle } from "./MapThemeToggle"
 import { useReportFilterStore } from "./filterStore"
 import { useT } from "../i18n"
+import { HEADER_AVATAR_SIZE, HEADER_GLYPH_SIZE } from "../bodies/headerControls"
 import { MAP_ACTION_SIZE } from "../shell/expandedFramePlan"
 
 export const GLASS_CONTROL_SIZE = MAP_ACTION_SIZE
@@ -96,7 +97,7 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
     >
       <Icon
         icon={iconMap.Layers}
-        size={20}
+        size={HEADER_GLYPH_SIZE}
         color={
           layersOpen ? th.glass.active.icon : reportsShown ? th.glass.on : th.colors.neutral.ink2
         }
@@ -109,7 +110,7 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
       <View style={[styles.topBar, { top }]}>
         <View style={styles.topActions}>
           <GlassButton accessibilityLabel={t("actions.locate")} onPress={onLocate}>
-            <Icon icon={iconMap.Navigation} size={19} color={th.colors.neutral.ink2} />
+            <Icon icon={iconMap.Navigation} size={HEADER_GLYPH_SIZE} color={th.colors.neutral.ink2} />
           </GlassButton>
           {layersButton}
           <ActivityBell onPress={onActivity} />
@@ -135,7 +136,7 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
           {brandPill}
 
           <GlassButton accessibilityLabel={t("actions.locate")} onPress={onLocate}>
-            <Icon icon={iconMap.Navigation} size={19} color={th.colors.neutral.ink2} />
+            <Icon icon={iconMap.Navigation} size={HEADER_GLYPH_SIZE} color={th.colors.neutral.ink2} />
           </GlassButton>
 
           {layersButton}
@@ -164,7 +165,7 @@ function ActivityBell({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       dot={unread}
     >
-      <Icon icon={iconMap.Bell} size={19} color={th.colors.neutral.ink2} />
+      <Icon icon={iconMap.Bell} size={HEADER_GLYPH_SIZE} color={th.colors.neutral.ink2} />
     </GlassButton>
   )
 }
@@ -203,7 +204,12 @@ function ProfileEntry() {
       {...focusRingProps}
       style={({ pressed }) => [styles.profileWrap, th.shadows.s2, pressed ? styles.pressed : null]}
     >
-      <Avatar name={user?.displayName ?? "You"} photoUrl={user?.avatarUrl ?? null} seed={user?.id} size={42} />
+      <Avatar
+        name={user?.displayName ?? "You"}
+        photoUrl={user?.avatarUrl ?? null}
+        seed={user?.id}
+        size={HEADER_AVATAR_SIZE}
+      />
     </Pressable>
   )
 }
@@ -227,7 +233,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   topPopoverAnchor: {
     position: "absolute",
-    top: 52,
+    top: GLASS_CONTROL_SIZE + t.space["2"],
     right: 0,
   },
   topLeft: {
@@ -245,7 +251,7 @@ const useStyles = makeThemedStyles((t) => ({
     pointerEvents: "box-none",
   },
   logoPill: {
-    height: 42,
+    height: GLASS_CONTROL_SIZE,
     paddingHorizontal: t.space["4"],
     borderRadius: t.radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
@@ -258,12 +264,12 @@ const useStyles = makeThemedStyles((t) => ({
     marginTop: t.space["2"],
   },
   profileWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: HEADER_AVATAR_SIZE,
+    height: HEADER_AVATAR_SIZE,
+    borderRadius: HEADER_AVATAR_SIZE / 2,
   },
   signInPill: {
-    height: 42,
+    height: GLASS_CONTROL_SIZE,
     paddingHorizontal: t.space["4"],
     borderRadius: t.radius.pill,
     borderWidth: StyleSheet.hairlineWidth,

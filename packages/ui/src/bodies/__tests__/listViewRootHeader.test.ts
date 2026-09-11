@@ -56,18 +56,25 @@ describe("every tab-root title is a HEADING, not just 32pt text", () => {
 })
 
 describe("the tab-root title row is one box", () => {
-  it("FeedBody's header row is the reference: 44pt minimum, cross-centred", () => {
-    expect(feed).toMatch(/header: \{[^}]*alignItems: "center"[^}]*minHeight: 44/)
+  it("FeedBody's header row is the reference: exactly the header control it carries", () => {
+    expect(feed).toMatch(/header: \{[^}]*alignItems: "center"[^}]*minHeight: HEADER_CONTROL_SIZE/)
   })
 
   it.each([
     ["SearchBody", search],
     ["MessagingListBody", inbox],
+  ])("%s carries the same header control, so its row is the same box", (_name, src) => {
+    expect(src).toMatch(/alignItems: "center",[\s\S]{0,120}?minHeight: HEADER_CONTROL_SIZE/)
+    expect(src).toContain("HeaderProfileButton")
+  })
+
+  it.each([
     ["SocialBody", people],
     ["ReportsBody", reports],
     ["EventsBody", events],
-  ])("%s gives its title the same 44pt cross-centred row", (_name, src) => {
-    expect(src).toMatch(/alignItems: "center",[\s\S]{0,80}?minHeight: (?:44|MIN_TOUCH_TARGET)/)
+  ])("%s carries no header control, so its row keeps the bare 44pt minimum", (_name, src) => {
+    expect(src).toMatch(/alignItems: "center",[\s\S]{0,120}?minHeight: (?:44|MIN_TOUCH_TARGET)/)
+    expect(src).not.toContain("HeaderProfileButton")
   })
 })
 

@@ -81,10 +81,6 @@
       "title": "Hier ein Problem melden",
       "sub": "Eine Meldung an dieser Stelle beginnen"
     },
-    "host": {
-      "title": "Hier eine Veranstaltung erstellen",
-      "sub": "Eine Putzaktion oder ein Treffen an dieser Stelle planen"
-    },
     "cancel": "Abbrechen",
     "cancelA11y": "Abbrechen und den gesetzten Pin entfernen",
     "confirm": {

@@ -122,7 +122,7 @@ export { categoryColor }
 export type { CategoryColorKey }
 
 export { MOTION, EASE_STANDARD_CSS, EASE_GRAVITY_CSS } from "./motion"
-export type { TimingRecipe, SpringRecipe, EaseTuple } from "./motion"
+export type { TimingRecipe, EaseTuple } from "./motion"
 
 export const cleanupColor: string = tokens.color.cleanup
 

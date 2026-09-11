@@ -6,7 +6,6 @@ import {
   Pressable,
   StyleSheet,
   TextInput,
-  type View as RNView,
 } from "react-native"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
 import Animated, {
@@ -17,7 +16,6 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
-  withSpring,
   withTiming,
   type DerivedValue,
   type SharedValue,
@@ -77,10 +75,8 @@ import {
   TAB_COUNT,
   TAB_DIVIDER_WIDTH,
   useTabBarModel,
-  useTabAnchors,
   useDockedSearchModel,
   type TabDef,
-  type TabRefRegistrar,
 } from "./TabBar.shared"
 
 const EASING = Easing.bezier(0.22, 1, 0.36, 1)
@@ -114,7 +110,6 @@ function MorphTabCell({
   active,
   interactive,
   onTab,
-  registerRef,
   p,
   mz,
 }: {
@@ -129,14 +124,12 @@ function MorphTabCell({
   active: boolean
   interactive: boolean
   onTab: (tab: TabDef, index: number) => void
-  registerRef: TabRefRegistrar
   p: SharedValue<number>
   mz: SharedValue<number>
 }) {
   const styles = useStyles()
   const th = useTheme()
   const onPress = useCallback(() => onTab(tab, index), [onTab, tab, index])
-  const setNode = useCallback((node: RNView | null) => registerRef(tab.id, node), [registerRef, tab.id])
   const wrapStyle = useAnimatedStyle(() => {
     if (persist) {
       const t = Math.max(travelFactor(p.value), mz.value)
@@ -158,7 +151,6 @@ function MorphTabCell({
   })
   return (
     <Pressable
-      ref={setNode}
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
@@ -182,7 +174,6 @@ export function TabBar() {
   const { t } = useT("nav")
   const { t: tSearch } = useT("common-search")
   const { view, activeIndex, searchActive, onTab, onSearch } = useTabBarModel()
-  const { registerTabRef, pressTab } = useTabAnchors(onTab)
   const dockedSearch = useDockedSearchModel()
   const selectView = useNavStore((s) => s.selectView)
   const setTabBarHeight = useTabBarStore((s) => s.setTabBarHeight)
@@ -229,7 +220,7 @@ export function TabBar() {
     }
     p.value =
       target === 1
-        ? withSpring(target, { ...dockMorphInConfig(), reduceMotion: ReduceMotion.System })
+        ? withTiming(target, { ...dockMorphInConfig(), reduceMotion: ReduceMotion.System })
         : withTiming(target, { ...dockMorphOutConfig(), reduceMotion: ReduceMotion.System }, (finished) => {
             "worklet"
             if (finished) runOnJS(setSearchExitSettled)(true)
@@ -287,15 +278,15 @@ export function TabBar() {
 
   const onTabPress = useCallback(
     (tab: TabDef, index: number) => {
-      if (tab.id !== "report" && index !== activeIndex && visible && regionW > 0 && !reduceMotion) {
+      if (index !== activeIndex && visible && regionW > 0 && !reduceMotion) {
         const x = selectedPillRect(index, tabW).x
         kickedXRef.current = x
         tx.value = withTiming(x, pillCfg)
         pillOp.value = withTiming(1, pillCfg)
       }
-      pressTab(tab)
+      onTab(tab)
     },
-    [activeIndex, visible, regionW, reduceMotion, tabW, tx, pillOp, pillCfg, pressTab],
+    [activeIndex, visible, regionW, reduceMotion, tabW, tx, pillOp, pillCfg, onTab],
   )
 
   const lockOnTab = useCallback(
@@ -303,9 +294,9 @@ export function TabBar() {
       const tab = TABS[index]
       if (!tab) return
       kickedXRef.current = selectedPillRect(index, tabW).x
-      pressTab(tab)
+      onTab(tab)
     },
-    [pressTab, tabW],
+    [onTab, tabW],
   )
   const panLive = useSharedValue(0)
   const panArmed = visible && !searchActive && !minimized && regionW > 0
@@ -451,7 +442,6 @@ export function TabBar() {
                         active={i === activeIndex}
                         interactive={!searchActive && !minimizedActive}
                         onTab={onTabPress}
-                        registerRef={registerTabRef}
                         p={p}
                         mz={mz}
                       />

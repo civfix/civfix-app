@@ -3,10 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native"
 import type { View as RNView } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme, webHover, webTransition } from "../theme"
 import { Icon, iconMap, type IconName } from "../typography"
-
-export const HEADER_ICON_BUTTON_TARGET = 44
-export const HEADER_ICON_BUTTON_CHIP = 38
-export const HEADER_ICON_BUTTON_GLYPH = 18
+import { HEADER_CONTROL_RADIUS, HEADER_CONTROL_SIZE, HEADER_GLYPH_SIZE } from "./headerControls"
 
 export interface HeaderIconButtonProps {
   icon: IconName
@@ -41,7 +38,7 @@ export const HeaderIconButton = forwardRef<RNView, HeaderIconButtonProps>(functi
             webHover(state) ? styles.chipHovered : null,
           ]}
         >
-          <Icon icon={iconMap[icon]} size={HEADER_ICON_BUTTON_GLYPH} color={t.colors.text} />
+          <Icon icon={iconMap[icon]} size={HEADER_GLYPH_SIZE} color={t.colors.text} />
         </View>
       )}
     </Pressable>
@@ -50,16 +47,16 @@ export const HeaderIconButton = forwardRef<RNView, HeaderIconButtonProps>(functi
 
 const useStyles = makeThemedStyles((t) => ({
   target: {
-    width: HEADER_ICON_BUTTON_TARGET,
-    height: HEADER_ICON_BUTTON_TARGET,
+    width: HEADER_CONTROL_SIZE,
+    height: HEADER_CONTROL_SIZE,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: HEADER_ICON_BUTTON_TARGET / 2,
+    borderRadius: HEADER_CONTROL_RADIUS,
   },
   chip: {
-    width: HEADER_ICON_BUTTON_CHIP,
-    height: HEADER_ICON_BUTTON_CHIP,
-    borderRadius: HEADER_ICON_BUTTON_CHIP / 2,
+    width: HEADER_CONTROL_SIZE,
+    height: HEADER_CONTROL_SIZE,
+    borderRadius: HEADER_CONTROL_RADIUS,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: t.glass.sheet.input,

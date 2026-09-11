@@ -45,13 +45,8 @@
     "home": "Home",
     "map": "Map",
     "messages": "Messages",
-    "report": "Create",
+    "report": "Report",
     "search": "Search"
-  },
-  "create": {
-    "report": "Create a report",
-    "event": "Create an event",
-    "post": "Create a post"
   },
   "placeholder": {
     "people": "Search people",
@@ -65,9 +60,7 @@
     "settings": "Settings",
     "home": "Home",
     "resize_sidebar": "Resize sidebar",
-    "drag_handle": "Drag handle",
-    "create_menu": "Create",
-    "dismiss_create_menu": "Dismiss create menu"
+    "drag_handle": "Drag handle"
   },
   "fallback_you": "You"
 }

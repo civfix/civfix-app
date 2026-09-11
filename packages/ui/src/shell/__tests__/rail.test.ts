@@ -81,11 +81,11 @@ describe("wiring", () => {
     expect(code).not.toMatch(/activeIndex\s*[,}]/)
   })
 
-  it("anchors the create menu on the MEASURED plus cell, so a wider cell moves the bubble with it", () => {
-    expect(rail).toContain("useTabAnchors(onTab)")
-    expect(rail).toContain("onPress={() => pressTab(tab)}")
-    expect(rail).toContain("registerRef={registerTabRef}")
+  it("presses a rail tab through the dock's own handler, with no menu machinery of its own", () => {
+    expect(rail).toContain("onPress={() => onTab(tab)}")
     expect(code).not.toContain("useCreateMenuStore")
+    expect(code).not.toContain("useTabAnchors")
+    expect(code).not.toContain("registerTabRef")
   })
 
   it("stays decoupled from the compact dock's stores and seams", () => {

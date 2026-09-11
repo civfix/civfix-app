@@ -5,6 +5,7 @@ import { Icon, iconMap, Text } from "../typography"
 import { AnchoredPopover, GlassButton, useMenuCardSize, usePopoverAnchor, type AnchorRect } from "../primitives"
 import { menuOrigin, useMenuMotion } from "../primitives/menuMotion"
 import { BlurSurface } from "../surface"
+import { HEADER_GLYPH_SIZE } from "../bodies/headerControls"
 import { HeaderIconButton } from "../bodies/HeaderIconButton"
 import { AppearanceOptionList } from "../bodies/AppearanceOptionList"
 import { useT } from "../i18n"
@@ -86,7 +87,7 @@ export function MapThemeToggle({ variant }: MapThemeToggleProps) {
     <View ref={anchorRef} onLayout={measure}>
       {variant === "glass" ? (
         <GlassButton accessibilityLabel={label} onPress={toggle} active={open} expanded={open}>
-          <Icon icon={iconMap.SunMoon} size={19} color={th.colors.neutral.ink2} />
+          <Icon icon={iconMap.SunMoon} size={HEADER_GLYPH_SIZE} color={th.colors.neutral.ink2} />
         </GlassButton>
       ) : (
         <HeaderIconButton

@@ -33,6 +33,7 @@ import { useStackDirection } from "../shell/useStackDirection"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
 import { announce } from "../announce"
 import { appErrorCode } from "./errorCode"
+import { HEADER_CONTROL_SIZE } from "./headerControls"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedShareBlock, FeedSharePreview } from "./FeedShareBlock"
 import { LinkedReportCard } from "./LinkedReportCard"
@@ -1257,7 +1258,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    minHeight: 44,
+    minHeight: HEADER_CONTROL_SIZE,
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["2"],
     paddingBottom: t.space["1"],

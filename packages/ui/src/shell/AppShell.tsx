@@ -5,8 +5,6 @@ import { useNavStore } from "../nav"
 import { ExpandedShell } from "./ExpandedShell"
 import { PortraitShell } from "./PortraitShell"
 import { defaultRenderBody } from "./BodyRouter"
-import { CreateMenu } from "./CreateMenu"
-import { useNestedShellHost } from "./nestedShellHost"
 import { MediaLightboxProvider } from "../lightbox"
 import { effectiveBaseView, portraitShellPlan } from "./bodyLayout"
 import { DETAILS_ARE_FULL_PAGE } from "./detailPresentationPlatform"
@@ -17,7 +15,6 @@ import type { AppShellProps } from "./types"
 
 export function AppShell({ map, mapControls, authOverlay, renderBody = defaultRenderBody }: AppShellProps) {
   const mode = useLayoutMode()
-  const nested = useNestedShellHost()
   const view = useNavStore((state) => state.view)
   const active = useNavStore((state) => state.active)
   const seededDetailPage = useNavStore((state) => state.seededDetailPage)
@@ -71,7 +68,6 @@ export function AppShell({ map, mapControls, authOverlay, renderBody = defaultRe
             {authOverlay}
           </View>
         ) : null}
-        {nested ? null : <CreateMenu />}
       </View>
     </MediaLightboxProvider>
   )

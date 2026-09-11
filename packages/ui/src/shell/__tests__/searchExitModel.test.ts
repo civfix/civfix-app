@@ -34,9 +34,8 @@ describe("focusSettleCommand — the exit is carried by ONE curve", () => {
     expect(focusSettleCommand(false, false, 1)).toEqual({ target: 0, animated: false })
     // The threshold boundary itself settles (inclusive).
     expect(focusSettleCommand(true, false, 1 - FOCUS_SETTLE_P_EPSILON)).toEqual({ target: 0, animated: false })
-    // A spring's overshoot bounce can push the raw shared value slightly past 1 (dockMorphIn has
-    // overshootClamping: false) — dockShapes clamps to 1 internally, so the geometry is identical to p=1
-    // and the settle must still fire.
+    // A shared value can be read slightly past 1 (a retarget landing on the same frame) — dockShapes
+    // clamps to 1 internally, so the geometry is identical to p=1 and the settle must still fire.
     expect(focusSettleCommand(true, false, 1.05)).toEqual({ target: 0, animated: false })
   })
 

@@ -81,10 +81,6 @@
       "title": "Report an issue here",
       "sub": "Start a report at this spot"
     },
-    "host": {
-      "title": "Host an event here",
-      "sub": "Plan a cleanup or meetup at this spot"
-    },
     "cancel": "Cancel",
     "cancelA11y": "Cancel and remove the dropped pin",
     "confirm": {
