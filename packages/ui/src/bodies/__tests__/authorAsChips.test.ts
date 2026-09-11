@@ -42,4 +42,18 @@ describe("the author pickers are wired to the stored selection", () => {
     expect(form).toContain("<AuthorAsChips")
     expect(form).toContain('tCreate("host_as.label")')
   })
+
+  it("the event form writes a cleared host organization back to the draft it submits", () => {
+    // The chip row rendering "You" while the create/update request still carries the old organizationId
+    // would publish an event under an organization the viewer can no longer host as, and say otherwise
+    // on screen. CreateCleanupBody/EditCleanupBody submit `form.organizationId`, so the guard has to
+    // land on the draft, not only on what the picker paints.
+    expect(form).toContain("if (value.organizationId === null || hostOrganizationId !== null) return")
+    expect(form).toContain("commitForm.current({ ...latestForm.current, organizationId: null })")
+  })
+
+  it("editing an event sends organizationId only when the host identity actually changed", () => {
+    const edit = readFileSync(new URL("../EditCleanupBody.tsx", import.meta.url), "utf8")
+    expect(edit).toContain("form.organizationId !== (cleanup.organization?.id ?? null)")
+  })
 })

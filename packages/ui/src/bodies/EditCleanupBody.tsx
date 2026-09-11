@@ -99,7 +99,9 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
       address: spotLine,
       bring: form.bring,
       slots: buildSlotInputs(form.slots),
-      organizationId: form.organizationId,
+      ...(form.organizationId !== (cleanup.organization?.id ?? null)
+        ? { organizationId: form.organizationId }
+        : {}),
       ...(form.eventKind === "cleanup" ? { linkedReportIds: form.linkedReportIds } : {}),
     }
     update.mutate(
@@ -111,7 +113,17 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
         onError: (err) => setSaveError(saveErrorMessage(err, t)),
       },
     )
-  }, [canSave, cleanup.id, cleanup.scheduledAt, form, scheduleUntouched, scheduledAt, update, t])
+  }, [
+    canSave,
+    cleanup.id,
+    cleanup.organization,
+    cleanup.scheduledAt,
+    form,
+    scheduleUntouched,
+    scheduledAt,
+    update,
+    t,
+  ])
 
   return (
     <ScrollView

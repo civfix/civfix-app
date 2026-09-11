@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import {
   EVENT_KIND_VALUES,
@@ -362,6 +362,14 @@ export function CleanupForm({
     value.organizationId,
     myOrgs.isSuccess ? hostOrganizations : undefined,
   )
+  const latestForm = useRef(value)
+  latestForm.current = value
+  const commitForm = useRef(onChange)
+  commitForm.current = onChange
+  useEffect(() => {
+    if (value.organizationId === null || hostOrganizationId !== null) return
+    commitForm.current({ ...latestForm.current, organizationId: null })
+  }, [value.organizationId, hostOrganizationId])
 
   const eventPreview = useMemo(() => {
     const ref = buildEventPreviewCard(value, PREVIEW_ORGANIZER)
