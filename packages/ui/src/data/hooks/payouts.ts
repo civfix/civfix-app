@@ -1,4 +1,3 @@
-import { useRef } from "react"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   CreateOrgPayoutResponse,
@@ -89,20 +88,40 @@ export interface CreateOrgPayoutVars {
   idempotencyKey?: string
 }
 
+const payoutIntentKeys = new Map<string, string>()
+
+export function payoutIntent(orgId: string, amountMinor: number | null | undefined): string {
+  return `${orgId}:${amountMinor ?? "available"}`
+}
+
+export function payoutIdempotencyKey(intent: string): string {
+  const held = payoutIntentKeys.get(intent)
+  if (held) return held
+  const minted = randomId()
+  payoutIntentKeys.set(intent, minted)
+  return minted
+}
+
+export function releasePayoutIntent(intent: string): void {
+  payoutIntentKeys.delete(intent)
+}
+
 export function useCreateOrgPayout(orgId: string | undefined) {
   const api = useApi()
   const qc = useQueryClient()
-  const attemptKey = useRef(randomId())
   return useMutation<CreateOrgPayoutResponse, unknown, CreateOrgPayoutVars | void>({
-    mutationFn: (vars) =>
-      api.createOrgPayout({
+    scope: { id: `org-payout:${orgId ?? "unknown"}` },
+    mutationFn: (vars) => {
+      const intent = payoutIntent(orgId as string, vars?.amountMinor)
+      return api.createOrgPayout({
         id: orgId as string,
         currency: "USD",
-        idempotencyKey: vars?.idempotencyKey ?? attemptKey.current,
-        ...(vars?.amountMinor ? { amountMinor: vars.amountMinor } : {}),
-      }),
-    onSuccess: () => {
-      attemptKey.current = randomId()
+        idempotencyKey: vars?.idempotencyKey ?? payoutIdempotencyKey(intent),
+        ...(vars?.amountMinor != null ? { amountMinor: vars.amountMinor } : {}),
+      })
+    },
+    onSuccess: (_res, vars) => {
+      releasePayoutIntent(payoutIntent(orgId as string, vars?.amountMinor))
       if (!orgId) return
       void qc.invalidateQueries({ queryKey: queryKeys.orgBalance(orgId) })
       void qc.invalidateQueries({ queryKey: queryKeys.orgPayouts(orgId) })
