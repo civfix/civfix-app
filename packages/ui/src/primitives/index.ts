@@ -65,6 +65,9 @@ export type { TimelineEntryRender, TimelineVisibilityKind } from "./report-timel
 
 export { MetaDot } from "./MetaDot"
 
+export { KeyboardPinnedFooter } from "./KeyboardPinnedFooter"
+export type { KeyboardPinnedFooterProps } from "./KeyboardPinnedFooter"
+
 export { TextInput } from "./TextInput"
 export type { TextInputProps, TextInputHandle } from "./TextInput.types"
 

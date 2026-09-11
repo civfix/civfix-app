@@ -8,13 +8,13 @@ import {
   AgeConfirmation,
   Avatar,
   IosKeyboardAvoidingView,
+  KeyboardPinnedFooter,
   PLAIN_SCROLL_HOST,
   PrimaryButton,
   TermsConfirmation,
   Text,
   TextField,
   makeKeyboardAwareScrollHost,
-  useKeyboardReserve,
 } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { api } from "@/api/client"
@@ -43,7 +43,6 @@ function FirstRunForm() {
   const th = useTheme()
   const styles = useStyles()
   const insets = useSafeAreaInsets()
-  const kbReserve = useKeyboardReserve()
   const user = useAuthStore((s) => s.user)
   const setUser = useAuthStore((s) => s.setUser)
   const signOut = useAuthStore((s) => s.signOut)
@@ -173,15 +172,7 @@ function FirstRunForm() {
           </View>
         </FirstRunScrollView>
 
-        <View
-          style={[
-            styles.footer,
-            {
-              marginBottom: kbReserve,
-              paddingBottom: (kbReserve > 0 ? 0 : insets.bottom) + theme.space["3"],
-            },
-          ]}
-        >
+        <KeyboardPinnedFooter style={styles.footer} safeAreaBottom={insets.bottom}>
           <PrimaryButton label={t("continue")} loading={submitting} disabled={!canSubmit} onPress={() => void onSubmit()} />
           <Text
             variant="caption"
@@ -191,7 +182,7 @@ function FirstRunForm() {
           >
             {t("signout.prompt")} {t("signout.action")}
           </Text>
-        </View>
+        </KeyboardPinnedFooter>
       </IosKeyboardAvoidingView>
     </View>
   )
@@ -261,6 +252,7 @@ const useStyles = makeThemedStyles((t) => ({
   footer: {
     paddingHorizontal: t.space["5"],
     paddingTop: t.space["3"],
+    paddingBottom: t.space["3"],
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: t.colors.border,
     backgroundColor: t.colors.bg,

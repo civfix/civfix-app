@@ -6,7 +6,7 @@ import { ipLocate, type LatLng } from "@civfix/shared/geocode"
 import { makeThemedStyles, useTheme, categoryColor, wash, useLayoutMode, focusRingProps, type LayoutMode } from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
-import { TextField, Toggle, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
+import { TextField, Toggle, KeyboardPinnedFooter, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
 import { LocationPicker, PortraitMapPickStep, useLocationPick } from "../map"
 import { PinSvg, glyphForCategory } from "../map"
 import {
@@ -19,7 +19,6 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
-import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 import {
   DETAIL_BACK_SIZE,
   DETAIL_BACK_RADIUS,
@@ -828,7 +827,6 @@ export function ReportFlowBody() {
   const th = useTheme()
   const { t } = useT("report-wizard")
   const { ScrollView } = useScrollHost()
-  const kbReserve = useKeyboardReserve()
   const fromComposer = usePostComposerStore((s) => s.claimedCreate) === "report"
   const submit = useReportSubmit({ forComposer: fromComposer })
   const reset = useDraftReportStore((s) => s.reset)
@@ -1171,7 +1169,7 @@ export function ReportFlowBody() {
       )}
 
       {showsWizardFooter(activeStep, hasMedia) ? (
-        <View style={[styles.footer, kbReserve > 0 ? { marginBottom: kbReserve } : null]}>
+        <KeyboardPinnedFooter style={styles.footer}>
           <Pressable
             onPress={onNext}
             disabled={!canAdvance}
@@ -1196,7 +1194,7 @@ export function ReportFlowBody() {
               />
             </View>
           </Pressable>
-        </View>
+        </KeyboardPinnedFooter>
       ) : null}
 
       <PortraitMapPickStep
