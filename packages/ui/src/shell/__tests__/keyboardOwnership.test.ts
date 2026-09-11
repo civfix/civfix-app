@@ -31,8 +31,8 @@ const FILES = ROOTS.flatMap(walk).map((file) => ({ file, src: readFileSync(file,
 
 function reactNativeSpecifiers(src: string): string[] {
   const out: string[] = []
-  for (const [, body] of src.matchAll(/import\s*\{([^}]*)\}\s*from\s*"react-native"/g)) {
-    for (const raw of body.split(",")) {
+  for (const match of src.matchAll(/import\s*\{([^}]*)\}\s*from\s*"react-native"/g)) {
+    for (const raw of (match[1] ?? "").split(",")) {
       const spec = raw.trim()
       if (spec) out.push(spec)
     }
