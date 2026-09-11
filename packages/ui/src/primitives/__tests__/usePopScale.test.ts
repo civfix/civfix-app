@@ -42,8 +42,8 @@ describe("usePopScale", () => {
     expect(source).toContain(
       "if (!POP_ENABLED || !active || wasActive || reduceMotionRef.current) return",
     )
-    expect(source).toContain("theme.motion.pop.from")
-    expect(source).toContain("theme.motion.pop.to")
+    expect(source).toContain("motion.pop.from")
+    expect(source).toContain("motion.pop.to")
   })
 })
 

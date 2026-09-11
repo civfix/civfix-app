@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { BackHandler, Modal, View, StyleSheet } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { theme, makeThemedStyles } from "../theme"
+import { space, makeThemedStyles } from "../theme"
 import { AddressSearch, type AddressPick } from "../bodies/AddressSearch"
 import { LocationPicker } from "./LocationPicker"
 import type { LatLng } from "./LocationPicker.types"
@@ -73,8 +73,8 @@ export function PortraitMapPickStep({
 
   if (!visible) return null
 
-  const topOffset = (layered ? 0 : insets.top) + theme.space["2"]
-  const bottomOffset = (layered ? 0 : insets.bottom) + theme.space["3"]
+  const topOffset = (layered ? 0 : insets.top) + space["2"]
+  const bottomOffset = (layered ? 0 : insets.bottom) + space["3"]
   const creditInset = (layered ? 0 : insets.bottom) + BOTTOM_BAR_CLEARANCE
 
   const content = (

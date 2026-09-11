@@ -3,7 +3,7 @@ import { Modal, View, Pressable, StyleSheet, Platform, useWindowDimensions } fro
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import {
   makeThemedStyles,
-  theme,
+  space,
   useTheme,
   webCursorPointer,
   webTransition,
@@ -35,8 +35,8 @@ const ROW_ICON: Record<ComposerAttachRowKey, IconName> = {
 }
 
 const CARD_WIDTH = 232
-const EDGE_MARGIN = theme.space["2"]
-const GAP = theme.space["1"]
+const EDGE_MARGIN = space["2"]
+const GAP = space["1"]
 
 export function ComposerAttachSheet({
   visible,

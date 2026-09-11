@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import { focusRingProps, makeThemedStyles, theme, useTheme, type Theme } from "../theme"
+import { focusRingProps, makeThemedStyles, space, motion, useTheme, type Theme } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { Text, TextLink, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
@@ -29,8 +29,8 @@ import { TOAST_MAX_WIDTH, toastBottomOffset, toastDurationMs } from "./toastMode
 export { useToast }
 export type { ToastAction, ToastApi, ToastOptions, ToastVariant }
 
-const ENTER = theme.motion.fadeUp
-const EXIT = theme.motion.menuOut
+const ENTER = motion.fadeUp
+const EXIT = motion.menuOut
 const USE_NATIVE_DRIVER = Platform.OS !== "web"
 const LIVE_REGION: "polite" | "none" = Platform.OS === "web" ? "polite" : "none"
 
@@ -145,7 +145,7 @@ function useToastBottomOffset(): number {
   return toastBottomOffset(
     dockFootprint,
     insets?.bottom ?? 0,
-    theme.space["3"],
+    space["3"],
     keyboard.reserved,
   )
 }

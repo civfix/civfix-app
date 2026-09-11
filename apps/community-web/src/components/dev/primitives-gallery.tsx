@@ -39,10 +39,12 @@ import {
   DateBadge,
   BlurSurface,
   iconMap,
-  theme,
+  themeFor,
 } from "@civfix/ui"
 import { CapabilitiesProvider, makeFakeCapabilities } from "@civfix/ui/capabilities"
 import type { ReportStatus, ReportCategory } from "@civfix/shared"
+
+const theme = themeFor("light")
 
 const noop = () => {}
 

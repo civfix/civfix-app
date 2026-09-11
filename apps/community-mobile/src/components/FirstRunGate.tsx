@@ -3,7 +3,7 @@ import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } f
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
 import { isValidHandle } from "@civfix/shared"
-import { makeThemedStyles, theme, useTheme } from "@/theme"
+import { makeThemedStyles, space, useTheme } from "@/theme"
 import {
   AgeConfirmation,
   Avatar,
@@ -104,7 +104,7 @@ function FirstRunForm() {
     <View style={styles.overlay}>
       <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <FirstRunScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: insets.top + theme.space["6"] }]}
+          contentContainerStyle={[styles.scroll, { paddingTop: insets.top + space["6"] }]}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.head}>
@@ -177,7 +177,7 @@ function FirstRunForm() {
             styles.footer,
             {
               marginBottom: kbReserve,
-              paddingBottom: (kbReserve > 0 ? 0 : insets.bottom) + theme.space["3"],
+              paddingBottom: (kbReserve > 0 ? 0 : insets.bottom) + space["3"],
             },
           ]}
         >

@@ -103,7 +103,7 @@ describe("SocialBody: the message button and the field clear chip clear 44pt", (
     const size = num(SRC, "ICON_BTN_SIZE")
     expect(SRC).toContain("hitSlop={ICON_BTN_HIT_SLOP}")
     expect(SRC).toMatch(/left: ROW_GAP,\s*\n\s*right: 0,/)
-    expect(SRC).toContain('const ROW_GAP = theme.space["3"]')
+    expect(SRC).toContain('const ROW_GAP = space["3"]')
     expect(SRC).toContain("gap: ROW_GAP,")
     const vertical = grown(SRC, "ICON_BTN_HIT_SLOP", "top", "bottom", size)
     expect(vertical).toBe(MIN_TOUCH_TARGET)

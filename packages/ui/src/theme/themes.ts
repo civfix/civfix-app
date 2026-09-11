@@ -164,10 +164,3 @@ export const themes: Readonly<Record<ColorSchemeName, Theme>> = Object.fromEntri
 export function themeFor(scheme: ColorSchemeName): Theme {
   return themes[scheme]
 }
-
-export const theme: Theme = themes.light
-
-export const colors: ThemeColors = theme.colors
-export const glass: ThemeGlass = theme.glass
-export const imageFrame: ImageFrameStyle = theme.imageFrame
-export const shadows: ThemeShadows = theme.shadows

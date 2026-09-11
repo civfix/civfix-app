@@ -58,7 +58,7 @@ import Animated, {
 } from "react-native-reanimated"
 import { BlurView } from "expo-blur"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { makeThemedStyles, theme, useTheme } from "../theme"
+import { makeThemedStyles, space, useTheme } from "../theme"
 import { useNavStore, type Snap, type View as NavView, type DetailEntry } from "../nav"
 import { useT } from "../i18n"
 import { useHaptics } from "../capabilities"
@@ -403,7 +403,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   // The sheet bottoms at the physical screen edge (no gorhom bottomInset), so the full snap only keeps the
   // top headroom clear (status bar + a breathing gap); nothing is reserved at the bottom.
   const snapPoints = useMemo<[number, number, number]>(
-    () => sheetSnapPoints(height, insets.top + theme.space["8"]),
+    () => sheetSnapPoints(height, insets.top + space["8"]),
     [height, insets.top],
   )
 

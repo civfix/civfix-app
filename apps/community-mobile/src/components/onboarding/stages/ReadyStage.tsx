@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native"
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from "react-native-reanimated"
 import { Avatar, Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
-import { makeThemedStyles, theme, useTheme } from "@/theme"
+import { makeThemedStyles, motion, useTheme } from "@/theme"
 import {
   GRAVITY_EASE,
   STAGE_DROP_PX,
@@ -24,7 +24,7 @@ const W_HANDLE = stageWindow(TOTAL_MS, 1400, 1760)
 
 const AVATAR_SIZE = 64
 const PLACEHOLDER_NAME = "?"
-const POP = theme.motion.pop
+const POP = motion.pop
 
 export function ReadyStage({ active, reduceMotion }: StageProps) {
   const { t } = useT("mobile-onboarding")

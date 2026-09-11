@@ -8,7 +8,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native"
-import { makeThemedStyles, theme, useReducedMotion } from "../../theme"
+import { makeThemedStyles, space, radius as radiusScale, useReducedMotion } from "../../theme"
 
 export const SKELETON_PULSE_MS = 820
 export const SKELETON_PULSE_MIN = 0.45
@@ -87,7 +87,7 @@ export interface SkeletonBlockProps {
 export function SkeletonBlock({
   width = "100%",
   height = 12,
-  radius = theme.radius.sm,
+  radius = radiusScale.sm,
   style,
 }: SkeletonBlockProps) {
   const styles = useStyles()
@@ -131,9 +131,9 @@ export const SKELETON_ROW_KINDS: Record<SkeletonRowKind, SkeletonRowKindSpec> = 
     lines: ["45%", "62%"],
     trailing: 74,
     trailingHeight: 30,
-    trailingRadius: theme.radius.pill,
+    trailingRadius: radiusScale.pill,
     paddingVertical: 14,
-    gap: theme.space["3"],
+    gap: space["3"],
     align: "center",
   },
   report: {
@@ -143,8 +143,8 @@ export const SKELETON_ROW_KINDS: Record<SkeletonRowKind, SkeletonRowKindSpec> = 
     trailing: null,
     trailingHeight: 0,
     trailingRadius: 0,
-    paddingVertical: theme.space["3"] + 1,
-    gap: theme.space["3"],
+    paddingVertical: space["3"] + 1,
+    gap: space["3"],
     align: "flex-start",
   },
   notification: {
@@ -154,8 +154,8 @@ export const SKELETON_ROW_KINDS: Record<SkeletonRowKind, SkeletonRowKindSpec> = 
     trailing: 34,
     trailingHeight: 10,
     trailingRadius: 5,
-    paddingVertical: theme.space["3"],
-    gap: theme.space["3"],
+    paddingVertical: space["3"],
+    gap: space["3"],
     align: "flex-start",
   },
   settings: {
@@ -164,9 +164,9 @@ export const SKELETON_ROW_KINDS: Record<SkeletonRowKind, SkeletonRowKindSpec> = 
     lines: ["52%", "34%"],
     trailing: 44,
     trailingHeight: 26,
-    trailingRadius: theme.radius.pill,
-    paddingVertical: theme.space["4"],
-    gap: theme.space["3"],
+    trailingRadius: radiusScale.pill,
+    paddingVertical: space["4"],
+    gap: space["3"],
     align: "center",
   },
   text: {
@@ -176,8 +176,8 @@ export const SKELETON_ROW_KINDS: Record<SkeletonRowKind, SkeletonRowKindSpec> = 
     trailing: null,
     trailingHeight: 0,
     trailingRadius: 0,
-    paddingVertical: theme.space["2"],
-    gap: theme.space["3"],
+    paddingVertical: space["2"],
+    gap: space["3"],
     align: "flex-start",
   },
 }
@@ -250,7 +250,7 @@ export interface SkeletonDetailProps {
 
 export function SkeletonDetail({
   hero = 200,
-  heroRadius = theme.radius.lg,
+  heroRadius = radiusScale.lg,
   lines = 3,
   rows = 0,
   rowKind = "text",

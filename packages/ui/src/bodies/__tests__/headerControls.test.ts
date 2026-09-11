@@ -42,7 +42,7 @@ describe("one header-control token set", () => {
   it("keeps the map's compact row optically centred against the glass controls beside it", () => {
     const map = read("../../map/MapHeaderActions.tsx")
     expect(map).toContain("const rowCenterOffset = (GLASS_CONTROL_SIZE - HEADER_CONTROL_SIZE) / 2")
-    expect(map).toContain('{ top: topInset + theme.space["2"] + rowCenterOffset }')
+    expect(map).toContain('{ top: topInset + space["2"] + rowCenterOffset }')
     expect(MAP_ACTION_SIZE - HEADER_CONTROL_SIZE).toBe(0)
   })
 })
