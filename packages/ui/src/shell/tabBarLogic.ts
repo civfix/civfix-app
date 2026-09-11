@@ -24,23 +24,7 @@ export const TAB_SPECS = [
   { id: "report", view: "report" },
 ] as const satisfies readonly TabSpec[]
 
-export const TAB_DIVIDER_INDEX = TAB_SPECS.findIndex((tab) => tab.id === "report")
-export const TAB_DIVIDER_HEIGHT_RATIO = 0.6
-export const TAB_DIVIDER_WIDTH = 1.5
-
-export const TAB_PILL_LOCK_COUNT = TAB_DIVIDER_INDEX
-
-export function tabDividerRect(
-  tabW: number,
-  barHeight: number,
-): { left: number; top: number; height: number } {
-  const height = Math.round(barHeight * TAB_DIVIDER_HEIGHT_RATIO)
-  return {
-    left: TAB_DIVIDER_INDEX * tabW - TAB_DIVIDER_WIDTH / 2,
-    top: (barHeight - height) / 2,
-    height,
-  }
-}
+export const TAB_PILL_LOCK_COUNT = TAB_SPECS.findIndex((tab) => tab.id === "report")
 
 export const TAB_ANIMATION_MS = MOTION.tabPill.duration
 export const TAB_EASING_CSS = "cubic-bezier(.22,1,.36,1)"

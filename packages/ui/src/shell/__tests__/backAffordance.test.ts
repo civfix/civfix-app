@@ -6,7 +6,7 @@
  * Both chevrons only CLOSED the surface (the wizard's literally called `reset()`), duplicating the dock /
  * the sheet's grab handle while promising a parent screen that does not exist.
  *
- * The gate is a pure predicate, so - house style (dragCollapse, expandedHomeButton, headerAuthAffordance)
+ * The gate is a pure predicate, so - house style (dragCollapse, bodyTransition, headerAuthAffordance)
  * - vitest drives it directly against the REAL nav store: no React Native renderer, and the arrival verbs
  * (selectView / push / openDetail / seed) are exercised for real rather than simulated, which is the whole
  * point (a "directly-opened pull-up" is defined by the STATE those verbs produce, not by their name).
@@ -206,9 +206,8 @@ describe("detailLeadingAffordance - chevron vs close X vs nothing", () => {
     // ExpandedShell is ONE persistent card that always shows something, so there is no overlay to close
     // there and both root shapes have a real destination:
     //   - ONE entry -> back() pops it and the card re-renders the body for the current VIEW, which on home
-    //     is the real feed timeline (`renderBody(null, view)`, VIEW_BODY.home = "feed"). The panel header
-    //     hides its own Home chip at this depth for exactly that reason (ExpandedShell.tsx's PanelHeader
-    //     doc: "Back already returns to the home card").
+    //     is the real feed timeline (`renderBody(null, view)`, VIEW_BODY.home = "feed"), so Back at this
+    //     depth already returns to the home card and is the panel's only header chip.
     expect(detailLeadingAffordance({ stack: [{ kind: "create-cleanup" }], mode: "expanded" })).toBe("back")
     expect(detailLeadingAffordance({ stack: [{ kind: "pin", id: "a" }], mode: "expanded" })).toBe("back")
     //   - EMPTY stack -> a top-level VIEW is filling the card. The only body that passes `stepIndex` is the
@@ -468,19 +467,22 @@ describe("person is an own-header FULL body", () => {
     expect(titleForEntry({ kind: "person", id: "x" }).trim()).toBe("")
   })
 
-  it("supplies its OWN Back and - in expanded - its own Home, because PanelHeader supplies neither", () => {
-    // Suppressing PanelHeader removes its Back AND its Home chip (`showHome={stack.length > 1}`), so the
-    // body has to replace both or person -> person -> person on desktop loses the one-tap route back to
-    // the home sidebar. Source greps, house style: the body imports react-native, which this package's
-    // node-environment vitest cannot load.
+  it("supplies its OWN Back, and nothing beside it, because PanelHeader supplies neither", () => {
+    // Suppressing PanelHeader removes its Back, so the body has to replace it. Nothing sits next to that
+    // chip on either layout: Back is the single exit here, matching PanelHeader. Source greps, house
+    // style: the body imports react-native, which this package's node-environment vitest cannot load.
     const body = read("../../bodies/PersonDetailBody.tsx")
     expect(body).toMatch(/accessibilityLabel=\{tNav\("a11y\.back"\)\}/)
-    expect(body).toMatch(/accessibilityLabel=\{tNav\("a11y\.home"\)\}/)
-    // Home is gated on EXPANDED + PanelHeader's own condition, never on compact (where the dock is the
-    // route home - and it is deliberately hidden for this kind).
-    expect(body).toMatch(/showHome = layoutMode === "expanded" && stackDepth > 1/)
-    // ...and it dispatches the same store action PanelHeader's home button does.
-    expect(body).toMatch(/useNavStore\.getState\(\)\.reset\(\)/)
+    expect(body).not.toMatch(/a11y\.home/)
+    expect(body).not.toMatch(/showHome/)
+    expect(body).not.toMatch(/iconMap\.Home/)
+  })
+
+  it("leaves the landscape panel header with Back as its ONLY navigation chip", () => {
+    const shell = read("../ExpandedShell.tsx")
+    expect(shell).not.toMatch(/showHome/)
+    expect(shell).not.toMatch(/iconMap\.Home/)
+    expect(shell).not.toMatch(/a11y\.home/)
   })
 })
 

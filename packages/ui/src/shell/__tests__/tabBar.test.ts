@@ -33,12 +33,12 @@ import {
   SHEET_REF_FULL,
   seedPreviousView,
   selectedPillRect,
-  tabDividerRect,
   tabIconMorph,
   tabPillTransition,
   travelFactor,
   windowProgress,
   TAB_PILL_INSET_X,
+  TAB_PILL_LOCK_COUNT,
   TAB_ICON_CENTER_Y,
   TAB_ICON_SIZE,
   TAB_ICON_STROKE_WIDTH,
@@ -873,30 +873,24 @@ describe("hostReserved is a WEB-only option the native seam never forwards", () 
   })
 })
 
-describe("tab divider is a soft rule, not an icon-weight bar", () => {
-  const dividerBlocks = ["TabBar.shared.tsx", "TabBar.native.tsx", "Rail.tsx"].map((file) => {
-    const src = readFileSync(new URL(`../${file}`, import.meta.url), "utf8")
-    const start = src.indexOf("  divider: {")
-    if (start < 0) throw new Error(`no divider style block in ${file}`)
-    const end = src.indexOf("\n  },", start)
-    if (end < 0) throw new Error(`unterminated divider style block in ${file}`)
-    return { file, block: src.slice(start, end) }
-  })
+describe("the report tab is no longer fenced off by a divider rule", () => {
+  const seams = ["TabBar.shared.tsx", "TabBar.native.tsx", "TabBar.web.tsx", "Rail.tsx"]
 
-  it("paints the rule with the hairline-rule token on every seam that draws it", () => {
-    for (const { file, block } of dividerBlocks) {
-      expect(block, file).toMatch(/backgroundColor: t\.colors\.borderStrong/)
+  it("draws no divider on any seam that renders the bar", () => {
+    for (const file of seams) {
+      const src = readFileSync(new URL(`../${file}`, import.meta.url), "utf8")
+      expect(src, file).not.toMatch(/divider/i)
     }
   })
 
-  it("never reuses the icon token, so the rule stays subtler than the glyphs it separates", () => {
-    for (const { file, block } of dividerBlocks) {
-      expect(block, file).not.toMatch(/t\.colors\.textMuted/)
-    }
+  it("keeps no divider geometry in the shared model", () => {
+    const logic = readFileSync(new URL("../tabBarLogic.ts", import.meta.url), "utf8")
+    expect(logic).not.toMatch(/DIVIDER/)
+    expect(logic).not.toMatch(/dividerRect/)
   })
 
-  it("spans 60% of the bar height, rounded, centered, and sits on the report seam", () => {
-    expect(tabDividerRect(80, 64)).toEqual({ left: 239.25, top: 13, height: 38 })
-    expect(tabDividerRect(80, 60)).toEqual({ left: 239.25, top: 12, height: 36 })
+  it("still locks the draggable pill to the tabs before Report, derived from the tab list itself", () => {
+    expect(TAB_PILL_LOCK_COUNT).toBe(TAB_SPECS.findIndex((tab) => tab.id === "report"))
+    expect(TAB_PILL_LOCK_COUNT).toBe(3)
   })
 })

@@ -24,18 +24,12 @@ import { useT } from "../i18n"
 import { useNavStore } from "../nav"
 import {
   TABS,
-  TAB_DIVIDER_WIDTH,
   useTabBarModel,
   type TabDef,
 } from "./TabBar.shared"
 import { useSearchBarStore } from "./searchBarStore"
 import { searchPressOpensSearch } from "./shellKeyModel"
-import {
-  activeTabIndex,
-  tabPillTransition,
-  TAB_DIVIDER_HEIGHT_RATIO,
-  TAB_DIVIDER_INDEX,
-} from "./tabBarLogic"
+import { activeTabIndex, tabPillTransition } from "./tabBarLogic"
 import {
   NAV_GAP,
   NAV_H,
@@ -62,9 +56,6 @@ const ORB_ICON = 22
 const BRAND_SIZE = RAIL_BRAND_SIZE
 const RAIL_BORDER = StyleSheet.hairlineWidth
 const LOZENGE_TOP = (RAIL_CAPSULE_H - RAIL_BORDER * 2 - RAIL_ITEM) / 2
-const RAIL_DIVIDER_H = Math.round((RAIL_CAPSULE_H - RAIL_BORDER * 2) * TAB_DIVIDER_HEIGHT_RATIO)
-const RAIL_DIVIDER_TOP = (RAIL_CAPSULE_H - RAIL_BORDER * 2 - RAIL_DIVIDER_H) / 2
-const RAIL_DIVIDER_LEFT = railItemLeft(TAB_DIVIDER_INDEX) - RAIL_ITEM_GAP / 2 - TAB_DIVIDER_WIDTH / 2
 const railShadow = (t: Theme): ViewStyle =>
   coloredShadow(
     t.glass.dock.shadow.color,
@@ -149,7 +140,6 @@ export function Rail() {
         >
           <BlurSurface kind="dock" style={[StyleSheet.absoluteFill, styles.noPointer]} />
           <View style={[styles.lozenge, lozengeStyle, styles.noPointer]} />
-          <View style={[styles.divider, styles.noPointer]} accessibilityRole="none" />
           {TABS.map((tab, i) => (
             <RailTab
               key={tab.id}
@@ -275,14 +265,6 @@ const useStyles = makeThemedStyles((t) => ({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.glass.dock.border,
     overflow: "hidden",
-  },
-  divider: {
-    position: "absolute",
-    left: RAIL_DIVIDER_LEFT,
-    top: RAIL_DIVIDER_TOP,
-    width: TAB_DIVIDER_WIDTH,
-    height: RAIL_DIVIDER_H,
-    backgroundColor: t.colors.borderStrong,
   },
   lozenge: {
     position: "absolute",
