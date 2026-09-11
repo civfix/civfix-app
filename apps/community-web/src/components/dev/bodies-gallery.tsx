@@ -49,6 +49,8 @@ import {
   FeedBody,
   EventsBody,
   EventDetailBody,
+  EventDashboardBody,
+  HostModeBody,
   CreateCleanupBody,
   EditCleanupBody,
   NotificationsBody,
@@ -68,6 +70,15 @@ import { CapabilitiesProvider, makeFakeCapabilities } from "@civfix/ui/capabilit
 import { useNavStore } from "@civfix/ui/nav"
 
 import { makeQueryClient } from "@/lib/query"
+import {
+  DASHBOARD_EVENT_ERROR_ID,
+  DASHBOARD_EVENT_IDS,
+  DASHBOARD_EVENT_PENDING_ID,
+  failing,
+  makeDashboardFakeApi,
+  pendingForever,
+  portfolioOverrides,
+} from "./dashboard-fixtures"
 
 
 const ORGANIZER = {
@@ -1050,6 +1061,28 @@ const fakeData = makeFakeDataContext({
 
 const fakeCaps = makeFakeCapabilities()
 
+const DASHBOARD_AUTH = { isAuthenticated: true, user: VIEWER, isPending: false }
+
+const dashboardData = makeFakeDataContext({
+  api: makeDashboardFakeApi(),
+  auth: DASHBOARD_AUTH,
+})
+
+const dashboardSoloData = makeFakeDataContext({
+  api: makeDashboardFakeApi({ listMyOrganizations: async () => ({ items: [] }) }),
+  auth: DASHBOARD_AUTH,
+})
+
+const dashboardPendingData = makeFakeDataContext({
+  api: makeDashboardFakeApi(portfolioOverrides(() => pendingForever())),
+  auth: DASHBOARD_AUTH,
+})
+
+const dashboardErrorData = makeFakeDataContext({
+  api: makeDashboardFakeApi(portfolioOverrides((name) => failing(name))),
+  auth: DASHBOARD_AUTH,
+})
+
 
 function BodyFrame({
   title,
@@ -1098,6 +1131,29 @@ function BodyFrame({
       { }
       <div style={{ height, display: "flex", flexDirection: "column" }}>{children}</div>
     </section>
+  )
+}
+
+function DashboardFrame({
+  title,
+  data = dashboardData,
+  height = 720,
+  wide = false,
+  children,
+}: {
+  title: string
+  data?: React.ComponentProps<typeof ApiProvider>["value"]
+  height?: number
+  wide?: boolean
+  children: React.ReactNode
+}) {
+  const [client] = React.useState(() => makeQueryClient())
+  return (
+    <BodyFrame title={title} height={height} wide={wide}>
+      <QueryClientProvider client={client}>
+        <ApiProvider value={data}>{children}</ApiProvider>
+      </QueryClientProvider>
+    </BodyFrame>
   )
 }
 
@@ -1342,6 +1398,75 @@ export default function BodiesGallery() {
                 </div>
               </CapabilitiesProvider>
             </BodyFrame>
+
+            { }
+            <DashboardFrame
+              title="EventDashboardBody (portfolio, personal only - no orgs)"
+              data={dashboardSoloData}
+              height={860}
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            <DashboardFrame
+              title="EventDashboardBody (portfolio, org tabs + picker - switch to Org for money + collaborators)"
+              height={900}
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            <DashboardFrame
+              title="EventDashboardBody (portfolio, WIDE)"
+              height={900}
+              wide
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            <DashboardFrame
+              title="EventDashboardBody (every portfolio query PENDING)"
+              data={dashboardPendingData}
+              height={520}
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            <DashboardFrame
+              title="EventDashboardBody (every portfolio query FAILING)"
+              data={dashboardErrorData}
+              height={620}
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            { }
+            <DashboardFrame title="HostModeBody (phase: upcoming)" height={820}>
+              <HostModeBody id={DASHBOARD_EVENT_IDS.upcoming} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (phase: live)" height={820}>
+              <HostModeBody id={DASHBOARD_EVENT_IDS.live} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (phase: live, WIDE)" height={820} wide>
+              <HostModeBody id={DASHBOARD_EVENT_IDS.live} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (phase: ended)" height={820}>
+              <HostModeBody id={DASHBOARD_EVENT_IDS.ended} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (phase: cancelled)" height={820}>
+              <HostModeBody id={DASHBOARD_EVENT_IDS.cancelled} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (counters + insights PENDING)" height={620}>
+              <HostModeBody id={DASHBOARD_EVENT_PENDING_ID} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (counters + insights FAILING)" height={620}>
+              <HostModeBody id={DASHBOARD_EVENT_ERROR_ID} />
+            </DashboardFrame>
 
             <BodyFrame title="ReportFlowBody (report wizard - capture/category/details/review)" height={760}>
               { }
