@@ -47,7 +47,7 @@
 
   Duplicate event: `duplicateCleanup` (`POST /cleanups/:id/duplicate`) with
   `DuplicateCleanupRequestSchema` (`{ id, scheduledAt, endsAt?, includeTicketTypes = true,
-  includeQuestions = true, includePage = false }`), answering the same shape as `createCleanup`.
+includeQuestions = true, includePage = false }`), answering the same shape as `createCleanup`.
 
   Payments (`schemas/payments.ts`, §26 amended by §34 - civfix still never holds funds): `PayoutDTO`,
   `OrgBalanceDTO`, `getOrgBalance`, `createOrgPayout` (required uuid `idempotencyKey`) and
