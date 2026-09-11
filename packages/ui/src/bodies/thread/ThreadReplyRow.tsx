@@ -121,6 +121,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               photoUrl={identity.avatarUrl}
               gradient={identity.avatarGradient}
               size={36}
+              {...(identity.organization ? { style: styles.orgAvatar } : {})}
               decorative
             />
           </Pressable>
@@ -238,6 +239,9 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
 })
 
 const useStyles = makeThemedStyles((t) => ({
+  orgAvatar: {
+    borderRadius: t.radius.sm,
+  },
   outer: {},
   outerRule: {
     borderBottomWidth: StyleSheet.hairlineWidth,

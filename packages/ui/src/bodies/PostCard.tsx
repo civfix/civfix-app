@@ -441,6 +441,7 @@ function EmbeddedPost({
             photoUrl={identity.avatarUrl}
             gradient={identity.avatarGradient}
             size={20}
+            {...(identity.organization ? { style: styles.orgAvatar } : {})}
             decorative
           />
         ) : null}
@@ -637,6 +638,7 @@ export const PostCard = React.memo(function PostCard({
               photoUrl={rowIdentity.avatarUrl}
               gradient={rowIdentity.avatarGradient}
               size={AVATAR}
+              {...(rowIdentity.organization ? { style: styles.orgAvatar } : {})}
               decorative
             />
           </Pressable>
@@ -945,6 +947,9 @@ const useStyles = makeThemedStyles((t) => ({
     width: AVATAR,
     marginRight: GUTTER_GAP,
     borderRadius: AVATAR / 2,
+  },
+  orgAvatar: {
+    borderRadius: t.radius.sm,
   },
   content: {
     flex: 1,

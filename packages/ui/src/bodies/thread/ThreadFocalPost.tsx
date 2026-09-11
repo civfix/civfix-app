@@ -126,6 +126,7 @@ function EmbeddedPost({
             photoUrl={identity.avatarUrl}
             gradient={identity.avatarGradient}
             size={prominent ? 40 : 26}
+            {...(identity.organization ? { style: styles.orgAvatar } : {})}
             decorative
           />
         ) : null}
@@ -216,6 +217,7 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
           photoUrl={identity.avatarUrl}
           gradient={identity.avatarGradient}
           size={44}
+          {...(identity.organization ? { style: styles.orgAvatar } : {})}
           decorative
         />
         <View style={styles.authorCopy}>
@@ -380,6 +382,9 @@ export function ThreadFocalSkeleton() {
 }
 
 const useStyles = makeThemedStyles((t) => ({
+  orgAvatar: {
+    borderRadius: t.radius.sm,
+  },
   root: {
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["3"],
