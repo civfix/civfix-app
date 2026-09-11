@@ -1,15 +1,15 @@
 import React, { useEffect } from "react"
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native"
+import { View, StyleSheet, ActivityIndicator } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import Animated, {
-  useAnimatedKeyboard,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated"
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
 import type { OAuthProvider } from "@civfix/shared"
 import { makeThemedStyles, theme, useTheme } from "@/theme"
-import { Text } from "@civfix/ui"
+import {
+  IosKeyboardAvoidingView,
+  PLAIN_SCROLL_HOST,
+  Text,
+  makeKeyboardAwareScrollHost,
+} from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { Wordmark } from "@/components/Wordmark"
 import { LoadingSplash } from "@/components/LoadingSplash"
@@ -18,6 +18,8 @@ import { ScreenHeader } from "@/components/ui/ScreenHeader"
 import { useEnabledProviders } from "@/hooks/useAuthFlow"
 
 const ALL_PROVIDERS: OAuthProvider[] = ["apple", "google", "email"]
+
+const { ScrollView: AuthScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 function WelcomeOptions() {
   const { t } = useT("mobile-auth-welcome")
@@ -68,26 +70,19 @@ export function AuthGate({
 }) {
   const insets = useSafeAreaInsets()
   const styles = useStyles()
-  const keyboard = useAnimatedKeyboard()
-  const scrollKeyboardStyle = useAnimatedStyle(() => ({
-    marginBottom: Platform.OS === "android" ? keyboard.height.value : 0,
-  }))
 
   if (mode === "loading") {
     return <LoadingSplash />
   }
   return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <IosKeyboardAvoidingView style={styles.root}>
       {showBack ? (
         <View style={styles.header}>
           <ScreenHeader />
         </View>
       ) : null}
-      <Animated.ScrollView
-        style={[styles.scroll, scrollKeyboardStyle]}
+      <AuthScrollView
+        style={styles.scroll}
         contentContainerStyle={[
           styles.welcome,
           {
@@ -102,8 +97,8 @@ export function AuthGate({
         <View style={styles.welcomeOptions}>
           <WelcomeOptions />
         </View>
-      </Animated.ScrollView>
-    </KeyboardAvoidingView>
+      </AuthScrollView>
+    </IosKeyboardAvoidingView>
   )
 }
 
