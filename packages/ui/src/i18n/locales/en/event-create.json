@@ -55,5 +55,11 @@
     "rateLimited": "Too many attempts. Please wait a moment and try again.",
     "session": "Your session may have expired. Sign in again and retry.",
     "generic": "We could not publish right now. Please try again."
+  },
+  "host_as": {
+    "label": "Host as",
+    "personal": "You",
+    "a11y": "Host as {{name}}",
+    "group_a11y": "Choose who hosts this event"
   }
 }

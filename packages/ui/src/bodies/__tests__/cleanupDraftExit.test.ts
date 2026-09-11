@@ -52,6 +52,7 @@ describe("host-draft exit", () => {
 /** A typed-in host draft, so the seed-point tests can prove nothing else is disturbed. */
 function typedForm(over: Partial<CleanupFormValue> = {}): CleanupFormValue {
   return {
+    organizationId: null,
     title: "Beach cleanup",
     description: "Bring gloves",
     eventKind: "cleanup",

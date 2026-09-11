@@ -49,6 +49,7 @@ describe("postComposerStore", () => {
       mode: "post",
       quotePostId: null,
       replyToPostId: null,
+      organizationId: null,
       pendingCreate: null,
     })
   })
@@ -149,6 +150,7 @@ describe("postComposerStore", () => {
       mode: "post",
       quotePostId: null,
       replyToPostId: null,
+      organizationId: null,
       pendingCreate: null,
     })
   })
@@ -175,9 +177,29 @@ describe("postComposerStore", () => {
       mode: "reply",
       quotePostId: null,
       replyToPostId: "post-parent",
+      organizationId: null,
       pendingCreate: null,
     })
     expect(selectPostComposerTargetId(usePostComposerStore.getState())).toBe("post-parent")
+  })
+
+  it("carries the chosen author organization across a reset, and a genuine exit keeps it too", () => {
+    const store = usePostComposerStore.getState()
+    store.setOrganizationId("org-1")
+    store.setBody("Posting on behalf of the trust")
+
+    store.reset()
+    expect(usePostComposerStore.getState().draft.organizationId).toBe("org-1")
+    expect(usePostComposerStore.getState().draft.body).toBe("")
+
+    store.reset({ mode: "reply", targetPostId: "post-parent" })
+    expect(usePostComposerStore.getState().draft.organizationId).toBe("org-1")
+
+    usePostComposerStore.getState().discardAttachments()
+    expect(usePostComposerStore.getState().draft.organizationId).toBe("org-1")
+
+    usePostComposerStore.getState().setOrganizationId(null)
+    expect(usePostComposerStore.getState().draft.organizationId).toBeNull()
   })
 
   it("reset(keep) routes a quote target to quotePostId, never replyToPostId", () => {
@@ -344,6 +366,7 @@ describe("postComposerStore create round trip", () => {
       mode: "reply",
       quotePostId: "post-quoted",
       replyToPostId: "post-parent",
+      organizationId: null,
       pendingCreate: null,
     })
   })

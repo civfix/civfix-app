@@ -56,5 +56,11 @@
     "report": "Meldung anhaengen",
     "back": "Zurueck",
     "dismiss": "Schliessen"
+  },
+  "post_as": {
+    "label": "Posten als",
+    "personal": "Du",
+    "a11y": "Als {{name}} posten",
+    "group_a11y": "Wähle, von wem dieser Beitrag stammt"
   }
 }

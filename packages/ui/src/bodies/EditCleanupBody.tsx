@@ -43,6 +43,7 @@ function saveErrorMessage(err: unknown, t: Translate): string {
 function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
   const when = new Date(cleanup.scheduledAt)
   return {
+    organizationId: cleanup.organization?.id ?? null,
     title: cleanup.title,
     description: cleanup.description ?? "",
     eventKind: cleanup.eventKind,
@@ -98,6 +99,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
       address: spotLine,
       bring: form.bring,
       slots: buildSlotInputs(form.slots),
+      organizationId: form.organizationId,
       ...(form.eventKind === "cleanup" ? { linkedReportIds: form.linkedReportIds } : {}),
     }
     update.mutate(
@@ -123,6 +125,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
         onChange={setForm}
         initialCenter={form.coords}
         existingSlots={cleanup.slots}
+        currentOrganization={cleanup.organization ?? null}
       />
 
       {saveError ? (

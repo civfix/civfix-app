@@ -56,5 +56,11 @@
     "report": "Attach a report",
     "back": "Back",
     "dismiss": "Dismiss"
+  },
+  "post_as": {
+    "label": "Post as",
+    "personal": "You",
+    "a11y": "Post as {{name}}",
+    "group_a11y": "Choose who this post is from"
   }
 }

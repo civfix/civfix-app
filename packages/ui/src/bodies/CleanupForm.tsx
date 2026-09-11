@@ -4,6 +4,7 @@ import {
   EVENT_KIND_VALUES,
   type EventKind,
   type EventSlotDTO,
+  type OrganizationRefDTO,
   type PersonDTO,
   type ReportDTO,
 } from "@civfix/shared"
@@ -19,10 +20,11 @@ import {
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField, BringInput, MetaDot } from "../primitives"
-import { useReport, useReverseLabel, reverseLabelText } from "../data"
+import { useMyOrganizations, useReport, useReverseLabel, reverseLabelText } from "../data"
 import { LocationPicker, PortraitMapPickStep, useLocationPick } from "../map"
 import { useLocale, useT } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
+import { AuthorAsChips, authorAsSelection, type AuthorAsOption } from "./AuthorAsChips"
 import { buildEventPreviewCard } from "./feedShare"
 import { FeedShareBlock, FeedShareEventCard } from "./FeedShareBlock"
 import { mergeDateTime } from "./calendarModel"
@@ -32,6 +34,7 @@ import { SlotEditor } from "./SlotEditor"
 import { claimedBySlotId, slotsValid, type SlotDraft } from "./eventSlotsForm"
 
 export interface CleanupFormValue {
+  organizationId: string | null
   title: string
   description: string
   eventKind: EventKind
@@ -57,8 +60,12 @@ export const ALL_CLEANUP_FORM_SECTIONS: readonly CleanupFormSection[] = [
   "share",
 ]
 
-export function emptyCleanupForm(seedLinkedReportId?: string): CleanupFormValue {
+export function emptyCleanupForm(
+  seedLinkedReportId?: string,
+  seedOrganizationId?: string,
+): CleanupFormValue {
   return {
+    organizationId: seedOrganizationId ?? null,
     title: "",
     description: "",
     eventKind: "cleanup",
@@ -279,12 +286,14 @@ export function CleanupForm({
   sections = ALL_CLEANUP_FORM_SECTIONS,
   showFeedShare = false,
   feedShareBusy = false,
+  currentOrganization,
   onRequestFeedShareReveal,
 }: {
   value: CleanupFormValue
   onChange: (next: CleanupFormValue) => void
   initialCenter?: LatLng | null
   existingSlots?: readonly EventSlotDTO[]
+  currentOrganization?: OrganizationRefDTO | null
   sections?: readonly CleanupFormSection[]
   showFeedShare?: boolean
   feedShareBusy?: boolean
@@ -293,6 +302,7 @@ export function CleanupForm({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-form")
+  const { t: tCreate } = useT("event-create")
   const { locale } = useLocale()
 
   const layoutMode = useLayoutMode()
@@ -332,6 +342,24 @@ export function CleanupForm({
 
   const isCleanup = value.eventKind === "cleanup"
 
+  const myOrgs = useMyOrganizations()
+  const hostOrganizations = useMemo<AuthorAsOption[]>(() => {
+    const rows: AuthorAsOption[] = (myOrgs.data ?? []).map((org) => ({
+      id: org.id,
+      name: org.name,
+      logoUrl: org.logoUrl ?? null,
+    }))
+    if (currentOrganization && !rows.some((row) => row.id === currentOrganization.id)) {
+      rows.unshift({
+        id: currentOrganization.id,
+        name: currentOrganization.name,
+        logoUrl: currentOrganization.logoUrl ?? null,
+      })
+    }
+    return rows
+  }, [myOrgs.data, currentOrganization])
+  const hostOrganizationId = authorAsSelection(value.organizationId, myOrgs.data && hostOrganizations)
+
   const eventPreview = useMemo(() => {
     const ref = buildEventPreviewCard(value, PREVIEW_ORGANIZER)
     if (!ref) return null
@@ -353,6 +381,16 @@ export function CleanupForm({
     <>
       {shows("basics") ? (
         <>
+          <AuthorAsChips
+            organizations={hostOrganizations}
+            value={hostOrganizationId}
+            onChange={(organizationId) => patch({ organizationId })}
+            label={tCreate("host_as.label")}
+            personalLabel={tCreate("host_as.personal")}
+            chipA11y={(name) => tCreate("host_as.a11y", { name })}
+            groupA11y={tCreate("host_as.group_a11y")}
+          />
+
           {isCleanup && value.linkedReportIds.length > 0 ? (
             <View style={styles.linkedCards}>
               {value.linkedReportIds.map((id) => (

@@ -28,7 +28,13 @@ import type { MentionCandidate } from "../primitives"
 import { ComposerThumbs } from "../primitives/ComposerThumbs"
 import { useComposerAttachments } from "../primitives/useComposerAttachments"
 import { Text, Icon, iconMap } from "../typography"
-import { useAttendingCleanups, useAuthState, useMyProfile, useMyReports } from "../data"
+import {
+  useAttendingCleanups,
+  useAuthState,
+  useMyOrganizations,
+  useMyProfile,
+  useMyReports,
+} from "../data"
 import { attachableEvents, attachableReports } from "../data/composerAttachable"
 import { useT } from "../i18n"
 import { useHaptics } from "../capabilities"
@@ -36,6 +42,7 @@ import { useCreatePost } from "../data/hooks/posts"
 import { useNavStore } from "../nav"
 import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, useScrollHost } from "../shell/ScrollHost"
+import { AuthorAsChips, authorAsSelection } from "./AuthorAsChips"
 import { LinkedEventCard } from "./LinkedEventCard"
 import { LinkedReportCard } from "./LinkedReportCard"
 import { clearStaleReportIntentAtComposerMount } from "./composerCreateFlow"
@@ -178,6 +185,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
   const setAttachedReportId = usePostComposerStore((state) => state.setAttachedReportId)
   const setMedia = usePostComposerStore((state) => state.setMedia)
   const setMode = usePostComposerStore((state) => state.setMode)
+  const setOrganizationId = usePostComposerStore((state) => state.setOrganizationId)
   const setReplyToPostId = usePostComposerStore((state) => state.setReplyToPostId)
   const setQuotePostId = usePostComposerStore((state) => state.setQuotePostId)
   const reset = usePostComposerStore((state) => state.reset)
@@ -308,6 +316,14 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
     () => activePostMentions(draft.body, draft.mentionedUsers),
     [draft.body, draft.mentionedUsers],
   )
+  const myOrgs = useMyOrganizations()
+  const postAsOrganizations = myOrgs.data ?? []
+  const postAsOrganizationId = authorAsSelection(draft.organizationId, myOrgs.data)
+  useEffect(() => {
+    if (draft.organizationId !== null && postAsOrganizationId === null) setOrganizationId(null)
+  }, [draft.organizationId, postAsOrganizationId, setOrganizationId])
+  const postAsOrganization =
+    postAsOrganizations.find((org) => org.id === postAsOrganizationId) ?? null
   const resolution = resolvePostSubmit({
     body: draft.body,
     eventId: draft.attachedEventId,
@@ -318,6 +334,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
     replyToId: draft.replyToPostId,
     repostOfId: draft.quotePostId,
     mentionedUserIds: activeMentions.map((user) => user.id),
+    organizationId: postAsOrganizationId,
   }, draft.media.length === 0 || (!hasPendingMedia && mediaUploadIds.length === draft.media.length))
 
   const submit = () => {
@@ -327,6 +344,18 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
     const optimistic: PostDTO = {
       id: `optimistic-${Date.now()}`,
       author: profile,
+      organization: postAsOrganization
+        ? {
+            id: postAsOrganization.id,
+            slug: postAsOrganization.slug,
+            name: postAsOrganization.name,
+            logoUrl: postAsOrganization.logoUrl ?? null,
+            verified: postAsOrganization.verifiedStatus === "verified",
+            ...(postAsOrganization.verifiedKind
+              ? { verifiedKind: postAsOrganization.verifiedKind }
+              : {}),
+          }
+        : null,
       kind: resolution.input.kind,
       body: resolution.input.body ?? null,
       createdAt: new Date().toISOString(),
@@ -737,9 +766,30 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
   const fields = (
     <View style={styles.fields}>
       <View style={styles.authorRow}>
-        <Avatar name={profile?.name ?? "You"} seed={profile?.id} photoUrl={profile?.avatarUrl} gradient={profile?.avatar ?? null} size={34} />
-        <Text style={styles.authorName}>{profile?.name ?? "You"}</Text>
+        {postAsOrganization ? (
+          <Avatar
+            name={postAsOrganization.name}
+            seed={postAsOrganization.id}
+            photoUrl={postAsOrganization.logoUrl ?? null}
+            size={34}
+            style={styles.authorOrgLogo}
+          />
+        ) : (
+          <Avatar name={profile?.name ?? "You"} seed={profile?.id} photoUrl={profile?.avatarUrl} gradient={profile?.avatar ?? null} size={34} />
+        )}
+        <Text style={styles.authorName}>{postAsOrganization?.name ?? profile?.name ?? "You"}</Text>
       </View>
+
+      <AuthorAsChips
+        organizations={postAsOrganizations}
+        value={postAsOrganizationId}
+        onChange={setOrganizationId}
+        label={t("post_as.label")}
+        personalLabel={t("post_as.personal")}
+        chipA11y={(name) => t("post_as.a11y", { name })}
+        groupA11y={t("post_as.group_a11y")}
+        disabled={create.isPending}
+      />
 
       {messageSection}
       {errorLines}
@@ -804,6 +854,7 @@ const useStyles = makeThemedStyles((t) => ({
   fields: { gap: 14 },
   authorRow: { flexDirection: "row", alignItems: "center", gap: 9 },
   authorName: { fontFamily: t.fontFamily.bodyBold, fontSize: 13.5, lineHeight: 18, color: t.colors.textMuted },
+  authorOrgLogo: { borderRadius: t.radius.sm },
   messageSection: { gap: 9 },
   composeRow: { flexDirection: "row", alignItems: "flex-start", gap: t.space["3"] },
   inputWrap: { flex: 1, minWidth: 0 },

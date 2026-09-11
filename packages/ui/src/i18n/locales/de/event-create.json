@@ -55,5 +55,11 @@
     "rateLimited": "Zu viele Versuche. Kurz warten und erneut versuchen.",
     "session": "Deine Sitzung ist möglicherweise abgelaufen. Erneut anmelden und wiederholen.",
     "generic": "Veröffentlichen gerade nicht möglich. Bitte erneut versuchen."
+  },
+  "host_as": {
+    "label": "Veranstalten als",
+    "personal": "Du",
+    "a11y": "Als {{name}} veranstalten",
+    "group_a11y": "Wähle, wer diese Veranstaltung ausrichtet"
   }
 }

@@ -55,5 +55,11 @@
     "rateLimited": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
     "session": "Es posible que tu sesión haya expirado. Vuelve a iniciar sesión e inténtalo.",
     "generic": "No pudimos publicar en este momento. Inténtalo de nuevo."
+  },
+  "host_as": {
+    "label": "Organizar como",
+    "personal": "Tú",
+    "a11y": "Organizar como {{name}}",
+    "group_a11y": "Elige quién organiza este evento"
   }
 }

@@ -9,6 +9,7 @@ import type { CleanupFormValue } from "../CleanupForm"
 // So we inline an RN-free factory matching emptyCleanupForm's shape and import only the (erased) type.
 function mkForm(seedLinkedReportId?: string): CleanupFormValue {
   return {
+    organizationId: null,
     title: "",
     description: "",
     eventKind: "cleanup",

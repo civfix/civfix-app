@@ -34,6 +34,8 @@ export interface PostDraft {
   repostOfId?: string | null
   /** The resolved @mention user ids to persist. */
   mentionedUserIds?: string[]
+  /** The organization the post is published as, or null/undefined to post as the acting person. */
+  organizationId?: string | null
 }
 
 /**
@@ -70,6 +72,9 @@ export function resolvePostSubmit(draft: PostDraft, hasReadyMedia = false): Post
     ...(draft.reportId ? { reportId: draft.reportId } : {}),
     mediaUploadIds: draft.mediaUploadIds ?? [],
     mentionedUserIds: draft.mentionedUserIds ?? [],
+    ...(draft.organizationId && draft.kind !== "repost"
+      ? { organizationId: draft.organizationId }
+      : {}),
   }
   return { action: "submit", input }
 }

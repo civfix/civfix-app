@@ -48,6 +48,29 @@ describe("resolvePostSubmit", () => {
     expect(res.input.mediaUploadIds).toEqual(["m1", "m2"])
   })
 
+  it("carries the chosen organization so the post publishes as that org", () => {
+    const res = resolvePostSubmit(draft({ body: "trail day", organizationId: "org_1" }))
+    expect(res.action).toBe("submit")
+    if (res.action !== "submit") throw new Error("expected submit")
+    expect(res.input.organizationId).toBe("org_1")
+  })
+
+  it("omits the organization when posting as the acting person", () => {
+    for (const organizationId of [null, undefined]) {
+      const res = resolvePostSubmit(draft({ body: "trail day", organizationId }))
+      if (res.action !== "submit") throw new Error("expected submit")
+      expect("organizationId" in res.input).toBe(false)
+    }
+  })
+
+  it("never sends an organization on a repost, which the contract rejects", () => {
+    const res = resolvePostSubmit(
+      draft({ body: "trail day", kind: "repost", repostOfId: "post_1", organizationId: "org_1" }),
+    )
+    if (res.action !== "submit") throw new Error("expected submit")
+    expect("organizationId" in res.input).toBe(false)
+  })
+
   it("carries the reference fields for a reply", () => {
     const res = resolvePostSubmit(draft({ body: "count me in", kind: "reply", replyToId: "post_1" }))
     expect(res.action).toBe("submit")
