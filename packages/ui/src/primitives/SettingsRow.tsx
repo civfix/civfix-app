@@ -76,7 +76,7 @@ function RowContent({
           <Icon
             icon={iconMap[icon]}
             size={16}
-            color={destructive ? t.colors.brand.bloom : t.colors.textMuted}
+            color={destructive ? t.colors.dangerInk : t.colors.textMuted}
           />
         </View>
       ) : null}
@@ -228,7 +228,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bgAlt,
   },
   iconTileDestructive: {
-    backgroundColor: t.colors.bloom["50"],
+    backgroundColor: t.colors.dangerWash,
   },
   meta: {
     flex: 1,
@@ -240,7 +240,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
   },
   labelDestructive: {
-    color: t.colors.accentText,
+    color: t.colors.dangerInk,
   },
   sub: {
     fontFamily: t.fontFamily.bodyRegular,

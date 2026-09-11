@@ -36,9 +36,11 @@ describe("SettingsRow", () => {
     expect(row.match(/\{\.\.\.focusRingProps\}/g) ?? []).toHaveLength(2)
   })
 
-  it("colours a destructive label with the WCAG-safe coral INK token", () => {
-    expect(row).toContain("color: t.colors.accentText")
-    expect(row).not.toMatch(/\bt\.colors\.accent\b(?!Text)/)
+  it("colours a destructive row with the danger role, never the brand accent", () => {
+    expect(row).toContain("color: t.colors.dangerInk")
+    expect(row).toContain("backgroundColor: t.colors.dangerWash")
+    expect(row).not.toMatch(/\bt\.colors\.accent(Text)?\b/)
+    expect(row).not.toMatch(/t\.colors\.bloom\[/)
   })
 
   it("hardcodes no hex, size scale or radius that a token already names", () => {

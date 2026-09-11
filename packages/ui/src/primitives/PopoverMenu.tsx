@@ -121,7 +121,7 @@ export function PopoverMenu({
       accessibilityRole="menu"
     >
       {items.map((item) => {
-        const color = item.destructive ? th.colors.bloom["600"] : th.colors.text
+        const color = item.destructive ? th.colors.dangerInk : th.colors.text
         return (
           <Pressable
             key={item.key}
