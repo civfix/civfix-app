@@ -17,7 +17,7 @@ const EN: Record<string, string> = {
   "post_card.replying_to": "Replying to {{handle}}",
   "post_card.profile_a11y": "View {{name}}'s profile",
   "post_card.org_a11y": "Open {{name}}",
-  "post_card.via": "via {{handle}}",
+  "post_card.via": "via {{author}}",
   "post_card.deleted_account": "Deleted account",
   "enums:reportType.dump": "Dump",
   "enums:reportType.pavement": "Pavement distress",

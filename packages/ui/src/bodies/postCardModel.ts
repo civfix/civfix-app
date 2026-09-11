@@ -47,7 +47,7 @@ export function buildPostIdentity(
     name: org ? org.name : personName,
     personName,
     handleLabel: org || !handle ? null : `@${handle}`,
-    viaLabel: org ? t("post_card.via", { handle: handle ? `@${handle}` : personName }) : null,
+    viaLabel: org ? t("post_card.via", { author: handle ? `@${handle}` : personName }) : null,
     personId: author?.id ?? null,
     avatarName: org ? org.name : personName,
     avatarSeed: org ? org.id : (author?.id ?? fallbackName),

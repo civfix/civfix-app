@@ -112,7 +112,7 @@
       "reported": "신고를 보냈어요"
     },
     "replying_to": "{{handle}}님에게 답글",
-    "via": "{{handle}} 작성",
+    "via": "{{author}} 작성",
     "org_a11y": "{{name}} 열기"
   }
 }

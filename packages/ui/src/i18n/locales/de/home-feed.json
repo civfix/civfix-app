@@ -118,7 +118,7 @@
       "reported": "Meldung gesendet"
     },
     "replying_to": "Antwort an {{handle}}",
-    "via": "von {{handle}}",
+    "via": "von {{author}}",
     "org_a11y": "{{name}} öffnen"
   }
 }

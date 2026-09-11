@@ -21,7 +21,7 @@ export function AffiliationRow({
   return (
     <Pressable
       onPress={() => push({ kind: "org", slug: organization.slug })}
-      accessibilityRole="link"
+      accessibilityRole="button"
       accessibilityLabel={t("affiliation.open_a11y", { name: organization.name })}
       {...focusRingProps}
       style={(state) => [

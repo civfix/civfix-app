@@ -118,7 +118,7 @@
       "reported": "Report sent"
     },
     "replying_to": "Replying to {{handle}}",
-    "via": "via {{handle}}",
+    "via": "via {{author}}",
     "org_a11y": "Open {{name}}"
   }
 }

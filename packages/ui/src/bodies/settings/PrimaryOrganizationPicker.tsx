@@ -160,7 +160,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["3"],
     minHeight: 56,
     paddingHorizontal: t.space["3"],
-    paddingVertical: 12,
+    paddingVertical: t.space["3"],
   },
   rowPressed: {
     opacity: 0.7,
