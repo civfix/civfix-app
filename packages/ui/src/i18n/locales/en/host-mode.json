@@ -6,6 +6,12 @@
     "denied_title": "Not a host here",
     "denied_body": "Only the event's hosts and staff can open host mode."
   },
+  "phase": {
+    "upcoming": "Upcoming",
+    "live": "Happening now",
+    "ended": "Ended",
+    "cancelled": "Cancelled"
+  },
   "action": {
     "scan": "Scan tickets",
     "scan_a11y": "Open the ticket scanner",

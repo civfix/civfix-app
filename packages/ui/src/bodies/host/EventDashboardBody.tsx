@@ -408,7 +408,7 @@ export function EventDashboardBody() {
         </>
       ) : null}
 
-      <ConsoleLinkRow orgId={activeOrgId} />
+      <ConsoleLinkRow target={activeOrgId ? { kind: "org", orgId: activeOrgId } : { kind: "portfolio" }} />
 
       <DuplicateEventSheet event={duplicating} onClose={() => setDuplicating(null)} />
     </ScrollView>

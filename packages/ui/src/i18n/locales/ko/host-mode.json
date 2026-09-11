@@ -6,6 +6,12 @@
     "denied_title": "이 행사의 호스트가 아닙니다",
     "denied_body": "행사의 호스트와 스태프만 호스트 모드를 열 수 있습니다."
   },
+  "phase": {
+    "upcoming": "예정",
+    "live": "진행 중",
+    "ended": "종료됨",
+    "cancelled": "취소됨"
+  },
   "action": {
     "scan": "티켓 스캔",
     "scan_a11y": "티켓 스캐너 열기",

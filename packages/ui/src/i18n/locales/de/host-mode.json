@@ -6,6 +6,12 @@
     "denied_title": "Hier kein Host",
     "denied_body": "Nur Hosts und das Team der Veranstaltung können den Host-Modus öffnen."
   },
+  "phase": {
+    "upcoming": "Bevorstehend",
+    "live": "Läuft gerade",
+    "ended": "Beendet",
+    "cancelled": "Abgesagt"
+  },
   "action": {
     "scan": "Tickets scannen",
     "scan_a11y": "Den Ticket-Scanner öffnen",

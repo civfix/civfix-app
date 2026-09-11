@@ -6,6 +6,12 @@
     "denied_title": "No eres anfitrión aquí",
     "denied_body": "Solo los anfitriones y el personal del evento pueden abrir el modo anfitrión."
   },
+  "phase": {
+    "upcoming": "Próximo",
+    "live": "En curso",
+    "ended": "Finalizado",
+    "cancelled": "Cancelado"
+  },
   "action": {
     "scan": "Escanear entradas",
     "scan_a11y": "Abrir el escáner de entradas",
