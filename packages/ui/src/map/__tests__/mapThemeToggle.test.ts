@@ -1,6 +1,5 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { MAP_THEME_TOGGLE_ENABLED } from "../themeTogglePlatform"
 import { THEME_MENU_MAX_WIDTH, themeMenuFrame, themeMenuPlacement } from "../themeMenuPlacement"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -9,9 +8,6 @@ const anchoredPopover = read("../../primitives/AnchoredPopover.tsx")
 const popoverMenu = read("../../primitives/PopoverMenu.tsx")
 const headerActions = read("../MapHeaderActions.tsx")
 const controls = read("../MapControls.tsx")
-const seamWeb = read("../themeTogglePlatform.web.ts")
-const seamNative = read("../themeTogglePlatform.native.ts")
-const seamDefault = read("../themeTogglePlatform.ts")
 
 const appearanceCatalog = (lng: string): { toggle?: string; dismiss?: string } =>
   (
@@ -24,19 +20,19 @@ const appearanceLabel = (lng: string): string | undefined => appearanceCatalog(l
 const dismissLabel = (lng: string): string | undefined => appearanceCatalog(lng).dismiss
 
 describe("MapThemeToggle", () => {
-  it("is a web-only affordance: the bare seam and its .web sibling are on, .native is off", () => {
-    expect(MAP_THEME_TOGGLE_ENABLED).toBe(true)
-    expect(seamWeb).toContain("MAP_THEME_TOGGLE_ENABLED = true")
-    expect(seamNative).toContain("MAP_THEME_TOGGLE_ENABLED = false")
-    expect(seamDefault).toContain(
-      'export { MAP_THEME_TOGGLE_ENABLED } from "./themeTogglePlatform.web"',
-    )
-    expect(seamDefault).not.toMatch(/MAP_THEME_TOGGLE_ENABLED\s*=/)
-    expect(source).toContain('import { MAP_THEME_TOGGLE_ENABLED } from "./themeTogglePlatform"')
-    expect(source).toContain("if (!MAP_THEME_TOGGLE_ENABLED) return null")
+  it("renders on every platform: no seam file and no enablement flag survive", () => {
+    for (const rel of [
+      "../themeTogglePlatform.ts",
+      "../themeTogglePlatform.web.ts",
+      "../themeTogglePlatform.native.ts",
+    ]) {
+      expect(existsSync(new URL(rel, import.meta.url)), rel).toBe(false)
+    }
+    expect(source).not.toMatch(/MAP_THEME_TOGGLE_ENABLED/)
+    expect(source).not.toMatch(/themeTogglePlatform/)
   })
 
-  it("reuses the shared AppearanceOptionList so the Beta pill and the copy have ONE source", () => {
+  it("reuses the shared AppearanceOptionList so the options and the copy have ONE source", () => {
     expect(source).toContain('import { AppearanceOptionList } from "../bodies/AppearanceOptionList"')
     expect(source).toContain("<AppearanceOptionList />")
     expect(source).not.toContain("setAppearancePreference(")

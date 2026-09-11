@@ -1,4 +1,6 @@
 // @ts-check
+const { tokens, darkColor } = require("@civfix/shared/tokens")
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? null
 
 const UPDATE_CHANNEL = process.env.CIVFIX_UPDATE_CHANNEL ?? null
@@ -17,8 +19,8 @@ const GOOGLE_IOS_URL_SCHEME =
 
 const CARTO_API_KEY = process.env.EXPO_PUBLIC_CARTO_API_KEY ?? "cb1_2800_1_9e1f147ec5d25247379fe9cf"
 
-const SPLASH_BG_LIGHT = "#FBF7F0"
-const SPLASH_BG_DARK = "#17130E"
+const SPLASH_BG_LIGHT = tokens.color.neutral.paper
+const SPLASH_BG_DARK = darkColor.neutral.paper
 
 const APP_LINK_HOSTS = ["civfix.org", "www.civfix.org"]
 
@@ -173,7 +175,7 @@ module.exports = ({ config }) => ({
     versionCode: 3,
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
-      backgroundColor: "#FBF7F0",
+      backgroundColor: SPLASH_BG_LIGHT,
     },
     permissions: [
       "android.permission.CAMERA",

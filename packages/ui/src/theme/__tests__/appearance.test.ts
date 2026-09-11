@@ -13,9 +13,9 @@ afterEach(() => {
 })
 
 describe("appearance preference seam", () => {
-  it("defaults to light with no host store registered", () => {
-    expect(DEFAULT_APPEARANCE_PREFERENCE).toBe("light")
-    expect(getAppearancePreference()).toBe("light")
+  it("defaults to the device scheme with no host store registered", () => {
+    expect(DEFAULT_APPEARANCE_PREFERENCE).toBe("system")
+    expect(getAppearancePreference()).toBe("system")
   })
 
   it("routes reads and writes through a registered host store", () => {
@@ -29,19 +29,19 @@ describe("appearance preference seam", () => {
   it("falls back to the memory store once the host unregisters", () => {
     setAppearancePreferenceStore(makeMemoryAppearanceStore("dark"))
     setAppearancePreferenceStore(null)
-    expect(getAppearancePreference()).toBe("light")
+    expect(getAppearancePreference()).toBe("system")
   })
 
   it("notifies subscribers only on a real change", () => {
     const store = makeMemoryAppearanceStore()
     const listener = vi.fn()
     const unsubscribe = store.subscribe(listener)
-    store.set("light")
+    store.set("system")
     expect(listener).not.toHaveBeenCalled()
     store.set("dark")
     expect(listener).toHaveBeenCalledTimes(1)
     unsubscribe()
-    store.set("system")
+    store.set("light")
     expect(listener).toHaveBeenCalledTimes(1)
   })
 })

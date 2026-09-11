@@ -5,9 +5,7 @@
     "system": "System",
     "system_sub": "Match your device",
     "light": "Light",
-    "dark": "Dark",
-    "dark_beta": "Beta",
-    "dark_sub": "Dark mode is experimental; some screens may look off."
+    "dark": "Dark"
   },
   "selected": "Selected"
 }

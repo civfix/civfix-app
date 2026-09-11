@@ -5,9 +5,7 @@
     "system": "시스템",
     "system_sub": "기기 설정에 맞춤",
     "light": "라이트",
-    "dark": "다크",
-    "dark_beta": "베타",
-    "dark_sub": "다크 모드는 실험 단계라 일부 화면이 어색해 보일 수 있어요."
+    "dark": "다크"
   },
   "selected": "선택됨"
 }

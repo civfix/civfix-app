@@ -5,9 +5,7 @@
     "system": "Sistema",
     "system_sub": "Igual que tu dispositivo",
     "light": "Claro",
-    "dark": "Oscuro",
-    "dark_beta": "Beta",
-    "dark_sub": "El modo oscuro es experimental; algunas pantallas pueden verse mal."
+    "dark": "Oscuro"
   },
   "selected": "Seleccionado"
 }
