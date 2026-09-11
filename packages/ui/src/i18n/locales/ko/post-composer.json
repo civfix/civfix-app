@@ -56,5 +56,11 @@
     "report": "신고 첨부",
     "back": "뒤로",
     "dismiss": "닫기"
+  },
+  "post_as": {
+    "label": "게시 주체",
+    "personal": "나",
+    "a11y": "{{name}}(으)로 게시",
+    "group_a11y": "이 게시물의 작성 주체를 선택하세요"
   }
 }

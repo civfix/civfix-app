@@ -6,10 +6,5 @@
   "error": {
     "title": "No se pudo cargar tu perfil",
     "body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo."
-  },
-  "verification": {
-    "verified": "Organizador comunitario verificado",
-    "get_verified": "Verificarme",
-    "get_verified_sub": "Gana la confianza de tus vecinos"
   }
 }

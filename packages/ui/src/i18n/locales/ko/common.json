@@ -37,5 +37,6 @@
     "default_title": "CivFix 게시물"
   },
   "wizard_step_count": "{{total}}단계 중 {{current}}단계",
-  "verified_badge": "인증됨"
+  "verified_badge": "인증됨",
+  "org_affiliation": "{{name}} 소속"
 }

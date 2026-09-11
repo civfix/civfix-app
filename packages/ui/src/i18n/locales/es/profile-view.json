@@ -63,5 +63,9 @@
     "load_more_a11y": "Cargar más publicaciones",
     "saved": "Publicaciones guardadas",
     "saved_a11y": "Abrir publicaciones guardadas"
+  },
+  "affiliation": {
+    "label": "Afiliación",
+    "open_a11y": "Abrir {{name}}"
   }
 }

@@ -111,6 +111,8 @@
       "report_failed": "신고를 보내지 못했어요",
       "reported": "신고를 보냈어요"
     },
-    "replying_to": "{{handle}}님에게 답글"
+    "replying_to": "{{handle}}님에게 답글",
+    "via": "{{author}} 작성",
+    "org_a11y": "{{name}} 열기"
   }
 }

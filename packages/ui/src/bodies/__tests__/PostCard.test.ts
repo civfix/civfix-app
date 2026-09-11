@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
 import type { MediaDTO, PostDTO } from "@civfix/shared"
-import { buildPostCardModel, splitPostBodyMentions } from "../postCardModel"
+import { buildPostCardModel, buildPostIdentity, splitPostBodyMentions } from "../postCardModel"
 
 /**
  * Stand-in for the `home-feed` namespace (plus the shared `enums:` labels) bound by useT: interpolates
@@ -15,6 +15,10 @@ const EN: Record<string, string> = {
   "post_card.open_thread_a11y": "Open {{name}}'s post",
   "post_card.permalink_a11y": "Posted {{time}} ago. Open this post",
   "post_card.replying_to": "Replying to {{handle}}",
+  "post_card.profile_a11y": "View {{name}}'s profile",
+  "post_card.org_a11y": "Open {{name}}",
+  "post_card.via": "via {{author}}",
+  "post_card.deleted_account": "Deleted account",
   "enums:reportType.dump": "Dump",
   "enums:reportType.pavement": "Pavement distress",
   "enums:category.trash": "Trash",
@@ -362,6 +366,66 @@ describe("PostCard replying-to line", () => {
   })
 })
 
+const org = {
+  id: "org-1",
+  slug: "ballona-creek",
+  name: "Ballona Creek Trust",
+  logoUrl: "https://example.com/org.png",
+  verified: true,
+} as const
+
+describe("post identity resolves who the card presents as", () => {
+  it("presents the person when no organization authored the post", () => {
+    const identity = buildPostIdentity(author, null, t, "Deleted account")
+
+    expect(identity.organization).toBeNull()
+    expect(identity.name).toBe("Friends of Ballona")
+    expect(identity.handleLabel).toBe("@friendsofballona")
+    expect(identity.viaLabel).toBeNull()
+    expect(identity.avatarSeed).toBe("person-1")
+  })
+
+  it("presents the ORG as the author and credits the acting person with via", () => {
+    const identity = buildPostIdentity(author, org, t, "Deleted account")
+
+    expect(identity.name).toBe("Ballona Creek Trust")
+    expect(identity.personName).toBe("Friends of Ballona")
+    expect(identity.handleLabel).toBeNull()
+    expect(identity.viaLabel).toBe("via @friendsofballona")
+    expect(identity.avatarSeed).toBe("org-1")
+    expect(identity.avatarUrl).toBe("https://example.com/org.png")
+    expect(identity.avatarGradient).toBeNull()
+  })
+
+  it("credits the acting person by name when they have no handle", () => {
+    const identity = buildPostIdentity({ ...author, handle: null }, org, t, "Deleted account")
+
+    expect(identity.viaLabel).toBe("via Friends of Ballona")
+  })
+
+  it("carries the author's affiliation badge only when the post is NOT org-authored", () => {
+    const affiliated = { ...author, organization: org }
+
+    expect(buildPostIdentity(affiliated, null, t, "Deleted account").affiliation).toEqual(org)
+    expect(buildPostIdentity(affiliated, org, t, "Deleted account").affiliation).toBeNull()
+  })
+
+  it("falls back to the deleted-account name with no person and no org", () => {
+    const identity = buildPostIdentity(null, null, t, "Deleted account")
+
+    expect(identity.name).toBe("Deleted account")
+    expect(identity.personId).toBeNull()
+    expect(identity.handleLabel).toBeNull()
+  })
+
+  it("puts the identity on the card model and suppresses the handle behind the ORGANIZER pill", () => {
+    const model = buildPostCardModel(basePost({ organization: org }), t)
+
+    expect(model.identity.name).toBe("Ballona Creek Trust")
+    expect(model.handleLabel).toBeNull()
+  })
+})
+
 /**
  * THE ROW'S WEB AFFORDANCES, asserted by SOURCE because this package has no RN renderer (the house pattern
  * - see PostActionBar.test.ts's header for why a grep is the right instrument for "which element carries
@@ -387,7 +451,8 @@ describe("PostCard's link-role controls answer the keyboard", () => {
     // deliberately leaves the tab order - and the timestamp permalink as keyboard-dead tab stops.
     expect(SRC).toContain("export function linkKeyProps")
     for (const marker of [
-      'accessibilityLabel={t("post_card.profile_a11y", { name: post.author.name })}', // MetaRow name
+      "accessibilityLabel={identityA11yLabel(identity, t)}", // MetaRow name
+      'accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}', // MetaRow "via"
       'accessibilityLabel={t("post_card.permalink_a11y", { time: model.timeLabel })}', // MetaRow timestamp
       "accessibilityLabel={model.replyingToLabel}", // the reply's parent link
     ]) {

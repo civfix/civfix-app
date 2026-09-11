@@ -7,6 +7,7 @@ import { makeThemedStyles, useTheme, categoryColor, focusRingProps, wash, webCur
 import { Text, Icon } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
+import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
 import {
   PostActionBar,
   formatPostActionCount,
@@ -20,7 +21,13 @@ import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
 import { OrganizerBadge } from "../PostCard"
 import { PostMediaGrid } from "../PostMediaGrid"
-import { buildPostCardModel, repostSubjectAuthorId, splitPostBodyMentions } from "../postCardModel"
+import {
+  buildPostCardModel,
+  buildPostIdentity,
+  identityA11yLabel,
+  repostSubjectAuthorId,
+  splitPostBodyMentions,
+} from "../postCardModel"
 import { focalTimestamp } from "../relativeTime"
 import { useListTimeAgo } from "../useListTimeAgo"
 import { buildFocalPostStats } from "./threadModel"
@@ -92,6 +99,10 @@ function EmbeddedPost({
 }) {
   const styles = useStyles()
   const th = useTheme()
+  const identity = React.useMemo(
+    () => buildPostIdentity(post.author, post.organization, t, t("post_card.deleted_account")),
+    [post.author, post.organization, t],
+  )
   return (
     <Pressable
       onPress={onPress}
@@ -108,19 +119,28 @@ function EmbeddedPost({
       ]}
     >
       <View style={styles.embeddedHeader}>
-        {post.author ? (
+        {post.author || identity.organization ? (
           <Avatar
-            name={post.author.name}
-            seed={post.author.id}
-            photoUrl={post.author.avatarUrl}
-            gradient={post.author.avatar ?? null}
+            name={identity.avatarName}
+            seed={identity.avatarSeed}
+            photoUrl={identity.avatarUrl}
+            gradient={identity.avatarGradient}
             size={prominent ? 40 : 26}
+            {...(identity.organization ? { style: styles.orgAvatar } : {})}
             decorative
           />
         ) : null}
         <Text variant="bodyStrong" numberOfLines={1} style={styles.embeddedAuthor}>
-          {post.author?.name ?? t("post_card.deleted_account")}
+          {identity.name}
         </Text>
+        {identity.affiliation ? (
+          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+        ) : null}
+        {identity.viaLabel ? (
+          <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
+            {identity.viaLabel}
+          </Text>
+        ) : null}
         <Text variant="caption" color={th.colors.textSubtle}>
           {timeAgo(post.createdAt)}
         </Text>
@@ -159,7 +179,17 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
   )
   const isFix = model.variant === "fix-confirmed"
   const isRepost = model.variant === "repost" && model.embeddedPost != null
-  const handle = post.author.handle?.replace(/^@/, "") ?? null
+  const identity = model.identity
+  const openActingPerson = React.useCallback(() => {
+    if (identity.personId) openPerson(identity.personId)
+  }, [identity, openPerson])
+  const openIdentity = React.useCallback(() => {
+    if (identity.organization) {
+      openEntry({ kind: "org", slug: identity.organization.slug })
+      return
+    }
+    if (identity.personId) openPerson(identity.personId)
+  }, [identity, openEntry, openPerson])
   const timestamp = focalTimestamp(post.createdAt)
   const timestampLine = post.editedAt != null ? `${timestamp} · ${t("thread.edited")}` : timestamp
 
@@ -177,35 +207,55 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
       ) : null}
 
       <Pressable
-        onPress={() => openPerson(post.author.id)}
+        onPress={openIdentity}
         accessibilityRole="button"
-        accessibilityLabel={t("post_card.profile_a11y", { name: post.author.name })}
+        accessibilityLabel={identityA11yLabel(identity, t)}
         hitSlop={5}
         {...focusRingProps}
         style={({ pressed }) => [styles.authorRow, pressed ? styles.pressed : null]}
       >
         <Avatar
-          name={post.author.name}
-          seed={post.author.id}
-          photoUrl={post.author.avatarUrl}
-          gradient={post.author.avatar ?? null}
+          name={identity.avatarName}
+          seed={identity.avatarSeed}
+          photoUrl={identity.avatarUrl}
+          gradient={identity.avatarGradient}
           size={44}
+          {...(identity.organization ? { style: styles.orgAvatar } : {})}
           decorative
         />
         <View style={styles.authorCopy}>
           <View style={styles.nameRow}>
             <Text numberOfLines={1} style={styles.authorName}>
-              {post.author.name}
+              {identity.name}
             </Text>
+            {identity.affiliation ? (
+              <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+            ) : null}
             {model.showOrganizerBadge ? <OrganizerBadge t={t} /> : null}
           </View>
-          {handle ? (
+          {identity.handleLabel ? (
             <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
-              {`@${handle}`}
+              {identity.handleLabel}
             </Text>
           ) : null}
         </View>
       </Pressable>
+
+      {identity.viaLabel ? (
+        <Pressable
+          onPress={openActingPerson}
+          disabled={!identity.personId}
+          accessibilityRole="button"
+          accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}
+          hitSlop={5}
+          {...focusRingProps}
+          style={({ pressed }) => [styles.viaRow, pressed ? styles.pressed : null]}
+        >
+          <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
+            {identity.viaLabel}
+          </Text>
+        </Pressable>
+      ) : null}
 
       {!isFix && !isRepost && bodySegments.length > 0 ? (
         <Text style={styles.body}>
@@ -351,6 +401,13 @@ export function ThreadFocalSkeleton() {
 }
 
 const useStyles = makeThemedStyles((t) => ({
+  orgAvatar: {
+    borderRadius: t.radius.sm,
+  },
+  viaRow: {
+    alignSelf: "flex-start",
+    marginTop: 2,
+  },
   root: {
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["3"],

@@ -256,10 +256,12 @@ function ReviewSummary({
 function HostForm({
   seedReportId,
   seedPoint,
+  seedOrganizationId,
   standalone,
 }: {
   seedReportId?: string
   seedPoint?: HostSeedPoint
+  seedOrganizationId?: string
   standalone?: CreateCleanupStandaloneHost
 }) {
   const { ScrollView } = useScrollHost()
@@ -298,8 +300,11 @@ function HostForm({
 
   const [mountPlan] = useState<HostDraftMountPlan>(() => {
     const initial: CleanupFormValue = seedPoint
-      ? { ...emptyCleanupForm(seedReportId), coords: { lat: seedPoint.lat, lng: seedPoint.lng } }
-      : emptyCleanupForm(seedReportId)
+      ? {
+          ...emptyCleanupForm(seedReportId, seedOrganizationId),
+          coords: { lat: seedPoint.lat, lng: seedPoint.lng },
+        }
+      : emptyCleanupForm(seedReportId, seedOrganizationId)
     const { active, value } = useCleanupDraft.getState()
     return planHostDraftMount({ active, value }, seedReportId, draftSeedReportId, initial, seedPoint)
   })
@@ -311,7 +316,8 @@ function HostForm({
     setDraftCommitted(true)
   }, [mountPlan])
   const liveDraft = useCleanupDraft((s) => s.value)
-  const form = (draftCommitted ? liveDraft : mountPlan.value) ?? emptyCleanupForm(seedReportId)
+  const form =
+    (draftCommitted ? liveDraft : mountPlan.value) ?? emptyCleanupForm(seedReportId, seedOrganizationId)
   const setForm = (next: CleanupFormValue) => useCleanupDraft.getState().patch(next)
 
   useEffect(() => {
@@ -418,6 +424,7 @@ function HostForm({
         ...(form.bring.length > 0 ? { bring: form.bring } : {}),
         ...(linkedReportIds ? { linkedReportIds } : {}),
         ...(slots.length > 0 ? { slots } : {}),
+        ...(form.organizationId ? { organizationId: form.organizationId } : {}),
       },
       {
         onSuccess: (cleanup) => {
@@ -622,8 +629,10 @@ export function CreateCleanupBody({ standalone }: CreateCleanupBodyProps = {}) {
   const navSeedReportId = useNavStore((s) => s.active?.reportId)
   const navSeedLat = useNavStore((s) => s.active?.lat)
   const navSeedLng = useNavStore((s) => s.active?.lng)
+  const navSeedOrganizationId = useNavStore((s) => s.active?.organizationId)
   const isStandalone = standalone !== undefined
   const seedReportId = isStandalone ? undefined : navSeedReportId
+  const seedOrganizationId = isStandalone ? undefined : navSeedOrganizationId
   const seedPoint = useMemo<HostSeedPoint | undefined>(
     () =>
       !isStandalone && navSeedLat != null && navSeedLng != null
@@ -663,6 +672,7 @@ export function CreateCleanupBody({ standalone }: CreateCleanupBodyProps = {}) {
         {...(standalone ? { standalone } : {})}
         {...(seedReportId ? { seedReportId } : {})}
         {...(seedPoint ? { seedPoint } : {})}
+        {...(seedOrganizationId ? { seedOrganizationId } : {})}
       />
     </ScrollHostProvider>
   )

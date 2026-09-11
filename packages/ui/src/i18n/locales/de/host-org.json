@@ -45,5 +45,17 @@
     "title": "Mitglieder",
     "joined": "Dabei seit {{when}}",
     "read_only": "Nur Inhaber*innen können ändern, wer zu dieser Organisation gehört."
+  },
+  "events": {
+    "upcoming": "Kommende Veranstaltungen",
+    "past": "Vergangene Veranstaltungen",
+    "empty_upcoming": "Noch keine kommenden Veranstaltungen.",
+    "empty_past": "Noch keine vergangenen Veranstaltungen.",
+    "loading": "Veranstaltungen werden geladen…",
+    "error": "Veranstaltungen konnten nicht geladen werden.",
+    "show_more": "Mehr anzeigen",
+    "loading_more": "Wird geladen…",
+    "show_more_upcoming_a11y": "Mehr kommende Veranstaltungen anzeigen",
+    "show_more_past_a11y": "Mehr vergangene Veranstaltungen anzeigen"
   }
 }

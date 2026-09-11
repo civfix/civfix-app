@@ -117,6 +117,8 @@
       "report_failed": "No se pudo enviar la denuncia",
       "reported": "Denuncia enviada"
     },
-    "replying_to": "En respuesta a {{handle}}"
+    "replying_to": "En respuesta a {{handle}}",
+    "via": "vía {{author}}",
+    "org_a11y": "Abrir {{name}}"
   }
 }

@@ -117,6 +117,8 @@
       "report_failed": "Could not send the report",
       "reported": "Report sent"
     },
-    "replying_to": "Replying to {{handle}}"
+    "replying_to": "Replying to {{handle}}",
+    "via": "via {{author}}",
+    "org_a11y": "Open {{name}}"
   }
 }

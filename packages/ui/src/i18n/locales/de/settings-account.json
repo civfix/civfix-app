@@ -9,7 +9,8 @@
   },
   "section": {
     "identity": "Identität",
-    "data": "Deine Daten"
+    "data": "Deine Daten",
+    "affiliation": "Organisation"
   },
   "avatar": {
     "change": "Profilbild",
@@ -123,5 +124,13 @@
   "delete_account": {
     "label": "Konto löschen",
     "sub": "civfix-Konto dauerhaft entfernen"
+  },
+  "affiliation": {
+    "label": "Organisation im Profil",
+    "helper": "Wähle, welche Organisation neben deinem Namen erscheint.",
+    "automatic": "Automatisch",
+    "automatic_sub": "Die zuerst beigetretene Organisation verwenden.",
+    "selected": "Ausgewählt",
+    "error": "Deine Organisation konnte nicht gespeichert werden. Versuche es erneut."
   }
 }

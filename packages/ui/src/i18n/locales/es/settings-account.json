@@ -9,7 +9,8 @@
   },
   "section": {
     "identity": "Identidad",
-    "data": "Tus datos"
+    "data": "Tus datos",
+    "affiliation": "Organización"
   },
   "avatar": {
     "change": "Foto de perfil",
@@ -123,5 +124,13 @@
   "delete_account": {
     "label": "Eliminar cuenta",
     "sub": "Elimina permanentemente tu cuenta de civfix"
+  },
+  "affiliation": {
+    "label": "Organización en el perfil",
+    "helper": "Elige qué organización aparece junto a tu nombre.",
+    "automatic": "Automática",
+    "automatic_sub": "Usar la organización a la que te uniste primero.",
+    "selected": "Seleccionada",
+    "error": "No se pudo guardar tu organización. Inténtalo de nuevo."
   }
 }

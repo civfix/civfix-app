@@ -63,5 +63,9 @@
     "load_more_a11y": "Mehr Beiträge laden",
     "saved": "Gespeicherte Beiträge",
     "saved_a11y": "Gespeicherte Beiträge öffnen"
+  },
+  "affiliation": {
+    "label": "Zugehörigkeit",
+    "open_a11y": "{{name}} öffnen"
   }
 }

@@ -49,6 +49,7 @@ export const queryKeys = {
   postReplies: (id: string) => ["posts", "replies", id] as const,
   userPosts: (id: string) => ["posts", "user", id] as const,
   saves: ["posts", "saves"] as const,
+  postRoot: ["post"] as const,
   post: (id: string) => ["post", id] as const,
 
   volunteerMe: ["volunteer", "me"] as const,
@@ -80,4 +81,14 @@ export const queryKeys = {
   myDonations: ["donations", "mine"] as const,
   orgDonate: (slug: string) => ["donations", "org", slug] as const,
   orgDonationExports: (orgId: string) => ["host-exports", "org", orgId] as const,
+  orgEventsRoot: ["org-events"] as const,
+  orgEvents: (slug: string, when: string) => ["org-events", slug, when] as const,
+  orgMembers: (orgId: string) => ["org-admin", orgId, "members"] as const,
+  orgInvites: (orgId: string) => ["org-admin", orgId, "invites"] as const,
+  myOrgInvites: ["org-invites", "mine"] as const,
+  orgPaymentsStatus: (orgId: string) => ["org-admin", orgId, "payments"] as const,
+  orgDonationSummary: (orgId: string, from: string, to: string) =>
+    ["org-admin", orgId, "donation-summary", from, to] as const,
+  orgBalance: (orgId: string) => ["org-admin", orgId, "balance"] as const,
+  orgPayouts: (orgId: string) => ["org-admin", orgId, "payouts"] as const,
 }

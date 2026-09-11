@@ -1,14 +1,20 @@
-import React, { useCallback, useMemo } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { OrganizationDTO, SocialLinks } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../theme"
 import { Text, TextLink, Icon, iconMap } from "../../typography"
-import { Avatar, DonateBlock, Markdown, VerifiedBadge, shareLink, useToast } from "../../primitives"
+import { Avatar, DonateBlock, EventCard, Markdown, VerifiedBadge, shareLink, useToast } from "../../primitives"
 import { orgPagePath } from "../../primitives/externalUrls"
 import { useOpenExternal } from "../../capabilities"
-import { useOrganization } from "../../data/hooks/orgs"
+import {
+  organizationEventRows,
+  useOrganization,
+  useOrganizationEvents,
+  type OrganizationEventsWindow,
+} from "../../data/hooks/orgs"
 import { donationsOffered, useOrgDonationPage } from "../../data/hooks/donations"
 import { useT } from "../../i18n"
+import { useNavStore } from "../../nav/useNavStore"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 
@@ -42,6 +48,99 @@ function OrgHeader({ org }: { org: OrganizationDTO }) {
           <Text style={styles.verified}>{t(`enums:orgVerificationKind.${org.verifiedKind}`)}</Text>
         ) : null}
       </View>
+    </View>
+  )
+}
+
+function OrgEventsSection({
+  slug,
+  when,
+  collapsible = false,
+}: {
+  slug: string
+  when: OrganizationEventsWindow
+  collapsible?: boolean
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("host-org")
+  const push = useNavStore((state) => state.push)
+  const [open, setOpen] = useState(!collapsible)
+  const query = useOrganizationEvents(slug, when, { enabled: open })
+  const rows = useMemo(
+    () => organizationEventRows(query.data?.pages),
+    [query.data?.pages],
+  )
+
+  const body = query.isLoading ? (
+    <Text style={styles.muted}>{t("events.loading")}</Text>
+  ) : query.isError ? (
+    <Text style={styles.muted}>{t("events.error")}</Text>
+  ) : rows.length === 0 ? (
+    <Text style={styles.muted}>
+      {when === "upcoming" ? t("events.empty_upcoming") : t("events.empty_past")}
+    </Text>
+  ) : (
+    <>
+      {rows.map((cleanup) => (
+        <EventCard
+          key={cleanup.id}
+          cleanup={cleanup}
+          onPress={() => push({ kind: "cleanup", id: cleanup.id })}
+        />
+      ))}
+      {query.hasNextPage ? (
+        <TextLink
+          variant="label"
+          standalone
+          onPress={() => {
+            void query.fetchNextPage()
+          }}
+          accessibilityLabel={
+            when === "upcoming"
+              ? t("events.show_more_upcoming_a11y")
+              : t("events.show_more_past_a11y")
+          }
+        >
+          {query.isFetchingNextPage ? t("events.loading_more") : t("events.show_more")}
+        </TextLink>
+      ) : null}
+    </>
+  )
+
+  const title = when === "upcoming" ? t("events.upcoming") : t("events.past")
+
+  if (!collapsible) {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        {body}
+      </View>
+    )
+  }
+
+  return (
+    <View style={styles.section}>
+      <Pressable
+        onPress={() => setOpen((current) => !current)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        accessibilityLabel={title}
+        {...focusRingProps}
+        style={(state) => [
+          styles.sectionToggle,
+          webCursor(),
+          state.pressed ? styles.sectionTogglePressed : null,
+        ]}
+      >
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <Icon
+          icon={open ? iconMap.ChevronUp : iconMap.ChevronDown}
+          size={16}
+          color={th.colors.textMuted}
+        />
+      </Pressable>
+      {open ? body : null}
     </View>
   )
 }
@@ -157,6 +256,9 @@ export function OrgPageBody({ slug }: { slug: string }) {
         ) : null}
       </View>
 
+      <OrgEventsSection slug={slug} when="upcoming" />
+      <OrgEventsSection slug={slug} when="past" collapsible />
+
       {donationsOffered(donate.data?.donateState) && donate.data ? (
         <DonateBlock
           org={{
@@ -225,6 +327,20 @@ const useStyles = makeThemedStyles((t) => ({
   },
   section: {
     gap: t.space["2"],
+  },
+  sectionTitle: {
+    fontFamily: t.fontFamily.displayBold,
+    fontSize: t.fontSize["16"],
+    color: t.colors.text,
+  },
+  sectionToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 32,
+  },
+  sectionTogglePressed: {
+    opacity: 0.7,
   },
   links: {
     flexDirection: "row",
