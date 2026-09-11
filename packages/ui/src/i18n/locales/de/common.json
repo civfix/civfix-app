@@ -36,5 +36,7 @@
     "menu_dismiss": "Repost-Menü schließen",
     "default_title": "CivFix-Beitrag"
   },
-  "wizard_step_count": "Schritt {{current}} von {{total}}"
+  "wizard_step_count": "Schritt {{current}} von {{total}}",
+  "verified_badge": "Verifiziert",
+  "org_affiliation": "Zugehörig zu {{name}}"
 }

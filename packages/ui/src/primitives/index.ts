@@ -42,8 +42,8 @@ export type { FollowButtonProps } from "./FollowButton"
 export { VerifiedBadge } from "./VerifiedBadge"
 export type { VerifiedBadgeProps, VerifiedBadgeSize } from "./VerifiedBadge"
 
-export { VerificationNotice } from "./VerificationNotice"
-export type { VerificationNoticeProps } from "./VerificationNotice"
+export { OrgAffiliationBadge } from "./OrgAffiliationBadge"
+export type { OrgAffiliationBadgeProps, OrgAffiliationBadgeSize } from "./OrgAffiliationBadge"
 
 export { ShareButton } from "./ShareButton"
 export type { ShareButtonProps } from "./ShareButton"
@@ -89,6 +89,8 @@ export {
   donateUrl,
   managePath,
   manageUrl,
+  manageOrgPath,
+  managePortfolioPath,
   orgPagePath,
   signupPagePath,
 } from "./externalUrls"

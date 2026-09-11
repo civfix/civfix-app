@@ -79,22 +79,20 @@ describe("map-first tab bar model", () => {
     expect(compactBottomChrome("map")).toBe("tabs")
   })
 
-  it("enters the search morph on a physical spring that is underdamped but no longer slow", () => {
-    const spring = MOTION.dockMorphIn
-    expect(spring).toMatchObject({ mass: 1, stiffness: 90, damping: 13, overshootClamping: false })
-    const zeta = spring.damping / (2 * Math.sqrt(spring.stiffness * spring.mass))
-    expect(zeta).toBeGreaterThan(0.55)
-    expect(zeta).toBeLessThan(0.75)
-    const omegaN = Math.sqrt(spring.stiffness / spring.mass)
-    expect(omegaN).toBeGreaterThan(8)
-    expect(omegaN).toBeLessThan(12)
-    expect(spring.energyThreshold).toBeGreaterThan(0)
-  })
-
-  it("leaves the search morph on a deterministic timing with no tail", () => {
-    expect(MOTION.dockMorphOut.duration).toBeLessThanOrEqual(220)
-    expect(MOTION.dockMorphOut.easing).toEqual([0.22, 1, 0.36, 1])
-    expect(MOTION.dockMorphOut.duration).toBeLessThanOrEqual(MOTION.tabPill.duration)
+  it("enters and leaves the search morph on ONE deterministic timing, with no tail either way", () => {
+    for (const recipe of [MOTION.dockMorphIn, MOTION.dockMorphOut]) {
+      expect(recipe.duration).toBe(200)
+      expect(recipe.easing).toEqual([0.22, 1, 0.36, 1])
+      expect(recipe.duration).toBeLessThanOrEqual(MOTION.tabPill.duration)
+    }
+    const native = readFileSync(new URL("../TabBar.native.tsx", import.meta.url), "utf8")
+    expect(native).not.toContain("withSpring")
+    expect(native).toMatch(/withTiming\(target, \{ \.\.\.dockMorphInConfig\(\)/)
+    expect(native).toMatch(/withTiming\(target, \{ \.\.\.dockMorphOutConfig\(\)/)
+    const configs = readFileSync(new URL("../motionConfigs.native.ts", import.meta.url), "utf8")
+    expect(configs).toContain(
+      "export const dockMorphInConfig = (): WithTimingConfig => timingConfig(theme.motion.dockMorphIn)",
+    )
   })
 
   it("renders ICONS-ONLY tab cells (no text labels) with bolder band-centered glyphs", () => {
@@ -122,6 +120,33 @@ describe("map-first tab bar model", () => {
         "TabBar.shared",
       )
       expect(seam).not.toMatch(/iconMap\.(Home|Newspaper)/)
+    }
+  })
+
+  it("puts a camera on the centre tab and opens the report wizard straight from it", () => {
+    const shared = readFileSync(new URL("../TabBar.shared.tsx", import.meta.url), "utf8")
+    expect(shared).toContain('report: { icon: iconMap.Camera, labelKey: "tab.report" }')
+    expect(shared).toContain('import { openReportFlow } from "../bodies/composerCreateFlow"')
+    expect(shared).toMatch(/if \(tab\.id === "report"\) \{[\s\S]*?openReportFlow\(\)/)
+    for (const locale of ["en", "es", "de", "ko"]) {
+      const nav = JSON.parse(
+        readFileSync(new URL(`../../i18n/locales/${locale}/nav.json`, import.meta.url), "utf8"),
+      ) as { tab: { report: string }; create?: unknown; a11y: Record<string, string> }
+      expect(typeof nav.tab.report).toBe("string")
+      expect(nav.create, `${locale} still ships the create-menu copy`).toBeUndefined()
+      expect(nav.a11y.create_menu).toBeUndefined()
+      expect(nav.a11y.dismiss_create_menu).toBeUndefined()
+    }
+  })
+
+  it("keeps no create-menu machinery for the centre tab to grow a bubble back from", () => {
+    const dir = fileURLToPath(new URL("..", import.meta.url))
+    const left = readdirSync(dir).filter((name) => name.toLowerCase().startsWith("createmenu"))
+    expect(left, "a CreateMenu module survived the revert").toEqual([])
+    for (const file of ["../TabBar.shared.tsx", "../TabBar.web.tsx", "../TabBar.native.tsx", "../Rail.tsx", "../AppShell.tsx"]) {
+      const source = readFileSync(new URL(file, import.meta.url), "utf8")
+      expect(source, file).not.toContain("CreateMenu")
+      expect(source, file).not.toContain("useTabAnchors")
     }
   })
 

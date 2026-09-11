@@ -5,6 +5,7 @@ export { HostTeamBody } from "./HostTeamBody"
 export { MyTicketBody } from "./MyTicketBody"
 export { OrgPageBody } from "./OrgPageBody"
 export { MyDonationsBody } from "./MyDonationsBody"
+export { EventDashboardBody } from "./EventDashboardBody"
 
 export { HostCounterStrip } from "./HostCounterStrip"
 export type { HostCounterStripProps } from "./HostCounterStrip"

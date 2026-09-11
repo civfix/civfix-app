@@ -49,6 +49,7 @@ import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { FeedNotice } from "./FeedNotice"
+import { HEADER_CONTROL_SIZE } from "./headerControls"
 import { HeaderIconButton } from "./HeaderIconButton"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { matchesThreadQuery } from "./messagesListModel"
@@ -645,7 +646,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    minHeight: MIN_TOUCH_TARGET,
+    minHeight: HEADER_CONTROL_SIZE,
     marginBottom: t.space["2"],
   },
   headerActions: {

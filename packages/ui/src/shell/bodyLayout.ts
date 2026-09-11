@@ -27,7 +27,6 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
   "edit-cleanup": "scroll",
   cluster: "scroll",
   blend: "scroll",
-  verify: "scroll",
   followers: "scroll",
   following: "scroll",
   leaderboard: "scroll",
@@ -47,6 +46,7 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
   "my-ticket": "scroll",
   org: "scroll",
   "my-donations": "scroll",
+  "event-dashboard": "scroll",
   "home-view": "scroll",
 }
 
@@ -202,12 +202,12 @@ export function searchRevealStyle(progress: number): { opacity: number; translat
   return { opacity: w, translateY: (1 - w) * 12 }
 }
 
-export const SEARCH_REVEAL_EXIT_WINDOW = [0, 0.85] as const
+export const SEARCH_REVEAL_EXIT_WINDOW = [0.2, 0.7] as const
 
 export function searchRevealExitStyle(progress: number): { opacity: number; translateY: number } {
   "worklet"
-  const start = 0
-  const end = 0.85
+  const start = 0.2
+  const end = 0.7
   const raw = (progress - start) / (end - start)
   const w = raw < 0 ? 0 : raw > 1 ? 1 : raw
   return { opacity: w, translateY: (1 - w) * 12 }

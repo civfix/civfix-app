@@ -13,7 +13,7 @@ const EVENT_ROLES: (CleanupMemberRole | null)[] = [null, ...CleanupMemberRoleSch
 const ORG_ROLES: (OrganizationMemberRole | null)[] = [null, ...OrganizationMemberRoleSchema.options]
 const ALL_CAPABILITIES = HostCapabilitySchema.options
 
-const ORG_ONLY: HostCapability[] = ["manage_payments", "view_donations"]
+const ORG_ONLY: HostCapability[] = ["manage_payments", "view_donations", "manage_org_members"]
 const NOT_COHOST: HostCapability[] = [
   "manage_team",
   "cancel_event",
@@ -58,6 +58,7 @@ function expected(standing: HostStanding): HostCapability[] {
   if (standing.orgRole === "admin") {
     for (const cap of eventCaps) if (!NOT_COHOST.includes(cap) && cap !== "export") out.add(cap)
     out.add("view_donations")
+    out.add("manage_org_members")
   }
   return [...out].sort()
 }
@@ -169,9 +170,23 @@ describe("hostCapabilities", () => {
 
   it("withholds export, manage_team, cancel_event, manage_org_link, request_resources and manage_payments from an org admin", () => {
     const caps = hostCapabilities({ eventRole: null, orgRole: "admin" })
-    for (const cap of ["export", ...NOT_COHOST, "manage_payments"] as HostCapability[]) {
+    const withheld = ["export", ...NOT_COHOST, "manage_payments"] as HostCapability[]
+    for (const cap of withheld) {
       expect(caps.has(cap)).toBe(false)
     }
+  })
+
+  it("gives an org admin the org roster without the event team it could seat a cohost from", () => {
+    const caps = hostCapabilities({ eventRole: null, orgRole: "admin" })
+    expect(caps.has("manage_org_members")).toBe(true)
+    expect(caps.has("manage_team")).toBe(false)
+    expect(caps.has("export")).toBe(false)
+    expect(hostCapabilities({ eventRole: null, orgRole: "owner" }).has("manage_org_members")).toBe(
+      true,
+    )
+    expect(hostCapabilities({ eventRole: "organizer", orgRole: null }).has("manage_org_members")).toBe(
+      false,
+    )
   })
 
   it("adds org standing on top of event standing", () => {

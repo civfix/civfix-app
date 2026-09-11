@@ -1,13 +1,13 @@
-import React, { useCallback, useRef } from "react"
-import { Pressable, StyleSheet, View, type View as RNView, type ViewStyle } from "react-native"
+import React, { useCallback } from "react"
+import { Pressable, StyleSheet, View, type ViewStyle } from "react-native"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Icon, iconMap, type LucideIcon } from "../typography"
 import { BlurSurface } from "../surface"
 import { searchModeFor, useNavStore, type View as NavView } from "../nav"
 import { discardSearchInput } from "../bodies/searchRecentStore"
+import { openReportFlow } from "../bodies/composerCreateFlow"
 import { useT } from "../i18n"
 import { useHaptics } from "../capabilities"
-import { useCreateMenuStore, type CreateMenuAnchor } from "./createMenuStore"
 import {
   TAB_BAR_HEIGHT,
   TAB_DIVIDER_WIDTH,
@@ -28,7 +28,7 @@ const TAB_VISUALS: Record<TabId, Pick<TabDef, "icon" | "labelKey">> = {
   home: { icon: iconMap.Newspaper, labelKey: "tab.home" },
   map: { icon: iconMap.Map, labelKey: "tab.map" },
   messages: { icon: iconMap.MessageCircle, labelKey: "tab.messages" },
-  report: { icon: iconMap.Plus, labelKey: "tab.report" },
+  report: { icon: iconMap.Camera, labelKey: "tab.report" },
 }
 
 export const TABS: readonly TabDef[] = TAB_SPECS.map((spec) => ({ ...spec, ...TAB_VISUALS[spec.id] }))
@@ -40,7 +40,7 @@ export const ORB_SIZE = 58
 export const PILL_INSET = 6
 export { TAB_DIVIDER_WIDTH }
 
-export type TabPressHandler = (tab: TabDef, anchor?: CreateMenuAnchor | null) => void
+export type TabPressHandler = (tab: TabDef) => void
 
 export function useTabBarModel(): {
   view: NavView
@@ -56,46 +56,21 @@ export function useTabBarModel(): {
   const activeIndex = activeTabIndex(view)
 
   const onTab = useCallback<TabPressHandler>(
-    (tab, anchor) => {
+    (tab) => {
       if (tab.id === "report") {
-        const opening = !useCreateMenuStore.getState().open
-        useCreateMenuStore.getState().toggle(anchor ?? null)
-        if (opening) haptics.impactLight()
-      } else if (tab.view !== null) {
-        useCreateMenuStore.getState().close()
-        if (tab.view !== useNavStore.getState().view) haptics.selection()
-        selectView(tab.view)
+        haptics.impactLight()
+        openReportFlow()
+        return
       }
+      if (tab.view === null) return
+      if (tab.view !== useNavStore.getState().view) haptics.selection()
+      selectView(tab.view)
     },
     [selectView, haptics],
   )
   const onSearch = useCallback(() => selectView("search"), [selectView])
 
   return { view, activeIndex, searchActive: view === "search", onTab, onSearch }
-}
-
-export type TabRefRegistrar = (id: TabId, node: RNView | null) => void
-
-export function useTabAnchors(onTab: TabPressHandler): {
-  registerTabRef: TabRefRegistrar
-  pressTab: (tab: TabDef) => void
-} {
-  const nodes = useRef(new Map<TabId, RNView | null>())
-  const registerTabRef = useCallback<TabRefRegistrar>((id, node) => {
-    nodes.current.set(id, node)
-  }, [])
-  const pressTab = useCallback(
-    (tab: TabDef) => {
-      const node = tab.id === "report" ? nodes.current.get(tab.id) : null
-      if (!node || typeof node.measureInWindow !== "function") {
-        onTab(tab, null)
-        return
-      }
-      node.measureInWindow((x, y, width, height) => onTab(tab, { x, y, width, height }))
-    },
-    [onTab],
-  )
-  return { registerTabRef, pressTab }
 }
 
 export function useDockedSearchModel() {
@@ -124,25 +99,18 @@ export function TabButton({
   tab,
   active,
   onPress,
-  registerRef,
 }: {
   tab: TabDef
   active: boolean
   onPress: () => void
-  registerRef?: TabRefRegistrar
 }) {
   const styles = useTabBarStyles()
   const th = useTheme()
   const { t } = useT("nav")
   const label = t(tab.labelKey)
   const color = th.colors.textMuted
-  const setNode = useCallback(
-    (node: RNView | null) => registerRef?.(tab.id, node),
-    [registerRef, tab.id],
-  )
   return (
     <Pressable
-      ref={setNode}
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}

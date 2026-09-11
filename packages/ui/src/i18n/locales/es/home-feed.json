@@ -6,25 +6,6 @@
     "claim_available": "Reclamo disponible",
     "system": "civfix"
   },
-  "your_events": {
-    "section": "Tus eventos",
-    "invited_as": "{{name}} te invitó como {{role}}",
-    "invited_by_unknown": "Un anfitrión",
-    "invites_error_title": "No se pudieron cargar las invitaciones",
-    "invites_error_body": "Revisa tu conexión e intenta de nuevo.",
-    "invites_retry": "Intentar de nuevo",
-    "accept": "Aceptar",
-    "accept_a11y": "Aceptar la invitación para ayudar a organizar {{title}}",
-    "decline": "Rechazar",
-    "decline_a11y": "Rechazar la invitación para ayudar a organizar {{title}}",
-    "open_dashboard_a11y": "Abrir el panel de anfitrión de {{title}}",
-    "show_more_one": "Ver {{count}} más",
-    "show_more_other": "Ver {{count}} más",
-    "show_more_a11y_one": "Ver {{count}} evento más que organizas",
-    "show_more_a11y_other": "Ver {{count}} eventos más que organizas",
-    "show_fewer": "Ver menos",
-    "action_error": "No se pudo completar. Revisa tu conexión e inténtalo de nuevo."
-  },
   "feed": {
     "title": "Tu feed",
     "error_title": "No se pudo cargar el feed",
@@ -117,6 +98,8 @@
       "report_failed": "No se pudo enviar la denuncia",
       "reported": "Denuncia enviada"
     },
-    "replying_to": "En respuesta a {{handle}}"
+    "replying_to": "En respuesta a {{handle}}",
+    "via": "vía {{author}}",
+    "org_a11y": "Abrir {{name}}"
   }
 }

@@ -3,8 +3,9 @@ import { View, Pressable, StyleSheet, type ViewStyle } from "react-native"
 import { makeThemedStyles, useTheme, webCursor, webTransition, webHover, focusRingProps } from "../theme"
 import { BlurSurface } from "../surface"
 import { CountBadge } from "./CountBadge"
+import { HEADER_CONTROL_SIZE } from "../bodies/headerControls"
 
-const SIZE = 42
+const SIZE = HEADER_CONTROL_SIZE
 
 export interface GlassButtonProps {
   onPress: () => void

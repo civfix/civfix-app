@@ -46,6 +46,14 @@ export function manageUrl(eventId: string): string {
   return WEB_ORIGIN + managePath(eventId)
 }
 
+export function managePortfolioPath(): string {
+  return "/manage/"
+}
+
+export function manageOrgPath(orgId: string): string {
+  return `/manage/orgs/${encodeURIComponent(orgId)}/overview`
+}
+
 export function orgPagePath(orgSlug: string): string {
   return `/orgs/${encodeURIComponent(orgSlug)}`
 }

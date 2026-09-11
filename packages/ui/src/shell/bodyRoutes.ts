@@ -21,7 +21,6 @@ export type BodyId =
   | "groupInfo"
   | "reportFlow"
   | "clusterReports"
-  | "getVerified"
   | "connections"
   | "leaderboard"
   | "members"
@@ -45,6 +44,7 @@ export type BodyId =
   | "myTicket"
   | "orgPage"
   | "myDonations"
+  | "eventDashboard"
   | "stub"
 
 export const VIEW_BODY: Record<View, BodyId> = {
@@ -75,7 +75,6 @@ export const DETAIL_BODY: Record<DetailKind, BodyId> = {
   "edit-cleanup": "editCleanup",
   cluster: "clusterReports",
   blend: "clusterReports",
-  verify: "getVerified",
   followers: "connections",
   following: "connections",
   leaderboard: "leaderboard",
@@ -102,4 +101,5 @@ export const DETAIL_BODY: Record<DetailKind, BodyId> = {
   "my-ticket": "myTicket",
   org: "orgPage",
   "my-donations": "myDonations",
+  "event-dashboard": "eventDashboard",
 }

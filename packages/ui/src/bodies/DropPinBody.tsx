@@ -91,11 +91,6 @@ export function DropPinBody({ lat, lng }: DropPinBodyProps) {
     seedReport(point)
   }, [point, seedReport])
 
-  const onHost = useCallback(() => {
-    if (!point) return
-    useNavStore.getState().push({ kind: "create-cleanup", lat: point.lat, lng: point.lng })
-  }, [point])
-
   const onCancel = useCallback(() => {
     const nav = useNavStore.getState()
     nav.back()
@@ -141,22 +136,13 @@ export function DropPinBody({ lat, lng }: DropPinBodyProps) {
           </View>
         </View>
       ) : (
-        <>
-          <ActionCard
-            icon={iconMap.Camera}
-            tone={th.colors.brand.bloom}
-            title={t("dropPin.report.title")}
-            sub={t("dropPin.report.sub")}
-            onPress={onReport}
-          />
-          <ActionCard
-            icon={iconMap.Megaphone}
-            tone={th.colors.moss["700"]}
-            title={t("dropPin.host.title")}
-            sub={t("dropPin.host.sub")}
-            onPress={onHost}
-          />
-        </>
+        <ActionCard
+          icon={iconMap.Camera}
+          tone={th.colors.brand.bloom}
+          title={t("dropPin.report.title")}
+          sub={t("dropPin.report.sub")}
+          onPress={onReport}
+        />
       )}
 
       <Pressable

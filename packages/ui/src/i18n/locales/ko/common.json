@@ -36,5 +36,7 @@
     "menu_dismiss": "리포스트 메뉴 닫기",
     "default_title": "CivFix 게시물"
   },
-  "wizard_step_count": "{{total}}단계 중 {{current}}단계"
+  "wizard_step_count": "{{total}}단계 중 {{current}}단계",
+  "verified_badge": "인증됨",
+  "org_affiliation": "{{name}} 소속"
 }

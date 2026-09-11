@@ -1,5 +1,6 @@
 import {
   WebhookSignatureError,
+  type AccountBalance,
   type AccountLink,
   type ApplicationFeeRecord,
   type ApplicationFeeRefund,
@@ -9,9 +10,11 @@ import {
   type CreateAccountLinkInput,
   type CreateConnectedAccountInput,
   type CreateDonationCheckoutInput,
+  type CreatePayoutInput,
   type DonationCheckoutSession,
   type DonationPaymentStatus,
   type DonationSessionStatus,
+  type ListPayoutsInput,
   type PaymentMethodDomainRegistration,
   type PaymentRefundRecord,
   type PaymentSnapshot,
@@ -21,6 +24,7 @@ import {
   type PaymentsPage,
   type PaymentsWebhookEvent,
   type PaymentsWebhookScope,
+  type PayoutRecord,
 } from "../interfaces/payments.js"
 import { constantTimeEqual, hmacSha256Hex } from "./hmac.js"
 
@@ -122,6 +126,9 @@ export class FakePayments implements Payments {
   private readonly domains = new Map<string, PaymentMethodDomainRegistration>()
   private readonly refundedApplicationFeeMinor = new Map<string, number>()
   private readonly refunds: FakeRefund[] = []
+  private readonly payouts: PayoutRecord[] = []
+  private readonly payoutAccounts = new Map<string, string>()
+  private readonly payoutsByIdempotency = new Map<string, string>()
   private readonly secrets: Record<PaymentsWebhookScope, string>
   private readonly clock: () => number
   private readonly processorFee: (amountMinor: number) => number
@@ -406,6 +413,99 @@ export class FakePayments implements Payments {
     return { id: this.nextId("fr"), amountMinor, status: "succeeded" }
   }
 
+  private settledNetMinor(accountId: string): number {
+    return [...this.checkouts.values()]
+      .filter(
+        (checkout) =>
+          checkout.accountId === accountId &&
+          checkout.chargedAtSec !== null &&
+          checkout.stripeFeeMinor !== null,
+      )
+      .reduce(
+        (total, checkout) =>
+          total + checkout.amountMinor - (checkout.stripeFeeMinor ?? 0) - checkout.applicationFeeMinor,
+        0,
+      )
+  }
+
+  private paidOutMinor(accountId: string): number {
+    return this.payouts
+      .filter(
+        (payout) =>
+          this.payoutAccounts.get(payout.id) === accountId &&
+          payout.status !== "failed" &&
+          payout.status !== "canceled",
+      )
+      .reduce((total, payout) => total + payout.amountMinor, 0)
+  }
+
+  private availableMinor(accountId: string): number {
+    return this.settledNetMinor(accountId) - this.paidOutMinor(accountId)
+  }
+
+  async retrieveBalance(accountId: string): Promise<AccountBalance> {
+    const account = this.accountOrThrow(accountId)
+    return {
+      availableMinor: this.availableMinor(accountId),
+      pendingMinor: 0,
+      currency: "usd",
+      payoutsEnabled: account.payoutsEnabled,
+      payoutSchedule: { interval: "manual" },
+    }
+  }
+
+  async createPayout(accountId: string, input: CreatePayoutInput): Promise<PayoutRecord> {
+    const account = this.accountOrThrow(accountId)
+    const requestKey = `${accountId}:${input.idempotencyKey}`
+    const existingId = this.payoutsByIdempotency.get(requestKey)
+    if (existingId !== undefined) {
+      const existing = this.payouts.find((payout) => payout.id === existingId)
+      if (existing === undefined) throw new Error(`FakePayments: unknown payout "${existingId}"`)
+      return existing
+    }
+    if (!account.payoutsEnabled) throw new Error("FakePayments: payouts_not_allowed")
+    if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0) {
+      throw new RangeError("FakePayments: payout amountMinor must be a positive integer")
+    }
+    if (input.amountMinor > this.availableMinor(accountId)) {
+      throw new Error("FakePayments: balance_insufficient")
+    }
+    const payout: PayoutRecord = {
+      id: this.nextId("po"),
+      amountMinor: input.amountMinor,
+      currency: input.currency,
+      status: "pending",
+      arrivalDateSec: null,
+      createdSec: this.nowSec(),
+      failureMessage: null,
+    }
+    this.payouts.push(payout)
+    this.payoutAccounts.set(payout.id, accountId)
+    this.payoutsByIdempotency.set(requestKey, payout.id)
+    return payout
+  }
+
+  async listPayouts(
+    accountId: string,
+    input: ListPayoutsInput,
+  ): Promise<PaymentsPage<PayoutRecord>> {
+    this.accountOrThrow(accountId)
+    const owned = [...this.payouts]
+      .reverse()
+      .filter((payout) => this.payoutAccounts.get(payout.id) === accountId)
+      .sort((a, b) => b.createdSec - a.createdSec)
+    const startingAfter = input.startingAfter ?? null
+    const start =
+      startingAfter === null ? 0 : owned.findIndex((payout) => payout.id === startingAfter) + 1
+    const limit = input.limit ?? FAKE_PAYMENTS_PAGE_LIMIT
+    const page = owned.slice(start, start + limit)
+    const last = page[page.length - 1]
+    return {
+      items: page,
+      nextCursor: last !== undefined && start + page.length < owned.length ? last.id : null,
+    }
+  }
+
   verifyWebhookSignature(
     rawBody: string | Uint8Array,
     signatureHeader: string,
@@ -549,6 +649,9 @@ export class FakePayments implements Payments {
     this.domains.clear()
     this.refundedApplicationFeeMinor.clear()
     this.refunds.length = 0
+    this.payouts.length = 0
+    this.payoutAccounts.clear()
+    this.payoutsByIdempotency.clear()
     this.counter = 0
   }
 }

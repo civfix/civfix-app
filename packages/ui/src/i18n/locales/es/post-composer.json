@@ -56,5 +56,11 @@
     "report": "Adjuntar una denuncia",
     "back": "Atras",
     "dismiss": "Cerrar"
+  },
+  "post_as": {
+    "label": "Publicar como",
+    "personal": "Tú",
+    "a11y": "Publicar como {{name}}",
+    "group_a11y": "Elige de parte de quién es esta publicación"
   }
 }

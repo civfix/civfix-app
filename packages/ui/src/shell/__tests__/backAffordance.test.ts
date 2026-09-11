@@ -127,26 +127,25 @@ describe("showBackAffordance - portrait pull-ups", () => {
       useNavStore.getState().openDetail({ kind, id: "x" })
       expect(gateFromStore()).toBe(true)
     }
-    // "verify" belongs in THIS list now: see the dedicated test below for why it left FLOW_KINDS.
-    for (const kind of ["pin", "cleanup", "post", "cluster", "verify"] as const) {
+    // "event-dashboard" belongs in THIS list: see the dedicated test below for why it is not a flow.
+    for (const kind of ["pin", "cleanup", "post", "cluster", "event-dashboard"] as const) {
       resetCompact()
       useNavStore.getState().openDetail({ kind, id: "x" })
       expect(gateFromStore()).toBe(false)
     }
   })
 
-  it('HIDES back at the root of "verify" - and the drag really does dismiss it, so nobody is trapped', () => {
-    // "Get verified" left FLOW_KINDS: the guard's comment called it "the verification submission form",
-    // which had gone stale - verification is no longer an in-app application and GetVerifiedBody is static
-    // informational content (zero useState / TextInput / mutation). There is no draft to protect.
-    useNavStore.getState().openDetail({ kind: "verify" })
+  it('HIDES back at the root of "event-dashboard" - and the drag really does dismiss it, so nobody is trapped', () => {
+    // The dashboard is not a FLOW_KIND: it holds no draft, so there is nothing for the collapse guard to
+    // protect and the grab-handle drag must really dismiss it.
+    useNavStore.getState().openDetail({ kind: "event-dashboard" })
     expect(useNavStore.getState().stack).toHaveLength(1)
     expect(gateFromStore()).toBe(false)
 
     // THE ASSERTION THAT MAKES THE HIDE SAFE, and the reason this is not just a flipped boolean: with the
     // dock hidden under any sheet detail (bodyLayout's `detailPresentation !== "sheet"`), the grab-handle
     // drag is the SOLE remaining exit - so hiding the chip is only legitimate because `collapseToParent`
-    // now actually dismisses. If a future change re-adds "verify" to FLOW_KINDS, the collapse silently
+    // now actually dismisses. If a future change adds "event-dashboard" to FLOW_KINDS, the collapse silently
     // becomes a no-op again and this line fails rather than shipping a dead-end screen.
     useNavStore.getState().collapseToParent()
     expect(useNavStore.getState().active).toBeNull()
@@ -222,7 +221,7 @@ describe("detailLeadingAffordance - chevron vs close X vs nothing", () => {
   })
 
   it("gives NONE wherever showBackAffordance hides the chip (it is the same gate, refined)", () => {
-    for (const kind of ["pin", "cleanup", "post", "cluster", "verify"] as const) {
+    for (const kind of ["pin", "cleanup", "post", "cluster", "event-dashboard"] as const) {
       resetCompact()
       useNavStore.getState().openDetail({ kind, id: "x" })
       expect(leadingFromStore()).toBe("none")
@@ -253,25 +252,25 @@ describe("detailLeadingAffordance - chevron vs close X vs nothing", () => {
 })
 
 /**
- * The other half of dropping "verify" from FLOW_KINDS: membership is read by `collapseToParent` too, and it
+ * The other half of a kind NOT being in FLOW_KINDS: membership is read by `collapseToParent` too, and it
  * was reading only the TOP entry. That is a different question from "which chip does the header draw", but
  * it is the same list - so a kind leaving the list changed the drag behaviour of every stack that kind can
  * sit on top of, not just its own root. These pin the widened guard.
  */
 describe("the FLOW_KINDS collapse guard covers the WHOLE stack, not just the top entry", () => {
   it("a drag on a child pushed ABOVE the host form no longer ejects the user out of the flow", () => {
-    // THE REGRESSION. CreateCleanupBody's unverified-host disclaimer banner pushes "Get verified" on top of
-    // the half-written event (its `onGetVerified`), so the stack is [create-cleanup, verify]. With "verify"
-    // out of FLOW_KINDS a top-only guard saw an ordinary detail here and collapsed - and a collapse clears
-    // the ENTIRE stack, so the user landed on the Events tab with the host form gone.
+    // THE REGRESSION. An ordinary non-flow detail pushed on top of the half-written event leaves the stack
+    // as [create-cleanup, <detail>]. With that detail out of FLOW_KINDS a top-only guard saw an ordinary
+    // detail here and collapsed - and a collapse clears the ENTIRE stack, so the user landed on the Events
+    // tab with the host form gone.
     useNavStore.getState().selectView("events")
     useNavStore.getState().push({ kind: "create-cleanup" })
-    useNavStore.getState().push({ kind: "verify" })
+    useNavStore.getState().push({ kind: "event-dashboard" })
 
     useNavStore.getState().collapseToParent()
     const s = useNavStore.getState()
-    expect(s.stack).toEqual([{ kind: "create-cleanup" }, { kind: "verify" }])
-    expect(s.active).toEqual({ kind: "verify" })
+    expect(s.stack).toEqual([{ kind: "create-cleanup" }, { kind: "event-dashboard" }])
+    expect(s.active).toEqual({ kind: "event-dashboard" })
     expect(s.view).toBe("events")
     expect(s.originView).toBe("events") // not burned - the flow's real exit still lands where it started
 
@@ -366,7 +365,7 @@ describe("dismissGesture: a surface with no drag always keeps its control", () =
       "cleanup",
       "post",
       "cluster",
-      "verify",
+      "event-dashboard",
       "leaderboard",
       "settings",
       "settings-account",

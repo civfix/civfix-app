@@ -59,6 +59,7 @@ export interface PostComposerDraft {
   attachedReport: LinkedReportRef | null
   media: PostComposerMedia[]
   mode: PostComposerMode
+  organizationId: string | null
   quotePostId: string | null
   replyToPostId: string | null
   /**
@@ -131,6 +132,7 @@ export interface PostComposerState {
   setMediaStatus: (uri: string, status: PostComposerMediaStatus) => void
   removeMedia: (uri: string) => void
   setMode: (mode: PostComposerMode) => void
+  setOrganizationId: (organizationId: string | null) => void
   setQuotePostId: (id: string | null) => void
   setReplyToPostId: (id: string | null) => void
   /**
@@ -160,6 +162,7 @@ function emptyDraft(): PostComposerDraft {
     attachedReport: null,
     media: [],
     mode: "post",
+    organizationId: null,
     quotePostId: null,
     replyToPostId: null,
     pendingCreate: null,
@@ -304,6 +307,9 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
 
   setMode: (mode) => set(replaceDraft((draft) => ({ ...draft, mode }))),
 
+  setOrganizationId: (organizationId) =>
+    set(replaceDraft((draft) => ({ ...draft, organizationId }))),
+
   setQuotePostId: (quotePostId) => set(replaceDraft((draft) => ({ ...draft, quotePostId }))),
 
   setReplyToPostId: (replyToPostId) => set(replaceDraft((draft) => ({ ...draft, replyToPostId }))),
@@ -311,19 +317,20 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
   restore: (draft) => set({ draft: { ...draft } }),
 
   reset: (keep) =>
-    set({
+    set((state) => ({
       // A cleared draft has no create run: whatever was armed or claimed belonged to the post that just
       // went out (or was discarded), and must not survive to route the next one.
       claimedCreate: null,
       draft: keep
         ? {
             ...emptyDraft(),
+            organizationId: state.draft.organizationId,
             mode: keep.mode,
             replyToPostId: keep.mode === "reply" ? (keep.targetPostId ?? null) : null,
             quotePostId: keep.mode === "quote" ? (keep.targetPostId ?? null) : null,
           }
-        : emptyDraft(),
-    }),
+        : { ...emptyDraft(), organizationId: state.draft.organizationId },
+    })),
 }))
 
 /** Lightweight selectors keep components from repeating submission and reference-mode derivation. */

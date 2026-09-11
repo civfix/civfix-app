@@ -43,5 +43,17 @@
     "title": "구성원",
     "joined": "{{when}} 합류",
     "read_only": "이 단체에 누가 속할지는 소유자만 변경할 수 있습니다."
+  },
+  "events": {
+    "upcoming": "예정된 행사",
+    "past": "지난 행사",
+    "empty_upcoming": "아직 예정된 행사가 없어요.",
+    "empty_past": "아직 지난 행사가 없어요.",
+    "loading": "행사를 불러오는 중…",
+    "error": "행사를 불러오지 못했어요.",
+    "show_more": "더 보기",
+    "loading_more": "불러오는 중…",
+    "show_more_upcoming_a11y": "예정된 행사 더 보기",
+    "show_more_past_a11y": "지난 행사 더 보기"
   }
 }

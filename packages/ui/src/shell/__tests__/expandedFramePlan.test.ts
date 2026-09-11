@@ -226,11 +226,17 @@ describe("EXPANDED_MIN_WIDTH: the width the expanded chrome needs before it may 
         MAP_ACTION_GAP * (MAP_ACTION_COUNT - 1) +
         MAP_PROFILE_EXTRA,
     )
-    expect(EXPANDED_RIGHT_ACTIONS_W).toBe(328)
+    expect(EXPANDED_RIGHT_ACTIONS_W).toBe(368)
     expect(mapControls).toContain("export const GLASS_CONTROL_SIZE = MAP_ACTION_SIZE")
+    const plan = readFileSync(new URL("../expandedFramePlan.ts", import.meta.url), "utf8")
+    expect(plan).toContain("export const MAP_ACTION_SIZE = HEADER_CONTROL_SIZE")
+    const glass = readFileSync(new URL("../../primitives/GlassButton.tsx", import.meta.url), "utf8")
+    expect(glass, "the glass button must render the size the plan reserves").toContain(
+      "const SIZE = HEADER_CONTROL_SIZE",
+    )
   })
 
-  it("budgets for the row's WIDEST state - the signed-out pill, not the 42px avatar", () => {
+  it("budgets for the row's WIDEST state - the signed-out pill, not the 52pt avatar", () => {
     expect(MAP_SIGN_IN_PAD_H).toBe(space["4"])
     expect(MAP_SIGN_IN_W).toBe(Math.ceil(MAP_SIGN_IN_PAD_H * 2 + MAP_SIGN_IN_FONT * MAP_SIGN_IN_LABEL_EM))
     expect(MAP_SIGN_IN_W).toBeGreaterThan(MAP_ACTION_SIZE)
@@ -244,7 +250,7 @@ describe("EXPANDED_MIN_WIDTH: the width the expanded chrome needs before it may 
     expect(EXPANDED_MIN_WIDTH).toBe(
       EXPANDED_LEFT_CLUSTER_W + EXPANDED_RIGHT_ACTIONS_W + EXPANDED_CLUSTER_BREATHING,
     )
-    expect(EXPANDED_MIN_WIDTH).toBe(833)
+    expect(EXPANDED_MIN_WIDTH).toBe(873)
     expect(EXPANDED_MIN_WIDTH).toBeGreaterThanOrEqual(
       EXPANDED_LEFT_CLUSTER_W + EXPANDED_RIGHT_ACTIONS_W,
     )

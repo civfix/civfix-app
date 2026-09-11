@@ -7,12 +7,12 @@ import {
   type SocialLinks,
   type UserProfileDTO,
   type CleanupDTO,
+  type OrganizationRefDTO,
 } from "@civfix/shared"
 import { makeThemedStyles, theme, useTheme, noShadow, focusRingProps, headingLevel } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
-  VerifiedBadge,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
@@ -20,6 +20,7 @@ import {
 } from "../primitives"
 import { useNavStore } from "../nav"
 import { useT } from "../i18n"
+import { AffiliationRow } from "./AffiliationRow"
 import { ProfileStatsRow } from "./ProfileStatsRow"
 import {
   PROFILE_DEFAULT_TAB,
@@ -77,8 +78,8 @@ export interface ProfileViewProps {
   onOpenEvent?: (event: CleanupDTO) => void
   onOpenConnections?: (which: "followers" | "following") => void
   actions?: React.ReactNode
-  verified?: boolean
-  verificationSlot?: React.ReactNode
+  organization?: OrganizationRefDTO | null
+  dashboardSlot?: React.ReactNode
   posts?: ProfilePosts
   onOpenSaved?: () => void
   reports?: ProfileReports
@@ -93,8 +94,8 @@ export function ProfileView({
   onOpenEvent,
   onOpenConnections,
   actions,
-  verified,
-  verificationSlot,
+  organization,
+  dashboardSlot,
   posts,
   onOpenSaved,
   reports,
@@ -116,7 +117,7 @@ export function ProfileView({
     consumedNavTabRef.current = navProfileTab
     setRequestedTab(navProfileTab)
   }, [navProfileTab])
-  const isVerified = verified ?? profile.verified ?? false
+  const affiliation = organization ?? profile.organization ?? null
   const heroSub = subtitle ?? (profile.handle ? `@${profile.handle}` : "")
 
   const pastEvents = useProfilePastEvents(profile)
@@ -171,7 +172,6 @@ export function ProfileView({
             <Text style={styles.heroName} numberOfLines={1} accessibilityRole="header" {...headingLevel(2)}>
               {profile.name}
             </Text>
-            {isVerified ? <VerifiedBadge size="md" /> : null}
           </View>
           {heroSub ? (
             <Text style={styles.heroSub} numberOfLines={1}>
@@ -207,6 +207,8 @@ export function ProfileView({
 
       {profile.bio ? <Text style={styles.bio}>{profile.bio}</Text> : null}
 
+      {affiliation ? <AffiliationRow organization={affiliation} style={styles.affiliation} /> : null}
+
       <ProfileStatsRow
         followers={profile.followers}
         following={profile.following}
@@ -216,7 +218,7 @@ export function ProfileView({
 
       <SocialLinksRow links={profile.socialLinks} />
 
-      {verificationSlot ? <View style={styles.verifySlot}>{verificationSlot}</View> : null}
+      {dashboardSlot ? <View style={styles.dashboardSlot}>{dashboardSlot}</View> : null}
 
       {actions ? <View style={styles.actions}>{actions}</View> : null}
 
@@ -333,6 +335,10 @@ const useStyles = makeThemedStyles((t) => ({
     marginTop: HEADER_BLOCK_GAP,
   },
 
+  affiliation: {
+    marginTop: HEADER_BLOCK_GAP,
+  },
+
   socialRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -356,7 +362,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.accentText,
   },
 
-  verifySlot: {
+  dashboardSlot: {
     marginTop: HEADER_CLUSTER_GAP,
   },
 

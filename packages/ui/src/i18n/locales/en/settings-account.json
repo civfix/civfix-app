@@ -9,7 +9,8 @@
   },
   "section": {
     "identity": "Identity",
-    "data": "Your data"
+    "data": "Your data",
+    "affiliation": "Organization"
   },
   "avatar": {
     "change": "Profile photo",
@@ -123,5 +124,13 @@
   "delete_account": {
     "label": "Delete account",
     "sub": "Permanently remove your civfix account"
+  },
+  "affiliation": {
+    "label": "Organization on profile",
+    "helper": "Pick which organization shows next to your name.",
+    "automatic": "Automatic",
+    "automatic_sub": "Use the organization you joined first.",
+    "selected": "Selected",
+    "error": "Couldn't save your organization. Try again."
   }
 }

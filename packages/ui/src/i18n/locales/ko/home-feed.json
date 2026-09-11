@@ -6,23 +6,6 @@
     "claim_available": "참여 가능",
     "system": "civfix"
   },
-  "your_events": {
-    "section": "내 이벤트",
-    "invited_as": "{{name}}님이 {{role}}(으)로 초대했어요",
-    "invited_by_unknown": "주최자",
-    "invites_error_title": "초대를 불러오지 못했어요",
-    "invites_error_body": "연결 상태를 확인하고 다시 시도해 주세요.",
-    "invites_retry": "다시 시도",
-    "accept": "수락",
-    "accept_a11y": "{{title}} 운영을 돕는 초대 수락",
-    "decline": "거절",
-    "decline_a11y": "{{title}} 운영을 돕는 초대 거절",
-    "open_dashboard_a11y": "{{title}} 호스트 대시보드 열기",
-    "show_more_other": "{{count}}개 더 보기",
-    "show_more_a11y_other": "내가 개최하는 이벤트 {{count}}개 더 보기",
-    "show_fewer": "간략히 보기",
-    "action_error": "처리하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요."
-  },
   "feed": {
     "title": "내 피드",
     "error_title": "피드를 불러오지 못했어요",
@@ -111,6 +94,8 @@
       "report_failed": "신고를 보내지 못했어요",
       "reported": "신고를 보냈어요"
     },
-    "replying_to": "{{handle}}님에게 답글"
+    "replying_to": "{{handle}}님에게 답글",
+    "via": "{{author}} 작성",
+    "org_a11y": "{{name}} 열기"
   }
 }

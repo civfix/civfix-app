@@ -39,17 +39,27 @@ import {
   HostedEventDTOSchema,
   MoneyDTOSchema,
   OrganizationDTOSchema,
+  PersonDTOSchema,
   TicketTypeDTOSchema,
 } from "../src/schemas/entities.js"
 import {
+  AcceptMyOrgInviteRequestSchema,
+  AcceptMyOrgInviteResponseSchema,
   AcceptOrganizationInviteRequestSchema,
   AcceptOrganizationInviteResponseSchema,
   CreateOrganizationRequestSchema,
+  DeclineMyOrgInviteRequestSchema,
+  DeclineMyOrgInviteResponseSchema,
   InviteOrganizationMemberResponseSchema,
+  ListMyOrgInvitesResponseSchema,
+  ListOrganizationEventsRequestSchema,
+  ListOrganizationEventsResponseSchema,
   ListOrganizationInvitesResponseSchema,
   MAX_ORG_INVITES_PER_ORG,
   OrganizationInviteDTOSchema,
+  OrganizationInviteStatusSchema,
   OrgSlugSchema,
+  PendingOrganizationInviteDTOSchema,
   RevokeOrganizationInviteRequestSchema,
 } from "../src/schemas/host/organizations.js"
 import { EventQuestionDefSchema } from "../src/schemas/host/questions.js"
@@ -85,6 +95,7 @@ import {
   ListMyEventInvitesResponseSchema,
   PendingEventTeamInviteDTOSchema,
 } from "../src/schemas/host/team.js"
+import { endpoints } from "../src/client/endpoints.js"
 
 const UUID = "123e4567-e89b-12d3-a456-426614174000"
 const UUID2 = "123e4567-e89b-12d3-a456-426614174001"
@@ -104,7 +115,6 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
   it("appends the three host media purposes LAST, in order", () => {
     expect([...MediaPurposeSchema.options]).toEqual([
       "report",
-      "verification",
       "post",
       "event_cover",
       "event_gallery",
@@ -112,9 +122,10 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
     ])
   })
 
-  it("keeps event_broadcast then event_team_invite at the tail of NotificationType and host LAST in SignalTopic", () => {
-    expect(NotificationTypeSchema.options.at(-2)).toBe("event_broadcast")
-    expect(NotificationTypeSchema.options.at(-1)).toBe("event_team_invite")
+  it("keeps event_broadcast, event_team_invite then org_invite at the tail of NotificationType and host LAST in SignalTopic", () => {
+    expect(NotificationTypeSchema.options.at(-3)).toBe("event_broadcast")
+    expect(NotificationTypeSchema.options.at(-2)).toBe("event_team_invite")
+    expect(NotificationTypeSchema.options.at(-1)).toBe("org_invite")
     expect([...SignalTopicSchema.options]).toEqual([
       "notifications",
       "threads",
@@ -245,12 +256,13 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
     ])
   })
 
-  it("enumerates the 18 host capabilities in a stable order", () => {
-    expect(HOST_CAPABILITY_VALUES).toHaveLength(18)
+  it("enumerates the 19 host capabilities in a stable order", () => {
+    expect(HOST_CAPABILITY_VALUES).toHaveLength(19)
     expect(HOST_CAPABILITY_VALUES).toBe(HostCapabilitySchema.options)
     expect(HOST_CAPABILITY_VALUES[0]).toBe("view_event_private")
-    expect(HOST_CAPABILITY_VALUES.at(-2)).toBe("manage_payments")
-    expect(HOST_CAPABILITY_VALUES.at(-1)).toBe("view_donations")
+    expect(HOST_CAPABILITY_VALUES.at(-3)).toBe("manage_payments")
+    expect(HOST_CAPABILITY_VALUES.at(-2)).toBe("view_donations")
+    expect(HOST_CAPABILITY_VALUES.at(-1)).toBe("manage_org_members")
     expect(HostCapabilitySchema.safeParse("delete_everything").success).toBe(false)
   })
 })
@@ -643,7 +655,7 @@ describe("organization invites (0.41.0)", () => {
     )
     expect(
       OrganizationInviteDTOSchema.safeParse({ ...emailInvite, status: "declined" }).success,
-    ).toBe(false)
+    ).toBe(true)
     expect(
       ListOrganizationInvitesResponseSchema.safeParse({ items: [emailInvite] }).success,
     ).toBe(true)
@@ -870,5 +882,102 @@ describe("event collaborators: the coordinator tier and the invitee inbox (DECIS
     ).toBe(false)
     expect(DeclineMyEventInviteResponseSchema.safeParse({ ok: true }).success).toBe(true)
     expect(DeclineMyEventInviteResponseSchema.safeParse({ ok: false }).success).toBe(false)
+  })
+})
+
+describe("organization affiliation, events and the invite inbox (0.43.0)", () => {
+  const orgRef = { id: UUID, slug: "reach-out-la", name: "Reach Out LA" }
+  const person = { id: UUID2, name: "Ada", followers: 0, following: 0, isFollowing: false }
+
+  it("appends declined LAST to OrganizationInviteStatus and keeps every prior position", () => {
+    expect([...OrganizationInviteStatusSchema.options]).toEqual([
+      "pending",
+      "accepted",
+      "revoked",
+      "expired",
+      "declined",
+    ])
+  })
+
+  it("carries the affiliation on PersonDTO and drops the retired verified flag", () => {
+    const parsed = PersonDTOSchema.parse({ ...person, organization: orgRef })
+    expect(parsed.organization?.slug).toBe("reach-out-la")
+    expect(parsed.organization?.verified).toBe(false)
+    expect(PersonDTOSchema.parse({ ...person, organization: null }).organization).toBeNull()
+    expect(PersonDTOSchema.parse(person).organization).toBeUndefined()
+    expect("verified" in PersonDTOSchema.parse(person)).toBe(false)
+  })
+
+  it("defaults ListOrganizationEventsRequest to upcoming and coerces limit from a query string", () => {
+    expect(ListOrganizationEventsRequestSchema.parse({ slug: "reach-out-la" })).toEqual({
+      slug: "reach-out-la",
+      when: "upcoming",
+    })
+    expect(
+      ListOrganizationEventsRequestSchema.parse({ slug: "reach-out-la", when: "past", limit: "10" }),
+    ).toEqual({ slug: "reach-out-la", when: "past", limit: 10 })
+    expect(
+      ListOrganizationEventsRequestSchema.safeParse({ slug: "reach-out-la", limit: 51 }).success,
+    ).toBe(false)
+    expect(
+      ListOrganizationEventsRequestSchema.safeParse({ slug: "reach-out-la", when: "someday" })
+        .success,
+    ).toBe(false)
+    expect(
+      ListOrganizationEventsRequestSchema.safeParse({ slug: "reach-out-la", extra: 1 }).success,
+    ).toBe(false)
+    expect(
+      ListOrganizationEventsResponseSchema.safeParse({ items: [], nextCursor: null }).success,
+    ).toBe(true)
+  })
+
+  it("gives the invitee an org invite row with no email and a required expiry", () => {
+    const invite = {
+      id: UUID,
+      organization: orgRef,
+      role: "member",
+      invitedBy: person,
+      createdAt: ISO,
+      expiresAt: ISO,
+    }
+    expect(PendingOrganizationInviteDTOSchema.safeParse(invite).success).toBe(true)
+    expect(
+      PendingOrganizationInviteDTOSchema.safeParse({ ...invite, invitedBy: null }).success,
+    ).toBe(true)
+    expect(
+      PendingOrganizationInviteDTOSchema.safeParse({ ...invite, expiresAt: undefined }).success,
+    ).toBe(false)
+    expect(PendingOrganizationInviteDTOSchema.safeParse({ ...invite, role: "owner" }).success).toBe(
+      false,
+    )
+    const parsed = PendingOrganizationInviteDTOSchema.parse({
+      ...invite,
+      email: "ada@example.org",
+    })
+    expect("email" in parsed).toBe(false)
+    expect(ListMyOrgInvitesResponseSchema.safeParse({ items: [invite] }).success).toBe(true)
+  })
+
+  it("accepts and declines an org invite by id alone", () => {
+    expect(AcceptMyOrgInviteRequestSchema.parse({ inviteId: UUID })).toEqual({ inviteId: UUID })
+    expect(AcceptMyOrgInviteRequestSchema.safeParse({ inviteId: UUID, token: "t" }).success).toBe(
+      false,
+    )
+    expect(DeclineMyOrgInviteRequestSchema.safeParse({ inviteId: "nope" }).success).toBe(false)
+    expect(DeclineMyOrgInviteResponseSchema.safeParse({ ok: true }).success).toBe(true)
+    expect(DeclineMyOrgInviteResponseSchema.safeParse({ ok: false }).success).toBe(false)
+    expect(AcceptMyOrgInviteResponseSchema).toBe(AcceptOrganizationInviteResponseSchema)
+  })
+
+  it("registers the org events read and the invite inbox trio", () => {
+    expect(endpoints.listOrganizationEvents.path).toBe("/orgs/by-slug/:slug/events")
+    expect(endpoints.listOrganizationEvents.auth).toBe("optional")
+    expect(endpoints.listOrganizationEvents.csrf).toBe(false)
+    expect(endpoints.listMyOrgInvites.path).toBe("/me/org-invites")
+    expect(endpoints.listMyOrgInvites.method).toBe("GET")
+    expect(endpoints.acceptMyOrgInvite.path).toBe("/me/org-invites/:inviteId/accept")
+    expect(endpoints.acceptMyOrgInvite.csrf).toBe(true)
+    expect(endpoints.declineMyOrgInvite.path).toBe("/me/org-invites/:inviteId/decline")
+    expect(endpoints.declineMyOrgInvite.csrf).toBe(true)
   })
 })

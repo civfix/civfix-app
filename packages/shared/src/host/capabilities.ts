@@ -57,11 +57,13 @@ const ORG_OWNER_CAPABILITIES: readonly HostCapability[] = [
   ...ORGANIZER_CAPABILITIES,
   "manage_payments",
   "view_donations",
+  "manage_org_members",
 ]
 
 const ORG_ADMIN_CAPABILITIES: readonly HostCapability[] = [
   ...COHOST_CAPABILITIES.filter((cap) => cap !== "export"),
   "view_donations",
+  "manage_org_members",
 ]
 
 const EVENT_ROLE_CAPABILITIES: Readonly<Record<CleanupMemberRole, readonly HostCapability[]>> = {

@@ -9,14 +9,6 @@ export interface TimingRecipe {
   readonly duration: number
   readonly easing: EaseTuple
 }
-export interface SpringRecipe {
-  readonly mass: number
-  readonly stiffness: number
-  readonly damping: number
-  readonly overshootClamping: boolean
-  readonly energyThreshold: number
-}
-
 export const MOTION = {
   easing: EASE_STANDARD,
   easingCss: EASE_STANDARD_CSS,
@@ -46,13 +38,7 @@ export const MOTION = {
   menuOut: { duration: 120, easing: EASE_STANDARD } as TimingRecipe,
   menuScaleFrom: 0.95,
 
-  dockMorphIn: {
-    mass: 1,
-    stiffness: 90,
-    damping: 13,
-    overshootClamping: false,
-    energyThreshold: 1e-4,
-  } as SpringRecipe,
+  dockMorphIn: { duration: 200, easing: EASE_STANDARD } as TimingRecipe,
   dockMorphOut: { duration: 200, easing: EASE_STANDARD } as TimingRecipe,
   dockFocus: { duration: 200, easing: EASE_STANDARD } as TimingRecipe,
   dockMinimize: { duration: 200, easing: EASE_STANDARD } as TimingRecipe,

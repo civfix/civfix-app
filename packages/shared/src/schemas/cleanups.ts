@@ -113,6 +113,26 @@ export const UpdateCleanupRequestSchema = z
   .strict()
 export type UpdateCleanupRequest = z.infer<typeof UpdateCleanupRequestSchema>
 
+/**
+ * POST /cleanups/:id/duplicate (0.43.0, DECISIONS §34). Copies the source event's content into a
+ * NEW draft at `scheduledAt`; the copy resets everything that identifies the original occurrence -
+ * page slug, reference code, status, counts - and carries no registrations, no team and no
+ * broadcasts. `id` consumes the path param. The three include flags are the only choices: ticket
+ * types and registration questions travel with a recurring event, a published event PAGE does not
+ * (it has its own slug and its own analytics), so it defaults off.
+ */
+export const DuplicateCleanupRequestSchema = z
+  .object({
+    id: IdSchema,
+    scheduledAt: ISODateSchema,
+    endsAt: ISODateSchema.nullable().optional(),
+    includeTicketTypes: z.boolean().default(true),
+    includeQuestions: z.boolean().default(true),
+    includePage: z.boolean().default(false),
+  })
+  .strict()
+export type DuplicateCleanupRequest = z.infer<typeof DuplicateCleanupRequestSchema>
+
 export const CancelCleanupRequestSchema = z
   .object({
     id: IdSchema,

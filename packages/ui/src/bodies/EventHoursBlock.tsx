@@ -14,18 +14,12 @@ export interface EventHoursBlockProps {
   cleanupId: string
   actsAsHost: boolean
   joined: boolean
-  identityVerified: boolean
-  verificationLoaded: boolean
-  onGetVerified: () => void
 }
 
 export function EventHoursBlock({
   cleanupId,
   actsAsHost,
   joined,
-  identityVerified,
-  verificationLoaded,
-  onGetVerified,
 }: EventHoursBlockProps) {
   const { user } = useAuthState()
   const hoursQuery = useEventHours(cleanupId)
@@ -33,14 +27,6 @@ export function EventHoursBlock({
   const entries = useMemo<readonly LoggedHoursEntry[]>(() => data?.entries ?? [], [data])
 
   if (actsAsHost) {
-    if (!identityVerified) {
-      if (!verificationLoaded) return null
-      return (
-        <FadeUp>
-          <VerifyGate onGetVerified={onGetVerified} />
-        </FadeUp>
-      )
-    }
     if (data === undefined && !hoursQuery.isError) return null
     return (
       <FadeUp>
@@ -111,24 +97,6 @@ function FadeUp({ children }: { children: React.ReactNode }) {
   )
 }
 
-function VerifyGate({ onGetVerified }: { onGetVerified: () => void }) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("event-detail")
-  return (
-    <Pressable
-      onPress={onGetVerified}
-      accessibilityRole="button"
-      accessibilityLabel={t("log_hours.verify_gate_a11y")}
-      {...focusRingProps}
-      style={({ pressed }) => [styles.verifyNote, pressed ? styles.pressed : null]}
-    >
-      <Icon icon={iconMap.Lock} size={15} color={th.colors.sky["700"]} />
-      <Text style={styles.verifyNoteText}>{t("log_hours.verify_gate")}</Text>
-      <Icon icon={iconMap.ChevronRight} size={16} color={th.colors.sky["700"]} />
-    </Pressable>
-  )
-}
 
 function HostHours({
   cleanupId,

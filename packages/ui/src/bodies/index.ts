@@ -44,11 +44,9 @@ export { PostCard } from "./PostCard"
 export { LinkedEventCard } from "./LinkedEventCard"
 export { PostComposer } from "./PostComposer"
 export {
-  hostFormNavEscape,
   openReportFlow,
   stackAfterComposerReturn,
 } from "./composerCreateFlow"
-export type { HostFormNavEscape } from "./composerCreateFlow"
 export { PostThreadBody } from "./PostThreadBody"
 export { PostMediaGrid, mediaAspect } from "./PostMediaGrid"
 export type { PostMediaGridProps } from "./PostMediaGrid"
@@ -241,7 +239,6 @@ export { ReportFlowBody } from "./ReportFlowBody"
 export { DropPinBody } from "./DropPinBody"
 export type { DropPinBodyProps } from "./DropPinBody"
 
-export { GetVerifiedBody } from "./GetVerifiedBody"
 
 export { AddressSearch } from "./AddressSearch"
 export type { AddressSearchProps, AddressPick } from "./AddressSearch"
@@ -254,11 +251,3 @@ export type { RoleChipProps, RoleChipTone } from "./RoleChip"
 export * from "./host"
 export { openHostDashboard } from "./hostDashboardTarget"
 export type { HostDashboardTarget } from "./hostDashboardTarget.types"
-
-export { YourEventsSection } from "./feed/YourEventsSection"
-export {
-  YOUR_EVENTS_COLLAPSED_COUNT,
-  buildYourEventsModel,
-  yourEventsSectionVisible,
-} from "./feed/yourEventsModel"
-export type { YourEventsInput, YourEventsModel } from "./feed/yourEventsModel"

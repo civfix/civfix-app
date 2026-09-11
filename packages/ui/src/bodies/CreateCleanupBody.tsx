@@ -17,14 +17,12 @@ import {
   SkeletonBlock,
   SkeletonGroup,
   SkeletonText,
-  VerificationNotice,
   useToast,
 } from "../primitives"
 import {
   useCreateCleanup,
   useAuthState,
   useRequireAuth,
-  useMyVerification,
   useReport,
   useReverseLabel,
   reverseLabelText,
@@ -50,7 +48,7 @@ import {
   type HostDraftMountPlan,
   type HostSeedPoint,
 } from "./cleanupDraftExit"
-import { hostFormNavEscape, stackAfterFlowPublished } from "./composerCreateFlow"
+import { stackAfterFlowPublished } from "./composerCreateFlow"
 import { useDroppedPin } from "../map/droppedPinStore"
 import {
   CleanupForm,
@@ -258,10 +256,12 @@ function ReviewSummary({
 function HostForm({
   seedReportId,
   seedPoint,
+  seedOrganizationId,
   standalone,
 }: {
   seedReportId?: string
   seedPoint?: HostSeedPoint
+  seedOrganizationId?: string
   standalone?: CreateCleanupStandaloneHost
 }) {
   const { ScrollView } = useScrollHost()
@@ -274,9 +274,6 @@ function HostForm({
   const toast = useToast()
   const geo = useGeolocation()
   const haptics = useHaptics()
-  const verification = useMyVerification()
-  const verificationStatus = verification.data?.verification.status
-
   const [initialCenter, setInitialCenter] = useState<LatLng | null>(
     seedPoint ? { lat: seedPoint.lat, lng: seedPoint.lng } : null,
   )
@@ -303,8 +300,11 @@ function HostForm({
 
   const [mountPlan] = useState<HostDraftMountPlan>(() => {
     const initial: CleanupFormValue = seedPoint
-      ? { ...emptyCleanupForm(seedReportId), coords: { lat: seedPoint.lat, lng: seedPoint.lng } }
-      : emptyCleanupForm(seedReportId)
+      ? {
+          ...emptyCleanupForm(seedReportId, seedOrganizationId),
+          coords: { lat: seedPoint.lat, lng: seedPoint.lng },
+        }
+      : emptyCleanupForm(seedReportId, seedOrganizationId)
     const { active, value } = useCleanupDraft.getState()
     return planHostDraftMount({ active, value }, seedReportId, draftSeedReportId, initial, seedPoint)
   })
@@ -316,7 +316,8 @@ function HostForm({
     setDraftCommitted(true)
   }, [mountPlan])
   const liveDraft = useCleanupDraft((s) => s.value)
-  const form = (draftCommitted ? liveDraft : mountPlan.value) ?? emptyCleanupForm(seedReportId)
+  const form =
+    (draftCommitted ? liveDraft : mountPlan.value) ?? emptyCleanupForm(seedReportId, seedOrganizationId)
   const setForm = (next: CleanupFormValue) => useCleanupDraft.getState().patch(next)
 
   useEffect(() => {
@@ -423,6 +424,7 @@ function HostForm({
         ...(form.bring.length > 0 ? { bring: form.bring } : {}),
         ...(linkedReportIds ? { linkedReportIds } : {}),
         ...(slots.length > 0 ? { slots } : {}),
+        ...(form.organizationId ? { organizationId: form.organizationId } : {}),
       },
       {
         onSuccess: (cleanup) => {
@@ -477,37 +479,6 @@ function HostForm({
     )
   }, [canPublish, create, createPostAsync, form, haptics, scheduledAt, standalone, t, tShare, toast])
 
-  const hostGetVerified = standalone?.onGetVerified
-  const verifyEscape = hostFormNavEscape({
-    standalone: standalone !== undefined,
-    hasHostCallback: hostGetVerified !== undefined,
-  })
-  const pushVerifyEntry = useCallback(() => {
-    useNavStore.getState().push({ kind: "verify" })
-  }, [])
-  const onGetVerified =
-    verifyEscape === "nav-store" ? pushVerifyEntry : verifyEscape === "host" ? hostGetVerified : undefined
-
-  let verificationBanner: React.ReactNode = null
-  if (verificationStatus === "verified") {
-    verificationBanner = (
-      <VerificationNotice verified message={t("verification.verified")} />
-    )
-  } else if (verificationStatus === "pending") {
-    verificationBanner = (
-      <VerificationNotice verified={false} message={t("verification.pending")} />
-    )
-  } else if (verificationStatus === "unverified" || verificationStatus === "rejected") {
-    verificationBanner = (
-      <VerificationNotice
-        verified={false}
-        message={t("verification.unverified")}
-        onPress={onGetVerified}
-        accessibilityLabel={t("verification.getVerified")}
-      />
-    )
-  }
-
   return (
     <ScrollView
       ref={scrollRef}
@@ -530,8 +501,6 @@ function HostForm({
       <StepTransition transitionKey={step} direction={stepDirection} style={styles.stepHost}>
         {isReview ? (
           <>
-            {verificationBanner}
-
             <ReviewSummary value={form} onEdit={editStep} />
 
             <CleanupForm
@@ -646,7 +615,6 @@ function HostForm({
 
 export interface CreateCleanupStandaloneHost {
   onComposerReturn: () => void
-  onGetVerified?: () => void
 }
 
 export interface CreateCleanupBodyProps {
@@ -661,8 +629,10 @@ export function CreateCleanupBody({ standalone }: CreateCleanupBodyProps = {}) {
   const navSeedReportId = useNavStore((s) => s.active?.reportId)
   const navSeedLat = useNavStore((s) => s.active?.lat)
   const navSeedLng = useNavStore((s) => s.active?.lng)
+  const navSeedOrganizationId = useNavStore((s) => s.active?.organizationId)
   const isStandalone = standalone !== undefined
   const seedReportId = isStandalone ? undefined : navSeedReportId
+  const seedOrganizationId = isStandalone ? undefined : navSeedOrganizationId
   const seedPoint = useMemo<HostSeedPoint | undefined>(
     () =>
       !isStandalone && navSeedLat != null && navSeedLng != null
@@ -702,6 +672,7 @@ export function CreateCleanupBody({ standalone }: CreateCleanupBodyProps = {}) {
         {...(standalone ? { standalone } : {})}
         {...(seedReportId ? { seedReportId } : {})}
         {...(seedPoint ? { seedPoint } : {})}
+        {...(seedOrganizationId ? { seedOrganizationId } : {})}
       />
     </ScrollHostProvider>
   )

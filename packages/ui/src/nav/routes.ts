@@ -121,8 +121,8 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
     case "channels":
       if (id === "new") return { kind: "new-channel" }
       return null
-    case "verify":
-      return { kind: "verify" }
+    case "dashboard":
+      return { kind: "event-dashboard" }
     case "post":
       if (id && parts[2] === "thread") return { kind: "post-thread", id }
       return id ? { kind: "post", id } : null
@@ -211,8 +211,8 @@ export function pathForEntry(entry: DetailEntry | null): string {
       return "/settings/language"
     case "appearance-settings":
       return "/settings/appearance"
-    case "verify":
-      return "/verify"
+    case "event-dashboard":
+      return "/dashboard"
     case "new-group":
       return "/groups/new"
     case "new-channel":
@@ -326,8 +326,8 @@ export function titleForEntry(entry: DetailEntry | null): string {
       return "title.org"
     case "my-donations":
       return "title.my_donations"
-    case "verify":
-      return "title.verify"
+    case "event-dashboard":
+      return "title.event_dashboard"
     case "cluster":
       return "title.cluster"
     case "blend":

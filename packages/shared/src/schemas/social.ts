@@ -151,6 +151,9 @@ export const UpdateSettingsRequestSchema = z
     // the public profile omits volunteerHours AND the per-event breakdown, and the user drops out of
     // the public jurisdiction leaderboard. The OWNER's own profile always shows their hours.
     showVolunteerHours: z.boolean().optional(),
+    // 0.43.0: which organization the profile publishes as the affiliation badge. Must be an org the
+    // user is a member of; null clears the pin and falls back to the earliest membership.
+    primaryOrganizationId: IdSchema.nullable().optional(),
   })
   .strict()
 export type UpdateSettingsRequest = z.infer<typeof UpdateSettingsRequestSchema>

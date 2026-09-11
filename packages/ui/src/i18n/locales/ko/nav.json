@@ -21,7 +21,6 @@
     "settings_privacy": "개인정보 및 안전",
     "create_cleanup": "이벤트 만들기",
     "edit_cleanup": "이벤트 수정",
-    "verify": "인증받기",
     "leaderboard": "리더보드",
     "cluster_other": "신고 {{count}}건",
     "members": "멤버",
@@ -38,19 +37,15 @@
     "host_team": "팀",
     "my_ticket": "내 티켓",
     "org": "단체",
-    "my_donations": "내 후원 내역"
+    "my_donations": "내 후원 내역",
+    "event_dashboard": "이벤트 대시보드"
   },
   "tab": {
     "home": "홈",
     "map": "지도",
     "messages": "메시지",
-    "report": "만들기",
+    "report": "신고",
     "search": "검색"
-  },
-  "create": {
-    "report": "신고 작성",
-    "event": "이벤트 만들기",
-    "post": "게시물 작성"
   },
   "placeholder": {
     "people": "사람 검색",
@@ -64,9 +59,7 @@
     "settings": "설정",
     "home": "홈",
     "resize_sidebar": "사이드바 크기 조절",
-    "drag_handle": "드래그 핸들",
-    "create_menu": "만들기",
-    "dismiss_create_menu": "만들기 메뉴 닫기"
+    "drag_handle": "드래그 핸들"
   },
   "fallback_you": "나"
 }

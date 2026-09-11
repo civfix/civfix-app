@@ -7,6 +7,13 @@ import { useAuthState, useRequireAuth } from "../data"
 import { useNavStore } from "../nav"
 import { headerAuthAffordance } from "../shell/headerAuthAffordance"
 import { useT } from "../i18n"
+import {
+  HEADER_AVATAR_SIZE,
+  HEADER_BADGED_AVATAR_SIZE,
+  HEADER_CONTROL_RADIUS,
+  HEADER_CONTROL_SIZE,
+  HEADER_GLYPH_SIZE,
+} from "./headerControls"
 
 export interface HeaderProfileButtonProps {
   surface?: "glass" | "solid"
@@ -39,7 +46,7 @@ export function HeaderProfileButton({ surface = "glass" }: HeaderProfileButtonPr
         style={({ pressed }) => [styles.target, pressed ? styles.pressed : null]}
       >
         <View style={[styles.signInBadge, surface === "solid" ? styles.solid : null]}>
-          <Icon icon={iconMap.LogIn} size={18} color={th.colors.text} />
+          <Icon icon={iconMap.LogIn} size={HEADER_GLYPH_SIZE} color={th.colors.text} />
         </View>
       </Pressable>
     )
@@ -51,7 +58,7 @@ export function HeaderProfileButton({ surface = "glass" }: HeaderProfileButtonPr
       seed={user?.id}
       photoUrl={user?.avatarUrl ?? null}
       gradient={null}
-      size={surface === "solid" ? 36 : 38}
+      size={surface === "solid" ? HEADER_BADGED_AVATAR_SIZE : HEADER_AVATAR_SIZE}
     />
   )
 
@@ -73,7 +80,13 @@ export function HeaderProfileButton({ surface = "glass" }: HeaderProfileButtonPr
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  target: { width: 44, height: 44, alignItems: "center", justifyContent: "center", borderRadius: 22 },
+  target: {
+    width: HEADER_CONTROL_SIZE,
+    height: HEADER_CONTROL_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: HEADER_CONTROL_RADIUS,
+  },
   avatarButton: { ...t.shadows.s1 },
   solid: {
     backgroundColor: t.colors.surface,
@@ -81,9 +94,9 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
   },
   signInBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: HEADER_CONTROL_SIZE,
+    height: HEADER_CONTROL_SIZE,
+    borderRadius: HEADER_CONTROL_RADIUS,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: t.glass.sheet.input,

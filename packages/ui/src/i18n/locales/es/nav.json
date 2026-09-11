@@ -21,7 +21,6 @@
     "settings_privacy": "Privacidad y seguridad",
     "create_cleanup": "Organizar un evento",
     "edit_cleanup": "Editar evento",
-    "verify": "Verificarse",
     "leaderboard": "Clasificación",
     "cluster_one": "{{count}} denuncia",
     "cluster_other": "{{count}} denuncias",
@@ -39,19 +38,15 @@
     "host_team": "Equipo",
     "my_ticket": "Tu entrada",
     "org": "Organización",
-    "my_donations": "Tus donaciones"
+    "my_donations": "Tus donaciones",
+    "event_dashboard": "Panel de eventos"
   },
   "tab": {
     "home": "Inicio",
     "map": "Mapa",
     "messages": "Mensajes",
-    "report": "Crear",
+    "report": "Reportar",
     "search": "Buscar"
-  },
-  "create": {
-    "report": "Crear un reporte",
-    "event": "Crear un evento",
-    "post": "Crear una publicación"
   },
   "placeholder": {
     "people": "Buscar personas",
@@ -65,9 +60,7 @@
     "settings": "Ajustes",
     "home": "Inicio",
     "resize_sidebar": "Redimensionar barra lateral",
-    "drag_handle": "Controlador de arrastre",
-    "create_menu": "Crear",
-    "dismiss_create_menu": "Cerrar el menú de creación"
+    "drag_handle": "Controlador de arrastre"
   },
   "fallback_you": "Tú"
 }

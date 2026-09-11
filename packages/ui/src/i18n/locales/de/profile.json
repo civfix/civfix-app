@@ -7,9 +7,8 @@
     "title": "Profil konnte nicht geladen werden",
     "body": "civfix ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
   },
-  "verification": {
-    "verified": "Verifizierter Community-Organisator",
-    "get_verified": "Jetzt verifizieren",
-    "get_verified_sub": "Vertrauen in der Nachbarschaft aufbauen"
+  "dashboard": {
+    "title": "Event-Dashboard",
+    "sub": "Deine Events, Auswertungen und Werkzeuge"
   }
 }

@@ -141,6 +141,44 @@ export interface ApplicationFeeRecord {
   livemode: boolean
 }
 
+export interface AccountBalance {
+  availableMinor: number
+  pendingMinor: number
+  currency: string
+  payoutsEnabled: boolean
+  payoutSchedule: PayoutSchedule | null
+}
+
+export type PayoutInterval = "daily" | "weekly" | "monthly" | "manual"
+
+export interface PayoutSchedule {
+  interval: PayoutInterval
+  delayDays?: number
+}
+
+export type PayoutRecordStatus = "pending" | "in_transit" | "paid" | "failed" | "canceled"
+
+export interface PayoutRecord {
+  id: string
+  amountMinor: number
+  currency: string
+  status: PayoutRecordStatus
+  arrivalDateSec: number | null
+  createdSec: number
+  failureMessage: string | null
+}
+
+export interface CreatePayoutInput {
+  amountMinor: number
+  currency: string
+  idempotencyKey: string
+}
+
+export interface ListPayoutsInput {
+  limit?: number
+  startingAfter?: string | null
+}
+
 export interface PaymentsWebhookEvent {
   id: string
   type: string
@@ -185,6 +223,9 @@ export interface Payments {
     amountMinor: number,
     idempotencyKey: string,
   ): Promise<ApplicationFeeRefund>
+  retrieveBalance(accountId: string): Promise<AccountBalance>
+  createPayout(accountId: string, input: CreatePayoutInput): Promise<PayoutRecord>
+  listPayouts(accountId: string, input: ListPayoutsInput): Promise<PaymentsPage<PayoutRecord>>
   verifyWebhookSignature(
     rawBody: string | Uint8Array,
     signatureHeader: string,

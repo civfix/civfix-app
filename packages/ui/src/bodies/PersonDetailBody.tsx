@@ -13,7 +13,6 @@ import {
   MetaDot,
   FollowButton,
   EmptyState,
-  VerifiedBadge,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
@@ -44,6 +43,7 @@ import {
   detailTitleStyle,
 } from "../shell/detailHeader"
 import { pushCleanup } from "./navHelpers"
+import { AffiliationRow } from "./AffiliationRow"
 import { ProfileStatsRow } from "./ProfileStatsRow"
 import { PostCard } from "./PostCard"
 import { ProfileTabBar } from "./profile/ProfileTabBar"
@@ -423,7 +423,6 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
               <Text style={styles.name} numberOfLines={1}>
                 {profile.name}
               </Text>
-              {profile.verified ? <VerifiedBadge size="md" /> : null}
             </View>
             {profile.handle ? (
               <View style={styles.handleRow}>
@@ -438,6 +437,10 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
               </Text>
             ) : null}
           </View>
+
+          {profile.organization ? (
+            <AffiliationRow organization={profile.organization} style={styles.affiliation} />
+          ) : null}
 
           <ProfileStatsRow
             followers={profile.followers}
@@ -799,6 +802,10 @@ const useStyles = makeThemedStyles((t) => ({
     marginTop: 8,
     textAlign: "center",
     maxWidth: 320,
+  },
+  affiliation: {
+    marginTop: t.space["3"],
+    marginHorizontal: t.space["4"],
   },
 
   actions: {

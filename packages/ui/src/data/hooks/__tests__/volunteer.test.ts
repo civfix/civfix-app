@@ -123,8 +123,20 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
     expect(fn).toContain(
       "patchCleanupInFlatLists(qc, cleanupId, { joined: res.joined, going: res.going })",
     )
-    expect(fn).toContain("queryKey: CLEANUPS_LIST_PREFIX")
+    expect(fn).toContain("invalidateCleanupLists(qc)")
     expect(fn).toContain("queryKeys.cleanupAttendees(cleanupId)")
+  })
+
+  it("the shared list invalidation reaches the ORG page's event sections, not just the map lists", () => {
+    // An org-hosted event is listed twice: under ["cleanups"] and under the org page's own
+    // ["org-events"] key. Invalidating only the first left an org's Upcoming/Past sections showing an
+    // event that had since been edited, cancelled or duplicated.
+    const helper = cleanupsSource.slice(
+      cleanupsSource.indexOf("function invalidateCleanupLists"),
+      cleanupsSource.indexOf("export function useCleanups"),
+    )
+    expect(helper).toContain("queryKey: CLEANUPS_LIST_PREFIX")
+    expect(helper).toContain("queryKey: queryKeys.orgEventsRoot")
   })
 
   it("completing an event invalidates the detail (every alias), the list prefix, the ROSTER and the hours read-back", () => {
@@ -136,7 +148,7 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
       cleanupsSource.indexOf("export interface ClaimEventSlotVars"),
     )
     expect(fn).toContain("cleanupDetailFilters(id)")
-    expect(fn).toContain("CLEANUPS_LIST_PREFIX")
+    expect(fn).toContain("invalidateCleanupLists(qc)")
     expect(fn).toContain("queryKeys.eventHours(id)")
     // Completion is what mounts the hours editor, and that editor renders one row per attendee joined
     // from this key - a roster cached before the last RSVPs leaves the host with nobody to credit.

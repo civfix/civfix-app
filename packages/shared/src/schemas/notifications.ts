@@ -23,6 +23,7 @@ export const NotificationTypeSchema = z.enum([
   "hours_logged",
   "event_broadcast",
   "event_team_invite",
+  "org_invite",
 ])
 export type NotificationType = z.infer<typeof NotificationTypeSchema>
 

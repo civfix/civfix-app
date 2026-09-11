@@ -24,6 +24,8 @@ const UUID = "00000000-0000-0000-0000-000000000001"
 
 const UUID2 = "00000000-0000-0000-0000-000000000002"
 
+const UUID3 = "00000000-0000-0000-0000-000000000003"
+
 describe("LogEventHoursRequestSchema (per-attendee entries)", () => {
   it("accepts the merged { id, entries } body the route parses (path id folded in)", () => {
     const parsed = LogEventHoursRequestSchema.parse({
@@ -165,16 +167,22 @@ describe("volunteer hours transcript DTOs", () => {
       reportId: null,
       jurisdictionGeoid: "0644000",
       jurisdictionName: "Los Angeles, CA",
-      creditedBy: { id: UUID2, name: "Ada", handle: "ada", verified: true },
+      creditedBy: {
+        id: UUID2,
+        name: "Ada",
+        handle: "ada",
+        organization: { id: UUID3, slug: "surfrider", name: "Surfrider" },
+      },
     })
     expect(parsed.creditedBy?.name).toBe("Ada")
+    expect(parsed.creditedBy?.organization?.slug).toBe("surfrider")
     expect(parsed.eventReferenceCode).toBe("DU-42-000001")
   })
 
   it("VolunteerHoursCreditor is not a PersonDTO - no follower counts required", () => {
     const parsed = VolunteerHoursCreditorSchema.parse({ id: UUID, name: "Ada" })
     expect(parsed.handle).toBeUndefined()
-    expect(parsed.verified).toBeUndefined()
+    expect(parsed.organization).toBeUndefined()
   })
 })
 

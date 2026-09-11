@@ -7,7 +7,7 @@ import { Text, Icon, iconMap } from "../typography"
 import { useT, useLocale } from "../i18n"
 import { Avatar } from "./Avatar"
 import { DateBadge } from "./DateBadge"
-import { VerifiedBadge } from "./VerifiedBadge"
+import { OrgAffiliationBadge } from "./OrgAffiliationBadge"
 
 export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: () => void }) {
   const styles = useStyles()
@@ -76,7 +76,11 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
               {cleanup.organizer.name}
             </Text>
           </Text>
-          {cleanup.organizer.verified ? <VerifiedBadge size="sm" /> : null}
+          {cleanup.organization ? (
+            <OrgAffiliationBadge organization={cleanup.organization} size="sm" interactive={false} />
+          ) : cleanup.organizer.organization ? (
+            <OrgAffiliationBadge organization={cleanup.organizer.organization} size="sm" interactive={false} />
+          ) : null}
         </View>
       </View>
     </Pressable>

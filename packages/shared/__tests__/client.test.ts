@@ -18,7 +18,7 @@ function jsonResponse(
 describe("endpoint registry", () => {
   it("covers the full Phase 1 + admin surface with unique paths per method", () => {
     const names = Object.keys(endpoints)
-    expect(names.length).toBe(337)
+    expect(names.length).toBe(343)
     const seen = new Set<string>()
     for (const name of names) {
       const e = endpoints[name as keyof typeof endpoints]
@@ -29,11 +29,11 @@ describe("endpoint registry", () => {
     }
   })
 
-  it("registers exactly 108 admin endpoints under /admin", () => {
+  it("registers exactly 107 admin endpoints under /admin", () => {
     const adminNames = Object.keys(endpoints).filter((n) =>
       endpoints[n as keyof typeof endpoints].path.startsWith("/admin"),
     )
-    expect(adminNames.length).toBe(108)
+    expect(adminNames.length).toBe(107)
   })
 
   it("registers GET /map/cleanups as an optional, csrf-free endpoint", () => {

@@ -22,12 +22,25 @@ const t = ((key: string) => {
 }) as unknown as TFunction
 
 describe("FeedBody feed model", () => {
-  it("titles the root from the catalog and offers the composer only to a signed-in reader", () => {
-    expect(buildFeedHeaderModel({ isAuthenticated: true }, t)).toEqual({
+  it("titles the root from the catalog and offers a composer only to a signed-in reader", () => {
+    expect(buildFeedHeaderModel({ isAuthenticated: true, layout: "compact" }, t)).toEqual({
       title: "Your Feed",
       showComposer: true,
+      showInlineComposer: false,
     })
-    expect(buildFeedHeaderModel({ isAuthenticated: false }, t).showComposer).toBe(false)
+    for (const layout of ["compact", "expanded"] as const) {
+      const model = buildFeedHeaderModel({ isAuthenticated: false, layout }, t)
+      expect(model.showComposer).toBe(false)
+      expect(model.showInlineComposer).toBe(false)
+    }
+  })
+
+  it("swaps the header glyph for the inline card when the shell is expanded", () => {
+    expect(buildFeedHeaderModel({ isAuthenticated: true, layout: "expanded" }, t)).toEqual({
+      title: "Your Feed",
+      showComposer: false,
+      showInlineComposer: true,
+    })
   })
 
   it("uses a 200ms ease-out transition unless reduced motion is enabled", () => {
@@ -120,12 +133,20 @@ describe("the feed header's compose control", () => {
     }
   })
 
-  it("clears 44pt with the 38pt chip the profile control already uses", () => {
-    expect(BUTTON_SOURCE).toContain("export const HEADER_ICON_BUTTON_TARGET = 44")
-    expect(BUTTON_SOURCE).toContain("export const HEADER_ICON_BUTTON_CHIP = 38")
+  it("draws the one 52pt control the profile button and every other top row use", () => {
+    const controls = readFileSync(new URL("../headerControls.ts", import.meta.url), "utf8")
+    expect(controls).toContain("export const HEADER_CONTROL_SIZE = 52")
+    expect(controls).toContain("export const HEADER_GLYPH_SIZE = 26")
+    expect(controls).toContain("export const HEADER_AVATAR_SIZE = 52")
+    expect(BUTTON_SOURCE).toContain("width: HEADER_CONTROL_SIZE")
+    expect(BUTTON_SOURCE).toContain("size={HEADER_GLYPH_SIZE}")
     expect(BUTTON_SOURCE).toContain("backgroundColor: t.glass.sheet.input")
     const profile = readFileSync(new URL("../HeaderProfileButton.tsx", import.meta.url), "utf8")
     expect(profile).toContain("backgroundColor: t.glass.sheet.input")
+    expect(profile).toContain("HEADER_BADGED_AVATAR_SIZE : HEADER_AVATAR_SIZE")
+    expect(controls).toContain("export const HEADER_BADGED_AVATAR_SIZE = HEADER_AVATAR_SIZE - 6")
+    expect(profile).toContain("width: HEADER_CONTROL_SIZE")
+    expect(FEED_SOURCE).toContain("minHeight: HEADER_CONTROL_SIZE")
   })
 })
 

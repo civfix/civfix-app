@@ -23,7 +23,8 @@
     "discard": "Descartar borrador",
     "discard_already_sending": "Ese mensaje ya empezó a enviarse, así que no se puede descartar.",
     "edits_lost": "La versión anterior de este mensaje ya se envió. Los cambios que acabas de hacer no se enviaron.",
-    "channels_note": "Se envía en la app y como notificación. El correo y la programación están en el panel de anfitrión."
+    "channels_note": "Se envía en la app y como notificación. El correo y la programación están en el panel de anfitrión.",
+    "channels_email_note": "Se envía por correo a todas las personas inscritas. Los avisos en la app están en el panel de anfitrión."
   },
   "toast": {
     "sent": "Tu mensaje está en camino.",

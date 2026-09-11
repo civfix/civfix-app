@@ -31,11 +31,11 @@ export interface FocusSettleCommand {
  * grows as p falls away from 1. Worked example (regionW=300, p=0.5, f0=1): u=56, delta = 0.5*(300-112-12)
  * = 88pt — a real sideways jump, not the "nothing translates" case the settle assumes.
  *
- * THRESHOLD: EPSILON = 0.01, i.e. settle only when p >= 1 - EPSILON = 0.99. This is not arbitrary — it is
- * exactly the residual `dockMorphIn`'s spring is documented to stop at (theme/motion.ts:48, "energyThreshold
- * 1e-4 ends the tail at ~760ms with <=1% residual"), so the threshold fires precisely once the ENTER morph
- * has settled to its own steady state, and never mid-spring. Worst-case discontinuity this permits, using
- * the widest current device dock region (iPhone 16 Pro Max, regionW ~= 430pt) and worst-case f0=1:
+ * THRESHOLD: EPSILON = 0.01, i.e. settle only when p >= 1 - EPSILON = 0.99. `dockMorphIn` is a 200ms
+ * EASE_STANDARD timing (theme/motion.ts) whose front-loaded curve is past 0.99 well before it lands, so the
+ * threshold fires only once the ENTER morph is visually done, and never in its first, fast frames. Worst-case
+ * discontinuity this permits, using the widest current device dock region (iPhone 16 Pro Max, regionW ~= 430pt)
+ * and worst-case f0=1:
  *   delta(0.99) = 1 * 0.01 * (430 - 2*(64-16*0.99) - 12) = 0.01 * (430 - 96.32 - 12) ~= 3.2pt
  * ~3pt is a sub-pixel-adjacent nudge on the field's right edge, not a visible snap; an EPSILON of 0.05 would
  * already reach ~16pt (visible), which is why this stays tight.
@@ -55,11 +55,11 @@ export const FOCUS_SETTLE_P_EPSILON = 0.01
  * The settle is geometrically cheap ONLY near p=1: there, `rightX` is identical at f=1 and f=0
  * (regionW - rightWp == u + gap), so nothing translates — only the field's right edge steps out by
  * (u + gap) = 60pt as the trailing ✕ circle leaves, on the same frame dockMorphOut has already taken p
- * past 0.85 (theme/motion.ts:57). At p < 1 (see FOCUS_SETTLE_P_EPSILON above) that identity does NOT hold,
- * so a fast tap-into-Search-then-exit (dockMorphIn is a ~760ms spring; the exit hit-target and field are
- * both live from `searchActive`'s first frame, well before p reaches 1) would settle f into a real lateral
- * jump. Below the threshold this falls back to the SAME animated `dockFocus` retarget the ✕-clear path
- * uses, which is smooth at any p — the behavior this whole task existed to improve on, minus its blind spot.
+ * past 0.85. At p < 1 (see FOCUS_SETTLE_P_EPSILON above) that identity does NOT hold, so a fast
+ * tap-into-Search-then-exit (the exit hit-target and field are both live from `searchActive`'s first frame,
+ * well before p reaches 1) would settle f into a real lateral jump. Below the threshold this falls back to
+ * the SAME animated `dockFocus` retarget the ✕-clear path uses, which is smooth at any p — the behavior this
+ * whole task existed to improve on, minus its blind spot.
  *
  * `p` is read, never driven, by this function: the caller (SearchHeader.native's useDockedSearchRise) owns
  * the reanimated shared value and passes its current `.value` in — this file stays free of any reanimated

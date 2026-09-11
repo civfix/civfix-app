@@ -23,7 +23,8 @@
     "discard": "Entwurf verwerfen",
     "discard_already_sending": "Diese Nachricht wird bereits gesendet und lässt sich nicht mehr verwerfen.",
     "edits_lost": "Die frühere Fassung dieser Nachricht ist bereits rausgegangen. Deine gerade gemachten Änderungen wurden nicht gesendet.",
-    "channels_note": "Wird in der App und als Push gesendet. E-Mail und Zeitplanung findest du im Host-Dashboard."
+    "channels_note": "Wird in der App und als Push gesendet. E-Mail und Zeitplanung findest du im Host-Dashboard.",
+    "channels_email_note": "Wird per E-Mail an alle Angemeldeten gesendet. In-App- und Push-Nachrichten findest du im Host-Dashboard."
   },
   "toast": {
     "sent": "Deine Nachricht ist unterwegs.",

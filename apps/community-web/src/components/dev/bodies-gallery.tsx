@@ -28,7 +28,6 @@ import type {
   EventHoursResponse,
   EventSlotDTO,
   GetMyHoursResponse,
-  GetMyVerificationResponse,
   IssueServiceHoursCertificateResponse,
   LeaderboardResponse,
   ListMyCertificatesResponse,
@@ -644,7 +643,7 @@ const HOST_ROSTER_IDS = new Set(["e-mine", "e-slots-mine", "e-ready", "e-done", 
 const hoursAgo = (h: number) => new Date(Date.now() - h * 60 * 60 * 1000).toISOString()
 const daysAgo = (d: number) => new Date(Date.now() - d * 24 * 60 * 60 * 1000).toISOString()
 
-const CREDITOR = { id: "p-ann", name: "Ann Rivera", handle: "annrivera", verified: true }
+const CREDITOR = { id: "p-ann", name: "Ann Rivera", handle: "annrivera" }
 
 const MY_HOURS: GetMyHoursResponse = {
   hours: {
@@ -779,12 +778,12 @@ const LEADERBOARD: LeaderboardResponse = {
   geoid: "0644000",
   jurisdictionName: "Los Angeles",
   entries: [
-    { rank: 1, userId: "p-ann", name: "Ann Rivera", handle: "annrivera", avatar: null, avatarUrl: null, verified: true, hours: 61.5 },
+    { rank: 1, userId: "p-ann", name: "Ann Rivera", handle: "annrivera", avatar: null, avatarUrl: null, hours: 61.5 },
     { rank: 2, userId: "p-lee", name: "Lee Tran", handle: "leetran", avatar: null, avatarUrl: null, hours: 48 },
     { rank: 3, userId: "p-mei", name: "Mei Wong", handle: "meiwong", avatar: null, avatarUrl: null, hours: 39.25 },
     { rank: 4, userId: "p-jae", name: "Jae Park", handle: "jaepark", avatar: null, avatarUrl: null, hours: 30 },
     { rank: 5, userId: "p-ravi", name: "Ravi Shah", handle: "ravishah", avatar: null, avatarUrl: null, hours: 22.5 },
-    { rank: 6, userId: "p-nour", name: "Nour Haddad", handle: "nourh", avatar: null, avatarUrl: null, verified: true, hours: 18 },
+    { rank: 6, userId: "p-nour", name: "Nour Haddad", handle: "nourh", avatar: null, avatarUrl: null, hours: 18 },
   ],
   nextOffset: null,
   participantCount: 42,
@@ -998,9 +997,6 @@ const fakeApi: ApiClient = new Proxy(
           if (id) CLEANUPS_BY_ID[id] = next
           return next
         }
-      }
-      if (prop === "myVerification") {
-        return async (): Promise<GetMyVerificationResponse> => ({ verification: { status: "verified" } })
       }
       if (prop === "issueServiceHoursCertificate") {
         return async (): Promise<IssueServiceHoursCertificateResponse> => {

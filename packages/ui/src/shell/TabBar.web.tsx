@@ -10,7 +10,6 @@ import {
   BAR_HEIGHT,
   PILL_INSET,
   useTabBarModel,
-  useTabAnchors,
   useDockedSearchModel,
   TabButton,
   SearchOrb,
@@ -23,7 +22,6 @@ export function TabBar() {
   const styles = useTabBarStyles()
   const th = useTheme()
   const { view, activeIndex, searchActive, onTab, onSearch } = useTabBarModel()
-  const { registerTabRef, pressTab } = useTabAnchors(onTab)
   const dockedSearch = useDockedSearchModel()
   const setTabBarHeight = useTabBarStore((s) => s.setTabBarHeight)
 
@@ -75,8 +73,7 @@ export function TabBar() {
               key={tab.id}
               tab={tab}
               active={i === activeIndex}
-              onPress={() => pressTab(tab)}
-              registerRef={registerTabRef}
+              onPress={() => onTab(tab)}
             />
           ))}
         </View>

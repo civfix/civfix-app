@@ -15,7 +15,7 @@ import { PostDTOSchema, PostKindSchema } from "./entities.js"
  * (kind:"reply" + replyToId). A PURE repost is NOT this route - it is the toggle POST
  * /posts/:id/repost. superRefine enforces the cross-field rules: a quote requires repostOfId; a
  * reply requires replyToId; and every post must carry SOMETHING - a body, an attachment (event or
- * report), or media - so an empty post is rejected.
+ * report), or media - so an empty post is rejected, and organizationId is refused on a repost.
  */
 export const PostComposeInputSchema = z
   .object({
@@ -27,6 +27,7 @@ export const PostComposeInputSchema = z
     reportId: IdSchema.optional(), // attach a report
     mediaUploadIds: z.array(IdSchema).max(4).default([]), // finalized upload ids to claim as post media
     mentionedUserIds: z.array(IdSchema).max(20).default([]),
+    organizationId: IdSchema.optional(), // post AS this organization (DECISIONS §34); not valid on a repost
   })
   .strict()
   .superRefine((v, ctx) => {
@@ -42,6 +43,13 @@ export const PostComposeInputSchema = z
         code: z.ZodIssueCode.custom,
         message: "A reply requires replyToId (the parent post).",
         path: ["replyToId"],
+      })
+    }
+    if (v.kind === "repost" && v.organizationId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "A repost cannot be attributed to an organization.",
+        path: ["organizationId"],
       })
     }
     const hasBody = typeof v.body === "string" && v.body.length > 0

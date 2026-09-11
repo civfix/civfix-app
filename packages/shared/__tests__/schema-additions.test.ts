@@ -9,6 +9,7 @@ import {
   REPORT_TYPE_TO_CATEGORY,
   WEB_REPORT_TYPE_BY_ID,
   LatLngFields,
+  MediaPurposeSchema,
 } from "../src/schemas/common.js"
 import {
   MarkThreadReadRequestSchema,
@@ -35,9 +36,12 @@ import {
   JoinCleanupResponseSchema,
   LeaveCleanupResponseSchema,
   CreateCleanupRequestSchema,
+  DuplicateCleanupRequestSchema,
   UpdateCleanupRequestSchema,
 } from "../src/schemas/cleanups.js"
-import { UserProfileDTOSchema } from "../src/schemas/social.js"
+import { UpdateSettingsRequestSchema, UserProfileDTOSchema } from "../src/schemas/social.js"
+import { UserDTOSchema } from "../src/schemas/auth.js"
+import { PostComposeInputSchema } from "../src/schemas/posts.js"
 import {
   PersonDTOSchema,
   AvatarPairSchema,
@@ -48,6 +52,8 @@ import {
   EVENT_KIND_LABELS,
   LinkedReportRefSchema,
   LinkedEventRefSchema,
+  PostDTOSchema,
+  PostRefDTOSchema,
 } from "../src/schemas/entities.js"
 import { CleanupPinDTOSchema } from "../src/schemas/map.js"
 import { AdminEventDTOSchema, AdminEventListItemDTOSchema } from "../src/schemas/admin/events.js"
@@ -536,5 +542,125 @@ describe("user @-mentions", () => {
     expect(MentionSearchRequestSchema.safeParse({ q: "" }).success).toBe(false)
     expect(MentionSearchRequestSchema.safeParse({ q: "x".repeat(65) }).success).toBe(false)
     expect(MentionSearchRequestSchema.safeParse({ q: "ja", extra: 1 }).success).toBe(false)
+  })
+})
+
+describe("0.43.0 additive refinement — affiliation, posting as an org, duplicating an event", () => {
+  const ISO_43 = "2026-09-01T10:00:00.000Z"
+  const ORG_ID = "123e4567-e89b-12d3-a456-426614174009"
+  const orgRef = { id: ORG_ID, slug: "reach-out-la", name: "Reach Out LA" }
+  const person = { id: UUID, name: "Ada", followers: 0, following: 0, isFollowing: false }
+
+  it("echoes the pinned affiliation on UserDTO and lets settings clear it", () => {
+    const base = {
+      id: UUID,
+      displayName: "Ada",
+      role: "citizen",
+      createdAt: ISO_43,
+    }
+    expect(UserDTOSchema.parse(base).primaryOrganizationId).toBeUndefined()
+    expect(UserDTOSchema.parse({ ...base, primaryOrganizationId: null }).primaryOrganizationId).toBeNull()
+    expect(
+      UserDTOSchema.parse({ ...base, primaryOrganizationId: ORG_ID }).primaryOrganizationId,
+    ).toBe(ORG_ID)
+    expect(UpdateSettingsRequestSchema.safeParse({ primaryOrganizationId: null }).success).toBe(true)
+    expect(UpdateSettingsRequestSchema.safeParse({ primaryOrganizationId: ORG_ID }).success).toBe(
+      true,
+    )
+    expect(UpdateSettingsRequestSchema.safeParse({ primaryOrganizationId: "nope" }).success).toBe(
+      false,
+    )
+  })
+
+  it("attributes a post to an org but refuses to attribute a repost", () => {
+    expect(
+      PostComposeInputSchema.parse({ body: "hello", organizationId: ORG_ID }).organizationId,
+    ).toBe(ORG_ID)
+    expect(
+      PostComposeInputSchema.safeParse({ kind: "reply", replyToId: UUID, body: "hi", organizationId: ORG_ID })
+        .success,
+    ).toBe(true)
+    expect(
+      PostComposeInputSchema.safeParse({
+        kind: "quote",
+        repostOfId: UUID,
+        body: "hi",
+        organizationId: ORG_ID,
+      }).success,
+    ).toBe(true)
+    const repost = PostComposeInputSchema.safeParse({
+      kind: "repost",
+      repostOfId: UUID,
+      body: "hi",
+      organizationId: ORG_ID,
+    })
+    expect(repost.success).toBe(false)
+    if (!repost.success) {
+      expect(repost.error.issues.some((issue) => issue.path[0] === "organizationId")).toBe(true)
+    }
+    expect(PostComposeInputSchema.safeParse({ body: "hi", organizationId: "nope" }).success).toBe(
+      false,
+    )
+  })
+
+  it("carries the org byline on PostDTO and on the embedded PostRefDTO", () => {
+    const post = {
+      id: UUID,
+      author: person,
+      kind: "post",
+      body: "hello",
+      createdAt: ISO_43,
+      counts: { likes: 0, reposts: 0, replies: 0, saves: 0 },
+      viewer: { liked: false, reposted: false, saved: false },
+    }
+    expect(PostDTOSchema.parse(post).organization).toBeUndefined()
+    expect(PostDTOSchema.parse({ ...post, organization: orgRef }).organization?.name).toBe(
+      "Reach Out LA",
+    )
+    expect(PostDTOSchema.parse({ ...post, organization: null }).organization).toBeNull()
+    expect(
+      PostRefDTOSchema.safeParse({
+        id: UUID,
+        author: person,
+        organization: orgRef,
+        kind: "post",
+        excerpt: "hello",
+        createdAt: ISO_43,
+      }).success,
+    ).toBe(true)
+  })
+
+  it("duplicates an event with ticket types and questions but not the page", () => {
+    expect(DuplicateCleanupRequestSchema.parse({ id: UUID, scheduledAt: ISO_43 })).toEqual({
+      id: UUID,
+      scheduledAt: ISO_43,
+      includeTicketTypes: true,
+      includeQuestions: true,
+      includePage: false,
+    })
+    expect(
+      DuplicateCleanupRequestSchema.safeParse({ id: UUID, scheduledAt: ISO_43, endsAt: null })
+        .success,
+    ).toBe(true)
+    expect(DuplicateCleanupRequestSchema.safeParse({ id: UUID }).success).toBe(false)
+    expect(
+      DuplicateCleanupRequestSchema.safeParse({ id: UUID, scheduledAt: ISO_43, title: "Copy" })
+        .success,
+    ).toBe(false)
+    expect(endpoints.duplicateCleanup.path).toBe("/cleanups/:id/duplicate")
+    expect(endpoints.duplicateCleanup.method).toBe("POST")
+    expect(endpoints.duplicateCleanup.csrf).toBe(true)
+    expect(endpoints.duplicateCleanup.response).toBe(endpoints.createCleanup.response)
+  })
+
+  it("retires the verified neighbor: no media purpose, no endpoints, no PersonDTO flag", () => {
+    expect(MediaPurposeSchema.options).not.toContain("verification")
+    expect("myVerification" in endpoints).toBe(false)
+    expect("setUserVerified" in endpoints).toBe(false)
+    const paths = Object.values(endpoints).map((e) => e.path)
+    expect(paths).not.toContain("/me/verification")
+    expect(paths).not.toContain("/admin/users/:id/verify")
+    expect(paths).toContain("/orgs/:id/verification")
+    expect("verified" in PersonDTOSchema.parse(person)).toBe(false)
   })
 })

@@ -29,9 +29,9 @@ import { tokens } from "@civfix/shared/tokens"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { Avatar } from "../primitives/Avatar"
+import { OrgAffiliationBadge } from "../primitives/OrgAffiliationBadge"
 import { MediaPreview } from "../primitives/MediaPreview"
 import { PostActionBar } from "../primitives/PostActionBar"
-import { VerifiedBadge } from "../primitives/VerifiedBadge"
 import { useNavStore } from "../nav/useNavStore"
 import { useLightbox } from "../lightbox"
 import { LinkedEventCard } from "./LinkedEventCard"
@@ -45,11 +45,14 @@ import { useListTimeAgo } from "./useListTimeAgo"
 import {
   POST_BODY_CLAMP_LINES,
   buildPostCardModel,
+  buildPostIdentity,
+  identityA11yLabel,
   repostBodyText,
   repostSubjectAuthorId,
   splitPostBodyMentions,
   type PostCardModel,
   type PostCardModelOptions,
+  type PostIdentity,
 } from "./postCardModel"
 export { buildPostCardModel, splitPostBodyMentions } from "./postCardModel"
 
@@ -150,17 +153,17 @@ export function OrganizerBadge({ t }: { t: TFunction }) {
 }
 
 function MetaRow({
-  post,
   model,
   t,
+  onOpenIdentity,
   onOpenPerson,
   onOpenPost,
   onOpenMenu,
   menuRef,
 }: {
-  post: PostDTO
   model: PostCardModel
   t: TFunction
+  onOpenIdentity: () => void
   onOpenPerson: () => void
   onOpenPost: () => void
   onOpenMenu: () => void
@@ -172,18 +175,19 @@ function MetaRow({
     () => [styles.moreButton, WEB_MORE_TARGET, webCursor(false)],
     [styles],
   )
+  const identity = model.identity
   return (
     <View style={[styles.metaRow, WEB_META_ROW_LIFT]}>
       <Pressable
         onPress={(event) => {
           stopPress(event)
-          onOpenPerson()
+          onOpenIdentity()
         }}
         accessibilityRole="link"
-        accessibilityLabel={t("post_card.profile_a11y", { name: post.author.name })}
+        accessibilityLabel={identityA11yLabel(identity, t)}
         hitSlop={4}
         {...focusRingProps}
-        {...linkKeyProps(onOpenPerson)}
+        {...linkKeyProps(onOpenIdentity)}
         style={(state) => [
           styles.identity,
           webTransition,
@@ -193,15 +197,41 @@ function MetaRow({
         ]}
       >
         <Text variant="bodyStrong" numberOfLines={1} style={styles.authorName}>
-          {post.author.name}
+          {identity.name}
         </Text>
-        {post.author.verified ? <VerifiedBadge size="sm" /> : null}
+        {identity.affiliation ? (
+          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+        ) : null}
         {model.handleLabel ? (
           <Text numberOfLines={1} style={styles.handle}>
             {model.handleLabel}
           </Text>
         ) : null}
       </Pressable>
+
+      {identity.viaLabel ? (
+        <Pressable
+          onPress={(event) => {
+            stopPress(event)
+            onOpenPerson()
+          }}
+          accessibilityRole="link"
+          accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}
+          hitSlop={4}
+          {...focusRingProps}
+          {...linkKeyProps(onOpenPerson)}
+          style={(state) => [
+            styles.identity,
+            webTransition,
+            webCursor(false),
+            state.pressed ? styles.pressed : null,
+          ]}
+        >
+          <Text numberOfLines={1} style={styles.handle}>
+            {identity.viaLabel}
+          </Text>
+        </Pressable>
+      ) : null}
 
       <Text style={styles.metaDot}>{"·"}</Text>
 
@@ -382,6 +412,10 @@ function EmbeddedPost({
 }) {
   const styles = useStyles()
   const th = useTheme()
+  const identity = React.useMemo(
+    () => buildPostIdentity(post.author, post.organization, t, t("post_card.deleted_account")),
+    [post.author, post.organization, t],
+  )
   return (
     <Pressable
       onPress={(event) => {
@@ -400,23 +434,31 @@ function EmbeddedPost({
       ]}
     >
       <View style={styles.embeddedHeader}>
-        {post.author ? (
+        {post.author || identity.organization ? (
           <Avatar
-            name={post.author.name}
-            seed={post.author.id}
-            photoUrl={post.author.avatarUrl}
-            gradient={post.author.avatar ?? null}
+            name={identity.avatarName}
+            seed={identity.avatarSeed}
+            photoUrl={identity.avatarUrl}
+            gradient={identity.avatarGradient}
             size={20}
+            {...(identity.organization ? { style: styles.orgAvatar } : {})}
             decorative
           />
         ) : null}
         <Text variant="bodyStrong" numberOfLines={1} style={styles.embeddedAuthor}>
-          {post.author?.name ?? t("post_card.deleted_account")}
+          {identity.name}
         </Text>
-        {post.author?.verified ? <VerifiedBadge size="sm" /> : null}
-        {post.author?.handle ? (
+        {identity.affiliation ? (
+          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+        ) : null}
+        {identity.handleLabel ? (
           <Text numberOfLines={1} style={styles.embeddedHandle}>
-            {`@${post.author.handle.replace(/^@/, "")}`}
+            {identity.handleLabel}
+          </Text>
+        ) : null}
+        {identity.viaLabel ? (
+          <Text numberOfLines={1} style={styles.embeddedHandle}>
+            {identity.viaLabel}
           </Text>
         ) : null}
         <Text style={styles.embeddedTime}>{`· ${timeAgo(post.createdAt)}`}</Text>
@@ -487,7 +529,25 @@ export const PostCard = React.memo(function PostCard({
   const isRepost = model.variant === "repost" && model.embeddedPost != null
   const embedded = model.embeddedPost
   const rowPostId = isRepost && embedded ? embedded.id : post.id
-  const openAuthor = () => openPerson(isRepost && embedded?.author ? embedded.author.id : post.author.id)
+  const embeddedIdentity = React.useMemo(
+    () =>
+      embedded
+        ? buildPostIdentity(embedded.author, embedded.organization, t, t("post_card.deleted_account"))
+        : null,
+    [embedded, t],
+  )
+  const rowIdentity = isRepost && embeddedIdentity ? embeddedIdentity : model.identity
+  const openIdentity = React.useCallback(
+    (identity: PostIdentity) => {
+      if (identity.organization) {
+        push({ kind: "org", slug: identity.organization.slug })
+        return
+      }
+      if (identity.personId) openPerson(identity.personId)
+    },
+    [push, openPerson],
+  )
+  const openAuthor = () => openIdentity(rowIdentity)
 
   const onComment = React.useCallback(() => openPost(post.id), [openPost, post.id])
   const onQuote = React.useCallback(
@@ -536,7 +596,7 @@ export const PostCard = React.memo(function PostCard({
       <Pressable
         onPress={() => openPost(rowPostId)}
         accessibilityRole={ROW_ROLE}
-        accessibilityLabel={t("post_card.open_thread_a11y", { name: post.author.name })}
+        accessibilityLabel={t("post_card.open_thread_a11y", { name: rowIdentity.name })}
         {...focusRingProps}
         {...rowHoverProps}
         {...rowKeyProps}
@@ -566,40 +626,41 @@ export const PostCard = React.memo(function PostCard({
               openAuthor()
             }}
             accessibilityRole="link"
-            accessibilityLabel={t("post_card.profile_a11y", {
-              name: isRepost && embedded?.author ? embedded.author.name : post.author.name,
-            })}
+            accessibilityLabel={identityA11yLabel(rowIdentity, t)}
             {...focusRingProps}
             {...linkKeyProps(openAuthor)}
             {...AVATAR_WEB_PROPS}
             style={(state) => [styles.gutter, webCursor(false), state.pressed ? styles.pressed : null]}
           >
             <Avatar
-              name={(isRepost && embedded?.author ? embedded.author.name : post.author.name) ?? ""}
-              seed={isRepost && embedded?.author ? embedded.author.id : post.author.id}
-              photoUrl={isRepost && embedded?.author ? embedded.author.avatarUrl : post.author.avatarUrl}
-              gradient={
-                (isRepost && embedded?.author ? embedded.author.avatar : post.author.avatar) ?? null
-              }
+              name={rowIdentity.avatarName}
+              seed={rowIdentity.avatarSeed}
+              photoUrl={rowIdentity.avatarUrl}
+              gradient={rowIdentity.avatarGradient}
               size={AVATAR}
+              {...(rowIdentity.organization ? { style: styles.orgAvatar } : {})}
               decorative
             />
           </Pressable>
 
           <View style={styles.content}>
-            {isRepost && embedded ? (
+            {isRepost && embedded && embeddedIdentity ? (
               <EmbeddedPostMeta
-                post={embedded}
+                identity={embeddedIdentity}
+                createdAt={embedded.createdAt}
                 t={t}
                 timeAgo={timeAgo}
-                onOpenPerson={openPerson}
+                onOpenIdentity={() => openIdentity(embeddedIdentity)}
+                onOpenPerson={() => {
+                  if (embeddedIdentity.personId) openPerson(embeddedIdentity.personId)
+                }}
                 onOpenPost={() => openPost(embedded.id)}
               />
             ) : (
               <MetaRow
-                post={post}
                 model={model}
                 t={t}
+                onOpenIdentity={() => openIdentity(model.identity)}
                 onOpenPerson={() => openPerson(post.author.id)}
                 onOpenPost={() => openPost(post.id)}
                 onOpenMenu={openMenu}
@@ -731,48 +792,70 @@ export const PostCard = React.memo(function PostCard({
 })
 
 function EmbeddedPostMeta({
-  post,
+  identity,
+  createdAt,
   t,
   timeAgo,
+  onOpenIdentity,
   onOpenPerson,
   onOpenPost,
 }: {
-  post: PostRefDTO
+  identity: PostIdentity
+  createdAt: string
   t: TFunction
   timeAgo: (iso: string) => string
-  onOpenPerson: (personId: string) => void
+  onOpenIdentity: () => void
+  onOpenPerson: () => void
   onOpenPost: () => void
 }) {
   const styles = useStyles()
+  const linkable = identity.organization != null || identity.personId != null
   return (
     <View style={styles.metaRow}>
       <Pressable
         onPress={(event) => {
           stopPress(event)
-          if (post.author) onOpenPerson(post.author.id)
+          onOpenIdentity()
         }}
-        disabled={!post.author}
+        disabled={!linkable}
         accessibilityRole="link"
-        accessibilityLabel={t("post_card.profile_a11y", {
-          name: post.author?.name ?? t("post_card.deleted_account"),
-        })}
+        accessibilityLabel={identityA11yLabel(identity, t)}
         hitSlop={4}
         {...focusRingProps}
-        {...linkKeyProps(() => {
-          if (post.author) onOpenPerson(post.author.id)
-        })}
-        style={(state) => [styles.identity, webCursor(!post.author), state.pressed ? styles.pressed : null]}
+        {...linkKeyProps(onOpenIdentity)}
+        style={(state) => [styles.identity, webCursor(!linkable), state.pressed ? styles.pressed : null]}
       >
         <Text variant="bodyStrong" numberOfLines={1} style={styles.authorName}>
-          {post.author?.name ?? t("post_card.deleted_account")}
+          {identity.name}
         </Text>
-        {post.author?.verified ? <VerifiedBadge size="sm" /> : null}
-        {post.author?.handle ? (
+        {identity.affiliation ? (
+          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+        ) : null}
+        {identity.handleLabel ? (
           <Text numberOfLines={1} style={styles.handle}>
-            {`@${post.author.handle.replace(/^@/, "")}`}
+            {identity.handleLabel}
           </Text>
         ) : null}
       </Pressable>
+
+      {identity.viaLabel ? (
+        <Pressable
+          onPress={(event) => {
+            stopPress(event)
+            onOpenPerson()
+          }}
+          accessibilityRole="link"
+          accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}
+          hitSlop={4}
+          {...focusRingProps}
+          {...linkKeyProps(onOpenPerson)}
+          style={(state) => [styles.identity, webCursor(false), state.pressed ? styles.pressed : null]}
+        >
+          <Text numberOfLines={1} style={styles.handle}>
+            {identity.viaLabel}
+          </Text>
+        </Pressable>
+      ) : null}
 
       <Text style={styles.metaDot}>{"·"}</Text>
 
@@ -782,13 +865,13 @@ function EmbeddedPostMeta({
           onOpenPost()
         }}
         accessibilityRole="link"
-        accessibilityLabel={t("post_card.permalink_a11y", { time: timeAgo(post.createdAt) })}
+        accessibilityLabel={t("post_card.permalink_a11y", { time: timeAgo(createdAt) })}
         hitSlop={6}
         {...focusRingProps}
         {...linkKeyProps(onOpenPost)}
         style={(state) => [webCursor(false), state.pressed ? styles.pressed : null]}
       >
-        <Text style={styles.timestamp}>{timeAgo(post.createdAt)}</Text>
+        <Text style={styles.timestamp}>{timeAgo(createdAt)}</Text>
       </Pressable>
 
       <View style={styles.metaSpacer} />
@@ -864,6 +947,9 @@ const useStyles = makeThemedStyles((t) => ({
     width: AVATAR,
     marginRight: GUTTER_GAP,
     borderRadius: AVATAR / 2,
+  },
+  orgAvatar: {
+    borderRadius: t.radius.sm,
   },
   content: {
     flex: 1,

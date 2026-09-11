@@ -253,12 +253,14 @@ describe("search body sync (dock-morph rebuild, defects 4/5)", () => {
     expect(mid.translateY).toBeCloseTo(6)
   })
 
-  it("fades the search overlay OUT on its own, earlier window so the exit starts on frame 1", () => {
-    expect(SEARCH_REVEAL_EXIT_WINDOW).toEqual([0, 0.85])
-    expect(searchRevealExitStyle(0.84).opacity).toBeLessThan(1)
-    expect(searchRevealExitStyle(0.85)).toEqual({ opacity: 1, translateY: 0 })
+  it("fades the search overlay OUT on the MIRROR of the reveal window, so the two curves match", () => {
+    expect(SEARCH_REVEAL_EXIT_WINDOW).toEqual([0.2, 0.7])
+    expect(searchRevealExitStyle(0.69).opacity).toBeLessThan(1)
+    expect(searchRevealExitStyle(0.7)).toEqual({ opacity: 1, translateY: 0 })
+    expect(searchRevealExitStyle(1)).toEqual({ opacity: 1, translateY: 0 })
+    expect(searchRevealExitStyle(0.2)).toEqual({ opacity: 0, translateY: 12 })
     expect(searchRevealExitStyle(0)).toEqual({ opacity: 0, translateY: 12 })
-    expect(searchRevealExitStyle(0.425).opacity).toBeCloseTo(0.5)
+    expect(searchRevealExitStyle(0.45).opacity).toBeCloseTo(0.5)
   })
 })
 

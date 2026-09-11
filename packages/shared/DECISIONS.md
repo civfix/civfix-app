@@ -1183,3 +1183,141 @@ host numbers to a stranger and sending zeros that are lies. `expiresAt` is requi
 `OrganizationInviteDTO`) because an inbox item whose deadline is unknown cannot be triaged, and the
 column is `not null` already. The seat itself is announced by `NotificationType`'s appended
 `event_team_invite`.
+
+## 34. Affiliation is org membership, the verified neighbor is retired, and an org invite is an inbox item too (0.43.0)
+
+**The "verified community organizer" is gone, table and all.** `user_verification` was a cosmetic
+trust signal with no in-app application: an operator flipped it after a phone call, and the only
+thing it bought a user was a checkmark and two backend gates. It never scaled (one founder, one
+call at a time), it said nothing checkable about the person, and it competed for meaning with ORG
+verification, which is evidence-backed and does scale. So `VerificationStatus`, `MyVerificationDTO`,
+`myVerification` (`GET /me/verification`), `setUserVerified` (`POST /admin/users/:id/verify`),
+`SetUserVerifiedRequest`, `PersonDTO.verified`, `LeaderboardEntryDTO.verified`,
+`AdminUserDTO.verificationStatus` and the `verification` media purpose are all REMOVED. Org
+verification is untouched (`OrgVerificationStatus`/`Kind`, `OrganizationRefDTO.verified`, the admin
+verification queue, the donations eligibility gate), and so is `reportVerified`, which is a
+different claim about a different thing (this reporter's reports may be auto-forwarded to the city).
+
+These removals are NOT additive, and that is a deliberate exception to §11 rather than an oversight.
+Every consumer of the removed surface is in this delivery set: the field was read by
+`packages/ui` and `civfix-admin` only, no third party consumes `@civfix/shared`, and the package is
+on 0.x where a minor may carry a removal. A `verified: true` that nothing can ever set again is
+worse than a compile error - it renders a badge that lies. The two backend gates that depended on it
+get real replacements rather than being dropped: `requestEventResources` now requires the event to
+be LINKED TO AN ORGANIZATION and the actor to hold `manage_event` (an institution vouches for the
+ask, which is what the city needs), and the volunteer-hours creditor gate falls back to the host
+standing it already checked (the creditor must hold `manage_event`/`check_in` ON THAT EVENT), which
+was always the load-bearing half. `VolunteerHoursCreditor.verified` becomes
+`organization?: OrganizationRefDTO | null` - the same substitution the whole release makes: a claim
+about an institution instead of a claim about a person.
+
+**Affiliation is membership, and the badge shows exactly one org.** `PersonDTO.organization` is the
+person's PRIMARY affiliation, rendered next to the name the way X renders one. A user may belong to
+many organizations, so `users.primary_organization_id` (nullable, FK SET NULL) picks which one is
+published, and when it is null the backend falls back to the EARLIEST membership rather than
+picking arbitrarily or showing none - a member of one org, which is the common case, never has to
+configure anything. It is written through `UpdateSettingsRequest.primaryOrganizationId` (validated
+as an org the caller actually belongs to; `null` restores the automatic choice) and read back on
+`UserDTO.primaryOrganizationId`. Leaving or being removed from the pinned org clears the pin in the
+same transaction as the membership delete, so the badge can never outlive the membership.
+
+Resolving the affiliation must not become an N+1: a feed page, a roster and a leaderboard all
+project `PersonDTO`, so the affiliation is resolved for a whole batch of user ids in ONE query
+(join `organization_members`, prefer `users.primary_organization_id`, else the earliest `joined_at`)
+and the logo URLs are presigned in one batch alongside every other avatar in the payload.
+
+**Posting as an org keeps the acting human on the record.** `PostComposeInput.organizationId` is
+allowed on `post`, `quote` and `reply` and REFUSED on `repost` (a pure repost carries no authored
+content, so there is nothing for an org to have said; the refusal is a `superRefine` in the contract,
+not a backend-only rule). The actor must be a member of a non-suspended org - any role, because
+membership already means the org chose this person. `PostDTO.organization` and
+`PostRefDTO.organization` carry the byline: clients render the org logo and name as the author line
+and the human as "via @handle". `posts.author_id` is unchanged, so deletion, moderation, rate
+limits and abuse handling all continue to follow the person who typed it. The alternative - a
+synthetic org "user" - would have made every one of those controls ambiguous.
+
+**The public org page lists the org's public events.** `listOrganizationEvents`
+(`GET /orgs/by-slug/:slug/events`, auth optional, `when=upcoming|past`, keyset-paged, limit ≤50)
+returns only `visibility: "public"` events and obeys §32's suspension rule exactly as
+`getOrganization` does. It is keyed by slug, not id, because it is the public page's second call and
+the page has no id to hand it. Host-console portfolio reads (`listMyHostedEvents`) stay separate:
+they are viewer-scoped and carry counts an anonymous reader must never see.
+
+**An org invite is an inbox item, mirroring §33 exactly.** `listMyOrgInvites`
+(`GET /me/org-invites`), `acceptMyOrgInvite` (`POST /me/org-invites/:inviteId/accept`) and
+`declineMyOrgInvite` (`POST /me/org-invites/:inviteId/decline`) are the invitee's side of §32's
+`organization_invites` record. Accept and decline are token-free for §33's reason: the invite is
+addressed to the session's account, so ownership is `organization_invites.user_id = the viewer` and
+handing the client a capability token only to have it handed straight back would be a secret in
+flight for no gain. The emailed link keeps `acceptOrganizationInvite` (`{ token }`) unchanged, so an
+address with no account yet still has a path. `PendingOrganizationInviteDTO` carries
+`organization: OrganizationRefDTO` (the badge ref, not the full `OrganizationDTO`: the invitee is not
+seated and has no claim on member counts or `myRole`), no `email` field (§33), and a required
+`expiresAt`. `OrganizationInviteStatus` appends `declined` LAST, keeping the same
+revoked-vs-declined distinction §33 draws for events. `NotificationType` appends `org_invite` LAST,
+replacing the generic `system` type org invites used to borrow - a notification the client cannot
+route is a notification it cannot deep-link.
+
+`ORG_ADMIN` capabilities gain a NEW capability, `manage_org_members` (appended LAST to
+`HostCapability`), not the existing `manage_team`. An org admin who can edit the org, run its events
+and read its donations but cannot add the second staffer is an admin in name only - but
+`manage_team` is the EVENT-team token, and `hostCapabilities` merges the org role into the event
+standing, so granting it would have given every org admin the power to seat a `cohost` on any org
+event, and `COHOST_CAPABILITIES` carries `export` - the attendee contact roster this same paragraph
+withholds from admins. The two jobs needed two tokens: `manage_org_members` governs the ORG roster
+(list, invite, revoke, role, remove) and is held by owner and admin; `manage_team` stays
+event-shaped and organizer/owner-only. The org owner keeps the powers that are genuinely
+owner-shaped (`manage_payments`, `cancel_event`, `manage_org_link`, `request_resources`, `export`,
+`manage_team`). SEATING is narrower than managing: inviting is `manage_org_members`, but changing a
+member's ROLE is OWNER-only, which is what the web console has always enforced ("Only the owner can
+change roles."); REMOVAL stays with any manager on a member the server marked `canRemove`, which is
+also what the console does. The backend that ADOPTS 0.43.0 must move its gates with it:
+`inviteOrganizationMember`, `listOrganizationMembers`, `listOrganizationInvites` and
+`revokeOrganizationInvite` onto `manage_org_members`, `setOrganizationMemberRole` onto ownership,
+and `removeOrganizationMember` onto `manage_org_members`. Until that adoption lands the backend is
+on 0.42.0 and still reads `manage_team`, so the split is inert rather than breaking - but the two
+halves must ship together, because an adopting backend that kept the old gates would refuse every
+org admin the capability set says can act.
+
+**A suspended org stops speaking for its members.** §32 makes a suspended org's public page a 404
+and refuses its writes; affiliation must honour the same line or suspension stops being a remedy.
+Resolving `PersonDTO.organization` (and `PostDTO`/`PostRefDTO.organization` for public readers)
+EXCLUDES suspended organizations, so a suspended org's name, logo and verified mark stop appearing
+next to its members' names everywhere the platform projects a person. The clients filter suspended
+orgs out of the "Post as", "Host as", affiliation and dashboard-organization pickers for the same
+reason: offering a choice the server refuses is a dead end, not a feature.
+
+**Duplicating an event copies content, never identity or history.** `duplicateCleanup`
+(`POST /cleanups/:id/duplicate`) exists because a recurring cleanup is retyped every month today.
+The copy takes title, description, type, kind, location, address, bring list, slots, visibility,
+timezone, capacity, registration windows, reminder offsets, org link and cover/gallery media, and
+RESETS `page_slug`, `reference_code`, `status` and every count. It carries no registrations, no team
+and no broadcasts - those are facts about the occurrence that happened, not about the event's shape.
+The three flags are the only choices worth offering: ticket types and questions travel with a
+recurring event, a published event PAGE does not (it owns a slug and its own analytics), so
+`includePage` defaults false. The gate is `manage_event` and the copy counts against
+`assertHostEventBudget`, because a duplicate is a new event by every measure the budget cares about.
+
+**Org payouts amend §26 without breaking it: civfix still never holds funds.** §26 established that
+donations are DIRECT charges on the org's connected account. Payouts follow the same line: the
+`Payments` seam gains `retrieveBalance`, `createPayout` and `listPayouts`, and all three execute ON
+the connected account (Stripe-Account header). The money never enters a civfix balance, so
+`createOrgPayout` is the org moving its own funds to its own bank, not civfix disbursing. The
+endpoints are `getOrgBalance` (`GET /orgs/:id/payments/balance`, `view_donations`),
+`createOrgPayout` (`POST /orgs/:id/payments/payouts`, `manage_payments`, csrf, rate-limited, with a
+REQUIRED `idempotencyKey` - a retried payout is real money moving twice) and `listOrgPayouts`
+(`GET /orgs/:id/payments/payouts`, `view_donations`). `org_payouts` is an audit mirror of the Stripe
+object, not a ledger civfix reconciles against.
+
+`OrgBalanceDTO` carries the payout SCHEDULE next to the balances on purpose. The connected accounts
+are Stripe Standard, where an automatic daily schedule usually leaves `available` at ~0 and a manual
+payout then fails for a reason the user cannot see. Shipping the schedule with the balance lets the
+client disable the button and say why, instead of surfacing a Stripe error after the fact. Stripe's
+`payouts_not_allowed` and `balance_insufficient` map to `AppError.validation` / `AppError.conflict`
+with user-safe copy; `PayoutStatus` (`pending|in_transit|paid|failed|canceled`) mirrors Stripe's own
+vocabulary so the `payout.paid|failed|canceled` webhooks need no translation table.
+
+**The admin plane shows memberships, and stops showing a verification status.**
+`AdminUserDTO.organizations` (`{ id, slug, name, role }[]`, optional) lets the Users page answer
+"who is this person affiliated with" in the same request as the rest of the detail, resolved in one
+query. It replaces `verificationStatus`, which named a system that no longer exists.

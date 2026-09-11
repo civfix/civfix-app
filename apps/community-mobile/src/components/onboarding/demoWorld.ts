@@ -16,7 +16,6 @@ export const DEMO_ORGANIZER: PersonDTO = {
   followers: 0,
   following: 0,
   isFollowing: false,
-  verified: true,
 }
 
 export const DEMO_NEIGHBOR: PersonDTO = {
@@ -28,7 +27,6 @@ export const DEMO_NEIGHBOR: PersonDTO = {
   followers: 0,
   following: 0,
   isFollowing: false,
-  verified: false,
 }
 
 export const DEMO_ATTENDEES: readonly PersonDTO[] = [
@@ -43,7 +41,6 @@ export const DEMO_ATTENDEES: readonly PersonDTO[] = [
     followers: 0,
     following: 0,
     isFollowing: false,
-    verified: false,
   },
 ]
 

@@ -23,7 +23,8 @@
     "discard": "Discard draft",
     "discard_already_sending": "That message already started sending, so it cannot be discarded.",
     "edits_lost": "The earlier version of this message already went out. The edits you just made were not sent.",
-    "channels_note": "Sent in the app and as a push notification. Email and scheduling live in the host dashboard."
+    "channels_note": "Sent in the app and as a push notification. Email and scheduling live in the host dashboard.",
+    "channels_email_note": "Sent by email to everyone registered. In-app and push messages live in the host dashboard."
   },
   "toast": {
     "sent": "Your message is on its way.",

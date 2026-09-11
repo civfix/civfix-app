@@ -52,7 +52,6 @@ export {
   useProfilePastEvents,
 } from "./hooks"
 export type { ProfilePastEvents } from "./hooks"
-export { useMyVerification } from "./hooks"
 export {
   useUserSearch,
   normalizeUserSearchTerm,
@@ -94,6 +93,7 @@ export {
   useCleanupAttendees,
   useJoinCleanup,
   useCreateCleanup,
+  useDuplicateCleanup,
   useUpdateCleanup,
   useCancelCleanup,
   useRequestEventResources,
@@ -108,6 +108,7 @@ export {
   cleanupDetailFilters,
 } from "./hooks"
 export type {
+  DuplicateCleanupVars,
   SetMemberRoleVars,
   RemoveMemberVars,
   CompleteCleanupVars,
@@ -206,11 +207,50 @@ export type {
 
 export {
   ORG_DONATION_EXPORTS_POLL_MS,
+  ORG_MEMBERS_PAGE_SIZE,
   exportsPollInterval,
+  actableOrganizations,
+  invalidateMyOrgInvites,
+  organizationEventRows,
+  organizationMemberRows,
+  useAcceptMyOrgInvite,
+  useDeclineMyOrgInvite,
+  useInviteOrganizationMember,
+  useMyOrgInvites,
   useMyOrganizations,
   useOrganization,
+  useOrganizationEvents,
+  useOrganizationInvites,
+  useOrganizationMembers,
   useOrgDonationExports,
+  useRemoveOrganizationMember,
+  useRevokeOrganizationInvite,
+  useSetOrganizationMemberRole,
 } from "./hooks/orgs"
+export type {
+  InviteOrganizationMemberVars,
+  OrganizationEventsWindow,
+  SetOrganizationMemberRoleVars,
+} from "./hooks/orgs"
+
+export { useHostedEventsAnalytics } from "./hooks/dashboard"
+
+export {
+  ORG_PAYOUTS_PAGE_SIZE,
+  clearPayoutIntents,
+  payoutRows,
+  useCreateOrgPayout,
+  useCreateOrgStripeAccountLink,
+  useOrgBalance,
+  useOrgDonationSummary,
+  useOrgPaymentsStatus,
+  useOrgPayouts,
+} from "./hooks/payouts"
+export type {
+  CreateOrgPayoutVars,
+  OrgDonationSummaryRange,
+  OrgStripeAccountLinkKind,
+} from "./hooks/payouts"
 
 export { fetchEventIcs, useEventIcs } from "./eventIcs"
 

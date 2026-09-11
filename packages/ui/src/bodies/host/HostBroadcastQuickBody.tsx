@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { View, TextInput, Pressable } from "react-native"
 import { MAX_BROADCAST_BODY, MAX_BROADCAST_SUBJECT } from "@civfix/shared"
 import {
@@ -15,6 +15,7 @@ import { ModalCardSheet, PrimaryButton, SecondaryButton, fieldFocusedStyle, useT
 import { Markdown } from "../../primitives/Markdown"
 import { useCleanup } from "../../data"
 import { hasHostCapability, useQuickBroadcast } from "../../data/hooks/host"
+import { useDashboardStore } from "./dashboard/dashboardStore"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
@@ -28,6 +29,8 @@ import {
   type QuickSegmentKind,
 } from "./broadcastQuickModel"
 
+const EMAIL_CHANNELS = ["email"] as const
+
 export function HostBroadcastQuickBody({ id }: { id: string }) {
   const styles = useStyles()
   const th = useTheme()
@@ -35,16 +38,21 @@ export function HostBroadcastQuickBody({ id }: { id: string }) {
   const { ScrollView } = useScrollHost()
   const toast = useToast()
 
+  const preset = useDashboardStore((s) => (s.broadcastPreset?.eventId === id ? s.broadcastPreset : null))
+
   const cleanup = useCleanup(id)
-  const send = useQuickBroadcast(id)
+  const send = useQuickBroadcast(id, preset?.email ? { channels: EMAIL_CHANNELS } : {})
 
   const [subject, setSubject] = useState("")
   const [body, setBody] = useState("")
-  const [segment, setSegment] = useState<QuickSegmentKind>("all_registered")
+  const [segment, setSegment] = useState<QuickSegmentKind>(preset?.segment ?? "all_registered")
   const [preview, setPreview] = useState(false)
   const [errorText, setErrorText] = useState<string | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [focusedField, setFocusedField] = useState<"subject" | "body" | null>(null)
+
+  const clearPreset = useDashboardStore((s) => s.setBroadcastPreset)
+  useEffect(() => () => clearPreset(null), [clearPreset])
 
   const canBroadcast = hasHostCapability(cleanup.data, "broadcast")
   const ready = quickBroadcastReady(subject, body)
@@ -240,7 +248,9 @@ export function HostBroadcastQuickBody({ id }: { id: string }) {
         loading={send.isPending}
         disabled={!ready || !canBroadcast || busy}
       />
-      <Text style={styles.caption}>{t("quick.channels_note")}</Text>
+      <Text style={styles.caption}>
+        {preset?.email ? t("quick.channels_email_note") : t("quick.channels_note")}
+      </Text>
 
       <ModalCardSheet
         visible={confirming}

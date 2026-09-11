@@ -35,6 +35,19 @@ import { isSafeHttpsUrl } from "../markdown/safe-url.js"
 
 export const AvatarPairSchema = z.tuple([z.string(), z.string()]).nullable().optional()
 
+const OrganizationRefDTOObjectSchema = z.object({
+  id: IdSchema,
+  slug: z.string(),
+  name: z.string(),
+  logoUrl: z.string().nullable().optional(),
+  verified: z.boolean().default(false),
+  verifiedKind: OrgVerificationKindSchema.nullable().optional(),
+})
+export type OrganizationRefDTO = z.infer<typeof OrganizationRefDTOObjectSchema>
+export const OrganizationRefDTOSchema: z.ZodType<OrganizationRefDTO, z.ZodTypeDef, unknown> =
+  OrganizationRefDTOObjectSchema
+
+
 
 
 export const EventKindSchema = z.enum(["cleanup", "other_volunteer"])
@@ -64,7 +77,12 @@ export const PersonDTOSchema = z.object({
   followers: z.number().int().nonnegative(),
   following: z.number().int().nonnegative(),
   isFollowing: z.boolean(),
-  verified: z.boolean().optional(),
+  /**
+   * 0.43.0: the person's PRIMARY organization affiliation (DECISIONS §34), rendered as a badge next
+   * to the name. Resolved from `users.primary_organization_id` with a fallback to the earliest
+   * membership; null when the person belongs to no organization. Optional so an older server parses.
+   */
+  organization: OrganizationRefDTOSchema.nullable().optional(),
   deleted: z.boolean().optional(),
 })
 export type PersonDTO = z.infer<typeof PersonDTOSchema>
@@ -263,18 +281,6 @@ const LegalDocumentVersionDTOObjectSchema = z.object({
 export type LegalDocumentVersionDTO = z.infer<typeof LegalDocumentVersionDTOObjectSchema>
 export const LegalDocumentVersionDTOSchema: z.ZodType<LegalDocumentVersionDTO, z.ZodTypeDef, unknown> =
   LegalDocumentVersionDTOObjectSchema
-
-const OrganizationRefDTOObjectSchema = z.object({
-  id: IdSchema,
-  slug: z.string(),
-  name: z.string(),
-  logoUrl: z.string().nullable().optional(),
-  verified: z.boolean().default(false),
-  verifiedKind: OrgVerificationKindSchema.nullable().optional(),
-})
-export type OrganizationRefDTO = z.infer<typeof OrganizationRefDTOObjectSchema>
-export const OrganizationRefDTOSchema: z.ZodType<OrganizationRefDTO, z.ZodTypeDef, unknown> =
-  OrganizationRefDTOObjectSchema
 
 const OrganizationDTOObjectSchema = z.object({
   id: IdSchema,
@@ -794,6 +800,11 @@ export type PostKindValue = (typeof POST_KIND_VALUES)[number]
 const PostRefObjectSchema = z.object({
   id: IdSchema,
   author: PersonDTOSchema.nullable(),
+  /**
+   * 0.43.0: the organization this post was published AS (DECISIONS §34). When present the client
+   * renders the org as the byline and the author as "via @handle". Null for a personal post.
+   */
+  organization: OrganizationRefDTOSchema.nullable().optional(),
   kind: PostKindSchema,
   excerpt: z.string(),
   createdAt: ISODateSchema,
@@ -825,6 +836,11 @@ export type PostViewer = z.infer<typeof PostViewerSchema>
 export const PostDTOSchema = z.object({
   id: IdSchema,
   author: PersonDTOSchema,
+  /**
+   * 0.43.0: the organization this post was published AS (DECISIONS §34). When present the client
+   * renders the org as the byline and the author as "via @handle". Null for a personal post.
+   */
+  organization: OrganizationRefDTOSchema.nullable().optional(),
   kind: PostKindSchema,
   body: z.string().nullable().optional(),
   createdAt: ISODateSchema,
