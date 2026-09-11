@@ -1,5 +1,86 @@
 # @civfix/ui
 
+## 0.59.0
+
+### Minor Changes
+
+- Organization affiliation, the event dashboard, and the feed / navbar revert. The verified community
+  organizer ("verified neighbor") system is retired from the UI: the Get verified row and screen, the
+  `verify` nav kind and `/verify` route, the person badges, the log-hours and request-resources gates
+  and the create-event notice are all gone. Org verification, the `VerifiedBadge` primitive and the
+  report auto-forward flag are untouched.
+
+  Consumes `@civfix/shared` `^0.43.0`.
+
+  ### Affiliation
+  - `OrgAffiliationBadge` primitive (organization logo, optional name) next to author names in
+    `PostCard`, the thread focal post and reply rows, `EventCard`, `RosterRow`, `EventsBody` and
+    `ConnectionsBody`.
+  - `AffiliationRow` - the labelled organization row on own and other profiles; pressing it opens the
+    organization page. It is the only affiliation surface on a profile; the hero shows the name alone.
+  - Posts composed as an organization render the organization as the author with a "via @handle"
+    secondary line; `postCardModel.buildPostIdentity` is the single source of that identity.
+  - "Post as" picker in `PostComposer` and "Host as" picker in `CleanupForm` / `CreateCleanupBody`,
+    both Personal plus every organization the viewer belongs to; the create-event nav entry carries an
+    optional `organizationId` that prefills the picker.
+  - Settings -> Account gains "Organization on profile" (Automatic, or a specific membership), writing
+    `primaryOrganizationId` through `updateSettings`.
+  - `OrgPageBody` gains Upcoming and Past event sections backed by `listOrganizationEvents`; Past
+    loads only when opened.
+
+  ### Event dashboard
+  - New nav kind `event-dashboard` (`/dashboard`, title "Event dashboard"), reached from the row that
+    replaced Get verified on your own profile, plus web `/dashboard` and the mobile deep link.
+  - Personal and Organization tabs (the organization tab appears only when the viewer belongs to one,
+    with a picker above two or more).
+  - KPI strip over `hostedEventsAnalytics` with a dependency-free `Sparkline`, range chips for 30 days
+    / 90 days / 12 months, and the existing small-sample suppression copy.
+  - Upcoming / Past hosted events with per-row Open, Host tools, Email attendees, Duplicate and Edit;
+    Email attendees pushes the quick broadcast with the email channel and the registered segment
+    preselected; Duplicate opens a date sheet, calls `duplicateCleanup` and lands on the copy's edit
+    screen.
+  - Invitations: pending event-team invites (moved here from the feed) and pending organization
+    invites, each accept or decline.
+  - Organization tab adds Money (payments status, available and on-the-way balance, "Export money to
+    bank" with a confirmation, recent payouts, and the Stripe onboarding link opened through the
+    injected external-URL capability) gated on `view_donations` with the payout action gated on
+    `manage_payments`, and Collaborators (members, role changes, removal, invite by handle or email,
+    pending invites and revoke) gated on `manage_team`.
+  - Web-only "Open full console" row into `/manage/*`; the native build renders nothing there.
+
+  ### Feed, navbar, map, search, header
+  - `YourEventsSection` is gone from the feed. The expanded (desktop) layout renders an inline
+    composer at the top of the feed; the compact layout keeps the header plus button, which is hidden
+    when expanded.
+  - The center tab is a camera labelled "Report" and opens the report flow directly (mobile lands on
+    the viewfinder, web on the wizard capture step). `CreateMenu`, its store and its layout are
+    deleted; the landscape rail follows.
+  - The map loses its header plus button and the "Host an event here" drop-pin card; "Report an issue
+    here" and the report-detail "host an event" link stay.
+  - Native search open and close are both a 200 ms standard-ease timing, with mirrored reveal and exit
+    windows.
+  - One header control token set (`bodies/headerControls.ts`): 52pt controls and avatars with 26pt
+    glyphs, applied to the feed, inbox, search, report root, both map layouts and the detail header.
+
+  ### Data
+  - New hooks: `useOrganizationEvents`, `useOrganizationMembers`, `useOrganizationInvites`,
+    `useInviteOrganizationMember`, `useRevokeOrganizationInvite`, `useSetOrganizationMemberRole`,
+    `useRemoveOrganizationMember`, `useMyOrgInvites`, `useAcceptMyOrgInvite`, `useDeclineMyOrgInvite`,
+    `useOrgPaymentsStatus`, `useOrgDonationSummary`, `useOrgBalance`, `useOrgPayouts`,
+    `useCreateOrgPayout`, `useCreateOrgStripeAccountLink`, `useHostedEventsAnalytics` and
+    `useDuplicateCleanup`. `useMyVerification` and its query key are removed.
+  - A payout keeps one idempotency key per organization and amount until the call succeeds, so a retry
+    after a timeout cannot send the money twice.
+
+  ### Breaking (internal)
+  - `ProfileView`'s `verificationSlot` prop is now `dashboardSlot`.
+  - Nav kind `verify` and the `/verify` route no longer exist; `nav:create.*`,
+    `home-feed:your_events.*`, `map-ui:dropPin.host.*` and the verification copy are deleted from all
+    four locales.
+
+- Updated dependencies
+  - @civfix/shared@0.43.0
+
 ## 0.58.2
 
 ### Patch Changes
