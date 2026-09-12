@@ -3,11 +3,10 @@ import { View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { KeyboardPinnedFooter, PrimaryButton } from "../primitives"
+import { KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton } from "../primitives"
 import { useComposerAttachments } from "../primitives/useComposerAttachments"
 import { useCreateGroup, useAuthState } from "../data"
 import { useNavStore } from "../nav"
-import { KeyboardHostReserveScope } from "../shell/keyboardScrollScope"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { MemberPicker } from "./MemberPicker"
@@ -78,70 +77,68 @@ export function NewGroupBody() {
     !canCreateGroup(name, description) || avatar.uploading || createGroup.isPending
 
   return (
-    <KeyboardHostReserveScope>
-      <View style={styles.root}>
-        <View style={styles.header}>
-          <Pressable
-            onPress={onBack}
-            accessibilityRole="button"
-            accessibilityLabel={t("back_a11y")}
-            hitSlop={8}
-            {...focusRingProps}
-            style={({ pressed }) => [styles.backBtn, pressed ? styles.backPressed : null]}
-          >
-            <Icon icon={iconMap.ArrowLeft} size={20} color={th.colors.text} />
-          </Pressable>
-          <Text style={styles.headerTitle} numberOfLines={1} accessibilityRole="header">
-            {step === "members" ? t("title_members") : t("title_identity")}
-          </Text>
-        </View>
-
-        {step === "members" ? (
-          <>
-            <View style={styles.pickerFill}>
-              <MemberPicker selected={selected} onChange={setSelected} excludeIds={excludeIds} />
-            </View>
-            <KeyboardPinnedFooter style={styles.footer}>
-              <PrimaryButton label={t("next")} onPress={onNext} disabled={nextDisabled} />
-            </KeyboardPinnedFooter>
-          </>
-        ) : (
-          <>
-            <ScrollView
-              style={styles.pickerFill}
-              contentContainerStyle={styles.identityContent}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              <GroupIdentityFields
-                avatar={avatar}
-                name={name}
-                onChangeName={setName}
-                description={description}
-                onChangeDescription={setDescription}
-                labels={{
-                  avatarA11y: t("avatar_a11y"),
-                  avatarClearA11y: t("avatar_clear_a11y"),
-                  nameLabel: t("name_label"),
-                  namePlaceholder: t("name_placeholder"),
-                  descriptionLabel: t("description_label"),
-                  descriptionPlaceholder: t("description_placeholder"),
-                }}
-              />
-              {submitError ? <Text style={styles.errorText}>{t("create_error")}</Text> : null}
-            </ScrollView>
-            <KeyboardPinnedFooter style={styles.footer}>
-              <PrimaryButton
-                label={t("create")}
-                onPress={onCreate}
-                disabled={createDisabled}
-                loading={createGroup.isPending}
-              />
-            </KeyboardPinnedFooter>
-          </>
-        )}
+    <KeyboardPinnedSurface style={styles.root}>
+      <View style={styles.header}>
+        <Pressable
+          onPress={onBack}
+          accessibilityRole="button"
+          accessibilityLabel={t("back_a11y")}
+          hitSlop={8}
+          {...focusRingProps}
+          style={({ pressed }) => [styles.backBtn, pressed ? styles.backPressed : null]}
+        >
+          <Icon icon={iconMap.ArrowLeft} size={20} color={th.colors.text} />
+        </Pressable>
+        <Text style={styles.headerTitle} numberOfLines={1} accessibilityRole="header">
+          {step === "members" ? t("title_members") : t("title_identity")}
+        </Text>
       </View>
-    </KeyboardHostReserveScope>
+
+      {step === "members" ? (
+        <>
+          <View style={styles.pickerFill}>
+            <MemberPicker selected={selected} onChange={setSelected} excludeIds={excludeIds} />
+          </View>
+          <KeyboardPinnedFooter style={styles.footer}>
+            <PrimaryButton label={t("next")} onPress={onNext} disabled={nextDisabled} />
+          </KeyboardPinnedFooter>
+        </>
+      ) : (
+        <>
+          <ScrollView
+            style={styles.pickerFill}
+            contentContainerStyle={styles.identityContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <GroupIdentityFields
+              avatar={avatar}
+              name={name}
+              onChangeName={setName}
+              description={description}
+              onChangeDescription={setDescription}
+              labels={{
+                avatarA11y: t("avatar_a11y"),
+                avatarClearA11y: t("avatar_clear_a11y"),
+                nameLabel: t("name_label"),
+                namePlaceholder: t("name_placeholder"),
+                descriptionLabel: t("description_label"),
+                descriptionPlaceholder: t("description_placeholder"),
+              }}
+            />
+            {submitError ? <Text style={styles.errorText}>{t("create_error")}</Text> : null}
+          </ScrollView>
+          <KeyboardPinnedFooter style={styles.footer}>
+            <PrimaryButton
+              label={t("create")}
+              onPress={onCreate}
+              disabled={createDisabled}
+              loading={createGroup.isPending}
+            />
+          </KeyboardPinnedFooter>
+        </>
+      )}
+    </KeyboardPinnedSurface>
   )
 }
 

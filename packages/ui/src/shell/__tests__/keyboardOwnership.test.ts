@@ -120,19 +120,29 @@ describe("I1 the Android reserve has exactly four owners", () => {
     expect(named(({ src }) => /keyboardHostReserveStore\./.test(src))).toEqual([])
   })
 
-  it("gives every body that pins a footer a scope of its own for the scrollers under it", () => {
-    for (const rel of [
-      "../../bodies/NewGroupBody.tsx",
-      "../../bodies/NewChannelBody.tsx",
-      "../../bodies/ReportFlowBody.tsx",
-    ]) {
-      const src = readFileSync(new URL(rel, import.meta.url), "utf8")
-      expect(src, rel).toMatch(
-        /import \{ KeyboardHostReserveScope \} from "\.\.\/shell\/keyboardScrollScope"/,
-      )
-      expect(src, rel).toMatch(/<KeyboardHostReserveScope>/)
-      expect(src, rel).toMatch(/<\/KeyboardHostReserveScope>/)
-    }
+  it("gives every file that pins a footer the surface that scopes the scrollers under it", () => {
+    const pins = named(({ src }) => src.includes("<KeyboardPinnedFooter"))
+    expect(pins).toContain("FirstRunGate.tsx")
+    expect(pins.length).toBeGreaterThan(1)
+    expect(
+      named(({ src }) => src.includes("<KeyboardPinnedFooter") && !src.includes("<KeyboardPinnedSurface")),
+    ).toEqual([])
+  })
+
+  it("keeps that surface the only holder of the scope, so no second idiom can grow", () => {
+    expect(named(({ src }) => /<KeyboardHostReserveScope>/.test(src))).toEqual([
+      "KeyboardPinnedSurface.tsx",
+    ])
+  })
+
+  it("makes a footer pinned outside the surface throw instead of double-padding the scroller", () => {
+    const scope = readFileSync(new URL("../keyboardScrollScope.tsx", import.meta.url), "utf8")
+    expect(scope).toMatch(
+      /function useRequiredKeyboardHostReserveScope\(\): KeyboardHostReserveStore \{\s*\n\s*const store = useKeyboardHostReserveScope\(\)\s*\n\s*if \(store === null\) \{\s*\n\s*throw new Error\(/,
+    )
+    expect(scope).toMatch(
+      /export function useKeyboardHostReserveClaim\(active: boolean\): void \{\s*\n\s*const store = useRequiredKeyboardHostReserveScope\(\)/,
+    )
   })
 
   it("gates the retained report slot on the page, so its footer stops claiming under a pushed page", () => {

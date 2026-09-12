@@ -9,6 +9,7 @@ import {
   Avatar,
   IosKeyboardAvoidingView,
   KeyboardPinnedFooter,
+  KeyboardPinnedSurface,
   PLAIN_SCROLL_HOST,
   PrimaryButton,
   TermsConfirmation,
@@ -103,86 +104,88 @@ function FirstRunForm() {
   return (
     <View style={styles.overlay}>
       <IosKeyboardAvoidingView style={styles.root}>
-        <FirstRunScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: insets.top + space["6"] }]}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.head}>
-            <Avatar name={previewName} seed={user?.id} photoUrl={user?.avatarUrl} size={76} />
-            <Text variant="title" style={styles.title}>
-              {t("title")}
-            </Text>
-            <Text variant="body" color={th.colors.textSubtle} style={styles.sub}>
-              {t("subtitle")}
-            </Text>
-          </View>
-
-          <View style={styles.row}>
-            <View style={styles.col}>
-              <TextField
-                label={t("field.first_name.label")}
-                placeholder={t("field.first_name.placeholder")}
-                value={first}
-                onChangeText={setFirst}
-                maxLength={40}
-                autoComplete="given-name"
-              />
-            </View>
-            <View style={styles.col}>
-              <TextField
-                label={t("field.last_name.label")}
-                placeholder={t("field.last_name.placeholder")}
-                value={last}
-                onChangeText={setLast}
-                maxLength={40}
-                autoComplete="family-name"
-              />
-            </View>
-          </View>
-
-          <TextField
-            label={t("field.username.label")}
-            placeholder={t("field.username.placeholder")}
-            value={handle}
-            onChangeText={(t) => setHandle(t.replace(/^@+/, ""))}
-            maxLength={20}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <HandleHint
-            handle={trimmedHandle}
-            valid={handleValid}
-            checking={avail.checking}
-            available={available}
-            taken={handleValid && avail.available === false}
-          />
-
-          {error ? (
-            <View style={styles.errorRow}>
-              <Ionicons name="alert-circle-outline" size={15} color={th.colors.brand.bloom} />
-              <Text variant="caption" color={th.colors.brand.bloom}>
-                {error}
+        <KeyboardPinnedSurface>
+          <FirstRunScrollView
+            contentContainerStyle={[styles.scroll, { paddingTop: insets.top + space["6"] }]}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.head}>
+              <Avatar name={previewName} seed={user?.id} photoUrl={user?.avatarUrl} size={76} />
+              <Text variant="title" style={styles.title}>
+                {t("title")}
+              </Text>
+              <Text variant="body" color={th.colors.textSubtle} style={styles.sub}>
+                {t("subtitle")}
               </Text>
             </View>
-          ) : null}
 
-          <View style={styles.ageGate}>
-            <AgeConfirmation confirmed={ageConfirmed} onConfirmedChange={setAgeConfirmed} />
-            <TermsConfirmation confirmed={termsConfirmed} onConfirmedChange={setTermsConfirmed} />
-          </View>
-        </FirstRunScrollView>
+            <View style={styles.row}>
+              <View style={styles.col}>
+                <TextField
+                  label={t("field.first_name.label")}
+                  placeholder={t("field.first_name.placeholder")}
+                  value={first}
+                  onChangeText={setFirst}
+                  maxLength={40}
+                  autoComplete="given-name"
+                />
+              </View>
+              <View style={styles.col}>
+                <TextField
+                  label={t("field.last_name.label")}
+                  placeholder={t("field.last_name.placeholder")}
+                  value={last}
+                  onChangeText={setLast}
+                  maxLength={40}
+                  autoComplete="family-name"
+                />
+              </View>
+            </View>
 
-        <KeyboardPinnedFooter style={styles.footer} safeAreaBottom={insets.bottom}>
-          <PrimaryButton label={t("continue")} loading={submitting} disabled={!canSubmit} onPress={() => void onSubmit()} />
-          <Text
-            variant="caption"
-            color={th.colors.textSubtle}
-            style={styles.signOut}
-            onPress={() => void signOut()}
-          >
-            {t("signout.prompt")} {t("signout.action")}
-          </Text>
-        </KeyboardPinnedFooter>
+            <TextField
+              label={t("field.username.label")}
+              placeholder={t("field.username.placeholder")}
+              value={handle}
+              onChangeText={(t) => setHandle(t.replace(/^@+/, ""))}
+              maxLength={20}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <HandleHint
+              handle={trimmedHandle}
+              valid={handleValid}
+              checking={avail.checking}
+              available={available}
+              taken={handleValid && avail.available === false}
+            />
+
+            {error ? (
+              <View style={styles.errorRow}>
+                <Ionicons name="alert-circle-outline" size={15} color={th.colors.brand.bloom} />
+                <Text variant="caption" color={th.colors.brand.bloom}>
+                  {error}
+                </Text>
+              </View>
+            ) : null}
+
+            <View style={styles.ageGate}>
+              <AgeConfirmation confirmed={ageConfirmed} onConfirmedChange={setAgeConfirmed} />
+              <TermsConfirmation confirmed={termsConfirmed} onConfirmedChange={setTermsConfirmed} />
+            </View>
+          </FirstRunScrollView>
+
+          <KeyboardPinnedFooter style={styles.footer} safeAreaBottom={insets.bottom}>
+            <PrimaryButton label={t("continue")} loading={submitting} disabled={!canSubmit} onPress={() => void onSubmit()} />
+            <Text
+              variant="caption"
+              color={th.colors.textSubtle}
+              style={styles.signOut}
+              onPress={() => void signOut()}
+            >
+              {t("signout.prompt")} {t("signout.action")}
+            </Text>
+          </KeyboardPinnedFooter>
+        </KeyboardPinnedSurface>
       </IosKeyboardAvoidingView>
     </View>
   )

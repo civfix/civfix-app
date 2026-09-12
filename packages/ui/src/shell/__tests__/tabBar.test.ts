@@ -799,7 +799,9 @@ describe("the pinned wizard footers reserve for the Android keyboard nothing els
     ["../../bodies/NewChannelBody.tsx", 3],
   ])("%s lifts every pinned footer", (rel, footers) => {
     const text = read(rel)
-    expect(text).toMatch(/import \{ KeyboardPinnedFooter, PrimaryButton \} from "\.\.\/primitives"/)
+    expect(text).toMatch(
+      /import \{ KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton \} from "\.\.\/primitives"/,
+    )
     expect(text).not.toMatch(/useKeyboardReserve/)
     expect(text.match(/<KeyboardPinnedFooter style=\{styles\.footer\}>/g)).toHaveLength(footers)
     expect(text).not.toMatch(/<View style=\{styles\.footer\}>/)

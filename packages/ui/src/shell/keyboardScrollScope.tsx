@@ -42,10 +42,21 @@ export function useKeyboardHostReserveScope(): KeyboardHostReserveStore | null {
   return useContext(KeyboardHostReserveScopeContext)
 }
 
-export function useKeyboardHostReserveClaim(active: boolean): void {
+function useRequiredKeyboardHostReserveScope(): KeyboardHostReserveStore {
   const store = useKeyboardHostReserveScope()
+  if (store === null) {
+    throw new Error(
+      "KeyboardPinnedFooter: no KeyboardPinnedSurface found. Wrap the scrollers and the pinned " +
+        "footer in <KeyboardPinnedSurface> so they share one reservation of the keyboard overlap.",
+    )
+  }
+  return store
+}
+
+export function useKeyboardHostReserveClaim(active: boolean): void {
+  const store = useRequiredKeyboardHostReserveScope()
   useEffect(() => {
-    if (!active || !store) return
+    if (!active) return
     return store.claim()
   }, [active, store])
 }
