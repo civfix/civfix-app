@@ -73,7 +73,11 @@ function InviteWhen({ startsAt, where }: { startsAt: string; where?: string | nu
       {parts.map((part, index) => (
         <React.Fragment key={index}>
           {index > 0 ? <MetaDot color={th.colors.textSubtle} style={styles.subDot} /> : null}
-          <Text variant="caption" numberOfLines={1} style={index === parts.length - 1 ? styles.subLast : null}>
+          <Text
+            variant="caption"
+            numberOfLines={1}
+            style={index === parts.length - 1 ? styles.subLast : styles.subFixed}
+          >
             {part}
           </Text>
         </React.Fragment>
@@ -203,6 +207,9 @@ const useStyles = makeThemedStyles((t) => ({
   },
   subLast: {
     flexShrink: 1,
+  },
+  subFixed: {
+    flexShrink: 0,
   },
   subDot: {
     marginHorizontal: t.space["1"],

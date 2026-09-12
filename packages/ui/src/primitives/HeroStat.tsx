@@ -16,6 +16,7 @@ export interface HeroStatProps {
   caption?: string
   tone?: StatTone
   compact?: boolean
+  warnAt?: number | null
 }
 
 export function HeroStat({
@@ -26,6 +27,7 @@ export function HeroStat({
   caption,
   tone = "neutral",
   compact = false,
+  warnAt,
 }: HeroStatProps) {
   const styles = useStyles()
   const { locale } = useLocale()
@@ -51,7 +53,12 @@ export function HeroStat({
           </Text>
         </View>
         {limit === null ? null : (
-          <Meter value={value} max={limit} accessibilityLabel={`${label}: ${shown} ${limitLabel}`} />
+          <Meter
+            value={value}
+            max={limit}
+            accessibilityLabel={`${label}: ${shown} ${limitLabel}`}
+            {...(warnAt === undefined ? {} : { warnAt })}
+          />
         )}
         {caption ? (
           <Text variant="caption" style={styles.caption}>

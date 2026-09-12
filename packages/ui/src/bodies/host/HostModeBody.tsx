@@ -428,7 +428,7 @@ export function HostModeBody({ id }: { id: string }) {
         secondary={secondary ? ctaFor(secondary) : undefined}
       />
 
-      {phase === "cancelled" ? <FeedNotice plain icon="Ban" title={t("cancelled_notice")} /> : null}
+      {phase === "cancelled" ? <FeedNotice icon="Ban" title={t("cancelled_notice")} /> : null}
 
       {can.viewAnalytics ? (
         <InsightsSection
@@ -466,7 +466,7 @@ export function HostModeBody({ id }: { id: string }) {
 
       {can.viewRoster ? (
         <SectionCard label={t("section.attendees")}>
-          <EventRosterBlock cleanupId={id} canCheckIn={can.checkIn} />
+          <EventRosterBlock cleanupId={id} canCheckIn={can.checkIn && phase !== "cancelled"} />
         </SectionCard>
       ) : null}
 

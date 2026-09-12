@@ -35,15 +35,17 @@ export function SectionCard({ label, trailing, children, style, testID }: Sectio
 const useStyles = makeThemedStyles((t) => ({
   header: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
-    gap: t.space["3"],
+    gap: t.space["2"],
     marginBottom: t.space["2"],
   },
   headerSpacer: {
     flex: 1,
   },
   eyebrow: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
     fontFamily: t.fontFamily.bodyExtraBold,
     fontSize: 11,
     letterSpacing: 0.6,
@@ -52,7 +54,9 @@ const useStyles = makeThemedStyles((t) => ({
     marginLeft: t.space["1"],
   },
   trailing: {
+    flexGrow: 1,
     flexShrink: 0,
+    alignItems: "flex-end",
   },
   card: {
     backgroundColor: t.colors.surface,

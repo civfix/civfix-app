@@ -37,7 +37,7 @@
     "of_capacity": "정원 {{limit}}석 중",
     "of_registered": "등록 {{limit}}명 중",
     "no_cap": "석, 정원 없음",
-    "as_of": "{{when}} 전 기준",
+    "as_of": "{{when}} 기준",
     "rate": "{{rate}} 참석"
   },
   "tiles": {

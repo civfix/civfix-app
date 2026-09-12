@@ -37,7 +37,7 @@
     "of_capacity": "of {{limit}} seats",
     "of_registered": "of {{limit}} registered",
     "no_cap": "seats, no cap",
-    "as_of": "As of {{when}} ago",
+    "as_of": "As of {{when}}",
     "rate": "{{rate}} showed up"
   },
   "tiles": {

@@ -39,6 +39,7 @@ import {
   payoutErrorKey,
   pendingOrgInvites,
   seriesChartable,
+  seriesDayLabel,
   seriesEnd,
   suppressed,
   bestDayTimeShowable,
@@ -790,5 +791,16 @@ describe("portfolio surface", () => {
         expect(cat[section]?.[leaf], `${lng} ${section}.${leaf}`).toBeTruthy()
       }
     }
+  })
+})
+
+describe("seriesDayLabel", () => {
+  it("reads a series day as a short calendar date, not a wire string", () => {
+    expect(seriesDayLabel("2026-09-12", "en-US")).toBe("Sep 12")
+    expect(seriesDayLabel("2026-01-02", "en-US")).toBe("Jan 2")
+  })
+
+  it("hands back anything it cannot parse", () => {
+    expect(seriesDayLabel("not-a-day", "en-US")).toBe("not-a-day")
   })
 })

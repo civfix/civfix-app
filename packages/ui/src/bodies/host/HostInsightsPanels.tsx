@@ -1,6 +1,7 @@
 import React from "react"
 import { View } from "react-native"
 import type { EventInsights, EventPhase, InsightsBroadcast } from "@civfix/shared"
+import { timeLabel } from "@civfix/shared/datetime"
 import { makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
 import { HeroStat } from "../../primitives/HeroStat"
@@ -69,7 +70,6 @@ function HeroPanel({
 }) {
   const { t } = useT("host-mode")
   const { locale } = useLocale()
-  const { relative } = useRelativeTime()
   const hero = hostHero(insights, phase)
   const rate = attendanceRate(insights)
   const limitLabel =
@@ -84,7 +84,7 @@ function HeroPanel({
         ? undefined
         : t("hero.rate", { rate: formatRate(rate, locale) ?? "" })
       : phase === "live"
-        ? t("hero.as_of", { when: relative(insights.generatedAt) })
+        ? t("hero.as_of", { when: timeLabel(insights.generatedAt, locale) })
         : undefined
 
   return (
@@ -94,6 +94,7 @@ function HeroPanel({
       limit={hero.limit}
       limitLabel={limitLabel}
       compact={compact}
+      {...(hero.key === "registered" ? {} : { warnAt: null })}
       {...(caption ? { caption } : {})}
     />
   )

@@ -8,7 +8,7 @@ export const METER_HEIGHT = 6
 export interface MeterProps {
   value: number
   max: number
-  warnAt?: number
+  warnAt?: number | null
   accessibilityLabel: string
 }
 

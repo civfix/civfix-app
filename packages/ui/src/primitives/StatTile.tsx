@@ -3,14 +3,18 @@ import { StyleSheet, View } from "react-native"
 import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"
 import { TrendSparkline } from "./TrendSparkline"
-import { STAT_VALUE_UNKNOWN, type StatTileColumns } from "./statTileModel"
+import { statValueSize, STAT_VALUE_UNKNOWN, type StatTileColumns } from "./statTileModel"
 import type { SparkPoint } from "./trendSparklineModel"
 
 const TREND_HEIGHT = 24
+const LABEL_LINES = 2
+const CAPTION_LINE_HEIGHT = 16
 const CELL_BASIS: Readonly<Record<StatTileColumns, `${number}%`>> = {
   2: "46%",
   4: "21%",
 }
+
+const StatTileColumnsContext = React.createContext<StatTileColumns>(2)
 
 export type StatTone = "neutral" | "success" | "danger"
 
@@ -37,19 +41,23 @@ export function StatTile({
   accessibilityLabel,
 }: StatTileProps) {
   const styles = useStyles()
+  const columns = React.useContext(StatTileColumnsContext)
   const shown = value ?? STAT_VALUE_UNKNOWN
+  const size = statValueSize(value, columns)
   return (
     <View
       style={styles.tile}
       accessibilityLabel={accessibilityLabel ?? `${label}: ${shown}`}
       accessibilityRole="summary"
     >
-      <Text variant="caption" numberOfLines={2}>
+      <Text variant="caption" numberOfLines={2} style={styles.label}>
         {label}
       </Text>
       <Text
         style={[
           styles.value,
+          size === "20" ? styles.value20 : null,
+          size === "18" ? styles.value18 : null,
           value === null ? styles.valueUnknown : null,
           tone === "success" ? styles.valueSuccess : null,
           tone === "danger" ? styles.valueDanger : null,
@@ -59,7 +67,7 @@ export function StatTile({
         {shown}
       </Text>
       {hint ? (
-        <Text variant="caption" numberOfLines={2}>
+        <Text variant="caption" numberOfLines={3}>
           {hint}
         </Text>
       ) : null}
@@ -79,13 +87,15 @@ export function StatTileRow({ children, columns = 2 }: StatTileRowProps) {
   const styles = useStyles()
   const cells = React.Children.toArray(children).filter(Boolean)
   return (
-    <View style={styles.row}>
-      {cells.map((cell, index) => (
-        <View key={index} style={[styles.cell, { flexBasis: CELL_BASIS[columns] }]}>
-          {cell}
-        </View>
-      ))}
-    </View>
+    <StatTileColumnsContext.Provider value={columns}>
+      <View style={styles.row}>
+        {cells.map((cell, index) => (
+          <View key={index} style={[styles.cell, { flexBasis: CELL_BASIS[columns] }]}>
+            {cell}
+          </View>
+        ))}
+      </View>
+    </StatTileColumnsContext.Provider>
   )
 }
 
@@ -109,12 +119,23 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.surface,
     ...t.shadows.s1,
   },
+  label: {
+    minHeight: LABEL_LINES * CAPTION_LINE_HEIGHT,
+  },
   value: {
     fontFamily: t.fontFamily.displayBold,
     fontSize: t.fontSize["24"],
     lineHeight: 28,
     letterSpacing: -0.4,
     color: t.colors.text,
+  },
+  value20: {
+    fontSize: t.fontSize["20"],
+    lineHeight: 26,
+  },
+  value18: {
+    fontSize: t.fontSize["18"],
+    lineHeight: 24,
   },
   valueUnknown: {
     color: t.colors.textSubtle,

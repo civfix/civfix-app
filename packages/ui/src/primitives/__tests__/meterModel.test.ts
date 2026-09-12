@@ -27,6 +27,11 @@ describe("meterFill", () => {
     expect(meterFill(Number.NaN, 40)).toEqual({ ratio: 0, state: "ok" })
   })
 
+  it("leaves the fill plain when the caller has no warn threshold", () => {
+    expect(meterFill(45, 50, null)).toEqual({ ratio: 0.9, state: "ok" })
+    expect(meterFill(50, 50, null)).toEqual({ ratio: 1, state: "ok" })
+  })
+
   it("never reports a negative fill", () => {
     expect(meterFill(-4, 50)).toEqual({ ratio: 0, state: "ok" })
   })

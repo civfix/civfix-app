@@ -195,6 +195,20 @@ export function seriesChartable(points: readonly SeriesPoint[]): boolean {
   return points.filter((point) => point.value !== null).length >= SPARKLINE_MIN_POINTS
 }
 
+export function seriesDayLabel(day: string, locale: string): string {
+  const parsed = Date.parse(`${day}T00:00:00Z`)
+  if (Number.isNaN(parsed)) return day
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    }).format(parsed)
+  } catch {
+    return day
+  }
+}
+
 export function seriesEnd(points: readonly SeriesPoint[]): SeriesPoint | null {
   for (let index = points.length - 1; index >= 0; index -= 1) {
     const point = points[index]

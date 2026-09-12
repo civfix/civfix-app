@@ -41,7 +41,11 @@ function MetaLine({ parts }: { parts: readonly string[] }) {
       {parts.map((part, index) => (
         <React.Fragment key={index}>
           {index > 0 ? <MetaDot color={th.colors.textSubtle} style={styles.subDot} /> : null}
-          <Text variant="caption" numberOfLines={1}>
+          <Text
+            variant="caption"
+            numberOfLines={1}
+            style={index === parts.length - 1 ? styles.subLast : styles.subFixed}
+          >
             {part}
           </Text>
         </React.Fragment>
@@ -172,7 +176,7 @@ export const HostedEventRow = memo(function HostedEventRow({
         <EventBadge startsAt={event.startsAt} coverThumbUrl={event.coverThumbUrl ?? null} />
         <View style={styles.meta}>
           <View style={styles.titleRow}>
-            <Text style={styles.title} numberOfLines={1}>
+            <Text style={styles.title} numberOfLines={2}>
               {event.title}
             </Text>
             {event.myRole ? (
@@ -299,6 +303,12 @@ const useStyles = makeThemedStyles((t) => ({
   subRow: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  subLast: {
+    flexShrink: 1,
+  },
+  subFixed: {
+    flexShrink: 0,
   },
   subDot: {
     marginHorizontal: t.space["1"],

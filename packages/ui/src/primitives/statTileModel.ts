@@ -19,3 +19,21 @@ export function formatRate(rate: number | null, locale: string = FALLBACK_LOCALE
   if (rate === null || !Number.isFinite(rate)) return null
   return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(rate)
 }
+
+export const STAT_VALUE_SIZES = ["24", "20", "18"] as const
+
+export type StatValueSize = (typeof STAT_VALUE_SIZES)[number]
+
+const STAT_VALUE_BUDGET: Readonly<Record<StatTileColumns, readonly [number, number]>> = {
+  2: [12, 16],
+  4: [6, 9],
+}
+
+export function statValueSize(value: string | null, columns: StatTileColumns): StatValueSize {
+  if (value === null) return "24"
+  const budget = STAT_VALUE_BUDGET[columns]
+  const length = [...value].length
+  if (length > budget[1]) return "18"
+  if (length > budget[0]) return "20"
+  return "24"
+}

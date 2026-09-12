@@ -25,6 +25,7 @@ import {
   portfolioSuppressed,
   rateShowable,
   seriesChartable,
+  seriesDayLabel,
   seriesEnd,
   type DashboardRange,
 } from "./dashboardModel"
@@ -130,11 +131,11 @@ export function PortfolioStats({
             height={TREND_HEIGHT}
             points={sparklinePoints(series)}
             suppressedKeys={suppressedSparkKeys(series)}
-            endLabel={t("kpi.end_label", { value: end.value, day: end.day })}
+            endLabel={t("kpi.end_label", { value: end.value, day: seriesDayLabel(end.day, locale) })}
             accessibilityLabel={t("kpi.trend_a11y", {
               range: t(`range.${range}`),
               value: end.value,
-              day: end.day,
+              day: seriesDayLabel(end.day, locale),
             })}
           />
         ) : null}

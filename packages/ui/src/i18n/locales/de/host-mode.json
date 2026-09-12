@@ -37,7 +37,7 @@
     "of_capacity": "von {{limit}} Plätzen",
     "of_registered": "von {{limit}} Angemeldeten",
     "no_cap": "Plätze, ohne Limit",
-    "as_of": "Vor {{when}}",
+    "as_of": "Stand {{when}}",
     "rate": "{{rate}} sind gekommen"
   },
   "tiles": {
