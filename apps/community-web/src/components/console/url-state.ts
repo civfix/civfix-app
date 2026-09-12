@@ -168,12 +168,6 @@ export function setConsoleParams(patch: ConsoleParamPatch, mode?: UrlWriteMode):
 
 export type DrawerClosePlan = "back" | "replace"
 
-/**
- * HOW A DRAWER CLOSES. Opening one PUSHES a history entry (its param is in CONSOLE_PUSH_PARAM_KEYS), so
- * dropping the param with a replace would leave that entry behind and a browser Back would re-open the
- * drawer instead of returning to the previous console screen. When the current entry is the drawer's own,
- * closing is a real traversal; only an entry this console did not push falls back to the replace patch.
- */
 export function drawerClosePlan(state: unknown): DrawerClosePlan {
   if (typeof state !== "object" || state === null) return "replace"
   return (state as Record<string, unknown>).consoleDrawer === true ? "back" : "replace"
