@@ -78,3 +78,8 @@ test("the About presenter is registered for the ROUTER's lifetime, not a leaf sc
   assert.match(layout, /<BrandAboutBridge \/>/)
   assert.doesNotMatch(home, /setBrandAboutPresenter/)
 })
+
+test("the android navigation bar glyphs follow the active scheme", () => {
+  assert.match(layout, /import \* as NavigationBar from "expo-navigation-bar"/)
+  assert.match(layout, /NavigationBar\.setButtonStyleAsync\(scheme === "dark" \? "light" : "dark"\)/)
+})

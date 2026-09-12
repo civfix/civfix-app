@@ -1,13 +1,13 @@
 import React from "react"
 import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
-import { makeThemedStyles, theme, useTheme, focusRingProps, webCursor, headingLevel } from "../theme"
+import { makeThemedStyles, space, useTheme, focusRingProps, webCursor, headingLevel } from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import { SettingsToggle } from "./SettingsToggle"
 
 export const SETTINGS_ROW_MIN_HEIGHT = 56
 const ICON_TILE = 32
 const ROW_PAD_H = 13
-const ROW_GAP = theme.space["3"]
+const ROW_GAP = space["3"]
 const DIVIDER_INSET = ROW_PAD_H + ICON_TILE + ROW_GAP
 
 export interface SettingsToggleBinding {

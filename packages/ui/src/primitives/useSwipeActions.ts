@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Animated, Easing, PanResponder, Platform, type GestureResponderHandlers } from "react-native"
 import { useHaptics } from "../capabilities"
-import { theme } from "../theme"
+import { motion } from "../theme"
 import {
   actionsProgress,
   actionsRestingX,
@@ -51,8 +51,8 @@ export function useSwipeActions({ enabled, actionCount }: SwipeActionsOptions): 
     (next: boolean) => {
       openRef.current = next
       setOpen(next)
-      const duration = theme.motion.fade.duration
-      const easing = Easing.bezier(...theme.motion.easing)
+      const duration = motion.fade.duration
+      const easing = Easing.bezier(...motion.easing)
       Animated.timing(translateX, {
         toValue: actionsRestingX(next, stateRef.current.width),
         duration,

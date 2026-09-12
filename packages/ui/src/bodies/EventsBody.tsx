@@ -8,7 +8,7 @@ import { eventChip, dowLabel, timeLabel } from "@civfix/shared/datetime"
 import {
   focusRingProps,
   makeThemedStyles,
-  theme,
+  space,
   useLayoutMode,
   useTheme,
   webInputReset,
@@ -29,13 +29,13 @@ type Row =
   | { kind: "header"; key: string; title: string; topGap: number }
   | { kind: "event"; key: string; cleanup: CleanupDTO; topGap: number }
 
-const HEADER_TO_CARD = theme.space["2"]
-const CARD_GAP = theme.space["3"] + 2
-const SECTION_GAP = theme.space["4"]
+const HEADER_TO_CARD = space["2"]
+const CARD_GAP = space["3"] + 2
+const SECTION_GAP = space["4"]
 
 const IS_WEB = Platform.OS === "web"
 
-const CARD_RING_INSET = theme.space["4"] + StyleSheet.hairlineWidth
+const CARD_RING_INSET = space["4"] + StyleSheet.hairlineWidth
 const WEB_CARD_RING: ViewStyle = IS_WEB
   ? ({ outlineOffset: CARD_RING_INSET } as unknown as ViewStyle)
   : {}

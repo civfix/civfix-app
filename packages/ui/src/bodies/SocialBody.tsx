@@ -2,7 +2,7 @@ import React, { memo, useCallback, useState } from "react"
 import { View, Pressable, TextInput, StyleSheet, Platform, type ViewStyle } from "react-native"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, theme, useTheme, useLayoutMode, webHover, webInputReset, webTransition, headingLevel } from "../theme"
+import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webInputReset, webTransition, headingLevel } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, FollowButton } from "../primitives"
 import {
@@ -379,7 +379,7 @@ function SearchResultsHeader({ count }: { count: number }) {
 
 const MIN_TOUCH_TARGET = 44
 const ICON_BTN_SIZE = 32
-const ROW_GAP = theme.space["3"]
+const ROW_GAP = space["3"]
 const ICON_BTN_HIT_SLOP = {
   top: (MIN_TOUCH_TARGET - ICON_BTN_SIZE) / 2,
   bottom: (MIN_TOUCH_TARGET - ICON_BTN_SIZE) / 2,

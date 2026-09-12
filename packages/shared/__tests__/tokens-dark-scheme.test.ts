@@ -67,6 +67,30 @@ describe("dark color scheme", () => {
     }
   })
 
+  it("clears WCAG AA body-text contrast on the LIGHT surfaces (ink3 on paper2 is a known 2.86 exception)", () => {
+    const { neutral } = tokens.color
+    for (const surface of [neutral.paper, neutral.paper2, neutral.card, neutral.cardTint]) {
+      expect(contrast(neutral.ink, surface)).toBeGreaterThanOrEqual(7)
+      expect(contrast(neutral.ink2, surface)).toBeGreaterThanOrEqual(4.5)
+    }
+    for (const surface of [neutral.paper, neutral.card, neutral.cardTint]) {
+      expect(contrast(neutral.ink3, surface)).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it("keeps the light hairline border visible on the surfaces it divides", () => {
+    const { neutral } = tokens.color
+    expect(contrast(neutral.ink5, neutral.paper)).toBeGreaterThanOrEqual(1.1)
+    expect(contrast(neutral.ink5, neutral.card)).toBeGreaterThanOrEqual(1.25)
+  })
+
+  it("keeps the light surface ramp ordered from paper2 up to card", () => {
+    const { neutral } = tokens.color
+    expect(luminance(neutral.paper2)).toBeLessThan(luminance(neutral.paper))
+    expect(luminance(neutral.paper)).toBeLessThan(luminance(neutral.cardTint))
+    expect(luminance(neutral.cardTint)).toBeLessThan(luminance(neutral.card))
+  })
+
   it("keeps every category pin distinguishable from the dark paper (3:1 non-text floor)", () => {
     for (const hex of Object.values(darkColor.category)) {
       expect(contrast(hex, darkColor.neutral.paper)).toBeGreaterThanOrEqual(3)

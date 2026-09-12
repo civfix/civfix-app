@@ -12,15 +12,15 @@ import {
   type SharedValue,
   type WithTimingConfig,
 } from "react-native-reanimated"
-import { theme } from "@/theme"
+import { motion } from "@/theme"
 
 export const STAGE_HOLD_MS = 2000
-export const STAGE_STAGGER_MS = theme.motion.gravityStagger
-export const STAGE_DROP_PX = theme.motion.gravityDrop
-export const STAGE_RISE_PX = theme.motion.fadeUp.distance
+export const STAGE_STAGGER_MS = motion.gravityStagger
+export const STAGE_DROP_PX = motion.gravityDrop
+export const STAGE_RISE_PX = motion.fadeUp.distance
 
-export const GRAVITY_EASE = Easing.bezierFn(...theme.motion.gravity.easing)
-export const STANDARD_EASE = Easing.bezierFn(...theme.motion.easing)
+export const GRAVITY_EASE = Easing.bezierFn(...motion.gravity.easing)
+export const STANDARD_EASE = Easing.bezierFn(...motion.easing)
 
 const SWEEP_EASE = Easing.linear
 const RESET_CONFIG: WithTimingConfig = { duration: 0, easing: SWEEP_EASE }

@@ -6,6 +6,7 @@ import {
   withCartoKey,
   basemapPaper,
   BASEMAP_TILES,
+  DARK_RASTER_BRIGHTNESS_MIN,
   DEFAULT_ATTRIBUTION,
 } from "../mapStyle"
 
@@ -51,6 +52,22 @@ function tileSizeOf(style: MapStyleInput): number {
 function backgroundColorOf(style: MapStyleInput): string {
   const layers = (style as { layers: { id: string; paint?: Record<string, unknown> }[] }).layers
   return layers.find((layer) => layer.id === "background")?.paint?.["background-color"] as string
+}
+
+function rasterPaintOf(style: MapStyleInput): Record<string, unknown> {
+  const layers = (style as { layers: { id: string; paint?: Record<string, unknown> }[] }).layers
+  return layers.find((layer) => layer.id === "basemap")?.paint ?? {}
+}
+
+function liftedGround(hex: string, min: number): string {
+  const n = hex.replace("#", "")
+  const channels = [0, 2, 4].map((i) =>
+    Math.round(min * 255 + (1 - min) * parseInt(n.slice(i, i + 2), 16))
+      .toString(16)
+      .padStart(2, "0")
+      .toUpperCase(),
+  )
+  return `#${channels.join("")}`
 }
 
 describe("withCartoKey", () => {
@@ -103,10 +120,28 @@ describe("rasterMapStyle", () => {
     )
   })
 
-  it("paints the dark paper background for the dark scheme", () => {
+  it("paints the lifted dark-matter ground behind the dark tiles, not the app paper", () => {
     expect(backgroundColorOf(rasterMapStyle(DEFAULT_ATTRIBUTION, { scheme: "dark" }))).toBe(
-      colorSchemes.dark.neutral.paper,
+      basemapPaper("dark"),
     )
+    expect(basemapPaper("dark")).not.toBe(colorSchemes.dark.neutral.paper)
+  })
+
+  it("lifts the dark ground and only the ground", () => {
+    const dark = rasterPaintOf(rasterMapStyle(DEFAULT_ATTRIBUTION, { scheme: "dark" }))
+    expect(dark["raster-opacity"]).toBe(1)
+    expect(dark["raster-brightness-min"]).toBe(DARK_RASTER_BRIGHTNESS_MIN)
+    expect(dark["raster-brightness-max"]).toBe(1)
+    expect(dark["raster-saturation"]).toBe(0)
+    expect(dark["raster-contrast"]).toBe(0)
+    const light = rasterPaintOf(rasterMapStyle(DEFAULT_ATTRIBUTION, { scheme: "light" }))
+    expect(light).toEqual({ "raster-opacity": 1 })
+  })
+
+  it("derives basemapPaper.dark from the dark-matter ground and the same brightness floor", () => {
+    expect(DARK_RASTER_BRIGHTNESS_MIN).toBeGreaterThan(0.15)
+    expect(DARK_RASTER_BRIGHTNESS_MIN).toBeLessThanOrEqual(0.25)
+    expect(basemapPaper("dark")).toBe(liftedGround("#0E0E0E", DARK_RASTER_BRIGHTNESS_MIN))
   })
 
   it("serves the voyager tiles in light and the dark-matter tiles in dark", () => {

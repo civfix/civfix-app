@@ -318,9 +318,9 @@ describe("the Report tab keeps the dock for the WHOLE flow (WS3)", () => {
     const layer = /\n {2}layer: \{[^}]*\}/.exec(pickStepSource)?.[0] ?? ""
     expect(layer).toContain("StyleSheet.absoluteFillObject")
     expect(layer).not.toContain("padding")
-    expect(pickStepSource).toContain('const topOffset = (layered ? 0 : insets.top) + theme.space["2"]')
+    expect(pickStepSource).toContain('const topOffset = (layered ? 0 : insets.top) + space["2"]')
     expect(pickStepSource).toContain(
-      'const bottomOffset = (layered ? 0 : insets.bottom) + theme.space["3"]',
+      'const bottomOffset = (layered ? 0 : insets.bottom) + space["3"]',
     )
   })
 })

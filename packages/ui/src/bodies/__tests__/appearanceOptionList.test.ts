@@ -61,24 +61,26 @@ describe("the appearance option list is the one picker both surfaces mount", () 
     )
   })
 
-  it("labels dark as beta with a caption, and announces the badge to a screen reader", () => {
-    expect(LIST).toContain('t("option.dark_beta")')
-    expect(LIST).toContain('t("option.dark_sub")')
-    expect(LIST).toContain("accessibilityLabel={badge ? `${label}, ${badge}` : label}")
+  it("carries no beta pill and no experimental caption on the dark row", () => {
+    expect(LIST).not.toMatch(/BetaPill/)
+    expect(LIST).not.toMatch(/badge/)
+    expect(LIST).not.toContain('t("option.dark_beta")')
+    expect(LIST).not.toContain('t("option.dark_sub")')
+    expect(LIST).toContain("accessibilityLabel={label}")
   })
 
-  it("paints the beta pill from tokens only", () => {
-    expect(LIST).toContain('backgroundColor: t.colors.sun["50"]')
+  it("paints from tokens only", () => {
     expect(LIST).not.toMatch(/#[0-9a-fA-F]{6}/)
   })
 
-  it("has the beta copy in all four appearance catalogs", () => {
+  it("has dropped the beta copy from all four appearance catalogs, keeping the system caption", () => {
     for (const lng of ["en", "es", "de", "ko"]) {
       const catalog = JSON.parse(read(`../../i18n/locales/${lng}/appearance-settings.json`)) as {
-        option?: { dark_beta?: string; dark_sub?: string }
+        option?: { dark_beta?: string; dark_sub?: string; system_sub?: string }
       }
-      expect(catalog.option?.dark_beta, `${lng} is missing option.dark_beta`).toBeTruthy()
-      expect(catalog.option?.dark_sub, `${lng} is missing option.dark_sub`).toBeTruthy()
+      expect(catalog.option?.dark_beta, `${lng} still has option.dark_beta`).toBeUndefined()
+      expect(catalog.option?.dark_sub, `${lng} still has option.dark_sub`).toBeUndefined()
+      expect(catalog.option?.system_sub, `${lng} is missing option.system_sub`).toBeTruthy()
     }
   })
 })
@@ -224,7 +226,7 @@ describe("the retained native map does not re-serialize its style on every rende
 })
 
 describe("the shipped default appearance", () => {
-  it("is light, so nobody lands in the beta dark scheme without choosing it", () => {
-    expect(DEFAULT_APPEARANCE_PREFERENCE).toBe("light")
+  it("follows the device, so the splash, the boot gate and the first frame agree either way", () => {
+    expect(DEFAULT_APPEARANCE_PREFERENCE).toBe("system")
   })
 })

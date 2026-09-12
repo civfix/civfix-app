@@ -13,7 +13,7 @@ import type { PostDTO, PostRefDTO } from "@civfix/shared"
 import { Repeat2 } from "lucide-react-native/icons"
 import {
   POST_SURFACE,
-  theme,
+  space, radius,
   categoryColor,
   focusRingProps,
   makeThemedStyles,
@@ -890,7 +890,7 @@ const WEB_MORE_TARGET: ViewStyle = IS_WEB
       height: RHYTHM.overflowTarget,
       marginTop: -WEB_MORE_TARGET_GROWTH,
       marginBottom: -WEB_MORE_TARGET_GROWTH,
-      borderRadius: theme.radius.pill,
+      borderRadius: radius.pill,
     }
   : {}
 const WEB_META_ROW_LIFT: ViewStyle = IS_WEB ? { zIndex: 1 } : {}
@@ -901,7 +901,7 @@ const WEB_MORE_HALO_TOP: ViewStyle = IS_WEB
 const META_ROW: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
-  gap: theme.space["1"],
+  gap: space["1"],
   minHeight: POST_CARD_RHYTHM.metaRowMinHeight,
 }
 

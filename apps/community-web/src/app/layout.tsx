@@ -69,7 +69,7 @@ export const viewport: Viewport = {
 
 const APPEARANCE_SCRIPT = `(function(){try{
 var s=localStorage.getItem("civfix.appearance");
-if(s!=="light"&&s!=="dark"&&s!=="system")s="light";
+if(s!=="light"&&s!=="dark"&&s!=="system")s="system";
 var d=s==="dark"||(s==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);
 document.documentElement.classList.toggle("dark",d);
 document.documentElement.style.colorScheme=d?"dark":"light";

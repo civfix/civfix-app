@@ -20,23 +20,10 @@ import {
   type AppearancePending,
 } from "./appearanceSelection"
 
-function BetaPill({ label }: { label: string }) {
-  const styles = useStyles()
-  const th = useTheme()
-  return (
-    <View style={styles.beta}>
-      <Text variant="caption" color={th.colors.sun["700"]} style={styles.betaLabel}>
-        {label}
-      </Text>
-    </View>
-  )
-}
-
 const AppearanceRow = React.memo(function AppearanceRow({
   code,
   label,
   sub,
-  badge,
   selected,
   pending,
   selectedLabel,
@@ -45,7 +32,6 @@ const AppearanceRow = React.memo(function AppearanceRow({
   code: AppearancePreference
   label: string
   sub?: string
-  badge?: string
   selected: boolean
   pending: boolean
   selectedLabel: string
@@ -61,7 +47,7 @@ const AppearanceRow = React.memo(function AppearanceRow({
       accessibilityState={{ checked: selected, busy: pending }}
       aria-checked={selected}
       aria-busy={pending}
-      accessibilityLabel={badge ? `${label}, ${badge}` : label}
+      accessibilityLabel={label}
       {...focusRingProps}
       style={({ pressed }) => [styles.row, pressed ? styles.rowPressed : null]}
     >
@@ -73,7 +59,6 @@ const AppearanceRow = React.memo(function AppearanceRow({
           >
             {label}
           </Text>
-          {badge ? <BetaPill label={badge} /> : null}
         </View>
         {sub ? (
           <Text style={styles.rowSub} numberOfLines={2}>
@@ -129,14 +114,7 @@ export function AppearanceOptionList() {
             <AppearanceRow
               code={code}
               label={t(`option.${code}`)}
-              sub={
-                code === "system"
-                  ? t("option.system_sub")
-                  : code === "dark"
-                    ? t("option.dark_sub")
-                    : undefined
-              }
-              badge={code === "dark" ? t("option.dark_beta") : undefined}
+              sub={code === "system" ? t("option.system_sub") : undefined}
               selected={row.selected}
               pending={row.pending}
               selectedLabel={t("selected")}
@@ -186,16 +164,6 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
     marginTop: 2,
-  },
-  beta: {
-    alignSelf: "flex-start",
-    paddingHorizontal: t.space["2"],
-    paddingVertical: 2,
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.sun["50"],
-  },
-  betaLabel: {
-    fontFamily: t.fontFamily.bodySemiBold,
   },
   trailing: {
     width: 24,

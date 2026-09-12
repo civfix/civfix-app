@@ -92,8 +92,8 @@ describe("the native swipe uses the house gesture primitive", () => {
   })
 
   it("snaps on the app's motion tokens rather than a hand-typed duration", () => {
-    expect(swipeHook).toContain("theme.motion.fade.duration")
-    expect(swipeHook).toContain("Easing.bezier(...theme.motion.easing)")
+    expect(swipeHook).toContain("motion.fade.duration")
+    expect(swipeHook).toContain("Easing.bezier(...motion.easing)")
     expect(swipeHook).toContain("useNativeDriver: true")
   })
 

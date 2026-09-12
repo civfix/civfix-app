@@ -44,24 +44,24 @@
  * gorhom's `onClose` fires immediately and the presence gate tears down cleanly.
  */
 import { Easing, type WithTimingConfig } from "react-native-reanimated"
-import { theme } from "../theme"
+import { motion } from "../theme"
 import type { TimingRecipe } from "../theme/motion"
 
 export function timingConfig(r: TimingRecipe): WithTimingConfig {
   return { duration: r.duration, easing: Easing.bezier(...r.easing) }
 }
 
-export const sheetMoveConfig = (): WithTimingConfig => timingConfig(theme.motion.sheetMove)
-export const sheetDismissConfig = (): WithTimingConfig => timingConfig(theme.motion.sheetDismiss)
-export const dockMorphInConfig = (): WithTimingConfig => timingConfig(theme.motion.dockMorphIn)
-export const dockMorphOutConfig = (): WithTimingConfig => timingConfig(theme.motion.dockMorphOut)
-export const dockFocusConfig = (): WithTimingConfig => timingConfig(theme.motion.dockFocus)
-export const dockMinimizeConfig = (): WithTimingConfig => timingConfig(theme.motion.dockMinimize)
-export const tabPillConfig = (): WithTimingConfig => timingConfig(theme.motion.tabPill)
+export const sheetMoveConfig = (): WithTimingConfig => timingConfig(motion.sheetMove)
+export const sheetDismissConfig = (): WithTimingConfig => timingConfig(motion.sheetDismiss)
+export const dockMorphInConfig = (): WithTimingConfig => timingConfig(motion.dockMorphIn)
+export const dockMorphOutConfig = (): WithTimingConfig => timingConfig(motion.dockMorphOut)
+export const dockFocusConfig = (): WithTimingConfig => timingConfig(motion.dockFocus)
+export const dockMinimizeConfig = (): WithTimingConfig => timingConfig(motion.dockMinimize)
+export const tabPillConfig = (): WithTimingConfig => timingConfig(motion.tabPill)
 // The native PAGE STACK's four curves (shell/PageStack.native). Two of them are reached from a GESTURE
 // callback, which is precisely the position THE RULE above is about: PageStack hoists all four into
 // module-level consts at import time and the pan's `.onEnd` captures the RESULT, never the factory.
-export const pagePushConfig = (): WithTimingConfig => timingConfig(theme.motion.pagePush)
-export const pagePopConfig = (): WithTimingConfig => timingConfig(theme.motion.pagePop)
-export const pageSwipeSettleConfig = (): WithTimingConfig => timingConfig(theme.motion.pageSwipeSettle)
-export const pageSwipeCancelConfig = (): WithTimingConfig => timingConfig(theme.motion.pageSwipeCancel)
+export const pagePushConfig = (): WithTimingConfig => timingConfig(motion.pagePush)
+export const pagePopConfig = (): WithTimingConfig => timingConfig(motion.pagePop)
+export const pageSwipeSettleConfig = (): WithTimingConfig => timingConfig(motion.pageSwipeSettle)
+export const pageSwipeCancelConfig = (): WithTimingConfig => timingConfig(motion.pageSwipeCancel)

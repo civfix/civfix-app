@@ -13,7 +13,7 @@ import type { CleanupDTO, LinkedEventRef, ReportDTO } from "@civfix/shared"
 import {
   focusRingProps,
   makeThemedStyles,
-  theme,
+  space,
   useTheme,
   webCursorPointer,
   webHover,
@@ -42,8 +42,8 @@ const ROW_ICON: Record<MenuRowKey, IconName> = {
 }
 
 const CARD_WIDTH = 264
-const EDGE_MARGIN = theme.space["2"]
-const GAP = theme.space["1"]
+const EDGE_MARGIN = space["2"]
+const GAP = space["1"]
 
 export interface ReplyAttachSheetProps {
   visible: boolean
@@ -290,7 +290,7 @@ export function ReplyAttachSheet({
           {...webScrimProps}
         />
         <View
-          style={[styles.sheet, { paddingBottom: (insets?.bottom ?? 0) + theme.space["3"] }]}
+          style={[styles.sheet, { paddingBottom: (insets?.bottom ?? 0) + space["3"] }]}
           accessibilityRole="menu"
         >
           {content}

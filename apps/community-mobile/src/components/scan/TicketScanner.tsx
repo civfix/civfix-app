@@ -9,7 +9,7 @@ import {
 } from "react-native-vision-camera"
 import { Text, PrimaryButton } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
-import { makeThemedStyles, theme, useTheme } from "@/theme"
+import { makeThemedStyles, radius, themeFor, useTheme } from "@/theme"
 import {
   acceptsScannedCode,
   cameraSessionRunning,
@@ -165,6 +165,8 @@ const useStyles = makeThemedStyles((t) => ({
   },
 }))
 
+const stage = themeFor("light")
+
 const scannerStyles = StyleSheet.create({
   frame: {
     position: "absolute",
@@ -173,7 +175,7 @@ const scannerStyles = StyleSheet.create({
     right: 48,
     bottom: "22%",
     borderWidth: 2,
-    borderColor: theme.colors.neutral.card,
-    borderRadius: theme.radius.lg,
+    borderColor: stage.colors.neutral.card,
+    borderRadius: radius.lg,
   },
 })

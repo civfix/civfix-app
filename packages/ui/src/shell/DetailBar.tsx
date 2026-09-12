@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { makeThemedStyles, theme, useTheme } from "../theme"
+import { makeThemedStyles, motion, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { DETAIL_BACK_SIZE, DETAIL_BACK_RADIUS, DETAIL_BACK_ICON_SIZE, detailTitleStyle } from "./detailHeader"
@@ -8,7 +8,7 @@ import { DetailTrailingButton } from "./DetailTrailingButton"
 import type { DetailTrailingAction } from "./detailTrailingAction"
 import { backPressDecision } from "./pageStackModel"
 
-const BACK_PRESS_WINDOW_MS = theme.motion.pagePop.duration
+const BACK_PRESS_WINDOW_MS = motion.pagePop.duration
 
 export interface DetailBarProps {
   title: string

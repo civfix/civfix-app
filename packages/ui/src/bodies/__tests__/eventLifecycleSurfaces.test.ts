@@ -96,7 +96,7 @@ describe("EventHoursBlock renders inside its host's scroller", () => {
   })
 
   it("plays the shared fadeUp on transform + opacity only, so useNativeDriver is safe everywhere", () => {
-    expect(hoursBlock).toContain("theme.motion.fadeUp")
+    expect(hoursBlock).toContain("motion.fadeUp")
     expect(hoursBlock).toContain("useNativeDriver: true")
     expect(hoursBlock).toContain("translateY")
   })

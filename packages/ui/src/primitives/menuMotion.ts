@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Animated, Easing, Platform } from "react-native"
-import { theme } from "../theme"
+import { motion } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { MENU_SCALE_FROM, menuOrigin, type MenuOrigin } from "./menuMotionModel"
 
@@ -50,8 +50,8 @@ export function useMenuMotion({
       }
       const enter = Animated.timing(progress, {
         toValue: 1,
-        duration: theme.motion.menuIn.duration,
-        easing: Easing.bezier(...theme.motion.menuIn.easing),
+        duration: motion.menuIn.duration,
+        easing: Easing.bezier(...motion.menuIn.easing),
         useNativeDriver,
       })
       animRef.current = enter
@@ -69,8 +69,8 @@ export function useMenuMotion({
     setExiting(true)
     const exit = Animated.timing(progress, {
       toValue: 0,
-      duration: theme.motion.menuOut.duration,
-      easing: Easing.bezier(...theme.motion.menuOut.easing),
+      duration: motion.menuOut.duration,
+      easing: Easing.bezier(...motion.menuOut.easing),
       useNativeDriver,
     })
     animRef.current = exit
