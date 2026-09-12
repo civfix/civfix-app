@@ -356,7 +356,7 @@ const PageLayer = memo(function PageLayer({
 }: PageLayerProps) {
   const styles = useStyles()
   const body = useMemo(() => renderBody(entry, view), [entry, renderBody, view])
-  const keyboardReserve = useKeyboardReserve({ enabled: keyboardAvoidance })
+  const keyboardReserve = useKeyboardReserve({ enabled: keyboardAvoidance && active })
 
   const layerStyle = useAnimatedStyle(() => {
     const ownProgress = own === "exit" ? exit.value : own === "front" ? front.value : 0

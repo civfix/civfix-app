@@ -242,7 +242,9 @@ describe("I6 the composer carve-out is matched by a reserve on BOTH page stacks"
 
   it("reserves for it on Android with the layer's own keyboard reserve", () => {
     const native = read("../PageStack.native.tsx")
-    expect(native).toMatch(/const keyboardReserve = useKeyboardReserve\(\{ enabled: keyboardAvoidance \}\)/)
+    expect(native).toMatch(
+      /const keyboardReserve = useKeyboardReserve\(\{ enabled: keyboardAvoidance && active \}\)/,
+    )
     expect(native).toMatch(/paddingBottom: paddingBottom \+ keyboardReserve/)
   })
 })
