@@ -149,6 +149,12 @@ describe("insights wiring", () => {
     expect(hooks).toContain("placeholderData: (previous) => previous")
   })
 
+  it("says so in the hero caption when the kept frame is a failed refresh, not fresh numbers", () => {
+    expect(body).toContain("stale={failed}")
+    expect(panels).toContain("const caption = stale ? t(\"hero.stale\") : fresh")
+    expect(panels).toContain("stale={stale}")
+  })
+
   it("asks for insights only when the viewer may read analytics", () => {
     expect(body).toContain("enabled: can.viewAnalytics")
     expect(body).toContain("{can.viewAnalytics ? (")

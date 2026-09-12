@@ -145,7 +145,13 @@ function InsightsSection({
   const { t } = useT("host-mode")
   if (insights) {
     return (
-      <HostInsightsPanels insights={insights} phase={phase} columns={columns} compact={compact} />
+      <HostInsightsPanels
+        insights={insights}
+        phase={phase}
+        columns={columns}
+        compact={compact}
+        stale={failed}
+      />
     )
   }
   if (failed) {

@@ -38,7 +38,8 @@
     "of_registered": "등록 {{limit}}명 중",
     "no_cap": "석, 정원 없음",
     "as_of": "{{when}} 기준",
-    "rate": "{{rate}} 참석"
+    "rate": "{{rate}} 참석",
+    "stale": "지금은 새로 고칠 수 없습니다. 마지막으로 받은 수치입니다."
   },
   "tiles": {
     "waitlist": "대기자",

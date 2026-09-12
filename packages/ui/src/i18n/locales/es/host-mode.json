@@ -38,7 +38,8 @@
     "of_registered": "de {{limit}} inscritos",
     "no_cap": "plazas, sin límite",
     "as_of": "A las {{when}}",
-    "rate": "{{rate}} asistió"
+    "rate": "{{rate}} asistió",
+    "stale": "No se pudo actualizar ahora mismo. Estos son los últimos datos que tenemos."
   },
   "tiles": {
     "waitlist": "Lista de espera",

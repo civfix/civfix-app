@@ -38,7 +38,8 @@
     "of_registered": "of {{limit}} registered",
     "no_cap": "seats, no cap",
     "as_of": "As of {{when}}",
-    "rate": "{{rate}} showed up"
+    "rate": "{{rate}} showed up",
+    "stale": "Could not refresh just now. These are the last numbers we have."
   },
   "tiles": {
     "waitlist": "Waitlist",

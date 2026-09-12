@@ -38,7 +38,8 @@
     "of_registered": "von {{limit}} Angemeldeten",
     "no_cap": "Plätze, ohne Limit",
     "as_of": "Stand {{when}}",
-    "rate": "{{rate}} sind gekommen"
+    "rate": "{{rate}} sind gekommen",
+    "stale": "Gerade nicht aktualisierbar. Das sind die letzten Zahlen, die wir haben."
   },
   "tiles": {
     "waitlist": "Warteliste",

@@ -31,6 +31,7 @@ export interface HostInsightsPanelsProps {
   phase: EventPhase
   columns: StatTileColumns
   compact: boolean
+  stale: boolean
 }
 
 function useTileText(insights: EventInsights) {
@@ -63,10 +64,12 @@ function HeroPanel({
   insights,
   phase,
   compact,
+  stale,
 }: {
   insights: EventInsights
   phase: EventPhase
   compact: boolean
+  stale: boolean
 }) {
   const { t } = useT("host-mode")
   const { locale } = useLocale()
@@ -78,7 +81,7 @@ function HeroPanel({
       : hero.key === "registered"
         ? t("hero.of_capacity", { limit: formatStatValue(hero.limit, locale) ?? hero.limit })
         : t("hero.of_registered", { limit: formatStatValue(hero.limit, locale) ?? hero.limit })
-  const caption =
+  const fresh =
     phase === "ended"
       ? rate === null
         ? undefined
@@ -86,6 +89,7 @@ function HeroPanel({
       : phase === "live"
         ? t("hero.as_of", { when: timeLabel(insights.generatedAt, locale) })
         : undefined
+  const caption = stale ? t("hero.stale") : fresh
 
   return (
     <HeroStat
@@ -245,7 +249,13 @@ function MoneyPanel({ insights }: { insights: EventInsights }) {
   )
 }
 
-export function HostInsightsPanels({ insights, phase, columns, compact }: HostInsightsPanelsProps) {
+export function HostInsightsPanels({
+  insights,
+  phase,
+  columns,
+  compact,
+  stale,
+}: HostInsightsPanelsProps) {
   const styles = useStyles()
   const { t } = useT("host-mode")
   const tileText = useTileText(insights)
@@ -254,7 +264,7 @@ export function HostInsightsPanels({ insights, phase, columns, compact }: HostIn
 
   return (
     <View style={styles.stack}>
-      <HeroPanel insights={insights} phase={phase} compact={compact} />
+      <HeroPanel insights={insights} phase={phase} compact={compact} stale={stale} />
       {panels.tiles && tiles.length > 0 ? (
         <StatTileRow columns={columns}>
           {tiles.map((tile) => {
