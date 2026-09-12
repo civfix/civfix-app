@@ -1,6 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useRef } from "react"
 import { TextInput as RNTextInput } from "react-native"
 import { keyboardFocusStore, type KeyboardFocusNode } from "../shell/keyboardFocusStore"
+import { useKeyboardRevealGroup } from "../shell/keyboardRevealGroup"
 import { useKeyboardScrollScope } from "../shell/keyboardScrollScope"
 import type { TextInputProps } from "./TextInput.types"
 
@@ -13,7 +14,9 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
   ref,
 ) {
   const scope = useKeyboardScrollScope()
+  const revealGroup = useKeyboardRevealGroup()
   const nodeRef = useRef<KeyboardFocusNode | null>(null)
+  const registeredRef = useRef<KeyboardFocusNode | null>(null)
   const focusedRef = useRef(false)
   const contentHeightRef = useRef(0)
 
@@ -28,7 +31,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
 
   useEffect(
     () => () => {
-      if (focusedRef.current) keyboardFocusStore.clearFocused(nodeRef.current)
+      keyboardFocusStore.clearFocused(registeredRef.current)
     },
     [],
   )
@@ -36,10 +39,11 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextIn
   const handleFocus = useCallback<FocusHandler>(
     (event) => {
       focusedRef.current = true
-      keyboardFocusStore.setFocused(nodeRef.current, scope)
+      registeredRef.current = nodeRef.current
+      keyboardFocusStore.setFocused(nodeRef.current, scope, revealGroup?.current ?? null)
       onFocus?.(event)
     },
-    [onFocus, scope],
+    [onFocus, scope, revealGroup],
   )
 
   const handleBlur = useCallback<BlurHandler>(

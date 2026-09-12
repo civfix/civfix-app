@@ -39,6 +39,15 @@ describe("keyboardFocusStore", () => {
     expect(keyboardFocusStore.getState().scope).toBeNull()
   })
 
+  it("carries the reveal group the field declared, and drops it with the focus", () => {
+    const field = node()
+    const group = node()
+    keyboardFocusStore.setFocused(field, "scope-a", group)
+    expect(keyboardFocusStore.getState().revealNode).toBe(group)
+    keyboardFocusStore.clearFocused(field)
+    expect(keyboardFocusStore.getState().revealNode).toBeNull()
+  })
+
   it("keeps the version monotonic across focus, growth and blur", () => {
     const field = node()
     const seen: number[] = []

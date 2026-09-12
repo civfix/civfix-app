@@ -111,9 +111,19 @@ describe("I3 every text field is the primitive that registers its focus", () => 
   it("registers focus, blur and content growth with the scope it renders in", () => {
     const native = readFileSync(new URL("../../primitives/TextInput.native.tsx", import.meta.url), "utf8")
     expect(native).toMatch(/const scope = useKeyboardScrollScope\(\)/)
-    expect(native).toMatch(/keyboardFocusStore\.setFocused\(nodeRef\.current, scope\)/)
+    expect(native).toMatch(
+      /keyboardFocusStore\.setFocused\(nodeRef\.current, scope, revealGroup\?\.current \?\? null\)/,
+    )
     expect(native).toMatch(/keyboardFocusStore\.clearFocused\(nodeRef\.current\)/)
     expect(native).toMatch(/if \(focusedRef\.current\) keyboardFocusStore\.bump\(\)/)
+  })
+
+  it("clears its registration from a node the ref teardown cannot null", () => {
+    const native = readFileSync(new URL("../../primitives/TextInput.native.tsx", import.meta.url), "utf8")
+    expect(native).toMatch(/registeredRef\.current = nodeRef\.current/)
+    expect(native).toMatch(
+      /\(\) => \(\) => \{\s*\n\s*keyboardFocusStore\.clearFocused\(registeredRef\.current\)\s*\n\s*\},/,
+    )
   })
 })
 
