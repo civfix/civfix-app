@@ -4,7 +4,7 @@ import { persistableCount } from "./navSnapshot"
 
 export type NavTransition =
   | { type: "push" }
-  | { type: "select" }
+  | { type: "select"; consumes?: boolean }
   | { type: "reset" }
   | { type: "seed" }
   | { type: "restore" }

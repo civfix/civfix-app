@@ -71,6 +71,26 @@ describe("navSeq and lastTransition", () => {
     expect(useNavStore.getState().lastTransition).toEqual({ type: "select" })
   })
 
+  it("leaving search marks the select as one that consumes the overlay entry", () => {
+    useNavStore.getState().selectView("map")
+    useNavStore.getState().selectView("search")
+    expect(useNavStore.getState().lastTransition).toEqual({ type: "select" })
+
+    useNavStore.getState().selectView("home")
+    expect(useNavStore.getState().lastTransition).toEqual({ type: "select", consumes: true })
+
+    useNavStore.getState().selectView("search")
+    useNavStore.getState().selectView("search")
+    expect(useNavStore.getState().view).toBe("home")
+    expect(useNavStore.getState().lastTransition).toEqual({ type: "select", consumes: true })
+  })
+
+  it("leaving the report wizard stays a plain select, since its own unwind owns the return", () => {
+    useNavStore.getState().selectView("report")
+    useNavStore.getState().selectView("events")
+    expect(useNavStore.getState().lastTransition).toEqual({ type: "select" })
+  })
+
   it("re-selecting map with an empty stack is not a transition at all", () => {
     useNavStore.getState().selectView("map")
     const seq = useNavStore.getState().navSeq

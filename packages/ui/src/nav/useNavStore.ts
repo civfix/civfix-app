@@ -79,6 +79,14 @@ function reportRunSurvives(view: View): boolean {
   return view === "report" || view === "search"
 }
 
+const TRANSIENT_OVERLAY_VIEWS: ReadonlySet<View> = new Set<View>(["search"])
+
+function selectTransition(leaving: View): NavTransition {
+  return TRANSIENT_OVERLAY_VIEWS.has(leaving)
+    ? { type: "select", consumes: true }
+    : { type: "select" }
+}
+
 const COLD_REPORT_RETURN: NavReturn = {
   view: "home",
   stack: [],
@@ -165,7 +173,7 @@ export const useNavStore = create<NavStore>((set, get) => ({
             snapAnimated: true,
             reportReturn: null,
           },
-          { type: "select" },
+          selectTransition(s.view),
         )
       }
       return advance(
@@ -181,7 +189,7 @@ export const useNavStore = create<NavStore>((set, get) => ({
           snapAnimated: true,
           reportReturn: reportReturnForView(s, view),
         },
-        { type: "select" },
+        selectTransition(s.view),
       )
     }),
 
