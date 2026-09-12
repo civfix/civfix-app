@@ -1,4 +1,8 @@
-import React, { createContext, useContext } from "react"
+import React, { createContext, useContext, useEffect, useState, useSyncExternalStore } from "react"
+import {
+  makeKeyboardHostReserveStore,
+  type KeyboardHostReserveStore,
+} from "./keyboardHostReserveStore"
 
 const KeyboardScrollScopeContext = createContext<string | null>(null)
 KeyboardScrollScopeContext.displayName = "KeyboardScrollScopeContext"
@@ -16,4 +20,42 @@ export function KeyboardScrollScopeProvider({ value, children }: KeyboardScrollS
 
 export function useKeyboardScrollScope(): string | null {
   return useContext(KeyboardScrollScopeContext)
+}
+
+const KeyboardHostReserveScopeContext = createContext<KeyboardHostReserveStore | null>(null)
+KeyboardHostReserveScopeContext.displayName = "KeyboardHostReserveScopeContext"
+
+export interface KeyboardHostReserveScopeProps {
+  children: React.ReactNode
+}
+
+export function KeyboardHostReserveScope({ children }: KeyboardHostReserveScopeProps) {
+  const [store] = useState(makeKeyboardHostReserveStore)
+  return (
+    <KeyboardHostReserveScopeContext.Provider value={store}>
+      {children}
+    </KeyboardHostReserveScopeContext.Provider>
+  )
+}
+
+export function useKeyboardHostReserveScope(): KeyboardHostReserveStore | null {
+  return useContext(KeyboardHostReserveScopeContext)
+}
+
+export function useKeyboardHostReserveClaim(active: boolean): void {
+  const store = useKeyboardHostReserveScope()
+  useEffect(() => {
+    if (!active || !store) return
+    return store.claim()
+  }, [active, store])
+}
+
+const unscopedSubscribe = (): (() => void) => () => {}
+const unscopedState = (): boolean => false
+
+export function useKeyboardHostReserved(): boolean {
+  const store = useKeyboardHostReserveScope()
+  const subscribe = store ? store.subscribe : unscopedSubscribe
+  const getState = store ? store.getState : unscopedState
+  return useSyncExternalStore(subscribe, getState, getState)
 }

@@ -99,18 +99,50 @@ describe("I1 the Android reserve has exactly four owners", () => {
     expect(footers("../../bodies/ReportFlowBody.tsx")).toBe(1)
   })
 
-  it("lets a lifted footer tell the scroll seams the space is already reserved", () => {
+  it("lets a lifted footer tell the scroll seams of ITS OWN scope the space is already reserved", () => {
     const footer = readFileSync(
       new URL("../../primitives/KeyboardPinnedFooter.tsx", import.meta.url),
       "utf8",
     )
     expect(footer).toMatch(/const lifts = pageActive && Platform\.OS !== "ios"/)
-    expect(footer).toMatch(/return keyboardHostReserveStore\.claim\(\)/)
+    expect(footer).toMatch(/useKeyboardHostReserveClaim\(lifts\)/)
     for (const rel of ["../KeyboardAwareScroll.native.tsx", "../KeyboardAwareScroll.web.tsx"]) {
       expect(readFileSync(new URL(rel, import.meta.url), "utf8"), rel).toMatch(
-        /keyboardHostReserve/,
+        /useKeyboardHostReserve(Scope|d)\(\)/,
       )
     }
+  })
+
+  it("keeps the reservation on the scope context alone, with no process-global counter left", () => {
+    const store = readFileSync(new URL("../keyboardHostReserveStore.ts", import.meta.url), "utf8")
+    expect(store).toMatch(/export function makeKeyboardHostReserveStore\(\): KeyboardHostReserveStore/)
+    expect(store).not.toMatch(/^let claims/m)
+    expect(named(({ src }) => /keyboardHostReserveStore\./.test(src))).toEqual([])
+  })
+
+  it("gives every body that pins a footer a scope of its own for the scrollers under it", () => {
+    for (const rel of [
+      "../../bodies/NewGroupBody.tsx",
+      "../../bodies/NewChannelBody.tsx",
+      "../../bodies/ReportFlowBody.tsx",
+    ]) {
+      const src = readFileSync(new URL(rel, import.meta.url), "utf8")
+      expect(src, rel).toMatch(
+        /import \{ KeyboardHostReserveScope \} from "\.\.\/shell\/keyboardScrollScope"/,
+      )
+      expect(src, rel).toMatch(/<KeyboardHostReserveScope>/)
+      expect(src, rel).toMatch(/<\/KeyboardHostReserveScope>/)
+    }
+  })
+
+  it("gates the retained report slot on the page, so its footer stops claiming under a pushed page", () => {
+    const portrait = readFileSync(new URL("../PortraitShell.shared.tsx", import.meta.url), "utf8")
+    expect(portrait).toMatch(
+      /const reportSlotActive = reportSlotVisible && stack\.length === 0/,
+    )
+    expect(portrait).toMatch(
+      /<PageActiveProvider value=\{reportSlotActive\}>\{reportSlotBody\}<\/PageActiveProvider>/,
+    )
   })
 })
 
@@ -213,6 +245,14 @@ describe("I5 no scroller outside the shell is left undecorated", () => {
       /ScrollView: makeKeyboardAwareScrollable\(base\.ScrollView, options, SCROLL_VIEW\),\s*\n\s*FlatList: makeKeyboardAwareScrollable\(base\.FlatList, options, FLAT_LIST\),/,
     )
     expect(seam).toMatch(/<KeyboardScrollScopeProvider value=\{scopeId\}>\{scrollable\}/)
+  })
+
+  it("reveals only for a focus that landed in ITS OWN scope", () => {
+    const seam = readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
+    expect(seam).toMatch(/if \(!scrollKeyboardReveals\(state\)\) return/)
+    expect(seam).toMatch(
+      /\}, \[state\.focusedScope, state\.overlap, state\.reserve, state\.revealVersion\]\)/,
+    )
   })
 
   it("leaves a HORIZONTAL list undecorated, the way the minimize seam does", () => {

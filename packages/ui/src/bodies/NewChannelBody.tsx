@@ -8,6 +8,7 @@ import { KeyboardPinnedFooter, PrimaryButton } from "../primitives"
 import { useComposerAttachments } from "../primitives/useComposerAttachments"
 import { useCreateGroup, useAuthState } from "../data"
 import { useNavStore } from "../nav"
+import { KeyboardHostReserveScope } from "../shell/keyboardScrollScope"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { MemberPicker } from "./MemberPicker"
@@ -94,130 +95,132 @@ export function NewChannelBody() {
         : t("add_members")
 
   return (
-    <View style={styles.root}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={onBack}
-          accessibilityRole="button"
-          accessibilityLabel={t("back_a11y")}
-          hitSlop={8}
-          {...focusRingProps}
-          style={({ pressed }) => [styles.backBtn, pressed ? styles.backPressed : null]}
-        >
-          <Icon icon={iconMap.ArrowLeft} size={20} color={th.colors.text} />
-        </Pressable>
-        <Text style={styles.headerTitle} numberOfLines={1} accessibilityRole="header">
-          {headerTitle}
-        </Text>
-        {shouldOfferChannelSkip(step, selected.length) ? (
+    <KeyboardHostReserveScope>
+      <View style={styles.root}>
+        <View style={styles.header}>
           <Pressable
-            onPress={onCreate}
-            disabled={createDisabled}
+            onPress={onBack}
             accessibilityRole="button"
-            accessibilityLabel={t("skip")}
+            accessibilityLabel={t("back_a11y")}
             hitSlop={8}
             {...focusRingProps}
-            style={({ pressed }) => [styles.skipBtn, pressed ? styles.backPressed : null]}
+            style={({ pressed }) => [styles.backBtn, pressed ? styles.backPressed : null]}
           >
-            <Text style={[styles.skipText, createDisabled ? styles.skipDisabled : null]}>{t("skip")}</Text>
+            <Icon icon={iconMap.ArrowLeft} size={20} color={th.colors.text} />
           </Pressable>
-        ) : null}
-      </View>
-
-      {step === "identity" ? (
-        <>
-          <ScrollView
-            style={styles.fill}
-            contentContainerStyle={styles.identityContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            <GroupIdentityFields
-              avatar={avatar}
-              name={name}
-              onChangeName={setName}
-              description={description}
-              onChangeDescription={setDescription}
-              labels={{
-                avatarA11y: t("avatar_a11y"),
-                avatarClearA11y: t("avatar_clear_a11y"),
-                nameLabel: t("name_label"),
-                namePlaceholder: t("name_placeholder"),
-                descriptionLabel: t("description_label"),
-                descriptionPlaceholder: t("description_placeholder"),
-              }}
-            />
-          </ScrollView>
-          <KeyboardPinnedFooter style={styles.footer}>
-            <PrimaryButton label={t("next")} onPress={onNextIdentity} disabled={identityNextDisabled} />
-          </KeyboardPinnedFooter>
-        </>
-      ) : step === "visibility" ? (
-        <>
-          <ScrollView
-            style={styles.fill}
-            contentContainerStyle={styles.identityContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            {VISIBILITY_OPTIONS.map((opt) => {
-              const active = visibility === opt.value
-              return (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => setVisibility(opt.value)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: active }}
-                  accessibilityLabel={t(`${opt.value}_label`)}
-                  {...focusRingProps}
-                  style={({ pressed }) => [
-                    styles.radioRow,
-                    active ? styles.radioRowActive : null,
-                    pressed ? styles.radioPressed : null,
-                  ]}
-                >
-                  <Icon
-                    icon={iconMap[opt.icon]}
-                    size={20}
-                    color={active ? th.colors.brand.moss : th.colors.textMuted}
-                  />
-                  <View style={styles.radioText}>
-                    <Text style={styles.radioLabel}>{t(`${opt.value}_label`)}</Text>
-                    <Text style={styles.radioHint}>{t(`${opt.value}_hint`)}</Text>
-                  </View>
-                  <View style={[styles.radioDot, active ? styles.radioDotActive : null]}>
-                    {active ? <View style={styles.radioDotInner} /> : null}
-                  </View>
-                </Pressable>
-              )
-            })}
-          </ScrollView>
-          <KeyboardPinnedFooter style={styles.footer}>
-            <PrimaryButton label={t("next")} onPress={() => setStep("members")} />
-          </KeyboardPinnedFooter>
-        </>
-      ) : (
-        <>
-          <View style={styles.fill}>
-            <MemberPicker
-              selected={selected}
-              onChange={setSelected}
-              excludeIds={excludeIds}
-              emptyPromptBody={t("subscriber_prompt")}
-            />
-          </View>
-          {submitError ? <Text style={[styles.errorText, styles.submitError]}>{t("create_error")}</Text> : null}
-          <KeyboardPinnedFooter style={styles.footer}>
-            <PrimaryButton
-              label={t("create")}
+          <Text style={styles.headerTitle} numberOfLines={1} accessibilityRole="header">
+            {headerTitle}
+          </Text>
+          {shouldOfferChannelSkip(step, selected.length) ? (
+            <Pressable
               onPress={onCreate}
               disabled={createDisabled}
-              loading={createGroup.isPending}
-            />
-          </KeyboardPinnedFooter>
-        </>
-      )}
-    </View>
+              accessibilityRole="button"
+              accessibilityLabel={t("skip")}
+              hitSlop={8}
+              {...focusRingProps}
+              style={({ pressed }) => [styles.skipBtn, pressed ? styles.backPressed : null]}
+            >
+              <Text style={[styles.skipText, createDisabled ? styles.skipDisabled : null]}>{t("skip")}</Text>
+            </Pressable>
+          ) : null}
+        </View>
+
+        {step === "identity" ? (
+          <>
+            <ScrollView
+              style={styles.fill}
+              contentContainerStyle={styles.identityContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <GroupIdentityFields
+                avatar={avatar}
+                name={name}
+                onChangeName={setName}
+                description={description}
+                onChangeDescription={setDescription}
+                labels={{
+                  avatarA11y: t("avatar_a11y"),
+                  avatarClearA11y: t("avatar_clear_a11y"),
+                  nameLabel: t("name_label"),
+                  namePlaceholder: t("name_placeholder"),
+                  descriptionLabel: t("description_label"),
+                  descriptionPlaceholder: t("description_placeholder"),
+                }}
+              />
+            </ScrollView>
+            <KeyboardPinnedFooter style={styles.footer}>
+              <PrimaryButton label={t("next")} onPress={onNextIdentity} disabled={identityNextDisabled} />
+            </KeyboardPinnedFooter>
+          </>
+        ) : step === "visibility" ? (
+          <>
+            <ScrollView
+              style={styles.fill}
+              contentContainerStyle={styles.identityContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              {VISIBILITY_OPTIONS.map((opt) => {
+                const active = visibility === opt.value
+                return (
+                  <Pressable
+                    key={opt.value}
+                    onPress={() => setVisibility(opt.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: active }}
+                    accessibilityLabel={t(`${opt.value}_label`)}
+                    {...focusRingProps}
+                    style={({ pressed }) => [
+                      styles.radioRow,
+                      active ? styles.radioRowActive : null,
+                      pressed ? styles.radioPressed : null,
+                    ]}
+                  >
+                    <Icon
+                      icon={iconMap[opt.icon]}
+                      size={20}
+                      color={active ? th.colors.brand.moss : th.colors.textMuted}
+                    />
+                    <View style={styles.radioText}>
+                      <Text style={styles.radioLabel}>{t(`${opt.value}_label`)}</Text>
+                      <Text style={styles.radioHint}>{t(`${opt.value}_hint`)}</Text>
+                    </View>
+                    <View style={[styles.radioDot, active ? styles.radioDotActive : null]}>
+                      {active ? <View style={styles.radioDotInner} /> : null}
+                    </View>
+                  </Pressable>
+                )
+              })}
+            </ScrollView>
+            <KeyboardPinnedFooter style={styles.footer}>
+              <PrimaryButton label={t("next")} onPress={() => setStep("members")} />
+            </KeyboardPinnedFooter>
+          </>
+        ) : (
+          <>
+            <View style={styles.fill}>
+              <MemberPicker
+                selected={selected}
+                onChange={setSelected}
+                excludeIds={excludeIds}
+                emptyPromptBody={t("subscriber_prompt")}
+              />
+            </View>
+            {submitError ? <Text style={[styles.errorText, styles.submitError]}>{t("create_error")}</Text> : null}
+            <KeyboardPinnedFooter style={styles.footer}>
+              <PrimaryButton
+                label={t("create")}
+                onPress={onCreate}
+                disabled={createDisabled}
+                loading={createGroup.isPending}
+              />
+            </KeyboardPinnedFooter>
+          </>
+        )}
+      </View>
+    </KeyboardHostReserveScope>
   )
 }
 

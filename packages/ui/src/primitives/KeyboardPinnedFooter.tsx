@@ -1,6 +1,6 @@
-import React, { useEffect } from "react"
+import React from "react"
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native"
-import { keyboardHostReserveStore } from "../shell/keyboardHostReserveStore"
+import { useKeyboardHostReserveClaim } from "../shell/keyboardScrollScope"
 import { usePageIsActive } from "../shell/pageActive"
 import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 
@@ -18,11 +18,7 @@ export function KeyboardPinnedFooter({
   const reserve = useKeyboardReserve()
   const pageActive = usePageIsActive()
   const lifts = pageActive && Platform.OS !== "ios"
-
-  useEffect(() => {
-    if (!lifts) return
-    return keyboardHostReserveStore.claim()
-  }, [lifts])
+  useKeyboardHostReserveClaim(lifts)
 
   const flat = (StyleSheet.flatten(style) || {}) as { paddingBottom?: number }
   const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0

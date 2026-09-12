@@ -18,6 +18,7 @@ import {
   queryKeys,
 } from "../data"
 import { useNavStore } from "../nav"
+import { KeyboardHostReserveScope } from "../shell/keyboardScrollScope"
 import { useScrollHost } from "../shell/ScrollHost"
 import {
   DETAIL_BACK_SIZE,
@@ -1076,137 +1077,139 @@ export function ReportFlowBody() {
   }
 
   return (
-    <View style={styles.root}>
-      {wizardHeaderMode(mode, showBack, atViewRoot) === "tab-root" ? (
-        <View style={[styles.headerRootRow, mode === "expanded" ? styles.headerRootRowExpanded : null]}>
-          <Text style={styles.headerTitleRoot} numberOfLines={1} accessibilityRole="header">
-            {t("header.title")}
-          </Text>
-          <HeaderProfileButton />
+    <KeyboardHostReserveScope>
+      <View style={styles.root}>
+        {wizardHeaderMode(mode, showBack, atViewRoot) === "tab-root" ? (
+          <View style={[styles.headerRootRow, mode === "expanded" ? styles.headerRootRowExpanded : null]}>
+            <Text style={styles.headerTitleRoot} numberOfLines={1} accessibilityRole="header">
+              {t("header.title")}
+            </Text>
+            <HeaderProfileButton />
+          </View>
+        ) : (
+          <View style={[styles.headerBase, mode === "expanded" ? styles.headerExpanded : styles.headerCompact]}>
+            {showBack ? (
+              <Pressable
+                onPress={onBack}
+                accessibilityRole="button"
+                accessibilityLabel={t("header.back")}
+                hitSlop={8}
+                {...focusRingProps}
+                style={({ pressed }) => [
+                  styles.backBase,
+                  mode === "expanded" ? styles.backExpanded : styles.backCompact,
+                  pressed ? styles.pressed : null,
+                ]}
+              >
+                <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
+              </Pressable>
+            ) : null}
+            <Text
+              style={mode === "expanded" ? styles.headerTitleExpanded : styles.headerTitleCompact}
+              numberOfLines={1}
+              accessibilityRole="header"
+            >
+              {t("header.title")}
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.wizardHead}>
+          <WizardStepHeader
+            step={stepIndex + 1}
+            total={stepOrder.length}
+            title={stepTitle}
+            help={t(`wizard.${activeStep}.help`)}
+          />
         </View>
-      ) : (
-        <View style={[styles.headerBase, mode === "expanded" ? styles.headerExpanded : styles.headerCompact]}>
-          {showBack ? (
+
+        {viewfinderVisible ? (
+          <View style={styles.viewfinderLayer}>
+            {viewfinderMounted && Viewfinder ? (
+              <Viewfinder
+                active={sessionActive}
+                resumeGrace={sessionResumeGrace}
+                onCaptured={onViewfinderCaptured}
+              />
+            ) : null}
+          </View>
+        ) : (
+          <ScrollView
+            ref={scrollRef}
+            style={styles.scroll}
+            contentContainerStyle={[
+              styles.content,
+              mode === "expanded" && activeStep === "capture" && !hasMedia ? styles.contentFill : null,
+            ]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <StepTransition
+              transitionKey={activeStep}
+              direction={stepDirection}
+              style={
+                mode === "expanded" && activeStep === "capture" && !hasMedia ? styles.stepHostFill : null
+              }
+            >
+              {activeStep === "capture" ? (
+                <CaptureStep mode={mode} />
+              ) : null}
+              {activeStep === "location" ? (
+                <LocationStep onOpenPicker={openPicker} />
+              ) : null}
+              {activeStep === "category" ? <CategoryStep /> : null}
+              {activeStep === "details" ? <DetailsStep /> : null}
+              {activeStep === "review" ? (
+                <ReviewStep
+                  fromComposer={fromComposer}
+                  onRequestReveal={revealShareBlock}
+                  onOpenPicker={openPicker}
+                />
+              ) : null}
+            </StepTransition>
+          </ScrollView>
+        )}
+
+        {showsWizardFooter(activeStep, hasMedia) ? (
+          <KeyboardPinnedFooter style={styles.footer}>
             <Pressable
-              onPress={onBack}
+              onPress={onNext}
+              disabled={!canAdvance}
               accessibilityRole="button"
-              accessibilityLabel={t("header.back")}
-              hitSlop={8}
+              accessibilityLabel={isLast ? t("footer.drop_pin") : t("footer.continue")}
+              accessibilityState={{ disabled: !canAdvance }}
               {...focusRingProps}
               style={({ pressed }) => [
-                styles.backBase,
-                mode === "expanded" ? styles.backExpanded : styles.backCompact,
-                pressed ? styles.pressed : null,
+                styles.nextBtn,
+                !canAdvance ? styles.nextDisabled : [styles.nextActive, th.shadows.pin],
+                pressed && canAdvance ? styles.pressed : null,
               ]}
             >
-              <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
+              <Text style={[styles.nextText, { color: canAdvance ? th.colors.onAccent : th.colors.textSubtle }]}>
+                {isLast ? t("footer.drop_pin") : t("footer.continue")}
+              </Text>
+              <View style={styles.nextIcon}>
+                <Icon
+                  icon={isLast ? iconMap.MapPin : iconMap.ChevronRight}
+                  size={16}
+                  color={canAdvance ? th.colors.onAccent : th.colors.textSubtle}
+                />
+              </View>
             </Pressable>
-          ) : null}
-          <Text
-            style={mode === "expanded" ? styles.headerTitleExpanded : styles.headerTitleCompact}
-            numberOfLines={1}
-            accessibilityRole="header"
-          >
-            {t("header.title")}
-          </Text>
-        </View>
-      )}
+          </KeyboardPinnedFooter>
+        ) : null}
 
-      <View style={styles.wizardHead}>
-        <WizardStepHeader
-          step={stepIndex + 1}
-          total={stepOrder.length}
-          title={stepTitle}
-          help={t(`wizard.${activeStep}.help`)}
+        <PortraitMapPickStep
+          visible={pickLayerMounted}
+          inert={!pickLayerOpen}
+          presentation="layer"
+          value={pickPoint}
+          initialCenter={pickCenter}
+          onConfirm={onPickConfirm}
+          onCancel={onPickCancel}
         />
       </View>
-
-      {viewfinderVisible ? (
-        <View style={styles.viewfinderLayer}>
-          {viewfinderMounted && Viewfinder ? (
-            <Viewfinder
-              active={sessionActive}
-              resumeGrace={sessionResumeGrace}
-              onCaptured={onViewfinderCaptured}
-            />
-          ) : null}
-        </View>
-      ) : (
-        <ScrollView
-          ref={scrollRef}
-          style={styles.scroll}
-          contentContainerStyle={[
-            styles.content,
-            mode === "expanded" && activeStep === "capture" && !hasMedia ? styles.contentFill : null,
-          ]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <StepTransition
-            transitionKey={activeStep}
-            direction={stepDirection}
-            style={
-              mode === "expanded" && activeStep === "capture" && !hasMedia ? styles.stepHostFill : null
-            }
-          >
-            {activeStep === "capture" ? (
-              <CaptureStep mode={mode} />
-            ) : null}
-            {activeStep === "location" ? (
-              <LocationStep onOpenPicker={openPicker} />
-            ) : null}
-            {activeStep === "category" ? <CategoryStep /> : null}
-            {activeStep === "details" ? <DetailsStep /> : null}
-            {activeStep === "review" ? (
-              <ReviewStep
-                fromComposer={fromComposer}
-                onRequestReveal={revealShareBlock}
-                onOpenPicker={openPicker}
-              />
-            ) : null}
-          </StepTransition>
-        </ScrollView>
-      )}
-
-      {showsWizardFooter(activeStep, hasMedia) ? (
-        <KeyboardPinnedFooter style={styles.footer}>
-          <Pressable
-            onPress={onNext}
-            disabled={!canAdvance}
-            accessibilityRole="button"
-            accessibilityLabel={isLast ? t("footer.drop_pin") : t("footer.continue")}
-            accessibilityState={{ disabled: !canAdvance }}
-            {...focusRingProps}
-            style={({ pressed }) => [
-              styles.nextBtn,
-              !canAdvance ? styles.nextDisabled : [styles.nextActive, th.shadows.pin],
-              pressed && canAdvance ? styles.pressed : null,
-            ]}
-          >
-            <Text style={[styles.nextText, { color: canAdvance ? th.colors.onAccent : th.colors.textSubtle }]}>
-              {isLast ? t("footer.drop_pin") : t("footer.continue")}
-            </Text>
-            <View style={styles.nextIcon}>
-              <Icon
-                icon={isLast ? iconMap.MapPin : iconMap.ChevronRight}
-                size={16}
-                color={canAdvance ? th.colors.onAccent : th.colors.textSubtle}
-              />
-            </View>
-          </Pressable>
-        </KeyboardPinnedFooter>
-      ) : null}
-
-      <PortraitMapPickStep
-        visible={pickLayerMounted}
-        inert={!pickLayerOpen}
-        presentation="layer"
-        value={pickPoint}
-        initialCenter={pickCenter}
-        onConfirm={onPickConfirm}
-        onCancel={onPickCancel}
-      />
-    </View>
+    </KeyboardHostReserveScope>
   )
 }
 

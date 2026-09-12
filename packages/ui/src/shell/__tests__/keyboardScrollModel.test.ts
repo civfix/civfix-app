@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   initialScrollKeyboardState,
   reduceScrollKeyboard,
+  scrollKeyboardReveals,
   type ScrollKeyboardSignal,
   type ScrollKeyboardState,
 } from "../keyboardScrollModel"
@@ -118,5 +119,23 @@ describe("reduceScrollKeyboard", () => {
     const next = opened(false)
     expect(next.reserve).toBe(0)
     expect(next.revealVersion).toBe(1)
+  })
+})
+
+describe("scrollKeyboardReveals", () => {
+  it("reveals once a field of its OWN scope raised the keyboard", () => {
+    expect(scrollKeyboardReveals(opened())).toBe(true)
+  })
+
+  it("never reveals for a focus that moved to a FOREIGN scope, even as the keyboard re-reports", () => {
+    const foreign = run(opened(), focus("scope-other"), show(412))
+    expect(foreign.overlap).toBe(412)
+    expect(foreign.revealVersion).toBe(1)
+    expect(scrollKeyboardReveals(foreign)).toBe(false)
+  })
+
+  it("never reveals before a focus, or once the keyboard is gone", () => {
+    expect(scrollKeyboardReveals(initialScrollKeyboardState(MINE))).toBe(false)
+    expect(scrollKeyboardReveals(run(opened(), { type: "hide" }))).toBe(false)
   })
 })

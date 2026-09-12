@@ -93,3 +93,7 @@ export function reduceScrollKeyboard(
     }
   }
 }
+
+export function scrollKeyboardReveals(state: ScrollKeyboardState): boolean {
+  return state.revealVersion > 0 && state.overlap > 0 && state.focusedScope === state.scope
+}
