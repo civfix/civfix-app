@@ -276,7 +276,7 @@ pnpm --filter @civfix/ui build                  # tsc --emitDeclarationOnly -> d
 
 `@civfix/ui` is `"private": true` and is NEVER published: it ships as part of whatever build its two
 consumers make. A change here reaches `community-web` on the next deploy of that app
-(`.github/workflows/deploy-web.yml`, push to `main` or `dev`) and reaches `community-mobile` only when
+(`.github/workflows/deploy-web.yml`, a push to `main` or a `v*` release) and reaches `community-mobile` only when
 someone runs a manual EAS build. `changeset version` may still bump its version and changelog
 (`privatePackages: { version: true, tag: false }`), but nothing is published or tagged for it —
 `@civfix/shared` is the only publishable package; see [RELEASING.md](../../RELEASING.md).
