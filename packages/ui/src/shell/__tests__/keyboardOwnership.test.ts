@@ -45,14 +45,31 @@ const importsValue = (src: string, name: string) =>
     (spec) => !spec.startsWith("type ") && (spec === name || spec.startsWith(`${name} as `)),
   )
 
+const REACT_NATIVE_IMPORT = /import\s+([^"';]*?)\s+from\s*"react-native"/g
+
+const importsWholeModule = (src: string) =>
+  [...src.matchAll(REACT_NATIVE_IMPORT)].some(
+    (match) =>
+      !(match[1] ?? "")
+        .replace(/^type\s+/, "")
+        .trim()
+        .startsWith("{"),
+  )
+
 const named = (predicate: (entry: { file: string; src: string }) => boolean) =>
   FILES.filter(predicate)
     .map((entry) => basename(entry.file))
     .sort()
 
+describe("I0 react-native is only ever imported through named specifiers", () => {
+  it("leaves no namespace or default binding for the specifier parse to miss", () => {
+    expect(named(({ src }) => importsWholeModule(src))).toEqual([])
+  })
+})
+
 describe("I1 the Android reserve has exactly four owners", () => {
   it("names them", () => {
-    expect(named(({ src }) => /= useKeyboardReserve\(/.test(src))).toEqual([
+    expect(named(({ src }) => /(?<!function\s)\buseKeyboardReserve\s*\(/.test(src))).toEqual([
       "ConversationBody.tsx",
       "KeyboardPinnedFooter.tsx",
       "ModalCardSheet.tsx",
@@ -180,7 +197,10 @@ describe("I5 no scroller outside the shell is left undecorated", () => {
   )("%s only ever hands the plain host to the keyboard-aware decorator", (_name, src) => {
     const body = src
       .split("\n")
-      .filter((line) => !/^\s*(import|export)\b/.test(line) && !/^\s{2}PLAIN_SCROLL_HOST,$/.test(line))
+      .filter(
+        (line) =>
+          !/^\s*(import|export)\b/.test(line) && !/^\s*PLAIN_SCROLL_HOST,\s*$/.test(line),
+      )
       .join("\n")
     for (const match of body.matchAll(/PLAIN_SCROLL_HOST/g)) {
       expect(body.slice(0, match.index)).toMatch(/makeKeyboardAwareScrollHost\($/)
