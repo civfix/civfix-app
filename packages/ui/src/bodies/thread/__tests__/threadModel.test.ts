@@ -9,13 +9,19 @@ import {
   isOptimisticPostId,
   replyComposerState,
   threadFocalExcerpt,
+  threadGutterWidth,
   threadItems,
   threadRailSegment,
+  threadRowGeometry,
   MIN_THREAD_VISIBLE,
   REPLY_INPUT_MAX_CAP,
   REPLY_INPUT_MIN,
   REPLY_SURFACE_MIN,
+  THREAD_AVATAR_SIZE,
   THREAD_MAX_INLINE_DEPTH,
+  THREAD_NESTED_AVATAR_SIZE,
+  THREAD_RAIL_COLUMN_W,
+  THREAD_RAIL_GAP,
 } from "../threadModel"
 
 const EN: Record<string, string> = {
@@ -546,6 +552,46 @@ describe("buildThreadRows (depth cap, cursors, optimistic rows)", () => {
       sent: [row("optimistic-1", "me", 0, null)],
     })
     expect(rows.map((entry) => entry.key)).toEqual(["optimistic-1"])
+  })
+})
+
+describe("threadRowGeometry", () => {
+  it("keeps a top-level reply flush with the focal post at the full avatar size", () => {
+    expect(threadRowGeometry(1)).toEqual({ indent: 0, avatarSize: THREAD_AVATAR_SIZE })
+  })
+
+  it("indents a nested reply by exactly one rail column so the connector lands under the parent avatar", () => {
+    const nested = threadRowGeometry(2)
+    expect(nested.indent).toBe(THREAD_RAIL_COLUMN_W + THREAD_RAIL_GAP)
+    expect(threadGutterWidth(nested)).toBe(THREAD_RAIL_COLUMN_W)
+    expect(nested.avatarSize).toBe(THREAD_NESTED_AVATAR_SIZE)
+    expect(nested.avatarSize).toBeLessThan(THREAD_AVATAR_SIZE)
+  })
+
+  it("returns interned geometry so a rows rebuild cannot defeat the row memo", () => {
+    expect(threadRowGeometry(2)).toBe(threadRowGeometry(2))
+    expect(threadRowGeometry(1)).toBe(threadRowGeometry(1))
+  })
+
+  it("indents every depth-2 row buildThreadRows emits, and nothing else", () => {
+    const rows = buildThreadRows({
+      focalId: "focal",
+      focalAuthorId: "a",
+      replies: [{ id: "r1", author: { id: "b" }, counts: { replies: 3 } }],
+      expandedIds: new Set(["r1"]),
+      children: {
+        r1: {
+          items: [{ id: "c1", author: { id: "c" }, counts: { replies: 0 }, replyToId: "r1" }],
+          loading: false,
+          hasMore: true,
+        },
+      },
+    })
+    expect(rows.map((entry) => [entry.kind, threadRowGeometry(entry.depth).indent > 0])).toEqual([
+      ["reply", false],
+      ["nested", true],
+      ["show-more", true],
+    ])
   })
 })
 

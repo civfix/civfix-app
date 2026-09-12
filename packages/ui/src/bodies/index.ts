@@ -84,8 +84,12 @@ export {
   REPLY_THUMBS_H,
   REPLY_TRAY_MAX_CAP,
   REPLY_TRAY_MIN,
+  THREAD_AVATAR_SIZE,
+  THREAD_CHAIN_ROW_MIN_H,
   THREAD_HEADER_H,
   THREAD_MAX_INLINE_DEPTH,
+  THREAD_NESTED_AVATAR_SIZE,
+  THREAD_NESTED_INDENT,
   THREAD_RAIL_COLUMN_W,
   THREAD_RAIL_GAP,
   THREAD_RAIL_STUB_H,
@@ -97,7 +101,9 @@ export {
   isOptimisticPostId,
   replyComposerState,
   threadFocalExcerpt,
+  threadGutterWidth,
   threadItems,
+  threadRowGeometry,
 } from "./thread/threadModel"
 export type {
   FocalPostStat,
@@ -107,7 +113,9 @@ export type {
   ThreadChildState,
   ThreadRailSegment,
   ThreadRow,
+  ThreadRowDepth,
   ThreadRowExpansion,
+  ThreadRowGeometry,
   ThreadRowPost,
   ThreadRowVariant,
 } from "./thread/threadModel"

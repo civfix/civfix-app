@@ -22,6 +22,7 @@ import { ThreadEmptyReplies } from "./thread/ThreadEmptyReplies"
 import { ThreadFocalPost, ThreadFocalSkeleton } from "./thread/ThreadFocalPost"
 import { ThreadReplyRow } from "./thread/ThreadReplyRow"
 import {
+  THREAD_CHAIN_ROW_MIN_H,
   buildThreadRows,
   type ThreadChildState,
   type ThreadRow,
@@ -248,6 +249,7 @@ export function PostThreadBody({
         <ThreadReplyRow
           post={listRow.post}
           rail={listRow.rail}
+          depth={listRow.depth}
           hairline={listRow.hairline}
           isOptimistic={listRow.optimistic}
           expansion={listRow.expansion}
@@ -464,7 +466,7 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyMedium,
   },
   chainAction: {
-    minHeight: 32,
+    minHeight: THREAD_CHAIN_ROW_MIN_H,
     justifyContent: "center",
     marginLeft: -6,
     paddingHorizontal: 6,
@@ -477,10 +479,10 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.accentText,
   },
   chainLoading: {
-    minHeight: 32,
+    minHeight: THREAD_CHAIN_ROW_MIN_H,
     fontFamily: t.fontFamily.bodyMedium,
     fontSize: 13.5,
-    lineHeight: 32,
+    lineHeight: THREAD_CHAIN_ROW_MIN_H,
     color: t.colors.textSubtle,
   },
   errorBlock: {
