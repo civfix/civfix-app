@@ -50,15 +50,17 @@ function ThreadRepliesSkeleton() {
   )
 }
 
-export function PostThreadBody({
-  id,
-  onBack,
-  onOpenEntry,
-}: {
+export interface PostThreadBodyProps {
   id: string
   onBack?: () => void
   onOpenEntry?: (entry: DetailEntry) => void
-}) {
+}
+
+export function PostThreadBody(props: PostThreadBodyProps) {
+  return <PostThread key={props.id} {...props} />
+}
+
+function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("home-feed")

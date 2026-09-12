@@ -1,15 +1,7 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { PostDTO } from "@civfix/shared"
-import {
-  focusRingProps,
-  makeThemedStyles,
-  stopPress,
-  wash,
-  webCursor,
-  webHover,
-  webTransition,
-} from "../../theme"
+import { focusRingProps, makeThemedStyles, stopPress, wash, webCursor, webTransition } from "../../theme"
 import { Text } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
@@ -24,7 +16,7 @@ import type { DetailEntry } from "../../nav/types"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
-import { ROW_ROLE, linkKeyProps } from "../PostCard"
+import { ROW_ROLE, WEB_ROW_FOCUS_INSET, linkKeyProps } from "../PostCard"
 import { PostMediaGrid } from "../PostMediaGrid"
 import {
   buildPostIdentity,
@@ -32,6 +24,7 @@ import {
   repostSubjectAuthorId,
   splitPostBodyMentions,
 } from "../postCardModel"
+import { useRowHover } from "../rowHover"
 import { useListTimeAgo } from "../useListTimeAgo"
 import {
   THREAD_AVATAR_SIZE,
@@ -57,6 +50,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
   onOpenEntry,
 }: ThreadReplyRowProps) {
   const styles = useStyles()
+  const { hovered, hoverProps } = useRowHover()
   const { t } = useT("home-feed")
   const push = useNavStore((state) => state.push)
   const openEntry = onOpenEntry ?? push
@@ -100,14 +94,16 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
       accessibilityRole={ROW_ROLE}
       accessibilityLabel={t("post_card.open_thread_a11y", { name: identity.name })}
       {...focusRingProps}
+      {...hoverProps}
       {...(isOptimistic ? null : linkKeyProps(openThread))}
       style={(state) => [
         styles.outer,
         hairline ? styles.outerRule : null,
         isOptimistic ? styles.outerOptimistic : null,
+        WEB_ROW_FOCUS_INSET,
         webTransition,
         webCursor(isOptimistic),
-        !isOptimistic && webHover(state) ? styles.outerHovered : null,
+        !isOptimistic && hovered ? styles.outerHovered : null,
         !isOptimistic && state.pressed ? styles.outerPressed : null,
       ]}
     >

@@ -880,7 +880,7 @@ function EmbeddedPostMeta({
 }
 
 const RING_FOOTPRINT = Number.parseFloat(/^0 0 0 (\d+(?:\.\d+)?)px/.exec(tokens.shadow.ring)?.[1] ?? "3")
-const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB
+export const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB
   ? ({ outlineOffset: -RING_FOOTPRINT } as unknown as ViewStyle)
   : {}
 

@@ -138,7 +138,6 @@ export function isOptimisticPostId(id: string): boolean {
 export interface ThreadRowPost {
   readonly id: string
   readonly author: { readonly id: string }
-  readonly counts: { readonly replies: number }
   readonly replyToId?: string | null
 }
 
