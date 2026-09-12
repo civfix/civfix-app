@@ -38,6 +38,7 @@
     "check_ins": "Check-ins",
     "suppressed": "Numbers stay hidden until at least {{k}} people take part.",
     "trend_a11y": "Registrations, {{range}}, latest {{value}} on {{day}}",
+    "trend_a11y_week": "Registrations, {{range}}, by week, latest {{value}} in the week of {{day}}",
     "error_title": "Could not load your numbers",
     "error_body": "We could not reach civfix. Check your connection and try again.",
     "retry": "Try again",
@@ -46,7 +47,8 @@
     "returning": "Returning volunteers",
     "returning_hint": "{{numerator}} of {{denominator}}",
     "busiest_slot": "Busiest slot: {{weekday}} at {{hour}}",
-    "end_label": "{{value}} on {{day}}"
+    "end_label": "{{value}} on {{day}}",
+    "end_label_week": "{{value}} in the week of {{day}}"
   },
   "top_events": {
     "section": "Top events",

@@ -29,6 +29,12 @@ export const DEFAULT_DASHBOARD_RANGE: DashboardRange = "30d"
 
 export const SPARKLINE_MIN_POINTS = 2
 
+export const SERIES_DAILY_MAX_POINTS = 90
+
+export const SERIES_BUCKET_DAYS = 7
+
+export const SERIES_MAX_BARS = 52
+
 export const BEST_DAY_TIME_MIN_EVENTS = 12
 
 export const TOP_EVENTS_MAX_ROWS = 5
@@ -191,6 +197,34 @@ export function rateShowable(rate: SuppressedRate | null | undefined): boolean {
   return !!rate && rate.value !== null && !rate.suppressed
 }
 
+export function rateEmpty(rate: SuppressedRate | null | undefined): boolean {
+  return !!rate && !rate.suppressed && rate.value === null && rate.denominator === 0
+}
+
+export function rateWithheld(rate: SuppressedRate | null | undefined): boolean {
+  return !rateShowable(rate) && !rateEmpty(rate)
+}
+
+export interface PortfolioChartSeries {
+  points: SeriesPoint[]
+  weekly: boolean
+}
+
+export function portfolioChartSeries(points: readonly SeriesPoint[]): PortfolioChartSeries {
+  if (points.length <= SERIES_DAILY_MAX_POINTS) return { points: [...points], weekly: false }
+  const buckets: SeriesPoint[] = []
+  for (let end = points.length; end > 0 && buckets.length < SERIES_MAX_BARS; end -= SERIES_BUCKET_DAYS) {
+    const week = points.slice(Math.max(0, end - SERIES_BUCKET_DAYS), end)
+    const known = week.filter((point) => point.value !== null)
+    buckets.unshift({
+      day: week[0]?.day ?? "",
+      value: known.length === 0 ? null : known.reduce((total, point) => total + (point.value ?? 0), 0),
+      suppressed: known.length === 0,
+    })
+  }
+  return { points: buckets, weekly: true }
+}
+
 export function seriesChartable(points: readonly SeriesPoint[]): boolean {
   return points.filter((point) => point.value !== null).length >= SPARKLINE_MIN_POINTS
 }
@@ -326,8 +360,8 @@ export function portfolioSuppressed(
     suppressed(totals.registrations) ||
     suppressed(totals.checkIns) ||
     suppressed(totals.uniqueAttendees) ||
-    !rateShowable(averageCheckInRate) ||
-    !rateShowable(repeatAttendance)
+    rateWithheld(averageCheckInRate) ||
+    rateWithheld(repeatAttendance)
   )
 }
 

@@ -47,8 +47,13 @@ import {
   hourLabel,
   nextUpCtaKey,
   nextUpEvent,
+  portfolioChartSeries,
   portfolioKpis,
   portfolioSuppressed,
+  rateEmpty,
+  rateWithheld,
+  SERIES_DAILY_MAX_POINTS,
+  SERIES_MAX_BARS,
   topEventBars,
   topEventsVisible,
   weekdayLabel,
@@ -679,10 +684,81 @@ describe("portfolio numbers", () => {
     expect(portfolioSuppressed(undefined)).toBe(false)
   })
 
+  it("leaves the caption off a host who simply has nothing to divide by", () => {
+    const empty = { value: null, numerator: 0, denominator: 0, suppressed: false }
+    expect(rateEmpty(empty)).toBe(true)
+    expect(rateWithheld(empty)).toBe(false)
+    expect(
+      portfolioSuppressed(
+        analytics({
+          totals: { events: 1, registrations: 0, checkIns: 0, uniqueAttendees: 0 },
+          repeatAttendance: empty,
+          averageCheckInRate: empty,
+        }),
+      ),
+    ).toBe(false)
+  })
+
+  it("still captions a rate the server actually withheld", () => {
+    const withheld = { value: null, numerator: null, denominator: null, suppressed: true }
+    expect(rateEmpty(withheld)).toBe(false)
+    expect(rateWithheld(withheld)).toBe(true)
+    expect(portfolioSuppressed(analytics({ averageCheckInRate: withheld }))).toBe(true)
+  })
+
   it("names the busiest weekday and hour in the reader's locale", () => {
     expect(weekdayLabel(0, "en-US")).toBe("Sunday")
     expect(weekdayLabel(6, "en-US")).toBe("Saturday")
     expect(hourLabel(10, "en-US")).toContain("10")
+  })
+})
+
+describe("the trend never draws a year one bar at a time", () => {
+  const days = (count: number, value: number | null = 3) =>
+    Array.from({ length: count }, (_, i) => ({
+      day: new Date(Date.UTC(2026, 0, 1) + i * DAY_MS).toISOString().slice(0, 10),
+      value,
+      suppressed: value === null,
+    }))
+
+  it("keeps a short range at day resolution", () => {
+    const series = days(SERIES_DAILY_MAX_POINTS)
+    const chart = portfolioChartSeries(series)
+    expect(chart.weekly).toBe(false)
+    expect(chart.points).toEqual(series)
+  })
+
+  it("rolls a long range into weeks that still total the same seats", () => {
+    const chart = portfolioChartSeries(days(364))
+    expect(chart.weekly).toBe(true)
+    expect(chart.points).toHaveLength(52)
+    expect(chart.points.every((point) => point.value === 21)).toBe(true)
+    expect(chart.points[0]?.day).toBe("2026-01-01")
+  })
+
+  it("bounds the bar count however long the history is", () => {
+    for (const count of [91, 200, 365, 1200]) {
+      const chart = portfolioChartSeries(days(count))
+      expect(chart.points.length, `${count} days`).toBeLessThanOrEqual(SERIES_MAX_BARS)
+      expect(chart.points.length).toBeGreaterThan(0)
+    }
+  })
+
+  it("keeps the most recent weeks when the history outruns the card", () => {
+    const long = days(400)
+    const chart = portfolioChartSeries(long)
+    expect(chart.points[chart.points.length - 1]?.day).toBe(long[400 - 7]?.day)
+  })
+
+  it("mutes only a week with nothing known in it", () => {
+    const mixed = days(98)
+    mixed[97] = { day: mixed[97]?.day ?? "", value: null, suppressed: true }
+    const chart = portfolioChartSeries(mixed)
+    const last = chart.points[chart.points.length - 1]
+    expect(last?.suppressed).toBe(false)
+    expect(last?.value).toBe(18)
+    const blank = portfolioChartSeries(days(98, null))
+    expect(blank.points.every((point) => point.suppressed && point.value === null)).toBe(true)
   })
 })
 

@@ -38,6 +38,7 @@
     "check_ins": "Check-ins",
     "suppressed": "Zahlen bleiben verborgen, bis mindestens {{k}} Personen teilnehmen.",
     "trend_a11y": "Anmeldungen, {{range}}, zuletzt {{value}} am {{day}}",
+    "trend_a11y_week": "Anmeldungen, {{range}}, nach Woche, zuletzt {{value}} in der Woche ab {{day}}",
     "error_title": "Zahlen konnten nicht geladen werden",
     "error_body": "Wir konnten civfix nicht erreichen. Prüfe deine Verbindung und versuche es erneut.",
     "retry": "Erneut versuchen",
@@ -46,7 +47,8 @@
     "returning": "Wiederkehrende Freiwillige",
     "returning_hint": "{{numerator}} von {{denominator}}",
     "busiest_slot": "Beste Zeit: {{weekday}} um {{hour}}",
-    "end_label": "{{value}} am {{day}}"
+    "end_label": "{{value}} am {{day}}",
+    "end_label_week": "{{value}} in der Woche ab {{day}}"
   },
   "top_events": {
     "section": "Top-Events",

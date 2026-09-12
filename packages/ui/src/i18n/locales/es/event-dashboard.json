@@ -38,6 +38,7 @@
     "check_ins": "Registros de entrada",
     "suppressed": "Los números se ocultan hasta que participen al menos {{k}} personas.",
     "trend_a11y": "Inscripciones, {{range}}, último dato {{value}} el {{day}}",
+    "trend_a11y_week": "Inscripciones, {{range}}, por semana, último dato {{value}} en la semana del {{day}}",
     "error_title": "No se pudieron cargar tus números",
     "error_body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo.",
     "retry": "Reintentar",
@@ -46,7 +47,8 @@
     "returning": "Voluntarios que repiten",
     "returning_hint": "{{numerator}} de {{denominator}}",
     "busiest_slot": "Franja con más actividad: {{weekday}} a las {{hour}}",
-    "end_label": "{{value}} el {{day}}"
+    "end_label": "{{value}} el {{day}}",
+    "end_label_week": "{{value}} en la semana del {{day}}"
   },
   "top_events": {
     "section": "Eventos con más inscripciones",

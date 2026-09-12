@@ -22,6 +22,7 @@ import {
   bestDayTimeParts,
   bestDayTimeShowable,
   DASHBOARD_RANGES,
+  portfolioChartSeries,
   portfolioSuppressed,
   rateShowable,
   seriesChartable,
@@ -91,7 +92,8 @@ export function PortfolioStats({
   }
 
   const { totals, averageCheckInRate, repeatAttendance, series, bestDayTime, k } = analytics
-  const end = seriesEnd(series)
+  const chart = portfolioChartSeries(series)
+  const end = seriesEnd(chart.points)
   const attendance = rateShowable(averageCheckInRate)
     ? formatRate(averageCheckInRate.value, locale)
     : null
@@ -125,14 +127,17 @@ export function PortfolioStats({
           <StatTile label={t("kpi.returning")} value={repeat} hint={repeatHint} />
         </StatTileRow>
 
-        {seriesChartable(series) && end ? (
+        {seriesChartable(chart.points) && end ? (
           <TrendSparkline
             kind="bars"
             height={TREND_HEIGHT}
-            points={sparklinePoints(series)}
-            suppressedKeys={suppressedSparkKeys(series)}
-            endLabel={t("kpi.end_label", { value: end.value, day: seriesDayLabel(end.day, locale) })}
-            accessibilityLabel={t("kpi.trend_a11y", {
+            points={sparklinePoints(chart.points)}
+            suppressedKeys={suppressedSparkKeys(chart.points)}
+            endLabel={t(chart.weekly ? "kpi.end_label_week" : "kpi.end_label", {
+              value: end.value,
+              day: seriesDayLabel(end.day, locale),
+            })}
+            accessibilityLabel={t(chart.weekly ? "kpi.trend_a11y_week" : "kpi.trend_a11y", {
               range: t(`range.${range}`),
               value: end.value,
               day: seriesDayLabel(end.day, locale),
