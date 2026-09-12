@@ -1,10 +1,10 @@
 import { Platform, StyleSheet, type TextStyle } from "react-native"
 import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, theme, wash } from "../../theme"
+import { makeThemedStyles, space, wash } from "../../theme"
 import { alpha } from "../../theme/alpha"
 import { DETAIL_BACK_SIZE, DETAIL_BACK_RADIUS, detailTitleStyle } from "../../shell/detailHeader"
 
-export const CONTROL = theme.space["10"]
+export const CONTROL = space["10"]
 const CONTROL_RADIUS = CONTROL / 2
 const COMPOSER_LINE = 20
 const COMPOSER_VPAD = (CONTROL - COMPOSER_LINE - StyleSheet.hairlineWidth * 2) / 2

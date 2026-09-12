@@ -7,7 +7,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated"
-import { makeThemedStyles, theme } from "@/theme"
+import { makeThemedStyles, motion } from "@/theme"
 import { useReducedMotion } from "@civfix/ui/theme"
 import { useAuthStore } from "@/store/authStore"
 import { ONBOARDING_VERSION, useOnboardingStore } from "@/store/onboardingStore"
@@ -15,22 +15,22 @@ import { onboardingBackPlan, onboardingEnterPlan, shouldShowOnboarding } from "@
 import { OnboardingPager } from "@/components/onboarding/OnboardingPager"
 
 const ENTER_TIMING = {
-  duration: theme.motion.dur.d4,
-  easing: Easing.bezier(...theme.motion.easing),
+  duration: motion.dur.d4,
+  easing: Easing.bezier(...motion.easing),
 }
 const EXIT_FADE_TIMING = {
-  duration: theme.motion.dur.d3,
-  easing: Easing.bezier(...theme.motion.easing),
+  duration: motion.dur.d3,
+  easing: Easing.bezier(...motion.easing),
 }
 const EXIT_DROP_TIMING = {
-  duration: theme.motion.dur.d3,
-  easing: Easing.bezier(...theme.motion.gravity.easing),
+  duration: motion.dur.d3,
+  easing: Easing.bezier(...motion.gravity.easing),
 }
 const REDUCED_TIMING = {
-  duration: theme.motion.dur.d2,
-  easing: Easing.bezier(...theme.motion.easing),
+  duration: motion.dur.d2,
+  easing: Easing.bezier(...motion.easing),
 }
-const EXIT_DISTANCE = theme.motion.slideUp.distance
+const EXIT_DISTANCE = motion.slideUp.distance
 
 export function OnboardingGate({
   gateActive,

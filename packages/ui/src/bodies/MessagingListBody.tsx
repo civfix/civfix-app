@@ -18,7 +18,7 @@ import {
   FOCUS_RING_WIDTH,
   focusRingProps,
   makeThemedStyles,
-  theme,
+  space,
   wash,
   useLayoutMode,
   useTheme,
@@ -66,10 +66,10 @@ const COMPOSE_MENU_ITEMS: ReadonlyArray<{ key: "message" | "group" | "channel"; 
 ]
 
 const MIN_TOUCH_TARGET = 44
-const ROW_GUTTER = theme.space["4"]
-const ROW_GAP = theme.space["3"]
+const ROW_GUTTER = space["4"]
+const ROW_GAP = space["3"]
 const ROW_AVATAR = 48
-const ROW_PADDING_V = theme.space["3"] + 2
+const ROW_PADDING_V = space["3"] + 2
 const ROW_MIN_HEIGHT = 80
 const SEPARATOR_INSET = ROW_GUTTER + ROW_AVATAR + ROW_GAP
 const EMPTY_FILL_MIN_HEIGHT = 300
@@ -77,7 +77,7 @@ const CLEAR_BTN_SIZE = 22
 const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2
 const ROW_MENU_CHIP = 28
 const ROW_MENU_GLYPH = 16
-const ROW_MENU_SLOT = ROW_MENU_CHIP + theme.space["2"]
+const ROW_MENU_SLOT = ROW_MENU_CHIP + space["2"]
 const ROW_MENU_HIT_SLOP = (MIN_TOUCH_TARGET - ROW_MENU_CHIP) / 2
 const SWIPE_ACTION_GLYPH = 18
 

@@ -115,7 +115,7 @@ describe("the entry points that focus it", () => {
     expect(bodyCode).toContain("FOCUS_REQUEST_HOLD_MS")
     expect(bodyCode).toContain("setTimeout(consumeSearchFocus, FOCUS_REQUEST_HOLD_MS)")
     expect(bodyCode).toMatch(
-      /FOCUS_REQUEST_HOLD_MS =\s*theme\.motion\.bodyPush\.duration \+ theme\.motion\.bodyExit\.duration/,
+      /FOCUS_REQUEST_HOLD_MS =\s*motion\.bodyPush\.duration \+ motion\.bodyExit\.duration/,
     )
   })
 })

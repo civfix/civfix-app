@@ -99,7 +99,7 @@ describe("the ring traces the control, not the hit target", () => {
 
   it("the events list's card tap pushes its ring out to the CARD's edge and curve", () => {
     const src = strip(read("bodies/EventsBody.tsx"))
-    expect(src).toMatch(/const CARD_RING_INSET = theme\.space\["4"\] \+ StyleSheet\.hairlineWidth/)
+    expect(src).toMatch(/const CARD_RING_INSET = space\["4"\] \+ StyleSheet\.hairlineWidth/)
     expect(src).toMatch(/outlineOffset: CARD_RING_INSET/)
     expect(src).toMatch(/borderRadius: t\.radius\.lg - CARD_RING_INSET/)
   })

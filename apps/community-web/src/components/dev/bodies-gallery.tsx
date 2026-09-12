@@ -62,12 +62,14 @@ import {
   MembersBody,
   ServiceHoursSection,
   ServiceHoursCertificateCard,
-  theme,
+  themeFor,
 } from "@civfix/ui"
 import { CapabilitiesProvider, makeFakeCapabilities } from "@civfix/ui/capabilities"
 import { useNavStore } from "@civfix/ui/nav"
 
 import { makeQueryClient } from "@/lib/query"
+
+const theme = themeFor("light")
 
 
 const ORGANIZER = {

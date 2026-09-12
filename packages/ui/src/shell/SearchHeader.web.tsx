@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { View, Pressable, TextInput } from "react-native"
-import { theme, useTheme } from "../theme"
+import { space, useTheme } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { Avatar } from "../primitives"
 import { useT } from "../i18n"
@@ -9,7 +9,7 @@ import { useSearchHeaderStyles } from "./SearchHeader.styles"
 import { useSearchBarStore } from "./searchBarStore"
 import { useKeyboardAnchor } from "./useKeyboardAnchor.web"
 
-const WEB_DOCK_REST_OFFSET = theme.space["3"] + 10
+const WEB_DOCK_REST_OFFSET = space["3"] + 10
 
 function SearchPill({
   value,

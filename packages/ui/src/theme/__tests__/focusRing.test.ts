@@ -73,7 +73,7 @@ const RING_DARK = "#F79185"
 
 describe("the focus ring's ink clears 3:1 on both civfix surfaces", () => {
   it("is the accentText coral, single-sourced with theme.colors.accentText", () => {
-    expect(SAND).toBe("#EDE6D8")
+    expect(SAND).toBe("#F4EFE6")
     expect(CARD).toBe("#FFFDF8")
     // The literal in webAffordances cannot import `colors` (theme/index re-exports webAffordances, so the
     // import would close a module cycle), so the two strings are pinned equal here instead.
@@ -93,7 +93,7 @@ describe("the focus ring's ink clears 3:1 on both civfix surfaces", () => {
     expect(contrast(RING, SAND)).toBeGreaterThanOrEqual(3)
     expect(contrast(RING, CARD)).toBeGreaterThanOrEqual(3)
     // The measured figures, so a hue tweak that still scrapes 3:1 is visible in the diff.
-    expect(+contrast(RING, SAND).toFixed(2)).toBe(4.85)
+    expect(+contrast(RING, SAND).toFixed(2)).toBe(5.26)
     expect(+contrast(RING, CARD).toFixed(2)).toBe(5.92)
   })
 

@@ -1,6 +1,6 @@
 import React, { useCallback } from "react"
 import { View, StyleSheet } from "react-native"
-import { theme } from "../theme"
+import { space } from "../theme"
 import { iconMap } from "../typography"
 import {
   SettingsRow,
@@ -102,20 +102,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingHorizontal: theme.space["4"],
-    paddingTop: theme.space["2"],
-    paddingBottom: theme.space["10"],
+    paddingHorizontal: space["4"],
+    paddingTop: space["2"],
+    paddingBottom: space["10"],
   },
   stateFill: {
     flex: 1,
   },
   sectionGap: {
-    marginTop: theme.space["6"],
+    marginTop: space["6"],
   },
   skeletonLabel: {
-    marginBottom: theme.space["3"],
+    marginBottom: space["3"],
   },
   skeletonSection: {
-    marginTop: theme.space["6"],
+    marginTop: space["6"],
   },
 })

@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import type { BBox, CleanupDTO, LatLng, ReportCategory, ReportPinDTO } from "@civfix/shared"
 import {
   AppShell,
-  theme,
+  space,
   useNavStore,
   useLayoutMode,
   Map as SharedMap,
@@ -455,7 +455,7 @@ export default function MapHomeScreen() {
         lng,
         currentZoom: viewportBefore?.zoom ?? null,
         windowHeight,
-        sheetTopReserve: insets.top + theme.space["8"],
+        sheetTopReserve: insets.top + space["8"],
         topInset: insets.top,
         sheetDetent: useNavStore.getState().snap,
         mode: layoutMode,

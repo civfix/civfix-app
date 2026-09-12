@@ -1321,3 +1321,29 @@ vocabulary so the `payout.paid|failed|canceled` webhooks need no translation tab
 `AdminUserDTO.organizations` (`{ id, slug, name, role }[]`, optional) lets the Users page answer
 "who is this person affiliated with" in the same request as the rest of the detail, resolved in one
 query. It replaces `verificationStatus`, which named a system that no longer exists.
+
+## 35. The light paper lightens, and the boot surface is derived, never copied (0.44.0)
+
+§22 promised that `tokens.color` keeps its exact values. That promise was about the DARK scheme being
+purely additive - it was never a freeze on the light ramp. The light `neutral.paper` moves from
+`#EDE6D8` to `#F4EFE6`, and three neighbours move with it so the ramp keeps its steps: `paper2`
+`#E5DDCD` -> `#EAE3D6` (paper:paper2 stays a 1.11:1 step instead of widening to 1.18:1), `cardTint`
+`#F8F1E4` -> `#FAF6EE` (a tinted card must sit between card and paper, and the old value would have
+fallen below the new paper's neighbourhood), and `ink5` `#ECE5D8` -> `#E6DFD2` (the hairline border
+was 1.01:1 on the old paper, i.e. invisible; it is 1.16:1 on the new one). `card` and the whole ink,
+brand, hue, chipInk, category and cleanup set are unchanged, and every DARK value is byte-identical.
+
+- **Nothing copies the paper value.** Every boot-time surface derives it: the mobile splash and
+  adaptive-icon backgrounds `require("@civfix/shared/tokens")` in `app.config.js`, the web boot splash
+  and shell read `var(--paper)`, and both CSS mirrors (`design.css`, `globals.css`) are asserted
+  against `colorSchemes` by tests. A colour step between the native splash, the boot gate and the
+  first app frame is a defect, not a detail.
+- **The default appearance follows the device.** `DEFAULT_APPEARANCE_PREFERENCE` is `"system"`. Under
+  `userInterfaceStyle: "automatic"` a dark-OS phone already shows a dark native splash; defaulting to
+  light guaranteed a colour step at every cold launch for every dark-mode user. `"system"` is the only
+  default under which splash, gate and app agree for both OS settings.
+- **The dark basemap is lifted at the raster, not dimmed.** `raster-brightness-min` lifts the Dark
+  Matter ground while `raster-brightness-max: 1` leaves the baked white labels white; lowering
+  `raster-opacity` over a lighter background would dim the labels instead. `basemapPaper("dark")` is
+  computed from the same constant, so the pin-contrast floor of §22 is measured against the ground
+  that is actually painted.

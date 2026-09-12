@@ -20,7 +20,7 @@
  */
 import { useEffect, useRef } from "react"
 import { AccessibilityInfo, Animated, Platform } from "react-native"
-import { theme } from "../theme"
+import { motion } from "../theme"
 
 /** cfPop is native decoration only; web keeps its unchanged static render. */
 export const POP_ENABLED = Platform.OS !== "web"
@@ -59,12 +59,12 @@ export function usePopScale(active: boolean): Animated.Value {
     // Only pop on the false -> true confirmation, and never on web / reduce-motion.
     if (!POP_ENABLED || !active || wasActive || reduceMotionRef.current) return
     popScale.stopAnimation()
-    popScale.setValue(theme.motion.pop.from)
+    popScale.setValue(motion.pop.from)
     Animated.spring(popScale, {
-      toValue: theme.motion.pop.to,
-      damping: theme.motion.pop.spring.damping,
-      stiffness: theme.motion.pop.spring.stiffness,
-      mass: theme.motion.pop.spring.mass,
+      toValue: motion.pop.to,
+      damping: motion.pop.spring.damping,
+      stiffness: motion.pop.spring.stiffness,
+      mass: motion.pop.spring.mass,
       useNativeDriver: true,
     }).start()
   }, [active, popScale])

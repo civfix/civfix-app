@@ -7,7 +7,7 @@
  * Colors come from the @civfix/ui theme's `wordmarkColors` (the single source of truth, itself
  * derived from @civfix/shared/tokens), NOT from any mobile theme nor an inline token list here:
  *   c = brand.bloom, i = sun.600, v = brand.moss, f = brand.sky, i = brand.lilac, x = brand.bloom.
- * The glyphs render in the brand wordmark face (`theme.fontFamily.brand` = "Baloo2_800ExtraBold",
+ * The glyphs render in the brand wordmark face (`fontFamily.brand` = "Baloo2_800ExtraBold",
  * the @expo-google-fonts / self-hosted-web contract name) with tight letter spacing; `fontWeight 800`
  * stays as a graceful fallback for any platform/timing where the face has not yet loaded.
  *
@@ -22,9 +22,9 @@
  */
 import React from "react"
 import { View, Text, StyleSheet } from "react-native"
-import { theme, wordmarkColors } from "../theme"
+import { fontFamily, wordmarkColors } from "../theme"
 
-// The six glyphs of the wordmark, colored by the matching index of theme.wordmarkColors. The two
+// The six glyphs of the wordmark, colored by the matching index of wordmarkColors. The two
 // "i"/"x" letters intentionally repeat the glyph but differ in color, so we key on index, not letter.
 const CHARS = ["c", "i", "v", "f", "i", "x"] as const
 
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
   },
   letter: {
-    fontFamily: theme.fontFamily.brand,
+    fontFamily: fontFamily.brand,
     fontWeight: "800",
   },
 })

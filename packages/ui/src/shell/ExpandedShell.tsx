@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from "react-native"
 import { ArrowLeft } from "lucide-react-native/icons"
-import { theme, wash, makeThemedStyles, useTheme, webCursorColResize, focusRingProps } from "../theme"
+import { motion, wash, makeThemedStyles, useTheme, webCursorColResize, focusRingProps } from "../theme"
 import { Text, Icon } from "../typography"
 import { useT } from "../i18n"
 import { useNavStore, titleForEntry, titleParamsForEntry, type DetailEntry, type View as NavView } from "../nav"
@@ -44,11 +44,11 @@ const RESIZE_HANDLE_W = 18
 const RESIZE_STEP = 24
 const ADJUST_ACTIONS = [{ name: "increment" }, { name: "decrement" }]
 
-const CARD_SHOW_TRANSITION = cssTransition(["opacity", "transform"], theme.motion.bodyPush)
-const CARD_HIDE_TRANSITION = cssTransition(["opacity", "transform"], theme.motion.sheetDismiss)
-const HANDLE_SHOW_TRANSITION = cssTransition(["opacity"], theme.motion.bodyPush)
-const HANDLE_HIDE_TRANSITION = cssTransition(["opacity"], theme.motion.sheetDismiss)
-const CARD_HIDE_SHIFT = theme.motion.bodyDistance
+const CARD_SHOW_TRANSITION = cssTransition(["opacity", "transform"], motion.bodyPush)
+const CARD_HIDE_TRANSITION = cssTransition(["opacity", "transform"], motion.sheetDismiss)
+const HANDLE_SHOW_TRANSITION = cssTransition(["opacity"], motion.bodyPush)
+const HANDLE_HIDE_TRANSITION = cssTransition(["opacity"], motion.sheetDismiss)
+const CARD_HIDE_SHIFT = motion.bodyDistance
 const isWeb = Platform.OS === "web"
 
 function cardVisibilityStyle(visible: boolean, reduceMotion: boolean): ViewStyle {
@@ -107,7 +107,7 @@ export function ExpandedShell({ renderBody = defaultRenderBody }: ExpandedShellP
       setHideSettled(false)
       return
     }
-    const id = setTimeout(() => setHideSettled(true), theme.motion.sheetDismiss.duration)
+    const id = setTimeout(() => setHideSettled(true), motion.sheetDismiss.duration)
     return () => clearTimeout(id)
   }, [cardVisible])
   const showLive = cardVisible || hideSettled

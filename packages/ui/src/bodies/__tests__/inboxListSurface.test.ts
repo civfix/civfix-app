@@ -39,7 +39,7 @@ describe("the thread row is flat, not a card", () => {
   })
 
   it("spends the list's gutter INSIDE the row, so the rows are edge-to-edge", () => {
-    expect(inbox).toMatch(/const ROW_GUTTER = theme\.space\["4"\]/)
+    expect(inbox).toMatch(/const ROW_GUTTER = space\["4"\]/)
     expect(rowStyle()).toContain("paddingHorizontal: ROW_GUTTER")
     expect(inbox).not.toMatch(/content: \{[^}]*paddingHorizontal/)
     expect(feed).toContain('paddingHorizontal: POST_SURFACE === "flat" ? 0 : 14')
@@ -56,8 +56,8 @@ describe("the thread row is flat, not a card", () => {
     expect(row).toContain("minHeight: ROW_MIN_HEIGHT")
     expect(row).toContain("paddingVertical: ROW_PADDING_V")
     expect(row).toContain('alignItems: "center"')
-    expect(inbox).toMatch(/const ROW_PADDING_V = theme\.space\["3"\] \+ 2/)
-    expect(inbox).toMatch(/const ROW_GAP = theme\.space\["3"\]/)
+    expect(inbox).toMatch(/const ROW_PADDING_V = space\["3"\] \+ 2/)
+    expect(inbox).toMatch(/const ROW_GAP = space\["3"\]/)
     expect(row).toContain("gap: ROW_GAP")
   })
 

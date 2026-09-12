@@ -7,7 +7,7 @@ import {
   type ViewStyle,
 } from "react-native"
 import {
-  theme,
+  motion,
   coloredShadow,
   makeThemedStyles,
   useTheme,
@@ -64,8 +64,8 @@ const railShadow = (t: Theme): ViewStyle =>
     1,
     8,
   )
-const MOUNT_TRANSITION = cssTransition(["opacity", "transform"], theme.motion.glassIn)
-const MOUNT_SCALE_FROM = theme.motion.glassIn.scaleFrom
+const MOUNT_TRANSITION = cssTransition(["opacity", "transform"], motion.glassIn)
+const MOUNT_SCALE_FROM = motion.glassIn.scaleFrom
 const isWeb = Platform.OS === "web"
 
 export function Rail() {
