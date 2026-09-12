@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Pressable, StyleSheet, TextInput, View } from "react-native"
+import { Pressable, StyleSheet, View, type TextInput as RNTextInput } from "react-native"
+import { TextInput } from "../../primitives/TextInput"
 import type { PostDTO, UserMentionDTO } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme } from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"
@@ -40,7 +41,7 @@ export function InlineComposer() {
   const profile = useMyProfile().data?.profile
   const create = useCreatePost()
   const attachments = useComposerAttachments(POST_COMPOSER_MEDIA_CAP)
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<RNTextInput>(null)
   const submittingRef = useRef(false)
 
   const body = usePostComposerStore((state) => state.draft.body)

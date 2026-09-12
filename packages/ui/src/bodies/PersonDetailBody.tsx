@@ -35,6 +35,7 @@ import {
 import { useUserPosts } from "../data/hooks/posts"
 import { useNavStore } from "../nav"
 import { useT, useRelativeTime, useLocale } from "../i18n"
+import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider, useScrollHost } from "../shell/ScrollHost"
 import {
   DETAIL_BACK_SIZE,
@@ -112,6 +113,8 @@ function PersonScroll({ children }: { children: React.ReactNode }) {
   )
 }
 
+const PERSON_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
+
 export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => void }) {
   const styles = useStyles()
   const th = useTheme()
@@ -120,7 +123,7 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
   const back = onBack ?? useNavStore.getState().back
   const layoutMode = useLayoutMode()
   const inheritedScrollHost = useScrollHost()
-  const scrollHost = layoutMode === "compact" ? PLAIN_SCROLL_HOST : inheritedScrollHost
+  const scrollHost = layoutMode === "compact" ? PERSON_SCROLL_HOST : inheritedScrollHost
   const { start } = useStartDm()
   const query = useProfile(id)
   const profile = query.data?.profile

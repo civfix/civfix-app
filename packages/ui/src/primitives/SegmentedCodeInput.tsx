@@ -1,5 +1,6 @@
 import React, { useCallback, useImperativeHandle, useRef, useState } from "react"
-import { View, TextInput, Pressable } from "react-native"
+import { View, Pressable, type TextInput as RNTextInput } from "react-native"
+import { TextInput } from "./TextInput"
 import { makeThemedStyles, webInputReset, focusRingProps } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"
@@ -29,7 +30,7 @@ export function SegmentedCodeInput({
 }: SegmentedCodeInputProps) {
   const styles = useStyles()
   const { t } = useT("common")
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<RNTextInput>(null)
   const [focused, setFocused] = useState(false)
 
   const focus = useCallback(() => inputRef.current?.focus(), [])

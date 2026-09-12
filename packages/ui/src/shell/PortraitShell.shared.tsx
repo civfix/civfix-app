@@ -167,6 +167,7 @@ export function PortraitShellFrame({
     }
   }
   const reportSlotBody = useMemo(() => renderBody(null, "report"), [renderBody])
+  const reportSlotActive = reportSlotVisible && stack.length === 0
 
   const baseBody = useMemo(
     () =>
@@ -238,7 +239,7 @@ export function PortraitShellFrame({
                 accessibilityElementsHidden={!reportSlotVisible}
                 importantForAccessibility={reportSlotVisible ? "auto" : "no-hide-descendants"}
               >
-                {reportSlotBody}
+                <PageActiveProvider value={reportSlotActive}>{reportSlotBody}</PageActiveProvider>
               </View>
             ) : null}
           </View>

@@ -2,12 +2,12 @@ import { useCallback, useMemo, useState } from "react"
 import {
   View,
   Pressable,
-  TextInput,
   StyleSheet,
   ActivityIndicator,
   Platform,
   type ViewStyle,
 } from "react-native"
+import { TextInput } from "../primitives/TextInput"
 import type { ReportDTO, MediaDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webInputReset, headingLevel } from "../theme"
