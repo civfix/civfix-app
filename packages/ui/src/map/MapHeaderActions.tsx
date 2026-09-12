@@ -1,6 +1,6 @@
 import React from "react"
 import { StyleSheet, View } from "react-native"
-import { theme } from "../theme"
+import { space } from "../theme"
 import { HEADER_CONTROL_SIZE } from "../bodies/headerControls"
 import { HeaderProfileButton } from "../bodies/HeaderProfileButton"
 import { MapThemeToggle } from "./MapThemeToggle"
@@ -13,7 +13,7 @@ export interface MapHeaderActionsProps {
 export function MapHeaderActions({ topInset = 0 }: MapHeaderActionsProps) {
   const rowCenterOffset = (GLASS_CONTROL_SIZE - HEADER_CONTROL_SIZE) / 2
   return (
-    <View style={[styles.root, { top: topInset + theme.space["2"] + rowCenterOffset }]}>
+    <View style={[styles.root, { top: topInset + space["2"] + rowCenterOffset }]}>
       <View style={styles.actions}>
         <MapThemeToggle variant="solid" />
         <HeaderProfileButton surface="solid" />
@@ -25,7 +25,7 @@ export function MapHeaderActions({ topInset = 0 }: MapHeaderActionsProps) {
 const styles = StyleSheet.create({
   root: {
     position: "absolute",
-    right: theme.space["3"],
+    right: space["3"],
     zIndex: 1,
     elevation: 1,
     pointerEvents: "box-none",
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: theme.space["2"],
+    gap: space["2"],
     pointerEvents: "box-none",
   },
 })

@@ -91,8 +91,8 @@ describe("Toast host", () => {
   })
 
   it("plays the package's fadeUp/menuOut recipes and fades only under reduced motion", () => {
-    expect(TOAST_SOURCE).toContain("const ENTER = theme.motion.fadeUp")
-    expect(TOAST_SOURCE).toContain("const EXIT = theme.motion.menuOut")
+    expect(TOAST_SOURCE).toContain("const ENTER = motion.fadeUp")
+    expect(TOAST_SOURCE).toContain("const EXIT = motion.menuOut")
     expect(TOAST_SOURCE).toContain("reducedMotion\n    ? { opacity: progress }")
   })
 })

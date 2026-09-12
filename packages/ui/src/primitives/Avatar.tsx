@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react"
 import { View, Image, StyleSheet, type StyleProp, type ViewStyle, type TextStyle } from "react-native"
 import { avatarColor, monogram } from "@civfix/shared"
-import { makeThemedStyles, theme, useTheme } from "../theme"
+import { makeThemedStyles, fontFamily, useTheme } from "../theme"
 import { Text } from "../typography"
 
 export function Avatar({
@@ -30,7 +30,7 @@ export function Avatar({
   const showPhoto = !!photoUrl && failedUrl !== photoUrl
   const color = gradient?.[0] ?? avatarColor(seed ?? name)
   const monogramStyle = useMemo<TextStyle>(
-    () => ({ fontFamily: theme.fontFamily.displaySemiBold, fontSize: size * 0.42 }),
+    () => ({ fontFamily: fontFamily.displaySemiBold, fontSize: size * 0.42 }),
     [size],
   )
   return (

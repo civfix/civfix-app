@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react"
 import { View, Pressable, ScrollView, StyleSheet } from "react-native"
 import type { CleanupDTO, ContentReportReason } from "@civfix/shared"
 import { eventChip, dowLabel, timeLabel } from "@civfix/shared/datetime"
-import { theme, focusRingProps, headingLevel, makeThemedStyles, useTheme } from "../theme"
+import { radius, focusRingProps, headingLevel, makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap, TextLink } from "../typography"
 import {
   Avatar,
@@ -645,7 +645,7 @@ function EventDetailSkeleton() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <SkeletonBlock width="100%" height={HERO_HEIGHT} radius={theme.radius.lg} style={styles.skeletonHero} />
+      <SkeletonBlock width="100%" height={HERO_HEIGHT} radius={radius.lg} style={styles.skeletonHero} />
       <SkeletonGroup style={styles.header}>
         <SkeletonText width="76%" height={22} />
         <SkeletonText width="30%" height={12} style={styles.skeletonStatus} />
@@ -654,7 +654,7 @@ function EventDetailSkeleton() {
           <SkeletonText width="68%" height={12} />
         </SkeletonGroup>
       </SkeletonGroup>
-      <SkeletonBlock width="100%" height={44} radius={theme.radius.pill} style={styles.rsvp} />
+      <SkeletonBlock width="100%" height={44} radius={radius.pill} style={styles.rsvp} />
       <SkeletonGroup style={styles.section}>
         <SkeletonText width="24%" height={11} />
         <SkeletonText width="96%" height={12} />

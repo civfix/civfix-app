@@ -8,7 +8,7 @@ import Animated, {
   Extrapolation,
   type SharedValue,
 } from "react-native-reanimated"
-import { makeThemedStyles, theme, useTheme } from "@/theme"
+import { makeThemedStyles, space, useTheme } from "@/theme"
 import { useT } from "@civfix/ui/i18n"
 import {
   ONBOARDING_PAGES,
@@ -16,9 +16,9 @@ import {
   railSegmentState,
 } from "@/lib/onboardingPlan"
 
-const SEGMENT_HEIGHT = theme.space["1"]
-const SEGMENT_REST_WIDTH = theme.space["5"]
-const SEGMENT_ACTIVE_WIDTH = theme.space["10"]
+const SEGMENT_HEIGHT = space["1"]
+const SEGMENT_REST_WIDTH = space["5"]
+const SEGMENT_ACTIVE_WIDTH = space["10"]
 
 function Segment({
   index,

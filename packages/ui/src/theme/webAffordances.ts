@@ -164,7 +164,7 @@ const FOCUS_RING_FOOTPRINT = RING_SPEC ? Number(RING_SPEC[1]) : 3
  *
  * `#B03A2C` is `theme.colors.accentText` - the SAME coral, darkened until it clears AA as ink on all three
  * civfix surfaces, and the token §6 already mandates for coral text. As an opaque outline it measures
- * 4.85:1 on sand (#EDE6D8) and 5.92:1 on a card (#FFFDF8) - both well past 3:1 - while staying
+ * 5.26:1 on sand (#F4EFE6) and 5.92:1 on a card (#FFFDF8) - both well past 3:1 - while staying
  * unmistakably in the coral family rather than becoming a second accent. It is a literal here rather than
  * an import because `theme/index` re-exports THIS module (importing it back would close a module cycle);
  * `theme/__tests__/focusRing.test.ts` pins the two strings equal, and computes both ratios, so neither the

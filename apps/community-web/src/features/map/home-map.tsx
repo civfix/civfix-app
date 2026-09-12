@@ -4,7 +4,7 @@ import * as React from "react"
 import type { BBox, CleanupDTO, ReportCategory, ReportPinDTO } from "@civfix/shared"
 import {
   Map as SharedMap,
-  theme,
+  space,
   useNavStore,
   useReportFilterStore,
   useEventReportLink,
@@ -298,7 +298,7 @@ export function HomeMap() {
         // No safe-area API on web; the compact sheet's top reserve is just the floating gutter - taken from
         // the shared token, the same one CompactShell.web builds its detents from, so the two cannot drift.
         windowHeight: typeof window === "undefined" ? 0 : window.innerHeight,
-        sheetTopReserve: theme.space["8"],
+        sheetTopReserve: space["8"],
         // The portrait app-download banner is a FIXED strip over the full-bleed map, so it occludes the top
         // of the map exactly as a notch does on native. It publishes its MEASURED height into the shared
         // promo store (the same value web-map-controls folds into `MapControls topInset`), and that height is

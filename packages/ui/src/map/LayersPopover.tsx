@@ -22,7 +22,7 @@
  */
 import React, { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
-import { theme, categoryColor, focusRingProps, makeThemedStyles, useTheme } from "../theme"
+import { motion, categoryColor, focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
@@ -35,7 +35,7 @@ import { useReportFilterStore, FILTER_CATEGORIES } from "./filterStore"
  * card mounted for exactly this long while it animates out before unmounting it. Sourced from the shared
  * `cfFadeUp` motion token (250ms) so the map glass popover shares one timing with the rest of the redesign.
  */
-export const LAYERS_POPOVER_ANIM_MS = theme.motion.fadeUp.duration
+export const LAYERS_POPOVER_ANIM_MS = motion.fadeUp.duration
 
 /** The design's 38x24 pill switch (knob 20x20, on=moss). Drives the Events layer toggle. */
 function MiniToggle({ on }: { on: boolean }) {
@@ -98,7 +98,7 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
       toValue: isClosing ? 0 : 1,
       duration: LAYERS_POPOVER_ANIM_MS,
       // Standard iOS-feel easing from the shared motion tokens (matches cfFadeUp / the body transitions).
-      easing: Easing.bezier(...theme.motion.fadeUp.easing),
+      easing: Easing.bezier(...motion.fadeUp.easing),
       useNativeDriver: false,
     })
     animRef.current = anim
@@ -116,10 +116,10 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
     {
       translateY: progress.interpolate({
         inputRange: [0, 1],
-        outputRange: [theme.motion.fadeUp.distance, 0],
+        outputRange: [motion.fadeUp.distance, 0],
       }),
     },
-    { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [theme.motion.fadeUp.scaleFrom, 1] }) },
+    { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [motion.fadeUp.scaleFrom, 1] }) },
   ]
   const shownCount = FILTER_CATEGORIES.filter((c) => enabled.has(c)).length
   const allOn = shownCount === FILTER_CATEGORIES.length

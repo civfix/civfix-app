@@ -65,7 +65,7 @@ describe("the bleed prop", () => {
   })
 
   it("is 16 for the padded hosts and 0 for the padding-free ones", () => {
-    expect(LANE).toMatch(/PROFILE_TIMELINE_BLEED = theme\.space\["4"\]/)
+    expect(LANE).toMatch(/PROFILE_TIMELINE_BLEED = space\["4"\]/)
     expect(HOSTS["profile/ProfilePostsSection.tsx"]).toMatch(/bleed=\{PROFILE_TIMELINE_BLEED\}/)
     expect(HOSTS["PersonDetailBody.tsx"]).toMatch(/bleed=\{PROFILE_TIMELINE_BLEED\}/)
     expect(HOSTS["SavedPostsBody.tsx"]).toMatch(/bleed=\{0\}/)

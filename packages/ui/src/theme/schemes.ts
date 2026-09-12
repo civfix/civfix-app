@@ -13,7 +13,7 @@ export type AppearancePreference = "system" | ColorSchemeName
 
 export const APPEARANCE_PREFERENCES: readonly AppearancePreference[] = ["system", "light", "dark"]
 
-export const DEFAULT_APPEARANCE_PREFERENCE: AppearancePreference = "light"
+export const DEFAULT_APPEARANCE_PREFERENCE: AppearancePreference = "system"
 
 export const COLOR_SCHEMES: readonly ColorSchemeName[] = ["light", "dark"]
 

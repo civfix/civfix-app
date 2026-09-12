@@ -1,14 +1,14 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { View, type ViewStyle } from "react-native"
-import { theme } from "../theme"
+import { motion } from "../theme"
 import type { BodyTransitionDirection, BodyTransitionProps } from "./BodyTransition.types"
 import { bodyTransitionPlan, translateRatio } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"
 import { cssTransitionParts } from "./motionCss"
 import { prefersReducedMotion } from "./webMedia"
 
-const IN_DURATION = theme.motion.bodyPush.duration
-const OUT_DURATION = theme.motion.bodyExit.duration
+const IN_DURATION = motion.bodyPush.duration
+const OUT_DURATION = motion.bodyExit.duration
 const SETTLE_FALLBACK_MS = IN_DURATION + 60
 
 interface LayerStyle {

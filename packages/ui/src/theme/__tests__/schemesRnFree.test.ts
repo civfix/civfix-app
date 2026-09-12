@@ -50,3 +50,20 @@ describe("resolveSchemeName", () => {
     }
   })
 })
+
+describe("the theme surface offers no ambient light-only binding", () => {
+  const themes = strip(read("../themes.ts"))
+  const index = strip(read("../index.ts"))
+
+  it("exports no static theme, colors, glass, imageFrame or shadows", () => {
+    for (const name of ["theme", "colors", "glass", "imageFrame", "shadows"]) {
+      expect(themes, name).not.toMatch(new RegExp(`export const ${name}\\b`))
+      expect(index, name).not.toMatch(new RegExp(`^\\s{2}${name},$`, "m"))
+    }
+  })
+
+  it("hands a scheme-bound theme out only through themeFor, themes or the hook", () => {
+    expect(themes).toMatch(/export function themeFor\(scheme: ColorSchemeName\): Theme/)
+    expect(index).toContain("export function useTheme(): Theme")
+  })
+})

@@ -14,11 +14,6 @@ export {
   motion,
   themes,
   themeFor,
-  theme,
-  colors,
-  glass,
-  imageFrame,
-  shadows,
 } from "./themes"
 export type {
   NativeShadowStyle,

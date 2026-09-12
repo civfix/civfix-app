@@ -7,7 +7,7 @@ import {
 } from "react-native"
 import {
   makeThemedStyles,
-  theme,
+  space,
   useTheme,
   webCursor,
   webTransition,
@@ -49,8 +49,8 @@ export interface PopoverMenuProps {
 }
 
 const CARD_WIDTH = 220
-const ROW_HEIGHT = theme.space["2"] * 2 + 20
-const CARD_PAD_V = theme.space["1"] * 2
+const ROW_HEIGHT = space["2"] * 2 + 20
+const CARD_PAD_V = space["1"] * 2
 
 export function PopoverMenu({
   visible,

@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef } from "react"
 import { AccessibilityInfo, Animated, Easing, StyleSheet, type LayoutChangeEvent } from "react-native"
-import { theme } from "../theme"
+import { motion } from "../theme"
 import type { BodyTransitionProps } from "./BodyTransition.types"
 import { bodyTransitionPlan } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"
 
-const EASING = Easing.bezier(...theme.motion.easing)
+const EASING = Easing.bezier(...motion.easing)
 
 let reduceMotionCache = false
 

@@ -326,7 +326,7 @@ describe("backPressDecision - the back-chip double-tap gate", () => {
   it("gates the DetailBar chip through the decision, on the pop duration", () => {
     const bar = readFileSync(new URL("../DetailBar.tsx", import.meta.url), "utf8")
     expect(bar).toMatch(/backPressDecision\(now, lastBackRef\.current, BACK_PRESS_WINDOW_MS\)/)
-    expect(bar).toMatch(/const BACK_PRESS_WINDOW_MS = theme\.motion\.pagePop\.duration/)
+    expect(bar).toMatch(/const BACK_PRESS_WINDOW_MS = motion\.pagePop\.duration/)
     expect(bar).toMatch(/onPress=\{handleBack\}/)
   })
 })
@@ -350,9 +350,9 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
   })
 
   it("resolves every layer token from the motion vocabulary, never from a literal", () => {
-    expect(src).toMatch(/travelRatio: theme\.motion\.pageTravelRatio/)
-    expect(src).toMatch(/parallaxRatio: theme\.motion\.pageParallaxRatio/)
-    expect(src).toMatch(/scrimOpacity: theme\.motion\.pageScrimOpacity/)
+    expect(src).toMatch(/travelRatio: motion\.pageTravelRatio/)
+    expect(src).toMatch(/parallaxRatio: motion\.pageParallaxRatio/)
+    expect(src).toMatch(/scrimOpacity: motion\.pageScrimOpacity/)
     expect(src).toMatch(/const ANIMATED_TOKENS = pageLayerTokens\(PAGE_MOTION, false, false\)/)
     expect(src).toMatch(/const DRAG_TOKENS = pageLayerTokens\(PAGE_MOTION, false, true\)/)
     expect(src).toMatch(/const REDUCED_TOKENS = pageLayerTokens\(PAGE_MOTION, true, false\)/)

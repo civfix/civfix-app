@@ -12,7 +12,7 @@ import {
 import { REACTION_EMOJIS, type ReactionEmoji } from "@civfix/shared"
 import {
   makeThemedStyles,
-  theme,
+  space,
   useTheme,
   webCursorPointer,
   webTransition,
@@ -70,7 +70,7 @@ export interface MessageContextMenuProps {
 
 const CARD_WIDTH = 240
 const ACTION_ROW_H = 38
-const CARD_PAD_V = theme.space["1"] * 2
+const CARD_PAD_V = space["1"] * 2
 const REACTION_ROW_H = 48
 const GLYPH_BUTTON = 36
 const GLYPH_GAP = 4
@@ -255,7 +255,7 @@ export function MessageContextMenu({
   const reactionRowW = Math.min(
     REACTION_EMOJIS.length * GLYPH_BUTTON +
       (REACTION_EMOJIS.length - 1) * GLYPH_GAP +
-      theme.space["2"] * 2,
+      space["2"] * 2,
     winW - CONTEXT_MENU_EDGE_MARGIN * 2,
   )
   if (anchor) {

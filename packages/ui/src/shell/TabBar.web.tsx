@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { View, type ViewStyle } from "react-native"
-import { theme, useTheme } from "../theme"
+import { space, useTheme } from "../theme"
 import { useTabBarStore } from "./tabBarStore"
 import { compactBottomChrome, tabDividerRect, tabPillTransition } from "./tabBarLogic"
 import { SearchHeader } from "./SearchHeader.web"
@@ -42,7 +42,7 @@ export function TabBar() {
 
   const divider = tabDividerRect(tabW, BAR_HEIGHT)
 
-  const containerStyle = [styles.container, { paddingBottom: theme.space["3"] }]
+  const containerStyle = [styles.container, { paddingBottom: space["3"] }]
 
   if (compactBottomChrome(view) === "docked-search") {
     return (

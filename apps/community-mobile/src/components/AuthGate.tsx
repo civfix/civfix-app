@@ -8,7 +8,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated"
 import type { OAuthProvider } from "@civfix/shared"
-import { makeThemedStyles, theme, useTheme } from "@/theme"
+import { makeThemedStyles, space, useTheme } from "@/theme"
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { Wordmark } from "@/components/Wordmark"
@@ -92,7 +92,7 @@ export function AuthGate({
           styles.welcome,
           {
             paddingTop: showBack ? 0 : insets.top,
-            paddingBottom: insets.bottom + theme.space["8"],
+            paddingBottom: insets.bottom + space["8"],
           },
         ]}
         keyboardShouldPersistTaps="handled"

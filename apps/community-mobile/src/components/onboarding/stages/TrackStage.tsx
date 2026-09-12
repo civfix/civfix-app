@@ -16,7 +16,7 @@ import {
   type LucideIcon,
 } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
-import { makeThemedStyles, theme, useTheme } from "@/theme"
+import { makeThemedStyles, space, motion, useTheme } from "@/theme"
 import {
   DEMO_REPORT_ID,
   DEMO_REPORT_LAT,
@@ -45,7 +45,7 @@ import { STAGE_ASPECT_RATIO, type StageProps } from "./stageTypes"
 
 const TOTAL_MS = 4800
 
-const DROP_MS = theme.motion.gravity.duration
+const DROP_MS = motion.gravity.duration
 const SQUASH_MS = 160
 
 const PIN_DROP_WINDOWS = TRACK_PINS.map((_, i) =>
@@ -76,7 +76,7 @@ const LOZENGE_WIDTH = 46
 const LOZENGE_HEIGHT = 34
 const LOZENGE_LEFT = DOCK_PADDING + (DOCK_CELL - LOZENGE_WIDTH) / 2
 const LOZENGE_TRAVEL = DOCK_CELL
-const DOCK_RISE = DOCK_HEIGHT + theme.space["4"]
+const DOCK_RISE = DOCK_HEIGHT + space["4"]
 
 const DOCK_ICONS: readonly LucideIcon[] = [
   iconMap.Newspaper,
@@ -86,7 +86,7 @@ const DOCK_ICONS: readonly LucideIcon[] = [
 ]
 const DOCK_SELECTED_INDEX = 1
 
-const POP = theme.motion.pop
+const POP = motion.pop
 
 function noop(): void {}
 

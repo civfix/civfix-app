@@ -80,7 +80,7 @@ describe("the tab-root title row is one box", () => {
 
 describe("the title is inset with the rows, not past them", () => {
   it("the inbox header shares ONE inset with the rows, on both layouts", () => {
-    expect(inbox).toMatch(/const ROW_GUTTER = theme\.space\["4"\]/)
+    expect(inbox).toMatch(/const ROW_GUTTER = space\["4"\]/)
     expect(inbox).toMatch(/headerInset: \{ paddingHorizontal: ROW_GUTTER \}/)
     expect(inbox).toMatch(/row: \{[\s\S]{0,240}?paddingHorizontal: ROW_GUTTER/)
     expect(inbox).toContain("<View style={styles.headerInset} onTouchStart={dismissSwipe}>")

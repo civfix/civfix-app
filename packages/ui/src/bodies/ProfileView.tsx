@@ -9,7 +9,7 @@ import {
   type CleanupDTO,
   type OrganizationRefDTO,
 } from "@civfix/shared"
-import { makeThemedStyles, theme, useTheme, noShadow, focusRingProps, headingLevel } from "../theme"
+import { makeThemedStyles, space, radius, useTheme, noShadow, focusRingProps, headingLevel } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
@@ -244,22 +244,22 @@ export function ProfileViewSkeleton() {
         <SkeletonText width="72%" height={12} />
       </View>
       <View style={styles.skeletonStats}>
-        <SkeletonBlock width="30%" height={44} radius={theme.radius.md} />
-        <SkeletonBlock width="30%" height={44} radius={theme.radius.md} />
-        <SkeletonBlock width="30%" height={44} radius={theme.radius.md} />
+        <SkeletonBlock width="30%" height={44} radius={radius.md} />
+        <SkeletonBlock width="30%" height={44} radius={radius.md} />
+        <SkeletonBlock width="30%" height={44} radius={radius.md} />
       </View>
       <View style={styles.skeletonTabs}>
-        <SkeletonBlock width={72} height={30} radius={theme.radius.pill} />
-        <SkeletonBlock width={72} height={30} radius={theme.radius.pill} />
-        <SkeletonBlock width={72} height={30} radius={theme.radius.pill} />
+        <SkeletonBlock width={72} height={30} radius={radius.pill} />
+        <SkeletonBlock width={72} height={30} radius={radius.pill} />
+        <SkeletonBlock width={72} height={30} radius={radius.pill} />
       </View>
       <SkeletonList rows={3} kind="text" />
     </SkeletonGroup>
   )
 }
 
-const HEADER_BLOCK_GAP = theme.space["3"]
-const HEADER_CLUSTER_GAP = theme.space["4"]
+const HEADER_BLOCK_GAP = space["3"]
+const HEADER_CLUSTER_GAP = space["4"]
 
 const useStyles = makeThemedStyles((t) => ({
   skeletonHeroSub: { marginTop: 5 },

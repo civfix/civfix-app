@@ -85,10 +85,10 @@ describe("anchor-origin solve", () => {
 
 describe("the shared menu motion hook (source-pinned)", () => {
   it("reads every duration and curve from the motion tokens, never a literal", () => {
-    expect(motionSource).toMatch(/duration: theme\.motion\.menuIn\.duration/)
-    expect(motionSource).toMatch(/duration: theme\.motion\.menuOut\.duration/)
-    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.theme\.motion\.menuIn\.easing\)/)
-    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.theme\.motion\.menuOut\.easing\)/)
+    expect(motionSource).toMatch(/duration: motion\.menuIn\.duration/)
+    expect(motionSource).toMatch(/duration: motion\.menuOut\.duration/)
+    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.motion\.menuIn\.easing\)/)
+    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.motion\.menuOut\.easing\)/)
     expect(motionSource).not.toMatch(/duration:\s*\d/)
     expect(motionModelSource).toMatch(/MENU_SCALE_FROM = MOTION\.menuScaleFrom/)
     expect(motionModelSource).not.toMatch(/0\.9\d/)

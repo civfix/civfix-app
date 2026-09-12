@@ -297,7 +297,7 @@ describe("eventPhase", () => {
   })
 })
 
-describe("insights authz invariant (DECISIONS §35)", () => {
+describe("insights authz invariant (DECISIONS §36)", () => {
   it("gives view_roster to every standing that holds view_analytics", () => {
     const eventRoles = [null, ...CleanupMemberRoleSchema.options]
     const orgRoles = [null, ...OrganizationMemberRoleSchema.options]
