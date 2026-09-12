@@ -114,6 +114,8 @@ export {
 export { useScannerAvailable } from "./useScannerAvailable"
 export type { ScanPresenter } from "./scannerPresenter"
 
+export { consoleReachable, openConsolePath } from "./consoleReach"
+
 export { openDonate } from "./donateTarget"
 export type { DonateTarget } from "./donateTarget.types"
 

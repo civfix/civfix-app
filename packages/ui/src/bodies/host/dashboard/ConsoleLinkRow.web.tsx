@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { managePath, manageOrgPath, managePortfolioPath } from "../../../primitives/externalUrls"
+import { openConsolePath } from "../../../primitives/consoleReach"
 import { useOpenExternal } from "../../../capabilities"
 import { useT } from "../../../i18n"
 import type { ConsoleLinkRowProps, ConsoleLinkTarget } from "./ConsoleLinkRow.types"
@@ -25,12 +26,7 @@ export function ConsoleLinkRow({ target }: ConsoleLinkRowProps) {
   const openExternal = useOpenExternal()
 
   const open = useCallback(() => {
-    const path = pathFor(target)
-    if (typeof window !== "undefined" && window.location) {
-      window.location.assign(path)
-      return
-    }
-    void openExternal?.open(path)
+    openConsolePath(pathFor(target), openExternal)
   }, [openExternal, target])
 
   return (

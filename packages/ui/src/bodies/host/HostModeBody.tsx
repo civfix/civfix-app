@@ -25,6 +25,7 @@ import {
   type StatTileColumns,
 } from "../../primitives/statTileModel"
 import { managePath } from "../../primitives/externalUrls"
+import { consoleReachable, openConsolePath } from "../../primitives/consoleReach"
 import { useOpenExternal } from "../../capabilities"
 import {
   useAuthState,
@@ -249,7 +250,7 @@ export function HostModeBody({ id }: { id: string }) {
   }, [id])
 
   const onTickets = useCallback(() => {
-    void openExternal?.open(managePath(id))
+    openConsolePath(managePath(id), openExternal)
   }, [id, openExternal])
 
   const onConfirmNoShows = useCallback(() => {
@@ -377,7 +378,7 @@ export function HostModeBody({ id }: { id: string }) {
     unmarked,
     scannerAvailable,
     hasOrganization: !!event.organization,
-    ticketsReachable: !!openExternal,
+    consoleReachable,
   })
   const columns = statTileColumns(contentWidth)
   const wide = contentWidth >= STAT_TILE_WIDE_AT

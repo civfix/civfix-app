@@ -89,7 +89,7 @@ export interface HostActionInput {
   unmarked: number
   scannerAvailable: boolean
   hasOrganization: boolean
-  ticketsReachable: boolean
+  consoleReachable: boolean
 }
 
 export interface HostActionCard {
@@ -254,7 +254,7 @@ export function hostActionCards(input: HostActionInput): HostActionCard[] {
   const configure: HostRowKey[] = []
   if (upcoming && can.manageEvent) configure.push("edit")
   if (upcoming && can.manageTeam) configure.push("team")
-  if (upcoming && can.manageTickets && input.ticketsReachable) configure.push("tickets")
+  if (upcoming && can.manageTickets && input.consoleReachable) configure.push("tickets")
   if (upcoming && can.requestResources && input.hasOrganization) configure.push("resources")
   if (ended && can.manageEvent) configure.push("duplicate")
 

@@ -17,6 +17,9 @@ const cancelSheet = strip(read("../../../primitives/CancelEventSheet.tsx"))
 const target = strip(read("../../hostDashboardTarget.ts"))
 const detail = strip(read("../../EventDetailBody.tsx"))
 const hooks = strip(read("../../../data/hooks/host.ts"))
+const reachSelector = strip(read("../../../primitives/consoleReach.ts"))
+const reachWeb = strip(read("../../../primitives/consoleReach.web.ts"))
+const reachNative = strip(read("../../../primitives/consoleReach.native.ts"))
 const keys = strip(read("../../../data/keys.ts"))
 
 const HOST_SOURCES: Record<string, string> = {
@@ -108,6 +111,30 @@ describe("the dashboard handoff is one file on both platforms", () => {
     expect(detail.match(/<EventActionRow\b/g) ?? []).not.toHaveLength(0)
     expect(detail).not.toContain('t("host.request_resources")')
     expect(detail).not.toContain('t("complete.action")')
+  })
+})
+
+describe("the tickets row is gated on the platform, not on a capability every host injects", () => {
+  it("reads reachability from the seam rather than from the presence of openExternal", () => {
+    expect(body).toContain("consoleReachable,")
+    expect(body).not.toContain("ticketsReachable")
+    expect(body).not.toContain("!!openExternal")
+    expect(strip(read("../hostSurfaceModel.ts"))).toContain(
+      'if (upcoming && can.manageTickets && input.consoleReachable) configure.push("tickets")',
+    )
+  })
+
+  it("answers true on the web and false on native, and the selector re-exports the web file", () => {
+    expect(reachWeb).toContain("export const consoleReachable = true")
+    expect(reachNative).toContain("export const consoleReachable = false")
+    expect(reachSelector).toContain('from "./consoleReach.web"')
+  })
+
+  it("opens the console through the one helper both surfaces share", () => {
+    expect(body).toContain("openConsolePath(managePath(id), openExternal)")
+    expect(strip(read("../dashboard/ConsoleLinkRow.web.tsx"))).toContain(
+      "openConsolePath(pathFor(target), openExternal)",
+    )
   })
 })
 

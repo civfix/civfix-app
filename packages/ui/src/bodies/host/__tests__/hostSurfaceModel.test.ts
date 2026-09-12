@@ -292,7 +292,7 @@ describe("action cards", () => {
     unmarked: 0,
     scannerAvailable: false,
     hasOrganization: true,
-    ticketsReachable: true,
+    consoleReachable: true,
   }
 
   it("never renders an empty card", () => {
@@ -341,12 +341,22 @@ describe("action cards", () => {
     expect(rows("live", 3)).not.toContain("mark_no_shows")
   })
 
-  it("hides the resources row without an organization and the tickets row without a console", () => {
+  it("hides the resources row without an organization", () => {
     const rows = (over: Partial<typeof base>) =>
       hostActionCards({ ...base, phase: "upcoming", ...over }).flatMap((card) => card.rows)
     expect(rows({})).toContain("resources")
     expect(rows({ hasOrganization: false })).not.toContain("resources")
-    expect(rows({ ticketsReachable: false })).not.toContain("tickets")
+  })
+
+  it("offers tickets on the web, where the console exists, and never on native", () => {
+    const rows = (consoleReachable: boolean) =>
+      hostActionCards({ ...base, phase: "upcoming", consoleReachable }).flatMap((card) => card.rows)
+    expect(rows(true)).toContain("tickets")
+    expect(rows(false)).not.toContain("tickets")
+    for (const phase of ["live", "ended", "cancelled"] as const) {
+      const anyPhase = hostActionCards({ ...base, phase }).flatMap((card) => card.rows)
+      expect(anyPhase, phase).not.toContain("tickets")
+    }
   })
 
   it("leaves a cancelled event with nothing but a duplicate path", () => {
