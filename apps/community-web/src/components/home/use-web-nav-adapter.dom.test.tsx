@@ -66,10 +66,18 @@ async function browserForward(): Promise<void> {
 const PIN_A: DetailEntry = { kind: "pin", id: "a" }
 const PIN_B: DetailEntry = { kind: "pin", id: "b" }
 const PERSON: DetailEntry = { kind: "person", id: "p1" }
+const PERSON_B: DetailEntry = { kind: "person", id: "p2" }
 const CLUSTER: DetailEntry = { kind: "cluster" }
 const DROP_PIN: DetailEntry = { kind: "drop-pin", lat: 1, lng: 2 }
 
 const RECOVERY_WAIT_MS = 600
+
+function delayGo(ms: number): void {
+  const real = window.history.go.bind(window.history)
+  vi.spyOn(window.history, "go").mockImplementation((delta) => {
+    setTimeout(() => real(delta), ms)
+  })
+}
 
 function dropSecondGoOfEachTask(): void {
   const real = window.history.go.bind(window.history)
@@ -386,7 +394,7 @@ describe("two Backs before the first has landed", () => {
     expect(depth()).toBe(0)
   })
 
-  it("recovers when a traversal never lands, so the next browser Back is a real Back", async () => {
+  it("releases the lock when a traversal never lands, leaving the entry it never left alone", async () => {
     mount()
     await drive(() => nav().push(PIN_A))
     await drive(() => nav().push(PERSON))
@@ -396,16 +404,147 @@ describe("two Backs before the first has landed", () => {
     expect(go).toHaveBeenCalledWith(-1)
 
     await wait(RECOVERY_WAIT_MS)
-    expect(path()).toBe("/pin/a")
-    expect(readNavHistory(window.history.state)?.snapshot.stack).toEqual([PIN_A])
+    expect(path()).toBe("/people/p1")
+    expect(depth()).toBe(2)
+    expect(readNavHistory(window.history.state)?.snapshot.stack).toEqual([PIN_A, PERSON])
 
     go.mockRestore()
     await drive(() => nav().push(PIN_B))
     expect(path()).toBe("/pin/b")
+    expect(depth()).toBe(3)
 
     await browserBack()
-    expect(nav().stack).toEqual([PIN_A])
+    expect(path()).toBe("/people/p1")
+    expect(nav().stack).toEqual([PIN_A, PERSON])
+  })
+
+  it("treats a traversal that lands after the timeout as ours, leaving no twin ahead of it", async () => {
+    mount()
+    await drive(() => nav().push(PIN_A))
+    await drive(() => nav().push(PERSON))
+    delayGo(500)
+
+    await drive(() => nav().back())
+    await wait(700)
     expect(path()).toBe("/pin/a")
+    expect(depth()).toBe(1)
+    expect(nav().stack).toEqual([PIN_A])
+
+    await browserForward()
+    expect(path()).toBe("/people/p1")
+    expect(nav().stack).toEqual([PIN_A, PERSON])
+  })
+
+  it("keeps a detail opened while the traversal was still in flight", async () => {
+    mount()
+    await drive(() => nav().push(PIN_A))
+    await drive(() => nav().push(PERSON))
+    delayGo(500)
+
+    await drive(() => nav().back())
+    await wait(200)
+    await act(async () => {
+      nav().push(PIN_B)
+    })
+    await wait(600)
+
+    expect(nav().stack).toEqual([PIN_A, PIN_B])
+    expect(path()).toBe("/pin/b")
+    expect(depth()).toBe(2)
+
+    await browserBack()
+    expect(path()).toBe("/pin/a")
+    expect(nav().stack).toEqual([PIN_A])
+  })
+})
+
+describe("transitions that change nothing a URL can address", () => {
+  it("a lateral open with no address of its own traverses to the entry beneath it", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    await drive(() => nav().openDetail(PIN_A))
+    expect(path()).toBe("/pin/a")
+    expect(depth()).toBe(2)
+    const entriesBefore = window.history.length
+
+    await drive(() => nav().openDetail(CLUSTER))
+    expect(path()).toBe("/map")
+    expect(depth()).toBe(1)
+    expect(window.history.length).toBe(entriesBefore)
+
+    await browserBack()
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("home")
+    expect(nav().stack).toEqual([])
+  })
+
+  it("a typed search query is in-place state, so it never grows history or twins an entry", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    expect(depth()).toBe(1)
+    const entriesBefore = window.history.length
+
+    await drive(() => nav().setQuery("abc"))
+    expect(window.history.length).toBe(entriesBefore)
+    expect(depth()).toBe(1)
+
+    await drive(() => nav().openDetail(CLUSTER))
+    expect(depth()).toBe(1)
+    expect(window.history.length).toBe(entriesBefore)
+    expect(readNavHistory(window.history.state)?.snapshot.query).toBe("abc")
+
+    await drive(() => nav().back())
+    expect(depth()).toBe(1)
+    expect(window.history.length).toBe(entriesBefore)
+
+    await browserBack()
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("home")
+  })
+})
+
+describe("a landing reconciles every surface the store gained mid-flight", () => {
+  it("pushes one entry per skipped surface, so Back walks them one at a time", async () => {
+    mount()
+    await drive(() => nav().push(PIN_A))
+    await drive(() => nav().push(PERSON))
+
+    await act(async () => {
+      nav().back()
+      nav().push(PIN_B)
+      nav().push(PERSON_B)
+    })
+    await settle()
+
+    expect(path()).toBe("/people/p2")
+    expect(depth()).toBe(3)
+    expect(nav().stack).toEqual([PIN_A, PIN_B, PERSON_B])
+
+    await browserBack()
+    expect(path()).toBe("/pin/b")
+    expect(nav().stack).toEqual([PIN_A, PIN_B])
+
+    await browserBack()
+    expect(path()).toBe("/pin/a")
+    expect(nav().stack).toEqual([PIN_A])
+  })
+
+  it("never overwrites the in-app root with a surface of its own", async () => {
+    window.history.replaceState(null, "", "/pin/a")
+    mount()
+    expect(depth()).toBe(1)
+
+    await drive(() => nav().collapseToParent())
+    expect(nav().view).toBe("reports")
+    expect(path()).toBe("/reports")
+    expect(depth()).toBe(1)
+
+    await browserBack()
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("home")
   })
 })
 

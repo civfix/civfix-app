@@ -18,32 +18,9 @@ import {
   snapshotEquals,
   stampNavHistory,
   traversalFor,
+  writePlan,
   type NavHistoryEntry,
 } from "./nav-history"
-
-/**
- * The WEB deep-link / URL adapter for the unified nav store.
- *
- * The shared @civfix/ui nav store + shell are platform-agnostic and NEVER touch window.history; this
- * web-app-side hook owns the URL <-> store bridge. Every history entry the shell writes carries a
- * `civfixNav` stamp (a nav SNAPSHOT plus its in-session depth), so the browser's Back button and the
- * in-app chevron land on the same surface:
- *
- *   (a) on mount it either RESTORES the stamped snapshot (reload, bfcache, a return from /manage) or
- *       seeds from the live pathname, writing a synthetic in-app root beneath any cold deep link so the
- *       first browser Back stays on the site,
- *   (b) it maps the store's transition log onto history: forward transitions push, lateral ones replace,
- *       and a POP TRAVERSES (`history.go(-n)`) instead of pushing a new entry,
- *   (c) a user-initiated popstate restores the landed snapshot into the store; a popstate landing from
- *       our own traversal reconciles the entry with whatever the store already is.
-
- *
- * URL sync uses raw history.pushState/replaceState (NOT next/navigation) on purpose: a Next client
- * navigation to /pin/<id> would unmount the shell (and the map) and mount the catch-all route shell. We
- * want the opposite - keep the shell, swap the active panel, and merely reflect the URL. Every write
- * SPREADS the existing window.history.state, because Next's app router keeps its own tree there and hard
- * reloads on a popstate whose state lacks it.
- */
 
 /**
  * The live layout mode at call time, so the mount seed branches list-kinds correctly. Delegates to the
@@ -85,8 +62,17 @@ function isRootSnapshot(snapshot: NavSnapshot): boolean {
 
 const TRAVERSAL_TIMEOUT_MS = 400
 
-interface PendingTraversal {
-  expectedDepth: number
+interface WrittenEntry {
+  seq: number
+  snapshot: NavSnapshot
+}
+
+interface TraversalTarget {
+  depth: number
+  seq: number | undefined
+}
+
+interface PendingTraversal extends TraversalTarget {
   timer: ReturnType<typeof window.setTimeout>
 }
 
@@ -95,15 +81,16 @@ interface NavController {
   adapterDriven: boolean
   handledSeq: number
   traversal: PendingTraversal | null
+  abandoned: TraversalTarget | null
   queued: NavTransition[]
-  written: (NavSnapshot | undefined)[]
+  written: (WrittenEntry | undefined)[]
 }
 
-/**
- * The return-depth pair an entry carries while a report run is live: the depth of the surface the wizard
- * was launched from, so one traversal unwinds the whole report -> search -> report detour. Inherited
- * while the capture token is unchanged, re-anchored on a fresh capture, absent with no run.
- */
+function isTarget(target: TraversalTarget, landed: NavHistoryEntry): boolean {
+  if (target.seq !== undefined) return landed.seq === target.seq
+  return landed.depth === target.depth
+}
+
 function returnFields(
   current: NavHistoryEntry | null,
   snapshot: NavSnapshot,
@@ -121,6 +108,7 @@ export function useWebNavAdapter(): void {
     adapterDriven: false,
     handledSeq: 0,
     traversal: null,
+    abandoned: null,
     queued: [],
     written: [],
   })
@@ -145,11 +133,15 @@ export function useWebNavAdapter(): void {
       const path = pathForSnapshot(snapshot)
       if (mode === "push") window.history.pushState(state, "", path)
       else window.history.replaceState(state, "", path)
-      controller.written[depth] = snapshot
+      controller.written[depth] = { seq: controller.seq, snapshot }
       controller.written.length = depth + 1
     },
     [],
   )
+
+  const beneathOf = React.useCallback((depth: number): NavSnapshot | undefined => {
+    return depth > 0 ? controllerRef.current.written[depth - 1]?.snapshot : undefined
+  }, [])
 
   const drive = React.useCallback((run: () => void) => {
     const controller = controllerRef.current
@@ -162,45 +154,58 @@ export function useWebNavAdapter(): void {
     controller.handledSeq = useNavStore.getState().navSeq
   }, [])
 
-  const recover = React.useCallback(() => {
+  const abandon = React.useCallback(() => {
     const controller = controllerRef.current
+    const traversal = controller.traversal
+    if (!traversal) return
     controller.traversal = null
     controller.queued = []
-    const current = readNavHistory(window.history.state)
-    write("replace", current?.depth ?? 0, liveSnapshot(), current)
-  }, [write])
+    controller.abandoned = { depth: traversal.depth, seq: traversal.seq }
+  }, [])
 
   const traverse = React.useCallback(
     (steps: number, fromDepth: number) => {
       const controller = controllerRef.current
+      const depth = fromDepth - steps
+      controller.abandoned = null
       controller.traversal = {
-        expectedDepth: fromDepth - steps,
-        timer: window.setTimeout(recover, TRAVERSAL_TIMEOUT_MS),
+        depth,
+        seq: controller.written[depth]?.seq,
+        timer: window.setTimeout(abandon, TRAVERSAL_TIMEOUT_MS),
       }
       window.history.go(-steps)
     },
-    [recover],
+    [abandon],
   )
 
   const reconcile = React.useCallback(
     (landed: NavHistoryEntry | null) => {
-      const controller = controllerRef.current
       const live = liveSnapshot()
+      const base = landed?.snapshot ?? ROOT_NAV_SNAPSHOT
       const depth = landed?.depth ?? 0
-      const plan = reconcilePlan(landed?.snapshot ?? ROOT_NAV_SNAPSHOT, live)
+      const plan = reconcilePlan(base, live)
       if (plan.type === "none") return
       if (plan.type === "push") {
-        write("push", depth + 1, live, landed)
+        let from = landed
+        for (let step = 1; step <= plan.count; step += 1) {
+          const stack = live.stack.slice(0, base.stack.length + step)
+          write("push", depth + step, { ...live, stack }, from)
+          from = readNavHistory(window.history.state)
+        }
         return
       }
-      const beneath = depth > 0 ? controller.written[depth - 1] : undefined
+      const beneath = beneathOf(depth)
       if (beneath && snapshotEquals(beneath, live)) {
         traverse(1, depth)
         return
       }
+      if (depth === 0 && !isRootSnapshot(live)) {
+        write("push", 1, live, landed)
+        return
+      }
       write("replace", depth, live, landed)
     },
-    [traverse, write],
+    [beneathOf, traverse, write],
   )
 
   const settle = React.useCallback(
@@ -219,10 +224,6 @@ export function useWebNavAdapter(): void {
     [reconcile, traverse],
   )
 
-  // (a) Seed once on mount from the stamped history entry, or from the live URL. Done in a LAYOUT effect
-  // (not useEffect) so the store is seeded BEFORE the first paint of the shell - otherwise a deep link
-  // would flash the map-only home for one frame before the panel opens. Safe with no SSR guard: this hook
-  // only runs inside HomeShell, which is mounted via dynamic(ssr:false).
   React.useLayoutEffect(() => {
     const controller = controllerRef.current
     const existing = readNavHistory(window.history.state)
@@ -237,18 +238,12 @@ export function useWebNavAdapter(): void {
       write("replace", 0, live, null)
       return
     }
-    // A COLD DEEP LINK has no in-app entry beneath it, so the first browser Back would leave the site.
-    // Write the in-app root underneath it, then push the deep-linked state on top: the address bar still
-    // ends on the deep link, and Back lands on the home feed instead of the previous website.
     write("replace", 0, ROOT_NAV_SNAPSHOT, null)
     write("push", 1, live, readNavHistory(window.history.state))
     // Mount-only: subsequent changes flow through the subscription below / popstate.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // (b) Map the store's transition log onto history. A forward move pushes, a lateral one replaces, and a
-  // POP traverses - which is the whole point: the in-app chevron must consume a history entry rather than
-  // append one, or browser Back would walk straight back into the surface the user just left.
   React.useEffect(() => {
     const unsub = useNavStore.subscribe((state) => {
       const controller = controllerRef.current
@@ -263,49 +258,45 @@ export function useWebNavAdapter(): void {
       }
       const current = readNavHistory(window.history.state)
       const live = takeNavSnapshot(state)
-      if (transition.type === "pop") {
-        if (current && snapshotEquals(current.snapshot, live)) return
-        const steps = traversalFor(transition, current)
-        if (steps === 0) {
-          write("replace", current?.depth ?? 0, live, current)
-          return
-        }
-        traverse(steps, current?.depth ?? 0)
+      const depth = current?.depth ?? 0
+      const plan = writePlan(transition, current, live, beneathOf(depth))
+      if (plan.type === "none") return
+      if (plan.type === "traverse") {
+        traverse(plan.steps, depth)
         return
       }
-      if (transition.type === "replace") {
-        write("replace", current?.depth ?? 0, live, current)
+      if (plan.type === "push") {
+        write("push", depth + 1, live, current)
         return
       }
-      if (current && snapshotEquals(current.snapshot, live)) return
-      write("push", (current?.depth ?? 0) + 1, live, current)
+      write("replace", depth, live, current)
     })
     return unsub
-  }, [traverse, write])
+  }, [beneathOf, traverse, write])
 
-  // (c) Browser Back/Forward restores the landed snapshot into the store. A popstate that is the landing
-  // of OUR OWN traversal is the other direction: the store is already right, so the entry is reconciled to
-  // it instead (a pop requested mid-flight is re-measured against the entry we land on).
   React.useEffect(() => {
     const controller = controllerRef.current
     const onPop = (event: PopStateEvent) => {
       const landed = readNavHistory(event.state)
       const traversal = controller.traversal
+      const abandoned = controller.abandoned
+      controller.abandoned = null
       if (traversal) {
         window.clearTimeout(traversal.timer)
         controller.traversal = null
-        if (!landed || landed.depth === traversal.expectedDepth) {
+        if (!landed || isTarget(traversal, landed)) {
           settle(landed)
           return
         }
         controller.queued = []
+      } else if (abandoned && landed && isTarget(abandoned, landed)) {
+        settle(landed)
+        return
       }
       if (landed) {
         drive(() => useNavStore.getState().restore(landed.snapshot))
         return
       }
-      // An entry this controller never wrote (a tab opened against an older build). Seed from its path,
-      // then stamp it so the next pop has a depth to traverse against.
       drive(() => seedStoreFromPath(window.location.pathname))
       write("replace", 0, liveSnapshot(), null)
     }
@@ -314,6 +305,7 @@ export function useWebNavAdapter(): void {
       window.removeEventListener("popstate", onPop)
       if (controller.traversal) window.clearTimeout(controller.traversal.timer)
       controller.traversal = null
+      controller.abandoned = null
       controller.queued = []
     }
   }, [drive, settle, write])

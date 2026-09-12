@@ -6,6 +6,7 @@ import {
   pathForView,
   type DetailEntry,
   type DetailKind,
+  type NavReturn,
   type NavSnapshot,
   type NavTransition,
   type View,
@@ -38,16 +39,39 @@ function isEntry(value: unknown): value is DetailEntry {
   return isRecord(value) && typeof value.kind === "string" && ENTRY_KINDS.has(value.kind)
 }
 
+function isView(value: unknown): value is View {
+  return typeof value === "string" && VIEWS.has(value)
+}
+
+function isViewOrNull(value: unknown): value is View | null {
+  return value === null || isView(value)
+}
+
+function isEntryList(value: unknown): value is DetailEntry[] {
+  return Array.isArray(value) && value.every(isEntry)
+}
+
+function isReturn(value: unknown): value is NavReturn {
+  if (!isRecord(value)) return false
+  return (
+    isView(value.view) &&
+    isEntryList(value.stack) &&
+    isViewOrNull(value.originView) &&
+    typeof value.query === "string" &&
+    typeof value.token === "number"
+  )
+}
+
 function isSnapshot(value: unknown): value is NavSnapshot {
   if (!isRecord(value)) return false
   return (
     value.v === 1 &&
-    typeof value.view === "string" &&
-    VIEWS.has(value.view) &&
-    Array.isArray(value.stack) &&
-    value.stack.every(isEntry) &&
+    isView(value.view) &&
+    isEntryList(value.stack) &&
+    isViewOrNull(value.originView) &&
     typeof value.query === "string" &&
-    typeof value.seededDetailPage === "boolean"
+    typeof value.seededDetailPage === "boolean" &&
+    (value.reportReturn === null || isReturn(value.reportReturn))
   )
 }
 
@@ -80,19 +104,21 @@ function sameIdentities(a: readonly string[], b: readonly string[]): boolean {
 
 export function snapshotEquals(a: NavSnapshot, b: NavSnapshot): boolean {
   if (a.view !== b.view) return false
-  if (a.query !== b.query) return false
   return sameIdentities(stackIdentities(a.stack), stackIdentities(b.stack))
 }
 
-export type ReconcilePlan = { type: "none" } | { type: "push" } | { type: "replace" }
+export type ReconcilePlan =
+  | { type: "none" }
+  | { type: "push"; count: number }
+  | { type: "replace" }
 
 export function reconcilePlan(landed: NavSnapshot, live: NavSnapshot): ReconcilePlan {
   if (snapshotEquals(landed, live)) return { type: "none" }
   if (landed.view !== live.view) return { type: "replace" }
   const landedIds = stackIdentities(landed.stack)
   const liveIds = stackIdentities(live.stack)
-  if (liveIds.length === landedIds.length + 1 && sameIdentities(landedIds, liveIds.slice(0, -1)))
-    return { type: "push" }
+  if (liveIds.length > landedIds.length && sameIdentities(landedIds, liveIds.slice(0, landedIds.length)))
+    return { type: "push", count: liveIds.length - landedIds.length }
   return { type: "replace" }
 }
 
@@ -109,6 +135,32 @@ export function traversalFor(
     return Math.min(Math.max(depth - returnDepth, 1), depth)
   }
   return Math.min(transition.count, depth)
+}
+
+export type WritePlan =
+  | { type: "none" }
+  | { type: "restamp" }
+  | { type: "push" }
+  | { type: "replace" }
+  | { type: "traverse"; steps: number }
+
+export function writePlan(
+  transition: NavTransition,
+  current: NavHistoryEntry | null,
+  live: NavSnapshot,
+  beneath: NavSnapshot | undefined,
+): WritePlan {
+  if (current && snapshotEquals(current.snapshot, live))
+    return current.snapshot.query === live.query ? { type: "none" } : { type: "restamp" }
+  if (transition.type === "pop") {
+    const steps = traversalFor(transition, current)
+    return steps === 0 ? { type: "replace" } : { type: "traverse", steps }
+  }
+  if (transition.type === "replace") {
+    if (beneath && snapshotEquals(beneath, live)) return { type: "traverse", steps: 1 }
+    return { type: "replace" }
+  }
+  return { type: "push" }
 }
 
 export function pathForSnapshot(snapshot: NavSnapshot): string {

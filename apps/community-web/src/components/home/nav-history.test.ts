@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { ROOT_NAV_SNAPSHOT, type NavSnapshot } from "@civfix/ui/nav"
+import { ROOT_NAV_SNAPSHOT, type NavReturn, type NavSnapshot } from "@civfix/ui/nav"
 
 import {
   pathForSnapshot,
@@ -8,6 +8,7 @@ import {
   snapshotEquals,
   stampNavHistory,
   traversalFor,
+  writePlan,
   type NavHistoryEntry,
 } from "./nav-history"
 
@@ -33,6 +34,50 @@ describe("readNavHistory", () => {
     expect(readNavHistory({ civfixNav: { v: 1, seq: 1, depth: 0 } })).toBeNull()
     expect(
       readNavHistory({ civfixNav: { v: 1, seq: 1, depth: 0, snapshot: { view: "home" } } }),
+    ).toBeNull()
+  })
+
+  it("rejects a snapshot whose report-return stamp is not a state the store can restore", () => {
+    const good: NavReturn = {
+      view: "events",
+      stack: [{ kind: "cleanup", id: "c1" }],
+      originView: null,
+      query: "",
+      token: 3,
+    }
+    expect(
+      readNavHistory(stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: good }) }))),
+    ).not.toBeNull()
+    expect(
+      readNavHistory(stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: {} as never }) }))),
+    ).toBeNull()
+    expect(
+      readNavHistory(
+        stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: { ...good, stack: "nope" } as never }) })),
+      ),
+    ).toBeNull()
+    expect(
+      readNavHistory(
+        stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: { ...good, view: "nonsense" } as never }) })),
+      ),
+    ).toBeNull()
+    expect(
+      readNavHistory(
+        stampNavHistory(null, entry({ snapshot: snapshot({ reportReturn: { ...good, token: "1" } as never }) })),
+      ),
+    ).toBeNull()
+  })
+
+  it("rejects a snapshot whose originView is neither a view nor null", () => {
+    expect(
+      readNavHistory(
+        stampNavHistory(null, entry({ snapshot: snapshot({ originView: "nonsense" as never }) })),
+      ),
+    ).toBeNull()
+    expect(
+      readNavHistory(
+        stampNavHistory(null, entry({ snapshot: snapshot({ originView: undefined as never }) })),
+      ),
     ).toBeNull()
   })
 
@@ -72,7 +117,7 @@ describe("stampNavHistory", () => {
 })
 
 describe("snapshotEquals", () => {
-  it("compares the view, the query and the stack identities", () => {
+  it("compares the view and the stack identities", () => {
     const a = snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }] })
     expect(snapshotEquals(a, snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }] }))).toBe(
       true,
@@ -87,9 +132,11 @@ describe("snapshotEquals", () => {
       false,
     )
     expect(snapshotEquals(a, snapshot({ view: "events", stack: [] }))).toBe(false)
-    expect(
-      snapshotEquals(a, snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }], query: "x" })),
-    ).toBe(false)
+  })
+
+  it("treats the search query as in-place state, not a surface of its own", () => {
+    const a = snapshot({ view: "map" })
+    expect(snapshotEquals(a, snapshot({ view: "map", query: "abc" }))).toBe(true)
   })
 })
 
@@ -104,10 +151,23 @@ describe("reconcilePlan", () => {
       view: "events",
       stack: [{ kind: "cleanup", id: "c1" }, { kind: "person", id: "p1" }],
     })
-    expect(reconcilePlan(landed, live).type).toBe("push")
+    expect(reconcilePlan(landed, live)).toEqual({ type: "push", count: 1 })
   })
 
-  it("replaces for a different view, a deeper jump or a lateral swap", () => {
+  it("pushes one entry per surface when several arrived while a traversal was in flight", () => {
+    const landed = snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }] })
+    const live = snapshot({
+      view: "events",
+      stack: [
+        { kind: "cleanup", id: "c1" },
+        { kind: "person", id: "p1" },
+        { kind: "post-thread", id: "t1" },
+      ],
+    })
+    expect(reconcilePlan(landed, live)).toEqual({ type: "push", count: 2 })
+  })
+
+  it("replaces for a different view or a lateral swap", () => {
     const landed = snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }] })
     expect(reconcilePlan(landed, snapshot({ view: "home", stack: [] })).type).toBe("replace")
     expect(
@@ -118,14 +178,70 @@ describe("reconcilePlan", () => {
         landed,
         snapshot({
           view: "events",
-          stack: [
-            { kind: "cleanup", id: "c1" },
-            { kind: "person", id: "p1" },
-            { kind: "post-thread", id: "t1" },
-          ],
+          stack: [{ kind: "person", id: "p1" }, { kind: "cleanup", id: "c1" }],
         }),
       ).type,
     ).toBe("replace")
+  })
+})
+
+describe("writePlan", () => {
+  const MAP = snapshot({ view: "map" })
+  const MAP_PIN = snapshot({ view: "map", stack: [{ kind: "pin", id: "a" }] })
+
+  it("writes nothing when the transition changed nothing a URL can address", () => {
+    expect(writePlan({ type: "push" }, entry({ depth: 1, snapshot: MAP }), MAP, undefined)).toEqual({
+      type: "none",
+    })
+    expect(
+      writePlan({ type: "pop", count: 0 }, entry({ depth: 1, snapshot: MAP }), MAP, undefined),
+    ).toEqual({ type: "none" })
+  })
+
+  it("restamps in place when only the search query moved on", () => {
+    expect(
+      writePlan(
+        { type: "push" },
+        entry({ depth: 1, snapshot: MAP }),
+        snapshot({ view: "map", query: "abc" }),
+        undefined,
+      ),
+    ).toEqual({ type: "restamp" })
+  })
+
+  it("traverses instead of overwriting when a lateral swap lands on the entry beneath", () => {
+    expect(writePlan({ type: "replace" }, entry({ depth: 2, snapshot: MAP_PIN }), MAP, MAP)).toEqual({
+      type: "traverse",
+      steps: 1,
+    })
+    expect(
+      writePlan({ type: "replace" }, entry({ depth: 2, snapshot: MAP_PIN }), MAP, undefined),
+    ).toEqual({ type: "replace" })
+    expect(
+      writePlan(
+        { type: "replace" },
+        entry({ depth: 2, snapshot: MAP_PIN }),
+        MAP,
+        snapshot({ view: "events" }),
+      ),
+    ).toEqual({ type: "replace" })
+  })
+
+  it("traverses a pop, and overwrites in place only when there is nothing beneath to traverse to", () => {
+    expect(writePlan({ type: "pop", count: 1 }, entry({ depth: 2, snapshot: MAP_PIN }), MAP, MAP)).toEqual(
+      { type: "traverse", steps: 1 },
+    )
+    expect(
+      writePlan({ type: "pop", count: 1 }, entry({ depth: 0, snapshot: MAP_PIN }), MAP, undefined),
+    ).toEqual({ type: "replace" })
+  })
+
+  it("pushes every forward transition", () => {
+    for (const transition of [{ type: "push" }, { type: "select" }, { type: "reset" }, { type: "seed" }] as const) {
+      expect(writePlan(transition, entry({ depth: 1, snapshot: MAP }), MAP_PIN, MAP)).toEqual({
+        type: "push",
+      })
+    }
   })
 })
 
