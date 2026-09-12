@@ -6,20 +6,24 @@ const focal = readFileSync(new URL("../ThreadFocalPost.tsx", import.meta.url), "
 const replyRow = readFileSync(new URL("../ThreadReplyRow.tsx", import.meta.url), "utf8")
 
 describe("post-thread navigation seam: every push-capable tap routes through onOpenEntry", () => {
-  it("PostThreadBody exposes the seam and defaults it to the store push", () => {
+  it("PostThreadBody exposes the seam and hands it to every row it renders", () => {
     expect(body).toMatch(/onOpenEntry\?: \(entry: DetailEntry\) => void/)
-    expect(body).toMatch(/if \(onOpenEntry\) onOpenEntry\(entry\)\s*\n\s*else push\(entry\)/)
+    expect(body).toMatch(/<ThreadFocalPost[\s\S]*?onOpenEntry=\{onOpenEntry\}/)
+    expect(body).toMatch(/<ThreadReplyRow[\s\S]*?onOpenEntry=\{onOpenEntry\}/)
   })
 
   it("PostThreadBody never bypasses the seam with a bare store push", () => {
     expect(body.match(/\bpush\(\{/g)).toBeNull()
-    expect(body).toMatch(/openEntry\(\{ kind: "post-thread", id: postId \}\)/)
-    expect(body).toMatch(/openEntry\(\{ kind: "post-thread", id: listRow\.parentId \}\)/)
   })
 
-  it("PostThreadBody threads the seam into the focal post and every reply row", () => {
-    expect(body).toMatch(/<ThreadFocalPost[\s\S]*?onOpenEntry=\{onOpenEntry\}/)
-    expect(body).toMatch(/<ThreadReplyRow[\s\S]*?onOpenEntry=\{onOpenEntry\}/)
+  /**
+   * The flat thread's whole navigation model: a reply row IS the way into that reply's own thread, so the
+   * row press and the comment glyph both route one entry through the seam.
+   */
+  it("a reply row opens its own thread through the seam, from the row and the comment glyph", () => {
+    expect(replyRow).toMatch(/openEntry\(\{ kind: "post-thread", id: post\.id \}\)/)
+    expect(replyRow).toMatch(/onPress=\{openThread\}/)
+    expect(replyRow).toMatch(/onComment=\{openThread\}/)
   })
 
   it("ThreadFocalPost and ThreadReplyRow fall back to the push only when the seam is absent", () => {

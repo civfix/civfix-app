@@ -1,7 +1,15 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { PostDTO } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles } from "../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  stopPress,
+  wash,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../../theme"
 import { Text } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
@@ -16,6 +24,7 @@ import type { DetailEntry } from "../../nav/types"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
+import { ROW_ROLE, linkKeyProps } from "../PostCard"
 import { PostMediaGrid } from "../PostMediaGrid"
 import {
   buildPostIdentity,
@@ -24,44 +33,27 @@ import {
   splitPostBodyMentions,
 } from "../postCardModel"
 import { useListTimeAgo } from "../useListTimeAgo"
-import { ThreadGutterRail } from "./ThreadGutterRail"
 import {
   THREAD_AVATAR_SIZE,
-  THREAD_NESTED_AVATAR_SIZE,
   THREAD_RAIL_GAP,
   THREAD_RAIL_STUB_H,
   THREAD_RAIL_W,
-  threadRowGeometry,
   type ThreadRailSegment,
-  type ThreadRowDepth,
-  type ThreadRowExpansion,
 } from "./threadModel"
 
 export interface ThreadReplyRowProps {
   post: PostDTO
   rail: ThreadRailSegment
-  depth?: ThreadRowDepth
   hairline?: boolean
   isOptimistic?: boolean
-  failed?: boolean
-  onRetry?: () => void
-  expansion?: ThreadRowExpansion
-  onToggleExpand?: (postId: string, expansion: ThreadRowExpansion) => void
-  onReply?: (post: PostDTO) => void
   onOpenEntry?: (entry: DetailEntry) => void
 }
 
 export const ThreadReplyRow = React.memo(function ThreadReplyRow({
   post,
   rail,
-  depth = 1,
   hairline = true,
   isOptimistic = false,
-  failed = false,
-  onRetry,
-  expansion,
-  onToggleExpand,
-  onReply,
   onOpenEntry,
 }: ThreadReplyRowProps) {
   const styles = useStyles()
@@ -76,10 +68,10 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
     (personId: string) => openEntry({ kind: "person", id: personId }),
     [openEntry],
   )
-  const onComment = React.useCallback(() => {
-    if (onReply) onReply(post)
-    else openEntry({ kind: "post-thread", id: post.id })
-  }, [onReply, post, openEntry])
+  const openThread = React.useCallback(
+    () => openEntry({ kind: "post-thread", id: post.id }),
+    [openEntry, post.id],
+  )
   const onQuote = React.useCallback(
     () => openEntry({ kind: "composer", composerMode: "quote", targetPostId: post.id }),
     [openEntry, post.id],
@@ -101,26 +93,32 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
   }, [identity, openPerson])
   const metaTail = `${identity.handleLabel ? `${identity.handleLabel} · ` : ""}${isOptimistic ? t("thread.sending") : timeAgo(post.createdAt)}`
 
-  const control: ThreadRowExpansion =
-    expansion ?? (!isOptimistic && post.counts.replies > 0 ? "navigate" : "none")
-  const geometry = threadRowGeometry(depth)
-  const nested = geometry.indent > 0
-
   return (
-    <View
-      style={[
+    <Pressable
+      onPress={openThread}
+      disabled={isOptimistic}
+      accessibilityRole={ROW_ROLE}
+      accessibilityLabel={t("post_card.open_thread_a11y", { name: identity.name })}
+      {...focusRingProps}
+      {...(isOptimistic ? null : linkKeyProps(openThread))}
+      style={(state) => [
         styles.outer,
         hairline ? styles.outerRule : null,
-        failed ? styles.outerFailed : null,
         isOptimistic ? styles.outerOptimistic : null,
+        webTransition,
+        webCursor(isOptimistic),
+        !isOptimistic && webHover(state) ? styles.outerHovered : null,
+        !isOptimistic && state.pressed ? styles.outerPressed : null,
       ]}
     >
       <View style={styles.row}>
-        {nested ? <ThreadGutterRail rail={rail} geometry={geometry} branch="avatar" /> : null}
-        <View style={nested ? styles.railColumnNested : styles.railColumn}>
-          {!nested && rail.above ? <View style={styles.railAbove} /> : null}
+        <View style={styles.railColumn}>
+          {rail.above ? <View style={styles.railAbove} /> : null}
           <Pressable
-            onPress={openIdentity}
+            onPress={(event) => {
+              stopPress(event)
+              openIdentity()
+            }}
             accessibilityRole="button"
             accessibilityLabel={identityA11yLabel(identity, t)}
             hitSlop={5}
@@ -131,12 +129,12 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               seed={identity.avatarSeed}
               photoUrl={identity.avatarUrl}
               gradient={identity.avatarGradient}
-              size={geometry.avatarSize}
+              size={THREAD_AVATAR_SIZE}
               {...(identity.organization ? { style: styles.orgAvatar } : {})}
               decorative
             />
           </Pressable>
-          {!nested && rail.below ? <View style={styles.railBelow} /> : null}
+          {rail.below ? <View style={styles.railBelow} /> : null}
         </View>
 
         <View style={styles.content}>
@@ -149,7 +147,10 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
             ) : null}
             {identity.viaLabel ? (
               <Pressable
-                onPress={openActingPerson}
+                onPress={(event) => {
+                  stopPress(event)
+                  openActingPerson()
+                }}
                 disabled={!identity.personId}
                 accessibilityRole="button"
                 accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}
@@ -174,7 +175,10 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
                   <Text
                     key={`${segment.userId}-${index}`}
                     style={styles.bodyMention}
-                    onPress={() => openPerson(segment.userId)}
+                    onPress={(event) => {
+                      stopPress(event)
+                      openPerson(segment.userId)
+                    }}
                   >
                     {segment.text}
                   </Text>
@@ -215,52 +219,21 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
             </View>
           ) : null}
 
-          {failed ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={onRetry}
-              {...focusRingProps}
-              style={({ pressed }) => [styles.retry, pressed ? styles.pressed : null]}
-            >
-              <Text style={styles.retryText}>{t("thread.tap_to_retry")}</Text>
-            </Pressable>
-          ) : (
-            <View style={styles.actionsWrap} pointerEvents={isOptimistic ? "none" : "auto"}>
-              <PostActionBar
-                variant="reply"
-                postId={post.id}
-                counts={post.counts}
-                viewer={post.viewer}
-                authorId={repostSubjectAuthorId(post)}
-                title={post.report?.title ?? t("post_card.share_title", { name: post.author.name })}
-                onComment={onComment}
-                onQuote={onQuote}
-              />
-            </View>
-          )}
-
-          {control !== "none" ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ expanded: control === "collapse" }}
-              onPress={() =>
-                onToggleExpand
-                  ? onToggleExpand(post.id, control)
-                  : openEntry({ kind: "post-thread", id: post.id })
-              }
-              {...focusRingProps}
-              style={({ pressed }) => [styles.showReplies, pressed ? styles.pressed : null]}
-            >
-              <Text style={styles.showRepliesText}>
-                {control === "collapse"
-                  ? t("thread.hide_replies")
-                  : t("thread.show_replies", { count: post.counts.replies })}
-              </Text>
-            </Pressable>
-          ) : null}
+          <View style={styles.actionsWrap} pointerEvents={isOptimistic ? "none" : "auto"}>
+            <PostActionBar
+              variant="reply"
+              postId={post.id}
+              counts={post.counts}
+              viewer={post.viewer}
+              authorId={repostSubjectAuthorId(post)}
+              title={post.report?.title ?? t("post_card.share_title", { name: post.author.name })}
+              onComment={openThread}
+              onQuote={onQuote}
+            />
+          </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   )
 })
 
@@ -272,17 +245,21 @@ const useStyles = makeThemedStyles((t) => ({
     flexShrink: 1,
     minWidth: 0,
   },
-  outer: {},
+  outer: {
+    backgroundColor: t.colors.bg,
+  },
   outerRule: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: t.colors.border,
   },
+  outerHovered: {
+    backgroundColor: t.colors.bgAlt,
+  },
+  outerPressed: {
+    backgroundColor: wash(t.colors.borderStrong, 0.35, t),
+  },
   outerOptimistic: {
     opacity: 0.55,
-  },
-  outerFailed: {
-    borderLeftWidth: 3,
-    borderLeftColor: t.colors.bloom["600"],
   },
   row: {
     flexDirection: "row",
@@ -292,10 +269,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   railColumn: {
     width: THREAD_AVATAR_SIZE,
-    alignItems: "center",
-  },
-  railColumnNested: {
-    width: THREAD_NESTED_AVATAR_SIZE,
     alignItems: "center",
   },
   railAbove: {
@@ -357,30 +330,6 @@ const useStyles = makeThemedStyles((t) => ({
   actionsWrap: {
     marginTop: t.space["1"],
     marginLeft: -postActionGlyphInset(postActionLayout("reply")),
-  },
-  showReplies: {
-    minHeight: 32,
-    justifyContent: "center",
-    marginLeft: -6,
-    paddingHorizontal: 6,
-    alignSelf: "flex-start",
-  },
-  showRepliesText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13.5,
-    lineHeight: 18,
-    color: t.colors.accentText,
-  },
-  retry: {
-    minHeight: 32,
-    justifyContent: "center",
-    alignSelf: "flex-start",
-  },
-  retryText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13.5,
-    lineHeight: 18,
-    color: t.colors.bloom["600"],
   },
   pressed: {
     opacity: 0.6,

@@ -4,24 +4,16 @@ import type { PostCounts } from "@civfix/shared"
 import {
   buildFocalPostStats,
   buildReplyComposerHeightPlan,
-  buildThreadRailPlan,
   buildThreadRows,
   isOptimisticPostId,
   replyComposerState,
   threadFocalExcerpt,
-  threadGutterWidth,
   threadItems,
   threadRailSegment,
-  threadRowGeometry,
   MIN_THREAD_VISIBLE,
   REPLY_INPUT_MAX_CAP,
   REPLY_INPUT_MIN,
   REPLY_SURFACE_MIN,
-  THREAD_AVATAR_SIZE,
-  THREAD_MAX_INLINE_DEPTH,
-  THREAD_NESTED_AVATAR_SIZE,
-  THREAD_RAIL_COLUMN_W,
-  THREAD_RAIL_GAP,
 } from "../threadModel"
 
 const EN: Record<string, string> = {
@@ -50,8 +42,6 @@ const counts = (over: Partial<PostCounts> = {}): PostCounts => ({
   saves: 0,
   ...over,
 })
-
-const reply = (authorId: string) => ({ id: `${authorId}-${Math.random()}`, author: { id: authorId } })
 
 describe("buildReplyComposerHeightPlan", () => {
   const CASES = [
@@ -121,43 +111,6 @@ describe("buildReplyComposerHeightPlan", () => {
         }
       }
     }
-  })
-})
-
-describe("buildThreadRailPlan", () => {
-  it("draws no rail when nobody continues the thread", () => {
-    expect(buildThreadRailPlan([reply("b"), reply("c")], "a")).toEqual([
-      { above: false, below: false },
-      { above: false, below: false },
-    ])
-  })
-
-  it("stubs a single leading self-reply up to the focal post", () => {
-    expect(buildThreadRailPlan([reply("a"), reply("b")], "a")).toEqual([
-      { above: true, below: false },
-      { above: false, below: false },
-    ])
-  })
-
-  it("connects a leading run of self-replies and stops at the stranger", () => {
-    expect(buildThreadRailPlan([reply("a"), reply("a"), reply("a"), reply("b")], "a")).toEqual([
-      { above: true, below: true },
-      { above: true, below: true },
-      { above: true, below: false },
-      { above: false, below: false },
-    ])
-  })
-
-  it("gives a self-reply that lands AFTER a stranger no rail - it is not a continuation", () => {
-    expect(buildThreadRailPlan([reply("b"), reply("a"), reply("a")], "a")).toEqual([
-      { above: false, below: false },
-      { above: false, below: false },
-      { above: false, below: false },
-    ])
-  })
-
-  it("draws nothing when the focal author is unknown", () => {
-    expect(buildThreadRailPlan([reply("a")], null)).toEqual([{ above: false, below: false }])
   })
 })
 
@@ -255,8 +208,24 @@ const row = (
 const flat = (replies: ReturnType<typeof row>[], focalAuthorId: string | null = "a") =>
   buildThreadRows({ focalId: "focal", focalAuthorId, replies })
 
-describe("buildThreadRows (flat list)", () => {
-  it("reproduces the self-thread rail plan when nothing is expanded", () => {
+describe("buildThreadRows", () => {
+  it("emits one row per reply, keyed by post id, in fetched order", () => {
+    const rows = flat([row("r1", "a"), row("r2", "b")])
+    expect(rows.map((entry) => entry.key)).toEqual(["r1", "r2"])
+    expect(rows.map((entry) => entry.post.id)).toEqual(["r1", "r2"])
+  })
+
+  /**
+   * The whole point of the flat model: a reply's OWN replies never appear on this screen, however many it
+   * has. They live on that reply's thread, which the row itself opens. Nothing here splices a child in.
+   */
+  it("never splices a reply's own replies into the list", () => {
+    const rows = flat([row("r1", "b", 12), row("r2", "c", 0)])
+    expect(rows).toHaveLength(2)
+    expect(rows.map((entry) => entry.post.counts.replies)).toEqual([12, 0])
+  })
+
+  it("connects a leading run of self-replies to the focal post and stops at the stranger", () => {
     const rows = flat([row("r1", "a"), row("r2", "a"), row("r3", "a"), row("r4", "b")])
     expect(rows.map((entry) => entry.rail)).toEqual([
       { above: true, below: true },
@@ -271,6 +240,14 @@ describe("buildThreadRows (flat list)", () => {
     expect(rows.map((entry) => entry.hairline)).toEqual([false, true, true])
   })
 
+  it("holds `above[k] === below[k-1]`, so the rail never breaks mid-run", () => {
+    const rows = flat([row("r1", "a"), row("r2", "a"), row("r3", "a"), row("r4", "b")])
+    rows.forEach((entry, index) => {
+      if (index === 0) return
+      expect(entry.rail.above, `row ${index}`).toBe(rows[index - 1]?.rail.below)
+    })
+  })
+
   it("draws no rail when nobody continues the thread", () => {
     const rows = flat([row("r1", "b"), row("r2", "c")])
     expect(rows.map((entry) => entry.rail)).toEqual([
@@ -279,7 +256,7 @@ describe("buildThreadRows (flat list)", () => {
     ])
   })
 
-  it("gives a self-reply that lands AFTER a stranger no rail", () => {
+  it("gives a self-reply that lands AFTER a stranger no rail - it is not a continuation", () => {
     const rows = flat([row("r1", "b"), row("r2", "a"), row("r3", "a")])
     expect(rows.every((entry) => entry.rail.above === false && entry.rail.below === false)).toBe(true)
   })
@@ -288,218 +265,12 @@ describe("buildThreadRows (flat list)", () => {
     expect(flat([row("r1", "a")], null)[0]?.rail).toEqual({ above: false, below: false })
   })
 
-  it("emits one depth-1 reply row per reply, keyed by post id, in fetched order", () => {
-    const rows = flat([row("r1", "a"), row("r2", "b")])
-    expect(rows.map((entry) => [entry.kind, entry.key, entry.depth])).toEqual([
-      ["reply", "r1", 1],
-      ["reply", "r2", 1],
-    ])
+  it("flags a row the server has not confirmed yet", () => {
+    const rows = flat([row("optimistic-1712", "a", 4), row("r2", "b")])
+    expect(rows.map((entry) => entry.optimistic)).toEqual([true, false])
   })
 
-  it("offers `expand` only to a reply that has replies", () => {
-    const rows = flat([row("r1", "a", 3), row("r2", "b", 0)])
-    expect(rows.map((entry) => (entry.kind === "reply" ? entry.expansion : null)))
-      .toEqual(["expand", "none"])
-  })
-
-  it("never offers an expand affordance on a row the server has not confirmed", () => {
-    const rows = flat([row("optimistic-1712", "a", 4)])
-    expect(rows[0]?.kind === "reply" && rows[0].optimistic).toBe(true)
-    expect(rows[0]?.kind === "reply" && rows[0].expansion).toBe("none")
-  })
-
-  it("caps inline expansion two levels below the focal post", () => {
-    expect(THREAD_MAX_INLINE_DEPTH).toBe(2)
-  })
-})
-
-describe("isOptimisticPostId", () => {
-  it("matches only the composer's temp-id prefix", () => {
-    expect(isOptimisticPostId("optimistic-1712345678901")).toBe(true)
-    expect(isOptimisticPostId("0f9a-real-uuid")).toBe(false)
-    expect(isOptimisticPostId("")).toBe(false)
-  })
-})
-
-describe("buildThreadRows (inline expansion)", () => {
-  const expanded = (
-    replies: ReturnType<typeof row>[],
-    expandedIds: string[],
-    children: Record<string, { items: ReturnType<typeof row>[]; loading: boolean; hasMore: boolean }>,
-  ) =>
-    buildThreadRows({
-      focalId: "focal",
-      focalAuthorId: "a",
-      replies,
-      expandedIds: new Set(expandedIds),
-      children,
-    })
-
-  it("splices the children directly beneath their parent and nowhere else", () => {
-    const rows = expanded(
-      [row("r1", "b", 2), row("r2", "c")],
-      ["r1"],
-      { r1: { items: [row("c1", "d", 0, "r1"), row("c2", "e", 0, "r1")], loading: false, hasMore: false } },
-    )
-    expect(rows.map((entry) => [entry.kind, entry.key])).toEqual([
-      ["reply", "r1"],
-      ["nested", "r1:c1"],
-      ["nested", "r1:c2"],
-      ["reply", "r2"],
-    ])
-    expect(rows.map((entry) => entry.depth)).toEqual([1, 2, 2, 1])
-  })
-
-  it("threads the rail from the parent through every child and stops at the last one", () => {
-    const rows = expanded(
-      [row("r1", "b", 2)],
-      ["r1"],
-      { r1: { items: [row("c1", "d", 0, "r1"), row("c2", "e", 0, "r1")], loading: false, hasMore: false } },
-    )
-    expect(rows.map((entry) => entry.rail)).toEqual([
-      { above: false, below: true },
-      { above: true, below: true },
-      { above: true, below: false },
-    ])
-    expect(rows.map((entry) => entry.hairline)).toEqual([false, false, true])
-  })
-
-  it("KEEPS THE RAILS ALIGNED under an insertion: the self-run breaks rather than lying", () => {
-    const rows = expanded(
-      [row("a1", "a", 1), row("a2", "a"), row("b1", "b")],
-      ["a1"],
-      { a1: { items: [row("c1", "z", 0, "a1")], loading: false, hasMore: false } },
-    )
-    expect(rows.map((entry) => entry.key)).toEqual(["a1", "a1:c1", "a2", "b1"])
-    expect(rows.map((entry) => entry.rail)).toEqual([
-      { above: true, below: true },
-      { above: true, below: false },
-      { above: false, below: false },
-      { above: false, below: false },
-    ])
-  })
-
-  it("falls back to the self-run rail when an expanded reply turns out to have no children", () => {
-    const rows = expanded(
-      [row("a1", "a", 1), row("a2", "a")],
-      ["a1"],
-      { a1: { items: [], loading: false, hasMore: false } },
-    )
-    expect(rows.map((entry) => entry.rail)).toEqual([
-      { above: true, below: true },
-      { above: true, below: false },
-    ])
-  })
-
-  it("holds `above[k] === below[k-1]` across every expansion permutation", () => {
-    const replies = [row("a1", "a", 2), row("a2", "a", 1), row("b1", "b", 3)]
-    const childMap = {
-      a1: { items: [row("x1", "z", 0, "a1"), row("x2", "z", 0, "a1")], loading: false, hasMore: false },
-      a2: { items: [row("y1", "z", 0, "a2")], loading: false, hasMore: false },
-      b1: { items: [], loading: true, hasMore: false },
-    }
-    for (const ids of [[], ["a1"], ["a2"], ["b1"], ["a1", "a2"], ["a1", "b1"], ["a1", "a2", "b1"]]) {
-      const rows = expanded(replies, ids, childMap)
-      for (let index = 1; index < rows.length; index += 1) {
-        expect(rows[index]?.rail.above, `${ids.join("+")} @${index}`)
-          .toBe(rows[index - 1]?.rail.below)
-      }
-      expect(new Set(rows.map((entry) => entry.key)).size).toBe(rows.length)
-    }
-  })
-
-  it("ignores an expansion aimed at a row nobody is showing", () => {
-    const rows = expanded([row("r1", "b", 2)], ["ghost"], {})
-    expect(rows.map((entry) => entry.key)).toEqual(["r1"])
-    expect(rows[0]?.kind === "reply" && rows[0].expansion).toBe("expand")
-  })
-
-  it("flips the parent's control to `collapse` while it is open", () => {
-    const rows = expanded(
-      [row("r1", "b", 1)],
-      ["r1"],
-      { r1: { items: [row("c1", "d", 0, "r1")], loading: false, hasMore: false } },
-    )
-    expect(rows[0]?.kind === "reply" && rows[0].expansion).toBe("collapse")
-  })
-})
-
-describe("buildThreadRows (depth cap, cursors, optimistic rows)", () => {
-  it("gives a depth-2 row a NAVIGATE affordance, never an expand one", () => {
-    const rows = buildThreadRows({
-      focalId: "focal",
-      focalAuthorId: "a",
-      replies: [row("r1", "b", 1)],
-      expandedIds: new Set(["r1"]),
-      children: { r1: { items: [row("c1", "d", 5, "r1")], loading: false, hasMore: false } },
-    })
-    expect(rows[1]?.kind).toBe("nested")
-    expect(rows[1]?.kind === "nested" && rows[1].expansion).toBe("navigate")
-  })
-
-  it("never splices a THIRD level, however the caller marks it expanded", () => {
-    const rows = buildThreadRows({
-      focalId: "focal",
-      focalAuthorId: "a",
-      replies: [row("r1", "b", 1)],
-      expandedIds: new Set(["r1", "c1"]),
-      children: {
-        r1: { items: [row("c1", "d", 2, "r1")], loading: false, hasMore: false },
-        c1: { items: [row("g1", "e", 0, "c1"), row("g2", "e", 0, "c1")], loading: false, hasMore: false },
-      },
-    })
-    expect(rows.map((entry) => entry.key)).toEqual(["r1", "r1:c1"])
-  })
-
-  it("emits ONE loading row while an expanded reply's first page is in flight", () => {
-    const rows = buildThreadRows({
-      focalId: "focal",
-      focalAuthorId: "a",
-      replies: [row("r1", "b", 3), row("r2", "c")],
-      expandedIds: new Set(["r1"]),
-      children: { r1: { items: [], loading: true, hasMore: false } },
-    })
-    expect(rows.map((entry) => [entry.kind, entry.key])).toEqual([
-      ["reply", "r1"],
-      ["loading", "loading:r1"],
-      ["reply", "r2"],
-    ])
-    expect(rows[0]?.rail).toEqual({ above: false, below: true })
-    expect(rows[1]?.rail).toEqual({ above: true, below: false })
-  })
-
-  it("closes the chain with a show-more cursor carrying what is still unread", () => {
-    const rows = buildThreadRows({
-      focalId: "focal",
-      focalAuthorId: "a",
-      replies: [row("r1", "b", 9)],
-      expandedIds: new Set(["r1"]),
-      children: {
-        r1: { items: [row("c1", "d", 0, "r1"), row("c2", "d", 0, "r1")], loading: false, hasMore: true },
-      },
-    })
-    expect(rows.map((entry) => entry.kind)).toEqual(["reply", "nested", "nested", "show-more"])
-    expect(rows[3]?.kind === "show-more" && rows[3].remaining).toBe(7)
-    expect(rows[3]?.kind === "show-more" && rows[3].parentId).toBe("r1")
-    expect(rows[2]?.rail.below).toBe(true)
-    expect(rows[3]?.rail).toEqual({ above: true, below: false })
-    expect(rows[3]?.hairline).toBe(true)
-  })
-
-  it("never advertises fewer than one remaining reply when the count is stale", () => {
-    const rows = buildThreadRows({
-      focalId: "focal",
-      focalAuthorId: "a",
-      replies: [row("r1", "b", 1)],
-      expandedIds: new Set(["r1"]),
-      children: {
-        r1: { items: [row("c1", "d", 0, "r1"), row("c2", "d", 0, "r1")], loading: false, hasMore: true },
-      },
-    })
-    expect(rows[3]?.kind === "show-more" && rows[3].remaining).toBe(1)
-  })
-
-  it("appends a reply sent to the FOCAL post at the tail of the top-level list", () => {
+  it("appends a reply sent to the FOCAL post at the tail of the list", () => {
     const rows = buildThreadRows({
       focalId: "focal",
       focalAuthorId: "a",
@@ -507,41 +278,6 @@ describe("buildThreadRows (depth cap, cursors, optimistic rows)", () => {
       sent: [row("optimistic-1", "me", 0, "focal")],
     })
     expect(rows.map((entry) => entry.key)).toEqual(["r1", "optimistic-1"])
-  })
-
-  it("puts a reply sent to an EXPANDED CHILD under that child, not at the tail", () => {
-    const rows = buildThreadRows({
-      focalId: "focal",
-      focalAuthorId: "a",
-      replies: [row("r1", "b", 1), row("r2", "c")],
-      sent: [row("optimistic-1", "me", 0, "r1")],
-      expandedIds: new Set(["r1"]),
-      children: { r1: { items: [row("c1", "d", 0, "r1")], loading: false, hasMore: false } },
-    })
-    expect(rows.map((entry) => entry.key)).toEqual(["r1", "r1:c1", "r1:optimistic-1", "r2"])
-  })
-
-  it("drops a sent reply the moment the fetched list carries its id, at either level", () => {
-    const rows = buildThreadRows({
-      focalId: "focal",
-      focalAuthorId: "a",
-      replies: [row("r1", "b", 1), row("s1", "me", 0, "focal")],
-      sent: [row("s1", "me", 0, "focal"), row("s2", "me", 0, "r1"), row("s3", "me", 0, "focal")],
-      expandedIds: new Set(["r1"]),
-      children: { r1: { items: [row("s2", "me", 0, "r1")], loading: false, hasMore: false } },
-    })
-    expect(rows.map((entry) => entry.key)).toEqual(["r1", "r1:s2", "s1", "s3"])
-    expect(new Set(rows.map((entry) => entry.key)).size).toBe(rows.length)
-  })
-
-  it("keeps a sent reply aimed at a COLLAPSED parent out of the top-level list", () => {
-    const rows = buildThreadRows({
-      focalId: "focal",
-      focalAuthorId: "a",
-      replies: [row("r1", "b", 1)],
-      sent: [row("optimistic-1", "me", 0, "r1")],
-    })
-    expect(rows.map((entry) => entry.key)).toEqual(["r1"])
   })
 
   it("treats a sent reply with no replyToId as a reply to the focal post", () => {
@@ -553,45 +289,38 @@ describe("buildThreadRows (depth cap, cursors, optimistic rows)", () => {
     })
     expect(rows.map((entry) => entry.key)).toEqual(["optimistic-1"])
   })
-})
 
-describe("threadRowGeometry", () => {
-  it("keeps a top-level reply flush with the focal post at the full avatar size", () => {
-    expect(threadRowGeometry(1)).toEqual({ indent: 0, avatarSize: THREAD_AVATAR_SIZE })
-  })
-
-  it("indents a nested reply by exactly one rail column so the connector lands under the parent avatar", () => {
-    const nested = threadRowGeometry(2)
-    expect(nested.indent).toBe(THREAD_RAIL_COLUMN_W + THREAD_RAIL_GAP)
-    expect(threadGutterWidth(nested)).toBe(THREAD_RAIL_COLUMN_W)
-    expect(nested.avatarSize).toBe(THREAD_NESTED_AVATAR_SIZE)
-    expect(nested.avatarSize).toBeLessThan(THREAD_AVATAR_SIZE)
-  })
-
-  it("returns interned geometry so a rows rebuild cannot defeat the row memo", () => {
-    expect(threadRowGeometry(2)).toBe(threadRowGeometry(2))
-    expect(threadRowGeometry(1)).toBe(threadRowGeometry(1))
-  })
-
-  it("indents every depth-2 row buildThreadRows emits, and nothing else", () => {
+  /**
+   * A reply sent from ANOTHER thread (the composer there aims at that thread's focal post) must not leak
+   * into this one just because the screen kept it in its sent tail.
+   */
+  it("keeps a sent reply aimed at some other post out of the list", () => {
     const rows = buildThreadRows({
       focalId: "focal",
       focalAuthorId: "a",
-      replies: [{ id: "r1", author: { id: "b" }, counts: { replies: 3 } }],
-      expandedIds: new Set(["r1"]),
-      children: {
-        r1: {
-          items: [{ id: "c1", author: { id: "c" }, counts: { replies: 0 }, replyToId: "r1" }],
-          loading: false,
-          hasMore: true,
-        },
-      },
+      replies: [row("r1", "b", 1)],
+      sent: [row("optimistic-1", "me", 0, "r1")],
     })
-    expect(rows.map((entry) => [entry.kind, threadRowGeometry(entry.depth).indent > 0])).toEqual([
-      ["reply", false],
-      ["nested", true],
-      ["show-more", true],
-    ])
+    expect(rows.map((entry) => entry.key)).toEqual(["r1"])
+  })
+
+  it("drops a sent reply the moment the fetched list carries its id", () => {
+    const rows = buildThreadRows({
+      focalId: "focal",
+      focalAuthorId: "a",
+      replies: [row("r1", "b"), row("s1", "me", 0, "focal")],
+      sent: [row("s1", "me", 0, "focal"), row("s2", "me", 0, "focal")],
+    })
+    expect(rows.map((entry) => entry.key)).toEqual(["r1", "s1", "s2"])
+    expect(new Set(rows.map((entry) => entry.key)).size).toBe(rows.length)
+  })
+})
+
+describe("isOptimisticPostId", () => {
+  it("matches only the composer's temp-id prefix", () => {
+    expect(isOptimisticPostId("optimistic-1712345678901")).toBe(true)
+    expect(isOptimisticPostId("0f9a-real-uuid")).toBe(false)
+    expect(isOptimisticPostId("")).toBe(false)
   })
 })
 
@@ -611,15 +340,5 @@ describe("threadRailSegment - interned rail identities", () => {
     first.forEach((entry, index) => {
       expect(second[index]?.rail).toBe(entry.rail)
     })
-  })
-
-  it("hands buildThreadRailPlan the same interned segments", () => {
-    const plan = buildThreadRailPlan(
-      [{ author: { id: "a" } }, { author: { id: "a" } }, { author: { id: "b" } }],
-      "a",
-    )
-    expect(plan[0]).toBe(threadRailSegment(true, true))
-    expect(plan[1]).toBe(threadRailSegment(true, false))
-    expect(plan[2]).toBe(threadRailSegment(false, false))
   })
 })

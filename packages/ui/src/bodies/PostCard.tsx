@@ -76,7 +76,7 @@ const EMPTY_MEDIA: PostDTO["media"] = []
 
 const IS_WEB = Platform.OS === "web"
 
-const ROW_ROLE = IS_WEB ? "link" : "button"
+export const ROW_ROLE = IS_WEB ? "link" : "button"
 
 const AVATAR_WEB_PROPS = IS_WEB ? ({ tabIndex: -1, "aria-hidden": true } as object) : null
 

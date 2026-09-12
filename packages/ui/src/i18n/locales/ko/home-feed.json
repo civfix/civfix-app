@@ -42,8 +42,6 @@
     "signed_out_body": "답글은 로그인한 이웃에게만 표시돼요.",
     "sign_in": "로그인",
     "no_replies_hint": "가장 먼저 답글을 남겨 보세요.",
-    "show_replies_other": "답글 {{count}}개 보기",
-    "hide_replies": "답글 숨기기",
     "stats": {
       "replies_other": "답글",
       "reposts_other": "리포스트",

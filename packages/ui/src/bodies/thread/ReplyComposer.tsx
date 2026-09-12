@@ -98,26 +98,17 @@ export interface ReplyComposerHandle {
 
 export interface ReplyComposerProps {
   /**
-   * The thread's focal post. Never null: a composer aimed at a null parent submits `replyToId: undefined`.
-   * It is the DEFAULT target and the permalink the signed-out pill returns to after auth.
+   * The thread's focal post - the ONLY thing this composer replies to. Replying to a reply means opening
+   * that reply's own thread, where it becomes the focal post. Also the permalink the signed-out pill
+   * returns to after auth.
    */
   focalPost: PostDTO
-  /**
-   * The post the composer is currently aimed at, when it is NOT the focal post - a reply row's comment
-   * glyph re-aims it here. Everything keyed by the target follows automatically: the draft store, the
-   * "Replying to @x" mode bar, `replyToId`.
-   */
-  replyTarget?: PostDTO | null
-  /** Drop the re-aim and return to the focal post (the mode bar's X, alongside the blur). */
-  onClearTarget?: () => void
   /** The live height of the thread body root, from its `onLayout`. Drives every cap. */
   rootHeight: number
   /**
-   * The SERVER-returned reply, for the screen's local `sentReplies` tail, plus the id it was aimed at -
-   * the screen needs it to splice the reply under the right parent, and cannot assume the response
-   * carries `replyToId`.
+   * The SERVER-returned reply, for the screen's local `sentReplies` tail.
    */
-  onPosted?: (post: PostDTO, targetId: string) => void
+  onPosted?: (post: PostDTO) => void
 }
 
 /** One process-level reduced-motion read for this screen's single composer (not a per-row subscription). */
@@ -140,7 +131,7 @@ function useReducedMotion(): boolean {
 }
 
 export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposerProps>(
-  function ReplyComposer({ focalPost, replyTarget, onClearTarget, rootHeight, onPosted }, ref) {
+  function ReplyComposer({ focalPost, rootHeight, onPosted }, ref) {
     const styles = useStyles()
     const th = useTheme()
     const { t } = useT("post-composer")
@@ -158,8 +149,7 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
     const dock = useReplyDockInset()
     const reducedMotion = useReducedMotion()
 
-    const target = replyTarget ?? focalPost
-    const targetId = target.id
+    const targetId = focalPost.id
     const draft = useReplyDraftStore((state) => state.drafts[targetId]) ?? EMPTY_REPLY_DRAFT
     const setBody = useReplyDraftStore((state) => state.setBody)
     const setMentionedUsers = useReplyDraftStore((state) => state.setMentionedUsers)
@@ -197,21 +187,13 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
     /**
      * The chosen report's ROW - the chip's title AND the optimistic reply's linked-report card (which is
      * why it is the full DTO: `LinkedReportCardData` carries no lat/lng). DERIVED from
-     * `draft.attachedReportId` via the shared report-detail cache, not mirrored component state: unlike
-     * `carried` below, the draft store already hands every render the CORRECT target's id with zero lag
-     * (it is a plain object read, not something staged asynchronously), so there is no re-aim window for
-     * a reset effect to bridge and nothing here for it to clear. `onSelectReport` primes this exact cache
+     * `draft.attachedReportId` via the shared report-detail cache, not mirrored component state, so there
+     * is nothing here to go stale. `onSelectReport` primes this exact cache
      * entry with the full row it already has in hand, so attaching still shows the real title immediately
      * instead of a flash of the generic label while a redundant fetch resolves.
      */
     const attachedReportQuery = useReport(draft.attachedReportId ?? undefined)
     const attachedReport = attachedReportQuery.data ?? null
-
-    /**
-     * The target the CURRENT `carried` / `attachments` belong to. It lags `targetId` by exactly the commit
-     * that re-aimed the composer, which is what the draft-media mirror effect below keys off.
-     */
-    const aimedAt = React.useRef(targetId)
 
     const media = React.useMemo(
       () => mergePostComposerMedia(carried, attachments.attachments),
@@ -227,31 +209,8 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
     // Mirror only the FINALIZED media into the draft, and only when it actually changed, so a write does
     // not bump `updatedAt` (and therefore the eviction order) on every render.
     React.useEffect(() => {
-      // SKIP THE RE-AIM COMMIT. `targetId` is already the NEW target, but `carried` / `attachments` still
-      // hold the PREVIOUS one's media - the reset effect below only SCHEDULES their update. Mirroring here
-      // would write A's media into B's draft and bump B's `updatedAt`, i.e. the store's eviction order.
-      if (aimedAt.current !== targetId) return
       if (readyKey !== draftMediaKey) setDraftMedia(targetId, readyMedia)
     }, [readyKey, draftMediaKey, readyMedia, setDraftMedia, targetId])
-
-    /**
-     * Re-aiming switches the DRAFT (the store is keyed by target id), so the ASYNCHRONOUSLY-staged
-     * component state that MIRRORS a draft has to switch with it too. Without this, media staged against
-     * the focal post would ride along into a reply aimed at someone else's comment. The attached-report
-     * chip needs no equivalent line here: it is DERIVED straight from `draft.attachedReportId` (see that
-     * hook above), which this commit already reads off the new target, so it re-points itself with no
-     * reset to schedule.
-     *
-     * DECLARED AFTER THE MIRROR ON PURPOSE: on the re-aim commit the mirror above sees the stale `aimedAt`
-     * and bails, and this one then adopts the new target; the next commit mirrors correctly. `reset` is a
-     * stable `useCallback` (`src/primitives/useComposerAttachments.ts:153`).
-     */
-    React.useEffect(() => {
-      if (aimedAt.current === targetId) return
-      aimedAt.current = targetId
-      attachments.reset()
-      setCarried(useReplyDraftStore.getState().get(targetId).media)
-    }, [targetId, attachments.reset])
 
     const hasAttachments =
       media.length > 0 || draft.attachedEventId != null || draft.attachedReportId != null
@@ -394,7 +353,7 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
         replyToId: targetId,
         // The server derives `parent.thread_root_id ?? parent.id`. Setting BOTH to the parent id (what the
         // old composer did) is only correct at depth 1 - and drilling into a reply now makes depth 2 real.
-        threadRootId: target.threadRootId ?? focalPost.threadRootId ?? focalPost.id,
+        threadRootId: focalPost.threadRootId ?? focalPost.id,
       }
       create.mutate(
         { input: resolution.input, optimistic },
@@ -403,7 +362,7 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
             clearDraft(targetId)
             attachments.reset()
             setCarried([])
-            onPosted?.(post, targetId)
+            onPosted?.(post)
             // Keep the keyboard up and the caret in the field: reply -> read -> reply again is the
             // entire product on this screen.
             grow.ref.current?.focus()
@@ -460,10 +419,10 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
     }
 
     const remaining = BODY_MAX - draft.body.length
-    const targetHandle = target.author.handle?.replace(/^@/, "") ?? null
+    const targetHandle = focalPost.author.handle?.replace(/^@/, "") ?? null
     const replyingTo = targetHandle
       ? t("reply.context", { handle: `@${targetHandle}` })
-      : t("reply.context", { handle: target.author.name })
+      : t("reply.context", { handle: focalPost.author.name })
 
     return (
       <View style={styles.root}>
@@ -500,12 +459,9 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
               <ComposerModeBar
                 mode="reply"
                 title={replyingTo}
-                excerpt={threadFocalExcerpt(target, tFeed)}
+                excerpt={threadFocalExcerpt(focalPost, tFeed)}
                 accentColor={th.colors.accent}
-                onCancel={() => {
-                  onClearTarget?.()
-                  grow.ref.current?.blur()
-                }}
+                onCancel={() => grow.ref.current?.blur()}
               />
             </View>
           ) : null}

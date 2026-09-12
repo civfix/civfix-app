@@ -42,9 +42,6 @@
     "signed_out_body": "Antworten sind nur fuer angemeldete Nachbarn sichtbar.",
     "sign_in": "Anmelden",
     "no_replies_hint": "Antworte als Erste:r.",
-    "show_replies_one": "{{count}} Antwort anzeigen",
-    "show_replies_other": "{{count}} Antworten anzeigen",
-    "hide_replies": "Antworten ausblenden",
     "stats": {
       "replies_one": "Antwort",
       "replies_other": "Antworten",

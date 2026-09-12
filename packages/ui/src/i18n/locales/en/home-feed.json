@@ -42,9 +42,6 @@
     "signed_out_body": "Replies are only visible to signed-in neighbors.",
     "sign_in": "Sign in",
     "no_replies_hint": "Be the first to reply.",
-    "show_replies_one": "Show {{count}} reply",
-    "show_replies_other": "Show {{count}} replies",
-    "hide_replies": "Hide replies",
     "stats": {
       "replies_one": "Reply",
       "replies_other": "Replies",

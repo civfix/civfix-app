@@ -56,8 +56,6 @@ export type { ThreadFocalPostProps, ThreadFocalParent } from "./thread/ThreadFoc
 export { ThreadReplyRow } from "./thread/ThreadReplyRow"
 export type { ThreadReplyRowProps } from "./thread/ThreadReplyRow"
 export { ThreadEmptyReplies } from "./thread/ThreadEmptyReplies"
-export { ThreadChainRow } from "./thread/ThreadChainRow"
-export type { ThreadChainRowProps } from "./thread/ThreadChainRow"
 export { ReplyComposer } from "./thread/ReplyComposer"
 export type { ReplyComposerProps, ReplyComposerHandle } from "./thread/ReplyComposer"
 export { ComposerAttachChip } from "./thread/ComposerAttachChip"
@@ -85,39 +83,26 @@ export {
   REPLY_TRAY_MAX_CAP,
   REPLY_TRAY_MIN,
   THREAD_AVATAR_SIZE,
-  THREAD_CHAIN_ROW_MIN_H,
   THREAD_HEADER_H,
-  THREAD_MAX_INLINE_DEPTH,
-  THREAD_NESTED_AVATAR_SIZE,
-  THREAD_NESTED_INDENT,
-  THREAD_RAIL_COLUMN_W,
   THREAD_RAIL_GAP,
   THREAD_RAIL_STUB_H,
   THREAD_RAIL_W,
   buildFocalPostStats,
   buildReplyComposerHeightPlan,
-  buildThreadRailPlan,
   buildThreadRows,
   isOptimisticPostId,
   replyComposerState,
   threadFocalExcerpt,
-  threadGutterWidth,
   threadItems,
-  threadRowGeometry,
 } from "./thread/threadModel"
 export type {
   FocalPostStat,
   FocalPostStatKey,
   ReplyComposerHeightPlan,
   ReplyComposerState,
-  ThreadChildState,
   ThreadRailSegment,
   ThreadRow,
-  ThreadRowDepth,
-  ThreadRowExpansion,
-  ThreadRowGeometry,
   ThreadRowPost,
-  ThreadRowVariant,
 } from "./thread/threadModel"
 
 export { PostDetailBody } from "./PostDetailBody"

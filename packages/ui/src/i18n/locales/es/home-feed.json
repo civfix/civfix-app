@@ -42,9 +42,6 @@
     "signed_out_body": "Las respuestas solo son visibles para vecinos con la sesion iniciada.",
     "sign_in": "Iniciar sesion",
     "no_replies_hint": "Se la primera persona en responder.",
-    "show_replies_one": "Ver {{count}} respuesta",
-    "show_replies_other": "Ver {{count}} respuestas",
-    "hide_replies": "Ocultar respuestas",
     "stats": {
       "replies_one": "Respuesta",
       "replies_other": "Respuestas",
