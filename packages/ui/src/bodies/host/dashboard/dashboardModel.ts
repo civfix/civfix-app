@@ -29,8 +29,6 @@ export const DEFAULT_DASHBOARD_RANGE: DashboardRange = "30d"
 
 export const SPARKLINE_MIN_POINTS = 2
 
-export const ALL_RANGE_DAYS = 365
-
 export const BEST_DAY_TIME_MIN_EVENTS = 12
 
 export const TOP_EVENTS_MAX_ROWS = 5

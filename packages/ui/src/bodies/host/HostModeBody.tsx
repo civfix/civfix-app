@@ -114,7 +114,6 @@ function useHostCapabilities(cleanup: CleanupDTO | undefined): HostSurfaceCapabi
     viewAnalytics: hasHostCapability(standing, "view_analytics"),
     cancelEvent: hasHostCapability(standing, "cancel_event"),
     requestResources: hasHostCapability(standing, "request_resources"),
-    viewDonations: hasHostCapability(standing, "view_donations"),
   }
 }
 
@@ -372,7 +371,6 @@ export function HostModeBody({ id }: { id: string }) {
     unmarked,
     scannerAvailable,
     hasOrganization: !!event.organization,
-    hasMoney: insights.data?.money != null,
     ticketsReachable: !!openExternal,
   })
   const columns = statTileColumns(width)

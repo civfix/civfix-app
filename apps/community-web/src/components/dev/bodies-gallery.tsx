@@ -64,10 +64,10 @@ import {
   MembersBody,
   ServiceHoursSection,
   ServiceHoursCertificateCard,
-  theme,
 } from "@civfix/ui"
 import { CapabilitiesProvider, makeFakeCapabilities } from "@civfix/ui/capabilities"
 import { useNavStore } from "@civfix/ui/nav"
+import { useTheme } from "@civfix/ui/theme"
 
 import { makeQueryClient } from "@/lib/query"
 import {
@@ -1102,6 +1102,7 @@ function BodyFrame({
   wide?: boolean
   children: React.ReactNode
 }) {
+  const theme = useTheme()
   return (
     <section
       data-body={title}
@@ -1165,6 +1166,7 @@ function DashboardFrame({
 }
 
 function CertificateHarness() {
+  const theme = useTheme()
   const [mode, setMode] = React.useState<"fresh" | "expired">("fresh")
   const [nonce, setNonce] = React.useState(0)
   const select = (next: "fresh" | "expired") => {
@@ -1213,6 +1215,7 @@ const CAPS_WITHOUT_OPEN_EXTERNAL = (() => {
 })()
 
 export default function BodiesGallery() {
+  const theme = useTheme()
   const [client] = React.useState(() => makeQueryClient())
 
   React.useEffect(() => {

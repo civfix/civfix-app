@@ -39,8 +39,8 @@ import {
   DateBadge,
   BlurSurface,
   iconMap,
-  theme,
   themeFor,
+  useTheme,
   ThemeProvider,
   SectionCard,
   SegmentedControl,
@@ -104,10 +104,13 @@ const PHOTO_URL =
   )
 
 // Exercises the new Avatar `style` passthrough (the s1 drop shadow 2C wanted on the web profile avatar).
-const avatarShadowStyle = theme.shadows.s1
+const staticTheme = themeFor("light")
+
+const avatarShadowStyle = staticTheme.shadows.s1
 
 /** A labeled section card. data-section makes each block easy to target from preview_inspect. */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const theme = useTheme()
   return (
     <section
       data-section={title}
@@ -140,6 +143,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 /** A tiny caption above a single specimen so its state is self-describing in the screenshot. */
 function Specimen({ note, children }: { note: string; children: React.ReactNode }) {
+  const theme = useTheme()
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
       <Text variant="caption" color={theme.colors.textSubtle}>
@@ -169,6 +173,7 @@ function Stack({ children }: { children: React.ReactNode }) {
 
 /** A fixed box that frames the flex-filling StateView blocks. */
 function StateBox({ children }: { children: React.ReactNode }) {
+  const theme = useTheme()
   return (
     <div
       style={{
@@ -188,6 +193,7 @@ function StateBox({ children }: { children: React.ReactNode }) {
 
 /** A colorful striped backdrop that a BlurSurface floats over, so the backdrop-filter is visible. */
 function BlurStage({ note, children }: { note: string; children: React.ReactNode }) {
+  const theme = useTheme()
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <Text variant="caption" color={theme.colors.textSubtle}>
@@ -389,6 +395,7 @@ function HostDashboardPanel({ scheme }: { scheme: ColorSchemeName }) {
 }
 
 export default function PrimitivesGallery() {
+  const theme = useTheme()
   // Interactive state so the Toggle / SettingsToggle / inputs are tappable during verification.
   const [toggleA, setToggleA] = useState(true)
   const [toggleB, setToggleB] = useState(false)
@@ -686,7 +693,7 @@ export default function PrimitivesGallery() {
 const blurButtonStyle = {
   paddingHorizontal: 16,
   paddingVertical: 10,
-  borderRadius: theme.radius.pill,
+  borderRadius: staticTheme.radius.pill,
   alignItems: "center",
   justifyContent: "center",
 } as const
@@ -694,7 +701,7 @@ const blurButtonStyle = {
 const blurSheetStyle = {
   paddingHorizontal: 24,
   paddingVertical: 16,
-  borderRadius: theme.radius.lg,
+  borderRadius: staticTheme.radius.lg,
   alignItems: "center",
   justifyContent: "center",
 } as const
@@ -702,7 +709,7 @@ const blurSheetStyle = {
 const blurPopoverStyle = {
   paddingHorizontal: 18,
   paddingVertical: 12,
-  borderRadius: theme.radius.md,
+  borderRadius: staticTheme.radius.md,
   alignItems: "center",
   justifyContent: "center",
 } as const

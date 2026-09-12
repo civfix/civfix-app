@@ -69,7 +69,6 @@ export interface HostSurfaceCapabilities {
   viewAnalytics: boolean
   cancelEvent: boolean
   requestResources: boolean
-  viewDonations: boolean
 }
 
 export interface HostSurfaceInput {
@@ -90,7 +89,6 @@ export interface HostActionInput {
   unmarked: number
   scannerAvailable: boolean
   hasOrganization: boolean
-  hasMoney: boolean
   ticketsReachable: boolean
 }
 

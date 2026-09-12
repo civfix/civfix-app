@@ -37,7 +37,6 @@ const ALL: HostSurfaceCapabilities = {
   viewAnalytics: true,
   cancelEvent: true,
   requestResources: true,
-  viewDonations: true,
 }
 
 const NONE: HostSurfaceCapabilities = {
@@ -50,7 +49,6 @@ const NONE: HostSurfaceCapabilities = {
   viewAnalytics: false,
   cancelEvent: false,
   requestResources: false,
-  viewDonations: false,
 }
 
 function surface(over: Partial<HostSurfaceInput> = {}): HostSurfaceInput {
@@ -294,7 +292,6 @@ describe("action cards", () => {
     unmarked: 0,
     scannerAvailable: false,
     hasOrganization: true,
-    hasMoney: false,
     ticketsReachable: true,
   }
 

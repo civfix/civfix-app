@@ -30,8 +30,6 @@ const DAY_MS = 86_400_000
 const HOUR_MS = 3_600_000
 const MINUTE_MS = 60_000
 
-export const DASHBOARD_PHASES: readonly EventPhase[] = ["upcoming", "live", "ended", "cancelled"]
-
 export const DASHBOARD_EVENT_IDS: Readonly<Record<EventPhase, string>> = {
   upcoming: "ev-upcoming",
   live: "ev-live",
