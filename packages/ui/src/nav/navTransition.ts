@@ -1,5 +1,6 @@
 import type { DetailEntry } from "./types"
 import { entryIdentity } from "./routes"
+import { persistableCount } from "./navSnapshot"
 
 export type NavTransition =
   | { type: "push" }
@@ -28,7 +29,8 @@ export function stackTransition(
 ): NavTransition | null {
   const common = commonPrefixLength(prev, next)
   if (common === prev.length && common === next.length) return null
-  if (common === next.length) return { type: "pop", count: prev.length - next.length }
+  if (common === next.length)
+    return { type: "pop", count: persistableCount(prev.slice(next.length)) }
   if (common === prev.length) return { type: "push" }
   return { type: "replace" }
 }

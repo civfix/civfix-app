@@ -61,6 +61,10 @@ export function persistableStack(stack: readonly DetailEntry[]): DetailEntry[] {
   return stack.filter((entry) => entryIdentity(entry) !== null).map(persistableEntry)
 }
 
+export function persistableCount(entries: readonly DetailEntry[]): number {
+  return entries.reduce((total, entry) => (entryIdentity(entry) === null ? total : total + 1), 0)
+}
+
 export function takeNavSnapshot(state: NavSnapshotSource): NavSnapshot {
   return {
     v: 1,

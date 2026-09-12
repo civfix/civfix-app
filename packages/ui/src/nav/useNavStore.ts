@@ -4,6 +4,7 @@ import { entryIdentity, parentViewForEntry, seedFor } from "./routes"
 import { isFlowKind } from "./flowKinds"
 import { stackTransition, type NavTransition } from "./navTransition"
 import {
+  persistableCount,
   persistableStack,
   type NavReturn,
   type NavSnapshot,
@@ -240,7 +241,7 @@ export const useNavStore = create<NavStore>((set, get) => ({
           originView: stack.length === 0 ? null : s.originView,
           seededDetailPage: stack.length === 0 ? false : s.seededDetailPage,
         },
-        { type: "pop", count: 1 },
+        { type: "pop", count: persistableCount(s.stack.slice(-1)) },
       )
     }),
 
@@ -249,7 +250,7 @@ export const useNavStore = create<NavStore>((set, get) => ({
       if (!s.active) return {}
       if (s.stack.some((entry) => isFlowKind(entry.kind))) return {}
       const parent = s.originView ?? parentViewForEntry(s.active)
-      const count = s.stack.length
+      const count = persistableCount(s.stack)
       return parent
         ? advance(
             s,
@@ -372,7 +373,7 @@ export const useNavStore = create<NavStore>((set, get) => ({
         },
         index === s.stack.length - 1
           ? { type: "replace" }
-          : { type: "pop", count: s.stack.length - index - 1 },
+          : { type: "pop", count: persistableCount(s.stack.slice(index + 1)) },
       ),
     )
   },
@@ -427,7 +428,7 @@ export const useNavStore = create<NavStore>((set, get) => ({
           snapAnimated: true,
           seededDetailPage: false,
         },
-        { type: "pop", count: s.stack.length - stack.length },
+        { type: "pop", count: persistableCount(s.stack.slice(index + 1)) },
       ),
     )
     return true

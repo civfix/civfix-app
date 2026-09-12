@@ -6,6 +6,8 @@ import type { DetailEntry } from "../types"
 const a: DetailEntry = { kind: "pin", id: "a" }
 const b: DetailEntry = { kind: "person", id: "b" }
 const c: DetailEntry = { kind: "post-thread", id: "c" }
+const cluster: DetailEntry = { kind: "cluster" }
+const dropPin: DetailEntry = { kind: "drop-pin", lat: 1, lng: 2 }
 
 function resetStore(): void {
   useNavStore.setState({
@@ -35,6 +37,12 @@ describe("stackTransition", () => {
     expect(stackTransition([a, b, c], [a])).toEqual({ type: "pop", count: 2 })
     expect(stackTransition([a, b], [a])).toEqual({ type: "pop", count: 1 })
     expect(stackTransition([a], [])).toEqual({ type: "pop", count: 1 })
+  })
+
+  it("counts only the popped entries a URL can address", () => {
+    expect(stackTransition([a, dropPin], [a])).toEqual({ type: "pop", count: 0 })
+    expect(stackTransition([cluster], [])).toEqual({ type: "pop", count: 0 })
+    expect(stackTransition([a, cluster, b], [a])).toEqual({ type: "pop", count: 1 })
   })
 
   it("reports a push when the previous stack is a proper prefix of the next one", () => {
@@ -108,6 +116,34 @@ describe("navSeq and lastTransition", () => {
     const seq1 = useNavStore.getState().navSeq
     useNavStore.getState().collapseToParent()
     expect(useNavStore.getState().navSeq).toBe(seq1)
+  })
+
+  it("back and collapseToParent count only the entries history could address", () => {
+    useNavStore.getState().push(a)
+    useNavStore.getState().push(dropPin)
+    useNavStore.getState().back()
+    expect(useNavStore.getState().lastTransition).toEqual({ type: "pop", count: 0 })
+
+    useNavStore.getState().push(dropPin)
+    useNavStore.getState().collapseToParent()
+    expect(useNavStore.getState().lastTransition).toEqual({ type: "pop", count: 1 })
+
+    resetStore()
+    useNavStore.getState().openDetail(cluster)
+    useNavStore.getState().collapseToParent()
+    expect(useNavStore.getState().lastTransition).toEqual({ type: "pop", count: 0 })
+  })
+
+  it("unwindTo and navigateTo count only the entries history could address", () => {
+    useNavStore.getState().push(a)
+    useNavStore.getState().push(dropPin)
+    useNavStore.getState().push(b)
+    useNavStore.getState().unwindTo(a)
+    expect(useNavStore.getState().lastTransition).toEqual({ type: "pop", count: 1 })
+
+    useNavStore.getState().push(dropPin)
+    useNavStore.getState().navigateTo(a, "compact")
+    expect(useNavStore.getState().lastTransition).toEqual({ type: "pop", count: 0 })
   })
 
   it("reset and seed record their own transitions", () => {
