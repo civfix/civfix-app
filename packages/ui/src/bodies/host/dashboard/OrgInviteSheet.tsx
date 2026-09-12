@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { View, TextInput } from "react-native"
+import { View } from "react-native"
+import { TextInput } from "../../../primitives/TextInput"
 import type { OrgInviteIdentifierKind } from "@civfix/shared"
 import {
   makeThemedStyles,

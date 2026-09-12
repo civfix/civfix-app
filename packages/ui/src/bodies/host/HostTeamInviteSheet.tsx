@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { View, Pressable, TextInput } from "react-native"
+import { View, Pressable } from "react-native"
+import { TextInput } from "../../primitives/TextInput"
 import type { EventTeamInviteIdentifierKind, EventTeamRole } from "@civfix/shared"
 import {
   focusRingProps,

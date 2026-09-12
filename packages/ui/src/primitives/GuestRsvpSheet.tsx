@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { View, TextInput, Pressable } from "react-native"
+import { View, Pressable } from "react-native"
+import { TextInput } from "./TextInput"
 import {
   MAX_GUEST_NAME,
   type EventAnswerValue,

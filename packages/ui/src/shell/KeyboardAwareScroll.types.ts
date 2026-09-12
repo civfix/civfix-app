@@ -31,13 +31,6 @@ export interface KeyboardAwareScrollHostOptions {
   /**
    * Does the keyboard-raising input live INSIDE this scroller? Default **true**.
    *
-   * WHY THIS IS AN EXPLICIT DECLARATION AND NOT A GEOMETRIC TEST: the reveal finds the focused field via
-   * the GLOBAL `TextInput.State.currentlyFocusedInput()` (web: any `focusin` that bubbles to the scroll
-   * node), with NO descendant test — and RN offers no cheap reliable ancestry check from a ScrollView ref
-   * (`ReactNativeElement.measureLayout`'s `onFail` is annotated `/* currently unused *\/`, and
-   * `ReadOnlyNode.contains` needs a host node the ref does not expose). A typed declaration is
-   * deterministic where a geometric guess is not.
-   *
    * Pass **false** from any host whose keyboard-raising field is OUTSIDE its scroller — the docked search
    * bar's TextInput (SearchBodyReveal / the portrait base surface during Search) and the reply thread's
    * composer, which is a sibling of the list. Without it the host scrolls its own unrelated content up and

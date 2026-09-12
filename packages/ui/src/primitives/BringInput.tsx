@@ -1,5 +1,6 @@
 import React, { useState } from "react"
-import { View, TextInput, Pressable, StyleSheet, Platform, type ViewStyle } from "react-native"
+import { View, Pressable, StyleSheet, Platform, type ViewStyle } from "react-native"
+import { TextInput } from "./TextInput"
 import { tokens } from "@civfix/shared/tokens"
 import {
   makeThemedStyles,

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { View, TextInput, Pressable } from "react-native"
+import { View, Pressable } from "react-native"
+import { TextInput } from "../../primitives/TextInput"
 import { MAX_BROADCAST_BODY, MAX_BROADCAST_SUBJECT } from "@civfix/shared"
 import {
   focusRingProps,

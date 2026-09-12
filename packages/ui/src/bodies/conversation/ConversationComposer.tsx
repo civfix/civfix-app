@@ -1,5 +1,6 @@
 import React from "react"
-import { View, Pressable, TextInput } from "react-native"
+import { View, Pressable } from "react-native"
+import { TextInput } from "../../primitives/TextInput"
 import type { StyleProp, ViewStyle } from "react-native"
 import { MESSAGE_BODY_MAX } from "@civfix/shared"
 import { focusRingProps, useTheme, webInputReset } from "../../theme"

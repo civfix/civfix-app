@@ -1,5 +1,6 @@
 import React, { useState } from "react"
-import { View, TextInput, Pressable } from "react-native"
+import { View, Pressable } from "react-native"
+import { TextInput } from "../../../primitives/TextInput"
 import type { EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
 import { MAX_LONG_TEXT_ANSWER, MAX_SHORT_TEXT_ANSWER } from "@civfix/shared"
 import {

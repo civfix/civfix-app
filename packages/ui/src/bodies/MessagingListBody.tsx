@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import {
   View,
   Pressable,
-  TextInput,
   ActivityIndicator,
   Animated,
   RefreshControl,
@@ -11,6 +10,7 @@ import {
   type AccessibilityActionEvent,
   type ViewStyle,
 } from "react-native"
+import { TextInput } from "../primitives/TextInput"
 import type { MessageThreadDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import {

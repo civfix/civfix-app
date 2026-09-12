@@ -43,7 +43,7 @@ export interface KeyboardAnchorOptions {
    * WEB ONLY. True when an ANCESTOR already reserved the keyboard overlap (the full-social-modal overlay
    * in PortraitShell.shared applies `paddingBottom: keyboardInset`). Suppresses this surface's own lift
    * so the inset is never applied twice. IGNORED on native, where no ancestor reserves anything.
-   * Default false. THE REPLY COMPOSER MUST PASS `hostReserved: true` ON WEB for the post-thread body.
+   * Default false.
    */
   hostReserved?: boolean
 }

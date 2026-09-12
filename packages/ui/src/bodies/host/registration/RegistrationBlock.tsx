@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { View, TextInput, StyleSheet } from "react-native"
+import { View, StyleSheet } from "react-native"
+import { TextInput } from "../../../primitives/TextInput"
 import type { CleanupDTO, EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
 import { ACCESS_CODE_MAX } from "@civfix/shared"
 import { makeThemedStyles, useTheme, webInputReset } from "../../../theme"

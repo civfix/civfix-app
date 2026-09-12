@@ -1,13 +1,14 @@
 import React, { memo, useCallback, useMemo, useState } from "react"
-import { View, Pressable, Image, Modal, StyleSheet } from "react-native"
+import { View, Pressable, Image, StyleSheet } from "react-native"
 import { useQueryClient } from "@tanstack/react-query"
 import type { GroupMemberDTO, GroupRole, PersonDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps, headingLevel, webScrimProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, headingLevel } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import {
   EmptyState,
   LoadingState,
+  ModalCardSheet,
   PrimaryButton,
   SecondaryButton,
   useToast,
@@ -27,7 +28,7 @@ import {
   queryKeys,
 } from "../data"
 import { useNavStore } from "../nav"
-import { useScrollHost, ScrollHostProvider, PLAIN_SCROLL_HOST } from "../shell/ScrollHost"
+import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { MemberPicker } from "./MemberPicker"
 import { RosterRow, type RosterRowMenu } from "./RosterRow"
@@ -440,149 +441,123 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
         }
       />
 
-      <Modal visible={addOpen} transparent animationType="fade" onRequestClose={() => setAddOpen(false)}>
-        <View style={styles.modalRoot}>
-          <Pressable
-            style={styles.backdrop}
-            accessibilityRole="button"
-            accessibilityLabel={t("sheet_dismiss")}
-            onPress={() => setAddOpen(false)}
-            {...webScrimProps}
-          />
-          <View style={styles.modalCenter} pointerEvents="box-none">
-            <View style={[styles.card, styles.addCard]}>
-              <Text variant="bodyStrong" color={th.colors.text}>
-                {t("add_members")}
-              </Text>
-              <View style={styles.pickerFill}>
-                <ScrollHostProvider value={PLAIN_SCROLL_HOST}>
-                  <MemberPicker selected={addSelected} onChange={setAddSelected} excludeIds={addExcludeIds} />
-                </ScrollHostProvider>
-              </View>
-              {addError ? <Text style={styles.errorText}>{t("add_error")}</Text> : null}
-              <View style={styles.cardActions}>
-                <SecondaryButton label={t("cancel")} onPress={() => setAddOpen(false)} size="sm" />
-                <PrimaryButton
-                  label={t("add")}
-                  onPress={onAddConfirm}
-                  loading={addMembers.isPending}
-                  disabled={addSelected.length === 0 || addMembers.isPending}
-                />
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <ModalCardSheet
+        visible={addOpen}
+        onClose={() => setAddOpen(false)}
+        headerIcon="UserPlus"
+        title={t("add_members")}
+        dismissLabel={t("sheet_dismiss")}
+        error={addError ? t("add_error") : null}
+        bodyLayout="fill"
+        cardStyle={styles.addCard}
+        actions={
+          <>
+            <SecondaryButton label={t("cancel")} onPress={() => setAddOpen(false)} size="sm" />
+            <PrimaryButton
+              label={t("add")}
+              onPress={onAddConfirm}
+              loading={addMembers.isPending}
+              disabled={addSelected.length === 0 || addMembers.isPending}
+            />
+          </>
+        }
+      >
+        <MemberPicker selected={addSelected} onChange={setAddSelected} excludeIds={addExcludeIds} />
+      </ModalCardSheet>
 
-      <Modal visible={editOpen} transparent animationType="fade" onRequestClose={() => setEditOpen(false)}>
-        <View style={styles.modalRoot}>
-          <Pressable
-            style={styles.backdrop}
-            accessibilityRole="button"
-            accessibilityLabel={t("sheet_dismiss")}
-            onPress={() => setEditOpen(false)}
-            {...webScrimProps}
-          />
-          <View style={styles.modalCenter} pointerEvents="box-none">
-            <View style={styles.card}>
-              <Text variant="bodyStrong" color={th.colors.text}>
-                {t("edit_info")}
-              </Text>
-              <GroupIdentityFields
-                variant="sheet"
-                avatar={avatar}
-                name={editName}
-                onChangeName={setEditName}
-                description={editDescription}
-                onChangeDescription={setEditDescription}
-                fallbackAvatarUrl={group?.avatar?.url ?? null}
-                labels={{
-                  avatarA11y: t("avatar_a11y"),
-                  nameLabel: t("name_label"),
-                  namePlaceholder: t("name_placeholder"),
-                  descriptionLabel: t("description_label"),
-                  descriptionPlaceholder: t("description_placeholder"),
-                }}
-              />
-              {isOwner ? (
-                <View style={styles.visibilityEdit}>
-                  <Text style={styles.visibilityEditLabel}>{t("visibility_label")}</Text>
-                  <View style={styles.visibilitySegment}>
-                    {(["private", "public"] as const).map((v) => {
-                      const active = editVisibility === v
-                      return (
-                        <Pressable
-                          key={v}
-                          onPress={() => setEditVisibility(v)}
-                          accessibilityRole="radio"
-                          accessibilityState={{ checked: active }}
-                          accessibilityLabel={t(v === "public" ? "visibility_public" : "visibility_private")}
-                          {...focusRingProps}
-                          style={({ pressed }) => [
-                            styles.visibilityOption,
-                            active ? styles.visibilityOptionActive : null,
-                            pressed ? styles.pressed : null,
-                          ]}
-                        >
-                          <Icon
-                            icon={iconMap[v === "public" ? "Globe" : "Lock"]}
-                            size={15}
-                            color={active ? th.colors.brand.moss : th.colors.textMuted}
-                          />
-                          <Text style={[styles.visibilityOptionText, active ? styles.visibilityOptionTextActive : null]}>
-                            {t(v === "public" ? "visibility_public" : "visibility_private")}
-                          </Text>
-                        </Pressable>
-                      )
-                    })}
-                  </View>
-                </View>
-              ) : null}
-              {editError ? <Text style={styles.errorText}>{t("edit_error")}</Text> : null}
-              <View style={styles.cardActions}>
-                <SecondaryButton label={t("cancel")} onPress={() => setEditOpen(false)} size="sm" />
-                <PrimaryButton
-                  label={t("save")}
-                  onPress={onEditSave}
-                  loading={updateGroup.isPending}
-                  disabled={!editValid || avatar.uploading || updateGroup.isPending}
-                />
-              </View>
+      <ModalCardSheet
+        visible={editOpen}
+        onClose={() => setEditOpen(false)}
+        headerIcon="Pencil"
+        title={t("edit_info")}
+        dismissLabel={t("sheet_dismiss")}
+        error={editError ? t("edit_error") : null}
+        actions={
+          <>
+            <SecondaryButton label={t("cancel")} onPress={() => setEditOpen(false)} size="sm" />
+            <PrimaryButton
+              label={t("save")}
+              onPress={onEditSave}
+              loading={updateGroup.isPending}
+              disabled={!editValid || avatar.uploading || updateGroup.isPending}
+            />
+          </>
+        }
+      >
+        <GroupIdentityFields
+          variant="sheet"
+          avatar={avatar}
+          name={editName}
+          onChangeName={setEditName}
+          description={editDescription}
+          onChangeDescription={setEditDescription}
+          fallbackAvatarUrl={group?.avatar?.url ?? null}
+          labels={{
+            avatarA11y: t("avatar_a11y"),
+            nameLabel: t("name_label"),
+            namePlaceholder: t("name_placeholder"),
+            descriptionLabel: t("description_label"),
+            descriptionPlaceholder: t("description_placeholder"),
+          }}
+        />
+        {isOwner ? (
+          <View style={styles.visibilityEdit}>
+            <Text style={styles.visibilityEditLabel}>{t("visibility_label")}</Text>
+            <View style={styles.visibilitySegment}>
+              {(["private", "public"] as const).map((v) => {
+                const active = editVisibility === v
+                return (
+                  <Pressable
+                    key={v}
+                    onPress={() => setEditVisibility(v)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: active }}
+                    accessibilityLabel={t(v === "public" ? "visibility_public" : "visibility_private")}
+                    {...focusRingProps}
+                    style={({ pressed }) => [
+                      styles.visibilityOption,
+                      active ? styles.visibilityOptionActive : null,
+                      pressed ? styles.pressed : null,
+                    ]}
+                  >
+                    <Icon
+                      icon={iconMap[v === "public" ? "Globe" : "Lock"]}
+                      size={15}
+                      color={active ? th.colors.brand.moss : th.colors.textMuted}
+                    />
+                    <Text style={[styles.visibilityOptionText, active ? styles.visibilityOptionTextActive : null]}>
+                      {t(v === "public" ? "visibility_public" : "visibility_private")}
+                    </Text>
+                  </Pressable>
+                )
+              })}
             </View>
           </View>
-        </View>
-      </Modal>
+        ) : null}
+      </ModalCardSheet>
 
-      <Modal visible={leaveOpen} transparent animationType="fade" onRequestClose={() => setLeaveOpen(false)}>
-        <View style={styles.modalRoot}>
-          <Pressable
-            style={styles.backdrop}
-            accessibilityRole="button"
-            accessibilityLabel={t("sheet_dismiss")}
-            onPress={() => setLeaveOpen(false)}
-            {...webScrimProps}
-          />
-          <View style={styles.modalCenter} pointerEvents="box-none">
-            <View style={styles.card}>
-              <Text variant="bodyStrong" color={th.colors.text}>
-                {isChannel ? t("leave_channel") : t("leave")}
-              </Text>
-              <Text style={styles.confirmBody}>{t("leave_confirm", { name: group?.name ?? "" })}</Text>
-              {leaveError ? <Text style={styles.errorText}>{t("leave_error")}</Text> : null}
-              <View style={styles.cardActions}>
-                <SecondaryButton label={t("cancel")} onPress={() => setLeaveOpen(false)} size="sm" />
-                <PrimaryButton
-                  label={t("leave_action")}
-                  variant="destructive"
-                  onPress={onLeaveConfirm}
-                  loading={removeMember.isPending}
-                  disabled={removeMember.isPending}
-                />
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <ModalCardSheet
+        visible={leaveOpen}
+        onClose={() => setLeaveOpen(false)}
+        headerIcon="LogOut"
+        title={isChannel ? t("leave_channel") : t("leave")}
+        dismissLabel={t("sheet_dismiss")}
+        error={leaveError ? t("leave_error") : null}
+        actions={
+          <>
+            <SecondaryButton label={t("cancel")} onPress={() => setLeaveOpen(false)} size="sm" />
+            <PrimaryButton
+              label={t("leave_action")}
+              variant="destructive"
+              onPress={onLeaveConfirm}
+              loading={removeMember.isPending}
+              disabled={removeMember.isPending}
+            />
+          </>
+        }
+      >
+        <Text style={styles.confirmBody}>{t("leave_confirm", { name: group?.name ?? "" })}</Text>
+      </ModalCardSheet>
     </>
   )
 }
@@ -747,53 +722,12 @@ const useStyles = makeThemedStyles((t) => ({
   pressed: {
     opacity: 0.55,
   },
-  modalRoot: {
-    flex: 1,
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: t.colors.scrimModal,
-  },
-  modalCenter: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: t.space["4"],
-  },
-  card: {
-    width: "100%",
-    maxWidth: 460,
-    maxHeight: "100%",
-    gap: t.space["3"],
-    padding: t.space["4"],
-    borderRadius: t.radius.xl,
-    backgroundColor: t.colors.bg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s3,
-  },
   addCard: {
     height: "80%",
-  },
-  pickerFill: {
-    flex: 1,
-    minHeight: 0,
-  },
-  cardActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: t.space["2"],
   },
   confirmBody: {
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: 14.5,
     color: t.colors.textMuted,
-  },
-  errorText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12.5,
-    color: t.colors.bloom["600"],
-    textAlign: "center",
   },
 }))

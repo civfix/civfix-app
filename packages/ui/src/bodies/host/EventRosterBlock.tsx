@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { View, Pressable, TextInput, StyleSheet } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
+import { TextInput } from "../../primitives/TextInput"
 import type { EventRegistrationDTO, RegistrationRosterFilter } from "@civfix/shared"
 import { DELETED_USER_LABEL } from "@civfix/shared"
 import {

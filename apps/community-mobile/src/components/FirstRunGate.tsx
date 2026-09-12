@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native"
+import { View, StyleSheet, ActivityIndicator } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
 import { isValidHandle } from "@civfix/shared"
@@ -7,13 +7,15 @@ import { makeThemedStyles, space, useTheme } from "@/theme"
 import {
   AgeConfirmation,
   Avatar,
+  IosKeyboardAvoidingView,
+  KeyboardPinnedFooter,
+  KeyboardPinnedSurface,
   PLAIN_SCROLL_HOST,
   PrimaryButton,
   TermsConfirmation,
   Text,
   TextField,
   makeKeyboardAwareScrollHost,
-  useKeyboardReserve,
 } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { api } from "@/api/client"
@@ -42,7 +44,6 @@ function FirstRunForm() {
   const th = useTheme()
   const styles = useStyles()
   const insets = useSafeAreaInsets()
-  const kbReserve = useKeyboardReserve()
   const user = useAuthStore((s) => s.user)
   const setUser = useAuthStore((s) => s.setUser)
   const signOut = useAuthStore((s) => s.signOut)
@@ -102,96 +103,90 @@ function FirstRunForm() {
 
   return (
     <View style={styles.overlay}>
-      <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <FirstRunScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: insets.top + space["6"] }]}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.head}>
-            <Avatar name={previewName} seed={user?.id} photoUrl={user?.avatarUrl} size={76} />
-            <Text variant="title" style={styles.title}>
-              {t("title")}
-            </Text>
-            <Text variant="body" color={th.colors.textSubtle} style={styles.sub}>
-              {t("subtitle")}
-            </Text>
-          </View>
-
-          <View style={styles.row}>
-            <View style={styles.col}>
-              <TextField
-                label={t("field.first_name.label")}
-                placeholder={t("field.first_name.placeholder")}
-                value={first}
-                onChangeText={setFirst}
-                maxLength={40}
-                autoComplete="given-name"
-              />
-            </View>
-            <View style={styles.col}>
-              <TextField
-                label={t("field.last_name.label")}
-                placeholder={t("field.last_name.placeholder")}
-                value={last}
-                onChangeText={setLast}
-                maxLength={40}
-                autoComplete="family-name"
-              />
-            </View>
-          </View>
-
-          <TextField
-            label={t("field.username.label")}
-            placeholder={t("field.username.placeholder")}
-            value={handle}
-            onChangeText={(t) => setHandle(t.replace(/^@+/, ""))}
-            maxLength={20}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <HandleHint
-            handle={trimmedHandle}
-            valid={handleValid}
-            checking={avail.checking}
-            available={available}
-            taken={handleValid && avail.available === false}
-          />
-
-          {error ? (
-            <View style={styles.errorRow}>
-              <Ionicons name="alert-circle-outline" size={15} color={th.colors.brand.bloom} />
-              <Text variant="caption" color={th.colors.brand.bloom}>
-                {error}
+      <IosKeyboardAvoidingView style={styles.root}>
+        <KeyboardPinnedSurface>
+          <FirstRunScrollView
+            contentContainerStyle={[styles.scroll, { paddingTop: insets.top + space["6"] }]}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.head}>
+              <Avatar name={previewName} seed={user?.id} photoUrl={user?.avatarUrl} size={76} />
+              <Text variant="title" style={styles.title}>
+                {t("title")}
+              </Text>
+              <Text variant="body" color={th.colors.textSubtle} style={styles.sub}>
+                {t("subtitle")}
               </Text>
             </View>
-          ) : null}
 
-          <View style={styles.ageGate}>
-            <AgeConfirmation confirmed={ageConfirmed} onConfirmedChange={setAgeConfirmed} />
-            <TermsConfirmation confirmed={termsConfirmed} onConfirmedChange={setTermsConfirmed} />
-          </View>
-        </FirstRunScrollView>
+            <View style={styles.row}>
+              <View style={styles.col}>
+                <TextField
+                  label={t("field.first_name.label")}
+                  placeholder={t("field.first_name.placeholder")}
+                  value={first}
+                  onChangeText={setFirst}
+                  maxLength={40}
+                  autoComplete="given-name"
+                />
+              </View>
+              <View style={styles.col}>
+                <TextField
+                  label={t("field.last_name.label")}
+                  placeholder={t("field.last_name.placeholder")}
+                  value={last}
+                  onChangeText={setLast}
+                  maxLength={40}
+                  autoComplete="family-name"
+                />
+              </View>
+            </View>
 
-        <View
-          style={[
-            styles.footer,
-            {
-              marginBottom: kbReserve,
-              paddingBottom: (kbReserve > 0 ? 0 : insets.bottom) + space["3"],
-            },
-          ]}
-        >
-          <PrimaryButton label={t("continue")} loading={submitting} disabled={!canSubmit} onPress={() => void onSubmit()} />
-          <Text
-            variant="caption"
-            color={th.colors.textSubtle}
-            style={styles.signOut}
-            onPress={() => void signOut()}
-          >
-            {t("signout.prompt")} {t("signout.action")}
-          </Text>
-        </View>
-      </KeyboardAvoidingView>
+            <TextField
+              label={t("field.username.label")}
+              placeholder={t("field.username.placeholder")}
+              value={handle}
+              onChangeText={(t) => setHandle(t.replace(/^@+/, ""))}
+              maxLength={20}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <HandleHint
+              handle={trimmedHandle}
+              valid={handleValid}
+              checking={avail.checking}
+              available={available}
+              taken={handleValid && avail.available === false}
+            />
+
+            {error ? (
+              <View style={styles.errorRow}>
+                <Ionicons name="alert-circle-outline" size={15} color={th.colors.brand.bloom} />
+                <Text variant="caption" color={th.colors.brand.bloom}>
+                  {error}
+                </Text>
+              </View>
+            ) : null}
+
+            <View style={styles.ageGate}>
+              <AgeConfirmation confirmed={ageConfirmed} onConfirmedChange={setAgeConfirmed} />
+              <TermsConfirmation confirmed={termsConfirmed} onConfirmedChange={setTermsConfirmed} />
+            </View>
+          </FirstRunScrollView>
+
+          <KeyboardPinnedFooter style={styles.footer} safeAreaBottom={insets.bottom}>
+            <PrimaryButton label={t("continue")} loading={submitting} disabled={!canSubmit} onPress={() => void onSubmit()} />
+            <Text
+              variant="caption"
+              color={th.colors.textSubtle}
+              style={styles.signOut}
+              onPress={() => void signOut()}
+            >
+              {t("signout.prompt")} {t("signout.action")}
+            </Text>
+          </KeyboardPinnedFooter>
+        </KeyboardPinnedSurface>
+      </IosKeyboardAvoidingView>
     </View>
   )
 }
@@ -260,6 +255,7 @@ const useStyles = makeThemedStyles((t) => ({
   footer: {
     paddingHorizontal: t.space["5"],
     paddingTop: t.space["3"],
+    paddingBottom: t.space["3"],
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: t.colors.border,
     backgroundColor: t.colors.bg,

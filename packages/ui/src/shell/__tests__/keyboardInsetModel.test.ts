@@ -18,7 +18,12 @@ import {
   androidKeyboardInset,
   keyboardMirrorOverlap,
   keyboardOverlapFrom,
+  keyboardTopInWindow,
   keyboardViewportOverlap,
+  KEYBOARD_REVEAL_MARGIN,
+  revealScrollDelta,
+  revealScrollTarget,
+  scrollKeyboardReserve,
   reduceKeyboard,
   shouldRecaptureRestingHeight,
   type KeyboardCommand,
@@ -489,5 +494,112 @@ describe("isRedundantClose — one close, ONE curve", () => {
     // The close everyone cares about targets exactly 0; a falsy check here would disable the whole fix.
     expect(isRedundantClose(BLUR_CLOSE, 0)).toBe(true)
     expect(isRedundantClose({ ...BLUR_CLOSE, target: 345 }, 345)).toBe(true)
+  })
+})
+
+describe("keyboardTopInWindow", () => {
+  it("puts the keyboard top at y529 on the iPhone 17 Pro geometry of record", () => {
+    expect(keyboardTopInWindow(874, 345)).toBe(529)
+  })
+
+  it("puts it at the same y on the Pixel geometry (297 reported + 48 nav bar)", () => {
+    const overlap = keyboardViewportOverlap({
+      endCoordinates: { screenY: 874, height: 297 },
+      windowHeight: 874,
+      restingWindowHeight: 874,
+      platform: "android",
+      systemBarInset: 48,
+    })
+    expect(keyboardTopInWindow(874, overlap)).toBe(529)
+  })
+
+  it("is the whole window when nothing is covered", () => {
+    expect(keyboardTopInWindow(874, 0)).toBe(874)
+  })
+
+  it("OVER-reveals by at most the nav bar when Dimensions.window is short by it, never under-reveals", () => {
+    const trueTop = keyboardTopInWindow(874, 345)
+    const shortTop = keyboardTopInWindow(874 - 48, 345)
+    expect(trueTop - shortTop).toBe(48)
+    const field = { fieldTop: 480, fieldHeight: 52, visibleTop: 0, margin: KEYBOARD_REVEAL_MARGIN }
+    expect(revealScrollDelta({ ...field, keyboardTop: shortTop })).toBeGreaterThan(
+      revealScrollDelta({ ...field, keyboardTop: trueTop }),
+    )
+  })
+})
+
+describe("revealScrollDelta", () => {
+  const field = (fieldTop: number, fieldHeight = 52) => ({
+    fieldTop,
+    fieldHeight,
+    keyboardTop: 529,
+    visibleTop: 0,
+    margin: KEYBOARD_REVEAL_MARGIN,
+  })
+
+  it("scrolls a covered field by field bottom + margin - keyboard top", () => {
+    expect(revealScrollDelta(field(500))).toBe(500 + 52 + 16 - 529)
+  })
+
+  it("moves nothing for a field that already clears the keyboard by more than the margin", () => {
+    expect(revealScrollDelta(field(400))).toBe(0)
+  })
+
+  it("moves nothing for a field whose bottom sits exactly a margin above the keyboard", () => {
+    expect(revealScrollDelta(field(529 - 52 - 16))).toBe(0)
+  })
+
+  it("clamps a field TALLER than the visible band to its own top — never scrolls the label away", () => {
+    expect(revealScrollDelta({ ...field(300, 600), visibleTop: 120 })).toBe(180)
+  })
+
+  it("never returns a negative delta, whatever the frame", () => {
+    expect(revealScrollDelta({ ...field(100), visibleTop: 400 })).toBe(0)
+  })
+
+  it("targets an absolute offset floored at zero", () => {
+    expect(revealScrollTarget(40, 101)).toBe(141)
+    expect(revealScrollTarget(0, 0)).toBe(0)
+    expect(revealScrollTarget(-20, 0)).toBe(0)
+  })
+})
+
+describe("scrollKeyboardReserve — a SHORT step can still reveal its last field", () => {
+  const CONTENT = 520
+  const VIEWPORT = 780
+  const OVERLAP = 345
+  const KEYBOARD_TOP = VIEWPORT - OVERLAP
+  const maxOffset = (reserve: number) => Math.max(0, CONTENT + reserve - VIEWPORT)
+  const targetFor = (fieldBottom: number, fieldHeight = 52) =>
+    revealScrollTarget(
+      0,
+      revealScrollDelta({
+        fieldTop: fieldBottom - fieldHeight,
+        fieldHeight,
+        keyboardTop: KEYBOARD_TOP,
+        visibleTop: 0,
+        margin: KEYBOARD_REVEAL_MARGIN,
+      }),
+    )
+
+  it("reserves nothing while the keyboard is down", () => {
+    expect(scrollKeyboardReserve(0, KEYBOARD_REVEAL_MARGIN)).toBe(0)
+  })
+
+  it("reserves the overlap plus the margin the reveal is about to ask for", () => {
+    expect(scrollKeyboardReserve(OVERLAP, KEYBOARD_REVEAL_MARGIN)).toBe(361)
+  })
+
+  it("leaves the LAST field short by up to a margin when the reserve is the bare overlap", () => {
+    const shortfall = targetFor(CONTENT) - maxOffset(OVERLAP)
+    expect(shortfall).toBeGreaterThan(0)
+    expect(shortfall).toBeLessThanOrEqual(KEYBOARD_REVEAL_MARGIN)
+  })
+
+  it("always has the range with the margin-inclusive reserve, at every field position", () => {
+    const reachable = maxOffset(scrollKeyboardReserve(OVERLAP, KEYBOARD_REVEAL_MARGIN))
+    for (let fieldBottom = 60; fieldBottom <= CONTENT; fieldBottom += 4) {
+      expect(targetFor(fieldBottom)).toBeLessThanOrEqual(reachable)
+    }
   })
 })

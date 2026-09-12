@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { View, TextInput, Pressable, StyleSheet } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
+import { TextInput } from "./TextInput"
 import type { ContentReportReason } from "@civfix/shared"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"

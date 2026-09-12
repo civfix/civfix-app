@@ -1,11 +1,11 @@
 import React, { useId, useState } from "react"
 import {
   View,
-  TextInput,
   type TextInputProps,
   type StyleProp,
   type ViewStyle,
 } from "react-native"
+import { TextInput } from "./TextInput"
 import { makeThemedStyles, useTheme, webInputReset } from "../theme"
 import { Text } from "../typography"
 
