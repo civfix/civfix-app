@@ -1,4 +1,6 @@
 import {
+  ALL_DETAIL_KINDS,
+  ALL_VIEWS,
   entryIdentity,
   pathForEntry,
   pathForView,
@@ -29,12 +31,21 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
+const ENTRY_KINDS: ReadonlySet<string> = new Set<string>([...ALL_DETAIL_KINDS, "view"])
+const VIEWS: ReadonlySet<string> = new Set<string>(ALL_VIEWS)
+
+function isEntry(value: unknown): value is DetailEntry {
+  return isRecord(value) && typeof value.kind === "string" && ENTRY_KINDS.has(value.kind)
+}
+
 function isSnapshot(value: unknown): value is NavSnapshot {
   if (!isRecord(value)) return false
   return (
     value.v === 1 &&
     typeof value.view === "string" &&
+    VIEWS.has(value.view) &&
     Array.isArray(value.stack) &&
+    value.stack.every(isEntry) &&
     typeof value.query === "string" &&
     typeof value.seededDetailPage === "boolean"
   )

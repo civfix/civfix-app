@@ -35,6 +35,27 @@ describe("readNavHistory", () => {
       readNavHistory({ civfixNav: { v: 1, seq: 1, depth: 0, snapshot: { view: "home" } } }),
     ).toBeNull()
   })
+
+  it("rejects a snapshot carrying a view or an entry kind the app cannot render", () => {
+    expect(
+      readNavHistory(stampNavHistory(null, entry({ snapshot: snapshot({ view: "nonsense" as never }) }))),
+    ).toBeNull()
+    expect(
+      readNavHistory(
+        stampNavHistory(null, entry({ snapshot: snapshot({ stack: [{ kind: "nonsense" as never }] }) })),
+      ),
+    ).toBeNull()
+    expect(
+      readNavHistory(
+        stampNavHistory(null, entry({ snapshot: snapshot({ stack: ["pin" as never] }) })),
+      ),
+    ).toBeNull()
+    expect(
+      readNavHistory(
+        stampNavHistory(null, entry({ snapshot: snapshot({ stack: [{ kind: "pin", id: "a" }] }) })),
+      ),
+    ).not.toBeNull()
+  })
 })
 
 describe("stampNavHistory", () => {
