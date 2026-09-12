@@ -94,14 +94,19 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
     () => (replies.data?.pages ?? []).flatMap((page) => page.items),
     [replies.data],
   )
+  const authorReplies = React.useMemo(
+    () => (replies.data?.pages ?? []).flatMap((page) => page.authorReplies),
+    [replies.data],
+  )
   const rows = React.useMemo(
     () =>
       buildThreadRows<PostDTO>({
         focalId: id,
         replies: fetched,
         sent: sentReplies,
+        nested: authorReplies,
       }),
-    [id, fetched, sentReplies],
+    [id, fetched, sentReplies, authorReplies],
   )
 
   const listHeader = React.useMemo(
