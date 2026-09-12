@@ -38,7 +38,9 @@ on:
       - ".npmrc"
       - ".github/workflows/deploy-web.yml"
   release:
-    types: [published]
+    # `released`, NOT `published`: `published` also fires for a PRERELEASE, and a prerelease must never
+    # reach civfix.org. The regex in the production gate below is the second, independent guard.
+    types: [released]
   workflow_dispatch:
 
 permissions:
@@ -72,6 +74,34 @@ jobs:
           echo "ref $GITHUB_REF -> $DEPLOY_ENV"
 
       - uses: actions/checkout@v4
+        with:
+          # Full history: the production gate below proves the tag is an ancestor of main.
+          fetch-depth: 0
+
+      - name: Prove the production ref (tag shape + merged into main)
+        # THIS IS A BRANCH-PROTECTION CONTROL, not a formality. Without it the only thing standing
+        # between an arbitrary commit and civfix.org — with the LIVE Stripe key — is the ability to push
+        # a tag. `main` requires a reviewed PR; tags do not, so a tag on an unreviewed branch would be a
+        # complete bypass straight to production. civfix-backend's deploy.yml carries the same proof;
+        # keep the regex identical to that one and to CIVFIX_RELEASE_TAG_REGEX in civfix-infra.
+        if: env.DEPLOY_ENV == 'production'
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF#refs/tags/}"
+          RELEASE_RE='^v[0-9]+\.[0-9]+\.[0-9]+$'
+          if ! printf '%s' "$tag" | grep -qE "$RELEASE_RE"; then
+            echo "::error::'$tag' is not a vMAJOR.MINOR.PATCH release tag; refusing to deploy production."
+            echo "::error::Prereleases are excluded by design."
+            exit 1
+          fi
+          git fetch --quiet --force origin '+refs/heads/main:refs/remotes/origin/main'
+          if ! git merge-base --is-ancestor "$tag" origin/main; then
+            echo "::error::tag '$tag' is not merged into main. Production only ships code that went"
+            echo "::error::through the staging lane and a reviewed PR. Refusing to deploy."
+            exit 1
+          fi
+          echo "$tag is a release tag merged into main"
+
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.0
@@ -116,13 +146,14 @@ jobs:
             api="https://api.civfix.dev"; site="https://civfix.dev"; turnstile=""
             stripe="$STRIPE_TEST"; pages_branch=staging
           fi
-          {
-            echo "NEXT_PUBLIC_API_URL=$api"
-            echo "NEXT_PUBLIC_SITE_URL=$site"
-            echo "NEXT_PUBLIC_TURNSTILE_SITEKEY=$turnstile"
-            echo "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$stripe"
-            echo "PAGES_BRANCH=$pages_branch"
-          } >> "$GITHUB_ENV"
+          # Heredoc delimiters, not `KEY=value` lines: a repo variable containing a newline would
+          # otherwise inject arbitrary extra KEY=VALUE pairs into the job environment.
+          emit() { printf '%s<<__CIVFIX_EOF__\n%s\n__CIVFIX_EOF__\n' "$1" "$2" >> "$GITHUB_ENV"; }
+          emit NEXT_PUBLIC_API_URL "$api"
+          emit NEXT_PUBLIC_SITE_URL "$site"
+          emit NEXT_PUBLIC_TURNSTILE_SITEKEY "$turnstile"
+          emit NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY "$stripe"
+          emit PAGES_BRANCH "$pages_branch"
 
       - name: Assert the build targets and the keys agree
         # The one check that makes a cross-environment mix-up impossible rather than merely unlikely.
