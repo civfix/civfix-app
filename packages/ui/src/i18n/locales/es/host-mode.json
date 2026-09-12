@@ -1,43 +1,143 @@
 {
   "state": {
-    "loading": "Cargando el evento…",
     "error_title": "El modo anfitrión no está disponible",
     "error_body": "No pudimos cargar este evento. Revisa tu conexión e inténtalo de nuevo.",
     "denied_title": "No eres anfitrión aquí",
-    "denied_body": "Solo los anfitriones y el personal del evento pueden abrir el modo anfitrión."
+    "denied_body": "Solo los anfitriones y el personal del evento pueden abrir el modo anfitrión.",
+    "insights_error_title": "Las cifras no están disponibles",
+    "insights_error_body": "No pudimos cargar las cifras de este evento. Todo lo demás sigue funcionando.",
+    "cancel_error": "No se pudo cancelar este evento.",
+    "complete_error": "No se pudo marcar este evento como completado.",
+    "resources_error": "No se pudo enviar la solicitud."
   },
   "phase": {
     "upcoming": "Próximo",
     "live": "En curso",
     "ended": "Finalizado",
-    "cancelled": "Cancelado"
+    "cancelled": "Cancelado",
+    "starts": "Empieza en {{when}}",
+    "started": "Empezó hace {{when}}",
+    "ended_on": "Terminó hace {{when}}",
+    "called_off": "Ya no se celebra"
   },
-  "action": {
+  "cta": {
+    "share": "Compartir evento",
+    "message": "Escribir a los asistentes",
+    "check_in": "Registrar entrada",
     "scan": "Escanear entradas",
-    "scan_a11y": "Abrir el escáner de entradas",
-    "checkin": "Registro de entrada",
-    "checkin_a11y": "Abrir la pantalla de registro de entrada",
-    "quick_message": "Mensaje rápido",
-    "quick_message_a11y": "Enviar un mensaje rápido a los asistentes",
-    "walkup": "Añadir sin cita",
-    "walkup_a11y": "Inscribir a alguien en la puerta",
+    "complete": "Marcar como completado",
+    "log_hours": "Registrar horas de voluntariado",
+    "duplicate": "Duplicar evento",
+    "edit": "Editar evento"
+  },
+  "hero": {
+    "registered": "Inscritos",
+    "checked_in": "Con entrada registrada",
+    "attended": "Asistieron",
+    "of_capacity": "de {{limit}} plazas",
+    "of_registered": "de {{limit}} inscritos",
+    "no_cap": "plazas, sin límite",
+    "as_of": "Hace {{when}}",
+    "rate": "{{rate}} asistió"
+  },
+  "tiles": {
+    "waitlist": "Lista de espera",
+    "cancelled": "Cancelados",
+    "spots_left": "Plazas libres",
+    "messages": "Mensajes enviados",
+    "expected": "Aún se esperan",
+    "walkups": "Sin cita previa",
+    "no_shows": "No asistieron",
+    "not_marked": "Sin marcar",
+    "hours": "Horas acreditadas",
+    "hours_value": "{{hours}} h",
+    "hours_hint": "{{credited}} de {{attended}} asistentes acreditados",
+    "donations": "Donaciones",
+    "returning": "Repiten",
+    "returning_hint": "de {{total}} inscritos ya habían venido"
+  },
+  "signups": {
+    "title": "Inscripciones",
+    "end_label": "{{seats}} plazas hasta ahora",
+    "a11y": "Plazas inscritas en los últimos {{days}} días, {{seats}} hoy"
+  },
+  "by_type": {
+    "title": "Por tipo de entrada",
+    "of": "{{registered}} de {{capacity}}",
+    "waiting_one": "{{count}} en espera",
+    "waiting_other": "{{count}} en espera"
+  },
+  "arrivals": {
+    "title": "Llegadas",
+    "caption": "Bloques de 15 minutos respecto a la hora de inicio.",
+    "label": "{{seats}} a {{offset}}",
+    "a11y": "Llegadas en {{buckets}} bloques de quince minutos alrededor de la hora de inicio"
+  },
+  "messages": {
+    "title": "Mensajes",
+    "row": "{{sent}} enviados · {{failed}} fallidos · {{suppressed}} omitidos",
+    "pending": "Aún sin enviar"
+  },
+  "money": {
+    "net": "Recaudado en este evento",
+    "donations": "Donaciones",
+    "gross": "{{amount}} antes de comisiones"
+  },
+  "section": {
+    "grow": "Difundir",
+    "communicate": "Comunicar",
+    "operate": "Gestionar el día",
+    "configure": "Configurar",
+    "money": "Dinero",
+    "danger": "Zona de riesgo",
+    "attendees": "Asistentes"
+  },
+  "row": {
+    "share": "Compartir enlace",
+    "invite_team": "Invitar a alguien al equipo",
+    "message": "Escribir a los asistentes",
+    "message_sub": "Push y en la app",
+    "email": "Enviar correo a los asistentes",
+    "email_sub": "Lo envía civfix. Las direcciones no se comparten.",
+    "check_in": "Registrar entrada",
+    "check_in_sub_one": "Queda {{count}} por registrar",
+    "check_in_sub_other": "Quedan {{count}} por registrar",
+    "scan": "Escanear entradas",
+    "walkup": "Añadir a alguien sin cita",
+    "mark_no_shows": "Marcar ausencias",
+    "mark_no_shows_sub_one": "{{count}} plaza quedó sin marcar",
+    "mark_no_shows_sub_other": "{{count}} plazas quedaron sin marcar",
+    "edit": "Editar evento",
     "team": "Equipo",
-    "team_a11y": "Gestionar el equipo del evento"
+    "tickets": "Entradas",
+    "resources": "Pedir recursos al ayuntamiento",
+    "resources_no_city": "Todavía no hay un municipio vinculado a esta ubicación.",
+    "duplicate": "Duplicar evento",
+    "cancel": "Cancelar evento"
   },
-  "roster": {
-    "heading": "Asistentes"
+  "no_shows": {
+    "title": "¿Marcar el resto como ausencias?",
+    "body_one": "{{count}} plaza sin registrar se marcará como ausencia.",
+    "body_other": "{{count}} plazas sin registrar se marcarán como ausencias.",
+    "confirm": "Marcar ausencias",
+    "cancel": "Dejarlo como está",
+    "dismiss_a11y": "Cerrar la confirmación de ausencias",
+    "success_one": "{{count}} plaza marcada como ausencia.",
+    "success_other": "{{count}} plazas marcadas como ausencias.",
+    "error": "No se pudieron marcar esas plazas."
   },
+  "cancelled_notice": "Este evento fue cancelado.",
   "walkup": {
-    "title": "Inscripción en la puerta",
-    "caption": "Inscribe a alguien en la puerta. Queda registrado de inmediato.",
-    "dismiss_a11y": "Cerrar la inscripción en la puerta",
+    "title": "Registro sin cita previa",
+    "caption": "Registra a alguien en la puerta. Su entrada queda validada al instante.",
+    "dismiss_a11y": "Cerrar el registro sin cita previa",
     "name_label": "Nombre",
     "name_placeholder": "Su nombre",
     "type_label": "Tipo de entrada",
     "cancel": "Cancelar",
-    "submit": "Añadir y registrar",
-    "success": "{{name}} ya está registrado.",
-    "error": "No se pudo añadir esa inscripción.",
-    "error_forbidden": "No tienes permiso para añadir inscripciones en la puerta."
+    "submit": "Añadir y registrar entrada",
+    "success": "{{name}} tiene la entrada registrada.",
+    "error": "No se pudo añadir ese registro.",
+    "error_forbidden": "No tienes permiso para añadir registros sin cita previa."
   }
 }

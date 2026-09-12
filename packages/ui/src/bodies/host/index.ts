@@ -7,13 +7,46 @@ export { OrgPageBody } from "./OrgPageBody"
 export { MyDonationsBody } from "./MyDonationsBody"
 export { EventDashboardBody } from "./EventDashboardBody"
 
-export { PhaseHeader, PhaseDot, PHASE_NAMES } from "./PhaseHeader"
-export type { PhaseHeaderProps, PhaseDotProps, PhaseHeaderAction, PhaseName } from "./PhaseHeader"
+export { PhaseHeader, PhaseDot } from "./PhaseHeader"
+export type { PhaseHeaderProps, PhaseDotProps, PhaseHeaderAction } from "./PhaseHeader"
 export { HeroSkeleton, TilesSkeleton, RowsSkeleton } from "./HostSkeletons"
 export type { TilesSkeletonProps, RowsSkeletonProps } from "./HostSkeletons"
 
-export { HostCounterStrip } from "./HostCounterStrip"
-export type { HostCounterStripProps } from "./HostCounterStrip"
+export { HostInsightsPanels } from "./HostInsightsPanels"
+export type { HostInsightsPanelsProps } from "./HostInsightsPanels"
+export {
+  ARRIVAL_BUCKET_MINUTES,
+  MESSAGE_CTA_WINDOW_MS,
+  arrivalOffsetLabel,
+  arrivalSparkPoints,
+  attendanceRate,
+  hostActionCards,
+  hostHero,
+  hostPanels,
+  hostPrimaryCta,
+  hostSecondaryCta,
+  hostStatTiles,
+  hostedEventFromCleanup,
+  peakArrival,
+  registrationTrendPoints,
+  sourceSeats,
+  spotsLeft,
+  stillExpected,
+} from "./hostSurfaceModel"
+export type {
+  HostActionCard,
+  HostActionInput,
+  HostCardKey,
+  HostCtaKey,
+  HostHero,
+  HostHeroKey,
+  HostPanels,
+  HostRowKey,
+  HostSurfaceCapabilities,
+  HostSurfaceInput,
+  HostTile,
+  HostTileKey,
+} from "./hostSurfaceModel"
 export {
   EventRosterBlock,
   ROSTER_FILTERS,

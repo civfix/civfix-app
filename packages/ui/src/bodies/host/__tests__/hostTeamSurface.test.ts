@@ -12,14 +12,16 @@ const members = strip(read("../../MembersBody.tsx"))
 const detail = strip(read("../../EventDetailBody.tsx"))
 
 describe("host mode reaches the team", () => {
-  it("gates the Team row on manage_team, not on a role string", () => {
-    expect(mode).toContain('const canManageTeam = hasHostCapability(standing, "manage_team")')
-    expect(mode).toMatch(/\{canManageTeam \? \(\s*<EventActionRow/)
+  it("gates the Team rows on manage_team, not on a role string", () => {
+    expect(mode).toContain('manageTeam: hasHostCapability(standing, "manage_team")')
     expect(mode).not.toMatch(/myRole === "(organizer|cohost)"/)
+    const model = strip(read("../hostSurfaceModel.ts"))
+    expect(model).toContain('if (!cancelled && can.manageTeam) grow.push("invite_team")')
+    expect(model).toContain('if (upcoming && can.manageTeam) configure.push("team")')
   })
 
   it("builds the standing once from the DTO plus the viewer, so a legacy organizer still passes", () => {
-    expect(mode).toContain("const standing = cleanupHostStanding(cleanup.data, viewerId)")
+    expect(mode).toContain("const standing = cleanupHostStanding(cleanup, viewerId)")
     expect(mode).not.toContain('hasHostCapability(cleanup.data, "check_in")')
   })
 
@@ -29,7 +31,7 @@ describe("host mode reaches the team", () => {
 
   it("leaves the event detail page's own host rows alone - it is not a mirror of host mode", () => {
     expect(detail).not.toContain('kind: "host-team"')
-    expect(detail).toContain("openHostDashboard({ eventId: cleanup.id, openExternal })")
+    expect(detail).toContain("openHostDashboard({ eventId: cleanup.id })")
   })
 })
 

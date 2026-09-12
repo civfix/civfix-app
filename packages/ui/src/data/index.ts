@@ -151,6 +151,8 @@ export type { SettableEventMemberRole } from "../bodies/host/eventTeamTiers"
 
 export {
   HOST_COUNTERS_POLL_MS,
+  INSIGHTS_IDLE_POLL_MS,
+  INSIGHTS_LIVE_POLL_MS,
   HOST_ROSTER_PAGE_SIZE,
   MY_EVENT_INVITES_PAGE_SIZE,
   actsAsHost,
@@ -172,6 +174,7 @@ export {
   useCancelEventRegistration,
   useCheckInEventSeat,
   useDeclineMyEventInvite,
+  useEventInsights,
   useEventQuestions,
   useEventTicketTypes,
   useHostCounters,
@@ -181,6 +184,7 @@ export {
   useInviteEventTeamMember,
   useJoinEventWaitlist,
   useLeaveEventWaitlist,
+  useMarkEventNoShows,
   useMyEventInvites,
   useMyEventTicket,
   useMyHostedEvents,
@@ -194,6 +198,7 @@ export {
 export type {
   CancelRegistrationVars,
   CleanupStandingSource,
+  EventInsightsOptions,
   HostRosterOptions,
   HostStandingView,
   HostedEventsWindow,

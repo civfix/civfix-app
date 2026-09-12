@@ -32,7 +32,6 @@ import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 import { openHostDashboard } from "../hostDashboardTarget"
-import { useOpenExternal } from "../../capabilities"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
 import { ConsoleLinkRow } from "./dashboard/ConsoleLinkRow"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
@@ -93,7 +92,6 @@ export function EventDashboardBody() {
   const { t } = useT("event-dashboard")
   const { t: tEnums } = useT("enums")
   const toast = useToast()
-  const openExternal = useOpenExternal()
   const { isAuthenticated, isPending: authPending } = useAuthState()
   const requireAuth = useRequireAuth()
 
@@ -153,12 +151,9 @@ export function EventDashboardBody() {
     useNavStore.getState().push({ kind: "cleanup", id: event.id, title: event.title })
   }, [])
 
-  const onHostTools = useCallback(
-    (event: HostedEventDTO) => {
-      openHostDashboard({ eventId: event.id, openExternal })
-    },
-    [openExternal],
-  )
+  const onHostTools = useCallback((event: HostedEventDTO) => {
+    openHostDashboard({ eventId: event.id })
+  }, [])
 
   const onEmailAttendees = useCallback(
     (event: HostedEventDTO) => {

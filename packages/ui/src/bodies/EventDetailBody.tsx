@@ -14,14 +14,10 @@ import {
   SkeletonList,
   SkeletonText,
   ReportContentSheet,
-  CancelEventSheet,
-  RequestResourcesSheet,
-  InviteSheet,
   GuestRsvpSheet,
   shareLink,
   useToast,
 } from "../primitives"
-import { CompleteEventSheet } from "../primitives/CompleteEventSheet"
 import { DonateBlock } from "../primitives/DonateBlock"
 import {
   useCleanup,
@@ -32,9 +28,6 @@ import {
   useGetTurnstileToken,
   useProfile,
   useReportContent,
-  useCancelCleanup,
-  useCompleteCleanup,
-  useRequestEventResources,
 } from "../data"
 import {
   cleanupHostStanding,
@@ -44,7 +37,6 @@ import {
 } from "../data/hooks/host"
 import { useOrgDonationPage } from "../data/hooks/donations"
 import { useNavStore } from "../nav"
-import { useOpenExternal } from "../capabilities"
 import { useHaptics } from "../capabilities"
 import { useLocale, useRelativeTime, useT } from "../i18n"
 import { usePageIsActive } from "../shell/pageActive"
@@ -59,7 +51,6 @@ import { EventGuestsBlock } from "./EventGuestsBlock"
 import { openHostDashboard } from "./hostDashboardTarget"
 import { EventRosterBlock } from "./host/EventRosterBlock"
 import { RegistrationBlock } from "./host/registration/RegistrationBlock"
-import { eventCompletionState } from "./eventLifecycle"
 import { eventDistanceLabel } from "./eventDistance"
 import { buildComposerEventRef } from "./postComposerModel"
 import { usePostComposerStore } from "./postComposerStore"
@@ -67,27 +58,6 @@ import { usePostComposerStore } from "./postComposerStore"
 const GOING_AVATAR_CAP = 4
 
 const HERO_HEIGHT = 160
-
-const COMPLETION_TICK_CAP_MS = 5 * 60 * 1000
-
-function useCompletionNow(active: boolean, scheduledAt: string): number {
-  const [now, setNow] = useState(() => Date.now())
-
-  useEffect(() => {
-    if (!active) return
-    const at = new Date(scheduledAt).getTime()
-    if (Number.isNaN(at)) return
-    const remaining = at - now
-    if (remaining <= 0) return
-    const id = setTimeout(
-      () => setNow(Date.now()),
-      Math.min(remaining + 1000, COMPLETION_TICK_CAP_MS),
-    )
-    return () => clearTimeout(id)
-  }, [active, scheduledAt, now])
-
-  return now
-}
 
 function EventHero({ cleanup }: { cleanup: CleanupDTO }) {
   const styles = useStyles()
@@ -264,10 +234,9 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const canViewGuestContact = hasHostCapability(capabilityCleanup, "view_guest_contact")
   const canViewRoster = hasHostCapability(capabilityCleanup, "view_roster")
   const actsAsHost = managesEvent(capabilityCleanup)
-  const openExternal = useOpenExternal()
   const onOpenHostDashboard = useCallback(() => {
-    openHostDashboard({ eventId: cleanup.id, openExternal })
-  }, [cleanup.id, openExternal])
+    openHostDashboard({ eventId: cleanup.id })
+  }, [cleanup.id])
   const onOpenCheckin = useCallback(() => {
     useNavStore.getState().push({ kind: "host-checkin", id: cleanup.id, title: cleanup.title })
   }, [cleanup.id, cleanup.title])
@@ -277,10 +246,8 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   })
   const isCancelled = cleanup.status === "cancelled"
   const isDone = cleanup.status === "done"
-  const isPast = cleanup.status === "done" || cleanup.status === "cancelled"
   const isUpcoming = !isCancelled && !isDone
   const next = `/cleanups/${cleanup.id}`
-  const completionNow = useCompletionNow(actsAsHost && !isPast, cleanup.scheduledAt)
 
   const isActive = usePageIsActive()
   useEffect(() => {
@@ -364,72 +331,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
     [reportContent, cleanup.id, toast, t],
   )
 
-  const onEdit = useCallback(() => {
-    useNavStore.getState().push({ kind: "edit-cleanup", id: cleanup.id, title: cleanup.title })
-  }, [cleanup.id, cleanup.title])
-
-  const cancelCleanup = useCancelCleanup()
-  const [cancelling, setCancelling] = useState(false)
-  const onCancelEvent = useCallback(() => setCancelling(true), [])
-  const onConfirmCancel = useCallback(
-    (reason?: string) => {
-      cancelCleanup.mutate(
-        { id: cleanup.id, ...(reason ? { reason } : {}) },
-        { onSuccess: () => setCancelling(false) },
-      )
-    },
-    [cancelCleanup, cleanup.id],
-  )
-  const closeCancel = useCallback(() => {
-    if (cancelCleanup.isPending) return
-    setCancelling(false)
-  }, [cancelCleanup.isPending])
-
-  const completeCleanup = useCompleteCleanup()
-  const [completing, setCompleting] = useState(false)
-  const onCompleteEvent = useCallback(() => setCompleting(true), [])
-  const onConfirmComplete = useCallback(() => {
-    completeCleanup.mutate(
-      { id: cleanup.id },
-      {
-        onSuccess: () => {
-          setCompleting(false)
-          toast.show(t("complete.success_toast"), { variant: "success" })
-        },
-      },
-    )
-  }, [completeCleanup, cleanup.id, toast, t])
-  const closeComplete = useCallback(() => {
-    if (completeCleanup.isPending) return
-    setCompleting(false)
-  }, [completeCleanup.isPending])
-
-  const requestResources = useRequestEventResources(cleanup.id)
-  const [requesting, setRequesting] = useState(false)
-  const onRequestResources = useCallback(() => setRequesting(true), [])
-  const onSubmitRequest = useCallback(
-    (message: string) => {
-      requestResources.mutate(
-        { message },
-        {
-          onSuccess: () => {
-            setRequesting(false)
-            toast.show(t("resources_sheet.success_toast"), { variant: "success" })
-          },
-        },
-      )
-    },
-    [requestResources, toast, t],
-  )
-  const closeRequest = useCallback(() => {
-    if (requestResources.isPending) return
-    setRequesting(false)
-  }, [requestResources.isPending])
-
-  const [inviting, setInviting] = useState(false)
-  const onInvite = useCallback(() => setInviting(true), [])
-  const closeInvite = useCallback(() => setInviting(false), [])
-
   const [guestRsvping, setGuestRsvping] = useState(false)
   const guestQuestions = useEventQuestions(cleanup.id, { enabled: guestRsvping && hasTicketTypes })
   const closeGuestRsvp = useCallback(() => setGuestRsvping(false), [])
@@ -481,13 +382,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
     : isDone
       ? th.colors.textMuted
       : th.colors.moss["700"]
-
-  const completionState = eventCompletionState({
-    actsAsHost,
-    status: cleanup.status,
-    scheduledAt: cleanup.scheduledAt,
-    now: completionNow,
-  })
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -566,7 +460,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       ) : null}
 
-      {actsAsHost && isUpcoming ? (
+      {actsAsHost ? (
         <View style={styles.section}>
           <EventActionRows>
             <EventActionRow
@@ -575,49 +469,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
               accessibilityLabel={t("host.dashboard_a11y")}
               onPress={onOpenHostDashboard}
             />
-            {canCheckIn ? (
-              <EventActionRow
-                icon={iconMap.QrCode}
-                label={t("host.check_in")}
-                accessibilityLabel={t("host.check_in_a11y")}
-                onPress={onOpenCheckin}
-              />
-            ) : null}
-            <EventActionRow
-              icon={iconMap.UserPlus}
-              label={t("actions.invite")}
-              accessibilityLabel={t("actions.invite_a11y")}
-              onPress={onInvite}
-            />
-            <EventActionRow
-              icon={iconMap.Pencil}
-              label={t("actions.edit")}
-              accessibilityLabel={t("actions.edit_a11y")}
-              onPress={onEdit}
-            />
-            {completionState === "hidden" ? null : (
-              <EventActionRow
-                icon={iconMap.CheckCheck}
-                label={t("complete.action")}
-                accessibilityLabel={t("complete.action_a11y")}
-                disabled={completionState === "too-early"}
-                hint={completionState === "too-early" ? t("complete.too_early") : undefined}
-                onPress={onCompleteEvent}
-              />
-            )}
-            {isOrganizer && cleanup.organization ? (
-              <EventActionRow
-                icon={iconMap.Building2}
-                label={t("host.request_resources")}
-                accessibilityLabel={t("host.request_resources_a11y")}
-                hint={
-                  cleanup.jurisdictionGeoid == null
-                    ? t("host.request_resources_no_city")
-                    : undefined
-                }
-                onPress={onRequestResources}
-              />
-            ) : null}
           </EventActionRows>
         </View>
       ) : null}
@@ -746,15 +597,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
               onPress={onReport}
             />
           )}
-          {isOrganizer && isUpcoming ? (
-            <EventActionRow
-              icon={iconMap.Ban}
-              label={t("actions.cancel_event")}
-              accessibilityLabel={t("actions.cancel_event_a11y")}
-              destructive
-              onPress={onCancelEvent}
-            />
-          ) : null}
         </EventActionRows>
       </View>
 
@@ -780,37 +622,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         error={reportContent.isError ? t("report_sheet.submit_error") : null}
         onSubmit={onSubmitReport}
         onClose={closeReport}
-      />
-
-      <CancelEventSheet
-        visible={cancelling}
-        pending={cancelCleanup.isPending}
-        error={cancelCleanup.isError ? t("cancel_sheet.error") : null}
-        onConfirm={onConfirmCancel}
-        onClose={closeCancel}
-      />
-
-      <CompleteEventSheet
-        visible={completing}
-        pending={completeCleanup.isPending}
-        error={completeCleanup.isError ? t("complete_sheet.error") : null}
-        onConfirm={onConfirmComplete}
-        onClose={closeComplete}
-      />
-
-      <RequestResourcesSheet
-        visible={requesting}
-        pending={requestResources.isPending}
-        error={requestResources.isError ? t("resources_sheet.error") : null}
-        onSubmit={onSubmitRequest}
-        onClose={closeRequest}
-      />
-
-      <InviteSheet
-        visible={inviting}
-        title={cleanup.title}
-        path={sharePath}
-        onClose={closeInvite}
       />
 
       <GuestRsvpSheet

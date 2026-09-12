@@ -1,35 +1,135 @@
 {
   "state": {
-    "loading": "행사를 불러오는 중…",
     "error_title": "호스트 모드를 사용할 수 없습니다",
     "error_body": "이 행사를 불러오지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.",
     "denied_title": "이 행사의 호스트가 아닙니다",
-    "denied_body": "행사의 호스트와 스태프만 호스트 모드를 열 수 있습니다."
+    "denied_body": "행사의 호스트와 스태프만 호스트 모드를 열 수 있습니다.",
+    "insights_error_title": "수치를 불러올 수 없습니다",
+    "insights_error_body": "이 행사의 수치를 불러오지 못했습니다. 나머지 기능은 그대로 사용할 수 있습니다.",
+    "cancel_error": "이 행사를 취소하지 못했습니다.",
+    "complete_error": "이 행사를 완료로 표시하지 못했습니다.",
+    "resources_error": "요청을 보내지 못했습니다."
   },
   "phase": {
     "upcoming": "예정",
     "live": "진행 중",
     "ended": "종료됨",
-    "cancelled": "취소됨"
+    "cancelled": "취소됨",
+    "starts": "{{when}} 후 시작",
+    "started": "{{when}} 전 시작",
+    "ended_on": "{{when}} 전 종료",
+    "called_off": "더 이상 열리지 않음"
   },
-  "action": {
+  "cta": {
+    "share": "행사 공유",
+    "message": "참가자에게 메시지",
+    "check_in": "체크인",
     "scan": "티켓 스캔",
-    "scan_a11y": "티켓 스캐너 열기",
-    "checkin": "체크인",
-    "checkin_a11y": "체크인 화면 열기",
-    "quick_message": "빠른 메시지",
-    "quick_message_a11y": "참가자에게 빠른 메시지 보내기",
+    "complete": "완료로 표시",
+    "log_hours": "봉사 시간 기록",
+    "duplicate": "행사 복제",
+    "edit": "행사 수정"
+  },
+  "hero": {
+    "registered": "등록",
+    "checked_in": "체크인",
+    "attended": "참석",
+    "of_capacity": "정원 {{limit}}석 중",
+    "of_registered": "등록 {{limit}}명 중",
+    "no_cap": "석, 정원 없음",
+    "as_of": "{{when}} 전 기준",
+    "rate": "{{rate}} 참석"
+  },
+  "tiles": {
+    "waitlist": "대기자",
+    "cancelled": "취소",
+    "spots_left": "남은 자리",
+    "messages": "보낸 메시지",
+    "expected": "아직 대기 중",
+    "walkups": "현장 등록",
+    "no_shows": "불참",
+    "not_marked": "미표시",
+    "hours": "인정된 시간",
+    "hours_value": "{{hours}}시간",
+    "hours_hint": "참가자 {{attended}}명 중 {{credited}}명 인정",
+    "donations": "기부",
+    "returning": "재참여",
+    "returning_hint": "등록 {{total}}명 중 이전에 참여한 인원"
+  },
+  "signups": {
+    "title": "신청 추이",
+    "end_label": "지금까지 {{seats}}석",
+    "a11y": "최근 {{days}}일간 등록 좌석, 오늘 {{seats}}석"
+  },
+  "by_type": {
+    "title": "티켓 종류별",
+    "of": "{{capacity}}석 중 {{registered}}석",
+    "waiting_one": "{{count}}명 대기",
+    "waiting_other": "{{count}}명 대기"
+  },
+  "arrivals": {
+    "title": "도착 시간",
+    "caption": "시작 시각 기준 15분 단위입니다.",
+    "label": "{{offset}}에 {{seats}}명",
+    "a11y": "시작 시각 전후 15분 단위 {{buckets}}구간의 도착 분포"
+  },
+  "messages": {
+    "title": "메시지",
+    "row": "발송 {{sent}} · 실패 {{failed}} · 제외 {{suppressed}}",
+    "pending": "아직 발송되지 않음"
+  },
+  "money": {
+    "net": "이 행사로 모인 금액",
+    "donations": "기부 건수",
+    "gross": "수수료 전 {{amount}}"
+  },
+  "section": {
+    "grow": "알리기",
+    "communicate": "소통",
+    "operate": "현장 운영",
+    "configure": "설정",
+    "money": "정산",
+    "danger": "위험 구역",
+    "attendees": "참가자"
+  },
+  "row": {
+    "share": "링크 공유",
+    "invite_team": "팀원 초대",
+    "message": "참가자에게 메시지",
+    "message_sub": "푸시 및 앱 내 알림",
+    "email": "참가자에게 이메일",
+    "email_sub": "civfix가 발송합니다. 주소는 공개되지 않습니다.",
+    "check_in": "체크인",
+    "check_in_sub_one": "{{count}}명 체크인 대기",
+    "check_in_sub_other": "{{count}}명 체크인 대기",
+    "scan": "티켓 스캔",
     "walkup": "현장 등록 추가",
-    "walkup_a11y": "현장에서 참가자 등록하기",
+    "mark_no_shows": "불참 처리",
+    "mark_no_shows_sub_one": "{{count}}석이 표시되지 않았습니다",
+    "mark_no_shows_sub_other": "{{count}}석이 표시되지 않았습니다",
+    "edit": "행사 수정",
     "team": "팀",
-    "team_a11y": "행사 팀 관리"
+    "tickets": "티켓",
+    "resources": "지자체 지원 요청",
+    "resources_no_city": "이 위치에 연결된 지자체가 아직 없습니다.",
+    "duplicate": "행사 복제",
+    "cancel": "행사 취소"
   },
-  "roster": {
-    "heading": "참가자"
+  "no_shows": {
+    "title": "나머지를 불참으로 표시할까요?",
+    "body_one": "체크인하지 않은 {{count}}석이 불참으로 표시됩니다.",
+    "body_other": "체크인하지 않은 {{count}}석이 불참으로 표시됩니다.",
+    "confirm": "불참으로 표시",
+    "cancel": "그대로 두기",
+    "dismiss_a11y": "불참 처리 확인 닫기",
+    "success_one": "{{count}}석을 불참으로 표시했습니다.",
+    "success_other": "{{count}}석을 불참으로 표시했습니다.",
+    "error": "해당 좌석을 표시하지 못했습니다."
   },
+  "cancelled_notice": "이 행사는 취소되었습니다.",
   "walkup": {
     "title": "현장 등록",
-    "caption": "현장에서 참가자를 등록합니다. 바로 체크인됩니다.",
+    "caption": "현장에서 참가자를 등록합니다. 등록과 동시에 체크인됩니다.",
     "dismiss_a11y": "현장 등록 닫기",
     "name_label": "이름",
     "name_placeholder": "참가자 이름",
