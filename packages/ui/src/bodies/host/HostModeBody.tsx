@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { useWindowDimensions, View } from "react-native"
+import { View, type LayoutChangeEvent } from "react-native"
 import type { CleanupDTO, EventInsights, EventPhase } from "@civfix/shared"
 import { dowLabel, timeLabel } from "@civfix/shared/datetime"
 import { eventPhase } from "@civfix/shared/host"
@@ -19,7 +19,11 @@ import {
 import { CompleteEventSheet } from "../../primitives/CompleteEventSheet"
 import { RequestResourcesSheet } from "../../primitives/RequestResourcesSheet"
 import { useScannerAvailable } from "../../primitives/useScannerAvailable"
-import { statTileColumns, type StatTileColumns } from "../../primitives/statTileModel"
+import {
+  statTileColumns,
+  STAT_TILE_WIDE_AT,
+  type StatTileColumns,
+} from "../../primitives/statTileModel"
 import { managePath } from "../../primitives/externalUrls"
 import { useOpenExternal } from "../../capabilities"
 import {
@@ -60,8 +64,6 @@ import {
 } from "./hostSurfaceModel"
 
 const PHASE_TICK_MS = 60_000
-
-const WIDE_AT = 480
 
 const CTA_ICONS: Readonly<Record<HostCtaKey, LucideIcon>> = {
   share: iconMap.Share,
@@ -170,7 +172,6 @@ export function HostModeBody({ id }: { id: string }) {
   const { locale } = useLocale()
   const { relative, weekdays } = useRelativeTime()
   const { ScrollView } = useScrollHost()
-  const { width } = useWindowDimensions()
   const toast = useToast()
   const openExternal = useOpenExternal()
 
@@ -193,6 +194,11 @@ export function HostModeBody({ id }: { id: string }) {
     live: clockPhase === "live",
   })
   const phase = insights.data?.phase ?? clockPhase
+
+  const [contentWidth, setContentWidth] = useState(0)
+  const onContentLayout = useCallback((layout: LayoutChangeEvent) => {
+    setContentWidth(layout.nativeEvent.layout.width)
+  }, [])
 
   const [walkupOpen, setWalkupOpen] = useState(false)
   const [duplicating, setDuplicating] = useState(false)
@@ -373,8 +379,8 @@ export function HostModeBody({ id }: { id: string }) {
     hasOrganization: !!event.organization,
     ticketsReachable: !!openExternal,
   })
-  const columns = statTileColumns(width)
-  const wide = width >= WIDE_AT
+  const columns = statTileColumns(contentWidth)
+  const wide = contentWidth >= STAT_TILE_WIDE_AT
 
   const ctaFor = (key: HostCtaKey): PhaseHeaderAction => ({
     label: t(`cta.${key}`),
@@ -418,57 +424,59 @@ export function HostModeBody({ id }: { id: string }) {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <PhaseHeader
-        phase={phase}
-        title={event.title}
-        when={whenLine(event, weekdays, locale)}
-        relative={relativeLine}
-        wide={wide}
-        cta={primary ? ctaFor(primary) : undefined}
-        secondary={secondary ? ctaFor(secondary) : undefined}
-      />
-
-      {phase === "cancelled" ? <FeedNotice icon="Ban" title={t("cancelled_notice")} /> : null}
-
-      {can.viewAnalytics ? (
-        <InsightsSection
-          insights={insights.data}
+      <View style={styles.body} onLayout={onContentLayout}>
+        <PhaseHeader
           phase={phase}
-          columns={columns}
-          compact={wide}
-          loading={insights.isLoading}
-          failed={insights.isError}
+          title={event.title}
+          when={whenLine(event, weekdays, locale)}
+          relative={relativeLine}
+          wide={wide}
+          cta={primary ? ctaFor(primary) : undefined}
+          secondary={secondary ? ctaFor(secondary) : undefined}
         />
-      ) : null}
 
-      {cards.map((card) => (
-        <SettingsSection
-          key={card.key}
-          label={t(`section.${card.key}`)}
-          style={card.key === "danger" ? styles.danger : undefined}
-        >
-          {card.rows.map((row) => (
-            <SettingsRow
-              key={row}
-              label={t(`row.${row}`)}
-              icon={ROW_ICONS[row]}
-              sub={rowSub(row)}
-              value={row === "team" && event.teamCount != null ? String(event.teamCount) : undefined}
-              onPress={actionFor(row)}
-              variant={row === "cancel" ? "destructive" : "default"}
-              chevron={row === "cancel" ? false : undefined}
-            />
-          ))}
-        </SettingsSection>
-      ))}
+        {phase === "cancelled" ? <FeedNotice icon="Ban" title={t("cancelled_notice")} /> : null}
 
-      <ConsoleLinkRow target={{ kind: "event", eventId: id }} />
+        {can.viewAnalytics ? (
+          <InsightsSection
+            insights={insights.data}
+            phase={phase}
+            columns={columns}
+            compact={wide}
+            loading={insights.isLoading}
+            failed={insights.isError}
+          />
+        ) : null}
 
-      {can.viewRoster ? (
-        <SectionCard label={t("section.attendees")}>
-          <EventRosterBlock cleanupId={id} canCheckIn={can.checkIn && phase !== "cancelled"} />
-        </SectionCard>
-      ) : null}
+        {cards.map((card) => (
+          <SettingsSection
+            key={card.key}
+            label={t(`section.${card.key}`)}
+            style={card.key === "danger" ? styles.danger : undefined}
+          >
+            {card.rows.map((row) => (
+              <SettingsRow
+                key={row}
+                label={t(`row.${row}`)}
+                icon={ROW_ICONS[row]}
+                sub={rowSub(row)}
+                value={row === "team" && event.teamCount != null ? String(event.teamCount) : undefined}
+                onPress={actionFor(row)}
+                variant={row === "cancel" ? "destructive" : "default"}
+                chevron={row === "cancel" ? false : undefined}
+              />
+            ))}
+          </SettingsSection>
+        ))}
+
+        <ConsoleLinkRow target={{ kind: "event", eventId: id }} />
+
+        {can.viewRoster ? (
+          <SectionCard label={t("section.attendees")}>
+            <EventRosterBlock cleanupId={id} canCheckIn={can.checkIn && phase !== "cancelled"} />
+          </SectionCard>
+        ) : null}
+      </View>
 
       <HostWalkupSheet
         visible={walkupOpen}
@@ -557,6 +565,8 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["2"],
     paddingBottom: t.space["10"],
+  },
+  body: {
     gap: t.space["6"],
   },
   stack: {

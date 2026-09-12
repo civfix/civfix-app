@@ -145,6 +145,27 @@ describe("insights wiring", () => {
   })
 })
 
+describe("density comes from the measured content, not from the window", () => {
+  it("never reads a window dimension for layout - the shell mounts it in a 300-640px panel", () => {
+    expect(body).not.toContain("useWindowDimensions")
+    expect(body).not.toContain("Dimensions")
+  })
+
+  it("measures its own stack and feeds the tile columns and the wide CTA row from it", () => {
+    expect(body).toContain("onLayout={onContentLayout}")
+    expect(body).toContain("setContentWidth(layout.nativeEvent.layout.width)")
+    expect(body).toContain("const columns = statTileColumns(contentWidth)")
+    expect(body).toContain("const wide = contentWidth >= STAT_TILE_WIDE_AT")
+  })
+
+  it("shares the one density threshold with the stat tiles instead of restating it", () => {
+    expect(body).not.toMatch(/const WIDE_AT = \d+/)
+    expect(strip(read("../../../primitives/statTileModel.ts"))).toContain(
+      "export const STAT_TILE_WIDE_AT = 480",
+    )
+  })
+})
+
 describe("the panels render only what the phase asked for", () => {
   it("drives every card off hostPanels rather than a second phase table", () => {
     expect(panels).toContain("const panels = hostPanels(phase)")
