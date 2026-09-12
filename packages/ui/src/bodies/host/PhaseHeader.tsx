@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react"
-import { Animated, Easing, View } from "react-native"
+import { Animated, Easing, Platform, View } from "react-native"
 import type { EventPhase } from "@civfix/shared"
 import { makeThemedStyles, useReducedMotion, useTheme } from "../../theme"
 import { useT } from "../../i18n"
@@ -9,6 +9,9 @@ import { SecondaryButton } from "../../primitives/SecondaryButton"
 import { Text, type LucideIcon } from "../../typography"
 
 const DOT_SIZE = 8
+
+const USE_NATIVE_DRIVER = Platform.OS !== "web"
+
 const PULSE_MIN_OPACITY = 0.35
 
 export interface PhaseDotProps {
@@ -50,13 +53,13 @@ export function PhaseDot({ phase }: PhaseDotProps) {
           toValue: PULSE_MIN_OPACITY,
           duration: t.motion.dur.d4,
           easing: Easing.inOut(Easing.quad),
-          useNativeDriver: false,
+          useNativeDriver: USE_NATIVE_DRIVER,
         }),
         Animated.timing(pulse, {
           toValue: 1,
           duration: t.motion.dur.d4,
           easing: Easing.inOut(Easing.quad),
-          useNativeDriver: false,
+          useNativeDriver: USE_NATIVE_DRIVER,
         }),
       ]),
     )
