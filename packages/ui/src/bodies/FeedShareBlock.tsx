@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { View, Pressable, StyleSheet, TextInput, Animated, Easing } from "react-native"
+import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
+import { TextInput } from "../primitives/TextInput"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, Toggle } from "../primitives"

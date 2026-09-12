@@ -14,6 +14,7 @@ import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
 import { useNavStore, type DetailEntry } from "../nav"
 import { pathForEntry } from "../nav"
+import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider, useScrollHost } from "../shell/ScrollHost"
 import { SignInPrompt } from "../primitives/StateView"
 import { ReplyComposer, type ReplyComposerHandle } from "./thread/ReplyComposer"
@@ -24,6 +25,11 @@ import { buildThreadRows, type ThreadRow } from "./thread/threadModel"
 
 const KEYBOARD_DISMISS_MODE: "interactive" | "on-drag" =
   Platform.OS === "ios" ? "interactive" : "on-drag"
+
+const THREAD_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
+  ownsFocusedInput: false,
+  reserveKeyboardPadding: false,
+})
 
 const ThreadList = React.forwardRef<unknown, Record<string, unknown>>(function ThreadList(props, ref) {
   const { FlatList } = useScrollHost()
@@ -252,7 +258,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   return (
     <View style={styles.root} onLayout={onRootLayout}>
       {header}
-      <ScrollHostProvider value={PLAIN_SCROLL_HOST}>
+      <ScrollHostProvider value={THREAD_SCROLL_HOST}>
         <ThreadList
           ref={listRef as never}
           style={styles.list}

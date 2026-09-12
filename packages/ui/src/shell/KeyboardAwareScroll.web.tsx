@@ -28,15 +28,16 @@
  * second inset. Note the web `focusin` reveal is at least SCOPED to this scroll node (the listener is on
  * the element), so `ownsFocusedInput: false` here is belt-and-braces; `reserveKeyboardPadding: false` is
  * the load-bearing one, because `inset` is the raw visual-viewport overlap regardless of who focused what.
+ * The pinned-footer suppression is read from the nearest KeyboardHostReserveScope, so a footer lifting one
+ * surface never collapses the reserve of a scroller on a surface pushed over it.
  */
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from "react"
 import { StyleSheet } from "react-native"
 import type { ScrollHostValue } from "./ScrollHost"
+import { useKeyboardHostReserved } from "./keyboardScrollScope"
+import { KEYBOARD_REVEAL_MARGIN } from "./keyboardInsetModel"
 import { useKeyboardInset } from "./useKeyboardInset.web"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
-
-/** Gap (px) kept between the bottom of the focused field and the top of the keyboard once revealed. */
-const KEYBOARD_MARGIN = 16
 /** Delay (ms) before measuring on focus, so the keyboard has opened + visualViewport has settled. */
 const SETTLE_MS = 140
 
@@ -66,6 +67,7 @@ function makeKeyboardAwareScrollView(
   ) {
     const innerRef = useRef<any>(null)
     const inset = useKeyboardInset()
+    const hostReserved = useKeyboardHostReserved()
 
     const setRefs = useCallback(
       (node: any) => {
@@ -100,7 +102,7 @@ function makeKeyboardAwareScrollView(
           const vv = window.visualViewport
           const viewportBottom = vv ? vv.height + vv.offsetTop : window.innerHeight
           const rect = target.getBoundingClientRect()
-          const over = rect.bottom - (viewportBottom - KEYBOARD_MARGIN)
+          const over = rect.bottom - (viewportBottom - KEYBOARD_REVEAL_MARGIN)
           if (over > 0) el.scrollTop += over
         }, SETTLE_MS) as unknown as number
       }
@@ -112,12 +114,13 @@ function makeKeyboardAwareScrollView(
     }, [])
 
     // Reserve bottom padding == keyboard overlap so the lower fields can scroll up past it (additive to the
-    // form's own bottom gutter). Suppressed when an ancestor already reserved it.
+    // form's own bottom gutter). Suppressed when a pinned footer in the same scope already reserved it.
     const mergedContentStyle = useMemo(() => {
       const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
       const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
-      return [contentContainerStyle, { paddingBottom: basePad + (reserveKeyboardPadding() ? inset : 0) }]
-    }, [contentContainerStyle, inset])
+      const reserve = reserveKeyboardPadding() && !hostReserved ? inset : 0
+      return [contentContainerStyle, { paddingBottom: basePad + reserve }]
+    }, [contentContainerStyle, hostReserved, inset])
 
     return <Base ref={setRefs} contentContainerStyle={mergedContentStyle} {...rest} />
   })

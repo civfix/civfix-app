@@ -242,4 +242,4 @@ export type { RoleChipProps, RoleChipTone } from "./RoleChip"
 
 export * from "./host"
 export { openHostDashboard } from "./hostDashboardTarget"
-export type { HostDashboardTarget } from "./hostDashboardTarget.types"
+export type { HostDashboardTarget } from "./hostDashboardTarget"

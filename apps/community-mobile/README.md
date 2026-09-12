@@ -265,6 +265,6 @@ pnpm --filter community-mobile exec expo-doctor
 pnpm --filter community-mobile exec expo export --platform ios   # JS bundle (no native compile)
 ```
 
-`.github/workflows/ci.yml` runs exactly that on every PR to `main` or `dev` (the `community-mobile`
+`.github/workflows/ci.yml` runs exactly that on every PR to `main` (the `community-mobile`
 job), plus `npx expo-doctor` from this directory. There is NO deploy workflow for mobile: nothing
 reaches a device until an EAS build (or a hand-driven archive) runs.

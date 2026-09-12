@@ -142,8 +142,8 @@ describe("the shell chrome opts in", () => {
     expect((mapControls.match(/\{\.\.\.focusRingProps\}/g) ?? []).length).toBe(3)
   })
 
-  it("ExpandedShell tags the panel-header Back + Home chips and the resize handle", () => {
+  it("ExpandedShell tags the panel-header Back chip and the resize handle", () => {
     expect(expandedShell).toContain("focusRingProps")
-    expect((expandedShell.match(/\{\.\.\.focusRingProps\}/g) ?? []).length).toBe(3)
+    expect((expandedShell.match(/\{\.\.\.focusRingProps\}/g) ?? []).length).toBe(2)
   })
 })

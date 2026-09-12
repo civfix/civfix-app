@@ -11,7 +11,7 @@ import {
 } from "react-native"
 import { ArrowLeft } from "lucide-react-native/icons"
 import { motion, wash, makeThemedStyles, useTheme, webCursorColResize, focusRingProps } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
+import { Text, Icon } from "../typography"
 import { useT } from "../i18n"
 import { useNavStore, titleForEntry, titleParamsForEntry, type DetailEntry, type View as NavView } from "../nav"
 import { AppPromoCard } from "../promo"
@@ -218,7 +218,6 @@ export function ExpandedShell({ renderBody = defaultRenderBody }: ExpandedShellP
                 <PanelHeader
                   title={title}
                   showBack={showBackAffordance({ stack: held.stack, mode: "expanded" })}
-                  showHome={held.stack.length > 1}
                   trailingAction={detailTrailingActionFor(held.active)}
                 />
               ) : null}
@@ -269,12 +268,10 @@ export function ExpandedShell({ renderBody = defaultRenderBody }: ExpandedShellP
 function PanelHeader({
   title,
   showBack,
-  showHome,
   trailingAction,
 }: {
   title: string
   showBack: boolean
-  showHome: boolean
   trailingAction: DetailTrailingAction | null
 }) {
   const styles = useStyles()
@@ -291,17 +288,6 @@ function PanelHeader({
           style={styles.back}
         >
           <Icon icon={ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
-        </Pressable>
-      ) : null}
-      {showHome ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t("a11y.home")}
-          onPress={() => useNavStore.getState().reset()}
-          {...focusRingProps}
-          style={styles.back}
-        >
-          <Icon icon={iconMap.Home} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
         </Pressable>
       ) : null}
       <Text

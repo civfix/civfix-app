@@ -226,3 +226,45 @@ export function reduceKeyboard(phase: KeyboardPhase, s: KeyboardSignal): Keyboar
 export function isRedundantClose(cmd: KeyboardCommand, inFlightTarget: number | null): boolean {
   return inFlightTarget !== null && cmd.duration > 0 && cmd.target === inFlightTarget
 }
+
+export const KEYBOARD_REVEAL_MARGIN = 16
+
+export function keyboardTopInWindow(windowHeight: number, overlap: number): number {
+  return windowHeight - (overlap > 0 ? overlap : 0)
+}
+
+export interface RevealScrollDeltaInput {
+  fieldTop: number
+  fieldHeight: number
+  keyboardTop: number
+  visibleTop: number
+  margin: number
+}
+
+export function revealScrollDelta({
+  fieldTop,
+  fieldHeight,
+  keyboardTop,
+  visibleTop,
+  margin,
+}: RevealScrollDeltaInput): number {
+  const needed = fieldTop + fieldHeight + margin - keyboardTop
+  if (needed <= 0) return 0
+  const headroom = fieldTop - visibleTop
+  const delta = needed < headroom ? needed : headroom
+  return delta > 0 ? delta : 0
+}
+
+export function revealScrollTarget(offset: number, delta: number): number {
+  const target = offset + delta
+  return target > 0 ? target : 0
+}
+
+export function scrollKeyboardReserve(
+  overlap: number,
+  margin: number,
+  hostReserved: boolean = false,
+): number {
+  if (overlap <= 0) return 0
+  return hostReserved ? margin : overlap + margin
+}

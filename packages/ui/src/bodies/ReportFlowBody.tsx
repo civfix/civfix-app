@@ -6,7 +6,7 @@ import { ipLocate, type LatLng } from "@civfix/shared/geocode"
 import { makeThemedStyles, useTheme, categoryColor, wash, useLayoutMode, focusRingProps, type LayoutMode } from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
-import { TextField, Toggle, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
+import { TextField, Toggle, KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
 import { LocationPicker, PortraitMapPickStep, useLocationPick } from "../map"
 import { PinSvg, glyphForCategory } from "../map"
 import {
@@ -19,7 +19,6 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
-import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 import {
   DETAIL_BACK_SIZE,
   DETAIL_BACK_RADIUS,
@@ -669,9 +668,7 @@ function FeedShareOutcomeRow({ outcome, share }: { outcome: FeedShareOutcome; sh
           caption={share.caption}
           footnote={t("share.fixes_hint")}
           onPress={() => {
-            const nav = useNavStore.getState()
-            nav.reset()
-            nav.push({ kind: "post-thread", id: postId })
+            useNavStore.getState().finishReportFlow({ kind: "post-thread", id: postId })
           }}
           attachment={
             share.category ? (
@@ -805,9 +802,7 @@ function SubmitState({
             label={t("submit.view_report")}
             variant="outline"
             onPress={() => {
-              const nav = useNavStore.getState()
-              nav.reset()
-              nav.push({
+              useNavStore.getState().finishReportFlow({
                 kind: "pin",
                 id: result.reportId,
                 lat: result.lat,
@@ -816,7 +811,7 @@ function SubmitState({
             }}
           />
         ) : null}
-        <PrimaryButton label={t("submit.back_to_map")} onPress={() => useNavStore.getState().reset()} />
+        <PrimaryButton label={t("submit.done")} onPress={() => useNavStore.getState().leaveReportFlow()} />
       </View>
     </View>
   )
@@ -828,7 +823,6 @@ export function ReportFlowBody() {
   const th = useTheme()
   const { t } = useT("report-wizard")
   const { ScrollView } = useScrollHost()
-  const kbReserve = useKeyboardReserve()
   const fromComposer = usePostComposerStore((s) => s.claimedCreate) === "report"
   const submit = useReportSubmit({ forComposer: fromComposer })
   const reset = useDraftReportStore((s) => s.reset)
@@ -934,7 +928,7 @@ export function ReportFlowBody() {
 
   const onBack = useCallback(() => {
     if (stepIndex <= 0) {
-      useNavStore.getState().reset()
+      useNavStore.getState().leaveReportFlow()
       return
     }
     setStep(stepOrder[stepIndex - 1] as Step)
@@ -971,9 +965,7 @@ export function ReportFlowBody() {
         })
         composer.releaseClaimedCreate("report")
         reset()
-        const nav = useNavStore.getState()
-        nav.reset()
-        nav.push({ kind: "composer" })
+        useNavStore.getState().finishReportFlow({ kind: "composer" })
         return
       }
 
@@ -1078,7 +1070,7 @@ export function ReportFlowBody() {
   }
 
   return (
-    <View style={styles.root}>
+    <KeyboardPinnedSurface style={styles.root}>
       {wizardHeaderMode(mode, showBack, atViewRoot) === "tab-root" ? (
         <View style={[styles.headerRootRow, mode === "expanded" ? styles.headerRootRowExpanded : null]}>
           <Text style={styles.headerTitleRoot} numberOfLines={1} accessibilityRole="header">
@@ -1171,7 +1163,7 @@ export function ReportFlowBody() {
       )}
 
       {showsWizardFooter(activeStep, hasMedia) ? (
-        <View style={[styles.footer, kbReserve > 0 ? { marginBottom: kbReserve } : null]}>
+        <KeyboardPinnedFooter style={styles.footer}>
           <Pressable
             onPress={onNext}
             disabled={!canAdvance}
@@ -1196,7 +1188,7 @@ export function ReportFlowBody() {
               />
             </View>
           </Pressable>
-        </View>
+        </KeyboardPinnedFooter>
       ) : null}
 
       <PortraitMapPickStep
@@ -1208,7 +1200,7 @@ export function ReportFlowBody() {
         onConfirm={onPickConfirm}
         onCancel={onPickCancel}
       />
-    </View>
+    </KeyboardPinnedSurface>
   )
 }
 

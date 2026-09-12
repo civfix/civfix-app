@@ -288,10 +288,11 @@ a local static-server preview — Cloudflare consumes these only at deploy time.
 ## Deploy
 
 `.github/workflows/deploy-web.yml` builds this app's static export and publishes it to the Cloudflare
-Pages project `civfix-web` with `wrangler pages deploy` (Direct Upload, not Pages' own git build), on
-every push to `main` (production -> https://civfix.org) or `dev` (preview branch ->
-https://civfix.dev). Only paths that feed the web build trigger it, so a mobile-only change never
-redeploys the site.
+Pages project `civfix-web` with `wrangler pages deploy` (Direct Upload, not Pages' own git build):
+a push to `main` publishes STAGING to the `staging` branch (https://civfix.dev), and a published `v*`
+release rebuilds the same commit with production values and publishes it to the Pages production branch
+(https://civfix.org). On a push, only paths that feed the web build trigger it, so a mobile-only change
+never redeploys the site; a release always deploys.
 
 The Pages config lives in this app, not at the repo root: `apps/community-web/wrangler.jsonc` supplies
 the project name and `pages_build_output_dir: "out"`, and `wrangler` picks up the sibling
@@ -368,7 +369,7 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    root URL on every route, so the per-entity Function injects the real one instead.
    `metadataBase` (and therefore every absolute image URL) is
    `NEXT_PUBLIC_SITE_URL`, inlined per Pages environment by `.github/workflows/deploy-web.yml`
-   (`main` -> `https://civfix.org`, `dev` -> `https://civfix.dev`), falling back to
+   (a `v*` release -> `https://civfix.org`, `main` -> `https://civfix.dev`), falling back to
    `DEFAULT_SITE_URL`. Regenerate the artwork with
    `pnpm --filter community-web og-image` (headless Chrome renders the favicon pin + the Baloo 2
    wordmark from `public/fonts/` into `public/og.png`, and the pin alone into the 180x180

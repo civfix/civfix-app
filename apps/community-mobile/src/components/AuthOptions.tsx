@@ -12,7 +12,7 @@ import {
 } from "@react-native-google-signin/google-signin"
 import type { OAuthProvider } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "@/theme"
-import { Text, PrimaryButton, TextField } from "@civfix/ui"
+import { KeyboardRevealGroup, Text, PrimaryButton, TextField } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import {
   signInWithApple,
@@ -190,7 +190,7 @@ export function AuthOptions({
       ) : null}
 
       {showEmail && emailMode ? (
-        <View style={styles.emailBlock}>
+        <KeyboardRevealGroup style={styles.emailBlock}>
           <TextField
             label={t("email.label")}
             placeholder={t("email.placeholder")}
@@ -209,7 +209,7 @@ export function AuthOptions({
             onPress={onEmail}
             style={styles.sendBtn}
           />
-        </View>
+        </KeyboardRevealGroup>
       ) : null}
 
       {error ? (

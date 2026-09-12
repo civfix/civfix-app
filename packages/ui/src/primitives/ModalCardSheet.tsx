@@ -6,7 +6,6 @@ import {
   Pressable,
   StyleSheet,
   Platform,
-  KeyboardAvoidingView,
   type StyleProp,
   type ViewStyle,
 } from "react-native"
@@ -14,7 +13,14 @@ import { tokens } from "@civfix/shared/tokens"
 import { makeThemedStyles, useTheme, webScrimProps, type Theme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
+import { IosKeyboardAvoidingView } from "../shell/IosKeyboardAvoidingView"
+import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
+import { PLAIN_SCROLL_HOST, ScrollHostProvider } from "../shell/ScrollHost"
 import { useKeyboardReserve } from "../shell/useKeyboardReserve"
+
+const MODAL_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
+  reserveKeyboardPadding: false,
+})
 
 export function useDialogWebKeys({
   visible,
@@ -54,8 +60,11 @@ export interface ModalCardSheetProps {
   dismissLabel: string
   backdropDismissDisabled?: boolean
   error?: string | null
+  tone?: "default" | "danger"
   actions: React.ReactNode
+  bodyLayout?: "scroll" | "fill"
   bodyContentStyle?: StyleProp<ViewStyle>
+  cardStyle?: StyleProp<ViewStyle>
   children: React.ReactNode
 }
 
@@ -69,8 +78,11 @@ export function ModalCardSheet({
   dismissLabel,
   backdropDismissDisabled = false,
   error,
+  tone = "default",
   actions,
+  bodyLayout = "scroll",
   bodyContentStyle,
+  cardStyle,
   children,
 }: ModalCardSheetProps) {
   const styles = useStyles()
@@ -89,36 +101,51 @@ export function ModalCardSheet({
           onPress={backdropDismissDisabled ? undefined : onClose}
           {...webScrimProps}
         />
-        <KeyboardAvoidingView
+        <IosKeyboardAvoidingView
           style={[styles.avoider, kbReserve > 0 ? { paddingBottom: t.space["4"] + kbReserve } : null]}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <View style={styles.card}>
+          <View style={[styles.card, cardStyle]}>
             <View style={styles.header}>
-              <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.text} />
+              {tone === "danger" ? (
+                <View style={styles.headerBadge}>
+                  <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.brand.bloom} />
+                </View>
+              ) : (
+                <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.text} />
+              )}
               <Text variant="bodyStrong" color={t.colors.text} style={styles.title}>
                 {title}
               </Text>
             </View>
 
-            <ScrollView
-              style={styles.bodyScroll}
-              contentContainerStyle={[styles.bodyContent, bodyContentStyle]}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              {children}
+            {bodyLayout === "fill" ? (
+              <View style={[styles.bodyFill, bodyContentStyle]}>
+                <ScrollHostProvider value={MODAL_SCROLL_HOST}>{children}</ScrollHostProvider>
+              </View>
+            ) : (
+              <ScrollView
+                style={styles.bodyScroll}
+                contentContainerStyle={[styles.bodyContent, bodyContentStyle]}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {children}
+              </ScrollView>
+            )}
 
-              {error ? (
-                <Text variant="caption" color={t.colors.bloom["600"]} numberOfLines={2}>
-                  {error}
-                </Text>
-              ) : null}
-            </ScrollView>
+            {error ? (
+              <Text
+                variant="caption"
+                color={tone === "danger" ? t.colors.bloom["700"] : t.colors.bloom["600"]}
+                numberOfLines={2}
+              >
+                {error}
+              </Text>
+            ) : null}
 
             <View style={styles.actions}>{actions}</View>
           </View>
-        </KeyboardAvoidingView>
+        </IosKeyboardAvoidingView>
       </View>
     </Modal>
   )
@@ -166,6 +193,10 @@ const useStyles = makeThemedStyles((t) => ({
   bodyContent: {
     gap: t.space["3"],
   },
+  bodyFill: {
+    flex: 1,
+    minHeight: 0,
+  },
   card: {
     width: "100%",
     maxWidth: 460,
@@ -182,6 +213,14 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["2"],
+  },
+  headerBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: t.radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: t.colors.bloom["50"],
   },
   title: {
     flex: 1,

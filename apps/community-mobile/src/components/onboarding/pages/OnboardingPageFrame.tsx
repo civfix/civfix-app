@@ -1,20 +1,24 @@
 import React from "react"
-import { KeyboardAvoidingView, Platform, View } from "react-native"
+import { View } from "react-native"
 import Animated, {
   interpolate,
-  useAnimatedKeyboard,
   useAnimatedStyle,
   Extrapolation,
   type SharedValue,
 } from "react-native-reanimated"
 import { makeThemedStyles, useTheme } from "@/theme"
-import { Text } from "@civfix/ui"
+import {
+  IosKeyboardAvoidingView,
+  PLAIN_SCROLL_HOST,
+  Text,
+  makeKeyboardAwareScrollHost,
+} from "@civfix/ui"
 
 const STAGE_PARALLAX = 0.35
 const COPY_PARALLAX = 0.15
 const SCALE_FROM = 0.92
-const IOS_KEYBOARD_BEHAVIOR = Platform.OS === "ios" ? "padding" : undefined
-const TRACKS_KEYBOARD_HEIGHT = Platform.OS === "android"
+
+const { ScrollView: OnboardingScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 export interface OnboardingPageProps {
   index: number
@@ -26,15 +30,7 @@ export interface OnboardingPageProps {
 
 function KeyboardAwarePage({ children }: { children: React.ReactNode }) {
   const styles = useStyles()
-  const keyboard = useAnimatedKeyboard()
-  const shrinkStyle = useAnimatedStyle(() => ({
-    marginBottom: TRACKS_KEYBOARD_HEIGHT ? keyboard.height.value : 0,
-  }))
-  return (
-    <KeyboardAvoidingView style={styles.fill} behavior={IOS_KEYBOARD_BEHAVIOR}>
-      <Animated.View style={[styles.fill, shrinkStyle]}>{children}</Animated.View>
-    </KeyboardAvoidingView>
-  )
+  return <IosKeyboardAvoidingView style={styles.fill}>{children}</IosKeyboardAvoidingView>
 }
 
 export interface OnboardingPageFrameProps extends OnboardingPageProps {
@@ -85,7 +81,7 @@ export function OnboardingPageFrame({
   })
 
   const scroll = (
-    <Animated.ScrollView
+    <OnboardingScrollView
       style={styles.scrollView}
       contentContainerStyle={styles.scroll}
       showsVerticalScrollIndicator={false}
@@ -106,7 +102,7 @@ export function OnboardingPageFrame({
         ) : null}
         {children}
       </Animated.View>
-    </Animated.ScrollView>
+    </OnboardingScrollView>
   )
 
   return (

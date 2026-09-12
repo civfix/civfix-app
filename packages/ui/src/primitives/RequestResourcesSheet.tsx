@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { TextInput } from "react-native"
+import { TextInput } from "./TextInput"
 import { makeThemedStyles, useTheme, webInputReset } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"

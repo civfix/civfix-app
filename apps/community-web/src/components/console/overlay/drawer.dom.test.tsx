@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
-import { screen } from "@testing-library/react"
+import { act, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 vi.mock("@civfix/ui/i18n", async () => {
@@ -9,6 +9,7 @@ vi.mock("@civfix/ui/i18n", async () => {
 })
 
 import { renderConsole } from "../__testing__/harness"
+import { closeConsoleDrawer, setConsoleParams, useConsoleUrlState } from "../url-state"
 import { Drawer } from "./drawer"
 
 function Harness({ onClose }: { onClose?: () => void }) {
@@ -97,5 +98,43 @@ describe("Drawer", () => {
     )
     expect(screen.queryByRole("dialog")).toBeNull()
     expect(screen.queryByRole("button", { name: "first" })).toBeNull()
+  })
+})
+
+function ParamDrawerHarness() {
+  const { params } = useConsoleUrlState()
+  return (
+    <Drawer
+      open={params.attendee !== undefined}
+      onClose={() => closeConsoleDrawer(["attendee"])}
+      title="Attendee"
+    >
+      <button type="button">detail</button>
+    </Drawer>
+  )
+}
+
+describe("a drawer addressed by a pushed URL param", () => {
+  it("closes by traversing the entry it pushed, so browser Back does not re-open it", async () => {
+    window.history.replaceState(null, "", "/manage/events/e1/attendees/")
+    renderConsole(<ParamDrawerHarness />)
+    expect(screen.queryByRole("dialog")).toBeNull()
+
+    await act(async () => {
+      setConsoleParams({ attendee: "a1" }, "push")
+    })
+    expect(screen.getByRole("dialog", { name: "Attendee" })).not.toBeNull()
+    expect(window.location.search).toBe("?attendee=a1")
+    const lengthWithDrawer = window.history.length
+
+    const user = userEvent.setup()
+    await user.click(screen.getByRole("button", { name: "action.close" }))
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    })
+
+    expect(window.location.search).toBe("")
+    expect(window.history.length).toBe(lengthWithDrawer)
+    expect(screen.queryByRole("dialog")).toBeNull()
   })
 })

@@ -1,5 +1,6 @@
 import React, { memo, useCallback, useState } from "react"
-import { View, Pressable, TextInput, StyleSheet, Platform, type ViewStyle } from "react-native"
+import { View, Pressable, StyleSheet, Platform, type ViewStyle } from "react-native"
+import { TextInput } from "../primitives/TextInput"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webInputReset, webTransition, headingLevel } from "../theme"

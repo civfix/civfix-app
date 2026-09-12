@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, KeyboardAvoidingView, Platform, AppState, useWindowDimensions } from "react-native"
+import { View, Pressable, AppState, useWindowDimensions } from "react-native"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
@@ -10,6 +10,7 @@ import {
 } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "@/theme"
 import {
+  IosKeyboardAvoidingView,
   PLAIN_SCROLL_HOST,
   PrimaryButton,
   SegmentedCodeInput,
@@ -156,7 +157,7 @@ export default function OtpScreen() {
   }, [availableAt, email, resending, t])
 
   return (
-    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <IosKeyboardAvoidingView style={styles.root}>
       <ScreenHeader />
       <OtpScrollView
         contentContainerStyle={[
@@ -269,7 +270,7 @@ export default function OtpScreen() {
           </View>
         </View>
       </OtpScrollView>
-    </KeyboardAvoidingView>
+    </IosKeyboardAvoidingView>
   )
 }
 

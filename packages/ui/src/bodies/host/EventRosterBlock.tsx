@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { View, Pressable, TextInput, StyleSheet } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
+import { TextInput } from "../../primitives/TextInput"
 import type { EventRegistrationDTO, RegistrationRosterFilter } from "@civfix/shared"
 import { DELETED_USER_LABEL } from "@civfix/shared"
 import {
@@ -12,7 +13,7 @@ import {
   webTransition,
 } from "../../theme"
 import { Text, TextLink, Icon, iconMap } from "../../typography"
-import { Avatar, fieldFocusedStyle, useToast } from "../../primitives"
+import { Avatar, FilterChip, fieldFocusedStyle, useToast } from "../../primitives"
 import { useT } from "../../i18n"
 import { useDebouncedValue } from "../../data/hooks/useDebouncedValue"
 import {
@@ -105,7 +106,7 @@ const RosterRowView = React.memo(function RosterRowView({
       </View>
       {checkedIn ? (
         <View style={styles.checkedIn}>
-          <Icon icon={iconMap.UserCheck} size={16} color={th.colors.moss["700"]} />
+          <Icon icon={iconMap.UserCheck} size={16} color={th.colors.successInk} />
           {canCheckIn && undoSeat ? (
             <TextLink
               variant="label"
@@ -198,30 +199,14 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
       />
 
       <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel={t("roster.filter_a11y")}>
-        {ROSTER_FILTERS.map((value) => {
-          const selected = value === filter
-          return (
-            <Pressable
-              key={value}
-              onPress={() => setFilter(value)}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: selected }}
-              accessibilityLabel={t(`roster.filter.${value}`)}
-              {...focusRingProps}
-              style={(state) => [
-                styles.chip,
-                webTransition,
-                webCursor(),
-                selected ? styles.chipOn : null,
-                webHover(state) && !selected ? styles.chipHovered : null,
-              ]}
-            >
-              <Text style={[styles.chipText, selected ? styles.chipTextOn : null]}>
-                {t(`roster.filter.${value}`)}
-              </Text>
-            </Pressable>
-          )
-        })}
+        {ROSTER_FILTERS.map((value) => (
+          <FilterChip
+            key={value}
+            label={t(`roster.filter.${value}`)}
+            selected={value === filter}
+            onPress={() => setFilter(value)}
+          />
+        ))}
       </View>
 
       {roster.isLoading ? (
@@ -282,27 +267,6 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: t.space["2"],
-  },
-  chip: {
-    minHeight: 32,
-    justifyContent: "center",
-    paddingHorizontal: t.space["3"],
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.bgAlt,
-  },
-  chipOn: {
-    backgroundColor: t.colors.brand.bloom,
-  },
-  chipHovered: {
-    backgroundColor: t.colors.surfaceTint,
-  },
-  chipText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textMuted,
-  },
-  chipTextOn: {
-    color: t.colors.onAccent,
   },
   state: {
     fontFamily: t.fontFamily.bodyRegular,

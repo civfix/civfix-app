@@ -2,7 +2,7 @@
  * Unit test for the ExpandedShell body-transition derivation (issue #60): the `transitionKey` + the
  * push/pop/replace `direction` the shell feeds into <BodyTransition>.
  *
- * Like expandedHomeButton.test.ts, these are PURE predicates over the live nav store - no React Native
+ * Like backAffordance.test.ts, these are PURE predicates over the live nav store - no React Native
  * renderer (the package has no react-test-renderer / testing-library). The derivation in
  * ExpandedShell.tsx is:
  *   transitionKey = active ? `${kind}:${id ?? ""}` : isHome ? "home" : `view:${view}`

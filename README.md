@@ -81,13 +81,21 @@ backend, Postgres/Redis, the media worker and the seeded data for end-to-end run
 
 ## Branches and deploys
 
-`main` is production, `dev` is staging — the same convention as the other civfix repos. PRs to either
-branch run `.github/workflows/ci.yml` (three jobs: packages, web, mobile).
+**`main` is staging. Production is a `v*` release.** There is no `dev` branch — every feature branch PRs
+into `main`, and a merge is assumed to be production-ready, but it lands on staging first and is promoted
+to production only when a release is cut (issue
+[civfix/issue-tracker#108](https://github.com/civfix/issue-tracker/issues/108)). PRs into `main` run
+`.github/workflows/ci.yml` (three jobs: packages, web, mobile).
 
-| Push | What happens |
+| Event | What happens |
 | --- | --- |
-| `main` | `deploy-web.yml` builds the web static export and publishes it to the Cloudflare Pages project `civfix-web` (production -> https://civfix.org). `publish-shared.yml` publishes `@civfix/shared` if its version is ahead of the registry. |
-| `dev` | `deploy-web.yml` publishes the same build to the Pages preview branch (https://civfix.dev). |
+| push to `main` | `deploy-web.yml` builds the web static export against `api.civfix.dev` with the Stripe TEST key and publishes it to the `staging` branch of the Cloudflare Pages project `civfix-web` (https://civfix.dev). `publish-shared.yml` publishes `@civfix/shared` if its version is ahead of the registry. |
+| published `v*` release | `deploy-web.yml` rebuilds **the same commit** against `api.civfix.org` with the LIVE Stripe key and Turnstile on, and publishes it to the Pages production branch (https://civfix.org). |
+
+A static export inlines every `NEXT_PUBLIC_*` at build time, so production is a rebuild of the release
+commit rather than a byte-copy of the staging artifact — unlike the backend, whose Docker images really
+are promoted as-is. The workflow resolves those values once and then asserts they match the target, so a
+build cannot ship a test key to civfix.org or a live key to the public preview.
 
 The mobile app has **no** deploy CI: it ships only via a manual EAS build from
 `apps/community-mobile` (see that app's README; `.github/workflows/eas-build.yml.example` is an

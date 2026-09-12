@@ -36,7 +36,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  TextInput,
   View,
   type LayoutChangeEvent,
   type NativeSyntheticEvent,
@@ -44,6 +43,7 @@ import {
   type TextStyle,
   type View as NativeView,
 } from "react-native"
+import { TextInput } from "../../primitives/TextInput"
 import { useQueryClient } from "@tanstack/react-query"
 import type { CleanupDTO, LinkedEventRef, PostDTO, ReportDTO, UserMentionDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"

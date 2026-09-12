@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from "react"
-import { View, TextInput, Pressable, Platform, type TextStyle } from "react-native"
+import { View, Pressable, Platform, type TextStyle } from "react-native"
+import { TextInput } from "../primitives/TextInput"
 import {
   MAX_EVENT_SLOTS,
   MAX_SLOT_CAPACITY,

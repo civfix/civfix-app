@@ -2,6 +2,13 @@ import { create } from "zustand"
 import type { DetailEntry, DetailKind, NavState, Snap, View } from "./types"
 import { entryIdentity, parentViewForEntry, seedFor } from "./routes"
 import { isFlowKind } from "./flowKinds"
+import { stackTransition, type NavTransition } from "./navTransition"
+import {
+  persistableCount,
+  persistableStack,
+  type NavReturn,
+  type NavSnapshot,
+} from "./navSnapshot"
 
 type NavMode = "compact" | "expanded"
 
@@ -13,6 +20,9 @@ export interface NavStore extends NavState {
 
   originView: View | null
   seededDetailPage: boolean
+  reportReturn: NavReturn | null
+  navSeq: number
+  lastTransition: NavTransition | null
 
   selectView: (view: View) => void
   push: (entry: DetailEntry) => void
@@ -26,6 +36,10 @@ export interface NavStore extends NavState {
   setStack: (stack: DetailEntry[]) => void
   seed: (entry: DetailEntry | null, mode: NavMode) => void
   navigateTo: (entry: DetailEntry | null, mode: NavMode) => void
+  restore: (snapshot: NavSnapshot) => void
+  leaveReportFlow: () => void
+  finishReportFlow: (next: DetailEntry) => void
+  unwindTo: (entry: DetailEntry) => boolean
 }
 
 function openIfPeeked(snap: Snap): Snap {
@@ -61,6 +75,74 @@ function snapForView(view: View, current: Snap): Snap {
   return openIfPeeked(current)
 }
 
+function reportRunSurvives(view: View): boolean {
+  return view === "report" || view === "search"
+}
+
+const TRANSIENT_OVERLAY_VIEWS: ReadonlySet<View> = new Set<View>(["search"])
+
+function selectTransition(leaving: View): NavTransition {
+  return TRANSIENT_OVERLAY_VIEWS.has(leaving)
+    ? { type: "select", consumes: true }
+    : { type: "select" }
+}
+
+const COLD_REPORT_RETURN: NavReturn = {
+  view: "home",
+  stack: [],
+  originView: null,
+  query: "",
+  token: 0,
+}
+
+function advance(
+  s: { navSeq: number },
+  patch: Partial<NavStore>,
+  transition: NavTransition,
+): Partial<NavStore> {
+  return { ...patch, navSeq: s.navSeq + 1, lastTransition: transition }
+}
+
+function captureReportReturn(s: NavStore): NavReturn {
+  return {
+    view: s.view,
+    stack: persistableStack(s.stack),
+    originView: s.stack.length === 0 ? null : s.originView,
+    query: s.query,
+    token: s.navSeq + 1,
+  }
+}
+
+function reportReturnForView(s: NavStore, view: View): NavReturn | null {
+  if (!reportRunSurvives(view)) return null
+  if (reportRunSurvives(s.view)) return s.reportReturn
+  return view === "report" ? captureReportReturn(s) : null
+}
+
+function stateForReportReturn(s: NavStore, appended: DetailEntry | null): Partial<NavStore> {
+  const target = s.reportReturn ?? COLD_REPORT_RETURN
+  const stack = appended ? [...target.stack, appended] : target.stack
+  const active = stack[stack.length - 1] ?? null
+  const viewSnap = snapForView(target.view, s.snap)
+  return {
+    view: target.view,
+    stack,
+    active,
+    originView: appended
+      ? target.stack.length === 0
+        ? target.view
+        : target.originView
+      : stack.length === 0
+        ? null
+        : target.originView,
+    query: target.query,
+    snap: active ? openIfPeeked(viewSnap) : viewSnap,
+    snapAnimated: true,
+    seededDetailPage: false,
+    reportReturn: null,
+  }
+}
+
 export const useNavStore = create<NavStore>((set, get) => ({
   view: "map",
   stack: [],
@@ -71,6 +153,9 @@ export const useNavStore = create<NavStore>((set, get) => ({
   mode: "compact",
   originView: null,
   seededDetailPage: false,
+  reportReturn: null,
+  navSeq: 0,
+  lastTransition: null,
 
   setMode: (mode) => set({ mode }),
 
@@ -78,24 +163,34 @@ export const useNavStore = create<NavStore>((set, get) => ({
     set((s) => {
       if (view === s.view && s.stack.length === 0) {
         if (view === "map") return s
-        return {
-          view: "home",
+        return advance(
+          s,
+          {
+            view: "home",
+            query: "",
+            originView: null,
+            seededDetailPage: false,
+            snapAnimated: true,
+            reportReturn: null,
+          },
+          selectTransition(s.view),
+        )
+      }
+      return advance(
+        s,
+        {
+          view,
+          stack: s.stack.length === 0 ? s.stack : [],
+          active: null,
           query: "",
           originView: null,
           seededDetailPage: false,
+          snap: snapForView(view, s.snap),
           snapAnimated: true,
-        }
-      }
-      return {
-        view,
-        stack: s.stack.length === 0 ? s.stack : [],
-        active: null,
-        query: "",
-        originView: null,
-        seededDetailPage: false,
-        snap: snapForView(view, s.snap),
-        snapAnimated: true,
-      }
+          reportReturn: reportReturnForView(s, view),
+        },
+        selectTransition(s.view),
+      )
     }),
 
   push: (entry) => {
@@ -105,14 +200,18 @@ export const useNavStore = create<NavStore>((set, get) => ({
     }
     set((s) => {
       const stack = [...s.stack, entry]
-      return {
-        stack,
-        active: entry,
-        snap: openIfPeeked(s.snap),
-        snapAnimated: true,
-        originView: s.stack.length === 0 ? s.view : s.originView,
-        seededDetailPage: false,
-      }
+      return advance(
+        s,
+        {
+          stack,
+          active: entry,
+          snap: openIfPeeked(s.snap),
+          snapAnimated: true,
+          originView: s.stack.length === 0 ? s.view : s.originView,
+          seededDetailPage: false,
+        },
+        { type: "push" },
+      )
     })
   },
 
@@ -121,14 +220,20 @@ export const useNavStore = create<NavStore>((set, get) => ({
       get().selectView(entry.view)
       return
     }
-    set((s) => ({
-      stack: [entry],
-      active: entry,
-      snap: openIfPeeked(s.snap),
-      snapAnimated: true,
-      originView: s.stack.length === 0 ? s.view : s.originView,
-      seededDetailPage: false,
-    }))
+    set((s) =>
+      advance(
+        s,
+        {
+          stack: [entry],
+          active: entry,
+          snap: openIfPeeked(s.snap),
+          snapAnimated: true,
+          originView: s.stack.length === 0 ? s.view : s.originView,
+          seededDetailPage: false,
+        },
+        s.stack.length === 0 ? { type: "push" } : { type: "replace" },
+      ),
+    )
   },
 
   back: () =>
@@ -136,12 +241,16 @@ export const useNavStore = create<NavStore>((set, get) => ({
       if (s.stack.length === 0)
         return { stack: [], active: null, originView: null, seededDetailPage: false }
       const stack = s.stack.slice(0, -1)
-      return {
-        stack,
-        active: stack[stack.length - 1] ?? null,
-        originView: stack.length === 0 ? null : s.originView,
-        seededDetailPage: stack.length === 0 ? false : s.seededDetailPage,
-      }
+      return advance(
+        s,
+        {
+          stack,
+          active: stack[stack.length - 1] ?? null,
+          originView: stack.length === 0 ? null : s.originView,
+          seededDetailPage: stack.length === 0 ? false : s.seededDetailPage,
+        },
+        { type: "pop", count: persistableCount(s.stack.slice(-1)) },
+      )
     }),
 
   collapseToParent: () =>
@@ -149,68 +258,99 @@ export const useNavStore = create<NavStore>((set, get) => ({
       if (!s.active) return {}
       if (s.stack.some((entry) => isFlowKind(entry.kind))) return {}
       const parent = s.originView ?? parentViewForEntry(s.active)
+      const count = persistableCount(s.stack)
       return parent
-        ? {
-            view: parent,
-            stack: [],
-            active: null,
-            query: parent === s.view ? s.query : "",
-            originView: null,
-            seededDetailPage: false,
-          }
-        : { stack: [], active: null, originView: null, seededDetailPage: false }
+        ? advance(
+            s,
+            {
+              view: parent,
+              stack: [],
+              active: null,
+              query: parent === s.view ? s.query : "",
+              originView: null,
+              seededDetailPage: false,
+              reportReturn: reportRunSurvives(parent) ? s.reportReturn : null,
+            },
+            { type: "pop", count },
+          )
+        : advance(
+            s,
+            { stack: [], active: null, originView: null, seededDetailPage: false },
+            { type: "pop", count },
+          )
     }),
 
   reset: () =>
-    set({
-      stack: [],
-      active: null,
-      view: "home",
-      snap: 2,
-      snapAnimated: true,
-      query: "",
-      originView: null,
-      seededDetailPage: false,
-    }),
+    set((s) =>
+      advance(
+        s,
+        {
+          stack: [],
+          active: null,
+          view: "home",
+          snap: 2,
+          snapAnimated: true,
+          query: "",
+          originView: null,
+          seededDetailPage: false,
+          reportReturn: null,
+        },
+        { type: "reset" },
+      ),
+    ),
 
   setSnap: (snap, animated = true) => set({ snap, snapAnimated: animated }),
 
   setQuery: (query) => set({ query }),
 
   setStack: (stack) =>
-    set((s) => ({
-      stack,
-      active: stack[stack.length - 1] ?? null,
-      originView: stack.length === 0 ? null : s.originView,
-      seededDetailPage: false,
-    })),
+    set((s) => {
+      const patch: Partial<NavStore> = {
+        stack,
+        active: stack[stack.length - 1] ?? null,
+        originView: stack.length === 0 ? null : s.originView,
+        seededDetailPage: false,
+      }
+      const transition = stackTransition(s.stack, stack)
+      return transition ? advance(s, patch, transition) : patch
+    }),
 
   seed: (entry, mode) =>
     set((s) => {
       if (!entry)
-        return {
-          stack: [],
-          active: null,
-          view: "home",
-          snap: snapForView("home", s.snap),
-          snapAnimated: true,
-          originView: null,
-          seededDetailPage: false,
-        }
+        return advance(
+          s,
+          {
+            stack: [],
+            active: null,
+            view: "home",
+            snap: snapForView("home", s.snap),
+            snapAnimated: true,
+            originView: null,
+            seededDetailPage: false,
+            reportReturn: null,
+          },
+          { type: "seed" },
+        )
       const partial = seedFor(entry, mode, s.view)
       const stack = partial.stack ?? s.stack
       const active = stack[stack.length - 1] ?? null
       const view = partial.view ?? s.view
       const viewSnap = snapForView(view, s.snap)
-      return {
-        ...partial,
-        stack,
-        active,
-        snap: partial.snap ?? (active ? openIfPeeked(viewSnap) : viewSnap),
-        snapAnimated: true,
-        originView: null,
-        seededDetailPage: seedsDetailPage(active),
-      }
+      return advance(
+        s,
+        {
+          ...partial,
+          stack,
+          active,
+          snap: partial.snap ?? (active ? openIfPeeked(viewSnap) : viewSnap),
+          snapAnimated: true,
+          originView: null,
+          seededDetailPage: seedsDetailPage(active),
+          reportReturn: reportRunSurvives(view) ? s.reportReturn : null,
+        },
+        { type: "seed" },
+      )
     }),
 
   navigateTo: (entry, mode) => {
@@ -228,12 +368,77 @@ export const useNavStore = create<NavStore>((set, get) => ({
       if (snap !== s.snap) set({ snap, snapAnimated: true })
       return
     }
-    set({
-      stack: [...s.stack.slice(0, index), merged],
-      active: merged,
-      snap: openIfPeeked(s.snap),
-      snapAnimated: true,
-      seededDetailPage: index === s.stack.length - 1 && s.seededDetailPage,
-    })
+    const stack = [...s.stack.slice(0, index), merged]
+    set(
+      advance(
+        s,
+        {
+          stack,
+          active: merged,
+          snap: openIfPeeked(s.snap),
+          snapAnimated: true,
+          seededDetailPage: index === s.stack.length - 1 && s.seededDetailPage,
+        },
+        index === s.stack.length - 1
+          ? { type: "replace" }
+          : { type: "pop", count: persistableCount(s.stack.slice(index + 1)) },
+      ),
+    )
+  },
+
+  restore: (snapshot) =>
+    set((s) => {
+      const stack = persistableStack(snapshot.stack)
+      const active = stack[stack.length - 1] ?? null
+      const viewSnap = snapForView(snapshot.view, s.snap)
+      return advance(
+        s,
+        {
+          view: snapshot.view,
+          stack,
+          active,
+          originView: stack.length === 0 ? null : snapshot.originView,
+          query: snapshot.query,
+          seededDetailPage: snapshot.seededDetailPage,
+          reportReturn: snapshot.reportReturn,
+          snap: active ? openIfPeeked(viewSnap) : viewSnap,
+          snapAnimated: false,
+        },
+        { type: "restore" },
+      )
+    }),
+
+  leaveReportFlow: () =>
+    set((s) =>
+      advance(s, stateForReportReturn(s, null), { type: "pop", count: 1, unwind: "report" }),
+    ),
+
+  finishReportFlow: (next) =>
+    set((s) =>
+      advance(s, stateForReportReturn(s, next), { type: "pop", count: 1, unwind: "report" }),
+    ),
+
+  unwindTo: (entry) => {
+    const identity = entryIdentity(entry)
+    if (!identity) return false
+    const s = get()
+    const index = lastIndexOfIdentity(s.stack, identity)
+    if (index === -1) return false
+    if (index === s.stack.length - 1) return true
+    const stack = s.stack.slice(0, index + 1)
+    set(
+      advance(
+        s,
+        {
+          stack,
+          active: stack[stack.length - 1] ?? null,
+          snap: openIfPeeked(s.snap),
+          snapAnimated: true,
+          seededDetailPage: false,
+        },
+        { type: "pop", count: persistableCount(s.stack.slice(index + 1)) },
+      ),
+    )
+    return true
   },
 }))

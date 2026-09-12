@@ -1,37 +1,144 @@
 {
   "state": {
-    "loading": "Veranstaltung wird geladen…",
-    "error_title": "Der Host-Modus ist nicht verfügbar",
-    "error_body": "Wir konnten diese Veranstaltung nicht laden. Prüfe deine Verbindung und versuche es erneut.",
-    "denied_title": "Hier kein Host",
-    "denied_body": "Nur Hosts und das Team der Veranstaltung können den Host-Modus öffnen."
+    "error_title": "Der Gastgeber-Modus ist nicht verfügbar",
+    "error_body": "Wir konnten diese Veranstaltung nicht laden. Prüfe deine Verbindung und versuch es erneut.",
+    "denied_title": "Du bist hier kein Gastgeber",
+    "denied_body": "Nur Gastgeber und Helfende der Veranstaltung können den Gastgeber-Modus öffnen.",
+    "insights_error_title": "Zahlen nicht verfügbar",
+    "insights_error_body": "Wir konnten die Zahlen dieser Veranstaltung nicht laden. Alles andere funktioniert weiter.",
+    "cancel_error": "Diese Veranstaltung konnte nicht abgesagt werden.",
+    "complete_error": "Diese Veranstaltung konnte nicht als abgeschlossen markiert werden.",
+    "resources_error": "Die Anfrage konnte nicht gesendet werden."
   },
-  "action": {
+  "phase": {
+    "upcoming": "Bevorstehend",
+    "live": "Läuft gerade",
+    "ended": "Beendet",
+    "cancelled": "Abgesagt",
+    "starts": "Beginnt in {{when}}",
+    "started": "Vor {{when}} begonnen",
+    "ended_on": "Vor {{when}} beendet",
+    "called_off": "Findet nicht mehr statt"
+  },
+  "cta": {
+    "share": "Veranstaltung teilen",
+    "message": "Teilnehmende anschreiben",
+    "check_in": "Einchecken",
     "scan": "Tickets scannen",
-    "scan_a11y": "Den Ticket-Scanner öffnen",
-    "checkin": "Check-in",
-    "checkin_a11y": "Den Check-in-Bildschirm öffnen",
-    "quick_message": "Kurznachricht",
-    "quick_message_a11y": "Eine Kurznachricht an die Teilnehmenden senden",
-    "walkup": "Vor Ort anmelden",
-    "walkup_a11y": "Jemanden an der Tür anmelden",
+    "complete": "Als abgeschlossen markieren",
+    "log_hours": "Ehrenamtsstunden eintragen",
+    "duplicate": "Veranstaltung duplizieren",
+    "edit": "Veranstaltung bearbeiten"
+  },
+  "hero": {
+    "registered": "Angemeldet",
+    "checked_in": "Eingecheckt",
+    "attended": "Teilgenommen",
+    "of_capacity": "von {{limit}} Plätzen",
+    "of_registered": "von {{limit}} Angemeldeten",
+    "no_cap": "Plätze, ohne Limit",
+    "as_of": "Stand {{when}}",
+    "rate": "{{rate}} sind gekommen",
+    "stale": "Gerade nicht aktualisierbar. Das sind die letzten Zahlen, die wir haben."
+  },
+  "tiles": {
+    "waitlist": "Warteliste",
+    "cancelled": "Abgemeldet",
+    "spots_left": "Freie Plätze",
+    "messages": "Gesendete Nachrichten",
+    "expected": "Noch erwartet",
+    "walkups": "Spontan",
+    "no_shows": "Nicht erschienen",
+    "not_marked": "Nicht markiert",
+    "hours": "Gutgeschriebene Stunden",
+    "hours_value": "{{hours}} Std.",
+    "hours_hint": "{{credited}} von {{attended}} Teilnehmenden gutgeschrieben",
+    "donations": "Spenden",
+    "returning": "Wiederkehrend",
+    "returning_hint": "von {{total}} Angemeldeten waren schon einmal dabei"
+  },
+  "signups": {
+    "title": "Anmeldungen",
+    "end_label": "{{seats}} Plätze bisher",
+    "a11y": "Angemeldete Plätze der letzten {{days}} Tage, {{seats}} heute"
+  },
+  "by_type": {
+    "title": "Nach Ticketart",
+    "of": "{{registered}} von {{capacity}}",
+    "waiting_one": "{{count}} wartet",
+    "waiting_other": "{{count}} warten"
+  },
+  "arrivals": {
+    "title": "Ankünfte",
+    "caption": "15-Minuten-Blöcke, bezogen auf den Beginn.",
+    "label": "{{seats}} um {{offset}}",
+    "a11y": "Ankünfte in {{buckets}} Fünfzehn-Minuten-Blöcken rund um den Beginn"
+  },
+  "messages": {
+    "title": "Nachrichten",
+    "row": "{{sent}} gesendet · {{failed}} fehlgeschlagen · {{suppressed}} übersprungen",
+    "pending": "Noch nicht gesendet"
+  },
+  "money": {
+    "net": "Für diese Veranstaltung gesammelt",
+    "donations": "Spenden",
+    "gross": "{{amount}} vor Gebühren"
+  },
+  "section": {
+    "grow": "Bekannt machen",
+    "communicate": "Kommunizieren",
+    "operate": "Vor Ort",
+    "configure": "Einrichten",
+    "money": "Geld",
+    "danger": "Gefahrenzone",
+    "attendees": "Teilnehmende"
+  },
+  "row": {
+    "share": "Link teilen",
+    "invite_team": "Teammitglied einladen",
+    "message": "Teilnehmende anschreiben",
+    "message_sub": "Push und in der App",
+    "email": "Teilnehmende per E-Mail erreichen",
+    "email_sub": "Versand durch civfix. Adressen bleiben privat.",
+    "check_in": "Einchecken",
+    "check_in_sub_one": "{{count}} noch einzuchecken",
+    "check_in_sub_other": "{{count}} noch einzuchecken",
+    "scan": "Tickets scannen",
+    "walkup": "Spontan anmelden",
+    "mark_no_shows": "Nicht Erschienene markieren",
+    "mark_no_shows_sub_one": "{{count}} Platz blieb unmarkiert",
+    "mark_no_shows_sub_other": "{{count}} Plätze blieben unmarkiert",
+    "edit": "Veranstaltung bearbeiten",
     "team": "Team",
-    "team_a11y": "Das Event-Team verwalten"
+    "tickets": "Tickets",
+    "resources": "Stadt um Unterstützung bitten",
+    "resources_no_city": "Diesem Ort ist noch keine Kommune zugeordnet.",
+    "duplicate": "Veranstaltung duplizieren",
+    "cancel": "Veranstaltung absagen"
   },
-  "roster": {
-    "heading": "Teilnehmende"
+  "no_shows": {
+    "title": "Den Rest als nicht erschienen markieren?",
+    "body_one": "{{count}} nie eingecheckter Platz wird als nicht erschienen markiert.",
+    "body_other": "{{count}} nie eingecheckte Plätze werden als nicht erschienen markiert.",
+    "confirm": "Als nicht erschienen markieren",
+    "cancel": "So lassen",
+    "dismiss_a11y": "Bestätigung für nicht Erschienene schließen",
+    "success_one": "{{count}} Platz als nicht erschienen markiert.",
+    "success_other": "{{count}} Plätze als nicht erschienen markiert.",
+    "error": "Diese Plätze konnten nicht markiert werden."
   },
+  "cancelled_notice": "Diese Veranstaltung wurde abgesagt.",
   "walkup": {
-    "title": "Anmeldung an der Tür",
-    "caption": "Melde jemanden an der Tür an. Die Person wird sofort eingecheckt.",
-    "dismiss_a11y": "Anmeldung an der Tür schließen",
+    "title": "Spontane Anmeldung",
+    "caption": "Melde jemanden an der Tür an. Der Check-in passiert sofort.",
+    "dismiss_a11y": "Spontane Anmeldung schließen",
     "name_label": "Name",
     "name_placeholder": "Name der Person",
     "type_label": "Ticketart",
     "cancel": "Abbrechen",
     "submit": "Hinzufügen und einchecken",
     "success": "{{name}} ist eingecheckt.",
-    "error": "Diese Anmeldung konnte nicht hinzugefügt werden.",
-    "error_forbidden": "Dazu hast du keine Berechtigung."
+    "error": "Diese spontane Anmeldung konnte nicht hinzugefügt werden.",
+    "error_forbidden": "Du hast keine Berechtigung, spontane Anmeldungen hinzuzufügen."
   }
 }

@@ -8,11 +8,12 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  TextInput,
   useWindowDimensions,
   View,
+  type TextInput as RNTextInput,
   type ViewStyle,
 } from "react-native"
+import { TextInput } from "../primitives/TextInput"
 import type { CleanupDTO, PostDTO, UserMentionDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import {
@@ -202,7 +203,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
   )
   const [carriedMedia, setCarriedMedia] = useState<PostComposerMedia[]>(() => carriedSnapshot.carried)
   const [droppedMedia, setDroppedMedia] = useState(() => carriedSnapshot.dropped)
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<RNTextInput>(null)
   const submittingRef = useRef(false)
   const expanded = useLayoutMode() === "expanded"
   const [bodyFocused, setBodyFocused] = useState(false)

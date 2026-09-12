@@ -35,6 +35,7 @@ import {
 import { useUserPosts } from "../data/hooks/posts"
 import { useNavStore } from "../nav"
 import { useT, useRelativeTime, useLocale } from "../i18n"
+import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider, useScrollHost } from "../shell/ScrollHost"
 import {
   DETAIL_BACK_SIZE,
@@ -112,6 +113,8 @@ function PersonScroll({ children }: { children: React.ReactNode }) {
   )
 }
 
+const PERSON_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
+
 export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => void }) {
   const styles = useStyles()
   const th = useTheme()
@@ -119,10 +122,8 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
   const { t: tNav } = useT("nav")
   const back = onBack ?? useNavStore.getState().back
   const layoutMode = useLayoutMode()
-  const stackDepth = useNavStore((state) => state.stack.length)
-  const showHome = layoutMode === "expanded" && stackDepth > 1
   const inheritedScrollHost = useScrollHost()
-  const scrollHost = layoutMode === "compact" ? PLAIN_SCROLL_HOST : inheritedScrollHost
+  const scrollHost = layoutMode === "compact" ? PERSON_SCROLL_HOST : inheritedScrollHost
   const { start } = useStartDm()
   const query = useProfile(id)
   const profile = query.data?.profile
@@ -265,18 +266,6 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
       >
         <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
       </Pressable>
-      {showHome ? (
-        <Pressable
-          onPress={() => useNavStore.getState().reset()}
-          accessibilityRole="button"
-          accessibilityLabel={tNav("a11y.home")}
-          hitSlop={6}
-          {...focusRingProps}
-          style={styles.headerChip}
-        >
-          <Icon icon={iconMap.Home} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
-        </Pressable>
-      ) : null}
       <Text style={styles.headerPanelTitle} numberOfLines={1} accessibilityRole="header">
         {profile?.name ?? tNav("title.person")}
       </Text>
@@ -293,22 +282,7 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
       >
         <Icon icon={iconMap.ArrowLeft} size={21} color={th.colors.text} />
       </Pressable>
-      {showHome ? (
-        <Pressable
-          onPress={() => useNavStore.getState().reset()}
-          accessibilityRole="button"
-          accessibilityLabel={tNav("a11y.home")}
-          hitSlop={6}
-          {...focusRingProps}
-          style={styles.headerHomeButton}
-        >
-          <Icon icon={iconMap.Home} size={21} color={th.colors.text} />
-        </Pressable>
-      ) : null}
-      <View
-        pointerEvents="none"
-        style={[styles.headerTitleWrap, showHome ? styles.headerTitleWrapWide : null]}
-      >
+      <View pointerEvents="none" style={styles.headerTitleWrap}>
         <Text variant="heading" numberOfLines={1}>
           {profile?.name ?? tNav("title.person")}
         </Text>
@@ -694,12 +668,6 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "center",
     marginLeft: -t.space["3"],
   },
-  headerHomeButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   headerPanel: {
     minHeight: 0,
     gap: 10,
@@ -726,9 +694,6 @@ const useStyles = makeThemedStyles((t) => ({
     right: 0,
     alignItems: "center",
     paddingHorizontal: 52,
-  },
-  headerTitleWrapWide: {
-    paddingHorizontal: 96,
   },
   headerSpacer: { width: 44 },
   scroll: {

@@ -1,5 +1,4 @@
 import { readFileSync, readdirSync } from "node:fs"
-import { basename, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { beforeEach, describe, expect, it } from "vitest"
 import { MOTION } from "../../theme/motion"
@@ -33,12 +32,12 @@ import {
   SHEET_REF_FULL,
   seedPreviousView,
   selectedPillRect,
-  tabDividerRect,
   tabIconMorph,
   tabPillTransition,
   travelFactor,
   windowProgress,
   TAB_PILL_INSET_X,
+  TAB_PILL_LOCK_COUNT,
   TAB_ICON_CENTER_Y,
   TAB_ICON_SIZE,
   TAB_ICON_STROKE_WIDTH,
@@ -635,7 +634,7 @@ describe("dock + sheet animation cost", () => {
     expect(portrait).toMatch(/Platform\.OS !== "web" && useNavStore\.getState\(\)\.view === "search"/)
     const kbNative = readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
     expect(kbNative).toMatch(/\|\| !ownsFocusedInput\(\)\) return/)
-    expect(kbNative).toMatch(/pageActiveRef\.current && reserveKeyboardPadding\(\) \? overlapOf\(e\) : 0/)
+    expect(kbNative).toMatch(/reserves: pageActiveRef\.current && reserveKeyboardPadding\(\),/)
     const thread = readFileSync(new URL("../../bodies/PostThreadBody.tsx", import.meta.url), "utf8")
     expect(thread).not.toMatch(/^import[^\n]*useKeyboardInset/m)
     expect(thread).not.toMatch(/useKeyboardInset\s*\(/)
@@ -694,13 +693,15 @@ describe("the keyboard-aware scroll seam measures the keyboard instead of trusti
 
   it("reserves on EVERY platform, through the pure model", () => {
     const text = seam()
-    expect(text).toMatch(/import \{ keyboardViewportOverlap \} from "\.\/keyboardInsetModel"/)
+    expect(text).toMatch(/\n {2}keyboardViewportOverlap,\n[\s\S]*?\} from "\.\/keyboardInsetModel"/)
     expect(text).not.toMatch(/Platform\.OS === "ios"\s*\n?\s*\? \(e\.endCoordinates/)
-    expect(text).toMatch(/setBottomReserve\(pageActiveRef\.current && reserveKeyboardPadding\(\) \? overlapOf\(e\) : 0\)/)
+    expect(text).toMatch(/reserves: pageActiveRef\.current && reserveKeyboardPadding\(\),/)
   })
 
   it("derives the keyboard top from the measured overlap", () => {
-    expect(seam()).toMatch(/const top = Dimensions\.get\("window"\)\.height - overlapOf\(e\)/)
+    expect(seam()).toMatch(
+      /const keyboardTop = keyboardTopInWindow\(Dimensions\.get\("window"\)\.height, state\.overlap\)/,
+    )
   })
 })
 
@@ -798,11 +799,11 @@ describe("the pinned wizard footers reserve for the Android keyboard nothing els
     ["../../bodies/NewChannelBody.tsx", 3],
   ])("%s lifts every pinned footer", (rel, footers) => {
     const text = read(rel)
-    expect(text).toMatch(/import \{ useKeyboardReserve \} from "\.\.\/shell\/useKeyboardReserve"/)
-    expect(text).toMatch(/const kbReserve = useKeyboardReserve\(\)/)
-    expect(
-      text.match(/<View style=\{\[styles\.footer, kbReserve > 0 \? \{ marginBottom: kbReserve \} : null\]\}>/g),
-    ).toHaveLength(footers)
+    expect(text).toMatch(
+      /import \{ KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton \} from "\.\.\/primitives"/,
+    )
+    expect(text).not.toMatch(/useKeyboardReserve/)
+    expect(text.match(/<KeyboardPinnedFooter style=\{styles\.footer\}>/g)).toHaveLength(footers)
     expect(text).not.toMatch(/<View style=\{styles\.footer\}>/)
   })
 
@@ -811,46 +812,6 @@ describe("the pinned wizard footers reserve for the Android keyboard nothing els
     expect(layout).toMatch(/"new-group": "full"/)
     expect(layout).toMatch(/"new-channel": "full"/)
     expect(layout).toMatch(/surfaceKeyboardAvoidance: active\?\.kind === "composer"/)
-  })
-})
-
-describe("ONE Android owner per surface: the reserve, never a live KeyboardAvoidingView beside it", () => {
-  const PRUNED = new Set(["node_modules", "__tests__", "ios", "android", ".expo", "dist", "dist-types", "out", ".next"])
-  const ROOTS = [
-    fileURLToPath(new URL("../../", import.meta.url)),
-    fileURLToPath(new URL("../../../../../apps/community-mobile/", import.meta.url)),
-  ]
-  const NEUTRAL_BEHAVIOR = '{Platform.OS === "ios" ? "padding" : undefined}'
-
-  const walk = (dir: string): string[] =>
-    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-      if (PRUNED.has(entry.name)) return []
-      const full = join(dir, entry.name)
-      if (entry.isDirectory()) return walk(full)
-      return entry.isFile() && /\.tsx?$/.test(entry.name) ? [full] : []
-    })
-
-  const consumers = () =>
-    ROOTS.flatMap(walk).filter((file) => /const \w+ = useKeyboardReserve\(/.test(readFileSync(file, "utf8")))
-
-  it("sees every surface that reads the reserve", () => {
-    expect(consumers().map((file) => basename(file)).sort()).toEqual([
-      "ConversationBody.tsx",
-      "DeleteAccountModal.tsx",
-      "FirstRunGate.tsx",
-      "ModalCardSheet.tsx",
-      "NewChannelBody.tsx",
-      "NewGroupBody.tsx",
-      "ReportFlowBody.tsx",
-    ])
-  })
-
-  it("gives none of them a KeyboardAvoidingView that is live on Android", () => {
-    for (const file of consumers()) {
-      for (const [, behavior] of readFileSync(file, "utf8").matchAll(/behavior=(\{[^}]*\}|"[^"]*")/g)) {
-        expect([basename(file), behavior]).toEqual([basename(file), NEUTRAL_BEHAVIOR])
-      }
-    }
   })
 })
 
@@ -873,30 +834,24 @@ describe("hostReserved is a WEB-only option the native seam never forwards", () 
   })
 })
 
-describe("tab divider is a soft rule, not an icon-weight bar", () => {
-  const dividerBlocks = ["TabBar.shared.tsx", "TabBar.native.tsx", "Rail.tsx"].map((file) => {
-    const src = readFileSync(new URL(`../${file}`, import.meta.url), "utf8")
-    const start = src.indexOf("  divider: {")
-    if (start < 0) throw new Error(`no divider style block in ${file}`)
-    const end = src.indexOf("\n  },", start)
-    if (end < 0) throw new Error(`unterminated divider style block in ${file}`)
-    return { file, block: src.slice(start, end) }
-  })
+describe("the report tab is no longer fenced off by a divider rule", () => {
+  const seams = ["TabBar.shared.tsx", "TabBar.native.tsx", "TabBar.web.tsx", "Rail.tsx"]
 
-  it("paints the rule with the hairline-rule token on every seam that draws it", () => {
-    for (const { file, block } of dividerBlocks) {
-      expect(block, file).toMatch(/backgroundColor: t\.colors\.borderStrong/)
+  it("draws no divider on any seam that renders the bar", () => {
+    for (const file of seams) {
+      const src = readFileSync(new URL(`../${file}`, import.meta.url), "utf8")
+      expect(src, file).not.toMatch(/divider/i)
     }
   })
 
-  it("never reuses the icon token, so the rule stays subtler than the glyphs it separates", () => {
-    for (const { file, block } of dividerBlocks) {
-      expect(block, file).not.toMatch(/t\.colors\.textMuted/)
-    }
+  it("keeps no divider geometry in the shared model", () => {
+    const logic = readFileSync(new URL("../tabBarLogic.ts", import.meta.url), "utf8")
+    expect(logic).not.toMatch(/DIVIDER/)
+    expect(logic).not.toMatch(/dividerRect/)
   })
 
-  it("spans 60% of the bar height, rounded, centered, and sits on the report seam", () => {
-    expect(tabDividerRect(80, 64)).toEqual({ left: 239.25, top: 13, height: 38 })
-    expect(tabDividerRect(80, 60)).toEqual({ left: 239.25, top: 12, height: 36 })
+  it("still locks the draggable pill to the tabs before Report, derived from the tab list itself", () => {
+    expect(TAB_PILL_LOCK_COUNT).toBe(TAB_SPECS.findIndex((tab) => tab.id === "report"))
+    expect(TAB_PILL_LOCK_COUNT).toBe(3)
   })
 })
