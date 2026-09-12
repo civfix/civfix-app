@@ -150,6 +150,7 @@ export const THREAD_RAIL_GAP = 10
 export const THREAD_RAIL_W = 2
 export const THREAD_RAIL_STUB_H = 12
 export const THREAD_NESTED_INDENT = THREAD_RAIL_COLUMN_W + THREAD_RAIL_GAP
+export const THREAD_CHAIN_ROW_MIN_H = 32
 
 export type ThreadRowDepth = 1 | 2
 

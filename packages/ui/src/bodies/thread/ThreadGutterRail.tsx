@@ -13,14 +13,19 @@ export interface ThreadGutterRailProps {
   rail: ThreadRailSegment
   geometry: ThreadRowGeometry
   branch?: "avatar" | "content"
+  anchor?: number
 }
 
-export function ThreadGutterRail({ rail, geometry, branch }: ThreadGutterRailProps) {
+export function ThreadGutterRail({
+  rail,
+  geometry,
+  branch,
+  anchor = geometry.avatarSize / 2,
+}: ThreadGutterRailProps) {
   const styles = useStyles()
   const th = useTheme()
   const width = threadGutterWidth(geometry)
   const railLeft = (width - THREAD_RAIL_W) / 2
-  const anchor = geometry.avatarSize / 2
   const segment: ViewStyle | null = React.useMemo(() => {
     if (rail.above && rail.below) return { left: railLeft, top: -th.space["3"], bottom: -th.space["2"] }
     if (rail.above) return { left: railLeft, top: -th.space["3"], height: th.space["3"] + anchor }
