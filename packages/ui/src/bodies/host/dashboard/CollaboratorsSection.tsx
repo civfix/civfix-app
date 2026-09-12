@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import type { OrganizationDTO, OrganizationInviteDTO, OrganizationMemberDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, headingLevel } from "../../../theme"
-import { Text, TextLink, iconMap, Icon } from "../../../typography"
+import { makeThemedStyles } from "../../../theme"
+import { Text, TextLink, iconMap } from "../../../typography"
 import type { IconName } from "../../../typography"
 import {
-  PrimaryButton,
   SecondaryButton,
+  SectionCard,
   SkeletonGroup,
   SkeletonList,
   useToast,
@@ -166,7 +166,6 @@ export interface CollaboratorsSectionProps {
 
 export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("event-dashboard")
   const { locale } = useLocale()
   const toast = useToast()
@@ -232,115 +231,96 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
   if (!canManage) return null
 
   return (
-    <View style={styles.section}>
-      <View style={styles.sectionHead}>
-        <View style={styles.sectionTitleRow}>
-          <Icon icon={iconMap.Users} size={17} color={th.colors.textMuted} />
-          <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(2)}>
-            {t("team.section")}
-          </Text>
-        </View>
-        <PrimaryButton
+    <SectionCard
+      label={t("team.section")}
+      trailing={
+        <SecondaryButton
+          size="sm"
           label={t("team.invite")}
           icon={iconMap.UserPlus}
-          variant="outline"
           disabled={quotaReached}
           onPress={() => setInviteOpen(true)}
         />
+      }
+    >
+      <View style={styles.section}>
+        {membersQuery.isError ? (
+          <FeedNotice
+            icon="CloudOff"
+            title={t("team.error_title")}
+            body={t("team.error_body")}
+            actionLabel={t("team.retry")}
+            onAction={() => void membersQuery.refetch()}
+          />
+        ) : null}
+
+        {membersQuery.isPending ? (
+          <SkeletonGroup>
+            <SkeletonList kind="person" rows={3} />
+          </SkeletonGroup>
+        ) : null}
+
+        {!membersQuery.isPending && !membersQuery.isError && members.length === 0 ? (
+          <Text style={styles.empty}>{t("team.empty")}</Text>
+        ) : null}
+
+        {members.map((member) => (
+          <CollaboratorRow
+            key={member.person.id}
+            member={member}
+            viewerId={viewerId}
+            canManage={canManage}
+            canSetRole={canSetRole}
+            pending={managePending}
+            onOpenPerson={onOpenPerson}
+            onSetRole={onSetRole}
+            onRemove={onRemove}
+          />
+        ))}
+
+        {membersQuery.hasNextPage ? (
+          <TextLink
+            variant="label"
+            standalone
+            accessibilityLabel={t("team.show_more_a11y")}
+            onPress={() => {
+              void membersQuery.fetchNextPage()
+            }}
+          >
+            {membersQuery.isFetchingNextPage ? t("team.loading_more") : t("team.show_more")}
+          </TextLink>
+        ) : null}
+
+        {invitesQuery.isError ? (
+          <Text style={styles.empty}>{t("team.invites_error")}</Text>
+        ) : null}
+
+        {invites.length > 0 ? (
+          <View style={styles.invites}>
+            <Text style={styles.subhead}>{t("team.pending_invites")}</Text>
+            {invites.map((invite) => (
+              <PendingInviteRow
+                key={invite.id}
+                invite={invite}
+                locale={locale}
+                pending={revokeInvite.isPending}
+                onRevoke={onRevoke}
+              />
+            ))}
+          </View>
+        ) : null}
+
+        {quotaReached ? <Text style={styles.empty}>{t("team.invite_quota")}</Text> : null}
+
+        <OrgInviteSheet visible={inviteOpen} orgId={org.id} onClose={() => setInviteOpen(false)} />
       </View>
-
-      {membersQuery.isError ? (
-        <FeedNotice
-          icon="CloudOff"
-          title={t("team.error_title")}
-          body={t("team.error_body")}
-          actionLabel={t("team.retry")}
-          onAction={() => void membersQuery.refetch()}
-        />
-      ) : null}
-
-      {membersQuery.isPending ? (
-        <SkeletonGroup>
-          <SkeletonList kind="person" rows={3} />
-        </SkeletonGroup>
-      ) : null}
-
-      {!membersQuery.isPending && !membersQuery.isError && members.length === 0 ? (
-        <Text style={styles.empty}>{t("team.empty")}</Text>
-      ) : null}
-
-      {members.map((member) => (
-        <CollaboratorRow
-          key={member.person.id}
-          member={member}
-          viewerId={viewerId}
-          canManage={canManage}
-          canSetRole={canSetRole}
-          pending={managePending}
-          onOpenPerson={onOpenPerson}
-          onSetRole={onSetRole}
-          onRemove={onRemove}
-        />
-      ))}
-
-      {membersQuery.hasNextPage ? (
-        <TextLink
-          variant="label"
-          standalone
-          accessibilityLabel={t("team.show_more_a11y")}
-          onPress={() => {
-            void membersQuery.fetchNextPage()
-          }}
-        >
-          {membersQuery.isFetchingNextPage ? t("team.loading_more") : t("team.show_more")}
-        </TextLink>
-      ) : null}
-
-      {invitesQuery.isError ? (
-        <Text style={styles.empty}>{t("team.invites_error")}</Text>
-      ) : null}
-
-      {invites.length > 0 ? (
-        <View style={styles.invites}>
-          <Text style={styles.subhead}>{t("team.pending_invites")}</Text>
-          {invites.map((invite) => (
-            <PendingInviteRow
-              key={invite.id}
-              invite={invite}
-              locale={locale}
-              pending={revokeInvite.isPending}
-              onRevoke={onRevoke}
-            />
-          ))}
-        </View>
-      ) : null}
-
-      {quotaReached ? <Text style={styles.empty}>{t("team.invite_quota")}</Text> : null}
-
-      <OrgInviteSheet visible={inviteOpen} orgId={org.id} onClose={() => setInviteOpen(false)} />
-    </View>
+    </SectionCard>
   )
 }
 
 const useStyles = makeThemedStyles((t) => ({
   section: {
     gap: t.space["2"],
-  },
-  sectionHead: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: t.space["3"],
-  },
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-  },
-  sectionTitle: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: t.fontSize["16"],
-    color: t.colors.text,
   },
   subhead: {
     fontFamily: t.fontFamily.bodySemiBold,

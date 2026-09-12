@@ -1,10 +1,18 @@
 import React, { useCallback, useState } from "react"
 import { View } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
-import type { CheckinResultDTO } from "@civfix/shared"
+import type { CheckinResultDTO, EventCheckinCountersDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
-import { PrimaryButton, SecondaryButton, fieldFocusedStyle, useToast } from "../../primitives"
+import {
+  PrimaryButton,
+  SecondaryButton,
+  StatTile,
+  StatTileRow,
+  fieldFocusedStyle,
+  useToast,
+} from "../../primitives"
+import { formatStatValue } from "../../primitives/statTileModel"
 import { presentScanner } from "../../primitives/scannerPresenter"
 import { useScannerAvailable } from "../../primitives/useScannerAvailable"
 import { useHaptics } from "../../capabilities"
@@ -15,17 +23,48 @@ import {
   useScanEventTicket,
   useUndoEventCheckIn,
 } from "../../data/hooks/host"
-import { useT } from "../../i18n"
+import { useLocale, useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 import { appErrorCode } from "../errorCode"
 import { checkinResultRender, manualCodeReady, normalizeManualCode, MANUAL_CODE_MAX } from "./checkinResult"
 import { useCheckinOutbox } from "./useCheckinOutbox"
-import { HostCounterStrip } from "./HostCounterStrip"
+import { TilesSkeleton } from "./HostSkeletons"
 
 interface ResultState {
   result: CheckinResultDTO
   seatId: string | null
+}
+
+function CheckinCounters({
+  counters,
+}: {
+  counters: { data?: EventCheckinCountersDTO; isLoading: boolean; isError: boolean }
+}) {
+  const { t } = useT("host-common")
+  const { locale } = useLocale()
+  if (counters.isLoading) return <TilesSkeleton columns={4} />
+  const data = counters.data
+  if (counters.isError || !data) {
+    return (
+      <Text variant="caption" accessibilityRole="alert">
+        {t("counters.error")}
+      </Text>
+    )
+  }
+  const shown = (value: number) => formatStatValue(value, locale) ?? String(value)
+  return (
+    <StatTileRow columns={4}>
+      <StatTile label={t("counters.checked_in")} value={shown(data.checkedIn)} />
+      <StatTile
+        label={t("counters.registered")}
+        value={shown(data.registered)}
+        hint={data.capacity != null ? t("counters.of_capacity", { capacity: data.capacity }) : undefined}
+      />
+      <StatTile label={t("counters.waitlist")} value={shown(data.waitlisted)} />
+      <StatTile label={t("counters.no_show")} value={shown(data.noShow)} />
+    </StatTileRow>
+  )
 }
 
 export function HostCheckinBody({ id }: { id: string }) {
@@ -139,7 +178,7 @@ export function HostCheckinBody({ id }: { id: string }) {
       : render?.tone === "warning"
         ? th.colors.sun["700"]
         : render?.tone === "error"
-          ? th.colors.bloom["700"]
+          ? th.colors.dangerInk
           : th.colors.textMuted
 
   return (
@@ -149,7 +188,7 @@ export function HostCheckinBody({ id }: { id: string }) {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <HostCounterStrip query={counters} />
+      <CheckinCounters counters={counters} />
 
       {outbox.pending > 0 ? (
         <View style={styles.outbox} accessibilityRole="alert">
@@ -335,7 +374,7 @@ const useStyles = makeThemedStyles((t) => ({
   replayWarn: {
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["13"],
-    color: t.colors.bloom["700"],
+    color: t.colors.dangerInk,
   },
   result: {
     gap: t.space["1"],
@@ -397,6 +436,6 @@ const useStyles = makeThemedStyles((t) => ({
   error: {
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["12"],
-    color: t.colors.bloom["700"],
+    color: t.colors.dangerInk,
   },
 }))

@@ -548,6 +548,7 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
             <SecondaryButton label={t("cancel")} onPress={() => setLeaveOpen(false)} size="sm" />
             <PrimaryButton
               label={t("leave_action")}
+              variant="destructive"
               onPress={onLeaveConfirm}
               loading={removeMember.isPending}
               disabled={removeMember.isPending}

@@ -98,6 +98,9 @@ import {
   Hourglass,
   HandHeart,
   ReceiptText,
+  Radio,
+  TrendingUp,
+  CalendarCheck,
 } from "lucide-react-native/icons"
 import type { LucideIcon } from "./Icon"
 
@@ -202,6 +205,9 @@ export type IconName =
   | "Hourglass"
   | "HandHeart"
   | "ReceiptText"
+  | "Radio"
+  | "TrendingUp"
+  | "CalendarCheck"
 
 export const iconMap: Record<IconName, LucideIcon> = {
   Check,
@@ -304,4 +310,7 @@ export const iconMap: Record<IconName, LucideIcon> = {
   Hourglass,
   HandHeart,
   ReceiptText,
+  Radio,
+  TrendingUp,
+  CalendarCheck,
 }

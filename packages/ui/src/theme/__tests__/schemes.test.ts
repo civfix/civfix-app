@@ -66,6 +66,23 @@ describe("theme color schemes", () => {
     expect(dark.shadowColor).toBe("#000000")
   })
 
+  it("passes the semantic roles through from the palette, unrecoloured", () => {
+    expect(light.dangerInk).toBe(tokens.color.semantic.dangerInk)
+    expect(light.chartInk).toBe(tokens.color.semantic.chartInk)
+    expect(light.chartTrack).toBe(tokens.color.semantic.chartTrack)
+    expect(light.selectedFill).toBe(tokens.color.semantic.selectedFill)
+    expect(dark.dangerInk).toBe(darkColor.semantic.dangerInk)
+    expect(dark.chartInk).toBe(darkColor.semantic.chartInk)
+    expect(dark.selectedFill).toBe(darkColor.semantic.selectedFill)
+  })
+
+  it("labels the coral CTA with the scheme's ink neutral, leaving onAccent alone", () => {
+    expect(light.onCta).toBe(tokens.color.neutral.ink)
+    expect(dark.onCta).toBe(darkColor.neutral.paper)
+    expect(light.onAccent).toBe("#FFFFFF")
+    expect(dark.onAccent).toBe(darkColor.neutral.paper)
+  })
+
   it("inverts the glass active state with the palette", () => {
     const lightGlass = makeGlass("light")
     const darkGlass = makeGlass("dark")

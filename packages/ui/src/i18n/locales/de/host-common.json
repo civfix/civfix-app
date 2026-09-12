@@ -3,6 +3,7 @@
     "a11y": "Live-Zähler der Veranstaltung",
     "checked_in": "Eingecheckt",
     "registered": "Angemeldet",
+    "of_capacity": "von {{capacity}} Plätzen",
     "waitlist": "Warteliste",
     "no_show": "Nicht erschienen",
     "error": "Die Zähler sind gerade nicht verfügbar."

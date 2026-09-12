@@ -47,6 +47,11 @@ pnpm --filter community-web dev      # next dev, http://localhost:3000
 pnpm --filter community-mobile start # expo start --dev-client (Metro)
 ```
 
+Recommended for local testing:
+```sh
+NEXT_PUBLIC_API_URL=https://api.civfix.dev pnpm --filter community-web dev
+```
+
 ## Dev loop
 
 1. `pnpm install`

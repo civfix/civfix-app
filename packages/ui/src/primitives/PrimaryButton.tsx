@@ -18,7 +18,7 @@ import {
 } from "../theme"
 import { Text, type LucideIcon } from "../typography"
 
-export type ButtonVariant = "primary" | "dark" | "outline" | "ghost"
+export type ButtonVariant = "primary" | "destructive" | "dark" | "outline" | "ghost"
 
 export interface PrimaryButtonProps {
   label: string
@@ -34,6 +34,9 @@ export interface PrimaryButtonProps {
 function contentColor(variant: ButtonVariant, t: Theme): string {
   switch (variant) {
     case "primary":
+      return t.colors.onCta
+    case "destructive":
+      return t.colors.onDanger
     case "dark":
       return t.colors.onAccent
     default:
@@ -69,7 +72,8 @@ export function PrimaryButton({
         webTransition,
         webCursor(isDisabled),
         variant === "primary" ? styles.primary : null,
-        variant === "primary" ? t.shadows.pin : null,
+        variant === "destructive" ? styles.destructive : null,
+        variant === "primary" || variant === "destructive" ? t.shadows.s2 : null,
         variant === "dark" ? styles.dark : null,
         variant === "outline" ? styles.outline : null,
         variant === "ghost" ? styles.ghost : null,
@@ -108,6 +112,9 @@ const useStyles = makeThemedStyles((t) => ({
   },
   primary: {
     backgroundColor: t.colors.brand.bloom,
+  },
+  destructive: {
+    backgroundColor: t.colors.dangerFill,
   },
   dark: {
     backgroundColor: t.colors.text,

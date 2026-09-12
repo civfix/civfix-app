@@ -631,6 +631,7 @@ export function MembersBody({
               />
               <PrimaryButton
                 label={t("leave.action")}
+                variant="destructive"
                 onPress={onConfirmLeave}
                 loading={leaveReportChat.isPending}
                 disabled={leaveReportChat.isPending}

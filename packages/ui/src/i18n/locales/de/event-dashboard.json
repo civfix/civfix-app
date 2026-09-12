@@ -8,22 +8,51 @@
   "org_picker": {
     "label": "Organisation"
   },
+  "header": {
+    "title": "Deine Events",
+    "summary": "{{upcoming}} bevorstehend · {{hosted}} veranstaltet"
+  },
+  "next_up": {
+    "section": "Als Nächstes",
+    "check_in": "Check-in",
+    "check_in_a11y": "Check-in für {{title}}",
+    "host_tools": "Host-Werkzeuge",
+    "host_tools_a11y": "Host-Werkzeuge für {{title}} öffnen",
+    "meter_a11y": "{{registered}} von {{capacity}} Plätzen belegt",
+    "empty_title": "Nichts geplant",
+    "empty_body": "Erstelle ein Event, dann erscheint es hier mit seinen Zahlen."
+  },
+  "numbers": {
+    "section": "Zahlen"
+  },
   "range": {
     "label": "Zeitraum",
     "30d": "30 Tage",
     "90d": "90 Tage",
-    "365d": "12 Monate"
+    "365d": "12 Monate",
+    "all": "Gesamt"
   },
   "kpi": {
     "events": "Veranstaltete Events",
     "registrations": "Anmeldungen",
     "check_ins": "Check-ins",
-    "hidden_value": "-",
     "suppressed": "Zahlen bleiben verborgen, bis mindestens {{k}} Personen teilnehmen.",
-    "trend_a11y": "Anmeldungen im Zeitverlauf",
+    "trend_a11y": "Anmeldungen, {{range}}, zuletzt {{value}} am {{day}}",
+    "trend_a11y_week": "Anmeldungen, {{range}}, nach Woche, zuletzt {{value}} in der Woche ab {{day}}",
     "error_title": "Zahlen konnten nicht geladen werden",
     "error_body": "Wir konnten civfix nicht erreichen. Prüfe deine Verbindung und versuche es erneut.",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "attendance_rate": "Teilnahmequote",
+    "unique_volunteers": "Einzelne Freiwillige",
+    "returning": "Wiederkehrende Freiwillige",
+    "returning_hint": "{{numerator}} von {{denominator}}",
+    "busiest_slot": "Beste Zeit: {{weekday}} um {{hour}}",
+    "end_label": "{{value}} am {{day}}",
+    "end_label_week": "{{value}} in der Woche ab {{day}}"
+  },
+  "top_events": {
+    "section": "Top-Events",
+    "seats": "{{count}} Anmeldungen"
   },
   "create": {
     "action": "Event erstellen",
@@ -34,7 +63,6 @@
     "label": "Welche Events",
     "upcoming": "Bevorstehend",
     "past": "Vergangen",
-    "counts": "{{registered}} angemeldet, {{checkedIn}} eingecheckt",
     "open_a11y": "{{title}} öffnen",
     "actions_a11y": "Aktionen für {{title}}",
     "host_tools": "Host-Werkzeuge",
@@ -60,7 +88,13 @@
     "duplicate_error_rate_limited": "Vorerst zu viele Events. Versuche es später erneut.",
     "duplicate_error_invalid": "Prüfe Datum und Uhrzeit und versuche es erneut.",
     "duplicate_error_generic": "Das Event konnte nicht dupliziert werden. Versuche es erneut.",
-    "loading_more": "Wird geladen…"
+    "loading_more": "Wird geladen…",
+    "section": "Events",
+    "meta_capacity": "{{registered}} von {{capacity}}",
+    "meta_registered": "{{count}} angemeldet",
+    "meta_waiting": "{{count}} auf der Warteliste",
+    "meta_checked_in": "{{count}} eingecheckt",
+    "check_in_a11y": "Check-in für {{title}}"
   },
   "invites": {
     "section": "Einladungen",
@@ -94,7 +128,7 @@
     "schedule_weekly": "Stripe zahlt wöchentlich automatisch aus.",
     "schedule_monthly": "Stripe zahlt monatlich automatisch aus.",
     "schedule_manual": "Auszahlungen erfolgen nur, wenn du sie auslöst.",
-    "payout": "Geld auf die Bank senden",
+    "payout": "Ans Bankkonto senden",
     "payout_blocked_disabled": "Stripe hat Auszahlungen für dieses Konto noch nicht freigegeben.",
     "payout_blocked_empty": "Es ist noch nichts zum Senden verfügbar.",
     "payout_owner_only": "Nur die Inhaberin oder der Inhaber kann Geld auf die Bank senden.",
@@ -119,7 +153,7 @@
     "link_error": "Die Einrichtungsseite konnte nicht geöffnet werden. Versuche es erneut."
   },
   "team": {
-    "section": "Mitwirkende",
+    "section": "Team",
     "invite": "Einladen",
     "invite_title": "Mitwirkende einladen",
     "invite_dismiss_a11y": "Mitwirkende einladen schließen",

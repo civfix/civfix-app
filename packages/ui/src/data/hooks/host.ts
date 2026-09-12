@@ -13,6 +13,7 @@ import type {
   CreateWalkupRegistrationResponse,
   DeclineMyEventInviteResponse,
   EventCheckinCountersDTO,
+  EventInsights,
   EventRegistrationDTO,
   EventTeamInviteIdentifierKind,
   EventTeamRole,
@@ -26,6 +27,7 @@ import type {
   ListEventTeamResponse,
   ListMyEventInvitesResponse,
   ListMyHostedEventsResponse,
+  MarkEventNoShowsResponse,
   MyEventTicketDTO,
   PendingEventTeamInviteDTO,
   RegisterForEventRequest,
@@ -41,6 +43,10 @@ import { queryKeys } from "../keys"
 import { cleanupDetailFilters } from "./cleanups"
 
 export const HOST_COUNTERS_POLL_MS = 20_000
+
+export const INSIGHTS_LIVE_POLL_MS = HOST_COUNTERS_POLL_MS
+
+export const INSIGHTS_IDLE_POLL_MS = 5 * 60_000
 
 export const HOST_ROSTER_PAGE_SIZE = 50
 
@@ -97,7 +103,36 @@ export function cleanupHostStanding(
 
 export function invalidateHostEvent(qc: QueryClient, cleanupId: string): void {
   void qc.invalidateQueries({ queryKey: queryKeys.hostEvent(cleanupId) })
+  void qc.invalidateQueries({ queryKey: queryKeys.eventInsights(cleanupId) })
   void qc.invalidateQueries(cleanupDetailFilters(cleanupId))
+}
+
+export interface EventInsightsOptions {
+  enabled?: boolean
+  live?: boolean
+}
+
+export function useEventInsights(id: string | undefined, opts: EventInsightsOptions = {}) {
+  const api = useApi()
+  const { isAuthenticated } = useAuthState()
+  const enabled = !!id && isAuthenticated && (opts.enabled ?? true)
+  return useQuery<EventInsights>({
+    queryKey: queryKeys.eventInsights(id ?? "unknown"),
+    enabled,
+    queryFn: () => api.getEventInsights({ id: id as string }),
+    refetchInterval: enabled ? (opts.live ? INSIGHTS_LIVE_POLL_MS : INSIGHTS_IDLE_POLL_MS) : false,
+    placeholderData: (previous) => previous,
+    retry: false,
+  })
+}
+
+export function useMarkEventNoShows(id: string) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation<MarkEventNoShowsResponse, unknown, void>({
+    mutationFn: () => api.markEventNoShows({ id, all: true }),
+    onSuccess: () => invalidateHostEvent(qc, id),
+  })
 }
 
 export function useHostCounters(id: string | undefined, opts: { enabled?: boolean } = {}) {

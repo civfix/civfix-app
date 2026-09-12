@@ -51,6 +51,7 @@ interface SchemeExtras {
   scrimStrong: string
   shadowColor: string
   onAccent: string
+  onCta: string
   onScrim: string
   stage: string
 }
@@ -68,6 +69,7 @@ const EXTRAS: Readonly<Record<ColorSchemeName, SchemeExtras>> = {
     scrimStrong: "rgba(26,23,20,0.55)",
     shadowColor: colorSchemes.light.neutral.ink,
     onAccent: "#FFFFFF",
+    onCta: colorSchemes.light.neutral.ink,
     onScrim: "#FFFFFF",
     stage: "#000000",
   },
@@ -83,6 +85,7 @@ const EXTRAS: Readonly<Record<ColorSchemeName, SchemeExtras>> = {
     scrimStrong: "rgba(0,0,0,0.70)",
     shadowColor: "#000000",
     onAccent: colorSchemes.dark.neutral.paper,
+    onCta: colorSchemes.dark.neutral.paper,
     onScrim: "#FFFFFF",
     stage: "#000000",
   },
@@ -109,8 +112,20 @@ export interface ThemeColors extends ColorPalette {
   scrimStrong: string
   shadowColor: string
   onAccent: string
+  onCta: string
   onScrim: string
   stage: string
+  selectedFill: string
+  selectedInk: string
+  dangerInk: string
+  dangerFill: string
+  onDanger: string
+  dangerWash: string
+  successInk: string
+  successWash: string
+  chartInk: string
+  chartInkMuted: string
+  chartTrack: string
 }
 
 export function makeThemeColors(scheme: ColorSchemeName): ThemeColors {
@@ -138,8 +153,20 @@ export function makeThemeColors(scheme: ColorSchemeName): ThemeColors {
     scrimStrong: extras.scrimStrong,
     shadowColor: extras.shadowColor,
     onAccent: extras.onAccent,
+    onCta: extras.onCta,
     onScrim: extras.onScrim,
     stage: extras.stage,
+    selectedFill: palette.semantic.selectedFill,
+    selectedInk: palette.semantic.selectedInk,
+    dangerInk: palette.semantic.dangerInk,
+    dangerFill: palette.semantic.dangerFill,
+    onDanger: palette.semantic.onDanger,
+    dangerWash: palette.semantic.dangerWash,
+    successInk: palette.semantic.successInk,
+    successWash: palette.semantic.successWash,
+    chartInk: palette.semantic.chartInk,
+    chartInkMuted: palette.semantic.chartInkMuted,
+    chartTrack: palette.semantic.chartTrack,
   }
 }
 

@@ -40,11 +40,25 @@ import {
   BlurSurface,
   iconMap,
   themeFor,
+  useTheme,
+  ThemeProvider,
+  SectionCard,
+  SegmentedControl,
+  FilterChip,
+  StatTile,
+  StatTileRow,
+  HeroStat,
+  Meter,
+  TrendSparkline,
+  PhaseHeader,
+  HeroSkeleton,
+  TilesSkeleton,
+  RowsSkeleton,
+  type ColorSchemeName,
+  type SparkPoint,
 } from "@civfix/ui"
 import { CapabilitiesProvider, makeFakeCapabilities } from "@civfix/ui/capabilities"
 import type { ReportStatus, ReportCategory } from "@civfix/shared"
-
-const theme = themeFor("light")
 
 const noop = () => {}
 
@@ -90,10 +104,13 @@ const PHOTO_URL =
   )
 
 // Exercises the new Avatar `style` passthrough (the s1 drop shadow 2C wanted on the web profile avatar).
-const avatarShadowStyle = theme.shadows.s1
+const staticTheme = themeFor("light")
+
+const avatarShadowStyle = staticTheme.shadows.s1
 
 /** A labeled section card. data-section makes each block easy to target from preview_inspect. */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const theme = useTheme()
   return (
     <section
       data-section={title}
@@ -126,6 +143,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 /** A tiny caption above a single specimen so its state is self-describing in the screenshot. */
 function Specimen({ note, children }: { note: string; children: React.ReactNode }) {
+  const theme = useTheme()
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
       <Text variant="caption" color={theme.colors.textSubtle}>
@@ -155,6 +173,7 @@ function Stack({ children }: { children: React.ReactNode }) {
 
 /** A fixed box that frames the flex-filling StateView blocks. */
 function StateBox({ children }: { children: React.ReactNode }) {
+  const theme = useTheme()
   return (
     <div
       style={{
@@ -174,6 +193,7 @@ function StateBox({ children }: { children: React.ReactNode }) {
 
 /** A colorful striped backdrop that a BlurSurface floats over, so the backdrop-filter is visible. */
 function BlurStage({ note, children }: { note: string; children: React.ReactNode }) {
+  const theme = useTheme()
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <Text variant="caption" color={theme.colors.textSubtle}>
@@ -202,7 +222,176 @@ function BlurStage({ note, children }: { note: string; children: React.ReactNode
   )
 }
 
+const SIGNUP_TREND: SparkPoint[] = [
+  { key: "d1", value: 2 },
+  { key: "d2", value: 5 },
+  { key: "d3", value: 5 },
+  { key: "d4", value: 9 },
+  { key: "d5", value: 0 },
+  { key: "d6", value: 14 },
+  { key: "d7", value: 18 },
+  { key: "d8", value: null },
+  { key: "d9", value: 23 },
+  { key: "d10", value: 31 },
+  { key: "d11", value: 38 },
+  { key: "d12", value: 44 },
+]
+
+const ARRIVALS: SparkPoint[] = [
+  { key: "a1", value: 1 },
+  { key: "a2", value: 4 },
+  { key: "a3", value: 9 },
+  { key: "a4", value: 12 },
+  { key: "a5", value: 7 },
+  { key: "a6", value: 3 },
+  { key: "a7", value: 2 },
+]
+
+const RANGE_OPTIONS = [
+  { key: "30d", label: "30d" },
+  { key: "90d", label: "90d" },
+  { key: "12mo", label: "12 mo" },
+  { key: "all", label: "All" },
+] as const
+
+const SCOPE_OPTIONS = [
+  { key: "personal", label: "Personal" },
+  { key: "org", label: "Organization" },
+] as const
+
+function HostDashboardPanel({ scheme }: { scheme: ColorSchemeName }) {
+  const t = themeFor(scheme)
+  const [range, setRange] = useState<string>("90d")
+  const [scope, setScope] = useState<string>("personal")
+  const [filter, setFilter] = useState<string>("all")
+
+  return (
+    <ThemeProvider preference={scheme}>
+      <div
+        data-scheme={scheme}
+        style={{
+          flex: "1 1 360px",
+          minWidth: 320,
+          maxWidth: 560,
+          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          gap: 24,
+          padding: 16,
+          borderRadius: t.radius.lg,
+          border: `1px solid ${t.colors.border}`,
+          backgroundColor: t.colors.bg,
+        }}
+      >
+        <Text variant="label">{scheme} scheme</Text>
+
+        <PhaseHeader
+          phase="live"
+          title="Ballona Creek cleanup"
+          when="Sat, Mar 14 · 9:00 AM · Ballona Creek"
+          relative="Started 40 min ago"
+          cta={{ label: "Check in", icon: iconMap.ScanLine, onPress: noop }}
+          secondary={{ label: "Message attendees", icon: iconMap.Megaphone, onPress: noop }}
+        />
+
+        <HeroStat
+          label="Checked in"
+          value={38}
+          limit={42}
+          limitLabel="of 42 registered"
+          caption="As of 9:41 AM"
+        />
+
+        <StatTileRow columns={2}>
+          <StatTile label="Still expected" value="4" />
+          <StatTile label="Walk-ups" value="6" tone="success" />
+          <StatTile label="No-shows" value="2" tone="danger" hint="2 of 42" />
+          <StatTile label="Waitlist" value={null} />
+        </StatTileRow>
+
+        <SectionCard
+          label="Numbers"
+          trailing={
+            <SegmentedControl
+              size="sm"
+              label="Range"
+              options={RANGE_OPTIONS}
+              selected={range}
+              onSelect={setRange}
+            />
+          }
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <StatTileRow columns={2}>
+              <StatTile label="Registrations" value="1,284" trend={SIGNUP_TREND} />
+              <StatTile label="Attendance rate" value="82%" />
+            </StatTileRow>
+            <TrendSparkline
+              points={SIGNUP_TREND}
+              kind="bars"
+              height={24}
+              endLabel="44 on Mar 12"
+              accessibilityLabel="Registrations, last 90 days, latest 44 on Mar 12"
+            />
+            <TrendSparkline
+              points={ARRIVALS}
+              kind="line"
+              height={56}
+              endLabel="2 at 10:30 AM"
+              accessibilityLabel="Arrivals, 15-minute blocks, latest 2 at 10:30 AM"
+            />
+          </div>
+        </SectionCard>
+
+        <SectionCard label="Attendees">
+          <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {[
+              { key: "all", label: "All", count: 42 },
+              { key: "checked_in", label: "Checked in", count: 38 },
+              { key: "waitlist", label: "Waitlist", count: 0 },
+            ].map((chip) => (
+              <FilterChip
+                key={chip.key}
+                label={chip.label}
+                count={chip.count}
+                selected={filter === chip.key}
+                onPress={() => setFilter(chip.key)}
+              />
+            ))}
+          </div>
+        </SectionCard>
+
+        <SegmentedControl
+          label="Scope"
+          options={SCOPE_OPTIONS}
+          selected={scope}
+          onSelect={setScope}
+        />
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <Meter value={18} max={40} accessibilityLabel="18 of 40 spots" />
+          <Meter value={38} max={40} accessibilityLabel="38 of 40 spots" />
+          <Meter value={40} max={40} accessibilityLabel="40 of 40 spots" />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <PrimaryButton label="Share event" icon={iconMap.Share} onPress={noop} />
+          <PrimaryButton label="Cancel event" variant="destructive" icon={iconMap.Ban} onPress={noop} />
+          <SecondaryButton label="Edit event" icon={iconMap.Pencil} onPress={noop} />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <HeroSkeleton />
+          <TilesSkeleton columns={2} />
+          <RowsSkeleton rows={3} />
+        </div>
+      </div>
+    </ThemeProvider>
+  )
+}
+
 export default function PrimitivesGallery() {
+  const theme = useTheme()
   // Interactive state so the Toggle / SettingsToggle / inputs are tappable during verification.
   const [toggleA, setToggleA] = useState(true)
   const [toggleB, setToggleB] = useState(false)
@@ -227,6 +416,34 @@ export default function PrimitivesGallery() {
             Stage 2 exit gate - every shared @civfix/ui primitive via react-native-web.
           </Text>
         </div>
+
+        <section
+          data-section="Host dashboard primitives (light + dark)"
+          style={{
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.radius.lg,
+            border: `1px solid ${theme.colors.border}`,
+            padding: 16,
+            marginTop: 12,
+          }}
+        >
+          <Text variant="label" color={theme.colors.textSubtle}>
+            HOST DASHBOARD PRIMITIVES (LIGHT + DARK)
+          </Text>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "wrap",
+              alignItems: "flex-start",
+              gap: 20,
+              marginTop: 12,
+            }}
+          >
+            <HostDashboardPanel scheme="light" />
+            <HostDashboardPanel scheme="dark" />
+          </div>
+        </section>
 
         <Section title="Brand (sizes 24 / 40 / 64)">
           <Specimen note="size 24">
@@ -472,7 +689,7 @@ export default function PrimitivesGallery() {
 const blurButtonStyle = {
   paddingHorizontal: 16,
   paddingVertical: 10,
-  borderRadius: theme.radius.pill,
+  borderRadius: staticTheme.radius.pill,
   alignItems: "center",
   justifyContent: "center",
 } as const
@@ -480,7 +697,7 @@ const blurButtonStyle = {
 const blurSheetStyle = {
   paddingHorizontal: 24,
   paddingVertical: 16,
-  borderRadius: theme.radius.lg,
+  borderRadius: staticTheme.radius.lg,
   alignItems: "center",
   justifyContent: "center",
 } as const
@@ -488,7 +705,7 @@ const blurSheetStyle = {
 const blurPopoverStyle = {
   paddingHorizontal: 18,
   paddingVertical: 12,
-  borderRadius: theme.radius.md,
+  borderRadius: staticTheme.radius.md,
   alignItems: "center",
   justifyContent: "center",
 } as const

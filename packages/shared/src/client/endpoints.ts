@@ -507,6 +507,10 @@ import {
   HostedEventsAnalyticsResponseSchema,
 } from "../schemas/host/analytics.js"
 import {
+  GetEventInsightsRequestSchema,
+  GetEventInsightsResponseSchema,
+} from "../schemas/host/insights.js"
+import {
   DownloadHostExportRequestSchema,
   DownloadHostExportResponseSchema,
   GetEventExportRequestSchema,
@@ -3307,6 +3311,15 @@ export const hostEndpoints = {
     path: "/me/hosted-events/analytics",
     request: HostedEventsAnalyticsRequestSchema,
     response: HostedEventsAnalyticsResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  getEventInsights: def({
+    method: "GET",
+    path: "/cleanups/:id/insights",
+    request: GetEventInsightsRequestSchema,
+    response: GetEventInsightsResponseSchema,
     auth: "required",
     csrf: false,
     version: "v1",

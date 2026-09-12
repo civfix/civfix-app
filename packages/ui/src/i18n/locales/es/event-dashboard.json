@@ -8,22 +8,51 @@
   "org_picker": {
     "label": "Organización"
   },
+  "header": {
+    "title": "Tus eventos",
+    "summary": "{{upcoming}} próximos · {{hosted}} organizados"
+  },
+  "next_up": {
+    "section": "Lo siguiente",
+    "check_in": "Registrar entradas",
+    "check_in_a11y": "Registrar entradas en {{title}}",
+    "host_tools": "Herramientas de anfitrión",
+    "host_tools_a11y": "Abrir las herramientas de anfitrión de {{title}}",
+    "meter_a11y": "{{registered}} de {{capacity}} plazas ocupadas",
+    "empty_title": "Nada programado",
+    "empty_body": "Crea un evento y aparecerá aquí con sus números."
+  },
+  "numbers": {
+    "section": "Números"
+  },
   "range": {
     "label": "Periodo",
     "30d": "30 días",
     "90d": "90 días",
-    "365d": "12 meses"
+    "365d": "12 meses",
+    "all": "Todo"
   },
   "kpi": {
     "events": "Eventos organizados",
     "registrations": "Inscripciones",
     "check_ins": "Registros de entrada",
-    "hidden_value": "-",
     "suppressed": "Los números se ocultan hasta que participen al menos {{k}} personas.",
-    "trend_a11y": "Inscripciones a lo largo del tiempo",
+    "trend_a11y": "Inscripciones, {{range}}, último dato {{value}} el {{day}}",
+    "trend_a11y_week": "Inscripciones, {{range}}, por semana, último dato {{value}} en la semana del {{day}}",
     "error_title": "No se pudieron cargar tus números",
     "error_body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "attendance_rate": "Tasa de asistencia",
+    "unique_volunteers": "Voluntarios distintos",
+    "returning": "Voluntarios que repiten",
+    "returning_hint": "{{numerator}} de {{denominator}}",
+    "busiest_slot": "Franja con más actividad: {{weekday}} a las {{hour}}",
+    "end_label": "{{value}} el {{day}}",
+    "end_label_week": "{{value}} en la semana del {{day}}"
+  },
+  "top_events": {
+    "section": "Eventos con más inscripciones",
+    "seats": "{{count}} inscritos"
   },
   "create": {
     "action": "Crear evento",
@@ -34,7 +63,6 @@
     "label": "Qué eventos",
     "upcoming": "Próximos",
     "past": "Pasados",
-    "counts": "{{registered}} inscritos, {{checkedIn}} con entrada registrada",
     "open_a11y": "Abrir {{title}}",
     "actions_a11y": "Acciones para {{title}}",
     "host_tools": "Herramientas de anfitrión",
@@ -60,7 +88,13 @@
     "duplicate_error_rate_limited": "Demasiados eventos por ahora. Inténtalo más tarde.",
     "duplicate_error_invalid": "Revisa la fecha y la hora e inténtalo de nuevo.",
     "duplicate_error_generic": "No se pudo duplicar el evento. Inténtalo de nuevo.",
-    "loading_more": "Cargando…"
+    "loading_more": "Cargando…",
+    "section": "Eventos",
+    "meta_capacity": "{{registered}} de {{capacity}}",
+    "meta_registered": "{{count}} inscritos",
+    "meta_waiting": "{{count}} en espera",
+    "meta_checked_in": "{{count}} con entrada registrada",
+    "check_in_a11y": "Registrar entradas en {{title}}"
   },
   "invites": {
     "section": "Invitaciones",
@@ -94,7 +128,7 @@
     "schedule_weekly": "Stripe paga automáticamente cada semana.",
     "schedule_monthly": "Stripe paga automáticamente cada mes.",
     "schedule_manual": "Los pagos solo salen cuando tú los envías.",
-    "payout": "Enviar dinero al banco",
+    "payout": "Enviar al banco",
     "payout_blocked_disabled": "Stripe aún no ha habilitado los pagos de esta cuenta.",
     "payout_blocked_empty": "Todavía no hay nada disponible para enviar.",
     "payout_owner_only": "Solo la persona propietaria puede enviar dinero al banco.",
@@ -119,7 +153,7 @@
     "link_error": "No se pudo abrir la página de configuración. Inténtalo de nuevo."
   },
   "team": {
-    "section": "Colaboradores",
+    "section": "Equipo",
     "invite": "Invitar",
     "invite_title": "Invitar a un colaborador",
     "invite_dismiss_a11y": "Cerrar invitar a un colaborador",
