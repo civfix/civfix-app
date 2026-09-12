@@ -20,7 +20,13 @@ const body = readFileSync(new URL("../../PostThreadBody.tsx", import.meta.url), 
 
 describe("one composer per thread", () => {
   it("remounts the screen when the focal post changes, so no composer state rides along", () => {
-    expect(body).toMatch(/<PostThread key=\{props\.id\} \{\.\.\.props\} \/>/)
+    const wrapper = body.slice(
+      body.indexOf("export function PostThreadBody"),
+      body.indexOf("function PostThread({"),
+    )
+    expect(wrapper).toContain("key={props.id}")
+    expect(wrapper, "the exported wrapper must stay hook-free, or the key stops remounting state")
+      .not.toMatch(/\buse[A-Z]/)
   })
 
   it("aims the composer at the focal post and nothing else", () => {
