@@ -222,10 +222,6 @@ function BlurStage({ note, children }: { note: string; children: React.ReactNode
   )
 }
 
-
-// WAVE-1 HOST DASHBOARD PRIMITIVES (event-dashboard redesign, package A). Rendered TWICE - once per
-// color scheme - because the whole point of the semantic token group is that selection, danger and the
-// chart ink resolve per scheme. <ThemeProvider preference> pins each panel's scheme.
 const SIGNUP_TREND: SparkPoint[] = [
   { key: "d1", value: 2 },
   { key: "d2", value: 5 },

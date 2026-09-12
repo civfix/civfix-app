@@ -30,6 +30,8 @@ const DAY_MS = 86_400_000
 const HOUR_MS = 3_600_000
 const MINUTE_MS = 60_000
 
+const FIXTURE_NOW = Date.now()
+
 export const DASHBOARD_EVENT_IDS: Readonly<Record<EventPhase, string>> = {
   upcoming: "ev-upcoming",
   live: "ev-live",
@@ -116,8 +118,8 @@ export const DASHBOARD_ORGS: readonly OrganizationDTO[] = [
     socialLinks: null,
     verifiedStatus: "verified",
     verifiedKind: "nonprofit",
-    verifiedAt: new Date(Date.now() - 240 * DAY_MS).toISOString(),
-    createdAt: new Date(Date.now() - 500 * DAY_MS).toISOString(),
+    verifiedAt: new Date(FIXTURE_NOW - 240 * DAY_MS).toISOString(),
+    createdAt: new Date(FIXTURE_NOW - 500 * DAY_MS).toISOString(),
     memberCount: 24,
     eventCount: 31,
     myRole: "owner",
@@ -137,7 +139,7 @@ export const DASHBOARD_ORGS: readonly OrganizationDTO[] = [
     verifiedStatus: "unverified",
     verifiedKind: null,
     verifiedAt: null,
-    createdAt: new Date(Date.now() - 180 * DAY_MS).toISOString(),
+    createdAt: new Date(FIXTURE_NOW - 180 * DAY_MS).toISOString(),
     memberCount: 9,
     eventCount: 6,
     myRole: "admin",
@@ -155,15 +157,15 @@ const EVENT_INVITES: ListMyEventInvitesResponse = {
       event: {
         id: "ev-invite-1",
         title: "Creekside trail restoration",
-        startsAt: new Date(Date.now() + 6 * DAY_MS).toISOString(),
-        endsAt: new Date(Date.now() + 6 * DAY_MS + 4 * HOUR_MS).toISOString(),
+        startsAt: new Date(FIXTURE_NOW + 6 * DAY_MS).toISOString(),
+        endsAt: new Date(FIXTURE_NOW + 6 * DAY_MS + 4 * HOUR_MS).toISOString(),
         status: "upcoming",
         coverThumbUrl: null,
         address: "Glen Canyon Park, San Francisco",
       },
       invitedBy: COHOST,
-      createdAt: new Date(Date.now() - 2 * DAY_MS).toISOString(),
-      expiresAt: new Date(Date.now() + 12 * DAY_MS).toISOString(),
+      createdAt: new Date(FIXTURE_NOW - 2 * DAY_MS).toISOString(),
+      expiresAt: new Date(FIXTURE_NOW + 12 * DAY_MS).toISOString(),
     },
   ],
   nextCursor: null,
@@ -183,20 +185,20 @@ const ORG_INVITES: ListMyOrgInvitesResponse = {
       },
       role: "admin",
       invitedBy: COHOST,
-      createdAt: new Date(Date.now() - 4 * DAY_MS).toISOString(),
-      expiresAt: new Date(Date.now() + 10 * DAY_MS).toISOString(),
+      createdAt: new Date(FIXTURE_NOW - 4 * DAY_MS).toISOString(),
+      expiresAt: new Date(FIXTURE_NOW + 10 * DAY_MS).toISOString(),
     },
   ],
 }
 
 const ORG_MEMBERS: ListOrganizationMembersResponse = {
   items: [
-    { person: HOST, role: "owner", joinedAt: new Date(Date.now() - 500 * DAY_MS).toISOString(), canRemove: false },
-    { person: COHOST, role: "admin", joinedAt: new Date(Date.now() - 300 * DAY_MS).toISOString(), canRemove: true },
+    { person: HOST, role: "owner", joinedAt: new Date(FIXTURE_NOW - 500 * DAY_MS).toISOString(), canRemove: false },
+    { person: COHOST, role: "admin", joinedAt: new Date(FIXTURE_NOW - 300 * DAY_MS).toISOString(), canRemove: true },
     {
       person: person("p-lee", "Lee Tran", "leetran"),
       role: "member",
-      joinedAt: new Date(Date.now() - 90 * DAY_MS).toISOString(),
+      joinedAt: new Date(FIXTURE_NOW - 90 * DAY_MS).toISOString(),
       canRemove: true,
     },
   ],
@@ -213,8 +215,8 @@ const ORG_INVITE_LIST: ListOrganizationInvitesResponse = {
       role: "member",
       status: "pending",
       invitedBy: HOST,
-      createdAt: new Date(Date.now() - 3 * DAY_MS).toISOString(),
-      expiresAt: new Date(Date.now() + 11 * DAY_MS).toISOString(),
+      createdAt: new Date(FIXTURE_NOW - 3 * DAY_MS).toISOString(),
+      expiresAt: new Date(FIXTURE_NOW + 11 * DAY_MS).toISOString(),
     },
   ],
 }
@@ -240,7 +242,7 @@ const PAYMENTS_STATUS: GetOrgPaymentsStatusResponse = {
   donationsDisabledReason: null,
   agreement: {
     version: "2026-01",
-    acceptedAt: new Date(Date.now() - 120 * DAY_MS).toISOString(),
+    acceptedAt: new Date(FIXTURE_NOW - 120 * DAY_MS).toISOString(),
     acceptedByName: "Sam Okafor",
     current: true,
     requiredVersion: "2026-01",
@@ -253,12 +255,12 @@ const PAYMENTS_STATUS: GetOrgPaymentsStatusResponse = {
     deductibilityCode: "PC",
     foundationCode: "15",
     graceExpiresAt: null,
-    evaluatedAt: new Date(Date.now() - 12 * DAY_MS).toISOString(),
-    nextCheckAt: new Date(Date.now() + 18 * DAY_MS).toISOString(),
+    evaluatedAt: new Date(FIXTURE_NOW - 12 * DAY_MS).toISOString(),
+    nextCheckAt: new Date(FIXTURE_NOW + 18 * DAY_MS).toISOString(),
     checks: [],
   },
   donateState: "READY",
-  lastSyncedAt: new Date(Date.now() - 2 * HOUR_MS).toISOString(),
+  lastSyncedAt: new Date(FIXTURE_NOW - 2 * HOUR_MS).toISOString(),
 }
 
 const ORG_BALANCE: GetOrgBalanceResponse = {
@@ -266,7 +268,7 @@ const ORG_BALANCE: GetOrgBalanceResponse = {
   pending: { amountMinor: 21_500, currency: "USD" },
   payoutsEnabled: true,
   payoutSchedule: { interval: "manual" },
-  lastSyncedAt: new Date(Date.now() - 2 * HOUR_MS).toISOString(),
+  lastSyncedAt: new Date(FIXTURE_NOW - 2 * HOUR_MS).toISOString(),
 }
 
 const DONATION_SUMMARY: GetOrgDonationSummaryResponse = {
@@ -278,7 +280,7 @@ const DONATION_SUMMARY: GetOrgDonationSummaryResponse = {
   netMinor: 200_745,
   refundedMinor: 5_000,
   disputedCount: 0,
-  from: new Date(Date.now() - 30 * DAY_MS).toISOString(),
+  from: new Date(FIXTURE_NOW - 30 * DAY_MS).toISOString(),
   to: null,
 }
 
@@ -289,8 +291,8 @@ const ORG_PAYOUTS: ListOrgPayoutsResponse = {
       stripePayoutId: "po_gallery_1",
       amount: { amountMinor: 96_000, currency: "USD" },
       status: "paid",
-      arrivalDate: new Date(Date.now() - 9 * DAY_MS).toISOString(),
-      createdAt: new Date(Date.now() - 12 * DAY_MS).toISOString(),
+      arrivalDate: new Date(FIXTURE_NOW - 9 * DAY_MS).toISOString(),
+      createdAt: new Date(FIXTURE_NOW - 12 * DAY_MS).toISOString(),
       failureMessage: null,
     },
     {
@@ -298,8 +300,8 @@ const ORG_PAYOUTS: ListOrgPayoutsResponse = {
       stripePayoutId: "po_gallery_2",
       amount: { amountMinor: 42_500, currency: "USD" },
       status: "in_transit",
-      arrivalDate: new Date(Date.now() + 2 * DAY_MS).toISOString(),
-      createdAt: new Date(Date.now() - 1 * DAY_MS).toISOString(),
+      arrivalDate: new Date(FIXTURE_NOW + 2 * DAY_MS).toISOString(),
+      createdAt: new Date(FIXTURE_NOW - 1 * DAY_MS).toISOString(),
       failureMessage: null,
     },
   ],
@@ -307,7 +309,10 @@ const ORG_PAYOUTS: ListOrgPayoutsResponse = {
 }
 
 function insightsFor(id: string, phase: EventPhase): EventInsights {
-  return fakeEventInsights(phase, id === DASHBOARD_EVENT_REFUNDED_ID ? { refunded: true } : {})
+  return fakeEventInsights(phase, {
+    now: FIXTURE_NOW,
+    ...(id === DASHBOARD_EVENT_REFUNDED_ID ? { refunded: true } : {}),
+  })
 }
 
 function phaseCleanup(id: string, phase: EventPhase): CleanupDTO {
@@ -453,13 +458,14 @@ export const DASHBOARD_FAKE_ENDPOINTS: Record<string, FakeEndpoint> = {
   hostedEventsAnalytics: async (args) => {
     const range = (args as { range?: PortfolioAnalyticsRange } | undefined)?.range ?? "30d"
     const orgId = (args as { orgId?: string } | undefined)?.orgId ?? null
-    return fakeHostedEventsAnalytics(range, { seed: orgId ? 23 : 7 })
+    return fakeHostedEventsAnalytics(range, { now: FIXTURE_NOW, seed: orgId ? 23 : 7 })
   },
   listMyHostedEvents: async (args) => {
     const when = (args as { when?: "upcoming" | "past" } | undefined)?.when ?? "upcoming"
     const orgId = (args as { orgId?: string } | undefined)?.orgId ?? null
     const org = DASHBOARD_ORGS.find((row) => row.id === orgId) ?? null
     return fakeHostedEvents(when, {
+      now: FIXTURE_NOW,
       orgId: org?.id ?? null,
       orgName: org?.name ?? null,
       seed: org ? 29 : 11,
@@ -545,8 +551,8 @@ export function portfolioOverrides(
 }
 
 export function emptyPortfolioOverrides(): Record<string, FakeEndpoint> {
-  const analytics = fakeHostedEventsAnalytics("30d", { seed: 7 })
-  const blank = { value: null, numerator: null, denominator: null, suppressed: false }
+  const analytics = fakeHostedEventsAnalytics("30d", { now: FIXTURE_NOW, seed: 7 })
+  const blank = { value: null, numerator: 0, denominator: 0, suppressed: false }
   return {
     listMyOrganizations: async () => ({ items: [] }),
     listMyEventInvites: async () => ({ items: [], nextCursor: null }),

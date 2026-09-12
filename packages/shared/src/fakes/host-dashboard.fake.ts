@@ -36,8 +36,8 @@ const FAKE_EVENT_DURATION_MS = 4 * HOUR_MS
 const FAKE_TIMEZONE = "America/Los_Angeles"
 
 export interface FakeEventInsightsOptions {
+  now: number
   seed?: number
-  now?: number
   money?: boolean
   refunded?: boolean
   returning?: boolean
@@ -50,13 +50,13 @@ const FAKE_DONATION_REFUNDED_MINOR = 2_500
 const FAKE_DONATION_REFUNDED_NET_MINOR = -2_370
 
 export interface FakeHostedEventsAnalyticsOptions {
+  now: number
   seed?: number
-  now?: number
 }
 
 export interface FakeHostedEventsOptions {
+  now: number
   seed?: number
-  now?: number
   orgId?: string | null
   orgName?: string | null
 }
@@ -256,10 +256,10 @@ function fakeTrend(
 
 export function fakeEventInsights(
   phase: EventPhase,
-  options: FakeEventInsightsOptions = {},
+  options: FakeEventInsightsOptions,
 ): EventInsights {
   const seed = options.seed ?? 1
-  const now = options.now ?? Date.now()
+  const now = options.now
   const rng = rngFrom(seed)
   const nextId = makeIdFactory(seed)
   const profile = phaseProfile(phase, now)
@@ -331,10 +331,10 @@ const PORTFOLIO_EVENT_TITLES = [
 
 export function fakeHostedEventsAnalytics(
   range: PortfolioAnalyticsRange = "30d",
-  options: FakeHostedEventsAnalyticsOptions = {},
+  options: FakeHostedEventsAnalyticsOptions,
 ): HostedEventsAnalyticsResponse {
   const seed = options.seed ?? 7
-  const now = options.now ?? Date.now()
+  const now = options.now
   const rng = rngFrom(seed)
   const days = PORTFOLIO_SERIES_DAYS[range]
   const series: SeriesPoint[] = []
@@ -394,10 +394,10 @@ export function fakeHostPortfolioKpis(): HostPortfolioKpis {
 
 export function fakeHostedEvents(
   when: "upcoming" | "past" = "upcoming",
-  options: FakeHostedEventsOptions = {},
+  options: FakeHostedEventsOptions,
 ): ListMyHostedEventsResponse {
   const seed = options.seed ?? 11
-  const now = options.now ?? Date.now()
+  const now = options.now
   const nextId = makeIdFactory(seed)
   const orgId = options.orgId ?? null
   const orgName = options.orgName ?? null
