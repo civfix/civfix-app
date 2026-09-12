@@ -1,32 +1,131 @@
 {
   "state": {
-    "loading": "Loading the event…",
     "error_title": "Host mode is unavailable",
     "error_body": "We could not load this event. Check your connection and try again.",
     "denied_title": "Not a host here",
-    "denied_body": "Only the event's hosts and staff can open host mode."
+    "denied_body": "Only the event's hosts and staff can open host mode.",
+    "insights_error_title": "Numbers are unavailable",
+    "insights_error_body": "We could not load this event's numbers. Everything else still works.",
+    "cancel_error": "This event could not be cancelled.",
+    "complete_error": "This event could not be marked as completed.",
+    "resources_error": "That request could not be sent."
   },
   "phase": {
     "upcoming": "Upcoming",
     "live": "Happening now",
     "ended": "Ended",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "starts": "Starts in {{when}}",
+    "started": "Started {{when}} ago",
+    "ended_on": "Ended {{when}} ago"
   },
-  "action": {
+  "cta": {
+    "share": "Share event",
+    "message": "Message attendees",
+    "check_in": "Check in",
     "scan": "Scan tickets",
-    "scan_a11y": "Open the ticket scanner",
-    "checkin": "Check-in",
-    "checkin_a11y": "Open the check-in screen",
-    "quick_message": "Quick message",
-    "quick_message_a11y": "Send a quick message to attendees",
+    "complete": "Mark as completed",
+    "log_hours": "Log volunteer hours",
+    "duplicate": "Duplicate event",
+    "edit": "Edit event"
+  },
+  "hero": {
+    "registered": "Registered",
+    "checked_in": "Checked in",
+    "attended": "Attended",
+    "of_capacity": "of {{limit}} seats",
+    "of_registered": "of {{limit}} registered",
+    "no_cap": "seats, no cap",
+    "as_of": "As of {{when}} ago",
+    "rate": "{{rate}} showed up"
+  },
+  "tiles": {
+    "waitlist": "Waitlist",
+    "cancelled": "Cancelled",
+    "spots_left": "Spots left",
+    "messages": "Messages sent",
+    "expected": "Still expected",
+    "walkups": "Walk-ups",
+    "no_shows": "No-shows",
+    "not_marked": "Not marked",
+    "hours": "Hours credited",
+    "hours_value": "{{hours}} h",
+    "hours_hint": "{{credited}} attendees checked in",
+    "donations": "Donations",
+    "returning": "Returning",
+    "returning_hint": "of {{total}} registered have been before"
+  },
+  "signups": {
+    "title": "Sign-ups",
+    "end_label": "{{seats}} seats so far",
+    "a11y": "Registered seats over the last {{days}} days, {{seats}} today"
+  },
+  "by_type": {
+    "title": "By ticket type",
+    "of": "{{registered}} of {{capacity}}",
+    "waiting_one": "{{count}} waiting",
+    "waiting_other": "{{count}} waiting"
+  },
+  "arrivals": {
+    "title": "Arrivals",
+    "caption": "15-minute blocks, relative to the start time.",
+    "label": "{{seats}} at {{offset}}",
+    "a11y": "Arrivals in {{buckets}} fifteen-minute blocks around the start time"
+  },
+  "messages": {
+    "title": "Messages",
+    "row": "{{sent}} sent · {{failed}} failed · {{suppressed}} skipped",
+    "pending": "Not sent yet"
+  },
+  "money": {
+    "net": "Raised for this event",
+    "donations": "Donations",
+    "gross": "{{amount}} before fees"
+  },
+  "section": {
+    "grow": "Grow",
+    "communicate": "Communicate",
+    "operate": "Operate",
+    "configure": "Configure",
+    "money": "Money",
+    "danger": "Danger zone",
+    "attendees": "Attendees"
+  },
+  "row": {
+    "share": "Share link",
+    "invite_team": "Invite a team member",
+    "message": "Message attendees",
+    "message_sub": "Push and in-app",
+    "email": "Email attendees",
+    "email_sub": "Sent by civfix. Addresses stay private.",
+    "check_in": "Check in",
+    "check_in_sub_one": "{{count}} still to check in",
+    "check_in_sub_other": "{{count}} still to check in",
+    "scan": "Scan tickets",
     "walkup": "Add a walk-up",
-    "walkup_a11y": "Register someone at the door",
+    "mark_no_shows": "Mark no-shows",
+    "mark_no_shows_sub_one": "{{count}} seat was never marked",
+    "mark_no_shows_sub_other": "{{count}} seats were never marked",
+    "edit": "Edit event",
     "team": "Team",
-    "team_a11y": "Manage the event team"
+    "tickets": "Tickets",
+    "resources": "Request city resources",
+    "resources_no_city": "No city is linked to this location yet.",
+    "duplicate": "Duplicate event",
+    "cancel": "Cancel event"
   },
-  "roster": {
-    "heading": "Attendees"
+  "no_shows": {
+    "title": "Mark the rest as no-shows?",
+    "body_one": "{{count}} seat that was never checked in will be marked as a no-show.",
+    "body_other": "{{count}} seats that were never checked in will be marked as no-shows.",
+    "confirm": "Mark no-shows",
+    "cancel": "Keep as is",
+    "dismiss_a11y": "Close the no-show confirmation",
+    "success_one": "{{count}} seat marked as a no-show.",
+    "success_other": "{{count}} seats marked as no-shows.",
+    "error": "Those seats could not be marked."
   },
+  "cancelled_notice": "This event was cancelled.",
   "walkup": {
     "title": "Walk-up registration",
     "caption": "Register someone at the door. They are checked in straight away.",

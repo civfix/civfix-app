@@ -3,6 +3,7 @@
     "a11y": "Contadores del evento en vivo",
     "checked_in": "Registrados",
     "registered": "Inscritos",
+    "of_capacity": "de {{capacity}} plazas",
     "waitlist": "Lista de espera",
     "no_show": "No asistieron",
     "error": "Los contadores no están disponibles ahora mismo."

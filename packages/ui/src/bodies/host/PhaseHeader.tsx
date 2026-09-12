@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { Animated, Easing, View } from "react-native"
+import type { EventPhase } from "@civfix/shared"
 import { makeThemedStyles, useReducedMotion, useTheme } from "../../theme"
 import { useT } from "../../i18n"
 import { MetaDot } from "../../primitives/MetaDot"
@@ -7,15 +8,11 @@ import { PrimaryButton } from "../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../primitives/SecondaryButton"
 import { Text, type LucideIcon } from "../../typography"
 
-export const PHASE_NAMES = ["upcoming", "live", "ended", "cancelled"] as const
-
-export type PhaseName = (typeof PHASE_NAMES)[number]
-
 const DOT_SIZE = 8
 const PULSE_MIN_OPACITY = 0.35
 
 export interface PhaseDotProps {
-  phase: PhaseName
+  phase: EventPhase
 }
 
 export interface PhaseHeaderAction {
@@ -26,7 +23,7 @@ export interface PhaseHeaderAction {
 }
 
 export interface PhaseHeaderProps {
-  phase: PhaseName
+  phase: EventPhase
   title: string
   when: string
   relative: string
