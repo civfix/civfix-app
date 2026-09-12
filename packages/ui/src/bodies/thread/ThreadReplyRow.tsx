@@ -24,18 +24,23 @@ import {
   splitPostBodyMentions,
 } from "../postCardModel"
 import { useListTimeAgo } from "../useListTimeAgo"
+import { ThreadGutterRail } from "./ThreadGutterRail"
 import {
-  THREAD_RAIL_COLUMN_W,
+  THREAD_AVATAR_SIZE,
+  THREAD_NESTED_AVATAR_SIZE,
   THREAD_RAIL_GAP,
   THREAD_RAIL_STUB_H,
   THREAD_RAIL_W,
+  threadRowGeometry,
   type ThreadRailSegment,
+  type ThreadRowDepth,
   type ThreadRowExpansion,
 } from "./threadModel"
 
 export interface ThreadReplyRowProps {
   post: PostDTO
   rail: ThreadRailSegment
+  depth?: ThreadRowDepth
   hairline?: boolean
   isOptimistic?: boolean
   failed?: boolean
@@ -49,6 +54,7 @@ export interface ThreadReplyRowProps {
 export const ThreadReplyRow = React.memo(function ThreadReplyRow({
   post,
   rail,
+  depth = 1,
   hairline = true,
   isOptimistic = false,
   failed = false,
@@ -97,6 +103,8 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
 
   const control: ThreadRowExpansion =
     expansion ?? (!isOptimistic && post.counts.replies > 0 ? "navigate" : "none")
+  const geometry = threadRowGeometry(depth)
+  const nested = geometry.indent > 0
 
   return (
     <View
@@ -108,8 +116,9 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
       ]}
     >
       <View style={styles.row}>
-        <View style={styles.railColumn}>
-          {rail.above ? <View style={styles.railAbove} /> : null}
+        {nested ? <ThreadGutterRail rail={rail} geometry={geometry} branch="avatar" /> : null}
+        <View style={nested ? styles.railColumnNested : styles.railColumn}>
+          {!nested && rail.above ? <View style={styles.railAbove} /> : null}
           <Pressable
             onPress={openIdentity}
             accessibilityRole="button"
@@ -122,12 +131,12 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               seed={identity.avatarSeed}
               photoUrl={identity.avatarUrl}
               gradient={identity.avatarGradient}
-              size={36}
+              size={geometry.avatarSize}
               {...(identity.organization ? { style: styles.orgAvatar } : {})}
               decorative
             />
           </Pressable>
-          {rail.below ? <View style={styles.railBelow} /> : null}
+          {!nested && rail.below ? <View style={styles.railBelow} /> : null}
         </View>
 
         <View style={styles.content}>
@@ -282,7 +291,11 @@ const useStyles = makeThemedStyles((t) => ({
     paddingBottom: t.space["2"],
   },
   railColumn: {
-    width: THREAD_RAIL_COLUMN_W,
+    width: THREAD_AVATAR_SIZE,
+    alignItems: "center",
+  },
+  railColumnNested: {
+    width: THREAD_NESTED_AVATAR_SIZE,
     alignItems: "center",
   },
   railAbove: {

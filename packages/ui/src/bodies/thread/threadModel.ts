@@ -143,10 +143,34 @@ export function replyComposerState(input: {
 
 export const THREAD_MAX_INLINE_DEPTH = 2
 
-export const THREAD_RAIL_COLUMN_W = 36
+export const THREAD_AVATAR_SIZE = 36
+export const THREAD_NESTED_AVATAR_SIZE = 28
+export const THREAD_RAIL_COLUMN_W = THREAD_AVATAR_SIZE
 export const THREAD_RAIL_GAP = 10
 export const THREAD_RAIL_W = 2
 export const THREAD_RAIL_STUB_H = 12
+export const THREAD_NESTED_INDENT = THREAD_RAIL_COLUMN_W + THREAD_RAIL_GAP
+
+export type ThreadRowDepth = 1 | 2
+
+export interface ThreadRowGeometry {
+  readonly indent: number
+  readonly avatarSize: number
+}
+
+const TOP_LEVEL_GEOMETRY: ThreadRowGeometry = { indent: 0, avatarSize: THREAD_AVATAR_SIZE }
+const NESTED_GEOMETRY: ThreadRowGeometry = {
+  indent: THREAD_NESTED_INDENT,
+  avatarSize: THREAD_NESTED_AVATAR_SIZE,
+}
+
+export function threadRowGeometry(depth: ThreadRowDepth): ThreadRowGeometry {
+  return depth >= THREAD_MAX_INLINE_DEPTH ? NESTED_GEOMETRY : TOP_LEVEL_GEOMETRY
+}
+
+export function threadGutterWidth(geometry: ThreadRowGeometry): number {
+  return geometry.indent - THREAD_RAIL_GAP
+}
 
 const OPTIMISTIC_PREFIX = "optimistic-"
 
@@ -177,7 +201,7 @@ export type ThreadRowVariant<T extends ThreadRowPost> =
 
 export type ThreadRow<T extends ThreadRowPost> = ThreadRowVariant<T> & {
   key: string
-  depth: 1 | 2
+  depth: ThreadRowDepth
   rail: ThreadRailSegment
   hairline: boolean
 }
@@ -185,7 +209,7 @@ export type ThreadRow<T extends ThreadRowPost> = ThreadRowVariant<T> & {
 const EMPTY_EXPANDED: ReadonlySet<string> = new Set<string>()
 
 function rowExpansion(
-  depth: 1 | 2,
+  depth: ThreadRowDepth,
   replyCount: number,
   expanded: boolean,
   optimistic: boolean,
@@ -217,7 +241,7 @@ export function buildThreadRows<T extends ThreadRowPost>(input: {
     while (run < top.length && top[run]?.author.id === input.focalAuthorId) run += 1
   }
 
-  const drafts: { key: string; depth: 1 | 2; variant: ThreadRowVariant<T>; below: boolean }[] = []
+  const drafts: { key: string; depth: ThreadRowDepth; variant: ThreadRowVariant<T>; below: boolean }[] = []
 
   top.forEach((post, index) => {
     const optimistic = isOptimisticPostId(post.id)

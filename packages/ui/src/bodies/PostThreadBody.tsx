@@ -223,7 +223,7 @@ export function PostThreadBody({
       const listRow = item as ThreadRow<PostDTO>
       if (listRow.kind === "show-more") {
         return (
-          <ThreadChainRow rail={listRow.rail} hairline={listRow.hairline}>
+          <ThreadChainRow rail={listRow.rail} depth={listRow.depth} hairline={listRow.hairline}>
             <Pressable
               accessibilityRole="button"
               onPress={() => openEntry({ kind: "post-thread", id: listRow.parentId })}
@@ -239,7 +239,7 @@ export function PostThreadBody({
       }
       if (listRow.kind === "loading") {
         return (
-          <ThreadChainRow rail={listRow.rail} hairline={listRow.hairline}>
+          <ThreadChainRow rail={listRow.rail} depth={listRow.depth} hairline={listRow.hairline}>
             <Text style={styles.chainLoading}>{t("thread.loading")}</Text>
           </ThreadChainRow>
         )
@@ -248,6 +248,7 @@ export function PostThreadBody({
         <ThreadReplyRow
           post={listRow.post}
           rail={listRow.rail}
+          depth={listRow.depth}
           hairline={listRow.hairline}
           isOptimistic={listRow.optimistic}
           expansion={listRow.expansion}
