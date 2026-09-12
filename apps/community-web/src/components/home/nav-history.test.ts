@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { ROOT_NAV_SNAPSHOT, type NavReturn, type NavSnapshot } from "@civfix/ui/nav"
+import {
+  ROOT_NAV_SNAPSHOT,
+  entryFromPath,
+  type DetailEntry,
+  type NavReturn,
+  type NavSnapshot,
+} from "@civfix/ui/nav"
 
 import {
   pathForSnapshot,
@@ -344,24 +350,62 @@ describe("traversalFor", () => {
 
 describe("pathForSnapshot", () => {
   it("addresses the active detail", () => {
-    expect(pathForSnapshot(snapshot({ stack: [{ kind: "pin", id: "p1" }] }))).toBe("/pin/p1")
+    expect(pathForSnapshot(snapshot({ stack: [{ kind: "pin", id: "p1" }] }))).toBe("/pin/p1/")
   })
 
   it("addresses the report wizard, which the old view-only rule flattened to /", () => {
-    expect(pathForSnapshot(snapshot({ view: "report" }))).toBe("/report")
-    expect(pathForSnapshot(snapshot({ view: "map" }))).toBe("/map")
-    expect(pathForSnapshot(snapshot({ view: "search" }))).toBe("/search")
+    expect(pathForSnapshot(snapshot({ view: "report" }))).toBe("/report/")
+    expect(pathForSnapshot(snapshot({ view: "map" }))).toBe("/map/")
+    expect(pathForSnapshot(snapshot({ view: "search" }))).toBe("/search/")
   })
 
   it("addresses a selected list view and falls back to home", () => {
-    expect(pathForSnapshot(snapshot({ view: "events" }))).toBe("/cleanups")
-    expect(pathForSnapshot(snapshot({ view: "messaging" }))).toBe("/messages")
+    expect(pathForSnapshot(snapshot({ view: "events" }))).toBe("/cleanups/")
+    expect(pathForSnapshot(snapshot({ view: "messaging" }))).toBe("/messages/")
     expect(pathForSnapshot(snapshot({ view: "home" }))).toBe("/")
   })
 
   it("never addresses the transient drop-pin affordance", () => {
     expect(pathForSnapshot(snapshot({ view: "map", stack: [{ kind: "drop-pin", lat: 1, lng: 2 }] }))).toBe(
-      "/map",
+      "/map/",
     )
+  })
+
+  it("writes export-canonical paths, so a reload is served instead of redirected", () => {
+    const written = [
+      snapshot({ view: "map" }),
+      snapshot({ view: "search" }),
+      snapshot({ view: "report" }),
+      snapshot({ view: "events" }),
+      snapshot({ view: "messaging" }),
+      snapshot({ view: "social" }),
+      snapshot({ view: "reports" }),
+      snapshot({ stack: [{ kind: "pin", id: "p1" }] }),
+      snapshot({ stack: [{ kind: "cleanup", id: "c1" }] }),
+      snapshot({ stack: [{ kind: "person", id: "u1" }] }),
+      snapshot({ stack: [{ kind: "activity" }] }),
+      snapshot({ stack: [{ kind: "thread", id: "t1", roomKind: "dm" }] }),
+    ].map(pathForSnapshot)
+    for (const path of written) expect(path.endsWith("/")).toBe(true)
+    expect(pathForSnapshot(snapshot({ view: "home" }))).toBe("/")
+  })
+
+  it("round-trips a written path back through the shared path reader", () => {
+    const cases: NavSnapshot[] = [
+      snapshot({ view: "map" }),
+      snapshot({ view: "search" }),
+      snapshot({ view: "report" }),
+      snapshot({ stack: [{ kind: "pin", id: "p1" }] }),
+      snapshot({ stack: [{ kind: "cleanup", id: "c1" }] }),
+      snapshot({ stack: [{ kind: "person", id: "u1" }] }),
+      snapshot({ stack: [{ kind: "thread", id: "t1", roomKind: "dm" }] }),
+      snapshot({ stack: [{ kind: "activity" }] }),
+    ]
+    for (const source of cases) {
+      const path = pathForSnapshot(source)
+      const entry = entryFromPath(path)
+      expect(entry).not.toBeNull()
+      expect(pathForSnapshot(snapshot({ ...source, stack: [entry as DetailEntry] }))).toBe(path)
+    }
   })
 })

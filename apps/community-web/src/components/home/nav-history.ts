@@ -170,11 +170,15 @@ export function writePlan(
   return { type: "push" }
 }
 
+function exportPath(path: string): string {
+  return path.endsWith("/") ? path : `${path}/`
+}
+
 export function pathForSnapshot(snapshot: NavSnapshot): string {
   const active = snapshot.stack[snapshot.stack.length - 1]
-  if (active && active.kind !== "drop-pin") return pathForEntry(active)
+  if (active && active.kind !== "drop-pin") return exportPath(pathForEntry(active))
   const viewPath = pathForView(snapshot.view)
-  if (viewPath) return viewPath
+  if (viewPath) return exportPath(viewPath)
   const listKind = LIST_KIND_FOR_VIEW[snapshot.view]
-  return listKind ? pathForEntry({ kind: listKind }) : "/"
+  return listKind ? exportPath(pathForEntry({ kind: listKind })) : "/"
 }
