@@ -17,7 +17,8 @@
     "cancelled": "취소됨",
     "starts": "{{when}} 후 시작",
     "started": "{{when}} 전 시작",
-    "ended_on": "{{when}} 전 종료"
+    "ended_on": "{{when}} 전 종료",
+    "called_off": "더 이상 열리지 않음"
   },
   "cta": {
     "share": "행사 공유",
@@ -50,7 +51,7 @@
     "not_marked": "미표시",
     "hours": "인정된 시간",
     "hours_value": "{{hours}}시간",
-    "hours_hint": "체크인한 참가자 {{credited}}명",
+    "hours_hint": "참가자 {{attended}}명 중 {{credited}}명 인정",
     "donations": "기부",
     "returning": "재참여",
     "returning_hint": "등록 {{total}}명 중 이전에 참여한 인원"

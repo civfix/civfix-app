@@ -405,11 +405,13 @@ export function HostModeBody({ id }: { id: string }) {
   }
 
   const relativeLine =
-    phase === "ended" || phase === "cancelled"
-      ? t("phase.ended_on", { when: relative(event.scheduledAt, now) })
-      : phase === "live"
-        ? t("phase.started", { when: relative(event.scheduledAt, now) })
-        : t("phase.starts", { when: relative(event.scheduledAt, now) })
+    phase === "cancelled"
+      ? t("phase.called_off")
+      : phase === "ended"
+        ? t("phase.ended_on", { when: relative(event.scheduledAt, now) })
+        : phase === "live"
+          ? t("phase.started", { when: relative(event.scheduledAt, now) })
+          : t("phase.starts", { when: relative(now, startsAt) })
 
   return (
     <ScrollView

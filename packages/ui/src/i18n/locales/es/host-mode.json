@@ -17,7 +17,8 @@
     "cancelled": "Cancelado",
     "starts": "Empieza en {{when}}",
     "started": "Empezó hace {{when}}",
-    "ended_on": "Terminó hace {{when}}"
+    "ended_on": "Terminó hace {{when}}",
+    "called_off": "Ya no se celebra"
   },
   "cta": {
     "share": "Compartir evento",
@@ -50,7 +51,7 @@
     "not_marked": "Sin marcar",
     "hours": "Horas acreditadas",
     "hours_value": "{{hours}} h",
-    "hours_hint": "{{credited}} asistentes con entrada registrada",
+    "hours_hint": "{{credited}} de {{attended}} asistentes acreditados",
     "donations": "Donaciones",
     "returning": "Repiten",
     "returning_hint": "de {{total}} inscritos ya habían venido"

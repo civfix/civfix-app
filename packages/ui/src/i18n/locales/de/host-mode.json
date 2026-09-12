@@ -17,7 +17,8 @@
     "cancelled": "Abgesagt",
     "starts": "Beginnt in {{when}}",
     "started": "Vor {{when}} begonnen",
-    "ended_on": "Vor {{when}} beendet"
+    "ended_on": "Vor {{when}} beendet",
+    "called_off": "Findet nicht mehr statt"
   },
   "cta": {
     "share": "Veranstaltung teilen",
@@ -50,7 +51,7 @@
     "not_marked": "Nicht markiert",
     "hours": "Gutgeschriebene Stunden",
     "hours_value": "{{hours}} Std.",
-    "hours_hint": "{{credited}} eingecheckte Teilnehmende",
+    "hours_hint": "{{credited}} von {{attended}} Teilnehmenden gutgeschrieben",
     "donations": "Spenden",
     "returning": "Wiederkehrend",
     "returning_hint": "von {{total}} Angemeldeten waren schon einmal dabei"

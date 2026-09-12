@@ -17,7 +17,8 @@
     "cancelled": "Cancelled",
     "starts": "Starts in {{when}}",
     "started": "Started {{when}} ago",
-    "ended_on": "Ended {{when}} ago"
+    "ended_on": "Ended {{when}} ago",
+    "called_off": "No longer happening"
   },
   "cta": {
     "share": "Share event",
@@ -50,7 +51,7 @@
     "not_marked": "Not marked",
     "hours": "Hours credited",
     "hours_value": "{{hours}} h",
-    "hours_hint": "{{credited}} attendees checked in",
+    "hours_hint": "{{credited}} of {{attended}} attendees credited",
     "donations": "Donations",
     "returning": "Returning",
     "returning_hint": "of {{total}} registered have been before"

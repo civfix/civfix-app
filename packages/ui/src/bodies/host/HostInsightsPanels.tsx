@@ -32,14 +32,17 @@ export interface HostInsightsPanelsProps {
   compact: boolean
 }
 
-function useTileText() {
+function useTileText(insights: EventInsights) {
   const { t } = useT("host-mode")
   const { locale } = useLocale()
   return (tile: HostTile): { value: string; hint?: string } => {
     if (tile.key === "hours") {
       return {
         value: t("tiles.hours_value", { hours: tile.value }),
-        hint: t("tiles.hours_hint", { credited: tile.total ?? 0 }),
+        hint: t("tiles.hours_hint", {
+          credited: insights.hours.attendeesCredited,
+          attended: tile.total ?? 0,
+        }),
       }
     }
     if (tile.key === "donations") {
@@ -244,7 +247,7 @@ function MoneyPanel({ insights }: { insights: EventInsights }) {
 export function HostInsightsPanels({ insights, phase, columns, compact }: HostInsightsPanelsProps) {
   const styles = useStyles()
   const { t } = useT("host-mode")
-  const tileText = useTileText()
+  const tileText = useTileText(insights)
   const tiles = hostStatTiles(insights, phase)
   const panels = hostPanels(phase)
 
