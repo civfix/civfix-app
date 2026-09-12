@@ -82,14 +82,20 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Restore Turbo + Next.js build cache
+        # THE CACHE KEY IS SCOPED BY ENVIRONMENT, and that is not tidiness. Staging and production now
+        # build the SAME COMMIT with different NEXT_PUBLIC_* values, so a key on the sha alone would let
+        # the production build restore the Next webpack cache the staging build just wrote — and those
+        # values are inlined into the chunks at compile time. Turbo hashes its env inputs and would
+        # rebuild, but `.next/cache` is restored underneath it by this step, so the guarantee has to be
+        # here. Never merge these two caches.
         uses: actions/cache@v4
         with:
           path: |
             .turbo
             apps/community-web/.next/cache
-          key: ${{ runner.os }}-web-build-${{ github.sha }}
+          key: ${{ runner.os }}-web-build-${{ env.DEPLOY_ENV }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-web-build-
+            ${{ runner.os }}-web-build-${{ env.DEPLOY_ENV }}-
 
       - name: Resolve the build environment
         # Every NEXT_PUBLIC_* is resolved once, from DEPLOY_ENV, and written to $GITHUB_ENV for the two
