@@ -353,6 +353,10 @@ export function buildCreateMutation(
       if (input.kind === "reply" && input.replyToId) {
         void qc.invalidateQueries({ queryKey: queryKeys.postReplies(input.replyToId) })
         void qc.invalidateQueries({ queryKey: queryKeys.post(input.replyToId) })
+        const grandparentId = qc.getQueryData<PostDTO>(queryKeys.post(input.replyToId))?.replyToId
+        if (grandparentId) {
+          void qc.invalidateQueries({ queryKey: queryKeys.postReplies(grandparentId) })
+        }
       }
     },
   }
