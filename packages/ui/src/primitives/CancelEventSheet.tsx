@@ -46,14 +46,20 @@ export function CancelEventSheet({
       onClose={onClose}
       onCommit={commit}
       headerIcon="Ban"
-      headerIconColor={th.colors.bloom["700"]}
+      headerIconColor={th.colors.dangerInk}
       title={t("title")}
       dismissLabel={t("a11y.dismiss")}
       error={error}
       actions={
         <>
           <SecondaryButton label={t("actions.keep")} onPress={onClose} size="sm" />
-          <PrimaryButton label={t("actions.confirm")} onPress={commit} loading={pending} disabled={pending} />
+          <PrimaryButton
+            label={t("actions.confirm")}
+            variant="destructive"
+            onPress={commit}
+            loading={pending}
+            disabled={pending}
+          />
         </>
       }
     >
