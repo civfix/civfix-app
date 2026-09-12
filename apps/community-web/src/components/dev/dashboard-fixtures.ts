@@ -7,6 +7,7 @@ import {
 import type {
   CleanupDTO,
   EventCheckinCountersDTO,
+  EventInsights,
   EventPhase,
   EventRegistrationDTO,
   GetOrgBalanceResponse,
@@ -40,6 +41,7 @@ export const DASHBOARD_EVENT_IDS: Readonly<Record<EventPhase, string>> = {
 
 export const DASHBOARD_EVENT_PENDING_ID = "ev-pending"
 export const DASHBOARD_EVENT_ERROR_ID = "ev-error"
+export const DASHBOARD_EVENT_REFUNDED_ID = "ev-refunded"
 
 const PHASE_BY_EVENT_ID: Readonly<Record<string, EventPhase>> = {
   [DASHBOARD_EVENT_IDS.upcoming]: "upcoming",
@@ -48,6 +50,7 @@ const PHASE_BY_EVENT_ID: Readonly<Record<string, EventPhase>> = {
   [DASHBOARD_EVENT_IDS.cancelled]: "cancelled",
   [DASHBOARD_EVENT_PENDING_ID]: "live",
   [DASHBOARD_EVENT_ERROR_ID]: "live",
+  [DASHBOARD_EVENT_REFUNDED_ID]: "ended",
 }
 
 const PHASE_TITLES: Readonly<Record<EventPhase, string>> = {
@@ -87,7 +90,21 @@ const FULL_HOST_CAPABILITIES: CleanupDTO["myCapabilities"] = [
   "broadcast",
   "export",
   "manage_page",
+  "cancel_event",
+  "manage_org_link",
+  "moderate_chat",
+  "request_resources",
+  "view_donations",
 ]
+
+const EVENT_ORGANIZATION: NonNullable<CleanupDTO["organization"]> = {
+  id: "org-bayview",
+  slug: "bayview-stewards",
+  name: "Bayview Stewards",
+  logoUrl: null,
+  verified: true,
+  verifiedKind: "nonprofit",
+}
 
 export const DASHBOARD_ORGS: readonly OrganizationDTO[] = [
   {
@@ -291,10 +308,18 @@ const ORG_PAYOUTS: ListOrgPayoutsResponse = {
   nextCursor: null,
 }
 
+function insightsFor(id: string, phase: EventPhase): EventInsights {
+  return fakeEventInsights(phase, id === DASHBOARD_EVENT_REFUNDED_ID ? { refunded: true } : {})
+}
+
 function phaseCleanup(id: string, phase: EventPhase): CleanupDTO {
-  const insights = fakeEventInsights(phase)
+  const insights = insightsFor(id, phase)
   return {
     id,
+    referenceCode: "BAY-4821",
+    pageSlug: "bayview-shoreline-cleanup",
+    jurisdictionGeoid: "0667000",
+    organization: EVENT_ORGANIZATION,
     title: PHASE_TITLES[phase],
     type: "site",
     eventKind: "cleanup",
@@ -327,8 +352,8 @@ function phaseCleanup(id: string, phase: EventPhase): CleanupDTO {
   }
 }
 
-function phaseCounters(phase: EventPhase): EventCheckinCountersDTO {
-  const insights = fakeEventInsights(phase)
+function phaseCounters(id: string, phase: EventPhase): EventCheckinCountersDTO {
+  const insights = insightsFor(id, phase)
   const startsAt = Date.parse(insights.clock.startsAt)
   return {
     registered: insights.seats.registered,
@@ -362,7 +387,7 @@ const ROSTER_PEOPLE: readonly { id: string; name: string; handle: string }[] = [
 ]
 
 function phaseRoster(id: string, phase: EventPhase): ListEventRegistrationsResponse {
-  const insights = fakeEventInsights(phase)
+  const insights = insightsFor(id, phase)
   const startsAt = Date.parse(insights.clock.startsAt)
   const checkedInRows = phase === "upcoming" || phase === "cancelled" ? 0 : 4
   const items: EventRegistrationDTO[] = ROSTER_PEOPLE.map((who, i) => {
@@ -462,13 +487,13 @@ export const DASHBOARD_FAKE_ENDPOINTS: Record<string, FakeEndpoint> = {
     const id = argId(args)
     if (id === DASHBOARD_EVENT_PENDING_ID) return pendingForever()()
     if (id === DASHBOARD_EVENT_ERROR_ID) return failing("getEventInsights")()
-    return Promise.resolve(fakeEventInsights(phaseOf(id)))
+    return Promise.resolve(insightsFor(id, phaseOf(id)))
   },
   getEventCheckinCounters: (args) => {
     const id = argId(args)
     if (id === DASHBOARD_EVENT_PENDING_ID) return pendingForever()()
     if (id === DASHBOARD_EVENT_ERROR_ID) return failing("getEventCheckinCounters")()
-    return Promise.resolve(phaseCounters(phaseOf(id)))
+    return Promise.resolve(phaseCounters(id, phaseOf(id)))
   },
   listEventRegistrations: async (args) => {
     const id = argId(args)
@@ -519,4 +544,28 @@ export function portfolioOverrides(
   const out: Record<string, FakeEndpoint> = {}
   for (const name of PORTFOLIO_QUERY_NAMES) out[name] = make(name)
   return out
+}
+
+export function emptyPortfolioOverrides(): Record<string, FakeEndpoint> {
+  const analytics = fakeHostedEventsAnalytics("30d", { seed: 7 })
+  const blank = { value: null, numerator: null, denominator: null, suppressed: false }
+  return {
+    listMyOrganizations: async () => ({ items: [] }),
+    listMyEventInvites: async () => ({ items: [], nextCursor: null }),
+    listMyOrgInvites: async () => ({ items: [] }),
+    listMyHostedEvents: async () => ({
+      items: [],
+      nextCursor: null,
+      kpis: { eventsHosted: 0, upcomingEvents: 0, totalRegistrations: 0, totalCheckedIn: 0 },
+    }),
+    hostedEventsAnalytics: async () => ({
+      ...analytics,
+      totals: { events: 0, registrations: 0, checkIns: 0, uniqueAttendees: 0 },
+      series: [],
+      byEvent: { panelSuppressed: false, rows: [] },
+      repeatAttendance: blank,
+      averageCheckInRate: blank,
+      bestDayTime: null,
+    }),
+  }
 }

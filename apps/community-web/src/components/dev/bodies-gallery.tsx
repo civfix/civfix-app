@@ -74,6 +74,8 @@ import {
   DASHBOARD_EVENT_ERROR_ID,
   DASHBOARD_EVENT_IDS,
   DASHBOARD_EVENT_PENDING_ID,
+  DASHBOARD_EVENT_REFUNDED_ID,
+  emptyPortfolioOverrides,
   failing,
   makeDashboardFakeApi,
   pendingForever,
@@ -1073,6 +1075,11 @@ const dashboardSoloData = makeFakeDataContext({
   auth: DASHBOARD_AUTH,
 })
 
+const dashboardEmptyData = makeFakeDataContext({
+  api: makeDashboardFakeApi(emptyPortfolioOverrides()),
+  auth: DASHBOARD_AUTH,
+})
+
 const dashboardPendingData = makeFakeDataContext({
   api: makeDashboardFakeApi(portfolioOverrides(() => pendingForever())),
   auth: DASHBOARD_AUTH,
@@ -1424,6 +1431,14 @@ export default function BodiesGallery() {
             </DashboardFrame>
 
             <DashboardFrame
+              title="EventDashboardBody (portfolio, nothing hosted yet)"
+              data={dashboardEmptyData}
+              height={720}
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            <DashboardFrame
               title="EventDashboardBody (every portfolio query PENDING)"
               data={dashboardPendingData}
               height={520}
@@ -1458,6 +1473,10 @@ export default function BodiesGallery() {
 
             <DashboardFrame title="HostModeBody (phase: cancelled)" height={820}>
               <HostModeBody id={DASHBOARD_EVENT_IDS.cancelled} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (ended, donations fully refunded - negative net)" height={820}>
+              <HostModeBody id={DASHBOARD_EVENT_REFUNDED_ID} />
             </DashboardFrame>
 
             <DashboardFrame title="HostModeBody (counters + insights PENDING)" height={620}>
