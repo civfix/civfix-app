@@ -109,11 +109,13 @@ export function snapshotEquals(a: NavSnapshot, b: NavSnapshot): boolean {
 
 export type ReconcilePlan =
   | { type: "none" }
+  | { type: "restamp" }
   | { type: "push"; count: number }
   | { type: "replace" }
 
 export function reconcilePlan(landed: NavSnapshot, live: NavSnapshot): ReconcilePlan {
-  if (snapshotEquals(landed, live)) return { type: "none" }
+  if (snapshotEquals(landed, live))
+    return landed.query === live.query ? { type: "none" } : { type: "restamp" }
   if (landed.view !== live.view) return { type: "replace" }
   const landedIds = stackIdentities(landed.stack)
   const liveIds = stackIdentities(live.stack)

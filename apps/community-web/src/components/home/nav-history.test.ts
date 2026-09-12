@@ -145,6 +145,16 @@ describe("reconcilePlan", () => {
     expect(reconcilePlan(snapshot(), snapshot()).type).toBe("none")
   })
 
+  it("restamps the landed entry when only the search query moved on", () => {
+    const landed = snapshot({ view: "map" })
+    expect(reconcilePlan(landed, snapshot({ view: "map", query: "abc" }))).toEqual({
+      type: "restamp",
+    })
+    expect(reconcilePlan(snapshot({ view: "map", query: "abc" }), landed)).toEqual({
+      type: "restamp",
+    })
+  })
+
   it("pushes when the live store is the landed state plus exactly one entry", () => {
     const landed = snapshot({ view: "events", stack: [{ kind: "cleanup", id: "c1" }] })
     const live = snapshot({

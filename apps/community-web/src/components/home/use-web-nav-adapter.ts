@@ -185,6 +185,10 @@ export function useWebNavAdapter(): void {
       const depth = landed?.depth ?? 0
       const plan = reconcilePlan(base, live)
       if (plan.type === "none") return
+      if (plan.type === "restamp") {
+        write("replace", depth, live, landed)
+        return
+      }
       if (plan.type === "push") {
         let from = landed
         for (let step = 1; step <= plan.count; step += 1) {
@@ -278,6 +282,7 @@ export function useWebNavAdapter(): void {
     const controller = controllerRef.current
     const onPop = (event: PopStateEvent) => {
       const landed = readNavHistory(event.state)
+      if (landed) controller.seq = Math.max(controller.seq, landed.seq)
       const traversal = controller.traversal
       const abandoned = controller.abandoned
       controller.abandoned = null

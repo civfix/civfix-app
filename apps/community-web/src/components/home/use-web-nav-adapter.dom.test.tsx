@@ -622,3 +622,43 @@ describe("leaving a view consumes its entry instead of twinning the surface bene
     expect(nav().view).toBe("map")
   })
 })
+
+describe("a landing carries the live search text and the seq already spent", () => {
+  it("restamps the landed entry so a reload keeps what was typed", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    await drive(() => nav().push(PIN_A))
+    expect(depth()).toBe(2)
+    const entriesBefore = window.history.length
+
+    await drive(() => nav().setQuery("abc"))
+    await drive(() => nav().back())
+    expect(path()).toBe("/map")
+    expect(depth()).toBe(1)
+    expect(window.history.length).toBe(entriesBefore)
+    expect(readNavHistory(window.history.state)?.snapshot.query).toBe("abc")
+  })
+
+  it("never mints twice the seq of an entry written before a reload", async () => {
+    mount()
+    await drive(() => nav().push(PIN_A))
+    const aheadSeq = readNavHistory(window.history.state)?.seq ?? 0
+    expect(aheadSeq).toBeGreaterThan(0)
+
+    await browserBack()
+    const rootState = window.history.state
+    cleanup()
+    useNavStore.setState({ view: "home", stack: [], active: null })
+    window.history.replaceState(rootState, "", "/")
+    mount()
+    expect(depth()).toBe(0)
+
+    await browserForward()
+    expect(depth()).toBe(1)
+    expect(nav().stack).toEqual([PIN_A])
+
+    await drive(() => nav().push(PERSON))
+    expect(depth()).toBe(2)
+    expect(readNavHistory(window.history.state)?.seq).toBeGreaterThan(aheadSeq)
+  })
+})
