@@ -8,6 +8,7 @@ import {
   takeNavSnapshot,
   ROOT_NAV_SNAPSHOT,
   type NavSnapshot,
+  type NavTransition,
 } from "@civfix/ui"
 
 import {
@@ -35,6 +36,7 @@ import {
  *       and a POP TRAVERSES (`history.go(-n)`) instead of pushing a new entry,
  *   (c) a user-initiated popstate restores the landed snapshot into the store; a popstate landing from
  *       our own traversal reconciles the entry with whatever the store already is.
+
  *
  * URL sync uses raw history.pushState/replaceState (NOT next/navigation) on purpose: a Next client
  * navigation to /pin/<id> would unmount the shell (and the map) and mount the catch-all route shell. We
@@ -81,11 +83,20 @@ function isRootSnapshot(snapshot: NavSnapshot): boolean {
   return snapshot.view === "home" && snapshot.stack.length === 0
 }
 
+const TRAVERSAL_TIMEOUT_MS = 400
+
+interface PendingTraversal {
+  expectedDepth: number
+  timer: ReturnType<typeof window.setTimeout>
+}
+
 interface NavController {
   seq: number
   adapterDriven: boolean
-  pendingTraversals: number
   handledSeq: number
+  traversal: PendingTraversal | null
+  queued: NavTransition[]
+  written: (NavSnapshot | undefined)[]
 }
 
 /**
@@ -108,8 +119,10 @@ export function useWebNavAdapter(): void {
   const controllerRef = React.useRef<NavController>({
     seq: 0,
     adapterDriven: false,
-    pendingTraversals: 0,
     handledSeq: 0,
+    traversal: null,
+    queued: [],
+    written: [],
   })
 
   const write = React.useCallback(
@@ -132,6 +145,8 @@ export function useWebNavAdapter(): void {
       const path = pathForSnapshot(snapshot)
       if (mode === "push") window.history.pushState(state, "", path)
       else window.history.replaceState(state, "", path)
+      controller.written[depth] = snapshot
+      controller.written.length = depth + 1
     },
     [],
   )
@@ -146,6 +161,63 @@ export function useWebNavAdapter(): void {
     }
     controller.handledSeq = useNavStore.getState().navSeq
   }, [])
+
+  const recover = React.useCallback(() => {
+    const controller = controllerRef.current
+    controller.traversal = null
+    controller.queued = []
+    const current = readNavHistory(window.history.state)
+    write("replace", current?.depth ?? 0, liveSnapshot(), current)
+  }, [write])
+
+  const traverse = React.useCallback(
+    (steps: number, fromDepth: number) => {
+      const controller = controllerRef.current
+      controller.traversal = {
+        expectedDepth: fromDepth - steps,
+        timer: window.setTimeout(recover, TRAVERSAL_TIMEOUT_MS),
+      }
+      window.history.go(-steps)
+    },
+    [recover],
+  )
+
+  const reconcile = React.useCallback(
+    (landed: NavHistoryEntry | null) => {
+      const controller = controllerRef.current
+      const live = liveSnapshot()
+      const depth = landed?.depth ?? 0
+      const plan = reconcilePlan(landed?.snapshot ?? ROOT_NAV_SNAPSHOT, live)
+      if (plan.type === "none") return
+      if (plan.type === "push") {
+        write("push", depth + 1, live, landed)
+        return
+      }
+      const beneath = depth > 0 ? controller.written[depth - 1] : undefined
+      if (beneath && snapshotEquals(beneath, live)) {
+        traverse(1, depth)
+        return
+      }
+      write("replace", depth, live, landed)
+    },
+    [traverse, write],
+  )
+
+  const settle = React.useCallback(
+    (landed: NavHistoryEntry | null) => {
+      const controller = controllerRef.current
+      while (controller.queued.length > 0) {
+        const queued = controller.queued.shift()
+        const steps = queued ? traversalFor(queued, landed) : 0
+        if (steps > 0) {
+          traverse(steps, landed?.depth ?? 0)
+          return
+        }
+      }
+      reconcile(landed)
+    },
+    [reconcile, traverse],
+  )
 
   // (a) Seed once on mount from the stamped history entry, or from the live URL. Done in a LAYOUT effect
   // (not useEffect) so the store is seeded BEFORE the first paint of the shell - otherwise a deep link
@@ -185,16 +257,20 @@ export function useWebNavAdapter(): void {
       controller.handledSeq = state.navSeq
       const transition = state.lastTransition
       if (!transition || transition.type === "restore") return
+      if (controller.traversal) {
+        if (transition.type === "pop") controller.queued.push(transition)
+        return
+      }
       const current = readNavHistory(window.history.state)
       const live = takeNavSnapshot(state)
       if (transition.type === "pop") {
+        if (current && snapshotEquals(current.snapshot, live)) return
         const steps = traversalFor(transition, current)
         if (steps === 0) {
           write("replace", current?.depth ?? 0, live, current)
           return
         }
-        controller.pendingTraversals += 1
-        window.history.go(-steps)
+        traverse(steps, current?.depth ?? 0)
         return
       }
       if (transition.type === "replace") {
@@ -205,25 +281,24 @@ export function useWebNavAdapter(): void {
       write("push", (current?.depth ?? 0) + 1, live, current)
     })
     return unsub
-  }, [write])
+  }, [traverse, write])
 
   // (c) Browser Back/Forward restores the landed snapshot into the store. A popstate that is the landing
   // of OUR OWN traversal is the other direction: the store is already right, so the entry is reconciled to
-  // it instead (coalesced traversals reconcile once, on the final landing).
+  // it instead (a pop requested mid-flight is re-measured against the entry we land on).
   React.useEffect(() => {
+    const controller = controllerRef.current
     const onPop = (event: PopStateEvent) => {
-      const controller = controllerRef.current
       const landed = readNavHistory(event.state)
-      if (controller.pendingTraversals > 0) {
-        controller.pendingTraversals -= 1
-        if (controller.pendingTraversals > 0) return
-        const live = liveSnapshot()
-        const plan = reconcilePlan(landed?.snapshot ?? ROOT_NAV_SNAPSHOT, live)
-        if (plan.type === "none") return
-        const depth = landed?.depth ?? 0
-        if (plan.type === "push") write("push", depth + 1, live, landed)
-        else write("replace", depth, live, landed)
-        return
+      const traversal = controller.traversal
+      if (traversal) {
+        window.clearTimeout(traversal.timer)
+        controller.traversal = null
+        if (!landed || landed.depth === traversal.expectedDepth) {
+          settle(landed)
+          return
+        }
+        controller.queued = []
       }
       if (landed) {
         drive(() => useNavStore.getState().restore(landed.snapshot))
@@ -235,8 +310,13 @@ export function useWebNavAdapter(): void {
       write("replace", 0, liveSnapshot(), null)
     }
     window.addEventListener("popstate", onPop)
-    return () => window.removeEventListener("popstate", onPop)
-  }, [drive, write])
+    return () => {
+      window.removeEventListener("popstate", onPop)
+      if (controller.traversal) window.clearTimeout(controller.traversal.timer)
+      controller.traversal = null
+      controller.queued = []
+    }
+  }, [drive, settle, write])
 
   // (d) Move focus to the active panel's heading on route change (WCAG 2.4.3). When the store gains a
   // NEW active detail entry, jump keyboard focus to the panel heading the shared shell marks with

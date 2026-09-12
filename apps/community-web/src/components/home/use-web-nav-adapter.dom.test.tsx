@@ -32,10 +32,14 @@ function nav() {
   return useNavStore.getState()
 }
 
-async function settle(): Promise<void> {
+async function wait(ms: number): Promise<void> {
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await new Promise((resolve) => setTimeout(resolve, ms))
   })
+}
+
+async function settle(): Promise<void> {
+  await wait(20)
 }
 
 async function drive(run: () => void): Promise<void> {
@@ -62,6 +66,23 @@ async function browserForward(): Promise<void> {
 const PIN_A: DetailEntry = { kind: "pin", id: "a" }
 const PIN_B: DetailEntry = { kind: "pin", id: "b" }
 const PERSON: DetailEntry = { kind: "person", id: "p1" }
+const CLUSTER: DetailEntry = { kind: "cluster" }
+const DROP_PIN: DetailEntry = { kind: "drop-pin", lat: 1, lng: 2 }
+
+const RECOVERY_WAIT_MS = 600
+
+function dropSecondGoOfEachTask(): void {
+  const real = window.history.go.bind(window.history)
+  let callsThisTask = 0
+  vi.spyOn(window.history, "go").mockImplementation((delta) => {
+    callsThisTask += 1
+    if (callsThisTask > 1) return
+    queueMicrotask(() => {
+      callsThisTask = 0
+    })
+    real(delta)
+  })
+}
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/")
@@ -83,6 +104,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
+  vi.restoreAllMocks()
 })
 
 describe("mount", () => {
@@ -260,5 +282,145 @@ describe("history entries this adapter did not write", () => {
     expect(state.__NA).toBe(true)
     expect(state.tree).toEqual(["x"])
     expect(readNavHistory(state)).not.toBeNull()
+  })
+})
+
+describe("entries with no address are never traversed for", () => {
+  it("cancelling a dropped pin stays on the map instead of eating the entry beneath", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    expect(depth()).toBe(1)
+    const entriesBefore = window.history.length
+
+    await drive(() => nav().openDetail(DROP_PIN))
+    expect(path()).toBe("/map")
+    expect(depth()).toBe(1)
+    expect(window.history.length).toBe(entriesBefore)
+
+    await drive(() => nav().back())
+    expect(path()).toBe("/map")
+    expect(depth()).toBe(1)
+
+    await browserBack()
+    expect(depth()).toBe(0)
+    expect(path()).toBe("/")
+    expect(nav().view).toBe("home")
+    expect(nav().stack).toEqual([])
+  })
+
+  it("closing a cluster leaves the map entry and the in-app root both intact", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    await drive(() => nav().openDetail(CLUSTER))
+    expect(depth()).toBe(1)
+
+    await drive(() => nav().back())
+    expect(path()).toBe("/map")
+    expect(depth()).toBe(1)
+
+    await browserBack()
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("home")
+  })
+
+  it("dragging a dropped pin away is not a traversal either", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    await drive(() => nav().openDetail(DROP_PIN))
+
+    await drive(() => nav().collapseToParent())
+    expect(nav().stack).toEqual([])
+    expect(path()).toBe("/map")
+    expect(depth()).toBe(1)
+
+    await browserBack()
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("home")
+  })
+
+  it("a dismissal traverses the addressable entries it cleared and no more", async () => {
+    mount()
+    await drive(() => nav().push(PIN_A))
+    await drive(() => nav().push(DROP_PIN))
+    expect(depth()).toBe(1)
+    expect(path()).toBe("/pin/a")
+
+    await drive(() => nav().collapseToParent())
+    expect(nav().stack).toEqual([])
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+  })
+})
+
+describe("two Backs before the first has landed", () => {
+  it("serializes the traversals and lands two surfaces down", async () => {
+    mount()
+    await drive(() => nav().push(PIN_A))
+    await drive(() => nav().push(PERSON))
+
+    await act(async () => {
+      nav().back()
+      nav().back()
+    })
+    await settle()
+
+    expect(nav().stack).toEqual([])
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+  })
+
+  it("still lands on an engine that drops a second traversal queued in the same task", async () => {
+    mount()
+    await drive(() => nav().push(PIN_A))
+    await drive(() => nav().push(PERSON))
+    dropSecondGoOfEachTask()
+
+    await act(async () => {
+      nav().back()
+      nav().back()
+    })
+    await settle()
+
+    expect(nav().stack).toEqual([])
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+  })
+
+  it("recovers when a traversal never lands, so the next browser Back is a real Back", async () => {
+    mount()
+    await drive(() => nav().push(PIN_A))
+    await drive(() => nav().push(PERSON))
+    const go = vi.spyOn(window.history, "go").mockImplementation(() => {})
+
+    await drive(() => nav().back())
+    expect(go).toHaveBeenCalledWith(-1)
+
+    await wait(RECOVERY_WAIT_MS)
+    expect(path()).toBe("/pin/a")
+    expect(readNavHistory(window.history.state)?.snapshot.stack).toEqual([PIN_A])
+
+    go.mockRestore()
+    await drive(() => nav().push(PIN_B))
+    expect(path()).toBe("/pin/b")
+
+    await browserBack()
+    expect(nav().stack).toEqual([PIN_A])
+    expect(path()).toBe("/pin/a")
+  })
+})
+
+describe("a lateral open after a drill-down", () => {
+  it("leaves no duplicate entry for Back to land on twice", async () => {
+    mount()
+    await drive(() => nav().push(PIN_A))
+    await drive(() => nav().push(PERSON))
+    await drive(() => nav().openDetail(PIN_B))
+    expect(path()).toBe("/pin/b")
+    expect(depth()).toBe(2)
+
+    await drive(() => nav().back())
+    expect(nav().stack).toEqual([])
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
   })
 })
