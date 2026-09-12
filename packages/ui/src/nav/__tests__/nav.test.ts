@@ -25,6 +25,9 @@ function resetStore(mode: "compact" | "expanded" = "compact"): void {
     mode,
     originView: null,
     seededDetailPage: false,
+    reportReturn: null,
+    navSeq: 0,
+    lastTransition: null,
   })
 }
 
@@ -856,9 +859,14 @@ describe("seedFor", () => {
     },
   )
 
-  it("a true detail seeds a stack in BOTH modes (compact also pins view=home)", () => {
-    expect(seedFor(detail, "expanded")).toEqual({ stack: [detail] })
+  it("a true detail seeds a stack AND the same base view in BOTH modes", () => {
+    expect(seedFor(detail, "expanded")).toEqual({ stack: [detail], view: "home" })
     expect(seedFor(detail, "compact")).toEqual({ stack: [detail], view: "home" })
+  })
+
+  it("a warm expanded seed keeps the current non-map view", () => {
+    expect(seedFor(detail, "expanded", "events")).toEqual({ stack: [detail], view: "events" })
+    expect(seedFor(detail, "compact", "events")).toEqual({ stack: [detail], view: "events" })
   })
 
   it("null (home) seeds nothing", () => {
@@ -1064,5 +1072,124 @@ describe("viewForEntry / titleForEntry / searchModeFor", () => {
     expect(titleForEntry({ kind: "post-thread", id: "p1" })).toBe(" ")
     expect(titleForEntry({ kind: "composer" })).toBe(" ")
     expect(titleForEntry({ kind: "person", id: "x" })).toBe(" ")
+  })
+})
+
+describe("report flow return", () => {
+  beforeEach(() => resetStore())
+
+  it("captures the surface the wizard was launched from, stack and all", () => {
+    useNavStore.getState().selectView("events")
+    useNavStore.getState().push({ kind: "cleanup", id: "c1" })
+    useNavStore.getState().selectView("report")
+
+    const captured = useNavStore.getState().reportReturn
+    expect(captured?.view).toBe("events")
+    expect(captured?.stack).toEqual([{ kind: "cleanup", id: "c1" }])
+    expect(captured?.originView).toBe("events")
+  })
+
+  it("keeps the original capture across a search detour and a re-tap of the Report tab", () => {
+    useNavStore.getState().selectView("events")
+    useNavStore.getState().selectView("report")
+    const first = useNavStore.getState().reportReturn
+    useNavStore.getState().selectView("search")
+    expect(useNavStore.getState().reportReturn).toBe(first)
+    useNavStore.getState().selectView("report")
+    expect(useNavStore.getState().reportReturn).toBe(first)
+  })
+
+  it("clears the capture when the run is abandoned for another surface", () => {
+    useNavStore.getState().selectView("events")
+    useNavStore.getState().selectView("report")
+    useNavStore.getState().selectView("messaging")
+    expect(useNavStore.getState().reportReturn).toBeNull()
+  })
+
+  it("filters the transient drop-pin entry out of the captured return", () => {
+    useNavStore.getState().selectView("map")
+    useNavStore.getState().push({ kind: "drop-pin", lat: 1, lng: 2 })
+    useNavStore.getState().selectView("report")
+    expect(useNavStore.getState().reportReturn?.stack).toEqual([])
+    expect(useNavStore.getState().reportReturn?.view).toBe("map")
+  })
+
+  it("leaveReportFlow restores the launching surface and records an unwinding pop", () => {
+    useNavStore.getState().selectView("events")
+    useNavStore.getState().push({ kind: "cleanup", id: "c1" })
+    useNavStore.getState().selectView("report")
+    useNavStore.getState().leaveReportFlow()
+
+    const s = useNavStore.getState()
+    expect(s.view).toBe("events")
+    expect(s.stack).toEqual([{ kind: "cleanup", id: "c1" }])
+    expect(s.active).toEqual({ kind: "cleanup", id: "c1" })
+    expect(s.originView).toBe("events")
+    expect(s.reportReturn).toBeNull()
+    expect(s.lastTransition).toEqual({ type: "pop", count: 1, unwind: "report" })
+  })
+
+  it("leaveReportFlow falls back to home when the wizard was entered cold", () => {
+    useNavStore.setState({ view: "report", stack: [], active: null, reportReturn: null })
+    useNavStore.getState().leaveReportFlow()
+    const s = useNavStore.getState()
+    expect(s.view).toBe("home")
+    expect(s.stack).toEqual([])
+    expect(s.active).toBeNull()
+  })
+
+  it("finishReportFlow lands the created entry on top of the launching surface", () => {
+    useNavStore.getState().selectView("events")
+    useNavStore.getState().selectView("report")
+    useNavStore.getState().finishReportFlow({ kind: "pin", id: "r1", lat: 1, lng: 2 })
+
+    const s = useNavStore.getState()
+    expect(s.view).toBe("events")
+    expect(s.stack).toEqual([{ kind: "pin", id: "r1", lat: 1, lng: 2 }])
+    expect(s.originView).toBe("events")
+    expect(s.reportReturn).toBeNull()
+    expect(s.lastTransition).toEqual({ type: "pop", count: 1, unwind: "report" })
+  })
+
+  it("finishReportFlow keeps the origin view of a return that already had a stack", () => {
+    useNavStore.getState().selectView("events")
+    useNavStore.getState().push({ kind: "cleanup", id: "c1" })
+    useNavStore.getState().selectView("report")
+    useNavStore.getState().finishReportFlow({ kind: "pin", id: "r1" })
+
+    const s = useNavStore.getState()
+    expect(s.stack).toEqual([{ kind: "cleanup", id: "c1" }, { kind: "pin", id: "r1" }])
+    expect(s.originView).toBe("events")
+  })
+})
+
+describe("unwindTo", () => {
+  beforeEach(() => resetStore())
+
+  it("truncates to the LAST matching entry and records the pop", () => {
+    useNavStore.getState().push({ kind: "create-cleanup" })
+    useNavStore.getState().push({ kind: "pin", id: "r1" })
+    useNavStore.getState().push({ kind: "person", id: "p1" })
+
+    expect(useNavStore.getState().unwindTo({ kind: "create-cleanup" })).toBe(true)
+    const s = useNavStore.getState()
+    expect(s.stack).toEqual([{ kind: "create-cleanup" }])
+    expect(s.active).toEqual({ kind: "create-cleanup" })
+    expect(s.lastTransition).toEqual({ type: "pop", count: 2 })
+  })
+
+  it("returns false and does not bump when the entry is not on the stack", () => {
+    useNavStore.getState().push({ kind: "pin", id: "r1" })
+    const seq = useNavStore.getState().navSeq
+    expect(useNavStore.getState().unwindTo({ kind: "create-cleanup" })).toBe(false)
+    expect(useNavStore.getState().navSeq).toBe(seq)
+    expect(useNavStore.getState().stack).toEqual([{ kind: "pin", id: "r1" }])
+  })
+
+  it("is a no-op when the entry is already the top of the stack", () => {
+    useNavStore.getState().push({ kind: "create-cleanup" })
+    const seq = useNavStore.getState().navSeq
+    expect(useNavStore.getState().unwindTo({ kind: "create-cleanup" })).toBe(true)
+    expect(useNavStore.getState().navSeq).toBe(seq)
   })
 })

@@ -160,9 +160,28 @@ export function setConsoleParams(patch: ConsoleParamPatch, mode?: UrlWriteMode):
   const next = applyConsolePatch(paramsSnapshot(), patch)
   const href = `${window.location.pathname}${serializeConsoleParams(next)}${window.location.hash}`
   const resolved = mode ?? writeModeForPatch(patch)
-  if (resolved === "push") window.history.pushState(null, "", href)
-  else window.history.replaceState(null, "", href)
+  if (resolved === "push")
+    window.history.pushState({ ...window.history.state, consoleDrawer: true }, "", href)
+  else window.history.replaceState(window.history.state, "", href)
   window.dispatchEvent(new Event(URL_STATE_EVENT))
+}
+
+export type DrawerClosePlan = "back" | "replace"
+
+export function drawerClosePlan(state: unknown): DrawerClosePlan {
+  if (typeof state !== "object" || state === null) return "replace"
+  return (state as Record<string, unknown>).consoleDrawer === true ? "back" : "replace"
+}
+
+export function closeConsoleDrawer(keys: readonly ConsoleParamKey[]): void {
+  if (typeof window === "undefined") return
+  if (drawerClosePlan(window.history.state) === "back") {
+    window.history.back()
+    return
+  }
+  const patch: ConsoleParamPatch = {}
+  for (const key of keys) patch[key] = null
+  setConsoleParams(patch, "replace")
 }
 
 export function navigateConsole(pathname: string, params: ConsoleParams = {}): void {

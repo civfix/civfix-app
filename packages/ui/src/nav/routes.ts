@@ -451,7 +451,7 @@ function baseViewForSeed(currentView: View): View {
 
 export function seedFor(
   entry: DetailEntry | null,
-  mode: NavMode,
+  _mode: NavMode,
   currentView: View = "home",
 ): Partial<NavState> {
   if (!entry) return {}
@@ -460,7 +460,5 @@ export function seedFor(
   }
   const view = viewForEntry(entry)
   if (view) return { view, stack: [] }
-  return mode === "expanded"
-    ? { stack: [entry] }
-    : { stack: [entry], view: baseViewForSeed(currentView) }
+  return { stack: [entry], view: baseViewForSeed(currentView) }
 }

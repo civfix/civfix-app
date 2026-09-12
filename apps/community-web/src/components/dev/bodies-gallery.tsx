@@ -1259,7 +1259,7 @@ export default function BodiesGallery() {
 
             { }
             <BodyFrame
-              title="PersonDetailBody (DESKTOP WIDTH: the header must show Back AND Home)"
+              title="PersonDetailBody (DESKTOP WIDTH: the header must show Back only)"
               height={760}
               wide
             >

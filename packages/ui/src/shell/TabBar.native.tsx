@@ -54,7 +54,6 @@ import {
   resolvePreviousView,
   searchMorphTarget,
   seedPreviousView,
-  tabDividerRect,
   tabIconMorph,
   travelFactor,
   windowProgress,
@@ -73,7 +72,6 @@ import { useDockMinimizeStore } from "./dockMinimizeStore"
 import {
   TABS,
   TAB_COUNT,
-  TAB_DIVIDER_WIDTH,
   useTabBarModel,
   useDockedSearchModel,
   type TabDef,
@@ -357,10 +355,6 @@ export function TabBar() {
     transform: [{ translateX: tx.value }],
     opacity: pillOp.value * (1 - windowProgress(p.value, 0, 0.35)) * (1 - mz.value),
   }))
-  const divider = tabDividerRect(tabW, H)
-  const dividerStyle = useAnimatedStyle(() => ({
-    opacity: (1 - windowProgress(p.value, 0, 0.35)) * (1 - mz.value),
-  }))
   const restMagX = Math.max(regionW - H / 2, 0)
   const magStyle = useAnimatedStyle(() => {
     const right = shapes.value.right
@@ -446,16 +440,6 @@ export function TabBar() {
                         mz={mz}
                       />
                     ))}
-                    <Animated.View
-                      style={[
-                        styles.divider,
-                        { left: divider.left, top: divider.top, height: divider.height },
-                        dividerStyle,
-                      ]}
-                      pointerEvents="none"
-                      accessibilityElementsHidden
-                      importantForAccessibility="no"
-                    />
                   </Animated.View>
                 </GestureDetector>
 
@@ -568,11 +552,6 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     height: ICON_SIZE,
-  },
-  divider: {
-    position: "absolute",
-    width: TAB_DIVIDER_WIDTH,
-    backgroundColor: t.colors.borderStrong,
   },
   pill: {
     position: "absolute",

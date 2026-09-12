@@ -709,7 +709,10 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
       {hostDraftActive ? (
         <View style={styles.hostDraftBar}>
           <Pressable
-            onPress={() => useNavStore.getState().push({ kind: "create-cleanup" })}
+            onPress={() => {
+              const nav = useNavStore.getState()
+              if (!nav.unwindTo({ kind: "create-cleanup" })) nav.push({ kind: "create-cleanup" })
+            }}
             accessibilityRole="button"
             accessibilityLabel={t("hostDraft.back", { count: linkedCount })}
             {...focusRingProps}

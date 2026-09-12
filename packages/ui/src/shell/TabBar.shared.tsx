@@ -10,7 +10,6 @@ import { useT } from "../i18n"
 import { useHaptics } from "../capabilities"
 import {
   TAB_BAR_HEIGHT,
-  TAB_DIVIDER_WIDTH,
   TAB_SPECS,
   activeTabIndex,
   type TabId,
@@ -38,7 +37,6 @@ export const TAB_COUNT = TABS.length
 export const BAR_HEIGHT = TAB_BAR_HEIGHT
 export const ORB_SIZE = 58
 export const PILL_INSET = 6
-export { TAB_DIVIDER_WIDTH }
 
 export type TabPressHandler = (tab: TabDef) => void
 
@@ -174,12 +172,6 @@ export const useTabBarStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     height: "100%",
-  },
-  divider: {
-    position: "absolute",
-    width: TAB_DIVIDER_WIDTH,
-    backgroundColor: t.colors.borderStrong,
-    pointerEvents: "none",
   },
   pill: {
     position: "absolute",

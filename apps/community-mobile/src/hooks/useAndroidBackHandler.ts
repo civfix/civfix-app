@@ -15,14 +15,17 @@
  * default router back behavior when THEY are focused. The cleanup returned from the focus effect removes
  * the listener on blur.
  *
- * Handler precedence (first match wins, consuming the event by returning true):
+ * Handler precedence lives in the pure `androidBackPlan` (src/lib/androidBackPlan.ts), first match wins,
+ * each consuming the event by returning true:
  *   1. The LayersPopover is open (`layersOpen`) -> dismiss it (`setLayersOpen(false)`). It is a transient
  *      map overlay outside the nav store / sheet, so back should close it first (the Android convention,
  *      and the same dismissal an empty-map tap does via onMapPress).
  *   2. A detail is open (`active !== null`) -> `back()` pops it (KEEPS the current list view, so a detail
- *      returns to the list it was opened from, or home for a map-pin detail). This is the core fix, and it
- *      covers BOTH presentations: a full-page detail and the one surviving pull-up (`drop-pin`) alike.
- *   3. Otherwise return false: let the OS default fire (at a bare tab root that means exit the app).
+ *      returns to the list it was opened from, or home for a map-pin detail). It covers BOTH presentations:
+ *      a full-page detail and the one surviving pull-up (`drop-pin`) alike.
+ *   3. The report wizard is the view (`view === "report"`) -> `leaveReportFlow()` returns to the surface it
+ *      was launched from. Without this rung the wizard is a bare tab root and hardware back EXITS THE APP.
+ *   4. Otherwise return false: let the OS default fire (at a bare tab root that means exit the app).
  *
  * THE BRANCH THAT USED TO SIT BETWEEN 2 AND 3, and why it is gone rather than fixed in place. It read
  * "no detail, but the sheet is expanded above peek (`snap > 0`) -> collapse it to peek", which was written
@@ -45,6 +48,7 @@ import { useCallback } from "react"
 import { BackHandler } from "react-native"
 import { useFocusEffect } from "expo-router"
 import { useNavStore, useReportFilterStore } from "@civfix/ui"
+import { androidBackPlan } from "@/lib/androidBackPlan"
 
 /**
  * Mount once in app/index.tsx (the map-home screen). Registers/removes the Android hardware-back listener
@@ -54,23 +58,21 @@ export function useAndroidBackHandler(): void {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = (): boolean => {
-        // 1) Dismiss the transient LayersPopover first (matches onMapPress + the Android overlay-first order).
         const filter = useReportFilterStore.getState()
-        if (filter.layersOpen) {
-          filter.setLayersOpen(false)
-          return true
-        }
         const nav = useNavStore.getState()
-        // 2) Pop an open detail - the true "go back" (returns to its parent list, or home). Whether that
-        //    detail is drawn as a full page or as the surviving `drop-pin` pull-up is not this hook's
-        //    business: `back()` is the same one exit either way, and it is the one the header chip calls.
-        if (nav.active !== null) {
-          nav.back()
-          return true
+        switch (androidBackPlan({ layersOpen: filter.layersOpen, active: nav.active, view: nav.view })) {
+          case "close-layers":
+            filter.setLayersOpen(false)
+            return true
+          case "pop-detail":
+            nav.back()
+            return true
+          case "leave-report":
+            nav.leaveReportFlow()
+            return true
+          default:
+            return false
         }
-        // 3) Nothing open: let the OS default fire (exit the app at a bare tab root). Deliberately NOT a
-        //    `snap > 0` collapse - see the module doc for why that branch swallowed the press for nothing.
-        return false
       }
 
       const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress)

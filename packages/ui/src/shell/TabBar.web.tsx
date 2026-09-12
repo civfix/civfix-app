@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react"
 import { View, type ViewStyle } from "react-native"
 import { space, useTheme } from "../theme"
 import { useTabBarStore } from "./tabBarStore"
-import { compactBottomChrome, tabDividerRect, tabPillTransition } from "./tabBarLogic"
+import { compactBottomChrome, tabPillTransition } from "./tabBarLogic"
 import { SearchHeader } from "./SearchHeader.web"
 import {
   TABS,
   TAB_COUNT,
-  BAR_HEIGHT,
   PILL_INSET,
   useTabBarModel,
   useDockedSearchModel,
@@ -40,8 +39,6 @@ export function TabBar() {
 
   useEffect(() => () => setTabBarHeight(0), [setTabBarHeight])
 
-  const divider = tabDividerRect(tabW, BAR_HEIGHT)
-
   const containerStyle = [styles.container, { paddingBottom: space["3"] }]
 
   if (compactBottomChrome(view) === "docked-search") {
@@ -60,13 +57,6 @@ export function TabBar() {
       <View style={[styles.bar, th.shadows.s3]} onLayout={(e) => setBarW(e.nativeEvent.layout.width)}>
         <BarGlass />
         {barW > 0 ? <View style={[styles.pill, pillStyle]} /> : null}
-        {barW > 0 ? (
-          <View
-            style={[styles.divider, { left: divider.left, top: divider.top, height: divider.height }]}
-            accessibilityElementsHidden
-            importantForAccessibility="no"
-          />
-        ) : null}
         <View style={styles.row}>
           {TABS.map((tab, i) => (
             <TabButton

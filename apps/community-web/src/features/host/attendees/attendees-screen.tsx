@@ -11,7 +11,7 @@ import type {
 import { useApi, useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
-import { useConsoleUrlState } from "@/components/console/url-state"
+import { closeConsoleDrawer, useConsoleUrlState } from "@/components/console/url-state"
 import { useGate } from "@/components/console/query-state"
 import { ConsoleButton } from "@/components/console/button"
 import { EmptyState, StateGate } from "@/components/console/states"
@@ -483,7 +483,7 @@ export function AttendeesScreen() {
         canManageTickets={can("manage_tickets")}
         onClose={() => {
           setOpenId(null)
-          set({ attendee: null })
+          closeConsoleDrawer(["attendee"])
         }}
       />
     </div>

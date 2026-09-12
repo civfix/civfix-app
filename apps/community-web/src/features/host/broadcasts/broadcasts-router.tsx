@@ -12,7 +12,7 @@ import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
 import type { ConsoleRoute } from "@/components/console/route"
-import { useConsoleUrlState } from "@/components/console/url-state"
+import { closeConsoleDrawer, useConsoleUrlState } from "@/components/console/url-state"
 import { useGate } from "@/components/console/query-state"
 import { EmptyState, LoadingState, StateGate } from "@/components/console/states"
 import { ConsoleButton } from "@/components/console/button"
@@ -188,7 +188,7 @@ function BroadcastsList() {
         broadcastId={params.delivery ?? null}
         status={deliveryStatusFrom(params.status)}
         onStatusChange={(next) => set({ status: next === "all" ? null : next })}
-        onClose={() => set({ delivery: null, status: null })}
+        onClose={() => closeConsoleDrawer(["delivery", "status"])}
       />
 
       <ConfirmModal

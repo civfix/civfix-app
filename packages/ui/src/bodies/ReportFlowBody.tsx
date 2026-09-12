@@ -668,9 +668,7 @@ function FeedShareOutcomeRow({ outcome, share }: { outcome: FeedShareOutcome; sh
           caption={share.caption}
           footnote={t("share.fixes_hint")}
           onPress={() => {
-            const nav = useNavStore.getState()
-            nav.reset()
-            nav.push({ kind: "post-thread", id: postId })
+            useNavStore.getState().finishReportFlow({ kind: "post-thread", id: postId })
           }}
           attachment={
             share.category ? (
@@ -804,9 +802,7 @@ function SubmitState({
             label={t("submit.view_report")}
             variant="outline"
             onPress={() => {
-              const nav = useNavStore.getState()
-              nav.reset()
-              nav.push({
+              useNavStore.getState().finishReportFlow({
                 kind: "pin",
                 id: result.reportId,
                 lat: result.lat,
@@ -815,7 +811,7 @@ function SubmitState({
             }}
           />
         ) : null}
-        <PrimaryButton label={t("submit.back_to_map")} onPress={() => useNavStore.getState().reset()} />
+        <PrimaryButton label={t("submit.done")} onPress={() => useNavStore.getState().leaveReportFlow()} />
       </View>
     </View>
   )
@@ -932,7 +928,7 @@ export function ReportFlowBody() {
 
   const onBack = useCallback(() => {
     if (stepIndex <= 0) {
-      useNavStore.getState().reset()
+      useNavStore.getState().leaveReportFlow()
       return
     }
     setStep(stepOrder[stepIndex - 1] as Step)
@@ -969,9 +965,7 @@ export function ReportFlowBody() {
         })
         composer.releaseClaimedCreate("report")
         reset()
-        const nav = useNavStore.getState()
-        nav.reset()
-        nav.push({ kind: "composer" })
+        useNavStore.getState().finishReportFlow({ kind: "composer" })
         return
       }
 
