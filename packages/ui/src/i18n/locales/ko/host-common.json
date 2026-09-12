@@ -3,6 +3,7 @@
     "a11y": "실시간 행사 집계",
     "checked_in": "체크인",
     "registered": "등록",
+    "of_capacity": "정원 {{capacity}}석 중",
     "waitlist": "대기자",
     "no_show": "불참",
     "error": "지금은 집계를 볼 수 없습니다."

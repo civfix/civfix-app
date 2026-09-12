@@ -8,10 +8,16 @@ import {
   webCursor,
   webHover,
   webInputReset,
-  webTransition,
 } from "../../theme"
 import { Text, iconMap } from "../../typography"
-import { ModalCardSheet, PrimaryButton, SecondaryButton, fieldFocusedStyle, useToast } from "../../primitives"
+import {
+  ModalCardSheet,
+  PrimaryButton,
+  SecondaryButton,
+  SegmentedControl,
+  fieldFocusedStyle,
+  useToast,
+} from "../../primitives"
 import { Markdown } from "../../primitives/Markdown"
 import { useCleanup } from "../../data"
 import { hasHostCapability, useQuickBroadcast } from "../../data/hooks/host"
@@ -191,37 +197,16 @@ export function HostBroadcastQuickBody({ id }: { id: string }) {
 
       <View style={styles.field}>
         <Text style={styles.label}>{t("quick.audience_label")}</Text>
-        <View
-          style={styles.segments}
-          accessibilityRole="radiogroup"
-          accessibilityLabel={t("quick.audience_label")}
-        >
-          {QUICK_SEGMENT_KINDS.map((kind) => {
-            const selected = kind === segment
-            return (
-              <Pressable
-                key={kind}
-                onPress={() => setSegment(kind)}
-                disabled={busy}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: selected, disabled: busy }}
-                accessibilityLabel={t(`enums:broadcastSegment.${kind}`)}
-                {...focusRingProps}
-                style={(state) => [
-                  styles.segment,
-                  webTransition,
-                  webCursor(busy),
-                  selected ? styles.segmentOn : null,
-                  !selected && webHover(state) ? styles.segmentHovered : null,
-                ]}
-              >
-                <Text style={[styles.segmentText, selected ? styles.segmentTextOn : null]}>
-                  {t(`enums:broadcastSegment.${kind}`)}
-                </Text>
-              </Pressable>
-            )
-          })}
-        </View>
+        <SegmentedControl
+          label={t("quick.audience_label")}
+          options={QUICK_SEGMENT_KINDS.map((kind) => ({
+            key: kind,
+            label: t(`enums:broadcastSegment.${kind}`),
+          }))}
+          selected={segment}
+          onSelect={(next) => setSegment(next as QuickSegmentKind)}
+          disabled={busy}
+        />
       </View>
 
       {errorText ? (
@@ -257,7 +242,7 @@ export function HostBroadcastQuickBody({ id }: { id: string }) {
         onClose={() => setConfirming(false)}
         onCommit={submit}
         headerIcon="Megaphone"
-        headerIconColor={th.colors.bloom["700"]}
+        headerIconColor={th.colors.brand.bloom}
         title={t("confirm.title")}
         dismissLabel={t("confirm.dismiss_a11y")}
         backdropDismissDisabled={busy}
@@ -352,35 +337,9 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["12"],
     color: t.colors.accentText,
   },
-  segments: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: t.space["2"],
-  },
-  segment: {
-    minHeight: 34,
-    justifyContent: "center",
-    paddingHorizontal: t.space["3"],
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.bgAlt,
-  },
-  segmentOn: {
-    backgroundColor: t.colors.brand.bloom,
-  },
-  segmentHovered: {
-    backgroundColor: t.colors.surfaceTint,
-  },
-  segmentText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textMuted,
-  },
-  segmentTextOn: {
-    color: t.colors.onAccent,
-  },
   error: {
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["12"],
-    color: t.colors.bloom["700"],
+    color: t.colors.dangerInk,
   },
 }))

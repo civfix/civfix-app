@@ -26,6 +26,7 @@ const body = readFileSync(new URL("../EventDetailBody.tsx", import.meta.url), "u
 const hoursBlock = readFileSync(new URL("../EventHoursBlock.tsx", import.meta.url), "utf8")
 const editor = readFileSync(new URL("../LogHoursEditor.tsx", import.meta.url), "utf8")
 const sheet = readFileSync(new URL("../../primitives/CompleteEventSheet.tsx", import.meta.url), "utf8")
+const hostMode = readFileSync(new URL("../host/HostModeBody.tsx", import.meta.url), "utf8")
 
 /**
  * Strip block + line comments so the assertions read CODE only - the header comments deliberately NAME
@@ -36,14 +37,14 @@ function code(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
 }
 
-describe("EventDetailBody hosts the complete-event sheet once", () => {
-  it("mounts <CompleteEventSheet/> exactly once", () => {
-    const mounts = code(body).match(/<CompleteEventSheet\b/g) ?? []
-    expect(mounts).toHaveLength(1)
+describe("the host surface hosts the complete-event sheet once", () => {
+  it("mounts <CompleteEventSheet/> exactly once, on the host surface", () => {
+    expect(code(hostMode).match(/<CompleteEventSheet\b/g) ?? []).toHaveLength(1)
+    expect(code(body).match(/<CompleteEventSheet\b/g) ?? []).toHaveLength(0)
   })
 
   it("imports it from its module, not a barrel that three packages are editing", () => {
-    expect(body).toContain('from "../primitives/CompleteEventSheet"')
+    expect(hostMode).toContain('from "../../primitives/CompleteEventSheet"')
     expect(body).toContain('from "./EventSlotsBlock"')
   })
 
@@ -52,20 +53,21 @@ describe("EventDetailBody hosts the complete-event sheet once", () => {
   })
 
   it("injects `now` into the completion state rather than letting the model read the clock", () => {
-    expect(code(body)).toContain("now: completionNow")
+    expect(code(hostMode)).toContain("now,")
+    expect(code(hostMode)).toContain("eventCompletionState({")
   })
 
   it("arms the completion gate on a timer instead of a render-time clock read", () => {
     // A bare `Date.now()` in JSX never re-renders when the start time passes: the host sat on the
     // `too_early` sentence until some unrelated refetch repainted the screen.
-    const source = code(body)
-    expect(source).toContain("function useCompletionNow(")
-    expect(source).toContain("setTimeout(")
-    expect(source).toContain("clearTimeout(")
-    // Capped, because a delay past 2^31 ms fires IMMEDIATELY and would spin the timer.
-    expect(source).toContain("COMPLETION_TICK_CAP_MS")
-    expect(source).toContain("useCompletionNow(actsAsHost && !isPast, cleanup.scheduledAt)")
-    // The completion gate is the only clock reader in the JSX.
+    const source = code(hostMode)
+    expect(source).toContain("function useTicker(")
+    expect(source).toContain("setInterval(")
+    expect(source).toContain("clearInterval(")
+    // The ticker stops once the event can no longer change phase on its own.
+    expect(source).toContain("PHASE_TICK_MS")
+    expect(source).toContain("const now = useTicker(!settled)")
+    // The gate reads the ticked `now`, never the clock mid-render.
     expect(source.match(/now: Date\.now\(\)/g) ?? []).toHaveLength(0)
     expect(source).not.toMatch(/react-native-reanimated/)
   })

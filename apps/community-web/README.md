@@ -60,6 +60,33 @@ Copy `.env.example` to `.env.local` and adjust. All public vars are inlined at b
 The app builds and runs with the backend OFF: every data hook handles loading, empty, and error
 states, and the map falls back to a plain warm basemap with a small non-blocking notice.
 
+### Running the local app against the staging API
+
+Point the app at staging by setting `NEXT_PUBLIC_API_URL=https://api.civfix.dev` (in `.env.local` or
+inline). Start it directly from `civfix-app/`, not through `dev/run.sh web` - the umbrella's env guard
+refuses any real-environment URL on purpose.
+
+Guest browsing works on plain `http://localhost:3000`, but **sign-in will not stick**: the API sets
+the session and CSRF cookies as `Secure; SameSite=Lax`, and a page on `localhost` is cross-site to
+`api.civfix.dev`, so the browser stores the cookie on verify and then never attaches it to the next
+request. Fixing CORS does not change that. The app has to be same-site with the API, i.e. served
+from a `civfix.dev` hostname over HTTPS:
+
+```
+# once: point a civfix.dev subdomain at this machine
+echo "127.0.0.1 local.civfix.dev" | sudo tee -a /etc/hosts
+
+# from civfix-app/ - Next mints a local cert the first time
+NEXT_PUBLIC_API_URL=https://api.civfix.dev \
+  pnpm --filter community-web exec next dev --experimental-https -H local.civfix.dev
+```
+
+Open `https://local.civfix.dev:3000` and accept the certificate once. The staging API must allow
+that origin: `https://local.civfix.dev:3000` goes in `WEB_ORIGINS` in
+`civfix-infra/secrets/staging/api.sops.env` (a `localhost` origin there only unblocks guest reads).
+Leave `sameSite` alone in the backend - relaxing it to `none` is a security-posture change, not a
+dev convenience.
+
 ## How tokens map into Tailwind
 
 `@civfix/shared/tokens` is the single source of truth for color, type, spacing, radius, shadow, and

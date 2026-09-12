@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type {
   HostedEventDTO,
+  HostedEventsAnalyticsResponse,
   OrgBalanceDTO,
   OrganizationDTO,
   OrganizationInviteDTO,
@@ -11,6 +12,7 @@ import type {
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
 import { can } from "@civfix/shared/host"
 import {
+  BEST_DAY_TIME_MIN_EVENTS,
   DASHBOARD_RANGES,
   DEFAULT_DASHBOARD_RANGE,
   buildDashboardTabs,
@@ -37,8 +39,25 @@ import {
   payoutErrorKey,
   pendingOrgInvites,
   seriesChartable,
-  sparklineBars,
+  seriesDayLabel,
+  seriesEnd,
   suppressed,
+  bestDayTimeShowable,
+  hostedEventPhase,
+  hourLabel,
+  nextUpCtaKey,
+  nextUpEvent,
+  portfolioChartSeries,
+  portfolioKpis,
+  portfolioSuppressed,
+  rateEmpty,
+  rateWithheld,
+  SERIES_DAILY_MAX_POINTS,
+  SERIES_MAX_BARS,
+  topEventBars,
+  topEventsVisible,
+  weekdayLabel,
+  TOP_EVENTS_MAX_ROWS,
 } from "../dashboardModel"
 
 const DAY_MS = 86_400_000
@@ -375,17 +394,15 @@ describe("analytics suppression", () => {
     expect(seriesChartable(points([1, 2]))).toBe(true)
   })
 
-  it("scales bars against the peak and marks suppressed points", () => {
-    const bars = sparklineBars([
-      { day: "d0", value: 5, suppressed: false },
-      { day: "d1", value: 10, suppressed: false },
-      { day: "d2", value: null, suppressed: true },
-    ])
-    expect(bars).toEqual([
-      { height: 0.5, suppressed: false },
-      { height: 1, suppressed: false },
-      { height: 0, suppressed: true },
-    ])
+  it("labels the trend with the last point that carries a number", () => {
+    expect(
+      seriesEnd([
+        { day: "d0", value: 5, suppressed: false },
+        { day: "d1", value: 10, suppressed: false },
+        { day: "d2", value: null, suppressed: true },
+      ]),
+    ).toEqual({ day: "d1", value: 10, suppressed: false })
+    expect(seriesEnd([{ day: "d0", value: null, suppressed: true }])).toBeNull()
   })
 })
 
@@ -430,9 +447,13 @@ describe("donation summary range", () => {
     expect(donationSummaryFrom("365d", now)).toBe("2025-09-10T00:00:00.000Z")
   })
 
+  it("asks for every donation when the range is all", () => {
+    expect(donationSummaryFrom("all", new Date("2026-09-10T00:00:00.000Z"))).toBeNull()
+  })
+
   it("defaults to the shortest range", () => {
     expect(DEFAULT_DASHBOARD_RANGE).toBe("30d")
-    expect(DASHBOARD_RANGES).toEqual(["30d", "90d", "365d"])
+    expect(DASHBOARD_RANGES).toEqual(["30d", "90d", "365d", "all"])
   })
 })
 
@@ -521,5 +542,341 @@ describe("dashboard wiring", () => {
     expect(broadcast).toContain('preset?.segment ?? "all_registered"')
     const store = source("../dashboardStore.ts")
     expect(store).toContain('segment: "all_registered"')
+  })
+})
+
+function row(id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO {
+  return hosted({ id, title: id.toUpperCase(), ...over })
+}
+
+describe("next up", () => {
+  const now = new Date("2026-09-10T12:00:00.000Z")
+
+  it("picks the soonest event that has not ended", () => {
+    const next = nextUpEvent(
+      [
+        row("late", { startsAt: "2026-09-25T17:00:00.000Z" }),
+        row("soon", { startsAt: "2026-09-12T17:00:00.000Z" }),
+      ],
+      now,
+    )
+    expect(next?.event.id).toBe("soon")
+    expect(next?.phase).toBe("upcoming")
+  })
+
+  it("promotes a live event over a sooner-listed upcoming one", () => {
+    const next = nextUpEvent(
+      [
+        row("soon", { startsAt: "2026-09-11T09:00:00.000Z" }),
+        row("live", { startsAt: "2026-09-10T13:00:00.000Z", status: "active" }),
+      ],
+      now,
+    )
+    expect(next?.event.id).toBe("live")
+    expect(next?.phase).toBe("live")
+  })
+
+  it("has nothing to show once every event is done or cancelled", () => {
+    expect(
+      nextUpEvent(
+        [
+          row("done", { status: "done" }),
+          row("gone", { status: "cancelled" }),
+        ],
+        now,
+      ),
+    ).toBeNull()
+  })
+
+  it("reads the phase of a hosted row the same way the shared clock does", () => {
+    expect(hostedEventPhase(row("a", { status: "cancelled" }), now)).toBe("cancelled")
+    expect(hostedEventPhase(row("b", { startsAt: "2026-09-10T13:00:00.000Z" }), now)).toBe("live")
+    expect(hostedEventPhase(row("c"), now)).toBe("upcoming")
+  })
+
+  it("sends a live event to check-in and everything else to host tools", () => {
+    expect(nextUpCtaKey("live")).toBe("next_up.check_in")
+    expect(nextUpCtaKey("upcoming")).toBe("next_up.host_tools")
+    expect(nextUpCtaKey("ended")).toBe("next_up.host_tools")
+  })
+
+  it("reads the portfolio counters off the first page only", () => {
+    const kpis = { eventsHosted: 9, upcomingEvents: 2, totalRegistrations: 40, totalCheckedIn: 31 }
+    expect(portfolioKpis([{ items: [], nextCursor: null, kpis }])).toEqual(kpis)
+    expect(portfolioKpis([{ items: [], nextCursor: null }])).toBeNull()
+    expect(portfolioKpis(undefined)).toBeNull()
+  })
+})
+
+describe("top events", () => {
+  const bar = (key: string, value: number | null, suppressedRow = false) => ({
+    key,
+    label: key.toUpperCase(),
+    value,
+    suppressed: suppressedRow,
+  })
+
+  it("ranks by seats, caps the list and scales against the leader", () => {
+    const bars = topEventBars({
+      panelSuppressed: false,
+      rows: [bar("a", 10), bar("b", 40), bar("c", 20), bar("d", null, true), bar("e", 5), bar("f", 4), bar("g", 3)],
+    })
+    expect(bars.map((entry) => entry.key)).toEqual(["b", "c", "a", "e", "f"])
+    expect(bars).toHaveLength(TOP_EVENTS_MAX_ROWS)
+    expect(bars[0]?.ratio).toBe(1)
+    expect(bars[1]?.ratio).toBe(0.5)
+  })
+
+  it("hides the card for a suppressed panel or a single bar", () => {
+    const one = { panelSuppressed: false, rows: [bar("a", 10)] }
+    expect(topEventsVisible(one, topEventBars(one))).toBe(false)
+    const hidden = { panelSuppressed: true, rows: [bar("a", 10), bar("b", 4)] }
+    expect(topEventsVisible(hidden, topEventBars(hidden))).toBe(false)
+    const two = { panelSuppressed: false, rows: [bar("a", 10), bar("b", 4)] }
+    expect(topEventsVisible(two, topEventBars(two))).toBe(true)
+    expect(topEventsVisible(undefined, [])).toBe(false)
+  })
+})
+
+describe("portfolio numbers", () => {
+  const rate = (value: number | null) => ({
+    value,
+    numerator: value === null ? null : 10,
+    denominator: value === null ? null : 20,
+    suppressed: value === null,
+  })
+
+  const analytics = (over: Partial<HostedEventsAnalyticsResponse> = {}): HostedEventsAnalyticsResponse => ({
+    generatedAt: "2026-09-10T12:00:00.000Z",
+    range: "30d",
+    k: 5,
+    totals: { events: 20, registrations: 120, checkIns: 90, uniqueAttendees: 80 },
+    series: [],
+    byEvent: { panelSuppressed: false, rows: [] },
+    repeatAttendance: rate(0.31),
+    averageCheckInRate: rate(0.82),
+    bestDayTime: { weekday: 6, hour: 10, value: 30, suppressed: false },
+    ...over,
+  })
+
+  it("shows the busiest slot only once there are enough events to mean something", () => {
+    expect(bestDayTimeShowable(analytics())).toBe(true)
+    expect(
+      bestDayTimeShowable(
+        analytics({ totals: { events: BEST_DAY_TIME_MIN_EVENTS - 1, registrations: 5, checkIns: 4, uniqueAttendees: 4 } }),
+      ),
+    ).toBe(false)
+    expect(
+      bestDayTimeShowable(analytics({ bestDayTime: { weekday: 6, hour: 10, value: null, suppressed: true } })),
+    ).toBe(false)
+    expect(bestDayTimeShowable(analytics({ bestDayTime: null }))).toBe(false)
+    expect(bestDayTimeShowable(undefined)).toBe(false)
+  })
+
+  it("captions the card once any rendered number is withheld", () => {
+    expect(portfolioSuppressed(analytics())).toBe(false)
+    expect(
+      portfolioSuppressed(
+        analytics({ totals: { events: 20, registrations: null, checkIns: 90, uniqueAttendees: 80 } }),
+      ),
+    ).toBe(true)
+    expect(portfolioSuppressed(analytics({ repeatAttendance: rate(null) }))).toBe(true)
+    expect(portfolioSuppressed(undefined)).toBe(false)
+  })
+
+  it("leaves the caption off a host who simply has nothing to divide by", () => {
+    const empty = { value: null, numerator: 0, denominator: 0, suppressed: false }
+    expect(rateEmpty(empty)).toBe(true)
+    expect(rateWithheld(empty)).toBe(false)
+    expect(
+      portfolioSuppressed(
+        analytics({
+          totals: { events: 1, registrations: 0, checkIns: 0, uniqueAttendees: 0 },
+          repeatAttendance: empty,
+          averageCheckInRate: empty,
+        }),
+      ),
+    ).toBe(false)
+  })
+
+  it("still captions a rate the server actually withheld", () => {
+    const withheld = { value: null, numerator: null, denominator: null, suppressed: true }
+    expect(rateEmpty(withheld)).toBe(false)
+    expect(rateWithheld(withheld)).toBe(true)
+    expect(portfolioSuppressed(analytics({ averageCheckInRate: withheld }))).toBe(true)
+  })
+
+  it("names the busiest weekday and hour in the reader's locale", () => {
+    expect(weekdayLabel(0, "en-US")).toBe("Sunday")
+    expect(weekdayLabel(6, "en-US")).toBe("Saturday")
+    expect(hourLabel(10, "en-US")).toContain("10")
+  })
+})
+
+describe("the trend never draws a year one bar at a time", () => {
+  const days = (count: number, value: number | null = 3) =>
+    Array.from({ length: count }, (_, i) => ({
+      day: new Date(Date.UTC(2026, 0, 1) + i * DAY_MS).toISOString().slice(0, 10),
+      value,
+      suppressed: value === null,
+    }))
+
+  it("keeps a short range at day resolution", () => {
+    const series = days(SERIES_DAILY_MAX_POINTS)
+    const chart = portfolioChartSeries(series)
+    expect(chart.weekly).toBe(false)
+    expect(chart.points).toEqual(series)
+  })
+
+  it("rolls a long range into weeks that still total the same seats", () => {
+    const chart = portfolioChartSeries(days(364))
+    expect(chart.weekly).toBe(true)
+    expect(chart.points).toHaveLength(52)
+    expect(chart.points.every((point) => point.value === 21)).toBe(true)
+    expect(chart.points[0]?.day).toBe("2026-01-01")
+  })
+
+  it("bounds the bar count however long the history is", () => {
+    for (const count of [91, 200, 365, 1200]) {
+      const chart = portfolioChartSeries(days(count))
+      expect(chart.points.length, `${count} days`).toBeLessThanOrEqual(SERIES_MAX_BARS)
+      expect(chart.points.length).toBeGreaterThan(0)
+    }
+  })
+
+  it("keeps the most recent weeks when the history outruns the card", () => {
+    const long = days(400)
+    const chart = portfolioChartSeries(long)
+    expect(chart.points[chart.points.length - 1]?.day).toBe(long[400 - 7]?.day)
+  })
+
+  it("mutes only a week with nothing known in it", () => {
+    const mixed = days(98)
+    mixed[97] = { day: mixed[97]?.day ?? "", value: null, suppressed: true }
+    const chart = portfolioChartSeries(mixed)
+    const last = chart.points[chart.points.length - 1]
+    expect(last?.suppressed).toBe(false)
+    expect(last?.value).toBe(18)
+    const blank = portfolioChartSeries(days(98, null))
+    expect(blank.points.every((point) => point.suppressed && point.value === null)).toBe(true)
+  })
+})
+
+describe("portfolio surface", () => {
+  const dashboardSource = (file: string): string => source(`../${file}`)
+
+  it("retires the old strip and its bar row", () => {
+    expect(existsSync(new URL("../KpiStrip.tsx", import.meta.url))).toBe(false)
+    expect(existsSync(new URL("../Sparkline.tsx", import.meta.url))).toBe(false)
+  })
+
+  it("keeps the coral fill for the single next-up action", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).not.toContain("<PrimaryButton")
+    const next = dashboardSource("NextUpCard.tsx")
+    expect(next.match(/<PrimaryButton/g)).toHaveLength(1)
+  })
+
+  it("leaves no bloom selection fill anywhere under the dashboard", () => {
+    const files = [
+      "../../EventDashboardBody.tsx",
+      "../NextUpCard.tsx",
+      "../PortfolioStats.tsx",
+      "../TopEventsCard.tsx",
+      "../HostedEventRow.tsx",
+      "../InviteRows.tsx",
+      "../MoneySection.tsx",
+      "../CollaboratorsSection.tsx",
+      "../OrgInviteSheet.tsx",
+      "../DuplicateEventSheet.tsx",
+    ]
+    for (const file of files) {
+      expect(source(file)).not.toContain("brand.bloom")
+      expect(source(file)).not.toContain('"#')
+    }
+  })
+
+  it("moves every selection onto the neutral primitives", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("SegmentedControl")
+    expect(body).not.toContain("SegmentedRow")
+    expect(dashboardSource("PortfolioStats.tsx")).toContain("SegmentedControl")
+    expect(dashboardSource("OrgInviteSheet.tsx")).toContain("FilterChip")
+  })
+
+  it("renders every number the portfolio read already ships", () => {
+    const stats = dashboardSource("PortfolioStats.tsx")
+    expect(stats).toContain("totals.uniqueAttendees")
+    expect(stats).toContain("averageCheckInRate")
+    expect(stats).toContain("repeatAttendance")
+    expect(stats).toContain("bestDayTime")
+    expect(stats).toContain("TrendSparkline")
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("topEventBars(analytics.data?.byEvent)")
+    expect(body).toContain("portfolioKpis(upcoming.data?.pages)")
+    expect(body).toContain("header.summary")
+  })
+
+  it("demotes create-event and the invitation accept to secondary", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("<SecondaryButton")
+    const invites = dashboardSource("InviteRows.tsx")
+    expect(invites).not.toContain("PrimaryButton")
+    expect(invites).toContain("<SecondaryButton")
+    expect(invites).toContain("<TextLink")
+  })
+
+  it("keeps money and collaborators in the shared card language", () => {
+    const money = dashboardSource("MoneySection.tsx")
+    expect(money).toContain("SectionCard")
+    expect(money).toContain('icon="ReceiptText"')
+    expect(money).toContain("StatTileRow")
+    const team = dashboardSource("CollaboratorsSection.tsx")
+    expect(team).toContain("SectionCard")
+  })
+
+  it("names every new portfolio string in all four locales", () => {
+    const keys: readonly [string, string][] = [
+      ["header", "title"],
+      ["header", "summary"],
+      ["next_up", "section"],
+      ["next_up", "check_in"],
+      ["next_up", "host_tools"],
+      ["next_up", "empty_title"],
+      ["next_up", "empty_body"],
+      ["next_up", "meter_a11y"],
+      ["numbers", "section"],
+      ["range", "all"],
+      ["kpi", "attendance_rate"],
+      ["kpi", "unique_volunteers"],
+      ["kpi", "returning"],
+      ["kpi", "returning_hint"],
+      ["kpi", "busiest_slot"],
+      ["kpi", "end_label"],
+      ["top_events", "section"],
+      ["top_events", "seats"],
+      ["events", "section"],
+      ["events", "meta_capacity"],
+      ["events", "meta_waiting"],
+      ["events", "check_in_a11y"],
+      ["team", "section"],
+    ]
+    for (const lng of ["en", "es", "de", "ko"]) {
+      const cat = catalog(lng, "event-dashboard") as Record<string, Record<string, string>>
+      for (const [section, leaf] of keys) {
+        expect(cat[section]?.[leaf], `${lng} ${section}.${leaf}`).toBeTruthy()
+      }
+    }
+  })
+})
+
+describe("seriesDayLabel", () => {
+  it("reads a series day as a short calendar date, not a wire string", () => {
+    expect(seriesDayLabel("2026-09-12", "en-US")).toBe("Sep 12")
+    expect(seriesDayLabel("2026-01-02", "en-US")).toBe("Jan 2")
+  })
+
+  it("hands back anything it cannot parse", () => {
+    expect(seriesDayLabel("not-a-day", "en-US")).toBe("not-a-day")
   })
 })

@@ -302,6 +302,6 @@ const useStyles = makeThemedStyles((t) => ({
   error: {
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["12"],
-    color: t.colors.bloom["700"],
+    color: t.colors.dangerInk,
   },
 }))

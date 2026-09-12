@@ -2,25 +2,32 @@ import React, { useCallback } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
-import { manageOrgPath, managePortfolioPath } from "../../../primitives/externalUrls"
+import { managePath, manageOrgPath, managePortfolioPath } from "../../../primitives/externalUrls"
+import { openConsolePath } from "../../../primitives/consoleReach"
 import { useOpenExternal } from "../../../capabilities"
 import { useT } from "../../../i18n"
-import type { ConsoleLinkRowProps } from "./ConsoleLinkRow.types"
+import type { ConsoleLinkRowProps, ConsoleLinkTarget } from "./ConsoleLinkRow.types"
 
-export function ConsoleLinkRow({ orgId }: ConsoleLinkRowProps) {
+function pathFor(target: ConsoleLinkTarget): string {
+  switch (target.kind) {
+    case "org":
+      return manageOrgPath(target.orgId)
+    case "event":
+      return managePath(target.eventId)
+    default:
+      return managePortfolioPath()
+  }
+}
+
+export function ConsoleLinkRow({ target }: ConsoleLinkRowProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-dashboard")
   const openExternal = useOpenExternal()
 
   const open = useCallback(() => {
-    const path = orgId ? manageOrgPath(orgId) : managePortfolioPath()
-    if (typeof window !== "undefined" && window.location) {
-      window.location.assign(path)
-      return
-    }
-    void openExternal?.open(path)
-  }, [openExternal, orgId])
+    openConsolePath(pathFor(target), openExternal)
+  }, [openExternal, target])
 
   return (
     <Pressable
