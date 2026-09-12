@@ -1353,6 +1353,10 @@ and a registry backend can skew for a deploy window, and an old server must stil
 with suppressed cells. The five `eventAnalytics*` panels and the `seriesClosure` machinery behind
 them are untouched and stay for the console and the CSV exports; §25 continues to govern them.
 
+`money.netMinor` is a SIGNED integer while `grossMinor` and `refundedMinor` stay non-negative: a fully
+refunded donation leaves the processor fee behind, so the honest net for that event is below zero and
+the client renders it as a negative amount rather than the server clamping the truth away at 0.
+
 `EventPhase` (`upcoming | live | ended | cancelled`) is the one phase vocabulary, and `eventPhase()`
 in `@civfix/shared/host` is the one implementation: `cancelled` from the status, `ended` from a `done`
 status or two hours past the end (an absent `endsAt` means a four-hour event), `live` from two hours

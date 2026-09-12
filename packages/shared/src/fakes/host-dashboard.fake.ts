@@ -39,9 +39,15 @@ export interface FakeEventInsightsOptions {
   seed?: number
   now?: number
   money?: boolean
+  refunded?: boolean
   returning?: boolean
   timezone?: string
 }
+
+const FAKE_DONATION_GROSS_MINOR = 48_500
+const FAKE_DONATION_NET_MINOR = 46_130
+const FAKE_DONATION_REFUNDED_MINOR = 2_500
+const FAKE_DONATION_REFUNDED_NET_MINOR = -2_370
 
 export interface FakeHostedEventsAnalyticsOptions {
   seed?: number
@@ -259,7 +265,8 @@ export function fakeEventInsights(
   const profile = phaseProfile(phase, now)
   const endsAt = profile.startsAt + FAKE_EVENT_DURATION_MS
   const unmarked = Math.max(0, FAKE_REGISTERED - profile.checkedIn - profile.noShow)
-  const withMoney = options.money ?? phase !== "cancelled"
+  const refunded = options.refunded ?? false
+  const withMoney = options.money ?? (refunded || phase !== "cancelled")
   const withReturning = options.returning ?? phase !== "cancelled"
 
   return {
@@ -296,9 +303,9 @@ export function fakeEventInsights(
       ? {
           currency: "USD",
           donationCount: 11,
-          grossMinor: 48_500,
-          netMinor: 46_130,
-          refundedMinor: 2_500,
+          grossMinor: FAKE_DONATION_GROSS_MINOR,
+          netMinor: refunded ? FAKE_DONATION_REFUNDED_NET_MINOR : FAKE_DONATION_NET_MINOR,
+          refundedMinor: refunded ? FAKE_DONATION_GROSS_MINOR : FAKE_DONATION_REFUNDED_MINOR,
           lastChargedAt: new Date(profile.startsAt - 2 * DAY_MS).toISOString(),
         }
       : null,

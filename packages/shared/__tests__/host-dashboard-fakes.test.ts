@@ -99,6 +99,13 @@ describe("fakeEventInsights", () => {
     expect(fakeEventInsights("ended", { now: NOW, returning: false }).returning).toBeNull()
   })
 
+  it("turns a fully refunded event into a negative net", () => {
+    const money = fakeEventInsights("ended", { now: NOW, refunded: true }).money
+    expect(money?.netMinor).toBeLessThan(0)
+    expect(money?.refundedMinor).toBe(money?.grossMinor)
+    expect(fakeEventInsights("ended", { now: NOW }).money?.netMinor).toBeGreaterThan(0)
+  })
+
   it("ships three broadcasts and two ticket types", () => {
     const insights = fakeEventInsights("ended", { now: NOW })
     expect(insights.broadcasts).toHaveLength(3)

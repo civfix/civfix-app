@@ -178,6 +178,36 @@ describe("getEventInsights contract", () => {
     expect(GetEventInsightsResponseSchema.safeParse(eur).success).toBe(false)
   })
 
+  it("lets a fully refunded event report a negative net", () => {
+    const refunded = {
+      ...(minimalInsights() as Record<string, unknown>),
+      money: {
+        currency: "USD",
+        donationCount: 2,
+        grossMinor: 12000,
+        netMinor: -640,
+        refundedMinor: 12000,
+        lastChargedAt: "2026-09-12T18:30:00.000Z",
+      },
+    }
+    expect(GetEventInsightsResponseSchema.parse(refunded).money?.netMinor).toBe(-640)
+    const fractional = {
+      ...refunded,
+      money: { ...(refunded.money as Record<string, unknown>), netMinor: -6.4 },
+    }
+    expect(GetEventInsightsResponseSchema.safeParse(fractional).success).toBe(false)
+    const negativeGross = {
+      ...refunded,
+      money: { ...(refunded.money as Record<string, unknown>), grossMinor: -1 },
+    }
+    expect(GetEventInsightsResponseSchema.safeParse(negativeGross).success).toBe(false)
+    const negativeRefund = {
+      ...refunded,
+      money: { ...(refunded.money as Record<string, unknown>), refundedMinor: -1 },
+    }
+    expect(GetEventInsightsResponseSchema.safeParse(negativeRefund).success).toBe(false)
+  })
+
   it("names exactly four phases and carries no suppression flag", () => {
     expect(EventPhaseSchema.options).toEqual(["upcoming", "live", "ended", "cancelled"])
     const parsed = GetEventInsightsResponseSchema.parse(minimalInsights())

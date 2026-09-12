@@ -87,7 +87,7 @@ export const EventInsightsMoneySchema = z.object({
   currency: z.literal("USD"),
   donationCount: z.number().int().nonnegative(),
   grossMinor: z.number().int().nonnegative(),
-  netMinor: z.number().int().nonnegative(),
+  netMinor: z.number().int(),
   refundedMinor: z.number().int().nonnegative(),
   lastChargedAt: ISODateSchema.nullable(),
 })
