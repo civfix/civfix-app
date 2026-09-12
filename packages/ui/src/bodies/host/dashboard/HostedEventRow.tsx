@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useState } from "react"
-import { Image, Pressable, StyleSheet, View } from "react-native"
+import { Image, Pressable, View } from "react-native"
 import type { CleanupMemberRole, HostedEventDTO } from "@civfix/shared"
-import { eventChip, dowLabel, timeLabel } from "@civfix/shared/datetime"
+import { dowLabel, timeLabel } from "@civfix/shared/datetime"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -11,36 +11,37 @@ import {
   webTransition,
 } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
-import { MetaDot, PopoverMenu, usePopoverAnchor } from "../../../primitives"
+import { DateBadge, MetaDot, PopoverMenu, usePopoverAnchor } from "../../../primitives"
 import type { AnchorRect, PopoverMenuItem } from "../../../primitives"
 import { useLocale, useRelativeTime, useT } from "../../../i18n"
 import { RoleChip } from "../../RoleChip"
-import { hostedEventActions, hostedEventHasActions } from "./dashboardModel"
+import { hostedEventActions, hostedEventCan, hostedEventHasActions } from "./dashboardModel"
 
 const CLOSED = "closed"
+
+const DATE_BADGE_SIZE = 48
 
 export interface HostedEventRowProps {
   event: HostedEventDTO
   roleLabel: (role: CleanupMemberRole) => string
+  live: boolean
   onOpen: (event: HostedEventDTO) => void
+  onCheckIn: (event: HostedEventDTO) => void
   onHostTools: (event: HostedEventDTO) => void
   onEmailAttendees: (event: HostedEventDTO) => void
   onDuplicate: (event: HostedEventDTO) => void
   onEdit: (event: HostedEventDTO) => void
 }
 
-function WhenLine({ startsAt }: { startsAt: string }) {
+function MetaLine({ parts }: { parts: readonly string[] }) {
   const styles = useStyles()
   const th = useTheme()
-  const { locale } = useLocale()
-  const { weekdays } = useRelativeTime()
-  const parts = [dowLabel(startsAt, weekdays), timeLabel(startsAt, locale)]
   return (
     <View style={styles.subRow}>
       {parts.map((part, index) => (
         <React.Fragment key={index}>
           {index > 0 ? <MetaDot color={th.colors.textSubtle} style={styles.subDot} /> : null}
-          <Text style={styles.sub} numberOfLines={1}>
+          <Text variant="caption" numberOfLines={1}>
             {part}
           </Text>
         </React.Fragment>
@@ -49,27 +50,22 @@ function WhenLine({ startsAt }: { startsAt: string }) {
   )
 }
 
-function DateBlock({ startsAt, coverThumbUrl }: { startsAt: string; coverThumbUrl?: string | null }) {
+function EventBadge({ startsAt, coverThumbUrl }: { startsAt: string; coverThumbUrl?: string | null }) {
   const styles = useStyles()
-  const { locale } = useLocale()
-  const { day, month } = eventChip(startsAt, locale)
   if (coverThumbUrl) {
     return (
       <Image source={{ uri: coverThumbUrl }} style={styles.cover} accessibilityIgnoresInvertColors />
     )
   }
-  return (
-    <View style={styles.date}>
-      <Text style={styles.dateDay}>{day}</Text>
-      <Text style={styles.dateMonth}>{month}</Text>
-    </View>
-  )
+  return <DateBadge iso={startsAt} size={DATE_BADGE_SIZE} />
 }
 
 export const HostedEventRow = memo(function HostedEventRow({
   event,
   roleLabel,
+  live,
   onOpen,
+  onCheckIn,
   onHostTools,
   onEmailAttendees,
   onDuplicate,
@@ -78,14 +74,18 @@ export const HostedEventRow = memo(function HostedEventRow({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-dashboard")
+  const { locale } = useLocale()
+  const { weekdays } = useRelativeTime()
   const [menuOpen, setMenuOpen] = useState<string>(CLOSED)
   const [menuRect, setMenuRect] = useState<AnchorRect | null>(null)
   const { ref: menuAnchorRef, measure: measureMenu } = usePopoverAnchor(setMenuRect)
 
   const actions = hostedEventActions(event)
   const hasMenu = hostedEventHasActions(actions)
+  const canCheckIn = live && hostedEventCan(event, "check_in")
 
   const open = useCallback(() => onOpen(event), [event, onOpen])
+  const checkIn = useCallback(() => onCheckIn(event), [event, onCheckIn])
   const openMenu = useCallback(() => {
     measureMenu()
     setMenuOpen("actions")
@@ -99,6 +99,17 @@ export const HostedEventRow = memo(function HostedEventRow({
     },
     [event],
   )
+
+  const capacity = event.capacity ?? null
+  const meta = [
+    capacity !== null
+      ? t("events.meta_capacity", { registered: event.registeredCount, capacity })
+      : t("events.meta_registered", { count: event.registeredCount }),
+    ...(event.waitlistCount > 0 ? [t("events.meta_waiting", { count: event.waitlistCount })] : []),
+    ...(event.checkedInCount > 0
+      ? [t("events.meta_checked_in", { count: event.checkedInCount })]
+      : []),
+  ]
 
   const items: PopoverMenuItem[] = [
     ...(actions.hostTools
@@ -150,9 +161,15 @@ export const HostedEventRow = memo(function HostedEventRow({
         accessibilityRole="button"
         accessibilityLabel={t("events.open_a11y", { title: event.title })}
         {...focusRingProps}
-        style={({ pressed }) => [styles.rowMain, pressed ? styles.rowPressed : null]}
+        style={(state) => [
+          styles.rowMain,
+          webTransition,
+          webCursorPointer,
+          webHover(state) ? styles.rowHovered : null,
+          state.pressed ? styles.rowPressed : null,
+        ]}
       >
-        <DateBlock startsAt={event.startsAt} coverThumbUrl={event.coverThumbUrl ?? null} />
+        <EventBadge startsAt={event.startsAt} coverThumbUrl={event.coverThumbUrl ?? null} />
         <View style={styles.meta}>
           <View style={styles.titleRow}>
             <Text style={styles.title} numberOfLines={1}>
@@ -165,15 +182,28 @@ export const HostedEventRow = memo(function HostedEventRow({
               />
             ) : null}
           </View>
-          <WhenLine startsAt={event.startsAt} />
-          <Text style={styles.counts} numberOfLines={1}>
-            {t("events.counts", {
-              registered: event.registeredCount,
-              checkedIn: event.checkedInCount,
-            })}
-          </Text>
+          <MetaLine parts={[dowLabel(event.startsAt, weekdays), timeLabel(event.startsAt, locale)]} />
+          <MetaLine parts={meta} />
         </View>
       </Pressable>
+      {canCheckIn ? (
+        <Pressable
+          onPress={checkIn}
+          accessibilityRole="button"
+          accessibilityLabel={t("events.check_in_a11y", { title: event.title })}
+          hitSlop={ACTION_HIT_SLOP}
+          {...focusRingProps}
+          style={(state) => [
+            styles.action,
+            webTransition,
+            webCursorPointer,
+            webHover(state) ? styles.actionHovered : null,
+            state.pressed ? styles.rowPressed : null,
+          ]}
+        >
+          <Icon icon={iconMap.QrCode} size={18} color={th.colors.textMuted} />
+        </Pressable>
+      ) : null}
       {hasMenu ? (
         <Pressable
           ref={menuAnchorRef}
@@ -181,13 +211,13 @@ export const HostedEventRow = memo(function HostedEventRow({
           accessibilityRole="button"
           accessibilityLabel={t("events.actions_a11y", { title: event.title })}
           accessibilityState={{ expanded: menuOpen !== CLOSED }}
-          hitSlop={6}
+          hitSlop={ACTION_HIT_SLOP}
           {...focusRingProps}
           style={(state) => [
-            styles.kebab,
+            styles.action,
             webTransition,
             webCursorPointer,
-            webHover(state) ? styles.kebabHovered : null,
+            webHover(state) ? styles.actionHovered : null,
             state.pressed ? styles.rowPressed : null,
           ]}
         >
@@ -206,16 +236,17 @@ export const HostedEventRow = memo(function HostedEventRow({
   )
 })
 
+const ACTION_SIZE = 32
+
+const MIN_TOUCH_TARGET = 44
+
+const ACTION_HIT_SLOP = (MIN_TOUCH_TARGET - ACTION_SIZE) / 2
+
 const useStyles = makeThemedStyles((t) => ({
   rowOuter: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: t.colors.surface,
-    borderRadius: t.radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    paddingRight: t.space["2"],
-    ...t.shadows.s1,
+    gap: t.space["1"],
   },
   rowMain: {
     flex: 1,
@@ -223,55 +254,36 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 11,
-    paddingHorizontal: 13,
-    borderRadius: t.radius.lg,
+    paddingVertical: t.space["2"],
+    borderRadius: t.radius.md,
+  },
+  rowHovered: {
+    backgroundColor: t.colors.bgAlt,
   },
   rowPressed: {
     opacity: 0.92,
   },
-  kebab: {
-    width: 34,
-    height: 34,
+  action: {
+    width: ACTION_SIZE,
+    height: ACTION_SIZE,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: t.radius.pill,
   },
-  kebabHovered: {
+  actionHovered: {
     backgroundColor: t.colors.bgAlt,
-  },
-  date: {
-    width: 46,
-    height: 46,
-    flexShrink: 0,
-    borderRadius: t.radius.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.bgAlt,
-  },
-  dateDay: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: 19,
-    lineHeight: 20,
-    color: t.colors.text,
-  },
-  dateMonth: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 9,
-    letterSpacing: 0.5,
-    marginTop: 2,
-    color: t.colors.textMuted,
   },
   cover: {
-    width: 46,
-    height: 46,
+    width: DATE_BADGE_SIZE,
+    height: DATE_BADGE_SIZE,
     flexShrink: 0,
-    borderRadius: t.radius.md,
+    borderRadius: t.radius.sm,
     backgroundColor: t.colors.bgAlt,
   },
   meta: {
     flex: 1,
     minWidth: 0,
+    gap: t.space["1"],
   },
   titleRow: {
     flexDirection: "row",
@@ -281,27 +293,14 @@ const useStyles = makeThemedStyles((t) => ({
   title: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 14.5,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   subRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 2,
-  },
-  sub: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
-    color: t.colors.textSubtle,
   },
   subDot: {
-    marginHorizontal: 5,
-  },
-  counts: {
-    marginTop: 2,
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12,
-    color: t.colors.textMuted,
+    marginHorizontal: t.space["1"],
   },
 }))

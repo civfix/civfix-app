@@ -1,14 +1,17 @@
 import React, { useCallback, useMemo, useRef, useState } from "react"
-import { StyleSheet, View } from "react-native"
+import { View } from "react-native"
 import type { OrganizationDTO, PayoutDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, headingLevel } from "../../../theme"
-import { Text, Icon, iconMap } from "../../../typography"
+import { makeThemedStyles, useTheme } from "../../../theme"
+import { Text } from "../../../typography"
 import {
   ModalCardSheet,
   PrimaryButton,
   SecondaryButton,
-  SkeletonGroup,
-  SkeletonText,
+  SectionCard,
+  SettingsRow,
+  SettingsSection,
+  StatTile,
+  StatTileRow,
   useToast,
 } from "../../../primitives"
 import { useOpenExternal } from "../../../capabilities"
@@ -24,6 +27,7 @@ import {
 } from "../../../data/hooks/payouts"
 import { FeedNotice } from "../../FeedNotice"
 import { appErrorCode } from "../../errorCode"
+import { HeroSkeleton } from "../HostSkeletons"
 import { formatMinor, formatMoney } from "../donationFormat"
 import {
   canManageOrgPayments,
@@ -54,12 +58,12 @@ function PayoutRow({ payout, locale }: { payout: PayoutDTO; locale: string }) {
       <View style={styles.payoutMeta}>
         <Text style={styles.payoutAmount}>{formatMoney(payout.amount, locale)}</Text>
         {when ? (
-          <Text style={styles.payoutWhen} numberOfLines={1}>
+          <Text variant="caption" numberOfLines={1}>
             {when}
           </Text>
         ) : null}
       </View>
-      <Text style={styles.payoutStatus} numberOfLines={1}>
+      <Text variant="caption" numberOfLines={1}>
         {t(`money.payout_status_${payout.status}`)}
       </Text>
     </View>
@@ -83,7 +87,10 @@ export function MoneySection({ org, range }: MoneySectionProps) {
   const status = useOrgPaymentsStatus(org.id, { enabled: canView })
   const connected = !!status.data?.stripeAccountId
   const balance = useOrgBalance(org.id, { enabled: connected })
-  const summaryRange = useMemo(() => ({ from: donationSummaryFrom(range, new Date()) }), [range])
+  const summaryRange = useMemo(() => {
+    const from = donationSummaryFrom(range, new Date())
+    return from ? { from } : {}
+  }, [range])
   const summary = useOrgDonationSummary(org.id, summaryRange, { enabled: connected })
   const payouts = useOrgPayouts(org.id, { enabled: connected })
   const createPayout = useCreateOrgPayout(org.id)
@@ -147,30 +154,11 @@ export function MoneySection({ org, range }: MoneySectionProps) {
 
   if (!canView) return null
 
-  const header = (
-    <View style={styles.sectionHead}>
-      <Icon icon={iconMap.HandHeart} size={17} color={th.colors.textMuted} />
-      <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(2)}>
-        {t("money.section")}
-      </Text>
-    </View>
-  )
-
-  if (status.isPending) {
-    return (
-      <View style={styles.section}>
-        {header}
-        <SkeletonGroup>
-          <SkeletonText width="70%" height={16} />
-        </SkeletonGroup>
-      </View>
-    )
-  }
+  if (status.isPending) return <HeroSkeleton />
 
   if (status.isError) {
     return (
-      <View style={styles.section}>
-        {header}
+      <SectionCard label={t("money.section")}>
         <FeedNotice
           icon="CloudOff"
           title={t("money.error_title")}
@@ -178,93 +166,87 @@ export function MoneySection({ org, range }: MoneySectionProps) {
           actionLabel={t("money.retry")}
           onAction={() => void status.refetch()}
         />
-      </View>
+      </SectionCard>
     )
   }
 
   if (!connected) {
     return (
-      <View style={styles.section}>
-        {header}
+      <SectionCard label={t("money.section")}>
         <View style={styles.card}>
-          <Text style={styles.cardBody}>{t("money.not_connected")}</Text>
+          <Text variant="body">{t("money.not_connected")}</Text>
           {canManage ? (
-            <PrimaryButton
+            <SecondaryButton
               label={t("money.connect")}
-              variant="outline"
-              loading={accountLink.isPending}
+              disabled={accountLink.isPending}
               onPress={onboard}
             />
           ) : (
-            <Text style={styles.note}>{t("money.connect_owner_only")}</Text>
+            <Text variant="caption">{t("money.connect_owner_only")}</Text>
           )}
         </View>
-      </View>
+      </SectionCard>
     )
   }
 
+  const payoutSub = blockedKey
+    ? t(blockedKey)
+    : balance.data?.payoutSchedule
+      ? t(`money.schedule_${balance.data.payoutSchedule.interval}`)
+      : undefined
+
   return (
-    <View style={styles.section}>
-      {header}
-      <View style={styles.card}>
-        <View style={styles.balanceRow}>
-          <View style={styles.balanceCell}>
-            <Text style={styles.balanceValue}>
-              {balance.data ? formatMoney(balance.data.available, locale) : t("money.dash")}
-            </Text>
-            <Text style={styles.balanceLabel}>{t("money.available")}</Text>
-          </View>
-          <View style={styles.balanceCell}>
-            <Text style={styles.balanceValue}>
-              {balance.data ? formatMoney(balance.data.pending, locale) : t("money.dash")}
-            </Text>
-            <Text style={styles.balanceLabel}>{t("money.pending")}</Text>
-          </View>
-        </View>
-
-        {balance.isError ? <Text style={styles.note}>{t("money.balance_error")}</Text> : null}
-
-        {summary.data ? (
-          <Text style={styles.note}>
-            {t("money.donations_total", {
-              amount: formatMinor(summary.data.netMinor, "USD", locale),
-              count: summary.data.donationCount,
-            })}
-          </Text>
-        ) : null}
-        {summary.isError ? <Text style={styles.note}>{t("money.summary_error")}</Text> : null}
-
-        {balance.data?.payoutSchedule ? (
-          <Text style={styles.note}>
-            {t(`money.schedule_${balance.data.payoutSchedule.interval}`)}
-          </Text>
-        ) : null}
-
-        {button.visible ? (
-          <>
-            <PrimaryButton
-              label={t("money.payout")}
-              variant="outline"
-              disabled={!button.enabled}
-              loading={createPayout.isPending}
-              onPress={askPayout}
+    <View style={styles.group}>
+      <SectionCard label={t("money.section")}>
+        <View style={styles.card}>
+          <StatTileRow columns={2}>
+            <StatTile
+              label={t("money.available")}
+              value={balance.data ? formatMoney(balance.data.available, locale) : null}
             />
-            {blockedKey ? <Text style={styles.note}>{t(blockedKey)}</Text> : null}
-          </>
-        ) : (
-          <Text style={styles.note}>{t("money.payout_owner_only")}</Text>
-        )}
-      </View>
+            <StatTile
+              label={t("money.pending")}
+              value={balance.data ? formatMoney(balance.data.pending, locale) : null}
+            />
+          </StatTileRow>
 
-      {rows.length > 0 ? (
-        <View style={styles.list}>
-          <Text style={styles.subhead}>{t("money.recent_payouts")}</Text>
-          {rows.map((payout) => (
-            <PayoutRow key={payout.id} payout={payout} locale={locale} />
-          ))}
+          {balance.isError ? <Text variant="caption">{t("money.balance_error")}</Text> : null}
+
+          {summary.data ? (
+            <Text variant="caption">
+              {t("money.donations_total", {
+                amount: formatMinor(summary.data.netMinor, "USD", locale),
+                count: summary.data.donationCount,
+              })}
+            </Text>
+          ) : null}
+          {summary.isError ? <Text variant="caption">{t("money.summary_error")}</Text> : null}
+
+          {rows.length > 0 ? (
+            <View style={styles.payouts}>
+              <Text variant="label">{t("money.recent_payouts")}</Text>
+              {rows.map((payout) => (
+                <PayoutRow key={payout.id} payout={payout} locale={locale} />
+              ))}
+            </View>
+          ) : null}
+          {payouts.isError ? <Text variant="caption">{t("money.payouts_error")}</Text> : null}
         </View>
-      ) : null}
-      {payouts.isError ? <Text style={styles.note}>{t("money.payouts_error")}</Text> : null}
+      </SectionCard>
+
+      {button.visible ? (
+        <SettingsSection>
+          <SettingsRow
+            icon="ReceiptText"
+            label={t("money.payout")}
+            sub={payoutSub}
+            disabled={!button.enabled}
+            onPress={askPayout}
+          />
+        </SettingsSection>
+      ) : (
+        <Text variant="caption">{t("money.payout_owner_only")}</Text>
+      )}
 
       <ModalCardSheet
         visible={confirming}
@@ -291,7 +273,7 @@ export function MoneySection({ org, range }: MoneySectionProps) {
           </>
         }
       >
-        <Text variant="caption" color={th.colors.textSubtle}>
+        <Text variant="caption">
           {t("money.confirm_body", {
             amount: balance.data ? formatMoney(balance.data.available, locale) : t("money.dash"),
           })}
@@ -302,64 +284,14 @@ export function MoneySection({ org, range }: MoneySectionProps) {
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  section: {
+  group: {
     gap: t.space["2"],
-  },
-  sectionHead: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-  },
-  sectionTitle: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: t.fontSize["16"],
-    color: t.colors.text,
   },
   card: {
     gap: t.space["3"],
-    padding: t.space["3"],
-    borderRadius: t.radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surface,
-    ...t.shadows.s1,
   },
-  cardBody: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-  },
-  balanceRow: {
-    flexDirection: "row",
-    gap: t.space["3"],
-  },
-  balanceCell: {
-    flex: 1,
-    minWidth: 0,
-  },
-  balanceValue: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: t.fontSize["20"],
-    color: t.colors.text,
-  },
-  balanceLabel: {
-    marginTop: 2,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-  },
-  note: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-  },
-  list: {
+  payouts: {
     gap: t.space["2"],
-  },
-  subhead: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
   },
   payoutRow: {
     flexDirection: "row",
@@ -378,17 +310,5 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyBold,
     fontSize: t.fontSize["14"],
     color: t.colors.text,
-  },
-  payoutWhen: {
-    marginTop: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-  },
-  payoutStatus: {
-    flexShrink: 0,
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textMuted,
   },
 }))

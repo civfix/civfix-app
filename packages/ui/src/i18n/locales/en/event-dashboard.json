@@ -8,22 +8,49 @@
   "org_picker": {
     "label": "Organization"
   },
+  "header": {
+    "title": "Your events",
+    "summary": "{{upcoming}} upcoming · {{hosted}} hosted"
+  },
+  "next_up": {
+    "section": "Up next",
+    "check_in": "Check in",
+    "check_in_a11y": "Check in for {{title}}",
+    "host_tools": "Host tools",
+    "host_tools_a11y": "Open host tools for {{title}}",
+    "meter_a11y": "{{registered}} of {{capacity}} spots taken",
+    "empty_title": "Nothing scheduled",
+    "empty_body": "Create an event and it shows up here with its numbers."
+  },
+  "numbers": {
+    "section": "Numbers"
+  },
   "range": {
     "label": "Time range",
     "30d": "30 days",
     "90d": "90 days",
-    "365d": "12 months"
+    "365d": "12 months",
+    "all": "All time"
   },
   "kpi": {
     "events": "Events hosted",
     "registrations": "Registrations",
     "check_ins": "Check-ins",
-    "hidden_value": "-",
     "suppressed": "Numbers stay hidden until at least {{k}} people take part.",
-    "trend_a11y": "Registrations over time",
+    "trend_a11y": "Registrations, {{range}}, latest {{value}} on {{day}}",
     "error_title": "Could not load your numbers",
     "error_body": "We could not reach civfix. Check your connection and try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "attendance_rate": "Attendance rate",
+    "unique_volunteers": "Unique volunteers",
+    "returning": "Returning volunteers",
+    "returning_hint": "{{numerator}} of {{denominator}}",
+    "busiest_slot": "Busiest slot: {{weekday}} at {{hour}}",
+    "end_label": "{{value}} on {{day}}"
+  },
+  "top_events": {
+    "section": "Top events",
+    "seats": "{{count}} registered"
   },
   "create": {
     "action": "Create event",
@@ -34,7 +61,6 @@
     "label": "Which events",
     "upcoming": "Upcoming",
     "past": "Past",
-    "counts": "{{registered}} registered, {{checkedIn}} checked in",
     "open_a11y": "Open {{title}}",
     "actions_a11y": "Actions for {{title}}",
     "host_tools": "Host tools",
@@ -60,7 +86,13 @@
     "duplicate_error_rate_limited": "Too many events for now. Try again later.",
     "duplicate_error_invalid": "Check the date and time and try again.",
     "duplicate_error_generic": "Could not duplicate the event. Try again.",
-    "loading_more": "Loading…"
+    "loading_more": "Loading…",
+    "section": "Events",
+    "meta_capacity": "{{registered}} of {{capacity}}",
+    "meta_registered": "{{count}} registered",
+    "meta_waiting": "{{count}} waiting",
+    "meta_checked_in": "{{count}} checked in",
+    "check_in_a11y": "Check in for {{title}}"
   },
   "invites": {
     "section": "Invitations",
@@ -94,7 +126,7 @@
     "schedule_weekly": "Stripe pays out weekly on its own.",
     "schedule_monthly": "Stripe pays out monthly on its own.",
     "schedule_manual": "Payouts happen only when you send them.",
-    "payout": "Export money to bank",
+    "payout": "Send to bank",
     "payout_blocked_disabled": "Stripe has not enabled payouts for this account yet.",
     "payout_blocked_empty": "Nothing is available to send yet.",
     "payout_owner_only": "Only the owner can send money to the bank.",
@@ -119,7 +151,7 @@
     "link_error": "Could not open the setup page. Try again."
   },
   "team": {
-    "section": "Collaborators",
+    "section": "Team",
     "invite": "Invite",
     "invite_title": "Invite a collaborator",
     "invite_dismiss_a11y": "Close invite a collaborator",

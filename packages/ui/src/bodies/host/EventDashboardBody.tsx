@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { Pressable, View } from "react-native"
+import { Pressable, View, type LayoutChangeEvent } from "react-native"
 import type { CleanupMemberRole, HostedEventDTO } from "@civfix/shared"
 import {
   focusRingProps,
@@ -10,7 +10,18 @@ import {
   webTransition,
 } from "../../theme"
 import { Text, TextLink, iconMap } from "../../typography"
-import { Avatar, PrimaryButton, SignInPrompt, SkeletonGroup, SkeletonList, useToast } from "../../primitives"
+import {
+  Avatar,
+  EmptyState,
+  SectionCard,
+  SecondaryButton,
+  SegmentedControl,
+  SignInPrompt,
+  SkeletonGroup,
+  SkeletonList,
+  statTileColumns,
+  useToast,
+} from "../../primitives"
 import { useAuthState, useRequireAuth } from "../../data"
 import { actableOrganizations, useMyOrganizations } from "../../data/hooks/orgs"
 import {
@@ -37,54 +48,26 @@ import { ConsoleLinkRow } from "./dashboard/ConsoleLinkRow"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
 import { EventInviteRow, OrgInviteRow } from "./dashboard/InviteRows"
 import { HostedEventRow } from "./dashboard/HostedEventRow"
-import { KpiStrip } from "./dashboard/KpiStrip"
+import { NextUpCard } from "./dashboard/NextUpCard"
 import { MoneySection } from "./dashboard/MoneySection"
-import { buildDashboardTabs, DASHBOARD_TABS, type DashboardTab } from "./dashboard/dashboardModel"
+import { PortfolioStats } from "./dashboard/PortfolioStats"
+import { TopEventsCard } from "./dashboard/TopEventsCard"
+import {
+  buildDashboardTabs,
+  DASHBOARD_TABS,
+  hostedEventCan,
+  hostedEventPhase,
+  nextUpEvent,
+  portfolioKpis,
+  topEventBars,
+  topEventsVisible,
+  type DashboardTab,
+} from "./dashboard/dashboardModel"
 import { emailAttendeesPreset, useDashboardStore } from "./dashboard/dashboardStore"
 
 type EventWindow = "upcoming" | "past"
 
 const EVENT_WINDOWS: readonly EventWindow[] = ["upcoming", "past"]
-
-function SegmentedRow({
-  options,
-  selected,
-  label,
-  onSelect,
-}: {
-  options: readonly { key: string; label: string }[]
-  selected: string
-  label: string
-  onSelect: (key: string) => void
-}) {
-  const styles = useStyles()
-  return (
-    <View style={styles.segments} accessibilityRole="radiogroup" accessibilityLabel={label}>
-      {options.map((option) => {
-        const on = option.key === selected
-        return (
-          <Pressable
-            key={option.key}
-            onPress={() => onSelect(option.key)}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: on }}
-            accessibilityLabel={option.label}
-            {...focusRingProps}
-            style={(state) => [
-              styles.segment,
-              webTransition,
-              webCursor(),
-              on ? styles.segmentOn : null,
-              !on && webHover(state) ? styles.segmentHovered : null,
-            ]}
-          >
-            <Text style={[styles.segmentText, on ? styles.segmentTextOn : null]}>{option.label}</Text>
-          </Pressable>
-        )
-      })}
-    </View>
-  )
-}
 
 export function EventDashboardBody() {
   const styles = useStyles()
@@ -105,6 +88,11 @@ export function EventDashboardBody() {
 
   const [eventWindow, setEventWindow] = useState<EventWindow>("upcoming")
   const [duplicating, setDuplicating] = useState<HostedEventDTO | null>(null)
+  const [contentWidth, setContentWidth] = useState(0)
+  const columns = statTileColumns(contentWidth)
+  const onContentLayout = useCallback((event: LayoutChangeEvent) => {
+    setContentWidth(event.nativeEvent.layout.width)
+  }, [])
 
   const orgsQuery = useMyOrganizations()
   const orgs = useMemo(() => actableOrganizations(orgsQuery.data) ?? [], [orgsQuery.data])
@@ -116,6 +104,7 @@ export function EventDashboardBody() {
 
   const analytics = useHostedEventsAnalytics(range, activeOrgId)
   const hosted = useMyHostedEvents(eventWindow, activeOrgId)
+  const upcoming = useMyHostedEvents("upcoming", activeOrgId)
   const eventInvites = useMyEventInvites()
   const orgInvites = useMyOrgInvites()
   const acceptEvent = useAcceptMyEventInvite()
@@ -123,7 +112,12 @@ export function EventDashboardBody() {
   const acceptOrg = useAcceptMyOrgInvite()
   const declineOrg = useDeclineMyOrgInvite()
 
+  const now = new Date()
   const events = useMemo(() => hostedEventRows(hosted.data?.pages), [hosted.data])
+  const upcomingEvents = useMemo(() => hostedEventRows(upcoming.data?.pages), [upcoming.data])
+  const nextUp = nextUpEvent(upcomingEvents, now)
+  const kpis = portfolioKpis(upcoming.data?.pages)
+  const topBars = useMemo(() => topEventBars(analytics.data?.byEvent), [analytics.data])
   const pendingEventInvites = useMemo(
     () => myEventInviteRows(eventInvites.data),
     [eventInvites.data],
@@ -154,6 +148,21 @@ export function EventDashboardBody() {
   const onHostTools = useCallback((event: HostedEventDTO) => {
     openHostDashboard({ eventId: event.id })
   }, [])
+
+  const onCheckIn = useCallback((event: HostedEventDTO) => {
+    useNavStore.getState().push({ kind: "host-checkin", id: event.id })
+  }, [])
+
+  const onNextUp = useCallback(
+    (event: HostedEventDTO) => {
+      if (hostedEventPhase(event, new Date()) === "live" && hostedEventCan(event, "check_in")) {
+        onCheckIn(event)
+        return
+      }
+      onHostTools(event)
+    },
+    [onCheckIn, onHostTools],
+  )
 
   const onEmailAttendees = useCallback(
     (event: HostedEventDTO) => {
@@ -232,178 +241,237 @@ export function EventDashboardBody() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {tabs.orgTabVisible ? (
-        <SegmentedRow
-          label={t("tabs.label")}
-          selected={tabs.tab}
-          onSelect={(key) => setTab(key as DashboardTab)}
-          options={DASHBOARD_TABS.map((key) => ({ key, label: t(`tabs.${key}`) }))}
-        />
-      ) : null}
-
-      {tabs.orgPickerVisible ? (
-        <View style={styles.orgRow} accessibilityRole="radiogroup" accessibilityLabel={t("org_picker.label")}>
-          {orgs.map((org) => {
-            const on = org.id === tabs.selectedOrgId
-            return (
-              <Pressable
-                key={org.id}
-                onPress={() => setOrgId(org.id)}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: on }}
-                accessibilityLabel={org.name}
-                {...focusRingProps}
-                style={(state) => [
-                  styles.orgChip,
-                  webTransition,
-                  webCursor(),
-                  on ? styles.orgChipOn : null,
-                  !on && webHover(state) ? styles.orgChipHovered : null,
-                ]}
-              >
-                <Avatar name={org.name} seed={org.id} photoUrl={org.logoUrl ?? null} size={20} />
-                <Text style={[styles.orgChipText, on ? styles.orgChipTextOn : null]} numberOfLines={1}>
-                  {org.name}
-                </Text>
-              </Pressable>
-            )
-          })}
-        </View>
-      ) : null}
-
-      <KpiStrip
-        analytics={analytics.data}
-        isPending={analytics.isPending}
-        isError={analytics.isError}
-        range={range}
-        onRange={setRange}
-        onRetry={() => void analytics.refetch()}
-      />
-
-      <PrimaryButton
-        label={t("create.action")}
-        icon={iconMap.Plus}
-        accessibilityLabel={
-          tabs.tab === "org" && tabs.selectedOrg
-            ? t("create.a11y_org", { org: tabs.selectedOrg.name })
-            : t("create.a11y_personal")
-        }
-        onPress={onCreate}
-      />
-
-      {invitesVisible ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(2)}>
-            {t("invites.section")}
-          </Text>
-          {invitesError ? (
-            <FeedNotice
-              icon="CloudOff"
-              title={t("invites.error_title")}
-              body={t("invites.error_body")}
-              actionLabel={t("invites.retry")}
-              onAction={() => {
-                if (eventInvites.isError) void eventInvites.refetch()
-                if (orgInvites.isError) void orgInvites.refetch()
-              }}
-            />
-          ) : null}
-          {!invitesError && invitesPending ? (
-            <SkeletonGroup>
-              <SkeletonList kind="person" rows={2} />
-            </SkeletonGroup>
-          ) : null}
-          {pendingEventInvites.map((invite) => (
-            <EventInviteRow
-              key={invite.id}
-              invite={invite}
-              roleLabel={roleLabel(invite.role)}
-              pending={pendingEventInviteId === invite.id}
-              onAccept={onAcceptEventInvite}
-              onDecline={onDeclineEventInvite}
-            />
-          ))}
-          {pendingOrgInviteRows.map((invite) => (
-            <OrgInviteRow
-              key={invite.id}
-              invite={invite}
-              roleLabel={tEnums(`organizationMemberRole.${invite.role}`)}
-              pending={pendingOrgInviteId === invite.id}
-              onAccept={onAcceptOrgInvite}
-              onDecline={onDeclineOrgInvite}
-            />
-          ))}
-        </View>
-      ) : null}
-
-      <View style={styles.section}>
-        <SegmentedRow
-          label={t("events.label")}
-          selected={eventWindow}
-          onSelect={(key) => setEventWindow(key as EventWindow)}
-          options={EVENT_WINDOWS.map((key) => ({ key, label: t(`events.${key}`) }))}
-        />
-
-        {hosted.isError ? (
-          <FeedNotice
-            icon="CloudOff"
-            title={t("events.error_title")}
-            body={t("events.error_body")}
-            actionLabel={t("events.retry")}
-            onAction={() => void hosted.refetch()}
+      <View style={styles.stack} onLayout={onContentLayout}>
+        {tabs.orgTabVisible ? (
+          <SegmentedControl
+            label={t("tabs.label")}
+            selected={tabs.tab}
+            onSelect={(key) => setTab(key as DashboardTab)}
+            options={DASHBOARD_TABS.map((key) => ({ key, label: t(`tabs.${key}`) }))}
           />
         ) : null}
 
-        {hosted.isPending ? (
-          <SkeletonGroup>
-            <SkeletonList kind="report" rows={3} />
-          </SkeletonGroup>
-        ) : null}
-
-        {!hosted.isPending && !hosted.isError && events.length === 0 ? (
-          <FeedNotice
-            plain
-            icon="Calendar"
-            title={t(`events.empty_${eventWindow}_title`)}
-            body={t(`events.empty_${eventWindow}_body`)}
-          />
-        ) : null}
-
-        {events.map((event) => (
-          <HostedEventRow
-            key={event.id}
-            event={event}
-            roleLabel={roleLabel}
-            onOpen={onOpenEvent}
-            onHostTools={onHostTools}
-            onEmailAttendees={onEmailAttendees}
-            onDuplicate={setDuplicating}
-            onEdit={onEdit}
-          />
-        ))}
-
-        {hosted.hasNextPage ? (
-          <TextLink
-            variant="label"
-            standalone
-            accessibilityLabel={t("events.show_more")}
-            onPress={() => {
-              void hosted.fetchNextPage()
-            }}
+        {tabs.orgPickerVisible ? (
+          <View
+            style={styles.orgRow}
+            accessibilityRole="radiogroup"
+            accessibilityLabel={t("org_picker.label")}
           >
-            {hosted.isFetchingNextPage ? t("events.loading_more") : t("events.show_more")}
-          </TextLink>
+            {orgs.map((org) => {
+              const on = org.id === tabs.selectedOrgId
+              return (
+                <Pressable
+                  key={org.id}
+                  onPress={() => setOrgId(org.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: on }}
+                  accessibilityLabel={org.name}
+                  {...focusRingProps}
+                  style={(state) => [
+                    styles.orgChip,
+                    webTransition,
+                    webCursor(),
+                    on ? styles.orgChipOn : null,
+                    !on && webHover(state) ? styles.orgChipHovered : null,
+                  ]}
+                >
+                  <Avatar name={org.name} seed={org.id} photoUrl={org.logoUrl ?? null} size={20} />
+                  <Text style={[styles.orgChipText, on ? styles.orgChipTextOn : null]} numberOfLines={1}>
+                    {org.name}
+                  </Text>
+                </Pressable>
+              )
+            })}
+          </View>
         ) : null}
+
+        <View style={styles.header}>
+          <View style={styles.headerMeta}>
+            <Text variant="title" accessibilityRole="header" {...headingLevel(1)}>
+              {t("header.title")}
+            </Text>
+            {kpis ? (
+              <Text variant="caption" numberOfLines={1}>
+                {t("header.summary", {
+                  upcoming: kpis.upcomingEvents,
+                  hosted: kpis.eventsHosted,
+                })}
+              </Text>
+            ) : null}
+          </View>
+          {nextUp ? (
+            <SecondaryButton
+              size="sm"
+              icon={iconMap.Plus}
+              label={t("create.action")}
+              accessibilityLabel={
+                tabs.tab === "org" && tabs.selectedOrg
+                  ? t("create.a11y_org", { org: tabs.selectedOrg.name })
+                  : t("create.a11y_personal")
+              }
+              onPress={onCreate}
+            />
+          ) : null}
+        </View>
+
+        {nextUp ? (
+          <NextUpCard
+            event={nextUp.event}
+            phase={nextUp.phase}
+            onOpen={onOpenEvent}
+            onPrimary={onNextUp}
+          />
+        ) : null}
+
+        {!nextUp && !upcoming.isPending ? (
+          <SectionCard label={t("next_up.section")}>
+            <EmptyState
+              tone="neutral"
+              icon={iconMap.Calendar}
+              title={t("next_up.empty_title")}
+              body={t("next_up.empty_body")}
+              cta={{ label: t("create.action"), icon: iconMap.Plus, onPress: onCreate }}
+            />
+          </SectionCard>
+        ) : null}
+
+        <PortfolioStats
+          analytics={analytics.data}
+          isPending={analytics.isPending}
+          isError={analytics.isError}
+          range={range}
+          columns={columns}
+          onRange={setRange}
+          onRetry={() => void analytics.refetch()}
+        />
+
+        {topEventsVisible(analytics.data?.byEvent, topBars) ? (
+          <TopEventsCard bars={topBars} />
+        ) : null}
+
+        {invitesVisible ? (
+          <SectionCard label={t("invites.section")}>
+            <View style={styles.rows}>
+              {invitesError ? (
+                <FeedNotice
+                  icon="CloudOff"
+                  title={t("invites.error_title")}
+                  body={t("invites.error_body")}
+                  actionLabel={t("invites.retry")}
+                  onAction={() => {
+                    if (eventInvites.isError) void eventInvites.refetch()
+                    if (orgInvites.isError) void orgInvites.refetch()
+                  }}
+                />
+              ) : null}
+              {!invitesError && invitesPending ? (
+                <SkeletonGroup>
+                  <SkeletonList kind="person" rows={2} />
+                </SkeletonGroup>
+              ) : null}
+              {pendingEventInvites.map((invite) => (
+                <EventInviteRow
+                  key={invite.id}
+                  invite={invite}
+                  roleLabel={roleLabel(invite.role)}
+                  pending={pendingEventInviteId === invite.id}
+                  onAccept={onAcceptEventInvite}
+                  onDecline={onDeclineEventInvite}
+                />
+              ))}
+              {pendingOrgInviteRows.map((invite) => (
+                <OrgInviteRow
+                  key={invite.id}
+                  invite={invite}
+                  roleLabel={tEnums(`organizationMemberRole.${invite.role}`)}
+                  pending={pendingOrgInviteId === invite.id}
+                  onAccept={onAcceptOrgInvite}
+                  onDecline={onDeclineOrgInvite}
+                />
+              ))}
+            </View>
+          </SectionCard>
+        ) : null}
+
+        <SectionCard
+          label={t("events.section")}
+          trailing={
+            <SegmentedControl
+              size="sm"
+              label={t("events.label")}
+              selected={eventWindow}
+              onSelect={(key) => setEventWindow(key as EventWindow)}
+              options={EVENT_WINDOWS.map((key) => ({ key, label: t(`events.${key}`) }))}
+            />
+          }
+        >
+          <View style={styles.rows}>
+            {hosted.isError ? (
+              <FeedNotice
+                icon="CloudOff"
+                title={t("events.error_title")}
+                body={t("events.error_body")}
+                actionLabel={t("events.retry")}
+                onAction={() => void hosted.refetch()}
+              />
+            ) : null}
+
+            {hosted.isPending ? (
+              <SkeletonGroup>
+                <SkeletonList kind="report" rows={3} />
+              </SkeletonGroup>
+            ) : null}
+
+            {!hosted.isPending && !hosted.isError && events.length === 0 ? (
+              <EmptyState
+                tone="neutral"
+                icon={iconMap.Calendar}
+                title={t(`events.empty_${eventWindow}_title`)}
+                body={t(`events.empty_${eventWindow}_body`)}
+              />
+            ) : null}
+
+            {events.map((event) => (
+              <HostedEventRow
+                key={event.id}
+                event={event}
+                roleLabel={roleLabel}
+                live={hostedEventPhase(event, now) === "live"}
+                onOpen={onOpenEvent}
+                onCheckIn={onCheckIn}
+                onHostTools={onHostTools}
+                onEmailAttendees={onEmailAttendees}
+                onDuplicate={setDuplicating}
+                onEdit={onEdit}
+              />
+            ))}
+
+            {hosted.hasNextPage ? (
+              <TextLink
+                variant="label"
+                standalone
+                accessibilityLabel={t("events.show_more")}
+                onPress={() => {
+                  void hosted.fetchNextPage()
+                }}
+              >
+                {hosted.isFetchingNextPage ? t("events.loading_more") : t("events.show_more")}
+              </TextLink>
+            ) : null}
+          </View>
+        </SectionCard>
+
+        {tabs.tab === "org" && tabs.selectedOrg ? (
+          <>
+            <MoneySection org={tabs.selectedOrg} range={range} />
+            <CollaboratorsSection org={tabs.selectedOrg} />
+          </>
+        ) : null}
+
+        <ConsoleLinkRow
+          target={activeOrgId ? { kind: "org", orgId: activeOrgId } : { kind: "portfolio" }}
+        />
       </View>
-
-      {tabs.tab === "org" && tabs.selectedOrg ? (
-        <>
-          <MoneySection org={tabs.selectedOrg} range={range} />
-          <CollaboratorsSection org={tabs.selectedOrg} />
-        </>
-      ) : null}
-
-      <ConsoleLinkRow target={activeOrgId ? { kind: "org", orgId: activeOrgId } : { kind: "portfolio" }} />
 
       <DuplicateEventSheet event={duplicating} onClose={() => setDuplicating(null)} />
     </ScrollView>
@@ -420,45 +488,25 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["3"],
     paddingBottom: t.space["10"],
-    gap: t.space["4"],
+  },
+  stack: {
+    gap: t.space["6"],
   },
   stateContent: {
     flexGrow: 1,
     justifyContent: "center",
   },
-  section: {
-    gap: t.space["2"],
-  },
-  sectionTitle: {
-    fontFamily: t.fontFamily.displayBold,
-    fontSize: t.fontSize["16"],
-    color: t.colors.text,
-  },
-  segments: {
+  header: {
     flexDirection: "row",
-    gap: t.space["2"],
-  },
-  segment: {
-    flex: 1,
-    minHeight: MIN_TOUCH_TARGET,
     alignItems: "center",
-    justifyContent: "center",
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.bgAlt,
+    gap: t.space["3"],
   },
-  segmentOn: {
-    backgroundColor: t.colors.brand.bloom,
+  headerMeta: {
+    flex: 1,
+    minWidth: 0,
   },
-  segmentHovered: {
-    backgroundColor: t.colors.surfaceTint,
-  },
-  segmentText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-  },
-  segmentTextOn: {
-    color: t.colors.onAccent,
+  rows: {
+    gap: t.space["3"],
   },
   orgRow: {
     flexDirection: "row",
