@@ -3,7 +3,7 @@ import { View, Pressable, Platform } from "react-native"
 import type { FlatList as RNFlatList, NativeScrollEvent, NativeSyntheticEvent } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { PersonDTO, ReactionEmoji, RoomKind } from "@civfix/shared"
-import { theme, useLayoutMode, useTheme, focusRingProps } from "../theme"
+import { space, useLayoutMode, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { ReportContentSheet, PinnedBar, SystemMessageRow, useToast, usePopoverAnchor } from "../primitives"
 import type { AnchorRect, PollCreateInput } from "../primitives"
@@ -459,7 +459,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
 
   const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const y = e.nativeEvent.contentOffset.y
-    const atBottom = y <= theme.space["10"]
+    const atBottom = y <= space["10"]
     setIsAtBottom(atBottom)
     if (atBottom) setHasNewBelow(false)
     if (Platform.OS === "web") {
@@ -583,7 +583,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
 
   const slotBottomStyle = fullScreen
     ? {
-        paddingBottom: keyboardVisible ? theme.space["3"] : insets.bottom + theme.space["3"],
+        paddingBottom: keyboardVisible ? space["3"] : insets.bottom + space["3"],
         marginBottom: kbReserve,
       }
     : kbReserve > 0
@@ -754,7 +754,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
         style={[
           styles.headerHost,
           mode === "expanded" ? styles.headerHostExpanded : styles.headerHostCompact,
-          fullScreen ? { paddingTop: insets.top + theme.space["1"] } : null,
+          fullScreen ? { paddingTop: insets.top + space["1"] } : null,
         ]}
       >
         {pinnedOnly ? (
@@ -863,5 +863,5 @@ const SUPPRESS_READ_ACKS = { suppressReadAcks: true } as const
 
 const MAINTAIN_VISIBLE_CONTENT_POSITION = {
   minIndexForVisible: 0,
-  autoscrollToTopThreshold: theme.space["10"],
+  autoscrollToTopThreshold: space["10"],
 } as const

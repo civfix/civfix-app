@@ -36,7 +36,7 @@ import {
   withTiming,
   type SharedValue,
 } from "react-native-reanimated"
-import { theme } from "../theme"
+import { motion } from "../theme"
 import {
   KEYBOARD_SURFACE_GAP,
   iosKeyboardCloseEasing,
@@ -177,7 +177,7 @@ export function useKeyboardAnchor({
   useEffect(() => {
     const subs: { remove(): void }[] = []
     const dur = (e: KeyboardEvent) =>
-      keyboardAnimationDuration(e.duration, theme.motion.keyboardFallbackMs, theme.motion.keyboardMaxMs)
+      keyboardAnimationDuration(e.duration, motion.keyboardFallbackMs, motion.keyboardMaxMs)
     if (Platform.OS === "ios") {
       subs.push(
         Keyboard.addListener("keyboardWillShow", (e: KeyboardEvent) => {
@@ -242,7 +242,7 @@ export function useKeyboardAnchor({
     enabledRef.current = enabled
     enabledSv.value = enabled ? 1 : 0
     const pending = lastWillShow.current
-    if (enabled && pending && Date.now() - pending.at < theme.motion.keyboardMaxMs) {
+    if (enabled && pending && Date.now() - pending.at < motion.keyboardMaxMs) {
       apply(
         reduceKeyboard(phase.current, {
           type: "will-show",
@@ -260,7 +260,7 @@ export function useKeyboardAnchor({
         type: "ownership",
         enabled,
         liveOverlap: live,
-        handoffMs: theme.motion.keyboardHandoffMs,
+        handoffMs: motion.keyboardHandoffMs,
         // Derived from the SAME record the dedupe uses, so "carry the reserve" and "do not restart the
         // travel" can never disagree. Order of record: iOS posts keyboardWillHide (which starts the close
         // and sets this ref) BEFORE the field's blur re-runs this effect.

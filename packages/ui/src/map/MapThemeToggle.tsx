@@ -9,7 +9,6 @@ import { HEADER_GLYPH_SIZE } from "../bodies/headerControls"
 import { HeaderIconButton } from "../bodies/HeaderIconButton"
 import { AppearanceOptionList } from "../bodies/AppearanceOptionList"
 import { useT } from "../i18n"
-import { MAP_THEME_TOGGLE_ENABLED } from "./themeTogglePlatform"
 import { themeMenuFrame } from "./themeMenuPlacement"
 
 export interface MapThemeToggleProps {
@@ -64,8 +63,6 @@ export function MapThemeToggle({ variant }: MapThemeToggleProps) {
     pendingOpen.current = true
     measure()
   }, [open, measure, close])
-
-  if (!MAP_THEME_TOGGLE_ENABLED) return null
 
   const label = t("appearance.toggle")
   const frame = anchorRect

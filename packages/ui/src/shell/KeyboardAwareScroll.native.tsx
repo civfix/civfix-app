@@ -18,7 +18,7 @@ import {
   type NativeSyntheticEvent,
 } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import { theme } from "../theme"
+import { motion } from "../theme"
 import type { ScrollHostValue } from "./ScrollHost"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
 import { keyboardFocusStore } from "./keyboardFocusStore"
@@ -186,7 +186,7 @@ function makeKeyboardAwareScrollable(
         holdRef.current = setTimeout(() => {
           holdRef.current = null
           dispatch({ type: "hold-expired" })
-        }, theme.motion.keyboardHandoffMs)
+        }, motion.keyboardHandoffMs)
       })
       return () => {
         showSub.remove()

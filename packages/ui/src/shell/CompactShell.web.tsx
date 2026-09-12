@@ -5,7 +5,7 @@ import {
   useWindowDimensions,
   type ViewStyle,
 } from "react-native"
-import { makeThemedStyles, theme } from "../theme"
+import { makeThemedStyles, space, motion } from "../theme"
 import { BlurSurface } from "../surface"
 import { useNavStore, type DetailEntry, type Snap, type View as NavView } from "../nav"
 import { SearchHeader } from "./SearchHeader.web"
@@ -34,7 +34,7 @@ const RADIUS_FULL = 22
 
 const SETTLE_TRANSITION = cssTransition(
   ["height", "left", "right", "border-radius"],
-  theme.motion.sheetMove,
+  motion.sheetMove,
 )
 
 const FLING_VELOCITY = 0.5
@@ -88,7 +88,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   const transitionKey = active ? `${active.kind}:${active.id ?? ""}` : `home:${view}`
   const direction = useStackDirection(stack.length)
 
-  const snapPx = useMemo(() => sheetSnapPoints(winH, theme.space["8"]), [winH])
+  const snapPx = useMemo(() => sheetSnapPoints(winH, space["8"]), [winH])
 
   const [dragHeight, setDragHeight] = useState<number | null>(null)
 

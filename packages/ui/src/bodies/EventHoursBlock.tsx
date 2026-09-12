@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AccessibilityInfo, View, Pressable, StyleSheet, Animated, Easing } from "react-native"
-import { theme, makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { motion, makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar } from "../primitives"
 import { useAuthState, useCleanupAttendees, useEventHours } from "../data"
@@ -53,15 +53,15 @@ export function EventHoursBlock({
 
 function FadeUp({ children }: { children: React.ReactNode }) {
   const opacity = useRef(new Animated.Value(0)).current
-  const translateY = useRef(new Animated.Value(theme.motion.fadeUp.distance)).current
+  const translateY = useRef(new Animated.Value(motion.fadeUp.distance)).current
 
   useEffect(() => {
     let mounted = true
     const timing = (value: Animated.Value, toValue: number) =>
       Animated.timing(value, {
         toValue,
-        duration: theme.motion.fadeUp.duration,
-        easing: Easing.bezier(...theme.motion.fadeUp.easing),
+        duration: motion.fadeUp.duration,
+        easing: Easing.bezier(...motion.fadeUp.easing),
         useNativeDriver: true,
       })
 

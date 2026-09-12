@@ -386,7 +386,7 @@ describe("the composer -> report wizard round trip", () => {
     const reparented = mountComposer(composer)
     const claimedAtCommitB = fromComposer()
 
-    // ...and `theme.motion.bodyExit` later the outgoing layer leaves the DOM and the composer is gone. The
+    // ...and `motion.bodyExit` later the outgoing layer leaves the DOM and the composer is gone. The
     // mid-flight facts are asserted AFTER the teardown so a regression cannot leak the module mount count
     // into every later case (the `beforeEach` guard would then fail the whole file instead of this one).
     reparented()

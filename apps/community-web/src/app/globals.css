@@ -15,8 +15,8 @@
 
 @layer base {
   :root {
-    /* Surfaces. background = paper (#FBF7F0); card = white (#FFFFFF). */
-    --background: 38.2 57.9% 96.3%; /* neutral.paper  #FBF7F0 */
+    /* Surfaces. background = paper (#F4EFE6); card = white (#FFFFFF). */
+    --background: 38.6 38.9% 92.9%; /* neutral.paper  #F4EFE6 */
     --foreground: 30.0 13.0% 9.0%; /* neutral.ink    #1A1714 */
 
     --card: 0 0% 100%; /* neutral.card   #FFFFFF */
@@ -30,11 +30,11 @@
     --primary-foreground: 0 0% 100%; /* white */
 
     /* Secondary = paper2 surface with ink text. */
-    --secondary: 38.6 38.9% 92.9%; /* neutral.paper2 #F4EFE6 */
+    --secondary: 39.0 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
     --secondary-foreground: 30.0 13.0% 9.0%; /* neutral.ink */
 
     /* Muted = paper2 with ink3 text. */
-    --muted: 38.6 38.9% 92.9%; /* neutral.paper2 #F4EFE6 */
+    --muted: 39.0 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
     --muted-foreground: 36.7 7.1% 50.6%; /* neutral.ink3   #8A8378 */
 
     /* Accent = sun (#FFCB47) with ink text (host-event accent). */
@@ -45,8 +45,8 @@
     --destructive: 6.0 74.1% 60.6%; /* bloom.600      #E55F50 */
     --destructive-foreground: 0 0% 100%; /* white */
 
-    --border: 41.1 29.2% 87.3%; /* neutral.ink5   #E8E2D5 (hairlines) */
-    --input: 41.1 29.2% 87.3%; /* neutral.ink5   #E8E2D5 */
+    --border: 39.0 28.6% 86.3%; /* neutral.ink5   #E6DFD2 (hairlines) */
+    --input: 39.0 28.6% 86.3%; /* neutral.ink5   #E6DFD2 */
     --ring: 6.1 100% 71%; /* bloom.500 focus ring */
 
     /* Radius base for shadcn components; matches token radius.lg (20px). */
@@ -63,21 +63,22 @@
     /*
      * ----- Host Console semantic surface layer (`/manage/*`) -----
      *
-     * The raw Tailwind token scales (bg-cardflat, text-ink-3, bg-sun-50) are LIGHT-ONLY literals, so a
-     * surface built out of them renders a white card on a dark page. The console is the one screen set
-     * that has to be scheme-correct without a per-component branch, so it consumes this semantic layer
-     * through the `console.*` Tailwind color group instead of the raw scales.
+     * The neutral Tailwind utilities (bg-paper, bg-cardflat, text-ink-3) resolve to the design.css
+     * variables and already follow the scheme; the raw HUE scales (bg-sun-50, text-bloom-600) are still
+     * LIGHT-ONLY literals. The console is the one screen set that needs scheme-correct hue surfaces
+     * without a per-component branch, so it consumes this semantic layer through the `console.*`
+     * Tailwind color group instead of the raw hue scales.
      *
      * Every value below is a `colorSchemes[scheme]` entry from @civfix/shared/tokens; the hue pairs are
      * `color[hue][50]` (soft) over `color.chipInk[hue]` (strong), the one pair that clears WCAG AA in
      * BOTH schemes. src/components/console/console-tokens.test.ts parses this file and asserts every
      * value against the contract, so these literals cannot drift.
      */
-    --console-canvas: #EDE6D8;
+    --console-canvas: #F4EFE6;
     --console-surface: #FFFDF8;
-    --console-surface-alt: #E5DDCD;
-    --console-tint: #F8F1E4;
-    --console-line: #ECE5D8;
+    --console-surface-alt: #EAE3D6;
+    --console-tint: #FAF6EE;
+    --console-line: #E6DFD2;
     --console-line-strong: #BDB5A6;
     --console-ink: #211B13;
     --console-ink-2: #5C5546;
@@ -85,7 +86,7 @@
     --console-accent: #F0685C;
     --console-scrim: rgba(33, 27, 19, 0.35);
     --console-toast-surface: #211B13;
-    --console-toast-ink: #EDE6D8;
+    --console-toast-ink: #F4EFE6;
     --console-toast-ink-dim: #8D8577;
     --console-hue-bloom-soft: #FDEAE7;
     --console-hue-bloom-strong: #BD4234;
@@ -260,12 +261,20 @@
   overflow: hidden;
 }
 .cf-shell .maplibregl-ctrl-group button {
-  background: #fff;
+  background: var(--card);
   width: 32px; height: 32px;
 }
+.dark .cf-shell .maplibregl-ctrl-group button .maplibregl-ctrl-icon,
+.dark .cf-shell .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
 .cf-shell .maplibregl-ctrl-attrib.maplibregl-compact {
-  background: rgba(251,247,240,0.85);
+  background: color-mix(in srgb, var(--paper) 85%, transparent);
   border-radius: 6px;
+}
+.cf-shell .maplibregl-ctrl-attrib,
+.cf-shell .maplibregl-ctrl-attrib a {
+  color: var(--ink-2);
 }
 /*
  * The attribution follows the shell's LIVE left occlusion instead of a hardcoded width. `.cf-shell`

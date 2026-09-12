@@ -7,7 +7,7 @@
  */
 import React from "react"
 import { View, StyleSheet } from "react-native"
-import { theme, wordmarkColors, WORDMARK_LETTERS } from "@/theme"
+import { fontFamily, wordmarkColors, WORDMARK_LETTERS } from "@/theme"
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 
@@ -36,6 +36,6 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
   },
   letter: {
-    fontFamily: theme.fontFamily.brand,
+    fontFamily: fontFamily.brand,
   },
 })

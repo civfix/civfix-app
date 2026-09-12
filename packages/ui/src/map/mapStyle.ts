@@ -14,9 +14,34 @@ export const BASEMAP_TILES: Readonly<Record<ColorSchemeName, readonly string[]>>
   dark: cartoTiles("dark_all"),
 }
 
+const DARK_MATTER_GROUND = "#0E0E0E"
+
+export const DARK_RASTER_BRIGHTNESS_MIN = 0.18
+
+const DARK_RASTER_PAINT = {
+  "raster-opacity": 1,
+  "raster-brightness-min": DARK_RASTER_BRIGHTNESS_MIN,
+  "raster-brightness-max": 1,
+  "raster-saturation": 0,
+  "raster-contrast": 0,
+} as const
+
+function liftChannel(byte: number, min: number): string {
+  return Math.round(min * 255 + (1 - min) * byte)
+    .toString(16)
+    .padStart(2, "0")
+    .toUpperCase()
+}
+
+function liftHex(hex: string, min: number): string {
+  const n = hex.replace("#", "")
+  const channels = [n.slice(0, 2), n.slice(2, 4), n.slice(4, 6)]
+  return `#${channels.map((c) => liftChannel(parseInt(c, 16), min)).join("")}`
+}
+
 const BASEMAP_PAPER: Readonly<Record<ColorSchemeName, string>> = {
   light: "#F5F3EE",
-  dark: "#0E0E0E",
+  dark: liftHex(DARK_MATTER_GROUND, DARK_RASTER_BRIGHTNESS_MIN),
 }
 
 export function basemapPaper(scheme: ColorSchemeName): string {
@@ -57,13 +82,16 @@ export function rasterMapStyle(
       {
         id: "background",
         type: "background",
-        paint: { "background-color": colorSchemes[scheme].neutral.paper },
+        paint: {
+          "background-color":
+            scheme === "dark" ? BASEMAP_PAPER.dark : colorSchemes[scheme].neutral.paper,
+        },
       },
       {
         id: "basemap",
         type: "raster",
         source: "basemap",
-        paint: { "raster-opacity": 1 },
+        paint: scheme === "dark" ? { ...DARK_RASTER_PAINT } : { "raster-opacity": 1 },
       },
     ],
   }

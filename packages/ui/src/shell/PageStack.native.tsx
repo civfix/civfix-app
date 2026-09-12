@@ -15,7 +15,7 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated"
 import { isFlowKind, useNavStore, type DetailEntry, type View as NavView } from "../nav"
-import { makeThemedStyles, theme } from "../theme"
+import { makeThemedStyles, motion } from "../theme"
 import { detailLeadingAffordance } from "./backAffordance"
 import {
   pagePopConfig,
@@ -49,22 +49,22 @@ const PUSH_CFG = pagePushConfig()
 const POP_CFG = pagePopConfig()
 const SETTLE_CFG = pageSwipeSettleConfig()
 const CANCEL_CFG = pageSwipeCancelConfig()
-const FADE_CFG = timingConfig(theme.motion.bodyReplace)
+const FADE_CFG = timingConfig(motion.bodyReplace)
 
 const TIMING: PageTransitionTiming = {
-  pushDuration: theme.motion.pagePush.duration,
-  popDuration: theme.motion.pagePop.duration,
-  fadeDuration: theme.motion.bodyReplace.duration,
+  pushDuration: motion.pagePush.duration,
+  popDuration: motion.pagePop.duration,
+  fadeDuration: motion.bodyReplace.duration,
 }
 const SWIPE_TOKENS: SwipeBackTokens = {
-  completeFraction: theme.motion.pageCompleteFraction,
-  completeVelocity: theme.motion.pageCompleteVelocity,
+  completeFraction: motion.pageCompleteFraction,
+  completeVelocity: motion.pageCompleteVelocity,
 }
-const EDGE_WIDTH = theme.motion.pageEdgeWidth
+const EDGE_WIDTH = motion.pageEdgeWidth
 const PAGE_MOTION: PageMotionTokens = {
-  travelRatio: theme.motion.pageTravelRatio,
-  parallaxRatio: theme.motion.pageParallaxRatio,
-  scrimOpacity: theme.motion.pageScrimOpacity,
+  travelRatio: motion.pageTravelRatio,
+  parallaxRatio: motion.pageParallaxRatio,
+  scrimOpacity: motion.pageScrimOpacity,
 }
 const ANIMATED_TOKENS = pageLayerTokens(PAGE_MOTION, false, false)
 const DRAG_TOKENS = pageLayerTokens(PAGE_MOTION, false, true)

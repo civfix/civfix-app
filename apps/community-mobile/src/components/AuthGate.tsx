@@ -3,7 +3,7 @@ import { View, StyleSheet, ActivityIndicator } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
 import type { OAuthProvider } from "@civfix/shared"
-import { makeThemedStyles, theme, useTheme } from "@/theme"
+import { makeThemedStyles, space, useTheme } from "@/theme"
 import {
   IosKeyboardAvoidingView,
   PLAIN_SCROLL_HOST,
@@ -87,7 +87,7 @@ export function AuthGate({
           styles.welcome,
           {
             paddingTop: showBack ? 0 : insets.top,
-            paddingBottom: insets.bottom + theme.space["8"],
+            paddingBottom: insets.bottom + space["8"],
           },
         ]}
         keyboardShouldPersistTaps="handled"

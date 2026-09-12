@@ -90,7 +90,7 @@ describe("map-first tab bar model", () => {
     expect(native).toMatch(/withTiming\(target, \{ \.\.\.dockMorphOutConfig\(\)/)
     const configs = readFileSync(new URL("../motionConfigs.native.ts", import.meta.url), "utf8")
     expect(configs).toContain(
-      "export const dockMorphInConfig = (): WithTimingConfig => timingConfig(theme.motion.dockMorphIn)",
+      "export const dockMorphInConfig = (): WithTimingConfig => timingConfig(motion.dockMorphIn)",
     )
   })
 
@@ -169,7 +169,7 @@ describe("map-first tab bar model", () => {
     expect(header).toMatch(/focusSettleCommand\(pinned, searchActive, p\.value\)/)
     const web = readFileSync(new URL("../SearchHeader.web.tsx", import.meta.url), "utf8")
     expect(web).toMatch(/useKeyboardAnchor\(\{ enabled: focused, restOffset: WEB_DOCK_REST_OFFSET \}\)/)
-    expect(web).toMatch(/const WEB_DOCK_REST_OFFSET = theme\.space\["3"\] \+ 10/)
+    expect(web).toMatch(/const WEB_DOCK_REST_OFFSET = space\["3"\] \+ 10/)
   })
 
   it("targets full merge only in Search, from any entry path", () => {
@@ -394,7 +394,7 @@ describe("dockBottomGap on Android: the system nav bar is reserved IN FULL", () 
 
   it("leaves the WEB dock structurally immune — it never consults an inset at all", () => {
     const web = readFileSync(new URL("../TabBar.web.tsx", import.meta.url), "utf8")
-    expect(web).toMatch(/paddingBottom: theme\.space\["3"\]/)
+    expect(web).toMatch(/paddingBottom: space\["3"\]/)
     expect(web).not.toMatch(/dockBottomGap|dockKeyboardRestOffset|useSafeAreaInsets|Platform\.OS/)
   })
 })

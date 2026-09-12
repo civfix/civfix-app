@@ -12,7 +12,7 @@ import type {
   ReportStatus,
   LinkedEventRef,
 } from "@civfix/shared"
-import { makeThemedStyles, theme, useTheme, focusRingProps, headingLevel, type Theme } from "../theme"
+import { makeThemedStyles, radius, useTheme, focusRingProps, headingLevel, type Theme } from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import {
   StatusBadge,
@@ -857,11 +857,11 @@ function ReportDetailSkeleton() {
         <SkeletonBlock
           width="100%"
           height="auto"
-          radius={theme.radius.lg}
+          radius={radius.lg}
           style={styles.skeletonHero}
         />
         <SkeletonGroup style={styles.skeletonBlocks}>
-          <SkeletonBlock width="100%" height={56} radius={theme.radius.lg} />
+          <SkeletonBlock width="100%" height={56} radius={radius.lg} />
           <SkeletonList rows={3} kind="notification" />
         </SkeletonGroup>
       </ScrollView>

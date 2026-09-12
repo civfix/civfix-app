@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef } from "react"
 import { Animated, Easing, type LayoutChangeEvent } from "react-native"
-import { theme } from "../theme"
+import { motion } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { bodyTransitionPlan } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"
 import type { StepTransitionProps } from "./StepTransition.types"
 
-const EASING = Easing.bezier(...theme.motion.easing)
+const EASING = Easing.bezier(...motion.easing)
 const SETTLE_GUARD_MS = 250
 
 export function StepTransition({ children, direction, style, transitionKey }: StepTransitionProps) {

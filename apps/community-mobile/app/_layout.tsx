@@ -3,6 +3,7 @@ import { Appearance, AppState, Platform, Pressable, StyleSheet, Text, View } fro
 import { Stack, useRouter, useSegments, type ErrorBoundaryProps } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import * as SplashScreen from "expo-splash-screen"
+import * as NavigationBar from "expo-navigation-bar"
 import * as Notifications from "expo-notifications"
 import * as Linking from "expo-linking"
 import * as WebBrowser from "expo-web-browser"
@@ -371,6 +372,11 @@ function RealtimeChannel(): null {
 function RootStack() {
   const scheme = useColorSchemeName()
   const t = useTheme()
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return
+    void NavigationBar.setButtonStyleAsync(scheme === "dark" ? "light" : "dark")
+  }, [scheme])
 
   return (
     <>

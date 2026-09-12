@@ -11,7 +11,7 @@ import {
 } from "react-native-vision-camera"
 import * as ImagePicker from "expo-image-picker"
 import * as Location from "expo-location"
-import { makeThemedStyles, theme, useTheme } from "@/theme"
+import { fontFamily, fontSize, makeThemedStyles, radius, themeFor, useTheme } from "@/theme"
 import { Text, PrimaryButton } from "@civfix/ui"
 import type { CameraViewfinderProps, CapturedMedia } from "@civfix/ui/capabilities"
 import { useT } from "@civfix/ui/i18n"
@@ -39,6 +39,8 @@ type CaptureMode = "photo" | "video"
 export type ReportViewfinderProps = Omit<CameraViewfinderProps, "onCancel"> & {
   resumeGrace?: boolean
 }
+
+const stage = themeFor("light")
 
 const RECORDING_RED = "#FF3B30"
 
@@ -503,7 +505,7 @@ export function ReportViewfinder({
             ]}
           >
             {busy && !recording ? (
-              <ActivityIndicator color={theme.colors.text} />
+              <ActivityIndicator color={stage.colors.text} />
             ) : recording ? (
               <View style={cameraStyles.stopSquare} />
             ) : null}
@@ -595,29 +597,29 @@ const cameraStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: theme.colors.scrimStrong,
+    backgroundColor: stage.colors.scrimStrong,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: theme.radius.pill,
+    borderRadius: radius.pill,
   },
   recDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: RECORDING_RED },
   recText: {
-    fontFamily: theme.fontFamily.bodySemiBold,
-    fontSize: theme.fontSize["12"],
-    color: theme.colors.neutral.card,
+    fontFamily: fontFamily.bodySemiBold,
+    fontSize: fontSize["12"],
+    color: stage.colors.neutral.card,
   },
 
   shutter: {
     width: 78,
     height: 78,
     borderRadius: 39,
-    backgroundColor: theme.colors.neutral.card,
+    backgroundColor: stage.colors.neutral.card,
     borderWidth: 4,
-    borderColor: theme.colors.text,
+    borderColor: stage.colors.text,
     alignItems: "center",
     justifyContent: "center",
   },
   shutterRec: { backgroundColor: RECORDING_RED },
   shutterPressed: { transform: [{ scale: 0.94 }] },
-  stopSquare: { width: 24, height: 24, borderRadius: 5, backgroundColor: theme.colors.neutral.card },
+  stopSquare: { width: 24, height: 24, borderRadius: 5, backgroundColor: stage.colors.neutral.card },
 })

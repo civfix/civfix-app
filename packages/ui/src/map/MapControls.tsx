@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import { theme, useLayoutMode, focusRingProps, makeThemedStyles, useTheme } from "../theme"
+import { space, useLayoutMode, focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { Brand, GlassButton, Avatar, openBrandAbout } from "../primitives"
 import { Text, Icon, iconMap } from "../typography"
 import { BlurSurface } from "../surface"
@@ -25,7 +25,7 @@ export interface MapControlsProps {
 export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
   const styles = useStyles()
   const th = useTheme()
-  const top = topInset + theme.space["2"]
+  const top = topInset + space["2"]
   const mode = useLayoutMode()
   const { t } = useT("map-ui")
 

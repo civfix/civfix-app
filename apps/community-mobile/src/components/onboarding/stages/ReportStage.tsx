@@ -9,7 +9,7 @@ import Animated, {
 import { REPORT_TYPE_TO_CATEGORY } from "@civfix/shared"
 import { CategoryChip, Icon, TeardropPin, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
-import { categoryColor, makeThemedStyles, theme, useTheme, wash } from "@/theme"
+import { categoryColor, makeThemedStyles, motion, useTheme, wash } from "@/theme"
 import { REPORT_STAGE_SELECTED_INDEX, REPORT_STAGE_TYPES } from "../demoWorld"
 import { PaperMap } from "./PaperMap"
 import {
@@ -62,7 +62,7 @@ const SELECTED_TYPE = REPORT_STAGE_TYPES[REPORT_STAGE_SELECTED_INDEX]
 const SELECTED_CATEGORY = REPORT_TYPE_TO_CATEGORY[SELECTED_TYPE]
 const SELECTED_TINT_AMOUNT = 0.86
 
-const POP = theme.motion.pop
+const POP = motion.pop
 
 function TypeRow({ index, progress }: { index: number; progress: SharedValue<number> }) {
   const { t } = useT("enums")

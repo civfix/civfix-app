@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Animated, Easing, Platform, StyleSheet, View } from "react-native"
 import Svg, { Circle, Path } from "react-native-svg"
-import { theme, useReducedMotion, useTheme } from "../theme"
+import { motion, useReducedMotion, useTheme } from "../theme"
 import { announce as announceToScreenReader } from "../announce"
 
 const VIEWBOX = 88
@@ -19,7 +19,7 @@ export interface SuccessCheckProps {
 export function SuccessCheck({ size = 80, announce: message }: SuccessCheckProps) {
   const th = useTheme()
   const reducedMotion = useReducedMotion()
-  const scale = useRef(new Animated.Value(theme.motion.pop.from)).current
+  const scale = useRef(new Animated.Value(motion.pop.from)).current
   const draw = useRef(new Animated.Value(0)).current
   const [dashOffset, setDashOffset] = useState(CHECK_LENGTH)
 
@@ -35,18 +35,18 @@ export function SuccessCheck({ size = 80, announce: message }: SuccessCheckProps
   useEffect(() => {
     if (reducedMotion === null) return
     if (reducedMotion) {
-      scale.setValue(theme.motion.pop.to)
+      scale.setValue(motion.pop.to)
       draw.setValue(1)
       return
     }
-    scale.setValue(theme.motion.pop.from)
+    scale.setValue(motion.pop.from)
     draw.setValue(0)
     const run = Animated.parallel([
       Animated.spring(scale, {
-        toValue: theme.motion.pop.to,
-        damping: theme.motion.pop.spring.damping,
-        stiffness: theme.motion.pop.spring.stiffness,
-        mass: theme.motion.pop.spring.mass,
+        toValue: motion.pop.to,
+        damping: motion.pop.spring.damping,
+        stiffness: motion.pop.spring.stiffness,
+        mass: motion.pop.spring.mass,
         useNativeDriver: Platform.OS !== "web",
       }),
       Animated.sequence([
@@ -54,7 +54,7 @@ export function SuccessCheck({ size = 80, announce: message }: SuccessCheckProps
         Animated.timing(draw, {
           toValue: 1,
           duration: DRAW_DURATION_MS,
-          easing: Easing.bezier(...theme.motion.easing),
+          easing: Easing.bezier(...motion.easing),
           useNativeDriver: false,
         }),
       ]),

@@ -117,7 +117,7 @@ describe("a11y", () => {
 describe("motion", () => {
   it("borrows the dock pill's clock and the shared glass-mount recipe - no new durations", () => {
     expect(rail).toContain("tabPillTransition(reduceMotion)")
-    expect(rail).toContain("theme.motion.glassIn")
+    expect(rail).toContain("motion.glassIn")
     expect(rail).toContain("webTransition")
     expect(code).not.toMatch(/\b\d{2,4}ms\b/)
     expect(MOTION.tabPill.duration).toBe(220)

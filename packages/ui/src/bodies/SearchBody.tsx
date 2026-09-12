@@ -13,7 +13,7 @@ import {
 import { TextInput } from "../primitives/TextInput"
 import type { CleanupDTO, LeaderboardEntryDTO, PersonDTO, ReportPinDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, theme, useTheme, wash, useLayoutMode, webHover, webInputReset, webTransition, headingLevel } from "../theme"
+import { focusRingProps, makeThemedStyles, motion, useTheme, wash, useLayoutMode, webHover, webInputReset, webTransition, headingLevel } from "../theme"
 import { Icon, iconMap, Text } from "../typography"
 import { Avatar, FollowButton } from "../primitives"
 import {
@@ -55,7 +55,7 @@ import {
   searchSurfaceState,
 } from "./searchSurfaceModel"
 
-const FOCUS_REQUEST_HOLD_MS = theme.motion.bodyPush.duration + theme.motion.bodyExit.duration
+const FOCUS_REQUEST_HOLD_MS = motion.bodyPush.duration + motion.bodyExit.duration
 
 function commitSearchRecent(query: string): void {
   const value = searchRecentCommit(query)

@@ -103,16 +103,16 @@ describe("BODY_TIMING - one vocabulary for every seam", () => {
   const timing = readFileSync(new URL("../bodyTransitionTiming.ts", import.meta.url), "utf8")
 
   it("resolves every number from the motion tokens, never from a literal", () => {
-    expect(timing).toMatch(/slideDuration: theme\.motion\.bodyPush\.duration/)
-    expect(timing).toMatch(/fadeDuration: theme\.motion\.bodyReplace\.duration/)
-    expect(timing).toMatch(/exitDuration: theme\.motion\.bodyExit\.duration/)
-    expect(timing).toMatch(/fadeRatio: theme\.motion\.bodyFadeRatio/)
+    expect(timing).toMatch(/slideDuration: motion\.bodyPush\.duration/)
+    expect(timing).toMatch(/fadeDuration: motion\.bodyReplace\.duration/)
+    expect(timing).toMatch(/exitDuration: motion\.bodyExit\.duration/)
+    expect(timing).toMatch(/fadeRatio: motion\.bodyFadeRatio/)
     expect(timing).not.toMatch(/: \d/)
   })
 
   it("shares the PAGE stack's geometry, so a body swap and a page push read as one language", () => {
-    expect(timing).toMatch(/travelRatio: theme\.motion\.pageTravelRatio/)
-    expect(timing).toMatch(/underRatio: theme\.motion\.pageParallaxRatio/)
+    expect(timing).toMatch(/travelRatio: motion\.pageTravelRatio/)
+    expect(timing).toMatch(/underRatio: motion\.pageParallaxRatio/)
     expect(MOTION.pageTravelRatio).toBeGreaterThan(MOTION.pageParallaxRatio)
   })
 })

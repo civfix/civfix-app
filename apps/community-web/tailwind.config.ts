@@ -6,6 +6,14 @@ const { color, fontSize, radius, shadow, space } = tokens
 
 const px = (n: number): string => `${n}px`
 
+export type SchemeColor = (utils: { opacityValue?: string }) => string
+
+const schemeVar = (name: string): string =>
+  ((({ opacityValue }: { opacityValue?: string }) =>
+    opacityValue === undefined
+      ? `var(${name})`
+      : `color-mix(in srgb, var(${name}) calc(${opacityValue} * 100%), transparent)`) satisfies SchemeColor) as unknown as string
+
 function fontSizeScale(): Record<string, string> {
   const out: Record<string, string> = {}
   for (const [k, v] of Object.entries(fontSize)) out[k] = v
@@ -68,16 +76,16 @@ const config: Config = {
 
         brand: color.brand,
 
-        paper: color.neutral.paper,
-        paper2: color.neutral.paper2,
-        cardflat: color.neutral.card,
-        cardTint: color.neutral.cardTint,
+        paper: schemeVar("--paper"),
+        paper2: schemeVar("--paper-2"),
+        cardflat: schemeVar("--card"),
+        cardTint: schemeVar("--card-tint"),
         ink: {
-          DEFAULT: color.neutral.ink,
-          2: color.neutral.ink2,
-          3: color.neutral.ink3,
-          4: color.neutral.ink4,
-          5: color.neutral.ink5,
+          DEFAULT: schemeVar("--ink"),
+          2: schemeVar("--ink-2"),
+          3: schemeVar("--ink-3"),
+          4: schemeVar("--ink-4"),
+          5: schemeVar("--ink-5"),
         },
 
         cat: color.category,
@@ -196,6 +204,14 @@ const config: Config = {
         "sheet-up": "sheet-up 0.32s cubic-bezier(0.22,1,0.36,1)",
       },
     },
+  },
+  corePlugins: {
+    backgroundOpacity: false,
+    textOpacity: false,
+    borderOpacity: false,
+    divideOpacity: false,
+    ringOpacity: false,
+    placeholderOpacity: false,
   },
   plugins: [require("tailwindcss-animate")],
 }

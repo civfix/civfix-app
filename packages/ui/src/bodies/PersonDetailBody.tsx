@@ -6,7 +6,7 @@ import {
   type ContentReportReason,
 } from "@civfix/shared"
 import { eventChip, dowLabel, timeLabel } from "@civfix/shared/datetime"
-import { makeThemedStyles, theme, useTheme, wash, focusRingProps, useLayoutMode, webScrimProps } from "../theme"
+import { makeThemedStyles, radius, useTheme, wash, focusRingProps, useLayoutMode, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
@@ -335,18 +335,18 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
                 <SkeletonText width={196} height={12} style={styles.skeletonBioLast} />
               </View>
               <View style={styles.skeletonStats}>
-                <SkeletonBlock width="30%" height={44} radius={theme.radius.md} />
-                <SkeletonBlock width="30%" height={44} radius={theme.radius.md} />
-                <SkeletonBlock width="30%" height={44} radius={theme.radius.md} />
+                <SkeletonBlock width="30%" height={44} radius={radius.md} />
+                <SkeletonBlock width="30%" height={44} radius={radius.md} />
+                <SkeletonBlock width="30%" height={44} radius={radius.md} />
               </View>
               <View style={styles.actions}>
-                <SkeletonBlock width="100%" height={40} radius={theme.radius.pill} style={styles.followAction} />
+                <SkeletonBlock width="100%" height={40} radius={radius.pill} style={styles.followAction} />
                 <SkeletonBlock width={40} height={40} radius={20} />
               </View>
               <View style={styles.skeletonTabs}>
-                <SkeletonBlock width={72} height={30} radius={theme.radius.pill} />
-                <SkeletonBlock width={72} height={30} radius={theme.radius.pill} />
-                <SkeletonBlock width={72} height={30} radius={theme.radius.pill} />
+                <SkeletonBlock width={72} height={30} radius={radius.pill} />
+                <SkeletonBlock width={72} height={30} radius={radius.pill} />
+                <SkeletonBlock width={72} height={30} radius={radius.pill} />
               </View>
               <SkeletonList rows={3} kind="text" />
             </SkeletonGroup>

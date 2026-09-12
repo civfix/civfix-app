@@ -5,9 +5,7 @@
     "system": "System",
     "system_sub": "Wie dein Gerät",
     "light": "Hell",
-    "dark": "Dunkel",
-    "dark_beta": "Beta",
-    "dark_sub": "Der Dunkelmodus ist experimentell; manche Ansichten sehen noch seltsam aus."
+    "dark": "Dunkel"
   },
   "selected": "Ausgewählt"
 }

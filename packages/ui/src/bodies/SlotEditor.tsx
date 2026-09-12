@@ -10,7 +10,7 @@ import {
 } from "@civfix/shared"
 import {
   makeThemedStyles,
-  theme,
+  radius,
   useTheme,
   webCursorPointer,
   webInputReset,
@@ -57,7 +57,7 @@ const WEB_FIELD_RING: TextStyle =
         outlineWidth: FOCUS_RING_WIDTH,
         outlineColor: FOCUS_RING_COLOR,
         outlineOffset: FOCUS_RING_OFFSET,
-        borderRadius: theme.radius.xs,
+        borderRadius: radius.xs,
       } as unknown as TextStyle)
     : {}
 

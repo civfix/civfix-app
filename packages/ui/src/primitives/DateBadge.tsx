@@ -1,6 +1,6 @@
 import React from "react"
 import { View, StyleSheet } from "react-native"
-import { makeThemedStyles, theme, useTheme } from "../theme"
+import { makeThemedStyles, radius, useTheme } from "../theme"
 import { Text } from "../typography"
 import { useLocale } from "../i18n"
 
@@ -21,7 +21,7 @@ export function DateBadge({ iso, size = 56 }: { iso: string; size?: number }) {
     <View
       style={[
         styles.badge,
-        { width: size, height: size, borderRadius: compact ? theme.radius.sm : theme.radius.md },
+        { width: size, height: size, borderRadius: compact ? radius.sm : radius.md },
       ]}
     >
       <Text

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Platform, StyleSheet, View } from "react-native"
 import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
-import { makeThemedStyles, theme } from "../theme"
+import { makeThemedStyles, motion } from "../theme"
 import { BodyTransition } from "./BodyTransition"
 import { CompactShell } from "./CompactShell"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
@@ -117,7 +117,7 @@ export function PortraitShellFrame({
   const closeGuard = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
     if (!sheetClosing) return
-    closeGuard.current = setTimeout(() => setSheetMounted(false), theme.motion.sheetTeardownGuardMs)
+    closeGuard.current = setTimeout(() => setSheetMounted(false), motion.sheetTeardownGuardMs)
     return () => {
       if (closeGuard.current) clearTimeout(closeGuard.current)
     }
