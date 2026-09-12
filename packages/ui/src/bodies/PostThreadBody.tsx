@@ -98,11 +98,10 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
     () =>
       buildThreadRows<PostDTO>({
         focalId: id,
-        focalAuthorId: post.data?.author.id,
         replies: fetched,
         sent: sentReplies,
       }),
-    [id, post.data?.author.id, fetched, sentReplies],
+    [id, fetched, sentReplies],
   )
 
   const listHeader = React.useMemo(

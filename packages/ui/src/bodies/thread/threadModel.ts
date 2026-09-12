@@ -127,7 +127,7 @@ export function replyComposerState(input: {
 export const THREAD_AVATAR_SIZE = 36
 export const THREAD_RAIL_GAP = 10
 export const THREAD_RAIL_W = 2
-export const THREAD_RAIL_STUB_H = 12
+export const THREAD_RAIL_AVATAR_GAP = 4
 
 const OPTIMISTIC_PREFIX = "optimistic-"
 
@@ -137,7 +137,6 @@ export function isOptimisticPostId(id: string): boolean {
 
 export interface ThreadRowPost {
   readonly id: string
-  readonly author: { readonly id: string }
   readonly replyToId?: string | null
 }
 
@@ -151,29 +150,42 @@ export interface ThreadRow<T extends ThreadRowPost> {
 
 export function buildThreadRows<T extends ThreadRowPost>(input: {
   focalId: string
-  focalAuthorId: string | null | undefined
   replies: readonly T[]
   sent?: readonly T[]
+  nested?: readonly T[]
 }): readonly ThreadRow<T>[] {
   const sent = input.sent ?? []
   const replies = threadItems(
     input.replies,
     sent.filter((post) => (post.replyToId ?? input.focalId) === input.focalId),
   )
-
-  let run = 0
-  if (input.focalAuthorId != null && input.focalAuthorId !== "") {
-    while (run < replies.length && replies[run]?.author.id === input.focalAuthorId) run += 1
+  const parentIds = new Set(replies.map((post) => post.id))
+  const child = new Map<string, T>()
+  for (const post of input.nested ?? []) {
+    const parentId = post.replyToId
+    if (parentId == null || !parentIds.has(parentId) || child.has(parentId)) continue
+    child.set(parentId, post)
   }
 
-  return replies.map((post, index) => {
-    const below = index < run - 1
-    return {
+  return replies.flatMap((post): ThreadRow<T>[] => {
+    const nested = child.get(post.id)
+    const parent: ThreadRow<T> = {
       key: post.id,
       post,
       optimistic: isOptimisticPostId(post.id),
-      rail: threadRailSegment(index < run, below),
-      hairline: !below,
+      rail: threadRailSegment(false, nested !== undefined),
+      hairline: nested === undefined,
     }
+    if (nested === undefined) return [parent]
+    return [
+      parent,
+      {
+        key: `${post.id}:${nested.id}`,
+        post: nested,
+        optimistic: isOptimisticPostId(nested.id),
+        rail: threadRailSegment(true, false),
+        hairline: true,
+      },
+    ]
   })
 }

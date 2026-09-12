@@ -85,7 +85,7 @@ export {
   THREAD_AVATAR_SIZE,
   THREAD_HEADER_H,
   THREAD_RAIL_GAP,
-  THREAD_RAIL_STUB_H,
+  THREAD_RAIL_AVATAR_GAP,
   THREAD_RAIL_W,
   buildFocalPostStats,
   buildReplyComposerHeightPlan,

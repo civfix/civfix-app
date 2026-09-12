@@ -28,8 +28,8 @@ import { useRowHover } from "../rowHover"
 import { useListTimeAgo } from "../useListTimeAgo"
 import {
   THREAD_AVATAR_SIZE,
+  THREAD_RAIL_AVATAR_GAP,
   THREAD_RAIL_GAP,
-  THREAD_RAIL_STUB_H,
   THREAD_RAIL_W,
   type ThreadRailSegment,
 } from "./threadModel"
@@ -268,17 +268,18 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
   },
   railAbove: {
+    position: "absolute",
+    left: (THREAD_AVATAR_SIZE - THREAD_RAIL_W) / 2,
+    top: -t.space["3"],
+    height: t.space["3"] - THREAD_RAIL_AVATAR_GAP,
     width: THREAD_RAIL_W,
-    marginTop: -t.space["3"],
-    height: t.space["3"] + THREAD_RAIL_STUB_H,
-    marginBottom: 2,
     borderRadius: THREAD_RAIL_W / 2,
     backgroundColor: t.colors.borderStrong,
   },
   railBelow: {
     width: THREAD_RAIL_W,
     flex: 1,
-    marginTop: 6,
+    marginTop: THREAD_RAIL_AVATAR_GAP,
     marginBottom: -t.space["2"],
     borderRadius: THREAD_RAIL_W / 2,
     backgroundColor: t.colors.borderStrong,

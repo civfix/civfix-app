@@ -205,8 +205,7 @@ const row = (
   replyToId: string | null = "focal",
 ) => ({ id, author: { id: authorId }, counts: { replies }, replyToId })
 
-const flat = (replies: ReturnType<typeof row>[], focalAuthorId: string | null = "a") =>
-  buildThreadRows({ focalId: "focal", focalAuthorId, replies })
+const flat = (replies: ReturnType<typeof row>[]) => buildThreadRows({ focalId: "focal", replies })
 
 describe("buildThreadRows", () => {
   it("emits one row per reply, keyed by post id, in fetched order", () => {
@@ -225,44 +224,76 @@ describe("buildThreadRows", () => {
     expect(rows.map((entry) => entry.post.counts.replies)).toEqual([12, 0])
   })
 
-  it("connects a leading run of self-replies to the focal post and stops at the stranger", () => {
+  /**
+   * The connector means ONE thing: the row above is this row's parent. Direct replies to the focal post
+   * are siblings of each other, so a list of them never draws a line - however many share an author.
+   */
+  it("never connects sibling replies, whoever wrote them", () => {
     const rows = flat([row("r1", "a"), row("r2", "a"), row("r3", "a"), row("r4", "b")])
     expect(rows.map((entry) => entry.rail)).toEqual([
-      { above: true, below: true },
-      { above: true, below: true },
+      { above: false, below: false },
+      { above: false, below: false },
+      { above: false, below: false },
+      { above: false, below: false },
+    ])
+    expect(rows.every((entry) => entry.hairline)).toBe(true)
+  })
+
+  /**
+   * The one nesting X keeps in a conversation: the post author's answer to a reply, shown under it as a
+   * same-left-edge row joined by the connector. One row only - the rest live on that reply's own thread.
+   */
+  it("inlines the author reply under its parent, connected, and only one per parent", () => {
+    const rows = buildThreadRows({
+      focalId: "focal",
+      replies: [row("r1", "b"), row("r2", "c")],
+      nested: [row("n1", "a", 0, "r1"), row("n2", "a", 0, "r1")],
+    })
+    expect(rows.map((entry) => entry.key)).toEqual(["r1", "r1:n1", "r2"])
+    expect(rows.map((entry) => entry.rail)).toEqual([
+      { above: false, below: true },
       { above: true, below: false },
       { above: false, below: false },
     ])
   })
 
-  it("drops the hairline on every chained row and keeps it where the chain ends", () => {
-    const rows = flat([row("r1", "a"), row("r2", "a"), row("r3", "b")])
+  it("swallows the divider between a parent and its inlined reply, and keeps the one that closes the pair", () => {
+    const rows = buildThreadRows({
+      focalId: "focal",
+      replies: [row("r1", "b"), row("r2", "c")],
+      nested: [row("n1", "a", 0, "r1")],
+    })
     expect(rows.map((entry) => entry.hairline)).toEqual([false, true, true])
   })
 
-  it("holds `above[k] === below[k-1]`, so the rail never breaks mid-run", () => {
-    const rows = flat([row("r1", "a"), row("r2", "a"), row("r3", "a"), row("r4", "b")])
+  it("drops an inlined reply whose parent is not on this page", () => {
+    const rows = buildThreadRows({
+      focalId: "focal",
+      replies: [row("r1", "b")],
+      nested: [row("n1", "a", 0, "somewhere-else"), row("n2", "a", 0, null)],
+    })
+    expect(rows.map((entry) => entry.key)).toEqual(["r1"])
+  })
+
+  it("flags an inlined reply the server has not confirmed, like any other row", () => {
+    const rows = buildThreadRows({
+      focalId: "focal",
+      replies: [row("r1", "b")],
+      nested: [row("optimistic-9", "a", 0, "r1")],
+    })
+    expect(rows.map((entry) => entry.optimistic)).toEqual([false, true])
+  })
+
+  it("holds `above[k] === below[k-1]`, so a drawn line never dangles", () => {
+    const rows = buildThreadRows({
+      focalId: "focal",
+      replies: [row("r1", "b"), row("r2", "c")],
+      nested: [row("n1", "a", 0, "r1")],
+    })
     rows.forEach((entry, index) => {
       if (index === 0) return
       expect(entry.rail.above, `row ${index}`).toBe(rows[index - 1]?.rail.below)
     })
-  })
-
-  it("draws no rail when nobody continues the thread", () => {
-    const rows = flat([row("r1", "b"), row("r2", "c")])
-    expect(rows.map((entry) => entry.rail)).toEqual([
-      { above: false, below: false },
-      { above: false, below: false },
-    ])
-  })
-
-  it("gives a self-reply that lands AFTER a stranger no rail - it is not a continuation", () => {
-    const rows = flat([row("r1", "b"), row("r2", "a"), row("r3", "a")])
-    expect(rows.every((entry) => entry.rail.above === false && entry.rail.below === false)).toBe(true)
-  })
-
-  it("draws nothing when the focal author is unknown", () => {
-    expect(flat([row("r1", "a")], null)[0]?.rail).toEqual({ above: false, below: false })
   })
 
   it("flags a row the server has not confirmed yet", () => {
@@ -273,7 +304,6 @@ describe("buildThreadRows", () => {
   it("appends a reply sent to the FOCAL post at the tail of the list", () => {
     const rows = buildThreadRows({
       focalId: "focal",
-      focalAuthorId: "a",
       replies: [row("r1", "b")],
       sent: [row("optimistic-1", "me", 0, "focal")],
     })
@@ -283,7 +313,6 @@ describe("buildThreadRows", () => {
   it("treats a sent reply with no replyToId as a reply to the focal post", () => {
     const rows = buildThreadRows({
       focalId: "focal",
-      focalAuthorId: "a",
       replies: [],
       sent: [row("optimistic-1", "me", 0, null)],
     })
@@ -297,7 +326,6 @@ describe("buildThreadRows", () => {
   it("keeps a sent reply aimed at some other post out of the list", () => {
     const rows = buildThreadRows({
       focalId: "focal",
-      focalAuthorId: "a",
       replies: [row("r1", "b", 1)],
       sent: [row("optimistic-1", "me", 0, "r1")],
     })
@@ -307,7 +335,6 @@ describe("buildThreadRows", () => {
   it("drops a sent reply the moment the fetched list carries its id", () => {
     const rows = buildThreadRows({
       focalId: "focal",
-      focalAuthorId: "a",
       replies: [row("r1", "b"), row("s1", "me", 0, "focal")],
       sent: [row("s1", "me", 0, "focal"), row("s2", "me", 0, "focal")],
     })
