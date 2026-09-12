@@ -127,7 +127,6 @@ export function replyComposerState(input: {
 export const THREAD_AVATAR_SIZE = 36
 export const THREAD_RAIL_GAP = 10
 export const THREAD_RAIL_W = 2
-export const THREAD_RAIL_AVATAR_GAP = 4
 
 const OPTIMISTIC_PREFIX = "optimistic-"
 

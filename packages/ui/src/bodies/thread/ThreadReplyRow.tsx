@@ -28,7 +28,6 @@ import { useRowHover } from "../rowHover"
 import { useListTimeAgo } from "../useListTimeAgo"
 import {
   THREAD_AVATAR_SIZE,
-  THREAD_RAIL_AVATAR_GAP,
   THREAD_RAIL_GAP,
   THREAD_RAIL_W,
   type ThreadRailSegment,
@@ -110,6 +109,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
       <View style={styles.row}>
         <View style={styles.railColumn}>
           {rail.above ? <View style={styles.railAbove} /> : null}
+          {rail.below ? <View style={styles.railBelow} /> : null}
           <Pressable
             onPress={(event) => {
               stopPress(event)
@@ -130,7 +130,6 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               decorative
             />
           </Pressable>
-          {rail.below ? <View style={styles.railBelow} /> : null}
         </View>
 
         <View style={styles.content}>
@@ -271,17 +270,16 @@ const useStyles = makeThemedStyles((t) => ({
     position: "absolute",
     left: (THREAD_AVATAR_SIZE - THREAD_RAIL_W) / 2,
     top: -t.space["3"],
-    height: t.space["3"] - THREAD_RAIL_AVATAR_GAP,
+    height: t.space["3"] + THREAD_AVATAR_SIZE / 2,
     width: THREAD_RAIL_W,
-    borderRadius: THREAD_RAIL_W / 2,
     backgroundColor: t.colors.borderStrong,
   },
   railBelow: {
+    position: "absolute",
+    left: (THREAD_AVATAR_SIZE - THREAD_RAIL_W) / 2,
+    top: THREAD_AVATAR_SIZE / 2,
+    bottom: -t.space["2"],
     width: THREAD_RAIL_W,
-    flex: 1,
-    marginTop: THREAD_RAIL_AVATAR_GAP,
-    marginBottom: -t.space["2"],
-    borderRadius: THREAD_RAIL_W / 2,
     backgroundColor: t.colors.borderStrong,
   },
   content: {
