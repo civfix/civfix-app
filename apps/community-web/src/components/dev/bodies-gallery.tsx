@@ -49,6 +49,8 @@ import {
   FeedBody,
   EventsBody,
   EventDetailBody,
+  EventDashboardBody,
+  HostModeBody,
   CreateCleanupBody,
   EditCleanupBody,
   NotificationsBody,
@@ -62,14 +64,23 @@ import {
   MembersBody,
   ServiceHoursSection,
   ServiceHoursCertificateCard,
-  themeFor,
 } from "@civfix/ui"
 import { CapabilitiesProvider, makeFakeCapabilities } from "@civfix/ui/capabilities"
 import { useNavStore } from "@civfix/ui/nav"
+import { useTheme } from "@civfix/ui/theme"
 
 import { makeQueryClient } from "@/lib/query"
-
-const theme = themeFor("light")
+import {
+  DASHBOARD_EVENT_ERROR_ID,
+  DASHBOARD_EVENT_IDS,
+  DASHBOARD_EVENT_PENDING_ID,
+  DASHBOARD_EVENT_REFUNDED_ID,
+  emptyPortfolioOverrides,
+  failing,
+  makeDashboardFakeApi,
+  pendingForever,
+  portfolioOverrides,
+} from "./dashboard-fixtures"
 
 
 const ORGANIZER = {
@@ -1052,6 +1063,33 @@ const fakeData = makeFakeDataContext({
 
 const fakeCaps = makeFakeCapabilities()
 
+const DASHBOARD_AUTH = { isAuthenticated: true, user: VIEWER, isPending: false }
+
+const dashboardData = makeFakeDataContext({
+  api: makeDashboardFakeApi(),
+  auth: DASHBOARD_AUTH,
+})
+
+const dashboardSoloData = makeFakeDataContext({
+  api: makeDashboardFakeApi({ listMyOrganizations: async () => ({ items: [] }) }),
+  auth: DASHBOARD_AUTH,
+})
+
+const dashboardEmptyData = makeFakeDataContext({
+  api: makeDashboardFakeApi(emptyPortfolioOverrides()),
+  auth: DASHBOARD_AUTH,
+})
+
+const dashboardPendingData = makeFakeDataContext({
+  api: makeDashboardFakeApi(portfolioOverrides(() => pendingForever())),
+  auth: DASHBOARD_AUTH,
+})
+
+const dashboardErrorData = makeFakeDataContext({
+  api: makeDashboardFakeApi(portfolioOverrides((name) => failing(name))),
+  auth: DASHBOARD_AUTH,
+})
+
 
 function BodyFrame({
   title,
@@ -1064,6 +1102,7 @@ function BodyFrame({
   wide?: boolean
   children: React.ReactNode
 }) {
+  const theme = useTheme()
   return (
     <section
       data-body={title}
@@ -1103,7 +1142,31 @@ function BodyFrame({
   )
 }
 
+function DashboardFrame({
+  title,
+  data = dashboardData,
+  height = 720,
+  wide = false,
+  children,
+}: {
+  title: string
+  data?: React.ComponentProps<typeof ApiProvider>["value"]
+  height?: number
+  wide?: boolean
+  children: React.ReactNode
+}) {
+  const [client] = React.useState(() => makeQueryClient())
+  return (
+    <BodyFrame title={title} height={height} wide={wide}>
+      <QueryClientProvider client={client}>
+        <ApiProvider value={data}>{children}</ApiProvider>
+      </QueryClientProvider>
+    </BodyFrame>
+  )
+}
+
 function CertificateHarness() {
+  const theme = useTheme()
   const [mode, setMode] = React.useState<"fresh" | "expired">("fresh")
   const [nonce, setNonce] = React.useState(0)
   const select = (next: "fresh" | "expired") => {
@@ -1152,6 +1215,7 @@ const CAPS_WITHOUT_OPEN_EXTERNAL = (() => {
 })()
 
 export default function BodiesGallery() {
+  const theme = useTheme()
   const [client] = React.useState(() => makeQueryClient())
 
   React.useEffect(() => {
@@ -1344,6 +1408,87 @@ export default function BodiesGallery() {
                 </div>
               </CapabilitiesProvider>
             </BodyFrame>
+
+            { }
+            <DashboardFrame
+              title="EventDashboardBody (portfolio, personal only - no orgs)"
+              data={dashboardSoloData}
+              height={860}
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            <DashboardFrame
+              title="EventDashboardBody (portfolio, org tabs + picker - switch to Org for money + collaborators)"
+              height={900}
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            <DashboardFrame
+              title="EventDashboardBody (portfolio, WIDE)"
+              height={900}
+              wide
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            <DashboardFrame
+              title="EventDashboardBody (portfolio, nothing hosted yet)"
+              data={dashboardEmptyData}
+              height={720}
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            <DashboardFrame
+              title="EventDashboardBody (every portfolio query PENDING)"
+              data={dashboardPendingData}
+              height={520}
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            <DashboardFrame
+              title="EventDashboardBody (every portfolio query FAILING)"
+              data={dashboardErrorData}
+              height={620}
+            >
+              <EventDashboardBody />
+            </DashboardFrame>
+
+            { }
+            <DashboardFrame title="HostModeBody (phase: upcoming)" height={820}>
+              <HostModeBody id={DASHBOARD_EVENT_IDS.upcoming} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (phase: live)" height={820}>
+              <HostModeBody id={DASHBOARD_EVENT_IDS.live} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (phase: live, WIDE)" height={820} wide>
+              <HostModeBody id={DASHBOARD_EVENT_IDS.live} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (phase: ended)" height={820}>
+              <HostModeBody id={DASHBOARD_EVENT_IDS.ended} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (phase: cancelled)" height={820}>
+              <HostModeBody id={DASHBOARD_EVENT_IDS.cancelled} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (ended, donations fully refunded - negative net)" height={820}>
+              <HostModeBody id={DASHBOARD_EVENT_REFUNDED_ID} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (counters + insights PENDING)" height={620}>
+              <HostModeBody id={DASHBOARD_EVENT_PENDING_ID} />
+            </DashboardFrame>
+
+            <DashboardFrame title="HostModeBody (counters + insights FAILING)" height={620}>
+              <HostModeBody id={DASHBOARD_EVENT_ERROR_ID} />
+            </DashboardFrame>
 
             <BodyFrame title="ReportFlowBody (report wizard - capture/category/details/review)" height={760}>
               { }

@@ -1,7 +1,7 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { StyleProp, TextStyle } from "react-native"
-import { focusRingProps, makeThemedStyles, wash, useTheme } from "../theme"
+import { focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { Icon, iconMap, Text, TextLink } from "../typography"
 
 export interface FeedNoticeLink {
@@ -78,7 +78,7 @@ export function FeedNotice({
   return (
     <View style={styles.notice}>
       <View style={styles.noticeIcon}>
-        <Icon icon={iconMap[icon]} size={18} color={t.colors.brand.bloom} />
+        <Icon icon={iconMap[icon]} size={18} color={t.colors.textMuted} />
       </View>
       <View style={styles.noticeCopy}>
         <Text style={styles.noticeTitle}>{title}</Text>
@@ -105,7 +105,7 @@ const MIN_TOUCH_TARGET = 44
 const useStyles = makeThemedStyles((t) => ({
   actionPressed: { opacity: 0.82, transform: [{ scale: 0.93 }] },
   notice: { flexDirection: "row", gap: t.space["3"], borderRadius: 24, backgroundColor: t.colors.neutral.card, padding: 14, borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border, ...t.shadows.s1 },
-  noticeIcon: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: wash(t.colors.brand.bloom, 0.88, t) },
+  noticeIcon: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.bgAlt },
   noticeCopy: { flex: 1, gap: 2 },
   noticeTitle: { fontFamily: t.fontFamily.bodyBold, fontSize: 14, lineHeight: 20, color: t.colors.text },
   noticeBody: { fontFamily: t.fontFamily.bodyRegular, fontSize: 12.5, lineHeight: 18, color: t.colors.textMuted },

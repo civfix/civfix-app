@@ -367,6 +367,7 @@ export function HostTeamBody({ id }: { id: string }) {
             />
             <PrimaryButton
               label={t("invites.revoke")}
+              variant="destructive"
               onPress={onConfirmRevoke}
               loading={revokeInvite.isPending}
               disabled={revokeInvite.isPending}

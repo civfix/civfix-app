@@ -1,5 +1,20 @@
 # @civfix/shared
 
+## 0.44.0
+
+### Minor Changes
+
+- 33b7792: Semantic colour tokens: `tokens.color.semantic` (selection, danger, success and chart roles) in both
+  schemes, with per-scheme contrast floors asserted in the token tests (DECISIONS §37). Additive — no
+  existing token changes value.
+- 7387f8a: `getEventInsights` (`GET /cleanups/:id/insights`): one per-event host read with exact seat counts, a
+  registration trend, per-ticket-type and per-source seats, the broadcast log, arrival offsets, credited
+  hours, donations and returning volunteers, plus `EventPhaseSchema` and `eventPhase()` in
+  `@civfix/shared/host` as the one phase vocabulary (DECISIONS §36). Portfolio analytics report exact
+  values for roster-capable viewers; the response shape is unchanged. `money.netMinor` is a signed
+  integer so a fully refunded event can report the processor fee it kept.
+- 21ce583: Lighten the light neutral ramp: paper #EDE6D8 -> #F4EFE6, paper2 #E5DDCD -> #EAE3D6, cardTint #F8F1E4 -> #FAF6EE, ink5 #ECE5D8 -> #E6DFD2. The dark scheme is unchanged.
+
 ## 0.43.0
 
 ### Minor Changes

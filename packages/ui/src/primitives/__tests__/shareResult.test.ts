@@ -1,7 +1,7 @@
 /**
  * Regression coverage for the web share fallback: dismissing the browser's share sheet used to fall
  * through to the clipboard copy, so cancelling a share silently overwrote the user's clipboard and the
- * callers (ShareButton, InviteSheet) then flashed "Link copied" for something the user had declined.
+ * caller (ShareButton) then flashed "Link copied" for something the user had declined.
  */
 import { describe, expect, it } from "vitest"
 import { classifyWebShareRejection } from "../shareResult"

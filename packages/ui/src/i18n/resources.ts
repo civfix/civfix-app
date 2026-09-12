@@ -59,7 +59,6 @@ import en_host_settings from "./locales/en/host-settings.json"
 import en_host_team from "./locales/en/host-team.json"
 import en_host_ticket from "./locales/en/host-ticket.json"
 import en_host_tickets from "./locales/en/host-tickets.json"
-import en_invite from "./locales/en/invite.json"
 import en_language_settings from "./locales/en/language-settings.json"
 import en_leaderboard from "./locales/en/leaderboard.json"
 import en_lightbox from "./locales/en/lightbox.json"
@@ -157,7 +156,6 @@ import es_host_settings from "./locales/es/host-settings.json"
 import es_host_team from "./locales/es/host-team.json"
 import es_host_ticket from "./locales/es/host-ticket.json"
 import es_host_tickets from "./locales/es/host-tickets.json"
-import es_invite from "./locales/es/invite.json"
 import es_language_settings from "./locales/es/language-settings.json"
 import es_leaderboard from "./locales/es/leaderboard.json"
 import es_lightbox from "./locales/es/lightbox.json"
@@ -255,7 +253,6 @@ import de_host_settings from "./locales/de/host-settings.json"
 import de_host_team from "./locales/de/host-team.json"
 import de_host_ticket from "./locales/de/host-ticket.json"
 import de_host_tickets from "./locales/de/host-tickets.json"
-import de_invite from "./locales/de/invite.json"
 import de_language_settings from "./locales/de/language-settings.json"
 import de_leaderboard from "./locales/de/leaderboard.json"
 import de_lightbox from "./locales/de/lightbox.json"
@@ -353,7 +350,6 @@ import ko_host_settings from "./locales/ko/host-settings.json"
 import ko_host_team from "./locales/ko/host-team.json"
 import ko_host_ticket from "./locales/ko/host-ticket.json"
 import ko_host_tickets from "./locales/ko/host-tickets.json"
-import ko_invite from "./locales/ko/invite.json"
 import ko_language_settings from "./locales/ko/language-settings.json"
 import ko_leaderboard from "./locales/ko/leaderboard.json"
 import ko_lightbox from "./locales/ko/lightbox.json"
@@ -454,7 +450,6 @@ export const namespaces = [
   "host-team",
   "host-ticket",
   "host-tickets",
-  "invite",
   "language-settings",
   "leaderboard",
   "lightbox",
@@ -557,7 +552,6 @@ export const resources: Resource = {
     "host-team": en_host_team,
     "host-ticket": en_host_ticket,
     "host-tickets": en_host_tickets,
-    "invite": en_invite,
     "language-settings": en_language_settings,
     "leaderboard": en_leaderboard,
     "lightbox": en_lightbox,
@@ -657,7 +651,6 @@ export const resources: Resource = {
     "host-team": es_host_team,
     "host-ticket": es_host_ticket,
     "host-tickets": es_host_tickets,
-    "invite": es_invite,
     "language-settings": es_language_settings,
     "leaderboard": es_leaderboard,
     "lightbox": es_lightbox,
@@ -757,7 +750,6 @@ export const resources: Resource = {
     "host-team": de_host_team,
     "host-ticket": de_host_ticket,
     "host-tickets": de_host_tickets,
-    "invite": de_invite,
     "language-settings": de_language_settings,
     "leaderboard": de_leaderboard,
     "lightbox": de_lightbox,
@@ -857,7 +849,6 @@ export const resources: Resource = {
     "host-team": ko_host_team,
     "host-ticket": ko_host_ticket,
     "host-tickets": ko_host_tickets,
-    "invite": ko_invite,
     "language-settings": ko_language_settings,
     "leaderboard": ko_leaderboard,
     "lightbox": ko_lightbox,

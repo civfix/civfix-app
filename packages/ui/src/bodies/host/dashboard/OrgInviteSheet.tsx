@@ -1,20 +1,18 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { View, Pressable, TextInput } from "react-native"
+import { View, TextInput } from "react-native"
 import type { OrgInviteIdentifierKind } from "@civfix/shared"
 import {
-  focusRingProps,
   makeThemedStyles,
   useTheme,
-  webCursor,
-  webHover,
   webInputReset,
-  webTransition,
 } from "../../../theme"
-import { Text, Icon, iconMap } from "../../../typography"
+import { Text } from "../../../typography"
 import {
+  FilterChip,
   ModalCardSheet,
   PrimaryButton,
   SecondaryButton,
+  SegmentedControl,
   modalSheetInputFocusedStyle,
   modalSheetInputStyle,
   useToast,
@@ -118,39 +116,16 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
       }
     >
       <Text variant="label">{t("team.invite_identifier_kind")}</Text>
-      <View style={styles.segments} accessibilityRole="radiogroup">
-        {IDENTIFIER_KINDS.map((kind) => {
-          const selected = kind === identifierKind
-          const label = kind === "email" ? t("team.by_email") : t("team.by_handle")
-          return (
-            <Pressable
-              key={kind}
-              onPress={() => onPickKind(kind)}
-              disabled={invite.isPending}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: selected, disabled: invite.isPending }}
-              accessibilityLabel={label}
-              {...focusRingProps}
-              style={(state) => [
-                styles.segment,
-                webTransition,
-                webCursor(invite.isPending),
-                selected ? styles.segmentOn : null,
-                !selected && webHover(state) ? styles.segmentHovered : null,
-              ]}
-            >
-              <Icon
-                icon={kind === "email" ? iconMap.Mail : iconMap.AtSign}
-                size={14}
-                color={selected ? th.colors.onAccent : th.colors.textMuted}
-              />
-              <Text style={[styles.segmentText, selected ? styles.segmentTextOn : null]}>
-                {label}
-              </Text>
-            </Pressable>
-          )
-        })}
-      </View>
+      <SegmentedControl
+        label={t("team.invite_identifier_kind")}
+        selected={identifierKind}
+        onSelect={(key) => onPickKind(key as OrgInviteIdentifierKind)}
+        options={IDENTIFIER_KINDS.map((kind) => ({
+          key: kind,
+          label: kind === "email" ? t("team.by_email") : t("team.by_handle"),
+        }))}
+        disabled={invite.isPending}
+      />
 
       <Text variant="label">
         {identifierKind === "email" ? t("team.email") : t("team.handle")}
@@ -173,38 +148,16 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
 
       <Text variant="label">{t("team.invite_role")}</Text>
       <View style={styles.roles} accessibilityRole="radiogroup" accessibilityLabel={t("team.invite_role")}>
-        {ORG_SETTABLE_ROLES.map((option) => {
-          const selected = option === role
-          return (
-            <Pressable
-              key={option}
-              onPress={() => setRole(option)}
-              disabled={invite.isPending}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: selected, disabled: invite.isPending }}
-              accessibilityLabel={tEnums(`organizationMemberRole.${option}`)}
-              {...focusRingProps}
-              style={(state) => [
-                styles.role,
-                webTransition,
-                webCursor(invite.isPending),
-                selected ? styles.roleSelected : null,
-                !selected && webHover(state) ? styles.roleHovered : null,
-              ]}
-            >
-              <Icon
-                icon={selected ? iconMap.CircleDot : iconMap.Circle}
-                size={18}
-                color={selected ? th.colors.brand.bloom : th.colors.textSubtle}
-              />
-              <View style={styles.roleMeta}>
-                <Text style={styles.roleName}>{tEnums(`organizationMemberRole.${option}`)}</Text>
-                <Text style={styles.roleHint}>{t(`team.role_hint_${option}`)}</Text>
-              </View>
-            </Pressable>
-          )
-        })}
+        {ORG_SETTABLE_ROLES.map((option) => (
+          <FilterChip
+            key={option}
+            label={tEnums(`organizationMemberRole.${option}`)}
+            selected={option === role}
+            onPress={() => setRole(option)}
+          />
+        ))}
       </View>
+      <Text variant="caption">{t(`team.role_hint_${role}`)}</Text>
 
       <Text variant="caption" color={th.colors.textSubtle}>
         {t("team.invite_privacy_note")}
@@ -214,74 +167,13 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  segments: {
-    flexDirection: "row",
-    gap: t.space["2"],
-  },
-  segment: {
-    flex: 1,
-    minHeight: 38,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: t.space["2"],
-    borderRadius: t.radius.pill,
-    borderWidth: 1.5,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surface,
-  },
-  segmentOn: {
-    backgroundColor: t.colors.brand.bloom,
-    borderColor: t.colors.brand.bloom,
-  },
-  segmentHovered: {
-    borderColor: t.colors.borderStrong,
-  },
-  segmentText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-  },
-  segmentTextOn: {
-    color: t.colors.onAccent,
-  },
   input: {
     ...modalSheetInputStyle(t),
     minHeight: 42,
   },
   roles: {
-    gap: t.space["2"],
-  },
-  role: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: t.space["3"],
-    paddingHorizontal: t.space["3"],
-    paddingVertical: t.space["2"],
-    borderRadius: t.radius.lg,
-    borderWidth: 1.5,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surface,
-  },
-  roleSelected: {
-    borderColor: t.colors.brand.bloom,
-  },
-  roleHovered: {
-    borderColor: t.colors.borderStrong,
-  },
-  roleMeta: {
-    flex: 1,
-    minWidth: 0,
-  },
-  roleName: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
-  },
-  roleHint: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textMuted,
-    marginTop: 2,
+    flexWrap: "wrap",
+    gap: t.space["2"],
   },
 }))

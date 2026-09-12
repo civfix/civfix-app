@@ -205,6 +205,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
                   <SecondaryButton label={t("actions.cancel")} onPress={onClose} size="sm" />
                   <PrimaryButton
                     label={t("actions.deleteConfirm")}
+                    variant="destructive"
                     onPress={confirmDelete}
                     loading={del.isPending}
                     disabled={code.length !== 6}

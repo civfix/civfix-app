@@ -24,9 +24,9 @@ const CSRF_FREE_MUTATIONS = new Set([
 ])
 
 describe("host platform endpoint registry", () => {
-  it("adds 133 endpoints, of which 30 are admin", () => {
-    expect(NEW_NAMES).toHaveLength(133)
-    expect(Object.keys(hostEndpoints)).toHaveLength(84)
+  it("adds 134 endpoints, of which 30 are admin", () => {
+    expect(NEW_NAMES).toHaveLength(134)
+    expect(Object.keys(hostEndpoints)).toHaveLength(85)
     expect(Object.keys(paymentsEndpoints)).toHaveLength(19)
     expect(Object.keys(hostAdminEndpoints)).toHaveLength(30)
     for (const name of Object.keys(hostAdminEndpoints)) {
@@ -244,6 +244,21 @@ describe("host platform endpoint registry", () => {
       expect(endpoints[n].request, n).toBe(endpoints.eventAnalyticsOverview.request)
       expect(endpoints[n].path, n).toMatch(/^\/cleanups\/:id\/analytics\//)
     }
+  })
+
+  it("seats the per-event insights read beside the analytics panels, not under them", () => {
+    const e = endpoints.getEventInsights
+    expect(e.method).toBe("GET")
+    expect(e.path).toBe("/cleanups/:id/insights")
+    expect(e.path).not.toMatch(/^\/cleanups\/:id\/analytics\//)
+    expect(e.auth).toBe("required")
+    expect(e.csrf).toBe(false)
+    expect(e.version).toBe("v1")
+    expect(e.request).not.toBe(endpoints.eventAnalyticsOverview.request)
+    const { params, consumedKeys } = extractParams(e.path, { id: UUID })
+    expect(params).toEqual({ id: UUID })
+    expect(consumedKeys.has("id")).toBe(true)
+    expect(fillPath(e.path, params)).toBe(`/cleanups/${UUID}/insights`)
   })
 
   it("records a page view as a POST, never a GET side effect", () => {

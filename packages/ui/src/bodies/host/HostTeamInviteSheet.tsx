@@ -15,6 +15,7 @@ import {
   ModalCardSheet,
   PrimaryButton,
   SecondaryButton,
+  SegmentedControl,
   modalSheetInputFocusedStyle,
   modalSheetInputStyle,
   useToast,
@@ -118,39 +119,16 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
       }
     >
       <Text variant="label">{t("invite.identifier_kind")}</Text>
-      <View style={styles.segments} accessibilityRole="radiogroup">
-        {IDENTIFIER_KINDS.map((kind) => {
-          const selected = kind === identifierKind
-          const label = kind === "email" ? t("invite.by_email") : t("invite.by_handle")
-          return (
-            <Pressable
-              key={kind}
-              onPress={() => onPickKind(kind)}
-              disabled={invite.isPending}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: selected, disabled: invite.isPending }}
-              accessibilityLabel={label}
-              {...focusRingProps}
-              style={(state) => [
-                styles.segment,
-                webTransition,
-                webCursor(invite.isPending),
-                selected ? styles.segmentOn : null,
-                !selected && webHover(state) ? styles.segmentHovered : null,
-              ]}
-            >
-              <Icon
-                icon={kind === "email" ? iconMap.Mail : iconMap.AtSign}
-                size={14}
-                color={selected ? th.colors.onAccent : th.colors.textMuted}
-              />
-              <Text style={[styles.segmentText, selected ? styles.segmentTextOn : null]}>
-                {label}
-              </Text>
-            </Pressable>
-          )
-        })}
-      </View>
+      <SegmentedControl
+        label={t("invite.identifier_kind")}
+        options={IDENTIFIER_KINDS.map((kind) => ({
+          key: kind,
+          label: kind === "email" ? t("invite.by_email") : t("invite.by_handle"),
+        }))}
+        selected={identifierKind}
+        onSelect={(next) => onPickKind(next as EventTeamInviteIdentifierKind)}
+        disabled={invite.isPending}
+      />
 
       <Text variant="label">
         {identifierKind === "email" ? t("invite.email") : t("invite.handle")}
@@ -196,7 +174,7 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
               <Icon
                 icon={selected ? iconMap.CircleDot : iconMap.Circle}
                 size={18}
-                color={selected ? th.colors.brand.bloom : th.colors.textSubtle}
+                color={selected ? th.colors.text : th.colors.textSubtle}
               />
               <View style={styles.tierMeta}>
                 <Text style={styles.tierName}>{t(tier.labelKey)}</Text>
@@ -215,37 +193,6 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  segments: {
-    flexDirection: "row",
-    gap: t.space["2"],
-  },
-  segment: {
-    flex: 1,
-    minHeight: 38,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: t.space["2"],
-    borderRadius: t.radius.pill,
-    borderWidth: 1.5,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surface,
-  },
-  segmentOn: {
-    backgroundColor: t.colors.brand.bloom,
-    borderColor: t.colors.brand.bloom,
-  },
-  segmentHovered: {
-    borderColor: t.colors.borderStrong,
-  },
-  segmentText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-  },
-  segmentTextOn: {
-    color: t.colors.onAccent,
-  },
   input: {
     ...modalSheetInputStyle(t),
     minHeight: 42,
@@ -265,7 +212,8 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.surface,
   },
   tierSelected: {
-    borderColor: t.colors.brand.bloom,
+    borderColor: t.colors.borderStrong,
+    backgroundColor: t.colors.bgAlt,
   },
   tierHovered: {
     borderColor: t.colors.borderStrong,

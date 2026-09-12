@@ -3,6 +3,7 @@
     "a11y": "Live event counters",
     "checked_in": "Checked in",
     "registered": "Registered",
+    "of_capacity": "of {{capacity}} seats",
     "waitlist": "Waitlist",
     "no_show": "No-show",
     "error": "Counters are unavailable right now."
