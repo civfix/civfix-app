@@ -1409,6 +1409,13 @@ their 113 existing usages.
   `successInk` on the card (4.99 / 9.37), and `chartInk` clears the 3:1 non-text floor against all
   four surfaces and against its own track (4.10 / 4.87 on the card). A new pair is added to that test,
   not eyeballed.
+- **The chart track IS the second paper step, derived rather than copied.** `semantic.chartTrack`
+  reads `neutral.paper2` in both schemes instead of carrying its own hex: the light track had been
+  frozen at the pre-§35 `#E5DDCD` and was left behind when the paper ramp lightened, which is exactly
+  the copied-surface failure §35 forbids. The neutral ramps are hoisted into `lightNeutral` /
+  `darkNeutral` consts so the derivation is a reference, not a second literal. `chartInk` on the
+  derived track measures 3.27:1 light (up from 3.09:1) and 5.37:1 dark, so the 3:1 non-text floor
+  asserted in `__tests__/tokens.test.ts` holds without moving a hue.
 - **The chart ink is chosen against the chart surface, not borrowed from a chip ramp.** Light is
   `moss.600` and dark is a step that exists nowhere else (`#5FA05A`): the dark `moss` ramp is tuned
   for text and chips and fails the perceptual lightness band for a chart mark. One series only — no

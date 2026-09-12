@@ -1,4 +1,28 @@
 
+const lightNeutral = {
+  paper: "#F4EFE6",
+  paper2: "#EAE3D6",
+  card: "#FFFDF8",
+  cardTint: "#FAF6EE",
+  ink: "#211B13",
+  ink2: "#5C5546",
+  ink3: "#8D8577",
+  ink4: "#BDB5A6",
+  ink5: "#E6DFD2",
+} as const
+
+const darkNeutral = {
+  paper: "#17130E",
+  paper2: "#211C15",
+  card: "#2A241C",
+  cardTint: "#332C22",
+  ink: "#F1EAE0",
+  ink2: "#BDB4A4",
+  ink3: "#948C7F",
+  ink4: "#4F473C",
+  ink5: "#332D25",
+} as const
+
 export const tokens = {
   color: {
     brand: {
@@ -65,19 +89,9 @@ export const tokens = {
       successWash: "#EAF3E8",
       chartInk: "#4C8A47",
       chartInkMuted: "#BDB5A6",
-      chartTrack: "#E5DDCD",
+      chartTrack: lightNeutral.paper2,
     },
-    neutral: {
-      paper: "#F4EFE6",
-      paper2: "#EAE3D6",
-      card: "#FFFDF8",
-      cardTint: "#FAF6EE",
-      ink: "#211B13",
-      ink2: "#5C5546",
-      ink3: "#8D8577",
-      ink4: "#BDB5A6",
-      ink5: "#E6DFD2",
-    },
+    neutral: lightNeutral,
     category: {
       trash: "#776C60",
       recycling: "#63A45A",
@@ -245,19 +259,9 @@ export const darkColor: ColorPalette = {
     successWash: "#1F2E1D",
     chartInk: "#5FA05A",
     chartInkMuted: "#4F473C",
-    chartTrack: "#211C15",
+    chartTrack: darkNeutral.paper2,
   },
-  neutral: {
-    paper: "#17130E",
-    paper2: "#211C15",
-    card: "#2A241C",
-    cardTint: "#332C22",
-    ink: "#F1EAE0",
-    ink2: "#BDB4A4",
-    ink3: "#948C7F",
-    ink4: "#4F473C",
-    ink5: "#332D25",
-  },
+  neutral: darkNeutral,
   category: {
     trash: "#A89C8E",
     recycling: "#78B56E",
