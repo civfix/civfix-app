@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { IdSchema, PaginationQuerySchema, pageResponse } from "./common.js"
-import { PostDTOSchema, PostKindSchema } from "./entities.js"
+import { PostDTOSchema, PostKindSchema, type PostDTO } from "./entities.js"
 
 /**
  * Social-feed post request/response contracts. The PostDTO + PostKind primitives live in
@@ -105,8 +105,17 @@ export type UserPostsQuery = z.infer<typeof UserPostsQuerySchema>
 export const HomeFeedResponseSchema = FeedPageDTOSchema
 export type HomeFeedResponse = z.infer<typeof HomeFeedResponseSchema>
 
-export const ListRepliesResponseSchema = FeedPageDTOSchema
-export type ListRepliesResponse = z.infer<typeof ListRepliesResponseSchema>
+/**
+ * A thread's direct replies, plus `authorReplies`: for each listed reply that the FOCAL POST'S AUTHOR has
+ * answered, their single most recent answer to it. The thread screen renders one of those under its parent
+ * as a connected row - the only nesting the conversation shows. Everything deeper lives on that reply's own
+ * thread. Empty on an older server, so the field is defaulted, never required.
+ */
+export interface ListRepliesResponse extends FeedPageDTO {
+  authorReplies: PostDTO[]
+}
+export const ListRepliesResponseSchema: z.ZodType<ListRepliesResponse, z.ZodTypeDef, unknown> =
+  FeedPageDTOSchema.extend({ authorReplies: z.array(PostDTOSchema).default([]) })
 
 export const ListUserPostsResponseSchema = FeedPageDTOSchema
 export type ListUserPostsResponse = z.infer<typeof ListUserPostsResponseSchema>

@@ -7,7 +7,8 @@
  *
  * QUERIES
  *   usePost(id)          - GET /posts/:id          -> a single PostDTO (the `["post", id]` detail cache).
- *   usePostReplies(id)   - GET /posts/:id/replies  -> infinite FeedPageDTO (a thread's replies).
+ *   usePostReplies(id)   - GET /posts/:id/replies  -> infinite ListRepliesResponse (a thread's replies
+ *                                                     plus the focal author's answers to them).
  *   useHomeFeed(filter)  - GET /feed/home          -> infinite FeedPageDTO (followed + self timeline).
  *   useUserPosts(userId) - GET /people/:id/posts   -> infinite FeedPageDTO (a person's own posts).
  *   useSaves()           - GET /me/saves           -> infinite FeedPageDTO (the viewer's bookmarks).
@@ -40,6 +41,7 @@ import type {
   PostDTO,
   PostComposeInput,
   FeedPageDTO,
+  ListRepliesResponse,
   DeletePostResponse,
 } from "@civfix/shared"
 import { useApi } from "../context"
@@ -351,6 +353,10 @@ export function buildCreateMutation(
       if (input.kind === "reply" && input.replyToId) {
         void qc.invalidateQueries({ queryKey: queryKeys.postReplies(input.replyToId) })
         void qc.invalidateQueries({ queryKey: queryKeys.post(input.replyToId) })
+        const grandparentId = qc.getQueryData<PostDTO>(queryKeys.post(input.replyToId))?.replyToId
+        if (grandparentId) {
+          void qc.invalidateQueries({ queryKey: queryKeys.postReplies(grandparentId) })
+        }
       }
     },
   }
@@ -421,11 +427,27 @@ export function usePost(id: string | undefined) {
   })
 }
 
+/** Coerce a replies page's two post arrays, so a malformed payload cannot reach the row builder. */
+function coerceReplyPages(
+  data: InfiniteData<ListRepliesResponse>,
+): InfiniteData<ListRepliesResponse> {
+  return {
+    ...data,
+    pages: data.pages.map((p) => ({
+      ...p,
+      items: Array.isArray(p?.items) ? p.items.filter((it) => it != null) : [],
+      authorReplies: Array.isArray(p?.authorReplies)
+        ? p.authorReplies.filter((it) => it != null)
+        : [],
+    })),
+  }
+}
+
 /** GET /posts/:id/replies - a thread's replies, cursor-infinite. Auth-required; gated on a present id. */
 export function usePostReplies(id: string | undefined) {
   const api = useApi()
   const { isAuthenticated } = useAuthState()
-  return useInfiniteQuery<FeedPageDTO>({
+  return useInfiniteQuery<ListRepliesResponse>({
     queryKey: queryKeys.postReplies(id ?? "unknown"),
     enabled: isAuthenticated && !!id,
     initialPageParam: undefined as string | undefined,
@@ -435,7 +457,7 @@ export function usePostReplies(id: string | undefined) {
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     retry: false,
-    select: coercePostPages,
+    select: coerceReplyPages,
   })
 }
 

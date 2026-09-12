@@ -18,17 +18,10 @@ import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider, useScrollHost } from "../shell/ScrollHost"
 import { SignInPrompt } from "../primitives/StateView"
 import { ReplyComposer, type ReplyComposerHandle } from "./thread/ReplyComposer"
-import { ThreadChainRow } from "./thread/ThreadChainRow"
 import { ThreadEmptyReplies } from "./thread/ThreadEmptyReplies"
 import { ThreadFocalPost, ThreadFocalSkeleton } from "./thread/ThreadFocalPost"
 import { ThreadReplyRow } from "./thread/ThreadReplyRow"
-import {
-  THREAD_CHAIN_ROW_MIN_H,
-  buildThreadRows,
-  type ThreadChildState,
-  type ThreadRow,
-  type ThreadRowExpansion,
-} from "./thread/threadModel"
+import { buildThreadRows, type ThreadRow } from "./thread/threadModel"
 
 const KEYBOARD_DISMISS_MODE: "interactive" | "on-drag" =
   Platform.OS === "ios" ? "interactive" : "on-drag"
@@ -63,47 +56,21 @@ function ThreadRepliesSkeleton() {
   )
 }
 
-function ThreadChildQuery({
-  parentId,
-  onState,
-}: {
-  parentId: string
-  onState: (parentId: string, state: ThreadChildState<PostDTO>) => void
-}) {
-  const replies = usePostReplies(parentId)
-  const items = React.useMemo(
-    () => (replies.data?.pages ?? []).flatMap((page) => page.items),
-    [replies.data],
-  )
-  const loading = replies.isLoading
-  const hasMore = replies.hasNextPage === true
-  React.useEffect(() => {
-    onState(parentId, { items, loading, hasMore })
-  }, [onState, parentId, items, loading, hasMore])
-  return null
-}
-
-export function PostThreadBody({
-  id,
-  onBack,
-  onOpenEntry,
-}: {
+export interface PostThreadBodyProps {
   id: string
   onBack?: () => void
   onOpenEntry?: (entry: DetailEntry) => void
-}) {
+}
+
+export function PostThreadBody(props: PostThreadBodyProps) {
+  return <PostThread key={props.id} {...props} />
+}
+
+function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("home-feed")
   const back = useNavStore((state) => state.back)
-  const push = useNavStore((state) => state.push)
-  const openEntry = React.useCallback(
-    (entry: DetailEntry) => {
-      if (onOpenEntry) onOpenEntry(entry)
-      else push(entry)
-    },
-    [onOpenEntry, push],
-  )
   const { isAuthenticated } = useAuthState()
   const requireAuth = useRequireAuth()
   const post = usePost(id)
@@ -114,65 +81,6 @@ export function PostThreadBody({
   const expandedChrome = useLayoutMode() === "expanded"
   const [sentReplies, setSentReplies] = React.useState<PostDTO[]>([])
 
-  const [expandedIds, setExpandedIds] = React.useState<readonly string[]>([])
-
-  const [replyTarget, setReplyTarget] = React.useState<PostDTO | null>(null)
-
-  const [childStates, setChildStates] = React.useState<
-    Readonly<Record<string, ThreadChildState<PostDTO> | undefined>>
-  >({})
-
-  const onChildState = React.useCallback(
-    (parentId: string, next: ThreadChildState<PostDTO>) => {
-      setChildStates((current) => {
-        const prev = current[parentId]
-        if (
-          prev != null
-          && prev.items === next.items
-          && prev.loading === next.loading
-          && prev.hasMore === next.hasMore
-        ) {
-          return current
-        }
-        return { ...current, [parentId]: next }
-      })
-    },
-    [],
-  )
-
-  const expandRow = React.useCallback((postId: string) => {
-    setExpandedIds((current) => (current.includes(postId) ? current : [...current, postId]))
-  }, [])
-
-  const onRowExpand = React.useCallback(
-    (postId: string, expansion: ThreadRowExpansion) => {
-      if (expansion === "navigate") {
-        openEntry({ kind: "post-thread", id: postId })
-        return
-      }
-      if (expansion === "collapse") {
-        setExpandedIds((current) => current.filter((entry) => entry !== postId))
-        setChildStates((current) => {
-          if (current[postId] === undefined) return current
-          const next = { ...current }
-          delete next[postId]
-          return next
-        })
-        return
-      }
-      expandRow(postId)
-    },
-    [openEntry, expandRow],
-  )
-
-  const onRowReply = React.useCallback(
-    (target: PostDTO) => {
-      setReplyTarget(target)
-      expandRow(target.id)
-      composerRef.current?.focus()
-    },
-    [expandRow],
-  )
   const composerRef = React.useRef<ReplyComposerHandle | null>(null)
   const listRef = React.useRef<{ scrollToEnd?: (options?: { animated?: boolean }) => void } | null>(null)
   const focusComposer = React.useCallback(() => composerRef.current?.focus(), [])
@@ -180,14 +88,10 @@ export function PostThreadBody({
     (event: LayoutChangeEvent) => setRootHeight(event.nativeEvent.layout.height),
     [],
   )
-  const onClearTarget = React.useCallback(() => setReplyTarget(null), [])
   const onPosted = React.useCallback(
-    (created: PostDTO, targetId: string) => {
-      setSentReplies((current) => [
-        ...current,
-        { ...created, replyToId: created.replyToId ?? targetId },
-      ])
-      if (targetId === id) listRef.current?.scrollToEnd?.({ animated: true })
+    (created: PostDTO) => {
+      setSentReplies((current) => [...current, { ...created, replyToId: created.replyToId ?? id }])
+      listRef.current?.scrollToEnd?.({ animated: true })
     },
     [id],
   )
@@ -196,18 +100,19 @@ export function PostThreadBody({
     () => (replies.data?.pages ?? []).flatMap((page) => page.items),
     [replies.data],
   )
-  const expandedSet = React.useMemo(() => new Set(expandedIds), [expandedIds])
+  const authorReplies = React.useMemo(
+    () => (replies.data?.pages ?? []).flatMap((page) => page.authorReplies),
+    [replies.data],
+  )
   const rows = React.useMemo(
     () =>
       buildThreadRows<PostDTO>({
         focalId: id,
-        focalAuthorId: post.data?.author.id,
         replies: fetched,
         sent: sentReplies,
-        expandedIds: expandedSet,
-        children: childStates,
+        nested: authorReplies,
       }),
-    [id, post.data?.author.id, fetched, sentReplies, expandedSet, childStates],
+    [id, fetched, sentReplies, authorReplies],
   )
 
   const listHeader = React.useMemo(
@@ -228,44 +133,17 @@ export function PostThreadBody({
   const renderItem = React.useCallback(
     ({ item }: { item: unknown }) => {
       const listRow = item as ThreadRow<PostDTO>
-      if (listRow.kind === "show-more") {
-        return (
-          <ThreadChainRow rail={listRow.rail} hairline={listRow.hairline}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => openEntry({ kind: "post-thread", id: listRow.parentId })}
-              {...focusRingProps}
-              style={({ pressed }) => [styles.chainAction, pressed ? styles.pressed : null]}
-            >
-              <Text style={styles.chainActionText}>
-                {t("thread.show_replies", { count: listRow.remaining })}
-              </Text>
-            </Pressable>
-          </ThreadChainRow>
-        )
-      }
-      if (listRow.kind === "loading") {
-        return (
-          <ThreadChainRow rail={listRow.rail} hairline={listRow.hairline}>
-            <Text style={styles.chainLoading}>{t("thread.loading")}</Text>
-          </ThreadChainRow>
-        )
-      }
       return (
         <ThreadReplyRow
           post={listRow.post}
           rail={listRow.rail}
-          depth={listRow.depth}
           hairline={listRow.hairline}
           isOptimistic={listRow.optimistic}
-          expansion={listRow.expansion}
-          onToggleExpand={onRowExpand}
-          onReply={listRow.depth === 1 ? onRowReply : undefined}
           onOpenEntry={onOpenEntry}
         />
       )
     },
-    [openEntry, onRowExpand, onRowReply, onOpenEntry, styles, t],
+    [onOpenEntry],
   )
 
   const hasNextPage = replies.hasNextPage
@@ -380,9 +258,6 @@ export function PostThreadBody({
   return (
     <View style={styles.root} onLayout={onRootLayout}>
       {header}
-      {expandedIds.map((parentId) => (
-        <ThreadChildQuery key={parentId} parentId={parentId} onState={onChildState} />
-      ))}
       <ScrollHostProvider value={THREAD_SCROLL_HOST}>
         <ThreadList
           ref={listRef as never}
@@ -406,8 +281,6 @@ export function PostThreadBody({
         <ReplyComposer
           ref={composerRef}
           focalPost={post.data}
-          replyTarget={replyTarget}
-          onClearTarget={onClearTarget}
           rootHeight={rootHeight}
           onPosted={onPosted}
         />
@@ -470,26 +343,6 @@ const useStyles = makeThemedStyles((t) => ({
     textAlign: "center",
     color: t.colors.textSubtle,
     fontFamily: t.fontFamily.bodyMedium,
-  },
-  chainAction: {
-    minHeight: THREAD_CHAIN_ROW_MIN_H,
-    justifyContent: "center",
-    marginLeft: -6,
-    paddingHorizontal: 6,
-    alignSelf: "flex-start",
-  },
-  chainActionText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13.5,
-    lineHeight: 18,
-    color: t.colors.accentText,
-  },
-  chainLoading: {
-    minHeight: THREAD_CHAIN_ROW_MIN_H,
-    fontFamily: t.fontFamily.bodyMedium,
-    fontSize: 13.5,
-    lineHeight: THREAD_CHAIN_ROW_MIN_H,
-    color: t.colors.textSubtle,
   },
   errorBlock: {
     flexDirection: "row",

@@ -285,6 +285,57 @@ describe("useCreatePost optimism (buildCreateMutation)", () => {
     )
   })
 
+  it("answering a reply also refreshes the thread ABOVE it, where the answer inlines under its parent", async () => {
+    const qc = recordInvalidations(new QueryClient())
+    qc.setQueryData(queryKeys.post("first"), post("first", { kind: "reply", replyToId: "root" }))
+
+    const api = { createPost: async () => post("server_answer", { kind: "reply", replyToId: "first" }) }
+    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const vars: CreatePostVars = {
+      input: { kind: "reply", replyToId: "first", body: "answer", mediaUploadIds: [], mentionedUserIds: [] },
+      optimistic: post("temp_answer", { kind: "reply", replyToId: "first" }),
+    }
+
+    opts.onSettled(undefined, undefined, vars)
+    expect(invalidated(qc)).toEqual(
+      expect.arrayContaining([
+        queryKeys.postReplies("first"),
+        queryKeys.post("first"),
+        queryKeys.postReplies("root"),
+      ]),
+    )
+  })
+
+  it("skips the grandparent refresh, without throwing, when the parent detail is not cached", async () => {
+    const qc = recordInvalidations(new QueryClient())
+    const api = { createPost: async () => post("server_answer", { kind: "reply", replyToId: "first" }) }
+    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const vars: CreatePostVars = {
+      input: { kind: "reply", replyToId: "first", body: "answer", mediaUploadIds: [], mentionedUserIds: [] },
+      optimistic: post("temp_answer", { kind: "reply", replyToId: "first" }),
+    }
+
+    expect(() => opts.onSettled(undefined, undefined, vars)).not.toThrow()
+    const replyLists = invalidated(qc).filter((key) => key[0] === "posts" && key[1] === "replies")
+    expect(replyLists).toEqual([queryKeys.postReplies("first")])
+  })
+
+  it("a reply to a TOP-LEVEL post refreshes only that post's thread, never a phantom grandparent", async () => {
+    const qc = recordInvalidations(new QueryClient())
+    qc.setQueryData(queryKeys.post("root"), post("root"))
+
+    const api = { createPost: async () => post("server_reply", { kind: "reply", replyToId: "root" }) }
+    const opts = loose<CreatePostVars, PostDTO>(buildCreateMutation(qc, api))
+    const vars: CreatePostVars = {
+      input: { kind: "reply", replyToId: "root", body: "reply", mediaUploadIds: [], mentionedUserIds: [] },
+      optimistic: post("temp_reply", { kind: "reply", replyToId: "root" }),
+    }
+
+    opts.onSettled(undefined, undefined, vars)
+    const replyLists = invalidated(qc).filter((key) => key[0] === "posts" && key[1] === "replies")
+    expect(replyLists).toEqual([queryKeys.postReplies("root")])
+  })
+
   it("does NOT append the optimistic reply while the thread's tail page is unloaded", async () => {
     // `listReplies` is ASC/oldest-first, so a new reply belongs at the very end of the thread. When the
     // last LOADED page still has a cursor, appending there would drop the reply into the MIDDLE of the
