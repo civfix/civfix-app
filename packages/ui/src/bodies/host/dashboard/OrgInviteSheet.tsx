@@ -124,6 +124,7 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
           key: kind,
           label: kind === "email" ? t("team.by_email") : t("team.by_handle"),
         }))}
+        disabled={invite.isPending}
       />
 
       <Text variant="label">

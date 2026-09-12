@@ -85,6 +85,32 @@ describe("selection is neutral", () => {
     expect(segmented).toContain("t.shadows.s1")
     expect(segmented).not.toMatch(/t\.colors\.(brand\.bloom|accent\b)/)
   })
+
+  it("lets a segmented picker go busy the way every other control does", () => {
+    const segmented = strip(read("../SegmentedControl.tsx"))
+    expect(segmented).toContain("disabled?: boolean")
+    expect(segmented).toContain("disabled = false,")
+    expect(segmented).toContain("disabled={disabled}")
+    expect(segmented).toContain("accessibilityState={{ checked: on, disabled }}")
+    expect(segmented).toContain("webCursor(disabled)")
+    expect(segmented).toContain("!on && !disabled && webHover(state)")
+    expect(segmented).toContain("!on && state.pressed && !disabled")
+    expect(segmented).toContain("disabled ? styles.segmentTextDisabled : null")
+    expect(segmented).toContain("segmentTextDisabled: {\n    color: t.colors.textSubtle,")
+  })
+
+  it("keeps the three pickers that became segmented gated on their in-flight request", () => {
+    const sites: [string, string][] = [
+      ["../../bodies/host/HostBroadcastQuickBody.tsx", "disabled={busy}"],
+      ["../../bodies/host/HostTeamInviteSheet.tsx", "disabled={invite.isPending}"],
+      ["../../bodies/host/dashboard/OrgInviteSheet.tsx", "disabled={invite.isPending}"],
+    ]
+    for (const [rel, gate] of sites) {
+      const src = strip(read(rel))
+      const control = src.slice(src.indexOf("<SegmentedControl"))
+      expect(control.slice(0, control.indexOf("/>")), `${rel} lost its busy gate`).toContain(gate)
+    }
+  })
 })
 
 describe("the chart wears the chart tokens only", () => {

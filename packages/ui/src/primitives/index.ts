@@ -251,9 +251,6 @@ export type { CancelEventSheetProps } from "./CancelEventSheet"
 export { CompleteEventSheet } from "./CompleteEventSheet"
 export type { CompleteEventSheetProps } from "./CompleteEventSheet"
 
-export { InviteSheet } from "./InviteSheet"
-export type { InviteSheetProps } from "./InviteSheet"
-
 export { RequestResourcesSheet } from "./RequestResourcesSheet"
 export type { RequestResourcesSheetProps } from "./RequestResourcesSheet"
 

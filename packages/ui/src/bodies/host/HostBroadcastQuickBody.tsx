@@ -205,6 +205,7 @@ export function HostBroadcastQuickBody({ id }: { id: string }) {
           }))}
           selected={segment}
           onSelect={(next) => setSegment(next as QuickSegmentKind)}
+          disabled={busy}
         />
       </View>
 

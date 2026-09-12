@@ -28,6 +28,7 @@ export interface SegmentedControlProps {
   selected: string
   onSelect: (key: string) => void
   size?: SegmentedControlSize
+  disabled?: boolean
 }
 
 export function SegmentedControl({
@@ -36,6 +37,7 @@ export function SegmentedControl({
   selected,
   onSelect,
   size = "md",
+  disabled = false,
 }: SegmentedControlProps) {
   const styles = useStyles()
   const t = useTheme()
@@ -52,8 +54,9 @@ export function SegmentedControl({
           <Pressable
             key={option.key}
             onPress={() => onSelect(option.key)}
+            disabled={disabled}
             accessibilityRole="radio"
-            accessibilityState={{ checked: on }}
+            accessibilityState={{ checked: on, disabled }}
             accessibilityLabel={option.label}
             hitSlop={sm ? SEGMENT_SM_HIT_SLOP : undefined}
             {...focusRingProps}
@@ -61,16 +64,21 @@ export function SegmentedControl({
               styles.segment,
               sm ? styles.segmentSm : styles.segmentMd,
               webTransition,
-              webCursor(),
+              webCursor(disabled),
               on ? styles.segmentOn : null,
               on ? t.shadows.s1 : null,
-              !on && webHover(state) ? styles.segmentHovered : null,
-              !on && state.pressed ? styles.segmentPressed : null,
+              !on && !disabled && webHover(state) ? styles.segmentHovered : null,
+              !on && state.pressed && !disabled ? styles.segmentPressed : null,
             ]}
           >
             <Text
               numberOfLines={1}
-              style={[styles.segmentText, sm ? styles.segmentTextSm : null, on ? styles.segmentTextOn : null]}
+              style={[
+                styles.segmentText,
+                sm ? styles.segmentTextSm : null,
+                on ? styles.segmentTextOn : null,
+                disabled ? styles.segmentTextDisabled : null,
+              ]}
             >
               {option.label}
             </Text>
@@ -127,5 +135,8 @@ const useStyles = makeThemedStyles((t) => ({
   },
   segmentTextOn: {
     color: t.colors.text,
+  },
+  segmentTextDisabled: {
+    color: t.colors.textSubtle,
   },
 }))

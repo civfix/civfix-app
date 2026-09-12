@@ -127,6 +127,7 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
         }))}
         selected={identifierKind}
         onSelect={(next) => onPickKind(next as EventTeamInviteIdentifierKind)}
+        disabled={invite.isPending}
       />
 
       <Text variant="label">
