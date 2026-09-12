@@ -6,8 +6,13 @@ const { color, fontSize, radius, shadow, space } = tokens
 
 const px = (n: number): string => `${n}px`
 
+export type SchemeColor = (utils: { opacityValue?: string }) => string
+
 const schemeVar = (name: string): string =>
-  `color-mix(in srgb, var(${name}) calc(<alpha-value> * 100%), transparent)`
+  ((({ opacityValue }: { opacityValue?: string }) =>
+    opacityValue === undefined
+      ? `var(${name})`
+      : `color-mix(in srgb, var(${name}) calc(${opacityValue} * 100%), transparent)`) satisfies SchemeColor) as unknown as string
 
 function fontSizeScale(): Record<string, string> {
   const out: Record<string, string> = {}
@@ -199,6 +204,14 @@ const config: Config = {
         "sheet-up": "sheet-up 0.32s cubic-bezier(0.22,1,0.36,1)",
       },
     },
+  },
+  corePlugins: {
+    backgroundOpacity: false,
+    textOpacity: false,
+    borderOpacity: false,
+    divideOpacity: false,
+    ringOpacity: false,
+    placeholderOpacity: false,
   },
   plugins: [require("tailwindcss-animate")],
 }

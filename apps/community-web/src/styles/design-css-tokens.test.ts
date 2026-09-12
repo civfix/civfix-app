@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs"
 import { colorSchemes } from "@civfix/shared/tokens"
 import type { ColorSchemeName } from "@civfix/shared/tokens"
 import { describe, expect, it } from "vitest"
+import config from "../../tailwind.config"
+import type { SchemeColor } from "../../tailwind.config"
 
 const CSS = readFileSync(new URL("./design.css", import.meta.url), "utf8")
 
@@ -43,5 +45,53 @@ describe("design.css neutrals mirror @civfix/shared tokens", () => {
 
   it("paints the shell and the boot splash from the same variable", () => {
     expect(CSS).toMatch(/\.cf-shell\s*\{[^}]*background:\s*var\(--paper\)/)
+  })
+})
+
+describe("tailwind neutral colours stay legal without an opacity modifier", () => {
+  const colors = (config.theme?.extend?.colors ?? {}) as Record<string, unknown>
+
+  function resolve(path: readonly string[]): SchemeColor {
+    let node: unknown = colors
+    for (const key of path) node = (node as Record<string, unknown>)[key]
+    expect(typeof node, path.join(".")).toBe("function")
+    return node as SchemeColor
+  }
+
+  const NEUTRAL_UTILITIES = [
+    [["paper"], "--paper"],
+    [["paper2"], "--paper-2"],
+    [["cardflat"], "--card"],
+    [["cardTint"], "--card-tint"],
+    [["ink", "DEFAULT"], "--ink"],
+    [["ink", "2"], "--ink-2"],
+    [["ink", "3"], "--ink-3"],
+    [["ink", "4"], "--ink-4"],
+    [["ink", "5"], "--ink-5"],
+  ] as const
+
+  for (const [path, variable] of NEUTRAL_UTILITIES) {
+    it(`${path.join(".")} resolves to a bare var(${variable})`, () => {
+      expect(resolve(path)({})).toBe(`var(${variable})`)
+    })
+  }
+
+  it("keeps the legacy opacity core plugins off so unmodified utilities stay bare", () => {
+    for (const plugin of [
+      "backgroundOpacity",
+      "textOpacity",
+      "borderOpacity",
+      "divideOpacity",
+      "ringOpacity",
+      "placeholderOpacity",
+    ]) {
+      expect((config.corePlugins as Record<string, boolean>)[plugin], plugin).toBe(false)
+    }
+  })
+
+  it("only reaches for color-mix when a modifier is present", () => {
+    expect(resolve(["paper2"])({ opacityValue: "0.6" })).toBe(
+      "color-mix(in srgb, var(--paper-2) calc(0.6 * 100%), transparent)",
+    )
   })
 })
