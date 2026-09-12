@@ -62,11 +62,6 @@ function isRootSnapshot(snapshot: NavSnapshot): boolean {
 
 const TRAVERSAL_TIMEOUT_MS = 400
 
-interface WrittenEntry {
-  seq: number
-  snapshot: NavSnapshot
-}
-
 interface TraversalTarget {
   depth: number
   seq: number | undefined
@@ -83,7 +78,7 @@ interface NavController {
   traversal: PendingTraversal | null
   abandoned: TraversalTarget | null
   queued: NavTransition[]
-  written: (WrittenEntry | undefined)[]
+  seqAt: (number | undefined)[]
 }
 
 function isTarget(target: TraversalTarget, landed: NavHistoryEntry): boolean {
@@ -110,7 +105,7 @@ export function useWebNavAdapter(): void {
     traversal: null,
     abandoned: null,
     queued: [],
-    written: [],
+    seqAt: [],
   })
 
   const write = React.useCallback(
@@ -123,25 +118,40 @@ export function useWebNavAdapter(): void {
       const controller = controllerRef.current
       controller.seq += 1
       const entry: NavHistoryEntry = {
-        v: 1,
+        v: 2,
         seq: controller.seq,
         depth,
         ...returnFields(current, snapshot),
+        beneath: mode === "push" ? (current?.snapshot ?? null) : (current?.beneath ?? null),
         snapshot,
       }
       const state = stampNavHistory(window.history.state, entry)
       const path = pathForSnapshot(snapshot)
       if (mode === "push") window.history.pushState(state, "", path)
       else window.history.replaceState(state, "", path)
-      controller.written[depth] = { seq: controller.seq, snapshot }
-      controller.written.length = depth + 1
+      controller.seqAt[depth] = controller.seq
+      controller.seqAt.length = depth + 1
     },
     [],
   )
 
-  const beneathOf = React.useCallback((depth: number): NavSnapshot | undefined => {
-    return depth > 0 ? controllerRef.current.written[depth - 1]?.snapshot : undefined
-  }, [])
+  const stampLeftBehindQuery = React.useCallback(
+    (current: NavHistoryEntry | null, left: NavSnapshot): NavHistoryEntry | null => {
+      if (!current || current.snapshot.query === left.query) return current
+      if (!snapshotEquals(current.snapshot, left)) return current
+      const entry: NavHistoryEntry = {
+        ...current,
+        snapshot: { ...current.snapshot, query: left.query },
+      }
+      window.history.replaceState(
+        stampNavHistory(window.history.state, entry),
+        "",
+        pathForSnapshot(entry.snapshot),
+      )
+      return entry
+    },
+    [],
+  )
 
   const drive = React.useCallback((run: () => void) => {
     const controller = controllerRef.current
@@ -170,7 +180,7 @@ export function useWebNavAdapter(): void {
       controller.abandoned = null
       controller.traversal = {
         depth,
-        seq: controller.written[depth]?.seq,
+        seq: controller.seqAt[depth],
         timer: window.setTimeout(abandon, TRAVERSAL_TIMEOUT_MS),
       }
       window.history.go(-steps)
@@ -198,7 +208,7 @@ export function useWebNavAdapter(): void {
         }
         return
       }
-      const beneath = beneathOf(depth)
+      const beneath = landed?.beneath
       if (beneath && snapshotEquals(beneath, live)) {
         traverse(1, depth)
         return
@@ -209,7 +219,7 @@ export function useWebNavAdapter(): void {
       }
       write("replace", depth, live, landed)
     },
-    [beneathOf, traverse, write],
+    [traverse, write],
   )
 
   const settle = React.useCallback(
@@ -249,7 +259,7 @@ export function useWebNavAdapter(): void {
   }, [])
 
   React.useEffect(() => {
-    const unsub = useNavStore.subscribe((state) => {
+    const unsub = useNavStore.subscribe((state, prev) => {
       const controller = controllerRef.current
       if (controller.adapterDriven) return
       if (state.navSeq === controller.handledSeq) return
@@ -263,20 +273,21 @@ export function useWebNavAdapter(): void {
       const current = readNavHistory(window.history.state)
       const live = takeNavSnapshot(state)
       const depth = current?.depth ?? 0
-      const plan = writePlan(transition, current, live, beneathOf(depth))
+      const plan = writePlan(transition, current, live)
       if (plan.type === "none") return
       if (plan.type === "traverse") {
+        stampLeftBehindQuery(current, takeNavSnapshot(prev))
         traverse(plan.steps, depth)
         return
       }
       if (plan.type === "push") {
-        write("push", depth + 1, live, current)
+        write("push", depth + 1, live, stampLeftBehindQuery(current, takeNavSnapshot(prev)))
         return
       }
       write("replace", depth, live, current)
     })
     return unsub
-  }, [beneathOf, traverse, write])
+  }, [stampLeftBehindQuery, traverse, write])
 
   React.useEffect(() => {
     const controller = controllerRef.current

@@ -17,7 +17,7 @@ function snapshot(partial: Partial<NavSnapshot> = {}): NavSnapshot {
 }
 
 function entry(partial: Partial<NavHistoryEntry> = {}): NavHistoryEntry {
-  return { v: 1, seq: 1, depth: 0, snapshot: snapshot(), ...partial }
+  return { v: 2, seq: 1, depth: 0, beneath: null, snapshot: snapshot(), ...partial }
 }
 
 describe("readNavHistory", () => {
@@ -30,10 +30,24 @@ describe("readNavHistory", () => {
     expect(readNavHistory(null)).toBeNull()
     expect(readNavHistory({})).toBeNull()
     expect(readNavHistory({ civfixNav: "nope" })).toBeNull()
-    expect(readNavHistory({ civfixNav: { v: 2, seq: 1, depth: 0, snapshot: snapshot() } })).toBeNull()
-    expect(readNavHistory({ civfixNav: { v: 1, seq: 1, depth: 0 } })).toBeNull()
+    expect(readNavHistory({ civfixNav: { v: 3, seq: 1, depth: 0, beneath: null, snapshot: snapshot() } })).toBeNull()
+    expect(readNavHistory({ civfixNav: { v: 2, seq: 1, depth: 0, beneath: null } })).toBeNull()
     expect(
-      readNavHistory({ civfixNav: { v: 1, seq: 1, depth: 0, snapshot: { view: "home" } } }),
+      readNavHistory({ civfixNav: { v: 2, seq: 1, depth: 0, beneath: null, snapshot: { view: "home" } } }),
+    ).toBeNull()
+  })
+
+  it("rejects a stamp written before the entry carried the surface beneath it", () => {
+    expect(readNavHistory({ civfixNav: { v: 1, seq: 1, depth: 1, snapshot: snapshot() } })).toBeNull()
+  })
+
+  it("rejects an entry whose beneath is neither a restorable snapshot nor null", () => {
+    expect(readNavHistory(stampNavHistory(null, entry({ beneath: snapshot({ view: "map" }) })))).not.toBeNull()
+    expect(
+      readNavHistory({ civfixNav: { v: 2, seq: 1, depth: 1, beneath: { view: "map" }, snapshot: snapshot() } }),
+    ).toBeNull()
+    expect(
+      readNavHistory({ civfixNav: { v: 2, seq: 1, depth: 1, snapshot: snapshot() } }),
     ).toBeNull()
   })
 
@@ -200,12 +214,12 @@ describe("writePlan", () => {
   const MAP_PIN = snapshot({ view: "map", stack: [{ kind: "pin", id: "a" }] })
 
   it("writes nothing when the transition changed nothing a URL can address", () => {
-    expect(writePlan({ type: "push" }, entry({ depth: 1, snapshot: MAP }), MAP, undefined)).toEqual({
+    expect(writePlan({ type: "push" }, entry({ depth: 1, snapshot: MAP }), MAP)).toEqual({
       type: "none",
     })
-    expect(
-      writePlan({ type: "pop", count: 0 }, entry({ depth: 1, snapshot: MAP }), MAP, undefined),
-    ).toEqual({ type: "none" })
+    expect(writePlan({ type: "pop", count: 0 }, entry({ depth: 1, snapshot: MAP }), MAP)).toEqual({
+      type: "none",
+    })
   })
 
   it("restamps in place when only the search query moved on", () => {
@@ -214,43 +228,40 @@ describe("writePlan", () => {
         { type: "push" },
         entry({ depth: 1, snapshot: MAP }),
         snapshot({ view: "map", query: "abc" }),
-        undefined,
       ),
     ).toEqual({ type: "restamp" })
   })
 
   it("traverses instead of overwriting when a lateral swap lands on the entry beneath", () => {
-    expect(writePlan({ type: "replace" }, entry({ depth: 2, snapshot: MAP_PIN }), MAP, MAP)).toEqual({
-      type: "traverse",
-      steps: 1,
-    })
     expect(
-      writePlan({ type: "replace" }, entry({ depth: 2, snapshot: MAP_PIN }), MAP, undefined),
-    ).toEqual({ type: "replace" })
+      writePlan({ type: "replace" }, entry({ depth: 2, snapshot: MAP_PIN, beneath: MAP }), MAP),
+    ).toEqual({ type: "traverse", steps: 1 })
+    expect(writePlan({ type: "replace" }, entry({ depth: 2, snapshot: MAP_PIN }), MAP)).toEqual({
+      type: "replace",
+    })
     expect(
       writePlan(
         { type: "replace" },
-        entry({ depth: 2, snapshot: MAP_PIN }),
+        entry({ depth: 2, snapshot: MAP_PIN, beneath: snapshot({ view: "events" }) }),
         MAP,
-        snapshot({ view: "events" }),
       ),
     ).toEqual({ type: "replace" })
   })
 
   it("traverses a pop, and overwrites in place only when there is nothing beneath to traverse to", () => {
-    expect(writePlan({ type: "pop", count: 1 }, entry({ depth: 2, snapshot: MAP_PIN }), MAP, MAP)).toEqual(
-      { type: "traverse", steps: 1 },
-    )
     expect(
-      writePlan({ type: "pop", count: 1 }, entry({ depth: 0, snapshot: MAP_PIN }), MAP, undefined),
+      writePlan({ type: "pop", count: 1 }, entry({ depth: 2, snapshot: MAP_PIN, beneath: MAP }), MAP),
+    ).toEqual({ type: "traverse", steps: 1 })
+    expect(
+      writePlan({ type: "pop", count: 1 }, entry({ depth: 0, snapshot: MAP_PIN }), MAP),
     ).toEqual({ type: "replace" })
   })
 
   it("pushes a forward transition onto a surface the entry beneath does not hold", () => {
     for (const transition of [{ type: "push" }, { type: "select" }, { type: "reset" }, { type: "seed" }] as const) {
-      expect(writePlan(transition, entry({ depth: 1, snapshot: MAP }), MAP_PIN, MAP)).toEqual({
-        type: "push",
-      })
+      expect(
+        writePlan(transition, entry({ depth: 1, snapshot: MAP, beneath: ROOT_NAV_SNAPSHOT }), MAP_PIN),
+      ).toEqual({ type: "push" })
     }
   })
 
@@ -264,19 +275,37 @@ describe("writePlan", () => {
       { type: "seed" },
       { type: "replace" },
     ] as const) {
-      expect(writePlan(transition, entry({ depth: 1, snapshot: SEARCH }), HOME, HOME)).toEqual({
-        type: "traverse",
-        steps: 1,
-      })
+      expect(
+        writePlan(transition, entry({ depth: 1, snapshot: SEARCH, beneath: HOME }), HOME),
+      ).toEqual({ type: "traverse", steps: 1 })
     }
+  })
+
+  it("consumes the entry it is leaving when the transition says so, instead of twinning a surface further down", () => {
+    const SEARCH = snapshot({ view: "search" })
+    const HOME = snapshot({ view: "home" })
+    expect(
+      writePlan(
+        { type: "select", consumes: true },
+        entry({ depth: 2, snapshot: SEARCH, beneath: MAP }),
+        HOME,
+      ),
+    ).toEqual({ type: "replace" })
+    expect(
+      writePlan({ type: "select" }, entry({ depth: 2, snapshot: SEARCH, beneath: MAP }), HOME),
+    ).toEqual({ type: "push" })
   })
 
   it("keeps the home chip a forward push when the entry beneath is another surface", () => {
     const HOME = snapshot({ view: "home" })
     expect(
-      writePlan({ type: "reset" }, entry({ depth: 2, snapshot: MAP_PIN }), HOME, snapshot({ view: "events" })),
+      writePlan(
+        { type: "reset" },
+        entry({ depth: 2, snapshot: MAP_PIN, beneath: snapshot({ view: "events" }) }),
+        HOME,
+      ),
     ).toEqual({ type: "push" })
-    expect(writePlan({ type: "reset" }, entry({ depth: 1, snapshot: MAP }), HOME, undefined)).toEqual({
+    expect(writePlan({ type: "reset" }, entry({ depth: 1, snapshot: MAP }), HOME)).toEqual({
       type: "push",
     })
   })

@@ -13,11 +13,12 @@ import {
 } from "@civfix/ui/nav"
 
 export interface NavHistoryEntry {
-  v: 1
+  v: 2
   seq: number
   depth: number
   returnDepth?: number
   returnToken?: number
+  beneath: NavSnapshot | null
   snapshot: NavSnapshot
 }
 
@@ -79,8 +80,9 @@ export function readNavHistory(state: unknown): NavHistoryEntry | null {
   if (!isRecord(state)) return null
   const nav = state.civfixNav
   if (!isRecord(nav)) return null
-  if (nav.v !== 1) return null
+  if (nav.v !== 2) return null
   if (typeof nav.seq !== "number" || typeof nav.depth !== "number") return null
+  if (nav.beneath !== null && !isSnapshot(nav.beneath)) return null
   if (!isSnapshot(nav.snapshot)) return null
   return nav as unknown as NavHistoryEntry
 }
@@ -146,11 +148,15 @@ export type WritePlan =
   | { type: "replace" }
   | { type: "traverse"; steps: number }
 
+function consumesCurrentEntry(transition: NavTransition): boolean {
+  if (transition.type === "replace") return true
+  return transition.type === "select" && transition.consumes === true
+}
+
 export function writePlan(
   transition: NavTransition,
   current: NavHistoryEntry | null,
   live: NavSnapshot,
-  beneath: NavSnapshot | undefined,
 ): WritePlan {
   if (current && snapshotEquals(current.snapshot, live))
     return current.snapshot.query === live.query ? { type: "none" } : { type: "restamp" }
@@ -158,8 +164,9 @@ export function writePlan(
     const steps = traversalFor(transition, current)
     return steps === 0 ? { type: "replace" } : { type: "traverse", steps }
   }
+  const beneath = current?.beneath
   if (beneath && snapshotEquals(beneath, live)) return { type: "traverse", steps: 1 }
-  if (transition.type === "replace") return { type: "replace" }
+  if (consumesCurrentEntry(transition)) return { type: "replace" }
   return { type: "push" }
 }
 

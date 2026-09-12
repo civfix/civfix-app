@@ -56,6 +56,26 @@ async function browserBack(): Promise<void> {
   await settle()
 }
 
+async function reload(): Promise<void> {
+  const state = window.history.state
+  const pathname = window.location.pathname
+  cleanup()
+  useNavStore.setState({
+    view: "home",
+    stack: [],
+    active: null,
+    query: "",
+    originView: null,
+    seededDetailPage: false,
+    reportReturn: null,
+    navSeq: 0,
+    lastTransition: null,
+  })
+  window.history.replaceState(state, "", pathname)
+  mount()
+  await settle()
+}
+
 async function browserForward(): Promise<void> {
   await act(async () => {
     window.history.forward()
@@ -606,6 +626,63 @@ describe("leaving a view consumes its entry instead of twinning the surface bene
     expect(nav().view).toBe("home")
   })
 
+  it("closing search from the map lands past it instead of twinning the home beneath the map", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    expect(depth()).toBe(1)
+
+    await drive(() => nav().selectView("search"))
+    expect(path()).toBe("/search")
+    expect(depth()).toBe(2)
+    const entriesBefore = window.history.length
+
+    await drive(() => nav().setQuery("abc"))
+    await drive(() => nav().selectView("home"))
+    expect(path()).toBe("/")
+    expect(depth()).toBe(2)
+    expect(nav().view).toBe("home")
+    expect(window.history.length).toBe(entriesBefore)
+
+    await browserBack()
+    expect(path()).toBe("/map")
+    expect(nav().view).toBe("map")
+    expect(window.history.length).toBe(entriesBefore)
+  })
+
+  it("toggling the search orb off consumes the same entry the docked home action does", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    await drive(() => nav().selectView("search"))
+    expect(depth()).toBe(2)
+    const entriesBefore = window.history.length
+
+    await drive(() => nav().selectView("search"))
+    expect(nav().view).toBe("home")
+    expect(path()).toBe("/")
+    expect(depth()).toBe(2)
+    expect(window.history.length).toBe(entriesBefore)
+
+    await browserBack()
+    expect(path()).toBe("/map")
+    expect(nav().view).toBe("map")
+  })
+
+  it("carries what was typed into the entry it leaves, so Forward re-opens search with the query", async () => {
+    mount()
+    await drive(() => nav().selectView("search"))
+    expect(depth()).toBe(1)
+
+    await drive(() => nav().setQuery("abc"))
+    await drive(() => nav().selectView("home"))
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+
+    await browserForward()
+    expect(path()).toBe("/search")
+    expect(nav().view).toBe("search")
+    expect(nav().query).toBe("abc")
+  })
+
   it("the home chip stays a forward push when the entry beneath is another surface", async () => {
     mount()
     await drive(() => nav().selectView("events"))
@@ -660,5 +737,54 @@ describe("a landing carries the live search text and the seq already spent", () 
     await drive(() => nav().push(PERSON))
     expect(depth()).toBe(2)
     expect(readNavHistory(window.history.state)?.seq).toBeGreaterThan(aheadSeq)
+  })
+})
+
+describe("a reload leaves the next write everything it needs", () => {
+  it("closing search still lands past it when the entry was written before the reload", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    await reload()
+    expect(path()).toBe("/map")
+    expect(depth()).toBe(1)
+    expect(nav().view).toBe("map")
+
+    await drive(() => nav().selectView("search"))
+    expect(path()).toBe("/search")
+    expect(depth()).toBe(2)
+    const entriesBefore = window.history.length
+
+    await drive(() => nav().setQuery("abc"))
+    await drive(() => nav().selectView("home"))
+    expect(path()).toBe("/")
+    expect(depth()).toBe(2)
+    expect(window.history.length).toBe(entriesBefore)
+
+    await browserBack()
+    expect(path()).toBe("/map")
+    expect(nav().view).toBe("map")
+  })
+
+  it("a lateral open with no address of its own still traverses after a reload", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    await drive(() => nav().openDetail(PIN_A))
+    expect(depth()).toBe(2)
+
+    await reload()
+    expect(path()).toBe("/pin/a")
+    expect(depth()).toBe(2)
+    expect(nav().stack).toEqual([PIN_A])
+    const entriesBefore = window.history.length
+
+    await drive(() => nav().openDetail(CLUSTER))
+    expect(path()).toBe("/map")
+    expect(depth()).toBe(1)
+    expect(window.history.length).toBe(entriesBefore)
+
+    await browserBack()
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("home")
   })
 })
