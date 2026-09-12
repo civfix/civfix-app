@@ -156,10 +156,8 @@ export function writePlan(
     const steps = traversalFor(transition, current)
     return steps === 0 ? { type: "replace" } : { type: "traverse", steps }
   }
-  if (transition.type === "replace") {
-    if (beneath && snapshotEquals(beneath, live)) return { type: "traverse", steps: 1 }
-    return { type: "replace" }
-  }
+  if (beneath && snapshotEquals(beneath, live)) return { type: "traverse", steps: 1 }
+  if (transition.type === "replace") return { type: "replace" }
   return { type: "push" }
 }
 

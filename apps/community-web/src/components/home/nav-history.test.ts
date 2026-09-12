@@ -236,12 +236,39 @@ describe("writePlan", () => {
     ).toEqual({ type: "replace" })
   })
 
-  it("pushes every forward transition", () => {
+  it("pushes a forward transition onto a surface the entry beneath does not hold", () => {
     for (const transition of [{ type: "push" }, { type: "select" }, { type: "reset" }, { type: "seed" }] as const) {
       expect(writePlan(transition, entry({ depth: 1, snapshot: MAP }), MAP_PIN, MAP)).toEqual({
         type: "push",
       })
     }
+  })
+
+  it("traverses instead of twinning whenever a forward transition lands on the entry beneath", () => {
+    const SEARCH = snapshot({ view: "search" })
+    const HOME = snapshot({ view: "home" })
+    for (const transition of [
+      { type: "push" },
+      { type: "select" },
+      { type: "reset" },
+      { type: "seed" },
+      { type: "replace" },
+    ] as const) {
+      expect(writePlan(transition, entry({ depth: 1, snapshot: SEARCH }), HOME, HOME)).toEqual({
+        type: "traverse",
+        steps: 1,
+      })
+    }
+  })
+
+  it("keeps the home chip a forward push when the entry beneath is another surface", () => {
+    const HOME = snapshot({ view: "home" })
+    expect(
+      writePlan({ type: "reset" }, entry({ depth: 2, snapshot: MAP_PIN }), HOME, snapshot({ view: "events" })),
+    ).toEqual({ type: "push" })
+    expect(writePlan({ type: "reset" }, entry({ depth: 1, snapshot: MAP }), HOME, undefined)).toEqual({
+      type: "push",
+    })
   })
 })
 

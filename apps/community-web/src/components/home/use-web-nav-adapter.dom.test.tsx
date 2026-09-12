@@ -241,8 +241,11 @@ describe("the report wizard returns to the surface it was launched from", () => 
     expect(readNavHistory(window.history.state)?.returnDepth).toBe(1)
 
     await drive(() => nav().selectView("search"))
+    expect(depth()).toBe(3)
+    const entriesBefore = window.history.length
     await drive(() => nav().selectView("report"))
-    expect(depth()).toBe(4)
+    expect(depth()).toBe(2)
+    expect(window.history.length).toBe(entriesBefore)
     expect(readNavHistory(window.history.state)?.returnDepth).toBe(1)
 
     await drive(() => nav().leaveReportFlow())
@@ -561,5 +564,61 @@ describe("a lateral open after a drill-down", () => {
     expect(nav().stack).toEqual([])
     expect(path()).toBe("/")
     expect(depth()).toBe(0)
+  })
+})
+
+describe("leaving a view consumes its entry instead of twinning the surface beneath", () => {
+  it("closing search from the docked home action returns to the in-app root without growing history", async () => {
+    mount()
+    await drive(() => nav().selectView("search"))
+    expect(path()).toBe("/search")
+    expect(depth()).toBe(1)
+    const entriesBefore = window.history.length
+
+    await drive(() => nav().selectView("home"))
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("home")
+    expect(window.history.length).toBe(entriesBefore)
+
+    await browserForward()
+    expect(path()).toBe("/search")
+    expect(nav().view).toBe("search")
+  })
+
+  it("closing search after typing lands past it, so Back does not re-open it", async () => {
+    mount()
+    await drive(() => nav().selectView("map"))
+    await drive(() => nav().selectView("search"))
+    expect(path()).toBe("/search")
+    expect(depth()).toBe(2)
+    const entriesBefore = window.history.length
+
+    await drive(() => nav().setQuery("abc"))
+    await drive(() => nav().selectView("map"))
+    expect(path()).toBe("/map")
+    expect(depth()).toBe(1)
+    expect(window.history.length).toBe(entriesBefore)
+
+    await browserBack()
+    expect(path()).toBe("/")
+    expect(depth()).toBe(0)
+    expect(nav().view).toBe("home")
+  })
+
+  it("the home chip stays a forward push when the entry beneath is another surface", async () => {
+    mount()
+    await drive(() => nav().selectView("events"))
+    await drive(() => nav().selectView("map"))
+    expect(depth()).toBe(2)
+
+    await drive(() => nav().reset())
+    expect(path()).toBe("/")
+    expect(depth()).toBe(3)
+    expect(nav().view).toBe("home")
+
+    await browserBack()
+    expect(path()).toBe("/map")
+    expect(nav().view).toBe("map")
   })
 })
