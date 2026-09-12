@@ -260,7 +260,11 @@ export function revealScrollTarget(offset: number, delta: number): number {
   return target > 0 ? target : 0
 }
 
-export function scrollKeyboardReserve(overlap: number, margin: number): number {
+export function scrollKeyboardReserve(
+  overlap: number,
+  margin: number,
+  hostReserved: boolean = false,
+): number {
   if (overlap <= 0) return 0
-  return overlap + margin
+  return hostReserved ? margin : overlap + margin
 }

@@ -10,8 +10,15 @@ export interface ScrollKeyboardState {
 }
 
 export type ScrollKeyboardSignal =
-  | { type: "focus"; scope: string | null; version: number }
-  | { type: "show"; overlap: number; reserves: boolean }
+  | {
+      type: "focus"
+      scope: string | null
+      focused: boolean
+      overlap: number
+      reserves: boolean
+      hostReserved: boolean
+    }
+  | { type: "show"; overlap: number; reserves: boolean; hostReserved: boolean }
   | { type: "hide" }
   | { type: "hold-expired" }
   | { type: "content-grew" }
@@ -20,22 +27,44 @@ export function initialScrollKeyboardState(scope: string): ScrollKeyboardState {
   return { scope, focusedScope: null, overlap: 0, reserve: 0, holding: false, revealVersion: 0 }
 }
 
+function engage(
+  state: ScrollKeyboardState,
+  scope: string,
+  overlap: number,
+  reserves: boolean,
+  hostReserved: boolean,
+): ScrollKeyboardState {
+  return {
+    ...state,
+    focusedScope: scope,
+    overlap,
+    holding: false,
+    reserve: reserves ? scrollKeyboardReserve(overlap, KEYBOARD_REVEAL_MARGIN, hostReserved) : 0,
+    revealVersion: overlap > 0 ? state.revealVersion + 1 : state.revealVersion,
+  }
+}
+
 export function reduceScrollKeyboard(
   state: ScrollKeyboardState,
   signal: ScrollKeyboardSignal,
 ): ScrollKeyboardState {
   switch (signal.type) {
     case "focus": {
-      const owned = signal.scope !== null && signal.scope === state.scope
-      if (owned) {
-        if (state.focusedScope === signal.scope && state.overlap <= 0) return state
-        return {
-          ...state,
-          focusedScope: signal.scope,
-          revealVersion: state.overlap > 0 ? state.revealVersion + 1 : state.revealVersion,
+      if (signal.scope !== null && signal.scope === state.scope) {
+        const overlap = signal.overlap > 0 ? signal.overlap : state.overlap
+        const next = engage(state, signal.scope, overlap, signal.reserves, signal.hostReserved)
+        if (
+          overlap <= 0 &&
+          state.focusedScope === next.focusedScope &&
+          state.overlap === next.overlap &&
+          state.reserve === next.reserve &&
+          state.holding === next.holding
+        ) {
+          return state
         }
+        return next
       }
-      if (signal.scope === null) {
+      if (!signal.focused) {
         return state.focusedScope === null ? state : { ...state, focusedScope: null }
       }
       if (state.focusedScope === null && state.reserve === 0 && !state.holding) return state
@@ -47,13 +76,7 @@ export function reduceScrollKeyboard(
         if (state.overlap === signal.overlap && state.reserve === 0 && !state.holding) return state
         return { ...state, overlap: signal.overlap, reserve: 0, holding: false }
       }
-      return {
-        ...state,
-        overlap: signal.overlap,
-        holding: false,
-        reserve: signal.reserves ? scrollKeyboardReserve(signal.overlap, KEYBOARD_REVEAL_MARGIN) : 0,
-        revealVersion: state.revealVersion + 1,
-      }
+      return engage(state, state.scope, signal.overlap, signal.reserves, signal.hostReserved)
     }
     case "hide":
       if (state.reserve <= 0) {

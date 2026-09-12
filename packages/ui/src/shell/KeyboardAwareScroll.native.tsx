@@ -22,6 +22,7 @@ import { theme } from "../theme"
 import type { ScrollHostValue } from "./ScrollHost"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
 import { keyboardFocusStore } from "./keyboardFocusStore"
+import { keyboardHostReserveStore } from "./keyboardHostReserveStore"
 import {
   KEYBOARD_REVEAL_MARGIN,
   keyboardTopInWindow,
@@ -80,7 +81,7 @@ function makeKeyboardAwareScrollable(
   const ownsFocusedInput = resolveHostFlag(options.ownsFocusedInput)
   const reserveKeyboardPadding = resolveHostFlag(options.reserveKeyboardPadding)
   const KeyboardAwareScrollable = forwardRef<any, any>(function KeyboardAwareScrollable(
-    { contentContainerStyle, onScroll, scrollEventThrottle, ...rest },
+    { contentContainerStyle, onScroll, scrollEventThrottle, horizontal, ...rest },
     ref,
   ) {
     const scopeId = useId()
@@ -118,9 +119,27 @@ function makeKeyboardAwareScrollable(
       [onScroll],
     )
 
+    const overlapOfEvent = useCallback(
+      (endCoordinates: KeyboardEvent["endCoordinates"] | undefined) =>
+        keyboardViewportOverlap({
+          endCoordinates,
+          windowHeight: Dimensions.get("window").height,
+          restingWindowHeight: restingWindowHeight.current,
+          platform: PLATFORM,
+          systemBarInset: bottomInsetRef.current,
+        }),
+      [restingWindowHeight],
+    )
+
+    const liveOverlap = useCallback(
+      () => (Keyboard.isVisible() ? overlapOfEvent(Keyboard.metrics()) : 0),
+      [overlapOfEvent],
+    )
+
     const seenFocusRef = useRef<{ node: unknown; scope: string | null }>({ node: null, scope: null })
 
     useEffect(() => {
+      if (horizontal) return
       const apply = () => {
         const focus = keyboardFocusStore.getState()
         const seen = seenFocusRef.current
@@ -129,21 +148,21 @@ function makeKeyboardAwareScrollable(
           dispatch({ type: "content-grew" })
           return
         }
-        dispatch({ type: "focus", scope: focus.scope, version: focus.version })
+        dispatch({
+          type: "focus",
+          scope: focus.scope,
+          focused: focus.node !== null,
+          overlap: liveOverlap(),
+          reserves: pageActiveRef.current && reserveKeyboardPadding(),
+          hostReserved: keyboardHostReserveStore.getState(),
+        })
       }
       apply()
       return keyboardFocusStore.subscribe(apply)
-    }, [dispatch])
+    }, [dispatch, horizontal, liveOverlap])
 
     useEffect(() => {
-      const overlapOf = (e: KeyboardEvent) =>
-        keyboardViewportOverlap({
-          endCoordinates: e.endCoordinates,
-          windowHeight: Dimensions.get("window").height,
-          restingWindowHeight: restingWindowHeight.current,
-          platform: PLATFORM,
-          systemBarInset: bottomInsetRef.current,
-        })
+      if (horizontal) return
       const clearHold = () => {
         if (holdRef.current === null) return
         clearTimeout(holdRef.current)
@@ -153,8 +172,9 @@ function makeKeyboardAwareScrollable(
         clearHold()
         dispatch({
           type: "show",
-          overlap: overlapOf(e),
+          overlap: overlapOfEvent(e.endCoordinates),
           reserves: pageActiveRef.current && reserveKeyboardPadding(),
+          hostReserved: keyboardHostReserveStore.getState(),
         })
         if (pageActiveRef.current && keyboardFocusStore.getState().scope === scopeId) {
           options.onKeyboardShow?.()
@@ -173,18 +193,19 @@ function makeKeyboardAwareScrollable(
         hideSub.remove()
         clearHold()
       }
-    }, [dispatch, restingWindowHeight, scopeId])
+    }, [dispatch, horizontal, overlapOfEvent, scopeId])
 
     useEffect(() => {
       if (state.revealVersion === 0 || state.overlap <= 0) return
       if (!pageActiveRef.current || !ownsFocusedInput()) return
       const node = innerRef.current
-      const focused = keyboardFocusStore.getState().node
-      if (!node || !focused) return
+      const focus = keyboardFocusStore.getState()
+      const target = focus.revealNode ?? focus.node
+      if (!node || !target) return
       const keyboardTop = keyboardTopInWindow(Dimensions.get("window").height, state.overlap)
       if (keyboardTop <= 0) return
       measureViewportTop(node, (visibleTop) => {
-        focused.measureInWindow((_x: number, y: number, _w: number, h: number) => {
+        target.measureInWindow((_x: number, y: number, _w: number, h: number) => {
           if (typeof y !== "number" || typeof h !== "number") return
           const delta = revealScrollDelta({
             fieldTop: y,
@@ -199,21 +220,26 @@ function makeKeyboardAwareScrollable(
     }, [state.overlap, state.reserve, state.revealVersion])
 
     const mergedContentStyle = useMemo(() => {
+      if (horizontal) return contentContainerStyle
       const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
       const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
       return [contentContainerStyle, { paddingBottom: basePad + state.reserve }]
-    }, [contentContainerStyle, state.reserve])
+    }, [contentContainerStyle, horizontal, state.reserve])
 
+    const scrollable = (
+      <Base
+        ref={setRefs}
+        horizontal={horizontal}
+        contentContainerStyle={mergedContentStyle}
+        onScroll={handleScroll}
+        scrollEventThrottle={scrollEventThrottle ?? adapter.scrollEventThrottle}
+        {...rest}
+      />
+    )
+
+    if (horizontal) return scrollable
     return (
-      <KeyboardScrollScopeProvider value={scopeId}>
-        <Base
-          ref={setRefs}
-          contentContainerStyle={mergedContentStyle}
-          onScroll={handleScroll}
-          scrollEventThrottle={scrollEventThrottle ?? adapter.scrollEventThrottle}
-          {...rest}
-        />
-      </KeyboardScrollScopeProvider>
+      <KeyboardScrollScopeProvider value={scopeId}>{scrollable}</KeyboardScrollScopeProvider>
     )
   })
   KeyboardAwareScrollable.displayName = "KeyboardAwareScrollable"

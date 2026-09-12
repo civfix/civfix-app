@@ -32,11 +32,10 @@
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from "react"
 import { StyleSheet } from "react-native"
 import type { ScrollHostValue } from "./ScrollHost"
+import { useKeyboardHostReserved } from "./keyboardHostReserveStore"
+import { KEYBOARD_REVEAL_MARGIN } from "./keyboardInsetModel"
 import { useKeyboardInset } from "./useKeyboardInset.web"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
-
-/** Gap (px) kept between the bottom of the focused field and the top of the keyboard once revealed. */
-const KEYBOARD_MARGIN = 16
 /** Delay (ms) before measuring on focus, so the keyboard has opened + visualViewport has settled. */
 const SETTLE_MS = 140
 
@@ -66,6 +65,7 @@ function makeKeyboardAwareScrollView(
   ) {
     const innerRef = useRef<any>(null)
     const inset = useKeyboardInset()
+    const hostReserved = useKeyboardHostReserved()
 
     const setRefs = useCallback(
       (node: any) => {
@@ -100,7 +100,7 @@ function makeKeyboardAwareScrollView(
           const vv = window.visualViewport
           const viewportBottom = vv ? vv.height + vv.offsetTop : window.innerHeight
           const rect = target.getBoundingClientRect()
-          const over = rect.bottom - (viewportBottom - KEYBOARD_MARGIN)
+          const over = rect.bottom - (viewportBottom - KEYBOARD_REVEAL_MARGIN)
           if (over > 0) el.scrollTop += over
         }, SETTLE_MS) as unknown as number
       }
@@ -116,8 +116,9 @@ function makeKeyboardAwareScrollView(
     const mergedContentStyle = useMemo(() => {
       const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
       const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
-      return [contentContainerStyle, { paddingBottom: basePad + (reserveKeyboardPadding() ? inset : 0) }]
-    }, [contentContainerStyle, inset])
+      const reserve = reserveKeyboardPadding() && !hostReserved ? inset : 0
+      return [contentContainerStyle, { paddingBottom: basePad + reserve }]
+    }, [contentContainerStyle, hostReserved, inset])
 
     return <Base ref={setRefs} contentContainerStyle={mergedContentStyle} {...rest} />
   })
