@@ -60,6 +60,7 @@ export interface ModalCardSheetProps {
   dismissLabel: string
   backdropDismissDisabled?: boolean
   error?: string | null
+  tone?: "default" | "danger"
   actions: React.ReactNode
   bodyLayout?: "scroll" | "fill"
   bodyContentStyle?: StyleProp<ViewStyle>
@@ -77,6 +78,7 @@ export function ModalCardSheet({
   dismissLabel,
   backdropDismissDisabled = false,
   error,
+  tone = "default",
   actions,
   bodyLayout = "scroll",
   bodyContentStyle,
@@ -104,7 +106,13 @@ export function ModalCardSheet({
         >
           <View style={[styles.card, cardStyle]}>
             <View style={styles.header}>
-              <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.text} />
+              {tone === "danger" ? (
+                <View style={styles.headerBadge}>
+                  <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.brand.bloom} />
+                </View>
+              ) : (
+                <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.text} />
+              )}
               <Text variant="bodyStrong" color={t.colors.text} style={styles.title}>
                 {title}
               </Text>
@@ -126,7 +134,11 @@ export function ModalCardSheet({
             )}
 
             {error ? (
-              <Text variant="caption" color={t.colors.bloom["600"]} numberOfLines={2}>
+              <Text
+                variant="caption"
+                color={tone === "danger" ? t.colors.bloom["700"] : t.colors.bloom["600"]}
+                numberOfLines={2}
+              >
                 {error}
               </Text>
             ) : null}
@@ -201,6 +213,14 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["2"],
+  },
+  headerBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: t.radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: t.colors.bloom["50"],
   },
   title: {
     flex: 1,

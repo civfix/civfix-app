@@ -118,7 +118,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
       visible={visible}
       onClose={onClose}
       headerIcon="Trash2"
-      headerIconColor={th.colors.brand.bloom}
+      tone="danger"
       title={t("title")}
       dismissLabel={t("a11y.dismiss")}
       error={error}
@@ -200,7 +200,6 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
     </ModalCardSheet>
   )
 }
-
 
 const useStyles = makeThemedStyles((t) => ({
   warnBox: {
