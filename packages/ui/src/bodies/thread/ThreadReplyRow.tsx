@@ -304,7 +304,7 @@ const useStyles = makeThemedStyles((t) => ({
     height: t.space["3"] + THREAD_RAIL_STUB_H,
     marginBottom: 2,
     borderRadius: THREAD_RAIL_W / 2,
-    backgroundColor: t.colors.border,
+    backgroundColor: t.colors.borderStrong,
   },
   railBelow: {
     width: THREAD_RAIL_W,
@@ -312,7 +312,7 @@ const useStyles = makeThemedStyles((t) => ({
     marginTop: 6,
     marginBottom: -t.space["2"],
     borderRadius: THREAD_RAIL_W / 2,
-    backgroundColor: t.colors.border,
+    backgroundColor: t.colors.borderStrong,
   },
   content: {
     flex: 1,

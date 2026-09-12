@@ -26,31 +26,29 @@ export function ThreadGutterRail({
   const th = useTheme()
   const width = threadGutterWidth(geometry)
   const railLeft = (width - THREAD_RAIL_W) / 2
-  const segment: ViewStyle | null = React.useMemo(() => {
-    if (rail.above && rail.below) return { left: railLeft, top: -th.space["3"], bottom: -th.space["2"] }
-    if (rail.above) return { left: railLeft, top: -th.space["3"], height: th.space["3"] + anchor }
-    if (rail.below) return { left: railLeft, top: anchor, bottom: -th.space["2"] }
-    return null
+  const trunk: ViewStyle | null = React.useMemo(() => {
+    if (!rail.below) return null
+    return { left: railLeft, top: rail.above ? -th.space["3"] : anchor, bottom: -th.space["2"] }
   }, [rail, railLeft, anchor, th])
-  const branchStyle: ViewStyle | null = React.useMemo(
-    () =>
-      branch && segment
-        ? {
-            left: railLeft,
-            top: anchor - THREAD_RAIL_W / 2,
-            width:
-              width
-              - railLeft
-              + THREAD_RAIL_GAP
-              + (branch === "content" ? geometry.avatarSize + THREAD_RAIL_GAP : 0),
-          }
-        : null,
-    [branch, segment, railLeft, anchor, width, geometry.avatarSize],
-  )
+  const elbow: ViewStyle | null = React.useMemo(() => {
+    if (!rail.above || !branch) return null
+    const reach = branch === "content" ? geometry.avatarSize + THREAD_RAIL_GAP : 0
+    return {
+      left: railLeft,
+      top: -th.space["3"],
+      width: width - railLeft + THREAD_RAIL_GAP + reach,
+      height: th.space["3"] + anchor + THREAD_RAIL_W / 2,
+    }
+  }, [rail.above, branch, geometry.avatarSize, railLeft, width, anchor, th])
+  const stub: ViewStyle | null = React.useMemo(() => {
+    if (!rail.above || branch || rail.below) return null
+    return { left: railLeft, top: -th.space["3"], height: th.space["3"] + anchor }
+  }, [rail, branch, railLeft, anchor, th])
   return (
     <View style={[styles.gutter, { width }]}>
-      {segment ? <View style={[styles.rail, segment]} /> : null}
-      {branchStyle ? <View style={[styles.branch, branchStyle]} /> : null}
+      {trunk ? <View style={[styles.line, trunk]} /> : null}
+      {stub ? <View style={[styles.line, stub]} /> : null}
+      {elbow ? <View style={[styles.elbow, elbow]} /> : null}
     </View>
   )
 }
@@ -60,16 +58,17 @@ const useStyles = makeThemedStyles((t) => ({
     marginRight: THREAD_RAIL_GAP,
     alignSelf: "stretch",
   },
-  rail: {
+  line: {
     position: "absolute",
     width: THREAD_RAIL_W,
     borderRadius: THREAD_RAIL_W / 2,
-    backgroundColor: t.colors.border,
+    backgroundColor: t.colors.borderStrong,
   },
-  branch: {
+  elbow: {
     position: "absolute",
-    height: THREAD_RAIL_W,
-    borderRadius: THREAD_RAIL_W / 2,
-    backgroundColor: t.colors.border,
+    borderLeftWidth: THREAD_RAIL_W,
+    borderBottomWidth: THREAD_RAIL_W,
+    borderBottomLeftRadius: t.radius.sm,
+    borderColor: t.colors.borderStrong,
   },
 }))
