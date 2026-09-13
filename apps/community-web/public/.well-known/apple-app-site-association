@@ -2,7 +2,7 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["27SWKQ5NF4.org.civfix.community"],
+        "appIDs": ["WMDUV888LH.org.civfix.community", "27SWKQ5NF4.org.civfix.community"],
         "components": [
           { "/": "/legal/*", "exclude": true },
           { "/": "/service-record/*", "exclude": true },
@@ -22,6 +22,6 @@
     ]
   },
   "webcredentials": {
-    "apps": ["27SWKQ5NF4.org.civfix.community"]
+    "apps": ["WMDUV888LH.org.civfix.community", "27SWKQ5NF4.org.civfix.community"]
   }
 }

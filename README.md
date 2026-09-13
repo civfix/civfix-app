@@ -97,9 +97,15 @@ commit rather than a byte-copy of the staging artifact — unlike the backend, w
 are promoted as-is. The workflow resolves those values once and then asserts they match the target, so a
 build cannot ship a test key to civfix.org or a live key to the public preview.
 
-The mobile app has **no** deploy CI: it ships only via a manual EAS build from
-`apps/community-mobile` (see that app's README; `.github/workflows/eas-build.yml.example` is an
-inactive template). Nothing mobile reaches a device until a build runs.
+The mobile app deploys through `.github/workflows/deploy-mobile.yml` on the same lane: a push to
+`main` that touches the app or the packages builds the `testflight` profile (staging API) on a
+GitHub-hosted Mac and uploads it to App Store Connect, where TestFlight hands it to the internal
+testers; a manual run with `profile=production` uploads a prod-API build, and attaching that build to
+a version and submitting it for review stays a human step in App Store Connect. The runner executes
+the same `scripts/store-build.sh` a developer runs locally (`eas build --local` + `eas submit`), so
+CI and laptop builds share one EAS credential store and one build-number counter. See that app's
+README for the prerequisites (an `EXPO_TOKEN` secret, EAS credentials, the remote build number).
+Android still ships only by hand.
 
 ## Publishing `@civfix/shared`
 
