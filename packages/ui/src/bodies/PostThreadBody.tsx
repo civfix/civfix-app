@@ -95,6 +95,11 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
     },
     [id],
   )
+  const goBack = onBack ?? back
+  const onReplyDeleted = React.useCallback(
+    (postId: string) => setSentReplies((current) => current.filter((reply) => reply.id !== postId)),
+    [],
+  )
 
   const fetched = React.useMemo(
     () => (replies.data?.pages ?? []).flatMap((page) => page.items),
@@ -123,11 +128,12 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
           parent={parent.data ?? null}
           onFocusComposer={focusComposer}
           onOpenEntry={onOpenEntry}
+          onDeleted={goBack}
         />
       ) : (
         <ThreadFocalSkeleton />
       ),
-    [post.data, parent.data, focusComposer, onOpenEntry],
+    [post.data, parent.data, focusComposer, onOpenEntry, goBack],
   )
 
   const renderItem = React.useCallback(
@@ -140,10 +146,11 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
           hairline={listRow.hairline}
           isOptimistic={listRow.optimistic}
           onOpenEntry={onOpenEntry}
+          onDeleted={onReplyDeleted}
         />
       )
     },
-    [onOpenEntry],
+    [onOpenEntry, onReplyDeleted],
   )
 
   const hasNextPage = replies.hasNextPage
@@ -189,7 +196,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   const header = expandedChrome ? (
     <View style={[styles.header, styles.headerPanel]}>
       <Pressable
-        onPress={onBack ?? back}
+        onPress={goBack}
         accessibilityRole="button"
         accessibilityLabel={t("thread.back")}
         hitSlop={6}
@@ -205,7 +212,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   ) : (
     <View style={styles.header}>
       <Pressable
-        onPress={onBack ?? back}
+        onPress={goBack}
         accessibilityRole="button"
         accessibilityLabel={t("thread.back")}
         hitSlop={6}

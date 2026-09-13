@@ -103,7 +103,7 @@ describe("PostCard model", () => {
     const model = buildPostCardModel(post, t, { neighborhood: "Playa del Rey" })
 
     expect(model.variant).toBe("event")
-    expect(model.showOrganizerBadge).toBe(true)
+    expect(model.handleLabel).toBe("@friendsofballona")
     expect(model.metaLabel).toContain("Playa del Rey")
     expect(splitPostBodyMentions(post.body ?? "", post.mentions)).toEqual([
       { kind: "text", text: "Join " },
@@ -229,24 +229,34 @@ describe("PostCard model", () => {
     expect(model.handleLabel).toBeNull()
   })
 
-  it("yields the handle to the ORGANIZER badge, so the NAME is never the thing that gets crushed", () => {
-    // MEASURED REGRESSION (bodies gallery, 375x812). The meta row holds name + handle + "·" + timestamp +
-    // the 75pt ORGANIZER pill + the 44pt overflow button inside a 257pt content column. Every other child
-    // is rigid, so the name/handle group is the only thing flexbox can shrink - it collapsed to 99pt and
-    // rendered "Ann Rivera" as "Ann ..." with "@ann...". Dropping the handle frees ~74pt against a ~70pt
-    // deficit, so the full name fits. Assert BOTH directions, because the whole point is that the two
-    // labels are mutually exclusive rather than merely both present.
+  it("shows the author's handle on every post kind, the organizer's own event promo included", () => {
     const organizer = buildPostCardModel(basePost({ event }), t)
-    expect(organizer.showOrganizerBadge).toBe(true)
-    expect(organizer.handleLabel).toBeNull()
+    expect(organizer.variant).toBe("event")
+    expect(organizer.handleLabel).toBe("@friendsofballona")
 
-    // A non-organizer post keeps its handle: there is no badge competing for the space.
     const guest = buildPostCardModel(
       basePost({ event: { ...event, organizer: { ...author, id: "person-9" } } }),
       t,
     )
-    expect(guest.showOrganizerBadge).toBe(false)
     expect(guest.handleLabel).toBe("@friendsofballona")
+
+    expect(organizer).not.toHaveProperty("showOrganizerBadge")
+  })
+
+  it("carries no ORGANIZER pill copy in the card source or the catalog", () => {
+    const src = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
+    const focal = readFileSync(new URL("../thread/ThreadFocalPost.tsx", import.meta.url), "utf8")
+    for (const source of [src, focal]) {
+      expect(source).not.toContain("OrganizerBadge")
+      expect(source).not.toContain("post_card.organizer")
+    }
+    for (const locale of ["en", "es", "de", "ko"]) {
+      const catalog = readFileSync(
+        new URL(`../../i18n/locales/${locale}/home-feed.json`, import.meta.url),
+        "utf8",
+      )
+      expect(JSON.parse(catalog).post_card, locale).not.toHaveProperty("organizer")
+    }
   })
 
   it("strips a leading @ so the handle is never rendered as @@name", () => {
@@ -418,11 +428,12 @@ describe("post identity resolves who the card presents as", () => {
     expect(identity.handleLabel).toBeNull()
   })
 
-  it("puts the identity on the card model and suppresses the handle behind the ORGANIZER pill", () => {
+  it("puts the identity on the card model, and an org-authored row has no personal handle", () => {
     const model = buildPostCardModel(basePost({ organization: org }), t)
 
     expect(model.identity.name).toBe("Ballona Creek Trust")
     expect(model.handleLabel).toBeNull()
+    expect(model.identity.viaLabel).toBe("via @friendsofballona")
   })
 })
 

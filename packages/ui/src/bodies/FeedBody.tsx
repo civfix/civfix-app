@@ -9,7 +9,7 @@ import {
 } from "react-native"
 import type { ViewStyle } from "react-native"
 import type { PostDTO } from "@civfix/shared"
-import { POST_SURFACE, makeThemedStyles, useLayoutMode, useTheme, type Theme } from "../theme"
+import { POST_SURFACE, makeThemedStyles, useLayoutMode, type Theme } from "../theme"
 import { Text } from "../typography"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
@@ -18,6 +18,7 @@ import { useNavStore } from "../nav"
 import { alpha } from "../theme/alpha"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { useScrollHost } from "../shell/ScrollHost"
+import { useRefreshControlProps } from "../primitives/useRefreshControlProps"
 import { useAppPromoStore } from "../promo"
 import { HEADER_CONTROL_SIZE } from "./headerControls"
 import { HeaderIconButton } from "./HeaderIconButton"
@@ -167,7 +168,7 @@ const NO_POSTS: readonly PostDTO[] = []
 export function FeedBody() {
   const { FlatList } = useScrollHost()
   const styles = useStyles()
-  const th = useTheme()
+  const refreshSpinner = useRefreshControlProps()
   const { isAuthenticated } = useAuthState()
   const layout = useLayoutMode()
   const isExpanded = layout === "expanded"
@@ -218,7 +219,6 @@ export function FeedBody() {
   const headerStyle = useMemo(() => [entranceStyle, styles.headerInset], [entranceStyle, styles])
   const emptyStyle = useMemo(() => [styles.list, styles.headerInset, styles.emptyFill], [styles])
   const footerStyle = useMemo(() => [styles.footer, styles.headerInset], [styles])
-  const refreshColors = useMemo(() => [th.colors.accent], [th])
 
   const header = useMemo(
     () => (
@@ -318,14 +318,9 @@ export function FeedBody() {
 
   const refresh = useMemo(
     () => (
-      <RefreshControl
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        tintColor={th.colors.textMuted}
-        colors={refreshColors}
-      />
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} {...refreshSpinner} />
     ),
-    [refreshing, onRefresh, th, refreshColors],
+    [refreshing, onRefresh, refreshSpinner],
   )
 
   const fadeStyle = useMemo(

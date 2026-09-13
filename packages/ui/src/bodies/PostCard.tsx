@@ -13,7 +13,7 @@ import type { PostDTO, PostRefDTO } from "@civfix/shared"
 import { Repeat2 } from "lucide-react-native/icons"
 import {
   POST_SURFACE,
-  space, radius,
+  space,
   categoryColor,
   focusRingProps,
   makeThemedStyles,
@@ -32,6 +32,7 @@ import { Avatar } from "../primitives/Avatar"
 import { OrgAffiliationBadge } from "../primitives/OrgAffiliationBadge"
 import { MediaPreview } from "../primitives/MediaPreview"
 import { PostActionBar } from "../primitives/PostActionBar"
+import { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "../primitives/PostOverflowButton"
 import { useNavStore } from "../nav/useNavStore"
 import { useLightbox } from "../lightbox"
 import { LinkedEventCard } from "./LinkedEventCard"
@@ -47,6 +48,7 @@ import {
   buildPostCardModel,
   buildPostIdentity,
   identityA11yLabel,
+  postMenuSubject,
   repostBodyText,
   repostSubjectAuthorId,
   splitPostBodyMentions,
@@ -143,15 +145,6 @@ function PostBody({
   )
 }
 
-export function OrganizerBadge({ t }: { t: TFunction }) {
-  const styles = useStyles()
-  return (
-    <View style={styles.organizerBadge}>
-      <Text style={styles.organizerBadgeText}>{t("post_card.organizer")}</Text>
-    </View>
-  )
-}
-
 function MetaRow({
   model,
   t,
@@ -170,14 +163,9 @@ function MetaRow({
   menuRef: React.Ref<RNView>
 }) {
   const styles = useStyles()
-  const th = useTheme()
-  const moreButtonStyle = React.useMemo(
-    () => [styles.moreButton, WEB_MORE_TARGET, webCursor(false)],
-    [styles],
-  )
   const identity = model.identity
   return (
-    <View style={[styles.metaRow, WEB_META_ROW_LIFT]}>
+    <View style={[styles.metaRow, POST_OVERFLOW_ROW_LIFT]}>
       <Pressable
         onPress={(event) => {
           stopPress(event)
@@ -254,36 +242,9 @@ function MetaRow({
         <Text style={styles.timestamp}>{model.timeLabel}</Text>
       </Pressable>
 
-      {model.showOrganizerBadge ? <OrganizerBadge t={t} /> : null}
-
       <View style={styles.metaSpacer} />
 
-      <Pressable
-        ref={menuRef}
-        onPress={(event) => {
-          stopPress(event)
-          onOpenMenu()
-        }}
-        accessibilityRole="button"
-        accessibilityLabel={t("post_card.more_a11y")}
-        hitSlop={8}
-        {...focusRingProps}
-        style={moreButtonStyle}
-      >
-        {(state) => (
-          <>
-            <View
-              style={[
-                styles.moreHalo,
-                WEB_MORE_HALO_TOP,
-                webTransition,
-                state.pressed ? styles.moreHaloPressed : webHover(state) ? styles.moreHaloHovered : null,
-              ]}
-            />
-            <Icon icon={iconMap.Ellipsis} size={RHYTHM.overflowGlyph} color={th.colors.textMuted} />
-          </>
-        )}
-      </Pressable>
+      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} />
     </View>
   )
 }
@@ -503,6 +464,7 @@ export const PostCard = React.memo(function PostCard({
     menuTrigger.measure()
     setMenuOpen(true)
   }, [menuTrigger])
+  const closeMenu = React.useCallback(() => setMenuOpen(false), [])
   const timeAgo = useListTimeAgo()
   const model = React.useMemo(
     () => buildPostCardModel(post, t, { neighborhood, reportedBy, resolutionLabel, timeAgo }),
@@ -529,6 +491,12 @@ export const PostCard = React.memo(function PostCard({
   const isRepost = model.variant === "repost" && model.embeddedPost != null
   const embedded = model.embeddedPost
   const rowPostId = isRepost && embedded ? embedded.id : post.id
+  const menuSubject = React.useMemo(() => postMenuSubject(post), [post])
+  const openOriginal = React.useMemo(
+    () =>
+      isRepost && embedded && !embedded.deleted ? () => openPost(embedded.id) : undefined,
+    [isRepost, embedded, openPost],
+  )
   const embeddedIdentity = React.useMemo(
     () =>
       embedded
@@ -655,6 +623,8 @@ export const PostCard = React.memo(function PostCard({
                   if (embeddedIdentity.personId) openPerson(embeddedIdentity.personId)
                 }}
                 onOpenPost={() => openPost(embedded.id)}
+                onOpenMenu={openMenu}
+                menuRef={menuTrigger.ref}
               />
             ) : (
               <MetaRow
@@ -782,10 +752,11 @@ export const PostCard = React.memo(function PostCard({
 
       <PostOverflowMenu
         visible={menuOpen}
-        post={post}
+        subject={menuSubject}
         anchorRect={menuAnchor}
-        onClose={() => setMenuOpen(false)}
+        onClose={closeMenu}
         onOpenPerson={openPerson}
+        onOpenOriginal={openOriginal}
       />
     </>
   )
@@ -799,6 +770,8 @@ function EmbeddedPostMeta({
   onOpenIdentity,
   onOpenPerson,
   onOpenPost,
+  onOpenMenu,
+  menuRef,
 }: {
   identity: PostIdentity
   createdAt: string
@@ -807,11 +780,13 @@ function EmbeddedPostMeta({
   onOpenIdentity: () => void
   onOpenPerson: () => void
   onOpenPost: () => void
+  onOpenMenu: () => void
+  menuRef: React.Ref<RNView>
 }) {
   const styles = useStyles()
   const linkable = identity.organization != null || identity.personId != null
   return (
-    <View style={styles.metaRow}>
+    <View style={[styles.metaRow, POST_OVERFLOW_ROW_LIFT]}>
       <Pressable
         onPress={(event) => {
           stopPress(event)
@@ -875,6 +850,8 @@ function EmbeddedPostMeta({
       </Pressable>
 
       <View style={styles.metaSpacer} />
+
+      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} />
     </View>
   )
 }
@@ -882,20 +859,6 @@ function EmbeddedPostMeta({
 const RING_FOOTPRINT = Number.parseFloat(/^0 0 0 (\d+(?:\.\d+)?)px/.exec(tokens.shadow.ring)?.[1] ?? "3")
 export const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB
   ? ({ outlineOffset: -RING_FOOTPRINT } as unknown as ViewStyle)
-  : {}
-
-const WEB_MORE_TARGET_GROWTH = (RHYTHM.overflowTarget - RHYTHM.overflowBoxHeight) / 2
-const WEB_MORE_TARGET: ViewStyle = IS_WEB
-  ? {
-      height: RHYTHM.overflowTarget,
-      marginTop: -WEB_MORE_TARGET_GROWTH,
-      marginBottom: -WEB_MORE_TARGET_GROWTH,
-      borderRadius: radius.pill,
-    }
-  : {}
-const WEB_META_ROW_LIFT: ViewStyle = IS_WEB ? { zIndex: 1 } : {}
-const WEB_MORE_HALO_TOP: ViewStyle = IS_WEB
-  ? { top: (RHYTHM.overflowTarget - RHYTHM.overflowHalo) / 2 }
   : {}
 
 const META_ROW: ViewStyle = {
@@ -1000,29 +963,6 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
     minWidth: 0,
   },
-  moreButton: {
-    width: RHYTHM.overflowTarget,
-    height: RHYTHM.overflowBoxHeight,
-    marginRight: -RHYTHM.overflowOverhang,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  moreHalo: {
-    position: "absolute",
-    left: RHYTHM.overflowHaloLeft,
-    top: RHYTHM.overflowHaloTop,
-    width: RHYTHM.overflowHalo,
-    height: RHYTHM.overflowHalo,
-    borderRadius: RHYTHM.overflowHalo / 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  moreHaloHovered: {
-    backgroundColor: t.colors.sky["50"],
-  },
-  moreHaloPressed: {
-    backgroundColor: t.colors.sky["100"],
-  },
   bodyText: {
     fontSize: 15,
     lineHeight: 21,
@@ -1045,21 +985,6 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: 14,
     lineHeight: 19,
     color: t.colors.accentText,
-  },
-  organizerBadge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.sun["50"],
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.sun["100"],
-  },
-  organizerBadgeText: {
-    color: t.colors.sun["700"],
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 10,
-    lineHeight: 12,
-    letterSpacing: 0.45,
   },
   repostAttribution: {
     flexDirection: "row",

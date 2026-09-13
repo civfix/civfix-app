@@ -13,6 +13,7 @@
     "schedule_unavailable": "Schedule unavailable",
     "location_fallback": "Open event for location",
     "a11y_card": "{{month}} {{day}}. {{title}}. {{schedule}}. {{location}}. {{going}}.",
+    "a11y_card_compact": "{{month}} {{day}}. {{title}}. {{schedule}}. {{location}}.",
     "a11y_remove": "Remove {{title}}"
   }
 }

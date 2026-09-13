@@ -6,6 +6,7 @@ import { ExpandedShell } from "./ExpandedShell"
 import { PortraitShell } from "./PortraitShell"
 import { defaultRenderBody } from "./BodyRouter"
 import { MediaLightboxProvider } from "../lightbox"
+import { SharePostProvider } from "../share/SharePostProvider"
 import { effectiveBaseView, portraitShellPlan } from "./bodyLayout"
 import { DETAILS_ARE_FULL_PAGE } from "./detailPresentationPlatform"
 import { MAP_IS_RETAINED } from "./mapRetentionPlatform"
@@ -40,6 +41,7 @@ export function AppShell({ map, mapControls, authOverlay, renderBody = defaultRe
 
   return (
     <MediaLightboxProvider>
+      <SharePostProvider>
       <View style={StyleSheet.absoluteFill}>
         {mountMap ? (
           <View
@@ -69,6 +71,7 @@ export function AppShell({ map, mapControls, authOverlay, renderBody = defaultRe
           </View>
         ) : null}
       </View>
+      </SharePostProvider>
     </MediaLightboxProvider>
   )
 }

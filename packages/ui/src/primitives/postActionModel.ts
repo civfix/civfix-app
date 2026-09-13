@@ -1,4 +1,5 @@
 import type { PostCounts, PostViewer } from "@civfix/shared"
+import type { MenuAnchorRect } from "./menuMotionModel"
 
 export type PostActionKey = "like" | "repost" | "comment" | "save" | "share"
 
@@ -16,13 +17,6 @@ export interface PostActionCallbacks {
   onComment?: () => void
   onSave?: (currentlySaved: boolean) => void
   onShare?: (path: string) => void
-}
-
-export interface PostActionMenuRect {
-  x: number
-  y: number
-  width: number
-  height: number
 }
 
 export type PostActionVariant = "timeline" | "card" | "focal" | "reply"
@@ -171,30 +165,8 @@ export function buildPostActionMenuModel(
   ]
 }
 
-export function resolvePostActionMenuKey(key: string): "dismiss" | null {
-  return key === "Escape" ? "dismiss" : null
-}
-
-export function resolvePostActionMenuFocus({
-  key,
-  shiftKey,
-  activeIndex,
-  itemCount,
-}: {
-  key: string
-  shiftKey: boolean
-  activeIndex: number
-  itemCount: number
-}): number | null {
-  if (key !== "Tab" || itemCount < 1) return null
-  if (activeIndex < 0) return shiftKey ? itemCount - 1 : 0
-  if (shiftKey && activeIndex === 0) return itemCount - 1
-  if (!shiftKey && activeIndex === itemCount - 1) return 0
-  return null
-}
-
 export function positionPostActionMenu(
-  anchor: PostActionMenuRect,
+  anchor: MenuAnchorRect,
   viewport: { width: number; height: number },
   menu: { width: number; height: number },
   align: "left" | "right" = "right",

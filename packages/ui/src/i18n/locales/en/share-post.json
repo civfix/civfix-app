@@ -1,0 +1,33 @@
+{
+  "title": "Share post",
+  "backdrop": {
+    "dismiss": "Close sharing"
+  },
+  "recipients": {
+    "recent": "Recent",
+    "empty_prompt": "Search for someone by @handle to send them this post.",
+    "cap": "You can send to up to {{count}} people at a time."
+  },
+  "note": {
+    "placeholder": "Add a message (optional)",
+    "a11y": "Message to send with the link"
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "send": "Send",
+    "send_count": "Send to {{count}}",
+    "more": "Share another way"
+  },
+  "signed_out": {
+    "title": "Sign in to send this",
+    "body": "Direct messages need an account. You can still share the link another way."
+  },
+  "toast": {
+    "sent_one": "Sent to {{count}} person",
+    "sent_other": "Sent to {{count}} people",
+    "partial": "Couldn't send to {{names}}",
+    "none_sent": "Couldn't send. Check your connection and try again.",
+    "retry": "Try again"
+  }
+}

@@ -169,13 +169,14 @@ export function openReportFlow(): void {
  * forever. Clearing at mount is the braces to `postComposerExit`'s belt.
  *
  * "THE COMPOSER IS ARRIVING" IS NOT ENOUGH, and assuming it was is what made the first version of this a
- * blocker. A MOUNT IS NOT AN ARRIVAL on web: `BodyTransition.web` re-parents the outgoing element into its
- * own keyed layer, so the composer this batch just dismissed MOUNTS AGAIN - a different parent and key path,
- * therefore a real React remount - one commit later, while the wizard it launched already owns the screen and
- * has claimed the intent. An unconditional clear released that claim, and then the outgoing layer's own
- * teardown (`theme.motion.bodyExit` later) unmounted the composer for good with nothing left to veto the exit
- * discard: the finished report was shared to the feed instead of handed back, AND the draft's attachments and
- * staged photos were wiped mid-round-trip. Both from one line.
+ * blocker. A MOUNT IS NOT AN ARRIVAL on web: the first `BodyTransition.web` re-parented the outgoing element
+ * into its own keyed layer, so the composer this batch just dismissed MOUNTED AGAIN - a different parent and
+ * key path, therefore a real React remount - one commit later, while the wizard it launched already owned the
+ * screen and had claimed the intent. (`BodyTransition.web` now keeps one identity per body, but a layout flip
+ * or StrictMode can still remount, so the rule stands.) An unconditional clear released that claim, and then
+ * the outgoing layer's own teardown (`theme.motion.bodyExit` later) unmounted the composer for good with
+ * nothing left to veto the exit discard: the finished report was shared to the feed instead of handed back,
+ * AND the draft's attachments and staged photos were wiped mid-round-trip. Both from one line.
  *
  * So the liveness test is the SHARED predicate every other half of this seam reads ({@link
  * reportRunSurvivesView}): a report run on screen - or paused under the Search overlay - speaks for itself,

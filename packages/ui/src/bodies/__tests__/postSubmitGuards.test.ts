@@ -54,7 +54,7 @@ describe("PostOverflowMenu mounts on demand", () => {
     expect(gateAt).toBeGreaterThan(-1)
     expect(contentAt).toBeGreaterThan(gateAt)
     const gate = source.slice(gateAt, contentAt)
-    for (const hook of ["useAuthState", "useMyProfile", "useDeletePost", "useToast", "useClipboard", "useReportContent", "useT"]) {
+    for (const hook of ["useAuthState", "useMyProfile", "useDeletePost", "useToast", "useClipboard", "useReportContent", "useRequireAuth", "useT"]) {
       expect(gate, `${hook} runs in the always-mounted gate`).not.toMatch(new RegExp(`${hook}\\(`))
     }
   })
@@ -74,7 +74,7 @@ describe("PostOverflowMenu mounts on demand", () => {
     // The confirm menu closes the moment the row fires, so without the busy flag the 400ms retention
     // timer would unmount this subtree mid-request and drop the success/failure toast.
     expect(source).toMatch(/const active = props\.visible \|\| reportOpen \|\| busy \|\| confirmingDelete/)
-    expect(source).toMatch(/onBusyChange\(true\)\s*\n\s*del\.mutate\(post\.id/)
+    expect(source).toMatch(/onBusyChange\(true\)\s*\n\s*del\.mutate\(subjectId/)
     expect(source).toMatch(/onSettled: \(\) => onBusyChange\(false\)/)
   })
 })

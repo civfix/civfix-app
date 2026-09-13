@@ -13,6 +13,7 @@
     "schedule_unavailable": "일정 정보 없음",
     "location_fallback": "이벤트를 열어 장소 확인",
     "a11y_card": "{{month}} {{day}}. {{title}}. {{schedule}}. {{location}}. {{going}}.",
+    "a11y_card_compact": "{{month}} {{day}}. {{title}}. {{schedule}}. {{location}}.",
     "a11y_remove": "{{title}} 제거"
   }
 }

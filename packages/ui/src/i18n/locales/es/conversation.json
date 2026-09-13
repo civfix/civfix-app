@@ -53,6 +53,7 @@
     "edited": "(editado)",
     "retry_sending": "Reintentar envío",
     "message_actions": "Acciones del mensaje",
+    "link_failed": "No se pudo abrir ese enlace",
     "announce_failed": "El mensaje no se pudo enviar. Toca para reintentar.",
     "reply_deleted": "Mensaje eliminado",
     "reply_media": "Foto",

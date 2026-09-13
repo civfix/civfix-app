@@ -11,7 +11,10 @@ export default function PostThreadScreen() {
   const th = useTheme()
   const insets = useSafeAreaInsets()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const back = () => (router.canGoBack() ? router.back() : router.replace("/"))
+  const back = React.useCallback(
+    () => (router.canGoBack() ? router.back() : router.replace("/")),
+    [router],
+  )
   const openEntry = React.useCallback(
     (entry: DetailEntry) => {
       const route = threadEntryRoute(entry)

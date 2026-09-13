@@ -53,6 +53,7 @@
     "edited": "(bearbeitet)",
     "retry_sending": "Erneut senden",
     "message_actions": "Nachrichtenoptionen",
+    "link_failed": "Link konnte nicht geöffnet werden",
     "announce_failed": "Nachricht konnte nicht gesendet werden. Tippen zum Wiederholen.",
     "reply_deleted": "Nachricht gelöscht",
     "reply_media": "Foto",

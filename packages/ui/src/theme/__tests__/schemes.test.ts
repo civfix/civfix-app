@@ -56,6 +56,25 @@ describe("theme color schemes", () => {
     expect(light.shadowColor).toBe(tokens.color.neutral.ink)
   })
 
+  it("carries a near-opaque lightbox scrim in the same base colours as the rest of the family", () => {
+    expect(light.scrimLightbox).toBe("rgba(26,23,20,0.92)")
+    expect(dark.scrimLightbox).toBe("rgba(0,0,0,0.94)")
+  })
+
+  it("makes the lightbox scrim the darkest of the four, in both schemes", () => {
+    const alphaOf = (value: string): number => {
+      const parsed = /rgba\(\d+,\d+,\d+,([\d.]+)\)/.exec(value)
+      expect(parsed, `${value} is not an rgba() scrim`).not.toBeNull()
+      return Number(parsed?.[1])
+    }
+    for (const scheme of [light, dark]) {
+      const family = [scheme.scrim, scheme.scrimModal, scheme.scrimStrong].map(alphaOf)
+      const lightbox = alphaOf(scheme.scrimLightbox)
+      for (const alpha of family) expect(lightbox).toBeGreaterThan(alpha)
+      expect(lightbox).toBeLessThan(1)
+    }
+  })
+
   it("re-derives the dark aliases from the dark palette", () => {
     expect(dark.bg).toBe(darkColor.neutral.paper)
     expect(dark.surface).toBe(darkColor.neutral.card)

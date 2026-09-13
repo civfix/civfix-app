@@ -1,6 +1,7 @@
-import React, { useCallback } from "react"
+import React, { useCallback, useContext } from "react"
 import { Modal, View, Pressable, StyleSheet, useWindowDimensions } from "react-native"
 import type { ModalProps, ViewProps } from "react-native"
+import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { makeThemedStyles, useTheme, webCursor, webTransition, focusRingProps, webScrimProps } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { MediaPreview } from "../primitives/MediaPreview"
@@ -10,8 +11,11 @@ import {
   LIGHTBOX_STAGE_MAX_WIDTH,
   LIGHTBOX_STAGE_PADDING_X,
   lightboxAspectRatio,
+  lightboxControlOffsets,
+  lightboxMediaHeight,
   lightboxMediaWidth,
 } from "./lightboxStage"
+import { ZoomableMedia } from "./ZoomableMedia"
 
 export interface MediaLightboxViewProps {
   visible: boolean
@@ -39,11 +43,14 @@ export function MediaLightboxBase({
   const th = useTheme()
   const { t } = useT("lightbox")
   const { width: windowWidth, height: windowHeight } = useWindowDimensions()
+  const insets = useContext(SafeAreaInsetsContext)
+  const offsets = lightboxControlOffsets(insets)
   const count = items.length
   const current = count > 0 ? items[Math.min(Math.max(index, 0), count - 1)] : null
   const multi = count > 1
   const aspectRatio = lightboxAspectRatio(current)
   const mediaWidth = lightboxMediaWidth({ ratio: aspectRatio, windowWidth, windowHeight })
+  const mediaHeight = lightboxMediaHeight(mediaWidth, aspectRatio)
 
   const goPrev = useCallback(() => {
     if (count < 2) return
@@ -54,6 +61,17 @@ export function MediaLightboxBase({
     if (count < 2) return
     onIndexChange((index + 1) % count)
   }, [count, index, onIndexChange])
+
+  const media = current ? (
+    <MediaPreview
+      uri={current.url}
+      kind={current.kind}
+      posterUri={current.thumbUrl}
+      aspectRatio={aspectRatio}
+      framed={false}
+      style={[styles.media, { width: mediaWidth }]}
+    />
+  ) : null
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} {...modalProps}>
@@ -66,16 +84,21 @@ export function MediaLightboxBase({
           {...webScrimProps}
         />
 
-        {current ? (
+        {current && current.kind === "image" ? (
+          <ZoomableMedia
+            contentWidth={mediaWidth}
+            contentHeight={mediaHeight}
+            viewportWidth={windowWidth}
+            viewportHeight={windowHeight}
+            resetToken={visible ? `${index}:${current.url}` : "closed"}
+          >
+            {media}
+          </ZoomableMedia>
+        ) : null}
+
+        {current && current.kind !== "image" ? (
           <View style={styles.stage} pointerEvents="box-none">
-            <MediaPreview
-              uri={current.url}
-              kind={current.kind}
-              posterUri={current.thumbUrl}
-              aspectRatio={aspectRatio}
-              framed={false}
-              style={[styles.media, { width: mediaWidth }]}
-            />
+            {media}
           </View>
         ) : null}
 
@@ -84,7 +107,7 @@ export function MediaLightboxBase({
           accessibilityRole="button"
           accessibilityLabel={t("control.close")}
           {...focusRingProps}
-          style={(state) => [styles.controlBase, styles.closeButton, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
+          style={(state) => [styles.controlBase, offsets.close, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
         >
           <Icon icon={iconMap.Close} size={24} color={th.colors.onScrim} />
         </Pressable>
@@ -96,7 +119,7 @@ export function MediaLightboxBase({
               accessibilityRole="button"
               accessibilityLabel={t("control.previous")}
               {...focusRingProps}
-              style={(state) => [styles.controlBase, styles.prevButton, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
+              style={(state) => [styles.controlBase, offsets.prev, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
             >
               <Icon icon={iconMap.ChevronLeft} size={28} color={th.colors.onScrim} />
             </Pressable>
@@ -105,7 +128,7 @@ export function MediaLightboxBase({
               accessibilityRole="button"
               accessibilityLabel={t("control.next")}
               {...focusRingProps}
-              style={(state) => [styles.controlBase, styles.nextButton, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
+              style={(state) => [styles.controlBase, offsets.next, webCursor(false), webTransition, state.pressed ? styles.controlPressed : null]}
             >
               <Icon icon={iconMap.ChevronRight} size={28} color={th.colors.onScrim} />
             </Pressable>
@@ -124,7 +147,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   scrim: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: t.colors.scrimStrong,
+    backgroundColor: t.colors.scrimLightbox,
   },
   stage: {
     width: "100%",
@@ -147,15 +170,5 @@ const useStyles = makeThemedStyles((t) => ({
   },
   controlPressed: {
     opacity: 0.7,
-  },
-  closeButton: {
-    top: t.space["4"],
-    right: t.space["4"],
-  },
-  prevButton: {
-    left: t.space["3"],
-  },
-  nextButton: {
-    right: t.space["3"],
   },
 }))

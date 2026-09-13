@@ -4,7 +4,7 @@ import * as React from "react"
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
 import { AppError } from "@civfix/shared"
 import { colorSchemes } from "@civfix/shared/tokens"
-import { ToastProvider } from "@civfix/ui"
+import { ToastProvider, entryFromPath, useNavStore } from "@civfix/ui"
 import { I18nProvider, FALLBACK_LOCALE } from "@civfix/ui/i18n"
 import {
   ThemeProvider,
@@ -14,6 +14,7 @@ import {
 import {
   CapabilitiesProvider,
   makeFakeCapabilities,
+  webClipboardCapability,
   type PlatformCapabilities,
 } from "@civfix/ui/capabilities"
 import {
@@ -54,9 +55,18 @@ const webCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),
   camera: webCamera,
   geolocation: webGeolocation,
+  clipboard: webClipboardCapability,
   openExternal: {
     open: async (url: string): Promise<void> => {
       window.open(url, "_blank", "noopener,noreferrer")
+    },
+  },
+  openInternalHref: {
+    open: (path: string): boolean => {
+      const entry = entryFromPath(path)
+      if (!entry) return false
+      useNavStore.getState().push(entry)
+      return true
     },
   },
   blurSurface: { supported: false },

@@ -13,6 +13,7 @@
     "schedule_unavailable": "Horario no disponible",
     "location_fallback": "Abre el evento para ver el lugar",
     "a11y_card": "{{day}} {{month}}, {{title}}. {{schedule}}. {{location}}. {{going}}.",
+    "a11y_card_compact": "{{day}} {{month}}, {{title}}. {{schedule}}. {{location}}.",
     "a11y_remove": "Quitar {{title}}"
   }
 }

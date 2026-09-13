@@ -1,18 +1,32 @@
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import {
+  AccessibilityInfo,
   Animated,
+  findNodeHandle,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   View,
   type AccessibilityRole,
   type LayoutChangeEvent,
   type StyleProp,
+  type View as NativeView,
   type ViewStyle,
 } from "react-native"
 import { makeThemedStyles, webScrimProps } from "../theme"
 import { menuCardStyle, menuScrimStyle, type MenuMotion } from "./menuMotion"
 import type { MenuOrigin } from "./menuMotionModel"
+
+const MOVES_ACCESSIBILITY_FOCUS = Platform.OS !== "web"
+
+type AccessibilityFocusTarget = Parameters<typeof findNodeHandle>[0] | undefined
+
+function focusAccessibilityNode(node: AccessibilityFocusTarget): void {
+  if (!MOVES_ACCESSIBILITY_FOCUS || node == null) return
+  const handle = findNodeHandle(node)
+  if (handle != null) AccessibilityInfo.setAccessibilityFocus(handle)
+}
 
 export interface AnchoredPopoverProps {
   motion: MenuMotion
@@ -24,6 +38,8 @@ export interface AnchoredPopoverProps {
   cardStyle?: StyleProp<ViewStyle>
   onCardLayout?: (event: LayoutChangeEvent) => void
   accessibilityRole?: AccessibilityRole
+  accessibilityLabel?: string
+  returnFocusRef?: React.RefObject<NativeView | null>
   children: React.ReactNode
 }
 
@@ -60,19 +76,49 @@ export function AnchoredPopover({
   cardStyle,
   onCardLayout,
   accessibilityRole,
+  accessibilityLabel,
+  returnFocusRef,
   children,
 }: AnchoredPopoverProps) {
   const styles = useStyles()
+  const cardRef = useRef<NativeView | null>(null)
+  const focusRequestRef = useRef<number | null>(null)
+  const cancelPendingFocus = useCallback(() => {
+    if (focusRequestRef.current == null) return
+    cancelAnimationFrame(focusRequestRef.current)
+    focusRequestRef.current = null
+  }, [])
+  const focusCard = useCallback(() => {
+    if (!MOVES_ACCESSIBILITY_FOCUS) return
+    cancelPendingFocus()
+    focusRequestRef.current = requestAnimationFrame(() => {
+      focusRequestRef.current = null
+      focusAccessibilityNode(cardRef.current)
+    })
+  }, [cancelPendingFocus])
+
+  const rendered = motion.rendered
+  useEffect(() => {
+    if (!rendered) return
+    return () => {
+      cancelPendingFocus()
+      focusAccessibilityNode(returnFocusRef?.current)
+    }
+  }, [cancelPendingFocus, rendered, returnFocusRef])
+
   return (
     <Modal
       visible={motion.rendered}
       transparent
       animationType="none"
       onRequestClose={onClose}
+      onShow={focusCard}
       onDismiss={onDismiss}
     >
       <View
         style={centered ? styles.rootCentered : styles.rootAnchored}
+        accessibilityViewIsModal
+        onAccessibilityEscape={onClose}
         pointerEvents={motion.exiting ? "none" : "auto"}
       >
         <Animated.View pointerEvents="none" style={[styles.backdrop, menuScrimStyle(motion)]} />
@@ -84,9 +130,11 @@ export function AnchoredPopover({
           {...webScrimProps}
         />
         <Animated.View
+          ref={cardRef}
           onLayout={onCardLayout}
           style={[cardStyle, menuCardStyle(motion, origin)]}
           accessibilityRole={accessibilityRole}
+          accessibilityLabel={accessibilityLabel}
         >
           {children}
         </Animated.View>

@@ -23,6 +23,7 @@ export function useMyDonations(opts: { enabled?: boolean } = {}) {
     queryFn: ({ pageParam }) =>
       api.listMyDonations({ ...(typeof pageParam === "string" ? { cursor: pageParam } : {}) }),
     getNextPageParam: (lastPage: ListMyDonationsResponse) => lastPage.nextCursor ?? undefined,
+    staleTime: 10_000,
     retry: false,
   })
 }

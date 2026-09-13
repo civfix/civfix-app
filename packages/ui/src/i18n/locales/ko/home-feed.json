@@ -54,7 +54,6 @@
     "load_more": "더 보기"
   },
   "post_card": {
-    "organizer": "주최자",
     "fix_confirmed": "해결 확인됨",
     "repost_attribution": "{{name}}님이 리포스트함",
     "reported_by": "{{name}}님이 신고",
@@ -77,6 +76,7 @@
     "more_a11y": "이 게시물의 추가 옵션",
     "show_more": "더 보기",
     "menu": {
+      "go_to_original": "원본 게시물로 이동",
       "copy_link": "링크 복사",
       "link_copied": "링크를 복사했어요",
       "link_copy_failed": "링크를 복사하지 못했어요",

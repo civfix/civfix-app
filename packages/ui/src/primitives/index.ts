@@ -42,6 +42,9 @@ export type { FollowButtonProps } from "./FollowButton"
 export { VerifiedBadge } from "./VerifiedBadge"
 export type { VerifiedBadgeProps, VerifiedBadgeSize } from "./VerifiedBadge"
 
+export { useRefreshControlProps } from "./useRefreshControlProps"
+export type { ThemedRefreshControlProps } from "./useRefreshControlProps"
+
 export { OrgAffiliationBadge } from "./OrgAffiliationBadge"
 export type { OrgAffiliationBadgeProps, OrgAffiliationBadgeSize } from "./OrgAffiliationBadge"
 
@@ -300,6 +303,8 @@ export { ToastProvider, useToast } from "./Toast"
 export type { ToastAction, ToastApi, ToastOptions, ToastVariant } from "./Toast"
 export { PostActionBar } from "./PostActionBar"
 export type { PostActionBarProps } from "./PostActionBar"
+export { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "./PostOverflowButton"
+export type { PostOverflowButtonProps } from "./PostOverflowButton"
 
 export {
   SkeletonBlock,

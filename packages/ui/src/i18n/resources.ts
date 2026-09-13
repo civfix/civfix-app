@@ -97,6 +97,7 @@ import en_search from "./locales/en/search.json"
 import en_settings from "./locales/en/settings.json"
 import en_settings_account from "./locales/en/settings-account.json"
 import en_settings_privacy from "./locales/en/settings-privacy.json"
+import en_share_post from "./locales/en/share-post.json"
 import en_volunteer_hours from "./locales/en/volunteer-hours.json"
 import en_web_auth from "./locales/en/web-auth.json"
 import en_web_claims from "./locales/en/web-claims.json"
@@ -194,6 +195,7 @@ import es_search from "./locales/es/search.json"
 import es_settings from "./locales/es/settings.json"
 import es_settings_account from "./locales/es/settings-account.json"
 import es_settings_privacy from "./locales/es/settings-privacy.json"
+import es_share_post from "./locales/es/share-post.json"
 import es_volunteer_hours from "./locales/es/volunteer-hours.json"
 import es_web_auth from "./locales/es/web-auth.json"
 import es_web_claims from "./locales/es/web-claims.json"
@@ -291,6 +293,7 @@ import de_search from "./locales/de/search.json"
 import de_settings from "./locales/de/settings.json"
 import de_settings_account from "./locales/de/settings-account.json"
 import de_settings_privacy from "./locales/de/settings-privacy.json"
+import de_share_post from "./locales/de/share-post.json"
 import de_volunteer_hours from "./locales/de/volunteer-hours.json"
 import de_web_auth from "./locales/de/web-auth.json"
 import de_web_claims from "./locales/de/web-claims.json"
@@ -388,6 +391,7 @@ import ko_search from "./locales/ko/search.json"
 import ko_settings from "./locales/ko/settings.json"
 import ko_settings_account from "./locales/ko/settings-account.json"
 import ko_settings_privacy from "./locales/ko/settings-privacy.json"
+import ko_share_post from "./locales/ko/share-post.json"
 import ko_volunteer_hours from "./locales/ko/volunteer-hours.json"
 import ko_web_auth from "./locales/ko/web-auth.json"
 import ko_web_claims from "./locales/ko/web-claims.json"
@@ -488,6 +492,7 @@ export const namespaces = [
   "settings",
   "settings-account",
   "settings-privacy",
+  "share-post",
   "volunteer-hours",
   "web-auth",
   "web-claims",
@@ -590,6 +595,7 @@ export const resources: Resource = {
     "settings": en_settings,
     "settings-account": en_settings_account,
     "settings-privacy": en_settings_privacy,
+    "share-post": en_share_post,
     "volunteer-hours": en_volunteer_hours,
     "web-auth": en_web_auth,
     "web-claims": en_web_claims,
@@ -689,6 +695,7 @@ export const resources: Resource = {
     "settings": es_settings,
     "settings-account": es_settings_account,
     "settings-privacy": es_settings_privacy,
+    "share-post": es_share_post,
     "volunteer-hours": es_volunteer_hours,
     "web-auth": es_web_auth,
     "web-claims": es_web_claims,
@@ -788,6 +795,7 @@ export const resources: Resource = {
     "settings": de_settings,
     "settings-account": de_settings_account,
     "settings-privacy": de_settings_privacy,
+    "share-post": de_share_post,
     "volunteer-hours": de_volunteer_hours,
     "web-auth": de_web_auth,
     "web-claims": de_web_claims,
@@ -887,6 +895,7 @@ export const resources: Resource = {
     "settings": ko_settings,
     "settings-account": ko_settings_account,
     "settings-privacy": ko_settings_privacy,
+    "share-post": ko_share_post,
     "volunteer-hours": ko_volunteer_hours,
     "web-auth": ko_web_auth,
     "web-claims": ko_web_claims,

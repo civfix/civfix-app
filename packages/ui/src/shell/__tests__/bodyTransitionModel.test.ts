@@ -154,7 +154,8 @@ describe("the body-transition seams honour the plan", () => {
 
   it("short-circuits on the platform's reduce-motion signal before any slide is scheduled", () => {
     expect(native).toMatch(/AccessibilityInfo\.isReduceMotionEnabled\(\)/)
-    expect(web).toMatch(/if \(prefersReducedMotion\(\)\) \{/)
+    expect(web).toMatch(/const instant = prefersReducedMotion\(\)/)
+    expect(web).toMatch(/anim: instant\s*\?\s*null/)
     expect(step).toMatch(/useReducedMotion\(\) === true/)
     expect(stepWeb).toMatch(/if \(prefersReducedMotion\(\)\) \{/)
   })

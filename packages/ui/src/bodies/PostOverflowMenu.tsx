@@ -1,20 +1,23 @@
-import React, { useCallback, useEffect, useState } from "react"
-import type { ContentReportReason, PostDTO } from "@civfix/shared"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
+import type { ContentReportReason } from "@civfix/shared"
 import { PopoverMenu, type AnchorRect, type PopoverMenuItem } from "../primitives/PopoverMenu"
 import { ReportContentSheet } from "../primitives/ReportContentSheet"
 import { useToast } from "../primitives/Toast"
 import { absoluteUrl } from "../primitives/share"
-import { useAuthState, useMyProfile, useReportContent } from "../data"
+import { useAuthState, useMyProfile, useReportContent, useRequireAuth } from "../data"
 import { useDeletePost } from "../data/hooks/posts"
 import { useClipboard } from "../capabilities"
 import { useT } from "../i18n"
+import type { PostMenuSubject } from "./postCardModel"
 
 export interface PostOverflowMenuProps {
   visible: boolean
-  post: PostDTO
+  subject: PostMenuSubject
   onClose: () => void
   onOpenPerson: (personId: string) => void
   anchorRect?: AnchorRect | null
+  onOpenOriginal?: () => void
+  onDeleted?: () => void
 }
 
 const RELEASE_AFTER_CLOSE_MS = 400
@@ -60,10 +63,12 @@ interface PostOverflowMenuContentProps extends PostOverflowMenuProps {
 
 function PostOverflowMenuContent({
   visible,
-  post,
+  subject,
   onClose,
   onOpenPerson,
   anchorRect,
+  onOpenOriginal,
+  onDeleted,
   reportOpen,
   onReportOpenChange,
   confirmingDelete,
@@ -72,18 +77,21 @@ function PostOverflowMenuContent({
 }: PostOverflowMenuContentProps) {
   const { t } = useT("home-feed")
   const { isAuthenticated } = useAuthState()
+  const requireAuth = useRequireAuth()
   const viewerId = useMyProfile().data?.profile?.id
   const del = useDeletePost()
   const toast = useToast()
   const clipboard = useClipboard()
   const reportContent = useReportContent()
 
-  const isOwn = isAuthenticated && viewerId != null && viewerId === post.author.id
+  const subjectId = subject.id
+  const subjectPath = `/post/${subjectId}`
+  const isOwn = isAuthenticated && viewerId != null && viewerId === subject.authorId
 
   const submitReport = useCallback(
     (reason: ContentReportReason, details?: string) => {
       reportContent.mutate(
-        { subjectType: "post", subjectId: post.id, reason, ...(details ? { details } : {}) },
+        { subjectType: "post", subjectId, reason, ...(details ? { details } : {}) },
         {
           onSuccess: () => {
             onReportOpenChange(false)
@@ -92,25 +100,33 @@ function PostOverflowMenuContent({
         },
       )
     },
-    [onReportOpenChange, post.id, reportContent, t, toast],
+    [onReportOpenChange, subjectId, reportContent, t, toast],
+  )
+
+  const startReport = useCallback(
+    () => requireAuth(() => onReportOpenChange(true), { next: subjectPath }),
+    [requireAuth, onReportOpenChange, subjectPath],
   )
 
   const copyLink = useCallback(() => {
     if (!clipboard) return
     clipboard
-      .setString(absoluteUrl(`/post/${post.id}`))
+      .setString(absoluteUrl(subjectPath))
       .then(() => toast.show(t("post_card.menu.link_copied")))
       .catch(() => toast.show(t("post_card.menu.link_copy_failed"), { variant: "error" }))
-  }, [clipboard, post.id, t, toast])
+  }, [clipboard, subjectPath, t, toast])
 
   const runDelete = useCallback(() => {
     onBusyChange(true)
-    del.mutate(post.id, {
-      onSuccess: () => toast.show(t("post_card.menu.deleted")),
+    del.mutate(subjectId, {
+      onSuccess: () => {
+        toast.show(t("post_card.menu.deleted"))
+        onDeleted?.()
+      },
       onError: () => toast.show(t("post_card.menu.delete_failed"), { variant: "error" }),
       onSettled: () => onBusyChange(false),
     })
-  }, [del, onBusyChange, post.id, t, toast])
+  }, [del, onBusyChange, onDeleted, subjectId, t, toast])
 
   const closeConfirmDelete = useCallback(
     () => onConfirmingDeleteChange(false),
@@ -129,41 +145,69 @@ function PostOverflowMenuContent({
     },
   ]
 
-  const items: PopoverMenuItem[] = [
-    {
-      key: "copy",
-      label: t("post_card.menu.copy_link"),
-      icon: "Copy",
-      disabled: !clipboard,
-      onPress: copyLink,
-    },
-    ...(isOwn
-      ? [
-          {
-            key: "delete",
-            label: t("post_card.menu.delete"),
-            icon: "Trash2" as const,
-            destructive: true,
-            disabled: del.isPending,
-            onPress: () => onConfirmingDeleteChange(true),
-          },
-        ]
-      : [
-          {
-            key: "profile",
-            label: t("post_card.menu.view_profile"),
-            icon: "User" as const,
-            onPress: () => onOpenPerson(post.author.id),
-          },
-          {
-            key: "report",
-            label: t("post_card.menu.report"),
-            icon: "Flag" as const,
-            ...(isAuthenticated ? {} : { disabled: true }),
-            onPress: () => onReportOpenChange(true),
-          },
-        ]),
-  ]
+  const authorId = subject.authorId
+  const items: PopoverMenuItem[] = useMemo(
+    () => [
+      ...(onOpenOriginal
+        ? [
+            {
+              key: "original",
+              label: t("post_card.menu.go_to_original"),
+              icon: "Repeat2" as const,
+              onPress: onOpenOriginal,
+            },
+          ]
+        : []),
+      {
+        key: "copy",
+        label: t("post_card.menu.copy_link"),
+        icon: "Copy" as const,
+        disabled: !clipboard,
+        onPress: copyLink,
+      },
+      ...(isOwn
+        ? [
+            {
+              key: "delete",
+              label: t("post_card.menu.delete"),
+              icon: "Trash2" as const,
+              destructive: true,
+              disabled: del.isPending,
+              onPress: () => onConfirmingDeleteChange(true),
+            },
+          ]
+        : [
+            ...(authorId
+              ? [
+                  {
+                    key: "profile",
+                    label: t("post_card.menu.view_profile"),
+                    icon: "User" as const,
+                    onPress: () => onOpenPerson(authorId),
+                  },
+                ]
+              : []),
+            {
+              key: "report",
+              label: t("post_card.menu.report"),
+              icon: "Flag" as const,
+              onPress: startReport,
+            },
+          ]),
+    ],
+    [
+      authorId,
+      clipboard,
+      copyLink,
+      del.isPending,
+      isOwn,
+      onConfirmingDeleteChange,
+      onOpenOriginal,
+      onOpenPerson,
+      startReport,
+      t,
+    ],
+  )
 
   return (
     <>

@@ -2,7 +2,12 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
 import type { PersonDTO, PostDTO, PostRefDTO } from "@civfix/shared"
-import { buildPostCardModel, repostBodyText, repostSubjectAuthorId } from "../postCardModel"
+import {
+  buildPostCardModel,
+  postMenuSubject,
+  repostBodyText,
+  repostSubjectAuthorId,
+} from "../postCardModel"
 
 const EN: Record<string, string> = {
   "post_card.repost_attribution": "{{name}} reposted",
@@ -79,6 +84,41 @@ describe("a repost renders its ORIGINAL, not a truncated preview of it", () => {
   })
 })
 
+describe("the overflow menu's subject is the post the row actually renders", () => {
+  it("redirects a REPOST's menu to the original, and keeps a quote's on itself", () => {
+    expect(postMenuSubject(repost(ref()))).toEqual({ id: "post-original", authorId: "person-2" })
+
+    const quote: PostDTO = { ...repost(ref()), kind: "quote", body: "Worth joining." }
+    expect(postMenuSubject(quote)).toEqual({ id: "post-repost", authorId: "person-1" })
+
+    const plain: PostDTO = { ...repost(ref()), kind: "post", repostOf: null }
+    expect(postMenuSubject(plain)).toEqual({ id: "post-repost", authorId: "person-1" })
+  })
+
+  it("reports no author at all when the original's account is gone", () => {
+    expect(postMenuSubject(repost(ref({ author: null })))).toEqual({
+      id: "post-original",
+      authorId: null,
+    })
+  })
+
+  it("falls back to the WRAPPER when the original post itself is deleted", () => {
+    const gone = repost(ref({ deleted: true, body: null, excerpt: "" }))
+    expect(postMenuSubject(gone)).toEqual({ id: "post-repost", authorId: "person-1" })
+
+    const goneAndAuthorless = repost(ref({ deleted: true, author: null, excerpt: "" }))
+    expect(postMenuSubject(goneAndAuthorless)).toEqual({ id: "post-repost", authorId: "person-1" })
+  })
+
+  it("offers no jump to an original that is gone", () => {
+    const card = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
+    const focal = readFileSync(new URL("../thread/ThreadFocalPost.tsx", import.meta.url), "utf8")
+    for (const source of [card, focal]) {
+      expect(source).toContain("isRepost && embedded && !embedded.deleted")
+    }
+  })
+})
+
 describe("the repost surfaces wire the guard and the embed they are modelled on", () => {
   const src = (path: string): string => readFileSync(new URL(path, import.meta.url), "utf8")
   const CARD = src("../PostCard.tsx")
@@ -88,6 +128,29 @@ describe("the repost surfaces wire the guard and the embed they are modelled on"
     expect(CARD).toContain("authorId={repostSubjectAuthorId(post)}")
     expect(BAR).toContain("const isOwnPost = authorId != null && viewerId != null && authorId === viewerId")
     expect(BAR).toMatch(/onRepost: isOwnPost\s*\?\s*undefined/)
+  })
+
+  it("gives the repost meta row the same overflow button the ordinary row has", () => {
+    const metaRows = CARD.split("function ").filter((block) =>
+      block.startsWith("MetaRow(") || block.startsWith("EmbeddedPostMeta("),
+    )
+    expect(metaRows).toHaveLength(2)
+    for (const block of metaRows) {
+      expect(block).toContain(
+        '<PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} />',
+      )
+    }
+    expect(CARD).toMatch(/<EmbeddedPostMeta[\s\S]*?onOpenMenu=\{openMenu\}[\s\S]*?menuRef=\{menuTrigger\.ref\}/)
+  })
+
+  it("hands the menu the redirected subject and a way back to the original", () => {
+    expect(CARD).toContain("const menuSubject = React.useMemo(() => postMenuSubject(post), [post])")
+    expect(CARD).toMatch(/<PostOverflowMenu[\s\S]*?subject=\{menuSubject\}/)
+    expect(CARD).toMatch(/<PostOverflowMenu[\s\S]*?onOpenOriginal=\{openOriginal\}/)
+    expect(CARD).toContain("isRepost && embedded && !embedded.deleted ? () => openPost(embedded.id) : undefined")
+    const MENU = src("../PostOverflowMenu.tsx")
+    expect(MENU).toContain('label: t("post_card.menu.go_to_original")')
+    expect(MENU).toContain("...(onOpenOriginal")
   })
 
   it("renders the original's media, event and report inline instead of gating them out", () => {

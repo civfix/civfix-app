@@ -54,6 +54,7 @@ export interface ModalCardSheetProps {
   visible: boolean
   onClose: () => void
   onCommit?: () => void
+  onDismiss?: () => void
   headerIcon: IconName
   headerIconColor?: string
   title: string
@@ -72,6 +73,7 @@ export function ModalCardSheet({
   visible,
   onClose,
   onCommit,
+  onDismiss,
   headerIcon,
   headerIconColor,
   title,
@@ -91,7 +93,13 @@ export function ModalCardSheet({
   useDialogWebKeys({ visible, onCommit, onClose })
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      onDismiss={onDismiss}
+    >
       <View style={styles.root}>
         <Pressable
           style={styles.backdrop}

@@ -16,6 +16,7 @@ const EN: Record<string, string> = {
   "linked.schedule_unavailable": "Schedule unavailable",
   "linked.location_fallback": "Open event for location",
   "linked.a11y_card": "{{month}} {{day}}. {{title}}. {{schedule}}. {{location}}. {{going}}.",
+  "linked.a11y_card_compact": "{{month}} {{day}}. {{title}}. {{schedule}}. {{location}}.",
   "linked.a11y_remove": "Remove {{title}}",
 }
 
@@ -55,6 +56,7 @@ describe("LinkedEventCard model", () => {
     const model = buildLinkedEventCardModel(event, t, "en-US", "UTC", {
       address: "Ballona Creek Bike Path, Playa del Rey",
       joined: false,
+      showAttendance: true,
       attendees: [
         event.organizer,
         { ...event.organizer, id: "person-2", name: "Maria G." },
@@ -107,6 +109,22 @@ describe("LinkedEventCard model", () => {
   it("localizes the unparseable-schedule fallback instead of hardcoding English", () => {
     const model = buildLinkedEventCardModel({ ...event, scheduledAt: "not-a-date" }, t, "en-US", "UTC")
     expect(model).toMatchObject({ month: "--", day: "--", scheduleLabel: "Schedule unavailable" })
+  })
+
+  it("announces attendance only on the variant that actually shows it", () => {
+    const context = { address: "Ballona Creek Bike Path", joined: false }
+    const detail = buildLinkedEventCardModel(event, t, "en-US", "UTC", {
+      ...context,
+      showAttendance: true,
+    })
+    const feed = buildLinkedEventCardModel(event, t, "en-US", "UTC", context)
+
+    expect(detail.accessibilityLabel).toContain("18 going")
+    expect(feed.accessibilityLabel).not.toContain("going")
+    for (const part of ["JUL 25", feed.title, feed.scheduleLabel, feed.locationLabel]) {
+      expect(feed.accessibilityLabel).toContain(part)
+    }
+    expect(feed.goingLabel).toBe("18 going")
   })
 
   it("uses a physical 44px remove target around the compact close visual", () => {

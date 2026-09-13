@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { View, Image, StyleSheet, type StyleProp, type ViewStyle, type TextStyle } from "react-native"
 import { avatarColor, monogram } from "@civfix/shared"
 import { makeThemedStyles, fontFamily, useTheme } from "../theme"
@@ -33,6 +33,8 @@ export function Avatar({
     () => ({ fontFamily: fontFamily.displaySemiBold, fontSize: size * 0.42 }),
     [size],
   )
+  const onPhotoError = useCallback(() => setFailedUrl(photoUrl ?? null), [photoUrl])
+  const photoSource = useMemo(() => ({ uri: photoUrl as string }), [photoUrl])
   return (
     <View
       accessibilityLabel={!decorative && accessibilityLabel ? accessibilityLabel : undefined}
@@ -59,9 +61,9 @@ export function Avatar({
       </Text>
       {showPhoto ? (
         <Image
-          source={{ uri: photoUrl as string }}
+          source={photoSource}
           accessibilityIgnoresInvertColors
-          onError={() => setFailedUrl(photoUrl ?? null)}
+          onError={onPhotoError}
           resizeMode="cover"
           style={StyleSheet.absoluteFill}
         />

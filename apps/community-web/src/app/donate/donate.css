@@ -61,7 +61,8 @@
   letter-spacing: var(--tracking-snug);
 }
 .donate-org-verified {
-  color: var(--moss-600);
+  color: var(--fg-on-color);
+  fill: var(--sky);
   flex: none;
 }
 .donate-org-legal,

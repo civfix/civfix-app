@@ -25,12 +25,14 @@ import {
 } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { Text } from "../typography"
+import type { IconName } from "../typography"
 import { useT } from "../i18n"
 import { useLikePost, useRepost, useSavePost } from "../data/hooks/posts"
 import { useAuthState, useRequireAuth } from "../data"
-import { absoluteUrl, shareLink } from "./share"
-import { PostActionMenu } from "./PostActionMenu"
+import { useSharePost } from "../share/SharePostContext"
+import { PopoverMenu, usePopoverAnchor, type AnchorRect, type PopoverMenuItem } from "./PopoverMenu"
 import {
+  buildPostActionMenuModel,
   buildPostActionModel,
   buildPostActionMotionModel,
   postActionCountGap,
@@ -39,7 +41,6 @@ import {
   postActionHaloInset,
   postActionLayout,
   type PostActionHaloFamily,
-  type PostActionMenuRect,
   type PostActionKey,
   type PostActionLayout,
   type PostActionModel,
@@ -60,8 +61,6 @@ export {
   postActionLayout,
   postActionRowAvailableWidth,
   postActionRowWidth,
-  resolvePostActionMenuFocus,
-  resolvePostActionMenuKey,
 } from "./postActionModel"
 export type { PostActionHaloFamily, PostActionLayout, PostActionVariant } from "./postActionModel"
 
@@ -77,6 +76,11 @@ export interface PostActionBarProps {
   style?: StyleProp<ViewStyle>
 }
 
+
+const REPOST_MENU_ICONS: Record<"repost" | "quote", IconName> = {
+  repost: "Repeat2",
+  quote: "MessageCircle",
+}
 
 const ACTION_LABEL_KEYS: Record<PostActionKey, string> = {
   like: "post_actions.like",
@@ -328,15 +332,25 @@ export function PostActionBar({
   const reducedMotion = useReducedMotion()
   const motionDisabled = reducedMotion !== false
   const [repostMenuOpen, setRepostMenuOpen] = useState(false)
-  const [repostAnchor, setRepostAnchor] = useState<PostActionMenuRect | null>(null)
-  const repostTriggerRef = useRef<NativeView | null>(null)
-  const dismissRepostMenu = useCallback(() => setRepostMenuOpen(false), [])
+  const [repostAnchor, setRepostAnchor] = useState<AnchorRect | null>(null)
+  const openRepostMenuAt = useCallback((rect: AnchorRect) => {
+    setRepostAnchor(rect)
+    setRepostMenuOpen(true)
+  }, [])
+  const { ref: repostAnchorRef, measure: measureRepostAnchor } = usePopoverAnchor(openRepostMenuAt)
+  const closeRepostMenu = useCallback(() => setRepostMenuOpen(false), [])
+  const openRepostMenu = useCallback(() => {
+    if (measureRepostAnchor()) return
+    setRepostAnchor(null)
+    setRepostMenuOpen(true)
+  }, [measureRepostAnchor])
 
+  const sharePost = useSharePost()
   const onShare = useCallback(
     (path: string) => {
-      void shareLink({ title: shareTitle, path, message: `${shareTitle}\n${absoluteUrl(path)}` })
+      sharePost.open({ title: shareTitle, path })
     },
-    [shareTitle],
+    [sharePost, shareTitle],
   )
 
   const likeMutate = like.mutate
@@ -356,16 +370,7 @@ export function PostActionBar({
                     repostMutate(currently)
                     return
                   }
-                  const trigger = repostTriggerRef.current
-                  if (!trigger || typeof trigger.measureInWindow !== "function") {
-                    setRepostAnchor(null)
-                    setRepostMenuOpen(true)
-                    return
-                  }
-                  trigger.measureInWindow((x, y, width, height) => {
-                    setRepostAnchor({ x, y, width, height })
-                    setRepostMenuOpen(true)
-                  })
+                  openRepostMenu()
                 }, { next: "/" }),
           onComment,
           onSave: (currently) => requireAuth(() => saveMutate(currently), { next: "/" }),
@@ -373,15 +378,32 @@ export function PostActionBar({
         },
         variant === "reply" ? REPLY_MODEL_OPTIONS : undefined,
       ),
-    [postId, counts, viewer, isOwnPost, requireAuth, likeMutate, repostMutate, saveMutate, onComment, onQuote, onShare, variant],
+    [postId, counts, viewer, isOwnPost, requireAuth, likeMutate, repostMutate, saveMutate, onComment, onQuote, openRepostMenu, onShare, variant],
   )
+
+  const reposted = viewer.reposted
+  const toggleRepost = useCallback(() => repostMutate(reposted), [repostMutate, reposted])
+  const startQuote = useCallback(() => onQuote?.(), [onQuote])
+  const repostMenuItems: PopoverMenuItem[] = useMemo(() => {
+    const run: Record<"repost" | "quote", () => void> = { repost: toggleRepost, quote: startQuote }
+    return buildPostActionMenuModel(reposted, {
+      repost: t("post_actions.repost"),
+      undoRepost: t("post_actions.undo_repost"),
+      quote: t("post_actions.quote_post"),
+    }).map((item) => ({
+      key: item.key,
+      label: item.label,
+      icon: REPOST_MENU_ICONS[item.key],
+      onPress: run[item.key],
+    }))
+  }, [reposted, startQuote, t, toggleRepost])
 
   const renderButton = (action: (typeof actions)[number]) => (
     <PostActionButton
       key={action.key}
       action={action}
       label={t(ACTION_LABEL_KEYS[action.key])}
-      buttonRef={action.key === "repost" ? repostTriggerRef : undefined}
+      buttonRef={action.key === "repost" ? repostAnchorRef : undefined}
       reducedMotion={motionDisabled}
       layout={layout}
       disabled={
@@ -417,15 +439,13 @@ export function PostActionBar({
           </>
         ) : null}
       </View>
-      <PostActionMenu
+      <PopoverMenu
         visible={repostMenuOpen}
-        reposted={viewer.reposted}
         anchorRect={repostAnchor}
-        reducedMotion={motionDisabled}
-        returnFocusRef={repostTriggerRef}
-        onDismiss={dismissRepostMenu}
-        onRepost={() => repostMutate(viewer.reposted)}
-        onQuote={() => onQuote?.()}
+        items={repostMenuItems}
+        accessibilityLabel={t("post_actions.menu_label")}
+        returnFocusRef={repostAnchorRef}
+        onClose={closeRepostMenu}
       />
     </View>
   )
