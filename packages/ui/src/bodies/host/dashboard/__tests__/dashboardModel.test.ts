@@ -7,57 +7,46 @@ import type {
   OrganizationDTO,
   OrganizationInviteDTO,
   OrganizationMemberDTO,
-  SeriesPoint,
 } from "@civfix/shared"
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
 import { can } from "@civfix/shared/host"
 import {
-  BEST_DAY_TIME_MIN_EVENTS,
-  DASHBOARD_RANGES,
-  DEFAULT_DASHBOARD_RANGE,
-  buildDashboardTabs,
+  ATTENTION_MAX_ROWS,
+  attentionRows,
   canManageOrgPayments,
   canManageOrgTeam,
   canSetOrgMemberRole,
   canViewOrgMoney,
   collaboratorErrorKey,
+  dashboardScope,
+  DASHBOARD_RANGES,
+  DEFAULT_DASHBOARD_RANGE,
   donationSummaryFrom,
   duplicateErrorKey,
   duplicateReady,
+  firstEventState,
   hostedEventActions,
   hostedEventCan,
   hostedEventHasActions,
+  hostedEventPhase,
+  impactModel,
   nextDuplicateStart,
+  nextUpCta,
+  nextUpEvent,
+  NEXT_UP_MESSAGE_WITHIN_MS,
   orderedOrgMembers,
   orgInviteErrorKey,
   orgInviteIdentifierErrorKey,
   orgInviteQuotaReached,
   orgMemberActions,
   orgMemberHasActions,
+  pastRowMeta,
   payoutBlockedKey,
   payoutButtonModel,
   payoutErrorKey,
   pendingOrgInvites,
-  seriesChartable,
-  seriesDayLabel,
-  seriesEnd,
-  suppressed,
-  bestDayTimeShowable,
-  hostedEventPhase,
-  hourLabel,
-  nextUpCtaKey,
-  nextUpEvent,
-  portfolioChartSeries,
   portfolioKpis,
-  portfolioSuppressed,
-  rateEmpty,
-  rateWithheld,
-  SERIES_DAILY_MAX_POINTS,
-  SERIES_MAX_BARS,
-  topEventBars,
-  topEventsVisible,
-  weekdayLabel,
-  TOP_EVENTS_MAX_ROWS,
+  sharePathFor,
 } from "../dashboardModel"
 
 const DAY_MS = 86_400_000
@@ -136,51 +125,31 @@ function balance(over: Partial<OrgBalanceDTO> = {}): OrgBalanceDTO {
   } as OrgBalanceDTO
 }
 
-describe("dashboard tabs", () => {
-  it("hides the org tab and falls back to personal when the viewer is in no org", () => {
-    const model = buildDashboardTabs({ orgs: [], requestedTab: "org", requestedOrgId: "o1" })
-    expect(model.orgTabVisible).toBe(false)
-    expect(model.tab).toBe("personal")
-    expect(model.selectedOrgId).toBeNull()
+describe("dashboard scope", () => {
+  it("hides the selector and stays personal when the viewer is in no org", () => {
+    const scope = dashboardScope([], "o1")
+    expect(scope.selectorVisible).toBe(false)
+    expect(scope.orgId).toBeNull()
+    expect(scope.org).toBeNull()
   })
 
-  it("shows the org tab with no picker for a single org", () => {
-    const model = buildDashboardTabs({
-      orgs: [org("o1")],
-      requestedTab: "org",
-      requestedOrgId: null,
-    })
-    expect(model.orgTabVisible).toBe(true)
-    expect(model.orgPickerVisible).toBe(false)
-    expect(model.selectedOrgId).toBe("o1")
+  it("shows the selector as soon as the viewer can act for one org", () => {
+    const scope = dashboardScope([org("o1")], null)
+    expect(scope.selectorVisible).toBe(true)
+    expect(scope.orgId).toBeNull()
   })
 
-  it("shows the picker for more than one org and honours the remembered choice", () => {
-    const model = buildDashboardTabs({
-      orgs: [org("o1"), org("o2")],
-      requestedTab: "org",
-      requestedOrgId: "o2",
-    })
-    expect(model.orgPickerVisible).toBe(true)
-    expect(model.selectedOrg?.id).toBe("o2")
+  it("honours the remembered org", () => {
+    const scope = dashboardScope([org("o1"), org("o2")], "o2")
+    expect(scope.org?.id).toBe("o2")
+    expect(scope.orgId).toBe("o2")
   })
 
-  it("falls back to the first org when the remembered one is gone", () => {
-    const model = buildDashboardTabs({
-      orgs: [org("o1")],
-      requestedTab: "org",
-      requestedOrgId: "vanished",
-    })
-    expect(model.selectedOrgId).toBe("o1")
-  })
-
-  it("never shows the picker on the personal tab", () => {
-    const model = buildDashboardTabs({
-      orgs: [org("o1"), org("o2")],
-      requestedTab: "personal",
-      requestedOrgId: "o1",
-    })
-    expect(model.orgPickerVisible).toBe(false)
+  it("falls back to you when the remembered org is no longer actable", () => {
+    const scope = dashboardScope([org("o1")], "vanished")
+    expect(scope.orgId).toBeNull()
+    expect(scope.org).toBeNull()
+    expect(scope.selectorVisible).toBe(true)
   })
 })
 
@@ -381,31 +350,6 @@ describe("collaborator actions", () => {
   })
 })
 
-describe("analytics suppression", () => {
-  it("treats a null count as suppressed", () => {
-    expect(suppressed(null)).toBe(true)
-    expect(suppressed(0)).toBe(false)
-  })
-
-  it("needs two real points before it draws a sparkline", () => {
-    const points = (values: (number | null)[]): SeriesPoint[] =>
-      values.map((value, index) => ({ day: `d${index}`, value, suppressed: value === null }))
-    expect(seriesChartable(points([1, null]))).toBe(false)
-    expect(seriesChartable(points([1, 2]))).toBe(true)
-  })
-
-  it("labels the trend with the last point that carries a number", () => {
-    expect(
-      seriesEnd([
-        { day: "d0", value: 5, suppressed: false },
-        { day: "d1", value: 10, suppressed: false },
-        { day: "d2", value: null, suppressed: true },
-      ]),
-    ).toEqual({ day: "d1", value: 10, suppressed: false })
-    expect(seriesEnd([{ day: "d0", value: null, suppressed: true }])).toBeNull()
-  })
-})
-
 describe("duplicate scheduling", () => {
   const now = new Date("2026-09-10T12:00:00.000Z")
 
@@ -447,13 +391,9 @@ describe("donation summary range", () => {
     expect(donationSummaryFrom("365d", now)).toBe("2025-09-10T00:00:00.000Z")
   })
 
-  it("asks for every donation when the range is all", () => {
-    expect(donationSummaryFrom("all", new Date("2026-09-10T00:00:00.000Z"))).toBeNull()
-  })
-
-  it("defaults to the shortest range", () => {
+  it("keeps three money ranges and defaults to the shortest", () => {
     expect(DEFAULT_DASHBOARD_RANGE).toBe("30d")
-    expect(DASHBOARD_RANGES).toEqual(["30d", "90d", "365d", "all"])
+    expect(DASHBOARD_RANGES).toEqual(["30d", "90d", "365d"])
   })
 })
 
@@ -513,7 +453,7 @@ describe("dashboard wiring", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).not.toContain("FeedBody")
     expect(body).not.toContain("feed/")
-    expect(body).toContain("./dashboard/InviteRows")
+    expect(body).toContain("./dashboard/AttentionCard")
   })
 
   it("routes the row actions at the nav kinds the plan named", () => {
@@ -594,10 +534,84 @@ describe("next up", () => {
     expect(hostedEventPhase(row("c"), now)).toBe("upcoming")
   })
 
-  it("sends a live event to check-in and everything else to host tools", () => {
-    expect(nextUpCtaKey("live")).toBe("next_up.check_in")
-    expect(nextUpCtaKey("upcoming")).toBe("next_up.host_tools")
-    expect(nextUpCtaKey("ended")).toBe("next_up.host_tools")
+  it("sends a live event to check-in", () => {
+    const event = row("live", { startsAt: "2026-09-10T11:00:00.000Z", myRole: "organizer" })
+    expect(nextUpCta({ phase: "live", event, now })).toBe("check_in")
+  })
+
+  it("offers a message when the event is close, has sign-ups and the viewer can broadcast", () => {
+    const event = row("soon", {
+      startsAt: new Date(now.getTime() + NEXT_UP_MESSAGE_WITHIN_MS - 1).toISOString(),
+      registeredCount: 12,
+      capacity: 20,
+      myRole: "organizer",
+    })
+    expect(nextUpCta({ phase: "upcoming", event, now })).toBe("message")
+  })
+
+  it("stops offering the message once the event is further out than the window", () => {
+    const event = row("later", {
+      startsAt: new Date(now.getTime() + NEXT_UP_MESSAGE_WITHIN_MS + 1).toISOString(),
+      registeredCount: 12,
+      capacity: 20,
+      myRole: "organizer",
+    })
+    expect(nextUpCta({ phase: "upcoming", event, now })).toBe("host_tools")
+  })
+
+  it("offers a share while the event is under half full, or has nobody at all", () => {
+    const thin = row("thin", {
+      startsAt: "2026-09-25T17:00:00.000Z",
+      registeredCount: 4,
+      capacity: 20,
+      myRole: "organizer",
+    })
+    expect(nextUpCta({ phase: "upcoming", event: thin, now })).toBe("share")
+    const uncapped = row("uncapped", {
+      startsAt: "2026-09-25T17:00:00.000Z",
+      registeredCount: 0,
+      myRole: "organizer",
+    })
+    expect(nextUpCta({ phase: "upcoming", event: uncapped, now })).toBe("share")
+  })
+
+  it("falls back to host tools for a healthy event that is not close yet", () => {
+    const event = row("healthy", {
+      startsAt: "2026-09-25T17:00:00.000Z",
+      registeredCount: 18,
+      capacity: 20,
+      myRole: "organizer",
+    })
+    expect(nextUpCta({ phase: "upcoming", event, now })).toBe("host_tools")
+    expect(nextUpCta({ phase: "ended", event, now })).toBe("host_tools")
+  })
+
+  it("finds a LIVE event in the past window, which is where the server puts it", () => {
+    const upcomingWindow = [row("soon", { startsAt: "2026-09-14T09:00:00.000Z" })]
+    const pastWindow = [
+      row("live", { startsAt: "2026-09-10T11:00:00.000Z", endsAt: "2026-09-10T15:00:00.000Z" }),
+      row("finished", { status: "done", startsAt: "2026-09-08T17:00:00.000Z" }),
+    ]
+    expect(nextUpEvent(upcomingWindow, now)?.event.id).toBe("soon")
+    const both = nextUpEvent([...upcomingWindow, ...pastWindow], now)
+    expect(both?.event.id).toBe("live")
+    expect(both?.phase).toBe("live")
+    expect(nextUpCta({ phase: both?.phase ?? "upcoming", event: both?.event as HostedEventDTO, now })).toBe(
+      "check_in",
+    )
+  })
+
+  it("still refuses a finished past row, however recent", () => {
+    const justDone = row("done", { status: "done", startsAt: "2026-09-10T08:00:00.000Z" })
+    expect(nextUpEvent([justDone], now)).toBeNull()
+    expect(nextUpEvent([justDone, row("soon", { startsAt: "2026-09-14T09:00:00.000Z" })], now)?.event.id).toBe(
+      "soon",
+    )
+  })
+
+  it("is fed BOTH windows by the dashboard body, not just the upcoming one", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("nextUpEvent([...upcomingEvents, ...pastEvents], now)")
   })
 
   it("reads the portfolio counters off the first page only", () => {
@@ -608,37 +622,64 @@ describe("next up", () => {
   })
 })
 
-describe("top events", () => {
-  const bar = (key: string, value: number | null, suppressedRow = false) => ({
-    key,
-    label: key.toUpperCase(),
-    value,
-    suppressed: suppressedRow,
-  })
+describe("needs attention", () => {
+  const now = new Date("2026-09-10T12:00:00.000Z")
 
-  it("ranks by seats, caps the list and scales against the leader", () => {
-    const bars = topEventBars({
-      panelSuppressed: false,
-      rows: [bar("a", 10), bar("b", 40), bar("c", 20), bar("d", null, true), bar("e", 5), bar("f", 4), bar("g", 3)],
+  it("queues an event that ended without being marked completed", () => {
+    const ended = row("ended", {
+      status: "upcoming",
+      startsAt: "2026-09-08T17:00:00.000Z",
+      endsAt: "2026-09-08T21:00:00.000Z",
     })
-    expect(bars.map((entry) => entry.key)).toEqual(["b", "c", "a", "e", "f"])
-    expect(bars).toHaveLength(TOP_EVENTS_MAX_ROWS)
-    expect(bars[0]?.ratio).toBe(1)
-    expect(bars[1]?.ratio).toBe(0.5)
+    expect(attentionRows({ past: [ended], now })).toEqual([{ kind: "complete", event: ended }])
   })
 
-  it("hides the card for a suppressed panel or a single bar", () => {
-    const one = { panelSuppressed: false, rows: [bar("a", 10)] }
-    expect(topEventsVisible(one, topEventBars(one))).toBe(false)
-    const hidden = { panelSuppressed: true, rows: [bar("a", 10), bar("b", 4)] }
-    expect(topEventsVisible(hidden, topEventBars(hidden))).toBe(false)
-    const two = { panelSuppressed: false, rows: [bar("a", 10), bar("b", 4)] }
-    expect(topEventsVisible(two, topEventBars(two))).toBe(true)
-    expect(topEventsVisible(undefined, [])).toBe(false)
+  it("queues a finished event whose hours were never credited", () => {
+    const unpaid = row("unpaid", { status: "done", checkedInCount: 6, hoursCredited: 0 })
+    expect(attentionRows({ past: [unpaid], now })).toEqual([
+      { kind: "credit_hours", event: unpaid },
+    ])
+  })
+
+  it("leaves credited, empty and cancelled events alone", () => {
+    const credited = row("credited", { status: "done", checkedInCount: 6, hoursCredited: 12 })
+    const nobody = row("nobody", { status: "done", checkedInCount: 0 })
+    const gone = row("gone", { status: "cancelled", startsAt: "2026-09-01T17:00:00.000Z" })
+    expect(attentionRows({ past: [credited, nobody, gone], now })).toEqual([])
+  })
+
+  it("says nothing about hours the payload never carried: absent is UNKNOWN, not zero", () => {
+    const silent = row("silent", { status: "done", checkedInCount: 6 })
+    expect(silent.hoursCredited).toBeUndefined()
+    expect(attentionRows({ past: [silent], now })).toEqual([])
+    const explicit = row("explicit", { status: "done", checkedInCount: 6, hoursCredited: 0 })
+    expect(attentionRows({ past: [explicit], now })).toEqual([
+      { kind: "credit_hours", event: explicit },
+    ])
+  })
+
+  it("puts every mark-completed ahead of every credit-hours, newest first", () => {
+    const older = row("older", {
+      status: "upcoming",
+      startsAt: "2026-09-01T17:00:00.000Z",
+      endsAt: "2026-09-01T21:00:00.000Z",
+    })
+    const newer = row("newer", {
+      status: "upcoming",
+      startsAt: "2026-09-08T17:00:00.000Z",
+      endsAt: "2026-09-08T21:00:00.000Z",
+    })
+    const unpaid = row("unpaid", { status: "done", checkedInCount: 6, hoursCredited: 0 })
+    const rows = attentionRows({ past: [unpaid, older, newer], now })
+    expect(rows.map((entry) => entry.event.id)).toEqual(["newer", "older", "unpaid"])
+  })
+
+  it("caps the queue at three rows for the caller", () => {
+    expect(ATTENTION_MAX_ROWS).toBe(3)
   })
 })
 
-describe("portfolio numbers", () => {
+describe("impact", () => {
   const rate = (value: number | null) => ({
     value,
     numerator: value === null ? null : 10,
@@ -648,147 +689,134 @@ describe("portfolio numbers", () => {
 
   const analytics = (over: Partial<HostedEventsAnalyticsResponse> = {}): HostedEventsAnalyticsResponse => ({
     generatedAt: "2026-09-10T12:00:00.000Z",
-    range: "30d",
+    range: "all",
     k: 5,
-    totals: { events: 20, registrations: 120, checkIns: 90, uniqueAttendees: 80 },
+    totals: { events: 6, registrations: 120, checkIns: 90, uniqueAttendees: 79 },
     series: [],
     byEvent: { panelSuppressed: false, rows: [] },
-    repeatAttendance: rate(0.31),
+    repeatAttendance: rate(0.15),
     averageCheckInRate: rate(0.82),
-    bestDayTime: { weekday: 6, hour: 10, value: 30, suppressed: false },
+    bestDayTime: null,
+    topVolunteers: [],
+    totalHours: 1284,
+    volunteersCredited: 62,
     ...over,
   })
 
-  it("shows the busiest slot only once there are enough events to mean something", () => {
-    expect(bestDayTimeShowable(analytics())).toBe(true)
+  it("has nothing to say before anyone has turned up", () => {
+    expect(impactModel(undefined)).toBeNull()
     expect(
-      bestDayTimeShowable(
-        analytics({ totals: { events: BEST_DAY_TIME_MIN_EVENTS - 1, registrations: 5, checkIns: 4, uniqueAttendees: 4 } }),
+      impactModel(
+        analytics({ totals: { events: 1, registrations: 0, checkIns: 0, uniqueAttendees: 0 } }),
       ),
-    ).toBe(false)
+    ).toBeNull()
+  })
+
+  it("leads with credited hours when there are any", () => {
+    const model = impactModel(analytics())
+    expect(model?.hero).toEqual({ value: 1284, unit: "hours" })
+    expect(model?.volunteersCredited).toBe(62)
+    expect(model?.uniqueAttendees).toBe(79)
+    expect(model?.events).toBe(6)
+  })
+
+  it("falls back to the volunteer head-count when no hours are credited yet", () => {
+    const model = impactModel(analytics({ totalHours: 0, volunteersCredited: 0 }))
+    expect(model?.hero).toEqual({ value: 79, unit: "volunteers" })
+  })
+
+  it("reads a 0.44-shaped payload without the hours fields", () => {
+    const legacy = analytics()
+    delete (legacy as { totalHours?: number }).totalHours
+    delete (legacy as { volunteersCredited?: number }).volunteersCredited
+    const model = impactModel(legacy)
+    expect(model?.hero.unit).toBe("volunteers")
+    expect(model?.volunteersCredited).toBeNull()
+  })
+
+  it("only claims a turnout rate once somebody registered", () => {
+    expect(impactModel(analytics())?.showedUp).toBe(0.82)
     expect(
-      bestDayTimeShowable(analytics({ bestDayTime: { weekday: 6, hour: 10, value: null, suppressed: true } })),
-    ).toBe(false)
-    expect(bestDayTimeShowable(analytics({ bestDayTime: null }))).toBe(false)
-    expect(bestDayTimeShowable(undefined)).toBe(false)
+      impactModel(
+        analytics({ totals: { events: 6, registrations: 0, checkIns: 0, uniqueAttendees: 79 } }),
+      )?.showedUp,
+    ).toBeNull()
   })
 
-  it("captions the card once any rendered number is withheld", () => {
-    expect(portfolioSuppressed(analytics())).toBe(false)
+  it("only claims a came-back rate from the second event on", () => {
+    expect(impactModel(analytics())?.cameBack).toBe(0.15)
     expect(
-      portfolioSuppressed(
-        analytics({ totals: { events: 20, registrations: null, checkIns: 90, uniqueAttendees: 80 } }),
-      ),
-    ).toBe(true)
-    expect(portfolioSuppressed(analytics({ repeatAttendance: rate(null) }))).toBe(true)
-    expect(portfolioSuppressed(undefined)).toBe(false)
-  })
-
-  it("leaves the caption off a host who simply has nothing to divide by", () => {
-    const empty = { value: null, numerator: 0, denominator: 0, suppressed: false }
-    expect(rateEmpty(empty)).toBe(true)
-    expect(rateWithheld(empty)).toBe(false)
-    expect(
-      portfolioSuppressed(
-        analytics({
-          totals: { events: 1, registrations: 0, checkIns: 0, uniqueAttendees: 0 },
-          repeatAttendance: empty,
-          averageCheckInRate: empty,
-        }),
-      ),
-    ).toBe(false)
-  })
-
-  it("still captions a rate the server actually withheld", () => {
-    const withheld = { value: null, numerator: null, denominator: null, suppressed: true }
-    expect(rateEmpty(withheld)).toBe(false)
-    expect(rateWithheld(withheld)).toBe(true)
-    expect(portfolioSuppressed(analytics({ averageCheckInRate: withheld }))).toBe(true)
-  })
-
-  it("names the busiest weekday and hour in the reader's locale", () => {
-    expect(weekdayLabel(0, "en-US")).toBe("Sunday")
-    expect(weekdayLabel(6, "en-US")).toBe("Saturday")
-    expect(hourLabel(10, "en-US")).toContain("10")
+      impactModel(
+        analytics({ totals: { events: 1, registrations: 10, checkIns: 8, uniqueAttendees: 8 } }),
+      )?.cameBack,
+    ).toBeNull()
   })
 })
 
-describe("the trend never draws a year one bar at a time", () => {
-  const days = (count: number, value: number | null = 3) =>
-    Array.from({ length: count }, (_, i) => ({
-      day: new Date(Date.UTC(2026, 0, 1) + i * DAY_MS).toISOString().slice(0, 10),
-      value,
-      suppressed: value === null,
-    }))
-
-  it("keeps a short range at day resolution", () => {
-    const series = days(SERIES_DAILY_MAX_POINTS)
-    const chart = portfolioChartSeries(series)
-    expect(chart.weekly).toBe(false)
-    expect(chart.points).toEqual(series)
+describe("first event and past rows", () => {
+  it("teaches only a host who has hosted nothing and has nothing coming", () => {
+    const kpis = { eventsHosted: 0, upcomingEvents: 0, totalRegistrations: 0, totalCheckedIn: 0 }
+    expect(firstEventState(kpis, [])).toBe(true)
+    expect(firstEventState(kpis, [row("soon")])).toBe(false)
+    expect(firstEventState({ ...kpis, eventsHosted: 2 }, [])).toBe(false)
+    expect(firstEventState(null, [])).toBe(false)
   })
 
-  it("rolls a long range into weeks that still total the same seats", () => {
-    const chart = portfolioChartSeries(days(364))
-    expect(chart.weekly).toBe(true)
-    expect(chart.points).toHaveLength(52)
-    expect(chart.points.every((point) => point.value === 21)).toBe(true)
-    expect(chart.points[0]?.day).toBe("2026-01-01")
+  it("prints turnout once anyone registered and hours once anyone was credited", () => {
+    expect(pastRowMeta(row("a", { registeredCount: 38, checkedInCount: 31, hoursCredited: 62 })))
+      .toEqual({ showedUp: true, hoursToken: "hours" })
   })
 
-  it("bounds the bar count however long the history is", () => {
-    for (const count of [91, 200, 365, 1200]) {
-      const chart = portfolioChartSeries(days(count))
-      expect(chart.points.length, `${count} days`).toBeLessThanOrEqual(SERIES_MAX_BARS)
-      expect(chart.points.length).toBeGreaterThan(0)
-    }
+  it("calls out a finished event whose hours nobody logged", () => {
+    expect(pastRowMeta(row("b", { registeredCount: 8, checkedInCount: 6, hoursCredited: 0 })))
+      .toEqual({ showedUp: true, hoursToken: "not_logged" })
   })
 
-  it("keeps the most recent weeks when the history outruns the card", () => {
-    const long = days(400)
-    const chart = portfolioChartSeries(long)
-    expect(chart.points[chart.points.length - 1]?.day).toBe(long[400 - 7]?.day)
+  it("says nothing about hours for an event nobody checked in to", () => {
+    expect(pastRowMeta(row("c", { registeredCount: 0, checkedInCount: 0 }))).toEqual({
+      showedUp: false,
+      hoursToken: null,
+    })
   })
 
-  it("mutes only a week with nothing known in it", () => {
-    const mixed = days(98)
-    mixed[97] = { day: mixed[97]?.day ?? "", value: null, suppressed: true }
-    const chart = portfolioChartSeries(mixed)
-    const last = chart.points[chart.points.length - 1]
-    expect(last?.suppressed).toBe(false)
-    expect(last?.value).toBe(18)
-    const blank = portfolioChartSeries(days(98, null))
-    expect(blank.points.every((point) => point.suppressed && point.value === null)).toBe(true)
+  it("shares the public page slug, then the reference code, then the id", () => {
+    expect(sharePathFor(row("a", { pageSlug: "ted-watkins" }))).toBe("/cleanups/ted-watkins")
+    expect(sharePathFor(row("b", { referenceCode: "CF-1234" }))).toBe("/cleanups/CF-1234")
+    expect(sharePathFor(row("c"))).toBe("/cleanups/c")
   })
 })
 
 describe("portfolio surface", () => {
   const dashboardSource = (file: string): string => source(`../${file}`)
 
-  it("retires the old strip and its bar row", () => {
+  it("retires the old strip, bar row, tile grid and top-events card", () => {
     expect(existsSync(new URL("../KpiStrip.tsx", import.meta.url))).toBe(false)
     expect(existsSync(new URL("../Sparkline.tsx", import.meta.url))).toBe(false)
+    expect(existsSync(new URL("../PortfolioStats.tsx", import.meta.url))).toBe(false)
+    expect(existsSync(new URL("../TopEventsCard.tsx", import.meta.url))).toBe(false)
   })
 
-  it("keeps the coral fill for the single next-up action", () => {
+  it("keeps one coral fill on the page, in whichever card is showing", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).not.toContain("<PrimaryButton")
-    const next = dashboardSource("NextUpCard.tsx")
-    expect(next.match(/<PrimaryButton/g)).toHaveLength(1)
+    expect(dashboardSource("NextUpCard.tsx").match(/<PrimaryButton/g)).toHaveLength(1)
+    expect(dashboardSource("FirstEventCard.tsx").match(/<PrimaryButton/g)).toHaveLength(1)
   })
 
   it("leaves no bloom selection fill anywhere under the dashboard", () => {
     const files = [
       "../../EventDashboardBody.tsx",
       "../NextUpCard.tsx",
-      "../PortfolioStats.tsx",
-      "../TopEventsCard.tsx",
+      "../AttentionCard.tsx",
+      "../ImpactCard.tsx",
+      "../FirstEventCard.tsx",
       "../HostedEventRow.tsx",
       "../InviteRows.tsx",
       "../MoneySection.tsx",
       "../CollaboratorsSection.tsx",
       "../OrgInviteSheet.tsx",
       "../DuplicateEventSheet.tsx",
+      "../ConsoleLinkRow.web.tsx",
     ]
     for (const file of files) {
       expect(source(file)).not.toContain("brand.bloom")
@@ -796,25 +824,32 @@ describe("portfolio surface", () => {
     }
   })
 
-  it("moves every selection onto the neutral primitives", () => {
+  it("keeps the only window switch inside the events card", () => {
     const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain("SegmentedControl")
+    expect(body.match(/<SegmentedControl/g)).toHaveLength(1)
+    expect(body).toContain("listHeader")
     expect(body).not.toContain("SegmentedRow")
-    expect(dashboardSource("PortfolioStats.tsx")).toContain("SegmentedControl")
-    expect(dashboardSource("OrgInviteSheet.tsx")).toContain("FilterChip")
   })
 
-  it("renders every number the portfolio read already ships", () => {
-    const stats = dashboardSource("PortfolioStats.tsx")
-    expect(stats).toContain("totals.uniqueAttendees")
-    expect(stats).toContain("averageCheckInRate")
-    expect(stats).toContain("repeatAttendance")
-    expect(stats).toContain("bestDayTime")
-    expect(stats).toContain("TrendSparkline")
+  it("drops the tab and range state the page no longer owns", () => {
+    const store = source("../dashboardStore.ts")
+    expect(store).not.toContain("setTab")
+    expect(store).not.toContain("setRange")
+    expect(store).toContain('segment: "all_registered"')
+  })
+
+  it("reads the portfolio through the new all-time model", () => {
     const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain("topEventBars(analytics.data?.byEvent)")
     expect(body).toContain("portfolioKpis(upcoming.data?.pages)")
     expect(body).toContain("header.summary")
+    expect(body).toContain('useHostedEventsAnalytics(ANALYTICS_RANGE')
+    expect(body).toContain('const ANALYTICS_RANGE = "all"')
+    expect(body).toContain("<ImpactCard")
+    expect(body).toContain("<TopVolunteersCard")
+    expect(body).toContain("<AttentionCard")
+    expect(body).toContain("<FirstEventCard")
+    expect(body).toContain("./dashboard/AttentionCard")
+    expect(dashboardSource("AttentionCard.tsx")).toContain("./InviteRows")
   })
 
   it("demotes create-event and the invitation accept to secondary", () => {
@@ -826,40 +861,69 @@ describe("portfolio surface", () => {
     expect(invites).toContain("<TextLink")
   })
 
-  it("keeps money and collaborators in the shared card language", () => {
+  it("keeps money, team and the console link in the shared list card", () => {
     const money = dashboardSource("MoneySection.tsx")
-    expect(money).toContain("SectionCard")
+    expect(money).toContain('variant="list"')
     expect(money).toContain('icon="ReceiptText"')
-    expect(money).toContain("StatTileRow")
+    expect(money).not.toContain("StatTileRow")
     const team = dashboardSource("CollaboratorsSection.tsx")
-    expect(team).toContain("SectionCard")
+    expect(team).toContain('variant="list"')
+    expect(team).toContain("<ListRow")
+    expect(dashboardSource("ConsoleLinkRow.web.tsx")).toContain("<ListRow")
   })
 
-  it("names every new portfolio string in all four locales", () => {
+  it("names every portfolio string the redesign reads, in all four locales", () => {
     const keys: readonly [string, string][] = [
       ["header", "title"],
       ["header", "summary"],
+      ["scope", "you"],
+      ["scope", "a11y"],
+      ["create", "short"],
       ["next_up", "section"],
       ["next_up", "check_in"],
       ["next_up", "host_tools"],
-      ["next_up", "empty_title"],
-      ["next_up", "empty_body"],
+      ["next_up", "message"],
+      ["next_up", "share"],
+      ["next_up", "signed_up_of"],
+      ["next_up", "signed_up"],
+      ["next_up", "waiting"],
+      ["next_up", "checked_in"],
+      ["next_up", "starts_in"],
+      ["next_up", "started"],
+      ["next_up", "more_shifts"],
       ["next_up", "meter_a11y"],
-      ["numbers", "section"],
-      ["range", "all"],
-      ["kpi", "attendance_rate"],
-      ["kpi", "unique_volunteers"],
-      ["kpi", "returning"],
-      ["kpi", "returning_hint"],
-      ["kpi", "busiest_slot"],
-      ["kpi", "end_label"],
-      ["top_events", "section"],
-      ["top_events", "seats"],
+      ["attention", "section"],
+      ["attention", "complete"],
+      ["attention", "credit_hours"],
+      ["impact", "section"],
+      ["impact", "all_time"],
+      ["impact", "unit_hours"],
+      ["impact", "unit_volunteers"],
+      ["impact", "credited_one"],
+      ["impact", "credited_other"],
+      ["impact", "volunteers_one"],
+      ["impact", "volunteers_other"],
+      ["impact", "events_other"],
+      ["impact", "showed_up"],
+      ["impact", "came_back"],
+      ["top_volunteers", "section"],
+      ["top_volunteers", "caption"],
       ["events", "section"],
       ["events", "meta_capacity"],
       ["events", "meta_waiting"],
+      ["events", "meta_signed_up"],
+      ["events", "meta_showed_up"],
+      ["events", "meta_hours"],
+      ["events", "meta_hours_not_logged"],
+      ["events", "empty_past"],
+      ["events", "empty_upcoming"],
       ["events", "check_in_a11y"],
+      ["first_event", "title"],
+      ["first_event", "cta"],
+      ["money", "range_a11y"],
+      ["money", "sent_on"],
       ["team", "section"],
+      ["team", "invite_row_sub"],
     ]
     for (const lng of ["en", "es", "de", "ko"]) {
       const cat = catalog(lng, "event-dashboard") as Record<string, Record<string, string>>
@@ -868,15 +932,18 @@ describe("portfolio surface", () => {
       }
     }
   })
-})
 
-describe("seriesDayLabel", () => {
-  it("reads a series day as a short calendar date, not a wire string", () => {
-    expect(seriesDayLabel("2026-09-12", "en-US")).toBe("Sep 12")
-    expect(seriesDayLabel("2026-01-02", "en-US")).toBe("Jan 2")
-  })
-
-  it("hands back anything it cannot parse", () => {
-    expect(seriesDayLabel("not-a-day", "en-US")).toBe("not-a-day")
+  it("retires the strings the redesign deleted, in all four locales", () => {
+    for (const lng of ["en", "es", "de", "ko"]) {
+      const cat = catalog(lng, "event-dashboard") as Record<string, Record<string, string> | undefined>
+      expect(cat.tabs).toBeUndefined()
+      expect(cat.org_picker).toBeUndefined()
+      expect(cat.numbers).toBeUndefined()
+      expect(cat.kpi).toBeUndefined()
+      expect(cat.top_events).toBeUndefined()
+      expect(cat.range?.all).toBeUndefined()
+      expect(cat.next_up?.empty_title).toBeUndefined()
+      expect(cat.events?.empty_past_title).toBeUndefined()
+    }
   })
 })

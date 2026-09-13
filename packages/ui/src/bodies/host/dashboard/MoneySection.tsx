@@ -2,18 +2,20 @@ import React, { useCallback, useMemo, useRef, useState } from "react"
 import { View } from "react-native"
 import type { OrganizationDTO, PayoutDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "../../../theme"
-import { Text } from "../../../typography"
+import { Text, iconMap } from "../../../typography"
 import {
+  IconTile,
+  LIST_DIVIDER_INSET,
+  ListRow,
   ModalCardSheet,
+  PopoverMenu,
   PrimaryButton,
   SecondaryButton,
   SectionCard,
-  SettingsRow,
-  SettingsSection,
-  StatTile,
-  StatTileRow,
   useToast,
+  usePopoverAnchor,
 } from "../../../primitives"
+import type { AnchorRect } from "../../../primitives"
 import { useOpenExternal } from "../../../capabilities"
 import { useLocale, useT } from "../../../i18n"
 import {
@@ -27,11 +29,13 @@ import {
 } from "../../../data/hooks/payouts"
 import { FeedNotice } from "../../FeedNotice"
 import { appErrorCode } from "../../errorCode"
-import { HeroSkeleton } from "../HostSkeletons"
+import { RowsSkeleton } from "../HostSkeletons"
 import { formatMinor, formatMoney } from "../donationFormat"
 import {
   canManageOrgPayments,
   canViewOrgMoney,
+  DASHBOARD_RANGES,
+  DEFAULT_DASHBOARD_RANGE,
   donationSummaryFrom,
   payoutBlockedKey,
   payoutButtonModel,
@@ -41,41 +45,23 @@ import {
 
 const RECENT_PAYOUTS = 3
 
-function PayoutRow({ payout, locale }: { payout: PayoutDTO; locale: string }) {
-  const styles = useStyles()
-  const { t } = useT("event-dashboard")
-  const when = (() => {
-    const parsed = new Date(payout.arrivalDate ?? payout.createdAt)
-    if (Number.isNaN(parsed.getTime())) return ""
-    try {
-      return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(parsed)
-    } catch {
-      return parsed.toISOString().slice(0, 10)
-    }
-  })()
-  return (
-    <View style={styles.payoutRow}>
-      <View style={styles.payoutMeta}>
-        <Text style={styles.payoutAmount}>{formatMoney(payout.amount, locale)}</Text>
-        {when ? (
-          <Text variant="caption" numberOfLines={1}>
-            {when}
-          </Text>
-        ) : null}
-      </View>
-      <Text variant="caption" numberOfLines={1}>
-        {t(`money.payout_status_${payout.status}`)}
-      </Text>
-    </View>
-  )
+const CLOSED = "closed"
+
+function payoutDateLabel(payout: PayoutDTO, locale: string): string {
+  const parsed = new Date(payout.arrivalDate ?? payout.createdAt)
+  if (Number.isNaN(parsed.getTime())) return ""
+  try {
+    return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(parsed)
+  } catch {
+    return parsed.toISOString().slice(0, 10)
+  }
 }
 
 export interface MoneySectionProps {
   org: OrganizationDTO
-  range: DashboardRange
 }
 
-export function MoneySection({ org, range }: MoneySectionProps) {
+export function MoneySection({ org }: MoneySectionProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-dashboard")
@@ -83,14 +69,19 @@ export function MoneySection({ org, range }: MoneySectionProps) {
   const toast = useToast()
   const openExternal = useOpenExternal()
 
+  const [range, setRange] = useState<DashboardRange>(DEFAULT_DASHBOARD_RANGE)
+  const [rangeOpen, setRangeOpen] = useState<string>(CLOSED)
+  const [rangeRect, setRangeRect] = useState<AnchorRect | null>(null)
+  const { ref: rangeAnchorRef, measure: measureRange } = usePopoverAnchor(setRangeRect)
+
   const canView = canViewOrgMoney(org.myRole)
   const status = useOrgPaymentsStatus(org.id, { enabled: canView })
   const connected = !!status.data?.stripeAccountId
   const balance = useOrgBalance(org.id, { enabled: connected })
-  const summaryRange = useMemo(() => {
-    const from = donationSummaryFrom(range, new Date())
-    return from ? { from } : {}
-  }, [range])
+  const summaryRange = useMemo(
+    () => ({ from: donationSummaryFrom(range, new Date()) }),
+    [range],
+  )
   const summary = useOrgDonationSummary(org.id, summaryRange, { enabled: connected })
   const payouts = useOrgPayouts(org.id, { enabled: connected })
   const createPayout = useCreateOrgPayout(org.id)
@@ -154,7 +145,7 @@ export function MoneySection({ org, range }: MoneySectionProps) {
 
   if (!canView) return null
 
-  if (status.isPending) return <HeroSkeleton />
+  if (status.isPending) return <RowsSkeleton rows={3} />
 
   if (status.isError) {
     return (
@@ -172,81 +163,115 @@ export function MoneySection({ org, range }: MoneySectionProps) {
 
   if (!connected) {
     return (
-      <SectionCard label={t("money.section")}>
-        <View style={styles.card}>
-          <Text variant="body">{t("money.not_connected")}</Text>
-          {canManage ? (
-            <SecondaryButton
-              label={t("money.connect")}
-              disabled={accountLink.isPending}
-              onPress={onboard}
-            />
-          ) : (
-            <Text variant="caption">{t("money.connect_owner_only")}</Text>
-          )}
-        </View>
+      <SectionCard label={t("money.section")} variant="list" dividerInset={LIST_DIVIDER_INSET}>
+        <ListRow
+          leading={<IconTile icon="ReceiptText" />}
+          title={t("money.connect")}
+          titleLines={1}
+          sub={canManage ? t("money.not_connected") : t("money.connect_owner_only")}
+          {...(canManage ? { chevron: true, onPress: onboard } : {})}
+        />
       </SectionCard>
     )
   }
 
   const payoutSub = blockedKey
     ? t(blockedKey)
-    : balance.data?.payoutSchedule
-      ? t(`money.schedule_${balance.data.payoutSchedule.interval}`)
-      : undefined
+    : !button.visible
+      ? t("money.payout_owner_only")
+      : balance.data?.payoutSchedule
+        ? t(`money.schedule_${balance.data.payoutSchedule.interval}`)
+        : undefined
+
+  const captions = [
+    balance.isError ? t("money.balance_error") : null,
+    summary.data
+      ? t("money.donations_total", {
+          amount: formatMinor(summary.data.netMinor, "USD", locale),
+          count: summary.data.donationCount,
+        })
+      : null,
+    summary.isError ? t("money.summary_error") : null,
+    payouts.isError ? t("money.payouts_error") : null,
+  ].filter((line): line is string => line !== null)
+
+  const rangePill = (
+    <View ref={rangeAnchorRef}>
+      <SecondaryButton
+        size="sm"
+        label={t(`range.${range}`)}
+        trailingIcon={iconMap.ChevronDown}
+        accessibilityLabel={t("money.range_a11y")}
+        onPress={() => {
+          measureRange()
+          setRangeOpen("range")
+        }}
+      />
+    </View>
+  )
 
   return (
-    <View style={styles.group}>
-      <SectionCard label={t("money.section")}>
-        <View style={styles.card}>
-          <StatTileRow columns={2}>
-            <StatTile
-              label={t("money.available")}
-              value={balance.data ? formatMoney(balance.data.available, locale) : null}
-            />
-            <StatTile
-              label={t("money.pending")}
-              value={balance.data ? formatMoney(balance.data.pending, locale) : null}
-            />
-          </StatTileRow>
-
-          {balance.isError ? <Text variant="caption">{t("money.balance_error")}</Text> : null}
-
-          {summary.data ? (
-            <Text variant="caption">
-              {t("money.donations_total", {
-                amount: formatMinor(summary.data.netMinor, "USD", locale),
-                count: summary.data.donationCount,
-              })}
-            </Text>
-          ) : null}
-          {summary.isError ? <Text variant="caption">{t("money.summary_error")}</Text> : null}
-
-          {rows.length > 0 ? (
-            <View style={styles.payouts}>
-              <Text variant="label">{t("money.recent_payouts")}</Text>
-              {rows.map((payout) => (
-                <PayoutRow key={payout.id} payout={payout} locale={locale} />
-              ))}
-            </View>
-          ) : null}
-          {payouts.isError ? <Text variant="caption">{t("money.payouts_error")}</Text> : null}
-        </View>
+    <View>
+      <SectionCard
+        label={t("money.section")}
+        trailing={rangePill}
+        variant="list"
+        dividerInset={LIST_DIVIDER_INSET}
+      >
+        <ListRow
+          leading={<IconTile icon="CheckCircle2" />}
+          title={t("money.available")}
+          titleLines={1}
+          trailing={balance.data ? formatMoney(balance.data.available, locale) : t("money.dash")}
+        />
+        <ListRow
+          leading={<IconTile icon="Clock" />}
+          title={t("money.pending")}
+          titleLines={1}
+          trailing={balance.data ? formatMoney(balance.data.pending, locale) : t("money.dash")}
+        />
+        <ListRow
+          leading={<IconTile icon="ReceiptText" />}
+          title={t("money.payout")}
+          titleLines={1}
+          {...(payoutSub ? { sub: payoutSub } : {})}
+          {...(button.enabled ? { chevron: true, onPress: askPayout } : {})}
+        />
+        {rows.map((payout) => (
+          <ListRow
+            key={payout.id}
+            leading={<IconTile icon="Check" tone="success" />}
+            title={t("money.sent_on", { date: payoutDateLabel(payout, locale) })}
+            titleLines={1}
+            sub={t(`money.payout_status_${payout.status}`)}
+            trailing={formatMoney(payout.amount, locale)}
+          />
+        ))}
+        {captions.length > 0 ? (
+          <View style={styles.captionRow}>
+            {captions.map((caption) => (
+              <Text key={caption} variant="caption">
+                {caption}
+              </Text>
+            ))}
+          </View>
+        ) : null}
       </SectionCard>
 
-      {button.visible ? (
-        <SettingsSection>
-          <SettingsRow
-            icon="ReceiptText"
-            label={t("money.payout")}
-            sub={payoutSub}
-            disabled={!button.enabled}
-            onPress={askPayout}
-          />
-        </SettingsSection>
-      ) : (
-        <Text variant="caption">{t("money.payout_owner_only")}</Text>
-      )}
+      <PopoverMenu
+        visible={rangeOpen === "range"}
+        anchorRect={rangeRect}
+        onClose={() => setRangeOpen(CLOSED)}
+        items={DASHBOARD_RANGES.map((key) => ({
+          key,
+          label: t(`range.${key}`),
+          ...(key === range ? { icon: "Check" as const } : {}),
+          onPress: () => {
+            setRangeOpen(CLOSED)
+            setRange(key)
+          },
+        }))}
+      />
 
       <ModalCardSheet
         visible={confirming}
@@ -284,31 +309,9 @@ export function MoneySection({ org, range }: MoneySectionProps) {
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  group: {
-    gap: t.space["2"],
-  },
-  card: {
-    gap: t.space["3"],
-  },
-  payouts: {
-    gap: t.space["2"],
-  },
-  payoutRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-    paddingVertical: t.space["2"],
-    paddingHorizontal: t.space["3"],
-    borderRadius: t.radius.md,
-    backgroundColor: t.colors.bgAlt,
-  },
-  payoutMeta: {
-    flex: 1,
-    minWidth: 0,
-  },
-  payoutAmount: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
+  captionRow: {
+    gap: t.space["1"],
+    paddingHorizontal: t.space["4"],
+    paddingVertical: t.space["3"],
   },
 }))

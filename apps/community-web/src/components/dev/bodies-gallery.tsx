@@ -78,6 +78,7 @@ import {
   emptyPortfolioOverrides,
   failing,
   makeDashboardFakeApi,
+  soloPortfolioOverrides,
   pendingForever,
   portfolioOverrides,
 } from "./dashboard-fixtures"
@@ -665,6 +666,30 @@ const MY_HOURS: GetMyHoursResponse = {
       { geoid: "0644000", name: "Los Angeles", hours: 10.2 },
       { geoid: "0667000", name: "Santa Monica", hours: 2.3 },
     ],
+    byOrganization: [
+      {
+        organization: {
+          id: "org-bayview",
+          slug: "bayview-stewards",
+          name: "Bayview Stewards",
+          logoUrl: null,
+          verified: true,
+          verifiedKind: "nonprofit",
+        },
+        hours: 7.5,
+      },
+      {
+        organization: {
+          id: "org-mission",
+          slug: "mission-green",
+          name: "Mission Green",
+          logoUrl: null,
+          verified: false,
+          verifiedKind: null,
+        },
+        hours: 3.5,
+      },
+    ],
   },
 }
 
@@ -748,6 +773,19 @@ const PUBLIC_HOURS_ENTRIES: PublicVolunteerHoursResponse = {
   visible: true,
   totalHours: 8,
   byJurisdiction: [{ geoid: "0644000", name: "Los Angeles", hours: 8 }],
+  byOrganization: [
+    {
+      organization: {
+        id: "org-bayview",
+        slug: "bayview-stewards",
+        name: "Bayview Stewards",
+        logoUrl: null,
+        verified: true,
+        verifiedKind: "nonprofit",
+      },
+      hours: 5,
+    },
+  ],
   items: [
     {
       id: "pvh-1",
@@ -1071,7 +1109,7 @@ const dashboardData = makeFakeDataContext({
 })
 
 const dashboardSoloData = makeFakeDataContext({
-  api: makeDashboardFakeApi({ listMyOrganizations: async () => ({ items: [] }) }),
+  api: makeDashboardFakeApi(soloPortfolioOverrides()),
   auth: DASHBOARD_AUTH,
 })
 

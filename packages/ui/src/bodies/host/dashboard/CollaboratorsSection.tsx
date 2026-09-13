@@ -1,16 +1,29 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { StyleSheet, View } from "react-native"
+import { Pressable, View } from "react-native"
 import type { OrganizationDTO, OrganizationInviteDTO, OrganizationMemberDTO } from "@civfix/shared"
-import { makeThemedStyles } from "../../../theme"
-import { Text, TextLink, iconMap } from "../../../typography"
+import { DELETED_USER_LABEL } from "@civfix/shared"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webCursorPointer,
+  webHover,
+  webTransition,
+} from "../../../theme"
+import { Text, TextLink, Icon, iconMap } from "../../../typography"
 import type { IconName } from "../../../typography"
 import {
-  SecondaryButton,
+  Avatar,
+  IconTile,
+  LIST_DIVIDER_INSET,
+  LIST_TILE,
+  ListRow,
+  PopoverMenu,
   SectionCard,
-  SkeletonGroup,
-  SkeletonList,
   useToast,
+  usePopoverAnchor,
 } from "../../../primitives"
+import type { AnchorRect, PopoverMenuItem } from "../../../primitives"
 import { useAuthState } from "../../../data"
 import {
   organizationMemberRows,
@@ -20,13 +33,11 @@ import {
   useRevokeOrganizationInvite,
   useSetOrganizationMemberRole,
 } from "../../../data/hooks/orgs"
-import { useLocale, useT } from "../../../i18n"
+import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { FeedNotice } from "../../FeedNotice"
-import { RoleChip } from "../../RoleChip"
-import { RosterRow, type RosterRowMenu } from "../../RosterRow"
+import { RowsSkeleton } from "../HostSkeletons"
 import { appErrorCode } from "../../errorCode"
-import { teamDateLabel } from "../hostTeamModel"
 import { OrgInviteSheet } from "./OrgInviteSheet"
 import {
   canManageOrgTeam,
@@ -40,7 +51,19 @@ import {
   type OrgSettableRole,
 } from "./dashboardModel"
 
-function CollaboratorRow({
+const CLOSED = "closed"
+
+const ACTIONS = "actions"
+
+const CONFIRM_REMOVE = "confirm-remove"
+
+const KEBAB_SIZE = 32
+
+const KEBAB_HIT_SLOP = 6
+
+const MORE_ROW_HEIGHT = 44
+
+function MemberRow({
   member,
   viewerId,
   canManage,
@@ -59,104 +82,158 @@ function CollaboratorRow({
   onSetRole: (userId: string, role: OrgSettableRole) => void
   onRemove: (userId: string) => void
 }) {
+  const styles = useStyles()
+  const th = useTheme()
   const { t } = useT("event-dashboard")
   const { t: tEnums } = useT("enums")
+  const [menuStep, setMenuStep] = useState<string>(CLOSED)
+  const [menuRect, setMenuRect] = useState<AnchorRect | null>(null)
+  const { ref: menuAnchorRef, measure: measureMenu } = usePopoverAnchor(setMenuRect)
   const actions = orgMemberActions({ member, viewerId, canManage, canSetRole })
   const person = member.person
+  const roleLabel = tEnums(`organizationMemberRole.${member.role}`)
 
-  const menu: RosterRowMenu | null = orgMemberHasActions(actions)
-    ? {
-        a11yLabel: t("team.actions_a11y", { name: person.name }),
-        buildItems: (goToConfirm) => [
-          ...actions.roles.map((role) => ({
-            key: `role-${role}`,
-            label: t("team.make_role", { role: tEnums(`organizationMemberRole.${role}`) }),
-            icon: (role === "member" ? "UserMinus" : "UserPlus") as IconName,
-            disabled: pending,
-            onPress: () => onSetRole(person.id, role),
-          })),
-          ...(actions.canRemove
-            ? [
-                {
-                  key: "remove",
-                  label: t("team.remove"),
-                  icon: "UserMinus" as const,
-                  destructive: true,
-                  onPress: () => goToConfirm("confirm-remove"),
-                },
-              ]
-            : []),
-        ],
-        confirmSteps: {
-          "confirm-remove": [
-            { key: "cancel", label: t("common:cancel"), onPress: () => {} },
-            {
-              key: "confirm-remove",
-              label: t("team.remove_confirm"),
-              icon: "UserMinus",
-              destructive: true,
-              disabled: pending,
-              onPress: () => onRemove(person.id),
-            },
-          ],
-        },
-      }
-    : null
+  if (person.deleted) {
+    return (
+      <ListRow
+        leading={<Avatar name={DELETED_USER_LABEL} seed={person.id} size={LIST_TILE} />}
+        title={DELETED_USER_LABEL}
+        titleLines={1}
+        sub={roleLabel}
+      />
+    )
+  }
+
+  const items: PopoverMenuItem[] = [
+    ...actions.roles.map((role) => ({
+      key: `role-${role}`,
+      label: t("team.make_role", { role: tEnums(`organizationMemberRole.${role}`) }),
+      icon: (role === "member" ? "UserMinus" : "UserPlus") as IconName,
+      disabled: pending,
+      onPress: () => onSetRole(person.id, role),
+    })),
+    ...(actions.canRemove
+      ? [
+          {
+            key: "remove",
+            label: t("team.remove"),
+            icon: "UserMinus" as const,
+            destructive: true,
+            onPress: () => setMenuStep(CONFIRM_REMOVE),
+          },
+        ]
+      : []),
+  ]
+  const hasKebab = orgMemberHasActions(actions) && items.length > 0
 
   return (
-    <RosterRow
-      person={person}
-      onOpenPerson={onOpenPerson}
-      openA11yLabel={t("team.open_person_a11y", { name: person.name })}
-      nameSuffix={
-        <RoleChip
-          label={tEnums(`organizationMemberRole.${member.role}`)}
-          tone={member.role === "owner" ? "lead" : "neutral"}
-        />
-      }
-      menu={menu}
-    />
+    <>
+      <ListRow
+        leading={
+          <Avatar
+            name={person.name}
+            seed={person.id}
+            photoUrl={person.avatarUrl}
+            gradient={person.avatar ?? null}
+            size={LIST_TILE}
+          />
+        }
+        title={person.name}
+        titleLines={1}
+        sub={roleLabel}
+        accessibilityLabel={t("team.open_person_a11y", { name: person.name })}
+        onPress={() => onOpenPerson(person.handle ?? person.id)}
+        trailing={
+          hasKebab ? (
+            <Pressable
+              ref={menuAnchorRef}
+              onPress={() => {
+                measureMenu()
+                setMenuStep(ACTIONS)
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={t("team.actions_a11y", { name: person.name })}
+              accessibilityState={{ expanded: menuStep !== CLOSED }}
+              hitSlop={KEBAB_HIT_SLOP}
+              {...focusRingProps}
+              style={(state) => [
+                styles.kebab,
+                webTransition,
+                webCursorPointer,
+                webHover(state) ? styles.kebabHovered : null,
+                state.pressed ? styles.kebabPressed : null,
+              ]}
+            >
+              <Icon icon={iconMap.Ellipsis} size={18} color={th.colors.textSubtle} />
+            </Pressable>
+          ) : null
+        }
+      />
+      {hasKebab ? (
+        <>
+          <PopoverMenu
+            visible={menuStep === ACTIONS}
+            anchorRect={menuRect}
+            onClose={() => setMenuStep(CLOSED)}
+            items={items}
+          />
+          <PopoverMenu
+            visible={menuStep === CONFIRM_REMOVE}
+            anchorRect={menuRect}
+            onClose={() => setMenuStep(CLOSED)}
+            items={[
+              { key: "cancel", label: t("common:cancel"), onPress: () => setMenuStep(CLOSED) },
+              {
+                key: CONFIRM_REMOVE,
+                label: t("team.remove_confirm"),
+                icon: "UserMinus",
+                destructive: true,
+                disabled: pending,
+                onPress: () => {
+                  setMenuStep(CLOSED)
+                  onRemove(person.id)
+                },
+              },
+            ]}
+          />
+        </>
+      ) : null}
+    </>
   )
 }
 
 function PendingInviteRow({
   invite,
-  locale,
   pending,
   onRevoke,
 }: {
   invite: OrganizationInviteDTO
-  locale: string
   pending: boolean
   onRevoke: (inviteId: string) => void
 }) {
-  const styles = useStyles()
   const { t } = useT("event-dashboard")
   const { t: tEnums } = useT("enums")
-  const name = invite.user?.name ?? invite.email ?? t("team.invite_unknown")
-  const expires = teamDateLabel(invite.expiresAt, locale)
+  const name =
+    invite.user?.handle ?? invite.user?.name ?? invite.email ?? t("team.invite_unknown")
   return (
-    <View style={styles.inviteRow}>
-      <View style={styles.inviteMeta}>
-        <View style={styles.inviteNameLine}>
-          <Text style={styles.inviteName} numberOfLines={1}>
-            {name}
-          </Text>
-          <RoleChip label={tEnums(`organizationMemberRole.${invite.role}`)} />
-        </View>
-        {expires ? (
-          <Text style={styles.inviteSub} numberOfLines={1}>
-            {t("team.invite_expires", { when: expires })}
-          </Text>
-        ) : null}
-      </View>
-      <SecondaryButton
-        label={t("team.revoke")}
-        size="sm"
-        disabled={pending}
-        onPress={() => onRevoke(invite.id)}
-      />
-    </View>
+    <ListRow
+      leading={<IconTile icon="Mail" tone="attention" />}
+      title={name}
+      titleLines={1}
+      sub={t("team.invite_row_sub", {
+        role: tEnums(`organizationMemberRole.${invite.role}`),
+      })}
+      trailing={
+        <TextLink
+          variant="label"
+          standalone
+          accessibilityLabel={t("team.revoke")}
+          onPress={pending ? () => {} : () => onRevoke(invite.id)}
+        >
+          {t("team.revoke")}
+        </TextLink>
+      }
+    />
   )
 }
 
@@ -167,7 +244,6 @@ export interface CollaboratorsSectionProps {
 export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
   const styles = useStyles()
   const { t } = useT("event-dashboard")
-  const { locale } = useLocale()
   const toast = useToast()
 
   const canManage = canManageOrgTeam(org.myRole)
@@ -230,42 +306,54 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
 
   if (!canManage) return null
 
-  return (
-    <SectionCard
-      label={t("team.section")}
-      trailing={
-        <SecondaryButton
-          size="sm"
-          label={t("team.invite")}
-          icon={iconMap.UserPlus}
-          disabled={quotaReached}
-          onPress={() => setInviteOpen(true)}
-        />
-      }
+  if (membersQuery.isPending) return <RowsSkeleton rows={3} />
+
+  const invite = (
+    <TextLink
+      variant="label"
+      standalone
+      accessibilityLabel={t("team.invite")}
+      onPress={quotaReached ? () => {} : () => setInviteOpen(true)}
     >
-      <View style={styles.section}>
-        {membersQuery.isError ? (
-          <FeedNotice
-            icon="CloudOff"
-            title={t("team.error_title")}
-            body={t("team.error_body")}
-            actionLabel={t("team.retry")}
-            onAction={() => void membersQuery.refetch()}
-          />
-        ) : null}
+      {t("team.invite")}
+    </TextLink>
+  )
 
-        {membersQuery.isPending ? (
-          <SkeletonGroup>
-            <SkeletonList kind="person" rows={3} />
-          </SkeletonGroup>
-        ) : null}
+  if (membersQuery.isError) {
+    return (
+      <SectionCard label={t("team.section")} trailing={invite}>
+        <FeedNotice
+          icon="CloudOff"
+          title={t("team.error_title")}
+          body={t("team.error_body")}
+          actionLabel={t("team.retry")}
+          onAction={() => void membersQuery.refetch()}
+        />
+        <OrgInviteSheet visible={inviteOpen} orgId={org.id} onClose={() => setInviteOpen(false)} />
+      </SectionCard>
+    )
+  }
 
-        {!membersQuery.isPending && !membersQuery.isError && members.length === 0 ? (
-          <Text style={styles.empty}>{t("team.empty")}</Text>
-        ) : null}
+  const notes = [
+    invitesQuery.isError ? t("team.invites_error") : null,
+    quotaReached ? t("team.invite_quota") : null,
+  ].filter((line): line is string => line !== null)
 
+  return (
+    <View>
+      <SectionCard
+        label={t("team.section")}
+        trailing={invite}
+        variant="list"
+        dividerInset={LIST_DIVIDER_INSET}
+      >
+        {members.length === 0 && invites.length === 0 ? (
+          <View style={styles.noteRow}>
+            <Text variant="label">{t("team.empty")}</Text>
+          </View>
+        ) : null}
         {members.map((member) => (
-          <CollaboratorRow
+          <MemberRow
             key={member.person.id}
             member={member}
             viewerId={viewerId}
@@ -277,95 +365,67 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
             onRemove={onRemove}
           />
         ))}
-
+        {invites.map((row) => (
+          <PendingInviteRow
+            key={row.id}
+            invite={row}
+            pending={revokeInvite.isPending}
+            onRevoke={onRevoke}
+          />
+        ))}
         {membersQuery.hasNextPage ? (
-          <TextLink
-            variant="label"
-            standalone
-            accessibilityLabel={t("team.show_more_a11y")}
-            onPress={() => {
-              void membersQuery.fetchNextPage()
-            }}
-          >
-            {membersQuery.isFetchingNextPage ? t("team.loading_more") : t("team.show_more")}
-          </TextLink>
+          <View style={styles.moreRow}>
+            <TextLink
+              variant="label"
+              standalone
+              accessibilityLabel={t("team.show_more_a11y")}
+              onPress={() => {
+                void membersQuery.fetchNextPage()
+              }}
+            >
+              {membersQuery.isFetchingNextPage ? t("team.loading_more") : t("team.show_more")}
+            </TextLink>
+          </View>
         ) : null}
-
-        {invitesQuery.isError ? (
-          <Text style={styles.empty}>{t("team.invites_error")}</Text>
-        ) : null}
-
-        {invites.length > 0 ? (
-          <View style={styles.invites}>
-            <Text style={styles.subhead}>{t("team.pending_invites")}</Text>
-            {invites.map((invite) => (
-              <PendingInviteRow
-                key={invite.id}
-                invite={invite}
-                locale={locale}
-                pending={revokeInvite.isPending}
-                onRevoke={onRevoke}
-              />
+        {notes.length > 0 ? (
+          <View style={styles.noteRow}>
+            {notes.map((note) => (
+              <Text key={note} variant="caption">
+                {note}
+              </Text>
             ))}
           </View>
         ) : null}
+      </SectionCard>
 
-        {quotaReached ? <Text style={styles.empty}>{t("team.invite_quota")}</Text> : null}
-
-        <OrgInviteSheet visible={inviteOpen} orgId={org.id} onClose={() => setInviteOpen(false)} />
-      </View>
-    </SectionCard>
+      <OrgInviteSheet visible={inviteOpen} orgId={org.id} onClose={() => setInviteOpen(false)} />
+    </View>
   )
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  section: {
-    gap: t.space["2"],
-  },
-  subhead: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
-  },
-  empty: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-  },
-  invites: {
-    gap: t.space["2"],
-    marginTop: t.space["2"],
-  },
-  inviteRow: {
-    flexDirection: "row",
+  kebab: {
+    width: KEBAB_SIZE,
+    height: KEBAB_SIZE,
     alignItems: "center",
-    gap: t.space["3"],
-    paddingVertical: t.space["2"],
-    paddingHorizontal: t.space["3"],
-    borderRadius: t.radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surface,
+    justifyContent: "center",
+    borderRadius: t.radius.pill,
   },
-  inviteMeta: {
-    flex: 1,
-    minWidth: 0,
+  kebabHovered: {
+    backgroundColor: t.colors.bgAlt,
   },
-  inviteNameLine: {
-    flexDirection: "row",
+  kebabPressed: {
+    opacity: 0.92,
+  },
+  noteRow: {
+    gap: t.space["1"],
+    paddingHorizontal: t.space["4"],
+    paddingVertical: t.space["3"],
+  },
+  moreRow: {
     alignItems: "center",
-    gap: t.space["2"],
-  },
-  inviteName: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
-  },
-  inviteSub: {
-    marginTop: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
+    justifyContent: "center",
+    minHeight: MORE_ROW_HEIGHT,
+    paddingHorizontal: t.space["4"],
   },
 }))

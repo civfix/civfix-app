@@ -1,5 +1,4 @@
 import type {
-  BestDayTime,
   EventPhase,
   HostCapability,
   HostedEventDTO,
@@ -12,73 +11,39 @@ import type {
   OrganizationMemberDTO,
   OrganizationMemberRole,
   OrgInviteIdentifierKind,
-  Panel,
-  SeriesPoint,
-  SuppressedRate,
 } from "@civfix/shared"
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
 import { can, eventPhase, hostCapabilities } from "@civfix/shared/host"
 
-export const DASHBOARD_TABS = ["personal", "org"] as const
-export type DashboardTab = (typeof DASHBOARD_TABS)[number]
-
-export const DASHBOARD_RANGES = ["30d", "90d", "365d", "all"] as const
+export const DASHBOARD_RANGES = ["30d", "90d", "365d"] as const
 export type DashboardRange = (typeof DASHBOARD_RANGES)[number]
 
 export const DEFAULT_DASHBOARD_RANGE: DashboardRange = "30d"
 
-export const SPARKLINE_MIN_POINTS = 2
+export const ATTENTION_MAX_ROWS = 3
 
-export const SERIES_DAILY_MAX_POINTS = 90
-
-export const SERIES_BUCKET_DAYS = 7
-
-export const SERIES_MAX_BARS = 52
-
-export const BEST_DAY_TIME_MIN_EVENTS = 12
-
-export const TOP_EVENTS_MAX_ROWS = 5
-
-export const TOP_EVENTS_MIN_ROWS = 2
+export const NEXT_UP_MESSAGE_WITHIN_MS = 48 * 3_600_000
 
 const DAY_MS = 86_400_000
 
-const HOUR_MS = 3_600_000
-
-const WEEKDAY_EPOCH_SUNDAY = Date.UTC(2024, 0, 7)
-
-const RANGE_DAYS: Readonly<Record<Exclude<DashboardRange, "all">, number>> = {
+const RANGE_DAYS: Readonly<Record<DashboardRange, number>> = {
   "30d": 30,
   "90d": 90,
   "365d": 365,
 }
 
-export interface DashboardTabsInput {
-  orgs: readonly OrganizationDTO[]
-  requestedTab: DashboardTab
-  requestedOrgId: string | null
+export interface DashboardScope {
+  orgId: string | null
+  org: OrganizationDTO | null
+  selectorVisible: boolean
 }
 
-export interface DashboardTabsModel {
-  tab: DashboardTab
-  orgTabVisible: boolean
-  orgPickerVisible: boolean
-  selectedOrgId: string | null
-  selectedOrg: OrganizationDTO | null
-}
-
-export function buildDashboardTabs(input: DashboardTabsInput): DashboardTabsModel {
-  const { orgs, requestedTab, requestedOrgId } = input
-  const orgTabVisible = orgs.length > 0
-  const tab: DashboardTab = requestedTab === "org" && orgTabVisible ? "org" : "personal"
-  const selected = orgs.find((org) => org.id === requestedOrgId) ?? orgs[0] ?? null
-  return {
-    tab,
-    orgTabVisible,
-    orgPickerVisible: tab === "org" && orgs.length > 1,
-    selectedOrgId: selected?.id ?? null,
-    selectedOrg: selected,
-  }
+export function dashboardScope(
+  orgs: readonly OrganizationDTO[],
+  requestedOrgId: string | null,
+): DashboardScope {
+  const org = orgs.find((candidate) => candidate.id === requestedOrgId) ?? null
+  return { orgId: org?.id ?? null, org, selectorVisible: orgs.length > 0 }
 }
 
 export interface HostedEventStanding {
@@ -189,68 +154,6 @@ export function payoutBlockedKey(reason: PayoutBlockReason): string | null {
   return null
 }
 
-export function suppressed(value: number | null | undefined): boolean {
-  return value === null || value === undefined
-}
-
-export function rateShowable(rate: SuppressedRate | null | undefined): boolean {
-  return !!rate && rate.value !== null && !rate.suppressed
-}
-
-export function rateEmpty(rate: SuppressedRate | null | undefined): boolean {
-  return !!rate && !rate.suppressed && rate.value === null && rate.denominator === 0
-}
-
-export function rateWithheld(rate: SuppressedRate | null | undefined): boolean {
-  return !rateShowable(rate) && !rateEmpty(rate)
-}
-
-export interface PortfolioChartSeries {
-  points: SeriesPoint[]
-  weekly: boolean
-}
-
-export function portfolioChartSeries(points: readonly SeriesPoint[]): PortfolioChartSeries {
-  if (points.length <= SERIES_DAILY_MAX_POINTS) return { points: [...points], weekly: false }
-  const buckets: SeriesPoint[] = []
-  for (let end = points.length; end > 0 && buckets.length < SERIES_MAX_BARS; end -= SERIES_BUCKET_DAYS) {
-    const week = points.slice(Math.max(0, end - SERIES_BUCKET_DAYS), end)
-    const known = week.filter((point) => point.value !== null)
-    buckets.unshift({
-      day: week[0]?.day ?? "",
-      value: known.length === 0 ? null : known.reduce((total, point) => total + (point.value ?? 0), 0),
-      suppressed: known.length === 0,
-    })
-  }
-  return { points: buckets, weekly: true }
-}
-
-export function seriesChartable(points: readonly SeriesPoint[]): boolean {
-  return points.filter((point) => point.value !== null).length >= SPARKLINE_MIN_POINTS
-}
-
-export function seriesDayLabel(day: string, locale: string): string {
-  const parsed = Date.parse(`${day}T00:00:00Z`)
-  if (Number.isNaN(parsed)) return day
-  try {
-    return new Intl.DateTimeFormat(locale, {
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    }).format(parsed)
-  } catch {
-    return day
-  }
-}
-
-export function seriesEnd(points: readonly SeriesPoint[]): SeriesPoint | null {
-  for (let index = points.length - 1; index >= 0; index -= 1) {
-    const point = points[index]
-    if (point && point.value !== null && !point.suppressed) return point
-  }
-  return null
-}
-
 export function portfolioKpis(
   pages: readonly ListMyHostedEventsResponse[] | undefined,
 ): HostPortfolioKpis | null {
@@ -290,86 +193,127 @@ export function nextUpEvent(
   return first ? { event: first.event, phase: first.phase } : null
 }
 
-export function nextUpCtaKey(phase: EventPhase): "next_up.check_in" | "next_up.host_tools" {
-  return phase === "live" ? "next_up.check_in" : "next_up.host_tools"
+export type NextUpCtaKey = "check_in" | "message" | "share" | "host_tools"
+
+export interface NextUpCtaInput {
+  phase: EventPhase
+  event: HostedEventDTO
+  now: Date
 }
 
-export interface TopEventBar {
-  key: string
-  label: string
-  value: number
-  ratio: number
+export function nextUpCta(input: NextUpCtaInput): NextUpCtaKey {
+  const { phase, event, now } = input
+  if (phase === "live") return "check_in"
+  if (phase !== "upcoming") return "host_tools"
+  const startsAt = Date.parse(event.startsAt)
+  const soon =
+    Number.isFinite(startsAt) && startsAt - now.getTime() <= NEXT_UP_MESSAGE_WITHIN_MS
+  if (soon && event.registeredCount > 0 && hostedEventCan(event, "broadcast")) return "message"
+  const capacity = event.capacity ?? null
+  const thin =
+    capacity !== null
+      ? event.registeredCount < capacity / 2
+      : event.registeredCount === 0
+  if (thin) return "share"
+  return "host_tools"
 }
 
-export function topEventBars(
-  panel: Panel | undefined,
-  max: number = TOP_EVENTS_MAX_ROWS,
-): TopEventBar[] {
-  const rows = (panel?.rows ?? [])
-    .filter((row) => row.value !== null && !row.suppressed)
-    .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
-    .slice(0, max)
-  const peak = rows.reduce((top, row) => Math.max(top, row.value ?? 0), 0)
-  return rows.map((row) => ({
-    key: row.key,
-    label: row.label,
-    value: row.value ?? 0,
-    ratio: peak > 0 ? (row.value ?? 0) / peak : 0,
-  }))
+export type AttentionRowKind = "complete" | "credit_hours"
+
+export interface AttentionRow {
+  kind: AttentionRowKind
+  event: HostedEventDTO
 }
 
-export function topEventsVisible(panel: Panel | undefined, bars: readonly TopEventBar[]): boolean {
-  if (!panel || panel.panelSuppressed) return false
-  return bars.length >= TOP_EVENTS_MIN_ROWS
+export interface AttentionRowsInput {
+  past: readonly HostedEventDTO[]
+  now: Date
 }
 
-export function bestDayTimeShowable(
-  analytics: HostedEventsAnalyticsResponse | undefined,
-): boolean {
-  if (!analytics?.bestDayTime) return false
-  const events = analytics.totals.events
-  if (events === null || events < BEST_DAY_TIME_MIN_EVENTS) return false
-  return !analytics.bestDayTime.suppressed && analytics.bestDayTime.value !== null
-}
-
-export function weekdayLabel(weekday: number, locale: string): string {
-  const at = new Date(WEEKDAY_EPOCH_SUNDAY + weekday * DAY_MS)
-  try {
-    return new Intl.DateTimeFormat(locale, { weekday: "long", timeZone: "UTC" }).format(at)
-  } catch {
-    return String(weekday)
+function attentionKind(event: HostedEventDTO, now: Date): AttentionRowKind | null {
+  if (event.status === "upcoming" && hostedEventPhase(event, now) === "ended") return "complete"
+  if (event.status === "done" && event.checkedInCount > 0 && event.hoursCredited === 0) {
+    return "credit_hours"
   }
+  return null
 }
 
-export function hourLabel(hour: number, locale: string): string {
-  const at = new Date(WEEKDAY_EPOCH_SUNDAY + hour * HOUR_MS)
-  try {
-    return new Intl.DateTimeFormat(locale, { hour: "numeric", timeZone: "UTC" }).format(at)
-  } catch {
-    return String(hour)
+function startedAt(event: HostedEventDTO): number {
+  const at = Date.parse(event.startsAt)
+  return Number.isFinite(at) ? at : 0
+}
+
+export function attentionRows(input: AttentionRowsInput): AttentionRow[] {
+  const rows: AttentionRow[] = []
+  for (const event of input.past) {
+    const kind = attentionKind(event, input.now)
+    if (kind) rows.push({ kind, event })
   }
+  return rows.sort((a, b) => {
+    if (a.kind !== b.kind) return a.kind === "complete" ? -1 : 1
+    return startedAt(b.event) - startedAt(a.event)
+  })
 }
 
-export function portfolioSuppressed(
+export type ImpactHeroUnit = "hours" | "volunteers"
+
+export interface ImpactModel {
+  hero: { value: number; unit: ImpactHeroUnit }
+  volunteersCredited: number | null
+  uniqueAttendees: number
+  events: number
+  showedUp: number | null
+  cameBack: number | null
+}
+
+export function impactModel(
   analytics: HostedEventsAnalyticsResponse | undefined,
-): boolean {
-  if (!analytics) return false
+): ImpactModel | null {
+  if (!analytics) return null
   const { totals, averageCheckInRate, repeatAttendance } = analytics
-  return (
-    suppressed(totals.events) ||
-    suppressed(totals.registrations) ||
-    suppressed(totals.checkIns) ||
-    suppressed(totals.uniqueAttendees) ||
-    rateWithheld(averageCheckInRate) ||
-    rateWithheld(repeatAttendance)
-  )
+  const uniqueAttendees = totals.uniqueAttendees ?? 0
+  if (uniqueAttendees === 0) return null
+  const events = totals.events ?? 0
+  const totalHours = analytics.totalHours ?? 0
+  const registrations = totals.registrations ?? 0
+  return {
+    hero:
+      totalHours > 0
+        ? { value: totalHours, unit: "hours" }
+        : { value: uniqueAttendees, unit: "volunteers" },
+    volunteersCredited: analytics.volunteersCredited ?? null,
+    uniqueAttendees,
+    events,
+    showedUp: registrations > 0 ? averageCheckInRate.value : null,
+    cameBack: events >= 2 ? repeatAttendance.value : null,
+  }
 }
 
-export function bestDayTimeParts(
-  best: BestDayTime,
-  locale: string,
-): { weekday: string; hour: string } {
-  return { weekday: weekdayLabel(best.weekday, locale), hour: hourLabel(best.hour, locale) }
+export function firstEventState(
+  kpis: HostPortfolioKpis | null,
+  upcoming: readonly HostedEventDTO[],
+): boolean {
+  return kpis !== null && kpis.eventsHosted === 0 && upcoming.length === 0
+}
+
+export type PastHoursToken = "hours" | "not_logged"
+
+export interface PastRowMeta {
+  showedUp: boolean
+  hoursToken: PastHoursToken | null
+}
+
+export function pastRowMeta(event: HostedEventDTO): PastRowMeta {
+  const credited = event.hoursCredited ?? 0
+  return {
+    showedUp: event.registeredCount > 0,
+    hoursToken:
+      credited > 0 ? "hours" : event.checkedInCount > 0 ? "not_logged" : null,
+  }
+}
+
+export function sharePathFor(event: HostedEventDTO): string {
+  return `/cleanups/${event.pageSlug ?? event.referenceCode ?? event.id}`
 }
 
 export function orgInviteQuotaReached(invites: readonly OrganizationInviteDTO[]): boolean {
@@ -435,8 +379,7 @@ export function orgMemberHasActions(actions: OrgMemberActions): boolean {
  * The start of the donation window, floored to the UTC day so the value - and the cache key built
  * from it - is stable for every mount within the same day rather than minting a fresh key per render.
  */
-export function donationSummaryFrom(range: DashboardRange, now: Date): string | null {
-  if (range === "all") return null
+export function donationSummaryFrom(range: DashboardRange, now: Date): string {
   const start = new Date(now.getTime() - RANGE_DAYS[range] * DAY_MS)
   start.setUTCHours(0, 0, 0, 0)
   return start.toISOString()

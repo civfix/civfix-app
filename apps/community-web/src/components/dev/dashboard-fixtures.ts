@@ -4,6 +4,7 @@ import {
   fakeHostedEvents,
   fakeHostedEventsAnalytics,
 } from "@civfix/shared/fakes"
+import { MAX_PORTFOLIO_TOP_VOLUNTEERS } from "@civfix/shared"
 import type {
   CleanupDTO,
   EventCheckinCountersDTO,
@@ -13,6 +14,10 @@ import type {
   GetOrgBalanceResponse,
   GetOrgDonationSummaryResponse,
   GetOrgPaymentsStatusResponse,
+  HostedEventDTO,
+  HostedEventsAnalyticsResponse,
+  LeaderboardEntryDTO,
+  ListMyHostedEventsResponse,
   ListEventRegistrationsResponse,
   ListMyEventInvitesResponse,
   ListMyOrganizationsResponse,
@@ -308,6 +313,97 @@ const ORG_PAYOUTS: ListOrgPayoutsResponse = {
   nextCursor: null,
 }
 
+const EXTRA_TOP_VOLUNTEERS: readonly LeaderboardEntryDTO[] = [
+  {
+    rank: 4,
+    userId: "v-gallery-4",
+    name: "Priya Raman",
+    handle: "priyar",
+    avatar: null,
+    avatarUrl: null,
+    hours: 21.5,
+  },
+  {
+    rank: 5,
+    userId: "v-gallery-5",
+    name: "Dom Alvarez",
+    handle: "domalv",
+    avatar: null,
+    avatarUrl: null,
+    hours: 18,
+  },
+]
+
+const NEEDS_COMPLETION_EVENT: HostedEventDTO = {
+  id: "ev-needs-complete",
+  title: "Islais Creek weed pull",
+  startsAt: new Date(FIXTURE_NOW - 2 * DAY_MS).toISOString(),
+  endsAt: new Date(FIXTURE_NOW - 2 * DAY_MS + 3 * HOUR_MS).toISOString(),
+  timezone: "America/Los_Angeles",
+  status: "upcoming",
+  visibility: "public",
+  coverThumbUrl: null,
+  registeredCount: 14,
+  capacity: 20,
+  checkedInCount: 0,
+  waitlistCount: 0,
+  myRole: "organizer",
+  myCapabilities: [
+    "view_event_private",
+    "view_roster",
+    "view_analytics",
+    "check_in",
+    "manage_event",
+    "broadcast",
+  ],
+  orgId: null,
+  orgName: null,
+  pageSlug: null,
+  pageStatus: null,
+}
+
+function galleryAnalytics(
+  range: PortfolioAnalyticsRange,
+  orgId: string | null,
+): HostedEventsAnalyticsResponse {
+  const base = fakeHostedEventsAnalytics(range, { now: FIXTURE_NOW, seed: orgId ? 23 : 7 })
+  return {
+    ...base,
+    topVolunteers: [...base.topVolunteers, ...EXTRA_TOP_VOLUNTEERS].slice(
+      0,
+      MAX_PORTFOLIO_TOP_VOLUNTEERS,
+    ),
+  }
+}
+
+function galleryHostedEvents(
+  when: "upcoming" | "past",
+  orgId: string | null,
+): ListMyHostedEventsResponse {
+  const org = DASHBOARD_ORGS.find((row) => row.id === orgId) ?? null
+  const page = fakeHostedEvents(when, {
+    now: FIXTURE_NOW,
+    orgId: org?.id ?? null,
+    orgName: org?.name ?? null,
+    seed: org ? 29 : 11,
+  })
+  if (when !== "past") return page
+  return { ...page, items: [NEEDS_COMPLETION_EVENT, ...page.items] }
+}
+
+export function soloPortfolioOverrides(): Record<string, FakeEndpoint> {
+  return {
+    listMyOrganizations: async () => ({ items: [] }),
+    hostedEventsAnalytics: async (args) => ({
+      ...galleryAnalytics(
+        (args as { range?: PortfolioAnalyticsRange } | undefined)?.range ?? "all",
+        null,
+      ),
+      topVolunteers: [],
+    }),
+  }
+}
+
 function insightsFor(id: string, phase: EventPhase): EventInsights {
   return fakeEventInsights(phase, {
     now: FIXTURE_NOW,
@@ -455,22 +551,16 @@ export function failing(label: string): FakeEndpoint {
 }
 
 export const DASHBOARD_FAKE_ENDPOINTS: Record<string, FakeEndpoint> = {
-  hostedEventsAnalytics: async (args) => {
-    const range = (args as { range?: PortfolioAnalyticsRange } | undefined)?.range ?? "30d"
-    const orgId = (args as { orgId?: string } | undefined)?.orgId ?? null
-    return fakeHostedEventsAnalytics(range, { now: FIXTURE_NOW, seed: orgId ? 23 : 7 })
-  },
-  listMyHostedEvents: async (args) => {
-    const when = (args as { when?: "upcoming" | "past" } | undefined)?.when ?? "upcoming"
-    const orgId = (args as { orgId?: string } | undefined)?.orgId ?? null
-    const org = DASHBOARD_ORGS.find((row) => row.id === orgId) ?? null
-    return fakeHostedEvents(when, {
-      now: FIXTURE_NOW,
-      orgId: org?.id ?? null,
-      orgName: org?.name ?? null,
-      seed: org ? 29 : 11,
-    })
-  },
+  hostedEventsAnalytics: async (args) =>
+    galleryAnalytics(
+      (args as { range?: PortfolioAnalyticsRange } | undefined)?.range ?? "all",
+      (args as { orgId?: string } | undefined)?.orgId ?? null,
+    ),
+  listMyHostedEvents: async (args) =>
+    galleryHostedEvents(
+      (args as { when?: "upcoming" | "past" } | undefined)?.when ?? "upcoming",
+      (args as { orgId?: string } | undefined)?.orgId ?? null,
+    ),
   listMyEventInvites: async () => EVENT_INVITES,
   listMyOrgInvites: async () => ORG_INVITES,
   listMyOrganizations: async (): Promise<ListMyOrganizationsResponse> => ({
@@ -551,7 +641,7 @@ export function portfolioOverrides(
 }
 
 export function emptyPortfolioOverrides(): Record<string, FakeEndpoint> {
-  const analytics = fakeHostedEventsAnalytics("30d", { now: FIXTURE_NOW, seed: 7 })
+  const analytics = fakeHostedEventsAnalytics("all", { now: FIXTURE_NOW, seed: 7 })
   const blank = { value: null, numerator: 0, denominator: 0, suppressed: false }
   return {
     listMyOrganizations: async () => ({ items: [] }),
@@ -570,6 +660,9 @@ export function emptyPortfolioOverrides(): Record<string, FakeEndpoint> {
       repeatAttendance: blank,
       averageCheckInRate: blank,
       bestDayTime: null,
+      totalHours: 0,
+      volunteersCredited: 0,
+      topVolunteers: [],
     }),
   }
 }

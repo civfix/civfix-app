@@ -1,12 +1,9 @@
 {
   "title": "Panel de eventos",
-  "tabs": {
-    "personal": "Personal",
-    "org": "Organización",
-    "label": "Vista del panel"
-  },
-  "org_picker": {
-    "label": "Organización"
+  "scope": {
+    "you": "Tú",
+    "a11y": "Ámbito: {{name}}",
+    "menu_a11y": "Elige de quién son los eventos"
   },
   "header": {
     "title": "Tus eventos",
@@ -19,45 +16,51 @@
     "host_tools": "Herramientas de anfitrión",
     "host_tools_a11y": "Abrir las herramientas de anfitrión de {{title}}",
     "meter_a11y": "{{registered}} de {{capacity}} plazas ocupadas",
-    "empty_title": "Nada programado",
-    "empty_body": "Crea un evento y aparecerá aquí con sus números."
+    "message": "Escribir a los asistentes",
+    "message_a11y": "Escribir a los asistentes de {{title}}",
+    "share": "Compartir",
+    "share_a11y": "Compartir {{title}}",
+    "signed_up_of": "{{registered}} de {{capacity}} apuntados",
+    "signed_up": "{{registered}} apuntados",
+    "waiting": "{{count}} en espera",
+    "checked_in": "{{count}} con entrada registrada",
+    "starts_in": "{{dow}} {{time}} · en {{relative}}",
+    "started": "Empezó hace {{ago}}",
+    "more_shifts": "{{count}} turnos más en Herramientas de anfitrión"
   },
-  "numbers": {
-    "section": "Números"
+  "attention": {
+    "section": "Requiere atención",
+    "complete": "Marcar como finalizado · terminó el {{dow}}",
+    "complete_a11y": "Marcar {{title}} como finalizado",
+    "credit_hours": "Acreditar horas · {{count}} con entrada registrada",
+    "credit_hours_a11y": "Acreditar horas de {{title}}"
   },
-  "range": {
-    "label": "Periodo",
-    "30d": "30 días",
-    "90d": "90 días",
-    "365d": "12 meses",
-    "all": "Todo"
-  },
-  "kpi": {
-    "events": "Eventos organizados",
-    "registrations": "Inscripciones",
-    "check_ins": "Registros de entrada",
-    "suppressed": "Los números se ocultan hasta que participen al menos {{k}} personas.",
-    "trend_a11y": "Inscripciones, {{range}}, último dato {{value}} el {{day}}",
-    "trend_a11y_week": "Inscripciones, {{range}}, por semana, último dato {{value}} en la semana del {{day}}",
-    "error_title": "No se pudieron cargar tus números",
+  "impact": {
+    "section": "Impacto",
+    "all_time": "Histórico",
+    "unit_hours": "horas de voluntariado",
+    "unit_volunteers": "voluntarios",
+    "credited_one": "{{count}} acreditado",
+    "credited_other": "{{count}} acreditados",
+    "volunteers_one": "{{count}} voluntario",
+    "volunteers_other": "{{count}} voluntarios",
+    "events_one": "{{count}} evento",
+    "events_other": "{{count}} eventos",
+    "showed_up": "{{rate}} asistió",
+    "came_back": "{{rate}} repitió",
+    "error_title": "No se pudo cargar tu impacto",
     "error_body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo.",
-    "retry": "Reintentar",
-    "attendance_rate": "Tasa de asistencia",
-    "unique_volunteers": "Voluntarios distintos",
-    "returning": "Voluntarios que repiten",
-    "returning_hint": "{{numerator}} de {{denominator}}",
-    "busiest_slot": "Franja con más actividad: {{weekday}} a las {{hour}}",
-    "end_label": "{{value}} el {{day}}",
-    "end_label_week": "{{value}} en la semana del {{day}}"
+    "retry": "Reintentar"
   },
-  "top_events": {
-    "section": "Eventos con más inscripciones",
-    "seats": "{{count}} inscritos"
+  "top_volunteers": {
+    "section": "Voluntarios destacados",
+    "caption": "De los eventos de esta vista, histórico. Solo los anfitriones ven esta lista."
   },
   "create": {
     "action": "Crear evento",
     "a11y_personal": "Crear un evento",
-    "a11y_org": "Crear un evento para {{org}}"
+    "a11y_org": "Crear un evento para {{org}}",
+    "short": "Crear"
   },
   "events": {
     "label": "Qué eventos",
@@ -70,10 +73,6 @@
     "duplicate": "Duplicar",
     "edit": "Editar",
     "show_more": "Ver más",
-    "empty_upcoming_title": "No hay eventos próximos",
-    "empty_upcoming_body": "Crea uno y aparecerá aquí con sus números.",
-    "empty_past_title": "Todavía no hay eventos pasados",
-    "empty_past_body": "Los eventos que organices aparecerán aquí cuando terminen.",
     "error_title": "No se pudieron cargar tus eventos",
     "error_body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo.",
     "retry": "Reintentar",
@@ -94,7 +93,20 @@
     "meta_registered": "{{count}} inscritos",
     "meta_waiting": "{{count}} en espera",
     "meta_checked_in": "{{count}} con entrada registrada",
-    "check_in_a11y": "Registrar entradas en {{title}}"
+    "check_in_a11y": "Registrar entradas en {{title}}",
+    "empty_past": "Los eventos aparecen aquí cuando terminan.",
+    "empty_upcoming": "No hay nada programado todavía.",
+    "meta_showed_up": "{{checkedIn}} de {{registered}} asistieron",
+    "meta_hours": "{{hours}} h",
+    "meta_hours_not_logged": "Horas sin registrar",
+    "meta_signed_up": "{{count}} apuntados"
+  },
+  "first_event": {
+    "title": "Organiza tu primer evento",
+    "step_signup": "La gente se apunta y elige turno",
+    "step_checkin": "Tú registras su entrada el día del evento",
+    "step_hours": "Tú acreditas sus horas después",
+    "cta": "Crear evento"
   },
   "invites": {
     "section": "Invitaciones",
@@ -150,7 +162,9 @@
     "confirm_action": "Enviar",
     "confirm_dismiss_a11y": "Cerrar enviar dinero",
     "link_unavailable": "Este dispositivo no puede abrir la página de configuración.",
-    "link_error": "No se pudo abrir la página de configuración. Inténtalo de nuevo."
+    "link_error": "No se pudo abrir la página de configuración. Inténtalo de nuevo.",
+    "range_a11y": "Periodo de dinero",
+    "sent_on": "Enviado el {{date}}"
   },
   "team": {
     "section": "Equipo",
@@ -198,7 +212,8 @@
     "show_more": "Mostrar más",
     "loading_more": "Cargando…",
     "show_more_a11y": "Mostrar más colaboradores",
-    "invites_error": "No se pudieron cargar las invitaciones pendientes."
+    "invites_error": "No se pudieron cargar las invitaciones pendientes.",
+    "invite_row_sub": "Invitado · {{role}}"
   },
   "console": {
     "open": "Abrir la consola completa",
@@ -207,5 +222,10 @@
   "state": {
     "signin_title": "Inicia sesión para ver tu panel",
     "signin_body": "Tus eventos, inscripciones y herramientas de anfitrión aparecen aquí al iniciar sesión."
+  },
+  "range": {
+    "30d": "30 días",
+    "90d": "90 días",
+    "365d": "12 meses"
   }
 }
