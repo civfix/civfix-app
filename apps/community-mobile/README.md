@@ -150,9 +150,43 @@ pnpm --filter community-mobile build:appstore     # App Store release build -> p
 One-time prereqs: Xcode + command-line tools, `brew install fastlane`, `npm install -g eas-cli`,
 `eas login`. Append `--no-submit` (e.g. `pnpm --filter community-mobile build:testflight --
 --no-submit`) to just produce the ipa without uploading; the ipa lands in
-`apps/community-mobile/build/` (gitignored). Cloud equivalent, if the build doesn't need to happen
-on your machine: `eas build --platform ios --profile testflight|production --auto-submit` from
-`apps/community-mobile`.
+`apps/community-mobile/build/` (gitignored) unless `--output <path>` says otherwise. After the
+build the script reads the resolved config back out of the ipa (`EXConstants.bundle/app.config`)
+and refuses to upload one whose baked API URL is not what the profile promises. Cloud equivalent,
+if the build doesn't need to happen on your machine: `eas build --platform ios --profile
+testflight|production --auto-submit` from `apps/community-mobile`.
+
+### CI (`.github/workflows/deploy-mobile.yml`)
+
+The same script runs on a GitHub-hosted `macos-26` runner, on the same lane as the web deploy:
+
+| Event | Profile | Result |
+| --- | --- | --- |
+| push to `main` touching `apps/community-mobile/**`, `packages/**` or the root manifests | `testflight` | staging-API build in TestFlight |
+| manual run (Actions -> "Deploy mobile (TestFlight)" -> Run workflow, `profile=production`) | `production` | prod-API build uploaded to App Store Connect, nothing submitted for review |
+
+A prod mobile release is a button rather than a `v*` tag on purpose: the app version in
+`app.config.js` is not derived from the git tag, and a web-only release must not produce a mobile
+build. Every run is a cold build (EAS local builds do no caching) and takes on the order of half an
+hour or more; a running build is never cancelled by a newer push, because the remote build number
+has already been consumed by then.
+
+What CI needs, none of it in this repository:
+
+- `EXPO_TOKEN` repository secret: an access token for a robot user in the Expo organisation that
+  owns the project (`owner` in `app.config.js`), Developer role is enough.
+- EAS project credentials for `org.civfix.community` (expo.dev -> Project credentials -> iOS): the
+  distribution certificate + App Store provisioning profile, and an App Store Connect API key under
+  Service credentials so `eas submit` never prompts for an Apple ID.
+- The remote build number initialised once, above the highest build already in App Store Connect:
+  `eas build:version:set -p ios` from this directory. An unset counter is silently seeded from
+  `ios.buildNumber` in `app.config.js`, and a number App Store Connect has already seen is only
+  rejected at upload time, after the whole build.
+
+`app.config.js` pins `ios.appleTeamId` to the civfix Apple team (`WMDUV888LH`), so `expo prebuild`
+writes that `DEVELOPMENT_TEAM` into the Xcode project. EAS-managed signing overrides it for store
+builds and simulator builds ignore it; a developer outside that team who wants a device
+`expo run:ios` sets `CIVFIX_APPLE_TEAM_ID` to their own team first.
 
 An `appstore` upload still lands in TestFlight first; the actual App Store release is the manual
 App Store Connect step (attach the build to a version, submit for review).
@@ -168,9 +202,9 @@ for TestFlight testers, publish the `testflight` channel with
 to `eas build`), and never map the `testflight` channel onto a prod-published branch.
 
 Config plugins for the native modules (camera/mic/location permission strings, Google sign-in URL
-scheme, Apple auth, notifications) are declared in `apps/community-mobile/app.config.ts`. The API base
-URL comes from `EXPO_PUBLIC_API_URL` (default `http://localhost:8080`) and is surfaced via
-`extra.apiUrl`.
+scheme, Apple auth, notifications) are declared in `apps/community-mobile/app.config.js`. The API base
+URL comes from `EXPO_PUBLIC_API_URL`, surfaced via `extra.apiUrl`; when unset, dev builds fall back
+to `http://localhost:8080` and release builds to `https://api.civfix.org` (`src/lib/apiUrl.ts`).
 
 ## pnpm + Expo + the shared packages
 
@@ -266,5 +300,6 @@ pnpm --filter community-mobile exec expo export --platform ios   # JS bundle (no
 ```
 
 `.github/workflows/ci.yml` runs exactly that on every PR to `main` (the `community-mobile`
-job), plus `npx expo-doctor` from this directory. There is NO deploy workflow for mobile: nothing
-reaches a device until an EAS build (or a hand-driven archive) runs.
+job), plus `npx expo-doctor` from this directory. Deploying is `.github/workflows/deploy-mobile.yml`
+(see "CI" above): a merge to `main` puts a staging build in TestFlight; nothing reaches a device
+before that workflow, a local `scripts/store-build.sh` run or a hand-driven archive runs.

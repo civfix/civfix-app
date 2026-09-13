@@ -5,7 +5,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL ?? null
 
 const UPDATE_CHANNEL = process.env.CIVFIX_UPDATE_CHANNEL ?? null
 
-const APPLE_TEAM_ID = process.env.CIVFIX_APPLE_TEAM_ID ?? null
+const APPLE_TEAM_ID = process.env.CIVFIX_APPLE_TEAM_ID ?? "WMDUV888LH"
 
 const GOOGLE_WEB_CLIENT_ID =
   process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ??
@@ -90,7 +90,7 @@ module.exports = ({ config }) => ({
   ios: {
     bundleIdentifier: "org.civfix.community",
     buildNumber: "23",
-    ...(APPLE_TEAM_ID ? { appleTeamId: APPLE_TEAM_ID } : {}),
+    appleTeamId: APPLE_TEAM_ID,
     supportsTablet: true,
     associatedDomains: ["applinks:civfix.org", "applinks:www.civfix.org"],
     usesAppleSignIn: true,
@@ -269,14 +269,15 @@ module.exports = ({ config }) => ({
     },
     cartoApiKey: CARTO_API_KEY,
     eas: {
-      projectId: "11d261f5-ddc9-40c1-9f25-3a2cb9f49369",
+      projectId: "dea5514a-661e-4148-b099-ffe65443f806",
     },
   },
   updates: {
-    url: "https://u.expo.dev/11d261f5-ddc9-40c1-9f25-3a2cb9f49369",
+    url: "https://u.expo.dev/dea5514a-661e-4148-b099-ffe65443f806",
     ...(UPDATE_CHANNEL ? { requestHeaders: { "expo-channel-name": UPDATE_CHANNEL } } : {}),
   },
   runtimeVersion: {
     policy: "appVersion",
   },
+  owner: "civfix-app",
 })

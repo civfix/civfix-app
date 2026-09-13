@@ -1,0 +1,149 @@
+name: Deploy mobile (TestFlight)
+
+# Builds apps/community-mobile for iOS and uploads it to App Store Connect, where TestFlight hands it
+# to the internal tester group. Same shape as deploy-web.yml, one lane:
+#
+#   push to main                     -> the `testflight` profile  -> staging API (api.civfix.dev)
+#   manual run, profile=production   -> the `production` profile  -> prod API (api.civfix.org)
+#
+# Nothing here submits for App Store review. A production build lands in App Store Connect exactly
+# like a staging one; attaching it to a version and submitting is the manual step, so a prod mobile
+# release is deliberately a button, not a v* tag: the app's own version (app.config.js) is not
+# derived from the git tag and a web-only release must not produce a mobile build.
+#
+# The build runs `eas build --local` on this GitHub-hosted Mac through scripts/store-build.sh — the
+# same script a developer runs on a laptop — so CI and manual builds share ONE credential store and
+# ONE remote build-number counter (both held by EAS). No Apple credential lives in this repository.
+# EAS free plan: local builds and `eas submit` consume no build quota. Standard macOS runners are
+# free on a public repository; this workflow assumes that and never runs on pull requests.
+#
+# Required repository configuration (Settings -> Secrets and variables -> Actions):
+#   Secrets:  EXPO_TOKEN — an access token for a robot user in the Expo org that owns the project.
+# Required on EAS (Project credentials, iOS): a distribution certificate + App Store provisioning
+# profile, an App Store Connect API key (Service credentials), and a remote build number initialised
+# with `eas build:version:set -p ios` above the highest build already in App Store Connect — an
+# unset counter is seeded from app.config.js's ios.buildNumber, and a too-low number only fails at
+# upload time, after the whole build.
+#
+# Every build is cold: EAS local builds do no caching, and the generated ios/ tree is regenerated
+# from a clean copy each run. Only the CocoaPods download cache is worth restoring.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/community-mobile/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - ".npmrc"
+      - ".github/workflows/deploy-mobile.yml"
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "eas.json build profile: testflight (staging API) or production (prod API, upload only)"
+        type: choice
+        options: [testflight, production]
+        default: testflight
+
+permissions:
+  contents: read
+
+concurrency:
+  # One build at a time and NEVER cancel a running one: `eas build --local` has already incremented
+  # the remote build number by the time a cancellation lands, and a cancelled upload leaves a gap
+  # App Store Connect will not let the next build reuse.
+  group: deploy-mobile
+  cancel-in-progress: false
+
+jobs:
+  ios:
+    name: build + upload iOS
+    runs-on: macos-26
+    timeout-minutes: 120
+    env:
+      PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'testflight' }}
+    steps:
+      - name: Refuse a build from any ref but main
+        run: |
+          set -euo pipefail
+          case "$GITHUB_REF" in
+            refs/heads/main) ;;
+            *)
+              echo "::error::deploy-mobile.yml may only run on main; refusing '$GITHUB_REF'."
+              exit 1
+              ;;
+          esac
+          echo "ref $GITHUB_REF -> profile $PROFILE"
+
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      # eas-cli evaluates app.config.js in THIS checkout before it makes its own copy, and that file
+      # requires @civfix/shared/tokens from the workspace: no install, no build. The mobile app's
+      # postinstall also builds packages/shared's dist, which that require resolves to.
+      - run: pnpm install --frozen-lockfile
+
+      - name: Resolve the build target and assert the profile agrees with it
+        # The profile -> API URL promise lives in eas.json; check it BEFORE spending a macOS build on
+        # it. store-build.sh re-checks the same promise AFTER the build, from inside the ipa.
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$*"; exit 1; }
+          case "$PROFILE" in
+            testflight) target=testflight; expected_api="https://api.civfix.dev" ;;
+            production) target=appstore; expected_api="" ;;
+            *) fail "unknown profile '$PROFILE'" ;;
+          esac
+          node - "$PROFILE" "$expected_api" <<'NODE'
+          const [profileName, expectedApi] = process.argv.slice(2)
+          const eas = JSON.parse(require("fs").readFileSync("apps/community-mobile/eas.json", "utf8"))
+          const resolve = (name, seen = []) => {
+            const profile = eas.build[name]
+            if (!profile) throw new Error(`eas.json has no build profile '${name}'`)
+            if (seen.includes(name)) throw new Error(`eas.json profile '${name}' extends itself`)
+            const base = profile.extends ? resolve(profile.extends, [...seen, name]) : {}
+            return { ...base, ...profile, env: { ...base.env, ...profile.env } }
+          }
+          const profile = resolve(profileName)
+          if (profile.distribution === "internal") {
+            throw new Error(`profile '${profileName}' is distribution=internal; it cannot be uploaded to App Store Connect`)
+          }
+          const api = profile.env.EXPO_PUBLIC_API_URL ?? ""
+          if (api !== expectedApi) {
+            throw new Error(`profile '${profileName}' bakes EXPO_PUBLIC_API_URL='${api}', expected '${expectedApi}'`)
+          }
+          console.log(`profile ${profileName}: EXPO_PUBLIC_API_URL='${api || "(unset -> https://api.civfix.org)"}'`)
+          NODE
+          echo "TARGET=$target" >> "$GITHUB_ENV"
+
+      - uses: expo/expo-github-action@v9
+        with:
+          # Pinned to what the developer laptops run, so CI and local builds resolve the same CLI.
+          eas-version: 24.3.0
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Restore the CocoaPods download cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/CocoaPods
+          key: ${{ runner.os }}-cocoapods-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-cocoapods-
+
+      - name: Build the ipa and upload it to App Store Connect
+        # No artifact is kept: on a public repository anyone could download it, and an App Store
+        # signed ipa is only installable through TestFlight anyway. The build log records the
+        # version and build number.
+        working-directory: apps/community-mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          CI: "true"
+        run: scripts/store-build.sh "$TARGET" --output "$RUNNER_TEMP/civfix-$TARGET.ipa"
