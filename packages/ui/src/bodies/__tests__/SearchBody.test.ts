@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { getSearchBodyMode } from "../searchRecentStore"
+import { inlineEmptyHeight } from "../../primitives/stateViewModel"
 
 describe("SearchBody state", () => {
   it("keeps the resting search page for a blank navigation query", () => {
@@ -158,6 +159,8 @@ describe("Discovery leaderboard asks for the extras threshold, renders the previ
  */
 describe("Discovery leaderboard survives an empty board", () => {
   const source = readFileSync(new URL("../SearchBody.tsx", import.meta.url), "utf8")
+  const emptyNoticeHeight = inlineEmptyHeight
+  const LEGACY_EMPTY_CARD_HEIGHT = { titleOnly: 52, withBody: 94 }
 
   it("gates the section on the query SETTLING, never on the row count", () => {
     expect(source).toContain("const showLeaderboard = !!geo && leaderboardQuery.isSuccess")
@@ -180,6 +183,27 @@ describe("Discovery leaderboard survives an empty board", () => {
     expect(source).toContain("participantCount === 0")
   })
 
+  it("ends up SHORTER than the bespoke card it replaced, not taller", () => {
+    expect(emptyNoticeHeight(0)).toBeLessThan(LEGACY_EMPTY_CARD_HEIGHT.titleOnly)
+    expect(emptyNoticeHeight(2)).toBeLessThan(LEGACY_EMPTY_CARD_HEIGHT.withBody)
+    expect(emptyNoticeHeight(1)).toBeLessThanOrEqual(60)
+  })
+
+  it("renders the empty branch through the compact shared primitive", () => {
+    expect(source).toMatch(/isEmpty \? \(\s*<View style=\{styles\.leaderboardEmpty\}>\s*<EmptyState\s+variant="inline"/)
+    expect(source).not.toMatch(/leaderboardEmptyTitle|leaderboardEmptyBody/)
+    expect(source).not.toMatch(/leaderboardEmpty: \{[^}]*paddingVertical/)
+  })
+
+  it("drops the section's own dead space when the board is empty", () => {
+    expect(source).toContain("const isEmpty = entries.length === 0")
+    expect(source).toContain("styles.sectionHeader, precededBySection ? styles.laterTitle : null")
+    expect(source).not.toContain("[styles.sectionHeader, styles.laterTitle]")
+    expect(source).toContain("precededBySection={sections.people.length > 0 || sections.events.length > 0}")
+    expect(source).toMatch(/\{name && !isEmpty \? \(/)
+    expect(source).not.toMatch(/\{name \? <Text style=\{styles\.leaderboardSub\}/)
+  })
+
   it("still bans the layout tokens THE RULE forbids, now that the empty branch exists too", () => {
     for (const banned of [
       /contentContainerStyle=\{\[/,
@@ -190,5 +214,20 @@ describe("Discovery leaderboard survives an empty board", () => {
     ]) {
       expect(source).not.toMatch(banned)
     }
+  })
+})
+
+/**
+ * The Discovery preview draws the SHARED row, not a second copy of it. A re-inlined row here is how the
+ * search page and the host screens drift apart again, which is the whole reason the row was extracted.
+ */
+describe("the Discovery leaderboard draws the shared row", () => {
+  const source = readFileSync(new URL("../SearchBody.tsx", import.meta.url), "utf8")
+
+  it("imports LeaderboardRow from its own module and renders it for both the list and the you-row", () => {
+    expect(source).toContain('import { LeaderboardRow } from "./LeaderboardRow"')
+    expect(source).not.toMatch(/LeaderboardHitRow/)
+    expect(source).toContain("<LeaderboardRow key={entry.userId} entry={entry} />")
+    expect(source).toContain("<LeaderboardRow key={youEntry.userId} entry={youEntry} you />")
   })
 })

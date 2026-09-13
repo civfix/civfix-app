@@ -1,14 +1,15 @@
 import React from "react"
 import { View, ActivityIndicator, type TextStyle } from "react-native"
 import { makeThemedStyles, useTheme, useLayoutMode, type Theme } from "../theme"
-import { Text, iconMap, type LucideIcon } from "../typography"
+import { Icon, Text, iconMap, type LucideIcon } from "../typography"
 import { PrimaryButton, type ButtonVariant } from "./PrimaryButton"
 import { DETAILS_ARE_FULL_PAGE } from "../shell/detailPresentationPlatform"
 import { useT } from "../i18n"
 import { SkeletonList, type SkeletonRowKind } from "./skeleton"
+import { INLINE_EMPTY_LAYOUT } from "./stateViewModel"
 
 export type StateTone = "bloom" | "moss" | "neutral"
-export type StateVariant = "list" | "detail"
+export type StateVariant = "list" | "detail" | "inline"
 
 function toneBg(tone: StateTone, t: Theme): string {
   switch (tone) {
@@ -41,6 +42,7 @@ export function CenterBox({
 }) {
   const styles = useStyles()
   const inPullUpSheet = useLayoutMode() === "compact" && !DETAILS_ARE_FULL_PAGE
+  if (variant === "inline") return <View style={styles.centerInline}>{children}</View>
   const base = variant === "detail" ? styles.centerDetail : styles.centerList
   return <View style={[base, inPullUpSheet ? styles.centerCompact : null]}>{children}</View>
 }
@@ -85,9 +87,9 @@ function IconBubble({
 }
 
 export interface EmptyStateProps {
-  icon: LucideIcon
+  icon?: LucideIcon
   title: string
-  body: string
+  body?: string
   tone?: StateTone
   iconColor?: string
   iconSize?: number
@@ -112,24 +114,57 @@ export function EmptyState({
 }: EmptyStateProps) {
   const styles = useStyles()
   const t = useTheme()
+  const button = cta ? (
+    <PrimaryButton
+      label={cta.label}
+      icon={cta.icon}
+      variant={cta.variant}
+      onPress={cta.onPress}
+      style={variant === "inline" ? styles.ctaInline : styles.cta}
+    />
+  ) : null
+  if (variant === "inline") {
+    return (
+      <CenterBox variant="inline">
+        <View style={styles.inlineRow}>
+          {icon ? (
+            <View style={styles.inlineIcon}>
+              <Icon
+                icon={icon}
+                size={INLINE_EMPTY_LAYOUT.iconSize}
+                color={iconColor ?? toneIcon(tone, t)}
+              />
+            </View>
+          ) : null}
+          <View style={styles.inlineCopy}>
+            <Text variant="bodyStrong" style={styles.titleInline}>
+              {title}
+            </Text>
+            {body ? (
+              <Text variant="label" color={t.colors.textMuted} style={styles.bodyInline}>
+                {body}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+        {button}
+      </CenterBox>
+    )
+  }
   return (
     <CenterBox variant={variant}>
-      <IconBubble icon={icon} tone={tone} iconColor={iconColor} iconSize={iconSize} />
+      {icon ? (
+        <IconBubble icon={icon} tone={tone} iconColor={iconColor} iconSize={iconSize} />
+      ) : null}
       <Text variant="title" style={styles.title}>
         {title}
       </Text>
-      <Text variant="body" color={t.colors.textMuted} style={bodyStyle(variant, styles)}>
-        {body}
-      </Text>
-      {cta ? (
-        <PrimaryButton
-          label={cta.label}
-          icon={cta.icon}
-          variant={cta.variant}
-          onPress={cta.onPress}
-          style={styles.cta}
-        />
+      {body ? (
+        <Text variant="body" color={t.colors.textMuted} style={bodyStyle(variant, styles)}>
+          {body}
+        </Text>
       ) : null}
+      {button}
     </CenterBox>
   )
 }
@@ -200,6 +235,19 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "flex-start",
     paddingTop: t.space["8"],
   },
+  centerInline: {
+    paddingVertical: INLINE_EMPTY_LAYOUT.paddingVertical,
+  },
+  inlineRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: INLINE_EMPTY_LAYOUT.gap,
+  },
+  inlineIcon: {
+    height: INLINE_EMPTY_LAYOUT.titleLineHeight,
+    justifyContent: "center",
+  },
+  inlineCopy: { flex: 1, minWidth: 0 },
   bubble: {
     width: 64,
     height: 64,
@@ -209,7 +257,10 @@ const useStyles = makeThemedStyles((t) => ({
     marginBottom: t.space["4"],
   },
   title: { textAlign: "center", marginBottom: t.space["2"] },
+  titleInline: { lineHeight: INLINE_EMPTY_LAYOUT.titleLineHeight },
   body: { textAlign: "center", lineHeight: 20, maxWidth: 300 },
   bodyDetail: { textAlign: "center", lineHeight: 20, maxWidth: 280 },
+  bodyInline: { lineHeight: INLINE_EMPTY_LAYOUT.bodyLineHeight },
   cta: { marginTop: t.space["6"], minWidth: 220 },
+  ctaInline: { marginTop: t.space["3"], alignSelf: "flex-start" },
 }))
