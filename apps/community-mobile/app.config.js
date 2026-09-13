@@ -194,14 +194,13 @@ module.exports = ({ config }) => ({
     ],
   },
   plugins: [
-    "./plugins/with-fmt-consteval-fix",
     "expo-router",
     "expo-localization",
     [
       "expo-build-properties",
       {
         ios: {
-          buildReactNativeFromSource: true,
+          buildReactNativeFromSource: false,
           extraPods: [
             { name: "GoogleUtilities", modular_headers: true },
             { name: "RecaptchaInterop", modular_headers: true },

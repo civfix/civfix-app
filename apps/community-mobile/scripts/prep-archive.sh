@@ -100,11 +100,6 @@ if [ -z "${CIVFIX_APPLE_TEAM_ID:-}" ] && [ -f ios/civfix.xcodeproj/project.pbxpr
   fi
 fi
 
-# Build React core from source so Xcode emits React.framework / ReactNativeDependencies.framework
-# dSYMs - same reason as the eas.json production profile's RCT_USE_* vars. Must be exported for
-# `pod install`, which is when the choice is locked in.
-export RCT_USE_PREBUILT_RNCORE=0
-export RCT_USE_RN_DEP=0
 # CocoaPods chokes on an ASCII locale (see README).
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -122,7 +117,7 @@ fi
 echo "Regenerating the native ${platform} project (expo prebuild)..."
 # --no-install: node_modules is already resolved by the pnpm workspace at the repo root, and prebuild's
 # own install step would run the package manager from this sub-package. It also suppresses prebuild's
-# implicit `pod install`, which we run below ourselves so the RCT_USE_* vars above actually apply.
+# implicit `pod install`, which we run below ourselves under the UTF-8 locale exported above.
 npx expo prebuild --platform "$platform" --no-install
 
 if [ "$platform" = "ios" ]; then
