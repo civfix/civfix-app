@@ -1,4 +1,5 @@
 import type {
+  CleanupStatus,
   EventPhase,
   HostCapability,
   HostedEventDTO,
@@ -13,7 +14,17 @@ import type {
   OrgInviteIdentifierKind,
 } from "@civfix/shared"
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
-import { can, eventPhase, hostCapabilities } from "@civfix/shared/host"
+import type { EventWhenInput } from "@civfix/shared/datetime"
+import {
+  can,
+  deriveCleanupStatus,
+  eventEndsAtMs,
+  eventPhase,
+  hostCapabilities,
+  hostStage,
+  type EventWindowLike,
+  type HostStage,
+} from "@civfix/shared/host"
 
 export const DASHBOARD_RANGES = ["30d", "90d", "365d"] as const
 export type DashboardRange = (typeof DASHBOARD_RANGES)[number]
@@ -76,14 +87,15 @@ export const NO_HOSTED_EVENT_ACTIONS: HostedEventActions = {
   edit: false,
 }
 
-export function hostedEventActions(event: HostedEventStanding): HostedEventActions {
+export function hostedEventActions(event: HostedEventDTO, now: Date): HostedEventActions {
   const caps = hostedEventCapabilities(event)
   const manage = caps.has("manage_event")
+  const status = hostedEventStatus(event, now)
   return {
     hostTools: manage || caps.has("view_roster"),
-    emailAttendees: caps.has("broadcast"),
+    emailAttendees: caps.has("broadcast") && status !== "cancelled",
     duplicate: manage,
-    edit: manage,
+    edit: manage && status !== "done" && status !== "cancelled",
   }
 }
 
@@ -160,15 +172,24 @@ export function portfolioKpis(
   return pages?.[0]?.kpis ?? null
 }
 
+export function hostedEventWindow(event: HostedEventDTO): EventWindowLike {
+  return { status: event.status, scheduledAt: event.startsAt, endsAt: event.endsAt ?? null }
+}
+
+export function hostedEventWhen(event: HostedEventDTO): EventWhenInput {
+  return { ...hostedEventWindow(event), timezone: event.timezone ?? null }
+}
+
 export function hostedEventPhase(event: HostedEventDTO, now: Date): EventPhase {
-  return eventPhase(
-    {
-      status: event.status,
-      scheduledAt: event.startsAt,
-      endsAt: event.endsAt ?? null,
-    },
-    now.getTime(),
-  )
+  return eventPhase(hostedEventWindow(event), now.getTime())
+}
+
+export function hostedEventStatus(event: HostedEventDTO, now: Date): CleanupStatus {
+  return deriveCleanupStatus(hostedEventWindow(event), now.getTime())
+}
+
+export function hostedEventStage(event: HostedEventDTO, now: Date): HostStage {
+  return hostStage(hostedEventWindow(event), now.getTime())
 }
 
 export interface NextUpModel {
@@ -181,8 +202,13 @@ export function nextUpEvent(
   now: Date,
 ): NextUpModel | null {
   const dated = events
-    .map((event) => ({ event, phase: hostedEventPhase(event, now), at: Date.parse(event.startsAt) }))
-    .filter((entry) => entry.phase === "live" || entry.phase === "upcoming")
+    .map((event) => ({
+      event,
+      phase: hostedEventPhase(event, now),
+      status: hostedEventStatus(event, now),
+      at: Date.parse(event.startsAt),
+    }))
+    .filter((entry) => entry.status === "upcoming" || entry.status === "active")
     .sort((a, b) => {
       if (a.phase !== b.phase) return a.phase === "live" ? -1 : 1
       const left = Number.isFinite(a.at) ? a.at : Number.MAX_SAFE_INTEGER
@@ -218,7 +244,7 @@ export function nextUpCta(input: NextUpCtaInput): NextUpCtaKey {
   return "host_tools"
 }
 
-export type AttentionRowKind = "complete" | "credit_hours"
+export type AttentionRowKind = "log_hours"
 
 export interface AttentionRow {
   kind: AttentionRowKind
@@ -231,16 +257,14 @@ export interface AttentionRowsInput {
 }
 
 function attentionKind(event: HostedEventDTO, now: Date): AttentionRowKind | null {
-  if (event.status === "upcoming" && hostedEventPhase(event, now) === "ended") return "complete"
-  if (event.status === "done" && event.checkedInCount > 0 && event.hoursCredited === 0) {
-    return "credit_hours"
-  }
+  if (hostedEventStatus(event, now) !== "done") return null
+  if (!hostedEventCan(event, "manage_event")) return null
+  if (event.checkedInCount > 0 && (event.hoursCredited ?? 0) === 0) return "log_hours"
   return null
 }
 
-function startedAt(event: HostedEventDTO): number {
-  const at = Date.parse(event.startsAt)
-  return Number.isFinite(at) ? at : 0
+function endedAt(event: HostedEventDTO): number {
+  return eventEndsAtMs(hostedEventWindow(event)) ?? 0
 }
 
 export function attentionRows(input: AttentionRowsInput): AttentionRow[] {
@@ -249,10 +273,7 @@ export function attentionRows(input: AttentionRowsInput): AttentionRow[] {
     const kind = attentionKind(event, input.now)
     if (kind) rows.push({ kind, event })
   }
-  return rows.sort((a, b) => {
-    if (a.kind !== b.kind) return a.kind === "complete" ? -1 : 1
-    return startedAt(b.event) - startedAt(a.event)
-  })
+  return rows.sort((a, b) => endedAt(b.event) - endedAt(a.event))
 }
 
 export type ImpactHeroUnit = "hours" | "volunteers"

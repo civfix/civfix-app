@@ -81,10 +81,17 @@ describe("registrationWindowState", () => {
     ).toBe("cancelled")
   })
 
-  it("reports a finished event as closed", () => {
-    expect(registrationWindowState(page({ event: { ...page().event, status: "done" } }), NOW)).toBe(
-      "closed",
-    )
+  it("reports a finished event as closed, reading the END TIME rather than the stored status", () => {
+    const over = page({
+      event: {
+        ...page().event,
+        startsAt: "2026-04-30T17:00:00.000Z",
+        endsAt: "2026-04-30T21:00:00.000Z",
+      },
+    })
+    expect(registrationWindowState(over, NOW)).toBe("closed")
+    const stale = page({ event: { ...page().event, status: "done" } })
+    expect(registrationWindowState(stale, NOW)).toBe("open")
   })
 
   it("honors the registration window in both directions", () => {

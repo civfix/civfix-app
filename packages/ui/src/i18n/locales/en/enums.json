@@ -36,8 +36,8 @@
   },
   "eventStatus": {
     "upcoming": "Upcoming",
-    "active": "Active",
-    "done": "Done",
+    "active": "Happening now",
+    "done": "Ended",
     "cancelled": "Cancelled"
   },
   "registrationStatus": {

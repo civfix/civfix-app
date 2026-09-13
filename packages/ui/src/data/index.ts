@@ -99,7 +99,6 @@ export {
   useRequestEventResources,
   useSetMemberRole,
   useRemoveMember,
-  useCompleteCleanup,
   useClaimEventSlot,
   useGuestRsvpRequest,
   useGuestRsvpVerify,
@@ -111,7 +110,6 @@ export type {
   DuplicateCleanupVars,
   SetMemberRoleVars,
   RemoveMemberVars,
-  CompleteCleanupVars,
   ClaimEventSlotVars,
   GuestRsvpRequestVars,
   GuestRsvpVerifyVars,
@@ -327,3 +325,8 @@ export type {
 } from "./uploadMedia"
 
 export { randomId } from "./randomId"
+
+export { NOW_TICK_MS, useNow } from "./useNow"
+export type { UseNowOptions } from "./useNow"
+
+export { useEventBoundaryRefresh } from "./useEventBoundaryRefresh"

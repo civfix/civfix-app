@@ -121,7 +121,7 @@ describe("the tickets row is gated on the platform, not on a capability every ho
     expect(body).not.toContain("ticketsReachable")
     expect(body).not.toContain("!!openExternal")
     expect(strip(read("../hostSurfaceModel.ts"))).toContain(
-      'if (upcoming && can.manageTickets && input.consoleReachable) configure.push("tickets")',
+      'if (before && can.manageTickets && input.consoleReachable) configure.push("tickets")',
     )
   })
 

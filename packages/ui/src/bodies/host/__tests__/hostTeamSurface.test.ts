@@ -17,7 +17,7 @@ describe("host mode reaches the team", () => {
     expect(mode).not.toMatch(/myRole === "(organizer|cohost)"/)
     const model = strip(read("../hostSurfaceModel.ts"))
     expect(model).toContain('if (!cancelled && can.manageTeam) grow.push("invite_team")')
-    expect(model).toContain('if (upcoming && can.manageTeam) configure.push("team")')
+    expect(model).toContain('if (before && can.manageTeam) configure.push("team")')
   })
 
   it("builds the standing once from the DTO plus the viewer, so a legacy organizer still passes", () => {

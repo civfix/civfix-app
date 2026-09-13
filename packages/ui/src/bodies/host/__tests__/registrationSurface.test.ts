@@ -38,12 +38,14 @@ const mine = (over: Partial<MyEventRegistrationRef> = {}): MyEventRegistrationRe
 
 const surface = (over: {
   status?: CleanupDTO["status"]
+  ended?: boolean
   ticketTypes?: TicketTypeDTO[]
   registrationState?: CleanupDTO["registrationState"]
   myRegistration?: CleanupDTO["myRegistration"]
 } = {}) =>
   registrationSurface({
     status: over.status ?? "upcoming",
+    ended: over.ended ?? false,
     ticketTypes: over.ticketTypes ?? [type()],
     registrationState: over.registrationState ?? "open",
     myRegistration: over.myRegistration ?? null,
@@ -64,14 +66,19 @@ describe("registrationSurface", () => {
     expect(surface({ registrationState: "closed", myRegistration: mine() })).toBe("registered")
   })
 
-  it("keeps a registered viewer's seat visible on a DONE or CANCELLED event", () => {
-    expect(surface({ status: "done", myRegistration: mine() })).toBe("registered")
+  it("keeps a registered viewer's seat visible on an ENDED or CANCELLED event", () => {
+    expect(surface({ ended: true, myRegistration: mine() })).toBe("registered")
     expect(surface({ status: "cancelled", myRegistration: mine() })).toBe("registered")
   })
 
-  it("hides the block on a done/cancelled event the viewer never registered for", () => {
-    expect(surface({ status: "done" })).toBe("hidden")
+  it("hides the block on an ended/cancelled event the viewer never registered for", () => {
+    expect(surface({ ended: true })).toBe("hidden")
     expect(surface({ status: "cancelled" })).toBe("hidden")
+  })
+
+  it("reads the END TIME, not the stored status - a stale 'done' row no longer closes registration", () => {
+    expect(surface({ status: "done", ended: false })).toBe("form")
+    expect(surface({ status: "upcoming", ended: true })).toBe("hidden")
   })
 
   it("distinguishes a waitlisted registration from a seated one", () => {

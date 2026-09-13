@@ -26,14 +26,13 @@
     "checked_in": "{{count}} eingecheckt",
     "starts_in": "{{dow}} {{time}} · in {{relative}}",
     "started": "Vor {{ago}} begonnen",
-    "more_shifts": "{{count}} weitere Schichten in den Host-Werkzeugen"
+    "more_shifts": "{{count}} weitere Schichten in den Host-Werkzeugen",
+    "more_shifts_a11y": "Host-Werkzeuge öffnen, um alle {{total}} Schichten von {{title}} zu sehen"
   },
   "attention": {
     "section": "Zu erledigen",
-    "complete": "Als abgeschlossen markieren · endete {{dow}}",
-    "complete_a11y": "{{title}} als abgeschlossen markieren",
-    "credit_hours": "Stunden gutschreiben · {{count}} eingecheckt",
-    "credit_hours_a11y": "Stunden für {{title}} gutschreiben"
+    "log_hours": "Stunden eintragen · {{count}} eingecheckt",
+    "log_hours_a11y": "Stunden für {{title}} eintragen"
   },
   "impact": {
     "section": "Wirkung",
@@ -54,7 +53,8 @@
   },
   "top_volunteers": {
     "section": "Top-Freiwillige",
-    "caption": "Über die Events in dieser Ansicht, gesamt. Nur Hosts sehen diese Liste."
+    "caption": "Über die Events in dieser Ansicht, gesamt. Nur Hosts sehen diese Liste.",
+    "open_hint": "Öffnet das Profil"
   },
   "create": {
     "action": "Event erstellen",
@@ -100,7 +100,8 @@
     "meta_hours": "{{hours}} Std.",
     "meta_hours_not_logged": "Stunden nicht erfasst",
     "meta_cancelled": "Abgesagt",
-    "meta_signed_up": "{{count}} angemeldet"
+    "meta_signed_up": "{{count}} angemeldet",
+    "meta_underway": "Vor {{ago}} begonnen"
   },
   "first_event": {
     "title": "Veranstalte dein erstes Event",

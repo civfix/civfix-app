@@ -238,7 +238,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
     () => resolveComposerReport(draft.attachedReportId, draft.attachedReport, reportItems),
     [draft.attachedReportId, draft.attachedReport, reportItems],
   )
-  const eventCandidates = useMemo(() => attachableEvents(eventItems), [eventItems])
+  const eventCandidates = useMemo(() => attachableEvents(eventItems, Date.now()), [eventItems])
   const reportCandidates = useMemo(() => attachableReports(reportItems), [reportItems])
 
   const eventsLoaded = events.isSuccess || events.isError

@@ -1,9 +1,9 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { LeaderboardEntryDTO } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, webHover, webTransition } from "../theme"
+import { focusRingProps, makeThemedStyles, useTheme, webHover, webTransition } from "../theme"
 import { Avatar, LIST_ROW_MIN_HEIGHT } from "../primitives"
-import { Text } from "../typography"
+import { Text, Icon, iconMap } from "../typography"
 import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
 import { formatHoursDisplay } from "./formatHours"
@@ -19,6 +19,7 @@ export interface LeaderboardRowProps {
 
 export function LeaderboardRow({ entry, you = false, emphasis = "accent" }: LeaderboardRowProps) {
   const styles = useStyles()
+  const th = useTheme()
   const { t } = useT("leaderboard")
   const { locale } = useLocale()
   const hours = formatHoursDisplay(entry.hours, locale)
@@ -28,6 +29,7 @@ export function LeaderboardRow({ entry, you = false, emphasis = "accent" }: Lead
       onPress={() => useNavStore.getState().push({ kind: "person", id: entry.handle ?? entry.userId })}
       accessibilityRole="button"
       accessibilityLabel={t("row.a11y", { rank: entry.rank, name, hours })}
+      accessibilityHint={t("event-dashboard:top_volunteers.open_hint")}
       {...focusRingProps}
       style={(state) => [
         styles.row,
@@ -58,6 +60,7 @@ export function LeaderboardRow({ entry, you = false, emphasis = "accent" }: Lead
       >
         {t("hours_unit", { hours })}
       </Text>
+      <Icon icon={iconMap.ChevronRight} size={16} color={th.colors.textSubtle} />
     </Pressable>
   )
 }

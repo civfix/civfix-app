@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { View, Pressable, ScrollView, StyleSheet } from "react-native"
 import type { CleanupDTO, ContentReportReason } from "@civfix/shared"
-import { eventChip, dowLabel, timeLabel, timeRangeLabel } from "@civfix/shared/datetime"
+import { eventWhenLabel } from "@civfix/shared/datetime"
+import { deriveCleanupStatus, nextEventBoundaryMs } from "@civfix/shared/host"
 import { radius, focusRingProps, headingLevel, makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap, TextLink } from "../typography"
 import {
@@ -26,6 +27,9 @@ import {
   useAuthState,
   useRequireAuth,
   useGetTurnstileToken,
+  useEventBoundaryRefresh,
+  useNow,
+  NOW_TICK_MS,
   useProfile,
   useReportContent,
 } from "../data"
@@ -245,9 +249,13 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const donatePage = useOrgDonationPage(cleanup.donationOrg?.slug, {
     enabled: cleanup.donationOrg?.enabled === true,
   })
-  const isCancelled = cleanup.status === "cancelled"
-  const isDone = cleanup.status === "done"
-  const isEnded = hasEventEnded(cleanup, Date.now())
+  const boundaryAt = nextEventBoundaryMs(cleanup, Date.now())
+  const now = useNow(NOW_TICK_MS, { boundaryAt })
+  useEventBoundaryRefresh(cleanup, now, cleanup.id)
+  const status = deriveCleanupStatus(cleanup, now)
+  const isCancelled = status === "cancelled"
+  const isDone = status === "done"
+  const isEnded = hasEventEnded(cleanup, now)
   const isLive = !isCancelled && !isDone
   const isUpcoming = isLive && !isEnded
   const isRegistered = cleanup.myRegistration?.status === "registered"
@@ -273,7 +281,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
 
   const organizerProfile = useProfile(isOrganizer ? undefined : cleanup.organizer.id)
 
-  const { day, month } = eventChip(cleanup.scheduledAt, locale)
   const where = cleanup.address?.trim()
   const dist = eventDistanceLabel(cleanup.dist)
   const goingCount = cleanup.going
@@ -406,15 +413,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         <View style={styles.metaRows}>
           <View style={styles.metaRow}>
             <Icon icon={iconMap.Calendar} size={14} color={th.colors.textSubtle} />
-            <Text style={styles.metaWhen}>
-              {dowLabel(cleanup.scheduledAt, weekdays)}, {month} {day}
-            </Text>
-            <MetaDot color={th.colors.textSubtle} />
-            <Text style={styles.metaWhen}>
-              {cleanup.endsAt
-                ? timeRangeLabel(cleanup.scheduledAt, cleanup.endsAt, locale)
-                : timeLabel(cleanup.scheduledAt, locale)}
-            </Text>
+            <Text style={styles.metaWhen}>{eventWhenLabel(cleanup, { locale, weekdays })}</Text>
           </View>
           <View style={styles.metaRow}>
             <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />

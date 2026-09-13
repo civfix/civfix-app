@@ -74,23 +74,6 @@
     "unavailable_title": "Event nicht verfügbar",
     "unavailable_body": "Das Event konnte nicht geladen werden."
   },
-  "complete": {
-    "action": "Als abgeschlossen markieren",
-    "action_a11y": "Dieses Event als abgeschlossen markieren",
-    "too_early": "Verfügbar, sobald das Event startet",
-    "success_toast": "Als abgeschlossen markiert. Du kannst jetzt Stunden erfassen."
-  },
-  "complete_sheet": {
-    "title": "Dieses Event als abgeschlossen markieren?",
-    "dismiss_a11y": "Abschliessen verwerfen",
-    "body": "Mach das, sobald alle fertig sind.",
-    "point_visible": "Teilnehmende sehen das Event als beendet.",
-    "point_hours": "Du kannst allen Anwesenden Freiwilligenstunden gutschreiben.",
-    "point_final": "Das lässt sich nicht rückgängig machen.",
-    "confirm": "Abschließen",
-    "cancel": "Noch nicht",
-    "error": "Event konnte nicht aktualisiert werden. Versuche es erneut."
-  },
   "receipt": {
     "pending": "Die gastgebende Person hat noch keine Freiwilligenstunden erfasst.",
     "credited": "Dir wurden {{hours}} Freiwilligenstunden gutgeschrieben",

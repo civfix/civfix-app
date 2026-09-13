@@ -74,23 +74,6 @@
     "unavailable_title": "Evento no disponible",
     "unavailable_body": "No pudimos cargar este evento."
   },
-  "complete": {
-    "action": "Marcar como completado",
-    "action_a11y": "Marcar este evento como completado",
-    "too_early": "Disponible cuando empiece el evento",
-    "success_toast": "Marcado como completado. Ya puedes registrar horas."
-  },
-  "complete_sheet": {
-    "title": "¿Marcar este evento como completado?",
-    "dismiss_a11y": "Cerrar marcar como completado",
-    "body": "Hazlo cuando todo el mundo haya terminado.",
-    "point_visible": "Las personas asistentes verán el evento como finalizado.",
-    "point_hours": "Podrás acreditar horas de voluntariado a quienes asistieron.",
-    "point_final": "Esta acción no se puede deshacer.",
-    "confirm": "Marcar completado",
-    "cancel": "Todavía no",
-    "error": "No se pudo actualizar el evento. Inténtalo de nuevo."
-  },
   "receipt": {
     "pending": "La persona anfitriona aún no ha registrado las horas de voluntariado.",
     "credited": "Se te acreditaron {{hours}} horas de voluntariado",

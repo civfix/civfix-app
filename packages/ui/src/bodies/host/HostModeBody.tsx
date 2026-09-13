@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View, type LayoutChangeEvent } from "react-native"
 import type { CleanupDTO, EventInsights, EventPhase, EventSlotDTO } from "@civfix/shared"
-import { dowLabel, timeLabel } from "@civfix/shared/datetime"
-import { eventPhase } from "@civfix/shared/host"
+import { eventWhenLabel } from "@civfix/shared/datetime"
+import { eventPhase, eventEndsAtMs, hostStage, nextEventBoundaryMs } from "@civfix/shared/host"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, iconMap, type LucideIcon } from "../../typography"
 import {
@@ -16,7 +16,6 @@ import {
   shareLink,
   useToast,
 } from "../../primitives"
-import { CompleteEventSheet } from "../../primitives/CompleteEventSheet"
 import { RequestResourcesSheet } from "../../primitives/RequestResourcesSheet"
 import { useScannerAvailable } from "../../primitives/useScannerAvailable"
 import {
@@ -31,7 +30,8 @@ import {
   useAuthState,
   useCancelCleanup,
   useCleanup,
-  useCompleteCleanup,
+  useEventBoundaryRefresh,
+  useNow,
   useRequestEventResources,
 } from "../../data"
 import {
@@ -43,7 +43,7 @@ import {
 import { useLocale, useRelativeTime, useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { eventCompletionState } from "../eventLifecycle"
+import { appErrorCode } from "../errorCode"
 import { FeedNotice } from "../FeedNotice"
 import { ConsoleLinkRow } from "./dashboard/ConsoleLinkRow"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
@@ -71,7 +71,6 @@ const CTA_ICONS: Readonly<Record<HostCtaKey, LucideIcon>> = {
   message: iconMap.Megaphone,
   check_in: iconMap.QrCode,
   scan: iconMap.ScanLine,
-  complete: iconMap.CheckCheck,
   log_hours: iconMap.Clock,
   duplicate: iconMap.Copy,
   edit: iconMap.Pencil,
@@ -86,22 +85,13 @@ const ROW_ICONS: Readonly<Record<HostRowKey, keyof typeof iconMap>> = {
   scan: "ScanLine",
   walkup: "UserPlus",
   mark_no_shows: "CheckCheck",
+  log_hours: "Clock",
   edit: "Pencil",
   team: "Users",
   tickets: "Ticket",
   resources: "Building2",
   duplicate: "Copy",
   cancel: "Ban",
-}
-
-function useTicker(active: boolean): number {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    if (!active) return
-    const id = setInterval(() => setNow(Date.now()), PHASE_TICK_MS)
-    return () => clearInterval(id)
-  }, [active])
-  return now
 }
 
 function useHostCapabilities(cleanup: CleanupDTO | undefined): HostSurfaceCapabilities {
@@ -117,13 +107,17 @@ function useHostCapabilities(cleanup: CleanupDTO | undefined): HostSurfaceCapabi
     viewAnalytics: hasHostCapability(standing, "view_analytics"),
     cancelEvent: hasHostCapability(standing, "cancel_event"),
     requestResources: hasHostCapability(standing, "request_resources"),
+    logHours: hasHostCapability(standing, "manage_event"),
   }
 }
 
+function cancelErrorKey(err: unknown): string {
+  return appErrorCode(err) === "CONFLICT" ? "state.cancel_ended" : "state.cancel_error"
+}
+
 function whenLine(cleanup: CleanupDTO, weekdays: readonly string[], locale: string): string {
-  const parts = [dowLabel(cleanup.scheduledAt, weekdays), timeLabel(cleanup.scheduledAt, locale)]
-  if (cleanup.address) parts.push(cleanup.address)
-  return parts.join(" · ")
+  const when = eventWhenLabel(cleanup, { locale, weekdays })
+  return cleanup.address ? `${when} · ${cleanup.address}` : when
 }
 
 function InsightsSection({
@@ -190,14 +184,14 @@ export function HostModeBody({ id }: { id: string }) {
   const scannerAvailable = useScannerAvailable()
 
   const event = cleanup.data
-  const settled = !!event && (event.status === "done" || event.status === "cancelled")
-  const now = useTicker(!settled)
-  const clockPhase: EventPhase = event
-    ? eventPhase(
-        { status: event.status, scheduledAt: event.scheduledAt, endsAt: event.endsAt ?? null },
-        now,
-      )
-    : "upcoming"
+  const clock = event
+    ? { status: event.status, scheduledAt: event.scheduledAt, endsAt: event.endsAt ?? null }
+    : null
+  const boundaryAt = clock === null ? null : nextEventBoundaryMs(clock, Date.now())
+  const now = useNow(boundaryAt === null ? 0 : PHASE_TICK_MS, { boundaryAt })
+  const clockPhase: EventPhase = clock === null ? "upcoming" : eventPhase(clock, now)
+  const stage = clock === null ? "upcoming" : hostStage(clock, now)
+  useEventBoundaryRefresh(clock, now, id)
 
   const insights = useEventInsights(id, {
     enabled: can.viewAnalytics,
@@ -213,12 +207,10 @@ export function HostModeBody({ id }: { id: string }) {
   const [walkupOpen, setWalkupOpen] = useState(false)
   const [duplicating, setDuplicating] = useState(false)
   const [cancelling, setCancelling] = useState(false)
-  const [completing, setCompleting] = useState(false)
   const [requesting, setRequesting] = useState(false)
   const [markingNoShows, setMarkingNoShows] = useState(false)
 
   const cancelCleanup = useCancelCleanup()
-  const completeCleanup = useCompleteCleanup()
   const requestResources = useRequestEventResources(id)
   const markNoShows = useMarkEventNoShows(id)
 
@@ -255,7 +247,7 @@ export function HostModeBody({ id }: { id: string }) {
   }, [id])
 
   const onLogHours = useCallback(() => {
-    useNavStore.getState().push({ kind: "cleanup", id })
+    useNavStore.getState().push({ kind: "host-log-hours", id })
   }, [id])
 
   const onTickets = useCallback(() => {
@@ -282,10 +274,6 @@ export function HostModeBody({ id }: { id: string }) {
     [cancelCleanup, id],
   )
 
-  const onConfirmComplete = useCallback(() => {
-    completeCleanup.mutate({ id }, { onSuccess: () => setCompleting(false) })
-  }, [completeCleanup, id])
-
   const onSubmitRequest = useCallback(
     (message: string) => {
       requestResources.mutate({ message }, { onSuccess: () => setRequesting(false) })
@@ -305,8 +293,6 @@ export function HostModeBody({ id }: { id: string }) {
         case "check_in":
         case "scan":
           return onCheckin
-        case "complete":
-          return () => setCompleting(true)
         case "log_hours":
           return onLogHours
         case "duplicate":
@@ -357,22 +343,15 @@ export function HostModeBody({ id }: { id: string }) {
   }
 
   const startsAt = Date.parse(event.scheduledAt)
-  const endsAt = event.endsAt ? Date.parse(event.endsAt) : NaN
+  const endsAt = eventEndsAtMs(event)
+  const checkedInSeats = insights.data?.seats.checkedIn ?? event.checkedInCount ?? 0
   const surface: HostSurfaceInput = {
-    phase,
+    stage,
     now,
     startsAt: Number.isFinite(startsAt) ? startsAt : null,
-    endsAt: Number.isFinite(endsAt) ? endsAt : null,
     registeredSeats: insights.data?.seats.registered ?? event.registeredCount ?? 0,
     hoursCredited: insights.data?.hours.credited ?? 0,
     scannerAvailable,
-    completionArmed:
-      eventCompletionState({
-        actsAsHost: can.manageEvent,
-        status: event.status,
-        scheduledAt: event.scheduledAt,
-        now,
-      }) === "ready",
     can,
   }
   const primary = hostPrimaryCta(surface)
@@ -382,7 +361,7 @@ export function HostModeBody({ id }: { id: string }) {
     ? Math.max(0, insights.data.seats.registered - insights.data.seats.checkedIn)
     : 0
   const cards = hostActionCards({
-    phase,
+    stage,
     can,
     unmarked,
     scannerAvailable,
@@ -411,6 +390,10 @@ export function HostModeBody({ id }: { id: string }) {
         return stillToCheckIn > 0 ? t("row.check_in_sub", { count: stillToCheckIn }) : undefined
       case "mark_no_shows":
         return t("row.mark_no_shows_sub", { count: unmarked })
+      case "log_hours":
+        return checkedInSeats > 0
+          ? t("row.log_hours_sub", { count: checkedInSeats })
+          : t("row.log_hours_none")
       case "resources":
         return event.jurisdictionGeoid == null ? t("row.resources_no_city") : undefined
       default:
@@ -419,11 +402,11 @@ export function HostModeBody({ id }: { id: string }) {
   }
 
   const relativeLine =
-    phase === "cancelled"
+    stage === "cancelled"
       ? t("phase.called_off")
-      : phase === "ended"
-        ? t("phase.ended_on", { when: relative(event.scheduledAt, now) })
-        : phase === "live"
+      : stage === "past" || stage === "wrapping_up"
+        ? t("phase.ended_on", { when: relative(endsAt ?? event.scheduledAt, now) })
+        : stage === "underway"
           ? t("phase.started", { when: relative(event.scheduledAt, now) })
           : t("phase.starts", { when: relative(now, startsAt) })
 
@@ -535,20 +518,10 @@ export function HostModeBody({ id }: { id: string }) {
       <CancelEventSheet
         visible={cancelling}
         pending={cancelCleanup.isPending}
-        error={cancelCleanup.isError ? t("state.cancel_error") : null}
+        error={cancelCleanup.isError ? t(cancelErrorKey(cancelCleanup.error)) : null}
         onConfirm={onConfirmCancel}
         onClose={() => {
           if (!cancelCleanup.isPending) setCancelling(false)
-        }}
-      />
-
-      <CompleteEventSheet
-        visible={completing}
-        pending={completeCleanup.isPending}
-        error={completeCleanup.isError ? t("state.complete_error") : null}
-        onConfirm={onConfirmComplete}
-        onClose={() => {
-          if (!completeCleanup.isPending) setCompleting(false)
         }}
       />
 

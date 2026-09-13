@@ -1,16 +1,17 @@
 import React, { useCallback } from "react"
 import { Pressable, View } from "react-native"
 import type { EventPhase, EventSlotDTO, HostedEventDTO } from "@civfix/shared"
-import { dowLabel, timeLabel } from "@civfix/shared/datetime"
+import { eventWhenParts } from "@civfix/shared/datetime"
+import { deriveCleanupStatus } from "@civfix/shared/host"
 import { focusRingProps, makeThemedStyles, useTheme } from "../../../theme"
-import { Text, iconMap, type LucideIcon } from "../../../typography"
+import { Text, TextLink, iconMap, type LucideIcon } from "../../../typography"
 import { DateBadge, MetaDot, Meter, PrimaryButton, SectionCard } from "../../../primitives"
 import { LIST_TILE } from "../../../primitives"
 import { useLocale, useRelativeTime, useT } from "../../../i18n"
 import { boardHasTimedSlots, slotDisplayOrder } from "../../eventSlotsModel"
 import { PhaseDot } from "../PhaseHeader"
 import { ShiftRow } from "../ShiftRow"
-import type { NextUpCtaKey } from "./dashboardModel"
+import { hostedEventWhen, hostedEventWindow, type NextUpCtaKey } from "./dashboardModel"
 
 const MAX_STRIP_SHIFTS = 3
 
@@ -43,8 +44,10 @@ export interface NextUpCardProps {
   cta: NextUpCtaKey
   slots: readonly EventSlotDTO[]
   liveCheckedIn: number | null
+  now: number
   onOpen: (event: HostedEventDTO) => void
   onPrimary: (event: HostedEventDTO) => void
+  onHostTools: (event: HostedEventDTO) => void
 }
 
 export function NextUpCard({
@@ -53,8 +56,10 @@ export function NextUpCard({
   cta,
   slots,
   liveCheckedIn,
+  now,
   onOpen,
   onPrimary,
+  onHostTools,
 }: NextUpCardProps) {
   const styles = useStyles()
   const th = useTheme()
@@ -64,19 +69,21 @@ export function NextUpCard({
 
   const open = useCallback(() => onOpen(event), [event, onOpen])
   const primary = useCallback(() => onPrimary(event), [event, onPrimary])
+  const hostTools = useCallback(() => onHostTools(event), [event, onHostTools])
 
-  const now = new Date()
+  const underway = deriveCleanupStatus(hostedEventWindow(event), now) === "active"
   const live = phase === "live"
   const capacity = event.capacity ?? null
   const seats =
     capacity !== null
       ? t("next_up.signed_up_of", { registered: event.registeredCount, capacity })
       : t("next_up.signed_up", { registered: event.registeredCount })
-  const when = live
+  const parts = eventWhenParts(hostedEventWhen(event), { locale, weekdays, now })
+  const when = underway
     ? t("next_up.started", { ago: relative(event.startsAt, now) })
     : t("next_up.starts_in", {
-        dow: dowLabel(event.startsAt, weekdays),
-        time: timeLabel(event.startsAt, locale),
+        dow: parts.dow,
+        time: parts.zone === null ? parts.time : `${parts.time} ${parts.zone}`,
         relative: relative(now, Date.parse(event.startsAt)),
       })
 
@@ -145,12 +152,21 @@ export function NextUpCard({
         {strip.length > 0 ? (
           <View style={styles.shifts}>
             {strip.map((slot) => (
-              <ShiftRow key={slot.id} slot={slot} />
+              <ShiftRow key={slot.id} slot={slot} timeZone={event.timezone ?? undefined} />
             ))}
             {hidden > 0 ? (
-              <Text variant="caption" numberOfLines={1}>
+              <TextLink
+                variant="label"
+                standalone
+                numberOfLines={1}
+                accessibilityLabel={t("next_up.more_shifts_a11y", {
+                  total: timed.length,
+                  title: event.title,
+                })}
+                onPress={hostTools}
+              >
                 {t("next_up.more_shifts", { count: hidden })}
-              </Text>
+              </TextLink>
             ) : null}
           </View>
         ) : null}

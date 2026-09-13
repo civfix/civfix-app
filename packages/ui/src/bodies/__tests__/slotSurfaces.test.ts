@@ -89,7 +89,7 @@ describe("an ENDED event's slot board is read-only, not just a DONE one", () => 
   })
 
   it("takes `ended` from the SHARED lifecycle helper, not a second local clock rule", () => {
-    expect(detail).toContain("const isEnded = hasEventEnded(cleanup, Date.now())")
+    expect(detail).toContain("const isEnded = hasEventEnded(cleanup, now)")
     expect(detail).toContain('from "./eventLifecycle"')
   })
 

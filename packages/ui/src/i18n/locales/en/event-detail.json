@@ -74,23 +74,6 @@
     "unavailable_title": "Event unavailable",
     "unavailable_body": "Couldn't load this event."
   },
-  "complete": {
-    "action": "Mark as completed",
-    "action_a11y": "Mark this event as completed",
-    "too_early": "Available once the event starts",
-    "success_toast": "Marked completed. You can log hours now."
-  },
-  "complete_sheet": {
-    "title": "Mark this event as completed?",
-    "dismiss_a11y": "Dismiss mark completed",
-    "body": "Do this once everyone has wrapped up.",
-    "point_visible": "Attendees will see the event as finished.",
-    "point_hours": "You can credit volunteer hours to everyone who showed up.",
-    "point_final": "This cannot be undone.",
-    "confirm": "Mark completed",
-    "cancel": "Not yet",
-    "error": "Couldn't update this event. Try again."
-  },
   "receipt": {
     "pending": "The host hasn't logged volunteer hours yet.",
     "credited": "You were credited {{hours}} volunteer hours",

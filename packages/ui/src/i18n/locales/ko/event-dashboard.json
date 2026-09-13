@@ -26,14 +26,13 @@
     "checked_in": "{{count}}명 체크인",
     "starts_in": "{{dow}} {{time}} · {{relative}} 후",
     "started": "{{ago}} 전 시작",
-    "more_shifts": "호스트 도구에 {{count}}개 교대 더 있음"
+    "more_shifts": "호스트 도구에 {{count}}개 교대 더 있음",
+    "more_shifts_a11y": "호스트 도구를 열어 {{title}}의 교대 {{total}}개 모두 보기"
   },
   "attention": {
     "section": "처리할 일",
-    "complete": "완료로 표시 · {{dow}} 종료",
-    "complete_a11y": "{{title}}을(를) 완료로 표시",
-    "credit_hours": "봉사 시간 인정 · {{count}}명 체크인",
-    "credit_hours_a11y": "{{title}}의 봉사 시간 인정"
+    "log_hours": "봉사 시간 기록 · {{count}}명 체크인",
+    "log_hours_a11y": "{{title}}의 봉사 시간 기록"
   },
   "impact": {
     "section": "성과",
@@ -54,7 +53,8 @@
   },
   "top_volunteers": {
     "section": "우수 참여자",
-    "caption": "이 화면의 이벤트 전체 기간 기준입니다. 호스트에게만 보입니다."
+    "caption": "이 화면의 이벤트 전체 기간 기준입니다. 호스트에게만 보입니다.",
+    "open_hint": "프로필을 엽니다"
   },
   "create": {
     "action": "이벤트 만들기",
@@ -100,7 +100,8 @@
     "meta_hours": "{{hours}}시간",
     "meta_hours_not_logged": "시간 미기록",
     "meta_cancelled": "취소됨",
-    "meta_signed_up": "{{count}}명 신청"
+    "meta_signed_up": "{{count}}명 신청",
+    "meta_underway": "{{ago}} 전 시작"
   },
   "first_event": {
     "title": "첫 이벤트를 열어보세요",

@@ -139,21 +139,6 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
     expect(helper).toContain("queryKey: queryKeys.orgEventsRoot")
   })
 
-  it("completing an event invalidates the detail (every alias), the list prefix, the ROSTER and the hours read-back", () => {
-    // Like the claim above, the completion wiring lives in the exported options builder (the hook just
-    // injects the api client) - so the behavioural contract is driven directly against a QueryClient in
-    // data/__tests__/complete-cleanup-cache.test.ts and this only pins the shape of the source.
-    const fn = cleanupsSource.slice(
-      cleanupsSource.indexOf("export function completeCleanupMutationOptions"),
-      cleanupsSource.indexOf("export interface ClaimEventSlotVars"),
-    )
-    expect(fn).toContain("cleanupDetailFilters(id)")
-    expect(fn).toContain("invalidateCleanupLists(qc)")
-    expect(fn).toContain("queryKeys.eventHours(id)")
-    // Completion is what mounts the hours editor, and that editor renders one row per attendee joined
-    // from this key - a roster cached before the last RSVPs leaves the host with nobody to credit.
-    expect(fn).toContain("queryKeys.cleanupAttendees(id)")
-  })
 })
 
 describe("hooks/posts.ts", () => {

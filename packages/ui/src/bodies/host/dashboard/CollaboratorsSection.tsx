@@ -227,8 +227,9 @@ function PendingInviteRow({
         <TextLink
           variant="label"
           standalone
+          disabled={pending}
           accessibilityLabel={t("team.revoke")}
-          onPress={pending ? () => {} : () => onRevoke(invite.id)}
+          onPress={() => onRevoke(invite.id)}
         >
           {t("team.revoke")}
         </TextLink>
@@ -312,8 +313,9 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
     <TextLink
       variant="label"
       standalone
+      disabled={quotaReached}
       accessibilityLabel={t("team.invite")}
-      onPress={quotaReached ? () => {} : () => setInviteOpen(true)}
+      onPress={() => setInviteOpen(true)}
     >
       {t("team.invite")}
     </TextLink>
@@ -334,10 +336,7 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
     )
   }
 
-  const notes = [
-    invitesQuery.isError ? t("team.invites_error") : null,
-    quotaReached ? t("team.invite_quota") : null,
-  ].filter((line): line is string => line !== null)
+  const notes = invitesQuery.isError ? [t("team.invites_error")] : []
 
   return (
     <View>
@@ -346,6 +345,13 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
         trailing={invite}
         variant="list"
         dividerInset={LIST_DIVIDER_INSET}
+        listHeader={
+          quotaReached ? (
+            <View style={styles.noteRow}>
+              <Text variant="caption">{t("team.invite_quota")}</Text>
+            </View>
+          ) : undefined
+        }
       >
         {members.length === 0 && invites.length === 0 ? (
           <View style={styles.noteRow}>

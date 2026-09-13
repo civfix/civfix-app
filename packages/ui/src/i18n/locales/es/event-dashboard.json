@@ -26,14 +26,13 @@
     "checked_in": "{{count}} con entrada registrada",
     "starts_in": "{{dow}} {{time}} · en {{relative}}",
     "started": "Empezó hace {{ago}}",
-    "more_shifts": "{{count}} turnos más en Herramientas de anfitrión"
+    "more_shifts": "{{count}} turnos más en Herramientas de anfitrión",
+    "more_shifts_a11y": "Abrir las herramientas de anfitrión para ver los {{total}} turnos de {{title}}"
   },
   "attention": {
     "section": "Requiere atención",
-    "complete": "Marcar como finalizado · terminó el {{dow}}",
-    "complete_a11y": "Marcar {{title}} como finalizado",
-    "credit_hours": "Acreditar horas · {{count}} con entrada registrada",
-    "credit_hours_a11y": "Acreditar horas de {{title}}"
+    "log_hours": "Registrar horas · {{count}} con entrada registrada",
+    "log_hours_a11y": "Registrar horas de {{title}}"
   },
   "impact": {
     "section": "Impacto",
@@ -54,7 +53,8 @@
   },
   "top_volunteers": {
     "section": "Voluntarios destacados",
-    "caption": "De los eventos de esta vista, histórico. Solo los anfitriones ven esta lista."
+    "caption": "De los eventos de esta vista, histórico. Solo los anfitriones ven esta lista.",
+    "open_hint": "Abre su perfil"
   },
   "create": {
     "action": "Crear evento",
@@ -100,7 +100,8 @@
     "meta_hours": "{{hours}} h",
     "meta_hours_not_logged": "Horas sin registrar",
     "meta_cancelled": "Cancelado",
-    "meta_signed_up": "{{count}} apuntados"
+    "meta_signed_up": "{{count}} apuntados",
+    "meta_underway": "Empezó hace {{ago}}"
   },
   "first_event": {
     "title": "Organiza tu primer evento",

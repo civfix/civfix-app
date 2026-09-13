@@ -1,45 +1,14 @@
 /**
- * The two pure state machines of the event LIFECYCLE region on the event detail (P2):
+ * The attendee-facing state machine of the event LIFECYCLE region on the event detail (P2).
  *
- *   - `eventCompletionState`  - should the host see "Mark completed", and is it armed yet?
- *   - `hoursReceiptState`     - what does an ATTENDEE see about the hours the host credited?
- *
- * `now` is INJECTED into both. Nothing in this file reads the clock, so a body can memoize on a
- * ticking `now` and the tests never need fake timers (the `bodies/__tests__` house pattern -
- * profileEventSplit / eventBlendScore).
+ * `now` is INJECTED, so a body can memoize on a ticking `now` and the tests never need fake timers
+ * (the `bodies/__tests__` house pattern - profileEventSplit / eventBlendScore). The "is it over"
+ * question is NOT answered here: it belongs to the shared clock, and this module only re-exports it
+ * so the detail surfaces keep one import site.
  */
 import type { CleanupStatus } from "@civfix/shared"
 
-export type EventCompletionState =
-  /** Not an acting host, or the event is already done / cancelled - render nothing. */
-  | "hidden"
-  /** Acting host, but the event has not started yet - the affordance is visible and disarmed. */
-  | "too-early"
-  /** Acting host, the start time has passed, status is upcoming|active - the action is armed. */
-  | "ready"
-
-/**
- * Mirrors the server gate on `completeCleanup` exactly: acting host (organizer OR cohost),
- * `status !== "cancelled"`, `scheduledAt <= now`. Keeping the two in step is the point of this
- * function - a "ready" that the server would 409 is worse than a button that says "not yet".
- *
- * BOUNDARY: `scheduledAt === now` is "ready" (the server's gate is `<=`, not `<`).
- *
- * An UNPARSEABLE `scheduledAt` fails CLOSED to "too-early": we cannot show it has started, and
- * arming an irreversible action on a date we could not read would just produce a server rejection.
- */
-export function eventCompletionState(input: {
-  actsAsHost: boolean
-  status: CleanupStatus
-  scheduledAt: string
-  now: number
-}): EventCompletionState {
-  if (!input.actsAsHost) return "hidden"
-  if (input.status === "done" || input.status === "cancelled") return "hidden"
-  const at = new Date(input.scheduledAt).getTime()
-  if (Number.isNaN(at)) return "too-early"
-  return at <= input.now ? "ready" : "too-early"
-}
+export { hasEventEnded } from "@civfix/shared/host"
 
 export type HoursReceiptState =
   /** Event not done, the viewer is an acting host, or the viewer never joined - render nothing. */
@@ -80,19 +49,4 @@ export function hoursReceiptState(input: {
   if (!input.joined) return "hidden"
   if (input.myHours !== null && input.myHours > 0) return "credited"
   return input.anyLogged ? "not-credited" : "pending"
-}
-
-export const EVENT_END_GRACE_MS = 24 * 60 * 60 * 1000
-
-export interface EventWindow {
-  scheduledAt: string
-  endsAt?: string | null
-}
-
-export function hasEventEnded(event: EventWindow, now: number): boolean {
-  const ends = event.endsAt == null ? Number.NaN : Date.parse(event.endsAt)
-  if (!Number.isNaN(ends)) return ends < now
-  const starts = Date.parse(event.scheduledAt)
-  if (Number.isNaN(starts)) return true
-  return starts + EVENT_END_GRACE_MS < now
 }

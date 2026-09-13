@@ -261,8 +261,6 @@ export type { ReportContentSheetProps } from "./ReportContentSheet"
 export { CancelEventSheet } from "./CancelEventSheet"
 export type { CancelEventSheetProps } from "./CancelEventSheet"
 
-export { CompleteEventSheet } from "./CompleteEventSheet"
-export type { CompleteEventSheetProps } from "./CompleteEventSheet"
 
 export { RequestResourcesSheet } from "./RequestResourcesSheet"
 export type { RequestResourcesSheetProps } from "./RequestResourcesSheet"

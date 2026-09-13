@@ -120,11 +120,11 @@ describe("splitProfileEvents (legacy: upcomingEvents undefined)", () => {
     expect(split.pastHosted).toEqual([])
   })
 
-  it("treats an unparseable schedule as past rather than upcoming", () => {
+  it("keeps a schedule it cannot read out of Past - the shared clock fails closed on 'has it ended'", () => {
     const split = splitProfileEvents([event("a", "not-a-date", "someone")], undefined, "me", NOW)
 
-    expect(split.pastAttended.map((e) => e.id)).toEqual(["a"])
-    expect(split.upcomingGoing).toEqual([])
+    expect(split.upcomingGoing.map((e) => e.id)).toEqual(["a"])
+    expect(split.pastAttended).toEqual([])
   })
 
   it("preserves the source order within each bucket", () => {

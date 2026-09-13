@@ -1033,14 +1033,6 @@ const fakeApi: ApiClient = new Proxy(
           credited: args?.entries?.length ?? 0,
         })
       }
-      if (prop === "completeCleanup") {
-        return async (args?: { id?: string }): Promise<CleanupDTO> => {
-          const id = args?.id ?? ""
-          const next: CleanupDTO = { ...(CLEANUPS_BY_ID[id] ?? CLEANUP_DETAIL), status: "done" }
-          if (id) CLEANUPS_BY_ID[id] = next
-          return next
-        }
-      }
       if (prop === "claimEventSlot") {
         return async (args?: { id?: string; slotId?: string | null }): Promise<CleanupDTO> => {
           const id = args?.id ?? ""

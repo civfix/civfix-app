@@ -7,8 +7,8 @@
     "insights_error_title": "Numbers are unavailable",
     "insights_error_body": "We could not load this event's numbers. Everything else still works.",
     "cancel_error": "This event could not be cancelled.",
-    "complete_error": "This event could not be marked as completed.",
-    "resources_error": "That request could not be sent."
+    "resources_error": "That request could not be sent.",
+    "cancel_ended": "This event has already ended and can't be cancelled."
   },
   "phase": {
     "upcoming": "Upcoming",
@@ -25,7 +25,6 @@
     "message": "Message attendees",
     "check_in": "Check in",
     "scan": "Scan tickets",
-    "complete": "Mark as completed",
     "log_hours": "Log volunteer hours",
     "duplicate": "Duplicate event",
     "edit": "Edit event"
@@ -128,7 +127,11 @@
     "resources": "Request city resources",
     "resources_no_city": "No city is linked to this location yet.",
     "duplicate": "Duplicate event",
-    "cancel": "Cancel event"
+    "cancel": "Cancel event",
+    "log_hours": "Log volunteer hours",
+    "log_hours_sub_one": "{{count}} checked in",
+    "log_hours_sub_other": "{{count}} checked in",
+    "log_hours_none": "No one was checked in"
   },
   "no_shows": {
     "title": "Mark the rest as no-shows?",

@@ -15,6 +15,7 @@
  * upcoming, and the past list must not be re-sliced by time in that case.
  */
 import type { CleanupDTO } from "@civfix/shared"
+import { hasEventEnded } from "@civfix/shared/host"
 
 /**
  * The Events section's own Upcoming / Past selector. It lives beside the split it selects between (it used
@@ -45,9 +46,8 @@ export function splitProfileEvents(
 
   if (upcomingEvents === undefined) {
     for (const event of pastEvents) {
-      const at = new Date(event.scheduledAt).getTime()
-      // An unparseable date is treated as past (it can never be "upcoming"), matching the old predicate.
-      const upcoming = !Number.isNaN(at) && at >= now
+      // An event that is UNDERWAY is upcoming here, matching the server's `ends_at > now()` window.
+      const upcoming = !hasEventEnded(event, now)
       const hosted = event.organizer.id === profileId
       if (upcoming) {
         ;(hosted ? split.upcomingHosting : split.upcomingGoing).push(event)

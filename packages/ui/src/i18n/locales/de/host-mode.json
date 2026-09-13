@@ -7,8 +7,8 @@
     "insights_error_title": "Zahlen nicht verfügbar",
     "insights_error_body": "Wir konnten die Zahlen dieser Veranstaltung nicht laden. Alles andere funktioniert weiter.",
     "cancel_error": "Diese Veranstaltung konnte nicht abgesagt werden.",
-    "complete_error": "Diese Veranstaltung konnte nicht als abgeschlossen markiert werden.",
-    "resources_error": "Die Anfrage konnte nicht gesendet werden."
+    "resources_error": "Die Anfrage konnte nicht gesendet werden.",
+    "cancel_ended": "Diese Veranstaltung ist bereits vorbei und kann nicht mehr abgesagt werden."
   },
   "phase": {
     "upcoming": "Bevorstehend",
@@ -25,7 +25,6 @@
     "message": "Teilnehmende anschreiben",
     "check_in": "Einchecken",
     "scan": "Tickets scannen",
-    "complete": "Als abgeschlossen markieren",
     "log_hours": "Ehrenamtsstunden eintragen",
     "duplicate": "Veranstaltung duplizieren",
     "edit": "Veranstaltung bearbeiten"
@@ -128,7 +127,11 @@
     "resources": "Stadt um Unterstützung bitten",
     "resources_no_city": "Diesem Ort ist noch keine Kommune zugeordnet.",
     "duplicate": "Veranstaltung duplizieren",
-    "cancel": "Veranstaltung absagen"
+    "cancel": "Veranstaltung absagen",
+    "log_hours": "Ehrenamtsstunden eintragen",
+    "log_hours_sub_one": "{{count}} eingecheckt",
+    "log_hours_sub_other": "{{count}} eingecheckt",
+    "log_hours_none": "Niemand hat eingecheckt"
   },
   "no_shows": {
     "title": "Den Rest als nicht erschienen markieren?",
