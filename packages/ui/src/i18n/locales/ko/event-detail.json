@@ -28,6 +28,7 @@
     "message_crew": "크루에게 메시지",
     "message_crew_a11y": "이벤트 크루에게 메시지 보내기",
     "message_crew_hint": "참가 신청하면 채팅에 참여할 수 있어요",
+    "message_crew_hint_ended": "참가 신청했던 사람만 이 채팅을 열 수 있어요",
     "cancel_event": "이벤트 취소",
     "cancel_event_a11y": "이 이벤트 취소",
     "invite": "초대",
@@ -94,7 +95,9 @@
     "pending": "주최자가 아직 봉사 시간을 기록하지 않았습니다.",
     "credited": "봉사 시간 {{hours}}시간이 인정되었습니다",
     "credited_a11y": "봉사 시간 {{hours}}시간이 인정되었습니다. 봉사 기록 보기.",
-    "not_credited": "이 이벤트에서 회원님의 봉사 시간은 기록되지 않았습니다."
+    "not_credited": "이 이벤트에서 회원님의 봉사 시간은 기록되지 않았습니다.",
+    "credited_shift": "{{slot}} 교대({{range}})로 봉사 시간 {{hours}}시간이 인정되었습니다",
+    "credited_shift_a11y": "{{slot}} 교대, {{range}}로 봉사 시간 {{hours}}시간이 인정되었습니다. 봉사 기록을 확인하세요."
   },
   "log_hours": {
     "action": "봉사 시간 기록",
@@ -126,7 +129,10 @@
     "row_unknown": "이전 참석자",
     "blank_hint": "참석하지 않은 사람은 비워 두세요.",
     "blank_hint_edit": "이미 인정된 시간을 수정하려면 새 숫자를 입력하세요. 빈 칸은 건너뜁니다. 칸을 비워도 이미 인정된 시간은 사라지지 않습니다.",
-    "self_note": "본인의 시간은 여기에 표시되지 않습니다. 다른 주최자가 인정해 주어야 합니다."
+    "self_note": "본인의 시간은 여기에 표시되지 않습니다. 다른 주최자가 인정해 주어야 합니다.",
+    "suggest_hint": "제안 시간은 각자의 교대와 행사 예정 시간을 기준으로 합니다. 실제로 활동한 시간을 확인해 주세요.",
+    "suggest_chip": "{{hours}}시간 · {{slot}}",
+    "suggest_chip_a11y": "{{name}}님에게 {{slot}} 교대의 {{hours}}시간 적용"
   },
   "guests": {
     "heading": "게스트",

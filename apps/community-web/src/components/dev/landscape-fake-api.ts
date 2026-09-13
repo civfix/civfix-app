@@ -330,6 +330,7 @@ const MY_HOURS: GetMyHoursResponse = {
       { geoid: "0667000", name: "San Francisco", hours: 10.2 },
       { geoid: "0644000", name: "Los Angeles", hours: 2.3 },
     ],
+    byOrganization: [],
   },
 }
 

@@ -73,6 +73,7 @@ export const queryKeys = {
   myRegistration: (id: string) => ["host", id, "my-registration"] as const,
   myTickets: (id: string) => ["tickets", "mine", id] as const,
   eventIcs: (id: string) => ["cleanup", id, "ics"] as const,
+  orgRoot: ["org"] as const,
   org: (slug: string) => ["org", slug] as const,
   myOrganizations: ["orgs", "mine"] as const,
   hostedEventsRoot: ["hosted-events"] as const,

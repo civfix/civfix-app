@@ -5,8 +5,8 @@ import { Text, Icon, iconMap, type IconName } from "../typography"
 import { SettingsToggle } from "./SettingsToggle"
 
 export const SETTINGS_ROW_MIN_HEIGHT = 56
-const ICON_TILE = 32
-const ROW_PAD_H = 13
+const ICON_TILE = 40
+const ROW_PAD_H = space["4"]
 const ROW_GAP = space["3"]
 const DIVIDER_INSET = ROW_PAD_H + ICON_TILE + ROW_GAP
 
@@ -75,7 +75,7 @@ function RowContent({
         <View style={[styles.iconTile, destructive ? styles.iconTileDestructive : null]}>
           <Icon
             icon={iconMap[icon]}
-            size={16}
+            size={18}
             color={destructive ? t.colors.dangerInk : t.colors.textMuted}
           />
         </View>
@@ -176,7 +176,8 @@ export function SettingsRow({
 const useStyles = makeThemedStyles((t) => ({
   eyebrow: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
+    fontSize: t.fontSize["12"],
+    lineHeight: 16,
     letterSpacing: 0.6,
     color: t.colors.textSubtle,
     textTransform: "uppercase",
@@ -201,7 +202,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     gap: ROW_GAP,
     minHeight: SETTINGS_ROW_MIN_HEIGHT,
-    paddingVertical: 12,
+    paddingVertical: t.space["2"],
     paddingHorizontal: ROW_PAD_H,
   },
   rowPressed: {

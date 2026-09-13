@@ -11,10 +11,15 @@ import {
 } from "../theme"
 import { Text, type LucideIcon } from "../typography"
 
+const SECONDARY_MIN_TOUCH_TARGET = 44
+const SECONDARY_HEIGHT_SM = 32
+const SECONDARY_SM_HIT_SLOP = (SECONDARY_MIN_TOUCH_TARGET - SECONDARY_HEIGHT_SM) / 2
+
 export interface SecondaryButtonProps {
   label: string
   onPress: () => void
   icon?: LucideIcon
+  trailingIcon?: LucideIcon
   size?: "sm" | "md" | "lg"
   disabled?: boolean
   iconColor?: string
@@ -27,6 +32,7 @@ export function SecondaryButton({
   label,
   onPress,
   icon: IconCmp,
+  trailingIcon: TrailingIconCmp,
   size = "md",
   disabled = false,
   iconColor,
@@ -46,6 +52,7 @@ export function SecondaryButton({
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       accessibilityLabel={accessibilityLabel ?? label}
+      hitSlop={sm ? SECONDARY_SM_HIT_SLOP : undefined}
       {...focusRingProps}
       style={(state) => [
         styles.base,
@@ -66,6 +73,7 @@ export function SecondaryButton({
       >
         {label}
       </Text>
+      {TrailingIconCmp ? <TrailingIconCmp size={16} color={t.colors.textSubtle} /> : null}
     </Pressable>
   )
 }
@@ -81,8 +89,8 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.borderStrong,
   },
   sm: {
-    gap: 6,
-    paddingVertical: 8,
+    height: SECONDARY_HEIGHT_SM,
+    gap: t.space["2"],
     paddingHorizontal: t.space["3"],
   },
   md: {

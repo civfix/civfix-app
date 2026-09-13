@@ -21,6 +21,7 @@ const reachSelector = strip(read("../../../primitives/consoleReach.ts"))
 const reachWeb = strip(read("../../../primitives/consoleReach.web.ts"))
 const reachNative = strip(read("../../../primitives/consoleReach.native.ts"))
 const keys = strip(read("../../../data/keys.ts"))
+const cleanupHooks = strip(read("../../../data/hooks/cleanups.ts"))
 
 const HOST_SOURCES: Record<string, string> = {
   "HostModeBody.tsx": body,
@@ -165,9 +166,19 @@ describe("insights wiring", () => {
     expect(hooks).toContain("void qc.invalidateQueries({ queryKey: queryKeys.eventInsights(cleanupId) })")
   })
 
+  it("refreshes it after a shift claim too, so the hero and the shift board agree", () => {
+    const claim = cleanupHooks.slice(
+      cleanupHooks.indexOf("export function claimEventSlotMutationOptions"),
+      cleanupHooks.indexOf("export function useClaimEventSlot"),
+    )
+    expect(claim).toContain(
+      "void qc.invalidateQueries({ queryKey: queryKeys.eventInsights(cleanupId) })",
+    )
+  })
+
   it("covers loading, error and the analytics-less viewer", () => {
     expect(body).toContain("<HeroSkeleton />")
-    expect(body).toContain("<TilesSkeleton columns={columns} />")
+    expect(body).toContain("<TilesSkeleton columns={columns} count={4} />")
     expect(body).toContain('title={t("state.insights_error_title")}')
     expect(body).toContain('icon="Lock"')
   })
@@ -216,6 +227,57 @@ describe("the panels render only what the phase asked for", () => {
     expect(panels).toContain("if (points.length < 2) return null")
     expect(panels).toContain("if (points.length === 0) return null")
     expect(panels).toContain("if (insights.broadcasts.length === 0) return null")
+  })
+
+  it("names the top volunteers from the card both host screens share", () => {
+    expect(panels).toContain("{panels.topVolunteers ?")
+    expect(panels).toContain("<TopVolunteersCard")
+    expect(panels).toContain("entries={insights.topVolunteers}")
+    expect(panels).toContain('label={t("top_volunteers.title")}')
+    expect(panels).toContain('caption={t("top_volunteers.caption")}')
+  })
+
+  it("draws the shift board from the slot model, marking the running shift only while live", () => {
+    expect(panels).toContain("{panels.shifts ?")
+    expect(panels).toContain("<ShiftsPanel")
+    expect(panels).toContain("<ShiftRow")
+    expect(panels).toContain("if (!boardHasTimedSlots(slots)) return null")
+    expect(panels).toContain("slotDisplayOrder(slots)")
+    expect(panels).toContain('phase === "live" ? new Set(currentShifts(slots, new Date(now))')
+  })
+
+  it("takes the event's slots from the cleanup the body already holds", () => {
+    expect(body).toContain("slots={event.slots ?? []}")
+    expect(body).toContain("now={now}")
+  })
+})
+
+describe("one rhythm across both host screens", () => {
+  it("spaces console cards on the dashboard's section gap, not on the intra-card one", () => {
+    expect(panels).toContain("<View style={styles.sections}>")
+    expect(/sections: \{\s*gap: t\.space\["6"\],/.test(panels)).toBe(true)
+    expect(/\n {2}stack: \{\s*gap: t\.space\["3"\],/.test(panels)).toBe(true)
+    expect(body).toContain("<View style={styles.sections}>")
+    expect(/sections: \{\s*gap: t\.space\["6"\],/.test(body)).toBe(true)
+    expect(/body: \{\s*gap: t\.space\["6"\],/.test(body)).toBe(true)
+  })
+
+  it("says how many were credited without a denominator the number cannot sit inside", () => {
+    expect(panels).toContain("hoursHintHasDenominator(credited, attended)")
+    expect(panels).toContain('t("tiles.hours_hint", { credited, attended })')
+    expect(panels).toContain('t("tiles.hours_hint_credited", { count: credited })')
+  })
+})
+
+describe("one hero size across both host screens", () => {
+  it("renders the compact hero unconditionally instead of threading a density prop", () => {
+    expect(panels).not.toContain("compact={compact}")
+    expect(panels).not.toContain("compact: boolean")
+    expect(body).not.toContain("compact={wide}")
+  })
+
+  it("keeps the skeleton hero the same height as the real one", () => {
+    expect(strip(read("../HostSkeletons.tsx"))).toContain("const HERO_VALUE_HEIGHT = 42")
   })
 })
 

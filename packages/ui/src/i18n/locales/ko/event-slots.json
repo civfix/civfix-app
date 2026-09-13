@@ -2,7 +2,8 @@
   "block": {
     "heading": "참여 역할",
     "claim_joins_hint": "역할을 맡으면 참석도 함께 확정됩니다.",
-    "filled": "{{capacity}}자리 중 {{claimed}}자리 참여"
+    "filled": "{{capacity}}자리 중 {{claimed}}자리 참여",
+    "no_slot_hint": "아직 정하지 못했나요? 역할 없이 참석을 확정하고 편한 시간에 오세요."
   },
   "row": {
     "open": "모집 중",
@@ -16,7 +17,9 @@
     "switch": "변경",
     "claim_a11y": "{{title}} 역할 맡기",
     "release_a11y": "{{title}} 역할 취소",
-    "switch_a11y": "{{title}} 역할로 변경"
+    "switch_a11y": "{{title}} 역할로 변경",
+    "any_time": "아무 때나",
+    "window_a11y": "{{title}}, {{range}}"
   },
   "editor": {
     "add_first": "역할 추가",
@@ -36,7 +39,23 @@
     "move_down_a11y": "{{index}}번 역할 아래로",
     "remove_a11y": "{{index}}번 역할 삭제",
     "claimed_count_other": "{{count}}명 신청",
-    "remove_warning_other": "역할을 삭제하면 신청한 {{count}}명의 배정이 해제됩니다."
+    "remove_warning_other": "역할을 삭제하면 신청한 {{count}}명의 배정이 해제됩니다.",
+    "time_label": "시간",
+    "whole_event": "행사 전체",
+    "set_time": "시간 지정",
+    "whole_event_a11y": "{{index}}번 역할은 행사 내내 진행됩니다",
+    "set_time_a11y": "{{index}}번 역할에 시작과 종료 시간 지정",
+    "starts_label": "시작",
+    "ends_label": "종료",
+    "starts_a11y": "{{index}}번 역할 시작 시간",
+    "ends_a11y": "{{index}}번 역할 종료 시간",
+    "time_needs_event_end": "먼저 행사 종료 시간을 설정하세요.",
+    "time_stores_event_end": "저장하면 행사 종료 시간도 {{time}}(으)로 설정됩니다.",
+    "split_label": "교대로 나누기",
+    "split_count_a11y": "행사를 {{count}}개의 균등한 교대로 나누기",
+    "generated_title_prefix": "교대",
+    "generated_title": "{{prefix}} {{n}}",
+    "prefix_a11y": "생성될 교대 이름의 접두사"
   },
   "error": {
     "empty_title": "역할 이름을 입력하세요.",
@@ -44,11 +63,16 @@
     "capacity_invalid": "인원 수를 입력하거나 비워 두세요.",
     "capacity_below_claimed": "이미 {{count}}명이 이 역할을 맡았습니다.",
     "full": "방금 자리가 모두 찼습니다.",
-    "generic": "역할을 변경하지 못했습니다. 다시 시도해 주세요."
+    "ended": "이 이벤트는 이미 종료되었습니다.",
+    "generic": "역할을 변경하지 못했습니다. 다시 시도해 주세요.",
+    "window_needs_event_end": "이 역할에 시간을 지정하기 전에 행사 종료 시간을 설정하세요.",
+    "window_outside_event": "교대 시간을 {{range}} 안에 맞춰 주세요.",
+    "window_too_short": "교대는 최소 {{min}}분이어야 합니다."
   },
   "roster": {
     "unassigned": "역할 없음",
-    "empty_slot": "아직 없음"
+    "empty_slot": "아직 없음",
+    "window_a11y": "{{title}}, {{range}}"
   },
   "toast": {
     "claimed": "역할을 맡았습니다",

@@ -1,12 +1,9 @@
 {
   "title": "Event dashboard",
-  "tabs": {
-    "personal": "Personal",
-    "org": "Organization",
-    "label": "Dashboard view"
-  },
-  "org_picker": {
-    "label": "Organization"
+  "scope": {
+    "you": "You",
+    "a11y": "Scope, {{name}}",
+    "menu_a11y": "Choose whose events to show"
   },
   "header": {
     "title": "Your events",
@@ -19,45 +16,51 @@
     "host_tools": "Host tools",
     "host_tools_a11y": "Open host tools for {{title}}",
     "meter_a11y": "{{registered}} of {{capacity}} spots taken",
-    "empty_title": "Nothing scheduled",
-    "empty_body": "Create an event and it shows up here with its numbers."
+    "message": "Message attendees",
+    "message_a11y": "Message attendees of {{title}}",
+    "share": "Share",
+    "share_a11y": "Share {{title}}",
+    "signed_up_of": "{{registered}} of {{capacity}} signed up",
+    "signed_up": "{{registered}} signed up",
+    "waiting": "{{count}} waiting",
+    "checked_in": "{{count}} checked in",
+    "starts_in": "{{dow}} {{time}} · in {{relative}}",
+    "started": "Started {{ago}} ago",
+    "more_shifts": "{{count}} more shifts in Host tools"
   },
-  "numbers": {
-    "section": "Numbers"
+  "attention": {
+    "section": "Needs attention",
+    "complete": "Mark completed · ended {{dow}}",
+    "complete_a11y": "Mark {{title}} completed",
+    "credit_hours": "Credit hours · {{count}} checked in",
+    "credit_hours_a11y": "Credit hours for {{title}}"
   },
-  "range": {
-    "label": "Time range",
-    "30d": "30 days",
-    "90d": "90 days",
-    "365d": "12 months",
-    "all": "All time"
-  },
-  "kpi": {
-    "events": "Events hosted",
-    "registrations": "Registrations",
-    "check_ins": "Check-ins",
-    "suppressed": "Numbers stay hidden until at least {{k}} people take part.",
-    "trend_a11y": "Registrations, {{range}}, latest {{value}} on {{day}}",
-    "trend_a11y_week": "Registrations, {{range}}, by week, latest {{value}} in the week of {{day}}",
-    "error_title": "Could not load your numbers",
+  "impact": {
+    "section": "Impact",
+    "all_time": "All time",
+    "unit_hours": "volunteer hours",
+    "unit_volunteers": "volunteers",
+    "credited_one": "{{count}} credited",
+    "credited_other": "{{count}} credited",
+    "volunteers_one": "{{count}} volunteer",
+    "volunteers_other": "{{count}} volunteers",
+    "events_one": "{{count}} event",
+    "events_other": "{{count}} events",
+    "showed_up": "{{rate}} showed up",
+    "came_back": "{{rate}} came back",
+    "error_title": "Could not load your impact",
     "error_body": "We could not reach civfix. Check your connection and try again.",
-    "retry": "Try again",
-    "attendance_rate": "Attendance rate",
-    "unique_volunteers": "Unique volunteers",
-    "returning": "Returning volunteers",
-    "returning_hint": "{{numerator}} of {{denominator}}",
-    "busiest_slot": "Busiest slot: {{weekday}} at {{hour}}",
-    "end_label": "{{value}} on {{day}}",
-    "end_label_week": "{{value}} in the week of {{day}}"
+    "retry": "Try again"
   },
-  "top_events": {
-    "section": "Top events",
-    "seats": "{{count}} registered"
+  "top_volunteers": {
+    "section": "Top volunteers",
+    "caption": "Across the events in this view, all time. Only hosts see this list."
   },
   "create": {
     "action": "Create event",
     "a11y_personal": "Create an event",
-    "a11y_org": "Create an event for {{org}}"
+    "a11y_org": "Create an event for {{org}}",
+    "short": "Create"
   },
   "events": {
     "label": "Which events",
@@ -70,10 +73,6 @@
     "duplicate": "Duplicate",
     "edit": "Edit",
     "show_more": "Show more",
-    "empty_upcoming_title": "No upcoming events",
-    "empty_upcoming_body": "Create one and it shows up here with its numbers.",
-    "empty_past_title": "No past events yet",
-    "empty_past_body": "Events you host appear here once they wrap up.",
     "error_title": "Could not load your events",
     "error_body": "We could not reach civfix. Check your connection and try again.",
     "retry": "Try again",
@@ -94,7 +93,21 @@
     "meta_registered": "{{count}} registered",
     "meta_waiting": "{{count}} waiting",
     "meta_checked_in": "{{count}} checked in",
-    "check_in_a11y": "Check in for {{title}}"
+    "check_in_a11y": "Check in for {{title}}",
+    "empty_past": "Events appear here once they wrap up.",
+    "empty_upcoming": "Nothing scheduled yet.",
+    "meta_showed_up": "{{checkedIn}} of {{registered}} showed up",
+    "meta_hours": "{{hours}} h",
+    "meta_hours_not_logged": "Hours not logged",
+    "meta_cancelled": "Cancelled",
+    "meta_signed_up": "{{count}} signed up"
+  },
+  "first_event": {
+    "title": "Host your first event",
+    "step_signup": "People sign up and claim shifts",
+    "step_checkin": "You check them in on the day",
+    "step_hours": "You credit their hours after",
+    "cta": "Create event"
   },
   "invites": {
     "section": "Invitations",
@@ -150,7 +163,9 @@
     "confirm_action": "Send it",
     "confirm_dismiss_a11y": "Close export money",
     "link_unavailable": "This device cannot open the setup page.",
-    "link_error": "Could not open the setup page. Try again."
+    "link_error": "Could not open the setup page. Try again.",
+    "range_a11y": "Money time range",
+    "sent_on": "Sent {{date}}"
   },
   "team": {
     "section": "Team",
@@ -198,7 +213,8 @@
     "show_more": "Show more",
     "loading_more": "Loading…",
     "show_more_a11y": "Show more collaborators",
-    "invites_error": "Could not load pending invitations."
+    "invites_error": "Could not load pending invitations.",
+    "invite_row_sub": "Invited · {{role}}"
   },
   "console": {
     "open": "Open full console",
@@ -207,5 +223,10 @@
   "state": {
     "signin_title": "Sign in to see your dashboard",
     "signin_body": "Your events, sign-ups and host tools live here once you are signed in."
+  },
+  "range": {
+    "30d": "30 days",
+    "90d": "90 days",
+    "365d": "12 months"
   }
 }

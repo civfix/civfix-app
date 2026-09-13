@@ -108,3 +108,44 @@ describe("report hits render through the shared ReportRowView", () => {
     for (const [tag] of callSites) expect(tag).toMatch(/\bviewer=\{/)
   })
 })
+
+/**
+ * The leaderboard row is now ONE component for two families of surface: the search page and the two
+ * host screens (`TopVolunteersCard`). Source guards, because neither half is renderable here - the
+ * extraction is only load-bearing while `SearchResults.tsx` holds no copy of it and the shared file
+ * keeps the 56pt list geometry every other list row in the app was retuned to.
+ */
+describe("the leaderboard row lives in its own module", () => {
+  const searchResults = readFileSync(new URL("../SearchResults.tsx", import.meta.url), "utf8")
+  const leaderboardRow = readFileSync(new URL("../LeaderboardRow.tsx", import.meta.url), "utf8")
+  const row = leaderboardRow.match(/\n {2}row: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
+
+  it("left SearchResults.tsx entirely, styles included", () => {
+    expect(searchResults).not.toMatch(/LeaderboardHitRow|LeaderboardRow/)
+    expect(searchResults).not.toMatch(/leaderRank|leaderName|leaderHandle|leaderHours|leaderYouRow/)
+    expect(searchResults).not.toMatch(/formatHoursDisplay/)
+  })
+
+  it("exports the shared row with the emphasis switch both surfaces need", () => {
+    expect(leaderboardRow).toMatch(/export function LeaderboardRow\(/)
+    expect(leaderboardRow).toMatch(/emphasis = "accent"/)
+    expect(leaderboardRow).toMatch(/emphasis === "ink" \? styles\.leaderHoursInk : null/)
+    expect(leaderboardRow).toMatch(/leaderHoursInk: \{ color: t\.colors\.text \}/)
+    expect(leaderboardRow).toMatch(/color: t\.colors\.accentText/)
+  })
+
+  it("carries the 56pt list geometry and a 40pt avatar, in tokens", () => {
+    expect(row).toMatch(/gap: t\.space\["3"\]/)
+    expect(row).toMatch(/minHeight: LIST_ROW_MIN_HEIGHT/)
+    expect(row).toMatch(/paddingVertical: t\.space\["2"\]/)
+    expect(row).toMatch(/paddingHorizontal: t\.space\["4"\]/)
+    expect(leaderboardRow).toMatch(/size=\{40\}/)
+    expect(leaderboardRow).toMatch(/width: t\.space\["6"\]/)
+    expect(leaderboardRow.match(/"#[0-9a-fA-F]{3,8}"/g) ?? []).toHaveLength(0)
+  })
+
+  it("keeps the search card chrome off the flat host row", () => {
+    expect(leaderboardRow).toMatch(/emphasis === "accent" \? styles\.rowCard : null/)
+    expect(row).not.toMatch(/borderRadius|backgroundColor|shadows/)
+  })
+})

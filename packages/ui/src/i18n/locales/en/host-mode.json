@@ -41,6 +41,14 @@
     "rate": "{{rate}} showed up",
     "stale": "Could not refresh just now. These are the last numbers we have."
   },
+  "shifts": {
+    "section": "Shifts",
+    "of": "{{claimed}} of {{capacity}}",
+    "signed_up": "{{count}} signed up",
+    "row_a11y": "{{title}}, {{range}}, {{claimed}} of {{capacity}}",
+    "show_all": "Show all",
+    "show_less": "Show less"
+  },
   "tiles": {
     "waitlist": "Waitlist",
     "cancelled": "Cancelled",
@@ -53,9 +61,15 @@
     "hours": "Hours credited",
     "hours_value": "{{hours}} h",
     "hours_hint": "{{credited}} of {{attended}} attendees credited",
+    "hours_hint_credited_one": "{{count}} attendee credited",
+    "hours_hint_credited_other": "{{count}} attendees credited",
     "donations": "Donations",
     "returning": "Returning",
     "returning_hint": "of {{total}} registered have been before"
+  },
+  "top_volunteers": {
+    "title": "Top volunteers",
+    "caption": "Ranked by hours you credited for this event. Only hosts see this list."
   },
   "signups": {
     "title": "Sign-ups",

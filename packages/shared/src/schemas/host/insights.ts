@@ -5,13 +5,14 @@ import {
   ISODateSchema,
   RegistrationSourceSchema,
 } from "../common.js"
-import { CleanupStatusSchema } from "../entities.js"
+import { CleanupStatusSchema, LeaderboardEntryDTOSchema } from "../entities.js"
 
 
 export const MAX_INSIGHTS_TREND_DAYS = 400
 export const MAX_INSIGHTS_TICKET_TYPES = 50
 export const MAX_INSIGHTS_BROADCASTS = 50
 export const MAX_INSIGHTS_ARRIVAL_BUCKETS = 96
+export const MAX_INSIGHTS_TOP_VOLUNTEERS = 5
 
 export const EventPhaseSchema = z.enum(["upcoming", "live", "ended", "cancelled"])
 export type EventPhase = z.infer<typeof EventPhaseSchema>
@@ -110,6 +111,7 @@ const EventInsightsObjectSchema = z.object({
   broadcasts: z.array(InsightsBroadcastSchema).max(MAX_INSIGHTS_BROADCASTS).default([]),
   arrivals: z.array(ArrivalOffsetBucketSchema).max(MAX_INSIGHTS_ARRIVAL_BUCKETS).default([]),
   hours: EventInsightsHoursSchema,
+  topVolunteers: z.array(LeaderboardEntryDTOSchema).max(MAX_INSIGHTS_TOP_VOLUNTEERS).default([]),
   money: EventInsightsMoneySchema.nullable(),
   returning: EventInsightsReturningSchema.nullable(),
 })

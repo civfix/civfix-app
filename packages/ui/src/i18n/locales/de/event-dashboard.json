@@ -1,12 +1,9 @@
 {
   "title": "Event-Dashboard",
-  "tabs": {
-    "personal": "Persönlich",
-    "org": "Organisation",
-    "label": "Dashboard-Ansicht"
-  },
-  "org_picker": {
-    "label": "Organisation"
+  "scope": {
+    "you": "Du",
+    "a11y": "Bereich: {{name}}",
+    "menu_a11y": "Wähle, wessen Events angezeigt werden"
   },
   "header": {
     "title": "Deine Events",
@@ -19,45 +16,51 @@
     "host_tools": "Host-Werkzeuge",
     "host_tools_a11y": "Host-Werkzeuge für {{title}} öffnen",
     "meter_a11y": "{{registered}} von {{capacity}} Plätzen belegt",
-    "empty_title": "Nichts geplant",
-    "empty_body": "Erstelle ein Event, dann erscheint es hier mit seinen Zahlen."
+    "message": "Teilnehmende anschreiben",
+    "message_a11y": "Teilnehmende von {{title}} anschreiben",
+    "share": "Teilen",
+    "share_a11y": "{{title}} teilen",
+    "signed_up_of": "{{registered}} von {{capacity}} angemeldet",
+    "signed_up": "{{registered}} angemeldet",
+    "waiting": "{{count}} auf der Warteliste",
+    "checked_in": "{{count}} eingecheckt",
+    "starts_in": "{{dow}} {{time}} · in {{relative}}",
+    "started": "Vor {{ago}} begonnen",
+    "more_shifts": "{{count}} weitere Schichten in den Host-Werkzeugen"
   },
-  "numbers": {
-    "section": "Zahlen"
+  "attention": {
+    "section": "Zu erledigen",
+    "complete": "Als abgeschlossen markieren · endete {{dow}}",
+    "complete_a11y": "{{title}} als abgeschlossen markieren",
+    "credit_hours": "Stunden gutschreiben · {{count}} eingecheckt",
+    "credit_hours_a11y": "Stunden für {{title}} gutschreiben"
   },
-  "range": {
-    "label": "Zeitraum",
-    "30d": "30 Tage",
-    "90d": "90 Tage",
-    "365d": "12 Monate",
-    "all": "Gesamt"
-  },
-  "kpi": {
-    "events": "Veranstaltete Events",
-    "registrations": "Anmeldungen",
-    "check_ins": "Check-ins",
-    "suppressed": "Zahlen bleiben verborgen, bis mindestens {{k}} Personen teilnehmen.",
-    "trend_a11y": "Anmeldungen, {{range}}, zuletzt {{value}} am {{day}}",
-    "trend_a11y_week": "Anmeldungen, {{range}}, nach Woche, zuletzt {{value}} in der Woche ab {{day}}",
-    "error_title": "Zahlen konnten nicht geladen werden",
+  "impact": {
+    "section": "Wirkung",
+    "all_time": "Gesamt",
+    "unit_hours": "Freiwilligenstunden",
+    "unit_volunteers": "Freiwillige",
+    "credited_one": "{{count}} gutgeschrieben",
+    "credited_other": "{{count}} gutgeschrieben",
+    "volunteers_one": "{{count}} Freiwilliger",
+    "volunteers_other": "{{count}} Freiwillige",
+    "events_one": "{{count}} Event",
+    "events_other": "{{count}} Events",
+    "showed_up": "{{rate}} erschienen",
+    "came_back": "{{rate}} kamen wieder",
+    "error_title": "Deine Wirkung konnte nicht geladen werden",
     "error_body": "Wir konnten civfix nicht erreichen. Prüfe deine Verbindung und versuche es erneut.",
-    "retry": "Erneut versuchen",
-    "attendance_rate": "Teilnahmequote",
-    "unique_volunteers": "Einzelne Freiwillige",
-    "returning": "Wiederkehrende Freiwillige",
-    "returning_hint": "{{numerator}} von {{denominator}}",
-    "busiest_slot": "Beste Zeit: {{weekday}} um {{hour}}",
-    "end_label": "{{value}} am {{day}}",
-    "end_label_week": "{{value}} in der Woche ab {{day}}"
+    "retry": "Erneut versuchen"
   },
-  "top_events": {
-    "section": "Top-Events",
-    "seats": "{{count}} Anmeldungen"
+  "top_volunteers": {
+    "section": "Top-Freiwillige",
+    "caption": "Über die Events in dieser Ansicht, gesamt. Nur Hosts sehen diese Liste."
   },
   "create": {
     "action": "Event erstellen",
     "a11y_personal": "Ein Event erstellen",
-    "a11y_org": "Ein Event für {{org}} erstellen"
+    "a11y_org": "Ein Event für {{org}} erstellen",
+    "short": "Neu"
   },
   "events": {
     "label": "Welche Events",
@@ -70,10 +73,6 @@
     "duplicate": "Duplizieren",
     "edit": "Bearbeiten",
     "show_more": "Mehr anzeigen",
-    "empty_upcoming_title": "Keine bevorstehenden Events",
-    "empty_upcoming_body": "Erstelle eins, dann erscheint es hier mit seinen Zahlen.",
-    "empty_past_title": "Noch keine vergangenen Events",
-    "empty_past_body": "Events, die du veranstaltest, erscheinen hier, sobald sie vorbei sind.",
     "error_title": "Events konnten nicht geladen werden",
     "error_body": "Wir konnten civfix nicht erreichen. Prüfe deine Verbindung und versuche es erneut.",
     "retry": "Erneut versuchen",
@@ -94,7 +93,21 @@
     "meta_registered": "{{count}} angemeldet",
     "meta_waiting": "{{count}} auf der Warteliste",
     "meta_checked_in": "{{count}} eingecheckt",
-    "check_in_a11y": "Check-in für {{title}}"
+    "check_in_a11y": "Check-in für {{title}}",
+    "empty_past": "Events erscheinen hier, sobald sie vorbei sind.",
+    "empty_upcoming": "Noch nichts geplant.",
+    "meta_showed_up": "{{checkedIn}} von {{registered}} erschienen",
+    "meta_hours": "{{hours}} Std.",
+    "meta_hours_not_logged": "Stunden nicht erfasst",
+    "meta_cancelled": "Abgesagt",
+    "meta_signed_up": "{{count}} angemeldet"
+  },
+  "first_event": {
+    "title": "Veranstalte dein erstes Event",
+    "step_signup": "Leute melden sich an und wählen eine Schicht",
+    "step_checkin": "Du checkst sie am Tag ein",
+    "step_hours": "Danach schreibst du ihre Stunden gut",
+    "cta": "Event erstellen"
   },
   "invites": {
     "section": "Einladungen",
@@ -150,7 +163,9 @@
     "confirm_action": "Senden",
     "confirm_dismiss_a11y": "Geld senden schließen",
     "link_unavailable": "Dieses Gerät kann die Einrichtungsseite nicht öffnen.",
-    "link_error": "Die Einrichtungsseite konnte nicht geöffnet werden. Versuche es erneut."
+    "link_error": "Die Einrichtungsseite konnte nicht geöffnet werden. Versuche es erneut.",
+    "range_a11y": "Zeitraum für Geld",
+    "sent_on": "Gesendet am {{date}}"
   },
   "team": {
     "section": "Team",
@@ -198,7 +213,8 @@
     "show_more": "Mehr anzeigen",
     "loading_more": "Wird geladen…",
     "show_more_a11y": "Mehr Mitwirkende anzeigen",
-    "invites_error": "Offene Einladungen konnten nicht geladen werden."
+    "invites_error": "Offene Einladungen konnten nicht geladen werden.",
+    "invite_row_sub": "Eingeladen · {{role}}"
   },
   "console": {
     "open": "Vollständige Konsole öffnen",
@@ -207,5 +223,10 @@
   "state": {
     "signin_title": "Melde dich an, um dein Dashboard zu sehen",
     "signin_body": "Deine Events, Anmeldungen und Host-Werkzeuge erscheinen hier, sobald du angemeldet bist."
+  },
+  "range": {
+    "30d": "30 Tage",
+    "90d": "90 Tage",
+    "365d": "12 Monate"
   }
 }

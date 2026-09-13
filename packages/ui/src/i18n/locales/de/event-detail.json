@@ -28,6 +28,7 @@
     "message_crew": "Crew anschreiben",
     "message_crew_a11y": "Nachricht an Event-Crew senden",
     "message_crew_hint": "Sag zu, um dem Chat beizutreten",
+    "message_crew_hint_ended": "Nur wer zugesagt hatte, kann diesen Chat öffnen",
     "cancel_event": "Event absagen",
     "cancel_event_a11y": "Dieses Event absagen",
     "invite": "Einladen",
@@ -94,7 +95,9 @@
     "pending": "Die gastgebende Person hat noch keine Freiwilligenstunden erfasst.",
     "credited": "Dir wurden {{hours}} Freiwilligenstunden gutgeschrieben",
     "credited_a11y": "Dir wurden {{hours}} Freiwilligenstunden gutgeschrieben. Einsatznachweis ansehen.",
-    "not_credited": "Für dich wurden bei diesem Event keine Freiwilligenstunden erfasst."
+    "not_credited": "Für dich wurden bei diesem Event keine Freiwilligenstunden erfasst.",
+    "credited_shift": "Dir wurden {{hours}} Freiwilligenstunden für deine Schicht {{slot}} ({{range}}) gutgeschrieben",
+    "credited_shift_a11y": "Dir wurden {{hours}} Freiwilligenstunden für deine Schicht {{slot}}, {{range}}, gutgeschrieben. Deinen Einsatznachweis ansehen."
   },
   "log_hours": {
     "action": "Freiwilligenstunden erfassen",
@@ -126,7 +129,10 @@
     "row_unknown": "Ehemalige teilnehmende Person",
     "blank_hint": "Lass eine Zeile leer, wenn jemand nicht da war.",
     "blank_hint_edit": "Gib eine neue Zahl ein, um bereits gutgeschriebene Stunden zu korrigieren. Eine leere Zeile wird übersprungen: sie zu leeren entfernt bereits gutgeschriebene Stunden nicht.",
-    "self_note": "Deine eigenen Stunden stehen hier nicht. Eine andere gastgebende Person muss sie dir gutschreiben."
+    "self_note": "Deine eigenen Stunden stehen hier nicht. Eine andere gastgebende Person muss sie dir gutschreiben.",
+    "suggest_hint": "Die Vorschläge stammen aus der Schicht der jeweiligen Person und der geplanten Dauer der Veranstaltung. Bestätige, was tatsächlich geleistet wurde.",
+    "suggest_chip": "{{hours}} Std. · {{slot}}",
+    "suggest_chip_a11y": "{{hours}} Stunden aus der Schicht {{slot}} für {{name}} übernehmen"
   },
   "guests": {
     "heading": "Gäste",

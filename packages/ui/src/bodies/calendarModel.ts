@@ -1,3 +1,4 @@
+import { MIN_SLOT_DURATION_MINUTES } from "@civfix/shared"
 
 export type WeekStart = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
@@ -117,4 +118,87 @@ export function isScheduleInFuture(date: Date, time: Date, now: Date = new Date(
 export function isScheduleUntouched(originalIso: string, date: Date, time: Date): boolean {
   const original = new Date(originalIso).getTime()
   return date.getTime() === original && time.getTime() === original
+}
+
+export const MIN_SLOT_DURATION_MS = MIN_SLOT_DURATION_MINUTES * 60_000
+
+export const MAX_EVENT_DURATION_MS = 24 * 3_600_000
+
+export const DURATION_CHIP_HOURS = [1, 2, 3, 4] as const
+
+export type DurationChipHours = (typeof DURATION_CHIP_HOURS)[number]
+
+function clockOf(hours: number, minutes: number): number {
+  return hours * 3_600_000 + minutes * 60_000
+}
+
+function clockMs(time: Date): number {
+  return clockOf(time.getHours(), time.getMinutes())
+}
+
+function offsetFromClocks(startClock: number, endClock: number): number {
+  return (((endClock - startClock) % MAX_EVENT_DURATION_MS) + MAX_EVENT_DURATION_MS) %
+    MAX_EVENT_DURATION_MS
+}
+
+export function endOffsetMs(start: Date, end: Date): number {
+  return offsetFromClocks(clockMs(start), clockMs(end))
+}
+
+export function endsNextDay(start: Date, end: Date): boolean {
+  return clockMs(end) <= clockMs(start)
+}
+
+export function resolveEventEnd(date: Date, start: Date, end: Date): Date {
+  const day = new Date(date)
+  if (endsNextDay(start, end)) day.setDate(day.getDate() + 1)
+  return mergeDateTime(day, end)
+}
+
+export function endTimeAfter(date: Date, start: Date, offsetMs: number): Date {
+  const clock = offsetFromClocks(0, clockMs(start) + offsetMs)
+  const day = new Date(date)
+  day.setHours(Math.floor(clock / 3_600_000), Math.floor((clock % 3_600_000) / 60_000), 0, 0)
+  return day
+}
+
+export function endTimeSelectable(
+  date: Date | null,
+  start: Date | null,
+  hours: number,
+  minutes: number,
+): boolean {
+  if (!date || !start) return false
+  const offset = offsetFromClocks(clockMs(start), clockOf(hours, minutes))
+  if (offset < MIN_SLOT_DURATION_MS) return false
+  const day = new Date(date)
+  if (clockOf(hours, minutes) <= clockMs(start)) day.setDate(day.getDate() + 1)
+  return wallClockExistsOn(day, hours, minutes)
+}
+
+export function eventDurationMs(date: Date, start: Date, end: Date): number {
+  return resolveEventEnd(date, start, end).getTime() - mergeDateTime(date, start).getTime()
+}
+
+export function durationChipFor(
+  date: Date | null,
+  start: Date | null,
+  end: Date | null,
+): DurationChipHours | null {
+  if (!date || !start || !end) return null
+  const elapsed = eventDurationMs(date, start, end)
+  if (elapsed <= 0) return null
+  return DURATION_CHIP_HOURS.find((h) => h * 3_600_000 === elapsed) ?? null
+}
+
+export function eventWindowOf(
+  date: Date | null,
+  time: Date | null,
+  endTime: Date | null,
+): { start: Date; end: Date | null } | null {
+  if (!date || !time) return null
+  return {
+    start: mergeDateTime(date, time),
+    end: endTime ? resolveEventEnd(date, time, endTime) : null,
+  }
 }

@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import type { JurisdictionHours, VolunteerHoursEntryDTO } from "@civfix/shared"
+import type { JurisdictionHours, OrgHoursDTO, VolunteerHoursEntryDTO } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
-import { EmptyState, MetaDot } from "../../primitives"
+import { Avatar, EmptyState, MetaDot } from "../../primitives"
 import { useAuthState, useMyHours, useMyHoursEntries, usePublicHoursEntries } from "../../data"
 import { useNavStore } from "../../nav"
 import { useLocale, useT } from "../../i18n"
@@ -14,6 +14,7 @@ import { useSectionStyles } from "./sectionStyles"
 import { ServiceHoursCertificateCard } from "./ServiceHoursCertificateCard"
 
 const MAX_JURISDICTION_CHIPS = 3
+const MAX_ORGANIZATION_CHIPS = 3
 const SKELETON_ROWS = [0, 1, 2]
 
 export interface ServiceHoursSectionProps {
@@ -39,6 +40,7 @@ function OwnServiceHours({ totalHours }: { totalHours?: number }) {
   const firstPage = pages?.[0]
   const total = hoursQuery.data?.hours.totalHours ?? firstPage?.totalHours ?? totalHours ?? 0
   const byJurisdiction = hoursQuery.data?.hours.byJurisdiction ?? []
+  const byOrganization = hoursQuery.data?.hours.byOrganization ?? []
   const items = useMemo(() => (pages ?? []).flatMap((page) => page.items), [pages])
 
   const onLoadMore = useCallback(() => {
@@ -47,7 +49,7 @@ function OwnServiceHours({ totalHours }: { totalHours?: number }) {
 
   return (
     <>
-      <HoursTotalCard total={total} byJurisdiction={byJurisdiction}>
+      <HoursTotalCard total={total} byJurisdiction={byJurisdiction} byOrganization={byOrganization}>
         <ServiceHoursCertificateCard totalHours={total} />
         <VisibilityIndicator />
       </HoursTotalCard>
@@ -110,7 +112,11 @@ function PublicServiceHours({ userId, totalHours }: { userId?: string; totalHour
 
   return (
     <>
-      <HoursTotalCard total={total} byJurisdiction={firstPage?.byJurisdiction ?? []} />
+      <HoursTotalCard
+        total={total}
+        byJurisdiction={firstPage?.byJurisdiction ?? []}
+        byOrganization={firstPage?.byOrganization ?? []}
+      />
       {itemisationWithheld ? (
         <>
           <SectionEyebrow>{t("ledger.eyebrow")}</SectionEyebrow>
@@ -142,10 +148,12 @@ function PublicServiceHours({ userId, totalHours }: { userId?: string; totalHour
 function HoursTotalCard({
   total,
   byJurisdiction,
+  byOrganization,
   children,
 }: {
   total: number
   byJurisdiction: readonly JurisdictionHours[]
+  byOrganization: readonly OrgHoursDTO[]
   children?: React.ReactNode
 }) {
   const styles = useStyles()
@@ -166,6 +174,7 @@ function HoursTotalCard({
         </View>
       </View>
       <JurisdictionChips items={byJurisdiction} />
+      <OrganizationChips items={byOrganization} />
       {children}
     </View>
   )
@@ -194,6 +203,48 @@ function JurisdictionChips({ items }: { items: readonly JurisdictionHours[] }) {
             {t("total.chip", {
               name: entry.name ?? entry.geoid,
               hours: formatHoursDisplay(entry.hours, locale),
+            })}
+          </Text>
+        </Pressable>
+      ))}
+      {extra > 0 ? (
+        <View style={styles.chip}>
+          <Text style={styles.chipText}>{t("total.chip_more", { count: extra })}</Text>
+        </View>
+      ) : null}
+    </View>
+  )
+}
+
+function OrganizationChips({ items }: { items: readonly OrgHoursDTO[] }) {
+  const styles = useStyles()
+  const { t } = useT("volunteer-hours")
+  const { locale } = useLocale()
+  if (items.length === 0) return null
+  const shown = items.slice(0, MAX_ORGANIZATION_CHIPS)
+  const extra = items.length - shown.length
+  return (
+    <View style={styles.chipRow}>
+      {shown.map(({ organization, hours }) => (
+        <Pressable
+          key={organization.id}
+          onPress={() => useNavStore.getState().push({ kind: "org", slug: organization.slug })}
+          accessibilityRole="button"
+          accessibilityLabel={t("total.org_chip_a11y", { name: organization.name })}
+          hitSlop={{ top: 9, bottom: 9 }}
+          {...focusRingProps}
+          style={({ pressed }) => [styles.chip, styles.orgChip, pressed ? styles.pressedDim : null]}
+        >
+          <Avatar
+            name={organization.name}
+            seed={organization.id}
+            photoUrl={organization.logoUrl ?? null}
+            size={16}
+          />
+          <Text style={[styles.chipText, styles.orgChipText]} numberOfLines={1}>
+            {t("total.org_chip", {
+              name: organization.name,
+              hours: formatHoursDisplay(hours, locale),
             })}
           </Text>
         </Pressable>
@@ -454,6 +505,15 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: 11.5,
     color: t.colors.textMuted,
+  },
+  orgChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["2"],
+    maxWidth: "100%",
+  },
+  orgChipText: {
+    flexShrink: 1,
   },
 
   visibility: {

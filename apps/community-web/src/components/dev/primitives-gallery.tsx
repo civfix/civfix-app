@@ -311,17 +311,20 @@ function HostDashboardPanel({ scheme }: { scheme: ColorSchemeName }) {
 
         <SectionCard
           label="Numbers"
-          trailing={
-            <SegmentedControl
-              size="sm"
-              label="Range"
-              options={RANGE_OPTIONS}
-              selected={range}
-              onSelect={setRange}
-            />
+          variant="list"
+          listHeader={
+            <div style={{ padding: "16px 16px 8px" }}>
+              <SegmentedControl
+                size="sm"
+                label="Range"
+                options={RANGE_OPTIONS}
+                selected={range}
+                onSelect={setRange}
+              />
+            </div>
           }
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16 }}>
             <StatTileRow columns={2}>
               <StatTile label="Registrations" value="1,284" trend={SIGNUP_TREND} />
               <StatTile label="Attendance rate" value="82%" />

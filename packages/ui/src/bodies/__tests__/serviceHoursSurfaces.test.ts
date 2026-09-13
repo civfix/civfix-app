@@ -73,6 +73,17 @@ describe("service-hours profile surfaces", () => {
     expect(notifications).toContain('glyph: "ClipboardList"')
   })
 
+  it("renders the by-organization chips on BOTH hours surfaces, capped at three", () => {
+    const body = code(section)
+    expect(body).toContain("const MAX_ORGANIZATION_CHIPS = 3")
+    expect(body).toContain("<OrganizationChips")
+    expect(body).toContain("items.slice(0, MAX_ORGANIZATION_CHIPS)")
+    expect(body).toContain("hoursQuery.data?.hours.byOrganization ?? []")
+    expect(body).toContain("firstPage?.byOrganization ?? []")
+    expect(body).toContain('push({ kind: "org", slug: organization.slug })')
+    expect(body).toContain('t("total.org_chip"')
+  })
+
   it("renders the service-record privacy switch OFF for a never-chosen account", () => {
     // `?? true` here would opt every existing account into the itemised per-event list on deploy day.
     expect(code(privacy)).toContain("user?.showVolunteerHours === true")

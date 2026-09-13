@@ -61,9 +61,19 @@ function typedForm(over: Partial<CleanupFormValue> = {}): CleanupFormValue {
     coords: { lat: 10, lng: 20 },
     date: null,
     time: null,
+    endTime: null,
     bring: ["gloves"],
     // Signup slots ride in the draft exactly like `bring`: plain strings plus a stable local key.
-    slots: [{ key: "slot-1", title: "Check-in table", description: "Greet arrivals", capacity: "2" }],
+    slots: [
+      {
+        key: "slot-1",
+        title: "Check-in table",
+        description: "Greet arrivals",
+        capacity: "2",
+        startsAt: null,
+        endsAt: null,
+      },
+    ],
     linkedReportIds: ["report-a"],
     shareToFeed: true,
     feedCaption: "",

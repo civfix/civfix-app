@@ -3,7 +3,6 @@ import { Pressable, StyleSheet, View } from "react-native"
 import type {
   CleanupDTO,
   LatLng,
-  LeaderboardEntryDTO,
   ReportPinDTO,
   UserSearchResultDTO,
 } from "@civfix/shared"
@@ -35,7 +34,7 @@ import { useLocale, useRelativeTime, useT } from "../i18n"
 import { useRowHover } from "./rowHover"
 import { pushCleanup } from "./navHelpers"
 import { ReportRowView } from "./ReportRow"
-import { formatHoursDisplay } from "./formatHours"
+import { hasEventEnded } from "./eventLifecycle"
 import { reportHitRowModel } from "./reportHitRowModel"
 import {
   SEARCH_RESULT_CARD_LAYOUT,
@@ -122,6 +121,7 @@ export function EventHitRow({ cleanup }: { cleanup: CleanupDTO }) {
         going={cleanup.joined}
         onToggle={(currentlyGoing) => join.mutate(currentlyGoing)}
         busy={join.isPending}
+        ended={hasEventEnded(cleanup, Date.now())}
         nextPath={`/cleanups/${cleanup.id}`}
         size="sm"
       />
@@ -149,51 +149,6 @@ export function ReportHitRow({ report, viewer }: { report: ReportPinDTO; viewer:
       divider={false}
       card
     />
-  )
-}
-
-export function LeaderboardHitRow({
-  entry,
-  you = false,
-}: {
-  entry: LeaderboardEntryDTO
-  you?: boolean
-}) {
-  const styles = useStyles()
-  const { t } = useT("leaderboard")
-  const { locale } = useLocale()
-  const hours = formatHoursDisplay(entry.hours, locale)
-  const name = you ? t("row.you") : entry.name
-  return (
-    <Pressable
-      onPress={() => useNavStore.getState().push({ kind: "person", id: entry.handle ?? entry.userId })}
-      accessibilityRole="button"
-      accessibilityLabel={t("row.a11y", { rank: entry.rank, name, hours })}
-      {...focusRingProps}
-      style={(state) => [
-        styles.row,
-        webTransition,
-        webHover(state) ? styles.rowHovered : null,
-        you ? styles.leaderYouRow : null,
-        state.pressed ? styles.pressed : null,
-      ]}
-    >
-      <Text style={styles.leaderRank} numberOfLines={1}>{entry.rank}</Text>
-      <Avatar
-        name={entry.name}
-        seed={entry.userId}
-        photoUrl={entry.avatarUrl ?? null}
-        gradient={entry.avatar ?? null}
-        size={36}
-      />
-      <View style={styles.rowCopy}>
-        <View style={styles.leaderNameRow}>
-          <Text style={[styles.rowTitle, styles.leaderName]} numberOfLines={1}>{name}</Text>
-        </View>
-        {entry.handle ? <Text style={styles.leaderHandle} numberOfLines={1}>@{entry.handle}</Text> : null}
-      </View>
-      <Text style={styles.leaderHours} numberOfLines={1}>{t("hours_unit", { hours })}</Text>
-    </Pressable>
   )
 }
 
@@ -420,12 +375,6 @@ const useStyles = makeThemedStyles((t) => ({
   eventDate: { width: 46, height: 46, flexShrink: 0, alignItems: "center", justifyContent: "center", borderRadius: t.radius.md, backgroundColor: t.colors.sun["50"] },
   eventMonth: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 9, lineHeight: 11, letterSpacing: 0.7, color: t.colors.sun["700"] },
   eventDay: { fontFamily: t.fontFamily.displayBold, fontSize: 19, lineHeight: 21, color: t.colors.text },
-  leaderRank: { width: 22, flexShrink: 0, textAlign: "center", fontFamily: t.fontFamily.displayBold, fontSize: 15, lineHeight: 20, color: t.colors.textSubtle },
-  leaderNameRow: { flexDirection: "row", alignItems: "center", gap: 5, minWidth: 0 },
-  leaderName: { flexShrink: 1 },
-  leaderHandle: { marginTop: 1, fontFamily: t.fontFamily.bodySemiBold, fontSize: 11.5, lineHeight: 15, color: t.colors.textSubtle },
-  leaderHours: { flexShrink: 0, fontFamily: t.fontFamily.bodyExtraBold, fontSize: 13, lineHeight: 18, color: t.colors.accentText },
-  leaderYouRow: { borderWidth: 1.5, borderColor: t.colors.moss["100"] },
   pressed: { opacity: 0.65 },
   notice: { flexDirection: "row", alignItems: "center", gap: t.space["3"], borderRadius: t.radius.md, backgroundColor: t.colors.bgAlt, padding: t.space["4"], marginBottom: t.space["2"] },
   noticeText: { flex: 1, fontFamily: t.fontFamily.bodyRegular, fontSize: 12.5, lineHeight: 17, color: t.colors.textMuted },

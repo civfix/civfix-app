@@ -8,6 +8,35 @@ import { SectionCard } from "./SectionCard"
 import { formatStatValue } from "./statTileModel"
 import type { StatTone } from "./StatTile"
 
+export interface HeroFigureProps {
+  value: string
+  unit: string
+  tone?: StatTone
+  compact?: boolean
+}
+
+export function HeroFigure({ value, unit, tone = "neutral", compact = false }: HeroFigureProps) {
+  const styles = useStyles()
+  return (
+    <View style={styles.figure}>
+      <Text
+        style={[
+          styles.value,
+          compact ? styles.valueCompact : null,
+          tone === "success" ? styles.valueSuccess : null,
+          tone === "danger" ? styles.valueDanger : null,
+        ]}
+        numberOfLines={1}
+      >
+        {value}
+      </Text>
+      <Text variant="label" style={styles.unit} numberOfLines={2}>
+        {unit}
+      </Text>
+    </View>
+  )
+}
+
 export interface HeroStatProps {
   label: string
   value: number
@@ -36,22 +65,7 @@ export function HeroStat({
     <SectionCard>
       <View style={styles.root}>
         <Text variant="label">{label}</Text>
-        <View style={styles.figure}>
-          <Text
-            style={[
-              styles.value,
-              compact ? styles.valueCompact : null,
-              tone === "success" ? styles.valueSuccess : null,
-              tone === "danger" ? styles.valueDanger : null,
-            ]}
-            numberOfLines={1}
-          >
-            {shown}
-          </Text>
-          <Text variant="label" style={styles.limitLabel} numberOfLines={2}>
-            {limitLabel}
-          </Text>
-        </View>
+        <HeroFigure value={shown} unit={limitLabel} tone={tone} compact={compact} />
         {limit === null ? null : (
           <Meter
             value={value}
@@ -96,7 +110,7 @@ const useStyles = makeThemedStyles((t) => ({
   valueDanger: {
     color: t.colors.dangerInk,
   },
-  limitLabel: {
+  unit: {
     flex: 1,
     minWidth: 0,
   },

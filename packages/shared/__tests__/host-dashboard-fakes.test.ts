@@ -8,6 +8,7 @@ import {
 import { GetEventInsightsResponseSchema, EventPhaseSchema } from "../src/schemas/host/insights.js"
 import {
   HostedEventsAnalyticsResponseSchema,
+  MAX_PORTFOLIO_TOP_VOLUNTEERS,
   PortfolioAnalyticsRangeSchema,
 } from "../src/schemas/host/analytics.js"
 import {
@@ -106,6 +107,15 @@ describe("fakeEventInsights", () => {
     expect(fakeEventInsights("ended", { now: NOW }).money?.netMinor).toBeGreaterThan(0)
   })
 
+  it("gives the ended phase a ranked volunteer list and every other phase none", () => {
+    const ended = fakeEventInsights("ended", { now: NOW })
+    expect(ended.topVolunteers.length).toBeGreaterThan(0)
+    for (const row of ended.topVolunteers) expect(row.hours).toBeLessThanOrEqual(24)
+    for (const phase of ["upcoming", "live", "cancelled"] as const) {
+      expect(fakeEventInsights(phase, { now: NOW }).topVolunteers).toEqual([])
+    }
+  })
+
   it("ships three broadcasts and two ticket types", () => {
     const insights = fakeEventInsights("ended", { now: NOW })
     expect(insights.broadcasts).toHaveLength(3)
@@ -141,6 +151,21 @@ describe("fakeHostedEventsAnalytics", () => {
       fakeHostedEventsAnalytics("90d", { seed: 5, now: NOW }),
     )
   })
+
+  it("carries the hours block the Impact and Top volunteers cards render", () => {
+    const analytics = fakeHostedEventsAnalytics("all", { now: NOW })
+    expect(analytics.totalHours).toBeGreaterThan(0)
+    expect(analytics.volunteersCredited).toBeGreaterThan(0)
+    expect(analytics.topVolunteers.length).toBeGreaterThan(0)
+    expect(analytics.topVolunteers.length).toBeLessThanOrEqual(MAX_PORTFOLIO_TOP_VOLUNTEERS)
+    expect(analytics.topVolunteers.map((row) => row.rank)).toEqual(
+      analytics.topVolunteers.map((_row, i) => i + 1),
+    )
+    const hours = analytics.topVolunteers.map((row) => row.hours)
+    expect([...hours].sort((a, b) => b - a)).toEqual(hours)
+    expect(new Set(analytics.topVolunteers.map((row) => row.userId)).size).toBe(hours.length)
+    for (const row of analytics.topVolunteers) expect(row.avatar).toHaveLength(2)
+  })
 })
 
 describe("fakeHostedEvents", () => {
@@ -160,6 +185,19 @@ describe("fakeHostedEvents", () => {
     }
     for (const item of fakeHostedEvents("past", { now: NOW }).items) {
       expect(Date.parse(item.startsAt)).toBeLessThan(NOW)
+    }
+  })
+
+  it("credits hours on a completed row and leaves an uncredited one at zero", () => {
+    const past = fakeHostedEvents("past", { now: NOW }).items
+    const credited = past.filter((item) => (item.hoursCredited ?? 0) > 0)
+    const uncredited = past.filter(
+      (item) => item.status === "done" && item.checkedInCount > 0 && item.hoursCredited === 0,
+    )
+    expect(credited.length).toBeGreaterThan(0)
+    expect(uncredited.length).toBeGreaterThan(0)
+    for (const item of fakeHostedEvents("upcoming", { now: NOW }).items) {
+      expect(item.hoursCredited).toBeUndefined()
     }
   })
 

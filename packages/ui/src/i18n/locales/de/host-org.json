@@ -15,7 +15,10 @@
     "events_one": "{{count}} Veranstaltung",
     "events_other": "{{count}} Veranstaltungen",
     "members_one": "{{count}} Mitglied",
-    "members_other": "{{count}} Mitglieder"
+    "members_other": "{{count}} Mitglieder",
+    "hours": "{{hours}} Std. ehrenamtlich",
+    "volunteers_one": "{{count}} freiwillige Person",
+    "volunteers_other": "{{count}} Freiwillige"
   },
   "actions": {
     "share": "Diese Organisation teilen",

@@ -178,3 +178,46 @@ export function timeLabel(iso: string, locale?: string): string {
   if (Number.isNaN(d.getTime())) return ""
   return d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })
 }
+
+const TIME_RANGE_SEPARATOR = " – "
+
+function clockParts(d: Date, locale?: string): Intl.DateTimeFormatPart[] {
+  return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).formatToParts(d)
+}
+
+function dayPeriodOf(parts: readonly Intl.DateTimeFormatPart[]): string | null {
+  const part = parts.find((p) => p.type === "dayPeriod")
+  return part === undefined ? null : part.value
+}
+
+function dayPeriodLeadsClock(parts: readonly Intl.DateTimeFormatPart[]): boolean {
+  const dayPeriod = parts.findIndex((p) => p.type === "dayPeriod")
+  const hour = parts.findIndex((p) => p.type === "hour")
+  return dayPeriod !== -1 && hour !== -1 && dayPeriod < hour
+}
+
+function withoutDayPeriod(label: string, dayPeriod: string): string {
+  const at = label.indexOf(dayPeriod)
+  if (at === -1) return ""
+  return `${label.slice(0, at)}${label.slice(at + dayPeriod.length)}`.trim()
+}
+
+export function timeRangeLabel(startIso: string, endIso: string, locale?: string): string {
+  const start = new Date(startIso)
+  const end = new Date(endIso)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return ""
+  const startLabel = timeLabel(startIso, locale)
+  const endLabel = timeLabel(endIso, locale)
+  const startParts = clockParts(start, locale)
+  const dayPeriod = dayPeriodOf(startParts)
+  if (dayPeriod !== null && dayPeriod === dayPeriodOf(clockParts(end, locale))) {
+    if (dayPeriodLeadsClock(startParts)) {
+      const trimmedEnd = withoutDayPeriod(endLabel, dayPeriod)
+      if (trimmedEnd !== "") return `${startLabel}${TIME_RANGE_SEPARATOR}${trimmedEnd}`
+    } else {
+      const trimmedStart = withoutDayPeriod(startLabel, dayPeriod)
+      if (trimmedStart !== "") return `${trimmedStart}${TIME_RANGE_SEPARATOR}${endLabel}`
+    }
+  }
+  return `${startLabel}${TIME_RANGE_SEPARATOR}${endLabel}`
+}

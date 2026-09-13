@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { View, Pressable, ScrollView, StyleSheet } from "react-native"
 import type { CleanupDTO, ContentReportReason } from "@civfix/shared"
-import { eventChip, dowLabel, timeLabel } from "@civfix/shared/datetime"
+import { eventChip, dowLabel, timeLabel, timeRangeLabel } from "@civfix/shared/datetime"
 import { radius, focusRingProps, headingLevel, makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap, TextLink } from "../typography"
 import {
@@ -52,6 +52,7 @@ import { openHostDashboard } from "./hostDashboardTarget"
 import { EventRosterBlock } from "./host/EventRosterBlock"
 import { RegistrationBlock } from "./host/registration/RegistrationBlock"
 import { eventDistanceLabel } from "./eventDistance"
+import { hasEventEnded } from "./eventLifecycle"
 import { buildComposerEventRef } from "./postComposerModel"
 import { usePostComposerStore } from "./postComposerStore"
 
@@ -246,7 +247,10 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   })
   const isCancelled = cleanup.status === "cancelled"
   const isDone = cleanup.status === "done"
-  const isUpcoming = !isCancelled && !isDone
+  const isEnded = hasEventEnded(cleanup, Date.now())
+  const isLive = !isCancelled && !isDone
+  const isUpcoming = isLive && !isEnded
+  const isRegistered = cleanup.myRegistration?.status === "registered"
   const next = `/cleanups/${cleanup.id}`
 
   const isActive = usePageIsActive()
@@ -406,7 +410,11 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
               {dowLabel(cleanup.scheduledAt, weekdays)}, {month} {day}
             </Text>
             <MetaDot color={th.colors.textSubtle} />
-            <Text style={styles.metaWhen}>{timeLabel(cleanup.scheduledAt, locale)}</Text>
+            <Text style={styles.metaWhen}>
+              {cleanup.endsAt
+                ? timeRangeLabel(cleanup.scheduledAt, cleanup.endsAt, locale)
+                : timeLabel(cleanup.scheduledAt, locale)}
+            </Text>
           </View>
           <View style={styles.metaRow}>
             <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
@@ -425,11 +433,13 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       </View>
 
-      {isUpcoming && !actsAsHost ? (
+      {isLive && !actsAsHost ? (
         hasTicketTypes ? (
-          <View style={styles.rsvp}>
-            <RegistrationBlock cleanup={cleanup} onGuestRegister={onSignedOutRsvp} />
-          </View>
+          isUpcoming || isRegistered ? (
+            <View style={styles.rsvp}>
+              <RegistrationBlock cleanup={cleanup} onGuestRegister={onSignedOutRsvp} />
+            </View>
+          ) : null
         ) : (
           <RsvpPill
             going={going}
@@ -438,6 +448,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
               join.mutate(currentlyGoing)
             }}
             busy={join.isPending}
+            ended={isEnded}
             nextPath={next}
             size="md"
             fill
@@ -447,7 +458,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         )
       ) : null}
 
-      {!actsAsHost && canCheckIn && isUpcoming ? (
+      {!actsAsHost && canCheckIn && isLive ? (
         <View style={styles.section}>
           <EventActionRows>
             <EventActionRow
@@ -497,7 +508,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
             cleanupId={cleanup.id}
             slots={cleanup.slots}
             joined={going}
-            readonly={isDone || isCancelled}
+            readonly={isDone || isCancelled || isEnded}
           />
         </View>
       ) : null}
@@ -528,6 +539,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         <View style={styles.section}>
           <EventHoursBlock
             cleanupId={cleanup.id}
+            cleanup={cleanup}
             actsAsHost={actsAsHost}
             joined={going}
           />
@@ -571,7 +583,13 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
               label={t("actions.message_crew")}
               accessibilityLabel={t("actions.message_crew_a11y")}
               disabled={!going && !actsAsHost}
-              hint={!going && !actsAsHost ? t("actions.message_crew_hint") : undefined}
+              hint={
+                going || actsAsHost
+                  ? undefined
+                  : isEnded
+                    ? t("actions.message_crew_hint_ended")
+                    : t("actions.message_crew_hint")
+              }
               onPress={onMessageCrew}
             />
           )}

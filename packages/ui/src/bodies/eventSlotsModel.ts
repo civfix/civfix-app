@@ -8,6 +8,7 @@
  * Ownership is read off `slot.mine` - the server-computed flag - never re-derived from a roster.
  */
 import type { EventSlotDTO } from "@civfix/shared"
+import { isEventEndedRefusal } from "./errorCode"
 
 export type SlotRowState =
   /** Claimable: has room (or is unlimited) and the viewer holds nothing. */
@@ -76,9 +77,57 @@ export function slotsFilledSummary(slots: readonly EventSlotDTO[]): {
   return { claimed, capacity }
 }
 
-/** By `sortOrder`, then title, so two slots the host never reordered still render deterministically. */
+export function claimSlotErrorKey(
+  code: string | undefined,
+  fields?: Record<string, string> | undefined,
+): string {
+  if (isEventEndedRefusal(fields)) return "error.ended"
+  if (code === "CONFLICT") return "error.full"
+  return "error.generic"
+}
+
+export interface SlotWindow {
+  start: Date
+  end: Date
+}
+
+export function slotWindow(slot: EventSlotDTO): SlotWindow | null {
+  if (slot.startsAt == null || slot.endsAt == null) return null
+  const start = new Date(slot.startsAt)
+  const end = new Date(slot.endsAt)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null
+  return { start, end }
+}
+
+export function boardHasTimedSlots(slots: readonly EventSlotDTO[]): boolean {
+  return slots.some((slot) => slotWindow(slot) !== null)
+}
+
+function byOrderThenTitle(a: EventSlotDTO, b: EventSlotDTO): number {
+  return a.sortOrder !== b.sortOrder ? a.sortOrder - b.sortOrder : a.title.localeCompare(b.title)
+}
+
+export function slotDisplayOrder(slots: readonly EventSlotDTO[]): EventSlotDTO[] {
+  const timed: { slot: EventSlotDTO; start: number }[] = []
+  const untimed: EventSlotDTO[] = []
+  for (const slot of slots) {
+    const window = slotWindow(slot)
+    if (window === null) untimed.push(slot)
+    else timed.push({ slot, start: window.start.getTime() })
+  }
+  timed.sort((a, b) => (a.start !== b.start ? a.start - b.start : byOrderThenTitle(a.slot, b.slot)))
+  untimed.sort(byOrderThenTitle)
+  return [...timed.map((entry) => entry.slot), ...untimed]
+}
+
+export function currentShifts(slots: readonly EventSlotDTO[], now: Date): EventSlotDTO[] {
+  const at = now.getTime()
+  return slots.filter((slot) => {
+    const window = slotWindow(slot)
+    return window !== null && window.start.getTime() <= at && at < window.end.getTime()
+  })
+}
+
 export function sortSlots(slots: readonly EventSlotDTO[]): EventSlotDTO[] {
-  return [...slots].sort((a, b) =>
-    a.sortOrder !== b.sortOrder ? a.sortOrder - b.sortOrder : a.title.localeCompare(b.title),
-  )
+  return [...slots].sort(byOrderThenTitle)
 }

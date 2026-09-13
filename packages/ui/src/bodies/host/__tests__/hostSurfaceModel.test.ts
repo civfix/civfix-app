@@ -15,6 +15,7 @@ import {
   hostSecondaryCta,
   hostStatTiles,
   hostedEventFromCleanup,
+  hoursHintHasDenominator,
   peakArrival,
   registrationTrendPoints,
   sourceSeats,
@@ -93,6 +94,7 @@ function insights(over: Partial<EventInsights> = {}): EventInsights {
     broadcasts: [],
     arrivals: [],
     hours: { credited: 62.5, attendeesCredited: 25, attendeesCheckedIn: 31 },
+    topVolunteers: [],
     money: null,
     returning: null,
     ...over,
@@ -178,6 +180,8 @@ describe("panels per phase", () => {
     expect(hostPanels("cancelled")).toEqual({
       hero: true,
       tiles: false,
+      shifts: false,
+      topVolunteers: false,
       signups: false,
       byTicketType: false,
       arrivals: false,
@@ -192,6 +196,20 @@ describe("panels per phase", () => {
     expect(hostPanels("live").signups).toBe(false)
     expect(hostPanels("ended").arrivals).toBe(true)
     expect(hostPanels("ended").messages).toBe(true)
+  })
+
+  it("names the top volunteers only once the event is over and the hours are in", () => {
+    expect(hostPanels("ended").topVolunteers).toBe(true)
+    expect(hostPanels("upcoming").topVolunteers).toBe(false)
+    expect(hostPanels("live").topVolunteers).toBe(false)
+    expect(hostPanels("cancelled").topVolunteers).toBe(false)
+  })
+
+  it("offers the shift board while the shifts can still be staffed, and never after", () => {
+    expect(hostPanels("upcoming").shifts).toBe(true)
+    expect(hostPanels("live").shifts).toBe(true)
+    expect(hostPanels("ended").shifts).toBe(false)
+    expect(hostPanels("cancelled").shifts).toBe(false)
   })
 })
 
@@ -283,6 +301,17 @@ describe("stat tiles per phase", () => {
 
   it("renders nothing for a cancelled event", () => {
     expect(hostStatTiles(insights(), "cancelled")).toEqual([])
+  })
+
+  it("keeps the hours denominator only while it is one the credited count sits inside", () => {
+    expect(hoursHintHasDenominator(25, 31)).toBe(true)
+    expect(hoursHintHasDenominator(31, 31)).toBe(true)
+  })
+
+  it("drops the denominator when more people were credited than ever checked in", () => {
+    expect(hoursHintHasDenominator(24, 16)).toBe(false)
+    expect(hoursHintHasDenominator(3, 0)).toBe(false)
+    expect(hoursHintHasDenominator(0, 0)).toBe(false)
   })
 })
 

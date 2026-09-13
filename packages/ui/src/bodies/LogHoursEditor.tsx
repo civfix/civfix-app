@@ -6,13 +6,22 @@ import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, TextField, useToast } from "../primitives"
 import { useAuthState, useCleanupAttendees, useLogEventHours } from "../data"
-import { useRelativeTime, useT } from "../i18n"
-import { buildHoursEntries, hoursDraftValid, seedHoursDrafts } from "./hoursEntries"
+import { useLocale, useRelativeTime, useT } from "../i18n"
+import { formatHours, formatHoursDisplay } from "./formatHours"
+import {
+  buildHoursEntries,
+  hoursDraftValid,
+  plannedEventHours,
+  seedHoursDrafts,
+  suggestedHoursFor,
+  type HoursCleanup,
+} from "./hoursEntries"
 
 export type LoggedHoursEntry = EventHoursResponse["entries"][number]
 
 export interface LogHoursEditorProps {
   cleanupId: string
+  cleanup: HoursCleanup
   initialEntries?: readonly LoggedHoursEntry[]
   openOnMount?: boolean
   onClose?: () => void
@@ -20,6 +29,7 @@ export interface LogHoursEditorProps {
 
 export function LogHoursEditor({
   cleanupId,
+  cleanup,
   initialEntries,
   openOnMount = false,
   onClose,
@@ -27,6 +37,7 @@ export function LogHoursEditor({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-detail")
+  const { locale } = useLocale()
   const { relative } = useRelativeTime()
   const { user } = useAuthState()
   const toast = useToast()
@@ -51,8 +62,21 @@ export function LogHoursEditor({
     return map
   }, [initialEntries])
 
+  const planned = plannedEventHours(cleanup)
+  const plannedDraft = planned === null ? "" : formatHours(planned)
+  const suggestionById = useMemo(() => {
+    const map = new Map<string, { hours: number; slotTitle: string }>()
+    for (const attendee of attendees) {
+      const suggestion = suggestedHoursFor(attendee, cleanup)
+      if (suggestion && suggestion.slotTitle !== null) {
+        map.set(attendee.id, { hours: suggestion.hours, slotTitle: suggestion.slotTitle })
+      }
+    }
+    return map
+  }, [attendees, cleanup])
+
   const [open, setOpen] = useState(openOnMount)
-  const [defaultHoursDraft, setDefaultHoursDraft] = useState("")
+  const [defaultHoursDraft, setDefaultHoursDraft] = useState(plannedDraft)
   const [hoursDrafts, setHoursDrafts] = useState<Record<string, string>>(seeded)
 
   const defaultDraftValid = hoursDraftValid(defaultHoursDraft, MAX_EVENT_HOURS)
@@ -70,10 +94,10 @@ export function LogHoursEditor({
   )
 
   const onOpen = useCallback(() => {
-    setDefaultHoursDraft("")
+    setDefaultHoursDraft(plannedDraft)
     setHoursDrafts(seeded)
     setOpen(true)
-  }, [seeded])
+  }, [plannedDraft, seeded])
   const onCancel = useCallback(() => {
     if (logHours.isPending) return
     setOpen(false)
@@ -81,8 +105,15 @@ export function LogHoursEditor({
   }, [logHours.isPending, onClose])
   const onApplyDefault = useCallback(() => {
     if (defaultHoursDraft.trim().length === 0 || !defaultDraftValid) return
-    setHoursDrafts(Object.fromEntries(attendees.map((a) => [a.id, defaultHoursDraft])))
-  }, [defaultHoursDraft, defaultDraftValid, attendees])
+    setHoursDrafts(
+      Object.fromEntries(
+        attendees.map((a) => {
+          const suggestion = suggestionById.get(a.id)
+          return [a.id, suggestion ? formatHours(suggestion.hours) : defaultHoursDraft]
+        }),
+      ),
+    )
+  }, [attendees, defaultHoursDraft, defaultDraftValid, suggestionById])
   const onChangeRow = useCallback((userId: string, value: string) => {
     setHoursDrafts((prev) => ({ ...prev, [userId]: value }))
   }, [])
@@ -157,6 +188,7 @@ export function LogHoursEditor({
           const draft = hoursDrafts[a.id] ?? ""
           const rowInvalid = !hoursDraftValid(draft, MAX_EVENT_HOURS)
           const loggedAt = loggedAtById[a.id]
+          const suggestion = suggestionById.get(a.id)
           return (
             <View key={a.id} style={styles.row}>
               <Avatar
@@ -167,9 +199,33 @@ export function LogHoursEditor({
                 size={28}
               />
               <View style={styles.rowMain}>
-                <Text style={styles.rowName} numberOfLines={1}>
-                  {a.name}
-                </Text>
+                <View style={styles.rowNameLine}>
+                  <Text style={styles.rowName} numberOfLines={1}>
+                    {a.name}
+                  </Text>
+                  {suggestion ? (
+                    <Pressable
+                      onPress={() => onChangeRow(a.id, formatHours(suggestion.hours))}
+                      disabled={logHours.isPending}
+                      accessibilityRole="button"
+                      accessibilityLabel={t("log_hours.suggest_chip_a11y", {
+                        hours: formatHoursDisplay(suggestion.hours, locale),
+                        slot: suggestion.slotTitle,
+                        name: a.name,
+                      })}
+                      hitSlop={6}
+                      {...focusRingProps}
+                      style={({ pressed }) => [styles.suggestChip, pressed ? styles.pressed : null]}
+                    >
+                      <Text style={styles.suggestChipText} numberOfLines={1}>
+                        {t("log_hours.suggest_chip", {
+                          hours: formatHoursDisplay(suggestion.hours, locale),
+                          slot: suggestion.slotTitle,
+                        })}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </View>
                 {loggedAt ? (
                   <Text style={styles.rowLogged} numberOfLines={1}>
                     {t("log_hours.row_logged", { ago: relative(loggedAt) })}
@@ -199,6 +255,9 @@ export function LogHoursEditor({
         <Text style={styles.blankHint}>
           {hasLoggedRows ? t("log_hours.blank_hint_edit") : t("log_hours.blank_hint")}
         </Text>
+      ) : null}
+      {attendees.length > 0 && (planned !== null || suggestionById.size > 0) ? (
+        <Text style={styles.blankHint}>{t("log_hours.suggest_hint")}</Text>
       ) : null}
       {viewerOnRoster ? <Text style={styles.blankHint}>{t("log_hours.self_note")}</Text> : null}
       <View style={styles.actions}>
@@ -292,10 +351,30 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
     minWidth: 0,
   },
+  rowNameLine: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["2"],
+    minWidth: 0,
+  },
   rowName: {
+    flexShrink: 1,
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: 13.5,
     color: t.colors.text,
+  },
+  suggestChip: {
+    flexShrink: 0,
+    maxWidth: 140,
+    paddingHorizontal: t.space["2"],
+    paddingVertical: t.space["1"],
+    borderRadius: t.radius.pill,
+    backgroundColor: t.colors.sky["50"],
+  },
+  suggestChipText: {
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["12"],
+    color: t.colors.sky["700"],
   },
   rowLogged: {
     fontFamily: t.fontFamily.bodyRegular,

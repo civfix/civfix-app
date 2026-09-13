@@ -30,6 +30,14 @@ import {
   TicketTypeVisibilitySchema,
   WaitlistStatusSchema,
 } from "../src/schemas/common.js"
+import {
+  HostedEventsAnalyticsResponseSchema,
+  MAX_PORTFOLIO_TOP_VOLUNTEERS,
+} from "../src/schemas/host/analytics.js"
+import {
+  EventInsightsSchema,
+  MAX_INSIGHTS_TOP_VOLUNTEERS,
+} from "../src/schemas/host/insights.js"
 import { NotificationTypeSchema } from "../src/schemas/notifications.js"
 import { SignalTopicSchema } from "../src/types/ws.js"
 import {
@@ -979,5 +987,149 @@ describe("organization affiliation, events and the invite inbox (0.43.0)", () =>
     expect(endpoints.acceptMyOrgInvite.csrf).toBe(true)
     expect(endpoints.declineMyOrgInvite.path).toBe("/me/org-invites/:inviteId/decline")
     expect(endpoints.declineMyOrgInvite.csrf).toBe(true)
+  })
+})
+
+describe("hours on the host read models (0.45.0, DECISIONS §39)", () => {
+  function volunteer(rank: number): unknown {
+    return { rank, userId: UUID2, name: "Maya", hours: 7.5 - rank }
+  }
+
+  function analytics(extra: Record<string, unknown> = {}): unknown {
+    return {
+      generatedAt: ISO,
+      range: "all",
+      totals: { events: 9, registrations: 412, checkIns: 337, uniqueAttendees: 268 },
+      byEvent: {},
+      repeatAttendance: { value: 0.34, numerator: 91, denominator: 268 },
+      averageCheckInRate: { value: 0.81, numerator: 337, denominator: 412 },
+      bestDayTime: null,
+      ...extra,
+    }
+  }
+
+  function insights(extra: Record<string, unknown> = {}): unknown {
+    return {
+      generatedAt: ISO,
+      phase: "ended",
+      clock: {
+        status: "done",
+        startsAt: ISO,
+        endsAt: null,
+        completedAt: null,
+        registrationClosesAt: null,
+        timezone: "America/Los_Angeles",
+      },
+      seats: {
+        registered: 14,
+        capacity: 40,
+        waitlisted: 2,
+        cancelled: 1,
+        checkedIn: 12,
+        noShow: 1,
+        unmarked: 1,
+      },
+      hours: { credited: 24, attendeesCredited: 12, attendeesCheckedIn: 12 },
+      money: null,
+      returning: null,
+      ...extra,
+    }
+  }
+
+  it("parses a 0.44-shaped analytics payload with no hours fields", () => {
+    const parsed = HostedEventsAnalyticsResponseSchema.parse(analytics())
+    expect(parsed.totalHours).toBeUndefined()
+    expect(parsed.volunteersCredited).toBeUndefined()
+    expect(parsed.topVolunteers).toEqual([])
+  })
+
+  it("carries the portfolio hours block and caps the ranked list", () => {
+    const parsed = HostedEventsAnalyticsResponseSchema.parse(
+      analytics({ totalHours: 486.75, volunteersCredited: 96, topVolunteers: [volunteer(1)] }),
+    )
+    expect(parsed.totalHours).toBe(486.75)
+    expect(parsed.volunteersCredited).toBe(96)
+    expect(parsed.topVolunteers[0]?.rank).toBe(1)
+    expect(MAX_PORTFOLIO_TOP_VOLUNTEERS).toBe(5)
+    const overflow = Array.from({ length: MAX_PORTFOLIO_TOP_VOLUNTEERS + 1 }, (_row, i) =>
+      volunteer(i + 1),
+    )
+    expect(HostedEventsAnalyticsResponseSchema.safeParse(analytics({ topVolunteers: overflow }))
+      .success).toBe(false)
+    expect(
+      HostedEventsAnalyticsResponseSchema.safeParse(analytics({ totalHours: -1 })).success,
+    ).toBe(false)
+    expect(
+      HostedEventsAnalyticsResponseSchema.safeParse(analytics({ volunteersCredited: 1.5 })).success,
+    ).toBe(false)
+  })
+
+  it("defaults EventInsights.topVolunteers to [] and caps it", () => {
+    expect(EventInsightsSchema.parse(insights()).topVolunteers).toEqual([])
+    expect(EventInsightsSchema.parse(insights({ topVolunteers: [volunteer(1)] })).topVolunteers)
+      .toHaveLength(1)
+    expect(MAX_INSIGHTS_TOP_VOLUNTEERS).toBe(5)
+    const overflow = Array.from({ length: MAX_INSIGHTS_TOP_VOLUNTEERS + 1 }, (_row, i) =>
+      volunteer(i + 1),
+    )
+    expect(EventInsightsSchema.safeParse(insights({ topVolunteers: overflow })).success).toBe(false)
+  })
+
+  it("keeps the org hours stats optional so a new org never reads zero", () => {
+    const bare = OrganizationDTOSchema.parse({
+      id: UUID,
+      slug: "reach-out-la",
+      name: "Reach Out LA",
+      createdAt: ISO,
+    })
+    expect(bare.volunteerHours).toBeUndefined()
+    expect(bare.volunteerCount).toBeUndefined()
+    const withHours = OrganizationDTOSchema.parse({
+      id: UUID,
+      slug: "reach-out-la",
+      name: "Reach Out LA",
+      createdAt: ISO,
+      volunteerHours: 128.5,
+      volunteerCount: 31,
+    })
+    expect(withHours.volunteerHours).toBe(128.5)
+    expect(withHours.volunteerCount).toBe(31)
+    expect(
+      OrganizationDTOSchema.safeParse({
+        id: UUID,
+        slug: "reach-out-la",
+        name: "Reach Out LA",
+        createdAt: ISO,
+        volunteerCount: 1.5,
+      }).success,
+    ).toBe(false)
+  })
+
+  it("keeps hoursCredited optional on the portfolio row", () => {
+    const bare = HostedEventDTOSchema.parse({
+      id: UUID,
+      title: "Sweep",
+      startsAt: ISO,
+      status: "done",
+    })
+    expect(bare.hoursCredited).toBeUndefined()
+    expect(
+      HostedEventDTOSchema.parse({
+        id: UUID,
+        title: "Sweep",
+        startsAt: ISO,
+        status: "done",
+        hoursCredited: 0,
+      }).hoursCredited,
+    ).toBe(0)
+    expect(
+      HostedEventDTOSchema.safeParse({
+        id: UUID,
+        title: "Sweep",
+        startsAt: ISO,
+        status: "done",
+        hoursCredited: -1,
+      }).success,
+    ).toBe(false)
   })
 })

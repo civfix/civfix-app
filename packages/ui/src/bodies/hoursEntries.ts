@@ -1,5 +1,39 @@
-import { MIN_EVENT_HOURS, type EventHoursEntry } from "@civfix/shared"
+import { MAX_EVENT_HOURS, MIN_EVENT_HOURS, type CleanupDTO, type EventHoursEntry } from "@civfix/shared"
 import { formatHours } from "./formatHours"
+
+export type HoursCleanup = Pick<CleanupDTO, "scheduledAt" | "endsAt" | "slots">
+
+export interface HoursAttendee {
+  slot?: { id: string } | null
+}
+
+function spanHours(fromIso: string, toIso: string): number | null {
+  const span = Date.parse(toIso) - Date.parse(fromIso)
+  if (!Number.isFinite(span) || span <= 0) return null
+  const hours = Math.round((span / 3_600_000) * 100) / 100
+  return Math.min(MAX_EVENT_HOURS, Math.max(MIN_EVENT_HOURS, hours))
+}
+
+export function plannedEventHours(cleanup: HoursCleanup): number | null {
+  if (!cleanup.endsAt) return null
+  return spanHours(cleanup.scheduledAt, cleanup.endsAt)
+}
+
+export function suggestedHoursFor(
+  attendee: HoursAttendee,
+  cleanup: HoursCleanup,
+): { hours: number; slotTitle: string | null } | null {
+  const slotId = attendee.slot?.id
+  if (slotId !== undefined) {
+    const slot = cleanup.slots.find((s) => s.id === slotId)
+    if (slot?.startsAt && slot.endsAt) {
+      const hours = spanHours(slot.startsAt, slot.endsAt)
+      if (hours !== null) return { hours, slotTitle: slot.title }
+    }
+  }
+  const planned = plannedEventHours(cleanup)
+  return planned === null ? null : { hours: planned, slotTitle: null }
+}
 
 export function parseHoursDraft(value: string): number | null {
   const trimmed = value.trim()

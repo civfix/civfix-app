@@ -11,11 +11,16 @@
   },
   "title": {
     "date": "날짜 선택",
-    "time": "시간 선택"
+    "time": "시간 선택",
+    "end_time": "종료 시간 선택"
   },
   "placeholder": {
     "pick_date": "날짜 선택",
-    "pick_time": "시간 선택"
+    "pick_time": "시간 선택",
+    "pick_end_time": "종료 시간 선택"
+  },
+  "value": {
+    "end_next_day": "{{time}} (다음 날)"
   },
   "action": {
     "done": "완료"
@@ -29,6 +34,7 @@
     "previous_month": "이전 달",
     "next_month": "다음 달",
     "date_field": "날짜: {{value}}",
-    "time_field": "시간: {{value}}"
+    "time_field": "시간: {{value}}",
+    "end_time_field": "종료: {{value}}"
   }
 }

@@ -1,8 +1,10 @@
 import { z } from "zod"
 import { BroadcastChannelSchema, IdSchema, ISODateSchema } from "../common.js"
+import { LeaderboardEntryDTOSchema } from "../entities.js"
 
 
 export const ANALYTICS_SUPPRESSION_K = 5
+export const MAX_PORTFOLIO_TOP_VOLUNTEERS = 5
 
 export const AnalyticsRangeSchema = z.enum(["7d", "30d", "90d", "all"])
 export type AnalyticsRange = z.infer<typeof AnalyticsRangeSchema>
@@ -189,6 +191,9 @@ const HostedEventsAnalyticsObjectSchema = z.object({
   repeatAttendance: SuppressedRateSchema,
   averageCheckInRate: SuppressedRateSchema,
   bestDayTime: BestDayTimeSchema.nullable(),
+  totalHours: z.number().nonnegative().optional(),
+  volunteersCredited: z.number().int().nonnegative().optional(),
+  topVolunteers: z.array(LeaderboardEntryDTOSchema).max(MAX_PORTFOLIO_TOP_VOLUNTEERS).default([]),
 })
 export type HostedEventsAnalyticsResponse = z.infer<typeof HostedEventsAnalyticsObjectSchema>
 

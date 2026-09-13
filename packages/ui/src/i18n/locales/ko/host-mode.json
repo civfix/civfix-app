@@ -41,6 +41,14 @@
     "rate": "{{rate}} 참석",
     "stale": "지금은 새로 고칠 수 없습니다. 마지막으로 받은 수치입니다."
   },
+  "shifts": {
+    "section": "교대 시간",
+    "of": "{{capacity}}명 중 {{claimed}}명",
+    "signed_up": "{{count}}명 신청",
+    "row_a11y": "{{title}}, {{range}}, {{capacity}}명 중 {{claimed}}명",
+    "show_all": "모두 보기",
+    "show_less": "간략히 보기"
+  },
   "tiles": {
     "waitlist": "대기자",
     "cancelled": "취소",
@@ -53,9 +61,15 @@
     "hours": "인정된 시간",
     "hours_value": "{{hours}}시간",
     "hours_hint": "참가자 {{attended}}명 중 {{credited}}명 인정",
+    "hours_hint_credited_one": "참가자 {{count}}명 인정",
+    "hours_hint_credited_other": "참가자 {{count}}명 인정",
     "donations": "기부",
     "returning": "재참여",
     "returning_hint": "등록 {{total}}명 중 이전에 참여한 인원"
+  },
+  "top_volunteers": {
+    "title": "최다 봉사자",
+    "caption": "이 행사에서 회원님이 인정한 시간을 기준으로 정렬했습니다. 호스트만 이 목록을 볼 수 있습니다."
   },
   "signups": {
     "title": "신청 추이",

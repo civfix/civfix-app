@@ -100,6 +100,8 @@ export interface HostActionCard {
 export interface HostPanels {
   hero: boolean
   tiles: boolean
+  shifts: boolean
+  topVolunteers: boolean
   signups: boolean
   byTicketType: boolean
   arrivals: boolean
@@ -154,6 +156,8 @@ export function hostPanels(phase: EventPhase): HostPanels {
   return {
     hero: true,
     tiles: phase !== "cancelled",
+    shifts: phase === "upcoming" || phase === "live",
+    topVolunteers: phase === "ended",
     signups: phase === "upcoming",
     byTicketType: phase === "upcoming",
     arrivals: phase === "live" || phase === "ended",
@@ -190,6 +194,10 @@ export function sourceSeats(
   source: InsightsSourceCount["source"],
 ): number {
   return bySource.find((entry) => entry.source === source)?.seats ?? 0
+}
+
+export function hoursHintHasDenominator(credited: number, attended: number): boolean {
+  return attended > 0 && credited <= attended
 }
 
 export function hostStatTiles(insights: EventInsights, phase: EventPhase): HostTile[] {

@@ -1424,3 +1424,23 @@ their 113 existing usages.
   scheme's neutrals (light `neutral.ink` on `brand.bloom` = 5.56:1, dark `neutral.paper` = 6.87:1)
   rather than moving the brand hue to `bloom.700`, which would have made the accent read as danger —
   the exact confusion this group removes. `onAccent` is unchanged; §22's on-accent floor is unaffected.
+
+## 38. A signup slot may be a shift, and a shift is identified by title plus window (0.45.0)
+
+`EventSlotDTO`/`EventSlotInput` gain `startsAt`/`endsAt` (both optional, both-or-neither, `ISODate` instants like `scheduledAt`). A slot with no window is what every slot was before: a role that spans the event. A slot with a window is a shift; the server refuses one shorter than `MIN_SLOT_DURATION_MINUTES` (the creditable-event minimum), one that falls outside the event's `scheduledAt..endsAt`, and any timed slot on an event with no `endsAt`. The community wizard therefore always sends `endsAt` on CREATE (the field has existed since §23; only the form was missing); on EDIT it sends the field only when the host moved the window — the date, the start, the end or a duration chip — or when a slot in that same save carries a window and the event has no stored end yet, which is the one case where omitting it would make the server reject the host's own shift. An unrelated edit to a legacy event therefore leaves its `endsAt` null, and such an event keeps the 4 h phase fallback until one of those two things happens.
+
+**Uniqueness is (event, lower(title), window).** 0063's title-only rule existed because every surface names a slot by its title; every surface now prints the window beside the title, so two "Sweep" shifts at different times are distinct to a human and to the index, while two untimed "Sweep" rows stay rejected.
+
+**One slot per person stays.** The claim PK is unchanged and `claimEventSlot` is still one singular resource (0063 banner). Instants on the slot are what a later non-overlapping multi-claim needs; nothing in this version pre-empts it.
+
+**Hours are not capped per shift.** `creditableHoursForEvent` is an attestation ceiling on the event's actual run time, and slots freeze at completion, so a per-shift cap would be uncorrectable; the shift length is a client-side suggestion the host confirms row by row. The ledger, certificate rows and `ledger_fingerprint` are untouched.
+
+`EventSlotRef` stays `{ id, title }`: every reader of a ref also holds the event's slot board.
+
+## 39. Hours by organization are an aggregation over `cleanups.organization_id`, and a host's ranked list is named (0.45.0)
+
+The ledger keeps no organization column and gains none: an organization's volunteer hours are the live (`voided_at IS NULL`), event-sourced (`source = 'event'`) rows whose `cleanup_id` belongs to a cleanup posted as that organization (`cleanups.organization_id`). A member's personal event contributes nothing to their organization, and `users.primary_organization_id` is never consulted. A hard-deleted organization's events fall out of every by-org figure (`ON DELETE SET NULL`); a soft-deleted or suspended one is dropped from `byOrganization` chips (its page is a 404) while the hours stay in `totalHours`. `byOrganization` is a set of chips, not a partition of the total — exactly as `byJurisdiction` already is.
+
+**Two numbers, one rule.** Public surfaces honor `users.show_volunteer_hours` (`IS NOT FALSE`): the organization page's `volunteerHours`/`volunteerCount` exclude an opted-out person, because an organization with one public event and one attendee would otherwise publish that attendee's hours. Host surfaces do not: `EventInsights.topVolunteers` and the portfolio's `totalHours`/`volunteersCredited`/`topVolunteers` are exact and named, under §36's argument — the reader holds `view_roster` on every event in the set and can already read each credited row through `getEventHours`. Deleted accounts stay in totals and leave the ranked rows. Blocked-pair anonymisation is not applied on host surfaces: the portfolio cache is keyed per org role, not per viewer, so a viewer-dependent row would leak across viewers.
+
+The portfolio hours fields are computed over the same `cleanupIds` as `totals`/`byEvent` and share their range behaviour (the whole hosted set); the dashboard requests `range: "all"` and labels the block "All time". `HostedEventDTO.hoursCredited` is the same sum per event, so the list and the total agree. `LeaderboardEntryDTO` moves to `entities.ts` because two domains now consume it. The PDF transcript and its fingerprint are untouched. No new endpoint: the registry stays at 344.

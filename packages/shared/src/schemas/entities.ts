@@ -47,6 +47,26 @@ export type OrganizationRefDTO = z.infer<typeof OrganizationRefDTOObjectSchema>
 export const OrganizationRefDTOSchema: z.ZodType<OrganizationRefDTO, z.ZodTypeDef, unknown> =
   OrganizationRefDTOObjectSchema
 
+const LeaderboardEntryDTOObjectSchema = z.object({
+  rank: z.number().int().positive(),
+  userId: IdSchema,
+  name: z.string(),
+  handle: z.string().nullable().optional(),
+  avatar: AvatarPairSchema,
+  avatarUrl: z.string().nullable().optional(),
+  hours: z.number().nonnegative(),
+})
+export type LeaderboardEntryDTO = z.infer<typeof LeaderboardEntryDTOObjectSchema>
+export const LeaderboardEntryDTOSchema: z.ZodType<LeaderboardEntryDTO, z.ZodTypeDef, unknown> =
+  LeaderboardEntryDTOObjectSchema
+
+const OrgHoursDTOObjectSchema = z.object({
+  organization: OrganizationRefDTOSchema,
+  hours: z.number().nonnegative(),
+})
+export type OrgHoursDTO = z.infer<typeof OrgHoursDTOObjectSchema>
+export const OrgHoursDTOSchema: z.ZodType<OrgHoursDTO, z.ZodTypeDef, unknown> = OrgHoursDTOObjectSchema
+
 
 
 
@@ -95,6 +115,8 @@ export const EventSlotDTOSchema = z.object({
   claimed: z.number().int().nonnegative().default(0),
   sortOrder: z.number().int().default(0),
   mine: z.boolean().optional(),
+  startsAt: ISODateSchema.nullable().optional(),
+  endsAt: ISODateSchema.nullable().optional(),
 })
 export type EventSlotDTO = z.infer<typeof EventSlotDTOSchema>
 
@@ -182,6 +204,7 @@ export const LinkedEventRefSchema = z.object({
   eventKind: EventKindSchema,
   status: CleanupStatusSchema.default("upcoming"),
   scheduledAt: ISODateSchema,
+  endsAt: ISODateSchema.nullable().optional(),
   ...LatLngFields,
   going: z.number().int().nonnegative(),
   organizer: PersonDTOSchema,
@@ -297,6 +320,8 @@ const OrganizationDTOObjectSchema = z.object({
   createdAt: ISODateSchema,
   memberCount: z.number().int().nonnegative().optional(),
   eventCount: z.number().int().nonnegative().optional(),
+  volunteerHours: z.number().nonnegative().optional(),
+  volunteerCount: z.number().int().nonnegative().optional(),
   myRole: OrganizationMemberRoleSchema.nullable().optional(),
   donationsEnabled: z.boolean().optional(),
   donateSlug: z.string().nullable().optional(),
@@ -636,6 +661,7 @@ const HostedEventObjectSchema = z.object({
   capacity: z.number().int().nonnegative().nullable().optional(),
   checkedInCount: z.number().int().nonnegative().default(0),
   waitlistCount: z.number().int().nonnegative().default(0),
+  hoursCredited: z.number().nonnegative().optional(),
   myRole: CleanupMemberRoleSchema.nullable().optional(),
   myCapabilities: z.array(HostCapabilitySchema).default([]),
   orgId: IdSchema.nullable().optional(),

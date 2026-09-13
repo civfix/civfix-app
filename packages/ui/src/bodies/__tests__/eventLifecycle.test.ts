@@ -3,7 +3,7 @@
  * tests never touch timers.
  */
 import { describe, expect, it } from "vitest"
-import { eventCompletionState, hoursReceiptState } from "../eventLifecycle"
+import { EVENT_END_GRACE_MS, eventCompletionState, hasEventEnded, hoursReceiptState } from "../eventLifecycle"
 
 const NOW = Date.parse("2026-07-27T12:00:00.000Z")
 const STARTED = "2026-07-27T11:00:00.000Z"
@@ -93,5 +93,29 @@ describe("hoursReceiptState", () => {
   it("treats a zero-hour row as not a credit", () => {
     expect(hoursReceiptState({ ...attended, myHours: 0, anyLogged: true })).toBe("not-credited")
     expect(hoursReceiptState({ ...attended, myHours: 0, anyLogged: false })).toBe("pending")
+  })
+})
+
+describe("hasEventEnded", () => {
+  it("prefers endsAt over the scheduled start", () => {
+    expect(hasEventEnded({ scheduledAt: STARTED, endsAt: "2026-07-27T11:30:00.000Z" }, NOW)).toBe(true)
+    expect(hasEventEnded({ scheduledAt: "2026-07-20T11:00:00.000Z", endsAt: FUTURE }, NOW)).toBe(false)
+  })
+
+  it("falls back to the start plus the grace window when endsAt is absent", () => {
+    expect(hasEventEnded({ scheduledAt: STARTED }, NOW)).toBe(false)
+    expect(hasEventEnded({ scheduledAt: STARTED, endsAt: null }, NOW)).toBe(false)
+    expect(hasEventEnded({ scheduledAt: new Date(NOW - EVENT_END_GRACE_MS - 1).toISOString() }, NOW)).toBe(
+      true,
+    )
+  })
+
+  it("treats an event ending exactly now as still live", () => {
+    expect(hasEventEnded({ scheduledAt: STARTED, endsAt: new Date(NOW).toISOString() }, NOW)).toBe(false)
+  })
+
+  it("treats an unparseable schedule as ended, and an unparseable endsAt as absent", () => {
+    expect(hasEventEnded({ scheduledAt: "not-a-date" }, NOW)).toBe(true)
+    expect(hasEventEnded({ scheduledAt: STARTED, endsAt: "not-a-date" }, NOW)).toBe(false)
   })
 })

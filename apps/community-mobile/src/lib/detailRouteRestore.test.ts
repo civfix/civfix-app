@@ -1,5 +1,8 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
+import { readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
+import { dirname, join } from "node:path"
 import type { DetailEntry } from "@civfix/ui"
 import {
   INITIAL_BRIDGE_GUARD,
@@ -16,9 +19,14 @@ const identity = (entry: DetailEntry | null): string | null =>
     ? `${entry.kind}:${entry.id ?? ""}:${entry.roomKind ?? ""}:${entry.geoid ?? ""}:${entry.slug ?? ""}:${entry.seatId ?? ""}`
     : null
 
+const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "app")
+
 const cleanup = { kind: "cleanup", id: "c1" } as DetailEntry
 const hostMode = { kind: "host-mode", id: "c1" } as DetailEntry
 const hostCheckin = { kind: "host-checkin", id: "c1" } as DetailEntry
+const thread = { kind: "thread", id: "t1", roomKind: "dm" } as DetailEntry
+const person = { kind: "person", id: "u1" } as DetailEntry
+const followers = { kind: "followers", id: "u1" } as DetailEntry
 
 test("restorableStack keeps an unbridged entry", () => {
   assert.deepEqual(restorableStack([cleanup], null), [cleanup])
@@ -129,6 +137,12 @@ function makeSim() {
     },
     push(entry: DetailEntry) {
       setStack([...stack, entry])
+    },
+    back() {
+      setStack(stack.slice(0, -1))
+    },
+    pushRoute(name: string, params: Record<string, string>) {
+      native.push({ name, params })
     },
     reset() {
       epoch += 1
@@ -241,4 +255,68 @@ test("a bridged entry is never re-inserted while its native route is not focused
   assert.deepEqual(sim.unmountHost(inner), { type: "restore", stack: [] })
   assert.deepEqual(sim.stack, [])
   assert.deepEqual(sim.pushes, ["/cleanups/[id]/host", "/cleanups/[id]/checkin"])
+})
+
+test("a profile a native screen pushed rides its own route, bridging nothing", () => {
+  const sim = makeSim()
+  sim.push(thread)
+  assert.deepEqual(sim.native, ["index", "messages/[id]"])
+  assert.deepEqual(sim.stack, [])
+
+  sim.pushRoute("people/[id]", { id: "u1" })
+  const host = sim.mountHost(person)
+
+  assert.deepEqual(sim.pushes, ["/messages/[id]"])
+  assert.deepEqual(sim.stack, [person])
+  assert.deepEqual(host.restore, [])
+})
+
+test("the profile's children stack inside the nested shell instead of pushing screens", () => {
+  const sim = makeSim()
+  sim.push(thread)
+  sim.pushRoute("people/[id]", { id: "u1" })
+  sim.mountHost(person)
+
+  sim.push(followers)
+  sim.push(cleanup)
+  assert.deepEqual(sim.stack, [person, followers, cleanup])
+  assert.deepEqual(sim.pushes, ["/messages/[id]"])
+
+  sim.back()
+  sim.back()
+  assert.deepEqual(sim.stack, [person])
+  assert.deepEqual(sim.native, ["index", "messages/[id]", "people/[id]"])
+})
+
+test("leaving the profile hands the conversation back with nothing seeded behind it", () => {
+  const sim = makeSim()
+  sim.push(thread)
+  sim.pushRoute("people/[id]", { id: "u1" })
+  const host = sim.mountHost(person)
+
+  sim.back()
+  host.left = true
+  sim.popNative()
+
+  assert.deepEqual(sim.unmountHost(host), { type: "skip", reason: "noop" })
+  assert.deepEqual(sim.stack, [])
+  assert.deepEqual(sim.native, ["index", "messages/[id]"])
+  assert.deepEqual(sim.pushes, ["/messages/[id]"])
+})
+
+const NESTED_SHELL_ROUTES = [
+  { file: "people/[id].tsx", kind: "person" },
+  { file: "profile/index.tsx", kind: "profile" },
+  { file: "pin/[id].tsx", kind: "pin" },
+  { file: "cleanups/[id]/index.tsx", kind: "cleanup" },
+  { file: "orgs/[slug].tsx", kind: "org" },
+] as const
+
+test("every detail route hosts its entry in a nested shell instead of seeding and dismissing", () => {
+  for (const { file, kind } of NESTED_SHELL_ROUTES) {
+    const source = readFileSync(join(APP_DIR, file), "utf8")
+    assert.match(source, /DetailRouteHost/, `${file} must host ${kind} in a nested shell`)
+    assert.doesNotMatch(source, /DeepLinkHost/, `${file} must not seed ${kind} and dismiss to home`)
+    assert.match(source, new RegExp(`kind: "${kind}"`), `${file} must host the ${kind} entry`)
+  }
 })

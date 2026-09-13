@@ -92,7 +92,6 @@ export function SegmentedControl({
 const useStyles = makeThemedStyles((t) => ({
   track: {
     flexDirection: "row",
-    alignSelf: "flex-start",
     maxWidth: "100%",
     backgroundColor: t.colors.bgAlt,
     borderRadius: t.radius.pill,
@@ -102,7 +101,9 @@ const useStyles = makeThemedStyles((t) => ({
   trackMd: {
     alignSelf: "stretch",
   },
-  trackSm: {},
+  trackSm: {
+    alignSelf: "flex-end",
+  },
   segment: {
     alignItems: "center",
     justifyContent: "center",

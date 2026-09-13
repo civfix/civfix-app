@@ -151,7 +151,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   actions: {
     gap: t.space["2"],
-    marginTop: t.space["2"],
+    marginTop: t.space["1"],
   },
   actionsWide: {
     flexDirection: "row",

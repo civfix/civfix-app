@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { View, Pressable, Platform, type TextStyle } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import {
@@ -6,8 +6,10 @@ import {
   MAX_SLOT_CAPACITY,
   MAX_SLOT_DESCRIPTION,
   MAX_SLOT_TITLE,
+  MIN_SLOT_DURATION_MINUTES,
   type EventSlotDTO,
 } from "@civfix/shared"
+import { timeLabel, timeRangeLabel } from "@civfix/shared/datetime"
 import {
   makeThemedStyles,
   radius,
@@ -22,24 +24,34 @@ import {
   FOCUS_RING_WIDTH,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { useT } from "../i18n"
+import { FilterChip, FILTER_CHIP_HEIGHT } from "../primitives"
+import { useLocale, useT } from "../i18n"
 import {
   addSlotDraft,
+  generateShiftDrafts,
   makeSlotKey,
   moveSlotDraft,
   removeSlotDraft,
   removedClaimedCount,
   slotDraftError,
+  splitCounts,
   updateSlotDraft,
+  SHIFT_SPLIT_COUNTS,
+  type ShiftSplitCount,
   type SlotDraft,
   type SlotDraftError,
+  type SlotWindowBounds,
 } from "./eventSlotsForm"
+import { SlotWindowPicker } from "./SlotWindowPicker"
 
 const ERROR_KEY: Record<Exclude<SlotDraftError, null>, string> = {
   "empty-title": "error.empty_title",
   "title-too-long": "error.title_too_long",
   "capacity-invalid": "error.capacity_invalid",
   "capacity-below-claimed": "error.capacity_below_claimed",
+  "window-needs-event-end": "error.window_needs_event_end",
+  "window-outside-event": "error.window_outside_event",
+  "window-too-short": "error.window_too_short",
 }
 
 function bumpCapacity(raw: string, delta: 1 | -1): string {
@@ -65,6 +77,8 @@ export interface SlotEditorProps {
   value: SlotDraft[]
   onChange: (next: SlotDraft[]) => void
   existing?: readonly EventSlotDTO[]
+  window?: SlotWindowBounds | null
+  eventEndUnsaved?: boolean
 }
 
 function SlotCard({
@@ -72,6 +86,8 @@ function SlotCard({
   index,
   total,
   claimed,
+  window,
+  eventEndUnsaved,
   onPatch,
   onRemove,
   onMove,
@@ -80,6 +96,8 @@ function SlotCard({
   index: number
   total: number
   claimed: number | undefined
+  window: SlotWindowBounds | null
+  eventEndUnsaved: boolean
   onPatch: (key: string, patch: Partial<SlotDraft>) => void
   onRemove: (key: string) => void
   onMove: (key: string, direction: -1 | 1) => void
@@ -87,9 +105,18 @@ function SlotCard({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-slots")
+  const { locale } = useLocale()
   const [focusedField, setFocusedField] = useState<"title" | "description" | "capacity" | null>(null)
   const position = index + 1
-  const error = slotDraftError(draft, claimed)
+  const error = slotDraftError(draft, claimed, window)
+  const eventEnd = window?.end ?? null
+  const timed = draft.startsAt !== null && draft.endsAt !== null
+  const eventRange = window && eventEnd ? timeRangeLabel(window.start.toISOString(), eventEnd.toISOString(), locale) : ""
+  const onWholeEvent = () => onPatch(draft.key, { startsAt: null, endsAt: null })
+  const onSetTime = () => {
+    if (!window || !eventEnd || timed) return
+    onPatch(draft.key, { startsAt: window.start, endsAt: eventEnd })
+  }
   const canMoveUp = index > 0
   const canMoveDown = index < total - 1
 
@@ -242,19 +269,71 @@ function SlotCard({
         ) : null}
       </View>
 
+      <View style={styles.timeBlock}>
+        <View style={styles.timeRow}>
+          <Text style={styles.capacityLabel}>{t("editor.time_label")}</Text>
+          <FilterChip
+            label={t("editor.whole_event")}
+            selected={!timed}
+            onPress={onWholeEvent}
+            accessibilityLabel={t("editor.whole_event_a11y", { index: position })}
+          />
+          <FilterChip
+            label={t("editor.set_time")}
+            selected={timed}
+            disabled={eventEnd === null}
+            onPress={onSetTime}
+            accessibilityLabel={t("editor.set_time_a11y", { index: position })}
+          />
+        </View>
+        {!eventEnd ? (
+          <Text style={styles.timeHint}>{t("editor.time_needs_event_end")}</Text>
+        ) : eventEndUnsaved && timed ? (
+          <Text style={styles.timeHint}>
+            {t("editor.time_stores_event_end", {
+              time: timeLabel(eventEnd.toISOString(), locale),
+            })}
+          </Text>
+        ) : null}
+        {timed && window && eventEnd && draft.startsAt && draft.endsAt ? (
+          <SlotWindowPicker
+            index={position}
+            eventStart={window.start}
+            eventEnd={eventEnd}
+            startsAt={draft.startsAt}
+            endsAt={draft.endsAt}
+            onChange={(next) => onPatch(draft.key, next)}
+          />
+        ) : null}
+      </View>
+
       {error ? (
         <Text style={styles.errorLine}>
-          {t(ERROR_KEY[error], { max: MAX_SLOT_TITLE, count: claimed ?? 0 })}
+          {t(ERROR_KEY[error], {
+            max: MAX_SLOT_TITLE,
+            count: claimed ?? 0,
+            min: MIN_SLOT_DURATION_MINUTES,
+            range: eventRange,
+          })}
         </Text>
       ) : null}
     </View>
   )
 }
 
-export function SlotEditor({ value, onChange, existing = [] }: SlotEditorProps) {
+export function SlotEditor({
+  value,
+  onChange,
+  existing = [],
+  window = null,
+  eventEndUnsaved = false,
+}: SlotEditorProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-slots")
+  const [shiftPrefix, setShiftPrefix] = useState("")
+  const [prefixFocused, setPrefixFocused] = useState(false)
+  const prefixPlaceholder = t("editor.generated_title_prefix")
 
   const onAdd = useCallback(() => {
     if (value.length >= MAX_EVENT_SLOTS) return
@@ -279,32 +358,93 @@ export function SlotEditor({ value, onChange, existing = [] }: SlotEditorProps) 
     [onChange, value],
   )
 
+  const eventWindow = useMemo(
+    () => (window && window.end ? { start: window.start, end: window.end } : null),
+    [window],
+  )
+
+  const shiftTitle = useCallback(
+    (position: number) => {
+      const prefix = shiftPrefix.trim() === "" ? prefixPlaceholder : shiftPrefix.trim()
+      return t("editor.generated_title", { prefix, n: position })
+    },
+    [prefixPlaceholder, shiftPrefix, t],
+  )
+
+  const onSplit = useCallback(
+    (count: ShiftSplitCount) => {
+      if (!eventWindow) return
+      const drafts = generateShiftDrafts(
+        eventWindow,
+        count,
+        shiftTitle,
+        () => makeSlotKey(),
+        value,
+      )
+      if (drafts.length === 0) return
+      onChange([...value, ...drafts])
+    },
+    [eventWindow, onChange, shiftTitle, value],
+  )
+
   const claimedById = new Map(existing.map((s) => [s.id, s.claimed]))
   const removedClaimed = removedClaimedCount(existing, value)
+  const offeredSplits = splitCounts(eventWindow, value, shiftTitle)
+  const splitRow =
+    eventWindow !== null ? (
+      <View style={styles.splitRow}>
+        <Text style={styles.capacityLabel}>{t("editor.split_label")}</Text>
+        {SHIFT_SPLIT_COUNTS.map((count) => (
+          <FilterChip
+            key={count}
+            label={String(count)}
+            selected={false}
+            disabled={!offeredSplits.includes(count)}
+            onPress={() => onSplit(count)}
+            accessibilityLabel={t("editor.split_count_a11y", { count })}
+          />
+        ))}
+        <TextInput
+          value={shiftPrefix}
+          onChangeText={setShiftPrefix}
+          accessibilityLabel={t("editor.prefix_a11y")}
+          placeholder={prefixPlaceholder}
+          placeholderTextColor={th.colors.textSubtle}
+          selectionColor={th.colors.brand.bloom}
+          maxLength={MAX_SLOT_TITLE}
+          onFocus={() => setPrefixFocused(true)}
+          onBlur={() => setPrefixFocused(false)}
+          style={[styles.prefixInput, webInputReset, prefixFocused ? WEB_FIELD_RING : null]}
+        />
+      </View>
+    ) : null
 
   if (value.length === 0) {
     return (
-      <Pressable
-        onPress={onAdd}
-        accessibilityRole="button"
-        accessibilityLabel={t("editor.add_first_a11y")}
-        {...focusRingProps}
-        style={(state) => [
-          styles.addRow,
-          webCursorPointer,
-          webTransition,
-          webHover(state) ? styles.addRowHovered : null,
-          state.pressed ? styles.pressed : null,
-        ]}
-      >
-        <Icon icon={iconMap.ClipboardList} size={18} color={th.colors.textSubtle} />
-        <Text style={styles.addRowText} numberOfLines={1}>
-          {t("editor.add_first")}
-        </Text>
-        <View style={styles.addBtn}>
-          <Icon icon={iconMap.Plus} size={18} color={th.colors.onAccent} />
-        </View>
-      </Pressable>
+      <View style={styles.list}>
+        <Pressable
+          onPress={onAdd}
+          accessibilityRole="button"
+          accessibilityLabel={t("editor.add_first_a11y")}
+          {...focusRingProps}
+          style={(state) => [
+            styles.addRow,
+            webCursorPointer,
+            webTransition,
+            webHover(state) ? styles.addRowHovered : null,
+            state.pressed ? styles.pressed : null,
+          ]}
+        >
+          <Icon icon={iconMap.ClipboardList} size={18} color={th.colors.textSubtle} />
+          <Text style={styles.addRowText} numberOfLines={1}>
+            {t("editor.add_first")}
+          </Text>
+          <View style={styles.addBtn}>
+            <Icon icon={iconMap.Plus} size={18} color={th.colors.onAccent} />
+          </View>
+        </Pressable>
+        {splitRow}
+      </View>
     )
   }
 
@@ -317,6 +457,8 @@ export function SlotEditor({ value, onChange, existing = [] }: SlotEditorProps) 
           index={index}
           total={value.length}
           claimed={draft.id ? claimedById.get(draft.id) : undefined}
+          window={window}
+          eventEndUnsaved={eventEndUnsaved}
           onPatch={onPatch}
           onRemove={onRemove}
           onMove={onMove}
@@ -342,6 +484,8 @@ export function SlotEditor({ value, onChange, existing = [] }: SlotEditorProps) 
       ) : (
         <Text style={styles.capReached}>{t("editor.cap_reached", { max: MAX_EVENT_SLOTS })}</Text>
       )}
+
+      {splitRow}
 
       {removedClaimed > 0 ? (
         <View style={styles.caution}>
@@ -494,6 +638,39 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: 12,
     color: t.colors.bloom["700"],
+  },
+
+  timeBlock: {
+    gap: t.space["2"],
+  },
+  timeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: t.space["2"],
+  },
+  timeHint: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    color: t.colors.textSubtle,
+  },
+  splitRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: t.space["2"],
+  },
+  prefixInput: {
+    flexGrow: 1,
+    flexBasis: 96,
+    minWidth: 0,
+    height: FILTER_CHIP_HEIGHT,
+    paddingHorizontal: t.space["3"],
+    borderRadius: t.radius.pill,
+    backgroundColor: t.colors.bgAlt,
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["13"],
+    color: t.colors.text,
   },
 
   addMore: {

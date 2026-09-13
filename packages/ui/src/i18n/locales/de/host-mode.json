@@ -41,6 +41,14 @@
     "rate": "{{rate}} sind gekommen",
     "stale": "Gerade nicht aktualisierbar. Das sind die letzten Zahlen, die wir haben."
   },
+  "shifts": {
+    "section": "Schichten",
+    "of": "{{claimed}} von {{capacity}}",
+    "signed_up": "{{count}} angemeldet",
+    "row_a11y": "{{title}}, {{range}}, {{claimed}} von {{capacity}}",
+    "show_all": "Alle anzeigen",
+    "show_less": "Weniger anzeigen"
+  },
   "tiles": {
     "waitlist": "Warteliste",
     "cancelled": "Abgemeldet",
@@ -53,9 +61,15 @@
     "hours": "Gutgeschriebene Stunden",
     "hours_value": "{{hours}} Std.",
     "hours_hint": "{{credited}} von {{attended}} Teilnehmenden gutgeschrieben",
+    "hours_hint_credited_one": "{{count}} Person gutgeschrieben",
+    "hours_hint_credited_other": "{{count}} Personen gutgeschrieben",
     "donations": "Spenden",
     "returning": "Wiederkehrend",
     "returning_hint": "von {{total}} Angemeldeten waren schon einmal dabei"
+  },
+  "top_volunteers": {
+    "title": "Top-Freiwillige",
+    "caption": "Sortiert nach den Stunden, die du für diese Veranstaltung gutgeschrieben hast. Nur Gastgeber sehen diese Liste."
   },
   "signups": {
     "title": "Anmeldungen",

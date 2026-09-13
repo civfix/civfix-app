@@ -6,6 +6,7 @@ const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\
 
 const searchBody = strip(read("../SearchBody.tsx"))
 const searchResults = strip(read("../SearchResults.tsx"))
+const leaderboardRow = strip(read("../LeaderboardRow.tsx"))
 const inbox = strip(read("../MessagingListBody.tsx"))
 const composer = strip(read("../conversation/ConversationComposer.tsx"))
 const convoStyles = strip(read("../conversation/styles.ts"))
@@ -17,7 +18,8 @@ const headerIconButton = strip(read("../HeaderIconButton.tsx"))
 describe("every row answers the pointer", () => {
   it.each([
     ["SearchBody (recents + discovery links)", searchBody, 2],
-    ["SearchResults (person / leaderboard hits)", searchResults, 2],
+    ["SearchResults (the person hit)", searchResults, 1],
+    ["LeaderboardRow (the row search and both host screens share)", leaderboardRow, 1],
     ["MessagingListBody (thread rows)", inbox, 1],
     ["HeaderIconButton (the compose control both list roots draw)", headerIconButton, 1],
     ["ReportRow (the row every report list draws)", reportRow, 1],
@@ -42,9 +44,11 @@ describe("every row answers the pointer", () => {
 
   it("uses the house fills: bgAlt on sand, surfaceTint + borderStrong on a card", () => {
     expect(searchBody).toMatch(/recentRowHovered: \{ backgroundColor: t\.colors\.bgAlt \}/)
-    expect(searchResults).toMatch(
-      /rowHovered: \{ backgroundColor: t\.colors\.surfaceTint, borderColor: t\.colors\.borderStrong \}/,
-    )
+    for (const src of [searchResults, leaderboardRow]) {
+      expect(src).toMatch(
+        /rowHovered: \{ backgroundColor: t\.colors\.surfaceTint, borderColor: t\.colors\.borderStrong \}/,
+      )
+    }
     expect(inbox).toMatch(/rowHovered: \{[\s\S]{0,160}?backgroundColor: t\.colors\.bgAlt/)
     expect(inbox).toMatch(/rowPressed: \{[\s\S]{0,160}?backgroundColor: wash\(t\.colors\.borderStrong, 0\.35, t\)/)
     expect(inbox).not.toMatch(/rowPressed: \{[\s\S]{0,160}?transform/)
@@ -53,14 +57,14 @@ describe("every row answers the pointer", () => {
   })
 
   it("tags its Pressables for the coral keyboard ring instead of Chrome's blue UA outline", () => {
-    for (const src of [searchBody, searchResults, inbox, reportRow, people, events, composer]) {
+    for (const src of [searchBody, searchResults, leaderboardRow, inbox, reportRow, people, events, composer]) {
       expect(src).toContain("focusRingProps")
     }
   })
 
   it("keeps the you-row's moss marker through a hover", () => {
-    const order = searchResults.indexOf("webHover(state) ? styles.rowHovered : null")
-    const you = searchResults.indexOf("you ? styles.leaderYouRow : null")
+    const order = leaderboardRow.indexOf("webHover(state) ? styles.rowHovered : null")
+    const you = leaderboardRow.indexOf("you ? styles.leaderYouRow : null")
     expect(order).toBeGreaterThan(-1)
     expect(order).toBeLessThan(you)
   })

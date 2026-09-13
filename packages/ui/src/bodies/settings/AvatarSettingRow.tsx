@@ -1,13 +1,13 @@
 import React from "react"
 import { View, Pressable, StyleSheet, ActivityIndicator } from "react-native"
 import type { UserProfileDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps, webCursor } from "../../theme"
+import { makeThemedStyles, space, useTheme, focusRingProps, webCursor } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
-import { Avatar, SETTINGS_ROW_MIN_HEIGHT } from "../../primitives"
+import { Avatar, LIST_TILE, SETTINGS_ROW_MIN_HEIGHT } from "../../primitives"
 import { useT } from "../../i18n"
 
-const AVATAR_SIZE = 36
-const ROW_PAD_H = 13
+const ROW_PAD_H = space["4"]
+const ROW_GAP = space["3"]
 
 export interface AvatarSettingRowProps {
   profile: UserProfileDTO
@@ -38,7 +38,7 @@ export function AvatarSettingRow({ profile, uploading, onPress }: AvatarSettingR
           seed={profile.id}
           photoUrl={profile.avatarUrl}
           gradient={profile.avatar ?? null}
-          size={AVATAR_SIZE}
+          size={LIST_TILE}
           decorative
         />
         {uploading ? (
@@ -64,9 +64,9 @@ const useStyles = makeThemedStyles((t) => ({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: t.space["3"],
+    gap: ROW_GAP,
     minHeight: SETTINGS_ROW_MIN_HEIGHT,
-    paddingVertical: 12,
+    paddingVertical: t.space["2"],
     paddingHorizontal: ROW_PAD_H,
   },
   rowPressed: {
@@ -74,6 +74,8 @@ const useStyles = makeThemedStyles((t) => ({
   },
   avatarWrap: {
     position: "relative",
+    width: LIST_TILE,
+    height: LIST_TILE,
     flexShrink: 0,
     borderRadius: t.radius.pill,
   },

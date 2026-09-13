@@ -4,7 +4,9 @@
     "value": "{{hours}}",
     "chip": "{{name}} - {{hours}} hrs",
     "chip_more": "+{{count}} more",
-    "chip_a11y": "{{name}} leaderboard"
+    "chip_a11y": "{{name}} leaderboard",
+    "org_chip": "{{name}} - {{hours}} hrs",
+    "org_chip_a11y": "{{name}} organization page"
   },
   "visibility": {
     "public": "Total and event list visible",

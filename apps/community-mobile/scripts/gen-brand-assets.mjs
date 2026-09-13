@@ -11,7 +11,10 @@
  *                                           The coral field is app.config android.adaptiveIcon
  *                                           .backgroundColor (#EA4F3D) and shows through the pin hole.
  *   - assets/favicon.png          256x256   the same app-icon.svg, for the Expo web export.
- *   - assets/splash.png          1284x1284  paper cream + the per-letter "civfix" wordmark (Baloo 2)
+ *   - assets/splash.png          1284x1284  the per-letter "civfix" wordmark (Baloo 2) on a FULLY
+ *                                           TRANSPARENT canvas, so the expo-splash-screen plugin
+ *                                           paints the paper token behind it (light AND dark) and
+ *                                           no baked field can drift from that token.
  *
  * To change the icon, edit assets/app-icon.svg (and assets/adaptive-icon.svg) — they are the source
  * of truth — then re-run this script. Native launcher resources are regenerated from these PNGs by
@@ -44,7 +47,6 @@ const balooTtfPath = join(
 )
 
 // Brand colors (from colors_and_type.css).
-const PAPER = "#FBF7F0"
 const SUN_600 = "#E5AE1C"
 const MOSS = "#6FB36F"
 const SKY = "#6FB1DC"
@@ -83,7 +85,11 @@ function wordmarkPaths(cx, baselineY, fontSize) {
   return out
 }
 
-/** Splash: paper field + the per-letter "civfix" wordmark (real Baloo 2 800 glyph paths), centered. */
+/**
+ * Splash: the per-letter "civfix" wordmark (real Baloo 2 800 glyph paths), centered on a transparent
+ * canvas. The field behind it is the splash backgroundColor in app.config.js (the paper token, one
+ * value per scheme) — never painted here, or the light asset would show a bright box in dark mode.
+ */
 function splashSvg(size) {
   // Larger wordmark so the logo reads at a comfortable size once `contain`-fit on a tall phone (the
   // previous 0.165 left it looking tiny in the big square canvas).
@@ -92,7 +98,6 @@ function splashSvg(size) {
   // lowercase word is optically centered.
   const baseline = Math.round(size * 0.52 + fs * 0.32)
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-    <rect x="0" y="0" width="${size}" height="${size}" fill="${PAPER}"/>
     ${wordmarkPaths(size / 2, baseline, fs)}
   </svg>`
 }

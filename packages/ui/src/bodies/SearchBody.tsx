@@ -15,7 +15,7 @@ import type { CleanupDTO, LeaderboardEntryDTO, PersonDTO, ReportPinDTO } from "@
 import { tokens } from "@civfix/shared/tokens"
 import { focusRingProps, makeThemedStyles, motion, useTheme, wash, useLayoutMode, webHover, webInputReset, webTransition, headingLevel } from "../theme"
 import { Icon, iconMap, Text } from "../typography"
-import { Avatar, FollowButton } from "../primitives"
+import { Avatar, EmptyState, FollowButton } from "../primitives"
 import {
   useAuthState,
   useFollowSuggestions,
@@ -33,7 +33,8 @@ import { searchFieldEscape } from "../shell/shellKeyModel"
 import { useT } from "../i18n"
 import { HEADER_CONTROL_SIZE } from "./headerControls"
 import { HeaderProfileButton } from "./HeaderProfileButton"
-import { EventHitRow, LeaderboardHitRow, ReportHitRow, SearchResults } from "./SearchResults"
+import { EventHitRow, ReportHitRow, SearchResults } from "./SearchResults"
+import { LeaderboardRow } from "./LeaderboardRow"
 import { SEARCH_RESULT_CARD_LAYOUT } from "./searchResultsModel"
 import { resolveDiscoveryGeoid } from "./leaderboardGeoid"
 import {
@@ -351,6 +352,7 @@ export function DiscoveryLeaderboard({
   geoid,
   name,
   entries,
+  precededBySection = false,
   participantCount,
   viewerRank,
   viewerHours,
@@ -358,6 +360,7 @@ export function DiscoveryLeaderboard({
   geoid: string
   name: string | null
   entries: readonly LeaderboardEntryDTO[]
+  precededBySection?: boolean
   participantCount?: number | null
   viewerRank?: number | null
   viewerHours?: number | null
@@ -365,6 +368,7 @@ export function DiscoveryLeaderboard({
   const styles = useStyles()
   const { t } = useT("home-sidebar")
   const { user } = useAuthState()
+  const isEmpty = entries.length === 0
   const youEntry: LeaderboardEntryDTO | null =
     user && typeof viewerRank === "number" && typeof viewerHours === "number" && viewerRank > LEADERBOARD_PREVIEW_LIMIT
       ? {
@@ -379,7 +383,7 @@ export function DiscoveryLeaderboard({
 
   return (
     <>
-      <View style={[styles.sectionHeader, styles.laterTitle]}>
+      <View style={[styles.sectionHeader, precededBySection ? styles.laterTitle : null]}>
         <Text accessibilityRole="header" {...headingLevel(2)} style={styles.sectionTitle}>
           {t("search_page.leaderboard")}
         </Text>
@@ -389,20 +393,24 @@ export function DiscoveryLeaderboard({
           onPress={() => useNavStore.getState().push({ kind: "leaderboard", geoid })}
         />
       </View>
-      {name ? <Text style={styles.leaderboardSub}>{t("search_page.leaderboard_in", { name })}</Text> : null}
-      {entries.length === 0 ? (
+      {name && !isEmpty ? (
+        <Text style={styles.leaderboardSub}>{t("search_page.leaderboard_in", { name })}</Text>
+      ) : null}
+      {isEmpty ? (
         <View style={styles.leaderboardEmpty}>
-          <Text style={styles.leaderboardEmptyTitle}>{t("leaderboard:empty.title")}</Text>
-          {participantCount === 0 ? (
-            <Text style={styles.leaderboardEmptyBody}>{t("leaderboard:empty.body")}</Text>
-          ) : null}
+          <EmptyState
+            variant="inline"
+            icon={iconMap.Award}
+            title={t("leaderboard:empty.title")}
+            body={participantCount === 0 ? t("leaderboard:empty.body") : undefined}
+          />
         </View>
       ) : (
         <View style={styles.suggestGroup}>
           {entries.map((entry) => (
-            <LeaderboardHitRow key={entry.userId} entry={entry} />
+            <LeaderboardRow key={entry.userId} entry={entry} />
           ))}
-          {youEntry ? <LeaderboardHitRow key={youEntry.userId} entry={youEntry} you /> : null}
+          {youEntry ? <LeaderboardRow key={youEntry.userId} entry={youEntry} you /> : null}
         </View>
       )}
     </>
@@ -511,6 +519,7 @@ function Discovery({ expanded }: { expanded: boolean }) {
           geoid={geo.geoid}
           name={geo.name ?? leaderboardPage?.jurisdictionName ?? null}
           entries={sections.leaderboard}
+          precededBySection={sections.people.length > 0 || sections.events.length > 0}
           participantCount={leaderboardPage?.participantCount ?? null}
           viewerRank={leaderboardPage?.viewerRank ?? null}
           viewerHours={leaderboardPage?.viewerHours ?? null}
@@ -727,21 +736,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     borderRadius: SEARCH_RESULT_CARD_LAYOUT.radius,
     borderWidth: StyleSheet.hairlineWidth,
-    gap: t.space["1"],
     paddingHorizontal: t.space["4"],
-    paddingVertical: t.space["4"],
-  },
-  leaderboardEmptyTitle: {
-    color: t.colors.text,
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  leaderboardEmptyBody: {
-    color: t.colors.textMuted,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13.5,
-    lineHeight: 19,
   },
   personRail: { marginHorizontal: -t.space["4"] },
   personRailContent: {

@@ -11,7 +11,10 @@
     "whatToBring": "What to bring",
     "slots": "Signup slots",
     "slotsHelp": "Give people a specific job to claim.",
-    "optional": "optional"
+    "optional": "optional",
+    "endTime": "Ends",
+    "runsFor": "Runs for",
+    "duration_hours": "{{count}} h"
   },
   "linkedReports": {
     "label": "Reports this event will handle",

@@ -21,7 +21,7 @@ import type {
 } from "@civfix/shared"
 import { useToast } from "../../primitives/toastContext"
 import { useT } from "../../i18n/useT"
-import { appErrorCode } from "../../bodies/errorCode"
+import { appErrorCode, appErrorFields, isEventEndedRefusal } from "../../bodies/errorCode"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 
@@ -199,7 +199,11 @@ export function joinCleanupMutationOptions(
   }
 }
 
-export function rsvpErrorKey(code: string | undefined): string {
+export function rsvpErrorKey(
+  code: string | undefined,
+  fields?: Record<string, string> | undefined,
+): string {
+  if (isEventEndedRefusal(fields)) return "error.ended"
   if (code === "CONFLICT") return "error.closed"
   if (code === "FORBIDDEN") return "error.not_allowed"
   return "error.generic"
@@ -218,7 +222,7 @@ export function useJoinCleanup(id: string) {
     ...options,
     onError: (err, currentlyJoined, ctx, mutationCtx) => {
       void options.onError?.(err, currentlyJoined, ctx, mutationCtx)
-      toast.show(t(rsvpErrorKey(appErrorCode(err))), { variant: "error" })
+      toast.show(t(rsvpErrorKey(appErrorCode(err), appErrorFields(err))), { variant: "error" })
     },
   })
 }
@@ -362,6 +366,7 @@ export function claimEventSlotMutationOptions(
       patchCleanupInFlatLists(qc, cleanupId, { joined: res.joined, going: res.going })
       invalidateCleanupLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(cleanupId) })
+      void qc.invalidateQueries({ queryKey: queryKeys.eventInsights(cleanupId) })
     },
   }
 }

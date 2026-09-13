@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
-import type { EventRegistrationDTO, RegistrationRosterFilter } from "@civfix/shared"
+import type { EventRegistrationDTO, EventSlotDTO, RegistrationRosterFilter } from "@civfix/shared"
 import { DELETED_USER_LABEL } from "@civfix/shared"
+import { timeRangeLabel } from "@civfix/shared/datetime"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -14,7 +15,7 @@ import {
 } from "../../theme"
 import { Text, TextLink, Icon, iconMap } from "../../typography"
 import { Avatar, FilterChip, fieldFocusedStyle, useToast } from "../../primitives"
-import { useT } from "../../i18n"
+import { useLocale, useT } from "../../i18n"
 import { useDebouncedValue } from "../../data/hooks/useDebouncedValue"
 import {
   rosterRows,
@@ -22,6 +23,8 @@ import {
   useHostRoster,
   useUndoEventCheckIn,
 } from "../../data/hooks/host"
+import { useCleanup } from "../../data"
+import { slotWindow } from "../eventSlotsModel"
 import { appErrorCode } from "../errorCode"
 
 export const ROSTER_FILTERS: readonly RegistrationRosterFilter[] = [
@@ -56,27 +59,42 @@ export function lastCheckedInSeat(row: EventRegistrationDTO): string | null {
   return best?.id ?? null
 }
 
+export function slotMetaLine(
+  slot: EventSlotDTO | undefined,
+  locale: string,
+): string | null {
+  if (!slot) return null
+  const window = slotWindow(slot)
+  if (window === null) return slot.title
+  return `${slot.title} · ${timeRangeLabel(window.start.toISOString(), window.end.toISOString(), locale)}`
+}
+
 const RosterRowView = React.memo(function RosterRowView({
   row,
   canCheckIn,
   pending,
+  slot,
   onCheckIn,
   onUndo,
 }: {
   row: EventRegistrationDTO
   canCheckIn: boolean
   pending: boolean
+  slot: EventSlotDTO | undefined
   onCheckIn: (seatId: string) => void
   onUndo: (seatId: string) => void
 }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-common")
+  const { locale } = useLocale()
   const name = attendeeName(row)
   const checkedIn = row.checkedInAt != null
   const nextSeat = nextCheckinSeat(row)
   const undoSeat = lastCheckedInSeat(row)
+  const slotLine = slotMetaLine(slot, locale)
   const meta = [
+    slotLine,
     row.ticketTypeName ?? null,
     row.seatCount > 1 ? t("roster.seats", { count: row.seatCount }) : null,
     row.kind === "guest" ? t("roster.guest") : null,
@@ -154,6 +172,11 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
 
   const roster = useHostRoster(cleanupId, { filter, q, enabled })
   const rows = useMemo(() => rosterRows(roster.data?.pages), [roster.data?.pages])
+  const cleanup = useCleanup(cleanupId)
+  const slotById = useMemo(
+    () => new Map((cleanup.data?.slots ?? []).map((slot) => [slot.id, slot])),
+    [cleanup.data?.slots],
+  )
 
   const checkIn = useCheckInEventSeat(cleanupId)
   const undo = useUndoEventCheckIn(cleanupId)
@@ -225,6 +248,7 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
               row={row}
               canCheckIn={canCheckIn}
               pending={pending}
+              slot={row.slot ? slotById.get(row.slot.id) : undefined}
               onCheckIn={onCheckIn}
               onUndo={onUndo}
             />

@@ -18,8 +18,9 @@
     },
     "when": {
       "title": "Wann ist es?",
-      "help": "Wähle einen Tag und eine Startzeit.",
-      "error": "Wähle Datum und Startzeit in der Zukunft."
+      "help": "Wähle einen Tag, eine Startzeit und die Dauer.",
+      "error": "Wähle Datum und Startzeit in der Zukunft.",
+      "error_end": "Wähle eine Endzeit nach dem Beginn."
     },
     "where": {
       "title": "Wo trefft ihr euch?",

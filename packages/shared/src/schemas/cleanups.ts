@@ -36,18 +36,43 @@ export const MAX_EVENT_SLOTS = 20
 export const MAX_SLOT_TITLE = 80
 export const MAX_SLOT_DESCRIPTION = 200
 export const MAX_SLOT_CAPACITY = 999
+export const MIN_SLOT_DURATION_MINUTES = 15
+export const MAX_GENERATED_SHIFTS = 4
 export const MAX_BRING_ITEMS = 30
 export const MAX_LINKED_REPORTS = 200
 
-export const EventSlotInputSchema = z
+const EventSlotInputObjectSchema = z
   .object({
     id: IdSchema.optional(),
     title: z.string().trim().min(1).max(MAX_SLOT_TITLE),
     description: z.string().max(MAX_SLOT_DESCRIPTION).nullable().optional(),
     capacity: z.number().int().positive().max(MAX_SLOT_CAPACITY).nullable().optional(),
     sortOrder: z.number().int().min(0).max(1000).optional(),
+    startsAt: ISODateSchema.nullable().optional(),
+    endsAt: ISODateSchema.nullable().optional(),
   })
   .strict()
+
+export const EventSlotInputSchema = EventSlotInputObjectSchema.superRefine((slot, ctx) => {
+  const starts = slot.startsAt ?? null
+  const ends = slot.endsAt ?? null
+  if ((starts === null) !== (ends === null)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: [starts === null ? "startsAt" : "endsAt"],
+      message: "set both a start and an end, or neither",
+    })
+    return
+  }
+  if (starts === null || ends === null) return
+  if (Date.parse(ends) - Date.parse(starts) < MIN_SLOT_DURATION_MINUTES * 60_000) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["endsAt"],
+      message: `must be at least ${MIN_SLOT_DURATION_MINUTES} minutes after startsAt`,
+    })
+  }
+})
 export type EventSlotInput = z.infer<typeof EventSlotInputSchema>
 
 export const MAX_EVENT_GALLERY_MEDIA = 12

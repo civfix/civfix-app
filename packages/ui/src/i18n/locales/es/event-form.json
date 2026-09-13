@@ -11,7 +11,10 @@
     "whatToBring": "Qué traer",
     "slots": "Puestos disponibles",
     "slotsHelp": "Ofrece tareas concretas que la gente pueda tomar.",
-    "optional": "opcional"
+    "optional": "opcional",
+    "endTime": "Termina",
+    "runsFor": "Dura",
+    "duration_hours": "{{count}} h"
   },
   "linkedReports": {
     "label": "Reportes que este evento atenderá",

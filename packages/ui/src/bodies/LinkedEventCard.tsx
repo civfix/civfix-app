@@ -12,6 +12,7 @@ import {
   buildLinkedEventCardTargetPlan,
   type LinkedEventCardModel,
 } from "./linkedEventCardModel"
+import { hasEventEnded } from "./eventLifecycle"
 export { buildLinkedEventCardModel, buildLinkedEventCardTargetPlan } from "./linkedEventCardModel"
 
 export type LinkedEventCardVariant = "feed" | "detail"
@@ -87,10 +88,12 @@ function EventCardFooter({
   eventId,
   model,
   loading,
+  ended,
 }: {
   eventId: string
   model: LinkedEventCardModel
   loading: boolean
+  ended: boolean
 }) {
   const styles = useStyles()
   const join = useJoinCleanup(eventId)
@@ -113,6 +116,7 @@ function EventCardFooter({
         onToggle={onToggle}
         nextPath={`/cleanups/${eventId}`}
         busy={join.isPending || loading}
+        ended={ended}
         size="md"
       />
     </View>
@@ -212,7 +216,12 @@ export function LinkedEventCard({
       </Pressable>
 
       {showControls ? (
-        <EventCardFooter eventId={event.id} model={model} loading={!cleanup && detail.isLoading} />
+        <EventCardFooter
+          eventId={event.id}
+          model={model}
+          loading={!cleanup && detail.isLoading}
+          ended={hasEventEnded(liveCleanup ?? event, Date.now())}
+        />
       ) : null}
     </View>
   )

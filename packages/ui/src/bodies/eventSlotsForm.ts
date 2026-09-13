@@ -15,7 +15,22 @@
  * hours editor. `slotDraftError` therefore returns `null` for a fully blank draft so the editor does
  * not paint a red "give this slot a name" line under a card the host has not typed into yet.
  */
-import { MAX_SLOT_CAPACITY, MAX_SLOT_TITLE, type EventSlotDTO, type EventSlotInput } from "@civfix/shared"
+import {
+  MAX_EVENT_SLOTS,
+  MAX_GENERATED_SHIFTS,
+  MAX_SLOT_CAPACITY,
+  MAX_SLOT_TITLE,
+  MIN_SLOT_DURATION_MINUTES,
+  type EventSlotDTO,
+  type EventSlotInput,
+} from "@civfix/shared"
+
+export const MIN_SLOT_DURATION_MS = MIN_SLOT_DURATION_MINUTES * 60_000
+
+export interface SlotWindowBounds {
+  start: Date
+  end: Date | null
+}
 
 /** One editable slot row. `key` is local-only; `id` is the server identity (absent = a new slot). */
 export interface SlotDraft {
@@ -25,6 +40,8 @@ export interface SlotDraft {
   description: string
   /** STRING draft. "" = unlimited (the server's `capacity: null`). */
   capacity: string
+  startsAt: Date | null
+  endsAt: Date | null
 }
 
 let slotKeySeq = 0
@@ -38,7 +55,7 @@ export function makeSlotKey(seed?: number): string {
 }
 
 function blankDraft(key: string): SlotDraft {
-  return { key, title: "", description: "", capacity: "" }
+  return { key, title: "", description: "", capacity: "", startsAt: null, endsAt: null }
 }
 
 /** Append one empty draft. `nextKey` is passed in so the caller owns key generation. */
@@ -83,11 +100,24 @@ export type SlotDraftError =
   | "title-too-long"
   | "capacity-invalid"
   | "capacity-below-claimed"
+  | "window-needs-event-end"
+  | "window-outside-event"
+  | "window-too-short"
   | null
 
-/** All three fields empty - the row exists but the host has not authored it. */
 export function isBlankSlotDraft(d: SlotDraft): boolean {
-  return d.title.trim() === "" && d.description.trim() === "" && d.capacity.trim() === ""
+  return (
+    d.title.trim() === "" &&
+    d.description.trim() === "" &&
+    d.capacity.trim() === "" &&
+    d.startsAt === null &&
+    d.endsAt === null
+  )
+}
+
+export function slotDraftWindow(d: SlotDraft): { start: Date; end: Date } | null {
+  if (d.startsAt === null || d.endsAt === null) return null
+  return { start: d.startsAt, end: d.endsAt }
 }
 
 /**
@@ -112,7 +142,11 @@ function parseCapacity(raw: string): number | null {
  * exists so an existing claimant is never evicted, not as an invitation for the editor to publish a
  * slot that is already over its own limit.
  */
-export function slotDraftError(d: SlotDraft, claimed?: number): SlotDraftError {
+export function slotDraftError(
+  d: SlotDraft,
+  claimed?: number,
+  window?: SlotWindowBounds | null,
+): SlotDraftError {
   if (isBlankSlotDraft(d)) return null
   const title = d.title.trim()
   if (title === "") return "empty-title"
@@ -120,6 +154,18 @@ export function slotDraftError(d: SlotDraft, claimed?: number): SlotDraftError {
   const capacity = parseCapacity(d.capacity)
   if (capacity !== null && Number.isNaN(capacity)) return "capacity-invalid"
   if (capacity !== null && claimed !== undefined && capacity < claimed) return "capacity-below-claimed"
+  const slotWindow = slotDraftWindow(d)
+  if (slotWindow === null) return null
+  if (slotWindow.end.getTime() - slotWindow.start.getTime() < MIN_SLOT_DURATION_MS) {
+    return "window-too-short"
+  }
+  if (!window || window.end === null) return "window-needs-event-end"
+  if (
+    slotWindow.start.getTime() < window.start.getTime() ||
+    slotWindow.end.getTime() > window.end.getTime()
+  ) {
+    return "window-outside-event"
+  }
   return null
 }
 
@@ -142,8 +188,11 @@ export function claimedBySlotId(existing: readonly EventSlotDTO[]): Map<string, 
 export function slotsValid(
   list: readonly SlotDraft[],
   claimedById?: ReadonlyMap<string, number>,
+  window?: SlotWindowBounds | null,
 ): boolean {
-  return list.every((d) => slotDraftError(d, d.id ? claimedById?.get(d.id) : undefined) === null)
+  return list.every(
+    (d) => slotDraftError(d, d.id ? claimedById?.get(d.id) : undefined, window) === null,
+  )
 }
 
 /**
@@ -158,12 +207,15 @@ export function buildSlotInputs(list: readonly SlotDraft[]): EventSlotInput[] {
     if (isBlankSlotDraft(d)) continue
     const capacity = parseCapacity(d.capacity)
     const description = d.description.trim()
+    const window = slotDraftWindow(d)
     inputs.push({
       ...(d.id ? { id: d.id } : {}),
       title: d.title.trim(),
       description: description === "" ? null : description,
       capacity: capacity === null || Number.isNaN(capacity) ? null : capacity,
       sortOrder: inputs.length,
+      startsAt: window === null ? null : window.start.toISOString(),
+      endsAt: window === null ? null : window.end.toISOString(),
     })
   }
   return inputs
@@ -171,13 +223,128 @@ export function buildSlotInputs(list: readonly SlotDraft[]): EventSlotInput[] {
 
 /** Seed the edit form from the event's current slots (already server-sorted by `sortOrder`). */
 export function slotsFromCleanup(slots: readonly EventSlotDTO[]): SlotDraft[] {
-  return slots.map((s) => ({
-    key: makeSlotKey(),
-    id: s.id,
-    title: s.title,
-    description: s.description ?? "",
-    capacity: s.capacity == null ? "" : String(s.capacity),
-  }))
+  return slots.map((s) => {
+    const startsAt = parseInstant(s.startsAt)
+    const endsAt = parseInstant(s.endsAt)
+    const paired = startsAt !== null && endsAt !== null
+    return {
+      key: makeSlotKey(),
+      id: s.id,
+      title: s.title,
+      description: s.description ?? "",
+      capacity: s.capacity == null ? "" : String(s.capacity),
+      startsAt: paired ? startsAt : null,
+      endsAt: paired ? endsAt : null,
+    }
+  })
+}
+
+function parseInstant(iso: string | null | undefined): Date | null {
+  if (!iso) return null
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+export function shiftSlotDrafts(list: readonly SlotDraft[], deltaMs: number): SlotDraft[] {
+  if (deltaMs === 0) return list as SlotDraft[]
+  return list.map((d) =>
+    d.startsAt === null || d.endsAt === null
+      ? d
+      : {
+          ...d,
+          startsAt: new Date(d.startsAt.getTime() + deltaMs),
+          endsAt: new Date(d.endsAt.getTime() + deltaMs),
+        },
+  )
+}
+
+function roundToMinute(ms: number): number {
+  return Math.round(ms / 60_000) * 60_000
+}
+
+export type ShiftSplitCount = 2 | 3 | 4
+
+export const SHIFT_SPLIT_COUNTS: readonly ShiftSplitCount[] = (
+  [2, 3, 4] as const
+).filter((count) => count <= MAX_GENERATED_SHIFTS)
+
+export type ShiftTitle = (position: number) => string
+
+export interface ShiftWindow {
+  start: number
+  end: number
+}
+
+export function shiftWindows(
+  window: { start: Date; end: Date },
+  count: ShiftSplitCount,
+): ShiftWindow[] {
+  const from = window.start.getTime()
+  const to = window.end.getTime()
+  if (to <= from) return []
+  const span = to - from
+  const boundaries: number[] = [from]
+  for (let i = 1; i < count; i++) boundaries.push(roundToMinute(from + (span * i) / count))
+  boundaries.push(to)
+  const windows: ShiftWindow[] = []
+  for (let i = 0; i < count; i++) {
+    windows.push({ start: boundaries[i] ?? from, end: boundaries[i + 1] ?? to })
+  }
+  return windows
+}
+
+export function slotDraftIdentity(draft: {
+  title: string
+  startsAt: Date | null
+  endsAt: Date | null
+}): string {
+  const start = draft.startsAt === null ? "" : String(draft.startsAt.getTime())
+  const end = draft.endsAt === null ? "" : String(draft.endsAt.getTime())
+  return `${draft.title.trim().toLowerCase()}|${start}|${end}`
+}
+
+function shiftIdentity(title: string, window: ShiftWindow): string {
+  return `${title.trim().toLowerCase()}|${window.start}|${window.end}`
+}
+
+export function generateShiftDrafts(
+  window: { start: Date; end: Date },
+  count: ShiftSplitCount,
+  title: ShiftTitle,
+  nextKey: () => string,
+  existing: readonly SlotDraft[] = [],
+): SlotDraft[] {
+  const taken = new Set(existing.map(slotDraftIdentity))
+  const drafts: SlotDraft[] = []
+  shiftWindows(window, count).forEach((shift, index) => {
+    const label = title(index + 1)
+    if (taken.has(shiftIdentity(label, shift))) return
+    drafts.push({
+      key: nextKey(),
+      title: label.trim(),
+      description: "",
+      capacity: "",
+      startsAt: new Date(shift.start),
+      endsAt: new Date(shift.end),
+    })
+  })
+  return drafts
+}
+
+export function splitCounts(
+  window: { start: Date; end: Date } | null,
+  existing: readonly SlotDraft[],
+  title: ShiftTitle,
+): ShiftSplitCount[] {
+  if (!window) return []
+  const taken = new Set(existing.map(slotDraftIdentity))
+  return SHIFT_SPLIT_COUNTS.filter((count) => {
+    if (existing.length + count > MAX_EVENT_SLOTS) return false
+    const windows = shiftWindows(window, count)
+    if (windows.length === 0) return false
+    if (windows.some((shift) => shift.end - shift.start < MIN_SLOT_DURATION_MS)) return false
+    return windows.some((shift, index) => !taken.has(shiftIdentity(title(index + 1), shift)))
+  })
 }
 
 /**

@@ -1,5 +1,12 @@
 # @civfix/shared
 
+## 0.45.0
+
+### Minor Changes
+
+- 6c6808e: Host tools batch. Slots may be shifts: `EventSlotDTO`/`EventSlotInput` gain `startsAt`/`endsAt` (both-or-neither, ≥ `MIN_SLOT_DURATION_MINUTES`, inside the event window; `MAX_GENERATED_SHIFTS`). Hours by organization: `OrganizationDTO` gains `volunteerHours`/`volunteerCount`; `MyVolunteerHoursDTO` and `PublicVolunteerHoursResponse` gain `byOrganization: OrgHoursDTO[]`; `EventInsights` gains `topVolunteers`; `HostedEventsAnalyticsResponse` gains `totalHours`, `volunteersCredited`, `topVolunteers`; `HostedEventDTO` gains `hoursCredited`. `LeaderboardEntryDTO` moves to `entities.ts` (re-exported from `volunteer.ts`, same names). `timeRangeLabel` added to `datetime`. All additive; registry unchanged.
+- 5686580: `listReplies` gains `authorReplies`: for each listed reply the focal post's author has answered, their most recent answer. The thread screen inlines one under its parent as a connected row; deeper replies stay on that reply's own thread.
+
 ## 0.44.0
 
 ### Minor Changes

@@ -22,6 +22,7 @@ export interface RosterRowProps {
   menu?: RosterRowMenu | null
 }
 
+const AVATAR_SIZE = 40
 const CLOSED = "closed"
 const ACTIONS = "actions"
 
@@ -42,7 +43,7 @@ export function RosterRow({
   if (person.deleted) {
     return (
       <View style={styles.row}>
-        <Avatar name={DELETED_USER_LABEL} seed={person.id} size={46} />
+        <Avatar name={DELETED_USER_LABEL} seed={person.id} size={AVATAR_SIZE} />
         <View style={styles.meta}>
           <Text style={styles.deletedName} numberOfLines={1}>
             {DELETED_USER_LABEL}
@@ -76,7 +77,7 @@ export function RosterRow({
           seed={person.id}
           photoUrl={person.avatarUrl}
           gradient={person.avatar ?? null}
-          size={46}
+          size={AVATAR_SIZE}
         />
         <View style={styles.meta}>
           <View style={styles.nameRow}>
@@ -152,13 +153,13 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 14,
+    paddingVertical: t.space["2"],
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 14,
+    paddingVertical: t.space["2"],
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: t.colors.border,
   },
@@ -186,24 +187,23 @@ const useStyles = makeThemedStyles((t) => ({
   nameRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    gap: t.space["1"],
   },
   name: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   deletedName: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.textSubtle,
   },
   handle: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 11.5,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
-    marginTop: 1,
   },
 }))

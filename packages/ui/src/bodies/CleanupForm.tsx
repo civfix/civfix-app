@@ -27,11 +27,24 @@ import { AddressSearch, type AddressPick } from "./AddressSearch"
 import { AuthorAsChips, authorAsSelection, type AuthorAsOption } from "./AuthorAsChips"
 import { buildEventPreviewCard } from "./feedShare"
 import { FeedShareBlock, FeedShareEventCard } from "./FeedShareBlock"
-import { mergeDateTime } from "./calendarModel"
+import {
+  endOffsetMs,
+  endTimeAfter,
+  endTimeSelectable,
+  eventWindowOf,
+  mergeDateTime,
+} from "./calendarModel"
 import { InlineDateTimePicker } from "./InlineDateTimePicker"
 import { LinkedReportCard, type LinkedReportCardData } from "./LinkedReportCard"
+import { DEFAULT_WIZARD_DURATION_MS } from "./eventWizard"
 import { SlotEditor } from "./SlotEditor"
-import { claimedBySlotId, slotsValid, type SlotDraft } from "./eventSlotsForm"
+import {
+  claimedBySlotId,
+  shiftSlotDrafts,
+  slotsValid,
+  type SlotDraft,
+  type SlotWindowBounds,
+} from "./eventSlotsForm"
 
 export interface CleanupFormValue {
   organizationId: string | null
@@ -43,6 +56,7 @@ export interface CleanupFormValue {
   coords: { lat: number; lng: number } | null
   date: Date | null
   time: Date | null
+  endTime: Date | null
   bring: string[]
   slots: SlotDraft[]
   linkedReportIds: string[]
@@ -74,6 +88,7 @@ export function emptyCleanupForm(
     coords: null,
     date: null,
     time: null,
+    endTime: null,
     bring: [],
     slots: [],
     linkedReportIds: seedLinkedReportId ? [seedLinkedReportId] : [],
@@ -84,6 +99,20 @@ export function emptyCleanupForm(
 
 export { mergeDateTime } from "./calendarModel"
 
+export function cleanupFormWindow(value: CleanupFormValue): SlotWindowBounds | null {
+  return eventWindowOf(value.date, value.time, value.endTime)
+}
+
+export function hasValidEventEnd(value: CleanupFormValue): boolean {
+  if (!value.date || !value.time || !value.endTime) return false
+  return endTimeSelectable(
+    value.date,
+    value.time,
+    value.endTime.getHours(),
+    value.endTime.getMinutes(),
+  )
+}
+
 export function isCleanupFormComplete(
   value: CleanupFormValue,
   existingSlots?: readonly EventSlotDTO[],
@@ -93,7 +122,12 @@ export function isCleanupFormComplete(
     value.coords !== null &&
     value.date !== null &&
     value.time !== null &&
-    slotsValid(value.slots, existingSlots ? claimedBySlotId(existingSlots) : undefined)
+    hasValidEventEnd(value) &&
+    slotsValid(
+      value.slots,
+      existingSlots ? claimedBySlotId(existingSlots) : undefined,
+      cleanupFormWindow(value),
+    )
   )
 }
 
@@ -283,6 +317,7 @@ export function CleanupForm({
   onChange,
   initialCenter,
   existingSlots,
+  eventEndUnsaved = false,
   sections = ALL_CLEANUP_FORM_SECTIONS,
   showFeedShare = false,
   feedShareBusy = false,
@@ -293,6 +328,7 @@ export function CleanupForm({
   onChange: (next: CleanupFormValue) => void
   initialCenter?: LatLng | null
   existingSlots?: readonly EventSlotDTO[]
+  eventEndUnsaved?: boolean
   currentOrganization?: OrganizationRefDTO | null
   sections?: readonly CleanupFormSection[]
   showFeedShare?: boolean
@@ -312,6 +348,44 @@ export function CleanupForm({
   const patch = useCallback(
     (partial: Partial<CleanupFormValue>) => onChange({ ...value, ...partial }),
     [onChange, value],
+  )
+
+  const onChangeDate = useCallback(
+    (date: Date) => {
+      const before = value.date && value.time ? mergeDateTime(value.date, value.time).getTime() : null
+      const time = value.time ? mergeDateTime(date, value.time) : value.time
+      const endTime = value.endTime ? mergeDateTime(date, value.endTime) : value.endTime
+      const after = time ? mergeDateTime(date, time).getTime() : null
+      patch({
+        date,
+        time,
+        endTime,
+        ...(before !== null && after !== null && before !== after
+          ? { slots: shiftSlotDrafts(value.slots, after - before) }
+          : {}),
+      })
+    },
+    [patch, value.date, value.endTime, value.slots, value.time],
+  )
+
+  const onChangeStartTime = useCallback(
+    (time: Date) => {
+      const before = value.date && value.time ? mergeDateTime(value.date, value.time).getTime() : null
+      const after = time.getTime()
+      const offset =
+        value.time && value.endTime
+          ? endOffsetMs(value.time, value.endTime)
+          : DEFAULT_WIZARD_DURATION_MS
+      const endTime = endTimeAfter(time, time, offset)
+      patch({
+        time,
+        endTime,
+        ...(before !== null && before !== after
+          ? { slots: shiftSlotDrafts(value.slots, after - before) }
+          : {}),
+      })
+    },
+    [patch, value.date, value.endTime, value.slots, value.time],
   )
 
   const onPickPlace = useCallback(
@@ -462,10 +536,10 @@ export function CleanupForm({
           <InlineDateTimePicker
             date={value.date}
             time={value.time}
-            onDateChange={(date) =>
-              patch({ date, time: value.time ? mergeDateTime(date, value.time) : value.time })
-            }
-            onTimeChange={(time) => patch({ time })}
+            endTime={value.endTime}
+            onDateChange={onChangeDate}
+            onTimeChange={onChangeStartTime}
+            onEndTimeChange={(endTime) => patch({ endTime })}
           />
         </View>
       ) : null}
@@ -491,6 +565,8 @@ export function CleanupForm({
             <SlotEditor
               value={value.slots}
               onChange={(slots) => patch({ slots })}
+              window={cleanupFormWindow(value)}
+              eventEndUnsaved={eventEndUnsaved}
               {...(existingSlots ? { existing: existingSlots } : {})}
             />
           </View>

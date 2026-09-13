@@ -1,12 +1,9 @@
 {
   "title": "이벤트 대시보드",
-  "tabs": {
-    "personal": "개인",
-    "org": "단체",
-    "label": "대시보드 보기"
-  },
-  "org_picker": {
-    "label": "단체"
+  "scope": {
+    "you": "나",
+    "a11y": "범위: {{name}}",
+    "menu_a11y": "표시할 이벤트의 주최자 선택"
   },
   "header": {
     "title": "내 이벤트",
@@ -19,45 +16,51 @@
     "host_tools": "호스트 도구",
     "host_tools_a11y": "{{title}} 호스트 도구 열기",
     "meter_a11y": "{{capacity}}자리 중 {{registered}}자리 신청",
-    "empty_title": "예정된 이벤트가 없어요",
-    "empty_body": "이벤트를 만들면 수치와 함께 여기에 표시됩니다."
+    "message": "참가자에게 메시지",
+    "message_a11y": "{{title}} 참가자에게 메시지 보내기",
+    "share": "공유",
+    "share_a11y": "{{title}} 공유",
+    "signed_up_of": "{{capacity}}자리 중 {{registered}}명 신청",
+    "signed_up": "{{registered}}명 신청",
+    "waiting": "{{count}}명 대기",
+    "checked_in": "{{count}}명 체크인",
+    "starts_in": "{{dow}} {{time}} · {{relative}} 후",
+    "started": "{{ago}} 전 시작",
+    "more_shifts": "호스트 도구에 {{count}}개 교대 더 있음"
   },
-  "numbers": {
-    "section": "수치"
+  "attention": {
+    "section": "처리할 일",
+    "complete": "완료로 표시 · {{dow}} 종료",
+    "complete_a11y": "{{title}}을(를) 완료로 표시",
+    "credit_hours": "봉사 시간 인정 · {{count}}명 체크인",
+    "credit_hours_a11y": "{{title}}의 봉사 시간 인정"
   },
-  "range": {
-    "label": "기간",
-    "30d": "30일",
-    "90d": "90일",
-    "365d": "12개월",
-    "all": "전체"
+  "impact": {
+    "section": "성과",
+    "all_time": "전체 기간",
+    "unit_hours": "봉사 시간",
+    "unit_volunteers": "참여자",
+    "credited_one": "{{count}}명 인정",
+    "credited_other": "{{count}}명 인정",
+    "volunteers_one": "{{count}}명 참여",
+    "volunteers_other": "{{count}}명 참여",
+    "events_one": "이벤트 {{count}}개",
+    "events_other": "이벤트 {{count}}개",
+    "showed_up": "{{rate}} 참석",
+    "came_back": "{{rate}} 재참여",
+    "error_title": "성과를 불러오지 못했습니다",
+    "error_body": "civfix에 연결하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.",
+    "retry": "다시 시도"
   },
-  "kpi": {
-    "events": "주최한 이벤트",
-    "registrations": "신청",
-    "check_ins": "체크인",
-    "suppressed": "최소 {{k}}명이 참여할 때까지 수치는 표시되지 않습니다.",
-    "trend_a11y": "신청, {{range}}, 최근 {{day}} {{value}}건",
-    "trend_a11y_week": "신청, {{range}}, 주간 단위, 최근 {{day}} 주간 {{value}}건",
-    "error_title": "수치를 불러오지 못했습니다",
-    "error_body": "civfix에 연결하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.",
-    "retry": "다시 시도",
-    "attendance_rate": "참석률",
-    "unique_volunteers": "참여한 자원봉사자",
-    "returning": "재참여 자원봉사자",
-    "returning_hint": "{{denominator}}명 중 {{numerator}}명",
-    "busiest_slot": "가장 활발한 시간대: {{weekday}} {{hour}}",
-    "end_label": "{{day}} {{value}}건",
-    "end_label_week": "{{day}} 주간 {{value}}건"
-  },
-  "top_events": {
-    "section": "상위 이벤트",
-    "seats": "{{count}}명 신청"
+  "top_volunteers": {
+    "section": "우수 참여자",
+    "caption": "이 화면의 이벤트 전체 기간 기준입니다. 호스트에게만 보입니다."
   },
   "create": {
     "action": "이벤트 만들기",
     "a11y_personal": "이벤트 만들기",
-    "a11y_org": "{{org}} 이벤트 만들기"
+    "a11y_org": "{{org}} 이벤트 만들기",
+    "short": "만들기"
   },
   "events": {
     "label": "표시할 이벤트",
@@ -70,10 +73,6 @@
     "duplicate": "복제",
     "edit": "수정",
     "show_more": "더 보기",
-    "empty_upcoming_title": "예정된 이벤트가 없습니다",
-    "empty_upcoming_body": "이벤트를 만들면 수치와 함께 여기에 표시됩니다.",
-    "empty_past_title": "지난 이벤트가 아직 없습니다",
-    "empty_past_body": "주최한 이벤트가 끝나면 여기에 표시됩니다.",
     "error_title": "이벤트를 불러오지 못했습니다",
     "error_body": "civfix에 연결하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.",
     "retry": "다시 시도",
@@ -94,7 +93,21 @@
     "meta_registered": "{{count}}명 신청",
     "meta_waiting": "{{count}}명 대기",
     "meta_checked_in": "{{count}}명 체크인",
-    "check_in_a11y": "{{title}} 체크인"
+    "check_in_a11y": "{{title}} 체크인",
+    "empty_past": "이벤트가 끝나면 여기에 표시됩니다.",
+    "empty_upcoming": "아직 예정된 일정이 없습니다.",
+    "meta_showed_up": "{{registered}}명 중 {{checkedIn}}명 참석",
+    "meta_hours": "{{hours}}시간",
+    "meta_hours_not_logged": "시간 미기록",
+    "meta_cancelled": "취소됨",
+    "meta_signed_up": "{{count}}명 신청"
+  },
+  "first_event": {
+    "title": "첫 이벤트를 열어보세요",
+    "step_signup": "사람들이 신청하고 교대를 선택합니다",
+    "step_checkin": "행사 당일 체크인합니다",
+    "step_hours": "끝난 뒤 봉사 시간을 인정합니다",
+    "cta": "이벤트 만들기"
   },
   "invites": {
     "section": "초대",
@@ -150,7 +163,9 @@
     "confirm_action": "보내기",
     "confirm_dismiss_a11y": "송금 닫기",
     "link_unavailable": "이 기기에서는 설정 페이지를 열 수 없습니다.",
-    "link_error": "설정 페이지를 열지 못했습니다. 다시 시도해 주세요."
+    "link_error": "설정 페이지를 열지 못했습니다. 다시 시도해 주세요.",
+    "range_a11y": "정산 기간",
+    "sent_on": "{{date}} 송금"
   },
   "team": {
     "section": "팀",
@@ -198,7 +213,8 @@
     "show_more": "더 보기",
     "loading_more": "불러오는 중…",
     "show_more_a11y": "협력자 더 보기",
-    "invites_error": "대기 중인 초대를 불러오지 못했어요."
+    "invites_error": "대기 중인 초대를 불러오지 못했어요.",
+    "invite_row_sub": "초대됨 · {{role}}"
   },
   "console": {
     "open": "전체 콘솔 열기",
@@ -207,5 +223,10 @@
   "state": {
     "signin_title": "대시보드를 보려면 로그인하세요",
     "signin_body": "로그인하면 이벤트, 신청 현황, 호스트 도구가 여기에 표시됩니다."
+  },
+  "range": {
+    "30d": "30일",
+    "90d": "90일",
+    "365d": "12개월"
   }
 }

@@ -2,7 +2,8 @@
   "block": {
     "heading": "Signup slots",
     "claim_joins_hint": "Claiming a slot also RSVPs you.",
-    "filled": "{{claimed}}/{{capacity}} spots filled"
+    "filled": "{{claimed}}/{{capacity}} spots filled",
+    "no_slot_hint": "Not sure yet? RSVP without a slot and come any time."
   },
   "row": {
     "open": "Open",
@@ -18,7 +19,9 @@
     "switch": "Switch",
     "claim_a11y": "Claim the {{title}} slot",
     "release_a11y": "Give up the {{title}} slot",
-    "switch_a11y": "Switch to the {{title}} slot"
+    "switch_a11y": "Switch to the {{title}} slot",
+    "any_time": "Any time",
+    "window_a11y": "{{title}}, {{range}}"
   },
   "editor": {
     "add_first": "Add a slot",
@@ -40,7 +43,23 @@
     "claimed_count_one": "{{count}} claimed",
     "claimed_count_other": "{{count}} claimed",
     "remove_warning_one": "Removing a slot un-assigns {{count}} person who claimed it.",
-    "remove_warning_other": "Removing a slot un-assigns {{count}} people who claimed it."
+    "remove_warning_other": "Removing a slot un-assigns {{count}} people who claimed it.",
+    "time_label": "Time",
+    "whole_event": "Whole event",
+    "set_time": "Set a time",
+    "whole_event_a11y": "Slot {{index}} runs for the whole event",
+    "set_time_a11y": "Give slot {{index}} its own start and end",
+    "starts_label": "Starts",
+    "ends_label": "Ends",
+    "starts_a11y": "Start time for slot {{index}}",
+    "ends_a11y": "End time for slot {{index}}",
+    "time_needs_event_end": "Set an end time for the event first.",
+    "time_stores_event_end": "Saving will also set this event's end time to {{time}}.",
+    "split_label": "Split into shifts",
+    "split_count_a11y": "Split the event into {{count}} equal shifts",
+    "generated_title_prefix": "Shift",
+    "generated_title": "{{prefix}} {{n}}",
+    "prefix_a11y": "Name prefix for generated shifts"
   },
   "error": {
     "empty_title": "Give this slot a name.",
@@ -48,11 +67,16 @@
     "capacity_invalid": "Enter a number of spots, or leave it blank for any.",
     "capacity_below_claimed": "{{count}} people already claimed this slot.",
     "full": "That slot just filled up.",
-    "generic": "Couldn't update your slot. Try again."
+    "ended": "This event has already ended.",
+    "generic": "Couldn't update your slot. Try again.",
+    "window_needs_event_end": "Set an end time for the event before timing this slot.",
+    "window_outside_event": "Keep the shift inside {{range}}.",
+    "window_too_short": "A shift needs at least {{min}} minutes."
   },
   "roster": {
     "unassigned": "No slot",
-    "empty_slot": "Nobody yet"
+    "empty_slot": "Nobody yet",
+    "window_a11y": "{{title}} from {{range}}"
   },
   "toast": {
     "claimed": "Slot claimed",
