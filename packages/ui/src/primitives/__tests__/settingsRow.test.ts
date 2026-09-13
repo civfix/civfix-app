@@ -75,9 +75,65 @@ describe("SettingsSection", () => {
   it("keeps the eyebrow visually identical to the profile's SectionEyebrow", () => {
     const eyebrow = /eyebrow: \{[\s\S]*?\}/.exec(row)?.[0] ?? ""
     expect(eyebrow).toContain("fontFamily: t.fontFamily.bodyExtraBold")
-    expect(eyebrow).toContain("fontSize: 11")
+    expect(eyebrow).toContain('fontSize: t.fontSize["12"]')
+    expect(eyebrow).toContain("lineHeight: 16")
     expect(eyebrow).toContain("letterSpacing: 0.6")
     expect(eyebrow).toContain("color: t.colors.textSubtle")
+  })
+})
+
+describe("the settings row shares ONE rhythm with ListRow", () => {
+  const listRow = strip(read("../ListRow.tsx"))
+  const listTile = Number.parseFloat(/const LIST_TILE = ([0-9.]+)/.exec(listRow)?.[1] ?? "NaN")
+
+  it("wears the same 40pt tile the list card's rows do", () => {
+    expect(row).toContain("const ICON_TILE = 40")
+    expect(listTile).toBe(40)
+  })
+
+  it("takes its horizontal padding and vertical rhythm from the space scale", () => {
+    expect(row).toContain('const ROW_PAD_H = space["4"]')
+    expect(row).toContain('paddingVertical: t.space["2"]')
+    expect(row).not.toMatch(/padding(Vertical|Horizontal): [0-9]/)
+  })
+
+  it("puts the row text on the same x as a ListRow's, 68 past the card edge", () => {
+    const listInset = /const LIST_DIVIDER_INSET = space\["4"\] \+ LIST_TILE \+ space\["3"\]/.test(
+      listRow,
+    )
+    expect(listInset).toBe(true)
+    expect(row).toContain("const DIVIDER_INSET = ROW_PAD_H + ICON_TILE + ROW_GAP")
+    expect(row).toContain('const ROW_GAP = space["3"]')
+  })
+
+  it("draws its glyph at the 18pt size both rows use", () => {
+    expect(row).toContain("size={18}")
+    expect(row).not.toContain("size={16}")
+  })
+})
+
+describe("the Account card's avatar row shares that rhythm exactly", () => {
+  const avatar = strip(read("../../bodies/settings/AvatarSettingRow.tsx"))
+
+  it("wears the SAME 40pt leading tile, so the divider inset of 68 lands on its text", () => {
+    expect(avatar).toContain("size={LIST_TILE}")
+    expect(avatar).toContain("width: LIST_TILE")
+    expect(avatar).toContain("height: LIST_TILE")
+    expect(avatar).not.toMatch(/const AVATAR_SIZE/)
+  })
+
+  it("takes its padding and gap off the same scale SettingsRow does", () => {
+    expect(avatar).toContain('const ROW_PAD_H = space["4"]')
+    expect(avatar).toContain('const ROW_GAP = space["3"]')
+    expect(avatar).toContain("paddingHorizontal: ROW_PAD_H")
+    expect(avatar).toContain("gap: ROW_GAP")
+    expect(avatar).toContain('paddingVertical: t.space["2"]')
+    expect(avatar).not.toMatch(/padding(Vertical|Horizontal): [0-9]/)
+  })
+
+  it("clears the same touch-target floor from its own box", () => {
+    expect(avatar).toContain("minHeight: SETTINGS_ROW_MIN_HEIGHT")
+    expect(rowMinHeight).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET)
   })
 })
 

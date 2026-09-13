@@ -26,6 +26,10 @@ export type { ConnectionsBodyProps } from "./ConnectionsBody"
 
 export { LeaderboardBody } from "./LeaderboardBody"
 export type { LeaderboardBodyProps } from "./LeaderboardBody"
+export { LeaderboardRow } from "./LeaderboardRow"
+export type { LeaderboardRowProps, LeaderboardRowEmphasis } from "./LeaderboardRow"
+export { TopVolunteersCard } from "./host/TopVolunteersCard"
+export type { TopVolunteersCardProps } from "./host/TopVolunteersCard"
 export { resolveDiscoveryGeoid } from "./leaderboardGeoid"
 export type { DiscoveryGeoid } from "./leaderboardGeoid"
 
@@ -169,13 +173,17 @@ export {
 } from "./eventSlotsForm"
 export type { SlotDraft, SlotDraftError } from "./eventSlotsForm"
 export {
+  boardHasTimedSlots,
+  currentShifts,
   mySlotId,
+  slotDisplayOrder,
   slotRemaining,
   slotRowState,
+  slotWindow,
   slotsFilledSummary,
   sortSlots,
 } from "./eventSlotsModel"
-export type { SlotRowState } from "./eventSlotsModel"
+export type { SlotRowState, SlotWindow } from "./eventSlotsModel"
 
 export { LinkedReportCard } from "./LinkedReportCard"
 export type { LinkedReportCardData } from "./LinkedReportCard"

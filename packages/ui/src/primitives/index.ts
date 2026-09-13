@@ -22,6 +22,7 @@ export type {
   StateTone,
   StateVariant,
 } from "./StateView"
+export { INLINE_EMPTY_LAYOUT, inlineEmptyHeight } from "./stateViewModel"
 
 export { SettingsToggle } from "./SettingsToggle"
 export type { SettingsToggleProps } from "./SettingsToggle"
@@ -325,7 +326,10 @@ export type {
 } from "./skeleton"
 
 export { SectionCard } from "./SectionCard"
-export type { SectionCardProps } from "./SectionCard"
+export type { SectionCardProps, SectionCardVariant } from "./SectionCard"
+
+export { ListRow, IconTile, LIST_TILE, LIST_ROW_MIN_HEIGHT, LIST_DIVIDER_INSET } from "./ListRow"
+export type { ListRowProps, IconTileProps, IconTileTone } from "./ListRow"
 
 export { SegmentedControl, SEGMENTED_MIN_TOUCH_TARGET } from "./SegmentedControl"
 export type {
@@ -334,10 +338,10 @@ export type {
   SegmentedOption,
 } from "./SegmentedControl"
 
-export { FilterChip, FILTER_CHIP_MIN_TOUCH_TARGET } from "./FilterChip"
+export { FilterChip, FILTER_CHIP_HEIGHT, FILTER_CHIP_MIN_TOUCH_TARGET } from "./FilterChip"
 export type { FilterChipProps } from "./FilterChip"
 
-export { StatTile, StatTileRow } from "./StatTile"
+export { StatTile, StatTileRow, STAT_TILE_MIN_HEIGHT } from "./StatTile"
 export type { StatTileProps, StatTileRowProps, StatTone } from "./StatTile"
 export {
   formatRate,
@@ -348,8 +352,8 @@ export {
 } from "./statTileModel"
 export type { StatTileColumns } from "./statTileModel"
 
-export { HeroStat } from "./HeroStat"
-export type { HeroStatProps } from "./HeroStat"
+export { HeroStat, HeroFigure } from "./HeroStat"
+export type { HeroStatProps, HeroFigureProps } from "./HeroStat"
 
 export { Meter, METER_HEIGHT } from "./Meter"
 export type { MeterProps } from "./Meter"

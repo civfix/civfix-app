@@ -6,6 +6,8 @@ import { TrendSparkline } from "./TrendSparkline"
 import { statValueSize, STAT_VALUE_UNKNOWN, type StatTileColumns } from "./statTileModel"
 import type { SparkPoint } from "./trendSparklineModel"
 
+export const STAT_TILE_MIN_HEIGHT = 88
+
 const TREND_HEIGHT = 24
 const LABEL_LINES = 2
 const CAPTION_LINE_HEIGHT = 16

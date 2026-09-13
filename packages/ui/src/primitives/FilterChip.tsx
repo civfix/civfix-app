@@ -10,37 +10,53 @@ import {
 import { Text } from "../typography"
 
 export const FILTER_CHIP_MIN_TOUCH_TARGET = 44
-const CHIP_HEIGHT = 34
-const CHIP_HIT_SLOP = (FILTER_CHIP_MIN_TOUCH_TARGET - CHIP_HEIGHT) / 2
+export const FILTER_CHIP_HEIGHT = 34
+const CHIP_HIT_SLOP = (FILTER_CHIP_MIN_TOUCH_TARGET - FILTER_CHIP_HEIGHT) / 2
 
 export interface FilterChipProps {
   label: string
   selected: boolean
   onPress: () => void
   count?: number
+  disabled?: boolean
   accessibilityLabel?: string
 }
 
-export function FilterChip({ label, selected, onPress, count, accessibilityLabel }: FilterChipProps) {
+export function FilterChip({
+  label,
+  selected,
+  onPress,
+  count,
+  disabled = false,
+  accessibilityLabel,
+}: FilterChipProps) {
   const styles = useStyles()
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
       accessibilityRole="radio"
-      accessibilityState={{ checked: selected }}
+      accessibilityState={{ checked: selected, disabled }}
       accessibilityLabel={accessibilityLabel ?? label}
       hitSlop={CHIP_HIT_SLOP}
       {...focusRingProps}
       style={(state) => [
         styles.chip,
         webTransition,
-        webCursor(),
+        webCursor(disabled),
         selected ? styles.chipOn : null,
-        !selected && webHover(state) ? styles.chipHovered : null,
-        state.pressed ? styles.chipPressed : null,
+        !selected && !disabled && webHover(state) ? styles.chipHovered : null,
+        state.pressed && !disabled ? styles.chipPressed : null,
       ]}
     >
-      <Text numberOfLines={1} style={[styles.label, selected ? styles.labelOn : null]}>
+      <Text
+        numberOfLines={1}
+        style={[
+          styles.label,
+          selected ? styles.labelOn : null,
+          disabled ? styles.labelDisabled : null,
+        ]}
+      >
         {label}
       </Text>
       {count === undefined ? null : (
@@ -55,7 +71,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["1"],
-    height: CHIP_HEIGHT,
+    height: FILTER_CHIP_HEIGHT,
     paddingHorizontal: t.space["3"],
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.bgAlt,
@@ -76,6 +92,9 @@ const useStyles = makeThemedStyles((t) => ({
   },
   labelOn: {
     color: t.colors.selectedInk,
+  },
+  labelDisabled: {
+    color: t.colors.textSubtle,
   },
   count: {
     fontFamily: t.fontFamily.bodyRegular,

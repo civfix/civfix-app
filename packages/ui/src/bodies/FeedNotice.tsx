@@ -101,19 +101,20 @@ export function FeedNotice({
 }
 
 const MIN_TOUCH_TARGET = 44
+const NOTICE_TILE = 40
 
 const useStyles = makeThemedStyles((t) => ({
   actionPressed: { opacity: 0.82, transform: [{ scale: 0.93 }] },
-  notice: { flexDirection: "row", gap: t.space["3"], borderRadius: 24, backgroundColor: t.colors.neutral.card, padding: 14, borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border, ...t.shadows.s1 },
-  noticeIcon: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.bgAlt },
-  noticeCopy: { flex: 1, gap: 2 },
-  noticeTitle: { fontFamily: t.fontFamily.bodyBold, fontSize: 14, lineHeight: 20, color: t.colors.text },
-  noticeBody: { fontFamily: t.fontFamily.bodyRegular, fontSize: 12.5, lineHeight: 18, color: t.colors.textMuted },
-  noticeLinkSize: { fontSize: 12.5, lineHeight: 18 },
+  notice: { flexDirection: "row", gap: t.space["3"], borderRadius: t.radius.lg, backgroundColor: t.colors.neutral.card, padding: t.space["3"], borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border, ...t.shadows.s1 },
+  noticeIcon: { width: NOTICE_TILE, height: NOTICE_TILE, borderRadius: t.radius.md, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.bgAlt },
+  noticeCopy: { flex: 1, gap: t.space["1"] },
+  noticeTitle: { fontFamily: t.fontFamily.bodyBold, fontSize: t.fontSize["14"], lineHeight: 20, color: t.colors.text },
+  noticeBody: { fontFamily: t.fontFamily.bodyRegular, fontSize: t.fontSize["12"], lineHeight: 16, color: t.colors.textMuted },
+  noticeLinkSize: { fontSize: t.fontSize["12"], lineHeight: 16 },
   plainNotice: { flexGrow: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: t.space["8"], paddingVertical: t.space["10"], gap: t.space["2"] },
   plainTitle: { textAlign: "center" },
   plainBody: { textAlign: "center", lineHeight: 20, maxWidth: 300 },
-  plainAction: { alignSelf: "center", minHeight: MIN_TOUCH_TARGET, justifyContent: "center", paddingHorizontal: 12, marginTop: t.space["2"], borderRadius: t.radius.pill, backgroundColor: t.colors.surfaceTint },
-  noticeAction: { alignSelf: "flex-start", minHeight: MIN_TOUCH_TARGET, justifyContent: "center", paddingHorizontal: 12, marginTop: 6, borderRadius: t.radius.pill, backgroundColor: t.colors.surfaceTint },
-  noticeActionText: { fontFamily: t.fontFamily.bodyBold, fontSize: 12.5, lineHeight: 17, color: t.colors.accentText },
+  plainAction: { alignSelf: "center", minHeight: MIN_TOUCH_TARGET, justifyContent: "center", paddingHorizontal: t.space["3"], marginTop: t.space["2"], borderRadius: t.radius.pill, backgroundColor: t.colors.surfaceTint },
+  noticeAction: { alignSelf: "flex-start", minHeight: MIN_TOUCH_TARGET, justifyContent: "center", paddingHorizontal: t.space["3"], marginTop: t.space["2"], borderRadius: t.radius.pill, backgroundColor: t.colors.surfaceTint },
+  noticeActionText: { fontFamily: t.fontFamily.bodyBold, fontSize: t.fontSize["12"], lineHeight: 16, color: t.colors.accentText },
 }))
