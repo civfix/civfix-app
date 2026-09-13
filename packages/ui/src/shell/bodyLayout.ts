@@ -43,6 +43,7 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
   "host-checkin": "scroll",
   "host-broadcast-quick": "scroll",
   "host-team": "scroll",
+  "host-log-hours": "scroll",
   "my-ticket": "scroll",
   org: "scroll",
   "my-donations": "scroll",

@@ -10,9 +10,11 @@ const HOST_KINDS = [
   "host-checkin",
   "host-broadcast-quick",
   "host-team",
+  "host-log-hours",
   "my-ticket",
   "org",
   "my-donations",
+  "event-dashboard",
 ] as const
 
 describe("the new kinds are registered everywhere a kind must be registered", () => {
@@ -37,6 +39,7 @@ describe("URL round trip", () => {
     ["/cleanups/e1/checkin", { kind: "host-checkin", id: "e1" }],
     ["/cleanups/e1/broadcast", { kind: "host-broadcast-quick", id: "e1" }],
     ["/cleanups/e1/team", { kind: "host-team", id: "e1" }],
+    ["/cleanups/e1/hours", { kind: "host-log-hours", id: "e1" }],
     ["/cleanups/e1/ticket", { kind: "my-ticket", id: "e1" }],
     ["/cleanups/e1/ticket/seat-9", { kind: "my-ticket", id: "e1", seatId: "seat-9" }],
     ["/orgs/river-keepers", { kind: "org", slug: "river-keepers" }],
@@ -68,6 +71,7 @@ describe("URL round trip", () => {
     expect(entryFromPath("/me/anything-else")).toBeNull()
     expect(pathForEntry({ kind: "host-mode" })).toBe("/cleanups")
     expect(pathForEntry({ kind: "host-team" })).toBe("/cleanups")
+    expect(pathForEntry({ kind: "host-log-hours" })).toBe("/cleanups")
     expect(pathForEntry({ kind: "org" })).toBe("/")
   })
 
@@ -83,8 +87,10 @@ describe("parent view + flow protection", () => {
       "host-checkin",
       "host-broadcast-quick",
       "host-team",
+      "host-log-hours",
       "my-ticket",
       "org",
+      "event-dashboard",
     ] as const) {
       expect(parentViewForEntry({ kind } as DetailEntry), kind).toBe("events")
     }
@@ -96,9 +102,11 @@ describe("parent view + flow protection", () => {
       "host-mode",
       "host-checkin",
       "host-team",
+      "host-log-hours",
       "my-ticket",
       "org",
       "my-donations",
+      "event-dashboard",
     ] as const) {
       expect(FLOW_KINDS.has(kind), kind).toBe(false)
     }

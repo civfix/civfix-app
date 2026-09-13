@@ -36,8 +36,6 @@ import {
   nestedShellBodyEntry,
   useNestedShellStore,
 } from "@/lib/nestedShellSignal"
-import { navTeardownEpoch } from "@/lib/goHome"
-import { stackWithoutShellHosted } from "@/lib/navBridge"
 import { LocationPrimerSheet } from "@/components/LocationPrimerSheet"
 import { useAndroidBackHandler } from "@/hooks/useAndroidBackHandler"
 import { markRootShellSeen } from "@/lib/rootShellSeen"
@@ -313,18 +311,7 @@ export default function MapHomeScreen() {
     }, []),
   )
 
-  const rootTeardownEpochRef = useRef(navTeardownEpoch())
-  useFocusEffect(
-    useCallback(() => {
-      clearNestedShellHosts()
-      const epoch = navTeardownEpoch()
-      if (epoch === rootTeardownEpochRef.current) return
-      rootTeardownEpochRef.current = epoch
-      const nav = useNavStore.getState()
-      const stack = stackWithoutShellHosted(nav.stack)
-      if (stack.length !== nav.stack.length) nav.setStack(stack)
-    }, []),
-  )
+  useFocusEffect(useCallback(() => clearNestedShellHosts(), []))
 
   const primerPlan = locationPrimerDecision({
     permission: location.permission,

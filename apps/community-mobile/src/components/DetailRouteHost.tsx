@@ -134,6 +134,7 @@ export default function DetailRouteHost({ entry }: DetailRouteHostProps): React.
         focusedBridgeKey: focusedBridgeKeyRef.current(),
       })
       if (plan.type === "restore") state.setStack(plan.stack)
+      else if (plan.type === "clear") state.setStack([])
     }
   }, [])
 
