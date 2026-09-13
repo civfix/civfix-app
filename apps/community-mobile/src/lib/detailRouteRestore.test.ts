@@ -22,26 +22,31 @@ const identity = (entry: DetailEntry | null): string | null =>
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "app")
 
 const cleanup = { kind: "cleanup", id: "c1" } as DetailEntry
-const hostMode = { kind: "host-mode", id: "c1" } as DetailEntry
+const dashboard = { kind: "event-dashboard" } as DetailEntry
 const hostCheckin = { kind: "host-checkin", id: "c1" } as DetailEntry
 const thread = { kind: "thread", id: "t1", roomKind: "dm" } as DetailEntry
 const person = { kind: "person", id: "u1" } as DetailEntry
+const pin = { kind: "pin", id: "r1" } as DetailEntry
 const followers = { kind: "followers", id: "u1" } as DetailEntry
 
 test("restorableStack keeps an unbridged entry", () => {
   assert.deepEqual(restorableStack([cleanup], null), [cleanup])
 })
 
+test("restorableStack keeps every host surface, because none of them is bridged any more", () => {
+  assert.deepEqual(restorableStack([dashboard, hostCheckin], null), [dashboard, hostCheckin])
+})
+
 test("restorableStack drops a bridged entry whose native route is not focused", () => {
-  assert.deepEqual(restorableStack([hostMode], null), [])
-  assert.deepEqual(restorableStack([hostMode], "host-checkin:c1"), [])
-  assert.deepEqual(restorableStack([hostMode], "host-mode:c1"), [hostMode])
+  assert.deepEqual(restorableStack([thread], null), [])
+  assert.deepEqual(restorableStack([thread], "thread:other"), [])
+  assert.deepEqual(restorableStack([thread], "thread:t1"), [thread])
 })
 
 const base = {
   restore: [cleanup],
-  seedKey: identity(hostMode),
-  activeKey: identity(hostMode),
+  seedKey: identity(person),
+  activeKey: identity(person),
   stackLength: 1,
   left: false,
   tornDown: false,
@@ -59,15 +64,22 @@ test("restores when the host itself navigated away and emptied the store", () =>
   })
 })
 
-test("discards the snapshot when the native stack was torn down under it", () => {
+test("discards the snapshot when the native stack was torn down out from under it", () => {
   assert.deepEqual(
     detailRestorePlan({ ...base, activeKey: null, stackLength: 0, tornDown: true }),
     { type: "skip", reason: "torn-down" },
   )
-  assert.deepEqual(detailRestorePlan({ ...base, tornDown: true }), {
-    type: "skip",
-    reason: "torn-down",
-  })
+})
+
+test("a teardown clears the seed this host is still showing, so it cannot ghost into the root shell", () => {
+  assert.deepEqual(detailRestorePlan({ ...base, tornDown: true }), { type: "clear" })
+})
+
+test("a teardown leaves a store another host has already re-seeded alone", () => {
+  assert.deepEqual(
+    detailRestorePlan({ ...base, activeKey: identity(pin), tornDown: true }),
+    { type: "skip", reason: "torn-down" },
+  )
 })
 
 test("discards the snapshot when the store was emptied by something other than this host", () => {
@@ -78,7 +90,7 @@ test("discards the snapshot when the store was emptied by something other than t
 })
 
 test("leaves the store alone when another host has already seeded it", () => {
-  assert.deepEqual(detailRestorePlan({ ...base, activeKey: identity(hostCheckin) }), {
+  assert.deepEqual(detailRestorePlan({ ...base, activeKey: identity(pin) }), {
     type: "skip",
     reason: "not-ours",
   })
@@ -176,22 +188,50 @@ function makeSim() {
         focusedBridgeKey: focusedKey(),
       })
       if (plan.type === "restore") setStack(plan.stack)
+      else if (plan.type === "clear") setStack([])
       return plan
     },
   }
 }
 
-test("two nested hosts unmounting after reset() + dismissTo('/') push nothing", () => {
+test("a host child opened from the event dashboard stacks in the shell and pushes no screen", () => {
+  const sim = makeSim()
+  sim.push(dashboard)
+  sim.push(hostCheckin)
+
+  assert.deepEqual(sim.pushes, [])
+  assert.deepEqual(sim.native, ["index"])
+  assert.deepEqual(sim.stack, [dashboard, hostCheckin])
+
+  sim.back()
+  assert.deepEqual(sim.stack, [dashboard])
+  assert.deepEqual(sim.pushes, [])
+})
+
+test("no host surface is ever stripped out of the shell stack the way a thread is", () => {
   const sim = makeSim()
   sim.push(cleanup)
-  sim.push(hostMode)
-  const outer = sim.mountHost(hostMode)
-  sim.push(hostCheckin)
-  const inner = sim.mountHost(hostCheckin)
+  sim.push({ kind: "host-mode", id: "c1" } as DetailEntry)
+  sim.push({ kind: "host-team", id: "c1" } as DetailEntry)
+  sim.push({ kind: "my-ticket", id: "c1" } as DetailEntry)
+  sim.push({ kind: "org", slug: "acme" } as DetailEntry)
+  sim.push({ kind: "host-log-hours", id: "c1" } as DetailEntry)
 
-  assert.deepEqual(sim.native, ["index", "cleanups/[id]/host", "cleanups/[id]/checkin"])
+  assert.equal(sim.stack.length, 6)
+  assert.deepEqual(sim.pushes, [])
+})
+
+test("two nested hosts unmounting after reset() + dismissTo('/') push nothing", () => {
+  const sim = makeSim()
+  sim.push(thread)
+  sim.pushRoute("people/[id]", { id: "u1" })
+  const outer = sim.mountHost(person)
+  sim.pushRoute("pin/[id]", { id: "r1" })
+  const inner = sim.mountHost(pin)
+
+  assert.deepEqual(sim.native, ["index", "messages/[id]", "people/[id]", "pin/[id]"])
   const pushesBefore = [...sim.pushes]
-  assert.equal(pushesBefore.length, 2)
+  assert.deepEqual(pushesBefore, ["/messages/[id]"])
 
   sim.reset()
   sim.dismissToHome()
@@ -206,55 +246,67 @@ test("two nested hosts unmounting after reset() + dismissTo('/') push nothing", 
 test("a single host unmounting after sign-out does not bring the sheet back", () => {
   const sim = makeSim()
   sim.push(cleanup)
-  sim.push(hostMode)
-  const host = sim.mountHost(hostMode)
+  sim.pushRoute("people/[id]", { id: "u1" })
+  const host = sim.mountHost(person)
 
   sim.reset()
   sim.dismissToHome()
   assert.deepEqual(sim.unmountHost(host), { type: "skip", reason: "torn-down" })
   assert.deepEqual(sim.stack, [])
-  assert.deepEqual(sim.pushes, ["/cleanups/[id]/host"])
+})
+
+test("a host torn down while still showing its own seed clears it instead of stranding it", () => {
+  const sim = makeSim()
+  sim.push(cleanup)
+  sim.pushRoute("people/[id]", { id: "u1" })
+  const host = sim.mountHost(person)
+
+  sim.dismissToHome()
+  assert.deepEqual(sim.unmountHost(host), { type: "clear" })
+  assert.deepEqual(sim.stack, [])
+  assert.deepEqual(sim.native, ["index"])
 })
 
 test("backing out of a host restores the sheet it replaced without re-pushing it", () => {
   const sim = makeSim()
   sim.push(cleanup)
-  sim.push(hostMode)
-  const host = sim.mountHost(hostMode)
+  sim.pushRoute("people/[id]", { id: "u1" })
+  const host = sim.mountHost(person)
 
   const plan = sim.unmountHost(host)
   assert.deepEqual(plan, { type: "restore", stack: [cleanup] })
   assert.deepEqual(sim.stack, [cleanup])
-  assert.deepEqual(sim.pushes, ["/cleanups/[id]/host"])
+  assert.deepEqual(sim.pushes, [])
 })
 
 test("popping the inner host hands the outer entry back without re-pushing its screen", () => {
   const sim = makeSim()
   sim.push(cleanup)
-  sim.push(hostMode)
-  sim.mountHost(hostMode)
-  sim.push(hostCheckin)
-  const inner = sim.mountHost(hostCheckin)
+  sim.pushRoute("people/[id]", { id: "u1" })
+  sim.mountHost(person)
+  sim.pushRoute("pin/[id]", { id: "r1" })
+  const inner = sim.mountHost(pin)
 
   sim.popNative()
   inner.left = true
-  assert.deepEqual(sim.unmountHost(inner), { type: "restore", stack: [hostMode] })
-  assert.deepEqual(sim.stack, [hostMode])
-  assert.deepEqual(sim.pushes, ["/cleanups/[id]/host", "/cleanups/[id]/checkin"])
+  assert.deepEqual(sim.unmountHost(inner), { type: "restore", stack: [person] })
+  assert.deepEqual(sim.stack, [person])
+  assert.deepEqual(sim.pushes, [])
 })
 
 test("a bridged entry is never re-inserted while its native route is not focused", () => {
   const sim = makeSim()
   sim.push(cleanup)
-  sim.push(hostMode)
-  sim.mountHost(hostMode)
-  sim.push(hostCheckin)
-  const inner = sim.mountHost(hostCheckin)
+  sim.push(thread)
+  sim.pushRoute("people/[id]", { id: "u1" })
+  const host = sim.mountHost(person)
+  assert.deepEqual(host.restore, [cleanup])
 
-  inner.left = true
-  assert.deepEqual(sim.unmountHost(inner), { type: "restore", stack: [] })
-  assert.deepEqual(sim.stack, [])
-  assert.deepEqual(sim.pushes, ["/cleanups/[id]/host", "/cleanups/[id]/checkin"])
+  sim.popNative()
+  sim.popNative()
+  host.left = true
+  assert.deepEqual(sim.unmountHost(host), { type: "restore", stack: [cleanup] })
+  assert.deepEqual(sim.stack, [cleanup])
 })
 
 test("a profile a native screen pushed rides its own route, bridging nothing", () => {
@@ -309,7 +361,14 @@ const NESTED_SHELL_ROUTES = [
   { file: "profile/index.tsx", kind: "profile" },
   { file: "pin/[id].tsx", kind: "pin" },
   { file: "cleanups/[id]/index.tsx", kind: "cleanup" },
+  { file: "cleanups/[id]/host.tsx", kind: "host-mode" },
+  { file: "cleanups/[id]/checkin.tsx", kind: "host-checkin" },
+  { file: "cleanups/[id]/team.tsx", kind: "host-team" },
+  { file: "cleanups/[id]/hours.tsx", kind: "host-log-hours" },
+  { file: "cleanups/[id]/ticket/index.tsx", kind: "my-ticket" },
+  { file: "cleanups/[id]/ticket/[seatId].tsx", kind: "my-ticket" },
   { file: "orgs/[slug].tsx", kind: "org" },
+  { file: "dashboard.tsx", kind: "event-dashboard" },
 ] as const
 
 test("every detail route hosts its entry in a nested shell instead of seeding and dismissing", () => {

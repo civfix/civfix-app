@@ -16,10 +16,10 @@ test("the root layout anchors every deep link under the home route", () => {
   assert.match(layout, /export const unstable_settings = \{ anchor: "index" \}/)
 })
 
-test("the focused root clears the nested-shell signal and any torn-down shell-hosted seed", () => {
+test("the focused root clears the nested-shell signal, and nothing else touches the nav stack", () => {
   assert.match(home, /clearNestedShellHosts\(\)/)
-  assert.match(home, /stackWithoutShellHosted\(nav\.stack\)/)
-  assert.match(home, /navTeardownEpoch\(\)/)
+  assert.doesNotMatch(home, /stackWithoutShellHosted/)
+  assert.doesNotMatch(home, /navTeardownEpoch/)
 })
 
 test("the crash retry drops the persisted AND in-memory cache before re-rendering", () => {

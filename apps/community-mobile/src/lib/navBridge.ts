@@ -6,31 +6,7 @@ export const BRIDGE_ROUTE_NAMES = {
   thread: "messages/[id]",
   postThread: "post/[id]",
   composer: "compose",
-  hostMode: "cleanups/[id]/host",
-  hostCheckin: "cleanups/[id]/checkin",
-  hostTeam: "cleanups/[id]/team",
-  myTicket: "cleanups/[id]/ticket",
-  myTicketSeat: "cleanups/[id]/ticket/[seatId]",
-  org: "orgs/[slug]",
 } as const
-
-export const MY_TICKET_ROUTE_NAMES: readonly string[] = [
-  BRIDGE_ROUTE_NAMES.myTicket,
-  `${BRIDGE_ROUTE_NAMES.myTicket}/index`,
-  BRIDGE_ROUTE_NAMES.myTicketSeat,
-]
-
-export const SHELL_HOSTED_BRIDGE_KINDS: readonly string[] = [
-  "host-mode",
-  "host-checkin",
-  "host-team",
-  "my-ticket",
-  "org",
-]
-
-export function stackWithoutShellHosted(stack: readonly DetailEntry[]): DetailEntry[] {
-  return stack.filter((entry) => !SHELL_HOSTED_BRIDGE_KINDS.includes(entry.kind))
-}
 
 export interface BridgeRoute {
   pathname: string
@@ -67,11 +43,6 @@ export function bridgeKey(entry: DetailEntry | null | undefined): string | null 
   }
   if (entry.kind === "post-thread") return entry.id ? `post-thread:${entry.id}` : null
   if (entry.kind === "thread") return entry.id ? `thread:${entry.id}` : null
-  if (entry.kind === "host-mode") return entry.id ? `host-mode:${entry.id}` : null
-  if (entry.kind === "host-checkin") return entry.id ? `host-checkin:${entry.id}` : null
-  if (entry.kind === "host-team") return entry.id ? `host-team:${entry.id}` : null
-  if (entry.kind === "my-ticket") return entry.id ? `my-ticket:${entry.id}:${entry.seatId ?? ""}` : null
-  if (entry.kind === "org") return entry.slug ? `org:${entry.slug}` : null
   return null
 }
 
@@ -94,26 +65,6 @@ export function nativeBridgeKey(route: NativeRoute | null | undefined): string |
   if (route.name === BRIDGE_ROUTE_NAMES.composer) {
     return `composer:${routeParam(route.params, "mode") || "post"}:${routeParam(route.params, "targetPostId")}`
   }
-  if (route.name === BRIDGE_ROUTE_NAMES.hostMode) {
-    const id = routeParam(route.params, "id")
-    return id ? `host-mode:${id}` : null
-  }
-  if (route.name === BRIDGE_ROUTE_NAMES.hostCheckin) {
-    const id = routeParam(route.params, "id")
-    return id ? `host-checkin:${id}` : null
-  }
-  if (route.name === BRIDGE_ROUTE_NAMES.hostTeam) {
-    const id = routeParam(route.params, "id")
-    return id ? `host-team:${id}` : null
-  }
-  if (MY_TICKET_ROUTE_NAMES.includes(route.name)) {
-    const id = routeParam(route.params, "id")
-    return id ? `my-ticket:${id}:${routeParam(route.params, "seatId")}` : null
-  }
-  if (route.name === BRIDGE_ROUTE_NAMES.org) {
-    const slug = routeParam(route.params, "slug")
-    return slug ? `org:${slug}` : null
-  }
   return null
 }
 
@@ -129,27 +80,6 @@ export function bridgeRoute(entry: DetailEntry): BridgeRoute | null {
   }
   if (entry.kind === "post-thread") {
     return entry.id ? { pathname: `/${BRIDGE_ROUTE_NAMES.postThread}`, params: { id: entry.id } } : null
-  }
-  if (entry.kind === "host-mode") {
-    return entry.id ? { pathname: `/${BRIDGE_ROUTE_NAMES.hostMode}`, params: { id: entry.id } } : null
-  }
-  if (entry.kind === "host-checkin") {
-    return entry.id ? { pathname: `/${BRIDGE_ROUTE_NAMES.hostCheckin}`, params: { id: entry.id } } : null
-  }
-  if (entry.kind === "host-team") {
-    return entry.id ? { pathname: `/${BRIDGE_ROUTE_NAMES.hostTeam}`, params: { id: entry.id } } : null
-  }
-  if (entry.kind === "my-ticket") {
-    if (!entry.id) return null
-    return entry.seatId
-      ? {
-          pathname: `/${BRIDGE_ROUTE_NAMES.myTicketSeat}`,
-          params: { id: entry.id, seatId: entry.seatId },
-        }
-      : { pathname: `/${BRIDGE_ROUTE_NAMES.myTicket}`, params: { id: entry.id } }
-  }
-  if (entry.kind === "org") {
-    return entry.slug ? { pathname: `/${BRIDGE_ROUTE_NAMES.org}`, params: { slug: entry.slug } } : null
   }
   if (entry.kind === "thread") {
     if (!entry.id) return null
@@ -182,13 +112,7 @@ export function bridgeDecision(
     }
   }
   if (key === guard.openKey) return { action: { type: "none" }, guard }
-  if (key === focusedKey) {
-    const guarded = { ...guard, openKey: key }
-    if (SHELL_HOSTED_BRIDGE_KINDS.includes(active.kind)) {
-      return { action: { type: "none" }, guard: guarded }
-    }
-    return { action: { type: "drop", key }, guard: guarded }
-  }
+  if (key === focusedKey) return { action: { type: "drop", key }, guard: { ...guard, openKey: key } }
   if (key === guard.recentKey && now - guard.recentAt < BRIDGE_REPEAT_WINDOW_MS) {
     return { action: { type: "drop", key }, guard: { ...guard, openKey: key } }
   }
@@ -224,6 +148,7 @@ export type DetailRestoreSkipReason = "torn-down" | "removed" | "not-ours" | "no
 
 export type DetailRestorePlan =
   | { type: "skip"; reason: DetailRestoreSkipReason }
+  | { type: "clear" }
   | { type: "restore"; stack: DetailEntry[] }
 
 export function restorableStack(
@@ -237,7 +162,11 @@ export function restorableStack(
 }
 
 export function detailRestorePlan(input: DetailRestoreInput): DetailRestorePlan {
-  if (input.tornDown) return { type: "skip", reason: "torn-down" }
+  if (input.tornDown) {
+    return input.activeKey !== null && input.activeKey === input.seedKey
+      ? { type: "clear" }
+      : { type: "skip", reason: "torn-down" }
+  }
   if (input.activeKey === null) {
     if (!input.left) return { type: "skip", reason: "removed" }
   } else if (input.activeKey !== input.seedKey) {
