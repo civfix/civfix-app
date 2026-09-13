@@ -226,8 +226,11 @@ export interface LogEventHoursVars {
 /**
  * POST /cleanups/:id/hours - the host credits each listed attendee individually. On success every
  * surface the new credit changes is invalidated: the viewer's own aggregate + itemised ledger, every
- * leaderboard variant, the event detail, and THIS event's hours read-back (which is what flips an
- * attendee's receipt from "pending" to "credited" and prefills the host's own editor on re-open).
+ * leaderboard variant, the event detail, THIS event's hours read-back (which is what flips an
+ * attendee's receipt from "pending" to "credited" and prefills the host's own editor on re-open),
+ * this event's host insights, the hosted-events root (portfolio lists + analytics, which carry
+ * `hoursCredited` / `totalHours` / `topVolunteers`) and every org page (whose `volunteerHours` /
+ * `volunteerCount` are sums over exactly these rows).
  */
 export function useLogEventHours() {
   const api = useApi()
@@ -241,6 +244,9 @@ export function useLogEventHours() {
       // Every alias key the event detail may render under (UUID + refcode) - see cleanupDetailFilters.
       void qc.invalidateQueries(cleanupDetailFilters(id))
       void qc.invalidateQueries({ queryKey: queryKeys.eventHours(id) })
+      void qc.invalidateQueries({ queryKey: queryKeys.eventInsights(id) })
+      void qc.invalidateQueries({ queryKey: queryKeys.hostedEventsRoot })
+      void qc.invalidateQueries({ queryKey: queryKeys.orgRoot })
     },
   })
 }

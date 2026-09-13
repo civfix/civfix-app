@@ -13,7 +13,9 @@
   },
   "stats": {
     "events_other": "행사 {{count}}건",
-    "members_other": "구성원 {{count}}명"
+    "members_other": "구성원 {{count}}명",
+    "hours": "봉사 {{hours}}시간",
+    "volunteers_other": "자원봉사자 {{count}}명"
   },
   "actions": {
     "share": "이 단체 공유하기",

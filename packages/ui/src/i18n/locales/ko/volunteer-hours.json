@@ -4,7 +4,9 @@
     "value": "{{hours}}",
     "chip": "{{name}} - {{hours}}시간",
     "chip_more": "+{{count}}개 더",
-    "chip_a11y": "{{name}} 리더보드"
+    "chip_a11y": "{{name}} 리더보드",
+    "org_chip": "{{name}} - {{hours}}시간",
+    "org_chip_a11y": "{{name}} 단체 페이지"
   },
   "visibility": {
     "public": "총 시간과 이벤트 목록 공개",

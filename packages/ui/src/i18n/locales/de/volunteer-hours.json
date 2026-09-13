@@ -4,7 +4,9 @@
     "value": "{{hours}}",
     "chip": "{{name}} - {{hours}} Std.",
     "chip_more": "+{{count}} weitere",
-    "chip_a11y": "Bestenliste {{name}}"
+    "chip_a11y": "Bestenliste {{name}}",
+    "org_chip": "{{name}} - {{hours}} Std.",
+    "org_chip_a11y": "Organisationsseite von {{name}}"
   },
   "visibility": {
     "public": "Gesamtstunden und Einsatzliste sichtbar",

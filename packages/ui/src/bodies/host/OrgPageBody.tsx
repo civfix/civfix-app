@@ -13,10 +13,11 @@ import {
   type OrganizationEventsWindow,
 } from "../../data/hooks/orgs"
 import { donationsOffered, useOrgDonationPage } from "../../data/hooks/donations"
-import { useT } from "../../i18n"
+import { useLocale, useT } from "../../i18n"
 import { useNavStore } from "../../nav/useNavStore"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
+import { formatHoursDisplay } from "../formatHours"
 
 const SOCIAL_ORDER = ["instagram", "x", "facebook", "tiktok", "youtube", "linkedin"] as const
 
@@ -149,6 +150,7 @@ export function OrgPageBody({ slug }: { slug: string }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-org")
+  const { locale } = useLocale()
   const { ScrollView } = useScrollHost()
   const toast = useToast()
   const openExternal = useOpenExternal()
@@ -253,6 +255,14 @@ export function OrgPageBody({ slug }: { slug: string }) {
         ) : null}
         {org.memberCount != null ? (
           <Text style={styles.stat}>{t("stats.members", { count: org.memberCount })}</Text>
+        ) : null}
+        {org.volunteerHours != null && org.volunteerHours > 0 ? (
+          <Text style={styles.stat}>
+            {t("stats.hours", { hours: formatHoursDisplay(org.volunteerHours, locale) })}
+          </Text>
+        ) : null}
+        {org.volunteerCount != null && org.volunteerCount > 0 ? (
+          <Text style={styles.stat}>{t("stats.volunteers", { count: org.volunteerCount })}</Text>
         ) : null}
       </View>
 
@@ -370,6 +380,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   statsRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: t.space["4"],
   },
   stat: {

@@ -15,7 +15,10 @@
     "events_one": "{{count}} evento",
     "events_other": "{{count}} eventos",
     "members_one": "{{count}} miembro",
-    "members_other": "{{count}} miembros"
+    "members_other": "{{count}} miembros",
+    "hours": "{{hours}} h de voluntariado",
+    "volunteers_one": "{{count}} voluntario",
+    "volunteers_other": "{{count}} voluntarios"
   },
   "actions": {
     "share": "Compartir esta organización",
