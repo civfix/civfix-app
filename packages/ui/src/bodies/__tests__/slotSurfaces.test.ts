@@ -81,6 +81,25 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
   })
 })
 
+describe("an ENDED event's slot board is read-only, not just a DONE one", () => {
+  const detail = code(readFileSync(new URL("../EventDetailBody.tsx", import.meta.url), "utf8"))
+
+  it("passes readonly for an event whose window has passed, so no pill is tappable", () => {
+    expect(detail).toContain("readonly={isDone || isCancelled || isEnded}")
+  })
+
+  it("takes `ended` from the SHARED lifecycle helper, not a second local clock rule", () => {
+    expect(detail).toContain("const isEnded = hasEventEnded(cleanup, Date.now())")
+    expect(detail).toContain('from "./eventLifecycle"')
+  })
+
+  it("maps the server's ended refusal onto its own copy instead of the slot-filled line", () => {
+    const block = code(SOURCES["EventSlotsBlock.tsx"])
+    expect(block).toContain("claimSlotErrorKey(code, appErrorFields(err))")
+    expect(block).not.toContain('t("error.full")')
+  })
+})
+
 describe("the slot editor validates against the EVENT's window, not just the row", () => {
   const editor = code(SOURCES["SlotEditor.tsx"])
   const form = code(readFileSync(new URL("../CleanupForm.tsx", import.meta.url), "utf8"))

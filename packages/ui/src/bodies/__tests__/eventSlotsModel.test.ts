@@ -6,8 +6,10 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { EventSlotDTO } from "@civfix/shared"
+import { EVENT_ENDED_FIELD, EVENT_ENDED_REASON } from "../errorCode"
 import {
   boardHasTimedSlots,
+  claimSlotErrorKey,
   currentShifts,
   mySlotId,
   slotDisplayOrder,
@@ -200,5 +202,37 @@ describe("currentShifts", () => {
     expect(currentShifts([sweep, sort], new Date(at("08:59")))).toEqual([])
     expect(currentShifts([sweep, sort], new Date(at("12:00")))).toEqual([])
     expect(currentShifts([grill], new Date(at("09:30")))).toEqual([])
+  })
+})
+
+describe("claimSlotErrorKey (the claim/switch/release failure toast copy)", () => {
+  const endedFields = { [EVENT_ENDED_FIELD]: EVENT_ENDED_REASON }
+
+  it("tells an ENDED event apart from a slot that just filled up - both arrive as a bare 409", () => {
+    expect(claimSlotErrorKey("CONFLICT", endedFields)).toBe("error.ended")
+    expect(claimSlotErrorKey("CONFLICT")).toBe("error.full")
+    expect(claimSlotErrorKey("CONFLICT", {})).toBe("error.full")
+    expect(claimSlotErrorKey("CONFLICT", undefined)).toBe("error.full")
+  })
+
+  it("reads the ended marker whatever code carries it, and falls back to the generic line", () => {
+    expect(claimSlotErrorKey(undefined, endedFields)).toBe("error.ended")
+    expect(claimSlotErrorKey("FORBIDDEN")).toBe("error.generic")
+    expect(claimSlotErrorKey("NOT_FOUND")).toBe("error.generic")
+    expect(claimSlotErrorKey(undefined)).toBe("error.generic")
+  })
+
+  it("returns keys that en/event-slots.json actually has - nothing here goes through a t() the checker sees", () => {
+    const catalog = JSON.parse(
+      readFileSync(new URL("../../i18n/locales/en/event-slots.json", import.meta.url), "utf8"),
+    ) as { error: Record<string, string> }
+    for (const key of ["error.ended", "error.full", "error.generic"]) {
+      expect(catalog.error[key.slice("error.".length)], key).toBeTypeOf("string")
+    }
+  })
+
+  it("is what EventSlotsBlock maps its failure toast through", () => {
+    const source = readFileSync(new URL("../EventSlotsBlock.tsx", import.meta.url), "utf8")
+    expect(source).toContain("claimSlotErrorKey(code, appErrorFields(err))")
   })
 })

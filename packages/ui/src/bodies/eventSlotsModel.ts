@@ -8,6 +8,7 @@
  * Ownership is read off `slot.mine` - the server-computed flag - never re-derived from a roster.
  */
 import type { EventSlotDTO } from "@civfix/shared"
+import { isEventEndedRefusal } from "./errorCode"
 
 export type SlotRowState =
   /** Claimable: has room (or is unlimited) and the viewer holds nothing. */
@@ -74,6 +75,15 @@ export function slotsFilledSummary(slots: readonly EventSlotDTO[]): {
     else if (capacity !== null) capacity += slot.capacity
   }
   return { claimed, capacity }
+}
+
+export function claimSlotErrorKey(
+  code: string | undefined,
+  fields?: Record<string, string> | undefined,
+): string {
+  if (isEventEndedRefusal(fields)) return "error.ended"
+  if (code === "CONFLICT") return "error.full"
+  return "error.generic"
 }
 
 export interface SlotWindow {

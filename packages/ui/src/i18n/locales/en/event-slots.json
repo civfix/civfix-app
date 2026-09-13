@@ -67,6 +67,7 @@
     "capacity_invalid": "Enter a number of spots, or leave it blank for any.",
     "capacity_below_claimed": "{{count}} people already claimed this slot.",
     "full": "That slot just filled up.",
+    "ended": "This event has already ended.",
     "generic": "Couldn't update your slot. Try again.",
     "window_needs_event_end": "Set an end time for the event before timing this slot.",
     "window_outside_event": "Keep the shift inside {{range}}.",

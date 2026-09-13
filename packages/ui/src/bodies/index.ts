@@ -174,6 +174,7 @@ export {
 export type { SlotDraft, SlotDraftError } from "./eventSlotsForm"
 export {
   boardHasTimedSlots,
+  claimSlotErrorKey,
   currentShifts,
   mySlotId,
   slotDisplayOrder,

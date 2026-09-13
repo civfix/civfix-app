@@ -67,6 +67,7 @@
     "capacity_invalid": "Escribe un número de lugares o déjalo en blanco.",
     "capacity_below_claimed": "{{count}} personas ya tomaron este puesto.",
     "full": "Ese puesto se acaba de llenar.",
+    "ended": "Este evento ya finalizó.",
     "generic": "No se pudo actualizar tu puesto. Inténtalo de nuevo.",
     "window_needs_event_end": "Fija una hora de fin para el evento antes de dar horario a este puesto.",
     "window_outside_event": "Mantén el turno dentro de {{range}}.",

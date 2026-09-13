@@ -31,9 +31,10 @@ import { MetaDot, useToast } from "../primitives"
 import { POP_ENABLED, usePopScale } from "../primitives/usePopScale"
 import { cleanupDetailFilters, useClaimEventSlot, useRequireAuth } from "../data"
 import { useLocale, useT } from "../i18n"
-import { appErrorCode } from "./errorCode"
+import { appErrorCode, appErrorFields } from "./errorCode"
 import {
   boardHasTimedSlots,
+  claimSlotErrorKey,
   mySlotId,
   slotDisplayOrder,
   slotRemaining,
@@ -273,15 +274,12 @@ export function EventSlotsBlock({ cleanupId, slots, joined, readonly = false }: 
   const onError = useCallback(
     (err: unknown) => {
       setPendingSlotId(null)
-      if (appErrorCode(err) === "CONFLICT") {
-        // Someone else took the last spot between the read and the tap. Re-read the event so the counts
-        // (and this row's state) catch up to what the server just told us - under EVERY key the detail
-        // may render as (the page can be cached by refcode when opened from a share link).
-        toast.show(t("error.full"), { variant: "error" })
-        void qc.invalidateQueries(cleanupDetailFilters(cleanupId))
-        return
-      }
-      toast.show(t("error.generic"), { variant: "error" })
+      const code = appErrorCode(err)
+      toast.show(t(claimSlotErrorKey(code, appErrorFields(err))), { variant: "error" })
+      // A 409 means the server's board moved under this tap - the last spot went, or the event ended.
+      // Re-read the event under EVERY key the detail may render as (the page can be cached by refcode
+      // when opened from a share link) so the counts and this block's readonly state catch up.
+      if (code === "CONFLICT") void qc.invalidateQueries(cleanupDetailFilters(cleanupId))
     },
     [cleanupId, qc, t, toast],
   )

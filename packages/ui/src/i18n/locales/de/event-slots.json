@@ -67,6 +67,7 @@
     "capacity_invalid": "Gib eine Anzahl an Plätzen ein oder lass das Feld leer.",
     "capacity_below_claimed": "{{count}} Personen haben diese Aufgabe bereits übernommen.",
     "full": "Diese Aufgabe wurde gerade vergeben.",
+    "ended": "Dieses Event ist bereits beendet.",
     "generic": "Aufgabe konnte nicht aktualisiert werden. Versuche es erneut.",
     "window_needs_event_end": "Lege eine Endzeit für die Veranstaltung fest, bevor du dieser Aufgabe eine Zeit gibst.",
     "window_outside_event": "Halte die Schicht innerhalb von {{range}}.",

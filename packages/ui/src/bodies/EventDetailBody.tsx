@@ -508,7 +508,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
             cleanupId={cleanup.id}
             slots={cleanup.slots}
             joined={going}
-            readonly={isDone || isCancelled}
+            readonly={isDone || isCancelled || isEnded}
           />
         </View>
       ) : null}
