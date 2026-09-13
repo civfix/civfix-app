@@ -167,7 +167,7 @@ describe("insights wiring", () => {
 
   it("covers loading, error and the analytics-less viewer", () => {
     expect(body).toContain("<HeroSkeleton />")
-    expect(body).toContain("<TilesSkeleton columns={columns} />")
+    expect(body).toContain("<TilesSkeleton columns={columns} count={4} />")
     expect(body).toContain('title={t("state.insights_error_title")}')
     expect(body).toContain('icon="Lock"')
   })
@@ -216,6 +216,40 @@ describe("the panels render only what the phase asked for", () => {
     expect(panels).toContain("if (points.length < 2) return null")
     expect(panels).toContain("if (points.length === 0) return null")
     expect(panels).toContain("if (insights.broadcasts.length === 0) return null")
+  })
+
+  it("names the top volunteers from the card both host screens share", () => {
+    expect(panels).toContain("{panels.topVolunteers ?")
+    expect(panels).toContain("<TopVolunteersCard")
+    expect(panels).toContain("entries={insights.topVolunteers}")
+    expect(panels).toContain('label={t("top_volunteers.title")}')
+    expect(panels).toContain('caption={t("top_volunteers.caption")}')
+  })
+
+  it("draws the shift board from the slot model, marking the running shift only while live", () => {
+    expect(panels).toContain("{panels.shifts ?")
+    expect(panels).toContain("<ShiftsPanel")
+    expect(panels).toContain("<ShiftRow")
+    expect(panels).toContain("if (!boardHasTimedSlots(slots)) return null")
+    expect(panels).toContain("slotDisplayOrder(slots)")
+    expect(panels).toContain('phase === "live" ? new Set(currentShifts(slots, new Date(now))')
+  })
+
+  it("takes the event's slots from the cleanup the body already holds", () => {
+    expect(body).toContain("slots={event.slots ?? []}")
+    expect(body).toContain("now={now}")
+  })
+})
+
+describe("one hero size across both host screens", () => {
+  it("renders the compact hero unconditionally instead of threading a density prop", () => {
+    expect(panels).not.toContain("compact={compact}")
+    expect(panels).not.toContain("compact: boolean")
+    expect(body).not.toContain("compact={wide}")
+  })
+
+  it("keeps the skeleton hero the same height as the real one", () => {
+    expect(strip(read("../HostSkeletons.tsx"))).toContain("const HERO_VALUE_HEIGHT = 42")
   })
 })
 

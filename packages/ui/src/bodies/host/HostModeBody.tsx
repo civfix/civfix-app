@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { View, type LayoutChangeEvent } from "react-native"
-import type { CleanupDTO, EventInsights, EventPhase } from "@civfix/shared"
+import type { CleanupDTO, EventInsights, EventPhase, EventSlotDTO } from "@civfix/shared"
 import { dowLabel, timeLabel } from "@civfix/shared/datetime"
 import { eventPhase } from "@civfix/shared/host"
 import { makeThemedStyles, useTheme } from "../../theme"
@@ -130,14 +130,16 @@ function InsightsSection({
   insights,
   phase,
   columns,
-  compact,
+  slots,
+  now,
   loading,
   failed,
 }: {
   insights: EventInsights | undefined
   phase: EventPhase
   columns: StatTileColumns
-  compact: boolean
+  slots: readonly EventSlotDTO[]
+  now: number
   loading: boolean
   failed: boolean
 }) {
@@ -149,7 +151,8 @@ function InsightsSection({
         insights={insights}
         phase={phase}
         columns={columns}
-        compact={compact}
+        slots={slots}
+        now={now}
         stale={failed}
       />
     )
@@ -167,7 +170,7 @@ function InsightsSection({
   return (
     <View style={styles.stack}>
       <HeroSkeleton />
-      <TilesSkeleton columns={columns} />
+      <TilesSkeleton columns={columns} count={4} />
     </View>
   )
 }
@@ -449,7 +452,8 @@ export function HostModeBody({ id }: { id: string }) {
             insights={insights.data}
             phase={phase}
             columns={columns}
-            compact={wide}
+            slots={event.slots ?? []}
+            now={now}
             loading={insights.isLoading}
             failed={insights.isError}
           />

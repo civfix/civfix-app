@@ -1,9 +1,9 @@
-import React from "react"
+import React, { useState } from "react"
 import { View } from "react-native"
-import type { EventInsights, EventPhase, InsightsBroadcast } from "@civfix/shared"
+import type { EventInsights, EventPhase, EventSlotDTO, InsightsBroadcast } from "@civfix/shared"
 import { timeLabel } from "@civfix/shared/datetime"
 import { makeThemedStyles } from "../../theme"
-import { Text } from "../../typography"
+import { Text, TextLink } from "../../typography"
 import { HeroStat } from "../../primitives/HeroStat"
 import { Meter } from "../../primitives/Meter"
 import { SectionCard } from "../../primitives/SectionCard"
@@ -11,7 +11,10 @@ import { StatTile, StatTileRow } from "../../primitives/StatTile"
 import { TrendSparkline } from "../../primitives/TrendSparkline"
 import { formatRate, formatStatValue, type StatTileColumns } from "../../primitives/statTileModel"
 import { useLocale, useRelativeTime, useT } from "../../i18n"
+import { boardHasTimedSlots, currentShifts, slotDisplayOrder, slotWindow } from "../eventSlotsModel"
 import { formatMinor } from "./donationFormat"
+import { ShiftRow } from "./ShiftRow"
+import { TopVolunteersCard } from "./TopVolunteersCard"
 import {
   arrivalOffsetLabel,
   arrivalSparkPoints,
@@ -26,11 +29,14 @@ import {
 
 const TREND_HEIGHT = 56
 
+const MAX_COLLAPSED_SHIFTS = 6
+
 export interface HostInsightsPanelsProps {
   insights: EventInsights
   phase: EventPhase
   columns: StatTileColumns
-  compact: boolean
+  slots: readonly EventSlotDTO[]
+  now: number
   stale: boolean
 }
 
@@ -63,12 +69,10 @@ function useTileText(insights: EventInsights) {
 function HeroPanel({
   insights,
   phase,
-  compact,
   stale,
 }: {
   insights: EventInsights
   phase: EventPhase
-  compact: boolean
   stale: boolean
 }) {
   const { t } = useT("host-mode")
@@ -97,10 +101,45 @@ function HeroPanel({
       value={hero.value}
       limit={hero.limit}
       limitLabel={limitLabel}
-      compact={compact}
+      compact
       {...(hero.key === "registered" ? {} : { warnAt: null })}
       {...(caption ? { caption } : {})}
     />
+  )
+}
+
+function ShiftsPanel({
+  slots,
+  phase,
+  now,
+}: {
+  slots: readonly EventSlotDTO[]
+  phase: EventPhase
+  now: number
+}) {
+  const styles = useStyles()
+  const { t } = useT("host-mode")
+  const [expanded, setExpanded] = useState(false)
+  if (!boardHasTimedSlots(slots)) return null
+  const timed = slotDisplayOrder(slots).filter((slot) => slotWindow(slot) !== null)
+  if (timed.length === 0) return null
+  const running =
+    phase === "live" ? new Set(currentShifts(slots, new Date(now)).map((slot) => slot.id)) : null
+  const collapsed = timed.length > MAX_COLLAPSED_SHIFTS && !expanded
+  const rows = collapsed ? timed.slice(0, MAX_COLLAPSED_SHIFTS) : timed
+  return (
+    <SectionCard label={t("shifts.section")}>
+      <View style={styles.stack}>
+        {rows.map((slot) => (
+          <ShiftRow key={slot.id} slot={slot} current={running?.has(slot.id) ?? false} />
+        ))}
+        {timed.length > MAX_COLLAPSED_SHIFTS ? (
+          <TextLink standalone variant="label" onPress={() => setExpanded(!expanded)}>
+            {expanded ? t("shifts.show_less") : t("shifts.show_all")}
+          </TextLink>
+        ) : null}
+      </View>
+    </SectionCard>
   )
 }
 
@@ -253,7 +292,8 @@ export function HostInsightsPanels({
   insights,
   phase,
   columns,
-  compact,
+  slots,
+  now,
   stale,
 }: HostInsightsPanelsProps) {
   const styles = useStyles()
@@ -264,7 +304,8 @@ export function HostInsightsPanels({
 
   return (
     <View style={styles.stack}>
-      <HeroPanel insights={insights} phase={phase} compact={compact} stale={stale} />
+      <HeroPanel insights={insights} phase={phase} stale={stale} />
+      {panels.shifts ? <ShiftsPanel slots={slots} phase={phase} now={now} /> : null}
       {panels.tiles && tiles.length > 0 ? (
         <StatTileRow columns={columns}>
           {tiles.map((tile) => {
@@ -280,6 +321,13 @@ export function HostInsightsPanels({
             )
           })}
         </StatTileRow>
+      ) : null}
+      {panels.topVolunteers ? (
+        <TopVolunteersCard
+          entries={insights.topVolunteers}
+          label={t("top_volunteers.title")}
+          caption={t("top_volunteers.caption")}
+        />
       ) : null}
       {panels.signups ? <SignupsPanel insights={insights} /> : null}
       {panels.byTicketType ? <ByTicketTypePanel insights={insights} /> : null}

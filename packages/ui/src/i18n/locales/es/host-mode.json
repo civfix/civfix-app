@@ -41,6 +41,14 @@
     "rate": "{{rate}} asistió",
     "stale": "No se pudo actualizar ahora mismo. Estos son los últimos datos que tenemos."
   },
+  "shifts": {
+    "section": "Turnos",
+    "of": "{{claimed}} de {{capacity}}",
+    "signed_up": "{{count}} apuntados",
+    "row_a11y": "{{title}}, {{range}}, {{claimed}} de {{capacity}}",
+    "show_all": "Ver todos",
+    "show_less": "Ver menos"
+  },
   "tiles": {
     "waitlist": "Lista de espera",
     "cancelled": "Cancelados",
@@ -56,6 +64,10 @@
     "donations": "Donaciones",
     "returning": "Repiten",
     "returning_hint": "de {{total}} inscritos ya habían venido"
+  },
+  "top_volunteers": {
+    "title": "Voluntarios destacados",
+    "caption": "Ordenados por las horas que acreditaste en este evento. Solo los anfitriones ven esta lista."
   },
   "signups": {
     "title": "Inscripciones",
