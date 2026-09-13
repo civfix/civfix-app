@@ -22,7 +22,7 @@ import { Text, Icon, iconMap } from "../typography"
 import { TextField, BringInput, MetaDot } from "../primitives"
 import { actableOrganizations, useMyOrganizations, useReport, useReverseLabel, reverseLabelText } from "../data"
 import { LocationPicker, PortraitMapPickStep, useLocationPick } from "../map"
-import { useLocale, useT } from "../i18n"
+import { useLocale, useT, viewerTimeZone } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
 import { AuthorAsChips, authorAsSelection, type AuthorAsOption } from "./AuthorAsChips"
 import { buildEventPreviewCard } from "./feedShare"
@@ -31,10 +31,13 @@ import {
   endOffsetMs,
   endTimeAfter,
   endTimeSelectable,
-  eventWindowOf,
+  eventWindowInZone,
+  formInstantMs,
   mergeDateTime,
+  scheduleFieldErrors,
 } from "./calendarModel"
 import { InlineDateTimePicker } from "./InlineDateTimePicker"
+import { TimezoneField } from "./TimezoneField"
 import { LinkedReportCard, type LinkedReportCardData } from "./LinkedReportCard"
 import { DEFAULT_WIZARD_DURATION_MS } from "./eventWizard"
 import { SlotEditor } from "./SlotEditor"
@@ -57,6 +60,7 @@ export interface CleanupFormValue {
   date: Date | null
   time: Date | null
   endTime: Date | null
+  timezone: string
   bring: string[]
   slots: SlotDraft[]
   linkedReportIds: string[]
@@ -89,6 +93,7 @@ export function emptyCleanupForm(
     date: null,
     time: null,
     endTime: null,
+    timezone: viewerTimeZone(),
     bring: [],
     slots: [],
     linkedReportIds: seedLinkedReportId ? [seedLinkedReportId] : [],
@@ -100,7 +105,7 @@ export function emptyCleanupForm(
 export { mergeDateTime } from "./calendarModel"
 
 export function cleanupFormWindow(value: CleanupFormValue): SlotWindowBounds | null {
-  return eventWindowOf(value.date, value.time, value.endTime)
+  return eventWindowInZone(value.date, value.time, value.endTime, value.timezone)
 }
 
 export function hasValidEventEnd(value: CleanupFormValue): boolean {
@@ -318,6 +323,7 @@ export function CleanupForm({
   initialCenter,
   existingSlots,
   eventEndUnsaved = false,
+  scheduleUnchanged = false,
   sections = ALL_CLEANUP_FORM_SECTIONS,
   showFeedShare = false,
   feedShareBusy = false,
@@ -329,6 +335,7 @@ export function CleanupForm({
   initialCenter?: LatLng | null
   existingSlots?: readonly EventSlotDTO[]
   eventEndUnsaved?: boolean
+  scheduleUnchanged?: boolean
   currentOrganization?: OrganizationRefDTO | null
   sections?: readonly CleanupFormSection[]
   showFeedShare?: boolean
@@ -352,10 +359,11 @@ export function CleanupForm({
 
   const onChangeDate = useCallback(
     (date: Date) => {
-      const before = value.date && value.time ? mergeDateTime(value.date, value.time).getTime() : null
+      const before =
+        value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
       const time = value.time ? mergeDateTime(date, value.time) : value.time
       const endTime = value.endTime ? mergeDateTime(date, value.endTime) : value.endTime
-      const after = time ? mergeDateTime(date, time).getTime() : null
+      const after = time ? formInstantMs(date, time, value.timezone) : null
       patch({
         date,
         time,
@@ -365,13 +373,14 @@ export function CleanupForm({
           : {}),
       })
     },
-    [patch, value.date, value.endTime, value.slots, value.time],
+    [patch, value.date, value.endTime, value.slots, value.time, value.timezone],
   )
 
   const onChangeStartTime = useCallback(
     (time: Date) => {
-      const before = value.date && value.time ? mergeDateTime(value.date, value.time).getTime() : null
-      const after = time.getTime()
+      const before =
+        value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
+      const after = value.date ? formInstantMs(value.date, time, value.timezone) : null
       const offset =
         value.time && value.endTime
           ? endOffsetMs(value.time, value.endTime)
@@ -380,12 +389,12 @@ export function CleanupForm({
       patch({
         time,
         endTime,
-        ...(before !== null && before !== after
+        ...(before !== null && after !== null && before !== after
           ? { slots: shiftSlotDrafts(value.slots, after - before) }
           : {}),
       })
     },
-    [patch, value.date, value.endTime, value.slots, value.time],
+    [patch, value.date, value.endTime, value.slots, value.time, value.timezone],
   )
 
   const onPickPlace = useCallback(
@@ -459,6 +468,17 @@ export function CleanupForm({
       }),
     }
   }, [value, locale])
+
+  const scheduleErrors = useMemo(() => {
+    const found = scheduleFieldErrors(value, value.timezone)
+    const stale = (key: string | undefined) =>
+      key === undefined || (scheduleUnchanged && (key === "date_past" || key === "time_past"))
+    return {
+      date: stale(found.date) ? null : t(`error.${found.date}`),
+      time: stale(found.time) ? null : t(`error.${found.time}`),
+      endTime: found.endTime ? t(`error.${found.endTime}`) : null,
+    }
+  }, [scheduleUnchanged, t, value])
 
   const shows = (section: CleanupFormSection) => sections.includes(section)
 
@@ -537,10 +557,13 @@ export function CleanupForm({
             date={value.date}
             time={value.time}
             endTime={value.endTime}
+            timeZone={value.timezone}
+            errors={scheduleErrors}
             onDateChange={onChangeDate}
             onTimeChange={onChangeStartTime}
             onEndTimeChange={(endTime) => patch({ endTime })}
           />
+          <TimezoneField value={value.timezone} onChange={(timezone) => patch({ timezone })} />
         </View>
       ) : null}
 
@@ -566,6 +589,7 @@ export function CleanupForm({
               value={value.slots}
               onChange={(slots) => patch({ slots })}
               window={cleanupFormWindow(value)}
+              timeZone={value.timezone}
               eventEndUnsaved={eventEndUnsaved}
               {...(existingSlots ? { existing: existingSlots } : {})}
             />

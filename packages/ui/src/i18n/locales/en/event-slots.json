@@ -59,7 +59,8 @@
     "split_count_a11y": "Split the event into {{count}} equal shifts",
     "generated_title_prefix": "Shift",
     "generated_title": "{{prefix}} {{n}}",
-    "prefix_a11y": "Name prefix for generated shifts"
+    "prefix_a11y": "Name prefix for generated shifts",
+    "window_outside_event": "Shifts must fit inside the event's hours."
   },
   "error": {
     "empty_title": "Give this slot a name.",

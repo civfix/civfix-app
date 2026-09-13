@@ -59,7 +59,8 @@
     "split_count_a11y": "Die Veranstaltung in {{count}} gleiche Schichten aufteilen",
     "generated_title_prefix": "Schicht",
     "generated_title": "{{prefix}} {{n}}",
-    "prefix_a11y": "Namenspräfix für erzeugte Schichten"
+    "prefix_a11y": "Namenspräfix für erzeugte Schichten",
+    "window_outside_event": "Schichten müssen in die Zeiten der Veranstaltung passen."
   },
   "error": {
     "empty_title": "Gib dieser Aufgabe einen Namen.",

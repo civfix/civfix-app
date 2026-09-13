@@ -20,19 +20,15 @@
     "pick_end_time": "Elige una hora de fin"
   },
   "value": {
-    "end_next_day": "{{time}} (día siguiente)"
+    "end_next_day": "{{time}} (día siguiente)",
+    "next_day": "día siguiente"
   },
   "action": {
     "done": "Listo"
   },
-  "calendar": {
-    "weekday_initials": ["D", "L", "M", "X", "J", "V", "S"]
-  },
   "a11y": {
     "dismiss": "Cerrar",
     "close": "Cerrar",
-    "previous_month": "Mes anterior",
-    "next_month": "Mes siguiente",
     "date_field": "Fecha: {{value}}",
     "time_field": "Hora: {{value}}",
     "end_time_field": "Termina: {{value}}"

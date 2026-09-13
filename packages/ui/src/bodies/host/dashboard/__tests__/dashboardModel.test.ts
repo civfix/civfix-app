@@ -352,35 +352,52 @@ describe("collaborator actions", () => {
 
 describe("duplicate scheduling", () => {
   const now = new Date("2026-09-10T12:00:00.000Z")
+  const LA = "America/Los_Angeles"
+  const carrier = (wall: { year: number; month: number; day: number; hours: number; minutes: number }) =>
+    new Date(wall.year, wall.month - 1, wall.day, wall.hours, wall.minutes, 0, 0)
 
   it("keeps a future start as the default", () => {
-    expect(nextDuplicateStart("2026-09-20T17:00:00.000Z", now).toISOString()).toBe(
-      "2026-09-20T17:00:00.000Z",
+    const seeded = nextDuplicateStart("2026-09-20T17:00:00.000Z", LA, now)
+    expect(new Date(seeded.instantMs).toISOString()).toBe("2026-09-20T17:00:00.000Z")
+    expect(seeded.wallClock).toEqual({ year: 2026, month: 9, day: 20, hours: 10, minutes: 0 })
+  })
+
+  it("rolls a past start forward in whole weeks so the weekday and the EVENT-zone clock survive", () => {
+    const seeded = nextDuplicateStart("2026-08-20T17:00:00.000Z", LA, now)
+    expect(seeded.instantMs).toBeGreaterThan(now.getTime())
+    expect(seeded.wallClock.hours).toBe(10)
+    expect(seeded.wallClock.minutes).toBe(0)
+    expect((seeded.instantMs - Date.parse("2026-08-20T17:00:00.000Z")) % (7 * DAY_MS)).toBe(0)
+  })
+
+  it("holds the wall clock across a daylight-saving boundary in the EVENT's zone", () => {
+    const afterSpring = new Date("2027-03-13T19:00:00.000Z")
+    const seeded = nextDuplicateStart("2027-03-06T18:00:00.000Z", LA, afterSpring)
+    expect(seeded.instantMs).toBeGreaterThan(afterSpring.getTime())
+    expect(seeded.wallClock.hours).toBe(10)
+    expect(new Date(seeded.instantMs).toISOString()).toBe("2027-03-20T17:00:00.000Z")
+    expect(duplicateReady(carrier(seeded.wallClock), carrier(seeded.wallClock), LA, afterSpring)).toBe(
+      true,
     )
   })
 
-  it("rolls a past start forward in whole weeks so the weekday and the wall clock survive", () => {
-    const original = "2026-08-20T17:00:00.000Z"
-    const seeded = nextDuplicateStart(original, now)
-    expect(seeded.getTime()).toBeGreaterThan(now.getTime())
-    expect(seeded.getDay()).toBe(new Date(original).getDay())
-    expect(seeded.getHours()).toBe(new Date(original).getHours())
-    expect(seeded.getMinutes()).toBe(new Date(original).getMinutes())
+  it("falls back to a week out when the source start does not parse", () => {
+    const seeded = nextDuplicateStart("not-a-date", LA, now)
+    expect(seeded.instantMs).toBe(now.getTime() + 7 * DAY_MS)
   })
 
-  it("still lands in the future when the roll crosses a daylight-saving boundary", () => {
-    const acrossDst = new Date("2027-03-15T17:30:00.000Z")
-    const seeded = nextDuplicateStart("2027-03-01T18:00:00.000Z", acrossDst)
-    expect(seeded.getTime()).toBeGreaterThan(acrossDst.getTime())
-    expect(duplicateReady(seeded, seeded, acrossDst)).toBe(true)
+  it("reads the wall clock in the EVENT zone, not the viewer's, when judging the future", () => {
+    const nine = new Date(2026, 8, 10, 9, 0, 0, 0)
+    expect(duplicateReady(nine, nine, "Pacific/Honolulu", now)).toBe(true)
+    expect(duplicateReady(nine, nine, "Europe/Berlin", now)).toBe(false)
   })
 
   it("refuses a copy scheduled in the past", () => {
     const past = new Date(now.getTime() - DAY_MS)
-    expect(duplicateReady(past, past, now)).toBe(false)
+    expect(duplicateReady(past, past, LA, now)).toBe(false)
     const future = new Date(now.getTime() + DAY_MS)
-    expect(duplicateReady(future, future, now)).toBe(true)
-    expect(duplicateReady(null, future, now)).toBe(false)
+    expect(duplicateReady(future, future, LA, now)).toBe(true)
+    expect(duplicateReady(null, future, LA, now)).toBe(false)
   })
 })
 

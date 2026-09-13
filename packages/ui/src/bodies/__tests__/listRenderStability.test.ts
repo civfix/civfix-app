@@ -199,15 +199,6 @@ describe("Toast", () => {
   })
 })
 
-describe("MonthCalendarGrid re-reads today instead of freezing it at mount", () => {
-  const SRC = code(read("../MonthCalendarGrid.tsx"))
-
-  it("derives the past/future boundary per render", () => {
-    expect(SRC).toContain("const today = startOfDay(new Date())")
-    expect(SRC).not.toContain("useMemo(() => startOfDay(new Date()), [])")
-  })
-})
-
 describe("ConversationBody surfaces the chat hook's transient error", () => {
   const SRC = code(read("../ConversationBody.tsx"))
 

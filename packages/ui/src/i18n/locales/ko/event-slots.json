@@ -55,7 +55,8 @@
     "split_count_a11y": "행사를 {{count}}개의 균등한 교대로 나누기",
     "generated_title_prefix": "교대",
     "generated_title": "{{prefix}} {{n}}",
-    "prefix_a11y": "생성될 교대 이름의 접두사"
+    "prefix_a11y": "생성될 교대 이름의 접두사",
+    "window_outside_event": "교대 시간은 이벤트 시간 안에 있어야 합니다."
   },
   "error": {
     "empty_title": "역할 이름을 입력하세요.",

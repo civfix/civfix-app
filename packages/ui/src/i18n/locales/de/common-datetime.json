@@ -20,19 +20,15 @@
     "pick_end_time": "Endzeit wählen"
   },
   "value": {
-    "end_next_day": "{{time}} (nächster Tag)"
+    "end_next_day": "{{time}} (nächster Tag)",
+    "next_day": "Folgetag"
   },
   "action": {
     "done": "Fertig"
   },
-  "calendar": {
-    "weekday_initials": ["S", "M", "D", "M", "D", "F", "S"]
-  },
   "a11y": {
     "dismiss": "Schließen",
     "close": "Schließen",
-    "previous_month": "Vorheriger Monat",
-    "next_month": "Nächster Monat",
     "date_field": "Datum: {{value}}",
     "time_field": "Uhrzeit: {{value}}",
     "end_time_field": "Endet: {{value}}"

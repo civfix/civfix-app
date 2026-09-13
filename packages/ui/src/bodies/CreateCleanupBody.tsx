@@ -60,7 +60,7 @@ import {
   type CleanupFormSection,
   type CleanupFormValue,
 } from "./CleanupForm"
-import { isScheduleInFuture, resolveEventEnd } from "./calendarModel"
+import { formEndInstantMs, formInstantMs, isScheduleInFutureInZone } from "./calendarModel"
 import { buildSlotInputs } from "./eventSlotsForm"
 import {
   EVENT_WIZARD_STEPS,
@@ -99,6 +99,7 @@ function wizardDraftOf(value: CleanupFormValue): EventWizardDraft {
     date: value.date,
     time: value.time,
     endTime: value.endTime,
+    timezone: value.timezone,
     coords: value.coords,
     slots: value.slots,
   }
@@ -215,12 +216,19 @@ function ReviewSummary({
           minute: "2-digit",
         })
       : empty
-  const whenRange =
+  const startMs =
+    value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
+  const endMs =
     value.date && value.time && value.endTime
+      ? formEndInstantMs(value.date, value.time, value.endTime, value.timezone)
+      : null
+  const whenRange =
+    startMs !== null && endMs !== null
       ? timeRangeLabel(
-          mergeDateTime(value.date, value.time).toISOString(),
-          resolveEventEnd(value.date, value.time, value.endTime).toISOString(),
+          new Date(startMs).toISOString(),
+          new Date(endMs).toISOString(),
           locale,
+          value.timezone,
         )
       : null
   const addr = value.coords ? reverseLabelText(label.data, value.coords) : null
@@ -412,18 +420,20 @@ function HostForm({
     isCleanupFormComplete(form) &&
     form.date != null &&
     form.time != null &&
-    isScheduleInFuture(form.date, form.time) &&
+    isScheduleInFutureInZone(form.date, form.time, form.timezone) &&
     !create.isPending
 
   const scheduledAt = useMemo(() => {
     if (!form.date || !form.time) return null
-    return mergeDateTime(form.date, form.time)
-  }, [form.date, form.time])
+    const at = formInstantMs(form.date, form.time, form.timezone)
+    return at === null ? null : new Date(at)
+  }, [form.date, form.time, form.timezone])
 
   const endsAt = useMemo(() => {
     if (!form.date || !form.time || !form.endTime) return null
-    return resolveEventEnd(form.date, form.time, form.endTime)
-  }, [form.date, form.time, form.endTime])
+    const at = formEndInstantMs(form.date, form.time, form.endTime, form.timezone)
+    return at === null ? null : new Date(at)
+  }, [form.date, form.endTime, form.time, form.timezone])
 
   const onPublish = useCallback(() => {
     if (!canPublish || !form.coords || !scheduledAt || !endsAt) return
@@ -441,6 +451,7 @@ function HostForm({
         lng: form.coords.lng,
         scheduledAt: scheduledAt.toISOString(),
         endsAt: endsAt.toISOString(),
+        timezone: form.timezone,
         ...(spotLine.length > 0 ? { address: spotLine } : {}),
         ...(form.description.trim().length > 0 ? { description: form.description.trim() } : {}),
         ...(form.bring.length > 0 ? { bring: form.bring } : {}),

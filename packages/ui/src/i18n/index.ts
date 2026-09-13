@@ -22,6 +22,8 @@ export type { LocaleContextValue } from "./LocaleContext"
 export { useRelativeTime } from "./useRelativeTime"
 export type { UseRelativeTime } from "./useRelativeTime"
 
+export { useViewerTimeZone, viewerTimeZone } from "./useViewerTimeZone"
+
 export { resolveLocale, supportedLocales, FALLBACK_LOCALE } from "./resolveLocale"
 export { resolveActiveLocale } from "./resolveActiveLocale"
 export type { LocaleSources } from "./resolveActiveLocale"

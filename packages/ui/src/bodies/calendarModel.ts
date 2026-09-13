@@ -1,4 +1,16 @@
-import { MIN_SLOT_DURATION_MINUTES } from "@civfix/shared"
+import {
+  DEFAULT_EVENT_DURATION_MINUTES,
+  MAX_EVENT_DURATION_MINUTES,
+  MIN_EVENT_DURATION_MINUTES,
+  MIN_SLOT_DURATION_MINUTES,
+} from "@civfix/shared"
+import {
+  wallClockExistsInZone,
+  wallClockInZone,
+  wallClockToInstantMs,
+  zoneShortName,
+  type WallClock,
+} from "@civfix/shared/datetime"
 
 export type WeekStart = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
@@ -115,14 +127,27 @@ export function isScheduleInFuture(date: Date, time: Date, now: Date = new Date(
   return mergeDateTime(date, time).getTime() > now.getTime() - PAST_SCHEDULE_GRACE_MS
 }
 
-export function isScheduleUntouched(originalIso: string, date: Date, time: Date): boolean {
+export function isScheduleUntouched(
+  originalIso: string,
+  date: Date,
+  time: Date,
+  timeZone?: string,
+): boolean {
   const original = new Date(originalIso).getTime()
-  return date.getTime() === original && time.getTime() === original
+  if (Number.isNaN(original)) return false
+  if (timeZone === undefined) return date.getTime() === original && time.getTime() === original
+  return formInstantMs(date, time, timeZone) === Math.floor(original / 60_000) * 60_000
 }
 
 export const MIN_SLOT_DURATION_MS = MIN_SLOT_DURATION_MINUTES * 60_000
 
-export const MAX_EVENT_DURATION_MS = 24 * 3_600_000
+export const MIN_EVENT_DURATION_MS = MIN_EVENT_DURATION_MINUTES * 60_000
+
+export const MAX_EVENT_DURATION_MS = MAX_EVENT_DURATION_MINUTES * 60_000
+
+export const DEFAULT_EVENT_DURATION_MS = DEFAULT_EVENT_DURATION_MINUTES * 60_000
+
+const DAY_MS = 24 * 3_600_000
 
 export const DURATION_CHIP_HOURS = [1, 2, 3, 4] as const
 
@@ -137,8 +162,7 @@ function clockMs(time: Date): number {
 }
 
 function offsetFromClocks(startClock: number, endClock: number): number {
-  return (((endClock - startClock) % MAX_EVENT_DURATION_MS) + MAX_EVENT_DURATION_MS) %
-    MAX_EVENT_DURATION_MS
+  return (((endClock - startClock) % DAY_MS) + DAY_MS) % DAY_MS
 }
 
 export function endOffsetMs(start: Date, end: Date): number {
@@ -170,7 +194,7 @@ export function endTimeSelectable(
 ): boolean {
   if (!date || !start) return false
   const offset = offsetFromClocks(clockMs(start), clockOf(hours, minutes))
-  if (offset < MIN_SLOT_DURATION_MS) return false
+  if (offset < MIN_EVENT_DURATION_MS) return false
   const day = new Date(date)
   if (clockOf(hours, minutes) <= clockMs(start)) day.setDate(day.getDate() + 1)
   return wallClockExistsOn(day, hours, minutes)
@@ -201,4 +225,156 @@ export function eventWindowOf(
     start: mergeDateTime(date, time),
     end: endTime ? resolveEventEnd(date, time, endTime) : null,
   }
+}
+
+export function formWallClock(date: Date, time: Date): WallClock {
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    hours: time.getHours(),
+    minutes: time.getMinutes(),
+  }
+}
+
+export function wallClockToFormDate(wallClock: WallClock): Date {
+  return new Date(
+    wallClock.year,
+    wallClock.month - 1,
+    wallClock.day,
+    wallClock.hours,
+    wallClock.minutes,
+    0,
+    0,
+  )
+}
+
+export function addWallClockDays(wallClock: WallClock, days: number): WallClock {
+  const anchor = new Date(Date.UTC(wallClock.year, wallClock.month - 1, wallClock.day, 12))
+  const moved = new Date(anchor.getTime() + days * DAY_MS)
+  return {
+    year: moved.getUTCFullYear(),
+    month: moved.getUTCMonth() + 1,
+    day: moved.getUTCDate(),
+    hours: wallClock.hours,
+    minutes: wallClock.minutes,
+  }
+}
+
+export function formInstantMs(date: Date, time: Date, timeZone: string): number | null {
+  return wallClockToInstantMs(formWallClock(date, time), timeZone)
+}
+
+export function formEndInstantMs(
+  date: Date,
+  start: Date,
+  end: Date,
+  timeZone: string,
+): number | null {
+  const day = new Date(date)
+  if (endsNextDay(start, end)) day.setDate(day.getDate() + 1)
+  return formInstantMs(day, end, timeZone)
+}
+
+export function isScheduleInFutureInZone(
+  date: Date,
+  time: Date,
+  timeZone: string,
+  now: number = Date.now(),
+): boolean {
+  const instant = formInstantMs(date, time, timeZone)
+  return instant !== null && instant > now - PAST_SCHEDULE_GRACE_MS
+}
+
+export function todayInZone(timeZone: string, now: number = Date.now()): Date {
+  const wall = wallClockInZone(now, timeZone)
+  return wallClockToFormDate({ ...wall, hours: 0, minutes: 0 })
+}
+
+export function nowClockInZone(timeZone: string, now: number = Date.now()): Date {
+  return wallClockToFormDate(wallClockInZone(now, timeZone))
+}
+
+export function eventWindowInZone(
+  date: Date | null,
+  time: Date | null,
+  endTime: Date | null,
+  timeZone: string,
+): { start: Date; end: Date | null } | null {
+  if (!date || !time) return null
+  const start = formInstantMs(date, time, timeZone)
+  if (start === null) return null
+  const end = endTime ? formEndInstantMs(date, time, endTime, timeZone) : null
+  return { start: new Date(start), end: end === null ? null : new Date(end) }
+}
+
+export function uses24HourClock(locale: string): boolean {
+  try {
+    const resolved = new Intl.DateTimeFormat(locale, { hour: "numeric" }).resolvedOptions()
+    if (typeof resolved.hour12 === "boolean") return !resolved.hour12
+    return resolved.hourCycle === "h23" || resolved.hourCycle === "h24"
+  } catch {
+    return false
+  }
+}
+
+export function zoneDisplayName(
+  timeZone: string,
+  locale: string,
+  now: number = Date.now(),
+): string {
+  const short = zoneShortName(now, timeZone, locale)
+  let long = ""
+  try {
+    const parts = new Intl.DateTimeFormat(locale, { timeZone, timeZoneName: "long" }).formatToParts(
+      new Date(now),
+    )
+    long = parts.find((p) => p.type === "timeZoneName")?.value ?? ""
+  } catch {
+    long = ""
+  }
+  if (long === "") return short === "" ? timeZone : short
+  if (short === "" || short === long) return long
+  return `${long} (${short})`
+}
+
+export type ScheduleFieldErrorKey = "date_past" | "time_past" | "end_too_soon" | "time_dst_gap"
+
+export interface ScheduleFieldErrors {
+  date?: ScheduleFieldErrorKey
+  time?: ScheduleFieldErrorKey
+  endTime?: ScheduleFieldErrorKey
+}
+
+export interface ScheduleFieldInput {
+  date: Date | null
+  time: Date | null
+  endTime: Date | null
+}
+
+export function scheduleFieldErrors(
+  value: ScheduleFieldInput,
+  timeZone: string,
+  now: number = Date.now(),
+): ScheduleFieldErrors {
+  const errors: ScheduleFieldErrors = {}
+  const { date, time, endTime } = value
+  if (!date) return errors
+
+  if (startOfDay(date).getTime() < todayInZone(timeZone, now).getTime()) errors.date = "date_past"
+
+  if (time) {
+    if (!wallClockExistsInZone(formWallClock(date, time), timeZone)) errors.time = "time_dst_gap"
+    else if (!isScheduleInFutureInZone(date, time, timeZone, now)) errors.time = "time_past"
+  }
+
+  if (time && endTime) {
+    const day = new Date(date)
+    if (endsNextDay(time, endTime)) day.setDate(day.getDate() + 1)
+    if (endOffsetMs(time, endTime) < MIN_EVENT_DURATION_MS) errors.endTime = "end_too_soon"
+    else if (!wallClockExistsInZone(formWallClock(day, endTime), timeZone))
+      errors.endTime = "time_dst_gap"
+  }
+
+  return errors
 }

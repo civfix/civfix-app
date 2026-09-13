@@ -78,6 +78,7 @@ export interface SlotEditorProps {
   onChange: (next: SlotDraft[]) => void
   existing?: readonly EventSlotDTO[]
   window?: SlotWindowBounds | null
+  timeZone: string
   eventEndUnsaved?: boolean
 }
 
@@ -87,6 +88,7 @@ function SlotCard({
   total,
   claimed,
   window,
+  timeZone,
   eventEndUnsaved,
   onPatch,
   onRemove,
@@ -97,6 +99,7 @@ function SlotCard({
   total: number
   claimed: number | undefined
   window: SlotWindowBounds | null
+  timeZone: string
   eventEndUnsaved: boolean
   onPatch: (key: string, patch: Partial<SlotDraft>) => void
   onRemove: (key: string) => void
@@ -111,7 +114,7 @@ function SlotCard({
   const error = slotDraftError(draft, claimed, window)
   const eventEnd = window?.end ?? null
   const timed = draft.startsAt !== null && draft.endsAt !== null
-  const eventRange = window && eventEnd ? timeRangeLabel(window.start.toISOString(), eventEnd.toISOString(), locale) : ""
+  const eventRange = window && eventEnd ? timeRangeLabel(window.start.toISOString(), eventEnd.toISOString(), locale, timeZone) : ""
   const onWholeEvent = () => onPatch(draft.key, { startsAt: null, endsAt: null })
   const onSetTime = () => {
     if (!window || !eventEnd || timed) return
@@ -291,7 +294,7 @@ function SlotCard({
         ) : eventEndUnsaved && timed ? (
           <Text style={styles.timeHint}>
             {t("editor.time_stores_event_end", {
-              time: timeLabel(eventEnd.toISOString(), locale),
+              time: timeLabel(eventEnd.toISOString(), locale, timeZone),
             })}
           </Text>
         ) : null}
@@ -302,6 +305,7 @@ function SlotCard({
             eventEnd={eventEnd}
             startsAt={draft.startsAt}
             endsAt={draft.endsAt}
+            timeZone={timeZone}
             onChange={(next) => onPatch(draft.key, next)}
           />
         ) : null}
@@ -326,6 +330,7 @@ export function SlotEditor({
   onChange,
   existing = [],
   window = null,
+  timeZone,
   eventEndUnsaved = false,
 }: SlotEditorProps) {
   const styles = useStyles()
@@ -458,6 +463,7 @@ export function SlotEditor({
           total={value.length}
           claimed={draft.id ? claimedById.get(draft.id) : undefined}
           window={window}
+          timeZone={timeZone}
           eventEndUnsaved={eventEndUnsaved}
           onPatch={onPatch}
           onRemove={onRemove}

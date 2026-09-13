@@ -1,4 +1,6 @@
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync, statSync } from "node:fs"
+import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
 /**
@@ -21,8 +23,22 @@ const SOURCES = {
   "SlotWindowPicker.tsx": readFileSync(new URL("../SlotWindowPicker.tsx", import.meta.url), "utf8"),
 }
 
+const SCROLLER_SOURCES = {
+  ...SOURCES,
+  "InlineDateTimePicker.web.tsx": readFileSync(
+    new URL("../InlineDateTimePicker.web.tsx", import.meta.url),
+    "utf8",
+  ),
+  "InlineDateTimePicker.native.tsx": readFileSync(
+    new URL("../InlineDateTimePicker.native.tsx", import.meta.url),
+    "utf8",
+  ),
+  "DateTimeFieldRow.tsx": readFileSync(new URL("../DateTimeFieldRow.tsx", import.meta.url), "utf8"),
+  "TimezoneField.tsx": readFileSync(new URL("../TimezoneField.tsx", import.meta.url), "utf8"),
+}
+
 describe("slot surfaces render inside their host's scroller", () => {
-  for (const [name, source] of Object.entries(SOURCES)) {
+  for (const [name, source] of Object.entries(SCROLLER_SOURCES)) {
     it(`${name} imports no Modal, FlatList or ScrollView`, () => {
       const imports = source.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
       expect(imports).not.toMatch(/\bModal\b/)
@@ -37,6 +53,47 @@ describe("slot surfaces render inside their host's scroller", () => {
     const source = SOURCES["EventSlotsBlock.tsx"]
     expect(source).toMatch(/usePopScale/)
     expect(source).not.toMatch(/react-native-reanimated/)
+  })
+})
+
+describe("the date/time picker seam stays a seam", () => {
+  const bodiesDir = fileURLToPath(new URL("..", import.meta.url))
+
+  function sourceFiles(dir: string): string[] {
+    const out: string[] = []
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry)
+      if (statSync(full).isDirectory()) {
+        if (entry !== "__tests__") out.push(...sourceFiles(full))
+      } else if (entry.endsWith(".ts") || entry.endsWith(".tsx")) {
+        out.push(full)
+      }
+    }
+    return out
+  }
+
+  const files = sourceFiles(bodiesDir)
+
+  it("keeps the base file to the two re-export lines Metro needs", () => {
+    const base = readFileSync(new URL("../InlineDateTimePicker.tsx", import.meta.url), "utf8")
+    const lines = base.trim().split("\n")
+    expect(lines).toHaveLength(2)
+    expect(lines[0]).toContain('from "./InlineDateTimePicker.web"')
+    expect(lines[1]).toContain('from "./InlineDateTimePicker.types"')
+  })
+
+  it("names the optional native picker peer in the .native seam and nowhere else, so web never resolves it", () => {
+    const importers = files
+      .filter((file) => readFileSync(file, "utf8").includes("@react-native-community/datetimepicker"))
+      .map((file) => file.slice(bodiesDir.length))
+    expect(importers).toEqual(["InlineDateTimePicker.native.tsx"])
+  })
+
+  it("leaves no reference to the retired month grid", () => {
+    const referrers = files
+      .filter((file) => readFileSync(file, "utf8").includes("MonthCalendarGrid"))
+      .map((file) => file.slice(bodiesDir.length))
+    expect(referrers).toEqual([])
   })
 })
 

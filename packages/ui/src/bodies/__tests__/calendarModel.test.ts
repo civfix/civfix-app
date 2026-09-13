@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
+  addWallClockDays,
   DURATION_CHIP_HOURS,
   durationChipFor,
   endOffsetMs,
@@ -7,15 +8,22 @@ import {
   endTimeAfter,
   endTimeSelectable,
   eventDurationMs,
+  eventWindowInZone,
   eventWindowOf,
+  formEndInstantMs,
+  formInstantMs,
+  isScheduleUntouched,
   MAX_EVENT_DURATION_MS,
+  nowClockInZone,
   mergeDateTime,
   monthGrid,
   resolveEventEnd,
   rotateWeekdays,
   sameDay,
+  scheduleFieldErrors,
   startOfDay,
   timeSlots,
+  todayInZone,
   weekStartForLocale,
 } from "../calendarModel"
 
@@ -219,5 +227,93 @@ describe("eventWindowOf", () => {
     expect(eventWindowOf(null, nineAm, elevenAm)).toBeNull()
     expect(eventWindowOf(day, null, elevenAm)).toBeNull()
     expect(eventWindowOf(day, nineAm, null)?.end).toBeNull()
+  })
+})
+
+describe("the form's wall clocks resolve in the EVENT's zone", () => {
+  const LA = "America/Los_Angeles"
+  const NY = "America/New_York"
+
+  const day = (y: number, m: number, d: number) => new Date(y, m - 1, d, 12, 0, 0, 0)
+  const clock = (h: number, mi = 0) => new Date(2026, 0, 1, h, mi, 0, 0)
+
+  it("reads the same typed clock as a different instant in a different zone", () => {
+    const at = day(2026, 9, 5)
+    expect(new Date(formInstantMs(at, clock(13), LA) ?? 0).toISOString()).toBe(
+      "2026-09-05T20:00:00.000Z",
+    )
+    expect(new Date(formInstantMs(at, clock(13), NY) ?? 0).toISOString()).toBe(
+      "2026-09-05T17:00:00.000Z",
+    )
+  })
+
+  it("rolls an end clock at or before the start onto the next day in the event zone", () => {
+    const at = day(2026, 9, 5)
+    const end = formEndInstantMs(at, clock(22), clock(2), NY)
+    expect(new Date(end ?? 0).toISOString()).toBe("2026-09-06T06:00:00.000Z")
+  })
+
+  it("refuses a wall clock that the spring-forward jump deletes", () => {
+    const springForward = day(2026, 3, 8)
+    expect(formInstantMs(springForward, clock(2, 30), LA)).toBeNull()
+    expect(
+      scheduleFieldErrors(
+        { date: springForward, time: clock(2, 30), endTime: null },
+        LA,
+        Date.parse("2026-03-01T00:00:00.000Z"),
+      ),
+    ).toEqual({ time: "time_dst_gap" })
+  })
+
+  it("flags a past date and a passed clock against the EVENT zone's today", () => {
+    const now = Date.parse("2026-09-05T20:00:00.000Z")
+    expect(
+      scheduleFieldErrors({ date: day(2026, 9, 4), time: clock(13), endTime: null }, LA, now).date,
+    ).toBe("date_past")
+    expect(
+      scheduleFieldErrors({ date: day(2026, 9, 5), time: clock(9), endTime: null }, LA, now).time,
+    ).toBe("time_past")
+    expect(
+      scheduleFieldErrors({ date: day(2026, 9, 5), time: clock(14), endTime: null }, LA, now),
+    ).toEqual({})
+  })
+
+  it("flags an end that lands under the 15-minute floor", () => {
+    const now = Date.parse("2026-09-05T00:00:00.000Z")
+    const at = day(2026, 9, 5)
+    expect(
+      scheduleFieldErrors({ date: at, time: clock(13), endTime: clock(13, 10) }, LA, now).endTime,
+    ).toBe("end_too_soon")
+    expect(
+      scheduleFieldErrors({ date: at, time: clock(13), endTime: clock(16) }, LA, now).endTime,
+    ).toBeUndefined()
+  })
+
+  it("puts today and now on the event zone's calendar, not the device's", () => {
+    const now = Date.parse("2026-09-06T04:00:00.000Z")
+    expect(todayInZone(LA, now).getDate()).toBe(5)
+    expect(todayInZone(NY, now).getDate()).toBe(6)
+    expect(nowClockInZone(NY, now).getHours()).toBe(0)
+  })
+
+  it("adds calendar days to a wall clock without letting an offset shift drag the hour", () => {
+    expect(addWallClockDays({ year: 2026, month: 3, day: 6, hours: 10, minutes: 30 }, 7)).toEqual({
+      year: 2026,
+      month: 3,
+      day: 13,
+      hours: 10,
+      minutes: 30,
+    })
+  })
+
+  it("carries the event window's instants in the event zone", () => {
+    const window = eventWindowInZone(day(2026, 9, 5), clock(13), clock(16), NY)
+    expect(window?.start.toISOString()).toBe("2026-09-05T17:00:00.000Z")
+    expect(window?.end?.toISOString()).toBe("2026-09-05T20:00:00.000Z")
+  })
+
+  it("compares an edited schedule against the stored instant, not the device clock", () => {
+    expect(isScheduleUntouched("2026-09-05T17:00:00.000Z", day(2026, 9, 5), clock(13), NY)).toBe(true)
+    expect(isScheduleUntouched("2026-09-05T17:00:00.000Z", day(2026, 9, 5), clock(14), NY)).toBe(false)
   })
 })

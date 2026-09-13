@@ -62,6 +62,7 @@ function typedForm(over: Partial<CleanupFormValue> = {}): CleanupFormValue {
     date: null,
     time: null,
     endTime: null,
+    timezone: "America/Los_Angeles",
     bring: ["gloves"],
     // Signup slots ride in the draft exactly like `bring`: plain strings plus a stable local key.
     slots: [
