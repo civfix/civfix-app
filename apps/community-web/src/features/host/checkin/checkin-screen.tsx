@@ -75,8 +75,8 @@ export function CheckinScreen() {
   const qc = useQueryClient()
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
-  const format = useConsoleFormat()
-  const { eventId, can } = useConsoleEvent()
+  const { eventId, event, can } = useConsoleEvent()
+  const format = useConsoleFormat(event?.timezone ?? undefined)
 
   const counters = useHostCounters(eventId)
   const countersGate = useGate(counters)

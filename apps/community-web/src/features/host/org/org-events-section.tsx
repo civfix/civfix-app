@@ -83,7 +83,7 @@ export function OrgEventsSection() {
               ident={row.referenceCode ?? undefined}
               sub={
                 <span className="flex flex-wrap items-center gap-token-2">
-                  <span>{format.dateTime(row.startsAt)}</span>
+                  <span>{format.whenLabel(row.startsAt, row.timezone ?? undefined)}</span>
                   <span>
                     {tp("list.counts", {
                       registered: format.number(row.registeredCount),

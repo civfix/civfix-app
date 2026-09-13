@@ -14,9 +14,9 @@ import { ConsoleLink } from "../layout/console-link"
 import { useConsoleEvent } from "../console-context"
 import { useConsoleFormat } from "../format"
 
-function ArrivalsSummary({ eventId }: { eventId: string }) {
+function ArrivalsSummary({ eventId, timeZone }: { eventId: string; timeZone?: string }) {
   const { t } = useT("host-event")
-  const format = useConsoleFormat()
+  const format = useConsoleFormat(timeZone)
   const counters = useHostCounters(eventId)
   const gate = useGate(counters)
   const data = counters.data
@@ -68,8 +68,10 @@ function ArrivalsSummary({ eventId }: { eventId: string }) {
 
 export function OverviewScreen() {
   const { t } = useT("host-event")
-  const format = useConsoleFormat()
   const { eventId, event, can } = useConsoleEvent()
+  const eventTimeZone = event?.timezone ?? undefined
+  const format = useConsoleFormat(eventTimeZone)
+  const zoneShort = event?.scheduledAt ? format.zoneLabel(event.scheduledAt) : null
   const ticketTypes = useEventTicketTypes(eventId)
   const ticketsGate = useGate(ticketTypes)
   const types = ticketTypes.data ?? []
@@ -80,7 +82,7 @@ export function OverviewScreen() {
         <h2 id="overview-counters" className="sr-only">
           {t("counters.heading")}
         </h2>
-        <ArrivalsSummary eventId={eventId} />
+        <ArrivalsSummary eventId={eventId} {...(eventTimeZone ? { timeZone: eventTimeZone } : {})} />
       </section>
 
       <section
@@ -100,12 +102,15 @@ export function OverviewScreen() {
               <dd className="text-token-14 font-semibold text-console-ink">
                 {format.dateTime(event?.scheduledAt ?? new Date().toISOString())}
                 {event?.endsAt ? ` – ${format.time(event.endsAt)}` : ""}
+                {zoneShort ? ` ${zoneShort}` : ""}
               </dd>
             </div>
-            {event?.timezone ? (
+            {event?.timezone && zoneShort ? (
               <div className="flex flex-wrap items-baseline justify-between gap-token-2">
                 <dt className="text-token-13 text-console-ink-3">{t("details.timezone")}</dt>
-                <dd className="text-token-14 text-console-ink-2">{event.timezone}</dd>
+                <dd className="text-token-14 text-console-ink-2">
+                  {`${zoneShort} (${event.timezone})`}
+                </dd>
               </div>
             ) : null}
             <div className="flex flex-wrap items-baseline justify-between gap-token-2">

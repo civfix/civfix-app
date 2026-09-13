@@ -1,21 +1,36 @@
 import React from "react"
 import { View, StyleSheet } from "react-native"
+import { isValidTimeZone, wallClockInZone } from "@civfix/shared/datetime"
 import { makeThemedStyles, radius, useTheme } from "../theme"
 import { Text } from "../typography"
 import { useLocale } from "../i18n"
 
-function dateParts(iso: string, locale: string): { weekday: string; day: string } {
+function dateParts(
+  iso: string,
+  locale: string,
+  timeZone: string | undefined,
+): { weekday: string; day: string } {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return { weekday: "--", day: "--" }
-  const weekday = new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d)
-  return { weekday: weekday.toUpperCase(), day: String(d.getDate()) }
+  const zone = timeZone !== undefined && isValidTimeZone(timeZone) ? timeZone : undefined
+  const weekday = new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: zone }).format(d)
+  const day = zone === undefined ? d.getDate() : wallClockInZone(d.getTime(), zone).day
+  return { weekday: weekday.toUpperCase(), day: String(day) }
 }
 
-export function DateBadge({ iso, size = 56 }: { iso: string; size?: number }) {
+export function DateBadge({
+  iso,
+  size = 56,
+  timeZone,
+}: {
+  iso: string
+  size?: number
+  timeZone?: string
+}) {
   const styles = useStyles()
   const t = useTheme()
   const { locale } = useLocale()
-  const { weekday, day } = dateParts(iso, locale)
+  const { weekday, day } = dateParts(iso, locale, timeZone)
   const compact = size <= 48
   return (
     <View

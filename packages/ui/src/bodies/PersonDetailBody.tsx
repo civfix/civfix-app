@@ -5,7 +5,7 @@ import {
   type CleanupDTO,
   type ContentReportReason,
 } from "@civfix/shared"
-import { eventChip, dowLabel, timeLabel } from "@civfix/shared/datetime"
+import { eventChip } from "@civfix/shared/datetime"
 import { makeThemedStyles, radius, useTheme, wash, focusRingProps, useLayoutMode, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
@@ -34,7 +34,7 @@ import {
 } from "../data"
 import { useUserPosts } from "../data/hooks/posts"
 import { useNavStore } from "../nav"
-import { useT, useRelativeTime, useLocale } from "../i18n"
+import { useT, useEventWhen, useLocale } from "../i18n"
 import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider, useScrollHost } from "../shell/ScrollHost"
 import {
@@ -65,9 +65,9 @@ function MiniEventRow({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("profile-person")
-  const { weekdays } = useRelativeTime()
   const { locale } = useLocale()
-  const { day, month } = eventChip(event.scheduledAt, locale)
+  const when = useEventWhen(event)
+  const { day, month } = eventChip(event.scheduledAt, locale, when.timeZone)
   return (
     <Pressable
       onPress={onPress}
@@ -90,7 +90,7 @@ function MiniEventRow({
           </Text>
           <MetaDot color={th.colors.textSubtle} style={styles.miniSubDot} />
           <Text style={[styles.miniSub, styles.miniSubWhen]} numberOfLines={1}>
-            {dowLabel(event.scheduledAt, weekdays)} {timeLabel(event.scheduledAt, locale)}
+            {when.dow} {when.timeWithZone}
           </Text>
         </View>
       </View>

@@ -62,11 +62,13 @@ export function lastCheckedInSeat(row: EventRegistrationDTO): string | null {
 export function slotMetaLine(
   slot: EventSlotDTO | undefined,
   locale: string,
+  timeZone?: string,
 ): string | null {
   if (!slot) return null
   const window = slotWindow(slot)
   if (window === null) return slot.title
-  return `${slot.title} · ${timeRangeLabel(window.start.toISOString(), window.end.toISOString(), locale)}`
+  const range = timeRangeLabel(window.start.toISOString(), window.end.toISOString(), locale, timeZone)
+  return `${slot.title} · ${range}`
 }
 
 const RosterRowView = React.memo(function RosterRowView({
@@ -74,6 +76,7 @@ const RosterRowView = React.memo(function RosterRowView({
   canCheckIn,
   pending,
   slot,
+  timeZone,
   onCheckIn,
   onUndo,
 }: {
@@ -81,6 +84,7 @@ const RosterRowView = React.memo(function RosterRowView({
   canCheckIn: boolean
   pending: boolean
   slot: EventSlotDTO | undefined
+  timeZone: string | undefined
   onCheckIn: (seatId: string) => void
   onUndo: (seatId: string) => void
 }) {
@@ -92,7 +96,7 @@ const RosterRowView = React.memo(function RosterRowView({
   const checkedIn = row.checkedInAt != null
   const nextSeat = nextCheckinSeat(row)
   const undoSeat = lastCheckedInSeat(row)
-  const slotLine = slotMetaLine(slot, locale)
+  const slotLine = slotMetaLine(slot, locale, timeZone)
   const meta = [
     slotLine,
     row.ticketTypeName ?? null,
@@ -249,6 +253,7 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
               canCheckIn={canCheckIn}
               pending={pending}
               slot={row.slot ? slotById.get(row.slot.id) : undefined}
+              timeZone={cleanup.data?.timezone ?? undefined}
               onCheckIn={onCheckIn}
               onUndo={onUndo}
             />

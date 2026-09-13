@@ -242,6 +242,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
                 <LinkedEventCard
                   event={post.event}
                   layout="list"
+                  timeZone={post.event.timezone ?? undefined}
                   onPress={() => openEntry({ kind: "cleanup", id: post.event!.id })}
                 />
               </View>

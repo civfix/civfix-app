@@ -12,6 +12,8 @@ export function makeI18nMock() {
   return {
     useT: () => ({ t, i18n: { language: "en", changeLanguage: () => Promise.resolve(t) } }),
     useLocale: () => ({ locale: "en" as const, setLocale: () => {} }),
+    useViewerTimeZone: () => "UTC",
+    viewerTimeZone: () => "UTC",
     useRelativeTime: () => ({
       relative: () => "now",
       weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],

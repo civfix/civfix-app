@@ -6,7 +6,7 @@ import type {
   ReportPinDTO,
   UserSearchResultDTO,
 } from "@civfix/shared"
-import { dowLabel, eventChip, timeLabel } from "@civfix/shared/datetime"
+import { eventChip } from "@civfix/shared/datetime"
 import { announce } from "../announce"
 import { focusRingProps, makeThemedStyles, useTheme, useLayoutMode, webHover, webTransition, headingLevel } from "../theme"
 import {
@@ -30,7 +30,7 @@ import {
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "../data/hooks/useDebouncedValue"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
-import { useLocale, useRelativeTime, useT } from "../i18n"
+import { useEventWhen, useLocale, useT } from "../i18n"
 import { useRowHover } from "./rowHover"
 import { pushCleanup } from "./navHelpers"
 import { ReportRowView } from "./ReportRow"
@@ -90,13 +90,9 @@ export function EventHitRow({ cleanup }: { cleanup: CleanupDTO }) {
   const expanded = useLayoutMode() === "expanded"
   const { hovered, hoverProps } = useRowHover()
   const { locale } = useLocale()
-  const { weekdays } = useRelativeTime()
-  const { day, month } = eventChip(cleanup.scheduledAt, locale)
-  const eventMeta = [
-    dowLabel(cleanup.scheduledAt, weekdays),
-    timeLabel(cleanup.scheduledAt, locale),
-    cleanup.address?.trim(),
-  ]
+  const when = useEventWhen(cleanup)
+  const { day, month } = eventChip(cleanup.scheduledAt, locale, when.timeZone)
+  const eventMeta = [when.dow, when.timeWithZone, cleanup.address?.trim()]
     .filter(Boolean)
     .join(" · ")
   return (

@@ -39,6 +39,8 @@ export interface HostInsightsPanelsProps {
   slots: readonly EventSlotDTO[]
   now: number
   stale: boolean
+  /** The EVENT's IANA zone; the live "as of" clock renders in it. Absent = the viewer's zone. */
+  timeZone?: string
 }
 
 function useTileText(insights: EventInsights) {
@@ -72,10 +74,12 @@ function HeroPanel({
   insights,
   phase,
   stale,
+  timeZone,
 }: {
   insights: EventInsights
   phase: EventPhase
   stale: boolean
+  timeZone: string | undefined
 }) {
   const { t } = useT("host-mode")
   const { locale } = useLocale()
@@ -93,7 +97,7 @@ function HeroPanel({
         ? undefined
         : t("hero.rate", { rate: formatRate(rate, locale) ?? "" })
       : phase === "live"
-        ? t("hero.as_of", { when: timeLabel(insights.generatedAt, locale) })
+        ? t("hero.as_of", { when: timeLabel(insights.generatedAt, locale, timeZone) })
         : undefined
   const caption = stale ? t("hero.stale") : fresh
 
@@ -297,6 +301,7 @@ export function HostInsightsPanels({
   slots,
   now,
   stale,
+  timeZone,
 }: HostInsightsPanelsProps) {
   const styles = useStyles()
   const { t } = useT("host-mode")
@@ -306,7 +311,7 @@ export function HostInsightsPanels({
 
   return (
     <View style={styles.sections}>
-      <HeroPanel insights={insights} phase={phase} stale={stale} />
+      <HeroPanel insights={insights} phase={phase} stale={stale} timeZone={timeZone} />
       {panels.shifts ? <ShiftsPanel slots={slots} phase={phase} now={now} /> : null}
       {panels.tiles && tiles.length > 0 ? (
         <StatTileRow columns={columns}>

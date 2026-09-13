@@ -90,7 +90,6 @@ const BOTTOM_TAB_ORDER: readonly EventSection[] = [
 export function EventRouter({ route }: { route: ConsoleRoute }) {
   const { t } = useT("host-event")
   const { t: tc } = useT("host-common")
-  const format = useConsoleFormat()
   const { go } = useConsoleNavigation()
 
   const eventId =
@@ -104,6 +103,7 @@ export function EventRouter({ route }: { route: ConsoleRoute }) {
   const cleanup = useCleanup(eventId)
   const gate = useGate(cleanup)
   const event = cleanup.data ?? null
+  const format = useConsoleFormat(event?.timezone ?? undefined)
   const viewerId = useAuthState().user?.id ?? null
   const standing = useMemo(() => cleanupHostStanding(event, viewerId), [event, viewerId])
   const section = railSectionForRoute(route)
@@ -152,7 +152,7 @@ export function EventRouter({ route }: { route: ConsoleRoute }) {
       subtitle={
         event ? (
           <>
-            <span>{format.dateTime(event.scheduledAt)}</span>
+            <span>{format.whenLabel(event.scheduledAt)}</span>
             <Chip kind="event-status" value={event.status} size="sm" />
             <Chip kind="event-visibility" value={event.visibility} size="sm" />
             {event.registrationState ? (
