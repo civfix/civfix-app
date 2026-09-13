@@ -366,6 +366,7 @@ export function claimEventSlotMutationOptions(
       patchCleanupInFlatLists(qc, cleanupId, { joined: res.joined, going: res.going })
       invalidateCleanupLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(cleanupId) })
+      void qc.invalidateQueries({ queryKey: queryKeys.eventInsights(cleanupId) })
     },
   }
 }

@@ -99,6 +99,7 @@
     "meta_showed_up": "{{registered}}명 중 {{checkedIn}}명 참석",
     "meta_hours": "{{hours}}시간",
     "meta_hours_not_logged": "시간 미기록",
+    "meta_cancelled": "취소됨",
     "meta_signed_up": "{{count}}명 신청"
   },
   "first_event": {

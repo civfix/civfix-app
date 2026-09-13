@@ -299,13 +299,18 @@ export function firstEventState(
 export type PastHoursToken = "hours" | "not_logged"
 
 export interface PastRowMeta {
+  cancelled: boolean
   showedUp: boolean
   hoursToken: PastHoursToken | null
 }
 
 export function pastRowMeta(event: HostedEventDTO): PastRowMeta {
+  if (event.status === "cancelled") {
+    return { cancelled: true, showedUp: false, hoursToken: null }
+  }
   const credited = event.hoursCredited ?? 0
   return {
+    cancelled: false,
     showedUp: event.registeredCount > 0,
     hoursToken:
       credited > 0 ? "hours" : event.checkedInCount > 0 ? "not_logged" : null,

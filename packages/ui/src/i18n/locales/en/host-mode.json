@@ -61,6 +61,8 @@
     "hours": "Hours credited",
     "hours_value": "{{hours}} h",
     "hours_hint": "{{credited}} of {{attended}} attendees credited",
+    "hours_hint_credited_one": "{{count}} attendee credited",
+    "hours_hint_credited_other": "{{count}} attendees credited",
     "donations": "Donations",
     "returning": "Returning",
     "returning_hint": "of {{total}} registered have been before"

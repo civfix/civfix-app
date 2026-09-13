@@ -196,6 +196,10 @@ export function sourceSeats(
   return bySource.find((entry) => entry.source === source)?.seats ?? 0
 }
 
+export function hoursHintHasDenominator(credited: number, attended: number): boolean {
+  return attended > 0 && credited <= attended
+}
+
 export function hostStatTiles(insights: EventInsights, phase: EventPhase): HostTile[] {
   const { seats } = insights
   const tiles: HostTile[] = []

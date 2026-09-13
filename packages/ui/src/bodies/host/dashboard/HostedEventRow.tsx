@@ -35,10 +35,12 @@ const ACTION_HIT_SLOP = (MIN_TOUCH_TARGET - ACTION_SIZE) / 2
 
 export type HostedEventWindow = "upcoming" | "past"
 
+type MetaTone = "warn" | "muted"
+
 interface MetaPart {
   key: string
   text: string
-  warn?: boolean
+  tone?: MetaTone
 }
 
 export interface HostedEventRowProps {
@@ -81,7 +83,8 @@ function MetaLine({ parts, chip }: { parts: readonly MetaPart[]; chip?: React.Re
             numberOfLines={1}
             style={[
               index === parts.length - 1 && !chip ? styles.subLast : styles.subFixed,
-              part.warn ? styles.subWarn : null,
+              part.tone === "warn" ? styles.subWarn : null,
+              part.tone === "muted" ? styles.subMuted : null,
             ]}
           >
             {part.text}
@@ -155,6 +158,9 @@ export const HostedEventRow = memo(function HostedEventRow({
     eventWindow === "past"
       ? [
           { key: "when", text: pastDateLabel(event.startsAt, locale) },
+          ...(past.cancelled
+            ? [{ key: "cancelled", text: t("events.meta_cancelled"), tone: "muted" as const }]
+            : []),
           ...(past.showedUp
             ? [
                 {
@@ -177,7 +183,7 @@ export const HostedEventRow = memo(function HostedEventRow({
               ]
             : []),
           ...(past.hoursToken === "not_logged"
-            ? [{ key: "hours", text: t("events.meta_hours_not_logged"), warn: true }]
+            ? [{ key: "hours", text: t("events.meta_hours_not_logged"), tone: "warn" as const }]
             : []),
         ]
       : [
@@ -347,6 +353,10 @@ const useStyles = makeThemedStyles((t) => ({
   },
   subFixed: {
     flexShrink: 0,
+  },
+  subMuted: {
+    flexShrink: 0,
+    color: t.colors.textSubtle,
   },
   subWarn: {
     flexShrink: 0,

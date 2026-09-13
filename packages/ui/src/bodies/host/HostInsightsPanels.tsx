@@ -22,6 +22,7 @@ import {
   hostHero,
   hostPanels,
   hostStatTiles,
+  hoursHintHasDenominator,
   peakArrival,
   registrationTrendPoints,
   type HostTile,
@@ -45,12 +46,13 @@ function useTileText(insights: EventInsights) {
   const { locale } = useLocale()
   return (tile: HostTile): { value: string; hint?: string } => {
     if (tile.key === "hours") {
+      const credited = insights.hours.attendeesCredited
+      const attended = tile.total ?? 0
       return {
         value: t("tiles.hours_value", { hours: tile.value }),
-        hint: t("tiles.hours_hint", {
-          credited: insights.hours.attendeesCredited,
-          attended: tile.total ?? 0,
-        }),
+        hint: hoursHintHasDenominator(credited, attended)
+          ? t("tiles.hours_hint", { credited, attended })
+          : t("tiles.hours_hint_credited", { count: credited }),
       }
     }
     if (tile.key === "donations") {
@@ -303,7 +305,7 @@ export function HostInsightsPanels({
   const panels = hostPanels(phase)
 
   return (
-    <View style={styles.stack}>
+    <View style={styles.sections}>
       <HeroPanel insights={insights} phase={phase} stale={stale} />
       {panels.shifts ? <ShiftsPanel slots={slots} phase={phase} now={now} /> : null}
       {panels.tiles && tiles.length > 0 ? (
@@ -339,6 +341,9 @@ export function HostInsightsPanels({
 }
 
 const useStyles = makeThemedStyles((t) => ({
+  sections: {
+    gap: t.space["6"],
+  },
   stack: {
     gap: t.space["3"],
   },

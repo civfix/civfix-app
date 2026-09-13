@@ -753,6 +753,8 @@ describe("impact", () => {
   })
 })
 
+const dashboardRowSource = (): string => source("../HostedEventRow.tsx")
+
 describe("first event and past rows", () => {
   it("teaches only a host who has hosted nothing and has nothing coming", () => {
     const kpis = { eventsHosted: 0, upcomingEvents: 0, totalRegistrations: 0, totalCheckedIn: 0 }
@@ -764,19 +766,41 @@ describe("first event and past rows", () => {
 
   it("prints turnout once anyone registered and hours once anyone was credited", () => {
     expect(pastRowMeta(row("a", { registeredCount: 38, checkedInCount: 31, hoursCredited: 62 })))
-      .toEqual({ showedUp: true, hoursToken: "hours" })
+      .toEqual({ cancelled: false, showedUp: true, hoursToken: "hours" })
   })
 
   it("calls out a finished event whose hours nobody logged", () => {
     expect(pastRowMeta(row("b", { registeredCount: 8, checkedInCount: 6, hoursCredited: 0 })))
-      .toEqual({ showedUp: true, hoursToken: "not_logged" })
+      .toEqual({ cancelled: false, showedUp: true, hoursToken: "not_logged" })
   })
 
   it("says nothing about hours for an event nobody checked in to", () => {
     expect(pastRowMeta(row("c", { registeredCount: 0, checkedInCount: 0 }))).toEqual({
+      cancelled: false,
       showedUp: false,
       hoursToken: null,
     })
+  })
+
+  it("says a cancelled event was cancelled instead of counting a turnout it never had", () => {
+    expect(
+      pastRowMeta(
+        row("d", { status: "cancelled", registeredCount: 6, checkedInCount: 0, hoursCredited: 0 }),
+      ),
+    ).toEqual({ cancelled: true, showedUp: false, hoursToken: null })
+  })
+
+  it("keeps the cancelled token off a completed event that simply had no arrivals", () => {
+    expect(pastRowMeta(row("e", { status: "done", registeredCount: 6, checkedInCount: 0 })))
+      .toEqual({ cancelled: false, showedUp: true, hoursToken: null })
+  })
+
+  it("prints the cancelled token in the past row instead of the showed-up and hours ones", () => {
+    const source = dashboardRowSource()
+    expect(source).toContain("past.cancelled")
+    expect(source).toContain('t("events.meta_cancelled")')
+    expect(source).toContain('tone: "muted" as const')
+    expect(source).toContain("color: t.colors.textSubtle")
   })
 
   it("shares the public page slug, then the reference code, then the id", () => {
@@ -861,6 +885,17 @@ describe("portfolio surface", () => {
     expect(invites).toContain("<TextLink")
   })
 
+  it("gives an invitation its own action line, so the title and the inviter stay readable", () => {
+    const invites = dashboardSource("InviteRows.tsx")
+    expect(invites.match(/footer=\{/g) ?? [], "both invite rows act below their text")
+      .toHaveLength(2)
+    expect(invites, "the trailing slot no longer squeezes the text column").not.toContain(
+      "trailing={",
+    )
+    expect(invites.match(/titleLines=\{2\}/g) ?? []).toHaveLength(2)
+    expect(invites).not.toContain('justifyContent: "flex-end"')
+  })
+
   it("keeps money, team and the console link in the shared list card", () => {
     const money = dashboardSource("MoneySection.tsx")
     expect(money).toContain('variant="list"')
@@ -915,6 +950,7 @@ describe("portfolio surface", () => {
       ["events", "meta_showed_up"],
       ["events", "meta_hours"],
       ["events", "meta_hours_not_logged"],
+      ["events", "meta_cancelled"],
       ["events", "empty_past"],
       ["events", "empty_upcoming"],
       ["events", "check_in_a11y"],

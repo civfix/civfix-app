@@ -50,6 +50,7 @@ export interface ListRowProps {
   titleLines?: 1 | 2
   sub?: React.ReactNode
   trailing?: React.ReactNode
+  footer?: React.ReactNode
   onPress?: () => void
   chevron?: boolean
   accessibilityLabel?: string
@@ -62,6 +63,7 @@ export function ListRow({
   titleLines,
   sub,
   trailing,
+  footer,
   onPress,
   chevron,
   accessibilityLabel,
@@ -71,33 +73,36 @@ export function ListRow({
   const t = useTheme()
   const content = (
     <>
-      {leading ? <View style={styles.leading}>{leading}</View> : null}
-      <View style={styles.meta}>
-        <Text style={styles.title} numberOfLines={titleLines ?? 2}>
-          {title}
-        </Text>
-        {typeof sub === "string" ? (
-          <Text variant="caption" numberOfLines={1}>
-            {sub}
+      <View style={styles.line}>
+        {leading ? <View style={styles.leading}>{leading}</View> : null}
+        <View style={styles.meta}>
+          <Text style={styles.title} numberOfLines={titleLines ?? 2}>
+            {title}
           </Text>
-        ) : (
-          (sub ?? null)
-        )}
-      </View>
-      {trailing ? (
-        <View style={styles.trailing}>
-          {typeof trailing === "string" ? (
-            <Text style={styles.rowValue} numberOfLines={1}>
-              {trailing}
+          {typeof sub === "string" ? (
+            <Text variant="caption" numberOfLines={1}>
+              {sub}
             </Text>
           ) : (
-            trailing
+            (sub ?? null)
           )}
         </View>
-      ) : null}
-      {chevron ? (
-        <Icon icon={iconMap.ChevronRight} size={18} color={t.colors.textSubtle} />
-      ) : null}
+        {trailing ? (
+          <View style={styles.trailing}>
+            {typeof trailing === "string" ? (
+              <Text style={styles.rowValue} numberOfLines={1}>
+                {trailing}
+              </Text>
+            ) : (
+              trailing
+            )}
+          </View>
+        ) : null}
+        {chevron ? (
+          <Icon icon={iconMap.ChevronRight} size={18} color={t.colors.textSubtle} />
+        ) : null}
+      </View>
+      {footer ? <View style={styles.footer}>{footer}</View> : null}
     </>
   )
 
@@ -131,12 +136,19 @@ export function ListRow({
 
 const useStyles = makeThemedStyles((t) => ({
   row: {
-    flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "center",
     gap: t.space["3"],
     minHeight: LIST_ROW_MIN_HEIGHT,
     paddingVertical: t.space["2"],
     paddingHorizontal: t.space["4"],
+  },
+  line: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["3"],
+  },
+  footer: {
+    paddingLeft: LIST_TILE + t.space["3"],
   },
   pressed: {
     backgroundColor: t.colors.bgAlt,

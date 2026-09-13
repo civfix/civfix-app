@@ -62,6 +62,14 @@ describe("ListRow is the one row geometry every list card shares", () => {
     expect(src).toContain('<Text variant="caption" numberOfLines={1}>')
   })
 
+  it("drops an action line beneath the text column when a footer is given", () => {
+    expect(src).toContain("{footer ? <View style={styles.footer}>{footer}</View> : null}")
+    expect(styleBlock("footer")).toContain('paddingLeft: LIST_TILE + t.space["3"]')
+    expect(styleBlock("line")).toContain('flexDirection: "row"')
+    expect(styleBlock("line")).toContain('alignItems: "center"')
+    expect(styleBlock("row")).toContain('justifyContent: "center"')
+  })
+
   it("renders a string trailing as the row value and a node trailing as authored", () => {
     expect(src).toContain('typeof trailing === "string"')
     const value = styleBlock("rowValue")

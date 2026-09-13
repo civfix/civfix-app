@@ -61,6 +61,8 @@
     "hours": "인정된 시간",
     "hours_value": "{{hours}}시간",
     "hours_hint": "참가자 {{attended}}명 중 {{credited}}명 인정",
+    "hours_hint_credited_one": "참가자 {{count}}명 인정",
+    "hours_hint_credited_other": "참가자 {{count}}명 인정",
     "donations": "기부",
     "returning": "재참여",
     "returning_hint": "등록 {{total}}명 중 이전에 참여한 인원"

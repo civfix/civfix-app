@@ -99,6 +99,7 @@
     "meta_showed_up": "{{checkedIn}} of {{registered}} showed up",
     "meta_hours": "{{hours}} h",
     "meta_hours_not_logged": "Hours not logged",
+    "meta_cancelled": "Cancelled",
     "meta_signed_up": "{{count}} signed up"
   },
   "first_event": {

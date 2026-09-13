@@ -168,7 +168,7 @@ function InsightsSection({
   }
   if (!loading) return null
   return (
-    <View style={styles.stack}>
+    <View style={styles.sections}>
       <HeroSkeleton />
       <TilesSkeleton columns={columns} count={4} />
     </View>
@@ -580,8 +580,8 @@ const useStyles = makeThemedStyles((t) => ({
   body: {
     gap: t.space["6"],
   },
-  stack: {
-    gap: t.space["3"],
+  sections: {
+    gap: t.space["6"],
   },
   danger: {
     marginTop: t.space["2"],

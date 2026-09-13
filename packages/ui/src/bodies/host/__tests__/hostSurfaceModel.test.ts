@@ -15,6 +15,7 @@ import {
   hostSecondaryCta,
   hostStatTiles,
   hostedEventFromCleanup,
+  hoursHintHasDenominator,
   peakArrival,
   registrationTrendPoints,
   sourceSeats,
@@ -300,6 +301,17 @@ describe("stat tiles per phase", () => {
 
   it("renders nothing for a cancelled event", () => {
     expect(hostStatTiles(insights(), "cancelled")).toEqual([])
+  })
+
+  it("keeps the hours denominator only while it is one the credited count sits inside", () => {
+    expect(hoursHintHasDenominator(25, 31)).toBe(true)
+    expect(hoursHintHasDenominator(31, 31)).toBe(true)
+  })
+
+  it("drops the denominator when more people were credited than ever checked in", () => {
+    expect(hoursHintHasDenominator(24, 16)).toBe(false)
+    expect(hoursHintHasDenominator(3, 0)).toBe(false)
+    expect(hoursHintHasDenominator(0, 0)).toBe(false)
   })
 })
 

@@ -29,14 +29,6 @@ function InviteActions({
   const { t } = useT("event-dashboard")
   return (
     <View style={styles.actions}>
-      <TextLink
-        variant="label"
-        standalone
-        accessibilityLabel={t("invites.decline_a11y", { title })}
-        onPress={pending ? () => {} : onDecline}
-      >
-        {t("invites.decline")}
-      </TextLink>
       <SecondaryButton
         size="sm"
         icon={iconMap.Check}
@@ -45,6 +37,14 @@ function InviteActions({
         disabled={pending}
         onPress={onAccept}
       />
+      <TextLink
+        variant="label"
+        standalone
+        accessibilityLabel={t("invites.decline_a11y", { title })}
+        onPress={pending ? () => {} : onDecline}
+      >
+        {t("invites.decline")}
+      </TextLink>
     </View>
   )
 }
@@ -64,9 +64,9 @@ export const EventInviteRow = memo(function EventInviteRow({
     <ListRow
       leading={<IconTile icon="Mail" tone="attention" />}
       title={invite.event.title}
-      titleLines={1}
+      titleLines={2}
       sub={t("invites.event_invited_as", { name: inviter, role: roleLabel })}
-      trailing={
+      footer={
         <InviteActions
           title={invite.event.title}
           pending={pending}
@@ -101,9 +101,9 @@ export const OrgInviteRow = memo(function OrgInviteRow({
     <ListRow
       leading={<IconTile icon="Building2" tone="attention" />}
       title={invite.organization.name}
-      titleLines={1}
+      titleLines={2}
       sub={t("invites.org_invited_as", { name: inviter, role: roleLabel })}
-      trailing={
+      footer={
         <InviteActions
           title={invite.organization.name}
           pending={pending}
@@ -118,8 +118,7 @@ export const OrgInviteRow = memo(function OrgInviteRow({
 const useStyles = makeThemedStyles((t) => ({
   actions: {
     flexDirection: "row",
-    justifyContent: "flex-end",
     alignItems: "center",
-    gap: t.space["3"],
+    gap: t.space["4"],
   },
 }))

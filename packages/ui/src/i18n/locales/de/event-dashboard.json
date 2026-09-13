@@ -99,6 +99,7 @@
     "meta_showed_up": "{{checkedIn}} von {{registered}} erschienen",
     "meta_hours": "{{hours}} Std.",
     "meta_hours_not_logged": "Stunden nicht erfasst",
+    "meta_cancelled": "Abgesagt",
     "meta_signed_up": "{{count}} angemeldet"
   },
   "first_event": {
