@@ -1,6 +1,10 @@
 import { z } from "zod"
 import { IdSchema, ISODateSchema } from "./common.js"
-import { AvatarPairSchema, OrganizationRefDTOSchema } from "./entities.js"
+import {
+  LeaderboardEntryDTOSchema as LeaderboardEntryDTOSchemaInternal,
+  OrganizationRefDTOSchema,
+  OrgHoursDTOSchema as OrgHoursDTOSchemaInternal,
+} from "./entities.js"
 
 /**
  * `"report"` is HISTORICAL ONLY and must stay in this list. Nothing writes a report credit any more
@@ -40,6 +44,7 @@ export type JurisdictionHours = z.infer<typeof JurisdictionHoursSchema>
 export const MyVolunteerHoursDTOSchema = z.object({
   totalHours: z.number().nonnegative(),
   byJurisdiction: z.array(JurisdictionHoursSchema),
+  byOrganization: z.array(OrgHoursDTOSchemaInternal).default([]),
 })
 export type MyVolunteerHoursDTO = z.infer<typeof MyVolunteerHoursDTOSchema>
 
@@ -118,6 +123,7 @@ export const PublicVolunteerHoursResponseSchema = z.object({
   visible: z.boolean().default(false),
   totalHours: z.number().nonnegative().default(0),
   byJurisdiction: z.array(JurisdictionHoursSchema).default([]),
+  byOrganization: z.array(OrgHoursDTOSchemaInternal).default([]),
   /**
    * EVENT entries only. A public, itemised list of every report a user filed is a privacy leak (reports
    * can be held, unlisted or sensitive), and the id alone would deep-link into them.
@@ -133,16 +139,8 @@ export const PublicVolunteerHoursResponseSchema = z.object({
 })
 export type PublicVolunteerHoursResponse = z.infer<typeof PublicVolunteerHoursResponseSchema>
 
-export const LeaderboardEntryDTOSchema = z.object({
-  rank: z.number().int().positive(),
-  userId: IdSchema,
-  name: z.string(),
-  handle: z.string().nullable().optional(),
-  avatar: AvatarPairSchema,
-  avatarUrl: z.string().nullable().optional(),
-  hours: z.number().nonnegative(),
-})
-export type LeaderboardEntryDTO = z.infer<typeof LeaderboardEntryDTOSchema>
+export { LeaderboardEntryDTOSchema, OrgHoursDTOSchema } from "./entities.js"
+export type { LeaderboardEntryDTO, OrgHoursDTO } from "./entities.js"
 
 /**
  * ⚠ `geoid` is NEW and REQUIRED. It consumes the :geoid path param — the client's extractParams
@@ -166,7 +164,7 @@ export type LeaderboardQuery = z.infer<typeof LeaderboardQuerySchema>
 export const LeaderboardResponseSchema = z.object({
   geoid: z.string(),
   jurisdictionName: z.string().nullable().optional(),
-  entries: z.array(LeaderboardEntryDTOSchema),
+  entries: z.array(LeaderboardEntryDTOSchemaInternal),
   nextOffset: z.number().int().nonnegative().nullable().optional(),
   /**
    * Total ranked volunteers in this jurisdiction. Computed on the FIRST page only (offset 0) so a

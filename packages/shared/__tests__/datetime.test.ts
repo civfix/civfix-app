@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { relativeAgo, eventChip, dowLabel, timeLabel } from "../src/datetime.js"
+import { relativeAgo, eventChip, dowLabel, timeLabel, timeRangeLabel } from "../src/datetime.js"
 
 /**
  * relativeAgo reconciles three former impls into one. These lock every bucket boundary with an injected
@@ -114,5 +114,46 @@ describe("timeLabel", () => {
 
   it("returns '' for an unparseable input", () => {
     expect(timeLabel("not a date")).toBe("")
+  })
+})
+
+const EN_DASH_RANGE = " – "
+
+function localClock(hour: number, minute = 0): string {
+  return new Date(2026, 5, 1, hour, minute, 0, 0).toISOString()
+}
+
+describe("timeRangeLabel", () => {
+  it("drops the redundant meridiem when both ends share one in a 12-hour locale", () => {
+    const out = timeRangeLabel(localClock(8), localClock(10), "en-US")
+    expect(out).toBe(`8:00${EN_DASH_RANGE}${timeLabel(localClock(10), "en-US")}`)
+    expect(out.match(/AM/g)).toHaveLength(1)
+  })
+
+  it("prints both meridiems when the range crosses noon", () => {
+    const out = timeRangeLabel(localClock(11), localClock(13), "en-US")
+    expect(out).toBe(
+      `${timeLabel(localClock(11), "en-US")}${EN_DASH_RANGE}${timeLabel(localClock(13), "en-US")}`,
+    )
+    expect(out).toContain("AM")
+    expect(out).toContain("PM")
+  })
+
+  it("prints both ends in full in a 24-hour locale", () => {
+    expect(timeRangeLabel(localClock(8), localClock(10), "de-DE")).toBe(`8:00${EN_DASH_RANGE}10:00`)
+    expect(timeRangeLabel(localClock(11), localClock(13), "de-DE")).toBe(
+      `11:00${EN_DASH_RANGE}13:00`,
+    )
+  })
+
+  it("keeps the meridiem on the leading end in a locale that writes it first", () => {
+    const out = timeRangeLabel(localClock(8), localClock(10), "ko-KR")
+    expect(out).toBe(`${timeLabel(localClock(8), "ko-KR")}${EN_DASH_RANGE}10:00`)
+    expect(out.endsWith("10:00")).toBe(true)
+  })
+
+  it("returns '' for an unparseable end of the range rather than throwing", () => {
+    expect(timeRangeLabel("not a date", localClock(10))).toBe("")
+    expect(timeRangeLabel(localClock(8), "not a date")).toBe("")
   })
 })

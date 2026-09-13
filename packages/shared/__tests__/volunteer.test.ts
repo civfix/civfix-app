@@ -5,6 +5,7 @@ import {
   LeaderboardResponseSchema,
   MyVolunteerHoursDTOSchema,
   LeaderboardEntryDTOSchema,
+  OrgHoursDTOSchema,
   VolunteerHoursCreditorSchema,
   VolunteerHoursEntryDTOSchema,
   MyVolunteerHoursEntriesQuerySchema,
@@ -218,6 +219,7 @@ describe("PublicVolunteerHours (GET /people/:id/volunteer-hours)", () => {
       visible: false,
       totalHours: 0,
       byJurisdiction: [],
+      byOrganization: [],
       items: [],
       reportHours: 0,
       nextCursor: null,
@@ -305,5 +307,53 @@ describe("volunteer DTOs", () => {
         hours: 12.4,
       }).rank,
     ).toBe(1)
+  })
+})
+
+describe("hours by organization (0.45.0, DECISIONS §39)", () => {
+  const org = {
+    id: UUID2,
+    slug: "bayview-stewards",
+    name: "Bayview Stewards",
+  }
+
+  it("still exports LeaderboardEntryDTOSchema from the package root after the entities.ts move", async () => {
+    const root = await import("../src/index.js")
+    expect(root.LeaderboardEntryDTOSchema).toBe(LeaderboardEntryDTOSchema)
+    expect(root.OrgHoursDTOSchema).toBe(OrgHoursDTOSchema)
+    const entities = await import("../src/schemas/entities.js")
+    expect(entities.LeaderboardEntryDTOSchema).toBe(LeaderboardEntryDTOSchema)
+    expect(entities.OrgHoursDTOSchema).toBe(OrgHoursDTOSchema)
+  })
+
+  it("parses an organization row and rejects negative hours", () => {
+    const parsed = OrgHoursDTOSchema.parse({ organization: org, hours: 12.5 })
+    expect(parsed.organization.name).toBe("Bayview Stewards")
+    expect(parsed.organization.verified).toBe(false)
+    expect(parsed.hours).toBe(12.5)
+    expect(OrgHoursDTOSchema.safeParse({ organization: org, hours: -1 }).success).toBe(false)
+    expect(OrgHoursDTOSchema.safeParse({ hours: 1 }).success).toBe(false)
+  })
+
+  it("defaults byOrganization to [] so a 0.44 server still parses", () => {
+    expect(
+      MyVolunteerHoursDTOSchema.parse({ totalHours: 3.4, byJurisdiction: [] }).byOrganization,
+    ).toEqual([])
+    expect(PublicVolunteerHoursResponseSchema.parse({}).byOrganization).toEqual([])
+  })
+
+  it("carries the chips on both the own and the public payload", () => {
+    const chips = [{ organization: org, hours: 9 }]
+    expect(
+      MyVolunteerHoursDTOSchema.parse({
+        totalHours: 9,
+        byJurisdiction: [],
+        byOrganization: chips,
+      }).byOrganization[0]?.hours,
+    ).toBe(9)
+    expect(
+      PublicVolunteerHoursResponseSchema.parse({ visible: true, byOrganization: chips })
+        .byOrganization[0]?.organization.slug,
+    ).toBe("bayview-stewards")
   })
 })

@@ -1,3 +1,4 @@
+import { avatarGradient } from "../avatar.js"
 import { ANALYTICS_SUPPRESSION_K } from "../schemas/host/analytics.js"
 import type {
   BreakdownRow,
@@ -20,6 +21,7 @@ import type {
   HostPortfolioKpis,
   ListMyHostedEventsResponse,
 } from "../schemas/host/portfolio.js"
+import type { LeaderboardEntryDTO } from "../schemas/entities.js"
 import { makeIdFactory } from "./ids.js"
 
 
@@ -42,6 +44,35 @@ export interface FakeEventInsightsOptions {
   refunded?: boolean
   returning?: boolean
   timezone?: string
+}
+
+const FAKE_VOLUNTEER_NAMES = [
+  { name: "Maya Okonkwo", handle: "mayao" },
+  { name: "Devon Reyes", handle: "devonr" },
+  { name: "Priya Raman", handle: null },
+] as const
+
+const FAKE_PORTFOLIO_VOLUNTEER_HOURS = [41.5, 33, 27.25] as const
+const FAKE_EVENT_VOLUNTEER_HOURS = [6, 5.5, 4.25] as const
+const FAKE_PORTFOLIO_TOTAL_HOURS = 486.75
+const FAKE_PORTFOLIO_VOLUNTEERS_CREDITED = 96
+
+function fakeTopVolunteers(
+  nextId: () => string,
+  hours: readonly number[],
+): LeaderboardEntryDTO[] {
+  return FAKE_VOLUNTEER_NAMES.map((volunteer, i) => {
+    const userId = nextId()
+    return {
+      rank: i + 1,
+      userId,
+      name: volunteer.name,
+      handle: volunteer.handle,
+      avatar: avatarGradient(userId),
+      avatarUrl: null,
+      hours: hours[i] ?? 0,
+    }
+  })
 }
 
 const FAKE_DONATION_GROSS_MINOR = 48_500
@@ -299,6 +330,7 @@ export function fakeEventInsights(
       attendeesCredited: phase === "ended" ? 34 : 0,
       attendeesCheckedIn: profile.checkedIn,
     },
+    topVolunteers: phase === "ended" ? fakeTopVolunteers(nextId, FAKE_EVENT_VOLUNTEER_HOURS) : [],
     money: withMoney
       ? {
           currency: "USD",
@@ -336,6 +368,7 @@ export function fakeHostedEventsAnalytics(
   const seed = options.seed ?? 7
   const now = options.now
   const rng = rngFrom(seed)
+  const nextId = makeIdFactory(seed)
   const days = PORTFOLIO_SERIES_DAYS[range]
   const series: SeriesPoint[] = []
   for (let i = days - 1; i >= 0; i -= 1) {
@@ -380,6 +413,9 @@ export function fakeHostedEventsAnalytics(
       suppressed: false,
     },
     bestDayTime: { weekday: 6, hour: 9, value: 5, suppressed: false },
+    totalHours: FAKE_PORTFOLIO_TOTAL_HOURS,
+    volunteersCredited: FAKE_PORTFOLIO_VOLUNTEERS_CREDITED,
+    topVolunteers: fakeTopVolunteers(nextId, FAKE_PORTFOLIO_VOLUNTEER_HOURS),
   }
 }
 
@@ -487,6 +523,7 @@ export function fakeHostedEvents(
       capacity: 60,
       checkedInCount: 38,
       waitlistCount: 7,
+      hoursCredited: 114.5,
       myRole: "organizer",
       myCapabilities: [
         "view_event_private",
@@ -517,6 +554,7 @@ export function fakeHostedEvents(
       capacity: 35,
       checkedInCount: 27,
       waitlistCount: 3,
+      hoursCredited: 0,
       myRole: "organizer",
       myCapabilities: [
         "view_event_private",

@@ -12,10 +12,12 @@ import {
   EventSlotInputSchema,
   MAX_BRING_ITEMS,
   MAX_EVENT_SLOTS,
+  MAX_GENERATED_SHIFTS,
   MAX_LINKED_REPORTS,
   MAX_SLOT_CAPACITY,
   MAX_SLOT_DESCRIPTION,
   MAX_SLOT_TITLE,
+  MIN_SLOT_DURATION_MINUTES,
   UpdateCleanupRequestSchema,
 } from "../src/schemas/cleanups.js"
 
@@ -41,6 +43,8 @@ describe("caps (single source of truth shared with the backend and the slot edit
     expect(MAX_SLOT_CAPACITY).toBe(999)
     expect(MAX_BRING_ITEMS).toBe(30)
     expect(MAX_LINKED_REPORTS).toBe(200)
+    expect(MIN_SLOT_DURATION_MINUTES).toBe(15)
+    expect(MAX_GENERATED_SHIFTS).toBe(4)
   })
 })
 
@@ -298,5 +302,121 @@ describe("CleanupDTOSchema.slots / slotCount (tolerant)", () => {
     const parsed = CleanupDTOSchema.parse({ ...legacy, slotCount: 3 })
     expect(parsed.slots).toEqual([])
     expect(parsed.slotCount).toBe(3)
+  })
+})
+
+describe("slot windows (0.45.0, DECISIONS §38)", () => {
+  const START = "2026-06-01T17:00:00.000Z"
+  const shift = { title: "Morning sweep", startsAt: START, endsAt: "2026-06-01T19:00:00.000Z" }
+
+  function endAfter(minutes: number): string {
+    return new Date(Date.parse(START) + minutes * 60_000).toISOString()
+  }
+
+  it("accepts a windowed shift and keeps both instants", () => {
+    const parsed = EventSlotInputSchema.parse(shift)
+    expect(parsed.startsAt).toBe(START)
+    expect(parsed.endsAt).toBe("2026-06-01T19:00:00.000Z")
+  })
+
+  it("accepts an untimed role: absent, and explicitly null on both ends", () => {
+    expect(EventSlotInputSchema.parse(slotInput).startsAt).toBeUndefined()
+    const cleared = EventSlotInputSchema.parse({ ...slotInput, startsAt: null, endsAt: null })
+    expect(cleared.startsAt).toBeNull()
+    expect(cleared.endsAt).toBeNull()
+  })
+
+  it("rejects one end without the other, flagging the side that is MISSING", () => {
+    for (const half of [
+      { input: { startsAt: START }, path: "endsAt" },
+      { input: { endsAt: START }, path: "startsAt" },
+    ]) {
+      const result = EventSlotInputSchema.safeParse({ ...slotInput, ...half.input })
+      expect(result.success).toBe(false)
+      expect(result.success === false && result.error.issues[0]?.path).toEqual([half.path])
+      expect(result.success === false && result.error.issues[0]?.message).toBe(
+        "set both a start and an end, or neither",
+      )
+    }
+    expect(EventSlotInputSchema.safeParse({ ...slotInput, startsAt: START, endsAt: null }).success).toBe(
+      false,
+    )
+  })
+
+  it("rejects a window shorter than MIN_SLOT_DURATION_MINUTES and accepts exactly that long", () => {
+    expect(
+      EventSlotInputSchema.safeParse({ ...slotInput, startsAt: START, endsAt: endAfter(15) }).success,
+    ).toBe(true)
+    const tooShort = EventSlotInputSchema.safeParse({
+      ...slotInput,
+      startsAt: START,
+      endsAt: endAfter(14),
+    })
+    expect(tooShort.success).toBe(false)
+    expect(tooShort.success === false && tooShort.error.issues[0]?.path).toEqual(["endsAt"])
+    expect(tooShort.success === false && tooShort.error.issues[0]?.message).toBe(
+      "must be at least 15 minutes after startsAt",
+    )
+  })
+
+  it("rejects an end before the start and an end equal to the start", () => {
+    expect(
+      EventSlotInputSchema.safeParse({ ...slotInput, startsAt: START, endsAt: endAfter(-60) }).success,
+    ).toBe(false)
+    expect(
+      EventSlotInputSchema.safeParse({ ...slotInput, startsAt: START, endsAt: START }).success,
+    ).toBe(false)
+  })
+
+  it("stays strict about unknown keys and the other field rules through the refinement", () => {
+    expect(EventSlotInputSchema.safeParse({ ...shift, bogus: 1 }).success).toBe(false)
+    expect(EventSlotInputSchema.safeParse({ ...shift, startsAt: "not-a-date" }).success).toBe(false)
+    expect(EventSlotInputSchema.safeParse({ ...shift, title: "   " }).success).toBe(false)
+  })
+
+  it("still nests inside the create and update request arrays under MAX_EVENT_SLOTS", () => {
+    const base = {
+      title: "Beach cleanup",
+      type: "site",
+      lat: 34.0,
+      lng: -118.5,
+      scheduledAt: START,
+      endsAt: "2026-06-01T21:00:00.000Z",
+    }
+    expect(CreateCleanupRequestSchema.parse({ ...base, slots: [shift] }).slots?.[0]?.endsAt).toBe(
+      "2026-06-01T19:00:00.000Z",
+    )
+    expect(
+      CreateCleanupRequestSchema.safeParse({
+        ...base,
+        slots: new Array(MAX_EVENT_SLOTS + 1).fill(shift),
+      }).success,
+    ).toBe(false)
+    expect(
+      UpdateCleanupRequestSchema.safeParse({ id: UUID, slots: [{ ...shift, endsAt: START }] }).success,
+    ).toBe(false)
+  })
+
+  it("carries the window on the DTO the board renders, and leaves the ref alone", () => {
+    const parsed = EventSlotDTOSchema.parse({
+      id: UUID,
+      title: "Morning sweep",
+      claimed: 2,
+      sortOrder: 0,
+      startsAt: START,
+      endsAt: "2026-06-01T19:00:00.000Z",
+    })
+    expect(parsed.startsAt).toBe(START)
+    expect(parsed.endsAt).toBe("2026-06-01T19:00:00.000Z")
+    const legacy = EventSlotDTOSchema.parse({ id: UUID, title: "Grill", claimed: 0, sortOrder: 0 })
+    expect(legacy.startsAt).toBeUndefined()
+    expect(legacy.endsAt).toBeUndefined()
+    expect(EventSlotRefSchema.safeParse({ id: UUID, title: "Grill", startsAt: START }).success).toBe(
+      true,
+    )
+    expect(EventSlotRefSchema.parse({ id: UUID, title: "Grill" })).toEqual({
+      id: UUID,
+      title: "Grill",
+    })
   })
 })
