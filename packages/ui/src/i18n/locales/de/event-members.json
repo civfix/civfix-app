@@ -12,7 +12,8 @@
   "hero": {
     "report_fallback": "Meldungs-Chat",
     "members_one": "{{count}} Mitglied",
-    "members_other": "{{count}} Mitglieder"
+    "members_other": "{{count}} Mitglieder",
+    "members_partial": "{{shown}} von {{going}} dabei werden angezeigt"
   },
   "action": {
     "mute": "Stummschalten",
@@ -40,6 +41,11 @@
   "empty": {
     "title": "Noch keine Mitglieder",
     "body": "Personen, die zu diesem Event kommen, erscheinen hier."
+  },
+  "restricted": {
+    "title": "Hier erscheinen nur Personen, denen du folgst",
+    "body": "Sag zu, um alle Teilnehmer zu sehen.",
+    "empty_body": "Noch ist niemand dabei, dem du folgst. Sag zu, um alle Teilnehmer zu sehen."
   },
   "role": {
     "host": "Host"

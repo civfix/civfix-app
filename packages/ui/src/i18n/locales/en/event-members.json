@@ -12,7 +12,8 @@
   "hero": {
     "report_fallback": "Report chat",
     "members_one": "{{count}} member",
-    "members_other": "{{count}} members"
+    "members_other": "{{count}} members",
+    "members_partial": "Showing {{shown}} of {{going}} going"
   },
   "action": {
     "mute": "Mute",
@@ -40,6 +41,11 @@
   "empty": {
     "title": "No members yet",
     "body": "People going to this event will show up here."
+  },
+  "restricted": {
+    "title": "Only people you follow appear here",
+    "body": "RSVP to this event to see everyone going.",
+    "empty_body": "No one you follow is going yet. RSVP to this event to see everyone going."
   },
   "role": {
     "host": "Host"
