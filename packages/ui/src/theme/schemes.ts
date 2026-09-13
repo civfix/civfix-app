@@ -49,6 +49,9 @@ interface SchemeExtras {
   scrim: string
   scrimModal: string
   scrimStrong: string
+  scrimLightbox: string
+  lightboxControl: string
+  verifiedFill: string
   shadowColor: string
   onAccent: string
   onCta: string
@@ -67,6 +70,9 @@ const EXTRAS: Readonly<Record<ColorSchemeName, SchemeExtras>> = {
     scrim: "rgba(26,23,20,0.35)",
     scrimModal: "rgba(26,23,20,0.45)",
     scrimStrong: "rgba(26,23,20,0.55)",
+    scrimLightbox: "rgba(26,23,20,0.92)",
+    lightboxControl: "rgba(255,255,255,0.18)",
+    verifiedFill: colorSchemes.light.sky["600"],
     shadowColor: colorSchemes.light.neutral.ink,
     onAccent: "#FFFFFF",
     onCta: colorSchemes.light.neutral.ink,
@@ -83,6 +89,9 @@ const EXTRAS: Readonly<Record<ColorSchemeName, SchemeExtras>> = {
     scrim: "rgba(0,0,0,0.50)",
     scrimModal: "rgba(0,0,0,0.60)",
     scrimStrong: "rgba(0,0,0,0.70)",
+    scrimLightbox: "rgba(0,0,0,0.94)",
+    lightboxControl: "rgba(255,255,255,0.16)",
+    verifiedFill: colorSchemes.dark.brand.sky,
     shadowColor: "#000000",
     onAccent: colorSchemes.dark.neutral.paper,
     onCta: colorSchemes.dark.neutral.paper,
@@ -110,6 +119,9 @@ export interface ThemeColors extends ColorPalette {
   scrim: string
   scrimModal: string
   scrimStrong: string
+  scrimLightbox: string
+  lightboxControl: string
+  verifiedFill: string
   shadowColor: string
   onAccent: string
   onCta: string
@@ -151,6 +163,9 @@ export function makeThemeColors(scheme: ColorSchemeName): ThemeColors {
     scrim: extras.scrim,
     scrimModal: extras.scrimModal,
     scrimStrong: extras.scrimStrong,
+    scrimLightbox: extras.scrimLightbox,
+    lightboxControl: extras.lightboxControl,
+    verifiedFill: extras.verifiedFill,
     shadowColor: extras.shadowColor,
     onAccent: extras.onAccent,
     onCta: extras.onCta,

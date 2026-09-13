@@ -53,6 +53,7 @@
     "edited": "(edited)",
     "retry_sending": "Retry sending",
     "message_actions": "Message actions",
+    "link_failed": "Couldn't open that link",
     "announce_failed": "Message failed to send. Tap to retry.",
     "reply_deleted": "Message deleted",
     "reply_media": "Photo",

@@ -101,6 +101,7 @@ import {
   Radio,
   TrendingUp,
   CalendarCheck,
+  Repeat2,
 } from "lucide-react-native/icons"
 import type { LucideIcon } from "./Icon"
 
@@ -208,6 +209,7 @@ export type IconName =
   | "Radio"
   | "TrendingUp"
   | "CalendarCheck"
+  | "Repeat2"
 
 export const iconMap: Record<IconName, LucideIcon> = {
   Check,
@@ -313,4 +315,5 @@ export const iconMap: Record<IconName, LucideIcon> = {
   Radio,
   TrendingUp,
   CalendarCheck,
+  Repeat2,
 }

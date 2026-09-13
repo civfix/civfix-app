@@ -17,7 +17,11 @@ export interface MemberPickerProps {
   onChange: (selected: PersonDTO[]) => void
   excludeIds?: readonly string[]
   emptyPromptBody?: string
+  suggested?: readonly UserSearchResultDTO[]
+  suggestedLabel?: string
 }
+
+const NO_SUGGESTIONS: readonly UserSearchResultDTO[] = []
 
 const SelectedChip = memo(function SelectedChip({
   person,
@@ -84,9 +88,11 @@ const ResultRow = memo(function ResultRow({
         <Text style={styles.name} numberOfLines={1}>
           {person.displayName}
         </Text>
-        <Text style={styles.handle} numberOfLines={1}>
-          @{person.handle}
-        </Text>
+        {person.handle.length > 0 ? (
+          <Text style={styles.handle} numberOfLines={1}>
+            @{person.handle}
+          </Text>
+        ) : null}
       </View>
       <View style={[styles.check, selected ? styles.checkOn : null]}>
         {selected ? <Icon icon={iconMap.Check} size={13} color={th.colors.onAccent} /> : null}
@@ -95,7 +101,14 @@ const ResultRow = memo(function ResultRow({
   )
 })
 
-export function MemberPicker({ selected, onChange, excludeIds, emptyPromptBody }: MemberPickerProps) {
+export function MemberPicker({
+  selected,
+  onChange,
+  excludeIds,
+  emptyPromptBody,
+  suggested,
+  suggestedLabel,
+}: MemberPickerProps) {
   const styles = useStyles()
   const th = useTheme()
   const { FlatList } = useScrollHost()
@@ -107,6 +120,9 @@ export function MemberPicker({ selected, onChange, excludeIds, emptyPromptBody }
   const typed = normalizeUserSearchTerm(query)
   const hasQuery = typed.length > 0
   const searchPending = search.isLoading || search.term !== typed
+  const suggestions = filterExcluded(suggested ?? NO_SUGGESTIONS, excludeIds)
+  const showSuggestions = !hasQuery && suggestions.length > 0
+  const rows = showSuggestions ? suggestions : results
 
   const onToggle = useCallback(
     (person: UserSearchResultDTO) => {
@@ -133,10 +149,10 @@ export function MemberPicker({ selected, onChange, excludeIds, emptyPromptBody }
 
   return (
     <FlatList
-      data={results}
+      data={rows}
       keyExtractor={idKeyExtractor}
       style={styles.list}
-      contentContainerStyle={results.length === 0 ? styles.listEmpty : styles.listContent}
+      contentContainerStyle={rows.length === 0 ? styles.listEmpty : styles.listContent}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={
@@ -163,6 +179,11 @@ export function MemberPicker({ selected, onChange, excludeIds, emptyPromptBody }
               style={[styles.searchInput, webInputReset]}
             />
           </View>
+          {showSuggestions && suggestedLabel ? (
+            <Text style={styles.sectionLabel} numberOfLines={1}>
+              {suggestedLabel}
+            </Text>
+          ) : null}
         </View>
       }
       renderItem={renderItem}
@@ -199,6 +220,14 @@ export function MemberPicker({ selected, onChange, excludeIds, emptyPromptBody }
 const useStyles = makeThemedStyles((t) => ({
   list: {
     flex: 1,
+  },
+  sectionLabel: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: 13,
+    color: t.colors.textSubtle,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    paddingBottom: t.space["1"],
   },
   listContent: {
     paddingHorizontal: t.space["4"],

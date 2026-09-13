@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react"
-import { Pressable, StyleSheet, View } from "react-native"
+import { Pressable, StyleSheet, View, type LayoutChangeEvent } from "react-native"
 import type { CleanupDTO, LinkedEventRef } from "@civfix/shared"
 import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTransition } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
@@ -7,9 +7,15 @@ import { Avatar } from "../primitives/Avatar"
 import { RsvpPill } from "../primitives/RsvpPill"
 import { useCleanup, useCleanupAttendees, useJoinCleanup } from "../data"
 import { useLocale, useT } from "../i18n"
-import { buildLinkedEventCardModel, buildLinkedEventCardTargetPlan } from "./linkedEventCardModel"
+import {
+  buildLinkedEventCardModel,
+  buildLinkedEventCardTargetPlan,
+  type LinkedEventCardModel,
+} from "./linkedEventCardModel"
 import { hasEventEnded } from "./eventLifecycle"
 export { buildLinkedEventCardModel, buildLinkedEventCardTargetPlan } from "./linkedEventCardModel"
+
+export type LinkedEventCardVariant = "feed" | "detail"
 
 export interface LinkedEventCardProps {
   event: LinkedEventRef
@@ -20,7 +26,7 @@ export interface LinkedEventCardProps {
   selected?: boolean
   onRemove?: () => void
   timeZone?: string
-  showAttendees?: boolean
+  variant?: LinkedEventCardVariant
 }
 
 const FOOTER_STACK_MIN_WIDTH = 224
@@ -29,7 +35,7 @@ function AttendeeStack({
   model,
   showAvatars,
 }: {
-  model: ReturnType<typeof buildLinkedEventCardModel>
+  model: LinkedEventCardModel
   showAvatars: boolean
 }) {
   const styles = useStyles()
@@ -78,6 +84,45 @@ function AttendeeStack({
   )
 }
 
+function EventCardFooter({
+  eventId,
+  model,
+  loading,
+  ended,
+}: {
+  eventId: string
+  model: LinkedEventCardModel
+  loading: boolean
+  ended: boolean
+}) {
+  const styles = useStyles()
+  const join = useJoinCleanup(eventId)
+  const [footerWidth, setFooterWidth] = useState<number | null>(null)
+  const showAvatars = footerWidth === null || footerWidth >= FOOTER_STACK_MIN_WIDTH
+  const onToggle = React.useCallback(
+    (currentlyGoing: boolean) => join.mutate(currentlyGoing),
+    [join],
+  )
+  const onLayout = React.useCallback((event: LayoutChangeEvent) => {
+    const width = event.nativeEvent.layout.width
+    setFooterWidth((current) => (current === width ? current : width))
+  }, [])
+
+  return (
+    <View style={styles.footerRow} onLayout={onLayout}>
+      <AttendeeStack model={model} showAvatars={showAvatars} />
+      <RsvpPill
+        going={model.rsvpActive}
+        onToggle={onToggle}
+        nextPath={`/cleanups/${eventId}`}
+        busy={join.isPending || loading}
+        ended={ended}
+        size="md"
+      />
+    </View>
+  )
+}
+
 export function LinkedEventCard({
   event,
   cleanup,
@@ -87,15 +132,15 @@ export function LinkedEventCard({
   selected = false,
   onRemove,
   timeZone,
-  showAttendees = false,
+  variant = "feed",
 }: LinkedEventCardProps) {
   const styles = useStyles()
   const th = useTheme()
   const { locale } = useLocale()
   const { t } = useT("event-card")
+  const showControls = variant === "detail" && !selectable
   const detail = useCleanup(cleanup ? undefined : event.id)
-  const attendeeQuery = useCleanupAttendees(showAttendees && !selectable ? event.id : undefined)
-  const join = useJoinCleanup(event.id)
+  const attendeeQuery = useCleanupAttendees(showControls ? event.id : undefined)
   const liveCleanup = cleanup ?? detail.data
   const address = liveCleanup?.address
   const liveGoing = liveCleanup?.going ?? attendeeQuery.data?.going
@@ -108,13 +153,12 @@ export function LinkedEventCard({
         going: liveGoing,
         joined,
         attendees,
+        showAttendance: showControls,
       }),
-    [event, t, locale, timeZone, address, liveGoing, joined, attendees],
+    [event, t, locale, timeZone, address, liveGoing, joined, attendees, showControls],
   )
   const isList = layout === "list"
   const targets = buildLinkedEventCardTargetPlan()
-  const [footerWidth, setFooterWidth] = useState<number | null>(null)
-  const showAvatars = footerWidth === null || footerWidth >= FOOTER_STACK_MIN_WIDTH
 
   const card = (
     <View
@@ -171,25 +215,14 @@ export function LinkedEventCard({
         ) : null}
       </Pressable>
 
-      {selectable ? null : (
-        <View
-          style={styles.footerRow}
-          onLayout={(event) => {
-            const width = event.nativeEvent.layout.width
-            setFooterWidth((current) => (current === width ? current : width))
-          }}
-        >
-          <AttendeeStack model={model} showAvatars={showAvatars} />
-          <RsvpPill
-            going={model.rsvpActive}
-            onToggle={(currentlyGoing) => join.mutate(currentlyGoing)}
-            nextPath={`/cleanups/${event.id}`}
-            busy={join.isPending || (!cleanup && detail.isLoading)}
-            ended={hasEventEnded(liveCleanup ?? event, Date.now())}
-            size="md"
-          />
-        </View>
-      )}
+      {showControls ? (
+        <EventCardFooter
+          eventId={event.id}
+          model={model}
+          loading={!cleanup && detail.isLoading}
+          ended={hasEventEnded(liveCleanup ?? event, Date.now())}
+        />
+      ) : null}
     </View>
   )
 
@@ -215,12 +248,12 @@ export function LinkedEventCard({
 
 const useStyles = makeThemedStyles((t) => ({
   card: {
-    padding: 12,
-    borderRadius: 18,
+    padding: t.space["3"],
+    borderRadius: t.radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.sun["300"],
-    backgroundColor: t.colors.sun["100"],
-    overflow: "hidden",
+    borderColor: t.colors.border,
+    backgroundColor: t.colors.surface,
+    ...t.shadows.s1,
   },
   cardStrip: {
     width: 292,
@@ -238,7 +271,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    borderRadius: 14,
+    borderRadius: t.radius.md,
   },
   hovered: {
     opacity: 0.86,
@@ -251,13 +284,13 @@ const useStyles = makeThemedStyles((t) => ({
     width: 52,
     minHeight: 58,
     flexShrink: 0,
-    borderRadius: 14,
+    borderRadius: t.radius.md,
     paddingVertical: 7,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: t.colors.surface,
+    backgroundColor: t.colors.surfaceTint,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.sun["300"],
+    borderColor: t.colors.border,
   },
   dateChipList: {
     width: 52,
@@ -320,7 +353,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1.5,
-    borderColor: t.colors.sun["100"],
+    borderColor: t.colors.surface,
     backgroundColor: t.colors.surface,
   },
   avatarOverlap: {
@@ -331,7 +364,7 @@ const useStyles = makeThemedStyles((t) => ({
     height: 24,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: t.colors.sun["100"],
+    borderColor: t.colors.surface,
   },
   placeholderCoral: {
     backgroundColor: t.colors.bloom["300"],

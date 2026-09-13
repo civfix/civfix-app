@@ -24,7 +24,12 @@ export function VerifiedBadge({ size = "sm", color, label }: VerifiedBadgeProps)
       accessibilityRole="image"
       accessibilityLabel={label ?? t("verified_badge")}
     >
-      <BadgeCheck size={glyph} color={color ?? th.colors.brand.sky} strokeWidth={2.25} />
+      <BadgeCheck
+        size={glyph}
+        color={th.colors.onAccent}
+        fill={color ?? th.colors.verifiedFill}
+        strokeWidth={2.25}
+      />
     </View>
   )
 }

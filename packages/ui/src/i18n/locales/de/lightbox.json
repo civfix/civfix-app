@@ -3,6 +3,9 @@
     "dismiss": "Schließen",
     "close": "Schließen",
     "previous": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "zoom_label": "Zoombares Foto",
+    "zoom_hint": "Doppelt tippen zum Zoomen. Zwei Finger zusammen- oder auseinanderführen und dann ziehen, um das Bild zu verschieben.",
+    "zoom_hint_pointer": "Doppelklicken zum Zoomen. Scrollen oder zwei Finger zusammenführen, um zu zoomen, dann ziehen, um das Bild zu verschieben."
   }
 }

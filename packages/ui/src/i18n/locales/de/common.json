@@ -33,7 +33,6 @@
     "undo_repost": "Repost zurücknehmen",
     "quote_post": "Beitrag zitieren",
     "menu_label": "Repost-Optionen",
-    "menu_dismiss": "Repost-Menü schließen",
     "default_title": "CivFix-Beitrag"
   },
   "wizard_step_count": "Schritt {{current}} von {{total}}",

@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest"
 import {
+  LIGHTBOX_CHEVRON_GUTTER,
+  LIGHTBOX_CLOSE_GUTTER,
   LIGHTBOX_FALLBACK_ASPECT_RATIO,
   LIGHTBOX_STAGE_MAX_WIDTH,
   LIGHTBOX_STAGE_PADDING_X,
   LIGHTBOX_STAGE_PADDING_Y,
   lightboxAspectRatio,
+  lightboxControlOffsets,
+  lightboxMediaHeight,
   lightboxMediaWidth,
 } from "../lightboxStage"
 
@@ -63,5 +67,43 @@ describe("lightboxMediaWidth", () => {
   it("survives a garbage ratio by falling back", () => {
     const bad = lightboxMediaWidth({ ratio: Number.NaN, ...phone })
     expect(bad).toBe(lightboxMediaWidth({ ratio: LIGHTBOX_FALLBACK_ASPECT_RATIO, ...phone }))
+  })
+})
+
+describe("lightboxMediaHeight", () => {
+  it("derives the stage height from the width and the ratio", () => {
+    expect(lightboxMediaHeight(320, 16 / 9)).toBeCloseTo(180)
+    expect(lightboxMediaHeight(342, 3 / 4)).toBeCloseTo(456)
+  })
+
+  it("falls back with the width, never to zero", () => {
+    expect(lightboxMediaHeight(320, Number.NaN)).toBeCloseTo(320 / LIGHTBOX_FALLBACK_ASPECT_RATIO)
+    expect(lightboxMediaHeight(0, 16 / 9)).toBe(1)
+    expect(lightboxMediaHeight(-10, 16 / 9)).toBe(1)
+    expect(lightboxMediaHeight(320, 0)).toBeCloseTo(320 / LIGHTBOX_FALLBACK_ASPECT_RATIO)
+  })
+})
+
+describe("lightboxControlOffsets", () => {
+  it("adds the device safe area to the token gutter, so the X clears the notch", () => {
+    const offsets = lightboxControlOffsets({ top: 59, right: 0, bottom: 34, left: 0 })
+    expect(offsets.close).toEqual({ top: 59 + LIGHTBOX_CLOSE_GUTTER, right: LIGHTBOX_CLOSE_GUTTER })
+    expect(offsets.prev).toEqual({ left: LIGHTBOX_CHEVRON_GUTTER })
+    expect(offsets.next).toEqual({ right: LIGHTBOX_CHEVRON_GUTTER })
+  })
+
+  it("clears a landscape notch on either side", () => {
+    const offsets = lightboxControlOffsets({ top: 0, right: 59, bottom: 21, left: 59 })
+    expect(offsets.close).toEqual({ top: LIGHTBOX_CLOSE_GUTTER, right: 59 + LIGHTBOX_CLOSE_GUTTER })
+    expect(offsets.prev).toEqual({ left: 59 + LIGHTBOX_CHEVRON_GUTTER })
+    expect(offsets.next).toEqual({ right: 59 + LIGHTBOX_CHEVRON_GUTTER })
+  })
+
+  it("degrades to the bare token gutters where no provider reports insets (web)", () => {
+    const bare = lightboxControlOffsets(null)
+    expect(bare.close).toEqual({ top: LIGHTBOX_CLOSE_GUTTER, right: LIGHTBOX_CLOSE_GUTTER })
+    expect(lightboxControlOffsets(undefined)).toEqual(bare)
+    expect(lightboxControlOffsets({})).toEqual(bare)
+    expect(lightboxControlOffsets({ top: Number.NaN, right: -12 })).toEqual(bare)
   })
 })

@@ -33,6 +33,7 @@ import {
   LoadingState,
   PopoverMenu,
   usePopoverAnchor,
+  useRefreshControlProps,
   useSwipeActions,
   closeOpenSwipeActions,
 } from "../primitives"
@@ -473,7 +474,7 @@ const ThreadRow = React.memo(function ThreadRow({
 export function MessagingListBody() {
   const styles = useStyles()
   const th = useTheme()
-  const refreshColors = useMemo(() => [th.colors.accent], [th])
+  const refreshSpinner = useRefreshControlProps()
   const { FlatList } = useScrollHost()
   const { t } = useT("messages-list")
   const expanded = useLayoutMode() === "expanded"
@@ -520,14 +521,9 @@ export function MessagingListBody() {
   }, [refetch])
   const refresh = useMemo(
     () => (
-      <RefreshControl
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        tintColor={th.colors.textMuted}
-        colors={refreshColors}
-      />
+      <RefreshControl refreshing={refreshing} onRefresh={onRefresh} {...refreshSpinner} />
     ),
-    [refreshing, onRefresh, th, refreshColors],
+    [refreshing, onRefresh, refreshSpinner],
   )
 
   const showSearch = isAuthenticated && threads.length > 0

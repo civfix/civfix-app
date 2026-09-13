@@ -10,16 +10,18 @@ import { AppError, ErrorCode } from "@civfix/shared"
  * failures (network/5xx) a couple of times. This keeps the UI responsive when the backend is down
  * (it fails fast into an error state instead of hammering a dead endpoint).
  *
- * Caching is aggressive to pair with the persisted cache (lib/query-persist): a short default
- * `staleTime` (10s) keeps lists fresh - and the always-on realtime channel invalidates them on server
- * events - while a 24h `gcTime` matches the persisted entries' max age so a warm entry is not
- * garbage-collected out from under the next restore.
+ * Caching is aggressive to pair with the persisted cache (lib/query-persist): a 5-minute default
+ * `staleTime` is what keeps a screen the user returns to from refetching (and visibly reloading) content
+ * it already has - a remount is not a reason to refetch. Freshness comes from an explicit signal instead:
+ * a mutation's own invalidation, the realtime channel for the families it covers, and a short local
+ * `staleTime` on the volatile ones that override this default. A 24h `gcTime` matches the persisted
+ * entries' max age so a warm entry is not garbage-collected out from under the next restore.
  */
 export function makeQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 10_000,
+        staleTime: 5 * 60_000,
         // 24h serves the persisted, user-scoped families (so a warm entry survives until the next
         // restore); volatile, non-persisted queries (map, chat history, search) override this locally
         // with a short gcTime so they are reaped on their old schedule rather than held for 24h.

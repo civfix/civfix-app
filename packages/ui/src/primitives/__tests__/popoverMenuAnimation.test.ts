@@ -1,10 +1,13 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
+import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import { MOTION } from "../../theme/motion"
 import { menuOrigin, MENU_SCALE_FROM } from "../menuMotionModel"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
+const PRIMITIVES = fileURLToPath(new URL("../", import.meta.url))
 
 const motionSource = strip(read("../menuMotion.ts"))
 const motionModelSource = strip(read("../menuMotionModel.ts"))
@@ -12,9 +15,7 @@ const popover = strip(read("../PopoverMenu.tsx"))
 const anchoredPopover = strip(read("../AnchoredPopover.tsx"))
 const mapThemeToggle = strip(read("../../map/MapThemeToggle.tsx"))
 const contextMenu = strip(read("../MessageContextMenu.tsx"))
-const postActionShared = strip(read("../PostActionMenu.shared.tsx"))
-const postActionWeb = strip(read("../PostActionMenu.web.tsx"))
-const postActionNative = strip(read("../PostActionMenu.native.tsx"))
+const postActionBar = strip(read("../PostActionBar.tsx"))
 const convoBar = strip(read("../../bodies/conversation/ConvoBar.tsx"))
 const conversation = strip(read("../../bodies/ConversationBody.tsx"))
 const inbox = strip(read("../../bodies/MessagingListBody.tsx"))
@@ -149,6 +150,45 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
     expect(anchoredPopover).toMatch(/\{\.\.\.webScrimProps\}/)
   })
 
+  it("paints a real tint, and no primitive keeps an invisible dismiss layer of its own", () => {
+    expect(anchoredPopover).toMatch(/backgroundColor: t\.colors\.scrimModal/)
+    const invisible = /(?:backdrop|scrim)\w*:\s*\{[^}]*backgroundColor:\s*"transparent"/i
+    const offenders = readdirSync(PRIMITIVES)
+      .filter((name) => name.endsWith(".tsx"))
+      .filter((name) => invisible.test(strip(readFileSync(join(PRIMITIVES, name), "utf8"))))
+    expect(offenders).toEqual([])
+  })
+
+  it("takes the screen reader with it and answers the escape gesture", () => {
+    expect(anchoredPopover).toMatch(/accessibilityViewIsModal/)
+    expect(anchoredPopover).toMatch(/onAccessibilityEscape=\{onClose\}/)
+    expect(anchoredPopover).toMatch(/accessibilityLabel=\{accessibilityLabel\}/)
+  })
+
+  it("owns the native accessibility focus handoff, so no menu hand-rolls one again", () => {
+    expect(anchoredPopover).toMatch(/MOVES_ACCESSIBILITY_FOCUS = Platform\.OS !== "web"/)
+    expect(anchoredPopover).toMatch(/if \(!MOVES_ACCESSIBILITY_FOCUS \|\| node == null\) return/)
+    expect(anchoredPopover).toMatch(/findNodeHandle\(node\)/)
+    expect(anchoredPopover).toMatch(/AccessibilityInfo\.setAccessibilityFocus\(handle\)/)
+    expect(anchoredPopover).toMatch(/onShow=\{focusCard\}/)
+    expect(anchoredPopover).toMatch(/focusAccessibilityNode\(cardRef\.current\)/)
+    expect(anchoredPopover).toMatch(/focusAccessibilityNode\(returnFocusRef\?\.current\)/)
+    expect(anchoredPopover).toMatch(/cancelAnimationFrame\(focusRequestRef\.current\)/)
+    expect(popover).toMatch(/returnFocusRef=\{returnFocusRef\}/)
+  })
+
+  it("leaves keyboard dismissal to the Modal contract instead of a bespoke key listener", () => {
+    for (const src of [anchoredPopover, popover]) {
+      expect(src).not.toMatch(/addEventListener\("keydown"/)
+      expect(src).not.toMatch(/"Escape"/)
+      expect(src).not.toMatch(/\.focus\(\)/)
+    }
+  })
+
+  it("runs an item's action only after it has asked the menu to close, never before", () => {
+    expect(popover).toMatch(/onClose\(\)\s+item\.onPress\(\)/)
+  })
+
   it("carries no card chrome of its own - every caller styles its own surface", () => {
     expect(anchoredPopover).not.toMatch(/borderRadius/)
     expect(anchoredPopover).not.toMatch(/backgroundColor: t\.colors\.surface/)
@@ -219,15 +259,27 @@ describe("every dropdown in the package rides the same motion", () => {
     expect(contextMenu).toMatch(/return \(\) => springIn\.stop\(\)/)
   })
 
-  it("the repost menu stopped carrying its own timing and now leaves on the same curve", () => {
-    expect(postActionShared).toMatch(/return useMenuMotion\(\{ visible, reducedMotion, useNativeDriver \}\)/)
-    expect(postActionShared).toMatch(/menuCardStyle\(motion, origin\)/)
-    expect(postActionShared).not.toMatch(/Easing\.out\(Easing\.cubic\)/)
-    expect(postActionShared).not.toMatch(/outputRange: \[8, 0\]/)
-    for (const seam of [postActionWeb, postActionNative]) {
-      expect(seam).toMatch(/visible=\{motion\.rendered\}/)
-      expect(seam).toMatch(/pointerEvents=\{motion\.exiting \? "none" : "auto"\}/)
-      expect(seam).toMatch(/origin=\{resolvePostActionMenuOrigin\(anchorRect, position\)\}/)
+  it("the repost menu is the house PopoverMenu now, so it finally tints the screen behind it", () => {
+    expect(postActionBar).toMatch(/<PopoverMenu\s/)
+    expect(postActionBar).toMatch(/usePopoverAnchor\(openRepostMenuAt\)/)
+    expect(postActionBar).toMatch(/anchorRect=\{repostAnchor\}/)
+    expect(postActionBar).toMatch(/items=\{repostMenuItems\}/)
+    expect(postActionBar).toMatch(/onClose=\{closeRepostMenu\}/)
+    expect(postActionBar).toMatch(/returnFocusRef=\{repostAnchorRef\}/)
+    expect(postActionBar).not.toMatch(/<Modal/)
+    expect(postActionBar).not.toMatch(/from "\.\/PostActionMenu"/)
+  })
+
+  it("left no hand-rolled repost-menu seam behind to drift back out of the house standard", () => {
+    for (const rel of [
+      "PostActionMenu.tsx",
+      "PostActionMenu.web.tsx",
+      "PostActionMenu.native.tsx",
+      "PostActionMenu.shared.tsx",
+      "PostActionMenu.types.ts",
+      "PostActionMenu.webBehavior.ts",
+    ]) {
+      expect(existsSync(join(PRIMITIVES, rel)), rel).toBe(false)
     }
   })
 

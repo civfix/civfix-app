@@ -57,7 +57,6 @@
     "load_more": "Mehr laden"
   },
   "post_card": {
-    "organizer": "ORGANISATOR",
     "fix_confirmed": "Behebung bestätigt",
     "repost_attribution": "{{name}} hat repostet",
     "reported_by": "Gemeldet von {{name}}",
@@ -80,6 +79,9 @@
     "more_a11y": "Weitere Optionen für diesen Beitrag",
     "show_more": "Mehr anzeigen",
     "menu": {
+      "go_to_original": "Zum Originalbeitrag",
+      "undo_repost": "Repost zurücknehmen",
+      "undo_repost_failed": "Repost konnte nicht zurückgenommen werden",
       "copy_link": "Link kopieren",
       "link_copied": "Link kopiert",
       "link_copy_failed": "Link konnte nicht kopiert werden",

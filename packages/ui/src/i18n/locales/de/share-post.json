@@ -1,0 +1,33 @@
+{
+  "title": "Beitrag teilen",
+  "backdrop": {
+    "dismiss": "Teilen schließen"
+  },
+  "recipients": {
+    "recent": "Zuletzt",
+    "empty_prompt": "Suche jemanden über @Nutzername, um ihm diesen Beitrag zu senden.",
+    "cap": "Du kannst an höchstens {{count}} Personen gleichzeitig senden."
+  },
+  "note": {
+    "placeholder": "Nachricht hinzufügen (optional)",
+    "a11y": "Nachricht, die mit dem Link gesendet wird"
+  },
+  "actions": {
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "send": "Senden",
+    "send_count": "An {{count}} senden",
+    "more": "Anders teilen"
+  },
+  "signed_out": {
+    "title": "Melde dich an, um das zu senden",
+    "body": "Für Direktnachrichten brauchst du ein Konto. Du kannst den Link trotzdem anders teilen."
+  },
+  "toast": {
+    "sent_one": "An {{count}} Person gesendet",
+    "sent_other": "An {{count}} Personen gesendet",
+    "partial": "Senden an {{names}} fehlgeschlagen",
+    "none_sent": "Senden fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.",
+    "retry": "Erneut versuchen"
+  }
+}

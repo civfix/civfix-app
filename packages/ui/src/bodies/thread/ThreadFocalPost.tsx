@@ -19,18 +19,24 @@ import type { DetailEntry } from "../../nav/types"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
-import { OrganizerBadge } from "../PostCard"
 import { PostMediaGrid } from "../PostMediaGrid"
+import { PostOverflowButton } from "../../primitives/PostOverflowButton"
 import {
   buildPostCardModel,
   buildPostIdentity,
   identityA11yLabel,
+  postMenuSubject,
   repostSubjectAuthorId,
   splitPostBodyMentions,
 } from "../postCardModel"
+import { PostOverflowMenu } from "../PostOverflowMenu"
+import { usePopoverAnchor, type AnchorRect } from "../../primitives/PopoverMenu"
+import { useLightbox } from "../../lightbox"
 import { focalTimestamp } from "../relativeTime"
 import { useListTimeAgo } from "../useListTimeAgo"
 import { buildFocalPostStats } from "./threadModel"
+
+const EMPTY_MEDIA: PostDTO["media"] = []
 
 export type ThreadFocalParent = PostDTO | PostRefDTO | null
 
@@ -39,6 +45,7 @@ export interface ThreadFocalPostProps {
   parent: ThreadFocalParent
   onFocusComposer: () => void
   onOpenEntry?: (entry: DetailEntry) => void
+  onDeleted?: () => void
 }
 
 function parentDeleted(parent: NonNullable<ThreadFocalParent>): boolean {
@@ -156,7 +163,13 @@ function EmbeddedPost({
   )
 }
 
-export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: ThreadFocalPostProps) {
+export function ThreadFocalPost({
+  post,
+  parent,
+  onFocusComposer,
+  onOpenEntry,
+  onDeleted,
+}: ThreadFocalPostProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("home-feed")
@@ -190,6 +203,38 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
     }
     if (identity.personId) openPerson(identity.personId)
   }, [identity, openEntry, openPerson])
+  const [menuOpen, setMenuOpen] = React.useState(false)
+  const [menuAnchor, setMenuAnchor] = React.useState<AnchorRect | null>(null)
+  const menuTrigger = usePopoverAnchor(setMenuAnchor)
+  const openMenu = React.useCallback(() => {
+    menuTrigger.measure()
+    setMenuOpen(true)
+  }, [menuTrigger])
+  const closeMenu = React.useCallback(() => setMenuOpen(false), [])
+  const menuSubject = React.useMemo(() => postMenuSubject(post), [post])
+  const embedded = model.embeddedPost
+  const openOriginal = React.useMemo(
+    () =>
+      isRepost && embedded && !embedded.deleted
+        ? () => openEntry({ kind: "post-thread", id: embedded.id })
+        : undefined,
+    [isRepost, embedded, openEntry],
+  )
+  const lightbox = useLightbox()
+  const media = post.media ?? EMPTY_MEDIA
+  const openMedia = React.useCallback(
+    (index: number) => {
+      const items = media.map((item) => ({
+        url: item.url,
+        kind: item.kind,
+        thumbUrl: item.thumbUrl ?? null,
+        width: item.width ?? null,
+        height: item.height ?? null,
+      }))
+      if (items.length > 0) lightbox.open(items, index)
+    },
+    [lightbox, media],
+  )
   const timestamp = focalTimestamp(post.createdAt)
   const timestampLine = post.editedAt != null ? `${timestamp} · ${t("thread.edited")}` : timestamp
 
@@ -206,40 +251,47 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
         </View>
       ) : null}
 
-      <Pressable
-        onPress={openIdentity}
-        accessibilityRole="button"
-        accessibilityLabel={identityA11yLabel(identity, t)}
-        hitSlop={5}
-        {...focusRingProps}
-        style={({ pressed }) => [styles.authorRow, pressed ? styles.pressed : null]}
-      >
-        <Avatar
-          name={identity.avatarName}
-          seed={identity.avatarSeed}
-          photoUrl={identity.avatarUrl}
-          gradient={identity.avatarGradient}
-          size={44}
-          {...(identity.organization ? { style: styles.orgAvatar } : {})}
-          decorative
-        />
-        <View style={styles.authorCopy}>
-          <View style={styles.nameRow}>
-            <Text numberOfLines={1} style={styles.authorName}>
-              {identity.name}
-            </Text>
-            {identity.affiliation ? (
-              <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+      <View style={styles.authorRow}>
+        <Pressable
+          onPress={openIdentity}
+          accessibilityRole="button"
+          accessibilityLabel={identityA11yLabel(identity, t)}
+          hitSlop={5}
+          {...focusRingProps}
+          style={({ pressed }) => [styles.authorTarget, pressed ? styles.pressed : null]}
+        >
+          <Avatar
+            name={identity.avatarName}
+            seed={identity.avatarSeed}
+            photoUrl={identity.avatarUrl}
+            gradient={identity.avatarGradient}
+            size={44}
+            {...(identity.organization ? { style: styles.orgAvatar } : {})}
+            decorative
+          />
+          <View style={styles.authorCopy}>
+            <View style={styles.nameRow}>
+              <Text numberOfLines={1} style={styles.authorName}>
+                {identity.name}
+              </Text>
+              {identity.affiliation ? (
+                <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+              ) : null}
+            </View>
+            {identity.handleLabel ? (
+              <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
+                {identity.handleLabel}
+              </Text>
             ) : null}
-            {model.showOrganizerBadge ? <OrganizerBadge t={t} /> : null}
           </View>
-          {identity.handleLabel ? (
-            <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
-              {identity.handleLabel}
-            </Text>
-          ) : null}
-        </View>
-      </Pressable>
+        </Pressable>
+
+        <PostOverflowButton
+          label={t("post_card.more_a11y")}
+          onPress={openMenu}
+          buttonRef={menuTrigger.ref}
+        />
+      </View>
 
       {identity.viaLabel ? (
         <Pressable
@@ -275,9 +327,9 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
         </Text>
       ) : null}
 
-      {!isFix && !isRepost && (post.media ?? []).length > 0 ? (
+      {!isFix && !isRepost && media.length > 0 ? (
         <View style={styles.block}>
-          <PostMediaGrid media={post.media ?? []} t={t} radius={18} maxHeight={320} />
+          <PostMediaGrid media={media} t={t} radius={18} maxHeight={320} onPressItem={openMedia} />
         </View>
       ) : null}
 
@@ -301,7 +353,7 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
               </Text>
             </View>
           ) : null}
-          <PostMediaGrid media={post.media ?? []} t={t} radius={18} maxHeight={320} />
+          <PostMediaGrid media={media} t={t} radius={18} maxHeight={320} onPressItem={openMedia} />
         </View>
       ) : null}
 
@@ -310,7 +362,7 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
           <LinkedEventCard
             event={post.event}
             layout="list"
-            showAttendees
+            variant="detail"
             onPress={() => openEntry({ kind: "cleanup", id: post.event!.id })}
           />
         </View>
@@ -375,6 +427,16 @@ export function ThreadFocalPost({ post, parent, onFocusComposer, onOpenEntry }: 
       />
 
       <View style={styles.openingDivider} />
+
+      <PostOverflowMenu
+        visible={menuOpen}
+        subject={menuSubject}
+        anchorRect={menuAnchor}
+        onClose={closeMenu}
+        onOpenPerson={openPerson}
+        onOpenOriginal={openOriginal}
+        onDeleted={onDeleted}
+      />
     </View>
   )
 }
@@ -433,6 +495,13 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodySemiBold,
   },
   authorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  authorTarget: {
+    flex: 1,
+    minWidth: 0,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,

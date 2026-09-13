@@ -20,6 +20,7 @@ export interface LinkedEventCardContext {
   going?: number
   joined?: boolean
   attendees?: readonly LinkedEventRef["organizer"][]
+  showAttendance?: boolean
 }
 
 export function buildLinkedEventCardTargetPlan() {
@@ -72,6 +73,7 @@ export function buildLinkedEventCardModel(
     : t("linked.schedule_unavailable")
   const locationLabel = context.address?.trim() || t("linked.location_fallback")
   const goingLabel = t("going", { count: going })
+  const dateSlots = { month, day, title: event.title, schedule: scheduleLabel, location: locationLabel }
   return {
     title: event.title,
     month,
@@ -82,14 +84,9 @@ export function buildLinkedEventCardModel(
     goingLabel,
     rsvpActive: joined,
     attendeePreview: attendees.length > 0 ? attendees : [event.organizer],
-    accessibilityLabel: t("linked.a11y_card", {
-      month,
-      day,
-      title: event.title,
-      schedule: scheduleLabel,
-      location: locationLabel,
-      going: goingLabel,
-    }),
+    accessibilityLabel: context.showAttendance
+      ? t("linked.a11y_card", { ...dateSlots, going: goingLabel })
+      : t("linked.a11y_card_compact", dateSlots),
     removeAccessibilityLabel: t("linked.a11y_remove", { title: event.title }),
   }
 }

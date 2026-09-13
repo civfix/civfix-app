@@ -3,6 +3,9 @@
     "dismiss": "Descartar",
     "close": "Cerrar",
     "previous": "Anterior",
-    "next": "Siguiente"
+    "next": "Siguiente",
+    "zoom_label": "Foto ampliable",
+    "zoom_hint": "Toca dos veces para ampliar. Pellizca para acercar o alejar y arrastra para desplazarte.",
+    "zoom_hint_pointer": "Haz doble clic para ampliar. Desplázate o pellizca para acercar o alejar y arrastra para desplazarte."
   }
 }

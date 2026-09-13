@@ -45,6 +45,8 @@ export interface PopoverMenuProps {
   anchorRect?: AnchorRect | null
   items: PopoverMenuItem[]
   align?: "left" | "right"
+  accessibilityLabel?: string
+  returnFocusRef?: React.RefObject<RNView | null>
   onDismiss?: () => void
 }
 
@@ -58,6 +60,8 @@ export function PopoverMenu({
   anchorRect,
   items,
   align = "right",
+  accessibilityLabel,
+  returnFocusRef,
   onDismiss,
 }: PopoverMenuProps) {
   const styles = useStyles()
@@ -119,6 +123,8 @@ export function PopoverMenu({
         anchored ? { position: "absolute", ...cardPosition } : styles.cardCentered,
       ]}
       accessibilityRole="menu"
+      accessibilityLabel={accessibilityLabel}
+      returnFocusRef={returnFocusRef}
     >
       {items.map((item) => {
         const color = item.destructive ? th.colors.dangerInk : th.colors.text
@@ -158,15 +164,16 @@ export function PopoverMenu({
 
 export function usePopoverAnchor(onMeasured: (rect: AnchorRect) => void): {
   ref: React.RefObject<RNView | null>
-  measure: () => void
+  measure: () => boolean
 } {
   const ref = useRef<RNView | null>(null)
   const measure = useCallback(() => {
     const node = ref.current
-    if (!node || typeof node.measureInWindow !== "function") return
+    if (!node || typeof node.measureInWindow !== "function") return false
     node.measureInWindow((x, y, width, height) => {
       onMeasured({ x, y, width, height })
     })
+    return true
   }, [onMeasured])
   return { ref, measure }
 }

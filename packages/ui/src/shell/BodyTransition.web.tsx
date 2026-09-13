@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
+import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { View, type ViewStyle } from "react-native"
 import { motion } from "../theme"
 import type { BodyTransitionDirection, BodyTransitionProps } from "./BodyTransition.types"
@@ -10,6 +10,10 @@ import { prefersReducedMotion } from "./webMedia"
 const IN_DURATION = motion.bodyPush.duration
 const OUT_DURATION = motion.bodyExit.duration
 const SETTLE_FALLBACK_MS = IN_DURATION + 60
+
+type SlotId = "a" | "b"
+
+const OTHER_SLOT: Record<SlotId, SlotId> = { a: "b", b: "a" }
 
 interface LayerStyle {
   transform: string
@@ -25,14 +29,16 @@ interface Phase {
   outgoingTransition: string
 }
 
-const SETTLED: LayerStyle = { transform: translateRatio(0), opacity: 1 }
+const ARRIVED: LayerStyle = { transform: translateRatio(0), opacity: 1 }
 const OUTGOING_FROM: LayerStyle = { transform: translateRatio(0), opacity: 1 }
+const IDLE: LayerStyle = { transform: "none", opacity: 1 }
+const VACANT: LayerStyle = { transform: "none", opacity: 0 }
 
 function phaseFor(direction: BodyTransitionDirection): Phase {
   const plan = bodyTransitionPlan(direction, false, BODY_TIMING)
   return {
     incomingFrom: { transform: translateRatio(plan.fromRatio), opacity: 0 },
-    incomingTo: SETTLED,
+    incomingTo: ARRIVED,
     outgoingFrom: OUTGOING_FROM,
     outgoingTo: { transform: translateRatio(plan.exitRatio), opacity: 0 },
     incomingTransition: plan.slide
@@ -56,134 +62,171 @@ const PHASES: Record<BodyTransitionDirection, Phase> = {
   replace: phaseFor("replace"),
 }
 
-function castLayerStyle(layer: LayerStyle, transition: string): ViewStyle {
+function castLayerStyle(
+  layer: LayerStyle,
+  transition: string,
+  zIndex: number | undefined,
+  interactive: boolean,
+): ViewStyle {
   return {
     transform: layer.transform,
     opacity: layer.opacity,
     transition,
+    zIndex,
+    pointerEvents: interactive ? undefined : "none",
   } as unknown as ViewStyle
 }
 
-export function BodyTransition({ children, transitionKey, direction }: BodyTransitionProps) {
-  const [settledKey, setSettledKey] = useState(transitionKey)
-  const [anim, setAnim] = useState<{
-    outgoing: React.ReactNode
-    outgoingKey: string
-    direction: BodyTransitionDirection
-    flipped: boolean
-    outDropped: boolean
-  } | null>(null)
+type TimerRef = React.MutableRefObject<ReturnType<typeof setTimeout> | null>
 
-  const prevChildRef = useRef<React.ReactNode>(children)
-  const prevKeyRef = useRef<string>(transitionKey)
+function clearTimer(ref: TimerRef): void {
+  if (ref.current) clearTimeout(ref.current)
+  ref.current = null
+}
+
+interface Animation {
+  outgoing: React.ReactNode
+  outgoingKey: string
+  direction: BodyTransitionDirection
+  flipped: boolean
+  outDropped: boolean
+}
+
+interface TransitionState {
+  key: string
+  nav: number
+  activeSlot: SlotId
+  anim: Animation | null
+}
+
+function withAnim(state: TransitionState, patch: Partial<Animation>): TransitionState {
+  if (!state.anim) return state
+  return { ...state, anim: { ...state.anim, ...patch } }
+}
+
+export function BodyTransition({ children, transitionKey, direction }: BodyTransitionProps) {
+  const [state, setState] = useState<TransitionState>(() => ({
+    key: transitionKey,
+    nav: 0,
+    activeSlot: "a",
+    anim: null,
+  }))
+
+  const committedChildRef = useRef<React.ReactNode>(children)
   const fallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const outDropRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const inRef = useRef<any>(null)
-  const outRef = useRef<any>(null)
+  const slotARef = useRef<any>(null)
+  const slotBRef = useRef<any>(null)
 
-  useLayoutEffect(() => {
-    if (transitionKey === prevKeyRef.current) return
-    const outgoing = prevChildRef.current
-    const outgoingKey = prevKeyRef.current
-    prevChildRef.current = children
-    prevKeyRef.current = transitionKey
+  if (state.key !== transitionKey) {
+    const instant = prefersReducedMotion()
+    setState({
+      key: transitionKey,
+      nav: state.nav + 1,
+      activeSlot: instant ? state.activeSlot : OTHER_SLOT[state.activeSlot],
+      anim: instant
+        ? null
+        : {
+            outgoing: committedChildRef.current,
+            outgoingKey: state.key,
+            direction,
+            flipped: false,
+            outDropped: false,
+          },
+    })
+  }
 
-    if (prefersReducedMotion()) {
-      if (fallbackRef.current) clearTimeout(fallbackRef.current)
-      fallbackRef.current = null
-      if (outDropRef.current) clearTimeout(outDropRef.current)
-      outDropRef.current = null
-      setAnim(null)
-      setSettledKey(transitionKey)
-      return
-    }
-
-    setSettledKey(transitionKey)
-    setAnim({ outgoing, outgoingKey, direction, flipped: false, outDropped: false })
-
-    if (fallbackRef.current) clearTimeout(fallbackRef.current)
-    if (typeof window !== "undefined") {
-      fallbackRef.current = setTimeout(() => {
-        fallbackRef.current = null
-        setAnim(null)
-      }, SETTLE_FALLBACK_MS)
-    }
-  }, [transitionKey])
+  const { activeSlot, anim } = state
 
   useEffect(() => {
-    if (!anim) {
-      prevChildRef.current = children
-      prevKeyRef.current = settledKey
-    }
-  }, [children, settledKey, anim])
+    committedChildRef.current = children
+  }, [children])
 
   useLayoutEffect(() => {
+    clearTimer(fallbackRef)
+    clearTimer(outDropRef)
     if (!anim || anim.flipped) return
     if (typeof window === "undefined") return
-    const inNode = inRef.current as { offsetHeight?: number } | null
-    const outNode = outRef.current as { offsetHeight?: number } | null
-    if (typeof inNode?.offsetHeight === "number") void inNode.offsetHeight
-    else if (typeof outNode?.offsetHeight === "number") void outNode.offsetHeight
-    else void document.documentElement.offsetHeight
-    setAnim((cur) => (cur && !cur.flipped ? { ...cur, flipped: true } : cur))
 
-    if (outDropRef.current) clearTimeout(outDropRef.current)
+    const activeNode = (activeSlot === "a" ? slotARef : slotBRef).current as {
+      offsetHeight?: number
+    } | null
+    const outgoingNode = (activeSlot === "a" ? slotBRef : slotARef).current as {
+      offsetHeight?: number
+    } | null
+    if (typeof activeNode?.offsetHeight === "number") void activeNode.offsetHeight
+    else if (typeof outgoingNode?.offsetHeight === "number") void outgoingNode.offsetHeight
+    else void document.documentElement.offsetHeight
+
+    setState((cur) => (cur.anim && !cur.anim.flipped ? withAnim(cur, { flipped: true }) : cur))
+
     outDropRef.current = setTimeout(() => {
       outDropRef.current = null
-      setAnim((cur) => (cur && !cur.outDropped ? { ...cur, outDropped: true } : cur))
+      setState((cur) => (cur.anim && !cur.anim.outDropped ? withAnim(cur, { outDropped: true }) : cur))
     }, OUT_DURATION)
-  }, [anim])
+
+    fallbackRef.current = setTimeout(() => {
+      fallbackRef.current = null
+      setState((cur) => (cur.anim ? { ...cur, anim: null } : cur))
+    }, SETTLE_FALLBACK_MS)
+  }, [state.nav])
 
   useEffect(() => {
     return () => {
-      if (fallbackRef.current) clearTimeout(fallbackRef.current)
-      if (outDropRef.current) clearTimeout(outDropRef.current)
+      clearTimer(fallbackRef)
+      clearTimer(outDropRef)
     }
   }, [])
 
-  if (!anim) {
-    return <View style={styles.host}>{children}</View>
-  }
+  const phase = anim ? PHASES[anim.direction] : null
+  const flipped = !!anim?.flipped
 
-  const phase = PHASES[anim.direction]
-  const incoming = anim.flipped ? phase.incomingTo : phase.incomingFrom
-  const outgoing = anim.flipped ? phase.outgoingTo : phase.outgoingFrom
+  const activeLayer = phase ? (flipped ? phase.incomingTo : phase.incomingFrom) : IDLE
+  const activeTransition = phase && flipped ? phase.incomingTransition : "none"
+  const outgoingLayer = phase ? (flipped ? phase.outgoingTo : phase.outgoingFrom) : VACANT
+  const outgoingTransition = phase && flipped ? phase.outgoingTransition : "none"
+  const activeContent = <Fragment key={state.key}>{children}</Fragment>
+  const outgoingContent =
+    anim && !anim.outDropped ? <Fragment key={anim.outgoingKey}>{anim.outgoing}</Fragment> : null
 
   const settle = () => {
-    if (fallbackRef.current) clearTimeout(fallbackRef.current)
-    fallbackRef.current = null
-    if (outDropRef.current) clearTimeout(outDropRef.current)
-    outDropRef.current = null
-    setAnim(null)
+    clearTimer(fallbackRef)
+    clearTimer(outDropRef)
+    setState((cur) => (cur.anim ? { ...cur, anim: null } : cur))
+  }
+
+  const onLayerTransitionEnd = (slot: SlotId, event: any) => {
+    if (!phase || !flipped) return
+    if (slot !== activeSlot) return
+    if (event?.target !== event?.currentTarget) return
+    const wants = phase.incomingFrom.transform !== phase.incomingTo.transform ? "transform" : "opacity"
+    if (event?.propertyName && event.propertyName !== wants) return
+    settle()
+  }
+
+  const renderLayer = (slot: SlotId) => {
+    const active = slot === activeSlot
+    const layer = active ? activeLayer : outgoingLayer
+    const transition = active ? activeTransition : outgoingTransition
+    const zIndex = anim ? (active ? 1 : 0) : undefined
+    return (
+      <View
+        key={slot}
+        ref={slot === "a" ? slotARef : slotBRef}
+        style={[styles.layer, castLayerStyle(layer, transition, zIndex, active)]}
+        {...({
+          onTransitionEnd: (event: any) => onLayerTransitionEnd(slot, event),
+        } as any)}
+      >
+        {active ? activeContent : outgoingContent}
+      </View>
+    )
   }
 
   return (
     <View style={styles.host}>
-      {anim.outDropped ? null : (
-        <View
-          ref={outRef}
-          key={`out:${anim.outgoingKey}`}
-          style={[styles.layer, castLayerStyle(outgoing, anim.flipped ? phase.outgoingTransition : "none")]}
-          pointerEvents="none"
-        >
-          {anim.outgoing}
-        </View>
-      )}
-      <View
-        ref={inRef}
-        key={`in:${settledKey}`}
-        style={[styles.layer, castLayerStyle(incoming, anim.flipped ? phase.incomingTransition : "none")]}
-        {...({
-          onTransitionEnd: (e: any) => {
-            if (e?.target !== e?.currentTarget) return
-            const wants = phase.incomingFrom.transform !== phase.incomingTo.transform ? "transform" : "opacity"
-            if (e?.propertyName && e.propertyName !== wants) return
-            if (anim.flipped) settle()
-          },
-        } as any)}
-      >
-        {children}
-      </View>
+      {renderLayer("a")}
+      {renderLayer("b")}
     </View>
   )
 }

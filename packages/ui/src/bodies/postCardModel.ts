@@ -65,7 +65,6 @@ export function identityA11yLabel(identity: PostIdentity, t: TFunction): string 
 export interface PostCardModel {
   variant: PostCardVariant
   identity: PostIdentity
-  showOrganizerBadge: boolean
   metaLabel: string
   repostAttribution: string | null
   embeddedPost: PostRefDTO | null
@@ -131,6 +130,29 @@ export function repostBodyText(embedded: PostRefDTO): string {
   return embedded.excerpt
 }
 
+export interface PostMenuRepost {
+  id: string
+  authorId: string
+}
+
+export interface PostMenuSubject {
+  id: string
+  authorId: string | null
+  repost: PostMenuRepost | null
+}
+
+export function postMenuSubject(post: PostDTO): PostMenuSubject {
+  const original = post.kind === "repost" ? post.repostOf : null
+  if (original && !original.deleted) {
+    return {
+      id: original.id,
+      authorId: original.author?.id ?? null,
+      repost: { id: post.id, authorId: post.author.id },
+    }
+  }
+  return { id: post.id, authorId: post.author.id, repost: null }
+}
+
 export function repostSubjectAuthorId(post: PostDTO): string {
   if (post.kind === "repost" && post.repostOf?.author) return post.repostOf.author.id
   return post.author.id
@@ -166,11 +188,9 @@ export function buildPostCardModel(
       ? t(`enums:reportType.${post.report.type}`)
       : t(`enums:category.${post.report.category}`)
     : null
-  const showOrganizerBadge = Boolean(post.event && post.event.organizer.id === post.author.id)
   return {
     variant,
     identity,
-    showOrganizerBadge,
     metaLabel,
     repostAttribution: post.kind === "repost"
       ? t("post_card.repost_attribution", { name: post.author.name })
@@ -185,7 +205,7 @@ export function buildPostCardModel(
       ? options.resolutionLabel?.trim()
         || (post.event ? t("post_card.cleared_at", { title: post.event.title }) : null)
       : null,
-    handleLabel: showOrganizerBadge ? null : identity.handleLabel,
+    handleLabel: identity.handleLabel,
     timeLabel,
     contextLabel,
     bodyExpandable: body.length > BODY_CLAMP_CHARS
