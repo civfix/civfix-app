@@ -40,6 +40,9 @@ export const MIN_SLOT_DURATION_MINUTES = 15
 export const MAX_GENERATED_SHIFTS = 4
 export const MAX_BRING_ITEMS = 30
 export const MAX_LINKED_REPORTS = 200
+export const MIN_EVENT_DURATION_MINUTES = 15
+export const MAX_EVENT_DURATION_MINUTES = 1440
+export const DEFAULT_EVENT_DURATION_MINUTES = 240
 
 const EventSlotInputObjectSchema = z
   .object({

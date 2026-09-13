@@ -1,5 +1,23 @@
 # @civfix/shared
 
+## 0.46.0
+
+### Minor Changes
+
+- Event status becomes a clock reading and event times gain a zone. Registry unchanged at 344; every
+  change is additive. `host/phase.ts` adds `DEFAULT_EVENT_DURATION_MS` (with `DEFAULT_DURATION_MS` kept
+  as its alias), `EventWindowLike`, `eventStartsAtMs`, `eventEndsAtMs`, `hasEventStarted`,
+  `hasEventEnded`, `deriveCleanupStatus`, `HostStage` + `hostStage` and `nextEventBoundaryMs`;
+  `eventPhase` is now time-only (the `status === "done"` short-circuit is gone) and `EventPhaseClock`
+  keeps `completedAt` but no helper reads it. `datetime.ts` adds the zone layer — `WallClock`,
+  `zoneOffsetMs`, `wallClockInZone`, `wallClockToInstantMs`, `wallClockExistsInZone`, `zoneShortName`,
+  `sameOffsetAt`, `isValidTimeZone`, `supportedTimeZones`, `COMMON_TIMEZONES` — plus an optional
+  trailing `timeZone` on `eventChip`, `dowLabel`, `timeLabel` and `timeRangeLabel`, and the composed
+  `EventWhenParts` / `eventWhenParts` / `eventWhenLabel`. `LinkedEventRefSchema` gains
+  `timezone: string | null`, and `schemas/cleanups.ts` exports `MIN_EVENT_DURATION_MINUTES`,
+  `MAX_EVENT_DURATION_MINUTES` and `DEFAULT_EVENT_DURATION_MINUTES` as the single source for the event
+  window bounds. See DECISIONS §40-42.
+
 ## 0.45.0
 
 ### Minor Changes

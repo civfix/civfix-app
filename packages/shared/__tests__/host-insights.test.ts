@@ -224,9 +224,9 @@ describe("eventPhase", () => {
     }
   })
 
-  it("reads ended off a done status even mid-window", () => {
-    expect(eventPhase(clockOf({ status: "done" }), START)).toBe("ended")
-    expect(eventPhase(clockOf({ status: "done" }), START - LIVE_LEAD_MS - 1)).toBe("ended")
+  it("ignores a stored done status and reads the window off the clock", () => {
+    expect(eventPhase(clockOf({ status: "done" }), START)).toBe("live")
+    expect(eventPhase(clockOf({ status: "done" }), START - LIVE_LEAD_MS - 1)).toBe("upcoming")
   })
 
   it("goes live exactly two hours before the start and not a millisecond earlier", () => {
@@ -260,7 +260,7 @@ describe("eventPhase", () => {
     const cases: Array<[EventPhaseClock["status"], string, string, string]> = [
       ["upcoming", "upcoming", "live", "ended"],
       ["active", "upcoming", "live", "ended"],
-      ["done", "ended", "ended", "ended"],
+      ["done", "upcoming", "live", "ended"],
       ["cancelled", "cancelled", "cancelled", "cancelled"],
     ]
     for (const [status, atBefore, atDuring, atAfter] of cases) {

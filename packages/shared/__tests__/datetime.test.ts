@@ -1,5 +1,22 @@
 import { describe, it, expect } from "vitest"
-import { relativeAgo, eventChip, dowLabel, timeLabel, timeRangeLabel } from "../src/datetime.js"
+import {
+  relativeAgo,
+  eventChip,
+  dowLabel,
+  timeLabel,
+  timeRangeLabel,
+  COMMON_TIMEZONES,
+  eventWhenLabel,
+  eventWhenParts,
+  isValidTimeZone,
+  sameOffsetAt,
+  supportedTimeZones,
+  wallClockExistsInZone,
+  wallClockInZone,
+  wallClockToInstantMs,
+  zoneOffsetMs,
+  zoneShortName,
+} from "../src/datetime.js"
 
 /**
  * relativeAgo reconciles three former impls into one. These lock every bucket boundary with an injected
@@ -155,5 +172,186 @@ describe("timeRangeLabel", () => {
   it("returns '' for an unparseable end of the range rather than throwing", () => {
     expect(timeRangeLabel("not a date", localClock(10))).toBe("")
     expect(timeRangeLabel(localClock(8), "not a date")).toBe("")
+  })
+})
+
+const LA = "America/Los_Angeles"
+const DENVER = "America/Denver"
+const HOUR_MS = 3_600_000
+
+describe("zoneOffsetMs", () => {
+  it("reads the summer and winter offsets of a DST zone", () => {
+    expect(zoneOffsetMs(Date.parse("2026-07-01T12:00:00.000Z"), LA)).toBe(-7 * HOUR_MS)
+    expect(zoneOffsetMs(Date.parse("2026-01-01T12:00:00.000Z"), LA)).toBe(-8 * HOUR_MS)
+  })
+
+  it("handles a half-hour zone and UTC", () => {
+    expect(zoneOffsetMs(Date.parse("2026-07-01T12:00:00.000Z"), "Asia/Kolkata")).toBe(
+      5.5 * HOUR_MS,
+    )
+    expect(zoneOffsetMs(Date.parse("2026-07-01T12:00:00.000Z"), "UTC")).toBe(0)
+  })
+
+  it("is 0 for an unknown zone instead of throwing", () => {
+    expect(zoneOffsetMs(Date.parse("2026-07-01T12:00:00.000Z"), "Mars/Olympus")).toBe(0)
+  })
+})
+
+describe("wallClockInZone", () => {
+  it("reads the calendar day of the event zone, not of UTC", () => {
+    expect(wallClockInZone(Date.parse("2026-09-06T05:00:00.000Z"), LA)).toEqual({
+      year: 2026,
+      month: 9,
+      day: 5,
+      hours: 22,
+      minutes: 0,
+    })
+  })
+
+  it("reads midnight as hour 0", () => {
+    expect(wallClockInZone(Date.parse("2026-09-06T07:00:00.000Z"), LA).hours).toBe(0)
+  })
+})
+
+describe("wallClockToInstantMs", () => {
+  it("round-trips an unambiguous wall clock", () => {
+    const wc = { year: 2026, month: 9, day: 5, hours: 13, minutes: 0 }
+    expect(wallClockToInstantMs(wc, LA)).toBe(Date.parse("2026-09-05T20:00:00.000Z"))
+    expect(wallClockExistsInZone(wc, LA)).toBe(true)
+  })
+
+  it("returns null for a wall clock the spring-forward gap skipped", () => {
+    const gap = { year: 2026, month: 3, day: 8, hours: 2, minutes: 30 }
+    expect(wallClockToInstantMs(gap, LA)).toBeNull()
+    expect(wallClockExistsInZone(gap, LA)).toBe(false)
+  })
+
+  it("picks the EARLIER instant when the autumn fall-back duplicates a wall clock", () => {
+    const ambiguous = { year: 2026, month: 11, day: 1, hours: 1, minutes: 30 }
+    expect(wallClockInZone(Date.parse("2026-11-01T08:30:00.000Z"), LA)).toEqual(ambiguous)
+    expect(wallClockInZone(Date.parse("2026-11-01T09:30:00.000Z"), LA)).toEqual(ambiguous)
+    expect(wallClockToInstantMs(ambiguous, LA)).toBe(Date.parse("2026-11-01T08:30:00.000Z"))
+  })
+})
+
+describe("zone identity helpers", () => {
+  it("treats two spellings of one zone as the same offset and two real zones as different", () => {
+    const at = Date.parse("2026-09-05T20:00:00.000Z")
+    expect(sameOffsetAt(at, LA, "US/Pacific")).toBe(true)
+    expect(sameOffsetAt(at, LA, "America/New_York")).toBe(false)
+  })
+
+  it("names the zone short form at an instant", () => {
+    expect(zoneShortName(Date.parse("2026-09-05T20:00:00.000Z"), LA, "en-US")).toBe("PDT")
+    expect(zoneShortName(Date.parse("2026-01-05T20:00:00.000Z"), LA, "en-US")).toBe("PST")
+    expect(zoneShortName(Date.parse("2026-09-05T20:00:00.000Z"), "Mars/Olympus", "en-US")).toBe("")
+  })
+
+  it("validates zone ids and always offers the common fallback list", () => {
+    expect(isValidTimeZone(LA)).toBe(true)
+    expect(isValidTimeZone("Mars/Olympus")).toBe(false)
+    expect(isValidTimeZone("")).toBe(false)
+    expect(COMMON_TIMEZONES).toHaveLength(9)
+    expect(COMMON_TIMEZONES[0]).toBe("UTC")
+    for (const zone of COMMON_TIMEZONES) expect(isValidTimeZone(zone)).toBe(true)
+    expect(supportedTimeZones()).toContain(LA)
+  })
+})
+
+describe("formatters in an event zone", () => {
+  const lateNight = "2026-09-06T05:00:00.000Z"
+
+  it("chips the event zone's calendar day, not the viewer's", () => {
+    expect(eventChip(lateNight, "en-US", LA)).toEqual({ day: "5", month: "SEP" })
+    expect(eventChip(lateNight, "en-US", "UTC")).toEqual({ day: "6", month: "SEP" })
+  })
+
+  it("takes the weekday from the event zone", () => {
+    expect(dowLabel(lateNight, undefined, LA)).toBe("Sat")
+    expect(dowLabel(lateNight, undefined, "UTC")).toBe("Sun")
+    expect(dowLabel(lateNight, ["do", "lu", "ma", "mi", "ju", "vi", "sa"], LA)).toBe("sa")
+  })
+
+  it("prints the clock and the range in the event zone", () => {
+    expect(timeLabel("2026-09-05T20:00:00.000Z", "en-US", LA)).toBe("1:00 PM")
+    expect(timeRangeLabel("2026-09-05T20:00:00.000Z", "2026-09-05T23:00:00.000Z", "en-US", LA)).toBe(
+      `1:00${EN_DASH_RANGE}4:00 PM`,
+    )
+  })
+
+  it("falls back to the viewer zone for an unknown zone rather than throwing", () => {
+    const iso = "2026-09-05T20:00:00.000Z"
+    expect(timeLabel(iso, "en-US", "Mars/Olympus")).toBe(timeLabel(iso, "en-US"))
+    expect(dowLabel(iso, undefined, "Mars/Olympus")).toBe(dowLabel(iso))
+    expect(eventChip(iso, "en-US", "Mars/Olympus")).toEqual(eventChip(iso, "en-US"))
+  })
+})
+
+describe("eventWhenParts / eventWhenLabel", () => {
+  const laEvent = {
+    scheduledAt: "2026-09-05T20:00:00.000Z",
+    endsAt: "2026-09-05T23:00:00.000Z",
+    timezone: LA,
+  }
+
+  it("renders the event zone and suffixes it for a viewer on another offset", () => {
+    expect(eventWhenParts(laEvent, { locale: "en-US", viewerTimeZone: DENVER })).toEqual({
+      dow: "Sat",
+      date: "Sep 5",
+      time: "1:00 PM",
+      range: `1:00${EN_DASH_RANGE}4:00 PM`,
+      zone: "PDT",
+    })
+    expect(eventWhenLabel(laEvent, { locale: "en-US", viewerTimeZone: DENVER })).toBe(
+      `Sat, Sep 5 · 1:00${EN_DASH_RANGE}4:00 PM PDT`,
+    )
+  })
+
+  it("drops the suffix when the viewer sits at the same offset, however the zone is spelled", () => {
+    expect(eventWhenParts(laEvent, { locale: "en-US", viewerTimeZone: LA }).zone).toBeNull()
+    expect(eventWhenParts(laEvent, { locale: "en-US", viewerTimeZone: "US/Pacific" }).zone).toBeNull()
+    expect(eventWhenLabel(laEvent, { locale: "en-US", viewerTimeZone: LA })).toBe(
+      `Sat, Sep 5 · 1:00${EN_DASH_RANGE}4:00 PM`,
+    )
+  })
+
+  it("prefixes the end weekday when the event runs past midnight in its own zone", () => {
+    const overnight = {
+      scheduledAt: "2026-09-06T05:00:00.000Z",
+      endsAt: "2026-09-06T09:00:00.000Z",
+      timezone: LA,
+    }
+    expect(eventWhenLabel(overnight, { locale: "en-US", viewerTimeZone: DENVER })).toBe(
+      `Sat, Sep 5 · 10:00 PM${EN_DASH_RANGE}Sun 2:00 AM PDT`,
+    )
+  })
+
+  it("falls back to the start time alone when the event has no end", () => {
+    const open = { scheduledAt: "2026-09-05T20:00:00.000Z", timezone: LA }
+    const parts = eventWhenParts(open, { locale: "en-US", viewerTimeZone: DENVER })
+    expect(parts.range).toBeNull()
+    expect(eventWhenLabel(open, { locale: "en-US", viewerTimeZone: DENVER })).toBe(
+      "Sat, Sep 5 · 1:00 PM PDT",
+    )
+  })
+
+  it("renders a legacy zone-less row in the viewer's own zone with no suffix", () => {
+    const legacy = { scheduledAt: "2026-09-05T20:00:00.000Z", endsAt: "2026-09-05T23:00:00.000Z" }
+    const parts = eventWhenParts(legacy, { locale: "en-US", viewerTimeZone: DENVER })
+    expect(parts.zone).toBeNull()
+    expect(parts.range).toBe(
+      timeRangeLabel(legacy.scheduledAt, legacy.endsAt ?? "", "en-US"),
+    )
+  })
+
+  it("returns empty parts for an unparseable instant rather than throwing", () => {
+    expect(eventWhenParts({ scheduledAt: "not a date" })).toEqual({
+      dow: "",
+      date: "",
+      time: "",
+      range: null,
+      zone: null,
+    })
+    expect(eventWhenLabel({ scheduledAt: "not a date" })).toBe("")
   })
 })
