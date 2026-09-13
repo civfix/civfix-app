@@ -32,6 +32,8 @@ import { useLocale, useT } from "../i18n"
 import { RosterRow, type RosterRowMenu } from "./RosterRow"
 import { RoleChip } from "./RoleChip"
 import { canLeaveChat, chatMemberCount, isChatInfoRoomKind } from "./chatInfoSurface"
+import { chatInfoRosterView } from "./chatInfoVisibility"
+import { FeedNotice } from "./FeedNotice"
 import { cleanupHostStanding, hasHostCapability } from "../data/hooks/host"
 import {
   settableRolesOtherThan,
@@ -464,6 +466,14 @@ export function MembersBody({
       ? chatMemberCount(reportRosterQuery.data?.total, report?.chatMemberCount)
       : chatMemberCount(cleanup?.going, attendeesQuery.data?.going)
 
+  const roster = chatInfoRosterView({
+    roomKind,
+    scope: attendeeRoster?.scope,
+    going: memberCount,
+    shown: items.length,
+    participant: cleanup?.joined,
+  })
+
   const onBlock = useCallback(
     (personId: string) => {
       blockUser.mutate(personId, { onError: onMutationError })
@@ -562,25 +572,36 @@ export function MembersBody({
             : cleanup?.title ?? ""
         }
         subtitle={roomKind === "report" ? report?.addr ?? null : cleanup?.address ?? null}
-        memberLine={t("hero.members", { count: memberCount })}
+        memberLine={
+          roster.access === "followed-only"
+            ? t("hero.members_partial", { shown: roster.shown, going: roster.going })
+            : t("hero.members", { count: memberCount })
+        }
       />
-      <View style={styles.actions}>
-        <ActionRow
-          icon={muted ? "BellOff" : "Bell"}
-          label={muted ? t("action.unmute") : t("action.mute")}
-          disabled={toggleMute.isPending}
-          onPress={onToggleMute}
-        />
-        {canLeave ? (
-          <ActionRow
-            icon="LogOut"
-            label={t("action.leave")}
-            destructive
-            onPress={() => setLeaveOpen(true)}
-          />
-        ) : null}
-      </View>
+      {roster.canMute || canLeave ? (
+        <View style={styles.actions}>
+          {roster.canMute ? (
+            <ActionRow
+              icon={muted ? "BellOff" : "Bell"}
+              label={muted ? t("action.unmute") : t("action.mute")}
+              disabled={toggleMute.isPending}
+              onPress={onToggleMute}
+            />
+          ) : null}
+          {canLeave ? (
+            <ActionRow
+              icon="LogOut"
+              label={t("action.leave")}
+              destructive
+              onPress={() => setLeaveOpen(true)}
+            />
+          ) : null}
+        </View>
+      ) : null}
       {linkedRow}
+      {roster.showRestrictedNotice ? (
+        <FeedNotice icon="Lock" title={t("restricted.title")} body={t("restricted.body")} />
+      ) : null}
       <Text style={styles.sectionLabel}>{t("section.members")}</Text>
     </View>
   ) : (
@@ -618,6 +639,16 @@ export function MembersBody({
             iconSize={30}
             title={t("error.title")}
             body={t("error.body")}
+          />
+        ) : roster.access === "followed-only" ? (
+          <EmptyState
+            variant="detail"
+            tone="neutral"
+            icon={iconMap.Lock}
+            iconColor={th.colors.textSubtle}
+            iconSize={30}
+            title={t("restricted.title")}
+            body={t("restricted.empty_body")}
           />
         ) : (
           <EmptyState

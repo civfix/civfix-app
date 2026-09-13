@@ -12,7 +12,8 @@
   "hero": {
     "report_fallback": "Chat del reporte",
     "members_one": "{{count}} miembro",
-    "members_other": "{{count}} miembros"
+    "members_other": "{{count}} miembros",
+    "members_partial": "Mostrando {{shown}} de {{going}} asistentes"
   },
   "action": {
     "mute": "Silenciar",
@@ -40,6 +41,11 @@
   "empty": {
     "title": "Aún no hay miembros",
     "body": "Las personas que van a este evento aparecerán aquí."
+  },
+  "restricted": {
+    "title": "Aquí solo aparecen las personas que sigues",
+    "body": "Confirma tu asistencia para ver a todas las personas que van.",
+    "empty_body": "Todavía no va nadie a quien sigas. Confirma tu asistencia para ver a todas las personas que van."
   },
   "role": {
     "host": "Anfitrión"
