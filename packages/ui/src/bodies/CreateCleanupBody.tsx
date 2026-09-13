@@ -12,6 +12,7 @@ import {
 } from "../theme"
 import { Text, Icon, iconMap, type LucideIcon } from "../typography"
 import { ipLocate, type LatLng } from "@civfix/shared/geocode"
+import { timeRangeLabel } from "@civfix/shared/datetime"
 import {
   SignInPrompt,
   SkeletonBlock,
@@ -52,13 +53,14 @@ import { stackAfterFlowPublished } from "./composerCreateFlow"
 import { useDroppedPin } from "../map/droppedPinStore"
 import {
   CleanupForm,
+  hasValidEventEnd,
   emptyCleanupForm,
   isCleanupFormComplete,
   mergeDateTime,
   type CleanupFormSection,
   type CleanupFormValue,
 } from "./CleanupForm"
-import { isScheduleInFuture } from "./calendarModel"
+import { isScheduleInFuture, resolveEventEnd } from "./calendarModel"
 import { buildSlotInputs } from "./eventSlotsForm"
 import {
   EVENT_WIZARD_STEPS,
@@ -96,6 +98,7 @@ function wizardDraftOf(value: CleanupFormValue): EventWizardDraft {
     title: value.title,
     date: value.date,
     time: value.time,
+    endTime: value.endTime,
     coords: value.coords,
     slots: value.slots,
   }
@@ -212,6 +215,14 @@ function ReviewSummary({
           minute: "2-digit",
         })
       : empty
+  const whenRange =
+    value.date && value.time && value.endTime
+      ? timeRangeLabel(
+          mergeDateTime(value.date, value.time).toISOString(),
+          resolveEventEnd(value.date, value.time, value.endTime).toISOString(),
+          locale,
+        )
+      : null
   const addr = value.coords ? reverseLabelText(label.data, value.coords) : null
   const spot = value.spot.trim()
   const bring = value.bring.join(", ")
@@ -234,6 +245,7 @@ function ReviewSummary({
         icon={STEP_ICONS.when}
         label={t("wizard.summary.when")}
         value={whenText}
+        sub={whenRange}
         onEdit={() => onEdit("when")}
       />
       <SummaryRow
@@ -338,6 +350,10 @@ function HostForm({
   const isReview = isFinalEventStep(step)
   const [editingFromReview, setEditingFromReview] = useState(false)
   const canAdvance = eventStepSatisfied(step, wizardDraftOf(form))
+  const stepErrorKey =
+    step === "when" && form.date !== null && form.time !== null && !hasValidEventEnd(form)
+      ? "wizard.when.error_end"
+      : `wizard.${step}.error`
   const showWizardBack =
     editingFromReview || prevEventStep(step) !== null || standalone === undefined
 
@@ -404,8 +420,13 @@ function HostForm({
     return mergeDateTime(form.date, form.time)
   }, [form.date, form.time])
 
+  const endsAt = useMemo(() => {
+    if (!form.date || !form.time || !form.endTime) return null
+    return resolveEventEnd(form.date, form.time, form.endTime)
+  }, [form.date, form.time, form.endTime])
+
   const onPublish = useCallback(() => {
-    if (!canPublish || !form.coords || !scheduledAt) return
+    if (!canPublish || !form.coords || !scheduledAt || !endsAt) return
     setSubmitError(null)
     const spotLine = form.spot.trim().slice(0, 200)
     const linkedReportIds =
@@ -419,6 +440,7 @@ function HostForm({
         lat: form.coords.lat,
         lng: form.coords.lng,
         scheduledAt: scheduledAt.toISOString(),
+        endsAt: endsAt.toISOString(),
         ...(spotLine.length > 0 ? { address: spotLine } : {}),
         ...(form.description.trim().length > 0 ? { description: form.description.trim() } : {}),
         ...(form.bring.length > 0 ? { bring: form.bring } : {}),
@@ -477,7 +499,7 @@ function HostForm({
         },
       },
     )
-  }, [canPublish, create, createPostAsync, form, haptics, scheduledAt, standalone, t, tShare, toast])
+  }, [canPublish, create, createPostAsync, endsAt, form, haptics, scheduledAt, standalone, t, tShare, toast])
 
   return (
     <ScrollView
@@ -537,7 +559,7 @@ function HostForm({
       ) : !canAdvance && !create.isPending ? (
         <View style={styles.validationRow}>
           <Icon icon={iconMap.Info} size={15} color={th.colors.textSubtle} />
-          <Text style={styles.hintText}>{t(`wizard.${step}.error`)}</Text>
+          <Text style={styles.hintText}>{t(stepErrorKey)}</Text>
         </View>
       ) : null}
 

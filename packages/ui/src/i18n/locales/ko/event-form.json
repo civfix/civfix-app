@@ -11,7 +11,10 @@
     "whatToBring": "준비물",
     "slots": "참여 역할",
     "slotsHelp": "사람들이 맡을 구체적인 역할을 만드세요.",
-    "optional": "선택 사항"
+    "optional": "선택 사항",
+    "endTime": "종료",
+    "runsFor": "진행 시간",
+    "duration_hours": "{{count}}시간"
   },
   "linkedReports": {
     "label": "이 이벤트에서 처리할 제보",

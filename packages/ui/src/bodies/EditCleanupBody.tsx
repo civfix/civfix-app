@@ -15,13 +15,14 @@ import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { appErrorCode } from "./errorCode"
-import { isScheduleInFuture, isScheduleUntouched } from "./calendarModel"
+import { isScheduleInFuture, isScheduleUntouched, resolveEventEnd } from "./calendarModel"
 import {
   CleanupForm,
   isCleanupFormComplete,
   mergeDateTime,
   type CleanupFormValue,
 } from "./CleanupForm"
+import { mustPersistEventEnd, seededEndTime } from "./eventWizard"
 import { buildSlotInputs, slotsFromCleanup } from "./eventSlotsForm"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
@@ -52,6 +53,7 @@ function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
     coords: cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null,
     date: when,
     time: when,
+    endTime: seededEndTime(cleanup),
     bring: cleanup.bring ?? [],
     slots: slotsFromCleanup(cleanup.slots),
     linkedReportIds: cleanup.eventKind === "cleanup" ? cleanup.linkedReports.map((r) => r.id) : [],
@@ -74,6 +76,8 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
     form.time != null &&
     isScheduleUntouched(cleanup.scheduledAt, form.date, form.time)
 
+  const persistEventEnd = mustPersistEventEnd(cleanup, form)
+
   const canSave =
     isCleanupFormComplete(form, cleanup.slots) &&
     (scheduleUntouched ||
@@ -85,8 +89,13 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
     return mergeDateTime(form.date, form.time)
   }, [form.date, form.time])
 
+  const endsAt = useMemo(() => {
+    if (!form.date || !form.time || !form.endTime) return null
+    return resolveEventEnd(form.date, form.time, form.endTime)
+  }, [form.date, form.time, form.endTime])
+
   const onSave = useCallback(() => {
-    if (!canSave || !form.coords || !scheduledAt) return
+    if (!canSave || !form.coords || !scheduledAt || !endsAt) return
     setSaveError(null)
     const spotLine = form.spot.trim().slice(0, 200)
     const patch: Omit<UpdateCleanupRequest, "id"> = {
@@ -95,6 +104,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
       lat: form.coords.lat,
       lng: form.coords.lng,
       scheduledAt: scheduleUntouched ? cleanup.scheduledAt : scheduledAt.toISOString(),
+      ...(persistEventEnd ? { endsAt: endsAt.toISOString() } : {}),
       description: form.description.trim(),
       address: spotLine,
       bring: form.bring,
@@ -118,7 +128,9 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
     cleanup.id,
     cleanup.organization,
     cleanup.scheduledAt,
+    endsAt,
     form,
+    persistEventEnd,
     scheduleUntouched,
     scheduledAt,
     update,
@@ -137,6 +149,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
         onChange={setForm}
         initialCenter={form.coords}
         existingSlots={cleanup.slots}
+        eventEndUnsaved={cleanup.endsAt == null}
         currentOrganization={cleanup.organization ?? null}
       />
 

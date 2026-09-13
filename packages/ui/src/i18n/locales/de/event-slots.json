@@ -2,7 +2,8 @@
   "block": {
     "heading": "Aufgaben",
     "claim_joins_hint": "Mit einer Aufgabe sagst du zugleich zu.",
-    "filled": "{{claimed}}/{{capacity}} Plätze belegt"
+    "filled": "{{claimed}}/{{capacity}} Plätze belegt",
+    "no_slot_hint": "Noch unsicher? Sage ohne Aufgabe zu und komm, wann du kannst."
   },
   "row": {
     "open": "Frei",
@@ -18,7 +19,9 @@
     "switch": "Wechseln",
     "claim_a11y": "Aufgabe {{title}} übernehmen",
     "release_a11y": "Aufgabe {{title}} abgeben",
-    "switch_a11y": "Zu Aufgabe {{title}} wechseln"
+    "switch_a11y": "Zu Aufgabe {{title}} wechseln",
+    "any_time": "Jederzeit",
+    "window_a11y": "{{title}}, {{range}}"
   },
   "editor": {
     "add_first": "Aufgabe hinzufügen",
@@ -40,7 +43,23 @@
     "claimed_count_one": "{{count}} vergeben",
     "claimed_count_other": "{{count}} vergeben",
     "remove_warning_one": "Beim Entfernen verliert {{count}} Person ihre Zuteilung.",
-    "remove_warning_other": "Beim Entfernen verlieren {{count}} Personen ihre Zuteilung."
+    "remove_warning_other": "Beim Entfernen verlieren {{count}} Personen ihre Zuteilung.",
+    "time_label": "Zeit",
+    "whole_event": "Ganze Veranstaltung",
+    "set_time": "Zeit festlegen",
+    "whole_event_a11y": "Aufgabe {{index}} läuft über die ganze Veranstaltung",
+    "set_time_a11y": "Aufgabe {{index}} einen eigenen Beginn und ein eigenes Ende geben",
+    "starts_label": "Beginnt",
+    "ends_label": "Endet",
+    "starts_a11y": "Beginn der Aufgabe {{index}}",
+    "ends_a11y": "Ende der Aufgabe {{index}}",
+    "time_needs_event_end": "Lege zuerst eine Endzeit für die Veranstaltung fest.",
+    "time_stores_event_end": "Beim Speichern wird auch die Endzeit der Veranstaltung auf {{time}} gesetzt.",
+    "split_label": "In Schichten aufteilen",
+    "split_count_a11y": "Die Veranstaltung in {{count}} gleiche Schichten aufteilen",
+    "generated_title_prefix": "Schicht",
+    "generated_title": "{{prefix}} {{n}}",
+    "prefix_a11y": "Namenspräfix für erzeugte Schichten"
   },
   "error": {
     "empty_title": "Gib dieser Aufgabe einen Namen.",
@@ -48,11 +67,15 @@
     "capacity_invalid": "Gib eine Anzahl an Plätzen ein oder lass das Feld leer.",
     "capacity_below_claimed": "{{count}} Personen haben diese Aufgabe bereits übernommen.",
     "full": "Diese Aufgabe wurde gerade vergeben.",
-    "generic": "Aufgabe konnte nicht aktualisiert werden. Versuche es erneut."
+    "generic": "Aufgabe konnte nicht aktualisiert werden. Versuche es erneut.",
+    "window_needs_event_end": "Lege eine Endzeit für die Veranstaltung fest, bevor du dieser Aufgabe eine Zeit gibst.",
+    "window_outside_event": "Halte die Schicht innerhalb von {{range}}.",
+    "window_too_short": "Eine Schicht braucht mindestens {{min}} Minuten."
   },
   "roster": {
     "unassigned": "Keine Aufgabe",
-    "empty_slot": "Noch niemand"
+    "empty_slot": "Noch niemand",
+    "window_a11y": "{{title}} von {{range}}"
   },
   "toast": {
     "claimed": "Aufgabe übernommen",

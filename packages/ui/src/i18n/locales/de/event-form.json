@@ -11,7 +11,10 @@
     "whatToBring": "Was mitbringen",
     "slots": "Aufgaben",
     "slotsHelp": "Biete konkrete Aufgaben zum Übernehmen an.",
-    "optional": "optional"
+    "optional": "optional",
+    "endTime": "Endet",
+    "runsFor": "Dauer",
+    "duration_hours": "{{count}} Std."
   },
   "linkedReports": {
     "label": "Meldungen, die dieses Event bearbeitet",

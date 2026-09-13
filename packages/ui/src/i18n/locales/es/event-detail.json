@@ -28,6 +28,7 @@
     "message_crew": "Mensaje al grupo",
     "message_crew_a11y": "Enviar mensaje al equipo del evento",
     "message_crew_hint": "Confirma tu asistencia para entrar al chat",
+    "message_crew_hint_ended": "Solo quienes se apuntaron pueden abrir este chat",
     "cancel_event": "Cancelar evento",
     "cancel_event_a11y": "Cancelar este evento",
     "invite": "Invitar",
@@ -94,7 +95,9 @@
     "pending": "La persona anfitriona aún no ha registrado las horas de voluntariado.",
     "credited": "Se te acreditaron {{hours}} horas de voluntariado",
     "credited_a11y": "Se te acreditaron {{hours}} horas de voluntariado. Ver tu registro de servicio.",
-    "not_credited": "No se registraron horas de voluntariado para ti en este evento."
+    "not_credited": "No se registraron horas de voluntariado para ti en este evento.",
+    "credited_shift": "Se te acreditaron {{hours}} horas de voluntariado por tu turno {{slot}} ({{range}})",
+    "credited_shift_a11y": "Se te acreditaron {{hours}} horas de voluntariado por tu turno {{slot}}, {{range}}. Ver tu registro de servicio."
   },
   "log_hours": {
     "action": "Registrar horas de voluntariado",
@@ -126,7 +129,10 @@
     "row_unknown": "Antiguo asistente",
     "blank_hint": "Deja una fila en blanco para quien no haya asistido.",
     "blank_hint_edit": "Escribe un número nuevo para corregir las horas ya acreditadas. Una fila en blanco se omite: borrarla no elimina las horas que ya se acreditaron.",
-    "self_note": "Tus propias horas no aparecen aquí. Otra persona anfitriona tiene que acreditártelas."
+    "self_note": "Tus propias horas no aparecen aquí. Otra persona anfitriona tiene que acreditártelas.",
+    "suggest_hint": "Las sugerencias salen del turno de cada persona y de la duración prevista del evento. Confirma lo que realmente trabajaron.",
+    "suggest_chip": "{{hours}} h · {{slot}}",
+    "suggest_chip_a11y": "Usar {{hours}} horas del turno {{slot}} para {{name}}"
   },
   "guests": {
     "heading": "Invitados",

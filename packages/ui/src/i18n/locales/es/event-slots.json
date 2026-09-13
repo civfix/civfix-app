@@ -2,7 +2,8 @@
   "block": {
     "heading": "Puestos disponibles",
     "claim_joins_hint": "Al tomar un puesto también confirmas tu asistencia.",
-    "filled": "{{claimed}}/{{capacity}} lugares ocupados"
+    "filled": "{{claimed}}/{{capacity}} lugares ocupados",
+    "no_slot_hint": "¿Aún no lo tienes claro? Confirma tu asistencia sin puesto y ven a cualquier hora."
   },
   "row": {
     "open": "Disponible",
@@ -18,7 +19,9 @@
     "switch": "Cambiar",
     "claim_a11y": "Tomar el puesto {{title}}",
     "release_a11y": "Dejar el puesto {{title}}",
-    "switch_a11y": "Cambiar al puesto {{title}}"
+    "switch_a11y": "Cambiar al puesto {{title}}",
+    "any_time": "A cualquier hora",
+    "window_a11y": "{{title}}, {{range}}"
   },
   "editor": {
     "add_first": "Añadir un puesto",
@@ -40,7 +43,23 @@
     "claimed_count_one": "{{count}} tomado",
     "claimed_count_other": "{{count}} tomados",
     "remove_warning_one": "Eliminar un puesto deja sin asignar a {{count}} persona que lo tomó.",
-    "remove_warning_other": "Eliminar un puesto deja sin asignar a {{count}} personas que lo tomaron."
+    "remove_warning_other": "Eliminar un puesto deja sin asignar a {{count}} personas que lo tomaron.",
+    "time_label": "Horario",
+    "whole_event": "Todo el evento",
+    "set_time": "Fijar un horario",
+    "whole_event_a11y": "El puesto {{index}} dura todo el evento",
+    "set_time_a11y": "Dar al puesto {{index}} su propio inicio y fin",
+    "starts_label": "Empieza",
+    "ends_label": "Termina",
+    "starts_a11y": "Hora de inicio del puesto {{index}}",
+    "ends_a11y": "Hora de fin del puesto {{index}}",
+    "time_needs_event_end": "Primero fija una hora de fin para el evento.",
+    "time_stores_event_end": "Al guardar también se fijará la hora de fin del evento a las {{time}}.",
+    "split_label": "Dividir en turnos",
+    "split_count_a11y": "Dividir el evento en {{count}} turnos iguales",
+    "generated_title_prefix": "Turno",
+    "generated_title": "{{prefix}} {{n}}",
+    "prefix_a11y": "Prefijo para el nombre de los turnos generados"
   },
   "error": {
     "empty_title": "Ponle un nombre a este puesto.",
@@ -48,11 +67,15 @@
     "capacity_invalid": "Escribe un número de lugares o déjalo en blanco.",
     "capacity_below_claimed": "{{count}} personas ya tomaron este puesto.",
     "full": "Ese puesto se acaba de llenar.",
-    "generic": "No se pudo actualizar tu puesto. Inténtalo de nuevo."
+    "generic": "No se pudo actualizar tu puesto. Inténtalo de nuevo.",
+    "window_needs_event_end": "Fija una hora de fin para el evento antes de dar horario a este puesto.",
+    "window_outside_event": "Mantén el turno dentro de {{range}}.",
+    "window_too_short": "Un turno necesita al menos {{min}} minutos."
   },
   "roster": {
     "unassigned": "Sin puesto",
-    "empty_slot": "Nadie todavía"
+    "empty_slot": "Nadie todavía",
+    "window_a11y": "{{title}} de {{range}}"
   },
   "toast": {
     "claimed": "Puesto tomado",

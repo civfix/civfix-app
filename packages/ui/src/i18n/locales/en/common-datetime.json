@@ -11,11 +11,16 @@
   },
   "title": {
     "date": "Pick a date",
-    "time": "Pick a time"
+    "time": "Pick a time",
+    "end_time": "Pick an end time"
   },
   "placeholder": {
     "pick_date": "Pick a date",
-    "pick_time": "Pick a time"
+    "pick_time": "Pick a time",
+    "pick_end_time": "Pick an end time"
+  },
+  "value": {
+    "end_next_day": "{{time}} (next day)"
   },
   "action": {
     "done": "Done"
@@ -29,6 +34,7 @@
     "previous_month": "Previous month",
     "next_month": "Next month",
     "date_field": "Date: {{value}}",
-    "time_field": "Time: {{value}}"
+    "time_field": "Time: {{value}}",
+    "end_time_field": "Ends: {{value}}"
   }
 }

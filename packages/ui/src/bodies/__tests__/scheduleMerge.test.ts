@@ -2,7 +2,12 @@ process.env.TZ = "America/Los_Angeles"
 
 import { describe, expect, it } from "vitest"
 import {
+  DURATION_CHIP_HOURS,
   PAST_SCHEDULE_GRACE_MS,
+  durationChipFor,
+  endOffsetMs,
+  endTimeAfter,
+  eventDurationMs,
   isScheduleInFuture,
   isScheduleUntouched,
   isTimeSlotSelectable,
@@ -174,5 +179,48 @@ describe("isScheduleInFuture (publish gate)", () => {
   it("accepts an instant inside the grace window so a pick seconds before the minute rolls does not flap", () => {
     const now = new Date(timeOn(NORMAL_DAY(), 12, 0).getTime() + PAST_SCHEDULE_GRACE_MS - 1_000)
     expect(isScheduleInFuture(NORMAL_DAY(), timeOn(NORMAL_DAY(), 12, 0), now)).toBe(true)
+  })
+})
+
+
+describe("durationChipFor across the spring-forward gap", () => {
+  const CHIP_MS = 3_600_000
+
+  it("lights the chip the host actually tapped, not the one the wall clock suggests", () => {
+    const day = SPRING_FORWARD_DAY()
+    const start = timeOn(day, 1, 30)
+    const end = endTimeAfter(day, start, 1 * CHIP_MS)
+    expect([end.getHours(), end.getMinutes()]).toEqual([3, 30])
+    expect(eventDurationMs(day, start, end)).toBe(1 * CHIP_MS)
+    expect(endOffsetMs(start, end)).toBe(2 * CHIP_MS)
+    expect(durationChipFor(day, start, end)).toBe(1)
+  })
+
+  it("collapses the 1 h and 2 h chips onto the same instant, and says so honestly", () => {
+    const day = SPRING_FORWARD_DAY()
+    const start = timeOn(day, 1, 30)
+    const oneHour = endTimeAfter(day, start, 1 * CHIP_MS)
+    const twoHours = endTimeAfter(day, start, 2 * CHIP_MS)
+    expect(twoHours.getTime()).toBe(oneHour.getTime())
+    expect(durationChipFor(day, start, twoHours)).toBe(1)
+    expect(durationChipFor(day, start, endTimeAfter(day, start, 3 * CHIP_MS))).toBe(2)
+  })
+
+  it("leaves a start clear of the gap alone on the same day", () => {
+    const day = SPRING_FORWARD_DAY()
+    const start = timeOn(day, 9, 0)
+    for (const hours of DURATION_CHIP_HOURS) {
+      expect(durationChipFor(day, start, endTimeAfter(day, start, hours * CHIP_MS))).toBe(hours)
+    }
+  })
+
+  it("lights every chip on a normal day", () => {
+    const day = NORMAL_DAY()
+    const start = timeOn(day, 9, 0)
+    for (const hours of DURATION_CHIP_HOURS) {
+      const end = endTimeAfter(day, start, hours * CHIP_MS)
+      expect(eventDurationMs(day, start, end)).toBe(hours * CHIP_MS)
+      expect(durationChipFor(day, start, end)).toBe(hours)
+    }
   })
 })

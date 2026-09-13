@@ -11,11 +11,16 @@
   },
   "title": {
     "date": "Datum wählen",
-    "time": "Uhrzeit wählen"
+    "time": "Uhrzeit wählen",
+    "end_time": "Endzeit wählen"
   },
   "placeholder": {
     "pick_date": "Datum wählen",
-    "pick_time": "Uhrzeit wählen"
+    "pick_time": "Uhrzeit wählen",
+    "pick_end_time": "Endzeit wählen"
+  },
+  "value": {
+    "end_next_day": "{{time}} (nächster Tag)"
   },
   "action": {
     "done": "Fertig"
@@ -29,6 +34,7 @@
     "previous_month": "Vorheriger Monat",
     "next_month": "Nächster Monat",
     "date_field": "Datum: {{value}}",
-    "time_field": "Uhrzeit: {{value}}"
+    "time_field": "Uhrzeit: {{value}}",
+    "end_time_field": "Endet: {{value}}"
   }
 }

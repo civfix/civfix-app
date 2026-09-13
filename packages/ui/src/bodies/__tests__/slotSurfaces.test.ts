@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest"
 const SOURCES = {
   "SlotEditor.tsx": readFileSync(new URL("../SlotEditor.tsx", import.meta.url), "utf8"),
   "EventSlotsBlock.tsx": readFileSync(new URL("../EventSlotsBlock.tsx", import.meta.url), "utf8"),
+  "SlotWindowPicker.tsx": readFileSync(new URL("../SlotWindowPicker.tsx", import.meta.url), "utf8"),
 }
 
 describe("slot surfaces render inside their host's scroller", () => {
@@ -77,6 +78,49 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
     expect(source).toContain("slotsFilledSummary(slots)")
     expect(source).toContain("filled.capacity !== null && filled.capacity > 0")
     expect(source).toContain('t("block.filled"')
+  })
+})
+
+describe("the slot editor validates against the EVENT's window, not just the row", () => {
+  const editor = code(SOURCES["SlotEditor.tsx"])
+  const form = code(readFileSync(new URL("../CleanupForm.tsx", import.meta.url), "utf8"))
+
+  it("passes the event window into the per-row error the card paints", () => {
+    expect(editor).toContain("slotDraftError(draft, claimed, window)")
+  })
+
+  it("renders the window picker only for a row that HAS a window and an event end", () => {
+    expect(editor).toContain("timed && window && eventEnd && draft.startsAt && draft.endsAt")
+  })
+
+  it("feeds the editor the same window the submit gate uses", () => {
+    expect(form).toContain("window={cleanupFormWindow(value)}")
+    expect(form).toMatch(/slotsValid\([\s\S]*?cleanupFormWindow\(value\),/)
+  })
+
+  it("offers Split into shifts only inside the caps and floors the schema enforces", () => {
+    const form = code(readFileSync(new URL("../eventSlotsForm.ts", import.meta.url), "utf8"))
+    expect(form).toContain("existing.length + count > MAX_EVENT_SLOTS")
+    expect(form).toContain("count <= MAX_GENERATED_SHIFTS")
+    expect(form).toContain("shift.end - shift.start < MIN_SLOT_DURATION_MS")
+  })
+
+  it("greys the out-of-reach split chips instead of hiding them, and de-dupes a second tap", () => {
+    expect(editor).toContain("const offeredSplits = splitCounts(eventWindow, value, shiftTitle)")
+    expect(editor).toContain("disabled={!offeredSplits.includes(count)}")
+    expect(editor).toMatch(/generateShiftDrafts\([\s\S]*?value,\s*\)/)
+  })
+
+  it("greys Set a time until the event HAS an end, rather than letting the tap do nothing", () => {
+    expect(editor).toContain("disabled={eventEnd === null}")
+  })
+
+  it("tells the host of an end-less event that timing a slot will store the end it shows", () => {
+    const edit = code(readFileSync(new URL("../EditCleanupBody.tsx", import.meta.url), "utf8"))
+    expect(editor).toContain("eventEndUnsaved && timed")
+    expect(editor).toContain('t("editor.time_stores_event_end"')
+    expect(form).toContain("eventEndUnsaved={eventEndUnsaved}")
+    expect(edit).toContain("eventEndUnsaved={cleanup.endsAt == null}")
   })
 })
 

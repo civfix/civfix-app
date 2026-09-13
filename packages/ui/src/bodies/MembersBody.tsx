@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useMemo, useState } from "react"
 import { View, Pressable, Image, Modal, StyleSheet } from "react-native"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/shared"
+import { timeRangeLabel } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, headingLevel, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
@@ -27,7 +28,7 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
-import { useT } from "../i18n"
+import { useLocale, useT } from "../i18n"
 import { RosterRow, type RosterRowMenu } from "./RosterRow"
 import { RoleChip } from "./RoleChip"
 import { canLeaveChat, chatMemberCount, isChatInfoRoomKind } from "./chatInfoSurface"
@@ -183,22 +184,41 @@ function SlotGroupHeader({
   title,
   claimed,
   capacity,
+  startsAt,
+  endsAt,
 }: {
   title: string
   claimed: number
   capacity: number | null
+  startsAt: string | null
+  endsAt: string | null
 }) {
   const styles = useStyles()
+  const { t: tSlots } = useT("event-slots")
+  const { locale } = useLocale()
+  const range = startsAt && endsAt ? timeRangeLabel(startsAt, endsAt, locale) : null
   return (
-    <View style={styles.slotHeader} accessibilityRole="header" {...headingLevel(2)}>
-      <Text style={styles.slotHeaderTitle} numberOfLines={1}>
-        {title}
-      </Text>
-      <View style={styles.slotHeaderCount}>
-        <Text style={styles.slotHeaderCountText}>
-          {capacity == null ? String(claimed) : `${claimed}/${capacity}`}
+    <View
+      style={styles.slotHeaderBlock}
+      accessibilityRole="header"
+      {...headingLevel(2)}
+      {...(range ? { accessibilityLabel: tSlots("roster.window_a11y", { title, range }) } : {})}
+    >
+      <View style={styles.slotHeader}>
+        <Text style={styles.slotHeaderTitle} numberOfLines={1}>
+          {title}
         </Text>
+        <View style={styles.slotHeaderCount}>
+          <Text style={styles.slotHeaderCountText}>
+            {capacity == null ? String(claimed) : `${claimed}/${capacity}`}
+          </Text>
+        </View>
       </View>
+      {range ? (
+        <Text style={styles.slotHeaderRange} numberOfLines={1}>
+          {range}
+        </Text>
+      ) : null}
     </View>
   )
 }
@@ -470,7 +490,13 @@ export function MembersBody({
       if ("kind" in item) {
         if (item.kind === "slot-header") {
           return (
-            <SlotGroupHeader title={item.title} claimed={item.claimed} capacity={item.capacity} />
+            <SlotGroupHeader
+            title={item.title}
+            claimed={item.claimed}
+            capacity={item.capacity}
+            startsAt={item.startsAt}
+            endsAt={item.endsAt}
+          />
           )
         }
         if (item.kind === "slot-empty") {
@@ -807,12 +833,20 @@ const useStyles = makeThemedStyles((t) => ({
     minWidth: 0,
   },
 
+  slotHeaderBlock: {
+    paddingTop: t.space["4"],
+    paddingBottom: t.space["2"],
+  },
   slotHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["2"],
-    paddingTop: t.space["4"],
-    paddingBottom: t.space["2"],
+  },
+  slotHeaderRange: {
+    marginTop: t.space["1"],
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    color: t.colors.textSubtle,
   },
   slotHeaderTitle: {
     flexShrink: 1,

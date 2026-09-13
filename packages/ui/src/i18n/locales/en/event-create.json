@@ -18,8 +18,9 @@
     },
     "when": {
       "title": "When is it?",
-      "help": "Pick a day and a start time.",
-      "error": "Pick a date and start time in the future."
+      "help": "Pick a day, a start time and how long it runs.",
+      "error": "Pick a date and start time in the future.",
+      "error_end": "Pick an end time after the start."
     },
     "where": {
       "title": "Where do you meet?",

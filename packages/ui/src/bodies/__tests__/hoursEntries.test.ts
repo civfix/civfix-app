@@ -1,9 +1,14 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import type { EventSlotDTO } from "@civfix/shared"
 import {
   parseHoursDraft,
   hoursDraftValid,
   buildHoursEntries,
+  plannedEventHours,
   seedHoursDrafts,
+  suggestedHoursFor,
+  type HoursCleanup,
 } from "../hoursEntries"
 import { formatHours } from "../formatHours"
 
@@ -86,6 +91,20 @@ describe("buildHoursEntries", () => {
     expect(buildHoursEntries(ids, {}, MAX)).toBeNull()
     expect(buildHoursEntries(ids, { a: "", b: "  " }, MAX)).toBeNull()
   })
+
+  it("cannot credit the ACTING HOST: the id list is the roster minus the viewer", () => {
+    const host = "host-1"
+    const roster = [...ids, host]
+    const drafts = { a: "2", [host]: "6" }
+    expect(buildHoursEntries(roster, drafts, MAX)).toContainEqual({ userId: host, hours: 6 })
+    const withoutHost = roster.filter((id) => id !== host)
+    expect(buildHoursEntries(withoutHost, drafts, MAX)).toEqual([{ userId: "a", hours: 2 }])
+
+    const editor = readFileSync(new URL("../LogHoursEditor.tsx", import.meta.url), "utf8")
+    expect(editor).toContain("roster.filter((a) => a.id !== viewerId)")
+    expect(editor).toMatch(/buildHoursEntries\(\s*attendees\.map\(\(a\) => a\.id\),/)
+    expect(editor).not.toMatch(/buildHoursEntries\(\s*roster/)
+  })
 })
 
 describe("formatHours", () => {
@@ -157,5 +176,90 @@ describe("editing rows that arrived already credited", () => {
   it("never credits a userId that is not in the shown roster (the viewer is filtered out upstream)", () => {
     const drafts = { a: "2", viewer: "3" }
     expect(buildHoursEntries(["a"], drafts, MAX)).toEqual([{ userId: "a", hours: 2 }])
+  })
+})
+
+const EVENT_START = "2026-06-08T16:00:00.000Z"
+
+function iso(offsetMinutes: number): string {
+  return new Date(Date.parse(EVENT_START) + offsetMinutes * 60_000).toISOString()
+}
+
+function timedSlot(id: string, startMin: number, endMin: number): EventSlotDTO {
+  return {
+    id,
+    title: `Slot ${id}`,
+    claimed: 0,
+    sortOrder: 0,
+    startsAt: iso(startMin),
+    endsAt: iso(endMin),
+  }
+}
+
+function cleanup(over: Partial<HoursCleanup> = {}): HoursCleanup {
+  return { scheduledAt: EVENT_START, endsAt: iso(240), slots: [], ...over }
+}
+
+describe("plannedEventHours", () => {
+  it("is the event's own length, to two decimals", () => {
+    expect(plannedEventHours(cleanup())).toBe(4)
+    expect(plannedEventHours(cleanup({ endsAt: iso(90) }))).toBe(1.5)
+    expect(plannedEventHours(cleanup({ endsAt: iso(100) }))).toBe(1.67)
+  })
+
+  it("is null for an event with no end, and for an end that is not after the start", () => {
+    expect(plannedEventHours(cleanup({ endsAt: null }))).toBeNull()
+    expect(plannedEventHours(cleanup({ endsAt: EVENT_START }))).toBeNull()
+    expect(plannedEventHours(cleanup({ endsAt: iso(-60) }))).toBeNull()
+  })
+
+  it("never suggests more than the ledger accepts", () => {
+    expect(plannedEventHours(cleanup({ endsAt: iso(60 * 40) }))).toBe(MAX)
+  })
+})
+
+describe("suggestedHoursFor", () => {
+  const board = [timedSlot("s1", 0, 120), { id: "s2", title: "Grill", claimed: 0, sortOrder: 1 }]
+
+  it("prefers the length of the TIMED slot the person holds, and names it", () => {
+    expect(suggestedHoursFor({ slot: { id: "s1" } }, cleanup({ slots: board }))).toEqual({
+      hours: 2,
+      slotTitle: "Slot s1",
+    })
+  })
+
+  it("falls back to the event's planned length for an untimed slot or no slot at all", () => {
+    expect(suggestedHoursFor({ slot: { id: "s2" } }, cleanup({ slots: board }))).toEqual({
+      hours: 4,
+      slotTitle: null,
+    })
+    expect(suggestedHoursFor({ slot: null }, cleanup({ slots: board }))).toEqual({
+      hours: 4,
+      slotTitle: null,
+    })
+    expect(suggestedHoursFor({}, cleanup({ slots: board }))).toEqual({ hours: 4, slotTitle: null })
+  })
+
+  it("falls back to the planned length when the held slot is not on the board any more", () => {
+    expect(suggestedHoursFor({ slot: { id: "gone" } }, cleanup({ slots: board }))).toEqual({
+      hours: 4,
+      slotTitle: null,
+    })
+  })
+
+  it("suggests nothing at all for an event with no end and no timed slot", () => {
+    expect(suggestedHoursFor({ slot: { id: "s2" } }, cleanup({ endsAt: null, slots: board }))).toBeNull()
+    expect(suggestedHoursFor({}, cleanup({ endsAt: null }))).toBeNull()
+  })
+
+  it("still names the shift on an event with no end - the slot carries its own window", () => {
+    expect(
+      suggestedHoursFor({ slot: { id: "s1" } }, cleanup({ endsAt: null, slots: board })),
+    ).toEqual({ hours: 2, slotTitle: "Slot s1" })
+  })
+
+  it("produces a value the row editor accepts", () => {
+    const suggestion = suggestedHoursFor({ slot: { id: "s1" } }, cleanup({ slots: board }))
+    expect(hoursDraftValid(formatHours(suggestion?.hours ?? 0), MAX)).toBe(true)
   })
 })

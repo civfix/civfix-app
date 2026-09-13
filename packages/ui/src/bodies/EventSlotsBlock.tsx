@@ -24,19 +24,22 @@ import React, { useCallback, useState } from "react"
 import { View, Pressable, StyleSheet, Animated } from "react-native"
 import { useQueryClient } from "@tanstack/react-query"
 import type { EventSlotDTO } from "@civfix/shared"
+import { timeRangeLabel } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, webCursorPointer, webTransition, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { MetaDot, useToast } from "../primitives"
 import { POP_ENABLED, usePopScale } from "../primitives/usePopScale"
 import { cleanupDetailFilters, useClaimEventSlot, useRequireAuth } from "../data"
-import { useT } from "../i18n"
+import { useLocale, useT } from "../i18n"
 import { appErrorCode } from "./errorCode"
 import {
+  boardHasTimedSlots,
   mySlotId,
+  slotDisplayOrder,
   slotRemaining,
   slotRowState,
   slotsFilledSummary,
-  sortSlots,
+  slotWindow,
   type SlotRowState,
 } from "./eventSlotsModel"
 
@@ -80,11 +83,29 @@ function capacityLine(slot: EventSlotDTO, state: SlotRowState, t: Translate): st
   }
 }
 
+function MetaLine({ parts }: { parts: readonly string[] }) {
+  const styles = useStyles()
+  const th = useTheme()
+  return (
+    <View style={styles.subRow}>
+      {parts.map((part, index) => (
+        <React.Fragment key={part}>
+          {index > 0 ? <MetaDot color={th.colors.textSubtle} /> : null}
+          <Text style={index === 0 ? styles.sub : styles.subMeta} numberOfLines={1}>
+            {part}
+          </Text>
+        </React.Fragment>
+      ))}
+    </View>
+  )
+}
+
 function SlotRow({
   slot,
   state,
   busy,
   pending,
+  mixedBoard,
   onPress,
 }: {
   slot: EventSlotDTO
@@ -97,12 +118,14 @@ function SlotRow({
   busy: boolean
   /** THIS row is the one in flight - the dim and the a11y busy state, so only the tapped pill reacts. */
   pending: boolean
+  mixedBoard: boolean
   /** Claim / switch / release. Absent for the two non-interactive states. */
   onPress?: () => void
 }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-slots")
+  const { locale } = useLocale()
   const mine = state === "mine"
   // OWNERSHIP vs INTERACTIVITY. A DONE event renders `readonly`, but the viewer who worked that slot
   // should still see it marked as theirs - so the moss tile/fill keys off `slot.mine`, while the pill and
@@ -115,6 +138,11 @@ function SlotRow({
   const line = capacityLine(slot, state, t)
   const description = slot.description?.trim() ?? ""
   const hasDescription = description.length > 0
+  const window = slotWindow(slot)
+  const range =
+    window === null ? null : timeRangeLabel(window.start.toISOString(), window.end.toISOString(), locale)
+  const windowText = range ?? (mixedBoard ? t("row.any_time") : null)
+  const metaParts = [windowText, line].filter((part): part is string => part !== null)
 
   const tile = (
     <View style={[styles.tile, owned ? styles.tileMine : null]}>
@@ -205,29 +233,19 @@ function SlotRow({
         tile
       )}
 
-      <View style={styles.meta}>
+      <View
+        style={styles.meta}
+        {...(range ? { accessibilityRole: "text" as const, accessibilityLabel: t("row.window_a11y", { title: slot.title, range }) } : {})}
+      >
         <Text style={styles.title} numberOfLines={1}>
           {slot.title}
         </Text>
         {hasDescription ? (
-          <View style={styles.subRow}>
-            <Text style={styles.sub} numberOfLines={line ? 1 : 2}>
-              {description}
-            </Text>
-            {line ? (
-              <>
-                <MetaDot color={th.colors.textSubtle} />
-                <Text style={styles.subMeta} numberOfLines={1}>
-                  {line}
-                </Text>
-              </>
-            ) : null}
-          </View>
-        ) : line ? (
-          <Text style={styles.sub} numberOfLines={1}>
-            {line}
+          <Text style={styles.sub} numberOfLines={metaParts.length > 0 ? 1 : 2}>
+            {description}
           </Text>
         ) : null}
+        {metaParts.length > 0 ? <MetaLine parts={metaParts} /> : null}
       </View>
 
       {pill ? (
@@ -297,7 +315,8 @@ export function EventSlotsBlock({ cleanupId, slots, joined, readonly = false }: 
   )
 
   const mine = mySlotId(slots)
-  const ordered = sortSlots(slots)
+  const ordered = slotDisplayOrder(slots)
+  const mixedBoard = boardHasTimedSlots(slots)
   // The block's one-line summary. `capacity` is null when ANY slot is unlimited - the model refuses to sum
   // a mix, and there is nothing honest to print for one, so the line is simply omitted then (as it is for
   // a block with no capped spots at all).
@@ -314,6 +333,9 @@ export function EventSlotsBlock({ cleanupId, slots, joined, readonly = false }: 
         ) : null}
       </View>
       {!joined && !readonly ? <Text style={styles.hint}>{t("block.claim_joins_hint")}</Text> : null}
+      {!joined && !readonly && mixedBoard ? (
+        <Text style={styles.hint}>{t("block.no_slot_hint")}</Text>
+      ) : null}
       <View style={styles.rows}>
         {ordered.map((slot) => {
           const state = slotRowState(slot, mine, readonly)
@@ -325,6 +347,7 @@ export function EventSlotsBlock({ cleanupId, slots, joined, readonly = false }: 
               state={state}
               busy={claim.isPending}
               pending={pendingSlotId === slot.id}
+              mixedBoard={mixedBoard}
               {...(interactive
                 ? { onPress: () => run(state === "mine" ? null : slot.id, slot.id) }
                 : {})}

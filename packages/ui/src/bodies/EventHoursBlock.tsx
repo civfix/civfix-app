@@ -6,18 +6,23 @@ import { Avatar } from "../primitives"
 import { useAuthState, useCleanupAttendees, useEventHours } from "../data"
 import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
+import { timeRangeLabel } from "@civfix/shared/datetime"
 import { formatHoursDisplay } from "./formatHours"
 import { hoursReceiptState, type HoursReceiptState } from "./eventLifecycle"
+import { slotWindow } from "./eventSlotsModel"
 import { LogHoursEditor, type LoggedHoursEntry } from "./LogHoursEditor"
+import type { HoursCleanup } from "./hoursEntries"
 
 export interface EventHoursBlockProps {
   cleanupId: string
+  cleanup: HoursCleanup
   actsAsHost: boolean
   joined: boolean
 }
 
 export function EventHoursBlock({
   cleanupId,
+  cleanup,
   actsAsHost,
   joined,
 }: EventHoursBlockProps) {
@@ -30,7 +35,7 @@ export function EventHoursBlock({
     if (data === undefined && !hoursQuery.isError) return null
     return (
       <FadeUp>
-        <HostHours cleanupId={cleanupId} entries={entries} />
+        <HostHours cleanupId={cleanupId} cleanup={cleanup} entries={entries} />
       </FadeUp>
     )
   }
@@ -44,9 +49,17 @@ export function EventHoursBlock({
     anyLogged: data?.anyLogged ?? false,
   })
   if (state === "hidden") return null
+  const mineSlot = cleanup.slots.find((slot) => slot.mine === true)
+  const window = mineSlot ? slotWindow(mineSlot) : null
   return (
     <FadeUp>
-      <AttendeeReceipt state={state} hours={myEntry?.hours ?? 0} />
+      <AttendeeReceipt
+        state={state}
+        hours={myEntry?.hours ?? 0}
+        {...(mineSlot && window
+          ? { shift: { title: mineSlot.title, start: window.start, end: window.end } }
+          : {})}
+      />
     </FadeUp>
   )
 }
@@ -100,20 +113,23 @@ function FadeUp({ children }: { children: React.ReactNode }) {
 
 function HostHours({
   cleanupId,
+  cleanup,
   entries,
 }: {
   cleanupId: string
+  cleanup: HoursCleanup
   entries: readonly LoggedHoursEntry[]
 }) {
   const [editing, setEditing] = useState(false)
   const stopEditing = useCallback(() => setEditing(false), [])
   const startEditing = useCallback(() => setEditing(true), [])
 
-  if (entries.length === 0) return <LogHoursEditor cleanupId={cleanupId} />
+  if (entries.length === 0) return <LogHoursEditor cleanupId={cleanupId} cleanup={cleanup} />
   if (editing) {
     return (
       <LogHoursEditor
         cleanupId={cleanupId}
+        cleanup={cleanup}
         initialEntries={entries}
         openOnMount
         onClose={stopEditing}
@@ -208,7 +224,15 @@ function HoursSummaryCard({
   )
 }
 
-function AttendeeReceipt({ state, hours }: { state: HoursReceiptState; hours: number }) {
+function AttendeeReceipt({
+  state,
+  hours,
+  shift,
+}: {
+  state: HoursReceiptState
+  hours: number
+  shift?: { title: string; start: Date; end: Date }
+}) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-detail")
@@ -219,16 +243,20 @@ function AttendeeReceipt({ state, hours }: { state: HoursReceiptState; hours: nu
 
   if (state === "credited") {
     const label = formatHoursDisplay(hours, locale)
+    const range = shift ? timeRangeLabel(shift.start.toISOString(), shift.end.toISOString(), locale) : null
+    const vars = shift && range ? { hours: label, slot: shift.title, range } : { hours: label }
     return (
       <Pressable
         onPress={onOpenHours}
         accessibilityRole="button"
-        accessibilityLabel={t("receipt.credited_a11y", { hours: label })}
+        accessibilityLabel={t(range ? "receipt.credited_shift_a11y" : "receipt.credited_a11y", vars)}
         {...focusRingProps}
         style={({ pressed }) => [styles.credited, pressed ? styles.pressed : null]}
       >
         <Icon icon={iconMap.Award} size={16} color={th.colors.moss["700"]} />
-        <Text style={styles.creditedText}>{t("receipt.credited", { hours: label })}</Text>
+        <Text style={styles.creditedText}>
+          {t(range ? "receipt.credited_shift" : "receipt.credited", vars)}
+        </Text>
         <Icon icon={iconMap.ChevronRight} size={16} color={th.colors.moss["700"]} />
       </Pressable>
     )

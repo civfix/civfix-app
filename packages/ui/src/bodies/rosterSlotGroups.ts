@@ -15,6 +15,7 @@
  * optional cleanup role) without a cast; all this module needs is an `id` and the optional `slot` ref.
  */
 import type { EventSlotDTO } from "@civfix/shared"
+import { slotDisplayOrder } from "./eventSlotsModel"
 
 /** The minimum this module needs off a roster row. `AttendeeDTO` satisfies it. */
 export interface RosterSlotPerson {
@@ -30,6 +31,8 @@ export type RosterListItem<P extends RosterSlotPerson = RosterSlotPerson> =
       title: string
       claimed: number
       capacity: number | null
+      startsAt: string | null
+      endsAt: string | null
     }
   | { kind: "slot-empty"; slotId: string | null; title: string }
   | { kind: "member"; person: P }
@@ -58,9 +61,7 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
   }
 
   const items: RosterListItem<P>[] = []
-  const ordered = [...slots].sort((a, b) =>
-    a.sortOrder !== b.sortOrder ? a.sortOrder - b.sortOrder : a.title.localeCompare(b.title),
-  )
+  const ordered = slotDisplayOrder(slots)
   const known = new Set(ordered.map((s) => s.id))
   for (const slot of ordered) {
     const members = bySlot.get(slot.id) ?? []
@@ -70,6 +71,8 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
       title: slot.title,
       claimed: members.length,
       capacity: slot.capacity ?? null,
+      startsAt: slot.startsAt ?? null,
+      endsAt: slot.endsAt ?? null,
     })
     if (members.length === 0) {
       items.push({ kind: "slot-empty", slotId: slot.id, title: opts.emptySlotTitle })
@@ -92,6 +95,8 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
       title: opts.unassignedTitle,
       claimed: trailing.length,
       capacity: null,
+      startsAt: null,
+      endsAt: null,
     })
     for (const person of trailing) items.push({ kind: "member", person })
   }

@@ -28,6 +28,7 @@
     "message_crew": "Message crew",
     "message_crew_a11y": "Message the event crew",
     "message_crew_hint": "RSVP to join the chat",
+    "message_crew_hint_ended": "Only people who signed up can open this chat",
     "cancel_event": "Cancel event",
     "cancel_event_a11y": "Cancel this event",
     "invite": "Invite",
@@ -94,7 +95,9 @@
     "pending": "The host hasn't logged volunteer hours yet.",
     "credited": "You were credited {{hours}} volunteer hours",
     "credited_a11y": "You were credited {{hours}} volunteer hours. View your service record.",
-    "not_credited": "No volunteer hours were logged for you at this event."
+    "not_credited": "No volunteer hours were logged for you at this event.",
+    "credited_shift": "You were credited {{hours}} volunteer hours for your {{slot}} shift ({{range}})",
+    "credited_shift_a11y": "You were credited {{hours}} volunteer hours for your {{slot}} shift, {{range}}. View your service record."
   },
   "log_hours": {
     "action": "Log volunteer hours",
@@ -126,7 +129,10 @@
     "row_unknown": "Former attendee",
     "blank_hint": "Leave a row blank for anyone who did not attend.",
     "blank_hint_edit": "Type a new number to correct hours already credited. A blank row is skipped: clearing it does not remove hours someone already has.",
-    "self_note": "Your own hours aren't listed here. Another host has to credit you."
+    "self_note": "Your own hours aren't listed here. Another host has to credit you.",
+    "suggest_hint": "Suggestions come from each person's shift and the event's planned length. Confirm what people actually worked.",
+    "suggest_chip": "{{hours}} h · {{slot}}",
+    "suggest_chip_a11y": "Use {{hours}} hours from the {{slot}} shift for {{name}}"
   },
   "guests": {
     "heading": "Guests",

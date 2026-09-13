@@ -10,23 +10,44 @@ import {
   webHover,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
+import { FilterChip } from "../primitives"
 import { useT, useLocale } from "../i18n"
-import { isTimeSlotSelectable, timeSlots } from "./calendarModel"
+import {
+  DURATION_CHIP_HOURS,
+  durationChipFor,
+  endsNextDay,
+  endTimeAfter,
+  endTimeSelectable,
+  isTimeSlotSelectable,
+  timeSlots,
+  type DurationChipHours,
+  type TimeSlot,
+} from "./calendarModel"
 import { MonthCalendarGrid } from "./MonthCalendarGrid"
 
-type OpenMode = "date" | "time" | null
+type OpenMode = "date" | "time" | "end" | null
 
 export interface InlineDateTimePickerProps {
   date: Date | null
   time: Date | null
+  endTime?: Date | null
   onDateChange: (next: Date) => void
   onTimeChange: (next: Date) => void
+  onEndTimeChange?: (next: Date) => void
 }
 
-export function InlineDateTimePicker({ date, time, onDateChange, onTimeChange }: InlineDateTimePickerProps) {
+export function InlineDateTimePicker({
+  date,
+  time,
+  endTime = null,
+  onDateChange,
+  onTimeChange,
+  onEndTimeChange,
+}: InlineDateTimePickerProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("common-datetime")
+  const { t: tForm } = useT("event-form")
   const { locale } = useLocale()
   const [openMode, setOpenMode] = useState<OpenMode>(null)
   const [viewMonth, setViewMonth] = useState<{ year: number; month: number }>(() => {
@@ -47,8 +68,30 @@ export function InlineDateTimePicker({ date, time, onDateChange, onTimeChange }:
   const dateText = dateValue ?? t("placeholder.pick_date")
   const timeText = timeValue ?? t("placeholder.pick_time")
 
-  const toggle = (mode: "date" | "time") => {
+  const rollsOver = time != null && endTime != null && endsNextDay(time, endTime)
+  const endClockText = endTime
+    ? endTime.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })
+    : null
+  const endValue =
+    endClockText && rollsOver ? t("value.end_next_day", { time: endClockText }) : endClockText
+  const endText = endValue ?? t("placeholder.pick_end_time")
+  const activeDuration = durationChipFor(date, time, endTime)
+
+  const toggle = (mode: OpenMode) => {
     setOpenMode((prev) => (prev === mode ? null : mode))
+  }
+
+  const selectDuration = (hours: DurationChipHours) => {
+    if (!date || !time || !onEndTimeChange) return
+    onEndTimeChange(endTimeAfter(date, time, hours * 3_600_000))
+  }
+
+  const selectEndTime = (hours: number, minutes: number) => {
+    if (!onEndTimeChange) return
+    const next = new Date(date ?? endTime ?? time ?? new Date())
+    next.setHours(hours, minutes, 0, 0)
+    onEndTimeChange(next)
+    setOpenMode(null)
   }
 
   const shiftMonth = (delta: number) => {
@@ -134,56 +177,134 @@ export function InlineDateTimePicker({ date, time, onDateChange, onTimeChange }:
       </Pressable>
 
       {openMode === "time" ? (
-        <View style={styles.panel}>
-          <View style={styles.timeGrid}>
-            {slots.map((slot) => {
-              const selectable = isTimeSlotSelectable(date, slot.hours, slot.minutes, now)
-              const selected =
-                time != null && time.getHours() === slot.hours && time.getMinutes() === slot.minutes
-              return (
-                <View key={slot.key} style={styles.timeCell}>
-                  <Pressable
-                    onPress={() => selectTime(slot.hours, slot.minutes)}
-                    disabled={!selectable}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected, disabled: !selectable }}
-                    {...focusRingProps}
-                    style={(state) => [
-                      styles.timeChip,
-                      webCursor(!selectable),
-                      webTransition,
-                      selected ? styles.timeChipSelected : null,
-                      webHover(state) && selectable
-                        ? selected
-                          ? styles.timeChipSelectedHovered
-                          : styles.chipPressed
-                        : null,
-                      state.pressed && !selected && selectable ? styles.chipPressed : null,
-                    ]}
-                  >
-                    {selected ? (
-                      <Icon icon={iconMap.Check} size={14} color={th.colors.brand.bloom} />
-                    ) : null}
-                    <Text
-                      numberOfLines={1}
-                      variant={selected ? "bodyStrong" : "body"}
-                      color={
-                        selected
-                          ? th.colors.brand.bloom
-                          : selectable
-                            ? th.colors.text
-                            : th.colors.textSubtle
-                      }
-                    >
-                      {slot.label}
-                    </Text>
-                  </Pressable>
-                </View>
-              )
-            })}
-          </View>
-        </View>
+        <TimeGrid
+          slots={slots}
+          isSelectable={(slot) => isTimeSlotSelectable(date, slot.hours, slot.minutes, now)}
+          isSelected={(slot) =>
+            time != null && time.getHours() === slot.hours && time.getMinutes() === slot.minutes
+          }
+          onSelect={selectTime}
+        />
       ) : null}
+
+      {onEndTimeChange ? (
+        <>
+          <View style={styles.durationRow}>
+            <Text style={styles.durationLabel}>{tForm("field.runsFor")}</Text>
+            {DURATION_CHIP_HOURS.map((hours) => (
+              <FilterChip
+                key={hours}
+                label={tForm("field.duration_hours", { count: hours })}
+                selected={activeDuration === hours}
+                disabled={date === null || time === null}
+                onPress={() => selectDuration(hours)}
+              />
+            ))}
+          </View>
+
+          <Pressable
+            onPress={() => toggle("end")}
+            accessibilityRole="button"
+            accessibilityLabel={t("a11y.end_time_field", { value: endText })}
+            accessibilityState={{ expanded: openMode === "end" }}
+            {...focusRingProps}
+            style={(state) => [
+              styles.fieldRow,
+              styles.fieldRowSpaced,
+              webCursorPointer,
+              webTransition,
+              webHover(state) ? styles.fieldRowHovered : null,
+              state.pressed ? styles.pressed : null,
+            ]}
+          >
+            <Icon icon={iconMap.Clock} size={16} color={th.colors.textSubtle} />
+            <Text numberOfLines={1} style={[styles.fieldValue, endValue ? null : styles.fieldPlaceholder]}>
+              {endText}
+            </Text>
+            <View style={openMode === "end" ? styles.caretOpen : null}>
+              <Icon icon={iconMap.ChevronDown} size={16} color={th.colors.textSubtle} />
+            </View>
+          </Pressable>
+
+          {openMode === "end" ? (
+            <TimeGrid
+              slots={slots}
+              isSelectable={(slot) => endTimeSelectable(date, time, slot.hours, slot.minutes)}
+              isSelected={(slot) =>
+                endTime != null &&
+                endTime.getHours() === slot.hours &&
+                endTime.getMinutes() === slot.minutes
+              }
+              onSelect={selectEndTime}
+            />
+          ) : null}
+        </>
+      ) : null}
+    </View>
+  )
+}
+
+function TimeGrid({
+  slots,
+  isSelectable,
+  isSelected,
+  onSelect,
+}: {
+  slots: readonly TimeSlot[]
+  isSelectable: (slot: TimeSlot) => boolean
+  isSelected: (slot: TimeSlot) => boolean
+  onSelect: (hours: number, minutes: number) => void
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  return (
+    <View style={styles.panel}>
+      <View style={styles.timeGrid}>
+        {slots.map((slot) => {
+          const selectable = isSelectable(slot)
+          const selected = isSelected(slot)
+          return (
+            <View key={slot.key} style={styles.timeCell}>
+              <Pressable
+                onPress={() => onSelect(slot.hours, slot.minutes)}
+                disabled={!selectable}
+                accessibilityRole="button"
+                accessibilityState={{ selected, disabled: !selectable }}
+                {...focusRingProps}
+                style={(state) => [
+                  styles.timeChip,
+                  webCursor(!selectable),
+                  webTransition,
+                  selected ? styles.timeChipSelected : null,
+                  webHover(state) && selectable
+                    ? selected
+                      ? styles.timeChipSelectedHovered
+                      : styles.chipPressed
+                    : null,
+                  state.pressed && !selected && selectable ? styles.chipPressed : null,
+                ]}
+              >
+                {selected ? (
+                  <Icon icon={iconMap.Check} size={14} color={th.colors.brand.bloom} />
+                ) : null}
+                <Text
+                  numberOfLines={1}
+                  variant={selected ? "bodyStrong" : "body"}
+                  color={
+                    selected
+                      ? th.colors.brand.bloom
+                      : selectable
+                        ? th.colors.text
+                        : th.colors.textSubtle
+                  }
+                >
+                  {slot.label}
+                </Text>
+              </Pressable>
+            </View>
+          )
+        })}
+      </View>
     </View>
   )
 }
@@ -218,6 +339,18 @@ const useStyles = makeThemedStyles((t) => ({
   },
   caretOpen: {
     transform: [{ rotate: "180deg" }],
+  },
+  durationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: t.space["2"],
+    marginTop: t.space["2"],
+  },
+  durationLabel: {
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["12"],
+    color: t.colors.textSubtle,
   },
   panel: {
     marginTop: t.space["2"],

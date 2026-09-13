@@ -11,11 +11,16 @@
   },
   "title": {
     "date": "Elige una fecha",
-    "time": "Elige una hora"
+    "time": "Elige una hora",
+    "end_time": "Elige una hora de fin"
   },
   "placeholder": {
     "pick_date": "Elige una fecha",
-    "pick_time": "Elige una hora"
+    "pick_time": "Elige una hora",
+    "pick_end_time": "Elige una hora de fin"
+  },
+  "value": {
+    "end_next_day": "{{time}} (día siguiente)"
   },
   "action": {
     "done": "Listo"
@@ -29,6 +34,7 @@
     "previous_month": "Mes anterior",
     "next_month": "Mes siguiente",
     "date_field": "Fecha: {{value}}",
-    "time_field": "Hora: {{value}}"
+    "time_field": "Hora: {{value}}",
+    "end_time_field": "Termina: {{value}}"
   }
 }
