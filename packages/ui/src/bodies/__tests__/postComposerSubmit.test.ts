@@ -4,7 +4,7 @@
  * React / transport, so `PostComposer`'s press handler + Post-button `disabled` prop share one truth.
  */
 import { describe, expect, it } from "vitest"
-import { resolvePostSubmit, type PostDraft } from "../postComposerSubmit"
+import { postSubmitDestination, resolvePostSubmit, type PostDraft } from "../postComposerSubmit"
 
 /** A blank draft; each test overrides only the fields it cares about. */
 function draft(overrides: Partial<PostDraft> = {}): PostDraft {
@@ -78,4 +78,16 @@ describe("resolvePostSubmit", () => {
     expect(res.input).toMatchObject({ kind: "reply", replyToId: "post_1", body: "count me in" })
   })
 
+})
+
+describe("postSubmitDestination", () => {
+  it("returns a top-level post to where the author came from", () => {
+    expect(postSubmitDestination("post")).toBe("origin")
+  })
+
+  it("drills a quote or a reply into the thread it just started", () => {
+    expect(postSubmitDestination("quote")).toBe("thread")
+    expect(postSubmitDestination("reply")).toBe("thread")
+    expect(postSubmitDestination("repost")).toBe("thread")
+  })
 })

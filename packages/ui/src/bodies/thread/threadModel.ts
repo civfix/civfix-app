@@ -124,6 +124,15 @@ export function replyComposerState(input: {
 }
 
 
+export type ComposerSurface = "chat" | "thread-reply"
+
+export type ComposerFocusAfterSend = "keep" | "release"
+
+export function composerFocusAfterSend(surface: ComposerSurface): ComposerFocusAfterSend {
+  return surface === "chat" ? "keep" : "release"
+}
+
+
 export const THREAD_AVATAR_SIZE = 36
 export const THREAD_RAIL_GAP = 10
 export const THREAD_RAIL_W = 2

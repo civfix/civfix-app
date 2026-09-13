@@ -5,6 +5,7 @@ import {
   buildFocalPostStats,
   buildReplyComposerHeightPlan,
   buildThreadRows,
+  composerFocusAfterSend,
   isOptimisticPostId,
   replyComposerState,
   threadFocalExcerpt,
@@ -367,5 +368,21 @@ describe("threadRailSegment - interned rail identities", () => {
     first.forEach((entry, index) => {
       expect(second[index]?.rail).toBe(entry.rail)
     })
+  })
+})
+
+describe("composerFocusAfterSend", () => {
+  it("keeps the caret in a chat composer, where send -> send is the whole surface", () => {
+    expect(composerFocusAfterSend("chat")).toBe("keep")
+  })
+
+  it("releases a thread reply, so the reply chip and the keyboard leave with the sent reply", () => {
+    expect(composerFocusAfterSend("thread-reply")).toBe("release")
+  })
+
+  it("collapses the composer once the release drops focus", () => {
+    const base = { hasDraft: false, hasAttachments: false, signedIn: true, hasError: false }
+    expect(replyComposerState({ ...base, focused: true })).toBe("expanded")
+    expect(replyComposerState({ ...base, focused: false })).toBe("collapsed")
   })
 })

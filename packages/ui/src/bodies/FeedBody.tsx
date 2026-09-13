@@ -26,6 +26,7 @@ import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedNotice } from "./FeedNotice"
 import { PostCard } from "./PostCard"
 import { InlineComposer } from "./feed/InlineComposer"
+import { useFeedScrollTopStore } from "./feed/feedScrollStore"
 import { POST_CARD_RHYTHM } from "./postCardRhythm"
 import {
   buildFeedHeaderModel,
@@ -207,6 +208,17 @@ export function FeedBody() {
 
   const promoHeight = useAppPromoStore((s) => s.cardHeight)
 
+  const listRef = useRef<{
+    scrollToOffset?: (options: { offset: number; animated?: boolean }) => void
+  } | null>(null)
+  const scrollTopPending = useFeedScrollTopStore((s) => s.pending)
+  const clearScrollTop = useFeedScrollTopStore((s) => s.clearScrollTop)
+  useEffect(() => {
+    if (!scrollTopPending) return
+    listRef.current?.scrollToOffset?.({ offset: 0, animated: true })
+    clearScrollTop()
+  }, [scrollTopPending, clearScrollTop])
+
   const renderItem = useCallback(
     ({ item }: { item: PostDTO }) => (
       <FeedPostRow postId={item.id} entrance={entrance} reducedMotion={reducedMotion}>
@@ -330,6 +342,7 @@ export function FeedBody() {
 
   const list = (
     <FlatList
+      ref={listRef as never}
       style={styles.scroll}
       contentContainerStyle={contentStyle}
       data={state === "loaded" ? posts : NO_POSTS}

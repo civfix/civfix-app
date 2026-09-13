@@ -35,6 +35,7 @@ import {
   type ReportRunExitHost,
 } from "../postComposerExit"
 import { usePostComposerStore } from "../postComposerStore"
+import { postSubmitDestination } from "../postComposerSubmit"
 
 const readSource = (relative: string) => readFileSync(new URL(relative, import.meta.url), "utf8")
 
@@ -863,7 +864,7 @@ describe("the wiring (source-pinned)", () => {
     expect(source).not.toMatch(/setPendingCreate/)
   })
 
-  it("POPS the composer and PUSHES the new thread, so the origin entry survives the post", () => {
+  it("POPS the composer and PUSHES the new thread for a QUOTE, so the origin entry survives the post", () => {
     // THE BUG: `onSuccess` used to `openDetail({kind:"post-thread"})`, and `openDetail` REPLACES the whole
     // stack. "open thread A -> Quote -> Post -> Back" therefore lost thread A and dumped the user on the
     // view root, because the entry they came from was thrown away with the composer's.
@@ -884,6 +885,28 @@ describe("the wiring (source-pinned)", () => {
     expect(success).toMatch(/if \(onBack\) onBack\(\)\s*\n\s*else back\(\)/)
     // And nothing in the file subscribes to `openDetail` any more - a stray selector is how this regresses.
     expect(source).not.toMatch(/state\.openDetail/)
+  })
+
+  it("a TOP-LEVEL post pops only, and asks the feed to show its new top", () => {
+    // THE BUG (civfix/issue-tracker#106): the push ran for every mode, so "New post -> Post" left the
+    // author reading a thread of one instead of the feed their post is now at the top of.
+    expect(postSubmitDestination("post")).toBe("origin")
+    expect(postSubmitDestination("quote")).toBe("thread")
+    expect(postSubmitDestination("reply")).toBe("thread")
+    const source = readSource("../PostComposer.tsx")
+    const success = source.slice(source.indexOf("onSuccess: (post) => {"), source.indexOf("onSettled:"))
+    // Keyed off what was SUBMITTED, never the `mode` prop - the two can disagree mid-flight.
+    expect(success).toContain(
+      'if (postSubmitDestination(resolution.input.kind) === "thread") push({ kind: "post-thread", id: post.id })',
+    )
+    expect(success).toContain("else useFeedScrollTopStore.getState().requestScrollTop()")
+    // The feed has a list ref and consumes the request, or the new post lands off-screen for a reader
+    // who had scrolled down.
+    const feed = readSource("../FeedBody.tsx")
+    expect(feed).toContain("ref={listRef as never}")
+    expect(feed).toMatch(
+      /listRef\.current\?\.scrollToOffset\?\.\(\{ offset: 0, animated: true \}\)\s*\n\s*clearScrollTop\(\)/,
+    )
   })
 
   it("ReportFlowBody claims at run ACTIVATION and releases on deactivation", () => {

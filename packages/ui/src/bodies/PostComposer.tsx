@@ -47,6 +47,7 @@ import { PLAIN_SCROLL_HOST, useScrollHost } from "../shell/ScrollHost"
 import { AuthorAsChips, authorAsSelection } from "./AuthorAsChips"
 import { LinkedEventCard } from "./LinkedEventCard"
 import { LinkedReportCard } from "./LinkedReportCard"
+import { useFeedScrollTopStore } from "./feed/feedScrollStore"
 import { clearStaleReportIntentAtComposerMount } from "./composerCreateFlow"
 import {
   activePostMentions,
@@ -75,7 +76,7 @@ import {
   mergePostComposerThumbs,
   snapshotCarriedMedia,
 } from "./postComposerMedia"
-import { resolvePostSubmit } from "./postComposerSubmit"
+import { postSubmitDestination, resolvePostSubmit } from "./postComposerSubmit"
 import { trackPostComposerMount, type PostComposerExitHost } from "./postComposerExit"
 import {
   selectPostComposerHasPendingMedia,
@@ -397,7 +398,8 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
         onPosted?.(post)
         if (onBack) onBack()
         else back()
-        push({ kind: "post-thread", id: post.id })
+        if (postSubmitDestination(resolution.input.kind) === "thread") push({ kind: "post-thread", id: post.id })
+        else useFeedScrollTopStore.getState().requestScrollTop()
       },
       onSettled: () => {
         submittingRef.current = false

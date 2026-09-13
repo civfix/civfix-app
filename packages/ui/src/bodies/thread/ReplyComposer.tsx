@@ -32,6 +32,7 @@
 import React from "react"
 import {
   AccessibilityInfo,
+  Keyboard,
   LayoutAnimation,
   Platform,
   Pressable,
@@ -78,6 +79,7 @@ import { useReplyDraftStore, EMPTY_REPLY_DRAFT } from "./replyDraftStore"
 import {
   REPLY_INPUT_MIN,
   buildReplyComposerHeightPlan,
+  composerFocusAfterSend,
   replyComposerState,
   threadFocalExcerpt,
 } from "./threadModel"
@@ -90,6 +92,7 @@ const SURFACE_GAPS = 12
 const BODY_MAX = 2000
 const COUNTER_VISIBLE_AT = 200
 const COUNTER_URGENT_AT = 50
+const REPLY_FOCUS_AFTER_SEND = composerFocusAfterSend("thread-reply")
 
 export interface ReplyComposerHandle {
   /** Focus the field (the focal post's comment glyph calls this instead of re-pushing the screen). */
@@ -362,10 +365,12 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
             clearDraft(targetId)
             attachments.reset()
             setCarried([])
+            setAttachOpen(false)
             onPosted?.(post)
-            // Keep the keyboard up and the caret in the field: reply -> read -> reply again is the
-            // entire product on this screen.
-            grow.ref.current?.focus()
+            if (REPLY_FOCUS_AFTER_SEND === "release") {
+              grow.ref.current?.blur()
+              Keyboard.dismiss()
+            }
           },
           onSettled: () => {
             submittingRef.current = false

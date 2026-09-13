@@ -11,7 +11,10 @@ import { describe, expect, it } from "vitest"
  *    under a MOUNTED instance the two would disagree and the previous post's photos would ride along into
  *    the new parent's draft. The web shell can reuse this screen's instance across entries, so the screen
  *    remounts on `id` instead of reconciling - that key IS the invariant.
- * 2. THE ATTACHED-REPORT CHIP IS DERIVED, NOT CACHED. An earlier write-only `attachedReport` useState, with
+ * 2. THE POSTED REPLY RELEASES THE FIELD. `onSuccess` used to re-focus the input, so `focused` stayed true,
+ *    `replyComposerState` stayed "expanded", and the "Replying to @X" chip plus the soft keyboard both
+ *    outlived the reply that was already sent (civfix/issue-tracker#92).
+ * 3. THE ATTACHED-REPORT CHIP IS DERIVED, NOT CACHED. An earlier write-only `attachedReport` useState, with
  *    no repopulation path, left the generic "Attach a report" label showing forever after leaving a thread
  *    and coming back, while `draft.attachedReportId` (the submitted data) was intact.
  */
@@ -33,6 +36,32 @@ describe("one composer per thread", () => {
     expect(composer).not.toContain("replyTarget")
     expect(composer).not.toContain("onClearTarget")
     expect(composer).toContain("const targetId = focalPost.id")
+  })
+})
+
+describe("a posted reply", () => {
+  const success = composer.slice(
+    composer.indexOf("onSuccess: (post) => {"),
+    composer.indexOf("onSettled:"),
+  )
+
+  it("releases the field instead of re-focusing it, so the chip and the keyboard both go", () => {
+    expect(success).toContain("grow.ref.current?.blur()")
+    expect(success).toContain("Keyboard.dismiss()")
+    expect(success).not.toContain("grow.ref.current?.focus()")
+    expect(composer).not.toContain("Keep the keyboard up")
+  })
+
+  it("closes an open attach sheet and scrolls the thread before the dock inset drops", () => {
+    expect(success).toContain("setAttachOpen(false)")
+    expect(success.indexOf("grow.ref.current?.blur()")).toBeGreaterThan(
+      success.indexOf("onPosted?.(post)"),
+    )
+  })
+
+  it("takes the release from the shared rule rather than an inline decision", () => {
+    expect(composer).toContain('const REPLY_FOCUS_AFTER_SEND = composerFocusAfterSend("thread-reply")')
+    expect(success).toContain('if (REPLY_FOCUS_AFTER_SEND === "release") {')
   })
 })
 
