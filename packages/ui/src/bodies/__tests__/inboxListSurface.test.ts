@@ -152,15 +152,33 @@ describe("the preview is truncated ONCE, by the layout", () => {
 })
 
 describe("pull-to-refresh", () => {
-  it("is FeedBody's control, prop for prop, on the inbox's own refetch", () => {
+  const spinner = strip(read("../../primitives/useRefreshControlProps.ts"))
+
+  it("is ONE shared themed control on both lists, on the inbox's own refetch", () => {
     for (const src of [feed, inbox]) {
-      expect(src).toContain("tintColor={th.colors.textMuted}")
-      expect(src).toContain("colors={refreshColors}")
-      expect(src).toContain("const refreshColors = useMemo(() => [th.colors.accent], [th])")
+      expect(src).toContain("const refreshSpinner = useRefreshControlProps()")
+      expect(src).toContain(
+        "<RefreshControl refreshing={refreshing} onRefresh={onRefresh} {...refreshSpinner} />",
+      )
     }
     expect(inbox).toMatch(
       /const onRefresh = useCallback\(\(\) => \{\s*setRefreshing\(true\)\s*void Promise\.resolve\(refetch\(\)\)\.finally\(\(\) => setRefreshing\(false\)\)\s*\}, \[refetch\]\)/,
     )
+  })
+
+  it("lets NEITHER body colour its own spinner any more", () => {
+    for (const src of [feed, inbox]) {
+      expect(src).not.toContain("tintColor=")
+      expect(src).not.toContain("refreshColors")
+    }
+  })
+
+  it("draws the indicator in the theme's ink on the theme's surface, so it shows in both schemes", () => {
+    expect(spinner).toContain("tintColor: th.colors.text")
+    expect(spinner).toContain("colors: [th.colors.text]")
+    expect(spinner).toContain("progressBackgroundColor: th.colors.surface")
+    expect(spinner).not.toContain("th.colors.accent")
+    expect(spinner).not.toContain("th.colors.textMuted")
   })
 
   it("hands the list a MEMOIZED element, not a fresh one per keystroke in the search field", () => {

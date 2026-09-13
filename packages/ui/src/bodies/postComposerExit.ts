@@ -194,9 +194,10 @@ function armReportSearchDetour(host: ReportRunExitHost): void {
  * NOWHERE ELSE: web with `prefers-reduced-motion: reduce` settles straight onto the new view with no outgoing
  * layer, and the expanded/landscape shell has no keep-alive slot at all. In both the wizard simply goes away,
  * and a claim left behind reproduces the original misroute verbatim - `claimPendingCreate` deliberately KEEPS
- * an existing claim, so every later report in the session renders as the composer round trip. (The animated
- * web path happens to release only because BodyTransition re-parents the outgoing element into its own keyed
- * layer, remounting the body with the new `view`. Nothing should depend on that.)
+ * an existing claim, so every later report in the session renders as the composer round trip. (The first
+ * animated web path happened to release only because BodyTransition re-parented the outgoing element into its
+ * own keyed layer, remounting the body with the new `view`; it now keeps one identity per body. Nothing
+ * should depend on either.)
  *
  * DEFERRED, for the same reason the composer's exit discard is: an unmount is not a departure. A layout flip,
  * the keyed keep-alive slot and StrictMode's double-invoked effects all remount immediately and re-claim

@@ -8,13 +8,13 @@ import type { LucideIcon } from "../../typography"
 import { MessageContextMenu, ReactionChips, ReplyQuote, MediaPreview, PopoverMenu, usePopoverAnchor, useDoubleTap, useSwipeReply, useToast, PollBubble } from "../../primitives"
 import type { PopoverMenuItem, AnchorRect, ContextMenuAction } from "../../primitives"
 import { buildReactionChipModel } from "../../primitives/reactionChipModel"
-import { useClipboard } from "../../capabilities"
+import { useClipboard, useOpenExternal, useOpenInternalHref } from "../../capabilities"
 import { useLightbox } from "../../lightbox"
 import { announce } from "../../announce"
 import { useT } from "../../i18n"
 import { buildMessageActions, type MessageActionKey } from "../messageActions"
 import { clockTime } from "../relativeTime"
-import { mentionScanRegex, normalizeHandle } from "./mentionMatch"
+import { appLinkOrigins, mentionLookup, tokenizeChatBody, type ChatLinkTarget } from "./chatLinks"
 import { senderColor } from "./conversationModel"
 import { useConversationStyles } from "./styles"
 
@@ -29,54 +29,63 @@ function actionBtnReveal(shown: boolean): ViewStyle {
   return { opacity: shown ? 1 : 0, pointerEvents: shown ? "auto" : "none" }
 }
 
-export function renderChatBody(
-  body: string,
-  mentions: UserMentionDTO[] | undefined,
-  tintStyle: object,
-  onOpenPerson: (target: { id: string; handle?: string | null }) => void,
-  cityHandle?: string | null,
-): React.ReactNode {
-  const byHandle = new Map<string, { kind: "city" } | { kind: "user"; id: string }>()
-  if (cityHandle) {
-    const c = normalizeHandle(cityHandle)
-    if (c.length > 0) byHandle.set(c, { kind: "city" })
-  }
-  for (const m of mentions ?? []) {
-    const h = normalizeHandle(m.handle)
-    if (h.length > 0 && !byHandle.has(h)) byHandle.set(h, { kind: "user", id: m.id })
-  }
-  if (byHandle.size === 0) return body
-  const re = mentionScanRegex([...byHandle.keys()])
-  const out: React.ReactNode[] = []
-  let last = 0
-  let match: RegExpExecArray | null
-  let i = 0
-  while ((match = re.exec(body)) !== null) {
-    const start = match.index + (match[1] ?? "").length
-    if (start > last) out.push(body.slice(last, start))
-    const handle = match[2]!
-    const action = byHandle.get(handle)!
-    const token = `@${handle}`
-    if (action.kind === "user") {
-      const userId = action.id
-      out.push(
-        <Text key={`m${i}`} style={tintStyle} onPress={() => onOpenPerson({ id: userId, handle })}>
-          {token}
-        </Text>,
-      )
-    } else {
-      out.push(
-        <Text key={`m${i}`} style={tintStyle}>
-          {token}
-        </Text>,
+export interface RenderChatBodyInput {
+  body: string
+  mentions: UserMentionDTO[] | undefined
+  cityHandle?: string | null
+  tintStyle: object
+  linkOrigins: readonly string[]
+  onOpenPerson: (target: { id: string; handle?: string | null }) => void
+  onOpenLink: (target: ChatLinkTarget) => void
+}
+
+export function renderChatBody({
+  body,
+  mentions,
+  cityHandle,
+  tintStyle,
+  linkOrigins,
+  onOpenPerson,
+  onOpenLink,
+}: RenderChatBodyInput): React.ReactNode {
+  const tokens = tokenizeChatBody(body, {
+    mentions: mentionLookup(mentions, cityHandle),
+    origins: linkOrigins,
+  })
+  if (tokens.length === 1 && tokens[0]?.kind === "text") return body
+  return tokens.map((token, i) => {
+    if (token.kind === "text") return token.text
+    if (token.kind === "mention") {
+      const userId = token.userId
+      if (userId === null) {
+        return (
+          <Text key={`m${i}`} style={tintStyle}>
+            {token.text}
+          </Text>
+        )
+      }
+      return (
+        <Text
+          key={`m${i}`}
+          style={tintStyle}
+          onPress={() => onOpenPerson({ id: userId, handle: token.handle })}
+        >
+          {token.text}
+        </Text>
       )
     }
-    last = re.lastIndex
-    i++
-  }
-  if (out.length === 0) return body
-  if (last < body.length) out.push(body.slice(last))
-  return out
+    const target = token.target
+    return (
+      <Text
+        key={`l${i}`}
+        style={tintStyle}
+        accessibilityRole="link"
+        onPress={() => onOpenLink(target)}
+      >
+        {token.text}
+      </Text>
+    )
+  })
 }
 
 export const BubbleAttachments = React.memo(function BubbleAttachments({
@@ -292,7 +301,23 @@ export const Bubble = React.memo(function Bubble({
     return () => sub.remove()
   }, [menuMode])
   const clipboard = useClipboard()
+  const openExternal = useOpenExternal()
+  const openInternalHref = useOpenInternalHref()
   const toast = useToast()
+  const linkOrigins = appLinkOrigins()
+  const onOpenLink = useCallback(
+    (target: ChatLinkTarget) => {
+      if (target.kind === "internal" && openInternalHref?.open(target.path) === true) return
+      if (!openExternal) {
+        toast.show(t("bubble.link_failed"), { variant: "error" })
+        return
+      }
+      void openExternal.open(target.url).catch(() => {
+        toast.show(t("bubble.link_failed"), { variant: "error" })
+      })
+    },
+    [openInternalHref, openExternal, toast, t],
+  )
   const openEdit = useCallback(() => {
     if (canEdit && message.id) onEdit(message)
   }, [canEdit, message, onEdit])
@@ -456,13 +481,15 @@ export const Bubble = React.memo(function Bubble({
   }
   const closeContextMenu = () => setMenuMode((m) => (m === "menu" ? "closed" : m))
   const reactions = message.reactions ?? []
-  const bodyContent = renderChatBody(
+  const bodyContent = renderChatBody({
     body,
-    message.mentions,
-    mine ? styles.mentionTokenMine : styles.mentionToken,
+    mentions: message.mentions,
+    cityHandle: message.cityMention?.handle ?? null,
+    tintStyle: mine ? styles.mentionTokenMine : styles.mentionToken,
+    linkOrigins,
     onOpenPerson,
-    message.cityMention?.handle ?? null,
-  )
+    onOpenLink,
+  })
   const atts = message.attachments ?? []
   const hasBody = body.length > 0
   const toggleReaction = (emoji: ReactionEmoji) => onToggleReaction(message.id, emoji)

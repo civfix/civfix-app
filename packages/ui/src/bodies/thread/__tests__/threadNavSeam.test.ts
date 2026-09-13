@@ -33,6 +33,18 @@ describe("post-thread navigation seam: every push-capable tap routes through onO
     }
   })
 
+  it("routes both thread menus' navigation through the seam", () => {
+    for (const src of [focal, replyRow]) {
+      expect(src).toMatch(/<PostOverflowMenu[\s\S]*?onOpenPerson=\{openPerson\}/)
+      expect(src).toMatch(
+        /const openPerson = React\.useCallback\(\s*\(personId: string\) => openEntry\(\{ kind: "person", id: personId \}\)/,
+      )
+    }
+    expect(focal).toContain('openEntry({ kind: "post-thread", id: embedded.id })')
+    expect(focal).toContain("isRepost && embedded && !embedded.deleted")
+    expect(focal).toMatch(/<PostOverflowMenu[\s\S]*?onOpenOriginal=\{openOriginal\}/)
+  })
+
   it("covers every entry kind the thread surface can open", () => {
     const surface = body + focal + replyRow
     for (const kind of ["person", "cleanup", "pin", "post-thread", "composer"]) {

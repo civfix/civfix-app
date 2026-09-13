@@ -9,6 +9,7 @@ export {
   useBlurSurface,
   useHaptics,
   useOpenExternal,
+  useOpenInternalHref,
   useContactsInvite,
   useClipboard,
   useCalendarFile,
@@ -24,6 +25,7 @@ export type {
   BlurSurfaceCapability,
   HapticsCapability,
   OpenExternalCapability,
+  OpenInternalHrefCapability,
   ContactsInviteAdapter,
   ClipboardCapability,
   CalendarFileCapability,
@@ -43,5 +45,6 @@ export {
   fakeBlurSurface,
   fakeHaptics,
   fakeOpenExternal,
+  fakeOpenInternalHref,
   FakeContactsInvite,
 } from "./fakes"

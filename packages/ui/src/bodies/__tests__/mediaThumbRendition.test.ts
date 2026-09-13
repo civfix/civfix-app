@@ -38,6 +38,26 @@ describe("PostMediaGrid spends the thumb on split cells only", () => {
   })
 })
 
+describe("the thread surfaces open their photos in the lightbox", () => {
+  for (const rel of ["../thread/ThreadFocalPost.tsx", "../thread/ThreadReplyRow.tsx"]) {
+    const source = code(read(rel))
+
+    it(`${rel} hands every media grid an onPressItem`, () => {
+      const grids = source.match(/<PostMediaGrid[^>]*\/>/g) ?? []
+      expect(grids.length).toBeGreaterThan(0)
+      for (const grid of grids) expect(grid, rel).toContain("onPressItem={openMedia}")
+    })
+
+    it(`${rel} builds the lightbox items once per media array`, () => {
+      expect(source).toContain('import { useLightbox } from "../../lightbox"')
+      expect(source).toContain("const lightbox = useLightbox()")
+      expect(source).toContain("if (items.length > 0) lightbox.open(items, index)")
+      expect(source).toContain("[lightbox, media]")
+      expect(source).toContain("const media = post.media ?? EMPTY_MEDIA")
+    })
+  }
+})
+
 describe("the lightbox keeps full resolution", () => {
   const source = code(read("../../lightbox/MediaLightboxBase.tsx"))
 

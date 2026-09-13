@@ -43,12 +43,18 @@ describe("MembersBody coalesces its roster before the grouping memo", () => {
 describe("FeedBody hands the FlatList stable props", () => {
   const SRC = code(read("../FeedBody.tsx"))
 
-  it("hoists the key extractor and the refresh colors out of the render", () => {
+  it("hoists the key extractor out of the render and takes the refresh palette from the shared hook", () => {
     expect(SRC).toContain("keyExtractor={postKeyExtractor}")
     expect(SRC).toContain("const postKeyExtractor = (item: PostDTO): string => item.id")
-    expect(SRC).toContain("colors={refreshColors}")
-    expect(SRC).toContain("const refreshColors = useMemo(() => [th.colors.accent], [th])")
+    expect(SRC).toContain("const refreshSpinner = useRefreshControlProps()")
+    expect(SRC).toContain("{...refreshSpinner}")
     expect(SRC).not.toMatch(/keyExtractor=\{\(item: PostDTO\) => item\.id\}/)
+  })
+
+  it("keeps no private copy of the refresh colors, and reaches for no theme of its own", () => {
+    expect(SRC).not.toContain("refreshColors")
+    expect(SRC).not.toContain("tintColor=")
+    expect(SRC).not.toContain("useTheme")
   })
 
   it("keeps the entrance style STABLE, or the header memo below it is dead on arrival", () => {
@@ -98,9 +104,10 @@ describe("FeedBody hands the FlatList stable props", () => {
 describe("LinkedEventCard does not fetch a roster per feed row", () => {
   const SRC = code(read("../LinkedEventCard.tsx"))
 
-  it("gates the attendee query behind an explicit opt-in that defaults off", () => {
-    expect(SRC).toContain("showAttendees = false")
-    expect(SRC).toContain("useCleanupAttendees(showAttendees && !selectable ? event.id : undefined)")
+  it("gates the attendee query behind the DETAIL variant, and the default is the feed row", () => {
+    expect(SRC).toContain('variant = "feed"')
+    expect(SRC).toContain('const showControls = variant === "detail" && !selectable')
+    expect(SRC).toContain("useCleanupAttendees(showControls ? event.id : undefined)")
   })
 
   it("keeps the cheap path intact: the ref's own count and organizer", () => {
@@ -109,7 +116,24 @@ describe("LinkedEventCard does not fetch a roster per feed row", () => {
     expect(model).toContain("attendeePreview: attendees.length > 0 ? attendees : [event.organizer]")
   })
 
-  it("still paints a stack with the opt-in OFF, so the footer is never a bare count", () => {
+  it("renders no RSVP pill and no attendee footer unless the host opts in", () => {
+    const mount = SRC.slice(SRC.indexOf("{showControls ? ("), SRC.indexOf("if (!onRemove) return card"))
+    expect(mount).toContain("<EventCardFooter")
+    expect(mount).not.toContain("<RsvpPill")
+
+    const footer = SRC.slice(SRC.indexOf("function EventCardFooter("), SRC.indexOf("export function LinkedEventCard("))
+    expect(footer).toContain("useJoinCleanup(eventId)")
+    expect(footer).toContain("<AttendeeStack")
+    expect(footer).toContain("<RsvpPill")
+  })
+
+  it("instantiates no join mutation on a feed row, because the footer owns it", () => {
+    const card = SRC.slice(SRC.indexOf("export function LinkedEventCard("))
+    expect(card).not.toContain("useJoinCleanup(")
+    expect((SRC.match(/useJoinCleanup\(/g) ?? []).length).toBe(1)
+  })
+
+  it("still paints a stack once the footer is asked for, so it is never a bare count", () => {
     expect(SRC).toContain(
       "const visibleCount = Math.min(3, Math.max(model.attendeePreview.length, Math.min(3, model.going)))",
     )
@@ -118,15 +142,26 @@ describe("LinkedEventCard does not fetch a roster per feed row", () => {
 
   it("the THREAD's single focal card opts in - one roster per screen, not one per row", () => {
     const focal = code(read("../thread/ThreadFocalPost.tsx"))
-    expect(focal).toMatch(/<LinkedEventCard\s+event=\{post\.event\}\s+layout="list"\s+showAttendees/)
+    expect(focal).toMatch(/<LinkedEventCard\s+event=\{post\.event\}\s+layout="list"\s+variant="detail"/)
   })
 
-  it("the list-scale rows stay off", () => {
+  it("the list-scale rows stay on the default feed variant", () => {
     for (const rel of ["../PostCard.tsx", "../thread/ThreadReplyRow.tsx"]) {
       expect(code(read(rel)), `${rel} must not opt a list row into the roster fetch`).not.toContain(
-        "showAttendees",
+        'variant="detail"',
       )
     }
+  })
+
+  it("paints the card on the shared surface recipe and keeps no beige fill anywhere", () => {
+    const card = SRC.slice(SRC.indexOf("  card: {"), SRC.indexOf("  cardStrip: {"))
+    expect(card).toContain("backgroundColor: t.colors.surface")
+    expect(card).toContain("borderColor: t.colors.border")
+    expect(card).toContain("...t.shadows.s1")
+    expect(card).toContain("borderRadius: t.radius.lg")
+    expect(card).not.toContain("overflow")
+    expect(SRC).not.toContain('backgroundColor: t.colors.sun')
+    expect(SRC).not.toContain('borderColor: t.colors.sun')
   })
 })
 

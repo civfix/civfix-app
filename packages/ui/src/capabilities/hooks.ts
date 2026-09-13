@@ -8,6 +8,7 @@ import type {
   BlurSurfaceCapability,
   HapticsCapability,
   OpenExternalCapability,
+  OpenInternalHrefCapability,
   ContactsInviteAdapter,
   ClipboardCapability,
   CalendarFileCapability,
@@ -50,6 +51,10 @@ export function useHaptics(): HapticsCapability {
 
 export function useOpenExternal(): OpenExternalCapability | undefined {
   return useCapabilities().openExternal
+}
+
+export function useOpenInternalHref(): OpenInternalHrefCapability | undefined {
+  return useCapabilities().openInternalHref
 }
 
 export function useContactsInvite(): ContactsInviteAdapter | undefined {

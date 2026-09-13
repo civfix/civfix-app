@@ -39,6 +39,16 @@ export function filterExcluded<T extends { id: string }>(
   return results.filter((r) => !excludeIds.includes(r.id))
 }
 
+export function personToSearchResult(p: PersonDTO): UserSearchResultDTO {
+  return {
+    id: p.id,
+    handle: p.handle ?? "",
+    displayName: p.name,
+    avatar: p.avatar,
+    avatarUrl: p.avatarUrl ?? null,
+  }
+}
+
 /**
  * A @handle search hit as a PersonDTO (the picker's selection currency and what CreateChatGroup /
  * AddGroupMembers callers thread through). The social counts are not part of the search DTO; they are

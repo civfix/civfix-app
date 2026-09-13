@@ -10,6 +10,7 @@ import type {
   BlurSurfaceCapability,
   HapticsCapability,
   OpenExternalCapability,
+  OpenInternalHrefCapability,
   ContactsInviteAdapter,
   ClipboardCapability,
 } from "../types"
@@ -127,6 +128,14 @@ export const fakeOpenExternal: OpenExternalCapability & {
   },
 }
 
+export const fakeOpenInternalHref: OpenInternalHrefCapability & { opened: string[] } = {
+  opened: [],
+  open(path: string): boolean {
+    recordOpen(fakeOpenInternalHref.opened, path)
+    return true
+  },
+}
+
 export class FakeContactsInvite implements ContactsInviteAdapter {
   available = true
   invites: Array<{ message: string; url: string }> = []
@@ -159,6 +168,7 @@ export function makeFakeCapabilities(): PlatformCapabilities {
     blurSurface: fakeBlurSurface,
     haptics: fakeHaptics,
     openExternal: fakeOpenExternal,
+    openInternalHref: fakeOpenInternalHref,
     clipboard: new FakeClipboard(),
   }
 }

@@ -6,7 +6,6 @@ import {
   buildPostActionModel,
   buildPostActionMotionModel,
   formatPostActionCount,
-  positionPostActionMenu,
   postActionButtonWidth,
   postActionCountGap,
   postActionGlyphInset,
@@ -15,8 +14,6 @@ import {
   postActionHaloOverhang,
   postActionLayout,
   postActionRowWidth,
-  resolvePostActionMenuFocus,
-  resolvePostActionMenuKey,
   type PostActionVariant,
 } from "../../primitives/postActionModel"
 
@@ -130,19 +127,9 @@ describe("PostActionBar model", () => {
       { key: "quote", label: "Quote post" },
     ])
     expect(buildPostActionMenuModel(true)[0]).toEqual({ key: "repost", label: "Undo repost" })
-    expect(resolvePostActionMenuKey("Escape")).toBe("dismiss")
-    expect(resolvePostActionMenuKey("Enter")).toBeNull()
-    expect(resolvePostActionMenuFocus({ key: "Tab", shiftKey: false, activeIndex: 1, itemCount: 2 })).toBe(0)
-    expect(resolvePostActionMenuFocus({ key: "Tab", shiftKey: true, activeIndex: 0, itemCount: 2 })).toBe(1)
-    expect(resolvePostActionMenuFocus({ key: "Tab", shiftKey: false, activeIndex: 0, itemCount: 2 })).toBeNull()
   })
 
-  it("clamps the popover to the viewport and disables decorative motion when requested", () => {
-    expect(positionPostActionMenu(
-      { x: 350, y: 760, width: 44, height: 44 },
-      { width: 390, height: 844 },
-      { width: 190, height: 104 },
-    )).toEqual({ left: 192, top: 652 })
+  it("disables decorative motion when requested", () => {
     expect(buildPostActionMotionModel(false)).toEqual({ duration: 280, easing: "ease-out", animated: true })
     expect(buildPostActionMotionModel(true)).toEqual({ duration: 0, easing: "linear", animated: false })
   })
@@ -449,5 +436,40 @@ describe("PostActionBar markup honours the geometry it is modelled on", () => {
     }
     expect(tints).not.toContain("surfaceTint")
     expect(tints).not.toMatch(/#[0-9a-fA-F]{3,8}/)
+  })
+})
+
+describe("PostActionBar opens the repost choice through the house popover", () => {
+  const BAR = readFileSync(new URL("../../primitives/PostActionBar.tsx", import.meta.url), "utf8")
+
+  it("measures the repost button itself and anchors the shared menu to it", () => {
+    expect(BAR).toContain("usePopoverAnchor(openRepostMenuAt)")
+    expect(BAR).toContain('buttonRef={action.key === "repost" ? repostAnchorRef : undefined}')
+    expect(BAR).toContain("<PopoverMenu")
+    expect(BAR).toContain("anchorRect={repostAnchor}")
+    expect(BAR).toContain("items={repostMenuItems}")
+    expect(BAR).toContain("onClose={closeRepostMenu}")
+  })
+
+  it("still opens CENTRED when the trigger cannot be measured", () => {
+    expect(BAR).toContain("if (measureRepostAnchor()) return")
+    expect(BAR).toMatch(/setRepostAnchor\(null\)\s+setRepostMenuOpen\(true\)/)
+  })
+
+  it("reposts directly when the host gave it nowhere to quote to", () => {
+    expect(BAR).toMatch(/if \(!onQuote\) \{\s*repostMutate\(currently\)/)
+  })
+
+  it("builds its rows from the shared model with the feed row's own two glyphs", () => {
+    expect(BAR).toContain("buildPostActionMenuModel(reposted, {")
+    expect(BAR).toContain('repost: "Repeat2"')
+    expect(BAR).toContain('quote: "MessageCircle"')
+    expect(BAR).toContain('accessibilityLabel={t("post_actions.menu_label")}')
+  })
+
+  it("carries no menu presentation of its own", () => {
+    expect(BAR).not.toContain("<Modal")
+    expect(BAR).not.toContain('"./PostActionMenu"')
+    expect(BAR).not.toContain("measureInWindow")
   })
 })

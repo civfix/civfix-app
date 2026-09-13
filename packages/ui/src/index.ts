@@ -25,6 +25,7 @@ export * from "./report"
 // Cross-platform full-screen media viewer ("lightbox"): a host mounts <MediaLightboxProvider> once
 // near the root (AppShell does this), and any body opens it via useLightbox().open(items, startIndex).
 export * from "./lightbox"
+export * from "./share"
 
 // Screen-reader status announcements (WCAG 4.1.3): announce(message) -> aria-live region on web /
 // AccessibilityInfo.announceForAccessibility on native. No provider needed.

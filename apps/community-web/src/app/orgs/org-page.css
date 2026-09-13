@@ -70,7 +70,8 @@
   overflow-wrap: anywhere;
 }
 .orgpage-verified {
-  color: var(--moss-600);
+  color: var(--fg-on-color);
+  fill: var(--sky-600);
   flex: none;
 }
 .orgpage-handle {

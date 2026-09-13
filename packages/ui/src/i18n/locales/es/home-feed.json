@@ -57,7 +57,6 @@
     "load_more": "Cargar más"
   },
   "post_card": {
-    "organizer": "ORGANIZADOR",
     "fix_confirmed": "Arreglo confirmado",
     "repost_attribution": "{{name}} republicó",
     "reported_by": "Reportado por {{name}}",
@@ -80,6 +79,9 @@
     "more_a11y": "Más opciones para esta publicación",
     "show_more": "Ver más",
     "menu": {
+      "go_to_original": "Ir a la publicación original",
+      "undo_repost": "Deshacer republicación",
+      "undo_repost_failed": "No se pudo deshacer la republicación",
       "copy_link": "Copiar enlace",
       "link_copied": "Enlace copiado",
       "link_copy_failed": "No se pudo copiar el enlace",

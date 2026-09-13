@@ -18,12 +18,18 @@ import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
 import { ROW_ROLE, WEB_ROW_FOCUS_INSET, linkKeyProps } from "../PostCard"
 import { PostMediaGrid } from "../PostMediaGrid"
+import { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "../../primitives/PostOverflowButton"
+import { PostOverflowMenu } from "../PostOverflowMenu"
 import {
   buildPostIdentity,
   identityA11yLabel,
+  postMenuSubject,
   repostSubjectAuthorId,
   splitPostBodyMentions,
 } from "../postCardModel"
+import { POST_CARD_RHYTHM } from "../postCardRhythm"
+import { usePopoverAnchor, type AnchorRect } from "../../primitives/PopoverMenu"
+import { useLightbox } from "../../lightbox"
 import { useRowHover } from "../rowHover"
 import { useListTimeAgo } from "../useListTimeAgo"
 import {
@@ -33,12 +39,16 @@ import {
   type ThreadRailSegment,
 } from "./threadModel"
 
+const RHYTHM = POST_CARD_RHYTHM
+const EMPTY_MEDIA: PostDTO["media"] = []
+
 export interface ThreadReplyRowProps {
   post: PostDTO
   rail: ThreadRailSegment
   hairline?: boolean
   isOptimistic?: boolean
   onOpenEntry?: (entry: DetailEntry) => void
+  onDeleted?: (postId: string) => void
 }
 
 export const ThreadReplyRow = React.memo(function ThreadReplyRow({
@@ -47,6 +57,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
   hairline = true,
   isOptimistic = false,
   onOpenEntry,
+  onDeleted,
 }: ThreadReplyRowProps) {
   const styles = useStyles()
   const { hovered, hoverProps } = useRowHover()
@@ -85,150 +96,196 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
     if (identity.personId) openPerson(identity.personId)
   }, [identity, openPerson])
   const metaTail = `${identity.handleLabel ? `${identity.handleLabel} · ` : ""}${isOptimistic ? t("thread.sending") : timeAgo(post.createdAt)}`
+  const [menuOpen, setMenuOpen] = React.useState(false)
+  const [menuAnchor, setMenuAnchor] = React.useState<AnchorRect | null>(null)
+  const menuTrigger = usePopoverAnchor(setMenuAnchor)
+  const openMenu = React.useCallback(() => {
+    menuTrigger.measure()
+    setMenuOpen(true)
+  }, [menuTrigger])
+  const closeMenu = React.useCallback(() => setMenuOpen(false), [])
+  const menuSubject = React.useMemo(() => postMenuSubject(post), [post])
+  const onMenuDeleted = React.useCallback(() => onDeleted?.(post.id), [onDeleted, post.id])
+  const lightbox = useLightbox()
+  const media = post.media ?? EMPTY_MEDIA
+  const openMedia = React.useCallback(
+    (index: number) => {
+      const items = media.map((item) => ({
+        url: item.url,
+        kind: item.kind,
+        thumbUrl: item.thumbUrl ?? null,
+        width: item.width ?? null,
+        height: item.height ?? null,
+      }))
+      if (items.length > 0) lightbox.open(items, index)
+    },
+    [lightbox, media],
+  )
 
   return (
-    <Pressable
-      onPress={openThread}
-      disabled={isOptimistic}
-      accessibilityRole={ROW_ROLE}
-      accessibilityLabel={t("post_card.open_thread_a11y", { name: identity.name })}
-      {...focusRingProps}
-      {...hoverProps}
-      {...(isOptimistic ? null : linkKeyProps(openThread))}
-      style={(state) => [
-        styles.outer,
-        hairline ? styles.outerRule : null,
-        isOptimistic ? styles.outerOptimistic : null,
-        WEB_ROW_FOCUS_INSET,
-        webTransition,
-        webCursor(isOptimistic),
-        !isOptimistic && hovered ? styles.outerHovered : null,
-        !isOptimistic && state.pressed ? styles.outerPressed : null,
-      ]}
-    >
-      <View style={styles.row}>
-        <View style={styles.railColumn}>
-          {rail.above ? <View style={styles.railAbove} /> : null}
-          {rail.below ? <View style={styles.railBelow} /> : null}
-          <Pressable
-            onPress={(event) => {
-              stopPress(event)
-              openIdentity()
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={identityA11yLabel(identity, t)}
-            hitSlop={5}
-            {...focusRingProps}
-          >
-            <Avatar
-              name={identity.avatarName}
-              seed={identity.avatarSeed}
-              photoUrl={identity.avatarUrl}
-              gradient={identity.avatarGradient}
-              size={THREAD_AVATAR_SIZE}
-              {...(identity.organization ? { style: styles.orgAvatar } : {})}
-              decorative
-            />
-          </Pressable>
-        </View>
-
-        <View style={styles.content}>
-          <View style={styles.metaRow}>
-            <Text numberOfLines={1} style={styles.metaName}>
-              {identity.name}
-            </Text>
-            {identity.affiliation ? (
-              <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
-            ) : null}
-            {identity.viaLabel ? (
-              <Pressable
-                onPress={(event) => {
-                  stopPress(event)
-                  openActingPerson()
-                }}
-                disabled={!identity.personId}
-                accessibilityRole="button"
-                accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}
-                hitSlop={4}
-                {...focusRingProps}
-                style={({ pressed }) => [styles.viaTail, pressed ? styles.pressed : null]}
-              >
-                <Text numberOfLines={1} style={styles.metaTail}>
-                  {`${identity.viaLabel} · `}
-                </Text>
-              </Pressable>
-            ) : null}
-            <Text numberOfLines={1} style={styles.metaTail}>
-              {metaTail}
-            </Text>
+    <>
+      <Pressable
+        onPress={openThread}
+        disabled={isOptimistic}
+        accessibilityRole={ROW_ROLE}
+        accessibilityLabel={t("post_card.open_thread_a11y", { name: identity.name })}
+        {...focusRingProps}
+        {...hoverProps}
+        {...(isOptimistic ? null : linkKeyProps(openThread))}
+        style={(state) => [
+          styles.outer,
+          hairline ? styles.outerRule : null,
+          isOptimistic ? styles.outerOptimistic : null,
+          WEB_ROW_FOCUS_INSET,
+          webTransition,
+          webCursor(isOptimistic),
+          !isOptimistic && hovered ? styles.outerHovered : null,
+          !isOptimistic && state.pressed ? styles.outerPressed : null,
+        ]}
+      >
+        <View style={styles.row}>
+          <View style={styles.railColumn}>
+            {rail.above ? <View style={styles.railAbove} /> : null}
+            {rail.below ? <View style={styles.railBelow} /> : null}
+            <Pressable
+              onPress={(event) => {
+                stopPress(event)
+                openIdentity()
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={identityA11yLabel(identity, t)}
+              hitSlop={5}
+              {...focusRingProps}
+            >
+              <Avatar
+                name={identity.avatarName}
+                seed={identity.avatarSeed}
+                photoUrl={identity.avatarUrl}
+                gradient={identity.avatarGradient}
+                size={THREAD_AVATAR_SIZE}
+                {...(identity.organization ? { style: styles.orgAvatar } : {})}
+                decorative
+              />
+            </Pressable>
           </View>
 
-          {segments.length > 0 ? (
-            <Text style={styles.body}>
-              {segments.map((segment, index) =>
-                segment.kind === "mention" ? (
-                  <Text
-                    key={`${segment.userId}-${index}`}
-                    style={styles.bodyMention}
-                    onPress={(event) => {
-                      stopPress(event)
-                      openPerson(segment.userId)
-                    }}
-                  >
-                    {segment.text}
+          <View style={styles.content}>
+            <View style={[styles.metaRow, POST_OVERFLOW_ROW_LIFT]}>
+              <Text numberOfLines={1} style={styles.metaName}>
+                {identity.name}
+              </Text>
+              {identity.affiliation ? (
+                <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+              ) : null}
+              {identity.viaLabel ? (
+                <Pressable
+                  onPress={(event) => {
+                    stopPress(event)
+                    openActingPerson()
+                  }}
+                  disabled={!identity.personId}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}
+                  hitSlop={4}
+                  {...focusRingProps}
+                  style={({ pressed }) => [styles.viaTail, pressed ? styles.pressed : null]}
+                >
+                  <Text numberOfLines={1} style={styles.metaTail}>
+                    {`${identity.viaLabel} · `}
                   </Text>
-                ) : (
-                  segment.text
-                ),
+                </Pressable>
+              ) : null}
+              <Text numberOfLines={1} style={styles.metaTail}>
+                {metaTail}
+              </Text>
+
+              <View style={styles.metaSpacer} />
+
+              {isOptimistic ? null : (
+                <PostOverflowButton
+                  label={t("post_card.more_a11y")}
+                  onPress={openMenu}
+                  buttonRef={menuTrigger.ref}
+                />
               )}
-            </Text>
-          ) : null}
-
-          {(post.media ?? []).length > 0 ? (
-            <View style={styles.block}>
-              <PostMediaGrid media={post.media ?? []} t={t} radius={14} maxHeight={240} />
             </View>
-          ) : null}
 
-          {post.event ? (
-            <View style={styles.block}>
-              <LinkedEventCard
-                event={post.event}
-                layout="list"
-                onPress={() => openEntry({ kind: "cleanup", id: post.event!.id })}
+            {segments.length > 0 ? (
+              <Text style={styles.body}>
+                {segments.map((segment, index) =>
+                  segment.kind === "mention" ? (
+                    <Text
+                      key={`${segment.userId}-${index}`}
+                      style={styles.bodyMention}
+                      onPress={(event) => {
+                        stopPress(event)
+                        openPerson(segment.userId)
+                      }}
+                    >
+                      {segment.text}
+                    </Text>
+                  ) : (
+                    segment.text
+                  ),
+                )}
+              </Text>
+            ) : null}
+
+            {media.length > 0 ? (
+              <View style={styles.block}>
+                <PostMediaGrid media={media} t={t} radius={14} maxHeight={240} onPressItem={openMedia} />
+              </View>
+            ) : null}
+
+            {post.event ? (
+              <View style={styles.block}>
+                <LinkedEventCard
+                  event={post.event}
+                  layout="list"
+                  onPress={() => openEntry({ kind: "cleanup", id: post.event!.id })}
+                />
+              </View>
+            ) : null}
+
+            {post.report ? (
+              <View style={styles.block}>
+                <LinkedReportCard
+                  report={{
+                    ...post.report,
+                    thumbUrl: post.report.thumbUrl ?? localReportThumb(post.report.id),
+                  }}
+                  layout="list"
+                  headline="title"
+                  onPress={() => openEntry({ kind: "pin", id: post.report!.id })}
+                />
+              </View>
+            ) : null}
+
+            <View style={styles.actionsWrap} pointerEvents={isOptimistic ? "none" : "auto"}>
+              <PostActionBar
+                variant="reply"
+                postId={post.id}
+                counts={post.counts}
+                viewer={post.viewer}
+                authorId={repostSubjectAuthorId(post)}
+                title={post.report?.title ?? t("post_card.share_title", { name: post.author.name })}
+                onComment={openThread}
+                onQuote={onQuote}
               />
             </View>
-          ) : null}
-
-          {post.report ? (
-            <View style={styles.block}>
-              <LinkedReportCard
-                report={{
-                  ...post.report,
-                  thumbUrl: post.report.thumbUrl ?? localReportThumb(post.report.id),
-                }}
-                layout="list"
-                headline="title"
-                onPress={() => openEntry({ kind: "pin", id: post.report!.id })}
-              />
-            </View>
-          ) : null}
-
-          <View style={styles.actionsWrap} pointerEvents={isOptimistic ? "none" : "auto"}>
-            <PostActionBar
-              variant="reply"
-              postId={post.id}
-              counts={post.counts}
-              viewer={post.viewer}
-              authorId={repostSubjectAuthorId(post)}
-              title={post.report?.title ?? t("post_card.share_title", { name: post.author.name })}
-              onComment={openThread}
-              onQuote={onQuote}
-            />
           </View>
         </View>
-      </View>
-    </Pressable>
+      </Pressable>
+
+      <PostOverflowMenu
+        visible={menuOpen}
+        subject={menuSubject}
+        anchorRect={menuAnchor}
+        onClose={closeMenu}
+        onOpenPerson={openPerson}
+        onDeleted={onMenuDeleted}
+      />
+    </>
   )
 })
 
@@ -292,6 +349,11 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["1"],
+    minHeight: RHYTHM.metaRowMinHeight,
+  },
+  metaSpacer: {
+    flex: 1,
+    minWidth: 0,
   },
   metaName: {
     flexShrink: 1,

@@ -3,6 +3,9 @@
     "dismiss": "Dismiss",
     "close": "Close",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "zoom_label": "Zoomable photo",
+    "zoom_hint": "Double tap to zoom. Pinch to zoom in or out, then drag to move around.",
+    "zoom_hint_pointer": "Double-click to zoom. Scroll or pinch to zoom in or out, then drag to move around."
   }
 }

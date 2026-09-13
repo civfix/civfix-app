@@ -85,6 +85,10 @@ export interface OpenExternalCapability {
   openInAppBrowser?(url: string): Promise<void>
 }
 
+export interface OpenInternalHrefCapability {
+  open(path: string): boolean
+}
+
 export interface CalendarFileCapability {
   save(input: { filename: string; ics: string }): Promise<boolean>
 }
@@ -104,6 +108,7 @@ export interface PlatformCapabilities {
   blurSurface: BlurSurfaceCapability
   haptics?: HapticsCapability
   openExternal?: OpenExternalCapability
+  openInternalHref?: OpenInternalHrefCapability
   contactsInvite?: ContactsInviteAdapter
   clipboard?: ClipboardCapability
   calendarFile?: CalendarFileCapability

@@ -53,6 +53,7 @@
     "edited": "(수정됨)",
     "retry_sending": "다시 보내기",
     "message_actions": "메시지 작업",
+    "link_failed": "링크를 열 수 없어요",
     "announce_failed": "메시지를 보내지 못했어요. 탭하여 재시도하세요.",
     "reply_deleted": "삭제된 메시지",
     "reply_media": "사진",

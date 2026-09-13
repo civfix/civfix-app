@@ -19,7 +19,7 @@ import esMap from "../../i18n/locales/es/map-ui.json"
 import deMap from "../../i18n/locales/de/map-ui.json"
 import koMap from "../../i18n/locales/ko/map-ui.json"
 
-const CARDS: Record<string, { linked: { a11y_card: string } }> = {
+const CARDS: Record<string, { linked: { a11y_card: string; a11y_card_compact: string } }> = {
   en: enCard,
   es: esCard,
   de: deCard,
@@ -49,6 +49,22 @@ describe("linked event card a11y label", () => {
     for (const locale of ["en", "ko"] as const) {
       const template = CARDS[locale]!.linked.a11y_card
       expect(template.indexOf("{{month}}"), locale).toBeLessThan(template.indexOf("{{day}}"))
+    }
+  })
+
+  it("keeps a compact, attendance-free variant with the same date order in every locale", () => {
+    for (const [locale, catalog] of Object.entries(CARDS)) {
+      const compact = catalog.linked.a11y_card_compact
+      expect(compact, locale).not.toContain("{{going}}")
+      for (const slot of ["{{month}}", "{{day}}", "{{title}}", "{{schedule}}", "{{location}}"]) {
+        expect(compact, `${locale} ${slot}`).toContain(slot)
+      }
+      const full = catalog.linked.a11y_card
+      expect(
+        compact.indexOf("{{day}}") < compact.indexOf("{{month}}"),
+        `${locale} compact date order must match a11y_card`,
+      ).toBe(full.indexOf("{{day}}") < full.indexOf("{{month}}"))
+      expect(compact, locale).not.toContain("{{month}}.")
     }
   })
 

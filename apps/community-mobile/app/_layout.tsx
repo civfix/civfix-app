@@ -33,6 +33,7 @@ import {
 import { I18nProvider, createI18n } from "@civfix/ui/i18n"
 import {
   MediaLightboxProvider,
+  SharePostProvider,
   ToastProvider,
   setBrandAboutPresenter,
   setOnboardingTourPresenter,
@@ -81,6 +82,7 @@ import {
 } from "@/push/register"
 import { useRealtimeChannel } from "@/hooks/useRealtimeChannel"
 import { applyInternalHref, useMobileNavAdapter } from "@/components/MobileNavAdapter"
+import { bridgeKey } from "@/lib/navBridge"
 
 export const unstable_settings = { anchor: "index" }
 
@@ -156,6 +158,27 @@ const mobileCapabilities: PlatformCapabilities = {
     },
     openInAppBrowser,
   },
+  openInternalHref: {
+    open: (path: string): boolean => {
+      const entry = applyInternalHref(path)
+      if (!entry) return false
+      if (bridgeKey(entry) === null) dismissToShell?.()
+      return true
+    },
+  },
+}
+
+let dismissToShell: (() => void) | null = null
+
+function InternalHrefBridge(): null {
+  const router = useRouter()
+  useEffect(() => {
+    dismissToShell = () => goHome(router)
+    return () => {
+      dismissToShell = null
+    }
+  }, [router])
+  return null
 }
 
 function CameraNavigatorBridge(): null {
@@ -486,9 +509,11 @@ export default function RootLayout() {
               <BrandAboutBridge />
               <OnboardingTourBridge />
               <NavAdapterBridge />
+              <InternalHrefBridge />
             <MobileI18nProvider>
             <ToastProvider>
             <MediaLightboxProvider>
+            <SharePostProvider>
             <BottomSheetModalProvider>
               <RootStack />
               <OnboardingGate gateActive={gateActive} loadingGateMounted={gateMounted} />
@@ -502,6 +527,7 @@ export default function RootLayout() {
                 </Animated.View>
               ) : null}
             </BottomSheetModalProvider>
+            </SharePostProvider>
             </MediaLightboxProvider>
             </ToastProvider>
             </MobileI18nProvider>

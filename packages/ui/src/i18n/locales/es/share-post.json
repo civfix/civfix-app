@@ -1,0 +1,33 @@
+{
+  "title": "Compartir publicación",
+  "backdrop": {
+    "dismiss": "Cerrar el menú de compartir"
+  },
+  "recipients": {
+    "recent": "Recientes",
+    "empty_prompt": "Busca a alguien por su @usuario para enviarle esta publicación.",
+    "cap": "Puedes enviar a un máximo de {{count}} personas a la vez."
+  },
+  "note": {
+    "placeholder": "Añade un mensaje (opcional)",
+    "a11y": "Mensaje que se enviará con el enlace"
+  },
+  "actions": {
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "send": "Enviar",
+    "send_count": "Enviar a {{count}}",
+    "more": "Compartir de otra forma"
+  },
+  "signed_out": {
+    "title": "Inicia sesión para enviarlo",
+    "body": "Los mensajes directos requieren una cuenta. Aun así puedes compartir el enlace de otra forma."
+  },
+  "toast": {
+    "sent_one": "Enviado a {{count}} persona",
+    "sent_other": "Enviado a {{count}} personas",
+    "partial": "No se pudo enviar a {{names}}",
+    "none_sent": "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Intentar de nuevo"
+  }
+}

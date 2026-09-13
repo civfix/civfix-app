@@ -33,7 +33,6 @@
     "undo_repost": "Undo repost",
     "quote_post": "Quote post",
     "menu_label": "Repost options",
-    "menu_dismiss": "Dismiss repost menu",
     "default_title": "CivFix post"
   },
   "wizard_step_count": "Step {{current}} of {{total}}",

@@ -25,23 +25,27 @@ import {
 
 const r = POST_CARD_RHYTHM
 const POST_CARD_SOURCE = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
+const OVERFLOW_BUTTON_SOURCE = readFileSync(
+  new URL("../../primitives/PostOverflowButton.tsx", import.meta.url),
+  "utf8",
+)
 
 /**
  * The body of a `const NAME: ViewStyle = { ... }` / `NAME: { ... }` block, for the source-grep guards, with
  * `//` comments stripped - these blocks DESCRIBE the margins they must not contain, so a naive grep would
  * fail on the very comment that documents the invariant.
  */
-function styleBlock(name: string): string {
-  const start = POST_CARD_SOURCE.indexOf(name)
-  expect(start, `${name} is gone from PostCard.tsx - rename the guard, do not delete it`).toBeGreaterThan(-1)
-  const open = POST_CARD_SOURCE.indexOf("{", start)
+function styleBlock(name: string, source: string = POST_CARD_SOURCE): string {
+  const start = source.indexOf(name)
+  expect(start, `${name} is gone - rename the guard, do not delete it`).toBeGreaterThan(-1)
+  const open = source.indexOf("{", start)
   let depth = 0
-  for (let i = open; i < POST_CARD_SOURCE.length; i += 1) {
-    if (POST_CARD_SOURCE[i] === "{") depth += 1
-    if (POST_CARD_SOURCE[i] === "}") {
+  for (let i = open; i < source.length; i += 1) {
+    if (source[i] === "{") depth += 1
+    if (source[i] === "}") {
       depth -= 1
       if (depth === 0) {
-        return POST_CARD_SOURCE.slice(open, i + 1).replace(/^\s*\/\/.*$/gm, "")
+        return source.slice(open, i + 1).replace(/^\s*\/\/.*$/gm, "")
       }
     }
   }
@@ -126,7 +130,7 @@ describe("PostCard row rhythm", () => {
     expect(block).not.toMatch(/margin[A-Za-z]*:\s*-/)
     // ...and the same for the button, whose own height must stay the row's rather than being cancelled back
     // to it. `position: absolute` here is the Android wrong-action bug (see postCardRhythm's header).
-    const button = styleBlock("moreButton: {")
+    const button = styleBlock("moreButton: {", OVERFLOW_BUTTON_SOURCE)
     expect(button).toContain("height: RHYTHM.overflowBoxHeight")
     expect(button).not.toContain("position: \"absolute\"")
     expect(button).not.toMatch(/margin(Top|Bottom|Vertical):\s*-/)
@@ -140,7 +144,7 @@ describe("PostCard row rhythm", () => {
    * somebody else - but only while the two halves agree, so pin the identity rather than the literals.
    */
   it("gives back exactly what the web target grows, so the row's rhythm is unchanged", () => {
-    const grown = styleBlock("const WEB_MORE_TARGET: ViewStyle =")
+    const grown = styleBlock("const WEB_MORE_TARGET: ViewStyle =", OVERFLOW_BUTTON_SOURCE)
     expect(grown).toContain("height: RHYTHM.overflowTarget")
     expect(grown).toContain("marginTop: -WEB_MORE_TARGET_GROWTH")
     expect(grown).toContain("marginBottom: -WEB_MORE_TARGET_GROWTH")
