@@ -80,6 +80,8 @@
     "show_more": "Ver más",
     "menu": {
       "go_to_original": "Ir a la publicación original",
+      "undo_repost": "Deshacer republicación",
+      "undo_repost_failed": "No se pudo deshacer la republicación",
       "copy_link": "Copiar enlace",
       "link_copied": "Enlace copiado",
       "link_copy_failed": "No se pudo copiar el enlace",

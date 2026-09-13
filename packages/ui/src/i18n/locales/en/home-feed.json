@@ -80,6 +80,8 @@
     "share_title": "Post by {{name}}",
     "menu": {
       "go_to_original": "Go to original post",
+      "undo_repost": "Undo repost",
+      "undo_repost_failed": "Could not undo the repost",
       "copy_link": "Copy link",
       "link_copied": "Link copied",
       "link_copy_failed": "Could not copy the link",

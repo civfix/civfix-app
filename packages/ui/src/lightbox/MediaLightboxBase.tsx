@@ -166,7 +166,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.pill,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: t.colors.scrimStrong,
+    backgroundColor: t.colors.lightboxControl,
   },
   controlPressed: {
     opacity: 0.7,

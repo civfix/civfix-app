@@ -1,4 +1,6 @@
-import { readFileSync } from "node:fs"
+import { readFileSync, readdirSync, statSync } from "node:fs"
+import { fileURLToPath } from "node:url"
+import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -149,5 +151,54 @@ describe("deleting from a menu leaves the surface consistent", () => {
     const fromDelete = hooks.slice(hooks.indexOf("export function buildDeleteMutation"))
     const deleteMutation = fromDelete.slice(0, fromDelete.indexOf("export function", 1))
     expect(deleteMutation).toContain("qc.invalidateQueries({ queryKey: queryKeys.postsRoot })")
+  })
+})
+
+const BODIES_DIR = fileURLToPath(new URL("../", import.meta.url))
+
+function listTsx(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const full = join(dir, name)
+    if (statSync(full).isDirectory()) return name === "__tests__" ? [] : listTsx(full)
+    return name.endsWith(".tsx") ? [full] : []
+  })
+}
+
+describe("every body that renders a post action bar also mounts the overflow menu", () => {
+  const actionBarSurfaces = listTsx(BODIES_DIR).filter((file) =>
+    readFileSync(file, "utf8").includes("<PostActionBar"),
+  )
+
+  it("enumerates the surfaces from disk rather than a hand-kept list", () => {
+    expect(actionBarSurfaces.length).toBe(Object.keys(SURFACES).length)
+    for (const file of actionBarSurfaces) {
+      expect(Object.keys(SURFACES).some((name) => file.endsWith(name)), file).toBe(true)
+    }
+  })
+
+  for (const file of actionBarSurfaces) {
+    it(`${file.slice(BODIES_DIR.length)} mounts PostOverflowMenu`, () => {
+      expect(readFileSync(file, "utf8")).toContain("<PostOverflowMenu")
+    })
+  }
+})
+
+describe("a repost row never deletes the original it embeds", () => {
+  it("only offers Delete when the subject was not redirected from a repost", () => {
+    expect(MENU).toContain("const canDelete = isOwn && repost === null")
+    const deleteItem = menuItem("delete")
+    expect(deleteItem).toContain("onPress: () => onConfirmingDeleteChange(true)")
+    expect(MENU).toContain("...(canDelete\n        ? [\n            {\n              key: \"delete\"")
+  })
+
+  it("offers Undo repost on the viewer's own repost, driven by the repost toggle", () => {
+    expect(MENU).toContain(
+      "const isOwnRepost = isAuthenticated && viewerId != null && repost !== null && viewerId === repost.authorId",
+    )
+    expect(MENU).toContain("const undoRepost = useRepost(subjectId)")
+    const undoItem = menuItem("undo-repost")
+    expect(undoItem).toContain('label: t("post_card.menu.undo_repost")')
+    expect(undoItem).toContain("onPress: runUndoRepost")
+    expect(MENU).toContain("undoRepostMutate(true, {")
   })
 })

@@ -61,6 +61,29 @@ describe("theme color schemes", () => {
     expect(dark.scrimLightbox).toBe("rgba(0,0,0,0.94)")
   })
 
+  it("lifts the lightbox controls with a translucent light chip that reads over the near-black scrim", () => {
+    expect(light.lightboxControl).toBe("rgba(255,255,255,0.18)")
+    expect(dark.lightboxControl).toBe("rgba(255,255,255,0.16)")
+  })
+
+  it("fills the verified badge with a sky that clears the 3:1 non-text floor under its check glyph", () => {
+    const luminance = (hex: string): number => {
+      const channel = (index: number): number => {
+        const c = parseInt(hex.slice(index, index + 2), 16) / 255
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+      }
+      return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5)
+    }
+    const contrast = (a: string, b: string): number => {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+      return ((hi ?? 0) + 0.05) / ((lo ?? 0) + 0.05)
+    }
+    expect(light.verifiedFill).toBe(tokens.color.sky["600"])
+    expect(dark.verifiedFill).toBe(darkColor.brand.sky)
+    expect(contrast(light.onAccent, light.verifiedFill)).toBeGreaterThanOrEqual(3)
+    expect(contrast(dark.onAccent, dark.verifiedFill)).toBeGreaterThanOrEqual(3)
+  })
+
   it("makes the lightbox scrim the darkest of the four, in both schemes", () => {
     const alphaOf = (value: string): number => {
       const parsed = /rgba\(\d+,\d+,\d+,([\d.]+)\)/.exec(value)

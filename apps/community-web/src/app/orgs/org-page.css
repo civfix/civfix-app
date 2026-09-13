@@ -71,7 +71,7 @@
 }
 .orgpage-verified {
   color: var(--fg-on-color);
-  fill: var(--sky);
+  fill: var(--sky-600);
   flex: none;
 }
 .orgpage-handle {

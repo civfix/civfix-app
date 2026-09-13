@@ -15,8 +15,8 @@ describe("the lightbox scrim", () => {
     expect(base).toMatch(
       /scrim: \{\n\s*\.\.\.StyleSheet\.absoluteFillObject,\n\s*backgroundColor: t\.colors\.scrimLightbox,/,
     )
-    expect((base.match(/t\.colors\.scrimStrong/g) ?? []).length).toBe(1)
-    expect(base).toMatch(/controlBase: \{[\s\S]*?backgroundColor: t\.colors\.scrimStrong,/)
+    expect(base).not.toContain("t.colors.scrimStrong")
+    expect(base).toMatch(/controlBase: \{[\s\S]*?backgroundColor: t\.colors\.lightboxControl,/)
   })
 
   it("hardcodes no colour", () => {

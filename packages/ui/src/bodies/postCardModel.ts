@@ -130,17 +130,27 @@ export function repostBodyText(embedded: PostRefDTO): string {
   return embedded.excerpt
 }
 
+export interface PostMenuRepost {
+  id: string
+  authorId: string
+}
+
 export interface PostMenuSubject {
   id: string
   authorId: string | null
+  repost: PostMenuRepost | null
 }
 
 export function postMenuSubject(post: PostDTO): PostMenuSubject {
   const original = post.kind === "repost" ? post.repostOf : null
   if (original && !original.deleted) {
-    return { id: original.id, authorId: original.author?.id ?? null }
+    return {
+      id: original.id,
+      authorId: original.author?.id ?? null,
+      repost: { id: post.id, authorId: post.author.id },
+    }
   }
-  return { id: post.id, authorId: post.author.id }
+  return { id: post.id, authorId: post.author.id, repost: null }
 }
 
 export function repostSubjectAuthorId(post: PostDTO): string {

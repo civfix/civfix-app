@@ -9,11 +9,11 @@ const badge = strip(read("../VerifiedBadge.tsx"))
 
 describe("VerifiedBadge is a solid seal, not an outline", () => {
   it("fills the seal with the brand sky, and lets a caller override that fill", () => {
-    expect(badge).toContain("fill={color ?? th.colors.brand.sky}")
+    expect(badge).toContain("fill={color ?? th.colors.verifiedFill}")
   })
 
   it("no longer spends the badge colour on the stroke, which is what made it an outline", () => {
-    expect(badge).not.toContain("color={color ?? th.colors.brand.sky}")
+    expect(badge).not.toContain("color={color ?? th.colors.verifiedFill}")
   })
 
   it("strokes the check in the on-accent ink, the same token the map pins use over a brand fill", () => {

@@ -80,6 +80,8 @@
     "show_more": "Mehr anzeigen",
     "menu": {
       "go_to_original": "Zum Originalbeitrag",
+      "undo_repost": "Repost zurücknehmen",
+      "undo_repost_failed": "Repost konnte nicht zurückgenommen werden",
       "copy_link": "Link kopieren",
       "link_copied": "Link kopiert",
       "link_copy_failed": "Link konnte nicht kopiert werden",

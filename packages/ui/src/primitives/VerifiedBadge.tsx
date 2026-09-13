@@ -27,7 +27,7 @@ export function VerifiedBadge({ size = "sm", color, label }: VerifiedBadgeProps)
       <BadgeCheck
         size={glyph}
         color={th.colors.onAccent}
-        fill={color ?? th.colors.brand.sky}
+        fill={color ?? th.colors.verifiedFill}
         strokeWidth={2.25}
       />
     </View>

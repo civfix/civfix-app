@@ -86,28 +86,33 @@ describe("a repost renders its ORIGINAL, not a truncated preview of it", () => {
 
 describe("the overflow menu's subject is the post the row actually renders", () => {
   it("redirects a REPOST's menu to the original, and keeps a quote's on itself", () => {
-    expect(postMenuSubject(repost(ref()))).toEqual({ id: "post-original", authorId: "person-2" })
+    expect(postMenuSubject(repost(ref()))).toEqual({
+      id: "post-original",
+      authorId: "person-2",
+      repost: { id: "post-repost", authorId: "person-1" },
+    })
 
     const quote: PostDTO = { ...repost(ref()), kind: "quote", body: "Worth joining." }
-    expect(postMenuSubject(quote)).toEqual({ id: "post-repost", authorId: "person-1" })
+    expect(postMenuSubject(quote)).toEqual({ id: "post-repost", authorId: "person-1", repost: null })
 
     const plain: PostDTO = { ...repost(ref()), kind: "post", repostOf: null }
-    expect(postMenuSubject(plain)).toEqual({ id: "post-repost", authorId: "person-1" })
+    expect(postMenuSubject(plain)).toEqual({ id: "post-repost", authorId: "person-1", repost: null })
   })
 
   it("reports no author at all when the original's account is gone", () => {
     expect(postMenuSubject(repost(ref({ author: null })))).toEqual({
       id: "post-original",
       authorId: null,
+      repost: { id: "post-repost", authorId: "person-1" },
     })
   })
 
   it("falls back to the WRAPPER when the original post itself is deleted", () => {
     const gone = repost(ref({ deleted: true, body: null, excerpt: "" }))
-    expect(postMenuSubject(gone)).toEqual({ id: "post-repost", authorId: "person-1" })
+    expect(postMenuSubject(gone)).toEqual({ id: "post-repost", authorId: "person-1", repost: null })
 
     const goneAndAuthorless = repost(ref({ deleted: true, author: null, excerpt: "" }))
-    expect(postMenuSubject(goneAndAuthorless)).toEqual({ id: "post-repost", authorId: "person-1" })
+    expect(postMenuSubject(goneAndAuthorless)).toEqual({ id: "post-repost", authorId: "person-1", repost: null })
   })
 
   it("offers no jump to an original that is gone", () => {

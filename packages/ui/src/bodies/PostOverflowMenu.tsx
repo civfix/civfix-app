@@ -5,7 +5,7 @@ import { ReportContentSheet } from "../primitives/ReportContentSheet"
 import { useToast } from "../primitives/Toast"
 import { absoluteUrl } from "../primitives/share"
 import { useAuthState, useMyProfile, useReportContent, useRequireAuth } from "../data"
-import { useDeletePost } from "../data/hooks/posts"
+import { useDeletePost, useRepost } from "../data/hooks/posts"
 import { useClipboard } from "../capabilities"
 import { useT } from "../i18n"
 import type { PostMenuSubject } from "./postCardModel"
@@ -86,7 +86,11 @@ function PostOverflowMenuContent({
 
   const subjectId = subject.id
   const subjectPath = `/post/${subjectId}`
+  const repost = subject.repost
   const isOwn = isAuthenticated && viewerId != null && viewerId === subject.authorId
+  const canDelete = isOwn && repost === null
+  const isOwnRepost = isAuthenticated && viewerId != null && repost !== null && viewerId === repost.authorId
+  const undoRepost = useRepost(subjectId)
 
   const submitReport = useCallback(
     (reason: ContentReportReason, details?: string) => {
@@ -115,6 +119,13 @@ function PostOverflowMenuContent({
       .then(() => toast.show(t("post_card.menu.link_copied")))
       .catch(() => toast.show(t("post_card.menu.link_copy_failed"), { variant: "error" }))
   }, [clipboard, subjectPath, t, toast])
+
+  const undoRepostMutate = undoRepost.mutate
+  const runUndoRepost = useCallback(() => {
+    undoRepostMutate(true, {
+      onError: () => toast.show(t("post_card.menu.undo_repost_failed"), { variant: "error" }),
+    })
+  }, [t, toast, undoRepostMutate])
 
   const runDelete = useCallback(() => {
     onBusyChange(true)
@@ -165,7 +176,18 @@ function PostOverflowMenuContent({
         disabled: !clipboard,
         onPress: copyLink,
       },
-      ...(isOwn
+      ...(isOwnRepost
+        ? [
+            {
+              key: "undo-repost",
+              label: t("post_card.menu.undo_repost"),
+              icon: "Repeat2" as const,
+              disabled: undoRepost.isPending,
+              onPress: runUndoRepost,
+            },
+          ]
+        : []),
+      ...(canDelete
         ? [
             {
               key: "delete",
@@ -197,15 +219,19 @@ function PostOverflowMenuContent({
     ],
     [
       authorId,
+      canDelete,
       clipboard,
       copyLink,
       del.isPending,
       isOwn,
+      isOwnRepost,
       onConfirmingDeleteChange,
       onOpenOriginal,
       onOpenPerson,
+      runUndoRepost,
       startReport,
       t,
+      undoRepost.isPending,
     ],
   )
 

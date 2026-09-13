@@ -77,6 +77,8 @@
     "show_more": "더 보기",
     "menu": {
       "go_to_original": "원본 게시물로 이동",
+      "undo_repost": "리포스트 취소",
+      "undo_repost_failed": "리포스트를 취소하지 못했습니다",
       "copy_link": "링크 복사",
       "link_copied": "링크를 복사했어요",
       "link_copy_failed": "링크를 복사하지 못했어요",
