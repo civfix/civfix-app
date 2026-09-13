@@ -86,6 +86,28 @@ describe("the host surface hosts the complete-event sheet once", () => {
   })
 })
 
+describe("an ended event closes RSVP without closing check-in", () => {
+  it("gates the non-host check-in row on the LIVE status, never on the end time", () => {
+    const source = code(body)
+    expect(source).toContain("!actsAsHost && canCheckIn && isLive")
+    expect(source).not.toMatch(/canCheckIn && isUpcoming/)
+  })
+
+  it("puts only the RSVP surfaces behind the end time", () => {
+    const source = code(body)
+    expect(source).toContain("const isEnded = hasEventEnded(cleanup, Date.now())")
+    expect(source).toContain("const isLive = !isCancelled && !isDone")
+    expect(source).toContain("const isUpcoming = isLive && !isEnded")
+    expect(source).toContain("ended={isEnded}")
+  })
+
+  it("still shows a registered attendee their ticket once the event has ended", () => {
+    const source = code(body)
+    expect(source).toContain("isUpcoming || isRegistered ? (")
+    expect(source).toContain('const isRegistered = cleanup.myRegistration?.status === "registered"')
+  })
+})
+
 describe("EventHoursBlock renders inside its host's scroller", () => {
   it("imports no Modal, FlatList or ScrollView, and no reanimated", () => {
     const imports = hoursBlock.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
@@ -149,7 +171,9 @@ describe("LogHoursEditor re-opens seeded rather than blank", () => {
     expect(source).toContain("const viewerId = user?.id")
     // Rows, "Apply to all", the validity scan and the request all read the FILTERED list.
     expect(source).toContain("attendees.map((a) => a.id)")
-    expect(source).toContain("Object.fromEntries(attendees.map((a) => [a.id, defaultHoursDraft]))")
+    expect(source).toContain("Object.fromEntries(")
+    expect(source).toMatch(/attendees\.map\(\(a\) => \{[\s\S]*?defaultHoursDraft\]/)
+    expect(source).toMatch(/for \(const attendee of attendees\)/)
     expect(source).toContain("attendees.some(")
     // ...and the raw roster is never mapped into rows or entries behind its back.
     expect(source).not.toMatch(/roster\.map\(/)

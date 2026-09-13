@@ -24,6 +24,7 @@ import { useLocale, useRelativeTime, useT } from "../i18n"
 import { pushCleanup } from "./navHelpers"
 import { useRowHover } from "./rowHover"
 import { eventDistanceLabel } from "./eventDistance"
+import { hasEventEnded } from "./eventLifecycle"
 import { eventBlendScore } from "./eventBlendScore"
 
 type Row =
@@ -140,6 +141,7 @@ const SheetEventCard = React.memo(function SheetEventCard({
           going={cleanup.joined}
           onToggle={(currentlyGoing) => join.mutate(currentlyGoing)}
           busy={join.isPending}
+          ended={hasEventEnded(cleanup, Date.now())}
           nextPath={`/cleanups/${cleanup.id}`}
           size="sm"
         />

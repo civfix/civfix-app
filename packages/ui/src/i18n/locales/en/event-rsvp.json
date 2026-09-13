@@ -1,14 +1,17 @@
 {
   "label": {
     "rsvp": "RSVP",
-    "going": "Going"
+    "going": "Going",
+    "ended": "Ended"
   },
   "a11y": {
     "rsvp": "RSVP",
-    "going": "Going. Tap to leave"
+    "going": "Going. Tap to leave",
+    "ended": "This event has ended"
   },
   "error": {
     "closed": "This event is closed.",
+    "ended": "This event has already ended.",
     "not_allowed": "You can't RSVP to this event.",
     "generic": "Couldn't update your RSVP. Try again."
   }

@@ -29,6 +29,7 @@ import {
   claimEventSlotMutationOptions,
   rsvpErrorKey,
 } from "../hooks/cleanups"
+import { EVENT_ENDED_FIELD, EVENT_ENDED_REASON } from "../../bodies/errorCode"
 
 const REFCODE = "EVT-2026-0042"
 
@@ -352,5 +353,11 @@ describe("rsvpErrorKey (the join/leave failure toast copy)", () => {
     expect(rsvpErrorKey("FORBIDDEN")).toBe("error.not_allowed") // 403 ban / CSRF
     expect(rsvpErrorKey("UNAUTHORIZED")).toBe("error.generic")
     expect(rsvpErrorKey(undefined)).toBe("error.generic") // network failure / non-AppError
+  })
+
+  it("tells an ENDED event apart from a closed one by the field the server names", () => {
+    expect(rsvpErrorKey("CONFLICT", { [EVENT_ENDED_FIELD]: EVENT_ENDED_REASON })).toBe("error.ended")
+    expect(rsvpErrorKey("CONFLICT", {})).toBe("error.closed")
+    expect(rsvpErrorKey("CONFLICT", undefined)).toBe("error.closed")
   })
 })

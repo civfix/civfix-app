@@ -304,10 +304,10 @@ export function GuestRsvpSheet({
   const errorText = (() => {
     if (localErrorKey !== null) return t(localErrorKey)
     if (step === "form" && request.isError && !smsBlocked) {
-      return t(guestRequestErrorKey(appErrorCode(request.error)))
+      return t(guestRequestErrorKey(appErrorCode(request.error), appErrorFields(request.error)))
     }
     if (step === "code") {
-      if (request.isError) return t(guestRequestErrorKey(appErrorCode(request.error)))
+      if (request.isError) return t(guestRequestErrorKey(appErrorCode(request.error), appErrorFields(request.error)))
       if (verify.isError) {
         return t(guestVerifyErrorKey(appErrorCode(verify.error), appErrorFields(verify.error)))
       }

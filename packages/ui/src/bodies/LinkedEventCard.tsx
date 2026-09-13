@@ -8,6 +8,7 @@ import { RsvpPill } from "../primitives/RsvpPill"
 import { useCleanup, useCleanupAttendees, useJoinCleanup } from "../data"
 import { useLocale, useT } from "../i18n"
 import { buildLinkedEventCardModel, buildLinkedEventCardTargetPlan } from "./linkedEventCardModel"
+import { hasEventEnded } from "./eventLifecycle"
 export { buildLinkedEventCardModel, buildLinkedEventCardTargetPlan } from "./linkedEventCardModel"
 
 export interface LinkedEventCardProps {
@@ -184,6 +185,7 @@ export function LinkedEventCard({
             onToggle={(currentlyGoing) => join.mutate(currentlyGoing)}
             nextPath={`/cleanups/${event.id}`}
             busy={join.isPending || (!cleanup && detail.isLoading)}
+            ended={hasEventEnded(liveCleanup ?? event, Date.now())}
             size="md"
           />
         </View>

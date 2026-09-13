@@ -46,6 +46,7 @@
     "invalid_contact": "Check that name and contact and try again.",
     "event_gone": "This event is no longer available.",
     "closed": "This event is closed to new RSVPs.",
+    "ended": "This event has already ended.",
     "bad_code": "That code isn't right, or it may have expired. Check it and try again.",
     "attempts_exhausted": "Too many tries. Start over to get a new code.",
     "generic": "Something went wrong. Try again.",

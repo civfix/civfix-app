@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import {
   canSubmitGuestForm,
@@ -20,7 +21,12 @@ import {
   GuestOtpErrorReason,
   type GuestOtpErrorReason as GuestOtpErrorReasonValue,
 } from "@civfix/shared"
-import { appErrorCode, appErrorFields } from "../../bodies/errorCode"
+import {
+  appErrorCode,
+  appErrorFields,
+  EVENT_ENDED_FIELD,
+  EVENT_ENDED_REASON,
+} from "../../bodies/errorCode"
 
 function verifyError(reason: GuestOtpErrorReasonValue): unknown {
   return {
@@ -144,6 +150,31 @@ describe("error mapping", () => {
     expect(guestVerifyErrorKey("CONFLICT", undefined)).toBe("error.closed")
     expect(guestVerifyErrorKey("NOT_FOUND", undefined)).toBe("error.event_gone")
     expect(guestVerifyErrorKey("RATE_LIMITED", undefined)).toBe("error.rate_limited")
+  })
+
+  it("says the event ENDED when the server names that field, on both guest steps", () => {
+    const ended = { [EVENT_ENDED_FIELD]: EVENT_ENDED_REASON }
+
+    expect(guestRequestErrorKey("CONFLICT", ended)).toBe("error.ended")
+    expect(guestVerifyErrorKey("CONFLICT", ended)).toBe("error.ended")
+    expect(guestRequestErrorKey("CONFLICT", {})).toBe("error.closed")
+    expect(guestVerifyErrorKey("CONFLICT", {})).toBe("error.closed")
+  })
+
+  it("keeps the ended refusal ahead of the otp reason, so a late code says why it failed", () => {
+    const fields = {
+      [EVENT_ENDED_FIELD]: EVENT_ENDED_REASON,
+      [GUEST_OTP_ERROR_FIELD]: GuestOtpErrorReason.invalidCode,
+    }
+    expect(guestVerifyErrorKey("CONFLICT", fields)).toBe("error.ended")
+  })
+
+  it.each(["en", "es", "de", "ko"])("carries the ended copy in the %s guest catalog", (locale) => {
+    const catalog = JSON.parse(
+      readFileSync(new URL(`../../i18n/locales/${locale}/event-guest-rsvp.json`, import.meta.url), "utf8"),
+    ) as { error: Record<string, string> }
+    expect(catalog.error.ended?.length ?? 0).toBeGreaterThan(0)
+    expect(catalog.error.ended).not.toBe(catalog.error.closed)
   })
 
   it("shows the start-over state ONLY when the server says the attempts are spent", () => {

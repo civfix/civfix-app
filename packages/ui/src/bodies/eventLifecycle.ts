@@ -81,3 +81,18 @@ export function hoursReceiptState(input: {
   if (input.myHours !== null && input.myHours > 0) return "credited"
   return input.anyLogged ? "not-credited" : "pending"
 }
+
+export const EVENT_END_GRACE_MS = 24 * 60 * 60 * 1000
+
+export interface EventWindow {
+  scheduledAt: string
+  endsAt?: string | null
+}
+
+export function hasEventEnded(event: EventWindow, now: number): boolean {
+  const ends = event.endsAt == null ? Number.NaN : Date.parse(event.endsAt)
+  if (!Number.isNaN(ends)) return ends < now
+  const starts = Date.parse(event.scheduledAt)
+  if (Number.isNaN(starts)) return true
+  return starts + EVENT_END_GRACE_MS < now
+}

@@ -5,6 +5,7 @@ import {
   MAX_GUEST_NAME,
   type GuestContactChannel,
 } from "@civfix/shared"
+import { isEventEndedRefusal } from "../bodies/errorCode"
 
 export type GuestRsvpStep = "choice" | "form" | "code" | "success"
 
@@ -78,7 +79,11 @@ export function canSubmitGuestForm(form: GuestRsvpFormState, pending: boolean): 
   return guestNameValue(form.name) !== null && guestContactPayload(form) !== null
 }
 
-export function guestRequestErrorKey(code: string | undefined): string {
+export function guestRequestErrorKey(
+  code: string | undefined,
+  fields?: Record<string, string> | undefined,
+): string {
+  if (isEventEndedRefusal(fields)) return "error.ended"
   if (code === "RATE_LIMITED") return "error.rate_limited"
   if (code === "TURNSTILE_FAILED") return "error.turnstile"
   if (code === "VALIDATION") return "error.invalid_contact"
@@ -99,6 +104,7 @@ export function guestVerifyErrorKey(
   code: string | undefined,
   fields: Record<string, string> | undefined,
 ): string {
+  if (isEventEndedRefusal(fields)) return "error.ended"
   const reason = guestOtpErrorReason(fields)
   if (reason === GuestOtpErrorReason.attemptsExhausted) return "error.attempts_exhausted"
   if (reason === GuestOtpErrorReason.invalidCode) return "error.bad_code"

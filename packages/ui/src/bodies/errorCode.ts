@@ -34,3 +34,11 @@ export function appErrorFields(err: unknown): Record<string, string> | undefined
         : undefined
   return typeof fields === "object" && fields !== null ? fields : undefined
 }
+
+export const EVENT_ENDED_FIELD = "event"
+
+export const EVENT_ENDED_REASON = "ended"
+
+export function isEventEndedRefusal(fields: Record<string, string> | undefined): boolean {
+  return fields?.[EVENT_ENDED_FIELD] === EVENT_ENDED_REASON
+}

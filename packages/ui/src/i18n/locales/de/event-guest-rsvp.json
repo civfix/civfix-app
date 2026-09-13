@@ -46,6 +46,7 @@
     "invalid_contact": "Prüfe Name und Kontaktdaten und versuche es erneut.",
     "event_gone": "Dieses Event ist nicht mehr verfügbar.",
     "closed": "Dieses Event nimmt keine neuen Zusagen an.",
+    "ended": "Dieses Event ist bereits beendet.",
     "bad_code": "Dieser Code stimmt nicht oder ist abgelaufen. Prüfe ihn und versuche es erneut.",
     "attempts_exhausted": "Zu viele Versuche. Starte neu, um einen neuen Code zu erhalten.",
     "generic": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",

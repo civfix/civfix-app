@@ -20,7 +20,7 @@ import {
 import { Text, Icon, iconMap } from "../typography"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
-import { buildRsvpPillLayoutPlan } from "./rsvpPillModel"
+import { buildRsvpPillLayoutPlan, rsvpPillState } from "./rsvpPillModel"
 import { POP_ENABLED, usePopScale } from "./usePopScale"
 export { buildRsvpPillLayoutPlan } from "./rsvpPillModel"
 
@@ -30,6 +30,7 @@ export interface RsvpPillProps {
   nextPath: string
   size?: "sm" | "md"
   busy?: boolean
+  ended?: boolean
   style?: StyleProp<ViewStyle>
   fill?: boolean
   onSignedOutPress?: () => void
@@ -41,6 +42,7 @@ export function RsvpPill({
   nextPath,
   size = "md",
   busy = false,
+  ended = false,
   style,
   fill = false,
   onSignedOutPress,
@@ -65,7 +67,44 @@ export function RsvpPill({
 
   const popScale = usePopScale(going)
 
-  const fg = going ? th.colors.moss["700"] : th.colors.onAccent
+  const state = rsvpPillState({ going, ended })
+
+  const fg =
+    state === "ended"
+      ? th.colors.textMuted
+      : state === "going"
+        ? th.colors.moss["700"]
+        : th.colors.onAccent
+
+  if (state === "ended") {
+    return (
+      <View
+        accessibilityRole="text"
+        accessibilityState={{ disabled: true }}
+        accessibilityLabel={t("a11y.ended")}
+        style={[
+          styles.target,
+          stretchToCell ? styles.targetStretch : null,
+          layout.target,
+          style,
+        ]}
+      >
+        <View
+          style={[
+            styles.visual,
+            layout.visual,
+            fillCell ? styles.visualFill : null,
+            compact ? styles.sm : styles.md,
+            styles.ended,
+          ]}
+        >
+          <Text color={fg} style={[styles.label, compact ? styles.labelSm : null, webNoSelect]}>
+            {t("label.ended")}
+          </Text>
+        </View>
+      </View>
+    )
+  }
 
   return (
     <Pressable
@@ -152,6 +191,11 @@ const useStyles = makeThemedStyles((t) => ({
   },
   going: {
     backgroundColor: t.colors.moss["50"],
+  },
+  ended: {
+    backgroundColor: t.colors.surfaceTint,
+    borderWidth: 1,
+    borderColor: t.colors.border,
   },
   label: {
     fontFamily: t.fontFamily.bodyBold,
