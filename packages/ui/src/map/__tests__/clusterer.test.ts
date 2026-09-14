@@ -263,6 +263,11 @@ describe("clusterZoomTarget", () => {
     expect(clusterZoomTarget(cluster(null), 12, null)).toBe(14)
   })
 
+  it("never hands the camera a non-finite zoom", () => {
+    expect(clusterZoomTarget(cluster(null), Number.NaN, null)).toBe(AGGREGATE_EXPAND_ZOOM)
+    expect(clusterZoomTarget(cluster(1), Number.NaN, null)).toBe(CLUSTER_ZOOM_STEP)
+  })
+
   it("is a no-op for a node that is not a cluster", () => {
     const node: ClusterNode = {
       type: "report",

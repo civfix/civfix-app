@@ -175,12 +175,13 @@ export function clusterZoomTarget(
   expansion: number | null,
 ): number | null {
   if (node.type !== "cluster") return null
+  const zoom = Number.isFinite(currentZoom) ? currentZoom : 0
   const ceiling = CLUSTER_MAX_ZOOM + 1
-  const stepped = Math.min(currentZoom + CLUSTER_ZOOM_STEP, ceiling)
+  const stepped = Math.min(zoom + CLUSTER_ZOOM_STEP, ceiling)
   if (node.clusterId === null) return Math.max(stepped, AGGREGATE_EXPAND_ZOOM)
-  if (!Number.isFinite(currentZoom) || Math.floor(currentZoom) >= CLUSTER_MAX_ZOOM) return null
-  const target = expansion === null ? stepped : Math.min(Math.max(expansion, currentZoom + 1), ceiling)
-  return target > currentZoom ? target : null
+  if (Math.floor(zoom) >= CLUSTER_MAX_ZOOM) return null
+  const target = expansion === null ? stepped : Math.min(Math.max(expansion, zoom + 1), ceiling)
+  return target > zoom ? target : null
 }
 
 export function clusterFallbackZoom(currentZoom: number): number {
