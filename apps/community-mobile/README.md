@@ -164,14 +164,31 @@ the change up; a hand-run `expo run:ios` or an Xcode archive against an existing
 Use `--clean` when you want the native project regenerated from scratch rather than re-synced in
 place — it is the only way to be sure no earlier generated file survives.
 
+There is no dark variant of the artwork and none is needed. `assets/splash.png` is the wordmark on a
+fully transparent canvas, so the same file serves both appearances; what changes is the field behind
+it. The prebuild writes `SPLASH_BG_LIGHT` and `SPLASH_BG_DARK` into
+`ios/civfix/Images.xcassets/SplashScreenBackground.colorset` as two entries — the second carrying a
+`luminosity: dark` appearance — and the storyboard paints its container view with that colorset *by
+name* (`<color key="backgroundColor" name="SplashScreenBackground"/>`), which is what lets UIKit
+resolve it per appearance before any JS runs. `Info.plist` must keep `UIUserInterfaceStyle` at
+`Automatic`; `expo-splash-screen` sets it whenever a `dark` block exists, and forcing
+`userInterfaceStyle` to anything but `automatic` in `app.config.js` would pin the launch screen to
+one appearance. Point `dark.image` at the same transparent asset: without it the prebuild emits no
+`dark_image` entries at all.
+
 `tests/splashAsset.test.ts` guards this. It decodes `assets/splash.png` and asserts the corners are
 fully transparent and that most of the image is, and — when a local `ios/` prebuild exists — decodes
-the generated `@3x` imageset entries and asserts the same, so a stale prebuild fails the test suite
-before anyone archives. CI has no `ios/`, so that half simply skips there.
+the generated `@3x` imageset entries and asserts the same, checks that the colorset carries both
+paper appearances, that the imageset carries a dark entry at every scale, that the storyboard binds
+the named colour, and that `Info.plist` keeps `Automatic` — so a stale or appearance-less prebuild
+fails the test suite before anyone archives. CI has no `ios/`, so that half simply skips there.
 
-iOS also caches the launch image as a snapshot keyed off the installed build. If a fresh build still
-shows the old splash, the binary is fine and the snapshot is stale: bump `ios.buildNumber`, or delete
-the app and reinstall, or reboot the device/simulator.
+iOS also caches the rendered launch screen as a snapshot, and that snapshot outlives the build it
+came from: a simulator that has been shown the old splash keeps replaying it after `simctl uninstall`
++ reinstall and after a full simulator reboot, even though the freshly installed `Assets.car`
+demonstrably holds the new colours. So a local "the fix didn't work" is usually the snapshot, not the
+binary — verify the bundle with `xcrun assetutil --info <app>/Assets.car` before believing the
+screen, and bump `ios.buildNumber` (or use a fresh simulator) to force a re-render.
 
 ### Local `eas build` (`scripts/store-build.sh`)
 
