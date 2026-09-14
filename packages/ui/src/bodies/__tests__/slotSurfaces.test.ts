@@ -102,11 +102,18 @@ describe("the date/time picker seam stays a seam", () => {
       "InlineDateTimePicker.web.tsx",
       "InlineDateTimePicker.native.tsx",
       "DateTimeFieldRow.tsx",
+      "SlotWindowPicker.tsx",
     ] as const) {
       expect(SCROLLER_SOURCES[name], `${name} hardcodes a minute step`).not.toMatch(
         /minuteInterval=\{\d/,
       )
     }
+  })
+
+  it("leaves the web inputs a keyboard focus ring of their own", () => {
+    const web = SCROLLER_SOURCES["InlineDateTimePicker.web.tsx"]
+    expect(web.match(/data-focus-ring=""/g) ?? []).toHaveLength(2)
+    expect(web).not.toContain('outline: "none"')
   })
 
   it("leaves the row chrome out of the a11y tree when the native input is the control", () => {

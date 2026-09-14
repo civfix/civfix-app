@@ -219,18 +219,6 @@ export function durationChipFor(
   return DURATION_CHIP_HOURS.find((h) => h * 3_600_000 === elapsed) ?? null
 }
 
-export function eventWindowOf(
-  date: Date | null,
-  time: Date | null,
-  endTime: Date | null,
-): { start: Date; end: Date | null } | null {
-  if (!date || !time) return null
-  return {
-    start: mergeDateTime(date, time),
-    end: endTime ? resolveEventEnd(date, time, endTime) : null,
-  }
-}
-
 export function formWallClock(date: Date, time: Date): WallClock {
   return {
     year: date.getFullYear(),

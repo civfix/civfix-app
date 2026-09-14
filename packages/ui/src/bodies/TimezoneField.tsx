@@ -18,6 +18,13 @@ const MAX_TIMEZONE_ROWS = 8
 
 const displayNames = new Map<string, string>()
 
+let everyZone: readonly string[] | null = null
+
+function allTimeZones(): readonly string[] {
+  everyZone ??= supportedTimeZones()
+  return everyZone
+}
+
 function cachedDisplayName(timeZone: string, locale: string): string {
   const key = `${locale}|${timeZone}`
   const cached = displayNames.get(key)
@@ -74,10 +81,9 @@ export function TimezoneField({ value, onChange }: TimezoneFieldProps) {
   const zoneLabel = cachedDisplayName(value, locale)
   const deviceLabel = cachedDisplayName(deviceZone, locale)
 
-  const allZones = useMemo(() => supportedTimeZones(), [])
   const rows = useMemo(
-    () => matchingTimeZones(query.trim() === "" ? COMMON_TIMEZONES : allZones, query, locale),
-    [allZones, locale, query],
+    () => matchingTimeZones(query.trim() === "" ? COMMON_TIMEZONES : allTimeZones(), query, locale),
+    [locale, query],
   )
 
   const pick = (timeZone: string) => {

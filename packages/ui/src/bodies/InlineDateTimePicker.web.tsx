@@ -44,7 +44,6 @@ function useNativeInputStyle(): React.CSSProperties {
       appearance: "none",
       background: "transparent",
       border: "none",
-      outline: "none",
       padding: 0,
       colorScheme: th.scheme,
       color: th.colors.text,
@@ -94,6 +93,7 @@ export function DateFieldRow({
         <input
           ref={ref}
           type="date"
+          data-focus-ring=""
           value={dateInputValue(value)}
           min={dateInputValue(minDate)}
           aria-label={accessibilityLabel}
@@ -142,6 +142,7 @@ export function TimeFieldRow({
         <input
           ref={ref}
           type="time"
+          data-focus-ring=""
           step={(minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL) * 60}
           value={timeInputValue(value)}
           min={timeInputValue(minTime)}

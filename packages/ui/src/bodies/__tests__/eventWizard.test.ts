@@ -20,8 +20,9 @@ import {
   endTimeAfter,
   endTimeSelectable,
   eventWindowInZone,
-  eventWindowOf,
+  wallClockToFormDate,
 } from "../calendarModel"
+import { wallClockInZone } from "@civfix/shared/datetime"
 
 const NOW = new Date("2026-06-01T12:00:00.000Z")
 const FUTURE_DAY = new Date("2026-06-08T00:00:00.000Z")
@@ -230,20 +231,17 @@ describe("resuming a draft that survived a remount", () => {
 })
 
 describe("editing an event whose end is a wall clock, not a same-day instant", () => {
-  const OVERNIGHT_START = new Date(2026, 5, 8, 23, 30, 0, 0)
-  const OVERNIGHT_END = new Date(2026, 5, 9, 2, 0, 0, 0)
+  const OVERNIGHT_START = "2026-06-09T06:30:00.000Z"
+  const OVERNIGHT_END = "2026-06-09T09:00:00.000Z"
 
-  const stored = {
-    scheduledAt: OVERNIGHT_START.toISOString(),
-    endsAt: OVERNIGHT_END.toISOString(),
-  }
+  const stored = { scheduledAt: OVERNIGHT_START, endsAt: OVERNIGHT_END }
 
   function seededForm(cleanup: { scheduledAt: string; endsAt?: string | null }) {
-    const when = new Date(cleanup.scheduledAt)
+    const when = wallClockToFormDate(wallClockInZone(Date.parse(cleanup.scheduledAt), DEVICE_ZONE))
     return {
       date: when,
       time: when,
-      endTime: seededEndTime(cleanup),
+      endTime: seededEndTime(cleanup, DEVICE_ZONE),
       timezone: DEVICE_ZONE,
       slots: [] as SlotDraft[],
     }
@@ -251,7 +249,8 @@ describe("editing an event whose end is a wall clock, not a same-day instant", (
 
   it("loads an overnight event into a form the host can actually save", () => {
     const form = seededForm(stored)
-    expect(form.endTime.getHours()).toBe(2)
+    expect([form.time.getHours(), form.time.getMinutes()]).toEqual([23, 30])
+    expect([form.endTime.getHours(), form.endTime.getMinutes()]).toEqual([2, 0])
     expect(
       endTimeSelectable(
         form.date,
@@ -261,14 +260,15 @@ describe("editing an event whose end is a wall clock, not a same-day instant", (
         DEVICE_ZONE,
       ),
     ).toBe(true)
-    const window = eventWindowOf(form.date, form.time, form.endTime)
-    expect(window?.end?.toISOString()).toBe(OVERNIGHT_END.toISOString())
+    const window = eventWindowInZone(form.date, form.time, form.endTime, DEVICE_ZONE)
+    expect(window?.start.toISOString()).toBe(OVERNIGHT_START)
+    expect(window?.end?.toISOString()).toBe(OVERNIGHT_END)
   })
 
   it("treats an untouched schedule as untouched, seeded 2 h end included", () => {
     expect(eventWindowUntouched(stored, seededForm(stored))).toBe(true)
-    const legacy = { scheduledAt: OVERNIGHT_START.toISOString(), endsAt: null }
-    expect(seededEndTime(legacy).getTime() - OVERNIGHT_START.getTime()).toBe(
+    const legacy = { scheduledAt: OVERNIGHT_START, endsAt: null }
+    expect(seededEndTime(legacy).getTime() - Date.parse(OVERNIGHT_START)).toBe(
       DEFAULT_WIZARD_DURATION_MS,
     )
     expect(eventWindowUntouched(legacy, seededForm(legacy))).toBe(true)
@@ -293,22 +293,25 @@ describe("editing an event whose end is a wall clock, not a same-day instant", (
 })
 
 describe("whether an edit has to persist the event's end", () => {
-  const START = new Date(2026, 5, 8, 9, 0, 0, 0)
-  const stored = {
-    scheduledAt: START.toISOString(),
-    endsAt: new Date(2026, 5, 8, 12, 0, 0, 0).toISOString(),
-  }
-  const legacy = { scheduledAt: START.toISOString(), endsAt: null }
+  const START = "2026-06-08T16:00:00.000Z"
+  const stored = { scheduledAt: START, endsAt: "2026-06-08T19:00:00.000Z" }
+  const legacy = { scheduledAt: START, endsAt: null }
 
   function form(cleanup: { scheduledAt: string; endsAt?: string | null }, slots: SlotDraft[]) {
-    const when = new Date(cleanup.scheduledAt)
-    return { date: when, time: when, endTime: seededEndTime(cleanup), timezone: DEVICE_ZONE, slots }
+    const when = wallClockToFormDate(wallClockInZone(Date.parse(cleanup.scheduledAt), DEVICE_ZONE))
+    return {
+      date: when,
+      time: when,
+      endTime: seededEndTime(cleanup, DEVICE_ZONE),
+      timezone: DEVICE_ZONE,
+      slots,
+    }
   }
 
   const timedSlot = (over: Partial<SlotDraft> = {}) =>
     slot({
-      startsAt: new Date(START.getTime() + 30 * 60_000),
-      endsAt: new Date(START.getTime() + 90 * 60_000),
+      startsAt: new Date(Date.parse(START) + 30 * 60_000),
+      endsAt: new Date(Date.parse(START) + 90 * 60_000),
       ...over,
     })
 
@@ -336,7 +339,7 @@ describe("whether an edit has to persist the event's end", () => {
   })
 
   it("ignores a half-set slot window, which the payload sends as untimed anyway", () => {
-    const halfSet = slot({ startsAt: new Date(START.getTime() + 30 * 60_000), endsAt: null })
+    const halfSet = slot({ startsAt: new Date(Date.parse(START) + 30 * 60_000), endsAt: null })
     expect(mustPersistEventEnd(legacy, form(legacy, [halfSet]))).toBe(false)
   })
 })

@@ -68,6 +68,12 @@ describe("no surface marks an event completed any more", () => {
     expect(source).not.toMatch(/react-native-reanimated/)
   })
 
+  it("stops the detail body's clock on the same terms as the host surfaces", () => {
+    const source = code(body)
+    expect(source).toContain("const boundaryAt = nextEventBoundaryMs(cleanup, Date.now())")
+    expect(source).toContain("useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })")
+  })
+
   it("refetches the surfaces the boundary crossing invalidated", () => {
     expect(code(hostMode)).toContain("useEventBoundaryRefresh(clock, now, id)")
     expect(code(body)).toContain("useEventBoundaryRefresh(cleanup, now, cleanup.id)")

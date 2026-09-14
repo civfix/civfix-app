@@ -9,7 +9,6 @@ import {
   endTimeSelectable,
   eventDurationMs,
   eventWindowInZone,
-  eventWindowOf,
   formEndInstantMs,
   formInstantMs,
   isScheduleUntouched,
@@ -161,8 +160,7 @@ describe("the duration chips", () => {
     expect(end.getMinutes()).toBe(0)
     expect(endTimeSelectable(day, tenPm, end.getHours(), end.getMinutes(), DEVICE_ZONE)).toBe(true)
     expect(durationChipFor(day, tenPm, end)).toBe(4)
-    const window = eventWindowOf(day, tenPm, end)
-    expect(window?.end?.getDate()).toBe(25)
+    const window = eventWindowInZone(day, tenPm, end, DEVICE_ZONE)
     expect((window?.end?.getTime() ?? 0) - (window?.start.getTime() ?? 0)).toBe(4 * 3_600_000)
   })
 
@@ -203,32 +201,30 @@ describe("durationChipFor", () => {
   })
 })
 
-describe("eventWindowOf", () => {
+describe("eventWindowInZone", () => {
   const day = new Date(2026, 6, 24)
   const nineAm = new Date(2026, 0, 1, 9, 0, 0, 0)
   const elevenAm = new Date(2026, 0, 1, 11, 0, 0, 0)
+  const LA = "America/Los_Angeles"
 
   it("merges the clock times onto the chosen DAY, not onto their own base dates", () => {
-    const window = eventWindowOf(day, nineAm, elevenAm)
-    expect(window?.start.getDate()).toBe(24)
-    expect(window?.start.getHours()).toBe(9)
-    expect(window?.end?.getDate()).toBe(24)
-    expect(window?.end?.getHours()).toBe(11)
+    const window = eventWindowInZone(day, nineAm, elevenAm, LA)
+    expect(window?.start.toISOString()).toBe("2026-07-24T16:00:00.000Z")
+    expect(window?.end?.toISOString()).toBe("2026-07-24T18:00:00.000Z")
   })
 
   it("rolls an end clock at or before the start onto the next day", () => {
     const lateNight = new Date(2026, 0, 1, 23, 30, 0, 0)
     const twoAm = new Date(2026, 0, 1, 2, 0, 0, 0)
-    const window = eventWindowOf(day, lateNight, twoAm)
-    expect(window?.start.getDate()).toBe(24)
-    expect(window?.end?.getDate()).toBe(25)
-    expect(window?.end?.getHours()).toBe(2)
+    const window = eventWindowInZone(day, lateNight, twoAm, LA)
+    expect(window?.start.toISOString()).toBe("2026-07-25T06:30:00.000Z")
+    expect(window?.end?.toISOString()).toBe("2026-07-25T09:00:00.000Z")
   })
 
   it("is null without a day and a start, and end-less without an end time", () => {
-    expect(eventWindowOf(null, nineAm, elevenAm)).toBeNull()
-    expect(eventWindowOf(day, null, elevenAm)).toBeNull()
-    expect(eventWindowOf(day, nineAm, null)?.end).toBeNull()
+    expect(eventWindowInZone(null, nineAm, elevenAm, LA)).toBeNull()
+    expect(eventWindowInZone(day, null, elevenAm, LA)).toBeNull()
+    expect(eventWindowInZone(day, nineAm, null, LA)?.end).toBeNull()
   })
 })
 
