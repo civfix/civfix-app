@@ -233,7 +233,7 @@ describe("editing an event whose end is a wall clock, not a same-day instant", (
     const body = readFileSync(new URL("../EditCleanupBody.tsx", import.meta.url), "utf8")
     expect(body).toContain("const persistEventEnd = mustPersistEventEnd(cleanup, form)")
     expect(body).toContain("...(persistEventEnd ? { endsAt: endsAt.toISOString() } : {})")
-    expect(body).toContain("resolveEventEnd(form.date, form.time, form.endTime)")
+    expect(body).toContain("formEndInstantMs(form.date, form.time, form.endTime, form.timezone)")
     expect(body).not.toMatch(/endsAt: endsAt\.toISOString\(\),\n/)
   })
 })

@@ -8,6 +8,7 @@
     "meetLocation": "Lugar de encuentro",
     "spotPlaceholder": "Nombra el lugar, p. ej. Muelle del embarcadero",
     "dateTime": "Fecha y hora",
+    "startTime": "Empieza",
     "whatToBring": "Qué traer",
     "slots": "Puestos disponibles",
     "slotsHelp": "Ofrece tareas concretas que la gente pueda tomar.",
@@ -47,5 +48,19 @@
     "now": "ahora",
     "card_placeholder": "Aquí aparecerá la tarjeta de tu evento",
     "event_failed": "Evento publicado. La publicación del feed no se creó."
+  },
+  "timezone": {
+    "caption": "Horas en {{zone}}",
+    "change": "Cambiar",
+    "device_hint": "Tu dispositivo está en {{deviceZone}}.",
+    "search_placeholder": "Buscar zonas horarias",
+    "use_device": "Usar la zona horaria de mi dispositivo ({{deviceZone}})",
+    "no_match": "Ninguna zona horaria coincide."
+  },
+  "error": {
+    "date_past": "Elige hoy o una fecha posterior.",
+    "time_past": "Elige una hora que aún no haya pasado.",
+    "end_too_soon": "Termina al menos 15 minutos después del inicio.",
+    "time_dst_gap": "Esa hora no existe en esta fecha porque los relojes se adelantan. Elige otra hora."
   }
 }

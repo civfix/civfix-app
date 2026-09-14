@@ -8,6 +8,7 @@
     "meetLocation": "Meet location",
     "spotPlaceholder": "Name the spot - e.g. Boathouse dock",
     "dateTime": "Date and time",
+    "startTime": "Starts",
     "whatToBring": "What to bring",
     "slots": "Signup slots",
     "slotsHelp": "Give people a specific job to claim.",
@@ -47,5 +48,19 @@
     "now": "now",
     "card_placeholder": "Your event card appears here",
     "event_failed": "Event published. The feed post did not go out."
+  },
+  "timezone": {
+    "caption": "Times in {{zone}}",
+    "change": "Change",
+    "device_hint": "Your device is on {{deviceZone}}.",
+    "search_placeholder": "Search time zones",
+    "use_device": "Use my device's time zone ({{deviceZone}})",
+    "no_match": "No time zone matches that."
+  },
+  "error": {
+    "date_past": "Pick today or a later date.",
+    "time_past": "Pick a time that hasn't passed yet.",
+    "end_too_soon": "End at least 15 minutes after the start.",
+    "time_dst_gap": "That time doesn't exist on this date because the clocks jump forward. Pick another time."
   }
 }

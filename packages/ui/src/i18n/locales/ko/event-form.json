@@ -8,6 +8,7 @@
     "meetLocation": "집합 장소",
     "spotPlaceholder": "장소 이름 입력, 예: 보트하우스 선착장",
     "dateTime": "날짜 및 시간",
+    "startTime": "시작",
     "whatToBring": "준비물",
     "slots": "참여 역할",
     "slotsHelp": "사람들이 맡을 구체적인 역할을 만드세요.",
@@ -47,5 +48,19 @@
     "now": "방금",
     "card_placeholder": "여기에 이벤트 카드가 표시돼요",
     "event_failed": "이벤트가 게시됐어요. 피드 게시물은 올라가지 않았어요."
+  },
+  "timezone": {
+    "caption": "{{zone}} 기준 시간",
+    "change": "변경",
+    "device_hint": "기기의 시간대는 {{deviceZone}}입니다.",
+    "search_placeholder": "시간대 검색",
+    "use_device": "내 기기의 시간대 사용 ({{deviceZone}})",
+    "no_match": "일치하는 시간대가 없습니다."
+  },
+  "error": {
+    "date_past": "오늘 또는 이후 날짜를 선택하세요.",
+    "time_past": "아직 지나지 않은 시간을 선택하세요.",
+    "end_too_soon": "시작보다 최소 15분 뒤에 끝나도록 하세요.",
+    "time_dst_gap": "서머타임으로 시계가 앞당겨져 이 날짜에는 없는 시간입니다. 다른 시간을 선택하세요."
   }
 }

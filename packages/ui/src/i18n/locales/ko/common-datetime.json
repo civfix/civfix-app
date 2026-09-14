@@ -20,19 +20,15 @@
     "pick_end_time": "종료 시간 선택"
   },
   "value": {
-    "end_next_day": "{{time}} (다음 날)"
+    "end_next_day": "{{time}} (다음 날)",
+    "next_day": "다음 날"
   },
   "action": {
     "done": "완료"
   },
-  "calendar": {
-    "weekday_initials": ["일", "월", "화", "수", "목", "금", "토"]
-  },
   "a11y": {
     "dismiss": "닫기",
     "close": "닫기",
-    "previous_month": "이전 달",
-    "next_month": "다음 달",
     "date_field": "날짜: {{value}}",
     "time_field": "시간: {{value}}",
     "end_time_field": "종료: {{value}}"

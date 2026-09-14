@@ -15,6 +15,7 @@ import type {
 } from "@civfix/shared"
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
 import type { EventWhenInput } from "@civfix/shared/datetime"
+import { wallClockInZone, wallClockToInstantMs, type WallClock } from "@civfix/shared/datetime"
 import {
   can,
   deriveCleanupStatus,
@@ -25,6 +26,8 @@ import {
   type EventWindowLike,
   type HostStage,
 } from "@civfix/shared/host"
+import { addWallClockDays, formInstantMs } from "../../calendarModel"
+import { viewerTimeZone } from "../../../i18n"
 
 export const DASHBOARD_RANGES = ["30d", "90d", "365d"] as const
 export type DashboardRange = (typeof DASHBOARD_RANGES)[number]
@@ -411,22 +414,47 @@ export function donationSummaryFrom(range: DashboardRange, now: Date): string {
   return start.toISOString()
 }
 
-export function nextDuplicateStart(startsAt: string, now: Date): Date {
-  const original = new Date(startsAt)
-  if (Number.isNaN(original.getTime())) return new Date(now.getTime() + 7 * DAY_MS)
-  if (original.getTime() > now.getTime()) return original
-  const weeks = Math.ceil((now.getTime() - original.getTime()) / (7 * DAY_MS))
-  const rolled = new Date(original)
-  rolled.setDate(rolled.getDate() + weeks * 7)
-  while (rolled.getTime() <= now.getTime()) rolled.setDate(rolled.getDate() + 7)
-  return rolled
+export interface DuplicateStartSeed {
+  instantMs: number
+  wallClock: WallClock
 }
 
-export function duplicateReady(date: Date | null, time: Date | null, now: Date): boolean {
+const MAX_DUPLICATE_ROLLS = 60
+
+export function nextDuplicateStart(
+  startsAt: string,
+  timezone: string | null | undefined,
+  now: Date,
+): DuplicateStartSeed {
+  const zone = timezone ?? viewerTimeZone()
+  const parsed = Date.parse(startsAt)
+  const seed = Number.isNaN(parsed) ? now.getTime() + 7 * DAY_MS : parsed
+  const behindMs = now.getTime() - seed
+  const weeks = behindMs > 0 ? Math.ceil(behindMs / (7 * DAY_MS)) : 0
+  let wallClock = addWallClockDays(wallClockInZone(seed, zone), weeks * 7)
+
+  for (let roll = 0; roll < MAX_DUPLICATE_ROLLS; roll++) {
+    const instantMs = wallClockToInstantMs(wallClock, zone)
+    if (instantMs !== null && instantMs > now.getTime()) return { instantMs, wallClock }
+    wallClock =
+      instantMs === null
+        ? { ...wallClock, hours: (wallClock.hours + 1) % 24 }
+        : addWallClockDays(wallClock, 7)
+  }
+
+  const fallback = now.getTime() + 7 * DAY_MS
+  return { instantMs: fallback, wallClock: wallClockInZone(fallback, zone) }
+}
+
+export function duplicateReady(
+  date: Date | null,
+  time: Date | null,
+  timezone: string | null | undefined,
+  now: Date,
+): boolean {
   if (!date || !time) return false
-  const merged = new Date(date)
-  merged.setHours(time.getHours(), time.getMinutes(), 0, 0)
-  return merged.getTime() > now.getTime()
+  const at = formInstantMs(date, time, timezone ?? viewerTimeZone())
+  return at !== null && at > now.getTime()
 }
 
 export function duplicateErrorKey(code: string | undefined): string {

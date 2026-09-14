@@ -2,8 +2,11 @@ import {
   endTimeSelectable,
   eventWindowOf,
   isScheduleInFuture,
+  isScheduleInFutureInZone,
   isScheduleUntouched,
+  wallClockToFormDate,
 } from "./calendarModel"
+import { wallClockInZone } from "@civfix/shared/datetime"
 import { slotDraftWindow, slotsValid, type SlotDraft } from "./eventSlotsForm"
 
 export const DEFAULT_WIZARD_DURATION_MS = 2 * 3_600_000
@@ -17,11 +20,17 @@ export interface EventScheduleDraft {
   date: Date | null
   time: Date | null
   endTime: Date | null
+  timezone?: string
 }
 
-export function seededEndTime(cleanup: EventScheduleSource): Date {
-  if (cleanup.endsAt) return new Date(cleanup.endsAt)
-  return new Date(new Date(cleanup.scheduledAt).getTime() + DEFAULT_WIZARD_DURATION_MS)
+export function seededEndTime(cleanup: EventScheduleSource, timeZone?: string): Date {
+  const endMs = cleanup.endsAt
+    ? Date.parse(cleanup.endsAt)
+    : Date.parse(cleanup.scheduledAt) + DEFAULT_WIZARD_DURATION_MS
+  if (Number.isNaN(endMs)) return new Date(Number.NaN)
+  return timeZone === undefined
+    ? new Date(endMs)
+    : wallClockToFormDate(wallClockInZone(endMs, timeZone))
 }
 
 export function eventWindowUntouched(
@@ -29,8 +38,8 @@ export function eventWindowUntouched(
   value: EventScheduleDraft,
 ): boolean {
   if (!value.date || !value.time || !value.endTime) return false
-  if (!isScheduleUntouched(cleanup.scheduledAt, value.date, value.time)) return false
-  const seeded = seededEndTime(cleanup)
+  if (!isScheduleUntouched(cleanup.scheduledAt, value.date, value.time, value.timezone)) return false
+  const seeded = seededEndTime(cleanup, value.timezone)
   return (
     value.endTime.getHours() === seeded.getHours() &&
     value.endTime.getMinutes() === seeded.getMinutes()
@@ -65,6 +74,7 @@ export interface EventWizardDraft {
   date: Date | null
   time: Date | null
   endTime: Date | null
+  timezone?: string
   coords: { lat: number; lng: number } | null
   slots: readonly SlotDraft[]
 }
@@ -91,7 +101,9 @@ export function eventStepSatisfied(
         draft.date !== null &&
         draft.time !== null &&
         draft.endTime !== null &&
-        isScheduleInFuture(draft.date, draft.time, now) &&
+        (draft.timezone === undefined
+          ? isScheduleInFuture(draft.date, draft.time, now)
+          : isScheduleInFutureInZone(draft.date, draft.time, draft.timezone, now?.getTime())) &&
         endTimeSelectable(draft.date, draft.time, draft.endTime.getHours(), draft.endTime.getMinutes())
       )
     case "where":

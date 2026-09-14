@@ -8,6 +8,7 @@
     "meetLocation": "Treffpunkt",
     "spotPlaceholder": "Ort benennen, z. B. Bootshaus-Steg",
     "dateTime": "Datum und Uhrzeit",
+    "startTime": "Beginnt",
     "whatToBring": "Was mitbringen",
     "slots": "Aufgaben",
     "slotsHelp": "Biete konkrete Aufgaben zum Übernehmen an.",
@@ -47,5 +48,19 @@
     "now": "jetzt",
     "card_placeholder": "Hier erscheint deine Event-Karte",
     "event_failed": "Event veröffentlicht. Der Feed-Beitrag ging nicht raus."
+  },
+  "timezone": {
+    "caption": "Zeiten in {{zone}}",
+    "change": "Ändern",
+    "device_hint": "Dein Gerät steht auf {{deviceZone}}.",
+    "search_placeholder": "Zeitzonen suchen",
+    "use_device": "Zeitzone meines Geräts verwenden ({{deviceZone}})",
+    "no_match": "Keine Zeitzone passt dazu."
+  },
+  "error": {
+    "date_past": "Wähle heute oder ein späteres Datum.",
+    "time_past": "Wähle eine Uhrzeit, die noch nicht vorbei ist.",
+    "end_too_soon": "Ende mindestens 15 Minuten nach dem Beginn.",
+    "time_dst_gap": "Diese Uhrzeit gibt es an diesem Datum nicht, weil die Uhren vorgestellt werden. Wähle eine andere Uhrzeit."
   }
 }

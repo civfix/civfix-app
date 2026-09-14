@@ -59,7 +59,8 @@
     "split_count_a11y": "Dividir el evento en {{count}} turnos iguales",
     "generated_title_prefix": "Turno",
     "generated_title": "{{prefix}} {{n}}",
-    "prefix_a11y": "Prefijo para el nombre de los turnos generados"
+    "prefix_a11y": "Prefijo para el nombre de los turnos generados",
+    "window_outside_event": "Los turnos deben caber dentro del horario del evento."
   },
   "error": {
     "empty_title": "Ponle un nombre a este puesto.",

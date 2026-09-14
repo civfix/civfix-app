@@ -3,11 +3,12 @@ import type { HostedEventDTO } from "@civfix/shared"
 import { useTheme } from "../../../theme"
 import { Text } from "../../../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton, useToast } from "../../../primitives"
-import { useT } from "../../../i18n"
+import { useT, viewerTimeZone } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { useDuplicateCleanup } from "../../../data/hooks/cleanups"
 import { InlineDateTimePicker } from "../../InlineDateTimePicker"
-import { mergeDateTime } from "../../calendarModel"
+import { TimezoneField } from "../../TimezoneField"
+import { formInstantMs, mergeDateTime, wallClockToFormDate } from "../../calendarModel"
 import { appErrorCode } from "../../errorCode"
 import { duplicateErrorKey, duplicateReady, nextDuplicateStart } from "./dashboardModel"
 
@@ -26,9 +27,13 @@ export function DuplicateEventSheet({ event, onClose }: DuplicateEventSheetProps
   const [time, setTime] = useState<Date | null>(null)
   const [errorText, setErrorText] = useState<string | null>(null)
 
+  const timeZone = event?.timezone ?? viewerTimeZone()
+
   useEffect(() => {
     if (!event) return
-    const seed = nextDuplicateStart(event.startsAt, new Date())
+    const seed = wallClockToFormDate(
+      nextDuplicateStart(event.startsAt, event.timezone, new Date()).wallClock,
+    )
     setDate(seed)
     setTime(seed)
     setErrorText(null)
@@ -36,11 +41,12 @@ export function DuplicateEventSheet({ event, onClose }: DuplicateEventSheetProps
   }, [event])
 
   const busy = duplicate.isPending
-  const ready = duplicateReady(date, time, new Date())
+  const ready = duplicateReady(date, time, timeZone, new Date())
 
   const submit = useCallback(() => {
     if (!event || !date || !time || busy) return
-    if (!duplicateReady(date, time, new Date())) {
+    const at = formInstantMs(date, time, timeZone)
+    if (at === null || !duplicateReady(date, time, timeZone, new Date())) {
       setErrorText(t("events.duplicate_past"))
       return
     }
@@ -48,7 +54,7 @@ export function DuplicateEventSheet({ event, onClose }: DuplicateEventSheetProps
     duplicate.mutate(
       {
         id: event.id,
-        scheduledAt: mergeDateTime(date, time).toISOString(),
+        scheduledAt: new Date(at).toISOString(),
         includeTicketTypes: true,
         includeQuestions: true,
         includePage: false,
@@ -66,7 +72,7 @@ export function DuplicateEventSheet({ event, onClose }: DuplicateEventSheetProps
         },
       },
     )
-  }, [busy, date, duplicate, event, onClose, t, time, toast])
+  }, [busy, date, duplicate, event, onClose, t, time, timeZone, toast])
 
   return (
     <ModalCardSheet
@@ -97,12 +103,14 @@ export function DuplicateEventSheet({ event, onClose }: DuplicateEventSheetProps
       <InlineDateTimePicker
         date={date}
         time={time}
+        timeZone={timeZone}
         onDateChange={(next) => {
           setDate(next)
           setTime((current) => (current ? mergeDateTime(next, current) : current))
         }}
         onTimeChange={setTime}
       />
+      <TimezoneField value={timeZone} />
     </ModalCardSheet>
   )
 }

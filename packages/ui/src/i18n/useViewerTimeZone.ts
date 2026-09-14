@@ -2,8 +2,8 @@ import { useMemo } from "react"
 
 export function viewerTimeZone(): string {
   try {
-    const zone = new Intl.DateTimeFormat().resolvedOptions().timeZone
-    return zone ? zone : "UTC"
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return typeof zone === "string" && zone.length > 0 ? zone : "UTC"
   } catch {
     return "UTC"
   }
