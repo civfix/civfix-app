@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { BBox, CleanupDTO, ReportCategory, ReportPinDTO } from "@civfix/shared"
+import type { BBox, CleanupDTO, ReportCategory, ReportClusterDTO, ReportPinDTO } from "@civfix/shared"
 import {
   Map as SharedMap,
   space,
@@ -98,10 +98,11 @@ export function HomeMap() {
     [enabled],
   )
 
+  const reportsEnabled = userLayerCategories.length > 0
   const reports = useMapReports({
     bbox,
     categories: userLayerCategories,
-    enabled: userLayerCategories.length > 0,
+    enabled: reportsEnabled,
   })
   // Upcoming events for the map's event markers. The SHARED hook (auth-optional, so it loads signed-out)
   // at its default page size, so this lands on exactly the `queryKeys.cleanups("upcoming", 50)` entry
@@ -213,7 +214,14 @@ export function HomeMap() {
   // ALL raw report points for the loaded region (category-filtered by the query; empty when no category
   // is enabled, since the query is then disabled). Memoized on the query data so the shared Map's
   // supercluster index is rebuilt only when the points actually change (stable identity = no index churn).
-  const pins = React.useMemo<ReportPinDTO[]>(() => reports.data?.pins ?? [], [reports.data])
+  const pins = React.useMemo<ReportPinDTO[]>(
+    () => (reportsEnabled ? (reports.data?.pins ?? []) : []),
+    [reportsEnabled, reports.data],
+  )
+  const reportAggregates = React.useMemo<ReportClusterDTO[]>(
+    () => (reportsEnabled ? (reports.data?.clusters ?? []) : []),
+    [reportsEnabled, reports.data],
+  )
   // Memoized to mirror the `pins` memo above: a fresh `[]` (when events are off or cleanups.data is
   // still undefined) or `cleanups.data` allocated every render would change the `cleanups` prop's
   // identity, re-firing SharedMap's marker-reconcile effect (keyed on `cleanups`) - which re-runs a
@@ -312,6 +320,7 @@ export function HomeMap() {
       ref={mapRef}
       initialCenter={bootCamera}
       reports={pins}
+      reportAggregates={reportAggregates}
       cleanups={cleanupItems}
       userLocation={userLocation}
       showUserLocation={userLocation != null}

@@ -3,7 +3,7 @@ import { View, StyleSheet, useWindowDimensions } from "react-native"
 import { useFocusEffect } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useQueryClient } from "@tanstack/react-query"
-import type { BBox, CleanupDTO, LatLng, ReportPinDTO } from "@civfix/shared"
+import type { BBox, CleanupDTO, LatLng, ReportClusterDTO, ReportPinDTO } from "@civfix/shared"
 import {
   AppShell,
   space,
@@ -466,6 +466,10 @@ export default function MapHomeScreen() {
     () => (reportsEnabled ? (reports.data?.pins ?? []) : []),
     [reportsEnabled, reports.data],
   )
+  const reportAggregates = useMemo<ReportClusterDTO[]>(
+    () => (reportsEnabled ? (reports.data?.clusters ?? []) : []),
+    [reportsEnabled, reports.data],
+  )
 
   const focusedPinId = active?.kind === "pin" ? (active.id ?? null) : null
   const focusedCleanupId = active?.kind === "cleanup" ? (active.id ?? null) : null
@@ -480,6 +484,7 @@ export default function MapHomeScreen() {
           (location.coords ? { lat: location.coords.lat, lng: location.coords.lng } : null)
         }
         reports={pins}
+        reportAggregates={reportAggregates}
         cleanups={eventsVisible ? cleanupItems : []}
         userLocation={location.coords}
         showUserLocation={location.permission === "granted"}
@@ -499,6 +504,7 @@ export default function MapHomeScreen() {
       location.coords,
       location.permission,
       pins,
+      reportAggregates,
       cleanupItems,
       eventsVisible,
       onPressPin,
