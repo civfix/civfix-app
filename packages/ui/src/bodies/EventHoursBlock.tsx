@@ -56,6 +56,7 @@ export function EventHoursBlock({
       <AttendeeReceipt
         state={state}
         hours={myEntry?.hours ?? 0}
+        timeZone={cleanup.timezone ?? undefined}
         {...(mineSlot && window
           ? { shift: { title: mineSlot.title, start: window.start, end: window.end } }
           : {})}
@@ -228,10 +229,12 @@ function AttendeeReceipt({
   state,
   hours,
   shift,
+  timeZone,
 }: {
   state: HoursReceiptState
   hours: number
   shift?: { title: string; start: Date; end: Date }
+  timeZone: string | undefined
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -243,7 +246,9 @@ function AttendeeReceipt({
 
   if (state === "credited") {
     const label = formatHoursDisplay(hours, locale)
-    const range = shift ? timeRangeLabel(shift.start.toISOString(), shift.end.toISOString(), locale) : null
+    const range = shift
+      ? timeRangeLabel(shift.start.toISOString(), shift.end.toISOString(), locale, timeZone)
+      : null
     const vars = shift && range ? { hours: label, slot: shift.title, range } : { hours: label }
     return (
       <Pressable

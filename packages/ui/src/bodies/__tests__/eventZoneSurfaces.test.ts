@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import { viewerTimeZone } from "../../i18n/useViewerTimeZone"
 
@@ -20,9 +21,20 @@ const SURFACES: Record<string, string> = {
   "bodies/EventDetailBody.tsx": code(read("../EventDetailBody.tsx")),
   "bodies/host/dashboard/NextUpCard.tsx": code(read("../host/dashboard/NextUpCard.tsx")),
   "bodies/host/dashboard/HostedEventRow.tsx": code(read("../host/dashboard/HostedEventRow.tsx")),
+  "bodies/EventHoursBlock.tsx": code(read("../EventHoursBlock.tsx")),
 }
 
 const RAW_DATE_READ = /new Date\([^)]*\)\.(getDate|getDay|getHours|getMinutes|toLocale\w*)\(/
+
+const UI_SRC = fileURLToPath(new URL("../..", import.meta.url))
+
+function tsxFilesUnder(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const child = `${dir}/${entry.name}`
+    if (entry.isDirectory()) return entry.name === "__tests__" ? [] : tsxFilesUnder(child)
+    return entry.isFile() && entry.name.endsWith(".tsx") ? [child] : []
+  })
+}
 
 describe("viewerTimeZone", () => {
   it("resolves a usable IANA zone rather than an empty string", () => {
@@ -110,6 +122,29 @@ describe("event surfaces render in the event's zone", () => {
   it("gives the date chip the event zone rather than the device's", () => {
     expect(SURFACES["primitives/DateBadge.tsx"]).toContain("wallClockInZone(d.getTime(), zone).day")
     expect(SURFACES["primitives/EventCard.tsx"]).toContain("timeZone={when.timeZone}")
+  })
+
+  it("passes a timeZone at every <DateBadge/> mount in the package", () => {
+    let mounted = 0
+    for (const file of tsxFilesUnder(UI_SRC)) {
+      const src = code(readFileSync(file, "utf8"))
+      const relative = file.slice(UI_SRC.length)
+      for (const mount of src.match(/<DateBadge\b[^>]*>/g) ?? []) {
+        mounted += 1
+        expect(mount, `${relative} mounts a DateBadge on the device zone`).toContain("timeZone=")
+      }
+    }
+    expect(mounted).toBeGreaterThanOrEqual(3)
+  })
+
+  it("prints the volunteer-hours receipt's shift window in the event's zone", () => {
+    const src = SURFACES["bodies/EventHoursBlock.tsx"] ?? ""
+    expect(src).toContain("timeZone={cleanup.timezone ?? undefined}")
+    const calls = src.match(/timeRangeLabel\([^;]*?\)\s*$/gm) ?? []
+    expect(calls.length).toBeGreaterThan(0)
+    for (const call of calls) {
+      expect(call, "the receipt drops the event zone").toContain("timeZone")
+    }
   })
 
   it("takes the zone off the event row it is rendering, never off the device", () => {

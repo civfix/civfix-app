@@ -101,7 +101,7 @@ export function NextUpCard({
           {...focusRingProps}
           style={({ pressed }) => [styles.head, pressed ? styles.pressed : null]}
         >
-          <DateBadge iso={event.startsAt} size={LIST_TILE} />
+          <DateBadge iso={event.startsAt} size={LIST_TILE} timeZone={when.timeZone} />
           <View style={styles.meta}>
             <Text style={styles.title} numberOfLines={2}>
               {event.title}

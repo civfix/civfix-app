@@ -119,14 +119,22 @@ function MetaLine({
   )
 }
 
-function EventBadge({ startsAt, coverThumbUrl }: { startsAt: string; coverThumbUrl?: string | null }) {
+function EventBadge({
+  startsAt,
+  timeZone,
+  coverThumbUrl,
+}: {
+  startsAt: string
+  timeZone: string | undefined
+  coverThumbUrl?: string | null
+}) {
   const styles = useStyles()
   if (coverThumbUrl) {
     return (
       <Image source={{ uri: coverThumbUrl }} style={styles.cover} accessibilityIgnoresInvertColors />
     )
   }
-  return <DateBadge iso={startsAt} size={LIST_TILE} />
+  return <DateBadge iso={startsAt} size={LIST_TILE} timeZone={timeZone} />
 }
 
 export const HostedEventRow = memo(function HostedEventRow({
@@ -280,7 +288,11 @@ export const HostedEventRow = memo(function HostedEventRow({
     <>
       <ListRow
         leading={
-          <EventBadge startsAt={event.startsAt} coverThumbUrl={event.coverThumbUrl ?? null} />
+          <EventBadge
+            startsAt={event.startsAt}
+            timeZone={when.timeZone}
+            coverThumbUrl={event.coverThumbUrl ?? null}
+          />
         }
         title={event.title}
         sub={<MetaLine parts={metaParts} chip={chip} leading={dot} />}
