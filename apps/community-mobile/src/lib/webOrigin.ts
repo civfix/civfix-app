@@ -1,6 +1,9 @@
 export const PROD_WEB_ORIGIN = "https://civfix.org"
 
-const API_HOST_PREFIX = "api."
+const WEB_ORIGIN_BY_API_HOST: Readonly<Record<string, string>> = {
+  "api.civfix.org": PROD_WEB_ORIGIN,
+  "api.civfix.dev": "https://civfix.dev",
+}
 
 export function resolveWebOrigin(apiUrl: string): string {
   let host: string
@@ -9,6 +12,5 @@ export function resolveWebOrigin(apiUrl: string): string {
   } catch {
     return PROD_WEB_ORIGIN
   }
-  if (!host.startsWith(API_HOST_PREFIX)) return PROD_WEB_ORIGIN
-  return `https://${host.slice(API_HOST_PREFIX.length)}`
+  return WEB_ORIGIN_BY_API_HOST[host] ?? PROD_WEB_ORIGIN
 }

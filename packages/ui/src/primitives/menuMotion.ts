@@ -44,8 +44,11 @@ export function useMenuMotion({
   const [exiting, setExiting] = useState(false)
   const renderedRef = useRef(visible)
   const animRef = useRef<Animated.CompositeAnimation | null>(null)
+  const recipesRef = useRef(recipes)
+  recipesRef.current = recipes
 
   useEffect(() => {
+    const recipes = recipesRef.current
     animRef.current?.stop()
     animRef.current = null
     if (visible) {
@@ -89,7 +92,7 @@ export function useMenuMotion({
       setExiting(false)
       setRendered(false)
     })
-  }, [visible, ready, reducedMotion, useNativeDriver, progress, recipes])
+  }, [visible, ready, reducedMotion, useNativeDriver, progress])
 
   useEffect(
     () => () => {

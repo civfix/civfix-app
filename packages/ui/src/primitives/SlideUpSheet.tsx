@@ -5,6 +5,7 @@ import {
   Modal,
   PanResponder,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
   useWindowDimensions,
@@ -27,6 +28,7 @@ export interface SlideUpSheetProps {
   dismissLabel: string
   accessibilityLabel?: string
   maxHeightRatio?: number
+  bodyLayout?: "scroll" | "fill"
   contentStyle?: StyleProp<ViewStyle>
   children: React.ReactNode
 }
@@ -41,6 +43,7 @@ export function SlideUpSheet({
   dismissLabel,
   accessibilityLabel,
   maxHeightRatio = DEFAULT_MAX_HEIGHT_RATIO,
+  bodyLayout = "scroll",
   contentStyle,
   children,
 }: SlideUpSheetProps) {
@@ -91,9 +94,13 @@ export function SlideUpSheet({
     })
   }, [dragY, useNativeDriver])
 
-  const translateY = Animated.add(
-    progress.interpolate({ inputRange: [0, 1], outputRange: [sheetHeight ?? winH, 0] }),
-    dragY,
+  const translateY = useMemo(
+    () =>
+      Animated.add(
+        progress.interpolate({ inputRange: [0, 1], outputRange: [sheetHeight ?? winH, 0] }),
+        dragY,
+      ),
+    [progress, dragY, sheetHeight, winH],
   )
 
   return (
@@ -142,7 +149,19 @@ export function SlideUpSheet({
                 style={styles.grabHandle}
               />
             </View>
-            <View style={[styles.content, contentStyle]}>{children}</View>
+            {bodyLayout === "fill" ? (
+              <View style={[styles.content, styles.contentInner, contentStyle]}>{children}</View>
+            ) : (
+              <ScrollView
+                style={styles.content}
+                contentContainerStyle={[styles.contentInner, contentStyle]}
+                bounces={false}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {children}
+              </ScrollView>
+            )}
           </Animated.View>
         </IosKeyboardAvoidingView>
       </View>
@@ -168,6 +187,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sheet: {
     width: "100%",
+    flexShrink: 1,
     borderTopLeftRadius: t.radius["2xl"],
     borderTopRightRadius: t.radius["2xl"],
     backgroundColor: t.colors.surface,
@@ -187,8 +207,11 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.border,
   },
   content: {
+    flexGrow: 0,
     flexShrink: 1,
     minHeight: 0,
+  },
+  contentInner: {
     paddingHorizontal: t.space["4"],
     gap: t.space["3"],
   },

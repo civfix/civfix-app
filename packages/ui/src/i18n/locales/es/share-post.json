@@ -22,7 +22,8 @@
     "send": "Enviar",
     "send_count": "Enviar a {{count}}",
     "more": "Compartir de otra forma",
-    "copy_link": "Copiar enlace"
+    "copy_link": "Copiar enlace",
+    "copy_failed": "No se pudo copiar"
   },
   "signed_out": {
     "title": "Inicia sesión para enviarlo",

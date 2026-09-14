@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import type { UserSearchResultDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, webInputReset } from "../theme"
@@ -10,13 +10,13 @@ import { SignInPrompt } from "../primitives/StateView"
 import { SlideUpSheet } from "../primitives/SlideUpSheet"
 import { TextInput } from "../primitives/TextInput"
 import { useDeferredOverlayAction } from "../primitives/useDeferredOverlayAction"
-import { useToast } from "../primitives/toastContext"
+import { TOAST_QUIET_MS } from "../primitives/toastModel"
 import { useClipboard, useHaptics } from "../capabilities"
 import { normalizeUserSearchTerm, useUserSearch } from "../data/hooks/direct"
 import { searchResultToPerson, toggleMember } from "../bodies/memberSelect"
 import { ShareActionTile } from "./ShareActionTile"
 import { SharePeople } from "./SharePeople"
-import { sharePeopleView, shareSheetFooter } from "./shareSheetModel"
+import { shareCopyTileFace, sharePeopleView, shareSheetFooter, type ShareCopyState } from "./shareSheetModel"
 import { useSharePostSession } from "./useSharePostSession"
 import type { SharePostSheetProps } from "./SharePostSheet.types"
 
@@ -26,7 +26,6 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("share-post")
-  const toast = useToast()
   const clipboard = useClipboard()
   const haptics = useHaptics()
   const session = useSharePostSession({ visible, target, onClose })
@@ -36,9 +35,20 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
   const [query, setQuery] = useState("")
   const [searchFocused, setSearchFocused] = useState(false)
   const [noteFocused, setNoteFocused] = useState(false)
+  const [copyState, setCopyState] = useState<ShareCopyState>("idle")
+  const copyResetRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const clearCopyReset = useCallback(() => {
+    if (copyResetRef.current === null) return
+    clearTimeout(copyResetRef.current)
+    copyResetRef.current = null
+  }, [])
+  useEffect(() => clearCopyReset, [clearCopyReset])
   useEffect(() => {
-    if (visible) setQuery("")
-  }, [visible])
+    if (!visible) return
+    setQuery("")
+    clearCopyReset()
+    setCopyState("idle")
+  }, [visible, clearCopyReset])
 
   const search = useUserSearch(query)
   const typed = normalizeUserSearchTerm(query)
@@ -63,13 +73,35 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
     [haptics, session, selected, excludeIds],
   )
 
+  const showCopyState = useCallback(
+    (next: ShareCopyState) => {
+      clearCopyReset()
+      setCopyState(next)
+      copyResetRef.current = setTimeout(() => {
+        copyResetRef.current = null
+        setCopyState("idle")
+      }, TOAST_QUIET_MS)
+    },
+    [clearCopyReset],
+  )
   const onCopyLink = useCallback(() => {
     if (!clipboard) return
     clipboard
       .setString(session.url)
-      .then(() => toast.show(t("common-share:button.copied"), { variant: "success" }))
-      .catch(() => toast.show(t("toast.copy_failed"), { variant: "error" }))
-  }, [clipboard, session.url, t, toast])
+      .then(() => {
+        haptics.success()
+        showCopyState("copied")
+      })
+      .catch(() => {
+        haptics.error()
+        showCopyState("failed")
+      })
+  }, [clipboard, haptics, session.url, showCopyState])
+  const copyTile = shareCopyTileFace(copyState, {
+    idle: t("actions.copy_link"),
+    copied: t("common-share:button.copied"),
+    failed: t("actions.copy_failed"),
+  })
   const onShareAnotherWay = useCallback(() => run(session.shareElsewhere), [run, session.shareElsewhere])
   const onSignIn = useCallback(() => run(session.signIn), [run, session.signIn])
 
@@ -80,6 +112,7 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
       onClosed={settled}
       dismissLabel={t("backdrop.dismiss")}
       accessibilityLabel={t("title")}
+      bodyLayout="fill"
     >
       <Text variant="bodyStrong" style={styles.title}>
         {t("title")}
@@ -113,13 +146,15 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
           />
         </>
       ) : (
-        <SignInPrompt
-          icon={iconMap.MessageCircle}
-          title={t("signed_out.title")}
-          body={t("signed_out.body")}
-          variant="detail"
-          onSignIn={onSignIn}
-        />
+        <View style={styles.signedOut}>
+          <SignInPrompt
+            icon={iconMap.MessageCircle}
+            title={t("signed_out.title")}
+            body={t("signed_out.body")}
+            variant="detail"
+            onSignIn={onSignIn}
+          />
+        </View>
       )}
 
       <View style={styles.divider} />
@@ -148,7 +183,13 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
       ) : (
         <View style={styles.actions}>
           {clipboard ? (
-            <ShareActionTile icon="Copy" label={t("actions.copy_link")} onPress={onCopyLink} disabled={pending} />
+            <ShareActionTile
+              icon={copyTile.icon}
+              label={copyTile.label}
+              tone={copyTile.tone}
+              onPress={onCopyLink}
+              disabled={pending}
+            />
           ) : null}
           <ShareActionTile icon="Share" label={t("actions.more")} onPress={onShareAnotherWay} disabled={pending} />
         </View>
@@ -178,6 +219,10 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyMedium,
     fontSize: t.fontSize["15"],
     color: t.colors.text,
+  },
+  signedOut: {
+    flexDirection: "row",
+    paddingVertical: t.space["2"],
   },
   divider: {
     height: StyleSheet.hairlineWidth,

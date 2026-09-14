@@ -87,7 +87,7 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
     expect(NATIVE_SHEET).toContain("<SlideUpSheet")
     expect(NATIVE_SHEET).not.toContain("<ModalCardSheet")
     expect(NATIVE_SHEET).toContain("<SharePeople")
-    expect(NATIVE_SHEET).toMatch(/<ShareActionTile icon="Copy" label=\{t\("actions.copy_link"\)\}/)
+    expect(NATIVE_SHEET).toMatch(/<ShareActionTile\s+icon=\{copyTile\.icon\}\s+label=\{copyTile\.label\}\s+tone=\{copyTile\.tone\}/)
     expect(NATIVE_SHEET).toMatch(/<ShareActionTile icon="Share" label=\{t\("actions.more"\)\} onPress=\{onShareAnotherWay\} disabled=\{pending\}/)
     const people = code(read("../SharePeople.tsx"))
     expect(people).toMatch(/<FlatList\s+horizontal/)
@@ -102,7 +102,21 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
 
   it("native hides Copy link when the host injects no clipboard capability", () => {
     expect(NATIVE_SHEET).toContain("const clipboard = useClipboard()")
-    expect(NATIVE_SHEET).toMatch(/\{clipboard \? \(\s*<ShareActionTile icon="Copy"/)
+    expect(NATIVE_SHEET).toMatch(/\{clipboard \? \(\s*<ShareActionTile\s+icon=\{copyTile\.icon\}/)
+  })
+
+  it("native confirms a copied link on the tile itself and never through the app toast, which sits behind the sheet's Modal", () => {
+    expect(NATIVE_SHEET).not.toContain("useToast")
+    expect(NATIVE_SHEET).toMatch(/\.then\(\(\) => \{\s*haptics\.success\(\)\s*showCopyState\("copied"\)/)
+    expect(NATIVE_SHEET).toMatch(/\.catch\(\(\) => \{\s*haptics\.error\(\)\s*showCopyState\("failed"\)/)
+    expect(NATIVE_SHEET).toMatch(/\}, TOAST_QUIET_MS\)/)
+    expect(NATIVE_SHEET).toMatch(/clearCopyReset\(\)\s*setCopyState\("idle"\)/)
+  })
+
+  it("native lays the guest prompt out as a row, so its fill-height variant takes its content height inside the content-sized sheet", () => {
+    expect(NATIVE_SHEET).toMatch(/<View style=\{styles\.signedOut\}>\s*<SignInPrompt/)
+    expect(NATIVE_SHEET).toMatch(/signedOut: \{\s*flexDirection: "row"/)
+    expect(NATIVE_SHEET).toContain('bodyLayout="fill"')
   })
 
   it("inherits the scrim and the dialog keys from ModalCardSheet rather than re-rolling them", () => {

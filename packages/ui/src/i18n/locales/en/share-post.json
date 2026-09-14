@@ -22,7 +22,8 @@
     "send": "Send",
     "send_count": "Send to {{count}}",
     "more": "Share another way",
-    "copy_link": "Copy link"
+    "copy_link": "Copy link",
+    "copy_failed": "Couldn't copy"
   },
   "signed_out": {
     "title": "Sign in to send this",

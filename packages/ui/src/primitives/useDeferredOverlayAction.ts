@@ -22,6 +22,8 @@ export function useDeferredOverlayAction(
     if (visible) gate.reopened()
   }, [visible, gate])
 
+  useEffect(() => () => gate.settle(), [gate])
+
   const run = useCallback(
     (action: () => void) => {
       onClose()

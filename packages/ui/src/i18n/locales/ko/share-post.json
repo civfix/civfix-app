@@ -22,7 +22,8 @@
     "send": "보내기",
     "send_count": "{{count}}명에게 보내기",
     "more": "다른 방법으로 공유",
-    "copy_link": "링크 복사"
+    "copy_link": "링크 복사",
+    "copy_failed": "복사 실패"
   },
   "signed_out": {
     "title": "로그인하면 보낼 수 있어요",

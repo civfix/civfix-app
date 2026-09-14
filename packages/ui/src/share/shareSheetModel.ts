@@ -1,5 +1,6 @@
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
 import { filterExcluded } from "../bodies/memberSelect"
+import type { IconName } from "../typography"
 
 export type SharePeopleMode = "recent" | "results" | "prompt"
 
@@ -29,4 +30,31 @@ export function shareSheetFooter(isAuthenticated: boolean, selectedCount: number
 
 export function isShareRecipient(selected: readonly PersonDTO[], id: string): boolean {
   return selected.some((person) => person.id === id)
+}
+
+export type ShareCopyState = "idle" | "copied" | "failed"
+
+export type ShareTileTone = "default" | "success" | "danger"
+
+export interface ShareTileFace {
+  icon: IconName
+  label: string
+  tone: ShareTileTone
+}
+
+export interface ShareCopyLabels {
+  idle: string
+  copied: string
+  failed: string
+}
+
+export function shareCopyTileFace(state: ShareCopyState, labels: ShareCopyLabels): ShareTileFace {
+  switch (state) {
+    case "copied":
+      return { icon: "Check", label: labels.copied, tone: "success" }
+    case "failed":
+      return { icon: "Close", label: labels.failed, tone: "danger" }
+    default:
+      return { icon: "Copy", label: labels.idle, tone: "default" }
+  }
 }

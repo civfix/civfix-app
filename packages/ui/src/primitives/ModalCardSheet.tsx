@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import {
+  Animated,
   Modal,
   View,
   ScrollView,
@@ -10,18 +11,21 @@ import {
   type ViewStyle,
 } from "react-native"
 import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, useTheme, webScrimProps, type Theme } from "../theme"
+import { makeThemedStyles, motion, useTheme, webScrimProps, type Theme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { IosKeyboardAvoidingView } from "../shell/IosKeyboardAvoidingView"
 import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider } from "../shell/ScrollHost"
 import { useKeyboardReserve } from "../shell/useKeyboardReserve"
+import { menuScrimStyle, useMenuMotion, type MenuMotionRecipes } from "./menuMotion"
 import { useModalClosed } from "./useModalClosed"
 
 const MODAL_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
   reserveKeyboardPadding: false,
 })
+
+const CARD_RECIPES: MenuMotionRecipes = { enter: motion.sheetMove, exit: motion.sheetDismiss }
 
 export function useDialogWebKeys({
   visible,
@@ -92,17 +96,22 @@ export function ModalCardSheet({
   const t = useTheme()
   const kbReserve = useKeyboardReserve({ enabled: visible })
   useDialogWebKeys({ visible, onCommit, onClose })
-  const onDismiss = useModalClosed(visible, onClosed)
+  const cardMotion = useMenuMotion({ visible, recipes: CARD_RECIPES })
+  const { rendered } = cardMotion
+  const onDismiss = useModalClosed(rendered, onClosed)
 
   return (
     <Modal
-      visible={visible}
+      visible={rendered}
       transparent
-      animationType="fade"
+      animationType="none"
       onRequestClose={onClose}
       onDismiss={onDismiss}
     >
-      <View style={styles.root}>
+      <Animated.View
+        style={[styles.root, menuScrimStyle(cardMotion)]}
+        pointerEvents={cardMotion.exiting ? "none" : "auto"}
+      >
         <Pressable
           style={styles.backdrop}
           accessibilityRole="button"
@@ -156,7 +165,7 @@ export function ModalCardSheet({
             <View style={styles.actions}>{actions}</View>
           </View>
         </IosKeyboardAvoidingView>
-      </View>
+      </Animated.View>
     </Modal>
   )
 }

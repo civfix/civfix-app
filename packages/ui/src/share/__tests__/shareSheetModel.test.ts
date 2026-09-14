@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
-import { isShareRecipient, sharePeopleView, shareSheetFooter } from "../shareSheetModel"
+import { isShareRecipient, shareCopyTileFace, sharePeopleView, shareSheetFooter } from "../shareSheetModel"
 
 const result = (id: string): UserSearchResultDTO => ({
   id,
@@ -53,5 +53,21 @@ describe("isShareRecipient", () => {
   it("matches by id only", () => {
     expect(isShareRecipient([person("a"), person("b")], "b")).toBe(true)
     expect(isShareRecipient([person("a")], "c")).toBe(false)
+  })
+})
+
+describe("the copy-link tile confirms inline, since a toast would land behind the sheet's own Modal", () => {
+  const labels = { idle: "Copy link", copied: "Link copied", failed: "Couldn't copy" }
+
+  it("rests as the copy affordance", () => {
+    expect(shareCopyTileFace("idle", labels)).toEqual({ icon: "Copy", label: "Copy link", tone: "default" })
+  })
+
+  it("flips to a check with the copied label after a real clipboard write", () => {
+    expect(shareCopyTileFace("copied", labels)).toEqual({ icon: "Check", label: "Link copied", tone: "success" })
+  })
+
+  it("says so, in place, when the clipboard write failed", () => {
+    expect(shareCopyTileFace("failed", labels)).toEqual({ icon: "Close", label: "Couldn't copy", tone: "danger" })
   })
 })

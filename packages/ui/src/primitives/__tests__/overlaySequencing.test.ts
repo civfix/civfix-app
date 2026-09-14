@@ -12,6 +12,8 @@ const POPOVER = code(read("../PopoverMenu.tsx"))
 const CARD_SHEET = code(read("../ModalCardSheet.tsx"))
 const REPORT_SHEET = code(read("../ReportContentSheet.tsx"))
 const SLIDE_UP = code(read("../SlideUpSheet.tsx"))
+const CONTEXT_MENU = code(read("../MessageContextMenu.tsx"))
+const MENU_MOTION = code(read("../menuMotion.ts"))
 const OVERFLOW = code(read("../../bodies/PostOverflowMenu.tsx"))
 const REPORT_DETAIL = code(read("../../bodies/ReportDetailBody.tsx"))
 const SHARE_PROVIDER = code(read("../../share/SharePostProvider.tsx"))
@@ -45,6 +47,15 @@ describe("the overlay action gate", () => {
     expect(gate.hasPending()).toBe(false)
   })
 
+  it("flushes a parked action when the overlay is torn down before it could settle", () => {
+    const gate = makeOverlayActionGate(true)
+    const calls: string[] = []
+    gate.choose(() => calls.push("report"))
+    gate.settle()
+    expect(calls).toEqual(["report"])
+    expect(gate.hasPending()).toBe(false)
+  })
+
   it("keeps only the latest choice and drops a stale one when the overlay reopens first", () => {
     const gate = makeOverlayActionGate(true)
     const calls: string[] = []
@@ -72,6 +83,20 @@ describe("every house overlay reports the moment it has fully left the screen", 
     expect(GATE_HOOK).toMatch(/if \(visible\) gate\.reopened\(\)/)
   })
 
+  it("the hook runs a parked action on unmount, so a caller that unmounts its menu on close cannot swallow it", () => {
+    expect(GATE_HOOK).toMatch(/useEffect\(\(\) => \(\) => gate\.settle\(\), \[gate\]\)/)
+  })
+
+  it("MessageContextMenu runs reactions and row actions through the same gate and settles off both of its Modals", () => {
+    expect(CONTEXT_MENU).toContain("const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)")
+    expect(CONTEXT_MENU).toContain("const onModalDismiss = useModalClosed(rendered, settled)")
+    expect(CONTEXT_MENU).toMatch(/const handleReact = \(emoji: ReactionEmoji\) => run\(\(\) => onReact\(emoji\)\)/)
+    expect(CONTEXT_MENU).toMatch(/const handleAction = \(action: ContextMenuAction\) => run\(action\.onPress\)/)
+    expect(CONTEXT_MENU.match(/onDismiss=\{onModalDismiss\}/g)).toHaveLength(2)
+    expect(CONTEXT_MENU).not.toMatch(/action\.onPress\(\)\s*onClose\(\)/)
+    expect(CONTEXT_MENU).not.toMatch(/onReact\(emoji\)\s*onClose\(\)/)
+  })
+
   it("PopoverMenu runs every row action through the gate and settles off its own Modal", () => {
     expect(POPOVER).toContain("const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)")
     expect(POPOVER).toContain("const onModalDismiss = useModalClosed(rendered, settled)")
@@ -80,12 +105,26 @@ describe("every house overlay reports the moment it has fully left the screen", 
     expect(POPOVER).not.toMatch(/onClose\(\)\s*item\.onPress\(\)/)
   })
 
-  it("ModalCardSheet and SlideUpSheet expose onClosed through the same hook", () => {
-    expect(CARD_SHEET).toContain("const onDismiss = useModalClosed(visible, onClosed)")
+  it("ModalCardSheet and SlideUpSheet expose onClosed through the same hook, off the post-exit rendered flag", () => {
+    expect(CARD_SHEET).toContain("const cardMotion = useMenuMotion({ visible, recipes: CARD_RECIPES })")
+    expect(CARD_SHEET).toContain("const onDismiss = useModalClosed(rendered, onClosed)")
+    expect(CARD_SHEET).toMatch(/visible=\{rendered\}/)
+    expect(CARD_SHEET).toMatch(/animationType="none"/)
+    expect(CARD_SHEET).not.toMatch(/animationType="fade"/)
+    expect(CARD_SHEET).toMatch(/pointerEvents=\{cardMotion\.exiting \? "none" : "auto"\}/)
     expect(CARD_SHEET).toContain("onDismiss={onDismiss}")
     expect(SLIDE_UP).toContain("const onModalDismiss = useModalClosed(rendered, onClosed)")
     expect(SLIDE_UP).toContain("onDismiss={onModalDismiss}")
     expect(REPORT_SHEET).toContain("onClosed={onClosed}")
+  })
+
+  it("the motion hook reads recipes through a ref, so an inline recipe object can never restart an animation", () => {
+    expect(MENU_MOTION).toMatch(/const recipesRef = useRef\(recipes\)\s*recipesRef\.current = recipes/)
+    expect(MENU_MOTION).toMatch(/\}, \[visible, ready, reducedMotion, useNativeDriver, progress\]\)/)
+  })
+
+  it("SlideUpSheet builds its translate graph once per height, not once per render", () => {
+    expect(SLIDE_UP).toMatch(/const translateY = useMemo\([\s\S]*?\[progress, dragY, sheetHeight, winH\],\s*\)/)
   })
 })
 

@@ -22,7 +22,8 @@
     "send": "Senden",
     "send_count": "An {{count}} senden",
     "more": "Anders teilen",
-    "copy_link": "Link kopieren"
+    "copy_link": "Link kopieren",
+    "copy_failed": "Kopieren fehlgeschlagen"
   },
   "signed_out": {
     "title": "Melde dich an, um das zu senden",

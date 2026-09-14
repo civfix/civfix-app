@@ -1,34 +1,49 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, type Theme } from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
+import type { ShareTileTone } from "./shareSheetModel"
 
 export interface ShareActionTileProps {
   icon: IconName
   label: string
   onPress: () => void
   disabled?: boolean
+  tone?: ShareTileTone
 }
 
 const CIRCLE = 52
 
-export function ShareActionTile({ icon, label, onPress, disabled = false }: ShareActionTileProps) {
+function toneColor(tone: ShareTileTone, t: Theme): string {
+  switch (tone) {
+    case "success":
+      return t.colors.brand.moss
+    case "danger":
+      return t.colors.dangerInk
+    default:
+      return t.colors.text
+  }
+}
+
+export function ShareActionTile({ icon, label, onPress, disabled = false, tone = "default" }: ShareActionTileProps) {
   const styles = useStyles()
   const th = useTheme()
+  const color = toneColor(tone, th)
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityLiveRegion={tone === "default" ? "none" : "polite"}
       accessibilityState={{ disabled }}
       {...focusRingProps}
       style={({ pressed }) => [styles.tile, pressed ? styles.pressed : null, disabled ? styles.disabled : null]}
     >
-      <View style={styles.circle}>
-        <Icon icon={iconMap[icon]} size={22} color={th.colors.text} />
+      <View style={[styles.circle, tone === "default" ? null : { borderColor: color }]}>
+        <Icon icon={iconMap[icon]} size={22} color={color} />
       </View>
-      <Text variant="caption" numberOfLines={2} style={styles.label}>
+      <Text variant="caption" color={color} numberOfLines={2} style={styles.label}>
         {label}
       </Text>
     </Pressable>
