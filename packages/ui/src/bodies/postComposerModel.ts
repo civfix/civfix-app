@@ -189,6 +189,8 @@ export function buildComposerEventRef(event: CleanupDTO, linkedAt = event.schedu
     eventKind: event.eventKind,
     status: event.status,
     scheduledAt: event.scheduledAt,
+    endsAt: event.endsAt ?? null,
+    timezone: event.timezone ?? null,
     lat: event.lat,
     lng: event.lng,
     going: event.going,

@@ -1,10 +1,9 @@
 import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { CleanupDTO } from "@civfix/shared"
-import { timeLabel } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { useT, useLocale } from "../i18n"
+import { useT, useEventWhen } from "../i18n"
 import { Avatar } from "./Avatar"
 import { DateBadge } from "./DateBadge"
 import { OrgAffiliationBadge } from "./OrgAffiliationBadge"
@@ -13,7 +12,7 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-card")
-  const { locale } = useLocale()
+  const when = useEventWhen(cleanup)
   const where = cleanup.address?.trim()
   return (
     <Pressable
@@ -23,7 +22,7 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
       {...focusRingProps}
       style={({ pressed }) => [styles.card, pressed ? styles.cardPressed : null]}
     >
-      <DateBadge iso={cleanup.scheduledAt} />
+      <DateBadge iso={cleanup.scheduledAt} timeZone={when.timeZone} />
 
       <View style={styles.body}>
         <View style={styles.titleRow}>
@@ -43,7 +42,7 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
           <View style={styles.metaItem}>
             <Icon icon={iconMap.Clock} size={13} color={th.colors.textSubtle} />
             <Text variant="caption" color={th.colors.textMuted}>
-              {timeLabel(cleanup.scheduledAt, locale)}
+              {when.timeWithZone}
             </Text>
           </View>
           {where ? (

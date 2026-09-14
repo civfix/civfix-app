@@ -540,6 +540,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
       event={attachedEvent}
       cleanup={attachedCleanup}
       layout="list"
+      timeZone={attachedEvent.timezone ?? undefined}
       selectable
       selected
       onRemove={detachEvent}
@@ -573,6 +574,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
                 event={buildComposerEventRef(event)}
                 cleanup={event}
                 layout="list"
+                timeZone={event.timezone ?? undefined}
                 selectable
                 selected={false}
                 onPress={() => attachEvent(event)}
@@ -687,6 +689,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
                 event={buildComposerEventRef(event)}
                 cleanup={event}
                 layout="list"
+                timeZone={event.timezone ?? undefined}
                 selectable
                 selected={event.id === draft.attachedEventId}
                 onPress={() => attachEvent(event)}

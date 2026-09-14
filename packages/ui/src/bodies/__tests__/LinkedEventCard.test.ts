@@ -106,6 +106,28 @@ describe("LinkedEventCard model", () => {
     })
   })
 
+  it("renders the attached event in the EVENT's zone and names it when the offset differs", () => {
+    const model = buildLinkedEventCardModel(event, t, "en-US", "America/Los_Angeles", {
+      viewerTimeZone: "America/New_York",
+    })
+    expect(model).toMatchObject({ month: "JUL", day: "25" })
+    expect(model.scheduleLabel).toBe("Sat 9:00 AM PDT")
+  })
+
+  it("leaves the zone off when the viewer's offset matches, alias zones included", () => {
+    const aliased = buildLinkedEventCardModel(event, t, "en-US", "America/Los_Angeles", {
+      viewerTimeZone: "US/Pacific",
+    })
+    expect(aliased.scheduleLabel).toBe("Sat 9:00 AM")
+  })
+
+  it("leaves the zone off for a legacy row that carries none", () => {
+    const legacy = buildLinkedEventCardModel(event, t, "en-US", undefined, {
+      viewerTimeZone: "America/New_York",
+    })
+    expect(legacy.scheduleLabel).not.toContain("EDT")
+  })
+
   it("localizes the unparseable-schedule fallback instead of hardcoding English", () => {
     const model = buildLinkedEventCardModel({ ...event, scheduledAt: "not-a-date" }, t, "en-US", "UTC")
     expect(model).toMatchObject({ month: "--", day: "--", scheduleLabel: "Schedule unavailable" })

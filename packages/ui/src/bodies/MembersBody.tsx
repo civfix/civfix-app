@@ -188,17 +188,19 @@ function SlotGroupHeader({
   capacity,
   startsAt,
   endsAt,
+  timeZone,
 }: {
   title: string
   claimed: number
   capacity: number | null
   startsAt: string | null
   endsAt: string | null
+  timeZone: string | undefined
 }) {
   const styles = useStyles()
   const { t: tSlots } = useT("event-slots")
   const { locale } = useLocale()
-  const range = startsAt && endsAt ? timeRangeLabel(startsAt, endsAt, locale) : null
+  const range = startsAt && endsAt ? timeRangeLabel(startsAt, endsAt, locale, timeZone) : null
   return (
     <View
       style={styles.slotHeaderBlock}
@@ -390,6 +392,7 @@ export function MembersBody({
   const removeMember = useRemoveMember()
   const managePending = setMemberRole.isPending || removeMember.isPending
 
+  const cleanupTimeZone = cleanupQuery.data?.timezone ?? undefined
   const cleanupSlots: readonly EventSlotDTO[] = cleanupQuery.data?.slots ?? NO_SLOTS
   const grouped = roomKind === "cleanup" && viewerManagesEvent && cleanupSlots.length > 0
   const data: RosterItem[] = useMemo(
@@ -506,6 +509,7 @@ export function MembersBody({
             capacity={item.capacity}
             startsAt={item.startsAt}
             endsAt={item.endsAt}
+            timeZone={cleanupTimeZone}
           />
           )
         }
@@ -541,6 +545,7 @@ export function MembersBody({
       blockUser.isPending,
       managePending,
       grouped,
+      cleanupTimeZone,
     ],
   )
 

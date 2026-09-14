@@ -58,6 +58,8 @@ export interface EventSlotsBlockProps {
   joined: boolean
   /** DONE / cancelled event: counts only, no pills, no taps. */
   readonly?: boolean
+  /** The EVENT's IANA zone; shift windows render in it. Absent (legacy row) = the viewer's zone. */
+  timeZone?: string
 }
 
 /** Minimal translator shape (the `t` from `useT`) for the row's copy helpers. */
@@ -107,6 +109,7 @@ function SlotRow({
   busy,
   pending,
   mixedBoard,
+  timeZone,
   onPress,
 }: {
   slot: EventSlotDTO
@@ -120,6 +123,7 @@ function SlotRow({
   /** THIS row is the one in flight - the dim and the a11y busy state, so only the tapped pill reacts. */
   pending: boolean
   mixedBoard: boolean
+  timeZone: string | undefined
   /** Claim / switch / release. Absent for the two non-interactive states. */
   onPress?: () => void
 }) {
@@ -141,7 +145,9 @@ function SlotRow({
   const hasDescription = description.length > 0
   const window = slotWindow(slot)
   const range =
-    window === null ? null : timeRangeLabel(window.start.toISOString(), window.end.toISOString(), locale)
+    window === null
+      ? null
+      : timeRangeLabel(window.start.toISOString(), window.end.toISOString(), locale, timeZone)
   const windowText = range ?? (mixedBoard ? t("row.any_time") : null)
   const metaParts = [windowText, line].filter((part): part is string => part !== null)
 
@@ -260,7 +266,13 @@ function SlotRow({
   )
 }
 
-export function EventSlotsBlock({ cleanupId, slots, joined, readonly = false }: EventSlotsBlockProps) {
+export function EventSlotsBlock({
+  cleanupId,
+  slots,
+  joined,
+  readonly = false,
+  timeZone,
+}: EventSlotsBlockProps) {
   const styles = useStyles()
   const { t } = useT("event-slots")
   const qc = useQueryClient()
@@ -346,6 +358,7 @@ export function EventSlotsBlock({ cleanupId, slots, joined, readonly = false }: 
               busy={claim.isPending}
               pending={pendingSlotId === slot.id}
               mixedBoard={mixedBoard}
+              timeZone={timeZone}
               {...(interactive
                 ? { onPress: () => run(state === "mine" ? null : slot.id, slot.id) }
                 : {})}

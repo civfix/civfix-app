@@ -707,7 +707,12 @@ export const PostCard = React.memo(function PostCard({
 
             {displayEvent ? (
               <View style={styles.attachment}>
-                <LinkedEventCard event={displayEvent} layout="list" onPress={() => openEvent(displayEvent.id)} />
+                <LinkedEventCard
+                  event={displayEvent}
+                  layout="list"
+                  timeZone={displayEvent.timezone ?? undefined}
+                  onPress={() => openEvent(displayEvent.id)}
+                />
               </View>
             ) : null}
 
