@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react"
-import { absoluteUrl, shareLink } from "../primitives/share"
+import { shareLink } from "../primitives/share"
 import type { SharePostHandle, SharePostTarget } from "./types"
 
 export const SharePostContext = createContext<SharePostHandle | null>(null)
@@ -7,11 +7,7 @@ SharePostContext.displayName = "SharePostContext"
 
 const DIRECT_SHARE: SharePostHandle = {
   open: (target: SharePostTarget) => {
-    void shareLink({
-      title: target.title,
-      path: target.path,
-      message: `${target.title}\n${absoluteUrl(target.path)}`,
-    })
+    void shareLink({ title: target.title, path: target.path })
   },
 }
 

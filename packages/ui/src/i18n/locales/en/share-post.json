@@ -6,7 +6,11 @@
   "recipients": {
     "recent": "Recent",
     "empty_prompt": "Search for someone by @handle to send them this post.",
-    "cap": "You can send to up to {{count}} people at a time."
+    "cap": "You can send to up to {{count}} people at a time.",
+    "search_placeholder": "Search by @handle",
+    "select_a11y": "Send to {{name}}",
+    "no_results": "No one found for @{{handle}}",
+    "search_failed": "Couldn't search right now"
   },
   "note": {
     "placeholder": "Add a message (optional)",
@@ -17,7 +21,8 @@
     "close": "Close",
     "send": "Send",
     "send_count": "Send to {{count}}",
-    "more": "Share another way"
+    "more": "Share another way",
+    "copy_link": "Copy link"
   },
   "signed_out": {
     "title": "Sign in to send this",
@@ -28,6 +33,10 @@
     "sent_other": "Sent to {{count}} people",
     "partial": "Couldn't send to {{names}}",
     "none_sent": "Couldn't send. Check your connection and try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "copy_failed": "Couldn't copy the link"
+  },
+  "os_share": {
+    "message": "Check out this post on civfix!"
   }
 }

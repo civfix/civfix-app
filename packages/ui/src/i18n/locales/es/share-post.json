@@ -6,7 +6,11 @@
   "recipients": {
     "recent": "Recientes",
     "empty_prompt": "Busca a alguien por su @usuario para enviarle esta publicación.",
-    "cap": "Puedes enviar a un máximo de {{count}} personas a la vez."
+    "cap": "Puedes enviar a un máximo de {{count}} personas a la vez.",
+    "search_placeholder": "Buscar por @usuario",
+    "select_a11y": "Enviar a {{name}}",
+    "no_results": "No se encontró a nadie con @{{handle}}",
+    "search_failed": "No se pudo buscar en este momento"
   },
   "note": {
     "placeholder": "Añade un mensaje (opcional)",
@@ -17,7 +21,8 @@
     "close": "Cerrar",
     "send": "Enviar",
     "send_count": "Enviar a {{count}}",
-    "more": "Compartir de otra forma"
+    "more": "Compartir de otra forma",
+    "copy_link": "Copiar enlace"
   },
   "signed_out": {
     "title": "Inicia sesión para enviarlo",
@@ -28,6 +33,10 @@
     "sent_other": "Enviado a {{count}} personas",
     "partial": "No se pudo enviar a {{names}}",
     "none_sent": "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.",
-    "retry": "Intentar de nuevo"
+    "retry": "Intentar de nuevo",
+    "copy_failed": "No se pudo copiar el enlace"
+  },
+  "os_share": {
+    "message": "¡Mira esta publicación en civfix!"
   }
 }

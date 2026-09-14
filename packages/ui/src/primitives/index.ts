@@ -51,7 +51,7 @@ export type { OrgAffiliationBadgeProps, OrgAffiliationBadgeSize } from "./OrgAff
 
 export { ShareButton } from "./ShareButton"
 export type { ShareButtonProps } from "./ShareButton"
-export { shareLink, classifyWebShareRejection, WEB_ORIGIN } from "./share"
+export { shareLink, classifyWebShareRejection, WEB_ORIGIN, setWebOrigin, webOrigin } from "./share"
 export type { ShareResult, ShareLinkOptions } from "./share"
 
 export { CountBadge } from "./CountBadge"

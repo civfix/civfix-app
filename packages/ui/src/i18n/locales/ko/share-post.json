@@ -6,7 +6,11 @@
   "recipients": {
     "recent": "최근",
     "empty_prompt": "@아이디로 검색해 이 게시물을 보낼 사람을 찾아보세요.",
-    "cap": "한 번에 최대 {{count}}명에게 보낼 수 있어요."
+    "cap": "한 번에 최대 {{count}}명에게 보낼 수 있어요.",
+    "search_placeholder": "@아이디로 검색",
+    "select_a11y": "{{name}}에게 보내기",
+    "no_results": "@{{handle}}에 해당하는 사람을 찾지 못했어요",
+    "search_failed": "지금은 검색할 수 없어요"
   },
   "note": {
     "placeholder": "메시지 추가 (선택)",
@@ -17,7 +21,8 @@
     "close": "닫기",
     "send": "보내기",
     "send_count": "{{count}}명에게 보내기",
-    "more": "다른 방법으로 공유"
+    "more": "다른 방법으로 공유",
+    "copy_link": "링크 복사"
   },
   "signed_out": {
     "title": "로그인하면 보낼 수 있어요",
@@ -28,6 +33,10 @@
     "sent_other": "{{count}}명에게 보냈어요",
     "partial": "{{names}}에게 보내지 못했어요",
     "none_sent": "보내지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
-    "retry": "다시 시도"
+    "retry": "다시 시도",
+    "copy_failed": "링크를 복사하지 못했어요"
+  },
+  "os_share": {
+    "message": "civfix에서 이 게시물을 확인해 보세요!"
   }
 }

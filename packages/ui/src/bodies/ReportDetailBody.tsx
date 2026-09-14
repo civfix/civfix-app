@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import {
   View,
   Pressable,
   ScrollView,
   Image,
   ActivityIndicator,
-  Platform,
 } from "react-native"
 import type {
   ReportDTO,
@@ -545,32 +544,17 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
     setReportTarget(null)
   }, [reportContent.isPending])
   const sharePath = `/pin/${report.referenceCode ?? report.id}`
-  const pendingMenuActionRef = useRef<(() => void) | null>(null)
-  const runAfterMenuDismiss = useCallback((action: () => void) => {
-    if (Platform.OS === "ios") {
-      pendingMenuActionRef.current = action
-      return
-    }
-    action()
-  }, [])
-  const onTitleMenuDismiss = useCallback(() => {
-    const action = pendingMenuActionRef.current
-    pendingMenuActionRef.current = null
-    if (action) action()
-  }, [])
   const onShare = useCallback(() => {
-    runAfterMenuDismiss(() => {
-      void shareLink({
-        title,
-        path: sharePath,
-        message: t("common-share:sheet.message", { title, url: absoluteUrl(sharePath) }),
-      }).then((result) => {
-        if (result === "copied") {
-          toast.show(t("common-share:button.copied"), { variant: "success" })
-        }
-      })
+    void shareLink({
+      title,
+      path: sharePath,
+      message: t("common-share:sheet.message", { title, url: absoluteUrl(sharePath) }),
+    }).then((result) => {
+      if (result === "copied") {
+        toast.show(t("common-share:button.copied"), { variant: "success" })
+      }
     })
-  }, [runAfterMenuDismiss, title, sharePath, t, toast])
+  }, [title, sharePath, t, toast])
   const onHostEvent = useCallback(() => {
     requireAuth(
       () => useNavStore.getState().push({ kind: "create-cleanup", reportId: report.id }),
@@ -719,7 +703,6 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
             visible={titleMenuOpen}
             anchorRect={titleMenuRect}
             onClose={() => setTitleMenuOpen(false)}
-            onDismiss={onTitleMenuDismiss}
             items={titleMenuItems}
           />
         </View>

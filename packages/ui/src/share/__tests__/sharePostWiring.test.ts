@@ -7,7 +7,10 @@ const code = (source: string): string =>
 
 const CONTEXT = code(read("../SharePostContext.ts"))
 const PROVIDER = code(read("../SharePostProvider.tsx"))
-const SHEET = code(read("../SharePostSheet.tsx"))
+const SELECTOR = code(read("../SharePostSheet.tsx"))
+const SHEET = code(read("../SharePostSheet.web.tsx"))
+const NATIVE_SHEET = code(read("../SharePostSheet.native.tsx"))
+const SESSION = code(read("../useSharePostSession.ts"))
 const HOOK = code(read("../useShareToDm.ts"))
 const DELIVERY = code(read("../shareDelivery.ts"))
 const BAR = code(read("../../primitives/PostActionBar.tsx"))
@@ -54,14 +57,52 @@ describe("the provider is mounted by every host that renders a feed", () => {
   it("mounts the sheet only once a target exists, so no session pays for its queries", () => {
     expect(PROVIDER).toMatch(/\{target \? <SharePostSheet visible=\{visible\}/)
   })
+
+  it("keeps the sheet mounted until it reports itself closed, so a deferred OS share cannot be dropped", () => {
+    expect(PROVIDER).toContain("onClosed={release}")
+    expect(PROVIDER).not.toContain("setTimeout")
+  })
 })
 
-describe("the sheet is a house dialog", () => {
-  it("is built on ModalCardSheet with a filling body", () => {
+describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet on native", () => {
+  it("selects through a .tsx selector that re-exports the web seam, never a .ts one Metro would shadow", () => {
+    expect(SELECTOR).toContain('export { SharePostSheet } from "./SharePostSheet.web"')
+    expect(SELECTOR).toContain('export type { SharePostSheetProps } from "./SharePostSheet.types"')
+  })
+
+  it("shares one session hook between both presentations", () => {
+    expect(SHEET).toContain("const session = useSharePostSession({ visible, target, onClose })")
+    expect(NATIVE_SHEET).toContain("const session = useSharePostSession({ visible, target, onClose })")
+    expect(SESSION).not.toMatch(/<\/?[A-Z][A-Za-z]*(\s|>|\/)/)
+  })
+
+  it("web is built on ModalCardSheet with a filling body", () => {
     expect(SHEET).toContain("<ModalCardSheet")
     expect(SHEET).toContain('bodyLayout="fill"')
     expect(SHEET).toContain("modalSheetInputStyle")
     expect(SHEET).toContain("modalSheetInputFocusedStyle")
+  })
+
+  it("native rises from the bottom on SlideUpSheet, TikTok/Instagram style: people row first, then action tiles", () => {
+    expect(NATIVE_SHEET).toContain("<SlideUpSheet")
+    expect(NATIVE_SHEET).not.toContain("<ModalCardSheet")
+    expect(NATIVE_SHEET).toContain("<SharePeople")
+    expect(NATIVE_SHEET).toMatch(/<ShareActionTile icon="Copy" label=\{t\("actions.copy_link"\)\}/)
+    expect(NATIVE_SHEET).toMatch(/<ShareActionTile icon="Share" label=\{t\("actions.more"\)\} onPress=\{onShareAnotherWay\} disabled=\{pending\}/)
+    const people = code(read("../SharePeople.tsx"))
+    expect(people).toMatch(/<FlatList\s+horizontal/)
+    expect(people).toContain('accessibilityRole="checkbox"')
+  })
+
+  it("native swaps the tiles for the compose bar once someone is picked, and never for a guest", () => {
+    expect(NATIVE_SHEET).toContain("const footer = shareSheetFooter(isAuthenticated, selected.length)")
+    expect(NATIVE_SHEET).toMatch(/footer === "compose" \? \(/)
+    expect(NATIVE_SHEET).toContain('t("actions.send_count", { count: selected.length })')
+  })
+
+  it("native hides Copy link when the host injects no clipboard capability", () => {
+    expect(NATIVE_SHEET).toContain("const clipboard = useClipboard()")
+    expect(NATIVE_SHEET).toMatch(/\{clipboard \? \(\s*<ShareActionTile icon="Copy"/)
   })
 
   it("inherits the scrim and the dialog keys from ModalCardSheet rather than re-rolling them", () => {
@@ -72,9 +113,9 @@ describe("the sheet is a house dialog", () => {
     expect(SHEET).toMatch(/onCommit=\{canSend \? onSend : undefined\}/)
   })
 
-  it("reuses MemberPicker (with its recents section) instead of forking a picker", () => {
+  it("web reuses MemberPicker (with its recents section) instead of forking a picker", () => {
     expect(SHEET).toContain('import { MemberPicker } from "../bodies/MemberPicker"')
-    expect(SHEET).toContain("suggested={suggested}")
+    expect(SHEET).toContain("suggested={session.suggested}")
     expect(SHEET).toContain('suggestedLabel={t("recipients.recent")}')
     const picker = code(read("../../bodies/MemberPicker.tsx"))
     expect(picker).toContain("suggested?: readonly UserSearchResultDTO[]")
@@ -82,39 +123,51 @@ describe("the sheet is a house dialog", () => {
   })
 
   it("never offers the viewer themselves as a recipient", () => {
-    expect(SHEET).toContain("const excludeIds = useMemo(() => (user?.id ? [user.id] : EMPTY_EXCLUDE)")
-    expect(SHEET).toContain("excludeIds={excludeIds}")
+    expect(SESSION).toContain("const excludeIds = useMemo(() => (user?.id ? [user.id] : EMPTY_EXCLUDE)")
+    expect(SHEET).toContain("excludeIds={session.excludeIds}")
+    expect(NATIVE_SHEET).toContain("excludeIds,")
   })
 
   it("labels Send with the recipient count and disables it with none selected", () => {
     expect(SHEET).toContain('t("actions.send_count", { count: selected.length })')
-    expect(SHEET).toContain("const canSend = isAuthenticated && selected.length > 0 && !pending")
+    expect(SESSION).toContain("const canSend = isAuthenticated && selected.length > 0 && !pending")
     expect(SHEET).toContain("disabled={!canSend}")
+    expect(NATIVE_SHEET).toContain("disabled={!canSend}")
   })
 
   it("caps the note so note + link always fit one message frame", () => {
-    expect(SHEET).toContain("const noteMax = shareNoteMaxLength(url)")
-    expect(SHEET).toContain("setNote(next.slice(0, noteMax))")
-    expect(SHEET).toContain("maxLength={noteMax}")
+    expect(SESSION).toContain("const noteMax = shareNoteMaxLength(url)")
+    expect(SESSION).toContain("setNoteRaw(next.slice(0, noteMax))")
+    expect(SHEET).toContain("maxLength={session.noteMax}")
+    expect(NATIVE_SHEET).toContain("maxLength={session.noteMax}")
   })
 
-  it("offers the OS share sheet AFTER the modal has dismissed, which iOS requires", () => {
-    expect(SHEET).toContain("onDismiss={onModalDismiss}")
-    expect(SHEET).toMatch(/if \(Platform\.OS === "ios"\) \{\s*pendingAfterDismiss\.current = action/)
-    expect(SHEET).toMatch(/const onShareAnotherWay = useCallback\(\(\) => \{\s*runAfterDismiss\(/)
-    expect(SHEET).toContain("void shareLink({")
+  it("offers the OS share sheet only AFTER its own overlay has fully left, which iOS requires", () => {
+    for (const source of [SHEET, NATIVE_SHEET]) {
+      expect(source).toContain("const { run, settled } = useDeferredOverlayAction(visible, onCancel, onClosed)")
+      expect(source).toContain("onClosed={settled}")
+      expect(source).toMatch(/const onShareAnotherWay = useCallback\(\(\) => run\(session\.shareElsewhere\)/)
+    }
+    expect(SESSION).toContain("void shareLink({")
+  })
+
+  it("shares the post link with the short invitation copy, translated per locale", () => {
+    expect(SESSION).toMatch(/message: t\("os_share\.message"\)/)
+    expect(SESSION).toContain("path: target.path,")
   })
 
   it("shows the copied toast only for a real clipboard copy", () => {
-    expect(SHEET).toMatch(/if \(result === "copied"\)/)
-    expect(SHEET).toContain('t("common-share:button.copied")')
+    expect(SESSION).toMatch(/if \(result === "copied"\)/)
+    expect(SESSION).toContain('t("common-share:button.copied")')
   })
 
   it("prompts a signed-out viewer to sign in but still lets them share the link", () => {
+    expect(SESSION).toMatch(/requireAuth\(\(\) => undefined, \{ next: target\.path \}\)/)
     expect(SHEET).toContain("<SignInPrompt")
-    expect(SHEET).toMatch(/requireAuth\(\(\) => undefined, \{ next: target\.path \}\)/)
     expect(SHEET).toMatch(/isAuthenticated \? \(\s*<>\s*<MemberPicker/)
     expect(SHEET).toMatch(/label=\{t\("actions.more"\)\}/)
+    expect(NATIVE_SHEET).toContain("<SignInPrompt")
+    expect(NATIVE_SHEET).toMatch(/const onSignIn = useCallback\(\(\) => run\(session\.signIn\)/)
   })
 })
 
@@ -122,18 +175,20 @@ describe("a send in flight can never seal the sheet", () => {
   it("keeps Cancel, the backdrop and Escape live, all through the same abort-then-close handler", () => {
     expect(SHEET).not.toContain("backdropDismissDisabled")
     expect(SHEET).toContain("onClose={onCancel}")
-    expect(SHEET).toMatch(
-      /const onCancel = \(\): void => \{\s*if \(pending\) \{\s*cancelledRef\.current = true\s*share\.abort\(\)/,
+    expect(NATIVE_SHEET).toContain("onClose={onCancel}")
+    expect(SESSION).toMatch(
+      /const onCancel = useCallback\(\(\): void => \{\s*if \(share\.isPending\) \{\s*cancelledRef\.current = true\s*share\.abort\(\)/,
     )
     expect(SHEET).toContain('<SecondaryButton label={t("actions.cancel")} onPress={onCancel} size="sm" />')
   })
 
   it("parks the OS share sheet while a send is running, so the two cannot race", () => {
     expect(SHEET).toMatch(/onPress=\{onShareAnotherWay\}\s*disabled=\{pending\}/)
+    expect(NATIVE_SHEET).toMatch(/onPress=\{onShareAnotherWay\} disabled=\{pending\}/)
   })
 
   it("stays quiet about a run the viewer cancelled, beyond what actually got through", () => {
-    expect(SHEET).toMatch(/if \(cancelledRef\.current\) \{/)
+    expect(SESSION).toMatch(/if \(cancelledRef\.current\) \{/)
   })
 })
 
@@ -170,8 +225,8 @@ describe("the DM send path", () => {
   it("reuses a thread id the inbox already knows instead of spending the openDm budget", () => {
     expect(HOOK).toMatch(/const known = knownRooms\?\.get\(recipientId\)/)
     expect(HOOK).toContain("return known ? Promise.resolve(known) : openDmRoom(api, recipientId)")
-    expect(SHEET).toContain("const knownRooms = useMemo(() => dmThreadIdsByPeer(threads.data?.pages)")
-    expect(SHEET).toContain("share.send({ entries, body, knownRooms })")
+    expect(SESSION).toContain("const knownRooms = useMemo(() => dmThreadIdsByPeer(threads.data?.pages)")
+    expect(SESSION).toContain("share.send({ entries, body, knownRooms })")
   })
 
   it("refreshes the inbox and each posted thread once, not per recipient", () => {
@@ -188,13 +243,13 @@ describe("the DM send path", () => {
 
   it("reports per-recipient outcomes instead of throwing out of the sheet", () => {
     expect(DELIVERY).toContain("summarizeShareRun(entries, outcomes, stopped)")
-    expect(SHEET).toMatch(/summary\.status === "all"/)
-    expect(SHEET).toContain("retryEntries(entries, summary.failed)")
-    expect(SHEET).toMatch(/\} catch \{\s*toast\.show\(t\("toast.none_sent"\)/)
+    expect(SESSION).toMatch(/summary\.status === "all"/)
+    expect(SESSION).toContain("retryEntries(entries, summary.failed)")
+    expect(SESSION).toMatch(/\} catch \{\s*toast\.show\(t\("toast.none_sent"\)/)
   })
 
   it("keeps only the failed recipients selected, so a manual resend cannot double-post", () => {
-    expect(SHEET).toContain("setSelected((prev) => prev.filter((person) => failedIds.has(person.id)))")
+    expect(SESSION).toContain("setSelected((prev) => prev.filter((person) => failedIds.has(person.id)))")
   })
 })
 

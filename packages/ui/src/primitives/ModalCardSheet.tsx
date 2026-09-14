@@ -17,6 +17,7 @@ import { IosKeyboardAvoidingView } from "../shell/IosKeyboardAvoidingView"
 import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider } from "../shell/ScrollHost"
 import { useKeyboardReserve } from "../shell/useKeyboardReserve"
+import { useModalClosed } from "./useModalClosed"
 
 const MODAL_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
   reserveKeyboardPadding: false,
@@ -54,7 +55,7 @@ export interface ModalCardSheetProps {
   visible: boolean
   onClose: () => void
   onCommit?: () => void
-  onDismiss?: () => void
+  onClosed?: () => void
   headerIcon: IconName
   headerIconColor?: string
   title: string
@@ -73,7 +74,7 @@ export function ModalCardSheet({
   visible,
   onClose,
   onCommit,
-  onDismiss,
+  onClosed,
   headerIcon,
   headerIconColor,
   title,
@@ -91,6 +92,7 @@ export function ModalCardSheet({
   const t = useTheme()
   const kbReserve = useKeyboardReserve({ enabled: visible })
   useDialogWebKeys({ visible, onCommit, onClose })
+  const onDismiss = useModalClosed(visible, onClosed)
 
   return (
     <Modal

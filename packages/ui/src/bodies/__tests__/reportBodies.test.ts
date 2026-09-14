@@ -123,10 +123,10 @@ describe("report detail: share and host-an-event live in the overflow menu", () 
     )
   })
 
-  it("parks the OS share sheet until the menu Modal has dismissed on iOS", () => {
-    expect(SRC).toContain('if (Platform.OS === "ios")')
-    expect(SRC).toContain("pendingMenuActionRef.current = action")
-    expect(SRC).toContain("onDismiss={onTitleMenuDismiss}")
+  it("leaves the iOS post-dismiss sequencing to PopoverMenu instead of a hand-rolled ref", () => {
+    expect(SRC).not.toContain("pendingMenuActionRef")
+    expect(SRC).not.toContain("onTitleMenuDismiss")
+    expect(SRC).toMatch(/const onShare = useCallback\(\(\) => \{\s*void shareLink\(\{/)
   })
 })
 

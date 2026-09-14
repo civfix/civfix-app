@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Animated, Easing, Platform } from "react-native"
-import { motion } from "../theme"
+import { motion, type TimingRecipe } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { MENU_SCALE_FROM, menuOrigin, type MenuOrigin } from "./menuMotionModel"
 
@@ -17,16 +17,25 @@ export interface MenuMotion {
   useNativeDriver: boolean
 }
 
+export interface MenuMotionRecipes {
+  enter: TimingRecipe
+  exit: TimingRecipe
+}
+
+export const MENU_RECIPES: MenuMotionRecipes = { enter: motion.menuIn, exit: motion.menuOut }
+
 export function useMenuMotion({
   visible,
   ready = true,
   reducedMotion: reducedMotionOverride,
   useNativeDriver = MENU_NATIVE_DRIVER,
+  recipes = MENU_RECIPES,
 }: {
   visible: boolean
   ready?: boolean
   reducedMotion?: boolean
   useNativeDriver?: boolean
+  recipes?: MenuMotionRecipes
 }): MenuMotion {
   const systemReducedMotion = useReducedMotion() === true
   const reducedMotion = reducedMotionOverride ?? systemReducedMotion
@@ -50,8 +59,8 @@ export function useMenuMotion({
       }
       const enter = Animated.timing(progress, {
         toValue: 1,
-        duration: motion.menuIn.duration,
-        easing: Easing.bezier(...motion.menuIn.easing),
+        duration: recipes.enter.duration,
+        easing: Easing.bezier(...recipes.enter.easing),
         useNativeDriver,
       })
       animRef.current = enter
@@ -69,8 +78,8 @@ export function useMenuMotion({
     setExiting(true)
     const exit = Animated.timing(progress, {
       toValue: 0,
-      duration: motion.menuOut.duration,
-      easing: Easing.bezier(...motion.menuOut.easing),
+      duration: recipes.exit.duration,
+      easing: Easing.bezier(...recipes.exit.easing),
       useNativeDriver,
     })
     animRef.current = exit
@@ -80,7 +89,7 @@ export function useMenuMotion({
       setExiting(false)
       setRendered(false)
     })
-  }, [visible, ready, reducedMotion, useNativeDriver, progress])
+  }, [visible, ready, reducedMotion, useNativeDriver, progress, recipes])
 
   useEffect(
     () => () => {

@@ -86,10 +86,12 @@ describe("anchor-origin solve", () => {
 
 describe("the shared menu motion hook (source-pinned)", () => {
   it("reads every duration and curve from the motion tokens, never a literal", () => {
-    expect(motionSource).toMatch(/duration: motion\.menuIn\.duration/)
-    expect(motionSource).toMatch(/duration: motion\.menuOut\.duration/)
-    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.motion\.menuIn\.easing\)/)
-    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.motion\.menuOut\.easing\)/)
+    expect(motionSource).toMatch(/MENU_RECIPES: MenuMotionRecipes = \{ enter: motion\.menuIn, exit: motion\.menuOut \}/)
+    expect(motionSource).toMatch(/recipes = MENU_RECIPES/)
+    expect(motionSource).toMatch(/duration: recipes\.enter\.duration/)
+    expect(motionSource).toMatch(/duration: recipes\.exit\.duration/)
+    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.recipes\.enter\.easing\)/)
+    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.recipes\.exit\.easing\)/)
     expect(motionSource).not.toMatch(/duration:\s*\d/)
     expect(motionModelSource).toMatch(/MENU_SCALE_FROM = MOTION\.menuScaleFrom/)
     expect(motionModelSource).not.toMatch(/0\.9\d/)
@@ -186,7 +188,9 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
   })
 
   it("runs an item's action only after it has asked the menu to close, never before", () => {
-    expect(popover).toMatch(/onClose\(\)\s+item\.onPress\(\)/)
+    expect(popover).toMatch(/run\(item\.onPress\)/)
+    const gateHook = strip(read("../useDeferredOverlayAction.ts"))
+    expect(gateHook).toMatch(/onClose\(\)\s+gate\.choose\(action\)/)
   })
 
   it("carries no card chrome of its own - every caller styles its own surface", () => {
@@ -216,13 +220,14 @@ describe("PopoverMenu owns the animation for every menu that uses it", () => {
   })
 
   it("keeps the Modal mounted through the exit, so onDismiss still fires AFTER it", () => {
-    expect(popover).toMatch(/onDismiss=\{onDismiss\}/)
+    expect(popover).toMatch(/onDismiss=\{onModalDismiss\}/)
     expect(popover).toMatch(/const rendered = motion\.rendered/)
   })
 
-  it("still hands the report-detail share action its post-dismiss slot", () => {
-    expect(reportDetail).toMatch(/onDismiss=\{onTitleMenuDismiss\}/)
-    expect(reportDetail).toMatch(/if \(Platform\.OS === "ios"\) \{\s*pendingMenuActionRef\.current = action/)
+  it("owns the post-dismiss slot for every row action, so report detail no longer rolls its own", () => {
+    expect(popover).toContain("useDeferredOverlayAction(visible, onClose, onClosed)")
+    expect(reportDetail).not.toContain("pendingMenuActionRef")
+    expect(reportDetail).not.toContain("onTitleMenuDismiss")
   })
 })
 

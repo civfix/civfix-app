@@ -10,8 +10,26 @@ import {
   managePath,
   manageUrl,
   orgPagePath,
+  setWebOrigin,
   signupPagePath,
+  webOrigin,
 } from "../externalUrls"
+
+describe("the configurable web origin", () => {
+  it("defaults to production and follows the host's setter for post, donate and manage links", () => {
+    expect(webOrigin()).toBe(WEB_ORIGIN)
+    try {
+      setWebOrigin("https://civfix.dev/")
+      expect(webOrigin()).toBe("https://civfix.dev")
+      expect(donateUrl("reachout")).toBe("https://civfix.dev/donate/reachout")
+      expect(manageUrl("evt")).toBe("https://civfix.dev/manage/events/evt")
+      expect(TERMS_URL).toBe(`${WEB_ORIGIN}/legal/terms`)
+    } finally {
+      setWebOrigin(WEB_ORIGIN)
+    }
+    expect(donateUrl("reachout")).toBe(`${WEB_ORIGIN}/donate/reachout`)
+  })
+})
 
 describe("legal URLs", () => {
   it("derives every civfix-hosted legal URL from the one origin", () => {

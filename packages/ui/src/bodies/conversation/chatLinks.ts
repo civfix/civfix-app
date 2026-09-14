@@ -1,5 +1,5 @@
 import { entryFromPath } from "../../nav/routes"
-import { WEB_ORIGIN } from "../../primitives/externalUrls"
+import { WEB_ORIGIN, webOrigin } from "../../primitives/externalUrls"
 import { mentionScanRegex, normalizeHandle } from "./mentionMatch"
 
 export type ChatLinkTarget =
@@ -77,16 +77,21 @@ export function normalizeLinkOrigin(origin: string): string | null {
 }
 
 let cachedAppOrigins: readonly string[] | null = null
+let cachedForOrigin: string | null = null
 
 export function appLinkOrigins(): readonly string[] {
-  if (cachedAppOrigins !== null) return cachedAppOrigins
+  const configured = webOrigin()
+  if (cachedAppOrigins !== null && cachedForOrigin === configured) return cachedAppOrigins
   const origins: string[] = []
-  const canonical = normalizeLinkOrigin(WEB_ORIGIN)
-  if (canonical !== null) origins.push(canonical)
+  for (const candidate of [WEB_ORIGIN, configured]) {
+    const normalized = normalizeLinkOrigin(candidate)
+    if (normalized !== null && !origins.includes(normalized)) origins.push(normalized)
+  }
   const location = (globalThis as { location?: { origin?: unknown } }).location
   const here = typeof location?.origin === "string" ? normalizeLinkOrigin(location.origin) : null
   if (here !== null && !origins.includes(here)) origins.push(here)
   cachedAppOrigins = origins
+  cachedForOrigin = configured
   return origins
 }
 
