@@ -49,6 +49,10 @@
     "not_found_title": "No encontrado",
     "not_found_body": "Esta página no existe o se ha eliminado."
   },
+  "hours": {
+    "not_yet_title": "Este evento aún no ha terminado",
+    "not_yet_body": "Puedes registrar horas cuando el evento termine."
+  },
   "action": {
     "back": "Volver",
     "back_to_events": "Volver a los eventos",

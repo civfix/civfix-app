@@ -118,10 +118,12 @@ function ShiftsPanel({
   slots,
   phase,
   now,
+  timeZone,
 }: {
   slots: readonly EventSlotDTO[]
   phase: EventPhase
   now: number
+  timeZone: string | undefined
 }) {
   const styles = useStyles()
   const { t } = useT("host-mode")
@@ -137,7 +139,7 @@ function ShiftsPanel({
     <SectionCard label={t("shifts.section")}>
       <View style={styles.stack}>
         {rows.map((slot) => (
-          <ShiftRow key={slot.id} slot={slot} current={running?.has(slot.id) ?? false} />
+          <ShiftRow key={slot.id} slot={slot} current={running?.has(slot.id) ?? false} timeZone={timeZone} />
         ))}
         {timed.length > MAX_COLLAPSED_SHIFTS ? (
           <TextLink standalone variant="label" onPress={() => setExpanded(!expanded)}>
@@ -312,7 +314,9 @@ export function HostInsightsPanels({
   return (
     <View style={styles.sections}>
       <HeroPanel insights={insights} phase={phase} stale={stale} timeZone={timeZone} />
-      {panels.shifts ? <ShiftsPanel slots={slots} phase={phase} now={now} /> : null}
+      {panels.shifts ? (
+        <ShiftsPanel slots={slots} phase={phase} now={now} timeZone={timeZone} />
+      ) : null}
       {panels.tiles && tiles.length > 0 ? (
         <StatTileRow columns={columns}>
           {tiles.map((tile) => {

@@ -42,7 +42,7 @@ import {
 import { useOrgDonationPage } from "../data/hooks/donations"
 import { useNavStore } from "../nav"
 import { useHaptics } from "../capabilities"
-import { useLocale, useRelativeTime, useT } from "../i18n"
+import { useLocale, useRelativeTime, useT, useViewerTimeZone } from "../i18n"
 import { usePageIsActive } from "../shell/pageActive"
 import { useScrollHost } from "../shell/ScrollHost"
 import { MiniMap, useMapFocus } from "../map"
@@ -223,6 +223,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const { t } = useT("event-detail")
   const { locale } = useLocale()
   const { weekdays } = useRelativeTime()
+  const viewerTimeZone = useViewerTimeZone()
   const { ScrollView } = useScrollHost()
   const requireAuth = useRequireAuth()
   const { user } = useAuthState()
@@ -413,7 +414,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         <View style={styles.metaRows}>
           <View style={styles.metaRow}>
             <Icon icon={iconMap.Calendar} size={14} color={th.colors.textSubtle} />
-            <Text style={styles.metaWhen}>{eventWhenLabel(cleanup, { locale, weekdays })}</Text>
+            <Text style={styles.metaWhen}>{eventWhenLabel(cleanup, { locale, weekdays, viewerTimeZone })}</Text>
           </View>
           <View style={styles.metaRow}>
             <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
@@ -508,6 +509,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
             slots={cleanup.slots}
             joined={going}
             readonly={isDone || isCancelled || isEnded}
+            timeZone={cleanup.timezone ?? undefined}
           />
         </View>
       ) : null}

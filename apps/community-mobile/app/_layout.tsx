@@ -82,7 +82,6 @@ import {
 } from "@/push/register"
 import { useRealtimeChannel } from "@/hooks/useRealtimeChannel"
 import { applyInternalHref, useMobileNavAdapter } from "@/components/MobileNavAdapter"
-import { bridgeKey } from "@/lib/navBridge"
 
 export const unstable_settings = { anchor: "index" }
 
@@ -160,9 +159,9 @@ const mobileCapabilities: PlatformCapabilities = {
   },
   openInternalHref: {
     open: (path: string): boolean => {
-      const entry = applyInternalHref(path)
-      if (!entry) return false
-      if (bridgeKey(entry) === null) dismissToShell?.()
+      const applied = applyInternalHref(path)
+      if (!applied) return false
+      if (applied.dismissToShell) dismissToShell?.()
       return true
     },
   },

@@ -61,11 +61,13 @@
  * bodies in a ScrollView; that wrapping is removed - see ExpandedShell / CompactShell.* .) "full" bodies
  * (thread/drop) still render raw and own their own layout, unchanged.
  *
- * The component types are kept deliberately loose (`React.ComponentType<any>`): gorhom's
- * BottomSheetScrollView/FlatList and RN's ScrollView/FlatList have compatible-enough runtime props but
- * do not share a single TS type, and a body uses them positionally (it passes `data`/`renderItem`/
- * `contentContainerStyle`/`style`). Keeping the seam untyped here avoids leaking gorhom's types into the
- * shared (web-safe) surface while letting each provider pass its concrete component.
+ * The component PROPS are kept deliberately loose: gorhom's BottomSheetScrollView/FlatList and RN's
+ * ScrollView/FlatList have compatible-enough runtime props but do not share a single TS type, and a body
+ * uses them positionally (it passes `data`/`renderItem`/`contentContainerStyle`/`style`). Keeping the seam
+ * open here avoids leaking gorhom's types into the shared (web-safe) surface while letting each provider
+ * pass its concrete component. The one thing that IS named is the list's imperative handle
+ * (`ScrollHostListHandle`), so a body that scrolls its own list gets a checked ref instead of an `as never`
+ * cast - every decorator below forwards its ref to the RN FlatList underneath, so the handle is real.
  *
  * This module is RN + React only (no gorhom): the gorhom components arrive by INJECTION from the
  * `.native` shell, never by import here, so the shared body source stays gorhom-free (import-guard).
@@ -117,21 +119,30 @@ import React, { createContext, useContext } from "react"
 import { ScrollView as RNScrollView, FlatList as RNFlatList } from "react-native"
 
 /**
- * The scroll components a body consumes. Untyped on purpose (see file header): a body uses them with the
- * standard RN ScrollView / FlatList prop shape, and each shell injects either the plain RN components or
- * gorhom's sheet-coordinated equivalents.
+ * The scroll components a body consumes. Props stay open on purpose (see file header): a body uses them
+ * with the standard RN ScrollView / FlatList prop shape, and each shell injects either the plain RN
+ * components or gorhom's sheet-coordinated equivalents.
  */
 export interface ScrollHostValue {
   /** A vertical scroll container (RN ScrollView, or gorhom BottomSheetScrollView in the native sheet). */
   ScrollView: React.ComponentType<any>
   /** A virtualized list (RN FlatList, or gorhom BottomSheetFlatList in the native sheet). */
-  FlatList: React.ComponentType<any>
+  FlatList: React.ComponentType<ScrollHostListProps>
+}
+
+export interface ScrollHostListHandle {
+  scrollToOffset?: (options: { offset: number; animated?: boolean }) => void
+  scrollToEnd?: (options?: { animated?: boolean }) => void
+}
+
+export type ScrollHostListProps = Record<string, unknown> & {
+  ref?: React.Ref<ScrollHostListHandle>
 }
 
 /** The plain RN defaults - used when no shell provider is mounted (gallery / test / non-sheet host). */
 const DEFAULT_SCROLL_HOST: ScrollHostValue = {
   ScrollView: RNScrollView as React.ComponentType<any>,
-  FlatList: RNFlatList as React.ComponentType<any>,
+  FlatList: RNFlatList as unknown as React.ComponentType<ScrollHostListProps>,
 }
 
 const ScrollHostContext = createContext<ScrollHostValue>(DEFAULT_SCROLL_HOST)

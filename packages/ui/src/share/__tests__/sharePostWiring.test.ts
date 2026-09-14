@@ -244,16 +244,18 @@ describe("a link in a message is opened BY THE HOST, never by shared code drivin
 describe("both hosts inject openInternalHref", () => {
   it("mobile reuses the SAME universal-link entry point the notification handler uses", () => {
     expect(MOBILE_LAYOUT).toMatch(/openInternalHref: \{\s*open: \(path: string\): boolean => \{/)
-    expect(MOBILE_LAYOUT).toContain("const entry = applyInternalHref(path)")
-    expect(MOBILE_LAYOUT).toContain("if (!entry) return false")
+    expect(MOBILE_LAYOUT).toContain("const applied = applyInternalHref(path)")
+    expect(MOBILE_LAYOUT).toContain("if (!applied) return false")
     expect(MOBILE_LAYOUT).toContain(
       'import { applyInternalHref, useMobileNavAdapter } from "@/components/MobileNavAdapter"',
     )
   })
 
-  it("mobile dismisses back to the shell for an entry its router bridge does not map", () => {
-    expect(MOBILE_LAYOUT).toContain('import { bridgeKey } from "@/lib/navBridge"')
-    expect(MOBILE_LAYOUT).toContain("if (bridgeKey(entry) === null) dismissToShell?.()")
+  it("mobile dismisses back to the shell only when the adapter says the shell is not showing it", () => {
+    // The host asks; it never re-derives the rule. A link to the entry a shell-hosted route is ALREADY
+    // showing must be a no-op - `goHome` there tears the route down and empties the nav stack.
+    expect(MOBILE_LAYOUT).toContain("if (applied.dismissToShell) dismissToShell?.()")
+    expect(MOBILE_LAYOUT).not.toContain("bridgeKey(entry)")
     expect(MOBILE_LAYOUT).toMatch(/function InternalHrefBridge\(\): null \{/)
     expect(MOBILE_LAYOUT).toContain("dismissToShell = () => goHome(router)")
     expect(MOBILE_LAYOUT).toContain("<InternalHrefBridge />")

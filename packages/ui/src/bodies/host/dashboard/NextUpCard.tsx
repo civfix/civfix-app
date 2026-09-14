@@ -1,13 +1,12 @@
 import React, { useCallback } from "react"
 import { Pressable, View } from "react-native"
 import type { EventPhase, EventSlotDTO, HostedEventDTO } from "@civfix/shared"
-import { eventWhenParts } from "@civfix/shared/datetime"
 import { deriveCleanupStatus } from "@civfix/shared/host"
 import { focusRingProps, makeThemedStyles, useTheme } from "../../../theme"
 import { Text, TextLink, iconMap, type LucideIcon } from "../../../typography"
 import { DateBadge, MetaDot, Meter, PrimaryButton, SectionCard } from "../../../primitives"
 import { LIST_TILE } from "../../../primitives"
-import { useLocale, useRelativeTime, useT } from "../../../i18n"
+import { useEventWhen, useRelativeTime, useT } from "../../../i18n"
 import { boardHasTimedSlots, slotDisplayOrder } from "../../eventSlotsModel"
 import { PhaseDot } from "../PhaseHeader"
 import { ShiftRow } from "../ShiftRow"
@@ -64,8 +63,8 @@ export function NextUpCard({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-dashboard")
-  const { locale } = useLocale()
-  const { relative, weekdays } = useRelativeTime()
+  const { relative } = useRelativeTime()
+  const when = useEventWhen(hostedEventWhen(event))
 
   const open = useCallback(() => onOpen(event), [event, onOpen])
   const primary = useCallback(() => onPrimary(event), [event, onPrimary])
@@ -78,12 +77,11 @@ export function NextUpCard({
     capacity !== null
       ? t("next_up.signed_up_of", { registered: event.registeredCount, capacity })
       : t("next_up.signed_up", { registered: event.registeredCount })
-  const parts = eventWhenParts(hostedEventWhen(event), { locale, weekdays, now })
-  const when = underway
+  const whenLine = underway
     ? t("next_up.started", { ago: relative(event.startsAt, now) })
     : t("next_up.starts_in", {
-        dow: parts.dow,
-        time: parts.zone === null ? parts.time : `${parts.time} ${parts.zone}`,
+        dow: when.dow,
+        time: when.timeWithZone,
         relative: relative(now, Date.parse(event.startsAt)),
       })
 
@@ -111,7 +109,7 @@ export function NextUpCard({
             <View style={styles.whenLine}>
               {live ? <PhaseDot phase={phase} /> : null}
               <Text variant="label" numberOfLines={1} style={styles.when}>
-                {when}
+                {whenLine}
               </Text>
             </View>
           </View>

@@ -49,6 +49,10 @@
     "not_found_title": "Not found",
     "not_found_body": "This page does not exist, or it has been removed."
   },
+  "hours": {
+    "not_yet_title": "This event has not ended yet",
+    "not_yet_body": "You can log hours once the event ends."
+  },
   "action": {
     "back": "Back",
     "back_to_events": "Back to events",

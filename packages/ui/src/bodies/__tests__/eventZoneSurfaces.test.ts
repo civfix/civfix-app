@@ -16,6 +16,10 @@ const SURFACES: Record<string, string> = {
   "bodies/profile/ProfileEventsSection.tsx": code(read("../profile/ProfileEventsSection.tsx")),
   "bodies/host/EventRosterBlock.tsx": code(read("../host/EventRosterBlock.tsx")),
   "bodies/host/HostInsightsPanels.tsx": code(read("../host/HostInsightsPanels.tsx")),
+  "bodies/host/HostModeBody.tsx": code(read("../host/HostModeBody.tsx")),
+  "bodies/EventDetailBody.tsx": code(read("../EventDetailBody.tsx")),
+  "bodies/host/dashboard/NextUpCard.tsx": code(read("../host/dashboard/NextUpCard.tsx")),
+  "bodies/host/dashboard/HostedEventRow.tsx": code(read("../host/dashboard/HostedEventRow.tsx")),
 }
 
 const RAW_DATE_READ = /new Date\([^)]*\)\.(getDate|getDay|getHours|getMinutes|toLocale\w*)\(/
@@ -69,10 +73,38 @@ describe("event surfaces render in the event's zone", () => {
       "bodies/SearchResults.tsx",
       "bodies/profile/ProfileEventsSection.tsx",
       "primitives/EventCard.tsx",
+      "bodies/host/dashboard/NextUpCard.tsx",
+      "bodies/host/dashboard/HostedEventRow.tsx",
     ]) {
       expect(SURFACES[name], `${name} must use the shared when-parts`).toContain("useEventWhen(")
       expect(SURFACES[name], `${name} must print the zone suffix`).toContain("when.timeWithZone")
     }
+  })
+
+  it("tells the composite label which zone the VIEWER is in, or no suffix ever renders", () => {
+    for (const name of ["bodies/EventDetailBody.tsx", "bodies/host/HostModeBody.tsx"]) {
+      const src = SURFACES[name] ?? ""
+      expect(src, `${name} must read the viewer zone`).toContain("useViewerTimeZone()")
+      for (const call of src.match(/eventWhenLabel\([\s\S]*?\)/g) ?? []) {
+        expect(call, `${name} drops the viewer zone`).toContain("viewerTimeZone")
+      }
+    }
+  })
+
+  it("hands the event's own zone down to every block that renders a shift window", () => {
+    expect(SURFACES["bodies/EventDetailBody.tsx"]).toMatch(
+      /<EventSlotsBlock[\s\S]*?timeZone=\{cleanup\.timezone \?\? undefined\}/,
+    )
+    expect(SURFACES["bodies/host/HostModeBody.tsx"]).toContain("timeZone={event.timezone ?? undefined}")
+    expect(SURFACES["bodies/host/HostInsightsPanels.tsx"]).toMatch(
+      /<ShiftsPanel[\s\S]*?timeZone=\{timeZone\}/,
+    )
+    expect(SURFACES["bodies/host/HostInsightsPanels.tsx"]).toMatch(
+      /<ShiftRow[\s\S]*?timeZone=\{timeZone\}/,
+    )
+    expect(SURFACES["bodies/host/dashboard/NextUpCard.tsx"]).toMatch(
+      /<ShiftRow[\s\S]*?timeZone=\{event\.timezone \?\? undefined\}/,
+    )
   })
 
   it("gives the date chip the event zone rather than the device's", () => {

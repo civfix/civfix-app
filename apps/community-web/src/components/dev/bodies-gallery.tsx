@@ -1330,7 +1330,7 @@ export default function BodiesGallery() {
             { }
 
             { }
-            <BodyFrame title="EventDetailBody (host, started -> 'Mark completed' ARMED + confirm sheet)" height={860}>
+            <BodyFrame title="EventDetailBody (host, started -> underway, no completion affordance)" height={860}>
               <EventDetailBody id="e-ready" />
             </BodyFrame>
 

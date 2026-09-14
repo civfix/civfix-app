@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs"
 import { test } from "node:test"
 import { isInternalLink } from "../src/lib/links.ts"
 import { bridgeKey, nativeBridgeKey, BRIDGE_ROUTE_NAMES } from "../src/lib/navBridge.ts"
+import { shellHostsEntries } from "../src/lib/internalHref.ts"
 
 const adapter = readFileSync(new URL("../src/components/MobileNavAdapter.tsx", import.meta.url), "utf8")
 
@@ -36,19 +37,26 @@ test("a tapped notification applies its href through the dedup verb, never a bar
   assert.doesNotMatch(body, /seedEntry\(|\.seed\(/)
 })
 
-test("a tapped notification for the full-screen route already on top changes nothing at all", () => {
+test("a tapped notification decides through the one action model before it touches the store", () => {
   const apply = adapter.slice(adapter.indexOf("export function applyInternalHref"))
   const body = apply.slice(0, apply.indexOf("\n}"))
-  const guard = body.indexOf("key === readFocusedBridgeKey()")
-  const apply2 = body.indexOf("navigateTo(entry")
-  assert.ok(guard > -1 && apply2 > guard)
-  assert.match(adapter, /readFocusedBridgeKey = focusedKey/)
-  assert.match(adapter, /readFocusedBridgeKey = \(\) => null/)
+  const decided = body.indexOf("internalHrefAction({")
+  const applied = body.indexOf('if (action !== "none")')
+  assert.ok(decided > -1 && applied > decided)
+  assert.match(body, /bridgeFocused: key !== null && key === nativeBridgeKey\(readFocusedRoute\(\)\)/)
+  assert.match(body, /shellFocused: shellHostsEntries\(readFocusedRoute\(\)\)/)
+  assert.match(body, /activeKey: entryIdentity\(useNavStore\.getState\(\)\.active\)/)
 })
 
 test("the bridge asks the router which screen is actually on top before it pushes", () => {
   assert.match(adapter, /useNavigationContainerRef/)
-  assert.match(adapter, /navigationRef\.isReady\(\) \? nativeBridgeKey\(navigationRef\.getCurrentRoute\(\)\) : null/)
+  assert.match(
+    adapter,
+    /navigationRef\.isReady\(\) \? \(navigationRef\.getCurrentRoute\(\) \?\? null\) : null/,
+  )
+  assert.match(adapter, /const focusedKey = \(\): string \| null => nativeBridgeKey\(focusedRoute\(\)\)/)
+  assert.match(adapter, /readFocusedRoute = focusedRoute/)
+  assert.match(adapter, /readFocusedRoute = \(\) => null/)
   assert.match(adapter, /bridgeDecision\(active, bridgeGuard, Date\.now\(\), focusedKey\(\)\)/)
 })
 
@@ -75,22 +83,24 @@ test("a shell notification target never claims a native bridge key", () => {
   assert.equal(nativeBridgeKey({ name: "notifications/index" }), null)
 })
 
-test("an event push that names a full-screen host surface resolves to that screen's own key", () => {
-  assert.equal(
-    nativeBridgeKey({ name: BRIDGE_ROUTE_NAMES.hostCheckin, params: { id: "c1" } }),
-    bridgeKey({ kind: "host-checkin", id: "c1" }),
-  )
-  assert.equal(
-    nativeBridgeKey({ name: BRIDGE_ROUTE_NAMES.myTicket, params: { id: "c1", seatId: "s1" } }),
-    bridgeKey({ kind: "my-ticket", id: "c1", seatId: "s1" }),
-  )
-  assert.equal(
-    nativeBridgeKey({ name: BRIDGE_ROUTE_NAMES.org, params: { slug: "acme" } }),
-    bridgeKey({ kind: "org", slug: "acme" }),
-  )
+test("an event push that names a host surface lands in a shell, not on a native route of its own", () => {
+  const SHELL_HOSTED = [
+    { entry: { kind: "host-mode", id: "c1" } as const, route: "cleanups/[id]/host" },
+    { entry: { kind: "host-checkin", id: "c1" } as const, route: "cleanups/[id]/checkin" },
+    { entry: { kind: "host-team", id: "c1" } as const, route: "cleanups/[id]/team" },
+    { entry: { kind: "host-log-hours", id: "c1" } as const, route: "cleanups/[id]/hours" },
+    { entry: { kind: "my-ticket", id: "c1", seatId: "s1" } as const, route: "cleanups/[id]/ticket/[seatId]" },
+    { entry: { kind: "org", slug: "acme" } as const, route: "orgs/[slug]" },
+  ]
+  for (const { entry, route } of SHELL_HOSTED) {
+    assert.equal(bridgeKey(entry), null, `${entry.kind} still claims a bridge key`)
+    assert.equal(nativeBridgeKey({ name: route, params: { id: "c1", seatId: "s1", slug: "acme" } }), null, route)
+    assert.equal(shellHostsEntries({ name: route }), true, route)
+  }
 })
 
 test("a broadcast push that lands in the sheet claims no native bridge key", () => {
   assert.equal(bridgeKey({ kind: "host-broadcast-quick", id: "c1" }), null)
   assert.equal(bridgeKey({ kind: "my-donations" }), null)
+  assert.equal(shellHostsEntries({ name: "compose" }), false)
 })

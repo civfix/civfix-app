@@ -40,7 +40,7 @@ import {
   useEventInsights,
   useMarkEventNoShows,
 } from "../../data/hooks/host"
-import { useLocale, useRelativeTime, useT } from "../../i18n"
+import { useLocale, useRelativeTime, useT, useViewerTimeZone } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { appErrorCode } from "../errorCode"
@@ -115,8 +115,13 @@ function cancelErrorKey(err: unknown): string {
   return appErrorCode(err) === "CONFLICT" ? "state.cancel_ended" : "state.cancel_error"
 }
 
-function whenLine(cleanup: CleanupDTO, weekdays: readonly string[], locale: string): string {
-  const when = eventWhenLabel(cleanup, { locale, weekdays })
+function whenLine(
+  cleanup: CleanupDTO,
+  weekdays: readonly string[],
+  locale: string,
+  viewerTimeZone: string,
+): string {
+  const when = eventWhenLabel(cleanup, { locale, weekdays, viewerTimeZone })
   return cleanup.address ? `${when} · ${cleanup.address}` : when
 }
 
@@ -126,6 +131,7 @@ function InsightsSection({
   columns,
   slots,
   now,
+  timeZone,
   loading,
   failed,
 }: {
@@ -134,6 +140,7 @@ function InsightsSection({
   columns: StatTileColumns
   slots: readonly EventSlotDTO[]
   now: number
+  timeZone: string | undefined
   loading: boolean
   failed: boolean
 }) {
@@ -148,6 +155,7 @@ function InsightsSection({
         slots={slots}
         now={now}
         stale={failed}
+        timeZone={timeZone}
       />
     )
   }
@@ -175,6 +183,7 @@ export function HostModeBody({ id }: { id: string }) {
   const { t } = useT("host-mode")
   const { locale } = useLocale()
   const { relative, weekdays } = useRelativeTime()
+  const viewerTimeZone = useViewerTimeZone()
   const { ScrollView } = useScrollHost()
   const toast = useToast()
   const openExternal = useOpenExternal()
@@ -421,7 +430,7 @@ export function HostModeBody({ id }: { id: string }) {
         <PhaseHeader
           phase={phase}
           title={event.title}
-          when={whenLine(event, weekdays, locale)}
+          when={whenLine(event, weekdays, locale, viewerTimeZone)}
           relative={relativeLine}
           wide={wide}
           cta={primary ? ctaFor(primary) : undefined}
@@ -437,6 +446,7 @@ export function HostModeBody({ id }: { id: string }) {
             columns={columns}
             slots={event.slots ?? []}
             now={now}
+            timeZone={event.timezone ?? undefined}
             loading={insights.isLoading}
             failed={insights.isError}
           />

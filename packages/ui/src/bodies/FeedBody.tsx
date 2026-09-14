@@ -17,7 +17,7 @@ import { useHomeFeed } from "../data/hooks/posts"
 import { useNavStore } from "../nav"
 import { alpha } from "../theme/alpha"
 import { useReducedMotion } from "../theme/useReducedMotion"
-import { useScrollHost } from "../shell/ScrollHost"
+import { useScrollHost, type ScrollHostListHandle } from "../shell/ScrollHost"
 import { useRefreshControlProps } from "../primitives/useRefreshControlProps"
 import { useAppPromoStore } from "../promo"
 import { HEADER_CONTROL_SIZE } from "./headerControls"
@@ -208,16 +208,14 @@ export function FeedBody() {
 
   const promoHeight = useAppPromoStore((s) => s.cardHeight)
 
-  const listRef = useRef<{
-    scrollToOffset?: (options: { offset: number; animated?: boolean }) => void
-  } | null>(null)
-  const scrollTopPending = useFeedScrollTopStore((s) => s.pending)
-  const clearScrollTop = useFeedScrollTopStore((s) => s.clearScrollTop)
+  const listRef = useRef<ScrollHostListHandle | null>(null)
+  const scrollTopRequestId = useFeedScrollTopStore((s) => s.requestId)
+  const honouredRequestIdRef = useRef(scrollTopRequestId)
   useEffect(() => {
-    if (!scrollTopPending) return
+    if (scrollTopRequestId === honouredRequestIdRef.current) return
+    honouredRequestIdRef.current = scrollTopRequestId
     listRef.current?.scrollToOffset?.({ offset: 0, animated: true })
-    clearScrollTop()
-  }, [scrollTopPending, clearScrollTop])
+  }, [scrollTopRequestId])
 
   const renderItem = useCallback(
     ({ item }: { item: PostDTO }) => (
@@ -342,7 +340,7 @@ export function FeedBody() {
 
   const list = (
     <FlatList
-      ref={listRef as never}
+      ref={listRef}
       style={styles.scroll}
       contentContainerStyle={contentStyle}
       data={state === "loaded" ? posts : NO_POSTS}

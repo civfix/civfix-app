@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useState } from "react"
 import { Image, Pressable, View } from "react-native"
 import type { CleanupMemberRole, HostedEventDTO } from "@civfix/shared"
-import { eventWhenParts } from "@civfix/shared/datetime"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -20,7 +19,7 @@ import {
   usePopoverAnchor,
 } from "../../../primitives"
 import type { AnchorRect, PopoverMenuItem } from "../../../primitives"
-import { useLocale, useRelativeTime, useT } from "../../../i18n"
+import { useEventWhen, useLocale, useRelativeTime, useT } from "../../../i18n"
 import { RoleChip } from "../../RoleChip"
 import { formatHoursDisplay } from "../../formatHours"
 import { PhaseDot } from "../PhaseHeader"
@@ -147,7 +146,7 @@ export const HostedEventRow = memo(function HostedEventRow({
   const th = useTheme()
   const { t } = useT("event-dashboard")
   const { locale } = useLocale()
-  const { relative, weekdays } = useRelativeTime()
+  const { relative } = useRelativeTime()
   const [menuOpen, setMenuOpen] = useState<string>(CLOSED)
   const [menuRect, setMenuRect] = useState<AnchorRect | null>(null)
   const { ref: menuAnchorRef, measure: measureMenu } = usePopoverAnchor(setMenuRect)
@@ -175,7 +174,7 @@ export const HostedEventRow = memo(function HostedEventRow({
   const capacity = event.capacity ?? null
   const past = pastRowMeta(event)
   const underway = hostedEventStatus(event, now) === "active"
-  const parts = eventWhenParts(hostedEventWhen(event), { locale, weekdays, now: now.getTime() })
+  const when = useEventWhen(hostedEventWhen(event))
   const metaParts: MetaPart[] =
     eventWindow === "past"
       ? [
@@ -213,7 +212,7 @@ export const HostedEventRow = memo(function HostedEventRow({
             key: "when",
             text: underway
               ? t("events.meta_underway", { ago: relative(event.startsAt, now) })
-              : `${parts.dow} ${parts.time}${parts.zone === null ? "" : ` ${parts.zone}`}`,
+              : `${when.dow} ${when.timeWithZone}`,
           },
           {
             key: "seats",

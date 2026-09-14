@@ -334,8 +334,8 @@ const EXTRA_TOP_VOLUNTEERS: readonly LeaderboardEntryDTO[] = [
   },
 ]
 
-const NEEDS_COMPLETION_EVENT: HostedEventDTO = {
-  id: "ev-needs-complete",
+const NEEDS_HOURS_EVENT: HostedEventDTO = {
+  id: "ev-needs-hours",
   title: "Islais Creek weed pull",
   startsAt: new Date(FIXTURE_NOW - 2 * DAY_MS).toISOString(),
   endsAt: new Date(FIXTURE_NOW - 2 * DAY_MS + 3 * HOUR_MS).toISOString(),
@@ -345,7 +345,7 @@ const NEEDS_COMPLETION_EVENT: HostedEventDTO = {
   coverThumbUrl: null,
   registeredCount: 14,
   capacity: 20,
-  checkedInCount: 0,
+  checkedInCount: 12,
   waitlistCount: 0,
   myRole: "organizer",
   myCapabilities: [
@@ -388,7 +388,7 @@ function galleryHostedEvents(
     seed: org ? 29 : 11,
   })
   if (when !== "past") return page
-  return { ...page, items: [NEEDS_COMPLETION_EVENT, ...page.items] }
+  return { ...page, items: [NEEDS_HOURS_EVENT, ...page.items] }
 }
 
 export function soloPortfolioOverrides(): Record<string, FakeEndpoint> {
