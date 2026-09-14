@@ -32,6 +32,11 @@ export function invalidateCleanupLists(qc: QueryClient): void {
   void qc.invalidateQueries({ queryKey: queryKeys.orgEventsRoot })
 }
 
+export function invalidateHostedEventLists(qc: QueryClient): void {
+  void qc.invalidateQueries({ queryKey: queryKeys.hostedEventsRoot })
+  void qc.invalidateQueries({ queryKey: queryKeys.profileRoot })
+}
+
 export function cleanupDetailFilters(id: string): QueryFilters {
   return {
     predicate: (query: Query) => {
@@ -236,6 +241,7 @@ export function useCreateCleanup() {
     onSuccess: (cleanup) => {
       qc.setQueryData<CleanupDTO>(queryKeys.cleanup(cleanup.id), cleanup)
       invalidateCleanupLists(qc)
+      invalidateHostedEventLists(qc)
     },
   })
 }
@@ -251,7 +257,7 @@ export function useDuplicateCleanup() {
     onSuccess: (cleanup) => {
       qc.setQueryData<CleanupDTO>(queryKeys.cleanup(cleanup.id), cleanup)
       invalidateCleanupLists(qc)
-      void qc.invalidateQueries({ queryKey: queryKeys.hostedEventsRoot })
+      invalidateHostedEventLists(qc)
     },
   })
 }
@@ -294,6 +300,7 @@ export function useUpdateCleanup() {
     onSettled: (_data, _err, { id }) => {
       void qc.invalidateQueries(cleanupDetailFilters(id))
       invalidateCleanupLists(qc)
+      invalidateHostedEventLists(qc)
     },
   })
 }
@@ -313,6 +320,7 @@ export function useCancelCleanup() {
     onSuccess: (cleanup) => {
       reconcileCleanupDetails(qc, cleanup.id, cleanup)
       invalidateCleanupLists(qc)
+      invalidateHostedEventLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(cleanup.id) })
     },
   })
