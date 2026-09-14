@@ -45,7 +45,7 @@ import { usePageIsActive } from "../shell/pageActive"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useNavStore } from "../nav"
 import { useCleanupDraft } from "./cleanupDraftStore"
-import { useEventReportLink, useMapFocus } from "../map"
+import { useMapFocus } from "../map"
 import { useLightbox } from "../lightbox"
 import { useT, useRelativeTime } from "../i18n"
 import type { TFunction } from "i18next"
@@ -296,41 +296,6 @@ function ViewChatRow({ report }: { report: ReportDTO }) {
   )
 }
 
-function AddToEventButton({ report }: { report: ReportDTO }) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("report-detail")
-  const selectedIds = useEventReportLink((s) => s.selectedIds)
-  const selected = selectedIds.includes(report.id)
-  const onPress = useCallback(() => {
-    useEventReportLink.getState().toggle(report.id)
-  }, [report.id])
-
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      accessibilityLabel={selected ? t("actions.added_a11y") : t("actions.add_to_event_a11y")}
-      {...focusRingProps}
-      style={({ pressed }) => [
-        styles.addEventBtn,
-        selected ? styles.addEventBtnOn : styles.addEventBtnIdle,
-        pressed ? styles.pressed : null,
-      ]}
-    >
-      <Icon
-        icon={selected ? iconMap.Check : iconMap.Plus}
-        size={17}
-        color={selected ? th.colors.onAccent : th.colors.text}
-      />
-      <Text style={[styles.addEventText, selected ? styles.addEventTextOn : null]} numberOfLines={1}>
-        {selected ? t("actions.added") : t("actions.add_to_event")}
-      </Text>
-    </Pressable>
-  )
-}
-
 function ReportLinkedEvents({ events }: { events: LinkedEventRef[] }) {
   const styles = useStyles()
   const { t } = useT("report-detail")
@@ -533,8 +498,6 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
   const { ScrollView } = useScrollHost()
   const title = report.title?.trim() || t(`enums:category.${report.category}`)
   const timeline = useMemo(() => buildTimeline(report, t, relative), [report, t, relative])
-  const linkActive = useEventReportLink((s) => s.active)
-
   const hostDraftActive = useCleanupDraft((s) => s.active)
   const linkedCount = useCleanupDraft((s) => s.value?.linkedReportIds.length ?? 0)
   const isLinked = useCleanupDraft((s) => s.value?.linkedReportIds.includes(report.id) ?? false)
@@ -791,8 +754,6 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
       ) : null}
 
       {report.mine ? <ResolveButton report={report} /> : null}
-
-      {linkActive ? <AddToEventButton report={report} /> : null}
 
       <ReportGallery report={report} onReportPhoto={onReportGalleryPhoto} />
 

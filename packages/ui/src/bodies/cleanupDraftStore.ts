@@ -2,8 +2,8 @@
  * The persistent in-memory host-event (create-cleanup) draft (zustand). Mirrors report/draftStore.ts: the
  * host form's whole value lives here instead of in HostForm's local state, so navigating to a linked
  * report's detail and back (which UNMOUNTS the form) preserves all progress. The store is the single source
- * of truth for the form value INCLUDING linkedReportIds, so the report detail's "Add to event" can toggle a
- * link while the form (and thus the transient eventReportLinkStore) is unmounted.
+ * of truth for the form value INCLUDING linkedReportIds, so the report detail's host-draft toggle can add or
+ * remove a link while the form is unmounted.
  *
  * Platform-neutral (no expo/next/maplibre) so both seams use it and it unit-tests directly. It imports only
  * the CleanupFormValue TYPE (erased at runtime) to avoid pulling CleanupForm's heavy deps into the store.

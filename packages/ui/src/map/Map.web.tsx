@@ -21,13 +21,11 @@ import { TeardropPin, EventPin, BlendPin, ClusterBubble, DropPin } from "./pins"
 import { useClusters } from "./useClusters"
 import { computeMapBlends } from "./blend"
 import { useLocationPick } from "./locationPickStore"
-import { useEventReportLink } from "./eventReportLinkStore"
 import { useMapFocus } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { makePinElement, applyPinElementTheme } from "./LocationPicker.web"
 import { occludedCenterLng } from "./dropPinCamera"
-import { ReportLinkPanel, REPORT_LINK_PANEL_WIDTH } from "./ReportLinkPanel"
 import type { MapProps, MapHandle } from "./types"
 
 const MAP_FOCUS_STYLE_ID = "civfix-map-focus-ring"
@@ -126,17 +124,10 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   const th = useTheme()
   const themeRef = React.useRef(th)
   themeRef.current = th
-  const [panelPoint, setPanelPoint] = React.useState<{ x: number; y: number } | null>(null)
-
   const pickActive = useLocationPick((s) => s.active)
   const pickDraft = useLocationPick((s) => s.draft)
   const pickActiveRef = React.useRef(pickActive)
   pickActiveRef.current = pickActive
-
-  const linkActive = useEventReportLink((s) => s.active)
-  const linkSelectedIds = useEventReportLink((s) => s.selectedIds)
-  const linkFilterCategories = useEventReportLink((s) => s.filterCategories)
-  const openPanelReportId = useEventReportLink((s) => s.openPanelReportId)
 
   const focus = useMapFocus((s) => s.focus)
 
@@ -180,25 +171,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
         node: <ThemeProvider preference={scheme}>{want.node}</ThemeProvider>,
       })
 
-    const link = useEventReportLink.getState()
-    if (link.active) {
-      const filter = link.filterCategories
-      const scoped = filter.length === 0 ? reports : reports.filter((r) => filter.includes(r.category))
-      for (const r of scoped) {
-        const checked = link.isSelected(r.id)
-        const badge: "plus" | "check" = checked ? "check" : "plus"
-        put(`pin:${r.id}`, {
-          signature: `${r.category}|1|${badge}`,
-          anchor: "bottom",
-          lngLat: [r.lng, r.lat],
-          node: <TeardropPin category={r.category} badge={badge} />,
-          onClick: () => {
-            const store = useEventReportLink.getState()
-            store.setOpenPanelReportId(store.openPanelReportId === r.id ? null : r.id)
-          },
-        })
-      }
-    } else if (useMapFocus.getState().focus) {
+    if (useMapFocus.getState().focus) {
       const f = useMapFocus.getState().focus!
       if (f.kind === "cleanup") {
         put(`cleanup:${f.id}`, {
@@ -351,7 +324,6 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
 
     const blockedTarget = (target: EventTarget | null): boolean => {
       if (pickActiveRef.current) return true
-      if (useEventReportLink.getState().active) return true
       return target instanceof Element && target.closest(".maplibregl-marker") !== null
     }
     let lastFireAt = 0
@@ -365,11 +337,6 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     map.on("click", (e) => {
       if (pickActiveRef.current) {
         useLocationPick.getState().setDraft(e.lngLat.lat, e.lngLat.lng)
-        return
-      }
-      const link = useEventReportLink.getState()
-      if (link.active && link.openPanelReportId) {
-        link.setOpenPanelReportId(null)
         return
       }
       onPressMapRef.current?.()
@@ -405,11 +372,9 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
 
     mapRef.current = map
     useLocationPick.getState().setMapRegistered(true)
-    useEventReportLink.getState().setMapRegistered(true)
     return () => {
       cancelPress()
       useLocationPick.getState().setMapRegistered(false)
-      useEventReportLink.getState().setMapRegistered(false)
       useMapViewport.getState().clear()
       map.remove()
       mapRef.current = null
@@ -565,7 +530,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
 
   React.useEffect(() => {
     reconcileRef.current()
-  }, [mapReady, reports, cleanups, focusedPinId, focusedCleanupId, linkActive, linkSelectedIds, linkFilterCategories, focus, th.scheme])
+  }, [mapReady, reports, cleanups, focusedPinId, focusedCleanupId, focus, th.scheme])
 
   React.useEffect(() => {
     const map = mapRef.current
@@ -575,27 +540,6 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     map.easeTo({ center: [lng, focus.lat], zoom: FOCUS_ZOOM, duration: 600 })
   }, [mapReady, mode, focus?.id, focus?.lat, focus?.lng])
 
-  const openReport = React.useMemo(
-    () => (openPanelReportId ? reports.find((r) => r.id === openPanelReportId) ?? null : null),
-    [openPanelReportId, reports],
-  )
-  React.useEffect(() => {
-    const map = mapRef.current
-    if (!map || !mapReady || !linkActive || !openReport) {
-      setPanelPoint(null)
-      return
-    }
-    const reposition = () => {
-      const p = map.project([openReport.lng, openReport.lat])
-      setPanelPoint({ x: p.x, y: p.y })
-    }
-    reposition()
-    map.on("move", reposition)
-    return () => {
-      map.off("move", reposition)
-    }
-  }, [mapReady, linkActive, openReport])
-
   return (
     <div className="cf-map-wrap" style={{ position: "relative", width: "100%", height: "100%" }}>
       <div
@@ -604,28 +548,6 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
         aria-label={t("a11y.homeMap")}
         style={{ width: "100%", height: "100%" }}
       />
-      {linkActive && openPanelReportId && panelPoint ? (
-        <div
-          style={{
-            position: "absolute",
-            left: panelPoint.x,
-            top: panelPoint.y,
-            transform: "translate(-50%, calc(-100% - 52px))",
-            width: REPORT_LINK_PANEL_WIDTH,
-            zIndex: 5,
-          }}
-        >
-          <ReportLinkPanel
-            reportId={openPanelReportId}
-            onViewDetails={() => {
-              const id = openPanelReportId
-              useEventReportLink.getState().setOpenPanelReportId(null)
-              onPressPinRef.current?.(id)
-            }}
-            onClose={() => useEventReportLink.getState().setOpenPanelReportId(null)}
-          />
-        </div>
-      ) : null}
     </div>
   )
 })

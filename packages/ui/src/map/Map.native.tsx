@@ -1,5 +1,5 @@
 import React, { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react"
-import { View, StyleSheet, useWindowDimensions, type NativeSyntheticEvent } from "react-native"
+import { View, StyleSheet, type NativeSyntheticEvent } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import {
   Map as MlMap,
@@ -23,15 +23,12 @@ import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
 import { TeardropPin, EventPin, BlendPin, ClusterBubble, DropPin } from "./pins"
 import { useClusters } from "./useClusters"
 import { computeMapBlends } from "./blend"
-import { useEventReportLink } from "./eventReportLinkStore"
 import { useLocationPick } from "./locationPickStore"
 import { useMapFocus } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { longPressHitsMarker, type LongPressMarker } from "./longPressGate"
-import { ReportLinkPanel, REPORT_LINK_PANEL_WIDTH } from "./ReportLinkPanel"
 import type { ClusterNode } from "./clusterer"
-import type { ReportPinDTO } from "@civfix/shared"
 import type { MapProps, MapHandle } from "./types"
 
 const DEFAULT_CENTER: [number, number] = [-98.5795, 39.8283]
@@ -92,34 +89,16 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const [nodes, setNodes] = useState<ClusterNode[]>([])
   const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
 
-  const linkActive = useEventReportLink((s) => s.active)
-  const linkSelectedIds = useEventReportLink((s) => s.selectedIds)
-  const linkFilterCategories = useEventReportLink((s) => s.filterCategories)
-  const openPanelReportId = useEventReportLink((s) => s.openPanelReportId)
-
   const focus = useMapFocus((s) => s.focus)
   const droppedPin = useDroppedPin((s) => s.pin)
 
   useEffect(() => {
-    useEventReportLink.getState().setMapRegistered(true)
     return () => {
-      useEventReportLink.getState().setMapRegistered(false)
       useMapViewport.getState().clear()
     }
   }, [])
 
-  const linkPins = useMemo<Array<{ report: ReportPinDTO; badge: "plus" | "check" }>>(() => {
-    if (!linkActive) return []
-    const selected = new Set(linkSelectedIds)
-    const scoped =
-      linkFilterCategories.length === 0
-        ? reports
-        : reports.filter((r) => linkFilterCategories.includes(r.category))
-    return scoped.map((report) => ({ report, badge: selected.has(report.id) ? "check" : "plus" }))
-  }, [linkActive, reports, linkSelectedIds, linkFilterCategories])
-
   const hitMarkers = useMemo<LongPressMarker[]>(() => {
-    if (linkActive) return linkPins.map(({ report }) => ({ lat: report.lat, lng: report.lng }))
     if (focus) return [{ lat: focus.lat, lng: focus.lng }]
     return [
       ...nodes.map((node) => ({
@@ -130,39 +109,9 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       ...standaloneCleanups.map((cleanup) => ({ lat: cleanup.lat, lng: cleanup.lng })),
       ...blends.map((blend) => ({ lat: blend.event.lat, lng: blend.event.lng })),
     ]
-  }, [linkActive, linkPins, focus, nodes, standaloneCleanups, blends])
+  }, [focus, nodes, standaloneCleanups, blends])
   const hitMarkersRef = useRef(hitMarkers)
   hitMarkersRef.current = hitMarkers
-
-  const openPanelReport = useMemo(
-    () => (linkActive && openPanelReportId ? reports.find((r) => r.id === openPanelReportId) ?? null : null),
-    [linkActive, openPanelReportId, reports],
-  )
-  const [panelPoint, setPanelPoint] = useState<{ x: number; y: number } | null>(null)
-  const [panelHeight, setPanelHeight] = useState(220)
-  const { width: screenWidth } = useWindowDimensions()
-  const reportsRef = useRef(reports)
-  reportsRef.current = reports
-  const repositionPanel = useCallback(() => {
-    const link = useEventReportLink.getState()
-    const id = link.openPanelReportId
-    if (!link.active || !id) {
-      setPanelPoint(null)
-      return
-    }
-    const r = reportsRef.current.find((x) => x.id === id)
-    if (!r) {
-      setPanelPoint(null)
-      return
-    }
-    void mapNativeRef.current
-      ?.project([r.lng, r.lat])
-      .then(([x, y]) => setPanelPoint({ x, y }))
-      .catch(() => setPanelPoint(null))
-  }, [])
-  useEffect(() => {
-    repositionPanel()
-  }, [openPanelReportId, linkActive, repositionPanel])
 
   useImperativeHandle(
     ref,
@@ -214,13 +163,6 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     setNodes(query(bbox, zoom))
     onRegionChange?.(bbox, zoom)
     useMapViewport.getState().setRegion(bbox, zoom)
-    repositionPanel()
-  }
-
-  const handleRegionChanging = () => {
-    const link = useEventReportLink.getState()
-    if (!link.active || !link.openPanelReportId) return
-    repositionPanel()
   }
 
   const handleMapLoad = () => {
@@ -248,18 +190,12 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   }, [focus?.id, focus?.lat, focus?.lng])
 
   const handleMapPress = (_event: NativeSyntheticEvent<PressEvent | PressEventWithFeatures>) => {
-    const link = useEventReportLink.getState()
-    if (link.active && link.openPanelReportId) {
-      link.setOpenPanelReportId(null)
-      return
-    }
     onPressMap?.()
   }
 
   const handleMapLongPress = useCallback((event: NativeSyntheticEvent<PressEvent>) => {
     const handler = onLongPressMapRef.current
     if (!handler) return
-    if (useEventReportLink.getState().active) return
     if (useLocationPick.getState().active) return
     const [lng, lat] = event.nativeEvent.lngLat
     if (
@@ -280,12 +216,6 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     hapticsRef.current.selection()
     onPressPinRef.current?.(id)
   }, [])
-  const handlePressLinkPin = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
-    const id = event.nativeEvent.id.slice("pin-".length)
-    hapticsRef.current.selection()
-    const store = useEventReportLink.getState()
-    store.setOpenPanelReportId(store.openPanelReportId === id ? null : id)
-  }, [])
   const handlePressCluster = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
     const clusterId = Number(event.nativeEvent.id.slice("cluster-".length))
     onPressClusterRef.current?.(leavesRef.current(clusterId))
@@ -304,12 +234,6 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     else onPressCleanupRef.current?.(blend.event.id)
   }, [])
 
-  const PANEL_LIFT = 52
-  const panelLeft = panelPoint
-    ? Math.max(8, Math.min(panelPoint.x - REPORT_LINK_PANEL_WIDTH / 2, screenWidth - REPORT_LINK_PANEL_WIDTH - 8))
-    : 0
-  const panelTop = panelPoint ? Math.max(insets.top + 8, panelPoint.y - PANEL_LIFT - panelHeight) : 0
-
   return (
     <View
       style={styles.container}
@@ -327,7 +251,6 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       compass={false}
       onDidFinishLoadingMap={handleMapLoad}
       onRegionDidChange={handleRegion}
-      onRegionIsChanging={handleRegionChanging}
       onPress={handleMapPress}
       onLongPress={handleMapLongPress}
     >
@@ -335,19 +258,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
 
       {showUserLocation ? <UserLocation animated accuracy /> : null}
 
-      {linkActive ? (
-        linkPins.map(({ report, badge }) => (
-          <Marker
-            key={`pin-${report.id}`}
-            id={`pin-${report.id}`}
-            lngLat={[report.lng, report.lat]}
-            anchor="bottom"
-            onPress={handlePressLinkPin}
-          >
-            <TeardropPin category={report.category} badge={badge} />
-          </Marker>
-        ))
-      ) : focus ? (
+      {focus ? (
         focus.kind === "cleanup" ? (
           <Marker
             key={`cleanup-${focus.id}`}
@@ -434,24 +345,6 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       ) : null}
     </MlMap>
 
-      {linkActive && openPanelReport && panelPoint ? (
-        <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
-          <View
-            onLayout={(e) => setPanelHeight(e.nativeEvent.layout.height)}
-            style={[styles.panel, { left: panelLeft, top: panelTop }]}
-          >
-            <ReportLinkPanel
-              reportId={openPanelReport.id}
-              onViewDetails={() => {
-                const id = openPanelReport.id
-                useEventReportLink.getState().setOpenPanelReportId(null)
-                onPressPinRef.current?.(id)
-              }}
-              onClose={() => useEventReportLink.getState().setOpenPanelReportId(null)}
-            />
-          </View>
-        </View>
-      ) : null}
     </View>
   )
 }))
@@ -462,9 +355,5 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
-  },
-  panel: {
-    position: "absolute",
-    width: REPORT_LINK_PANEL_WIDTH,
   },
 })

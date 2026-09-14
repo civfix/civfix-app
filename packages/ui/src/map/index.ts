@@ -38,9 +38,6 @@ export type { PortraitMapPickStepProps } from "./PortraitMapPickStep"
 export { useLocationPick } from "./locationPickStore"
 export type { LocationPickState, PickDraft } from "./locationPickStore"
 
-export { useEventReportLink } from "./eventReportLinkStore"
-export type { EventReportLinkState } from "./eventReportLinkStore"
-
 export { useMapFocus } from "./mapFocusStore"
 export type { MapFocusState, FocusedReport, FocusedEvent, FocusedEntity } from "./mapFocusStore"
 

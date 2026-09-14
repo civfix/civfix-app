@@ -67,12 +67,7 @@ export interface MapProps {
    * the Map reclusters locally on zoom with no network, which is what keeps zoom/merge smooth.
    */
   onRegionChange?: (bbox: BBox, zoom: number) => void
-  /**
-   * A report pin was tapped (the app opens the full report detail). In EVENT-LINK mode (a cleanup being
-   * hosted/edited) a badged-pin tap instead opens the inline marker-anchored ReportLinkPanel; this same
-   * callback is then the panel's "View report details" action, so the shell keeps owning that navigation
-   * (no separate prop needed). The panel's Add/Remove flows through useEventReportLink.toggle, not here.
-   */
+  /** A report pin was tapped (the app opens the full report detail). */
   onPressPin?: (id: string) => void
   /**
    * A count bubble was tapped - receives the FULL list of raw report pins the cluster encloses
@@ -107,9 +102,8 @@ export interface MapProps {
    *   - a press that lands on an existing marker is SWALLOWED. Android's native view already hit-tests
    *     markers and swallows it; iOS does not, and the web seam sees the marker DOM - `longPressGate.ts`
    *     normalises all three to the Android behaviour.
-   *   - EVENT-LINK mode (`useEventReportLink.active`) and LOCATION-PICK mode (`useLocationPick.active`)
-   *     already own the map's press semantics, so the long press is suppressed entirely while either is
-   *     active.
+   *   - LOCATION-PICK mode (`useLocationPick.active`) already owns the map's press semantics, so the
+   *     long press is suppressed entirely while it is active.
    * The host is still responsible for its OWN guards (a press that started on a floating control, a
    * second press inside the repeat window) and for the CAMERA - neither seam moves it. Feed the
    * coordinate through `dropPinCameraTarget` and fly with the host's own generation-guarded camera.

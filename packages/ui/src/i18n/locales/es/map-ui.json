@@ -64,17 +64,6 @@
     "cancelA11y": "Cancelar la elección de ubicación",
     "needPin": "Toca el mapa para establecer una ubicación primero"
   },
-  "linkPanel": {
-    "preview": "Vista previa del reporte",
-    "title": "Reporte",
-    "close": "Cerrar la vista previa del reporte",
-    "noDescription": "Sin descripción.",
-    "viewDetails": "Ver detalles del reporte",
-    "add": "Añadir este reporte",
-    "remove": "Quitar",
-    "addA11y": "Añadir este reporte al evento",
-    "removeA11y": "Quitar este reporte del evento"
-  },
   "dropPin": {
     "locationA11y": "Ubicación seleccionada",
     "report": {

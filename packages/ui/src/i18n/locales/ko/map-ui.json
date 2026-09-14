@@ -64,17 +64,6 @@
     "cancelA11y": "위치 선택 취소",
     "needPin": "먼저 지도를 탭하여 위치를 설정하세요"
   },
-  "linkPanel": {
-    "preview": "제보 미리보기",
-    "title": "제보",
-    "close": "제보 미리보기 닫기",
-    "noDescription": "설명이 없습니다.",
-    "viewDetails": "제보 상세 보기",
-    "add": "이 제보 추가",
-    "remove": "제거",
-    "addA11y": "이 제보를 이벤트에 추가",
-    "removeA11y": "이 제보를 이벤트에서 제거"
-  },
   "dropPin": {
     "locationA11y": "선택한 위치",
     "report": {

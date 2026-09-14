@@ -7,11 +7,9 @@ import {
   space,
   useNavStore,
   useReportFilterStore,
-  useEventReportLink,
   useMapViewport,
   useLayoutMode,
   enabledCategoriesArray,
-  FILTER_CATEGORIES,
   // The landscape shell's live geometry - the drop-pin camera offsets around the rail + card, which
   // OVERLAY the map rather than shrinking it (`expandedFramePlan` is the one tested source for how much).
   useSidebarStore,
@@ -61,14 +59,6 @@ import { useMapRecenterStore } from "@/features/map/map-recenter"
  * live when the appearance changes. The tiles stay CARTO Voyager either way. Pin clicks push the matching detail into the
  * unified nav store (the web panel-stack behavior is preserved).
  */
-/**
- * The full report-category list to fetch when an event-report link is active but its filter is unscoped
- * ("all categories"). Derived from the canonical shared FILTER_CATEGORIES (the five real, toggleable
- * categories - "other" excluded, same universe the layer filter and the link's filterCategories operate
- * over) so it can never drift from the taxonomy.
- */
-const ALL_REPORT_CATEGORIES: readonly ReportCategory[] = FILTER_CATEGORIES
-
 export function HomeMap() {
   // The PADDED region we have fetched raw points for (NOT the viewport). The shared Map clusters these
   // client-side; we only update this when the viewport leaves the region (see onRegionChange).
@@ -108,25 +98,11 @@ export function HomeMap() {
     [enabled],
   )
 
-  // While an event-report link is ACTIVE the map must show report pins regardless of the user's reports
-  // layer toggle (the link temporarily "overrides layers"): force the query ON and feed the link's
-  // category scope (its filterCategories, or ALL real categories when it is unscoped). When INACTIVE this
-  // is byte-equivalent to the old behavior - the user's layer categories drive the query and it is gated
-  // on at least one enabled category. (filterCategories is read elementwise; CleanupForm keeps it in sync.)
-  const linkActive = useEventReportLink((s) => s.active)
-  const linkFilterCategories = useEventReportLink((s) => s.filterCategories)
-  const effectiveCategories = React.useMemo<ReportCategory[]>(
-    () =>
-      linkActive
-        ? linkFilterCategories.length
-          ? linkFilterCategories
-          : [...ALL_REPORT_CATEGORIES]
-        : userLayerCategories,
-    [linkActive, linkFilterCategories, userLayerCategories],
-  )
-  const queryEnabled = linkActive || userLayerCategories.length > 0
-
-  const reports = useMapReports({ bbox, categories: effectiveCategories, enabled: queryEnabled })
+  const reports = useMapReports({
+    bbox,
+    categories: userLayerCategories,
+    enabled: userLayerCategories.length > 0,
+  })
   // Upcoming events for the map's event markers. The SHARED hook (auth-optional, so it loads signed-out)
   // at its default page size, so this lands on exactly the `queryKeys.cleanups("upcoming", 50)` entry
   // EventsBody reads instead of a second, near-identical one - keep the limit at the shared default.

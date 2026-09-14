@@ -64,17 +64,6 @@
     "cancelA11y": "Standortauswahl abbrechen",
     "needPin": "Tippe zuerst auf die Karte, um einen Standort festzulegen"
   },
-  "linkPanel": {
-    "preview": "Meldungsvorschau",
-    "title": "Meldung",
-    "close": "Meldungsvorschau schließen",
-    "noDescription": "Keine Beschreibung vorhanden.",
-    "viewDetails": "Meldungsdetails ansehen",
-    "add": "Diese Meldung hinzufügen",
-    "remove": "Entfernen",
-    "addA11y": "Diese Meldung zum Event hinzufügen",
-    "removeA11y": "Diese Meldung aus dem Event entfernen"
-  },
   "dropPin": {
     "locationA11y": "Ausgewählter Standort",
     "report": {
