@@ -60,6 +60,13 @@
     "reply_unknown_author": "삭제된 계정",
     "reply_quote_a11y": "{{name}}님에게 답장: {{excerpt}}"
   },
+  "embed": {
+    "loading": "미리보기 불러오는 중",
+    "post_a11y": "{{name}}님의 게시물 열기",
+    "person_a11y": "{{name}}님의 프로필 열기",
+    "org_a11y": "{{name}} 열기",
+    "followers_other": "팔로워 {{count}}명"
+  },
   "menu": {
     "cancel": "취소",
     "delete_message": "메시지 삭제",

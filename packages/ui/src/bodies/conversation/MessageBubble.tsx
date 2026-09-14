@@ -14,7 +14,9 @@ import { announce } from "../../announce"
 import { useT } from "../../i18n"
 import { buildMessageActions, type MessageActionKey } from "../messageActions"
 import { clockTime } from "../relativeTime"
-import { appLinkOrigins, mentionLookup, tokenizeChatBody, type ChatLinkTarget } from "./chatLinks"
+import { appLinkOrigins, mentionLookup, tokenizeChatBody, type ChatBodyToken, type ChatLinkTarget } from "./chatLinks"
+import { planChatEmbeds, type CivfixLinkRef } from "./civfixLinks"
+import { ChatLinkEmbeds } from "./ChatLinkEmbeds"
 import { senderColor } from "./conversationModel"
 import { useConversationStyles } from "./styles"
 
@@ -39,19 +41,26 @@ export interface RenderChatBodyInput {
   onOpenLink: (target: ChatLinkTarget) => void
 }
 
-export function renderChatBody({
+export function chatBodyTokens({
   body,
   mentions,
   cityHandle,
-  tintStyle,
   linkOrigins,
-  onOpenPerson,
-  onOpenLink,
-}: RenderChatBodyInput): React.ReactNode {
-  const tokens = tokenizeChatBody(body, {
+}: Pick<RenderChatBodyInput, "body" | "mentions" | "cityHandle" | "linkOrigins">): ChatBodyToken[] {
+  return tokenizeChatBody(body, {
     mentions: mentionLookup(mentions, cityHandle),
     origins: linkOrigins,
   })
+}
+
+export function renderChatBody(input: RenderChatBodyInput): React.ReactNode {
+  return renderChatTokens(chatBodyTokens(input), input)
+}
+
+export function renderChatTokens(
+  tokens: readonly ChatBodyToken[],
+  { body, tintStyle, onOpenPerson, onOpenLink }: RenderChatBodyInput,
+): React.ReactNode {
   if (tokens.length === 1 && tokens[0]?.kind === "text") return body
   return tokens.map((token, i) => {
     if (token.kind === "text") return token.text
@@ -318,6 +327,10 @@ export const Bubble = React.memo(function Bubble({
     },
     [openInternalHref, openExternal, toast, t],
   )
+  const onOpenEmbed = useCallback(
+    (ref: CivfixLinkRef) => onOpenLink({ kind: "internal", path: ref.path, url: ref.url }),
+    [onOpenLink],
+  )
   const openEdit = useCallback(() => {
     if (canEdit && message.id) onEdit(message)
   }, [canEdit, message, onEdit])
@@ -481,15 +494,23 @@ export const Bubble = React.memo(function Bubble({
   }
   const closeContextMenu = () => setMenuMode((m) => (m === "menu" ? "closed" : m))
   const reactions = message.reactions ?? []
-  const bodyContent = renderChatBody({
+  const tintStyle = mine ? styles.mentionTokenMine : styles.mentionToken
+  const bodyTokens = chatBodyTokens({
     body,
     mentions: message.mentions,
     cityHandle: message.cityMention?.handle ?? null,
-    tintStyle: mine ? styles.mentionTokenMine : styles.mentionToken,
+    linkOrigins,
+  })
+  const embedPlan = planChatEmbeds(bodyTokens)
+  const bodyContent = renderChatTokens(bodyTokens, {
+    body,
+    mentions: message.mentions,
+    tintStyle,
     linkOrigins,
     onOpenPerson,
     onOpenLink,
   })
+  const showBodyText = !embedPlan.linkOnly
   const atts = message.attachments ?? []
   const hasBody = body.length > 0
   const toggleReaction = (emoji: ReactionEmoji) => onToggleReaction(message.id, emoji)
@@ -538,11 +559,19 @@ export const Bubble = React.memo(function Bubble({
             if (message.id) onVotePoll?.(message.id, idxs)
           }}
         />
-      ) : (
+      ) : showBodyText ? (
         <Text style={[styles.bubbleBody, mine ? styles.bubbleBodyMine : styles.bubbleBodyTheirs]}>
           {bodyContent}
         </Text>
-      )}
+      ) : null}
+      {!isPoll && embedPlan.refs.length > 0 ? (
+        <ChatLinkEmbeds
+          refs={embedPlan.refs}
+          linkOnly={embedPlan.linkOnly}
+          linkStyle={tintStyle}
+          onOpen={onOpenEmbed}
+        />
+      ) : null}
       <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={mine} disabled={!reactable} />
     </>
   )
