@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import {
   EVENT_KIND_VALUES,
+  MIN_EVENT_DURATION_MINUTES,
   type EventKind,
   type EventSlotDTO,
   type OrganizationRefDTO,
@@ -31,7 +32,6 @@ import {
   endOffsetMs,
   endTimeAfter,
   endTimeSelectable,
-  eventWindowInZone,
   formInstantMs,
   mergeDateTime,
   scheduleFieldErrors,
@@ -39,7 +39,7 @@ import {
 import { InlineDateTimePicker } from "./InlineDateTimePicker"
 import { TimezoneField } from "./TimezoneField"
 import { LinkedReportCard, type LinkedReportCardData } from "./LinkedReportCard"
-import { DEFAULT_WIZARD_DURATION_MS } from "./eventWizard"
+import { DEFAULT_WIZARD_DURATION_MS, eventDraftWindow } from "./eventWizard"
 import { SlotEditor } from "./SlotEditor"
 import {
   claimedBySlotId,
@@ -105,7 +105,7 @@ export function emptyCleanupForm(
 export { mergeDateTime } from "./calendarModel"
 
 export function cleanupFormWindow(value: CleanupFormValue): SlotWindowBounds | null {
-  return eventWindowInZone(value.date, value.time, value.endTime, value.timezone)
+  return eventDraftWindow(value)
 }
 
 export function hasValidEventEnd(value: CleanupFormValue): boolean {
@@ -115,6 +115,7 @@ export function hasValidEventEnd(value: CleanupFormValue): boolean {
     value.time,
     value.endTime.getHours(),
     value.endTime.getMinutes(),
+    value.timezone,
   )
 }
 
@@ -473,10 +474,11 @@ export function CleanupForm({
     const found = scheduleFieldErrors(value, value.timezone)
     const stale = (key: string | undefined) =>
       key === undefined || (scheduleUnchanged && (key === "date_past" || key === "time_past"))
+    const vars = { minutes: MIN_EVENT_DURATION_MINUTES }
     return {
-      date: stale(found.date) ? null : t(`error.${found.date}`),
-      time: stale(found.time) ? null : t(`error.${found.time}`),
-      endTime: found.endTime ? t(`error.${found.endTime}`) : null,
+      date: stale(found.date) ? null : t(`error.${found.date}`, vars),
+      time: stale(found.time) ? null : t(`error.${found.time}`, vars),
+      endTime: found.endTime ? t(`error.${found.endTime}`, vars) : null,
     }
   }, [scheduleUnchanged, t, value])
 

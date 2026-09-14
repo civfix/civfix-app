@@ -191,13 +191,17 @@ export function endTimeSelectable(
   start: Date | null,
   hours: number,
   minutes: number,
+  timeZone: string,
 ): boolean {
   if (!date || !start) return false
   const offset = offsetFromClocks(clockMs(start), clockOf(hours, minutes))
   if (offset < MIN_EVENT_DURATION_MS) return false
   const day = new Date(date)
   if (clockOf(hours, minutes) <= clockMs(start)) day.setDate(day.getDate() + 1)
-  return wallClockExistsOn(day, hours, minutes)
+  return wallClockExistsInZone(
+    { year: day.getFullYear(), month: day.getMonth() + 1, day: day.getDate(), hours, minutes },
+    timeZone,
+  )
 }
 
 export function eventDurationMs(date: Date, start: Date, end: Date): number {

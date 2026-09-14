@@ -60,7 +60,7 @@
   "error": {
     "date_past": "Pick today or a later date.",
     "time_past": "Pick a time that hasn't passed yet.",
-    "end_too_soon": "End at least 15 minutes after the start.",
+    "end_too_soon": "End at least {{minutes}} minutes after the start.",
     "time_dst_gap": "That time doesn't exist on this date because the clocks jump forward. Pick another time."
   }
 }

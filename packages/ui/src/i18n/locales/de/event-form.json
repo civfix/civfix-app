@@ -60,7 +60,7 @@
   "error": {
     "date_past": "Wähle heute oder ein späteres Datum.",
     "time_past": "Wähle eine Uhrzeit, die noch nicht vorbei ist.",
-    "end_too_soon": "Ende mindestens 15 Minuten nach dem Beginn.",
+    "end_too_soon": "Ende mindestens {{minutes}} Minuten nach dem Beginn.",
     "time_dst_gap": "Diese Uhrzeit gibt es an diesem Datum nicht, weil die Uhren vorgestellt werden. Wähle eine andere Uhrzeit."
   }
 }

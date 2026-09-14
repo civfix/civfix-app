@@ -29,6 +29,8 @@ import {
 
 const SUNDAY_FIRST = ["S", "M", "T", "W", "T", "F", "S"] as const
 
+const DEVICE_ZONE = "America/Los_Angeles"
+
 describe("calendarModel", () => {
   it("zeroes the clock without mutating the input", () => {
     const source = new Date(2026, 6, 24, 13, 45, 30, 500)
@@ -107,25 +109,25 @@ describe("the event's end time", () => {
   const lateNight = new Date(2026, 6, 24, 23, 30, 0, 0)
 
   it("offers only clock times at least the slot minimum after the start", () => {
-    expect(endTimeSelectable(day, nineAm, 9, 0)).toBe(false)
-    expect(endTimeSelectable(day, nineAm, 9, 10)).toBe(false)
-    expect(endTimeSelectable(day, nineAm, 9, 15)).toBe(true)
-    expect(endTimeSelectable(day, nineAm, 11, 0)).toBe(true)
+    expect(endTimeSelectable(day, nineAm, 9, 0, DEVICE_ZONE)).toBe(false)
+    expect(endTimeSelectable(day, nineAm, 9, 10, DEVICE_ZONE)).toBe(false)
+    expect(endTimeSelectable(day, nineAm, 9, 15, DEVICE_ZONE)).toBe(true)
+    expect(endTimeSelectable(day, nineAm, 11, 0, DEVICE_ZONE)).toBe(true)
   })
 
   it("reads a clock at or before the start as the NEXT day, not as an impossible end", () => {
-    expect(endTimeSelectable(day, nineAm, 8, 30)).toBe(true)
+    expect(endTimeSelectable(day, nineAm, 8, 30, DEVICE_ZONE)).toBe(true)
     expect(endsNextDay(nineAm, new Date(2026, 6, 24, 8, 30))).toBe(true)
     expect(endOffsetMs(nineAm, new Date(2026, 6, 24, 8, 30))).toBe(23.5 * 3_600_000)
   })
 
   it("leaves a 23:30 start a full grid of ends instead of none", () => {
     const offered = timeSlots("en-US").filter((slot) =>
-      endTimeSelectable(day, lateNight, slot.hours, slot.minutes),
+      endTimeSelectable(day, lateNight, slot.hours, slot.minutes, DEVICE_ZONE),
     )
     expect(offered.length).toBe(47)
-    expect(endTimeSelectable(day, lateNight, 2, 0)).toBe(true)
-    expect(endTimeSelectable(day, lateNight, 23, 30)).toBe(false)
+    expect(endTimeSelectable(day, lateNight, 2, 0, DEVICE_ZONE)).toBe(true)
+    expect(endTimeSelectable(day, lateNight, 23, 30, DEVICE_ZONE)).toBe(false)
   })
 
   it("resolves an end clock that rolled over onto the following calendar day", () => {
@@ -144,8 +146,8 @@ describe("the event's end time", () => {
   })
 
   it("offers nothing at all until a day and a start time exist", () => {
-    expect(endTimeSelectable(null, nineAm, 11, 0)).toBe(false)
-    expect(endTimeSelectable(day, null, 11, 0)).toBe(false)
+    expect(endTimeSelectable(null, nineAm, 11, 0, DEVICE_ZONE)).toBe(false)
+    expect(endTimeSelectable(day, null, 11, 0, DEVICE_ZONE)).toBe(false)
   })
 })
 
@@ -157,7 +159,7 @@ describe("the duration chips", () => {
     const end = endTimeAfter(day, tenPm, 4 * 3_600_000)
     expect(end.getHours()).toBe(2)
     expect(end.getMinutes()).toBe(0)
-    expect(endTimeSelectable(day, tenPm, end.getHours(), end.getMinutes())).toBe(true)
+    expect(endTimeSelectable(day, tenPm, end.getHours(), end.getMinutes(), DEVICE_ZONE)).toBe(true)
     expect(durationChipFor(day, tenPm, end)).toBe(4)
     const window = eventWindowOf(day, tenPm, end)
     expect(window?.end?.getDate()).toBe(25)
@@ -168,7 +170,7 @@ describe("the duration chips", () => {
     const lateNight = new Date(2026, 6, 24, 23, 30, 0, 0)
     for (const hours of DURATION_CHIP_HOURS) {
       const end = endTimeAfter(day, lateNight, hours * 3_600_000)
-      expect(endTimeSelectable(day, lateNight, end.getHours(), end.getMinutes())).toBe(true)
+      expect(endTimeSelectable(day, lateNight, end.getHours(), end.getMinutes(), DEVICE_ZONE)).toBe(true)
       expect(durationChipFor(day, lateNight, end)).toBe(hours)
     }
   })
@@ -315,5 +317,13 @@ describe("the form's wall clocks resolve in the EVENT's zone", () => {
   it("compares an edited schedule against the stored instant, not the device clock", () => {
     expect(isScheduleUntouched("2026-09-05T17:00:00.000Z", day(2026, 9, 5), clock(13), NY)).toBe(true)
     expect(isScheduleUntouched("2026-09-05T17:00:00.000Z", day(2026, 9, 5), clock(14), NY)).toBe(false)
+  })
+
+  it("judges an end clock against the EVENT zone's spring-forward gap", () => {
+    const eveOfSpringForward = day(2026, 3, 7)
+    const lateStart = clock(23)
+    expect(endTimeSelectable(eveOfSpringForward, lateStart, 2, 30, LA)).toBe(false)
+    expect(endTimeSelectable(eveOfSpringForward, lateStart, 2, 30, "America/Phoenix")).toBe(true)
+    expect(endTimeSelectable(eveOfSpringForward, lateStart, 3, 30, LA)).toBe(true)
   })
 })

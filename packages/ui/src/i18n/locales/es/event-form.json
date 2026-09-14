@@ -60,7 +60,7 @@
   "error": {
     "date_past": "Elige hoy o una fecha posterior.",
     "time_past": "Elige una hora que aún no haya pasado.",
-    "end_too_soon": "Termina al menos 15 minutos después del inicio.",
+    "end_too_soon": "Termina al menos {{minutes}} minutos después del inicio.",
     "time_dst_gap": "Esa hora no existe en esta fecha porque los relojes se adelantan. Elige otra hora."
   }
 }

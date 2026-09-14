@@ -1,13 +1,17 @@
 import {
   endTimeSelectable,
-  eventWindowOf,
-  isScheduleInFuture,
+  eventWindowInZone,
   isScheduleInFutureInZone,
   isScheduleUntouched,
   wallClockToFormDate,
 } from "./calendarModel"
 import { wallClockInZone } from "@civfix/shared/datetime"
-import { slotDraftWindow, slotsValid, type SlotDraft } from "./eventSlotsForm"
+import {
+  slotDraftWindow,
+  slotsValid,
+  type SlotDraft,
+  type SlotWindowBounds,
+} from "./eventSlotsForm"
 
 export const DEFAULT_WIZARD_DURATION_MS = 2 * 3_600_000
 
@@ -20,7 +24,7 @@ export interface EventScheduleDraft {
   date: Date | null
   time: Date | null
   endTime: Date | null
-  timezone?: string
+  timezone: string
 }
 
 export function seededEndTime(cleanup: EventScheduleSource, timeZone?: string): Date {
@@ -74,9 +78,13 @@ export interface EventWizardDraft {
   date: Date | null
   time: Date | null
   endTime: Date | null
-  timezone?: string
+  timezone: string
   coords: { lat: number; lng: number } | null
   slots: readonly SlotDraft[]
+}
+
+export function eventDraftWindow(draft: EventScheduleDraft): SlotWindowBounds | null {
+  return eventWindowInZone(draft.date, draft.time, draft.endTime, draft.timezone)
 }
 
 export function eventStepIndex(step: EventWizardStep): number {
@@ -101,15 +109,19 @@ export function eventStepSatisfied(
         draft.date !== null &&
         draft.time !== null &&
         draft.endTime !== null &&
-        (draft.timezone === undefined
-          ? isScheduleInFuture(draft.date, draft.time, now)
-          : isScheduleInFutureInZone(draft.date, draft.time, draft.timezone, now?.getTime())) &&
-        endTimeSelectable(draft.date, draft.time, draft.endTime.getHours(), draft.endTime.getMinutes())
+        isScheduleInFutureInZone(draft.date, draft.time, draft.timezone, now?.getTime()) &&
+        endTimeSelectable(
+          draft.date,
+          draft.time,
+          draft.endTime.getHours(),
+          draft.endTime.getMinutes(),
+          draft.timezone,
+        )
       )
     case "where":
       return draft.coords !== null
     case "details":
-      return slotsValid(draft.slots, undefined, eventWindowOf(draft.date, draft.time, draft.endTime))
+      return slotsValid(draft.slots, undefined, eventDraftWindow(draft))
     case "review":
       return EVENT_WIZARD_STEPS.every(
         (other) => isFinalEventStep(other) || eventStepSatisfied(other, draft, now),
