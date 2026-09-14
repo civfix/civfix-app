@@ -118,7 +118,9 @@ export function useOrganizationEvents(
 export function organizationEventRows(
   pages: readonly ListOrganizationEventsResponse[] | undefined,
 ): CleanupDTO[] {
-  return (pages ?? []).flatMap((page) => page.items)
+  return (pages ?? [])
+    .flatMap((page) => page?.items ?? [])
+    .filter((event) => event != null && event.id != null && event.organizer != null)
 }
 
 export const ORG_MEMBERS_PAGE_SIZE = 50

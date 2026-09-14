@@ -672,7 +672,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </EventActionRows>
       </View>
 
-      {donatePage.data ? (
+      {donatePage.data?.org ? (
         <View style={styles.section}>
           <DonateBlock
             org={{
