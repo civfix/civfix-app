@@ -41,10 +41,15 @@ export function matchingTimeZones(
   if (needle === "") return zones.slice(0, limit)
   const out: string[] = []
   for (const zone of zones) {
-    if (
-      normalize(zone).includes(needle) ||
-      normalize(cachedDisplayName(zone, locale)).includes(needle)
-    ) {
+    if (normalize(zone).includes(needle)) {
+      out.push(zone)
+      if (out.length === limit) return out
+    }
+  }
+  const byId = new Set(out)
+  for (const zone of zones) {
+    if (byId.has(zone)) continue
+    if (normalize(cachedDisplayName(zone, locale)).includes(needle)) {
       out.push(zone)
       if (out.length === limit) break
     }
@@ -69,9 +74,10 @@ export function TimezoneField({ value, onChange }: TimezoneFieldProps) {
   const zoneLabel = cachedDisplayName(value, locale)
   const deviceLabel = cachedDisplayName(deviceZone, locale)
 
+  const allZones = useMemo(() => supportedTimeZones(), [])
   const rows = useMemo(
-    () => matchingTimeZones(query.trim() === "" ? COMMON_TIMEZONES : supportedTimeZones(), query, locale),
-    [locale, query],
+    () => matchingTimeZones(query.trim() === "" ? COMMON_TIMEZONES : allZones, query, locale),
+    [allZones, locale, query],
   )
 
   const pick = (timeZone: string) => {

@@ -21,10 +21,11 @@ import {
   todayInZone,
   type DurationChipHours,
 } from "./calendarModel"
-import type {
-  DateFieldRowProps,
-  InlineDateTimePickerProps,
-  TimeFieldRowProps,
+import {
+  TIME_PICKER_MINUTE_INTERVAL,
+  type DateFieldRowProps,
+  type InlineDateTimePickerProps,
+  type TimeFieldRowProps,
 } from "./InlineDateTimePicker.types"
 
 const ROW_HEIGHT = 52
@@ -84,15 +85,22 @@ export function DateTimeFieldRow({
     </>
   )
 
+  const slotOwnsAccessibility = valueSlot !== undefined
+  const rowAccessibility = slotOwnsAccessibility
+    ? { focusable: false }
+    : {
+        accessibilityRole: "button" as const,
+        accessibilityLabel,
+        accessibilityValue: { text: value },
+        ...focusRingProps,
+      }
+
   return (
     <View style={spaced ? styles.blockSpaced : null}>
       {onPress ? (
         <Pressable
           onPress={onPress}
-          accessibilityRole="button"
-          accessibilityLabel={accessibilityLabel}
-          accessibilityValue={{ text: value }}
-          {...focusRingProps}
+          {...rowAccessibility}
           style={(state) => [
             styles.fieldRow,
             webCursorPointer,
@@ -197,7 +205,7 @@ export function InlineDateTimePickerLayout({
         label={tForm("field.startTime")}
         day={date}
         minTime={startFloor}
-        minuteInterval={5}
+        minuteInterval={TIME_PICKER_MINUTE_INTERVAL}
         error={errors?.time ?? null}
         spaced
       />
@@ -225,7 +233,7 @@ export function InlineDateTimePickerLayout({
             onChange={onEndTimeChange}
             label={tForm("field.endTime")}
             day={date}
-            minuteInterval={5}
+            minuteInterval={TIME_PICKER_MINUTE_INTERVAL}
             suffix={rollsOver ? t("value.next_day") : null}
             error={errors?.endTime ?? null}
             spaced

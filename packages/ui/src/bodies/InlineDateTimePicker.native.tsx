@@ -9,10 +9,11 @@ import { Icon, iconMap } from "../typography"
 import { useLocale } from "../i18n"
 import { DateTimeFieldRow, InlineDateTimePickerLayout } from "./DateTimeFieldRow"
 import { uses24HourClock } from "./calendarModel"
-import type {
-  DateFieldRowProps,
-  InlineDateTimePickerProps,
-  TimeFieldRowProps,
+import {
+  TIME_PICKER_MINUTE_INTERVAL,
+  type DateFieldRowProps,
+  type InlineDateTimePickerProps,
+  type TimeFieldRowProps,
 } from "./InlineDateTimePicker.types"
 
 const isAndroid = Platform.OS === "android"
@@ -119,7 +120,7 @@ export function TimeFieldRow({
       mode: "time",
       display: "default",
       is24Hour: uses24HourClock(locale),
-      minuteInterval: minuteInterval ?? 1,
+      minuteInterval: minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL,
       onChange: commit,
     })
   }, [commit, current, locale, minuteInterval])
@@ -146,7 +147,7 @@ export function TimeFieldRow({
             value={current}
             minimumDate={minTime ?? undefined}
             maximumDate={maxTime ?? undefined}
-            minuteInterval={minuteInterval ?? 1}
+            minuteInterval={minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL}
             accentColor={th.colors.brand.bloom}
             themeVariant={th.scheme}
             onChange={commit}

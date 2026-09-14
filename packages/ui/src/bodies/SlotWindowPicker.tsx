@@ -6,6 +6,7 @@ import { useLocale, useT } from "../i18n"
 import { addWallClockDays, wallClockToFormDate } from "./calendarModel"
 import { MIN_SLOT_DURATION_MS } from "./eventSlotsForm"
 import { TimeFieldRow } from "./InlineDateTimePicker"
+import { TIME_PICKER_MINUTE_INTERVAL } from "./InlineDateTimePicker.types"
 
 export interface SlotWindowPickerProps {
   index: number
@@ -97,7 +98,7 @@ export function SlotWindowPicker({
         day={carrierOf(startsAt, timeZone)}
         minTime={carrierOf(eventStart, timeZone)}
         maxTime={carrierOf(new Date(latestStart), timeZone)}
-        minuteInterval={5}
+        minuteInterval={TIME_PICKER_MINUTE_INTERVAL}
         error={invalidEdge === "start" ? outsideEvent : null}
       />
       <TimeFieldRow
@@ -110,7 +111,7 @@ export function SlotWindowPicker({
         day={carrierOf(endsAt, timeZone)}
         minTime={carrierOf(new Date(earliestEnd), timeZone)}
         maxTime={carrierOf(eventEnd, timeZone)}
-        minuteInterval={5}
+        minuteInterval={TIME_PICKER_MINUTE_INTERVAL}
         error={invalidEdge === "end" ? outsideEvent : null}
       />
     </View>

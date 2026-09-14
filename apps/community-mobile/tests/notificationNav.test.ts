@@ -6,6 +6,7 @@ import { bridgeKey, nativeBridgeKey, BRIDGE_ROUTE_NAMES } from "../src/lib/navBr
 import { shellHostsEntries } from "../src/lib/internalHref.ts"
 
 const adapter = readFileSync(new URL("../src/components/MobileNavAdapter.tsx", import.meta.url), "utf8")
+const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
 
 const NOTIFICATION_LINKS = [
   "/messages/dm/room-1",
@@ -46,6 +47,13 @@ test("a tapped notification decides through the one action model before it touch
   assert.match(body, /bridgeFocused: key !== null && key === nativeBridgeKey\(readFocusedRoute\(\)\)/)
   assert.match(body, /shellFocused: shellHostsEntries\(readFocusedRoute\(\)\)/)
   assert.match(body, /activeKey: entryIdentity\(useNavStore\.getState\(\)\.active\)/)
+})
+
+test("a tapped notification dismisses to the shell whenever the action says to", () => {
+  const listener = layout.slice(layout.indexOf("function useNotificationDeepLinks"))
+  const body = listener.slice(0, listener.indexOf("\n}"))
+  assert.match(body, /const applied = applyInternalHref\(href as string\)/)
+  assert.match(body, /if \(applied\?\.dismissToShell\) dismissToShell\?\.\(\)/)
 })
 
 test("the bridge asks the router which screen is actually on top before it pushes", () => {

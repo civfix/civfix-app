@@ -2,10 +2,11 @@ import React, { useCallback, useMemo, useRef } from "react"
 import { useTheme } from "../theme"
 import { iconMap } from "../typography"
 import { DateTimeFieldRow, InlineDateTimePickerLayout } from "./DateTimeFieldRow"
-import type {
-  DateFieldRowProps,
-  InlineDateTimePickerProps,
-  TimeFieldRowProps,
+import {
+  TIME_PICKER_MINUTE_INTERVAL,
+  type DateFieldRowProps,
+  type InlineDateTimePickerProps,
+  type TimeFieldRowProps,
 } from "./InlineDateTimePicker.types"
 
 function pad(value: number): string {
@@ -117,6 +118,7 @@ export function TimeFieldRow({
   day,
   minTime,
   maxTime,
+  minuteInterval,
   suffix,
   label,
   error,
@@ -140,7 +142,7 @@ export function TimeFieldRow({
         <input
           ref={ref}
           type="time"
-          step={60}
+          step={(minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL) * 60}
           value={timeInputValue(value)}
           min={timeInputValue(minTime)}
           max={timeInputValue(maxTime)}

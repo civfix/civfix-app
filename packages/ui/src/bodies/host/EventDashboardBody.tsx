@@ -84,8 +84,7 @@ const SCOPE_PILL_MAX_WIDTH = "60%"
 
 const MORE_ROW_HEIGHT = 44
 
-function soonestBoundary(events: readonly HostedEventDTO[]): number | null {
-  const at = Date.now()
+function soonestBoundary(events: readonly HostedEventDTO[], at: number): number | null {
   const ahead = events.flatMap((event) => {
     const boundary = nextEventBoundaryMs(hostedEventWindow(event), at)
     return boundary === null ? [] : [boundary]
@@ -137,7 +136,7 @@ export function EventDashboardBody() {
   const events = useMemo(() => hostedEventRows(hosted.data?.pages), [hosted.data])
   const upcomingEvents = useMemo(() => hostedEventRows(upcoming.data?.pages), [upcoming.data])
   const pastEvents = useMemo(() => hostedEventRows(past.data?.pages), [past.data])
-  const boundaryAt = useMemo(() => soonestBoundary(upcomingEvents), [upcomingEvents])
+  const boundaryAt = soonestBoundary(upcomingEvents, Date.now())
   const nowMs = useNow(NOW_TICK_MS, { boundaryAt })
   const now = useMemo(() => new Date(nowMs), [nowMs])
   const nextUp = nextUpEvent([...upcomingEvents, ...pastEvents], now)

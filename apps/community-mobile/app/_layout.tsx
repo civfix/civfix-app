@@ -370,7 +370,8 @@ function useNotificationDeepLinks() {
       if (!href) return
       handledResponseIdRef.current = id
       setTimeout(() => {
-        applyInternalHref(href as string)
+        const applied = applyInternalHref(href as string)
+        if (applied?.dismissToShell) dismissToShell?.()
       }, 0)
     }
 

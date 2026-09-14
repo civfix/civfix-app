@@ -251,7 +251,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
     enabled: cleanup.donationOrg?.enabled === true,
   })
   const boundaryAt = nextEventBoundaryMs(cleanup, Date.now())
-  const now = useNow(NOW_TICK_MS, { boundaryAt })
+  const now = useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })
   useEventBoundaryRefresh(cleanup, now, cleanup.id)
   const status = deriveCleanupStatus(cleanup, now)
   const isCancelled = status === "cancelled"

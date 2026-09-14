@@ -1122,7 +1122,13 @@ describe("portfolio surface", () => {
   it("ticks the dashboard clock off the shared hook instead of reading it mid-render", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("const nowMs = useNow(NOW_TICK_MS, { boundaryAt })")
-    expect(body).toContain("soonestBoundary(upcomingEvents)")
     expect(body).not.toContain("const now = new Date()")
+  })
+
+  it("re-reads the soonest boundary each tick, so a later one still schedules a refresh", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("const boundaryAt = soonestBoundary(upcomingEvents, Date.now())")
+    expect(body).not.toMatch(/useMemo\(\(\) => soonestBoundary\([^)]*\), \[upcomingEvents\]\)/)
+    expect(body).toContain("function soonestBoundary(events: readonly HostedEventDTO[], at: number)")
   })
 })

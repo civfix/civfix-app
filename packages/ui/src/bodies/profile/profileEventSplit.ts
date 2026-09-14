@@ -46,10 +46,9 @@ export function splitProfileEvents(
 
   if (upcomingEvents === undefined) {
     for (const event of pastEvents) {
-      // An event that is UNDERWAY is upcoming here, matching the server's `ends_at > now()` window.
-      const upcoming = !hasEventEnded(event, now)
+      const notYetOver = !hasEventEnded(event, now)
       const hosted = event.organizer.id === profileId
-      if (upcoming) {
+      if (notYetOver) {
         ;(hosted ? split.upcomingHosting : split.upcomingGoing).push(event)
       } else {
         ;(hosted ? split.pastHosted : split.pastAttended).push(event)

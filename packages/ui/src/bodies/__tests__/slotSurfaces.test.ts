@@ -89,6 +89,33 @@ describe("the date/time picker seam stays a seam", () => {
     expect(importers).toEqual(["InlineDateTimePicker.native.tsx"])
   })
 
+  it("grants the same minute granularity on both seams, from one constant", () => {
+    const types = readFileSync(new URL("../InlineDateTimePicker.types.ts", import.meta.url), "utf8")
+    expect(types).toContain("export const TIME_PICKER_MINUTE_INTERVAL = 5")
+    expect(SCROLLER_SOURCES["InlineDateTimePicker.web.tsx"]).toContain(
+      "step={(minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL) * 60}",
+    )
+    expect(SCROLLER_SOURCES["InlineDateTimePicker.native.tsx"]).toContain(
+      "minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL",
+    )
+    for (const name of [
+      "InlineDateTimePicker.web.tsx",
+      "InlineDateTimePicker.native.tsx",
+      "DateTimeFieldRow.tsx",
+    ] as const) {
+      expect(SCROLLER_SOURCES[name], `${name} hardcodes a minute step`).not.toMatch(
+        /minuteInterval=\{\d/,
+      )
+    }
+  })
+
+  it("leaves the row chrome out of the a11y tree when the native input is the control", () => {
+    const row = SCROLLER_SOURCES["DateTimeFieldRow.tsx"]
+    expect(row).toContain("const slotOwnsAccessibility = valueSlot !== undefined")
+    expect(row).toContain("? { focusable: false }")
+    expect(row).not.toMatch(/<Pressable[\s\S]*?accessibilityRole="button"/)
+  })
+
   it("leaves no reference to the retired month grid", () => {
     const referrers = files
       .filter((file) => readFileSync(file, "utf8").includes("MonthCalendarGrid"))

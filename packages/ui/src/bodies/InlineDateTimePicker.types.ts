@@ -1,3 +1,7 @@
+export const TIME_PICKER_MINUTE_INTERVAL = 5
+
+export type TimePickerMinuteInterval = 1 | typeof TIME_PICKER_MINUTE_INTERVAL
+
 export interface InlineDateTimePickerErrors {
   date?: string | null
   time?: string | null
@@ -37,7 +41,7 @@ export interface TimeFieldRowProps {
   day?: Date | null
   minTime?: Date | null
   maxTime?: Date | null
-  minuteInterval?: 1 | 5
+  minuteInterval?: TimePickerMinuteInterval
   suffix?: string | null
   label?: string
   error?: string | null
