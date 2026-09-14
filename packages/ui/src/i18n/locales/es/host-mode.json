@@ -131,7 +131,10 @@
     "log_hours": "Registrar horas de voluntariado",
     "log_hours_sub_one": "{{count}} con entrada registrada",
     "log_hours_sub_other": "{{count}} con entrada registrada",
-    "log_hours_none": "Nadie registró su entrada"
+    "log_hours_none": "Nadie registró su entrada",
+    "linked_reports": "Reportes vinculados",
+    "linked_reports_sub": "Reportes que atenderá esta limpieza",
+    "linked_reports_none": "Aún no hay ninguno vinculado"
   },
   "no_shows": {
     "title": "¿Marcar el resto como ausencias?",
@@ -157,5 +160,17 @@
     "success": "{{name}} tiene la entrada registrada.",
     "error": "No se pudo añadir ese registro.",
     "error_forbidden": "No tienes permiso para añadir registros sin cita previa."
+  },
+  "linked_reports_sheet": {
+    "title": "Reportes vinculados",
+    "caption": "Agrega o quita los reportes que atiende esta limpieza. Quien los envió verá el evento en su reporte.",
+    "caption_readonly": "Este evento ya terminó. Sus reportes vinculados no se pueden cambiar.",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "dismiss_a11y": "Cerrar los reportes vinculados",
+    "saved": "Reportes vinculados actualizados",
+    "error": "No se pudieron actualizar los reportes vinculados. Intenta de nuevo.",
+    "error_forbidden": "Solo quienes pueden administrar este evento pueden cambiar sus reportes."
   }
 }

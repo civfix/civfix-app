@@ -52,7 +52,9 @@ import { EventRosterBlock } from "./EventRosterBlock"
 import { HeroSkeleton, RowsSkeleton, TilesSkeleton } from "./HostSkeletons"
 import { HostInsightsPanels } from "./HostInsightsPanels"
 import { HostWalkupSheet } from "./HostWalkupSheet"
+import { LinkedReportsSheet } from "./LinkedReportsSheet"
 import { PhaseHeader, type PhaseHeaderAction } from "./PhaseHeader"
+import { linkSheetMode } from "../linkReportsModel"
 import {
   hostActionCards,
   hostedEventFromCleanup,
@@ -91,6 +93,7 @@ const ROW_ICONS: Readonly<Record<HostRowKey, keyof typeof iconMap>> = {
   tickets: "Ticket",
   resources: "Building2",
   duplicate: "Copy",
+  linked_reports: "MapPin",
   cancel: "Ban",
 }
 
@@ -214,6 +217,7 @@ export function HostModeBody({ id }: { id: string }) {
   }, [])
 
   const [walkupOpen, setWalkupOpen] = useState(false)
+  const [linkingOpen, setLinkingOpen] = useState(false)
   const [duplicating, setDuplicating] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [requesting, setRequesting] = useState(false)
@@ -317,6 +321,8 @@ export function HostModeBody({ id }: { id: string }) {
           return () => setMarkingNoShows(true)
         case "tickets":
           return onTickets
+        case "linked_reports":
+          return () => setLinkingOpen(true)
         case "resources":
           return () => setRequesting(true)
         default:
@@ -369,6 +375,14 @@ export function HostModeBody({ id }: { id: string }) {
   const stillToCheckIn = insights.data
     ? Math.max(0, insights.data.seats.registered - insights.data.seats.checkedIn)
     : 0
+  const isCleanupEvent = event.eventKind === "cleanup"
+  const linkedReportCount = event.linkedReports.length
+  const linkMode = linkSheetMode({
+    stage,
+    canManage: can.manageEvent,
+    isCleanup: isCleanupEvent,
+    linkedCount: linkedReportCount,
+  })
   const cards = hostActionCards({
     stage,
     can,
@@ -376,6 +390,8 @@ export function HostModeBody({ id }: { id: string }) {
     scannerAvailable,
     hasOrganization: !!event.organization,
     consoleReachable,
+    isCleanup: isCleanupEvent,
+    linkedReportCount,
   })
   const columns = statTileColumns(contentWidth)
   const wide = contentWidth >= STAT_TILE_WIDE_AT
@@ -405,9 +421,17 @@ export function HostModeBody({ id }: { id: string }) {
           : t("row.log_hours_none")
       case "resources":
         return event.jurisdictionGeoid == null ? t("row.resources_no_city") : undefined
+      case "linked_reports":
+        return linkedReportCount > 0 ? t("row.linked_reports_sub") : t("row.linked_reports_none")
       default:
         return undefined
     }
+  }
+
+  const rowValue = (key: HostRowKey): string | undefined => {
+    if (key === "team" && event.teamCount != null) return String(event.teamCount)
+    if (key === "linked_reports" && linkedReportCount > 0) return String(linkedReportCount)
+    return undefined
   }
 
   const relativeLine =
@@ -464,7 +488,7 @@ export function HostModeBody({ id }: { id: string }) {
                 label={t(`row.${row}`)}
                 icon={ROW_ICONS[row]}
                 sub={rowSub(row)}
-                value={row === "team" && event.teamCount != null ? String(event.teamCount) : undefined}
+                value={rowValue(row)}
                 onPress={actionFor(row)}
                 variant={row === "cancel" ? "destructive" : "default"}
                 chevron={row === "cancel" ? false : undefined}
@@ -487,6 +511,13 @@ export function HostModeBody({ id }: { id: string }) {
         cleanupId={id}
         ticketTypes={event.ticketTypes}
         onClose={() => setWalkupOpen(false)}
+      />
+
+      <LinkedReportsSheet
+        visible={linkingOpen}
+        mode={linkMode === "hidden" ? "readonly" : linkMode}
+        cleanup={event}
+        onClose={() => setLinkingOpen(false)}
       />
 
       <DuplicateEventSheet

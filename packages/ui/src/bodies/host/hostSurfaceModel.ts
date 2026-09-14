@@ -9,6 +9,7 @@ import type {
   SeatPoint,
 } from "@civfix/shared"
 import type { SparkPoint } from "../../primitives/trendSparklineModel"
+import { linkSheetMode } from "../linkReportsModel"
 
 export const MESSAGE_CTA_WINDOW_MS = 48 * 3_600_000
 
@@ -55,6 +56,7 @@ export type HostRowKey =
   | "tickets"
   | "resources"
   | "duplicate"
+  | "linked_reports"
   | "cancel"
 
 export type HostHeroKey = "registered" | "checked_in" | "attended"
@@ -89,6 +91,8 @@ export interface HostActionInput {
   scannerAvailable: boolean
   hasOrganization: boolean
   consoleReachable: boolean
+  isCleanup: boolean
+  linkedReportCount: number
 }
 
 export interface HostActionCard {
@@ -269,6 +273,16 @@ export function hostActionCards(input: HostActionInput): HostActionCard[] {
 
   const configure: HostRowKey[] = []
   if (editable && can.manageEvent) configure.push("edit")
+  if (
+    linkSheetMode({
+      stage,
+      canManage: can.manageEvent,
+      isCleanup: input.isCleanup,
+      linkedCount: input.linkedReportCount,
+    }) !== "hidden"
+  ) {
+    configure.push("linked_reports")
+  }
   if (before && can.manageTeam) configure.push("team")
   if (before && can.manageTickets && input.consoleReachable) configure.push("tickets")
   if (before && can.requestResources && input.hasOrganization) configure.push("resources")

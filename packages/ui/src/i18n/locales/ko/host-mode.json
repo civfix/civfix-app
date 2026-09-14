@@ -131,7 +131,10 @@
     "log_hours": "봉사 시간 기록",
     "log_hours_sub_one": "{{count}}명 체크인",
     "log_hours_sub_other": "{{count}}명 체크인",
-    "log_hours_none": "체크인한 사람이 없습니다"
+    "log_hours_none": "체크인한 사람이 없습니다",
+    "linked_reports": "연결된 제보",
+    "linked_reports_sub": "이 정리 활동에서 처리할 제보",
+    "linked_reports_none": "아직 연결된 제보가 없어요"
   },
   "no_shows": {
     "title": "나머지를 불참으로 표시할까요?",
@@ -157,5 +160,17 @@
     "success": "{{name}} 님이 체크인되었습니다.",
     "error": "현장 등록을 추가하지 못했습니다.",
     "error_forbidden": "현장 등록을 추가할 권한이 없습니다."
+  },
+  "linked_reports_sheet": {
+    "title": "연결된 제보",
+    "caption": "이 정리 활동이 처리할 제보를 추가하거나 뺄 수 있어요. 제보한 사람에게 이 이벤트가 표시돼요.",
+    "caption_readonly": "이미 끝난 이벤트예요. 연결된 제보는 바꿀 수 없어요.",
+    "save": "저장",
+    "cancel": "취소",
+    "close": "닫기",
+    "dismiss_a11y": "연결된 제보 닫기",
+    "saved": "연결된 제보를 업데이트했어요",
+    "error": "연결된 제보를 업데이트하지 못했어요. 다시 시도해 주세요.",
+    "error_forbidden": "이 이벤트를 관리할 수 있는 주최자만 제보를 바꿀 수 있어요."
   }
 }

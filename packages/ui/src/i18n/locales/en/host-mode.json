@@ -131,7 +131,10 @@
     "log_hours": "Log volunteer hours",
     "log_hours_sub_one": "{{count}} checked in",
     "log_hours_sub_other": "{{count}} checked in",
-    "log_hours_none": "No one was checked in"
+    "log_hours_none": "No one was checked in",
+    "linked_reports": "Linked reports",
+    "linked_reports_sub": "Reports this cleanup will handle",
+    "linked_reports_none": "None linked yet"
   },
   "no_shows": {
     "title": "Mark the rest as no-shows?",
@@ -157,5 +160,17 @@
     "success": "{{name}} is checked in.",
     "error": "That walk-up could not be added.",
     "error_forbidden": "You do not have permission to add a walk-up."
+  },
+  "linked_reports_sheet": {
+    "title": "Linked reports",
+    "caption": "Add or remove the reports this cleanup handles. Reporters see the event on their report.",
+    "caption_readonly": "This event has ended. Its linked reports can't be changed.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "dismiss_a11y": "Close linked reports",
+    "saved": "Linked reports updated",
+    "error": "Couldn't update the linked reports. Try again.",
+    "error_forbidden": "Only hosts who can manage this event can change its reports."
   }
 }

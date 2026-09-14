@@ -375,6 +375,8 @@ describe("action cards", () => {
     scannerAvailable: false,
     hasOrganization: true,
     consoleReachable: true,
+    isCleanup: false,
+    linkedReportCount: 0,
   }
 
   const rowsFor = (over: Partial<typeof base> & { stage: HostStage }) =>
@@ -458,6 +460,46 @@ describe("action cards", () => {
 
   it("leaves a cancelled event with nothing but a duplicate path", () => {
     expect(rowsFor({ stage: STAGES.cancelled })).toEqual(["duplicate"])
+  })
+
+  it("offers Linked reports right after Edit while a cleanup can still be changed", () => {
+    for (const stage of [STAGES.upcoming, STAGES.soon, STAGES.underway] as const) {
+      const rows = rowsFor({ stage, isCleanup: true, linkedReportCount: 0 })
+      expect(rows, stage).toContain("linked_reports")
+      expect(rows.indexOf("linked_reports"), stage).toBe(rows.indexOf("edit") + 1)
+    }
+    const configure = hostActionCards({
+      ...base,
+      stage: STAGES.upcoming,
+      isCleanup: true,
+      linkedReportCount: 0,
+    }).find((card) => card.key === "configure")
+    expect(configure?.rows).toContain("linked_reports")
+  })
+
+  it("keeps the row off a gathering and off a host without manage_event", () => {
+    expect(rowsFor({ stage: STAGES.upcoming, isCleanup: false, linkedReportCount: 3 })).not.toContain(
+      "linked_reports",
+    )
+    expect(
+      rowsFor({
+        stage: STAGES.upcoming,
+        isCleanup: true,
+        linkedReportCount: 3,
+        can: { ...ALL, manageEvent: false },
+      }),
+    ).not.toContain("linked_reports")
+  })
+
+  it("shows an ended or cancelled cleanup the row only when there is something to show", () => {
+    for (const stage of [STAGES.wrapping_up, STAGES.past, STAGES.cancelled] as const) {
+      expect(rowsFor({ stage, isCleanup: true, linkedReportCount: 0 }), stage).not.toContain(
+        "linked_reports",
+      )
+      expect(rowsFor({ stage, isCleanup: true, linkedReportCount: 2 }), stage).toContain(
+        "linked_reports",
+      )
+    }
   })
 })
 

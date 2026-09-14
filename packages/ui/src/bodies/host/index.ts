@@ -13,6 +13,9 @@ export type { PhaseHeaderProps, PhaseDotProps, PhaseHeaderAction } from "./Phase
 export { HeroSkeleton, TilesSkeleton, RowsSkeleton } from "./HostSkeletons"
 export type { TilesSkeletonProps, RowsSkeletonProps } from "./HostSkeletons"
 
+export { LinkedReportsSheet } from "./LinkedReportsSheet"
+export type { LinkedReportsSheetProps } from "./LinkedReportsSheet"
+
 export { HostInsightsPanels } from "./HostInsightsPanels"
 export type { HostInsightsPanelsProps } from "./HostInsightsPanels"
 export {
