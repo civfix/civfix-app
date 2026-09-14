@@ -8,7 +8,6 @@ import { Text, Icon, iconMap, TextLink } from "../typography"
 import {
   Avatar,
   MetaDot,
-  RsvpPill,
   FollowButton,
   SkeletonBlock,
   SkeletonGroup,
@@ -84,7 +83,15 @@ function EventHero({ cleanup }: { cleanup: CleanupDTO }) {
   )
 }
 
-function GoingRow({ cleanup, goingCount }: { cleanup: CleanupDTO; goingCount: number }) {
+function GoingRow({
+  cleanup,
+  goingCount,
+  onViewAll,
+}: {
+  cleanup: CleanupDTO
+  goingCount: number
+  onViewAll: () => void
+}) {
   const styles = useStyles()
   const { t } = useT("event-detail")
   const { data } = useCleanupAttendees(cleanup.id)
@@ -94,10 +101,6 @@ function GoingRow({ cleanup, goingCount }: { cleanup: CleanupDTO; goingCount: nu
   const attendees = data?.attendees ?? []
   const stack = attendees.length > 0 ? attendees.slice(0, GOING_AVATAR_CAP) : [cleanup.organizer]
   const names = attendees.map((p) => (user && p.id === user.id ? t("going.you") : p.name))
-
-  const onViewAll = useCallback(() => {
-    useNavStore.getState().push({ kind: "members", id: cleanup.id, roomKind: "cleanup" })
-  }, [cleanup.id])
 
   return (
     <View style={styles.goingRow}>
@@ -363,6 +366,17 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
       .push({ kind: "person", id: cleanup.organizer.handle ?? cleanup.organizer.id })
   }, [cleanup.organizer.handle, cleanup.organizer.id])
 
+  const onViewAllMembers = useCallback(() => {
+    useNavStore.getState().push({ kind: "members", id: cleanup.id, roomKind: "cleanup" })
+  }, [cleanup.id])
+
+  const onLeave = useCallback(() => {
+    haptics.impactLight()
+    join.mutate(true, {
+      onSuccess: () => toast.show(t("actions.leave_toast")),
+    })
+  }, [haptics, join, t, toast])
+
   const onOpenReport = useCallback(
     (report: CleanupDTO["linkedReports"][number]) => {
       useNavStore.getState().push({
@@ -433,29 +447,32 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       </View>
 
-      {isLive && !actsAsHost ? (
-        hasTicketTypes ? (
-          isUpcoming || isRegistered ? (
-            <View style={styles.rsvp}>
-              <RegistrationBlock cleanup={cleanup} onGuestRegister={onSignedOutRsvp} />
-            </View>
-          ) : null
-        ) : (
-          <RsvpPill
-            going={going}
-            onToggle={(currentlyGoing) => {
-              if (!currentlyGoing) haptics.success()
-              join.mutate(currentlyGoing)
-            }}
-            busy={join.isPending}
-            ended={isEnded}
-            nextPath={next}
-            size="md"
-            fill
-            onSignedOutPress={onSignedOutRsvp}
-            style={styles.rsvp}
+      {isLive && !actsAsHost && hasTicketTypes && (isUpcoming || isRegistered) ? (
+        <View style={styles.rsvp}>
+          <RegistrationBlock cleanup={cleanup} onGuestRegister={onSignedOutRsvp} />
+        </View>
+      ) : null}
+
+      {cleanup.slots.length > 0 ? (
+        <View style={[styles.section, styles.sectionFlush]}>
+          <EventSlotsBlock
+            key={cleanup.id}
+            cleanupId={cleanup.id}
+            slots={cleanup.slots}
+            joined={going}
+            readonly={isDone || isCancelled || isEnded}
+            cancelled={isCancelled}
+            timeZone={cleanup.timezone ?? undefined}
+            mode={hasTicketTypes ? "registration" : "claim"}
+            viewer={{ actsAsHost, registered: isRegistered }}
+            onViewAll={onViewAllMembers}
+            onGuestRsvp={onSignedOutRsvp}
           />
-        )
+        </View>
+      ) : isLive && !isEnded && !actsAsHost ? (
+        <View style={styles.section}>
+          <Text style={styles.slotsNone}>{t("event-slots:block.none_yet")}</Text>
+        </View>
       ) : null}
 
       {!actsAsHost && canCheckIn && isLive ? (
@@ -486,7 +503,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("going.heading")}</Text>
-        <GoingRow cleanup={cleanup} goingCount={goingCount} />
+        <GoingRow cleanup={cleanup} goingCount={goingCount} onViewAll={onViewAllMembers} />
         {canViewGuestContact ? (
           <View style={styles.guestsWrap}>
             <EventGuestsBlock
@@ -501,18 +518,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
           </View>
         ) : null}
       </View>
-
-      {cleanup.slots.length > 0 ? (
-        <View style={[styles.section, styles.sectionFlush]}>
-          <EventSlotsBlock
-            cleanupId={cleanup.id}
-            slots={cleanup.slots}
-            joined={going}
-            readonly={isDone || isCancelled || isEnded}
-            timeZone={cleanup.timezone ?? undefined}
-          />
-        </View>
-      ) : null}
 
       {showDetails ? (
         <View style={styles.section}>
@@ -608,6 +613,17 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
             accessibilityLabel={t("actions.share_a11y")}
             onPress={onShare}
           />
+          {going && !actsAsHost && isLive && !isEnded ? (
+            <EventActionRow
+              icon={iconMap.LogOut}
+              label={t("actions.leave")}
+              hint={t("actions.leave_hint")}
+              accessibilityLabel={t("actions.leave_a11y")}
+              destructive
+              disabled={join.isPending}
+              onPress={onLeave}
+            />
+          ) : null}
           {actsAsHost ? null : (
             <EventActionRow
               icon={iconMap.Flag}
@@ -673,7 +689,11 @@ function EventDetailSkeleton() {
           <SkeletonText width="68%" height={12} />
         </SkeletonGroup>
       </SkeletonGroup>
-      <SkeletonBlock width="100%" height={44} radius={radius.pill} style={styles.rsvp} />
+      <SkeletonGroup style={styles.section}>
+        <SkeletonText width="24%" height={11} />
+        <SkeletonBlock width="100%" height={56} radius={radius.md} />
+        <SkeletonBlock width="100%" height={56} radius={radius.md} />
+      </SkeletonGroup>
       <SkeletonGroup style={styles.section}>
         <SkeletonText width="24%" height={11} />
         <SkeletonText width="96%" height={12} />
@@ -789,8 +809,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
 
   rsvp: {
-    height: 44,
-    alignSelf: "stretch",
     marginTop: t.space["4"],
     marginBottom: t.space["4"],
   },
@@ -803,6 +821,11 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sectionFlush: {
     paddingTop: 0,
+  },
+  slotsNone: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    color: t.colors.textSubtle,
   },
   sectionTitle: {
     fontFamily: t.fontFamily.bodySemiBold,

@@ -61,7 +61,7 @@ import {
   type CleanupFormValue,
 } from "./CleanupForm"
 import { formEndInstantMs, formInstantMs, isScheduleInFutureInZone } from "./calendarModel"
-import { buildSlotInputs } from "./eventSlotsForm"
+import { addSlotDraft, buildSlotInputs, hasNamedSlot, makeSlotKey } from "./eventSlotsForm"
 import {
   EVENT_WIZARD_STEPS,
   eventStepIndex,
@@ -91,6 +91,16 @@ const STEP_ICONS: Record<Exclude<EventWizardStep, "review">, LucideIcon> = {
   when: iconMap.Calendar,
   where: iconMap.MapPin,
   details: iconMap.Users,
+}
+
+/**
+ * The >=1 slot floor applied to a RESUMED draft. `emptyCleanupForm` already seeds a fresh one, so this
+ * only catches a draft begun before the floor existed - it must stay a pure plan tweak, because the
+ * store write happens in the mount effect (see `planHostDraftMount`'s doc).
+ */
+function withSeededSlot(plan: HostDraftMountPlan): HostDraftMountPlan {
+  if (plan.value.slots.length > 0) return plan
+  return { ...plan, value: { ...plan.value, slots: addSlotDraft([], makeSlotKey()) } }
 }
 
 function wizardDraftOf(value: CleanupFormValue): EventWizardDraft {
@@ -238,7 +248,6 @@ function ReviewSummary({
     .map((slot) => slot.title.trim())
     .filter((title) => title.length > 0)
     .join(", ")
-  const extras = [bring, slots].filter((part) => part.length > 0).join(" · ")
 
   return (
     <View style={styles.summaryCard}>
@@ -265,8 +274,14 @@ function ReviewSummary({
       />
       <SummaryRow
         icon={STEP_ICONS.details}
+        label={t("wizard.summary.slots")}
+        value={slots.length > 0 ? slots : empty}
+        onEdit={() => onEdit("details")}
+      />
+      <SummaryRow
+        icon={STEP_ICONS.details}
         label={t("wizard.summary.extras")}
-        value={extras.length > 0 ? extras : t("wizard.summary.noExtras")}
+        value={bring.length > 0 ? bring : t("wizard.summary.noExtras")}
         onEdit={() => onEdit("details")}
       />
     </View>
@@ -326,12 +341,16 @@ function HostForm({
         }
       : emptyCleanupForm(seedReportId, seedOrganizationId)
     const { active, value } = useCleanupDraft.getState()
-    return planHostDraftMount({ active, value }, seedReportId, draftSeedReportId, initial, seedPoint)
+    return withSeededSlot(
+      planHostDraftMount({ active, value }, seedReportId, draftSeedReportId, initial, seedPoint),
+    )
   })
   const startedFresh = mountPlan.startedFresh
   const [draftCommitted, setDraftCommitted] = useState(false)
   useEffect(() => {
     commitHostDraftMount(useCleanupDraft.getState(), mountPlan)
+    const resumed = useCleanupDraft.getState().value
+    if (resumed && resumed.slots.length === 0) useCleanupDraft.getState().patch(mountPlan.value)
     draftSeedReportId = mountPlan.seedReportId
     setDraftCommitted(true)
   }, [mountPlan])
@@ -361,7 +380,9 @@ function HostForm({
   const stepErrorKey =
     step === "when" && form.date !== null && form.time !== null && !hasValidEventEnd(form)
       ? "wizard.when.error_end"
-      : `wizard.${step}.error`
+      : step === "details" && hasNamedSlot(form.slots)
+        ? "wizard.details.error_invalid"
+        : `wizard.${step}.error`
   const showWizardBack =
     editingFromReview || prevEventStep(step) !== null || standalone === undefined
 
@@ -456,7 +477,7 @@ function HostForm({
         ...(form.description.trim().length > 0 ? { description: form.description.trim() } : {}),
         ...(form.bring.length > 0 ? { bring: form.bring } : {}),
         ...(linkedReportIds ? { linkedReportIds } : {}),
-        ...(slots.length > 0 ? { slots } : {}),
+        slots,
         ...(form.organizationId ? { organizationId: form.organizationId } : {}),
       },
       {

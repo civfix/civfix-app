@@ -6,7 +6,7 @@
     "ended": "종료된 이벤트예요"
   },
   "going": {
-    "heading": "참가",
+    "heading": "참석자",
     "count_one": "{{count}}명 참가",
     "count_other": "{{count}}명 참가",
     "empty": "아직 참가자가 없어요.",
@@ -27,14 +27,18 @@
     "report_a11y": "이벤트 신고",
     "message_crew": "크루에게 메시지",
     "message_crew_a11y": "이벤트 크루에게 메시지 보내기",
-    "message_crew_hint": "참가 신청하면 채팅에 참여할 수 있어요",
+    "message_crew_hint": "역할을 신청하면 채팅에 참여할 수 있습니다",
     "message_crew_hint_ended": "참가 신청했던 사람만 이 채팅을 열 수 있어요",
     "cancel_event": "이벤트 취소",
     "cancel_event_a11y": "이 이벤트 취소",
     "invite": "초대",
     "invite_a11y": "이 이벤트에 사람들을 초대하기",
     "repost": "리포스트",
-    "repost_a11y": "이 이벤트 리포스트"
+    "repost_a11y": "이 이벤트 리포스트",
+    "leave": "행사 나가기",
+    "leave_a11y": "이 행사에서 나가기",
+    "leave_hint": "채팅에서 나가고 맡은 역할도 취소됩니다",
+    "leave_toast": "행사에서 나왔습니다"
   },
   "where": {
     "route": "청소 경로",

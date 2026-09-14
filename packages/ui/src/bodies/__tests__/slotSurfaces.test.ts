@@ -155,13 +155,35 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
     expect(source.match(/hitSlop=\{PILL_HIT_SLOP\}/g) ?? []).toHaveLength(2)
   })
 
-  it("renders the filled summary the model documents, and omits it when any slot is unlimited", () => {
-    // `slotsFilledSummary` shipped as a documented export ("the block's one-line summary") that nothing
-    // rendered. It is rendered here now; a null capacity means at least one slot is unlimited, and
-    // printing a sum then would understate an event that can take everyone.
-    expect(source).toContain("slotsFilledSummary(slots)")
-    expect(source).toContain("filled.capacity !== null && filled.capacity > 0")
+  it("prints one honest head summary for all three board shapes", () => {
+    // A null capacity means at least one slot is unlimited, and printing a sum then would understate an
+    // event that can take everyone - so those boards print the claim count, or say nobody has yet.
+    expect(source).toContain("slotBoardSummary(slots)")
+    expect(source).toContain('summary.kind === "capped" && summary.capacity !== null && summary.capacity > 0')
     expect(source).toContain('t("block.filled"')
+    expect(source).toContain('t("block.signed_up"')
+    expect(source).toContain('t("block.none_signed_up")')
+  })
+
+  it("keeps the disclosure a SIBLING of the pill, never its parent", () => {
+    // RNW renders Pressable as a <button>; nesting one inside another is invalid DOM the browser
+    // silently re-parents, which is why the row was never a single tap target.
+    expect(source).toMatch(/<\/Pressable>\s*\{pill \?/)
+    expect(source).toContain("accessibilityState={{ expanded }}")
+  })
+
+  it("derives the hidden count from the DTO's claimed, never from the roster array", () => {
+    // One rule covers three truncations: the follow-only filter, the 50-row roster cap, and a roster
+    // that is momentarily behind the detail.
+    const call = source.match(/slotPeopleView\(\{[\s\S]*?\}\)/)?.[0] ?? ""
+    expect(call).toContain("claimed: slot.claimed")
+    expect(source).not.toContain("attendees.length -")
+  })
+
+  it("reads the roster through the SHARED attendees query, not a request of its own", () => {
+    expect(source).toContain("useCleanupAttendees(cleanupId)")
+    expect(source).toContain("claimantsBySlot(")
+    expect(source).not.toContain("api.")
   })
 })
 
@@ -218,6 +240,19 @@ describe("the slot editor validates against the EVENT's window, not just the row
     expect(editor).toContain("disabled={eventEnd === null}")
   })
 
+  it("refuses to remove the LAST card, and says why", () => {
+    // Every event needs a board, so the floor is an affordance (a disabled control with a hint) plus the
+    // step gate - never a silent no-op inside removeSlotDraft.
+    expect(editor).toContain("disabled={total === 1}")
+    expect(editor).toContain('t("editor.remove_last_hint")')
+  })
+
+  it("offers the common first slot as a one-tap chip instead of prefilling every board alike", () => {
+    expect(editor).toContain("value.every(isBlankSlotDraft)")
+    expect(editor).toContain('t("editor.suggest_general")')
+    expect(editor).toContain('index === 0 ? "editor.title_placeholder_first" : "editor.title_placeholder"')
+  })
+
   it("tells the host of an end-less event that timing a slot will store the end it shows", () => {
     const edit = code(readFileSync(new URL("../EditCleanupBody.tsx", import.meta.url), "utf8"))
     expect(editor).toContain("eventEndUnsaved && timed")
@@ -234,7 +269,10 @@ describe("the edit form's capacity-below-claimed error actually blocks Save", ()
 
   it("threads the live claim counts through the submit gate", () => {
     expect(form).toMatch(/slotsValid\(\s*value\.slots,/)
-    expect(edit).toContain("isCleanupFormComplete(form, cleanup.slots)")
+    // The third argument is the >=1 slot floor: ON for a live event, OFF once it has ended, because the
+    // server refuses any slot change afterwards and the floor would lock the host out of editing.
+    expect(edit).toContain("isCleanupFormComplete(form, cleanup.slots, { requireSlot: !ended })")
+    expect(edit).toContain("const ended = hasEventEnded(cleanup, Date.now())")
   })
 
   it("leaves the CREATE gate exactly as it was - a brand-new slot has no claims", () => {

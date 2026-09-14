@@ -28,9 +28,10 @@
       "error": "Set the meeting point on the map."
     },
     "details": {
-      "title": "Anything to bring?",
-      "help": "Optional - supplies and jobs people can claim.",
-      "error": "Give every signup slot a name and a valid capacity."
+      "title": "Who do you need?",
+      "help": "Add at least one sign-up slot. People join your event by signing up for one.",
+      "error": "Name at least one sign-up slot.",
+      "error_invalid": "Give every slot a name and a valid capacity."
     },
     "review": {
       "title": "Ready to publish?",
@@ -41,7 +42,8 @@
       "what": "What",
       "when": "When",
       "extras": "Details",
-      "noExtras": "Nothing extra"
+      "noExtras": "Nothing extra",
+      "slots": "Slots"
     }
   },
   "publish": {

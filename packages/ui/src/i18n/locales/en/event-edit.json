@@ -18,6 +18,6 @@
   },
   "denied": {
     "title": "Only hosts who can manage this event can edit it",
-    "body": "Ask the host to update the details, or RSVP to join from the event page."
+    "body": "Ask the host to update the details, or sign up for a slot from the event page."
   }
 }

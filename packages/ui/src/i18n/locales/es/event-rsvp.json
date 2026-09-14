@@ -12,7 +12,7 @@
   "error": {
     "closed": "Este evento está cerrado.",
     "ended": "Este evento ya finalizó.",
-    "not_allowed": "No puedes confirmar asistencia a este evento.",
-    "generic": "No se pudo actualizar tu asistencia. Inténtalo de nuevo."
+    "not_allowed": "No puedes inscribirte en este evento.",
+    "generic": "No se pudo actualizar tu inscripción. Inténtalo de nuevo."
   }
 }

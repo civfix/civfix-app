@@ -49,7 +49,7 @@ function draft(over: Partial<EventWizardDraft> = {}): EventWizardDraft {
     endTime: FUTURE_END,
     timezone: DEVICE_ZONE,
     coords: { lat: 34.05, lng: -118.24 },
-    slots: [],
+    slots: [slot()],
     ...over,
   }
 }
@@ -193,9 +193,12 @@ describe("per-step gating", () => {
     expect(eventStepSatisfied("where", draft(), NOW)).toBe(true)
   })
 
-  it("details is optional but still rejects a broken slot row", () => {
-    expect(eventStepSatisfied("details", draft({ slots: [] }), NOW)).toBe(true)
+  it("details requires at least one NAMED slot, and still rejects a broken row", () => {
+    const blank = slot({ title: "", capacity: "" })
+    expect(eventStepSatisfied("details", draft({ slots: [] }), NOW)).toBe(false)
+    expect(eventStepSatisfied("details", draft({ slots: [blank] }), NOW)).toBe(false)
     expect(eventStepSatisfied("details", draft({ slots: [slot()] }), NOW)).toBe(true)
+    expect(eventStepSatisfied("details", draft({ slots: [blank, slot()] }), NOW)).toBe(true)
     expect(eventStepSatisfied("details", draft({ slots: [slot({ title: "" })] }), NOW)).toBe(false)
     expect(
       eventStepSatisfied("details", draft({ slots: [slot({ capacity: "-3" })] }), NOW),

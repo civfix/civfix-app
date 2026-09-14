@@ -6,7 +6,7 @@
     "ended": "Este evento ya terminó"
   },
   "going": {
-    "heading": "Asistentes",
+    "heading": "Quién asiste",
     "count_one": "{{count}} asistente",
     "count_other": "{{count}} asistentes",
     "empty": "Todavía no va nadie.",
@@ -27,14 +27,18 @@
     "report_a11y": "Reportar este evento",
     "message_crew": "Mensaje al grupo",
     "message_crew_a11y": "Enviar mensaje al equipo del evento",
-    "message_crew_hint": "Confirma tu asistencia para entrar al chat",
+    "message_crew_hint": "Inscríbete en un puesto para entrar al chat",
     "message_crew_hint_ended": "Solo quienes se apuntaron pueden abrir este chat",
     "cancel_event": "Cancelar evento",
     "cancel_event_a11y": "Cancelar este evento",
     "invite": "Invitar",
     "invite_a11y": "Invita a gente a este evento",
     "repost": "Republicar",
-    "repost_a11y": "Republicar este evento"
+    "repost_a11y": "Republicar este evento",
+    "leave": "Salir del evento",
+    "leave_a11y": "Salir de este evento",
+    "leave_hint": "Saldrás del chat y dejarás tu puesto",
+    "leave_toast": "Saliste del evento"
   },
   "where": {
     "route": "Ruta de limpieza",

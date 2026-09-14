@@ -100,12 +100,12 @@ describe("an ended event closes RSVP without closing check-in", () => {
     expect(source).toContain("const status = deriveCleanupStatus(cleanup, now)")
     expect(source).toContain("const isLive = !isCancelled && !isDone")
     expect(source).toContain("const isUpcoming = isLive && !isEnded")
-    expect(source).toContain("ended={isEnded}")
+    expect(source).toContain("readonly={isDone || isCancelled || isEnded}")
   })
 
   it("still shows a registered attendee their ticket once the event has ended", () => {
     const source = code(body)
-    expect(source).toContain("isUpcoming || isRegistered ? (")
+    expect(source).toContain("(isUpcoming || isRegistered) ? (")
     expect(source).toContain('const isRegistered = cleanup.myRegistration?.status === "registered"')
   })
 })

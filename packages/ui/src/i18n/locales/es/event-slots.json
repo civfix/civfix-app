@@ -1,9 +1,11 @@
 {
   "block": {
-    "heading": "Puestos disponibles",
-    "claim_joins_hint": "Al tomar un puesto también confirmas tu asistencia.",
-    "filled": "{{claimed}}/{{capacity}} lugares ocupados",
-    "no_slot_hint": "¿Aún no lo tienes claro? Confirma tu asistencia sin puesto y ven a cualquier hora."
+    "heading": "Puestos de inscripción",
+    "filled": "{{claimed}} de {{capacity}} lugares ocupados",
+    "signed_up_one": "{{count}} inscrito",
+    "signed_up_other": "{{count}} inscritos",
+    "none_signed_up": "Nadie se ha inscrito todavía",
+    "none_yet": "El anfitrión aún no ha añadido puestos de inscripción."
   },
   "row": {
     "open": "Disponible",
@@ -11,17 +13,21 @@
     "remaining_other": "Quedan {{count}} lugares",
     "full": "Completo",
     "full_sub": "No quedan lugares",
-    "you_claimed": "Tienes este puesto",
-    "claimed_count_one": "{{count}} persona",
-    "claimed_count_other": "{{count}} personas",
-    "claim": "Tomar",
-    "claimed": "Tomado",
+    "you_claimed": "Tu puesto",
+    "claimed_count_one": "{{count}} inscrito",
+    "claimed_count_other": "{{count}} inscritos",
+    "claim": "Inscribirme",
+    "claimed": "Inscrito",
     "switch": "Cambiar",
-    "claim_a11y": "Tomar el puesto {{title}}",
+    "claim_a11y": "Inscribirme en el puesto {{title}}",
     "release_a11y": "Dejar el puesto {{title}}",
     "switch_a11y": "Cambiar al puesto {{title}}",
     "any_time": "A cualquier hora",
-    "window_a11y": "{{title}}, {{range}}"
+    "window_a11y": "{{title}}, {{range}}",
+    "expand_a11y": "{{title}}, {{count}} inscritos",
+    "expand_hint": "Muestra quién se inscribió",
+    "collapse_hint": "Oculta quién se inscribió",
+    "faces_more": "+{{count}}"
   },
   "editor": {
     "add_first": "Añadir un puesto",
@@ -60,7 +66,11 @@
     "generated_title_prefix": "Turno",
     "generated_title": "{{prefix}} {{n}}",
     "prefix_a11y": "Prefijo para el nombre de los turnos generados",
-    "window_outside_event": "Los turnos deben caber dentro del horario del evento."
+    "window_outside_event": "Los turnos deben caber dentro del horario del evento.",
+    "suggest_general": "Voluntariado general",
+    "suggest_general_a11y": "Usar «Voluntariado general» como nombre del primer puesto",
+    "title_placeholder_first": "p. ej. Voluntariado general",
+    "remove_last_hint": "Todo evento necesita al menos un puesto."
   },
   "error": {
     "empty_title": "Ponle un nombre a este puesto.",
@@ -80,7 +90,31 @@
     "window_a11y": "{{title}} de {{range}}"
   },
   "toast": {
-    "claimed": "Puesto tomado",
-    "released": "Se liberó tu puesto"
+    "claimed": "Inscripción hecha",
+    "released": "Se liberó tu puesto",
+    "switched": "Cambiaste a {{title}}"
+  },
+  "viewer": {
+    "holds": "Estás inscrito en {{slot}}",
+    "held": "Te inscribiste en {{slot}}",
+    "going_no_slot": "Vas a asistir. Elige un puesto para que el anfitrión sepa dónde ayudarás.",
+    "pick_hint": "Elige un puesto para inscribirte.",
+    "guest_link": "¿No tienes cuenta? Confirma como invitado",
+    "guest_link_a11y": "Confirmar asistencia como invitado sin cuenta",
+    "ticketed_hint": "Los lugares se reservan al registrarte."
+  },
+  "people": {
+    "you": "Tú",
+    "view_profile_a11y": "{{name}}, ver perfil",
+    "error": "No se pudo cargar quién se inscribió.",
+    "retry": "Reintentar",
+    "be_first": "Sé la primera persona en inscribirte.",
+    "more": "+{{count}} más",
+    "more_a11y": "Ver a todas las personas inscritas",
+    "partial": "Mostrando {{shown}} de {{claimed}}",
+    "gated_title": "Aquí solo aparecen las personas que sigues",
+    "gated_hint": "Inscríbete en un puesto para ver a todos los asistentes.",
+    "gated_empty_one": "{{count}} inscrito. Inscríbete en un puesto para ver quién es.",
+    "gated_empty_other": "{{count}} inscritos. Inscríbete en un puesto para ver quiénes son."
   }
 }
