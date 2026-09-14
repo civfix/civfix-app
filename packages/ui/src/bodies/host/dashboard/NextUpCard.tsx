@@ -97,23 +97,6 @@ export function NextUpCard({
     <SectionCard label={t("next_up.section")}>
       <View style={styles.root}>
         <Pressable
-          onPress={share}
-          accessibilityRole="button"
-          accessibilityLabel={t("next_up.share_a11y", { title: event.title })}
-          hitSlop={SHARE_HIT_SLOP}
-          {...focusRingProps}
-          style={(state) => [
-            styles.share,
-            webTransition,
-            webCursorPointer,
-            webHover(state) ? styles.shareHovered : null,
-            state.pressed ? styles.sharePressed : null,
-          ]}
-        >
-          <Icon icon={iconMap.Share} size={SHARE_ICON} color={th.colors.textMuted} />
-        </Pressable>
-
-        <Pressable
           onPress={open}
           accessibilityRole="button"
           accessibilityLabel={cardLabel}
@@ -202,6 +185,23 @@ export function NextUpCard({
           accessibilityLabel={t("next_up.host_tools_a11y", { title: event.title })}
           onPress={hostTools}
         />
+
+        <Pressable
+          onPress={share}
+          accessibilityRole="button"
+          accessibilityLabel={t("next_up.share_a11y", { title: event.title })}
+          hitSlop={SHARE_HIT_SLOP}
+          {...focusRingProps}
+          style={(state) => [
+            styles.share,
+            webTransition,
+            webCursorPointer,
+            webHover(state) ? styles.shareHovered : null,
+            state.pressed ? styles.sharePressed : null,
+          ]}
+        >
+          <Icon icon={iconMap.Share} size={SHARE_ICON} color={th.colors.textMuted} />
+        </Pressable>
       </View>
     </SectionCard>
   )

@@ -7,7 +7,7 @@ import { useLocale, useT } from "../i18n"
 
 export interface SlotGroupHeaderProps {
   title: string
-  claimed: number
+  claimed: number | null
   capacity: number | null
   startsAt: string | null
   endsAt: string | null
@@ -37,11 +37,13 @@ export function SlotGroupHeader({
         <Text style={styles.slotHeaderTitle} numberOfLines={1}>
           {title}
         </Text>
-        <View style={styles.slotHeaderCount}>
-          <Text style={styles.slotHeaderCountText}>
-            {capacity == null ? String(claimed) : `${claimed}/${capacity}`}
-          </Text>
-        </View>
+        {claimed == null ? null : (
+          <View style={styles.slotHeaderCount}>
+            <Text style={styles.slotHeaderCountText}>
+              {capacity == null ? String(claimed) : `${claimed}/${capacity}`}
+            </Text>
+          </View>
+        )}
       </View>
       {range ? (
         <Text style={styles.slotHeaderRange} numberOfLines={1}>

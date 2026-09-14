@@ -1105,9 +1105,11 @@ describe("portfolio surface", () => {
     expect(body).toContain("shareLink({ title: event.title, path: sharePathFor(event) })")
   })
 
-  it("reaches the share icon before the card body on a web tab sweep", () => {
+  it("reaches the card body, then host tools, then the share icon on a web tab sweep", () => {
     const card = dashboardSource("NextUpCard.tsx")
-    expect(card.indexOf("onPress={share}")).toBeLessThan(card.indexOf("onPress={open}"))
+    expect(card.indexOf("onPress={open}")).toBeLessThan(card.indexOf("onPress={hostTools}"))
+    expect(card.indexOf("onPress={hostTools}")).toBeLessThan(card.indexOf("onPress={share}"))
+    expect(card).toMatch(/share: \{\s*position: "absolute",\s*top: 0,\s*right: 0,/)
   })
 
   it("keeps the share icon and the host-tools button OUTSIDE the card pressable", () => {

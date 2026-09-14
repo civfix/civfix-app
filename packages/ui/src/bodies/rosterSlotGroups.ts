@@ -32,7 +32,7 @@ export type RosterListItem<P extends RosterSlotPerson = RosterSlotPerson> =
       /** null = the trailing "no slot" group. */
       slotId: string | null
       title: string
-      claimed: number
+      claimed: number | null
       capacity: number | null
       startsAt: string | null
       endsAt: string | null
@@ -41,9 +41,10 @@ export type RosterListItem<P extends RosterSlotPerson = RosterSlotPerson> =
   | { kind: "member"; person: P }
 
 /**
- * `claimed` on the header is the number of roster rows ACTUALLY in the group, not `slot.claimed`:
- * the header sits directly above the rows it counts, so a disagreement between the two would be
- * visible on screen. `slot.claimed` still drives the attendee-facing picker, which has no roster.
+ * `claimed` on a slot header is that slot's OWN `claimed` off the event's slot board, never the
+ * number of rows in the list: the roster is paged and filtered, so a page-local count would tell a
+ * host filtering for "not checked in" that a full slot is nearly empty. The trailing "no slot" group
+ * answers to no slot, so it carries `claimed: null` and the header prints no fraction for it.
  */
 export function groupRosterBySlot<P extends RosterSlotPerson>(
   attendees: readonly P[],
@@ -67,11 +68,11 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
   const ordered = slotDisplayOrder(slots)
   const known = new Set(ordered.map((s) => s.id))
   const emptySlotTitle = opts.emptySlotTitle ?? null
-  const headerFor = (slot: EventSlotDTO, claimed: number): RosterListItem<P> => ({
+  const headerFor = (slot: EventSlotDTO): RosterListItem<P> => ({
     kind: "slot-header",
     slotId: slot.id,
     title: slot.title,
-    claimed,
+    claimed: slot.claimed,
     capacity: slot.capacity ?? null,
     startsAt: slot.startsAt ?? null,
     endsAt: slot.endsAt ?? null,
@@ -80,11 +81,11 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
     const members = bySlot.get(slot.id) ?? []
     if (members.length === 0) {
       if (emptySlotTitle === null) continue
-      items.push(headerFor(slot, 0))
+      items.push(headerFor(slot))
       items.push({ kind: "slot-empty", slotId: slot.id, title: emptySlotTitle })
       continue
     }
-    items.push(headerFor(slot, members.length))
+    items.push(headerFor(slot))
     for (const person of members) items.push({ kind: "member", person })
   }
 
@@ -100,7 +101,7 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
       kind: "slot-header",
       slotId: null,
       title: opts.unassignedTitle,
-      claimed: trailing.length,
+      claimed: null,
       capacity: null,
       startsAt: null,
       endsAt: null,

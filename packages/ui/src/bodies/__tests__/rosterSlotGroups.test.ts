@@ -3,6 +3,7 @@
  * `sortOrder`, an unclaimed slot still shows a header (that gap is the point of the view), the "no
  * slot" group is LAST, and every item has a stable key for the FlatList.
  */
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
 import {
@@ -64,7 +65,7 @@ describe("groupRosterBySlot", () => {
       kind: "slot-header",
       slotId: null,
       title: "No slot",
-      claimed: 1,
+      claimed: null,
       capacity: null,
       startsAt: null,
       endsAt: null,
@@ -92,9 +93,9 @@ describe("groupRosterBySlot", () => {
     expect(shape(items)).toEqual(["slot-header:s1", "member:p1"])
   })
 
-  it("counts the members actually present, not the DTO's claimed field", () => {
+  it("takes claimed from the slot board, not from the rows on this page", () => {
     const items = groupRosterBySlot([person("p1", "s1")], [slot("s1", { claimed: 9 })], OPTS)
-    expect(items[0]).toMatchObject({ kind: "slot-header", claimed: 1 })
+    expect(items[0]).toMatchObject({ kind: "slot-header", claimed: 9 })
   })
 
   it("folds a member whose slot no longer exists into the unassigned group", () => {
@@ -154,6 +155,62 @@ describe("a paginated roster omits the empty-slot placeholder", () => {
       "slot-header:s2",
       "member:p1",
     ])
+  })
+})
+
+describe("the header count survives paging and filtering", () => {
+  const slots = [
+    slot("s1", { title: "Check-in", sortOrder: 0, capacity: 40, claimed: 40 }),
+    slot("s2", { title: "Grill", sortOrder: 1, capacity: 6, claimed: 5 }),
+  ]
+  const OPEN = { unassignedTitle: "No slot" }
+
+  it("reports the full slot even when one row of it survived the filter", () => {
+    const items = groupRosterBySlot([person("p1", "s1")], slots, OPEN)
+    expect(items[0]).toMatchObject({ kind: "slot-header", claimed: 40, capacity: 40 })
+  })
+
+  it("reports the same count on every page of a long roster", () => {
+    const first = groupRosterBySlot([person("p1", "s1"), person("p2", "s1")], slots, OPEN)
+    const second = groupRosterBySlot([person("p3", "s1")], slots, OPEN)
+    expect(first[0]).toMatchObject({ claimed: 40 })
+    expect(second[0]).toMatchObject({ claimed: 40 })
+  })
+
+  it("keeps each slot on its own count when several groups are on the page", () => {
+    const items = groupRosterBySlot([person("p1", "s1"), person("p2", "s2")], slots, OPEN)
+    expect(items.filter((item) => item.kind === "slot-header")).toMatchObject([
+      { slotId: "s1", claimed: 40 },
+      { slotId: "s2", claimed: 5 },
+    ])
+  })
+
+  it("carries the slot's count onto an empty-placeholder header too", () => {
+    const items = groupRosterBySlot([], [slot("s1", { capacity: 4, claimed: 3 })], OPTS)
+    expect(items[0]).toMatchObject({ kind: "slot-header", claimed: 3, capacity: 4 })
+  })
+})
+
+describe("the no-slot group has no fraction to print", () => {
+  it("leaves claimed null on the trailing group, page count or not", () => {
+    const items = groupRosterBySlot([person("p1"), person("p2")], [slot("s1")], {
+      unassignedTitle: "No slot",
+    })
+    const trailing = items.find((item) => item.kind === "slot-header" && item.slotId === null)
+    expect(trailing).toMatchObject({ claimed: null, capacity: null })
+  })
+
+  it("leaves claimed null for orphans folded in from a deleted slot", () => {
+    const items = groupRosterBySlot([person("p1", "gone")], [slot("s1")], {
+      unassignedTitle: "No slot",
+    })
+    expect(items[0]).toMatchObject({ kind: "slot-header", slotId: null, claimed: null })
+  })
+
+  it("makes the header skip the count badge entirely on a null claimed", () => {
+    const header = readFileSync(new URL("../SlotGroupHeader.tsx", import.meta.url), "utf8")
+    expect(header).toContain("claimed: number | null")
+    expect(header).toContain("{claimed == null ? null : (")
   })
 })
 
