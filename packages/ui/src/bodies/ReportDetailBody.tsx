@@ -1062,33 +1062,6 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
   },
 
-  addEventBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    height: 46,
-    marginTop: t.space["4"],
-    borderRadius: t.radius.pill,
-    borderWidth: 1.5,
-  },
-  addEventBtnIdle: {
-    backgroundColor: t.colors.surface,
-    borderColor: t.colors.borderStrong,
-  },
-  addEventBtnOn: {
-    backgroundColor: t.colors.brand.moss,
-    borderColor: t.colors.brand.moss,
-  },
-  addEventText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
-    color: t.colors.text,
-  },
-  addEventTextOn: {
-    color: t.colors.onAccent,
-  },
-
   linkedSection: {
     marginTop: t.space["5"],
   },

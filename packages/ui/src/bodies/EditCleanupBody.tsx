@@ -77,10 +77,12 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   const [saveError, setSaveError] = useState<string | null>(null)
 
   const linkedReports = cleanup.linkedReports
+  const linkedReportIds = linkedReports.map((report) => report.id).join(",")
   useEffect(() => {
     useLinkedReportCards.getState().put(linkedReports.map(linkedRefToCardData))
-    return () => useLinkedReportCards.getState().clear()
-  }, [linkedReports])
+  }, [linkedReportIds])
+
+  useEffect(() => () => useLinkedReportCards.getState().clear(), [])
 
   const scheduleUntouched =
     form.date != null &&

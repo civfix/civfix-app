@@ -43,6 +43,7 @@ import { appErrorCode } from "./errorCode"
 import { pushCleanup } from "./navHelpers"
 import { useCleanupDraft } from "./cleanupDraftStore"
 import { useLinkedReportCards } from "./linkedReportCards"
+import { linkedReportsSummary } from "./linkReportsModel"
 import {
   commitHostDraftMount,
   isGenuineHostExit,
@@ -249,6 +250,10 @@ function ReviewSummary({
     .map((slot) => slot.title.trim())
     .filter((title) => title.length > 0)
     .join(", ")
+  const reportsSummary = linkedReportsSummary({
+    eventKind: value.eventKind,
+    linkedCount: value.linkedReportIds.length,
+  })
 
   return (
     <View style={styles.summaryCard}>
@@ -273,15 +278,11 @@ function ReviewSummary({
         sub={spot.length > 0 ? spot : null}
         onEdit={() => onEdit("where")}
       />
-      {value.eventKind === "cleanup" ? (
+      {reportsSummary ? (
         <SummaryRow
           icon={STEP_ICONS.where}
-          label={t("wizard.summary.reports")}
-          value={
-            value.linkedReportIds.length > 0
-              ? t("wizard.summary.reports_count", { count: value.linkedReportIds.length })
-              : t("wizard.summary.noReports")
-          }
+          label={t(reportsSummary.labelKey)}
+          value={t(reportsSummary.valueKey, { count: reportsSummary.count })}
           onEdit={() => onEdit("where")}
         />
       ) : null}

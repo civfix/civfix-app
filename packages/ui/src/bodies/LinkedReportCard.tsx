@@ -17,7 +17,7 @@ export interface LinkedReportCardData {
   type?: ReportType | null
   title?: string | null
   description?: string | null
-  status: ReportStatus
+  status: ReportStatus | null
   thumbUrl?: string | null
   addr?: string | null
   referenceCode?: string | null
@@ -146,9 +146,11 @@ export function LinkedReportCard({
             </Text>
           </>
         )}
-        <View style={styles.statusRow}>
-          <StatusBadge status={report.status} />
-        </View>
+        {report.status ? (
+          <View style={styles.statusRow}>
+            <StatusBadge status={report.status} />
+          </View>
+        ) : null}
       </View>
 
       {badge ? (

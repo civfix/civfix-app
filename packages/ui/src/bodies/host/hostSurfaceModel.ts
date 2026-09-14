@@ -9,6 +9,7 @@ import type {
   SeatPoint,
 } from "@civfix/shared"
 import type { SparkPoint } from "../../primitives/trendSparklineModel"
+import type { IconName } from "../../typography/icon-map"
 import { linkSheetMode } from "../linkReportsModel"
 
 export const MESSAGE_CTA_WINDOW_MS = 48 * 3_600_000
@@ -58,6 +59,25 @@ export type HostRowKey =
   | "duplicate"
   | "linked_reports"
   | "cancel"
+
+export const HOST_ROW_ICONS: Readonly<Record<HostRowKey, IconName>> = {
+  share: "Link2",
+  invite_team: "UserPlus",
+  message: "Megaphone",
+  email: "Mail",
+  check_in: "QrCode",
+  scan: "ScanLine",
+  walkup: "UserPlus",
+  mark_no_shows: "CheckCheck",
+  log_hours: "Clock",
+  edit: "Pencil",
+  team: "Users",
+  tickets: "Ticket",
+  resources: "Building2",
+  duplicate: "Copy",
+  linked_reports: "MapPin",
+  cancel: "Ban",
+}
 
 export type HostHeroKey = "registered" | "checked_in" | "attended"
 

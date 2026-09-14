@@ -20,6 +20,7 @@ export { HostInsightsPanels } from "./HostInsightsPanels"
 export type { HostInsightsPanelsProps } from "./HostInsightsPanels"
 export {
   ARRIVAL_BUCKET_MINUTES,
+  HOST_ROW_ICONS,
   MESSAGE_CTA_WINDOW_MS,
   arrivalOffsetLabel,
   arrivalSparkPoints,

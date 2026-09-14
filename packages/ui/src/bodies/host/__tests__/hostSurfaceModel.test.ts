@@ -3,6 +3,7 @@ import type { CleanupDTO, EventInsights } from "@civfix/shared"
 import { hostStage, type EventWindowLike, type HostStage } from "@civfix/shared/host"
 import {
   ARRIVAL_BUCKET_MINUTES,
+  HOST_ROW_ICONS,
   MAX_ARRIVAL_SPARK_BUCKETS,
   MESSAGE_CTA_WINDOW_MS,
   arrivalOffsetLabel,
@@ -21,6 +22,7 @@ import {
   sourceSeats,
   spotsLeft,
   stillExpected,
+  type HostRowKey,
   type HostSurfaceCapabilities,
   type HostSurfaceInput,
 } from "../hostSurfaceModel"
@@ -609,5 +611,32 @@ describe("the duplicate sheet's event ref", () => {
     expect(ref.registeredCount).toBe(0)
     expect(ref.capacity).toBeNull()
     expect(ref.referenceCode).toBeNull()
+  })
+})
+
+describe("every host row carries an icon of its own", () => {
+  it("gives the linked-reports row the map pin", () => {
+    expect(HOST_ROW_ICONS.linked_reports).toBe("MapPin")
+  })
+
+  it("names an icon for every row the action cards can emit, in any stage", () => {
+    const base = {
+      unmarked: 2,
+      scannerAvailable: true,
+      hasOrganization: true,
+      consoleReachable: true,
+      isCleanup: true,
+      linkedReportCount: 2,
+    }
+    const rows = new Set<HostRowKey>()
+    for (const stage of Object.values(STAGES)) {
+      for (const can of [ALL, NONE]) {
+        for (const card of hostActionCards({ ...base, stage, can })) {
+          for (const row of card.rows) rows.add(row)
+        }
+      }
+    }
+    expect(rows.size).toBeGreaterThan(0)
+    for (const row of rows) expect(HOST_ROW_ICONS[row], row).toBeTruthy()
   })
 })

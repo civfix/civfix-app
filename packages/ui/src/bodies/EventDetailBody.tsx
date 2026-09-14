@@ -48,6 +48,7 @@ import { MiniMap, useMapFocus } from "../map"
 import { FeedNotice } from "./FeedNotice"
 import { EventActionRow, EventActionRows } from "./EventActionRow"
 import { LinkedReportCard } from "./LinkedReportCard"
+import { LINKED_REPORTS_COUNT_AT } from "./linkReportsModel"
 import { EventHoursBlock } from "./EventHoursBlock"
 import { EventSlotsBlock } from "./EventSlotsBlock"
 import { EventGuestsBlock } from "./EventGuestsBlock"
@@ -194,8 +195,6 @@ function HostIdentity({ cleanup, isOrganizer }: { cleanup: CleanupDTO; isOrganiz
     </>
   )
 }
-
-const LINKED_REPORTS_COUNT_AT = 3
 
 function LinkedReportsStrip({
   reports,

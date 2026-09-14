@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import type { LinkedReportRef, ReportPinDTO } from "@civfix/shared"
 import {
   linkedRefToCardData,
+  mergeCardEntry,
   pinToCardData,
   sameCardEntry,
   useLinkedReportCards,
@@ -133,5 +134,38 @@ describe("the display cache", () => {
     expect(empty).toEqual({})
     useLinkedReportCards.getState().clear()
     expect(useLinkedReportCards.getState().cards).toBe(empty)
+  })
+})
+
+describe("a ref-sourced put never downgrades a reference code the pin already carried", () => {
+  beforeEach(() => {
+    useLinkedReportCards.setState({ cards: {} })
+  })
+
+  it("keeps the known reference when the incoming entry has none", () => {
+    const withRef = pinToCardData({ ...PIN, referenceCode: "CF-1234" })
+    useLinkedReportCards.getState().put([withRef])
+    useLinkedReportCards.getState().put([linkedRefToCardData({ ...REF, id: PIN.id })])
+    expect(useLinkedReportCards.getState().cards[PIN.id]?.referenceCode).toBe("CF-1234")
+  })
+
+  it("takes every other field from the incoming entry", () => {
+    useLinkedReportCards.getState().put([pinToCardData({ ...PIN, referenceCode: "CF-1234" })])
+    useLinkedReportCards.getState().put([linkedRefToCardData({ ...REF, id: PIN.id })])
+    const card = useLinkedReportCards.getState().cards[PIN.id]
+    expect(card?.category).toBe(REF.category)
+    expect(card?.status).toBe(REF.status)
+    expect(card?.title).toBe(REF.title)
+  })
+
+  it("lets a later reference code replace an earlier one", () => {
+    useLinkedReportCards.getState().put([pinToCardData({ ...PIN, referenceCode: "CF-1234" })])
+    useLinkedReportCards.getState().put([pinToCardData({ ...PIN, referenceCode: "CF-9999" })])
+    expect(useLinkedReportCards.getState().cards[PIN.id]?.referenceCode).toBe("CF-9999")
+  })
+
+  it("merges nothing when the id is new", () => {
+    const incoming = linkedRefToCardData(REF)
+    expect(mergeCardEntry(undefined, incoming)).toBe(incoming)
   })
 })

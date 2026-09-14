@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { LINKED_REPORTS_COUNT_AT, linkedReportsPatch } from "../linkReportsModel"
+import { HOST_ROW_ICONS } from "../host/hostSurfaceModel"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (src: string): string =>
@@ -20,6 +22,10 @@ const eventForm = JSON.parse(read("../../i18n/locales/en/event-form.json")) as R
   unknown
 >
 const hostMode = JSON.parse(read("../../i18n/locales/en/host-mode.json")) as Record<string, unknown>
+const eventCreate = JSON.parse(read("../../i18n/locales/en/event-create.json")) as Record<
+  string,
+  unknown
+>
 const mapUi = JSON.parse(read("../../i18n/locales/en/map-ui.json")) as Record<string, unknown>
 const reportDetail = JSON.parse(read("../../i18n/locales/en/report-detail.json")) as Record<
   string,
@@ -40,13 +46,14 @@ function catalogHas(catalog: Record<string, unknown>, path: string): boolean {
   return leaf in obj || `${leaf}_one` in obj || `${leaf}_other` in obj
 }
 
-describe("the link block lives inside the form's own scroller", () => {
-  it("ReportLinkPicker.tsx imports no Modal, FlatList or ScrollView", () => {
+describe("the picker adds no scroller of its own", () => {
+  it("ReportLinkPicker.tsx renders no scroll container and hosts no modal itself", () => {
     const imports = picker.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
     expect(imports).not.toMatch(/\bModal\b/)
     expect(imports).not.toMatch(/\bFlatList\b/)
     expect(imports).not.toMatch(/\bScrollView\b/)
     expect(picker).not.toMatch(/useScrollHost/)
+    expect(picker).not.toMatch(/<(ScrollView|FlatList|SectionList|Modal)\b/)
   })
 
   it("ReportLinkRow.tsx does the same", () => {
@@ -62,6 +69,36 @@ describe("the link block lives inside the form's own scroller", () => {
     expect(searchSheet).toContain("useReportSearch(")
     expect(searchSheet).not.toMatch(/\bapi\./)
     expect(row).not.toMatch(/\bapi\./)
+  })
+})
+
+describe("nothing fetches until the surface is actually asked for", () => {
+  it("mounts the search sheet only while the picker is searching", () => {
+    expect(picker).toMatch(/\{searching \? \(\s*<ReportSearchSheet\b/)
+    expect(picker).not.toMatch(/<ReportSearchSheet\s+visible=\{searching\}/)
+  })
+
+  it("keeps the search query off until the sheet is open AND the user has narrowed it", () => {
+    expect(searchSheet).toContain("{ enabled: visible && !idle }")
+    expect(searchSheet).toMatch(/const idle = [\s\S]*?\n\s*const search = useReportSearch\(/)
+  })
+
+  it("shows the search hint instead of listing the newest reports nationwide", () => {
+    expect(searchSheet).toContain('t("linkedReports.search_hint")')
+    expect(searchSheet).not.toContain("emptyNone")
+  })
+
+  it("disables an unselected hit once the link cap is reached, and says so", () => {
+    expect(searchSheet).toContain("disabled={atLimit && !value.includes(card.id)}")
+    expect(searchSheet).toContain('t("linkedReports.limit_reached"')
+  })
+
+  it("mounts the host sheet's picker only while that sheet is open", () => {
+    expect(hostSheet).toMatch(/\{visible \? \(\s*<ReportLinkPicker\b/)
+  })
+
+  it("dims the nearby list while it is still showing another cell's rows", () => {
+    expect(picker).toContain("nearby.isPlaceholderData")
   })
 })
 
@@ -81,11 +118,16 @@ describe("the basics step no longer owns the linked cards", () => {
 })
 
 describe("the wizard keeps its five steps and its draft hygiene", () => {
-  it("summarises the links on review behind a cleanup-kind guard", () => {
-    expect(create).toContain('value.eventKind === "cleanup" ? (')
-    expect(create).toContain('t("wizard.summary.reports")')
-    expect(create).toContain('t("wizard.summary.reports_count"')
-    expect(create).toContain('t("wizard.summary.noReports")')
+  it("summarises the links on review from the pure helper, not an inline kind check", () => {
+    expect(create).toContain("linkedReportsSummary({")
+    expect(create).not.toContain('value.eventKind === "cleanup"')
+    for (const key of [
+      "wizard.summary.reports",
+      "wizard.summary.reports_count",
+      "wizard.summary.noReports",
+    ]) {
+      expect(catalogHas(eventCreate, key), key).toBe(true)
+    }
   })
 
   it("clears the display cache wherever it clears the draft", () => {
@@ -99,18 +141,27 @@ describe("the wizard keeps its five steps and its draft hygiene", () => {
     expect(edit).toContain("linkedReports.map(linkedRefToCardData)")
     expect(edit).toContain("useLinkedReportCards.getState().clear()")
   })
+
+  it("re-seeds on the linked IDS, and clears the whole cache only on unmount", () => {
+    expect(edit).toMatch(/linkedReports\.map\(\(report\) => report\.id\)\.join\(","\)/)
+    expect(edit).toMatch(/\}, \[linkedReportIds\]\)/)
+    expect(edit).toContain("useEffect(() => () => useLinkedReportCards.getState().clear(), [])")
+    expect(edit).not.toMatch(/return \(\) => useLinkedReportCards\.getState\(\)\.clear\(\)/)
+  })
 })
 
 describe("host tools reach the same block", () => {
   it("names the row's icon and routes it at the sheet", () => {
-    expect(hostBody).toContain('linked_reports: "MapPin"')
+    expect(HOST_ROW_ICONS.linked_reports).toBe("MapPin")
+    expect(hostBody).toContain("HOST_ROW_ICONS[row]")
     expect(hostBody).toContain('case "linked_reports":')
     expect(hostBody).toContain("<LinkedReportsSheet")
     expect(hostBody).toContain("linkSheetMode({")
   })
 
   it("sends ONLY the linked ids in the patch, so nothing else on the event moves", () => {
-    expect(hostSheet).toContain("patch: { linkedReportIds: ids }")
+    expect(Object.keys(linkedReportsPatch(["a", "b"]))).toEqual(["linkedReportIds"])
+    expect(hostSheet).toContain("patch: linkedReportsPatch(ids)")
     expect(hostSheet).toContain("sameIdSet(ids, saved)")
   })
 
@@ -121,7 +172,8 @@ describe("host tools reach the same block", () => {
 
 describe("the event page names the count once the strip runs long", () => {
   it("switches to the counted heading past the visible tail", () => {
-    expect(detail).toContain("const LINKED_REPORTS_COUNT_AT = 3")
+    expect(LINKED_REPORTS_COUNT_AT).toBe(3)
+    expect(detail).toContain("reports.length > LINKED_REPORTS_COUNT_AT")
     expect(detail).toContain('t("linked_reports.heading_count", { count: reports.length })')
   })
 })

@@ -78,6 +78,15 @@ export function sameCardEntry(
   )
 }
 
+export function mergeCardEntry(
+  prev: LinkedReportCardEntry | undefined,
+  incoming: LinkedReportCardEntry,
+): LinkedReportCardEntry {
+  if (!prev) return incoming
+  const keepReference = incoming.referenceCode == null && prev.referenceCode != null
+  return keepReference ? { ...incoming, referenceCode: prev.referenceCode } : incoming
+}
+
 export interface LinkedReportCardsState {
   cards: Record<string, LinkedReportCardEntry>
   put: (cards: readonly LinkedReportCardEntry[]) => void
@@ -92,8 +101,9 @@ export const useLinkedReportCards = create<LinkedReportCardsState>((set) => ({
       const next = { ...state.cards }
       let changed = false
       for (const card of incoming) {
-        if (sameCardEntry(next[card.id], card)) continue
-        next[card.id] = card
+        const merged = mergeCardEntry(next[card.id], card)
+        if (sameCardEntry(next[card.id], merged)) continue
+        next[card.id] = merged
         changed = true
       }
       return changed ? { cards: next } : state

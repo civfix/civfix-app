@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest"
 import { MAX_LINKED_REPORTS, type ReportPinDTO, type ReportStatus } from "@civfix/shared"
 import type { HostStage } from "@civfix/shared/host"
 import {
+  LINKED_REPORTS_COUNT_AT,
   NEARBY_MAX,
   NEARBY_PREVIEW,
   linkBlockState,
   linkSheetMode,
+  linkedReportsPatch,
+  linkedReportsSummary,
   linkedRowHeadline,
   nearbyReportRows,
   sameIdSet,
@@ -192,5 +195,50 @@ describe("linkedRowHeadline", () => {
     expect(linkedRowHeadline({})).toBe("title")
     expect(linkedRowHeadline({ referenceCode: null })).toBe("title")
     expect(linkedRowHeadline({ referenceCode: "  " })).toBe("title")
+  })
+})
+
+describe("linkedReportsPatch", () => {
+  it("sends the linked ids and nothing else, so no other field on the event moves", () => {
+    expect(linkedReportsPatch(["a", "b"])).toEqual({ linkedReportIds: ["a", "b"] })
+    expect(Object.keys(linkedReportsPatch([]))).toEqual(["linkedReportIds"])
+  })
+
+  it("copies the ids so a later edit of the selection cannot mutate a sent patch", () => {
+    const ids = ["a"]
+    const patch = linkedReportsPatch(ids)
+    ids.push("b")
+    expect(patch.linkedReportIds).toEqual(["a"])
+  })
+
+  it("clears every link when the host unlinks the last report", () => {
+    expect(linkedReportsPatch([]).linkedReportIds).toEqual([])
+  })
+})
+
+describe("linkedReportsSummary", () => {
+  it("says nothing at all for an event that is not a cleanup", () => {
+    expect(linkedReportsSummary({ eventKind: "other_volunteer", linkedCount: 4 })).toBeNull()
+  })
+
+  it("counts the links on a cleanup that has some", () => {
+    expect(linkedReportsSummary({ eventKind: "cleanup", linkedCount: 4 })).toEqual({
+      labelKey: "wizard.summary.reports",
+      valueKey: "wizard.summary.reports_count",
+      count: 4,
+    })
+  })
+
+  it("falls back to the none copy on a cleanup with no links", () => {
+    expect(linkedReportsSummary({ eventKind: "cleanup", linkedCount: 0 })?.valueKey).toBe(
+      "wizard.summary.noReports",
+    )
+  })
+})
+
+describe("LINKED_REPORTS_COUNT_AT", () => {
+  it("keeps the plain heading up to the visible tail and counts past it", () => {
+    expect(LINKED_REPORTS_COUNT_AT).toBe(3)
+    expect(LINKED_REPORTS_COUNT_AT).toBeLessThan(NEARBY_PREVIEW)
   })
 })

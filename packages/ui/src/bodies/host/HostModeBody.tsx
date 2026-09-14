@@ -56,6 +56,7 @@ import { LinkedReportsSheet } from "./LinkedReportsSheet"
 import { PhaseHeader, type PhaseHeaderAction } from "./PhaseHeader"
 import { linkSheetMode } from "../linkReportsModel"
 import {
+  HOST_ROW_ICONS,
   hostActionCards,
   hostedEventFromCleanup,
   hostPrimaryCta,
@@ -76,25 +77,6 @@ const CTA_ICONS: Readonly<Record<HostCtaKey, LucideIcon>> = {
   log_hours: iconMap.Clock,
   duplicate: iconMap.Copy,
   edit: iconMap.Pencil,
-}
-
-const ROW_ICONS: Readonly<Record<HostRowKey, keyof typeof iconMap>> = {
-  share: "Link2",
-  invite_team: "UserPlus",
-  message: "Megaphone",
-  email: "Mail",
-  check_in: "QrCode",
-  scan: "ScanLine",
-  walkup: "UserPlus",
-  mark_no_shows: "CheckCheck",
-  log_hours: "Clock",
-  edit: "Pencil",
-  team: "Users",
-  tickets: "Ticket",
-  resources: "Building2",
-  duplicate: "Copy",
-  linked_reports: "MapPin",
-  cancel: "Ban",
 }
 
 function useHostCapabilities(cleanup: CleanupDTO | undefined): HostSurfaceCapabilities {
@@ -486,7 +468,7 @@ export function HostModeBody({ id }: { id: string }) {
               <SettingsRow
                 key={row}
                 label={t(`row.${row}`)}
-                icon={ROW_ICONS[row]}
+                icon={HOST_ROW_ICONS[row]}
                 sub={rowSub(row)}
                 value={rowValue(row)}
                 onPress={actionFor(row)}

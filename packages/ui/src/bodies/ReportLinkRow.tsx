@@ -76,7 +76,7 @@ export function ReportLinkRow({
     const unavailable = t("linkedReports.unavailable_row")
     return (
       <LinkedReportCard
-        report={{ id, category: "other", status: "published", title: unavailable }}
+        report={{ id, category: "other", status: null, title: unavailable }}
         layout="list"
         headline="title"
         subtitle={t("linkedReports.unavailable_sub")}

@@ -195,10 +195,13 @@ export type { ReportSearchSheetProps } from "./ReportSearchSheet"
 export { ReportLinkRow } from "./ReportLinkRow"
 export type { ReportLinkRowProps } from "./ReportLinkRow"
 export {
+  LINKED_REPORTS_COUNT_AT,
   NEARBY_MAX,
   NEARBY_PREVIEW,
   linkBlockState,
   linkSheetMode,
+  linkedReportsPatch,
+  linkedReportsSummary,
   linkedRowHeadline,
   nearbyReportRows,
   sameIdSet,
@@ -209,10 +212,12 @@ export type {
   LinkSheetMode,
   LinkToggleOutcome,
   LinkToggleResult,
+  LinkedReportsSummary,
   NearbyReportRow,
 } from "./linkReportsModel"
 export {
   linkedRefToCardData,
+  mergeCardEntry,
   pinToCardData,
   reportToCardData,
   reportThumbUrl,
