@@ -29,6 +29,16 @@ test("maps every push-capable thread tap to a pushed route", () => {
     pathname: "/post/[id]",
     params: { id: "p1" },
   })
+  assert.deepEqual(threadEntryRoute({ kind: "org", slug: "acme" }), {
+    pathname: "/orgs/[slug]",
+    params: { slug: "acme" },
+  })
+})
+
+test("an org byline on a post opens the organization instead of dropping the tap", () => {
+  assert.notEqual(threadEntryRoute({ kind: "org", slug: "river-keepers" }), null)
+  assert.equal(threadEntryRoute({ kind: "org" }), null)
+  assert.ok(routeFileExists("/orgs/[slug]"))
 })
 
 test("maps the quote composer with its target", () => {

@@ -383,6 +383,19 @@ describe("pageLayerKey - stable page identity", () => {
     )
   })
 
+  it("tells two organizations apart, which carry a slug and never an id", () => {
+    const acme: DetailEntry = { kind: "org", slug: "acme" }
+    const river: DetailEntry = { kind: "org", slug: "river-keepers" }
+    expect(pageLayerKey("home", acme, 1)).not.toBe(pageLayerKey("home", river, 1))
+    expect(pageLayerKey("home", acme, 1)).toBe("1:org:acme")
+  })
+
+  it("tells two leaderboards apart, which carry a geoid and never an id", () => {
+    const la: DetailEntry = { kind: "leaderboard", geoid: "0644000" }
+    const sf: DetailEntry = { kind: "leaderboard", geoid: "0667000" }
+    expect(pageLayerKey("home", la, 0)).not.toBe(pageLayerKey("home", sf, 0))
+  })
+
   it("cannot collide a RETAINED leaving layer with any surviving one", () => {
     // The exit animation renders the popped page ABOVE the stack it just left, keyed by the key it had
     // BEFORE the pop. That key's depth is old-length-1, and every surviving layer's depth is at most

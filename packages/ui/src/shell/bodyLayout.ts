@@ -115,7 +115,7 @@ export function portraitSurfaceTransitionKey(
   if (active.kind === "composer") {
     return `composer:${active.composerMode ?? "post"}:${active.targetPostId ?? ""}`
   }
-  return `${active.kind}:${active.id ?? ""}`
+  return `${active.kind}:${active.id ?? active.slug ?? active.geoid ?? ""}`
 }
 
 export function topmostFullEntry(

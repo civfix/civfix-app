@@ -15,6 +15,8 @@ export function threadEntryRoute(entry: DetailEntry): ThreadEntryRoute | null {
       return entry.id ? { pathname: "/pin/[id]", params: { id: entry.id } } : null
     case "post-thread":
       return entry.id ? { pathname: "/post/[id]", params: { id: entry.id } } : null
+    case "org":
+      return entry.slug ? { pathname: "/orgs/[slug]", params: { slug: entry.slug } } : null
     case "composer":
       return entry.composerMode === "quote" && entry.targetPostId
         ? { pathname: "/compose", params: { mode: "quote", targetPostId: entry.targetPostId } }
