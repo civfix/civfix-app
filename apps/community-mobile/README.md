@@ -357,3 +357,8 @@ pnpm --filter community-mobile exec expo export --platform ios   # JS bundle (no
 job), plus `npx expo-doctor` from this directory. Deploying is `.github/workflows/deploy-mobile.yml`
 (see "CI" above): a merge to `main` puts a staging build in TestFlight; nothing reaches a device
 before that workflow, a local `scripts/store-build.sh` run or a hand-driven archive runs.
+
+Launch-screen coverage splits along that line: `tests/splashConfig.test.ts` asserts the resolved
+`app.config.js` (automatic appearance, both paper backgrounds, the plugin's own `dark` block) and so
+runs in CI, while the `ios/` prebuild assertions in `tests/splashAsset.test.ts` skip anywhere without
+a local prebuild.
