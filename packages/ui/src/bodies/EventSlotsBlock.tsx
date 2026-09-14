@@ -47,6 +47,7 @@ import {
   useAuthState,
   useClaimEventSlot,
   useCleanupAttendees,
+  useJoinCleanup,
   useRequireAuth,
 } from "../data"
 import { useNavStore } from "../nav"
@@ -55,7 +56,12 @@ import { appErrorCode, appErrorFields } from "./errorCode"
 import { FeedNotice } from "./FeedNotice"
 import { RoleChip } from "./RoleChip"
 import { claimantsBySlot, groupRosterBySlot } from "./rosterSlotGroups"
-import { slotPeopleView, type SlotPeopleView } from "./slotPeopleVisibility"
+import {
+  FACE_NAME_CAP,
+  facePileOverflow,
+  slotPeopleView,
+  type SlotPeopleView,
+} from "./slotPeopleVisibility"
 import {
   boardHasTimedSlots,
   claimSlotErrorKey,
@@ -93,8 +99,13 @@ export interface EventSlotsBlockProps {
   cancelled?: boolean
   /** The EVENT's IANA zone; shift windows render in it. Absent (legacy row) = the viewer's zone. */
   timeZone?: string
-  /** A ticketed event commits through `RegistrationBlock`, so the board offers no second primary CTA. */
-  mode: "claim" | "registration"
+  /**
+   * `registration` - a ticketed event commits through `RegistrationBlock`, so the board offers no second
+   * primary CTA to a viewer who has not registered. `general` - the slot-less fallback: `slots` carries
+   * the single synthetic row `generalSlotBoard` builds, and its pill commits through the event's
+   * join/leave mutation rather than a slot claim, because that row IS membership.
+   */
+  mode: "claim" | "registration" | "general"
   viewer: { actsAsHost: boolean; registered: boolean }
   /** Opens the host's guest-RSVP sheet. Absent when the host cannot mint a Turnstile token. */
   onGuestRsvp?: () => void
@@ -398,9 +409,10 @@ function SlotRow({
   const metaParts = [windowText, line].filter((part): part is string => part !== null)
   const faces = people.slice(0, FACE_CAP)
   const previewNames = people
-    .slice(0, 2)
+    .slice(0, FACE_NAME_CAP)
     .map((person) => firstNameOf(personLabel(person, viewerId, t)))
     .join(", ")
+  const previewOverflow = facePileOverflow(slot.claimed, people.length)
 
   const tile = (
     <View style={[styles.tile, owned ? styles.tileMine : null]}>
@@ -549,8 +561,8 @@ function SlotRow({
                   </View>
                 ))}
                 <Text style={styles.facesNames} numberOfLines={1}>
-                  {slot.claimed > 2
-                    ? `${previewNames} ${t("row.faces_more", { count: slot.claimed - 2 })}`
+                  {previewOverflow > 0
+                    ? `${previewNames} ${t("row.faces_more", { count: previewOverflow })}`
                     : previewNames}
                 </Text>
               </View>
@@ -608,13 +620,17 @@ export function EventSlotsBlock({
   const toast = useToast()
   const requireAuth = useRequireAuth()
   const claim = useClaimEventSlot(cleanupId)
+  const join = useJoinCleanup(cleanupId)
   const attendees = useCleanupAttendees(cleanupId)
   const { user, isAuthenticated, isPending } = useAuthState()
   const reducedMotion = useReducedMotion()
   // WHICH row is in flight, so only the tapped pill dims. It is NOT the disabled gate: the mutation is
-  // shared by every row, so every row disables on `claim.isPending` (see SlotRow's `busy`).
+  // shared by every row, so every row disables on `boardBusy` (see SlotRow's `busy`).
   const [pendingSlotId, setPendingSlotId] = useState<string | null>(null)
   const [open, setOpen] = useState<ReadonlySet<string>>(NOTHING_OPEN)
+  const ticketed = mode === "registration"
+  const general = mode === "general"
+  const boardBusy = general ? join.isPending : claim.isPending
 
   const onError = useCallback(
     (err: unknown) => {
@@ -634,10 +650,21 @@ export function EventSlotsBlock({
       // Belt to the disabled pills' braces: `disabled` is a render-time guard, so a tap already in the
       // gesture queue (or a host that re-fires onPress) could still re-enter here mid-flight and start a
       // second PUT of the same singular resource.
-      if (claim.isPending) return
+      if (boardBusy) return
       requireAuth(
         () => {
           setPendingSlotId(tappedId)
+          if (general) {
+            join.mutate(slotId === null, {
+              onSuccess: () => {
+                setPendingSlotId(null)
+                if (slotId === null) return
+                toast.show(t("toast.claimed"))
+              },
+              onError: () => setPendingSlotId(null),
+            })
+            return
+          }
           const switching = slotId !== null && mySlotId(slots) !== null
           claim.mutate(
             { slotId },
@@ -657,7 +684,7 @@ export function EventSlotsBlock({
         { next: `/cleanups/${cleanupId}` },
       )
     },
-    [claim, cleanupId, onError, requireAuth, slots, t, toast],
+    [boardBusy, claim, cleanupId, general, join, onError, requireAuth, slots, t, toast],
   )
 
   const onToggle = useCallback(
@@ -685,16 +712,19 @@ export function EventSlotsBlock({
   const summary = slotBoardSummary(slots)
   const heldSlot = slots.find((slot) => slot.mine === true) ?? null
 
-  const claimants = useMemo(
-    () =>
-      claimantsBySlot(
-        groupRosterBySlot(attendees.data?.attendees ?? NO_ATTENDEES, slots, {
-          unassignedTitle: t("roster.unassigned"),
-          emptySlotTitle: t("roster.empty_slot"),
-        }),
-      ),
-    [attendees.data, slots, t],
-  )
+  const claimants = useMemo(() => {
+    const roster = attendees.data?.attendees ?? NO_ATTENDEES
+    if (general) {
+      const only = slots[0]
+      return only ? new Map([[only.id, [...roster]]]) : new Map<string, AttendeeDTO[]>()
+    }
+    return claimantsBySlot(
+      groupRosterBySlot(roster, slots, {
+        unassignedTitle: t("roster.unassigned"),
+        emptySlotTitle: t("roster.empty_slot"),
+      }),
+    )
+  }, [attendees.data, general, slots, t])
 
   const viewerState = slotViewerState({
     slots,
@@ -704,14 +734,11 @@ export function EventSlotsBlock({
     isAuthenticated,
     authPending: isPending,
   })
-  const ticketed = mode === "registration"
   const peopleLoading = attendees.isLoading && attendees.data === undefined
   const peopleErrored = attendees.isError && attendees.data === undefined
+  const showPill = !ticketed || viewer.registered || viewer.actsAsHost
   const canSignUpHere =
-    (!ticketed || viewer.registered) &&
-    viewerState !== "holds" &&
-    viewerState !== "host" &&
-    viewerState !== "ended"
+    showPill && (viewerState === "not_going" || viewerState === "signed_out")
   const hostLabel = t("event-members:role.host")
 
   const heldRange = windowRangeLabel(heldSlot, locale, timeZone)
@@ -779,7 +806,6 @@ export function EventSlotsBlock({
       <View style={styles.rows}>
         {ordered.map((slot) => {
           const state = slotRowState(slot, mine, readonly)
-          const showPill = !ticketed || viewer.registered
           const interactive =
             showPill && (state === "open" || state === "switch" || state === "mine")
           const people = claimants.get(slot.id) ?? NO_ATTENDEES
@@ -793,7 +819,7 @@ export function EventSlotsBlock({
               key={slot.id}
               slot={slot}
               state={state}
-              busy={claim.isPending}
+              busy={boardBusy}
               pending={pendingSlotId === slot.id}
               mixedBoard={mixedBoard}
               timeZone={timeZone}

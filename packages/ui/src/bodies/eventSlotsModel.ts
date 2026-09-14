@@ -95,6 +95,37 @@ export function slotBoardSummary(slots: readonly EventSlotDTO[]): SlotBoardSumma
   return { kind: "capped", claimed, capacity }
 }
 
+/** The id the synthetic general row carries. Never a server id - it addresses no `event_slots` row. */
+export const GENERAL_SLOT_ID = "general"
+
+/**
+ * The one-row board a LIVE event with no slots falls back to, so the page keeps a working join path.
+ *
+ * Reachable in two windows: before migration 0169's default-slot backfill lands, and off a cached
+ * `getCleanup` written before it. The row mirrors membership rather than a claim - `claimed` is the
+ * event's member count and `mine` is the viewer's own membership - and `EventSlotsBlock`'s `general`
+ * mode commits it through the join/leave mutation, so nothing here ever addresses `PUT /slot`.
+ */
+export function generalSlotBoard(input: {
+  title: string
+  joined: boolean
+  going: number
+}): EventSlotDTO[] {
+  return [
+    {
+      id: GENERAL_SLOT_ID,
+      title: input.title,
+      description: null,
+      capacity: null,
+      claimed: input.going,
+      sortOrder: 0,
+      mine: input.joined,
+      startsAt: null,
+      endsAt: null,
+    },
+  ]
+}
+
 export type SlotViewerState =
   /** The viewer holds one of these slots (a host who claimed one lands here too). */
   | "holds"

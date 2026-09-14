@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ScrollView, StyleSheet } from "react-native"
 import type { CleanupDTO, ContentReportReason } from "@civfix/shared"
 import { eventWhenLabel } from "@civfix/shared/datetime"
@@ -56,6 +56,7 @@ import { EventRosterBlock } from "./host/EventRosterBlock"
 import { RegistrationBlock } from "./host/registration/RegistrationBlock"
 import { eventDistanceLabel } from "./eventDistance"
 import { hasEventEnded } from "./eventLifecycle"
+import { generalSlotBoard } from "./eventSlotsModel"
 import { buildComposerEventRef } from "./postComposerModel"
 import { usePostComposerStore } from "./postComposerStore"
 
@@ -390,6 +391,18 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
     [],
   )
 
+  const needsGeneralBoard =
+    cleanup.slots.length === 0 && isLive && !isEnded && !actsAsHost && !hasTicketTypes
+  const generalTitle = t("event-slots:editor.suggest_general")
+  const generalBoard = useMemo(
+    () =>
+      needsGeneralBoard
+        ? generalSlotBoard({ title: generalTitle, joined: going, going: goingCount })
+        : null,
+    [generalTitle, going, goingCount, needsGeneralBoard],
+  )
+  const boardSlots = cleanup.slots.length > 0 ? cleanup.slots : generalBoard
+
   const showLinkedReports = cleanup.eventKind === "cleanup" && cleanup.linkedReports.length > 0
   const showDetails =
     !!cleanup.description || cleanup.bring.length > 0 || showLinkedReports
@@ -453,17 +466,20 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       ) : null}
 
-      {cleanup.slots.length > 0 ? (
+      {boardSlots ? (
         <View style={[styles.section, styles.sectionFlush]}>
+          {generalBoard ? (
+            <Text style={styles.slotsNone}>{t("event-slots:block.none_yet")}</Text>
+          ) : null}
           <EventSlotsBlock
             key={cleanup.id}
             cleanupId={cleanup.id}
-            slots={cleanup.slots}
+            slots={boardSlots}
             joined={going}
             readonly={isDone || isCancelled || isEnded}
             cancelled={isCancelled}
             timeZone={cleanup.timezone ?? undefined}
-            mode={hasTicketTypes ? "registration" : "claim"}
+            mode={generalBoard ? "general" : hasTicketTypes ? "registration" : "claim"}
             viewer={{ actsAsHost, registered: isRegistered }}
             onViewAll={onViewAllMembers}
             onGuestRsvp={onSignedOutRsvp}

@@ -123,14 +123,12 @@ export function hasValidEventEnd(value: CleanupFormValue): boolean {
 }
 
 /**
- * `requireSlot` is the >=1 sign-up slot floor. It defaults ON because that is what a live event needs;
- * an ENDED event is the one exception - the server refuses any slot change after the window closes, so
- * demanding one would lock its host out of editing the title.
+ * The >=1 named sign-up slot floor is unconditional: every event needs a board, the edit route is only
+ * ever offered for an event that has not ended, and the server refuses a slot change afterwards anyway.
  */
 export function isCleanupFormComplete(
   value: CleanupFormValue,
   existingSlots?: readonly EventSlotDTO[],
-  opts?: { requireSlot?: boolean },
 ): boolean {
   return (
     value.title.trim().length > 0 &&
@@ -138,7 +136,7 @@ export function isCleanupFormComplete(
     value.date !== null &&
     value.time !== null &&
     hasValidEventEnd(value) &&
-    (opts?.requireSlot === false || hasNamedSlot(value.slots)) &&
+    hasNamedSlot(value.slots) &&
     slotsValid(
       value.slots,
       existingSlots ? claimedBySlotId(existingSlots) : undefined,

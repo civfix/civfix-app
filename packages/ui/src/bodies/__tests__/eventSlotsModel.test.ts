@@ -11,6 +11,8 @@ import {
   boardHasTimedSlots,
   claimSlotErrorKey,
   currentShifts,
+  GENERAL_SLOT_ID,
+  generalSlotBoard,
   mySlotId,
   slotDisplayOrder,
   slotRemaining,
@@ -309,5 +311,39 @@ describe("slotViewerState", () => {
 
   it("treats a signed-in non-member as simply not going yet", () => {
     expect(slotViewerState(base)).toBe("not_going")
+  })
+})
+
+describe("generalSlotBoard", () => {
+  it("mirrors membership onto one unlimited row, so the strip and summary read true", () => {
+    expect(generalSlotBoard({ title: "General volunteers", joined: true, going: 4 })).toEqual([
+      {
+        id: GENERAL_SLOT_ID,
+        title: "General volunteers",
+        description: null,
+        capacity: null,
+        claimed: 4,
+        sortOrder: 0,
+        mine: true,
+        startsAt: null,
+        endsAt: null,
+      },
+    ])
+  })
+
+  it("reads as a claimable open row for a non-member, and as held for a member", () => {
+    const [away] = generalSlotBoard({ title: "General volunteers", joined: false, going: 0 })
+    const [held] = generalSlotBoard({ title: "General volunteers", joined: true, going: 1 })
+    expect(away && slotRowState(away, null, false)).toBe("open")
+    expect(held && slotRowState(held, mySlotId([held]), false)).toBe("mine")
+    expect(away && slotRemaining(away)).toBe(null)
+  })
+
+  it("summarises as an open board, never as a capped one", () => {
+    expect(slotBoardSummary(generalSlotBoard({ title: "G", joined: false, going: 3 }))).toEqual({
+      kind: "open",
+      claimed: 3,
+      capacity: null,
+    })
   })
 })

@@ -143,14 +143,34 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
     // The viewer's slot is a singular resource: two overlapping PUTs resolve last-RESPONSE-wins, so
     // tapping row A then row B could leave the detail cache marking A as `mine` while the server holds
     // B. `pendingSlotId` still exists, but only to say which pill DIMS.
-    expect(source).toContain("busy={claim.isPending}")
+    expect(source).toContain("const boardBusy = general ? join.isPending : claim.isPending")
+    expect(source).toContain("busy={boardBusy}")
     expect(source).toContain("pending={pendingSlotId === slot.id}")
     expect(source).not.toContain("busy={pendingSlotId === slot.id}")
   })
 
   it("refuses to re-enter the mutation while one is in flight", () => {
     // `disabled` is a render-time guard; a queued tap can still land. This is the runtime half.
-    expect(source).toContain("if (claim.isPending) return")
+    expect(source).toContain("if (boardBusy) return")
+  })
+
+  it("keeps the pill for the HOST of a ticketed event, who is never `registered`", () => {
+    // The registration gate exists to leave one primary CTA for someone who has not committed; a host
+    // has no registration to make and still owns this board.
+    expect(source).toContain("const showPill = !ticketed || viewer.registered || viewer.actsAsHost")
+  })
+
+  it("nudges only the viewers who have not committed, never a member who simply holds no slot", () => {
+    expect(source).toContain(
+      'showPill && (viewerState === "not_going" || viewerState === "signed_out")',
+    )
+  })
+
+  it("counts the facepile's +N against the names PRINTED, not the two-name cap", () => {
+    // A follow-gated viewer (or a slot the 50-row roster cap truncated) is handed fewer names than the
+    // cap, and `claimed - 2` then understates the overflow against the row's own capacity line.
+    expect(source).toContain("facePileOverflow(slot.claimed, people.length)")
+    expect(source).not.toContain("slot.claimed - 2")
   })
 
   it("gives the claim/switch/release pill a 44pt target without growing the 30pt visual", () => {
@@ -210,6 +230,47 @@ describe("an ENDED event's slot board is read-only, not just a DONE one", () => 
     const block = code(SOURCES["EventSlotsBlock.tsx"])
     expect(block).toContain("claimSlotErrorKey(code, appErrorFields(err))")
     expect(block).not.toContain('t("error.full")')
+  })
+})
+
+describe("a LIVE event with no slots still has a way in", () => {
+  const detail = code(readFileSync(new URL("../EventDetailBody.tsx", import.meta.url), "utf8"))
+  const block = code(SOURCES["EventSlotsBlock.tsx"])
+
+  it("falls back to a one-row general board instead of a sentence with no join path", () => {
+    // Reachable in the deploy window before the backend's default-slot backfill lands, and off any
+    // `getCleanup` cached before it. A notice with no pill, no slot and no guest line strands the
+    // viewer on a live event they cannot sign up for.
+    expect(detail).toContain(
+      "generalSlotBoard({ title: generalTitle, joined: going, going: goingCount })",
+    )
+    expect(detail).toContain(
+      "cleanup.slots.length === 0 && isLive && !isEnded && !actsAsHost && !hasTicketTypes",
+    )
+    expect(detail).toContain("const boardSlots = cleanup.slots.length > 0 ? cleanup.slots : generalBoard")
+    expect(detail).toContain(
+      'mode={generalBoard ? "general" : hasTicketTypes ? "registration" : "claim"}',
+    )
+    expect(detail).toContain("onGuestRsvp={onSignedOutRsvp}")
+  })
+
+  it("commits that row through the event's join/leave mutation, never a claim on a synthetic id", () => {
+    expect(block).toContain("const join = useJoinCleanup(cleanupId)")
+    expect(block).toContain("join.mutate(slotId === null, {")
+    expect(block).toContain('const general = mode === "general"')
+  })
+
+  it("keeps the explicit Leave event row, which is the only place membership is dropped", () => {
+    expect(detail).toContain('label={t("actions.leave")}')
+    expect(detail).toContain("going && !actsAsHost && isLive && !isEnded ?")
+  })
+
+  it("keeps the slot-less rendering for an ENDED or cancelled event", () => {
+    // `boardSlots` is null there (no general board is built), so the region falls through to the
+    // notice-or-nothing arm and the roster section below stays the only "who's going" surface.
+    expect(detail).toContain("{boardSlots ? (")
+    expect(detail).toContain("isLive && !isEnded && !actsAsHost ? (")
+    expect(detail).toContain('t("event-slots:block.none_yet")')
   })
 })
 
@@ -276,10 +337,10 @@ describe("the edit form's capacity-below-claimed error actually blocks Save", ()
 
   it("threads the live claim counts through the submit gate", () => {
     expect(form).toMatch(/slotsValid\(\s*value\.slots,/)
-    // The third argument is the >=1 slot floor: ON for a live event, OFF once it has ended, because the
-    // server refuses any slot change afterwards and the floor would lock the host out of editing.
-    expect(edit).toContain("isCleanupFormComplete(form, cleanup.slots, { requireSlot: !ended })")
-    expect(edit).toContain("const ended = hasEventEnded(cleanup, Date.now())")
+    // The >=1 slot floor has no exemption: the edit route is never offered for an ended event, and the
+    // server refuses a slot change on one regardless, so there is nothing for a knob to unlock.
+    expect(edit).toContain("isCleanupFormComplete(form, cleanup.slots)")
+    expect(form).not.toContain("requireSlot")
   })
 
   it("leaves the CREATE gate exactly as it was - a brand-new slot has no claims", () => {

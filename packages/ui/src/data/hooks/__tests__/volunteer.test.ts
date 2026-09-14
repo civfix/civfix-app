@@ -111,8 +111,8 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
   })
 
   it("claiming a slot patches the LIST rows too - a claim auto-RSVPs, so `joined`/`going` move", () => {
-    // The server joins a non-member in the same transaction as the claim (that is what the block's
-    // `claim_joins_hint` promises), so every list card for this event is stale the moment the PUT
+    // The server joins a non-member in the same transaction as the claim (holding a slot IS what
+    // "going" means on the board), so every list card for this event is stale the moment the PUT
     // returns. Writing only the detail left the card BEHIND the sheet reading "RSVP" and the old count
     // until that list happened to refetch. This is the same pair `useJoinCleanup` applies.
     // The claim wiring lives in the exported options builder (the hook just injects the api client).

@@ -25,7 +25,6 @@ import {
 import { wallClockInZone } from "@civfix/shared/datetime"
 import { CleanupForm, isCleanupFormComplete, type CleanupFormValue } from "./CleanupForm"
 import { mustPersistEventEnd, seededEndTime } from "./eventWizard"
-import { hasEventEnded } from "./eventLifecycle"
 import { buildSlotInputs, slotsFromCleanup } from "./eventSlotsForm"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
@@ -75,7 +74,6 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   const update = useUpdateCleanup()
   const [form, setForm] = useState<CleanupFormValue>(() => formFromCleanup(cleanup))
   const [saveError, setSaveError] = useState<string | null>(null)
-  const ended = hasEventEnded(cleanup, Date.now())
 
   const scheduleUntouched =
     form.date != null &&
@@ -85,7 +83,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   const persistEventEnd = mustPersistEventEnd(cleanup, form)
 
   const canSave =
-    isCleanupFormComplete(form, cleanup.slots, { requireSlot: !ended }) &&
+    isCleanupFormComplete(form, cleanup.slots) &&
     (scheduleUntouched ||
       (form.date != null &&
         form.time != null &&

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { slotPeopleView } from "../slotPeopleVisibility"
+import { facePileOverflow, slotPeopleView } from "../slotPeopleVisibility"
 
 describe("who a viewer sees inside an expanded slot row", () => {
   it("gives a member the full list, with nothing hidden", () => {
@@ -47,5 +47,28 @@ describe("who a viewer sees inside an expanded slot row", () => {
 
   it("clamps a stale claimed below the rows actually in hand", () => {
     expect(slotPeopleView({ scope: "all", claimed: 1, shown: 3 }).hidden).toBe(0)
+  })
+})
+
+describe("the collapsed facepile's +N counts everyone it did not name", () => {
+  it("counts against the names PRINTED, not the two-name cap", () => {
+    expect(facePileOverflow(5, 1)).toBe(4)
+    expect(facePileOverflow(5, 0)).toBe(5)
+  })
+
+  it("agrees with the row's hidden count once the cap is the only truncation", () => {
+    const view = slotPeopleView({ scope: "all", claimed: 5, shown: 2 })
+    expect(facePileOverflow(5, 2)).toBe(3)
+    expect(view.hidden).toBe(3)
+  })
+
+  it("prints nothing extra when the printed names already cover the claims", () => {
+    expect(facePileOverflow(2, 2)).toBe(0)
+    expect(facePileOverflow(1, 1)).toBe(0)
+    expect(facePileOverflow(0, 0)).toBe(0)
+  })
+
+  it("clamps a stale claimed below the names in hand", () => {
+    expect(facePileOverflow(1, 3)).toBe(0)
   })
 })

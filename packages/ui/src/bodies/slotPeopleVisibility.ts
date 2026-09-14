@@ -41,3 +41,16 @@ export function slotPeopleView(input: SlotPeopleInput): SlotPeopleView {
     showGate: followedOnly,
   }
 }
+
+/** How many first names the collapsed facepile prints before it falls back to a count. */
+export const FACE_NAME_CAP = 2
+
+/**
+ * The collapsed facepile's "+N", under the SAME rule as `hidden`: everyone `claimed` who is not one of
+ * the names actually printed. Reading it off `claimed - FACE_NAME_CAP` instead understates the overflow
+ * for every viewer who was handed fewer names than the cap - a follow-gated non-member, or a slot the
+ * 50-row roster cap truncated - and contradicts both the capacity line and the expanded count.
+ */
+export function facePileOverflow(claimed: number, shown: number): number {
+  return Math.max(0, claimed - Math.min(FACE_NAME_CAP, shown))
+}
