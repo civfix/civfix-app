@@ -136,6 +136,43 @@ eas.json. `CIVFIX_UPDATE_CHANNEL` (also set by the script) fills that gap via
 OTA update. The local build number comes from `ios.buildNumber` in `app.config.js` (EAS's remote
 `autoIncrement` counter does not apply) and must exceed every build already in App Store Connect.
 
+### Launch screen assets are baked at prebuild
+
+`ios/` and `android/` are gitignored, so the native launch screen is **whatever the last local
+prebuild generated**, not what `assets/` and `app.config.js` currently say. `expo-splash-screen`
+copies `assets/splash.png` into
+`ios/civfix/Images.xcassets/SplashScreenLogo.imageset/{image,dark_image}@{1,2,3}x.png` and writes
+the paper background into the storyboard; nothing re-checks either afterwards. A stale prebuild
+therefore ships the *old* logo on the *new* background — which is how an opaque splash asset from
+an earlier revision shipped a visible box around the logo in both appearances long after
+`assets/splash.png` had been fixed.
+
+After changing any of these, re-run the prebuild before you archive:
+
+- `assets/splash.png` (or any other native asset: icon, adaptive icon)
+- the `splash` / `expo-splash-screen` blocks in `app.config.js`
+- the paper tokens in `@civfix/shared` that `SPLASH_BG_LIGHT` / `SPLASH_BG_DARK` derive from
+
+```sh
+cd apps/community-mobile
+npx expo prebuild --platform ios --clean --no-install
+(cd ios && pod install)
+```
+
+`scripts/prep-archive.sh` runs a (non-`--clean`) prebuild + `pod install`, so a prep'd archive picks
+the change up; a hand-run `expo run:ios` or an Xcode archive against an existing `ios/` does not.
+Use `--clean` when you want the native project regenerated from scratch rather than re-synced in
+place — it is the only way to be sure no earlier generated file survives.
+
+`tests/splashAsset.test.ts` guards this. It decodes `assets/splash.png` and asserts the corners are
+fully transparent and that most of the image is, and — when a local `ios/` prebuild exists — decodes
+the generated `@3x` imageset entries and asserts the same, so a stale prebuild fails the test suite
+before anyone archives. CI has no `ios/`, so that half simply skips there.
+
+iOS also caches the launch image as a snapshot keyed off the installed build. If a fresh build still
+shows the old splash, the binary is fine and the snapshot is stale: bump `ios.buildNumber`, or delete
+the app and reinstall, or reboot the device/simulator.
+
 ### Local `eas build` (`scripts/store-build.sh`)
 
 `apps/community-mobile/scripts/store-build.sh` wraps the whole local flow - it builds the ipa on
