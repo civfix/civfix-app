@@ -162,17 +162,21 @@ export function useNearbyReports(
 
 const SEARCH_PAGE_SIZE = 30
 
-export function useReportSearch(params: {
-  q?: string
-  categories?: readonly ReportCategory[]
-  types?: readonly ReportType[]
-}) {
+export function useReportSearch(
+  params: {
+    q?: string
+    categories?: readonly ReportCategory[]
+    types?: readonly ReportType[]
+  },
+  options: { enabled?: boolean } = {},
+) {
   const api = useApi()
   const q = params.q ?? ""
   const categories = params.categories
   const types = params.types
   const query = useInfiniteQuery<ListReportsSearchResponse>({
     queryKey: [...queryKeys.reportSearch(q, [...(categories ?? [])].sort()), [...(types ?? [])].sort()],
+    enabled: options.enabled ?? true,
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
       api.searchReports({

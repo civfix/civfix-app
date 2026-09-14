@@ -15,7 +15,12 @@ import { useT } from "../../i18n"
 import { appErrorCode } from "../errorCode"
 import { ReportLinkPicker } from "../ReportLinkPicker"
 import { linkedRefToCardData, useLinkedReportCards } from "../linkedReportCards"
-import { linkBlockState, sameIdSet, type LinkSheetMode } from "../linkReportsModel"
+import {
+  linkBlockState,
+  linkedReportsPatch,
+  sameIdSet,
+  type LinkSheetMode,
+} from "../linkReportsModel"
 
 export interface LinkedReportsSheetProps {
   visible: boolean
@@ -49,7 +54,7 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
     setErrorText(null)
     const touched = new Set([...ids, ...saved].filter((id) => !ids.includes(id) || !saved.includes(id)))
     update.mutate(
-      { id: cleanup.id, patch: { linkedReportIds: ids } },
+      { id: cleanup.id, patch: linkedReportsPatch(ids) },
       {
         onSuccess: () => {
           for (const id of touched) void qc.invalidateQueries({ queryKey: queryKeys.report(id) })
@@ -105,17 +110,19 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
         {readonly ? t("linked_reports_sheet.caption_readonly") : t("linked_reports_sheet.caption")}
       </Text>
 
-      <ReportLinkPicker
-        value={ids}
-        onChange={setIds}
-        center={center}
-        state={linkBlockState({
-          isCleanup: cleanup.eventKind === "cleanup",
-          hasCoords: center !== null,
-          linkedCount: ids.length,
-        })}
-        readonly={readonly}
-      />
+      {visible ? (
+        <ReportLinkPicker
+          value={ids}
+          onChange={setIds}
+          center={center}
+          state={linkBlockState({
+            isCleanup: cleanup.eventKind === "cleanup",
+            hasCoords: center !== null,
+            linkedCount: ids.length,
+          })}
+          readonly={readonly}
+        />
+      ) : null}
     </ModalCardSheet>
   )
 }

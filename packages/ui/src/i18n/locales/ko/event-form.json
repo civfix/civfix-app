@@ -24,7 +24,6 @@
     "searching": "제보 검색 중...",
     "loadError": "제보를 불러오지 못했어요. 다시 시도해 주세요.",
     "emptyNoMatch": "검색 결과와 일치하는 제보가 없어요.",
-    "emptyNone": "아직 게시된 제보가 없어요.",
     "showMore": "{{count}}개 더 보기",
     "showMoreA11y": "제보 더 보기",
     "loadMore": "더 불러오기",

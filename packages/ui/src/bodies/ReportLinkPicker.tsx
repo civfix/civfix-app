@@ -139,7 +139,7 @@ export function ReportLinkPicker({
               ) : rows.length === 0 ? (
                 <Text style={styles.fieldHelp}>{t("linkedReports.nearby_empty")}</Text>
               ) : (
-                <View style={styles.rows}>
+                <View style={[styles.rows, nearby.isPlaceholderData ? styles.rowsStale : null]}>
                   <Text style={styles.eyebrow}>{t("linkedReports.nearby_heading")}</Text>
                   {visible.map((row) => (
                     <ReportLinkRow
@@ -175,13 +175,15 @@ export function ReportLinkPicker({
                 chevron
               />
 
-              <ReportSearchSheet
-                visible={searching}
-                value={value}
-                center={center}
-                onToggle={toggle}
-                onClose={() => setSearching(false)}
-              />
+              {searching ? (
+                <ReportSearchSheet
+                  visible
+                  value={value}
+                  center={center}
+                  onToggle={toggle}
+                  onClose={() => setSearching(false)}
+                />
+              ) : null}
             </>
           ) : null}
         </>
@@ -239,6 +241,9 @@ const useStyles = makeThemedStyles((t) => ({
   },
   rows: {
     gap: t.space["2"],
+  },
+  rowsStale: {
+    opacity: 0.55,
   },
   moreRow: {
     alignItems: "flex-start",

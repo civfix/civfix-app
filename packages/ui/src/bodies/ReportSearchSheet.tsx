@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { Platform, View } from "react-native"
-import { ReportCategorySchema, type ReportCategory } from "@civfix/shared"
+import { MAX_LINKED_REPORTS, ReportCategorySchema, type ReportCategory } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
 import { makeThemedStyles, useTheme, webInputReset } from "../theme"
 import { Text, TextLink } from "../typography"
@@ -55,7 +55,8 @@ export function ReportSearchSheet({
 
   const debounced = useDebouncedValue(query, SEARCH_DEBOUNCE_MS)
   const categories = useMemo(() => (category ? [category] : []), [category])
-  const search = useReportSearch({ q: debounced, categories })
+  const idle = debounced.trim().length === 0 && categories.length === 0
+  const search = useReportSearch({ q: debounced, categories }, { enabled: visible && !idle })
 
   const hitCards = useMemo(() => search.items.map(pinToCardData), [search.items])
 
@@ -63,7 +64,7 @@ export function ReportSearchSheet({
     if (hitCards.length > 0) useLinkedReportCards.getState().put(hitCards)
   }, [hitCards])
 
-  const idle = debounced.trim().length === 0 && categories.length === 0
+  const atLimit = value.length >= MAX_LINKED_REPORTS
 
   return (
     <ModalCardSheet
@@ -112,13 +113,23 @@ export function ReportSearchSheet({
         ))}
       </View>
 
-      <Text variant="caption" color={th.colors.textSubtle}>
-        {value.length > 0
-          ? t("linkedReports.selectedCount", { count: value.length })
-          : t("linkedReports.search_hint")}
-      </Text>
+      {value.length > 0 ? (
+        <Text variant="caption" color={th.colors.textSubtle}>
+          {t("linkedReports.selectedCount", { count: value.length })}
+        </Text>
+      ) : null}
 
-      {search.isError ? (
+      {atLimit ? (
+        <Text variant="caption" color={th.colors.accentText}>
+          {t("linkedReports.limit_reached", { max: MAX_LINKED_REPORTS })}
+        </Text>
+      ) : null}
+
+      {idle ? (
+        <Text variant="caption" color={th.colors.textSubtle}>
+          {t("linkedReports.search_hint")}
+        </Text>
+      ) : search.isError ? (
         <FeedNotice
           icon="CloudOff"
           title={t("linkedReports.loadError")}
@@ -131,7 +142,7 @@ export function ReportSearchSheet({
         </SkeletonGroup>
       ) : hitCards.length === 0 ? (
         <Text variant="caption" color={th.colors.textSubtle}>
-          {idle ? t("linkedReports.emptyNone") : t("linkedReports.emptyNoMatch")}
+          {t("linkedReports.emptyNoMatch")}
         </Text>
       ) : (
         <View style={styles.rows}>
@@ -142,6 +153,7 @@ export function ReportSearchSheet({
               card={card}
               center={center}
               selected={value.includes(card.id)}
+              disabled={atLimit && !value.includes(card.id)}
               onToggle={onToggle}
             />
           ))}
@@ -168,7 +180,7 @@ export function ReportSearchSheet({
 const useStyles = makeThemedStyles((t) => ({
   input: {
     ...modalSheetInputStyle(t),
-    minHeight: 42,
+    minHeight: 44,
   },
   chips: {
     flexDirection: "row",

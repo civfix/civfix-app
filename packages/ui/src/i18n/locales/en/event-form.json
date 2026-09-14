@@ -24,7 +24,6 @@
     "searching": "Searching reports...",
     "loadError": "Could not load reports. Try again.",
     "emptyNoMatch": "No reports match your search.",
-    "emptyNone": "No published reports yet.",
     "showMore": "Show {{count}} more",
     "showMoreA11y": "Show more reports",
     "loadMore": "Load more",

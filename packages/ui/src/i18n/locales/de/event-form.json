@@ -24,7 +24,6 @@
     "searching": "Suche läuft...",
     "loadError": "Meldungen konnten nicht geladen werden. Erneut versuchen.",
     "emptyNoMatch": "Keine Meldungen entsprechen der Suche.",
-    "emptyNone": "Noch keine veröffentlichten Meldungen.",
     "showMore": "{{count}} weitere anzeigen",
     "showMoreA11y": "Weitere Meldungen anzeigen",
     "loadMore": "Mehr laden",

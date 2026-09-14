@@ -24,7 +24,6 @@
     "searching": "Buscando reportes...",
     "loadError": "No se pudieron cargar los reportes. Intenta de nuevo.",
     "emptyNoMatch": "Ningún reporte coincide con tu búsqueda.",
-    "emptyNone": "Aún no hay reportes publicados.",
     "showMore": "Mostrar {{count}} más",
     "showMoreA11y": "Mostrar más reportes",
     "loadMore": "Cargar más",

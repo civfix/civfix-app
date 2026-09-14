@@ -1,4 +1,9 @@
-import { MAX_LINKED_REPORTS, haversineMeters, type ReportPinDTO } from "@civfix/shared"
+import {
+  MAX_LINKED_REPORTS,
+  haversineMeters,
+  type EventKind,
+  type ReportPinDTO,
+} from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
 import type { HostStage } from "@civfix/shared/host"
 import type { LinkedReportHeadline } from "./linkedReportHeadline"
@@ -6,6 +11,8 @@ import type { LinkedReportHeadline } from "./linkedReportHeadline"
 export const NEARBY_PREVIEW = 6
 
 export const NEARBY_MAX = 30
+
+export const LINKED_REPORTS_COUNT_AT = 3
 
 export type LinkBlockState = "hidden" | "pin_first" | "ready"
 
@@ -79,6 +86,28 @@ export function linkSheetMode(input: {
     return "manage"
   }
   return input.linkedCount > 0 ? "readonly" : "hidden"
+}
+
+export function linkedReportsPatch(ids: readonly string[]): { linkedReportIds: string[] } {
+  return { linkedReportIds: [...ids] }
+}
+
+export interface LinkedReportsSummary {
+  labelKey: "wizard.summary.reports"
+  valueKey: "wizard.summary.reports_count" | "wizard.summary.noReports"
+  count: number
+}
+
+export function linkedReportsSummary(input: {
+  eventKind: EventKind
+  linkedCount: number
+}): LinkedReportsSummary | null {
+  if (input.eventKind !== "cleanup") return null
+  return {
+    labelKey: "wizard.summary.reports",
+    valueKey: input.linkedCount > 0 ? "wizard.summary.reports_count" : "wizard.summary.noReports",
+    count: input.linkedCount,
+  }
 }
 
 export function sameIdSet(a: readonly string[], b: readonly string[]): boolean {
