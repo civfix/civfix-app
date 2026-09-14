@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { View, StyleSheet, useWindowDimensions, type TextStyle } from "react-native"
+import { Pressable, View, StyleSheet, useWindowDimensions, type TextStyle } from "react-native"
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -11,9 +11,10 @@ import Animated, {
   cancelAnimation,
   Easing,
 } from "react-native-reanimated"
-import { makeThemedStyles, wordmarkColors, WORDMARK_LETTERS } from "@/theme"
+import { focusRingProps, makeThemedStyles, wordmarkColors, WORDMARK_LETTERS } from "@/theme"
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
+import { retrySessionRestore, useBootGate } from "@/hooks/useBootGate"
 
 const DROP_DURATION = 880
 const DROP_STAGGER = 80
@@ -128,6 +129,45 @@ function Tagline({ reduceMotion }: { reduceMotion: boolean }) {
   )
 }
 
+const CONNECTING_FADE = 320
+
+function ConnectingNotice({ reduceMotion }: { reduceMotion: boolean }) {
+  const { t } = useT("mobile-branding")
+  const styles = useStyles()
+  const { showNotice, showRetry } = useBootGate()
+  const appear = useSharedValue(reduceMotion ? 1 : 0)
+
+  useEffect(() => {
+    if (!showNotice) return
+    if (reduceMotion) {
+      appear.value = 1
+      return
+    }
+    appear.value = withTiming(1, { duration: CONNECTING_FADE })
+    return () => cancelAnimation(appear)
+  }, [showNotice, reduceMotion, appear])
+
+  const style = useAnimatedStyle(() => ({ opacity: appear.value }))
+
+  if (!showNotice) return null
+
+  return (
+    <Animated.View style={[styles.connecting, style]}>
+      <Text style={styles.connectingText}>{t("boot.still_connecting")}</Text>
+      {showRetry ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={retrySessionRestore}
+          {...focusRingProps}
+          style={({ pressed }) => [styles.connectingAction, pressed ? styles.pressed : null]}
+        >
+          <Text style={styles.connectingActionLabel}>{t("boot.retry")}</Text>
+        </Pressable>
+      ) : null}
+    </Animated.View>
+  )
+}
+
 export function LoadingSplash() {
   const { t } = useT("mobile-branding")
   const styles = useStyles()
@@ -156,6 +196,7 @@ export function LoadingSplash() {
         ))}
       </View>
       <Tagline reduceMotion={reduceMotion} />
+      <ConnectingNotice reduceMotion={reduceMotion} />
     </View>
   )
 }
@@ -184,5 +225,32 @@ const useStyles = makeThemedStyles((t) => ({
     textTransform: "uppercase",
     textAlign: "center",
     color: t.colors.textSubtle,
+  },
+  pressed: { opacity: 0.82, transform: [{ scale: 0.97 }] },
+  connecting: {
+    position: "absolute",
+    bottom: t.space["10"],
+    alignItems: "center",
+    gap: t.space["2"],
+    paddingHorizontal: t.space["8"],
+  },
+  connectingText: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["13"],
+    lineHeight: 18,
+    textAlign: "center",
+    color: t.colors.textSubtle,
+  },
+  connectingAction: {
+    minHeight: 44,
+    justifyContent: "center",
+    paddingHorizontal: t.space["4"],
+    borderRadius: t.radius.pill,
+    backgroundColor: t.colors.surfaceTint,
+  },
+  connectingActionLabel: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: t.fontSize["13"],
+    color: t.colors.accentText,
   },
 }))

@@ -2,5 +2,12 @@
   "a11y": {
     "brand_logo": "civfix"
   },
+  "boot": {
+    "still_connecting": "Verbindung wird noch hergestellt…",
+    "retry": "Erneut versuchen",
+    "offline_title": "civfix ist nicht erreichbar",
+    "offline_body": "civfix konnte den Server nicht erreichen. Prüfe deine Verbindung und versuche es erneut.",
+    "sign_out": "Abmelden"
+  },
   "nonprofit_tagline": "Eine eingetragene gemeinnützige Organisation (501(c)(3))."
 }

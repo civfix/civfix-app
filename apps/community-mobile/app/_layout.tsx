@@ -1,5 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Appearance, AppState, Platform, Pressable, StyleSheet, Text, View } from "react-native"
+import {
+  Appearance,
+  AppState,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useColorScheme,
+} from "react-native"
 import { Stack, useRouter, useSegments, type ErrorBoundaryProps } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import * as SplashScreen from "expo-splash-screen"
@@ -29,6 +38,7 @@ import {
   supportsBlur,
   useColorSchemeName,
   useTheme,
+  type ColorSchemeName,
   type Theme,
 } from "@civfix/ui/theme"
 import { I18nProvider, createI18n } from "@civfix/ui/i18n"
@@ -69,9 +79,11 @@ import {
   type PushAttemptState,
 } from "@/lib/pushRegistrationRetry"
 import { useAuthGate } from "@/hooks/useAuthGate"
+import { useBootGate } from "@/hooks/useBootGate"
 import { useAppLifecycle } from "@/hooks/useAppLifecycle"
 import { useSignOutReset } from "@/hooks/useSignOutReset"
 import { AuthGate } from "@/components/AuthGate"
+import { BootOfflineGate } from "@/components/BootConnectivity"
 import { FirstRunGate } from "@/components/FirstRunGate"
 import { OnboardingGate } from "@/components/onboarding/OnboardingGate"
 import { useOnboardingStore } from "@/store/onboardingStore"
@@ -105,6 +117,34 @@ const GATE_FADE_MS = 450
 
 function currentTheme(): Theme {
   return themeFor(resolveColorScheme(getAppearancePreference(), Appearance.getColorScheme()))
+}
+
+function useBootScheme(): ColorSchemeName {
+  const preference = useAppearanceStore((s) => s.preference)
+  const system = useColorScheme()
+  return resolveColorScheme(preference, system)
+}
+
+function useBootTheme(): Theme {
+  const scheme = useBootScheme()
+  const theme = useMemo(() => themeFor(scheme), [scheme])
+
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(theme.colors.bg)
+  }, [theme.colors.bg])
+
+  return theme
+}
+
+function BootBackdrop() {
+  const theme = useBootTheme()
+
+  return (
+    <>
+      <StatusBar style={theme.scheme === "dark" ? "light" : "dark"} />
+      <View style={[styles.gate, { backgroundColor: theme.colors.bg }]} />
+    </>
+  )
 }
 
 let inAppBrowserOpen = false
@@ -472,10 +512,12 @@ export default function RootLayout() {
     return () => clearTimeout(t)
   }, [fontsReady])
 
+  const boot = useBootGate()
+
   const gateActive =
     !fontsReady ||
-    status === "idle" ||
-    status === "loading" ||
+    boot.phase === "connecting" ||
+    boot.phase === "offline" ||
     (status === "authed" && !minSplashElapsed)
 
   const setGateActive = useOnboardingStore((s) => s.setGateActive)
@@ -499,7 +541,7 @@ export default function RootLayout() {
   }, [gateActive, gateOpacity])
 
   if (!fontsReady) {
-    return <View style={styles.gate} />
+    return <BootBackdrop />
   }
 
   return (
@@ -529,7 +571,7 @@ export default function RootLayout() {
                   pointerEvents={gateActive ? "auto" : "none"}
                   style={[StyleSheet.absoluteFill, styles.loadingGate, gateStyle]}
                 >
-                  <AuthGate mode="loading" />
+                  {boot.phase === "offline" ? <BootOfflineGate /> : <AuthGate mode="loading" />}
                 </Animated.View>
               ) : null}
             </BottomSheetModalProvider>
@@ -567,6 +609,8 @@ function crashCopy(): typeof CRASH_COPY {
 
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   const copy = useMemo(crashCopy, [])
+  const theme = useBootTheme()
+  const crash = useMemo(() => crashStyles(theme), [theme])
 
   const onRetry = useCallback(() => {
     try {
@@ -578,13 +622,13 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   }, [retry])
 
   return (
-    <View style={styles.crash}>
-      <StatusBar style={bootTheme.scheme === "dark" ? "light" : "dark"} />
-      <Text style={styles.crashTitle}>{copy.title}</Text>
-      <Text style={styles.crashBody}>{copy.body}</Text>
-      {__DEV__ ? <Text style={styles.crashDetail}>{String(error?.message ?? error)}</Text> : null}
-      <Pressable accessibilityRole="button" onPress={onRetry} style={styles.crashAction}>
-        <Text style={styles.crashActionLabel}>{copy.action}</Text>
+    <View style={crash.root}>
+      <StatusBar style={theme.scheme === "dark" ? "light" : "dark"} />
+      <Text style={crash.title}>{copy.title}</Text>
+      <Text style={crash.body}>{copy.body}</Text>
+      {__DEV__ ? <Text style={crash.detail}>{String(error?.message ?? error)}</Text> : null}
+      <Pressable accessibilityRole="button" onPress={onRetry} style={crash.action}>
+        <Text style={crash.actionLabel}>{copy.action}</Text>
       </Pressable>
     </View>
   )
@@ -596,50 +640,54 @@ const styles = StyleSheet.create({
   },
   gate: {
     flex: 1,
-    backgroundColor: bootTheme.colors.bg,
   },
   loadingGate: {
     zIndex: 60,
     elevation: 60,
   },
-  crash: {
-    flex: 1,
-    backgroundColor: bootTheme.colors.bg,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: bootTheme.space["6"],
-  },
-  crashTitle: {
-    fontSize: bootTheme.fontSize["24"],
-    fontWeight: "700",
-    color: bootTheme.colors.text,
-    textAlign: "center",
-  },
-  crashBody: {
-    marginTop: bootTheme.space["3"],
-    fontSize: bootTheme.fontSize["16"],
-    color: bootTheme.colors.textMuted,
-    textAlign: "center",
-  },
-  crashDetail: {
-    marginTop: bootTheme.space["3"],
-    fontSize: bootTheme.fontSize["13"],
-    color: bootTheme.colors.textSubtle,
-    textAlign: "center",
-  },
-  crashAction: {
-    marginTop: bootTheme.space["8"],
-    alignSelf: "stretch",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 52,
-    paddingHorizontal: bootTheme.space["5"],
-    borderRadius: bootTheme.radius.pill,
-    backgroundColor: bootTheme.colors.brand.bloom,
-  },
-  crashActionLabel: {
-    fontSize: bootTheme.fontSize["16"],
-    fontWeight: "600",
-    color: bootTheme.colors.onAccent,
-  },
 })
+
+function crashStyles(t: Theme) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: t.colors.bg,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: t.space["6"],
+    },
+    title: {
+      fontSize: t.fontSize["24"],
+      fontWeight: "700",
+      color: t.colors.text,
+      textAlign: "center",
+    },
+    body: {
+      marginTop: t.space["3"],
+      fontSize: t.fontSize["16"],
+      color: t.colors.textMuted,
+      textAlign: "center",
+    },
+    detail: {
+      marginTop: t.space["3"],
+      fontSize: t.fontSize["13"],
+      color: t.colors.textSubtle,
+      textAlign: "center",
+    },
+    action: {
+      marginTop: t.space["8"],
+      alignSelf: "stretch",
+      alignItems: "center",
+      justifyContent: "center",
+      height: 52,
+      paddingHorizontal: t.space["5"],
+      borderRadius: t.radius.pill,
+      backgroundColor: t.colors.brand.bloom,
+    },
+    actionLabel: {
+      fontSize: t.fontSize["16"],
+      fontWeight: "600",
+      color: t.colors.onAccent,
+    },
+  })
+}

@@ -1,9 +1,15 @@
 import { create } from "zustand"
 import type { UserDTO } from "@civfix/shared"
 import { api } from "@/api/client"
+import {
+  SESSION_RESTORE_DEADLINE_MS,
+  isRequestDeadlineError,
+  withRequestDeadline,
+} from "@/api/deadline"
+import type { BootNetworkOutcome } from "@/boot/bootGateModel"
 import { readToken, setToken, clearToken } from "@/auth/storage"
 import { isForeignIdentity } from "@/lib/authLifecycle"
-import { isUnauthorized } from "@/lib/errors"
+import { isAppError, isUnauthorized } from "@/lib/errors"
 import { chatSocket } from "@/lib/ws"
 import { storage } from "@/lib/mmkv"
 import { clearSecureBlobs } from "@/lib/nativeSecureStore"
@@ -58,16 +64,31 @@ function rememberIdentity(id: string | null): void {
 
 let identityTornDown = false
 let foregroundHydrationInFlight = false
+let sessionRetryInFlight = false
 
-type SetAuthState = (next: { status: AuthStatus; user: UserDTO | null }) => void
+type SetAuthState = (next: {
+  status?: AuthStatus
+  user?: UserDTO | null
+  guestSmsEnabled?: boolean | undefined
+  sessionPresent?: boolean | null
+  networkOutcome?: BootNetworkOutcome
+  restoreStartedAt?: number
+}) => void
 
-type SetGuestCapabilities = (next: { guestSmsEnabled: boolean | undefined }) => void
+function restoreSession(): Promise<Awaited<ReturnType<typeof api.session>>> {
+  return withRequestDeadline(SESSION_RESTORE_DEADLINE_MS, (signal) => api.session({ signal }))
+}
 
-function refreshGuestCapabilities(set: SetGuestCapabilities): void {
-  void api
-    .session()
-    .then((session) => set({ guestSmsEnabled: session.guestSmsEnabled }))
-    .catch(() => undefined)
+function reachabilityOutcome(err: unknown): BootNetworkOutcome {
+  if (isRequestDeadlineError(err)) return "timeout"
+  if (isAppError(err)) return "ok"
+  return "error"
+}
+
+function refreshGuestCapabilities(set: SetAuthState): void {
+  void restoreSession()
+    .then((session) => set({ guestSmsEnabled: session.guestSmsEnabled, networkOutcome: "ok" }))
+    .catch((err) => set({ networkOutcome: reachabilityOutcome(err) }))
 }
 
 function tearDownIdentity(set: SetAuthState): void {
@@ -76,7 +97,7 @@ function tearDownIdentity(set: SetAuthState): void {
   cacheUser(null)
   forgetPushRegistration(storage)
   queryClient.clear()
-  set({ status: "unauthed", user: null })
+  set({ status: "unauthed", user: null, sessionPresent: false })
   resumeCachePersistence()
   identityTornDown = true
 }
@@ -89,7 +110,7 @@ function dropForeignIdentityState(): void {
 function adoptIdentity(user: UserDTO, set: SetAuthState): void {
   cacheUser(user)
   rememberIdentity(user.id)
-  set({ status: "authed", user })
+  set({ status: "authed", user, sessionPresent: true })
   identityTornDown = false
 }
 
@@ -97,8 +118,12 @@ interface AuthState {
   status: AuthStatus
   user: UserDTO | null
   guestSmsEnabled: boolean | undefined
+  sessionPresent: boolean | null
+  networkOutcome: BootNetworkOutcome
+  restoreStartedAt: number
   hydrate: (mode?: HydrateMode) => Promise<void>
   retryHydration: () => Promise<void>
+  retrySessionRestore: () => Promise<void>
   signIn: (token: string, user: UserDTO) => Promise<void>
   setUser: (user: UserDTO) => void
   signOut: () => Promise<void>
@@ -109,12 +134,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   status: "idle",
   user: null,
   guestSmsEnabled: undefined,
+  sessionPresent: null,
+  networkOutcome: "pending",
+  restoreStartedAt: Date.now(),
 
   hydrate: async (mode = "boot") => {
+    if (mode === "boot") set({ restoreStartedAt: Date.now(), networkOutcome: "pending" })
     const read = await readToken()
 
     if (!read.ok) {
-      set({ status: "unauthed", user: null })
+      set({ status: "unauthed", user: null, sessionPresent: false })
       refreshGuestCapabilities(set)
       return
     }
@@ -126,12 +155,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     const cached = readCachedUser()
+    set({ sessionPresent: true })
     if (cached) set({ status: "authed", user: cached })
     else if (mode === "boot") set({ status: "loading" })
 
     try {
-      const session = await api.session()
-      set({ guestSmsEnabled: session.guestSmsEnabled })
+      const session = await restoreSession()
+      set({ guestSmsEnabled: session.guestSmsEnabled, networkOutcome: "ok" })
       if (session.authenticated && session.user) {
         const previousIdentity = readLastIdentity() ?? cached?.id ?? null
         if (isForeignIdentity(previousIdentity, session.user.id)) dropForeignIdentityState()
@@ -142,12 +172,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await clearToken()
     } catch (err) {
       if (isUnauthorized(err)) {
+        set({ networkOutcome: "ok" })
         tearDownIdentity(set)
         await clearToken()
         return
       }
+      set({ networkOutcome: reachabilityOutcome(err) })
       if (cached) return
       set({ status: "unauthed", user: null })
+    }
+  },
+
+  retrySessionRestore: async () => {
+    if (sessionRetryInFlight) return
+    sessionRetryInFlight = true
+    try {
+      await get().hydrate("boot")
+    } finally {
+      sessionRetryInFlight = false
     }
   },
 

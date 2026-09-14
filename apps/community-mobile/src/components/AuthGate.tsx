@@ -12,6 +12,8 @@ import {
 } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { Wordmark } from "@/components/Wordmark"
+import { BootConnectivityNotice } from "@/components/BootConnectivity"
+import { useBootGate } from "@/hooks/useBootGate"
 import { LoadingSplash } from "@/components/LoadingSplash"
 import { AuthOptions } from "@/components/AuthOptions"
 import { ScreenHeader } from "@/components/ui/ScreenHeader"
@@ -26,19 +28,21 @@ function WelcomeOptions() {
   const th = useTheme()
   const styles = useStyles()
   const providers = useEnabledProviders()
+  const unreachable = useBootGate().showNotice
   const ready = !providers.isPlaceholderData
   const enabled = providers.data ?? ALL_PROVIDERS
 
+  const revealed = ready || unreachable
   const fall = useSharedValue(0)
   useEffect(() => {
-    if (ready) fall.value = withSpring(1, { damping: 13, stiffness: 120, mass: 0.9 })
-  }, [ready, fall])
+    if (revealed) fall.value = withSpring(1, { damping: 13, stiffness: 120, mass: 0.9 })
+  }, [revealed, fall])
   const style = useAnimatedStyle(() => ({
     opacity: fall.value,
     transform: [{ translateY: (1 - fall.value) * -32 }],
   }))
 
-  if (!ready) {
+  if (!ready && !unreachable) {
     return (
       <View style={styles.optionsLoading}>
         <ActivityIndicator color={th.colors.brand.bloom} />
@@ -54,6 +58,11 @@ function WelcomeOptions() {
       <Text variant="caption" style={styles.subtag}>
         {t("subtitle")}
       </Text>
+      {unreachable ? (
+        <View style={styles.connectivity}>
+          <BootConnectivityNotice />
+        </View>
+      ) : null}
       <View style={styles.options}>
         <AuthOptions enabled={enabled} />
       </View>
@@ -132,6 +141,9 @@ const useStyles = makeThemedStyles((t) => ({
     maxWidth: 300,
     alignSelf: "center",
     marginTop: t.space["3"],
+  },
+  connectivity: {
+    marginTop: t.space["6"],
   },
   options: {
     marginTop: t.space["8"],
