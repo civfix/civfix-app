@@ -11,6 +11,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { ReportCategorySchema } from "@civfix/shared"
 import { cleanupColorFor, categoryColor, colorSchemes } from "@civfix/shared/tokens"
 import {
   pinAppearanceFor,
@@ -25,7 +26,15 @@ const code = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[
 describe("a report target never yields the event glyph", () => {
   it("draws the picked category's own teardrop, in both schemes", () => {
     for (const scheme of ["light", "dark"] as const) {
-      for (const category of ["trash", "graffiti", "hazard", "water", "encampment", "recycling"]) {
+      for (const category of [
+        "trash",
+        "graffiti",
+        "hazard",
+        "water",
+        "encampment",
+        "recycling",
+        "other",
+      ]) {
         const pin = pinAppearanceFor(reportPinTarget(category), scheme)
         expect(pin.glyph).toBe(glyphForCategory(category))
         expect(pin.fill).toBe(categoryColor(category, scheme))
@@ -46,9 +55,28 @@ describe("a report target never yields the event glyph", () => {
     }
   })
 
-  it("an unknown category still resolves to a report glyph, not the event one", () => {
+  it('the "other" category draws its own ellipsis glyph rather than borrowing the trash can', () => {
+    for (const scheme of ["light", "dark"] as const) {
+      const pin = pinAppearanceFor(reportPinTarget("other"), scheme)
+      expect(pin.glyph).toBe(PIN_GLYPHS.other)
+      expect(pin.glyph).not.toBe(PIN_GLYPHS.trash)
+      expect(pin.glyph).not.toBe(DROP_PIN_GLYPH)
+      expect(pin.fill).toBe(categoryColor("other", scheme))
+    }
+  })
+
+  it("every report category the contract allows has a glyph of its own", () => {
+    const categories = ReportCategorySchema.options
+    for (const category of categories) expect(PIN_GLYPHS[category]).toBeDefined()
+    expect(new Set(categories.map((category) => glyphForCategory(category))).size).toBe(
+      categories.length,
+    )
+  })
+
+  it("an unknown category falls back to the neutral 'other' pin, glyph and fill together", () => {
     const pin = pinAppearanceFor(reportPinTarget("no-such-category"), "light")
-    expect(pin.glyph).toBe(PIN_GLYPHS.trash)
+    expect(pin.glyph).toBe(PIN_GLYPHS.other)
+    expect(pin.glyph).not.toBe(PIN_GLYPHS.trash)
     expect(pin.fill).toBe(categoryColor("other", "light"))
   })
 })

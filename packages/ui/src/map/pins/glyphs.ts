@@ -12,9 +12,11 @@ export const PIN_GLYPHS: Record<string, string> = {
   recycling: "M12 4 L8 11 H16 L12 4 Z M5 13 L3 17 L7 19 M19 13 L21 17 L17 19 M8 20 H16",
   graffiti: "M4 14 v3 a2 2 0 0 0 2 2 h2 v-3 M4 14 l9 -9 a2.83 2.83 0 0 1 4 4 l-9 9 H4 v-4 Z",
   water: "M12 3 C7 8 4 12 4 15 a8 8 0 0 0 16 0 c0 -3 -3 -7 -8 -12 Z",
+  other:
+    "M5 11 a1 1 0 1 0 0 2 a1 1 0 1 0 0 -2 M12 11 a1 1 0 1 0 0 2 a1 1 0 1 0 0 -2 M19 11 a1 1 0 1 0 0 2 a1 1 0 1 0 0 -2",
   drop: DROP_PIN_GLYPH,
 }
 
 export function glyphForCategory(category: string): string {
-  return PIN_GLYPHS[category] ?? PIN_GLYPHS.trash!
+  return PIN_GLYPHS[category] ?? PIN_GLYPHS.other!
 }
