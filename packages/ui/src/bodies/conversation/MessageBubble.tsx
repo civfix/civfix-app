@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Platform, Animated, Dimensions } from "react-native"
 import type { PressableStateCallbackType, ViewProps, ViewStyle } from "react-native"
 import { type ChatItem, type ChatMessageDTO, type UserMentionDTO, type ReactionEmoji, type MediaDTO } from "@civfix/shared"
@@ -331,6 +331,17 @@ export const Bubble = React.memo(function Bubble({
     (ref: CivfixLinkRef) => onOpenLink({ kind: "internal", path: ref.path, url: ref.url }),
     [onOpenLink],
   )
+  const bodyTokens = useMemo(
+    () =>
+      chatBodyTokens({
+        body,
+        mentions: message.mentions,
+        cityHandle: message.cityMention?.handle ?? null,
+        linkOrigins,
+      }),
+    [body, message.mentions, message.cityMention?.handle, linkOrigins],
+  )
+  const embedPlan = useMemo(() => planChatEmbeds(bodyTokens), [bodyTokens])
   const openEdit = useCallback(() => {
     if (canEdit && message.id) onEdit(message)
   }, [canEdit, message, onEdit])
@@ -494,14 +505,8 @@ export const Bubble = React.memo(function Bubble({
   }
   const closeContextMenu = () => setMenuMode((m) => (m === "menu" ? "closed" : m))
   const reactions = message.reactions ?? []
+  const rowKey = message.clientId ?? message.id
   const tintStyle = mine ? styles.mentionTokenMine : styles.mentionToken
-  const bodyTokens = chatBodyTokens({
-    body,
-    mentions: message.mentions,
-    cityHandle: message.cityMention?.handle ?? null,
-    linkOrigins,
-  })
-  const embedPlan = planChatEmbeds(bodyTokens)
   const bodyContent = renderChatTokens(bodyTokens, {
     body,
     mentions: message.mentions,
@@ -566,6 +571,7 @@ export const Bubble = React.memo(function Bubble({
       ) : null}
       {!isPoll && embedPlan.refs.length > 0 ? (
         <ChatLinkEmbeds
+          rowKey={rowKey}
           refs={embedPlan.refs}
           linkOnly={embedPlan.linkOnly}
           linkStyle={tintStyle}

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react"
+import React, { useCallback, useEffect, useMemo } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { StyleProp, TextStyle } from "react-native"
 import type { CleanupDTO, LinkedEventRef, OrganizationDTO, PostDTO, UserProfileDTO } from "@civfix/shared"
@@ -16,44 +16,59 @@ import { reportToCardData } from "../linkedReportCards"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { buildPostIdentity } from "../postCardModel"
 import { useListTimeAgo } from "../useListTimeAgo"
-import type { CivfixLinkRef } from "./civfixLinks"
+import { useEmbedGate } from "./chatEmbedScope"
+import type { CivfixLinkKind, CivfixLinkRef } from "./civfixLinks"
 
 export const EMBED_CARD_WIDTH = 260
-export const EMBED_SKELETON_HEIGHT = 64
+
+export const EMBED_RESERVED_HEIGHT: Record<CivfixLinkKind, number> = {
+  report: 64,
+  event: 68,
+  post: 88,
+  person: 64,
+  org: 64,
+}
+
 const POST_EMBED_MEDIA_MAX_HEIGHT = 160
 
 export interface ChatLinkEmbedsProps {
+  rowKey: string
   refs: readonly CivfixLinkRef[]
   linkOnly: boolean
   linkStyle: StyleProp<TextStyle>
   onOpen: (ref: CivfixLinkRef) => void
 }
 
-interface EmbedProps {
+interface EmbedCardProps {
   link: CivfixLinkRef
   linkOnly: boolean
   linkStyle: StyleProp<TextStyle>
   onOpen: (ref: CivfixLinkRef) => void
 }
 
-interface EmbedQueryState {
-  isLoading: boolean
+interface EmbedProps extends EmbedCardProps {
+  onSettled: (cached: boolean) => void
 }
 
-function EmbedSkeleton() {
+interface EmbedQueryState {
+  isLoading: boolean
+  isSuccess: boolean
+}
+
+function EmbedSkeleton({ kind }: { kind: CivfixLinkKind }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("conversation")
   return (
     <View accessible accessibilityLabel={t("embed.loading")} style={styles.skeletonHost}>
       <SkeletonGroup>
-        <SkeletonBlock height={EMBED_SKELETON_HEIGHT} radius={th.radius.lg} />
+        <SkeletonBlock height={EMBED_RESERVED_HEIGHT[kind]} radius={th.radius.lg} />
       </SkeletonGroup>
     </View>
   )
 }
 
-function EmbedFallback({ link, linkOnly, linkStyle, onOpen }: EmbedProps) {
+function EmbedFallback({ link, linkOnly, linkStyle, onOpen }: EmbedCardProps) {
   const styles = useStyles()
   if (!linkOnly) return null
   return (
@@ -67,14 +82,20 @@ function EmbedShell<T>({
   query,
   data,
   render,
+  onSettled,
   ...props
 }: EmbedProps & {
   query: EmbedQueryState
   data: T | undefined
   render: (data: T) => React.ReactNode
 }) {
+  const settled = !query.isLoading
+  const cached = query.isSuccess
+  useEffect(() => {
+    if (settled) onSettled(cached)
+  }, [settled, cached, onSettled])
   if (data !== undefined) return <>{render(data)}</>
-  if (query.isLoading) return <EmbedSkeleton />
+  if (query.isLoading) return <EmbedSkeleton kind={props.link.kind} />
   return <EmbedFallback {...props} />
 }
 
@@ -332,22 +353,26 @@ function OrgEmbed(props: EmbedProps) {
   )
 }
 
-function ChatLinkEmbed(props: EmbedProps) {
+function ChatLinkEmbed({ rowKey, ...props }: EmbedCardProps & { rowKey: string }) {
+  const { ready, onSettled } = useEmbedGate(rowKey, props.link.key)
+  if (!ready) return <EmbedSkeleton kind={props.link.kind} />
+  const gated: EmbedProps = { ...props, onSettled }
   switch (props.link.kind) {
     case "report":
-      return <ReportEmbed {...props} />
+      return <ReportEmbed {...gated} />
     case "event":
-      return <EventEmbed {...props} />
+      return <EventEmbed {...gated} />
     case "post":
-      return <PostEmbed {...props} />
+      return <PostEmbed {...gated} />
     case "person":
-      return <PersonEmbed {...props} />
+      return <PersonEmbed {...gated} />
     case "org":
-      return <OrgEmbed {...props} />
+      return <OrgEmbed {...gated} />
   }
 }
 
 export const ChatLinkEmbeds = React.memo(function ChatLinkEmbeds({
+  rowKey,
   refs,
   linkOnly,
   linkStyle,
@@ -358,7 +383,14 @@ export const ChatLinkEmbeds = React.memo(function ChatLinkEmbeds({
   return (
     <View style={[styles.host, linkOnly ? styles.hostLinkOnly : null]}>
       {refs.map((link) => (
-        <ChatLinkEmbed key={link.key} link={link} linkOnly={linkOnly} linkStyle={linkStyle} onOpen={onOpen} />
+        <ChatLinkEmbed
+          key={link.key}
+          rowKey={rowKey}
+          link={link}
+          linkOnly={linkOnly}
+          linkStyle={linkStyle}
+          onOpen={onOpen}
+        />
       ))}
     </View>
   )

@@ -35,6 +35,8 @@ import { aroundWindowState } from "./conversation/aroundWindowState"
 import { useJumpToMessage } from "./conversation/useJumpToMessage"
 import { usePinCycle } from "./conversation/usePinCycle"
 import { useConversationStyles } from "./conversation/styles"
+import { ChatEmbedScopeProvider, useOwnChatEmbedScope } from "./conversation/chatEmbedScope"
+import { viewportWindowKeys } from "./conversation/embedScheduler"
 
 export { Bubble, DaySeparator } from "./conversation/MessageBubble"
 export { TypingBubble } from "./conversation/TypingBubble"
@@ -334,6 +336,18 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
     () => (pinnedOnly ? pinnedRows : (windowRows ?? (typingItem ? [typingItem, ...inverted] : inverted))),
     [pinnedOnly, pinnedRows, windowRows, typingItem, inverted],
   )
+  const dataRef = useRef(data)
+  dataRef.current = data
+
+  const embedScope = useOwnChatEmbedScope()
+  const embedViewport = embedScope.viewport
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: readonly { index: number | null }[] }) => {
+      const keys = viewportWindowKeys(dataRef.current, viewableItems)
+      if (keys.length > 0) embedViewport.setVisible(keys)
+    },
+    [embedViewport],
+  )
 
   const { flashMessageId, jumpLoadingId, onJumpToMessage, onScrollToIndexFailed } = useJumpToMessage({
     listRef,
@@ -591,7 +605,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
       : null
 
   const content = (
-    <>
+    <ChatEmbedScopeProvider value={embedScope}>
       {chat.isLoading && chat.items.length === 0 ? (
         <View style={styles.center}>
           <Text variant="body" color={th.colors.textMuted}>
@@ -631,6 +645,8 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
             windowSize={11}
             maxToRenderPerBatch={12}
             initialNumToRender={15}
+            viewabilityConfig={EMBED_VIEWABILITY}
+            onViewableItemsChanged={onViewableItemsChanged}
             maintainVisibleContentPosition={MAINTAIN_VISIBLE_CONTENT_POSITION}
             ListEmptyComponent={
               pinnedOnly ? (
@@ -745,7 +761,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
           style={slotBottomStyle}
         />
       )}
-    </>
+    </ChatEmbedScopeProvider>
   )
 
   return (
@@ -860,6 +876,11 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
 }
 
 const SUPPRESS_READ_ACKS = { suppressReadAcks: true } as const
+
+const EMBED_VIEWABILITY = {
+  itemVisiblePercentThreshold: 1,
+  minimumViewTime: 0,
+} as const
 
 const MAINTAIN_VISIBLE_CONTENT_POSITION = {
   minIndexForVisible: 0,

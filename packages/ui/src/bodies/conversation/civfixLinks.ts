@@ -83,7 +83,9 @@ export interface ChatEmbedPlan {
 
 const NO_EMBEDS: ChatEmbedPlan = { refs: [], linkOnly: false }
 
-const PUNCTUATION_ONLY = /^[\s.,;:!?…'"“”‘’*_~<>()[\]{}-]*$/
+const WHITESPACE_ONLY = /^\s*$/
+
+const ATTACHED_TERMINATOR = /^[.,]\s*$/
 
 export function planChatEmbeds(
   tokens: readonly ChatBodyToken[],
@@ -93,15 +95,20 @@ export function planChatEmbeds(
   const seen = new Set<string>()
   let embeddedLinks = 0
   let otherContent = false
+  let afterLink = false
   for (const token of tokens) {
     if (token.kind === "text") {
-      if (!PUNCTUATION_ONLY.test(token.text)) otherContent = true
+      const spare = WHITESPACE_ONLY.test(token.text) || (afterLink && ATTACHED_TERMINATOR.test(token.text))
+      if (!spare) otherContent = true
+      afterLink = false
       continue
     }
     if (token.kind === "mention") {
       otherContent = true
+      afterLink = false
       continue
     }
+    afterLink = true
     const found = classifyCivfixUrl(token.text)
     if (found === null) {
       otherContent = true

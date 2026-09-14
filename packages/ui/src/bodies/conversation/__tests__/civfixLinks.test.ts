@@ -138,6 +138,18 @@ describe("planChatEmbeds decides which links in a message become cards", () => {
     expect(plan("https://civfix.org/post/post-1").linkOnly).toBe(true)
     expect(plan("  https://civfix.org/post/post-1 \n").linkOnly).toBe(true)
     expect(plan("https://civfix.org/post/post-1.").linkOnly).toBe(true)
+    expect(plan("https://civfix.org/post/post-1, ").linkOnly).toBe(true)
+  })
+
+  it("keeps anything the sender typed alongside the link, punctuation included", () => {
+    expect(plan("https://civfix.org/pin/rep-1 :)").linkOnly).toBe(false)
+    expect(plan("https://civfix.org/pin/rep-1!").linkOnly).toBe(false)
+    expect(plan("https://civfix.org/pin/rep-1?").linkOnly).toBe(false)
+    expect(plan("https://civfix.org/pin/rep-1 ...").linkOnly).toBe(false)
+    expect(plan("https://civfix.org/pin/rep-1 .").linkOnly).toBe(false)
+    expect(plan("https://civfix.org/pin/rep-1 ,").linkOnly).toBe(false)
+    expect(plan("!!! https://civfix.org/pin/rep-1").linkOnly).toBe(false)
+    expect(plan("... https://civfix.org/pin/rep-1").linkOnly).toBe(false)
   })
 
   it("keeps the text when a note, a mention, a second link or a foreign link accompanies it", () => {
