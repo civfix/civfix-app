@@ -39,7 +39,7 @@ import {
 } from "../data"
 import { type NodeKind, NODE_GLYPH, nodeColor, kindForStatus, citizenStatusLabel } from "../primitives/report-timeline-labels"
 import { timelineEntryRender } from "../primitives/report-timeline-model"
-import { clampGallerySelection } from "./reportDetailModel"
+import { clampGallerySelection, linkedEventToCleanup } from "./reportDetailModel"
 import type { ContentReportReason, ContentReportSubject } from "@civfix/shared"
 import { usePageIsActive } from "../shell/pageActive"
 import { useScrollHost } from "../shell/ScrollHost"
@@ -349,26 +349,6 @@ function ReportLinkedEvents({ events }: { events: LinkedEventRef[] }) {
       </View>
     </View>
   )
-}
-
-function linkedEventToCleanup(ev: LinkedEventRef): import("@civfix/shared").CleanupDTO {
-  return {
-    id: ev.id,
-    title: ev.title,
-    type: "site",
-    eventKind: ev.eventKind,
-    lat: ev.lat,
-    lng: ev.lng,
-    scheduledAt: ev.scheduledAt,
-    status: ev.status,
-    organizer: ev.organizer,
-    going: ev.going,
-    joined: false,
-    bring: [],
-    address: null,
-    description: null,
-    linkedReports: [],
-  } as unknown as import("@civfix/shared").CleanupDTO
 }
 
 type StatusTileKind = "processing" | "rejected" | "held"

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { clampGallerySelection } from "../reportDetailModel"
+import type { LinkedEventRef } from "@civfix/shared"
+import { clampGallerySelection, linkedEventToCleanup } from "../reportDetailModel"
 import { matchesReportQuery } from "../reportsListModel"
 import { resumeStep, stepOrderFor } from "../../report/wizardSteps"
 
@@ -15,6 +16,60 @@ describe("report gallery selection", () => {
 
   it("falls back to 0 when nothing is ready", () => {
     expect(clampGallerySelection(3, 0)).toBe(0)
+  })
+})
+
+describe("a report's linked-event card renders in the EVENT's zone", () => {
+  const linkedEvent: LinkedEventRef = {
+    id: "event-1",
+    title: "Ballona Creek Cleanup",
+    eventKind: "cleanup",
+    status: "upcoming",
+    scheduledAt: "2026-07-25T16:00:00.000Z",
+    endsAt: "2026-07-25T19:00:00.000Z",
+    timezone: "America/Los_Angeles",
+    lat: 33.95,
+    lng: -118.45,
+    going: 18,
+    organizer: {
+      id: "person-1",
+      name: "Friends of Ballona",
+      avatar: ["#F0685C", "#E4574A"],
+      followers: 240,
+      following: 12,
+      isFollowing: false,
+    },
+    linkedAt: "2026-07-01T00:00:00.000Z",
+  }
+
+  it("carries the zone and the end instant onto the cleanup the card reads", () => {
+    const cleanup = linkedEventToCleanup(linkedEvent)
+    expect(cleanup.timezone).toBe("America/Los_Angeles")
+    expect(cleanup.endsAt).toBe("2026-07-25T19:00:00.000Z")
+  })
+
+  it("normalizes a ref that carries neither, so the card falls back instead of reading undefined", () => {
+    const cleanup = linkedEventToCleanup({
+      ...linkedEvent,
+      endsAt: undefined,
+      timezone: undefined,
+    })
+    expect(cleanup.timezone).toBeNull()
+    expect(cleanup.endsAt).toBeNull()
+  })
+
+  it("keeps the rest of the ref intact for the card's title, time and attendance line", () => {
+    const cleanup = linkedEventToCleanup(linkedEvent)
+    expect(cleanup).toMatchObject({
+      id: "event-1",
+      title: "Ballona Creek Cleanup",
+      eventKind: "cleanup",
+      status: "upcoming",
+      scheduledAt: "2026-07-25T16:00:00.000Z",
+      going: 18,
+      joined: false,
+    })
+    expect(cleanup.organizer.name).toBe("Friends of Ballona")
   })
 })
 

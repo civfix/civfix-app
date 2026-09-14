@@ -143,4 +143,10 @@ describe("the attached-event card is told which zone the event is in", () => {
   it("keeps the zone on the ref the composer builds, so an attached draft is not device-local", () => {
     expect(code(read("../postComposerModel.ts"))).toContain("timezone: event.timezone ?? null")
   })
+
+  it("keeps the zone on the cleanup a report's linked-event card is built from", () => {
+    const src = code(read("../reportDetailModel.ts"))
+    expect(src).toContain("timezone: event.timezone ?? null")
+    expect(src).toContain("endsAt: event.endsAt ?? null")
+  })
 })
