@@ -36,8 +36,6 @@ export const DEFAULT_DASHBOARD_RANGE: DashboardRange = "30d"
 
 export const ATTENTION_MAX_ROWS = 3
 
-export const NEXT_UP_MESSAGE_WITHIN_MS = 48 * 3_600_000
-
 const DAY_MS = 86_400_000
 
 const RANGE_DAYS: Readonly<Record<DashboardRange, number>> = {
@@ -220,31 +218,6 @@ export function nextUpEvent(
     })
   const first = dated[0]
   return first ? { event: first.event, phase: first.phase } : null
-}
-
-export type NextUpCtaKey = "check_in" | "message" | "share" | "host_tools"
-
-export interface NextUpCtaInput {
-  phase: EventPhase
-  event: HostedEventDTO
-  now: Date
-}
-
-export function nextUpCta(input: NextUpCtaInput): NextUpCtaKey {
-  const { phase, event, now } = input
-  if (phase === "live") return "check_in"
-  if (phase !== "upcoming") return "host_tools"
-  const startsAt = Date.parse(event.startsAt)
-  const soon =
-    Number.isFinite(startsAt) && startsAt - now.getTime() <= NEXT_UP_MESSAGE_WITHIN_MS
-  if (soon && event.registeredCount > 0 && hostedEventCan(event, "broadcast")) return "message"
-  const capacity = event.capacity ?? null
-  const thin =
-    capacity !== null
-      ? event.registeredCount < capacity / 2
-      : event.registeredCount === 0
-  if (thin) return "share"
-  return "host_tools"
 }
 
 export type AttentionRowKind = "log_hours"

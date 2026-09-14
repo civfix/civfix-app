@@ -2,63 +2,55 @@ import React, { useCallback } from "react"
 import { Pressable, View } from "react-native"
 import type { EventPhase, EventSlotDTO, HostedEventDTO } from "@civfix/shared"
 import { deriveCleanupStatus } from "@civfix/shared/host"
-import { focusRingProps, makeThemedStyles, useTheme } from "../../../theme"
-import { Text, TextLink, iconMap, type LucideIcon } from "../../../typography"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  useTheme,
+  webCursorPointer,
+  webHover,
+  webTransition,
+} from "../../../theme"
+import { Icon, Text, TextLink, iconMap } from "../../../typography"
 import { DateBadge, MetaDot, Meter, PrimaryButton, SectionCard } from "../../../primitives"
 import { LIST_TILE } from "../../../primitives"
 import { useEventWhen, useRelativeTime, useT } from "../../../i18n"
 import { boardHasTimedSlots, slotDisplayOrder } from "../../eventSlotsModel"
 import { PhaseDot } from "../PhaseHeader"
 import { ShiftRow } from "../ShiftRow"
-import { hostedEventWhen, hostedEventWindow, type NextUpCtaKey } from "./dashboardModel"
+import { hostedEventWhen, hostedEventWindow } from "./dashboardModel"
 
 const MAX_STRIP_SHIFTS = 3
 
 const MIN_STRIP_SHIFTS = 2
 
-const CTA_ICONS: Readonly<Record<NextUpCtaKey, LucideIcon>> = {
-  check_in: iconMap.QrCode,
-  message: iconMap.Megaphone,
-  share: iconMap.Share,
-  host_tools: iconMap.Building,
-}
+const SHARE_SIZE = 32
 
-const CTA_LABELS: Readonly<Record<NextUpCtaKey, string>> = {
-  check_in: "next_up.check_in",
-  message: "next_up.message",
-  share: "next_up.share",
-  host_tools: "next_up.host_tools",
-}
+const MIN_TOUCH_TARGET = 44
 
-const CTA_A11Y: Readonly<Record<NextUpCtaKey, string>> = {
-  check_in: "next_up.check_in_a11y",
-  message: "next_up.message_a11y",
-  share: "next_up.share_a11y",
-  host_tools: "next_up.host_tools_a11y",
-}
+const SHARE_HIT_SLOP = (MIN_TOUCH_TARGET - SHARE_SIZE) / 2
+
+const SHARE_ICON = 18
 
 export interface NextUpCardProps {
   event: HostedEventDTO
   phase: EventPhase
-  cta: NextUpCtaKey
   slots: readonly EventSlotDTO[]
   liveCheckedIn: number | null
   now: number
   onOpen: (event: HostedEventDTO) => void
-  onPrimary: (event: HostedEventDTO) => void
   onHostTools: (event: HostedEventDTO) => void
+  onShare: (event: HostedEventDTO) => void
 }
 
 export function NextUpCard({
   event,
   phase,
-  cta,
   slots,
   liveCheckedIn,
   now,
   onOpen,
-  onPrimary,
   onHostTools,
+  onShare,
 }: NextUpCardProps) {
   const styles = useStyles()
   const th = useTheme()
@@ -67,8 +59,8 @@ export function NextUpCard({
   const when = useEventWhen(hostedEventWhen(event))
 
   const open = useCallback(() => onOpen(event), [event, onOpen])
-  const primary = useCallback(() => onPrimary(event), [event, onPrimary])
   const hostTools = useCallback(() => onHostTools(event), [event, onHostTools])
+  const share = useCallback(() => onShare(event), [event, onShare])
 
   const underway = deriveCleanupStatus(hostedEventWindow(event), now) === "active"
   const live = phase === "live"
@@ -85,6 +77,16 @@ export function NextUpCard({
         relative: relative(now, Date.parse(event.startsAt)),
       })
 
+  const cardLabel = [
+    t("events.open_a11y", { title: event.title }),
+    whenLine,
+    seats,
+    event.waitlistCount > 0 ? t("next_up.waiting", { count: event.waitlistCount }) : null,
+    live && liveCheckedIn !== null ? t("next_up.checked_in", { count: liveCheckedIn }) : null,
+  ]
+    .filter((part): part is string => part !== null)
+    .join(". ")
+
   const timed = boardHasTimedSlots(slots)
     ? slotDisplayOrder(slots).filter((slot) => !!slot.startsAt && !!slot.endsAt)
     : []
@@ -95,85 +97,110 @@ export function NextUpCard({
     <SectionCard label={t("next_up.section")}>
       <View style={styles.root}>
         <Pressable
-          onPress={open}
+          onPress={share}
           accessibilityRole="button"
-          accessibilityLabel={t("events.open_a11y", { title: event.title })}
+          accessibilityLabel={t("next_up.share_a11y", { title: event.title })}
+          hitSlop={SHARE_HIT_SLOP}
           {...focusRingProps}
-          style={({ pressed }) => [styles.head, pressed ? styles.pressed : null]}
+          style={(state) => [
+            styles.share,
+            webTransition,
+            webCursorPointer,
+            webHover(state) ? styles.shareHovered : null,
+            state.pressed ? styles.sharePressed : null,
+          ]}
         >
-          <DateBadge iso={event.startsAt} size={LIST_TILE} timeZone={when.timeZone} />
-          <View style={styles.meta}>
-            <Text style={styles.title} numberOfLines={2}>
-              {event.title}
-            </Text>
-            <View style={styles.whenLine}>
-              {live ? <PhaseDot phase={phase} /> : null}
-              <Text variant="label" numberOfLines={1} style={styles.when}>
-                {whenLine}
-              </Text>
-            </View>
-          </View>
+          <Icon icon={iconMap.Share} size={SHARE_ICON} color={th.colors.textMuted} />
         </Pressable>
 
-        <View style={styles.staffing}>
-          {capacity !== null && capacity > 0 ? (
-            <Meter
-              value={event.registeredCount}
-              max={capacity}
-              accessibilityLabel={t("next_up.meter_a11y", {
-                registered: event.registeredCount,
-                capacity,
-              })}
-            />
-          ) : null}
-          <View style={styles.countsRow}>
-            <Text variant="caption" numberOfLines={1} style={styles.counts}>
-              {seats}
-            </Text>
-            {event.waitlistCount > 0 ? (
-              <>
-                <MetaDot color={th.colors.textSubtle} />
-                <Text variant="caption" numberOfLines={1} style={styles.counts}>
-                  {t("next_up.waiting", { count: event.waitlistCount })}
-                </Text>
-              </>
-            ) : null}
-            <View style={styles.spacer} />
-            {live && liveCheckedIn !== null ? (
-              <Text style={styles.checkedIn} numberOfLines={1}>
-                {t("next_up.checked_in", { count: liveCheckedIn })}
+        <Pressable
+          onPress={open}
+          accessibilityRole="button"
+          accessibilityLabel={cardLabel}
+          {...focusRingProps}
+          style={({ pressed }) => [
+            styles.body,
+            webTransition,
+            webCursorPointer,
+            pressed ? styles.pressed : null,
+          ]}
+        >
+          <View style={styles.head}>
+            <DateBadge iso={event.startsAt} size={LIST_TILE} timeZone={when.timeZone} />
+            <View style={styles.meta}>
+              <Text style={styles.title} numberOfLines={2}>
+                {event.title}
               </Text>
-            ) : null}
+              <View style={styles.whenLine}>
+                {live ? <PhaseDot phase={phase} /> : null}
+                <Text variant="label" numberOfLines={1} style={styles.when}>
+                  {whenLine}
+                </Text>
+              </View>
+            </View>
           </View>
-        </View>
 
-        {strip.length > 0 ? (
-          <View style={styles.shifts}>
-            {strip.map((slot) => (
-              <ShiftRow key={slot.id} slot={slot} timeZone={event.timezone ?? undefined} />
-            ))}
-            {hidden > 0 ? (
-              <TextLink
-                variant="label"
-                standalone
-                numberOfLines={1}
-                accessibilityLabel={t("next_up.more_shifts_a11y", {
-                  total: timed.length,
-                  title: event.title,
+          <View style={styles.staffing}>
+            {capacity !== null && capacity > 0 ? (
+              <Meter
+                value={event.registeredCount}
+                max={capacity}
+                accessibilityLabel={t("next_up.meter_a11y", {
+                  registered: event.registeredCount,
+                  capacity,
                 })}
-                onPress={hostTools}
-              >
-                {t("next_up.more_shifts", { count: hidden })}
-              </TextLink>
+              />
             ) : null}
+            <View style={styles.countsRow}>
+              <Text variant="caption" numberOfLines={1} style={styles.counts}>
+                {seats}
+              </Text>
+              {event.waitlistCount > 0 ? (
+                <>
+                  <MetaDot color={th.colors.textSubtle} />
+                  <Text variant="caption" numberOfLines={1} style={styles.counts}>
+                    {t("next_up.waiting", { count: event.waitlistCount })}
+                  </Text>
+                </>
+              ) : null}
+              <View style={styles.spacer} />
+              {live && liveCheckedIn !== null ? (
+                <Text style={styles.checkedIn} numberOfLines={1}>
+                  {t("next_up.checked_in", { count: liveCheckedIn })}
+                </Text>
+              ) : null}
+            </View>
           </View>
+
+          {strip.length > 0 ? (
+            <View style={styles.shifts}>
+              {strip.map((slot) => (
+                <ShiftRow key={slot.id} slot={slot} timeZone={event.timezone ?? undefined} />
+              ))}
+            </View>
+          ) : null}
+        </Pressable>
+
+        {strip.length > 0 && hidden > 0 ? (
+          <TextLink
+            variant="label"
+            standalone
+            numberOfLines={1}
+            accessibilityLabel={t("next_up.more_shifts_a11y", {
+              total: timed.length,
+              title: event.title,
+            })}
+            onPress={hostTools}
+          >
+            {t("next_up.more_shifts", { count: hidden })}
+          </TextLink>
         ) : null}
 
         <PrimaryButton
-          label={t(CTA_LABELS[cta])}
-          icon={CTA_ICONS[cta]}
-          accessibilityLabel={t(CTA_A11Y[cta], { title: event.title })}
-          onPress={primary}
+          label={t("next_up.host_tools")}
+          icon={iconMap.Building}
+          accessibilityLabel={t("next_up.host_tools_a11y", { title: event.title })}
+          onPress={hostTools}
         />
       </View>
     </SectionCard>
@@ -184,12 +211,33 @@ const useStyles = makeThemedStyles((t) => ({
   root: {
     gap: t.space["3"],
   },
+  body: {
+    gap: t.space["3"],
+  },
   head: {
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
+    paddingRight: SHARE_SIZE + t.space["2"],
   },
   pressed: {
+    opacity: 0.92,
+  },
+  share: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    zIndex: 1,
+    width: SHARE_SIZE,
+    height: SHARE_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: t.radius.pill,
+  },
+  shareHovered: {
+    backgroundColor: t.colors.bgAlt,
+  },
+  sharePressed: {
     opacity: 0.92,
   },
   meta: {

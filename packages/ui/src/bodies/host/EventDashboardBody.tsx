@@ -61,7 +61,6 @@ import {
   firstEventState,
   hostedEventPhase,
   hostedEventWindow,
-  nextUpCta,
   nextUpEvent,
   portfolioKpis,
   sharePathFor,
@@ -204,14 +203,6 @@ export function EventDashboardBody() {
     [setBroadcastPreset],
   )
 
-  const onMessageAttendees = useCallback(
-    (event: HostedEventDTO) => {
-      setBroadcastPreset(null)
-      useNavStore.getState().push({ kind: "host-broadcast-quick", id: event.id })
-    },
-    [setBroadcastPreset],
-  )
-
   const onLogHours = useCallback((event: HostedEventDTO) => {
     useNavStore.getState().push({ kind: "host-log-hours", id: event.id })
   }, [])
@@ -224,27 +215,6 @@ export function EventDashboardBody() {
       })
     },
     [t, toast],
-  )
-
-  const cta = nextUp ? nextUpCta({ phase: nextUp.phase, event: nextUp.event, now }) : null
-
-  const onNextUp = useCallback(
-    (event: HostedEventDTO) => {
-      if (cta === "check_in") {
-        onCheckIn(event)
-        return
-      }
-      if (cta === "message") {
-        onMessageAttendees(event)
-        return
-      }
-      if (cta === "share") {
-        onShare(event)
-        return
-      }
-      onHostTools(event)
-    },
-    [cta, onCheckIn, onHostTools, onMessageAttendees, onShare],
   )
 
   const onEdit = useCallback((event: HostedEventDTO) => {
@@ -371,17 +341,16 @@ export function EventDashboardBody() {
 
         {upcoming.isPending ? <NextUpSkeleton /> : null}
 
-        {teaching || upcoming.isPending ? null : nextUp && cta ? (
+        {teaching || upcoming.isPending ? null : nextUp ? (
           <NextUpCard
             event={nextUp.event}
             phase={nextUp.phase}
-            cta={cta}
             slots={nextUpCleanup.data?.slots ?? []}
             liveCheckedIn={liveCheckedIn}
             now={nowMs}
             onOpen={onOpenEvent}
-            onPrimary={onNextUp}
             onHostTools={onHostTools}
+            onShare={onShare}
           />
         ) : null}
 

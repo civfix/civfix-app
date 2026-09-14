@@ -33,9 +33,7 @@ import {
   hostedEventStatus,
   impactModel,
   nextDuplicateStart,
-  nextUpCta,
   nextUpEvent,
-  NEXT_UP_MESSAGE_WITHIN_MS,
   orderedOrgMembers,
   orgInviteErrorKey,
   orgInviteIdentifierErrorKey,
@@ -616,58 +614,6 @@ describe("next up", () => {
     ).toBe("past")
   })
 
-  it("sends a live event to check-in", () => {
-    const event = row("live", { startsAt: "2026-09-10T11:00:00.000Z", myRole: "organizer" })
-    expect(nextUpCta({ phase: "live", event, now })).toBe("check_in")
-  })
-
-  it("offers a message when the event is close, has sign-ups and the viewer can broadcast", () => {
-    const event = row("soon", {
-      startsAt: new Date(now.getTime() + NEXT_UP_MESSAGE_WITHIN_MS - 1).toISOString(),
-      registeredCount: 12,
-      capacity: 20,
-      myRole: "organizer",
-    })
-    expect(nextUpCta({ phase: "upcoming", event, now })).toBe("message")
-  })
-
-  it("stops offering the message once the event is further out than the window", () => {
-    const event = row("later", {
-      startsAt: new Date(now.getTime() + NEXT_UP_MESSAGE_WITHIN_MS + 1).toISOString(),
-      registeredCount: 12,
-      capacity: 20,
-      myRole: "organizer",
-    })
-    expect(nextUpCta({ phase: "upcoming", event, now })).toBe("host_tools")
-  })
-
-  it("offers a share while the event is under half full, or has nobody at all", () => {
-    const thin = row("thin", {
-      startsAt: "2026-09-25T17:00:00.000Z",
-      registeredCount: 4,
-      capacity: 20,
-      myRole: "organizer",
-    })
-    expect(nextUpCta({ phase: "upcoming", event: thin, now })).toBe("share")
-    const uncapped = row("uncapped", {
-      startsAt: "2026-09-25T17:00:00.000Z",
-      registeredCount: 0,
-      myRole: "organizer",
-    })
-    expect(nextUpCta({ phase: "upcoming", event: uncapped, now })).toBe("share")
-  })
-
-  it("falls back to host tools for a healthy event that is not close yet", () => {
-    const event = row("healthy", {
-      startsAt: "2026-09-25T17:00:00.000Z",
-      registeredCount: 18,
-      capacity: 20,
-      myRole: "organizer",
-    })
-    expect(nextUpCta({ phase: "upcoming", event, now })).toBe("host_tools")
-    expect(nextUpCta({ phase: "ended", event, now })).toBe("host_tools")
-  })
-
   it("finds a LIVE event in the past window, which is where the server puts it", () => {
     const upcomingWindow = [row("soon", { startsAt: "2026-09-14T09:00:00.000Z" })]
     const pastWindow = [
@@ -678,9 +624,6 @@ describe("next up", () => {
     const both = nextUpEvent([...upcomingWindow, ...pastWindow], now)
     expect(both?.event.id).toBe("live")
     expect(both?.phase).toBe("live")
-    expect(nextUpCta({ phase: both?.phase ?? "upcoming", event: both?.event as HostedEventDTO, now })).toBe(
-      "check_in",
-    )
   })
 
   it("still refuses a finished past row, however recent", () => {
@@ -1020,10 +963,9 @@ describe("portfolio surface", () => {
       ["scope", "a11y"],
       ["create", "short"],
       ["next_up", "section"],
-      ["next_up", "check_in"],
       ["next_up", "host_tools"],
-      ["next_up", "message"],
-      ["next_up", "share"],
+      ["next_up", "host_tools_a11y"],
+      ["next_up", "share_a11y"],
       ["next_up", "signed_up_of"],
       ["next_up", "signed_up"],
       ["next_up", "waiting"],
@@ -1087,6 +1029,11 @@ describe("portfolio surface", () => {
       expect(cat.top_events).toBeUndefined()
       expect(cat.range?.all).toBeUndefined()
       expect(cat.next_up?.empty_title).toBeUndefined()
+      expect(cat.next_up?.check_in).toBeUndefined()
+      expect(cat.next_up?.check_in_a11y).toBeUndefined()
+      expect(cat.next_up?.message).toBeUndefined()
+      expect(cat.next_up?.message_a11y).toBeUndefined()
+      expect(cat.next_up?.share).toBeUndefined()
       expect(cat.events?.empty_past_title).toBeUndefined()
       expect(cat.attention?.complete).toBeUndefined()
       expect(cat.attention?.complete_a11y).toBeUndefined()
@@ -1106,17 +1053,81 @@ describe("portfolio surface", () => {
     expect(body).toContain("onLogHours={onLogHours}")
   })
 
-  it("sends the Next-Up message CTA to push and in-app, never to the email preset", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain("onMessageAttendees(event)")
-    expect(body).toContain("setBroadcastPreset(null)")
-  })
-
   it("makes the hidden-shift line a pressable route into host tools", () => {
     const card = dashboardSource("NextUpCard.tsx")
     expect(card).toContain("<TextLink")
     expect(card).toContain('t("next_up.more_shifts_a11y"')
     expect(card).toContain("onHostTools")
+  })
+
+  it("opens the event page when the card body is pressed", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toContain("const open = useCallback(() => onOpen(event), [event, onOpen])")
+    expect(card).toMatch(/<Pressable\s+onPress=\{open\}/)
+    expect(card).toContain("accessibilityLabel={cardLabel}")
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("onOpen={onOpenEvent}")
+    expect(body).toContain('push({ kind: "cleanup", id: event.id, title: event.title })')
+  })
+
+  it("keeps the staffing and shift lines audible by folding them into the card label", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toMatch(
+      /const cardLabel = \[\s*t\("events\.open_a11y", \{ title: event\.title \}\),\s*whenLine,\s*seats,/,
+    )
+    expect(card).toContain('t("next_up.waiting", { count: event.waitlistCount }) : null')
+    expect(card).toContain('t("next_up.checked_in", { count: liveCheckedIn }) : null')
+  })
+
+  it("points the one card button at host tools, whatever the stage", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toMatch(/<PrimaryButton[\s\S]*?label=\{t\("next_up\.host_tools"\)\}/)
+    expect(card).toMatch(/<PrimaryButton[\s\S]*?onPress=\{hostTools\}/)
+    expect(card).not.toContain("cta")
+    expect(source("../dashboardModel.ts")).not.toContain("nextUpCta")
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("onHostTools={onHostTools}")
+    expect(body).toContain("openHostDashboard({ eventId: event.id })")
+  })
+
+  it("shares from an icon button pinned to the top right of the card", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toContain("const MIN_TOUCH_TARGET = 44")
+    expect(card).toContain("const SHARE_HIT_SLOP = (MIN_TOUCH_TARGET - SHARE_SIZE) / 2")
+    expect(card).toMatch(/<Pressable\s+onPress=\{share\}/)
+    expect(card).toContain('accessibilityLabel={t("next_up.share_a11y", { title: event.title })}')
+    expect(card).toContain("hitSlop={SHARE_HIT_SLOP}")
+    expect(card).toContain("<Icon icon={iconMap.Share}")
+    expect(card).toMatch(/share: \{\s*position: "absolute",\s*top: 0,\s*right: 0,\s*zIndex: 1,/)
+    expect(card).toContain("paddingRight: SHARE_SIZE + t.space[\"2\"]")
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("onShare={onShare}")
+    expect(body).toContain("shareLink({ title: event.title, path: sharePathFor(event) })")
+  })
+
+  it("reaches the share icon before the card body on a web tab sweep", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card.indexOf("onPress={share}")).toBeLessThan(card.indexOf("onPress={open}"))
+  })
+
+  it("keeps the share icon and the host-tools button OUTSIDE the card pressable", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card.match(/<Pressable/g)).toHaveLength(2)
+    const opens = card.indexOf("onPress={open}")
+    const region = card.slice(opens, card.indexOf("</Pressable>", opens))
+    expect(region).not.toContain("<Pressable")
+    expect(region).not.toContain("<PrimaryButton")
+    expect(region).not.toContain("<TextLink")
+    expect(region).not.toContain("onPress={share}")
+    expect(region).not.toContain("onPress={hostTools}")
+  })
+
+  it("keeps the live dot, the started line and the shifts strip inside the card body", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toContain("<PhaseDot phase={phase} />")
+    expect(card).toContain('t("next_up.started", { ago: relative(event.startsAt, now) })')
+    expect(card).toContain("<ShiftRow")
+    expect(card).toContain("when.timeWithZone")
   })
 
   it("ticks the dashboard clock off the shared hook instead of reading it mid-render", () => {
