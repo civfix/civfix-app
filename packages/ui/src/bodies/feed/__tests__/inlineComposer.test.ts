@@ -67,9 +67,17 @@ describe("the feed's inline composer model", () => {
   })
 
   it("collapses on blur only when nothing the reader staged would be lost", () => {
-    expect(inlineComposerClosesOnBlur({ body: "   ", mediaCount: 0 })).toBe(true)
-    expect(inlineComposerClosesOnBlur({ body: "hello", mediaCount: 0 })).toBe(false)
-    expect(inlineComposerClosesOnBlur({ body: "", mediaCount: 1 })).toBe(false)
+    const blur = (over: Partial<Parameters<typeof inlineComposerClosesOnBlur>[0]>) =>
+      inlineComposerClosesOnBlur({ body: "", mediaCount: 0, pressingOwnControl: false, ...over })
+    expect(blur({ body: "   " })).toBe(true)
+    expect(blur({ body: "hello" })).toBe(false)
+    expect(blur({ mediaCount: 1 })).toBe(false)
+  })
+
+  it("stays open when the blur came from pressing one of its own controls", () => {
+    expect(
+      inlineComposerClosesOnBlur({ body: "", mediaCount: 0, pressingOwnControl: true }),
+    ).toBe(false)
   })
 })
 
@@ -115,6 +123,29 @@ describe("the inline composer rides the full composer's store and submit path", 
   it("mirrors staged media into the shared draft ONLY while it is open", () => {
     expect(SRC).toMatch(/if \(!open\) return\s*\n\s*setMedia\(composerMedia\)/)
     expect(SRC).toContain("snapshotCarriedMedia(usePostComposerStore.getState().draft.media)")
+  })
+
+  it("hands the add-media press the open composer it needs to land on", () => {
+    expect(SRC).toContain("const pressingOwnControlRef = useRef(false)")
+    expect(SRC).toContain("onPressIn={holdOpenForOwnControl}")
+    expect(SRC).toMatch(
+      /inlineComposerClosesOnBlur\(\{ body, mediaCount: composerMedia\.length, pressingOwnControl \}\)/,
+    )
+  })
+
+  it("draws its own focus treatment instead of the browser's ring", () => {
+    expect(SRC).toContain("style={[webInputReset, styles.input]}")
+    expect(SRC).toContain("bodyFocused ? styles.inputSurfaceFocused : null")
+    expect(SRC).toContain("onFocus={onFocus}")
+  })
+
+  it("keeps the idle card down to the avatar and the prompt, with no dead Post button", () => {
+    const collapsed = SRC.slice(
+      SRC.indexOf('if (model.state === "collapsed")'),
+      SRC.indexOf("return (\n    <View style={styles.card}>\n      {avatar}\n      <View style={styles.column}>"),
+    )
+    expect(collapsed).toContain("{avatar}")
+    expect(collapsed).not.toContain("{postButton}")
   })
 
   it("is mounted by the feed header, on the expanded shell only", () => {

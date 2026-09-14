@@ -59,6 +59,11 @@ export function buildInlineComposerModel(
   }
 }
 
-export function inlineComposerClosesOnBlur(input: { body: string; mediaCount: number }): boolean {
+export function inlineComposerClosesOnBlur(input: {
+  body: string
+  mediaCount: number
+  pressingOwnControl: boolean
+}): boolean {
+  if (input.pressingOwnControl) return false
   return input.body.trim().length === 0 && input.mediaCount === 0
 }
