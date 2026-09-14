@@ -24,12 +24,11 @@ import {
   DEMO_HOURS_CREDITED,
   DEMO_NEIGHBOR,
   DEMO_ORGANIZER,
-  TOGETHER_EVENT_PIN_X,
-  TOGETHER_EVENT_PIN_Y,
   demoChatItems,
   demoCleanup,
 } from "../demoWorld"
-import { PaperMap, mapSpot } from "./PaperMap"
+import { TOGETHER_EVENT_SPOT } from "../onboardingMapScenes"
+import { MapStill, spotStyle } from "./MapStill"
 import {
   GRAVITY_EASE,
   STAGE_DROP_PX,
@@ -187,17 +186,15 @@ export function TogetherStage({ active, reduceMotion }: StageProps) {
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
-        <View style={styles.mapStrip}>
-          <PaperMap style={StyleSheet.absoluteFill} />
-          <Animated.View
-            style={[
-              mapSpot(TOGETHER_EVENT_PIN_X, TOGETHER_EVENT_PIN_Y, -PIN_SIZE / 2, -PIN_HEIGHT),
-              pinStyle,
-            ]}
-          >
-            <EventPin size={PIN_SIZE} />
-          </Animated.View>
-        </View>
+        <MapStill stage="together" style={styles.mapStrip} attributionEdge="top">
+          {(frame) => (
+            <Animated.View
+              style={[spotStyle(frame.at(TOGETHER_EVENT_SPOT), -PIN_SIZE / 2, -PIN_HEIGHT), pinStyle]}
+            >
+              <EventPin size={PIN_SIZE} />
+            </Animated.View>
+          )}
+        </MapStill>
 
         <Animated.View style={[styles.card, cardStyle]}>
           <EventCard cleanup={cleanup} onPress={noop} />

@@ -11,7 +11,8 @@ import { CategoryChip, Icon, TeardropPin, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { categoryColor, makeThemedStyles, motion, useTheme, wash } from "@/theme"
 import { REPORT_STAGE_SELECTED_INDEX, REPORT_STAGE_TYPES } from "../demoWorld"
-import { PaperMap } from "./PaperMap"
+import { REPORT_PIN_SPOT } from "../onboardingMapScenes"
+import { MapStill, spotStyle } from "./MapStill"
 import {
   GRAVITY_EASE,
   STAGE_DROP_PX,
@@ -172,14 +173,21 @@ export function ReportStage({ active, reduceMotion }: StageProps) {
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
-        <PaperMap style={styles.map} />
-
-        <View style={styles.pinWrap}>
-          <Animated.View style={[styles.glow, glowStyle]} />
-          <Animated.View style={pinStyle}>
-            <TeardropPin category={SELECTED_CATEGORY} size={PIN_SIZE} />
-          </Animated.View>
-        </View>
+        <MapStill stage="report" style={styles.map}>
+          {(frame) => (
+            <View
+              style={[
+                spotStyle(frame.at(REPORT_PIN_SPOT), -PIN_SIZE / 2, -PIN_HEIGHT),
+                styles.pinWrap,
+              ]}
+            >
+              <Animated.View style={[styles.glow, glowStyle]} />
+              <Animated.View style={pinStyle}>
+                <TeardropPin category={SELECTED_CATEGORY} size={PIN_SIZE} />
+              </Animated.View>
+            </View>
+          )}
+        </MapStill>
 
         <Animated.View style={[styles.successRow, successStyle]}>
           <Text variant="heading" style={styles.successTitle} numberOfLines={2}>
@@ -226,11 +234,7 @@ const useStyles = makeThemedStyles((t) => {
       height: "80%",
     },
     pinWrap: {
-      position: "absolute",
-      top: "62%",
-      left: "50%",
       width: PIN_SIZE,
-      marginLeft: -PIN_SIZE / 2,
       alignItems: "center",
     },
     glow: {

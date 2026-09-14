@@ -120,3 +120,23 @@ export function transparentShare(png: DecodedPng, step = 8): number {
   }
   return transparent / sampled
 }
+
+export type PngHeader = {
+  width: number
+  height: number
+  bitDepth: number
+  colourType: number
+  interlace: number
+}
+
+export function readPngHeader(bytes: Buffer): PngHeader {
+  if (!bytes.subarray(0, 8).equals(SIGNATURE)) throw new Error("not a PNG file")
+  if (bytes.toString("ascii", 12, 16) !== "IHDR") throw new Error("PNG does not open with IHDR")
+  return {
+    width: bytes.readUInt32BE(16),
+    height: bytes.readUInt32BE(20),
+    bitDepth: bytes[24],
+    colourType: bytes[25],
+    interlace: bytes[28],
+  }
+}

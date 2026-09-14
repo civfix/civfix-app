@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from "react"
-import { StyleSheet, View, type LayoutChangeEvent } from "react-native"
+import React from "react"
+import { StyleSheet, View } from "react-native"
 import Animated, {
   Extrapolation,
   interpolate,
@@ -23,13 +23,13 @@ import {
   DEMO_REPORT_LNG,
   TRACK_CLUSTER_COUNT,
   TRACK_CLUSTER_MEMBERS,
-  TRACK_CLUSTER_X,
-  TRACK_CLUSTER_Y,
+  TRACK_CLUSTER_SPOT,
   TRACK_PINS,
   TRACK_ROW_PIN_INDEX,
   TRACK_STATUS_CYCLE,
 } from "../demoWorld"
-import { PaperMap, mapSpot } from "./PaperMap"
+import type { BoxPoint } from "../onboardingMapScenes"
+import { MapStill, spotStyle } from "./MapStill"
 import {
   GRAVITY_EASE,
   STAGE_DROP_PX,
@@ -93,6 +93,7 @@ function noop(): void {}
 function TrackPin({
   index,
   progress,
+  at,
   merges,
   mergeX,
   mergeY,
@@ -100,6 +101,7 @@ function TrackPin({
 }: {
   index: number
   progress: SharedValue<number>
+  at: BoxPoint
   merges: boolean
   mergeX: number
   mergeY: number
@@ -130,7 +132,7 @@ function TrackPin({
   })
 
   return (
-    <Animated.View style={[mapSpot(pin.x, pin.y, -PIN_SIZE / 2, -PIN_HEIGHT), style]}>
+    <Animated.View style={[spotStyle(at, -PIN_SIZE / 2, -PIN_HEIGHT), style]}>
       <TeardropPin category={pin.category} size={PIN_SIZE} active={active} />
     </Animated.View>
   )
@@ -142,12 +144,6 @@ export function TrackStage({ active, reduceMotion }: StageProps) {
   const styles = useStyles()
   const progress = useStageTimeline(active, reduceMotion, TOTAL_MS)
   const step = useStageStep(progress, STEP_STOPS)
-  const [mapSize, setMapSize] = useState({ width: 0, height: 0 })
-
-  const onMapLayout = useCallback((event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout
-    setMapSize((prev) => (prev.width === width && prev.height === height ? prev : { width, height }))
-  }, [])
 
   const clusterStyle = useAnimatedStyle(() => {
     const s = segment(progress.value, W_CLUSTER[0], W_CLUSTER[1])
@@ -192,28 +188,35 @@ export function TrackStage({ active, reduceMotion }: StageProps) {
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
-        <View style={styles.mapArea} onLayout={onMapLayout}>
-          <PaperMap style={StyleSheet.absoluteFill} />
-          {TRACK_PINS.map((pin, i) => (
-            <TrackPin
-              key={`${pin.category}-${i}`}
-              index={i}
-              progress={progress}
-              merges={TRACK_CLUSTER_MEMBERS.includes(i)}
-              mergeX={(TRACK_CLUSTER_X - pin.x) * mapSize.width}
-              mergeY={(TRACK_CLUSTER_Y - pin.y) * mapSize.height}
-              active={i === TRACK_ROW_PIN_INDEX && step >= 1}
-            />
-          ))}
-          <Animated.View
-            style={[
-              mapSpot(TRACK_CLUSTER_X, TRACK_CLUSTER_Y, -CLUSTER_SIZE / 2, -CLUSTER_SIZE / 2),
-              clusterStyle,
-            ]}
-          >
-            <ClusterBubble count={TRACK_CLUSTER_COUNT} size={CLUSTER_SIZE} />
-          </Animated.View>
-        </View>
+        <MapStill stage="track" style={styles.mapArea}>
+          {(frame) => {
+            const cluster = frame.at(TRACK_CLUSTER_SPOT)
+            return (
+              <>
+                {TRACK_PINS.map((pin, i) => {
+                  const at = frame.at(pin.spot)
+                  return (
+                    <TrackPin
+                      key={`${pin.category}-${i}`}
+                      index={i}
+                      progress={progress}
+                      at={at}
+                      merges={TRACK_CLUSTER_MEMBERS.includes(i)}
+                      mergeX={cluster.left - at.left}
+                      mergeY={cluster.top - at.top}
+                      active={i === TRACK_ROW_PIN_INDEX && step >= 1}
+                    />
+                  )
+                })}
+                <Animated.View
+                  style={[spotStyle(cluster, -CLUSTER_SIZE / 2, -CLUSTER_SIZE / 2), clusterStyle]}
+                >
+                  <ClusterBubble count={TRACK_CLUSTER_COUNT} size={CLUSTER_SIZE} />
+                </Animated.View>
+              </>
+            )
+          }}
+        </MapStill>
 
         <Animated.View style={[styles.row, rowStyle]}>
           <ReportRowView

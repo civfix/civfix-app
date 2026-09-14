@@ -323,6 +323,18 @@ Do not hardcode hex/size values in components; import from the theme.
   backend - to render. `GET /map/tileinfo` is still called only for its attribution string; the basemap
   draws regardless of whether it resolves. There is no `protomaps-mlrn` / PMTiles dependency.
 
+### Onboarding map stills
+
+The first-run tour's map cards (`src/components/onboarding/stages/MapStill.tsx`) are CARTO Voyager
+(light) / Dark Matter (dark) crops of three real Los Angeles places — Highland Park (report), Boyle
+Heights at Hollenbeck Park (track), Echo Park Lake (together) — shipped as static `@2x` PNGs in
+`assets/onboarding/` so first launch needs no network, with `@civfix/ui` pins overlaid at real
+coordinates by the stages. `node scripts/onboarding-map-art.mjs` regenerates them from the scene table
+in `src/components/onboarding/onboardingMapScenes.ts` through the app's own tile URL rule and CARTO
+key, writes the palettised stills plus a `manifest.json` (sha256 + dimensions) that
+`tests/onboardingMapArt.test.ts` asserts against, and with `--preview <dir>` also writes copies with
+the pin spots marked for checking the framing after moving a scene.
+
 ## Deferred / incompatible libraries
 
 - **react-native-mmkv** is pinned to v3 (not v4) and **react-native-vision-camera** to v4 (not v5)
