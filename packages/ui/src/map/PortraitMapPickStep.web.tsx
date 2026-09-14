@@ -21,6 +21,7 @@ export function PortraitMapPickStep({
   initialCenter,
   onConfirm,
   onCancel,
+  pin,
   inert = false,
 }: PortraitMapPickStepProps) {
   const styles = useStyles()
@@ -37,6 +38,8 @@ export function PortraitMapPickStep({
   onCancelRef.current = onCancel
 
   const pointRef = useRef<LatLng | null>(value ?? null)
+  const pinRef = useRef(pin)
+  pinRef.current = pin
 
   usePickStepSheetSnap(live)
 
@@ -48,11 +51,16 @@ export function PortraitMapPickStep({
 
   useEffect(() => {
     if (!live || !mapRegistered) return
-    useLocationPick.getState().start((pointRef.current as PickDraft | null) ?? null)
+    useLocationPick.getState().start((pointRef.current as PickDraft | null) ?? null, pinRef.current)
     return () => {
       useLocationPick.getState().cancel()
     }
   }, [live, mapRegistered])
+
+  useEffect(() => {
+    if (!live || !mapRegistered) return
+    useLocationPick.getState().setPin(pin)
+  }, [live, mapRegistered, pin])
 
   const point: LatLng | null = mapRegistered ? draft ?? localPoint ?? value : localPoint
 
@@ -106,6 +114,7 @@ export function PortraitMapPickStep({
             initialCenter={initialCenter ?? undefined}
             mode="standalone"
             height={INLINE_PICK_HEIGHT}
+            pin={pin}
           />
         </View>
       )}

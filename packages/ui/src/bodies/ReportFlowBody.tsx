@@ -7,7 +7,7 @@ import { makeThemedStyles, useTheme, categoryColor, wash, useLayoutMode, focusRi
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField, Toggle, KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
-import { LocationPicker, PortraitMapPickStep, useLocationPick } from "../map"
+import { LocationPicker, PortraitMapPickStep, useLocationPick, reportPinTarget } from "../map"
 import { PinSvg, glyphForCategory } from "../map"
 import {
   useAuthState,
@@ -540,6 +540,7 @@ function ReviewStep({
   const jurisdiction = useResolveJurisdiction(point)
   const jd = jurisdiction.data
   const category = draft.category as ReportCategory | null
+  const pin = useMemo(() => reportPinTarget(category), [category])
 
   return (
     <View style={styles.stepBlock}>
@@ -570,7 +571,7 @@ function ReviewStep({
         ) : (
           <>
             <AddressSearch value={addrQuery} onChangeText={setAddrQuery} onPick={onPickPlace} />
-            <LocationPicker value={point} onChange={onDropPin} onClear={clearLocation} initialCenter={initialCenter ?? undefined} mode={pickMode} />
+            <LocationPicker value={point} onChange={onDropPin} onClear={clearLocation} initialCenter={initialCenter ?? undefined} mode={pickMode} pin={pin} />
           </>
         )}
         <TextField
@@ -1018,7 +1019,9 @@ export function ReportFlowBody() {
 
   const draftLat = useDraftReportStore((s) => s.draft.lat)
   const draftLng = useDraftReportStore((s) => s.draft.lng)
+  const draftCategory = useDraftReportStore((s) => s.draft.category)
   const pickPoint = draftLat != null && draftLng != null ? { lat: draftLat, lng: draftLng } : null
+  const pickPin = useMemo(() => reportPinTarget(draftCategory), [draftCategory])
   const [picking, setPicking] = useState(false)
   const pickCenter = useApproxCenter(
     hasMedia || activeStep === "location" || activeStep === "review" || picking,
@@ -1199,6 +1202,7 @@ export function ReportFlowBody() {
         initialCenter={pickCenter}
         onConfirm={onPickConfirm}
         onCancel={onPickCancel}
+        pin={pickPin}
       />
     </KeyboardPinnedSurface>
   )

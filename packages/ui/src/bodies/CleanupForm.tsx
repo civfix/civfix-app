@@ -21,7 +21,7 @@ import {
 import { Text, Icon, iconMap } from "../typography"
 import { TextField, BringInput, MetaDot } from "../primitives"
 import { actableOrganizations, useMyOrganizations, useReverseLabel, reverseLabelText } from "../data"
-import { LocationPicker, PortraitMapPickStep, useLocationPick } from "../map"
+import { LocationPicker, PortraitMapPickStep, useLocationPick, eventPinTarget } from "../map"
 import { useLocale, useT, viewerTimeZone } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
 import { AuthorAsChips, authorAsSelection, type AuthorAsOption } from "./AuthorAsChips"
@@ -224,6 +224,7 @@ function MeetLocationCompact({
   const th = useTheme()
   const { t: tMap } = useT("map-ui")
   const [picking, setPicking] = useState(false)
+  const pin = useMemo(() => eventPinTarget(value.eventKind), [value.eventKind])
   const label = useReverseLabel(value.coords)
   const display = value.coords ? reverseLabelText(label.data, value.coords) : null
 
@@ -289,6 +290,7 @@ function MeetLocationCompact({
           setPicking(false)
         }}
         onCancel={() => setPicking(false)}
+        pin={pin}
       />
     </View>
   )
@@ -396,6 +398,7 @@ export function CleanupForm({
   )
 
   const isCleanup = value.eventKind === "cleanup"
+  const pin = useMemo(() => eventPinTarget(value.eventKind), [value.eventKind])
 
   const myOrgs = useMyOrganizations()
   const hostOrganizations = useMemo<AuthorAsOption[]>(() => {
@@ -504,7 +507,7 @@ export function CleanupForm({
             ) : (
               <>
                 <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
-                <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} mode={pickMode} />
+                <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} mode={pickMode} pin={pin} />
               </>
             )}
             <TextField

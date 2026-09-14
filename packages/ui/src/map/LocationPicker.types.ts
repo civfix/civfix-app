@@ -13,6 +13,8 @@
  * SAME component drops into the unified host body (web sidebar + native sheet) and the mobile host
  * overlay alike. A bottom "Tap the map to place the pin" hint overlays the canvas.
  */
+import type { PinTarget } from "./pins/appearance"
+
 export interface LatLng {
   lat: number
   lng: number
@@ -73,14 +75,7 @@ export interface LocationPickerProps {
    * floating confirm / cancel bar. Ignored otherwise.
    */
   attributionBottomInset?: number
-  /**
-   * Optional ReportCategory key. When set, the dropped pin renders as that report category's teardrop
-   * (category color + white category glyph, the same marker the map uses for that report type) instead of
-   * the default coral event / meeting-point pin - so the report-creation flow's pin matches the report
-   * type the user picked. Omitted by the event-hosting flow, which keeps the coral pin. Honored by the
-   * native seam; the web seam currently keeps its default pin (web report-pin theming is a follow-up).
-   */
-  markerCategory?: string
+  pin: PinTarget
 }
 
 // THERE IS DELIBERATELY NO `NEUTRAL_CENTER` HERE ANY MORE - do not reintroduce one.

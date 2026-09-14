@@ -17,7 +17,11 @@ export {
   PIN_GLYPHS,
   DROP_PIN_GLYPH,
   glyphForCategory,
+  pinAppearanceFor,
+  eventPinTarget,
+  reportPinTarget,
 } from "./pins"
+export type { PinTarget, PinAppearance } from "./pins"
 export type { MapProps, MapHandle, MapLatLng, MapStyleInput } from "./types"
 
 export { MapControls } from "./MapControls"

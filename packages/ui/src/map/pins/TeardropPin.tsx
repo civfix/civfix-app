@@ -1,7 +1,8 @@
 import React from "react"
 import { View } from "react-native"
-import { categoryColor, pinGlow, useTheme, type CategoryColorKey } from "../../theme"
-import { PinSvg, PinBadge, glyphForCategory, type PinBadge as PinBadgeValue } from "./PinSvg"
+import { pinGlow, useTheme, type CategoryColorKey } from "../../theme"
+import { PinSvg, PinBadge, type PinBadge as PinBadgeValue } from "./PinSvg"
+import { pinAppearanceFor, reportPinTarget } from "./appearance"
 
 export const TeardropPin = React.memo(function TeardropPin({
   category,
@@ -15,11 +16,11 @@ export const TeardropPin = React.memo(function TeardropPin({
   badge?: PinBadgeValue
 }) {
   const t = useTheme()
-  const color = categoryColor(category, t.scheme)
+  const { fill, glyph } = pinAppearanceFor(reportPinTarget(category), t.scheme)
   const w = active ? 50 : size
   return (
-    <View style={active ? pinGlow(color, 6, 7, 0.4, 8) : undefined}>
-      <PinSvg fill={color} glyph={glyphForCategory(category)} size={w} />
+    <View style={active ? pinGlow(fill, 6, 7, 0.4, 8) : undefined}>
+      <PinSvg fill={fill} glyph={glyph} size={w} />
       <PinBadge badge={badge} />
     </View>
   )

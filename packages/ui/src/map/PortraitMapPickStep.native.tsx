@@ -20,7 +20,7 @@ export function PortraitMapPickStep({
   initialCenter,
   onConfirm,
   onCancel,
-  markerCategory,
+  pin,
   presentation = "modal",
   inert = false,
 }: PortraitMapPickStepProps) {
@@ -87,7 +87,7 @@ export function PortraitMapPickStep({
         interactive
         fullBleed
         attributionBottomInset={creditInset}
-        markerCategory={markerCategory}
+        pin={pin}
       />
 
       <View style={[styles.topBar, { top: topOffset }]} pointerEvents="box-none">

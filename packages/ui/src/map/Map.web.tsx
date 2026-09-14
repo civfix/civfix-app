@@ -17,7 +17,7 @@ import { useNavStore } from "../nav"
 import { expandedFramePlan } from "../shell/expandedFramePlan"
 import { clampSidebarWidth, useSidebarStore } from "../shell/sidebarStore"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
-import { TeardropPin, EventPin, BlendPin, ClusterBubble, DropPin } from "./pins"
+import { TeardropPin, EventPin, BlendPin, ClusterBubble, DropPin, pinAppearanceFor } from "./pins"
 import { useClusters } from "./useClusters"
 import { computeMapBlends } from "./blend"
 import { useLocationPick } from "./locationPickStore"
@@ -126,6 +126,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   themeRef.current = th
   const pickActive = useLocationPick((s) => s.active)
   const pickDraft = useLocationPick((s) => s.draft)
+  const pickPin = useLocationPick((s) => s.pin)
   const pickActiveRef = React.useRef(pickActive)
   pickActiveRef.current = pickActive
 
@@ -469,15 +470,19 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       pickMarkerRef.current = null
       return
     }
+    const pickFill = pinAppearanceFor(pickPin, th.scheme).fill
     if (!pickMarkerRef.current) {
-      pickMarkerRef.current = new maplibregl.Marker({ element: makePinElement(themeRef.current), anchor: "bottom" })
+      pickMarkerRef.current = new maplibregl.Marker({
+        element: makePinElement(themeRef.current, pickFill),
+        anchor: "bottom",
+      })
         .setLngLat([pickDraft.lng, pickDraft.lat])
         .addTo(map)
     } else {
       pickMarkerRef.current.setLngLat([pickDraft.lng, pickDraft.lat])
-      applyPinElementTheme(pickMarkerRef.current.getElement(), themeRef.current)
+      applyPinElementTheme(pickMarkerRef.current.getElement(), themeRef.current, pickFill)
     }
-  }, [mapReady, pickActive, pickDraft, mode, th.scheme])
+  }, [mapReady, pickActive, pickDraft, pickPin, mode, th.scheme])
 
   React.useEffect(() => {
     const map = mapRef.current
