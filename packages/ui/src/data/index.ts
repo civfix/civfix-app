@@ -63,8 +63,15 @@ export {
 } from "./hooks"
 export type { DmTarget, ResolvedDm, StartDmHandlers } from "./hooks"
 export { useReportContent, useDeleteAccount, useRequestMyData, useRequestEmailCode } from "./hooks"
-export { useMyReports, useReport, useResolveReport, useUnlistReport, useResolveJurisdiction, useNearbyReportPins, useReportSearch, useMapReports } from "./hooks"
+export { useMyReports, useReport, useResolveReport, useUnlistReport, useResolveJurisdiction, useNearbyReportPins, useNearbyReports, useReportSearch, useMapReports } from "./hooks"
 export type { MapReportsArgs } from "./hooks"
+export {
+  NEARBY_RADIUS_KM,
+  NEARBY_KEY_PRECISION,
+  PIN_SPAN_MAX_DEG,
+  bboxAround,
+  roundNearbyCoord,
+} from "./hooks"
 export {
   useJoinReportChat,
   useLeaveReportChat,

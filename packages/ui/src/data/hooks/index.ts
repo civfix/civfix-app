@@ -32,8 +32,15 @@ export {
   useRequestEmailCode,
 } from "./moderation"
 
-export { useMyReports, useReport, useResolveReport, useUnlistReport, useResolveJurisdiction, useNearbyReportPins, useReportSearch, useMapReports } from "./reports"
+export { useMyReports, useReport, useResolveReport, useUnlistReport, useResolveJurisdiction, useNearbyReportPins, useNearbyReports, useReportSearch, useMapReports } from "./reports"
 export type { MapReportsArgs } from "./reports"
+export {
+  NEARBY_RADIUS_KM,
+  NEARBY_KEY_PRECISION,
+  PIN_SPAN_MAX_DEG,
+  bboxAround,
+  roundNearbyCoord,
+} from "./nearbyBbox"
 
 export {
   useJoinReportChat,
