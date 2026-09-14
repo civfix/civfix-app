@@ -110,7 +110,7 @@ describe("NotificationsBody rows answer the pointer like every other list root",
   })
 })
 
-describe("the event detail leads with one full-width RSVP", () => {
+describe("the event detail leads with the slot board, not an RSVP", () => {
   it("the RSVP pill fills its cell only when the caller opts in, and only in landscape", () => {
     expect(rsvpPill).toMatch(/fill = false/)
     expect(rsvpPill).toMatch(/const fillCell = stretchToCell && fill/)
@@ -120,29 +120,35 @@ describe("the event detail leads with one full-width RSVP", () => {
     expect(rsvpPill).toMatch(/POP_ENABLED \?[\s\S]*?fillCell \? styles\.visualFill : null/)
   })
 
-  it("every other RsvpPill call site keeps the hugging 30/34pt pill", () => {
+  it("keeps the hugging pill on every LIST card, and renders none on the detail", () => {
     const rsvpElements = (src: string) =>
       src.split("<RsvpPill").slice(1).map((seg) => seg.slice(0, seg.indexOf("/>")))
-    const sites: Array<[string, string]> = [
-      ["LinkedEventCard", linkedEvent],
-      ["EventDetailBody", eventDetail],
+    const cards: Array<[string, string]> = [
       ["SearchResults", strip(read("../SearchResults.tsx"))],
       ["EventsBody", strip(read("../EventsBody.tsx"))],
+      ["LinkedEventCard", linkedEvent],
     ]
-    const filled = sites.flatMap(([name, src]) =>
+    const filled = cards.flatMap(([name, src]) =>
       rsvpElements(src).filter((el) => /\bfill\b/.test(el)).map(() => name),
     )
-    expect(filled).toEqual(["EventDetailBody"])
-    expect(sites.every(([, src]) => rsvpElements(src).length > 0)).toBe(true)
+    expect(filled).toEqual([])
+    expect(cards.every(([, src]) => rsvpElements(src).length > 0)).toBe(true)
   })
 
-  it("the detail's RSVP is the page's single, full-width primary action", () => {
-    expect(eventDetail.match(/<RsvpPill\b/g) ?? []).toHaveLength(1)
-    expect(eventDetail).toMatch(/\n {2}rsvp: \{[\s\S]*?height: 44,/)
-    expect(eventDetail).toMatch(/\n {2}rsvp: \{[\s\S]*?alignSelf: "stretch",/)
+  it("the detail asks WHERE you will help, so it mounts no RsvpPill at all", () => {
+    expect(eventDetail).not.toMatch(/<RsvpPill\b/)
+    expect(eventDetail).not.toMatch(/\bRsvpPill\b/)
   })
 
-  it("Repost is a quiet action row, so nothing competes with the pill", () => {
+  it("puts the slot board directly under the header, above check-in and the roster", () => {
+    const board = eventDetail.indexOf("<EventSlotsBlock")
+    expect(board).toBeGreaterThan(-1)
+    expect(board).toBeLessThan(eventDetail.indexOf('t("host.check_in")'))
+    expect(board).toBeLessThan(eventDetail.indexOf('t("going.heading")'))
+    expect(eventDetail.match(/<EventSlotsBlock/g) ?? []).toHaveLength(1)
+  })
+
+  it("Repost is a quiet action row, so nothing competes with the board", () => {
     expect(eventDetail).not.toMatch(/styles\.secondaryTall/)
     expect(eventDetail).not.toMatch(/useLayoutMode/)
     const repost = eventDetail.match(/label=\{t\("actions\.repost"\)\}[\s\S]*?\/>/)?.[0] ?? ""
@@ -152,5 +158,14 @@ describe("the event detail leads with one full-width RSVP", () => {
     expect(actionRow).toContain("webTransition")
     expect(actionRow).toContain("webHover(state)")
     expect(actionRow).toContain("webCursor(disabled)")
+  })
+
+  it("gives a member with no slot an explicit, destructive way out", () => {
+    const leave = eventDetail.match(/label=\{t\("actions\.leave"\)\}[\s\S]*?\/>/)?.[0] ?? ""
+    expect(leave).toContain("destructive")
+    expect(leave).toContain('hint={t("actions.leave_hint")}')
+    expect(leave).toContain("onPress={onLeave}")
+    expect(eventDetail).toContain("{going && !actsAsHost && isLive && !isEnded ? (")
+    expect(eventDetail).toContain("join.mutate(true, {")
   })
 })

@@ -44,8 +44,8 @@
   },
   "restricted": {
     "title": "Hier erscheinen nur Personen, denen du folgst",
-    "body": "Sag zu, um alle Teilnehmer zu sehen.",
-    "empty_body": "Noch ist niemand dabei, dem du folgst. Sag zu, um alle Teilnehmer zu sehen."
+    "body": "Trag dich für eine Aufgabe ein, um alle Teilnehmenden zu sehen.",
+    "empty_body": "Von den Personen, denen du folgst, kommt noch niemand. Trag dich für eine Aufgabe ein, um alle Teilnehmenden zu sehen."
   },
   "role": {
     "host": "Host"

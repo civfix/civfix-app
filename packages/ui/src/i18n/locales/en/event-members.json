@@ -44,8 +44,8 @@
   },
   "restricted": {
     "title": "Only people you follow appear here",
-    "body": "RSVP to this event to see everyone going.",
-    "empty_body": "No one you follow is going yet. RSVP to this event to see everyone going."
+    "body": "Sign up for a slot to see everyone going.",
+    "empty_body": "No one you follow is going yet. Sign up for a slot to see everyone going."
   },
   "role": {
     "host": "Host"

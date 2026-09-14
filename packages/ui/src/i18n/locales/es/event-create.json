@@ -28,9 +28,10 @@
       "error": "Marca el punto de encuentro en el mapa."
     },
     "details": {
-      "title": "¿Algo que llevar?",
-      "help": "Opcional: materiales y tareas que otros pueden asumir.",
-      "error": "Da un nombre y un cupo válido a cada tarea."
+      "title": "¿A quién necesitas?",
+      "help": "Añade al menos un puesto de inscripción. La gente se une a tu evento inscribiéndose en uno.",
+      "error": "Ponle nombre al menos a un puesto de inscripción.",
+      "error_invalid": "Dale a cada puesto un nombre y una capacidad válida."
     },
     "review": {
       "title": "¿Todo listo?",
@@ -41,7 +42,8 @@
       "what": "Qué",
       "when": "Cuándo",
       "extras": "Detalles",
-      "noExtras": "Sin extras"
+      "noExtras": "Sin extras",
+      "slots": "Puestos"
     }
   },
   "publish": {

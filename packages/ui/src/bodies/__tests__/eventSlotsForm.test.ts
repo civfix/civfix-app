@@ -11,6 +11,7 @@ import {
   buildSlotInputs,
   generateShiftDrafts,
   claimedBySlotId,
+  hasNamedSlot,
   isBlankSlotDraft,
   makeSlotKey,
   moveSlotDraft,
@@ -457,5 +458,24 @@ describe("removedClaimedCount", () => {
 
   it("ignores brand-new drafts, which have no id", () => {
     expect(removedClaimedCount([], [draft("a", { title: "New" })])).toBe(0)
+  })
+})
+
+describe("hasNamedSlot", () => {
+  it("is false for a board of nothing, and for a board of blanks", () => {
+    expect(hasNamedSlot([])).toBe(false)
+    expect(hasNamedSlot([draft("a"), draft("b")])).toBe(false)
+  })
+
+  it("is true as soon as one card carries anything the host typed", () => {
+    expect(hasNamedSlot([draft("a"), draft("b", { title: "Grill" })])).toBe(true)
+    expect(hasNamedSlot([draft("a", { capacity: "4" })])).toBe(true)
+  })
+
+  it("agrees with buildSlotInputs, which drops exactly the blanks it ignores", () => {
+    const list = [draft("a"), draft("b", { title: "Grill" })]
+    expect(hasNamedSlot(list)).toBe(true)
+    expect(buildSlotInputs(list).map((i) => i.title)).toEqual(["Grill"])
+    expect(buildSlotInputs([draft("a")])).toEqual([])
   })
 })

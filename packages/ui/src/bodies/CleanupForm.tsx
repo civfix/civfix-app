@@ -42,7 +42,10 @@ import { LinkedReportCard, type LinkedReportCardData } from "./LinkedReportCard"
 import { DEFAULT_WIZARD_DURATION_MS, eventDraftWindow } from "./eventWizard"
 import { SlotEditor } from "./SlotEditor"
 import {
+  addSlotDraft,
   claimedBySlotId,
+  hasNamedSlot,
+  makeSlotKey,
   shiftSlotDrafts,
   slotsValid,
   type SlotDraft,
@@ -95,7 +98,7 @@ export function emptyCleanupForm(
     endTime: null,
     timezone: viewerTimeZone(),
     bring: [],
-    slots: [],
+    slots: addSlotDraft([], makeSlotKey()),
     linkedReportIds: seedLinkedReportId ? [seedLinkedReportId] : [],
     shareToFeed: true,
     feedCaption: "",
@@ -119,9 +122,15 @@ export function hasValidEventEnd(value: CleanupFormValue): boolean {
   )
 }
 
+/**
+ * `requireSlot` is the >=1 sign-up slot floor. It defaults ON because that is what a live event needs;
+ * an ENDED event is the one exception - the server refuses any slot change after the window closes, so
+ * demanding one would lock its host out of editing the title.
+ */
 export function isCleanupFormComplete(
   value: CleanupFormValue,
   existingSlots?: readonly EventSlotDTO[],
+  opts?: { requireSlot?: boolean },
 ): boolean {
   return (
     value.title.trim().length > 0 &&
@@ -129,6 +138,7 @@ export function isCleanupFormComplete(
     value.date !== null &&
     value.time !== null &&
     hasValidEventEnd(value) &&
+    (opts?.requireSlot === false || hasNamedSlot(value.slots)) &&
     slotsValid(
       value.slots,
       existingSlots ? claimedBySlotId(existingSlots) : undefined,
@@ -573,18 +583,7 @@ export function CleanupForm({
         <>
           <View style={styles.fieldBlock}>
             <View style={styles.labelRow}>
-              <Text style={styles.fieldLabel}>{t("field.whatToBring")}</Text>
-              <MetaDot color={th.colors.textSubtle} style={styles.labelDot} />
-              <Text style={styles.optional}>{t("field.optional")}</Text>
-            </View>
-            <BringInput value={value.bring} onChange={(bring) => patch({ bring })} />
-          </View>
-
-          <View style={styles.fieldBlock}>
-            <View style={styles.labelRow}>
               <Text style={styles.fieldLabel}>{t("field.slots")}</Text>
-              <MetaDot color={th.colors.textSubtle} style={styles.labelDot} />
-              <Text style={styles.optional}>{t("field.optional")}</Text>
             </View>
             <Text style={styles.fieldHelp}>{t("field.slotsHelp")}</Text>
             <SlotEditor
@@ -595,6 +594,15 @@ export function CleanupForm({
               eventEndUnsaved={eventEndUnsaved}
               {...(existingSlots ? { existing: existingSlots } : {})}
             />
+          </View>
+
+          <View style={styles.fieldBlock}>
+            <View style={styles.labelRow}>
+              <Text style={styles.fieldLabel}>{t("field.whatToBring")}</Text>
+              <MetaDot color={th.colors.textSubtle} style={styles.labelDot} />
+              <Text style={styles.optional}>{t("field.optional")}</Text>
+            </View>
+            <BringInput value={value.bring} onChange={(bring) => patch({ bring })} />
           </View>
         </>
       ) : null}

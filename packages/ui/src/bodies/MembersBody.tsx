@@ -394,7 +394,8 @@ export function MembersBody({
 
   const cleanupTimeZone = cleanupQuery.data?.timezone ?? undefined
   const cleanupSlots: readonly EventSlotDTO[] = cleanupQuery.data?.slots ?? NO_SLOTS
-  const grouped = roomKind === "cleanup" && viewerManagesEvent && cleanupSlots.length > 0
+  const grouped =
+    roomKind === "cleanup" && cleanupSlots.length > 0 && attendeeRoster?.scope === "all"
   const data: RosterItem[] = useMemo(
     () =>
       grouped

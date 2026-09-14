@@ -103,6 +103,31 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
   return items
 }
 
+/**
+ * The same grouping, bucketed by slot id for a caller that renders PER SLOT rather than as one list
+ * (the attendee-facing board's expanded rows). Walks the flat items so both surfaces read the SAME
+ * grouping decision - including the orphan fold - instead of re-implementing it.
+ *
+ * The trailing "no slot" group is skipped: it belongs to no row. Server order is preserved.
+ */
+export function claimantsBySlot<P extends RosterSlotPerson>(
+  items: readonly RosterListItem<P>[],
+): Map<string, P[]> {
+  const bySlot = new Map<string, P[]>()
+  let current: string | null = null
+  for (const item of items) {
+    if (item.kind === "slot-header") {
+      current = item.slotId
+      continue
+    }
+    if (item.kind !== "member" || current === null) continue
+    const bucket = bySlot.get(current)
+    if (bucket) bucket.push(item.person)
+    else bySlot.set(current, [item.person])
+  }
+  return bySlot
+}
+
 /** A stable React key. Members are unique by id (one slot per attendee in v1). */
 export function rosterListKey(item: RosterListItem): string {
   switch (item.kind) {

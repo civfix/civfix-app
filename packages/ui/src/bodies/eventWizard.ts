@@ -7,6 +7,7 @@ import {
 } from "./calendarModel"
 import { wallClockInZone } from "@civfix/shared/datetime"
 import {
+  hasNamedSlot,
   slotDraftWindow,
   slotsValid,
   type SlotDraft,
@@ -121,7 +122,7 @@ export function eventStepSatisfied(
     case "where":
       return draft.coords !== null
     case "details":
-      return slotsValid(draft.slots, undefined, eventDraftWindow(draft))
+      return hasNamedSlot(draft.slots) && slotsValid(draft.slots, undefined, eventDraftWindow(draft))
     case "review":
       return EVENT_WIZARD_STEPS.every(
         (other) => isFinalEventStep(other) || eventStepSatisfied(other, draft, now),

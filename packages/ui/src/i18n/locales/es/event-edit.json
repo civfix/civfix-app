@@ -18,6 +18,6 @@
   },
   "denied": {
     "title": "Solo los anfitriones que pueden gestionar este evento pueden editarlo",
-    "body": "Pídele al anfitrión que actualice los detalles, o confirma tu asistencia desde la página del evento."
+    "body": "Pide al anfitrión que actualice los detalles, o inscríbete en un puesto desde la página del evento."
   }
 }

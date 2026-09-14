@@ -44,8 +44,8 @@
   },
   "restricted": {
     "title": "Aquí solo aparecen las personas que sigues",
-    "body": "Confirma tu asistencia para ver a todas las personas que van.",
-    "empty_body": "Todavía no va nadie a quien sigas. Confirma tu asistencia para ver a todas las personas que van."
+    "body": "Inscríbete en un puesto para ver a todos los asistentes.",
+    "empty_body": "Todavía no asiste nadie a quien sigas. Inscríbete en un puesto para ver a todos los asistentes."
   },
   "role": {
     "host": "Anfitrión"

@@ -12,7 +12,7 @@
   "error": {
     "closed": "Dieses Event ist geschlossen.",
     "ended": "Dieses Event ist bereits beendet.",
-    "not_allowed": "Du kannst diesem Event nicht zusagen.",
-    "generic": "Zusage konnte nicht aktualisiert werden. Versuche es erneut."
+    "not_allowed": "Du kannst dich für diese Veranstaltung nicht eintragen.",
+    "generic": "Deine Eintragung konnte nicht aktualisiert werden. Versuche es erneut."
   }
 }

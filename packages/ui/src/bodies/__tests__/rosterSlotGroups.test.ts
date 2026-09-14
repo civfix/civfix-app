@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest"
 import type { EventSlotDTO } from "@civfix/shared"
 import {
+  claimantsBySlot,
   groupRosterBySlot,
   rosterListKey,
   type RosterListItem,
@@ -167,5 +168,40 @@ describe("timed slots in the grouped roster", () => {
     const items = groupRosterBySlot([person("p1", "early")], [timed("early", 0, 60), slot("s2")], OPTS)
     expect(items.map(rosterListKey)).toContain("slot-header:early")
     expect(items.map(rosterListKey)).toContain("slot-empty:s2")
+  })
+})
+
+describe("claimantsBySlot", () => {
+  const slots = [
+    slot("s2", { title: "Grill", sortOrder: 1 }),
+    slot("s1", { title: "Check-in", sortOrder: 0 }),
+  ]
+
+  it("buckets each member under the header it follows, in server order", () => {
+    const items = groupRosterBySlot(
+      [person("p1", "s2"), person("p2", "s1"), person("p3", "s1")],
+      slots,
+      OPTS,
+    )
+    const bySlot = claimantsBySlot(items)
+    expect(bySlot.get("s1")?.map((p) => p.id)).toEqual(["p2", "p3"])
+    expect(bySlot.get("s2")?.map((p) => p.id)).toEqual(["p1"])
+  })
+
+  it("leaves the trailing no-slot group out - it belongs to no row", () => {
+    const items = groupRosterBySlot([person("p1"), person("p2", "s1")], slots, OPTS)
+    const bySlot = claimantsBySlot(items)
+    expect([...bySlot.keys()]).toEqual(["s1"])
+    expect(bySlot.get("s1")?.map((p) => p.id)).toEqual(["p2"])
+  })
+
+  it("drops an orphan of a deleted slot, which the grouping already folded into no-slot", () => {
+    const items = groupRosterBySlot([person("p1", "gone")], slots, OPTS)
+    expect([...claimantsBySlot(items).keys()]).toEqual([])
+  })
+
+  it("returns nothing for a slot an empty placeholder stands in for", () => {
+    const items = groupRosterBySlot([], slots, OPTS)
+    expect(claimantsBySlot(items).size).toBe(0)
   })
 })
