@@ -13,6 +13,7 @@ const SURFACES: Record<string, string> = {
   "bodies/PersonDetailBody.tsx": code(read("../PersonDetailBody.tsx")),
   "bodies/SearchResults.tsx": code(read("../SearchResults.tsx")),
   "bodies/MembersBody.tsx": code(read("../MembersBody.tsx")),
+  "bodies/SlotGroupHeader.tsx": code(read("../SlotGroupHeader.tsx")),
   "bodies/EventSlotsBlock.tsx": code(read("../EventSlotsBlock.tsx")),
   "bodies/profile/ProfileEventsSection.tsx": code(read("../profile/ProfileEventsSection.tsx")),
   "bodies/host/EventRosterBlock.tsx": code(read("../host/EventRosterBlock.tsx")),
@@ -64,13 +65,10 @@ describe("event surfaces render in the event's zone", () => {
     expect(SURFACES["bodies/profile/ProfileEventsSection.tsx"]).toContain(
       "eventChip(event.scheduledAt, locale, when.timeZone)",
     )
-    expect(SURFACES["bodies/MembersBody.tsx"]).toContain(
+    expect(SURFACES["bodies/SlotGroupHeader.tsx"]).toContain(
       "timeRangeLabel(startsAt, endsAt, locale, timeZone)",
     )
     expect(SURFACES["bodies/EventSlotsBlock.tsx"]).toContain(
-      "window.end.toISOString(), locale, timeZone)",
-    )
-    expect(SURFACES["bodies/host/EventRosterBlock.tsx"]).toContain(
       "window.end.toISOString(), locale, timeZone)",
     )
     expect(SURFACES["bodies/host/HostInsightsPanels.tsx"]).toContain(
@@ -154,6 +152,7 @@ describe("event surfaces render in the event's zone", () => {
     expect(SURFACES["bodies/host/EventRosterBlock.tsx"]).toContain(
       "cleanup.data?.timezone ?? undefined",
     )
+    expect(SURFACES["bodies/MembersBody.tsx"]).toContain("timeZone={cleanupTimeZone}")
   })
 })
 

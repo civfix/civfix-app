@@ -8,11 +8,14 @@
  * Order: slots by `sortOrder` (each header immediately followed by its members), then the UNASSIGNED
  * group last. A slot nobody claimed still emits its header plus one `slot-empty` placeholder so the
  * host can SEE the gap they need to fill - that visibility is the whole point of the grouped view.
- * The unassigned group is omitted entirely when it is empty (it is not a slot the host authored, so
- * an empty one says nothing).
+ * Omit `emptySlotTitle` and an unclaimed slot is skipped entirely instead: a paginated or filtered
+ * roster cannot honestly call a slot empty, because its rows may simply not be on the pages read so
+ * far. The unassigned group is omitted entirely when it is empty (it is not a slot the host authored,
+ * so an empty one says nothing).
  *
- * Generic over the person type so `MembersBody` can pass its own `RosterPerson` (a `PersonDTO` plus an
- * optional cleanup role) without a cast; all this module needs is an `id` and the optional `slot` ref.
+ * Generic over the person type so each caller passes its own row without a cast - `MembersBody`'s
+ * `RosterPerson` (a `PersonDTO` plus an optional cleanup role) and the host roster's
+ * `EventRegistrationDTO` alike; all this module needs is an `id` and the optional `slot` ref.
  */
 import type { EventSlotDTO } from "@civfix/shared"
 import { slotDisplayOrder } from "./eventSlotsModel"
@@ -45,7 +48,7 @@ export type RosterListItem<P extends RosterSlotPerson = RosterSlotPerson> =
 export function groupRosterBySlot<P extends RosterSlotPerson>(
   attendees: readonly P[],
   slots: readonly EventSlotDTO[],
-  opts: { unassignedTitle: string; emptySlotTitle: string },
+  opts: { unassignedTitle: string; emptySlotTitle?: string | null },
 ): RosterListItem<P>[] {
   const bySlot = new Map<string, P[]>()
   const unassigned: P[] = []
@@ -63,21 +66,25 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
   const items: RosterListItem<P>[] = []
   const ordered = slotDisplayOrder(slots)
   const known = new Set(ordered.map((s) => s.id))
+  const emptySlotTitle = opts.emptySlotTitle ?? null
+  const headerFor = (slot: EventSlotDTO, claimed: number): RosterListItem<P> => ({
+    kind: "slot-header",
+    slotId: slot.id,
+    title: slot.title,
+    claimed,
+    capacity: slot.capacity ?? null,
+    startsAt: slot.startsAt ?? null,
+    endsAt: slot.endsAt ?? null,
+  })
   for (const slot of ordered) {
     const members = bySlot.get(slot.id) ?? []
-    items.push({
-      kind: "slot-header",
-      slotId: slot.id,
-      title: slot.title,
-      claimed: members.length,
-      capacity: slot.capacity ?? null,
-      startsAt: slot.startsAt ?? null,
-      endsAt: slot.endsAt ?? null,
-    })
     if (members.length === 0) {
-      items.push({ kind: "slot-empty", slotId: slot.id, title: opts.emptySlotTitle })
+      if (emptySlotTitle === null) continue
+      items.push(headerFor(slot, 0))
+      items.push({ kind: "slot-empty", slotId: slot.id, title: emptySlotTitle })
       continue
     }
+    items.push(headerFor(slot, members.length))
     for (const person of members) items.push({ kind: "member", person })
   }
 

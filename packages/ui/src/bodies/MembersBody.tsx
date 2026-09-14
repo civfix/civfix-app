@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from "react"
 import { View, Pressable, Image, Modal, StyleSheet } from "react-native"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/shared"
-import { timeRangeLabel } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, headingLevel, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
@@ -28,7 +27,7 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
-import { useLocale, useT } from "../i18n"
+import { useT } from "../i18n"
 import { RosterRow, type RosterRowMenu } from "./RosterRow"
 import { RoleChip } from "./RoleChip"
 import { canLeaveChat, chatMemberCount, isChatInfoRoomKind } from "./chatInfoSurface"
@@ -40,6 +39,7 @@ import {
   type SettableEventMemberRole,
 } from "./host/eventTeamTiers"
 import { groupRosterBySlot, rosterListKey, type RosterListItem } from "./rosterSlotGroups"
+import { SlotGroupHeader } from "./SlotGroupHeader"
 
 type RosterPerson = PersonDTO & { role?: CleanupMemberRole; slot?: EventSlotRef | null }
 
@@ -181,51 +181,6 @@ const MemberRow = memo(function MemberRow({
     />
   )
 })
-
-function SlotGroupHeader({
-  title,
-  claimed,
-  capacity,
-  startsAt,
-  endsAt,
-  timeZone,
-}: {
-  title: string
-  claimed: number
-  capacity: number | null
-  startsAt: string | null
-  endsAt: string | null
-  timeZone: string | undefined
-}) {
-  const styles = useStyles()
-  const { t: tSlots } = useT("event-slots")
-  const { locale } = useLocale()
-  const range = startsAt && endsAt ? timeRangeLabel(startsAt, endsAt, locale, timeZone) : null
-  return (
-    <View
-      style={styles.slotHeaderBlock}
-      accessibilityRole="header"
-      {...headingLevel(2)}
-      {...(range ? { accessibilityLabel: tSlots("roster.window_a11y", { title, range }) } : {})}
-    >
-      <View style={styles.slotHeader}>
-        <Text style={styles.slotHeaderTitle} numberOfLines={1}>
-          {title}
-        </Text>
-        <View style={styles.slotHeaderCount}>
-          <Text style={styles.slotHeaderCountText}>
-            {capacity == null ? String(claimed) : `${claimed}/${capacity}`}
-          </Text>
-        </View>
-      </View>
-      {range ? (
-        <Text style={styles.slotHeaderRange} numberOfLines={1}>
-          {range}
-        </Text>
-      ) : null}
-    </View>
-  )
-}
 
 function LinkedEntityRow({
   icon,
@@ -505,13 +460,13 @@ export function MembersBody({
         if (item.kind === "slot-header") {
           return (
             <SlotGroupHeader
-            title={item.title}
-            claimed={item.claimed}
-            capacity={item.capacity}
-            startsAt={item.startsAt}
-            endsAt={item.endsAt}
-            timeZone={cleanupTimeZone}
-          />
+              title={item.title}
+              claimed={item.claimed}
+              capacity={item.capacity}
+              startsAt={item.startsAt}
+              endsAt={item.endsAt}
+              timeZone={cleanupTimeZone}
+            />
           )
         }
         if (item.kind === "slot-empty") {
@@ -868,42 +823,6 @@ const useStyles = makeThemedStyles((t) => ({
     gap: 4,
     flexShrink: 1,
     minWidth: 0,
-  },
-
-  slotHeaderBlock: {
-    paddingTop: t.space["4"],
-    paddingBottom: t.space["2"],
-  },
-  slotHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-  },
-  slotHeaderRange: {
-    marginTop: t.space["1"],
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-  },
-  slotHeaderTitle: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
-    color: t.colors.textSubtle,
-  },
-  slotHeaderCount: {
-    flexShrink: 0,
-    paddingHorizontal: t.space["2"],
-    paddingVertical: 1,
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.bgAlt,
-  },
-  slotHeaderCountText: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
-    color: t.colors.textSubtle,
   },
   slotEmpty: {
     paddingVertical: t.space["2"],

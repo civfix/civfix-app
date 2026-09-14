@@ -1,9 +1,9 @@
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { View } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import type { CheckinResultDTO, EventCheckinCountersDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
-import { Text, Icon, iconMap } from "../../typography"
+import { headingLevel, makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { Text, TextLink, Icon, iconMap } from "../../typography"
 import {
   PrimaryButton,
   SecondaryButton,
@@ -19,10 +19,14 @@ import { useHaptics } from "../../capabilities"
 import { useCleanup } from "../../data"
 import {
   hasHostCapability,
+  rosterRows,
+  useCheckInEventSeat,
   useHostCounters,
+  useHostRoster,
   useScanEventTicket,
   useUndoEventCheckIn,
 } from "../../data/hooks/host"
+import { useDebouncedValue } from "../../data/hooks/useDebouncedValue"
 import { useLocale, useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
@@ -30,6 +34,7 @@ import { appErrorCode } from "../errorCode"
 import { checkinResultRender, manualCodeReady, normalizeManualCode, MANUAL_CODE_MAX } from "./checkinResult"
 import { useCheckinOutbox } from "./useCheckinOutbox"
 import { TilesSkeleton } from "./HostSkeletons"
+import { RosterCheckinList } from "./RosterCheckinList"
 
 interface ResultState {
   result: CheckinResultDTO
@@ -71,6 +76,7 @@ export function HostCheckinBody({ id }: { id: string }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-checkin")
+  const { t: tRoster } = useT("host-common")
   const { ScrollView } = useScrollHost()
   const haptics = useHaptics()
   const toast = useToast()
@@ -84,10 +90,43 @@ export function HostCheckinBody({ id }: { id: string }) {
   const [state, setState] = useState<ResultState | null>(null)
   const [errorText, setErrorText] = useState<string | null>(null)
   const [codeFocused, setCodeFocused] = useState(false)
+  const [rosterSearch, setRosterSearch] = useState("")
+  const [rosterFocused, setRosterFocused] = useState(false)
   const canScan = useScannerAvailable()
 
   const canCheckIn = hasHostCapability(cleanup.data, "check_in")
   const counters = useHostCounters(id, { enabled: canCheckIn })
+  const rosterQuery = useDebouncedValue(rosterSearch, 250)
+  const roster = useHostRoster(id, {
+    filter: "not_checked_in",
+    q: rosterQuery,
+    enabled: canCheckIn,
+  })
+  const waiting = useMemo(() => rosterRows(roster.data?.pages), [roster.data?.pages])
+  const checkIn = useCheckInEventSeat(id)
+  const onRosterCheckIn = useCallback(
+    (seatId: string) => {
+      checkIn.mutate(
+        { seatId },
+        { onError: () => toast.show(tRoster("roster.error"), { variant: "error" }) },
+      )
+    },
+    [checkIn, tRoster, toast],
+  )
+  const onRosterUndo = useCallback(
+    (seatId: string) => {
+      undo.mutate(
+        { seatId },
+        { onError: () => toast.show(tRoster("roster.error"), { variant: "error" }) },
+      )
+    },
+    [tRoster, toast, undo],
+  )
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = roster
+  const loadMoreWaiting = useCallback(() => {
+    if (!hasNextPage || isFetchingNextPage) return
+    void fetchNextPage()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   const submitToken = useCallback(
     (token: string) => {
@@ -317,6 +356,63 @@ export function HostCheckinBody({ id }: { id: string }) {
           {errorText}
         </Text>
       ) : null}
+
+      <View style={styles.roster}>
+        <Text style={styles.rosterTitle} accessibilityRole="header" {...headingLevel(2)}>
+          {t("roster.title")}
+        </Text>
+        <TextInput
+          value={rosterSearch}
+          onChangeText={setRosterSearch}
+          placeholder={t("roster.search")}
+          placeholderTextColor={th.colors.textSubtle}
+          accessibilityLabel={t("roster.search")}
+          autoCapitalize="none"
+          autoCorrect={false}
+          onFocus={() => setRosterFocused(true)}
+          onBlur={() => setRosterFocused(false)}
+          style={[webInputReset, styles.rosterSearch, rosterFocused ? fieldFocusedStyle(th) : null]}
+        />
+        {roster.isLoading ? (
+          <Text style={styles.muted}>{tRoster("roster.loading")}</Text>
+        ) : roster.isError ? (
+          <Text style={styles.error} accessibilityRole="alert">
+            {tRoster("roster.error")}
+          </Text>
+        ) : waiting.length === 0 ? (
+          <FeedNotice
+            plain
+            icon="UserCheck"
+            title={t("roster.empty_title")}
+            body={t("roster.empty_body")}
+          />
+        ) : (
+          <View>
+            <RosterCheckinList
+              rows={waiting}
+              slots={cleanup.data.slots}
+              timeZone={cleanup.data.timezone ?? undefined}
+              canCheckIn
+              pending={checkIn.isPending || undo.isPending}
+              onCheckIn={onRosterCheckIn}
+              onUndo={onRosterUndo}
+            />
+            {hasNextPage ? (
+              <View style={styles.rosterMore}>
+                <TextLink
+                  variant="label"
+                  standalone
+                  disabled={isFetchingNextPage}
+                  onPress={loadMoreWaiting}
+                  accessibilityLabel={tRoster("roster.load_more_a11y")}
+                >
+                  {isFetchingNextPage ? tRoster("roster.loading_more") : tRoster("roster.load_more")}
+                </TextLink>
+              </View>
+            ) : null}
+          </View>
+        )}
+      </View>
     </ScrollView>
   )
 }
@@ -437,5 +533,28 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["12"],
     color: t.colors.dangerInk,
+  },
+  roster: {
+    gap: t.space["2"],
+  },
+  rosterTitle: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: t.fontSize["16"],
+    color: t.colors.text,
+  },
+  rosterSearch: {
+    minHeight: 42,
+    paddingHorizontal: t.space["3"],
+    borderRadius: t.radius.pill,
+    borderWidth: 1.5,
+    borderColor: t.colors.border,
+    backgroundColor: t.colors.surface,
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["14"],
+    color: t.colors.text,
+  },
+  rosterMore: {
+    alignSelf: "flex-start",
+    paddingVertical: t.space["2"],
   },
 }))

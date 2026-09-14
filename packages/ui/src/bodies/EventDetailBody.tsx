@@ -250,6 +250,9 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const onOpenCheckin = useCallback(() => {
     useNavStore.getState().push({ kind: "host-checkin", id: cleanup.id, title: cleanup.title })
   }, [cleanup.id, cleanup.title])
+  const onOpenMyTicket = useCallback(() => {
+    useNavStore.getState().push({ kind: "my-ticket", id: cleanup.id, title: cleanup.title })
+  }, [cleanup.id, cleanup.title])
   const hasTicketTypes = cleanup.ticketTypes.length > 0
   const donatePage = useOrgDonationPage(cleanup.donationOrg?.slug, {
     enabled: cleanup.donationOrg?.enabled === true,
@@ -264,6 +267,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const isLive = !isCancelled && !isDone
   const isUpcoming = isLive && !isEnded
   const isRegistered = cleanup.myRegistration?.status === "registered"
+  const holdsSeat = isRegistered && cleanup.myRegistration?.waitlistPosition == null
   const next = `/cleanups/${cleanup.id}`
 
   const isActive = usePageIsActive()
@@ -488,6 +492,18 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
       ) : isLive && !isEnded && !actsAsHost ? (
         <View style={styles.section}>
           <Text style={styles.slotsNone}>{t("event-slots:block.none_yet")}</Text>
+        </View>
+      ) : null}
+
+      {going && holdsSeat && isLive && (!hasTicketTypes || actsAsHost) ? (
+        <View style={styles.section}>
+          <EventActionRows>
+            <EventActionRow
+              icon={iconMap.Ticket}
+              label={t("host-ticket:mine.view_ticket")}
+              onPress={onOpenMyTicket}
+            />
+          </EventActionRows>
         </View>
       ) : null}
 
