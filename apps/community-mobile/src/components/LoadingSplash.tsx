@@ -11,8 +11,7 @@ import Animated, {
   cancelAnimation,
   Easing,
 } from "react-native-reanimated"
-import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg"
-import { makeThemedStyles, useTheme, wordmarkColors, WORDMARK_LETTERS } from "@/theme"
+import { makeThemedStyles, wordmarkColors, WORDMARK_LETTERS } from "@/theme"
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 
@@ -129,26 +128,6 @@ function Tagline({ reduceMotion }: { reduceMotion: boolean }) {
   )
 }
 
-function GlowBackground() {
-  const th = useTheme()
-  return (
-    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Defs>
-        <RadialGradient id="cf-sun" cx="0.5" cy="0.16" rx="0.9" ry="0.6">
-          <Stop offset="0" stopColor={th.colors.sun["50"]} stopOpacity={1} />
-          <Stop offset="0.6" stopColor={th.colors.sun["50"]} stopOpacity={0} />
-        </RadialGradient>
-        <RadialGradient id="cf-moss" cx="0.5" cy="1.02" rx="0.8" ry="0.5">
-          <Stop offset="0" stopColor={th.colors.moss["50"]} stopOpacity={1} />
-          <Stop offset="0.55" stopColor={th.colors.moss["50"]} stopOpacity={0} />
-        </RadialGradient>
-      </Defs>
-      <Rect x="0" y="0" width="100%" height="100%" fill="url(#cf-sun)" />
-      <Rect x="0" y="0" width="100%" height="100%" fill="url(#cf-moss)" />
-    </Svg>
-  )
-}
-
 export function LoadingSplash() {
   const { t } = useT("mobile-branding")
   const styles = useStyles()
@@ -159,7 +138,6 @@ export function LoadingSplash() {
 
   return (
     <View style={styles.root}>
-      <GlowBackground />
       <View
         style={styles.row}
         accessibilityRole="header"

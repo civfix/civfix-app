@@ -3,6 +3,7 @@ import { Appearance, AppState, Platform, Pressable, StyleSheet, Text, View } fro
 import { Stack, useRouter, useSegments, type ErrorBoundaryProps } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import * as SplashScreen from "expo-splash-screen"
+import * as SystemUI from "expo-system-ui"
 import * as NavigationBar from "expo-navigation-bar"
 import * as Notifications from "expo-notifications"
 import * as Linking from "expo-linking"
@@ -96,6 +97,7 @@ const bootTheme = themeFor(
 )
 
 void SplashScreen.preventAutoHideAsync()
+void SystemUI.setBackgroundColorAsync(bootTheme.colors.bg)
 
 const SPLASH_WATCHDOG_MS = 5000
 const MIN_SPLASH_MS = 1700
@@ -395,6 +397,10 @@ function RealtimeChannel(): null {
 function RootStack() {
   const scheme = useColorSchemeName()
   const t = useTheme()
+
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(t.colors.bg)
+  }, [t.colors.bg])
 
   useEffect(() => {
     if (Platform.OS !== "android") return

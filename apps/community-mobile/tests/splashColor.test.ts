@@ -7,6 +7,11 @@ import { tokens, darkColor } from "@civfix/shared/tokens"
 const require = createRequire(import.meta.url)
 const appConfigSource = readFileSync(new URL("../app.config.js", import.meta.url), "utf8")
 const appConfig = require("../app.config.js")({ config: {} })
+const loadingSplash = readFileSync(
+  new URL("../src/components/LoadingSplash.tsx", import.meta.url),
+  "utf8",
+)
+const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
 
 const LIGHT = tokens.color.neutral.paper
 const DARK = darkColor.neutral.paper
@@ -40,4 +45,18 @@ test("the splash colours are derived from the contract, never retyped as literal
   for (const [, value] of appConfigSource.matchAll(/backgroundColor: ([^,\n]+)/g)) {
     assert.match(value, /^SPLASH_BG_(LIGHT|DARK)$/)
   }
+})
+
+test("the JS boot screen paints the flat theme background, never a wash over it", () => {
+  const root = loadingSplash.slice(loadingSplash.indexOf("  root: {"))
+  assert.match(root, /backgroundColor: t\.colors\.bg/)
+  assert.doesNotMatch(loadingSplash, /RadialGradient|LinearGradient|react-native-svg/)
+  assert.doesNotMatch(loadingSplash, /StyleSheet\.absoluteFill[^O]/)
+})
+
+test("the native root view sits on the resolved paper before and after the first paint", () => {
+  assert.match(layout, /import \* as SystemUI from "expo-system-ui"/)
+  assert.match(layout, /void SystemUI\.setBackgroundColorAsync\(bootTheme\.colors\.bg\)/)
+  assert.match(layout, /void SystemUI\.setBackgroundColorAsync\(t\.colors\.bg\)/)
+  assert.match(layout, /const bootTheme = themeFor\(\n\s+resolveColorScheme\(/)
 })
