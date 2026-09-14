@@ -17,7 +17,7 @@
  * fallback the apps can layer their own resolve on top of). Mobile's old `recenter(lng,lat)` maps to
  * `flyTo(lat,lng)`.
  */
-import type { ReportPinDTO, CleanupDTO, BBox } from "@civfix/shared"
+import type { ReportPinDTO, ReportClusterDTO, CleanupDTO, BBox } from "@civfix/shared"
 
 /** A simple lat/lng the map can fly to / draw the user dot at (when the precise/IP location resolves). */
 export interface MapLatLng {
@@ -46,6 +46,7 @@ export interface MapProps {
   reports?: ReportPinDTO[]
   /** Cleanup/event gold teardrops to draw (the caller passes them only while the Events layer is on). */
   cleanups?: CleanupDTO[]
+  reportAggregates?: ReportClusterDTO[]
 
   /** The currently-focused report pin id (an open in-sheet "pin" detail) - drawn enlarged + glowing. */
   focusedPinId?: string | null

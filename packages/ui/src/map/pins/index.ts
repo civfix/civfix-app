@@ -7,5 +7,11 @@ export { ClusterBubble } from "./ClusterBubble"
 export { DropPin, DROP_PIN_SIZE } from "./DropPin"
 export { PinSvg } from "./PinSvg"
 export { PIN_GLYPHS, DROP_PIN_GLYPH, glyphForCategory } from "./glyphs"
-export { pinAppearanceFor, eventPinTarget, reportPinTarget } from "./appearance"
-export type { PinTarget, PinAppearance } from "./appearance"
+export {
+  pinAppearanceFor,
+  eventPinTarget,
+  reportPinTarget,
+  clusterToneFor,
+  clusterBubbleFill,
+} from "./appearance"
+export type { PinTarget, PinAppearance, ClusterTone } from "./appearance"

@@ -20,8 +20,24 @@ export {
   pinAppearanceFor,
   eventPinTarget,
   reportPinTarget,
+  clusterToneFor,
+  clusterBubbleFill,
 } from "./pins"
-export type { PinTarget, PinAppearance } from "./pins"
+export type { PinTarget, PinAppearance, ClusterTone } from "./pins"
+export {
+  CLUSTER_RADIUS,
+  CLUSTER_MAX_ZOOM,
+  CLUSTER_MIN_POINTS,
+  CLUSTER_ZOOM_STEP,
+  AGGREGATE_EXPAND_ZOOM,
+  clusterZoomTarget,
+  reportsOfPoints,
+} from "./clusterer"
+export type { MapPoint, ClusterNode, ClusterWeights } from "./clusterer"
+export { mapPointsFor } from "./mapPoints"
+export type { MapPointsInput } from "./mapPoints"
+export { createIdleRunner, CLUSTER_IDLE_MS } from "./clusterSchedule"
+export type { IdleRunner } from "./clusterSchedule"
 export type { MapProps, MapHandle, MapLatLng, MapStyleInput } from "./types"
 
 export { MapControls } from "./MapControls"

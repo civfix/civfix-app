@@ -36,3 +36,14 @@ export function pinAppearanceFor(target: PinTarget, scheme: ColorSchemeName): Pi
   }
   return { fill: categoryColor(target.category, scheme), glyph: glyphForCategory(target.category) }
 }
+
+export type ClusterTone = "reports" | "events"
+
+export function clusterToneFor(reportCount: number, eventCount: number): ClusterTone {
+  return reportCount <= 0 && eventCount > 0 ? "events" : "reports"
+}
+
+export function clusterBubbleFill(tone: ClusterTone, scheme: ColorSchemeName): string {
+  if (tone === "events") return pinAppearanceFor(eventPinTarget("cleanup"), scheme).fill
+  return colorSchemes[scheme].brand.bloom
+}
