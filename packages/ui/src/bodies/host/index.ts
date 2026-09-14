@@ -48,13 +48,11 @@ export type {
   HostTile,
   HostTileKey,
 } from "./hostSurfaceModel"
-export {
-  EventRosterBlock,
-  ROSTER_FILTERS,
-  nextCheckinSeat,
-  lastCheckedInSeat,
-} from "./EventRosterBlock"
+export { EventRosterBlock } from "./EventRosterBlock"
 export type { EventRosterBlockProps } from "./EventRosterBlock"
+export { ROSTER_FILTERS, visibleRosterFilters } from "./rosterFiltersModel"
+export { RosterCheckinList, nextCheckinSeat, lastCheckedInSeat } from "./RosterCheckinList"
+export type { RosterCheckinListProps } from "./RosterCheckinList"
 export { HostWalkupSheet } from "./HostWalkupSheet"
 export type { HostWalkupSheetProps } from "./HostWalkupSheet"
 export { HostTeamInviteSheet } from "./HostTeamInviteSheet"

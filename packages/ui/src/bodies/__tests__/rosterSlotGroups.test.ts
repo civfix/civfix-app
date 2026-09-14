@@ -4,7 +4,7 @@
  * slot" group is LAST, and every item has a stable key for the FlatList.
  */
 import { describe, expect, it } from "vitest"
-import type { EventSlotDTO } from "@civfix/shared"
+import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
 import {
   claimantsBySlot,
   groupRosterBySlot,
@@ -110,6 +110,87 @@ describe("groupRosterBySlot", () => {
 
   it("returns nothing for an empty roster with no slots", () => {
     expect(groupRosterBySlot([], [], OPTS)).toEqual([])
+  })
+})
+
+describe("a paginated roster omits the empty-slot placeholder", () => {
+  const slots = [
+    slot("s1", { title: "Check-in", sortOrder: 0, capacity: 4 }),
+    slot("s2", { title: "Grill", sortOrder: 1, capacity: 2 }),
+  ]
+  const OPEN = { unassignedTitle: "No slot" }
+
+  it("skips a slot with no loaded members entirely - header included", () => {
+    const items = groupRosterBySlot([person("p1", "s2")], slots, OPEN)
+    expect(shape(items)).toEqual(["slot-header:s2", "member:p1"])
+  })
+
+  it("keeps the order, the counts and the trailing unassigned group", () => {
+    const items = groupRosterBySlot([person("p1"), person("p2", "s2"), person("p3", "s1")], slots, OPEN)
+    expect(shape(items)).toEqual([
+      "slot-header:s1",
+      "member:p3",
+      "slot-header:s2",
+      "member:p2",
+      "slot-header:none",
+      "member:p1",
+    ])
+  })
+
+  it("still folds an orphan of a deleted slot into the unassigned group", () => {
+    const items = groupRosterBySlot([person("p1", "gone")], slots, OPEN)
+    expect(shape(items)).toEqual(["slot-header:none", "member:p1"])
+  })
+
+  it("returns nothing when no loaded row claims any slot", () => {
+    expect(groupRosterBySlot([], slots, OPEN)).toEqual([])
+  })
+
+  it("leaves the placeholder behaviour untouched when a title IS supplied", () => {
+    const items = groupRosterBySlot([person("p1", "s2")], slots, OPTS)
+    expect(shape(items)).toEqual([
+      "slot-header:s1",
+      "slot-empty:s1",
+      "slot-header:s2",
+      "member:p1",
+    ])
+  })
+})
+
+describe("the grouping takes registration rows, not just attendees", () => {
+  function registration(id: string, slotId?: string): EventRegistrationDTO {
+    return {
+      id,
+      cleanupId: "c1",
+      kind: "member",
+      partySize: 1,
+      seatCount: 1,
+      seats: [],
+      status: "registered",
+      source: "self",
+      registeredAt: "2026-06-08T16:00:00.000Z",
+      slot: slotId ? { id: slotId, title: `Slot ${slotId}` } : null,
+    }
+  }
+
+  it("groups EventRegistrationDTO rows and hands each one back unchanged", () => {
+    const rows = [registration("r1", "s1"), registration("r2")]
+    const items = groupRosterBySlot(rows, [slot("s1")], { unassignedTitle: "No slot" })
+    expect(items.map((item) => (item.kind === "member" ? item.person.id : item.kind))).toEqual([
+      "slot-header",
+      "r1",
+      "slot-header",
+      "r2",
+    ])
+    const first = items[1]
+    expect(first?.kind === "member" ? first.person : null).toBe(rows[0])
+  })
+
+  it("keys a registration row off the registration id", () => {
+    const items = groupRosterBySlot([registration("r1", "s1")], [slot("s1")], {
+      unassignedTitle: "No slot",
+    })
+    expect(items.map(rosterListKey)).toContain("member:r1")
   })
 })
 
