@@ -18,7 +18,7 @@
     "duration_hours": "{{count}} h"
   },
   "linkedReports": {
-    "label": "Reports this event will handle",
+    "label": "Reports at this spot",
     "filterByType": "Filter by {{type}}",
     "searchPlaceholder": "Search reports by title or detail",
     "searching": "Searching reports...",
@@ -31,14 +31,26 @@
     "loadMoreA11y": "Load more reports",
     "loading": "Loading...",
     "selectedCount_one": "{{count}} report selected",
-    "selectedCount_other": "{{count}} reports selected"
-  },
-  "pickOnMap": {
-    "start": "Pick on map",
-    "startA11y": "Pick reports on the map",
-    "hint": "Tap report pins on the map to link them, then pull this sheet back up.",
-    "done": "Done",
-    "doneA11y": "Done picking reports on the map"
+    "selectedCount_other": "{{count}} reports selected",
+    "help": "Link the reports you'll clean up. Reporters see the event on their report.",
+    "pin_first": "Set the meeting point to see reports nearby.",
+    "nearby_heading": "Nearby",
+    "nearby_empty": "No open reports near this spot yet.",
+    "linked_count_one": "{{count}} linked",
+    "linked_count_other": "{{count}} linked",
+    "search_all": "Search all reports",
+    "search_all_a11y": "Search all reports to link to this event",
+    "search_hint": "Search by title, detail or address.",
+    "sheet_title": "Search reports",
+    "sheet_done": "Done",
+    "sheet_dismiss_a11y": "Close report search",
+    "all_categories": "All",
+    "retry": "Retry",
+    "added_announce": "Linked {{title}}",
+    "removed_announce": "Unlinked {{title}}",
+    "limit_reached": "You've linked the maximum of {{max}} reports.",
+    "unavailable_row": "Report unavailable",
+    "unavailable_sub": "It may have been removed. You can still unlink it."
   },
   "share": {
     "label": "Announce to the feed",

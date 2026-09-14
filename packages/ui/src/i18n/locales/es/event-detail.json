@@ -49,7 +49,8 @@
     "heading": "Qué llevar"
   },
   "linked_reports": {
-    "heading": "Reportes que atenderemos"
+    "heading": "Reportes que atenderemos",
+    "heading_count": "Reportes que atenderemos · {{count}}"
   },
   "host": {
     "heading": "Organizador",

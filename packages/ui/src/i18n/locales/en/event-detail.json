@@ -49,7 +49,8 @@
     "heading": "What to bring"
   },
   "linked_reports": {
-    "heading": "Reports we'll handle"
+    "heading": "Reports we'll handle",
+    "heading_count": "Reports we'll handle · {{count}}"
   },
   "host": {
     "heading": "Host",

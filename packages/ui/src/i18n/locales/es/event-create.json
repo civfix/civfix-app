@@ -43,7 +43,11 @@
       "when": "Cuándo",
       "extras": "Detalles",
       "noExtras": "Sin extras",
-      "slots": "Puestos"
+      "slots": "Puestos",
+      "reports": "Reportes",
+      "reports_count_one": "{{count}} reporte",
+      "reports_count_other": "{{count}} reportes",
+      "noReports": "Ninguno vinculado"
     }
   },
   "publish": {

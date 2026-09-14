@@ -195,6 +195,8 @@ function HostIdentity({ cleanup, isOrganizer }: { cleanup: CleanupDTO; isOrganiz
   )
 }
 
+const LINKED_REPORTS_COUNT_AT = 3
+
 function LinkedReportsStrip({
   reports,
   onOpenReport,
@@ -206,7 +208,11 @@ function LinkedReportsStrip({
   const { t } = useT("event-detail")
   return (
     <View style={styles.subsection}>
-      <Text style={styles.sectionTitle}>{t("linked_reports.heading")}</Text>
+      <Text style={styles.sectionTitle}>
+        {reports.length > LINKED_REPORTS_COUNT_AT
+          ? t("linked_reports.heading_count", { count: reports.length })
+          : t("linked_reports.heading")}
+      </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

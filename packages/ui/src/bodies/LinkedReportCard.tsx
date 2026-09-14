@@ -29,9 +29,12 @@ export function LinkedReportCard({
   layout = "strip",
   selectable = false,
   selected = false,
+  disabled = false,
   onRemove,
   badge = null,
   headline = "reference",
+  subtitle,
+  a11yLabel,
 }: {
   report: LinkedReportCardData
   onPress?: () => void
@@ -39,8 +42,11 @@ export function LinkedReportCard({
   headline?: LinkedReportHeadline
   selectable?: boolean
   selected?: boolean
+  disabled?: boolean
   onRemove?: () => void
   badge?: "plus" | "check" | null
+  subtitle?: string | null
+  a11yLabel?: string
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -52,29 +58,34 @@ export function LinkedReportCard({
     ? t(`enums:reportType.${report.type}`)
     : categoryLabel
   const listTitle = linkedReportHeadline(report, headline, typeLabel, categoryLabel)
-  const listSubtitle = report.addr?.trim() || report.description?.trim() || categoryLabel
+  const listSubtitle =
+    subtitle?.trim() || report.addr?.trim() || report.description?.trim() || categoryLabel
   const isList = layout === "list"
+  const interactive = !!onPress && !disabled
 
   const card = (
     <Pressable
       onPress={onPress}
-      disabled={!onPress}
+      disabled={!interactive}
       accessibilityRole={selectable ? "checkbox" : "button"}
-      accessibilityState={selectable ? { checked: selected } : undefined}
-      accessibilityLabel={t("card.a11yLabel", { title, category: categoryLabel })}
+      accessibilityState={
+        selectable ? { checked: selected, disabled } : disabled ? { disabled } : undefined
+      }
+      accessibilityLabel={a11yLabel ?? t("card.a11yLabel", { title, category: categoryLabel })}
       {...focusRingProps}
       style={(state) => [
         styles.card,
         isList ? styles.cardList : styles.cardStrip,
         webTransition,
-        webCursor(!onPress),
+        webCursor(!interactive),
         selectable && selected ? styles.cardSelected : null,
-        webHover(state) && onPress
+        webHover(state) && interactive
           ? selectable && selected
             ? styles.hoveredSelected
             : styles.hovered
           : null,
-        state.pressed && onPress ? styles.pressed : null,
+        state.pressed && interactive ? styles.pressed : null,
+        disabled ? styles.disabled : null,
       ]}
     >
       {report.thumbUrl ? (
@@ -203,6 +214,9 @@ const useStyles = makeThemedStyles((t) => ({
   },
   pressed: {
     opacity: 0.92,
+  },
+  disabled: {
+    opacity: 0.55,
   },
   hovered: {
     backgroundColor: t.colors.surfaceTint,

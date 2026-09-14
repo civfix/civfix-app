@@ -43,7 +43,11 @@
       "when": "언제",
       "extras": "세부 정보",
       "noExtras": "추가 사항 없음",
-      "slots": "역할"
+      "slots": "역할",
+      "reports": "제보",
+      "reports_count_one": "제보 {{count}}개",
+      "reports_count_other": "제보 {{count}}개",
+      "noReports": "연결된 제보 없음"
     }
   },
   "publish": {

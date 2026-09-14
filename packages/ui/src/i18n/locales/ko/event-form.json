@@ -18,7 +18,7 @@
     "duration_hours": "{{count}}시간"
   },
   "linkedReports": {
-    "label": "이 이벤트에서 처리할 제보",
+    "label": "이 장소의 제보",
     "filterByType": "{{type}}(으)로 필터",
     "searchPlaceholder": "제목이나 내용으로 제보 검색",
     "searching": "제보 검색 중...",
@@ -31,14 +31,26 @@
     "loadMoreA11y": "제보 더 불러오기",
     "loading": "불러오는 중...",
     "selectedCount_one": "{{count}}개 제보 선택됨",
-    "selectedCount_other": "{{count}}개 제보 선택됨"
-  },
-  "pickOnMap": {
-    "start": "지도에서 선택",
-    "startA11y": "지도에서 제보 선택하기",
-    "hint": "지도에서 제보 핀을 눌러 연결한 뒤, 이 화면을 다시 올려주세요.",
-    "done": "완료",
-    "doneA11y": "지도에서 제보 선택 완료"
+    "selectedCount_other": "{{count}}개 제보 선택됨",
+    "help": "정리할 제보를 연결하세요. 제보한 사람에게 이 이벤트가 표시돼요.",
+    "pin_first": "모임 장소를 정하면 주변 제보를 볼 수 있어요.",
+    "nearby_heading": "주변",
+    "nearby_empty": "이 장소 주변에 아직 처리되지 않은 제보가 없어요.",
+    "linked_count_one": "{{count}}개 연결됨",
+    "linked_count_other": "{{count}}개 연결됨",
+    "search_all": "전체 제보 검색",
+    "search_all_a11y": "전체 제보를 검색해 이 이벤트에 연결하기",
+    "search_hint": "제목, 내용, 주소로 검색하세요.",
+    "sheet_title": "제보 검색",
+    "sheet_done": "완료",
+    "sheet_dismiss_a11y": "제보 검색 닫기",
+    "all_categories": "전체",
+    "retry": "다시 시도",
+    "added_announce": "{{title}} 연결됨",
+    "removed_announce": "{{title}} 연결 해제됨",
+    "limit_reached": "제보는 최대 {{max}}개까지 연결할 수 있어요.",
+    "unavailable_row": "제보를 볼 수 없어요",
+    "unavailable_sub": "삭제되었을 수 있어요. 연결은 해제할 수 있어요."
   },
   "share": {
     "label": "피드에 알리기",

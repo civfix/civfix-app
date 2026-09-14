@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
+import { View, Pressable } from "react-native"
 import {
   EVENT_KIND_VALUES,
   MIN_EVENT_DURATION_MINUTES,
@@ -7,7 +7,6 @@ import {
   type EventSlotDTO,
   type OrganizationRefDTO,
   type PersonDTO,
-  type ReportDTO,
 } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
 import {
@@ -21,7 +20,7 @@ import {
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField, BringInput, MetaDot } from "../primitives"
-import { actableOrganizations, useMyOrganizations, useReport, useReverseLabel, reverseLabelText } from "../data"
+import { actableOrganizations, useMyOrganizations, useReverseLabel, reverseLabelText } from "../data"
 import { LocationPicker, PortraitMapPickStep, useLocationPick } from "../map"
 import { useLocale, useT, viewerTimeZone } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
@@ -37,8 +36,9 @@ import {
   scheduleFieldErrors,
 } from "./calendarModel"
 import { InlineDateTimePicker } from "./InlineDateTimePicker"
+import { ReportLinkPicker } from "./ReportLinkPicker"
+import { linkBlockState } from "./linkReportsModel"
 import { TimezoneField } from "./TimezoneField"
-import { LinkedReportCard, type LinkedReportCardData } from "./LinkedReportCard"
 import { DEFAULT_WIZARD_DURATION_MS, eventDraftWindow } from "./eventWizard"
 import { SlotEditor } from "./SlotEditor"
 import {
@@ -207,38 +207,6 @@ function KindSelector({
       </View>
     </View>
   )
-}
-
-function reportThumbUrl(report: ReportDTO): string | null {
-  const photo = report.media.find((m) => m.kind === "image" && m.status === "ready")
-  return photo ? (photo.thumbUrl ?? photo.url) : null
-}
-
-function reportToCardData(report: ReportDTO): LinkedReportCardData {
-  return {
-    id: report.id,
-    category: report.category,
-    type: report.type,
-    title: report.title,
-    description: report.description,
-    status: report.status,
-    thumbUrl: reportThumbUrl(report),
-    addr: report.addr,
-    referenceCode: report.referenceCode,
-  }
-}
-
-function LinkedReportCardById({ id, onRemove }: { id: string; onRemove: () => void }) {
-  const styles = useStyles()
-  const query = useReport(id)
-
-  if (query.isLoading) {
-    return <View style={styles.seedSkeleton} />
-  }
-  if (query.isError || !query.data) {
-    return null
-  }
-  return <LinkedReportCard report={reportToCardData(query.data)} layout="list" onRemove={onRemove} />
 }
 
 function MeetLocationCompact({
@@ -427,11 +395,6 @@ export function CleanupForm({
     [patch],
   )
 
-  const removeLink = useCallback(
-    (id: string) => patch({ linkedReportIds: value.linkedReportIds.filter((x) => x !== id) }),
-    [patch, value.linkedReportIds],
-  )
-
   const isCleanup = value.eventKind === "cleanup"
 
   const myOrgs = useMyOrganizations()
@@ -506,14 +469,6 @@ export function CleanupForm({
             groupA11y={tCreate("host_as.group_a11y")}
           />
 
-          {isCleanup && value.linkedReportIds.length > 0 ? (
-            <View style={styles.linkedCards}>
-              {value.linkedReportIds.map((id) => (
-                <LinkedReportCardById key={id} id={id} onRemove={() => removeLink(id)} />
-              ))}
-            </View>
-          ) : null}
-
           <TextField
             label={t("field.title")}
             placeholder={t("field.titlePlaceholder")}
@@ -536,28 +491,41 @@ export function CleanupForm({
       ) : null}
 
       {shows("where") ? (
-        <View style={styles.fieldBlock}>
-          <Text style={styles.fieldLabel}>{t("field.meetLocation")}</Text>
-          {compact ? (
-            <MeetLocationCompact
-              value={value}
-              onConfirmPoint={onDropPin}
-              onClear={() => patch({ coords: null })}
-              initialCenter={initialCenter ?? null}
+        <>
+          <View style={styles.fieldBlock}>
+            <Text style={styles.fieldLabel}>{t("field.meetLocation")}</Text>
+            {compact ? (
+              <MeetLocationCompact
+                value={value}
+                onConfirmPoint={onDropPin}
+                onClear={() => patch({ coords: null })}
+                initialCenter={initialCenter ?? null}
+              />
+            ) : (
+              <>
+                <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
+                <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} mode={pickMode} />
+              </>
+            )}
+            <TextField
+              placeholder={t("field.spotPlaceholder")}
+              value={value.spot}
+              onChangeText={(spot) => patch({ spot })}
+              maxLength={200}
             />
-          ) : (
-            <>
-              <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
-              <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} mode={pickMode} />
-            </>
-          )}
-          <TextField
-            placeholder={t("field.spotPlaceholder")}
-            value={value.spot}
-            onChangeText={(spot) => patch({ spot })}
-            maxLength={200}
+          </View>
+
+          <ReportLinkPicker
+            value={value.linkedReportIds}
+            onChange={(linkedReportIds) => patch({ linkedReportIds })}
+            center={value.coords}
+            state={linkBlockState({
+              isCleanup,
+              hasCoords: value.coords !== null,
+              linkedCount: value.linkedReportIds.length,
+            })}
           />
-        </View>
+        </>
       ) : null}
 
       {shows("when") ? (
@@ -659,10 +627,6 @@ const useStyles = makeThemedStyles((t) => ({
     marginTop: -t.space["1"],
   },
 
-  linkedCards: {
-    gap: t.space["2"],
-  },
-
   segment: {
     flexDirection: "row",
     gap: t.space["1"],
@@ -698,14 +662,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   segmentTextActive: {
     color: t.colors.neutral.card,
-  },
-
-  seedSkeleton: {
-    height: 64,
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.bgAlt,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
   },
 
   compactLoc: {

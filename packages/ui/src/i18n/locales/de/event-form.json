@@ -18,7 +18,7 @@
     "duration_hours": "{{count}} Std."
   },
   "linkedReports": {
-    "label": "Meldungen, die dieses Event bearbeitet",
+    "label": "Meldungen an diesem Ort",
     "filterByType": "Nach {{type}} filtern",
     "searchPlaceholder": "Meldungen nach Titel oder Details suchen",
     "searching": "Suche läuft...",
@@ -31,14 +31,26 @@
     "loadMoreA11y": "Weitere Meldungen laden",
     "loading": "Wird geladen...",
     "selectedCount_one": "{{count}} Meldung ausgewählt",
-    "selectedCount_other": "{{count}} Meldungen ausgewählt"
-  },
-  "pickOnMap": {
-    "start": "Auf Karte wählen",
-    "startA11y": "Meldungen auf der Karte auswählen",
-    "hint": "Tippe auf Meldungs-Pins in der Karte, um sie zu verknüpfen, und ziehe dieses Fenster dann wieder hoch.",
-    "done": "Fertig",
-    "doneA11y": "Fertig – Meldungen auf der Karte auswählen beenden"
+    "selectedCount_other": "{{count}} Meldungen ausgewählt",
+    "help": "Verknüpfe die Meldungen, die ihr aufräumt. Wer sie gemeldet hat, sieht das Event bei seiner Meldung.",
+    "pin_first": "Setze den Treffpunkt, um Meldungen in der Nähe zu sehen.",
+    "nearby_heading": "In der Nähe",
+    "nearby_empty": "Noch keine offenen Meldungen in der Nähe dieses Orts.",
+    "linked_count_one": "{{count}} verknüpft",
+    "linked_count_other": "{{count}} verknüpft",
+    "search_all": "Alle Meldungen durchsuchen",
+    "search_all_a11y": "Alle Meldungen durchsuchen und mit diesem Event verknüpfen",
+    "search_hint": "Suche nach Titel, Details oder Adresse.",
+    "sheet_title": "Meldungen suchen",
+    "sheet_done": "Fertig",
+    "sheet_dismiss_a11y": "Meldungssuche schließen",
+    "all_categories": "Alle",
+    "retry": "Erneut versuchen",
+    "added_announce": "{{title}} verknüpft",
+    "removed_announce": "Verknüpfung mit {{title}} gelöst",
+    "limit_reached": "Du hast das Maximum von {{max}} Meldungen verknüpft.",
+    "unavailable_row": "Meldung nicht verfügbar",
+    "unavailable_sub": "Sie wurde vielleicht entfernt. Du kannst die Verknüpfung trotzdem lösen."
   },
   "share": {
     "label": "Im Feed ankündigen",

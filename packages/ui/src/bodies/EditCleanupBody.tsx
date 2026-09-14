@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ActivityIndicator } from "react-native"
 import type { CleanupDTO, UpdateCleanupRequest } from "@civfix/shared"
 import { makeThemedStyles, useTheme, noShadow, focusRingProps } from "../theme"
@@ -24,6 +24,7 @@ import {
 } from "./calendarModel"
 import { wallClockInZone } from "@civfix/shared/datetime"
 import { CleanupForm, isCleanupFormComplete, type CleanupFormValue } from "./CleanupForm"
+import { linkedRefToCardData, useLinkedReportCards } from "./linkedReportCards"
 import { mustPersistEventEnd, seededEndTime } from "./eventWizard"
 import { buildSlotInputs, slotsFromCleanup } from "./eventSlotsForm"
 
@@ -74,6 +75,12 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   const update = useUpdateCleanup()
   const [form, setForm] = useState<CleanupFormValue>(() => formFromCleanup(cleanup))
   const [saveError, setSaveError] = useState<string | null>(null)
+
+  const linkedReports = cleanup.linkedReports
+  useEffect(() => {
+    useLinkedReportCards.getState().put(linkedReports.map(linkedRefToCardData))
+    return () => useLinkedReportCards.getState().clear()
+  }, [linkedReports])
 
   const scheduleUntouched =
     form.date != null &&

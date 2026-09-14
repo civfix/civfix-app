@@ -49,7 +49,8 @@
     "heading": "준비물"
   },
   "linked_reports": {
-    "heading": "처리할 민원"
+    "heading": "처리할 민원",
+    "heading_count": "우리가 처리할 제보 · {{count}}"
   },
   "host": {
     "heading": "주최자",

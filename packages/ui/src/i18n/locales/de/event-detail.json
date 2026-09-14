@@ -49,7 +49,8 @@
     "heading": "Was mitbringen"
   },
   "linked_reports": {
-    "heading": "Meldungen, die wir angehen"
+    "heading": "Meldungen, die wir angehen",
+    "heading_count": "Meldungen, die wir angehen · {{count}}"
   },
   "host": {
     "heading": "Gastgeber",

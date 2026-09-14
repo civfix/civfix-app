@@ -42,6 +42,7 @@ import { useLocale, useT } from "../i18n"
 import { appErrorCode } from "./errorCode"
 import { pushCleanup } from "./navHelpers"
 import { useCleanupDraft } from "./cleanupDraftStore"
+import { useLinkedReportCards } from "./linkedReportCards"
 import {
   commitHostDraftMount,
   isGenuineHostExit,
@@ -272,6 +273,18 @@ function ReviewSummary({
         sub={spot.length > 0 ? spot : null}
         onEdit={() => onEdit("where")}
       />
+      {value.eventKind === "cleanup" ? (
+        <SummaryRow
+          icon={STEP_ICONS.where}
+          label={t("wizard.summary.reports")}
+          value={
+            value.linkedReportIds.length > 0
+              ? t("wizard.summary.reports_count", { count: value.linkedReportIds.length })
+              : t("wizard.summary.noReports")
+          }
+          onEdit={() => onEdit("where")}
+        />
+      ) : null}
       <SummaryRow
         icon={STEP_ICONS.details}
         label={t("wizard.summary.slots")}
@@ -363,6 +376,7 @@ function HostForm({
     return () => {
       if (isGenuineHostExit(useNavStore.getState().stack)) {
         useCleanupDraft.getState().clear()
+        useLinkedReportCards.getState().clear()
         draftSeedReportId = undefined
       }
     }
@@ -508,6 +522,7 @@ function HostForm({
             }).catch(() => toast.show(tShare("share.event_failed"), { variant: "error" }))
           }
           useCleanupDraft.getState().clear()
+          useLinkedReportCards.getState().clear()
           draftSeedReportId = undefined
           useDroppedPin.getState().clear()
           if (standalone) {

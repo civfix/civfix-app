@@ -43,7 +43,11 @@
       "when": "Wann",
       "extras": "Details",
       "noExtras": "Nichts weiter",
-      "slots": "Aufgaben"
+      "slots": "Aufgaben",
+      "reports": "Meldungen",
+      "reports_count_one": "{{count}} Meldung",
+      "reports_count_other": "{{count}} Meldungen",
+      "noReports": "Keine verknüpft"
     }
   },
   "publish": {
