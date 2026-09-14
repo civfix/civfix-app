@@ -4,6 +4,7 @@ import {
   Pressable,
   StyleSheet,
   View,
+  type BlurEvent,
   type TextInput as RNTextInput,
   type ViewStyle,
 } from "react-native"
@@ -36,7 +37,9 @@ import {
   buildInlineComposerModel,
   composerEntryFor,
   inlineComposerClosesOnBlur,
+  inlineComposerFocusWithin,
   inlineComposerOwnsDraft,
+  type InlineComposerFocusHost,
 } from "./inlineComposerModel"
 
 const AVATAR_SIZE = 40
@@ -50,6 +53,7 @@ export function InlineComposer() {
   const create = useCreatePost()
   const attachments = useComposerAttachments(POST_COMPOSER_MEDIA_CAP)
   const inputRef = useRef<RNTextInput>(null)
+  const cardRef = useRef<View>(null)
   const submittingRef = useRef(false)
 
   const body = usePostComposerStore((state) => state.draft.body)
@@ -73,6 +77,7 @@ export function InlineComposer() {
   const [carriedMedia, setCarriedMedia] = useState<PostComposerMedia[]>([])
   const [droppedMedia, setDroppedMedia] = useState(0)
   const pressingOwnControlRef = useRef(false)
+  const deferredBlurRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const composerMedia = useMemo(
     () => mergePostComposerMedia(carriedMedia, attachments.attachments),
@@ -148,22 +153,56 @@ export function InlineComposer() {
     if (open && !ownsDraft) closeComposer()
   }, [open, ownsDraft, closeComposer])
 
+  useEffect(
+    () => () => {
+      if (deferredBlurRef.current != null) clearTimeout(deferredBlurRef.current)
+    },
+    [],
+  )
+
   const onFocus = useCallback(() => {
     pressingOwnControlRef.current = false
     setBodyFocused(true)
   }, [])
 
-  const holdOpenForOwnControl = useCallback(() => {
+  const holdOwnControl = useCallback(() => {
     pressingOwnControlRef.current = true
   }, [])
 
-  const onBlur = useCallback(() => {
-    const pressingOwnControl = pressingOwnControlRef.current
+  const releaseOwnControl = useCallback(() => {
     pressingOwnControlRef.current = false
-    setBodyFocused(false)
-    if (inlineComposerClosesOnBlur({ body, mediaCount: composerMedia.length, pressingOwnControl }))
-      closeComposer()
-  }, [body, closeComposer, composerMedia.length])
+  }, [])
+
+  const onBlur = useCallback(
+    (event: BlurEvent) => {
+      const pressingOwnControl = pressingOwnControlRef.current
+      setBodyFocused(false)
+      const settle = (next: unknown) => {
+        const focusWithin = inlineComposerFocusWithin({
+          card: cardRef.current as unknown as InlineComposerFocusHost | null,
+          next,
+          pressingOwnControl,
+        })
+        if (inlineComposerClosesOnBlur({ body, mediaCount: composerMedia.length, focusWithin }))
+          closeComposer()
+      }
+      if (Platform.OS !== "web") {
+        settle(null)
+        return
+      }
+      const landed = (event?.nativeEvent as { relatedTarget?: unknown } | undefined)?.relatedTarget
+      if (landed != null) {
+        settle(landed)
+        return
+      }
+      if (deferredBlurRef.current != null) clearTimeout(deferredBlurRef.current)
+      deferredBlurRef.current = setTimeout(() => {
+        deferredBlurRef.current = null
+        settle(typeof document === "undefined" ? null : document.activeElement)
+      }, 0)
+    },
+    [body, closeComposer, composerMedia.length],
+  )
 
   const removeMedia = useCallback(
     (id: string) => {
@@ -325,7 +364,7 @@ export function InlineComposer() {
   }
 
   return (
-    <View style={styles.card}>
+    <View ref={cardRef} style={styles.card}>
       {avatar}
       <View style={styles.column}>
         <View style={[styles.inputSurface, bodyFocused ? styles.inputSurfaceFocused : null]}>
@@ -373,7 +412,8 @@ export function InlineComposer() {
             accessibilityLabel={t("add_media_a11y")}
             accessibilityState={{ disabled: !attachments.canAttach }}
             disabled={!attachments.canAttach}
-            onPressIn={holdOpenForOwnControl}
+            onPressIn={holdOwnControl}
+            onPressOut={releaseOwnControl}
             onPress={() => void attachments.onAttach()}
             hitSlop={6}
             {...focusRingProps}
