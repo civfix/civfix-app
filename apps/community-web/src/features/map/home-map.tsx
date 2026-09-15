@@ -24,16 +24,22 @@ import {
   // The detail-panel focus camera's published target. Read (never written) here, so the one-time initial
   // center cannot fly away from a deep-linked detail - see the effect below.
   useMapFocus,
+  MapPending,
+  resolveMapCenter,
+  shouldAdoptCenter,
+  PRECISE_ZOOM,
+  APPROX_ZOOM,
+  type MapCenterSource,
+  type MapCenterTarget,
   type MapHandle,
   type MapLatLng,
   type DetailEntry,
 } from "@civfix/ui"
-import { useCleanups, useMapReports } from "@civfix/ui/data"
+import { useApproximateLocation, useCleanups, useMapReports } from "@civfix/ui/data"
 
 import { decideRegionFetch } from "@/features/map/region-fetch"
 import { readCameraSnapshot, writeCameraSnapshot } from "@/features/map/camera-snapshot"
-import { resolveInitialCenter, getBrowserPosition, PRECISE_ZOOM, APPROX_ZOOM } from "@/lib/locate"
-import { ipLocate } from "@civfix/shared/geocode"
+import { resolvePreciseCenter, getBrowserPosition } from "@/lib/locate"
 import { useMapRecenterStore } from "@/features/map/map-recenter"
 
 /**
@@ -139,20 +145,52 @@ export function HomeMap() {
   // freshly-resolved location would yank the camera off it AND re-trigger the second region fetch this
   // seed exists to eliminate. The resolve still runs - solely for the dot - and the Locate button
   // remains the deliberate way to recenter. Only a first-ever visit (no snapshot) takes the flight.
+  const [preciseCenter, setPreciseCenter] = React.useState<MapLatLng | null>(null)
   React.useEffect(() => {
     let cancelled = false
     void (async () => {
-      const target = await resolveInitialCenter()
-      if (cancelled || !target) return
-      if (target.precise) setUserLocation(target.point)
-      if (bootCamera) return
-      if (useMapFocus.getState().focus) return
-      mapRef.current?.flyTo(target.point.lat, target.point.lng, target.precise ? PRECISE_ZOOM : APPROX_ZOOM)
+      const precise = await resolvePreciseCenter()
+      if (cancelled || !precise) return
+      setPreciseCenter(precise)
+      setUserLocation(precise)
     })()
     return () => {
       cancelled = true
     }
-  }, [bootCamera])
+  }, [])
+
+  const approximate = useApproximateLocation()
+  const approximatePoint = React.useMemo<MapLatLng | null>(
+    () => (approximate.data ? { lat: approximate.data.lat, lng: approximate.data.lng } : null),
+    [approximate.data],
+  )
+
+  const approximatePointRef = React.useRef(approximatePoint)
+  approximatePointRef.current = approximatePoint
+
+  const centerPlan = resolveMapCenter({
+    precise: preciseCenter,
+    approximate: approximatePoint,
+    remembered: bootCamera,
+  })
+  const seedRef = React.useRef<MapCenterTarget | null>(null)
+  const adoptedSourceRef = React.useRef<MapCenterSource | null>(null)
+  if (seedRef.current === null && centerPlan.center) {
+    seedRef.current = centerPlan.center
+    adoptedSourceRef.current = centerPlan.source
+  }
+  const seedCenter = seedRef.current
+
+  const planCenter = centerPlan.center
+  const planSource = centerPlan.source
+  React.useEffect(() => {
+    if (bootCamera) return
+    if (!planCenter || !planSource) return
+    if (!shouldAdoptCenter(adoptedSourceRef.current, planSource)) return
+    adoptedSourceRef.current = planSource
+    if (useMapFocus.getState().focus) return
+    mapRef.current?.flyTo(planCenter.lat, planCenter.lng, planCenter.zoom)
+  }, [planCenter, planSource, bootCamera])
 
   // Register a Locate action into the cross-slot recenter bus (the shared MapControls' Locate button
   // reads it - it lives in a separate AppShell slot). Re-resolve a FRESH location and fly there: precise
@@ -168,13 +206,15 @@ export function HomeMap() {
           mapRef.current?.flyTo(precise.lat, precise.lng, PRECISE_ZOOM)
           return
         }
-        const estimate = await ipLocate()
+        const estimate = approximatePointRef.current
         if (estimate) mapRef.current?.flyTo(estimate.lat, estimate.lng, APPROX_ZOOM)
       })()
     }
     setRecenter(recenter)
     return () => setRecenter(null)
   }, [setRecenter])
+
+
 
   // The shared Map fires this on move-settle. Clustering is client-side, so we DON'T refetch on every
   // move: only when the viewport leaves the region we asked for (pan/zoom-out) or zooms in past it (the
@@ -315,10 +355,12 @@ export function HomeMap() {
     [layoutMode],
   )
 
+  if (seedCenter === null) return <MapPending />
+
   return (
     <SharedMap
       ref={mapRef}
-      initialCenter={bootCamera}
+      initialCenter={seedCenter}
       reports={pins}
       reportAggregates={reportAggregates}
       cleanups={cleanupItems}

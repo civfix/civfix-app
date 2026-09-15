@@ -13,7 +13,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
  * later deliberate retry gets a fresh attempt).
  *
  * The module caches at module level, so each test re-imports a FRESH module via `vi.resetModules()` +
- * dynamic import (the same pattern the module-cached `resolveInitialCenter` forces).
+ * dynamic import (the same pattern the module-cached `resolvePreciseCenter` forces).
  */
 
 type SuccessCb = (pos: { coords: { latitude: number; longitude: number; accuracy: number | null } }) => void
@@ -56,10 +56,10 @@ afterEach(() => {
 
 describe("getSharedBrowserFix dedupes every one-shot consumer onto one browser request", () => {
   it("the camera resolver, the capability and the LatLng helper share ONE getCurrentPosition call", async () => {
-    const { resolveInitialCenter, webGeolocation, getBrowserPosition } = await freshModules()
+    const { resolvePreciseCenter, webGeolocation, getBrowserPosition } = await freshModules()
 
     // All three cold-load consumers ask concurrently - the exact boot-time shape.
-    const camera = resolveInitialCenter()
+    const camera = resolvePreciseCenter()
     const capability = webGeolocation.getCurrentPosition()
     const latLng = getBrowserPosition()
     expect(geo.calls).toHaveLength(1)
@@ -67,8 +67,8 @@ describe("getSharedBrowserFix dedupes every one-shot consumer onto one browser r
     geo.calls[0]!.resolve(34.05, -118.25)
     await expect(capability).resolves.toEqual({ latitude: 34.05, longitude: -118.25, accuracy: 25 })
     await expect(latLng).resolves.toEqual({ lat: 34.05, lng: -118.25 })
-    // Device fix granted -> the camera target is the same point, marked precise (dot-eligible).
-    await expect(camera).resolves.toEqual({ point: { lat: 34.05, lng: -118.25 }, precise: true })
+    // Device fix granted -> the camera target is that same precise point (dot-eligible).
+    await expect(camera).resolves.toEqual({ lat: 34.05, lng: -118.25 })
   })
 
   it("asks the browser under the ONE aligned timeout policy (useUserLocation's 4s, not the old 6s/8s split)", async () => {
@@ -110,6 +110,13 @@ describe("getSharedBrowserFix dedupes every one-shot consumer onto one browser r
     expect(geo.calls).toHaveLength(2)
     geo.calls[1]!.resolve(37.8, -122.4)
     await expect(retried).resolves.toMatchObject({ latitude: 37.8, longitude: -122.4 })
+  })
+
+  it("resolves the precise centre to null on denial - and never substitutes a coordinate", async () => {
+    const { resolvePreciseCenter } = await freshModules()
+    const camera = resolvePreciseCenter()
+    geo.calls[0]!.reject()
+    await expect(camera).resolves.toBeNull()
   })
 
   it("rejects (capability) / resolves null (helper) when the browser has no geolocation at all", async () => {

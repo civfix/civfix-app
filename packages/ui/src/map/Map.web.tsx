@@ -63,8 +63,6 @@ function ensureMapFocusRingStyle(): void {
   document.head.appendChild(el)
 }
 
-const DEFAULT_CENTER: [number, number] = [-98.5795, 39.8283]
-const DEFAULT_ZOOM = 4
 const FLYTO_ZOOM = 13
 const FOCUS_ZOOM = 16
 
@@ -123,7 +121,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     onPressMap,
     onLongPressMap,
     mapStyle,
-    initialCenter = null,
+    initialCenter,
   } = props
 
   const points = React.useMemo(
@@ -354,8 +352,8 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
           cartoApiKey,
           scheme: themeRef.current.scheme,
         })) as maplibregl.StyleSpecification,
-      center: seed ? [seed.lng, seed.lat] : DEFAULT_CENTER,
-      zoom: seed ? seed.zoom ?? FLYTO_ZOOM : DEFAULT_ZOOM,
+      center: [seed.lng, seed.lat] as [number, number],
+      zoom: seed.zoom ?? FLYTO_ZOOM,
       attributionControl: false,
       dragRotate: false,
       pitchWithRotate: false,

@@ -118,13 +118,14 @@ export interface MapProps {
   mapStyle?: MapStyleInput
 
   /**
-   * Optional INITIAL camera for the very first frame (dock-morph rebuild, defect 6). The camera seeds
-   * ONCE at mount from this (falling back to the neutral statewide default when omitted). A host that
-   * REMOUNTS the map - e.g. returning to the Map tab after Search, which mounts a fresh instance - passes
-   * the last-known viewport here so the fresh map renders THERE instead of flashing the statewide default
-   * and then flying back (the disorienting zoom). Read only at mount; later changes do not move the camera.
+   * REQUIRED initial camera for the very first frame. There is no fallback centre anywhere in the map
+   * stack: a host that does not yet know where the viewer is renders no map at all until it does
+   * (@civfix/ui `resolveMapCenter` decides), rather than opening on a hardcoded point. The camera seeds
+   * ONCE at mount from this, so a host that REMOUNTS the map - returning to the Map tab after Search,
+   * which mounts a fresh instance - passes the last-known viewport here and the fresh map renders THERE.
+   * Read only at mount; later changes do not move the camera.
    */
-  initialCenter?: (MapLatLng & { zoom?: number }) | null
+  initialCenter: MapLatLng & { zoom?: number }
 }
 
 /**

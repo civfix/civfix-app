@@ -77,10 +77,9 @@
   },
   "location": {
     "title": "¿Ver lo que pasa cerca de ti?",
-    "body": "Tu ubicación centra el mapa en tu barrio. Solo se usa mientras usas la app y puedes reportar sin ella.",
+    "body": "El mapa se centra en tu zona a partir de tu conexión a internet, a menos que permitas la ubicación precisa. La ubicación solo se usa mientras usas la app.",
     "use": "Usar mi ubicación",
-    "address": "Ingresar una dirección",
-    "later": "Ahora no",
+    "approximate": "Continuar con ubicación aproximada",
     "a11y_dismiss": "Cerrar"
   }
 }

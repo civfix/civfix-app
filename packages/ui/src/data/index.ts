@@ -36,7 +36,12 @@ export type {
 } from "./optimistic"
 export { queryKeys } from "./keys"
 export { invalidationKeysForTopic } from "./signals"
-export { makeFakeDataContext, makeFakeApiClient, makeFakeChatSocket } from "./fakes"
+export {
+  makeFakeDataContext,
+  makeFakeApiClient,
+  makeFakeChatSocket,
+  FAKE_APPROXIMATE_LOCATION,
+} from "./fakes"
 export type { FakeDataContextOptions } from "./fakes"
 export {
   useProfile,
@@ -93,6 +98,14 @@ export {
 export { useReverseLabel, reverseLabelText, coordsLabel } from "./hooks"
 export type { ReverseLabelPoint } from "./hooks"
 export { useNearbyCleanups, useFeedNotifications, NEARBY_RADIUS_M, useUserLocation } from "./hooks"
+export {
+  useApproximateLocation,
+  approximateLocationRetryDelay,
+  APPROXIMATE_LOCATION_STALE_MS,
+  APPROXIMATE_LOCATION_RETRY_BASE_MS,
+  APPROXIMATE_LOCATION_RETRY_MAX_MS,
+} from "./hooks"
+export type { UseApproximateLocationOptions } from "./hooks"
 export {
   useCleanups,
   useAttendingCleanups,

@@ -10,3 +10,5 @@ export const ONBOARDING_KEY = "civfix.onboarding"
 export const LOCATION_PRIMER_KEY = "civfix.location-primer"
 
 export const APPEARANCE_KEY = "civfix.appearance"
+
+export const LAST_MAP_CENTER_KEY = "civfix.map.last-center"

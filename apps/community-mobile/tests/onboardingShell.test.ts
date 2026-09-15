@@ -84,6 +84,10 @@ const header = readFileSync(
 )
 const home = readFileSync(new URL("../app/index.tsx", import.meta.url), "utf8")
 const hook = readFileSync(new URL("../src/hooks/useUserLocation.ts", import.meta.url), "utf8")
+const primer = readFileSync(
+  new URL("../src/components/LocationPrimerSheet.tsx", import.meta.url),
+  "utf8",
+)
 const togetherStage = readFileSync(
   new URL("../src/components/onboarding/stages/TogetherStage.tsx", import.meta.url),
   "utf8",
@@ -186,7 +190,7 @@ test("the primer waits for the tour, registration and the focused route", () => 
 test("the camera center and the primer decision are two independent effects", () => {
   assert.match(
     home,
-    /if \(initialCenterOwnedRef\.current\) return\n\s+if \(centerPlan === "wait"\) return/,
+    /if \(initialCenterOwnedRef\.current\) return\n\s+if \(!planCenter \|\| !planSource\) return/,
   )
   assert.match(
     home,
@@ -194,78 +198,80 @@ test("the camera center and the primer decision are two independent effects", ()
   )
 })
 
-test("the initial camera center keys only on the settled permission, never on the primer gating", () => {
+test("the initial camera center is the resolved centre, never a hardcoded point", () => {
   assert.match(
     home,
-    /const centerPlan = initialCenterPlan\(\{\n\s+permission: location\.permission,\n\s+permissionResolved: location\.permissionResolved,\n\s+primerShown,\n\s+\}\)/,
+    /const centerPlan = resolveMapCenter\(\{\n\s+precise: location\.coords,\n\s+approximate: approximatePoint,\n\s+remembered: rememberedCenter,\n\s+\}\)/,
+  )
+  assert.match(home, /const \[rememberedCenter\] = useState<RememberedCenter \| null>\(readLastCenter\)/)
+  assert.doesNotMatch(home, /DEFAULT_CENTER|NEUTRAL_CENTER/)
+})
+
+test("no map is mounted until a real centre exists", () => {
+  assert.match(home, /const mapSeed = mapLifecycleRef\.current\.lastViewport \?\? seedCenter/)
+  assert.match(home, /mapSeed === null \? \(\n\s+<MapPending \/>/)
+  assert.match(home, /initialCenter=\{mapLifecycleRef\.current\.lastViewport \?\? mapSeed\}/)
+})
+
+test("a better source upgrades the camera and a worse one never downgrades it", () => {
+  assert.match(
+    home,
+    /if \(!shouldAdoptCenter\(adoptedSourceRef\.current, planSource\)\) return\n\s+adoptedSourceRef\.current = planSource\n\s+centerOnTarget\(planCenter\)/,
   )
   assert.match(
     home,
-    /\}, \[\n\s+centerPlan,\n\s+beginCameraRequest,\n\s+centerOnUser,\n\s+resolveLocation,\n\s+resolveLocationWithoutPrompt,\n\s+\]\)/,
+    /if \(seedCenterRef\.current === null && centerPlan\.center\) \{\n\s+seedCenterRef\.current = centerPlan\.center\n\s+adoptedSourceRef\.current = centerPlan\.source/,
   )
 })
 
-test("the one-shot latch means a center LANDED - a cancelled fetch re-arms it", () => {
-  assert.match(home, /let landed = false/)
+test("the primer offers precise or approximate, and dismissing IS the approximate answer", () => {
   assert.match(
     home,
-    /if \(cancelled \|\| !target\) return\n\s+landed = true\n\s+initialCenterLandedRef\.current = true\n\s+centerOnUser\(target, requestGeneration\)/,
+    /const answerPrimer = useCallback\(\(\) => \{\n\s+setPrimerVisible\(false\)\n\s+markPrimerShown\(\)/,
   )
-  assert.match(
-    home,
-    /cancelled = true\n\s+if \(!landed\) initialCenterOwnedRef\.current = false/,
-  )
-})
-
-test("the primer is marked answered by the ANSWER, not by the presentation", () => {
-  assert.match(
-    home,
-    /const answerPrimer = useCallback\(\(\) => \{\n\s+setPrimerVisible\(false\)\n\s+initialCenterOwnedRef\.current = true\n\s+markPrimerShown\(\)/,
-  )
-  for (const handler of ["onPrimerUseLocation", "onPrimerEnterAddress", "onPrimerLater"]) {
+  for (const handler of ["onPrimerUseLocation", "onPrimerApproximate"]) {
     assert.match(home, new RegExp(`const ${handler} = useCallback\\(\\(\\) => \\{\\n\\s+answerPrimer\\(\\)`))
   }
-  assert.match(home, /onLater=\{onPrimerLater\}/)
+  assert.match(home, /setLocationChoice\("precise"\)/)
+  assert.match(home, /setLocationChoice\("approximate"\)/)
+  assert.match(home, /onApproximate=\{onPrimerApproximate\}/)
+  assert.doesNotMatch(home, /onEnterAddress|onPrimerLater/)
+  assert.doesNotMatch(primer, /location\.address|location\.later|SecondaryButton/)
+  assert.match(primer, /onClose=\{onApproximate\}/)
+  assert.match(primer, /t\("location\.approximate"\)/)
 })
 
-test("the deferred answers settle on the prompt-free point and center unless one already landed", () => {
+test("the approximate point comes from the server, not from a third-party IP lookup", () => {
+  assert.match(home, /const approximate = useApproximateLocation\(\)/)
   assert.match(
     home,
-    /const shouldCenter =\n\s+settleAfterPrimerPlan\(\{ landed: initialCenterLandedRef\.current \}\) === "center"/,
+    /const nearPoint = location\.coords \?\? approximatePoint/,
   )
-  assert.match(home, /const target = await resolveLocationWithoutPrompt\(\)/)
-  assert.match(
-    home,
-    /if \(!target\) return\n\s+if \(!shouldCenter\) return\n\s+initialCenterLandedRef\.current = true\n\s+centerOnUser\(target, requestGeneration\)/,
-  )
+  assert.doesNotMatch(hook, /ipLocate/)
+  assert.doesNotMatch(hook, /precise/)
 })
 
-test("the ranked hook point is the ONLY writer of the shared user-location cache", () => {
+test("the shared user-location cache has exactly one writer", () => {
   assert.doesNotMatch(home, /publishUserLocation/)
   assert.match(
     home,
-    /if \(!location\.coords\) return\n\s+queryClient\.setQueryData<LatLng \| null>\(queryKeys\.userLocation, location\.coords\)/,
+    /if \(!nearPoint\) return\n\s+queryClient\.setQueryData<LatLng \| null>\(queryKeys\.userLocation, nearPoint\)/,
   )
   assert.equal(home.match(/queryKeys\.userLocation/g)?.length, 1)
-  assert.match(hook, /import \{ mergeResolvedLocation, type ResolvedLocation \} from "@\/lib\/locationRank"/)
+})
+
+test("every settled viewport is remembered for the next launch", () => {
   assert.match(
-    hook,
-    /const winner = mergeResolvedLocation\(bestRef\.current, next\)\n\s+bestRef\.current = winner\n\s+setResolved\(winner\)/,
+    home,
+    /rememberMapViewport\(mapLifecycleRef\.current\.lastViewport\)\n\s+writeLastCenter\(\{/,
   )
-  assert.doesNotMatch(hook, /setResolved\((?!winner)/)
-  assert.match(hook, /adopt\(\{ \.\.\.next, precise: true \}\)/)
-  assert.match(hook, /return adopt\(ip \? \{ \.\.\.ip, precise: false \} : null\)/)
-  const address = home.indexOf("const onPrimerEnterAddress")
-  const later = home.indexOf("const onPrimerLater")
-  assert.ok(home.indexOf("settleWithoutPrompt()", address) < home.indexOf("selectView(\"search\")", address))
-  assert.ok(home.indexOf("settleWithoutPrompt()", later) > later)
+  assert.match(keys, /export const LAST_MAP_CENTER_KEY = "civfix\.map\.last-center"/)
 })
 
 test("a remembered viewport both owns the initial center and counts as a landing", () => {
   assert.match(home, /createMapLifecycleState\(recallMapViewport\(\)\)/)
   assert.match(home, /const recalledViewport = recallMapViewport\(\) !== null/)
   assert.match(home, /const initialCenterOwnedRef = useRef\(recalledViewport\)/)
-  assert.match(home, /const initialCenterLandedRef = useRef\(recalledViewport\)/)
   assert.equal(home.match(/recallMapViewport\(\)/g)?.length, 2)
 })
 

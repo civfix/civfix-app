@@ -1,12 +1,6 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import {
-  initialCenterPlan,
-  locationPrimerDecision,
-  settleAfterPrimerPlan,
-  type InitialCenterInput,
-  type LocationPrimerInput,
-} from "./locationPrimerPlan.ts"
+import { locationPrimerDecision, type LocationPrimerInput } from "./locationPrimerPlan.ts"
 
 const base: LocationPrimerInput = {
   permission: "undetermined",
@@ -137,94 +131,4 @@ test("a settled permission keeps its answer whatever is on screen", () => {
   const blocked = { tourPresenting: true, profileIncomplete: true, routeFocused: false }
   assert.equal(locationPrimerDecision({ ...base, ...blocked, permission: "granted" }), "resolve")
   assert.equal(locationPrimerDecision({ ...base, ...blocked, permission: "denied" }), "ip-only")
-})
-
-const centerBase: InitialCenterInput = {
-  permission: "undetermined",
-  permissionResolved: true,
-  primerShown: false,
-}
-
-test("the initial center waits until the stored permission has settled", () => {
-  for (const permission of ["undetermined", "granted", "denied"] as const) {
-    for (const primerShown of [false, true]) {
-      assert.equal(
-        initialCenterPlan({ ...centerBase, permission, primerShown, permissionResolved: false }),
-        "wait",
-      )
-    }
-  }
-})
-
-test("a granted permission centers on the real fix, whatever the primer remembers", () => {
-  assert.equal(initialCenterPlan({ ...centerBase, permission: "granted" }), "gps")
-  assert.equal(
-    initialCenterPlan({ ...centerBase, permission: "granted", primerShown: true }),
-    "gps",
-  )
-})
-
-test("a denied permission centers on the prompt-free point instead", () => {
-  assert.equal(initialCenterPlan({ ...centerBase, permission: "denied" }), "ip")
-  assert.equal(
-    initialCenterPlan({ ...centerBase, permission: "denied", primerShown: true }),
-    "ip",
-  )
-})
-
-test("an unanswered primer owns the undetermined case; an answered one falls back to IP", () => {
-  assert.equal(initialCenterPlan(centerBase), "wait")
-  assert.equal(initialCenterPlan({ ...centerBase, primerShown: true }), "ip")
-})
-
-test("the initial center never reads the primer's presentation gating", () => {
-  const gating = {
-    gateActive: true,
-    authStatus: "loading" as const,
-    onboardingDone: false,
-    tourPresenting: true,
-    profileIncomplete: true,
-    routeFocused: false,
-  }
-  for (const permission of ["undetermined", "granted", "denied"] as const) {
-    for (const primerShown of [false, true]) {
-      const input = { ...centerBase, permission, primerShown }
-      const withGating = { ...input, ...gating }
-      assert.equal(initialCenterPlan(input), initialCenterPlan(withGating))
-    }
-  }
-})
-
-test("once the primer is answered no permission state can strand the camera waiting", () => {
-  for (const permission of ["undetermined", "granted", "denied"] as const) {
-    assert.notEqual(initialCenterPlan({ ...centerBase, permission, primerShown: true }), "wait")
-  }
-})
-
-test("answering the primer with Later still centers the map - a default frame is not a center", () => {
-  assert.equal(settleAfterPrimerPlan({ landed: false }), "center")
-})
-
-test("a center that already landed is never overridden by the deferred settle", () => {
-  assert.equal(settleAfterPrimerPlan({ landed: true }), "publish-only")
-})
-
-test("the deferred settle reads only the landing flag, never the primer answer", () => {
-  for (const landed of [false, true]) {
-    const once = settleAfterPrimerPlan({ landed })
-    assert.equal(settleAfterPrimerPlan({ landed }), once)
-    assert.equal(once, landed ? "publish-only" : "center")
-  }
-})
-
-test("a recalled viewport is a landing, so Not now leaves that camera where it is", () => {
-  const recalledViewport = true
-  assert.equal(settleAfterPrimerPlan({ landed: recalledViewport }), "publish-only")
-})
-
-test("a fresh install that answers the primer before any center lands ends up on the IP fix", () => {
-  const permission = "undetermined" as const
-  assert.equal(initialCenterPlan({ permission, permissionResolved: true, primerShown: false }), "wait")
-  assert.equal(settleAfterPrimerPlan({ landed: false }), "center")
-  assert.equal(initialCenterPlan({ permission, permissionResolved: true, primerShown: true }), "ip")
 })

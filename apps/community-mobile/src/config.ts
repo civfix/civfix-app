@@ -31,11 +31,3 @@ export type { DonateBrowserMode } from "./lib/donateBrowser"
 
 export const GOOGLE_WEB_CLIENT_ID: string = extra.google?.webClientId ?? ""
 export const GOOGLE_IOS_CLIENT_ID: string = extra.google?.iosClientId ?? ""
-
-export const DEFAULT_CENTER = {
-  lat: 39.8283,
-  lng: -98.5795,
-} as const
-
-export const PRECISE_ZOOM = 13
-export const APPROX_ZOOM = 10

@@ -1,21 +1,19 @@
 import React from "react"
 import { Pressable, View } from "react-native"
-import { ModalCardSheet, PrimaryButton, SecondaryButton, Text, iconMap } from "@civfix/ui"
+import { ModalCardSheet, PrimaryButton, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { makeThemedStyles, useTheme } from "@/theme"
 
 export interface LocationPrimerSheetProps {
   visible: boolean
   onUseLocation: () => void
-  onEnterAddress: () => void
-  onLater: () => void
+  onApproximate: () => void
 }
 
 export function LocationPrimerSheet({
   visible,
   onUseLocation,
-  onEnterAddress,
-  onLater,
+  onApproximate,
 }: LocationPrimerSheetProps) {
   const { t } = useT("mobile-onboarding")
   const th = useTheme()
@@ -24,7 +22,7 @@ export function LocationPrimerSheet({
   return (
     <ModalCardSheet
       visible={visible}
-      onClose={onLater}
+      onClose={onApproximate}
       onCommit={onUseLocation}
       headerIcon="MapPin"
       headerIconColor={th.colors.accent}
@@ -33,15 +31,14 @@ export function LocationPrimerSheet({
       actions={
         <View style={styles.stack}>
           <PrimaryButton label={t("location.use")} icon={iconMap.Navigation} onPress={onUseLocation} />
-          <SecondaryButton label={t("location.address")} size="lg" onPress={onEnterAddress} />
           <Pressable
-            onPress={onLater}
+            onPress={onApproximate}
             accessibilityRole="button"
-            accessibilityLabel={t("location.later")}
+            accessibilityLabel={t("location.approximate")}
             style={({ pressed }) => [styles.later, pressed ? styles.laterPressed : null]}
           >
             <Text variant="label" color={th.colors.textMuted}>
-              {t("location.later")}
+              {t("location.approximate")}
             </Text>
           </Pressable>
         </View>
