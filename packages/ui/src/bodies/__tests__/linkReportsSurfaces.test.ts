@@ -1,6 +1,6 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { LINKED_REPORTS_COUNT_AT, linkedReportsPatch } from "../linkReportsModel"
+import { LINKED_REPORTS_COUNT_AT, NEARBY_PREVIEW, linkedReportsPatch } from "../linkReportsModel"
 import { HOST_ROW_ICONS } from "../host/hostSurfaceModel"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -9,28 +9,24 @@ const code = (src: string): string =>
 
 const picker = code(read("../ReportLinkPicker.tsx"))
 const row = code(read("../ReportLinkRow.tsx"))
-const searchSheet = code(read("../ReportSearchSheet.tsx"))
+const surface = code(read("../reportPicker/ReportPicker.tsx"))
+const pickerRow = code(read("../reportPicker/PickerReportRow.tsx"))
+const chips = code(read("../reportPicker/LayerChipRow.tsx"))
+const mapNative = code(read("../../map/ReportPickMap.native.tsx"))
+const mapWeb = code(read("../../map/ReportPickMap.web.tsx"))
+const mapSelector = code(read("../../map/ReportPickMap.tsx"))
 const form = code(read("../CleanupForm.tsx"))
 const create = code(read("../CreateCleanupBody.tsx"))
 const edit = code(read("../EditCleanupBody.tsx"))
 const detail = code(read("../EventDetailBody.tsx"))
 const hostBody = code(read("../host/HostModeBody.tsx"))
 const hostSheet = code(read("../host/LinkedReportsSheet.tsx"))
+const bodiesIndex = code(read("../index.ts"))
 
-const eventForm = JSON.parse(read("../../i18n/locales/en/event-form.json")) as Record<
-  string,
-  unknown
->
+const eventForm = JSON.parse(read("../../i18n/locales/en/event-form.json")) as Record<string, unknown>
 const hostMode = JSON.parse(read("../../i18n/locales/en/host-mode.json")) as Record<string, unknown>
-const eventCreate = JSON.parse(read("../../i18n/locales/en/event-create.json")) as Record<
-  string,
-  unknown
->
-const mapUi = JSON.parse(read("../../i18n/locales/en/map-ui.json")) as Record<string, unknown>
-const reportDetail = JSON.parse(read("../../i18n/locales/en/report-detail.json")) as Record<
-  string,
-  unknown
->
+const reportPicker = JSON.parse(read("../../i18n/locales/en/report-picker.json")) as Record<string, unknown>
+const eventCreate = JSON.parse(read("../../i18n/locales/en/event-create.json")) as Record<string, unknown>
 
 function catalogHas(catalog: Record<string, unknown>, path: string): boolean {
   const parts = path.split(".")
@@ -46,81 +42,138 @@ function catalogHas(catalog: Record<string, unknown>, path: string): boolean {
   return leaf in obj || `${leaf}_one` in obj || `${leaf}_other` in obj
 }
 
-describe("the picker adds no scroller of its own", () => {
-  it("ReportLinkPicker.tsx renders no scroll container and hosts no modal itself", () => {
+describe("the inline block is a summary plus a door to the map picker", () => {
+  it("renders no scroll container and hosts no modal itself", () => {
     const imports = picker.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
     expect(imports).not.toMatch(/\bModal\b/)
     expect(imports).not.toMatch(/\bFlatList\b/)
     expect(imports).not.toMatch(/\bScrollView\b/)
-    expect(picker).not.toMatch(/useScrollHost/)
     expect(picker).not.toMatch(/<(ScrollView|FlatList|SectionList|Modal)\b/)
   })
 
-  it("ReportLinkRow.tsx does the same", () => {
-    const imports = row.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
-    expect(imports).not.toMatch(/\bFlatList\b/)
-    expect(imports).not.toMatch(/\bScrollView\b/)
-    expect(row).not.toMatch(/useScrollHost/)
+  it("keeps the one-tap nearby shortlist to a short preview and drops the show-more tail", () => {
+    expect(NEARBY_PREVIEW).toBe(3)
+    expect(picker).toContain(".slice(0, NEARBY_PREVIEW)")
+    expect(picker).not.toContain("showMore")
+    expect(picker).not.toContain("NEARBY_MAX")
   })
 
-  it("reaches the network only through the shared hooks, never a raw client call", () => {
+  it("reaches the network only through the shared hooks", () => {
     expect(picker).toContain("useNearbyReports(")
     expect(picker).not.toMatch(/\bapi\./)
-    expect(searchSheet).toContain("useReportSearch(")
-    expect(searchSheet).not.toMatch(/\bapi\./)
+    expect(surface).toContain("useMapReports(")
+    expect(surface).toContain("useReportSearch(")
+    expect(surface).not.toMatch(/\bapi\./)
     expect(row).not.toMatch(/\bapi\./)
   })
-})
 
-describe("nothing fetches until the surface is actually asked for", () => {
-  it("mounts the search sheet only while the picker is searching", () => {
-    expect(picker).toMatch(/\{searching \? \(\s*<ReportSearchSheet\b/)
-    expect(picker).not.toMatch(/<ReportSearchSheet\s+visible=\{searching\}/)
+  it("mounts the map picker only while the host asked for it, seeded from the draft", () => {
+    expect(picker).toMatch(/\{picking \? \(\s*<ReportPicker\b/)
+    expect(picker).toContain('mode="draft"')
+    expect(picker).toContain("value={value}")
+    expect(picker).toContain("linked={knownPins}")
+    expect(picker).toContain('t("linkedReports.pick_on_map")')
   })
 
-  it("keeps the search query off until the sheet is open AND the user has narrowed it", () => {
-    expect(searchSheet).toContain("{ enabled: visible && !idle }")
-    expect(searchSheet).toMatch(/const idle = [\s\S]*?\n\s*const search = useReportSearch\(/)
-  })
-
-  it("shows the search hint instead of listing the newest reports nationwide", () => {
-    expect(searchSheet).toContain('t("linkedReports.search_hint")')
-    expect(searchSheet).not.toContain("emptyNone")
-  })
-
-  it("disables an unselected hit once the link cap is reached, and says so", () => {
-    expect(searchSheet).toContain("disabled={atLimit && !value.includes(card.id)}")
-    expect(searchSheet).toContain('t("linkedReports.limit_reached"')
-  })
-
-  it("mounts the host sheet's picker only while that sheet is open", () => {
-    expect(hostSheet).toMatch(/\{visible \? \(\s*<ReportLinkPicker\b/)
-  })
-
-  it("dims the nearby list while it is still showing another cell's rows", () => {
-    expect(picker).toContain("nearby.isPlaceholderData")
+  it("the old text-only search sheet is gone", () => {
+    expect(existsSync(new URL("../ReportSearchSheet.tsx", import.meta.url))).toBe(false)
+    expect(bodiesIndex).not.toContain("ReportSearchSheet")
+    expect(bodiesIndex).toContain('from "./reportPicker/ReportPicker"')
   })
 })
 
-describe("the basics step no longer owns the linked cards", () => {
-  it("leaves no linkedReportIds anywhere in the basics section", () => {
-    const basics = form.slice(form.indexOf('shows("basics")'), form.indexOf('shows("where")'))
-    expect(basics).not.toContain("linkedReportIds")
-    expect(form).not.toContain("LinkedReportCardById")
+describe("the picker surface fetches bounded regions and keeps map and list in sync", () => {
+  it("fetches through the padded region model, never the raw viewport, and gates on it", () => {
+    expect(surface).toContain("pickerFetchRegion(bbox)")
+    expect(surface).toContain("shouldRefetch(bbox, loaded)")
+    expect(surface).toContain("useMapReports({ bbox: fetchRegion, enabled: fetchRegion !== null })")
   })
 
+  it("runs the text search only past the minimum length", () => {
+    expect(surface).toContain("debounced.trim().length >= PICKER_SEARCH_MIN_CHARS")
+    expect(surface).toContain("{ enabled: searching }")
+  })
+
+  it("caps the markers it hands the map and derives every pin state from one model", () => {
+    expect(surface).toContain("mapPinsFor(pins, keepSet, enabled)")
+    expect(surface).toContain("new Set([...linkedSet, ...idSet])")
+    expect(surface).toContain("lookFor={pinPresentation}")
+    expect(surface).toContain("pinState(id, idSet, linkedSet)")
+  })
+
+  it("a pin tap focuses then toggles; a row tap toggles and eases the map", () => {
+    expect(surface).toContain('pinTapIntent(id, focusedId) === "toggle"')
+    expect(surface).toContain("scrollToRow(id)")
+    expect(surface).toMatch(/onPressRow[\s\S]*?toggle\(id, title\)[\s\S]*?flyTo\(pin\.lat, pin\.lng\)/)
+    expect(surface).toContain("scrollToOffset?.(")
+  })
+
+  it("lives on the shared card sheet so its field and list are keyboard-owned", () => {
+    const imports = surface.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
+    expect(imports).not.toMatch(/\bModal\b/)
+    expect(imports).not.toMatch(/\bFlatList\b/)
+    expect(surface).toContain("<ModalCardSheet")
+    expect(surface).toContain("fullBleed")
+    expect(surface).toContain('bodyLayout="fill"')
+    expect(surface).toContain("const { FlatList } = useScrollHost()")
+  })
+
+  it("seeds its layer filters from the session store and shows all seven categories", () => {
+    expect(surface).toContain("useReportPickerFilters((s) => s.enabled)")
+    expect(chips).toContain("PICKER_CATEGORIES.map(")
+    expect(chips).toContain("categoryColor(category, th.scheme)")
+    expect(chips).toContain('t("layer_a11y", { category: label, count })')
+  })
+
+  it("labels every marker for assistive tech on both seams", () => {
+    expect(mapNative).toContain("accessibilityLabel={pinLabel(node.pin, state)}")
+    expect(mapNative).toContain("accessibilityLabel={clusterLabel(node.count)}")
+    expect(mapNative).toContain("accessibilityLabel={meetingPointLabel}")
+    expect(mapWeb).toContain('el.setAttribute("aria-label", want.label)')
+    expect(mapWeb).toContain('el.setAttribute("role", "button")')
+    expect(mapWeb).toContain('el.setAttribute("tabindex", "0")')
+  })
+
+  it("draws the meeting point and its radius hint on both seams from the shared circle helper", () => {
+    for (const src of [mapNative, mapWeb]) {
+      expect(src).toContain("radiusCircleFeature(center, radiusM)")
+      expect(src).toContain("REPORT_PICK_MEETING_PIN_SIZE")
+      expect(src).toContain("ClusterBubble")
+      expect(src).toContain("TeardropPin")
+    }
+    expect(mapSelector).toContain('from "./ReportPickMap.web"')
+  })
+
+  it("never touches the main map's shared stores", () => {
+    for (const [name, src] of [
+      ["native", mapNative],
+      ["web", mapWeb],
+    ] as const) {
+      expect(src, name).not.toContain("useMapViewport")
+      expect(src, name).not.toContain("useMapFocus")
+      expect(src, name).not.toContain("useDroppedPin")
+      expect(src, name).not.toContain("useLocationPick")
+    }
+  })
+
+  it("the row reads its tag from the mode so a draft never claims a report is linked", () => {
+    expect(pickerRow).toContain('t(mode === "draft" ? "row_added_tag" : "row_linked_tag")')
+    expect(pickerRow).toContain("disabled={atLimit && !chosen}")
+  })
+})
+
+describe("the form and the wizard are unchanged around the block", () => {
   it("renders the block in the WHERE section, from the pure state helper", () => {
     const where = form.slice(form.indexOf('shows("where")'), form.indexOf('shows("when")'))
     expect(where).toContain("<ReportLinkPicker")
     expect(where).toContain("state={linkBlockState({")
     expect(where).toContain("center={value.coords}")
+    const basics = form.slice(form.indexOf('shows("basics")'), form.indexOf('shows("where")'))
+    expect(basics).not.toContain("linkedReportIds")
   })
-})
 
-describe("the wizard keeps its five steps and its draft hygiene", () => {
-  it("summarises the links on review from the pure helper, not an inline kind check", () => {
+  it("summarises the links on review from the pure helper", () => {
     expect(create).toContain("linkedReportsSummary({")
-    expect(create).not.toContain('value.eventKind === "cleanup"')
     for (const key of [
       "wizard.summary.reports",
       "wizard.summary.reports_count",
@@ -141,16 +194,9 @@ describe("the wizard keeps its five steps and its draft hygiene", () => {
     expect(edit).toContain("linkedReports.map(linkedRefToCardData)")
     expect(edit).toContain("useLinkedReportCards.getState().clear()")
   })
-
-  it("re-seeds on the linked IDS, and clears the whole cache only on unmount", () => {
-    expect(edit).toMatch(/linkedReports\.map\(\(report\) => report\.id\)\.join\(","\)/)
-    expect(edit).toMatch(/\}, \[linkedReportIds\]\)/)
-    expect(edit).toContain("useEffect(() => () => useLinkedReportCards.getState().clear(), [])")
-    expect(edit).not.toMatch(/return \(\) => useLinkedReportCards\.getState\(\)\.clear\(\)/)
-  })
 })
 
-describe("host tools reach the same block", () => {
+describe("host tools open the same picker in commit mode", () => {
   it("names the row's icon and routes it at the sheet", () => {
     expect(HOST_ROW_ICONS.linked_reports).toBe("MapPin")
     expect(hostBody).toContain("HOST_ROW_ICONS[row]")
@@ -159,10 +205,22 @@ describe("host tools reach the same block", () => {
     expect(hostBody).toContain("linkSheetMode({")
   })
 
-  it("sends ONLY the linked ids in the patch, so nothing else on the event moves", () => {
+  it("manage mode is the map picker; readonly stays the card sheet", () => {
+    expect(hostSheet).toContain('mode="commit"')
+    expect(hostSheet).toContain("value={saved}")
+    expect(hostSheet).toContain("linked={linkedPins}")
+    expect(hostSheet).toContain("busy={update.isPending}")
+    expect(hostSheet).toMatch(/if \(!readonly\) \{\s*return \(\s*<ReportPicker/)
+    expect(hostSheet).toContain("<ModalCardSheet")
+    expect(hostSheet).toContain("readonly\n")
+  })
+
+  it("sends ONLY the linked ids in the patch, optimistically, and rolls back on error", () => {
     expect(Object.keys(linkedReportsPatch(["a", "b"]))).toEqual(["linkedReportIds"])
     expect(hostSheet).toContain("patch: linkedReportsPatch(ids)")
-    expect(hostSheet).toContain("sameIdSet(ids, saved)")
+    expect(hostSheet).toContain("optimisticLinkedRefs(")
+    expect(hostSheet).toContain("qc.getQueriesData<CleanupDTO>(filters)")
+    expect(hostSheet).toMatch(/onError: \(err\) => \{\s*for \(const \[key, data\] of snapshot\) qc\.setQueryData/)
   })
 
   it("invalidates the touched reports so their own page shows the event", () => {
@@ -182,11 +240,32 @@ describe("every key these surfaces name exists in en", () => {
   it.each([
     ["ReportLinkPicker.tsx", picker],
     ["ReportLinkRow.tsx", row],
-    ["ReportSearchSheet.tsx", searchSheet],
   ])("%s's linkedReports keys are all in en/event-form.json", (_name, source) => {
     const keys = [...source.matchAll(/"(linkedReports\.[a-zA-Z0-9_]+)"/g)].map((m) => m[1] ?? "")
     expect(keys.length).toBeGreaterThan(0)
     expect(keys.filter((key) => !catalogHas(eventForm, key))).toEqual([])
+  })
+
+  it.each([
+    ["ReportPicker.tsx", surface],
+    ["PickerReportRow.tsx", pickerRow],
+    ["LayerChipRow.tsx", chips],
+  ])("%s's picker keys are all in en/report-picker.json", (_name, source) => {
+    const keys = [...source.matchAll(/\bt\(\s*"([a-z0-9_]+)"/g)].map((m) => m[1] ?? "")
+    expect(keys.length).toBeGreaterThan(0)
+    expect(keys.filter((key) => !catalogHas(reportPicker, key))).toEqual([])
+  })
+
+  it("the picker's dynamic keys resolve for every state and section", () => {
+    for (const state of ["selected", "linked", "unlinking", "added"]) {
+      expect(catalogHas(reportPicker, `pin_state_${state}`), state).toBe(true)
+    }
+    for (const place of ["linked", "added", "view", "elsewhere"]) {
+      expect(catalogHas(reportPicker, `section_${place}`), place).toBe(true)
+    }
+    for (const action of ["action_done", "action_link", "action_save"]) {
+      expect(catalogHas(reportPicker, action), action).toBe(true)
+    }
   })
 
   it("the host sheet's keys are all in en/host-mode.json", () => {
@@ -196,28 +275,5 @@ describe("every key these surfaces name exists in en", () => {
     ].map((m) => m[1] ?? "")
     expect(keys.length).toBeGreaterThan(0)
     expect(keys.filter((key) => !catalogHas(hostMode, key))).toEqual([])
-  })
-})
-
-describe("the dead map link-mode and its strings are gone", () => {
-  it("retires map-ui.linkPanel and report-detail's add_to_event", () => {
-    expect(mapUi).not.toHaveProperty("linkPanel")
-    const actions = reportDetail["actions"] as Record<string, unknown>
-    for (const key of ["add_to_event", "added", "add_to_event_a11y", "added_a11y"]) {
-      expect(actions, key).not.toHaveProperty(key)
-    }
-  })
-
-  it("leaves no reader of the orphaned store anywhere in the package", () => {
-    for (const [name, source] of [
-      ["Map.web.tsx", code(read("../../map/Map.web.tsx"))],
-      ["Map.native.tsx", code(read("../../map/Map.native.tsx"))],
-      ["map/index.ts", code(read("../../map/index.ts"))],
-      ["ReportDetailBody.tsx", code(read("../ReportDetailBody.tsx"))],
-    ] as const) {
-      expect(source, name).not.toContain("useEventReportLink")
-      expect(source, name).not.toContain("ReportLinkPanel")
-      expect(source, name).not.toContain("AddToEventButton")
-    }
   })
 })

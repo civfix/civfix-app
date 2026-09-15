@@ -3,7 +3,7 @@ import { View } from "react-native"
 import { MAX_LINKED_REPORTS } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
 import { makeThemedStyles, useTheme } from "../theme"
-import { Text, TextLink } from "../typography"
+import { Text } from "../typography"
 import { IconTile, ListRow, MetaDot, SkeletonGroup, SkeletonList } from "../primitives"
 import { useNearbyReports, NEARBY_RADIUS_KM } from "../data"
 import { useHaptics } from "../capabilities"
@@ -11,10 +11,10 @@ import { announce } from "../announce"
 import { useT } from "../i18n"
 import { FeedNotice } from "./FeedNotice"
 import { ReportLinkRow } from "./ReportLinkRow"
-import { ReportSearchSheet } from "./ReportSearchSheet"
+import { ReportPicker } from "./reportPicker/ReportPicker"
+import { cardToPin } from "./reportPicker/reportPickerModel"
 import { pinToCardData, useLinkedReportCards } from "./linkedReportCards"
 import {
-  NEARBY_MAX,
   NEARBY_PREVIEW,
   nearbyReportRows,
   toggleLinkedReportId,
@@ -40,22 +40,34 @@ export function ReportLinkPicker({
   const th = useTheme()
   const { t } = useT("event-form")
   const haptics = useHaptics()
-  const [expanded, setExpanded] = useState(false)
-  const [searching, setSearching] = useState(false)
+  const [picking, setPicking] = useState(false)
 
   const live = state === "ready" && !readonly
   const nearby = useNearbyReports(live ? center : null)
   const pins = useMemo(() => nearby.data ?? [], [nearby.data])
   const pinCards = useMemo(() => pins.map(pinToCardData), [pins])
   const cardById = useMemo(() => new Map(pinCards.map((card) => [card.id, card])), [pinCards])
+  const cards = useLinkedReportCards((s) => s.cards)
 
   useEffect(() => {
     if (pinCards.length > 0) useLinkedReportCards.getState().put(pinCards)
   }, [pinCards])
 
   const rows = useMemo(
-    () => (center ? nearbyReportRows(pins, center, value, NEARBY_RADIUS_KM) : []),
+    () =>
+      center
+        ? nearbyReportRows(pins, center, value, NEARBY_RADIUS_KM).slice(0, NEARBY_PREVIEW)
+        : [],
     [pins, center, value],
+  )
+
+  const knownPins = useMemo(
+    () =>
+      value
+        .map((id) => cards[id])
+        .filter((card): card is NonNullable<typeof card> => card !== undefined)
+        .map(cardToPin),
+    [value, cards],
   )
 
   const atLimit = value.length >= MAX_LINKED_REPORTS
@@ -75,10 +87,15 @@ export function ReportLinkPicker({
     [haptics, onChange, t, value],
   )
 
-  if (state === "hidden") return null
+  const onPickerCommit = useCallback(
+    (ids: string[]) => {
+      onChange(ids)
+      setPicking(false)
+    },
+    [onChange],
+  )
 
-  const visible = expanded ? rows.slice(0, NEARBY_MAX) : rows.slice(0, NEARBY_PREVIEW)
-  const hidden = Math.min(rows.length, NEARBY_MAX) - visible.length
+  if (state === "hidden") return null
 
   return (
     <View style={styles.block}>
@@ -134,14 +151,14 @@ export function ReportLinkPicker({
                 />
               ) : nearby.isPending ? (
                 <SkeletonGroup>
-                  <SkeletonList kind="report" rows={3} />
+                  <SkeletonList kind="report" rows={NEARBY_PREVIEW} />
                 </SkeletonGroup>
               ) : rows.length === 0 ? (
                 <Text style={styles.fieldHelp}>{t("linkedReports.nearby_empty")}</Text>
               ) : (
                 <View style={[styles.rows, nearby.isPlaceholderData ? styles.rowsStale : null]}>
                   <Text style={styles.eyebrow}>{t("linkedReports.nearby_heading")}</Text>
-                  {visible.map((row) => (
+                  {rows.map((row) => (
                     <ReportLinkRow
                       key={row.pin.id}
                       id={row.pin.id}
@@ -152,36 +169,27 @@ export function ReportLinkPicker({
                       onToggle={toggle}
                     />
                   ))}
-                  {hidden > 0 ? (
-                    <View style={styles.moreRow}>
-                      <TextLink
-                        variant="label"
-                        standalone
-                        accessibilityLabel={t("linkedReports.showMoreA11y")}
-                        onPress={() => setExpanded(true)}
-                      >
-                        {t("linkedReports.showMore", { count: hidden })}
-                      </TextLink>
-                    </View>
-                  ) : null}
                 </View>
               )}
 
               <ListRow
-                leading={<IconTile icon="Search" />}
-                title={t("linkedReports.search_all")}
-                accessibilityLabel={t("linkedReports.search_all_a11y")}
-                onPress={() => setSearching(true)}
+                leading={<IconTile icon="Map" />}
+                title={t("linkedReports.pick_on_map")}
+                sub={t("linkedReports.pick_on_map_sub")}
+                accessibilityLabel={t("linkedReports.pick_on_map_a11y")}
+                onPress={() => setPicking(true)}
                 chevron
               />
 
-              {searching ? (
-                <ReportSearchSheet
+              {picking ? (
+                <ReportPicker
                   visible
-                  value={value}
+                  mode="draft"
                   center={center}
-                  onToggle={toggle}
-                  onClose={() => setSearching(false)}
+                  value={value}
+                  linked={knownPins}
+                  onCommit={onPickerCommit}
+                  onClose={() => setPicking(false)}
                 />
               ) : null}
             </>
@@ -244,9 +252,5 @@ const useStyles = makeThemedStyles((t) => ({
   },
   rowsStale: {
     opacity: 0.55,
-  },
-  moreRow: {
-    alignItems: "flex-start",
-    paddingVertical: t.space["1"],
   },
 }))

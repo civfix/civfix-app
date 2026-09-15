@@ -124,7 +124,7 @@ describe("nearbyReportRows", () => {
   it("caps nothing itself - the component slices the preview", () => {
     const pins = Array.from({ length: 40 }, (_unused, i) => pin(`p${i}`, { lat: north(i / 100) }))
     expect(nearbyReportRows(pins, LA, [], 2)).toHaveLength(40)
-    expect(NEARBY_PREVIEW).toBe(6)
+    expect(NEARBY_PREVIEW).toBe(3)
     expect(NEARBY_MAX).toBe(30)
   })
 })
@@ -239,6 +239,6 @@ describe("linkedReportsSummary", () => {
 describe("LINKED_REPORTS_COUNT_AT", () => {
   it("keeps the plain heading up to the visible tail and counts past it", () => {
     expect(LINKED_REPORTS_COUNT_AT).toBe(3)
-    expect(LINKED_REPORTS_COUNT_AT).toBeLessThan(NEARBY_PREVIEW)
+    expect(LINKED_REPORTS_COUNT_AT).toBeLessThanOrEqual(NEARBY_PREVIEW)
   })
 })

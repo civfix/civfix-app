@@ -8,7 +8,7 @@ import type { LatLng } from "@civfix/shared/geocode"
 import type { HostStage } from "@civfix/shared/host"
 import type { LinkedReportHeadline } from "./linkedReportHeadline"
 
-export const NEARBY_PREVIEW = 6
+export const NEARBY_PREVIEW = 3
 
 export const NEARBY_MAX = 30
 
