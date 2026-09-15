@@ -1,7 +1,15 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
 import type { BBox } from "@civfix/shared"
-import { decideRegionFetch, padBbox, regionCovers, PAD_FACTOR } from "./mapRegion.ts"
+import {
+  decideRegionFetch,
+  impliedZoomForBBox,
+  padBbox,
+  regionCovers,
+  serverReturnsPins,
+  PAD_FACTOR,
+  SERVER_PIN_ZOOM,
+} from "./mapRegion.ts"
 
 /** A square viewport centered on (0,0) with the given half-size in degrees. */
 function viewportOf(half: number): BBox {
@@ -65,4 +73,59 @@ test("a FAILED region fetch (both refs cleared) re-requests on the next settle",
   // panned inside a region whose fetch had failed.
   const afterError = decideRegionFetch({ loaded: null, requested: null }, shifted(VIEWPORT, 0.005))
   assert.equal(afterError.action, "request")
+})
+
+/** Centered on downtown LA so the latitude term is the one that actually binds, as it does on a phone. */
+function boxAround(halfLng: number, halfLat: number): BBox {
+  return { west: -118.25 - halfLng, east: -118.25 + halfLng, south: 34.05 - halfLat, north: 34.05 + halfLat }
+}
+
+// A viewport whose PADDED region still reads as aggregates, and the tighter one that earns pins.
+const AGGREGATE_VIEWPORT = boxAround(1, 0.5)
+const AGGREGATE_REGION = padBbox(AGGREGATE_VIEWPORT, PAD_FACTOR)
+const PIN_VIEWPORT = boxAround(0.8, 0.4)
+
+test("the server pin threshold matches the one the shared clusterer exports as AGGREGATE_EXPAND_ZOOM", () => {
+  assert.equal(SERVER_PIN_ZOOM, 10)
+})
+
+test("implied zoom is the server's own bbox clamp, so the two agree on which side of the line a region is", () => {
+  assert.equal(impliedZoomForBBox({ west: -180, east: 180, south: -85, north: 85 }), 3)
+  assert.equal(impliedZoomForBBox({ west: -119.0, east: -117.6, south: 33.7, north: 34.8 }), 10)
+  assert.equal(impliedZoomForBBox({ west: 0, east: 0, south: 0, north: 0 }), 0)
+  assert.equal(serverReturnsPins(AGGREGATE_REGION), false)
+  assert.equal(serverReturnsPins(padBbox(PIN_VIEWPORT, PAD_FACTOR)), true)
+})
+
+test("crossing INTO the server's pin zoom refetches immediately instead of waiting out the hysteresis", () => {
+  // The aggregate region still covers the tighter viewport, so the plain coverage rule would keep it and
+  // leave the stale bubbles on screen for another whole zoom level.
+  assert.equal(regionCovers(AGGREGATE_REGION, PIN_VIEWPORT), true)
+  const decision = decideRegionFetch(
+    { loaded: AGGREGATE_REGION, requested: AGGREGATE_REGION },
+    PIN_VIEWPORT,
+  )
+  assert.equal(decision.action, "request")
+  assert.deepEqual(
+    decision.action === "request" ? decision.region : null,
+    padBbox(PIN_VIEWPORT, PAD_FACTOR),
+  )
+})
+
+test("a loaded aggregate region cannot be REVERTED to once the viewport has earned pins", () => {
+  const far = padBbox({ west: -50, east: -40, south: 10, north: 20 }, PAD_FACTOR)
+  const decision = decideRegionFetch({ loaded: AGGREGATE_REGION, requested: far }, PIN_VIEWPORT)
+  assert.equal(decision.action, "request")
+})
+
+test("the forced refetch fires once: the pin-scale region it asks for then settles to keep", () => {
+  const pinRegion = padBbox(PIN_VIEWPORT, PAD_FACTOR)
+  assert.equal(decideRegionFetch({ loaded: pinRegion, requested: pinRegion }, PIN_VIEWPORT).action, "keep")
+})
+
+test("zooming out from pins back to aggregate scale is left to the ordinary coverage rule", () => {
+  const pinRegion = padBbox(PIN_VIEWPORT, PAD_FACTOR)
+  const slightlyWider = boxAround(0.82, 0.41)
+  assert.equal(regionCovers(pinRegion, slightlyWider), true)
+  assert.equal(decideRegionFetch({ loaded: pinRegion, requested: pinRegion }, slightlyWider).action, "keep")
 })

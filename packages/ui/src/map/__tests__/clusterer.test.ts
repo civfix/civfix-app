@@ -55,58 +55,71 @@ function clustersOf(nodes: ClusterNode[]) {
 
 describe("cluster threshold table", () => {
   it("pins the tuned knobs so a regression in them is visible", () => {
-    expect(CLUSTER_RADIUS).toBe(40)
-    expect(CLUSTER_MAX_ZOOM).toBe(13)
-    expect(CLUSTER_LIST_ZOOM).toBe(13)
-    expect(CLUSTER_MIN_POINTS).toBe(2)
+    expect(CLUSTER_RADIUS).toBe(20)
+    expect(CLUSTER_MAX_ZOOM).toBe(11)
+    expect(CLUSTER_LIST_ZOOM).toBe(11)
+    expect(CLUSTER_MIN_POINTS).toBe(3)
     expect(CLUSTER_ZOOM_STEP).toBe(2)
-    expect(AGGREGATE_EXPAND_ZOOM).toBe(11)
+    expect(AGGREGATE_EXPAND_ZOOM).toBe(10)
   })
 
-  it("groups neighbourhood-dense markers at city zoom and ungroups them above maxZoom", () => {
+  it("groups stacked markers at city zoom and ungroups them above maxZoom", () => {
     const index = buildIndex(denseReports(6))
     expect(clustersOf(queryClusters(index, WORLD, 10))).toHaveLength(1)
-    expect(clustersOf(queryClusters(index, WORLD, 13))).toHaveLength(1)
+    expect(clustersOf(queryClusters(index, WORLD, CLUSTER_MAX_ZOOM))).toHaveLength(1)
     const zoomedIn = queryClusters(index, WORLD, CLUSTER_MAX_ZOOM + 1)
     expect(zoomedIn).toHaveLength(6)
     expect(zoomedIn.every((n) => n.type === "report")).toBe(true)
   })
 
-  it("leaves two reports a block apart as separate pins at neighbourhood zoom", () => {
+  it("never groups a PAIR of reports, however far they overlap", () => {
     const index = buildIndex([
       reportPoint("a", 34.05, -118.25),
-      reportPoint("b", 34.05, -118.2446),
+      reportPoint("b", 34.0501, -118.2501),
     ])
-    const nodes = queryClusters(index, WORLD, 13)
-    expect(nodes).toHaveLength(2)
+    for (const zoom of [8, 9, 10, CLUSTER_MAX_ZOOM]) {
+      const nodes = queryClusters(index, WORLD, zoom)
+      expect(nodes).toHaveLength(2)
+      expect(nodes.every((n) => n.type === "report")).toBe(true)
+    }
+  })
+
+  it("leaves three reports a block apart as separate pins at the last clustering zoom", () => {
+    const index = buildIndex([
+      reportPoint("a", 34.05, -118.25),
+      reportPoint("b", 34.05, -118.2246),
+      reportPoint("c", 34.05, -118.2746),
+    ])
+    const nodes = queryClusters(index, WORLD, CLUSTER_MAX_ZOOM)
+    expect(nodes).toHaveLength(3)
     expect(nodes.every((n) => n.type === "report")).toBe(true)
   })
 
-  it("merges only the reports that would physically overlap at neighbourhood zoom", () => {
+  it("merges three reports that stack on the same spot at the last clustering zoom", () => {
     const index = buildIndex([
       reportPoint("a", 34.05, -118.25),
-      reportPoint("b", 34.05, -118.2489),
+      reportPoint("b", 34.0501, -118.2501),
+      reportPoint("c", 34.0502, -118.2502),
     ])
-    const clusters = clustersOf(queryClusters(index, WORLD, 13))
+    const clusters = clustersOf(queryClusters(index, WORLD, CLUSTER_MAX_ZOOM))
     expect(clusters).toHaveLength(1)
-    expect(clusters[0]!.count).toBe(2)
+    expect(clusters[0]!.count).toBe(3)
   })
 
-  it("still merges the same pair of reports into one bubble at district zoom", () => {
-    const index = buildIndex([
-      reportPoint("a", 34.05, -118.25),
-      reportPoint("b", 34.05, -118.2446),
-    ])
-    const clusters = clustersOf(queryClusters(index, WORLD, 11))
-    expect(clusters).toHaveLength(1)
-    expect(clusters[0]!.count).toBe(2)
+  it("never renders a bubble that counts fewer than the minimum points", () => {
+    const index = buildIndex(denseReports(12))
+    for (let zoom = 0; zoom <= CLUSTER_MAX_ZOOM; zoom += 1) {
+      for (const node of clustersOf(queryClusters(index, WORLD, zoom))) {
+        expect(node.count).toBeGreaterThanOrEqual(CLUSTER_MIN_POINTS)
+      }
+    }
   })
 
   it("keeps a report that has no neighbour within the radius as its own pin", () => {
     const nodes = queryClusters(
       buildIndex([reportPoint("a", 34.05, -118.25), reportPoint("b", 34.6, -117.4)]),
       WORLD,
-      12,
+      CLUSTER_MAX_ZOOM,
     )
     expect(nodes).toHaveLength(2)
     expect(nodes.every((n) => n.type === "report")).toBe(true)
@@ -114,21 +127,25 @@ describe("cluster threshold table", () => {
 })
 
 describe("unified reports + events clustering", () => {
-  it("collapses a report and an event that share a spot into one counted cluster", () => {
+  it("collapses reports and an event that share a spot into one counted cluster", () => {
     const nodes = queryClusters(
-      buildIndex([reportPoint("r1", 34.05, -118.25), eventPoint("e1", 34.0501, -118.2501)]),
+      buildIndex([
+        reportPoint("r1", 34.05, -118.25),
+        reportPoint("r2", 34.0501, -118.2501),
+        eventPoint("e1", 34.0502, -118.2502),
+      ]),
       WORLD,
-      11,
+      10,
     )
     const clusters = clustersOf(nodes)
     expect(clusters).toHaveLength(1)
-    expect(clusters[0]!.count).toBe(2)
-    expect(clusters[0]!.reportCount).toBe(1)
+    expect(clusters[0]!.count).toBe(3)
+    expect(clusters[0]!.reportCount).toBe(2)
     expect(clusters[0]!.eventCount).toBe(1)
   })
 
   it("draws a lone event as an event node, not as a bubble", () => {
-    const nodes = queryClusters(buildIndex([eventPoint("e1", 34.05, -118.25)]), WORLD, 11)
+    const nodes = queryClusters(buildIndex([eventPoint("e1", 34.05, -118.25)]), WORLD, 10)
     expect(nodes).toHaveLength(1)
     expect(nodes[0]!.type).toBe("event")
   })
@@ -145,10 +162,18 @@ describe("unified reports + events clustering", () => {
     }
     expect(weightsOfPoint(blend)).toEqual({ reportCount: 2, eventCount: 1 })
     const clusters = clustersOf(
-      queryClusters(buildIndex([blend, reportPoint("r3", 34.0502, -118.2502)]), WORLD, 11),
+      queryClusters(
+        buildIndex([
+          blend,
+          reportPoint("r3", 34.0502, -118.2502),
+          reportPoint("r4", 34.0503, -118.2503),
+        ]),
+        WORLD,
+        10,
+      ),
     )
     expect(clusters).toHaveLength(1)
-    expect(clusters[0]!.count).toBe(4)
+    expect(clusters[0]!.count).toBe(5)
     expect(clusters[0]!.eventCount).toBe(1)
   })
 
@@ -172,15 +197,16 @@ describe("unified reports + events clustering", () => {
         buildIndex([
           { kind: "aggregate", id: "a1", lat: 34.05, lng: -118.25, count: 12 },
           eventPoint("e1", 34.0501, -118.2501),
+          eventPoint("e2", 34.0502, -118.2502),
         ]),
         WORLD,
         10,
       ),
     )
     expect(clusters).toHaveLength(1)
-    expect(clusters[0]!.count).toBe(13)
+    expect(clusters[0]!.count).toBe(14)
     expect(clusters[0]!.reportCount).toBe(12)
-    expect(clusters[0]!.eventCount).toBe(1)
+    expect(clusters[0]!.eventCount).toBe(2)
   })
 })
 
@@ -188,7 +214,7 @@ describe("marker identity", () => {
   it("keeps a cluster's key stable across zoom levels while its membership is unchanged", () => {
     const index = buildIndex(denseReports(5))
     const low = clustersOf(queryClusters(index, WORLD, 9))
-    const high = clustersOf(queryClusters(index, WORLD, 13))
+    const high = clustersOf(queryClusters(index, WORLD, CLUSTER_MAX_ZOOM))
     expect(low).toHaveLength(1)
     expect(high).toHaveLength(1)
     expect(low[0]!.key).toBe(high[0]!.key)
@@ -203,7 +229,7 @@ describe("marker identity", () => {
       ),
     )
     const index = buildIndex(grid)
-    const wide = clustersOf(queryClusters(index, WORLD, 9)).map((c) => c.key)
+    const wide = clustersOf(queryClusters(index, WORLD, 8)).map((c) => c.key)
     const tight = clustersOf(queryClusters(index, WORLD, CLUSTER_MAX_ZOOM)).map((c) => c.key)
     expect(wide).toHaveLength(1)
     expect(tight).toHaveLength(4)
@@ -234,7 +260,7 @@ describe("cluster drill-down", () => {
       { kind: "blend", id: "e1", lat: 34.0501, lng: -118.2501, event, reports: [pin("r2", 34.05, -118.25)] },
       eventPoint("e2", 34.0502, -118.2502),
     ])
-    const cluster = clustersOf(queryClusters(index, WORLD, 11))[0]!
+    const cluster = clustersOf(queryClusters(index, WORLD, 10))[0]!
     const leaves = leavesOfCluster(index, cluster.clusterId as number)
     expect(leaves).toHaveLength(3)
     expect(reportsOfPoints(leaves).map((r) => r.id).sort()).toEqual(["r1", "r2"])
@@ -242,7 +268,7 @@ describe("cluster drill-down", () => {
 
   it("lists a pure-report cluster with exactly the reports its bubble counted", () => {
     const index = buildIndex(denseReports(4))
-    const cluster = clustersOf(queryClusters(index, WORLD, 12))[0]!
+    const cluster = clustersOf(queryClusters(index, WORLD, CLUSTER_MAX_ZOOM))[0]!
     const listing = clusterListReports(index, cluster)
     expect(listing).not.toBeNull()
     expect(listing).toHaveLength(cluster.count)
@@ -251,14 +277,16 @@ describe("cluster drill-down", () => {
   it("refuses to list a cluster whose bubble counts things the list cannot show", () => {
     const withEvent = buildIndex([
       reportPoint("r1", 34.05, -118.25),
-      eventPoint("e1", 34.0501, -118.2501),
+      reportPoint("r2", 34.0501, -118.2501),
+      eventPoint("e1", 34.0502, -118.2502),
     ])
-    const eventCluster = clustersOf(queryClusters(withEvent, WORLD, 11))[0]!
+    const eventCluster = clustersOf(queryClusters(withEvent, WORLD, 10))[0]!
     expect(clusterListReports(withEvent, eventCluster)).toBeNull()
 
     const withAggregate = buildIndex([
       { kind: "aggregate", id: "a1", lat: 34.05, lng: -118.25, count: 12 },
       { kind: "aggregate", id: "a2", lat: 34.0501, lng: -118.2501, count: 3 },
+      { kind: "aggregate", id: "a3", lat: 34.0502, lng: -118.2502, count: 5 },
     ])
     const aggregateCluster = clustersOf(queryClusters(withAggregate, WORLD, 10))[0]!
     expect(clusterListReports(withAggregate, aggregateCluster)).toBeNull()
@@ -311,14 +339,15 @@ describe("clusterZoomTarget", () => {
   })
 
   it("offers a bounded fallback zoom for a tap that has no list to open", () => {
-    expect(clusterFallbackZoom(10)).toBe(12)
+    expect(clusterFallbackZoom(9)).toBe(11)
     expect(clusterFallbackZoom(CLUSTER_MAX_ZOOM)).toBe(CLUSTER_MAX_ZOOM + 1)
     expect(clusterFallbackZoom(Number.NaN)).toBe(CLUSTER_ZOOM_STEP)
   })
 
   it("takes a server aggregate to at least the zoom where the server returns individual pins", () => {
-    expect(clusterZoomTarget(cluster(null), 9, null)).toBe(AGGREGATE_EXPAND_ZOOM)
-    expect(clusterZoomTarget(cluster(null), 12, null)).toBe(14)
+    expect(clusterZoomTarget(cluster(null), 7, null)).toBe(AGGREGATE_EXPAND_ZOOM)
+    expect(clusterZoomTarget(cluster(null), 8, null)).toBe(AGGREGATE_EXPAND_ZOOM)
+    expect(clusterZoomTarget(cluster(null), 9, null)).toBe(CLUSTER_MAX_ZOOM)
   })
 
   it("refuses an aggregate tap that would not move the camera", () => {

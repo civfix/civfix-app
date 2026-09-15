@@ -1,7 +1,16 @@
 import type { BBox } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
 
-import { decideRegionFetch, padBbox, regionCovers, type RegionFetchState } from "./region-fetch"
+import {
+  decideRegionFetch,
+  impliedZoomForBBox,
+  padBbox,
+  regionCovers,
+  serverReturnsPins,
+  PAD_FACTOR,
+  SERVER_PIN_ZOOM,
+  type RegionFetchState,
+} from "./region-fetch"
 
 /**
  * Region-fetch decisions for the web home map (see region-fetch.ts).
@@ -156,5 +165,55 @@ describe("settle sequences", () => {
     expect(map.state.loaded).toBe(loaded)
     expect(map.settle(box(1, 1, 9, 9))).toBe("keep")
     expect(map.requests).toHaveLength(2)
+  })
+})
+
+describe("the server pin threshold", () => {
+  /** Centered on downtown LA so the latitude term binds, as it does on a real viewport. */
+  function boxAround(halfLng: number, halfLat: number): BBox {
+    return { west: -118.25 - halfLng, east: -118.25 + halfLng, south: 34.05 - halfLat, north: 34.05 + halfLat }
+  }
+
+  const AGGREGATE_VIEWPORT = boxAround(1, 0.5)
+  const AGGREGATE_REGION = padBbox(AGGREGATE_VIEWPORT, PAD_FACTOR)
+  const PIN_VIEWPORT = boxAround(0.8, 0.4)
+  const PIN_REGION = padBbox(PIN_VIEWPORT, PAD_FACTOR)
+
+  it("is the zoom the shared clusterer exports as AGGREGATE_EXPAND_ZOOM", () => {
+    expect(SERVER_PIN_ZOOM).toBe(10)
+  })
+
+  it("derives a region's zoom exactly as the server's bbox clamp does", () => {
+    expect(impliedZoomForBBox(box(-180, -85, 180, 85))).toBe(3)
+    expect(impliedZoomForBBox(box(-119.0, 33.7, -117.6, 34.8))).toBe(10)
+    expect(impliedZoomForBBox(box(0, 0, 0, 0))).toBe(0)
+    expect(serverReturnsPins(AGGREGATE_REGION)).toBe(false)
+    expect(serverReturnsPins(PIN_REGION)).toBe(true)
+  })
+
+  it("refetches the moment the viewport crosses into pins, without waiting out the hysteresis", () => {
+    // Coverage alone would hold the aggregate region for another ~1.13 zoom levels, so the bubbles stayed
+    // on screen long after the map should have broken into individual pins.
+    expect(regionCovers(AGGREGATE_REGION, PIN_VIEWPORT)).toBe(true)
+    expect(decideRegionFetch(state(AGGREGATE_REGION, AGGREGATE_REGION), PIN_VIEWPORT)).toEqual({
+      action: "request",
+      region: PIN_REGION,
+    })
+  })
+
+  it("will not revert onto a loaded aggregate region once the viewport has earned pins", () => {
+    expect(decideRegionFetch(state(AGGREGATE_REGION, padBbox(FAR, PAD_FACTOR)), PIN_VIEWPORT).action).toBe(
+      "request",
+    )
+  })
+
+  it("fires that refetch once, then settles", () => {
+    expect(decideRegionFetch(state(PIN_REGION, PIN_REGION), PIN_VIEWPORT)).toEqual({ action: "keep" })
+  })
+
+  it("leaves the pins-to-aggregates direction to the ordinary coverage rule", () => {
+    const slightlyWider = boxAround(0.82, 0.41)
+    expect(regionCovers(PIN_REGION, slightlyWider)).toBe(true)
+    expect(decideRegionFetch(state(PIN_REGION, PIN_REGION), slightlyWider)).toEqual({ action: "keep" })
   })
 })
