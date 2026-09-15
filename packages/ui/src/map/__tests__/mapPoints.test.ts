@@ -55,13 +55,13 @@ describe("mapPointsFor", () => {
     ])
   })
 
-  it("ignores server aggregates whenever individual points are available", () => {
+  it("keeps server aggregates when the event layer already has points to draw", () => {
     const points = mapPointsFor({
-      reports: [pin("r1")],
-      cleanups: [],
+      reports: [],
+      cleanups: [event("e1")],
       aggregates: [{ lat: 34.05, lng: -118.25, count: 9 }],
     })
-    expect(points.map((p) => p.kind)).toEqual(["report"])
+    expect(points.map((p) => p.kind).sort()).toEqual(["aggregate", "event"])
   })
 
   it("collapses aggregates that round to the same position into one point", () => {
