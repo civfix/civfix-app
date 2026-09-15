@@ -90,6 +90,7 @@ import en_report_cluster from "./locales/en/report-cluster.json"
 import en_report_content from "./locales/en/report-content.json"
 import en_report_detail from "./locales/en/report-detail.json"
 import en_report_linked from "./locales/en/report-linked.json"
+import en_report_picker from "./locales/en/report-picker.json"
 import en_report_list from "./locales/en/report-list.json"
 import en_report_row from "./locales/en/report-row.json"
 import en_report_wizard from "./locales/en/report-wizard.json"
@@ -188,6 +189,7 @@ import es_report_cluster from "./locales/es/report-cluster.json"
 import es_report_content from "./locales/es/report-content.json"
 import es_report_detail from "./locales/es/report-detail.json"
 import es_report_linked from "./locales/es/report-linked.json"
+import es_report_picker from "./locales/es/report-picker.json"
 import es_report_list from "./locales/es/report-list.json"
 import es_report_row from "./locales/es/report-row.json"
 import es_report_wizard from "./locales/es/report-wizard.json"
@@ -286,6 +288,7 @@ import de_report_cluster from "./locales/de/report-cluster.json"
 import de_report_content from "./locales/de/report-content.json"
 import de_report_detail from "./locales/de/report-detail.json"
 import de_report_linked from "./locales/de/report-linked.json"
+import de_report_picker from "./locales/de/report-picker.json"
 import de_report_list from "./locales/de/report-list.json"
 import de_report_row from "./locales/de/report-row.json"
 import de_report_wizard from "./locales/de/report-wizard.json"
@@ -384,6 +387,7 @@ import ko_report_cluster from "./locales/ko/report-cluster.json"
 import ko_report_content from "./locales/ko/report-content.json"
 import ko_report_detail from "./locales/ko/report-detail.json"
 import ko_report_linked from "./locales/ko/report-linked.json"
+import ko_report_picker from "./locales/ko/report-picker.json"
 import ko_report_list from "./locales/ko/report-list.json"
 import ko_report_row from "./locales/ko/report-row.json"
 import ko_report_wizard from "./locales/ko/report-wizard.json"
@@ -485,6 +489,7 @@ export const namespaces = [
   "report-content",
   "report-detail",
   "report-linked",
+  "report-picker",
   "report-list",
   "report-row",
   "report-wizard",
@@ -588,6 +593,7 @@ export const resources: Resource = {
     "report-content": en_report_content,
     "report-detail": en_report_detail,
     "report-linked": en_report_linked,
+    "report-picker": en_report_picker,
     "report-list": en_report_list,
     "report-row": en_report_row,
     "report-wizard": en_report_wizard,
@@ -688,6 +694,7 @@ export const resources: Resource = {
     "report-content": es_report_content,
     "report-detail": es_report_detail,
     "report-linked": es_report_linked,
+    "report-picker": es_report_picker,
     "report-list": es_report_list,
     "report-row": es_report_row,
     "report-wizard": es_report_wizard,
@@ -788,6 +795,7 @@ export const resources: Resource = {
     "report-content": de_report_content,
     "report-detail": de_report_detail,
     "report-linked": de_report_linked,
+    "report-picker": de_report_picker,
     "report-list": de_report_list,
     "report-row": de_report_row,
     "report-wizard": de_report_wizard,
@@ -888,6 +896,7 @@ export const resources: Resource = {
     "report-content": ko_report_content,
     "report-detail": ko_report_detail,
     "report-linked": ko_report_linked,
+    "report-picker": ko_report_picker,
     "report-list": ko_report_list,
     "report-row": ko_report_row,
     "report-wizard": ko_report_wizard,
