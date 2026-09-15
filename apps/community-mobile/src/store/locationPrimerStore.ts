@@ -23,6 +23,10 @@ export const useLocationPrimerStore = create<LocationPrimerState>()(
     {
       name: LOCATION_PRIMER_KEY,
       version: 2,
+      migrate: (persisted) => ({
+        shown: (persisted as { shown?: boolean } | null)?.shown === true,
+        choice: null,
+      }),
       storage: createJSONStorage(() => mmkvStateStorage),
       partialize: (state) => ({ shown: state.shown, choice: state.choice }),
     },
