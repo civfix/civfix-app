@@ -19,6 +19,7 @@ function mkForm(seedLinkedReportId?: string): CleanupFormValue {
     date: null,
     time: null,
     endTime: null,
+    timezone: "America/Los_Angeles",
     bring: [],
     slots: [],
     linkedReportIds: seedLinkedReportId ? [seedLinkedReportId] : [],

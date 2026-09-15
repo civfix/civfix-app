@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useState } from "react"
 import { Image, Pressable, View } from "react-native"
 import type { CleanupMemberRole, HostedEventDTO } from "@civfix/shared"
-import { dowLabel, timeLabel } from "@civfix/shared/datetime"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -20,10 +19,18 @@ import {
   usePopoverAnchor,
 } from "../../../primitives"
 import type { AnchorRect, PopoverMenuItem } from "../../../primitives"
-import { useLocale, useRelativeTime, useT } from "../../../i18n"
+import { useEventWhen, useLocale, useRelativeTime, useT } from "../../../i18n"
 import { RoleChip } from "../../RoleChip"
 import { formatHoursDisplay } from "../../formatHours"
-import { hostedEventActions, hostedEventCan, hostedEventHasActions, pastRowMeta } from "./dashboardModel"
+import { PhaseDot } from "../PhaseHeader"
+import {
+  hostedEventActions,
+  hostedEventCan,
+  hostedEventHasActions,
+  hostedEventStatus,
+  hostedEventWhen,
+  pastRowMeta,
+} from "./dashboardModel"
 
 const CLOSED = "closed"
 
@@ -48,6 +55,7 @@ export interface HostedEventRowProps {
   window: HostedEventWindow
   roleLabel: (role: CleanupMemberRole) => string
   live: boolean
+  now: Date
   onOpen: (event: HostedEventDTO) => void
   onCheckIn: (event: HostedEventDTO) => void
   onHostTools: (event: HostedEventDTO) => void
@@ -56,7 +64,7 @@ export interface HostedEventRowProps {
   onEdit: (event: HostedEventDTO) => void
 }
 
-function pastDateLabel(iso: string, locale: string): string {
+function pastDateLabel(iso: string, locale: string, timeZone: string | undefined): string {
   const at = new Date(iso)
   if (Number.isNaN(at.getTime())) return ""
   try {
@@ -64,17 +72,27 @@ function pastDateLabel(iso: string, locale: string): string {
       weekday: "short",
       month: "short",
       day: "numeric",
+      ...(timeZone ? { timeZone } : {}),
     }).format(at)
   } catch {
     return iso.slice(0, 10)
   }
 }
 
-function MetaLine({ parts, chip }: { parts: readonly MetaPart[]; chip?: React.ReactNode }) {
+function MetaLine({
+  parts,
+  chip,
+  leading,
+}: {
+  parts: readonly MetaPart[]
+  chip?: React.ReactNode
+  leading?: React.ReactNode
+}) {
   const styles = useStyles()
   const th = useTheme()
   return (
     <View style={styles.subRow}>
+      {leading ? <View style={styles.subLead}>{leading}</View> : null}
       {parts.map((part, index) => (
         <React.Fragment key={part.key}>
           {index > 0 ? <MetaDot color={th.colors.textSubtle} /> : null}
@@ -101,14 +119,22 @@ function MetaLine({ parts, chip }: { parts: readonly MetaPart[]; chip?: React.Re
   )
 }
 
-function EventBadge({ startsAt, coverThumbUrl }: { startsAt: string; coverThumbUrl?: string | null }) {
+function EventBadge({
+  startsAt,
+  timeZone,
+  coverThumbUrl,
+}: {
+  startsAt: string
+  timeZone: string | undefined
+  coverThumbUrl?: string | null
+}) {
   const styles = useStyles()
   if (coverThumbUrl) {
     return (
       <Image source={{ uri: coverThumbUrl }} style={styles.cover} accessibilityIgnoresInvertColors />
     )
   }
-  return <DateBadge iso={startsAt} size={LIST_TILE} />
+  return <DateBadge iso={startsAt} size={LIST_TILE} timeZone={timeZone} />
 }
 
 export const HostedEventRow = memo(function HostedEventRow({
@@ -116,6 +142,7 @@ export const HostedEventRow = memo(function HostedEventRow({
   window: eventWindow,
   roleLabel,
   live,
+  now,
   onOpen,
   onCheckIn,
   onHostTools,
@@ -127,12 +154,12 @@ export const HostedEventRow = memo(function HostedEventRow({
   const th = useTheme()
   const { t } = useT("event-dashboard")
   const { locale } = useLocale()
-  const { weekdays } = useRelativeTime()
+  const { relative } = useRelativeTime()
   const [menuOpen, setMenuOpen] = useState<string>(CLOSED)
   const [menuRect, setMenuRect] = useState<AnchorRect | null>(null)
   const { ref: menuAnchorRef, measure: measureMenu } = usePopoverAnchor(setMenuRect)
 
-  const actions = hostedEventActions(event)
+  const actions = hostedEventActions(event, now)
   const hasMenu = hostedEventHasActions(actions)
   const canCheckIn = live && hostedEventCan(event, "check_in")
 
@@ -154,10 +181,12 @@ export const HostedEventRow = memo(function HostedEventRow({
 
   const capacity = event.capacity ?? null
   const past = pastRowMeta(event)
-  const parts: MetaPart[] =
+  const underway = hostedEventStatus(event, now) === "active"
+  const when = useEventWhen(hostedEventWhen(event))
+  const metaParts: MetaPart[] =
     eventWindow === "past"
       ? [
-          { key: "when", text: pastDateLabel(event.startsAt, locale) },
+          { key: "when", text: pastDateLabel(event.startsAt, locale, event.timezone ?? undefined) },
           ...(past.cancelled
             ? [{ key: "cancelled", text: t("events.meta_cancelled"), tone: "muted" as const }]
             : []),
@@ -189,7 +218,9 @@ export const HostedEventRow = memo(function HostedEventRow({
       : [
           {
             key: "when",
-            text: `${dowLabel(event.startsAt, weekdays)} ${timeLabel(event.startsAt, locale)}`,
+            text: underway
+              ? t("events.meta_underway", { ago: relative(event.startsAt, now) })
+              : `${when.dow} ${when.timeWithZone}`,
           },
           {
             key: "seats",
@@ -202,6 +233,8 @@ export const HostedEventRow = memo(function HostedEventRow({
             ? [{ key: "waiting", text: t("events.meta_waiting", { count: event.waitlistCount }) }]
             : []),
         ]
+
+  const dot = underway ? <PhaseDot phase="live" /> : null
 
   const chip =
     eventWindow === "upcoming" && event.myRole && event.myRole !== "organizer" ? (
@@ -255,10 +288,14 @@ export const HostedEventRow = memo(function HostedEventRow({
     <>
       <ListRow
         leading={
-          <EventBadge startsAt={event.startsAt} coverThumbUrl={event.coverThumbUrl ?? null} />
+          <EventBadge
+            startsAt={event.startsAt}
+            timeZone={when.timeZone}
+            coverThumbUrl={event.coverThumbUrl ?? null}
+          />
         }
         title={event.title}
-        sub={<MetaLine parts={parts} chip={chip} />}
+        sub={<MetaLine parts={metaParts} chip={chip} leading={dot} />}
         accessibilityLabel={t("events.open_a11y", { title: event.title })}
         onPress={open}
         trailing={
@@ -347,6 +384,10 @@ const useStyles = makeThemedStyles((t) => ({
   subRow: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  subLead: {
+    flexShrink: 0,
+    marginRight: t.space["1"],
   },
   subLast: {
     flexShrink: 1,

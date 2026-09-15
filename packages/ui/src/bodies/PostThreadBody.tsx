@@ -15,7 +15,12 @@ import { useT } from "../i18n"
 import { useNavStore, type DetailEntry } from "../nav"
 import { pathForEntry } from "../nav"
 import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
-import { PLAIN_SCROLL_HOST, ScrollHostProvider, useScrollHost } from "../shell/ScrollHost"
+import {
+  PLAIN_SCROLL_HOST,
+  ScrollHostProvider,
+  useScrollHost,
+  type ScrollHostListHandle,
+} from "../shell/ScrollHost"
 import { SignInPrompt } from "../primitives/StateView"
 import { ReplyComposer, type ReplyComposerHandle } from "./thread/ReplyComposer"
 import { ThreadEmptyReplies } from "./thread/ThreadEmptyReplies"
@@ -31,7 +36,10 @@ const THREAD_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
   reserveKeyboardPadding: false,
 })
 
-const ThreadList = React.forwardRef<unknown, Record<string, unknown>>(function ThreadList(props, ref) {
+const ThreadList = React.forwardRef<ScrollHostListHandle, Record<string, unknown>>(function ThreadList(
+  props,
+  ref,
+) {
   const { FlatList } = useScrollHost()
   return <FlatList ref={ref} {...props} />
 })
@@ -82,7 +90,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   const [sentReplies, setSentReplies] = React.useState<PostDTO[]>([])
 
   const composerRef = React.useRef<ReplyComposerHandle | null>(null)
-  const listRef = React.useRef<{ scrollToEnd?: (options?: { animated?: boolean }) => void } | null>(null)
+  const listRef = React.useRef<ScrollHostListHandle | null>(null)
   const focusComposer = React.useCallback(() => composerRef.current?.focus(), [])
   const onRootLayout = React.useCallback(
     (event: LayoutChangeEvent) => setRootHeight(event.nativeEvent.layout.height),
@@ -267,7 +275,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
       {header}
       <ScrollHostProvider value={THREAD_SCROLL_HOST}>
         <ThreadList
-          ref={listRef as never}
+          ref={listRef}
           style={styles.list}
           data={rows}
           keyExtractor={threadKeyExtractor}

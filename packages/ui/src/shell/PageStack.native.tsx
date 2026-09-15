@@ -17,6 +17,8 @@ import Animated, {
 import { isFlowKind, useNavStore, type DetailEntry, type View as NavView } from "../nav"
 import { makeThemedStyles, motion } from "../theme"
 import { detailLeadingAffordance } from "./backAffordance"
+import { pageBottomReserve } from "./bodyLayout"
+import { ContentBottomReserveProvider, contentBottomReserveScrollHost } from "./ContentBottomReserve"
 import {
   pagePopConfig,
   pagePushConfig,
@@ -357,6 +359,10 @@ const PageLayer = memo(function PageLayer({
   const styles = useStyles()
   const body = useMemo(() => renderBody(entry, view), [entry, renderBody, view])
   const keyboardReserve = useKeyboardReserve({ enabled: keyboardAvoidance && active })
+  const reserve = pageBottomReserve(entry.kind)
+  const boxReserve = (reserve === "box" ? paddingBottom : 0) + keyboardReserve
+  const contentReserve = reserve === "content" ? paddingBottom : 0
+  const bodyScrollHost = reserve === "content" ? contentBottomReserveScrollHost(scrollHost) : scrollHost
 
   const layerStyle = useAnimatedStyle(() => {
     const ownProgress = own === "exit" ? exit.value : own === "front" ? front.value : 0
@@ -383,16 +389,18 @@ const PageLayer = memo(function PageLayer({
       accessibilityElementsHidden={!active}
       importantForAccessibility={active ? "auto" : "no-hide-descendants"}
     >
-      <View style={[styles.layerContent, { paddingBottom: paddingBottom + keyboardReserve, paddingTop }]}>
+      <View style={[styles.layerContent, { paddingBottom: boxReserve, paddingTop }]}>
         <IosKeyboardAvoidingView style={styles.layerContent} enabled={keyboardAvoidance}>
           {hasDetailHeader(entry) ? (
             <View style={styles.header}>
               <DetailHeader active={entry} stack={stack} dismissGesture={false} />
             </View>
           ) : null}
-          <ScrollHostProvider value={scrollHost}>
-            <PageActiveProvider value={active}>{body}</PageActiveProvider>
-          </ScrollHostProvider>
+          <ContentBottomReserveProvider value={contentReserve}>
+            <ScrollHostProvider value={bodyScrollHost}>
+              <PageActiveProvider value={active}>{body}</PageActiveProvider>
+            </ScrollHostProvider>
+          </ContentBottomReserveProvider>
         </IosKeyboardAvoidingView>
       </View>
       {above === "one" ? null : <Animated.View style={[styles.scrim, scrimStyle]} pointerEvents="none" />}

@@ -115,10 +115,24 @@ export function useOrganizationEvents(
   })
 }
 
+let warnedUnrenderableOrgEvents = false
+
+export function resetOrganizationEventRowWarnings(): void {
+  warnedUnrenderableOrgEvents = false
+}
+
 export function organizationEventRows(
   pages: readonly ListOrganizationEventsResponse[] | undefined,
 ): CleanupDTO[] {
-  return (pages ?? []).flatMap((page) => page.items)
+  const items = (pages ?? []).flatMap((page) => page?.items ?? [])
+  const rows = items.filter((event) => event != null && event.id != null && event.organizer != null)
+  if (rows.length < items.length && !warnedUnrenderableOrgEvents) {
+    warnedUnrenderableOrgEvents = true
+    console.warn(
+      `[@civfix/ui] listOrganizationEvents returned ${items.length - rows.length} row(s) the event card cannot render; dropping them.`,
+    )
+  }
+  return rows
 }
 
 export const ORG_MEMBERS_PAGE_SIZE = 50

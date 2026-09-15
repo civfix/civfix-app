@@ -1,7 +1,8 @@
 import React from "react"
 import { View } from "react-native"
 import { useTheme, pinGlow } from "../../theme"
-import { PinSvg, DROP_PIN_GLYPH } from "./PinSvg"
+import { PinSvg } from "./PinSvg"
+import { DROP_PIN_GLYPH } from "./glyphs"
 
 export const DROP_PIN_SIZE = 52
 

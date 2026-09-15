@@ -21,6 +21,8 @@ import { useT } from "../i18n"
 import { positionPostActionMenu } from "./postActionModel"
 import { menuOrigin, useMenuMotion } from "./menuMotion"
 import { AnchoredPopover, useMenuCardSize } from "./AnchoredPopover"
+import { useDeferredOverlayAction } from "./useDeferredOverlayAction"
+import { useModalClosed } from "./useModalClosed"
 
 export interface PopoverMenuItem {
   key: string
@@ -47,7 +49,7 @@ export interface PopoverMenuProps {
   align?: "left" | "right"
   accessibilityLabel?: string
   returnFocusRef?: React.RefObject<RNView | null>
-  onDismiss?: () => void
+  onClosed?: () => void
 }
 
 const CARD_WIDTH = 220
@@ -62,7 +64,7 @@ export function PopoverMenu({
   align = "right",
   accessibilityLabel,
   returnFocusRef,
-  onDismiss,
+  onClosed,
 }: PopoverMenuProps) {
   const styles = useStyles()
   const th = useTheme()
@@ -88,13 +90,10 @@ export function PopoverMenu({
     if (openedAtRef.current !== viewportKey) onClose()
   }, [visible, viewportKey, onClose])
 
-  const handlePress = useCallback(
-    (item: PopoverMenuItem) => {
-      onClose()
-      item.onPress()
-    },
-    [onClose],
-  )
+  const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)
+  const onModalDismiss = useModalClosed(rendered, settled)
+
+  const handlePress = useCallback((item: PopoverMenuItem) => run(item.onPress), [run])
 
   const cardSizeOrEstimate = cardSize ?? {
     width: CARD_WIDTH,
@@ -114,7 +113,7 @@ export function PopoverMenu({
       motion={motion}
       origin={origin}
       onClose={onClose}
-      onDismiss={onDismiss}
+      onDismiss={onModalDismiss}
       dismissLabel={t("dismiss_menu")}
       centered={!anchored}
       onCardLayout={anchored ? onCardLayout : undefined}

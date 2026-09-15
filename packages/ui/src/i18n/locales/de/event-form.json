@@ -8,36 +8,33 @@
     "meetLocation": "Treffpunkt",
     "spotPlaceholder": "Ort benennen, z. B. Bootshaus-Steg",
     "dateTime": "Datum und Uhrzeit",
+    "startTime": "Beginnt",
     "whatToBring": "Was mitbringen",
-    "slots": "Aufgaben",
-    "slotsHelp": "Biete konkrete Aufgaben zum Übernehmen an.",
+    "slots": "Aufgaben zum Eintragen",
+    "slotsHelp": "Mindestens eine. Man trägt sich für eine Aufgabe ein, um teilzunehmen.",
     "optional": "optional",
     "endTime": "Endet",
     "runsFor": "Dauer",
     "duration_hours": "{{count}} Std."
   },
   "linkedReports": {
-    "label": "Meldungen, die dieses Event bearbeitet",
-    "filterByType": "Nach {{type}} filtern",
-    "searchPlaceholder": "Meldungen nach Titel oder Details suchen",
-    "searching": "Suche läuft...",
+    "label": "Meldungen an diesem Ort",
     "loadError": "Meldungen konnten nicht geladen werden. Erneut versuchen.",
-    "emptyNoMatch": "Keine Meldungen entsprechen der Suche.",
-    "emptyNone": "Noch keine veröffentlichten Meldungen.",
-    "showMore": "{{count}} weitere anzeigen",
-    "showMoreA11y": "Weitere Meldungen anzeigen",
-    "loadMore": "Mehr laden",
-    "loadMoreA11y": "Weitere Meldungen laden",
-    "loading": "Wird geladen...",
-    "selectedCount_one": "{{count}} Meldung ausgewählt",
-    "selectedCount_other": "{{count}} Meldungen ausgewählt"
-  },
-  "pickOnMap": {
-    "start": "Auf Karte wählen",
-    "startA11y": "Meldungen auf der Karte auswählen",
-    "hint": "Tippe auf Meldungs-Pins in der Karte, um sie zu verknüpfen, und ziehe dieses Fenster dann wieder hoch.",
-    "done": "Fertig",
-    "doneA11y": "Fertig – Meldungen auf der Karte auswählen beenden"
+    "help": "Verknüpfe die Meldungen, die ihr aufräumt. Wer sie gemeldet hat, sieht das Event bei seiner Meldung.",
+    "pin_first": "Setze den Treffpunkt, um Meldungen in der Nähe zu sehen.",
+    "nearby_heading": "In der Nähe",
+    "nearby_empty": "Noch keine offenen Meldungen in der Nähe dieses Orts.",
+    "linked_count_one": "{{count}} verknüpft",
+    "linked_count_other": "{{count}} verknüpft",
+    "pick_on_map": "Meldungen auf der Karte auswählen",
+    "pick_on_map_sub": "Nach Art filtern und auf der Karte auswählen",
+    "pick_on_map_a11y": "Karte öffnen, um Meldungen für diese Veranstaltung auszuwählen",
+    "retry": "Erneut versuchen",
+    "added_announce": "{{title}} verknüpft",
+    "removed_announce": "Verknüpfung mit {{title}} gelöst",
+    "limit_reached": "Du hast das Maximum von {{max}} Meldungen verknüpft.",
+    "unavailable_row": "Meldung nicht verfügbar",
+    "unavailable_sub": "Sie wurde vielleicht entfernt. Du kannst die Verknüpfung trotzdem lösen."
   },
   "share": {
     "label": "Im Feed ankündigen",
@@ -47,5 +44,19 @@
     "now": "jetzt",
     "card_placeholder": "Hier erscheint deine Event-Karte",
     "event_failed": "Event veröffentlicht. Der Feed-Beitrag ging nicht raus."
+  },
+  "timezone": {
+    "caption": "Zeiten in {{zone}}",
+    "change": "Ändern",
+    "device_hint": "Dein Gerät steht auf {{deviceZone}}.",
+    "search_placeholder": "Zeitzonen suchen",
+    "use_device": "Zeitzone meines Geräts verwenden ({{deviceZone}})",
+    "no_match": "Keine Zeitzone passt dazu."
+  },
+  "error": {
+    "date_past": "Wähle heute oder ein späteres Datum.",
+    "time_past": "Wähle eine Uhrzeit, die noch nicht vorbei ist.",
+    "end_too_soon": "Ende mindestens {{minutes}} Minuten nach dem Beginn.",
+    "time_dst_gap": "Diese Uhrzeit gibt es an diesem Datum nicht, weil die Uhren vorgestellt werden. Wähle eine andere Uhrzeit."
   }
 }

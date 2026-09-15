@@ -1,8 +1,9 @@
 import { Platform, Share } from "react-native"
 import { classifyWebShareRejection, type ShareResult } from "./shareResult"
+import { nativeShareContent } from "./shareContent"
 
-export { WEB_ORIGIN } from "./externalUrls"
-import { WEB_ORIGIN } from "./externalUrls"
+export { WEB_ORIGIN, setWebOrigin, webOrigin } from "./externalUrls"
+import { webOrigin } from "./externalUrls"
 
 export function absoluteUrl(path: string): string {
   const p = path.startsWith("/") ? path : `/${path}`
@@ -14,7 +15,7 @@ export function absoluteUrl(path: string): string {
   ) {
     return window.location.origin + p
   }
-  return WEB_ORIGIN + p
+  return webOrigin() + p
 }
 
 export { classifyWebShareRejection } from "./shareResult"
@@ -51,7 +52,7 @@ export async function shareLink(opts: ShareLinkOptions): Promise<ShareResult> {
   }
 
   try {
-    await Share.share({ title: opts.title, message: opts.message ?? `${opts.title}\n${url}`, url })
+    await Share.share(nativeShareContent(Platform.OS, { title: opts.title, message: opts.message, url }))
     return "shared"
   } catch {
     return "unavailable"

@@ -59,6 +59,25 @@ export function buildInlineComposerModel(
   }
 }
 
-export function inlineComposerClosesOnBlur(input: { body: string; mediaCount: number }): boolean {
+export interface InlineComposerFocusHost {
+  contains?: (node: unknown) => boolean
+}
+
+export function inlineComposerFocusWithin(input: {
+  card: InlineComposerFocusHost | null
+  next: unknown
+  pressingOwnControl: boolean
+}): boolean {
+  if (input.pressingOwnControl) return true
+  if (input.card == null || input.next == null) return false
+  return input.card.contains?.(input.next) === true
+}
+
+export function inlineComposerClosesOnBlur(input: {
+  body: string
+  mediaCount: number
+  focusWithin: boolean
+}): boolean {
+  if (input.focusWithin) return false
   return input.body.trim().length === 0 && input.mediaCount === 0
 }

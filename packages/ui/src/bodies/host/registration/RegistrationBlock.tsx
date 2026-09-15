@@ -3,13 +3,14 @@ import { View, StyleSheet } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import type { CleanupDTO, EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
 import { ACCESS_CODE_MAX } from "@civfix/shared"
+import { hasEventEnded } from "@civfix/shared/host"
 import { makeThemedStyles, useTheme, webInputReset } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"
 import { modalSheetInputFocusedStyle as fieldFocusedStyle } from "../../../primitives/ModalCardSheet"
 import { useToast } from "../../../primitives/toastContext"
-import { useAuthState, useRequireAuth } from "../../../data"
+import { useAuthState, useNow, useRequireAuth } from "../../../data"
 import { randomId } from "../../../data/randomId"
 import {
   useCancelEventRegistration,
@@ -61,9 +62,11 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
   const requireAuth = useRequireAuth()
   const { isAuthenticated, isPending: authPending } = useAuthState()
 
+  const now = useNow()
   const ticketTypes = useMemo(() => selectableTicketTypes(cleanup.ticketTypes), [cleanup.ticketTypes])
   const surface = registrationSurface({
     status: cleanup.status,
+    ended: hasEventEnded(cleanup, now),
     ticketTypes,
     registrationState: cleanup.registrationState,
     myRegistration: cleanup.myRegistration,

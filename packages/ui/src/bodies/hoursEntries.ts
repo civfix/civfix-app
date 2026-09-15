@@ -1,7 +1,7 @@
 import { MAX_EVENT_HOURS, MIN_EVENT_HOURS, type CleanupDTO, type EventHoursEntry } from "@civfix/shared"
 import { formatHours } from "./formatHours"
 
-export type HoursCleanup = Pick<CleanupDTO, "scheduledAt" | "endsAt" | "slots">
+export type HoursCleanup = Pick<CleanupDTO, "scheduledAt" | "endsAt" | "slots" | "timezone">
 
 export interface HoursAttendee {
   slot?: { id: string } | null

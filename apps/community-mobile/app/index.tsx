@@ -3,7 +3,7 @@ import { View, StyleSheet, useWindowDimensions } from "react-native"
 import { useFocusEffect } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useQueryClient } from "@tanstack/react-query"
-import type { BBox, CleanupDTO, LatLng, ReportCategory, ReportPinDTO } from "@civfix/shared"
+import type { BBox, CleanupDTO, LatLng, ReportClusterDTO, ReportPinDTO } from "@civfix/shared"
 import {
   AppShell,
   space,
@@ -13,9 +13,7 @@ import {
   MapControls,
   useMapViewport,
   useReportFilterStore,
-  useEventReportLink,
   enabledCategoriesArray,
-  FILTER_CATEGORIES,
   useSidebarStore,
   clampSidebarWidth,
   defaultRenderBody,
@@ -36,8 +34,6 @@ import {
   nestedShellBodyEntry,
   useNestedShellStore,
 } from "@/lib/nestedShellSignal"
-import { navTeardownEpoch } from "@/lib/goHome"
-import { stackWithoutShellHosted } from "@/lib/navBridge"
 import { LocationPrimerSheet } from "@/components/LocationPrimerSheet"
 import { useAndroidBackHandler } from "@/hooks/useAndroidBackHandler"
 import { markRootShellSeen } from "@/lib/rootShellSeen"
@@ -97,8 +93,6 @@ function ManagedMap({
   return <SharedMap {...mapProps} ref={setMapHandle} onRegionChange={onRegionChange} />
 }
 
-const ALL_REPORT_CATEGORIES: readonly ReportCategory[] = FILTER_CATEGORIES
-
 const NEARBY_CLEANUPS_LIMIT = 20
 
 const CONTROL_LONG_PRESS_GUARD_MS = 800
@@ -127,19 +121,6 @@ export default function MapHomeScreen() {
     [enabledCategories],
   )
 
-  const linkActive = useEventReportLink((s) => s.active)
-  const linkFilterCategories = useEventReportLink((s) => s.filterCategories)
-  const effectiveCategories = useMemo<ReportCategory[]>(
-    () =>
-      linkActive
-        ? linkFilterCategories.length
-          ? linkFilterCategories
-          : [...ALL_REPORT_CATEGORIES]
-        : userLayerCategories,
-    [linkActive, linkFilterCategories, userLayerCategories],
-  )
-  const queryEnabled = linkActive || userLayerCategories.length > 0
-
   const location = useUserLocation()
 
   const queryClient = useQueryClient()
@@ -148,10 +129,11 @@ export default function MapHomeScreen() {
     queryClient.setQueryData<LatLng | null>(queryKeys.userLocation, location.coords)
   }, [location.coords, queryClient])
 
+  const reportsEnabled = userLayerCategories.length > 0
   const reports = useMapReports({
     bbox,
-    categories: effectiveCategories,
-    enabled: queryEnabled,
+    categories: userLayerCategories,
+    enabled: reportsEnabled,
   })
   const cleanups = useNearbyCleanups(NEARBY_CLEANUPS_LIMIT, location.coords, { radiusM: null })
 
@@ -313,18 +295,7 @@ export default function MapHomeScreen() {
     }, []),
   )
 
-  const rootTeardownEpochRef = useRef(navTeardownEpoch())
-  useFocusEffect(
-    useCallback(() => {
-      clearNestedShellHosts()
-      const epoch = navTeardownEpoch()
-      if (epoch === rootTeardownEpochRef.current) return
-      rootTeardownEpochRef.current = epoch
-      const nav = useNavStore.getState()
-      const stack = stackWithoutShellHosted(nav.stack)
-      if (stack.length !== nav.stack.length) nav.setStack(stack)
-    }, []),
-  )
+  useFocusEffect(useCallback(() => clearNestedShellHosts(), []))
 
   const primerPlan = locationPrimerDecision({
     permission: location.permission,
@@ -492,8 +463,12 @@ export default function MapHomeScreen() {
   }, [])
 
   const pins = useMemo<ReportPinDTO[]>(
-    () => (queryEnabled ? (reports.data?.pins ?? []) : []),
-    [queryEnabled, reports.data],
+    () => (reportsEnabled ? (reports.data?.pins ?? []) : []),
+    [reportsEnabled, reports.data],
+  )
+  const reportAggregates = useMemo<ReportClusterDTO[]>(
+    () => (reportsEnabled ? (reports.data?.clusters ?? []) : []),
+    [reportsEnabled, reports.data],
   )
 
   const focusedPinId = active?.kind === "pin" ? (active.id ?? null) : null
@@ -509,6 +484,7 @@ export default function MapHomeScreen() {
           (location.coords ? { lat: location.coords.lat, lng: location.coords.lng } : null)
         }
         reports={pins}
+        reportAggregates={reportAggregates}
         cleanups={eventsVisible ? cleanupItems : []}
         userLocation={location.coords}
         showUserLocation={location.permission === "granted"}
@@ -528,6 +504,7 @@ export default function MapHomeScreen() {
       location.coords,
       location.permission,
       pins,
+      reportAggregates,
       cleanupItems,
       eventsVisible,
       onPressPin,

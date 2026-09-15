@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Platform, Animated, Dimensions } from "react-native"
 import type { PressableStateCallbackType, ViewProps, ViewStyle } from "react-native"
 import { type ChatItem, type ChatMessageDTO, type UserMentionDTO, type ReactionEmoji, type MediaDTO } from "@civfix/shared"
@@ -14,7 +14,9 @@ import { announce } from "../../announce"
 import { useT } from "../../i18n"
 import { buildMessageActions, type MessageActionKey } from "../messageActions"
 import { clockTime } from "../relativeTime"
-import { appLinkOrigins, mentionLookup, tokenizeChatBody, type ChatLinkTarget } from "./chatLinks"
+import { appLinkOrigins, mentionLookup, tokenizeChatBody, type ChatBodyToken, type ChatLinkTarget } from "./chatLinks"
+import { planChatEmbeds, type CivfixLinkRef } from "./civfixLinks"
+import { ChatLinkEmbeds } from "./ChatLinkEmbeds"
 import { senderColor } from "./conversationModel"
 import { useConversationStyles } from "./styles"
 
@@ -39,19 +41,26 @@ export interface RenderChatBodyInput {
   onOpenLink: (target: ChatLinkTarget) => void
 }
 
-export function renderChatBody({
+export function chatBodyTokens({
   body,
   mentions,
   cityHandle,
-  tintStyle,
   linkOrigins,
-  onOpenPerson,
-  onOpenLink,
-}: RenderChatBodyInput): React.ReactNode {
-  const tokens = tokenizeChatBody(body, {
+}: Pick<RenderChatBodyInput, "body" | "mentions" | "cityHandle" | "linkOrigins">): ChatBodyToken[] {
+  return tokenizeChatBody(body, {
     mentions: mentionLookup(mentions, cityHandle),
     origins: linkOrigins,
   })
+}
+
+export function renderChatBody(input: RenderChatBodyInput): React.ReactNode {
+  return renderChatTokens(chatBodyTokens(input), input)
+}
+
+export function renderChatTokens(
+  tokens: readonly ChatBodyToken[],
+  { body, tintStyle, onOpenPerson, onOpenLink }: RenderChatBodyInput,
+): React.ReactNode {
   if (tokens.length === 1 && tokens[0]?.kind === "text") return body
   return tokens.map((token, i) => {
     if (token.kind === "text") return token.text
@@ -160,7 +169,9 @@ export const BubbleAttachments = React.memo(function BubbleAttachments({
   )
 })
 
-function FlashOverlay({ mine, rounded }: { mine: boolean; rounded?: boolean }) {
+type FlashShape = "bubble" | "rounded" | "card"
+
+function FlashOverlay({ mine, shape = "bubble" }: { mine: boolean; shape?: FlashShape }) {
   const styles = useConversationStyles()
   const v = useRef(new Animated.Value(0)).current
   useEffect(() => {
@@ -177,11 +188,38 @@ function FlashOverlay({ mine, rounded }: { mine: boolean; rounded?: boolean }) {
       pointerEvents="none"
       style={[
         StyleSheet.absoluteFillObject,
-        rounded ? styles.flashOverlayRounded : styles.flashOverlayBubble,
+        shape === "rounded" ? styles.flashOverlayRounded : shape === "card" ? styles.flashOverlayCard : styles.flashOverlayBubble,
         mine ? styles.flashOverlayMine : styles.flashOverlayTheirs,
         { opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0, mine ? 0.35 : 0.16] }) },
       ]}
     />
+  )
+}
+
+function SendStatusLine({ failed, onRetry }: { failed: boolean; onRetry: () => void }) {
+  const styles = useConversationStyles()
+  const th = useTheme()
+  const { t } = useT("conversation")
+  if (failed) {
+    return (
+      <Pressable
+        onPress={onRetry}
+        accessibilityRole="button"
+        accessibilityLabel={t("bubble.retry_sending")}
+        hitSlop={6}
+        {...focusRingProps}
+        style={styles.statusLine}
+      >
+        <Icon icon={iconMap.RefreshCw} size={11} color={th.colors.bloom["600"]} />
+        <Text style={[styles.timeText, styles.failedText]}>{t("bubble.failed_retry")}</Text>
+      </Pressable>
+    )
+  }
+  return (
+    <View style={styles.statusLine}>
+      <Icon icon={iconMap.Clock} size={11} color={th.colors.textSubtle} />
+      <Text style={styles.timeText}>{t("bubble.sending")}</Text>
+    </View>
   )
 }
 
@@ -318,6 +356,22 @@ export const Bubble = React.memo(function Bubble({
     },
     [openInternalHref, openExternal, toast, t],
   )
+  const onOpenEmbed = useCallback(
+    (ref: CivfixLinkRef) => onOpenLink({ kind: "internal", path: ref.path, url: ref.url }),
+    [onOpenLink],
+  )
+  const bodyTokens = useMemo(
+    () =>
+      chatBodyTokens({
+        body,
+        mentions: message.mentions,
+        cityHandle: message.cityMention?.handle ?? null,
+        linkOrigins,
+      }),
+    [body, message.mentions, message.cityMention?.handle, linkOrigins],
+  )
+  const embedPlan = useMemo(() => planChatEmbeds(bodyTokens), [bodyTokens])
+  const bare = embedPlan.linkOnly && !message.replyTo
   const openEdit = useCallback(() => {
     if (canEdit && message.id) onEdit(message)
   }, [canEdit, message, onEdit])
@@ -345,7 +399,7 @@ export const Bubble = React.memo(function Bubble({
           <Icon icon={iconMap.Ban} size={13} color={th.colors.textSubtle} />
           <Text style={styles.tombstoneBubbleText}>{t("bubble.removed")}</Text>
         </View>
-        {flash ? <FlashOverlay mine={false} rounded /> : null}
+        {flash ? <FlashOverlay mine={false} shape="rounded" /> : null}
       </View>
     )
   }
@@ -481,49 +535,27 @@ export const Bubble = React.memo(function Bubble({
   }
   const closeContextMenu = () => setMenuMode((m) => (m === "menu" ? "closed" : m))
   const reactions = message.reactions ?? []
-  const bodyContent = renderChatBody({
+  const rowKey = message.clientId ?? message.id
+  const tinted = mine && !bare
+  const tintStyle = tinted ? styles.mentionTokenMine : styles.mentionToken
+  const bubbleChrome = bare ? styles.bubbleBare : mine ? styles.bubbleMine : styles.bubbleTheirs
+  const bodyContent = renderChatTokens(bodyTokens, {
     body,
     mentions: message.mentions,
-    cityHandle: message.cityMention?.handle ?? null,
-    tintStyle: mine ? styles.mentionTokenMine : styles.mentionToken,
+    tintStyle,
     linkOrigins,
     onOpenPerson,
     onOpenLink,
   })
+  const showBodyText = !embedPlan.linkOnly
   const atts = message.attachments ?? []
   const hasBody = body.length > 0
   const toggleReaction = (emoji: ReactionEmoji) => onToggleReaction(message.id, emoji)
 
-  if (mine && (pending || failed)) {
-    return (
-      <View style={[styles.bubbleWrap, styles.bubbleWrapMine, wrapGap]}>
-        {hasBody ? (
-          <View style={[styles.bubble, styles.bubbleMine, failed ? styles.bubbleFailed : null]}>
-            {message.replyTo ? <ReplyQuote replyTo={message.replyTo} mine onPress={onQuotePress} loading={jumpLoading} /> : null}
-            <Text style={[styles.bubbleBody, styles.bubbleBodyMine]}>{body}</Text>
-          </View>
-        ) : null}
-        <BubbleAttachments attachments={atts} mine />
-        {failed ? (
-          <Pressable
-            onPress={() => message.clientId && onRetry(message.clientId)}
-            accessibilityRole="button"
-            accessibilityLabel={t("bubble.retry_sending")}
-            hitSlop={6}
-            {...focusRingProps}
-            style={styles.statusLine}
-          >
-            <Icon icon={iconMap.RefreshCw} size={11} color={th.colors.bloom["600"]} />
-            <Text style={[styles.timeText, styles.failedText]}>{t("bubble.failed_retry")}</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.statusLine}>
-            <Icon icon={iconMap.Clock} size={11} color={th.colors.textSubtle} />
-            <Text style={styles.timeText}>{t("bubble.sending")}</Text>
-          </View>
-        )}
-      </View>
-    )
+  const inFlight = mine && (pending || failed)
+  const bubbleTint = failed && !bare ? styles.bubbleFailed : null
+  const retrySend = () => {
+    if (message.clientId) onRetry(message.clientId)
   }
 
   const bubbleInner = (
@@ -538,16 +570,25 @@ export const Bubble = React.memo(function Bubble({
             if (message.id) onVotePoll?.(message.id, idxs)
           }}
         />
-      ) : (
+      ) : showBodyText ? (
         <Text style={[styles.bubbleBody, mine ? styles.bubbleBodyMine : styles.bubbleBodyTheirs]}>
           {bodyContent}
         </Text>
-      )}
-      <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={mine} disabled={!reactable} />
+      ) : null}
+      {!isPoll && embedPlan.refs.length > 0 ? (
+        <ChatLinkEmbeds
+          rowKey={rowKey}
+          refs={embedPlan.refs}
+          linkOnly={embedPlan.linkOnly}
+          linkStyle={tintStyle}
+          onOpen={onOpenEmbed}
+        />
+      ) : null}
+      <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={tinted} disabled={!reactable} />
     </>
   )
   const bubbleClone = !menuEverOpened ? null : hasBody ? (
-    <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>{bubbleInner}</View>
+    <View style={[styles.bubble, bubbleChrome, bubbleTint]}>{bubbleInner}</View>
   ) : (
     <BubbleAttachments attachments={atts} mine={mine} />
   )
@@ -590,9 +631,9 @@ export const Bubble = React.memo(function Bubble({
       ) : null}
       <View style={styles.bubbleRow}>
         {!hasBody ? null : isWeb ? (
-          <View ref={menuAnchorRef} style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
+          <View ref={menuAnchorRef} style={[styles.bubble, bubbleChrome, bubbleTint]}>
             {bubbleInner}
-            {flash ? <FlashOverlay mine={mine} /> : null}
+            {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}
           </View>
         ) : (
           <Pressable
@@ -601,10 +642,10 @@ export const Bubble = React.memo(function Bubble({
             onLongPress={menuAvailable ? openContextMenu : undefined}
             delayLongPress={300}
             {...focusRingProps}
-            style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}
+            style={[styles.bubble, bubbleChrome, bubbleTint]}
           >
             {bubbleInner}
-            {flash ? <FlashOverlay mine={mine} /> : null}
+            {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}
           </Pressable>
         )}
         {isWeb && menuAvailable ? (
@@ -654,10 +695,11 @@ export const Bubble = React.memo(function Bubble({
         onReportPhoto={onReportPhoto}
         onLongPress={!isWeb && menuAvailable ? openContextMenu : undefined}
       />
+      {inFlight ? <SendStatusLine failed={failed} onRetry={retrySend} /> : null}
       {!hasBody ? (
         <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={false} disabled={!reactable} />
       ) : null}
-      {flash && !hasBody ? <FlashOverlay mine={false} rounded /> : null}
+      {flash && !hasBody ? <FlashOverlay mine={false} shape="rounded" /> : null}
 
       {menuAvailable && menuEverOpened ? (() => {
         const model = buildMenuModel()
@@ -689,7 +731,7 @@ export const Bubble = React.memo(function Bubble({
           </>
         )
       })() : null}
-      {groupEnd || edited ? (
+      {(groupEnd || edited) && !inFlight ? (
         <View style={styles.metaLine}>
           {groupEnd ? <Text style={styles.timeText}>{clockTime(message.createdAt)}</Text> : null}
           {edited ? <Text style={styles.editedText}>{t("bubble.edited")}</Text> : null}

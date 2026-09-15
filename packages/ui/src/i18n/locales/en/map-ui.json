@@ -64,17 +64,6 @@
     "cancelA11y": "Cancel choosing a location",
     "needPin": "Tap the map to set a location first"
   },
-  "linkPanel": {
-    "preview": "Report preview",
-    "title": "Report",
-    "close": "Close report preview",
-    "noDescription": "No description provided.",
-    "viewDetails": "View report details",
-    "add": "Add this report",
-    "remove": "Remove",
-    "addA11y": "Add this report to the event",
-    "removeA11y": "Remove this report from the event"
-  },
   "dropPin": {
     "locationA11y": "Selected location",
     "report": {

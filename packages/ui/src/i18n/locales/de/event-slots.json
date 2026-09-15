@@ -1,9 +1,11 @@
 {
   "block": {
-    "heading": "Aufgaben",
-    "claim_joins_hint": "Mit einer Aufgabe sagst du zugleich zu.",
-    "filled": "{{claimed}}/{{capacity}} Plätze belegt",
-    "no_slot_hint": "Noch unsicher? Sage ohne Aufgabe zu und komm, wann du kannst."
+    "heading": "Aufgaben zum Eintragen",
+    "filled": "{{claimed}} von {{capacity}} Plätzen belegt",
+    "signed_up_one": "{{count}} eingetragen",
+    "signed_up_other": "{{count}} eingetragen",
+    "none_signed_up": "Noch niemand eingetragen",
+    "none_yet": "Der Gastgeber hat noch keine Aufgaben angelegt."
   },
   "row": {
     "open": "Frei",
@@ -11,17 +13,21 @@
     "remaining_other": "Noch {{count}} Plätze frei",
     "full": "Voll",
     "full_sub": "Alle Plätze vergeben",
-    "you_claimed": "Du hast diese Aufgabe",
-    "claimed_count_one": "{{count}} Person",
-    "claimed_count_other": "{{count}} Personen",
-    "claim": "Übernehmen",
-    "claimed": "Übernommen",
+    "you_claimed": "Deine Aufgabe",
+    "claimed_count_one": "{{count}} eingetragen",
+    "claimed_count_other": "{{count}} eingetragen",
+    "claim": "Eintragen",
+    "claimed": "Eingetragen",
     "switch": "Wechseln",
-    "claim_a11y": "Aufgabe {{title}} übernehmen",
+    "claim_a11y": "Für die Aufgabe {{title}} eintragen",
     "release_a11y": "Aufgabe {{title}} abgeben",
     "switch_a11y": "Zu Aufgabe {{title}} wechseln",
     "any_time": "Jederzeit",
-    "window_a11y": "{{title}}, {{range}}"
+    "window_a11y": "{{title}}, {{range}}",
+    "expand_a11y": "{{title}}, {{count}} eingetragen",
+    "expand_hint": "Zeigt, wer eingetragen ist",
+    "collapse_hint": "Blendet aus, wer eingetragen ist",
+    "faces_more": "+{{count}}"
   },
   "editor": {
     "add_first": "Aufgabe hinzufügen",
@@ -59,7 +65,12 @@
     "split_count_a11y": "Die Veranstaltung in {{count}} gleiche Schichten aufteilen",
     "generated_title_prefix": "Schicht",
     "generated_title": "{{prefix}} {{n}}",
-    "prefix_a11y": "Namenspräfix für erzeugte Schichten"
+    "prefix_a11y": "Namenspräfix für erzeugte Schichten",
+    "window_outside_event": "Schichten müssen in die Zeiten der Veranstaltung passen.",
+    "suggest_general": "Allgemeine Helfer",
+    "suggest_general_a11y": "„Allgemeine Helfer“ als Namen der ersten Aufgabe verwenden",
+    "title_placeholder_first": "z. B. Allgemeine Helfer",
+    "remove_last_hint": "Jede Veranstaltung braucht mindestens eine Aufgabe."
   },
   "error": {
     "empty_title": "Gib dieser Aufgabe einen Namen.",
@@ -79,7 +90,31 @@
     "window_a11y": "{{title}} von {{range}}"
   },
   "toast": {
-    "claimed": "Aufgabe übernommen",
-    "released": "Deine Aufgabe wurde freigegeben"
+    "claimed": "Eingetragen",
+    "released": "Deine Aufgabe wurde freigegeben",
+    "switched": "Zu {{title}} gewechselt"
+  },
+  "viewer": {
+    "holds": "Du bist für {{slot}} eingetragen",
+    "held": "Du warst für {{slot}} eingetragen",
+    "going_no_slot": "Du bist dabei. Wähle eine Aufgabe, damit der Gastgeber weiß, wo du hilfst.",
+    "pick_hint": "Wähle eine Aufgabe, um dich einzutragen.",
+    "guest_link": "Kein Konto? Als Gast zusagen",
+    "guest_link_a11y": "Ohne Konto als Gast zusagen",
+    "ticketed_hint": "Plätze werden über die Anmeldung vergeben."
+  },
+  "people": {
+    "you": "Du",
+    "view_profile_a11y": "{{name}}, Profil ansehen",
+    "error": "Konnte nicht laden, wer eingetragen ist.",
+    "retry": "Erneut versuchen",
+    "be_first": "Trag dich als Erste oder Erster ein.",
+    "more": "+{{count}} weitere",
+    "more_a11y": "Alle Eingetragenen ansehen",
+    "partial": "{{shown}} von {{claimed}} werden angezeigt",
+    "gated_title": "Hier erscheinen nur Personen, denen du folgst",
+    "gated_hint": "Trag dich für eine Aufgabe ein, um alle Teilnehmenden zu sehen.",
+    "gated_empty_one": "{{count}} eingetragen. Trag dich für eine Aufgabe ein, um zu sehen, wer.",
+    "gated_empty_other": "{{count}} eingetragen. Trag dich für eine Aufgabe ein, um zu sehen, wer."
   }
 }

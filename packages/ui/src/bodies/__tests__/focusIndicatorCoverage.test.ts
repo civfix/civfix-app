@@ -80,6 +80,15 @@ describe("the focused-field recipe is ONE recipe", () => {
     expect(src).toMatch(/outlineColor: FOCUS_RING_COLOR/)
     expect(src).toMatch(/outlineOffset: FOCUS_RING_OFFSET/)
   })
+
+  it("every tab stop the slot board added carries the ring, and the disclosure announces its state", () => {
+    // Three new stops per expanded row: the disclosure, each person row, and the overflow link - on top
+    // of the claim pill that was already there.
+    const src = strip(read("bodies/EventSlotsBlock.tsx"))
+    expect((src.match(/\{\.\.\.focusRingProps\}/g) ?? []).length).toBeGreaterThanOrEqual(4)
+    expect(src).toContain("accessibilityState={{ expanded }}")
+    expect(src).toContain('accessibilityHint={t(expanded ? "row.collapse_hint" : "row.expand_hint")}')
+  })
 })
 
 describe("the ring traces the control, not the hit target", () => {

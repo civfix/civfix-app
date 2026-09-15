@@ -42,6 +42,8 @@ import { useLocale, useT } from "../i18n"
 import { appErrorCode } from "./errorCode"
 import { pushCleanup } from "./navHelpers"
 import { useCleanupDraft } from "./cleanupDraftStore"
+import { useLinkedReportCards } from "./linkedReportCards"
+import { linkedReportsSummary } from "./linkReportsModel"
 import {
   commitHostDraftMount,
   isGenuineHostExit,
@@ -60,8 +62,8 @@ import {
   type CleanupFormSection,
   type CleanupFormValue,
 } from "./CleanupForm"
-import { isScheduleInFuture, resolveEventEnd } from "./calendarModel"
-import { buildSlotInputs } from "./eventSlotsForm"
+import { formEndInstantMs, formInstantMs, isScheduleInFutureInZone } from "./calendarModel"
+import { addSlotDraft, buildSlotInputs, hasNamedSlot, makeSlotKey } from "./eventSlotsForm"
 import {
   EVENT_WIZARD_STEPS,
   eventStepIndex,
@@ -93,12 +95,23 @@ const STEP_ICONS: Record<Exclude<EventWizardStep, "review">, LucideIcon> = {
   details: iconMap.Users,
 }
 
+/**
+ * The >=1 slot floor applied to a RESUMED draft. `emptyCleanupForm` already seeds a fresh one, so this
+ * only catches a draft begun before the floor existed - it must stay a pure plan tweak, because the
+ * store write happens in the mount effect (see `planHostDraftMount`'s doc).
+ */
+function withSeededSlot(plan: HostDraftMountPlan): HostDraftMountPlan {
+  if (plan.value.slots.length > 0) return plan
+  return { ...plan, value: { ...plan.value, slots: addSlotDraft([], makeSlotKey()) } }
+}
+
 function wizardDraftOf(value: CleanupFormValue): EventWizardDraft {
   return {
     title: value.title,
     date: value.date,
     time: value.time,
     endTime: value.endTime,
+    timezone: value.timezone,
     coords: value.coords,
     slots: value.slots,
   }
@@ -215,12 +228,19 @@ function ReviewSummary({
           minute: "2-digit",
         })
       : empty
-  const whenRange =
+  const startMs =
+    value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
+  const endMs =
     value.date && value.time && value.endTime
+      ? formEndInstantMs(value.date, value.time, value.endTime, value.timezone)
+      : null
+  const whenRange =
+    startMs !== null && endMs !== null
       ? timeRangeLabel(
-          mergeDateTime(value.date, value.time).toISOString(),
-          resolveEventEnd(value.date, value.time, value.endTime).toISOString(),
+          new Date(startMs).toISOString(),
+          new Date(endMs).toISOString(),
           locale,
+          value.timezone,
         )
       : null
   const addr = value.coords ? reverseLabelText(label.data, value.coords) : null
@@ -230,7 +250,10 @@ function ReviewSummary({
     .map((slot) => slot.title.trim())
     .filter((title) => title.length > 0)
     .join(", ")
-  const extras = [bring, slots].filter((part) => part.length > 0).join(" · ")
+  const reportsSummary = linkedReportsSummary({
+    eventKind: value.eventKind,
+    linkedCount: value.linkedReportIds.length,
+  })
 
   return (
     <View style={styles.summaryCard}>
@@ -255,10 +278,24 @@ function ReviewSummary({
         sub={spot.length > 0 ? spot : null}
         onEdit={() => onEdit("where")}
       />
+      {reportsSummary ? (
+        <SummaryRow
+          icon={STEP_ICONS.where}
+          label={t(reportsSummary.labelKey)}
+          value={t(reportsSummary.valueKey, { count: reportsSummary.count })}
+          onEdit={() => onEdit("where")}
+        />
+      ) : null}
+      <SummaryRow
+        icon={STEP_ICONS.details}
+        label={t("wizard.summary.slots")}
+        value={slots.length > 0 ? slots : empty}
+        onEdit={() => onEdit("details")}
+      />
       <SummaryRow
         icon={STEP_ICONS.details}
         label={t("wizard.summary.extras")}
-        value={extras.length > 0 ? extras : t("wizard.summary.noExtras")}
+        value={bring.length > 0 ? bring : t("wizard.summary.noExtras")}
         onEdit={() => onEdit("details")}
       />
     </View>
@@ -318,12 +355,16 @@ function HostForm({
         }
       : emptyCleanupForm(seedReportId, seedOrganizationId)
     const { active, value } = useCleanupDraft.getState()
-    return planHostDraftMount({ active, value }, seedReportId, draftSeedReportId, initial, seedPoint)
+    return withSeededSlot(
+      planHostDraftMount({ active, value }, seedReportId, draftSeedReportId, initial, seedPoint),
+    )
   })
   const startedFresh = mountPlan.startedFresh
   const [draftCommitted, setDraftCommitted] = useState(false)
   useEffect(() => {
     commitHostDraftMount(useCleanupDraft.getState(), mountPlan)
+    const resumed = useCleanupDraft.getState().value
+    if (resumed && resumed.slots.length === 0) useCleanupDraft.getState().patch(mountPlan.value)
     draftSeedReportId = mountPlan.seedReportId
     setDraftCommitted(true)
   }, [mountPlan])
@@ -336,6 +377,7 @@ function HostForm({
     return () => {
       if (isGenuineHostExit(useNavStore.getState().stack)) {
         useCleanupDraft.getState().clear()
+        useLinkedReportCards.getState().clear()
         draftSeedReportId = undefined
       }
     }
@@ -353,7 +395,9 @@ function HostForm({
   const stepErrorKey =
     step === "when" && form.date !== null && form.time !== null && !hasValidEventEnd(form)
       ? "wizard.when.error_end"
-      : `wizard.${step}.error`
+      : step === "details" && hasNamedSlot(form.slots)
+        ? "wizard.details.error_invalid"
+        : `wizard.${step}.error`
   const showWizardBack =
     editingFromReview || prevEventStep(step) !== null || standalone === undefined
 
@@ -412,18 +456,20 @@ function HostForm({
     isCleanupFormComplete(form) &&
     form.date != null &&
     form.time != null &&
-    isScheduleInFuture(form.date, form.time) &&
+    isScheduleInFutureInZone(form.date, form.time, form.timezone) &&
     !create.isPending
 
   const scheduledAt = useMemo(() => {
     if (!form.date || !form.time) return null
-    return mergeDateTime(form.date, form.time)
-  }, [form.date, form.time])
+    const at = formInstantMs(form.date, form.time, form.timezone)
+    return at === null ? null : new Date(at)
+  }, [form.date, form.time, form.timezone])
 
   const endsAt = useMemo(() => {
     if (!form.date || !form.time || !form.endTime) return null
-    return resolveEventEnd(form.date, form.time, form.endTime)
-  }, [form.date, form.time, form.endTime])
+    const at = formEndInstantMs(form.date, form.time, form.endTime, form.timezone)
+    return at === null ? null : new Date(at)
+  }, [form.date, form.endTime, form.time, form.timezone])
 
   const onPublish = useCallback(() => {
     if (!canPublish || !form.coords || !scheduledAt || !endsAt) return
@@ -441,11 +487,12 @@ function HostForm({
         lng: form.coords.lng,
         scheduledAt: scheduledAt.toISOString(),
         endsAt: endsAt.toISOString(),
+        timezone: form.timezone,
         ...(spotLine.length > 0 ? { address: spotLine } : {}),
         ...(form.description.trim().length > 0 ? { description: form.description.trim() } : {}),
         ...(form.bring.length > 0 ? { bring: form.bring } : {}),
         ...(linkedReportIds ? { linkedReportIds } : {}),
-        ...(slots.length > 0 ? { slots } : {}),
+        slots,
         ...(form.organizationId ? { organizationId: form.organizationId } : {}),
       },
       {
@@ -476,6 +523,7 @@ function HostForm({
             }).catch(() => toast.show(tShare("share.event_failed"), { variant: "error" }))
           }
           useCleanupDraft.getState().clear()
+          useLinkedReportCards.getState().clear()
           draftSeedReportId = undefined
           useDroppedPin.getState().clear()
           if (standalone) {

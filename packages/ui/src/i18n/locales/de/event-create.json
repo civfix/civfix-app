@@ -28,9 +28,10 @@
       "error": "Setze den Treffpunkt auf der Karte."
     },
     "details": {
-      "title": "Noch etwas?",
-      "help": "Optional: Material und Aufgaben zum Übernehmen.",
-      "error": "Jede Aufgabe braucht einen Namen und eine gültige Anzahl."
+      "title": "Wen brauchst du?",
+      "help": "Lege mindestens eine Aufgabe an. Man nimmt an deiner Veranstaltung teil, indem man sich für eine einträgt.",
+      "error": "Benenne mindestens eine Aufgabe.",
+      "error_invalid": "Gib jeder Aufgabe einen Namen und eine gültige Platzzahl."
     },
     "review": {
       "title": "Bereit zum Veröffentlichen?",
@@ -41,7 +42,12 @@
       "what": "Was",
       "when": "Wann",
       "extras": "Details",
-      "noExtras": "Nichts weiter"
+      "noExtras": "Nichts weiter",
+      "slots": "Aufgaben",
+      "reports": "Meldungen",
+      "reports_count_one": "{{count}} Meldung",
+      "reports_count_other": "{{count}} Meldungen",
+      "noReports": "Keine verknüpft"
     }
   },
   "publish": {

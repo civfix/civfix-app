@@ -1,4 +1,5 @@
 import type { DetailEntry, DetailKind, View } from "../nav"
+import { entryDiscriminator } from "../nav/routes"
 import { resolveTabBarFootprint } from "./tabBarLogic"
 
 export type BodyLayout = "scroll" | "full"
@@ -43,6 +44,7 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
   "host-checkin": "scroll",
   "host-broadcast-quick": "scroll",
   "host-team": "scroll",
+  "host-log-hours": "scroll",
   "my-ticket": "scroll",
   org: "scroll",
   "my-donations": "scroll",
@@ -66,6 +68,20 @@ export function resolveBodyLayout(
 ): BodyLayout {
   if (!fullPageDetails || kind === "home-view") return BODY_LAYOUT[kind]
   return SHEET_ONLY_KINDS.has(kind) ? BODY_LAYOUT[kind] : "full"
+}
+
+export type PageBottomReserve = "box" | "content"
+
+const PINNED_FOOTER_KINDS: ReadonlySet<DetailKind> = new Set<DetailKind>([
+  "thread",
+  "new-group",
+  "new-channel",
+  "composer",
+  "post-thread",
+])
+
+export function pageBottomReserve(kind: DetailEntry["kind"]): PageBottomReserve {
+  return kind !== "view" && PINNED_FOOTER_KINDS.has(kind) ? "box" : "content"
 }
 
 export type PortraitDetailPresentation = "none" | "sheet" | "full"
@@ -111,10 +127,7 @@ export function portraitSurfaceTransitionKey(
   presentation: PortraitDetailPresentation,
 ): string {
   if (presentation !== "full" || !active) return `view:${view}`
-  if (active.kind === "composer") {
-    return `composer:${active.composerMode ?? "post"}:${active.targetPostId ?? ""}`
-  }
-  return `${active.kind}:${active.id ?? ""}`
+  return entryDiscriminator(active)
 }
 
 export function topmostFullEntry(

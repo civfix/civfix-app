@@ -23,7 +23,17 @@ describe("RsvpPill signed-out seam", () => {
 describe("EventDetailBody wiring", () => {
   it("offers the guest path only where the host can mint a Turnstile token", () => {
     expect(detail).toContain("const onSignedOutRsvp = getTurnstileToken ? openGuestRsvp : undefined")
-    expect(detail).toContain("onSignedOutPress={onSignedOutRsvp}")
+    expect(detail).toContain("onGuestRsvp={onSignedOutRsvp}")
+  })
+
+  it("routes a signed-out SLOT tap to sign-in, and offers the guest sheet as its own line", () => {
+    // A guest can never hold a claim (cleanup_guests has no user_id), so tapping a specific slot must
+    // lead to an account, not to the guest sheet. The guest path survives as a separate link.
+    const block = strip(read("../EventSlotsBlock.tsx"))
+    expect(block).toContain("requireAuth(")
+    expect(block).toContain('t("viewer.guest_link")')
+    expect(block).not.toMatch(/onPress=\{onGuestRsvp\}[\s\S]{0,400}?row\.claim/)
+    expect(block).toMatch(/viewerState === "signed_out" && onGuestRsvp/)
   })
 
   it("mounts the guest sheet once, beside the other event sheets", () => {

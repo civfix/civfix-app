@@ -35,4 +35,9 @@ describe("DonateBlock's callers pass a REAL donateState", () => {
       expect(read(rel), rel).toMatch(/useOrgDonationPage\(/)
     }
   })
+
+  it("neither caller reaches into the donation page's org block before proving it is there", () => {
+    expect(read("bodies/host/OrgPageBody.tsx")).toContain("donate.data?.org ?")
+    expect(read("bodies/EventDetailBody.tsx")).toContain("donatePage.data?.org ?")
+  })
 })

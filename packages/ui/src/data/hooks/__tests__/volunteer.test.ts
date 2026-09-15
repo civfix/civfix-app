@@ -111,8 +111,8 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
   })
 
   it("claiming a slot patches the LIST rows too - a claim auto-RSVPs, so `joined`/`going` move", () => {
-    // The server joins a non-member in the same transaction as the claim (that is what the block's
-    // `claim_joins_hint` promises), so every list card for this event is stale the moment the PUT
+    // The server joins a non-member in the same transaction as the claim (holding a slot IS what
+    // "going" means on the board), so every list card for this event is stale the moment the PUT
     // returns. Writing only the detail left the card BEHIND the sheet reading "RSVP" and the old count
     // until that list happened to refetch. This is the same pair `useJoinCleanup` applies.
     // The claim wiring lives in the exported options builder (the hook just injects the api client).
@@ -139,21 +139,6 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
     expect(helper).toContain("queryKey: queryKeys.orgEventsRoot")
   })
 
-  it("completing an event invalidates the detail (every alias), the list prefix, the ROSTER and the hours read-back", () => {
-    // Like the claim above, the completion wiring lives in the exported options builder (the hook just
-    // injects the api client) - so the behavioural contract is driven directly against a QueryClient in
-    // data/__tests__/complete-cleanup-cache.test.ts and this only pins the shape of the source.
-    const fn = cleanupsSource.slice(
-      cleanupsSource.indexOf("export function completeCleanupMutationOptions"),
-      cleanupsSource.indexOf("export interface ClaimEventSlotVars"),
-    )
-    expect(fn).toContain("cleanupDetailFilters(id)")
-    expect(fn).toContain("invalidateCleanupLists(qc)")
-    expect(fn).toContain("queryKeys.eventHours(id)")
-    // Completion is what mounts the hours editor, and that editor renders one row per attendee joined
-    // from this key - a roster cached before the last RSVPs leaves the host with nobody to credit.
-    expect(fn).toContain("queryKeys.cleanupAttendees(id)")
-  })
 })
 
 describe("hooks/posts.ts", () => {

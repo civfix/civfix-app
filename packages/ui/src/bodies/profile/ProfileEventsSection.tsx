@@ -1,11 +1,11 @@
 import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { CleanupDTO } from "@civfix/shared"
-import { eventChip, dowLabel, timeLabel } from "@civfix/shared/datetime"
+import { eventChip } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
 import { Text } from "../../typography"
 import { MetaDot } from "../../primitives"
-import { useLocale, useRelativeTime, useT } from "../../i18n"
+import { useEventWhen, useLocale, useT } from "../../i18n"
 import { SectionEyebrow, SubHead } from "./SectionHeadings"
 import { useSectionStyles } from "./sectionStyles"
 import type { ProfileEventSplit, ProfileEventTab } from "./profileEventSplit"
@@ -27,15 +27,11 @@ function EventRow({
   const th = useTheme()
   const { t } = useT("profile-view")
   const { locale } = useLocale()
-  const { weekdays } = useRelativeTime()
-  const { day, month } = eventChip(event.scheduledAt, locale)
+  const when = useEventWhen(event)
+  const { day, month } = eventChip(event.scheduledAt, locale, when.timeZone)
   const where = event.address?.trim()
   const tint = `${badgeColor}1A`
-  const subParts = [
-    dowLabel(event.scheduledAt, weekdays),
-    timeLabel(event.scheduledAt, locale),
-    where,
-  ].filter((s): s is string => !!s)
+  const subParts = [when.dow, when.timeWithZone, where].filter((s): s is string => !!s)
   return (
     <Pressable
       onPress={onPress}

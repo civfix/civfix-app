@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ActivityIndicator } from "react-native"
 import type { CleanupDTO, UpdateCleanupRequest } from "@civfix/shared"
 import { makeThemedStyles, useTheme, noShadow, focusRingProps } from "../theme"
@@ -13,15 +13,18 @@ import { useCleanup, useUpdateCleanup, useAuthState } from "../data"
 import { cleanupHostStanding, managesEvent } from "../data/hooks/host"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
-import { useT } from "../i18n"
+import { useT, viewerTimeZone } from "../i18n"
 import { appErrorCode } from "./errorCode"
-import { isScheduleInFuture, isScheduleUntouched, resolveEventEnd } from "./calendarModel"
 import {
-  CleanupForm,
-  isCleanupFormComplete,
-  mergeDateTime,
-  type CleanupFormValue,
-} from "./CleanupForm"
+  formEndInstantMs,
+  formInstantMs,
+  isScheduleInFutureInZone,
+  isScheduleUntouched,
+  wallClockToFormDate,
+} from "./calendarModel"
+import { wallClockInZone } from "@civfix/shared/datetime"
+import { CleanupForm, isCleanupFormComplete, type CleanupFormValue } from "./CleanupForm"
+import { linkedRefToCardData, useLinkedReportCards } from "./linkedReportCards"
 import { mustPersistEventEnd, seededEndTime } from "./eventWizard"
 import { buildSlotInputs, slotsFromCleanup } from "./eventSlotsForm"
 
@@ -42,7 +45,8 @@ function saveErrorMessage(err: unknown, t: Translate): string {
 }
 
 function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
-  const when = new Date(cleanup.scheduledAt)
+  const timezone = cleanup.timezone ?? viewerTimeZone()
+  const when = wallClockToFormDate(wallClockInZone(Date.parse(cleanup.scheduledAt), timezone))
   return {
     organizationId: cleanup.organization?.id ?? null,
     title: cleanup.title,
@@ -53,7 +57,8 @@ function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
     coords: cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null,
     date: when,
     time: when,
-    endTime: seededEndTime(cleanup),
+    endTime: seededEndTime(cleanup, timezone),
+    timezone,
     bring: cleanup.bring ?? [],
     slots: slotsFromCleanup(cleanup.slots),
     linkedReportIds: cleanup.eventKind === "cleanup" ? cleanup.linkedReports.map((r) => r.id) : [],
@@ -71,28 +76,40 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   const [form, setForm] = useState<CleanupFormValue>(() => formFromCleanup(cleanup))
   const [saveError, setSaveError] = useState<string | null>(null)
 
+  const linkedReports = cleanup.linkedReports
+  const linkedReportIds = linkedReports.map((report) => report.id).join(",")
+  useEffect(() => {
+    useLinkedReportCards.getState().put(linkedReports.map(linkedRefToCardData))
+  }, [linkedReportIds])
+
+  useEffect(() => () => useLinkedReportCards.getState().clear(), [])
+
   const scheduleUntouched =
     form.date != null &&
     form.time != null &&
-    isScheduleUntouched(cleanup.scheduledAt, form.date, form.time)
+    isScheduleUntouched(cleanup.scheduledAt, form.date, form.time, form.timezone)
 
   const persistEventEnd = mustPersistEventEnd(cleanup, form)
 
   const canSave =
     isCleanupFormComplete(form, cleanup.slots) &&
     (scheduleUntouched ||
-      (form.date != null && form.time != null && isScheduleInFuture(form.date, form.time))) &&
+      (form.date != null &&
+        form.time != null &&
+        isScheduleInFutureInZone(form.date, form.time, form.timezone))) &&
     !update.isPending
 
   const scheduledAt = useMemo(() => {
     if (!form.date || !form.time) return null
-    return mergeDateTime(form.date, form.time)
-  }, [form.date, form.time])
+    const at = formInstantMs(form.date, form.time, form.timezone)
+    return at === null ? null : new Date(at)
+  }, [form.date, form.time, form.timezone])
 
   const endsAt = useMemo(() => {
     if (!form.date || !form.time || !form.endTime) return null
-    return resolveEventEnd(form.date, form.time, form.endTime)
-  }, [form.date, form.time, form.endTime])
+    const at = formEndInstantMs(form.date, form.time, form.endTime, form.timezone)
+    return at === null ? null : new Date(at)
+  }, [form.date, form.endTime, form.time, form.timezone])
 
   const onSave = useCallback(() => {
     if (!canSave || !form.coords || !scheduledAt || !endsAt) return
@@ -105,6 +122,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
       lng: form.coords.lng,
       scheduledAt: scheduleUntouched ? cleanup.scheduledAt : scheduledAt.toISOString(),
       ...(persistEventEnd ? { endsAt: endsAt.toISOString() } : {}),
+      ...(form.timezone !== (cleanup.timezone ?? null) ? { timezone: form.timezone } : {}),
       description: form.description.trim(),
       address: spotLine,
       bring: form.bring,
@@ -128,6 +146,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
     cleanup.id,
     cleanup.organization,
     cleanup.scheduledAt,
+    cleanup.timezone,
     endsAt,
     form,
     persistEventEnd,
@@ -150,6 +169,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
         initialCenter={form.coords}
         existingSlots={cleanup.slots}
         eventEndUnsaved={cleanup.endsAt == null}
+        scheduleUnchanged={scheduleUntouched}
         currentOrganization={cleanup.organization ?? null}
       />
 

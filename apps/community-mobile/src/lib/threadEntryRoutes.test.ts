@@ -29,6 +29,20 @@ test("maps every push-capable thread tap to a pushed route", () => {
     pathname: "/post/[id]",
     params: { id: "p1" },
   })
+  assert.deepEqual(threadEntryRoute({ kind: "post", id: "p1" }), {
+    pathname: "/post/[id]",
+    params: { id: "p1" },
+  })
+  assert.deepEqual(threadEntryRoute({ kind: "org", slug: "acme" }), {
+    pathname: "/orgs/[slug]",
+    params: { slug: "acme" },
+  })
+})
+
+test("an org byline on a post opens the organization instead of dropping the tap", () => {
+  assert.notEqual(threadEntryRoute({ kind: "org", slug: "river-keepers" }), null)
+  assert.equal(threadEntryRoute({ kind: "org" }), null)
+  assert.ok(routeFileExists("/orgs/[slug]"))
 })
 
 test("maps the quote composer with its target", () => {
@@ -44,6 +58,7 @@ test("refuses id-less entries and kinds the thread never produces", () => {
   assert.equal(threadEntryRoute({ kind: "cleanup" }), null)
   assert.equal(threadEntryRoute({ kind: "pin" }), null)
   assert.equal(threadEntryRoute({ kind: "post-thread" }), null)
+  assert.equal(threadEntryRoute({ kind: "post" }), null)
   assert.equal(threadEntryRoute({ kind: "profile" }), null)
   assert.equal(threadEntryRoute({ kind: "drop-pin", lat: 1, lng: 2 }), null)
 })
@@ -54,6 +69,7 @@ test("every mapped pathname has a real expo-router route file", () => {
     threadEntryRoute({ kind: "cleanup", id: "x" }),
     threadEntryRoute({ kind: "pin", id: "x" }),
     threadEntryRoute({ kind: "post-thread", id: "x" }),
+    threadEntryRoute({ kind: "post", id: "x" }),
     threadEntryRoute({ kind: "composer", composerMode: "quote", targetPostId: "x" }),
   ].map((route) => {
     assert.notEqual(route, null)

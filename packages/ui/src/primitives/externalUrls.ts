@@ -1,5 +1,15 @@
 export const WEB_ORIGIN = "https://civfix.org"
 
+let configuredWebOrigin = WEB_ORIGIN
+
+export function setWebOrigin(origin: string): void {
+  configuredWebOrigin = origin.replace(/\/+$/, "")
+}
+
+export function webOrigin(): string {
+  return configuredWebOrigin
+}
+
 export const DONATE_URL = "https://reachoutla.org/help"
 
 export const TERMS_URL = `${WEB_ORIGIN}/legal/terms`
@@ -35,7 +45,7 @@ export function donatePath(orgSlug: string, eventId?: string | null): string {
 }
 
 export function donateUrl(orgSlug: string, eventId?: string | null): string {
-  return WEB_ORIGIN + donatePath(orgSlug, eventId)
+  return webOrigin() + donatePath(orgSlug, eventId)
 }
 
 export function managePath(eventId: string): string {
@@ -43,7 +53,7 @@ export function managePath(eventId: string): string {
 }
 
 export function manageUrl(eventId: string): string {
-  return WEB_ORIGIN + managePath(eventId)
+  return webOrigin() + managePath(eventId)
 }
 
 export function managePortfolioPath(): string {

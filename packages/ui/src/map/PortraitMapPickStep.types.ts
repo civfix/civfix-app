@@ -1,4 +1,5 @@
 import type { LatLng } from "./LocationPicker.types"
+import type { PinTarget } from "./pins/appearance"
 
 export interface PortraitMapPickStepProps {
   visible: boolean
@@ -6,7 +7,7 @@ export interface PortraitMapPickStepProps {
   initialCenter?: LatLng | null
   onConfirm: (lat: number, lng: number) => void
   onCancel: () => void
-  markerCategory?: string
+  pin: PinTarget
   presentation?: "modal" | "layer"
   inert?: boolean
 }

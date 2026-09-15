@@ -12,7 +12,8 @@
   "hero": {
     "report_fallback": "신고 채팅",
     "members_one": "멤버 {{count}}명",
-    "members_other": "멤버 {{count}}명"
+    "members_other": "멤버 {{count}}명",
+    "members_partial": "참가자 {{going}}명 중 {{shown}}명 표시"
   },
   "action": {
     "mute": "음소거",
@@ -40,6 +41,11 @@
   "empty": {
     "title": "아직 멤버가 없어요",
     "body": "이 이벤트에 참여하는 사람들이 여기에 표시됩니다."
+  },
+  "restricted": {
+    "title": "팔로우하는 사람만 여기에 표시돼요",
+    "body": "역할을 신청하면 참석자를 모두 볼 수 있습니다.",
+    "empty_body": "아직 팔로우하는 사람 중에 참석자가 없습니다. 역할을 신청하면 참석자를 모두 볼 수 있습니다."
   },
   "role": {
     "host": "주최자"

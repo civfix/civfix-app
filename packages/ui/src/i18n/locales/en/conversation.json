@@ -60,6 +60,14 @@
     "reply_unknown_author": "Deleted account",
     "reply_quote_a11y": "In reply to {{name}}: {{excerpt}}"
   },
+  "embed": {
+    "loading": "Loading preview",
+    "post_a11y": "Open post by {{name}}",
+    "person_a11y": "Open {{name}}'s profile",
+    "org_a11y": "Open {{name}}",
+    "followers_one": "{{count}} follower",
+    "followers_other": "{{count}} followers"
+  },
   "menu": {
     "cancel": "Cancel",
     "delete_message": "Delete message",

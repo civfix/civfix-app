@@ -28,6 +28,8 @@ import { useHaptics } from "../capabilities"
 import { REACTION_GLYPH } from "./reactionChipModel"
 import { menuCardStyle, menuOrigin, menuScrimStyle, useMenuMotion } from "./menuMotion"
 import type { AnchorRect } from "./PopoverMenu"
+import { useDeferredOverlayAction } from "./useDeferredOverlayAction"
+import { useModalClosed } from "./useModalClosed"
 import {
   resolveMenuPlacement,
   resolveBandLeft,
@@ -59,6 +61,7 @@ export interface ContextMenuAction {
 export interface MessageContextMenuProps {
   visible: boolean
   onClose: () => void
+  onClosed?: () => void
   anchor: AnchorRect | null
   bubble: React.ReactNode
   mine: boolean
@@ -78,6 +81,7 @@ const GLYPH_GAP = 4
 export function MessageContextMenu({
   visible,
   onClose,
+  onClosed,
   anchor,
   bubble,
   mine,
@@ -95,6 +99,8 @@ export function MessageContextMenu({
   const isWeb = Platform.OS === "web"
   const motion = useMenuMotion({ visible })
   const rendered = motion.rendered
+  const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)
+  const onModalDismiss = useModalClosed(rendered, settled)
 
   const scale = useRef(new Animated.Value(0.96)).current
   useEffect(() => {
@@ -120,14 +126,8 @@ export function MessageContextMenu({
 
   const mineSet = new Set(reactions.filter((r) => r.mine).map((r) => r.emoji))
 
-  const handleReact = (emoji: ReactionEmoji) => {
-    onReact(emoji)
-    onClose()
-  }
-  const handleAction = (action: ContextMenuAction) => {
-    action.onPress()
-    onClose()
-  }
+  const handleReact = (emoji: ReactionEmoji) => run(() => onReact(emoji))
+  const handleAction = (action: ContextMenuAction) => run(action.onPress)
 
   const renderActionRow = (action: ContextMenuAction) => {
     const color = action.destructive ? th.colors.bloom["600"] : th.colors.text
@@ -206,7 +206,13 @@ export function MessageContextMenu({
       cardPosition ? { ...cardPosition, width: WEB_CARD_WIDTH, height: cardH } : null,
     )
     return (
-      <Modal visible={rendered} transparent animationType="none" onRequestClose={onClose}>
+      <Modal
+        visible={rendered}
+        transparent
+        animationType="none"
+        onRequestClose={onClose}
+        onDismiss={onModalDismiss}
+      >
         <View
           style={cardPosition ? styles.rootAnchored : styles.rootCentered}
           pointerEvents={motion.exiting ? "none" : "auto"}
@@ -287,7 +293,13 @@ export function MessageContextMenu({
   )
 
   return (
-    <Modal visible={rendered} transparent animationType="none" onRequestClose={onClose}>
+    <Modal
+      visible={rendered}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+      onDismiss={onModalDismiss}
+    >
       <View
         style={bands ? styles.rootAnchored : styles.rootCentered}
         pointerEvents={motion.exiting ? "none" : "auto"}

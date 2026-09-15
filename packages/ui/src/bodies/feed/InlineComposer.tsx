@@ -1,8 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Pressable, StyleSheet, View, type TextInput as RNTextInput } from "react-native"
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type BlurEvent,
+  type TextInput as RNTextInput,
+  type ViewStyle,
+} from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import type { PostDTO, UserMentionDTO } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, useTheme } from "../../theme"
+import { tokens } from "@civfix/shared/tokens"
+import { focusRingProps, makeThemedStyles, useTheme, webInputReset } from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"
 import type { MentionCandidate } from "../../primitives"
 import { ComposerThumbs } from "../../primitives/ComposerThumbs"
@@ -28,7 +37,9 @@ import {
   buildInlineComposerModel,
   composerEntryFor,
   inlineComposerClosesOnBlur,
+  inlineComposerFocusWithin,
   inlineComposerOwnsDraft,
+  type InlineComposerFocusHost,
 } from "./inlineComposerModel"
 
 const AVATAR_SIZE = 40
@@ -42,6 +53,7 @@ export function InlineComposer() {
   const create = useCreatePost()
   const attachments = useComposerAttachments(POST_COMPOSER_MEDIA_CAP)
   const inputRef = useRef<RNTextInput>(null)
+  const cardRef = useRef<View>(null)
   const submittingRef = useRef(false)
 
   const body = usePostComposerStore((state) => state.draft.body)
@@ -61,8 +73,11 @@ export function InlineComposer() {
     postAsOrganizations.find((org) => org.id === postAsOrganizationId) ?? null
 
   const [open, setOpen] = useState(false)
+  const [bodyFocused, setBodyFocused] = useState(false)
   const [carriedMedia, setCarriedMedia] = useState<PostComposerMedia[]>([])
   const [droppedMedia, setDroppedMedia] = useState(0)
+  const pressingOwnControlRef = useRef(false)
+  const deferredBlurRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const composerMedia = useMemo(
     () => mergePostComposerMedia(carriedMedia, attachments.attachments),
@@ -129,6 +144,8 @@ export function InlineComposer() {
     attachments.reset()
     setCarriedMedia([])
     setDroppedMedia(0)
+    setBodyFocused(false)
+    pressingOwnControlRef.current = false
     setOpen(false)
   }, [attachments])
 
@@ -136,9 +153,56 @@ export function InlineComposer() {
     if (open && !ownsDraft) closeComposer()
   }, [open, ownsDraft, closeComposer])
 
-  const onBlur = useCallback(() => {
-    if (inlineComposerClosesOnBlur({ body, mediaCount: composerMedia.length })) closeComposer()
-  }, [body, closeComposer, composerMedia.length])
+  useEffect(
+    () => () => {
+      if (deferredBlurRef.current != null) clearTimeout(deferredBlurRef.current)
+    },
+    [],
+  )
+
+  const onFocus = useCallback(() => {
+    pressingOwnControlRef.current = false
+    setBodyFocused(true)
+  }, [])
+
+  const holdOwnControl = useCallback(() => {
+    pressingOwnControlRef.current = true
+  }, [])
+
+  const releaseOwnControl = useCallback(() => {
+    pressingOwnControlRef.current = false
+  }, [])
+
+  const onBlur = useCallback(
+    (event: BlurEvent) => {
+      const pressingOwnControl = pressingOwnControlRef.current
+      setBodyFocused(false)
+      const settle = (next: unknown) => {
+        const focusWithin = inlineComposerFocusWithin({
+          card: cardRef.current as unknown as InlineComposerFocusHost | null,
+          next,
+          pressingOwnControl,
+        })
+        if (inlineComposerClosesOnBlur({ body, mediaCount: composerMedia.length, focusWithin }))
+          closeComposer()
+      }
+      if (Platform.OS !== "web") {
+        settle(null)
+        return
+      }
+      const landed = (event?.nativeEvent as { relatedTarget?: unknown } | undefined)?.relatedTarget
+      if (landed != null) {
+        settle(landed)
+        return
+      }
+      if (deferredBlurRef.current != null) clearTimeout(deferredBlurRef.current)
+      deferredBlurRef.current = setTimeout(() => {
+        deferredBlurRef.current = null
+        settle(typeof document === "undefined" ? null : document.activeElement)
+      }, 0)
+    },
+    [body, closeComposer, composerMedia.length],
+  )
 
   const removeMedia = useCallback(
     (id: string) => {
@@ -295,28 +359,28 @@ export function InlineComposer() {
             {model.placeholder}
           </Text>
         </Pressable>
-        {postButton}
       </View>
     )
   }
 
   return (
-    <View style={styles.card}>
+    <View ref={cardRef} style={styles.card}>
       {avatar}
       <View style={styles.column}>
-        <View style={styles.inputSurface}>
+        <View style={[styles.inputSurface, bodyFocused ? styles.inputSurfaceFocused : null]}>
           <TextInput
             ref={inputRef}
             accessibilityLabel={t("input_a11y")}
             value={body}
             onChangeText={setBody}
+            onFocus={onFocus}
             onBlur={onBlur}
             placeholder={model.placeholder}
             placeholderTextColor={th.colors.textSubtle}
             multiline
             maxLength={2000}
             autoFocus
-            style={styles.input}
+            style={[webInputReset, styles.input]}
           />
           <MentionAutocomplete draft={body} onSelect={onMention} />
           <ComposerThumbs
@@ -348,6 +412,8 @@ export function InlineComposer() {
             accessibilityLabel={t("add_media_a11y")}
             accessibilityState={{ disabled: !attachments.canAttach }}
             disabled={!attachments.canAttach}
+            onPressIn={holdOwnControl}
+            onPressOut={releaseOwnControl}
             onPress={() => void attachments.onAttach()}
             hitSlop={6}
             {...focusRingProps}
@@ -416,6 +482,10 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["2"],
     paddingVertical: t.space["1"],
   },
+  inputSurfaceFocused:
+    Platform.OS === "web"
+      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
+      : { borderColor: t.colors.accent },
   input: {
     minHeight: 72,
     maxHeight: 220,

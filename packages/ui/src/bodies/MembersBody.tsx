@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from "react"
 import { View, Pressable, Image, Modal, StyleSheet } from "react-native"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/shared"
-import { timeRangeLabel } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, headingLevel, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
@@ -28,16 +27,19 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
-import { useLocale, useT } from "../i18n"
+import { useT } from "../i18n"
 import { RosterRow, type RosterRowMenu } from "./RosterRow"
 import { RoleChip } from "./RoleChip"
 import { canLeaveChat, chatMemberCount, isChatInfoRoomKind } from "./chatInfoSurface"
+import { chatInfoRosterView } from "./chatInfoVisibility"
+import { FeedNotice } from "./FeedNotice"
 import { cleanupHostStanding, hasHostCapability } from "../data/hooks/host"
 import {
   settableRolesOtherThan,
   type SettableEventMemberRole,
 } from "./host/eventTeamTiers"
 import { groupRosterBySlot, rosterListKey, type RosterListItem } from "./rosterSlotGroups"
+import { SlotGroupHeader } from "./SlotGroupHeader"
 
 type RosterPerson = PersonDTO & { role?: CleanupMemberRole; slot?: EventSlotRef | null }
 
@@ -179,49 +181,6 @@ const MemberRow = memo(function MemberRow({
     />
   )
 })
-
-function SlotGroupHeader({
-  title,
-  claimed,
-  capacity,
-  startsAt,
-  endsAt,
-}: {
-  title: string
-  claimed: number
-  capacity: number | null
-  startsAt: string | null
-  endsAt: string | null
-}) {
-  const styles = useStyles()
-  const { t: tSlots } = useT("event-slots")
-  const { locale } = useLocale()
-  const range = startsAt && endsAt ? timeRangeLabel(startsAt, endsAt, locale) : null
-  return (
-    <View
-      style={styles.slotHeaderBlock}
-      accessibilityRole="header"
-      {...headingLevel(2)}
-      {...(range ? { accessibilityLabel: tSlots("roster.window_a11y", { title, range }) } : {})}
-    >
-      <View style={styles.slotHeader}>
-        <Text style={styles.slotHeaderTitle} numberOfLines={1}>
-          {title}
-        </Text>
-        <View style={styles.slotHeaderCount}>
-          <Text style={styles.slotHeaderCountText}>
-            {capacity == null ? String(claimed) : `${claimed}/${capacity}`}
-          </Text>
-        </View>
-      </View>
-      {range ? (
-        <Text style={styles.slotHeaderRange} numberOfLines={1}>
-          {range}
-        </Text>
-      ) : null}
-    </View>
-  )
-}
 
 function LinkedEntityRow({
   icon,
@@ -388,8 +347,10 @@ export function MembersBody({
   const removeMember = useRemoveMember()
   const managePending = setMemberRole.isPending || removeMember.isPending
 
+  const cleanupTimeZone = cleanupQuery.data?.timezone ?? undefined
   const cleanupSlots: readonly EventSlotDTO[] = cleanupQuery.data?.slots ?? NO_SLOTS
-  const grouped = roomKind === "cleanup" && viewerManagesEvent && cleanupSlots.length > 0
+  const grouped =
+    roomKind === "cleanup" && cleanupSlots.length > 0 && attendeeRoster?.scope === "all"
   const data: RosterItem[] = useMemo(
     () =>
       grouped
@@ -464,6 +425,14 @@ export function MembersBody({
       ? chatMemberCount(reportRosterQuery.data?.total, report?.chatMemberCount)
       : chatMemberCount(cleanup?.going, attendeesQuery.data?.going)
 
+  const roster = chatInfoRosterView({
+    roomKind,
+    scope: attendeeRoster?.scope,
+    going: memberCount,
+    shown: items.length,
+    participant: cleanup?.joined,
+  })
+
   const onBlock = useCallback(
     (personId: string) => {
       blockUser.mutate(personId, { onError: onMutationError })
@@ -491,12 +460,13 @@ export function MembersBody({
         if (item.kind === "slot-header") {
           return (
             <SlotGroupHeader
-            title={item.title}
-            claimed={item.claimed}
-            capacity={item.capacity}
-            startsAt={item.startsAt}
-            endsAt={item.endsAt}
-          />
+              title={item.title}
+              claimed={item.claimed}
+              capacity={item.capacity}
+              startsAt={item.startsAt}
+              endsAt={item.endsAt}
+              timeZone={cleanupTimeZone}
+            />
           )
         }
         if (item.kind === "slot-empty") {
@@ -531,6 +501,7 @@ export function MembersBody({
       blockUser.isPending,
       managePending,
       grouped,
+      cleanupTimeZone,
     ],
   )
 
@@ -562,25 +533,36 @@ export function MembersBody({
             : cleanup?.title ?? ""
         }
         subtitle={roomKind === "report" ? report?.addr ?? null : cleanup?.address ?? null}
-        memberLine={t("hero.members", { count: memberCount })}
+        memberLine={
+          roster.access === "followed-only"
+            ? t("hero.members_partial", { shown: roster.shown, going: roster.going })
+            : t("hero.members", { count: memberCount })
+        }
       />
-      <View style={styles.actions}>
-        <ActionRow
-          icon={muted ? "BellOff" : "Bell"}
-          label={muted ? t("action.unmute") : t("action.mute")}
-          disabled={toggleMute.isPending}
-          onPress={onToggleMute}
-        />
-        {canLeave ? (
-          <ActionRow
-            icon="LogOut"
-            label={t("action.leave")}
-            destructive
-            onPress={() => setLeaveOpen(true)}
-          />
-        ) : null}
-      </View>
+      {roster.canMute || canLeave ? (
+        <View style={styles.actions}>
+          {roster.canMute ? (
+            <ActionRow
+              icon={muted ? "BellOff" : "Bell"}
+              label={muted ? t("action.unmute") : t("action.mute")}
+              disabled={toggleMute.isPending}
+              onPress={onToggleMute}
+            />
+          ) : null}
+          {canLeave ? (
+            <ActionRow
+              icon="LogOut"
+              label={t("action.leave")}
+              destructive
+              onPress={() => setLeaveOpen(true)}
+            />
+          ) : null}
+        </View>
+      ) : null}
       {linkedRow}
+      {roster.showRestrictedNotice ? (
+        <FeedNotice icon="Lock" title={t("restricted.title")} body={t("restricted.body")} />
+      ) : null}
       <Text style={styles.sectionLabel}>{t("section.members")}</Text>
     </View>
   ) : (
@@ -618,6 +600,16 @@ export function MembersBody({
             iconSize={30}
             title={t("error.title")}
             body={t("error.body")}
+          />
+        ) : roster.access === "followed-only" ? (
+          <EmptyState
+            variant="detail"
+            tone="neutral"
+            icon={iconMap.Lock}
+            iconColor={th.colors.textSubtle}
+            iconSize={30}
+            title={t("restricted.title")}
+            body={t("restricted.empty_body")}
           />
         ) : (
           <EmptyState
@@ -831,42 +823,6 @@ const useStyles = makeThemedStyles((t) => ({
     gap: 4,
     flexShrink: 1,
     minWidth: 0,
-  },
-
-  slotHeaderBlock: {
-    paddingTop: t.space["4"],
-    paddingBottom: t.space["2"],
-  },
-  slotHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-  },
-  slotHeaderRange: {
-    marginTop: t.space["1"],
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-  },
-  slotHeaderTitle: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
-    color: t.colors.textSubtle,
-  },
-  slotHeaderCount: {
-    flexShrink: 0,
-    paddingHorizontal: t.space["2"],
-    paddingVertical: 1,
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.bgAlt,
-  },
-  slotHeaderCountText: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 11,
-    color: t.colors.textSubtle,
   },
   slotEmpty: {
     paddingVertical: t.space["2"],

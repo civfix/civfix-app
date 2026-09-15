@@ -6,6 +6,7 @@ import {
   type ReportStatus,
   type ReportType,
 } from "@civfix/shared"
+import { isValidTimeZone } from "@civfix/shared/datetime"
 
 import {
   APPLE_TOUCH_ICON_PATH,
@@ -125,6 +126,7 @@ export interface ReportPreviewInput {
 export interface EventPreviewInput {
   title?: string | null
   scheduledAt?: string | null
+  timezone?: string | null
   status?: string | null
 }
 
@@ -178,19 +180,23 @@ export function previewForReport(
   }
 }
 
-export function formatEventWhen(iso: string | null | undefined): string {
+export function formatEventWhen(
+  iso: string | null | undefined,
+  timeZone?: string | null,
+): string {
   if (!iso) return ""
   const at = new Date(iso)
   if (Number.isNaN(at.getTime())) return ""
-  return new Intl.DateTimeFormat("en-US", {
+  const options: Intl.DateTimeFormatOptions = {
     weekday: "short",
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
     timeZoneName: "short",
-    timeZone: EVENT_TIME_ZONE,
-  }).format(at)
+  }
+  const zone = timeZone && isValidTimeZone(timeZone) ? timeZone : EVENT_TIME_ZONE
+  return new Intl.DateTimeFormat("en-US", { ...options, timeZone: zone }).format(at)
 }
 
 export function previewForEvent(
@@ -200,7 +206,7 @@ export function previewForEvent(
   const title = input.title ? clamp(input.title, EVENT_TITLE_MAX) : ""
   if (!title) return null
 
-  const when = formatEventWhen(input.scheduledAt)
+  const when = formatEventWhen(input.scheduledAt, input.timezone)
   const cancelled = input.status === "cancelled" ? "Cancelled" : null
   const description =
     finishDescription([cancelled, when, `A volunteer event on ${SITE_NAME}`]) || DEFAULT_DESCRIPTION
@@ -251,6 +257,7 @@ export interface SignupPagePreviewInput {
   event?: {
     title?: string | null
     startsAt?: string | null
+    timezone?: string | null
     status?: string | null
     address?: string | null
   } | null
@@ -267,7 +274,7 @@ export function previewForSignupPage(
   if (!title) return null
 
   const isPublic = input.visibility === "public"
-  const when = formatEventWhen(event?.startsAt)
+  const when = formatEventWhen(event?.startsAt, event?.timezone)
   const cancelled = event?.status === "cancelled" ? "Cancelled" : null
   const host = input.organization?.name ? oneLine(input.organization.name) : ""
   const description =

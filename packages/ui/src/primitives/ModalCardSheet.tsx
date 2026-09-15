@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from "react"
+import React, { useContext, useEffect, useRef } from "react"
 import {
+  Animated,
   Modal,
   View,
   ScrollView,
@@ -9,18 +10,33 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native"
+import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, useTheme, webScrimProps, type Theme } from "../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  motion,
+  useTheme,
+  webCursorPointer,
+  webHover,
+  webScrimProps,
+  webTransition,
+  type Theme,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { IosKeyboardAvoidingView } from "../shell/IosKeyboardAvoidingView"
 import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider } from "../shell/ScrollHost"
 import { useKeyboardReserve } from "../shell/useKeyboardReserve"
+import { menuScrimStyle, useMenuMotion, type MenuMotionRecipes } from "./menuMotion"
+import { useModalClosed } from "./useModalClosed"
 
 const MODAL_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
   reserveKeyboardPadding: false,
 })
+
+const CARD_RECIPES: MenuMotionRecipes = { enter: motion.sheetMove, exit: motion.sheetDismiss }
 
 export function useDialogWebKeys({
   visible,
@@ -54,7 +70,7 @@ export interface ModalCardSheetProps {
   visible: boolean
   onClose: () => void
   onCommit?: () => void
-  onDismiss?: () => void
+  onClosed?: () => void
   headerIcon: IconName
   headerIconColor?: string
   title: string
@@ -66,6 +82,7 @@ export interface ModalCardSheetProps {
   bodyLayout?: "scroll" | "fill"
   bodyContentStyle?: StyleProp<ViewStyle>
   cardStyle?: StyleProp<ViewStyle>
+  fullBleed?: boolean
   children: React.ReactNode
 }
 
@@ -73,7 +90,7 @@ export function ModalCardSheet({
   visible,
   onClose,
   onCommit,
-  onDismiss,
+  onClosed,
   headerIcon,
   headerIconColor,
   title,
@@ -85,22 +102,30 @@ export function ModalCardSheet({
   bodyLayout = "scroll",
   bodyContentStyle,
   cardStyle,
+  fullBleed = false,
   children,
 }: ModalCardSheetProps) {
   const styles = useStyles()
   const t = useTheme()
+  const insets = useContext(SafeAreaInsetsContext)
   const kbReserve = useKeyboardReserve({ enabled: visible })
   useDialogWebKeys({ visible, onCommit, onClose })
+  const cardMotion = useMenuMotion({ visible, recipes: CARD_RECIPES })
+  const { rendered } = cardMotion
+  const onDismiss = useModalClosed(rendered, onClosed)
 
   return (
     <Modal
-      visible={visible}
+      visible={rendered}
       transparent
-      animationType="fade"
+      animationType="none"
       onRequestClose={onClose}
       onDismiss={onDismiss}
     >
-      <View style={styles.root}>
+      <Animated.View
+        style={[styles.root, menuScrimStyle(cardMotion)]}
+        pointerEvents={cardMotion.exiting ? "none" : "auto"}
+      >
         <Pressable
           style={styles.backdrop}
           accessibilityRole="button"
@@ -110,10 +135,20 @@ export function ModalCardSheet({
           {...webScrimProps}
         />
         <IosKeyboardAvoidingView
-          style={[styles.avoider, kbReserve > 0 ? { paddingBottom: t.space["4"] + kbReserve } : null]}
+          style={[
+            styles.avoider,
+            fullBleed ? styles.avoiderFull : null,
+            kbReserve > 0 ? { paddingBottom: (fullBleed ? 0 : t.space["4"]) + kbReserve } : null,
+          ]}
         >
-          <View style={[styles.card, cardStyle]}>
-            <View style={styles.header}>
+          <View style={[styles.card, fullBleed ? styles.cardFull : null, cardStyle]}>
+            <View
+              style={[
+                styles.header,
+                fullBleed ? styles.headerFull : null,
+                fullBleed ? { paddingTop: (insets?.top ?? 0) + t.space["2"] } : null,
+              ]}
+            >
               {tone === "danger" ? (
                 <View style={styles.headerBadge}>
                   <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.brand.bloom} />
@@ -124,6 +159,25 @@ export function ModalCardSheet({
               <Text variant="bodyStrong" color={t.colors.text} style={styles.title}>
                 {title}
               </Text>
+              {fullBleed ? (
+                <Pressable
+                  onPress={backdropDismissDisabled ? undefined : onClose}
+                  accessibilityRole="button"
+                  accessibilityLabel={dismissLabel}
+                  accessibilityState={{ disabled: backdropDismissDisabled }}
+                  hitSlop={8}
+                  {...focusRingProps}
+                  style={(state) => [
+                    styles.closeBtn,
+                    webCursorPointer,
+                    webTransition,
+                    webHover(state) ? styles.closeBtnHovered : null,
+                    state.pressed ? styles.closeBtnPressed : null,
+                  ]}
+                >
+                  <Icon icon={iconMap.Close} size={18} color={t.colors.text} />
+                </Pressable>
+              ) : null}
             </View>
 
             {bodyLayout === "fill" ? (
@@ -146,15 +200,26 @@ export function ModalCardSheet({
                 variant="caption"
                 color={tone === "danger" ? t.colors.bloom["700"] : t.colors.bloom["600"]}
                 numberOfLines={2}
+                style={fullBleed ? styles.errorFull : null}
               >
                 {error}
               </Text>
             ) : null}
 
-            <View style={styles.actions}>{actions}</View>
+            {actions ? (
+              <View
+                style={[
+                  styles.actions,
+                  fullBleed ? styles.actionsFull : null,
+                  fullBleed ? { paddingBottom: (insets?.bottom ?? 0) + t.space["3"] } : null,
+                ]}
+              >
+                {actions}
+              </View>
+            ) : null}
           </View>
         </IosKeyboardAvoidingView>
-      </View>
+      </Animated.View>
     </Modal>
   )
 }
@@ -238,5 +303,49 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "flex-end",
     gap: t.space["2"],
+  },
+  avoiderFull: {
+    padding: 0,
+    alignItems: "stretch",
+    justifyContent: "flex-start",
+  },
+  cardFull: {
+    flex: 1,
+    maxWidth: "100%",
+    gap: 0,
+    padding: 0,
+    borderRadius: 0,
+    borderWidth: 0,
+  },
+  headerFull: {
+    paddingHorizontal: t.space["4"],
+    paddingBottom: t.space["2"],
+    backgroundColor: t.colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: t.colors.border,
+  },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  closeBtnHovered: {
+    backgroundColor: t.colors.surfaceTint,
+  },
+  closeBtnPressed: {
+    opacity: 0.85,
+  },
+  errorFull: {
+    paddingHorizontal: t.space["4"],
+    paddingTop: t.space["2"],
+  },
+  actionsFull: {
+    paddingHorizontal: t.space["4"],
+    paddingTop: t.space["3"],
+    backgroundColor: t.colors.surface,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: t.colors.border,
   },
 }))

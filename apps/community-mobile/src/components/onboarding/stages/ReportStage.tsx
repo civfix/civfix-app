@@ -1,9 +1,11 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { StyleSheet, View } from "react-native"
 import Animated, {
   Extrapolation,
   interpolate,
+  useAnimatedReaction,
   useAnimatedStyle,
+  useSharedValue,
   type SharedValue,
 } from "react-native-reanimated"
 import { REPORT_TYPE_TO_CATEGORY } from "@civfix/shared"
@@ -11,7 +13,8 @@ import { CategoryChip, Icon, TeardropPin, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { categoryColor, makeThemedStyles, motion, useTheme, wash } from "@/theme"
 import { REPORT_STAGE_SELECTED_INDEX, REPORT_STAGE_TYPES } from "../demoWorld"
-import { PaperMap } from "./PaperMap"
+import { REPORT_PIN_SPOT } from "../onboardingMapScenes"
+import { MapStill, spotStyle } from "./MapStill"
 import {
   GRAVITY_EASE,
   STAGE_DROP_PX,
@@ -114,6 +117,18 @@ export function ReportStage({ active, reduceMotion }: StageProps) {
   const th = useTheme()
   const styles = useStyles()
   const progress = useStageTimeline(active, reduceMotion, TOTAL_MS)
+  const landed = useSharedValue(false)
+
+  useEffect(() => {
+    if (!active) landed.value = false
+  }, [active, landed])
+
+  useAnimatedReaction(
+    () => progress.value >= W_PIN[1],
+    (dropped) => {
+      if (dropped) landed.value = true
+    },
+  )
 
   const cardStyle = useAnimatedStyle(() => {
     const enter = GRAVITY_EASE(segment(progress.value, W_CARD[0], W_CARD[1]))
@@ -130,7 +145,8 @@ export function ReportStage({ active, reduceMotion }: StageProps) {
   })
 
   const pinStyle = useAnimatedStyle(() => {
-    const drop = GRAVITY_EASE(segment(progress.value, W_PIN[0], W_PIN[1]))
+    const resting = landed.value && progress.value < W_PIN[0]
+    const drop = resting ? 1 : GRAVITY_EASE(segment(progress.value, W_PIN[0], W_PIN[1]))
     const squash = Math.sin(Math.PI * segment(progress.value, W_SQUASH[0], W_SQUASH[1]))
     const scaleY = 1 - squash * 0.1
     const scaleX = 1 + squash * 0.08
@@ -172,14 +188,21 @@ export function ReportStage({ active, reduceMotion }: StageProps) {
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
-        <PaperMap style={styles.map} />
-
-        <View style={styles.pinWrap}>
-          <Animated.View style={[styles.glow, glowStyle]} />
-          <Animated.View style={pinStyle}>
-            <TeardropPin category={SELECTED_CATEGORY} size={PIN_SIZE} />
-          </Animated.View>
-        </View>
+        <MapStill stage="report" style={styles.map}>
+          {(frame) => (
+            <View
+              style={[
+                spotStyle(frame.at(REPORT_PIN_SPOT), -PIN_SIZE / 2, -PIN_HEIGHT),
+                styles.pinWrap,
+              ]}
+            >
+              <Animated.View style={[styles.glow, glowStyle]} />
+              <Animated.View style={pinStyle}>
+                <TeardropPin category={SELECTED_CATEGORY} size={PIN_SIZE} />
+              </Animated.View>
+            </View>
+          )}
+        </MapStill>
 
         <Animated.View style={[styles.successRow, successStyle]}>
           <Text variant="heading" style={styles.successTitle} numberOfLines={2}>
@@ -226,11 +249,7 @@ const useStyles = makeThemedStyles((t) => {
       height: "80%",
     },
     pinWrap: {
-      position: "absolute",
-      top: "62%",
-      left: "50%",
       width: PIN_SIZE,
-      marginLeft: -PIN_SIZE / 2,
       alignItems: "center",
     },
     glow: {

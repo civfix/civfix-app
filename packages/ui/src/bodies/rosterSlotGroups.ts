@@ -8,11 +8,14 @@
  * Order: slots by `sortOrder` (each header immediately followed by its members), then the UNASSIGNED
  * group last. A slot nobody claimed still emits its header plus one `slot-empty` placeholder so the
  * host can SEE the gap they need to fill - that visibility is the whole point of the grouped view.
- * The unassigned group is omitted entirely when it is empty (it is not a slot the host authored, so
- * an empty one says nothing).
+ * Omit `emptySlotTitle` and an unclaimed slot is skipped entirely instead: a paginated or filtered
+ * roster cannot honestly call a slot empty, because its rows may simply not be on the pages read so
+ * far. The unassigned group is omitted entirely when it is empty (it is not a slot the host authored,
+ * so an empty one says nothing).
  *
- * Generic over the person type so `MembersBody` can pass its own `RosterPerson` (a `PersonDTO` plus an
- * optional cleanup role) without a cast; all this module needs is an `id` and the optional `slot` ref.
+ * Generic over the person type so each caller passes its own row without a cast - `MembersBody`'s
+ * `RosterPerson` (a `PersonDTO` plus an optional cleanup role) and the host roster's
+ * `EventRegistrationDTO` alike; all this module needs is an `id` and the optional `slot` ref.
  */
 import type { EventSlotDTO } from "@civfix/shared"
 import { slotDisplayOrder } from "./eventSlotsModel"
@@ -29,7 +32,7 @@ export type RosterListItem<P extends RosterSlotPerson = RosterSlotPerson> =
       /** null = the trailing "no slot" group. */
       slotId: string | null
       title: string
-      claimed: number
+      claimed: number | null
       capacity: number | null
       startsAt: string | null
       endsAt: string | null
@@ -38,14 +41,15 @@ export type RosterListItem<P extends RosterSlotPerson = RosterSlotPerson> =
   | { kind: "member"; person: P }
 
 /**
- * `claimed` on the header is the number of roster rows ACTUALLY in the group, not `slot.claimed`:
- * the header sits directly above the rows it counts, so a disagreement between the two would be
- * visible on screen. `slot.claimed` still drives the attendee-facing picker, which has no roster.
+ * `claimed` on a slot header is that slot's OWN `claimed` off the event's slot board, never the
+ * number of rows in the list: the roster is paged and filtered, so a page-local count would tell a
+ * host filtering for "not checked in" that a full slot is nearly empty. The trailing "no slot" group
+ * answers to no slot, so it carries `claimed: null` and the header prints no fraction for it.
  */
 export function groupRosterBySlot<P extends RosterSlotPerson>(
   attendees: readonly P[],
   slots: readonly EventSlotDTO[],
-  opts: { unassignedTitle: string; emptySlotTitle: string },
+  opts: { unassignedTitle: string; emptySlotTitle?: string | null },
 ): RosterListItem<P>[] {
   const bySlot = new Map<string, P[]>()
   const unassigned: P[] = []
@@ -63,21 +67,25 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
   const items: RosterListItem<P>[] = []
   const ordered = slotDisplayOrder(slots)
   const known = new Set(ordered.map((s) => s.id))
+  const emptySlotTitle = opts.emptySlotTitle ?? null
+  const headerFor = (slot: EventSlotDTO): RosterListItem<P> => ({
+    kind: "slot-header",
+    slotId: slot.id,
+    title: slot.title,
+    claimed: slot.claimed,
+    capacity: slot.capacity ?? null,
+    startsAt: slot.startsAt ?? null,
+    endsAt: slot.endsAt ?? null,
+  })
   for (const slot of ordered) {
     const members = bySlot.get(slot.id) ?? []
-    items.push({
-      kind: "slot-header",
-      slotId: slot.id,
-      title: slot.title,
-      claimed: members.length,
-      capacity: slot.capacity ?? null,
-      startsAt: slot.startsAt ?? null,
-      endsAt: slot.endsAt ?? null,
-    })
     if (members.length === 0) {
-      items.push({ kind: "slot-empty", slotId: slot.id, title: opts.emptySlotTitle })
+      if (emptySlotTitle === null) continue
+      items.push(headerFor(slot))
+      items.push({ kind: "slot-empty", slotId: slot.id, title: emptySlotTitle })
       continue
     }
+    items.push(headerFor(slot))
     for (const person of members) items.push({ kind: "member", person })
   }
 
@@ -93,7 +101,7 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
       kind: "slot-header",
       slotId: null,
       title: opts.unassignedTitle,
-      claimed: trailing.length,
+      claimed: null,
       capacity: null,
       startsAt: null,
       endsAt: null,
@@ -101,6 +109,31 @@ export function groupRosterBySlot<P extends RosterSlotPerson>(
     for (const person of trailing) items.push({ kind: "member", person })
   }
   return items
+}
+
+/**
+ * The same grouping, bucketed by slot id for a caller that renders PER SLOT rather than as one list
+ * (the attendee-facing board's expanded rows). Walks the flat items so both surfaces read the SAME
+ * grouping decision - including the orphan fold - instead of re-implementing it.
+ *
+ * The trailing "no slot" group is skipped: it belongs to no row. Server order is preserved.
+ */
+export function claimantsBySlot<P extends RosterSlotPerson>(
+  items: readonly RosterListItem<P>[],
+): Map<string, P[]> {
+  const bySlot = new Map<string, P[]>()
+  let current: string | null = null
+  for (const item of items) {
+    if (item.kind === "slot-header") {
+      current = item.slotId
+      continue
+    }
+    if (item.kind !== "member" || current === null) continue
+    const bucket = bySlot.get(current)
+    if (bucket) bucket.push(item.person)
+    else bySlot.set(current, [item.person])
+  }
+  return bySlot
 }
 
 /** A stable React key. Members are unique by id (one slot per attendee in v1). */

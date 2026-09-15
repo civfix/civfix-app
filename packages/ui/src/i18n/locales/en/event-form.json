@@ -8,36 +8,33 @@
     "meetLocation": "Meet location",
     "spotPlaceholder": "Name the spot - e.g. Boathouse dock",
     "dateTime": "Date and time",
+    "startTime": "Starts",
     "whatToBring": "What to bring",
-    "slots": "Signup slots",
-    "slotsHelp": "Give people a specific job to claim.",
+    "slots": "Sign-up slots",
+    "slotsHelp": "At least one. People sign up for a slot to join your event.",
     "optional": "optional",
     "endTime": "Ends",
     "runsFor": "Runs for",
     "duration_hours": "{{count}} h"
   },
   "linkedReports": {
-    "label": "Reports this event will handle",
-    "filterByType": "Filter by {{type}}",
-    "searchPlaceholder": "Search reports by title or detail",
-    "searching": "Searching reports...",
+    "label": "Reports at this spot",
     "loadError": "Could not load reports. Try again.",
-    "emptyNoMatch": "No reports match your search.",
-    "emptyNone": "No published reports yet.",
-    "showMore": "Show {{count}} more",
-    "showMoreA11y": "Show more reports",
-    "loadMore": "Load more",
-    "loadMoreA11y": "Load more reports",
-    "loading": "Loading...",
-    "selectedCount_one": "{{count}} report selected",
-    "selectedCount_other": "{{count}} reports selected"
-  },
-  "pickOnMap": {
-    "start": "Pick on map",
-    "startA11y": "Pick reports on the map",
-    "hint": "Tap report pins on the map to link them, then pull this sheet back up.",
-    "done": "Done",
-    "doneA11y": "Done picking reports on the map"
+    "help": "Link the reports you'll clean up. Reporters see the event on their report.",
+    "pin_first": "Set the meeting point to see reports nearby.",
+    "nearby_heading": "Nearby",
+    "nearby_empty": "No open reports near this spot yet.",
+    "linked_count_one": "{{count}} linked",
+    "linked_count_other": "{{count}} linked",
+    "pick_on_map": "Pick reports on the map",
+    "pick_on_map_sub": "Filter by type and select from the map",
+    "pick_on_map_a11y": "Open the map to pick reports for this event",
+    "retry": "Retry",
+    "added_announce": "Linked {{title}}",
+    "removed_announce": "Unlinked {{title}}",
+    "limit_reached": "You've linked the maximum of {{max}} reports.",
+    "unavailable_row": "Report unavailable",
+    "unavailable_sub": "It may have been removed. You can still unlink it."
   },
   "share": {
     "label": "Announce to the feed",
@@ -47,5 +44,19 @@
     "now": "now",
     "card_placeholder": "Your event card appears here",
     "event_failed": "Event published. The feed post did not go out."
+  },
+  "timezone": {
+    "caption": "Times in {{zone}}",
+    "change": "Change",
+    "device_hint": "Your device is on {{deviceZone}}.",
+    "search_placeholder": "Search time zones",
+    "use_device": "Use my device's time zone ({{deviceZone}})",
+    "no_match": "No time zone matches that."
+  },
+  "error": {
+    "date_past": "Pick today or a later date.",
+    "time_past": "Pick a time that hasn't passed yet.",
+    "end_too_soon": "End at least {{minutes}} minutes after the start.",
+    "time_dst_gap": "That time doesn't exist on this date because the clocks jump forward. Pick another time."
   }
 }

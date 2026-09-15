@@ -1,45 +1,76 @@
 /**
- * EventSlotsBlock - the ATTENDEE-facing signup-slot picker for an event ("Check-in table", "Truck
- * driver", ...). One row per slot; the trailing pill claims, switches or releases.
+ * EventSlotsBlock - the ATTENDEE-facing signup-slot board ("Check-in table", "Truck driver", ...). It is
+ * the event page's PRIMARY commitment surface: the page no longer asks "are you going?", it asks "where
+ * will you help?", so this block sits directly under the event header and its first bloom pill IS the
+ * page's primary action. One row per slot; the trailing pill claims, switches or releases.
  *
- * CREATED HERE, MOUNTED BY EventDetailBody: this file deliberately touches nothing else. The detail body
- * renders it below the actions row for an UPCOMING/ACTIVE event and again, `readonly`, in the DONE region
- * so a past event still shows who did what.
+ * MOUNTED BY EventDetailBody, which owns the guest sheet and the members push and hands them in as
+ * `onGuestRsvp` / `onViewAll`.
  *
  * ONE MUTATION, NOT THREE. The viewer's slot is a SINGULAR resource (`PUT /cleanups/:id/slot`), so claim,
  * switch and release are all `useClaimEventSlot(cleanupId)`: `{ slotId }` claims or moves, `{ slotId: null }`
  * releases. There is no separate join call either - claiming auto-RSVPs a non-member in the same server
- * transaction, which is what the `claim_joins_hint` line tells a viewer who has not RSVP'd yet.
+ * transaction, which is why holding a slot is what "going" means here.
  *
- * THE ROW IS NOT A PRESSABLE - only the trailing pill is. Two reasons, both load-bearing: react-native-web
- * renders `Pressable` as a `<button>` and nesting one inside another is invalid DOM the browser silently
- * re-parents, and a whole-row target would make "tap anywhere to claim" ambiguous next to a row whose only
- * meaningful action is on the right. Every state's ownership comes off the server's `slot.mine` flag via
- * `eventSlotsModel`, never re-derived from a roster.
+ * THE DISCLOSURE IS A SIBLING OF THE PILL, NEVER ITS PARENT. react-native-web renders `Pressable` as a
+ * `<button>` and nesting one inside another is invalid DOM the browser silently re-parents - so the row
+ * carries two side-by-side targets (tile+text expands, trailing pill commits) rather than one wrapping
+ * the other. Every state's ownership comes off the server's `slot.mine` flag via `eventSlotsModel`, never
+ * re-derived from the roster: the roster decides who is LISTED, the DTO decides which row is YOURS.
  *
- * No `Modal`, no `FlatList`, no inner `ScrollView` - this block renders inside the gorhom sheet's scroller
- * (see the same constraint on `SlotEditor`).
+ * THE ROSTER IS READ, NOT FETCHED PER ROW. `useCleanupAttendees` is the same query the page's "Who's
+ * going" row already mounts, so expansion issues no request; `groupRosterBySlot` + `claimantsBySlot`
+ * bucket it, and `slotPeopleView` applies the follow-only rule with honest counts off `slot.claimed`.
+ *
+ * No `Modal`, no `FlatList`, no inner `ScrollView` - the expansion grows the card inside the page's
+ * existing scroller (see the same constraint on `SlotEditor`).
  */
-import React, { useCallback, useState } from "react"
-import { View, Pressable, StyleSheet, Animated } from "react-native"
+import React, { useCallback, useMemo, useState } from "react"
+import { View, Pressable, StyleSheet, Animated, LayoutAnimation, Platform } from "react-native"
 import { useQueryClient } from "@tanstack/react-query"
-import type { EventSlotDTO } from "@civfix/shared"
+import type { AttendeeDTO, EventSlotDTO } from "@civfix/shared"
 import { timeRangeLabel } from "@civfix/shared/datetime"
-import { makeThemedStyles, useTheme, webCursorPointer, webTransition, focusRingProps } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
-import { MetaDot, useToast } from "../primitives"
+import {
+  makeThemedStyles,
+  useTheme,
+  useReducedMotion,
+  webCursorPointer,
+  webHover,
+  webTransition,
+  focusRingProps,
+} from "../theme"
+import { Text, Icon, iconMap, TextLink } from "../typography"
+import { Avatar, MetaDot, SkeletonList, useToast } from "../primitives"
 import { POP_ENABLED, usePopScale } from "../primitives/usePopScale"
-import { cleanupDetailFilters, useClaimEventSlot, useRequireAuth } from "../data"
+import {
+  cleanupDetailFilters,
+  useAuthState,
+  useClaimEventSlot,
+  useCleanupAttendees,
+  useJoinCleanup,
+  useRequireAuth,
+} from "../data"
+import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
 import { appErrorCode, appErrorFields } from "./errorCode"
+import { FeedNotice } from "./FeedNotice"
+import { RoleChip } from "./RoleChip"
+import { claimantsBySlot, groupRosterBySlot } from "./rosterSlotGroups"
+import {
+  FACE_NAME_CAP,
+  facePileOverflow,
+  slotPeopleView,
+  type SlotPeopleView,
+} from "./slotPeopleVisibility"
 import {
   boardHasTimedSlots,
   claimSlotErrorKey,
   mySlotId,
+  slotBoardSummary,
   slotDisplayOrder,
   slotRemaining,
   slotRowState,
-  slotsFilledSummary,
+  slotViewerState,
   slotWindow,
   type SlotRowState,
 } from "./eventSlotsModel"
@@ -51,13 +82,34 @@ import {
  */
 const PILL_HIT_SLOP = 7
 
+/** Faces in the collapsed preview. Past three the row is a wall of circles, and the count says the rest. */
+const FACE_CAP = 3
+
+const NO_ATTENDEES: readonly AttendeeDTO[] = []
+const NOTHING_OPEN: ReadonlySet<string> = new Set<string>()
+
 export interface EventSlotsBlockProps {
   cleanupId: string
   slots: readonly EventSlotDTO[]
-  /** Whether the viewer has RSVP'd. Drives the "claiming also RSVPs you" hint (interactive mode only). */
+  /** Whether the viewer has joined. Drives the viewer strip, not any row's state. */
   joined: boolean
   /** DONE / cancelled event: counts only, no pills, no taps. */
   readonly?: boolean
+  /** Cancelled events say so in the header already, so the board stays silent above the rows. */
+  cancelled?: boolean
+  /** The EVENT's IANA zone; shift windows render in it. Absent (legacy row) = the viewer's zone. */
+  timeZone?: string
+  /**
+   * `registration` - a ticketed event commits through `RegistrationBlock`, so the board offers no second
+   * primary CTA to a viewer who has not registered. `general` - the slot-less fallback: `slots` carries
+   * the single synthetic row `generalSlotBoard` builds, and its pill commits through the event's
+   * join/leave mutation rather than a slot claim, because that row IS membership.
+   */
+  mode: "claim" | "registration" | "general"
+  viewer: { actsAsHost: boolean; registered: boolean }
+  /** Opens the host's guest-RSVP sheet. Absent when the host cannot mint a Turnstile token. */
+  onGuestRsvp?: () => void
+  onViewAll: () => void
 }
 
 /** Minimal translator shape (the `t` from `useT`) for the row's copy helpers. */
@@ -84,7 +136,41 @@ function capacityLine(slot: EventSlotDTO, state: SlotRowState, t: Translate): st
   }
 }
 
-function MetaLine({ parts }: { parts: readonly string[] }) {
+/** The label a facepile prints for one claimant. "You" wins over a real name for the viewer's own row. */
+function personLabel(person: AttendeeDTO, viewerId: string | null, t: Translate): string {
+  if (viewerId !== null && person.id === viewerId) return t("people.you")
+  return person.name
+}
+
+function firstNameOf(label: string): string {
+  const trimmed = label.trim()
+  const cut = trimmed.indexOf(" ")
+  return cut > 0 ? trimmed.slice(0, cut) : trimmed
+}
+
+function windowRangeLabel(
+  slot: EventSlotDTO | null,
+  locale: string,
+  timeZone: string | undefined,
+): string | null {
+  if (slot === null) return null
+  const window = slotWindow(slot)
+  if (window === null) return null
+  return timeRangeLabel(window.start.toISOString(), window.end.toISOString(), locale, timeZone)
+}
+
+/**
+ * The viewer's own row first, everyone else in server order. A stable PARTITION, not a sort: the server's
+ * ordering is meaningful (claim time) and re-sorting the whole list to lift one row would destroy it.
+ */
+function viewerFirst(people: readonly AttendeeDTO[], viewerId: string | null): AttendeeDTO[] {
+  if (viewerId === null) return [...people]
+  const mine = people.filter((p) => p.id === viewerId)
+  if (mine.length === 0) return [...people]
+  return [...mine, ...people.filter((p) => p.id !== viewerId)]
+}
+
+function MetaLine({ parts, trailing }: { parts: readonly string[]; trailing?: React.ReactNode }) {
   const styles = useStyles()
   const th = useTheme()
   return (
@@ -97,7 +183,159 @@ function MetaLine({ parts }: { parts: readonly string[] }) {
           </Text>
         </React.Fragment>
       ))}
+      {trailing}
     </View>
+  )
+}
+
+function PersonRow({ person, label, hostLabel }: { person: AttendeeDTO; label: string; hostLabel: string | null }) {
+  const styles = useStyles()
+  const { t } = useT("event-slots")
+  const onPress = useCallback(() => {
+    useNavStore.getState().push({ kind: "person", id: person.handle ?? person.id })
+  }, [person.handle, person.id])
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={t("people.view_profile_a11y", { name: person.name })}
+      {...focusRingProps}
+      style={(state) => [
+        styles.personRow,
+        webCursorPointer,
+        webTransition,
+        webHover(state) ? styles.personRowHovered : null,
+        state.pressed ? styles.pressed : null,
+      ]}
+    >
+      <Avatar
+        name={person.name}
+        seed={person.id}
+        photoUrl={person.avatarUrl ?? null}
+        gradient={person.avatar ?? null}
+        size={28}
+        decorative
+      />
+      <View style={styles.personMeta}>
+        <Text style={styles.personName} numberOfLines={1}>
+          {label}
+        </Text>
+        {person.handle ? (
+          <Text style={styles.personHandle} numberOfLines={1}>
+            @{person.handle}
+          </Text>
+        ) : null}
+      </View>
+      {hostLabel ? <RoleChip label={hostLabel} tone="lead" /> : null}
+    </Pressable>
+  )
+}
+
+function SlotPeople({
+  people,
+  view,
+  loading,
+  errored,
+  nudgeToSignUp,
+  viewerId,
+  hostLabel,
+  onRetry,
+  onViewAll,
+}: {
+  people: readonly AttendeeDTO[]
+  view: SlotPeopleView
+  loading: boolean
+  errored: boolean
+  /** An open row the viewer could still take: worth one line of encouragement, never on a past row. */
+  nudgeToSignUp: boolean
+  viewerId: string | null
+  hostLabel: string
+  onRetry: () => void
+  onViewAll: () => void
+}) {
+  const styles = useStyles()
+  const { t } = useT("event-slots")
+
+  if (loading) return <SkeletonList rows={2} kind="person" />
+  if (errored) {
+    return (
+      <>
+        <Text style={styles.peopleState}>{t("people.error")}</Text>
+        <TextLink variant="label" onPress={onRetry} standalone>
+          {t("people.retry")}
+        </TextLink>
+      </>
+    )
+  }
+  if (view.shown === 0 && view.claimed === 0) {
+    return (
+      <>
+        <Text style={styles.peopleState}>{t("roster.empty_slot")}</Text>
+        {nudgeToSignUp ? <Text style={styles.peopleState}>{t("people.be_first")}</Text> : null}
+      </>
+    )
+  }
+  if (view.shown === 0) {
+    return view.showGate ? (
+      <FeedNotice
+        plain
+        icon="Lock"
+        title={t("people.gated_title")}
+        body={t("people.gated_empty", { count: view.claimed })}
+      />
+    ) : (
+      <>
+        <Text style={styles.peopleState}>
+          {t("people.partial", { shown: 0, claimed: view.claimed })}
+        </Text>
+        <TextLink
+          variant="label"
+          onPress={onViewAll}
+          standalone
+          accessibilityLabel={t("people.more_a11y")}
+        >
+          {t("people.more", { count: view.hidden })}
+        </TextLink>
+      </>
+    )
+  }
+
+  const ordered = viewerFirst(people, viewerId)
+  return (
+    <>
+      {ordered.map((person) => (
+        <PersonRow
+          key={person.id}
+          person={person}
+          label={personLabel(person, viewerId, t)}
+          hostLabel={person.role === "organizer" || person.role === "cohost" ? hostLabel : null}
+        />
+      ))}
+      {view.hidden > 0 && view.access === "full" ? (
+        <TextLink
+          variant="label"
+          onPress={onViewAll}
+          standalone
+          accessibilityLabel={t("people.more_a11y")}
+        >
+          {t("people.more", { count: view.hidden })}
+        </TextLink>
+      ) : null}
+      {view.showGate ? (
+        <>
+          <Text style={styles.peopleState}>
+            {t("people.partial", { shown: view.shown, claimed: view.claimed })}
+          </Text>
+          <FeedNotice
+            plain
+            icon="Lock"
+            title={t("people.gated_title")}
+            body={t("people.gated_hint")}
+          />
+        </>
+      ) : null}
+    </>
   )
 }
 
@@ -107,6 +345,19 @@ function SlotRow({
   busy,
   pending,
   mixedBoard,
+  timeZone,
+  showPill,
+  expanded,
+  people,
+  view,
+  peopleLoading,
+  peopleErrored,
+  nudgeToSignUp,
+  viewerId,
+  hostLabel,
+  onToggle,
+  onRetryPeople,
+  onViewAll,
   onPress,
 }: {
   slot: EventSlotDTO
@@ -120,6 +371,20 @@ function SlotRow({
   /** THIS row is the one in flight - the dim and the a11y busy state, so only the tapped pill reacts. */
   pending: boolean
   mixedBoard: boolean
+  timeZone: string | undefined
+  /** A ticketed event hides the pill until the viewer has registered; the disclosure stays live. */
+  showPill: boolean
+  expanded: boolean
+  people: readonly AttendeeDTO[]
+  view: SlotPeopleView
+  peopleLoading: boolean
+  peopleErrored: boolean
+  nudgeToSignUp: boolean
+  viewerId: string | null
+  hostLabel: string
+  onToggle: () => void
+  onRetryPeople: () => void
+  onViewAll: () => void
   /** Claim / switch / release. Absent for the two non-interactive states. */
   onPress?: () => void
 }) {
@@ -139,11 +404,15 @@ function SlotRow({
   const line = capacityLine(slot, state, t)
   const description = slot.description?.trim() ?? ""
   const hasDescription = description.length > 0
-  const window = slotWindow(slot)
-  const range =
-    window === null ? null : timeRangeLabel(window.start.toISOString(), window.end.toISOString(), locale)
+  const range = windowRangeLabel(slot, locale, timeZone)
   const windowText = range ?? (mixedBoard ? t("row.any_time") : null)
   const metaParts = [windowText, line].filter((part): part is string => part !== null)
+  const faces = people.slice(0, FACE_CAP)
+  const previewNames = people
+    .slice(0, FACE_NAME_CAP)
+    .map((person) => firstNameOf(personLabel(person, viewerId, t)))
+    .join(", ")
+  const previewOverflow = facePileOverflow(slot.claimed, people.length)
 
   const tile = (
     <View style={[styles.tile, owned ? styles.tileMine : null]}>
@@ -162,7 +431,9 @@ function SlotRow({
   )
 
   let pill: React.ReactNode = null
-  if (state === "open" || state === "switch") {
+  if (!showPill) {
+    pill = null
+  } else if (state === "open" || state === "switch") {
     const switching = state === "switch"
     pill = (
       <Pressable
@@ -171,8 +442,8 @@ function SlotRow({
         accessibilityRole="button"
         accessibilityState={{ busy: pending }}
         accessibilityLabel={t(switching ? "row.switch_a11y" : "row.claim_a11y", { title: slot.title })}
-        // 30pt visual, 44pt effective target: this pill IS the whole tap area (the row is deliberately
-        // not pressable), so the house 44pt rule is met with slop rather than a taller wrapper, which
+        // 30pt visual, 44pt effective target: this pill is the row's commitment action and the page's
+        // primary one, so the house 44pt rule is met with slop rather than a taller wrapper, which
         // would grow every slot row. 7 on each edge takes the 30pt height to 44.
         hitSlop={PILL_HIT_SLOP}
         {...focusRingProps}
@@ -220,6 +491,10 @@ function SlotRow({
     )
   }
 
+  const disclosureLabel = range
+    ? `${t("row.window_a11y", { title: slot.title, range })}, ${t("row.claimed_count", { count: slot.claimed })}`
+    : t("row.expand_a11y", { title: slot.title, count: slot.claimed })
+
   return (
     <View
       style={[
@@ -228,48 +503,134 @@ function SlotRow({
         state === "full" ? styles.rowFull : null,
       ]}
     >
-      {POP_ENABLED ? (
-        <Animated.View style={{ transform: [{ scale: popScale }] }}>{tile}</Animated.View>
-      ) : (
-        tile
-      )}
+      <View style={styles.rowMain}>
+        <Pressable
+          onPress={onToggle}
+          accessibilityRole="button"
+          accessibilityState={{ expanded }}
+          accessibilityLabel={disclosureLabel}
+          accessibilityHint={t(expanded ? "row.collapse_hint" : "row.expand_hint")}
+          {...focusRingProps}
+          style={(pressState) => [
+            styles.disclosure,
+            webCursorPointer,
+            webTransition,
+            webHover(pressState) ? styles.disclosureHovered : null,
+            pressState.pressed ? styles.pressed : null,
+          ]}
+        >
+          {POP_ENABLED ? (
+            <Animated.View style={{ transform: [{ scale: popScale }] }}>{tile}</Animated.View>
+          ) : (
+            tile
+          )}
 
-      <View
-        style={styles.meta}
-        {...(range ? { accessibilityRole: "text" as const, accessibilityLabel: t("row.window_a11y", { title: slot.title, range }) } : {})}
-      >
-        <Text style={styles.title} numberOfLines={1}>
-          {slot.title}
-        </Text>
-        {hasDescription ? (
-          <Text style={styles.sub} numberOfLines={metaParts.length > 0 ? 1 : 2}>
-            {description}
-          </Text>
+          <View style={styles.meta}>
+            <Text style={styles.title} numberOfLines={1}>
+              {slot.title}
+            </Text>
+            {hasDescription ? (
+              <Text style={styles.sub} numberOfLines={metaParts.length > 0 ? 1 : 2}>
+                {description}
+              </Text>
+            ) : null}
+            {metaParts.length > 0 ? (
+              <MetaLine
+                parts={metaParts}
+                trailing={
+                  <Icon
+                    icon={expanded ? iconMap.ChevronUp : iconMap.ChevronDown}
+                    size={14}
+                    color={th.colors.textSubtle}
+                  />
+                }
+              />
+            ) : null}
+            {!expanded && faces.length > 0 ? (
+              <View style={styles.facesRow}>
+                {faces.map((person, index) => (
+                  <View key={person.id} style={index === 0 ? null : styles.faceOverlap}>
+                    <Avatar
+                      name={person.name}
+                      seed={person.id}
+                      photoUrl={person.avatarUrl ?? null}
+                      gradient={person.avatar ?? null}
+                      size={20}
+                      decorative
+                    />
+                  </View>
+                ))}
+                <Text style={styles.facesNames} numberOfLines={1}>
+                  {previewOverflow > 0
+                    ? `${previewNames} ${t("row.faces_more", { count: previewOverflow })}`
+                    : previewNames}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        </Pressable>
+
+        {pill ? (
+          POP_ENABLED ? (
+            <Animated.View style={styles.pillWrap}>
+              <Animated.View style={{ transform: [{ scale: popScale }] }}>{pill}</Animated.View>
+            </Animated.View>
+          ) : (
+            <View style={styles.pillWrap}>{pill}</View>
+          )
         ) : null}
-        {metaParts.length > 0 ? <MetaLine parts={metaParts} /> : null}
       </View>
 
-      {pill ? (
-        POP_ENABLED ? (
-          <Animated.View style={{ transform: [{ scale: popScale }] }}>{pill}</Animated.View>
-        ) : (
-          pill
-        )
+      {expanded ? (
+        <View style={styles.people}>
+          <SlotPeople
+            people={people}
+            view={view}
+            loading={peopleLoading}
+            errored={peopleErrored}
+            nudgeToSignUp={nudgeToSignUp}
+            viewerId={viewerId}
+            hostLabel={hostLabel}
+            onRetry={onRetryPeople}
+            onViewAll={onViewAll}
+          />
+        </View>
       ) : null}
     </View>
   )
 }
 
-export function EventSlotsBlock({ cleanupId, slots, joined, readonly = false }: EventSlotsBlockProps) {
+export function EventSlotsBlock({
+  cleanupId,
+  slots,
+  joined,
+  readonly = false,
+  cancelled = false,
+  timeZone,
+  mode,
+  viewer,
+  onGuestRsvp,
+  onViewAll,
+}: EventSlotsBlockProps) {
   const styles = useStyles()
+  const th = useTheme()
   const { t } = useT("event-slots")
+  const { locale } = useLocale()
   const qc = useQueryClient()
   const toast = useToast()
   const requireAuth = useRequireAuth()
   const claim = useClaimEventSlot(cleanupId)
+  const join = useJoinCleanup(cleanupId)
+  const attendees = useCleanupAttendees(cleanupId)
+  const { user, isAuthenticated, isPending } = useAuthState()
+  const reducedMotion = useReducedMotion()
   // WHICH row is in flight, so only the tapped pill dims. It is NOT the disabled gate: the mutation is
-  // shared by every row, so every row disables on `claim.isPending` (see SlotRow's `busy`).
+  // shared by every row, so every row disables on `boardBusy` (see SlotRow's `busy`).
   const [pendingSlotId, setPendingSlotId] = useState<string | null>(null)
+  const [open, setOpen] = useState<ReadonlySet<string>>(NOTHING_OPEN)
+  const ticketed = mode === "registration"
+  const general = mode === "general"
+  const boardBusy = general ? join.isPending : claim.isPending
 
   const onError = useCallback(
     (err: unknown) => {
@@ -285,22 +646,36 @@ export function EventSlotsBlock({ cleanupId, slots, joined, readonly = false }: 
   )
 
   const run = useCallback(
-    (slotId: string | null, tappedId: string) => {
+    (slotId: string | null, tappedId: string, title: string) => {
       // Belt to the disabled pills' braces: `disabled` is a render-time guard, so a tap already in the
       // gesture queue (or a host that re-fires onPress) could still re-enter here mid-flight and start a
       // second PUT of the same singular resource.
-      if (claim.isPending) return
+      if (boardBusy) return
       requireAuth(
         () => {
           setPendingSlotId(tappedId)
+          if (general) {
+            join.mutate(slotId === null, {
+              onSuccess: () => {
+                setPendingSlotId(null)
+                if (slotId === null) return
+                toast.show(t("toast.claimed"))
+              },
+              onError: () => setPendingSlotId(null),
+            })
+            return
+          }
+          const switching = slotId !== null && mySlotId(slots) !== null
           claim.mutate(
             { slotId },
             {
               onSuccess: () => {
                 setPendingSlotId(null)
                 // Releasing needs no confirmation and no announcement - the row flips back visibly. A
-                // CLAIM is worth confirming: on web there is no pop spring to carry it.
-                if (slotId !== null) toast.show(t("toast.claimed"))
+                // CLAIM is worth confirming: on web there is no pop spring to carry it, and a SWITCH
+                // has to name where you landed or two moss rows read the same for a frame.
+                if (slotId === null) return
+                toast.show(switching ? t("toast.switched", { title }) : t("toast.claimed"))
               },
               onError,
             },
@@ -309,50 +684,176 @@ export function EventSlotsBlock({ cleanupId, slots, joined, readonly = false }: 
         { next: `/cleanups/${cleanupId}` },
       )
     },
-    [claim, cleanupId, onError, requireAuth, t, toast],
+    [boardBusy, claim, cleanupId, general, join, onError, requireAuth, slots, t, toast],
   )
+
+  const onToggle = useCallback(
+    (slotId: string) => {
+      if (Platform.OS === "ios" && reducedMotion !== true) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+      }
+      setOpen((prev) => {
+        const next = new Set(prev)
+        if (next.has(slotId)) next.delete(slotId)
+        else next.add(slotId)
+        return next
+      })
+    },
+    [reducedMotion],
+  )
+
+  const onRetryPeople = useCallback(() => {
+    void attendees.refetch()
+  }, [attendees])
 
   const mine = mySlotId(slots)
   const ordered = slotDisplayOrder(slots)
   const mixedBoard = boardHasTimedSlots(slots)
-  // The block's one-line summary. `capacity` is null when ANY slot is unlimited - the model refuses to sum
-  // a mix, and there is nothing honest to print for one, so the line is simply omitted then (as it is for
-  // a block with no capped spots at all).
-  const filled = slotsFilledSummary(slots)
+  const summary = slotBoardSummary(slots)
+  const heldSlot = slots.find((slot) => slot.mine === true) ?? null
+
+  const claimants = useMemo(() => {
+    const roster = attendees.data?.attendees ?? NO_ATTENDEES
+    if (general) {
+      const only = slots[0]
+      return only ? new Map([[only.id, [...roster]]]) : new Map<string, AttendeeDTO[]>()
+    }
+    return claimantsBySlot(
+      groupRosterBySlot(roster, slots, {
+        unassignedTitle: t("roster.unassigned"),
+        emptySlotTitle: t("roster.empty_slot"),
+      }),
+    )
+  }, [attendees.data, general, slots, t])
+
+  const viewerState = slotViewerState({
+    slots,
+    joined,
+    actsAsHost: viewer.actsAsHost,
+    readonly,
+    isAuthenticated,
+    authPending: isPending,
+  })
+  const peopleLoading = attendees.isLoading && attendees.data === undefined
+  const peopleErrored = attendees.isError && attendees.data === undefined
+  const showPill = !ticketed || viewer.registered || viewer.actsAsHost
+  const canSignUpHere =
+    showPill && (viewerState === "not_going" || viewerState === "signed_out")
+  const hostLabel = t("event-members:role.host")
+
+  const heldRange = windowRangeLabel(heldSlot, locale, timeZone)
+
+  function renderStrip(): React.ReactNode {
+    if (viewerState === "host") return null
+    if (viewerState === "ended") {
+      if (heldSlot === null || cancelled) return null
+      return (
+        <View style={[styles.strip, styles.stripMuted]}>
+          <Icon icon={iconMap.Check} size={16} color={th.colors.textMuted} />
+          <Text style={[styles.stripText, styles.stripTextMuted]} numberOfLines={2}>
+            {t("viewer.held", { slot: heldSlot.title })}
+          </Text>
+          {heldRange ? (
+            <>
+              <MetaDot color={th.colors.textSubtle} />
+              <Text style={styles.stripMeta}>{heldRange}</Text>
+            </>
+          ) : null}
+        </View>
+      )
+    }
+    if (viewerState === "holds" && heldSlot !== null) {
+      return (
+        <View style={[styles.strip, styles.stripMoss]}>
+          <Icon icon={iconMap.Check} size={16} color={th.colors.moss["700"]} />
+          <Text style={[styles.stripText, styles.stripTextMoss]} numberOfLines={2}>
+            {t("viewer.holds", { slot: heldSlot.title })}
+          </Text>
+          {heldRange ? (
+            <>
+              <MetaDot color={th.colors.textSubtle} />
+              <Text style={styles.stripMeta}>{heldRange}</Text>
+            </>
+          ) : null}
+        </View>
+      )
+    }
+    if (viewerState === "going_no_slot" && (!ticketed || viewer.registered)) {
+      return (
+        <View style={[styles.strip, styles.stripSun]}>
+          <Icon icon={iconMap.ClipboardList} size={16} color={th.colors.sun["700"]} />
+          <Text style={[styles.stripText, styles.stripTextSun]}>{t("viewer.going_no_slot")}</Text>
+        </View>
+      )
+    }
+    if (ticketed) return <Text style={styles.hint}>{t("viewer.ticketed_hint")}</Text>
+    return <Text style={styles.hint}>{t("viewer.pick_hint")}</Text>
+  }
 
   return (
     <View style={styles.block}>
       <View style={styles.head}>
         <Text style={styles.eyebrow}>{t("block.heading")}</Text>
-        {filled.capacity !== null && filled.capacity > 0 ? (
-          <Text style={styles.filled} numberOfLines={1}>
-            {t("block.filled", { claimed: filled.claimed, capacity: filled.capacity })}
-          </Text>
-        ) : null}
+        <Text style={styles.filled} numberOfLines={1}>
+          {summary.kind === "capped" && summary.capacity !== null && summary.capacity > 0
+            ? t("block.filled", { claimed: summary.claimed, capacity: summary.capacity })
+            : summary.claimed > 0
+              ? t("block.signed_up", { count: summary.claimed })
+              : t("block.none_signed_up")}
+        </Text>
       </View>
-      {!joined && !readonly ? <Text style={styles.hint}>{t("block.claim_joins_hint")}</Text> : null}
-      {!joined && !readonly && mixedBoard ? (
-        <Text style={styles.hint}>{t("block.no_slot_hint")}</Text>
-      ) : null}
+      {renderStrip()}
       <View style={styles.rows}>
         {ordered.map((slot) => {
           const state = slotRowState(slot, mine, readonly)
-          const interactive = state === "open" || state === "switch" || state === "mine"
+          const interactive =
+            showPill && (state === "open" || state === "switch" || state === "mine")
+          const people = claimants.get(slot.id) ?? NO_ATTENDEES
+          const view = slotPeopleView({
+            scope: attendees.data?.scope,
+            claimed: slot.claimed,
+            shown: people.length,
+          })
           return (
             <SlotRow
               key={slot.id}
               slot={slot}
               state={state}
-              busy={claim.isPending}
+              busy={boardBusy}
               pending={pendingSlotId === slot.id}
               mixedBoard={mixedBoard}
+              timeZone={timeZone}
+              showPill={showPill}
+              expanded={open.has(slot.id)}
+              people={people}
+              view={view}
+              peopleLoading={peopleLoading}
+              peopleErrored={peopleErrored}
+              nudgeToSignUp={canSignUpHere && state === "open"}
+              viewerId={user?.id ?? null}
+              hostLabel={hostLabel}
+              onToggle={() => onToggle(slot.id)}
+              onRetryPeople={onRetryPeople}
+              onViewAll={onViewAll}
               {...(interactive
-                ? { onPress: () => run(state === "mine" ? null : slot.id, slot.id) }
+                ? { onPress: () => run(state === "mine" ? null : slot.id, slot.id, slot.title) }
                 : {})}
             />
           )
         })}
       </View>
+      {viewerState === "signed_out" && onGuestRsvp && !ticketed ? (
+        <View style={styles.guestLine}>
+          <TextLink
+            variant="label"
+            onPress={onGuestRsvp}
+            standalone
+            accessibilityLabel={t("viewer.guest_link_a11y")}
+          >
+            {t("viewer.guest_link")}
+          </TextLink>
+        </View>
+      ) : null}
     </View>
   )
 }
@@ -361,8 +862,8 @@ const useStyles = makeThemedStyles((t) => ({
   block: {
     marginTop: t.space["4"],
   },
-  // The eyebrow row: heading left, the filled summary right. The row owns the bottom margin the eyebrow
-  // used to carry, so the spacing above the hint / rows is unchanged.
+  // The eyebrow row: heading left, the board summary right. The row owns the bottom margin the eyebrow
+  // used to carry, so the spacing above the strip / rows is unchanged.
   head: {
     flexDirection: "row",
     alignItems: "center",
@@ -390,19 +891,64 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textSubtle,
     marginBottom: t.space["2"],
   },
+
+  strip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["2"],
+    padding: t.space["3"],
+    borderRadius: t.radius.md,
+    marginBottom: t.space["3"],
+  },
+  stripMoss: {
+    backgroundColor: t.colors.moss["50"],
+  },
+  stripSun: {
+    backgroundColor: t.colors.sun["50"],
+  },
+  stripMuted: {
+    backgroundColor: t.colors.bgAlt,
+  },
+  stripText: {
+    flexShrink: 1,
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["13"],
+    color: t.colors.text,
+  },
+  stripTextMoss: {
+    color: t.colors.moss["700"],
+  },
+  stripTextSun: {
+    color: t.colors.sun["700"],
+  },
+  stripTextMuted: {
+    color: t.colors.textMuted,
+  },
+  stripMeta: {
+    flexShrink: 0,
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: 12,
+    color: t.colors.textSubtle,
+  },
+
   rows: {
     gap: t.space["2"],
   },
+  guestLine: {
+    marginTop: t.space["3"],
+  },
 
   row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
     padding: t.space["3"],
     borderRadius: t.radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
     backgroundColor: t.colors.surface,
+  },
+  rowMain: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["3"],
   },
   rowMine: {
     backgroundColor: t.colors.moss["50"],
@@ -412,6 +958,20 @@ const useStyles = makeThemedStyles((t) => ({
   rowFull: {
     backgroundColor: t.colors.bgAlt,
     borderColor: "transparent",
+  },
+
+  disclosure: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["3"],
+  },
+  disclosureHovered: {
+    backgroundColor: t.colors.surfaceTint,
+    marginHorizontal: -t.space["2"],
+    paddingHorizontal: t.space["2"],
+    borderRadius: t.radius.sm,
   },
 
   tile: {
@@ -438,6 +998,7 @@ const useStyles = makeThemedStyles((t) => ({
   subRow: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 2,
     minWidth: 0,
   },
   sub: {
@@ -453,6 +1014,63 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textSubtle,
   },
 
+  facesRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["2"],
+    marginTop: t.space["1"],
+  },
+  faceOverlap: {
+    marginLeft: -6,
+  },
+  facesNames: {
+    flexShrink: 1,
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: 12,
+    color: t.colors.textSubtle,
+  },
+
+  people: {
+    marginTop: t.space["3"],
+    paddingTop: t.space["3"],
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: t.colors.border,
+    gap: t.space["2"],
+  },
+  peopleState: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: 12,
+    color: t.colors.textSubtle,
+  },
+  personRow: {
+    minHeight: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["3"],
+    borderRadius: t.radius.sm,
+  },
+  personRowHovered: {
+    backgroundColor: t.colors.surfaceTint,
+  },
+  personMeta: {
+    flex: 1,
+    minWidth: 0,
+  },
+  personName: {
+    flexShrink: 1,
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["13"],
+    color: t.colors.text,
+  },
+  personHandle: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: 12,
+    color: t.colors.textSubtle,
+  },
+
+  pillWrap: {
+    alignSelf: "flex-start",
+  },
   pill: {
     flexDirection: "row",
     alignItems: "center",

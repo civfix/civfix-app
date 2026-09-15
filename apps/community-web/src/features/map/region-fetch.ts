@@ -11,10 +11,38 @@ import type { BBox } from "@civfix/shared"
  *   - EDGE_MARGIN: refetch once the viewport comes within this fraction of a loaded-region edge (pan / zoom-out).
  *   - MAX_COARSENESS: refetch once the loaded region is this many times wider than the viewport (zoom-in),
  *     so the <=2000-candidate sample re-tightens around the smaller view and stays dense.
+ *
+ * That hysteresis has ONE override. The server answers with grid AGGREGATES below SERVER_PIN_ZOOM and
+ * with individual pins at/above it, and it derives that zoom from the fetch BBOX alone (impliedZoomForBBox
+ * here is the same derivation, same reference viewport). MAX_COARSENESS 3.5 against a 1.6x pad means a
+ * held region survives until the viewport is ~1.13 zoom levels tighter, so after the user zooms past the
+ * pin threshold the stale AGGREGATES stayed on screen for a whole zoom level - the map looked grouped
+ * long after it should have broken apart. So when the region we would fetch NOW clears the threshold and
+ * the one we hold does not, the crossing itself forces the refetch.
  */
 export const PAD_FACTOR = 0.6
 export const EDGE_MARGIN = 0.12
 export const MAX_COARSENESS = 3.5
+export const SERVER_PIN_ZOOM = 10
+export const VIEWPORT_REFERENCE_TILES = 8
+
+/** The largest zoom a viewport of this extent could be displaying - the server's own bbox->zoom clamp. */
+export function impliedZoomForBBox(b: BBox): number {
+  const span = Math.max(b.east - b.west, (b.north - b.south) * 2)
+  if (!Number.isFinite(span) || span <= 0) return 0
+  const zoom = Math.log2((360 * VIEWPORT_REFERENCE_TILES) / span)
+  if (!Number.isFinite(zoom)) return 0
+  return Math.max(0, Math.min(22, Math.floor(zoom)))
+}
+
+/** Whether a fetch for this region comes back as individual pins rather than server aggregates. */
+export function serverReturnsPins(region: BBox): boolean {
+  return impliedZoomForBBox(region) >= SERVER_PIN_ZOOM
+}
+
+function crossesIntoServerPins(held: BBox, fresh: BBox): boolean {
+  return serverReturnsPins(fresh) && !serverReturnsPins(held)
+}
 
 /** Grow a bbox outward by `factor` per axis (so a small pan/zoom-out stays inside the loaded points). */
 export function padBbox(b: BBox, factor: number): BBox {
@@ -70,7 +98,8 @@ export type RegionFetchDecision =
  * suppresses the duplicate fetch on every settle of a long pan (checking `loaded` first would report
  * "not covered" for the whole pan and restart the request per settle). Only when the request no longer
  * matches the viewport does the loaded region get a say - and if it covers, the user has panned back
- * onto data we already have, so we revert rather than fire a third fetch.
+ * onto data we already have, so we revert rather than fire a third fetch. Either way a region that only
+ * holds server AGGREGATES loses its say the moment the viewport has tightened enough to earn pins.
  */
 export function decideRegionFetch(
   state: RegionFetchState,
@@ -78,7 +107,12 @@ export function decideRegionFetch(
   padFactor: number = PAD_FACTOR,
 ): RegionFetchDecision {
   const { loaded, requested } = state
-  if (requested && regionCovers(requested, viewport)) return { action: "keep" }
-  if (loaded && regionCovers(loaded, viewport)) return { action: "revert", region: loaded }
-  return { action: "request", region: padBbox(viewport, padFactor) }
+  const fresh = padBbox(viewport, padFactor)
+  if (requested && regionCovers(requested, viewport) && !crossesIntoServerPins(requested, fresh)) {
+    return { action: "keep" }
+  }
+  if (loaded && regionCovers(loaded, viewport) && !crossesIntoServerPins(loaded, fresh)) {
+    return { action: "revert", region: loaded }
+  }
+  return { action: "request", region: fresh }
 }

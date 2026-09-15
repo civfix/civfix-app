@@ -9,6 +9,7 @@ const body = strip(read("../HostModeBody.tsx"))
 const panels = strip(read("../HostInsightsPanels.tsx"))
 const model = strip(read("../hostSurfaceModel.ts"))
 const roster = strip(read("../EventRosterBlock.tsx"))
+const rosterList = strip(read("../RosterCheckinList.tsx"))
 const broadcast = strip(read("../HostBroadcastQuickBody.tsx"))
 const invite = strip(read("../HostTeamInviteSheet.tsx"))
 const checkin = strip(read("../HostCheckinBody.tsx"))
@@ -28,6 +29,7 @@ const HOST_SOURCES: Record<string, string> = {
   "HostInsightsPanels.tsx": panels,
   "hostSurfaceModel.ts": model,
   "EventRosterBlock.tsx": roster,
+  "RosterCheckinList.tsx": rosterList,
   "HostBroadcastQuickBody.tsx": broadcast,
   "HostTeamInviteSheet.tsx": invite,
 }
@@ -121,7 +123,7 @@ describe("the tickets row is gated on the platform, not on a capability every ho
     expect(body).not.toContain("ticketsReachable")
     expect(body).not.toContain("!!openExternal")
     expect(strip(read("../hostSurfaceModel.ts"))).toContain(
-      'if (upcoming && can.manageTickets && input.consoleReachable) configure.push("tickets")',
+      'if (before && can.manageTickets && input.consoleReachable) configure.push("tickets")',
     )
   })
 

@@ -36,8 +36,10 @@
  * back IN to the gestures (`interactive`) and fills edge-to-edge with no card chrome (`fullBleed`), so the
  * picker IS the moveable home map: pan / zoom to frame, tap to drop / move the pin, search to fly there.
  *
- * maplibre-react-native is allowed here (this is the *.native.* map seam). The coral draft pin is the
- * shared teardrop (PinSvg, bloom fill) so it matches the map pins (Ionicons are banned in @civfix/ui).
+ * maplibre-react-native is allowed here (this is the *.native.* map seam). The draft pin is the shared
+ * teardrop (PinSvg), themed from the caller's `pin` target through the one `pinAppearanceFor` derivation
+ * the map's own markers use, so what the user drags around IS the marker the thing will get (Ionicons are
+ * banned in @civfix/ui).
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ActivityIndicator, View, StyleSheet, type NativeSyntheticEvent } from "react-native"
@@ -50,12 +52,12 @@ import {
   type PressEventWithFeatures,
 } from "@maplibre/maplibre-react-native"
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec"
-import { categoryColor, makeThemedStyles, useTheme } from "../theme"
+import { makeThemedStyles, useTheme } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
-import { PinSvg, PIN_GLYPHS, glyphForCategory } from "./pins"
+import { PinSvg, pinAppearanceFor } from "./pins"
 import { PICKER_ZOOM, PICKER_HEIGHT, type LatLng, type LocationPickerProps } from "./LocationPicker.types"
 
 // MapLibre's Map.onPress passes either event shape; both carry lngLat (the touched coordinate).
@@ -69,7 +71,7 @@ export function LocationPicker({
   interactive = false,
   fullBleed = false,
   attributionBottomInset,
-  markerCategory,
+  pin,
 }: LocationPickerProps) {
   const styles = useStyles()
   const th = useTheme()
@@ -82,6 +84,8 @@ export function LocationPicker({
   // mount generations and a queued target, in miniature.
   const mapReadyRef = useRef(false)
   const pendingCenterRef = useRef<LatLng | null>(null)
+
+  const pinAppearance = useMemo(() => pinAppearanceFor(pin, th.scheme), [pin, th.scheme])
 
   // Structural MapStyleInput -> the concrete StyleSpecification the native Map wants (mirrors Map.native).
   // rasterMapStyle() rebuilds a deeply-nested style object every call; LocationPicker re-renders on every
@@ -201,17 +205,7 @@ export function LocationPicker({
         {picked ? (
           <Marker id="picked" lngLat={[picked.lng, picked.lat]} anchor="bottom">
             <View style={styles.pin}>
-              {/* Report flow: the dropped pin is the picked report category's teardrop (matches its map
-                  marker). Event-hosting passes no markerCategory, so it keeps the coral cleanup pin. */}
-              {markerCategory ? (
-                <PinSvg
-                  fill={categoryColor(markerCategory, th.scheme)}
-                  glyph={glyphForCategory(markerCategory)}
-                  size={40}
-                />
-              ) : (
-                <PinSvg fill={th.colors.brand.bloom} glyph={PIN_GLYPHS.cleanup!} size={40} />
-              )}
+              <PinSvg fill={pinAppearance.fill} glyph={pinAppearance.glyph} size={40} />
             </View>
           </Marker>
         ) : null}

@@ -363,6 +363,7 @@ export function ThreadFocalPost({
             event={post.event}
             layout="list"
             variant="detail"
+            timeZone={post.event.timezone ?? undefined}
             onPress={() => openEntry({ kind: "cleanup", id: post.event!.id })}
           />
         </View>

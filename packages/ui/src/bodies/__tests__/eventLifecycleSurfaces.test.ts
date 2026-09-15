@@ -1,13 +1,13 @@
 /**
- * Source-text guards for the event LIFECYCLE surfaces (P2): the restructured `EventDetailBody` region,
- * the new `EventHoursBlock`, the relocated `LogHoursEditor` and the `CompleteEventSheet` dialog.
+ * Source-text guards for the event LIFECYCLE surfaces: the restructured `EventDetailBody` region, the
+ * `EventHoursBlock` and the relocated `LogHoursEditor`.
  *
  * The pure state machines are covered by `eventLifecycle.test.ts`. What is left is the wiring, and every
  * assertion here guards a rule that typecheck cannot see and review reliably misses:
  *
- *   1. `CompleteEventSheet` is mounted EXACTLY ONCE. It is a `Modal`; two mounts means two stacked
- *      dialogs and a backdrop that dismisses only the top one - and duplicating it is the natural
- *      mistake when a second host affordance grows a confirm.
+ *   1. Nothing marks an event completed any more. Status is a clock reading, so a surface that still
+ *      imported the retired confirm dialog or the retired completion gate would be writing state the
+ *      server no longer changes.
  *   2. `EventHoursBlock` imports no reanimated and no `Modal`/`FlatList`/`ScrollView`. It renders inside
  *      the event body's scroller, which on compact IS the gorhom sheet: a nested vertical scroller
  *      swallows the sheet's pan, and reanimated is the 0.36.1 worklet-factory crash class.
@@ -19,13 +19,12 @@
  *      compile-time check and `i18n:check` only compares catalogs to EACH OTHER, so a key missing from
  *      all four locales renders the raw key path to the user and sails through the gate.
  */
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
 const body = readFileSync(new URL("../EventDetailBody.tsx", import.meta.url), "utf8")
 const hoursBlock = readFileSync(new URL("../EventHoursBlock.tsx", import.meta.url), "utf8")
 const editor = readFileSync(new URL("../LogHoursEditor.tsx", import.meta.url), "utf8")
-const sheet = readFileSync(new URL("../../primitives/CompleteEventSheet.tsx", import.meta.url), "utf8")
 const hostMode = readFileSync(new URL("../host/HostModeBody.tsx", import.meta.url), "utf8")
 
 /**
@@ -37,39 +36,47 @@ function code(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
 }
 
-describe("the host surface hosts the complete-event sheet once", () => {
-  it("mounts <CompleteEventSheet/> exactly once, on the host surface", () => {
-    expect(code(hostMode).match(/<CompleteEventSheet\b/g) ?? []).toHaveLength(1)
-    expect(code(body).match(/<CompleteEventSheet\b/g) ?? []).toHaveLength(0)
+describe("no surface marks an event completed any more", () => {
+  it("mounts no completion dialog and imports no completion module", () => {
+    for (const source of [code(hostMode), code(body)]) {
+      expect(source).not.toMatch(/CompleteEventSheet/)
+      expect(source).not.toMatch(/eventCompletionState/)
+      expect(source).not.toMatch(/useCompleteCleanup/)
+      expect(source).not.toMatch(/completionArmed/)
+    }
+    expect(existsSync(new URL("../../primitives/CompleteEventSheet.tsx", import.meta.url))).toBe(false)
   })
 
-  it("imports it from its module, not a barrel that three packages are editing", () => {
-    expect(hostMode).toContain('from "../../primitives/CompleteEventSheet"')
-    expect(body).toContain('from "./EventSlotsBlock"')
+  it("sends the host's Log hours affordances at the dedicated screen", () => {
+    expect(code(hostMode)).toContain('push({ kind: "host-log-hours", id })')
   })
 
   it("gates the slots block on a non-empty slot list", () => {
     expect(code(body)).toContain("cleanup.slots.length > 0")
   })
 
-  it("injects `now` into the completion state rather than letting the model read the clock", () => {
-    expect(code(hostMode)).toContain("now,")
-    expect(code(hostMode)).toContain("eventCompletionState({")
+  it("injects a ticked `now` into the stage rather than letting the model read the clock", () => {
+    const source = code(hostMode)
+    expect(source).toContain("const stage = clock === null ? \"upcoming\" : hostStage(clock, now)")
+    expect(source.match(/now: Date\.now\(\)/g) ?? []).toHaveLength(0)
   })
 
-  it("arms the completion gate on a timer instead of a render-time clock read", () => {
-    // A bare `Date.now()` in JSX never re-renders when the start time passes: the host sat on the
-    // `too_early` sentence until some unrelated refetch repainted the screen.
+  it("ticks the clock off the shared hook and stops once the event can no longer change", () => {
     const source = code(hostMode)
-    expect(source).toContain("function useTicker(")
-    expect(source).toContain("setInterval(")
-    expect(source).toContain("clearInterval(")
-    // The ticker stops once the event can no longer change phase on its own.
-    expect(source).toContain("PHASE_TICK_MS")
-    expect(source).toContain("const now = useTicker(!settled)")
-    // The gate reads the ticked `now`, never the clock mid-render.
-    expect(source.match(/now: Date\.now\(\)/g) ?? []).toHaveLength(0)
+    expect(source).toContain("useNow(boundaryAt === null ? 0 : PHASE_TICK_MS, { boundaryAt })")
+    expect(source).toContain("nextEventBoundaryMs(clock, Date.now())")
     expect(source).not.toMatch(/react-native-reanimated/)
+  })
+
+  it("stops the detail body's clock on the same terms as the host surfaces", () => {
+    const source = code(body)
+    expect(source).toContain("const boundaryAt = nextEventBoundaryMs(cleanup, Date.now())")
+    expect(source).toContain("useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })")
+  })
+
+  it("refetches the surfaces the boundary crossing invalidated", () => {
+    expect(code(hostMode)).toContain("useEventBoundaryRefresh(clock, now, id)")
+    expect(code(body)).toContain("useEventBoundaryRefresh(cleanup, now, cleanup.id)")
   })
 
   it("mounts <EventHoursBlock/> exactly once, and the block trusts that placement", () => {
@@ -95,15 +102,16 @@ describe("an ended event closes RSVP without closing check-in", () => {
 
   it("puts only the RSVP surfaces behind the end time", () => {
     const source = code(body)
-    expect(source).toContain("const isEnded = hasEventEnded(cleanup, Date.now())")
+    expect(source).toContain("const isEnded = hasEventEnded(cleanup, now)")
+    expect(source).toContain("const status = deriveCleanupStatus(cleanup, now)")
     expect(source).toContain("const isLive = !isCancelled && !isDone")
     expect(source).toContain("const isUpcoming = isLive && !isEnded")
-    expect(source).toContain("ended={isEnded}")
+    expect(source).toContain("readonly={isDone || isCancelled || isEnded}")
   })
 
   it("still shows a registered attendee their ticket once the event has ended", () => {
     const source = code(body)
-    expect(source).toContain("isUpcoming || isRegistered ? (")
+    expect(source).toContain("(isUpcoming || isRegistered) ? (")
     expect(source).toContain('const isRegistered = cleanup.myRegistration?.status === "registered"')
   })
 })
@@ -219,7 +227,6 @@ describe("the lifecycle surfaces reference only real keys", () => {
     "EventDetailBody.tsx": body,
     "EventHoursBlock.tsx": hoursBlock,
     "LogHoursEditor.tsx": editor,
-    "CompleteEventSheet.tsx": sheet,
   }
 
   for (const [name, source] of Object.entries(SOURCES)) {

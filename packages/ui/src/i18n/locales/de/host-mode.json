@@ -7,8 +7,8 @@
     "insights_error_title": "Zahlen nicht verfügbar",
     "insights_error_body": "Wir konnten die Zahlen dieser Veranstaltung nicht laden. Alles andere funktioniert weiter.",
     "cancel_error": "Diese Veranstaltung konnte nicht abgesagt werden.",
-    "complete_error": "Diese Veranstaltung konnte nicht als abgeschlossen markiert werden.",
-    "resources_error": "Die Anfrage konnte nicht gesendet werden."
+    "resources_error": "Die Anfrage konnte nicht gesendet werden.",
+    "cancel_ended": "Diese Veranstaltung ist bereits vorbei und kann nicht mehr abgesagt werden."
   },
   "phase": {
     "upcoming": "Bevorstehend",
@@ -25,7 +25,6 @@
     "message": "Teilnehmende anschreiben",
     "check_in": "Einchecken",
     "scan": "Tickets scannen",
-    "complete": "Als abgeschlossen markieren",
     "log_hours": "Ehrenamtsstunden eintragen",
     "duplicate": "Veranstaltung duplizieren",
     "edit": "Veranstaltung bearbeiten"
@@ -128,7 +127,14 @@
     "resources": "Stadt um Unterstützung bitten",
     "resources_no_city": "Diesem Ort ist noch keine Kommune zugeordnet.",
     "duplicate": "Veranstaltung duplizieren",
-    "cancel": "Veranstaltung absagen"
+    "cancel": "Veranstaltung absagen",
+    "log_hours": "Ehrenamtsstunden eintragen",
+    "log_hours_sub_one": "{{count}} eingecheckt",
+    "log_hours_sub_other": "{{count}} eingecheckt",
+    "log_hours_none": "Niemand hat eingecheckt",
+    "linked_reports": "Verknüpfte Meldungen",
+    "linked_reports_sub": "Meldungen, die dieser Cleanup bearbeitet",
+    "linked_reports_none": "Noch nichts verknüpft"
   },
   "no_shows": {
     "title": "Den Rest als nicht erschienen markieren?",
@@ -154,5 +160,18 @@
     "success": "{{name}} ist eingecheckt.",
     "error": "Diese spontane Anmeldung konnte nicht hinzugefügt werden.",
     "error_forbidden": "Du hast keine Berechtigung, spontane Anmeldungen hinzuzufügen."
+  },
+  "linked_reports_sheet": {
+    "title": "Verknüpfte Meldungen",
+    "caption": "Füge Meldungen hinzu oder entferne sie. Wer sie gemeldet hat, sieht das Event bei seiner Meldung.",
+    "caption_readonly": "Dieses Event ist vorbei. Seine verknüpften Meldungen lassen sich nicht mehr ändern.",
+    "caption_pin_first": "Lege zuerst den Treffpunkt des Events fest. Meldungen werden auf der Karte darum herum ausgewählt.",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "dismiss_a11y": "Verknüpfte Meldungen schließen",
+    "saved": "Verknüpfte Meldungen aktualisiert",
+    "error": "Die verknüpften Meldungen konnten nicht aktualisiert werden. Erneut versuchen.",
+    "error_forbidden": "Nur Gastgeber:innen, die dieses Event verwalten dürfen, können seine Meldungen ändern."
   }
 }

@@ -183,6 +183,7 @@ export function ReplyAttachSheet({
                 event={buildComposerEventRef(event)}
                 cleanup={event}
                 layout="list"
+                timeZone={event.timezone ?? undefined}
                 selectable
                 selected={event.id === attachedEventId}
                 onPress={() => {

@@ -120,6 +120,166 @@ export function relativeAgo(
   return `${Math.floor(diff / WEEK)}${week}`
 }
 
+export interface WallClock {
+  year: number
+  month: number
+  day: number
+  hours: number
+  minutes: number
+}
+
+export const COMMON_TIMEZONES: readonly string[] = [
+  "UTC",
+  "America/Los_Angeles",
+  "America/Denver",
+  "America/Phoenix",
+  "America/Chicago",
+  "America/New_York",
+  "America/Anchorage",
+  "Pacific/Honolulu",
+  "America/Puerto_Rico",
+]
+
+const zoneFormatters = new Map<string, Intl.DateTimeFormat | null>()
+
+function zoneFormatter(timeZone: string): Intl.DateTimeFormat | null {
+  const cached = zoneFormatters.get(timeZone)
+  if (cached !== undefined) return cached
+  let formatter: Intl.DateTimeFormat | null
+  try {
+    formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+    })
+  } catch {
+    formatter = null
+  }
+  zoneFormatters.set(timeZone, formatter)
+  return formatter
+}
+
+function numericPart(parts: readonly Intl.DateTimeFormatPart[], type: string): number {
+  const part = parts.find((p) => p.type === type)
+  return part === undefined ? Number.NaN : Number(part.value)
+}
+
+function hostWallClock(date: Date): WallClock {
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    hours: date.getHours(),
+    minutes: date.getMinutes(),
+  }
+}
+
+export function isValidTimeZone(timeZone: string): boolean {
+  return zoneFormatter(timeZone) !== null
+}
+
+export function supportedTimeZones(): readonly string[] {
+  const supported = (Intl as { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf
+  if (typeof supported !== "function") return COMMON_TIMEZONES
+  try {
+    const values = supported.call(Intl, "timeZone")
+    return values.length > 0 ? values : COMMON_TIMEZONES
+  } catch {
+    return COMMON_TIMEZONES
+  }
+}
+
+export function zoneOffsetMs(instantMs: number, timeZone: string): number {
+  const formatter = zoneFormatter(timeZone)
+  if (formatter === null || !Number.isFinite(instantMs)) return 0
+  const parts = formatter.formatToParts(new Date(instantMs))
+  const asUtc = Date.UTC(
+    numericPart(parts, "year"),
+    numericPart(parts, "month") - 1,
+    numericPart(parts, "day"),
+    numericPart(parts, "hour"),
+    numericPart(parts, "minute"),
+    numericPart(parts, "second"),
+  )
+  if (Number.isNaN(asUtc)) return 0
+  return asUtc - Math.floor(instantMs / 1000) * 1000
+}
+
+export function wallClockInZone(instantMs: number, timeZone: string): WallClock {
+  const date = new Date(instantMs)
+  const formatter = zoneFormatter(timeZone)
+  if (formatter === null || Number.isNaN(date.getTime())) return hostWallClock(date)
+  const parts = formatter.formatToParts(date)
+  return {
+    year: numericPart(parts, "year"),
+    month: numericPart(parts, "month"),
+    day: numericPart(parts, "day"),
+    hours: numericPart(parts, "hour"),
+    minutes: numericPart(parts, "minute"),
+  }
+}
+
+function sameWallClock(a: WallClock, b: WallClock): boolean {
+  return (
+    a.year === b.year &&
+    a.month === b.month &&
+    a.day === b.day &&
+    a.hours === b.hours &&
+    a.minutes === b.minutes
+  )
+}
+
+export function wallClockToInstantMs(wallClock: WallClock, timeZone: string): number | null {
+  const guess = Date.UTC(
+    wallClock.year,
+    wallClock.month - 1,
+    wallClock.day,
+    wallClock.hours,
+    wallClock.minutes,
+  )
+  if (Number.isNaN(guess)) return null
+  const offset = zoneOffsetMs(guess - zoneOffsetMs(guess, timeZone), timeZone)
+  const candidate = guess - offset
+  return sameWallClock(wallClockInZone(candidate, timeZone), wallClock) ? candidate : null
+}
+
+export function wallClockExistsInZone(wallClock: WallClock, timeZone: string): boolean {
+  return wallClockToInstantMs(wallClock, timeZone) !== null
+}
+
+export function zoneShortName(instantMs: number, timeZone: string, locale?: string): string {
+  const date = new Date(instantMs)
+  if (Number.isNaN(date.getTime())) return ""
+  try {
+    const parts = new Intl.DateTimeFormat(locale, { timeZone, timeZoneName: "short" }).formatToParts(
+      date,
+    )
+    return parts.find((p) => p.type === "timeZoneName")?.value ?? ""
+  } catch {
+    return ""
+  }
+}
+
+export function sameOffsetAt(instantMs: number, zoneA: string, zoneB: string): boolean {
+  return zoneOffsetMs(instantMs, zoneA) === zoneOffsetMs(instantMs, zoneB)
+}
+
+function usableZone(timeZone: string | null | undefined): string | undefined {
+  if (timeZone === null || timeZone === undefined || timeZone === "") return undefined
+  return isValidTimeZone(timeZone) ? timeZone : undefined
+}
+
+function zonedWallClock(instantMs: number, timeZone: string | undefined): WallClock {
+  return timeZone === undefined
+    ? hostWallClock(new Date(instantMs))
+    : wallClockInZone(instantMs, timeZone)
+}
+
 /**
  * Pure, framework-free calendar/clock formatting helpers shared by the event + profile surfaces on
  * every client. These were duplicated in the mobile app's `lib/datetime` and the web app's format
@@ -146,12 +306,17 @@ export const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as con
  * default) uses the host's default locale, so existing callers are unchanged. The `@civfix/ui` layer
  * passes the active locale so the chip month localizes with the rest of the UI.
  */
-export function eventChip(iso: string, locale?: string): { day: string; month: string } {
+export function eventChip(
+  iso: string,
+  locale?: string,
+  timeZone?: string,
+): { day: string; month: string } {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return { day: "--", month: "--" }
+  const zone = usableZone(timeZone)
   return {
-    day: String(d.getDate()),
-    month: d.toLocaleDateString(locale, { month: "short" }).toUpperCase(),
+    day: String(zonedWallClock(d.getTime(), zone).day),
+    month: d.toLocaleDateString(locale, { month: "short", timeZone: zone }).toUpperCase(),
   }
 }
 
@@ -162,27 +327,46 @@ export function eventChip(iso: string, locale?: string): { day: string; month: s
  * `Date#getDay()` (0 = Sunday); omitted, the English `WEEKDAYS` default is used so existing callers are
  * unchanged. The `@civfix/ui` layer passes the active locale's labels from the `common-datetime` catalog.
  */
-export function dowLabel(iso: string, weekdays?: readonly string[]): string {
+export function dowLabel(
+  iso: string,
+  weekdays?: readonly string[],
+  timeZone?: string,
+): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ""
   const labels = weekdays ?? WEEKDAYS
-  return labels[d.getDay()] ?? ""
+  return labels[weekdayIndex(d, usableZone(timeZone))] ?? ""
+}
+
+function weekdayIndex(date: Date, timeZone: string | undefined): number {
+  if (timeZone === undefined) return date.getDay()
+  const short = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone }).format(date)
+  const index = WEEKDAYS.indexOf(short as (typeof WEEKDAYS)[number])
+  return index === -1 ? date.getDay() : index
 }
 
 /**
  * Time of day like "9:00 AM". "" for an invalid input. `locale` (optional BCP-47 tag) localizes the
  * clock format via the platform `Intl`; omitted uses the host default, so existing callers are unchanged.
  */
-export function timeLabel(iso: string, locale?: string): string {
+export function timeLabel(iso: string, locale?: string, timeZone?: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ""
-  return d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })
+  return d.toLocaleTimeString(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: usableZone(timeZone),
+  })
 }
 
 const TIME_RANGE_SEPARATOR = " – "
 
-function clockParts(d: Date, locale?: string): Intl.DateTimeFormatPart[] {
-  return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).formatToParts(d)
+function clockParts(d: Date, locale?: string, timeZone?: string): Intl.DateTimeFormatPart[] {
+  return new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: usableZone(timeZone),
+  }).formatToParts(d)
 }
 
 function dayPeriodOf(parts: readonly Intl.DateTimeFormatPart[]): string | null {
@@ -202,15 +386,20 @@ function withoutDayPeriod(label: string, dayPeriod: string): string {
   return `${label.slice(0, at)}${label.slice(at + dayPeriod.length)}`.trim()
 }
 
-export function timeRangeLabel(startIso: string, endIso: string, locale?: string): string {
+export function timeRangeLabel(
+  startIso: string,
+  endIso: string,
+  locale?: string,
+  timeZone?: string,
+): string {
   const start = new Date(startIso)
   const end = new Date(endIso)
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return ""
-  const startLabel = timeLabel(startIso, locale)
-  const endLabel = timeLabel(endIso, locale)
-  const startParts = clockParts(start, locale)
+  const startLabel = timeLabel(startIso, locale, timeZone)
+  const endLabel = timeLabel(endIso, locale, timeZone)
+  const startParts = clockParts(start, locale, timeZone)
   const dayPeriod = dayPeriodOf(startParts)
-  if (dayPeriod !== null && dayPeriod === dayPeriodOf(clockParts(end, locale))) {
+  if (dayPeriod !== null && dayPeriod === dayPeriodOf(clockParts(end, locale, timeZone))) {
     if (dayPeriodLeadsClock(startParts)) {
       const trimmedEnd = withoutDayPeriod(endLabel, dayPeriod)
       if (trimmedEnd !== "") return `${startLabel}${TIME_RANGE_SEPARATOR}${trimmedEnd}`
@@ -220,4 +409,82 @@ export function timeRangeLabel(startIso: string, endIso: string, locale?: string
     }
   }
   return `${startLabel}${TIME_RANGE_SEPARATOR}${endLabel}`
+}
+
+export interface EventWhenInput {
+  scheduledAt: string
+  endsAt?: string | null
+  timezone?: string | null
+}
+
+export interface EventWhenOptions {
+  locale?: string
+  weekdays?: readonly string[]
+  viewerTimeZone?: string
+  now?: number
+}
+
+export interface EventWhenParts {
+  dow: string
+  date: string
+  time: string
+  range: string | null
+  zone: string | null
+}
+
+function zoneSuffix(
+  instantMs: number,
+  eventZone: string | undefined,
+  viewerZone: string | undefined,
+  locale: string | undefined,
+): string | null {
+  if (eventZone === undefined || viewerZone === undefined) return null
+  if (sameOffsetAt(instantMs, eventZone, viewerZone)) return null
+  const short = zoneShortName(instantMs, eventZone, locale)
+  return short === "" ? null : short
+}
+
+function sameCalendarDay(a: WallClock, b: WallClock): boolean {
+  return a.year === b.year && a.month === b.month && a.day === b.day
+}
+
+function spanLabel(
+  startIso: string,
+  endIso: string,
+  locale: string | undefined,
+  weekdays: readonly string[] | undefined,
+  zone: string | undefined,
+): string {
+  const startWall = zonedWallClock(Date.parse(startIso), zone)
+  const endWall = zonedWallClock(Date.parse(endIso), zone)
+  if (sameCalendarDay(startWall, endWall)) return timeRangeLabel(startIso, endIso, locale, zone)
+  const endDow = dowLabel(endIso, weekdays, zone)
+  const endTime = timeLabel(endIso, locale, zone)
+  const end = endDow === "" ? endTime : `${endDow} ${endTime}`
+  return `${timeLabel(startIso, locale, zone)}${TIME_RANGE_SEPARATOR}${end}`
+}
+
+export function eventWhenParts(event: EventWhenInput, opts: EventWhenOptions = {}): EventWhenParts {
+  const start = new Date(event.scheduledAt)
+  if (Number.isNaN(start.getTime())) return { dow: "", date: "", time: "", range: null, zone: null }
+
+  const zone = usableZone(event.timezone)
+  const { locale, weekdays } = opts
+  const endIso = event.endsAt ?? null
+  const hasEnd = endIso !== null && !Number.isNaN(Date.parse(endIso))
+
+  return {
+    dow: dowLabel(event.scheduledAt, weekdays, zone),
+    date: start.toLocaleDateString(locale, { month: "short", day: "numeric", timeZone: zone }),
+    time: timeLabel(event.scheduledAt, locale, zone),
+    range: hasEnd ? spanLabel(event.scheduledAt, endIso, locale, weekdays, zone) : null,
+    zone: zoneSuffix(start.getTime(), zone, usableZone(opts.viewerTimeZone), locale),
+  }
+}
+
+export function eventWhenLabel(event: EventWhenInput, opts: EventWhenOptions = {}): string {
+  const parts = eventWhenParts(event, opts)
+  if (parts.time === "") return ""
+  const when = `${parts.dow}, ${parts.date} · ${parts.range ?? parts.time}`
+  return parts.zone === null ? when : `${when} ${parts.zone}`
 }

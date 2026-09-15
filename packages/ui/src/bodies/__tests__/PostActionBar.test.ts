@@ -473,3 +473,42 @@ describe("PostActionBar opens the repost choice through the house popover", () =
     expect(BAR).not.toContain("measureInWindow")
   })
 })
+
+describe("a viewer cannot repost their own post, and the row says so", () => {
+  const BAR = readFileSync(new URL("../../primitives/PostActionBar.tsx", import.meta.url), "utf8")
+  const FOCAL = readFileSync(new URL("../thread/ThreadFocalPost.tsx", import.meta.url), "utf8")
+
+  it("leaves the repost action handler-less while keeping its count", () => {
+    const model = buildPostActionModel(
+      { postId: "post-mine", counts, viewer },
+      { onLike: vi.fn(), onComment: vi.fn(), onSave: vi.fn(), onShare: vi.fn() },
+    )
+    const repost = model.find((action) => action.key === "repost")
+    expect(repost?.onPress).toBeUndefined()
+    expect(repost?.countLabel).toBe("8")
+    expect(model.map((action) => action.key)).toContain("repost")
+  })
+
+  it("withholds the handler on an own post rather than hiding the affordance", () => {
+    expect(BAR).toContain("const isOwnPost = authorId != null && viewerId != null && authorId === viewerId")
+    expect(BAR).toMatch(/onRepost: isOwnPost\s*\?\s*undefined/)
+  })
+
+  it("greys a handler-less action the same way an in-flight one is greyed", () => {
+    expect(BAR).toContain("const unavailable = disabled || !action.onPress")
+    expect(BAR).toContain("accessibilityState={{ selected: action.active, disabled: unavailable }}")
+    expect(BAR).toContain("unavailable ? styles.disabled : null")
+    expect(BAR).toContain("webCursor(unavailable)")
+    expect(BAR).not.toContain("disabled ? styles.disabled : null")
+  })
+
+  it("shows the count under the dimmed glyph, on both platforms", () => {
+    expect(BAR).toMatch(/layout\.showCounts && action\.countLabel != null/)
+    expect(BAR).toMatch(/disabled: \{\s*opacity: 0\.5,\s*\}/)
+  })
+
+  it("carries the same bar on a thread's focal post, so the rule holds there too", () => {
+    expect(FOCAL).toContain("<PostActionBar")
+    expect(FOCAL).toContain("authorId={repostSubjectAuthorId(post)}")
+  })
+})

@@ -51,7 +51,7 @@ export type { OrgAffiliationBadgeProps, OrgAffiliationBadgeSize } from "./OrgAff
 
 export { ShareButton } from "./ShareButton"
 export type { ShareButtonProps } from "./ShareButton"
-export { shareLink, classifyWebShareRejection, WEB_ORIGIN } from "./share"
+export { shareLink, classifyWebShareRejection, WEB_ORIGIN, setWebOrigin, webOrigin } from "./share"
 export type { ShareResult, ShareLinkOptions } from "./share"
 
 export { CountBadge } from "./CountBadge"
@@ -261,8 +261,6 @@ export type { ReportContentSheetProps } from "./ReportContentSheet"
 export { CancelEventSheet } from "./CancelEventSheet"
 export type { CancelEventSheetProps } from "./CancelEventSheet"
 
-export { CompleteEventSheet } from "./CompleteEventSheet"
-export type { CompleteEventSheetProps } from "./CompleteEventSheet"
 
 export { RequestResourcesSheet } from "./RequestResourcesSheet"
 export type { RequestResourcesSheetProps } from "./RequestResourcesSheet"

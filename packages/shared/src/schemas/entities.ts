@@ -205,6 +205,7 @@ export const LinkedEventRefSchema = z.object({
   status: CleanupStatusSchema.default("upcoming"),
   scheduledAt: ISODateSchema,
   endsAt: ISODateSchema.nullable().optional(),
+  timezone: z.string().nullable().optional(),
   ...LatLngFields,
   going: z.number().int().nonnegative(),
   organizer: PersonDTOSchema,

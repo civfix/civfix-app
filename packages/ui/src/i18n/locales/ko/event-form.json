@@ -8,36 +8,33 @@
     "meetLocation": "집합 장소",
     "spotPlaceholder": "장소 이름 입력, 예: 보트하우스 선착장",
     "dateTime": "날짜 및 시간",
+    "startTime": "시작",
     "whatToBring": "준비물",
-    "slots": "참여 역할",
-    "slotsHelp": "사람들이 맡을 구체적인 역할을 만드세요.",
+    "slots": "신청 역할",
+    "slotsHelp": "최소 하나. 참가자는 역할을 신청해 행사에 참여합니다.",
     "optional": "선택 사항",
     "endTime": "종료",
     "runsFor": "진행 시간",
     "duration_hours": "{{count}}시간"
   },
   "linkedReports": {
-    "label": "이 이벤트에서 처리할 제보",
-    "filterByType": "{{type}}(으)로 필터",
-    "searchPlaceholder": "제목이나 내용으로 제보 검색",
-    "searching": "제보 검색 중...",
+    "label": "이 장소의 제보",
     "loadError": "제보를 불러오지 못했어요. 다시 시도해 주세요.",
-    "emptyNoMatch": "검색 결과와 일치하는 제보가 없어요.",
-    "emptyNone": "아직 게시된 제보가 없어요.",
-    "showMore": "{{count}}개 더 보기",
-    "showMoreA11y": "제보 더 보기",
-    "loadMore": "더 불러오기",
-    "loadMoreA11y": "제보 더 불러오기",
-    "loading": "불러오는 중...",
-    "selectedCount_one": "{{count}}개 제보 선택됨",
-    "selectedCount_other": "{{count}}개 제보 선택됨"
-  },
-  "pickOnMap": {
-    "start": "지도에서 선택",
-    "startA11y": "지도에서 제보 선택하기",
-    "hint": "지도에서 제보 핀을 눌러 연결한 뒤, 이 화면을 다시 올려주세요.",
-    "done": "완료",
-    "doneA11y": "지도에서 제보 선택 완료"
+    "help": "정리할 제보를 연결하세요. 제보한 사람에게 이 이벤트가 표시돼요.",
+    "pin_first": "모임 장소를 정하면 주변 제보를 볼 수 있어요.",
+    "nearby_heading": "주변",
+    "nearby_empty": "이 장소 주변에 아직 처리되지 않은 제보가 없어요.",
+    "linked_count_one": "{{count}}개 연결됨",
+    "linked_count_other": "{{count}}개 연결됨",
+    "pick_on_map": "지도에서 신고 선택",
+    "pick_on_map_sub": "유형별로 걸러 지도에서 선택",
+    "pick_on_map_a11y": "이 이벤트에 연결할 신고를 지도에서 선택",
+    "retry": "다시 시도",
+    "added_announce": "{{title}} 연결됨",
+    "removed_announce": "{{title}} 연결 해제됨",
+    "limit_reached": "제보는 최대 {{max}}개까지 연결할 수 있어요.",
+    "unavailable_row": "제보를 볼 수 없어요",
+    "unavailable_sub": "삭제되었을 수 있어요. 연결은 해제할 수 있어요."
   },
   "share": {
     "label": "피드에 알리기",
@@ -47,5 +44,19 @@
     "now": "방금",
     "card_placeholder": "여기에 이벤트 카드가 표시돼요",
     "event_failed": "이벤트가 게시됐어요. 피드 게시물은 올라가지 않았어요."
+  },
+  "timezone": {
+    "caption": "{{zone}} 기준 시간",
+    "change": "변경",
+    "device_hint": "기기의 시간대는 {{deviceZone}}입니다.",
+    "search_placeholder": "시간대 검색",
+    "use_device": "내 기기의 시간대 사용 ({{deviceZone}})",
+    "no_match": "일치하는 시간대가 없습니다."
+  },
+  "error": {
+    "date_past": "오늘 또는 이후 날짜를 선택하세요.",
+    "time_past": "아직 지나지 않은 시간을 선택하세요.",
+    "end_too_soon": "시작보다 최소 {{minutes}}분 뒤에 끝나도록 하세요.",
+    "time_dst_gap": "서머타임으로 시계가 앞당겨져 이 날짜에는 없는 시간입니다. 다른 시간을 선택하세요."
   }
 }

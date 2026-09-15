@@ -1,9 +1,11 @@
 {
   "block": {
-    "heading": "Signup slots",
-    "claim_joins_hint": "Claiming a slot also RSVPs you.",
-    "filled": "{{claimed}}/{{capacity}} spots filled",
-    "no_slot_hint": "Not sure yet? RSVP without a slot and come any time."
+    "heading": "Sign-up slots",
+    "filled": "{{claimed}} of {{capacity}} spots filled",
+    "signed_up_one": "{{count}} signed up",
+    "signed_up_other": "{{count}} signed up",
+    "none_signed_up": "No one signed up yet",
+    "none_yet": "The host hasn't added sign-up slots yet."
   },
   "row": {
     "open": "Open",
@@ -11,17 +13,21 @@
     "remaining_other": "{{count}} spots left",
     "full": "Full",
     "full_sub": "All spots taken",
-    "you_claimed": "You have this slot",
-    "claimed_count_one": "{{count}} person",
-    "claimed_count_other": "{{count}} people",
-    "claim": "Claim",
-    "claimed": "Claimed",
+    "you_claimed": "Your slot",
+    "claimed_count_one": "{{count}} signed up",
+    "claimed_count_other": "{{count}} signed up",
+    "claim": "Sign up",
+    "claimed": "Signed up",
     "switch": "Switch",
-    "claim_a11y": "Claim the {{title}} slot",
+    "claim_a11y": "Sign up for the {{title}} slot",
     "release_a11y": "Give up the {{title}} slot",
     "switch_a11y": "Switch to the {{title}} slot",
     "any_time": "Any time",
-    "window_a11y": "{{title}}, {{range}}"
+    "window_a11y": "{{title}}, {{range}}",
+    "expand_a11y": "{{title}}, {{count}} signed up",
+    "expand_hint": "Shows who signed up",
+    "collapse_hint": "Hides who signed up",
+    "faces_more": "+{{count}}"
   },
   "editor": {
     "add_first": "Add a slot",
@@ -59,7 +65,12 @@
     "split_count_a11y": "Split the event into {{count}} equal shifts",
     "generated_title_prefix": "Shift",
     "generated_title": "{{prefix}} {{n}}",
-    "prefix_a11y": "Name prefix for generated shifts"
+    "prefix_a11y": "Name prefix for generated shifts",
+    "window_outside_event": "Shifts must fit inside the event's hours.",
+    "suggest_general": "General volunteers",
+    "suggest_general_a11y": "Use \"General volunteers\" as the first slot's name",
+    "title_placeholder_first": "e.g. General volunteers",
+    "remove_last_hint": "Every event needs at least one slot."
   },
   "error": {
     "empty_title": "Give this slot a name.",
@@ -79,7 +90,31 @@
     "window_a11y": "{{title}} from {{range}}"
   },
   "toast": {
-    "claimed": "Slot claimed",
-    "released": "Your slot was released"
+    "claimed": "Signed up",
+    "released": "Your slot was released",
+    "switched": "Moved to {{title}}"
+  },
+  "viewer": {
+    "holds": "You're signed up for {{slot}}",
+    "held": "You signed up for {{slot}}",
+    "going_no_slot": "You're going. Pick a slot so the host knows where you'll help.",
+    "pick_hint": "Pick a slot to sign up.",
+    "guest_link": "No account? RSVP as a guest",
+    "guest_link_a11y": "RSVP as a guest without an account",
+    "ticketed_hint": "Spots are reserved through registration."
+  },
+  "people": {
+    "you": "You",
+    "view_profile_a11y": "{{name}}, view profile",
+    "error": "Couldn't load who's signed up.",
+    "retry": "Try again",
+    "be_first": "Be the first to sign up.",
+    "more": "+{{count}} more",
+    "more_a11y": "See everyone signed up",
+    "partial": "Showing {{shown}} of {{claimed}}",
+    "gated_title": "Only people you follow appear here",
+    "gated_hint": "Sign up for a slot to see everyone going.",
+    "gated_empty_one": "{{count}} signed up. Sign up for a slot to see who.",
+    "gated_empty_other": "{{count}} signed up. Sign up for a slot to see who."
   }
 }

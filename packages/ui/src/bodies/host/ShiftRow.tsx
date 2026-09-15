@@ -10,16 +10,17 @@ import { useLocale, useT } from "../../i18n"
 export interface ShiftRowProps {
   slot: EventSlotDTO
   current?: boolean
+  timeZone?: string
 }
 
-export function ShiftRow({ slot, current = false }: ShiftRowProps) {
+export function ShiftRow({ slot, current = false, timeZone }: ShiftRowProps) {
   const styles = useStyles()
   const { t } = useT("host-mode")
   const { locale } = useLocale()
   const range =
     slot.startsAt == null || slot.endsAt == null
       ? ""
-      : timeRangeLabel(slot.startsAt, slot.endsAt, locale)
+      : timeRangeLabel(slot.startsAt, slot.endsAt, locale, timeZone)
   const headline = [slot.title, range].filter((part) => part.length > 0).join(" · ")
   const count =
     slot.capacity == null

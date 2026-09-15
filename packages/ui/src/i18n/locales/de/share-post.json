@@ -6,7 +6,11 @@
   "recipients": {
     "recent": "Zuletzt",
     "empty_prompt": "Suche jemanden über @Nutzername, um ihm diesen Beitrag zu senden.",
-    "cap": "Du kannst an höchstens {{count}} Personen gleichzeitig senden."
+    "cap": "Du kannst an höchstens {{count}} Personen gleichzeitig senden.",
+    "search_placeholder": "Nach @Nutzername suchen",
+    "select_a11y": "An {{name}} senden",
+    "no_results": "Niemand mit @{{handle}} gefunden",
+    "search_failed": "Suche gerade nicht möglich"
   },
   "note": {
     "placeholder": "Nachricht hinzufügen (optional)",
@@ -17,7 +21,9 @@
     "close": "Schließen",
     "send": "Senden",
     "send_count": "An {{count}} senden",
-    "more": "Anders teilen"
+    "more": "Anders teilen",
+    "copy_link": "Link kopieren",
+    "copy_failed": "Kopieren fehlgeschlagen"
   },
   "signed_out": {
     "title": "Melde dich an, um das zu senden",
@@ -28,6 +34,10 @@
     "sent_other": "An {{count}} Personen gesendet",
     "partial": "Senden an {{names}} fehlgeschlagen",
     "none_sent": "Senden fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "copy_failed": "Link konnte nicht kopiert werden"
+  },
+  "os_share": {
+    "message": "Schau dir diesen Beitrag auf civfix an!"
   }
 }

@@ -1,5 +1,6 @@
 import type { TFunction } from "i18next"
 import type { LinkedEventRef } from "@civfix/shared"
+import { sameOffsetAt, zoneShortName } from "@civfix/shared/datetime"
 
 export interface LinkedEventCardModel {
   title: string
@@ -16,6 +17,7 @@ export interface LinkedEventCardModel {
 }
 
 export interface LinkedEventCardContext {
+  viewerTimeZone?: string
   address?: string | null
   going?: number
   joined?: boolean
@@ -49,6 +51,18 @@ function formatter(locale: string, timeZone: string | undefined, options: Intl.D
   return made
 }
 
+function zoneSuffix(
+  instantMs: number,
+  eventZone: string | undefined,
+  viewerZone: string | undefined,
+  locale: string,
+): string | null {
+  if (eventZone === undefined || viewerZone === undefined) return null
+  if (sameOffsetAt(instantMs, eventZone, viewerZone)) return null
+  const short = zoneShortName(instantMs, eventZone, locale)
+  return short === "" ? null : short
+}
+
 /**
  * The attached-event card's presentation. `t` is bound to the `event-card` namespace (this card's own
  * strings live under `linked.*`, and it shares the `going_one`/`going_other` plural with EventCard) so
@@ -68,9 +82,11 @@ export function buildLinkedEventCardModel(
   const attendees = context.attendees?.slice(0, 3) ?? []
   const month = valid ? formatter(locale, timeZone, { month: "short" }).format(date).toUpperCase() : "--"
   const day = valid ? formatter(locale, timeZone, { day: "numeric" }).format(date) : "--"
-  const scheduleLabel = valid
+  const zone = valid ? zoneSuffix(date.getTime(), timeZone, context.viewerTimeZone, locale) : null
+  const clock = valid
     ? formatter(locale, timeZone, { weekday: "short", hour: "numeric", minute: "2-digit" }).format(date)
     : t("linked.schedule_unavailable")
+  const scheduleLabel = zone === null ? clock : `${clock} ${zone}`
   const locationLabel = context.address?.trim() || t("linked.location_fallback")
   const goingLabel = t("going", { count: going })
   const dateSlots = { month, day, title: event.title, schedule: scheduleLabel, location: locationLabel }

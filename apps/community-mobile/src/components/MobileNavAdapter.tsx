@@ -1,7 +1,9 @@
 import { useEffect } from "react"
 import { useNavigationContainerRef, useRouter } from "expo-router"
-import { useNavStore, entryFromPath, isRootLink, type DetailEntry } from "@civfix/ui"
+import { useNavStore, entryFromPath, entryIdentity, isRootLink, type DetailEntry } from "@civfix/ui"
 import { toInternalHref } from "@/lib/links"
+import { internalHrefAction, shellHostsEntries } from "@/lib/internalHref"
+import { threadEntryRoute, type ThreadEntryRoute } from "@/lib/threadEntryRoutes"
 import {
   INITIAL_BRIDGE_GUARD,
   bridgeDecision,
@@ -9,16 +11,23 @@ import {
   nativeBridgeKey,
   stackWithoutBridged,
   type BridgeGuard,
+  type NativeRoute,
 } from "@/lib/navBridge"
 
 export function seedEntry(entry: DetailEntry): void {
   useNavStore.getState().seed(entry, "compact")
 }
 
-let bridgeGuard: BridgeGuard = INITIAL_BRIDGE_GUARD
-let readFocusedBridgeKey: () => string | null = () => null
+export interface InternalHrefResult {
+  entry: DetailEntry
+  dismissToShell: boolean
+}
 
-export function applyInternalHref(href: string): DetailEntry | null {
+let bridgeGuard: BridgeGuard = INITIAL_BRIDGE_GUARD
+let readFocusedRoute: () => NativeRoute | null = () => null
+let pushDetailRoute: ((route: ThreadEntryRoute) => void) | null = null
+
+export function applyInternalHref(href: string): InternalHrefResult | null {
   if (!toInternalHref(href)) return null
   const entry = entryFromPath(href)
   if (!entry) {
@@ -26,9 +35,23 @@ export function applyInternalHref(href: string): DetailEntry | null {
     return null
   }
   const key = bridgeKey(entry)
-  if (key !== null && key === readFocusedBridgeKey()) return entry
-  useNavStore.getState().navigateTo(entry, "compact")
-  return entry
+  const focused = readFocusedRoute()
+  const detailRoute = threadEntryRoute(entry)
+  const action = internalHrefAction({
+    entryKey: entryIdentity(entry),
+    activeKey: entryIdentity(useNavStore.getState().active),
+    bridged: key !== null,
+    bridgeFocused: key !== null && key === nativeBridgeKey(focused),
+    shellFocused: shellHostsEntries(focused),
+    routeFocused: focused !== null && pushDetailRoute !== null,
+    detailRoute: detailRoute !== null,
+  })
+  if (action === "push-route" && detailRoute !== null && pushDetailRoute !== null) {
+    pushDetailRoute(detailRoute)
+    return { entry, dismissToShell: false }
+  }
+  if (action !== "none") useNavStore.getState().navigateTo(entry, "compact")
+  return { entry, dismissToShell: action === "navigate-and-dismiss" }
 }
 
 export function useMobileNavAdapter(): void {
@@ -36,9 +59,12 @@ export function useMobileNavAdapter(): void {
   const navigationRef = useNavigationContainerRef()
 
   useEffect(() => {
-    const focusedKey = (): string | null =>
-      navigationRef.isReady() ? nativeBridgeKey(navigationRef.getCurrentRoute()) : null
-    readFocusedBridgeKey = focusedKey
+    const focusedRoute = (): NativeRoute | null =>
+      navigationRef.isReady() ? (navigationRef.getCurrentRoute() ?? null) : null
+    const focusedKey = (): string | null => nativeBridgeKey(focusedRoute())
+    readFocusedRoute = focusedRoute
+    pushDetailRoute = (route) =>
+      router.push({ pathname: route.pathname as never, params: route.params })
 
     const decide = (active: DetailEntry | null): void => {
       const decision = bridgeDecision(active, bridgeGuard, Date.now(), focusedKey())
@@ -54,7 +80,8 @@ export function useMobileNavAdapter(): void {
     decide(useNavStore.getState().active)
     const unsubscribe = useNavStore.subscribe((state) => decide(state.active))
     return () => {
-      readFocusedBridgeKey = () => null
+      readFocusedRoute = () => null
+      pushDetailRoute = null
       unsubscribe()
     }
   }, [router, navigationRef])

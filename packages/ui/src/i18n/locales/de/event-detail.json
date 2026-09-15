@@ -6,7 +6,7 @@
     "ended": "Dieses Event ist beendet"
   },
   "going": {
-    "heading": "Dabei",
+    "heading": "Wer kommt",
     "count_one": "{{count}} dabei",
     "count_other": "{{count}} dabei",
     "empty": "Noch ist niemand dabei.",
@@ -27,14 +27,18 @@
     "report_a11y": "Event melden",
     "message_crew": "Crew anschreiben",
     "message_crew_a11y": "Nachricht an Event-Crew senden",
-    "message_crew_hint": "Sag zu, um dem Chat beizutreten",
+    "message_crew_hint": "Trag dich für eine Aufgabe ein, um dem Chat beizutreten",
     "message_crew_hint_ended": "Nur wer zugesagt hatte, kann diesen Chat öffnen",
     "cancel_event": "Event absagen",
     "cancel_event_a11y": "Dieses Event absagen",
     "invite": "Einladen",
     "invite_a11y": "Lade Leute zu diesem Event ein",
     "repost": "Reposten",
-    "repost_a11y": "Dieses Event reposten"
+    "repost_a11y": "Dieses Event reposten",
+    "leave": "Veranstaltung verlassen",
+    "leave_a11y": "Diese Veranstaltung verlassen",
+    "leave_hint": "Du verlässt den Chat und gibst deine Aufgabe ab",
+    "leave_toast": "Du hast die Veranstaltung verlassen"
   },
   "where": {
     "route": "Säuberungsroute",
@@ -45,7 +49,8 @@
     "heading": "Was mitbringen"
   },
   "linked_reports": {
-    "heading": "Meldungen, die wir angehen"
+    "heading": "Meldungen, die wir angehen",
+    "heading_count": "Meldungen, die wir angehen · {{count}}"
   },
   "host": {
     "heading": "Gastgeber",
@@ -73,23 +78,6 @@
   "state": {
     "unavailable_title": "Event nicht verfügbar",
     "unavailable_body": "Das Event konnte nicht geladen werden."
-  },
-  "complete": {
-    "action": "Als abgeschlossen markieren",
-    "action_a11y": "Dieses Event als abgeschlossen markieren",
-    "too_early": "Verfügbar, sobald das Event startet",
-    "success_toast": "Als abgeschlossen markiert. Du kannst jetzt Stunden erfassen."
-  },
-  "complete_sheet": {
-    "title": "Dieses Event als abgeschlossen markieren?",
-    "dismiss_a11y": "Abschliessen verwerfen",
-    "body": "Mach das, sobald alle fertig sind.",
-    "point_visible": "Teilnehmende sehen das Event als beendet.",
-    "point_hours": "Du kannst allen Anwesenden Freiwilligenstunden gutschreiben.",
-    "point_final": "Das lässt sich nicht rückgängig machen.",
-    "confirm": "Abschließen",
-    "cancel": "Noch nicht",
-    "error": "Event konnte nicht aktualisiert werden. Versuche es erneut."
   },
   "receipt": {
     "pending": "Die gastgebende Person hat noch keine Freiwilligenstunden erfasst.",

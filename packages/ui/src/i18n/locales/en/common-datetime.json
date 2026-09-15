@@ -20,19 +20,15 @@
     "pick_end_time": "Pick an end time"
   },
   "value": {
-    "end_next_day": "{{time}} (next day)"
+    "end_next_day": "{{time}} (next day)",
+    "next_day": "next day"
   },
   "action": {
     "done": "Done"
   },
-  "calendar": {
-    "weekday_initials": ["S", "M", "T", "W", "T", "F", "S"]
-  },
   "a11y": {
     "dismiss": "Dismiss",
     "close": "Close",
-    "previous_month": "Previous month",
-    "next_month": "Next month",
     "date_field": "Date: {{value}}",
     "time_field": "Time: {{value}}",
     "end_time_field": "Ends: {{value}}"

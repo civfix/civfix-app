@@ -18,6 +18,7 @@ import type {
   GuestRsvpCancelRequest,
   GuestRsvpCancelResponse,
   GetCleanupGuestsResponse,
+  LinkedReportRef,
 } from "@civfix/shared"
 import { useToast } from "../../primitives/toastContext"
 import { useT } from "../../i18n/useT"
@@ -27,9 +28,14 @@ import { queryKeys } from "../keys"
 
 const CLEANUPS_LIST_PREFIX = ["cleanups"] as const
 
-function invalidateCleanupLists(qc: QueryClient): void {
+export function invalidateCleanupLists(qc: QueryClient): void {
   void qc.invalidateQueries({ queryKey: CLEANUPS_LIST_PREFIX })
   void qc.invalidateQueries({ queryKey: queryKeys.orgEventsRoot })
+}
+
+export function invalidateHostedEventLists(qc: QueryClient): void {
+  void qc.invalidateQueries({ queryKey: queryKeys.hostedEventsRoot })
+  void qc.invalidateQueries({ queryKey: queryKeys.profileRoot })
 }
 
 export function cleanupDetailFilters(id: string): QueryFilters {
@@ -236,6 +242,7 @@ export function useCreateCleanup() {
     onSuccess: (cleanup) => {
       qc.setQueryData<CleanupDTO>(queryKeys.cleanup(cleanup.id), cleanup)
       invalidateCleanupLists(qc)
+      invalidateHostedEventLists(qc)
     },
   })
 }
@@ -251,7 +258,7 @@ export function useDuplicateCleanup() {
     onSuccess: (cleanup) => {
       qc.setQueryData<CleanupDTO>(queryKeys.cleanup(cleanup.id), cleanup)
       invalidateCleanupLists(qc)
-      void qc.invalidateQueries({ queryKey: queryKeys.hostedEventsRoot })
+      invalidateHostedEventLists(qc)
     },
   })
 }
@@ -259,24 +266,28 @@ export function useDuplicateCleanup() {
 export interface UpdateCleanupVars {
   id: string
   patch: Omit<UpdateCleanupRequest, "id">
+  linkedReports?: readonly LinkedReportRef[]
 }
 
-export function useUpdateCleanup() {
-  const api = useApi()
-  const qc = useQueryClient()
+export interface UpdateCleanupCtx {
+  prevDetails: ReadonlyArray<readonly [readonly unknown[], CleanupDTO | undefined]>
+}
 
-  return useMutation<
-    CleanupDTO,
-    unknown,
-    UpdateCleanupVars,
-    { prevDetails: ReadonlyArray<readonly [readonly unknown[], CleanupDTO | undefined]> }
-  >({
-    mutationFn: ({ id, patch }) => api.updateCleanup({ ...patch, id }),
-    onMutate: async ({ id, patch }) => {
+export function updateCleanupMutationOptions(
+  qc: QueryClient,
+  mutationFn: (vars: UpdateCleanupVars) => Promise<CleanupDTO>,
+): UseMutationOptions<CleanupDTO, unknown, UpdateCleanupVars, UpdateCleanupCtx> {
+  return {
+    mutationFn,
+    onMutate: async ({ id, patch, linkedReports }) => {
       await qc.cancelQueries(cleanupDetailFilters(id))
       const prevDetails = qc.getQueriesData<CleanupDTO>(cleanupDetailFilters(id))
       const scalarPatch = scalarCleanupPatch(patch)
-      patchCleanupDetails(qc, id, (prev) => ({ ...prev, ...scalarPatch }))
+      patchCleanupDetails(qc, id, (prev) => ({
+        ...prev,
+        ...scalarPatch,
+        ...(linkedReports ? { linkedReports: [...linkedReports] } : {}),
+      }))
       qc.setQueriesData<CleanupDTO[]>({ queryKey: CLEANUPS_LIST_PREFIX }, (prev) =>
         Array.isArray(prev)
           ? prev.map((c) => (c.id === id ? { ...c, ...scalarPatch } : c))
@@ -294,8 +305,18 @@ export function useUpdateCleanup() {
     onSettled: (_data, _err, { id }) => {
       void qc.invalidateQueries(cleanupDetailFilters(id))
       invalidateCleanupLists(qc)
+      invalidateHostedEventLists(qc)
     },
-  })
+  }
+}
+
+export function useUpdateCleanup() {
+  const api = useApi()
+  const qc = useQueryClient()
+
+  return useMutation(
+    updateCleanupMutationOptions(qc, ({ id, patch }) => api.updateCleanup({ ...patch, id })),
+  )
 }
 
 export interface CancelCleanupVars {
@@ -313,41 +334,10 @@ export function useCancelCleanup() {
     onSuccess: (cleanup) => {
       reconcileCleanupDetails(qc, cleanup.id, cleanup)
       invalidateCleanupLists(qc)
+      invalidateHostedEventLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(cleanup.id) })
     },
   })
-}
-
-export interface CompleteCleanupVars {
-  id: string
-  note?: string
-}
-
-export function completeCleanupMutationOptions(
-  qc: QueryClient,
-  mutationFn: (vars: CompleteCleanupVars) => Promise<CleanupDTO>,
-): UseMutationOptions<CleanupDTO, unknown, CompleteCleanupVars> {
-  return {
-    mutationFn,
-    onSuccess: (res, { id }) => {
-      reconcileCleanupDetails(qc, id, res)
-      void qc.invalidateQueries(cleanupDetailFilters(id))
-      invalidateCleanupLists(qc)
-      void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(id) })
-      void qc.invalidateQueries({ queryKey: queryKeys.eventHours(id) })
-    },
-  }
-}
-
-export function useCompleteCleanup() {
-  const api = useApi()
-  const qc = useQueryClient()
-
-  return useMutation<CleanupDTO, unknown, CompleteCleanupVars>(
-    completeCleanupMutationOptions(qc, ({ id, note }) =>
-      api.completeCleanup({ id, ...(note ? { note } : {}) }),
-    ),
-  )
 }
 
 export interface ClaimEventSlotVars {

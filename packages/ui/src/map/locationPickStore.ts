@@ -20,6 +20,7 @@
  * directly and both seam files (.web map + .web picker) may import it.
  */
 import { create } from "zustand"
+import { reportPinTarget, type PinTarget } from "./pins/appearance"
 
 /** A simple lat/lng draft point the main map previews and the picker echoes / resolves. */
 export interface PickDraft {
@@ -32,6 +33,7 @@ export interface LocationPickState {
   active: boolean
   /** The pending point (the last main-map tap or the initial value), or null when nothing is placed yet. */
   draft: PickDraft | null
+  pin: PinTarget
   /**
    * Whether a SHARED <Map/> has registered itself as the active main map. The LocationPicker only delegates
    * to the main map (renders its overlay instead of an inline map) when this is true; otherwise it falls
@@ -40,7 +42,8 @@ export interface LocationPickState {
   mapRegistered: boolean
 
   /** Begin a pick (the picker calls this on enter), seeding the draft with the current value if any. */
-  start: (initial?: PickDraft | null) => void
+  start: (initial?: PickDraft | null, pin?: PinTarget) => void
+  setPin: (pin: PinTarget) => void
   /** Move the pending point (a main-map tap, or an AddressSearch pick syncing the preview pin). */
   setDraft: (lat: number, lng: number) => void
   /**
@@ -55,16 +58,20 @@ export interface LocationPickState {
   setMapRegistered: (registered: boolean) => void
 }
 
+const DEFAULT_PIN: PinTarget = reportPinTarget(null)
+
 export const useLocationPick = create<LocationPickState>((set) => ({
   active: false,
   draft: null,
+  pin: DEFAULT_PIN,
   mapRegistered: false,
 
-  start: (initial) => set({ active: true, draft: initial ?? null }),
+  start: (initial, pin) => set({ active: true, draft: initial ?? null, pin: pin ?? DEFAULT_PIN }),
+  setPin: (pin) => set({ pin }),
   setDraft: (lat, lng) => set({ draft: { lat, lng } }),
   // confirm + cancel both just END the pick (identical state reset). The web picker now commits each tap
   // live via onChange and only calls cancel() (on unmount); confirm() is retained but currently unused.
-  confirm: () => set({ active: false, draft: null }),
-  cancel: () => set({ active: false, draft: null }),
+  confirm: () => set({ active: false, draft: null, pin: DEFAULT_PIN }),
+  cancel: () => set({ active: false, draft: null, pin: DEFAULT_PIN }),
   setMapRegistered: (registered) => set({ mapRegistered: registered }),
 }))

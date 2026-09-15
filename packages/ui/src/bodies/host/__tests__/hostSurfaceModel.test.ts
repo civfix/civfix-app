@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest"
-import type { CleanupDTO, EventInsights, EventPhase } from "@civfix/shared"
+import type { CleanupDTO, EventInsights } from "@civfix/shared"
+import { hostStage, type EventWindowLike, type HostStage } from "@civfix/shared/host"
 import {
   ARRIVAL_BUCKET_MINUTES,
+  HOST_ROW_ICONS,
   MAX_ARRIVAL_SPARK_BUCKETS,
   MESSAGE_CTA_WINDOW_MS,
   arrivalOffsetLabel,
   arrivalSparkPoints,
   attendanceRate,
-  eventEnd,
   hostActionCards,
   hostHero,
   hostPanels,
@@ -21,12 +22,33 @@ import {
   sourceSeats,
   spotsLeft,
   stillExpected,
+  type HostRowKey,
   type HostSurfaceCapabilities,
   type HostSurfaceInput,
 } from "../hostSurfaceModel"
 
 const NOW = Date.parse("2026-09-11T18:00:00.000Z")
 const HOUR = 3_600_000
+
+const iso = (at: number): string => new Date(at).toISOString()
+
+/**
+ * Every stage in these tests is DERIVED from a real window through the shared clock, never hand-injected:
+ * a stage the clock cannot produce is a state the app can never be in, and pinning the CTA table to one
+ * is how the old suite ended up asserting on a phase/status pair that could not co-exist.
+ */
+function stageOf(startsAt: number, endsAt: number, status: EventWindowLike["status"] = "upcoming"): HostStage {
+  return hostStage({ status, scheduledAt: iso(startsAt), endsAt: iso(endsAt) }, NOW)
+}
+
+const STAGES: Readonly<Record<HostStage, HostStage>> = {
+  upcoming: stageOf(NOW + 7 * 24 * HOUR, NOW + 7 * 24 * HOUR + 4 * HOUR),
+  soon: stageOf(NOW + HOUR, NOW + 5 * HOUR),
+  underway: stageOf(NOW - HOUR, NOW + 3 * HOUR),
+  wrapping_up: stageOf(NOW - 5 * HOUR, NOW - HOUR),
+  past: stageOf(NOW - 9 * HOUR, NOW - 5 * HOUR),
+  cancelled: stageOf(NOW - HOUR, NOW + 3 * HOUR, "cancelled"),
+}
 
 const ALL: HostSurfaceCapabilities = {
   checkIn: true,
@@ -38,6 +60,7 @@ const ALL: HostSurfaceCapabilities = {
   viewAnalytics: true,
   cancelEvent: true,
   requestResources: true,
+  logHours: true,
 }
 
 const NONE: HostSurfaceCapabilities = {
@@ -50,18 +73,17 @@ const NONE: HostSurfaceCapabilities = {
   viewAnalytics: false,
   cancelEvent: false,
   requestResources: false,
+  logHours: false,
 }
 
 function surface(over: Partial<HostSurfaceInput> = {}): HostSurfaceInput {
   return {
-    phase: "upcoming",
+    stage: STAGES.upcoming,
     now: NOW,
     startsAt: NOW + 7 * 24 * HOUR,
-    endsAt: null,
     registeredSeats: 0,
     hoursCredited: 0,
     scannerAvailable: false,
-    completionArmed: false,
     can: ALL,
     ...over,
   }
@@ -101,7 +123,20 @@ function insights(over: Partial<EventInsights> = {}): EventInsights {
   }
 }
 
-describe("one primary CTA per phase", () => {
+describe("the stages the shared clock can actually produce", () => {
+  it("names each of the six windows", () => {
+    expect(STAGES).toEqual({
+      upcoming: "upcoming",
+      soon: "soon",
+      underway: "underway",
+      wrapping_up: "wrapping_up",
+      past: "past",
+      cancelled: "cancelled",
+    })
+  })
+})
+
+describe("one primary CTA per stage", () => {
   it("offers share before the event, and swaps to a message inside the 48h window", () => {
     expect(hostPrimaryCta(surface())).toBe("share")
     expect(
@@ -112,66 +147,86 @@ describe("one primary CTA per phase", () => {
   })
 
   it("keeps share when nobody has registered, because there is nobody to message", () => {
-    expect(
-      hostPrimaryCta(surface({ startsAt: NOW + HOUR, registeredSeats: 0 })),
-    ).toBe("share")
+    expect(hostPrimaryCta(surface({ startsAt: NOW + 3 * HOUR, registeredSeats: 0 }))).toBe("share")
   })
 
   it("keeps share when the viewer may not broadcast", () => {
     expect(
       hostPrimaryCta(
-        surface({ startsAt: NOW + HOUR, registeredSeats: 12, can: { ...ALL, broadcast: false } }),
+        surface({ startsAt: NOW + 3 * HOUR, registeredSeats: 12, can: { ...ALL, broadcast: false } }),
       ),
     ).toBe("share")
   })
 
-  it("puts check-in first while live, and names the scanner when one exists", () => {
-    expect(hostPrimaryCta(surface({ phase: "live", startsAt: NOW - HOUR }))).toBe("check_in")
+  it("puts check-in first from the lead window on, and names the scanner when one exists", () => {
+    for (const stage of [STAGES.soon, STAGES.underway] as const) {
+      expect(hostPrimaryCta(surface({ stage })), stage).toBe("check_in")
+      expect(hostPrimaryCta(surface({ stage, scannerAvailable: true })), stage).toBe("scan")
+    }
+  })
+
+  it("falls back to a message, then a share, for a host who cannot check anyone in", () => {
+    const stage = STAGES.underway
+    expect(hostPrimaryCta(surface({ stage, can: { ...ALL, checkIn: false } }))).toBe("message")
     expect(
-      hostPrimaryCta(surface({ phase: "live", startsAt: NOW - HOUR, scannerAvailable: true })),
-    ).toBe("scan")
+      hostPrimaryCta(surface({ stage, can: { ...ALL, checkIn: false, broadcast: false } })),
+    ).toBe("share")
   })
 
-  it("promotes completion only once the end time has passed and the server gate is armed", () => {
-    const past = surface({ phase: "live", startsAt: NOW - 6 * HOUR, endsAt: NOW - HOUR })
-    expect(hostPrimaryCta(past)).toBe("check_in")
-    expect(hostPrimaryCta({ ...past, completionArmed: true })).toBe("complete")
+  it("asks for hours from the moment the event ends, not from a host marking it done", () => {
+    expect(hostPrimaryCta(surface({ stage: STAGES.wrapping_up }))).toBe("log_hours")
+    expect(hostPrimaryCta(surface({ stage: STAGES.past }))).toBe("log_hours")
   })
 
-  it("falls back to the default duration when the event carries no end time", () => {
-    const input = surface({ phase: "live", startsAt: NOW - 5 * HOUR, completionArmed: true })
-    expect(eventEnd(input)).toBe(NOW - HOUR)
-    expect(hostPrimaryCta(input)).toBe("complete")
+  it("keeps check-in reachable in the wrap-up tail once the hours are in", () => {
+    const input = surface({ stage: STAGES.wrapping_up, hoursCredited: 62.5 })
+    expect(hostPrimaryCta(input)).toBe("check_in")
+    expect(hostPrimaryCta({ ...input, can: { ...ALL, checkIn: false } })).toBe("share")
   })
 
-  it("asks for hours after the event, then for a duplicate once hours exist", () => {
-    expect(hostPrimaryCta(surface({ phase: "ended" }))).toBe("log_hours")
-    expect(hostPrimaryCta(surface({ phase: "ended", hoursCredited: 62.5 }))).toBe("duplicate")
+  it("offers a duplicate once the hours exist, and nothing to a viewer with no rights", () => {
+    expect(hostPrimaryCta(surface({ stage: STAGES.past, hoursCredited: 62.5 }))).toBe("duplicate")
     expect(
-      hostPrimaryCta(surface({ phase: "ended", hoursCredited: 62.5, can: NONE })),
+      hostPrimaryCta(surface({ stage: STAGES.past, hoursCredited: 62.5, can: NONE })),
     ).toBeNull()
   })
 
+  it("never offers Log hours to a viewer without manage_event - the server would 403 it", () => {
+    const staff: HostSurfaceCapabilities = { ...ALL, logHours: false, manageEvent: false }
+    for (const stage of [STAGES.wrapping_up, STAGES.past] as const) {
+      expect(hostPrimaryCta(surface({ stage, can: staff })), stage).not.toBe("log_hours")
+      expect(hostSecondaryCta(surface({ stage, can: staff })), stage).not.toBe("log_hours")
+    }
+  })
+
   it("offers no primary at all on a cancelled event", () => {
-    expect(hostPrimaryCta(surface({ phase: "cancelled" }))).toBeNull()
-    expect(hostPrimaryCta(surface({ phase: "cancelled", can: NONE }))).toBeNull()
+    expect(hostPrimaryCta(surface({ stage: STAGES.cancelled }))).toBeNull()
+    expect(hostPrimaryCta(surface({ stage: STAGES.cancelled, can: NONE }))).toBeNull()
   })
 
   it("never repeats the primary in the secondary slot", () => {
-    for (const phase of ["upcoming", "live", "ended", "cancelled"] as const) {
+    for (const stage of Object.values(STAGES)) {
       for (const can of [ALL, NONE]) {
-        const input = surface({ phase, can, startsAt: NOW + HOUR, registeredSeats: 9 })
-        const primary = hostPrimaryCta(input)
-        const secondary = hostSecondaryCta(input)
-        expect(secondary === null || secondary !== primary, `${phase}`).toBe(true)
+        for (const hoursCredited of [0, 62.5]) {
+          const input = surface({ stage, can, hoursCredited, startsAt: NOW + HOUR, registeredSeats: 9 })
+          const primary = hostPrimaryCta(input)
+          const secondary = hostSecondaryCta(input)
+          expect(secondary === null || secondary !== primary, `${stage}`).toBe(true)
+        }
       }
     }
   })
 
   it("puts editing beside the share CTA and duplication beside a cancelled event", () => {
     expect(hostSecondaryCta(surface())).toBe("edit")
-    expect(hostSecondaryCta(surface({ phase: "cancelled" }))).toBe("duplicate")
-    expect(hostSecondaryCta(surface({ phase: "live", startsAt: NOW - HOUR }))).toBe("message")
+    expect(hostSecondaryCta(surface({ stage: STAGES.cancelled }))).toBe("duplicate")
+    expect(hostSecondaryCta(surface({ stage: STAGES.underway }))).toBe("message")
+  })
+
+  it("lets a past host correct hours that are already logged", () => {
+    const input = surface({ stage: STAGES.past, hoursCredited: 62.5, can: { ...ALL, broadcast: false } })
+    expect(hostPrimaryCta(input)).toBe("duplicate")
+    expect(hostSecondaryCta(input)).toBe("log_hours")
   })
 })
 
@@ -322,75 +377,131 @@ describe("action cards", () => {
     scannerAvailable: false,
     hasOrganization: true,
     consoleReachable: true,
+    isCleanup: false,
+    linkedReportCount: 0,
   }
 
+  const rowsFor = (over: Partial<typeof base> & { stage: HostStage }) =>
+    hostActionCards({ ...base, ...over }).flatMap((card) => card.rows)
+
   it("never renders an empty card", () => {
-    for (const phase of ["upcoming", "live", "ended", "cancelled"] as const) {
+    for (const stage of Object.values(STAGES)) {
       for (const can of [ALL, NONE]) {
-        for (const card of hostActionCards({ ...base, phase, can })) {
-          expect(card.rows.length, `${phase}/${card.key}`).toBeGreaterThan(0)
+        for (const card of hostActionCards({ ...base, stage, can })) {
+          expect(card.rows.length, `${stage}/${card.key}`).toBeGreaterThan(0)
         }
       }
     }
   })
 
   it("keeps cancel in the danger card only, and only while the event can still be cancelled", () => {
-    for (const phase of ["upcoming", "live", "ended", "cancelled"] as const) {
-      for (const card of hostActionCards({ ...base, phase })) {
+    for (const stage of Object.values(STAGES)) {
+      for (const card of hostActionCards({ ...base, stage })) {
         if (card.rows.includes("cancel")) expect(card.key).toBe("danger")
         if (card.key === "danger") expect(card.rows).toEqual(["cancel"])
       }
     }
-    const keys = (phase: EventPhase) => hostActionCards({ ...base, phase }).map((card) => card.key)
-    expect(keys("upcoming")).toContain("danger")
-    expect(keys("live")).toContain("danger")
-    expect(keys("ended")).not.toContain("danger")
-    expect(keys("cancelled")).not.toContain("danger")
-    expect(keys("upcoming")).not.toContain("money")
+    const keys = (stage: HostStage) => hostActionCards({ ...base, stage }).map((card) => card.key)
+    expect(keys(STAGES.upcoming)).toContain("danger")
+    expect(keys(STAGES.soon)).toContain("danger")
+    expect(keys(STAGES.underway)).toContain("danger")
+    expect(keys(STAGES.wrapping_up)).not.toContain("danger")
+    expect(keys(STAGES.past)).not.toContain("danger")
+    expect(keys(STAGES.cancelled)).not.toContain("danger")
   })
 
-  it("gates cancel on the capability rather than on the phase alone", () => {
-    const cards = hostActionCards({ ...base, phase: "upcoming", can: { ...ALL, cancelEvent: false } })
+  it("gates cancel on the capability rather than on the stage alone", () => {
+    const cards = hostActionCards({ ...base, stage: STAGES.upcoming, can: { ...ALL, cancelEvent: false } })
     expect(cards.map((card) => card.key)).not.toContain("danger")
   })
 
-  it("offers the check-in row only while live, and names the scanner when one exists", () => {
-    const rows = (over: Partial<typeof base> & { phase: EventPhase }) =>
-      hostActionCards({ ...base, ...over }).flatMap((card) => card.rows)
-    expect(rows({ phase: "upcoming" })).not.toContain("check_in")
-    expect(rows({ phase: "live" })).toContain("check_in")
-    expect(rows({ phase: "live", scannerAvailable: true })).toContain("scan")
+  it("offers the check-in row across the whole run window, and names the scanner when one exists", () => {
+    expect(rowsFor({ stage: STAGES.upcoming })).not.toContain("check_in")
+    for (const stage of [STAGES.soon, STAGES.underway, STAGES.wrapping_up] as const) {
+      expect(rowsFor({ stage }), stage).toContain("check_in")
+    }
+    expect(rowsFor({ stage: STAGES.soon, scannerAvailable: true })).toContain("scan")
+    expect(rowsFor({ stage: STAGES.past })).not.toContain("check_in")
+  })
+
+  it("offers Log hours from the end of the event on, gated on manage_event", () => {
+    expect(rowsFor({ stage: STAGES.underway })).not.toContain("log_hours")
+    expect(rowsFor({ stage: STAGES.wrapping_up })).toContain("log_hours")
+    expect(rowsFor({ stage: STAGES.past })).toContain("log_hours")
+    expect(rowsFor({ stage: STAGES.past, can: { ...ALL, logHours: false } })).not.toContain("log_hours")
   })
 
   it("offers no-show marking only after the event and only while seats are unmarked", () => {
-    const rows = (phase: EventPhase, unmarked: number) =>
-      hostActionCards({ ...base, phase, unmarked }).flatMap((card) => card.rows)
-    expect(rows("ended", 0)).not.toContain("mark_no_shows")
-    expect(rows("ended", 3)).toContain("mark_no_shows")
-    expect(rows("live", 3)).not.toContain("mark_no_shows")
+    expect(rowsFor({ stage: STAGES.past, unmarked: 0 })).not.toContain("mark_no_shows")
+    expect(rowsFor({ stage: STAGES.past, unmarked: 3 })).toContain("mark_no_shows")
+    expect(rowsFor({ stage: STAGES.wrapping_up, unmarked: 3 })).toContain("mark_no_shows")
+    expect(rowsFor({ stage: STAGES.underway, unmarked: 3 })).not.toContain("mark_no_shows")
+  })
+
+  it("keeps Edit reachable until the event ends, and never after - the server freezes it", () => {
+    for (const stage of [STAGES.upcoming, STAGES.soon, STAGES.underway] as const) {
+      expect(rowsFor({ stage }), stage).toContain("edit")
+    }
+    for (const stage of [STAGES.wrapping_up, STAGES.past, STAGES.cancelled] as const) {
+      expect(rowsFor({ stage }), stage).not.toContain("edit")
+    }
   })
 
   it("hides the resources row without an organization", () => {
-    const rows = (over: Partial<typeof base>) =>
-      hostActionCards({ ...base, phase: "upcoming", ...over }).flatMap((card) => card.rows)
-    expect(rows({})).toContain("resources")
-    expect(rows({ hasOrganization: false })).not.toContain("resources")
+    expect(rowsFor({ stage: STAGES.upcoming })).toContain("resources")
+    expect(rowsFor({ stage: STAGES.upcoming, hasOrganization: false })).not.toContain("resources")
   })
 
   it("offers tickets on the web, where the console exists, and never on native", () => {
-    const rows = (consoleReachable: boolean) =>
-      hostActionCards({ ...base, phase: "upcoming", consoleReachable }).flatMap((card) => card.rows)
-    expect(rows(true)).toContain("tickets")
-    expect(rows(false)).not.toContain("tickets")
-    for (const phase of ["live", "ended", "cancelled"] as const) {
-      const anyPhase = hostActionCards({ ...base, phase }).flatMap((card) => card.rows)
-      expect(anyPhase, phase).not.toContain("tickets")
+    expect(rowsFor({ stage: STAGES.upcoming, consoleReachable: true })).toContain("tickets")
+    expect(rowsFor({ stage: STAGES.upcoming, consoleReachable: false })).not.toContain("tickets")
+    for (const stage of [STAGES.underway, STAGES.wrapping_up, STAGES.past, STAGES.cancelled] as const) {
+      expect(rowsFor({ stage }), stage).not.toContain("tickets")
     }
   })
 
   it("leaves a cancelled event with nothing but a duplicate path", () => {
-    const rows = hostActionCards({ ...base, phase: "cancelled" }).flatMap((card) => card.rows)
-    expect(rows).toEqual([])
+    expect(rowsFor({ stage: STAGES.cancelled })).toEqual(["duplicate"])
+  })
+
+  it("offers Linked reports right after Edit while a cleanup can still be changed", () => {
+    for (const stage of [STAGES.upcoming, STAGES.soon, STAGES.underway] as const) {
+      const rows = rowsFor({ stage, isCleanup: true, linkedReportCount: 0 })
+      expect(rows, stage).toContain("linked_reports")
+      expect(rows.indexOf("linked_reports"), stage).toBe(rows.indexOf("edit") + 1)
+    }
+    const configure = hostActionCards({
+      ...base,
+      stage: STAGES.upcoming,
+      isCleanup: true,
+      linkedReportCount: 0,
+    }).find((card) => card.key === "configure")
+    expect(configure?.rows).toContain("linked_reports")
+  })
+
+  it("keeps the row off a gathering and off a host without manage_event", () => {
+    expect(rowsFor({ stage: STAGES.upcoming, isCleanup: false, linkedReportCount: 3 })).not.toContain(
+      "linked_reports",
+    )
+    expect(
+      rowsFor({
+        stage: STAGES.upcoming,
+        isCleanup: true,
+        linkedReportCount: 3,
+        can: { ...ALL, manageEvent: false },
+      }),
+    ).not.toContain("linked_reports")
+  })
+
+  it("shows an ended or cancelled cleanup the row only when there is something to show", () => {
+    for (const stage of [STAGES.wrapping_up, STAGES.past, STAGES.cancelled] as const) {
+      expect(rowsFor({ stage, isCleanup: true, linkedReportCount: 0 }), stage).not.toContain(
+        "linked_reports",
+      )
+      expect(rowsFor({ stage, isCleanup: true, linkedReportCount: 2 }), stage).toContain(
+        "linked_reports",
+      )
+    }
   })
 })
 
@@ -500,5 +611,32 @@ describe("the duplicate sheet's event ref", () => {
     expect(ref.registeredCount).toBe(0)
     expect(ref.capacity).toBeNull()
     expect(ref.referenceCode).toBeNull()
+  })
+})
+
+describe("every host row carries an icon of its own", () => {
+  it("gives the linked-reports row the map pin", () => {
+    expect(HOST_ROW_ICONS.linked_reports).toBe("MapPin")
+  })
+
+  it("names an icon for every row the action cards can emit, in any stage", () => {
+    const base = {
+      unmarked: 2,
+      scannerAvailable: true,
+      hasOrganization: true,
+      consoleReachable: true,
+      isCleanup: true,
+      linkedReportCount: 2,
+    }
+    const rows = new Set<HostRowKey>()
+    for (const stage of Object.values(STAGES)) {
+      for (const can of [ALL, NONE]) {
+        for (const card of hostActionCards({ ...base, stage, can })) {
+          for (const row of card.rows) rows.add(row)
+        }
+      }
+    }
+    expect(rows.size).toBeGreaterThan(0)
+    for (const row of rows) expect(HOST_ROW_ICONS[row], row).toBeTruthy()
   })
 })

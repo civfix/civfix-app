@@ -17,17 +17,31 @@ import { useNavStore } from "../nav"
 import { expandedFramePlan } from "../shell/expandedFramePlan"
 import { clampSidebarWidth, useSidebarStore } from "../shell/sidebarStore"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
-import { TeardropPin, EventPin, BlendPin, ClusterBubble, DropPin } from "./pins"
+import {
+  TeardropPin,
+  EventPin,
+  BlendPin,
+  ClusterBubble,
+  DropPin,
+  pinAppearanceFor,
+  clusterToneFor,
+} from "./pins"
 import { useClusters } from "./useClusters"
-import { computeMapBlends } from "./blend"
+import { mapPointsFor } from "./mapPoints"
+import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
+import {
+  clusterFallbackZoom,
+  clusterListReports,
+  clusterZoomTarget,
+  expansionZoomOfCluster,
+} from "./clusterer"
 import { useLocationPick } from "./locationPickStore"
-import { useEventReportLink } from "./eventReportLinkStore"
 import { useMapFocus } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { makePinElement, applyPinElementTheme } from "./LocationPicker.web"
 import { occludedCenterLng } from "./dropPinCamera"
-import { ReportLinkPanel, REPORT_LINK_PANEL_WIDTH } from "./ReportLinkPanel"
+import type { ClusterNode, MapClusterIndex } from "./clusterer"
 import type { MapProps, MapHandle } from "./types"
 
 const MAP_FOCUS_STYLE_ID = "civfix-map-focus-ring"
@@ -57,6 +71,10 @@ const FOCUS_ZOOM = 16
 const LONG_PRESS_MS = 500
 const LONG_PRESS_SLOP_PX = 10
 const LONG_PRESS_DEDUPE_MS = 700
+const CLUSTER_FLY_MS = 450
+const NO_REPORTS: MapProps["reports"] = []
+const NO_CLEANUPS: MapProps["cleanups"] = []
+const NO_AGGREGATES: MapProps["reportAggregates"] = []
 
 function shellOcclusionLeft(): number {
   const { view, stack } = useNavStore.getState()
@@ -90,8 +108,9 @@ interface Desired {
 export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref) {
   const { t } = useT("map-ui")
   const {
-    reports = [],
-    cleanups = [],
+    reports = NO_REPORTS,
+    cleanups = NO_CLEANUPS,
+    reportAggregates = NO_AGGREGATES,
     focusedPinId = null,
     focusedCleanupId = null,
     userLocation = null,
@@ -107,9 +126,9 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     initialCenter = null,
   } = props
 
-  const { blends, standaloneReports, standaloneCleanups } = React.useMemo(
-    () => computeMapBlends(reports, cleanups),
-    [reports, cleanups],
+  const points = React.useMemo(
+    () => mapPointsFor({ reports, cleanups, aggregates: reportAggregates }),
+    [reports, cleanups, reportAggregates],
   )
 
   const cartoApiKey = useCartoApiKey()
@@ -126,17 +145,11 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   const th = useTheme()
   const themeRef = React.useRef(th)
   themeRef.current = th
-  const [panelPoint, setPanelPoint] = React.useState<{ x: number; y: number } | null>(null)
-
   const pickActive = useLocationPick((s) => s.active)
   const pickDraft = useLocationPick((s) => s.draft)
+  const pickPin = useLocationPick((s) => s.pin)
   const pickActiveRef = React.useRef(pickActive)
   pickActiveRef.current = pickActive
-
-  const linkActive = useEventReportLink((s) => s.active)
-  const linkSelectedIds = useEventReportLink((s) => s.selectedIds)
-  const linkFilterCategories = useEventReportLink((s) => s.filterCategories)
-  const openPanelReportId = useEventReportLink((s) => s.openPanelReportId)
 
   const focus = useMapFocus((s) => s.focus)
 
@@ -164,9 +177,38 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   const dropRootRef = React.useRef<Root | null>(null)
   const styleSchemeRef = React.useRef<ColorSchemeName | null>(null)
 
-  const { query, leaves } = useClusters(standaloneReports)
+  const { index, query } = useClusters(points)
+  const indexRef = React.useRef<MapClusterIndex>(index)
+
+  const pressCluster = React.useCallback(
+    (node: Extract<ClusterNode, { type: "cluster" }>) => {
+      const map = mapRef.current
+      if (!map) return
+      const currentZoom = map.getZoom()
+      const expansion =
+        node.clusterId === null ? null : expansionZoomOfCluster(indexRef.current, node.clusterId)
+      const target = clusterZoomTarget(node, currentZoom, expansion)
+      const flyToCluster = (zoom: number) =>
+        map.easeTo({ center: [node.lng, node.lat], zoom, duration: CLUSTER_FLY_MS })
+      if (target !== null) {
+        flyToCluster(target)
+        return
+      }
+      const handler = onPressClusterRef.current
+      const listing = clusterListReports(indexRef.current, node)
+      if (handler && listing !== null && listing.length > 0) {
+        handler(listing)
+        return
+      }
+      flyToCluster(clusterFallbackZoom(currentZoom))
+    },
+    [],
+  )
 
   const reconcileRef = React.useRef<() => void>(() => {})
+  const runnerRef = React.useRef<IdleRunner | null>(null)
+  if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => reconcileRef.current())
+  const runner = runnerRef.current
   reconcileRef.current = () => {
     const map = mapRef.current
     if (!map || !mapReady) return
@@ -180,37 +222,19 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
         node: <ThemeProvider preference={scheme}>{want.node}</ThemeProvider>,
       })
 
-    const link = useEventReportLink.getState()
-    if (link.active) {
-      const filter = link.filterCategories
-      const scoped = filter.length === 0 ? reports : reports.filter((r) => filter.includes(r.category))
-      for (const r of scoped) {
-        const checked = link.isSelected(r.id)
-        const badge: "plus" | "check" = checked ? "check" : "plus"
-        put(`pin:${r.id}`, {
-          signature: `${r.category}|1|${badge}`,
-          anchor: "bottom",
-          lngLat: [r.lng, r.lat],
-          node: <TeardropPin category={r.category} badge={badge} />,
-          onClick: () => {
-            const store = useEventReportLink.getState()
-            store.setOpenPanelReportId(store.openPanelReportId === r.id ? null : r.id)
-          },
-        })
-      }
-    } else if (useMapFocus.getState().focus) {
+    if (useMapFocus.getState().focus) {
       const f = useMapFocus.getState().focus!
       if (f.kind === "cleanup") {
-        put(`cleanup:${f.id}`, {
-          signature: `${f.eventKind}|1|focus`,
+        put(`e:${f.id}`, {
+          signature: `${f.eventKind}|1`,
           anchor: "bottom",
           lngLat: [f.lng, f.lat],
           node: <EventPin active eventKind={f.eventKind} />,
           onClick: () => onPressCleanupRef.current?.(f.id),
         })
       } else {
-        put(`pin:${f.id}`, {
-          signature: `${f.category}|1|focus`,
+        put(`r:${f.id}`, {
+          signature: `${f.category}|1`,
           anchor: "bottom",
           lngLat: [f.lng, f.lat],
           node: <TeardropPin category={f.category} active />,
@@ -218,49 +242,51 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
         })
       }
     } else {
-      const nodes = query(mapBoundsToBBox(map), map.getZoom())
-      for (const node of nodes) {
+      for (const node of query(mapBoundsToBBox(map), map.getZoom())) {
         if (node.type === "cluster") {
-          put(`cluster:${node.clusterId}`, {
-            signature: `${node.count}`,
+          const tone = clusterToneFor(node.reportCount, node.eventCount)
+          put(node.key, {
+            signature: `${node.count}|${tone}`,
             anchor: "center",
             lngLat: [node.lng, node.lat],
-            node: <ClusterBubble count={node.count} />,
-            onClick: () => onPressClusterRef.current?.(leaves(node.clusterId)),
+            node: <ClusterBubble count={node.count} tone={tone} />,
+            onClick: () => pressCluster(node),
           })
-        } else {
+        } else if (node.type === "report") {
           const active = focusedPinId === node.id
-          put(`pin:${node.id}`, {
+          put(node.key, {
             signature: `${node.pin.category}|${active ? 1 : 0}`,
             anchor: "bottom",
             lngLat: [node.lng, node.lat],
             node: <TeardropPin category={node.pin.category} active={active} />,
             onClick: () => onPressPinRef.current?.(node.id),
           })
+        } else if (node.type === "event") {
+          const active = focusedCleanupId === node.id
+          put(node.key, {
+            signature: `${node.event.eventKind}|${active ? 1 : 0}`,
+            anchor: "bottom",
+            lngLat: [node.lng, node.lat],
+            node: <EventPin active={active} eventKind={node.event.eventKind} />,
+            onClick: () => onPressCleanupRef.current?.(node.id),
+          })
+        } else {
+          const active = focusedCleanupId === node.id
+          const event = node.event
+          const blendReports = node.reports
+          put(node.key, {
+            signature: `${event.eventKind}|${blendReports.length}|${active ? 1 : 0}`,
+            anchor: "bottom",
+            lngLat: [node.lng, node.lat],
+            node: (
+              <BlendPin count={blendReports.length} active={active} eventKind={event.eventKind} />
+            ),
+            onClick: () =>
+              onPressBlendRef.current
+                ? onPressBlendRef.current(event, blendReports)
+                : onPressCleanupRef.current?.(event.id),
+          })
         }
-      }
-      for (const c of standaloneCleanups) {
-        const active = focusedCleanupId === c.id
-        put(`cleanup:${c.id}`, {
-          signature: `${c.eventKind}|${active ? 1 : 0}`,
-          anchor: "bottom",
-          lngLat: [c.lng, c.lat],
-          node: <EventPin active={active} eventKind={c.eventKind} />,
-          onClick: () => onPressCleanupRef.current?.(c.id),
-        })
-      }
-      for (const b of blends) {
-        const active = focusedCleanupId === b.event.id
-        put(`blend:${b.event.id}`, {
-          signature: `${b.event.eventKind}|${b.reports.length}|${active ? 1 : 0}`,
-          anchor: "bottom",
-          lngLat: [b.event.lng, b.event.lat],
-          node: <BlendPin count={b.reports.length} active={active} eventKind={b.event.eventKind} />,
-          onClick: () =>
-            onPressBlendRef.current
-              ? onPressBlendRef.current(b.event, b.reports)
-              : onPressCleanupRef.current?.(b.event.id),
-        })
       }
     }
 
@@ -336,11 +362,11 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     })
 
     const syncViewport = () => {
-      reconcileRef.current()
       const bbox = mapBoundsToBBox(map)
       const zoom = map.getZoom()
       onRegionChangeRef.current?.(bbox, zoom)
       useMapViewport.getState().setRegion(bbox, zoom)
+      runner.request()
     }
 
     map.on("load", () => {
@@ -351,7 +377,6 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
 
     const blockedTarget = (target: EventTarget | null): boolean => {
       if (pickActiveRef.current) return true
-      if (useEventReportLink.getState().active) return true
       return target instanceof Element && target.closest(".maplibregl-marker") !== null
     }
     let lastFireAt = 0
@@ -365,11 +390,6 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     map.on("click", (e) => {
       if (pickActiveRef.current) {
         useLocationPick.getState().setDraft(e.lngLat.lat, e.lngLat.lng)
-        return
-      }
-      const link = useEventReportLink.getState()
-      if (link.active && link.openPanelReportId) {
-        link.setOpenPanelReportId(null)
         return
       }
       onPressMapRef.current?.()
@@ -405,11 +425,10 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
 
     mapRef.current = map
     useLocationPick.getState().setMapRegistered(true)
-    useEventReportLink.getState().setMapRegistered(true)
     return () => {
       cancelPress()
+      runner.dispose()
       useLocationPick.getState().setMapRegistered(false)
-      useEventReportLink.getState().setMapRegistered(false)
       useMapViewport.getState().clear()
       map.remove()
       mapRef.current = null
@@ -504,15 +523,19 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       pickMarkerRef.current = null
       return
     }
+    const pickFill = pinAppearanceFor(pickPin, th.scheme).fill
     if (!pickMarkerRef.current) {
-      pickMarkerRef.current = new maplibregl.Marker({ element: makePinElement(themeRef.current), anchor: "bottom" })
+      pickMarkerRef.current = new maplibregl.Marker({
+        element: makePinElement(themeRef.current, pickFill),
+        anchor: "bottom",
+      })
         .setLngLat([pickDraft.lng, pickDraft.lat])
         .addTo(map)
     } else {
       pickMarkerRef.current.setLngLat([pickDraft.lng, pickDraft.lat])
-      applyPinElementTheme(pickMarkerRef.current.getElement(), themeRef.current)
+      applyPinElementTheme(pickMarkerRef.current.getElement(), themeRef.current, pickFill)
     }
-  }, [mapReady, pickActive, pickDraft, mode, th.scheme])
+  }, [mapReady, pickActive, pickDraft, pickPin, mode, th.scheme])
 
   React.useEffect(() => {
     const map = mapRef.current
@@ -564,8 +587,9 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   }, [mapReady, mapStyle, cartoApiKey, th.scheme])
 
   React.useEffect(() => {
-    reconcileRef.current()
-  }, [mapReady, reports, cleanups, focusedPinId, focusedCleanupId, linkActive, linkSelectedIds, linkFilterCategories, focus, th.scheme])
+    indexRef.current = index
+    if (mapReady) runner.flush()
+  }, [runner, mapReady, index, points, focusedPinId, focusedCleanupId, focus, th.scheme])
 
   React.useEffect(() => {
     const map = mapRef.current
@@ -575,27 +599,6 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     map.easeTo({ center: [lng, focus.lat], zoom: FOCUS_ZOOM, duration: 600 })
   }, [mapReady, mode, focus?.id, focus?.lat, focus?.lng])
 
-  const openReport = React.useMemo(
-    () => (openPanelReportId ? reports.find((r) => r.id === openPanelReportId) ?? null : null),
-    [openPanelReportId, reports],
-  )
-  React.useEffect(() => {
-    const map = mapRef.current
-    if (!map || !mapReady || !linkActive || !openReport) {
-      setPanelPoint(null)
-      return
-    }
-    const reposition = () => {
-      const p = map.project([openReport.lng, openReport.lat])
-      setPanelPoint({ x: p.x, y: p.y })
-    }
-    reposition()
-    map.on("move", reposition)
-    return () => {
-      map.off("move", reposition)
-    }
-  }, [mapReady, linkActive, openReport])
-
   return (
     <div className="cf-map-wrap" style={{ position: "relative", width: "100%", height: "100%" }}>
       <div
@@ -604,28 +607,6 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
         aria-label={t("a11y.homeMap")}
         style={{ width: "100%", height: "100%" }}
       />
-      {linkActive && openPanelReportId && panelPoint ? (
-        <div
-          style={{
-            position: "absolute",
-            left: panelPoint.x,
-            top: panelPoint.y,
-            transform: "translate(-50%, calc(-100% - 52px))",
-            width: REPORT_LINK_PANEL_WIDTH,
-            zIndex: 5,
-          }}
-        >
-          <ReportLinkPanel
-            reportId={openPanelReportId}
-            onViewDetails={() => {
-              const id = openPanelReportId
-              useEventReportLink.getState().setOpenPanelReportId(null)
-              onPressPinRef.current?.(id)
-            }}
-            onClose={() => useEventReportLink.getState().setOpenPanelReportId(null)}
-          />
-        </div>
-      ) : null}
     </div>
   )
 })

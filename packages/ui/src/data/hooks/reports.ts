@@ -16,6 +16,7 @@ import type {
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 import { optimisticPatch } from "../optimistic"
+import { NEARBY_RADIUS_KM, bboxAround, roundNearbyCoord } from "./nearbyBbox"
 
 function coerceMyReportPages(
   data: InfiniteData<ListMyReportsResponse>,
@@ -135,19 +136,47 @@ export function useNearbyReportPins(point: { lat: number; lng: number } | null) 
   })
 }
 
+export function useNearbyReports(
+  center: { lat: number; lng: number } | null,
+  radiusKm = NEARBY_RADIUS_KM,
+) {
+  const api = useApi()
+  const lat = center ? roundNearbyCoord(center.lat) : 0
+  const lng = center ? roundNearbyCoord(center.lng) : 0
+  return useQuery<ReportPinDTO[]>({
+    queryKey: queryKeys.nearbyReports(lat, lng, radiusKm),
+    enabled: center !== null,
+    queryFn: async () => {
+      const res = await api.mapReports({
+        bbox: bboxAround({ lat, lng }, radiusKm),
+        zoom: POINTS_FETCH_ZOOM,
+      })
+      return Array.isArray(res?.pins) ? res.pins.filter((p) => p != null) : []
+    },
+    placeholderData: (prev) => prev,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+    retry: false,
+  })
+}
+
 const SEARCH_PAGE_SIZE = 30
 
-export function useReportSearch(params: {
-  q?: string
-  categories?: readonly ReportCategory[]
-  types?: readonly ReportType[]
-}) {
+export function useReportSearch(
+  params: {
+    q?: string
+    categories?: readonly ReportCategory[]
+    types?: readonly ReportType[]
+  },
+  options: { enabled?: boolean } = {},
+) {
   const api = useApi()
   const q = params.q ?? ""
   const categories = params.categories
   const types = params.types
   const query = useInfiniteQuery<ListReportsSearchResponse>({
     queryKey: [...queryKeys.reportSearch(q, [...(categories ?? [])].sort()), [...(types ?? [])].sort()],
+    enabled: options.enabled ?? true,
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
       api.searchReports({

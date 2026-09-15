@@ -17,7 +17,30 @@ export {
   PIN_GLYPHS,
   DROP_PIN_GLYPH,
   glyphForCategory,
+  pinAppearanceFor,
+  eventPinTarget,
+  reportPinTarget,
+  clusterToneFor,
+  clusterBubbleAppearance,
 } from "./pins"
+export type { PinTarget, PinAppearance, ClusterTone, ClusterBubbleAppearance } from "./pins"
+export {
+  CLUSTER_RADIUS,
+  CLUSTER_MAX_ZOOM,
+  CLUSTER_LIST_ZOOM,
+  CLUSTER_MIN_POINTS,
+  CLUSTER_ZOOM_STEP,
+  AGGREGATE_EXPAND_ZOOM,
+  clusterZoomTarget,
+  clusterFallbackZoom,
+  clusterListReports,
+  reportsOfPoints,
+} from "./clusterer"
+export type { MapPoint, ClusterNode, ClusterWeights } from "./clusterer"
+export { mapPointsFor } from "./mapPoints"
+export type { MapPointsInput } from "./mapPoints"
+export { createIdleRunner, CLUSTER_IDLE_MS } from "./clusterSchedule"
+export type { IdleRunner } from "./clusterSchedule"
 export type { MapProps, MapHandle, MapLatLng, MapStyleInput } from "./types"
 
 export { MapControls } from "./MapControls"
@@ -35,11 +58,19 @@ export type { LocationPickerProps } from "./LocationPicker.types"
 export { PortraitMapPickStep } from "./PortraitMapPickStep"
 export type { PortraitMapPickStepProps } from "./PortraitMapPickStep"
 
+export { ReportPickMap } from "./ReportPickMap"
+export type {
+  ReportPickMapProps,
+  ReportPickMapHandle,
+  ReportPickPinState,
+  ReportPickPinLook,
+} from "./ReportPickMap.types"
+export { REPORT_PICK_PIN_SIZE, REPORT_PICK_MUTED_OPACITY } from "./ReportPickMap.types"
+export { radiusCircleFeature, RADIUS_CIRCLE_STEPS } from "./radiusCircle"
+export type { RadiusCircleFeature } from "./radiusCircle"
+
 export { useLocationPick } from "./locationPickStore"
 export type { LocationPickState, PickDraft } from "./locationPickStore"
-
-export { useEventReportLink } from "./eventReportLinkStore"
-export type { EventReportLinkState } from "./eventReportLinkStore"
 
 export { useMapFocus } from "./mapFocusStore"
 export type { MapFocusState, FocusedReport, FocusedEvent, FocusedEntity } from "./mapFocusStore"

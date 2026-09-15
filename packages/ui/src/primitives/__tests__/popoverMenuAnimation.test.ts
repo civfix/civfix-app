@@ -8,6 +8,7 @@ import { menuOrigin, MENU_SCALE_FROM } from "../menuMotionModel"
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 const PRIMITIVES = fileURLToPath(new URL("../", import.meta.url))
+const MAP = fileURLToPath(new URL("../../map/", import.meta.url))
 
 const motionSource = strip(read("../menuMotion.ts"))
 const motionModelSource = strip(read("../menuMotionModel.ts"))
@@ -86,10 +87,12 @@ describe("anchor-origin solve", () => {
 
 describe("the shared menu motion hook (source-pinned)", () => {
   it("reads every duration and curve from the motion tokens, never a literal", () => {
-    expect(motionSource).toMatch(/duration: motion\.menuIn\.duration/)
-    expect(motionSource).toMatch(/duration: motion\.menuOut\.duration/)
-    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.motion\.menuIn\.easing\)/)
-    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.motion\.menuOut\.easing\)/)
+    expect(motionSource).toMatch(/MENU_RECIPES: MenuMotionRecipes = \{ enter: motion\.menuIn, exit: motion\.menuOut \}/)
+    expect(motionSource).toMatch(/recipes = MENU_RECIPES/)
+    expect(motionSource).toMatch(/duration: recipes\.enter\.duration/)
+    expect(motionSource).toMatch(/duration: recipes\.exit\.duration/)
+    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.recipes\.enter\.easing\)/)
+    expect(motionSource).toMatch(/Easing\.bezier\(\.\.\.recipes\.exit\.easing\)/)
     expect(motionSource).not.toMatch(/duration:\s*\d/)
     expect(motionModelSource).toMatch(/MENU_SCALE_FROM = MOTION\.menuScaleFrom/)
     expect(motionModelSource).not.toMatch(/0\.9\d/)
@@ -124,6 +127,35 @@ describe("the shared menu motion hook (source-pinned)", () => {
   it("only touches state at the animation's edges - never per frame", () => {
     expect(motionSource).not.toMatch(/addListener/)
     expect(motionSource).not.toMatch(/setState/)
+  })
+
+  it("refuses, in dev, a recipes object that changes identity - reading them through a ref makes a swap inert", () => {
+    expect(motionSource).toMatch(
+      /MENU_MOTION_DEV_ASSERTS = process\.env\.NODE_ENV !== "production"/,
+    )
+    expect(motionSource).toMatch(
+      /if \(MENU_MOTION_DEV_ASSERTS && recipesRef\.current !== recipes\) \{\s*throw new Error\(/,
+    )
+    expect(motionSource).toMatch(/const recipes = recipesRef\.current/)
+  })
+
+  it("is called only with a STABLE recipes object, so the dev guard can never fire on our own code", () => {
+    const callers = [...readdirSync(PRIMITIVES), ...readdirSync(MAP)]
+      .filter((name) => name.endsWith(".tsx"))
+      .map((name) => {
+        const dir = existsSync(join(PRIMITIVES, name)) ? PRIMITIVES : MAP
+        return { name, source: strip(readFileSync(join(dir, name), "utf8")) }
+      })
+      .filter((file) => file.source.includes("useMenuMotion("))
+    expect(callers.length).toBeGreaterThan(0)
+    for (const { name, source } of callers) {
+      for (const [, passed] of source.matchAll(/useMenuMotion\(\{[^}]*recipes:\s*([A-Za-z0-9_.]+)/g)) {
+        expect(passed, `${name} passes ${passed} as recipes`).toMatch(/^[A-Z][A-Z0-9_]*$/)
+        expect(source, `${name} must hoist ${passed} to a module constant`).toMatch(
+          new RegExp(`^const ${passed}: MenuMotionRecipes = `, "m"),
+        )
+      }
+    }
   })
 })
 
@@ -186,7 +218,9 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
   })
 
   it("runs an item's action only after it has asked the menu to close, never before", () => {
-    expect(popover).toMatch(/onClose\(\)\s+item\.onPress\(\)/)
+    expect(popover).toMatch(/run\(item\.onPress\)/)
+    const gateHook = strip(read("../useDeferredOverlayAction.ts"))
+    expect(gateHook).toMatch(/onClose\(\)\s+gate\.choose\(action\)/)
   })
 
   it("carries no card chrome of its own - every caller styles its own surface", () => {
@@ -216,13 +250,14 @@ describe("PopoverMenu owns the animation for every menu that uses it", () => {
   })
 
   it("keeps the Modal mounted through the exit, so onDismiss still fires AFTER it", () => {
-    expect(popover).toMatch(/onDismiss=\{onDismiss\}/)
+    expect(popover).toMatch(/onDismiss=\{onModalDismiss\}/)
     expect(popover).toMatch(/const rendered = motion\.rendered/)
   })
 
-  it("still hands the report-detail share action its post-dismiss slot", () => {
-    expect(reportDetail).toMatch(/onDismiss=\{onTitleMenuDismiss\}/)
-    expect(reportDetail).toMatch(/if \(Platform\.OS === "ios"\) \{\s*pendingMenuActionRef\.current = action/)
+  it("owns the post-dismiss slot for every row action, so report detail no longer rolls its own", () => {
+    expect(popover).toContain("useDeferredOverlayAction(visible, onClose, onClosed)")
+    expect(reportDetail).not.toContain("pendingMenuActionRef")
+    expect(reportDetail).not.toContain("onTitleMenuDismiss")
   })
 })
 

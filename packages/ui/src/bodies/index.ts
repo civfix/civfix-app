@@ -188,6 +188,44 @@ export type { SlotRowState, SlotWindow } from "./eventSlotsModel"
 
 export { LinkedReportCard } from "./LinkedReportCard"
 export type { LinkedReportCardData } from "./LinkedReportCard"
+export { ReportLinkPicker } from "./ReportLinkPicker"
+export type { ReportLinkPickerProps } from "./ReportLinkPicker"
+export { ReportPicker } from "./reportPicker/ReportPicker"
+export type { ReportPickerProps } from "./reportPicker/ReportPicker"
+export { useReportPickerFilters, PICKER_CATEGORIES } from "./reportPicker/reportPickerFilterStore"
+export type { ReportPickerFilterState } from "./reportPicker/reportPickerFilterStore"
+export { ReportLinkRow } from "./ReportLinkRow"
+export type { ReportLinkRowProps } from "./ReportLinkRow"
+export {
+  LINKED_REPORTS_COUNT_AT,
+  NEARBY_MAX,
+  NEARBY_PREVIEW,
+  linkBlockState,
+  linkSheetMode,
+  linkedReportsPatch,
+  linkedReportsSummary,
+  nearbyReportRows,
+  sameIdSet,
+  toggleLinkedReportId,
+} from "./linkReportsModel"
+export type {
+  LinkBlockState,
+  LinkSheetMode,
+  LinkToggleOutcome,
+  LinkToggleResult,
+  LinkedReportsSummary,
+  NearbyReportRow,
+} from "./linkReportsModel"
+export {
+  linkedRefToCardData,
+  mergeCardEntry,
+  pinToCardData,
+  reportToCardData,
+  reportThumbUrl,
+  sameCardEntry,
+  useLinkedReportCards,
+} from "./linkedReportCards"
+export type { LinkedReportCardEntry, LinkedReportCardsState } from "./linkedReportCards"
 export { linkedReportHeadline } from "./linkedReportHeadline"
 export type { LinkedReportHeadline } from "./linkedReportHeadline"
 

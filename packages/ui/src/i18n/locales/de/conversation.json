@@ -60,6 +60,14 @@
     "reply_unknown_author": "Gelöschtes Konto",
     "reply_quote_a11y": "Antwort auf {{name}}: {{excerpt}}"
   },
+  "embed": {
+    "loading": "Vorschau wird geladen",
+    "post_a11y": "Beitrag von {{name}} öffnen",
+    "person_a11y": "Profil von {{name}} öffnen",
+    "org_a11y": "{{name}} öffnen",
+    "followers_one": "{{count}} Follower",
+    "followers_other": "{{count}} Follower"
+  },
   "menu": {
     "cancel": "Abbrechen",
     "delete_message": "Nachricht löschen",

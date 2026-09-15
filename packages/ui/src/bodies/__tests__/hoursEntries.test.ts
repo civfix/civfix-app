@@ -197,7 +197,13 @@ function timedSlot(id: string, startMin: number, endMin: number): EventSlotDTO {
 }
 
 function cleanup(over: Partial<HoursCleanup> = {}): HoursCleanup {
-  return { scheduledAt: EVENT_START, endsAt: iso(240), slots: [], ...over }
+  return {
+    scheduledAt: EVENT_START,
+    endsAt: iso(240),
+    slots: [],
+    timezone: "America/Los_Angeles",
+    ...over,
+  }
 }
 
 describe("plannedEventHours", () => {

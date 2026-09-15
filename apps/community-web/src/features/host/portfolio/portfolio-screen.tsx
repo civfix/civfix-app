@@ -276,7 +276,7 @@ export function PortfolioScreen({ notFoundPath }: PortfolioScreenProps) {
                 ident={row.referenceCode ?? undefined}
                 sub={
                   <span className="flex flex-wrap items-center gap-token-2">
-                    <span>{format.dateTime(row.startsAt)}</span>
+                    <span>{format.whenLabel(row.startsAt, row.timezone ?? undefined)}</span>
                     {row.orgName ? <span>{row.orgName}</span> : null}
                     <span>
                       {t("list.counts", {

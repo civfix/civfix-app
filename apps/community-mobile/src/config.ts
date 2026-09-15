@@ -1,6 +1,7 @@
 import Constants from "expo-constants"
 import { resolveApiUrl } from "./lib/apiUrl"
 import { resolveDonateBrowserMode, type DonateBrowserMode } from "./lib/donateBrowser"
+import { resolveWebOrigin } from "./lib/webOrigin"
 
 type Extra = {
   apiUrl?: unknown
@@ -16,6 +17,8 @@ const extra = (Constants.expoConfig?.extra ?? {}) as Extra
 export { DEV_API_URL, PROD_API_URL, resolveApiUrl } from "./lib/apiUrl"
 
 export const API_URL: string = resolveApiUrl(extra.apiUrl, __DEV__)
+
+export const WEB_ORIGIN: string = resolveWebOrigin(API_URL)
 
 export const CARTO_API_KEY: string = extra.cartoApiKey ?? ""
 

@@ -29,6 +29,7 @@ import { useLocale, useT } from "../i18n"
 import {
   addSlotDraft,
   generateShiftDrafts,
+  isBlankSlotDraft,
   makeSlotKey,
   moveSlotDraft,
   removeSlotDraft,
@@ -78,6 +79,7 @@ export interface SlotEditorProps {
   onChange: (next: SlotDraft[]) => void
   existing?: readonly EventSlotDTO[]
   window?: SlotWindowBounds | null
+  timeZone: string
   eventEndUnsaved?: boolean
 }
 
@@ -87,6 +89,7 @@ function SlotCard({
   total,
   claimed,
   window,
+  timeZone,
   eventEndUnsaved,
   onPatch,
   onRemove,
@@ -97,6 +100,7 @@ function SlotCard({
   total: number
   claimed: number | undefined
   window: SlotWindowBounds | null
+  timeZone: string
   eventEndUnsaved: boolean
   onPatch: (key: string, patch: Partial<SlotDraft>) => void
   onRemove: (key: string) => void
@@ -111,7 +115,7 @@ function SlotCard({
   const error = slotDraftError(draft, claimed, window)
   const eventEnd = window?.end ?? null
   const timed = draft.startsAt !== null && draft.endsAt !== null
-  const eventRange = window && eventEnd ? timeRangeLabel(window.start.toISOString(), eventEnd.toISOString(), locale) : ""
+  const eventRange = window && eventEnd ? timeRangeLabel(window.start.toISOString(), eventEnd.toISOString(), locale, timeZone) : ""
   const onWholeEvent = () => onPatch(draft.key, { startsAt: null, endsAt: null })
   const onSetTime = () => {
     if (!window || !eventEnd || timed) return
@@ -130,7 +134,7 @@ function SlotCard({
           value={draft.title}
           onChangeText={(title) => onPatch(draft.key, { title })}
           accessibilityLabel={t("editor.title_a11y", { index: position })}
-          placeholder={t("editor.title_placeholder")}
+          placeholder={t(index === 0 ? "editor.title_placeholder_first" : "editor.title_placeholder")}
           placeholderTextColor={th.colors.textSubtle}
           selectionColor={th.colors.brand.bloom}
           maxLength={MAX_SLOT_TITLE}
@@ -180,19 +184,27 @@ function SlotCard({
         </View>
         <Pressable
           onPress={() => onRemove(draft.key)}
+          disabled={total === 1}
           accessibilityRole="button"
+          accessibilityState={{ disabled: total === 1 }}
           accessibilityLabel={t("editor.remove_a11y", { index: position })}
+          {...(total === 1 ? { accessibilityHint: t("editor.remove_last_hint") } : {})}
           hitSlop={6}
           {...focusRingProps}
           style={(state) => [
             styles.removeBtn,
             webCursorPointer,
             webTransition,
-            webHover(state) ? styles.discHovered : null,
-            state.pressed ? styles.pressed : null,
+            total === 1 ? styles.disabled : null,
+            webHover(state) && total > 1 ? styles.discHovered : null,
+            state.pressed && total > 1 ? styles.pressed : null,
           ]}
         >
-          <Icon icon={iconMap.Close} size={14} color={th.colors.textMuted} />
+          <Icon
+            icon={iconMap.Close}
+            size={14}
+            color={total === 1 ? th.colors.textSubtle : th.colors.textMuted}
+          />
         </Pressable>
       </View>
 
@@ -291,7 +303,7 @@ function SlotCard({
         ) : eventEndUnsaved && timed ? (
           <Text style={styles.timeHint}>
             {t("editor.time_stores_event_end", {
-              time: timeLabel(eventEnd.toISOString(), locale),
+              time: timeLabel(eventEnd.toISOString(), locale, timeZone),
             })}
           </Text>
         ) : null}
@@ -302,6 +314,7 @@ function SlotCard({
             eventEnd={eventEnd}
             startsAt={draft.startsAt}
             endsAt={draft.endsAt}
+            timeZone={timeZone}
             onChange={(next) => onPatch(draft.key, next)}
           />
         ) : null}
@@ -326,6 +339,7 @@ export function SlotEditor({
   onChange,
   existing = [],
   window = null,
+  timeZone,
   eventEndUnsaved = false,
 }: SlotEditorProps) {
   const styles = useStyles()
@@ -386,6 +400,12 @@ export function SlotEditor({
     },
     [eventWindow, onChange, shiftTitle, value],
   )
+
+  const onSuggestGeneral = useCallback(() => {
+    const first = value[0]
+    if (!first) return
+    onPatch(first.key, { title: t("editor.suggest_general") })
+  }, [onPatch, t, value])
 
   const claimedById = new Map(existing.map((s) => [s.id, s.claimed]))
   const removedClaimed = removedClaimedCount(existing, value)
@@ -450,6 +470,16 @@ export function SlotEditor({
 
   return (
     <View style={styles.list}>
+      {value.every(isBlankSlotDraft) ? (
+        <View style={styles.suggestRow}>
+          <FilterChip
+            label={t("editor.suggest_general")}
+            selected={false}
+            onPress={onSuggestGeneral}
+            accessibilityLabel={t("editor.suggest_general_a11y")}
+          />
+        </View>
+      ) : null}
       {value.map((draft, index) => (
         <SlotCard
           key={draft.key}
@@ -458,6 +488,7 @@ export function SlotEditor({
           total={value.length}
           claimed={draft.id ? claimedById.get(draft.id) : undefined}
           window={window}
+          timeZone={timeZone}
           eventEndUnsaved={eventEndUnsaved}
           onPatch={onPatch}
           onRemove={onRemove}
@@ -501,6 +532,11 @@ export function SlotEditor({
 
 const useStyles = makeThemedStyles((t) => ({
   list: {
+    gap: t.space["2"],
+  },
+  suggestRow: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: t.space["2"],
   },
 

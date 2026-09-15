@@ -1,16 +1,9 @@
 import React from "react"
 import { View } from "react-native"
 import type { EventKind } from "@civfix/shared"
-import { cleanupColorFor } from "@civfix/shared/tokens"
-import { pinGlow, useTheme, type Theme } from "../../theme"
-import { PinSvg, PinBadge, PIN_GLYPHS, type PinBadge as PinBadgeValue } from "./PinSvg"
-
-function pinForKind(eventKind: EventKind, t: Theme): { fill: string; glyph: string } {
-  if (eventKind === "other_volunteer") {
-    return { fill: t.colors.brand.lilac, glyph: PIN_GLYPHS.other_volunteer! }
-  }
-  return { fill: cleanupColorFor(t.scheme), glyph: PIN_GLYPHS.cleanup! }
-}
+import { pinGlow, useTheme } from "../../theme"
+import { PinSvg, PinBadge, type PinBadge as PinBadgeValue } from "./PinSvg"
+import { eventPinTarget, pinAppearanceFor } from "./appearance"
 
 export const EventPin = React.memo(function EventPin({
   size = 38,
@@ -25,7 +18,7 @@ export const EventPin = React.memo(function EventPin({
 }) {
   const t = useTheme()
   const w = active ? 50 : size
-  const { fill, glyph } = pinForKind(eventKind, t)
+  const { fill, glyph } = pinAppearanceFor(eventPinTarget(eventKind), t.scheme)
   return (
     <View style={active ? pinGlow(fill, 6, 7, 0.4, 8) : undefined}>
       <PinSvg fill={fill} glyph={glyph} size={w} />

@@ -4,6 +4,7 @@ import type {
   PublicPageTicketType,
   RegisterOutcome,
 } from "@civfix/shared"
+import { hasEventEnded } from "@civfix/shared/host"
 
 export type WidgetState =
   | "cancelled"
@@ -17,7 +18,14 @@ export function registrationWindowState(
   now: number,
 ): WidgetState {
   if (page.event.status === "cancelled") return "cancelled"
-  if (page.event.status === "done") return "closed"
+  if (
+    hasEventEnded(
+      { scheduledAt: page.event.startsAt, endsAt: page.event.endsAt ?? null },
+      now,
+    )
+  ) {
+    return "closed"
+  }
 
   const opens = toTime(page.event.registrationOpensAt)
   const closes = toTime(page.event.registrationClosesAt)

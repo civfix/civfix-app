@@ -115,6 +115,15 @@ export function isBlankSlotDraft(d: SlotDraft): boolean {
   )
 }
 
+/**
+ * At least one slot the host actually named. The wizard's details step and both submit gates hang off
+ * this: an event is joined BY signing up for a slot, so a board of nothing but blank cards is not a
+ * publishable event. Blank drafts stay legal in the list (they are dropped at build time).
+ */
+export function hasNamedSlot(list: readonly SlotDraft[]): boolean {
+  return list.some((d) => !isBlankSlotDraft(d))
+}
+
 export function slotDraftWindow(d: SlotDraft): { start: Date; end: Date } | null {
   if (d.startsAt === null || d.endsAt === null) return null
   return { start: d.startsAt, end: d.endsAt }

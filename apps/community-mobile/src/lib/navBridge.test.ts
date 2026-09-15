@@ -4,15 +4,12 @@ import type { DetailEntry } from "@civfix/ui"
 import {
   BRIDGE_REPEAT_WINDOW_MS,
   BRIDGE_ROUTE_NAMES,
-  MY_TICKET_ROUTE_NAMES,
-  SHELL_HOSTED_BRIDGE_KINDS,
   INITIAL_BRIDGE_GUARD,
   bridgeDecision,
   bridgeKey,
   bridgeRoute,
   nativeBridgeKey,
   stackWithoutBridged,
-  stackWithoutShellHosted,
   type BridgeGuard,
 } from "./navBridge.ts"
 
@@ -49,17 +46,11 @@ function run(steps: Step[], start: BridgeGuard = INITIAL_BRIDGE_GUARD) {
   return { actions, guard }
 }
 
-test("only the full-screen kinds have a bridge key", () => {
+test("only the kinds with their own native screen have a bridge key", () => {
   assert.equal(bridgeKey(null), null)
   assert.equal(bridgeKey({ kind: "pin", id: "r1" }), null)
   assert.equal(bridgeKey({ kind: "person", id: "p1" }), null)
   assert.equal(bridgeKey({ kind: "cleanup", id: "c1" }), null)
-  assert.equal(bridgeKey(hostMode("c1")), "host-mode:c1")
-  assert.equal(bridgeKey(hostCheckin("c1")), "host-checkin:c1")
-  assert.equal(bridgeKey(hostTeam("c1")), "host-team:c1")
-  assert.equal(bridgeKey(myTicket("c1")), "my-ticket:c1:")
-  assert.equal(bridgeKey(myTicket("c1", "s1")), "my-ticket:c1:s1")
-  assert.equal(bridgeKey(org("acme")), "org:acme")
   assert.equal(bridgeKey(thread("room-1")), "thread:room-1")
   assert.equal(bridgeKey(postThread("post-1")), "post-thread:post-1")
   assert.equal(bridgeKey(composer()), "composer:post:")
@@ -225,24 +216,7 @@ test("every bridged route reads its own name back as the key that produced it", 
   assert.equal(bridgeRoute(postThread("P"))?.pathname, `/${BRIDGE_ROUTE_NAMES.postThread}`)
   assert.equal(bridgeRoute(composer())?.pathname, `/${BRIDGE_ROUTE_NAMES.composer}`)
 
-  assert.equal(bridgeRoute(hostMode("c1"))?.pathname, `/${BRIDGE_ROUTE_NAMES.hostMode}`)
-  assert.equal(bridgeRoute(hostCheckin("c1"))?.pathname, `/${BRIDGE_ROUTE_NAMES.hostCheckin}`)
-  assert.equal(bridgeRoute(hostTeam("c1"))?.pathname, `/${BRIDGE_ROUTE_NAMES.hostTeam}`)
-  assert.equal(bridgeRoute(myTicket("c1", "s1"))?.pathname, `/${BRIDGE_ROUTE_NAMES.myTicketSeat}`)
-  assert.equal(bridgeRoute(org("acme"))?.pathname, `/${BRIDGE_ROUTE_NAMES.org}`)
-
-  for (const entry of [
-    thread("A"),
-    postThread("P"),
-    composer("reply", "P1"),
-    composer(),
-    hostMode("c1"),
-    hostCheckin("c1"),
-    hostTeam("c1"),
-    myTicket("c1"),
-    myTicket("c1", "s1"),
-    org("acme"),
-  ]) {
+  for (const entry of [thread("A"), postThread("P"), composer("reply", "P1"), composer()]) {
     const route = bridgeRoute(entry)
     assert.ok(route)
     assert.equal(nativeBridgeKey({ name: route.pathname.slice(1), params: route.params }), bridgeKey(entry))
@@ -320,58 +294,44 @@ test("stackWithoutBridged removes the LAST match and reports nothing to do when 
   assert.equal(stackWithoutBridged([], "thread:A"), null)
 })
 
-test("the day-of host surfaces are their own full-screen routes, keyed by event", () => {
-  assert.equal(bridgeRoute(hostMode("c1"))?.params.id, "c1")
-  assert.equal(bridgeRoute(hostCheckin("c1"))?.params.id, "c1")
-  assert.equal(bridgeRoute(hostTeam("c1"))?.params.id, "c1")
-  assert.equal(bridgeRoute(org("acme"))?.params.slug, "acme")
-  assert.deepEqual(bridgeRoute(myTicket("c1"))?.params, { id: "c1" })
-  assert.deepEqual(bridgeRoute(myTicket("c1", "s2"))?.params, { id: "c1", seatId: "s2" })
-})
-
-test("the seat is a path segment on both sides, so one seat is one screen", () => {
-  assert.equal(bridgeRoute(myTicket("c1"))?.pathname, `/${BRIDGE_ROUTE_NAMES.myTicket}`)
-  assert.equal(bridgeRoute(myTicket("c1", "s2"))?.pathname, `/${BRIDGE_ROUTE_NAMES.myTicketSeat}`)
-  for (const name of MY_TICKET_ROUTE_NAMES) {
-    assert.equal(nativeBridgeKey({ name, params: { id: "c1", seatId: "s2" } }), "my-ticket:c1:s2")
-    assert.equal(nativeBridgeKey({ name, params: { id: "c1" } }), "my-ticket:c1:")
-  }
-})
-
-test("a screen that HOSTS the shared shell keeps its entry when it is already on top", () => {
+test("every host surface the shell can reach stays in the shell, exactly like an event page", () => {
   for (const entry of [
     hostMode("c1"),
     hostCheckin("c1"),
     hostTeam("c1"),
+    myTicket("c1"),
     myTicket("c1", "s1"),
     org("acme"),
+    { kind: "host-log-hours", id: "c1" } as DetailEntry,
+    { kind: "event-dashboard" } as DetailEntry,
   ]) {
-    const key = bridgeKey(entry)
-    assert.ok(key)
-    assert.ok(SHELL_HOSTED_BRIDGE_KINDS.includes(entry.kind))
-    const decision = bridgeDecision(entry, INITIAL_BRIDGE_GUARD, 0, key)
-    assert.equal(decision.action.type, "none")
-    assert.equal(decision.guard.openKey, key)
+    assert.equal(bridgeKey(entry), null, entry.kind)
+    assert.equal(bridgeRoute(entry), null, entry.kind)
+    assert.equal(bridgeDecision(entry, INITIAL_BRIDGE_GUARD, 0, null).action.type, "none", entry.kind)
   }
 })
 
-test("a screen that renders its OWN body still drops the entry when it is already on top", () => {
+test("their cold deep-link route names carry no native bridge key either", () => {
+  for (const name of [
+    "cleanups/[id]/host",
+    "cleanups/[id]/checkin",
+    "cleanups/[id]/team",
+    "cleanups/[id]/hours",
+    "cleanups/[id]/ticket",
+    "cleanups/[id]/ticket/[seatId]",
+    "orgs/[slug]",
+    "dashboard",
+  ]) {
+    assert.equal(nativeBridgeKey({ name, params: { id: "c1", seatId: "s2", slug: "acme" } }), null, name)
+  }
+})
+
+test("a screen that renders its OWN body drops the entry when it is already on top", () => {
   for (const entry of [thread("A"), postThread("P"), composer("reply", "P1")]) {
     const key = bridgeKey(entry)
     assert.ok(key)
     assert.equal(bridgeDecision(entry, INITIAL_BRIDGE_GUARD, 0, key).action.type, "drop")
   }
-})
-
-test("an id-less host entry and a slug-less org are never bridged", () => {
-  assert.equal(bridgeKey({ kind: "host-mode" }), null)
-  assert.equal(bridgeKey({ kind: "host-checkin" }), null)
-  assert.equal(bridgeKey({ kind: "host-team" }), null)
-  assert.equal(bridgeRoute({ kind: "host-team" }), null)
-  assert.equal(bridgeKey({ kind: "my-ticket" }), null)
-  assert.equal(bridgeKey({ kind: "org" }), null)
-  assert.equal(bridgeRoute({ kind: "my-ticket" }), null)
-  assert.equal(bridgeRoute({ kind: "org" }), null)
 })
 
 test("the quick broadcast stays in the sheet so its draft guard applies", () => {
@@ -385,42 +345,4 @@ test("my-donations is reached from settings in the sheet, never as a native scre
   assert.equal(bridgeKey({ kind: "my-donations" }), null)
   assert.equal(bridgeRoute({ kind: "my-donations" }), null)
   assert.equal(nativeBridgeKey({ name: "me/donations" }), null)
-})
-
-test("two seats of the same ticket are two different screens", () => {
-  const { actions } = run([
-    { active: myTicket("c1", "s1"), now: 0 },
-    { active: null, now: 0 },
-    { active: myTicket("c1", "s2"), now: 100 },
-  ])
-  assert.equal(actions[0].type, "bridge")
-  assert.equal(actions[2].type, "bridge")
-  assert.equal((actions[2] as { key: string }).key, "my-ticket:c1:s2")
-})
-
-test("a host screen already on top is left alone - its entry IS what that screen renders", () => {
-  const { actions, guard } = run([
-    { active: hostCheckin("c1"), now: 0 },
-    { active: null, now: 0 },
-    { active: hostCheckin("c1"), now: 30_000, focused: "host-checkin:c1" },
-  ])
-  assert.equal(actions[0].type, "bridge")
-  assert.equal(actions[2].type, "none")
-  assert.equal(guard.openKey, "host-checkin:c1")
-})
-
-test("a shell-hosted seed is dropped when a teardown lands back on the root sheet", () => {
-  const pin: DetailEntry = { kind: "pin", id: "p1" }
-  assert.deepEqual(stackWithoutShellHosted([pin, hostMode("c1")]), [pin])
-  assert.deepEqual(
-    stackWithoutShellHosted([pin, org("acme"), myTicket("c1", "s1"), hostCheckin("c1")]),
-    [pin],
-  )
-  assert.deepEqual(stackWithoutShellHosted([hostMode("c1")]), [])
-})
-
-test("the entries the root sheet renders itself survive that teardown untouched", () => {
-  const stack: DetailEntry[] = [{ kind: "pin", id: "p1" }, thread("r1"), postThread("P1")]
-  assert.deepEqual(stackWithoutShellHosted(stack), stack)
-  assert.deepEqual(stackWithoutShellHosted([]), [])
 })

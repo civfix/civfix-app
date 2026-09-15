@@ -1,11 +1,5 @@
-import type {
-  ChatItem,
-  CleanupDTO,
-  PersonDTO,
-  ReportCategory,
-  ReportStatus,
-  ReportType,
-} from "@civfix/shared"
+import type { ChatItem, CleanupDTO, PersonDTO, ReportStatus, ReportType } from "@civfix/shared"
+import { TOGETHER_EVENT_SPOT, TRACK_PINS } from "./onboardingMapScenes"
 
 export const DEMO_ORGANIZER: PersonDTO = {
   id: "onboarding-organizer",
@@ -51,44 +45,22 @@ export const DEMO_HOURS_CREDITED = 2.5
 export const DEMO_GOING_BEFORE = 2
 export const DEMO_GOING_AFTER = 3
 
-export const DEMO_EVENT_LAT = 34.0782
-export const DEMO_EVENT_LNG = -118.2606
+export const DEMO_EVENT_LAT = TOGETHER_EVENT_SPOT.lat
+export const DEMO_EVENT_LNG = TOGETHER_EVENT_SPOT.lng
 
 export const DEMO_REPORT_ID = "onboarding-report"
-export const DEMO_REPORT_LAT = 34.0709
-export const DEMO_REPORT_LNG = -118.2547
 
 export const REPORT_STAGE_TYPES: readonly ReportType[] = ["dump", "graffiti", "pavement"]
 export const REPORT_STAGE_SELECTED_INDEX = 1
 
-export interface DemoPin {
-  readonly category: ReportCategory
-  readonly x: number
-  readonly y: number
-  readonly rise: number
-}
-
-export const TRACK_PINS: readonly DemoPin[] = [
-  { category: "trash", x: 0.17, y: 0.29, rise: 1.7 },
-  { category: "graffiti", x: 0.4, y: 0.18, rise: 1.1 },
-  { category: "hazard", x: 0.71, y: 0.31, rise: 2 },
-  { category: "water", x: 0.85, y: 0.55, rise: 1.3 },
-  { category: "encampment", x: 0.28, y: 0.6, rise: 1.5 },
-  { category: "recycling", x: 0.54, y: 0.47, rise: 1.2 },
-  { category: "other", x: 0.65, y: 0.61, rise: 1.8 },
-]
-
 export const TRACK_CLUSTER_MEMBERS: readonly number[] = [5, 6]
-export const TRACK_CLUSTER_X = 0.595
-export const TRACK_CLUSTER_Y = 0.545
 export const TRACK_CLUSTER_COUNT = 3
 
 export const TRACK_ROW_PIN_INDEX = 0
+export const DEMO_REPORT_LAT = TRACK_PINS[TRACK_ROW_PIN_INDEX].spot.lat
+export const DEMO_REPORT_LNG = TRACK_PINS[TRACK_ROW_PIN_INDEX].spot.lng
 
 export const TRACK_STATUS_CYCLE: readonly ReportStatus[] = ["published", "in_progress", "resolved"]
-
-export const TOGETHER_EVENT_PIN_X = 0.31
-export const TOGETHER_EVENT_PIN_Y = 0.52
 
 export function demoCleanup(title: string, address: string, going: number): CleanupDTO {
   return {

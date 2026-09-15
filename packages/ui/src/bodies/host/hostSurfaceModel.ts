@@ -1,4 +1,4 @@
-import { DEFAULT_DURATION_MS } from "@civfix/shared/host"
+import type { HostStage } from "@civfix/shared/host"
 import type {
   ArrivalOffsetBucket,
   CleanupDTO,
@@ -9,6 +9,8 @@ import type {
   SeatPoint,
 } from "@civfix/shared"
 import type { SparkPoint } from "../../primitives/trendSparklineModel"
+import type { IconName } from "../../typography/icon-map"
+import { linkSheetMode } from "../linkReportsModel"
 
 export const MESSAGE_CTA_WINDOW_MS = 48 * 3_600_000
 
@@ -21,7 +23,6 @@ export type HostCtaKey =
   | "message"
   | "check_in"
   | "scan"
-  | "complete"
   | "log_hours"
   | "duplicate"
   | "edit"
@@ -50,12 +51,33 @@ export type HostRowKey =
   | "scan"
   | "walkup"
   | "mark_no_shows"
+  | "log_hours"
   | "edit"
   | "team"
   | "tickets"
   | "resources"
   | "duplicate"
+  | "linked_reports"
   | "cancel"
+
+export const HOST_ROW_ICONS: Readonly<Record<HostRowKey, IconName>> = {
+  share: "Link2",
+  invite_team: "UserPlus",
+  message: "Megaphone",
+  email: "Mail",
+  check_in: "QrCode",
+  scan: "ScanLine",
+  walkup: "UserPlus",
+  mark_no_shows: "CheckCheck",
+  log_hours: "Clock",
+  edit: "Pencil",
+  team: "Users",
+  tickets: "Ticket",
+  resources: "Building2",
+  duplicate: "Copy",
+  linked_reports: "MapPin",
+  cancel: "Ban",
+}
 
 export type HostHeroKey = "registered" | "checked_in" | "attended"
 
@@ -69,27 +91,28 @@ export interface HostSurfaceCapabilities {
   viewAnalytics: boolean
   cancelEvent: boolean
   requestResources: boolean
+  logHours: boolean
 }
 
 export interface HostSurfaceInput {
-  phase: EventPhase
+  stage: HostStage
   now: number
   startsAt: number | null
-  endsAt: number | null
   registeredSeats: number
   hoursCredited: number
   scannerAvailable: boolean
-  completionArmed: boolean
   can: HostSurfaceCapabilities
 }
 
 export interface HostActionInput {
-  phase: EventPhase
+  stage: HostStage
   can: HostSurfaceCapabilities
   unmarked: number
   scannerAvailable: boolean
   hasOrganization: boolean
   consoleReachable: boolean
+  isCleanup: boolean
+  linkedReportCount: number
 }
 
 export interface HostActionCard {
@@ -120,24 +143,22 @@ export interface HostTile {
   total: number | null
 }
 
-export function eventEnd(input: HostSurfaceInput): number | null {
-  if (input.endsAt !== null) return input.endsAt
-  if (input.startsAt === null) return null
-  return input.startsAt + DEFAULT_DURATION_MS
+function checkInCta(input: HostSurfaceInput): HostCtaKey | null {
+  if (!input.can.checkIn) return null
+  return input.scannerAvailable ? "scan" : "check_in"
+}
+
+function logHoursCta(input: HostSurfaceInput): HostCtaKey | null {
+  return input.can.logHours && input.hoursCredited === 0 ? "log_hours" : null
 }
 
 export function hostPrimaryCta(input: HostSurfaceInput): HostCtaKey | null {
-  const { phase, can } = input
-  if (phase === "cancelled") return null
-  if (phase === "ended") {
-    if (input.hoursCredited > 0) return can.manageEvent ? "duplicate" : null
-    return "log_hours"
-  }
-  if (phase === "live") {
-    const end = eventEnd(input)
-    if (input.completionArmed && end !== null && input.now >= end) return "complete"
-    if (can.checkIn) return input.scannerAvailable ? "scan" : "check_in"
-    return can.broadcast ? "message" : "share"
+  const { can, stage } = input
+  if (stage === "cancelled") return null
+  if (stage === "past") return logHoursCta(input) ?? (can.manageEvent ? "duplicate" : null)
+  if (stage === "wrapping_up") return logHoursCta(input) ?? checkInCta(input) ?? "share"
+  if (stage === "soon" || stage === "underway") {
+    return checkInCta(input) ?? (can.broadcast ? "message" : "share")
   }
   const soon = input.startsAt !== null && input.startsAt - input.now <= MESSAGE_CTA_WINDOW_MS
   if (can.broadcast && soon && input.registeredSeats > 0) return "message"
@@ -145,11 +166,20 @@ export function hostPrimaryCta(input: HostSurfaceInput): HostCtaKey | null {
 }
 
 export function hostSecondaryCta(input: HostSurfaceInput): HostCtaKey | null {
-  const { phase, can } = input
-  if (phase === "cancelled") return can.manageEvent ? "duplicate" : null
-  if (phase === "upcoming") return can.manageEvent ? "edit" : null
-  if (!can.broadcast) return null
-  return hostPrimaryCta(input) === "message" ? null : "message"
+  const { can, stage } = input
+  const primary = hostPrimaryCta(input)
+  const message = can.broadcast && primary !== "message" ? "message" : null
+  const edit = can.manageEvent ? "edit" : null
+  if (stage === "cancelled") return can.manageEvent ? "duplicate" : null
+  if (stage === "upcoming") return edit
+  if (stage === "soon") return message ?? edit
+  if (stage === "underway") return message
+  if (stage === "wrapping_up") {
+    const checkIn = checkInCta(input)
+    return checkIn !== null && primary !== checkIn ? checkIn : message
+  }
+  if (message !== null) return message
+  return can.logHours && primary !== "log_hours" ? "log_hours" : null
 }
 
 export function hostPanels(phase: EventPhase): HostPanels {
@@ -238,11 +268,12 @@ export function hostStatTiles(insights: EventInsights, phase: EventPhase): HostT
 }
 
 export function hostActionCards(input: HostActionInput): HostActionCard[] {
-  const { can, phase } = input
-  const live = phase === "live"
-  const upcoming = phase === "upcoming"
-  const ended = phase === "ended"
-  const cancelled = phase === "cancelled"
+  const { can, stage } = input
+  const cancelled = stage === "cancelled"
+  const before = stage === "upcoming" || stage === "soon"
+  const running = stage === "soon" || stage === "underway" || stage === "wrapping_up"
+  const after = stage === "wrapping_up" || stage === "past"
+  const editable = before || stage === "underway"
 
   const grow: HostRowKey[] = []
   if (!cancelled) grow.push("share")
@@ -255,19 +286,30 @@ export function hostActionCards(input: HostActionInput): HostActionCard[] {
   }
 
   const operate: HostRowKey[] = []
-  if (live && can.checkIn) operate.push(input.scannerAvailable ? "scan" : "check_in")
-  if (live && can.manageTickets) operate.push("walkup")
-  if (ended && can.checkIn && input.unmarked > 0) operate.push("mark_no_shows")
+  if (running && can.checkIn) operate.push(input.scannerAvailable ? "scan" : "check_in")
+  if (running && can.manageTickets) operate.push("walkup")
+  if (after && can.logHours) operate.push("log_hours")
+  if (after && can.checkIn && input.unmarked > 0) operate.push("mark_no_shows")
 
   const configure: HostRowKey[] = []
-  if (upcoming && can.manageEvent) configure.push("edit")
-  if (upcoming && can.manageTeam) configure.push("team")
-  if (upcoming && can.manageTickets && input.consoleReachable) configure.push("tickets")
-  if (upcoming && can.requestResources && input.hasOrganization) configure.push("resources")
-  if (ended && can.manageEvent) configure.push("duplicate")
+  if (editable && can.manageEvent) configure.push("edit")
+  if (
+    linkSheetMode({
+      stage,
+      canManage: can.manageEvent,
+      isCleanup: input.isCleanup,
+      linkedCount: input.linkedReportCount,
+    }) !== "hidden"
+  ) {
+    configure.push("linked_reports")
+  }
+  if (before && can.manageTeam) configure.push("team")
+  if (before && can.manageTickets && input.consoleReachable) configure.push("tickets")
+  if (before && can.requestResources && input.hasOrganization) configure.push("resources")
+  if ((stage === "past" || cancelled) && can.manageEvent) configure.push("duplicate")
 
   const danger: HostRowKey[] = []
-  if ((upcoming || live) && can.cancelEvent) danger.push("cancel")
+  if (editable && can.cancelEvent) danger.push("cancel")
 
   const cards: HostActionCard[] = [
     { key: "grow", rows: grow },

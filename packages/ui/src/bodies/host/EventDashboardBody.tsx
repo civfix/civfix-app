@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { View } from "react-native"
 import type { CleanupMemberRole, HostedEventDTO } from "@civfix/shared"
+import { nextEventBoundaryMs } from "@civfix/shared/host"
 import { headingLevel, makeThemedStyles } from "../../theme"
 import { Text, TextLink, iconMap, type LucideIcon } from "../../typography"
 import {
@@ -19,7 +20,7 @@ import {
   useToast,
 } from "../../primitives"
 import type { AnchorRect } from "../../primitives"
-import { useAuthState, useRequireAuth } from "../../data"
+import { NOW_TICK_MS, useAuthState, useEventBoundaryRefresh, useNow, useRequireAuth } from "../../data"
 import { actableOrganizations, useMyOrganizations } from "../../data/hooks/orgs"
 import {
   hostedEventRows,
@@ -59,7 +60,7 @@ import {
   dashboardScope,
   firstEventState,
   hostedEventPhase,
-  nextUpCta,
+  hostedEventWindow,
   nextUpEvent,
   portfolioKpis,
   sharePathFor,
@@ -81,6 +82,14 @@ const HEADER_ROW_HEIGHT = 32
 const SCOPE_PILL_MAX_WIDTH = "60%"
 
 const MORE_ROW_HEIGHT = 44
+
+function soonestBoundary(events: readonly HostedEventDTO[], at: number): number | null {
+  const ahead = events.flatMap((event) => {
+    const boundary = nextEventBoundaryMs(hostedEventWindow(event), at)
+    return boundary === null ? [] : [boundary]
+  })
+  return ahead.length === 0 ? null : Math.min(...ahead)
+}
 
 function avatarIcon(name: string, seed: string, photoUrl: string | null): LucideIcon {
   return function ScopeAvatar() {
@@ -123,15 +132,22 @@ export function EventDashboardBody() {
   const acceptOrg = useAcceptMyOrgInvite()
   const declineOrg = useDeclineMyOrgInvite()
 
-  const now = new Date()
   const events = useMemo(() => hostedEventRows(hosted.data?.pages), [hosted.data])
   const upcomingEvents = useMemo(() => hostedEventRows(upcoming.data?.pages), [upcoming.data])
   const pastEvents = useMemo(() => hostedEventRows(past.data?.pages), [past.data])
+  const boundaryAt = soonestBoundary(upcomingEvents, Date.now())
+  const nowMs = useNow(NOW_TICK_MS, { boundaryAt })
+  const now = useMemo(() => new Date(nowMs), [nowMs])
   const nextUp = nextUpEvent([...upcomingEvents, ...pastEvents], now)
   const kpis = portfolioKpis(upcoming.data?.pages)
   const tasks = useMemo(
-    () => attentionRows({ past: pastEvents, now: new Date() }).slice(0, ATTENTION_MAX_ROWS),
-    [pastEvents],
+    () => attentionRows({ past: pastEvents, now }).slice(0, ATTENTION_MAX_ROWS),
+    [pastEvents, now],
+  )
+  useEventBoundaryRefresh(
+    nextUp ? hostedEventWindow(nextUp.event) : null,
+    nowMs,
+    nextUp?.event.id ?? null,
   )
   const teaching = firstEventState(kpis, upcomingEvents)
 
@@ -187,6 +203,10 @@ export function EventDashboardBody() {
     [setBroadcastPreset],
   )
 
+  const onLogHours = useCallback((event: HostedEventDTO) => {
+    useNavStore.getState().push({ kind: "host-log-hours", id: event.id })
+  }, [])
+
   const onShare = useCallback(
     (event: HostedEventDTO) => {
       void shareLink({ title: event.title, path: sharePathFor(event) }).then((result) => {
@@ -195,27 +215,6 @@ export function EventDashboardBody() {
       })
     },
     [t, toast],
-  )
-
-  const cta = nextUp ? nextUpCta({ phase: nextUp.phase, event: nextUp.event, now }) : null
-
-  const onNextUp = useCallback(
-    (event: HostedEventDTO) => {
-      if (cta === "check_in") {
-        onCheckIn(event)
-        return
-      }
-      if (cta === "message") {
-        onEmailAttendees(event)
-        return
-      }
-      if (cta === "share") {
-        onShare(event)
-        return
-      }
-      onHostTools(event)
-    },
-    [cta, onCheckIn, onEmailAttendees, onHostTools, onShare],
   )
 
   const onEdit = useCallback((event: HostedEventDTO) => {
@@ -342,15 +341,16 @@ export function EventDashboardBody() {
 
         {upcoming.isPending ? <NextUpSkeleton /> : null}
 
-        {teaching || upcoming.isPending ? null : nextUp && cta ? (
+        {teaching || upcoming.isPending ? null : nextUp ? (
           <NextUpCard
             event={nextUp.event}
             phase={nextUp.phase}
-            cta={cta}
             slots={nextUpCleanup.data?.slots ?? []}
             liveCheckedIn={liveCheckedIn}
+            now={nowMs}
             onOpen={onOpenEvent}
-            onPrimary={onNextUp}
+            onHostTools={onHostTools}
+            onShare={onShare}
           />
         ) : null}
 
@@ -372,7 +372,7 @@ export function EventDashboardBody() {
           onAcceptOrgInvite={onAcceptOrgInvite}
           onDeclineOrgInvite={onDeclineOrgInvite}
           rows={teaching ? [] : tasks}
-          onOpenHost={onHostTools}
+          onLogHours={onLogHours}
         />
 
         {teaching ? <FirstEventCard onCreate={onCreate} /> : null}
@@ -442,6 +442,7 @@ export function EventDashboardBody() {
                   window={eventWindow}
                   roleLabel={roleLabel}
                   live={hostedEventPhase(event, now) === "live"}
+                  now={now}
                   onOpen={onOpenEvent}
                   onCheckIn={onCheckIn}
                   onHostTools={onHostTools}

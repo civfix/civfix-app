@@ -1,25 +1,30 @@
 {
   "block": {
-    "heading": "참여 역할",
-    "claim_joins_hint": "역할을 맡으면 참석도 함께 확정됩니다.",
-    "filled": "{{capacity}}자리 중 {{claimed}}자리 참여",
-    "no_slot_hint": "아직 정하지 못했나요? 역할 없이 참석을 확정하고 편한 시간에 오세요."
+    "heading": "신청 역할",
+    "filled": "{{capacity}}자리 중 {{claimed}}자리 신청",
+    "signed_up_other": "{{count}}명 신청",
+    "none_signed_up": "아직 신청한 사람이 없습니다",
+    "none_yet": "주최자가 아직 신청 역할을 추가하지 않았습니다."
   },
   "row": {
     "open": "모집 중",
     "remaining_other": "{{count}}자리 남음",
     "full": "마감",
     "full_sub": "자리가 모두 찼습니다",
-    "you_claimed": "내가 맡은 역할",
-    "claimed_count_other": "{{count}}명",
-    "claim": "맡기",
-    "claimed": "맡음",
+    "you_claimed": "내 역할",
+    "claimed_count_other": "{{count}}명 신청",
+    "claim": "신청",
+    "claimed": "신청함",
     "switch": "변경",
-    "claim_a11y": "{{title}} 역할 맡기",
+    "claim_a11y": "{{title}} 역할 신청",
     "release_a11y": "{{title}} 역할 취소",
     "switch_a11y": "{{title}} 역할로 변경",
     "any_time": "아무 때나",
-    "window_a11y": "{{title}}, {{range}}"
+    "window_a11y": "{{title}}, {{range}}",
+    "expand_a11y": "{{title}}, {{count}}명 신청",
+    "expand_hint": "신청한 사람을 표시합니다",
+    "collapse_hint": "신청한 사람을 숨깁니다",
+    "faces_more": "+{{count}}"
   },
   "editor": {
     "add_first": "역할 추가",
@@ -55,7 +60,12 @@
     "split_count_a11y": "행사를 {{count}}개의 균등한 교대로 나누기",
     "generated_title_prefix": "교대",
     "generated_title": "{{prefix}} {{n}}",
-    "prefix_a11y": "생성될 교대 이름의 접두사"
+    "prefix_a11y": "생성될 교대 이름의 접두사",
+    "window_outside_event": "교대 시간은 이벤트 시간 안에 있어야 합니다.",
+    "suggest_general": "일반 자원봉사",
+    "suggest_general_a11y": "첫 번째 역할 이름으로 '일반 자원봉사' 사용",
+    "title_placeholder_first": "예: 일반 자원봉사",
+    "remove_last_hint": "모든 행사에는 역할이 최소 하나 필요합니다."
   },
   "error": {
     "empty_title": "역할 이름을 입력하세요.",
@@ -75,7 +85,30 @@
     "window_a11y": "{{title}}, {{range}}"
   },
   "toast": {
-    "claimed": "역할을 맡았습니다",
-    "released": "역할이 해제되었습니다"
+    "claimed": "신청했습니다",
+    "released": "역할이 해제되었습니다",
+    "switched": "{{title}}(으)로 변경했습니다"
+  },
+  "viewer": {
+    "holds": "{{slot}} 역할로 신청했습니다",
+    "held": "{{slot}} 역할로 신청했습니다",
+    "going_no_slot": "참석 예정입니다. 어디에서 도울지 주최자가 알 수 있도록 역할을 선택하세요.",
+    "pick_hint": "역할을 선택해 신청하세요.",
+    "guest_link": "계정이 없나요? 게스트로 참석 확정",
+    "guest_link_a11y": "계정 없이 게스트로 참석 확정하기",
+    "ticketed_hint": "자리는 등록을 통해 배정됩니다."
+  },
+  "people": {
+    "you": "나",
+    "view_profile_a11y": "{{name}}, 프로필 보기",
+    "error": "신청한 사람을 불러오지 못했습니다.",
+    "retry": "다시 시도",
+    "be_first": "가장 먼저 신청해 보세요.",
+    "more": "+{{count}}명 더",
+    "more_a11y": "신청한 사람 모두 보기",
+    "partial": "{{claimed}}명 중 {{shown}}명 표시",
+    "gated_title": "내가 팔로우하는 사람만 표시됩니다",
+    "gated_hint": "역할을 신청하면 참석자를 모두 볼 수 있습니다.",
+    "gated_empty_other": "{{count}}명 신청. 역할을 신청하면 누구인지 볼 수 있습니다."
   }
 }

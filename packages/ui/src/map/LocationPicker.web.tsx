@@ -7,14 +7,15 @@ import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
 import { PICKER_ZOOM, PICKER_HEIGHT, type LatLng, type LocationPickerProps } from "./LocationPicker.types"
 import { useLocationPick } from "./locationPickStore"
+import { pinAppearanceFor } from "./pins"
 
-export function applyPinElementTheme(el: HTMLElement, t: Theme): void {
-  el.style.background = t.colors.brand.bloom
+export function applyPinElementTheme(el: HTMLElement, t: Theme, fill: string): void {
+  el.style.background = fill
   el.style.boxShadow = shadowSchemes[t.scheme].pin
   el.style.border = `2px solid ${t.colors.onAccent}`
 }
 
-export function makePinElement(t: Theme): HTMLDivElement {
+export function makePinElement(t: Theme, fill: string): HTMLDivElement {
   const el = document.createElement("div")
   el.style.width = "24px"
   el.style.height = "24px"
@@ -22,16 +23,19 @@ export function makePinElement(t: Theme): HTMLDivElement {
   el.style.transform = "rotate(45deg)"
   el.style.boxSizing = "border-box"
   el.style.cursor = "grab"
-  applyPinElementTheme(el, t)
+  applyPinElementTheme(el, t, fill)
   return el
 }
 
-function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_HEIGHT }: LocationPickerProps) {
+function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_HEIGHT, pin }: LocationPickerProps) {
   const { t } = useT("map-ui")
   const th = useTheme()
   const styles = React.useMemo(() => makeStyles(th), [th])
   const themeRef = React.useRef(th)
   themeRef.current = th
+  const pinFill = pinAppearanceFor(pin, th.scheme).fill
+  const pinFillRef = React.useRef(pinFill)
+  pinFillRef.current = pinFill
   const cartoApiKey = useCartoApiKey()
   const cartoApiKeyRef = React.useRef(cartoApiKey)
   cartoApiKeyRef.current = cartoApiKey
@@ -51,7 +55,7 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
       const existing = markerRef.current
       if (existing) return existing
       const marker = new maplibregl.Marker({
-        element: makePinElement(themeRef.current),
+        element: makePinElement(themeRef.current, pinFillRef.current),
         anchor: "bottom",
         draggable: true,
       })
@@ -102,6 +106,11 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
   }, [cameraSeed])
 
   React.useEffect(() => {
+    const marker = markerRef.current
+    if (marker) applyPinElementTheme(marker.getElement(), th, pinFill)
+  }, [th, pinFill])
+
+  React.useEffect(() => {
     const map = mapRef.current
     if (!map) return
     if (!value) {
@@ -136,7 +145,7 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
   )
 }
 
-function MainMapLocationPicker({ value, onChange, onClear }: LocationPickerProps) {
+function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPickerProps) {
   const { t } = useT("map-ui")
   const th = useTheme()
   const styles = React.useMemo(() => makeStyles(th), [th])
@@ -146,13 +155,19 @@ function MainMapLocationPicker({ value, onChange, onClear }: LocationPickerProps
   onChangeRef.current = onChange
   const onClearRef = React.useRef(onClear)
   onClearRef.current = onClear
+  const pinRef = React.useRef(pin)
+  pinRef.current = pin
 
   React.useEffect(() => {
-    useLocationPick.getState().start(value ?? null)
+    useLocationPick.getState().start(value ?? null, pinRef.current)
     return () => {
       useLocationPick.getState().cancel()
     }
   }, [])
+
+  React.useEffect(() => {
+    useLocationPick.getState().setPin(pin)
+  }, [pin])
 
   React.useEffect(() => {
     if (!draft) return
@@ -163,7 +178,7 @@ function MainMapLocationPicker({ value, onChange, onClear }: LocationPickerProps
   const point = draft ?? value ?? null
 
   const onReset = React.useCallback(() => {
-    useLocationPick.getState().start(null)
+    useLocationPick.getState().start(null, pinRef.current)
     onClearRef.current?.()
   }, [])
 

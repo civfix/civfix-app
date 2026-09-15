@@ -4,7 +4,7 @@
  * Address autocomplete should favor the area the user is actually looking at on the map, not just where
  * their device happens to be. But the search input (AddressSearch, deep inside the host/report forms) is
  * decoupled from the persistent <Map/>. This tiny zustand store bridges them without either importing the
- * app (mirrors mapFocusStore / locationPickStore / eventReportLinkStore):
+ * app (mirrors mapFocusStore / locationPickStore):
  *   - the shared <Map/> (.web + .native seams) PUBLISHES its region (`setRegion`) on every move-settle, and
  *     CLEARS it on unmount so a later flow does not bias to a stale view;
  *   - AddressSearch READS the latest viewport at search time and passes its center (+ zoom) as the Photon

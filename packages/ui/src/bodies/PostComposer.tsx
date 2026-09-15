@@ -47,6 +47,7 @@ import { PLAIN_SCROLL_HOST, useScrollHost } from "../shell/ScrollHost"
 import { AuthorAsChips, authorAsSelection } from "./AuthorAsChips"
 import { LinkedEventCard } from "./LinkedEventCard"
 import { LinkedReportCard } from "./LinkedReportCard"
+import { useFeedScrollTopStore } from "./feed/feedScrollStore"
 import { clearStaleReportIntentAtComposerMount } from "./composerCreateFlow"
 import {
   activePostMentions,
@@ -75,7 +76,7 @@ import {
   mergePostComposerThumbs,
   snapshotCarriedMedia,
 } from "./postComposerMedia"
-import { resolvePostSubmit } from "./postComposerSubmit"
+import { postSubmitDestination, resolvePostSubmit } from "./postComposerSubmit"
 import { trackPostComposerMount, type PostComposerExitHost } from "./postComposerExit"
 import {
   selectPostComposerHasPendingMedia,
@@ -237,7 +238,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
     () => resolveComposerReport(draft.attachedReportId, draft.attachedReport, reportItems),
     [draft.attachedReportId, draft.attachedReport, reportItems],
   )
-  const eventCandidates = useMemo(() => attachableEvents(eventItems), [eventItems])
+  const eventCandidates = useMemo(() => attachableEvents(eventItems, Date.now()), [eventItems])
   const reportCandidates = useMemo(() => attachableReports(reportItems), [reportItems])
 
   const eventsLoaded = events.isSuccess || events.isError
@@ -397,7 +398,8 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
         onPosted?.(post)
         if (onBack) onBack()
         else back()
-        push({ kind: "post-thread", id: post.id })
+        if (postSubmitDestination(resolution.input.kind) === "thread") push({ kind: "post-thread", id: post.id })
+        else useFeedScrollTopStore.getState().requestScrollTop()
       },
       onSettled: () => {
         submittingRef.current = false
@@ -538,6 +540,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
       event={attachedEvent}
       cleanup={attachedCleanup}
       layout="list"
+      timeZone={attachedEvent.timezone ?? undefined}
       selectable
       selected
       onRemove={detachEvent}
@@ -571,6 +574,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
                 event={buildComposerEventRef(event)}
                 cleanup={event}
                 layout="list"
+                timeZone={event.timezone ?? undefined}
                 selectable
                 selected={false}
                 onPress={() => attachEvent(event)}
@@ -685,6 +689,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
                 event={buildComposerEventRef(event)}
                 cleanup={event}
                 layout="list"
+                timeZone={event.timezone ?? undefined}
                 selectable
                 selected={event.id === draft.attachedEventId}
                 onPress={() => attachEvent(event)}

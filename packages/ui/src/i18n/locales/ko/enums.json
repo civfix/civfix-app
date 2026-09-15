@@ -37,7 +37,7 @@
   "eventStatus": {
     "upcoming": "예정",
     "active": "진행 중",
-    "done": "완료",
+    "done": "종료됨",
     "cancelled": "취소됨"
   },
   "registrationStatus": {

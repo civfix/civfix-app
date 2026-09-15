@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { ContentReportReason } from "@civfix/shared"
 import { PopoverMenu, type AnchorRect, type PopoverMenuItem } from "../primitives/PopoverMenu"
 import { ReportContentSheet } from "../primitives/ReportContentSheet"
@@ -20,8 +20,6 @@ export interface PostOverflowMenuProps {
   onDeleted?: () => void
 }
 
-const RELEASE_AFTER_CLOSE_MS = 400
-
 const noop = () => {}
 
 export function PostOverflowMenu(props: PostOverflowMenuProps) {
@@ -30,15 +28,15 @@ export function PostOverflowMenu(props: PostOverflowMenuProps) {
   const [busy, setBusy] = useState(false)
   const [retained, setRetained] = useState(false)
   const active = props.visible || reportOpen || busy || confirmingDelete
+  const activeRef = useRef(active)
+  activeRef.current = active
 
   useEffect(() => {
-    if (active) {
-      setRetained(true)
-      return
-    }
-    const timer = setTimeout(() => setRetained(false), RELEASE_AFTER_CLOSE_MS)
-    return () => clearTimeout(timer)
+    if (active) setRetained(true)
   }, [active])
+  const onSurfaceClosed = useCallback(() => {
+    if (!activeRef.current) setRetained(false)
+  }, [])
 
   if (!active && !retained) return null
   return (
@@ -49,6 +47,7 @@ export function PostOverflowMenu(props: PostOverflowMenuProps) {
       confirmingDelete={confirmingDelete}
       onConfirmingDeleteChange={setConfirmingDelete}
       onBusyChange={setBusy}
+      onSurfaceClosed={onSurfaceClosed}
     />
   )
 }
@@ -59,6 +58,7 @@ interface PostOverflowMenuContentProps extends PostOverflowMenuProps {
   confirmingDelete: boolean
   onConfirmingDeleteChange: (confirming: boolean) => void
   onBusyChange: (busy: boolean) => void
+  onSurfaceClosed: () => void
 }
 
 function PostOverflowMenuContent({
@@ -74,6 +74,7 @@ function PostOverflowMenuContent({
   confirmingDelete,
   onConfirmingDeleteChange,
   onBusyChange,
+  onSurfaceClosed,
 }: PostOverflowMenuContentProps) {
   const { t } = useT("home-feed")
   const { isAuthenticated } = useAuthState()
@@ -240,12 +241,14 @@ function PostOverflowMenuContent({
       <PopoverMenu
         visible={visible && !confirmingDelete}
         onClose={onClose}
+        onClosed={onSurfaceClosed}
         anchorRect={anchorRect}
         items={items}
       />
       <PopoverMenu
         visible={confirmingDelete}
         onClose={closeConfirmDelete}
+        onClosed={onSurfaceClosed}
         anchorRect={anchorRect}
         items={confirmDeleteItems}
       />
@@ -256,6 +259,7 @@ function PostOverflowMenuContent({
         error={reportContent.isError ? t("post_card.menu.report_failed") : null}
         onSubmit={submitReport}
         onClose={() => onReportOpenChange(false)}
+        onClosed={onSurfaceClosed}
       />
     </>
   )

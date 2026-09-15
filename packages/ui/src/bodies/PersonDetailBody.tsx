@@ -5,7 +5,7 @@ import {
   type CleanupDTO,
   type ContentReportReason,
 } from "@civfix/shared"
-import { eventChip, dowLabel, timeLabel } from "@civfix/shared/datetime"
+import { eventChip } from "@civfix/shared/datetime"
 import { makeThemedStyles, radius, useTheme, wash, focusRingProps, useLayoutMode, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
@@ -34,9 +34,8 @@ import {
 } from "../data"
 import { useUserPosts } from "../data/hooks/posts"
 import { useNavStore } from "../nav"
-import { useT, useRelativeTime, useLocale } from "../i18n"
-import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
-import { PLAIN_SCROLL_HOST, ScrollHostProvider, useScrollHost } from "../shell/ScrollHost"
+import { useT, useEventWhen, useLocale } from "../i18n"
+import { useScrollHost } from "../shell/ScrollHost"
 import {
   DETAIL_BACK_SIZE,
   DETAIL_BACK_RADIUS,
@@ -65,9 +64,9 @@ function MiniEventRow({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("profile-person")
-  const { weekdays } = useRelativeTime()
   const { locale } = useLocale()
-  const { day, month } = eventChip(event.scheduledAt, locale)
+  const when = useEventWhen(event)
+  const { day, month } = eventChip(event.scheduledAt, locale, when.timeZone)
   return (
     <Pressable
       onPress={onPress}
@@ -90,7 +89,7 @@ function MiniEventRow({
           </Text>
           <MetaDot color={th.colors.textSubtle} style={styles.miniSubDot} />
           <Text style={[styles.miniSub, styles.miniSubWhen]} numberOfLines={1}>
-            {dowLabel(event.scheduledAt, weekdays)} {timeLabel(event.scheduledAt, locale)}
+            {when.dow} {when.timeWithZone}
           </Text>
         </View>
       </View>
@@ -113,8 +112,6 @@ function PersonScroll({ children }: { children: React.ReactNode }) {
   )
 }
 
-const PERSON_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
-
 export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => void }) {
   const styles = useStyles()
   const th = useTheme()
@@ -122,8 +119,6 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
   const { t: tNav } = useT("nav")
   const back = onBack ?? useNavStore.getState().back
   const layoutMode = useLayoutMode()
-  const inheritedScrollHost = useScrollHost()
-  const scrollHost = layoutMode === "compact" ? PERSON_SCROLL_HOST : inheritedScrollHost
   const { start } = useStartDm()
   const query = useProfile(id)
   const profile = query.data?.profile
@@ -295,34 +290,32 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
     return (
       <View style={styles.root}>
         {header}
-        <ScrollHostProvider value={scrollHost}>
-          <PersonScroll>
-            <SkeletonGroup>
-              <View style={styles.hero}>
-                <SkeletonBlock width={72} height={72} radius={36} />
-                <SkeletonText width={168} height={18} style={styles.skeletonName} />
-                <SkeletonText width={104} height={12} style={styles.skeletonHandle} />
-                <SkeletonText width={248} height={12} style={styles.skeletonBio} />
-                <SkeletonText width={196} height={12} style={styles.skeletonBioLast} />
-              </View>
-              <View style={styles.skeletonStats}>
-                <SkeletonBlock width="30%" height={44} radius={radius.md} />
-                <SkeletonBlock width="30%" height={44} radius={radius.md} />
-                <SkeletonBlock width="30%" height={44} radius={radius.md} />
-              </View>
-              <View style={styles.actions}>
-                <SkeletonBlock width="100%" height={40} radius={radius.pill} style={styles.followAction} />
-                <SkeletonBlock width={40} height={40} radius={20} />
-              </View>
-              <View style={styles.skeletonTabs}>
-                <SkeletonBlock width={72} height={30} radius={radius.pill} />
-                <SkeletonBlock width={72} height={30} radius={radius.pill} />
-                <SkeletonBlock width={72} height={30} radius={radius.pill} />
-              </View>
-              <SkeletonList rows={3} kind="text" />
-            </SkeletonGroup>
-          </PersonScroll>
-        </ScrollHostProvider>
+        <PersonScroll>
+          <SkeletonGroup>
+            <View style={styles.hero}>
+              <SkeletonBlock width={72} height={72} radius={36} />
+              <SkeletonText width={168} height={18} style={styles.skeletonName} />
+              <SkeletonText width={104} height={12} style={styles.skeletonHandle} />
+              <SkeletonText width={248} height={12} style={styles.skeletonBio} />
+              <SkeletonText width={196} height={12} style={styles.skeletonBioLast} />
+            </View>
+            <View style={styles.skeletonStats}>
+              <SkeletonBlock width="30%" height={44} radius={radius.md} />
+              <SkeletonBlock width="30%" height={44} radius={radius.md} />
+              <SkeletonBlock width="30%" height={44} radius={radius.md} />
+            </View>
+            <View style={styles.actions}>
+              <SkeletonBlock width="100%" height={40} radius={radius.pill} style={styles.followAction} />
+              <SkeletonBlock width={40} height={40} radius={20} />
+            </View>
+            <View style={styles.skeletonTabs}>
+              <SkeletonBlock width={72} height={30} radius={radius.pill} />
+              <SkeletonBlock width={72} height={30} radius={radius.pill} />
+              <SkeletonBlock width={72} height={30} radius={radius.pill} />
+            </View>
+            <SkeletonList rows={3} kind="text" />
+          </SkeletonGroup>
+        </PersonScroll>
       </View>
     )
   }
@@ -383,206 +376,204 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
   return (
     <View style={styles.root}>
       {header}
-      <ScrollHostProvider value={scrollHost}>
-        <PersonScroll>
-          <View style={styles.hero}>
-            <Avatar
-              name={profile.name}
-              seed={profile.id}
-              photoUrl={profile.avatarUrl}
-              gradient={resolveAvatarGradient(profile.avatar, profile.id)}
-              size={72}
-            />
-            <View style={styles.nameRow}>
-              <Text style={styles.name} numberOfLines={1}>
-                {profile.name}
+      <PersonScroll>
+        <View style={styles.hero}>
+          <Avatar
+            name={profile.name}
+            seed={profile.id}
+            photoUrl={profile.avatarUrl}
+            gradient={resolveAvatarGradient(profile.avatar, profile.id)}
+            size={72}
+          />
+          <View style={styles.nameRow}>
+            <Text style={styles.name} numberOfLines={1}>
+              {profile.name}
+            </Text>
+          </View>
+          {profile.handle ? (
+            <View style={styles.handleRow}>
+              <Text style={styles.handle} numberOfLines={1}>
+                @{profile.handle}
               </Text>
             </View>
-            {profile.handle ? (
-              <View style={styles.handleRow}>
-                <Text style={styles.handle} numberOfLines={1}>
-                  @{profile.handle}
-                </Text>
+          ) : null}
+          {profile.bio ? (
+            <Text style={styles.bio} numberOfLines={4}>
+              {profile.bio}
+            </Text>
+          ) : null}
+        </View>
+
+        {profile.organization ? (
+          <AffiliationRow organization={profile.organization} style={styles.affiliation} />
+        ) : null}
+
+        <ProfileStatsRow
+          followers={profile.followers}
+          following={profile.following}
+          stats={profile.stats}
+          onOpenConnections={onOpenConnections}
+        />
+
+        <View style={styles.actions}>
+          {profile.blockedByMe ? (
+            <Text style={styles.blockedLabel}>{t("blocked.label")}</Text>
+          ) : (
+            <>
+              <FollowButton
+                personId={profile.id}
+                isFollowing={profile.isFollowing}
+                nextPath={profilePath}
+                size="md"
+                style={styles.followAction}
+              />
+              <Pressable
+                onPress={onMessage}
+                accessibilityRole="button"
+                accessibilityLabel={t("actions.message_a11y", { name: profile.name })}
+                {...focusRingProps}
+                style={({ pressed }) => [styles.secondary, pressed ? styles.secondaryPressed : null]}
+              >
+                <Icon icon={iconMap.MessageCircle} size={17} color={th.colors.text} />
+                <Text style={styles.secondaryText}>{t("actions.message")}</Text>
+              </Pressable>
+            </>
+          )}
+          <Pressable
+            ref={menuAnchorRef}
+            onPress={() => {
+              measureMenu()
+              setMenuOpen(true)
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={t("actions.more_options")}
+            accessibilityState={{ expanded: menuOpen }}
+            {...focusRingProps}
+            style={({ pressed }) => [styles.overflowBtn, pressed ? styles.secondaryPressed : null]}
+          >
+            <Icon icon={iconMap.Ellipsis} size={18} color={th.colors.text} />
+          </Pressable>
+        </View>
+
+        <ProfileTabBar model={tabsModel} onSelect={setRequestedTab} />
+
+        {tabsModel.active === "posts" ? (
+          postsQuery.isLoading ? (
+            <Text style={styles.postsState}>{t("posts.loading")}</Text>
+          ) : postsQuery.isError ? (
+            <Text style={styles.postsState}>{t("posts.error")}</Text>
+          ) : postItems.length === 0 ? (
+            <Text style={styles.postsState}>{t("posts.empty")}</Text>
+          ) : (
+            <>
+              <View style={styles.postsLane}>
+                <ProfileTimelineLane bleed={PROFILE_TIMELINE_BLEED}>
+                  {postItems.map((post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </ProfileTimelineLane>
               </View>
-            ) : null}
-            {profile.bio ? (
-              <Text style={styles.bio} numberOfLines={4}>
-                {profile.bio}
-              </Text>
-            ) : null}
-          </View>
-
-          {profile.organization ? (
-            <AffiliationRow organization={profile.organization} style={styles.affiliation} />
-          ) : null}
-
-          <ProfileStatsRow
-            followers={profile.followers}
-            following={profile.following}
-            stats={profile.stats}
-            onOpenConnections={onOpenConnections}
-          />
-
-          <View style={styles.actions}>
-            {profile.blockedByMe ? (
-              <Text style={styles.blockedLabel}>{t("blocked.label")}</Text>
-            ) : (
-              <>
-                <FollowButton
-                  personId={profile.id}
-                  isFollowing={profile.isFollowing}
-                  nextPath={profilePath}
-                  size="md"
-                  style={styles.followAction}
-                />
+              {postsQuery.hasNextPage ? (
                 <Pressable
-                  onPress={onMessage}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("actions.message_a11y", { name: profile.name })}
-                  {...focusRingProps}
-                  style={({ pressed }) => [styles.secondary, pressed ? styles.secondaryPressed : null]}
-                >
-                  <Icon icon={iconMap.MessageCircle} size={17} color={th.colors.text} />
-                  <Text style={styles.secondaryText}>{t("actions.message")}</Text>
-                </Pressable>
-              </>
-            )}
-            <Pressable
-              ref={menuAnchorRef}
-              onPress={() => {
-                measureMenu()
-                setMenuOpen(true)
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={t("actions.more_options")}
-              accessibilityState={{ expanded: menuOpen }}
-              {...focusRingProps}
-              style={({ pressed }) => [styles.overflowBtn, pressed ? styles.secondaryPressed : null]}
-            >
-              <Icon icon={iconMap.Ellipsis} size={18} color={th.colors.text} />
-            </Pressable>
-          </View>
-
-          <ProfileTabBar model={tabsModel} onSelect={setRequestedTab} />
-
-          {tabsModel.active === "posts" ? (
-            postsQuery.isLoading ? (
-              <Text style={styles.postsState}>{t("posts.loading")}</Text>
-            ) : postsQuery.isError ? (
-              <Text style={styles.postsState}>{t("posts.error")}</Text>
-            ) : postItems.length === 0 ? (
-              <Text style={styles.postsState}>{t("posts.empty")}</Text>
-            ) : (
-              <>
-                <View style={styles.postsLane}>
-                  <ProfileTimelineLane bleed={PROFILE_TIMELINE_BLEED}>
-                    {postItems.map((post) => (
-                      <PostCard key={post.id} post={post} />
-                    ))}
-                  </ProfileTimelineLane>
-                </View>
-                {postsQuery.hasNextPage ? (
-                  <Pressable
-                    {...focusRingProps}
-                    style={styles.loadMore}
-                    onPress={onLoadMorePosts}
-                    disabled={postsQuery.isFetchingNextPage}
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: postsQuery.isFetchingNextPage, busy: postsQuery.isFetchingNextPage }}
-                    accessibilityLabel={t("posts.load_more_a11y")}
-                  >
-                    <Text style={styles.loadMoreText}>
-                      {postsQuery.isFetchingNextPage ? t("posts.loading_more") : t("posts.load_more")}
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </>
-            )
-          ) : null}
-
-          {tabsModel.active === "events" && !hasEvents ? (
-            <Text style={styles.postsState}>{t("events.empty")}</Text>
-          ) : null}
-          {tabsModel.active === "events" && hasEvents ? (
-            <View style={styles.events}>
-              <Text style={styles.eventsLabel}>{t("events.label")}</Text>
-              {upcoming.length > 0 ? (
-                <>
-                  <Text style={styles.eventsGroupLabel}>{t("events.group_upcoming")}</Text>
-                  {eventSplit.upcomingHosting.map((ev) => (
-                    <MiniEventRow
-                      key={`uh-${ev.id}`}
-                      event={ev}
-                      role={t("events.role_hosting")}
-                      onPress={() => onOpenEvent(ev)}
-                    />
-                  ))}
-                  {eventSplit.upcomingGoing.map((ev) => (
-                    <MiniEventRow
-                      key={`ug-${ev.id}`}
-                      event={ev}
-                      role={t("events.role_going")}
-                      onPress={() => onOpenEvent(ev)}
-                    />
-                  ))}
-                </>
-              ) : null}
-              {hosting.length > 0 || going.length > 0 ? (
-                <Text style={styles.eventsGroupLabel}>{t("events.group_past")}</Text>
-              ) : null}
-              {hosting.map((ev) => (
-                <MiniEventRow
-                  key={`h-${ev.id}`}
-                  event={ev}
-                  role={t("events.role_hosting")}
-                  onPress={() => onOpenEvent(ev)}
-                />
-              ))}
-              {going.map((ev) => (
-                <MiniEventRow
-                  key={`g-${ev.id}`}
-                  event={ev}
-                  role={t("events.role_going")}
-                  onPress={() => onOpenEvent(ev)}
-                />
-              ))}
-              {pastEvents.isError ? (
-                <Text style={styles.postsState}>{t("events.load_more_error")}</Text>
-              ) : null}
-              {pastEvents.canLoadMore ? (
-                <Pressable
-                  onPress={pastEvents.loadMore}
-                  disabled={pastEvents.isLoadingMore}
-                  accessibilityRole="button"
-                  accessibilityState={{
-                    disabled: pastEvents.isLoadingMore,
-                    busy: pastEvents.isLoadingMore,
-                  }}
-                  accessibilityLabel={t("events.load_more_a11y")}
                   {...focusRingProps}
                   style={styles.loadMore}
+                  onPress={onLoadMorePosts}
+                  disabled={postsQuery.isFetchingNextPage}
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: postsQuery.isFetchingNextPage, busy: postsQuery.isFetchingNextPage }}
+                  accessibilityLabel={t("posts.load_more_a11y")}
                 >
                   <Text style={styles.loadMoreText}>
-                    {pastEvents.isLoadingMore
-                      ? t("events.loading_more")
-                      : pastEvents.isRetry
-                        ? t("events.load_more_retry")
-                        : t("events.load_more")}
+                    {postsQuery.isFetchingNextPage ? t("posts.loading_more") : t("posts.load_more")}
                   </Text>
                 </Pressable>
               ) : null}
-            </View>
-          ) : null}
+            </>
+          )
+        ) : null}
 
-          {tabsModel.active === "hours" ? (
-            <ServiceHoursSection
-              variant="public"
-              userId={profile.id}
-              totalHours={profile.volunteerHours}
-            />
-          ) : null}
-        </PersonScroll>
-      </ScrollHostProvider>
+        {tabsModel.active === "events" && !hasEvents ? (
+          <Text style={styles.postsState}>{t("events.empty")}</Text>
+        ) : null}
+        {tabsModel.active === "events" && hasEvents ? (
+          <View style={styles.events}>
+            <Text style={styles.eventsLabel}>{t("events.label")}</Text>
+            {upcoming.length > 0 ? (
+              <>
+                <Text style={styles.eventsGroupLabel}>{t("events.group_upcoming")}</Text>
+                {eventSplit.upcomingHosting.map((ev) => (
+                  <MiniEventRow
+                    key={`uh-${ev.id}`}
+                    event={ev}
+                    role={t("events.role_hosting")}
+                    onPress={() => onOpenEvent(ev)}
+                  />
+                ))}
+                {eventSplit.upcomingGoing.map((ev) => (
+                  <MiniEventRow
+                    key={`ug-${ev.id}`}
+                    event={ev}
+                    role={t("events.role_going")}
+                    onPress={() => onOpenEvent(ev)}
+                  />
+                ))}
+              </>
+            ) : null}
+            {hosting.length > 0 || going.length > 0 ? (
+              <Text style={styles.eventsGroupLabel}>{t("events.group_past")}</Text>
+            ) : null}
+            {hosting.map((ev) => (
+              <MiniEventRow
+                key={`h-${ev.id}`}
+                event={ev}
+                role={t("events.role_hosting")}
+                onPress={() => onOpenEvent(ev)}
+              />
+            ))}
+            {going.map((ev) => (
+              <MiniEventRow
+                key={`g-${ev.id}`}
+                event={ev}
+                role={t("events.role_going")}
+                onPress={() => onOpenEvent(ev)}
+              />
+            ))}
+            {pastEvents.isError ? (
+              <Text style={styles.postsState}>{t("events.load_more_error")}</Text>
+            ) : null}
+            {pastEvents.canLoadMore ? (
+              <Pressable
+                onPress={pastEvents.loadMore}
+                disabled={pastEvents.isLoadingMore}
+                accessibilityRole="button"
+                accessibilityState={{
+                  disabled: pastEvents.isLoadingMore,
+                  busy: pastEvents.isLoadingMore,
+                }}
+                accessibilityLabel={t("events.load_more_a11y")}
+                {...focusRingProps}
+                style={styles.loadMore}
+              >
+                <Text style={styles.loadMoreText}>
+                  {pastEvents.isLoadingMore
+                    ? t("events.loading_more")
+                    : pastEvents.isRetry
+                      ? t("events.load_more_retry")
+                      : t("events.load_more")}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
+
+        {tabsModel.active === "hours" ? (
+          <ServiceHoursSection
+            variant="public"
+            userId={profile.id}
+            totalHours={profile.volunteerHours}
+          />
+        ) : null}
+      </PersonScroll>
 
       <PopoverMenu
         visible={menuOpen}

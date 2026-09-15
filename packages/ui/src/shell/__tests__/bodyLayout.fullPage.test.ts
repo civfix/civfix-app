@@ -17,7 +17,7 @@
  */
 import { describe, expect, it } from "vitest"
 import type { DetailEntry, DetailKind, View } from "../../nav"
-import { ALL_DETAIL_KINDS, titleForEntry } from "../../nav"
+import { ALL_DETAIL_KINDS, ENTRY_IDENTITY_FIELDS, entryIdentity, titleForEntry } from "../../nav"
 import {
   BODY_LAYOUT,
   SHEET_ONLY_KINDS,
@@ -377,10 +377,54 @@ describe("pageLayerKey - stable page identity", () => {
   })
 
   it("carries the same identity `portraitSurfaceTransitionKey` gives the web overlay", () => {
-    expect(pageLayerKey("home", { kind: "pin", id: "r1", lat: 1, lng: 2 }, 2)).toBe("2:pin:r1")
+    expect(pageLayerKey("home", { kind: "pin", id: "r1", lat: 1, lng: 2 }, 2)).toBe("2:pin:r1::::")
     expect(pageLayerKey("home", { kind: "composer", composerMode: "reply", targetPostId: "p1" }, 0)).toBe(
       "0:composer:reply:p1",
     )
+  })
+
+  it("is the nav store's own `entryIdentity`, depth-prefixed - ONE discriminating-field list, not two", () => {
+    for (const entry of [
+      { kind: "pin", id: "r1" },
+      { kind: "org", slug: "acme" },
+      { kind: "leaderboard", geoid: "0644000" },
+      { kind: "thread", id: "r1", roomKind: "group" },
+      { kind: "my-ticket", id: "e1", seatId: "seat-9" },
+      { kind: "composer", composerMode: "quote", targetPostId: "p1" },
+    ] satisfies DetailEntry[]) {
+      expect(pageLayerKey("home", entry, 3), entry.kind).toBe(`3:${entryIdentity(entry)}`)
+    }
+  })
+
+  it("tells two SEATS on one event apart - the collision `seatId` was missing for", () => {
+    const nine: DetailEntry = { kind: "my-ticket", id: "e1", seatId: "seat-9" }
+    const ten: DetailEntry = { kind: "my-ticket", id: "e1", seatId: "seat-10" }
+    expect(pageLayerKey("home", nine, 0)).not.toBe(pageLayerKey("home", ten, 0))
+    expect(pageLayerKey("home", nine, 0)).not.toBe(
+      pageLayerKey("home", { kind: "my-ticket", id: "e1" }, 0),
+    )
+  })
+
+  it("reflects EVERY field `entryIdentity` discriminates on, so a new one cannot silently collide", () => {
+    for (const field of ENTRY_IDENTITY_FIELDS) {
+      const bare: DetailEntry = { kind: "cleanup" }
+      const set = { ...bare, [field]: "discriminator" } as DetailEntry
+      expect(entryIdentity(bare), field).not.toBe(entryIdentity(set))
+      expect(pageLayerKey("home", bare, 0), field).not.toBe(pageLayerKey("home", set, 0))
+    }
+  })
+
+  it("tells two organizations apart, which carry a slug and never an id", () => {
+    const acme: DetailEntry = { kind: "org", slug: "acme" }
+    const river: DetailEntry = { kind: "org", slug: "river-keepers" }
+    expect(pageLayerKey("home", acme, 1)).not.toBe(pageLayerKey("home", river, 1))
+    expect(pageLayerKey("home", acme, 1)).toBe("1:org::::acme:")
+  })
+
+  it("tells two leaderboards apart, which carry a geoid and never an id", () => {
+    const la: DetailEntry = { kind: "leaderboard", geoid: "0644000" }
+    const sf: DetailEntry = { kind: "leaderboard", geoid: "0667000" }
+    expect(pageLayerKey("home", la, 0)).not.toBe(pageLayerKey("home", sf, 0))
   })
 
   it("cannot collide a RETAINED leaving layer with any surviving one", () => {

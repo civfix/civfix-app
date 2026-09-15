@@ -269,7 +269,7 @@ export function OrgPageBody({ slug }: { slug: string }) {
       <OrgEventsSection slug={slug} when="upcoming" />
       <OrgEventsSection slug={slug} when="past" collapsible />
 
-      {donationsOffered(donate.data?.donateState) && donate.data ? (
+      {donationsOffered(donate.data?.donateState) && donate.data?.org ? (
         <DonateBlock
           org={{
             slug: org.slug,

@@ -29,6 +29,7 @@ export interface ReportContentSheetProps {
   error?: string | null
   onSubmit: (reason: ContentReportReason, details?: string) => void
   onClose: () => void
+  onClosed?: () => void
 }
 
 export function ReportContentSheet({
@@ -38,6 +39,7 @@ export function ReportContentSheet({
   error,
   onSubmit,
   onClose,
+  onClosed,
 }: ReportContentSheetProps) {
   const styles = useStyles()
   const th = useTheme()
@@ -65,6 +67,7 @@ export function ReportContentSheet({
     <ModalCardSheet
       visible={visible}
       onClose={onClose}
+      onClosed={onClosed}
       onCommit={commit}
       headerIcon="Flag"
       title={t("title", { subject: subjectLabel })}

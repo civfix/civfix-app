@@ -11,10 +11,14 @@ import {
   boardHasTimedSlots,
   claimSlotErrorKey,
   currentShifts,
+  GENERAL_SLOT_ID,
+  generalSlotBoard,
   mySlotId,
   slotDisplayOrder,
   slotRemaining,
+  slotBoardSummary,
   slotRowState,
+  slotViewerState,
   slotWindow,
   slotsFilledSummary,
   sortSlots,
@@ -234,5 +238,112 @@ describe("claimSlotErrorKey (the claim/switch/release failure toast copy)", () =
   it("is what EventSlotsBlock maps its failure toast through", () => {
     const source = readFileSync(new URL("../EventSlotsBlock.tsx", import.meta.url), "utf8")
     expect(source).toContain("claimSlotErrorKey(code, appErrorFields(err))")
+  })
+})
+
+describe("slotBoardSummary", () => {
+  it("is capped only when EVERY slot has a capacity, and sums them", () => {
+    const summary = slotBoardSummary([
+      slot("a", { capacity: 4, claimed: 3 }),
+      slot("b", { capacity: 8, claimed: 3 }),
+    ])
+    expect(summary).toEqual({ kind: "capped", claimed: 6, capacity: 12 })
+  })
+
+  it("refuses to sum a board where anything is unlimited", () => {
+    const summary = slotBoardSummary([
+      slot("a", { capacity: 4, claimed: 3 }),
+      slot("b", { claimed: 5 }),
+    ])
+    expect(summary).toEqual({ kind: "open", claimed: 8, capacity: null })
+  })
+
+  it("reports an empty board as open with nothing claimed", () => {
+    expect(slotBoardSummary([])).toEqual({ kind: "open", claimed: 0, capacity: null })
+  })
+
+  it("is honest about a capped board nobody has signed up for", () => {
+    expect(slotBoardSummary([slot("a", { capacity: 12 })])).toEqual({
+      kind: "capped",
+      claimed: 0,
+      capacity: 12,
+    })
+  })
+})
+
+describe("slotViewerState", () => {
+  const base = {
+    slots: [slot("a")],
+    joined: false,
+    actsAsHost: false,
+    readonly: false,
+    isAuthenticated: true,
+    authPending: false,
+  }
+
+  it("says nothing actionable about a read-only board", () => {
+    expect(slotViewerState({ ...base, readonly: true })).toBe("ended")
+    expect(
+      slotViewerState({ ...base, readonly: true, slots: [slot("a", { mine: true })] }),
+    ).toBe("ended")
+  })
+
+  it("puts holding a slot above every role", () => {
+    const slots = [slot("a"), slot("b", { mine: true })]
+    expect(slotViewerState({ ...base, slots, joined: true })).toBe("holds")
+    expect(slotViewerState({ ...base, slots, actsAsHost: true })).toBe("holds")
+  })
+
+  it("never nags a host who is organising rather than signing up", () => {
+    expect(slotViewerState({ ...base, actsAsHost: true, joined: true })).toBe("host")
+  })
+
+  it("nudges a member who holds nothing", () => {
+    expect(slotViewerState({ ...base, joined: true })).toBe("going_no_slot")
+  })
+
+  it("offers the guest line only once auth has RESOLVED to signed-out", () => {
+    expect(slotViewerState({ ...base, isAuthenticated: false, authPending: false })).toBe(
+      "signed_out",
+    )
+    expect(slotViewerState({ ...base, isAuthenticated: false, authPending: true })).toBe("not_going")
+  })
+
+  it("treats a signed-in non-member as simply not going yet", () => {
+    expect(slotViewerState(base)).toBe("not_going")
+  })
+})
+
+describe("generalSlotBoard", () => {
+  it("mirrors membership onto one unlimited row, so the strip and summary read true", () => {
+    expect(generalSlotBoard({ title: "General volunteers", joined: true, going: 4 })).toEqual([
+      {
+        id: GENERAL_SLOT_ID,
+        title: "General volunteers",
+        description: null,
+        capacity: null,
+        claimed: 4,
+        sortOrder: 0,
+        mine: true,
+        startsAt: null,
+        endsAt: null,
+      },
+    ])
+  })
+
+  it("reads as a claimable open row for a non-member, and as held for a member", () => {
+    const [away] = generalSlotBoard({ title: "General volunteers", joined: false, going: 0 })
+    const [held] = generalSlotBoard({ title: "General volunteers", joined: true, going: 1 })
+    expect(away && slotRowState(away, null, false)).toBe("open")
+    expect(held && slotRowState(held, mySlotId([held]), false)).toBe("mine")
+    expect(away && slotRemaining(away)).toBe(null)
+  })
+
+  it("summarises as an open board, never as a capped one", () => {
+    expect(slotBoardSummary(generalSlotBoard({ title: "G", joined: false, going: 3 }))).toEqual({
+      kind: "open",
+      claimed: 3,
+      capacity: null,
+    })
   })
 })

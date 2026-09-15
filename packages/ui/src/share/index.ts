@@ -2,7 +2,9 @@ export { SharePostProvider } from "./SharePostProvider"
 export type { SharePostProviderProps } from "./SharePostProvider"
 export { useSharePost } from "./SharePostContext"
 export { SharePostSheet } from "./SharePostSheet"
-export type { SharePostSheetProps } from "./SharePostSheet"
+export type { SharePostSheetProps } from "./SharePostSheet.types"
+export { sharePeopleView, shareSheetFooter, isShareRecipient } from "./shareSheetModel"
+export type { SharePeopleMode, SharePeopleView, ShareSheetFooter } from "./shareSheetModel"
 export type { SharePostHandle, SharePostTarget } from "./types"
 export {
   SHARE_CLIENT_ID_MAX,

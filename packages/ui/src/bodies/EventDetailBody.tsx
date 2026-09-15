@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ScrollView, StyleSheet } from "react-native"
 import type { CleanupDTO, ContentReportReason } from "@civfix/shared"
-import { eventChip, dowLabel, timeLabel, timeRangeLabel } from "@civfix/shared/datetime"
+import { eventWhenLabel } from "@civfix/shared/datetime"
+import { deriveCleanupStatus, nextEventBoundaryMs } from "@civfix/shared/host"
 import { radius, focusRingProps, headingLevel, makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap, TextLink } from "../typography"
 import {
   Avatar,
   MetaDot,
-  RsvpPill,
   FollowButton,
   SkeletonBlock,
   SkeletonGroup,
@@ -26,6 +26,9 @@ import {
   useAuthState,
   useRequireAuth,
   useGetTurnstileToken,
+  useEventBoundaryRefresh,
+  useNow,
+  NOW_TICK_MS,
   useProfile,
   useReportContent,
 } from "../data"
@@ -38,13 +41,14 @@ import {
 import { useOrgDonationPage } from "../data/hooks/donations"
 import { useNavStore } from "../nav"
 import { useHaptics } from "../capabilities"
-import { useLocale, useRelativeTime, useT } from "../i18n"
+import { useLocale, useRelativeTime, useT, useViewerTimeZone } from "../i18n"
 import { usePageIsActive } from "../shell/pageActive"
 import { useScrollHost } from "../shell/ScrollHost"
 import { MiniMap, useMapFocus } from "../map"
 import { FeedNotice } from "./FeedNotice"
 import { EventActionRow, EventActionRows } from "./EventActionRow"
 import { LinkedReportCard } from "./LinkedReportCard"
+import { LINKED_REPORTS_COUNT_AT } from "./linkReportsModel"
 import { EventHoursBlock } from "./EventHoursBlock"
 import { EventSlotsBlock } from "./EventSlotsBlock"
 import { EventGuestsBlock } from "./EventGuestsBlock"
@@ -53,6 +57,7 @@ import { EventRosterBlock } from "./host/EventRosterBlock"
 import { RegistrationBlock } from "./host/registration/RegistrationBlock"
 import { eventDistanceLabel } from "./eventDistance"
 import { hasEventEnded } from "./eventLifecycle"
+import { generalSlotBoard } from "./eventSlotsModel"
 import { buildComposerEventRef } from "./postComposerModel"
 import { usePostComposerStore } from "./postComposerStore"
 
@@ -80,7 +85,15 @@ function EventHero({ cleanup }: { cleanup: CleanupDTO }) {
   )
 }
 
-function GoingRow({ cleanup, goingCount }: { cleanup: CleanupDTO; goingCount: number }) {
+function GoingRow({
+  cleanup,
+  goingCount,
+  onViewAll,
+}: {
+  cleanup: CleanupDTO
+  goingCount: number
+  onViewAll: () => void
+}) {
   const styles = useStyles()
   const { t } = useT("event-detail")
   const { data } = useCleanupAttendees(cleanup.id)
@@ -90,10 +103,6 @@ function GoingRow({ cleanup, goingCount }: { cleanup: CleanupDTO; goingCount: nu
   const attendees = data?.attendees ?? []
   const stack = attendees.length > 0 ? attendees.slice(0, GOING_AVATAR_CAP) : [cleanup.organizer]
   const names = attendees.map((p) => (user && p.id === user.id ? t("going.you") : p.name))
-
-  const onViewAll = useCallback(() => {
-    useNavStore.getState().push({ kind: "members", id: cleanup.id, roomKind: "cleanup" })
-  }, [cleanup.id])
 
   return (
     <View style={styles.goingRow}>
@@ -198,7 +207,11 @@ function LinkedReportsStrip({
   const { t } = useT("event-detail")
   return (
     <View style={styles.subsection}>
-      <Text style={styles.sectionTitle}>{t("linked_reports.heading")}</Text>
+      <Text style={styles.sectionTitle}>
+        {reports.length > LINKED_REPORTS_COUNT_AT
+          ? t("linked_reports.heading_count", { count: reports.length })
+          : t("linked_reports.heading")}
+      </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -219,6 +232,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const { t } = useT("event-detail")
   const { locale } = useLocale()
   const { weekdays } = useRelativeTime()
+  const viewerTimeZone = useViewerTimeZone()
   const { ScrollView } = useScrollHost()
   const requireAuth = useRequireAuth()
   const { user } = useAuthState()
@@ -241,16 +255,24 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const onOpenCheckin = useCallback(() => {
     useNavStore.getState().push({ kind: "host-checkin", id: cleanup.id, title: cleanup.title })
   }, [cleanup.id, cleanup.title])
+  const onOpenMyTicket = useCallback(() => {
+    useNavStore.getState().push({ kind: "my-ticket", id: cleanup.id, title: cleanup.title })
+  }, [cleanup.id, cleanup.title])
   const hasTicketTypes = cleanup.ticketTypes.length > 0
   const donatePage = useOrgDonationPage(cleanup.donationOrg?.slug, {
     enabled: cleanup.donationOrg?.enabled === true,
   })
-  const isCancelled = cleanup.status === "cancelled"
-  const isDone = cleanup.status === "done"
-  const isEnded = hasEventEnded(cleanup, Date.now())
+  const boundaryAt = nextEventBoundaryMs(cleanup, Date.now())
+  const now = useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })
+  useEventBoundaryRefresh(cleanup, now, cleanup.id)
+  const status = deriveCleanupStatus(cleanup, now)
+  const isCancelled = status === "cancelled"
+  const isDone = status === "done"
+  const isEnded = hasEventEnded(cleanup, now)
   const isLive = !isCancelled && !isDone
   const isUpcoming = isLive && !isEnded
   const isRegistered = cleanup.myRegistration?.status === "registered"
+  const holdsSeat = isRegistered && cleanup.myRegistration?.waitlistPosition == null
   const next = `/cleanups/${cleanup.id}`
 
   const isActive = usePageIsActive()
@@ -273,7 +295,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
 
   const organizerProfile = useProfile(isOrganizer ? undefined : cleanup.organizer.id)
 
-  const { day, month } = eventChip(cleanup.scheduledAt, locale)
   const where = cleanup.address?.trim()
   const dist = eventDistanceLabel(cleanup.dist)
   const goingCount = cleanup.going
@@ -355,6 +376,17 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
       .push({ kind: "person", id: cleanup.organizer.handle ?? cleanup.organizer.id })
   }, [cleanup.organizer.handle, cleanup.organizer.id])
 
+  const onViewAllMembers = useCallback(() => {
+    useNavStore.getState().push({ kind: "members", id: cleanup.id, roomKind: "cleanup" })
+  }, [cleanup.id])
+
+  const onLeave = useCallback(() => {
+    haptics.impactLight()
+    join.mutate(true, {
+      onSuccess: () => toast.show(t("actions.leave_toast")),
+    })
+  }, [haptics, join, t, toast])
+
   const onOpenReport = useCallback(
     (report: CleanupDTO["linkedReports"][number]) => {
       useNavStore.getState().push({
@@ -367,6 +399,18 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
     },
     [],
   )
+
+  const needsGeneralBoard =
+    cleanup.slots.length === 0 && isLive && !isEnded && !actsAsHost && !hasTicketTypes
+  const generalTitle = t("event-slots:editor.suggest_general")
+  const generalBoard = useMemo(
+    () =>
+      needsGeneralBoard
+        ? generalSlotBoard({ title: generalTitle, joined: going, going: goingCount })
+        : null,
+    [generalTitle, going, goingCount, needsGeneralBoard],
+  )
+  const boardSlots = cleanup.slots.length > 0 ? cleanup.slots : generalBoard
 
   const showLinkedReports = cleanup.eventKind === "cleanup" && cleanup.linkedReports.length > 0
   const showDetails =
@@ -406,15 +450,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         <View style={styles.metaRows}>
           <View style={styles.metaRow}>
             <Icon icon={iconMap.Calendar} size={14} color={th.colors.textSubtle} />
-            <Text style={styles.metaWhen}>
-              {dowLabel(cleanup.scheduledAt, weekdays)}, {month} {day}
-            </Text>
-            <MetaDot color={th.colors.textSubtle} />
-            <Text style={styles.metaWhen}>
-              {cleanup.endsAt
-                ? timeRangeLabel(cleanup.scheduledAt, cleanup.endsAt, locale)
-                : timeLabel(cleanup.scheduledAt, locale)}
-            </Text>
+            <Text style={styles.metaWhen}>{eventWhenLabel(cleanup, { locale, weekdays, viewerTimeZone })}</Text>
           </View>
           <View style={styles.metaRow}>
             <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
@@ -433,29 +469,47 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       </View>
 
-      {isLive && !actsAsHost ? (
-        hasTicketTypes ? (
-          isUpcoming || isRegistered ? (
-            <View style={styles.rsvp}>
-              <RegistrationBlock cleanup={cleanup} onGuestRegister={onSignedOutRsvp} />
-            </View>
-          ) : null
-        ) : (
-          <RsvpPill
-            going={going}
-            onToggle={(currentlyGoing) => {
-              if (!currentlyGoing) haptics.success()
-              join.mutate(currentlyGoing)
-            }}
-            busy={join.isPending}
-            ended={isEnded}
-            nextPath={next}
-            size="md"
-            fill
-            onSignedOutPress={onSignedOutRsvp}
-            style={styles.rsvp}
+      {isLive && !actsAsHost && hasTicketTypes && (isUpcoming || isRegistered) ? (
+        <View style={styles.rsvp}>
+          <RegistrationBlock cleanup={cleanup} onGuestRegister={onSignedOutRsvp} />
+        </View>
+      ) : null}
+
+      {boardSlots ? (
+        <View style={[styles.section, styles.sectionFlush]}>
+          {generalBoard ? (
+            <Text style={styles.slotsNone}>{t("event-slots:block.none_yet")}</Text>
+          ) : null}
+          <EventSlotsBlock
+            key={cleanup.id}
+            cleanupId={cleanup.id}
+            slots={boardSlots}
+            joined={going}
+            readonly={isDone || isCancelled || isEnded}
+            cancelled={isCancelled}
+            timeZone={cleanup.timezone ?? undefined}
+            mode={generalBoard ? "general" : hasTicketTypes ? "registration" : "claim"}
+            viewer={{ actsAsHost, registered: isRegistered }}
+            onViewAll={onViewAllMembers}
+            onGuestRsvp={onSignedOutRsvp}
           />
-        )
+        </View>
+      ) : isLive && !isEnded && !actsAsHost ? (
+        <View style={styles.section}>
+          <Text style={styles.slotsNone}>{t("event-slots:block.none_yet")}</Text>
+        </View>
+      ) : null}
+
+      {going && holdsSeat && isLive && (!hasTicketTypes || actsAsHost) ? (
+        <View style={styles.section}>
+          <EventActionRows>
+            <EventActionRow
+              icon={iconMap.Ticket}
+              label={t("host-ticket:mine.view_ticket")}
+              onPress={onOpenMyTicket}
+            />
+          </EventActionRows>
+        </View>
       ) : null}
 
       {!actsAsHost && canCheckIn && isLive ? (
@@ -486,7 +540,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t("going.heading")}</Text>
-        <GoingRow cleanup={cleanup} goingCount={goingCount} />
+        <GoingRow cleanup={cleanup} goingCount={goingCount} onViewAll={onViewAllMembers} />
         {canViewGuestContact ? (
           <View style={styles.guestsWrap}>
             <EventGuestsBlock
@@ -501,17 +555,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
           </View>
         ) : null}
       </View>
-
-      {cleanup.slots.length > 0 ? (
-        <View style={[styles.section, styles.sectionFlush]}>
-          <EventSlotsBlock
-            cleanupId={cleanup.id}
-            slots={cleanup.slots}
-            joined={going}
-            readonly={isDone || isCancelled || isEnded}
-          />
-        </View>
-      ) : null}
 
       {showDetails ? (
         <View style={styles.section}>
@@ -607,6 +650,17 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
             accessibilityLabel={t("actions.share_a11y")}
             onPress={onShare}
           />
+          {going && !actsAsHost && isLive && !isEnded ? (
+            <EventActionRow
+              icon={iconMap.LogOut}
+              label={t("actions.leave")}
+              hint={t("actions.leave_hint")}
+              accessibilityLabel={t("actions.leave_a11y")}
+              destructive
+              disabled={join.isPending}
+              onPress={onLeave}
+            />
+          ) : null}
           {actsAsHost ? null : (
             <EventActionRow
               icon={iconMap.Flag}
@@ -618,7 +672,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </EventActionRows>
       </View>
 
-      {donatePage.data ? (
+      {donatePage.data?.org ? (
         <View style={styles.section}>
           <DonateBlock
             org={{
@@ -672,7 +726,11 @@ function EventDetailSkeleton() {
           <SkeletonText width="68%" height={12} />
         </SkeletonGroup>
       </SkeletonGroup>
-      <SkeletonBlock width="100%" height={44} radius={radius.pill} style={styles.rsvp} />
+      <SkeletonGroup style={styles.section}>
+        <SkeletonText width="24%" height={11} />
+        <SkeletonBlock width="100%" height={56} radius={radius.md} />
+        <SkeletonBlock width="100%" height={56} radius={radius.md} />
+      </SkeletonGroup>
       <SkeletonGroup style={styles.section}>
         <SkeletonText width="24%" height={11} />
         <SkeletonText width="96%" height={12} />
@@ -788,8 +846,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
 
   rsvp: {
-    height: 44,
-    alignSelf: "stretch",
     marginTop: t.space["4"],
     marginBottom: t.space["4"],
   },
@@ -802,6 +858,11 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sectionFlush: {
     paddingTop: 0,
+  },
+  slotsNone: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    color: t.colors.textSubtle,
   },
   sectionTitle: {
     fontFamily: t.fontFamily.bodySemiBold,

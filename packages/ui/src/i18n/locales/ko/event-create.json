@@ -28,9 +28,10 @@
       "error": "지도에서 집합 장소를 지정하세요."
     },
     "details": {
-      "title": "더 준비할 것이 있나요?",
-      "help": "선택 사항 — 준비물과 맡을 수 있는 역할.",
-      "error": "각 모집 항목에 이름과 올바른 인원을 입력하세요."
+      "title": "어떤 도움이 필요한가요?",
+      "help": "신청 역할을 하나 이상 추가하세요. 참가자는 역할을 신청해 행사에 참여합니다.",
+      "error": "신청 역할을 하나 이상 입력하세요.",
+      "error_invalid": "모든 역할에 이름과 올바른 인원 수를 입력하세요."
     },
     "review": {
       "title": "게시할 준비가 됐나요?",
@@ -41,7 +42,12 @@
       "what": "무엇",
       "when": "언제",
       "extras": "세부 정보",
-      "noExtras": "추가 사항 없음"
+      "noExtras": "추가 사항 없음",
+      "slots": "역할",
+      "reports": "제보",
+      "reports_count_one": "제보 {{count}}개",
+      "reports_count_other": "제보 {{count}}개",
+      "noReports": "연결된 제보 없음"
     }
   },
   "publish": {

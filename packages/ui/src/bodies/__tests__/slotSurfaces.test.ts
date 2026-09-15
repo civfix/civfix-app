@@ -1,4 +1,6 @@
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync, statSync } from "node:fs"
+import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
 /**
@@ -21,8 +23,22 @@ const SOURCES = {
   "SlotWindowPicker.tsx": readFileSync(new URL("../SlotWindowPicker.tsx", import.meta.url), "utf8"),
 }
 
+const SCROLLER_SOURCES = {
+  ...SOURCES,
+  "InlineDateTimePicker.web.tsx": readFileSync(
+    new URL("../InlineDateTimePicker.web.tsx", import.meta.url),
+    "utf8",
+  ),
+  "InlineDateTimePicker.native.tsx": readFileSync(
+    new URL("../InlineDateTimePicker.native.tsx", import.meta.url),
+    "utf8",
+  ),
+  "DateTimeFieldRow.tsx": readFileSync(new URL("../DateTimeFieldRow.tsx", import.meta.url), "utf8"),
+  "TimezoneField.tsx": readFileSync(new URL("../TimezoneField.tsx", import.meta.url), "utf8"),
+}
+
 describe("slot surfaces render inside their host's scroller", () => {
-  for (const [name, source] of Object.entries(SOURCES)) {
+  for (const [name, source] of Object.entries(SCROLLER_SOURCES)) {
     it(`${name} imports no Modal, FlatList or ScrollView`, () => {
       const imports = source.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
       expect(imports).not.toMatch(/\bModal\b/)
@@ -40,6 +56,81 @@ describe("slot surfaces render inside their host's scroller", () => {
   })
 })
 
+describe("the date/time picker seam stays a seam", () => {
+  const bodiesDir = fileURLToPath(new URL("..", import.meta.url))
+
+  function sourceFiles(dir: string): string[] {
+    const out: string[] = []
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry)
+      if (statSync(full).isDirectory()) {
+        if (entry !== "__tests__") out.push(...sourceFiles(full))
+      } else if (entry.endsWith(".ts") || entry.endsWith(".tsx")) {
+        out.push(full)
+      }
+    }
+    return out
+  }
+
+  const files = sourceFiles(bodiesDir)
+
+  it("keeps the base file to the two re-export lines Metro needs", () => {
+    const base = readFileSync(new URL("../InlineDateTimePicker.tsx", import.meta.url), "utf8")
+    const lines = base.trim().split("\n")
+    expect(lines).toHaveLength(2)
+    expect(lines[0]).toContain('from "./InlineDateTimePicker.web"')
+    expect(lines[1]).toContain('from "./InlineDateTimePicker.types"')
+  })
+
+  it("names the optional native picker peer in the .native seam and nowhere else, so web never resolves it", () => {
+    const importers = files
+      .filter((file) => readFileSync(file, "utf8").includes("@react-native-community/datetimepicker"))
+      .map((file) => file.slice(bodiesDir.length))
+    expect(importers).toEqual(["InlineDateTimePicker.native.tsx"])
+  })
+
+  it("grants the same minute granularity on both seams, from one constant", () => {
+    const types = readFileSync(new URL("../InlineDateTimePicker.types.ts", import.meta.url), "utf8")
+    expect(types).toContain("export const TIME_PICKER_MINUTE_INTERVAL = 5")
+    expect(SCROLLER_SOURCES["InlineDateTimePicker.web.tsx"]).toContain(
+      "step={(minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL) * 60}",
+    )
+    expect(SCROLLER_SOURCES["InlineDateTimePicker.native.tsx"]).toContain(
+      "minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL",
+    )
+    for (const name of [
+      "InlineDateTimePicker.web.tsx",
+      "InlineDateTimePicker.native.tsx",
+      "DateTimeFieldRow.tsx",
+      "SlotWindowPicker.tsx",
+    ] as const) {
+      expect(SCROLLER_SOURCES[name], `${name} hardcodes a minute step`).not.toMatch(
+        /minuteInterval=\{\d/,
+      )
+    }
+  })
+
+  it("leaves the web inputs a keyboard focus ring of their own", () => {
+    const web = SCROLLER_SOURCES["InlineDateTimePicker.web.tsx"]
+    expect(web.match(/data-focus-ring=""/g) ?? []).toHaveLength(2)
+    expect(web).not.toContain('outline: "none"')
+  })
+
+  it("leaves the row chrome out of the a11y tree when the native input is the control", () => {
+    const row = SCROLLER_SOURCES["DateTimeFieldRow.tsx"]
+    expect(row).toContain("const slotOwnsAccessibility = valueSlot !== undefined")
+    expect(row).toContain("? { focusable: false }")
+    expect(row).not.toMatch(/<Pressable[\s\S]*?accessibilityRole="button"/)
+  })
+
+  it("leaves no reference to the retired month grid", () => {
+    const referrers = files
+      .filter((file) => readFileSync(file, "utf8").includes("MonthCalendarGrid"))
+      .map((file) => file.slice(bodiesDir.length))
+    expect(referrers).toEqual([])
+  })
+})
+
 /** Comments stripped - these guards are about the CODE, and the prose deliberately names the mistakes. */
 function code(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
@@ -52,14 +143,34 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
     // The viewer's slot is a singular resource: two overlapping PUTs resolve last-RESPONSE-wins, so
     // tapping row A then row B could leave the detail cache marking A as `mine` while the server holds
     // B. `pendingSlotId` still exists, but only to say which pill DIMS.
-    expect(source).toContain("busy={claim.isPending}")
+    expect(source).toContain("const boardBusy = general ? join.isPending : claim.isPending")
+    expect(source).toContain("busy={boardBusy}")
     expect(source).toContain("pending={pendingSlotId === slot.id}")
     expect(source).not.toContain("busy={pendingSlotId === slot.id}")
   })
 
   it("refuses to re-enter the mutation while one is in flight", () => {
     // `disabled` is a render-time guard; a queued tap can still land. This is the runtime half.
-    expect(source).toContain("if (claim.isPending) return")
+    expect(source).toContain("if (boardBusy) return")
+  })
+
+  it("keeps the pill for the HOST of a ticketed event, who is never `registered`", () => {
+    // The registration gate exists to leave one primary CTA for someone who has not committed; a host
+    // has no registration to make and still owns this board.
+    expect(source).toContain("const showPill = !ticketed || viewer.registered || viewer.actsAsHost")
+  })
+
+  it("nudges only the viewers who have not committed, never a member who simply holds no slot", () => {
+    expect(source).toContain(
+      'showPill && (viewerState === "not_going" || viewerState === "signed_out")',
+    )
+  })
+
+  it("counts the facepile's +N against the names PRINTED, not the two-name cap", () => {
+    // A follow-gated viewer (or a slot the 50-row roster cap truncated) is handed fewer names than the
+    // cap, and `claimed - 2` then understates the overflow against the row's own capacity line.
+    expect(source).toContain("facePileOverflow(slot.claimed, people.length)")
+    expect(source).not.toContain("slot.claimed - 2")
   })
 
   it("gives the claim/switch/release pill a 44pt target without growing the 30pt visual", () => {
@@ -71,13 +182,35 @@ describe("EventSlotsBlock serialises claims across ALL rows", () => {
     expect(source.match(/hitSlop=\{PILL_HIT_SLOP\}/g) ?? []).toHaveLength(2)
   })
 
-  it("renders the filled summary the model documents, and omits it when any slot is unlimited", () => {
-    // `slotsFilledSummary` shipped as a documented export ("the block's one-line summary") that nothing
-    // rendered. It is rendered here now; a null capacity means at least one slot is unlimited, and
-    // printing a sum then would understate an event that can take everyone.
-    expect(source).toContain("slotsFilledSummary(slots)")
-    expect(source).toContain("filled.capacity !== null && filled.capacity > 0")
+  it("prints one honest head summary for all three board shapes", () => {
+    // A null capacity means at least one slot is unlimited, and printing a sum then would understate an
+    // event that can take everyone - so those boards print the claim count, or say nobody has yet.
+    expect(source).toContain("slotBoardSummary(slots)")
+    expect(source).toContain('summary.kind === "capped" && summary.capacity !== null && summary.capacity > 0')
     expect(source).toContain('t("block.filled"')
+    expect(source).toContain('t("block.signed_up"')
+    expect(source).toContain('t("block.none_signed_up")')
+  })
+
+  it("keeps the disclosure a SIBLING of the pill, never its parent", () => {
+    // RNW renders Pressable as a <button>; nesting one inside another is invalid DOM the browser
+    // silently re-parents, which is why the row was never a single tap target.
+    expect(source).toMatch(/<\/Pressable>\s*\{pill \?/)
+    expect(source).toContain("accessibilityState={{ expanded }}")
+  })
+
+  it("derives the hidden count from the DTO's claimed, never from the roster array", () => {
+    // One rule covers three truncations: the follow-only filter, the 50-row roster cap, and a roster
+    // that is momentarily behind the detail.
+    const call = source.match(/slotPeopleView\(\{[\s\S]*?\}\)/)?.[0] ?? ""
+    expect(call).toContain("claimed: slot.claimed")
+    expect(source).not.toContain("attendees.length -")
+  })
+
+  it("reads the roster through the SHARED attendees query, not a request of its own", () => {
+    expect(source).toContain("useCleanupAttendees(cleanupId)")
+    expect(source).toContain("claimantsBySlot(")
+    expect(source).not.toContain("api.")
   })
 })
 
@@ -89,7 +222,7 @@ describe("an ENDED event's slot board is read-only, not just a DONE one", () => 
   })
 
   it("takes `ended` from the SHARED lifecycle helper, not a second local clock rule", () => {
-    expect(detail).toContain("const isEnded = hasEventEnded(cleanup, Date.now())")
+    expect(detail).toContain("const isEnded = hasEventEnded(cleanup, now)")
     expect(detail).toContain('from "./eventLifecycle"')
   })
 
@@ -97,6 +230,47 @@ describe("an ENDED event's slot board is read-only, not just a DONE one", () => 
     const block = code(SOURCES["EventSlotsBlock.tsx"])
     expect(block).toContain("claimSlotErrorKey(code, appErrorFields(err))")
     expect(block).not.toContain('t("error.full")')
+  })
+})
+
+describe("a LIVE event with no slots still has a way in", () => {
+  const detail = code(readFileSync(new URL("../EventDetailBody.tsx", import.meta.url), "utf8"))
+  const block = code(SOURCES["EventSlotsBlock.tsx"])
+
+  it("falls back to a one-row general board instead of a sentence with no join path", () => {
+    // Reachable in the deploy window before the backend's default-slot backfill lands, and off any
+    // `getCleanup` cached before it. A notice with no pill, no slot and no guest line strands the
+    // viewer on a live event they cannot sign up for.
+    expect(detail).toContain(
+      "generalSlotBoard({ title: generalTitle, joined: going, going: goingCount })",
+    )
+    expect(detail).toContain(
+      "cleanup.slots.length === 0 && isLive && !isEnded && !actsAsHost && !hasTicketTypes",
+    )
+    expect(detail).toContain("const boardSlots = cleanup.slots.length > 0 ? cleanup.slots : generalBoard")
+    expect(detail).toContain(
+      'mode={generalBoard ? "general" : hasTicketTypes ? "registration" : "claim"}',
+    )
+    expect(detail).toContain("onGuestRsvp={onSignedOutRsvp}")
+  })
+
+  it("commits that row through the event's join/leave mutation, never a claim on a synthetic id", () => {
+    expect(block).toContain("const join = useJoinCleanup(cleanupId)")
+    expect(block).toContain("join.mutate(slotId === null, {")
+    expect(block).toContain('const general = mode === "general"')
+  })
+
+  it("keeps the explicit Leave event row, which is the only place membership is dropped", () => {
+    expect(detail).toContain('label={t("actions.leave")}')
+    expect(detail).toContain("going && !actsAsHost && isLive && !isEnded ?")
+  })
+
+  it("keeps the slot-less rendering for an ENDED or cancelled event", () => {
+    // `boardSlots` is null there (no general board is built), so the region falls through to the
+    // notice-or-nothing arm and the roster section below stays the only "who's going" surface.
+    expect(detail).toContain("{boardSlots ? (")
+    expect(detail).toContain("isLive && !isEnded && !actsAsHost ? (")
+    expect(detail).toContain('t("event-slots:block.none_yet")')
   })
 })
 
@@ -134,6 +308,19 @@ describe("the slot editor validates against the EVENT's window, not just the row
     expect(editor).toContain("disabled={eventEnd === null}")
   })
 
+  it("refuses to remove the LAST card, and says why", () => {
+    // Every event needs a board, so the floor is an affordance (a disabled control with a hint) plus the
+    // step gate - never a silent no-op inside removeSlotDraft.
+    expect(editor).toContain("disabled={total === 1}")
+    expect(editor).toContain('t("editor.remove_last_hint")')
+  })
+
+  it("offers the common first slot as a one-tap chip instead of prefilling every board alike", () => {
+    expect(editor).toContain("value.every(isBlankSlotDraft)")
+    expect(editor).toContain('t("editor.suggest_general")')
+    expect(editor).toContain('index === 0 ? "editor.title_placeholder_first" : "editor.title_placeholder"')
+  })
+
   it("tells the host of an end-less event that timing a slot will store the end it shows", () => {
     const edit = code(readFileSync(new URL("../EditCleanupBody.tsx", import.meta.url), "utf8"))
     expect(editor).toContain("eventEndUnsaved && timed")
@@ -150,7 +337,10 @@ describe("the edit form's capacity-below-claimed error actually blocks Save", ()
 
   it("threads the live claim counts through the submit gate", () => {
     expect(form).toMatch(/slotsValid\(\s*value\.slots,/)
+    // The >=1 slot floor has no exemption: the edit route is never offered for an ended event, and the
+    // server refuses a slot change on one regardless, so there is nothing for a knob to unlock.
     expect(edit).toContain("isCleanupFormComplete(form, cleanup.slots)")
+    expect(form).not.toContain("requireSlot")
   })
 
   it("leaves the CREATE gate exactly as it was - a brand-new slot has no claims", () => {

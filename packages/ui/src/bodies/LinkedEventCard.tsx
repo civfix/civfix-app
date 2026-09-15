@@ -6,7 +6,7 @@ import { Text, Icon, iconMap } from "../typography"
 import { Avatar } from "../primitives/Avatar"
 import { RsvpPill } from "../primitives/RsvpPill"
 import { useCleanup, useCleanupAttendees, useJoinCleanup } from "../data"
-import { useLocale, useT } from "../i18n"
+import { useLocale, useT, useViewerTimeZone } from "../i18n"
 import {
   buildLinkedEventCardModel,
   buildLinkedEventCardTargetPlan,
@@ -137,6 +137,7 @@ export function LinkedEventCard({
   const styles = useStyles()
   const th = useTheme()
   const { locale } = useLocale()
+  const viewerTimeZone = useViewerTimeZone()
   const { t } = useT("event-card")
   const showControls = variant === "detail" && !selectable
   const detail = useCleanup(cleanup ? undefined : event.id)
@@ -149,13 +150,14 @@ export function LinkedEventCard({
   const model = useMemo(
     () =>
       buildLinkedEventCardModel(event, t, locale, timeZone, {
+        viewerTimeZone,
         address,
         going: liveGoing,
         joined,
         attendees,
         showAttendance: showControls,
       }),
-    [event, t, locale, timeZone, address, liveGoing, joined, attendees, showControls],
+    [event, t, locale, timeZone, viewerTimeZone, address, liveGoing, joined, attendees, showControls],
   )
   const isList = layout === "list"
   const targets = buildLinkedEventCardTargetPlan()

@@ -1,8 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Appearance, AppState, Platform, Pressable, StyleSheet, Text, View } from "react-native"
+import {
+  Appearance,
+  AppState,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useColorScheme,
+} from "react-native"
 import { Stack, useRouter, useSegments, type ErrorBoundaryProps } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import * as SplashScreen from "expo-splash-screen"
+import * as SystemUI from "expo-system-ui"
 import * as NavigationBar from "expo-navigation-bar"
 import * as Notifications from "expo-notifications"
 import * as Linking from "expo-linking"
@@ -28,6 +38,7 @@ import {
   supportsBlur,
   useColorSchemeName,
   useTheme,
+  type ColorSchemeName,
   type Theme,
 } from "@civfix/ui/theme"
 import { I18nProvider, createI18n } from "@civfix/ui/i18n"
@@ -38,8 +49,9 @@ import {
   setBrandAboutPresenter,
   setOnboardingTourPresenter,
   setScanPresenter,
+  setWebOrigin,
 } from "@civfix/ui"
-import { CARTO_API_KEY, DONATE_BROWSER_MODE } from "@/config"
+import { CARTO_API_KEY, DONATE_BROWSER_MODE, WEB_ORIGIN } from "@/config"
 import { nativeCamera, setCameraNavigator } from "@/lib/nativeCamera"
 import { nativeCalendarFile } from "@/lib/nativeCalendarFile"
 import { nativeClipboard } from "@/lib/nativeClipboard"
@@ -47,6 +59,7 @@ import { nativeGeolocation } from "@/lib/nativeGeolocation"
 import { nativeHaptics } from "@/lib/nativeHaptics"
 import { nativePush } from "@/lib/nativePush"
 import { nativeSecureStore } from "@/lib/nativeSecureStore"
+import { LAUNCH_SCHEME, launchTheme } from "@/boot/launchTheme"
 import { getAppearancePreference, resolveColorScheme, themeFor } from "@/theme"
 import { useAppFonts } from "@/theme/fonts"
 import { QueryProvider } from "@/query/QueryProvider"
@@ -68,9 +81,11 @@ import {
   type PushAttemptState,
 } from "@/lib/pushRegistrationRetry"
 import { useAuthGate } from "@/hooks/useAuthGate"
+import { useBootGate } from "@/hooks/useBootGate"
 import { useAppLifecycle } from "@/hooks/useAppLifecycle"
 import { useSignOutReset } from "@/hooks/useSignOutReset"
 import { AuthGate } from "@/components/AuthGate"
+import { BootOfflineGate } from "@/components/BootConnectivity"
 import { FirstRunGate } from "@/components/FirstRunGate"
 import { OnboardingGate } from "@/components/onboarding/OnboardingGate"
 import { useOnboardingStore } from "@/store/onboardingStore"
@@ -82,7 +97,6 @@ import {
 } from "@/push/register"
 import { useRealtimeChannel } from "@/hooks/useRealtimeChannel"
 import { applyInternalHref, useMobileNavAdapter } from "@/components/MobileNavAdapter"
-import { bridgeKey } from "@/lib/navBridge"
 
 export const unstable_settings = { anchor: "index" }
 
@@ -92,11 +106,8 @@ setAppearancePreferenceStore({
   subscribe: (l) => useAppearanceStore.subscribe(l),
 })
 
-const bootTheme = themeFor(
-  resolveColorScheme(useAppearanceStore.getState().preference, Appearance.getColorScheme()),
-)
-
 void SplashScreen.preventAutoHideAsync()
+void SystemUI.setBackgroundColorAsync(launchTheme.colors.bg)
 
 const SPLASH_WATCHDOG_MS = 5000
 const MIN_SPLASH_MS = 1700
@@ -104,6 +115,32 @@ const GATE_FADE_MS = 450
 
 function currentTheme(): Theme {
   return themeFor(resolveColorScheme(getAppearancePreference(), Appearance.getColorScheme()))
+}
+
+function useAppearanceScheme(): ColorSchemeName {
+  const preference = useAppearanceStore((s) => s.preference)
+  const system = useColorScheme()
+  return resolveColorScheme(preference, system)
+}
+
+function useAppearanceTheme(): Theme {
+  const scheme = useAppearanceScheme()
+  const theme = useMemo(() => themeFor(scheme), [scheme])
+
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(theme.colors.bg)
+  }, [theme.colors.bg])
+
+  return theme
+}
+
+function BootBackdrop() {
+  return (
+    <>
+      <StatusBar style="dark" />
+      <View style={styles.gate} />
+    </>
+  )
 }
 
 let inAppBrowserOpen = false
@@ -138,6 +175,8 @@ async function openInAppBrowser(url: string): Promise<void> {
   }
 }
 
+setWebOrigin(WEB_ORIGIN)
+
 const mobileCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),
   camera: nativeCamera,
@@ -160,9 +199,9 @@ const mobileCapabilities: PlatformCapabilities = {
   },
   openInternalHref: {
     open: (path: string): boolean => {
-      const entry = applyInternalHref(path)
-      if (!entry) return false
-      if (bridgeKey(entry) === null) dismissToShell?.()
+      const applied = applyInternalHref(path)
+      if (!applied) return false
+      if (applied.dismissToShell) dismissToShell?.()
       return true
     },
   },
@@ -371,7 +410,8 @@ function useNotificationDeepLinks() {
       if (!href) return
       handledResponseIdRef.current = id
       setTimeout(() => {
-        applyInternalHref(href as string)
+        const applied = applyInternalHref(href as string)
+        if (applied?.dismissToShell) dismissToShell?.()
       }, 0)
     }
 
@@ -392,9 +432,14 @@ function RealtimeChannel(): null {
   return null
 }
 
-function RootStack() {
-  const scheme = useColorSchemeName()
+function RootStack({ launchGate }: { launchGate: boolean }) {
+  const liveScheme = useColorSchemeName()
+  const scheme = launchGate ? LAUNCH_SCHEME : liveScheme
   const t = useTheme()
+
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(launchGate ? launchTheme.colors.bg : t.colors.bg)
+  }, [launchGate, t.colors.bg])
 
   useEffect(() => {
     if (Platform.OS !== "android") return
@@ -466,10 +511,12 @@ export default function RootLayout() {
     return () => clearTimeout(t)
   }, [fontsReady])
 
+  const boot = useBootGate()
+
   const gateActive =
     !fontsReady ||
-    status === "idle" ||
-    status === "loading" ||
+    boot.phase === "connecting" ||
+    boot.phase === "offline" ||
     (status === "authed" && !minSplashElapsed)
 
   const setGateActive = useOnboardingStore((s) => s.setGateActive)
@@ -493,7 +540,7 @@ export default function RootLayout() {
   }, [gateActive, gateOpacity])
 
   if (!fontsReady) {
-    return <View style={styles.gate} />
+    return <BootBackdrop />
   }
 
   return (
@@ -515,7 +562,7 @@ export default function RootLayout() {
             <MediaLightboxProvider>
             <SharePostProvider>
             <BottomSheetModalProvider>
-              <RootStack />
+              <RootStack launchGate={gateMounted} />
               <OnboardingGate gateActive={gateActive} loadingGateMounted={gateMounted} />
               <FirstRunGate />
               {gateMounted ? (
@@ -523,7 +570,7 @@ export default function RootLayout() {
                   pointerEvents={gateActive ? "auto" : "none"}
                   style={[StyleSheet.absoluteFill, styles.loadingGate, gateStyle]}
                 >
-                  <AuthGate mode="loading" />
+                  {boot.phase === "offline" ? <BootOfflineGate /> : <AuthGate mode="loading" />}
                 </Animated.View>
               ) : null}
             </BottomSheetModalProvider>
@@ -561,6 +608,8 @@ function crashCopy(): typeof CRASH_COPY {
 
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   const copy = useMemo(crashCopy, [])
+  const theme = useAppearanceTheme()
+  const crash = useMemo(() => crashStyles(theme), [theme])
 
   const onRetry = useCallback(() => {
     try {
@@ -572,13 +621,13 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   }, [retry])
 
   return (
-    <View style={styles.crash}>
-      <StatusBar style={bootTheme.scheme === "dark" ? "light" : "dark"} />
-      <Text style={styles.crashTitle}>{copy.title}</Text>
-      <Text style={styles.crashBody}>{copy.body}</Text>
-      {__DEV__ ? <Text style={styles.crashDetail}>{String(error?.message ?? error)}</Text> : null}
-      <Pressable accessibilityRole="button" onPress={onRetry} style={styles.crashAction}>
-        <Text style={styles.crashActionLabel}>{copy.action}</Text>
+    <View style={crash.root}>
+      <StatusBar style={theme.scheme === "dark" ? "light" : "dark"} />
+      <Text style={crash.title}>{copy.title}</Text>
+      <Text style={crash.body}>{copy.body}</Text>
+      {__DEV__ ? <Text style={crash.detail}>{String(error?.message ?? error)}</Text> : null}
+      <Pressable accessibilityRole="button" onPress={onRetry} style={crash.action}>
+        <Text style={crash.actionLabel}>{copy.action}</Text>
       </Pressable>
     </View>
   )
@@ -590,50 +639,55 @@ const styles = StyleSheet.create({
   },
   gate: {
     flex: 1,
-    backgroundColor: bootTheme.colors.bg,
+    backgroundColor: launchTheme.colors.bg,
   },
   loadingGate: {
     zIndex: 60,
     elevation: 60,
   },
-  crash: {
-    flex: 1,
-    backgroundColor: bootTheme.colors.bg,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: bootTheme.space["6"],
-  },
-  crashTitle: {
-    fontSize: bootTheme.fontSize["24"],
-    fontWeight: "700",
-    color: bootTheme.colors.text,
-    textAlign: "center",
-  },
-  crashBody: {
-    marginTop: bootTheme.space["3"],
-    fontSize: bootTheme.fontSize["16"],
-    color: bootTheme.colors.textMuted,
-    textAlign: "center",
-  },
-  crashDetail: {
-    marginTop: bootTheme.space["3"],
-    fontSize: bootTheme.fontSize["13"],
-    color: bootTheme.colors.textSubtle,
-    textAlign: "center",
-  },
-  crashAction: {
-    marginTop: bootTheme.space["8"],
-    alignSelf: "stretch",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 52,
-    paddingHorizontal: bootTheme.space["5"],
-    borderRadius: bootTheme.radius.pill,
-    backgroundColor: bootTheme.colors.brand.bloom,
-  },
-  crashActionLabel: {
-    fontSize: bootTheme.fontSize["16"],
-    fontWeight: "600",
-    color: bootTheme.colors.onAccent,
-  },
 })
+
+function crashStyles(t: Theme) {
+  return StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: t.colors.bg,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: t.space["6"],
+    },
+    title: {
+      fontSize: t.fontSize["24"],
+      fontWeight: "700",
+      color: t.colors.text,
+      textAlign: "center",
+    },
+    body: {
+      marginTop: t.space["3"],
+      fontSize: t.fontSize["16"],
+      color: t.colors.textMuted,
+      textAlign: "center",
+    },
+    detail: {
+      marginTop: t.space["3"],
+      fontSize: t.fontSize["13"],
+      color: t.colors.textSubtle,
+      textAlign: "center",
+    },
+    action: {
+      marginTop: t.space["8"],
+      alignSelf: "stretch",
+      alignItems: "center",
+      justifyContent: "center",
+      height: 52,
+      paddingHorizontal: t.space["5"],
+      borderRadius: t.radius.pill,
+      backgroundColor: t.colors.brand.bloom,
+    },
+    actionLabel: {
+      fontSize: t.fontSize["16"],
+      fontWeight: "600",
+      color: t.colors.onAccent,
+    },
+  })
+}

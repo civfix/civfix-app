@@ -2,6 +2,7 @@ export { HostModeBody } from "./HostModeBody"
 export { HostCheckinBody } from "./HostCheckinBody"
 export { HostBroadcastQuickBody } from "./HostBroadcastQuickBody"
 export { HostTeamBody } from "./HostTeamBody"
+export { HostLogHoursBody } from "./HostLogHoursBody"
 export { MyTicketBody } from "./MyTicketBody"
 export { OrgPageBody } from "./OrgPageBody"
 export { MyDonationsBody } from "./MyDonationsBody"
@@ -12,10 +13,14 @@ export type { PhaseHeaderProps, PhaseDotProps, PhaseHeaderAction } from "./Phase
 export { HeroSkeleton, TilesSkeleton, RowsSkeleton } from "./HostSkeletons"
 export type { TilesSkeletonProps, RowsSkeletonProps } from "./HostSkeletons"
 
+export { LinkedReportsSheet } from "./LinkedReportsSheet"
+export type { LinkedReportsSheetProps } from "./LinkedReportsSheet"
+
 export { HostInsightsPanels } from "./HostInsightsPanels"
 export type { HostInsightsPanelsProps } from "./HostInsightsPanels"
 export {
   ARRIVAL_BUCKET_MINUTES,
+  HOST_ROW_ICONS,
   MESSAGE_CTA_WINDOW_MS,
   arrivalOffsetLabel,
   arrivalSparkPoints,
@@ -47,13 +52,11 @@ export type {
   HostTile,
   HostTileKey,
 } from "./hostSurfaceModel"
-export {
-  EventRosterBlock,
-  ROSTER_FILTERS,
-  nextCheckinSeat,
-  lastCheckedInSeat,
-} from "./EventRosterBlock"
+export { EventRosterBlock } from "./EventRosterBlock"
 export type { EventRosterBlockProps } from "./EventRosterBlock"
+export { ROSTER_FILTERS, visibleRosterFilters } from "./rosterFiltersModel"
+export { RosterCheckinList, nextCheckinSeat, lastCheckedInSeat } from "./RosterCheckinList"
+export type { RosterCheckinListProps } from "./RosterCheckinList"
 export { HostWalkupSheet } from "./HostWalkupSheet"
 export type { HostWalkupSheetProps } from "./HostWalkupSheet"
 export { HostTeamInviteSheet } from "./HostTeamInviteSheet"

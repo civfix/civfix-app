@@ -12,7 +12,7 @@
   "error": {
     "closed": "This event is closed.",
     "ended": "This event has already ended.",
-    "not_allowed": "You can't RSVP to this event.",
-    "generic": "Couldn't update your RSVP. Try again."
+    "not_allowed": "You can't sign up for this event.",
+    "generic": "Couldn't update your sign-up. Try again."
   }
 }

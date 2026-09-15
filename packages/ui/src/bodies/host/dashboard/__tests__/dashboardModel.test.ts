@@ -29,11 +29,11 @@ import {
   hostedEventCan,
   hostedEventHasActions,
   hostedEventPhase,
+  hostedEventStage,
+  hostedEventStatus,
   impactModel,
   nextDuplicateStart,
-  nextUpCta,
   nextUpEvent,
-  NEXT_UP_MESSAGE_WITHIN_MS,
   orderedOrgMembers,
   orgInviteErrorKey,
   orgInviteIdentifierErrorKey,
@@ -74,6 +74,7 @@ function hosted(over: Partial<HostedEventDTO> = {}): HostedEventDTO {
     id: "e1",
     title: "Cleanup",
     startsAt: "2026-09-20T17:00:00.000Z",
+    endsAt: "2026-09-20T21:00:00.000Z",
     status: "upcoming",
     visibility: "public",
     registeredCount: 4,
@@ -154,8 +155,10 @@ describe("dashboard scope", () => {
 })
 
 describe("event row actions", () => {
+  const now = new Date("2026-09-10T12:00:00.000Z")
+
   it("gives an organizer every action", () => {
-    const actions = hostedEventActions(hosted({ myRole: "organizer" }))
+    const actions = hostedEventActions(hosted({ myRole: "organizer" }), now)
     expect(actions).toEqual({
       hostTools: true,
       emailAttendees: true,
@@ -165,7 +168,7 @@ describe("event row actions", () => {
   })
 
   it("gives a staff member only host tools", () => {
-    const actions = hostedEventActions(hosted({ myRole: "staff" }))
+    const actions = hostedEventActions(hosted({ myRole: "staff" }), now)
     expect(actions).toEqual({
       hostTools: true,
       emailAttendees: false,
@@ -178,7 +181,7 @@ describe("event row actions", () => {
   it("prefers the server capability list over the legacy role fallback", () => {
     const event = hosted({ myRole: "organizer", myCapabilities: ["view_roster"] })
     expect(hostedEventCan(event, "manage_event")).toBe(false)
-    expect(hostedEventActions(event)).toEqual({
+    expect(hostedEventActions(event, now)).toEqual({
       hostTools: true,
       emailAttendees: false,
       duplicate: false,
@@ -187,14 +190,38 @@ describe("event row actions", () => {
   })
 
   it("gives a plain attendee nothing, so the row shows no menu", () => {
-    const actions = hostedEventActions(hosted())
+    const actions = hostedEventActions(hosted(), now)
     expect(hostedEventHasActions(actions)).toBe(false)
   })
 
   it("lets broadcast alone unlock the email action", () => {
-    const actions = hostedEventActions(hosted({ myCapabilities: ["broadcast"] }))
+    const actions = hostedEventActions(hosted({ myCapabilities: ["broadcast"] }), now)
     expect(actions.emailAttendees).toBe(true)
     expect(actions.duplicate).toBe(false)
+  })
+
+  it("retires Edit once the event has ended, because the server freezes it there", () => {
+    const organizer = { myRole: "organizer" as const }
+    const past = hosted({
+      ...organizer,
+      startsAt: "2026-09-08T17:00:00.000Z",
+      endsAt: "2026-09-08T21:00:00.000Z",
+    })
+    expect(hostedEventActions(past, now).edit).toBe(false)
+    expect(hostedEventActions(past, now).duplicate).toBe(true)
+  })
+
+  it("keeps Edit on an UNDERWAY event and drops it on a cancelled one", () => {
+    const organizer = { myRole: "organizer" as const }
+    const underway = hosted({
+      ...organizer,
+      startsAt: "2026-09-10T11:00:00.000Z",
+      endsAt: "2026-09-10T15:00:00.000Z",
+    })
+    expect(hostedEventActions(underway, now).edit).toBe(true)
+    const gone = hosted({ ...organizer, status: "cancelled" })
+    expect(hostedEventActions(gone, now).edit).toBe(false)
+    expect(hostedEventActions(gone, now).emailAttendees).toBe(false)
   })
 })
 
@@ -352,35 +379,52 @@ describe("collaborator actions", () => {
 
 describe("duplicate scheduling", () => {
   const now = new Date("2026-09-10T12:00:00.000Z")
+  const LA = "America/Los_Angeles"
+  const carrier = (wall: { year: number; month: number; day: number; hours: number; minutes: number }) =>
+    new Date(wall.year, wall.month - 1, wall.day, wall.hours, wall.minutes, 0, 0)
 
   it("keeps a future start as the default", () => {
-    expect(nextDuplicateStart("2026-09-20T17:00:00.000Z", now).toISOString()).toBe(
-      "2026-09-20T17:00:00.000Z",
+    const seeded = nextDuplicateStart("2026-09-20T17:00:00.000Z", LA, now)
+    expect(new Date(seeded.instantMs).toISOString()).toBe("2026-09-20T17:00:00.000Z")
+    expect(seeded.wallClock).toEqual({ year: 2026, month: 9, day: 20, hours: 10, minutes: 0 })
+  })
+
+  it("rolls a past start forward in whole weeks so the weekday and the EVENT-zone clock survive", () => {
+    const seeded = nextDuplicateStart("2026-08-20T17:00:00.000Z", LA, now)
+    expect(seeded.instantMs).toBeGreaterThan(now.getTime())
+    expect(seeded.wallClock.hours).toBe(10)
+    expect(seeded.wallClock.minutes).toBe(0)
+    expect((seeded.instantMs - Date.parse("2026-08-20T17:00:00.000Z")) % (7 * DAY_MS)).toBe(0)
+  })
+
+  it("holds the wall clock across a daylight-saving boundary in the EVENT's zone", () => {
+    const afterSpring = new Date("2027-03-13T19:00:00.000Z")
+    const seeded = nextDuplicateStart("2027-03-06T18:00:00.000Z", LA, afterSpring)
+    expect(seeded.instantMs).toBeGreaterThan(afterSpring.getTime())
+    expect(seeded.wallClock.hours).toBe(10)
+    expect(new Date(seeded.instantMs).toISOString()).toBe("2027-03-20T17:00:00.000Z")
+    expect(duplicateReady(carrier(seeded.wallClock), carrier(seeded.wallClock), LA, afterSpring)).toBe(
+      true,
     )
   })
 
-  it("rolls a past start forward in whole weeks so the weekday and the wall clock survive", () => {
-    const original = "2026-08-20T17:00:00.000Z"
-    const seeded = nextDuplicateStart(original, now)
-    expect(seeded.getTime()).toBeGreaterThan(now.getTime())
-    expect(seeded.getDay()).toBe(new Date(original).getDay())
-    expect(seeded.getHours()).toBe(new Date(original).getHours())
-    expect(seeded.getMinutes()).toBe(new Date(original).getMinutes())
+  it("falls back to a week out when the source start does not parse", () => {
+    const seeded = nextDuplicateStart("not-a-date", LA, now)
+    expect(seeded.instantMs).toBe(now.getTime() + 7 * DAY_MS)
   })
 
-  it("still lands in the future when the roll crosses a daylight-saving boundary", () => {
-    const acrossDst = new Date("2027-03-15T17:30:00.000Z")
-    const seeded = nextDuplicateStart("2027-03-01T18:00:00.000Z", acrossDst)
-    expect(seeded.getTime()).toBeGreaterThan(acrossDst.getTime())
-    expect(duplicateReady(seeded, seeded, acrossDst)).toBe(true)
+  it("reads the wall clock in the EVENT zone, not the viewer's, when judging the future", () => {
+    const nine = new Date(2026, 8, 10, 9, 0, 0, 0)
+    expect(duplicateReady(nine, nine, "Pacific/Honolulu", now)).toBe(true)
+    expect(duplicateReady(nine, nine, "Europe/Berlin", now)).toBe(false)
   })
 
   it("refuses a copy scheduled in the past", () => {
     const past = new Date(now.getTime() - DAY_MS)
-    expect(duplicateReady(past, past, now)).toBe(false)
+    expect(duplicateReady(past, past, LA, now)).toBe(false)
     const future = new Date(now.getTime() + DAY_MS)
-    expect(duplicateReady(future, future, now)).toBe(true)
-    expect(duplicateReady(null, future, now)).toBe(false)
+    expect(duplicateReady(future, future, LA, now)).toBe(true)
+    expect(duplicateReady(null, future, LA, now)).toBe(false)
   })
 })
 
@@ -516,16 +560,26 @@ describe("next up", () => {
     expect(next?.phase).toBe("live")
   })
 
-  it("has nothing to show once every event is done or cancelled", () => {
+  it("has nothing to show once every event is over or cancelled", () => {
     expect(
       nextUpEvent(
         [
-          row("done", { status: "done" }),
+          row("over", { startsAt: "2026-09-08T17:00:00.000Z", endsAt: "2026-09-08T21:00:00.000Z" }),
           row("gone", { status: "cancelled" }),
         ],
         now,
       ),
     ).toBeNull()
+  })
+
+  it("ignores a STORED done on a row whose window has not closed - status is a clock reading", () => {
+    const stale = row("stale", {
+      status: "done",
+      startsAt: "2026-09-10T11:00:00.000Z",
+      endsAt: "2026-09-10T15:00:00.000Z",
+    })
+    expect(hostedEventStatus(stale, now)).toBe("active")
+    expect(nextUpEvent([stale], now)?.event.id).toBe("stale")
   })
 
   it("reads the phase of a hosted row the same way the shared clock does", () => {
@@ -534,75 +588,49 @@ describe("next up", () => {
     expect(hostedEventPhase(row("c"), now)).toBe("upcoming")
   })
 
-  it("sends a live event to check-in", () => {
-    const event = row("live", { startsAt: "2026-09-10T11:00:00.000Z", myRole: "organizer" })
-    expect(nextUpCta({ phase: "live", event, now })).toBe("check_in")
-  })
-
-  it("offers a message when the event is close, has sign-ups and the viewer can broadcast", () => {
-    const event = row("soon", {
-      startsAt: new Date(now.getTime() + NEXT_UP_MESSAGE_WITHIN_MS - 1).toISOString(),
-      registeredCount: 12,
-      capacity: 20,
-      myRole: "organizer",
-    })
-    expect(nextUpCta({ phase: "upcoming", event, now })).toBe("message")
-  })
-
-  it("stops offering the message once the event is further out than the window", () => {
-    const event = row("later", {
-      startsAt: new Date(now.getTime() + NEXT_UP_MESSAGE_WITHIN_MS + 1).toISOString(),
-      registeredCount: 12,
-      capacity: 20,
-      myRole: "organizer",
-    })
-    expect(nextUpCta({ phase: "upcoming", event, now })).toBe("host_tools")
-  })
-
-  it("offers a share while the event is under half full, or has nobody at all", () => {
-    const thin = row("thin", {
-      startsAt: "2026-09-25T17:00:00.000Z",
-      registeredCount: 4,
-      capacity: 20,
-      myRole: "organizer",
-    })
-    expect(nextUpCta({ phase: "upcoming", event: thin, now })).toBe("share")
-    const uncapped = row("uncapped", {
-      startsAt: "2026-09-25T17:00:00.000Z",
-      registeredCount: 0,
-      myRole: "organizer",
-    })
-    expect(nextUpCta({ phase: "upcoming", event: uncapped, now })).toBe("share")
-  })
-
-  it("falls back to host tools for a healthy event that is not close yet", () => {
-    const event = row("healthy", {
-      startsAt: "2026-09-25T17:00:00.000Z",
-      registeredCount: 18,
-      capacity: 20,
-      myRole: "organizer",
-    })
-    expect(nextUpCta({ phase: "upcoming", event, now })).toBe("host_tools")
-    expect(nextUpCta({ phase: "ended", event, now })).toBe("host_tools")
+  it("names the five host-tooling stages off the same window", () => {
+    expect(hostedEventStage(row("a", { status: "cancelled" }), now)).toBe("cancelled")
+    expect(hostedEventStage(row("b"), now)).toBe("upcoming")
+    expect(
+      hostedEventStage(row("c", { startsAt: "2026-09-10T13:00:00.000Z" }), now),
+    ).toBe("soon")
+    expect(
+      hostedEventStage(
+        row("d", { startsAt: "2026-09-10T11:00:00.000Z", endsAt: "2026-09-10T15:00:00.000Z" }),
+        now,
+      ),
+    ).toBe("underway")
+    expect(
+      hostedEventStage(
+        row("e", { startsAt: "2026-09-10T06:00:00.000Z", endsAt: "2026-09-10T11:00:00.000Z" }),
+        now,
+      ),
+    ).toBe("wrapping_up")
+    expect(
+      hostedEventStage(
+        row("f", { startsAt: "2026-09-08T17:00:00.000Z", endsAt: "2026-09-08T21:00:00.000Z" }),
+        now,
+      ),
+    ).toBe("past")
   })
 
   it("finds a LIVE event in the past window, which is where the server puts it", () => {
     const upcomingWindow = [row("soon", { startsAt: "2026-09-14T09:00:00.000Z" })]
     const pastWindow = [
       row("live", { startsAt: "2026-09-10T11:00:00.000Z", endsAt: "2026-09-10T15:00:00.000Z" }),
-      row("finished", { status: "done", startsAt: "2026-09-08T17:00:00.000Z" }),
+      row("finished", { startsAt: "2026-09-08T17:00:00.000Z", endsAt: "2026-09-08T21:00:00.000Z" }),
     ]
     expect(nextUpEvent(upcomingWindow, now)?.event.id).toBe("soon")
     const both = nextUpEvent([...upcomingWindow, ...pastWindow], now)
     expect(both?.event.id).toBe("live")
     expect(both?.phase).toBe("live")
-    expect(nextUpCta({ phase: both?.phase ?? "upcoming", event: both?.event as HostedEventDTO, now })).toBe(
-      "check_in",
-    )
   })
 
   it("still refuses a finished past row, however recent", () => {
-    const justDone = row("done", { status: "done", startsAt: "2026-09-10T08:00:00.000Z" })
+    const justDone = row("done", {
+      startsAt: "2026-09-10T08:00:00.000Z",
+      endsAt: "2026-09-10T12:00:00.000Z",
+    })
     expect(nextUpEvent([justDone], now)).toBeNull()
     expect(nextUpEvent([justDone, row("soon", { startsAt: "2026-09-14T09:00:00.000Z" })], now)?.event.id).toBe(
       "soon",
@@ -625,53 +653,73 @@ describe("next up", () => {
 describe("needs attention", () => {
   const now = new Date("2026-09-10T12:00:00.000Z")
 
-  it("queues an event that ended without being marked completed", () => {
-    const ended = row("ended", {
-      status: "upcoming",
+  const finished = (id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO =>
+    row(id, {
+      myRole: "organizer",
       startsAt: "2026-09-08T17:00:00.000Z",
       endsAt: "2026-09-08T21:00:00.000Z",
+      ...over,
     })
-    expect(attentionRows({ past: [ended], now })).toEqual([{ kind: "complete", event: ended }])
-  })
 
   it("queues a finished event whose hours were never credited", () => {
-    const unpaid = row("unpaid", { status: "done", checkedInCount: 6, hoursCredited: 0 })
-    expect(attentionRows({ past: [unpaid], now })).toEqual([
-      { kind: "credit_hours", event: unpaid },
-    ])
+    const unpaid = finished("unpaid", { checkedInCount: 6, hoursCredited: 0 })
+    expect(attentionRows({ past: [unpaid], now })).toEqual([{ kind: "log_hours", event: unpaid }])
+  })
+
+  it("no longer asks anyone to mark an event completed - the clock does that", () => {
+    const ended = finished("ended", { checkedInCount: 0, hoursCredited: 0 })
+    expect(attentionRows({ past: [ended], now })).toEqual([])
   })
 
   it("leaves credited, empty and cancelled events alone", () => {
-    const credited = row("credited", { status: "done", checkedInCount: 6, hoursCredited: 12 })
-    const nobody = row("nobody", { status: "done", checkedInCount: 0 })
-    const gone = row("gone", { status: "cancelled", startsAt: "2026-09-01T17:00:00.000Z" })
+    const credited = finished("credited", { checkedInCount: 6, hoursCredited: 12 })
+    const nobody = finished("nobody", { checkedInCount: 0, hoursCredited: 0 })
+    const gone = finished("gone", { status: "cancelled", checkedInCount: 6, hoursCredited: 0 })
     expect(attentionRows({ past: [credited, nobody, gone], now })).toEqual([])
   })
 
-  it("says nothing about hours the payload never carried: absent is UNKNOWN, not zero", () => {
-    const silent = row("silent", { status: "done", checkedInCount: 6 })
+  it("says nothing about an event that has not ended yet", () => {
+    const underway = finished("underway", {
+      startsAt: "2026-09-10T11:00:00.000Z",
+      endsAt: "2026-09-10T15:00:00.000Z",
+      checkedInCount: 6,
+      hoursCredited: 0,
+    })
+    expect(attentionRows({ past: [underway], now })).toEqual([])
+  })
+
+  it("treats hours the payload never carried as none logged, so the task is not silently dropped", () => {
+    // `hoursCredited` is `.optional()` on the wire. The row now routes to the hours editor, which shows
+    // the truth either way, so an older server's silence must not hide a real task from the host.
+    const silent = finished("silent", { checkedInCount: 6 })
     expect(silent.hoursCredited).toBeUndefined()
-    expect(attentionRows({ past: [silent], now })).toEqual([])
-    const explicit = row("explicit", { status: "done", checkedInCount: 6, hoursCredited: 0 })
+    expect(attentionRows({ past: [silent], now })).toEqual([{ kind: "log_hours", event: silent }])
+    const explicit = finished("explicit", { checkedInCount: 6, hoursCredited: 0 })
     expect(attentionRows({ past: [explicit], now })).toEqual([
-      { kind: "credit_hours", event: explicit },
+      { kind: "log_hours", event: explicit },
     ])
   })
 
-  it("puts every mark-completed ahead of every credit-hours, newest first", () => {
-    const older = row("older", {
-      status: "upcoming",
+  it("never queues a viewer the server would 403 - logging hours needs manage_event", () => {
+    const staff = finished("staff", {
+      myRole: "staff",
+      myCapabilities: ["view_roster", "check_in"],
+      checkedInCount: 6,
+      hoursCredited: 0,
+    })
+    expect(attentionRows({ past: [staff], now })).toEqual([])
+  })
+
+  it("puts the most recently ENDED event first", () => {
+    const older = finished("older", {
       startsAt: "2026-09-01T17:00:00.000Z",
       endsAt: "2026-09-01T21:00:00.000Z",
+      checkedInCount: 4,
+      hoursCredited: 0,
     })
-    const newer = row("newer", {
-      status: "upcoming",
-      startsAt: "2026-09-08T17:00:00.000Z",
-      endsAt: "2026-09-08T21:00:00.000Z",
-    })
-    const unpaid = row("unpaid", { status: "done", checkedInCount: 6, hoursCredited: 0 })
-    const rows = attentionRows({ past: [unpaid, older, newer], now })
-    expect(rows.map((entry) => entry.event.id)).toEqual(["newer", "older", "unpaid"])
+    const newer = finished("newer", { checkedInCount: 6, hoursCredited: 0 })
+    const rows = attentionRows({ past: [older, newer], now })
+    expect(rows.map((entry) => entry.event.id)).toEqual(["newer", "older"])
   })
 
   it("caps the queue at three rows for the caller", () => {
@@ -915,10 +963,9 @@ describe("portfolio surface", () => {
       ["scope", "a11y"],
       ["create", "short"],
       ["next_up", "section"],
-      ["next_up", "check_in"],
       ["next_up", "host_tools"],
-      ["next_up", "message"],
-      ["next_up", "share"],
+      ["next_up", "host_tools_a11y"],
+      ["next_up", "share_a11y"],
       ["next_up", "signed_up_of"],
       ["next_up", "signed_up"],
       ["next_up", "waiting"],
@@ -926,10 +973,11 @@ describe("portfolio surface", () => {
       ["next_up", "starts_in"],
       ["next_up", "started"],
       ["next_up", "more_shifts"],
+      ["next_up", "more_shifts_a11y"],
       ["next_up", "meter_a11y"],
       ["attention", "section"],
-      ["attention", "complete"],
-      ["attention", "credit_hours"],
+      ["attention", "log_hours"],
+      ["attention", "log_hours_a11y"],
       ["impact", "section"],
       ["impact", "all_time"],
       ["impact", "unit_hours"],
@@ -943,6 +991,7 @@ describe("portfolio surface", () => {
       ["impact", "came_back"],
       ["top_volunteers", "section"],
       ["top_volunteers", "caption"],
+      ["top_volunteers", "open_hint"],
       ["events", "section"],
       ["events", "meta_capacity"],
       ["events", "meta_waiting"],
@@ -951,6 +1000,7 @@ describe("portfolio surface", () => {
       ["events", "meta_hours"],
       ["events", "meta_hours_not_logged"],
       ["events", "meta_cancelled"],
+      ["events", "meta_underway"],
       ["events", "empty_past"],
       ["events", "empty_upcoming"],
       ["events", "check_in_a11y"],
@@ -979,7 +1029,119 @@ describe("portfolio surface", () => {
       expect(cat.top_events).toBeUndefined()
       expect(cat.range?.all).toBeUndefined()
       expect(cat.next_up?.empty_title).toBeUndefined()
+      expect(cat.next_up?.check_in).toBeUndefined()
+      expect(cat.next_up?.check_in_a11y).toBeUndefined()
+      expect(cat.next_up?.message).toBeUndefined()
+      expect(cat.next_up?.message_a11y).toBeUndefined()
+      expect(cat.next_up?.share).toBeUndefined()
       expect(cat.events?.empty_past_title).toBeUndefined()
+      expect(cat.attention?.complete).toBeUndefined()
+      expect(cat.attention?.complete_a11y).toBeUndefined()
+      expect(cat.attention?.credit_hours).toBeUndefined()
+      expect(cat.attention?.credit_hours_a11y).toBeUndefined()
     }
+  })
+
+  it("shows an underway row live, under Upcoming, and routes the attention row at the hours screen", () => {
+    const rowSource = dashboardRowSource()
+    expect(rowSource).toContain('hostedEventStatus(event, now) === "active"')
+    expect(rowSource).toContain('t("events.meta_underway", { ago: relative(event.startsAt, now) })')
+    expect(rowSource).toContain('<PhaseDot phase="live" />')
+    expect(dashboardSource("AttentionCard.tsx")).toContain("attention.log_hours")
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain('push({ kind: "host-log-hours", id: event.id })')
+    expect(body).toContain("onLogHours={onLogHours}")
+  })
+
+  it("makes the hidden-shift line a pressable route into host tools", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toContain("<TextLink")
+    expect(card).toContain('t("next_up.more_shifts_a11y"')
+    expect(card).toContain("onHostTools")
+  })
+
+  it("opens the event page when the card body is pressed", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toContain("const open = useCallback(() => onOpen(event), [event, onOpen])")
+    expect(card).toMatch(/<Pressable\s+onPress=\{open\}/)
+    expect(card).toContain("accessibilityLabel={cardLabel}")
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("onOpen={onOpenEvent}")
+    expect(body).toContain('push({ kind: "cleanup", id: event.id, title: event.title })')
+  })
+
+  it("keeps the staffing and shift lines audible by folding them into the card label", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toMatch(
+      /const cardLabel = \[\s*t\("events\.open_a11y", \{ title: event\.title \}\),\s*whenLine,\s*seats,/,
+    )
+    expect(card).toContain('t("next_up.waiting", { count: event.waitlistCount }) : null')
+    expect(card).toContain('t("next_up.checked_in", { count: liveCheckedIn }) : null')
+  })
+
+  it("points the one card button at host tools, whatever the stage", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toMatch(/<PrimaryButton[\s\S]*?label=\{t\("next_up\.host_tools"\)\}/)
+    expect(card).toMatch(/<PrimaryButton[\s\S]*?onPress=\{hostTools\}/)
+    expect(card).not.toContain("cta")
+    expect(source("../dashboardModel.ts")).not.toContain("nextUpCta")
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("onHostTools={onHostTools}")
+    expect(body).toContain("openHostDashboard({ eventId: event.id })")
+  })
+
+  it("shares from an icon button pinned to the top right of the card", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toContain("const MIN_TOUCH_TARGET = 44")
+    expect(card).toContain("const SHARE_HIT_SLOP = (MIN_TOUCH_TARGET - SHARE_SIZE) / 2")
+    expect(card).toMatch(/<Pressable\s+onPress=\{share\}/)
+    expect(card).toContain('accessibilityLabel={t("next_up.share_a11y", { title: event.title })}')
+    expect(card).toContain("hitSlop={SHARE_HIT_SLOP}")
+    expect(card).toContain("<Icon icon={iconMap.Share}")
+    expect(card).toMatch(/share: \{\s*position: "absolute",\s*top: 0,\s*right: 0,\s*zIndex: 1,/)
+    expect(card).toContain("paddingRight: SHARE_SIZE + t.space[\"2\"]")
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("onShare={onShare}")
+    expect(body).toContain("shareLink({ title: event.title, path: sharePathFor(event) })")
+  })
+
+  it("reaches the card body, then host tools, then the share icon on a web tab sweep", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card.indexOf("onPress={open}")).toBeLessThan(card.indexOf("onPress={hostTools}"))
+    expect(card.indexOf("onPress={hostTools}")).toBeLessThan(card.indexOf("onPress={share}"))
+    expect(card).toMatch(/share: \{\s*position: "absolute",\s*top: 0,\s*right: 0,/)
+  })
+
+  it("keeps the share icon and the host-tools button OUTSIDE the card pressable", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card.match(/<Pressable/g)).toHaveLength(2)
+    const opens = card.indexOf("onPress={open}")
+    const region = card.slice(opens, card.indexOf("</Pressable>", opens))
+    expect(region).not.toContain("<Pressable")
+    expect(region).not.toContain("<PrimaryButton")
+    expect(region).not.toContain("<TextLink")
+    expect(region).not.toContain("onPress={share}")
+    expect(region).not.toContain("onPress={hostTools}")
+  })
+
+  it("keeps the live dot, the started line and the shifts strip inside the card body", () => {
+    const card = dashboardSource("NextUpCard.tsx")
+    expect(card).toContain("<PhaseDot phase={phase} />")
+    expect(card).toContain('t("next_up.started", { ago: relative(event.startsAt, now) })')
+    expect(card).toContain("<ShiftRow")
+    expect(card).toContain("when.timeWithZone")
+  })
+
+  it("ticks the dashboard clock off the shared hook instead of reading it mid-render", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("const nowMs = useNow(NOW_TICK_MS, { boundaryAt })")
+    expect(body).not.toContain("const now = new Date()")
+  })
+
+  it("re-reads the soonest boundary each tick, so a later one still schedules a refresh", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("const boundaryAt = soonestBoundary(upcomingEvents, Date.now())")
+    expect(body).not.toMatch(/useMemo\(\(\) => soonestBoundary\([^)]*\), \[upcomingEvents\]\)/)
+    expect(body).toContain("function soonestBoundary(events: readonly HostedEventDTO[], at: number)")
   })
 })

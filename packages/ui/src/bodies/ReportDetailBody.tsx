@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import {
   View,
   Pressable,
   ScrollView,
   Image,
   ActivityIndicator,
-  Platform,
 } from "react-native"
 import type {
   ReportDTO,
@@ -39,13 +38,13 @@ import {
 } from "../data"
 import { type NodeKind, NODE_GLYPH, nodeColor, kindForStatus, citizenStatusLabel } from "../primitives/report-timeline-labels"
 import { timelineEntryRender } from "../primitives/report-timeline-model"
-import { clampGallerySelection } from "./reportDetailModel"
+import { clampGallerySelection, linkedEventToCleanup } from "./reportDetailModel"
 import type { ContentReportReason, ContentReportSubject } from "@civfix/shared"
 import { usePageIsActive } from "../shell/pageActive"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useNavStore } from "../nav"
 import { useCleanupDraft } from "./cleanupDraftStore"
-import { useEventReportLink, useMapFocus } from "../map"
+import { useMapFocus } from "../map"
 import { useLightbox } from "../lightbox"
 import { useT, useRelativeTime } from "../i18n"
 import type { TFunction } from "i18next"
@@ -296,41 +295,6 @@ function ViewChatRow({ report }: { report: ReportDTO }) {
   )
 }
 
-function AddToEventButton({ report }: { report: ReportDTO }) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("report-detail")
-  const selectedIds = useEventReportLink((s) => s.selectedIds)
-  const selected = selectedIds.includes(report.id)
-  const onPress = useCallback(() => {
-    useEventReportLink.getState().toggle(report.id)
-  }, [report.id])
-
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      accessibilityLabel={selected ? t("actions.added_a11y") : t("actions.add_to_event_a11y")}
-      {...focusRingProps}
-      style={({ pressed }) => [
-        styles.addEventBtn,
-        selected ? styles.addEventBtnOn : styles.addEventBtnIdle,
-        pressed ? styles.pressed : null,
-      ]}
-    >
-      <Icon
-        icon={selected ? iconMap.Check : iconMap.Plus}
-        size={17}
-        color={selected ? th.colors.onAccent : th.colors.text}
-      />
-      <Text style={[styles.addEventText, selected ? styles.addEventTextOn : null]} numberOfLines={1}>
-        {selected ? t("actions.added") : t("actions.add_to_event")}
-      </Text>
-    </Pressable>
-  )
-}
-
 function ReportLinkedEvents({ events }: { events: LinkedEventRef[] }) {
   const styles = useStyles()
   const { t } = useT("report-detail")
@@ -349,26 +313,6 @@ function ReportLinkedEvents({ events }: { events: LinkedEventRef[] }) {
       </View>
     </View>
   )
-}
-
-function linkedEventToCleanup(ev: LinkedEventRef): import("@civfix/shared").CleanupDTO {
-  return {
-    id: ev.id,
-    title: ev.title,
-    type: "site",
-    eventKind: ev.eventKind,
-    lat: ev.lat,
-    lng: ev.lng,
-    scheduledAt: ev.scheduledAt,
-    status: ev.status,
-    organizer: ev.organizer,
-    going: ev.going,
-    joined: false,
-    bring: [],
-    address: null,
-    description: null,
-    linkedReports: [],
-  } as unknown as import("@civfix/shared").CleanupDTO
 }
 
 type StatusTileKind = "processing" | "rejected" | "held"
@@ -553,8 +497,6 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
   const { ScrollView } = useScrollHost()
   const title = report.title?.trim() || t(`enums:category.${report.category}`)
   const timeline = useMemo(() => buildTimeline(report, t, relative), [report, t, relative])
-  const linkActive = useEventReportLink((s) => s.active)
-
   const hostDraftActive = useCleanupDraft((s) => s.active)
   const linkedCount = useCleanupDraft((s) => s.value?.linkedReportIds.length ?? 0)
   const isLinked = useCleanupDraft((s) => s.value?.linkedReportIds.includes(report.id) ?? false)
@@ -602,32 +544,17 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
     setReportTarget(null)
   }, [reportContent.isPending])
   const sharePath = `/pin/${report.referenceCode ?? report.id}`
-  const pendingMenuActionRef = useRef<(() => void) | null>(null)
-  const runAfterMenuDismiss = useCallback((action: () => void) => {
-    if (Platform.OS === "ios") {
-      pendingMenuActionRef.current = action
-      return
-    }
-    action()
-  }, [])
-  const onTitleMenuDismiss = useCallback(() => {
-    const action = pendingMenuActionRef.current
-    pendingMenuActionRef.current = null
-    if (action) action()
-  }, [])
   const onShare = useCallback(() => {
-    runAfterMenuDismiss(() => {
-      void shareLink({
-        title,
-        path: sharePath,
-        message: t("common-share:sheet.message", { title, url: absoluteUrl(sharePath) }),
-      }).then((result) => {
-        if (result === "copied") {
-          toast.show(t("common-share:button.copied"), { variant: "success" })
-        }
-      })
+    void shareLink({
+      title,
+      path: sharePath,
+      message: t("common-share:sheet.message", { title, url: absoluteUrl(sharePath) }),
+    }).then((result) => {
+      if (result === "copied") {
+        toast.show(t("common-share:button.copied"), { variant: "success" })
+      }
     })
-  }, [runAfterMenuDismiss, title, sharePath, t, toast])
+  }, [title, sharePath, t, toast])
   const onHostEvent = useCallback(() => {
     requireAuth(
       () => useNavStore.getState().push({ kind: "create-cleanup", reportId: report.id }),
@@ -776,7 +703,6 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
             visible={titleMenuOpen}
             anchorRect={titleMenuRect}
             onClose={() => setTitleMenuOpen(false)}
-            onDismiss={onTitleMenuDismiss}
             items={titleMenuItems}
           />
         </View>
@@ -811,8 +737,6 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
       ) : null}
 
       {report.mine ? <ResolveButton report={report} /> : null}
-
-      {linkActive ? <AddToEventButton report={report} /> : null}
 
       <ReportGallery report={report} onReportPhoto={onReportGalleryPhoto} />
 
@@ -1119,33 +1043,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   resolveTextReopen: {
     color: t.colors.text,
-  },
-
-  addEventBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    height: 46,
-    marginTop: t.space["4"],
-    borderRadius: t.radius.pill,
-    borderWidth: 1.5,
-  },
-  addEventBtnIdle: {
-    backgroundColor: t.colors.surface,
-    borderColor: t.colors.borderStrong,
-  },
-  addEventBtnOn: {
-    backgroundColor: t.colors.brand.moss,
-    borderColor: t.colors.brand.moss,
-  },
-  addEventText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
-    color: t.colors.text,
-  },
-  addEventTextOn: {
-    color: t.colors.onAccent,
   },
 
   linkedSection: {

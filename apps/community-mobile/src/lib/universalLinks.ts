@@ -179,7 +179,7 @@ function internalPathFor(parts: readonly string[]): string | null {
   }
 }
 
-const CLEANUP_CHILDREN = new Set(["edit", "host", "checkin", "team"])
+const CLEANUP_CHILDREN = new Set(["edit", "host", "checkin", "team", "hours"])
 
 function cleanupPathFor(
   id: string,

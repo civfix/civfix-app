@@ -6,7 +6,7 @@
     "ended": "This event has ended"
   },
   "going": {
-    "heading": "Going",
+    "heading": "Who's going",
     "count_one": "{{count}} going",
     "count_other": "{{count}} going",
     "empty": "No one's going yet.",
@@ -27,14 +27,18 @@
     "report_a11y": "Report this event",
     "message_crew": "Message crew",
     "message_crew_a11y": "Message the event crew",
-    "message_crew_hint": "RSVP to join the chat",
+    "message_crew_hint": "Sign up for a slot to join the chat",
     "message_crew_hint_ended": "Only people who signed up can open this chat",
     "cancel_event": "Cancel event",
     "cancel_event_a11y": "Cancel this event",
     "invite": "Invite",
     "invite_a11y": "Invite people to this event",
     "repost": "Repost",
-    "repost_a11y": "Repost this event"
+    "repost_a11y": "Repost this event",
+    "leave": "Leave event",
+    "leave_a11y": "Leave this event",
+    "leave_hint": "You'll leave the chat and give up your slot",
+    "leave_toast": "You left the event"
   },
   "where": {
     "route": "Route cleanup",
@@ -45,7 +49,8 @@
     "heading": "What to bring"
   },
   "linked_reports": {
-    "heading": "Reports we'll handle"
+    "heading": "Reports we'll handle",
+    "heading_count": "Reports we'll handle · {{count}}"
   },
   "host": {
     "heading": "Host",
@@ -73,23 +78,6 @@
   "state": {
     "unavailable_title": "Event unavailable",
     "unavailable_body": "Couldn't load this event."
-  },
-  "complete": {
-    "action": "Mark as completed",
-    "action_a11y": "Mark this event as completed",
-    "too_early": "Available once the event starts",
-    "success_toast": "Marked completed. You can log hours now."
-  },
-  "complete_sheet": {
-    "title": "Mark this event as completed?",
-    "dismiss_a11y": "Dismiss mark completed",
-    "body": "Do this once everyone has wrapped up.",
-    "point_visible": "Attendees will see the event as finished.",
-    "point_hours": "You can credit volunteer hours to everyone who showed up.",
-    "point_final": "This cannot be undone.",
-    "confirm": "Mark completed",
-    "cancel": "Not yet",
-    "error": "Couldn't update this event. Try again."
   },
   "receipt": {
     "pending": "The host hasn't logged volunteer hours yet.",

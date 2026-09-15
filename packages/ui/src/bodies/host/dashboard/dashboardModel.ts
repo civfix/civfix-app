@@ -1,4 +1,5 @@
 import type {
+  CleanupStatus,
   EventPhase,
   HostCapability,
   HostedEventDTO,
@@ -13,7 +14,20 @@ import type {
   OrgInviteIdentifierKind,
 } from "@civfix/shared"
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
-import { can, eventPhase, hostCapabilities } from "@civfix/shared/host"
+import type { EventWhenInput } from "@civfix/shared/datetime"
+import { wallClockInZone, wallClockToInstantMs, type WallClock } from "@civfix/shared/datetime"
+import {
+  can,
+  deriveCleanupStatus,
+  eventEndsAtMs,
+  eventPhase,
+  hostCapabilities,
+  hostStage,
+  type EventWindowLike,
+  type HostStage,
+} from "@civfix/shared/host"
+import { addWallClockDays, formInstantMs } from "../../calendarModel"
+import { viewerTimeZone } from "../../../i18n"
 
 export const DASHBOARD_RANGES = ["30d", "90d", "365d"] as const
 export type DashboardRange = (typeof DASHBOARD_RANGES)[number]
@@ -21,8 +35,6 @@ export type DashboardRange = (typeof DASHBOARD_RANGES)[number]
 export const DEFAULT_DASHBOARD_RANGE: DashboardRange = "30d"
 
 export const ATTENTION_MAX_ROWS = 3
-
-export const NEXT_UP_MESSAGE_WITHIN_MS = 48 * 3_600_000
 
 const DAY_MS = 86_400_000
 
@@ -76,14 +88,15 @@ export const NO_HOSTED_EVENT_ACTIONS: HostedEventActions = {
   edit: false,
 }
 
-export function hostedEventActions(event: HostedEventStanding): HostedEventActions {
+export function hostedEventActions(event: HostedEventDTO, now: Date): HostedEventActions {
   const caps = hostedEventCapabilities(event)
   const manage = caps.has("manage_event")
+  const status = hostedEventStatus(event, now)
   return {
     hostTools: manage || caps.has("view_roster"),
-    emailAttendees: caps.has("broadcast"),
+    emailAttendees: caps.has("broadcast") && status !== "cancelled",
     duplicate: manage,
-    edit: manage,
+    edit: manage && status !== "done" && status !== "cancelled",
   }
 }
 
@@ -160,15 +173,24 @@ export function portfolioKpis(
   return pages?.[0]?.kpis ?? null
 }
 
+export function hostedEventWindow(event: HostedEventDTO): EventWindowLike {
+  return { status: event.status, scheduledAt: event.startsAt, endsAt: event.endsAt ?? null }
+}
+
+export function hostedEventWhen(event: HostedEventDTO): EventWhenInput {
+  return { ...hostedEventWindow(event), timezone: event.timezone ?? null }
+}
+
 export function hostedEventPhase(event: HostedEventDTO, now: Date): EventPhase {
-  return eventPhase(
-    {
-      status: event.status,
-      scheduledAt: event.startsAt,
-      endsAt: event.endsAt ?? null,
-    },
-    now.getTime(),
-  )
+  return eventPhase(hostedEventWindow(event), now.getTime())
+}
+
+export function hostedEventStatus(event: HostedEventDTO, now: Date): CleanupStatus {
+  return deriveCleanupStatus(hostedEventWindow(event), now.getTime())
+}
+
+export function hostedEventStage(event: HostedEventDTO, now: Date): HostStage {
+  return hostStage(hostedEventWindow(event), now.getTime())
 }
 
 export interface NextUpModel {
@@ -181,8 +203,13 @@ export function nextUpEvent(
   now: Date,
 ): NextUpModel | null {
   const dated = events
-    .map((event) => ({ event, phase: hostedEventPhase(event, now), at: Date.parse(event.startsAt) }))
-    .filter((entry) => entry.phase === "live" || entry.phase === "upcoming")
+    .map((event) => ({
+      event,
+      phase: hostedEventPhase(event, now),
+      status: hostedEventStatus(event, now),
+      at: Date.parse(event.startsAt),
+    }))
+    .filter((entry) => entry.status === "upcoming" || entry.status === "active")
     .sort((a, b) => {
       if (a.phase !== b.phase) return a.phase === "live" ? -1 : 1
       const left = Number.isFinite(a.at) ? a.at : Number.MAX_SAFE_INTEGER
@@ -193,32 +220,7 @@ export function nextUpEvent(
   return first ? { event: first.event, phase: first.phase } : null
 }
 
-export type NextUpCtaKey = "check_in" | "message" | "share" | "host_tools"
-
-export interface NextUpCtaInput {
-  phase: EventPhase
-  event: HostedEventDTO
-  now: Date
-}
-
-export function nextUpCta(input: NextUpCtaInput): NextUpCtaKey {
-  const { phase, event, now } = input
-  if (phase === "live") return "check_in"
-  if (phase !== "upcoming") return "host_tools"
-  const startsAt = Date.parse(event.startsAt)
-  const soon =
-    Number.isFinite(startsAt) && startsAt - now.getTime() <= NEXT_UP_MESSAGE_WITHIN_MS
-  if (soon && event.registeredCount > 0 && hostedEventCan(event, "broadcast")) return "message"
-  const capacity = event.capacity ?? null
-  const thin =
-    capacity !== null
-      ? event.registeredCount < capacity / 2
-      : event.registeredCount === 0
-  if (thin) return "share"
-  return "host_tools"
-}
-
-export type AttentionRowKind = "complete" | "credit_hours"
+export type AttentionRowKind = "log_hours"
 
 export interface AttentionRow {
   kind: AttentionRowKind
@@ -231,16 +233,14 @@ export interface AttentionRowsInput {
 }
 
 function attentionKind(event: HostedEventDTO, now: Date): AttentionRowKind | null {
-  if (event.status === "upcoming" && hostedEventPhase(event, now) === "ended") return "complete"
-  if (event.status === "done" && event.checkedInCount > 0 && event.hoursCredited === 0) {
-    return "credit_hours"
-  }
+  if (hostedEventStatus(event, now) !== "done") return null
+  if (!hostedEventCan(event, "manage_event")) return null
+  if (event.checkedInCount > 0 && (event.hoursCredited ?? 0) === 0) return "log_hours"
   return null
 }
 
-function startedAt(event: HostedEventDTO): number {
-  const at = Date.parse(event.startsAt)
-  return Number.isFinite(at) ? at : 0
+function endedAt(event: HostedEventDTO): number {
+  return eventEndsAtMs(hostedEventWindow(event)) ?? 0
 }
 
 export function attentionRows(input: AttentionRowsInput): AttentionRow[] {
@@ -249,10 +249,7 @@ export function attentionRows(input: AttentionRowsInput): AttentionRow[] {
     const kind = attentionKind(event, input.now)
     if (kind) rows.push({ kind, event })
   }
-  return rows.sort((a, b) => {
-    if (a.kind !== b.kind) return a.kind === "complete" ? -1 : 1
-    return startedAt(b.event) - startedAt(a.event)
-  })
+  return rows.sort((a, b) => endedAt(b.event) - endedAt(a.event))
 }
 
 export type ImpactHeroUnit = "hours" | "volunteers"
@@ -390,22 +387,47 @@ export function donationSummaryFrom(range: DashboardRange, now: Date): string {
   return start.toISOString()
 }
 
-export function nextDuplicateStart(startsAt: string, now: Date): Date {
-  const original = new Date(startsAt)
-  if (Number.isNaN(original.getTime())) return new Date(now.getTime() + 7 * DAY_MS)
-  if (original.getTime() > now.getTime()) return original
-  const weeks = Math.ceil((now.getTime() - original.getTime()) / (7 * DAY_MS))
-  const rolled = new Date(original)
-  rolled.setDate(rolled.getDate() + weeks * 7)
-  while (rolled.getTime() <= now.getTime()) rolled.setDate(rolled.getDate() + 7)
-  return rolled
+export interface DuplicateStartSeed {
+  instantMs: number
+  wallClock: WallClock
 }
 
-export function duplicateReady(date: Date | null, time: Date | null, now: Date): boolean {
+const MAX_DUPLICATE_ROLLS = 60
+
+export function nextDuplicateStart(
+  startsAt: string,
+  timezone: string | null | undefined,
+  now: Date,
+): DuplicateStartSeed {
+  const zone = timezone ?? viewerTimeZone()
+  const parsed = Date.parse(startsAt)
+  const seed = Number.isNaN(parsed) ? now.getTime() + 7 * DAY_MS : parsed
+  const behindMs = now.getTime() - seed
+  const weeks = behindMs > 0 ? Math.ceil(behindMs / (7 * DAY_MS)) : 0
+  let wallClock = addWallClockDays(wallClockInZone(seed, zone), weeks * 7)
+
+  for (let roll = 0; roll < MAX_DUPLICATE_ROLLS; roll++) {
+    const instantMs = wallClockToInstantMs(wallClock, zone)
+    if (instantMs !== null && instantMs > now.getTime()) return { instantMs, wallClock }
+    wallClock =
+      instantMs === null
+        ? { ...wallClock, hours: (wallClock.hours + 1) % 24 }
+        : addWallClockDays(wallClock, 7)
+  }
+
+  const fallback = now.getTime() + 7 * DAY_MS
+  return { instantMs: fallback, wallClock: wallClockInZone(fallback, zone) }
+}
+
+export function duplicateReady(
+  date: Date | null,
+  time: Date | null,
+  timezone: string | null | undefined,
+  now: Date,
+): boolean {
   if (!date || !time) return false
-  const merged = new Date(date)
-  merged.setHours(time.getHours(), time.getMinutes(), 0, 0)
-  return merged.getTime() > now.getTime()
+  const at = formInstantMs(date, time, timezone ?? viewerTimeZone())
+  return at !== null && at > now.getTime()
 }
 
 export function duplicateErrorKey(code: string | undefined): string {

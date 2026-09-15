@@ -5,6 +5,7 @@ import {
   buildInlineComposerModel,
   composerEntryFor,
   inlineComposerClosesOnBlur,
+  inlineComposerFocusWithin,
   inlineComposerOwnsDraft,
 } from "../inlineComposerModel"
 
@@ -67,9 +68,64 @@ describe("the feed's inline composer model", () => {
   })
 
   it("collapses on blur only when nothing the reader staged would be lost", () => {
-    expect(inlineComposerClosesOnBlur({ body: "   ", mediaCount: 0 })).toBe(true)
-    expect(inlineComposerClosesOnBlur({ body: "hello", mediaCount: 0 })).toBe(false)
-    expect(inlineComposerClosesOnBlur({ body: "", mediaCount: 1 })).toBe(false)
+    const blur = (over: Partial<Parameters<typeof inlineComposerClosesOnBlur>[0]>) =>
+      inlineComposerClosesOnBlur({ body: "", mediaCount: 0, focusWithin: false, ...over })
+    expect(blur({ body: "   " })).toBe(true)
+    expect(blur({ body: "hello" })).toBe(false)
+    expect(blur({ mediaCount: 1 })).toBe(false)
+  })
+
+  it("stays open whenever the interaction never left the composer card", () => {
+    expect(inlineComposerClosesOnBlur({ body: "", mediaCount: 0, focusWithin: true })).toBe(false)
+  })
+})
+
+describe("the inline composer decides on blur by where the focus LANDED", () => {
+  const addMediaButton = { name: "add a photo or video" }
+  const outside = { name: "a link further down the feed" }
+  const card = { contains: (node: unknown) => node === addMediaButton }
+
+  const blurTo = (
+    next: unknown,
+    over: { body?: string; mediaCount?: number; pressingOwnControl?: boolean } = {},
+  ) =>
+    inlineComposerClosesOnBlur({
+      body: over.body ?? "",
+      mediaCount: over.mediaCount ?? 0,
+      focusWithin: inlineComposerFocusWithin({
+        card,
+        next,
+        pressingOwnControl: over.pressingOwnControl ?? false,
+      }),
+    })
+
+  it("survives a Tab from the empty input onto its own add-media button", () => {
+    expect(blurTo(addMediaButton)).toBe(false)
+  })
+
+  it("survives a click that moves focus onto its own add-media button", () => {
+    expect(blurTo(addMediaButton)).toBe(false)
+  })
+
+  it("survives a press on its own control in a browser that focuses no button on click", () => {
+    expect(blurTo(null, { pressingOwnControl: true })).toBe(false)
+  })
+
+  it("collapses when an empty draft's focus leaves the card", () => {
+    expect(blurTo(outside)).toBe(true)
+    expect(blurTo(null)).toBe(true)
+  })
+
+  it("keeps a started draft alive when focus leaves the card", () => {
+    expect(blurTo(outside, { body: "hello" })).toBe(false)
+    expect(blurTo(outside, { mediaCount: 1 })).toBe(false)
+  })
+
+  it("treats a card it cannot measure yet as focus gone, not as focus held", () => {
+    const within = (card: Parameters<typeof inlineComposerFocusWithin>[0]["card"]) =>
+      inlineComposerFocusWithin({ card, next: addMediaButton, pressingOwnControl: false })
+    expect(within(null)).toBe(false)
+    expect(within({})).toBe(false)
   })
 })
 
@@ -115,6 +171,42 @@ describe("the inline composer rides the full composer's store and submit path", 
   it("mirrors staged media into the shared draft ONLY while it is open", () => {
     expect(SRC).toMatch(/if \(!open\) return\s*\n\s*setMedia\(composerMedia\)/)
     expect(SRC).toContain("snapshotCarriedMedia(usePostComposerStore.getState().draft.media)")
+  })
+
+  it("asks the DOM where focus went before it collapses, so its own controls stay mounted", () => {
+    expect(SRC).toContain("<View ref={cardRef} style={styles.card}>")
+    expect(SRC).toContain("relatedTarget")
+    expect(SRC).toContain("document.activeElement")
+    expect(SRC).toContain("deferredBlurRef.current = setTimeout(() => {")
+    expect(SRC).toContain("inlineComposerFocusWithin({")
+    expect(SRC).toMatch(
+      /inlineComposerClosesOnBlur\(\{ body, mediaCount: composerMedia\.length, focusWithin \}\)/,
+    )
+  })
+
+  it("lets go of the press flag when the press ends, so a later tap outside still collapses it", () => {
+    expect(SRC).toContain("onPressIn={holdOwnControl}")
+    expect(SRC).toContain("onPressOut={releaseOwnControl}")
+    expect(SRC).toMatch(
+      /const releaseOwnControl = useCallback\(\(\) => \{\n\s*pressingOwnControlRef\.current = false/,
+    )
+    expect(SRC).not.toContain("holdOpenForOwnControl")
+  })
+
+  it("draws its own focus treatment instead of the browser's ring", () => {
+    expect(SRC).toContain("style={[webInputReset, styles.input]}")
+    expect(SRC).toContain("bodyFocused ? styles.inputSurfaceFocused : null")
+    expect(SRC).toContain("onFocus={onFocus}")
+  })
+
+  it("keeps the idle card down to the avatar and the prompt, with no dead Post button", () => {
+    const start = SRC.indexOf('if (model.state === "collapsed")')
+    const end = SRC.indexOf("<View ref={cardRef} style={styles.card}>")
+    expect(start).toBeGreaterThan(-1)
+    expect(end).toBeGreaterThan(start)
+    const collapsed = SRC.slice(start, end)
+    expect(collapsed).toContain("{avatar}")
+    expect(collapsed).not.toContain("{postButton}")
   })
 
   it("is mounted by the feed header, on the expanded shell only", () => {

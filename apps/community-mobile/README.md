@@ -136,6 +136,71 @@ eas.json. `CIVFIX_UPDATE_CHANNEL` (also set by the script) fills that gap via
 OTA update. The local build number comes from `ios.buildNumber` in `app.config.js` (EAS's remote
 `autoIncrement` counter does not apply) and must exceed every build already in App Store Connect.
 
+### Launch screen assets are baked at prebuild
+
+`ios/` and `android/` are gitignored, so the native launch screen is **whatever the last local
+prebuild generated**, not what `assets/` and `app.config.js` currently say. `expo-splash-screen`
+copies `assets/splash.png` into
+`ios/civfix/Images.xcassets/SplashScreenLogo.imageset/image@{1,2,3}x.png` and writes
+the paper background into the storyboard; nothing re-checks either afterwards. A stale prebuild
+therefore ships the *old* logo on the *new* background — which is how an opaque splash asset from
+an earlier revision shipped a visible box around the logo in both appearances long after
+`assets/splash.png` had been fixed.
+
+After changing any of these, re-run the prebuild before you archive:
+
+- `assets/splash.png` (or any other native asset: icon, adaptive icon)
+- the `splash` / `expo-splash-screen` blocks in `app.config.js`
+- the paper token in `@civfix/shared` that `SPLASH_BG_LIGHT` derives from
+
+```sh
+cd apps/community-mobile
+npx expo prebuild --platform ios --clean --no-install
+(cd ios && pod install)
+```
+
+`scripts/prep-archive.sh` runs a (non-`--clean`) prebuild + `pod install`, so a prep'd archive picks
+the change up; a hand-run `expo run:ios` or an Xcode archive against an existing `ios/` does not.
+Use `--clean` when you want the native project regenerated from scratch rather than re-synced in
+place — it is the only way to be sure no earlier generated file survives.
+
+The launch screen is light-only, by product decision (2026-09-14): the static native screen and the
+JS wordmark screen that follows it are both painted on light paper in every appearance, so the two
+match instead of one switching a beat before the other. That is why `app.config.js` carries no `dark`
+splash block — not on `splash`, not on the `expo-splash-screen` plugin tuple — and why
+`src/boot/launchTheme.ts` pins `LAUNCH_SCHEME` to `light` for `LoadingSplash`, `BootOfflineGate`, the
+pre-fonts backdrop in `app/_layout.tsx` and that file's system chrome: while `gateMounted` is true,
+`RootStack` holds the status bar, the Android nav-bar glyphs and the native root background
+(`SystemUI.setBackgroundColorAsync`) on the launch scheme, so none of them turns dark behind the
+light gate. The app proper is unaffected: `userInterfaceStyle` stays `automatic` and every shell
+frame once the gate has unmounted follows the device.
+
+There is no dark variant of the artwork and none is needed. `assets/splash.png` is the wordmark on a
+fully transparent canvas; what sits behind it is `SPLASH_BG_LIGHT`, which the prebuild writes into
+`ios/civfix/Images.xcassets/SplashScreenBackground.colorset` as a single `universal` entry with no
+`luminosity` appearance, and the storyboard paints its container view with that colorset *by name*
+(`<color key="backgroundColor" name="SplashScreenBackground"/>`). With one appearance in the
+colorset UIKit resolves the same paper in light and dark. `Info.plist` still keeps
+`UIUserInterfaceStyle` at `Automatic` — that key governs the whole process, launch screen included,
+so forcing `userInterfaceStyle` to `light` in `app.config.js` would hold the splash light too, but it
+would pin the app proper to that one appearance along with it. The single-appearance colorset buys
+the same launch paper without that cost.
+
+`tests/splashAsset.test.ts` guards this. It decodes `assets/splash.png` and asserts the corners are
+fully transparent and that most of the image is, and — when a local `ios/` prebuild exists — decodes
+the generated `@3x` imageset entry and asserts the same, checks that the colorset holds exactly one
+light appearance, that the imageset lists no dark entry and no `dark_image` file survives on disk,
+that the storyboard binds the named colour, and that `Info.plist` keeps `Automatic` — so a stale
+prebuild carrying the old two-appearance splash fails the test suite before anyone archives. CI has
+no `ios/`, so that half simply skips there.
+
+iOS also caches the rendered launch screen as a snapshot, and that snapshot outlives the build it
+came from: a simulator that has been shown the old splash keeps replaying it after `simctl uninstall`
++ reinstall and after a full simulator reboot, even though the freshly installed `Assets.car`
+demonstrably holds the new colours. So a local "the fix didn't work" is usually the snapshot, not the
+binary — verify the bundle with `xcrun assetutil --info <app>/Assets.car` before believing the
+screen, and bump `ios.buildNumber` (or use a fresh simulator) to force a re-render.
+
 ### Local `eas build` (`scripts/store-build.sh`)
 
 `apps/community-mobile/scripts/store-build.sh` wraps the whole local flow - it builds the ipa on
@@ -269,6 +334,19 @@ Do not hardcode hex/size values in components; import from the theme.
   backend - to render. `GET /map/tileinfo` is still called only for its attribution string; the basemap
   draws regardless of whether it resolves. There is no `protomaps-mlrn` / PMTiles dependency.
 
+### Onboarding map stills
+
+The first-run tour's map cards (`src/components/onboarding/stages/MapStill.tsx`) are CARTO Voyager
+(light) / Dark Matter (dark) crops of three real Los Angeles places — Highland Park (report), Boyle
+Heights at Hollenbeck Park (track), Echo Park Lake (together) — shipped as static `@2x` PNGs in
+`assets/onboarding/` so first launch needs no network, with `@civfix/ui` pins overlaid at real
+coordinates by the stages. `node scripts/onboarding-map-art.mjs` regenerates them from the scene table
+in `src/components/onboarding/onboardingMapScenes.ts` through the app's own tile URL rule and CARTO
+key, writes the palettised stills plus a `manifest.json` (sha256, dimensions and the scene centre,
+zoom and point size each still was cut from) that `tests/onboardingMapArt.test.ts` asserts against —
+so editing a scene without regenerating fails the suite — and with `--preview <dir>` also writes
+copies with the pin spots marked for checking the framing after moving a scene.
+
 ## Deferred / incompatible libraries
 
 - **react-native-mmkv** is pinned to v3 (not v4) and **react-native-vision-camera** to v4 (not v5)
@@ -303,3 +381,9 @@ pnpm --filter community-mobile exec expo export --platform ios   # JS bundle (no
 job), plus `npx expo-doctor` from this directory. Deploying is `.github/workflows/deploy-mobile.yml`
 (see "CI" above): a merge to `main` puts a staging build in TestFlight; nothing reaches a device
 before that workflow, a local `scripts/store-build.sh` run or a hand-driven archive runs.
+
+Launch-screen coverage splits along that line: `tests/splashConfig.test.ts` asserts the resolved
+`app.config.js` (automatic appearance for the app, the light paper background, and no `dark` block
+anywhere) and `tests/bootTheme.test.ts` asserts the JS boot screen is pinned to the launch scheme,
+so both run in CI, while the `ios/` prebuild assertions in `tests/splashAsset.test.ts` skip anywhere
+without a local prebuild.

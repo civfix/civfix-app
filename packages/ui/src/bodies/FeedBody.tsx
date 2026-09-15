@@ -17,7 +17,7 @@ import { useHomeFeed } from "../data/hooks/posts"
 import { useNavStore } from "../nav"
 import { alpha } from "../theme/alpha"
 import { useReducedMotion } from "../theme/useReducedMotion"
-import { useScrollHost } from "../shell/ScrollHost"
+import { useScrollHost, type ScrollHostListHandle } from "../shell/ScrollHost"
 import { useRefreshControlProps } from "../primitives/useRefreshControlProps"
 import { useAppPromoStore } from "../promo"
 import { HEADER_CONTROL_SIZE } from "./headerControls"
@@ -26,6 +26,7 @@ import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedNotice } from "./FeedNotice"
 import { PostCard } from "./PostCard"
 import { InlineComposer } from "./feed/InlineComposer"
+import { useFeedScrollTopStore } from "./feed/feedScrollStore"
 import { POST_CARD_RHYTHM } from "./postCardRhythm"
 import {
   buildFeedHeaderModel,
@@ -207,6 +208,15 @@ export function FeedBody() {
 
   const promoHeight = useAppPromoStore((s) => s.cardHeight)
 
+  const listRef = useRef<ScrollHostListHandle | null>(null)
+  const scrollTopRequestId = useFeedScrollTopStore((s) => s.requestId)
+  const honouredRequestIdRef = useRef(scrollTopRequestId)
+  useEffect(() => {
+    if (scrollTopRequestId === honouredRequestIdRef.current) return
+    honouredRequestIdRef.current = scrollTopRequestId
+    listRef.current?.scrollToOffset?.({ offset: 0, animated: true })
+  }, [scrollTopRequestId])
+
   const renderItem = useCallback(
     ({ item }: { item: PostDTO }) => (
       <FeedPostRow postId={item.id} entrance={entrance} reducedMotion={reducedMotion}>
@@ -330,6 +340,7 @@ export function FeedBody() {
 
   const list = (
     <FlatList
+      ref={listRef}
       style={styles.scroll}
       contentContainerStyle={contentStyle}
       data={state === "loaded" ? posts : NO_POSTS}

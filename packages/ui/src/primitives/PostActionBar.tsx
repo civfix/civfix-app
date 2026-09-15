@@ -251,21 +251,23 @@ const PostActionButton = React.memo(function PostActionButton({
     }
   }, [action.key, reducedMotion, scale, turn, useNativeDriver])
 
+  const unavailable = disabled || !action.onPress
+
   const onPress = useCallback(() => {
-    if (disabled || !action.onPress) return
+    if (unavailable || !action.onPress) return
     animate()
     action.onPress()
-  }, [action, animate, disabled])
+  }, [action, animate, unavailable])
 
   return (
     <Pressable
       ref={buttonRef}
       onPress={onPress}
-      disabled={disabled || !action.onPress}
+      disabled={unavailable}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityValue={action.countLabel != null ? { text: action.countLabel } : undefined}
-      accessibilityState={{ selected: action.active, disabled: disabled || !action.onPress }}
+      accessibilityState={{ selected: action.active, disabled: unavailable }}
       hitSlop={8}
       {...focusRingProps}
       style={[
@@ -274,8 +276,8 @@ const PostActionButton = React.memo(function PostActionButton({
         layout.target,
         webTransition,
         WEB_ACTION_FOCUS_INSET,
-        webCursor(disabled || !action.onPress),
-        disabled ? styles.disabled : null,
+        webCursor(unavailable),
+        unavailable ? styles.disabled : null,
       ]}
     >
       {(state) => (

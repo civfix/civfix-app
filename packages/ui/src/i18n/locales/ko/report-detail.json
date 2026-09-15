@@ -12,11 +12,7 @@
     "mark_resolved": "해결됨으로 표시",
     "reopen": "신고 다시 열기",
     "mark_resolved_a11y": "이 신고를 해결됨으로 표시",
-    "reopen_a11y": "이 신고 다시 열기",
-    "add_to_event": "이벤트에 추가",
-    "added": "추가됨",
-    "add_to_event_a11y": "이 신고를 이벤트에 추가",
-    "added_a11y": "이벤트에 추가됨"
+    "reopen_a11y": "이 신고 다시 열기"
   },
   "title_menu": {
     "options_a11y": "신고 옵션",

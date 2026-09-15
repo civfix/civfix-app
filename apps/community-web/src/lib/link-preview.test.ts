@@ -191,6 +191,24 @@ describe("previewForEvent", () => {
     expect(formatEventWhen(null)).toBe("")
   })
 
+  it("formats the schedule in the EVENT's zone when the row carries one", () => {
+    expect(formatEventWhen("2026-09-12T17:00:00.000Z", "America/New_York")).toBe(
+      "Sat, Sep 12, 1:00 PM EDT",
+    )
+  })
+
+  it("falls back to the platform zone for a legacy row or an unusable zone", () => {
+    expect(formatEventWhen("2026-09-12T17:00:00.000Z", null)).toBe("Sat, Sep 12, 10:00 AM PDT")
+    expect(formatEventWhen("2026-09-12T17:00:00.000Z", "Mars/Olympus")).toBe(
+      "Sat, Sep 12, 10:00 AM PDT",
+    )
+  })
+
+  it("carries the event zone into the shared-link description", () => {
+    const preview = previewForEvent({ ...base, timezone: "America/New_York" }, ctx)
+    expect(preview?.description).toBe("Sat, Sep 12, 1:00 PM EDT · A volunteer event on civfix")
+  })
+
   it("uses the event title and a date-led fixed description", () => {
     const preview = previewForEvent(base, ctx)
     expect(preview?.title).toBe("Ballona Creek cleanup")

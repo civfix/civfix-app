@@ -14,6 +14,12 @@
  */
 import type { PostComposeInput, PostKind } from "@civfix/shared"
 
+export type PostSubmitDestination = "origin" | "thread"
+
+export function postSubmitDestination(kind: PostKind): PostSubmitDestination {
+  return kind === "post" ? "origin" : "thread"
+}
+
 /** The composer's editable draft - the fields that decide whether (and as what) a post can be submitted. */
 export interface PostDraft {
   /** The free-form body text (may contain @mentions). */

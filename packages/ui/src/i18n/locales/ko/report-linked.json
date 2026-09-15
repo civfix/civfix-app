@@ -1,6 +1,8 @@
 {
   "card": {
     "a11yLabel": "{{title}}, {{category}}",
-    "removeA11yLabel": "이 이벤트에서 {{title}} 제거"
+    "removeA11yLabel": "이 이벤트에서 {{title}} 제거",
+    "a11yLabelDistance": "{{title}}, {{category}}, {{distance}} 거리",
+    "a11yLabelCode": "{{title}}, {{category}}, {{code}}, {{distance}} 거리"
   }
 }

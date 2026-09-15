@@ -11,14 +11,9 @@
   },
   "next_up": {
     "section": "Up next",
-    "check_in": "Check in",
-    "check_in_a11y": "Check in for {{title}}",
     "host_tools": "Host tools",
     "host_tools_a11y": "Open host tools for {{title}}",
     "meter_a11y": "{{registered}} of {{capacity}} spots taken",
-    "message": "Message attendees",
-    "message_a11y": "Message attendees of {{title}}",
-    "share": "Share",
     "share_a11y": "Share {{title}}",
     "signed_up_of": "{{registered}} of {{capacity}} signed up",
     "signed_up": "{{registered}} signed up",
@@ -26,14 +21,13 @@
     "checked_in": "{{count}} checked in",
     "starts_in": "{{dow}} {{time}} · in {{relative}}",
     "started": "Started {{ago}} ago",
-    "more_shifts": "{{count}} more shifts in Host tools"
+    "more_shifts": "{{count}} more shifts in Host tools",
+    "more_shifts_a11y": "Open host tools to see all {{total}} shifts for {{title}}"
   },
   "attention": {
     "section": "Needs attention",
-    "complete": "Mark completed · ended {{dow}}",
-    "complete_a11y": "Mark {{title}} completed",
-    "credit_hours": "Credit hours · {{count}} checked in",
-    "credit_hours_a11y": "Credit hours for {{title}}"
+    "log_hours": "Log hours · {{count}} checked in",
+    "log_hours_a11y": "Log hours for {{title}}"
   },
   "impact": {
     "section": "Impact",
@@ -54,7 +48,8 @@
   },
   "top_volunteers": {
     "section": "Top volunteers",
-    "caption": "Across the events in this view, all time. Only hosts see this list."
+    "caption": "Across the events in this view, all time. Only hosts see this list.",
+    "open_hint": "Opens their profile"
   },
   "create": {
     "action": "Create event",
@@ -100,7 +95,8 @@
     "meta_hours": "{{hours}} h",
     "meta_hours_not_logged": "Hours not logged",
     "meta_cancelled": "Cancelled",
-    "meta_signed_up": "{{count}} signed up"
+    "meta_signed_up": "{{count}} signed up",
+    "meta_underway": "Started {{ago}} ago"
   },
   "first_event": {
     "title": "Host your first event",

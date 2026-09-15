@@ -1,3 +1,5 @@
+import type { CleanupDTO, LinkedEventRef } from "@civfix/shared"
+
 /**
  * Pure behavior models for ReportDetailBody, extracted so they are unit-testable without the RN body
  * (matching postComposerModel / profileViewModel / searchResultsModel).
@@ -14,4 +16,31 @@ export function clampGallerySelection(selected: number, readyCount: number): num
   if (readyCount <= 0) return 0
   if (!Number.isFinite(selected) || selected < 0) return 0
   return Math.min(Math.trunc(selected), readyCount - 1)
+}
+
+export function linkedEventToCleanup(event: LinkedEventRef): CleanupDTO {
+  return {
+    id: event.id,
+    title: event.title,
+    type: "site",
+    eventKind: event.eventKind,
+    lat: event.lat,
+    lng: event.lng,
+    scheduledAt: event.scheduledAt,
+    endsAt: event.endsAt ?? null,
+    timezone: event.timezone ?? null,
+    status: event.status,
+    organizer: event.organizer,
+    going: event.going,
+    joined: false,
+    bring: [],
+    address: null,
+    description: null,
+    linkedReports: [],
+    slots: [],
+    visibility: "public",
+    galleryUrls: [],
+    ticketTypes: [],
+    myCapabilities: [],
+  }
 }

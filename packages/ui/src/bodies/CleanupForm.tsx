@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
+import { View, Pressable } from "react-native"
 import {
   EVENT_KIND_VALUES,
+  MIN_EVENT_DURATION_MINUTES,
   type EventKind,
   type EventSlotDTO,
   type OrganizationRefDTO,
   type PersonDTO,
-  type ReportDTO,
 } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
 import {
@@ -20,9 +20,9 @@ import {
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField, BringInput, MetaDot } from "../primitives"
-import { actableOrganizations, useMyOrganizations, useReport, useReverseLabel, reverseLabelText } from "../data"
-import { LocationPicker, PortraitMapPickStep, useLocationPick } from "../map"
-import { useLocale, useT } from "../i18n"
+import { actableOrganizations, useMyOrganizations, useReverseLabel, reverseLabelText } from "../data"
+import { LocationPicker, PortraitMapPickStep, useLocationPick, eventPinTarget } from "../map"
+import { useLocale, useT, viewerTimeZone } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
 import { AuthorAsChips, authorAsSelection, type AuthorAsOption } from "./AuthorAsChips"
 import { buildEventPreviewCard } from "./feedShare"
@@ -31,15 +31,21 @@ import {
   endOffsetMs,
   endTimeAfter,
   endTimeSelectable,
-  eventWindowOf,
+  formInstantMs,
   mergeDateTime,
+  scheduleFieldErrors,
 } from "./calendarModel"
 import { InlineDateTimePicker } from "./InlineDateTimePicker"
-import { LinkedReportCard, type LinkedReportCardData } from "./LinkedReportCard"
-import { DEFAULT_WIZARD_DURATION_MS } from "./eventWizard"
+import { ReportLinkPicker } from "./ReportLinkPicker"
+import { linkBlockState } from "./linkReportsModel"
+import { TimezoneField } from "./TimezoneField"
+import { DEFAULT_WIZARD_DURATION_MS, eventDraftWindow } from "./eventWizard"
 import { SlotEditor } from "./SlotEditor"
 import {
+  addSlotDraft,
   claimedBySlotId,
+  hasNamedSlot,
+  makeSlotKey,
   shiftSlotDrafts,
   slotsValid,
   type SlotDraft,
@@ -57,6 +63,7 @@ export interface CleanupFormValue {
   date: Date | null
   time: Date | null
   endTime: Date | null
+  timezone: string
   bring: string[]
   slots: SlotDraft[]
   linkedReportIds: string[]
@@ -89,8 +96,9 @@ export function emptyCleanupForm(
     date: null,
     time: null,
     endTime: null,
+    timezone: viewerTimeZone(),
     bring: [],
-    slots: [],
+    slots: addSlotDraft([], makeSlotKey()),
     linkedReportIds: seedLinkedReportId ? [seedLinkedReportId] : [],
     shareToFeed: true,
     feedCaption: "",
@@ -100,7 +108,7 @@ export function emptyCleanupForm(
 export { mergeDateTime } from "./calendarModel"
 
 export function cleanupFormWindow(value: CleanupFormValue): SlotWindowBounds | null {
-  return eventWindowOf(value.date, value.time, value.endTime)
+  return eventDraftWindow(value)
 }
 
 export function hasValidEventEnd(value: CleanupFormValue): boolean {
@@ -110,9 +118,14 @@ export function hasValidEventEnd(value: CleanupFormValue): boolean {
     value.time,
     value.endTime.getHours(),
     value.endTime.getMinutes(),
+    value.timezone,
   )
 }
 
+/**
+ * The >=1 named sign-up slot floor is unconditional: every event needs a board, the edit route is only
+ * ever offered for an event that has not ended, and the server refuses a slot change afterwards anyway.
+ */
 export function isCleanupFormComplete(
   value: CleanupFormValue,
   existingSlots?: readonly EventSlotDTO[],
@@ -123,6 +136,7 @@ export function isCleanupFormComplete(
     value.date !== null &&
     value.time !== null &&
     hasValidEventEnd(value) &&
+    hasNamedSlot(value.slots) &&
     slotsValid(
       value.slots,
       existingSlots ? claimedBySlotId(existingSlots) : undefined,
@@ -195,38 +209,6 @@ function KindSelector({
   )
 }
 
-function reportThumbUrl(report: ReportDTO): string | null {
-  const photo = report.media.find((m) => m.kind === "image" && m.status === "ready")
-  return photo ? (photo.thumbUrl ?? photo.url) : null
-}
-
-function reportToCardData(report: ReportDTO): LinkedReportCardData {
-  return {
-    id: report.id,
-    category: report.category,
-    type: report.type,
-    title: report.title,
-    description: report.description,
-    status: report.status,
-    thumbUrl: reportThumbUrl(report),
-    addr: report.addr,
-    referenceCode: report.referenceCode,
-  }
-}
-
-function LinkedReportCardById({ id, onRemove }: { id: string; onRemove: () => void }) {
-  const styles = useStyles()
-  const query = useReport(id)
-
-  if (query.isLoading) {
-    return <View style={styles.seedSkeleton} />
-  }
-  if (query.isError || !query.data) {
-    return null
-  }
-  return <LinkedReportCard report={reportToCardData(query.data)} layout="list" onRemove={onRemove} />
-}
-
 function MeetLocationCompact({
   value,
   onConfirmPoint,
@@ -242,6 +224,7 @@ function MeetLocationCompact({
   const th = useTheme()
   const { t: tMap } = useT("map-ui")
   const [picking, setPicking] = useState(false)
+  const pin = useMemo(() => eventPinTarget(value.eventKind), [value.eventKind])
   const label = useReverseLabel(value.coords)
   const display = value.coords ? reverseLabelText(label.data, value.coords) : null
 
@@ -307,6 +290,7 @@ function MeetLocationCompact({
           setPicking(false)
         }}
         onCancel={() => setPicking(false)}
+        pin={pin}
       />
     </View>
   )
@@ -318,6 +302,7 @@ export function CleanupForm({
   initialCenter,
   existingSlots,
   eventEndUnsaved = false,
+  scheduleUnchanged = false,
   sections = ALL_CLEANUP_FORM_SECTIONS,
   showFeedShare = false,
   feedShareBusy = false,
@@ -329,6 +314,7 @@ export function CleanupForm({
   initialCenter?: LatLng | null
   existingSlots?: readonly EventSlotDTO[]
   eventEndUnsaved?: boolean
+  scheduleUnchanged?: boolean
   currentOrganization?: OrganizationRefDTO | null
   sections?: readonly CleanupFormSection[]
   showFeedShare?: boolean
@@ -352,10 +338,11 @@ export function CleanupForm({
 
   const onChangeDate = useCallback(
     (date: Date) => {
-      const before = value.date && value.time ? mergeDateTime(value.date, value.time).getTime() : null
+      const before =
+        value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
       const time = value.time ? mergeDateTime(date, value.time) : value.time
       const endTime = value.endTime ? mergeDateTime(date, value.endTime) : value.endTime
-      const after = time ? mergeDateTime(date, time).getTime() : null
+      const after = time ? formInstantMs(date, time, value.timezone) : null
       patch({
         date,
         time,
@@ -365,13 +352,14 @@ export function CleanupForm({
           : {}),
       })
     },
-    [patch, value.date, value.endTime, value.slots, value.time],
+    [patch, value.date, value.endTime, value.slots, value.time, value.timezone],
   )
 
   const onChangeStartTime = useCallback(
     (time: Date) => {
-      const before = value.date && value.time ? mergeDateTime(value.date, value.time).getTime() : null
-      const after = time.getTime()
+      const before =
+        value.date && value.time ? formInstantMs(value.date, value.time, value.timezone) : null
+      const after = value.date ? formInstantMs(value.date, time, value.timezone) : null
       const offset =
         value.time && value.endTime
           ? endOffsetMs(value.time, value.endTime)
@@ -380,12 +368,12 @@ export function CleanupForm({
       patch({
         time,
         endTime,
-        ...(before !== null && before !== after
+        ...(before !== null && after !== null && before !== after
           ? { slots: shiftSlotDrafts(value.slots, after - before) }
           : {}),
       })
     },
-    [patch, value.date, value.endTime, value.slots, value.time],
+    [patch, value.date, value.endTime, value.slots, value.time, value.timezone],
   )
 
   const onPickPlace = useCallback(
@@ -409,12 +397,8 @@ export function CleanupForm({
     [patch],
   )
 
-  const removeLink = useCallback(
-    (id: string) => patch({ linkedReportIds: value.linkedReportIds.filter((x) => x !== id) }),
-    [patch, value.linkedReportIds],
-  )
-
   const isCleanup = value.eventKind === "cleanup"
+  const pin = useMemo(() => eventPinTarget(value.eventKind), [value.eventKind])
 
   const myOrgs = useMyOrganizations()
   const hostOrganizations = useMemo<AuthorAsOption[]>(() => {
@@ -460,6 +444,18 @@ export function CleanupForm({
     }
   }, [value, locale])
 
+  const scheduleErrors = useMemo(() => {
+    const found = scheduleFieldErrors(value, value.timezone)
+    const stale = (key: string | undefined) =>
+      key === undefined || (scheduleUnchanged && (key === "date_past" || key === "time_past"))
+    const vars = { minutes: MIN_EVENT_DURATION_MINUTES }
+    return {
+      date: stale(found.date) ? null : t(`error.${found.date}`, vars),
+      time: stale(found.time) ? null : t(`error.${found.time}`, vars),
+      endTime: found.endTime ? t(`error.${found.endTime}`, vars) : null,
+    }
+  }, [scheduleUnchanged, t, value])
+
   const shows = (section: CleanupFormSection) => sections.includes(section)
 
   return (
@@ -475,14 +471,6 @@ export function CleanupForm({
             chipA11y={(name) => tCreate("host_as.a11y", { name })}
             groupA11y={tCreate("host_as.group_a11y")}
           />
-
-          {isCleanup && value.linkedReportIds.length > 0 ? (
-            <View style={styles.linkedCards}>
-              {value.linkedReportIds.map((id) => (
-                <LinkedReportCardById key={id} id={id} onRemove={() => removeLink(id)} />
-              ))}
-            </View>
-          ) : null}
 
           <TextField
             label={t("field.title")}
@@ -506,28 +494,41 @@ export function CleanupForm({
       ) : null}
 
       {shows("where") ? (
-        <View style={styles.fieldBlock}>
-          <Text style={styles.fieldLabel}>{t("field.meetLocation")}</Text>
-          {compact ? (
-            <MeetLocationCompact
-              value={value}
-              onConfirmPoint={onDropPin}
-              onClear={() => patch({ coords: null })}
-              initialCenter={initialCenter ?? null}
+        <>
+          <View style={styles.fieldBlock}>
+            <Text style={styles.fieldLabel}>{t("field.meetLocation")}</Text>
+            {compact ? (
+              <MeetLocationCompact
+                value={value}
+                onConfirmPoint={onDropPin}
+                onClear={() => patch({ coords: null })}
+                initialCenter={initialCenter ?? null}
+              />
+            ) : (
+              <>
+                <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
+                <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} mode={pickMode} pin={pin} />
+              </>
+            )}
+            <TextField
+              placeholder={t("field.spotPlaceholder")}
+              value={value.spot}
+              onChangeText={(spot) => patch({ spot })}
+              maxLength={200}
             />
-          ) : (
-            <>
-              <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
-              <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} mode={pickMode} />
-            </>
-          )}
-          <TextField
-            placeholder={t("field.spotPlaceholder")}
-            value={value.spot}
-            onChangeText={(spot) => patch({ spot })}
-            maxLength={200}
+          </View>
+
+          <ReportLinkPicker
+            value={value.linkedReportIds}
+            onChange={(linkedReportIds) => patch({ linkedReportIds })}
+            center={value.coords}
+            state={linkBlockState({
+              isCleanup,
+              hasCoords: value.coords !== null,
+              linkedCount: value.linkedReportIds.length,
+            })}
           />
-        </View>
+        </>
       ) : null}
 
       {shows("when") ? (
@@ -537,10 +538,13 @@ export function CleanupForm({
             date={value.date}
             time={value.time}
             endTime={value.endTime}
+            timeZone={value.timezone}
+            errors={scheduleErrors}
             onDateChange={onChangeDate}
             onTimeChange={onChangeStartTime}
             onEndTimeChange={(endTime) => patch({ endTime })}
           />
+          <TimezoneField value={value.timezone} onChange={(timezone) => patch({ timezone })} />
         </View>
       ) : null}
 
@@ -548,27 +552,26 @@ export function CleanupForm({
         <>
           <View style={styles.fieldBlock}>
             <View style={styles.labelRow}>
-              <Text style={styles.fieldLabel}>{t("field.whatToBring")}</Text>
-              <MetaDot color={th.colors.textSubtle} style={styles.labelDot} />
-              <Text style={styles.optional}>{t("field.optional")}</Text>
-            </View>
-            <BringInput value={value.bring} onChange={(bring) => patch({ bring })} />
-          </View>
-
-          <View style={styles.fieldBlock}>
-            <View style={styles.labelRow}>
               <Text style={styles.fieldLabel}>{t("field.slots")}</Text>
-              <MetaDot color={th.colors.textSubtle} style={styles.labelDot} />
-              <Text style={styles.optional}>{t("field.optional")}</Text>
             </View>
             <Text style={styles.fieldHelp}>{t("field.slotsHelp")}</Text>
             <SlotEditor
               value={value.slots}
               onChange={(slots) => patch({ slots })}
               window={cleanupFormWindow(value)}
+              timeZone={value.timezone}
               eventEndUnsaved={eventEndUnsaved}
               {...(existingSlots ? { existing: existingSlots } : {})}
             />
+          </View>
+
+          <View style={styles.fieldBlock}>
+            <View style={styles.labelRow}>
+              <Text style={styles.fieldLabel}>{t("field.whatToBring")}</Text>
+              <MetaDot color={th.colors.textSubtle} style={styles.labelDot} />
+              <Text style={styles.optional}>{t("field.optional")}</Text>
+            </View>
+            <BringInput value={value.bring} onChange={(bring) => patch({ bring })} />
           </View>
         </>
       ) : null}
@@ -627,10 +630,6 @@ const useStyles = makeThemedStyles((t) => ({
     marginTop: -t.space["1"],
   },
 
-  linkedCards: {
-    gap: t.space["2"],
-  },
-
   segment: {
     flexDirection: "row",
     gap: t.space["1"],
@@ -666,14 +665,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   segmentTextActive: {
     color: t.colors.neutral.card,
-  },
-
-  seedSkeleton: {
-    height: 64,
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.bgAlt,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
   },
 
   compactLoc: {

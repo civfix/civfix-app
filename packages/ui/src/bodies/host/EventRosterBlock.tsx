@@ -1,21 +1,11 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
+import { View } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
-import type { EventRegistrationDTO, EventSlotDTO, RegistrationRosterFilter } from "@civfix/shared"
-import { DELETED_USER_LABEL } from "@civfix/shared"
-import { timeRangeLabel } from "@civfix/shared/datetime"
-import {
-  focusRingProps,
-  makeThemedStyles,
-  useTheme,
-  webCursor,
-  webHover,
-  webInputReset,
-  webTransition,
-} from "../../theme"
-import { Text, TextLink, Icon, iconMap } from "../../typography"
-import { Avatar, FilterChip, fieldFocusedStyle, useToast } from "../../primitives"
-import { useLocale, useT } from "../../i18n"
+import type { EventSlotDTO, RegistrationRosterFilter } from "@civfix/shared"
+import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { Text, TextLink } from "../../typography"
+import { FilterChip, fieldFocusedStyle, useToast } from "../../primitives"
+import { useT } from "../../i18n"
 import { useDebouncedValue } from "../../data/hooks/useDebouncedValue"
 import {
   rosterRows,
@@ -24,140 +14,17 @@ import {
   useUndoEventCheckIn,
 } from "../../data/hooks/host"
 import { useCleanup } from "../../data"
-import { slotWindow } from "../eventSlotsModel"
 import { appErrorCode } from "../errorCode"
+import { RosterCheckinList } from "./RosterCheckinList"
+import { visibleRosterFilters } from "./rosterFiltersModel"
 
-export const ROSTER_FILTERS: readonly RegistrationRosterFilter[] = [
-  "all",
-  "not_checked_in",
-  "checked_in",
-  "waitlisted",
-]
+const NO_SLOTS: readonly EventSlotDTO[] = []
 
 export interface EventRosterBlockProps {
   cleanupId: string
   canCheckIn?: boolean
   enabled?: boolean
 }
-
-function attendeeName(row: EventRegistrationDTO): string {
-  if (row.person?.deleted) return DELETED_USER_LABEL
-  return row.person?.name ?? row.guestName ?? ""
-}
-
-export function nextCheckinSeat(row: EventRegistrationDTO): string | null {
-  const seat = row.seats.find((s) => s.status === "active" && s.checkedInAt == null)
-  return seat?.id ?? null
-}
-
-export function lastCheckedInSeat(row: EventRegistrationDTO): string | null {
-  let best: { id: string; at: string } | null = null
-  for (const seat of row.seats) {
-    if (seat.status !== "active" || !seat.checkedInAt) continue
-    if (!best || seat.checkedInAt > best.at) best = { id: seat.id, at: seat.checkedInAt }
-  }
-  return best?.id ?? null
-}
-
-export function slotMetaLine(
-  slot: EventSlotDTO | undefined,
-  locale: string,
-): string | null {
-  if (!slot) return null
-  const window = slotWindow(slot)
-  if (window === null) return slot.title
-  return `${slot.title} · ${timeRangeLabel(window.start.toISOString(), window.end.toISOString(), locale)}`
-}
-
-const RosterRowView = React.memo(function RosterRowView({
-  row,
-  canCheckIn,
-  pending,
-  slot,
-  onCheckIn,
-  onUndo,
-}: {
-  row: EventRegistrationDTO
-  canCheckIn: boolean
-  pending: boolean
-  slot: EventSlotDTO | undefined
-  onCheckIn: (seatId: string) => void
-  onUndo: (seatId: string) => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const { t } = useT("host-common")
-  const { locale } = useLocale()
-  const name = attendeeName(row)
-  const checkedIn = row.checkedInAt != null
-  const nextSeat = nextCheckinSeat(row)
-  const undoSeat = lastCheckedInSeat(row)
-  const slotLine = slotMetaLine(slot, locale)
-  const meta = [
-    slotLine,
-    row.ticketTypeName ?? null,
-    row.seatCount > 1 ? t("roster.seats", { count: row.seatCount }) : null,
-    row.kind === "guest" ? t("roster.guest") : null,
-    row.waitlistPosition != null ? t("roster.waitlist_position", { position: row.waitlistPosition }) : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join(" · ")
-
-  return (
-    <View style={styles.row}>
-      <Avatar
-        name={name}
-        seed={row.person?.id ?? row.id}
-        photoUrl={row.person?.avatarUrl ?? null}
-        gradient={row.person?.avatar ?? null}
-        size={36}
-      />
-      <View style={styles.rowMeta}>
-        <Text style={styles.rowName} numberOfLines={1}>
-          {name}
-        </Text>
-        {meta.length > 0 ? (
-          <Text style={styles.rowSub} numberOfLines={1}>
-            {meta}
-          </Text>
-        ) : null}
-      </View>
-      {checkedIn ? (
-        <View style={styles.checkedIn}>
-          <Icon icon={iconMap.UserCheck} size={16} color={th.colors.successInk} />
-          {canCheckIn && undoSeat ? (
-            <TextLink
-              variant="label"
-              standalone
-              disabled={pending}
-              onPress={() => onUndo(undoSeat)}
-              accessibilityLabel={t("roster.undo_a11y", { name })}
-            >
-              {t("roster.undo")}
-            </TextLink>
-          ) : null}
-        </View>
-      ) : canCheckIn && nextSeat ? (
-        <Pressable
-          onPress={pending ? undefined : () => onCheckIn(nextSeat)}
-          disabled={pending}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: pending }}
-          accessibilityLabel={t("roster.check_in_a11y", { name })}
-          {...focusRingProps}
-          style={(state) => [
-            styles.checkInBtn,
-            webTransition,
-            webCursor(pending),
-            webHover(state) && !pending ? styles.checkInBtnHovered : null,
-          ]}
-        >
-          <Text style={styles.checkInLabel}>{t("roster.check_in")}</Text>
-        </Pressable>
-      ) : null}
-    </View>
-  )
-})
 
 export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true }: EventRosterBlockProps) {
   const styles = useStyles()
@@ -173,10 +40,8 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
   const roster = useHostRoster(cleanupId, { filter, q, enabled })
   const rows = useMemo(() => rosterRows(roster.data?.pages), [roster.data?.pages])
   const cleanup = useCleanup(cleanupId)
-  const slotById = useMemo(
-    () => new Map((cleanup.data?.slots ?? []).map((slot) => [slot.id, slot])),
-    [cleanup.data?.slots],
-  )
+  const slots = cleanup.data?.slots ?? NO_SLOTS
+  const filters = visibleRosterFilters((cleanup.data?.ticketTypes.length ?? 0) > 0)
 
   const checkIn = useCheckInEventSeat(cleanupId)
   const undo = useUndoEventCheckIn(cleanupId)
@@ -222,7 +87,7 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
       />
 
       <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel={t("roster.filter_a11y")}>
-        {ROSTER_FILTERS.map((value) => (
+        {filters.map((value) => (
           <FilterChip
             key={value}
             label={t(`roster.filter.${value}`)}
@@ -242,17 +107,15 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
         <Text style={styles.state}>{t("roster.empty")}</Text>
       ) : (
         <View>
-          {rows.map((row) => (
-            <RosterRowView
-              key={row.id}
-              row={row}
-              canCheckIn={canCheckIn}
-              pending={pending}
-              slot={row.slot ? slotById.get(row.slot.id) : undefined}
-              onCheckIn={onCheckIn}
-              onUndo={onUndo}
-            />
-          ))}
+          <RosterCheckinList
+            rows={rows}
+            slots={slots}
+            timeZone={cleanup.data?.timezone ?? undefined}
+            canCheckIn={canCheckIn}
+            pending={pending}
+            onCheckIn={onCheckIn}
+            onUndo={onUndo}
+          />
           {hasNextPage ? (
             <View style={styles.more}>
               <TextLink
@@ -297,50 +160,6 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
     paddingVertical: t.space["2"],
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-    paddingVertical: t.space["2"],
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: t.colors.border,
-  },
-  rowMeta: {
-    flex: 1,
-    minWidth: 0,
-  },
-  rowName: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
-  },
-  rowSub: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-    marginTop: 1,
-  },
-  checkedIn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-  },
-  checkInBtn: {
-    minHeight: 32,
-    justifyContent: "center",
-    paddingHorizontal: t.space["3"],
-    borderRadius: t.radius.pill,
-    borderWidth: 1.5,
-    borderColor: t.colors.borderStrong,
-  },
-  checkInBtnHovered: {
-    backgroundColor: t.colors.surfaceTint,
-  },
-  checkInLabel: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: t.fontSize["12"],
-    color: t.colors.text,
   },
   more: {
     alignSelf: "flex-start",

@@ -12,11 +12,7 @@
     "mark_resolved": "Mark as resolved",
     "reopen": "Reopen report",
     "mark_resolved_a11y": "Mark this report as resolved",
-    "reopen_a11y": "Reopen this report",
-    "add_to_event": "Add to event",
-    "added": "Added",
-    "add_to_event_a11y": "Add this report to the event",
-    "added_a11y": "Added to event"
+    "reopen_a11y": "Reopen this report"
   },
   "title_menu": {
     "options_a11y": "Report options",

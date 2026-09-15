@@ -60,6 +60,14 @@
     "reply_unknown_author": "Cuenta eliminada",
     "reply_quote_a11y": "En respuesta a {{name}}: {{excerpt}}"
   },
+  "embed": {
+    "loading": "Cargando vista previa",
+    "post_a11y": "Abrir publicación de {{name}}",
+    "person_a11y": "Abrir el perfil de {{name}}",
+    "org_a11y": "Abrir {{name}}",
+    "followers_one": "{{count}} seguidor",
+    "followers_other": "{{count}} seguidores"
+  },
   "menu": {
     "cancel": "Cancelar",
     "delete_message": "Eliminar mensaje",

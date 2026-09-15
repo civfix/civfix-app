@@ -39,6 +39,21 @@ export interface DonationsReportProps {
   canView: boolean
 }
 
+const DAY_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/
+
+export function localDayIso(
+  day: string,
+  hours: number,
+  minutes: number,
+  seconds: number,
+  ms: number,
+): string | undefined {
+  const parts = DAY_ONLY.exec(day)
+  if (parts === null) return undefined
+  const at = new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]), hours, minutes, seconds, ms)
+  return Number.isNaN(at.getTime()) ? undefined : at.toISOString()
+}
+
 export function DonationsReport({ orgId, orgName, canView }: DonationsReportProps) {
   const { t } = useT("host-payments")
   const { t: tc } = useT("host-common")
@@ -49,8 +64,8 @@ export function DonationsReport({ orgId, orgName, canView }: DonationsReportProp
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
 
-  const fromIso = from === "" ? undefined : new Date(`${from}T00:00:00`).toISOString()
-  const toIso = to === "" ? undefined : new Date(`${to}T23:59:59.999`).toISOString()
+  const fromIso = localDayIso(from, 0, 0, 0, 0)
+  const toIso = localDayIso(to, 23, 59, 59, 999)
 
   const donations = useInfiniteQuery<ListOrgDonationsResponse>({
     queryKey: consoleKeys.orgDonations(orgId, status ?? "all", from, to),

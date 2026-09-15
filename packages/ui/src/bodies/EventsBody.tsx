@@ -5,7 +5,7 @@ import type { ViewStyle } from "react-native"
 import { haversineMeters } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import type { CleanupDTO } from "@civfix/shared"
-import { eventChip, dowLabel, timeLabel } from "@civfix/shared/datetime"
+import { eventChip } from "@civfix/shared/datetime"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -20,7 +20,7 @@ import { MetaDot, RsvpPill, EmptyState, OrgAffiliationBadge } from "../primitive
 import { useCleanups, useJoinCleanup, useAttendingCleanups, useUserLocation, useAuthState } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
-import { useLocale, useRelativeTime, useT } from "../i18n"
+import { useEventWhen, useLocale, useT } from "../i18n"
 import { pushCleanup } from "./navHelpers"
 import { useRowHover } from "./rowHover"
 import { eventDistanceLabel } from "./eventDistance"
@@ -53,8 +53,8 @@ const SheetEventCard = React.memo(function SheetEventCard({
   const th = useTheme()
   const { t } = useT("event-list")
   const { locale } = useLocale()
-  const { weekdays } = useRelativeTime()
-  const { day, month } = eventChip(cleanup.scheduledAt, locale)
+  const when = useEventWhen(cleanup)
+  const { day, month } = eventChip(cleanup.scheduledAt, locale, when.timeZone)
   const join = useJoinCleanup(cleanup.id)
   const dist = eventDistanceLabel(cleanup.dist)
   const where = cleanup.address?.trim()
@@ -94,11 +94,11 @@ const SheetEventCard = React.memo(function SheetEventCard({
           <View style={styles.sub}>
             <Icon icon={iconMap.Clock} size={12} color={th.colors.textSubtle} />
             <Text style={styles.subText} numberOfLines={1}>
-              {dowLabel(cleanup.scheduledAt, weekdays)}
+              {when.dow}
             </Text>
             <MetaDot style={styles.metaDot} />
             <Text style={styles.subText} numberOfLines={1}>
-              {timeLabel(cleanup.scheduledAt, locale)}
+              {when.timeWithZone}
             </Text>
             {where ? (
               <>

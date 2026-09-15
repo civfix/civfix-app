@@ -6,7 +6,7 @@
     "ended": "Este evento ya terminó"
   },
   "going": {
-    "heading": "Asistentes",
+    "heading": "Quién asiste",
     "count_one": "{{count}} asistente",
     "count_other": "{{count}} asistentes",
     "empty": "Todavía no va nadie.",
@@ -27,14 +27,18 @@
     "report_a11y": "Reportar este evento",
     "message_crew": "Mensaje al grupo",
     "message_crew_a11y": "Enviar mensaje al equipo del evento",
-    "message_crew_hint": "Confirma tu asistencia para entrar al chat",
+    "message_crew_hint": "Inscríbete en un puesto para entrar al chat",
     "message_crew_hint_ended": "Solo quienes se apuntaron pueden abrir este chat",
     "cancel_event": "Cancelar evento",
     "cancel_event_a11y": "Cancelar este evento",
     "invite": "Invitar",
     "invite_a11y": "Invita a gente a este evento",
     "repost": "Republicar",
-    "repost_a11y": "Republicar este evento"
+    "repost_a11y": "Republicar este evento",
+    "leave": "Salir del evento",
+    "leave_a11y": "Salir de este evento",
+    "leave_hint": "Saldrás del chat y dejarás tu puesto",
+    "leave_toast": "Saliste del evento"
   },
   "where": {
     "route": "Ruta de limpieza",
@@ -45,7 +49,8 @@
     "heading": "Qué llevar"
   },
   "linked_reports": {
-    "heading": "Reportes que atenderemos"
+    "heading": "Reportes que atenderemos",
+    "heading_count": "Reportes que atenderemos · {{count}}"
   },
   "host": {
     "heading": "Organizador",
@@ -73,23 +78,6 @@
   "state": {
     "unavailable_title": "Evento no disponible",
     "unavailable_body": "No pudimos cargar este evento."
-  },
-  "complete": {
-    "action": "Marcar como completado",
-    "action_a11y": "Marcar este evento como completado",
-    "too_early": "Disponible cuando empiece el evento",
-    "success_toast": "Marcado como completado. Ya puedes registrar horas."
-  },
-  "complete_sheet": {
-    "title": "¿Marcar este evento como completado?",
-    "dismiss_a11y": "Cerrar marcar como completado",
-    "body": "Hazlo cuando todo el mundo haya terminado.",
-    "point_visible": "Las personas asistentes verán el evento como finalizado.",
-    "point_hours": "Podrás acreditar horas de voluntariado a quienes asistieron.",
-    "point_final": "Esta acción no se puede deshacer.",
-    "confirm": "Marcar completado",
-    "cancel": "Todavía no",
-    "error": "No se pudo actualizar el evento. Inténtalo de nuevo."
   },
   "receipt": {
     "pending": "La persona anfitriona aún no ha registrado las horas de voluntariado.",

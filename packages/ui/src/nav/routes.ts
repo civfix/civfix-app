@@ -4,14 +4,26 @@ type NavMode = "compact" | "expanded"
 
 const UNADDRESSABLE_KINDS: readonly DetailKind[] = ["cluster", "blend", "drop-pin"]
 
+export const ENTRY_IDENTITY_FIELDS = [
+  "id",
+  "roomKind",
+  "geoid",
+  "slug",
+  "seatId",
+] as const satisfies readonly (keyof DetailEntry)[]
+
+export function entryDiscriminator(entry: DetailEntry): string {
+  if (entry.kind === "composer") {
+    return `composer:${entry.composerMode ?? "post"}:${entry.targetPostId ?? ""}`
+  }
+  return [entry.kind, ...ENTRY_IDENTITY_FIELDS.map((field) => entry[field] ?? "")].join(":")
+}
+
 export function entryIdentity(entry: DetailEntry | null | undefined): string | null {
   if (!entry) return null
   if (entry.kind === "view") return entry.view ? `view:${entry.view}` : null
   if (UNADDRESSABLE_KINDS.includes(entry.kind)) return null
-  if (entry.kind === "composer") {
-    return `composer:${entry.composerMode ?? "post"}:${entry.targetPostId ?? ""}`
-  }
-  return `${entry.kind}:${entry.id ?? ""}:${entry.roomKind ?? ""}:${entry.geoid ?? ""}:${entry.slug ?? ""}:${entry.seatId ?? ""}`
+  return entryDiscriminator(entry)
 }
 
 
@@ -48,6 +60,7 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
       if (sub === "checkin") return { kind: "host-checkin", id }
       if (sub === "broadcast") return { kind: "host-broadcast-quick", id }
       if (sub === "team") return { kind: "host-team", id }
+      if (sub === "hours") return { kind: "host-log-hours", id }
       if (sub === "ticket") {
         const seatId = parts[3]
         return seatId ? { kind: "my-ticket", id, seatId } : { kind: "my-ticket", id }
@@ -158,6 +171,8 @@ export function pathForEntry(entry: DetailEntry | null): string {
       return entry.id ? `/cleanups/${entry.id}/broadcast` : "/cleanups"
     case "host-team":
       return entry.id ? `/cleanups/${entry.id}/team` : "/cleanups"
+    case "host-log-hours":
+      return entry.id ? `/cleanups/${entry.id}/hours` : "/cleanups"
     case "my-ticket":
       if (!entry.id) return "/cleanups"
       return entry.seatId
@@ -320,6 +335,8 @@ export function titleForEntry(entry: DetailEntry | null): string {
       return "title.host_broadcast_quick"
     case "host-team":
       return "title.host_team"
+    case "host-log-hours":
+      return "title.host_log_hours"
     case "my-ticket":
       return "title.my_ticket"
     case "org":
@@ -421,8 +438,10 @@ export function parentViewForEntry(entry: DetailEntry | null): View | null {
     case "host-checkin":
     case "host-broadcast-quick":
     case "host-team":
+    case "host-log-hours":
     case "my-ticket":
     case "org":
+    case "event-dashboard":
       return "events"
     case "person":
     case "people":

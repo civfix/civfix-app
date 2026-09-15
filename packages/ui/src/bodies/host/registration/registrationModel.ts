@@ -12,6 +12,7 @@ export type RegistrationSurface =
 
 export interface RegistrationSurfaceInput {
   status: CleanupDTO["status"]
+  ended: boolean
   ticketTypes: readonly TicketTypeDTO[]
   registrationState: RegistrationState | null | undefined
   myRegistration: CleanupDTO["myRegistration"]
@@ -19,7 +20,7 @@ export interface RegistrationSurfaceInput {
 
 export function registrationSurface(input: RegistrationSurfaceInput): RegistrationSurface {
   if (input.ticketTypes.length === 0) return "hidden"
-  if (input.status === "cancelled" || input.status === "done") {
+  if (input.status === "cancelled" || input.ended) {
     return input.myRegistration?.status === "registered" ? "registered" : "hidden"
   }
 
