@@ -99,7 +99,7 @@ describe("event mutations reach the host dashboard", () => {
   it("edit invalidates them - the dashboard row carries the title, time and status", () => {
     const fn = section(
       cleanupsSource,
-      "export function useUpdateCleanup",
+      "export function updateCleanupMutationOptions",
       "export interface CancelCleanupVars",
     )
     expect(fn).toContain("invalidateHostedEventLists(qc)")

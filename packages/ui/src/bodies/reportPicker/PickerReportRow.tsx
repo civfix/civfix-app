@@ -7,7 +7,7 @@ import { pinToCardData, useLinkedReportCards } from "../linkedReportCards"
 import { localReportThumb } from "../localReportThumbs"
 import { METERS_PER_MILE } from "../reportHitRowModel"
 import { distanceLabel } from "../relativeTime"
-import { isChosen, reportShortCode, type PickerMode, type PickerRow } from "./reportPickerModel"
+import { isChosen, reportShortCode, rowTagKey, type PickerMode, type PickerRow } from "./reportPickerModel"
 
 export interface PickerReportRowProps {
   row: PickerRow
@@ -43,12 +43,8 @@ export const PickerReportRow = memo(function PickerReportRow({
     const title = card.title?.trim() || categoryLabel
     const distance = distanceLabel(row.distanceM / METERS_PER_MILE)
     const code = reportShortCode(card)
-    const tag =
-      row.state === "linked"
-        ? t(mode === "draft" ? "row_added_tag" : "row_linked_tag")
-        : row.state === "unlinking"
-          ? t("row_unlinking_tag")
-          : null
+    const tagKey = rowTagKey(row.state, mode)
+    const tag = tagKey ? t(tagKey) : null
     const addr = card.addr?.trim() ?? ""
     const subtitle = [tag, distance, addr].filter(Boolean).join(" · ")
     return {

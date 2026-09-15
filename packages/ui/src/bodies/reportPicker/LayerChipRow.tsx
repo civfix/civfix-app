@@ -138,8 +138,8 @@ export function LayerChipRow({
       keyboardShouldPersistTaps="handled"
     >
       <PlainChip
-        label={t("layers_all")}
-        a11yLabel={t("layers_all_a11y")}
+        label={allOn ? t("layers_clear") : t("layers_all")}
+        a11yLabel={allOn ? t("layers_clear_a11y") : t("layers_all_a11y")}
         selected={allOn}
         onPress={allOn ? onClear : onAll}
       />

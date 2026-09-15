@@ -366,7 +366,12 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
 
     return (
       <div style={{ position: "relative", width: "100%", height: "100%" }}>
-        <div ref={containerRef} aria-label={mapLabel} style={{ width: "100%", height: "100%" }} />
+        <div
+          ref={containerRef}
+          role="region"
+          aria-label={mapLabel}
+          style={{ width: "100%", height: "100%" }}
+        />
       </div>
     )
   },

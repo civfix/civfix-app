@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useTheme } from "../../theme"
 import { Text } from "../../typography"
 import { ModalCardSheet, PrimaryButton, useToast } from "../../primitives"
-import { cleanupDetailFilters, useUpdateCleanup } from "../../data"
+import { useUpdateCleanup } from "../../data"
 import { queryKeys } from "../../data/keys"
 import { useT } from "../../i18n"
 import { appErrorCode } from "../errorCode"
@@ -45,19 +45,14 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
       const touched = new Set(
         [...ids, ...saved].filter((id) => !ids.includes(id) || !saved.includes(id)),
       )
-      const filters = cleanupDetailFilters(cleanup.id)
-      const snapshot = qc.getQueriesData<CleanupDTO>(filters)
-      const optimistic = optimisticLinkedRefs(
+      const linkedReports = optimisticLinkedRefs(
         ids,
         cleanup.linkedReports,
         useLinkedReportCards.getState().cards,
         new Date().toISOString(),
       )
-      qc.setQueriesData<CleanupDTO>(filters, (prev) =>
-        prev ? { ...prev, linkedReports: optimistic } : prev,
-      )
       update.mutate(
-        { id: cleanup.id, patch: linkedReportsPatch(ids) },
+        { id: cleanup.id, patch: linkedReportsPatch(ids), linkedReports },
         {
           onSuccess: () => {
             for (const id of touched) void qc.invalidateQueries({ queryKey: queryKeys.report(id) })
@@ -65,7 +60,6 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
             onClose()
           },
           onError: (err) => {
-            for (const [key, data] of snapshot) qc.setQueryData(key as unknown[], data)
             setErrorText(
               appErrorCode(err) === "FORBIDDEN"
                 ? t("linked_reports_sheet.error_forbidden")
@@ -78,10 +72,12 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
     [cleanup.id, cleanup.linkedReports, onClose, qc, saved, t, toast, update],
   )
 
-  const center =
-    cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null
+  const center = useMemo(
+    () => (cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null),
+    [cleanup.lat, cleanup.lng],
+  )
 
-  if (!readonly) {
+  if (!readonly && center) {
     return (
       <ReportPicker
         visible={visible}
@@ -109,7 +105,7 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
       actions={<PrimaryButton label={t("linked_reports_sheet.close")} onPress={onClose} />}
     >
       <Text variant="caption" color={th.colors.textSubtle}>
-        {t("linked_reports_sheet.caption_readonly")}
+        {t(readonly ? "linked_reports_sheet.caption_readonly" : "linked_reports_sheet.caption_pin_first")}
       </Text>
 
       {visible ? (

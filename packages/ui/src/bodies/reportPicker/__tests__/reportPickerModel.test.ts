@@ -11,7 +11,9 @@ import {
   bboxHolds,
   cardToPin,
   categoryCounts,
+  footerRemovedKey,
   isChosen,
+  keptPinIds,
   loadMoreState,
   mapPinsFor,
   matchesQuery,
@@ -20,12 +22,14 @@ import {
   optimisticLinkedRefs,
   pickerAction,
   pickerFetchRegion,
+  pickerFit,
   pickerListItems,
   pickerListState,
   pickerRows,
   pickerSections,
   pinPresentation,
   pinState,
+  pinStateKey,
   pinTapIntent,
   queryRank,
   refFromCard,
@@ -33,6 +37,7 @@ import {
   reportLookupKey,
   reportShortCode,
   rowIndexOf,
+  rowTagKey,
   rowOrdinalOf,
   selectionDiff,
   shouldRefetch,
@@ -185,9 +190,71 @@ describe("pins", () => {
 
   it("keeps baseline pins on the map even when their layer is off, and caps the total", () => {
     const pins = [pin("keep", { category: "hazard" }), ...Array.from({ length: 5 }, (_u, i) => pin(`p${i}`))]
-    const shown = mapPinsFor(pins, new Set(["keep"]), new Set(["trash"]), 3)
+    const filter = { center: LA, categories: new Set(["trash" as const]), nearbyOnly: false, radiusM: 500, query: "" }
+    const shown = mapPinsFor(pins, new Set(["keep"]), filter, 3)
     expect(shown.map((p) => p.id)).toEqual(["keep", "p0", "p1"])
     expect(PICKER_MAX_PINS).toBeGreaterThanOrEqual(200)
+  })
+
+  it("filters the map by the SAME predicate as the list, so no pin is left without a row", () => {
+    const pins = [
+      pin("near", { lat: north(100) }),
+      pin("far", { lat: north(3000) }),
+      pin("off-layer", { category: "hazard", lat: north(120) }),
+      pin("other-title", { lat: north(130), title: "couch" }),
+    ]
+    const filter = { center: LA, categories: ALL, nearbyOnly: true, radiusM: 500, query: "" }
+    const rowsFor = (over: Partial<typeof filter> = {}) =>
+      pickerRows({
+        ...filter,
+        ...over,
+        pins,
+        viewport: null,
+        ids: new Set<string>(),
+        linked: new Set<string>(),
+      }).map((r) => r.pin.id)
+    const pinsFor = (over: Partial<typeof filter> = {}) =>
+      mapPinsFor(pins, new Set<string>(), { ...filter, ...over }).map((p) => p.id)
+
+    expect(pinsFor()).toEqual(rowsFor())
+    expect(pinsFor()).not.toContain("far")
+    expect(pinsFor({ categories: new Set(["trash"]) })).toEqual(rowsFor({ categories: new Set(["trash"]) }))
+    expect(pinsFor({ nearbyOnly: false, query: "couch" })).toEqual(
+      rowsFor({ nearbyOnly: false, query: "couch" }),
+    )
+    expect(pinsFor({ nearbyOnly: false, query: "couch" })).toEqual(["other-title"])
+  })
+
+  it("an exact id or reference hit survives the layer and radius filters on both map and list", () => {
+    const hit = pin("f0f0f0f0-1111-4222-8333-444444444444", {
+      category: "hazard",
+      lat: north(9000),
+      referenceCode: "HA-4-000007",
+    })
+    const filter = { center: LA, categories: new Set(["trash" as const]), nearbyOnly: true, radiusM: 500, query: "ha-4-000007" }
+    expect(pickerFit(hit, filter)?.passes).toBe(true)
+    expect(mapPinsFor([hit], new Set<string>(), filter).map((p) => p.id)).toEqual([hit.id])
+    expect(
+      pickerRows({ ...filter, pins: [hit], viewport: null, ids: new Set<string>(), linked: new Set<string>() }).map(
+        (r) => r.pin.id,
+      ),
+    ).toEqual([hit.id])
+  })
+
+  it("names only the chosen pins the filter would otherwise hide, sorted, so the map memo stays stable", () => {
+    const pins = [
+      pin("chosen-visible", { lat: north(100) }),
+      pin("chosen-hidden", { category: "hazard", lat: north(120) }),
+      pin("chosen-far", { lat: north(4000) }),
+      pin("idle-hidden", { category: "hazard", lat: north(140) }),
+    ]
+    const filter = { center: LA, categories: new Set(["trash" as const]), nearbyOnly: true, radiusM: 500, query: "" }
+    const chosen = new Set(["chosen-visible", "chosen-hidden", "chosen-far"])
+    expect(keptPinIds(pins, chosen, filter)).toEqual(["chosen-far", "chosen-hidden"])
+    expect(keptPinIds(pins, new Set<string>(), filter)).toEqual([])
+    expect(
+      mapPinsFor(pins, new Set(keptPinIds(pins, chosen, filter)), filter).map((p) => p.id),
+    ).toEqual(["chosen-visible", "chosen-hidden", "chosen-far"])
   })
 })
 
@@ -420,6 +487,31 @@ describe("selection + footer", () => {
     expect(refs.map((r) => r.id)).toEqual(["b", "a"])
     expect(refs[0]).toEqual(refFromCard(card, "2026-02-02T00:00:00.000Z"))
     expect(refs[1]).toBe(kept)
+  })
+})
+
+describe("draft mode never says linked", () => {
+  it("renames the linked and unlinking states for a draft that has linked nothing yet", () => {
+    expect(pinStateKey("linked", "commit")).toBe("linked")
+    expect(pinStateKey("unlinking", "commit")).toBe("unlinking")
+    expect(pinStateKey("linked", "draft")).toBe("added")
+    expect(pinStateKey("unlinking", "draft")).toBe("removed")
+    expect(pinStateKey("selected", "draft")).toBe("selected")
+    expect(pinStateKey("idle", "draft")).toBe("idle")
+  })
+
+  it("picks the row tag per mode, and none for an untouched row", () => {
+    expect(rowTagKey("linked", "commit")).toBe("row_linked_tag")
+    expect(rowTagKey("linked", "draft")).toBe("row_added_tag")
+    expect(rowTagKey("unlinking", "commit")).toBe("row_unlinking_tag")
+    expect(rowTagKey("unlinking", "draft")).toBe("row_removed_tag")
+    expect(rowTagKey("selected", "draft")).toBeNull()
+    expect(rowTagKey("idle", "commit")).toBeNull()
+  })
+
+  it("counts removals as unlinks only when committing", () => {
+    expect(footerRemovedKey("commit")).toBe("footer_removed")
+    expect(footerRemovedKey("draft")).toBe("footer_deselected")
   })
 })
 

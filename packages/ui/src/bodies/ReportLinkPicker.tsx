@@ -47,7 +47,7 @@ export function ReportLinkPicker({
   const pins = useMemo(() => nearby.data ?? [], [nearby.data])
   const pinCards = useMemo(() => pins.map(pinToCardData), [pins])
   const cardById = useMemo(() => new Map(pinCards.map((card) => [card.id, card])), [pinCards])
-  const cards = useLinkedReportCards((s) => s.cards)
+  const knownKey = useLinkedReportCards((s) => value.filter((id) => s.cards[id]).join(","))
 
   useEffect(() => {
     if (pinCards.length > 0) useLinkedReportCards.getState().put(pinCards)
@@ -61,14 +61,13 @@ export function ReportLinkPicker({
     [pins, center, value],
   )
 
-  const knownPins = useMemo(
-    () =>
-      value
-        .map((id) => cards[id])
-        .filter((card): card is NonNullable<typeof card> => card !== undefined)
-        .map(cardToPin),
-    [value, cards],
-  )
+  const knownPins = useMemo(() => {
+    const { cards } = useLinkedReportCards.getState()
+    return (knownKey ? knownKey.split(",") : [])
+      .map((id) => cards[id])
+      .filter((card): card is NonNullable<typeof card> => card !== undefined)
+      .map(cardToPin)
+  }, [knownKey])
 
   const atLimit = value.length >= MAX_LINKED_REPORTS
 

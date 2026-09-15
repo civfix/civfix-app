@@ -165,6 +165,7 @@
     "title": "Linked reports",
     "caption": "Add or remove the reports this cleanup handles. Reporters see the event on their report.",
     "caption_readonly": "This event has ended. Its linked reports can't be changed.",
+    "caption_pin_first": "Set the event's meeting point first. Reports are picked on the map around it.",
     "save": "Save",
     "cancel": "Cancel",
     "close": "Close",

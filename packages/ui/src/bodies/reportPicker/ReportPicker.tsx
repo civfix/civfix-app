@@ -41,7 +41,9 @@ import {
   PICKER_ZOOM,
   cardToPin,
   categoryCounts,
+  footerRemovedKey,
   isSearching,
+  keptPinIds,
   loadMoreState,
   mapPinsFor,
   mergePins,
@@ -54,6 +56,7 @@ import {
   pickerSections,
   pinPresentation,
   pinState,
+  pinStateKey,
   pinTapIntent,
   reportLookupKey,
   reportShortCode,
@@ -90,8 +93,8 @@ export interface ReportPickerProps {
 export function ReportPicker(props: ReportPickerProps) {
   const { visible, center, onClose, onCommit, mode, busy = false, error = null } = props
   const { t } = useT("report-picker")
-  const [openCount, setOpenCount] = useState(0)
-  const wasVisibleRef = useRef(false)
+  const [openCount, setOpenCount] = useState(visible ? 1 : 0)
+  const wasVisibleRef = useRef(visible)
   useEffect(() => {
     if (visible && !wasVisibleRef.current) setOpenCount((n) => n + 1)
     wasVisibleRef.current = visible
@@ -187,6 +190,10 @@ function ReportPickerSurface({
   const [tooWide, setTooWide] = useState(false)
   const [page, setPage] = useState<PageState>({ key: "", visible: PICKER_PAGE_FIRST })
 
+  useEffect(() => {
+    useReportPickerFilters.getState().reset()
+  }, [])
+
   const enabled = useReportPickerFilters((s) => s.enabled)
   const nearbyOnly = useReportPickerFilters((s) => s.nearbyOnly)
   const toggleLayer = useReportPickerFilters((s) => s.toggle)
@@ -221,20 +228,20 @@ function ReportPickerSurface({
     if (pins.length > 0) useLinkedReportCards.getState().put(pins.map(pinToCardData))
   }, [pins])
 
+  const filter = useMemo(
+    () => ({
+      center,
+      categories: enabled,
+      nearbyOnly,
+      radiusM: PICKER_RADIUS_M,
+      query: debounced,
+    }),
+    [center, enabled, nearbyOnly, debounced],
+  )
+
   const rows = useMemo(
-    () =>
-      pickerRows({
-        pins,
-        center,
-        viewport,
-        ids: idSet,
-        linked: linkedSet,
-        categories: enabled,
-        nearbyOnly,
-        radiusM: PICKER_RADIUS_M,
-        query: debounced,
-      }),
-    [pins, center, viewport, idSet, linkedSet, enabled, nearbyOnly, debounced],
+    () => pickerRows({ ...filter, pins, viewport, ids: idSet, linked: linkedSet }),
+    [filter, pins, viewport, idSet, linkedSet],
   )
   const sections = useMemo(() => pickerSections(rows), [rows])
   const pageKey = `${debounced.trim().toLowerCase()}|${[...enabled].sort().join(",")}|${nearbyOnly ? 1 : 0}`
@@ -242,8 +249,13 @@ function ReportPickerSurface({
   const allItems = useMemo(() => pickerListItems(sections).items, [sections])
   const { items, shown, total } = useMemo(() => pickerListItems(sections, visible), [sections, visible])
   const counts = useMemo(() => categoryCounts(pins, viewport), [pins, viewport])
-  const keepSet = useMemo(() => new Set([...linkedSet, ...idSet]), [linkedSet, idSet])
-  const mapPins = useMemo(() => mapPinsFor(pins, keepSet, enabled), [pins, keepSet, enabled])
+  const chosenSet = useMemo(() => new Set([...linkedSet, ...idSet]), [linkedSet, idSet])
+  const keepKey = useMemo(
+    () => keptPinIds(pins, chosenSet, filter).join(","),
+    [pins, chosenSet, filter],
+  )
+  const keepSet = useMemo(() => new Set(keepKey ? keepKey.split(",") : []), [keepKey])
+  const mapPins = useMemo(() => mapPinsFor(pins, keepSet, filter), [pins, keepSet, filter])
   const pinById = useMemo(() => new Map(pins.map((pin) => [pin.id, pin])), [pins])
 
   const stateOf = useCallback(
@@ -258,8 +270,13 @@ function ReportPickerSurface({
       const code = reportShortCode(pin)
       const distance = distanceLabel(haversineMeters(center, pin) / METERS_PER_MILE)
       if (state === "idle") return t("pin_a11y", { title, category, code, distance })
-      const stateKey = state === "linked" && mode === "draft" ? "pin_state_added" : `pin_state_${state}`
-      return t("pin_a11y_state", { title, category, code, distance, state: t(stateKey) })
+      return t("pin_a11y_state", {
+        title,
+        category,
+        code,
+        distance,
+        state: t(`pin_state_${pinStateKey(state, mode)}`),
+      })
     },
     [center, mode, t, tEnums],
   )
@@ -347,12 +364,9 @@ function ReportPickerSurface({
 
   const onRegionChange = useCallback((bbox: BBox) => {
     setViewport(bbox)
-    setFetchRegion((loaded) => {
-      if (!shouldRefetch(bbox, loaded)) return loaded
-      const next = pickerFetchRegion(bbox)
-      setTooWide(next === null)
-      return next ?? loaded
-    })
+    const next = pickerFetchRegion(bbox)
+    setTooWide(next === null)
+    setFetchRegion((loaded) => (next !== null && shouldRefetch(bbox, loaded) ? next : loaded))
   }, [])
 
   const commit = useCallback(() => {
@@ -392,7 +406,8 @@ function ReportPickerSurface({
 
   const summary =
     diff.selected > 0 ? t("footer_selected", { count: diff.selected }) : t("footer_none")
-  const removedText = diff.removed > 0 ? t("footer_removed", { count: diff.removed }) : null
+  const removedText =
+    diff.removed > 0 ? t(footerRemovedKey(mode), { count: diff.removed }) : null
 
   useEffect(() => registerCommit(commit), [commit, registerCommit])
 

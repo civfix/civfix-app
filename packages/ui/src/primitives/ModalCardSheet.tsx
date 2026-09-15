@@ -161,9 +161,10 @@ export function ModalCardSheet({
               </Text>
               {fullBleed ? (
                 <Pressable
-                  onPress={onClose}
+                  onPress={backdropDismissDisabled ? undefined : onClose}
                   accessibilityRole="button"
                   accessibilityLabel={dismissLabel}
+                  accessibilityState={{ disabled: backdropDismissDisabled }}
                   hitSlop={8}
                   {...focusRingProps}
                   style={(state) => [

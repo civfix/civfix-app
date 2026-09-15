@@ -250,16 +250,34 @@ export interface PickerRow {
   rank: QueryRank
 }
 
-export interface PickerRowsInput {
-  pins: readonly ReportPinDTO[]
+export interface PickerFilter {
   center: LatLng
-  viewport: BBox | null
-  ids: ReadonlySet<string>
-  linked: ReadonlySet<string>
   categories: ReadonlySet<ReportCategory>
   nearbyOnly: boolean
   radiusM: number
   query: string
+}
+
+export interface PickerFit {
+  rank: QueryRank
+  distanceM: number
+  passes: boolean
+}
+
+export function pickerFit(pin: ReportPinDTO, filter: PickerFilter): PickerFit | null {
+  const rank = queryRank(pin, filter.query)
+  if (rank === null) return null
+  const distanceM = haversineMeters(filter.center, { lat: pin.lat, lng: pin.lng })
+  const withinRadius = !filter.nearbyOnly || distanceM <= filter.radiusM
+  const exact = rank === QUERY_RANK.exactId
+  return { rank, distanceM, passes: exact || (filter.categories.has(pin.category) && withinRadius) }
+}
+
+export interface PickerRowsInput extends PickerFilter {
+  pins: readonly ReportPinDTO[]
+  viewport: BBox | null
+  ids: ReadonlySet<string>
+  linked: ReadonlySet<string>
 }
 
 function compareById(a: PickerRow, b: PickerRow): number {
@@ -284,21 +302,19 @@ export function pickerRows(input: PickerRowsInput): PickerRow[] {
   const rows: PickerRow[] = []
   const searching = isSearching(input.query)
   for (const pin of input.pins) {
+    const fit = pickerFit(pin, input)
+    if (!fit) continue
     const state = pinState(pin.id, input.ids, input.linked)
     const wasLinked = state === "linked" || state === "unlinking"
     const pinned = state !== "idle"
-    if (!pinned && !input.categories.has(pin.category)) continue
-    const rank = queryRank(pin, input.query)
-    if (rank === null) continue
-    const distanceM = haversineMeters(input.center, { lat: pin.lat, lng: pin.lng })
-    if (!pinned && input.nearbyOnly && distanceM > input.radiusM) continue
+    if (!fit.passes && !pinned) continue
     const inView = input.viewport ? bboxHolds(input.viewport, pin) : true
     if (!pinned && !inView && !searching) continue
     rows.push({
       pin,
-      distanceM,
+      distanceM: fit.distanceM,
       state,
-      rank,
+      rank: fit.rank,
       place: searching ? "matches" : wasLinked ? "linked" : "view",
     })
   }
@@ -392,15 +408,31 @@ export function categoryCounts(
   return counts
 }
 
+export function keptPinIds(
+  pins: readonly ReportPinDTO[],
+  chosen: ReadonlySet<string>,
+  filter: PickerFilter,
+): string[] {
+  const out: string[] = []
+  for (const pin of pins) {
+    if (!chosen.has(pin.id)) continue
+    const fit = pickerFit(pin, filter)
+    if (fit && !fit.passes) out.push(pin.id)
+  }
+  return out.sort()
+}
+
 export function mapPinsFor(
   pins: readonly ReportPinDTO[],
-  linked: ReadonlySet<string>,
-  categories: ReadonlySet<ReportCategory>,
+  keep: ReadonlySet<string>,
+  filter: PickerFilter,
   max = PICKER_MAX_PINS,
 ): ReportPinDTO[] {
   const out: ReportPinDTO[] = []
   for (const pin of pins) {
-    if (!linked.has(pin.id) && !categories.has(pin.category)) continue
+    const fit = pickerFit(pin, filter)
+    if (!fit) continue
+    if (!fit.passes && !keep.has(pin.id)) continue
     out.push(pin)
     if (out.length >= max) break
   }
@@ -427,6 +459,33 @@ export function selectionDiff(
 }
 
 export type PickerMode = "draft" | "commit"
+
+export type PickerStateKey = PickerPinState | "added" | "removed"
+
+export function pinStateKey(state: PickerPinState, mode: PickerMode): PickerStateKey {
+  if (mode !== "draft") return state
+  if (state === "linked") return "added"
+  if (state === "unlinking") return "removed"
+  return state
+}
+
+export type PickerRowTagKey =
+  | "row_linked_tag"
+  | "row_added_tag"
+  | "row_unlinking_tag"
+  | "row_removed_tag"
+
+export function rowTagKey(state: PickerPinState, mode: PickerMode): PickerRowTagKey | null {
+  if (state === "linked") return mode === "draft" ? "row_added_tag" : "row_linked_tag"
+  if (state === "unlinking") return mode === "draft" ? "row_removed_tag" : "row_unlinking_tag"
+  return null
+}
+
+export type PickerFooterRemovedKey = "footer_removed" | "footer_deselected"
+
+export function footerRemovedKey(mode: PickerMode): PickerFooterRemovedKey {
+  return mode === "draft" ? "footer_deselected" : "footer_removed"
+}
 
 export type PickerActionKey = "action_done" | "action_link" | "action_save"
 

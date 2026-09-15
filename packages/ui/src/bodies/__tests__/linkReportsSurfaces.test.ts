@@ -21,6 +21,7 @@ const edit = code(read("../EditCleanupBody.tsx"))
 const detail = code(read("../EventDetailBody.tsx"))
 const hostBody = code(read("../host/HostModeBody.tsx"))
 const hostSheet = code(read("../host/LinkedReportsSheet.tsx"))
+const modalSheet = code(read("../../primitives/ModalCardSheet.tsx"))
 const bodiesIndex = code(read("../index.ts"))
 
 const eventForm = JSON.parse(read("../../i18n/locales/en/event-form.json")) as Record<string, unknown>
@@ -65,6 +66,13 @@ describe("the inline block is a summary plus a door to the map picker", () => {
     expect(surface).toContain("useReportSearch(")
     expect(surface).not.toMatch(/\bapi\./)
     expect(row).not.toMatch(/\bapi\./)
+  })
+
+  it("subscribes to the cards it actually names, not the whole record", () => {
+    expect(picker).not.toContain("useLinkedReportCards((s) => s.cards)")
+    expect(picker).toContain('useLinkedReportCards((s) => value.filter((id) => s.cards[id]).join(","))')
+    expect(picker).toContain("useMemo(() => {")
+    expect(picker).toContain("[knownKey]")
   })
 
   it("mounts the map picker only while the host asked for it, seeded from the draft", () => {
@@ -120,10 +128,40 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
   })
 
   it("caps the markers it hands the map and derives every pin state from one model", () => {
-    expect(surface).toContain("mapPinsFor(pins, keepSet, enabled)")
+    expect(surface).toContain("mapPinsFor(pins, keepSet, filter)")
     expect(surface).toContain("new Set([...linkedSet, ...idSet])")
     expect(surface).toContain("lookFor={pinPresentation}")
     expect(surface).toContain("pinState(id, idSet, linkedSet)")
+  })
+
+  it("filters rows and markers through ONE filter object, so a pin always has a row", () => {
+    expect(surface).toContain("pickerRows({ ...filter, pins, viewport, ids: idSet, linked: linkedSet })")
+    expect(surface).toMatch(/const filter = useMemo\(\s*\(\) => \(\{\s*center,\s*categories: enabled,\s*nearbyOnly,/)
+  })
+
+  it("keeps the marker memo off the selection - only pins the filter would hide are named", () => {
+    expect(surface).toContain("keptPinIds(pins, chosenSet, filter).join(\",\")")
+    expect(surface).toContain("useMemo(() => new Set(keepKey ? keepKey.split(\",\") : []), [keepKey])")
+    expect(surface).toContain("[pins, keepSet, filter]")
+    expect(surface).not.toContain("mapPinsFor(pins, new Set([...linkedSet, ...idSet])")
+  })
+
+  it("recomputes the zoom-in state on every region change, not only when it refetches", () => {
+    const region = surface.slice(surface.indexOf("const onRegionChange"), surface.indexOf("const listState"))
+    expect(region).toContain("const next = pickerFetchRegion(bbox)")
+    expect(region).toContain("setTooWide(next === null)")
+    expect(region).toContain("setFetchRegion((loaded) => (next !== null && shouldRefetch(bbox, loaded) ? next : loaded))")
+    expect(region.indexOf("setTooWide")).toBeLessThan(region.indexOf("setFetchRegion"))
+  })
+
+  it("mounts its map ONCE per open - the remount key is already 1 on the first visible render", () => {
+    expect(surface).toContain("useState(visible ? 1 : 0)")
+    expect(surface).toContain("useRef(visible)")
+    expect(surface).toContain("key={openCount}")
+  })
+
+  it("starts every event with the default layers instead of the last event's", () => {
+    expect(surface).toMatch(/useEffect\(\(\) => \{\s*useReportPickerFilters\.getState\(\)\.reset\(\)\s*\}, \[\]\)/)
   })
 
   it("a pin tap focuses then toggles; a row tap toggles and eases the map", () => {
@@ -182,8 +220,28 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
   })
 
   it("the row reads its tag from the mode so a draft never claims a report is linked", () => {
-    expect(pickerRow).toContain('t(mode === "draft" ? "row_added_tag" : "row_linked_tag")')
+    expect(pickerRow).toContain("rowTagKey(row.state, mode)")
+    expect(pickerRow).not.toContain("row_unlinking_tag")
     expect(pickerRow).toContain("disabled={atLimit && !chosen}")
+    expect(surface).toContain("pinStateKey(state, mode)")
+    expect(surface).toContain("t(footerRemovedKey(mode), { count: diff.removed })")
+  })
+
+  it("the all-layers chip says what the next tap will do", () => {
+    expect(chips).toContain('label={allOn ? t("layers_clear") : t("layers_all")}')
+    expect(chips).toContain('a11yLabel={allOn ? t("layers_clear_a11y") : t("layers_all_a11y")}')
+    expect(chips).toContain("onPress={allOn ? onClear : onAll}")
+  })
+
+  it("the full-bleed close button obeys the same busy lock as the backdrop", () => {
+    const closeBtn = modalSheet.slice(modalSheet.indexOf("{fullBleed ? ("), modalSheet.indexOf("iconMap.Close"))
+    expect(closeBtn).toContain("onPress={backdropDismissDisabled ? undefined : onClose}")
+    expect(closeBtn).toContain("accessibilityState={{ disabled: backdropDismissDisabled }}")
+  })
+
+  it("names the web map container a region, not just a label", () => {
+    expect(mapWeb).toContain('role="region"')
+    expect(mapWeb).toContain("aria-label={mapLabel}")
   })
 })
 
@@ -235,17 +293,28 @@ describe("host tools open the same picker in commit mode", () => {
     expect(hostSheet).toContain("value={saved}")
     expect(hostSheet).toContain("linked={linkedPins}")
     expect(hostSheet).toContain("busy={update.isPending}")
-    expect(hostSheet).toMatch(/if \(!readonly\) \{\s*return \(\s*<ReportPicker/)
+    expect(hostSheet).toMatch(/if \(!readonly && center\) \{\s*return \(\s*<ReportPicker/)
     expect(hostSheet).toContain("<ModalCardSheet")
     expect(hostSheet).toContain("readonly\n")
   })
 
-  it("sends ONLY the linked ids in the patch, optimistically, and rolls back on error", () => {
+  it("sends ONLY the linked ids in the patch, and hands the optimistic refs to the mutation", () => {
     expect(Object.keys(linkedReportsPatch(["a", "b"]))).toEqual(["linkedReportIds"])
-    expect(hostSheet).toContain("patch: linkedReportsPatch(ids)")
+    expect(hostSheet).toContain("patch: linkedReportsPatch(ids), linkedReports }")
     expect(hostSheet).toContain("optimisticLinkedRefs(")
-    expect(hostSheet).toContain("qc.getQueriesData<CleanupDTO>(filters)")
-    expect(hostSheet).toMatch(/onError: \(err\) => \{\s*for \(const \[key, data\] of snapshot\) qc\.setQueryData/)
+    expect(hostSheet).not.toContain("qc.setQueriesData")
+    expect(hostSheet).not.toContain("getQueriesData")
+    expect(hostSheet).not.toContain("snapshot")
+  })
+
+  it("without coordinates the sheet still opens, on the pin-first surface", () => {
+    expect(hostSheet).toContain("if (!readonly && center) {")
+    expect(hostSheet).toContain(
+      't(readonly ? "linked_reports_sheet.caption_readonly" : "linked_reports_sheet.caption_pin_first")',
+    )
+    expect(hostSheet).toContain("hasCoords: center !== null")
+    expect(hostSheet).toContain("[cleanup.lat, cleanup.lng]")
+    expect(catalogHas(hostMode, "linked_reports_sheet.caption_pin_first")).toBe(true)
   })
 
   it("invalidates the touched reports so their own page shows the event", () => {
@@ -288,7 +357,7 @@ describe("every key these surfaces name exists in en", () => {
   })
 
   it("the picker's dynamic keys resolve for every state and section", () => {
-    for (const state of ["selected", "linked", "unlinking", "added"]) {
+    for (const state of ["selected", "linked", "unlinking", "added", "removed"]) {
       expect(catalogHas(reportPicker, `pin_state_${state}`), state).toBe(true)
     }
     for (const place of ["linked", "added", "view", "matches"]) {
@@ -296,6 +365,30 @@ describe("every key these surfaces name exists in en", () => {
     }
     for (const action of ["action_done", "action_link", "action_save"]) {
       expect(catalogHas(reportPicker, action), action).toBe(true)
+    }
+    for (const tag of ["row_linked_tag", "row_added_tag", "row_unlinking_tag", "row_removed_tag"]) {
+      expect(catalogHas(reportPicker, tag), tag).toBe(true)
+    }
+    for (const footer of ["footer_removed", "footer_deselected"]) {
+      expect(catalogHas(reportPicker, footer), footer).toBe(true)
+    }
+  })
+
+  it("the retired search sheet's keys are gone from every event-form catalog", () => {
+    const dead = [
+      "linkedReports.search_all",
+      "linkedReports.search_all_a11y",
+      "linkedReports.search_hint",
+      "linkedReports.sheet_title",
+      "linkedReports.sheet_done",
+      "linkedReports.sheet_dismiss_a11y",
+      "linkedReports.showMore",
+      "linkedReports.showMoreA11y",
+    ]
+    for (const lng of ["en", "es", "de", "ko"]) {
+      const catalog = JSON.parse(read(`../../i18n/locales/${lng}/event-form.json`)) as Record<string, unknown>
+      for (const key of dead) expect(catalogHas(catalog, key), `${lng}: ${key}`).toBe(false)
+      expect(catalogHas(catalog, "linkedReports.pick_on_map"), lng).toBe(true)
     }
   })
 

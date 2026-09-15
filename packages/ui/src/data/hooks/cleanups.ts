@@ -18,6 +18,7 @@ import type {
   GuestRsvpCancelRequest,
   GuestRsvpCancelResponse,
   GetCleanupGuestsResponse,
+  LinkedReportRef,
 } from "@civfix/shared"
 import { useToast } from "../../primitives/toastContext"
 import { useT } from "../../i18n/useT"
@@ -265,24 +266,28 @@ export function useDuplicateCleanup() {
 export interface UpdateCleanupVars {
   id: string
   patch: Omit<UpdateCleanupRequest, "id">
+  linkedReports?: readonly LinkedReportRef[]
 }
 
-export function useUpdateCleanup() {
-  const api = useApi()
-  const qc = useQueryClient()
+export interface UpdateCleanupCtx {
+  prevDetails: ReadonlyArray<readonly [readonly unknown[], CleanupDTO | undefined]>
+}
 
-  return useMutation<
-    CleanupDTO,
-    unknown,
-    UpdateCleanupVars,
-    { prevDetails: ReadonlyArray<readonly [readonly unknown[], CleanupDTO | undefined]> }
-  >({
-    mutationFn: ({ id, patch }) => api.updateCleanup({ ...patch, id }),
-    onMutate: async ({ id, patch }) => {
+export function updateCleanupMutationOptions(
+  qc: QueryClient,
+  mutationFn: (vars: UpdateCleanupVars) => Promise<CleanupDTO>,
+): UseMutationOptions<CleanupDTO, unknown, UpdateCleanupVars, UpdateCleanupCtx> {
+  return {
+    mutationFn,
+    onMutate: async ({ id, patch, linkedReports }) => {
       await qc.cancelQueries(cleanupDetailFilters(id))
       const prevDetails = qc.getQueriesData<CleanupDTO>(cleanupDetailFilters(id))
       const scalarPatch = scalarCleanupPatch(patch)
-      patchCleanupDetails(qc, id, (prev) => ({ ...prev, ...scalarPatch }))
+      patchCleanupDetails(qc, id, (prev) => ({
+        ...prev,
+        ...scalarPatch,
+        ...(linkedReports ? { linkedReports: [...linkedReports] } : {}),
+      }))
       qc.setQueriesData<CleanupDTO[]>({ queryKey: CLEANUPS_LIST_PREFIX }, (prev) =>
         Array.isArray(prev)
           ? prev.map((c) => (c.id === id ? { ...c, ...scalarPatch } : c))
@@ -302,7 +307,16 @@ export function useUpdateCleanup() {
       invalidateCleanupLists(qc)
       invalidateHostedEventLists(qc)
     },
-  })
+  }
+}
+
+export function useUpdateCleanup() {
+  const api = useApi()
+  const qc = useQueryClient()
+
+  return useMutation(
+    updateCleanupMutationOptions(qc, ({ id, patch }) => api.updateCleanup({ ...patch, id })),
+  )
 }
 
 export interface CancelCleanupVars {

@@ -165,6 +165,7 @@
     "title": "Verknüpfte Meldungen",
     "caption": "Füge Meldungen hinzu oder entferne sie. Wer sie gemeldet hat, sieht das Event bei seiner Meldung.",
     "caption_readonly": "Dieses Event ist vorbei. Seine verknüpften Meldungen lassen sich nicht mehr ändern.",
+    "caption_pin_first": "Lege zuerst den Treffpunkt des Events fest. Meldungen werden auf der Karte darum herum ausgewählt.",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "close": "Schließen",

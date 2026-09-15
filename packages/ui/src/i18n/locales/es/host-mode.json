@@ -165,6 +165,7 @@
     "title": "Reportes vinculados",
     "caption": "Agrega o quita los reportes que atiende esta limpieza. Quien los envió verá el evento en su reporte.",
     "caption_readonly": "Este evento ya terminó. Sus reportes vinculados no se pueden cambiar.",
+    "caption_pin_first": "Primero fija el punto de encuentro del evento. Los reportes se eligen en el mapa alrededor de ese punto.",
     "save": "Guardar",
     "cancel": "Cancelar",
     "close": "Cerrar",
