@@ -16,8 +16,16 @@ import type {
   LinkedReportRef,
   PostComposeInput,
   FeedPageDTO,
+  GetApproximateLocationResponse,
 } from "@civfix/shared"
 import type { AuthState, ChatSocketLike, DataContextValue } from "./types"
+
+export const FAKE_APPROXIMATE_LOCATION: GetApproximateLocationResponse = {
+  lat: 34.0522,
+  lng: -118.2437,
+  radiusKm: 25,
+  source: "ip",
+}
 
 /**
  * A stand-in ApiClient whose every endpoint method rejects with a clear "fake" error, EXCEPT the social-
@@ -29,12 +37,17 @@ import type { AuthState, ChatSocketLike, DataContextValue } from "./types"
  */
 export function makeFakeApiClient(): ApiClient {
   const postMethods = makeFakePostApi()
+  const geoMethods = {
+    getApproximateLocation: (): Promise<GetApproximateLocationResponse> =>
+      Promise.resolve({ ...FAKE_APPROXIMATE_LOCATION }),
+  }
   return new Proxy(
     {},
     {
       get(_target, prop) {
         if (prop === "then") return undefined // not a thenable; avoid await-unwrapping the proxy itself
         const key = String(prop)
+        if (key in geoMethods) return (geoMethods as unknown as Record<string, unknown>)[key]
         if (key in postMethods) return (postMethods as unknown as Record<string, unknown>)[key]
         return (..._args: unknown[]): Promise<never> =>
           Promise.reject(

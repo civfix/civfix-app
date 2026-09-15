@@ -2,6 +2,10 @@ import { describe, it, expect, vi } from "vitest"
 import { createApiClient } from "../src/client/client.js"
 import { endpoints } from "../src/client/endpoints.js"
 import { AppError, ErrorCode } from "../src/types/errors.js"
+import {
+  GetApproximateLocationRequestSchema,
+  GetApproximateLocationResponseSchema,
+} from "../src/schemas/geo.js"
 
 const UUID = "123e4567-e89b-12d3-a456-426614174000"
 
@@ -18,7 +22,7 @@ function jsonResponse(
 describe("endpoint registry", () => {
   it("covers the full Phase 1 + admin surface with unique paths per method", () => {
     const names = Object.keys(endpoints)
-    expect(names.length).toBe(344)
+    expect(names.length).toBe(345)
     const seen = new Set<string>()
     for (const name of names) {
       const e = endpoints[name as keyof typeof endpoints]
@@ -34,6 +38,61 @@ describe("endpoint registry", () => {
       endpoints[n as keyof typeof endpoints].path.startsWith("/admin"),
     )
     expect(adminNames.length).toBe(107)
+  })
+
+  it("registers GET /geo/approximate as an optional, csrf-free v1 endpoint", () => {
+    const e = endpoints.getApproximateLocation
+    expect(e.method).toBe("GET")
+    expect(e.path).toBe("/geo/approximate")
+    expect(e.auth).toBe("optional")
+    expect(e.csrf).toBe(false)
+    expect(e.version).toBe("v1")
+    expect(e.request).toBe(GetApproximateLocationRequestSchema)
+    expect(e.response).toBe(GetApproximateLocationResponseSchema)
+  })
+
+  it("parses an approximate location and rejects an off-globe or zero-radius one", () => {
+    expect(
+      GetApproximateLocationResponseSchema.parse({
+        lat: 34.0522,
+        lng: -118.2437,
+        radiusKm: 25,
+        source: "ip",
+      }).source,
+    ).toBe("ip")
+    expect(
+      GetApproximateLocationResponseSchema.safeParse({
+        lat: 34.0522,
+        lng: -118.2437,
+        radiusKm: 25,
+        source: "region",
+      }).success,
+    ).toBe(true)
+    expect(
+      GetApproximateLocationResponseSchema.safeParse({
+        lat: 91,
+        lng: -118.2437,
+        radiusKm: 25,
+        source: "ip",
+      }).success,
+    ).toBe(false)
+    expect(
+      GetApproximateLocationResponseSchema.safeParse({
+        lat: 34.0522,
+        lng: -118.2437,
+        radiusKm: 0,
+        source: "ip",
+      }).success,
+    ).toBe(false)
+    expect(
+      GetApproximateLocationResponseSchema.safeParse({
+        lat: 34.0522,
+        lng: -118.2437,
+        radiusKm: 25,
+        source: "gps",
+      }).success,
+    ).toBe(false)
+    expect(GetApproximateLocationRequestSchema.safeParse({ lat: 1 }).success).toBe(false)
   })
 
   it("registers GET /map/cleanups as an optional, csrf-free endpoint", () => {

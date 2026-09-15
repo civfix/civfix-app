@@ -68,6 +68,12 @@ export type { ReverseLabelPoint } from "./reverseLabel"
 export { useNearbyCleanups, useFeedNotifications, NEARBY_RADIUS_M } from "./feed"
 
 export { useUserLocation } from "./location"
+export {
+  useApproximateLocation,
+  approximateLocationShouldRetry,
+  APPROXIMATE_LOCATION_STALE_MS,
+} from "./approximateLocation"
+export type { UseApproximateLocationOptions } from "./approximateLocation"
 
 export {
   useCleanups,

@@ -77,10 +77,9 @@
   },
   "location": {
     "title": "See what's happening near you?",
-    "body": "Your location centers the map on your block. It is used only while you use the app, and you can report without it.",
+    "body": "The map centers on your area from your internet connection unless you allow precise location. Location is used only while you use the app.",
     "use": "Use my location",
-    "address": "Enter an address",
-    "later": "Not now",
+    "approximate": "Continue with approximate location",
     "a11y_dismiss": "Close"
   }
 }

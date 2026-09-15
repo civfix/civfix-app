@@ -21,12 +21,26 @@ import {
   dropPinCameraTarget,
   captureDropPinCamera,
   setDropPinCameraRestorer,
+  MapPending,
+  resolveMapCenter,
+  shouldAdoptCenter,
+  PRECISE_ZOOM,
+  APPROX_ZOOM,
   type DetailEntry,
+  type MapCenterSource,
+  type MapCenterTarget,
   type MapHandle,
   type MapProps,
+  type RememberedCenter,
   type View as NavView,
 } from "@civfix/ui"
-import { queryKeys, useMapReports, useNearbyCleanups, useTotalUnread } from "@civfix/ui/data"
+import {
+  queryKeys,
+  useApproximateLocation,
+  useMapReports,
+  useNearbyCleanups,
+  useTotalUnread,
+} from "@civfix/ui/data"
 import { useHaptics } from "@civfix/ui/capabilities"
 import { mobileHostMapPlan } from "@/components/hostMapPlan"
 import {
@@ -37,14 +51,10 @@ import {
 import { LocationPrimerSheet } from "@/components/LocationPrimerSheet"
 import { useAndroidBackHandler } from "@/hooks/useAndroidBackHandler"
 import { markRootShellSeen } from "@/lib/rootShellSeen"
-import { PRECISE_ZOOM, APPROX_ZOOM } from "@/config"
-import { useUserLocation, type ResolvedLocation } from "@/hooks/useUserLocation"
+import { useUserLocation } from "@/hooks/useUserLocation"
 import { decideRegionFetch } from "@/lib/mapRegion"
-import {
-  initialCenterPlan,
-  locationPrimerDecision,
-  settleAfterPrimerPlan,
-} from "@/lib/locationPrimerPlan"
+import { readLastCenter, writeLastCenter } from "@/lib/lastCenter"
+import { locationPrimerDecision } from "@/lib/locationPrimerPlan"
 import { useLocationPrimerStore } from "@/store/locationPrimerStore"
 import { useOnboardingStore, ONBOARDING_VERSION } from "@/store/onboardingStore"
 import { useAuthStore } from "@/store/authStore"
@@ -122,12 +132,20 @@ export default function MapHomeScreen() {
   )
 
   const location = useUserLocation()
+  const approximate = useApproximateLocation({
+    enabled: location.permissionResolved && location.permission !== "granted",
+  })
+  const approximatePoint = useMemo<LatLng | null>(
+    () => (approximate.data ? { lat: approximate.data.lat, lng: approximate.data.lng } : null),
+    [approximate.data],
+  )
+  const nearPoint = location.coords ?? approximatePoint
 
   const queryClient = useQueryClient()
   useEffect(() => {
-    if (!location.coords) return
-    queryClient.setQueryData<LatLng | null>(queryKeys.userLocation, location.coords)
-  }, [location.coords, queryClient])
+    if (!nearPoint) return
+    queryClient.setQueryData<LatLng | null>(queryKeys.userLocation, nearPoint)
+  }, [nearPoint, queryClient])
 
   const reportsEnabled = userLayerCategories.length > 0
   const reports = useMapReports({
@@ -135,7 +153,7 @@ export default function MapHomeScreen() {
     categories: userLayerCategories,
     enabled: reportsEnabled,
   })
-  const cleanups = useNearbyCleanups(NEARBY_CLEANUPS_LIMIT, location.coords, { radiusM: null })
+  const cleanups = useNearbyCleanups(NEARBY_CLEANUPS_LIMIT, nearPoint, { radiusM: null })
 
   const unreadMessages = useTotalUnread()
 
@@ -182,14 +200,9 @@ export default function MapHomeScreen() {
 
   useAndroidBackHandler()
 
-  const centerOnUser = useCallback(
-    (target: ResolvedLocation, requestGeneration?: number) => {
-      flyTo(
-        target.lng,
-        target.lat,
-        target.precise ? PRECISE_ZOOM : APPROX_ZOOM,
-        requestGeneration,
-      )
+  const centerOnTarget = useCallback(
+    (target: MapCenterTarget, requestGeneration?: number) => {
+      flyTo(target.lng, target.lat, target.zoom, requestGeneration)
     },
     [flyTo],
   )
@@ -236,6 +249,11 @@ export default function MapHomeScreen() {
         state.viewport,
       )
       rememberMapViewport(mapLifecycleRef.current.lastViewport)
+      writeLastCenter({
+        lat: state.viewport.center.lat,
+        lng: state.viewport.center.lng,
+        zoom: state.viewport.zoom,
+      })
     })
   }, [])
 
@@ -256,26 +274,49 @@ export default function MapHomeScreen() {
   }, [])
 
   const resolveLocation = location.resolve
-  const resolveLocationWithoutPrompt = location.resolveWithoutPrompt
 
   const recalledViewport = recallMapViewport() !== null
   const initialCenterOwnedRef = useRef(recalledViewport)
-  const initialCenterLandedRef = useRef(recalledViewport)
+  const [rememberedCenter] = useState<RememberedCenter | null>(readLastCenter)
 
-  const centerFrom = useCallback(
-    async (resolver: () => Promise<ResolvedLocation | null>) => {
-      const requestGeneration = beginCameraRequest()
-      const target = await resolver()
-      if (!target) return
-      initialCenterLandedRef.current = true
-      centerOnUser(target, requestGeneration)
-    },
-    [beginCameraRequest, centerOnUser],
+  const centerPlan = useMemo(
+    () =>
+      resolveMapCenter({
+        precise: location.coords,
+        approximate: approximatePoint,
+        remembered: rememberedCenter,
+      }),
+    [location.coords, approximatePoint, rememberedCenter],
   )
-  const onLocate = useCallback(
-    () => centerFrom(resolveLocation),
-    [centerFrom, resolveLocation],
-  )
+
+  const [seedCenter, setSeedCenter] = useState<MapCenterTarget | null>(null)
+  const adoptedSourceRef = useRef<MapCenterSource | null>(null)
+  useEffect(() => {
+    if (seedCenter !== null || !centerPlan.center) return
+    adoptedSourceRef.current = centerPlan.source
+    setSeedCenter(centerPlan.center)
+  }, [seedCenter, centerPlan])
+
+  const approximatePointRef = useRef(approximatePoint)
+  useEffect(() => {
+    approximatePointRef.current = approximatePoint
+  }, [approximatePoint])
+  const onLocate = useCallback(() => {
+    const requestGeneration = beginCameraRequest()
+    void (async () => {
+      const precise = await resolveLocation()
+      const fallback = approximatePointRef.current
+      initialCenterOwnedRef.current = true
+      if (precise) {
+        adoptedSourceRef.current = "precise"
+        centerOnTarget({ ...precise, zoom: PRECISE_ZOOM }, requestGeneration)
+        return
+      }
+      if (!fallback) return
+      adoptedSourceRef.current = "approximate"
+      centerOnTarget({ ...fallback, zoom: APPROX_ZOOM }, requestGeneration)
+    })()
+  }, [beginCameraRequest, centerOnTarget, resolveLocation])
 
   const onboardingDone = useOnboardingStore((s) => s.completedVersion >= ONBOARDING_VERSION)
   const tourPresenting = useOnboardingStore((s) => s.presenting)
@@ -284,6 +325,7 @@ export default function MapHomeScreen() {
   const profileIncomplete = useAuthStore((s) => s.user?.profileComplete === false)
   const primerShown = useLocationPrimerStore((s) => s.shown)
   const markPrimerShown = useLocationPrimerStore((s) => s.markShown)
+  const setLocationChoice = useLocationPrimerStore((s) => s.setChoice)
   const [primerVisible, setPrimerVisible] = useState(false)
 
   const [routeFocused, setRouteFocused] = useState(false)
@@ -309,76 +351,36 @@ export default function MapHomeScreen() {
     routeFocused,
   })
 
-  const centerPlan = initialCenterPlan({
-    permission: location.permission,
-    permissionResolved: location.permissionResolved,
-    primerShown,
-  })
-
   useEffect(() => {
     if (initialCenterOwnedRef.current) return
-    if (centerPlan === "wait") return
+    if (seedCenter === null) return
+    const { center, source } = centerPlan
+    if (!center || !source) return
+    if (!shouldAdoptCenter(adoptedSourceRef.current, source)) return
+    adoptedSourceRef.current = source
     initialCenterOwnedRef.current = true
-    let landed = false
-    let cancelled = false
-    const requestGeneration = beginCameraRequest()
-    const resolver = centerPlan === "gps" ? resolveLocation : resolveLocationWithoutPrompt
-    void (async () => {
-      const target = await resolver()
-      if (cancelled || !target) return
-      landed = true
-      initialCenterLandedRef.current = true
-      centerOnUser(target, requestGeneration)
-    })()
-    return () => {
-      cancelled = true
-      if (!landed) initialCenterOwnedRef.current = false
-    }
-  }, [
-    centerPlan,
-    beginCameraRequest,
-    centerOnUser,
-    resolveLocation,
-    resolveLocationWithoutPrompt,
-  ])
+    centerOnTarget(center)
+  }, [centerPlan, seedCenter, centerOnTarget])
 
   useEffect(() => {
     if (primerPlan !== "prompt") return
     setPrimerVisible(true)
   }, [primerPlan])
 
-  const settleWithoutPrompt = useCallback(() => {
-    const shouldCenter =
-      settleAfterPrimerPlan({ landed: initialCenterLandedRef.current }) === "center"
-    const requestGeneration = shouldCenter ? beginCameraRequest() : undefined
-    void (async () => {
-      const target = await resolveLocationWithoutPrompt()
-      if (!target) return
-      if (!shouldCenter) return
-      initialCenterLandedRef.current = true
-      centerOnUser(target, requestGeneration)
-    })()
-  }, [beginCameraRequest, centerOnUser, resolveLocationWithoutPrompt])
-
   const answerPrimer = useCallback(() => {
     setPrimerVisible(false)
-    initialCenterOwnedRef.current = true
     markPrimerShown()
   }, [markPrimerShown])
 
   const onPrimerUseLocation = useCallback(() => {
     answerPrimer()
-    void centerFrom(resolveLocation)
-  }, [answerPrimer, centerFrom, resolveLocation])
-  const onPrimerEnterAddress = useCallback(() => {
+    setLocationChoice("precise")
+    onLocate()
+  }, [answerPrimer, onLocate, setLocationChoice])
+  const onPrimerApproximate = useCallback(() => {
     answerPrimer()
-    settleWithoutPrompt()
-    useNavStore.getState().selectView("search")
-  }, [answerPrimer, settleWithoutPrompt])
-  const onPrimerLater = useCallback(() => {
-    answerPrimer()
-    settleWithoutPrompt()
-  }, [answerPrimer, settleWithoutPrompt])
+    setLocationChoice("approximate")
+  }, [answerPrimer, setLocationChoice])
 
   useEffect(() => {
     setDropPinCameraRestorer((restoreTarget) => {
@@ -474,15 +476,15 @@ export default function MapHomeScreen() {
   const focusedPinId = active?.kind === "pin" ? (active.id ?? null) : null
   const focusedCleanupId = active?.kind === "cleanup" ? (active.id ?? null) : null
 
-  const mapElement = useMemo(
-    () => (
+  const mapElement = useMemo(() => {
+    const mapSeed = mapLifecycleRef.current.lastViewport ?? seedCenter
+    return mapSeed === null ? (
+      <MapPending />
+    ) : (
       <ManagedMap
         onMapHandle={setMapHandle}
         onInstanceRegionChange={onRegionChange}
-        initialCenter={
-          mapLifecycleRef.current.lastViewport ??
-          (location.coords ? { lat: location.coords.lat, lng: location.coords.lng } : null)
-        }
+        initialCenter={mapSeed}
         reports={pins}
         reportAggregates={reportAggregates}
         cleanups={eventsVisible ? cleanupItems : []}
@@ -497,26 +499,26 @@ export default function MapHomeScreen() {
         focusedPinId={focusedPinId}
         focusedCleanupId={focusedCleanupId}
       />
-    ),
-    [
-      setMapHandle,
-      onRegionChange,
-      location.coords,
-      location.permission,
-      pins,
-      reportAggregates,
-      cleanupItems,
-      eventsVisible,
-      onPressPin,
-      onPressCleanup,
-      onPressCluster,
-      onPressBlend,
-      onMapPress,
-      onLongPressMap,
-      focusedPinId,
-      focusedCleanupId,
-    ],
-  )
+    )
+  }, [
+    seedCenter,
+    setMapHandle,
+    onRegionChange,
+    location.coords,
+    location.permission,
+    pins,
+    reportAggregates,
+    cleanupItems,
+    eventsVisible,
+    onPressPin,
+    onPressCleanup,
+    onPressCluster,
+    onPressBlend,
+    onMapPress,
+    onLongPressMap,
+    focusedPinId,
+    focusedCleanupId,
+  ])
 
   const nestedShell = useNestedShellStore()
   const renderRootBody = useCallback(
@@ -552,8 +554,7 @@ export default function MapHomeScreen() {
       <LocationPrimerSheet
         visible={primerVisible}
         onUseLocation={onPrimerUseLocation}
-        onEnterAddress={onPrimerEnterAddress}
-        onLater={onPrimerLater}
+        onApproximate={onPrimerApproximate}
       />
     </>
   )

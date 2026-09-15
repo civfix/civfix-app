@@ -24,16 +24,22 @@ import {
   // The detail-panel focus camera's published target. Read (never written) here, so the one-time initial
   // center cannot fly away from a deep-linked detail - see the effect below.
   useMapFocus,
+  MapPending,
+  resolveMapCenter,
+  shouldAdoptCenter,
+  PRECISE_ZOOM,
+  APPROX_ZOOM,
+  type MapCenterSource,
+  type MapCenterTarget,
   type MapHandle,
   type MapLatLng,
   type DetailEntry,
 } from "@civfix/ui"
-import { useCleanups, useMapReports } from "@civfix/ui/data"
+import { useApproximateLocation, useCleanups, useMapReports } from "@civfix/ui/data"
 
 import { decideRegionFetch } from "@/features/map/region-fetch"
 import { readCameraSnapshot, writeCameraSnapshot } from "@/features/map/camera-snapshot"
-import { resolveInitialCenter, getBrowserPosition, PRECISE_ZOOM, APPROX_ZOOM } from "@/lib/locate"
-import { ipLocate } from "@civfix/shared/geocode"
+import { resolvePreciseCenter, getBrowserPosition } from "@/lib/locate"
 import { useMapRecenterStore } from "@/features/map/map-recenter"
 
 /**
@@ -115,44 +121,91 @@ export function HomeMap() {
     setCounts(reports.data?.counts ?? null)
   }, [reports.data, setCounts])
 
-  // One-time initial center: resolve the user's approximate location (precise browser geolocation, else
-  // IP) and fly there. We ALWAYS center on the best estimate, but light the user dot ONLY when the
-  // position is precise - an IP estimate centers the camera without dropping a dot. The zoom tracks the
-  // confidence: precise GPS lands tight (PRECISE_ZOOM), an IP estimate lands much wider (APPROX_ZOOM) so
-  // the user sees the whole metro instead of a wrong neighborhood. If neither resolves, keep the neutral view.
+  // THE CENTRE, RESOLVED - and there is no fallback coordinate left anywhere. Order (the shared
+  // `resolveMapCenter` model, which mobile runs too): precise browser geolocation, else the server's
+  // approximate location (`GET /geo/approximate`, which always answers), else the persisted boot camera
+  // as a holding frame. With none of the three the map is NOT MOUNTED at all (MapPending holds the space)
+  // rather than opening on a hardcoded point - the US centroid this used to fall back to is gone
+  // (@civfix/shared DECISIONS §45). The zoom tracks the confidence: precise lands tight (PRECISE_ZOOM),
+  // an approximate estimate lands much wider (APPROX_ZOOM) so the user sees the whole metro instead of a
+  // confidently-wrong neighborhood.
   //
-  // IT DOES NOT FLY OVER A FOCUSED DETAIL. This resolve is ASYNC (browser geolocation, else an IP lookup),
-  // so on a COLD deep link to a detail the two cameras race: the panel's `useMapFocus` easeTo runs the
-  // moment its body has coordinates, and an initial flyTo that lands AFTER it drags the map off to the
-  // user's own metro with the focused marker thousands of px off-screen - and nothing ever corrects it,
-  // because focus publishes once. Measured on this build before the guard: /cleanups/e1 landed on the
-  // clear-strip centre 1/4 cold loads at both 840x630 and 1440x900 (the marker at x=-5416 on the misses),
-  // while /pin/r-pothole passed 3-4/4 purely because its body resolves ~2s LATER than the fly. Reading the
-  // store at RESOLVE time (not at mount) is what makes the guard honest: whoever published last wins, so a
-  // focus that arrives after this has already flown still overrides it with its own easeTo.
+  // THE USER DOT is set ONLY by a precise fix - it marks where the user is, not where the camera points,
+  // and an approximate point is a centering guess that must never draw one.
   //
-  // The USER DOT is not part of the race and is set either way - it marks where the user is, not where the
-  // camera is pointed.
+  // IT DOES NOT FLY OVER A FOCUSED DETAIL. The centre resolves asynchronously, so on a COLD deep link to
+  // a detail the two cameras race: the panel's `useMapFocus` easeTo runs the moment its body has
+  // coordinates, and a flyTo that lands AFTER it drags the map off to the user's own metro with the
+  // focused marker thousands of px off-screen - and nothing ever corrects it, because focus publishes
+  // once. Measured on an earlier build without the guard: /cleanups/e1 landed on the clear-strip centre
+  // 1/4 cold loads at both 840x630 and 1440x900 (the marker at x=-5416 on the misses). Reading the store
+  // at ADOPT time (not at mount) is what makes the guard honest: whoever published last wins.
   //
   // AND IT DOES NOT FLY AT ALL WHEN THE MAP BOOTED FROM THE PERSISTED CAMERA. `bootCamera` already put
   // the first frame where the user last left the map (the standard maps-app boot), so flying to the
   // freshly-resolved location would yank the camera off it AND re-trigger the second region fetch this
-  // seed exists to eliminate. The resolve still runs - solely for the dot - and the Locate button
-  // remains the deliberate way to recenter. Only a first-ever visit (no snapshot) takes the flight.
+  // seed exists to eliminate. The resolve still runs - for the dot, and for the Locate button, which
+  // remains the deliberate way to recenter. Only a first-ever visit (no snapshot) ever takes a flight,
+  // and even then only to UPGRADE the source (remembered -> approximate -> precise), never to repeat or
+  // downgrade one (`shouldAdoptCenter`).
+  const [preciseCenter, setPreciseCenter] = React.useState<MapLatLng | null>(null)
   React.useEffect(() => {
     let cancelled = false
     void (async () => {
-      const target = await resolveInitialCenter()
-      if (cancelled || !target) return
-      if (target.precise) setUserLocation(target.point)
-      if (bootCamera) return
-      if (useMapFocus.getState().focus) return
-      mapRef.current?.flyTo(target.point.lat, target.point.lng, target.precise ? PRECISE_ZOOM : APPROX_ZOOM)
+      const precise = await resolvePreciseCenter()
+      if (cancelled || !precise) return
+      setPreciseCenter(precise)
+      setUserLocation(precise)
     })()
     return () => {
       cancelled = true
     }
-  }, [bootCamera])
+  }, [])
+
+  const approximate = useApproximateLocation()
+  const approximatePoint = React.useMemo<MapLatLng | null>(
+    () => (approximate.data ? { lat: approximate.data.lat, lng: approximate.data.lng } : null),
+    [approximate.data],
+  )
+
+  const approximatePointRef = React.useRef(approximatePoint)
+  React.useEffect(() => {
+    approximatePointRef.current = approximatePoint
+  }, [approximatePoint])
+
+  const centerPlan = React.useMemo(
+    () =>
+      resolveMapCenter({
+        precise: preciseCenter,
+        approximate: approximatePoint,
+        remembered: bootCamera,
+      }),
+    [preciseCenter, approximatePoint, bootCamera],
+  )
+
+  const [seedCenter, setSeedCenter] = React.useState<MapCenterTarget | null>(null)
+  const adoptedSourceRef = React.useRef<MapCenterSource | null>(null)
+  const seedSourceRef = React.useRef<MapCenterSource | null>(null)
+  React.useEffect(() => {
+    if (seedCenter !== null || !centerPlan.center) return
+    adoptedSourceRef.current = centerPlan.source
+    seedSourceRef.current = centerPlan.source
+    setSeedCenter(centerPlan.center)
+  }, [seedCenter, centerPlan])
+
+  const cameraOwnedRef = React.useRef(false)
+  React.useEffect(() => {
+    if (cameraOwnedRef.current) return
+    if (seedSourceRef.current === "remembered") return
+    if (seedCenter === null) return
+    const { center, source } = centerPlan
+    if (!center || !source) return
+    if (!shouldAdoptCenter(adoptedSourceRef.current, source)) return
+    adoptedSourceRef.current = source
+    cameraOwnedRef.current = true
+    if (useMapFocus.getState().focus) return
+    mapRef.current?.flyTo(center.lat, center.lng, center.zoom)
+  }, [centerPlan, seedCenter])
 
   // Register a Locate action into the cross-slot recenter bus (the shared MapControls' Locate button
   // reads it - it lives in a separate AppShell slot). Re-resolve a FRESH location and fly there: precise
@@ -162,13 +215,14 @@ export function HomeMap() {
   React.useEffect(() => {
     const recenter = () => {
       void (async () => {
+        cameraOwnedRef.current = true
         const precise = await getBrowserPosition()
         if (precise) {
           setUserLocation(precise)
           mapRef.current?.flyTo(precise.lat, precise.lng, PRECISE_ZOOM)
           return
         }
-        const estimate = await ipLocate()
+        const estimate = approximatePointRef.current
         if (estimate) mapRef.current?.flyTo(estimate.lat, estimate.lng, APPROX_ZOOM)
       })()
     }
@@ -315,10 +369,12 @@ export function HomeMap() {
     [layoutMode],
   )
 
+  if (seedCenter === null) return <MapPending />
+
   return (
     <SharedMap
       ref={mapRef}
-      initialCenter={bootCamera}
+      initialCenter={seedCenter}
       reports={pins}
       reportAggregates={reportAggregates}
       cleanups={cleanupItems}

@@ -40,9 +40,7 @@ import {
 } from "./clusterer"
 import type { MapProps, MapHandle } from "./types"
 
-const DEFAULT_CENTER: [number, number] = [-98.5795, 39.8283]
 const DEFAULT_ZOOM = 13
-const INITIAL_FALLBACK_ZOOM = 4
 const FOCUS_ZOOM = 16
 const CLUSTER_FLY_MS = 450
 const MARKER_PRESS_GUARD_MS = 350
@@ -67,7 +65,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     onPressMap,
     onLongPressMap,
     mapStyle,
-    initialCenter = null,
+    initialCenter,
   } = props
 
   const points = useMemo(
@@ -106,13 +104,10 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
 
   const initialCenterRef = useRef(initialCenter)
   const initialViewState = useMemo(
-    () =>
-      initialCenterRef.current
-        ? {
-            center: [initialCenterRef.current.lng, initialCenterRef.current.lat] as [number, number],
-            zoom: initialCenterRef.current.zoom ?? DEFAULT_ZOOM,
-          }
-        : { center: DEFAULT_CENTER, zoom: INITIAL_FALLBACK_ZOOM },
+    () => ({
+      center: [initialCenterRef.current.lng, initialCenterRef.current.lat] as [number, number],
+      zoom: initialCenterRef.current.zoom ?? DEFAULT_ZOOM,
+    }),
     [],
   )
 

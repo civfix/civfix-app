@@ -77,10 +77,9 @@
   },
   "location": {
     "title": "Sehen, was in deiner Nähe passiert?",
-    "body": "Dein Standort zentriert die Karte auf deinen Kiez. Er wird nur verwendet, während du die App nutzt, und melden kannst du auch ohne ihn.",
+    "body": "Die Karte zentriert sich anhand deiner Internetverbindung auf deine Gegend, sofern du den genauen Standort nicht erlaubst. Der Standort wird nur verwendet, während du die App nutzt.",
     "use": "Meinen Standort verwenden",
-    "address": "Adresse eingeben",
-    "later": "Jetzt nicht",
+    "approximate": "Mit ungefährem Standort fortfahren",
     "a11y_dismiss": "Schließen"
   }
 }

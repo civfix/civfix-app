@@ -20,7 +20,9 @@
  *      its own and a first fix can hang for many seconds (worst right after launch / indoors / on a
  *      simulator), and with `retry: false` + an infinite staleTime ONE slow fix was permanent for the
  *      session. The cap is the same 4 s the mobile app's own location hook already applies.
- *   2. `ipLocate()` - key-less, permissionless, city-accurate. This mirrors `resolveApproxCenter`
+ *   2. `fetchApproximateLocation()` - the civfix API's own key-less, permissionless, city-accurate
+ *      estimate (`GET /geo/approximate`), sharing one cache entry with `useApproximateLocation()` so the
+ *      map and every picker resolve it once. This mirrors `resolveApproxCenter`
  *      (bodies/ReportFlowBody.tsx) and AddressSearch's "use my location", i.e. the robust pattern
  *      @civfix/ui already shipped everywhere EXCEPT here. Coarse, and consumers should read it as
  *      "roughly which city", not "which street".
@@ -38,8 +40,9 @@
  */
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import type { LatLng } from "@civfix/shared"
-import { ipLocate } from "@civfix/shared/geocode"
 import { useGeolocation } from "../../capabilities"
+import { useApi } from "../context"
+import { fetchApproximateLocation } from "../fetchApproximateLocation"
 import { queryKeys } from "../keys"
 
 /** How long a FRESH device fix gets before we stop waiting and fall back to IP. */
@@ -71,6 +74,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
  */
 export function useUserLocation() {
   const geo = useGeolocation()
+  const api = useApi()
   const qc = useQueryClient()
   return useQuery<LatLng | null>({
     queryKey: queryKeys.userLocation,
@@ -84,12 +88,8 @@ export function useUserLocation() {
         ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)
         : null
       if (fix) return { lat: fix.latitude, lng: fix.longitude }
-      try {
-        const ip = await ipLocate()
-        if (ip) return ip
-      } catch {
-        // Offline / lookup unavailable: fall through rather than throw, so the section hides cleanly.
-      }
+      const approximate = await fetchApproximateLocation(api, qc)
+      if (approximate) return approximate
       // Never DOWNGRADE a point someone already put in this cache entry (see step 3 above).
       return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null
     },

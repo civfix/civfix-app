@@ -105,3 +105,20 @@ export {
   setDropPinCameraRestorer,
 } from "./dropPinFlow"
 export type { DropPinCameraRestorer } from "./dropPinFlow"
+export {
+  resolveMapCenter,
+  shouldAdoptCenter,
+  isRememberedCenter,
+  zoomForSource,
+  PRECISE_ZOOM,
+  APPROX_ZOOM,
+} from "./mapCenterModel"
+export type {
+  MapCenterSource,
+  MapCenterPoint,
+  MapCenterInput,
+  MapCenterTarget,
+  MapCenterPlan,
+  RememberedCenter,
+} from "./mapCenterModel"
+export { MapPending } from "./MapPending"

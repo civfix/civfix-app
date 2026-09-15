@@ -42,6 +42,10 @@ import {
   SuggestContactResponseSchema,
 } from "../schemas/map.js"
 import {
+  GetApproximateLocationRequestSchema,
+  GetApproximateLocationResponseSchema,
+} from "../schemas/geo.js"
+import {
   CreateCleanupRequestSchema,
   UpdateCleanupRequestSchema,
   CancelCleanupRequestSchema,
@@ -824,6 +828,16 @@ export const coreEndpoints = {
     response: ReportDTOSchema,
     auth: "required",
     csrf: true,
+    version: "v1",
+  }),
+
+  getApproximateLocation: def({
+    method: "GET",
+    path: "/geo/approximate",
+    request: GetApproximateLocationRequestSchema,
+    response: GetApproximateLocationResponseSchema,
+    auth: "optional",
+    csrf: false,
     version: "v1",
   }),
 

@@ -10,7 +10,7 @@ const viewfinder = read("../src/components/report/ReportViewfinder.tsx")
 function mapElementMemo(): string {
   const start = mapHome.indexOf("const mapElement = useMemo(")
   assert.ok(start > -1, "app/index.tsx no longer memoizes the map element")
-  const end = mapHome.indexOf("\n  )\n", start)
+  const end = mapHome.indexOf("\n  ])\n", start)
   assert.ok(end > start)
   return mapHome.slice(start, end)
 }

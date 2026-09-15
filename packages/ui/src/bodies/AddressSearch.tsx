@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { View, Pressable, ActivityIndicator, Platform, StyleSheet, type ViewStyle } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import { tokens } from "@civfix/shared/tokens"
-import { parseLatLng, ipLocate, type GeoSuggestion, type LatLng } from "@civfix/shared/geocode"
+import { parseLatLng, type GeoSuggestion, type LatLng } from "@civfix/shared/geocode"
 import { makeThemedStyles, useTheme, focusRingProps, webInputReset } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useGeolocation } from "../capabilities"
-import { useApi } from "../data"
+import { useApi, fetchApproximateLocation } from "../data"
 import { useMapViewport, viewportBias } from "../map/mapViewportStore"
 import { useT } from "../i18n"
 import { buildSuggestRequest } from "./addressSuggestRequest"
@@ -35,6 +36,7 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
   const { t } = useT("map-address")
   const geo = useGeolocation()
   const api = useApi()
+  const qc = useQueryClient()
   const [open, setOpen] = useState(false)
   const [focused, setFocused] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -48,16 +50,14 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
       proximityRef.current = (async () => {
         const pos = geo.isAvailable() ? await geo.getCurrentPosition().catch(() => null) : null
         if (pos) return { lat: pos.latitude, lng: pos.longitude }
-        try {
-          return await ipLocate()
-        } catch {
-          proximityRef.current = null
-          return null
-        }
+        const approximate = await fetchApproximateLocation(api, qc)
+        if (approximate) return approximate
+        proximityRef.current = null
+        return null
       })()
     }
     return proximityRef.current
-  }, [geo])
+  }, [geo, api, qc])
 
   const resolveBias = useCallback(async (): Promise<Bias> => {
     return (

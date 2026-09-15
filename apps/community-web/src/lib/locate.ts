@@ -1,10 +1,11 @@
 /**
- * Approximate map centering for the web app (no city hardcoded).
+ * Precise map centering for the web app (no city hardcoded, and no fallback coordinate at all).
  *
- * Resolves the user's location ONCE per session for the initial map camera: precise browser
- * geolocation first (prompts), then permissionless IP geolocation (@civfix/shared/geocode `ipLocate`),
- * else null so the caller keeps a neutral country-level view. The promise is module-cached so multiple
- * maps / remounts never re-prompt or re-fetch, and every surface shares the same resolved point.
+ * Resolves the user's PRECISE browser location ONCE per session for the initial map camera, else null.
+ * There is no neutral centre here any more: when the browser gives nothing, the caller reads the
+ * server's approximate location (`GET /geo/approximate` via @civfix/ui `useApproximateLocation`), which
+ * always answers. The promise is module-cached so multiple maps / remounts never re-prompt or re-fetch,
+ * and every surface shares the same resolved point.
  *
  * ONE DEVICE FIX PER APP, not one per subsystem. `navigator.geolocation.getCurrentPosition` used to be
  * called from TWO independent resolvers on a cold load - this module (the map camera, 6s timeout) and
@@ -14,23 +15,7 @@
  * underlying position request: both resolvers await the SAME promise under the SAME
  * {@link DEVICE_FIX_TIMEOUT_MS} policy, so a cold load settles once, together.
  */
-import { ipLocate, type LatLng } from "@civfix/shared/geocode"
-
-/** Neutral fallback when we cannot locate the user: the geographic center of the contiguous US. */
-export const NEUTRAL_CENTER: LatLng = { lat: 39.8283, lng: -98.5795 }
-/** Country-level zoom for the neutral first paint (before any location resolves). */
-export const NEUTRAL_ZOOM = 4
-/**
- * Zoom to settle on once a PRECISE (device GPS) location is known - tight, neighborhood level. Matches
- * the shared Map's Locate-button zoom so an initial precise center and a later Locate land at the same scale.
- */
-export const PRECISE_ZOOM = 13
-/**
- * Zoom to settle on for an APPROXIMATE (IP) location - substantially wider than PRECISE_ZOOM. An IP
- * estimate is only city-accurate and can be tens of km off, so we show the whole metro/region rather than
- * dropping the camera into a confidently-wrong neighborhood the user then has to zoom out of.
- */
-export const APPROX_ZOOM = 10
+import type { LatLng } from "@civfix/shared/geocode"
 
 /**
  * How long the ONE-SHOT device fix gets before the browser gives up and every consumer falls back
@@ -52,16 +37,6 @@ export const GEO_POSITION_OPTIONS: PositionOptions = {
   enableHighAccuracy: false,
   timeout: 8000,
   maximumAge: 600000,
-}
-
-/**
- * An initial-camera target plus WHERE it came from. The map centers on `point` either way, but only a
- * `precise: true` target (the browser's geolocation, permission granted) may light the user-location
- * dot - a `precise: false` IP estimate is a centering guess only and must NOT draw a dot.
- */
-export interface InitialCenter {
-  point: LatLng
-  precise: boolean
 }
 
 /**
@@ -125,24 +100,17 @@ export function getSharedBrowserFix(): Promise<BrowserFix> {
   return promise
 }
 
-let initialCenterPromise: Promise<InitialCenter | null> | null = null
+let preciseCenterPromise: Promise<LatLng | null> | null = null
 
 /**
- * Resolve an approximate center for the initial map camera, at most once per session. Per the product
- * decision the map PROMPTS for precise location on load, then falls back to IP, then null (the caller
- * then keeps the neutral view). Never rejects. The `precise` flag tells the caller whether the point is
- * the device's true location (dot-eligible) or just an IP estimate (center-only, no dot).
+ * The viewer's PRECISE position for the initial map camera, resolved at most once per session: the map
+ * prompts for browser geolocation on load and resolves to null on denial / timeout / no support. Never
+ * rejects, and never substitutes an estimate of its own - when this is null the caller asks the server
+ * for an approximate location instead (@civfix/ui `useApproximateLocation`), which always answers.
  */
-export function resolveInitialCenter(): Promise<InitialCenter | null> {
-  if (!initialCenterPromise) {
-    initialCenterPromise = (async () => {
-      const device = await getBrowserPosition()
-      if (device) return { point: device, precise: true }
-      const ip = await ipLocate()
-      return ip ? { point: ip, precise: false } : null
-    })()
-  }
-  return initialCenterPromise
+export function resolvePreciseCenter(): Promise<LatLng | null> {
+  if (!preciseCenterPromise) preciseCenterPromise = getBrowserPosition()
+  return preciseCenterPromise
 }
 
 /**

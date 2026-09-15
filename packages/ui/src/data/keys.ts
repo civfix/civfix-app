@@ -43,6 +43,7 @@ export const queryKeys = {
   followers: (id: string) => ["connections", "followers", id] as const,
   following: (id: string) => ["connections", "following", id] as const,
   userLocation: ["user-location"] as const,
+  approximateLocation: ["geo", "approximate"] as const,
 
   postsRoot: ["posts"] as const,
   homeFeedRoot: (filter: string) => ["posts", "feed", filter] as const,

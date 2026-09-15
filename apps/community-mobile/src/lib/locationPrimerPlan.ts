@@ -38,32 +38,3 @@ export function locationPrimerDecision({
   if (!routeFocused) return "wait"
   return primerShown ? "ip-only" : "prompt"
 }
-
-export type InitialCenterDecision = "wait" | "gps" | "ip"
-
-export interface InitialCenterInput {
-  permission: LocationPermission
-  permissionResolved: boolean
-  primerShown: boolean
-}
-
-export function initialCenterPlan({
-  permission,
-  permissionResolved,
-  primerShown,
-}: InitialCenterInput): InitialCenterDecision {
-  if (!permissionResolved) return "wait"
-  if (permission === "granted") return "gps"
-  if (permission === "denied") return "ip"
-  return primerShown ? "ip" : "wait"
-}
-
-export type SettleAfterPrimerDecision = "center" | "publish-only"
-
-export interface SettleAfterPrimerInput {
-  landed: boolean
-}
-
-export function settleAfterPrimerPlan({ landed }: SettleAfterPrimerInput): SettleAfterPrimerDecision {
-  return landed ? "publish-only" : "center"
-}
