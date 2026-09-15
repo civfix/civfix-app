@@ -1,5 +1,11 @@
 # @civfix/shared
 
+## 0.47.0
+
+### Minor Changes
+
+- 0225dfd: approximate location endpoint
+
 ## 0.46.0
 
 ### Minor Changes
