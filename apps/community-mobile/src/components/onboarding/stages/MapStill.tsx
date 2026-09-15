@@ -10,7 +10,7 @@ import {
 } from "react-native"
 import type { ColorSchemeName } from "@civfix/shared/tokens"
 import { DEFAULT_ATTRIBUTION, Text, basemapPaper } from "@civfix/ui"
-import { makeThemedStyles, useTheme } from "@/theme"
+import { makeThemedStyles, space, useTheme } from "@/theme"
 import {
   ONBOARDING_MAP_SCENES,
   pointInBox,
@@ -41,8 +41,6 @@ export interface MapStillFrame {
   at(point: GeoPoint): BoxPoint
 }
 
-export type AttributionEdge = "bottom" | "top"
-
 export function spotStyle(at: BoxPoint, offsetX: number, offsetY: number): ViewStyle {
   return {
     position: "absolute",
@@ -54,18 +52,19 @@ export function spotStyle(at: BoxPoint, offsetX: number, offsetY: number): ViewS
 export function MapStill({
   stage,
   style,
-  attributionEdge = "bottom",
+  attributionInset,
   children,
 }: {
   stage: OnboardingMapStage
   style?: StyleProp<ViewStyle>
-  attributionEdge?: AttributionEdge
+  attributionInset?: number
   children?: (frame: MapStillFrame) => React.ReactNode
 }) {
   const th = useTheme()
   const styles = useStyles()
   const scene = ONBOARDING_MAP_SCENES[stage]
   const [box, setBox] = useState<BoxSize>(EMPTY_BOX)
+  const inset = attributionInset ?? space["2"]
 
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout
@@ -90,10 +89,7 @@ export function MapStill({
           fadeDuration={0}
           accessible={false}
         />
-        <View
-          pointerEvents="none"
-          style={[styles.attribution, attributionEdge === "top" ? styles.attributionTop : styles.attributionBottom]}
-        >
+        <View pointerEvents="none" style={[styles.attribution, { bottom: inset }]}>
           <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
             {DEFAULT_ATTRIBUTION}
           </Text>
@@ -118,11 +114,5 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.surface,
     opacity: 0.88,
-  },
-  attributionBottom: {
-    bottom: t.space["2"],
-  },
-  attributionTop: {
-    top: t.space["2"],
   },
 }))

@@ -23,12 +23,10 @@ import {
   DEMO_REPORT_LNG,
   TRACK_CLUSTER_COUNT,
   TRACK_CLUSTER_MEMBERS,
-  TRACK_CLUSTER_SPOT,
-  TRACK_PINS,
   TRACK_ROW_PIN_INDEX,
   TRACK_STATUS_CYCLE,
 } from "../demoWorld"
-import type { BoxPoint } from "../onboardingMapScenes"
+import { TRACK_CLUSTER_SPOT, TRACK_PINS, type BoxPoint } from "../onboardingMapScenes"
 import { MapStill, spotStyle } from "./MapStill"
 import {
   GRAVITY_EASE,

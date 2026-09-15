@@ -6,37 +6,91 @@
       "sha256": "f087747f32711d2c1a2c89b4dca95fec2a63a7565215ad49caff3dd09428d444",
       "width": 780,
       "height": 680,
-      "bytes": 171458
+      "bytes": 171458,
+      "scene": {
+        "center": {
+          "lat": 34.1196,
+          "lng": -118.2035
+        },
+        "zoom": 16,
+        "widthPt": 390,
+        "heightPt": 340
+      }
     },
     "report-dark@2x.png": {
       "sha256": "c58be72c9373e473c0b9b1f1397c3313f86b5be45ce7d2053afe5c887db628a2",
       "width": 780,
       "height": 680,
-      "bytes": 91241
+      "bytes": 91241,
+      "scene": {
+        "center": {
+          "lat": 34.1196,
+          "lng": -118.2035
+        },
+        "zoom": 16,
+        "widthPt": 390,
+        "heightPt": 340
+      }
     },
     "track-light@2x.png": {
       "sha256": "fd452bc9491f866193b604221880923abeb6a8251c5d96b569affc96bf656e80",
       "width": 780,
       "height": 544,
-      "bytes": 117024
+      "bytes": 117024,
+      "scene": {
+        "center": {
+          "lat": 34.04,
+          "lng": -118.215
+        },
+        "zoom": 16,
+        "widthPt": 390,
+        "heightPt": 272
+      }
     },
     "track-dark@2x.png": {
       "sha256": "0bed0dc26fa54e27aace0108e3d546af26ce719e3114d937d85f38b3e5935fa2",
       "width": 780,
       "height": 544,
-      "bytes": 70028
+      "bytes": 70028,
+      "scene": {
+        "center": {
+          "lat": 34.04,
+          "lng": -118.215
+        },
+        "zoom": 16,
+        "widthPt": 390,
+        "heightPt": 272
+      }
     },
     "together-light@2x.png": {
-      "sha256": "a79914171ce61f69c4002cefb4ff718f4460fd65769916f64a46cbf92e3bf9f0",
+      "sha256": "40aa4982b88f1e8111a6fbba5d0d3778696a16673232ae5dcd425e134c708bbd",
       "width": 780,
-      "height": 280,
-      "bytes": 69699
+      "height": 250,
+      "bytes": 59644,
+      "scene": {
+        "center": {
+          "lat": 34.07333,
+          "lng": -118.2606
+        },
+        "zoom": 16,
+        "widthPt": 390,
+        "heightPt": 125
+      }
     },
     "together-dark@2x.png": {
-      "sha256": "a3a4e9a794cceeacad2f544acf19e59e8c3a21ca7b872c59a576cbc7ec1883c2",
+      "sha256": "58f8d5af8a83b67063acb8589a3e7f6d0eb50575045594af3e9f6ad699ec09da",
       "width": 780,
-      "height": 280,
-      "bytes": 39119
+      "height": 250,
+      "bytes": 32920,
+      "scene": {
+        "center": {
+          "lat": 34.07333,
+          "lng": -118.2606
+        },
+        "zoom": 16,
+        "widthPt": 390,
+        "heightPt": 125
+      }
     }
   }
 }

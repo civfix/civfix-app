@@ -1,3 +1,4 @@
+import type { ReportCategory } from "@civfix/shared"
 import type { ColorSchemeName } from "@civfix/shared/tokens"
 
 export type OnboardingMapStage = "report" | "track" | "together"
@@ -67,28 +68,38 @@ export const ONBOARDING_MAP_SCENES: Readonly<Record<OnboardingMapStage, Onboardi
   together: {
     stage: "together",
     place: "Echo Park Lake, boathouse shore",
-    center: { lat: 34.074, lng: -118.2606 },
+    center: { lat: 34.07333, lng: -118.2606 },
     zoom: 16,
     widthPt: STILL_WIDTH_PT,
-    heightPt: 140,
+    heightPt: 125,
   },
 }
 
 export const REPORT_PIN_SPOT: GeoPoint = { lat: 34.11888, lng: -118.20312 }
 
-export const TRACK_PIN_SPOTS: readonly GeoPoint[] = [
-  { lat: 34.04123, lng: -118.21291 },
-  { lat: 34.04097, lng: -118.21621 },
-  { lat: 34.04029, lng: -118.21203 },
-  { lat: 34.04068, lng: -118.21692 },
-  { lat: 34.04145, lng: -118.21751 },
-  { lat: 34.04048, lng: -118.21344 },
-  { lat: 34.0401, lng: -118.21517 },
+export interface TrackPin {
+  readonly category: ReportCategory
+  readonly spot: GeoPoint
+  readonly rise: number
+}
+
+export const TRACK_PINS: readonly TrackPin[] = [
+  { category: "trash", spot: { lat: 34.04123, lng: -118.21291 }, rise: 1.7 },
+  { category: "graffiti", spot: { lat: 34.04097, lng: -118.21621 }, rise: 1.1 },
+  { category: "hazard", spot: { lat: 34.04029, lng: -118.21203 }, rise: 2 },
+  { category: "water", spot: { lat: 34.04068, lng: -118.21692 }, rise: 1.3 },
+  { category: "encampment", spot: { lat: 34.04145, lng: -118.21751 }, rise: 1.5 },
+  { category: "recycling", spot: { lat: 34.04048, lng: -118.21344 }, rise: 1.2 },
+  { category: "other", spot: { lat: 34.0401, lng: -118.21517 }, rise: 1.8 },
 ]
 
 export const TRACK_CLUSTER_SPOT: GeoPoint = { lat: 34.04029, lng: -118.21416 }
 
 export const TOGETHER_EVENT_SPOT: GeoPoint = { lat: 34.07333, lng: -118.26001 }
+
+export function sceneAspectRatio(scene: OnboardingMapScene): number {
+  return scene.widthPt / scene.heightPt
+}
 
 export function mapArtFileName(
   stage: OnboardingMapStage,

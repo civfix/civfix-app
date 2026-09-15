@@ -331,9 +331,10 @@ Heights at Hollenbeck Park (track), Echo Park Lake (together) — shipped as sta
 `assets/onboarding/` so first launch needs no network, with `@civfix/ui` pins overlaid at real
 coordinates by the stages. `node scripts/onboarding-map-art.mjs` regenerates them from the scene table
 in `src/components/onboarding/onboardingMapScenes.ts` through the app's own tile URL rule and CARTO
-key, writes the palettised stills plus a `manifest.json` (sha256 + dimensions) that
-`tests/onboardingMapArt.test.ts` asserts against, and with `--preview <dir>` also writes copies with
-the pin spots marked for checking the framing after moving a scene.
+key, writes the palettised stills plus a `manifest.json` (sha256, dimensions and the scene centre,
+zoom and point size each still was cut from) that `tests/onboardingMapArt.test.ts` asserts against —
+so editing a scene without regenerating fails the suite — and with `--preview <dir>` also writes
+copies with the pin spots marked for checking the framing after moving a scene.
 
 ## Deferred / incompatible libraries
 

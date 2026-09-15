@@ -16,7 +16,7 @@ import {
   iconMap,
 } from "@civfix/ui"
 import { useLocale, useT } from "@civfix/ui/i18n"
-import { makeThemedStyles, useTheme } from "@/theme"
+import { makeThemedStyles, space, useTheme } from "@/theme"
 import {
   DEMO_ATTENDEES,
   DEMO_GOING_AFTER,
@@ -27,7 +27,7 @@ import {
   demoChatItems,
   demoCleanup,
 } from "../demoWorld"
-import { TOGETHER_EVENT_SPOT } from "../onboardingMapScenes"
+import { ONBOARDING_MAP_SCENES, TOGETHER_EVENT_SPOT, sceneAspectRatio } from "../onboardingMapScenes"
 import { MapStill, spotStyle } from "./MapStill"
 import {
   GRAVITY_EASE,
@@ -40,7 +40,7 @@ import {
   useStageStep,
   useStageTimeline,
 } from "./stageMotion"
-import { STAGE_ASPECT_RATIO, type StageProps } from "./stageTypes"
+import type { StageProps } from "./stageTypes"
 
 const TOTAL_MS = 5200
 
@@ -66,18 +66,20 @@ const PIN_DROP = STAGE_DROP_PX * 4
 const AVATAR_SIZE = 22
 const AVATAR_OVERLAP = -8
 const PROFILE_AVATAR_SIZE = 28
-const MAP_STRIP_MIN_HEIGHT = 54
+const STRIP_ASPECT_RATIO = sceneAspectRatio(ONBOARDING_MAP_SCENES.together)
+const CARD_OVERLAP = space["4"]
+const ATTRIBUTION_INSET = CARD_OVERLAP + space["2"]
 const GUEST_PATH = "/"
 
 function noop(): void {}
 
-function StageBubble({ item, showName }: { item: ChatItem; showName: boolean }) {
+function StageBubble({ item }: { item: ChatItem }) {
   return (
     <Bubble
       item={item}
-      showName={showName}
+      showName={false}
       groupStart
-      groupEnd
+      groupEnd={false}
       isGroup={false}
       canEdit={false}
       canDelete={false}
@@ -186,7 +188,7 @@ export function TogetherStage({ active, reduceMotion }: StageProps) {
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
-        <MapStill stage="together" style={styles.mapStrip} attributionEdge="top">
+        <MapStill stage="together" style={styles.mapStrip} attributionInset={ATTRIBUTION_INSET}>
           {(frame) => (
             <Animated.View
               style={[spotStyle(frame.at(TOGETHER_EVENT_SPOT), -PIN_SIZE / 2, -PIN_HEIGHT), pinStyle]}
@@ -227,11 +229,11 @@ export function TogetherStage({ active, reduceMotion }: StageProps) {
 
         <View style={styles.chat}>
           <Animated.View style={askStyle}>
-            <StageBubble item={chat[0]} showName={false} />
+            <StageBubble item={chat[0]} />
           </Animated.View>
           <View style={styles.replySlot}>
             <Animated.View style={replyStyle}>
-              <StageBubble item={chat[1]} showName />
+              <StageBubble item={chat[1]} />
             </Animated.View>
             {typingVisible ? (
               <Animated.View style={[StyleSheet.absoluteFill, typingStyle]}>
@@ -272,18 +274,17 @@ export function TogetherStage({ active, reduceMotion }: StageProps) {
 const useStyles = makeThemedStyles((t) => ({
   root: {
     width: "100%",
-    aspectRatio: STAGE_ASPECT_RATIO,
     overflow: "hidden",
   },
   inner: {
-    flex: 1,
+    alignSelf: "stretch",
   },
   mapStrip: {
-    flex: 1,
-    minHeight: MAP_STRIP_MIN_HEIGHT,
+    width: "100%",
+    aspectRatio: STRIP_ASPECT_RATIO,
   },
   card: {
-    marginTop: -t.space["4"],
+    marginTop: -CARD_OVERLAP,
   },
   goingRow: {
     flexDirection: "row",

@@ -7,7 +7,7 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { deflateSync, inflateSync } from "node:zlib"
 
-if (!process.features.typescript) {
+if (!process.execArgv.includes("--experimental-strip-types")) {
   const rerun = spawnSync(
     process.execPath,
     [
@@ -44,7 +44,7 @@ const {
   REPORT_PIN_SPOT,
   TOGETHER_EVENT_SPOT,
   TRACK_CLUSTER_SPOT,
-  TRACK_PIN_SPOTS,
+  TRACK_PINS,
   fractionInScene,
   mapArtFileName,
 } = scenes
@@ -327,12 +327,19 @@ function liftChannel(value, min) {
 
 const tileCache = new Map()
 
+function publicTileUrl(url) {
+  const parsed = new URL(url)
+  return `${parsed.origin}${parsed.pathname}`
+}
+
 async function fetchTile(url) {
   const cached = tileCache.get(url)
   if (cached) return cached
   const pending = (async () => {
     const response = await fetch(url, { headers: { "user-agent": USER_AGENT } })
-    if (!response.ok) throw new Error(`${response.status} ${response.statusText} for ${url}`)
+    if (!response.ok) {
+      throw new Error(`${response.status} ${response.statusText} for ${publicTileUrl(url)}`)
+    }
     return decodePng(new Uint8Array(await response.arrayBuffer()))
   })()
   tileCache.set(url, pending)
@@ -439,7 +446,7 @@ function drawSpot(image, fraction, colour) {
 
 function previewSpots(stage) {
   if (stage === "report") return [REPORT_PIN_SPOT]
-  if (stage === "track") return [...TRACK_PIN_SPOTS, TRACK_CLUSTER_SPOT]
+  if (stage === "track") return [...TRACK_PINS.map((pin) => pin.spot), TRACK_CLUSTER_SPOT]
   return [TOGETHER_EVENT_SPOT]
 }
 
@@ -473,6 +480,12 @@ for (const stage of ONBOARDING_MAP_STAGES) {
       width: still.width,
       height: still.height,
       bytes: png.length,
+      scene: {
+        center: scene.center,
+        zoom: scene.zoom,
+        widthPt: scene.widthPt,
+        heightPt: scene.heightPt,
+      },
     }
     console.log(
       `${name}  ${still.width}x${still.height}  ${(png.length / 1024).toFixed(0)} KB  (${still.tileCount} tiles, ${scene.place})`,

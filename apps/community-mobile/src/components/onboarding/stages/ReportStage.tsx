@@ -1,9 +1,11 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { StyleSheet, View } from "react-native"
 import Animated, {
   Extrapolation,
   interpolate,
+  useAnimatedReaction,
   useAnimatedStyle,
+  useSharedValue,
   type SharedValue,
 } from "react-native-reanimated"
 import { REPORT_TYPE_TO_CATEGORY } from "@civfix/shared"
@@ -115,6 +117,18 @@ export function ReportStage({ active, reduceMotion }: StageProps) {
   const th = useTheme()
   const styles = useStyles()
   const progress = useStageTimeline(active, reduceMotion, TOTAL_MS)
+  const landed = useSharedValue(false)
+
+  useEffect(() => {
+    if (!active) landed.value = false
+  }, [active, landed])
+
+  useAnimatedReaction(
+    () => progress.value >= W_PIN[1],
+    (dropped) => {
+      if (dropped) landed.value = true
+    },
+  )
 
   const cardStyle = useAnimatedStyle(() => {
     const enter = GRAVITY_EASE(segment(progress.value, W_CARD[0], W_CARD[1]))
@@ -131,7 +145,8 @@ export function ReportStage({ active, reduceMotion }: StageProps) {
   })
 
   const pinStyle = useAnimatedStyle(() => {
-    const drop = GRAVITY_EASE(segment(progress.value, W_PIN[0], W_PIN[1]))
+    const resting = landed.value && progress.value < W_PIN[0]
+    const drop = resting ? 1 : GRAVITY_EASE(segment(progress.value, W_PIN[0], W_PIN[1]))
     const squash = Math.sin(Math.PI * segment(progress.value, W_SQUASH[0], W_SQUASH[1]))
     const scaleY = 1 - squash * 0.1
     const scaleX = 1 + squash * 0.08

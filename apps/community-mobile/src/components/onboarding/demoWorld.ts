@@ -1,17 +1,5 @@
-import type {
-  ChatItem,
-  CleanupDTO,
-  PersonDTO,
-  ReportCategory,
-  ReportStatus,
-  ReportType,
-} from "@civfix/shared"
-import {
-  TOGETHER_EVENT_SPOT,
-  TRACK_CLUSTER_SPOT,
-  TRACK_PIN_SPOTS,
-  type GeoPoint,
-} from "./onboardingMapScenes"
+import type { ChatItem, CleanupDTO, PersonDTO, ReportStatus, ReportType } from "@civfix/shared"
+import { TOGETHER_EVENT_SPOT, TRACK_PINS } from "./onboardingMapScenes"
 
 export const DEMO_ORGANIZER: PersonDTO = {
   id: "onboarding-organizer",
@@ -65,36 +53,12 @@ export const DEMO_REPORT_ID = "onboarding-report"
 export const REPORT_STAGE_TYPES: readonly ReportType[] = ["dump", "graffiti", "pavement"]
 export const REPORT_STAGE_SELECTED_INDEX = 1
 
-export interface DemoPin {
-  readonly category: ReportCategory
-  readonly spot: GeoPoint
-  readonly rise: number
-}
-
-const TRACK_PIN_CATEGORIES: readonly ReportCategory[] = [
-  "trash",
-  "graffiti",
-  "hazard",
-  "water",
-  "encampment",
-  "recycling",
-  "other",
-]
-const TRACK_PIN_RISES: readonly number[] = [1.7, 1.1, 2, 1.3, 1.5, 1.2, 1.8]
-
-export const TRACK_PINS: readonly DemoPin[] = TRACK_PIN_CATEGORIES.map((category, i) => ({
-  category,
-  spot: TRACK_PIN_SPOTS[i],
-  rise: TRACK_PIN_RISES[i],
-}))
-
 export const TRACK_CLUSTER_MEMBERS: readonly number[] = [5, 6]
 export const TRACK_CLUSTER_COUNT = 3
-export { TRACK_CLUSTER_SPOT }
 
 export const TRACK_ROW_PIN_INDEX = 0
-export const DEMO_REPORT_LAT = TRACK_PIN_SPOTS[TRACK_ROW_PIN_INDEX].lat
-export const DEMO_REPORT_LNG = TRACK_PIN_SPOTS[TRACK_ROW_PIN_INDEX].lng
+export const DEMO_REPORT_LAT = TRACK_PINS[TRACK_ROW_PIN_INDEX].spot.lat
+export const DEMO_REPORT_LNG = TRACK_PINS[TRACK_ROW_PIN_INDEX].spot.lng
 
 export const TRACK_STATUS_CYCLE: readonly ReportStatus[] = ["published", "in_progress", "resolved"]
 
