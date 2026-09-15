@@ -60,6 +60,7 @@ import { nativeHaptics } from "@/lib/nativeHaptics"
 import { nativePush } from "@/lib/nativePush"
 import { nativeSecureStore } from "@/lib/nativeSecureStore"
 import { getAppearancePreference, resolveColorScheme, themeFor } from "@/theme"
+import { LAUNCH_SCHEME, launchTheme } from "@/boot/launchTheme"
 import { useAppFonts } from "@/theme/fonts"
 import { QueryProvider } from "@/query/QueryProvider"
 import { queryClient } from "@/query/client"
@@ -105,12 +106,8 @@ setAppearancePreferenceStore({
   subscribe: (l) => useAppearanceStore.subscribe(l),
 })
 
-const bootTheme = themeFor(
-  resolveColorScheme(useAppearanceStore.getState().preference, Appearance.getColorScheme()),
-)
-
 void SplashScreen.preventAutoHideAsync()
-void SystemUI.setBackgroundColorAsync(bootTheme.colors.bg)
+void SystemUI.setBackgroundColorAsync(launchTheme.colors.bg)
 
 const SPLASH_WATCHDOG_MS = 5000
 const MIN_SPLASH_MS = 1700
@@ -120,14 +117,14 @@ function currentTheme(): Theme {
   return themeFor(resolveColorScheme(getAppearancePreference(), Appearance.getColorScheme()))
 }
 
-function useBootScheme(): ColorSchemeName {
+function useAppearanceScheme(): ColorSchemeName {
   const preference = useAppearanceStore((s) => s.preference)
   const system = useColorScheme()
   return resolveColorScheme(preference, system)
 }
 
-function useBootTheme(): Theme {
-  const scheme = useBootScheme()
+function useAppearanceTheme(): Theme {
+  const scheme = useAppearanceScheme()
   const theme = useMemo(() => themeFor(scheme), [scheme])
 
   useEffect(() => {
@@ -138,12 +135,10 @@ function useBootTheme(): Theme {
 }
 
 function BootBackdrop() {
-  const theme = useBootTheme()
-
   return (
     <>
-      <StatusBar style={theme.scheme === "dark" ? "light" : "dark"} />
-      <View style={[styles.gate, { backgroundColor: theme.colors.bg }]} />
+      <StatusBar style={launchTheme.scheme === "dark" ? "light" : "dark"} />
+      <View style={styles.gate} />
     </>
   )
 }
@@ -437,8 +432,9 @@ function RealtimeChannel(): null {
   return null
 }
 
-function RootStack() {
-  const scheme = useColorSchemeName()
+function RootStack({ launchGate }: { launchGate: boolean }) {
+  const liveScheme = useColorSchemeName()
+  const scheme = launchGate ? LAUNCH_SCHEME : liveScheme
   const t = useTheme()
 
   useEffect(() => {
@@ -566,7 +562,7 @@ export default function RootLayout() {
             <MediaLightboxProvider>
             <SharePostProvider>
             <BottomSheetModalProvider>
-              <RootStack />
+              <RootStack launchGate={gateMounted} />
               <OnboardingGate gateActive={gateActive} loadingGateMounted={gateMounted} />
               <FirstRunGate />
               {gateMounted ? (
@@ -612,7 +608,7 @@ function crashCopy(): typeof CRASH_COPY {
 
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   const copy = useMemo(crashCopy, [])
-  const theme = useBootTheme()
+  const theme = useAppearanceTheme()
   const crash = useMemo(() => crashStyles(theme), [theme])
 
   const onRetry = useCallback(() => {
@@ -643,6 +639,7 @@ const styles = StyleSheet.create({
   },
   gate: {
     flex: 1,
+    backgroundColor: launchTheme.colors.bg,
   },
   loadingGate: {
     zIndex: 60,

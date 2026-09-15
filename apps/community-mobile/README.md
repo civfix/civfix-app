@@ -141,7 +141,7 @@ OTA update. The local build number comes from `ios.buildNumber` in `app.config.j
 `ios/` and `android/` are gitignored, so the native launch screen is **whatever the last local
 prebuild generated**, not what `assets/` and `app.config.js` currently say. `expo-splash-screen`
 copies `assets/splash.png` into
-`ios/civfix/Images.xcassets/SplashScreenLogo.imageset/{image,dark_image}@{1,2,3}x.png` and writes
+`ios/civfix/Images.xcassets/SplashScreenLogo.imageset/image@{1,2,3}x.png` and writes
 the paper background into the storyboard; nothing re-checks either afterwards. A stale prebuild
 therefore ships the *old* logo on the *new* background — which is how an opaque splash asset from
 an earlier revision shipped a visible box around the logo in both appearances long after
@@ -151,7 +151,7 @@ After changing any of these, re-run the prebuild before you archive:
 
 - `assets/splash.png` (or any other native asset: icon, adaptive icon)
 - the `splash` / `expo-splash-screen` blocks in `app.config.js`
-- the paper tokens in `@civfix/shared` that `SPLASH_BG_LIGHT` / `SPLASH_BG_DARK` derive from
+- the paper token in `@civfix/shared` that `SPLASH_BG_LIGHT` derives from
 
 ```sh
 cd apps/community-mobile
@@ -164,24 +164,31 @@ the change up; a hand-run `expo run:ios` or an Xcode archive against an existing
 Use `--clean` when you want the native project regenerated from scratch rather than re-synced in
 place — it is the only way to be sure no earlier generated file survives.
 
+The launch screen is light-only, by product decision (2026-09-14): the static native screen and the
+JS wordmark screen that follows it are both painted on light paper in every appearance, so the two
+match instead of one switching a beat before the other. That is why `app.config.js` carries no `dark`
+splash block — not on `splash`, not on the `expo-splash-screen` plugin tuple — and why
+`src/boot/launchTheme.ts` pins `LAUNCH_SCHEME` to `light` for `LoadingSplash`, `BootOfflineGate` and
+the pre-fonts backdrop in `app/_layout.tsx`. The app proper is unaffected: `userInterfaceStyle` stays
+`automatic` and every shell frame from `RootStack` onward follows the device.
+
 There is no dark variant of the artwork and none is needed. `assets/splash.png` is the wordmark on a
-fully transparent canvas, so the same file serves both appearances; what changes is the field behind
-it. The prebuild writes `SPLASH_BG_LIGHT` and `SPLASH_BG_DARK` into
-`ios/civfix/Images.xcassets/SplashScreenBackground.colorset` as two entries — the second carrying a
-`luminosity: dark` appearance — and the storyboard paints its container view with that colorset *by
-name* (`<color key="backgroundColor" name="SplashScreenBackground"/>`), which is what lets UIKit
-resolve it per appearance before any JS runs. `Info.plist` must keep `UIUserInterfaceStyle` at
-`Automatic`; `expo-splash-screen` sets it whenever a `dark` block exists, and forcing
-`userInterfaceStyle` to anything but `automatic` in `app.config.js` would pin the launch screen to
-one appearance. Point `dark.image` at the same transparent asset: without it the prebuild emits no
-`dark_image` entries at all.
+fully transparent canvas; what sits behind it is `SPLASH_BG_LIGHT`, which the prebuild writes into
+`ios/civfix/Images.xcassets/SplashScreenBackground.colorset` as a single `universal` entry with no
+`luminosity` appearance, and the storyboard paints its container view with that colorset *by name*
+(`<color key="backgroundColor" name="SplashScreenBackground"/>`). With one appearance in the
+colorset UIKit resolves the same paper in light and dark. `Info.plist` still keeps
+`UIUserInterfaceStyle` at `Automatic` — that key governs the app, not the launch screen, and forcing
+`userInterfaceStyle` to anything else in `app.config.js` would pin the whole app to one appearance,
+not just the splash.
 
 `tests/splashAsset.test.ts` guards this. It decodes `assets/splash.png` and asserts the corners are
 fully transparent and that most of the image is, and — when a local `ios/` prebuild exists — decodes
-the generated `@3x` imageset entries and asserts the same, checks that the colorset carries both
-paper appearances, that the imageset carries a dark entry at every scale, that the storyboard binds
-the named colour, and that `Info.plist` keeps `Automatic` — so a stale or appearance-less prebuild
-fails the test suite before anyone archives. CI has no `ios/`, so that half simply skips there.
+the generated `@3x` imageset entry and asserts the same, checks that the colorset holds exactly one
+light appearance, that the imageset lists no dark entry and no `dark_image` file survives on disk,
+that the storyboard binds the named colour, and that `Info.plist` keeps `Automatic` — so a stale
+prebuild carrying the old two-appearance splash fails the test suite before anyone archives. CI has
+no `ios/`, so that half simply skips there.
 
 iOS also caches the rendered launch screen as a snapshot, and that snapshot outlives the build it
 came from: a simulator that has been shown the old splash keeps replaying it after `simctl uninstall`
@@ -372,6 +379,7 @@ job), plus `npx expo-doctor` from this directory. Deploying is `.github/workflow
 before that workflow, a local `scripts/store-build.sh` run or a hand-driven archive runs.
 
 Launch-screen coverage splits along that line: `tests/splashConfig.test.ts` asserts the resolved
-`app.config.js` (automatic appearance, both paper backgrounds, the plugin's own `dark` block) and so
-runs in CI, while the `ios/` prebuild assertions in `tests/splashAsset.test.ts` skip anywhere without
-a local prebuild.
+`app.config.js` (automatic appearance for the app, the light paper background, and no `dark` block
+anywhere) and `tests/bootTheme.test.ts` asserts the JS boot screen is pinned to the launch scheme,
+so both run in CI, while the `ios/` prebuild assertions in `tests/splashAsset.test.ts` skip anywhere
+without a local prebuild.

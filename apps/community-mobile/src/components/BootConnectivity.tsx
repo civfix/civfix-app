@@ -4,6 +4,7 @@ import { Icon, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { focusRingProps, makeThemedStyles, useTheme } from "@/theme"
 import { retrySessionRestore } from "@/hooks/useBootGate"
+import { LAUNCH_SCHEME, launchTheme } from "@/boot/launchTheme"
 import { useAuthStore } from "@/store/authStore"
 
 const MIN_TOUCH_TARGET = 44
@@ -11,8 +12,8 @@ const NOTICE_TILE = 40
 
 export function BootOfflineGate() {
   const { t } = useT("mobile-branding")
-  const th = useTheme()
-  const styles = useStyles()
+  const th = launchTheme
+  const styles = useStyles.for(LAUNCH_SCHEME)
   const signOut = useAuthStore((s) => s.signOut)
   const onSignOut = useCallback(() => {
     void signOut()
@@ -23,7 +24,7 @@ export function BootOfflineGate() {
       <View style={styles.tile}>
         <Icon icon={iconMap.CloudOff} size={22} color={th.colors.textMuted} />
       </View>
-      <Text variant="title" style={styles.title}>
+      <Text variant="title" color={th.colors.text} style={styles.title}>
         {t("boot.offline_title")}
       </Text>
       <Text variant="body" color={th.colors.textMuted} style={styles.body}>

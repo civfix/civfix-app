@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs"
 import { createRequire } from "node:module"
 import { fileURLToPath } from "node:url"
 import { test } from "node:test"
-import { tokens, darkColor } from "@civfix/shared/tokens"
+import { tokens } from "@civfix/shared/tokens"
 import { decodeRgbaPng, pixelAt, transparentShare } from "./helpers/png.ts"
 
 const require = createRequire(import.meta.url)
@@ -20,7 +20,6 @@ const COLORSET = new URL(
 const STORYBOARD = new URL("ios/civfix/SplashScreen.storyboard", appDir)
 const INFO_PLIST = new URL("ios/civfix/Info.plist", appDir)
 const LIGHT = tokens.color.neutral.paper
-const DARK = darkColor.neutral.paper
 
 function load(relative: string) {
   return decodeRgbaPng(readFileSync(fileURLToPath(new URL(relative, appDir))))
@@ -88,14 +87,8 @@ test("the splash asset has no baked background behind the logo", () => {
   )
 })
 
-test("both appearances point at the transparent splash asset", () => {
-  const plugin = splashPluginOptions()
-  const references = [
-    appConfig.splash.image,
-    appConfig.splash.dark.image,
-    plugin.image,
-    plugin.dark.image,
-  ]
+test("the one appearance the config declares points at the transparent splash asset", () => {
+  const references = [appConfig.splash.image, splashPluginOptions().image]
   for (const reference of references) {
     assert.equal(reference, SPLASH_SOURCE)
     assertTransparentCorners(load(reference), reference)
@@ -108,42 +101,45 @@ test(
   "the generated ios imageset carries the transparent logo, not a stale opaque prebuild",
   { skip: skipWithoutPrebuild },
   () => {
-    for (const name of ["image@3x.png", "dark_image@3x.png"]) {
-      const png = decodeRgbaPng(readFileSync(fileURLToPath(new URL(name, IMAGESET))))
-      assertTransparentCorners(png, `SplashScreenLogo.imageset/${name}`)
-    }
+    const png = decodeRgbaPng(readFileSync(fileURLToPath(new URL("image@3x.png", IMAGESET))))
+    assertTransparentCorners(png, "SplashScreenLogo.imageset/image@3x.png")
   },
 )
 
 test(
-  "the generated ios background colorset carries both paper appearances",
+  "the generated ios background colorset carries the light paper and nothing else",
   { skip: skipWithoutPrebuild },
   () => {
     const { colors } = JSON.parse(readGenerated(COLORSET))
-    const light = colors.find((entry: Record<string, any>) => !isDarkEntry(entry))
-    const dark = colors.find(isDarkEntry)
-    assert.ok(light, "SplashScreenBackground has no default appearance")
-    assert.ok(
-      dark,
-      "SplashScreenBackground has no dark appearance; the launch screen cannot follow the device",
+    assert.equal(
+      colors.length,
+      1,
+      "SplashScreenBackground must hold a single appearance; a second one reopens dark mode",
     )
-    assertComponents(light.color.components, LIGHT, "SplashScreenBackground light")
-    assertComponents(dark.color.components, DARK, "SplashScreenBackground dark")
+    assert.equal(colors.filter(isDarkEntry).length, 0)
+    assertComponents(colors[0].color.components, LIGHT, "SplashScreenBackground light")
   },
 )
 
 test(
-  "the generated ios imageset carries a dark logo entry at every scale",
+  "the generated ios imageset carries no dark logo entry, and no dark file on disk",
   { skip: skipWithoutPrebuild },
   () => {
     const { images } = JSON.parse(readGenerated(new URL("Contents.json", IMAGESET)))
-    const dark = images.filter(isDarkEntry)
-    assert.deepEqual(
-      dark.map((entry: Record<string, any>) => entry.scale).sort(),
-      ["1x", "2x", "3x"],
-      "SplashScreenLogo is missing a dark appearance at some scale",
-    )
-    for (const entry of dark) assert.match(entry.filename, /^dark_image/)
+    assert.equal(images.filter(isDarkEntry).length, 0)
+    for (const entry of images) {
+      assert.ok(
+        typeof entry.filename !== "string" || !entry.filename.startsWith("dark_image"),
+        `SplashScreenLogo still lists ${entry.filename}`,
+      )
+    }
+    for (const name of ["dark_image.png", "dark_image@2x.png", "dark_image@3x.png"]) {
+      assert.equal(
+        existsSync(fileURLToPath(new URL(name, IMAGESET))),
+        false,
+        `a stale ${name} survives in the imageset`,
+      )
+    }
   },
 )
 
@@ -161,7 +157,7 @@ test(
 )
 
 test(
-  "the generated Info.plist lets the launch screen follow the device appearance",
+  "the generated Info.plist leaves the app itself on the device appearance",
   { skip: skipWithoutPrebuild },
   () => {
     const plist = readGenerated(INFO_PLIST)

@@ -1,5 +1,5 @@
 // @ts-check
-const { tokens, darkColor } = require("@civfix/shared/tokens")
+const { tokens } = require("@civfix/shared/tokens")
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? null
 
@@ -20,7 +20,6 @@ const GOOGLE_IOS_URL_SCHEME =
 const CARTO_API_KEY = process.env.EXPO_PUBLIC_CARTO_API_KEY ?? "cb1_2800_1_9e1f147ec5d25247379fe9cf"
 
 const SPLASH_BG_LIGHT = tokens.color.neutral.paper
-const SPLASH_BG_DARK = darkColor.neutral.paper
 
 const APP_LINK_HOSTS = ["civfix.org", "www.civfix.org"]
 
@@ -80,11 +79,6 @@ module.exports = ({ config }) => ({
     image: "./assets/splash.png",
     resizeMode: "contain",
     backgroundColor: SPLASH_BG_LIGHT,
-    dark: {
-      image: "./assets/splash.png",
-      resizeMode: "contain",
-      backgroundColor: SPLASH_BG_DARK,
-    },
   },
   assetBundlePatterns: ["**/*"],
   ios: {
@@ -251,12 +245,6 @@ module.exports = ({ config }) => ({
         imageWidth: 320,
         resizeMode: "contain",
         backgroundColor: SPLASH_BG_LIGHT,
-        dark: {
-          image: "./assets/splash.png",
-          imageWidth: 320,
-          resizeMode: "contain",
-          backgroundColor: SPLASH_BG_DARK,
-        },
       },
     ],
   ],

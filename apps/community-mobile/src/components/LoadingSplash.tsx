@@ -15,6 +15,7 @@ import { focusRingProps, makeThemedStyles, wordmarkColors, WORDMARK_LETTERS } fr
 import { Text } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { retrySessionRestore, useBootGate } from "@/hooks/useBootGate"
+import { LAUNCH_SCHEME } from "@/boot/launchTheme"
 
 const DROP_DURATION = 880
 const DROP_STAGGER = 80
@@ -48,7 +49,6 @@ function Letter({
   dropDistance: number
   reduceMotion: boolean
 }) {
-  const styles = useStyles()
   const drop = useSharedValue(reduceMotion ? 1 : 0)
   const bounce = useSharedValue(0)
 
@@ -103,7 +103,6 @@ function Letter({
 
 function Tagline({ reduceMotion }: { reduceMotion: boolean }) {
   const { t } = useT("mobile-branding")
-  const styles = useStyles()
   const fall = useSharedValue(reduceMotion ? 1 : 0)
   useEffect(() => {
     if (reduceMotion) {
@@ -133,7 +132,6 @@ const CONNECTING_FADE = 320
 
 function ConnectingNotice({ reduceMotion }: { reduceMotion: boolean }) {
   const { t } = useT("mobile-branding")
-  const styles = useStyles()
   const { showNotice, showRetry } = useBootGate()
   const appear = useSharedValue(reduceMotion ? 1 : 0)
 
@@ -170,7 +168,6 @@ function ConnectingNotice({ reduceMotion }: { reduceMotion: boolean }) {
 
 export function LoadingSplash() {
   const { t } = useT("mobile-branding")
-  const styles = useStyles()
   const { width, height } = useWindowDimensions()
   const reduceMotion = useReducedMotion()
   const fontSize = wordmarkSize(width)
@@ -201,7 +198,7 @@ export function LoadingSplash() {
   )
 }
 
-const useStyles = makeThemedStyles((t) => ({
+const styles = makeThemedStyles((t) => ({
   root: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: t.colors.bg,
@@ -253,4 +250,4 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["13"],
     color: t.colors.accentText,
   },
-}))
+})).for(LAUNCH_SCHEME)
