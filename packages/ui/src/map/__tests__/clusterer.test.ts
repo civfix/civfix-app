@@ -55,12 +55,12 @@ function clustersOf(nodes: ClusterNode[]) {
 
 describe("cluster threshold table", () => {
   it("pins the tuned knobs so a regression in them is visible", () => {
-    expect(CLUSTER_RADIUS).toBe(56)
-    expect(CLUSTER_MAX_ZOOM).toBe(15)
-    expect(CLUSTER_LIST_ZOOM).toBe(15)
+    expect(CLUSTER_RADIUS).toBe(40)
+    expect(CLUSTER_MAX_ZOOM).toBe(13)
+    expect(CLUSTER_LIST_ZOOM).toBe(13)
     expect(CLUSTER_MIN_POINTS).toBe(2)
     expect(CLUSTER_ZOOM_STEP).toBe(2)
-    expect(AGGREGATE_EXPAND_ZOOM).toBe(13)
+    expect(AGGREGATE_EXPAND_ZOOM).toBe(11)
   })
 
   it("groups neighbourhood-dense markers at city zoom and ungroups them above maxZoom", () => {
@@ -70,6 +70,36 @@ describe("cluster threshold table", () => {
     const zoomedIn = queryClusters(index, WORLD, CLUSTER_MAX_ZOOM + 1)
     expect(zoomedIn).toHaveLength(6)
     expect(zoomedIn.every((n) => n.type === "report")).toBe(true)
+  })
+
+  it("leaves two reports a block apart as separate pins at neighbourhood zoom", () => {
+    const index = buildIndex([
+      reportPoint("a", 34.05, -118.25),
+      reportPoint("b", 34.05, -118.2446),
+    ])
+    const nodes = queryClusters(index, WORLD, 13)
+    expect(nodes).toHaveLength(2)
+    expect(nodes.every((n) => n.type === "report")).toBe(true)
+  })
+
+  it("merges only the reports that would physically overlap at neighbourhood zoom", () => {
+    const index = buildIndex([
+      reportPoint("a", 34.05, -118.25),
+      reportPoint("b", 34.05, -118.2489),
+    ])
+    const clusters = clustersOf(queryClusters(index, WORLD, 13))
+    expect(clusters).toHaveLength(1)
+    expect(clusters[0]!.count).toBe(2)
+  })
+
+  it("still merges the same pair of reports into one bubble at district zoom", () => {
+    const index = buildIndex([
+      reportPoint("a", 34.05, -118.25),
+      reportPoint("b", 34.05, -118.2446),
+    ])
+    const clusters = clustersOf(queryClusters(index, WORLD, 11))
+    expect(clusters).toHaveLength(1)
+    expect(clusters[0]!.count).toBe(2)
   })
 
   it("keeps a report that has no neighbour within the radius as its own pin", () => {
@@ -166,13 +196,17 @@ describe("marker identity", () => {
 
   it("changes a cluster's key as soon as its membership changes", () => {
     const grid: MapPoint[] = Array.from({ length: 16 }, (_, i) =>
-      reportPoint(`g${i}`, 34.0 + (i % 4) * 0.004, -118.3 + Math.floor(i / 4) * 0.004),
+      reportPoint(
+        `g${i}`,
+        34.0 + Math.floor(i / 4) * 0.01 + (i % 4) * 0.0002,
+        -118.3 + Math.floor(i / 4) * 0.01 + (i % 4) * 0.0002,
+      ),
     )
     const index = buildIndex(grid)
     const wide = clustersOf(queryClusters(index, WORLD, 9)).map((c) => c.key)
-    const tight = clustersOf(queryClusters(index, WORLD, 13)).map((c) => c.key)
+    const tight = clustersOf(queryClusters(index, WORLD, CLUSTER_MAX_ZOOM)).map((c) => c.key)
     expect(wide).toHaveLength(1)
-    expect(tight.length).toBeGreaterThan(1)
+    expect(tight).toHaveLength(4)
     expect(tight).not.toContain(wide[0])
   })
 
@@ -265,7 +299,7 @@ describe("clusterZoomTarget", () => {
   })
 
   it("never asks for a zoom past the clustering ceiling", () => {
-    expect(clusterZoomTarget(cluster(1), 14, 99)).toBe(CLUSTER_MAX_ZOOM + 1)
+    expect(clusterZoomTarget(cluster(1), CLUSTER_MAX_ZOOM - 1, 99)).toBe(CLUSTER_MAX_ZOOM + 1)
   })
 
   it("hands the last clustering zoom over to the tap-to-list surface instead of zooming", () => {

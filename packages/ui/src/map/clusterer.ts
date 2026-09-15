@@ -42,12 +42,12 @@ export type ClusterNode =
       reports: ReportPinDTO[]
     }
 
-export const CLUSTER_RADIUS = 56
-export const CLUSTER_MAX_ZOOM = 15
-export const CLUSTER_LIST_ZOOM = 15
+export const CLUSTER_RADIUS = 40
+export const CLUSTER_MAX_ZOOM = 13
+export const CLUSTER_LIST_ZOOM = 13
 export const CLUSTER_MIN_POINTS = 2
 export const CLUSTER_ZOOM_STEP = 2
-export const AGGREGATE_EXPAND_ZOOM = 13
+export const AGGREGATE_EXPAND_ZOOM = 11
 export const KEY_PRECISION = 5
 export const WORLD_BBOX: BBox = { west: -180, south: -85, east: 180, north: 85 }
 
