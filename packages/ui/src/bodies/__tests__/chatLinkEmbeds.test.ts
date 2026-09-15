@@ -171,7 +171,20 @@ describe("only the cards the reader can see are allowed to fetch", () => {
 
   it("falls back to the in-flight cap, never to a dead card, if the list never reports viewability", () => {
     expect(SCHEDULER).toContain("isVisible: (key) => !reported || visible.has(key)")
-    expect(SCOPE).toContain("const UNSCOPED: ChatEmbedScope = { queue: createEmbedLoadQueue(), viewport: createOpenViewport() }")
+    expect(SCOPE).toContain("unscoped.current ??= { queue: createEmbedLoadQueue(), viewport: createOpenViewport() }")
+  })
+
+  it("gives a provider-less bubble its OWN fallback scope, never a module-level one that outlives it", () => {
+    expect(SCOPE).toContain("createContext<ChatEmbedScope | null>(null)")
+    expect(SCOPE).toContain("const unscoped = useRef<ChatEmbedScope | null>(null)")
+    expect(SCOPE).toContain("if (provided) return provided")
+    expect(SCOPE).not.toMatch(/^const UNSCOPED/m)
+  })
+
+  it("makes an already-loaded embed take a slot again, so the in-flight cap is never exceeded", () => {
+    expect(SCHEDULER).toContain("const isAdmitted = (key: string): boolean => active.has(key) || holding.has(key)")
+    expect(SCHEDULER).toContain("if (settledOnce.has(key)) waiting.unshift(key)")
+    expect(SCHEDULER).toMatch(/if \(settledOnce\.size <= hintLimit\) break/)
   })
 
   it("keeps the scheduler pure, so the queue is unit-testable without React", () => {

@@ -22,6 +22,26 @@ export function sharePeopleView(input: {
   return recent.length > 0 ? { mode: "recent", rows: recent } : { mode: "prompt", rows: [] }
 }
 
+export const SHARE_RECIPIENTS_MAX_HEIGHT = 264
+
+export interface ShareRecipientsSizing {
+  flexShrink: number
+  minHeight: number
+  maxHeight?: number
+}
+
+const SHRINKABLE_RECIPIENTS: ShareRecipientsSizing = {
+  flexShrink: 1,
+  minHeight: 0,
+  maxHeight: SHARE_RECIPIENTS_MAX_HEIGHT,
+}
+
+const RIGID_RECIPIENTS: ShareRecipientsSizing = { flexShrink: 0, minHeight: 0 }
+
+export function shareRecipientsSizing(mode: SharePeopleMode): ShareRecipientsSizing {
+  return mode === "results" ? SHRINKABLE_RECIPIENTS : RIGID_RECIPIENTS
+}
+
 export type ShareSheetFooter = "compose" | "actions"
 
 export function shareSheetFooter(isAuthenticated: boolean, selectedCount: number): ShareSheetFooter {

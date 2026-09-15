@@ -1,5 +1,5 @@
-import React from "react"
-import { Pressable, StyleSheet, View } from "react-native"
+import React, { useEffect, useRef } from "react"
+import { AccessibilityInfo, Pressable, StyleSheet, View } from "react-native"
 import { makeThemedStyles, useTheme, focusRingProps, type Theme } from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import type { ShareTileTone } from "./shareSheetModel"
@@ -7,6 +7,8 @@ import type { ShareTileTone } from "./shareSheetModel"
 export interface ShareActionTileProps {
   icon: IconName
   label: string
+  name?: string
+  status?: string
   onPress: () => void
   disabled?: boolean
   tone?: ShareTileTone
@@ -25,17 +27,35 @@ function toneColor(tone: ShareTileTone, t: Theme): string {
   }
 }
 
-export function ShareActionTile({ icon, label, onPress, disabled = false, tone = "default" }: ShareActionTileProps) {
+export function ShareActionTile({
+  icon,
+  label,
+  name,
+  status,
+  onPress,
+  disabled = false,
+  tone = "default",
+}: ShareActionTileProps) {
   const styles = useStyles()
   const th = useTheme()
   const color = toneColor(tone, th)
+  const announced = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (status === undefined) {
+      announced.current = undefined
+      return
+    }
+    if (status === announced.current) return
+    announced.current = status
+    AccessibilityInfo.announceForAccessibility(status)
+  }, [status])
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityLiveRegion={tone === "default" ? "none" : "polite"}
+      accessibilityLabel={name ?? label}
+      accessibilityValue={status === undefined ? undefined : { text: status }}
       accessibilityState={{ disabled }}
       {...focusRingProps}
       style={({ pressed }) => [styles.tile, pressed ? styles.pressed : null, disabled ? styles.disabled : null]}

@@ -1,4 +1,5 @@
 import type { DetailEntry, DetailKind, View } from "../nav"
+import { entryDiscriminator } from "../nav/routes"
 import { resolveTabBarFootprint } from "./tabBarLogic"
 
 export type BodyLayout = "scroll" | "full"
@@ -112,10 +113,7 @@ export function portraitSurfaceTransitionKey(
   presentation: PortraitDetailPresentation,
 ): string {
   if (presentation !== "full" || !active) return `view:${view}`
-  if (active.kind === "composer") {
-    return `composer:${active.composerMode ?? "post"}:${active.targetPostId ?? ""}`
-  }
-  return `${active.kind}:${active.id ?? active.slug ?? active.geoid ?? ""}`
+  return entryDiscriminator(active)
 }
 
 export function topmostFullEntry(

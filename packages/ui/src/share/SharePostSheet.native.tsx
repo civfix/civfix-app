@@ -186,6 +186,8 @@ export function SharePostSheet({ visible, target, onClose, onClosed }: SharePost
             <ShareActionTile
               icon={copyTile.icon}
               label={copyTile.label}
+              name={t("actions.copy_link")}
+              status={copyState === "idle" ? undefined : copyTile.label}
               tone={copyTile.tone}
               onPress={onCopyLink}
               disabled={pending}

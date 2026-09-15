@@ -2,6 +2,8 @@ export const EMBED_LOAD_CONCURRENCY = 6
 
 export const EMBED_VIEWPORT_LOOKAHEAD = 2
 
+export const EMBED_SETTLED_HINT_LIMIT = 64
+
 type Listener = () => void
 
 interface KeyedListeners {
@@ -39,17 +41,30 @@ export interface EmbedLoadQueue {
   settle(key: string, cached: boolean): void
   activeCount(): number
   waitingCount(): number
+  hintCount(): number
 }
 
-export function createEmbedLoadQueue(limit: number = EMBED_LOAD_CONCURRENCY): EmbedLoadQueue {
+export function createEmbedLoadQueue(
+  limit: number = EMBED_LOAD_CONCURRENCY,
+  hintLimit: number = EMBED_SETTLED_HINT_LIMIT,
+): EmbedLoadQueue {
   const listeners = keyedListeners()
   const wanted = new Map<string, number>()
   const waiting: string[] = []
   const active = new Set<string>()
   const holding = new Set<string>()
-  const cached = new Set<string>()
+  const settledOnce = new Set<string>()
 
-  const isAdmitted = (key: string): boolean => cached.has(key) || active.has(key) || holding.has(key)
+  const isAdmitted = (key: string): boolean => active.has(key) || holding.has(key)
+
+  const hint = (key: string): void => {
+    settledOnce.delete(key)
+    settledOnce.add(key)
+    for (const oldest of settledOnce) {
+      if (settledOnce.size <= hintLimit) break
+      settledOnce.delete(oldest)
+    }
+  }
 
   const unqueue = (key: string): void => {
     const at = waiting.indexOf(key)
@@ -72,7 +87,8 @@ export function createEmbedLoadQueue(limit: number = EMBED_LOAD_CONCURRENCY): Em
       const held = wanted.get(key) ?? 0
       wanted.set(key, held + 1)
       if (held > 0 || isAdmitted(key)) return
-      waiting.push(key)
+      if (settledOnce.has(key)) waiting.unshift(key)
+      else waiting.push(key)
       pump()
     },
     drop(key) {
@@ -91,13 +107,14 @@ export function createEmbedLoadQueue(limit: number = EMBED_LOAD_CONCURRENCY): Em
     },
     settle(key, wasCached) {
       unqueue(key)
-      if (wasCached) cached.add(key)
-      else if (wanted.has(key)) holding.add(key)
+      if (wasCached) hint(key)
+      if (wanted.has(key)) holding.add(key)
       if (!active.delete(key)) return
       pump()
     },
     activeCount: () => active.size,
     waitingCount: () => waiting.length,
+    hintCount: () => settledOnce.size,
   }
 }
 

@@ -6,11 +6,10 @@ import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { Avatar } from "../primitives/Avatar"
 import { idKeyExtractor } from "../bodies/navHelpers"
-import { isShareRecipient, type SharePeopleView } from "./shareSheetModel"
+import { isShareRecipient, shareRecipientsSizing, type SharePeopleView } from "./shareSheetModel"
 
 const TILE_AVATAR = 56
 const ROW_AVATAR = 40
-const RESULTS_MAX_HEIGHT = 264
 
 export interface SharePeopleProps {
   view: SharePeopleView
@@ -125,6 +124,7 @@ export function SharePeople({ view, selected, query, searchPending, searchFailed
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("share-post")
+  const sizing = shareRecipientsSizing(view.mode)
 
   const renderTile = useCallback(
     ({ item }: { item: UserSearchResultDTO }) => (
@@ -141,7 +141,7 @@ export function SharePeople({ view, selected, query, searchPending, searchFailed
 
   if (view.mode === "prompt") {
     return (
-      <Text variant="caption" color={th.colors.textMuted} style={styles.prompt}>
+      <Text variant="caption" color={th.colors.textMuted} style={[styles.prompt, sizing]}>
         {t("recipients.empty_prompt")}
       </Text>
     )
@@ -149,7 +149,7 @@ export function SharePeople({ view, selected, query, searchPending, searchFailed
 
   if (view.mode === "recent") {
     return (
-      <View style={styles.recent}>
+      <View style={[styles.recent, sizing]}>
         <Text variant="label" color={th.colors.textSubtle} style={styles.sectionLabel}>
           {t("recipients.recent")}
         </Text>
@@ -168,7 +168,7 @@ export function SharePeople({ view, selected, query, searchPending, searchFailed
 
   if (view.rows.length === 0) {
     return (
-      <View style={styles.prompt}>
+      <View style={[styles.prompt, sizing]}>
         {searchPending ? (
           <ActivityIndicator color={th.colors.textSubtle} />
         ) : (
@@ -185,7 +185,7 @@ export function SharePeople({ view, selected, query, searchPending, searchFailed
       data={view.rows}
       keyExtractor={idKeyExtractor}
       renderItem={renderRow}
-      style={styles.results}
+      style={sizing}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     />
@@ -240,9 +240,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   pressed: {
     opacity: 0.7,
-  },
-  results: {
-    maxHeight: RESULTS_MAX_HEIGHT,
   },
   row: {
     flexDirection: "row",

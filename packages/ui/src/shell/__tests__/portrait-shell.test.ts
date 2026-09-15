@@ -205,7 +205,7 @@ describe("portrait surface transition identity", () => {
 
   it("keys full overlays by their route identity", () => {
     expect(transitionKey("home", { kind: "post-thread", id: "post-1" }, "full")).toBe(
-      "post-thread:post-1",
+      "post-thread:post-1::::",
     )
     expect(
       transitionKey(
@@ -214,7 +214,7 @@ describe("portrait surface transition identity", () => {
         "full",
       ),
     ).toBe("composer:quote:post-1")
-    expect(transitionKey("social", { kind: "person", id: "p" }, "full")).toBe("person:p")
+    expect(transitionKey("social", { kind: "person", id: "p" }, "full")).toBe("person:p::::")
   })
 
   it("keeps the base transition key stable beneath a detail sheet", () => {

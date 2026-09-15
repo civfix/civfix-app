@@ -119,7 +119,8 @@ describe("every house overlay reports the moment it has fully left the screen", 
   })
 
   it("the motion hook reads recipes through a ref, so an inline recipe object can never restart an animation", () => {
-    expect(MENU_MOTION).toMatch(/const recipesRef = useRef\(recipes\)\s*recipesRef\.current = recipes/)
+    expect(MENU_MOTION).toMatch(/const recipesRef = useRef\(recipes\)\s*if \(MENU_MOTION_DEV_ASSERTS/)
+    expect(MENU_MOTION).toMatch(/\}\s*recipesRef\.current = recipes/)
     expect(MENU_MOTION).toMatch(/\}, \[visible, ready, reducedMotion, useNativeDriver, progress\]\)/)
   })
 

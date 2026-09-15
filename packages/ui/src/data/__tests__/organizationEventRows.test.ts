@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type { CleanupDTO, ListOrganizationEventsResponse } from "@civfix/shared"
-import { organizationEventRows } from "../hooks/orgs"
+import { organizationEventRows, resetOrganizationEventRowWarnings } from "../hooks/orgs"
 
 const organizer = {
   id: "u1",
@@ -17,6 +17,15 @@ function page(items: unknown): ListOrganizationEventsResponse {
 }
 
 describe("organizationEventRows", () => {
+  beforeEach(() => {
+    resetOrganizationEventRowWarnings()
+    vi.spyOn(console, "warn").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it("flattens every page in order", () => {
     const second = { ...event, id: "c2" }
     expect(organizationEventRows([page([event]), page([second])]).map((row) => row.id)).toEqual([
@@ -46,5 +55,30 @@ describe("organizationEventRows", () => {
         (row) => row.id,
       ),
     ).toEqual(["c1"])
+  })
+})
+
+describe("organizationEventRows says so when a page loses rows", () => {
+  const noOrganizer = { ...event, id: "c3", organizer: undefined } as unknown as CleanupDTO
+
+  beforeEach(() => {
+    resetOrganizationEventRowWarnings()
+    vi.spyOn(console, "warn").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("warns ONCE, however many renders drop rows, so a mismatching server is not a log flood", () => {
+    organizationEventRows([page([event, noOrganizer])])
+    organizationEventRows([page([event, noOrganizer])])
+    expect(console.warn).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(console.warn).mock.calls[0]?.[0]).toContain("1 row(s)")
+  })
+
+  it("stays silent when every row is renderable", () => {
+    organizationEventRows([page([event]), page([])])
+    expect(console.warn).not.toHaveBeenCalled()
   })
 })

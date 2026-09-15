@@ -7,7 +7,11 @@ import { MENU_SCALE_FROM, menuOrigin, type MenuOrigin } from "./menuMotionModel"
 export { MENU_SCALE_FROM, menuOrigin }
 export type { MenuAnchorRect, MenuCardRect, MenuOrigin } from "./menuMotionModel"
 
+declare const process: { env: { NODE_ENV?: string } }
+
 export const MENU_NATIVE_DRIVER = Platform.OS !== "web"
+
+const MENU_MOTION_DEV_ASSERTS = process.env.NODE_ENV !== "production"
 
 export interface MenuMotion {
   rendered: boolean
@@ -45,6 +49,11 @@ export function useMenuMotion({
   const renderedRef = useRef(visible)
   const animRef = useRef<Animated.CompositeAnimation | null>(null)
   const recipesRef = useRef(recipes)
+  if (MENU_MOTION_DEV_ASSERTS && recipesRef.current !== recipes) {
+    throw new Error(
+      "useMenuMotion recipes must keep one object identity: a running timing reads them through a ref, so a swapped recipe is silently ignored. Hoist them to a module constant.",
+    )
+  }
   recipesRef.current = recipes
 
   useEffect(() => {

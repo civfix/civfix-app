@@ -8,6 +8,7 @@ import { menuOrigin, MENU_SCALE_FROM } from "../menuMotionModel"
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 const PRIMITIVES = fileURLToPath(new URL("../", import.meta.url))
+const MAP = fileURLToPath(new URL("../../map/", import.meta.url))
 
 const motionSource = strip(read("../menuMotion.ts"))
 const motionModelSource = strip(read("../menuMotionModel.ts"))
@@ -126,6 +127,35 @@ describe("the shared menu motion hook (source-pinned)", () => {
   it("only touches state at the animation's edges - never per frame", () => {
     expect(motionSource).not.toMatch(/addListener/)
     expect(motionSource).not.toMatch(/setState/)
+  })
+
+  it("refuses, in dev, a recipes object that changes identity - reading them through a ref makes a swap inert", () => {
+    expect(motionSource).toMatch(
+      /MENU_MOTION_DEV_ASSERTS = process\.env\.NODE_ENV !== "production"/,
+    )
+    expect(motionSource).toMatch(
+      /if \(MENU_MOTION_DEV_ASSERTS && recipesRef\.current !== recipes\) \{\s*throw new Error\(/,
+    )
+    expect(motionSource).toMatch(/const recipes = recipesRef\.current/)
+  })
+
+  it("is called only with a STABLE recipes object, so the dev guard can never fire on our own code", () => {
+    const callers = [...readdirSync(PRIMITIVES), ...readdirSync(MAP)]
+      .filter((name) => name.endsWith(".tsx"))
+      .map((name) => {
+        const dir = existsSync(join(PRIMITIVES, name)) ? PRIMITIVES : MAP
+        return { name, source: strip(readFileSync(join(dir, name), "utf8")) }
+      })
+      .filter((file) => file.source.includes("useMenuMotion("))
+    expect(callers.length).toBeGreaterThan(0)
+    for (const { name, source } of callers) {
+      for (const [, passed] of source.matchAll(/useMenuMotion\(\{[^}]*recipes:\s*([A-Za-z0-9_.]+)/g)) {
+        expect(passed, `${name} passes ${passed} as recipes`).toMatch(/^[A-Z][A-Z0-9_]*$/)
+        expect(source, `${name} must hoist ${passed} to a module constant`).toMatch(
+          new RegExp(`^const ${passed}: MenuMotionRecipes = `, "m"),
+        )
+      }
+    }
   })
 })
 

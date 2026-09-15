@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
-import { isShareRecipient, shareCopyTileFace, sharePeopleView, shareSheetFooter } from "../shareSheetModel"
+import {
+  SHARE_RECIPIENTS_MAX_HEIGHT,
+  isShareRecipient,
+  shareCopyTileFace,
+  sharePeopleView,
+  shareRecipientsSizing,
+  shareSheetFooter,
+} from "../shareSheetModel"
 
 const result = (id: string): UserSearchResultDTO => ({
   id,
@@ -69,5 +76,36 @@ describe("the copy-link tile confirms inline, since a toast would land behind th
 
   it("says so, in place, when the clipboard write failed", () => {
     expect(shareCopyTileFace("failed", labels)).toEqual({ icon: "Close", label: "Couldn't copy", tone: "danger" })
+  })
+})
+
+describe("shareRecipientsSizing - the one region that gives up space when the sheet shrinks", () => {
+  it("makes the vertical results list shrinkable, with NO floor under it", () => {
+    const sizing = shareRecipientsSizing("results")
+    expect(sizing.flexShrink).toBe(1)
+    expect(sizing.minHeight).toBe(0)
+  })
+
+  it("still caps the results list, so a long match list leaves the sheet compact", () => {
+    expect(shareRecipientsSizing("results").maxHeight).toBe(SHARE_RECIPIENTS_MAX_HEIGHT)
+    expect(SHARE_RECIPIENTS_MAX_HEIGHT).toBeGreaterThan(0)
+  })
+
+  it("leaves the recents strip and the empty prompt at their content height", () => {
+    for (const mode of ["recent", "prompt"] as const) {
+      expect(shareRecipientsSizing(mode), mode).toEqual({ flexShrink: 0, minHeight: 0 })
+    }
+  })
+
+  it("never caps a region it does not also allow to shrink", () => {
+    for (const mode of ["recent", "results", "prompt"] as const) {
+      const sizing = shareRecipientsSizing(mode)
+      if (sizing.maxHeight !== undefined) expect(sizing.flexShrink, mode).toBe(1)
+    }
+  })
+
+  it("returns ONE object per mode, so the list's style prop does not churn every render", () => {
+    expect(shareRecipientsSizing("results")).toBe(shareRecipientsSizing("results"))
+    expect(shareRecipientsSizing("recent")).toBe(shareRecipientsSizing("prompt"))
   })
 })

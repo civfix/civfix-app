@@ -4,14 +4,26 @@ type NavMode = "compact" | "expanded"
 
 const UNADDRESSABLE_KINDS: readonly DetailKind[] = ["cluster", "blend", "drop-pin"]
 
+export const ENTRY_IDENTITY_FIELDS = [
+  "id",
+  "roomKind",
+  "geoid",
+  "slug",
+  "seatId",
+] as const satisfies readonly (keyof DetailEntry)[]
+
+export function entryDiscriminator(entry: DetailEntry): string {
+  if (entry.kind === "composer") {
+    return `composer:${entry.composerMode ?? "post"}:${entry.targetPostId ?? ""}`
+  }
+  return [entry.kind, ...ENTRY_IDENTITY_FIELDS.map((field) => entry[field] ?? "")].join(":")
+}
+
 export function entryIdentity(entry: DetailEntry | null | undefined): string | null {
   if (!entry) return null
   if (entry.kind === "view") return entry.view ? `view:${entry.view}` : null
   if (UNADDRESSABLE_KINDS.includes(entry.kind)) return null
-  if (entry.kind === "composer") {
-    return `composer:${entry.composerMode ?? "post"}:${entry.targetPostId ?? ""}`
-  }
-  return `${entry.kind}:${entry.id ?? ""}:${entry.roomKind ?? ""}:${entry.geoid ?? ""}:${entry.slug ?? ""}:${entry.seatId ?? ""}`
+  return entryDiscriminator(entry)
 }
 
 

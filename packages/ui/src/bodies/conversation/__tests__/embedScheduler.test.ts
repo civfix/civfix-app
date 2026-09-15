@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import {
   EMBED_LOAD_CONCURRENCY,
+  EMBED_SETTLED_HINT_LIMIT,
   EMBED_VIEWPORT_LOOKAHEAD,
   createEmbedLoadQueue,
   createEmbedViewport,
@@ -83,16 +84,55 @@ describe("the embed load queue caps how many cards fetch at once", () => {
     expect(queue.isAdmitted("report:1")).toBe(false)
   })
 
-  it("lets a cached entity back in for free, so scrolling back never queues again", () => {
+  it("keeps an already-loaded entity admitted for free while it stays mounted", () => {
     const queue = createEmbedLoadQueue(1)
     queue.request("a")
     queue.settle("a", true)
-    queue.drop("a")
+    expect(queue.isAdmitted("a")).toBe(true)
+    expect(queue.activeCount()).toBe(0)
     queue.request("b")
-    queue.request("a")
     expect(queue.isAdmitted("a")).toBe(true)
     expect(queue.isAdmitted("b")).toBe(true)
-    expect(queue.activeCount()).toBe(1)
+  })
+
+  it("makes an already-loaded entity take a SLOT again on a later visit, so the cap cannot be exceeded", () => {
+    const queue = createEmbedLoadQueue(2)
+    for (const key of ["a", "b"]) {
+      queue.request(key)
+      queue.settle(key, true)
+      queue.drop(key)
+    }
+    for (const key of ["slow-1", "slow-2"]) queue.request(key)
+    queue.request("a")
+    queue.request("b")
+    expect(queue.activeCount()).toBe(2)
+    expect([queue.isAdmitted("a"), queue.isAdmitted("b")]).toEqual([false, false])
+  })
+
+  it("serves an already-loaded entity FIRST, so scrolling back does not wait behind cold cards", () => {
+    const queue = createEmbedLoadQueue(1)
+    queue.request("seen")
+    queue.settle("seen", true)
+    queue.drop("seen")
+    queue.request("busy")
+    queue.request("cold")
+    queue.request("seen")
+    queue.settle("busy", false)
+    queue.drop("busy")
+    expect(queue.isAdmitted("seen")).toBe(true)
+    expect(queue.isAdmitted("cold")).toBe(false)
+  })
+
+  it("bounds the already-loaded memo, so a long conversation cannot grow it forever", () => {
+    expect(EMBED_SETTLED_HINT_LIMIT).toBeGreaterThan(EMBED_LOAD_CONCURRENCY)
+    const queue = createEmbedLoadQueue(1, 3)
+    for (let i = 0; i < 20; i += 1) {
+      const key = `row-${i}`
+      queue.request(key)
+      queue.settle(key, true)
+      queue.drop(key)
+    }
+    expect(queue.hintCount()).toBe(3)
   })
 
   it("keeps a failed embed admitted while it stays mounted, and re-queues it on a later visit", () => {

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useSyncExternalStore } from "react"
 import {
   createEmbedLoadQueue,
   createEmbedViewport,
@@ -12,15 +12,17 @@ export interface ChatEmbedScope {
   viewport: EmbedViewport
 }
 
-const UNSCOPED: ChatEmbedScope = { queue: createEmbedLoadQueue(), viewport: createOpenViewport() }
-
-const ChatEmbedScopeContext = createContext<ChatEmbedScope>(UNSCOPED)
+const ChatEmbedScopeContext = createContext<ChatEmbedScope | null>(null)
 ChatEmbedScopeContext.displayName = "ChatEmbedScopeContext"
 
 export const ChatEmbedScopeProvider = ChatEmbedScopeContext.Provider
 
 export function useChatEmbedScope(): ChatEmbedScope {
-  return useContext(ChatEmbedScopeContext)
+  const provided = useContext(ChatEmbedScopeContext)
+  const unscoped = useRef<ChatEmbedScope | null>(null)
+  if (provided) return provided
+  unscoped.current ??= { queue: createEmbedLoadQueue(), viewport: createOpenViewport() }
+  return unscoped.current
 }
 
 export function useOwnChatEmbedScope(): ChatEmbedScope {
