@@ -100,10 +100,8 @@ export type { ReverseLabelPoint } from "./hooks"
 export { useNearbyCleanups, useFeedNotifications, NEARBY_RADIUS_M, useUserLocation } from "./hooks"
 export {
   useApproximateLocation,
-  approximateLocationRetryDelay,
+  approximateLocationShouldRetry,
   APPROXIMATE_LOCATION_STALE_MS,
-  APPROXIMATE_LOCATION_RETRY_BASE_MS,
-  APPROXIMATE_LOCATION_RETRY_MAX_MS,
 } from "./hooks"
 export type { UseApproximateLocationOptions } from "./hooks"
 export {

@@ -22,7 +22,7 @@ const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
 /** The body of the camera-adoption effect, isolated from the Locate bus's own flyTo calls. */
 const adoptEffect = code.slice(
-  code.indexOf("if (!shouldAdoptCenter(adoptedSourceRef.current, planSource)) return"),
+  code.indexOf("if (cameraOwnedRef.current) return"),
   code.indexOf("const recenter = () => {"),
 )
 
@@ -34,7 +34,7 @@ describe("the resolved centre is the only centre", () => {
   })
 
   it("orders precise over the server's approximate location through the shared model", () => {
-    expect(code).toContain("const centerPlan = resolveMapCenter({")
+    expect(code).toContain("resolveMapCenter({")
     expect(code).toContain("precise: preciseCenter,")
     expect(code).toContain("approximate: approximatePoint,")
     expect(code).toContain("remembered: bootCamera,")
@@ -47,8 +47,26 @@ describe("the resolved centre is the only centre", () => {
   })
 
   it("seeds the camera source at the same moment it seeds the centre, so the seed is never re-flown", () => {
-    expect(code).toContain("seedRef.current = centerPlan.center")
+    expect(code).toContain("setSeedCenter(centerPlan.center)")
     expect(code).toContain("adoptedSourceRef.current = centerPlan.source")
+  })
+
+  it("never mutates a camera ref during render - every write is in an effect", () => {
+    const renderBody = code.slice(0, code.indexOf("const onRegionChange = React.useCallback("))
+    for (const write of [
+      "adoptedSourceRef.current =",
+      "seedSourceRef.current =",
+      "approximatePointRef.current =",
+      "cameraOwnedRef.current =",
+    ]) {
+      let at = renderBody.indexOf(write)
+      while (at !== -1) {
+        const effectAt = renderBody.lastIndexOf("React.useEffect(", at)
+        const closeAt = renderBody.lastIndexOf("\n  }, [", at)
+        expect(effectAt).toBeGreaterThan(closeAt)
+        at = renderBody.indexOf(write, at + 1)
+      }
+    }
   })
 })
 
@@ -66,16 +84,24 @@ describe("the camera adoption effect", () => {
   })
 
   it("never yanks a map that booted from the persisted camera", () => {
-    const boot = adoptEffect.indexOf("if (bootCamera) return")
+    const boot = adoptEffect.indexOf('if (seedSourceRef.current === "remembered") return')
     const fly = adoptEffect.indexOf("mapRef.current?.flyTo(")
-    expect(boot).toBe(-1)
-    expect(code).toContain("if (bootCamera) return")
-    expect(fly).toBeGreaterThan(-1)
+    expect(boot).toBeGreaterThan(-1)
+    expect(fly).toBeGreaterThan(boot)
+  })
+
+  it("flies at most once, then hands the camera to the user", () => {
+    const owned = adoptEffect.indexOf("if (cameraOwnedRef.current) return")
+    const latch = adoptEffect.indexOf("cameraOwnedRef.current = true")
+    const fly = adoptEffect.indexOf("mapRef.current?.flyTo(")
+    expect(owned).toBe(0)
+    expect(latch).toBeGreaterThan(owned)
+    expect(fly).toBeGreaterThan(latch)
   })
 
   it("only ever upgrades the source, never downgrades it", () => {
-    expect(code).toContain("if (!shouldAdoptCenter(adoptedSourceRef.current, planSource)) return")
-    expect(code).toContain("adoptedSourceRef.current = planSource")
+    expect(code).toContain("if (!shouldAdoptCenter(adoptedSourceRef.current, source)) return")
+    expect(code).toContain("adoptedSourceRef.current = source")
   })
 
   it("still lights the user dot only for a PRECISE fix - an approximate point draws none", () => {

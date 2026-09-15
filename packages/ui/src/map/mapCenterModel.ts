@@ -31,7 +31,7 @@ export interface MapCenterPlan {
 }
 
 const SOURCE_RANK: Record<MapCenterSource, number> = {
-  remembered: 0,
+  remembered: 1,
   approximate: 1,
   precise: 2,
 }
@@ -42,10 +42,12 @@ function onGlobe(point: MapCenterPoint | null | undefined): point is MapCenterPo
   return Math.abs(point.lat) <= 90 && Math.abs(point.lng) <= 180
 }
 
-function usableRemembered(point: RememberedCenter | null | undefined): point is RememberedCenter {
-  if (!onGlobe(point)) return false
-  const { zoom } = point as RememberedCenter
-  return Number.isFinite(zoom) && zoom >= 0 && zoom <= 24
+export function isRememberedCenter(body: unknown): body is RememberedCenter {
+  if (typeof body !== "object" || body === null) return false
+  const { lat, lng, zoom } = body as Partial<RememberedCenter>
+  if (typeof lat !== "number" || typeof lng !== "number") return false
+  if (!onGlobe({ lat, lng })) return false
+  return typeof zoom === "number" && Number.isFinite(zoom) && zoom >= 0 && zoom <= 24
 }
 
 export function resolveMapCenter({
@@ -69,7 +71,7 @@ export function resolveMapCenter({
       showFindingHint: false,
     }
   }
-  if (usableRemembered(remembered)) {
+  if (isRememberedCenter(remembered)) {
     return {
       center: { lat: remembered.lat, lng: remembered.lng, zoom: remembered.zoom },
       source: "remembered",

@@ -190,7 +190,7 @@ test("the primer waits for the tour, registration and the focused route", () => 
 test("the camera center and the primer decision are two independent effects", () => {
   assert.match(
     home,
-    /if \(initialCenterOwnedRef\.current\) return\n\s+if \(!planCenter \|\| !planSource\) return/,
+    /if \(initialCenterOwnedRef\.current\) return\n\s+if \(seedCenter === null\) return/,
   )
   assert.match(
     home,
@@ -201,7 +201,7 @@ test("the camera center and the primer decision are two independent effects", ()
 test("the initial camera center is the resolved centre, never a hardcoded point", () => {
   assert.match(
     home,
-    /const centerPlan = resolveMapCenter\(\{\n\s+precise: location\.coords,\n\s+approximate: approximatePoint,\n\s+remembered: rememberedCenter,\n\s+\}\)/,
+    /resolveMapCenter\(\{\n\s+precise: location\.coords,\n\s+approximate: approximatePoint,\n\s+remembered: rememberedCenter,\n\s+\}\)/,
   )
   assert.match(home, /const \[rememberedCenter\] = useState<RememberedCenter \| null>\(readLastCenter\)/)
   assert.doesNotMatch(home, /DEFAULT_CENTER|NEUTRAL_CENTER/)
@@ -209,18 +209,18 @@ test("the initial camera center is the resolved centre, never a hardcoded point"
 
 test("no map is mounted until a real centre exists", () => {
   assert.match(home, /const mapSeed = mapLifecycleRef\.current\.lastViewport \?\? seedCenter/)
-  assert.match(home, /mapSeed === null \? \(\n\s+<MapPending \/>/)
-  assert.match(home, /initialCenter=\{mapLifecycleRef\.current\.lastViewport \?\? mapSeed\}/)
+  assert.match(home, /return mapSeed === null \? \(\n\s+<MapPending \/>/)
+  assert.match(home, /initialCenter=\{mapSeed\}/)
 })
 
 test("a better source upgrades the camera and a worse one never downgrades it", () => {
   assert.match(
     home,
-    /if \(!shouldAdoptCenter\(adoptedSourceRef\.current, planSource\)\) return\n\s+adoptedSourceRef\.current = planSource\n\s+centerOnTarget\(planCenter\)/,
+    /if \(!shouldAdoptCenter\(adoptedSourceRef\.current, source\)\) return\n\s+adoptedSourceRef\.current = source\n\s+initialCenterOwnedRef\.current = true\n\s+centerOnTarget\(center\)/,
   )
   assert.match(
     home,
-    /if \(seedCenterRef\.current === null && centerPlan\.center\) \{\n\s+seedCenterRef\.current = centerPlan\.center\n\s+adoptedSourceRef\.current = centerPlan\.source/,
+    /if \(seedCenter !== null \|\| !centerPlan\.center\) return\n\s+adoptedSourceRef\.current = centerPlan\.source\n\s+setSeedCenter\(centerPlan\.center\)/,
   )
 })
 
@@ -242,7 +242,10 @@ test("the primer offers precise or approximate, and dismissing IS the approximat
 })
 
 test("the approximate point comes from the server, not from a third-party IP lookup", () => {
-  assert.match(home, /const approximate = useApproximateLocation\(\)/)
+  assert.match(
+    home,
+    /const approximate = useApproximateLocation\(\{\n\s+enabled: location\.permissionResolved && location\.permission !== "granted",\n\s+\}\)/,
+  )
   assert.match(
     home,
     /const nearPoint = location\.coords \?\? approximatePoint/,

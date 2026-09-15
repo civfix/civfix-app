@@ -1,19 +1,21 @@
 import { useQuery } from "@tanstack/react-query"
+import { AppError, ErrorCode } from "@civfix/shared"
 import type { GetApproximateLocationResponse } from "@civfix/shared"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
 
 export const APPROXIMATE_LOCATION_STALE_MS = 60 * 60 * 1000
 
-export const APPROXIMATE_LOCATION_RETRY_BASE_MS = 1000
+const PERMANENT: readonly ErrorCode[] = [
+  ErrorCode.NOT_FOUND,
+  ErrorCode.VALIDATION,
+  ErrorCode.UNAUTHORIZED,
+  ErrorCode.FORBIDDEN,
+]
 
-export const APPROXIMATE_LOCATION_RETRY_MAX_MS = 30_000
-
-export function approximateLocationRetryDelay(attemptIndex: number): number {
-  return Math.min(
-    APPROXIMATE_LOCATION_RETRY_MAX_MS,
-    APPROXIMATE_LOCATION_RETRY_BASE_MS * 2 ** attemptIndex,
-  )
+export function approximateLocationShouldRetry(_failureCount: number, error: unknown): boolean {
+  if (error instanceof AppError && PERMANENT.includes(error.code)) return false
+  return true
 }
 
 export interface UseApproximateLocationOptions {
@@ -28,8 +30,7 @@ export function useApproximateLocation(opts: UseApproximateLocationOptions = {})
     queryFn: () => api.getApproximateLocation({}),
     staleTime: APPROXIMATE_LOCATION_STALE_MS,
     gcTime: APPROXIMATE_LOCATION_STALE_MS,
-    retry: true,
-    retryDelay: approximateLocationRetryDelay,
+    retry: approximateLocationShouldRetry,
     refetchOnWindowFocus: false,
   })
 }

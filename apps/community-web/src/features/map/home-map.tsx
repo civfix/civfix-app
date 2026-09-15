@@ -169,31 +169,43 @@ export function HomeMap() {
   )
 
   const approximatePointRef = React.useRef(approximatePoint)
-  approximatePointRef.current = approximatePoint
-
-  const centerPlan = resolveMapCenter({
-    precise: preciseCenter,
-    approximate: approximatePoint,
-    remembered: bootCamera,
-  })
-  const seedRef = React.useRef<MapCenterTarget | null>(null)
-  const adoptedSourceRef = React.useRef<MapCenterSource | null>(null)
-  if (seedRef.current === null && centerPlan.center) {
-    seedRef.current = centerPlan.center
-    adoptedSourceRef.current = centerPlan.source
-  }
-  const seedCenter = seedRef.current
-
-  const planCenter = centerPlan.center
-  const planSource = centerPlan.source
   React.useEffect(() => {
-    if (bootCamera) return
-    if (!planCenter || !planSource) return
-    if (!shouldAdoptCenter(adoptedSourceRef.current, planSource)) return
-    adoptedSourceRef.current = planSource
+    approximatePointRef.current = approximatePoint
+  }, [approximatePoint])
+
+  const centerPlan = React.useMemo(
+    () =>
+      resolveMapCenter({
+        precise: preciseCenter,
+        approximate: approximatePoint,
+        remembered: bootCamera,
+      }),
+    [preciseCenter, approximatePoint, bootCamera],
+  )
+
+  const [seedCenter, setSeedCenter] = React.useState<MapCenterTarget | null>(null)
+  const adoptedSourceRef = React.useRef<MapCenterSource | null>(null)
+  const seedSourceRef = React.useRef<MapCenterSource | null>(null)
+  React.useEffect(() => {
+    if (seedCenter !== null || !centerPlan.center) return
+    adoptedSourceRef.current = centerPlan.source
+    seedSourceRef.current = centerPlan.source
+    setSeedCenter(centerPlan.center)
+  }, [seedCenter, centerPlan])
+
+  const cameraOwnedRef = React.useRef(false)
+  React.useEffect(() => {
+    if (cameraOwnedRef.current) return
+    if (seedSourceRef.current === "remembered") return
+    if (seedCenter === null) return
+    const { center, source } = centerPlan
+    if (!center || !source) return
+    if (!shouldAdoptCenter(adoptedSourceRef.current, source)) return
+    adoptedSourceRef.current = source
+    cameraOwnedRef.current = true
     if (useMapFocus.getState().focus) return
-    mapRef.current?.flyTo(planCenter.lat, planCenter.lng, planCenter.zoom)
-  }, [planCenter, planSource, bootCamera])
+    mapRef.current?.flyTo(center.lat, center.lng, center.zoom)
+  }, [centerPlan, seedCenter])
 
   // Register a Locate action into the cross-slot recenter bus (the shared MapControls' Locate button
   // reads it - it lives in a separate AppShell slot). Re-resolve a FRESH location and fly there: precise
@@ -203,6 +215,7 @@ export function HomeMap() {
   React.useEffect(() => {
     const recenter = () => {
       void (async () => {
+        cameraOwnedRef.current = true
         const precise = await getBrowserPosition()
         if (precise) {
           setUserLocation(precise)
@@ -216,8 +229,6 @@ export function HomeMap() {
     setRecenter(recenter)
     return () => setRecenter(null)
   }, [setRecenter])
-
-
 
   // The shared Map fires this on move-settle. Clustering is client-side, so we DON'T refetch on every
   // move: only when the viewport leaves the region we asked for (pan/zoom-out) or zooms in past it (the

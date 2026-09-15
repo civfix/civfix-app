@@ -1,4 +1,4 @@
-import type { RememberedCenter } from "@civfix/ui"
+import { isRememberedCenter, type RememberedCenter } from "@civfix/ui"
 import { storage } from "@/lib/mmkv"
 import { LAST_MAP_CENTER_KEY } from "@/lib/mmkv-keys"
 
@@ -9,21 +9,14 @@ interface StoredCenter extends RememberedCenter {
 }
 
 function isStoredCenter(body: unknown): body is StoredCenter {
-  if (typeof body !== "object" || body === null) return false
-  const { v, lat, lng, zoom } = body as Partial<StoredCenter>
-  return (
-    v === LAST_MAP_CENTER_VERSION &&
-    typeof lat === "number" &&
-    Number.isFinite(lat) &&
-    Math.abs(lat) <= 90 &&
-    typeof lng === "number" &&
-    Number.isFinite(lng) &&
-    Math.abs(lng) <= 180 &&
-    typeof zoom === "number" &&
-    Number.isFinite(zoom) &&
-    zoom >= 0 &&
-    zoom <= 24
-  )
+  if (!isRememberedCenter(body)) return false
+  return (body as Partial<StoredCenter>).v === LAST_MAP_CENTER_VERSION
+}
+
+function clearLastCenter(): void {
+  try {
+    storage.delete(LAST_MAP_CENTER_KEY)
+  } catch {}
 }
 
 export function readLastCenter(): RememberedCenter | null {
@@ -42,21 +35,10 @@ export function readLastCenter(): RememberedCenter | null {
   return null
 }
 
-export function writeLastCenter(center: { lat: number; lng: number; zoom?: number }): void {
-  const body: StoredCenter = {
-    v: LAST_MAP_CENTER_VERSION,
-    lat: center.lat,
-    lng: center.lng,
-    zoom: center.zoom ?? 0,
-  }
-  if (center.zoom == null || !isStoredCenter(body)) return
+export function writeLastCenter(center: RememberedCenter): void {
+  const body: StoredCenter = { v: LAST_MAP_CENTER_VERSION, ...center }
+  if (!isStoredCenter(body)) return
   try {
     storage.set(LAST_MAP_CENTER_KEY, JSON.stringify(body))
-  } catch {}
-}
-
-export function clearLastCenter(): void {
-  try {
-    storage.delete(LAST_MAP_CENTER_KEY)
   } catch {}
 }

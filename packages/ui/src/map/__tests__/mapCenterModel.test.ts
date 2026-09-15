@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   APPROX_ZOOM,
   PRECISE_ZOOM,
+  isRememberedCenter,
   resolveMapCenter,
   shouldAdoptCenter,
   zoomForSource,
@@ -88,13 +89,27 @@ describe("the never-a-hardcoded-centre invariant", () => {
 })
 
 describe("camera adoption", () => {
-  it("upgrades remembered -> approximate -> precise and never downgrades", () => {
+  it("adopts anything over nothing, and only a precise fix over an area", () => {
     expect(shouldAdoptCenter(null, "remembered")).toBe(true)
-    expect(shouldAdoptCenter("remembered", "approximate")).toBe(true)
+    expect(shouldAdoptCenter(null, "approximate")).toBe(true)
+    expect(shouldAdoptCenter(null, "precise")).toBe(true)
+    expect(shouldAdoptCenter("remembered", "precise")).toBe(true)
     expect(shouldAdoptCenter("approximate", "precise")).toBe(true)
-    expect(shouldAdoptCenter("precise", "approximate")).toBe(false)
+  })
+
+  it("never moves the camera between two area-level guesses", () => {
+    // The viewer's own last-settled centre is at least as good as a server IP estimate, so swapping one
+    // for the other is a zoom-out to a different guess, not an upgrade - and it yanks a map being panned.
+    expect(shouldAdoptCenter("remembered", "approximate")).toBe(false)
     expect(shouldAdoptCenter("approximate", "remembered")).toBe(false)
     expect(shouldAdoptCenter("approximate", "approximate")).toBe(false)
+    expect(shouldAdoptCenter("remembered", "remembered")).toBe(false)
+  })
+
+  it("never downgrades off a precise fix", () => {
+    expect(shouldAdoptCenter("precise", "approximate")).toBe(false)
+    expect(shouldAdoptCenter("precise", "remembered")).toBe(false)
+    expect(shouldAdoptCenter("precise", "precise")).toBe(false)
     expect(shouldAdoptCenter("precise", null)).toBe(false)
   })
 
@@ -102,5 +117,32 @@ describe("camera adoption", () => {
     expect(zoomForSource("precise")).toBe(PRECISE_ZOOM)
     expect(zoomForSource("approximate")).toBe(APPROX_ZOOM)
     expect(zoomForSource("remembered")).toBe(APPROX_ZOOM)
+  })
+})
+
+describe("the remembered-centre validator both hosts persist through", () => {
+  it("accepts a well-formed centre", () => {
+    expect(isRememberedCenter(REMEMBERED)).toBe(true)
+    expect(isRememberedCenter({ lat: 0, lng: 0, zoom: 0 })).toBe(true)
+    expect(isRememberedCenter({ lat: 0, lng: 0, zoom: 24 })).toBe(true)
+  })
+
+  it("rejects anything that would boot the map somewhere wrong", () => {
+    for (const bad of [
+      null,
+      undefined,
+      "34,-118",
+      {},
+      { lat: 34, lng: -118 },
+      { lat: "34", lng: -118, zoom: 12 },
+      { lat: 91, lng: -118, zoom: 12 },
+      { lat: 34, lng: -181, zoom: 12 },
+      { lat: Number.NaN, lng: -118, zoom: 12 },
+      { lat: 34, lng: -118, zoom: -1 },
+      { lat: 34, lng: -118, zoom: 25 },
+      { lat: 34, lng: -118, zoom: Number.NaN },
+    ]) {
+      expect(isRememberedCenter(bad)).toBe(false)
+    }
   })
 })

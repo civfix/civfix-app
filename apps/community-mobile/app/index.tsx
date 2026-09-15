@@ -132,7 +132,9 @@ export default function MapHomeScreen() {
   )
 
   const location = useUserLocation()
-  const approximate = useApproximateLocation()
+  const approximate = useApproximateLocation({
+    enabled: location.permissionResolved && location.permission !== "granted",
+  })
   const approximatePoint = useMemo<LatLng | null>(
     () => (approximate.data ? { lat: approximate.data.lat, lng: approximate.data.lng } : null),
     [approximate.data],
@@ -277,27 +279,34 @@ export default function MapHomeScreen() {
   const initialCenterOwnedRef = useRef(recalledViewport)
   const [rememberedCenter] = useState<RememberedCenter | null>(readLastCenter)
 
-  const centerPlan = resolveMapCenter({
-    precise: location.coords,
-    approximate: approximatePoint,
-    remembered: rememberedCenter,
-  })
+  const centerPlan = useMemo(
+    () =>
+      resolveMapCenter({
+        precise: location.coords,
+        approximate: approximatePoint,
+        remembered: rememberedCenter,
+      }),
+    [location.coords, approximatePoint, rememberedCenter],
+  )
 
-  const seedCenterRef = useRef<MapCenterTarget | null>(null)
+  const [seedCenter, setSeedCenter] = useState<MapCenterTarget | null>(null)
   const adoptedSourceRef = useRef<MapCenterSource | null>(null)
-  if (seedCenterRef.current === null && centerPlan.center) {
-    seedCenterRef.current = centerPlan.center
+  useEffect(() => {
+    if (seedCenter !== null || !centerPlan.center) return
     adoptedSourceRef.current = centerPlan.source
-  }
-  const seedCenter = seedCenterRef.current
+    setSeedCenter(centerPlan.center)
+  }, [seedCenter, centerPlan])
 
   const approximatePointRef = useRef(approximatePoint)
-  approximatePointRef.current = approximatePoint
+  useEffect(() => {
+    approximatePointRef.current = approximatePoint
+  }, [approximatePoint])
   const onLocate = useCallback(() => {
     const requestGeneration = beginCameraRequest()
     void (async () => {
       const precise = await resolveLocation()
       const fallback = approximatePointRef.current
+      initialCenterOwnedRef.current = true
       if (precise) {
         adoptedSourceRef.current = "precise"
         centerOnTarget({ ...precise, zoom: PRECISE_ZOOM }, requestGeneration)
@@ -342,15 +351,16 @@ export default function MapHomeScreen() {
     routeFocused,
   })
 
-  const planCenter = centerPlan.center
-  const planSource = centerPlan.source
   useEffect(() => {
     if (initialCenterOwnedRef.current) return
-    if (!planCenter || !planSource) return
-    if (!shouldAdoptCenter(adoptedSourceRef.current, planSource)) return
-    adoptedSourceRef.current = planSource
-    centerOnTarget(planCenter)
-  }, [planCenter, planSource, centerOnTarget])
+    if (seedCenter === null) return
+    const { center, source } = centerPlan
+    if (!center || !source) return
+    if (!shouldAdoptCenter(adoptedSourceRef.current, source)) return
+    adoptedSourceRef.current = source
+    initialCenterOwnedRef.current = true
+    centerOnTarget(center)
+  }, [centerPlan, seedCenter, centerOnTarget])
 
   useEffect(() => {
     if (primerPlan !== "prompt") return
@@ -365,8 +375,8 @@ export default function MapHomeScreen() {
   const onPrimerUseLocation = useCallback(() => {
     answerPrimer()
     setLocationChoice("precise")
-    void resolveLocation()
-  }, [answerPrimer, resolveLocation, setLocationChoice])
+    onLocate()
+  }, [answerPrimer, onLocate, setLocationChoice])
   const onPrimerApproximate = useCallback(() => {
     answerPrimer()
     setLocationChoice("approximate")
@@ -466,51 +476,49 @@ export default function MapHomeScreen() {
   const focusedPinId = active?.kind === "pin" ? (active.id ?? null) : null
   const focusedCleanupId = active?.kind === "cleanup" ? (active.id ?? null) : null
 
-  const mapSeed = mapLifecycleRef.current.lastViewport ?? seedCenter
-  const mapElement = useMemo(
-    () =>
-      mapSeed === null ? (
-        <MapPending />
-      ) : (
-        <ManagedMap
-          onMapHandle={setMapHandle}
-          onInstanceRegionChange={onRegionChange}
-          initialCenter={mapLifecycleRef.current.lastViewport ?? mapSeed}
-          reports={pins}
-          reportAggregates={reportAggregates}
-          cleanups={eventsVisible ? cleanupItems : []}
-          userLocation={location.coords}
-          showUserLocation={location.permission === "granted"}
-          onPressPin={onPressPin}
-          onPressCleanup={onPressCleanup}
-          onPressCluster={onPressCluster}
-          onPressBlend={onPressBlend}
-          onPressMap={onMapPress}
-          onLongPressMap={onLongPressMap}
-          focusedPinId={focusedPinId}
-          focusedCleanupId={focusedCleanupId}
-        />
-      ),
-    [
-      mapSeed,
-      setMapHandle,
-      onRegionChange,
-      location.coords,
-      location.permission,
-      pins,
-      reportAggregates,
-      cleanupItems,
-      eventsVisible,
-      onPressPin,
-      onPressCleanup,
-      onPressCluster,
-      onPressBlend,
-      onMapPress,
-      onLongPressMap,
-      focusedPinId,
-      focusedCleanupId,
-    ],
-  )
+  const mapElement = useMemo(() => {
+    const mapSeed = mapLifecycleRef.current.lastViewport ?? seedCenter
+    return mapSeed === null ? (
+      <MapPending />
+    ) : (
+      <ManagedMap
+        onMapHandle={setMapHandle}
+        onInstanceRegionChange={onRegionChange}
+        initialCenter={mapSeed}
+        reports={pins}
+        reportAggregates={reportAggregates}
+        cleanups={eventsVisible ? cleanupItems : []}
+        userLocation={location.coords}
+        showUserLocation={location.permission === "granted"}
+        onPressPin={onPressPin}
+        onPressCleanup={onPressCleanup}
+        onPressCluster={onPressCluster}
+        onPressBlend={onPressBlend}
+        onPressMap={onMapPress}
+        onLongPressMap={onLongPressMap}
+        focusedPinId={focusedPinId}
+        focusedCleanupId={focusedCleanupId}
+      />
+    )
+  }, [
+    seedCenter,
+    setMapHandle,
+    onRegionChange,
+    location.coords,
+    location.permission,
+    pins,
+    reportAggregates,
+    cleanupItems,
+    eventsVisible,
+    onPressPin,
+    onPressCleanup,
+    onPressCluster,
+    onPressBlend,
+    onMapPress,
+    onLongPressMap,
+    focusedPinId,
+    focusedCleanupId,
+  ])
 
   const nestedShell = useNestedShellStore()
   const renderRootBody = useCallback(
