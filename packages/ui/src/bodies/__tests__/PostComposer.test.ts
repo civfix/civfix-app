@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { pageBottomReserve } from "../../shell/bodyLayout"
 import type { TFunction } from "i18next"
 import type { CleanupDTO } from "@civfix/shared"
 import {
@@ -147,7 +148,9 @@ describe("PostComposer presentation model", () => {
     expect(native).toMatch(
       /const keyboardReserve = useKeyboardReserve\(\{ enabled: keyboardAvoidance && active \}\)/,
     )
-    expect(native).toMatch(/paddingBottom: paddingBottom \+ keyboardReserve/)
+    expect(pageBottomReserve("composer")).toBe("box")
+    expect(native).toMatch(/const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/)
+    expect(native).toMatch(/paddingBottom: boxReserve, paddingTop/)
   })
 
   it("keeps the pill panels one-at-a-time via explicit toggles", () => {

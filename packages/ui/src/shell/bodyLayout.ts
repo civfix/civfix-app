@@ -70,6 +70,20 @@ export function resolveBodyLayout(
   return SHEET_ONLY_KINDS.has(kind) ? BODY_LAYOUT[kind] : "full"
 }
 
+export type PageBottomReserve = "box" | "content"
+
+const PINNED_FOOTER_KINDS: ReadonlySet<DetailKind> = new Set<DetailKind>([
+  "thread",
+  "new-group",
+  "new-channel",
+  "composer",
+  "post-thread",
+])
+
+export function pageBottomReserve(kind: DetailEntry["kind"]): PageBottomReserve {
+  return kind !== "view" && PINNED_FOOTER_KINDS.has(kind) ? "box" : "content"
+}
+
 export type PortraitDetailPresentation = "none" | "sheet" | "full"
 
 export interface PortraitShellPlan {

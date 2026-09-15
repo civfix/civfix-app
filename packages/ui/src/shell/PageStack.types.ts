@@ -49,7 +49,10 @@ export interface PageStackProps {
    * The safe-area padding a page wears. Applied INSIDE this host (per layer on native, on the host's own
    * box on web) rather than on the shell's overlay wrapper: a native layer must cover the full screen -
    * background and all - while it slides, and an absolutely-positioned child of a PADDED box is laid out
-   * against the padding edge, which would leave the status-bar strip showing whatever is behind.
+   * against the padding edge, which would leave the status-bar strip showing whatever is behind. On
+   * native the BOTTOM half is routed per page (`pageBottomReserve`): a page whose body owns its scroll
+   * wears it as scroll-CONTENT padding, so its list runs under the home indicator instead of being cut
+   * off above a strip of layer background; only a footer-pinning page keeps it on the box.
    */
   insets: { paddingTop: number; paddingBottom: number }
   /** The scroll host every page body consumes (`PLAIN_SCROLL_HOST` or the keyboard-aware one). */

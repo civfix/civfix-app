@@ -295,6 +295,7 @@ describe("I6 the composer carve-out is matched by a reserve on BOTH page stacks"
     expect(native).toMatch(
       /const keyboardReserve = useKeyboardReserve\(\{ enabled: keyboardAvoidance && active \}\)/,
     )
-    expect(native).toMatch(/paddingBottom: paddingBottom \+ keyboardReserve/)
+    expect(native).toMatch(/const boxReserve = \(reserve === "box" \? paddingBottom : 0\) \+ keyboardReserve/)
+    expect(native).toMatch(/paddingBottom: boxReserve, paddingTop/)
   })
 })

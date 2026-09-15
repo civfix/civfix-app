@@ -67,6 +67,7 @@ import { SheetHeader } from "./SheetHeader.shared"
 import { armCollapse, shouldCollapseOnSettle, COLLAPSE_SWAP_AT } from "./dragCollapse"
 import { defaultRenderBody } from "./BodyRouter"
 import { ScrollHostProvider } from "./ScrollHost"
+import { makeContentBottomReserveScrollHost } from "./ContentBottomReserve"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
 import { makeMinimizeAwareScrollHost } from "./MinimizeAwareScroll.native"
 import { makeSheetHandoffScrollHost } from "./SheetHandoffScroll.native"
@@ -132,31 +133,20 @@ const SHEET_SCROLL_HOST = makeMinimizeAwareScrollHost(
  * Add the safe-area BOTTOM inset to a scrollable's content padding (round 5 fix). The flush-bottom modal
  * card (no gorhom bottomInset, FLOAT_BOTTOM 0) means a scroll body's content now runs to the physical
  * screen bottom — so the scroll CONTENT reserves insets.bottom, letting the last row scroll up clear of
- * the home indicator / Android nav bar while the glass card itself stays flush. Additive merge (flatten +
- * add), exactly like KeyboardAwareScroll's bottomReserve, so each body's own bottom gutter (e.g.
- * ProfileBody / ReportDetailBody's space["10"]) is kept on top of the inset.
+ * the home indicator / Android nav bar while the glass card itself stays flush. The additive merge is
+ * ContentBottomReserve's (shared with the page stack, which routes a page's safe-area bottom the same
+ * way), so each body's own bottom gutter (e.g. ProfileBody / ReportDetailBody's space["10"]) is kept on
+ * top of the inset.
  */
-function makeSafeAreaPaddedScroll(Base: React.ComponentType<any>): React.ComponentType<any> {
-  const SafeAreaPaddedScroll = React.forwardRef<any, any>(function SafeAreaPaddedScroll(
-    { contentContainerStyle, ...rest },
-    ref,
-  ) {
-    const insets = useSafeAreaInsets()
-    const merged = useMemo(() => {
-      const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
-      const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
-      return [contentContainerStyle, { paddingBottom: basePad + insets.bottom }]
-    }, [contentContainerStyle, insets.bottom])
-    return <Base ref={ref} contentContainerStyle={merged} {...rest} />
-  })
-  return SafeAreaPaddedScroll as unknown as React.ComponentType<any>
+function useSafeAreaBottom(): number {
+  return useSafeAreaInsets().bottom
 }
 
 /** SHEET_SCROLL_HOST with the safe-area bottom added to the scroll content (scroll-layout bodies). */
-const SHEET_SCROLL_HOST_SAFE_BOTTOM = {
-  ScrollView: makeSafeAreaPaddedScroll(SHEET_SCROLL_HOST.ScrollView),
-  FlatList: makeSafeAreaPaddedScroll(SHEET_SCROLL_HOST.FlatList),
-}
+const SHEET_SCROLL_HOST_SAFE_BOTTOM = makeContentBottomReserveScrollHost(
+  SHEET_SCROLL_HOST,
+  useSafeAreaBottom,
+)
 
 /**
  * The scroll host for the ACTIVE body: "scroll" bodies get the safe-area-padded host (their scrollable IS
