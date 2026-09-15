@@ -169,7 +169,9 @@ export const BubbleAttachments = React.memo(function BubbleAttachments({
   )
 })
 
-function FlashOverlay({ mine, rounded }: { mine: boolean; rounded?: boolean }) {
+type FlashShape = "bubble" | "rounded" | "card"
+
+function FlashOverlay({ mine, shape = "bubble" }: { mine: boolean; shape?: FlashShape }) {
   const styles = useConversationStyles()
   const v = useRef(new Animated.Value(0)).current
   useEffect(() => {
@@ -186,7 +188,7 @@ function FlashOverlay({ mine, rounded }: { mine: boolean; rounded?: boolean }) {
       pointerEvents="none"
       style={[
         StyleSheet.absoluteFillObject,
-        rounded ? styles.flashOverlayRounded : styles.flashOverlayBubble,
+        shape === "rounded" ? styles.flashOverlayRounded : shape === "card" ? styles.flashOverlayCard : styles.flashOverlayBubble,
         mine ? styles.flashOverlayMine : styles.flashOverlayTheirs,
         { opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0, mine ? 0.35 : 0.16] }) },
       ]}
@@ -342,6 +344,7 @@ export const Bubble = React.memo(function Bubble({
     [body, message.mentions, message.cityMention?.handle, linkOrigins],
   )
   const embedPlan = useMemo(() => planChatEmbeds(bodyTokens), [bodyTokens])
+  const bare = embedPlan.linkOnly && !message.replyTo
   const openEdit = useCallback(() => {
     if (canEdit && message.id) onEdit(message)
   }, [canEdit, message, onEdit])
@@ -369,7 +372,7 @@ export const Bubble = React.memo(function Bubble({
           <Icon icon={iconMap.Ban} size={13} color={th.colors.textSubtle} />
           <Text style={styles.tombstoneBubbleText}>{t("bubble.removed")}</Text>
         </View>
-        {flash ? <FlashOverlay mine={false} rounded /> : null}
+        {flash ? <FlashOverlay mine={false} shape="rounded" /> : null}
       </View>
     )
   }
@@ -506,7 +509,9 @@ export const Bubble = React.memo(function Bubble({
   const closeContextMenu = () => setMenuMode((m) => (m === "menu" ? "closed" : m))
   const reactions = message.reactions ?? []
   const rowKey = message.clientId ?? message.id
-  const tintStyle = mine ? styles.mentionTokenMine : styles.mentionToken
+  const tinted = mine && !bare
+  const tintStyle = tinted ? styles.mentionTokenMine : styles.mentionToken
+  const bubbleChrome = bare ? styles.bubbleBare : mine ? styles.bubbleMine : styles.bubbleTheirs
   const bodyContent = renderChatTokens(bodyTokens, {
     body,
     mentions: message.mentions,
@@ -578,11 +583,11 @@ export const Bubble = React.memo(function Bubble({
           onOpen={onOpenEmbed}
         />
       ) : null}
-      <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={mine} disabled={!reactable} />
+      <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={tinted} disabled={!reactable} />
     </>
   )
   const bubbleClone = !menuEverOpened ? null : hasBody ? (
-    <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>{bubbleInner}</View>
+    <View style={[styles.bubble, bubbleChrome]}>{bubbleInner}</View>
   ) : (
     <BubbleAttachments attachments={atts} mine={mine} />
   )
@@ -625,9 +630,9 @@ export const Bubble = React.memo(function Bubble({
       ) : null}
       <View style={styles.bubbleRow}>
         {!hasBody ? null : isWeb ? (
-          <View ref={menuAnchorRef} style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
+          <View ref={menuAnchorRef} style={[styles.bubble, bubbleChrome]}>
             {bubbleInner}
-            {flash ? <FlashOverlay mine={mine} /> : null}
+            {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}
           </View>
         ) : (
           <Pressable
@@ -636,10 +641,10 @@ export const Bubble = React.memo(function Bubble({
             onLongPress={menuAvailable ? openContextMenu : undefined}
             delayLongPress={300}
             {...focusRingProps}
-            style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}
+            style={[styles.bubble, bubbleChrome]}
           >
             {bubbleInner}
-            {flash ? <FlashOverlay mine={mine} /> : null}
+            {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}
           </Pressable>
         )}
         {isWeb && menuAvailable ? (
@@ -692,7 +697,7 @@ export const Bubble = React.memo(function Bubble({
       {!hasBody ? (
         <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={false} disabled={!reactable} />
       ) : null}
-      {flash && !hasBody ? <FlashOverlay mine={false} rounded /> : null}
+      {flash && !hasBody ? <FlashOverlay mine={false} shape="rounded" /> : null}
 
       {menuAvailable && menuEverOpened ? (() => {
         const model = buildMenuModel()

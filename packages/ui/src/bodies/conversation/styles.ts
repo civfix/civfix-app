@@ -209,6 +209,9 @@ export const useConversationStyles = makeThemedStyles((t) => ({
   flashOverlayRounded: {
     borderRadius: t.radius.md,
   },
+  flashOverlayCard: {
+    borderRadius: t.radius.lg,
+  },
   flashOverlayTheirs: {
     backgroundColor: t.colors.brand.bloom,
   },
@@ -269,6 +272,11 @@ export const useConversationStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     borderBottomLeftRadius: 6,
     ...t.shadows.s1,
+  },
+  bubbleBare: {
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    borderRadius: t.radius.lg,
   },
   bubbleFailed: {
     backgroundColor: t.colors.bloom["600"],

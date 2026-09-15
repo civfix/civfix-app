@@ -12,6 +12,7 @@ const CLASSIFIER = code(read("../conversation/civfixLinks.ts"))
 const SCHEDULER = code(read("../conversation/embedScheduler.ts"))
 const SCOPE = code(read("../conversation/chatEmbedScope.ts"))
 const CONVERSATION = code(read("../ConversationBody.tsx"))
+const STYLES = code(read("../conversation/styles.ts"))
 const REPORT_CARD = code(read("../LinkedReportCard.tsx"))
 const EVENT_CARD = code(read("../LinkedEventCard.tsx"))
 const LOCALES = ["en", "es", "de", "ko"].map((locale) => ({
@@ -191,5 +192,31 @@ describe("only the cards the reader can see are allowed to fetch", () => {
     expect(SCHEDULER).not.toMatch(/from "react/)
     expect(SCHEDULER).not.toMatch(/from "\.\/Chat/)
     expect(SCHEDULER).not.toMatch(/from "\.\.\/\.\.\/data/)
+  })
+})
+
+describe("a link-only message is drawn as its card, never as a tinted bubble framing it", () => {
+  it("drops the bubble chrome when the body is nothing but the link and there is no quote above it", () => {
+    expect(BUBBLE).toContain("const bare = embedPlan.linkOnly && !message.replyTo")
+    expect(BUBBLE).toContain("const bubbleChrome = bare ? styles.bubbleBare : mine ? styles.bubbleMine : styles.bubbleTheirs")
+    expect(BUBBLE.match(/\[styles\.bubble, bubbleChrome\]/g)?.length).toBe(3)
+    expect(BUBBLE).not.toMatch(/styles\.bubble, mine \? styles\.bubbleMine/)
+    expect(STYLES).toMatch(/bubbleBare: \{\s*paddingHorizontal: 0,\s*paddingVertical: 0,\s*borderRadius: t\.radius\.lg,\s*\}/)
+  })
+
+  it("styles the chips, the flash and the fallback link for the page, not the tint, once the bubble is bare", () => {
+    expect(BUBBLE).toContain("const tinted = mine && !bare")
+    expect(BUBBLE).toContain("const tintStyle = tinted ? styles.mentionTokenMine : styles.mentionToken")
+    expect(BUBBLE).toContain("<ReactionChips reactions={reactions} onToggle={toggleReaction} mine={tinted} disabled={!reactable} />")
+    expect(BUBBLE.match(/<FlashOverlay mine=\{tinted\} shape=\{bare \? "card" : "bubble"\} \/>/g)?.length).toBe(2)
+    expect(STYLES).toMatch(/flashOverlayCard: \{\s*borderRadius: t\.radius\.lg,\s*\}/)
+  })
+
+  it("paints every card on the neutral surface with the hairline border, in both schemes", () => {
+    expect(EMBEDS).toMatch(
+      /card: \{[^}]*borderWidth: StyleSheet\.hairlineWidth,\s*borderColor: t\.colors\.border,\s*backgroundColor: t\.colors\.surface,/,
+    )
+    expect(EMBEDS).toMatch(/cardHovered: \{\s*borderColor: t\.colors\.borderStrong,\s*backgroundColor: t\.colors\.surfaceTint,\s*\}/)
+    expect(EMBEDS).not.toMatch(/bloom|danger|accent|brand\./)
   })
 })
