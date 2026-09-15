@@ -12,6 +12,6 @@ export {
   eventPinTarget,
   reportPinTarget,
   clusterToneFor,
-  clusterBubbleFill,
+  clusterBubbleAppearance,
 } from "./appearance"
-export type { PinTarget, PinAppearance, ClusterTone } from "./appearance"
+export type { PinTarget, PinAppearance, ClusterTone, ClusterBubbleAppearance } from "./appearance"

@@ -59,6 +59,18 @@ describe("createIdleRunner", () => {
     expect(run).toHaveBeenCalledTimes(1)
   })
 
+  it("refuses every later request once disposed", () => {
+    const run = vi.fn()
+    const runner = createIdleRunner(run, { intervalMs: 100, now: () => Date.now() })
+    runner.dispose()
+    runner.request()
+    runner.flush()
+    vi.advanceTimersByTime(1000)
+    runner.request()
+    vi.advanceTimersByTime(1000)
+    expect(run).not.toHaveBeenCalled()
+  })
+
   it("defaults to the shared map-idle interval", () => {
     const run = vi.fn()
     const runner = createIdleRunner(run)

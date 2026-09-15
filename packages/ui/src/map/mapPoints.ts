@@ -37,15 +37,14 @@ export function mapPointsFor(input: MapPointsInput): MapPoint[] {
       reports: b.reports,
     })
   }
+  if (points.length > 0) return points
+  const seen = new Set<string>()
   for (const a of input.aggregates) {
     if (a.count <= 0 || !finite(a.lat) || !finite(a.lng)) continue
-    points.push({
-      kind: "aggregate",
-      id: positionKey(a.lng, a.lat),
-      lat: a.lat,
-      lng: a.lng,
-      count: a.count,
-    })
+    const id = positionKey(a.lng, a.lat)
+    if (seen.has(id)) continue
+    seen.add(id)
+    points.push({ kind: "aggregate", id, lat: a.lat, lng: a.lng, count: a.count })
   }
   return points
 }

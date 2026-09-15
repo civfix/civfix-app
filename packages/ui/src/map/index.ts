@@ -21,16 +21,19 @@ export {
   eventPinTarget,
   reportPinTarget,
   clusterToneFor,
-  clusterBubbleFill,
+  clusterBubbleAppearance,
 } from "./pins"
-export type { PinTarget, PinAppearance, ClusterTone } from "./pins"
+export type { PinTarget, PinAppearance, ClusterTone, ClusterBubbleAppearance } from "./pins"
 export {
   CLUSTER_RADIUS,
   CLUSTER_MAX_ZOOM,
+  CLUSTER_LIST_ZOOM,
   CLUSTER_MIN_POINTS,
   CLUSTER_ZOOM_STEP,
   AGGREGATE_EXPAND_ZOOM,
   clusterZoomTarget,
+  clusterFallbackZoom,
+  clusterListReports,
   reportsOfPoints,
 } from "./clusterer"
 export type { MapPoint, ClusterNode, ClusterWeights } from "./clusterer"

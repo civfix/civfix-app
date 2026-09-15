@@ -16,6 +16,7 @@ export function createIdleRunner(run: () => void, options: IdleRunnerOptions = {
   const now = options.now ?? Date.now
   let timer: ReturnType<typeof setTimeout> | null = null
   let lastRunAt = Number.NEGATIVE_INFINITY
+  let disposed = false
 
   const invoke = () => {
     timer = null
@@ -30,7 +31,7 @@ export function createIdleRunner(run: () => void, options: IdleRunnerOptions = {
 
   return {
     request: () => {
-      if (timer !== null) return
+      if (disposed || timer !== null) return
       const waited = now() - lastRunAt
       if (waited >= intervalMs) {
         invoke()
@@ -39,9 +40,13 @@ export function createIdleRunner(run: () => void, options: IdleRunnerOptions = {
       timer = setTimeout(invoke, intervalMs - waited)
     },
     flush: () => {
+      if (disposed) return
       cancel()
       invoke()
     },
-    dispose: cancel,
+    dispose: () => {
+      disposed = true
+      cancel()
+    },
   }
 }

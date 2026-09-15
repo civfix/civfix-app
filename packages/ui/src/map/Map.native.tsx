@@ -29,7 +29,15 @@ import { useMapFocus } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { longPressHitsMarker, type LongPressMarker } from "./longPressGate"
-import { clusterFallbackZoom, clusterZoomTarget, reportsOfPoints, type ClusterNode } from "./clusterer"
+import {
+  clusterFallbackZoom,
+  clusterListReports,
+  clusterZoomTarget,
+  expansionZoomOfCluster,
+  WORLD_BBOX,
+  type ClusterNode,
+  type MapClusterIndex,
+} from "./clusterer"
 import type { MapProps, MapHandle } from "./types"
 
 const DEFAULT_CENTER: [number, number] = [-98.5795, 39.8283]
@@ -37,12 +45,16 @@ const DEFAULT_ZOOM = 13
 const INITIAL_FALLBACK_ZOOM = 4
 const FOCUS_ZOOM = 16
 const CLUSTER_FLY_MS = 450
+const MARKER_PRESS_GUARD_MS = 350
+const NO_REPORTS: MapProps["reports"] = []
+const NO_CLEANUPS: MapProps["cleanups"] = []
+const NO_AGGREGATES: MapProps["reportAggregates"] = []
 
 export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref) {
   const {
-    reports = [],
-    cleanups = [],
-    reportAggregates = [],
+    reports = NO_REPORTS,
+    cleanups = NO_CLEANUPS,
+    reportAggregates = NO_AGGREGATES,
     focusedPinId = null,
     focusedCleanupId = null,
     userLocation = null,
@@ -84,16 +96,25 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   onLongPressMapRef.current = onLongPressMap
   const mapSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 })
 
-  const { query, leaves, expansionZoom } = useClusters(points)
-  const leavesRef = useRef(leaves)
-  leavesRef.current = leaves
-  const expansionZoomRef = useRef(expansionZoom)
-  expansionZoomRef.current = expansionZoom
+  const { index, query } = useClusters(points)
+  const indexRef = useRef<MapClusterIndex>(index)
   const [nodes, setNodes] = useState<ClusterNode[]>([])
   const nodesByMarkerRef = useRef<globalThis.Map<string, ClusterNode>>(new globalThis.Map())
   const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
   const onRegionChangeRef = useRef(onRegionChange)
   onRegionChangeRef.current = onRegionChange
+
+  const initialCenterRef = useRef(initialCenter)
+  const initialViewState = useMemo(
+    () =>
+      initialCenterRef.current
+        ? {
+            center: [initialCenterRef.current.lng, initialCenterRef.current.lat] as [number, number],
+            zoom: initialCenterRef.current.zoom ?? DEFAULT_ZOOM,
+          }
+        : { center: DEFAULT_CENTER, zoom: INITIAL_FALLBACK_ZOOM },
+    [],
+  )
 
   const focus = useMapFocus((s) => s.focus)
   const droppedPin = useDroppedPin((s) => s.pin)
@@ -101,8 +122,11 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const recomputeRef = useRef<() => void>(() => {})
   recomputeRef.current = () => {
     const region = lastRegionRef.current
-    if (!region) return
-    setNodes(query(region.bbox, region.zoom))
+    setNodes(
+      region
+        ? query(region.bbox, region.zoom)
+        : query(WORLD_BBOX, initialViewState.zoom),
+    )
   }
   const runnerRef = useRef<IdleRunner | null>(null)
   if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => recomputeRef.current())
@@ -146,18 +170,6 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     [],
   )
 
-  const initialCenterRef = useRef(initialCenter)
-  const initialViewState = useMemo(
-    () =>
-      initialCenterRef.current
-        ? {
-            center: [initialCenterRef.current.lng, initialCenterRef.current.lat] as [number, number],
-            zoom: initialCenterRef.current.zoom ?? DEFAULT_ZOOM,
-          }
-        : { center: DEFAULT_CENTER, zoom: INITIAL_FALLBACK_ZOOM },
-    [],
-  )
-
   const cartoApiKey = useCartoApiKey()
   const scheme = useTheme().scheme
   const resolvedStyle = useMemo(
@@ -184,27 +196,39 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   )
 
   const handleMapLoad = useCallback(() => {
-    void mapNativeRef.current
-      ?.getViewState()
+    const pending = mapNativeRef.current?.getViewState()
+    if (!pending) {
+      runner.request()
+      return
+    }
+    void pending
       .then((view: ViewState) => {
         const [west, south, east, north] = view.bounds
         commitRegion({ west, south, east, north }, view.zoom)
       })
-      .catch(() => {})
-  }, [commitRegion])
+      .catch(() => runner.request())
+  }, [commitRegion, runner])
 
   useEffect(() => {
-    if (lastRegionRef.current) runner.flush()
-  }, [query, runner])
+    indexRef.current = index
+    runner.flush()
+  }, [index, query, runner])
 
   useEffect(() => {
     if (!focus) return
     cameraRef.current?.flyTo({ center: [focus.lng, focus.lat], zoom: FOCUS_ZOOM, duration: 600 })
   }, [focus?.id, focus?.lat, focus?.lng])
 
-  const handleMapPress = (_event: NativeSyntheticEvent<PressEvent | PressEventWithFeatures>) => {
-    onPressMap?.()
-  }
+  const markerPressedAtRef = useRef(0)
+  const onPressMapRef = useRef(onPressMap)
+  onPressMapRef.current = onPressMap
+  const handleMapPress = useCallback(
+    (_event: NativeSyntheticEvent<PressEvent | PressEventWithFeatures>) => {
+      if (Date.now() - markerPressedAtRef.current < MARKER_PRESS_GUARD_MS) return
+      onPressMapRef.current?.()
+    },
+    [],
+  )
 
   const handleMapLongPress = useCallback((event: NativeSyntheticEvent<PressEvent>) => {
     const handler = onLongPressMapRef.current
@@ -225,16 +249,19 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   }, [])
 
   const handlePressPin = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
+    markerPressedAtRef.current = Date.now()
     const id = event.nativeEvent.id.slice("pin-".length)
     hapticsRef.current.selection()
     onPressPinRef.current?.(id)
   }, [])
   const handlePressCluster = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
+    markerPressedAtRef.current = Date.now()
     const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
     if (!node || node.type !== "cluster") return
     hapticsRef.current.selection()
     const currentZoom = lastRegionRef.current?.zoom ?? DEFAULT_ZOOM
-    const expansion = node.clusterId === null ? null : expansionZoomRef.current(node.clusterId)
+    const expansion =
+      node.clusterId === null ? null : expansionZoomOfCluster(indexRef.current, node.clusterId)
     const target = clusterZoomTarget(node, currentZoom, expansion)
     const flyToCluster = (zoom: number) =>
       cameraRef.current?.flyTo({ center: [node.lng, node.lat], zoom, duration: CLUSTER_FLY_MS })
@@ -243,20 +270,21 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       return
     }
     const handler = onPressClusterRef.current
-    const clusterReports =
-      node.clusterId === null ? [] : reportsOfPoints(leavesRef.current(node.clusterId))
-    if (handler && clusterReports.length > 0) {
-      handler(clusterReports)
+    const listing = clusterListReports(indexRef.current, node)
+    if (handler && listing !== null && listing.length > 0) {
+      handler(listing)
       return
     }
     flyToCluster(clusterFallbackZoom(currentZoom))
   }, [])
   const handlePressCleanup = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
+    markerPressedAtRef.current = Date.now()
     const id = event.nativeEvent.id.slice("cleanup-".length)
     hapticsRef.current.selection()
     onPressCleanupRef.current?.(id)
   }, [])
   const handlePressBlend = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
+    markerPressedAtRef.current = Date.now()
     const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
     if (!node || node.type !== "blend") return
     hapticsRef.current.selection()
@@ -278,9 +306,12 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       byMarker.set(markerId, node)
       return { node, markerId }
     })
-    nodesByMarkerRef.current = byMarker
-    return rendered
+    return { rendered, byMarker }
   }, [nodes])
+
+  useEffect(() => {
+    nodesByMarkerRef.current = markerNodes.byMarker
+  }, [markerNodes])
 
   return (
     <View
@@ -330,7 +361,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
         )
       ) : (
         <>
-          {markerNodes.map(({ node, markerId }) =>
+          {markerNodes.rendered.map(({ node, markerId }) =>
             node.type === "cluster" ? (
               <Marker
                 key={node.key}

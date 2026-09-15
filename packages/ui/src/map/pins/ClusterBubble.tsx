@@ -2,7 +2,7 @@ import React from "react"
 import { View } from "react-native"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text } from "../../typography"
-import { clusterBubbleFill, type ClusterTone } from "./appearance"
+import { clusterBubbleAppearance, type ClusterTone } from "./appearance"
 
 export const ClusterBubble = React.memo(function ClusterBubble({
   count,
@@ -15,6 +15,7 @@ export const ClusterBubble = React.memo(function ClusterBubble({
 }) {
   const styles = useStyles()
   const t = useTheme()
+  const { fill, label } = clusterBubbleAppearance(tone, t.scheme, t.colors.onAccent)
   return (
     <View
       style={[
@@ -24,11 +25,11 @@ export const ClusterBubble = React.memo(function ClusterBubble({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: clusterBubbleFill(tone, t.scheme),
+          backgroundColor: fill,
         },
       ]}
     >
-      <Text variant="bodyStrong" color={t.colors.onAccent}>
+      <Text variant="bodyStrong" color={label}>
         {count > 999 ? "999+" : String(count)}
       </Text>
     </View>

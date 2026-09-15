@@ -6,10 +6,12 @@ import {
   leavesOfCluster,
   reportsOfPoints,
   expansionZoomOfCluster,
+  clusterListReports,
   clusterZoomTarget,
   weightsOfPoint,
   CLUSTER_RADIUS,
   CLUSTER_MAX_ZOOM,
+  CLUSTER_LIST_ZOOM,
   CLUSTER_MIN_POINTS,
   CLUSTER_ZOOM_STEP,
   AGGREGATE_EXPAND_ZOOM,
@@ -55,6 +57,7 @@ describe("cluster threshold table", () => {
   it("pins the tuned knobs so a regression in them is visible", () => {
     expect(CLUSTER_RADIUS).toBe(56)
     expect(CLUSTER_MAX_ZOOM).toBe(15)
+    expect(CLUSTER_LIST_ZOOM).toBe(15)
     expect(CLUSTER_MIN_POINTS).toBe(2)
     expect(CLUSTER_ZOOM_STEP).toBe(2)
     expect(AGGREGATE_EXPAND_ZOOM).toBe(13)
@@ -203,24 +206,45 @@ describe("cluster drill-down", () => {
     expect(reportsOfPoints(leaves).map((r) => r.id).sort()).toEqual(["r1", "r2"])
   })
 
-  it("survives a stale cluster id without throwing", () => {
-    const index = buildIndex(denseReports(3))
-    expect(leavesOfCluster(index, 999999)).toEqual([])
-    expect(() => expansionZoomOfCluster(index, 999999)).not.toThrow()
-    const stale: ClusterNode = {
-      type: "cluster",
-      key: "c:0,0:2",
-      clusterId: 999999,
-      lng: 0,
-      lat: 0,
-      count: 2,
-      reportCount: 2,
-      eventCount: 0,
+  it("lists a pure-report cluster with exactly the reports its bubble counted", () => {
+    const index = buildIndex(denseReports(4))
+    const cluster = clustersOf(queryClusters(index, WORLD, 12))[0]!
+    const listing = clusterListReports(index, cluster)
+    expect(listing).not.toBeNull()
+    expect(listing).toHaveLength(cluster.count)
+  })
+
+  it("refuses to list a cluster whose bubble counts things the list cannot show", () => {
+    const withEvent = buildIndex([
+      reportPoint("r1", 34.05, -118.25),
+      eventPoint("e1", 34.0501, -118.2501),
+    ])
+    const eventCluster = clustersOf(queryClusters(withEvent, WORLD, 11))[0]!
+    expect(clusterListReports(withEvent, eventCluster)).toBeNull()
+
+    const withAggregate = buildIndex([
+      { kind: "aggregate", id: "a1", lat: 34.05, lng: -118.25, count: 12 },
+      { kind: "aggregate", id: "a2", lat: 34.0501, lng: -118.2501, count: 3 },
+    ])
+    const aggregateCluster = clustersOf(queryClusters(withAggregate, WORLD, 10))[0]!
+    expect(clusterListReports(withAggregate, aggregateCluster)).toBeNull()
+  })
+
+  it("has no list for a lone server aggregate", () => {
+    const index = buildIndex([{ kind: "aggregate", id: "a1", lat: 34.05, lng: -118.25, count: 7 }])
+    const node = queryClusters(index, WORLD, 10)[0]!
+    expect(clusterListReports(index, node)).toBeNull()
+  })
+
+  it("resolves every cluster it renders against the same index", () => {
+    const index = buildIndex(denseReports(9))
+    for (let zoom = 0; zoom <= CLUSTER_MAX_ZOOM; zoom += 1) {
+      for (const node of clustersOf(queryClusters(index, WORLD, zoom))) {
+        const clusterId = node.clusterId as number
+        expect(leavesOfCluster(index, clusterId)).toHaveLength(node.count)
+        expect(expansionZoomOfCluster(index, clusterId)).not.toBeNull()
+      }
     }
-    expect(clusterZoomTarget(stale, 12, expansionZoomOfCluster(index, 999999))).toBe(
-      CLUSTER_MAX_ZOOM + 1,
-    )
-    expect(clusterZoomTarget(stale, CLUSTER_MAX_ZOOM, 99)).toBeNull()
   })
 })
 
@@ -261,6 +285,10 @@ describe("clusterZoomTarget", () => {
   it("takes a server aggregate to at least the zoom where the server returns individual pins", () => {
     expect(clusterZoomTarget(cluster(null), 9, null)).toBe(AGGREGATE_EXPAND_ZOOM)
     expect(clusterZoomTarget(cluster(null), 12, null)).toBe(14)
+  })
+
+  it("refuses an aggregate tap that would not move the camera", () => {
+    expect(clusterZoomTarget(cluster(null), CLUSTER_MAX_ZOOM + 1, null)).toBeNull()
   })
 
   it("never hands the camera a non-finite zoom", () => {

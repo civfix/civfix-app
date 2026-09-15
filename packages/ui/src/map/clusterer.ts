@@ -44,10 +44,12 @@ export type ClusterNode =
 
 export const CLUSTER_RADIUS = 56
 export const CLUSTER_MAX_ZOOM = 15
+export const CLUSTER_LIST_ZOOM = 15
 export const CLUSTER_MIN_POINTS = 2
 export const CLUSTER_ZOOM_STEP = 2
 export const AGGREGATE_EXPAND_ZOOM = 13
 export const KEY_PRECISION = 5
+export const WORLD_BBOX: BBox = { west: -180, south: -85, east: 180, north: 85 }
 
 export type MapClusterIndex = Supercluster<MapPoint, ClusterWeights>
 
@@ -144,11 +146,7 @@ export function queryClusters(index: MapClusterIndex, bbox: BBox, zoom: number):
 }
 
 export function leavesOfCluster(index: MapClusterIndex, clusterId: number): MapPoint[] {
-  try {
-    return index.getLeaves(clusterId, Infinity).map((f) => f.properties)
-  } catch {
-    return []
-  }
+  return index.getLeaves(clusterId, Infinity).map((f) => f.properties)
 }
 
 export function reportsOfPoints(points: MapPoint[]): ReportPinDTO[] {
@@ -160,13 +158,18 @@ export function reportsOfPoints(points: MapPoint[]): ReportPinDTO[] {
   return reports
 }
 
+export function clusterListReports(
+  index: MapClusterIndex,
+  node: ClusterNode,
+): ReportPinDTO[] | null {
+  if (node.type !== "cluster" || node.clusterId === null) return null
+  const reports = reportsOfPoints(leavesOfCluster(index, node.clusterId))
+  return reports.length === node.count ? reports : null
+}
+
 export function expansionZoomOfCluster(index: MapClusterIndex, clusterId: number): number | null {
-  try {
-    const zoom = index.getClusterExpansionZoom(clusterId)
-    return Number.isFinite(zoom) ? zoom : null
-  } catch {
-    return null
-  }
+  const zoom = index.getClusterExpansionZoom(clusterId)
+  return Number.isFinite(zoom) ? zoom : null
 }
 
 export function clusterZoomTarget(
@@ -178,8 +181,11 @@ export function clusterZoomTarget(
   const zoom = Number.isFinite(currentZoom) ? currentZoom : 0
   const ceiling = CLUSTER_MAX_ZOOM + 1
   const stepped = Math.min(zoom + CLUSTER_ZOOM_STEP, ceiling)
-  if (node.clusterId === null) return Math.max(stepped, AGGREGATE_EXPAND_ZOOM)
-  if (Math.floor(zoom) >= CLUSTER_MAX_ZOOM) return null
+  if (node.clusterId === null) {
+    const aggregateTarget = Math.max(stepped, AGGREGATE_EXPAND_ZOOM)
+    return aggregateTarget > zoom ? aggregateTarget : null
+  }
+  if (Math.floor(zoom) >= CLUSTER_LIST_ZOOM) return null
   const target = expansion === null ? stepped : Math.min(Math.max(expansion, zoom + 1), ceiling)
   return target > zoom ? target : null
 }

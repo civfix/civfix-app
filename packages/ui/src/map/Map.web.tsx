@@ -29,14 +29,19 @@ import {
 import { useClusters } from "./useClusters"
 import { mapPointsFor } from "./mapPoints"
 import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
-import { clusterFallbackZoom, clusterZoomTarget, reportsOfPoints } from "./clusterer"
+import {
+  clusterFallbackZoom,
+  clusterListReports,
+  clusterZoomTarget,
+  expansionZoomOfCluster,
+} from "./clusterer"
 import { useLocationPick } from "./locationPickStore"
 import { useMapFocus } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { makePinElement, applyPinElementTheme } from "./LocationPicker.web"
 import { occludedCenterLng } from "./dropPinCamera"
-import type { ClusterNode } from "./clusterer"
+import type { ClusterNode, MapClusterIndex } from "./clusterer"
 import type { MapProps, MapHandle } from "./types"
 
 const MAP_FOCUS_STYLE_ID = "civfix-map-focus-ring"
@@ -67,6 +72,9 @@ const LONG_PRESS_MS = 500
 const LONG_PRESS_SLOP_PX = 10
 const LONG_PRESS_DEDUPE_MS = 700
 const CLUSTER_FLY_MS = 450
+const NO_REPORTS: MapProps["reports"] = []
+const NO_CLEANUPS: MapProps["cleanups"] = []
+const NO_AGGREGATES: MapProps["reportAggregates"] = []
 
 function shellOcclusionLeft(): number {
   const { view, stack } = useNavStore.getState()
@@ -100,9 +108,9 @@ interface Desired {
 export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref) {
   const { t } = useT("map-ui")
   const {
-    reports = [],
-    cleanups = [],
-    reportAggregates = [],
+    reports = NO_REPORTS,
+    cleanups = NO_CLEANUPS,
+    reportAggregates = NO_AGGREGATES,
     focusedPinId = null,
     focusedCleanupId = null,
     userLocation = null,
@@ -169,18 +177,16 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   const dropRootRef = React.useRef<Root | null>(null)
   const styleSchemeRef = React.useRef<ColorSchemeName | null>(null)
 
-  const { query, leaves, expansionZoom } = useClusters(points)
-  const expansionZoomRef = React.useRef(expansionZoom)
-  expansionZoomRef.current = expansionZoom
-  const leavesRef = React.useRef(leaves)
-  leavesRef.current = leaves
+  const { index, query } = useClusters(points)
+  const indexRef = React.useRef<MapClusterIndex>(index)
 
   const pressCluster = React.useCallback(
     (node: Extract<ClusterNode, { type: "cluster" }>) => {
       const map = mapRef.current
       if (!map) return
       const currentZoom = map.getZoom()
-      const expansion = node.clusterId === null ? null : expansionZoomRef.current(node.clusterId)
+      const expansion =
+        node.clusterId === null ? null : expansionZoomOfCluster(indexRef.current, node.clusterId)
       const target = clusterZoomTarget(node, currentZoom, expansion)
       const flyToCluster = (zoom: number) =>
         map.easeTo({ center: [node.lng, node.lat], zoom, duration: CLUSTER_FLY_MS })
@@ -189,10 +195,9 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
         return
       }
       const handler = onPressClusterRef.current
-      const clusterReports =
-        node.clusterId === null ? [] : reportsOfPoints(leavesRef.current(node.clusterId))
-      if (handler && clusterReports.length > 0) {
-        handler(clusterReports)
+      const listing = clusterListReports(indexRef.current, node)
+      if (handler && listing !== null && listing.length > 0) {
+        handler(listing)
         return
       }
       flyToCluster(clusterFallbackZoom(currentZoom))
@@ -582,8 +587,9 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   }, [mapReady, mapStyle, cartoApiKey, th.scheme])
 
   React.useEffect(() => {
+    indexRef.current = index
     if (mapReady) runner.flush()
-  }, [runner, mapReady, points, focusedPinId, focusedCleanupId, focus, th.scheme])
+  }, [runner, mapReady, index, points, focusedPinId, focusedCleanupId, focus, th.scheme])
 
   React.useEffect(() => {
     const map = mapRef.current

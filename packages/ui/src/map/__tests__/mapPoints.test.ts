@@ -55,6 +55,27 @@ describe("mapPointsFor", () => {
     ])
   })
 
+  it("ignores server aggregates whenever individual points are available", () => {
+    const points = mapPointsFor({
+      reports: [pin("r1")],
+      cleanups: [],
+      aggregates: [{ lat: 34.05, lng: -118.25, count: 9 }],
+    })
+    expect(points.map((p) => p.kind)).toEqual(["report"])
+  })
+
+  it("collapses aggregates that round to the same position into one point", () => {
+    const points = mapPointsFor({
+      reports: [],
+      cleanups: [],
+      aggregates: [
+        { lat: 34.05, lng: -118.25, count: 9 },
+        { lat: 34.050001, lng: -118.250001, count: 4 },
+      ],
+    })
+    expect(points).toHaveLength(1)
+  })
+
   it("drops empty aggregates and non-finite coordinates", () => {
     const points = mapPointsFor({
       reports: [pin("bad", Number.NaN)],
