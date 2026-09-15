@@ -37,9 +37,7 @@ export function readLastCenter(): RememberedCenter | null {
   try {
     const body = JSON.parse(raw) as unknown
     if (isStoredCenter(body)) return { lat: body.lat, lng: body.lng, zoom: body.zoom }
-  } catch {
-    // Corrupt value: fall through to the clear below.
-  }
+  } catch {}
   clearLastCenter()
   return null
 }
@@ -54,15 +52,11 @@ export function writeLastCenter(center: { lat: number; lng: number; zoom?: numbe
   if (center.zoom == null || !isStoredCenter(body)) return
   try {
     storage.set(LAST_MAP_CENTER_KEY, JSON.stringify(body))
-  } catch {
-    // Storage unavailable: the snapshot is an optimization, not state.
-  }
+  } catch {}
 }
 
 export function clearLastCenter(): void {
   try {
     storage.delete(LAST_MAP_CENTER_KEY)
-  } catch {
-    // Storage unavailable: nothing to do.
-  }
+  } catch {}
 }
