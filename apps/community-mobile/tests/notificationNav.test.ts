@@ -44,9 +44,26 @@ test("a tapped notification decides through the one action model before it touch
   const decided = body.indexOf("internalHrefAction({")
   const applied = body.indexOf('if (action !== "none")')
   assert.ok(decided > -1 && applied > decided)
-  assert.match(body, /bridgeFocused: key !== null && key === nativeBridgeKey\(readFocusedRoute\(\)\)/)
-  assert.match(body, /shellFocused: shellHostsEntries\(readFocusedRoute\(\)\)/)
+  assert.match(body, /const focused = readFocusedRoute\(\)/)
+  assert.match(body, /bridgeFocused: key !== null && key === nativeBridgeKey\(focused\)/)
+  assert.match(body, /shellFocused: shellHostsEntries\(focused\)/)
   assert.match(body, /activeKey: entryIdentity\(useNavStore\.getState\(\)\.active\)/)
+})
+
+test("an entity link tapped on a full-screen route is pushed on top of it, never dismissed", () => {
+  const apply = adapter.slice(adapter.indexOf("export function applyInternalHref"))
+  const body = apply.slice(0, apply.indexOf("\n}"))
+  assert.match(body, /const detailRoute = threadEntryRoute\(entry\)/)
+  assert.match(body, /routeFocused: focused !== null && pushDetailRoute !== null/)
+  assert.match(body, /detailRoute: detailRoute !== null/)
+  const pushed = body.indexOf('if (action === "push-route"')
+  const dismissed = body.indexOf('dismissToShell: action === "navigate-and-dismiss"')
+  assert.ok(pushed > -1 && dismissed > pushed)
+  assert.match(body, /pushDetailRoute\(detailRoute\)/)
+  assert.ok(
+    adapter.includes("router.push({ pathname: route.pathname as never, params: route.params })"),
+  )
+  assert.match(adapter, /pushDetailRoute = null/)
 })
 
 test("a tapped notification dismisses to the shell whenever the action says to", () => {

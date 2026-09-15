@@ -8,6 +8,8 @@ import {
   internalHrefAction,
   normalizeRouteName,
   shellHostsEntries,
+  type InternalHrefAction,
+  type InternalHrefInput,
 } from "./internalHref.ts"
 import { ROOT_ROUTE_NAME } from "./nestedShellSignal.ts"
 
@@ -25,14 +27,6 @@ function routeFiles(dir: string, prefix = ""): string[] {
     out.push(`${prefix}${name.slice(0, -".tsx".length)}`)
   }
   return out
-}
-
-const SHELL_HOSTED = {
-  entryKey: "person:u1:::::",
-  activeKey: null,
-  bridged: false,
-  bridgeFocused: false,
-  shellFocused: true,
 }
 
 test("the shell-host list names the root shell and nothing narrower", () => {
@@ -64,44 +58,53 @@ test("a full-screen route that hosts no shell is not one", () => {
   assert.equal(shellHostsEntries({}), false)
 })
 
-test("a link to the entry the shell is ALREADY showing changes nothing", () => {
-  assert.equal(
-    internalHrefAction({ ...SHELL_HOSTED, activeKey: SHELL_HOSTED.entryKey }),
-    "none",
-  )
+const IN_SHELL: InternalHrefInput = {
+  entryKey: "person:u1:::::",
+  activeKey: null,
+  bridged: false,
+  bridgeFocused: false,
+  shellFocused: true,
+  routeFocused: true,
+  detailRoute: true,
+}
+
+const IN_CONVERSATION: InternalHrefInput = { ...IN_SHELL, shellFocused: false }
+
+const COLD_START: InternalHrefInput = {
+  ...IN_SHELL,
+  shellFocused: false,
+  routeFocused: false,
+}
+
+const ACTIONS: readonly [string, InternalHrefInput, InternalHrefAction][] = [
+  ["a bridged entry whose own screen is already on top", { ...IN_SHELL, bridged: true, bridgeFocused: true }, "none"],
+  ["a bridged entry opened from anywhere else", { ...IN_CONVERSATION, bridged: true }, "navigate"],
+  ["the entry the focused shell is already showing", { ...IN_SHELL, activeKey: IN_SHELL.entryKey }, "none"],
+  ["another entry while a shell is focused", { ...IN_SHELL, activeKey: "pin:r1:::::" }, "navigate"],
+  ["an entity link tapped inside a full-screen route", IN_CONVERSATION, "push-route"],
+  ["an entity link to the entry the root shell happens to hold", { ...IN_CONVERSATION, activeKey: IN_CONVERSATION.entryKey }, "push-route"],
+  ["a link with no detail route of its own", { ...IN_CONVERSATION, detailRoute: false }, "navigate-and-dismiss"],
+  ["a deep link that arrives before any route is focused", COLD_START, "navigate-and-dismiss"],
+  ["a cold-start deep link with no detail route either", { ...COLD_START, detailRoute: false }, "navigate-and-dismiss"],
+]
+
+test("the internal-href action table", () => {
+  for (const [name, input, expected] of ACTIONS) {
+    assert.equal(internalHrefAction(input), expected, name)
+  }
 })
 
-test("a link to a different entry navigates in place while a shell is on top", () => {
-  assert.equal(internalHrefAction({ ...SHELL_HOSTED, activeKey: "pin:r1:::::" }), "navigate")
-  assert.equal(internalHrefAction(SHELL_HOSTED), "navigate")
+test("a link tapped in a conversation drills down instead of dismissing the conversation", () => {
+  assert.equal(internalHrefAction(IN_CONVERSATION), "push-route")
+  assert.notEqual(internalHrefAction(IN_CONVERSATION), "navigate-and-dismiss")
 })
 
-test("only a route that hosts no shell dismisses back to the root one", () => {
-  assert.equal(
-    internalHrefAction({ ...SHELL_HOSTED, shellFocused: false }),
-    "navigate-and-dismiss",
-  )
-  assert.equal(
-    internalHrefAction({ ...SHELL_HOSTED, shellFocused: false, activeKey: SHELL_HOSTED.entryKey }),
-    "navigate-and-dismiss",
-  )
+test("only a route with nothing to push falls back to dismissing to the root shell", () => {
+  assert.equal(internalHrefAction({ ...IN_CONVERSATION, detailRoute: false }), "navigate-and-dismiss")
+  assert.equal(internalHrefAction({ ...COLD_START, bridged: false }), "navigate-and-dismiss")
 })
 
-test("a bridged entry is left to the router bridge, never dismissed out from under it", () => {
-  const bridged = { ...SHELL_HOSTED, entryKey: "thread:room-1:dm::::", bridged: true }
-  assert.equal(internalHrefAction({ ...bridged, shellFocused: false }), "navigate")
-  assert.equal(internalHrefAction(bridged), "navigate")
-})
-
-test("a bridged entry whose own screen is already on top changes nothing", () => {
-  assert.equal(
-    internalHrefAction({
-      ...SHELL_HOSTED,
-      entryKey: "thread:room-1:dm::::",
-      bridged: true,
-      bridgeFocused: true,
-      shellFocused: false,
-    }),
-    "none",
-  )
+test("a focused shell still navigates in place, never pushing a second host for the same entry", () => {
+  assert.equal(internalHrefAction(IN_SHELL), "navigate")
+  assert.equal(internalHrefAction({ ...IN_SHELL, activeKey: IN_SHELL.entryKey }), "none")
 })

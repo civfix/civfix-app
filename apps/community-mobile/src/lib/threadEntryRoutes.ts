@@ -13,6 +13,7 @@ export function threadEntryRoute(entry: DetailEntry): ThreadEntryRoute | null {
       return entry.id ? { pathname: "/cleanups/[id]", params: { id: entry.id } } : null
     case "pin":
       return entry.id ? { pathname: "/pin/[id]", params: { id: entry.id } } : null
+    case "post":
     case "post-thread":
       return entry.id ? { pathname: "/post/[id]", params: { id: entry.id } } : null
     case "org":

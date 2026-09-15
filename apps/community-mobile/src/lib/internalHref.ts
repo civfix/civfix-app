@@ -26,7 +26,11 @@ export function shellHostsEntries(route: NativeRoute | null | undefined): boolea
   return !!route?.name && SHELL_HOST_ROUTE_NAMES.includes(normalizeRouteName(route.name))
 }
 
-export type InternalHrefAction = "none" | "navigate" | "navigate-and-dismiss"
+export type InternalHrefAction =
+  | "none"
+  | "navigate"
+  | "navigate-and-dismiss"
+  | "push-route"
 
 export interface InternalHrefInput {
   entryKey: string | null
@@ -34,11 +38,15 @@ export interface InternalHrefInput {
   bridged: boolean
   bridgeFocused: boolean
   shellFocused: boolean
+  routeFocused: boolean
+  detailRoute: boolean
 }
 
 export function internalHrefAction(input: InternalHrefInput): InternalHrefAction {
   if (input.bridgeFocused) return "none"
   if (input.bridged) return "navigate"
-  if (!input.shellFocused) return "navigate-and-dismiss"
-  return input.entryKey !== null && input.entryKey === input.activeKey ? "none" : "navigate"
+  if (input.shellFocused) {
+    return input.entryKey !== null && input.entryKey === input.activeKey ? "none" : "navigate"
+  }
+  return input.routeFocused && input.detailRoute ? "push-route" : "navigate-and-dismiss"
 }
