@@ -316,7 +316,10 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
         }
       }
       if (map.isStyleLoaded()) apply()
-      else map.once("styledata", apply)
+      map.on("style.load", apply)
+      return () => {
+        map.off("style.load", apply)
+      }
     }, [mapReady, radiusFeature, th.colors.brand.bloom, th.scheme])
 
     React.useEffect(() => {

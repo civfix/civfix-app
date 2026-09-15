@@ -24,4 +24,29 @@ describe("radiusCircleFeature", () => {
   it("never drops below eight steps", () => {
     expect(radiusCircleFeature(LA, 100, 2).geometry.coordinates[0]).toHaveLength(9)
   })
+
+  it("stays bounded at the poles: latitudes clamp to 90 and the ring stays finite", () => {
+    const ring = radiusCircleFeature({ lat: 89.999, lng: 12 }, 500).geometry.coordinates[0]!
+    for (const [lng, lat] of ring) {
+      expect(Number.isFinite(lng)).toBe(true)
+      expect(lat).toBeLessThanOrEqual(90)
+      expect(lat).toBeGreaterThanOrEqual(-90)
+      expect(Math.abs(lng - 12)).toBeLessThanOrEqual(180)
+    }
+  })
+
+  it("keeps a continuous ring across the antimeridian instead of wrapping vertices", () => {
+    const ring = radiusCircleFeature({ lat: -16.5, lng: 179.999 }, 500).geometry.coordinates[0]!
+    for (let i = 1; i < ring.length; i++) {
+      expect(Math.abs(ring[i]![0] - ring[i - 1]![0])).toBeLessThan(1)
+    }
+  })
+
+  it("degrades a non-finite radius or centre to a point-sized ring instead of NaN", () => {
+    const ring = radiusCircleFeature({ lat: Number.NaN, lng: Number.NaN }, Number.NaN).geometry.coordinates[0]!
+    for (const [lng, lat] of ring) {
+      expect(lng).toBe(0)
+      expect(lat).toBe(0)
+    }
+  })
 })
