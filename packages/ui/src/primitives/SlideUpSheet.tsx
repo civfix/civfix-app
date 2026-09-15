@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import {
   Animated,
   Easing,
+  Keyboard,
   Modal,
   PanResponder,
   Pressable,
@@ -15,11 +16,16 @@ import {
 } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { makeThemedStyles, motion, useTheme, webScrimProps } from "../theme"
-import { IosKeyboardAvoidingView } from "../shell/IosKeyboardAvoidingView"
-import { useKeyboardReserve } from "../shell/useKeyboardReserve"
+import { KeyboardAnchorView } from "../shell/KeyboardAnchorView"
+import { useKeyboardAnchor } from "../shell/useKeyboardAnchor"
 import { menuScrimStyle, useMenuMotion, type MenuMotionRecipes } from "./menuMotion"
 import { useModalClosed } from "./useModalClosed"
-import { slideUpDragOffset, slideUpDragOutcome, slideUpShouldCapture } from "./slideUpSheetModel"
+import {
+  slideUpDragOffset,
+  slideUpDragOutcome,
+  slideUpSheetMaxHeight,
+  slideUpShouldCapture,
+} from "./slideUpSheetModel"
 
 export interface SlideUpSheetProps {
   visible: boolean
@@ -51,11 +57,16 @@ export function SlideUpSheet({
   const th = useTheme()
   const { height: winH } = useWindowDimensions()
   const insets = useContext(SafeAreaInsetsContext)
-  const kbReserve = useKeyboardReserve({ enabled: visible })
+  const homeIndicatorPad = insets?.bottom ?? 0
   const [sheetHeight, setSheetHeight] = useState<number | null>(null)
   const sheetMotion = useMenuMotion({ visible, ready: sheetHeight !== null, recipes: SHEET_RECIPES })
   const { rendered, progress, useNativeDriver } = sheetMotion
   const onModalDismiss = useModalClosed(rendered, onClosed)
+  const anchor = useKeyboardAnchor({ enabled: rendered, restOffset: homeIndicatorPad, gap: 0 })
+
+  useEffect(() => {
+    if (!visible && rendered) Keyboard.dismiss()
+  }, [visible, rendered])
 
   const sheetHeightRef = useRef<number | null>(null)
   const onSheetLayout = useCallback((event: LayoutChangeEvent) => {
@@ -125,45 +136,58 @@ export function SlideUpSheet({
           onPress={onClose}
           {...webScrimProps}
         />
-        <IosKeyboardAvoidingView
-          style={[styles.avoider, kbReserve > 0 ? { paddingBottom: kbReserve } : null]}
-        >
-          <Animated.View
-            onLayout={onSheetLayout}
-            accessibilityLabel={accessibilityLabel}
+        <View style={styles.dock}>
+          <KeyboardAnchorView
+            anchor={anchor}
+            pointerEvents="box-none"
             style={[
-              styles.sheet,
+              styles.lift,
               {
-                maxHeight: winH * maxHeightRatio,
-                paddingBottom: (insets?.bottom ?? 0) + th.space["3"],
-                transform: [{ translateY }],
+                maxHeight: slideUpSheetMaxHeight(
+                  winH,
+                  maxHeightRatio,
+                  anchor.reserved,
+                  insets?.top ?? 0,
+                ),
               },
             ]}
           >
-            <View style={styles.grabArea} {...pan.panHandlers}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={dismissLabel}
-                onPress={onClose}
-                hitSlop={th.space["2"]}
-                style={styles.grabHandle}
-              />
-            </View>
-            {bodyLayout === "fill" ? (
-              <View style={[styles.content, styles.contentInner, contentStyle]}>{children}</View>
-            ) : (
-              <ScrollView
-                style={styles.content}
-                contentContainerStyle={[styles.contentInner, contentStyle]}
-                bounces={false}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-              >
-                {children}
-              </ScrollView>
-            )}
-          </Animated.View>
-        </IosKeyboardAvoidingView>
+            <Animated.View
+              onLayout={onSheetLayout}
+              accessibilityLabel={accessibilityLabel}
+              style={[
+                styles.sheet,
+                {
+                  paddingBottom: homeIndicatorPad + th.space["3"],
+                  transform: [{ translateY }],
+                },
+              ]}
+            >
+              <View style={styles.grabArea} {...pan.panHandlers}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={dismissLabel}
+                  onPress={onClose}
+                  hitSlop={th.space["2"]}
+                  style={styles.grabHandle}
+                />
+              </View>
+              {bodyLayout === "fill" ? (
+                <View style={[styles.content, styles.contentInner, contentStyle]}>{children}</View>
+              ) : (
+                <ScrollView
+                  style={styles.content}
+                  contentContainerStyle={[styles.contentInner, contentStyle]}
+                  bounces={false}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                >
+                  {children}
+                </ScrollView>
+              )}
+            </Animated.View>
+          </KeyboardAnchorView>
+        </View>
       </View>
     </Modal>
   )
@@ -180,10 +204,14 @@ const useStyles = makeThemedStyles((t) => ({
   scrimTouch: {
     ...StyleSheet.absoluteFillObject,
   },
-  avoider: {
+  dock: {
     flex: 1,
     justifyContent: "flex-end",
     pointerEvents: "box-none",
+  },
+  lift: {
+    width: "100%",
+    flexShrink: 1,
   },
   sheet: {
     width: "100%",

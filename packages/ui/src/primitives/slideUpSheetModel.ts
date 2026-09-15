@@ -21,3 +21,13 @@ export function slideUpDragOutcome(dy: number, vy: number, sheetHeight: number |
       : SLIDE_UP_DISMISS_DISTANCE
   return dy >= threshold ? "dismiss" : "settle"
 }
+
+export function slideUpSheetMaxHeight(
+  windowHeight: number,
+  ratio: number,
+  keyboardLift: number,
+  topInset: number = 0,
+): number {
+  if (keyboardLift <= 0) return windowHeight * ratio
+  return Math.min(windowHeight * ratio, windowHeight - keyboardLift - topInset)
+}

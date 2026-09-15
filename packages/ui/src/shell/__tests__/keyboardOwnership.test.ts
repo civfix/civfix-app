@@ -67,14 +67,13 @@ describe("I0 react-native is only ever imported through named specifiers", () =>
   })
 })
 
-describe("I1 the Android reserve has exactly five owners", () => {
+describe("I1 the Android reserve has exactly four owners", () => {
   it("names them", () => {
     expect(named(({ src }) => /(?<!function\s)\buseKeyboardReserve\s*\(/.test(src))).toEqual([
       "ConversationBody.tsx",
       "KeyboardPinnedFooter.tsx",
       "ModalCardSheet.tsx",
       "PageStack.native.tsx",
-      "SlideUpSheet.tsx",
     ])
   })
 

@@ -4,6 +4,7 @@ import {
   SLIDE_UP_DISMISS_VELOCITY,
   slideUpDragOffset,
   slideUpDragOutcome,
+  slideUpSheetMaxHeight,
   slideUpShouldCapture,
 } from "../slideUpSheetModel"
 
@@ -31,5 +32,19 @@ describe("slide-up sheet drag model", () => {
   it("halves the distance for a short sheet so it cannot demand a drag longer than itself", () => {
     expect(slideUpDragOutcome(60, 0, 100)).toBe("dismiss")
     expect(slideUpDragOutcome(60, 0, null)).toBe("settle")
+  })
+})
+
+describe("slide-up sheet height under the keyboard", () => {
+  it("keeps the resting ratio while no keyboard lift is reserved, whatever the top inset", () => {
+    expect(slideUpSheetMaxHeight(874, 0.9, 0)).toBeCloseTo(786.6)
+    expect(slideUpSheetMaxHeight(874, 0.9, 0, 62)).toBeCloseTo(786.6)
+    expect(slideUpSheetMaxHeight(874, 0.9, -20, 62)).toBeCloseTo(786.6)
+  })
+
+  it("gives the lift back as height so a lifted sheet's top stays below the top inset", () => {
+    expect(slideUpSheetMaxHeight(874, 0.9, 311)).toBe(563)
+    expect(slideUpSheetMaxHeight(874, 0.9, 311, 62)).toBe(501)
+    expect(slideUpSheetMaxHeight(874, 0.5, 311, 62)).toBe(437)
   })
 })
