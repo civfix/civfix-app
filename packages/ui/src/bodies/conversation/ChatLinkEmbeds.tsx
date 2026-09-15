@@ -12,12 +12,13 @@ import { usePost } from "../../data/hooks/posts"
 import { useT } from "../../i18n"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
-import { reportToCardData } from "../linkedReportCards"
+import { linkedRefToCardData, reportToCardData } from "../linkedReportCards"
+import { localReportThumb } from "../localReportThumbs"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { buildPostIdentity } from "../postCardModel"
 import { useListTimeAgo } from "../useListTimeAgo"
 import { useEmbedGate } from "./chatEmbedScope"
-import type { CivfixLinkKind, CivfixLinkRef } from "./civfixLinks"
+import { civfixEntityRef, type CivfixLinkKind, type CivfixLinkRef } from "./civfixLinks"
 
 export const EMBED_CARD_WIDTH = 260
 
@@ -43,6 +44,7 @@ interface EmbedCardProps {
   link: CivfixLinkRef
   linkOnly: boolean
   linkStyle: StyleProp<TextStyle>
+  embeddedKeys: ReadonlySet<string>
   onOpen: (ref: CivfixLinkRef) => void
 }
 
@@ -155,7 +157,17 @@ function EventEmbed(props: EmbedProps) {
   )
 }
 
-function PostEmbedCard({ post, onPress }: { post: PostDTO; onPress: () => void }) {
+function PostEmbedCard({
+  post,
+  embeddedKeys,
+  onPress,
+  onOpen,
+}: {
+  post: PostDTO
+  embeddedKeys: ReadonlySet<string>
+  onPress: () => void
+  onOpen: (ref: CivfixLinkRef) => void
+}) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("conversation")
@@ -169,6 +181,18 @@ function PostEmbedCard({ post, onPress }: { post: PostDTO; onPress: () => void }
   const media = post.media ?? []
   const byline = identity.handleLabel ?? identity.viaLabel
   const time = timeAgo(post.createdAt)
+  const linkedEvent = post.event ?? post.repostOf?.event ?? null
+  const linkedReport = post.report ?? post.repostOf?.report ?? null
+  const eventCard = linkedEvent && !embeddedKeys.has(`event:${linkedEvent.id}`) ? linkedEvent : null
+  const reportCard = linkedReport && !embeddedKeys.has(`report:${linkedReport.id}`) ? linkedReport : null
+  const openEvent = useCallback(
+    (id: string) => onOpen(civfixEntityRef("event", id)),
+    [onOpen],
+  )
+  const openReport = useCallback(
+    (id: string) => onOpen(civfixEntityRef("report", id)),
+    [onOpen],
+  )
   return (
     <Pressable
       onPress={onPress}
@@ -220,12 +244,31 @@ function PostEmbedCard({ post, onPress }: { post: PostDTO; onPress: () => void }
       {media.length > 0 ? (
         <PostMediaGrid media={media} radius={th.radius.md} maxHeight={POST_EMBED_MEDIA_MAX_HEIGHT} />
       ) : null}
+      {eventCard ? (
+        <LinkedEventCard
+          event={eventCard}
+          layout="list"
+          timeZone={eventCard.timezone ?? undefined}
+          onPress={() => openEvent(eventCard.id)}
+        />
+      ) : null}
+      {reportCard ? (
+        <LinkedReportCard
+          report={{
+            ...linkedRefToCardData(reportCard),
+            thumbUrl: reportCard.thumbUrl ?? localReportThumb(reportCard.id),
+          }}
+          layout="list"
+          headline="title"
+          onPress={() => openReport(reportCard.id)}
+        />
+      ) : null}
     </Pressable>
   )
 }
 
 function PostEmbed(props: EmbedProps) {
-  const { link, onOpen } = props
+  const { link, embeddedKeys, onOpen } = props
   const query = usePost(link.id)
   const onPress = useCallback(() => onOpen(link), [onOpen, link])
   return (
@@ -233,7 +276,9 @@ function PostEmbed(props: EmbedProps) {
       {...props}
       query={query}
       data={query.data}
-      render={(post) => <PostEmbedCard post={post} onPress={onPress} />}
+      render={(post) => (
+        <PostEmbedCard post={post} embeddedKeys={embeddedKeys} onPress={onPress} onOpen={onOpen} />
+      )}
     />
   )
 }
@@ -387,6 +432,7 @@ export const ChatLinkEmbeds = React.memo(function ChatLinkEmbeds({
   onOpen,
 }: ChatLinkEmbedsProps) {
   const styles = useStyles()
+  const embeddedKeys = useMemo(() => new Set(refs.map((link) => link.key)), [refs])
   if (refs.length === 0) return null
   return (
     <View style={[styles.host, linkOnly ? styles.hostLinkOnly : null]}>
@@ -397,6 +443,7 @@ export const ChatLinkEmbeds = React.memo(function ChatLinkEmbeds({
           link={link}
           linkOnly={linkOnly}
           linkStyle={linkStyle}
+          embeddedKeys={embeddedKeys}
           onOpen={onOpen}
         />
       ))}

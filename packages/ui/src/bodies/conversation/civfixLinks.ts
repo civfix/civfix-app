@@ -1,3 +1,4 @@
+import { webOrigin } from "../../primitives/externalUrls"
 import { parseHttpsUrl, type ChatBodyToken } from "./chatLinks"
 
 export type CivfixLinkKind = "report" | "event" | "post" | "person" | "org"
@@ -58,6 +59,11 @@ export function civfixLinkFromPath(path: string, url: string = path): CivfixLink
     default:
       return null
   }
+}
+
+export function civfixEntityRef(kind: "report" | "event", id: string): CivfixLinkRef {
+  const path = kind === "event" ? `/cleanups/${id}` : `/pin/${id}`
+  return ref(kind, id, path, `${webOrigin()}${path}`)
 }
 
 export function isCivfixLinkHost(origin: string): boolean {

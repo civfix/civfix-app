@@ -292,3 +292,50 @@ describe("the post card byline gives the name the first line and moves the handl
     }
   })
 })
+
+describe("a shared post still previews the event or report attached to it", () => {
+  const postCard = () => EMBEDS.slice(EMBEDS.indexOf("function PostEmbedCard("), EMBEDS.indexOf("function PostEmbed("))
+
+  it("draws the attachment with the same two cards the feed row draws it with", () => {
+    const card = postCard()
+    expect(card).toContain("const linkedEvent = post.event ?? post.repostOf?.event ?? null")
+    expect(card).toContain("const linkedReport = post.report ?? post.repostOf?.report ?? null")
+    expect(card).toMatch(/<LinkedEventCard\s+event=\{eventCard\}\s+layout="list"\s+timeZone=\{eventCard\.timezone \?\? undefined\}/)
+    expect(card).toMatch(/<LinkedReportCard\s+report=\{\{\s*\.\.\.linkedRefToCardData\(reportCard\),/)
+    expect(card).toMatch(/thumbUrl: reportCard\.thumbUrl \?\? localReportThumb\(reportCard\.id\),/)
+    expect(card).toMatch(/layout="list"\s+headline="title"/)
+    const feed = code(read("../PostCard.tsx"))
+    expect(feed).toContain("const displayEvent = isRepost ? (embedded?.event ?? null) : (post.event ?? null)")
+    expect(feed).toContain("const displayReport = isRepost ? (embedded?.report ?? null) : (post.report ?? null)")
+  })
+
+  it("hangs the attachment below the body and the photos, never above the byline", () => {
+    const card = postCard()
+    const identityAt = card.indexOf("<View style={styles.identityRow}>")
+    const mediaAt = card.indexOf("<PostMediaGrid")
+    const eventAt = card.indexOf("<LinkedEventCard")
+    const reportAt = card.indexOf("<LinkedReportCard")
+    expect(identityAt).toBeGreaterThan(-1)
+    expect(eventAt).toBeGreaterThan(mediaAt)
+    expect(mediaAt).toBeGreaterThan(identityAt)
+    expect(reportAt).toBeGreaterThan(eventAt)
+  })
+
+  it("drops the nested card when the same entity is already linked in the message body", () => {
+    const card = postCard()
+    expect(card).toContain("const eventCard = linkedEvent && !embeddedKeys.has(`event:${linkedEvent.id}`) ? linkedEvent : null")
+    expect(card).toContain("const reportCard = linkedReport && !embeddedKeys.has(`report:${linkedReport.id}`) ? linkedReport : null")
+    expect(EMBEDS).toContain("const embeddedKeys = useMemo(() => new Set(refs.map((link) => link.key)), [refs])")
+    expect(EMBEDS).toContain("embeddedKeys={embeddedKeys}")
+  })
+
+  it("opens a tapped attachment through the bubble's own internal-link path", () => {
+    const card = postCard()
+    expect(card).toContain('onOpen(civfixEntityRef("event", id))')
+    expect(card).toContain('onOpen(civfixEntityRef("report", id))')
+    expect(card).toContain("onPress={() => openEvent(eventCard.id)}")
+    expect(card).toContain("onPress={() => openReport(reportCard.id)}")
+    expect(EMBEDS).not.toContain("expo-router")
+    expect(EMBEDS).not.toContain("useNavStore")
+  })
+})

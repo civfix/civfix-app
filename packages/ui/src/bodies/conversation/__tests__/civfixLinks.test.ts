@@ -3,6 +3,7 @@ import { tokenizeChatBody } from "../chatLinks"
 import {
   CIVFIX_LINK_HOSTS,
   MAX_EMBEDS_PER_MESSAGE,
+  civfixEntityRef,
   civfixLinkFromPath,
   classifyCivfixUrl,
   planChatEmbeds,
@@ -185,5 +186,32 @@ describe("planChatEmbeds decides which links in a message become cards", () => {
 
   it("returns the same frozen empty plan for every embed-less message", () => {
     expect(plan("hello")).toBe(plan("https://example.com"))
+  })
+})
+
+describe("civfixEntityRef keys an attached entity the way a pasted link to it is keyed", () => {
+  it("matches the ref a body link to the same entity produces", () => {
+    const event = classifyCivfixUrl("https://civfix.org/cleanups/evt-1")
+    expect(civfixEntityRef("event", "evt-1").key).toBe(event?.key)
+    expect(civfixEntityRef("event", "evt-1").path).toBe(event?.path)
+    const report = classifyCivfixUrl("https://civfix.org/pin/rep-1")
+    expect(civfixEntityRef("report", "rep-1").key).toBe(report?.key)
+    expect(civfixEntityRef("report", "rep-1").path).toBe(report?.path)
+  })
+
+  it("keeps the key set a message plans and the key an attachment checks in one namespace", () => {
+    const planned = planChatEmbeds(
+      tokenizeChatBody("https://civfix.org/post/post-1 https://civfix.org/cleanups/evt-1", {
+        origins: ["https://civfix.org"],
+      }),
+    )
+    const keys = new Set(planned.refs.map((ref) => ref.key))
+    expect(keys.has(civfixEntityRef("event", "evt-1").key)).toBe(true)
+    expect(keys.has(civfixEntityRef("event", "evt-2").key)).toBe(false)
+  })
+
+  it("resolves an absolute url for the external-open fallback", () => {
+    expect(civfixEntityRef("event", "evt-1").url).toMatch(/^https:\/\/[^/]+\/cleanups\/evt-1$/)
+    expect(civfixEntityRef("report", "rep-1").url).toMatch(/^https:\/\/[^/]+\/pin\/rep-1$/)
   })
 })
