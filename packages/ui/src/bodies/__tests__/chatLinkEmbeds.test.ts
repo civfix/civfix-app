@@ -199,7 +199,7 @@ describe("a link-only message is drawn as its card, never as a tinted bubble fra
   it("drops the bubble chrome when the body is nothing but the link and there is no quote above it", () => {
     expect(BUBBLE).toContain("const bare = embedPlan.linkOnly && !message.replyTo")
     expect(BUBBLE).toContain("const bubbleChrome = bare ? styles.bubbleBare : mine ? styles.bubbleMine : styles.bubbleTheirs")
-    expect(BUBBLE.match(/\[styles\.bubble, bubbleChrome\]/g)?.length).toBe(3)
+    expect(BUBBLE.match(/\[styles\.bubble, bubbleChrome, bubbleTint\]/g)?.length).toBe(3)
     expect(BUBBLE).not.toMatch(/styles\.bubble, mine \? styles\.bubbleMine/)
     expect(STYLES).toMatch(/bubbleBare: \{\s*paddingHorizontal: 0,\s*paddingVertical: 0,\s*borderRadius: t\.radius\.lg,\s*\}/)
   })
@@ -218,5 +218,77 @@ describe("a link-only message is drawn as its card, never as a tinted bubble fra
     )
     expect(EMBEDS).toMatch(/cardHovered: \{\s*borderColor: t\.colors\.borderStrong,\s*backgroundColor: t\.colors\.surfaceTint,\s*\}/)
     expect(EMBEDS).not.toMatch(/bloom|danger|accent|brand\./)
+  })
+})
+
+describe("an optimistic send is drawn by the same tree the ack will confirm, so nothing snaps", () => {
+  const rowContent = () => BUBBLE.slice(BUBBLE.indexOf("const rowContent = ("), BUBBLE.indexOf("return (\n    <View\n      ref={hasBody"))
+
+  it("has no dedicated pending render path: one bubble tree, one ChatLinkEmbeds mount", () => {
+    expect(BUBBLE).not.toMatch(/if \(mine && \(pending \|\| failed\)\) \{\s*return/)
+    expect(BUBBLE.match(/<ChatLinkEmbeds/g)?.length).toBe(1)
+    expect(BUBBLE).toContain("const inFlight = mine && (pending || failed)")
+  })
+
+  it("tints only a real bubble on failure; a bare card keeps the neutral surface", () => {
+    expect(BUBBLE).toContain("const bubbleTint = failed && !bare ? styles.bubbleFailed : null")
+    expect(BUBBLE).not.toMatch(/failed \? styles\.bubbleFailed/)
+  })
+
+  it("keeps the sending state and the retry affordance beneath the bubble, where attachment-only sends already show them", () => {
+    const content = rowContent()
+    const attachmentsAt = content.indexOf("<BubbleAttachments")
+    const statusAt = content.indexOf("{inFlight ? <SendStatusLine failed={failed} onRetry={retrySend} /> : null}")
+    expect(attachmentsAt).toBeGreaterThan(0)
+    expect(statusAt).toBeGreaterThan(attachmentsAt)
+    expect(content).toContain("{(groupEnd || edited) && !inFlight ? (")
+    const status = BUBBLE.slice(BUBBLE.indexOf("function SendStatusLine("), BUBBLE.indexOf("interface MenuModel"))
+    expect(status).toMatch(/accessibilityLabel=\{t\("bubble\.retry_sending"\)\}/)
+    expect(status).toMatch(/\{t\("bubble\.failed_retry"\)\}/)
+    expect(status).toMatch(/\{t\("bubble\.sending"\)\}/)
+    expect(BUBBLE).toMatch(/const retrySend = \(\) => \{\s*if \(message\.clientId\) onRetry\(message\.clientId\)/)
+  })
+
+  it("gates the card on the row key the ack preserves, so the optimistic row and the echoed row share one gate", () => {
+    expect(BUBBLE).toContain("const rowKey = message.clientId ?? message.id")
+    const model = code(read("../conversation/conversationModel.ts"))
+    expect(model).toContain("id: item.message.clientId ?? item.message.id")
+    expect(SCOPE).toContain("export function useEmbedGate(rowKey: string, embedKey: string): EmbedGate")
+  })
+
+  it("never opens a context menu or a reaction for an in-flight message", () => {
+    const actions = code(read("../messageActions.ts"))
+    expect(actions).toContain("if (input.deleted || input.pendingOrFailed) return []")
+    expect(BUBBLE).toContain("const reactable = canReact && !pending && !failed")
+    expect(BUBBLE).toContain("const menuAvailable = descriptors.length > 0 || reactable")
+  })
+})
+
+describe("the post card byline gives the name the first line and moves the handle beneath it", () => {
+  const postCard = () => EMBEDS.slice(EMBEDS.indexOf("function PostEmbedCard("), EMBEDS.indexOf("function PostEmbed("))
+
+  it("stacks name (+ org badge) over handle · time in the identity column the person and org cards already use", () => {
+    const card = postCard()
+    expect(card).toContain("const byline = identity.handleLabel ?? identity.viaLabel")
+    expect(card).toMatch(/<View style=\{styles\.identityRow\}>\s*<Avatar[\s\S]*?size=\{40\}[\s\S]*?<View style=\{styles\.identityCol\}>/)
+    const nameRow = card.slice(card.indexOf("<View style={styles.identityCol}>"), card.indexOf("{byline ? ("))
+    expect(nameRow).toContain("{identity.name}")
+    expect(nameRow).toContain('<OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />')
+    expect(nameRow).not.toContain("byline")
+    expect(nameRow).not.toContain("timeAgo")
+    expect(card).toContain("<Text style={[styles.meta, styles.metaFixed]}>{byline ? `· ${time}` : time}</Text>")
+  })
+
+  it("lets the handle truncate but never the time", () => {
+    expect(EMBEDS).toMatch(/meta: \{\s*flexShrink: 1,/)
+    expect(EMBEDS).toMatch(/metaFixed: \{\s*flexShrink: 0,\s*\}/)
+    expect(EMBEDS).toMatch(/identityCol: \{\s*flex: 1,\s*minWidth: 0,/)
+  })
+
+  it("matches the other person-led rows in the package, which all stack name over @handle", () => {
+    for (const file of ["../SearchResults.tsx", "../ConnectionsBody.tsx", "../RosterRow.tsx", "../LeaderboardRow.tsx"]) {
+      const source = code(read(file))
+      expect(source).toMatch(/numberOfLines=\{1\}>\s*@\{(person|entry)\.handle\}/)
+    }
   })
 })

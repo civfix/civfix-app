@@ -196,6 +196,33 @@ function FlashOverlay({ mine, shape = "bubble" }: { mine: boolean; shape?: Flash
   )
 }
 
+function SendStatusLine({ failed, onRetry }: { failed: boolean; onRetry: () => void }) {
+  const styles = useConversationStyles()
+  const th = useTheme()
+  const { t } = useT("conversation")
+  if (failed) {
+    return (
+      <Pressable
+        onPress={onRetry}
+        accessibilityRole="button"
+        accessibilityLabel={t("bubble.retry_sending")}
+        hitSlop={6}
+        {...focusRingProps}
+        style={styles.statusLine}
+      >
+        <Icon icon={iconMap.RefreshCw} size={11} color={th.colors.bloom["600"]} />
+        <Text style={[styles.timeText, styles.failedText]}>{t("bubble.failed_retry")}</Text>
+      </Pressable>
+    )
+  }
+  return (
+    <View style={styles.statusLine}>
+      <Icon icon={iconMap.Clock} size={11} color={th.colors.textSubtle} />
+      <Text style={styles.timeText}>{t("bubble.sending")}</Text>
+    </View>
+  )
+}
+
 interface MenuModel {
   menuActions: ContextMenuAction[]
   confirmItems: PopoverMenuItem[]
@@ -525,36 +552,10 @@ export const Bubble = React.memo(function Bubble({
   const hasBody = body.length > 0
   const toggleReaction = (emoji: ReactionEmoji) => onToggleReaction(message.id, emoji)
 
-  if (mine && (pending || failed)) {
-    return (
-      <View style={[styles.bubbleWrap, styles.bubbleWrapMine, wrapGap]}>
-        {hasBody ? (
-          <View style={[styles.bubble, styles.bubbleMine, failed ? styles.bubbleFailed : null]}>
-            {message.replyTo ? <ReplyQuote replyTo={message.replyTo} mine onPress={onQuotePress} loading={jumpLoading} /> : null}
-            <Text style={[styles.bubbleBody, styles.bubbleBodyMine]}>{body}</Text>
-          </View>
-        ) : null}
-        <BubbleAttachments attachments={atts} mine />
-        {failed ? (
-          <Pressable
-            onPress={() => message.clientId && onRetry(message.clientId)}
-            accessibilityRole="button"
-            accessibilityLabel={t("bubble.retry_sending")}
-            hitSlop={6}
-            {...focusRingProps}
-            style={styles.statusLine}
-          >
-            <Icon icon={iconMap.RefreshCw} size={11} color={th.colors.bloom["600"]} />
-            <Text style={[styles.timeText, styles.failedText]}>{t("bubble.failed_retry")}</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.statusLine}>
-            <Icon icon={iconMap.Clock} size={11} color={th.colors.textSubtle} />
-            <Text style={styles.timeText}>{t("bubble.sending")}</Text>
-          </View>
-        )}
-      </View>
-    )
+  const inFlight = mine && (pending || failed)
+  const bubbleTint = failed && !bare ? styles.bubbleFailed : null
+  const retrySend = () => {
+    if (message.clientId) onRetry(message.clientId)
   }
 
   const bubbleInner = (
@@ -587,7 +588,7 @@ export const Bubble = React.memo(function Bubble({
     </>
   )
   const bubbleClone = !menuEverOpened ? null : hasBody ? (
-    <View style={[styles.bubble, bubbleChrome]}>{bubbleInner}</View>
+    <View style={[styles.bubble, bubbleChrome, bubbleTint]}>{bubbleInner}</View>
   ) : (
     <BubbleAttachments attachments={atts} mine={mine} />
   )
@@ -630,7 +631,7 @@ export const Bubble = React.memo(function Bubble({
       ) : null}
       <View style={styles.bubbleRow}>
         {!hasBody ? null : isWeb ? (
-          <View ref={menuAnchorRef} style={[styles.bubble, bubbleChrome]}>
+          <View ref={menuAnchorRef} style={[styles.bubble, bubbleChrome, bubbleTint]}>
             {bubbleInner}
             {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}
           </View>
@@ -641,7 +642,7 @@ export const Bubble = React.memo(function Bubble({
             onLongPress={menuAvailable ? openContextMenu : undefined}
             delayLongPress={300}
             {...focusRingProps}
-            style={[styles.bubble, bubbleChrome]}
+            style={[styles.bubble, bubbleChrome, bubbleTint]}
           >
             {bubbleInner}
             {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}
@@ -694,6 +695,7 @@ export const Bubble = React.memo(function Bubble({
         onReportPhoto={onReportPhoto}
         onLongPress={!isWeb && menuAvailable ? openContextMenu : undefined}
       />
+      {inFlight ? <SendStatusLine failed={failed} onRetry={retrySend} /> : null}
       {!hasBody ? (
         <ReactionChips reactions={reactions} onToggle={toggleReaction} mine={false} disabled={!reactable} />
       ) : null}
@@ -729,7 +731,7 @@ export const Bubble = React.memo(function Bubble({
           </>
         )
       })() : null}
-      {groupEnd || edited ? (
+      {(groupEnd || edited) && !inFlight ? (
         <View style={styles.metaLine}>
           {groupEnd ? <Text style={styles.timeText}>{clockTime(message.createdAt)}</Text> : null}
           {edited ? <Text style={styles.editedText}>{t("bubble.edited")}</Text> : null}

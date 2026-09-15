@@ -167,6 +167,8 @@ function PostEmbedCard({ post, onPress }: { post: PostDTO; onPress: () => void }
   )
   const body = post.body?.trim() || post.repostOf?.excerpt || ""
   const media = post.media ?? []
+  const byline = identity.handleLabel ?? identity.viaLabel
+  const time = timeAgo(post.createdAt)
   return (
     <Pressable
       onPress={onPress}
@@ -181,28 +183,34 @@ function PostEmbedCard({ post, onPress }: { post: PostDTO; onPress: () => void }
         state.pressed ? styles.pressed : null,
       ]}
     >
-      <View style={styles.headerRow}>
+      <View style={styles.identityRow}>
         <Avatar
           name={identity.avatarName}
           seed={identity.avatarSeed}
           photoUrl={identity.avatarUrl}
           gradient={identity.avatarGradient}
-          size={20}
+          size={40}
           {...(identity.organization ? { style: styles.orgAvatar } : {})}
           decorative
         />
-        <Text variant="bodyStrong" numberOfLines={1} style={styles.name}>
-          {identity.name}
-        </Text>
-        {identity.affiliation ? (
-          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
-        ) : null}
-        {identity.handleLabel ?? identity.viaLabel ? (
-          <Text numberOfLines={1} style={styles.meta}>
-            {identity.handleLabel ?? identity.viaLabel}
-          </Text>
-        ) : null}
-        <Text style={styles.meta}>{`· ${timeAgo(post.createdAt)}`}</Text>
+        <View style={styles.identityCol}>
+          <View style={styles.headerRow}>
+            <Text variant="bodyStrong" numberOfLines={1} style={styles.name}>
+              {identity.name}
+            </Text>
+            {identity.affiliation ? (
+              <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
+            ) : null}
+          </View>
+          <View style={styles.headerRow}>
+            {byline ? (
+              <Text numberOfLines={1} style={styles.meta}>
+                {byline}
+              </Text>
+            ) : null}
+            <Text style={[styles.meta, styles.metaFixed]}>{byline ? `· ${time}` : time}</Text>
+          </View>
+        </View>
       </View>
       {body.length > 0 ? (
         <Text variant="body" numberOfLines={4} color={th.colors.text} style={styles.body}>
@@ -462,6 +470,9 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: 13,
     lineHeight: 18,
     color: t.colors.textMuted,
+  },
+  metaFixed: {
+    flexShrink: 0,
   },
   body: {
     fontSize: 14,
