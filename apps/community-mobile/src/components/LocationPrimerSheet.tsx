@@ -1,6 +1,6 @@
 import React from "react"
-import { Pressable } from "react-native"
-import { ModalCardSheet, PrimaryButton, SecondaryButton, Text } from "@civfix/ui"
+import { Pressable, View } from "react-native"
+import { ModalCardSheet, PrimaryButton, SecondaryButton, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { makeThemedStyles, useTheme } from "@/theme"
 
@@ -31,34 +31,42 @@ export function LocationPrimerSheet({
       title={t("location.title")}
       dismissLabel={t("location.a11y_dismiss")}
       actions={
-        <>
-          <SecondaryButton label={t("location.address")} onPress={onEnterAddress} size="sm" />
-          <PrimaryButton label={t("location.use")} onPress={onUseLocation} />
-        </>
+        <View style={styles.stack}>
+          <PrimaryButton label={t("location.use")} icon={iconMap.Navigation} onPress={onUseLocation} />
+          <SecondaryButton label={t("location.address")} size="lg" onPress={onEnterAddress} />
+          <Pressable
+            onPress={onLater}
+            accessibilityRole="button"
+            accessibilityLabel={t("location.later")}
+            style={({ pressed }) => [styles.later, pressed ? styles.laterPressed : null]}
+          >
+            <Text variant="label" color={th.colors.textMuted}>
+              {t("location.later")}
+            </Text>
+          </Pressable>
+        </View>
       }
     >
       <Text variant="body" color={th.colors.textMuted}>
         {t("location.body")}
       </Text>
-
-      <Pressable
-        onPress={onLater}
-        accessibilityRole="button"
-        accessibilityLabel={t("location.later")}
-        style={styles.later}
-      >
-        <Text variant="caption" color={th.colors.textSubtle}>
-          {t("location.later")}
-        </Text>
-      </Pressable>
     </ModalCardSheet>
   )
 }
 
-const useStyles = makeThemedStyles(() => ({
+const useStyles = makeThemedStyles((t) => ({
+  stack: {
+    flex: 1,
+    gap: t.space["3"],
+    paddingTop: t.space["1"],
+  },
   later: {
     minHeight: 44,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: t.radius.pill,
+  },
+  laterPressed: {
+    opacity: 0.7,
   },
 }))
