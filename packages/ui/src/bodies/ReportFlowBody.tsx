@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Platform, Pressable, ScrollView, StyleSheet, ActivityIndicator, InteractionManager } from "react-native"
 import { useQueryClient, type QueryClient } from "@tanstack/react-query"
 import type { ReportCategory, ReportType as SharedReportType } from "@civfix/shared"
-import { ipLocate, type LatLng } from "@civfix/shared/geocode"
+import type { ApiClient } from "@civfix/shared/client"
+import { type LatLng } from "@civfix/shared/geocode"
 import { makeThemedStyles, useTheme, categoryColor, wash, useLayoutMode, focusRingProps, type LayoutMode } from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
@@ -10,11 +11,13 @@ import { TextField, Toggle, KeyboardPinnedFooter, KeyboardPinnedSurface, Primary
 import { LocationPicker, PortraitMapPickStep, useLocationPick, reportPinTarget } from "../map"
 import { PinSvg, glyphForCategory } from "../map"
 import {
+  useApi,
   useAuthState,
   useResolveJurisdiction,
   useReverseLabel,
   reverseLabelText,
   useMyProfile,
+  fetchApproximateLocation,
   queryKeys,
 } from "../data"
 import { useNavStore } from "../nav"
@@ -387,17 +390,19 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
 
 async function resolveApproxCenter(
   geo: ReturnType<typeof useGeolocation>,
+  api: ApiClient,
   qc: QueryClient,
 ): Promise<LatLng | null> {
   const fix = geo.isAvailable() ? await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS) : null
   if (fix) return { lat: fix.latitude, lng: fix.longitude }
-  const ip = await ipLocate().catch(() => null)
-  if (ip) return ip
+  const approximate = await fetchApproximateLocation(api, qc)
+  if (approximate) return approximate
   return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null
 }
 
 function useApproxCenter(enabled: boolean): LatLng | null {
   const geo = useGeolocation()
+  const api = useApi()
   const qc: QueryClient = useQueryClient()
   const [center, setCenter] = useState<LatLng | null>(
     () => qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null,
@@ -413,7 +418,7 @@ function useApproxCenter(enabled: boolean): LatLng | null {
     void qc
       .fetchQuery<LatLng | null>({
         queryKey: queryKeys.userLocation,
-        queryFn: () => resolveApproxCenter(geo, qc),
+        queryFn: () => resolveApproxCenter(geo, api, qc),
         staleTime: Infinity,
         gcTime: Infinity,
         retry: false,
@@ -428,7 +433,7 @@ function useApproxCenter(enabled: boolean): LatLng | null {
     return () => {
       cancelled = true
     }
-  }, [geo, qc, enabled, center])
+  }, [geo, api, qc, enabled, center])
   return center
 }
 

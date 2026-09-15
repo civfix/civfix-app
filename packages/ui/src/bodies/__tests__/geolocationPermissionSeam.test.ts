@@ -68,13 +68,13 @@ describe("every shared reader of the geolocation seam is PASSIVE", () => {
     expect(createCleanup).toContain("geo.getCurrentPosition()")
   })
 
-  it("keeps the passive readers' denial fallback intact - a rejected fix degrades to ipLocate", () => {
+  it("keeps the passive readers' denial fallback intact - a rejected fix degrades to the API's approximate location", () => {
     expect(locationHook).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
     expect(reportFlow).toContain("await withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
     expect(addressSearch).toContain("await geo.getCurrentPosition().catch(() => null)")
-    expect(locationHook).toContain("ipLocate()")
-    expect(reportFlow).toContain("ipLocate()")
-    expect(addressSearch).toContain("ipLocate()")
-    expect(createCleanup).toContain("ipLocate()")
+    expect(locationHook).toContain("fetchApproximateLocation(api, qc)")
+    expect(reportFlow).toContain("fetchApproximateLocation(api, qc)")
+    expect(addressSearch).toContain("fetchApproximateLocation(api, qc)")
+    expect(createCleanup).toContain("fetchApproximateLocation(api, qc)")
   })
 })

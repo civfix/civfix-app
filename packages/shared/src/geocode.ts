@@ -10,8 +10,8 @@
  *      basemap the maps already use.
  *
  * Platform-agnostic: only global fetch + math. Each app supplies the proximity point from its own
- * geolocation API (browser navigator.geolocation / expo-location) with an IP-based fallback
- * (ipLocate). Everything degrades gracefully - offline you still get pasted coordinates.
+ * geolocation API (browser navigator.geolocation / expo-location) with the civfix API's approximate
+ * location as the fallback. Everything degrades gracefully - offline you still get pasted coordinates.
  */
 import type { LatLngLike } from "./geo.js"
 
@@ -321,6 +321,9 @@ const GEOJS_URL = "https://get.geojs.io/v1/ip/geo.json"
  * Best-effort IP geolocation (no permission prompt) via GeoJS - a free, CORS-enabled, key-less HTTPS
  * endpoint. Returns null on any failure so callers can fall back to a map center. Used as the proximity
  * source when device location sharing is denied or unavailable.
+ *
+ * @deprecated since 0.47.0 - a third-party data flow with no consumer-plane callers left. Use
+ * `GET /geo/approximate` (`getApproximateLocation`, DECISIONS #45). Slated for removal in the next minor.
  */
 export async function ipLocate(signal?: AbortSignal): Promise<LatLng | null> {
   try {

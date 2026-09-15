@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { View, Pressable, StyleSheet, ActivityIndicator } from "react-native"
 import {
   makeThemedStyles,
@@ -11,7 +12,7 @@ import {
   webHover,
 } from "../theme"
 import { Text, Icon, iconMap, type LucideIcon } from "../typography"
-import { ipLocate, type LatLng } from "@civfix/shared/geocode"
+import { type LatLng } from "@civfix/shared/geocode"
 import { timeRangeLabel } from "@civfix/shared/datetime"
 import {
   SignInPrompt,
@@ -21,12 +22,14 @@ import {
   useToast,
 } from "../primitives"
 import {
+  useApi,
   useCreateCleanup,
   useAuthState,
   useRequireAuth,
   useReport,
   useReverseLabel,
   reverseLabelText,
+  fetchApproximateLocation,
 } from "../data"
 import { useCreatePost } from "../data/hooks/posts"
 import { buildFeedShareInput, buildOptimisticFeedSharePost } from "./feedShare"
@@ -322,6 +325,8 @@ function HostForm({
   const createPostAsync = useCreatePost().mutateAsync
   const toast = useToast()
   const geo = useGeolocation()
+  const api = useApi()
+  const qc = useQueryClient()
   const haptics = useHaptics()
   const [initialCenter, setInitialCenter] = useState<LatLng | null>(
     seedPoint ? { lat: seedPoint.lat, lng: seedPoint.lng } : null,
@@ -339,13 +344,13 @@ function HostForm({
       } catch {
         point = null
       }
-      if (!point) point = await ipLocate()
+      if (!point) point = await fetchApproximateLocation(api, qc)
       if (!cancelled && point) setInitialCenter(point)
     })()
     return () => {
       cancelled = true
     }
-  }, [geo])
+  }, [geo, api, qc])
 
   const [mountPlan] = useState<HostDraftMountPlan>(() => {
     const initial: CleanupFormValue = seedPoint

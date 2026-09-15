@@ -173,7 +173,7 @@ describe("the wizard gives the centre a head start and shares one session-wide r
     expect(code(resolver)).not.toMatch(/\n\s*return null\n\}/)
     // ...and the queryFn actually hands it the client (the pre-fetch `if (cached)` check is NOT the same
     // guarantee: it runs before the fetch, so it cannot see a seed that lands during it).
-    expect(wizard).toContain("queryFn: () => resolveApproxCenter(geo, qc),")
+    expect(wizard).toContain("queryFn: () => resolveApproxCenter(geo, api, qc),")
     // The same last step, verbatim, in the hook that owns the key - so the two cannot drift.
     expect(read("../../data/hooks/location.ts")).toContain(
       "return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null",

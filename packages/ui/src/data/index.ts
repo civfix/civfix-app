@@ -342,6 +342,8 @@ export type {
   UploadedMedia,
 } from "./uploadMedia"
 
+export { fetchApproximateLocation } from "./fetchApproximateLocation"
+
 export { randomId } from "./randomId"
 
 export { NOW_TICK_MS, useNow } from "./useNow"
