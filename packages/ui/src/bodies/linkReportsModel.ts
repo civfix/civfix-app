@@ -6,7 +6,6 @@ import {
 } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
 import type { HostStage } from "@civfix/shared/host"
-import type { LinkedReportHeadline } from "./linkedReportHeadline"
 
 export const NEARBY_PREVIEW = 3
 
@@ -114,10 +113,4 @@ export function sameIdSet(a: readonly string[], b: readonly string[]): boolean {
   if (a.length !== b.length) return false
   const set = new Set(a)
   return b.every((id) => set.has(id))
-}
-
-export function linkedRowHeadline(card: {
-  referenceCode?: string | null
-}): LinkedReportHeadline {
-  return card.referenceCode?.trim() ? "reference" : "title"
 }

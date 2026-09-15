@@ -34,6 +34,7 @@ export function LinkedReportCard({
   badge = null,
   headline = "reference",
   subtitle,
+  code,
   a11yLabel,
 }: {
   report: LinkedReportCardData
@@ -46,6 +47,7 @@ export function LinkedReportCard({
   onRemove?: () => void
   badge?: "plus" | "check" | null
   subtitle?: string | null
+  code?: string | null
   a11yLabel?: string
 }) {
   const styles = useStyles()
@@ -130,6 +132,11 @@ export function LinkedReportCard({
             >
               {listSubtitle}
             </Text>
+            {code ? (
+              <Text variant="mono" color={th.colors.textSubtle} numberOfLines={1} style={styles.code}>
+                {code}
+              </Text>
+            ) : null}
           </>
         ) : (
           <>
@@ -269,6 +276,9 @@ const useStyles = makeThemedStyles((t) => ({
   },
   catLabel: {
     fontFamily: t.fontFamily.bodyRegular,
+  },
+  code: {
+    fontSize: t.fontSize["12"],
   },
   statusRow: {
     marginTop: 2,

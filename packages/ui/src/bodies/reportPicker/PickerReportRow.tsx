@@ -3,11 +3,11 @@ import { View } from "react-native"
 import { makeThemedStyles } from "../../theme"
 import { useT } from "../../i18n"
 import { LinkedReportCard } from "../LinkedReportCard"
-import { pinToCardData } from "../linkedReportCards"
-import { linkedRowHeadline } from "../linkReportsModel"
+import { pinToCardData, useLinkedReportCards } from "../linkedReportCards"
+import { localReportThumb } from "../localReportThumbs"
 import { METERS_PER_MILE } from "../reportHitRowModel"
 import { distanceLabel } from "../relativeTime"
-import { isChosen, type PickerMode, type PickerRow } from "./reportPickerModel"
+import { isChosen, reportShortCode, type PickerMode, type PickerRow } from "./reportPickerModel"
 
 export interface PickerReportRowProps {
   row: PickerRow
@@ -27,14 +27,22 @@ export const PickerReportRow = memo(function PickerReportRow({
   const styles = useStyles()
   const { t } = useT("report-picker")
   const { t: tEnums } = useT("enums")
-  const { t: tLinked } = useT("report-linked")
-  const card = useMemo(() => pinToCardData(row.pin), [row.pin])
+  const cachedReference = useLinkedReportCards((s) => s.cards[row.pin.id]?.referenceCode ?? null)
+  const card = useMemo(() => {
+    const data = pinToCardData(row.pin)
+    return {
+      ...data,
+      referenceCode: data.referenceCode ?? cachedReference,
+      thumbUrl: data.thumbUrl ?? localReportThumb(data.id),
+    }
+  }, [cachedReference, row.pin])
   const chosen = isChosen(row.state)
 
   const view = useMemo(() => {
     const categoryLabel = tEnums(`category.${card.category}`)
     const title = card.title?.trim() || categoryLabel
     const distance = distanceLabel(row.distanceM / METERS_PER_MILE)
+    const code = reportShortCode(card)
     const tag =
       row.state === "linked"
         ? t(mode === "draft" ? "row_added_tag" : "row_linked_tag")
@@ -45,18 +53,20 @@ export const PickerReportRow = memo(function PickerReportRow({
     const subtitle = [tag, distance, addr].filter(Boolean).join(" · ")
     return {
       title,
+      code,
       subtitle: subtitle || card.description?.trim() || null,
-      a11yLabel: tLinked("card.a11yLabelDistance", { title, category: categoryLabel, distance }),
+      a11yLabel: t("row_a11y", { title, category: categoryLabel, code, distance }),
     }
-  }, [card, mode, row.distanceM, row.state, t, tEnums, tLinked])
+  }, [card, mode, row.distanceM, row.state, t, tEnums])
 
   return (
     <View style={[styles.wrap, focused ? styles.focused : null]}>
       <LinkedReportCard
         report={card}
         layout="list"
-        headline={linkedRowHeadline(card)}
+        headline="title"
         subtitle={view.subtitle}
+        code={view.code}
         a11yLabel={view.a11yLabel}
         selectable
         selected={chosen}

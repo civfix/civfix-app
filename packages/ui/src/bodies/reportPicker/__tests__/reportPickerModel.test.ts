@@ -4,14 +4,19 @@ import type { LinkedReportCardEntry } from "../../linkedReportCards"
 import {
   PICKER_MAX_FETCH_SPAN_DEG,
   PICKER_MAX_PINS,
+  PICKER_PAGE_FIRST,
+  PICKER_PAGE_STEP,
+  QUERY_RANK,
   bboxContains,
   bboxHolds,
   cardToPin,
   categoryCounts,
   isChosen,
+  loadMoreState,
   mapPinsFor,
   matchesQuery,
   mergePins,
+  nextPageSize,
   optimisticLinkedRefs,
   pickerAction,
   pickerFetchRegion,
@@ -22,9 +27,13 @@ import {
   pinPresentation,
   pinState,
   pinTapIntent,
+  queryRank,
   refFromCard,
   refToPin,
+  reportLookupKey,
+  reportShortCode,
   rowIndexOf,
+  rowOrdinalOf,
   selectionDiff,
   shouldRefetch,
   togglePickerId,
@@ -233,20 +242,137 @@ describe("rows", () => {
     ])
   })
 
-  it("a text query reaches beyond the view and files those hits as elsewhere", () => {
+  it("a text query reaches beyond the view and files every hit into one ranked matches section", () => {
     const rows = pickerRows({ ...base, query: "couch" })
-    expect(rows.map((r) => [r.pin.id, r.place])).toEqual([["out-of-view", "elsewhere"]])
+    expect(rows.map((r) => [r.pin.id, r.place])).toEqual([["out-of-view", "matches"]])
   })
 
   it("groups rows into sections and flattens them with headers", () => {
     const sections = pickerSections(pickerRows(base))
     expect(sections.linked.map((r) => r.pin.id)).toEqual(["unlinking", "far-linked"])
     expect(sections.view.map((r) => r.pin.id)).toEqual(["near", "mid"])
-    expect(sections.elsewhere).toEqual([])
-    const items = pickerListItems(sections)
+    expect(sections.matches).toEqual([])
+    const { items, shown, total } = pickerListItems(sections)
     expect(items.map((i) => i.key)).toEqual(["h:linked", "r:unlinking", "r:far-linked", "h:view", "r:near", "r:mid"])
+    expect([shown, total]).toEqual([4, 4])
     expect(rowIndexOf(items, "near")).toBe(4)
+    expect(rowOrdinalOf(items, "near")).toBe(2)
     expect(rowIndexOf(items, "nope")).toBe(-1)
+    expect(rowOrdinalOf(items, "nope")).toBe(-1)
+  })
+})
+
+describe("ranking by the typed text", () => {
+  const UUID = "0f6c2b1e-3d4a-4c5b-9e7f-1a2b3c4d5e6f"
+  const p = pin(UUID, {
+    title: "Couch dumped on Union Ave",
+    description: "brown sofa",
+    addr: "500 Union Ave",
+    referenceCode: "DU-4-000016",
+  })
+
+  it("scores exact id first, id prefix next, then title prefix, title word, title contains, other fields", () => {
+    expect(queryRank(p, "du-4-000016")).toBe(QUERY_RANK.exactId)
+    expect(queryRank(p, UUID.toUpperCase())).toBe(QUERY_RANK.exactId)
+    expect(queryRank(p, "DU-4")).toBe(QUERY_RANK.idPrefix)
+    expect(queryRank(p, "0f6c2b1e")).toBe(QUERY_RANK.idPrefix)
+    expect(queryRank(p, "couch dum")).toBe(QUERY_RANK.titlePrefix)
+    expect(queryRank(p, "union dumped")).toBe(QUERY_RANK.titleWord)
+    expect(queryRank(p, "nion")).toBe(QUERY_RANK.titleContains)
+    expect(queryRank(p, "sofa")).toBe(QUERY_RANK.otherFields)
+    expect(queryRank(p, "000016")).toBe(QUERY_RANK.otherFields)
+    expect(queryRank(p, "bicycle")).toBeNull()
+    expect(queryRank(p, "")).toBe(QUERY_RANK.otherFields)
+  })
+
+  it("orders rows by rank, then distance, only while something is typed", () => {
+    const pins = [
+      pin("far-exact", { lat: north(5000), referenceCode: "GR-4-000009", title: "tags" }),
+      pin("near-title", { lat: north(100), title: "GR-4 tags on the wall" }),
+      pin("mid-prefix", { lat: north(900), referenceCode: "GR-4-000001" }),
+      pin("near-prefix", { lat: north(200), referenceCode: "GR-4-000002" }),
+    ]
+    const base = {
+      pins,
+      center: LA,
+      viewport: { west: -118.3, east: -118.2, south: 34.0, north: north(1000) },
+      ids: new Set<string>(),
+      linked: new Set<string>(),
+      categories: ALL,
+      nearbyOnly: false,
+      radiusM: 500,
+      query: "GR-4-000009",
+    }
+    expect(pickerRows(base).map((r) => r.pin.id)).toEqual(["far-exact"])
+    expect(pickerRows({ ...base, query: "gr-4" }).map((r) => r.pin.id)).toEqual([
+      "near-prefix",
+      "mid-prefix",
+      "far-exact",
+      "near-title",
+    ])
+    expect(pickerRows({ ...base, query: "" }).map((r) => r.pin.id)).toEqual(["near-title", "near-prefix", "mid-prefix"])
+  })
+
+  it("recognises a pasted full uuid or reference code as a lookup key, normalised", () => {
+    expect(reportLookupKey(` ${UUID.toUpperCase()} `)).toBe(UUID)
+    expect(reportLookupKey("du-4-000016")).toBe("DU-4-000016")
+    expect(reportLookupKey("DU-4")).toBeNull()
+    expect(reportLookupKey("0f6c2b1e")).toBeNull()
+    expect(reportLookupKey("couch")).toBeNull()
+  })
+
+  it("prints the reference as the short code, or the first eight uuid characters", () => {
+    expect(reportShortCode(p)).toBe("#DU-4-000016")
+    expect(reportShortCode({ id: UUID })).toBe("#0f6c2b1e")
+    expect(reportShortCode({ id: UUID, referenceCode: "  " })).toBe("#0f6c2b1e")
+  })
+})
+
+describe("paging", () => {
+  const rows = Array.from({ length: 11 }, (_u, i) => pin(`p${String(i).padStart(2, "0")}`, { lat: north(i * 10) }))
+  const sections = pickerSections(
+    pickerRows({
+      pins: rows,
+      center: LA,
+      viewport: { west: -118.3, east: -118.2, south: 34.0, north: north(1000) },
+      ids: new Set(["p10"]),
+      linked: new Set(["p10"]),
+      categories: ALL,
+      nearbyOnly: false,
+      radiusM: 500,
+      query: "",
+    }),
+  )
+
+  it("starts with a first page, appends three per tap and stops at the total", () => {
+    expect(PICKER_PAGE_FIRST).toBe(8)
+    expect(PICKER_PAGE_STEP).toBe(3)
+    const first = pickerListItems(sections, PICKER_PAGE_FIRST)
+    expect([first.shown, first.total]).toEqual([8, 11])
+    expect(first.items.filter((i) => i.kind === "header").map((i) => i.key)).toEqual(["h:linked", "h:view"])
+    expect(nextPageSize(8, 11)).toBe(11)
+    expect(nextPageSize(11, 11)).toBe(11)
+    const second = pickerListItems(sections, nextPageSize(8, 11))
+    expect(second.shown).toBe(11)
+    expect(second.items.filter((i) => i.kind === "row")).toHaveLength(11)
+  })
+
+  it("keeps section headers counting the whole section while the rows are truncated", () => {
+    const page = pickerListItems(sections, 2)
+    expect(page.items).toEqual([
+      { kind: "header", key: "h:linked", place: "linked", count: 1 },
+      expect.objectContaining({ key: "r:p10" }),
+      { kind: "header", key: "h:view", place: "view", count: 10 },
+      expect.objectContaining({ key: "r:p00" }),
+    ])
+  })
+
+  it("shows the button while rows remain, fetches another page only during a search, then hides", () => {
+    expect(loadMoreState({ shown: 8, total: 11, searching: false, hasNextPage: false, fetchingNextPage: false })).toBe("more")
+    expect(loadMoreState({ shown: 11, total: 11, searching: false, hasNextPage: true, fetchingNextPage: false })).toBe("hidden")
+    expect(loadMoreState({ shown: 11, total: 11, searching: true, hasNextPage: true, fetchingNextPage: false })).toBe("fetch")
+    expect(loadMoreState({ shown: 11, total: 11, searching: true, hasNextPage: true, fetchingNextPage: true })).toBe("loading")
+    expect(loadMoreState({ shown: 11, total: 11, searching: true, hasNextPage: false, fetchingNextPage: false })).toBe("hidden")
   })
 })
 
@@ -298,11 +424,21 @@ describe("selection + footer", () => {
 })
 
 describe("list state", () => {
-  const ok = { hasRegion: true, pending: false, error: false, pinCount: 3, layerCount: 7, rowCount: 3 }
-  it("prefers rows, then error, then loading, then zoom, then layers, then empty", () => {
+  const ok = {
+    hasRegion: true,
+    pending: false,
+    error: false,
+    searching: false,
+    pinCount: 3,
+    layerCount: 7,
+    rowCount: 3,
+  }
+  it("prefers rows, then error, then loading, then no match, then zoom, then layers, then empty", () => {
     expect(pickerListState(ok)).toBe("rows")
     expect(pickerListState({ ...ok, rowCount: 0, error: true })).toBe("error")
     expect(pickerListState({ ...ok, rowCount: 0, pinCount: 0, pending: true })).toBe("loading")
+    expect(pickerListState({ ...ok, rowCount: 0, searching: true, pending: true })).toBe("loading")
+    expect(pickerListState({ ...ok, rowCount: 0, searching: true })).toBe("no_match")
     expect(pickerListState({ ...ok, rowCount: 0, hasRegion: false })).toBe("too_wide")
     expect(pickerListState({ ...ok, rowCount: 0, layerCount: 0 })).toBe("no_layers")
     expect(pickerListState({ ...ok, rowCount: 0 })).toBe("empty")

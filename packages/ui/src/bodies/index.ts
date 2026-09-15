@@ -204,7 +204,6 @@ export {
   linkSheetMode,
   linkedReportsPatch,
   linkedReportsSummary,
-  linkedRowHeadline,
   nearbyReportRows,
   sameIdSet,
   toggleLinkedReportId,

@@ -16,7 +16,9 @@ export const PICKER_FETCH_PAD = 0.5
 export const PICKER_FETCH_PRECISION = 3
 export const PICKER_MAX_FETCH_SPAN_DEG = PIN_SPAN_MAX_DEG
 export const PICKER_MAX_PINS = 400
-export const PICKER_SEARCH_MIN_CHARS = 2
+export const PICKER_SEARCH_MIN_CHARS = 3
+export const PICKER_PAGE_FIRST = 8
+export const PICKER_PAGE_STEP = 3
 
 export type PickerPinState = "idle" | "selected" | "linked" | "unlinking"
 
@@ -180,23 +182,72 @@ export function mergePins(...groups: ReadonlyArray<readonly ReportPinDTO[]>): Re
   return [...byId.values()]
 }
 
-export function matchesQuery(pin: ReportPinDTO, query: string): boolean {
-  const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
-  if (tokens.length === 0) return true
-  const haystack = [pin.title, pin.description, pin.addr, pin.referenceCode]
-    .filter((part): part is string => typeof part === "string" && part.length > 0)
-    .join(" ")
-    .toLowerCase()
-  return tokens.every((token) => haystack.includes(token))
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const REFERENCE_CODE_PATTERN = /^[a-z]{2,4}-\d{1,6}-\d{6}$/i
+export const SHORT_ID_LENGTH = 8
+
+export function reportLookupKey(query: string): string | null {
+  const q = query.trim()
+  if (UUID_PATTERN.test(q)) return q.toLowerCase()
+  if (REFERENCE_CODE_PATTERN.test(q)) return q.toUpperCase()
+  return null
 }
 
-export type PickerRowPlace = "linked" | "view" | "elsewhere"
+export function reportShortCode(report: { id: string; referenceCode?: string | null }): string {
+  const reference = report.referenceCode?.trim()
+  return `#${reference || report.id.slice(0, SHORT_ID_LENGTH)}`
+}
+
+export const QUERY_RANK = {
+  exactId: 0,
+  idPrefix: 1,
+  titlePrefix: 2,
+  titleWord: 3,
+  titleContains: 4,
+  otherFields: 5,
+} as const
+
+export type QueryRank = (typeof QUERY_RANK)[keyof typeof QUERY_RANK]
+
+function normalize(s: string | null | undefined): string {
+  return (s ?? "").trim().toLowerCase()
+}
+
+export function queryRank(pin: ReportPinDTO, query: string): QueryRank | null {
+  const q = normalize(query)
+  if (q.length === 0) return QUERY_RANK.otherFields
+  const id = pin.id.toLowerCase()
+  const reference = normalize(pin.referenceCode)
+  if (q === id || (reference.length > 0 && q === reference)) return QUERY_RANK.exactId
+  if (id.startsWith(q) || (reference.length > 0 && reference.startsWith(q))) return QUERY_RANK.idPrefix
+  const title = normalize(pin.title)
+  const tokens = q.split(/\s+/).filter(Boolean)
+  if (title.length > 0) {
+    if (title.startsWith(q)) return QUERY_RANK.titlePrefix
+    const words = title.split(/[^a-z0-9]+/i).filter(Boolean)
+    if (tokens.every((token) => words.some((word) => word.startsWith(token)))) return QUERY_RANK.titleWord
+    if (tokens.every((token) => title.includes(token))) return QUERY_RANK.titleContains
+  }
+  const rest = [pin.description, pin.addr, reference, id]
+    .map(normalize)
+    .filter((part) => part.length > 0)
+    .join(" ")
+  if (tokens.every((token) => rest.includes(token) || title.includes(token))) return QUERY_RANK.otherFields
+  return null
+}
+
+export function matchesQuery(pin: ReportPinDTO, query: string): boolean {
+  return queryRank(pin, query) !== null
+}
+
+export type PickerRowPlace = "linked" | "view" | "matches"
 
 export interface PickerRow {
   pin: ReportPinDTO
   distanceM: number
   state: PickerPinState
   place: PickerRowPlace
+  rank: QueryRank
 }
 
 export interface PickerRowsInput {
@@ -211,20 +262,34 @@ export interface PickerRowsInput {
   query: string
 }
 
-function compareRows(a: PickerRow, b: PickerRow): number {
-  if (a.distanceM !== b.distanceM) return a.distanceM - b.distanceM
+function compareById(a: PickerRow, b: PickerRow): number {
   return a.pin.id < b.pin.id ? -1 : a.pin.id > b.pin.id ? 1 : 0
+}
+
+function compareByDistance(a: PickerRow, b: PickerRow): number {
+  if (a.distanceM !== b.distanceM) return a.distanceM - b.distanceM
+  return compareById(a, b)
+}
+
+function compareByRank(a: PickerRow, b: PickerRow): number {
+  if (a.rank !== b.rank) return a.rank - b.rank
+  return compareByDistance(a, b)
+}
+
+export function isSearching(query: string): boolean {
+  return query.trim().length > 0
 }
 
 export function pickerRows(input: PickerRowsInput): PickerRow[] {
   const rows: PickerRow[] = []
-  const searching = input.query.trim().length > 0
+  const searching = isSearching(input.query)
   for (const pin of input.pins) {
     const state = pinState(pin.id, input.ids, input.linked)
     const wasLinked = state === "linked" || state === "unlinking"
     const pinned = state !== "idle"
     if (!pinned && !input.categories.has(pin.category)) continue
-    if (!matchesQuery(pin, input.query)) continue
+    const rank = queryRank(pin, input.query)
+    if (rank === null) continue
     const distanceM = haversineMeters(input.center, { lat: pin.lat, lng: pin.lng })
     if (!pinned && input.nearbyOnly && distanceM > input.radiusM) continue
     const inView = input.viewport ? bboxHolds(input.viewport, pin) : true
@@ -233,21 +298,24 @@ export function pickerRows(input: PickerRowsInput): PickerRow[] {
       pin,
       distanceM,
       state,
-      place: wasLinked ? "linked" : inView || state === "selected" ? "view" : "elsewhere",
+      rank,
+      place: searching ? "matches" : wasLinked ? "linked" : "view",
     })
   }
-  rows.sort(compareRows)
+  rows.sort(searching ? compareByRank : compareByDistance)
   return rows
 }
 
 export interface PickerSections {
   linked: PickerRow[]
   view: PickerRow[]
-  elsewhere: PickerRow[]
+  matches: PickerRow[]
 }
 
+export const SECTION_ORDER: readonly PickerRowPlace[] = ["matches", "linked", "view"]
+
 export function pickerSections(rows: readonly PickerRow[]): PickerSections {
-  const out: PickerSections = { linked: [], view: [], elsewhere: [] }
+  const out: PickerSections = { linked: [], view: [], matches: [] }
   for (const row of rows) out[row.place].push(row)
   return out
 }
@@ -256,21 +324,60 @@ export type PickerListItem =
   | { kind: "header"; key: string; place: PickerRowPlace; count: number }
   | { kind: "row"; key: string; row: PickerRow }
 
-export function pickerListItems(sections: PickerSections): PickerListItem[] {
+export interface PickerPage {
+  items: PickerListItem[]
+  shown: number
+  total: number
+}
+
+export function pickerListItems(sections: PickerSections, limit = Number.POSITIVE_INFINITY): PickerPage {
   const items: PickerListItem[] = []
-  const push = (place: PickerRowPlace, rows: readonly PickerRow[]) => {
-    if (rows.length === 0) return
+  let shown = 0
+  let total = 0
+  for (const place of SECTION_ORDER) {
+    const rows = sections[place]
+    total += rows.length
+    if (rows.length === 0 || shown >= limit) continue
     items.push({ kind: "header", key: `h:${place}`, place, count: rows.length })
-    for (const row of rows) items.push({ kind: "row", key: `r:${row.pin.id}`, row })
+    for (const row of rows) {
+      if (shown >= limit) break
+      items.push({ kind: "row", key: `r:${row.pin.id}`, row })
+      shown++
+    }
   }
-  push("linked", sections.linked)
-  push("view", sections.view)
-  push("elsewhere", sections.elsewhere)
-  return items
+  return { items, shown, total }
 }
 
 export function rowIndexOf(items: readonly PickerListItem[], id: string): number {
   return items.findIndex((item) => item.kind === "row" && item.row.pin.id === id)
+}
+
+export function rowOrdinalOf(items: readonly PickerListItem[], id: string): number {
+  let ordinal = 0
+  for (const item of items) {
+    if (item.kind !== "row") continue
+    if (item.row.pin.id === id) return ordinal
+    ordinal++
+  }
+  return -1
+}
+
+export function nextPageSize(shown: number, total: number, step = PICKER_PAGE_STEP): number {
+  return Math.min(total, shown + step)
+}
+
+export type LoadMoreState = "hidden" | "more" | "fetch" | "loading"
+
+export function loadMoreState(input: {
+  shown: number
+  total: number
+  searching: boolean
+  hasNextPage: boolean
+  fetchingNextPage: boolean
+}): LoadMoreState {
+  if (input.shown < input.total) return "more"
+  if (!input.searching || !input.hasNextPage) return "hidden"
+  return input.fetchingNextPage ? "loading" : "fetch"
 }
 
 export function categoryCounts(
@@ -363,6 +470,7 @@ export type PickerListState =
   | "error"
   | "too_wide"
   | "no_layers"
+  | "no_match"
   | "empty"
   | "rows"
 
@@ -370,13 +478,15 @@ export function pickerListState(input: {
   hasRegion: boolean
   pending: boolean
   error: boolean
+  searching: boolean
   pinCount: number
   layerCount: number
   rowCount: number
 }): PickerListState {
   if (input.rowCount > 0) return "rows"
   if (input.error) return "error"
-  if (input.pending && input.pinCount === 0) return "loading"
+  if (input.pending && (input.pinCount === 0 || input.searching)) return "loading"
+  if (input.searching) return "no_match"
   if (!input.hasRegion) return "too_wide"
   if (input.layerCount === 0) return "no_layers"
   return "empty"

@@ -9,7 +9,6 @@ import {
   linkSheetMode,
   linkedReportsPatch,
   linkedReportsSummary,
-  linkedRowHeadline,
   nearbyReportRows,
   sameIdSet,
   toggleLinkedReportId,
@@ -183,18 +182,6 @@ describe("sameIdSet", () => {
 
   it("treats two empty selections as unchanged", () => {
     expect(sameIdSet([], [])).toBe(true)
-  })
-})
-
-describe("linkedRowHeadline", () => {
-  it("prints the reference when the card carries one", () => {
-    expect(linkedRowHeadline({ referenceCode: "DU-42-000118" })).toBe("reference")
-  })
-
-  it("falls back to the human title rather than a raw uuid", () => {
-    expect(linkedRowHeadline({})).toBe("title")
-    expect(linkedRowHeadline({ referenceCode: null })).toBe("title")
-    expect(linkedRowHeadline({ referenceCode: "  " })).toBe("title")
   })
 })
 

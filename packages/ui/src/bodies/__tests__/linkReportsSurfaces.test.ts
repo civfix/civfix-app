@@ -94,6 +94,31 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
     expect(surface).toContain("{ enabled: searching }")
   })
 
+  it("looks a pasted full id or reference up through the detail hook so an off-screen report is found", () => {
+    expect(surface).toContain("reportLookupKey(debounced)")
+    expect(surface).toContain("useReport(lookupKey ?? undefined)")
+    expect(surface).toContain("cardToPin(reportToCardData(lookup.data))")
+    expect(surface).toMatch(/mergePins\(linked, fetchedPins, searching \? search\.items : \[\], lookupPins\)/)
+  })
+
+  it("pages the list from the pure model and offers three more at the tail", () => {
+    expect(surface).toContain("pickerListItems(sections, visible)")
+    expect(surface).toContain("nextPageSize(shown, total)")
+    expect(surface).toContain("ListFooterComponent={listFooter}")
+    expect(surface).toContain('t("load_more", { count: PICKER_PAGE_STEP })')
+    expect(surface).toMatch(/if \(more === "fetch"\) search\.fetchNextPage\(\)/)
+  })
+
+  it("prints the short code on every row and reads the human title as the headline", () => {
+    expect(pickerRow).toContain('headline="title"')
+    expect(pickerRow).toContain("code={view.code}")
+    expect(pickerRow).toContain("reportShortCode(card)")
+    expect(pickerRow).toContain("localReportThumb(data.id)")
+    expect(row).toContain('headline="title"')
+    expect(row).toContain("code={view.code}")
+    expect(row).toContain("localReportThumb(resolved.id)")
+  })
+
   it("caps the markers it hands the map and derives every pin state from one model", () => {
     expect(surface).toContain("mapPinsFor(pins, keepSet, enabled)")
     expect(surface).toContain("new Set([...linkedSet, ...idSet])")
@@ -237,6 +262,12 @@ describe("the event page names the count once the strip runs long", () => {
 })
 
 describe("every key these surfaces name exists in en", () => {
+  it("the link row's card label exists in en/report-linked.json", () => {
+    const linked = JSON.parse(read("../../i18n/locales/en/report-linked.json")) as Record<string, unknown>
+    expect(catalogHas(linked, "card.a11yLabelCode")).toBe(true)
+    expect(row).toContain('tLinked("card.a11yLabelCode"')
+  })
+
   it.each([
     ["ReportLinkPicker.tsx", picker],
     ["ReportLinkRow.tsx", row],
@@ -260,7 +291,7 @@ describe("every key these surfaces name exists in en", () => {
     for (const state of ["selected", "linked", "unlinking", "added"]) {
       expect(catalogHas(reportPicker, `pin_state_${state}`), state).toBe(true)
     }
-    for (const place of ["linked", "added", "view", "elsewhere"]) {
+    for (const place of ["linked", "added", "view", "matches"]) {
       expect(catalogHas(reportPicker, `section_${place}`), place).toBe(true)
     }
     for (const action of ["action_done", "action_link", "action_save"]) {

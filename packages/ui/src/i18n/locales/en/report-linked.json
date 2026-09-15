@@ -2,6 +2,7 @@
   "card": {
     "a11yLabel": "{{title}}, {{category}}",
     "removeA11yLabel": "Remove {{title}} from this event",
-    "a11yLabelDistance": "{{title}}, {{category}}, {{distance}} away"
+    "a11yLabelDistance": "{{title}}, {{category}}, {{distance}} away",
+    "a11yLabelCode": "{{title}}, {{category}}, {{code}}, {{distance}} away"
   }
 }

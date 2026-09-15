@@ -20,26 +20,32 @@ import {
   TextInput,
 } from "../../primitives"
 import { useScrollHost, type ScrollHostListHandle } from "../../shell/ScrollHost"
-import { useMapReports, useReportSearch } from "../../data"
+import { useMapReports, useReport, useReportSearch } from "../../data"
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "../../data/hooks/useDebouncedValue"
 import { useHaptics } from "../../capabilities"
 import { announce } from "../../announce"
 import { useT } from "../../i18n"
 import { ReportPickMap, type ReportPickMapHandle } from "../../map"
 import { FeedNotice } from "../FeedNotice"
-import { pinToCardData, useLinkedReportCards } from "../linkedReportCards"
+import { pinToCardData, reportToCardData, useLinkedReportCards } from "../linkedReportCards"
 import { METERS_PER_MILE } from "../reportHitRowModel"
 import { distanceLabel } from "../relativeTime"
 import { LayerChipRow } from "./LayerChipRow"
 import { PickerReportRow } from "./PickerReportRow"
 import { useReportPickerFilters } from "./reportPickerFilterStore"
 import {
+  PICKER_PAGE_FIRST,
+  PICKER_PAGE_STEP,
   PICKER_RADIUS_M,
   PICKER_SEARCH_MIN_CHARS,
   PICKER_ZOOM,
+  cardToPin,
   categoryCounts,
+  isSearching,
+  loadMoreState,
   mapPinsFor,
   mergePins,
+  nextPageSize,
   pickerAction,
   pickerFetchRegion,
   pickerListItems,
@@ -49,7 +55,10 @@ import {
   pinPresentation,
   pinState,
   pinTapIntent,
+  reportLookupKey,
+  reportShortCode,
   rowIndexOf,
+  rowOrdinalOf,
   selectionDiff,
   shouldRefetch,
   togglePickerId,
@@ -62,7 +71,7 @@ const PANE_WIDTH = 420
 const COMPACT_MAP_RATIO = 0.4
 const COMPACT_MAP_MIN = 200
 const ROW_GAP = 8
-const ESTIMATED_ROW_HEIGHT = 76
+const ESTIMATED_ROW_HEIGHT = 84
 const ESTIMATED_HEADER_HEIGHT = 30
 const ROW_REVEAL_INSET = 72
 
@@ -102,7 +111,6 @@ export function ReportPicker(props: ReportPickerProps) {
       title={mode === "commit" ? t("title_commit") : t("title_draft")}
       dismissLabel={t("close_a11y")}
       backdropDismissDisabled={busy}
-      error={error}
       bodyLayout="fill"
       fullBleed
       actions={null}
@@ -117,6 +125,7 @@ export function ReportPicker(props: ReportPickerProps) {
           onCommit={onCommit}
           onClose={onClose}
           busy={busy}
+          error={error}
           registerCommit={registerCommit}
         />
       ) : null}
@@ -132,7 +141,13 @@ interface SurfaceProps {
   onCommit: (ids: string[]) => void
   onClose: () => void
   busy: boolean
+  error: string | null
   registerCommit: (commit: () => void) => void
+}
+
+interface PageState {
+  key: string
+  visible: number
 }
 
 function ReportPickerSurface({
@@ -143,6 +158,7 @@ function ReportPickerSurface({
   onCommit,
   onClose,
   busy,
+  error,
   registerCommit,
 }: SurfaceProps) {
   const styles = useStyles()
@@ -169,6 +185,7 @@ function ReportPickerSurface({
   const [viewport, setViewport] = useState<BBox | null>(null)
   const [fetchRegion, setFetchRegion] = useState<BBox | null>(null)
   const [tooWide, setTooWide] = useState(false)
+  const [page, setPage] = useState<PageState>({ key: "", visible: PICKER_PAGE_FIRST })
 
   const enabled = useReportPickerFilters((s) => s.enabled)
   const nearbyOnly = useReportPickerFilters((s) => s.nearbyOnly)
@@ -181,16 +198,23 @@ function ReportPickerSurface({
 
   const region = useMapReports({ bbox: fetchRegion, enabled: fetchRegion !== null })
   const debounced = useDebouncedValue(query, SEARCH_DEBOUNCE_MS)
+  const typed = isSearching(debounced)
   const searching = debounced.trim().length >= PICKER_SEARCH_MIN_CHARS
   const search = useReportSearch({ q: debounced }, { enabled: searching })
+  const lookupKey = reportLookupKey(debounced)
+  const lookup = useReport(lookupKey ?? undefined)
 
   const fetchedPins = useMemo(
     () => (Array.isArray(region.data?.pins) ? region.data.pins.filter((p) => p != null) : []),
     [region.data],
   )
+  const lookupPins = useMemo(
+    () => (lookupKey && lookup.data ? [cardToPin(reportToCardData(lookup.data))] : []),
+    [lookupKey, lookup.data],
+  )
   const pins = useMemo(
-    () => mergePins(linked, fetchedPins, searching ? search.items : []),
-    [linked, fetchedPins, searching, search.items],
+    () => mergePins(linked, fetchedPins, searching ? search.items : [], lookupPins),
+    [linked, fetchedPins, searching, search.items, lookupPins],
   )
 
   useEffect(() => {
@@ -212,7 +236,11 @@ function ReportPickerSurface({
       }),
     [pins, center, viewport, idSet, linkedSet, enabled, nearbyOnly, debounced],
   )
-  const items = useMemo(() => pickerListItems(pickerSections(rows)), [rows])
+  const sections = useMemo(() => pickerSections(rows), [rows])
+  const pageKey = `${debounced.trim().toLowerCase()}|${[...enabled].sort().join(",")}|${nearbyOnly ? 1 : 0}`
+  const visible = page.key === pageKey ? page.visible : PICKER_PAGE_FIRST
+  const allItems = useMemo(() => pickerListItems(sections).items, [sections])
+  const { items, shown, total } = useMemo(() => pickerListItems(sections, visible), [sections, visible])
   const counts = useMemo(() => categoryCounts(pins, viewport), [pins, viewport])
   const keepSet = useMemo(() => new Set([...linkedSet, ...idSet]), [linkedSet, idSet])
   const mapPins = useMemo(() => mapPinsFor(pins, keepSet, enabled), [pins, keepSet, enabled])
@@ -227,10 +255,11 @@ function ReportPickerSurface({
     (pin: ReportPinDTO, state: PickerPinState) => {
       const category = tEnums(`category.${pin.category}`)
       const title = pin.title?.trim() || category
+      const code = reportShortCode(pin)
       const distance = distanceLabel(haversineMeters(center, pin) / METERS_PER_MILE)
-      if (state === "idle") return t("pin_a11y", { title, category, distance })
+      if (state === "idle") return t("pin_a11y", { title, category, code, distance })
       const stateKey = state === "linked" && mode === "draft" ? "pin_state_added" : `pin_state_${state}`
-      return t("pin_a11y_state", { title, category, distance, state: t(stateKey) })
+      return t("pin_a11y_state", { title, category, code, distance, state: t(stateKey) })
     },
     [center, mode, t, tEnums],
   )
@@ -240,13 +269,22 @@ function ReportPickerSurface({
   const action = pickerAction(mode, diff, busy)
   const atLimit = ids.length >= MAX_LINKED_REPORTS
 
+  const revealRow = useCallback(
+    (id: string) => {
+      const ordinal = rowOrdinalOf(allItems, id)
+      if (ordinal >= visible) setPage({ key: pageKey, visible: ordinal + 1 })
+    },
+    [allItems, pageKey, visible],
+  )
+
   const scrollToRow = useCallback(
     (id: string) => {
-      const index = rowIndexOf(items, id)
+      const index = rowIndexOf(allItems, id)
       if (index < 0) return
+      revealRow(id)
       let offset = 0
       for (let i = 0; i < index; i++) {
-        const item = items[i]!
+        const item = allItems[i]!
         const measured = heightsRef.current.get(item.key)
         offset +=
           (measured ?? (item.kind === "header" ? ESTIMATED_HEADER_HEIGHT : ESTIMATED_ROW_HEIGHT)) +
@@ -254,7 +292,7 @@ function ReportPickerSurface({
       }
       listRef.current?.scrollToOffset?.({ offset: Math.max(0, offset - ROW_REVEAL_INSET), animated: true })
     },
-    [items],
+    [allItems, revealRow],
   )
 
   const toggle = useCallback(
@@ -325,12 +363,32 @@ function ReportPickerSurface({
 
   const listState = pickerListState({
     hasRegion: !tooWide,
-    pending: region.isPending || (searching && search.isLoading),
+    pending:
+      region.isPending || (searching && search.isLoading) || (lookupKey !== null && lookup.isLoading),
     error: region.isError,
+    searching: typed,
     pinCount: pins.length,
     layerCount: enabled.size,
     rowCount: items.length,
   })
+
+  const more = loadMoreState({
+    shown,
+    total,
+    searching,
+    hasNextPage: search.hasNextPage,
+    fetchingNextPage: search.isFetchingNextPage,
+  })
+
+  const onLoadMore = useCallback(() => {
+    if (more === "more") {
+      const next = nextPageSize(shown, total)
+      setPage({ key: pageKey, visible: next })
+      announce(t("load_more_announce", { count: next - shown }))
+      return
+    }
+    if (more === "fetch") search.fetchNextPage()
+  }, [more, pageKey, search, shown, t, total])
 
   const summary =
     diff.selected > 0 ? t("footer_selected", { count: diff.selected }) : t("footer_none")
@@ -340,32 +398,39 @@ function ReportPickerSurface({
 
   const footer = (
     <View style={[styles.footer, { paddingBottom: (expanded ? 0 : (insets?.bottom ?? 0)) + th.space["3"] }]}>
-      <View style={styles.footerMeta}>
-        <Text style={styles.footerSummary} numberOfLines={1}>
-          {summary}
-          {removedText ? ` · ${removedText}` : ""}
+      {error ? (
+        <Text variant="caption" color={th.colors.bloom["600"]} numberOfLines={2} style={styles.footerError}>
+          {error}
         </Text>
-        {atLimit ? (
-          <Text style={styles.footerLimit} numberOfLines={2}>
-            {t("limit_reached", { max: MAX_LINKED_REPORTS })}
+      ) : null}
+      <View style={styles.footerRow}>
+        <View style={styles.footerMeta}>
+          <Text style={styles.footerSummary} numberOfLines={1}>
+            {summary}
+            {removedText ? ` · ${removedText}` : ""}
           </Text>
-        ) : diff.selected > 0 ? (
-          <TextLink
-            variant="label"
-            standalone
-            accessibilityLabel={t("footer_clear_a11y")}
-            onPress={() => setIds([])}
-          >
-            {t("footer_clear")}
-          </TextLink>
-        ) : null}
+          {atLimit ? (
+            <Text style={styles.footerLimit} numberOfLines={2}>
+              {t("limit_reached", { max: MAX_LINKED_REPORTS })}
+            </Text>
+          ) : diff.selected > 0 ? (
+            <TextLink
+              variant="label"
+              standalone
+              accessibilityLabel={t("footer_clear_a11y")}
+              onPress={() => setIds([])}
+            >
+              {t("footer_clear")}
+            </TextLink>
+          ) : null}
+        </View>
+        <PrimaryButton
+          label={t(action.key, { count: action.count })}
+          onPress={commit}
+          loading={busy}
+          disabled={!action.enabled}
+        />
       </View>
-      <PrimaryButton
-        label={t(action.key, { count: action.count })}
-        onPress={commit}
-        loading={busy}
-        disabled={!action.enabled}
-      />
     </View>
   )
 
@@ -399,6 +464,20 @@ function ReportPickerSurface({
     },
     [atLimit, focusedId, mode, onItemLayout, onPressRow, styles.sectionHeader, t],
   )
+
+  const listFooter =
+    more === "hidden" ? null : (
+      <View style={styles.loadMore}>
+        <PrimaryButton
+          variant="outline"
+          label={t("load_more", { count: PICKER_PAGE_STEP })}
+          accessibilityLabel={t("load_more_a11y", { count: PICKER_PAGE_STEP, shown, total })}
+          onPress={onLoadMore}
+          loading={more === "loading"}
+          disabled={more === "loading"}
+        />
+      </View>
+    )
 
   const mapHeight = Math.max(COMPACT_MAP_MIN, Math.round(windowHeight * COMPACT_MAP_RATIO))
 
@@ -473,6 +552,7 @@ function ReportPickerSurface({
         keyExtractor={(item: PickerListItem) => item.key}
         renderItem={renderItem}
         extraData={focusedId}
+        ListFooterComponent={listFooter}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -493,11 +573,13 @@ function ReportPickerSurface({
           />
         ) : (
           <Text style={styles.stateText}>
-            {listState === "too_wide"
-              ? t("zoom_in")
-              : listState === "no_layers"
-                ? t("empty_layers")
-                : t("empty_view")}
+            {listState === "no_match"
+              ? t("no_match", { query: debounced.trim() })
+              : listState === "too_wide"
+                ? t("zoom_in")
+                : listState === "no_layers"
+                  ? t("empty_layers")
+                  : t("empty_view")}
           </Text>
         )}
       </View>
@@ -599,6 +681,10 @@ const useStyles = makeThemedStyles((t) => ({
     paddingBottom: t.space["3"],
     gap: ROW_GAP,
   },
+  loadMore: {
+    alignItems: "center",
+    paddingTop: t.space["1"],
+  },
   sectionHeader: {
     fontFamily: t.fontFamily.bodyBold,
     fontSize: t.fontSize["12"],
@@ -621,14 +707,20 @@ const useStyles = makeThemedStyles((t) => ({
     paddingTop: t.space["4"],
   },
   footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["3"],
+    gap: t.space["2"],
     backgroundColor: t.colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: t.colors.border,
+  },
+  footerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["3"],
+  },
+  footerError: {
+    fontFamily: t.fontFamily.bodySemiBold,
   },
   footerMeta: {
     flex: 1,

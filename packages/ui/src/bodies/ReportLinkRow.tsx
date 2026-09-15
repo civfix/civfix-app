@@ -12,7 +12,8 @@ import {
   useLinkedReportCards,
   type LinkedReportCardEntry,
 } from "./linkedReportCards"
-import { linkedRowHeadline } from "./linkReportsModel"
+import { localReportThumb } from "./localReportThumbs"
+import { reportShortCode } from "./reportPicker/reportPickerModel"
 import { METERS_PER_MILE } from "./reportHitRowModel"
 import { distanceLabel } from "./relativeTime"
 
@@ -51,7 +52,11 @@ export function ReportLinkRow({
     }
   }, [fetchedId])
 
-  const card: LinkedReportCardEntry | undefined = known ?? fetched ?? undefined
+  const resolved: LinkedReportCardEntry | undefined = known ?? fetched ?? undefined
+  const card = useMemo(
+    () => (resolved ? { ...resolved, thumbUrl: resolved.thumbUrl ?? localReportThumb(resolved.id) } : undefined),
+    [resolved],
+  )
 
   const view = useMemo(() => {
     if (!card) return null
@@ -62,11 +67,13 @@ export function ReportLinkRow({
       : ""
     const addr = card.addr?.trim() ?? ""
     const location = [distance, addr].filter(Boolean).join(" · ")
+    const code = reportShortCode(card)
     return {
       title,
+      code,
       subtitle: location || card.description?.trim() || null,
       a11yLabel: distance
-        ? tLinked("card.a11yLabelDistance", { title, category: categoryLabel, distance })
+        ? tLinked("card.a11yLabelCode", { title, category: categoryLabel, code, distance })
         : tLinked("card.a11yLabel", { title, category: categoryLabel }),
     }
   }, [card, center, tEnums, tLinked])
@@ -92,8 +99,9 @@ export function ReportLinkRow({
     <LinkedReportCard
       report={card}
       layout="list"
-      headline={linkedRowHeadline(card)}
+      headline="title"
       subtitle={view.subtitle}
+      code={view.code}
       a11yLabel={view.a11yLabel}
       selectable
       selected={selected}
