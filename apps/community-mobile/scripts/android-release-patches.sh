@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Re-apply the four machine-local pieces a release gradle build needs and `expo prebuild` does not
-# provide. Idempotent: safe to run before every release build, and a no-op when nothing is missing.
+# provide, then clear the one stale generated file a non-clean prebuild leaves behind. Idempotent:
+# safe to run before every release build, and a no-op when nothing is missing.
 #
 #   scripts/android-release-patches.sh
 #
@@ -21,6 +22,11 @@
 #                                    :expo-updates:kspReleaseKotlin dies with
 #                                    "A failure occurred while executing KspAAWorkerAction > Metaspace".
 #                                    Metaspace is NOT part of the heap, so raising -Xmx alone does nothing.
+#   5. values-night/colors.xml    -> the opposite problem: a non-clean prebuild PRESERVES this file, so
+#                                    the dark splashscreen_background written before the light-only
+#                                    launch screen (2026-09-14) survives and Android paints the launch
+#                                    screen dark in dark mode. A clean prebuild writes an empty
+#                                    <resources/> there, which is what deleting the stale file leaves.
 #
 # Build afterwards with JDK 22 (the Gradle 8.14.3 wrapper cannot use the default Temurin 25):
 #   export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-22.jdk/Contents/Home
@@ -241,6 +247,15 @@ if not changed:
     print("  ok       app/build.gradle and gradle.properties already patched")
 PY
 
+# 5. Stale dark splash colour left behind by a non-clean prebuild.
+night_colors="android/app/src/main/res/values-night/colors.xml"
+if [ -f "$night_colors" ] && grep -q "splashscreen_background" "$night_colors"; then
+  rm -f "$night_colors"
+  applied "removed $night_colors (stale dark splashscreen_background)"
+else
+  note "ok       no stale splashscreen_background in values-night/colors.xml"
+fi
+
 echo
 echo "=========================== ANDROID RELEASE PATCHES ========================"
 echo "  sdk.dir       $(sed -n 's/^sdk\.dir=//p' android/local.properties | head -1)"
@@ -250,4 +265,5 @@ echo "  perms         $(stat -f '%Lp' android/keystore.properties) (android/keys
 echo "  release sign  $(grep -c 'signingConfigs\.release' android/app/build.gradle) reference(s) in app/build.gradle"
 echo "  jvmargs       $(sed -n 's/^org\.gradle\.jvmargs=//p' android/gradle.properties | head -1)"
 echo "  kotlin args   $(sed -n 's/^kotlin\.daemon\.jvmargs=//p' android/gradle.properties | head -1)"
+echo "  night splash  $(grep -qs splashscreen_background "$night_colors" && echo 'STALE dark colour still present' || echo 'clean (launch screen is light in both appearances)')"
 echo "============================================================================"
