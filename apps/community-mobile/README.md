@@ -168,9 +168,12 @@ The launch screen is light-only, by product decision (2026-09-14): the static na
 JS wordmark screen that follows it are both painted on light paper in every appearance, so the two
 match instead of one switching a beat before the other. That is why `app.config.js` carries no `dark`
 splash block — not on `splash`, not on the `expo-splash-screen` plugin tuple — and why
-`src/boot/launchTheme.ts` pins `LAUNCH_SCHEME` to `light` for `LoadingSplash`, `BootOfflineGate` and
-the pre-fonts backdrop in `app/_layout.tsx`. The app proper is unaffected: `userInterfaceStyle` stays
-`automatic` and every shell frame from `RootStack` onward follows the device.
+`src/boot/launchTheme.ts` pins `LAUNCH_SCHEME` to `light` for `LoadingSplash`, `BootOfflineGate`, the
+pre-fonts backdrop in `app/_layout.tsx` and that file's system chrome: while `gateMounted` is true,
+`RootStack` holds the status bar, the Android nav-bar glyphs and the native root background
+(`SystemUI.setBackgroundColorAsync`) on the launch scheme, so none of them turns dark behind the
+light gate. The app proper is unaffected: `userInterfaceStyle` stays `automatic` and every shell
+frame once the gate has unmounted follows the device.
 
 There is no dark variant of the artwork and none is needed. `assets/splash.png` is the wordmark on a
 fully transparent canvas; what sits behind it is `SPLASH_BG_LIGHT`, which the prebuild writes into
@@ -178,9 +181,10 @@ fully transparent canvas; what sits behind it is `SPLASH_BG_LIGHT`, which the pr
 `luminosity` appearance, and the storyboard paints its container view with that colorset *by name*
 (`<color key="backgroundColor" name="SplashScreenBackground"/>`). With one appearance in the
 colorset UIKit resolves the same paper in light and dark. `Info.plist` still keeps
-`UIUserInterfaceStyle` at `Automatic` — that key governs the app, not the launch screen, and forcing
-`userInterfaceStyle` to anything else in `app.config.js` would pin the whole app to one appearance,
-not just the splash.
+`UIUserInterfaceStyle` at `Automatic` — that key governs the whole process, launch screen included,
+so forcing `userInterfaceStyle` to `light` in `app.config.js` would hold the splash light too, but it
+would pin the app proper to that one appearance along with it. The single-appearance colorset buys
+the same launch paper without that cost.
 
 `tests/splashAsset.test.ts` guards this. It decodes `assets/splash.png` and asserts the corners are
 fully transparent and that most of the image is, and — when a local `ios/` prebuild exists — decodes

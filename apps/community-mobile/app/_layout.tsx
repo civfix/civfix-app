@@ -59,8 +59,8 @@ import { nativeGeolocation } from "@/lib/nativeGeolocation"
 import { nativeHaptics } from "@/lib/nativeHaptics"
 import { nativePush } from "@/lib/nativePush"
 import { nativeSecureStore } from "@/lib/nativeSecureStore"
-import { getAppearancePreference, resolveColorScheme, themeFor } from "@/theme"
 import { LAUNCH_SCHEME, launchTheme } from "@/boot/launchTheme"
+import { getAppearancePreference, resolveColorScheme, themeFor } from "@/theme"
 import { useAppFonts } from "@/theme/fonts"
 import { QueryProvider } from "@/query/QueryProvider"
 import { queryClient } from "@/query/client"
@@ -137,7 +137,7 @@ function useAppearanceTheme(): Theme {
 function BootBackdrop() {
   return (
     <>
-      <StatusBar style={launchTheme.scheme === "dark" ? "light" : "dark"} />
+      <StatusBar style="dark" />
       <View style={styles.gate} />
     </>
   )
@@ -438,8 +438,8 @@ function RootStack({ launchGate }: { launchGate: boolean }) {
   const t = useTheme()
 
   useEffect(() => {
-    void SystemUI.setBackgroundColorAsync(t.colors.bg)
-  }, [t.colors.bg])
+    void SystemUI.setBackgroundColorAsync(launchGate ? launchTheme.colors.bg : t.colors.bg)
+  }, [launchGate, t.colors.bg])
 
   useEffect(() => {
     if (Platform.OS !== "android") return
