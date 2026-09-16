@@ -62,7 +62,6 @@
     "hours_hint": "참가자 {{attended}}명 중 {{credited}}명 인정",
     "hours_hint_credited_one": "참가자 {{count}}명 인정",
     "hours_hint_credited_other": "참가자 {{count}}명 인정",
-    "donations": "기부",
     "returning": "재참여",
     "returning_hint": "등록 {{total}}명 중 이전에 참여한 인원"
   },
@@ -92,17 +91,11 @@
     "row": "발송 {{sent}} · 실패 {{failed}} · 제외 {{suppressed}}",
     "pending": "아직 발송되지 않음"
   },
-  "money": {
-    "net": "이 행사로 모인 금액",
-    "donations": "기부 건수",
-    "gross": "수수료 전 {{amount}}"
-  },
   "section": {
     "grow": "알리기",
     "communicate": "소통",
     "operate": "현장 운영",
     "configure": "설정",
-    "money": "정산",
     "danger": "위험 구역",
     "attendees": "참가자"
   },

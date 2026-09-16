@@ -62,7 +62,6 @@
     "hours_hint": "{{credited}} de {{attended}} asistentes acreditados",
     "hours_hint_credited_one": "{{count}} asistente acreditado",
     "hours_hint_credited_other": "{{count}} asistentes acreditados",
-    "donations": "Donaciones",
     "returning": "Repiten",
     "returning_hint": "de {{total}} inscritos ya habían venido"
   },
@@ -92,17 +91,11 @@
     "row": "{{sent}} enviados · {{failed}} fallidos · {{suppressed}} omitidos",
     "pending": "Aún sin enviar"
   },
-  "money": {
-    "net": "Recaudado en este evento",
-    "donations": "Donaciones",
-    "gross": "{{amount}} antes de comisiones"
-  },
   "section": {
     "grow": "Difundir",
     "communicate": "Comunicar",
     "operate": "Gestionar el día",
     "configure": "Configurar",
-    "money": "Dinero",
     "danger": "Zona de riesgo",
     "attendees": "Asistentes"
   },

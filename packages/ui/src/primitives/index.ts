@@ -96,13 +96,11 @@ export {
   PRIVACY_URL,
   COOKIES_URL,
   SUBPROCESSORS_URL,
-  DONATION_TERMS_URL,
   legalUrlFor,
-  donatePath,
-  donateUrl,
   managePath,
   manageUrl,
   manageOrgPath,
+  manageOrgSettingsPath,
   managePortfolioPath,
   orgPagePath,
   signupPagePath,
@@ -134,6 +132,7 @@ export type { DonateTarget } from "./donateTarget.types"
 
 export { DonateBlock } from "./DonateBlock"
 export type { DonateBlockProps } from "./DonateBlock"
+export { safeDonationUrl, donationUrlHost } from "./donationUrl"
 
 export { saveCalendarFile, calendarSaveAvailable } from "./calendarFile"
 export type { CalendarSaveInput, CalendarSaveResult } from "./calendarFile.types"

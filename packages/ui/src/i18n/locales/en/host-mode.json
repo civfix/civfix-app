@@ -62,7 +62,6 @@
     "hours_hint": "{{credited}} of {{attended}} attendees credited",
     "hours_hint_credited_one": "{{count}} attendee credited",
     "hours_hint_credited_other": "{{count}} attendees credited",
-    "donations": "Donations",
     "returning": "Returning",
     "returning_hint": "of {{total}} registered have been before"
   },
@@ -92,17 +91,11 @@
     "row": "{{sent}} sent · {{failed}} failed · {{suppressed}} skipped",
     "pending": "Not sent yet"
   },
-  "money": {
-    "net": "Raised for this event",
-    "donations": "Donations",
-    "gross": "{{amount}} before fees"
-  },
   "section": {
     "grow": "Grow",
     "communicate": "Communicate",
     "operate": "Operate",
     "configure": "Configure",
-    "money": "Money",
     "danger": "Danger zone",
     "attendees": "Attendees"
   },

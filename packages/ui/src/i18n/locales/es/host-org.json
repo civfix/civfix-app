@@ -32,17 +32,17 @@
   "nav": {
     "events": "Eventos",
     "overview": "Resumen",
-    "members": "Miembros",
-    "payments": "Pagos"
+    "members": "Miembros"
   },
   "overview": {
     "title": "Organización",
     "events": "Eventos",
     "members": "Miembros",
     "created": "Creada",
-    "donations": "Donaciones",
-    "donations_on": "Acepta donaciones",
-    "donations_off": "No acepta donaciones"
+    "donation_link": "Enlace de donación",
+    "no_donation_link": "Sin enlace de donación",
+    "add_donation_link": "Añadir un enlace",
+    "edit_donation_link": "Editar enlace"
   },
   "members": {
     "title": "Miembros",
@@ -60,5 +60,10 @@
     "loading_more": "Cargando…",
     "show_more_upcoming_a11y": "Ver más próximos eventos",
     "show_more_past_a11y": "Ver más eventos pasados"
+  },
+  "form": {
+    "donationUrl": "Enlace de donación",
+    "donation_hint": "Debe empezar por https://. Se muestra en tu página pública y en tus eventos; civfix nunca gestiona el dinero.",
+    "donation_invalid": "Debe empezar por https://"
   }
 }

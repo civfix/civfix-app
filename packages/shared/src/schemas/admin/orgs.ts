@@ -3,7 +3,6 @@ import {
   IdSchema,
   ISODateSchema,
   OrganizationMemberRoleSchema,
-  OrgPaymentsStateSchema,
   OrgVerificationKindSchema,
   OrgVerificationStatusSchema,
   PaginationQuerySchema,
@@ -71,8 +70,7 @@ const AdminOrgDTOObjectSchema = z.object({
   eventCount: z.number().int().nonnegative().default(0),
   owner: AdminActorRefSchema.nullable().optional(),
   verification: AdminOrgVerificationListItemDTOSchema.nullable().optional(),
-  donationsEnabled: z.boolean().default(false),
-  paymentsState: OrgPaymentsStateSchema.nullable().optional(),
+  donationUrl: z.string().nullable().optional(),
   // 0.41.0 additions, all optional so a 0.40.0 server payload still parses.
   suspendedAt: ISODateSchema.nullable().optional(),
   suspendedReason: z.string().nullable().optional(),
@@ -114,7 +112,6 @@ export const AdminOrgListQuerySchema = AdminListQuerySchema.extend({
   verified: OrgVerificationStatusSchema.optional(),
   kind: OrgVerificationKindSchema.optional(),
   suspended: QueryBooleanSchema.optional(),
-  donationsEnabled: QueryBooleanSchema.optional(),
 })
 export type AdminOrgListQuery = z.infer<typeof AdminOrgListQuerySchema>
 

@@ -33,6 +33,7 @@ import { avatarErrorMessage, uploadAvatar } from "./settings/avatarUpload"
 import { BioEditor } from "./settings/BioEditor"
 import { ChangeUsernameEditor } from "./settings/ChangeUsernameEditor"
 import { DisplayNameEditor } from "./settings/DisplayNameEditor"
+import { DonationLinkEditor } from "./settings/DonationLinkEditor"
 import { PrimaryOrganizationPicker } from "./settings/PrimaryOrganizationPicker"
 import { SocialLinksEditor } from "./settings/SocialLinksEditor"
 
@@ -133,6 +134,20 @@ export function SettingsAccountBody() {
           handle: profile.handle ?? "",
           displayName: profile.name,
           socialLinks,
+        })
+        .then(() => undefined)
+    },
+    [profile, updateProfile],
+  )
+
+  const onSaveDonationUrl = useCallback(
+    (donationUrl: string | null): Promise<void> => {
+      if (!profile) return Promise.resolve()
+      return updateProfile
+        .mutateAsync({
+          handle: profile.handle ?? "",
+          displayName: profile.name,
+          donationUrl,
         })
         .then(() => undefined)
     },
@@ -244,6 +259,11 @@ export function SettingsAccountBody() {
           socialLinks={profile.socialLinks}
           saving={updateProfile.isPending}
           onSave={onSaveSocialLinks}
+        />
+        <DonationLinkEditor
+          currentUrl={profile.donationUrl}
+          saving={updateProfile.isPending}
+          onSave={onSaveDonationUrl}
         />
       </SettingsSection>
 

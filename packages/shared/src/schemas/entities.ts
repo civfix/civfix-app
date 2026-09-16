@@ -6,8 +6,6 @@ import {
   BroadcastStatusSchema,
   CheckinMethodSchema,
   CleanupMemberRoleSchema,
-  DonationDisputeStateSchema,
-  DonationStatusSchema,
   EventPageStatusSchema,
   EventVisibilitySchema,
   HostCapabilitySchema,
@@ -32,6 +30,8 @@ import {
 } from "./common.js"
 import { MARKDOWN_SUBSET_MAX_CHARS } from "../markdown/parse.js"
 import { isSafeHttpsUrl } from "../markdown/safe-url.js"
+
+export const HttpsUrlSchema = z.string().trim().url().max(500).startsWith("https://")
 
 export const AvatarPairSchema = z.tuple([z.string(), z.string()]).nullable().optional()
 
@@ -103,6 +103,7 @@ export const PersonDTOSchema = z.object({
    * membership; null when the person belongs to no organization. Optional so an older server parses.
    */
   organization: OrganizationRefDTOSchema.nullable().optional(),
+  donationUrl: HttpsUrlSchema.nullable().optional(),
   deleted: z.boolean().optional(),
 })
 export type PersonDTO = z.infer<typeof PersonDTOSchema>
@@ -274,27 +275,6 @@ export const ReportPinDTOSchema = z.object({
 export type ReportPinDTO = z.infer<typeof ReportPinDTOSchema>
 
 
-const MoneyDTOObjectSchema = z.object({
-  amountMinor: z.number().int(),
-  currency: z.literal("USD"),
-})
-export type MoneyDTO = z.infer<typeof MoneyDTOObjectSchema>
-export const MoneyDTOSchema: z.ZodType<MoneyDTO, z.ZodTypeDef, unknown> =
-  MoneyDTOObjectSchema
-
-const FeeBreakdownDTOObjectSchema = z.object({
-  grossMinor: z.number().int().nonnegative(),
-  platformFeeMinor: z.number().int().nonnegative(),
-  processorFeeMinor: z.number().int().nonnegative(),
-  processorFeeIsEstimate: z.boolean(),
-  netMinor: z.number().int(),
-  platformFeeBps: z.number().int().nonnegative().max(10000),
-  currency: z.literal("USD").default("USD"),
-})
-export type FeeBreakdownDTO = z.infer<typeof FeeBreakdownDTOObjectSchema>
-export const FeeBreakdownDTOSchema: z.ZodType<FeeBreakdownDTO, z.ZodTypeDef, unknown> =
-  FeeBreakdownDTOObjectSchema
-
 const LegalDocumentVersionDTOObjectSchema = z.object({
   type: LegalDocumentTypeSchema,
   version: z.string().min(1).max(32),
@@ -324,8 +304,7 @@ const OrganizationDTOObjectSchema = z.object({
   volunteerHours: z.number().nonnegative().optional(),
   volunteerCount: z.number().int().nonnegative().optional(),
   myRole: OrganizationMemberRoleSchema.nullable().optional(),
-  donationsEnabled: z.boolean().optional(),
-  donateSlug: z.string().nullable().optional(),
+  donationUrl: HttpsUrlSchema.nullable().optional(),
   // 0.41.0: an operator-suspended org (DECISIONS §32). Optional so a 0.40.0 server still parses.
   suspended: z.boolean().optional(),
 })
@@ -704,31 +683,6 @@ export type BroadcastDTO = z.infer<typeof BroadcastDTOObjectSchema>
 export const BroadcastDTOSchema: z.ZodType<BroadcastDTO, z.ZodTypeDef, unknown> =
   BroadcastDTOObjectSchema
 
-const DonationDTOObjectSchema = z.object({
-  id: IdSchema,
-  reference: z.string(),
-  organizationId: IdSchema,
-  orgName: z.string(),
-  orgLegalName: z.string().nullable().optional(),
-  amount: MoneyDTOSchema,
-  fees: FeeBreakdownDTOSchema.nullable().optional(),
-  status: DonationStatusSchema,
-  disputeState: DonationDisputeStateSchema.default("none"),
-  refundedTotalMinor: z.number().int().nonnegative().default(0),
-  createdAt: ISODateSchema,
-  chargedAt: ISODateSchema.nullable().optional(),
-  cardBrand: z.string().nullable().optional(),
-  cardLast4: z.string().nullable().optional(),
-  receiptAvailable: z.boolean().default(false),
-  receiptSentAt: ISODateSchema.nullable().optional(),
-  sharedIdentityWithOrg: z.boolean().default(false),
-  eventId: IdSchema.nullable().optional(),
-  eventTitle: z.string().nullable().optional(),
-})
-export type DonationDTO = z.infer<typeof DonationDTOObjectSchema>
-export const DonationDTOSchema: z.ZodType<DonationDTO, z.ZodTypeDef, unknown> =
-  DonationDTOObjectSchema
-
 export const RegistrationStateSchema = z.enum([
   "open",
   "not_yet_open",
@@ -738,14 +692,12 @@ export const RegistrationStateSchema = z.enum([
 ])
 export type RegistrationState = z.infer<typeof RegistrationStateSchema>
 
-const CleanupDonationOrgRefObjectSchema = z.object({
-  slug: z.string(),
-  name: z.string(),
-  enabled: z.boolean(),
+const CleanupOrganizationRefObjectSchema = OrganizationRefDTOObjectSchema.extend({
+  donationUrl: HttpsUrlSchema.nullable().optional(),
 })
-export type CleanupDonationOrgRef = z.infer<typeof CleanupDonationOrgRefObjectSchema>
-export const CleanupDonationOrgRefSchema: z.ZodType<CleanupDonationOrgRef, z.ZodTypeDef, unknown> =
-  CleanupDonationOrgRefObjectSchema
+export type CleanupOrganizationRef = z.infer<typeof CleanupOrganizationRefObjectSchema>
+export const CleanupOrganizationRefSchema: z.ZodType<CleanupOrganizationRef, z.ZodTypeDef, unknown> =
+  CleanupOrganizationRefObjectSchema
 
 const CleanupObjectSchema = z.object({
   id: IdSchema,
@@ -774,15 +726,14 @@ const CleanupObjectSchema = z.object({
   visibility: EventVisibilitySchema.default("public"),
   coverUrl: z.string().nullable().optional(),
   galleryUrls: z.array(z.string()).default([]),
-  donationUrl: z.string().nullable().optional(),
+  donationUrl: HttpsUrlSchema.nullable().optional(),
   donationClicks: z.number().int().nonnegative().nullable().optional(),
-  donationOrg: CleanupDonationOrgRefSchema.nullable().optional(),
   pageSlug: z.string().nullable().optional(),
   pageStatus: EventPageStatusSchema.nullable().optional(),
   registrationOpensAt: ISODateSchema.nullable().optional(),
   registrationClosesAt: ISODateSchema.nullable().optional(),
   capacity: z.number().int().nonnegative().nullable().optional(),
-  organization: OrganizationRefDTOSchema.nullable().optional(),
+  organization: CleanupOrganizationRefSchema.nullable().optional(),
   ticketTypes: z.array(TicketTypeDTOSchema).default([]),
   registrationState: RegistrationStateSchema.nullable().optional(),
   myRegistration: MyEventRegistrationRefSchema.nullable().optional(),

@@ -14,7 +14,6 @@ export const TURNSTILE_SITEKEY: string | undefined = process.env.NEXT_PUBLIC_TUR
 
 export const TURNSTILE_ACTION_ANON_REPORT = "anon-report"
 export const TURNSTILE_ACTION_HOME_TURF = "home-turf"
-export const TURNSTILE_ACTION_DONATE = "donate"
 
 interface TurnstileApi {
   render: (

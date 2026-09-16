@@ -12,7 +12,6 @@
   "kind": {
     "roster": "Asistentes",
     "answers": "Respuestas",
-    "checkins": "Registros de entrada",
-    "donations": "Donaciones"
+    "checkins": "Registros de entrada"
   }
 }

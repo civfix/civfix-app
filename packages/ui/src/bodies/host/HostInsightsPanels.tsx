@@ -12,7 +12,6 @@ import { TrendSparkline } from "../../primitives/TrendSparkline"
 import { formatRate, formatStatValue, type StatTileColumns } from "../../primitives/statTileModel"
 import { useLocale, useRelativeTime, useT } from "../../i18n"
 import { boardHasTimedSlots, currentShifts, slotDisplayOrder, slotWindow } from "../eventSlotsModel"
-import { formatMinor } from "./donationFormat"
 import { ShiftRow } from "./ShiftRow"
 import { TopVolunteersCard } from "./TopVolunteersCard"
 import {
@@ -56,9 +55,6 @@ function useTileText(insights: EventInsights) {
           ? t("tiles.hours_hint", { credited, attended })
           : t("tiles.hours_hint_credited", { count: credited }),
       }
-    }
-    if (tile.key === "donations") {
-      return { value: formatMinor(tile.value, "USD", locale) }
     }
     if (tile.key === "returning") {
       return {
@@ -275,27 +271,6 @@ function MessagesPanel({ insights }: { insights: EventInsights }) {
   )
 }
 
-function MoneyPanel({ insights }: { insights: EventInsights }) {
-  const { t } = useT("host-mode")
-  const { locale } = useLocale()
-  const money = insights.money
-  if (money === null) return null
-  return (
-    <SectionCard label={t("section.money")}>
-      <StatTileRow columns={2}>
-        <StatTile label={t("money.net")} value={formatMinor(money.netMinor, money.currency, locale)} />
-        <StatTile
-          label={t("money.donations")}
-          value={formatStatValue(money.donationCount, locale)}
-          hint={t("money.gross", {
-            amount: formatMinor(money.grossMinor, money.currency, locale),
-          })}
-        />
-      </StatTileRow>
-    </SectionCard>
-  )
-}
-
 export function HostInsightsPanels({
   insights,
   phase,
@@ -343,7 +318,6 @@ export function HostInsightsPanels({
       {panels.signups ? <SignupsPanel insights={insights} /> : null}
       {panels.byTicketType ? <ByTicketTypePanel insights={insights} /> : null}
       {panels.arrivals ? <ArrivalsPanel insights={insights} /> : null}
-      <MoneyPanel insights={insights} />
       {panels.messages ? <MessagesPanel insights={insights} /> : null}
     </View>
   )

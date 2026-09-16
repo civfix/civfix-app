@@ -325,7 +325,7 @@ export function PortfolioScreen({ notFoundPath }: PortfolioScreenProps) {
             title={to("portfolio.empty_title", { defaultValue: "Host as an organization" })}
             body={to("portfolio.empty_body", {
               defaultValue:
-                "An organization is a shared identity for a nonprofit, agency or community group: events carry its name and badge, teammates co-host under it, and verified nonprofits can accept donations.",
+                "An organization is a shared identity for a nonprofit, agency or community group: events carry its name and badge, and teammates co-host under it.",
             })}
             cta={{
               label: to("portfolio.empty_cta", { defaultValue: "Create an organization" }),

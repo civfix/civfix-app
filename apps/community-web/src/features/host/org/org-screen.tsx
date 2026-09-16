@@ -5,7 +5,6 @@ import {
   BadgeCheck,
   Building2,
   CalendarDays,
-  CreditCard,
   ExternalLink,
   LayoutDashboard,
   Settings,
@@ -33,9 +32,6 @@ import { MembersScreen } from "./members-screen"
 import { publicOrgPath } from "./org-slug"
 import { SuspendedBanner } from "./suspended-banner"
 
-const PaymentsTab = lazy(() =>
-  import("./payments/payments-tab").then((m) => ({ default: m.PaymentsTab })),
-)
 const VerificationScreen = lazy(() =>
   import("./verification-screen").then((m) => ({ default: m.VerificationScreen })),
 )
@@ -49,7 +45,6 @@ const SECTION_ICON: Record<OrgSection, LucideIcon> = {
   members: Users,
   verification: BadgeCheck,
   settings: Settings,
-  payments: CreditCard,
 }
 
 const BOTTOM_TAB_ORDER: readonly OrgSection[] = ["overview", "events", "members", "verification", "settings"]
@@ -68,9 +63,7 @@ export function OrgScreen({ orgId, section }: OrgScreenProps) {
   const gate = useGate(orgs)
   const org: OrganizationDTO | null = (orgs.data ?? []).find((entry) => entry.id === orgId) ?? null
 
-  const isOwner = org?.myRole === "owner"
-  const isAdmin = isOwner || org?.myRole === "admin"
-  const canManage = isAdmin
+  const canManage = org?.myRole === "owner" || org?.myRole === "admin"
 
   const navItems = useMemo<ConsoleNavItem[]>(() => {
     const items: ConsoleNavItem[] = [
@@ -180,13 +173,7 @@ export function OrgScreen({ orgId, section }: OrgScreenProps) {
               </div>
             ) : null}
             <Suspense fallback={<LoadingState count={5} />}>
-              <OrgSectionScreen
-                section={section}
-                orgId={orgId}
-                orgName={org.name}
-                isOwner={isOwner}
-                canManage={canManage}
-              />
+              <OrgSectionScreen section={section} />
             </Suspense>
           </ConsoleOrgProvider>
         )}
@@ -195,19 +182,7 @@ export function OrgScreen({ orgId, section }: OrgScreenProps) {
   )
 }
 
-function OrgSectionScreen({
-  section,
-  orgId,
-  orgName,
-  isOwner,
-  canManage,
-}: {
-  section: OrgSection
-  orgId: string
-  orgName: string
-  isOwner: boolean
-  canManage: boolean
-}) {
+function OrgSectionScreen({ section }: { section: OrgSection }) {
   switch (section) {
     case "overview":
       return <OrgOverview />
@@ -219,14 +194,5 @@ function OrgSectionScreen({
       return <VerificationScreen />
     case "settings":
       return <OrgSettingsScreen />
-    case "payments":
-      return (
-        <PaymentsTab
-          orgId={orgId}
-          orgName={orgName}
-          canManagePayments={isOwner}
-          canViewDonations={canManage}
-        />
-      )
   }
 }

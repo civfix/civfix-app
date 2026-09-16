@@ -15,7 +15,6 @@ export default defineConfig({
     "src/host/index.ts",
     "src/markdown/index.ts",
     "src/ics/index.ts",
-    "src/payments/index.ts",
     "src/legal/index.ts",
     "src/tokens/chip-contrast.ts",
   ],

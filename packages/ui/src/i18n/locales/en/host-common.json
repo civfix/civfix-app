@@ -145,8 +145,7 @@
     "forbidden": "You do not have permission to do that.",
     "conflict": "Someone changed this before you did. Reload and try again.",
     "not_found": "We could not find that.",
-    "abuse_held": "This is being reviewed before it goes out.",
-    "payment_unavailable": "Payments are temporarily unavailable. Nothing was charged."
+    "abuse_held": "This is being reviewed before it goes out."
   },
   "crash": {
     "title": "The console hit a problem",

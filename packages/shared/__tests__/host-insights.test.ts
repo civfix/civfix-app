@@ -57,7 +57,6 @@ function minimalInsights(): unknown {
       unmarked: 14,
     },
     hours: { credited: 0, attendeesCredited: 0, attendeesCheckedIn: 0 },
-    money: null,
     returning: null,
   }
 }
@@ -98,7 +97,6 @@ describe("getEventInsights contract", () => {
     expect(parsed.broadcasts).toEqual([])
     expect(parsed.arrivals).toEqual([])
     expect(parsed.phase).toBe("upcoming")
-    expect(parsed.money).toBeNull()
     expect(parsed.returning).toBeNull()
     expect(EventInsightsSchema.parse(minimalInsights())).toEqual(parsed)
   })
@@ -155,57 +153,15 @@ describe("getEventInsights contract", () => {
     expect(GetEventInsightsResponseSchema.safeParse(atCap).success).toBe(true)
   })
 
-  it("carries money and returning as whole nullable blocks, never partial ones", () => {
-    const withMoney = {
+  it("carries returning as a whole nullable block, never a partial one", () => {
+    const withReturning = {
       ...(minimalInsights() as Record<string, unknown>),
-      money: {
-        currency: "USD",
-        donationCount: 3,
-        grossMinor: 12000,
-        netMinor: 11500,
-        refundedMinor: 0,
-        lastChargedAt: "2026-09-12T18:30:00.000Z",
-      },
       returning: { seats: 5, ofRegistered: 14 },
     }
-    const parsed = GetEventInsightsResponseSchema.parse(withMoney)
-    expect(parsed.money?.currency).toBe("USD")
+    const parsed = GetEventInsightsResponseSchema.parse(withReturning)
     expect(parsed.returning).toEqual({ seats: 5, ofRegistered: 14 })
-    const eur = {
-      ...withMoney,
-      money: { ...(withMoney.money as Record<string, unknown>), currency: "EUR" },
-    }
-    expect(GetEventInsightsResponseSchema.safeParse(eur).success).toBe(false)
-  })
-
-  it("lets a fully refunded event report a negative net", () => {
-    const refunded = {
-      ...(minimalInsights() as Record<string, unknown>),
-      money: {
-        currency: "USD",
-        donationCount: 2,
-        grossMinor: 12000,
-        netMinor: -640,
-        refundedMinor: 12000,
-        lastChargedAt: "2026-09-12T18:30:00.000Z",
-      },
-    }
-    expect(GetEventInsightsResponseSchema.parse(refunded).money?.netMinor).toBe(-640)
-    const fractional = {
-      ...refunded,
-      money: { ...(refunded.money as Record<string, unknown>), netMinor: -6.4 },
-    }
-    expect(GetEventInsightsResponseSchema.safeParse(fractional).success).toBe(false)
-    const negativeGross = {
-      ...refunded,
-      money: { ...(refunded.money as Record<string, unknown>), grossMinor: -1 },
-    }
-    expect(GetEventInsightsResponseSchema.safeParse(negativeGross).success).toBe(false)
-    const negativeRefund = {
-      ...refunded,
-      money: { ...(refunded.money as Record<string, unknown>), refundedMinor: -1 },
-    }
-    expect(GetEventInsightsResponseSchema.safeParse(negativeRefund).success).toBe(false)
+    const partial = { ...withReturning, returning: { seats: 5 } }
+    expect(GetEventInsightsResponseSchema.safeParse(partial).success).toBe(false)
   })
 
   it("names exactly four phases and carries no suppression flag", () => {

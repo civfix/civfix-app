@@ -36,7 +36,7 @@
       "autoIncrement": true,
       "env": {
         "//api": "Dev/TestFlight testing builds bake the staging API base URL. App Store releases use the production profile, which sets no EXPO_PUBLIC_API_URL and therefore falls back to https://api.civfix.org (src/lib/apiUrl.ts).",
-        "//donate": "How a donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. OTA-flippable with `eas update` if App Review treats the in-app browser as in-app purchasing (see APP-REVIEW-NOTES.md).",
+        "//donate": "How a host's external donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. The link is the host's own third-party page; no payment happens anywhere in civfix. OTA-flippable with `eas update` if App Review ever objects to the in-app browser (see APP-REVIEW-NOTES.md).",
         "EXPO_PUBLIC_DONATE_BROWSER_MODE": "in-app",
         "EXPO_PUBLIC_API_URL": "https://api.civfix.dev",
         "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf",
@@ -59,7 +59,7 @@
       "autoIncrement": true,
       "env": {
         "//dsym": "iOS links React Native's prebuilt core frameworks (buildReactNativeFromSource: false in app.config.js), so App Store Connect's 'Upload Symbols Failed' warning for React.framework / ReactNativeDependencies.framework (alongside hermes and MapLibre) is expected and non-blocking.",
-        "//donate": "How a donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. OTA-flippable with `eas update` if App Review treats the in-app browser as in-app purchasing (see APP-REVIEW-NOTES.md).",
+        "//donate": "How a host's external donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. The link is the host's own third-party page; no payment happens anywhere in civfix. OTA-flippable with `eas update` if App Review ever objects to the in-app browser (see APP-REVIEW-NOTES.md).",
         "EXPO_PUBLIC_DONATE_BROWSER_MODE": "in-app",
         "EXPO_PUBLIC_CARTO_API_KEY": "cb1_2800_1_9e1f147ec5d25247379fe9cf",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "521996499476-d86mdmhsuopfp9gmqf7qarc2ousv6sqt.apps.googleusercontent.com",

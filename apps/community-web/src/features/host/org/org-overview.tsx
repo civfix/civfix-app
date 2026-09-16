@@ -20,6 +20,14 @@ import { useConsoleFormat } from "../format"
 import { publicOrgPath } from "./org-slug"
 import { useOrgVerification } from "./verification-screen"
 
+function hostnameOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return url
+  }
+}
+
 interface NextStep {
   id: string
   icon: LucideIcon
@@ -44,6 +52,8 @@ export function OrgOverview() {
   const memberCount = org.memberCount ?? 0
   const eventCount = org.eventCount ?? 0
   const website = safeExternalHref(org.websiteUrl)
+  const donationLink = safeExternalHref(org.donationUrl)
+  const donationHost = donationLink === null ? null : hostnameOf(donationLink)
 
   const allSteps: NextStep[] = [
     {
@@ -73,7 +83,7 @@ export function OrgOverview() {
       icon: BadgeCheck,
       title: t("next.verification_title", { defaultValue: "Apply for verification" }),
       body: t("next.verification_body", {
-        defaultValue: "A badge on every event, and donations for nonprofits.",
+        defaultValue: "A badge on every event you host.",
       }),
       done: status !== "unverified",
       section: "verification",
@@ -193,11 +203,35 @@ export function OrgOverview() {
             sub={org.verifiedAt ? format.date(org.verifiedAt) : undefined}
           />
           <KpiCell
-            label={t("overview.donations")}
+            label={t("overview.donation_link")}
             value={
-              <span className="text-token-14">
-                {org.donationsEnabled ? t("overview.donations_on") : t("overview.donations_off")}
-              </span>
+              donationLink === null ? (
+                <span className="text-token-14 text-console-ink-3">
+                  {t("overview.no_donation_link")}
+                </span>
+              ) : (
+                <a
+                  href={donationLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded-xs text-token-14 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                >
+                  {donationHost}
+                  <ExternalLink aria-hidden className="h-3.5 w-3.5" />
+                </a>
+              )
+            }
+            sub={
+              canManage ? (
+                <ConsoleLink
+                  href={hrefForRoute({ kind: "org", orgId, section: "settings" })}
+                  className="rounded-xs font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                >
+                  {donationLink === null
+                    ? t("overview.add_donation_link")
+                    : t("overview.edit_donation_link")}
+                </ConsoleLink>
+              ) : undefined
             }
           />
         </div>

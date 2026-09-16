@@ -37,27 +37,6 @@ const WEB_ROWS: StorageRow[] = [
     classification: "Strictly necessary / first-party preference",
   },
   {
-    item: "__stripe_mid",
-    where: "HTTP cookie set by Stripe, only on /donate/*",
-    purpose:
-      "Stripe's fraud-prevention device identifier. It is set only while you are on a donation page, so that Stripe can tell a returning legitimate donor from a card-testing bot. Expires after 1 year.",
-    classification: "Strictly necessary (payment fraud prevention)",
-  },
-  {
-    item: "__stripe_sid",
-    where: "HTTP cookie set by Stripe, only on /donate/*",
-    purpose:
-      "Stripe's per-session fraud-prevention identifier for the same purpose as __stripe_mid. Expires after 30 minutes.",
-    classification: "Strictly necessary (payment fraud prevention)",
-  },
-  {
-    item: "civfix.donate.status.<id>",
-    where: "Browser sessionStorage, only on /donate/*",
-    purpose:
-      "The short-lived capability token that lets the confirmation page read the status of the donation you just made, kept so a page reload does not lose your receipt confirmation. Cleared when you close the tab.",
-    classification: "Strictly necessary (donation confirmation)",
-  },
-  {
     item: "Map layer toggles",
     where: "Browser localStorage",
     purpose:
@@ -96,12 +75,6 @@ export default function CookiesPage() {
           preferences. We do <strong>not</strong> use any advertising, analytics, or cross-site tracking
           technology; we set no third-party tracking cookies; and we do not sell or share your information
           for advertising.
-        </p>
-        <p>
-          There is exactly one third-party script anywhere in civfix, and it runs on exactly one page:
-          Stripe.js on the donation page, which sets two strictly necessary fraud-prevention cookies for
-          the payment you are making. Section 4 explains what they are, why they are necessary, and the
-          measures that keep them off every other page.
         </p>
         <p>
           Because everything we store is either strictly necessary or a first-party preference you set
@@ -182,48 +155,10 @@ export default function CookiesPage() {
       </section>
 
       <section>
-        <h2>4. Payment cookies on the donation page only</h2>
+        <h2>4. No advertising or cross-site tracking</h2>
         <p>
-          The donation page at <code>/donate/&lt;organization&gt;</code> is the one place in civfix that
-          loads a third-party script: Stripe.js, which draws the payment form inside an iframe so that
-          your card number never touches civfix&rsquo;s servers. Stripe.js sets the two cookies listed in
-          Section 2 (<code>__stripe_mid</code> and <code>__stripe_sid</code>) for fraud prevention.
-        </p>
-        <p>
-          Three deliberate engineering choices keep this narrow, and they are enforced in the build, not
-          just described here:
-        </p>
-        <ul>
-          <li>
-            Stripe.js is loaded <strong>lazily and only from the donation page</strong>. Browse the map,
-            file a report, sign up for an event, or read this page and no Stripe script runs and no
-            Stripe cookie is set.
-          </li>
-          <li>
-            We disable Stripe&rsquo;s optional <em>advanced fraud signals</em> beacon, so no telemetry
-            request is made to <code>m.stripe.com</code> merely because the page loaded. Stripe still
-            runs its fraud checks on its own servers when you submit a payment.
-          </li>
-          <li>
-            The site&rsquo;s Content-Security-Policy permits Stripe&rsquo;s origins on{" "}
-            <code>/donate/*</code> and nowhere else, so a Stripe script could not execute on another
-            page even by accident.
-          </li>
-        </ul>
-        <p>
-          These cookies are strictly necessary for a payment you have chosen to make: without them
-          Stripe cannot distinguish you from an automated card-testing attack and the payment would be
-          refused. They are not used for advertising, profiling or measurement, and they are not read by
-          civfix. That is why the donation page also carries no consent banner. If you do not want them,
-          do not open the donation page.
-        </p>
-      </section>
-
-      <section>
-        <h2>5. No advertising or cross-site tracking</h2>
-        <p>
-          Apart from the payment cookies described in Section 4, civfix runs no advertising, analytics,
-          or third-party tracking technology inside the apps or website. We do not set third-party
+          civfix runs no advertising, analytics, or third-party tracking technology inside the apps or
+          website. We do not set third-party
           tracking cookies, do not build advertising profiles, and do not sell or &ldquo;share&rdquo;
           your personal information for cross-context behavioral advertising as those terms are used
           under US state privacy laws. Our error-tracking system is self-hosted on our own infrastructure
@@ -242,19 +177,17 @@ export default function CookiesPage() {
       </section>
 
       <section>
-        <h2>6. Your controls</h2>
+        <h2>5. Your controls</h2>
         <p>
           You can clear the cookies and local storage above at any time through your browser settings, or
           by signing out (which clears your session). On mobile, signing out clears the stored
           authentication token, and removing the app clears its on-device storage. Clearing strictly
-          necessary storage will sign you out and reset your saved preferences. The Stripe payment
-          cookies clear with your browser&rsquo;s cookies like any other; clearing them does not affect a
-          donation you have already completed.
+          necessary storage will sign you out and reset your saved preferences.
         </p>
       </section>
 
       <section>
-        <h2>7. Contact us</h2>
+        <h2>6. Contact us</h2>
         <p>
           Questions about cookies or storage? Email{" "}
           <a href="mailto:roman@reachoutla.org">roman@reachoutla.org</a>.

@@ -12,7 +12,6 @@
   "kind": {
     "roster": "Teilnehmende",
     "answers": "Antworten",
-    "checkins": "Check-ins",
-    "donations": "Spenden"
+    "checkins": "Check-ins"
   }
 }

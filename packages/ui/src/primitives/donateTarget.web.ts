@@ -1,11 +1,9 @@
-import { donatePath } from "./externalUrls"
 import type { DonateTarget } from "./donateTarget.types"
 
 export function openDonate(target: DonateTarget): void {
-  const path = donatePath(target.orgSlug, target.eventId ?? null)
-  if (typeof window !== "undefined" && window.location) {
-    window.location.assign(path)
+  if (typeof window !== "undefined" && typeof window.open === "function") {
+    window.open(target.url, "_blank", "noopener,noreferrer")
     return
   }
-  void target.openExternal?.open(path)
+  void target.openExternal?.open(target.url)
 }

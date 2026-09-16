@@ -1,0 +1,26 @@
+{
+  "card": {
+    "title": "Spenden",
+    "supports": "Unterstützt {{name}}",
+    "open": "Spendenseite öffnen",
+    "open_a11y": "Spendenseite von {{name}} auf {{host}} öffnen"
+  },
+  "editor": {
+    "title": "Spendenlink",
+    "add": "Füge einen Link hinzu, über den Leute spenden können",
+    "hint": "Füge einen Link zu deiner eigenen Spenden- oder Fundraising-Seite ein. Er wird in deinem Profil und bei Events angezeigt, die du veranstaltest. civfix wickelt niemals Geld ab.",
+    "field_label": "Spendenlink",
+    "placeholder": "https://",
+    "invalid": "Muss ein vollständiger Link sein, der mit https:// beginnt",
+    "remove": "Link entfernen",
+    "save": "Speichern",
+    "dismiss": "Spendenlink schließen",
+    "error": "Der Link konnte nicht gespeichert werden. Versuche es erneut."
+  },
+  "dashboard": {
+    "row": "Spendenlink",
+    "row_set": "Sichtbar bei deinen Events und auf deiner Seite: {{host}}",
+    "row_unset": "Noch nicht festgelegt",
+    "row_org_web": "Lege ihn in den Organisationseinstellungen im Web fest"
+  }
+}

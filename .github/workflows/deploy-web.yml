@@ -4,23 +4,22 @@ name: Deploy web (Cloudflare Pages)
 # "civfix-web". TWO environments, selected by the REF this runs on
 # (issue https://github.com/civfix/issue-tracker/issues/108):
 #
-#   push to main        -> STAGING    --branch=staging  -> civfix.dev       (api.civfix.dev, Stripe TEST)
-#   a published v* tag  -> PRODUCTION --branch=main     -> civfix.org       (api.civfix.org, Stripe LIVE)
+#   push to main        -> STAGING    --branch=staging  -> civfix.dev       (api.civfix.dev)
+#   a published v* tag  -> PRODUCTION --branch=main     -> civfix.org       (api.civfix.org)
 #
 # There is no `dev` branch any more: feature branches PR into main, main IS staging, and cutting a
 # release promotes to production.
 #
 # WHY THIS IS A REBUILD AND NOT A BYTE-PROMOTION. The backend's Docker images are built once and the
 # same digests are promoted to prod. A Next static export cannot work that way: every NEXT_PUBLIC_* is
-# INLINED INTO THE BUNDLE at build time, so the staging artifact has api.civfix.dev and the Stripe TEST
-# key compiled into it. Production is therefore rebuilt FROM THE RELEASE TAG — the same commit, with
+# INLINED INTO THE BUNDLE at build time, so the staging artifact has api.civfix.dev compiled into it.
+# Production is therefore rebuilt FROM THE RELEASE TAG — the same commit, with
 # production values. Same source, not the same bytes; see civfix-infra/docs/DEPLOY.md §Promotion.
 #
 # Required repository configuration (Settings -> Secrets and variables -> Actions):
 #   Secrets:   CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
 #   Variables: NEXT_PUBLIC_API_URL, NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_TURNSTILE_SITEKEY,
-#              NEXT_PUBLIC_CARTO_API_KEY, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_LIVE (production only),
-#              NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_TEST (staging only)
+#              NEXT_PUBLIC_CARTO_API_KEY
 #
 # On a push, only paths that feed the web build trigger a deploy; a mobile-only change never redeploys
 # the site. A release always deploys, so a tag produces a complete, self-consistent production.
@@ -80,8 +79,8 @@ jobs:
 
       - name: Prove the production ref (tag shape + merged into main)
         # THIS IS A BRANCH-PROTECTION CONTROL, not a formality. Without it the only thing standing
-        # between an arbitrary commit and civfix.org — with the LIVE Stripe key — is the ability to push
-        # a tag. `main` requires a reviewed PR; tags do not, so a tag on an unreviewed branch would be a
+        # between an arbitrary commit and civfix.org is the ability to push a tag.
+        # `main` requires a reviewed PR; tags do not, so a tag on an unreviewed branch would be a
         # complete bypass straight to production. civfix-backend's deploy.yml carries the same proof;
         # keep the regex identical to that one and to CIVFIX_RELEASE_TAG_REGEX in civfix-infra.
         if: env.DEPLOY_ENV == 'production'
@@ -135,16 +134,14 @@ jobs:
           PROD_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
           PROD_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
           PROD_TURNSTILE: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITEKEY }}
-          STRIPE_LIVE: ${{ vars.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_LIVE }}
-          STRIPE_TEST: ${{ vars.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_TEST }}
         run: |
           set -euo pipefail
           if [ "$DEPLOY_ENV" = "production" ]; then
             api="$PROD_API_URL"; site="$PROD_SITE_URL"; turnstile="$PROD_TURNSTILE"
-            stripe="$STRIPE_LIVE"; pages_branch=main
+            pages_branch=main
           else
             api="https://api.civfix.dev"; site="https://civfix.dev"; turnstile=""
-            stripe="$STRIPE_TEST"; pages_branch=staging
+            pages_branch=staging
           fi
           # Heredoc delimiters, not `KEY=value` lines: a repo variable containing a newline would
           # otherwise inject arbitrary extra KEY=VALUE pairs into the job environment.
@@ -152,29 +149,20 @@ jobs:
           emit NEXT_PUBLIC_API_URL "$api"
           emit NEXT_PUBLIC_SITE_URL "$site"
           emit NEXT_PUBLIC_TURNSTILE_SITEKEY "$turnstile"
-          emit NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY "$stripe"
           emit PAGES_BRANCH "$pages_branch"
 
-      - name: Assert the build targets and the keys agree
+      - name: Assert the build targets agree
         # The one check that makes a cross-environment mix-up impossible rather than merely unlikely.
         # It runs BEFORE the build, so a mismatch costs nothing, and it checks the values that were
         # actually resolved — not the expressions that were supposed to resolve them.
         run: |
           set -euo pipefail
           fail() { echo "::error::$*"; exit 1; }
-          case "$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" in
-            ""|pk_live_*|pk_test_*) ;;
-            *) fail "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is neither empty nor a pk_live_/pk_test_ key." ;;
-          esac
           if [ "$DEPLOY_ENV" = "production" ]; then
             [ "$NEXT_PUBLIC_API_URL" = "https://api.civfix.org" ] \
               || fail "production build points at '$NEXT_PUBLIC_API_URL', not https://api.civfix.org."
             [ "$NEXT_PUBLIC_SITE_URL" = "https://civfix.org" ] \
               || fail "production build declares site '$NEXT_PUBLIC_SITE_URL', not https://civfix.org."
-            case "$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" in
-              pk_live_*) ;;
-              *) fail "production build has no LIVE Stripe key (got '${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:0:8}...'). Check vars.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_LIVE." ;;
-            esac
             [ -n "$NEXT_PUBLIC_TURNSTILE_SITEKEY" ] \
               || fail "production build has no Turnstile sitekey; signup abuse controls would be off."
             [ "$PAGES_BRANCH" = "main" ] || fail "production must publish to the Pages production branch."
@@ -183,13 +171,9 @@ jobs:
               https://api.civfix.dev) ;;
               *) fail "staging build points at '$NEXT_PUBLIC_API_URL', not https://api.civfix.dev." ;;
             esac
-            case "$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" in
-              ""|pk_test_*) ;;
-              *) fail "staging build carries a non-test Stripe key. Refusing to publish it publicly." ;;
-            esac
             [ "$PAGES_BRANCH" != "main" ] || fail "staging must not publish to the Pages production branch."
           fi
-          echo "$DEPLOY_ENV: api=$NEXT_PUBLIC_API_URL site=$NEXT_PUBLIC_SITE_URL stripe=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:0:8}... pages-branch=$PAGES_BRANCH"
+          echo "$DEPLOY_ENV: api=$NEXT_PUBLIC_API_URL site=$NEXT_PUBLIC_SITE_URL pages-branch=$PAGES_BRANCH"
 
       - name: Build static export
         # NEXT_PUBLIC_* come from $GITHUB_ENV (resolved and asserted above) and are inlined here.

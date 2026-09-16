@@ -29,17 +29,17 @@
   "nav": {
     "events": "행사",
     "overview": "개요",
-    "members": "구성원",
-    "payments": "결제"
+    "members": "구성원"
   },
   "overview": {
     "title": "단체",
     "events": "행사",
     "members": "구성원",
     "created": "생성일",
-    "donations": "기부",
-    "donations_on": "기부를 받는 중",
-    "donations_off": "기부를 받지 않음"
+    "donation_link": "기부 링크",
+    "no_donation_link": "기부 링크 없음",
+    "add_donation_link": "링크 추가",
+    "edit_donation_link": "링크 수정"
   },
   "members": {
     "title": "구성원",
@@ -57,5 +57,10 @@
     "loading_more": "불러오는 중…",
     "show_more_upcoming_a11y": "예정된 행사 더 보기",
     "show_more_past_a11y": "지난 행사 더 보기"
+  },
+  "form": {
+    "donationUrl": "기부 링크",
+    "donation_hint": "https://로 시작해야 합니다. 공개 페이지와 이벤트에 표시되며, civfix는 금전을 처리하지 않습니다.",
+    "donation_invalid": "https://로 시작해야 합니다"
   }
 }

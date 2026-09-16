@@ -21,7 +21,6 @@ const BROWSER_ONLY_ROOTS = new Set([
   "skeleton",
   "bodies",
   "manage",
-  "donate",
   "unsubscribe",
 ])
 
@@ -146,8 +145,6 @@ function internalPathFor(parts: readonly string[]): string | null {
       return a ? `/cleanups/${a}` : null
     case "orgs":
       return a ? `/orgs/${a}` : null
-    case "me":
-      return a === "donations" && !b ? "/me/donations" : null
     case "cleanups":
       if (!a) return "/cleanups"
       return cleanupPathFor(a, b, c)

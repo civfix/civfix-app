@@ -91,20 +91,9 @@ describe("fakeEventInsights", () => {
     expect(fakeEventInsights("cancelled", { now: NOW }).arrivals).toEqual([])
   })
 
-  it("carries both the present and the null money and returning variants", () => {
-    expect(fakeEventInsights("ended", { now: NOW }).money).not.toBeNull()
-    expect(fakeEventInsights("cancelled", { now: NOW }).money).toBeNull()
-    expect(fakeEventInsights("ended", { now: NOW, money: false }).money).toBeNull()
-    expect(fakeEventInsights("cancelled", { now: NOW, money: true }).money).not.toBeNull()
+  it("carries both the present and the null returning variants", () => {
     expect(fakeEventInsights("ended", { now: NOW }).returning).not.toBeNull()
     expect(fakeEventInsights("ended", { now: NOW, returning: false }).returning).toBeNull()
-  })
-
-  it("turns a fully refunded event into a negative net", () => {
-    const money = fakeEventInsights("ended", { now: NOW, refunded: true }).money
-    expect(money?.netMinor).toBeLessThan(0)
-    expect(money?.refundedMinor).toBe(money?.grossMinor)
-    expect(fakeEventInsights("ended", { now: NOW }).money?.netMinor).toBeGreaterThan(0)
   })
 
   it("gives the ended phase a ranked volunteer list and every other phase none", () => {

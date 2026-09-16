@@ -220,10 +220,6 @@ describe("the panels render only what the phase asked for", () => {
     expect(panels).toContain("{panels.messages ?")
   })
 
-  it("hides the money card unless the server sent money", () => {
-    expect(panels).toContain("if (money === null) return null")
-  })
-
   it("hides the ticket-type and sign-up cards when there is nothing to draw", () => {
     expect(panels).toContain("if (insights.byTicketType.length < 2) return null")
     expect(panels).toContain("if (points.length < 2) return null")

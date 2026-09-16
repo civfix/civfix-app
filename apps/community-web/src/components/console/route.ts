@@ -18,12 +18,11 @@ export const ORG_SECTIONS = [
   "members",
   "verification",
   "settings",
-  "payments",
 ] as const
 export type OrgSection = (typeof ORG_SECTIONS)[number]
 
 /** Org sections only an owner or admin may open; members see the rest. */
-export const ORG_MANAGE_SECTIONS: readonly OrgSection[] = ["verification", "settings", "payments"]
+export const ORG_MANAGE_SECTIONS: readonly OrgSection[] = ["verification", "settings"]
 
 /** The `/manage/orgs/<segment>` that is a verb, not an org id. */
 const ORG_NEW_SEGMENT = "new"

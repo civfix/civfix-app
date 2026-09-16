@@ -5,25 +5,15 @@ import type { LegalDocumentType } from "@civfix/shared"
 
 import { Wordmark } from "@/components/brand"
 
-import { CA_REGISTRATION_LABEL, CA_REGISTRATION_NUMBER, LEGAL_ENTITY } from "./legal-entity"
+import { LEGAL_ENTITY } from "./legal-entity"
 
-export type LegalDocId =
-  | "terms"
-  | "privacy"
-  | "cookies"
-  | "subprocessors"
-  | "donations"
-  | "org-donation-agreement"
-  | "donation-disclosure"
+export type LegalDocId = "terms" | "privacy" | "cookies" | "subprocessors"
 
 export const LEGAL_DOC_TYPE: Readonly<Record<LegalDocId, LegalDocumentType>> = {
   terms: "terms",
   privacy: "privacy",
   cookies: "cookies",
   subprocessors: "subprocessors",
-  donations: "donations",
-  "org-donation-agreement": "org_donation_agreement",
-  "donation-disclosure": "donation_disclosure",
 }
 
 const DOCS: { id: LegalDocId; href: string; label: string }[] = [
@@ -31,20 +21,9 @@ const DOCS: { id: LegalDocId; href: string; label: string }[] = [
   { id: "privacy", href: "/legal/privacy", label: "Privacy Policy" },
   { id: "cookies", href: "/legal/cookies", label: "Cookies & Storage" },
   { id: "subprocessors", href: "/legal/subprocessors", label: "Sub-processors" },
-  { id: "donations", href: "/legal/donations", label: "Donations & Fundraising" },
-  {
-    id: "org-donation-agreement",
-    href: "/legal/org-donation-agreement",
-    label: "Organization Donation Agreement",
-  },
-  {
-    id: "donation-disclosure",
-    href: "/legal/donation-disclosure",
-    label: "Donation Disclosures",
-  },
 ]
 
-export { CA_REGISTRATION_LABEL, CA_REGISTRATION_NUMBER, LEGAL_ENTITY }
+export { LEGAL_ENTITY }
 
 export function legalVersionFor(id: LegalDocId): LegalDocumentVersion {
   return legalDocument(LEGAL_DOC_TYPE[id])

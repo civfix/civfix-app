@@ -63,18 +63,6 @@ export type ListEventExportsResponse = z.infer<typeof ListEventExportsResponseOb
 export const ListEventExportsResponseSchema: z.ZodType<ListEventExportsResponse, z.ZodTypeDef, unknown> =
   ListEventExportsResponseObjectSchema
 
-export const ListOrgDonationExportsRequestSchema = PaginationQuerySchema.extend({
-  id: IdSchema,
-}).strict()
-export type ListOrgDonationExportsRequest = z.infer<typeof ListOrgDonationExportsRequestSchema>
-
-const ListOrgDonationExportsResponseObjectSchema = pageResponse(HostExportDTOSchema)
-export type ListOrgDonationExportsResponse = z.infer<
-  typeof ListOrgDonationExportsResponseObjectSchema
->
-export const ListOrgDonationExportsResponseSchema: z.ZodType<ListOrgDonationExportsResponse, z.ZodTypeDef, unknown> =
-  ListOrgDonationExportsResponseObjectSchema
-
 export const GetEventExportRequestSchema = z.object({ id: IdSchema, exportId: IdSchema }).strict()
 export type GetEventExportRequest = z.infer<typeof GetEventExportRequestSchema>
 

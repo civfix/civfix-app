@@ -14,7 +14,6 @@ export enum ErrorCode {
   CONFLICT = "CONFLICT",
   UNSUPPORTED_API_VERSION = "UNSUPPORTED_API_VERSION",
   API_VERSION_SUNSET = "API_VERSION_SUNSET",
-  PAYMENT_UNAVAILABLE = "PAYMENT_UNAVAILABLE",
   INTERNAL = "INTERNAL",
 }
 
@@ -33,7 +32,6 @@ export const ERROR_HTTP_STATUS: Record<ErrorCode, number> = {
   [ErrorCode.CONFLICT]: 409,
   [ErrorCode.UNSUPPORTED_API_VERSION]: 400,
   [ErrorCode.API_VERSION_SUNSET]: 410,
-  [ErrorCode.PAYMENT_UNAVAILABLE]: 503,
   [ErrorCode.INTERNAL]: 500,
 }
 
@@ -128,10 +126,6 @@ export class AppError extends Error {
 
   static apiVersionSunset(message = "API version sunset"): AppError {
     return new AppError(ErrorCode.API_VERSION_SUNSET, message)
-  }
-
-  static paymentUnavailable(message = "Payments are temporarily unavailable"): AppError {
-    return new AppError(ErrorCode.PAYMENT_UNAVAILABLE, message)
   }
 
   static internal(message = "Internal error"): AppError {

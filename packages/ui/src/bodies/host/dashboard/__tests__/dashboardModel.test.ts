@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import type {
   HostedEventDTO,
   HostedEventsAnalyticsResponse,
-  OrgBalanceDTO,
   OrganizationDTO,
   OrganizationInviteDTO,
   OrganizationMemberDTO,
@@ -13,15 +12,10 @@ import { can } from "@civfix/shared/host"
 import {
   ATTENTION_MAX_ROWS,
   attentionRows,
-  canManageOrgPayments,
   canManageOrgTeam,
   canSetOrgMemberRole,
-  canViewOrgMoney,
   collaboratorErrorKey,
   dashboardScope,
-  DASHBOARD_RANGES,
-  DEFAULT_DASHBOARD_RANGE,
-  donationSummaryFrom,
   duplicateErrorKey,
   duplicateReady,
   firstEventState,
@@ -41,9 +35,6 @@ import {
   orgMemberActions,
   orgMemberHasActions,
   pastRowMeta,
-  payoutBlockedKey,
-  payoutButtonModel,
-  payoutErrorKey,
   pendingOrgInvites,
   portfolioKpis,
   sharePathFor,
@@ -113,17 +104,6 @@ function invite(id: string, over: Partial<OrganizationInviteDTO> = {}): Organiza
     expiresAt: "2026-02-01T00:00:00.000Z",
     ...over,
   } as OrganizationInviteDTO
-}
-
-function balance(over: Partial<OrgBalanceDTO> = {}): OrgBalanceDTO {
-  return {
-    available: { amountMinor: 5000, currency: "USD" },
-    pending: { amountMinor: 200, currency: "USD" },
-    payoutsEnabled: true,
-    payoutSchedule: { interval: "manual" },
-    lastSyncedAt: "2026-09-10T00:00:00.000Z",
-    ...over,
-  } as OrgBalanceDTO
 }
 
 describe("dashboard scope", () => {
@@ -233,63 +213,6 @@ describe("org role gating", () => {
     expect(canManageOrgTeam(null)).toBe(false)
   })
 
-  it("lets owners and admins see money but only owners move it", () => {
-    expect(canViewOrgMoney("owner")).toBe(true)
-    expect(canViewOrgMoney("admin")).toBe(true)
-    expect(canViewOrgMoney("member")).toBe(false)
-    expect(canManageOrgPayments("owner")).toBe(true)
-    expect(canManageOrgPayments("admin")).toBe(false)
-  })
-})
-
-describe("payout button", () => {
-  it("stays hidden for an admin, who is read-only on money", () => {
-    expect(payoutButtonModel({ role: "admin", balance: balance(), pending: false })).toEqual({
-      visible: false,
-      enabled: false,
-      reason: "role",
-    })
-  })
-
-  it("is enabled for an owner with an available balance", () => {
-    expect(payoutButtonModel({ role: "owner", balance: balance(), pending: false })).toEqual({
-      visible: true,
-      enabled: true,
-      reason: null,
-    })
-  })
-
-  it("explains itself when Stripe has not enabled payouts", () => {
-    const model = payoutButtonModel({
-      role: "owner",
-      balance: balance({ payoutsEnabled: false }),
-      pending: false,
-    })
-    expect(model).toEqual({ visible: true, enabled: false, reason: "payouts_disabled" })
-    expect(payoutBlockedKey(model.reason)).toBe("money.payout_blocked_disabled")
-  })
-
-  it("explains itself when nothing is available", () => {
-    const model = payoutButtonModel({
-      role: "owner",
-      balance: balance({ available: { amountMinor: 0, currency: "USD" } }),
-      pending: false,
-    })
-    expect(model).toEqual({ visible: true, enabled: false, reason: "no_balance" })
-    expect(payoutBlockedKey(model.reason)).toBe("money.payout_blocked_empty")
-  })
-
-  it("blocks a second press while one payout is in flight", () => {
-    expect(payoutButtonModel({ role: "owner", balance: balance(), pending: true }).enabled).toBe(
-      false,
-    )
-  })
-
-  it("shows no blocked explanation while the balance is still loading", () => {
-    const model = payoutButtonModel({ role: "owner", balance: null, pending: false })
-    expect(model).toEqual({ visible: true, enabled: false, reason: null })
-    expect(payoutBlockedKey(model.reason)).toBeNull()
-  })
 })
 
 describe("collaborator actions", () => {
@@ -428,40 +351,20 @@ describe("duplicate scheduling", () => {
   })
 })
 
-describe("donation summary range", () => {
-  it("turns each range chip into a from-date", () => {
-    const now = new Date("2026-09-10T00:00:00.000Z")
-    expect(donationSummaryFrom("30d", now)).toBe("2026-08-11T00:00:00.000Z")
-    expect(donationSummaryFrom("365d", now)).toBe("2025-09-10T00:00:00.000Z")
-  })
-
-  it("keeps three money ranges and defaults to the shortest", () => {
-    expect(DEFAULT_DASHBOARD_RANGE).toBe("30d")
-    expect(DASHBOARD_RANGES).toEqual(["30d", "90d", "365d"])
-  })
-})
-
 describe("error copy", () => {
   const en = catalog("en", "event-dashboard") as {
     events: Record<string, string>
-    money: Record<string, string>
     team: Record<string, string>
   }
 
   const leaf = (key: string): string | undefined => {
-    const [section, rest] = key.split(".") as ["events" | "money" | "team", string]
+    const [section, rest] = key.split(".") as ["events" | "team", string]
     return en[section]?.[rest]
   }
 
   it("maps every duplicate error code to real copy", () => {
     for (const code of ["FORBIDDEN", "NOT_FOUND", "RATE_LIMITED", "VALIDATION", undefined]) {
       expect(leaf(duplicateErrorKey(code))).toBeTruthy()
-    }
-  })
-
-  it("maps every payout error code to real copy", () => {
-    for (const code of ["VALIDATION", "CONFLICT", "FORBIDDEN", "RATE_LIMITED", undefined]) {
-      expect(leaf(payoutErrorKey(code))).toBeTruthy()
     }
   })
 
@@ -506,12 +409,6 @@ describe("dashboard wiring", () => {
     expect(body).toContain('kind: "edit-cleanup"')
     expect(body).toContain('kind: "host-broadcast-quick"')
     expect(body).toContain("openHostDashboard")
-  })
-
-  it("opens the Stripe link through the injected capability, never a raw window call", () => {
-    const money = source("../MoneySection.tsx")
-    expect(money).toContain("openExternal?.openInAppBrowser ?? openExternal?.open")
-    expect(money).not.toContain("window.")
   })
 
   it("renders the console link only on web", () => {
@@ -884,7 +781,7 @@ describe("portfolio surface", () => {
       "../FirstEventCard.tsx",
       "../HostedEventRow.tsx",
       "../InviteRows.tsx",
-      "../MoneySection.tsx",
+      "../DonationLinkRow.tsx",
       "../CollaboratorsSection.tsx",
       "../OrgInviteSheet.tsx",
       "../DuplicateEventSheet.tsx",
@@ -944,11 +841,11 @@ describe("portfolio surface", () => {
     expect(invites).not.toContain('justifyContent: "flex-end"')
   })
 
-  it("keeps money, team and the console link in the shared list card", () => {
-    const money = dashboardSource("MoneySection.tsx")
-    expect(money).toContain('variant="list"')
-    expect(money).toContain('icon="ReceiptText"')
-    expect(money).not.toContain("StatTileRow")
+  it("keeps the donation link, team and the console link in the shared list card", () => {
+    const donation = dashboardSource("DonationLinkRow.tsx")
+    expect(donation).toContain('variant="list"')
+    expect(donation).toContain('icon="HandHeart"')
+    expect(donation).toContain("<ListRow")
     const team = dashboardSource("CollaboratorsSection.tsx")
     expect(team).toContain('variant="list"')
     expect(team).toContain("<ListRow")
@@ -1006,8 +903,6 @@ describe("portfolio surface", () => {
       ["events", "check_in_a11y"],
       ["first_event", "title"],
       ["first_event", "cta"],
-      ["money", "range_a11y"],
-      ["money", "sent_on"],
       ["team", "section"],
       ["team", "invite_row_sub"],
     ]

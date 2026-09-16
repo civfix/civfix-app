@@ -6,7 +6,6 @@ import type {
   HostPortfolioKpis,
   HostedEventsAnalyticsResponse,
   ListMyHostedEventsResponse,
-  OrgBalanceDTO,
   OrganizationDTO,
   OrganizationInviteDTO,
   OrganizationMemberDTO,
@@ -29,20 +28,9 @@ import {
 import { addWallClockDays, formInstantMs } from "../../calendarModel"
 import { viewerTimeZone } from "../../../i18n"
 
-export const DASHBOARD_RANGES = ["30d", "90d", "365d"] as const
-export type DashboardRange = (typeof DASHBOARD_RANGES)[number]
-
-export const DEFAULT_DASHBOARD_RANGE: DashboardRange = "30d"
-
 export const ATTENTION_MAX_ROWS = 3
 
 const DAY_MS = 86_400_000
-
-const RANGE_DAYS: Readonly<Record<DashboardRange, number>> = {
-  "30d": 30,
-  "90d": 90,
-  "365d": 365,
-}
 
 export interface DashboardScope {
   orgId: string | null
@@ -122,49 +110,6 @@ export function canManageOrgTeam(role: OrganizationMemberRole | null | undefined
  */
 export function canSetOrgMemberRole(role: OrganizationMemberRole | null | undefined): boolean {
   return role === "owner"
-}
-
-export function canViewOrgMoney(role: OrganizationMemberRole | null | undefined): boolean {
-  return orgRoleCan(role, "view_donations")
-}
-
-export function canManageOrgPayments(role: OrganizationMemberRole | null | undefined): boolean {
-  return orgRoleCan(role, "manage_payments")
-}
-
-export type PayoutBlockReason = "role" | "payouts_disabled" | "no_balance" | null
-
-export interface PayoutButtonInput {
-  role: OrganizationMemberRole | null | undefined
-  balance: OrgBalanceDTO | null | undefined
-  pending: boolean
-}
-
-export interface PayoutButtonModel {
-  visible: boolean
-  enabled: boolean
-  reason: PayoutBlockReason
-}
-
-export function payoutButtonModel(input: PayoutButtonInput): PayoutButtonModel {
-  const { role, balance, pending } = input
-  if (!canManageOrgPayments(role)) {
-    return { visible: false, enabled: false, reason: "role" }
-  }
-  if (!balance) return { visible: true, enabled: false, reason: null }
-  if (!balance.payoutsEnabled) {
-    return { visible: true, enabled: false, reason: "payouts_disabled" }
-  }
-  if (balance.available.amountMinor <= 0) {
-    return { visible: true, enabled: false, reason: "no_balance" }
-  }
-  return { visible: true, enabled: !pending, reason: null }
-}
-
-export function payoutBlockedKey(reason: PayoutBlockReason): string | null {
-  if (reason === "payouts_disabled") return "money.payout_blocked_disabled"
-  if (reason === "no_balance") return "money.payout_blocked_empty"
-  return null
 }
 
 export function portfolioKpis(
@@ -377,16 +322,6 @@ export function orgMemberHasActions(actions: OrgMemberActions): boolean {
   return actions.roles.length > 0 || actions.canRemove
 }
 
-/**
- * The start of the donation window, floored to the UTC day so the value - and the cache key built
- * from it - is stable for every mount within the same day rather than minting a fresh key per render.
- */
-export function donationSummaryFrom(range: DashboardRange, now: Date): string {
-  const start = new Date(now.getTime() - RANGE_DAYS[range] * DAY_MS)
-  start.setUTCHours(0, 0, 0, 0)
-  return start.toISOString()
-}
-
 export interface DuplicateStartSeed {
   instantMs: number
   wallClock: WallClock
@@ -436,14 +371,6 @@ export function duplicateErrorKey(code: string | undefined): string {
   if (code === "RATE_LIMITED") return "events.duplicate_error_rate_limited"
   if (code === "VALIDATION") return "events.duplicate_error_invalid"
   return "events.duplicate_error_generic"
-}
-
-export function payoutErrorKey(code: string | undefined): string {
-  if (code === "VALIDATION") return "money.payout_error_invalid"
-  if (code === "CONFLICT") return "money.payout_error_conflict"
-  if (code === "FORBIDDEN") return "money.payout_error_forbidden"
-  if (code === "RATE_LIMITED") return "money.payout_error_rate_limited"
-  return "money.payout_error_generic"
 }
 
 export function orgInviteIdentifierErrorKey(kind: OrgInviteIdentifierKind): string {

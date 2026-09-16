@@ -143,7 +143,6 @@ const PublicEventPageObjectSchema = z.object({
     .strict(),
   waitlistEnabled: z.boolean().default(false),
   donationUrl: z.string().nullable().optional(),
-  donateSlug: z.string().nullable().optional(),
   requiresTurnstile: z.boolean().default(true),
 })
 export type PublicEventPageDTO = z.infer<typeof PublicEventPageObjectSchema>

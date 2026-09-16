@@ -45,7 +45,6 @@ import {
   HostLogHoursBody,
   MyTicketBody,
   OrgPageBody,
-  MyDonationsBody,
   EventDashboardBody,
 } from "../bodies"
 import type { DetailEntry, View as NavView } from "../nav"
@@ -173,8 +172,6 @@ function renderBodyId(id: BodyId, entry: DetailEntry | null): React.ReactNode {
       )
     case "orgPage":
       return <OrgPageBody slug={entry?.slug ?? ""} />
-    case "myDonations":
-      return <MyDonationsBody />
     case "eventDashboard":
       return <EventDashboardBody />
     case "stub": {

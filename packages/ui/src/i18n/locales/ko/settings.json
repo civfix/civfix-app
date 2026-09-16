@@ -33,9 +33,5 @@
   "support_civfix": "civfix 후원하기",
   "terms": "서비스 약관",
   "privacy_policy": "개인정보 처리방침",
-  "sign_out": "로그아웃",
-  "donations": {
-    "label": "후원",
-    "sub": "내 후원 내역과 영수증"
-  }
+  "sign_out": "로그아웃"
 }

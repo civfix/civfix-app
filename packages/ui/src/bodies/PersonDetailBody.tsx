@@ -10,15 +10,16 @@ import { makeThemedStyles, radius, useTheme, wash, focusRingProps, useLayoutMode
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
-  MetaDot,
-  FollowButton,
+  DonateBlock,
   EmptyState,
+  FollowButton,
+  MetaDot,
+  PopoverMenu,
+  ReportContentSheet,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
   SkeletonText,
-  ReportContentSheet,
-  PopoverMenu,
   usePopoverAnchor,
   useToast,
 } from "../primitives"
@@ -414,6 +415,8 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
           stats={profile.stats}
           onOpenConnections={onOpenConnections}
         />
+
+        <DonateBlock url={profile.donationUrl} ownerName={profile.name} variant="row" />
 
         <View style={styles.actions}>
           {profile.blockedByMe ? (

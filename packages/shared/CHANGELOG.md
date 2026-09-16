@@ -1,5 +1,17 @@
 # @civfix/shared
 
+## 0.48.1
+
+### Patch Changes
+
+- legal document versions for the donation-link terms
+
+## 0.48.0
+
+### Minor Changes
+
+- b630ce6: remove platform-processed donations; add donationUrl to organizations and people
+
 ## 0.47.0
 
 ### Minor Changes

@@ -117,7 +117,6 @@ function insights(over: Partial<EventInsights> = {}): EventInsights {
     arrivals: [],
     hours: { credited: 62.5, attendeesCredited: 25, attendeesCheckedIn: 31 },
     topVolunteers: [],
-    money: null,
     returning: null,
     ...over,
   }
@@ -332,21 +331,10 @@ describe("stat tiles per phase", () => {
     expect(hostStatTiles(insights(), "ended").map((tile) => tile.key)).toContain("not_marked")
   })
 
-  it("adds money and returning only when the server sent them", () => {
-    expect(hostStatTiles(insights(), "ended").map((tile) => tile.key)).not.toContain("donations")
-    const rich = insights({
-      money: {
-        currency: "USD",
-        donationCount: 18,
-        grossMinor: 124000,
-        netMinor: 115100,
-        refundedMinor: 0,
-        lastChargedAt: null,
-      },
-      returning: { seats: 9, ofRegistered: 38 },
-    })
+  it("adds returning only when the server sent it", () => {
+    expect(hostStatTiles(insights(), "ended").map((tile) => tile.key)).not.toContain("returning")
+    const rich = insights({ returning: { seats: 9, ofRegistered: 38 } })
     const tiles = hostStatTiles(rich, "ended")
-    expect(tiles.map((tile) => tile.key)).toContain("donations")
     expect(tiles.find((tile) => tile.key === "returning")).toEqual({
       key: "returning",
       value: 9,

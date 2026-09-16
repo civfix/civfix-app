@@ -210,8 +210,8 @@ test("garbage and unknown paths go home instead of nowhere", () => {
   assert.deepEqual(resolveIncomingPath(42), home)
 })
 
-test("the host console, the donate flow and unsubscribe belong to the browser, not the app", () => {
-  for (const path of ["/manage", "/manage/events/e1", "/donate/acme", "/unsubscribe"]) {
+test("the host console and unsubscribe belong to the browser, not the app", () => {
+  for (const path of ["/manage", "/manage/events/e1", "/unsubscribe"]) {
     assert.deepEqual(
       resolveIncomingPath(`https://civfix.org${path}`),
       external(`https://civfix.org${path}`),
@@ -253,11 +253,11 @@ test("a shared signup page opens the event it belongs to, in the app's own route
   assert.deepEqual(resolveIncomingPath("https://civfix.org/e"), home)
 })
 
-test("an organization page and the donation history are addressable", () => {
+test("an organization page is addressable and nothing under /me is", () => {
   assert.deepEqual(resolveIncomingPath("https://civfix.org/orgs/acme"), internal("/orgs/acme"))
   assert.deepEqual(resolveIncomingPath("https://civfix.org/orgs"), home)
-  assert.deepEqual(resolveIncomingPath("https://civfix.org/me/donations"), internal("/me/donations"))
   assert.deepEqual(resolveIncomingPath("https://civfix.org/me"), home)
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/me/donations"), home)
   assert.deepEqual(resolveIncomingPath("https://civfix.org/me/anything-else"), home)
 })
 

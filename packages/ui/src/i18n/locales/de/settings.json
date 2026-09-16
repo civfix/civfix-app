@@ -33,9 +33,5 @@
   "support_civfix": "civfix unterstützen",
   "terms": "Nutzungsbedingungen",
   "privacy_policy": "Datenschutzerklärung",
-  "sign_out": "Abmelden",
-  "donations": {
-    "label": "Spenden",
-    "sub": "Deine Spendenhistorie und Belege"
-  }
+  "sign_out": "Abmelden"
 }

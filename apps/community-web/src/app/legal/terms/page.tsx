@@ -195,151 +195,33 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>8. Donations through civfix</h2>
+        <h2>8. Donation links</h2>
         <p>
-          Some verified nonprofit host organizations can accept donations through civfix. When you
-          donate,{" "}
+          <strong>civfix does not process donations.</strong> An organization, a host or a person can add
+          a <strong>donation link</strong> - an ordinary external web address of their own choosing - to
+          their profile, their organization page or an event. civfix displays that link and nothing more.
+        </p>
+        <p>
+          Following a donation link takes you to a site civfix does not operate. Any payment you make
+          there is a transaction between you and whoever runs that site, on their terms and through their
+          payment processor.{" "}
           <strong>
-            the host organization is the recipient of your donation and the merchant of record
+            civfix is not a party to it, never receives, holds or disburses the money, charges no fee on
+            it, and issues no receipt
           </strong>
-          . civfix acts only as the organization&rsquo;s authorized agent to solicit and facilitate the
-          payment. Your card is charged directly on that organization&rsquo;s own account with our
-          payment processor, Stripe; the money never enters a civfix bank account or balance, and civfix
-          never holds, pools, or disburses donated funds.
+          . We do not verify that a linked site belongs to the person or organization that posted it, that
+          it is a registered charity, or that a gift made there is tax-deductible. Check who you are
+          giving to before you give, and direct any question about a payment, a receipt or a refund to the
+          recipient.
         </p>
         <p>
-          Because civfix collects the payment as the organization&rsquo;s authorized agent,{" "}
-          <strong>
-            your payment to civfix satisfies your obligation to the recipient organization
-          </strong>{" "}
-          to the extent of the amount you paid, whether or not civfix or the processor subsequently
-          remits it. If a donation cannot be delivered to the organization you chose - for example if it
-          loses its good standing before the payment settles - we will tell you and refund it.
-        </p>
-        <p>
-          A donation is a voluntary contribution, not a purchase. You receive no goods or services in
-          exchange, and you must be authorized to use the payment method you provide. We may refuse or
-          reverse a donation we reasonably believe is fraudulent, unlawful, or made with a payment
-          method you are not authorized to use.
-        </p>
-        <p>
-          civfix is not a charity that is soliciting for itself when it hosts these pages. Whether a
-          donation is tax-deductible depends entirely on the recipient organization&rsquo;s own tax
-          status, which we display on the donation page along with the date we last verified it against
-          public records. We do not give tax advice.
+          Posting a donation link means you confirm it is yours to post and that it is lawful to solicit
+          through it. We may remove a donation link at any time, including immediately and without notice,
+          if it is deceptive, unlawful, unsafe or otherwise breaks these Terms.
         </p>
       </section>
-
       <section>
-        <h2>9. Fees on donations</h2>
-        <p>
-          civfix charges a <strong>platform fee of 5% of the donation amount</strong>. Separately, the
-          payment processor charges the recipient organization its own card-processing fee. Both are
-          itemized on the donation page, with the estimated amount the organization receives,{" "}
-          <strong>before</strong> you enter any payment details and before you pay. We will never tell
-          you that 100% of your donation reaches the organization, because that would not be true.
-        </p>
-        <p>
-          The processing fee shown before payment is an estimate: the exact amount depends on the card
-          and method you use and is set by the processor, not by us. The exact figures appear on your
-          receipt.
-        </p>
-        <p>
-          <strong>Refundability of the platform fee:</strong> if a donation is refunded in full or in
-          part, civfix reverses its 5% platform fee proportionally, so you are not charged a civfix fee
-          on money you got back. The payment processor&rsquo;s own fee is generally retained by the
-          processor on a refunded payment; that is the processor&rsquo;s policy, not a civfix charge, and
-          it is borne by the recipient organization rather than by you.
-        </p>
-      </section>
-
-      <section>
-        <h2>10. Refunds</h2>
-        <p>
-          Donations are <strong>non-refundable</strong> except where the law requires a refund or where
-          the recipient organization chooses to issue one. The recipient organization controls refunds
-          for its own donations, because it is the merchant of record; civfix cannot issue a refund on
-          its behalf. To request one, contact the organization first. If you believe a charge was
-          unauthorized or fraudulent, contact us at{" "}
-          <a href="mailto:roman@reachoutla.org">roman@reachoutla.org</a> and we will help you reach the
-          organization and, where appropriate, act on our own.
-        </p>
-        <p>
-          If a donation is refunded, the platform fee is reversed proportionally as described in Section
-          9. Refunds are returned to the original payment method.
-        </p>
-      </section>
-
-      <section>
-        <h2>11. Terms for host organizations that accept donations</h2>
-        <p>
-          If you connect an organization to civfix to receive donations, these additional terms apply to
-          you and to that organization, and you confirm you are authorized to accept them on its behalf.
-        </p>
-        <ul>
-          <li>
-            <strong>Processor agreement.</strong> You accept the Stripe Connected Account Agreement
-            (including the Stripe Services Agreement) directly with Stripe during onboarding. That
-            agreement is between the organization and Stripe; civfix is not a party to it and cannot vary
-            it.
-          </li>
-          <li>
-            <strong>Eligibility and notice.</strong> The organization represents that it is a tax-exempt
-            organization in good standing under Internal Revenue Code section 501(c)(3), registered and
-            in good standing where its solicitation requires registration, and not on any list barring it
-            from soliciting. You must notify civfix{" "}
-            <strong>within five business days</strong> of losing, or being notified you may lose, any of
-            that status. We re-verify against public records on a schedule and will suspend donations
-            immediately if the organization ceases to be in good standing.
-          </li>
-          <li>
-            <strong>Merchant of record.</strong> The organization is the merchant of record for every
-            donation it receives. It is solely responsible for its own tax reporting (including any Form
-            1099-K issued to it by the processor), for its donors&rsquo; substantiation, for chargebacks
-            and disputes, and for any refunds it chooses to give. Chargeback and refund amounts, and the
-            processor fees on them, are borne by the organization.
-          </li>
-          <li>
-            <strong>Receipts.</strong> You authorize civfix to issue donation receipts and
-            acknowledgments to donors <strong>on the organization&rsquo;s behalf and in its name</strong>
-            , using the legal name, address and employer identification number shown in public tax
-            records, and to state on those receipts whether the donation is tax-deductible. You remain
-            responsible for the accuracy of your own tax status.
-          </li>
-          <li>
-            <strong>Fees.</strong> The organization agrees to the platform fee disclosed to it when it
-            enabled donations. We will not raise that fee without giving you notice and asking you to
-            accept a new version of this agreement; until you do, we charge the rate you already
-            accepted.
-          </li>
-          <li>
-            <strong>Suspension.</strong> civfix may suspend or disable an organization&rsquo;s donation
-            page at any time - including immediately and without notice - if it loses good standing, if
-            the processor disables its account, if we are directed to by a regulator, or if we
-            reasonably suspect fraud or misuse.
-          </li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>12. Receipts and acknowledgments</h2>
-        <p>
-          civfix sends a receipt for every completed donation, by email, as the recipient
-          organization&rsquo;s authorized agent, normally within minutes and in any case{" "}
-          <strong>within five business days</strong>. The receipt names the recipient organization, the
-          amount, the date your card was charged, whether the donation is tax-deductible and to what
-          extent, and an itemization of the fees. It contains no promotional content.
-        </p>
-        <p>
-          For a single donation of <strong>$250 or more</strong>, US tax law requires you to hold a
-          contemporaneous written acknowledgment from the charity in order to claim a deduction; the
-          receipt civfix issues on the organization&rsquo;s behalf is intended to serve that purpose, and
-          you should keep it. We do not give tax advice; consult your own advisor.
-        </p>
-      </section>
-
-      <section>
-        <h2>13. Messages from event hosts</h2>
+        <h2>9. Messages from event hosts</h2>
         <p>
           If you register for an event, the host can send you messages about that event - confirmations,
           reminders, changes, and updates - through civfix, by push notification and by email. Those
@@ -367,7 +249,7 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>14. Third-party services</h2>
+        <h2>10. Third-party services</h2>
         <p>
           civfix relies on third-party providers to operate, for example for sign-in, hosting, media
           storage and delivery, maps, email, and push notifications. Your use of those features may also
@@ -379,7 +261,7 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>15. Intellectual property in civfix</h2>
+        <h2>11. Intellectual property in civfix</h2>
         <p>
           civfix, including its software, design, brand, and the &ldquo;civfix&rdquo; name and logo, is
           owned by us and our licensors and is protected by intellectual-property laws. These Terms do
@@ -389,7 +271,7 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>16. Disclaimers</h2>
+        <h2>12. Disclaimers</h2>
         <p>
           civfix is provided <strong>&ldquo;as is&rdquo;</strong> and{" "}
           <strong>&ldquo;as available,&rdquo;</strong> without warranties of any kind, whether express,
@@ -403,7 +285,7 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>17. Limitation of liability</h2>
+        <h2>13. Limitation of liability</h2>
         <p>
           To the maximum extent permitted by law, civfix and its operators, owners, employees, and
           providers will not be liable for any indirect, incidental, special, consequential, exemplary,
@@ -418,7 +300,7 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>18. Indemnification</h2>
+        <h2>14. Indemnification</h2>
         <p>
           You agree to indemnify and hold harmless civfix and its operators and providers from any
           claims, damages, liabilities, and expenses (including reasonable legal fees) arising out of
@@ -428,7 +310,7 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>19. Changes, suspension, and termination</h2>
+        <h2>15. Changes, suspension, and termination</h2>
         <p>
           We may change, suspend, or discontinue any part of civfix at any time. We may update these
           Terms; when we make material changes we will update the &ldquo;Last updated&rdquo; date and,
@@ -440,7 +322,7 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>20. Governing law and disputes</h2>
+        <h2>16. Governing law and disputes</h2>
         <p>
           These Terms are governed by the laws of the State of California, without regard to its
           conflict-of-laws rules, and you and we submit to the exclusive jurisdiction of the state and
@@ -451,15 +333,15 @@ export default function TermsPage() {
           <strong>If you are a consumer in the European Economic Area or the United Kingdom,</strong> this
           choice of law and forum does not deprive you of the protection of the mandatory consumer-protection
           laws of your country of residence, and you may bring proceedings in the courts of that country.
-          Nothing in these Terms (including the disclaimers in Section 16 and the liability limits in
-          Section 17) limits or excludes any right or remedy you have under that mandatory law, or any
+          Nothing in these Terms (including the disclaimers in Section 12 and the liability limits in
+          Section 13) limits or excludes any right or remedy you have under that mandatory law, or any
           liability that cannot lawfully be limited or excluded. Your data-protection rights are described
           in the <a href="/legal/privacy">Privacy Policy</a>.
         </p>
       </section>
 
       <section>
-        <h2>21. Miscellaneous</h2>
+        <h2>17. Miscellaneous</h2>
         <p>
           These Terms, together with the Privacy Policy, are the entire agreement between you and us
           about civfix. If any provision is found unenforceable, the rest stays in effect. Our failure
@@ -469,7 +351,7 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>22. Contact</h2>
+        <h2>18. Contact</h2>
         <p>
           Questions about these Terms? Email{" "}
           <a href="mailto:roman@reachoutla.org">roman@reachoutla.org</a>.

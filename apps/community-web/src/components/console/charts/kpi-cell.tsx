@@ -17,7 +17,7 @@ export interface KpiDelta {
 export interface KpiCellProps {
   label: string
   value: ReactNode
-  sub?: string
+  sub?: ReactNode
   delta?: KpiDelta
   spark?: readonly number[]
   size?: "card" | "strip"

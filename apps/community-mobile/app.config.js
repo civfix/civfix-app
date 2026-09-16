@@ -70,7 +70,7 @@ module.exports = ({ config }) => ({
   name: "civfix",
   slug: "civfix-community",
   scheme: "civfix",
-  version: "1.2.0",
+  version: "1.2.1",
   orientation: "portrait",
   userInterfaceStyle: "automatic",
   icon: "./assets/icon.png",

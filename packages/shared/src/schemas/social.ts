@@ -1,6 +1,12 @@
 import { z } from "zod"
 import { IdSchema, PaginationQuerySchema, pageResponse } from "./common.js"
-import { PersonDTOSchema, CleanupDTOSchema, AvatarPairSchema, SocialLinksSchema } from "./entities.js"
+import {
+  PersonDTOSchema,
+  CleanupDTOSchema,
+  AvatarPairSchema,
+  HttpsUrlSchema,
+  SocialLinksSchema,
+} from "./entities.js"
 import { UserDTOSchema, LocaleEnum } from "./auth.js"
 
 
@@ -77,6 +83,7 @@ export const UpdateProfileRequestSchema = z
     bio: z.string().trim().max(MAX_BIO_LENGTH).nullable().optional(),
     avatarUploadId: IdSchema.optional(),
     socialLinks: SocialLinksSchema.nullable().optional(),
+    donationUrl: HttpsUrlSchema.nullable().optional(),
   })
   .strict()
 export type UpdateProfileRequest = z.infer<typeof UpdateProfileRequestSchema>

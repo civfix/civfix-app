@@ -26,32 +26,10 @@ const RETENTION_ROWS: RetentionRow[] = [
       "A published report is a civic record that has been forwarded to or relied on by a government agency. It survives deletion of the account that filed it, shown as from a deleted user.",
   },
   {
-    category: "Donation records (amount, fees, dates, status, card brand and last four)",
-    period: "7 years from the date the card was charged",
-    basis:
-      "Financial record-keeping, charitable-solicitation reporting, receipt re-issue, and the dispute and chargeback window. This record is kept under a legal hold and is not deleted on request.",
-  },
-  {
-    category: "Donor email address and name attached to a donation",
-    period: "7 years from the charge date, then removed from the donation record",
-    basis:
-      "Part of the receipt and the evidence a specific person made a specific gift. After 7 years the contact details are removed and only the pseudonymous financial record remains.",
-  },
-  {
     category: "Records of the terms and disclosures you accepted",
     period: "For the life of the record they relate to",
     basis:
       "The version and content hash of what you were shown is the only proof of what you agreed to; it is worthless if it is deleted before the record it evidences.",
-  },
-  {
-    category: "Payment card details",
-    period: "Never stored",
-    basis: "They go directly to Stripe and never reach civfix.",
-  },
-  {
-    category: "Sanctions-screening evidence",
-    period: "10 years",
-    basis: "Required retention period for sanctions-screening records.",
   },
   {
     category: "Event registration answers to a host's questions",
@@ -198,45 +176,18 @@ export default function PrivacyPage() {
           as a new follower or a report update).
         </p>
 
-        <h3>Financial and payment information (donations)</h3>
+        <h3>Donation links</h3>
         <p>
-          If you donate to a host organization through civfix, your{" "}
-          <strong>card number, expiry and security code go directly to Stripe</strong>, our payment
-          processor, inside an iframe it controls. They never reach civfix&rsquo;s servers and we never
-          store them. What we do receive and keep, as part of the donation record, is:
+          <strong>civfix does not process payments and never has access to your payment details.</strong>{" "}
+          An organization, a host or a person can add a <strong>donation link</strong> to their profile,
+          their organization page or an event. It is an ordinary external web address they choose. Opening
+          it takes you to that site, which is operated by them and their own payment processor: anything
+          you enter there - your name, your email address, your card - is collected by that site under its
+          own privacy notice, not ours. We receive no donation amount, no donor identity and no card data.
         </p>
-        <ul>
-          <li>
-            the donation amount and currency, the fees, the date and time your card was charged, and
-            whether the payment succeeded, failed, was refunded or disputed;
-          </li>
-          <li>
-            the <strong>brand and last four digits</strong> of the card, so a receipt and a later dispute
-            can be matched to the right payment;
-          </li>
-          <li>
-            your <strong>email address</strong> (required, so we can send the receipt) and your name if
-            you give one;
-          </li>
-          <li>
-            a record of the exact version and content hash of the terms, privacy notice and disclosures
-            you were shown when you paid, and whether you opted in to sharing your identity with the
-            recipient organization; and
-          </li>
-          <li>
-            the processor&rsquo;s opaque references for the payment, which let us reconcile it and issue
-            a receipt.
-          </li>
-        </ul>
         <p>
-          Under California law this is &ldquo;financial information&rdquo;; the amounts and history of
-          your donations are also &ldquo;commercial information&rdquo;. We do not use either category to
-          profile you, to infer characteristics about you, or for any advertising purpose, and we never
-          sell or share it.
-        </p>
-        <p className="legal-note">
-          <strong>Notice at collection.</strong> The donation form itself repeats this in short form at
-          the point you enter your details, so you know what is collected and why before you pay.
+          We count how many times a donation link on an event is opened. That count is a daily total shown
+          to the host and carries no identifier of who opened it.
         </p>
 
         <h3>Technical, security, and anti-abuse information</h3>
@@ -344,23 +295,6 @@ export default function PrivacyPage() {
             the service, store and deliver media, send email, deliver push notifications, run anti-abuse
             challenges, and serve the map. They process information on our behalf under contract. See our{" "}
             <a href="/legal/subprocessors">Sub-processors</a> list.
-          </li>
-          <li>
-            <strong>Stripe, our payment processor.</strong> Stripe processes donations on our behalf{" "}
-            <em>and</em> acts as an <strong>independent controller</strong> in its own right for fraud
-            prevention, anti-money-laundering and sanctions screening, and its own legal and regulatory
-            obligations. Where Stripe acts as an independent controller, its own privacy notice governs
-            and civfix cannot direct or delete that processing. Under the direct-charge model civfix uses,
-            the recipient organization is the merchant of record and holds its own relationship with
-            Stripe.
-          </li>
-          <li>
-            <strong>The organization you donate to.</strong> It always receives the donation amount, the
-            date, and its fee and net figures - it is the recipient of the money. It receives your{" "}
-            <strong>name and email address only if you check the optional box</strong> on the donation
-            page saying it may know who you are; that box is <strong>off by default</strong>. If you
-            leave it off, your donation appears to the organization as an anonymous donation with no
-            identifier it could use to work out who you are.
           </li>
           <li>
             <strong>Event hosts.</strong> If you register for an event, the host sees your display name,
@@ -516,19 +450,6 @@ export default function PrivacyPage() {
             Some content that has been published or forwarded to an agency may be retained as part of the
             public and civic record described in Section 7, and we may retain limited information where the
             law allows or requires it.
-          </li>
-          <li>
-            <strong>Erasure and donations - what we can and cannot delete.</strong> Deleting your account
-            immediately <strong>unlinks your profile</strong> from any donation you made: the donation
-            record stops pointing at your account and stops appearing in your donation history. The{" "}
-            <strong>financial record itself is kept for seven years</strong> from the charge date, under
-            the exceptions for legal obligations and the establishment or defence of legal claims (GDPR
-            Article 17(3)(b) and (e); Civil Code section 1798.105(d)). The email address and name on that
-            record are removed at the end of the seven years, leaving only a pseudonymous financial entry.
-            Separately, civfix cannot delete a payment record held by{" "}
-            <strong>Stripe or by the recipient organization</strong>: Stripe keeps its own records as an
-            independent controller with its own legal obligations, and the organization is the merchant
-            of record for the payment. Contact them directly for their own records.
           </li>
           <li>
             <strong>Restriction.</strong> Ask us to limit how we use your information while a request is

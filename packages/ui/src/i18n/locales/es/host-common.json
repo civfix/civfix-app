@@ -145,8 +145,7 @@
     "forbidden": "No tienes permiso para hacer eso.",
     "conflict": "Alguien cambió esto antes que tú. Recarga la página e inténtalo de nuevo.",
     "not_found": "No pudimos encontrar eso.",
-    "abuse_held": "Esto está en revisión antes de enviarse.",
-    "payment_unavailable": "Los pagos no están disponibles temporalmente. No se ha cobrado nada."
+    "abuse_held": "Esto está en revisión antes de enviarse."
   },
   "crash": {
     "title": "La consola tuvo un problema",

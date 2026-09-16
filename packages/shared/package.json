@@ -1,6 +1,6 @@
 {
   "name": "@civfix/shared",
-  "version": "0.47.0",
+  "version": "0.48.1",
   "description": "civfix shared contract package: zod schemas, domain types, vendor interfaces, in-memory fakes, design tokens, and a typed API client. Single source of truth for backend, web, and mobile.",
   "license": "UNLICENSED",
   "private": false,
@@ -138,16 +138,6 @@
       "require": {
         "types": "./dist/ics/index.d.cts",
         "default": "./dist/ics/index.cjs"
-      }
-    },
-    "./payments": {
-      "import": {
-        "types": "./dist/payments/index.d.ts",
-        "default": "./dist/payments/index.js"
-      },
-      "require": {
-        "types": "./dist/payments/index.d.cts",
-        "default": "./dist/payments/index.cjs"
       }
     },
     "./legal": {

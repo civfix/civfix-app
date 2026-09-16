@@ -40,8 +40,7 @@ function socialEntries(org: OrganizationDTO): Array<{ platform: SocialPlatform; 
   return out
 }
 
-function websiteHref(org: OrganizationDTO): string | null {
-  const url = org.websiteUrl
+function httpsHref(url: string | null | undefined): string | null {
   if (!url || !url.startsWith("https://")) return null
   try {
     return new URL(url).href
@@ -131,9 +130,9 @@ function OrgDocument({ slug }: { slug: string }) {
 
   const org = query.data
   const verified = org.verifiedStatus === "verified"
-  const website = websiteHref(org)
+  const website = httpsHref(org.websiteUrl)
   const socials = socialEntries(org)
-  const donate = org.donationsEnabled && org.donateSlug ? `/donate/${org.donateSlug}/` : null
+  const donate = httpsHref(org.donationUrl)
   const description = org.description ? parseMarkdownSubset(org.description) : []
 
   return (
@@ -185,7 +184,12 @@ function OrgDocument({ slug }: { slug: string }) {
         </header>
 
         {donate ? (
-          <a className="orgpage-donate" href={donate}>
+          <a
+            className="orgpage-donate"
+            href={donate}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <HeartHandshake aria-hidden="true" size={18} />
             {t("public.donate", { name: org.name, defaultValue: `Donate to ${org.name}` })}
           </a>

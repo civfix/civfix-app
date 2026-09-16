@@ -18,7 +18,6 @@ const NOTIFICATION_LINKS = [
   "/cleanups/c1/ticket",
   "/cleanups/c1/ticket/s1",
   "/orgs/acme",
-  "/me/donations",
   "/people/u1",
   "/post/p1",
   "/reports",
@@ -126,6 +125,5 @@ test("an event push that names a host surface lands in a shell, not on a native 
 
 test("a broadcast push that lands in the sheet claims no native bridge key", () => {
   assert.equal(bridgeKey({ kind: "host-broadcast-quick", id: "c1" }), null)
-  assert.equal(bridgeKey({ kind: "my-donations" }), null)
   assert.equal(shellHostsEntries({ name: "compose" }), false)
 })

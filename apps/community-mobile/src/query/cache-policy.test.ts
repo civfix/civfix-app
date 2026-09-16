@@ -233,11 +233,9 @@ test("an event's day-of numbers survive a cold start; every other host surface i
   assert.equal(isPersistedQueryKey(["tickets", "mine", "c1"]), false)
 })
 
-test("a public org page is cacheable and a donation record is not", () => {
+test("a public org page and the viewer's own org list are cacheable", () => {
   assert.equal(isPersistedQueryKey(["org", "acme"]), true)
   assert.equal(isPersistedQueryKey(["orgs", "mine"]), true)
-  assert.equal(isPersistedQueryKey(["donations", "mine"]), false)
-  assert.equal(isPersistedQueryKey(["donations", "org", "acme"]), false)
 })
 
 test("a paused mutation is never written to disk - its variables can carry a seat token", () => {

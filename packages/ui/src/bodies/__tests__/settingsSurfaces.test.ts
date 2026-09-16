@@ -8,6 +8,7 @@ const EDITORS = [
   "../settings/BioEditor.tsx",
   "../settings/ChangeUsernameEditor.tsx",
   "../settings/SocialLinksEditor.tsx",
+  "../settings/DonationLinkEditor.tsx",
 ]
 
 describe("every Settings > Account editor is a row that opens a modal", () => {
@@ -52,6 +53,16 @@ describe("every Settings > Account editor is a row that opens a modal", () => {
     const social = read("../settings/SocialLinksEditor.tsx")
     expect(social).toContain("const canSave = !saving && dirty")
     expect(social).toContain("SocialLinksSchema.safeParse(normalizedLinks(drafts))")
+    const donation = read("../settings/DonationLinkEditor.tsx")
+    expect(donation).toContain("const canSave = !saving && valid && dirty")
+    expect(donation).toContain("donationLinkFieldError(draft)")
+  })
+
+  it("clears the donation link to NULL when it is emptied or removed, matching UpdateProfileRequest", () => {
+    const donation = read("../settings/DonationLinkEditor.tsx")
+    expect(donation).toContain("commit(normalizeDonationLink(draft))")
+    expect(donation).toContain("commit(null)")
+    expect(read("../SettingsAccountBody.tsx")).toContain("donationUrl,")
   })
 
   it("keeps the handle cooldown a DISABLED ROW - a locked field has no dialog to open", () => {
@@ -75,13 +86,14 @@ describe("every Settings > Account editor is a row that opens a modal", () => {
     expect(read("../SettingsAccountBody.tsx")).toContain("bio: bio.length > 0 ? bio : null")
   })
 
-  it("mounts all four editors in the identity section", () => {
+  it("mounts all five editors in the identity section", () => {
     const account = read("../SettingsAccountBody.tsx")
     for (const tag of [
       "<DisplayNameEditor",
       "<BioEditor",
       "<ChangeUsernameEditor",
       "<SocialLinksEditor",
+      "<DonationLinkEditor",
     ]) {
       expect(account).toContain(tag)
     }

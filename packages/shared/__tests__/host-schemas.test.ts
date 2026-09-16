@@ -45,7 +45,6 @@ import {
   EventPageBlockSchema,
   EventRegistrationDTOSchema,
   HostedEventDTOSchema,
-  MoneyDTOSchema,
   OrganizationDTOSchema,
   PersonDTOSchema,
   TicketTypeDTOSchema,
@@ -199,12 +198,7 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
       "contact",
     ])
     expect([...ThemeAccentSchema.options]).toEqual(["bloom", "moss", "sun", "sky", "lilac"])
-    expect([...HostExportKindSchema.options]).toEqual([
-      "roster",
-      "answers",
-      "checkins",
-      "donations",
-    ])
+    expect([...HostExportKindSchema.options]).toEqual(["roster", "answers", "checkins"])
     expect([...HostExportStatusSchema.options]).toEqual([
       "queued",
       "running",
@@ -251,25 +245,19 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
       "privacy",
       "cookies",
       "subprocessors",
-      "donations",
-      "org_donation_agreement",
-      "donation_disclosure",
     ])
     expect([...ConsentSurfaceSchema.options]).toEqual([
-      "web_donate",
-      "web_org_settings",
       "web_register",
       "mobile_register",
       "onboarding",
     ])
   })
 
-  it("enumerates the 19 host capabilities in a stable order", () => {
-    expect(HOST_CAPABILITY_VALUES).toHaveLength(19)
+  it("enumerates the 17 host capabilities in a stable order", () => {
+    expect(HOST_CAPABILITY_VALUES).toHaveLength(17)
     expect(HOST_CAPABILITY_VALUES).toBe(HostCapabilitySchema.options)
     expect(HOST_CAPABILITY_VALUES[0]).toBe("view_event_private")
-    expect(HOST_CAPABILITY_VALUES.at(-3)).toBe("manage_payments")
-    expect(HOST_CAPABILITY_VALUES.at(-2)).toBe("view_donations")
+    expect(HOST_CAPABILITY_VALUES.at(-2)).toBe("request_resources")
     expect(HOST_CAPABILITY_VALUES.at(-1)).toBe("manage_org_members")
     expect(HostCapabilitySchema.safeParse("delete_everything").success).toBe(false)
   })
@@ -323,7 +311,7 @@ describe("additive DTO growth stays backward compatible", () => {
     expect(parsed.ticketTypes).toEqual([])
     expect(parsed.myCapabilities).toEqual([])
     expect(parsed.endsAt).toBeUndefined()
-    expect(parsed.donationOrg).toBeUndefined()
+    expect(parsed.organization).toBeUndefined()
   })
 
   it("carries the host fields when the server sends them", () => {
@@ -335,16 +323,23 @@ describe("additive DTO growth stays backward compatible", () => {
       pageSlug: "beach-sweep",
       registrationState: "waitlist",
       myCapabilities: ["view_roster", "check_in"],
-      donationOrg: { slug: "reach-out-la", name: "Reach Out LA", enabled: true },
-      organization: { id: UUID2, slug: "reach-out-la", name: "Reach Out LA", verified: true },
+      donationUrl: "https://example.org/give",
+      organization: {
+        id: UUID2,
+        slug: "reach-out-la",
+        name: "Reach Out LA",
+        verified: true,
+        donationUrl: "https://reachoutla.org/donate",
+      },
     })
     expect(parsed.visibility).toBe("unlisted")
     expect(parsed.myCapabilities).toEqual(["view_roster", "check_in"])
-    expect(parsed.donationOrg?.enabled).toBe(true)
+    expect(parsed.donationUrl).toBe("https://example.org/give")
     expect(parsed.organization?.verified).toBe(true)
+    expect(parsed.organization?.donationUrl).toBe("https://reachoutla.org/donate")
   })
 
-  it("defaults OrganizationDTO.verifiedStatus and leaves the donation fields absent", () => {
+  it("defaults OrganizationDTO.verifiedStatus and leaves donationUrl absent", () => {
     const org = OrganizationDTOSchema.parse({
       id: UUID,
       slug: "reach-out-la",
@@ -352,8 +347,16 @@ describe("additive DTO growth stays backward compatible", () => {
       createdAt: ISO,
     })
     expect(org.verifiedStatus).toBe("unverified")
-    expect(org.donationsEnabled).toBeUndefined()
-    expect(org.donateSlug).toBeUndefined()
+    expect(org.donationUrl).toBeUndefined()
+    expect(
+      OrganizationDTOSchema.safeParse({
+        id: UUID,
+        slug: "reach-out-la",
+        name: "Reach Out LA",
+        createdAt: ISO,
+        donationUrl: "http://reachoutla.org/donate",
+      }).success,
+    ).toBe(false)
   })
 
   it("defaults the ticket-type counters", () => {
@@ -605,14 +608,6 @@ describe("analytics envelopes carry suppression, never opens or clicks", () => {
     })
     expect(r.value).toBeNull()
     expect(r.suppressed).toBe(true)
-  })
-})
-
-describe("money is always integer minor units", () => {
-  it("rejects a float amount and a non-USD currency", () => {
-    expect(MoneyDTOSchema.safeParse({ amountMinor: 2500, currency: "USD" }).success).toBe(true)
-    expect(MoneyDTOSchema.safeParse({ amountMinor: 25.5, currency: "USD" }).success).toBe(false)
-    expect(MoneyDTOSchema.safeParse({ amountMinor: 2500, currency: "EUR" }).success).toBe(false)
   })
 })
 
@@ -1030,7 +1025,6 @@ describe("hours on the host read models (0.45.0, DECISIONS §39)", () => {
         unmarked: 1,
       },
       hours: { credited: 24, attendeesCredited: 12, attendeesCheckedIn: 12 },
-      money: null,
       returning: null,
       ...extra,
     }

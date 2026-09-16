@@ -44,7 +44,6 @@ export type BodyId =
   | "hostLogHours"
   | "myTicket"
   | "orgPage"
-  | "myDonations"
   | "eventDashboard"
   | "stub"
 
@@ -102,6 +101,5 @@ export const DETAIL_BODY: Record<DetailKind, BodyId> = {
   "host-log-hours": "hostLogHours",
   "my-ticket": "myTicket",
   org: "orgPage",
-  "my-donations": "myDonations",
   "event-dashboard": "eventDashboard",
 }

@@ -62,7 +62,6 @@
     "hours_hint": "{{credited}} von {{attended}} Teilnehmenden gutgeschrieben",
     "hours_hint_credited_one": "{{count}} Person gutgeschrieben",
     "hours_hint_credited_other": "{{count}} Personen gutgeschrieben",
-    "donations": "Spenden",
     "returning": "Wiederkehrend",
     "returning_hint": "von {{total}} Angemeldeten waren schon einmal dabei"
   },
@@ -92,17 +91,11 @@
     "row": "{{sent}} gesendet · {{failed}} fehlgeschlagen · {{suppressed}} übersprungen",
     "pending": "Noch nicht gesendet"
   },
-  "money": {
-    "net": "Für diese Veranstaltung gesammelt",
-    "donations": "Spenden",
-    "gross": "{{amount}} vor Gebühren"
-  },
   "section": {
     "grow": "Bekannt machen",
     "communicate": "Kommunizieren",
     "operate": "Vor Ort",
     "configure": "Einrichten",
-    "money": "Geld",
     "danger": "Gefahrenzone",
     "attendees": "Teilnehmende"
   },

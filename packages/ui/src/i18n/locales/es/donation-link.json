@@ -1,0 +1,26 @@
+{
+  "card": {
+    "title": "Donar",
+    "supports": "Apoya a {{name}}",
+    "open": "Abrir página de donación",
+    "open_a11y": "Abrir la página de donación de {{name}} en {{host}}"
+  },
+  "editor": {
+    "title": "Enlace de donación",
+    "add": "Añade un enlace por el que la gente pueda donar",
+    "hint": "Pega un enlace a tu propia página de donaciones o de recaudación. Se muestra en tu perfil y en los eventos que organizas. civfix nunca gestiona el dinero.",
+    "field_label": "Enlace de donación",
+    "placeholder": "https://",
+    "invalid": "Debe ser un enlace completo que empiece por https://",
+    "remove": "Quitar enlace",
+    "save": "Guardar",
+    "dismiss": "Cerrar enlace de donación",
+    "error": "No se pudo guardar el enlace. Inténtalo de nuevo."
+  },
+  "dashboard": {
+    "row": "Enlace de donación",
+    "row_set": "Visible en tus eventos y tu página: {{host}}",
+    "row_unset": "Aún sin configurar",
+    "row_org_web": "Configúralo en los ajustes de la organización en la web"
+  }
+}

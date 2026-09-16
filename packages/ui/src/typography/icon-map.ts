@@ -97,6 +97,7 @@ import {
   UserCheck,
   Hourglass,
   HandHeart,
+  ExternalLink,
   ReceiptText,
   Radio,
   TrendingUp,
@@ -205,6 +206,7 @@ export type IconName =
   | "UserCheck"
   | "Hourglass"
   | "HandHeart"
+  | "ExternalLink"
   | "ReceiptText"
   | "Radio"
   | "TrendingUp"
@@ -311,6 +313,7 @@ export const iconMap: Record<IconName, LucideIcon> = {
   UserCheck,
   Hourglass,
   HandHeart,
+  ExternalLink,
   ReceiptText,
   Radio,
   TrendingUp,

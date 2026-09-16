@@ -11,12 +11,6 @@ describe("consentPayload", () => {
     expect(payload.disclosureVersion).toBe(currentVersion("privacy"))
   })
 
-  it("does NOT point the disclosure at the donation document", () => {
-    const payload = consentPayload(EMPTY_CONSENT)
-    expect(payload.disclosureVersion).toBe(currentVersion("privacy"))
-    expect(currentVersion("privacy")).toBe(currentVersion("donation_disclosure"))
-  })
-
   it("ALWAYS carries smsOptIn from state - an express consent is never silently dropped", () => {
     expect(consentPayload({ terms: true, hostContactOptIn: false, smsOptIn: true }).smsOptIn).toBe(true)
     expect(consentPayload({ terms: true, hostContactOptIn: false, smsOptIn: false }).smsOptIn).toBe(false)

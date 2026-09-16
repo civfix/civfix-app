@@ -37,7 +37,6 @@ export type HostTileKey =
   | "no_shows"
   | "not_marked"
   | "hours"
-  | "donations"
   | "returning"
 
 export type HostCardKey = "grow" | "communicate" | "operate" | "configure" | "danger"
@@ -257,7 +256,6 @@ export function hostStatTiles(insights: EventInsights, phase: EventPhase): HostT
     push("no_shows", seats.noShow)
     if (seats.unmarked > 0) push("not_marked", seats.unmarked)
     push("hours", insights.hours.credited, insights.hours.attendeesCheckedIn)
-    if (insights.money !== null) push("donations", insights.money.netMinor)
     if (insights.returning !== null) {
       push("returning", insights.returning.seats, insights.returning.ofRegistered)
     }

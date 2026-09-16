@@ -38,7 +38,7 @@ import {
   managesEvent,
   useEventQuestions,
 } from "../data/hooks/host"
-import { useOrgDonationPage } from "../data/hooks/donations"
+import { donationLinkFor } from "./donationLink"
 import { useNavStore } from "../nav"
 import { useHaptics } from "../capabilities"
 import { useLocale, useRelativeTime, useT, useViewerTimeZone } from "../i18n"
@@ -259,9 +259,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
     useNavStore.getState().push({ kind: "my-ticket", id: cleanup.id, title: cleanup.title })
   }, [cleanup.id, cleanup.title])
   const hasTicketTypes = cleanup.ticketTypes.length > 0
-  const donatePage = useOrgDonationPage(cleanup.donationOrg?.slug, {
-    enabled: cleanup.donationOrg?.enabled === true,
-  })
+  const donation = useMemo(() => donationLinkFor(cleanup), [cleanup])
   const boundaryAt = nextEventBoundaryMs(cleanup, Date.now())
   const now = useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })
   useEventBoundaryRefresh(cleanup, now, cleanup.id)
@@ -672,18 +670,9 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </EventActionRows>
       </View>
 
-      {donatePage.data?.org ? (
+      {donation ? (
         <View style={styles.section}>
-          <DonateBlock
-            org={{
-              slug: donatePage.data.org.slug,
-              displayName: donatePage.data.org.displayName,
-              legalName: donatePage.data.org.legalName,
-              verified: donatePage.data.org.verified,
-              donateState: donatePage.data.donateState,
-            }}
-            eventId={cleanup.id}
-          />
+          <DonateBlock url={donation.url} ownerName={donation.ownerName} />
         </View>
       ) : null}
 

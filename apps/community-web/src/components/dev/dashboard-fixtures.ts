@@ -11,9 +11,6 @@ import type {
   EventInsights,
   EventPhase,
   EventRegistrationDTO,
-  GetOrgBalanceResponse,
-  GetOrgDonationSummaryResponse,
-  GetOrgPaymentsStatusResponse,
   HostedEventDTO,
   HostedEventsAnalyticsResponse,
   LeaderboardEntryDTO,
@@ -24,7 +21,6 @@ import type {
   ListMyOrgInvitesResponse,
   ListOrganizationInvitesResponse,
   ListOrganizationMembersResponse,
-  ListOrgPayoutsResponse,
   OrganizationDTO,
   PersonDTO,
   PortfolioAnalyticsRange,
@@ -46,7 +42,6 @@ export const DASHBOARD_EVENT_IDS: Readonly<Record<EventPhase, string>> = {
 
 export const DASHBOARD_EVENT_PENDING_ID = "ev-pending"
 export const DASHBOARD_EVENT_ERROR_ID = "ev-error"
-export const DASHBOARD_EVENT_REFUNDED_ID = "ev-refunded"
 
 const PHASE_BY_EVENT_ID: Readonly<Record<string, EventPhase>> = {
   [DASHBOARD_EVENT_IDS.upcoming]: "upcoming",
@@ -55,7 +50,6 @@ const PHASE_BY_EVENT_ID: Readonly<Record<string, EventPhase>> = {
   [DASHBOARD_EVENT_IDS.cancelled]: "cancelled",
   [DASHBOARD_EVENT_PENDING_ID]: "live",
   [DASHBOARD_EVENT_ERROR_ID]: "live",
-  [DASHBOARD_EVENT_REFUNDED_ID]: "ended",
 }
 
 const PHASE_TITLES: Readonly<Record<EventPhase, string>> = {
@@ -99,7 +93,6 @@ const FULL_HOST_CAPABILITIES: CleanupDTO["myCapabilities"] = [
   "manage_org_link",
   "moderate_chat",
   "request_resources",
-  "view_donations",
 ]
 
 const EVENT_ORGANIZATION: NonNullable<CleanupDTO["organization"]> = {
@@ -109,6 +102,7 @@ const EVENT_ORGANIZATION: NonNullable<CleanupDTO["organization"]> = {
   logoUrl: null,
   verified: true,
   verifiedKind: "nonprofit",
+  donationUrl: "https://bayviewstewards.org/give",
 }
 
 export const DASHBOARD_ORGS: readonly OrganizationDTO[] = [
@@ -128,8 +122,7 @@ export const DASHBOARD_ORGS: readonly OrganizationDTO[] = [
     memberCount: 24,
     eventCount: 31,
     myRole: "owner",
-    donationsEnabled: true,
-    donateSlug: "bayview-stewards",
+    donationUrl: "https://bayviewstewards.org/give",
     suspended: false,
   },
   {
@@ -148,8 +141,7 @@ export const DASHBOARD_ORGS: readonly OrganizationDTO[] = [
     memberCount: 9,
     eventCount: 6,
     myRole: "admin",
-    donationsEnabled: false,
-    donateSlug: null,
+    donationUrl: null,
     suspended: false,
   },
 ]
@@ -226,92 +218,9 @@ const ORG_INVITE_LIST: ListOrganizationInvitesResponse = {
   ],
 }
 
-const PAYMENTS_STATUS: GetOrgPaymentsStatusResponse = {
-  organizationId: "org-bayview",
-  state: "ready",
-  stripeAccountId: "acct_gallery_bayview",
-  livemode: true,
-  detailsSubmitted: true,
-  chargesEnabled: true,
-  payoutsEnabled: true,
-  disabledReason: null,
-  currentlyDue: [],
-  pastDue: [],
-  pendingVerification: [],
-  futureCurrentlyDue: [],
-  currentDeadline: null,
-  capabilities: { card_payments: "active", transfers: "active" },
-  paymentMethodDomains: [],
-  walletsAvailable: ["apple_pay", "google_pay"],
-  donationsEnabled: true,
-  donationsDisabledReason: null,
-  agreement: {
-    version: "2026-01",
-    acceptedAt: new Date(FIXTURE_NOW - 120 * DAY_MS).toISOString(),
-    acceptedByName: "Sam Okafor",
-    current: true,
-    requiredVersion: "2026-01",
-  },
-  eligibility: {
-    verdict: "eligible",
-    reasons: [],
-    einLast4: "4417",
-    irsLegalName: "Bayview Stewards Inc",
-    deductibilityCode: "PC",
-    foundationCode: "15",
-    graceExpiresAt: null,
-    evaluatedAt: new Date(FIXTURE_NOW - 12 * DAY_MS).toISOString(),
-    nextCheckAt: new Date(FIXTURE_NOW + 18 * DAY_MS).toISOString(),
-    checks: [],
-  },
-  donateState: "READY",
-  lastSyncedAt: new Date(FIXTURE_NOW - 2 * HOUR_MS).toISOString(),
-}
 
-const ORG_BALANCE: GetOrgBalanceResponse = {
-  available: { amountMinor: 128_400, currency: "USD" },
-  pending: { amountMinor: 21_500, currency: "USD" },
-  payoutsEnabled: true,
-  payoutSchedule: { interval: "manual" },
-  lastSyncedAt: new Date(FIXTURE_NOW - 2 * HOUR_MS).toISOString(),
-}
 
-const DONATION_SUMMARY: GetOrgDonationSummaryResponse = {
-  currency: "USD",
-  donationCount: 37,
-  grossMinor: 214_500,
-  platformFeeMinor: 6_435,
-  processorFeeMinor: 7_320,
-  netMinor: 200_745,
-  refundedMinor: 5_000,
-  disputedCount: 0,
-  from: new Date(FIXTURE_NOW - 30 * DAY_MS).toISOString(),
-  to: null,
-}
 
-const ORG_PAYOUTS: ListOrgPayoutsResponse = {
-  items: [
-    {
-      id: "payout-1",
-      stripePayoutId: "po_gallery_1",
-      amount: { amountMinor: 96_000, currency: "USD" },
-      status: "paid",
-      arrivalDate: new Date(FIXTURE_NOW - 9 * DAY_MS).toISOString(),
-      createdAt: new Date(FIXTURE_NOW - 12 * DAY_MS).toISOString(),
-      failureMessage: null,
-    },
-    {
-      id: "payout-2",
-      stripePayoutId: "po_gallery_2",
-      amount: { amountMinor: 42_500, currency: "USD" },
-      status: "in_transit",
-      arrivalDate: new Date(FIXTURE_NOW + 2 * DAY_MS).toISOString(),
-      createdAt: new Date(FIXTURE_NOW - 1 * DAY_MS).toISOString(),
-      failureMessage: null,
-    },
-  ],
-  nextCursor: null,
-}
 
 const EXTRA_TOP_VOLUNTEERS: readonly LeaderboardEntryDTO[] = [
   {
@@ -404,15 +313,12 @@ export function soloPortfolioOverrides(): Record<string, FakeEndpoint> {
   }
 }
 
-function insightsFor(id: string, phase: EventPhase): EventInsights {
-  return fakeEventInsights(phase, {
-    now: FIXTURE_NOW,
-    ...(id === DASHBOARD_EVENT_REFUNDED_ID ? { refunded: true } : {}),
-  })
+function insightsFor(phase: EventPhase): EventInsights {
+  return fakeEventInsights(phase, { now: FIXTURE_NOW })
 }
 
 function phaseCleanup(id: string, phase: EventPhase): CleanupDTO {
-  const insights = insightsFor(id, phase)
+  const insights = insightsFor(phase)
   return {
     id,
     referenceCode: "BAY-4821",
@@ -452,7 +358,7 @@ function phaseCleanup(id: string, phase: EventPhase): CleanupDTO {
 }
 
 function phaseCounters(id: string, phase: EventPhase): EventCheckinCountersDTO {
-  const insights = insightsFor(id, phase)
+  const insights = insightsFor(phase)
   const startsAt = Date.parse(insights.clock.startsAt)
   return {
     registered: insights.seats.registered,
@@ -486,7 +392,7 @@ const ROSTER_PEOPLE: readonly { id: string; name: string; handle: string }[] = [
 ]
 
 function phaseRoster(id: string, phase: EventPhase): ListEventRegistrationsResponse {
-  const insights = insightsFor(id, phase)
+  const insights = insightsFor(phase)
   const startsAt = Date.parse(insights.clock.startsAt)
   const checkedInRows = phase === "upcoming" || phase === "cancelled" ? 0 : 4
   const items: EventRegistrationDTO[] = ROSTER_PEOPLE.map((who, i) => {
@@ -568,11 +474,6 @@ export const DASHBOARD_FAKE_ENDPOINTS: Record<string, FakeEndpoint> = {
   }),
   listOrganizationMembers: async () => ORG_MEMBERS,
   listOrganizationInvites: async () => ORG_INVITE_LIST,
-  getOrgPaymentsStatus: async () => PAYMENTS_STATUS,
-  getOrgBalance: async () => ORG_BALANCE,
-  getOrgDonationSummary: async () => DONATION_SUMMARY,
-  listOrgPayouts: async () => ORG_PAYOUTS,
-  listOrgDonationExports: async () => ({ items: [] }),
   getCleanup: async (args) => {
     const id = argId(args)
     return phaseCleanup(id, phaseOf(id))
@@ -581,7 +482,7 @@ export const DASHBOARD_FAKE_ENDPOINTS: Record<string, FakeEndpoint> = {
     const id = argId(args)
     if (id === DASHBOARD_EVENT_PENDING_ID) return pendingForever()()
     if (id === DASHBOARD_EVENT_ERROR_ID) return failing("getEventInsights")()
-    return Promise.resolve(insightsFor(id, phaseOf(id)))
+    return Promise.resolve(insightsFor(phaseOf(id)))
   },
   getEventCheckinCounters: (args) => {
     const id = argId(args)

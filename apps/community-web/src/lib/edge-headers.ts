@@ -11,42 +11,6 @@ export const PERVASIVE_HEADERS: Readonly<Record<string, string>> = {
     "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: wss:; worker-src 'self' blob:; frame-src https://challenges.cloudflare.com",
 }
 
-export const DONATE_HEADERS_PATH = "/donate/*"
-
-export const STRIPE_SCRIPT_ORIGINS: readonly string[] = [
-  "https://js.stripe.com",
-  "https://*.js.stripe.com",
-]
-
-export const STRIPE_FRAME_ORIGINS: readonly string[] = [
-  "https://js.stripe.com",
-  "https://*.js.stripe.com",
-  "https://hooks.stripe.com",
-]
-
-export const STRIPE_FORM_ACTION_ORIGINS: readonly string[] = [
-  "https://hooks.stripe.com",
-  "https://*.js.stripe.com",
-]
-
-export const DONATE_HEADERS: Readonly<Record<string, string>> = {
-  "Permissions-Policy":
-    'accelerometer=(), autoplay=(self), camera=(), fullscreen=(self), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(self "https://js.stripe.com"), usb=()',
-  "Content-Security-Policy":
-    "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; " +
-    "form-action 'self' https://hooks.stripe.com https://*.js.stripe.com; " +
-    "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://js.stripe.com https://*.js.stripe.com; " +
-    "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; " +
-    "font-src 'self' data:; connect-src 'self' https: wss:; worker-src 'self' blob:; " +
-    "frame-src https://challenges.cloudflare.com https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com",
-  "X-Robots-Tag": "noindex",
-}
-
-export const DONATE_HEADER_DROPS: readonly string[] = [
-  "Content-Security-Policy",
-  "Permissions-Policy",
-]
-
 export interface HeaderBlock {
   headers: Record<string, string>
   drops: string[]

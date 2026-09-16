@@ -6,15 +6,12 @@ import { describe, expect, it } from "vitest"
 import { LEGAL_DOCUMENTS } from "@civfix/shared/legal"
 
 import {
-  MERCHANT_PLACEHOLDER_TOKEN,
   aasaExcludeOrder,
   canonicalDocumentText,
   extractLegalArticle,
   isPlaceholderLegalHash,
   legalDocumentHash,
-  merchantFileVerdict,
   missingAasaExcludes,
-  publishableKeyVerdict,
   spaFallbackGaps,
 } from "./postbuild-gates.mjs"
 
@@ -33,13 +30,12 @@ const REQUIRED_EXCLUDES = [
   "/claim*",
   "/manage*",
   "/e/*",
-  "/donate/*",
   "/unsubscribe*",
 ]
 
 describe("SPA-fallback completeness gate", () => {
   it("passes for the committed _redirects and the routes that ship a placeholder shell", () => {
-    const shipped = ["pin", "cleanups", "people", "messages", "groups", "channels", "post", "compose", "leaderboard", "service-record", "manage", "e", "donate", "orgs"]
+    const shipped = ["pin", "cleanups", "people", "messages", "groups", "channels", "post", "compose", "leaderboard", "service-record", "manage", "e", "orgs"]
     expect(spaFallbackGaps(shipped, redirects)).toEqual([])
   })
 
@@ -72,7 +68,7 @@ describe("AASA gate", () => {
       applinks: {
         details: [
           {
-            components: [{ "/": "/*" }, { "/": "/donate/*", exclude: true }],
+            components: [{ "/": "/*" }, { "/": "/nope/*", exclude: true }],
           },
         ],
       },
@@ -80,7 +76,7 @@ describe("AASA gate", () => {
     const verdict = aasaExcludeOrder(broken)
     expect(verdict.ok).toBe(false)
     expect(verdict.reason).toContain("exclude-after-catch-all")
-    expect(verdict.lateExcludes).toEqual(["/donate/*"])
+    expect(verdict.lateExcludes).toEqual(["/nope/*"])
   })
 
   it("fails when there is no catch-all at all", () => {
@@ -92,8 +88,8 @@ describe("AASA gate", () => {
     const association = {
       applinks: {
         details: [
-          { components: [{ "/": "/donate/*", exclude: true }, { "/": "/*" }] },
-          { components: [{ "/": "/*" }, { "/": "/donate/*", exclude: true }] },
+          { components: [{ "/": "/nope/*", exclude: true }, { "/": "/*" }] },
+          { components: [{ "/": "/*" }, { "/": "/nope/*", exclude: true }] },
         ],
       },
     }
@@ -101,53 +97,6 @@ describe("AASA gate", () => {
     expect(verdict.ok).toBe(false)
     expect(verdict.reason).toContain("details[1]")
     expect(missingAasaExcludes(association, ["/manage*"])).toEqual(["/manage*"])
-  })
-})
-
-describe("Apple Pay merchant-domain file gate", () => {
-  it("rejects every way the file can be wrong", () => {
-    expect(merchantFileVerdict(null)).toBe("missing")
-    expect(merchantFileVerdict("   \n")).toBe("empty")
-    expect(merchantFileVerdict("<!DOCTYPE html><html>404</html>")).toBe("markup")
-    expect(merchantFileVerdict(`${MERCHANT_PLACEHOLDER_TOKEN}_REPLACE_FROM_STRIPE_DASHBOARD\n`)).toBe(
-      "placeholder",
-    )
-  })
-
-  it("accepts a real Stripe-issued body", () => {
-    expect(merchantFileVerdict("7B227073704964223A2237423" + "\n")).toBe("ok")
-  })
-
-  it("still sees the committed file as the placeholder it is", () => {
-    const committed = readFileSync(
-      join(publicDir, ".well-known", "apple-developer-merchantid-domain-association"),
-      "utf8",
-    )
-    expect(merchantFileVerdict(committed)).toBe("placeholder")
-  })
-})
-
-describe("publishable-key mode gate", () => {
-  it("refuses a live key on a non-production origin", () => {
-    expect(publishableKeyVerdict("pk_live_abc", false)).toBe("live-on-non-production")
-  })
-
-  it("refuses a test key on production", () => {
-    expect(publishableKeyVerdict("pk_test_abc", true)).toBe("test-on-production")
-  })
-
-  it("accepts the two correct pairings", () => {
-    expect(publishableKeyVerdict("pk_live_abc", true)).toBe("ok")
-    expect(publishableKeyVerdict("pk_test_abc", false)).toBe("ok")
-  })
-
-  it("treats an unset key as an intentional payments-off build", () => {
-    expect(publishableKeyVerdict(undefined, true)).toBe("absent")
-    expect(publishableKeyVerdict("   ", false)).toBe("absent")
-  })
-
-  it("refuses a key that is neither", () => {
-    expect(publishableKeyVerdict("sk_live_secret", true)).toBe("malformed")
   })
 })
 

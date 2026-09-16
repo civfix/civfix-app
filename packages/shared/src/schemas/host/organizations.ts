@@ -10,6 +10,7 @@ import {
 } from "../common.js"
 import {
   CleanupDTOSchema,
+  HttpsUrlSchema,
   OrganizationDTOSchema,
   OrganizationMemberDTOSchema,
   OrganizationRefDTOSchema,
@@ -19,6 +20,7 @@ import {
 
 
 export {
+  HttpsUrlSchema,
   OrganizationDTOSchema,
   OrganizationRefDTOSchema,
   OrganizationMemberDTOSchema,
@@ -46,8 +48,6 @@ export const OrgSlugSchema = z
   .max(ORG_SLUG_MAX)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 export type OrgSlug = z.infer<typeof OrgSlugSchema>
-
-export const HttpsUrlSchema = z.string().trim().url().max(500).startsWith("https://")
 
 export const CreateOrganizationRequestSchema = z
   .object({
@@ -100,6 +100,7 @@ export const UpdateOrganizationRequestSchema = z
     name: z.string().trim().min(1).max(MAX_ORG_NAME).optional(),
     description: z.string().max(MAX_ORG_DESCRIPTION).nullable().optional(),
     websiteUrl: HttpsUrlSchema.nullable().optional(),
+    donationUrl: HttpsUrlSchema.nullable().optional(),
     logoMediaId: IdSchema.nullable().optional(),
     socialLinks: SocialLinksSchema.nullable().optional(),
   })

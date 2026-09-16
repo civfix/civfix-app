@@ -28,7 +28,7 @@
     "title": "기부",
     "link": "기부 링크",
     "link_hint": "행사 페이지에 표시되는 https 링크입니다.",
-    "org_note": "이 행사의 기부는 {{org}}에서 처리합니다."
+    "org_fallback": "비워 두면 {{org}}의 기부 링크를 사용합니다."
   },
   "danger": {
     "title": "위험 구역",

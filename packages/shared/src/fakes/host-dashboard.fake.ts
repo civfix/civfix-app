@@ -40,8 +40,6 @@ const FAKE_TIMEZONE = "America/Los_Angeles"
 export interface FakeEventInsightsOptions {
   now: number
   seed?: number
-  money?: boolean
-  refunded?: boolean
   returning?: boolean
   timezone?: string
 }
@@ -75,10 +73,6 @@ function fakeTopVolunteers(
   })
 }
 
-const FAKE_DONATION_GROSS_MINOR = 48_500
-const FAKE_DONATION_NET_MINOR = 46_130
-const FAKE_DONATION_REFUNDED_MINOR = 2_500
-const FAKE_DONATION_REFUNDED_NET_MINOR = -2_370
 
 export interface FakeHostedEventsAnalyticsOptions {
   now: number
@@ -296,8 +290,6 @@ export function fakeEventInsights(
   const profile = phaseProfile(phase, now)
   const endsAt = profile.startsAt + FAKE_EVENT_DURATION_MS
   const unmarked = Math.max(0, FAKE_REGISTERED - profile.checkedIn - profile.noShow)
-  const refunded = options.refunded ?? false
-  const withMoney = options.money ?? (refunded || phase !== "cancelled")
   const withReturning = options.returning ?? phase !== "cancelled"
 
   return {
@@ -331,16 +323,6 @@ export function fakeEventInsights(
       attendeesCheckedIn: profile.checkedIn,
     },
     topVolunteers: phase === "ended" ? fakeTopVolunteers(nextId, FAKE_EVENT_VOLUNTEER_HOURS) : [],
-    money: withMoney
-      ? {
-          currency: "USD",
-          donationCount: 11,
-          grossMinor: FAKE_DONATION_GROSS_MINOR,
-          netMinor: refunded ? FAKE_DONATION_REFUNDED_NET_MINOR : FAKE_DONATION_NET_MINOR,
-          refundedMinor: refunded ? FAKE_DONATION_GROSS_MINOR : FAKE_DONATION_REFUNDED_MINOR,
-          lastChargedAt: new Date(profile.startsAt - 2 * DAY_MS).toISOString(),
-        }
-      : null,
     returning: withReturning ? { seats: 17, ofRegistered: FAKE_REGISTERED } : null,
   }
 }
