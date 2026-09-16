@@ -40,7 +40,7 @@ export function DrilldownHeader({
         </button>
       ) : null}
       <div className="min-w-0 flex-1">
-        <h3 className="truncate font-display text-token-16 font-semibold tracking-snugger text-console-ink">
+        <h3 className="truncate font-display text-token-16 font-bold tracking-snugger text-console-ink">
           {title}
         </h3>
         {context ? <p className="mt-0.5 text-token-12 text-console-ink-3">{context}</p> : null}

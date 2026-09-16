@@ -358,7 +358,7 @@ function Fingerprint({ sha256 }: { sha256: string }) {
           type="button"
           onClick={copy}
           aria-label={t("fingerprint_copy_a11y")}
-          className="sr-no-print inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2 py-1 text-token-13 font-semibold text-ink-2 transition-colors hover:bg-paper2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="sr-no-print inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2 py-1 text-token-13 font-semibold text-ink-2 transition-colors duration-d2 ease-out hover:bg-paper2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Copy className="h-3.5 w-3.5" aria-hidden="true" />
           {copied && <span>{t("copied")}</span>}
@@ -390,9 +390,9 @@ function ErrorVerdict({
       <EmptyState
         icon={
           reason === "network" ? (
-            <ShieldX className="h-7 w-7" aria-hidden="true" />
+            <ShieldX className="h-6 w-6" aria-hidden="true" />
           ) : (
-            <SearchX className="h-7 w-7" aria-hidden="true" />
+            <SearchX className="h-6 w-6" aria-hidden="true" />
           )
         }
         iconTone="neutral"

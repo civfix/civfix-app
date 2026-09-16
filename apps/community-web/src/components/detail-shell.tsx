@@ -47,9 +47,9 @@ export function DetailShell({
           <button
             type="button"
             onClick={handleBack}
-            className="inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-token-14 font-semibold text-ink-2 transition-colors hover:bg-paper2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-token-14 font-semibold text-ink-2 transition-colors duration-d2 ease-out hover:bg-paper2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             {backLabel ?? t("detail.back")}
           </button>
           <Wordmark className="ml-auto select-none text-token-18" />
