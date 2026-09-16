@@ -38,8 +38,8 @@ describe("the post surfaces own their scroll", () => {
     const close = source.lastIndexOf("</ScrollView>")
     expect(open, "PostDetailBody renders no ScrollView").toBeGreaterThan(-1)
     expect(close, "PostDetailBody closes no ScrollView").toBeGreaterThan(open)
-    const at = source.indexOf("styles.threadButton")
-    expect(at, "PostDetailBody renders no styles.threadButton").toBeGreaterThan(-1)
+    const at = source.indexOf("sectionStyles.loadMore")
+    expect(at, "PostDetailBody renders no sectionStyles.loadMore").toBeGreaterThan(-1)
     expect(at, "PostDetailBody: the tail sits outside the scroll container").toBeLessThan(close)
     expect(at, "PostDetailBody: the tail sits above the scroll container").toBeGreaterThan(open)
   })
@@ -47,7 +47,7 @@ describe("the post surfaces own their scroll", () => {
   it("hands SavedPostsBody's pager to the list as its footer", () => {
     const source = BODIES["SavedPostsBody.tsx"].source
     expect(source).toMatch(/const footer = hasNextPage \?/)
-    expect(source).toMatch(/style=\{styles\.more\}/)
+    expect(source).toMatch(/sectionStyles\.loadMore/)
     expect(source).toMatch(/ListFooterComponent=\{footer\}/)
   })
 

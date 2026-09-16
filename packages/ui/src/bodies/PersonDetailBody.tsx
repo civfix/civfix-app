@@ -52,6 +52,7 @@ import { PROFILE_TIMELINE_BLEED, ProfileTimelineLane } from "./profile/ProfileTi
 import { ServiceHoursSection } from "./profile/ServiceHoursSection"
 import { PROFILE_DEFAULT_TAB, buildProfileTabsModel, type ProfileTabId } from "./profileTabsModel"
 import { splitProfileEvents } from "./profile/profileEventSplit"
+import { useSectionStyles } from "./profile/sectionStyles"
 
 function MiniEventRow({
   event,
@@ -115,6 +116,7 @@ function PersonScroll({ children }: { children: React.ReactNode }) {
 
 export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => void }) {
   const styles = useStyles()
+  const sectionStyles = useSectionStyles()
   const th = useTheme()
   const { t } = useT("profile-person")
   const { t: tNav } = useT("nav")
@@ -479,14 +481,17 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
               {postsQuery.hasNextPage ? (
                 <Pressable
                   {...focusRingProps}
-                  style={styles.loadMore}
+                  style={({ pressed }) => [
+                    sectionStyles.loadMore,
+                    pressed ? sectionStyles.loadMorePressed : null,
+                  ]}
                   onPress={onLoadMorePosts}
                   disabled={postsQuery.isFetchingNextPage}
                   accessibilityRole="button"
                   accessibilityState={{ disabled: postsQuery.isFetchingNextPage, busy: postsQuery.isFetchingNextPage }}
                   accessibilityLabel={t("posts.load_more_a11y")}
                 >
-                  <Text style={styles.loadMoreText}>
+                  <Text style={sectionStyles.loadMoreText}>
                     {postsQuery.isFetchingNextPage ? t("posts.loading_more") : t("posts.load_more")}
                   </Text>
                 </Pressable>
@@ -555,9 +560,12 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
                 }}
                 accessibilityLabel={t("events.load_more_a11y")}
                 {...focusRingProps}
-                style={styles.loadMore}
+                style={({ pressed }) => [
+                  sectionStyles.loadMore,
+                  pressed ? sectionStyles.loadMorePressed : null,
+                ]}
               >
-                <Text style={styles.loadMoreText}>
+                <Text style={sectionStyles.loadMoreText}>
                   {pastEvents.isLoadingMore
                     ? t("events.loading_more")
                     : pastEvents.isRetry
@@ -960,19 +968,6 @@ const useStyles = makeThemedStyles((t) => ({
     marginHorizontal: 5,
   },
 
-  loadMore: {
-    alignSelf: "center",
-    marginTop: t.space["3"],
-    paddingVertical: t.space["2"],
-    paddingHorizontal: t.space["5"],
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.bgAlt,
-  },
-  loadMoreText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
-    color: t.colors.textMuted,
-  },
   postsLane: {
     marginBottom: t.space["5"],
   },

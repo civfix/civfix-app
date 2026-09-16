@@ -219,9 +219,12 @@ export function ProfileEventsSection({
               accessibilityState={{ disabled: more.isLoadingMore, busy: more.isLoadingMore }}
               accessibilityLabel={t("events.load_more_a11y")}
               {...focusRingProps}
-              style={styles.more}
+              style={({ pressed }) => [
+                sectionStyles.loadMore,
+                pressed ? sectionStyles.loadMorePressed : null,
+              ]}
             >
-              <Text style={styles.moreText}>
+              <Text style={sectionStyles.loadMoreText}>
                 {more.isLoadingMore
                   ? t("events.loading_more")
                   : more.isRetry
@@ -237,16 +240,6 @@ export function ProfileEventsSection({
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  more: {
-    alignSelf: "flex-start",
-    paddingVertical: t.space["1"],
-    borderRadius: t.radius.sm,
-  },
-  moreText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
-    color: t.colors.accentText,
-  },
   seg: {
     flexDirection: "row",
     gap: 4,
