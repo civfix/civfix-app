@@ -9,16 +9,10 @@ export interface DonationLink {
 export type DonationLinkSource = Pick<CleanupDTO, "title" | "donationUrl" | "organization" | "organizer">
 
 export interface DonationViewer {
-  /** The event's derived status. Only `cancelled` withdraws the ask. */
   status: CleanupStatus
-  /** The viewer runs this event: the card would be asking them to donate to themselves. */
   actsAsHost: boolean
 }
 
-/**
- * The donation card for an event page. A DONE event KEEPS it - donating after the day is the point of
- * a receipt-shaped page - but a cancelled event and the host's own view lose it.
- */
 export function eventDonationLinkFor(
   cleanup: DonationLinkSource,
   viewer: DonationViewer,

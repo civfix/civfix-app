@@ -111,12 +111,6 @@ export function applyCounts(post: PostDTO, counts: PostCounts): PostDTO {
   return { ...post, counts }
 }
 
-/**
- * Apply a WHOLE realtime counts batch (up to FEED_COUNTS_MAX_IDS ids) in ONE pass per list cache.
- * Patching id-by-id rebuilt every page of every `["posts"]` query once per id, so a full batch cost
- * ids x queries rebuilds and as many FlatList re-notifies. Here each cache is visited once and an
- * untouched cache is returned by reference, so react-query sees no change and nothing re-renders.
- */
 export function patchPostCountsInCaches(
   qc: QueryClient,
   items: ReadonlyArray<FeedPostCountsDTO>,

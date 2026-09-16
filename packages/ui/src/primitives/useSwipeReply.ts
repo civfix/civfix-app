@@ -10,9 +10,8 @@
  * Responder-chain contract (why bubble taps keep working):
  * - `onStartShouldSetPanResponder(Capture)` are BOTH false: touch-down never claims, so the child
  *   Pressables (bubble long-press/double-tap, ReplyQuote jump, reaction chips, mention links) receive
- *   presses exactly as before. The capture handler still runs on every touch-down, which is the only
- *   moment the finger's page X is known: RN fills `gestureState.x0` in onResponderGrant, long AFTER
- *   the move negotiation that needs it, so the start position is recorded here instead.
+ *   presses exactly as before. The capture handler still records the touch-down page X, because RN
+ *   fills `gestureState.x0` only in onResponderGrant - long after the move negotiation that needs it.
  * - `onMoveShouldSetPanResponder` claims only on a rightward, horizontally-dominant drag past slop
  *   (shouldCaptureSwipe). A child Pressable holding the responder gets a termination request and RN's
  *   Pressability cancels cleanly (no stray press/long-press fires mid-swipe). Vertical drags never

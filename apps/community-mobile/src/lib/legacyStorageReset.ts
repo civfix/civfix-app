@@ -42,16 +42,6 @@ async function purge(): Promise<void> {
   resumeCachePersistence()
 }
 
-/**
- * Run BEFORE the first session read of a boot. Purges the legacy storage ids when the previous run of
- * this container belonged to another environment, then records this run's environment.
- *
- * The blob ENCRYPTION KEY is the one legacy id emptied rather than deleted: clearing the blobs through
- * the store that already holds the key wipes the same data, while rotating the key underneath an MMKV
- * instance this process has already opened is not something react-native-mmkv promises to survive.
- *
- * Resolves to whether a purge happened, so a caller can report it.
- */
 export async function adoptStorageEnvironment(): Promise<boolean> {
   const namespace = storageNamespace(API_URL)
   const marker = await readMarker()

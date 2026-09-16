@@ -329,8 +329,6 @@ function useBootstrap() {
     setUnauthorizedHandler(() => {
       useAuthStore.getState().markUnauthed()
     })
-    // The storage-environment check runs BEFORE the first session read: on a production boot whose
-    // previous run was staging it drops that run's legacy session, cached user and query cache.
     void adoptStorageEnvironment()
       .catch(() => false)
       .finally(() => {

@@ -41,7 +41,6 @@ const store = createStore()
 
 export const storage: KeyValueStore = store
 
-/** Wipe this install's whole app store. Only the storage-environment reset has a reason to call it. */
 export function clearAppStorage(): void {
   try {
     store.clearAll()

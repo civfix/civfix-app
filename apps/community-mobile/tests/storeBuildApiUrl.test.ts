@@ -10,10 +10,6 @@ const SCRIPT = readFileSync(
   "utf8",
 )
 
-/**
- * The exact reader `store-build.sh` runs over EXConstants.bundle/app.config, lifted out of the script
- * so this test cannot drift from what the release actually asserts.
- */
 function bakedApiUrlReader(): string {
   const at = SCRIPT.indexOf("baked_api_url=\"$(printf '%s' \"$baked_config\" | node -e '")
   assert.ok(at > -1, "store-build.sh no longer reads the baked api url with an inline node program")
@@ -30,7 +26,6 @@ function read(config: unknown): string {
   })
 }
 
-/** The appstore target promises an EMPTY expectation: the app resolves its base URL at runtime. */
 const APPSTORE_EXPECTATION = ""
 const TESTFLIGHT_EXPECTATION = "https://api.civfix.dev"
 

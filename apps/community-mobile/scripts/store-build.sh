@@ -83,9 +83,8 @@ eas build --platform ios --profile "$profile" --local --output "$ipa" ${eas_flag
 # Prove what was baked, from the artifact itself: expo-constants ships the resolved app config
 # inside the app bundle, which is exactly what the running app will read.
 baked_config="$(unzip -p "$ipa" 'Payload/*.app/EXConstants.bundle/app.config')"
-# An ABSENT key prints empty; anything else prints what it really is. Expo once baked
-# `apiUrl: process.env.X ?? null` through as `{}`, and collapsing every non-string to "" let that sail
-# past the appstore assertion, whose expectation IS the empty string.
+# An ABSENT key prints empty; anything else prints what it really is, so the `{}` Expo once baked for a
+# null config value cannot sail past the appstore assertion, whose expectation IS the empty string.
 baked_api_url="$(printf '%s' "$baked_config" | node -e '
   const config = JSON.parse(require("fs").readFileSync(0, "utf8"))
   const extra = config.extra

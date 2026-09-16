@@ -161,15 +161,6 @@ export function restorableStack(
   })
 }
 
-/**
- * The stack the shell BELOW a detail route renders, and the one restored when that route unmounts:
- * everything the route did not seed.
- *
- * `seedKey` is null when the route has no entry yet (a missing param on first render), and `null` is
- * ALSO the identity of every unaddressable entry - a cluster, a blend, a drop-pin, a bare view. Filtering
- * on a null seed key therefore silently deleted all of those from the snapshot; with nothing seeded there
- * is nothing to exclude, so the whole stack is the snapshot.
- */
 export function detailShellSnapshot(
   stack: readonly DetailEntry[],
   seedKey: string | null,

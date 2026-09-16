@@ -7,15 +7,9 @@ const NO_VIEWER = Symbol("no-viewer")
 
 export interface FeedLiveState {
   pendingNewPostIds: readonly string[]
-  /** The viewer the pending ids belong to. `NO_VIEWER` until the feed first reports one. */
   viewerId: string | null | typeof NO_VIEWER
   noteNewPost: (id: string) => void
   clearNewPosts: () => void
-  /**
-   * Adopt the signed-in viewer. The store is a module singleton that deliberately OUTLIVES a FeedBody
-   * remount, so a sign-out (or an account switch) has to drop the previous identity's pending ids
-   * explicitly - otherwise one account's "N new posts" count greets the next one.
-   */
   adoptViewer: (viewerId: string | null) => void
 }
 
