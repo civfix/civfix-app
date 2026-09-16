@@ -40,7 +40,9 @@ import type {
   ApiClient,
   PostDTO,
   PostComposeInput,
+  PostCounts,
   FeedPageDTO,
+  FeedPostCountsDTO,
   ListRepliesResponse,
   DeletePostResponse,
 } from "@civfix/shared"
@@ -103,6 +105,22 @@ export function patchPostInListCaches(
         }
       : prev,
   )
+}
+
+export function applyCounts(post: PostDTO, counts: PostCounts): PostDTO {
+  return { ...post, counts }
+}
+
+export function patchPostCountsInCaches(
+  qc: QueryClient,
+  items: ReadonlyArray<FeedPostCountsDTO>,
+): void {
+  for (const { id, counts } of items) {
+    patchPostInListCaches(qc, id, (post) => applyCounts(post, counts))
+    qc.setQueryData<PostDTO>(queryKeys.post(id), (prev) =>
+      prev ? applyCounts(prev, counts) : prev,
+    )
+  }
 }
 
 /** Find the target post's current value in any list cache under the prefix (for the rollback snapshot). */

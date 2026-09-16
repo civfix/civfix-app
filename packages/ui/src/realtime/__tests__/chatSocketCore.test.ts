@@ -267,6 +267,23 @@ describe("inbound frames", () => {
     expect(received).toEqual([{ type: "signal", topic: "threads" }])
   })
 
+  it("delivers the feed signal topics and drops a topic this client predates", () => {
+    const socket = new ChatSocketCore({ transport: syncTransport() })
+    socket.connect()
+    latest().fireOpen()
+    const received: unknown[] = []
+    socket.subscribe((frame) => received.push(frame))
+
+    latest().fireMessage(JSON.stringify({ type: "signal", topic: "feed", id: ROOM_A }))
+    latest().fireMessage(JSON.stringify({ type: "signal", topic: "feed_counts", id: ROOM_B }))
+    latest().fireMessage(JSON.stringify({ type: "signal", topic: "feed_v2", id: ROOM_A }))
+
+    expect(received).toEqual([
+      { type: "signal", topic: "feed", id: ROOM_A },
+      { type: "signal", topic: "feed_counts", id: ROOM_B },
+    ])
+  })
+
   it("a throwing listener does not take down the socket or its siblings", () => {
     const socket = new ChatSocketCore({ transport: syncTransport() })
     socket.connect()

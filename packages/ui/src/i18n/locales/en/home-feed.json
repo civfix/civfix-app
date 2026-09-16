@@ -17,7 +17,9 @@
     "empty_body_before": "Posts from your community will show up here. ",
     "empty_body_link": "Sign in",
     "empty_body_after": " to share the first update.",
-    "caught_up": "You're all caught up"
+    "caught_up": "You're all caught up",
+    "new_posts_one": "{{count}} new post",
+    "new_posts_other": "{{count}} new posts"
   },
   "thread": {
     "title": "Post",

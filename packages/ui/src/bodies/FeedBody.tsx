@@ -7,13 +7,14 @@ import {
   RefreshControl,
   View,
 } from "react-native"
-import type { ViewStyle } from "react-native"
+import type { NativeScrollEvent, NativeSyntheticEvent, ViewStyle } from "react-native"
 import type { PostDTO } from "@civfix/shared"
 import { POST_SURFACE, makeThemedStyles, useLayoutMode, type Theme } from "../theme"
 import { Text } from "../typography"
 import { useAuthState, useRequireAuth } from "../data"
 import { useT } from "../i18n"
 import { useHomeFeed } from "../data/hooks/posts"
+import { useFeedRealtime } from "../data/hooks/feedRealtime"
 import { useNavStore } from "../nav"
 import { alpha } from "../theme/alpha"
 import { useReducedMotion } from "../theme/useReducedMotion"
@@ -27,6 +28,9 @@ import { FeedNotice } from "./FeedNotice"
 import { PostCard } from "./PostCard"
 import { InlineComposer } from "./feed/InlineComposer"
 import { useFeedScrollTopStore } from "./feed/feedScrollStore"
+import { useFeedLiveStore } from "./feed/feedLiveStore"
+import { clearsPendingAtOffset, dedupePostsById } from "./feed/feedLiveModel"
+import { NewPostsPill } from "./feed/NewPostsPill"
 import { POST_CARD_RHYTHM } from "./postCardRhythm"
 import {
   buildFeedHeaderModel,
@@ -174,6 +178,8 @@ export function FeedBody() {
   const layout = useLayoutMode()
   const isExpanded = layout === "expanded"
   const feed = useHomeFeed()
+  useFeedRealtime()
+  const pendingNewPosts = useFeedLiveStore((s) => s.pendingNewPostIds.length)
   const entranceStyle = useFeedEntrance()
   const [entrance] = useState(createFeedEntranceTracker)
   const reducedMotion = useReducedMotion()
@@ -181,7 +187,7 @@ export function FeedBody() {
   const headerModel = buildFeedHeaderModel({ isAuthenticated, layout }, t)
   const composeLabel = useT("nav").t("title.post_composer")
   const posts = useMemo(
-    () => feed.data?.pages.flatMap((page) => page.items) ?? [],
+    () => dedupePostsById(feed.data?.pages.flatMap((page) => page.items) ?? []),
     [feed.data],
   )
   const state = feedViewState({
@@ -197,8 +203,20 @@ export function FeedBody() {
   const [refreshing, setRefreshing] = useState(false)
   const onRefresh = useCallback(() => {
     setRefreshing(true)
+    useFeedLiveStore.getState().clearNewPosts()
     void Promise.resolve(refetch()).finally(() => setRefreshing(false))
   }, [refetch])
+  const showNewPosts = useCallback(() => {
+    useFeedScrollTopStore.getState().requestScrollTop()
+    void refetch()
+    useFeedLiveStore.getState().clearNewPosts()
+  }, [refetch])
+  const onListScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const live = useFeedLiveStore.getState()
+    if (clearsPendingAtOffset(event.nativeEvent.contentOffset.y, live.pendingNewPostIds.length)) {
+      live.clearNewPosts()
+    }
+  }, [])
   const fetchNextPage = feed.fetchNextPage
   const hasNextPage = feed.hasNextPage
   const isFetchingNextPage = feed.isFetchingNextPage
@@ -353,16 +371,17 @@ export function FeedBody() {
       showsVerticalScrollIndicator={false}
       onEndReached={loadMore}
       onEndReachedThreshold={0.6}
+      onScroll={onListScroll}
+      scrollEventThrottle={16}
       refreshControl={refresh}
     />
   )
 
-  if (!isExpanded || !IS_WEB) return list
-
   return (
     <View style={styles.scrollHost}>
       {list}
-      <View pointerEvents="none" style={fadeStyle} />
+      <NewPostsPill count={pendingNewPosts} onPress={showNewPosts} />
+      {isExpanded && IS_WEB ? <View pointerEvents="none" style={fadeStyle} /> : null}
     </View>
   )
 }

@@ -1,0 +1,70 @@
+import { beforeEach, describe, expect, it } from "vitest"
+import {
+  FEED_TOP_CLEAR_OFFSET,
+  addPendingNewPost,
+  clearsPendingAtOffset,
+  dedupePostsById,
+} from "../feedLiveModel"
+import { useFeedLiveStore } from "../feedLiveStore"
+
+describe("addPendingNewPost", () => {
+  it("accumulates ids in arrival order", () => {
+    expect(addPendingNewPost(addPendingNewPost([], "a"), "b")).toEqual(["a", "b"])
+  })
+
+  it("dedupes a repeated id and keeps the SAME array identity for the no-op", () => {
+    const once = addPendingNewPost([], "a")
+    expect(addPendingNewPost(once, "a")).toBe(once)
+  })
+})
+
+describe("clearsPendingAtOffset", () => {
+  it("clears only when the reader has actually reached the top", () => {
+    expect(clearsPendingAtOffset(0, 3)).toBe(true)
+    expect(clearsPendingAtOffset(FEED_TOP_CLEAR_OFFSET, 3)).toBe(true)
+    expect(clearsPendingAtOffset(-40, 3)).toBe(true)
+    expect(clearsPendingAtOffset(FEED_TOP_CLEAR_OFFSET + 1, 3)).toBe(false)
+    expect(clearsPendingAtOffset(400, 3)).toBe(false)
+  })
+
+  it("never clears when nothing is pending, so top-of-list scrolling stays write-free", () => {
+    expect(clearsPendingAtOffset(0, 0)).toBe(false)
+  })
+})
+
+describe("dedupePostsById", () => {
+  it("keeps the FIRST occurrence and preserves server rank order", () => {
+    const items = [{ id: "a" }, { id: "b" }, { id: "a" }, { id: "c" }]
+    expect(dedupePostsById(items).map((p) => p.id)).toEqual(["a", "b", "c"])
+  })
+
+  it("returns the same array identity when nothing is duplicated", () => {
+    const items = [{ id: "a" }, { id: "b" }]
+    expect(dedupePostsById(items)).toBe(items)
+  })
+})
+
+describe("useFeedLiveStore", () => {
+  beforeEach(() => useFeedLiveStore.getState().clearNewPosts())
+
+  it("counts distinct new posts and clears on demand", () => {
+    const store = useFeedLiveStore
+    store.getState().noteNewPost("p1")
+    store.getState().noteNewPost("p2")
+    store.getState().noteNewPost("p1")
+    expect(store.getState().pendingNewPostIds).toEqual(["p1", "p2"])
+    store.getState().clearNewPosts()
+    expect(store.getState().pendingNewPostIds).toEqual([])
+  })
+
+  it("a duplicate note and an empty clear both leave the state identity untouched", () => {
+    const store = useFeedLiveStore
+    const empty = store.getState().pendingNewPostIds
+    store.getState().clearNewPosts()
+    expect(store.getState().pendingNewPostIds).toBe(empty)
+    store.getState().noteNewPost("p1")
+    const one = store.getState().pendingNewPostIds
+    store.getState().noteNewPost("p1")
+    expect(store.getState().pendingNewPostIds).toBe(one)
+  })
+})
