@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from "react-native"
 import { ArrowLeft } from "lucide-react-native/icons"
-import { motion, wash, makeThemedStyles, useTheme, webCursorColResize, focusRingProps } from "../theme"
+import { motion, wash, makeThemedStyles, useTheme, webCursor, webCursorColResize, focusRingProps } from "../theme"
 import { Text, Icon } from "../typography"
 import { useT } from "../i18n"
 import { useNavStore, titleForEntry, titleParamsForEntry, type DetailEntry, type View as NavView } from "../nav"
@@ -290,8 +290,9 @@ function PanelHeader({
           accessibilityRole="button"
           accessibilityLabel={t("a11y.back")}
           onPress={() => useNavStore.getState().back()}
+          hitSlop={8}
           {...focusRingProps}
-          style={styles.back}
+          style={({ pressed }) => [styles.back, webCursor(), pressed ? styles.backPressed : null]}
         >
           <Icon icon={ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
         </Pressable>
@@ -353,6 +354,10 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.surfaceTint,
     alignItems: "center",
     justifyContent: "center",
+  },
+  backPressed: {
+    opacity: 0.6,
+    backgroundColor: t.colors.bgAlt,
   },
   title: { ...detailTitleStyle(18, t), flex: 1 },
   fill: { flex: 1 },

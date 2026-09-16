@@ -1,7 +1,7 @@
 import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { CleanupDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTransition } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT, useEventWhen } from "../i18n"
 import { Avatar } from "./Avatar"
@@ -20,7 +20,13 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
       accessibilityRole="button"
       accessibilityLabel={t("a11y.card", { title: cleanup.title, count: cleanup.going })}
       {...focusRingProps}
-      style={({ pressed }) => [styles.card, pressed ? styles.cardPressed : null]}
+      style={(state) => [
+        styles.card,
+        webCursor(),
+        webTransition,
+        webHover(state) ? styles.cardHovered : null,
+        state.pressed ? styles.cardPressed : null,
+      ]}
     >
       <DateBadge iso={cleanup.scheduledAt} timeZone={when.timeZone} />
 
@@ -97,6 +103,9 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     padding: t.space["4"],
     ...t.shadows.s1,
+  },
+  cardHovered: {
+    backgroundColor: t.colors.surfaceTint,
   },
   cardPressed: {
     opacity: 0.92,

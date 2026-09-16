@@ -121,7 +121,7 @@ export function SearchHeader(props: SearchHeaderProps) {
           accessibilityRole="button"
           accessibilityLabel={t("a11y.sign_in")}
           hitSlop={8}
-          style={styles.signIn}
+          style={({ pressed }) => [styles.signIn, pressed ? styles.buttonPressed : null]}
         >
           <Icon icon={iconMap.LogIn} size={18} color={th.colors.text} />
         </Pressable>
@@ -131,6 +131,7 @@ export function SearchHeader(props: SearchHeaderProps) {
           accessibilityRole="button"
           accessibilityLabel={t("a11y.open_profile")}
           hitSlop={8}
+          style={({ pressed }) => (pressed ? styles.buttonPressed : null)}
         >
           <Avatar name={userName} photoUrl={userPhotoUrl ?? null} size={32} />
         </Pressable>

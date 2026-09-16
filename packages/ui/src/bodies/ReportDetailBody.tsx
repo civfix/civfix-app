@@ -406,7 +406,7 @@ function ReportGallery({
           accessibilityRole="button"
           accessibilityLabel={t("gallery.view_fullscreen_a11y")}
           {...focusRingProps}
-          style={styles.heroPress}
+          style={({ pressed }) => [styles.heroPress, pressed ? styles.pressed : null]}
         >
           <MediaPreview
             key={active.url}
@@ -453,7 +453,11 @@ function ReportGallery({
                   total: ready.length,
                 })}
                 {...focusRingProps}
-                style={[styles.thumb, isActive ? styles.thumbActive : null]}
+                style={({ pressed }) => [
+                  styles.thumb,
+                  isActive ? styles.thumbActive : null,
+                  pressed ? styles.pressed : null,
+                ]}
               >
                 <Image source={{ uri: thumbUri }} style={styles.thumbImg} resizeMode="cover" />
                 {m.kind === "video" ? (

@@ -23,7 +23,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
 import { motion, categoryColor, focusRingProps, makeThemedStyles, useTheme } from "../theme"
-import { alpha } from "../theme/alpha"
+import { KNOB_OFF_X, KNOB_ON_X, trackOffColor } from "../primitives/SettingsToggle.types"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { BlurSurface } from "../surface"
@@ -45,10 +45,10 @@ function MiniToggle({ on }: { on: boolean }) {
     <View
       style={[
         styles.toggle,
-        { backgroundColor: on ? t.colors.brand.moss : alpha(t.colors.text, 0.16) },
+        { backgroundColor: on ? t.colors.brand.moss : trackOffColor(t) },
       ]}
     >
-      <View style={[styles.toggleKnob, { left: on ? 16 : 2 }]} />
+      <View style={[styles.toggleKnob, { left: on ? KNOB_ON_X : KNOB_OFF_X }]} />
     </View>
   )
 }
@@ -141,7 +141,7 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
             because none of the four rows was tagged for the house `[data-focus-ring]:focus-visible` rule.
             Each row already owns its own radius, so the outline traces the control as-drawn. */}
         <Pressable
-          style={styles.row}
+          style={({ pressed }) => [styles.row, pressed ? styles.rowPressed : null]}
           onPress={toggleEvents}
           accessibilityRole="switch"
           accessibilityState={{ checked: eventsEnabled }}
@@ -168,7 +168,7 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
 
         {/* Reports row (expands) */}
         <Pressable
-          style={styles.row}
+          style={({ pressed }) => [styles.row, pressed ? styles.rowPressed : null]}
           onPress={() => setReportsOpen((o) => !o)}
           accessibilityRole="button"
           accessibilityLabel={t("layers.reportsA11y")}
@@ -192,10 +192,11 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
         {reportsOpen ? (
           <View style={styles.catList}>
             <Pressable
-              style={styles.allRow}
+              style={({ pressed }) => [styles.allRow, pressed ? styles.rowPressed : null]}
               onPress={toggleAll}
               accessibilityRole="button"
               accessibilityLabel={allOn ? t("layers.clearAllA11y") : t("layers.selectAllA11y")}
+              hitSlop={6}
               {...focusRingProps}
             >
               <View style={[styles.check, allOn ? styles.checkOnNeutral : styles.checkOff]}>
@@ -219,7 +220,7 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
                   accessibilityLabel={t("layers.categoryPinsA11y", { category: label })}
                   hitSlop={6}
                   {...focusRingProps}
-                  style={styles.catRow}
+                  style={({ pressed }) => [styles.catRow, pressed ? styles.rowPressed : null]}
                 >
                   <View style={styles.catPin}>
                     <TeardropPin category={cat} size={17} />
@@ -264,6 +265,9 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["2"],
     paddingVertical: t.space["2"],
   },
+  rowPressed: {
+    opacity: 0.6,
+  },
   iconTile: {
     width: 32,
     height: 32,
@@ -291,7 +295,7 @@ const useStyles = makeThemedStyles((t) => ({
     marginHorizontal: t.space["2"],
   },
   toggle: {
-    width: 38,
+    width: 40,
     height: 24,
     borderRadius: 12,
     justifyContent: "center",
@@ -328,7 +332,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     gap: t.space["3"],
     paddingHorizontal: t.space["2"],
-    paddingVertical: 7,
+    paddingVertical: t.space["2"],
   },
   catPin: {
     width: 20,

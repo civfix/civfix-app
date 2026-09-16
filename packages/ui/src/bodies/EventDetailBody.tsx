@@ -130,6 +130,7 @@ function GoingRow({
             accessibilityRole="button"
             accessibilityLabel={expanded ? t("going.a11y_show_fewer") : t("going.a11y_show_everyone")}
             {...focusRingProps}
+            style={({ pressed }) => (pressed ? styles.pressed : null)}
           >
             <Text style={styles.goingNames} numberOfLines={expanded ? undefined : 1}>
               {data?.scope === "following"

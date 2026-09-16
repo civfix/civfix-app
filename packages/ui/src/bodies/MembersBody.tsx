@@ -200,12 +200,15 @@ function LinkedEntityRow({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={a11y}
+      {...focusRingProps}
       style={({ pressed }) => [styles.linkedRow, pressed ? styles.linkedRowPressed : null]}
     >
       <View style={styles.linkedIcon}>
         <Icon icon={iconMap[icon]} size={17} color={th.colors.brand.moss} />
       </View>
-      <Text style={styles.linkedLabel}>{label}</Text>
+      <Text style={styles.linkedLabel} numberOfLines={1}>
+        {label}
+      </Text>
       <Icon icon={iconMap.ChevronRight} size={16} color={th.colors.textSubtle} />
     </Pressable>
   )

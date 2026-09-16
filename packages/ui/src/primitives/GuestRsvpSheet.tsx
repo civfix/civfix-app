@@ -468,11 +468,13 @@ export function GuestRsvpSheet({
                       accessibilityLabel={
                         channel === "email" ? t("form.channel_email") : t("form.channel_sms")
                       }
+                      hitSlop={5}
                       {...focusRingProps}
-                      style={[
+                      style={({ pressed }) => [
                         styles.segBtn,
                         selected ? styles.segBtnOn : null,
                         disabled ? styles.segBtnOff : null,
+                        pressed && !disabled ? styles.pressedFeedback : null,
                       ]}
                     >
                       <Text style={[styles.segText, selected ? styles.segTextOn : null]}>
@@ -592,8 +594,9 @@ export function GuestRsvpSheet({
             accessibilityRole="button"
             accessibilityState={{ disabled: secondsLeft > 0 || sendPending }}
             accessibilityLabel={t("code.resend_a11y")}
+            hitSlop={10}
             {...focusRingProps}
-            style={styles.resend}
+            style={({ pressed }) => [styles.resend, pressed ? styles.pressedFeedback : null]}
           >
             <Text style={[styles.resendText, secondsLeft > 0 ? styles.resendTextOff : null]}>
               {secondsLeft > 0 ? t("code.resend_wait", { seconds: secondsLeft }) : t("code.resend")}
@@ -672,6 +675,9 @@ const useStyles = makeThemedStyles((t) => ({
     alignSelf: "flex-start",
     paddingVertical: t.space["1"],
     borderRadius: t.radius.sm,
+  },
+  pressedFeedback: {
+    opacity: 0.6,
   },
   resendText: {
     fontFamily: t.fontFamily.bodyBold,

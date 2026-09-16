@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { makeThemedStyles, motion, useTheme } from "../theme"
+import { focusRingProps, makeThemedStyles, motion, useTheme, webCursor, webHover, webTransition } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { DETAIL_BACK_SIZE, DETAIL_BACK_RADIUS, DETAIL_BACK_ICON_SIZE, detailTitleStyle } from "./detailHeader"
@@ -44,7 +44,14 @@ export function DetailBar({
           accessibilityRole="button"
           accessibilityLabel={isClose ? t("a11y.close") : t("a11y.back")}
           hitSlop={8}
-          style={({ pressed }) => [styles.back, pressed ? styles.pressed : null]}
+          {...focusRingProps}
+          style={(state) => [
+            styles.back,
+            webCursor(),
+            webTransition,
+            webHover(state) ? styles.backHovered : null,
+            state.pressed ? styles.pressed : null,
+          ]}
         >
           <Icon
             icon={isClose ? iconMap.Close : iconMap.ArrowLeft}
@@ -80,6 +87,9 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: -t.space["2"],
+  },
+  backHovered: {
+    backgroundColor: t.colors.surfaceTint,
   },
   pressed: {
     opacity: 0.6,

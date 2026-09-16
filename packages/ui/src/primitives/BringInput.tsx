@@ -97,6 +97,7 @@ export function BringInput({ value, onChange }: BringInputProps) {
               onPress={() => remove(item)}
               accessibilityRole="button"
               accessibilityLabel={t("chip.remove_a11y", { item })}
+              hitSlop={8}
               {...focusRingProps}
               style={(state) => [
                 styles.chip,
@@ -132,6 +133,7 @@ export function BringInput({ value, onChange }: BringInputProps) {
                 onPress={() => add(s)}
                 accessibilityRole="button"
                 accessibilityLabel={t("suggestions.add_a11y", { item: s })}
+                hitSlop={8}
                 {...focusRingProps}
                 style={(state) => [
                   styles.suggestPill,
