@@ -143,7 +143,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
         </SectionCard>
 
         <SectionCard label={t("page.impact_section")}>
-          <ImpactSection data={data} width={chartWidth} />
+          <ImpactSection data={data} />
         </SectionCard>
 
         {comparisonVisible(data) ? <ComparisonSection data={data} /> : null}
@@ -323,8 +323,6 @@ function SourcesSection({ panel }: { panel: Panel | undefined }) {
           color: th.colors.accent,
           valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
         }))}
-        width={0}
-        height={0}
         horizontal
         labelColor={th.colors.textMuted}
         accessibilityLabel={t("page.sources_section")}
@@ -351,8 +349,6 @@ function SlotsSection({ data }: { data: GetEventAnalyticsResponse }) {
             color: th.colors.accent,
             valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
           }))}
-          width={0}
-          height={0}
           horizontal
           labelColor={th.colors.textMuted}
           accessibilityLabel={t("page.slots_section")}
@@ -426,7 +422,7 @@ function EventDaySection({ data, width }: { data: GetEventAnalyticsResponse; wid
   )
 }
 
-function ImpactSection({ data, width }: { data: GetEventAnalyticsResponse; width: number }) {
+function ImpactSection({ data }: { data: GetEventAnalyticsResponse }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-analytics")
@@ -446,8 +442,6 @@ function ImpactSection({ data, width }: { data: GetEventAnalyticsResponse; width
             color: th.colors.accent,
             valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
           }))}
-          width={width}
-          height={0}
           horizontal
           labelColor={th.colors.textMuted}
           accessibilityLabel={t("page.hours_distribution")}

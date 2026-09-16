@@ -29,8 +29,9 @@ export interface ChartBar {
 
 export interface BarChartProps {
   bars: readonly ChartBar[]
-  width: number
-  height: number
+  /** Required for the SVG (vertical) mode; a horizontal list sizes itself from its parent. */
+  width?: number
+  height?: number
   horizontal?: boolean
   maxValue?: number
   barRadius?: number
@@ -48,8 +49,8 @@ export interface BarChartProps {
  */
 export function BarChart({
   bars,
-  width,
-  height,
+  width = 0,
+  height = 0,
   horizontal = false,
   maxValue,
   barRadius = DEFAULT_BAR_RADIUS,
