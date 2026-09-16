@@ -24,7 +24,6 @@ export function useConsoleErrors(): ConsoleErrorCopy {
     [ErrorCode.CONFLICT]: t("error.conflict"),
     [ErrorCode.NOT_FOUND]: t("error.not_found"),
     [ErrorCode.ABUSE_HELD]: t("error.abuse_held"),
-    [ErrorCode.PAYMENT_UNAVAILABLE]: t("error.payment_unavailable"),
   }
 
   const message = useCallback(

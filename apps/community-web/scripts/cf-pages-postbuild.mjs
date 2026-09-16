@@ -20,13 +20,10 @@ import {
   withNoindexRule,
 } from "./robots-policy.mjs"
 import {
-  MERCHANT_FILE_RELATIVE,
   aasaExcludeOrder,
   isPlaceholderLegalHash,
   legalDocumentHash,
-  merchantFileVerdict,
   missingAasaExcludes,
-  publishableKeyVerdict,
   spaFallbackGaps,
 } from "./postbuild-gates.mjs"
 
@@ -137,7 +134,6 @@ const REQUIRED_AASA_EXCLUDES = [
   "/claim*",
   "/manage*",
   "/e/*",
-  "/donate/*",
   "/unsubscribe*",
 ]
 
@@ -149,8 +145,7 @@ if (missingExcludes.length > 0) {
     `[cf-pages] ERROR: ${AASA_RELATIVE} is missing required exclude(s): ` +
       `${missingExcludes.join(", ")}. Without them iOS claims those paths as Universal Links and ` +
       `opens the civfix app instead of the browser - which breaks the host console, the public ` +
-      `signup page, the donation checkout (the app must NEVER show a payment form) and one-click ` +
-      `unsubscribe.`,
+      `signup page and one-click unsubscribe.`,
   )
   process.exit(1)
 }
@@ -164,45 +159,6 @@ if (!excludeOrder.ok) {
       `iOS evaluates components IN ORDER and stops at the FIRST match, so every ` +
       `{"exclude": true} entry must appear BEFORE the {"/": "/*"} catch-all. An exclude listed after ` +
       `it is dead configuration that reads as if it works.`,
-  )
-  process.exit(1)
-}
-
-const merchantOut = join(outDir, MERCHANT_FILE_RELATIVE)
-const merchantSource = join(appDir, "public", MERCHANT_FILE_RELATIVE)
-
-if (!existsSync(merchantOut) && existsSync(merchantSource)) {
-  mkdirSync(dirname(merchantOut), { recursive: true })
-  copyFileSync(merchantSource, merchantOut)
-}
-
-const merchantVerdict = merchantFileVerdict(
-  existsSync(merchantOut) ? readFileSync(merchantOut, "utf8") : null,
-)
-const paymentsShipped = (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "").trim().length > 0
-
-if (merchantVerdict === "ok") {
-  console.log(`[cf-pages] ${MERCHANT_FILE_RELATIVE} present with real contents.`)
-} else if (!paymentsShipped) {
-  console.log(
-    `[cf-pages] ${MERCHANT_FILE_RELATIVE} is ${merchantVerdict}, which cannot matter on this build: ` +
-      `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is unset, so Stripe.js never loads and /donate/* renders ` +
-      `its payments-unavailable state. This gate arms itself the moment a build ships a key.`,
-  )
-} else if (!productionBuild) {
-  console.warn(
-    `[cf-pages] WARNING: this build ships a Stripe publishable key but ${MERCHANT_FILE_RELATIVE} is ` +
-      `${merchantVerdict}. Apple Pay and Google Pay will NOT appear on /donate/*. Tolerated because ` +
-      `${siteOrigin} is not the production origin; the same state fails a production build.`,
-  )
-} else {
-  console.error(
-    `[cf-pages] ERROR: this build ships a Stripe publishable key for ${siteOrigin}, but ` +
-      `${MERCHANT_FILE_RELATIVE} is ${merchantVerdict}. Apple fetches this file to verify civfix.org ` +
-      `as a payment_method_domain for every connected account; an empty file, an HTML 404 body, or ` +
-      `the committed placeholder all fail verification SILENTLY - the wallet button simply never ` +
-      `renders and nobody finds out until a donor complains. Paste the real contents from the Stripe ` +
-      `Dashboard into apps/community-web/public/${MERCHANT_FILE_RELATIVE}.`,
   )
   process.exit(1)
 }
@@ -370,38 +326,6 @@ console.log(
         `(no ${NOINDEX_RULE} rule in ${HEADERS_FILE}).`
     : `[cf-pages] robots policy: ${siteOrigin} is NOT production, ${HEADERS_FILE} now serves ` +
         `"${NOINDEX_RULE}" on /* so no staging URL is indexed as a duplicate of civfix.org.`,
-)
-
-const keyVerdict = publishableKeyVerdict(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-  productionBuild,
-)
-
-if (keyVerdict === "live-on-non-production" || keyVerdict === "test-on-production") {
-  console.error(
-    `[cf-pages] ERROR: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is ${keyVerdict} for origin ` +
-      `${siteOrigin}. A live key on a staging origin takes REAL money from anyone who lands on ` +
-      `/donate/*, and a test key on production silently refuses every real donation. The key is ` +
-      `branch-selected in .github/workflows/deploy.yml (main -> _LIVE, dev -> _TEST, any other ` +
-      `ref -> no key); ` +
-      `fix the repo variable rather than the build.`,
-  )
-  process.exit(1)
-}
-
-if (keyVerdict === "malformed") {
-  console.error(
-    `[cf-pages] ERROR: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is set but is neither pk_live_ nor ` +
-      `pk_test_. Stripe.js would fail to initialize and the donate page would render its ` +
-      `"payments unavailable" state on every visit.`,
-  )
-  process.exit(1)
-}
-
-console.log(
-  keyVerdict === "absent"
-    ? `[cf-pages] Stripe publishable key: absent, /donate/* renders its payments-unavailable state.`
-    : `[cf-pages] Stripe publishable key mode OK for ${siteOrigin}.`,
 )
 
 const legalOutDir = join(outDir, "legal")

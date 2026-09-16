@@ -58,7 +58,7 @@
 /leaderboard/*      /leaderboard/_/      200
 /service-record/*   /service-record/_/   200
 
-# 3) Host-platform routes added by the events overhaul. All four are catch-all placeholder shells with
+# 3) Host-platform routes added by the events overhaul. Both are catch-all placeholder shells with
 # NO browse page at out/<route>/index.html, so - like /pin, /groups and /channels - none needs a
 # protective /__spa/ rule (the collision detector in scripts/cf-pages-postbuild.mjs never fires for
 # them, and the new SPA-fallback-completeness gate proves the reverse: every emitted /_/ shell HAS a
@@ -67,14 +67,12 @@
 #   /manage/*     the host console (src/app/manage/[...path]), event id in the path
 #   /e/*          the public signup page (src/app/e/[...slug]); ALSO routed through
 #                 functions/e/[[path]].ts for per-event link previews, hence the _routes.json include
-#   /donate/*     the donation checkout + its /complete return view (src/app/donate/[...slug])
 #
 # /unsubscribe deliberately has NO rule: it is a STATIC page (out/unsubscribe/index.html) whose token
 # rides in the query string, so a splat rule here would shadow the page it points at and Cloudflare
 # would drop it as an infinite loop.
 /manage/*     /manage/_/     200
 /e/*          /e/_/          200
-/donate/*     /donate/_/     200
 
 # /orgs/<slug> is the PUBLIC organization page (src/app/orgs/[...slug]); the in-app nav also maps
 # /orgs/<slug> to the shared org panel, so a cold load boots this standalone shell and a warm click

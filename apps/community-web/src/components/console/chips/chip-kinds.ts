@@ -6,14 +6,10 @@ import type {
   CleanupMemberRole,
   CleanupStatus,
   DeliveryStatus,
-  DonateState,
-  DonationDisputeState,
-  DonationStatus,
   EventPageStatus,
   EventVisibility,
   HostExportStatus,
   OrganizationMemberRole,
-  OrgPaymentsState,
   OrgVerificationStatus,
   RegistrantKind,
   RegistrationState,
@@ -49,7 +45,6 @@ import {
   HandHeart,
   Hourglass,
   KeyRound,
-  Link2Off,
   Lock,
   Mail,
   Megaphone,
@@ -57,15 +52,12 @@ import {
   PartyPopper,
   Pencil,
   RefreshCw,
-  RotateCcw,
   Send,
-  ShieldAlert,
   ShieldCheck,
   Smartphone,
   Sparkles,
   TicketCheck,
   TriangleAlert,
-  Undo2,
   UserCheck,
   UserCog,
   UserPlus,
@@ -224,36 +216,9 @@ const deliveryStatus = {
   skipped: { hue: "neutral", icon: CircleSlash, labelKey: "enums:deliveryStatus.skipped" },
 } satisfies Record<DeliveryStatus, ChipKindEntry>
 
-const donationStatus = {
-  pending: { hue: "neutral", icon: CircleDashed, labelKey: "enums:donationStatus.pending" },
-  succeeded: { hue: "moss", icon: CircleCheck, labelKey: "enums:donationStatus.succeeded" },
-  failed: { hue: "bloom", icon: TriangleAlert, labelKey: "enums:donationStatus.failed" },
-  refunded: { hue: "sun", icon: RotateCcw, labelKey: "enums:donationStatus.refunded" },
-  partially_refunded: { hue: "sun", icon: Undo2, labelKey: "enums:donationStatus.partially_refunded" },
-} satisfies Record<DonationStatus, ChipKindEntry>
 
-const disputeState = {
-  none: { hue: "neutral", icon: CircleDashed, labelKey: "enums:donationDisputeState.none" },
-  open: { hue: "sun", icon: ShieldAlert, labelKey: "enums:donationDisputeState.open" },
-  won: { hue: "moss", icon: ShieldCheck, labelKey: "enums:donationDisputeState.won" },
-  lost: { hue: "bloom", icon: Ban, labelKey: "enums:donationDisputeState.lost" },
-  warning: { hue: "sun", icon: TriangleAlert, labelKey: "enums:donationDisputeState.warning" },
-} satisfies Record<DonationDisputeState, ChipKindEntry>
 
-const orgPayments = {
-  not_started: { hue: "neutral", icon: CircleDashed, labelKey: "enums:orgPaymentsState.not_started" },
-  onboarding: { hue: "sky", icon: Hourglass, labelKey: "enums:orgPaymentsState.onboarding" },
-  ready: { hue: "moss", icon: CircleCheck, labelKey: "enums:orgPaymentsState.ready" },
-  at_risk: { hue: "sun", icon: TriangleAlert, labelKey: "enums:orgPaymentsState.at_risk" },
-  blocked: { hue: "bloom", icon: Ban, labelKey: "enums:orgPaymentsState.blocked", bold: true },
-} satisfies Record<OrgPaymentsState, ChipKindEntry>
 
-const donateState = {
-  READY: { hue: "moss", icon: HandHeart, labelKey: "enums:donateState.READY" },
-  AT_RISK: { hue: "sun", icon: TriangleAlert, labelKey: "enums:donateState.AT_RISK" },
-  BLOCKED: { hue: "bloom", icon: Ban, labelKey: "enums:donateState.BLOCKED" },
-  OFF: { hue: "neutral", icon: Link2Off, labelKey: "enums:donateState.OFF" },
-} satisfies Record<DonateState, ChipKindEntry>
 
 const exportStatus = {
   queued: { hue: "neutral", icon: CircleDashed, labelKey: "enums:hostExportStatus.queued" },
@@ -295,10 +260,6 @@ export const CHIP_KINDS = {
   "broadcast-kind": broadcastKind,
   channel,
   "delivery-status": deliveryStatus,
-  "donation-status": donationStatus,
-  "dispute-state": disputeState,
-  "org-payments": orgPayments,
-  "donate-state": donateState,
   "export-status": exportStatus,
 } as const
 

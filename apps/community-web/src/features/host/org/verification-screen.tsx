@@ -96,7 +96,7 @@ function StatusPanel({
     status === "verified"
       ? t("verification.verified_body", {
           defaultValue:
-            "Your events carry a verified badge and, for nonprofits, you can accept donations through civfix.",
+            "Your events carry a verified badge people can trust.",
         })
       : status === "pending"
         ? t("verification.pending_body", {
@@ -110,7 +110,7 @@ function StatusPanel({
             })
           : t("verification.unverified_body", {
               defaultValue:
-                "Verification adds a badge to your events and unlocks donations for nonprofits. Tell us what kind of organization you are and attach proof.",
+                "Verification adds a badge to your events. Tell us what kind of organization you are and attach proof.",
             })
 
   return (
@@ -282,7 +282,7 @@ function ApplyForm({ orgId, onSubmitted }: { orgId: string; onSubmitted: () => v
               kind === "nonprofit"
                 ? t("verification.kind_nonprofit_hint", {
                     defaultValue:
-                      "A registered 501(c)(3) or similar. Only nonprofits can accept donations through civfix.",
+                      "A registered 501(c)(3) or similar.",
                   })
                 : kind === "government"
                   ? t("verification.kind_government_hint", {
@@ -311,7 +311,7 @@ function ApplyForm({ orgId, onSubmitted }: { orgId: string; onSubmitted: () => v
               htmlFor="verification-ein"
               optional
               hint={t("verification.ein_hint", {
-                defaultValue: "Format XX-XXXXXXX. Speeds up review and is required to accept donations.",
+                defaultValue: "Format XX-XXXXXXX. Speeds up review.",
               })}
               error={showError("einNumber")}
             >

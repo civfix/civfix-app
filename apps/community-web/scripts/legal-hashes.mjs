@@ -12,7 +12,7 @@ const legalOutDir = join(appDir, "out", "legal")
 if (!existsSync(legalOutDir)) {
   console.error(
     `[legal-hashes] no export found at ${legalOutDir}. The hash is taken from the SERVED HTML, not ` +
-      `from source, so the canonical text is exactly what a donor saw. Run \`pnpm build\` first.`,
+      `from source, so the canonical text is exactly what a reader saw. Run \`pnpm build\` first.`,
   )
   process.exit(1)
 }
@@ -53,10 +53,7 @@ for (const row of rows) {
 if (unrendered.length > 0) {
   console.error(
     `\n[legal-hashes] ERROR: no /legal/<slug> page renders: ${unrendered.join(", ")}. Every type in ` +
-      `LEGAL_DOCUMENTS must have a rendered page, or its hash is a number that verifies no text. ` +
-      `The §318 org agreement and the donation disclosure template are rendered at ` +
-      `/legal/org-donation-agreement and /legal/donation-disclosure and embedded from there into ` +
-      `the console sheet and the donate page, so the text accepted is the text hashed.`,
+      `LEGAL_DOCUMENTS must have a rendered page, or its hash is a number that verifies no text.`,
   )
   process.exitCode = 1
 }

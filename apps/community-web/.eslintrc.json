@@ -17,49 +17,6 @@
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_"
       }
-    ],
-    "no-restricted-imports": [
-      "error",
-      {
-        "paths": [
-          {
-            "name": "@/lib/stripe-js",
-            "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-          },
-          {
-            "name": "@stripe/stripe-js",
-            "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-          },
-          {
-            "name": "@stripe/stripe-js/pure",
-            "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-          },
-          {
-            "name": "@stripe/react-stripe-js",
-            "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-          },
-          {
-            "name": "@stripe/react-stripe-js/checkout",
-            "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-          }
-        ],
-        "patterns": [
-          {
-            "group": [
-              "**/lib/stripe-js",
-              "**/lib/stripe-js.*"
-            ],
-            "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-          },
-          {
-            "group": [
-              "@stripe/*",
-              "@stripe/*/**"
-            ],
-            "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-          }
-        ]
-      }
     ]
   },
   "overrides": [
@@ -126,26 +83,6 @@
               {
                 "name": "maplibre-gl",
                 "message": "The console renders no map."
-              },
-              {
-                "name": "@/lib/stripe-js",
-                "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-              },
-              {
-                "name": "@stripe/stripe-js",
-                "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-              },
-              {
-                "name": "@stripe/stripe-js/pure",
-                "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-              },
-              {
-                "name": "@stripe/react-stripe-js",
-                "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-              },
-              {
-                "name": "@stripe/react-stripe-js/checkout",
-                "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
               }
             ],
             "patterns": [
@@ -174,110 +111,10 @@
                   "maplibre-gl/**"
                 ],
                 "message": "The console renders no map."
-              },
-              {
-                "group": [
-                  "**/lib/stripe-js",
-                  "**/lib/stripe-js.*"
-                ],
-                "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
-              },
-              {
-                "group": [
-                  "@stripe/*",
-                  "@stripe/*/**"
-                ],
-                "message": "Stripe.js may be loaded ONLY from the donate surface (src/features/donate/**, src/app/donate/**). Importing it anywhere else puts js.stripe.com in a chunk the rest of the site loads, which breaks the pervasive CSP and the cookie commitment that Stripe runs on /donate/* only."
               }
             ]
           }
         ]
-      }
-    },
-    {
-      "files": [
-        "src/features/donate/**",
-        "src/app/donate/**"
-      ],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "paths": [
-              {
-                "name": "@civfix/ui",
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              },
-              {
-                "name": "@civfix/ui/theme",
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              },
-              {
-                "name": "@civfix/ui/bodies",
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              },
-              {
-                "name": "@civfix/ui/nav",
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              },
-              {
-                "name": "@civfix/ui/surface",
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              },
-              {
-                "name": "@civfix/ui/report",
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              },
-              {
-                "name": "@civfix/ui/realtime",
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              },
-              {
-                "name": "@civfix/ui/typography",
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              },
-              {
-                "name": "@civfix/ui/capabilities",
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              },
-              {
-                "name": "maplibre-gl",
-                "message": "The donate page renders no map."
-              }
-            ],
-            "patterns": [
-              {
-                "group": [
-                  "react-native",
-                  "react-native/*",
-                  "react-native-*",
-                  "react-native-*/**",
-                  "@gorhom/*",
-                  "@shopify/react-native-*"
-                ],
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              },
-              {
-                "group": [
-                  "@civfix/ui/*/*",
-                  "@civfix/ui/*/**",
-                  "!@civfix/ui/theme/schemes"
-                ],
-                "message": "The donate page is plain DOM and ships no React Native: @civfix/ui barrels reach react-native and would land in the one chunk that also loads Stripe.js. Use @civfix/ui/theme/schemes for scheme names and src/lib/color-scheme.ts to read the same `.dark` class the tokens key off."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": [
-        "src/lib/stripe-js.ts",
-        "src/lib/stripe-js.test.ts",
-        "src/lib/stripe-appearance.ts"
-      ],
-      "rules": {
-        "no-restricted-imports": "off"
       }
     }
   ]

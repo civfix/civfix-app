@@ -1,8 +1,5 @@
 import { createHash } from "node:crypto"
 
-export const MERCHANT_FILE_RELATIVE = ".well-known/apple-developer-merchantid-domain-association"
-export const MERCHANT_PLACEHOLDER_TOKEN = "CIVFIX_PLACEHOLDER_APPLE_PAY_DOMAIN_ASSOCIATION"
-
 export function spaFallbackGaps(shellRoutes, redirects) {
   const rules = new Set()
   for (const raw of redirects.split("\n")) {
@@ -73,26 +70,6 @@ export function missingAasaExcludes(association, required) {
     for (const pattern of required) if (!present.has(pattern)) missing.add(pattern)
   }
   return required.filter((pattern) => missing.has(pattern))
-}
-
-export function merchantFileVerdict(contents) {
-  if (contents === null || contents === undefined) return "missing"
-  const trimmed = contents.trim()
-  if (trimmed.length === 0) return "empty"
-  if (trimmed.startsWith("<")) return "markup"
-  if (trimmed.includes(MERCHANT_PLACEHOLDER_TOKEN)) return "placeholder"
-  return "ok"
-}
-
-export function publishableKeyVerdict(key, isProductionOrigin) {
-  const value = typeof key === "string" ? key.trim() : ""
-  if (value.length === 0) return "absent"
-  const live = value.startsWith("pk_live_")
-  const test = value.startsWith("pk_test_")
-  if (!live && !test) return "malformed"
-  if (live && !isProductionOrigin) return "live-on-non-production"
-  if (test && isProductionOrigin) return "test-on-production"
-  return "ok"
 }
 
 export function canonicalDocumentText(html) {

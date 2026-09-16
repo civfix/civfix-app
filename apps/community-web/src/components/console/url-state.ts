@@ -17,7 +17,6 @@ export const CONSOLE_REPLACE_PARAM_KEYS = [
   "block",
   "preview",
   "next",
-  "stripe",
 ] as const
 
 export const CONSOLE_PUSH_PARAM_KEYS = [

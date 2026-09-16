@@ -21,12 +21,6 @@ export const consoleKeys = {
   orgInvites: (orgId: string) => ["org-console", orgId, "invites"] as const,
   orgVerification: (orgId: string) => ["org-console", orgId, "verification"] as const,
   orgEvents: (orgId: string, when: string) => ["org-console", orgId, "events", when] as const,
-  orgPayments: (orgId: string) => ["org-console", orgId, "payments"] as const,
-  orgDonationSettings: (orgId: string) => ["org-console", orgId, "donation-settings"] as const,
-  orgDonations: (orgId: string, status: string, from: string, to: string) =>
-    ["org-console", orgId, "donations", status, from, to] as const,
-  orgDonationSummary: (orgId: string, from: string, to: string) =>
-    ["org-console", orgId, "donations", "summary", from, to] as const,
 
   portfolioAnalytics: (range: string, orgId: string) =>
     ["hosted-events", "analytics", range, orgId] as const,

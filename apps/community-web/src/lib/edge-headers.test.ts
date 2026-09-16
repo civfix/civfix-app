@@ -3,13 +3,7 @@ import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
 import {
-  DONATE_HEADERS,
-  DONATE_HEADERS_PATH,
-  DONATE_HEADER_DROPS,
   PERVASIVE_HEADERS,
-  STRIPE_FORM_ACTION_ORIGINS,
-  STRIPE_FRAME_ORIGINS,
-  STRIPE_SCRIPT_ORIGINS,
   cspDirective,
   parseHeaderBlock,
   parsePervasiveHeaders,
@@ -55,81 +49,32 @@ describe("pervasive edge headers", () => {
   })
 })
 
-describe("donate edge headers", () => {
-  const block = parseHeaderBlock(headersFile, DONATE_HEADERS_PATH)
-
-  it("matches the /donate/* block of public/_headers", () => {
-    expect(block.headers).toEqual({ ...DONATE_HEADERS })
+describe("the platform processes no payments", () => {
+  it("names no payment-processor origin anywhere in public/_headers", () => {
+    expect(headersFile).not.toContain("stripe.com")
   })
 
-  it("ships no Report-Only copy, which would collect nothing without a report endpoint", () => {
-    expect(block.headers["Content-Security-Policy-Report-Only"]).toBeUndefined()
-    expect(headersFile).not.toMatch(/^\s+Content-Security-Policy-Report-Only:/m)
+  it("keeps no /donate/* block", () => {
+    expect(parseHeaderBlock(headersFile, "/donate/*")).toEqual({ headers: {}, drops: [] })
   })
 
-  it("drops the inherited policies before restating them", () => {
-    expect([...block.drops].sort()).toEqual([...DONATE_HEADER_DROPS].sort())
-  })
-
-  it("allows Stripe's script, frame and form-action origins", () => {
-    const policy = DONATE_HEADERS["Content-Security-Policy"] as string
-    for (const origin of STRIPE_SCRIPT_ORIGINS) {
-      expect(cspDirective(policy, "script-src")).toContain(origin)
-    }
-    for (const origin of STRIPE_FRAME_ORIGINS) {
-      expect(cspDirective(policy, "frame-src")).toContain(origin)
-    }
-    for (const origin of STRIPE_FORM_ACTION_ORIGINS) {
-      expect(cspDirective(policy, "form-action")).toContain(origin)
+  it("hard-blocks the Payment Request API on every route", () => {
+    expect(PERVASIVE_HEADERS["Permissions-Policy"]).toContain("payment=()")
+    for (const line of headersFile.split("\n")) {
+      if (line.trimStart().startsWith("Permissions-Policy:")) expect(line).toContain("payment=()")
     }
   })
 
-  it("keeps every hardening directive the pervasive policy sets", () => {
-    const policy = DONATE_HEADERS["Content-Security-Policy"] as string
+  it("keeps every hardening directive in the pervasive policy", () => {
+    const policy = PERVASIVE_HEADERS["Content-Security-Policy"] as string
     expect(cspDirective(policy, "frame-ancestors")).toEqual(["'none'"])
     expect(cspDirective(policy, "object-src")).toEqual(["'none'"])
     expect(cspDirective(policy, "base-uri")).toEqual(["'self'"])
     expect(cspDirective(policy, "default-src")).toEqual(["'self'"])
+    expect(cspDirective(policy, "form-action")).toEqual(["'self'"])
   })
 
-  it("re-enables the Payment Request API for Stripe.js and nothing else", () => {
-    expect(DONATE_HEADERS["Permissions-Policy"]).toContain('payment=(self "https://js.stripe.com")')
-    expect(PERVASIVE_HEADERS["Permissions-Policy"]).toContain("payment=()")
-  })
-
-  it("keeps the donation page out of search indexes", () => {
-    expect(DONATE_HEADERS["X-Robots-Tag"]).toBe("noindex")
-  })
-})
-
-describe("Stripe stays off every other route", () => {
-  it("has no Stripe origin anywhere in the pervasive policy", () => {
-    const policy = PERVASIVE_HEADERS["Content-Security-Policy"] as string
-    expect(policy).not.toContain("stripe.com")
-    for (const origin of [
-      ...STRIPE_SCRIPT_ORIGINS,
-      ...STRIPE_FRAME_ORIGINS,
-      ...STRIPE_FORM_ACTION_ORIGINS,
-    ]) {
-      expect(policy).not.toContain(origin)
-    }
-  })
-
-  it("has no Stripe origin in any block of public/_headers other than /donate/*", () => {
-    const blocks = headersFile
-      .split("\n")
-      .filter((line) => line.trim().length > 0 && !line.trimStart().startsWith("#"))
-      .reduce<{ path: string | null; lines: Array<{ path: string; line: string }> }>(
-        (state, line) => {
-          if (!/^\s/.test(line)) return { path: line.trim(), lines: state.lines }
-          if (state.path === null) return state
-          return { path: state.path, lines: [...state.lines, { path: state.path, line }] }
-        },
-        { path: null, lines: [] },
-      )
-    for (const entry of blocks.lines) {
-      if (entry.path === DONATE_HEADERS_PATH) continue
-      expect(entry.line).not.toContain("stripe.com")
-    }
+  it("ships no Report-Only copy, which would collect nothing without a report endpoint", () => {
+    expect(headersFile).not.toMatch(/^\s+Content-Security-Policy-Report-Only:/m)
   })
 })

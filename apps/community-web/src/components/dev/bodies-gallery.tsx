@@ -74,7 +74,6 @@ import {
   DASHBOARD_EVENT_ERROR_ID,
   DASHBOARD_EVENT_IDS,
   DASHBOARD_EVENT_PENDING_ID,
-  DASHBOARD_EVENT_REFUNDED_ID,
   emptyPortfolioOverrides,
   failing,
   makeDashboardFakeApi,
@@ -1506,10 +1505,6 @@ export default function BodiesGallery() {
 
             <DashboardFrame title="HostModeBody (phase: cancelled)" height={820}>
               <HostModeBody id={DASHBOARD_EVENT_IDS.cancelled} />
-            </DashboardFrame>
-
-            <DashboardFrame title="HostModeBody (ended, donations fully refunded - negative net)" height={820}>
-              <HostModeBody id={DASHBOARD_EVENT_REFUNDED_ID} />
             </DashboardFrame>
 
             <DashboardFrame title="HostModeBody (counters + insights PENDING)" height={620}>

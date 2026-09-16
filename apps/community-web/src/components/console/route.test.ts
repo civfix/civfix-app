@@ -59,10 +59,14 @@ describe("parseConsoleRoute", () => {
       orgId: "o1",
       section: "overview",
     })
-    expect(parseConsoleRoute("/manage/orgs/o1/payments/")).toEqual({
+    expect(parseConsoleRoute("/manage/orgs/o1/members/")).toEqual({
       kind: "org",
       orgId: "o1",
-      section: "payments",
+      section: "members",
+    })
+    expect(parseConsoleRoute("/manage/orgs/o1/payments/")).toEqual({
+      kind: "not-found",
+      path: "/manage/orgs/o1/payments/",
     })
   })
 
@@ -178,7 +182,6 @@ describe("parseConsoleRoute", () => {
       { kind: "portfolio" },
       { kind: "org-new" },
       { kind: "org", orgId: "o1", section: "overview" },
-      { kind: "org", orgId: "o1", section: "payments" },
       ...ORG_SECTIONS.map((section): ConsoleRoute => ({ kind: "org", orgId: "o2", section })),
       { kind: "org-invite-accept", token: null },
       { kind: "org-invite-accept", token: "abcdefghijklmnopqrstuvwxyz0123" },

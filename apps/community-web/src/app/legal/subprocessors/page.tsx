@@ -50,13 +50,6 @@ const ROWS: Row[] = [
     location: "Germany / EU",
   },
   {
-    name: "Stripe, Inc. and Stripe Payments Company",
-    purpose:
-      "Payment processing for donations to host organizations. Donations are DIRECT charges on the recipient organization's own Stripe connected account: the organization is the merchant of record and civfix never receives or holds the funds. Stripe also acts as an INDEPENDENT CONTROLLER (not our processor) for fraud prevention, anti-money-laundering, sanctions screening and its own regulatory obligations, and it is the licensed money transmitter in the flow.",
-    data: "Donor name and email address; the donation amount and currency; the card or wallet payment details you enter directly into Stripe's hosted iframe (these never reach civfix's servers); the last four digits and brand of the card, returned to us for your receipt; IP address and device signals Stripe collects for fraud prevention.",
-    location: "United States, with onward transfers to Stripe entities in the EU and UK",
-  },
-  {
     name: "Apple Inc.",
     purpose:
       "Sign in with Apple (authentication) and the Apple Push Notification service (push notifications to iOS devices).",
@@ -121,15 +114,6 @@ export default function SubprocessorsPage() {
           When we forward a report to the government body responsible for a location, that agency
           receives the report as an independent recipient, not as our sub-processor.
         </p>
-        <p>
-          A payment processor plays BOTH roles at once. Stripe processes donor data on our behalf when
-          it charges a donation we initiated, and it is an independent controller of the same data for
-          fraud prevention, anti-money-laundering and sanctions screening, and its own legal and
-          regulatory reporting. Where Stripe acts as an independent controller, its own privacy notice
-          governs and civfix cannot direct or delete that processing. The recipient host organization is
-          likewise an independent controller of any donor identity it receives - which happens only when
-          you explicitly opt in on the donation page.
-        </p>
       </section>
 
       <section>
@@ -143,20 +127,6 @@ export default function SubprocessorsPage() {
           EU-US / UK Extension / Swiss-US Data Privacy Framework where the provider is certified. See the{" "}
           <a href="/legal/privacy">Privacy Policy</a> for details and how to request a copy of the
           safeguards.
-        </p>
-        <p>
-          For payment processing specifically, Stripe self-certifies under the EU-US Data Privacy
-          Framework, the UK Extension and the Swiss-US Data Privacy Framework, and additionally relies on
-          the European Commission&rsquo;s Standard Contractual Clauses (Modules One and Two) together
-          with the UK International Data Transfer Addendum. Stripe publishes these terms in its{" "}
-          <a href="https://stripe.com/legal/dpa" rel="noreferrer noopener" target="_blank">
-            Data Processing Agreement
-          </a>{" "}
-          and its{" "}
-          <a href="https://stripe.com/privacy" rel="noreferrer noopener" target="_blank">
-            Privacy Policy
-          </a>
-          .
         </p>
       </section>
 
