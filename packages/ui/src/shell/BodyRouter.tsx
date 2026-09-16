@@ -45,6 +45,7 @@ import {
   HostLogHoursBody,
   MyTicketBody,
   OrgPageBody,
+  OrgManageBody,
   EventDashboardBody,
   AnnouncementBody,
   AnnouncementsBody,
@@ -175,6 +176,8 @@ function renderBodyId(id: BodyId, entry: DetailEntry | null): React.ReactNode {
       )
     case "orgPage":
       return <OrgPageBody slug={entry?.slug ?? ""} />
+    case "orgManage":
+      return <OrgManageBody slug={entry?.slug ?? ""} />
     case "eventDashboard":
       return <EventDashboardBody />
     case "eventAnalytics":

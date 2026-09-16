@@ -42,7 +42,8 @@
     "announcement": "Ankündigung",
     "announcements": "Ankündigungen",
     "host_announce": "Ankündigung schreiben",
-    "event_analytics": "Auswertung"
+    "event_analytics": "Auswertung",
+    "org_manage": "Einstellungen der Organisation"
   },
   "tab": {
     "home": "Start",

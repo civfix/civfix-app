@@ -21,6 +21,6 @@
     "row": "Enlace de donación",
     "row_set": "Visible en tus eventos y tu página: {{host}}",
     "row_unset": "Aún sin configurar",
-    "row_org_web": "Configúralo en los ajustes de la organización en la web"
+    "row_org_admin": "Solo el propietario o un administrador puede configurarlo"
   }
 }

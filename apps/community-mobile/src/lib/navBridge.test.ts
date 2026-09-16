@@ -334,9 +334,9 @@ test("a screen that renders its OWN body drops the entry when it is already on t
   }
 })
 
-test("the quick broadcast stays in the sheet so its draft guard applies", () => {
-  assert.equal(bridgeKey({ kind: "host-broadcast-quick", id: "c1" }), null)
-  assert.equal(bridgeRoute({ kind: "host-broadcast-quick", id: "c1" }), null)
-  const { actions } = run([{ active: { kind: "host-broadcast-quick", id: "c1" }, now: 0 }])
+test("the announcement composer stays in the sheet so its draft guard applies", () => {
+  assert.equal(bridgeKey({ kind: "host-announce", id: "c1" }), null)
+  assert.equal(bridgeRoute({ kind: "host-announce", id: "c1" }), null)
+  const { actions } = run([{ active: { kind: "host-announce", id: "c1" }, now: 0 }])
   assert.equal(actions[0].type, "none")
 })

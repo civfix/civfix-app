@@ -244,6 +244,7 @@ export {
   useRemoveOrganizationMember,
   useRevokeOrganizationInvite,
   useSetOrganizationMemberRole,
+  useUpdateOrganization,
 } from "./hooks/orgs"
 export type {
   InviteOrganizationMemberVars,

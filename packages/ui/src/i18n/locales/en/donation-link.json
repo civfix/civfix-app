@@ -21,6 +21,6 @@
     "row": "Donation link",
     "row_set": "Live on your events and page: {{host}}",
     "row_unset": "Not set yet",
-    "row_org_web": "Set it in the organization settings on the web"
+    "row_org_admin": "Only an owner or admin can set it"
   }
 }

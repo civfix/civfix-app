@@ -17,6 +17,7 @@ const HOST_KINDS = [
   "announcement",
   "announcements",
   "event-analytics",
+  "org-manage",
 ] as const
 
 describe("the new kinds are registered everywhere a kind must be registered", () => {
@@ -51,6 +52,7 @@ describe("URL round trip", () => {
       { kind: "announcement", id: "e1", announcementId: "a-9" },
     ],
     ["/orgs/river-keepers", { kind: "org", slug: "river-keepers" }],
+    ["/orgs/river-keepers/manage", { kind: "org-manage", slug: "river-keepers" }],
   ]
 
   it.each(cases)("%s", (path, entry) => {
@@ -80,6 +82,7 @@ describe("URL round trip", () => {
     expect(pathForEntry({ kind: "host-team" })).toBe("/cleanups")
     expect(pathForEntry({ kind: "host-log-hours" })).toBe("/cleanups")
     expect(pathForEntry({ kind: "org" })).toBe("/")
+    expect(pathForEntry({ kind: "org-manage" })).toBe("/")
   })
 
   it("keeps an unknown /cleanups/:id/<sub> on the event detail rather than 404ing the shell", () => {
@@ -101,6 +104,7 @@ describe("parent view + flow protection", () => {
       "announcement",
       "announcements",
       "event-analytics",
+      "org-manage",
     ] as const) {
       expect(parentViewForEntry({ kind } as DetailEntry), kind).toBe("events")
     }
@@ -119,6 +123,7 @@ describe("parent view + flow protection", () => {
       "announcement",
       "announcements",
       "event-analytics",
+      "org-manage",
     ] as const) {
       expect(FLOW_KINDS.has(kind), kind).toBe(false)
     }

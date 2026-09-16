@@ -7,6 +7,26 @@ export { HostTeamBody } from "./HostTeamBody"
 export { HostLogHoursBody } from "./HostLogHoursBody"
 export { MyTicketBody } from "./MyTicketBody"
 export { OrgPageBody } from "./OrgPageBody"
+export { OrgManageBody } from "./OrgManageBody"
+export {
+  ORG_MANAGE_SECTIONS,
+  SOCIAL_PREFIX,
+  canOpenOrgManage,
+  counterVisible,
+  lastAdminSeat,
+  linksDirty,
+  linksDraftFrom,
+  linksErrors,
+  linksPayload,
+  orgLogoErrorKey,
+  orgManageErrorKey,
+  profileDirty,
+  profileDraftFrom,
+  profileErrors,
+  profilePayload,
+  socialLinksFromDraft,
+} from "./orgManageModel"
+export type { OrgLinksDraft, OrgManageSection, OrgProfileDraft } from "./orgManageModel"
 export { EventAnalyticsBody } from "./EventAnalyticsBody"
 export { AnalyticsCarouselCard } from "./dashboard/AnalyticsCarouselCard"
 export type { AnalyticsCarouselCardProps } from "./dashboard/AnalyticsCarouselCard"

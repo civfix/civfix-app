@@ -3,7 +3,16 @@ import { View, Pressable, StyleSheet } from "react-native"
 import type { OrganizationDTO, SocialLinks } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../theme"
 import { Text, TextLink, Icon, iconMap } from "../../typography"
-import { Avatar, DonateBlock, EventCard, Markdown, VerifiedBadge, shareLink, useToast } from "../../primitives"
+import {
+  Avatar,
+  DonateBlock,
+  EventCard,
+  Markdown,
+  SecondaryButton,
+  VerifiedBadge,
+  shareLink,
+  useToast,
+} from "../../primitives"
 import { orgPagePath } from "../../primitives/externalUrls"
 import { useOpenExternal } from "../../capabilities"
 import {
@@ -17,6 +26,7 @@ import { useNavStore } from "../../nav/useNavStore"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 import { formatHoursDisplay } from "../formatHours"
+import { canOpenOrgManage } from "./orgManageModel"
 
 const SOCIAL_ORDER = ["instagram", "x", "facebook", "tiktok", "youtube", "linkedin"] as const
 
@@ -201,6 +211,18 @@ export function OrgPageBody({ slug }: { slug: string }) {
     >
       <OrgHeader org={org} />
 
+      {canOpenOrgManage(org) ? (
+        <View style={styles.manageRow}>
+          <SecondaryButton
+            size="sm"
+            icon={iconMap.Settings}
+            label={t("manage.action")}
+            accessibilityLabel={t("manage.action_a11y", { name: org.name })}
+            onPress={() => useNavStore.getState().push({ kind: "org-manage", slug: org.slug })}
+          />
+        </View>
+      ) : null}
+
       {org.description ? (
         <View style={styles.section}>
           <Markdown source={org.description} />
@@ -327,6 +349,10 @@ const useStyles = makeThemedStyles((t) => ({
   },
   section: {
     gap: t.space["2"],
+  },
+  manageRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   sectionTitle: {
     fontFamily: t.fontFamily.displayBold,

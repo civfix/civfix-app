@@ -368,7 +368,11 @@ const NESTED_SHELL_ROUTES = [
   { file: "cleanups/[id]/hours.tsx", kind: "host-log-hours" },
   { file: "cleanups/[id]/ticket/index.tsx", kind: "my-ticket" },
   { file: "cleanups/[id]/ticket/[seatId].tsx", kind: "my-ticket" },
-  { file: "orgs/[slug].tsx", kind: "org" },
+  { file: "cleanups/[id]/analytics.tsx", kind: "event-analytics" },
+  { file: "cleanups/[id]/announcements/index.tsx", kind: "announcements" },
+  { file: "cleanups/[id]/announcements/[announcementId].tsx", kind: "announcement" },
+  { file: "orgs/[slug]/index.tsx", kind: "org" },
+  { file: "orgs/[slug]/manage.tsx", kind: "org-manage" },
   { file: "dashboard.tsx", kind: "event-dashboard" },
 ] as const
 

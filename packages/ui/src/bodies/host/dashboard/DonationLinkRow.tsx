@@ -1,13 +1,11 @@
 import React, { useCallback } from "react"
 import type { OrganizationDTO } from "@civfix/shared"
 import { IconTile, ListRow, SectionCard } from "../../../primitives"
-import { consoleReachable, openConsolePath } from "../../../primitives/consoleReach"
 import { donationUrlHost, safeDonationUrl } from "../../../primitives/donationUrl"
-import { manageOrgSettingsPath } from "../../../primitives/externalUrls"
-import { useOpenExternal } from "../../../capabilities"
 import { useMyProfile } from "../../../data"
 import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
+import { canOpenOrgManage } from "../orgManageModel"
 
 export interface DonationLinkRowProps {
   org: OrganizationDTO | null
@@ -15,25 +13,25 @@ export interface DonationLinkRowProps {
 
 export function DonationLinkRow({ org }: DonationLinkRowProps) {
   const { t } = useT("donation-link")
-  const openExternal = useOpenExternal()
   const profile = useMyProfile()
 
   const url = safeDonationUrl(org ? org.donationUrl : profile.data?.profile.donationUrl)
-  const orgId = org?.id ?? null
+  const manageable = canOpenOrgManage(org)
+  const slug = org?.slug ?? null
 
-  const openOrgSettings = useCallback(() => {
-    if (!orgId) return
-    openConsolePath(manageOrgSettingsPath(orgId), openExternal)
-  }, [openExternal, orgId])
+  const openOrgManage = useCallback(() => {
+    if (!slug) return
+    useNavStore.getState().push({ kind: "org-manage", slug })
+  }, [slug])
   const openAccountSettings = useCallback(() => {
     useNavStore.getState().push({ kind: "settings-account" })
   }, [])
 
-  const onPress = orgId ? (consoleReachable ? openOrgSettings : null) : openAccountSettings
+  const onPress = org ? (manageable ? openOrgManage : null) : openAccountSettings
   const sub = url
     ? t("dashboard.row_set", { host: donationUrlHost(url) })
-    : orgId && !consoleReachable
-      ? t("dashboard.row_org_web")
+    : org && !manageable
+      ? t("dashboard.row_org_admin")
       : t("dashboard.row_unset")
 
   return (

@@ -122,7 +122,8 @@ test("an event push that names a host surface lands in a shell, not on a native 
       entry: { kind: "announcement", id: "c1", announcementId: "a1" } as const,
       route: "cleanups/[id]/announcements/[announcementId]",
     },
-    { entry: { kind: "org", slug: "acme" } as const, route: "orgs/[slug]" },
+    { entry: { kind: "org", slug: "acme" } as const, route: "orgs/[slug]/index" },
+    { entry: { kind: "org-manage", slug: "acme" } as const, route: "orgs/[slug]/manage" },
   ]
   for (const { entry, route } of SHELL_HOSTED) {
     assert.equal(bridgeKey(entry), null, `${entry.kind} still claims a bridge key`)

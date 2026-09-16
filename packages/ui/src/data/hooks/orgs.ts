@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query"
 import type {
   AcceptMyOrgInviteResponse,
+  UpdateOrganizationRequest,
   CleanupDTO,
   DeclineMyOrgInviteResponse,
   InviteOrganizationMemberResponse,
@@ -58,6 +59,23 @@ export function actableOrganizations(
   orgs: readonly OrganizationDTO[] | undefined,
 ): OrganizationDTO[] | undefined {
   return orgs?.filter((org) => org.suspended !== true)
+}
+
+/**
+ * PATCH /orgs/:id answers with the whole DTO, so the org page's own cache is SEATED with the
+ * response rather than invalidated - the header reflects a save before the refetch lands.
+ */
+export function useUpdateOrganization(slug: string | undefined) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation<OrganizationDTO, unknown, UpdateOrganizationRequest>({
+    mutationFn: (vars) => api.updateOrganization(vars),
+    onSuccess: (org) => {
+      qc.setQueryData(queryKeys.org(org.slug), org)
+      if (slug && slug !== org.slug) void qc.invalidateQueries({ queryKey: queryKeys.org(slug) })
+      void qc.invalidateQueries({ queryKey: queryKeys.myOrganizations })
+    },
+  })
 }
 
 export type OrganizationEventsWindow = "upcoming" | "past"
