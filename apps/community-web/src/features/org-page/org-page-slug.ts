@@ -11,10 +11,6 @@ const NONE: OrgSlugSource = { kind: "none" }
 
 export const ORG_MANAGE_SEGMENT = "manage"
 
-/**
- * `/orgs/<slug>/manage` is the in-app management body, not the public page: the same catch-all route
- * serves both, so the client decides which one to mount from the live URL.
- */
 export function isOrgManagePath(pathname: string | null | undefined): boolean {
   if (!pathname) return false
   const segments = pathname.split("/").filter((segment) => segment.length > 0)

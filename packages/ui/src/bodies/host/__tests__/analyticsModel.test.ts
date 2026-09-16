@@ -95,6 +95,12 @@ const point = (at: number, value: number | null, suppressed = false): SeriesPoin
   suppressed,
 })
 
+const dayPoint = (day: string, value: number | null): SeriesPoint => ({
+  day,
+  value,
+  suppressed: false,
+})
+
 describe("the carousel reads as the event's own story", () => {
   it("leads with sign-ups before the event, arrivals on the day and impact after", () => {
     expect(analyticsPanelOrder("upcoming")[0]).toBe("signups")
@@ -188,6 +194,18 @@ describe("the lifecycle scrubber replaces a rolling window", () => {
   it("keeps the whole series rather than drawing an empty chart when a slice is empty", () => {
     const series = [point(CREATED, 1)]
     expect(sliceSeries(series, { from: END, to: END + DAY_MS })).toEqual(series)
+  })
+
+  it("selects the event's own day from a daily-bucketed series, not the whole series", () => {
+    const series = [dayPoint("2026-09-09", 1), dayPoint("2026-09-10", 7), dayPoint("2026-09-11", 2)]
+    const day = segmentRange("event_day", LIFECYCLE, END)
+    expect(sliceSeries(series, day).map((p) => p.value)).toEqual([7])
+  })
+
+  it("still ends a daily lead-up at the day the event starts", () => {
+    const series = [dayPoint("2026-09-09", 1), dayPoint("2026-09-10", 7), dayPoint("2026-09-11", 2)]
+    const lead = segmentRange("lead_up", LIFECYCLE, END)
+    expect(sliceSeries(series, lead).map((p) => p.value)).toEqual([1, 7])
   })
 })
 

@@ -11,7 +11,6 @@ export interface SparklineProps {
   height: number
   stroke: string
   strokeWidth?: number
-  /** Area fill under the line; omit for a bare line. */
   fill?: string
   accessibilityLabel: string
 }

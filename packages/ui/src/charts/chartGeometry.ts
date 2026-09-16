@@ -22,10 +22,6 @@ export function clampFraction(value: number): number {
   return value < 0 ? 0 : value > 1 ? 1 : value
 }
 
-/**
- * The top of the y axis. Charts here always start at zero - a truncated axis reads as a bigger swing
- * than the numbers justify, and these are a host's own totals, not a trading chart.
- */
 export function chartMax(values: readonly (number | null)[], floor = 1): number {
   let max = floor
   for (const value of values) {
@@ -39,10 +35,6 @@ function plotY(value: number, max: number, height: number): number {
   return height - (value / max) * height
 }
 
-/**
- * Contiguous runs of real numbers, as polyline point strings. A null is a SUPPRESSED point, not a
- * zero, so the line breaks there rather than diving to the axis and inventing a drop.
- */
 export function sparklineSegments(
   values: readonly (number | null)[],
   width: number,
@@ -66,7 +58,6 @@ export function sparklineSegments(
   return segments.filter((segment) => segment.includes(" "))
 }
 
-/** The filled area under the longest contiguous run, or null when there is nothing to fill. */
 export function sparklineAreaPath(
   values: readonly (number | null)[],
   width: number,
@@ -113,7 +104,6 @@ export function barRects(
   })
 }
 
-/** 0..1 of the bar track, for the plain-View horizontal bars the breakdown lists draw. */
 export function barFraction(value: number | null, max: number): number {
   if (value === null || !Number.isFinite(value) || max <= 0) return 0
   return clampFraction(value / max)
@@ -124,10 +114,6 @@ export interface LineGeometry {
   area: string | null
 }
 
-/**
- * An x-positioned series (a lifecycle runs on real timestamps, not on evenly spaced indices), scaled
- * into the box. A null y breaks the line exactly as it does in a sparkline.
- */
 export function lineGeometry(
   points: readonly ChartPoint[],
   width: number,
@@ -179,10 +165,6 @@ export function valueToPixels(value: number, max: number, height: number): numbe
   return round(plotY(value, max, height))
 }
 
-/**
- * The swept arc of a progress ring, drawn clockwise from twelve o'clock. A full ring is TWO arcs,
- * because a single SVG arc whose end meets its start renders as nothing.
- */
 export function progressArcPath(
   value: number,
   size: number,

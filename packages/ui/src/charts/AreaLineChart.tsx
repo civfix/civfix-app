@@ -23,10 +23,8 @@ export interface AreaLineChartProps {
   height: number
   stroke: string
   fill?: string
-  /** A horizontal dashed guide, e.g. capacity. */
   refLineY?: number
   refLineColor?: string
-  /** A vertical marker in the series' own x units, e.g. the event day. */
   markerX?: number
   markerColor?: string
   xTicks?: readonly { x: number; label: string }[]

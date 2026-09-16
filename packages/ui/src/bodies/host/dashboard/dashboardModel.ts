@@ -315,15 +315,20 @@ export function orgMemberActions(input: {
   viewerId: string | null
   canManage: boolean
   canSetRole: boolean
+  lastAdmin: boolean
 }): OrgMemberActions {
-  const { member, viewerId, canManage, canSetRole } = input
+  const { member, viewerId, canManage, canSetRole, lastAdmin } = input
   if (!canManage) return NO_ORG_MEMBER_ACTIONS
   if (member.person.deleted) return NO_ORG_MEMBER_ACTIONS
   if (member.role === "owner") return NO_ORG_MEMBER_ACTIONS
   if (viewerId !== null && member.person.id === viewerId) return NO_ORG_MEMBER_ACTIONS
+  const holdsTheLastAdminSeat = lastAdmin && member.role === "admin"
   return {
-    roles: canSetRole ? ORG_SETTABLE_ROLES.filter((role) => role !== member.role) : [],
-    canRemove: member.canRemove,
+    roles:
+      canSetRole && !holdsTheLastAdminSeat
+        ? ORG_SETTABLE_ROLES.filter((role) => role !== member.role)
+        : [],
+    canRemove: member.canRemove && !holdsTheLastAdminSeat,
   }
 }
 

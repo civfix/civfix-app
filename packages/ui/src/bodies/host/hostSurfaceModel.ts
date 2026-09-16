@@ -103,7 +103,6 @@ export interface HostSurfaceInput {
 
 export interface HostActionInput {
   stage: HostStage
-  /** The CTAs the PhaseHeader is rendering right now; a row that repeats one is dropped. */
   ctas: readonly (HostCtaKey | null)[]
   can: HostSurfaceCapabilities
   unmarked: number
@@ -265,11 +264,6 @@ export function hostStatTiles(insights: EventInsights, phase: EventPhase): HostT
   return tiles
 }
 
-/**
- * A CTA and a row that fire the same handler are the same button twice. The PhaseHeader owns the
- * phase's one or two headline actions, so the cards drop any row that repeats one - which is why the
- * suppression lives HERE, next to the rows, rather than in a second phase table in the body.
- */
 const CTA_ROW: Readonly<Record<HostCtaKey, HostRowKey>> = {
   share: "share",
   announce: "announce",

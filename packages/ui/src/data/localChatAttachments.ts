@@ -23,6 +23,7 @@ export function linkLocalChatAttachments(clientId: string, messageId: string): v
   if (clientId === messageId) return
   const local = byKey.get(clientId)
   if (!local) return
+  byKey.delete(clientId)
   touch(messageId, local)
 }
 
@@ -30,9 +31,14 @@ export function localChatAttachments(message: ChatMessageDTO): MediaDTO[] | null
   return byKey.get(message.id) ?? (message.clientId ? byKey.get(message.clientId) ?? null : null)
 }
 
+function settled(media: MediaDTO): boolean {
+  return media.status !== "validating"
+}
+
 export function mergeLocalAttachments(local: MediaDTO[], server: MediaDTO[]): MediaDTO[] {
   if (server.length >= local.length) return server
   if (server.length === 0) return local
+  if (server.every(settled)) return server
   const serverById = new Map(server.map((m) => [m.id, m]))
   const merged = local.map((m) => serverById.get(m.id) ?? m)
   for (const m of server) {

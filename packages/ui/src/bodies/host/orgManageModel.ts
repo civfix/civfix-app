@@ -60,10 +60,6 @@ function trimmedOrNull(value: string): string | null {
   return trimmed === "" ? null : trimmed
 }
 
-/**
- * A leading `@` is dropped the way the console's own form drops it: people paste "@riverkeepers"
- * into a field that already shows the platform prefix.
- */
 export function socialLinksFromDraft(draft: OrgLinksDraft): SocialLinks | null {
   const out: SocialLinks = {}
   let any = false
@@ -108,11 +104,6 @@ export function linksDirty(draft: OrgLinksDraft, initial: OrgLinksDraft): boolea
   )
 }
 
-/**
- * Validation is the contract's own zod, never a second copy of the rules: the schemas are imported
- * and run against the payload the section would actually PATCH, so a field this client accepts is
- * one the server accepts too.
- */
 export function profileErrors(draft: OrgProfileDraft): Record<string, string> {
   const parsed = UpdateOrganizationRequestSchema.safeParse({
     ...profilePayload("00000000-0000-4000-8000-000000000000", draft),
@@ -160,18 +151,10 @@ export function counterVisible(length: number, max: number): boolean {
   return length >= Math.floor(max * ORG_COUNTER_AT)
 }
 
-/**
- * Client gating is UX only - the server enforces every mutation - but a non-admin who follows the URL
- * should meet a notice, not a form that will 403 on save.
- */
 export function canOpenOrgManage(org: OrganizationDTO | null | undefined): boolean {
   return org?.myRole === "owner" || org?.myRole === "admin"
 }
 
-/**
- * The client pre-disables the last admin's own demotion/removal, but pagination means this count can
- * lie - the server's ORG_LAST_ADMIN refusal is the guarantee, and its copy is what the user sees.
- */
 export function lastAdminSeat(members: readonly OrganizationMemberDTO[]): boolean {
   return members.filter((member) => member.role !== "member").length <= 1
 }

@@ -50,11 +50,6 @@ export function bodyCounterVisible(length: number): boolean {
 
 const MARKDOWN_MARKS = /^[\s>#*\-+]+|[*_`]/g
 
-/**
- * The one-line stand-in a card shows when an announcement carries no title, and the body preview under
- * one that does. Markdown is a subset here, so flattening the marks is enough - the card renders plain
- * text, never a second parser.
- */
 export function announcementPreview(bodyMd: string): string {
   const flattened = bodyMd
     .split("\n")
@@ -71,10 +66,6 @@ export function announcementHeading(announcement: AnnouncementDTO): string | nul
   return title && title.length > 0 ? title : null
 }
 
-/**
- * Host-only fields are absent on the public projection, so their presence IS the capability signal -
- * a public reader must never be told an announcement was not addressed to them.
- */
 export function announcementCounts(announcement: AnnouncementDTO): {
   recipients: number
   sent: number

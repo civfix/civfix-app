@@ -4,7 +4,6 @@ import Svg, { Circle, Path } from "react-native-svg"
 import { DEFAULT_RING_THICKNESS, clampFraction, progressArcPath } from "./chartGeometry"
 
 export interface ProgressRingProps {
-  /** 0..1, clamped. */
   value: number
   size: number
   thickness?: number

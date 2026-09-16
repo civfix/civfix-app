@@ -5,11 +5,6 @@ import { queryKeys } from "../keys"
 
 export const EVENT_ANALYTICS_STALE_MS = 60_000
 
-/**
- * One round trip for either analytics surface. `card` is the dashboard carousel's capped payload and
- * `full` is the whole lifecycle; they are cached separately so opening the full page never discards
- * the card the host is still looking at.
- */
 export function useEventAnalytics(
   cleanupId: string | undefined,
   scope: EventAnalyticsScope,

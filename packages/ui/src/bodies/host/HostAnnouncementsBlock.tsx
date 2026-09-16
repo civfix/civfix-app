@@ -14,10 +14,6 @@ export interface HostAnnouncementsBlockProps {
   cleanupId: string
 }
 
-/**
- * What the host already sent, newest first. This is the ONE surface that shows the audience and the
- * delivery counts - the public card deliberately shows neither.
- */
 export function HostAnnouncementsBlock({ cleanupId }: HostAnnouncementsBlockProps) {
   const styles = useStyles()
   const { t } = useT("host-broadcasts")

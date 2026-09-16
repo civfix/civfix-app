@@ -17,7 +17,6 @@ const AVATAR_SIZE = 24
 
 export interface AnnouncementCardProps {
   announcement: AnnouncementDTO
-  /** Host surfaces show the audience chip and the delivery counts; public readers never do. */
   showDelivery?: boolean
   onPress?: () => void
 }

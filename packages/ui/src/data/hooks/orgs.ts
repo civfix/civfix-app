@@ -61,10 +61,6 @@ export function actableOrganizations(
   return orgs?.filter((org) => org.suspended !== true)
 }
 
-/**
- * PATCH /orgs/:id answers with the whole DTO, so the org page's own cache is SEATED with the
- * response rather than invalidated - the header reflects a save before the refetch lands.
- */
 export function useUpdateOrganization(slug: string | undefined) {
   const api = useApi()
   const qc = useQueryClient()

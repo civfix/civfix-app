@@ -12,11 +12,6 @@ export const ANALYTICS_PANELS = ["signups", "reach", "slots", "checkins", "impac
 
 export type AnalyticsPanelKey = (typeof ANALYTICS_PANELS)[number]
 
-/**
- * The carousel reads top to bottom as the event's own story, so the phase decides which chapter leads:
- * before the event a host is growing sign-ups, on the day they are counting arrivals, afterwards the
- * only number that matters is the impact.
- */
 const PANEL_ORDER: Readonly<Record<EventAnalyticsPhase, readonly AnalyticsPanelKey[]>> = {
   upcoming: ["signups", "reach", "slots", "checkins", "impact"],
   day_of: ["checkins", "signups", "slots", "reach", "impact"],
@@ -38,10 +33,6 @@ export function analyticsPanelOrder(phase: EventAnalyticsPhase): readonly Analyt
   return PANEL_ORDER[phase]
 }
 
-/**
- * An event with neither shifts nor a capacity has no fill to show, and an empty ring is worse than a
- * missing panel - so that one panel drops out and the carousel shows four dots.
- */
 export function slotsPanelVisible(data: GetEventAnalyticsResponse): boolean {
   const rows = data.signups.bySlot?.rows.length ?? 0
   return rows > 0 || (data.kpis.capacity ?? 0) > 0
@@ -54,10 +45,6 @@ export function visibleAnalyticsPanels(
   return slotsPanelVisible(data) ? order : order.filter((panel) => panel !== "slots")
 }
 
-/**
- * A long-finished event is a record, not a dashboard: past this window the card collapses to one
- * summary row rather than five panels nobody will swipe.
- */
 export function isArchivalEvent(
   lifecycle: EventAnalyticsLifecycle,
   phase: EventAnalyticsPhase,
@@ -85,10 +72,6 @@ function parse(value: string | null | undefined): number | null {
   return Number.isFinite(at) ? at : null
 }
 
-/**
- * A single event's time is a lifecycle, not a rolling window, so the scrubber names the phases rather
- * than offering 7/30/90 days. The server always sends the whole series; this is client-side slicing.
- */
 export function segmentRange(
   segment: LifecycleSegment,
   lifecycle: EventAnalyticsLifecycle,
@@ -130,13 +113,27 @@ export function defaultSegment(
   return segmentEnabled(wanted, lifecycle, now) ? wanted : "all"
 }
 
+const DAY_BUCKET_KEY = /^\d{4}-\d{2}-\d{2}$/
+
+export function dayBucketed(points: readonly SeriesPoint[]): boolean {
+  return points.length > 0 && points.every((point) => DAY_BUCKET_KEY.test(point.day))
+}
+
+export function wholeDayRange(range: TimeRange): TimeRange {
+  return {
+    from: Math.floor(range.from / DAY_MS) * DAY_MS,
+    to: Math.floor(range.to / DAY_MS) * DAY_MS + DAY_MS - 1,
+  }
+}
+
 export function sliceSeries(
   points: readonly SeriesPoint[],
   range: TimeRange,
 ): readonly SeriesPoint[] {
+  const bounds = dayBucketed(points) ? wholeDayRange(range) : range
   const sliced = points.filter((point) => {
     const at = parse(point.day)
-    return at === null ? true : at >= range.from && at <= range.to
+    return at === null ? true : at >= bounds.from && at <= bounds.to
   })
   return sliced.length > 0 ? sliced : points
 }
@@ -156,13 +153,11 @@ export function hasSeriesData(points: readonly SeriesPoint[]): boolean {
   return points.some((point) => !point.suppressed && (point.value ?? 0) > 0)
 }
 
-/** A rate the server suppressed reads as "not enough data", never as a zero. */
 export function ratePercent(rate: SuppressedRate | undefined): number | null {
   if (!rate || rate.suppressed || rate.value === null) return null
   return Math.round(rate.value * 100)
 }
 
-/** The view-to-signup rate is silly under a handful of views, so it is hidden rather than rounded. */
 export function reachRateVisible(pageViews: number | null, rate: SuppressedRate): boolean {
   return (pageViews ?? 0) >= REACH_RATE_MIN_VIEWS && ratePercent(rate) !== null
 }
@@ -170,11 +165,8 @@ export function reachRateVisible(pageViews: number | null, rate: SuppressedRate)
 export interface FunnelBar {
   step: string
   value: number | null
-  /** Width as a fraction of the first step, 0..1. */
   fraction: number
-  /** Share of the PREVIOUS step, or null at the top and wherever a denominator is missing. */
   ofPrevious: number | null
-  /** A step the lifecycle has not reached yet renders as a ghost outline, not as a zero. */
   ghost: boolean
 }
 
@@ -203,10 +195,6 @@ export type ComparisonVerdict = "above" | "typical" | "below" | "unknown"
 
 export const COMPARISON_BAND = 0.1
 
-/**
- * Plain language, not a bare percentage: a host wants to know whether this one went well, and a
- * median within a tenth either way is simply typical.
- */
 export function comparisonVerdict(
   value: number | null,
   median: number | null,

@@ -20,16 +20,13 @@ export interface ChartBar {
   label?: string
   value: number | null
   color: string
-  /** A lighter segment stacked on top of `value` (walk-ups on an arrivals bucket). */
   stackValue?: number
   stackColor?: string
-  /** The right-hand caption a horizontal row shows, e.g. "8/10". Never derived - callers format. */
   valueLabel?: string
 }
 
 export interface BarChartProps {
   bars: readonly ChartBar[]
-  /** Required for the SVG (vertical) mode; a horizontal list sizes itself from its parent. */
   width?: number
   height?: number
   horizontal?: boolean
@@ -42,11 +39,6 @@ export interface BarChartProps {
   accessibilityLabel: string
 }
 
-/**
- * Vertical bars are SVG; horizontal bars are plain Views, because a horizontal row is a label, a
- * rounded track and a caption - all of which the app's own typography and tokens already draw better
- * than SVG text would.
- */
 export function BarChart({
   bars,
   width = 0,

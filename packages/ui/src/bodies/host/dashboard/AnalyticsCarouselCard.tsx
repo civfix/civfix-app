@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { Pressable, ScrollView, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native"
+import { Platform, Pressable, ScrollView, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native"
 import type { GetEventAnalyticsResponse } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover } from "../../../theme"
 import { Icon, Text, iconMap } from "../../../typography"
@@ -31,9 +31,10 @@ const DOT_SIZE = 6
 
 const CHEVRON_HIT = 28
 
+const IS_WEB = Platform.OS === "web"
+
 export interface AnalyticsCarouselCardProps {
   cleanupId: string
-  /** Host surfaces only: the endpoint is host-authenticated and never shown to attendees. */
   enabled?: boolean
 }
 
@@ -180,7 +181,7 @@ export function AnalyticsCarouselCard({ cleanupId, enabled = true }: AnalyticsCa
           </ScrollView>
         ) : null}
 
-        {index > 0 ? (
+        {IS_WEB && index > 0 ? (
           <Pressable
             onPress={() => goTo(index - 1)}
             accessibilityRole="button"
@@ -196,7 +197,7 @@ export function AnalyticsCarouselCard({ cleanupId, enabled = true }: AnalyticsCa
             <Icon icon={iconMap.ChevronLeft} size={16} color={th.colors.textMuted} />
           </Pressable>
         ) : null}
-        {index < panels.length - 1 ? (
+        {IS_WEB && index < panels.length - 1 ? (
           <Pressable
             onPress={() => goTo(index + 1)}
             accessibilityRole="button"

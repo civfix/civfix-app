@@ -87,11 +87,6 @@ export function useCreateAnnouncement(cleanupId: string) {
   })
 }
 
-/**
- * Live recipient count for the audience picker. The preview endpoint is the one place that resolves a
- * segment without sending anything, so the count in the Send button is the count the server would fan
- * out to. Callers debounce the audience they pass in.
- */
 export function useAudiencePreview(
   cleanupId: string | undefined,
   audience: AnnouncementAudience,

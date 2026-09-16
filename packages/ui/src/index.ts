@@ -22,8 +22,6 @@ export * from "./bodies"
 export * from "./map"
 export * from "./report"
 
-// Hand-rolled react-native-svg chart primitives (Sparkline, BarChart, AreaLineChart, ProgressRing)
-// plus their pure geometry. Four shapes, one implementation, both platforms - no chart library.
 export * from "./charts"
 
 // Cross-platform full-screen media viewer ("lightbox"): a host mounts <MediaLightboxProvider> once

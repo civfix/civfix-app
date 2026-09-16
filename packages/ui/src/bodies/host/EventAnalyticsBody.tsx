@@ -49,7 +49,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
 
   const cleanup = useCleanup(id)
   const canView = hasHostCapability(cleanup.data, "view_analytics")
-  const query = useEventAnalytics(id, "full", { enabled: canView || cleanup.isPending })
+  const query = useEventAnalytics(id, "full", { enabled: canView })
 
   const [segment, setSegment] = useState<LifecycleSegment | null>(null)
   const [width, setWidth] = useState(0)
@@ -63,7 +63,34 @@ export function EventAnalyticsBody({ id }: { id: string }) {
     segment ?? (data ? defaultSegment(data.phase, data.lifecycle, now) : "all")
   const range = data ? segmentRange(active, data.lifecycle, now) : null
 
-  if (cleanup.data && !canView) {
+  const skeleton = (
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+      <HeroSkeleton />
+      <TilesSkeleton columns={2} count={6} />
+    </ScrollView>
+  )
+
+  const errorState = (
+    <View style={styles.fill}>
+      <FeedNotice
+        plain
+        icon="CloudOff"
+        title={t("state.error_title")}
+        body={t("state.error_body")}
+        actionLabel={t("card.retry")}
+        onAction={() => {
+          void cleanup.refetch()
+          void query.refetch()
+        }}
+      />
+    </View>
+  )
+
+  if (cleanup.isPending) return skeleton
+
+  if (cleanup.isError) return errorState
+
+  if (!canView) {
     return (
       <View style={styles.fill}>
         <FeedNotice plain icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
@@ -71,29 +98,9 @@ export function EventAnalyticsBody({ id }: { id: string }) {
     )
   }
 
-  if (query.isPending) {
-    return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <HeroSkeleton />
-        <TilesSkeleton columns={2} count={6} />
-      </ScrollView>
-    )
-  }
+  if (query.isPending) return skeleton
 
-  if (query.isError || !data || !range) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice
-          plain
-          icon="CloudOff"
-          title={t("state.error_title")}
-          body={t("state.error_body")}
-          actionLabel={t("card.retry")}
-          onAction={() => void query.refetch()}
-        />
-      </View>
-    )
-  }
+  if (query.isError || !data || !range) return errorState
 
   const chartWidth = Math.max(0, width)
 

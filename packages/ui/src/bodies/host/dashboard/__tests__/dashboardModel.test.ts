@@ -237,6 +237,7 @@ describe("collaborator actions", () => {
         viewerId: "u9",
         canManage: true,
         canSetRole: false,
+        lastAdmin: false,
       }),
     ).toEqual({ roles: [], canRemove: true })
     expect(
@@ -245,6 +246,7 @@ describe("collaborator actions", () => {
         viewerId: "u9",
         canManage: true,
         canSetRole: false,
+        lastAdmin: false,
       }),
     ).toEqual({ roles: [], canRemove: false })
   })
@@ -257,25 +259,25 @@ describe("collaborator actions", () => {
   })
 
   it("offers nothing to a member who cannot manage the team", () => {
-    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: false, canSetRole: false }))
+    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: false, canSetRole: false, lastAdmin: false }))
       .toEqual({ roles: [], canRemove: false })
   })
 
   it("never offers actions on the owner or on yourself", () => {
     expect(
       orgMemberHasActions(
-        orgMemberActions({ member: member("u1", "owner"), viewerId: "u9", canManage: true, canSetRole: true }),
+        orgMemberActions({ member: member("u1", "owner"), viewerId: "u9", canManage: true, canSetRole: true, lastAdmin: false }),
       ),
     ).toBe(false)
     expect(
       orgMemberHasActions(
-        orgMemberActions({ member: member("u9", "admin"), viewerId: "u9", canManage: true, canSetRole: true }),
+        orgMemberActions({ member: member("u9", "admin"), viewerId: "u9", canManage: true, canSetRole: true, lastAdmin: false }),
       ),
     ).toBe(false)
   })
 
   it("offers the other role and removal to a manager", () => {
-    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true, canSetRole: true }))
+    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true, canSetRole: true, lastAdmin: false }))
       .toEqual({ roles: ["admin"], canRemove: true })
   })
 
@@ -285,8 +287,33 @@ describe("collaborator actions", () => {
       viewerId: "u9",
       canManage: true,
       canSetRole: true,
+      lastAdmin: false,
     })
     expect(actions).toEqual({ roles: ["member"], canRemove: false })
+  })
+
+  it("pre-disables demotion and removal on the last admin seat rather than waiting for the server", () => {
+    expect(
+      orgMemberActions({
+        member: member("u1", "admin"),
+        viewerId: "u9",
+        canManage: true,
+        canSetRole: true,
+        lastAdmin: true,
+      }),
+    ).toEqual({ roles: [], canRemove: false })
+  })
+
+  it("still manages plain members while the org is down to one admin", () => {
+    expect(
+      orgMemberActions({
+        member: member("u1", "member"),
+        viewerId: "u9",
+        canManage: true,
+        canSetRole: true,
+        lastAdmin: true,
+      }),
+    ).toEqual({ roles: ["admin"], canRemove: true })
   })
 
   it("orders owners first, then admins, then members by name", () => {

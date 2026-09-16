@@ -14,6 +14,10 @@ function media(id: string, url: string): MediaDTO {
   return { id, kind: "image", url, thumbUrl: null, status: "validating" } as MediaDTO
 }
 
+function ready(id: string, url: string): MediaDTO {
+  return { id, kind: "image", url, thumbUrl: null, status: "ready" } as MediaDTO
+}
+
 function msg(partial: Partial<ChatMessageDTO> & { id: string }): ChatMessageDTO {
   return {
     cleanupId: "room-1",
@@ -61,6 +65,18 @@ describe("mergeLocalAttachments", () => {
     const server = [media("z", "https://cdn/z.jpg")]
     expect(mergeLocalAttachments(local, server).map((m) => m.id)).toEqual(["a", "b", "z"])
   })
+
+  it("accepts a shorter server list once every attachment on it has settled", () => {
+    const local = [media("a", "file://a.jpg"), media("b", "file://b.jpg")]
+    const server = [ready("b", "https://cdn/b.jpg")]
+    expect(mergeLocalAttachments(local, server)).toBe(server)
+  })
+
+  it("keeps filling the gaps while any server attachment is still validating", () => {
+    const local = [media("a", "file://a.jpg"), media("b", "file://b.jpg")]
+    const server = [media("b", "https://cdn/b.jpg")]
+    expect(mergeLocalAttachments(local, server).map((m) => m.id)).toEqual(["a", "b"])
+  })
 })
 
 describe("withLocalChatAttachments", () => {
@@ -80,6 +96,13 @@ describe("withLocalChatAttachments", () => {
     linkLocalChatAttachments("c1", "m1")
     const restored = withLocalChatAttachments(msg({ id: "m1" }))
     expect(restored.attachments?.map((m) => m.url)).toEqual(["file://a.jpg"])
+  })
+
+  it("frees the client-id slot once the server id has taken it over", () => {
+    rememberLocalChatAttachments("c1", [media("a", "file://a.jpg")])
+    linkLocalChatAttachments("c1", "m1")
+    expect(localChatAttachments(msg({ id: "m9", clientId: "c1" }))).toBeNull()
+    expect(localChatAttachments(msg({ id: "m1" }))).not.toBeNull()
   })
 
   it("stops overriding once the server serves the attachment", () => {
