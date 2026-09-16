@@ -11,6 +11,7 @@ import {
   MAX_ORG_NAME,
   ORG_SLUG_MAX,
   ORG_SLUG_MIN,
+  SafeHttpsLinkSchema,
   SOCIAL_PLATFORMS,
   SOCIAL_PLATFORM_LABELS,
   UpdateOrganizationRequestSchema,
@@ -143,6 +144,11 @@ function editBodyFromDraft(
   return { ...bodyFromDraft(draft, logo), donationUrl: trimmedOrNull(draft.donationUrl) }
 }
 
+function donationLinkUnsafe(value: string): boolean {
+  const trimmed = trimmedOrNull(value)
+  return trimmed !== null && !SafeHttpsLinkSchema.safeParse(trimmed).success
+}
+
 function issuesToFields(issues: readonly { path: readonly PropertyKey[]; message: string }[]) {
   const out: Record<string, string> = {}
   for (const issue of issues) {
@@ -219,8 +225,8 @@ export function OrgProfileForm({
         defaultValue: "Enter a full https:// address.",
       })
     }
-    if (out.donationUrl) {
-      out.donationUrl = t("form.donation_invalid", { defaultValue: "Must start with https://" })
+    if (out.donationUrl || donationLinkUnsafe(draft.donationUrl)) {
+      out.donationUrl = t("form.donation_invalid")
     }
     for (const platform of SOCIAL_PLATFORMS) {
       const key = `socialLinks.${platform}`
@@ -508,14 +514,11 @@ export function OrgProfileForm({
           </Field>
           {mode === "edit" ? (
             <Field
-              label={t("form.donationUrl", { defaultValue: "Donation link" })}
+              label={t("form.donationUrl")}
               htmlFor="org-donation-url"
               optional
               error={showError("donationUrl")}
-              hint={t("form.donation_hint", {
-                defaultValue:
-                  "Must start with https://. Shown on your public page and your events; civfix never handles the money.",
-              })}
+              hint={t("form.donation_hint")}
             >
               <TextInput
                 id="org-donation-url"

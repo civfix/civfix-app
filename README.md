@@ -89,13 +89,13 @@ to production only when a release is cut (issue
 
 | Event | What happens |
 | --- | --- |
-| push to `main` | `deploy-web.yml` builds the web static export against `api.civfix.dev` with the Stripe TEST key and publishes it to the `staging` branch of the Cloudflare Pages project `civfix-web` (https://civfix.dev). `publish-shared.yml` publishes `@civfix/shared` if its version is ahead of the registry. |
-| published `v*` release | `deploy-web.yml` rebuilds **the same commit** against `api.civfix.org` with the LIVE Stripe key and Turnstile on, and publishes it to the Pages production branch (https://civfix.org). |
+| push to `main` | `deploy-web.yml` builds the web static export against `api.civfix.dev` and publishes it to the `staging` branch of the Cloudflare Pages project `civfix-web` (https://civfix.dev). `publish-shared.yml` publishes `@civfix/shared` if its version is ahead of the registry. |
+| published `v*` release | `deploy-web.yml` rebuilds **the same commit** against `api.civfix.org` with Turnstile on, and publishes it to the Pages production branch (https://civfix.org). |
 
 A static export inlines every `NEXT_PUBLIC_*` at build time, so production is a rebuild of the release
 commit rather than a byte-copy of the staging artifact — unlike the backend, whose Docker images really
 are promoted as-is. The workflow resolves those values once and then asserts they match the target, so a
-build cannot ship a test key to civfix.org or a live key to the public preview.
+build cannot ship the staging API URL to civfix.org or the production one to the public preview.
 
 The mobile app deploys through `.github/workflows/deploy-mobile.yml` on the same lane: a push to
 `main` that touches the app or the packages builds the `testflight` profile (staging API) on a

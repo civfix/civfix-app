@@ -28,7 +28,7 @@
     "title": "Donations",
     "link": "Donation link",
     "link_hint": "An https link shown on the event page.",
-    "org_note": "Donations for this event are handled by {{org}}."
+    "org_fallback": "Leave this blank to use {{org}}'s donation link."
   },
   "danger": {
     "title": "Danger zone",

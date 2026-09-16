@@ -28,7 +28,7 @@
     "title": "Spenden",
     "link": "Spendenlink",
     "link_hint": "Ein https-Link, der auf der Veranstaltungsseite erscheint.",
-    "org_note": "Die Spenden für diese Veranstaltung laufen über {{org}}."
+    "org_fallback": "Leer lassen, um den Spendenlink von {{org}} zu verwenden."
   },
   "danger": {
     "title": "Gefahrenzone",

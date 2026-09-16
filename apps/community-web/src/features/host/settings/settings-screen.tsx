@@ -284,10 +284,7 @@ export function SettingsScreen() {
         </Field>
         {event?.organization?.donationUrl ? (
           <p className="mt-token-2 text-token-12 text-console-ink-3">
-            {t("donations.org_fallback", {
-              org: event.organization.name,
-              defaultValue: `Leave this blank to use ${event.organization.name}'s donation link.`,
-            })}
+            {t("donations.org_fallback", { org: event.organization.name })}
           </p>
         ) : null}
       </section>

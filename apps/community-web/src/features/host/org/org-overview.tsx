@@ -203,11 +203,11 @@ export function OrgOverview() {
             sub={org.verifiedAt ? format.date(org.verifiedAt) : undefined}
           />
           <KpiCell
-            label={t("overview.donation_link", { defaultValue: "Donation link" })}
+            label={t("overview.donation_link")}
             value={
               donationLink === null ? (
                 <span className="text-token-14 text-console-ink-3">
-                  {t("overview.no_donation_link", { defaultValue: "No donation link" })}
+                  {t("overview.no_donation_link")}
                 </span>
               ) : (
                 <a
@@ -228,8 +228,8 @@ export function OrgOverview() {
                   className="rounded-xs font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
                 >
                   {donationLink === null
-                    ? t("overview.add_donation_link", { defaultValue: "Add a link" })
-                    : t("overview.edit_donation_link", { defaultValue: "Edit link" })}
+                    ? t("overview.add_donation_link")
+                    : t("overview.edit_donation_link")}
                 </ConsoleLink>
               ) : undefined
             }

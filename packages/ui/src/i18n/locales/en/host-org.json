@@ -38,7 +38,11 @@
     "title": "Organization",
     "events": "Events",
     "members": "Members",
-    "created": "Created"
+    "created": "Created",
+    "donation_link": "Donation link",
+    "no_donation_link": "No donation link",
+    "add_donation_link": "Add a link",
+    "edit_donation_link": "Edit link"
   },
   "members": {
     "title": "Members",
@@ -56,5 +60,10 @@
     "loading_more": "Loading…",
     "show_more_upcoming_a11y": "Show more upcoming events",
     "show_more_past_a11y": "Show more past events"
+  },
+  "form": {
+    "donationUrl": "Donation link",
+    "donation_hint": "Must start with https://. Shown on your public page and your events; civfix never handles the money.",
+    "donation_invalid": "Must start with https://"
   }
 }
