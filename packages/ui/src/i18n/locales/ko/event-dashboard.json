@@ -64,7 +64,6 @@
     "open_a11y": "{{title}} 열기",
     "actions_a11y": "{{title}} 작업",
     "host_tools": "호스트 도구",
-    "email_attendees": "참가자에게 이메일 보내기",
     "duplicate": "복제",
     "edit": "수정",
     "show_more": "더 보기",
@@ -96,7 +95,9 @@
     "meta_hours_not_logged": "시간 미기록",
     "meta_cancelled": "취소됨",
     "meta_signed_up": "{{count}}명 신청",
-    "meta_underway": "{{ago}} 전 시작"
+    "meta_underway": "{{ago}} 전 시작",
+    "open_chat": "그룹 채팅 열기",
+    "announce": "공지 작성"
   },
   "first_event": {
     "title": "첫 이벤트를 열어보세요",

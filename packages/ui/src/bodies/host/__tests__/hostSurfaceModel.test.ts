@@ -5,7 +5,8 @@ import {
   ARRIVAL_BUCKET_MINUTES,
   HOST_ROW_ICONS,
   MAX_ARRIVAL_SPARK_BUCKETS,
-  MESSAGE_CTA_WINDOW_MS,
+  ANNOUNCE_CTA_WINDOW_MS,
+  ctaRowKeys,
   arrivalOffsetLabel,
   arrivalSparkPoints,
   attendanceRate,
@@ -24,6 +25,7 @@ import {
   stillExpected,
   type HostRowKey,
   type HostSurfaceCapabilities,
+  type HostCtaKey,
   type HostSurfaceInput,
 } from "../hostSurfaceModel"
 
@@ -136,16 +138,16 @@ describe("the stages the shared clock can actually produce", () => {
 })
 
 describe("one primary CTA per stage", () => {
-  it("offers share before the event, and swaps to a message inside the 48h window", () => {
+  it("offers share before the event, and swaps to an announcement inside the 48h window", () => {
     expect(hostPrimaryCta(surface())).toBe("share")
     expect(
       hostPrimaryCta(
-        surface({ startsAt: NOW + MESSAGE_CTA_WINDOW_MS - HOUR, registeredSeats: 12 }),
+        surface({ startsAt: NOW + ANNOUNCE_CTA_WINDOW_MS - HOUR, registeredSeats: 12 }),
       ),
-    ).toBe("message")
+    ).toBe("announce")
   })
 
-  it("keeps share when nobody has registered, because there is nobody to message", () => {
+  it("keeps share when nobody has registered, because there is nobody to notify", () => {
     expect(hostPrimaryCta(surface({ startsAt: NOW + 3 * HOUR, registeredSeats: 0 }))).toBe("share")
   })
 
@@ -164,9 +166,9 @@ describe("one primary CTA per stage", () => {
     }
   })
 
-  it("falls back to a message, then a share, for a host who cannot check anyone in", () => {
+  it("falls back to an announcement, then a share, for a host who cannot check anyone in", () => {
     const stage = STAGES.underway
-    expect(hostPrimaryCta(surface({ stage, can: { ...ALL, checkIn: false } }))).toBe("message")
+    expect(hostPrimaryCta(surface({ stage, can: { ...ALL, checkIn: false } }))).toBe("announce")
     expect(
       hostPrimaryCta(surface({ stage, can: { ...ALL, checkIn: false, broadcast: false } })),
     ).toBe("share")
@@ -219,7 +221,7 @@ describe("one primary CTA per stage", () => {
   it("puts editing beside the share CTA and duplication beside a cancelled event", () => {
     expect(hostSecondaryCta(surface())).toBe("edit")
     expect(hostSecondaryCta(surface({ stage: STAGES.cancelled }))).toBe("duplicate")
-    expect(hostSecondaryCta(surface({ stage: STAGES.underway }))).toBe("message")
+    expect(hostSecondaryCta(surface({ stage: STAGES.underway }))).toBe("announce")
   })
 
   it("lets a past host correct hours that are already logged", () => {
@@ -360,6 +362,7 @@ describe("stat tiles per phase", () => {
 
 describe("action cards", () => {
   const base = {
+    ctas: [] as readonly (HostCtaKey | null)[],
     can: ALL,
     unmarked: 0,
     scannerAvailable: false,
@@ -452,6 +455,32 @@ describe("action cards", () => {
     expect(rowsFor({ stage: STAGES.cancelled })).toEqual(["duplicate"])
   })
 
+  it("offers the group chat to anyone still on a live event, and drops it once it is called off", () => {
+    for (const stage of [STAGES.upcoming, STAGES.underway, STAGES.past] as const) {
+      expect(rowsFor({ stage }), stage).toContain("chat")
+    }
+    expect(rowsFor({ stage: STAGES.upcoming, can: NONE })).toContain("chat")
+    expect(rowsFor({ stage: STAGES.cancelled })).not.toContain("chat")
+  })
+
+  it("puts the group chat ahead of the announcement, and gates only the announcement on broadcast", () => {
+    const rows = rowsFor({ stage: STAGES.upcoming })
+    expect(rows.indexOf("announce")).toBe(rows.indexOf("chat") + 1)
+    expect(rowsFor({ stage: STAGES.upcoming, can: { ...ALL, broadcast: false } })).not.toContain(
+      "announce",
+    )
+  })
+
+  it("has one Team row, reachable for as long as the team is - the invite row was the same door", () => {
+    for (const stage of [STAGES.upcoming, STAGES.underway, STAGES.past] as const) {
+      const rows = rowsFor({ stage })
+      expect(rows.filter((row) => row === "team"), stage).toHaveLength(1)
+    }
+    expect(rowsFor({ stage: STAGES.upcoming, can: { ...ALL, manageTeam: false } })).not.toContain(
+      "team",
+    )
+  })
+
   it("offers Linked reports right after Edit while a cleanup can still be changed", () => {
     for (const stage of [STAGES.upcoming, STAGES.soon, STAGES.underway] as const) {
       const rows = rowsFor({ stage, isCleanup: true, linkedReportCount: 0 })
@@ -491,6 +520,58 @@ describe("action cards", () => {
       )
     }
   })
+})
+
+describe("a row never repeats a CTA the PhaseHeader is already showing", () => {
+  const base = {
+    ctas: [] as readonly (HostCtaKey | null)[],
+    can: ALL,
+    unmarked: 0,
+    scannerAvailable: false,
+    hasOrganization: true,
+    consoleReachable: true,
+    isCleanup: false,
+    linkedReportCount: 0,
+  }
+
+  it("maps each CTA onto the one row that fires the same handler", () => {
+    expect([...ctaRowKeys(["share", "announce", "edit"])]).toEqual(["share", "announce", "edit"])
+    expect([...ctaRowKeys([null, null])]).toEqual([])
+    expect(ctaRowKeys(["scan"]).has("scan")).toBe(true)
+    expect(ctaRowKeys(["check_in"]).has("check_in")).toBe(true)
+  })
+
+  it("drops the duplicated rows from every card", () => {
+    const stage = STAGES.upcoming
+    const before = hostActionCards({ ...base, stage }).flatMap((card) => card.rows)
+    expect(before).toContain("share")
+    expect(before).toContain("edit")
+    const after = hostActionCards({ ...base, stage, ctas: ["share", "edit"] }).flatMap(
+      (card) => card.rows,
+    )
+    expect(after).not.toContain("share")
+    expect(after).not.toContain("edit")
+    expect(after).toContain("chat")
+  })
+
+  it("never leaves an empty card behind once a row is suppressed", () => {
+    const cards = hostActionCards({ ...base, stage: STAGES.upcoming, ctas: ["share"] })
+    expect(cards.map((card) => card.key)).not.toContain("grow")
+    for (const card of cards) expect(card.rows.length).toBeGreaterThan(0)
+  })
+
+  it("is what a real host surface passes: the primary and the secondary of that render", () => {
+    const input = surface({ stage: STAGES.underway })
+    const ctas = [hostPrimaryCta(input), hostSecondaryCta(input)]
+    expect(ctas).toEqual(["check_in", "announce"])
+    const rows = hostActionCards({ ...base, stage: STAGES.underway, ctas }).flatMap(
+      (card) => card.rows,
+    )
+    expect(rows).not.toContain("check_in")
+    expect(rows).not.toContain("announce")
+    expect(rows).toContain("chat")
+  })
+
 })
 
 describe("chart inputs", () => {
@@ -609,6 +690,7 @@ describe("every host row carries an icon of its own", () => {
 
   it("names an icon for every row the action cards can emit, in any stage", () => {
     const base = {
+      ctas: [] as readonly (HostCtaKey | null)[],
       unmarked: 2,
       scannerAvailable: true,
       hasOrganization: true,

@@ -64,14 +64,16 @@ export function hostedEventCan(event: HostedEventStanding, capability: HostCapab
 
 export interface HostedEventActions {
   hostTools: boolean
-  emailAttendees: boolean
+  chat: boolean
+  announce: boolean
   duplicate: boolean
   edit: boolean
 }
 
 export const NO_HOSTED_EVENT_ACTIONS: HostedEventActions = {
   hostTools: false,
-  emailAttendees: false,
+  chat: false,
+  announce: false,
   duplicate: false,
   edit: false,
 }
@@ -82,14 +84,21 @@ export function hostedEventActions(event: HostedEventDTO, now: Date): HostedEven
   const status = hostedEventStatus(event, now)
   return {
     hostTools: manage || caps.has("view_roster"),
-    emailAttendees: caps.has("broadcast") && status !== "cancelled",
+    chat: status !== "cancelled",
+    announce: caps.has("broadcast") && status !== "cancelled",
     duplicate: manage,
     edit: manage && status !== "done" && status !== "cancelled",
   }
 }
 
 export function hostedEventHasActions(actions: HostedEventActions): boolean {
-  return actions.hostTools || actions.emailAttendees || actions.duplicate || actions.edit
+  return (
+    actions.hostTools ||
+    actions.chat ||
+    actions.announce ||
+    actions.duplicate ||
+    actions.edit
+  )
 }
 
 export function orgRoleCan(

@@ -34,14 +34,14 @@
     "drop_pin": "Añadir aquí",
     "host_mode": "Modo anfitrión",
     "host_checkin": "Registro de entrada",
-    "host_broadcast_quick": "Mensaje rápido",
     "host_team": "Equipo",
     "host_log_hours": "Registrar horas de voluntariado",
     "my_ticket": "Tu entrada",
     "org": "Organización",
     "event_dashboard": "Panel de eventos",
     "announcement": "Anuncio",
-    "announcements": "Anuncios"
+    "announcements": "Anuncios",
+    "host_announce": "Publicar un anuncio"
   },
   "tab": {
     "home": "Inicio",

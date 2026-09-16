@@ -141,7 +141,8 @@ describe("event row actions", () => {
     const actions = hostedEventActions(hosted({ myRole: "organizer" }), now)
     expect(actions).toEqual({
       hostTools: true,
-      emailAttendees: true,
+      chat: true,
+      announce: true,
       duplicate: true,
       edit: true,
     })
@@ -151,7 +152,8 @@ describe("event row actions", () => {
     const actions = hostedEventActions(hosted({ myRole: "staff" }), now)
     expect(actions).toEqual({
       hostTools: true,
-      emailAttendees: false,
+      chat: true,
+      announce: false,
       duplicate: false,
       edit: false,
     })
@@ -163,20 +165,28 @@ describe("event row actions", () => {
     expect(hostedEventCan(event, "manage_event")).toBe(false)
     expect(hostedEventActions(event, now)).toEqual({
       hostTools: true,
-      emailAttendees: false,
+      chat: true,
+      announce: false,
       duplicate: false,
       edit: false,
     })
   })
 
-  it("gives a plain attendee nothing, so the row shows no menu", () => {
+  it("gives a plain attendee the group chat and nothing else - the chat is every event's", () => {
     const actions = hostedEventActions(hosted(), now)
-    expect(hostedEventHasActions(actions)).toBe(false)
+    expect(actions).toEqual({
+      hostTools: false,
+      chat: true,
+      announce: false,
+      duplicate: false,
+      edit: false,
+    })
+    expect(hostedEventHasActions(actions)).toBe(true)
   })
 
-  it("lets broadcast alone unlock the email action", () => {
+  it("lets broadcast alone unlock the announcement action", () => {
     const actions = hostedEventActions(hosted({ myCapabilities: ["broadcast"] }), now)
-    expect(actions.emailAttendees).toBe(true)
+    expect(actions.announce).toBe(true)
     expect(actions.duplicate).toBe(false)
   })
 
@@ -201,7 +211,8 @@ describe("event row actions", () => {
     expect(hostedEventActions(underway, now).edit).toBe(true)
     const gone = hosted({ ...organizer, status: "cancelled" })
     expect(hostedEventActions(gone, now).edit).toBe(false)
-    expect(hostedEventActions(gone, now).emailAttendees).toBe(false)
+    expect(hostedEventActions(gone, now).announce).toBe(false)
+    expect(hostedEventActions(gone, now).chat).toBe(false)
   })
 })
 
@@ -407,7 +418,8 @@ describe("dashboard wiring", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain('kind: "create-cleanup"')
     expect(body).toContain('kind: "edit-cleanup"')
-    expect(body).toContain('kind: "host-broadcast-quick"')
+    expect(body).toContain('kind: "host-announce"')
+    expect(body).toContain('roomKind: "cleanup"')
     expect(body).toContain("openHostDashboard")
   })
 
@@ -417,12 +429,14 @@ describe("dashboard wiring", () => {
     expect(source("../ConsoleLinkRow.tsx")).toContain("./ConsoleLinkRow.web")
   })
 
-  it("preselects email and the registered segment for the email-attendees entry", () => {
-    const broadcast = source("../../HostBroadcastQuickBody.tsx")
-    expect(broadcast).toContain("EMAIL_CHANNELS")
-    expect(broadcast).toContain('preset?.segment ?? "all_registered"')
+  it("sends an announcement straight through the new endpoint, with no draft machine in between", () => {
+    const announce = source("../../HostAnnounceBody.tsx")
+    expect(announce).toContain("useCreateAnnouncement")
+    expect(announce).toContain("useAudiencePreview")
+    expect(announce).not.toContain("useQuickBroadcast")
+    expect(announce).not.toContain("retainedDraft")
     const store = source("../dashboardStore.ts")
-    expect(store).toContain('segment: "all_registered"')
+    expect(store).not.toContain("broadcastPreset")
   })
 })
 
@@ -804,7 +818,7 @@ describe("portfolio surface", () => {
     const store = source("../dashboardStore.ts")
     expect(store).not.toContain("setTab")
     expect(store).not.toContain("setRange")
-    expect(store).toContain('segment: "all_registered"')
+    expect(store).not.toContain("broadcastPreset")
   })
 
   it("reads the portfolio through the new all-time model", () => {

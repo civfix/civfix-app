@@ -8,7 +8,7 @@ import { BODY_LAYOUT } from "../../shell/bodyLayout"
 const HOST_KINDS = [
   "host-mode",
   "host-checkin",
-  "host-broadcast-quick",
+  "host-announce",
   "host-team",
   "host-log-hours",
   "my-ticket",
@@ -38,7 +38,7 @@ describe("URL round trip", () => {
   const cases: Array<[string, DetailEntry]> = [
     ["/cleanups/e1/host", { kind: "host-mode", id: "e1" }],
     ["/cleanups/e1/checkin", { kind: "host-checkin", id: "e1" }],
-    ["/cleanups/e1/broadcast", { kind: "host-broadcast-quick", id: "e1" }],
+    ["/cleanups/e1/announce", { kind: "host-announce", id: "e1" }],
     ["/cleanups/e1/team", { kind: "host-team", id: "e1" }],
     ["/cleanups/e1/hours", { kind: "host-log-hours", id: "e1" }],
     ["/cleanups/e1/ticket", { kind: "my-ticket", id: "e1" }],
@@ -90,7 +90,7 @@ describe("parent view + flow protection", () => {
     for (const kind of [
       "host-mode",
       "host-checkin",
-      "host-broadcast-quick",
+      "host-announce",
       "host-team",
       "host-log-hours",
       "my-ticket",
@@ -103,8 +103,8 @@ describe("parent view + flow protection", () => {
     }
   })
 
-  it("protects the quick broadcast draft - and ONLY it - among the new kinds", () => {
-    expect(FLOW_KINDS.has("host-broadcast-quick")).toBe(true)
+  it("protects the announcement draft - and ONLY it - among the new kinds", () => {
+    expect(FLOW_KINDS.has("host-announce")).toBe(true)
     for (const kind of [
       "host-mode",
       "host-checkin",

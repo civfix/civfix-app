@@ -22,12 +22,12 @@
   },
   "cta": {
     "share": "Veranstaltung teilen",
-    "message": "Teilnehmende anschreiben",
     "check_in": "Einchecken",
     "scan": "Tickets scannen",
     "log_hours": "Ehrenamtsstunden eintragen",
     "duplicate": "Veranstaltung duplizieren",
-    "edit": "Veranstaltung bearbeiten"
+    "edit": "Veranstaltung bearbeiten",
+    "announce": "Ankündigung schreiben"
   },
   "hero": {
     "registered": "Angemeldet",
@@ -101,11 +101,6 @@
   },
   "row": {
     "share": "Link teilen",
-    "invite_team": "Teammitglied einladen",
-    "message": "Teilnehmende anschreiben",
-    "message_sub": "Push und in der App",
-    "email": "Teilnehmende per E-Mail erreichen",
-    "email_sub": "Versand durch civfix. Adressen bleiben privat.",
     "check_in": "Einchecken",
     "check_in_sub_one": "{{count}} noch einzuchecken",
     "check_in_sub_other": "{{count}} noch einzuchecken",
@@ -127,7 +122,11 @@
     "log_hours_none": "Niemand hat eingecheckt",
     "linked_reports": "Verknüpfte Meldungen",
     "linked_reports_sub": "Meldungen, die dieser Cleanup bearbeitet",
-    "linked_reports_none": "Noch nichts verknüpft"
+    "linked_reports_none": "Noch nichts verknüpft",
+    "chat": "Gruppenchat öffnen",
+    "chat_sub": "Mit allen bei der Veranstaltung sprechen",
+    "announce": "Ankündigung schreiben",
+    "announce_sub": "Benachrichtigt die ausgewählten Personen per E-Mail und Push"
   },
   "no_shows": {
     "title": "Den Rest als nicht erschienen markieren?",

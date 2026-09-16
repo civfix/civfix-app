@@ -22,12 +22,12 @@
   },
   "cta": {
     "share": "Share event",
-    "message": "Message attendees",
     "check_in": "Check in",
     "scan": "Scan tickets",
     "log_hours": "Log volunteer hours",
     "duplicate": "Duplicate event",
-    "edit": "Edit event"
+    "edit": "Edit event",
+    "announce": "Make announcement"
   },
   "hero": {
     "registered": "Registered",
@@ -101,11 +101,6 @@
   },
   "row": {
     "share": "Share link",
-    "invite_team": "Invite a team member",
-    "message": "Message attendees",
-    "message_sub": "Push and in-app",
-    "email": "Email attendees",
-    "email_sub": "Sent by civfix. Addresses stay private.",
     "check_in": "Check in",
     "check_in_sub_one": "{{count}} still to check in",
     "check_in_sub_other": "{{count}} still to check in",
@@ -127,7 +122,11 @@
     "log_hours_none": "No one was checked in",
     "linked_reports": "Linked reports",
     "linked_reports_sub": "Reports this cleanup will handle",
-    "linked_reports_none": "None linked yet"
+    "linked_reports_none": "None linked yet",
+    "chat": "Open group chat",
+    "chat_sub": "Talk with everyone at the event",
+    "announce": "Make announcement",
+    "announce_sub": "Notifies the people you pick, by email and push"
   },
   "no_shows": {
     "title": "Mark the rest as no-shows?",

@@ -40,7 +40,7 @@ import {
   DropPinBody,
   HostModeBody,
   HostCheckinBody,
-  HostBroadcastQuickBody,
+  HostAnnounceBody,
   HostTeamBody,
   HostLogHoursBody,
   MyTicketBody,
@@ -162,8 +162,8 @@ function renderBodyId(id: BodyId, entry: DetailEntry | null): React.ReactNode {
       return <HostModeBody id={entry?.id ?? ""} />
     case "hostCheckin":
       return <HostCheckinBody id={entry?.id ?? ""} />
-    case "hostBroadcastQuick":
-      return <HostBroadcastQuickBody id={entry?.id ?? ""} />
+    case "hostAnnounce":
+      return <HostAnnounceBody id={entry?.id ?? ""} />
     case "hostTeam":
       return <HostTeamBody id={entry?.id ?? ""} />
     case "hostLogHours":

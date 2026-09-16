@@ -64,7 +64,6 @@
     "open_a11y": "Abrir {{title}}",
     "actions_a11y": "Acciones para {{title}}",
     "host_tools": "Herramientas de anfitrión",
-    "email_attendees": "Escribir a los asistentes",
     "duplicate": "Duplicar",
     "edit": "Editar",
     "show_more": "Ver más",
@@ -96,7 +95,9 @@
     "meta_hours_not_logged": "Horas sin registrar",
     "meta_cancelled": "Cancelado",
     "meta_signed_up": "{{count}} apuntados",
-    "meta_underway": "Empezó hace {{ago}}"
+    "meta_underway": "Empezó hace {{ago}}",
+    "open_chat": "Abrir el chat del grupo",
+    "announce": "Publicar un anuncio"
   },
   "first_event": {
     "title": "Organiza tu primer evento",

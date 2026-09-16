@@ -65,7 +65,7 @@ import {
   portfolioKpis,
   sharePathFor,
 } from "./dashboard/dashboardModel"
-import { emailAttendeesPreset, useDashboardStore } from "./dashboard/dashboardStore"
+import { useDashboardStore } from "./dashboard/dashboardStore"
 
 type EventWindow = "upcoming" | "past"
 
@@ -108,7 +108,6 @@ export function EventDashboardBody() {
 
   const requestedOrgId = useDashboardStore((s) => s.orgId)
   const setOrgId = useDashboardStore((s) => s.setOrgId)
-  const setBroadcastPreset = useDashboardStore((s) => s.setBroadcastPreset)
 
   const [eventWindow, setEventWindow] = useState<EventWindow>("upcoming")
   const [duplicating, setDuplicating] = useState<HostedEventDTO | null>(null)
@@ -195,13 +194,18 @@ export function EventDashboardBody() {
     useNavStore.getState().push({ kind: "host-checkin", id: event.id })
   }, [])
 
-  const onEmailAttendees = useCallback(
-    (event: HostedEventDTO) => {
-      setBroadcastPreset(emailAttendeesPreset(event.id))
-      useNavStore.getState().push({ kind: "host-broadcast-quick", id: event.id })
-    },
-    [setBroadcastPreset],
-  )
+  const onOpenChat = useCallback((event: HostedEventDTO) => {
+    useNavStore.getState().push({
+      kind: "thread",
+      id: event.id,
+      roomKind: "cleanup",
+      title: event.title,
+    })
+  }, [])
+
+  const onAnnounce = useCallback((event: HostedEventDTO) => {
+    useNavStore.getState().push({ kind: "host-announce", id: event.id })
+  }, [])
 
   const onLogHours = useCallback((event: HostedEventDTO) => {
     useNavStore.getState().push({ kind: "host-log-hours", id: event.id })
@@ -446,7 +450,8 @@ export function EventDashboardBody() {
                   onOpen={onOpenEvent}
                   onCheckIn={onCheckIn}
                   onHostTools={onHostTools}
-                  onEmailAttendees={onEmailAttendees}
+                  onOpenChat={onOpenChat}
+                  onAnnounce={onAnnounce}
                   onDuplicate={setDuplicating}
                   onEdit={onEdit}
                 />

@@ -59,7 +59,7 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
       if (sub === "edit") return { kind: "edit-cleanup", id }
       if (sub === "host") return { kind: "host-mode", id }
       if (sub === "checkin") return { kind: "host-checkin", id }
-      if (sub === "broadcast") return { kind: "host-broadcast-quick", id }
+      if (sub === "announce") return { kind: "host-announce", id }
       if (sub === "team") return { kind: "host-team", id }
       if (sub === "hours") return { kind: "host-log-hours", id }
       if (sub === "announcements") {
@@ -172,8 +172,8 @@ export function pathForEntry(entry: DetailEntry | null): string {
       return entry.id ? `/cleanups/${entry.id}/host` : "/cleanups"
     case "host-checkin":
       return entry.id ? `/cleanups/${entry.id}/checkin` : "/cleanups"
-    case "host-broadcast-quick":
-      return entry.id ? `/cleanups/${entry.id}/broadcast` : "/cleanups"
+    case "host-announce":
+      return entry.id ? `/cleanups/${entry.id}/announce` : "/cleanups"
     case "host-team":
       return entry.id ? `/cleanups/${entry.id}/team` : "/cleanups"
     case "host-log-hours":
@@ -341,8 +341,8 @@ export function titleForEntry(entry: DetailEntry | null): string {
       return "title.host_mode"
     case "host-checkin":
       return "title.host_checkin"
-    case "host-broadcast-quick":
-      return "title.host_broadcast_quick"
+    case "host-announce":
+      return "title.host_announce"
     case "host-team":
       return "title.host_team"
     case "host-log-hours":
@@ -448,7 +448,7 @@ export function parentViewForEntry(entry: DetailEntry | null): View | null {
     case "cleanups":
     case "host-mode":
     case "host-checkin":
-    case "host-broadcast-quick":
+    case "host-announce":
     case "host-team":
     case "host-log-hours":
     case "my-ticket":

@@ -51,7 +51,7 @@ export type DetailKind =
   | "drop-pin"
   | "host-mode"
   | "host-checkin"
-  | "host-broadcast-quick"
+  | "host-announce"
   | "host-team"
   | "host-log-hours"
   | "my-ticket"
@@ -98,7 +98,7 @@ export const ALL_DETAIL_KINDS = [
   "drop-pin",
   "host-mode",
   "host-checkin",
-  "host-broadcast-quick",
+  "host-announce",
   "host-team",
   "host-log-hours",
   "my-ticket",

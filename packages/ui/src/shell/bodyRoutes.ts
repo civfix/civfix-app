@@ -39,7 +39,7 @@ export type BodyId =
   | "dropPin"
   | "hostMode"
   | "hostCheckin"
-  | "hostBroadcastQuick"
+  | "hostAnnounce"
   | "hostTeam"
   | "hostLogHours"
   | "myTicket"
@@ -98,7 +98,7 @@ export const DETAIL_BODY: Record<DetailKind, BodyId> = {
   "drop-pin": "dropPin",
   "host-mode": "hostMode",
   "host-checkin": "hostCheckin",
-  "host-broadcast-quick": "hostBroadcastQuick",
+  "host-announce": "hostAnnounce",
   "host-team": "hostTeam",
   "host-log-hours": "hostLogHours",
   "my-ticket": "myTicket",

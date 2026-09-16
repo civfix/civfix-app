@@ -64,7 +64,6 @@
     "open_a11y": "Open {{title}}",
     "actions_a11y": "Actions for {{title}}",
     "host_tools": "Host tools",
-    "email_attendees": "Email attendees",
     "duplicate": "Duplicate",
     "edit": "Edit",
     "show_more": "Show more",
@@ -96,7 +95,9 @@
     "meta_hours_not_logged": "Hours not logged",
     "meta_cancelled": "Cancelled",
     "meta_signed_up": "{{count}} signed up",
-    "meta_underway": "Started {{ago}} ago"
+    "meta_underway": "Started {{ago}} ago",
+    "open_chat": "Open group chat",
+    "announce": "Make announcement"
   },
   "first_event": {
     "title": "Host your first event",

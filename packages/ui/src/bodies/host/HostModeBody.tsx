@@ -47,8 +47,8 @@ import { appErrorCode } from "../errorCode"
 import { FeedNotice } from "../FeedNotice"
 import { ConsoleLinkRow } from "./dashboard/ConsoleLinkRow"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
-import { emailAttendeesPreset, useDashboardStore } from "./dashboard/dashboardStore"
 import { EventRosterBlock } from "./EventRosterBlock"
+import { HostAnnouncementsBlock } from "./HostAnnouncementsBlock"
 import { HeroSkeleton, RowsSkeleton, TilesSkeleton } from "./HostSkeletons"
 import { HostInsightsPanels } from "./HostInsightsPanels"
 import { HostWalkupSheet } from "./HostWalkupSheet"
@@ -71,7 +71,7 @@ const PHASE_TICK_MS = 60_000
 
 const CTA_ICONS: Readonly<Record<HostCtaKey, LucideIcon>> = {
   share: iconMap.Share,
-  message: iconMap.Megaphone,
+  announce: iconMap.Megaphone,
   check_in: iconMap.QrCode,
   scan: iconMap.ScanLine,
   log_hours: iconMap.Clock,
@@ -219,15 +219,18 @@ export function HostModeBody({ id }: { id: string }) {
     })
   }, [sharePath, shareTitle, t, toast])
 
-  const onMessage = useCallback(() => {
-    useDashboardStore.getState().setBroadcastPreset(null)
-    useNavStore.getState().push({ kind: "host-broadcast-quick", id })
+  const onAnnounce = useCallback(() => {
+    useNavStore.getState().push({ kind: "host-announce", id })
   }, [id])
 
-  const onEmail = useCallback(() => {
-    useDashboardStore.getState().setBroadcastPreset(emailAttendeesPreset(id))
-    useNavStore.getState().push({ kind: "host-broadcast-quick", id })
-  }, [id])
+  const onOpenChat = useCallback(() => {
+    useNavStore.getState().push({
+      kind: "thread",
+      id,
+      roomKind: "cleanup",
+      ...(shareTitle ? { title: shareTitle } : {}),
+    })
+  }, [id, shareTitle])
 
   const onCheckin = useCallback(() => {
     useNavStore.getState().push({ kind: "host-checkin", id })
@@ -281,10 +284,10 @@ export function HostModeBody({ id }: { id: string }) {
       switch (key) {
         case "share":
           return onShare
-        case "message":
-          return onMessage
-        case "email":
-          return onEmail
+        case "announce":
+          return onAnnounce
+        case "chat":
+          return onOpenChat
         case "check_in":
         case "scan":
           return onCheckin
@@ -294,7 +297,6 @@ export function HostModeBody({ id }: { id: string }) {
           return () => setDuplicating(true)
         case "edit":
           return onEdit
-        case "invite_team":
         case "team":
           return onTeam
         case "walkup":
@@ -311,7 +313,7 @@ export function HostModeBody({ id }: { id: string }) {
           return () => setCancelling(true)
       }
     },
-    [onCheckin, onEdit, onEmail, onLogHours, onMessage, onShare, onTeam, onTickets],
+    [onAnnounce, onCheckin, onEdit, onLogHours, onOpenChat, onShare, onTeam, onTickets],
   )
 
   if (cleanup.isLoading) {
@@ -367,6 +369,7 @@ export function HostModeBody({ id }: { id: string }) {
   })
   const cards = hostActionCards({
     stage,
+    ctas: [primary, secondary],
     can,
     unmarked,
     scannerAvailable,
@@ -388,10 +391,10 @@ export function HostModeBody({ id }: { id: string }) {
     switch (key) {
       case "share":
         return event.pageSlug ?? event.referenceCode ?? undefined
-      case "message":
-        return t("row.message_sub")
-      case "email":
-        return t("row.email_sub")
+      case "chat":
+        return t("row.chat_sub")
+      case "announce":
+        return t("row.announce_sub")
       case "check_in":
       case "scan":
         return stillToCheckIn > 0 ? t("row.check_in_sub", { count: stillToCheckIn }) : undefined
@@ -478,6 +481,8 @@ export function HostModeBody({ id }: { id: string }) {
             ))}
           </SettingsSection>
         ))}
+
+        {can.broadcast ? <HostAnnouncementsBlock cleanupId={id} /> : null}
 
         <ConsoleLinkRow target={{ kind: "event", eventId: id }} />
 
