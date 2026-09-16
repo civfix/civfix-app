@@ -1497,6 +1497,12 @@ Stripe adapter, the `Payments` seam wiring in `di.ts`, the donation/payout/eligi
 routes and the `PAYMENTS_*`/`STRIPE_*`/`DONATION_*` env, and update
 `test/unit/route-coverage.test.ts` to 318.
 
+**Follow-up.** `PublicEventPageDTO.organization` is an `OrganizationRefDTO` with no `donationUrl`,
+so the public sign-up page's donate block can only resolve `page.donationUrl` (the event's own
+link) and the block's `url`. The organization and organizer steps of the resolution rule are
+therefore missing on that one surface. Closing it means adding `donationUrl` to the sign-up page's
+org ref (and projecting it in the backend's page query) in a later contract version.
+
 **Retired by this entry:** §26 (donations: direct charges), §31 (the donation status ratchet) and
 the org-payouts amendment inside §33. Amended: §23 (`donationOrg` gone from the `CleanupDTO`
 growth list, `/orgs/by-slug/:slug/donate` gone, `HostCapability` count), §33 and §34 (the

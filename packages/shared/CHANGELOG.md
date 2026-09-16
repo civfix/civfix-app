@@ -1,5 +1,11 @@
 # @civfix/shared
 
+## 0.48.1
+
+### Patch Changes
+
+- legal document versions for the donation-link terms
+
 ## 0.48.0
 
 ### Minor Changes
