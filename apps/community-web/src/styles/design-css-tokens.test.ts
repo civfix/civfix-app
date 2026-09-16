@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs"
-import { colorSchemes } from "@civfix/shared/tokens"
+import { colorSchemes, tokens } from "@civfix/shared/tokens"
 import type { ColorSchemeName } from "@civfix/shared/tokens"
 import { describe, expect, it } from "vitest"
 import config from "../../tailwind.config"
 import type { SchemeColor } from "../../tailwind.config"
 
 const CSS = readFileSync(new URL("./design.css", import.meta.url), "utf8")
+const GLOBALS = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8")
 
 function blockFor(scheme: ColorSchemeName): string {
   const start = CSS.indexOf(scheme === "light" ? "\n:root {" : "\n:root.dark {")
@@ -159,5 +160,132 @@ describe("tailwind neutral colours stay legal without an opacity modifier", () =
     expect(resolve(["paper2"])({ opacityValue: "0.6" })).toBe(
       "color-mix(in srgb, var(--paper-2) calc(0.6 * 100%), transparent)",
     )
+  })
+
+  const CONSOLE_UTILITIES = [
+    [["console", "surface"], "--console-surface"],
+    [["console", "surface-alt"], "--console-surface-alt"],
+    [["console", "tint"], "--console-tint"],
+    [["console", "canvas"], "--console-canvas"],
+    [["console", "line"], "--console-line"],
+    [["console", "line-strong"], "--console-line-strong"],
+    [["console", "accent"], "--console-accent"],
+    [["console", "scrim"], "--console-scrim"],
+    [["console", "toast-surface"], "--console-toast-surface"],
+    [["console", "toast-ink"], "--console-toast-ink"],
+    [["console", "toast-ink-dim"], "--console-toast-ink-dim"],
+    [["console", "ink", "DEFAULT"], "--console-ink"],
+    [["console", "ink", "2"], "--console-ink-2"],
+    [["console", "ink", "3"], "--console-ink-3"],
+    [["console", "bloom", "soft"], "--console-hue-bloom-soft"],
+    [["console", "bloom", "strong"], "--console-hue-bloom-strong"],
+    [["console", "moss", "soft"], "--console-hue-moss-soft"],
+    [["console", "moss", "strong"], "--console-hue-moss-strong"],
+    [["console", "sun", "soft"], "--console-hue-sun-soft"],
+    [["console", "sun", "strong"], "--console-hue-sun-strong"],
+    [["console", "sky", "soft"], "--console-hue-sky-soft"],
+    [["console", "sky", "strong"], "--console-hue-sky-strong"],
+    [["console", "lilac", "soft"], "--console-hue-lilac-soft"],
+    [["console", "lilac", "strong"], "--console-hue-lilac-strong"],
+  ] as const
+
+  for (const [path, variable] of CONSOLE_UTILITIES) {
+    it(`${path.join(".")} answers an opacity modifier instead of emitting nothing`, () => {
+      expect(resolve(path)({})).toBe(`var(${variable})`)
+      expect(resolve(path)({ opacityValue: "0.4" })).toBe(
+        `color-mix(in srgb, var(${variable}) calc(0.4 * 100%), transparent)`,
+      )
+    })
+  }
+
+  it("carries a time unit on every duration step, so the utility is legal CSS", () => {
+    const durations = (config.theme?.extend?.transitionDuration ?? {}) as Record<string, string>
+    expect(Object.keys(durations)).toEqual(["d1", "d2", "d3", "d4"])
+    for (const [step, value] of Object.entries(durations)) {
+      expect(value, step).toMatch(/^\d+ms$/)
+    }
+    expect(durations.d1).toBe(`${tokens.motion.dur.d1}ms`)
+    expect(durations.d4).toBe(`${tokens.motion.dur.d4}ms`)
+  })
+})
+
+function hslToHex(triplet: string): string {
+  const [h, s, l] = triplet.split(/\s+/).map((part) => Number.parseFloat(part))
+  const sat = (s ?? 0) / 100
+  const lig = (l ?? 0) / 100
+  const k = (n: number): number => (n + (h ?? 0) / 30) % 12
+  const a = sat * Math.min(lig, 1 - lig)
+  const f = (n: number): number => lig - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))
+  const channel = (x: number): string =>
+    Math.round(255 * x)
+      .toString(16)
+      .padStart(2, "0")
+      .toUpperCase()
+  return `#${channel(f(0))}${channel(f(8))}${channel(f(4))}`
+}
+
+function shadcnBlock(scheme: ColorSchemeName): string {
+  const marker = scheme === "light" ? "\n  :root {" : "\n  .dark {"
+  const start = GLOBALS.indexOf(marker)
+  expect(start, `globals.css ${scheme} block`).toBeGreaterThan(-1)
+  const end = GLOBALS.indexOf("\n  }", start)
+  return GLOBALS.slice(start, end)
+}
+
+function readTriplet(block: string, name: string): string {
+  const match = block.match(new RegExp(`--${name}:\\s*([^;]+);`))
+  expect(match, name).not.toBeNull()
+  return (match?.[1] ?? "").trim()
+}
+
+describe("globals.css shadcn surfaces mirror @civfix/shared tokens in BOTH schemes", () => {
+  for (const scheme of ["light", "dark"] as const) {
+    it(`${scheme} fills match colorSchemes`, () => {
+      const block = shadcnBlock(scheme)
+      const c = colorSchemes[scheme]
+      const expected: ReadonlyArray<readonly [string, string]> = [
+        ["background", c.neutral.paper],
+        ["foreground", c.neutral.ink],
+        ["shadcn-card", c.neutral.card],
+        ["shadcn-card-foreground", c.neutral.ink],
+        ["popover", c.neutral.card],
+        ["popover-foreground", c.neutral.ink],
+        ["primary", c.bloom["500"]],
+        ["secondary", c.neutral.paper2],
+        ["secondary-foreground", c.neutral.ink],
+        ["muted", c.neutral.paper2],
+        ["muted-foreground", c.neutral.ink3],
+        ["shadcn-accent", c.sun["500"]],
+        ["destructive", c.bloom["600"]],
+        ["shadcn-border", c.neutral.ink5],
+        ["input", c.neutral.ink5],
+      ]
+      for (const [name, hex] of expected) {
+        expect(hslToHex(readTriplet(block, name)), name).toBe(hex.toUpperCase())
+      }
+    })
+  }
+
+  it("paints the light focus ring and the light primary in the SAME coral", () => {
+    const block = shadcnBlock("light")
+    const coral = colorSchemes.light.bloom["500"].toUpperCase()
+    expect(hslToHex(readTriplet(block, "primary"))).toBe(coral)
+    expect(hslToHex(readTriplet(block, "ring"))).toBe(coral)
+  })
+
+  it("paints the dark focus ring in the dark ring token", () => {
+    const block = shadcnBlock("dark")
+    expect(hslToHex(readTriplet(block, "ring"))).toBe(colorSchemes.dark.bloom["600"].toUpperCase())
+  })
+})
+
+describe("the shadcn theme and the ported handoff palette never share a variable name", () => {
+  function rootNames(source: string): Set<string> {
+    return new Set([...source.matchAll(/^\s*(--[a-z0-9-]+):/gm)].map((m) => m[1] as string))
+  }
+
+  it("a shared name would make Tailwind emit hsl(<flat hex>) and drop the declaration", () => {
+    const shared = [...rootNames(GLOBALS)].filter((name) => rootNames(CSS).has(name))
+    expect(shared).toEqual([])
   })
 })
