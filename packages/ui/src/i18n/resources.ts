@@ -103,6 +103,7 @@ import en_web_auth from "./locales/en/web-auth.json"
 import en_web_claims from "./locales/en/web-claims.json"
 import en_web_common from "./locales/en/web-common.json"
 import en_web_errors from "./locales/en/web-errors.json"
+import en_web_guest_cancel from "./locales/en/web-guest-cancel.json"
 import en_web_registration from "./locales/en/web-registration.json"
 import en_web_service_record from "./locales/en/web-service-record.json"
 import es_about from "./locales/es/about.json"
@@ -201,6 +202,7 @@ import es_web_auth from "./locales/es/web-auth.json"
 import es_web_claims from "./locales/es/web-claims.json"
 import es_web_common from "./locales/es/web-common.json"
 import es_web_errors from "./locales/es/web-errors.json"
+import es_web_guest_cancel from "./locales/es/web-guest-cancel.json"
 import es_web_registration from "./locales/es/web-registration.json"
 import es_web_service_record from "./locales/es/web-service-record.json"
 import de_about from "./locales/de/about.json"
@@ -299,6 +301,7 @@ import de_web_auth from "./locales/de/web-auth.json"
 import de_web_claims from "./locales/de/web-claims.json"
 import de_web_common from "./locales/de/web-common.json"
 import de_web_errors from "./locales/de/web-errors.json"
+import de_web_guest_cancel from "./locales/de/web-guest-cancel.json"
 import de_web_registration from "./locales/de/web-registration.json"
 import de_web_service_record from "./locales/de/web-service-record.json"
 import ko_about from "./locales/ko/about.json"
@@ -397,6 +400,7 @@ import ko_web_auth from "./locales/ko/web-auth.json"
 import ko_web_claims from "./locales/ko/web-claims.json"
 import ko_web_common from "./locales/ko/web-common.json"
 import ko_web_errors from "./locales/ko/web-errors.json"
+import ko_web_guest_cancel from "./locales/ko/web-guest-cancel.json"
 import ko_web_registration from "./locales/ko/web-registration.json"
 import ko_web_service_record from "./locales/ko/web-service-record.json"
 
@@ -498,6 +502,7 @@ export const namespaces = [
   "web-claims",
   "web-common",
   "web-errors",
+  "web-guest-cancel",
   "web-registration",
   "web-service-record",
 ] as const
@@ -601,6 +606,7 @@ export const resources: Resource = {
     "web-claims": en_web_claims,
     "web-common": en_web_common,
     "web-errors": en_web_errors,
+    "web-guest-cancel": en_web_guest_cancel,
     "web-registration": en_web_registration,
     "web-service-record": en_web_service_record,
   },
@@ -701,6 +707,7 @@ export const resources: Resource = {
     "web-claims": es_web_claims,
     "web-common": es_web_common,
     "web-errors": es_web_errors,
+    "web-guest-cancel": es_web_guest_cancel,
     "web-registration": es_web_registration,
     "web-service-record": es_web_service_record,
   },
@@ -801,6 +808,7 @@ export const resources: Resource = {
     "web-claims": de_web_claims,
     "web-common": de_web_common,
     "web-errors": de_web_errors,
+    "web-guest-cancel": de_web_guest_cancel,
     "web-registration": de_web_registration,
     "web-service-record": de_web_service_record,
   },
@@ -901,6 +909,7 @@ export const resources: Resource = {
     "web-claims": ko_web_claims,
     "web-common": ko_web_common,
     "web-errors": ko_web_errors,
+    "web-guest-cancel": ko_web_guest_cancel,
     "web-registration": ko_web_registration,
     "web-service-record": ko_web_service_record,
   },
