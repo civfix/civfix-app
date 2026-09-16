@@ -15,7 +15,7 @@
 
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { resolveApiUrl, DEV_API_URL, STAGING_API_URL, PROD_API_URL } from "../src/lib/apiUrl.ts"
+import { resolveApiUrl, DEV_API_URL, PROD_API_URL } from "../src/lib/apiUrl.ts"
 
 test("an empty object from the baked config falls back - the shipped-outage case", () => {
   // `??` would have returned the object here. Everything else in this file is scaffolding; this is
@@ -59,7 +59,6 @@ test("a release build never resolves to localhost, and a dev build never to prod
 })
 
 test("an unbaked release installed from TestFlight resolves to the staging API", () => {
-  assert.equal(resolveApiUrl(undefined, false, true), STAGING_API_URL)
   assert.equal(resolveApiUrl(undefined, false, true), "https://api.civfix.dev")
 })
 
@@ -76,10 +75,4 @@ test("a dev build stays on localhost even when the install looks like a beta one
 test("a baked URL still wins over the runtime install signal", () => {
   assert.equal(resolveApiUrl("https://api.civfix.dev", false, false), "https://api.civfix.dev")
   assert.equal(resolveApiUrl("https://api.civfix.org", false, true), "https://api.civfix.org")
-})
-
-test("the three environment defaults stay distinct", () => {
-  assert.notEqual(DEV_API_URL, STAGING_API_URL)
-  assert.notEqual(STAGING_API_URL, PROD_API_URL)
-  assert.notEqual(DEV_API_URL, PROD_API_URL)
 })

@@ -4,7 +4,7 @@
 #   scripts/store-build.sh testflight    dev/testing build for TestFlight — staging API (https://api.civfix.dev), baked
 #   scripts/store-build.sh appstore      official App Store release build — bakes NO API URL; the app picks
 #                                        api.civfix.dev in TestFlight and api.civfix.org from the App Store
-#                                        at runtime (src/lib/apiUrl.ts + src/lib/betaInstall.ts)
+#                                        at runtime (src/lib/apiUrl.ts + src/lib/nativeBetaInstall.ts)
 #
 # Runs `eas build --local` on this machine — a developer Mac or the macOS GitHub runner that
 # .github/workflows/deploy-mobile.yml drives. Unlike a raw Xcode archive, this applies the profile's

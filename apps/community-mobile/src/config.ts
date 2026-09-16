@@ -1,6 +1,6 @@
 import Constants from "expo-constants"
 import { resolveApiUrl } from "./lib/apiUrl"
-import { isBetaInstall } from "./lib/betaInstall"
+import { isBetaInstall } from "./lib/nativeBetaInstall"
 import { resolveDonateBrowserMode, type DonateBrowserMode } from "./lib/donateBrowser"
 import { resolveWebOrigin } from "./lib/webOrigin"
 

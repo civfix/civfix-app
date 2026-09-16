@@ -1,5 +1,9 @@
 import { MMKV } from "react-native-mmkv"
 import type { StateStorage } from "zustand/middleware"
+import { API_URL } from "@/config"
+import { scopeStorageId } from "@/lib/storageScope"
+
+const INSTANCE_ID = scopeStorageId("civfix.app", API_URL)
 
 export interface KeyValueStore {
   getString(key: string): string | undefined
@@ -22,7 +26,7 @@ function memoryStore(): KeyValueStore {
 
 function createStore(): KeyValueStore {
   try {
-    return new MMKV({ id: "civfix.app" })
+    return new MMKV({ id: INSTANCE_ID })
   } catch {
     return memoryStore()
   }

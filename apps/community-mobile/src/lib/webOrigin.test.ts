@@ -1,7 +1,7 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
 import { PROD_WEB_ORIGIN, resolveWebOrigin } from "./webOrigin.ts"
-import { PROD_API_URL, STAGING_API_URL } from "./apiUrl.ts"
+import { DEV_API_URL, PROD_API_URL, STAGING_API_URL } from "./apiUrl.ts"
 
 test("a build pointed at the staging API shares links to the staging site", () => {
   assert.equal(resolveWebOrigin("https://api.civfix.dev"), "https://civfix.dev")
@@ -20,8 +20,14 @@ test("a local or unrecognised API falls back to the production site", () => {
 })
 
 test("every API base URL the resolver can choose has a mapped share origin", () => {
-  assert.equal(resolveWebOrigin(STAGING_API_URL), "https://civfix.dev")
-  assert.equal(resolveWebOrigin(PROD_API_URL), PROD_WEB_ORIGIN)
+  const originFor: Readonly<Record<string, string>> = {
+    [DEV_API_URL]: PROD_WEB_ORIGIN,
+    [STAGING_API_URL]: "https://civfix.dev",
+    [PROD_API_URL]: PROD_WEB_ORIGIN,
+  }
+  for (const [apiUrl, origin] of Object.entries(originFor)) {
+    assert.equal(resolveWebOrigin(apiUrl), origin)
+  }
 })
 
 test("never reflects an arbitrary api.* host into a trusted link origin", () => {

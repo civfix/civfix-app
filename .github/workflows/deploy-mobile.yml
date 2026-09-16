@@ -6,7 +6,7 @@ name: Deploy mobile (TestFlight)
 #   push to main                     -> the `testflight` profile  -> staging API (api.civfix.dev), baked
 #   manual run, profile=production   -> the `production` profile  -> API chosen at runtime by install
 #                                       source: api.civfix.dev in TestFlight, api.civfix.org from the
-#                                       App Store (src/lib/apiUrl.ts + src/lib/betaInstall.ts)
+#                                       App Store (src/lib/apiUrl.ts + src/lib/nativeBetaInstall.ts)
 #
 # Nothing here submits for App Store review. A production build lands in App Store Connect exactly
 # like a staging one; attaching it to a version and submitting is the manual step, so a prod mobile

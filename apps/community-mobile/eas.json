@@ -58,7 +58,7 @@
       "channel": "production",
       "autoIncrement": true,
       "env": {
-        "//api": "Deliberately sets no EXPO_PUBLIC_API_URL. src/lib/apiUrl.ts resolves the base URL at runtime from the active StoreKit receipt, so ONE binary talks to https://api.civfix.dev while it is under test in TestFlight and to https://api.civfix.org once the same build is downloaded from the App Store. Baking a URL here would freeze it to one of the two.",
+        "//api": "Deliberately sets no EXPO_PUBLIC_API_URL. On iOS ONLY, src/lib/apiUrl.ts resolves the base URL at runtime from the active StoreKit receipt, so one binary talks to https://api.civfix.dev while it is under test in TestFlight and to https://api.civfix.org once the same build is downloaded from the App Store. Every other platform resolves to https://api.civfix.org, so an Android internal-track tester is on production. Baking a URL here would freeze iOS to one of the two.",
         "//dsym": "iOS links React Native's prebuilt core frameworks (buildReactNativeFromSource: false in app.config.js), so App Store Connect's 'Upload Symbols Failed' warning for React.framework / ReactNativeDependencies.framework (alongside hermes and MapLibre) is expected and non-blocking.",
         "//donate": "How a host's external donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. The link is the host's own third-party page; no payment happens anywhere in civfix. OTA-flippable with `eas update` if App Review ever objects to the in-app browser (see APP-REVIEW-NOTES.md).",
         "EXPO_PUBLIC_DONATE_BROWSER_MODE": "in-app",

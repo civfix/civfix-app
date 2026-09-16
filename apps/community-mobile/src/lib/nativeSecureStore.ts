@@ -4,9 +4,11 @@ import * as Crypto from "expo-crypto"
 import type { SecureStoreCapability } from "@civfix/ui/capabilities"
 import type { KeyValueStore } from "@/lib/mmkv"
 import { mintSecureBlobKey, normalizeSecureBlobKey } from "@/lib/secureBlobKey"
+import { scopeStorageId } from "@/lib/storageScope"
+import { API_URL } from "@/config"
 
-const ENCRYPTION_KEY_ITEM = "civfix.secure-blobs.key"
-const INSTANCE_ID = "civfix.secure"
+const ENCRYPTION_KEY_ITEM = scopeStorageId("civfix.secure-blobs.key", API_URL)
+const INSTANCE_ID = scopeStorageId("civfix.secure", API_URL)
 
 const OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,
