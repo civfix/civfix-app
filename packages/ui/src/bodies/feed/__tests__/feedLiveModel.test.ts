@@ -45,7 +45,10 @@ describe("dedupePostsById", () => {
 })
 
 describe("useFeedLiveStore", () => {
-  beforeEach(() => useFeedLiveStore.getState().clearNewPosts())
+  beforeEach(() => {
+    useFeedLiveStore.getState().adoptViewer("viewer-a")
+    useFeedLiveStore.getState().clearNewPosts()
+  })
 
   it("counts distinct new posts and clears on demand", () => {
     const store = useFeedLiveStore
@@ -66,5 +69,37 @@ describe("useFeedLiveStore", () => {
     const one = store.getState().pendingNewPostIds
     store.getState().noteNewPost("p1")
     expect(store.getState().pendingNewPostIds).toBe(one)
+  })
+
+  it("drops the pending ids on SIGN-OUT, so a count never greets the next account", () => {
+    const store = useFeedLiveStore
+    store.getState().noteNewPost("p1")
+    store.getState().noteNewPost("p2")
+    store.getState().adoptViewer(null)
+    expect(store.getState().pendingNewPostIds).toEqual([])
+  })
+
+  it("drops the pending ids on an account SWITCH", () => {
+    const store = useFeedLiveStore
+    store.getState().noteNewPost("p1")
+    store.getState().adoptViewer("viewer-b")
+    expect(store.getState().pendingNewPostIds).toEqual([])
+  })
+
+  it("KEEPS the pending ids when the same viewer is re-adopted, which is every feed remount", () => {
+    const store = useFeedLiveStore
+    store.getState().noteNewPost("p1")
+    const pending = store.getState().pendingNewPostIds
+    store.getState().adoptViewer("viewer-a")
+    store.getState().adoptViewer("viewer-a")
+    expect(store.getState().pendingNewPostIds).toBe(pending)
+  })
+
+  it("clears the ids a signed-out reader accumulated when someone signs in", () => {
+    const store = useFeedLiveStore
+    store.getState().adoptViewer(null)
+    store.getState().noteNewPost("p1")
+    store.getState().adoptViewer("viewer-c")
+    expect(store.getState().pendingNewPostIds).toEqual([])
   })
 })

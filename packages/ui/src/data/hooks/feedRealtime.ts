@@ -20,8 +20,12 @@ export function createFeedCountsBatcher(
   let timer: ReturnType<typeof setTimeout> | null = null
   const flush = () => {
     timer = null
-    const postIds = [...pending].slice(0, FEED_COUNTS_MAX_IDS)
-    pending = new Set()
+    const queued = [...pending]
+    const postIds = queued.slice(0, FEED_COUNTS_MAX_IDS)
+    // Anything past the contract cap stays queued for the next window instead of being dropped:
+    // a burst above FEED_COUNTS_MAX_IDS used to leave those posts showing stale counts forever.
+    pending = new Set(queued.slice(FEED_COUNTS_MAX_IDS))
+    if (pending.size > 0) timer = setTimeout(flush, debounceMs)
     if (postIds.length > 0) void fetchAndPatch(postIds).catch(() => undefined)
   }
   return {
@@ -41,7 +45,12 @@ export function useFeedRealtime(): void {
   const api = useApi()
   const qc = useQueryClient()
   const socket = useChatSocket()
-  const { isAuthenticated } = useAuthState()
+  const { isAuthenticated, user } = useAuthState()
+  const viewerId = isAuthenticated ? (user?.id ?? null) : null
+
+  useEffect(() => {
+    useFeedLiveStore.getState().adoptViewer(viewerId)
+  }, [viewerId])
 
   useEffect(() => {
     if (!isAuthenticated) return

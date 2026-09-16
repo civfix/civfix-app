@@ -111,12 +111,36 @@ export function applyCounts(post: PostDTO, counts: PostCounts): PostDTO {
   return { ...post, counts }
 }
 
+/**
+ * Apply a WHOLE realtime counts batch (up to FEED_COUNTS_MAX_IDS ids) in ONE pass per list cache.
+ * Patching id-by-id rebuilt every page of every `["posts"]` query once per id, so a full batch cost
+ * ids x queries rebuilds and as many FlatList re-notifies. Here each cache is visited once and an
+ * untouched cache is returned by reference, so react-query sees no change and nothing re-renders.
+ */
 export function patchPostCountsInCaches(
   qc: QueryClient,
   items: ReadonlyArray<FeedPostCountsDTO>,
 ): void {
-  for (const { id, counts } of items) {
-    patchPostInListCaches(qc, id, (post) => applyCounts(post, counts))
+  if (items.length === 0) return
+  const byId = new Map<string, PostCounts>(items.map(({ id, counts }) => [id, counts]))
+  qc.setQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot }, (prev) => {
+    if (!isInfinitePosts(prev)) return prev
+    let touched = false
+    const pages = prev.pages.map((page) => {
+      let pageTouched = false
+      const nextItems = page.items.map((it) => {
+        const counts = byId.get(it.id)
+        if (!counts) return it
+        pageTouched = true
+        return applyCounts(it, counts)
+      })
+      if (!pageTouched) return page
+      touched = true
+      return { ...page, items: nextItems }
+    })
+    return touched ? { ...prev, pages } : prev
+  })
+  for (const [id, counts] of byId) {
     qc.setQueryData<PostDTO>(queryKeys.post(id), (prev) =>
       prev ? applyCounts(prev, counts) : prev,
     )

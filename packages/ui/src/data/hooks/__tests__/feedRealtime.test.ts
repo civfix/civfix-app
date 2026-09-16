@@ -88,6 +88,44 @@ describe("createFeedCountsBatcher", () => {
     expect(calls[0]).toHaveLength(FEED_COUNTS_MAX_IDS)
   })
 
+  it("re-queues the overflow into the next window instead of dropping it", () => {
+    const calls: string[][] = []
+    const batcher = createFeedCountsBatcher(async (ids) => {
+      calls.push(ids)
+    })
+    for (let i = 0; i < FEED_COUNTS_MAX_IDS + 25; i++) batcher.note(`p${i}`)
+    vi.advanceTimersByTime(FEED_COUNTS_DEBOUNCE_MS)
+    vi.advanceTimersByTime(FEED_COUNTS_DEBOUNCE_MS)
+    expect(calls).toHaveLength(2)
+    expect(calls[1]).toHaveLength(25)
+    expect(calls[1]?.[0]).toBe(`p${FEED_COUNTS_MAX_IDS}`)
+    const seen = new Set([...(calls[0] ?? []), ...(calls[1] ?? [])])
+    expect(seen.size).toBe(FEED_COUNTS_MAX_IDS + 25)
+  })
+
+  it("stops once the overflow drains, without an idle timer left running", () => {
+    const calls: string[][] = []
+    const batcher = createFeedCountsBatcher(async (ids) => {
+      calls.push(ids)
+    })
+    for (let i = 0; i < FEED_COUNTS_MAX_IDS + 1; i++) batcher.note(`p${i}`)
+    vi.advanceTimersByTime(FEED_COUNTS_DEBOUNCE_MS * 5)
+    expect(calls).toHaveLength(2)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it("dispose cancels a re-queued overflow window too", () => {
+    const calls: string[][] = []
+    const batcher = createFeedCountsBatcher(async (ids) => {
+      calls.push(ids)
+    })
+    for (let i = 0; i < FEED_COUNTS_MAX_IDS + 5; i++) batcher.note(`p${i}`)
+    vi.advanceTimersByTime(FEED_COUNTS_DEBOUNCE_MS)
+    batcher.dispose()
+    vi.advanceTimersByTime(FEED_COUNTS_DEBOUNCE_MS * 3)
+    expect(calls).toHaveLength(1)
+  })
+
   it("a rejecting fetch neither throws nor leaves a stuck timer", async () => {
     const batcher = createFeedCountsBatcher(async () => {
       throw new Error("offline")
@@ -136,6 +174,48 @@ describe("patchPostCountsInCaches", () => {
       { id: "p1", counts: { likes: 1, reposts: 0, replies: 0, saves: 0 } },
     ])
     expect(qc.getQueryState(FEED_ALL)?.isInvalidated).toBe(false)
+  })
+
+  it("applies a whole batch in ONE rebuild per list cache", () => {
+    const qc = new QueryClient()
+    qc.setQueryData(FEED_ALL, feed([post("p1"), post("p2"), post("p3")]))
+    let rebuilds = 0
+    const cache = qc.getQueryCache()
+    const unsubscribe = cache.subscribe((event) => {
+      if (event.type === "updated" && event.query.queryHash === JSON.stringify(FEED_ALL)) rebuilds++
+    })
+
+    patchPostCountsInCaches(qc, [
+      { id: "p1", counts: { likes: 9, reposts: 0, replies: 0, saves: 0 } },
+      { id: "p2", counts: { likes: 8, reposts: 0, replies: 0, saves: 0 } },
+      { id: "p3", counts: { likes: 7, reposts: 0, replies: 0, saves: 0 } },
+    ])
+    unsubscribe()
+
+    expect(rebuilds).toBe(1)
+    const items = qc.getQueryData<InfiniteData<FeedPageDTO>>(FEED_ALL)!.pages[0]!.items
+    expect(items.map((p) => p.counts.likes)).toEqual([9, 8, 7])
+  })
+
+  it("leaves a cache holding none of the batch REFERENTIALLY unchanged, so nothing re-renders", () => {
+    const qc = new QueryClient()
+    const before = feed([post("p1")])
+    qc.setQueryData(queryKeys.saves, before)
+    qc.setQueryData(FEED_ALL, feed([post("p9")]))
+
+    patchPostCountsInCaches(qc, [
+      { id: "p9", counts: { likes: 3, reposts: 0, replies: 0, saves: 0 } },
+    ])
+
+    expect(qc.getQueryData(queryKeys.saves)).toBe(before)
+  })
+
+  it("does nothing at all for an empty batch", () => {
+    const qc = new QueryClient()
+    const before = feed([post("p1")])
+    qc.setQueryData(FEED_ALL, before)
+    patchPostCountsInCaches(qc, [])
+    expect(qc.getQueryData(FEED_ALL)).toBe(before)
   })
 
   it("tolerates ids the server left out and ids no cache holds", () => {
