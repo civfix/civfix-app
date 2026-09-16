@@ -32,17 +32,13 @@
   "nav": {
     "events": "Events",
     "overview": "Overview",
-    "members": "Members",
-    "payments": "Payments"
+    "members": "Members"
   },
   "overview": {
     "title": "Organization",
     "events": "Events",
     "members": "Members",
-    "created": "Created",
-    "donations": "Donations",
-    "donations_on": "Accepting donations",
-    "donations_off": "Not accepting donations"
+    "created": "Created"
   },
   "members": {
     "title": "Members",

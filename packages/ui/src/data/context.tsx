@@ -8,9 +8,8 @@
  * selector hooks so a body imports exactly the slice it needs (the api client, the auth state, the
  * requireAuth gate, or logout) rather than the whole bundle.
  */
-import React, { createContext, useCallback, useContext } from "react"
+import React, { createContext, useContext } from "react"
 import type { ApiClient } from "@civfix/shared/client"
-import { clearPayoutIntents } from "./hooks/payouts"
 import type { AuthState, ChatSocketLike, DataContextValue } from "./types"
 
 const DataContext = createContext<DataContextValue | null>(null)
@@ -66,16 +65,9 @@ export function useRequireAuth(): DataContextValue["requireAuth"] {
 
 /**
  * Sign the viewer out (host owns any cache teardown).
- *
- * The shared module state the host's query-cache purge cannot reach is dropped here: a held payout
- * idempotency key must never outlive the session that authorized it.
  */
 export function useLogout(): DataContextValue["logout"] {
-  const logout = useDataContext().logout
-  return useCallback(() => {
-    clearPayoutIntents()
-    return logout()
-  }, [logout])
+  return useDataContext().logout
 }
 
 /**

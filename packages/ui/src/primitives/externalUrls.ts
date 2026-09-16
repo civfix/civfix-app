@@ -16,7 +16,6 @@ export const TERMS_URL = `${WEB_ORIGIN}/legal/terms`
 export const PRIVACY_URL = `${WEB_ORIGIN}/legal/privacy`
 export const COOKIES_URL = `${WEB_ORIGIN}/legal/cookies`
 export const SUBPROCESSORS_URL = `${WEB_ORIGIN}/legal/subprocessors`
-export const DONATION_TERMS_URL = `${WEB_ORIGIN}/legal/donations`
 
 export function legalUrlFor(type: string): string {
   switch (type) {
@@ -28,24 +27,9 @@ export function legalUrlFor(type: string): string {
       return COOKIES_URL
     case "subprocessors":
       return SUBPROCESSORS_URL
-    case "donations":
-      return DONATION_TERMS_URL
-    case "org_donation_agreement":
-      return `${WEB_ORIGIN}/legal/org-donation-agreement`
-    case "donation_disclosure":
-      return `${WEB_ORIGIN}/legal/donation-disclosure`
     default:
       return `${WEB_ORIGIN}/legal`
   }
-}
-
-export function donatePath(orgSlug: string, eventId?: string | null): string {
-  const base = `/donate/${encodeURIComponent(orgSlug)}`
-  return eventId ? `${base}?event=${encodeURIComponent(eventId)}` : base
-}
-
-export function donateUrl(orgSlug: string, eventId?: string | null): string {
-  return webOrigin() + donatePath(orgSlug, eventId)
 }
 
 export function managePath(eventId: string): string {
@@ -62,6 +46,10 @@ export function managePortfolioPath(): string {
 
 export function manageOrgPath(orgId: string): string {
   return `/manage/orgs/${encodeURIComponent(orgId)}/overview`
+}
+
+export function manageOrgSettingsPath(orgId: string): string {
+  return `/manage/orgs/${encodeURIComponent(orgId)}/settings`
 }
 
 export function orgPagePath(orgSlug: string): string {

@@ -153,33 +153,6 @@
     "suppressed": "Suppressed",
     "skipped": "Skipped"
   },
-  "donationStatus": {
-    "pending": "Pending",
-    "succeeded": "Completed",
-    "failed": "Failed",
-    "refunded": "Refunded",
-    "partially_refunded": "Partly refunded"
-  },
-  "donationDisputeState": {
-    "none": "None",
-    "open": "Open",
-    "won": "Won",
-    "lost": "Lost",
-    "warning": "Warning"
-  },
-  "orgPaymentsState": {
-    "not_started": "Not started",
-    "onboarding": "In progress",
-    "ready": "Ready",
-    "at_risk": "Needs attention",
-    "blocked": "Blocked"
-  },
-  "donateState": {
-    "READY": "Accepting donations",
-    "AT_RISK": "Needs attention",
-    "BLOCKED": "Blocked",
-    "OFF": "Off"
-  },
   "attendeeKind": {
     "member": "Member",
     "guest": "Guest"

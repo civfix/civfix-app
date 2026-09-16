@@ -33,9 +33,5 @@
   "support_civfix": "Apoya a civfix",
   "terms": "Términos del servicio",
   "privacy_policy": "Política de privacidad",
-  "sign_out": "Cerrar sesión",
-  "donations": {
-    "label": "Donaciones",
-    "sub": "Tu historial de donaciones y tus recibos"
-  }
+  "sign_out": "Cerrar sesión"
 }

@@ -1,0 +1,26 @@
+{
+  "card": {
+    "title": "Donate",
+    "supports": "Supports {{name}}",
+    "open": "Open donation page",
+    "open_a11y": "Open the donation page for {{name}} on {{host}}"
+  },
+  "editor": {
+    "title": "Donation link",
+    "add": "Add a link people can donate through",
+    "hint": "Paste a link to your own donation or fundraiser page. It is shown on your profile and on events you host. civfix never handles the money.",
+    "field_label": "Donation link",
+    "placeholder": "https://",
+    "invalid": "Must be a full link starting with https://",
+    "remove": "Remove link",
+    "save": "Save",
+    "dismiss": "Close donation link",
+    "error": "Could not save the link. Try again."
+  },
+  "dashboard": {
+    "row": "Donation link",
+    "row_set": "Live on your events and page: {{host}}",
+    "row_unset": "Not set yet",
+    "row_org_web": "Set it in the organization settings on the web"
+  }
+}

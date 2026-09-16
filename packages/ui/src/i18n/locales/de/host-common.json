@@ -145,8 +145,7 @@
     "forbidden": "Dazu hast du keine Berechtigung.",
     "conflict": "Jemand hat das vor dir geändert. Lade neu und versuche es erneut.",
     "not_found": "Wir konnten das nicht finden.",
-    "abuse_held": "Das wird geprüft, bevor es rausgeht.",
-    "payment_unavailable": "Zahlungen sind vorübergehend nicht verfügbar. Es wurde nichts abgebucht."
+    "abuse_held": "Das wird geprüft, bevor es rausgeht."
   },
   "crash": {
     "title": "In der Konsole ist ein Fehler aufgetreten",

@@ -13,6 +13,7 @@ import { makeThemedStyles, space, radius, useTheme, noShadow, focusRingProps, he
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
+  DonateBlock,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
@@ -217,6 +218,8 @@ export function ProfileView({
       />
 
       <SocialLinksRow links={profile.socialLinks} />
+
+      <DonateBlock url={profile.donationUrl} ownerName={profile.name} variant="row" />
 
       {dashboardSlot ? <View style={styles.dashboardSlot}>{dashboardSlot}</View> : null}
 

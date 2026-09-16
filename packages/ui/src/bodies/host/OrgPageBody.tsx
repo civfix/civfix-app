@@ -12,7 +12,6 @@ import {
   useOrganizationEvents,
   type OrganizationEventsWindow,
 } from "../../data/hooks/orgs"
-import { donationsOffered, useOrgDonationPage } from "../../data/hooks/donations"
 import { useLocale, useT } from "../../i18n"
 import { useNavStore } from "../../nav/useNavStore"
 import { useScrollHost } from "../../shell/ScrollHost"
@@ -157,7 +156,6 @@ export function OrgPageBody({ slug }: { slug: string }) {
 
   const query = useOrganization(slug)
   const org = query.data ?? null
-  const donate = useOrgDonationPage(slug, { enabled: org?.donationsEnabled === true })
 
   const socials = useMemo(() => socialEntries(org?.socialLinks), [org?.socialLinks])
 
@@ -269,17 +267,7 @@ export function OrgPageBody({ slug }: { slug: string }) {
       <OrgEventsSection slug={slug} when="upcoming" />
       <OrgEventsSection slug={slug} when="past" collapsible />
 
-      {donationsOffered(donate.data?.donateState) && donate.data?.org ? (
-        <DonateBlock
-          org={{
-            slug: org.slug,
-            displayName: donate.data.org.displayName,
-            legalName: donate.data.org.legalName,
-            verified: donate.data.org.verified,
-            donateState: donate.data.donateState,
-          }}
-        />
-      ) : null}
+      <DonateBlock url={org.donationUrl} ownerName={org.name} />
 
       <View style={styles.section}>
         <TextLink variant="label" standalone onPress={onShare} accessibilityLabel={t("actions.share_a11y")}>

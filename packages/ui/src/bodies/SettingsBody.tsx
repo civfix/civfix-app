@@ -84,12 +84,6 @@ export function SettingsBody() {
             sub={t("privacy.sub")}
             onPress={() => pushKind("settings-privacy")}
           />
-          <SettingsRow
-            icon="ReceiptText"
-            label={t("donations.label")}
-            sub={t("donations.sub")}
-            onPress={() => pushKind("my-donations")}
-          />
         </SettingsSection>
       )}
 

@@ -4,7 +4,6 @@ export const ALLOWED_LINK_PREFIXES = [
   "/pin/",
   "/cleanups/",
   "/orgs/",
-  "/me/donations",
   "/messages/",
   "/people/",
   "/post/",

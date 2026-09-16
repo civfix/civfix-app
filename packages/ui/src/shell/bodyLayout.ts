@@ -47,7 +47,6 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
   "host-log-hours": "scroll",
   "my-ticket": "scroll",
   org: "scroll",
-  "my-donations": "scroll",
   "event-dashboard": "scroll",
   "home-view": "scroll",
 }

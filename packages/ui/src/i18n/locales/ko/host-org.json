@@ -29,17 +29,13 @@
   "nav": {
     "events": "행사",
     "overview": "개요",
-    "members": "구성원",
-    "payments": "결제"
+    "members": "구성원"
   },
   "overview": {
     "title": "단체",
     "events": "행사",
     "members": "구성원",
-    "created": "생성일",
-    "donations": "기부",
-    "donations_on": "기부를 받는 중",
-    "donations_off": "기부를 받지 않음"
+    "created": "생성일"
   },
   "members": {
     "title": "구성원",

@@ -13,7 +13,6 @@ const HOST_KINDS = [
   "host-log-hours",
   "my-ticket",
   "org",
-  "my-donations",
   "event-dashboard",
 ] as const
 
@@ -43,7 +42,6 @@ describe("URL round trip", () => {
     ["/cleanups/e1/ticket", { kind: "my-ticket", id: "e1" }],
     ["/cleanups/e1/ticket/seat-9", { kind: "my-ticket", id: "e1", seatId: "seat-9" }],
     ["/orgs/river-keepers", { kind: "org", slug: "river-keepers" }],
-    ["/me/donations", { kind: "my-donations" }],
   ]
 
   it.each(cases)("%s", (path, entry) => {
@@ -105,7 +103,6 @@ describe("parent view + flow protection", () => {
       "host-log-hours",
       "my-ticket",
       "org",
-      "my-donations",
       "event-dashboard",
     ] as const) {
       expect(FLOW_KINDS.has(kind), kind).toBe(false)

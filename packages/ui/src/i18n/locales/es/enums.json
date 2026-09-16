@@ -153,33 +153,6 @@
     "suppressed": "Suprimido",
     "skipped": "Omitido"
   },
-  "donationStatus": {
-    "pending": "Pendiente",
-    "succeeded": "Completada",
-    "failed": "Fallida",
-    "refunded": "Reembolsada",
-    "partially_refunded": "Reembolsada en parte"
-  },
-  "donationDisputeState": {
-    "none": "Ninguna",
-    "open": "Abierta",
-    "won": "Ganada",
-    "lost": "Perdida",
-    "warning": "Aviso"
-  },
-  "orgPaymentsState": {
-    "not_started": "Sin empezar",
-    "onboarding": "En curso",
-    "ready": "Lista",
-    "at_risk": "Requiere atención",
-    "blocked": "Bloqueada"
-  },
-  "donateState": {
-    "READY": "Aceptando donaciones",
-    "AT_RISK": "Requiere atención",
-    "BLOCKED": "Bloqueada",
-    "OFF": "Desactivada"
-  },
   "attendeeKind": {
     "member": "Miembro",
     "guest": "Invitado"

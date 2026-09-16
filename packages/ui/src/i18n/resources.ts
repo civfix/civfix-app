@@ -23,7 +23,7 @@ import en_conversation_reactions from "./locales/en/conversation-reactions.json"
 import en_discussion from "./locales/en/discussion.json"
 import en_discussion_composer from "./locales/en/discussion-composer.json"
 import en_discussion_delete from "./locales/en/discussion-delete.json"
-import en_donations from "./locales/en/donations.json"
+import en_donation_link from "./locales/en/donation-link.json"
 import en_enums from "./locales/en/enums.json"
 import en_event_bring from "./locales/en/event-bring.json"
 import en_event_cancel from "./locales/en/event-cancel.json"
@@ -53,7 +53,6 @@ import en_host_exports from "./locales/en/host-exports.json"
 import en_host_mode from "./locales/en/host-mode.json"
 import en_host_org from "./locales/en/host-org.json"
 import en_host_page_builder from "./locales/en/host-page-builder.json"
-import en_host_payments from "./locales/en/host-payments.json"
 import en_host_portfolio from "./locales/en/host-portfolio.json"
 import en_host_settings from "./locales/en/host-settings.json"
 import en_host_team from "./locales/en/host-team.json"
@@ -90,8 +89,8 @@ import en_report_cluster from "./locales/en/report-cluster.json"
 import en_report_content from "./locales/en/report-content.json"
 import en_report_detail from "./locales/en/report-detail.json"
 import en_report_linked from "./locales/en/report-linked.json"
-import en_report_picker from "./locales/en/report-picker.json"
 import en_report_list from "./locales/en/report-list.json"
+import en_report_picker from "./locales/en/report-picker.json"
 import en_report_row from "./locales/en/report-row.json"
 import en_report_wizard from "./locales/en/report-wizard.json"
 import en_search from "./locales/en/search.json"
@@ -122,7 +121,7 @@ import es_conversation_reactions from "./locales/es/conversation-reactions.json"
 import es_discussion from "./locales/es/discussion.json"
 import es_discussion_composer from "./locales/es/discussion-composer.json"
 import es_discussion_delete from "./locales/es/discussion-delete.json"
-import es_donations from "./locales/es/donations.json"
+import es_donation_link from "./locales/es/donation-link.json"
 import es_enums from "./locales/es/enums.json"
 import es_event_bring from "./locales/es/event-bring.json"
 import es_event_cancel from "./locales/es/event-cancel.json"
@@ -152,7 +151,6 @@ import es_host_exports from "./locales/es/host-exports.json"
 import es_host_mode from "./locales/es/host-mode.json"
 import es_host_org from "./locales/es/host-org.json"
 import es_host_page_builder from "./locales/es/host-page-builder.json"
-import es_host_payments from "./locales/es/host-payments.json"
 import es_host_portfolio from "./locales/es/host-portfolio.json"
 import es_host_settings from "./locales/es/host-settings.json"
 import es_host_team from "./locales/es/host-team.json"
@@ -189,8 +187,8 @@ import es_report_cluster from "./locales/es/report-cluster.json"
 import es_report_content from "./locales/es/report-content.json"
 import es_report_detail from "./locales/es/report-detail.json"
 import es_report_linked from "./locales/es/report-linked.json"
-import es_report_picker from "./locales/es/report-picker.json"
 import es_report_list from "./locales/es/report-list.json"
+import es_report_picker from "./locales/es/report-picker.json"
 import es_report_row from "./locales/es/report-row.json"
 import es_report_wizard from "./locales/es/report-wizard.json"
 import es_search from "./locales/es/search.json"
@@ -221,7 +219,7 @@ import de_conversation_reactions from "./locales/de/conversation-reactions.json"
 import de_discussion from "./locales/de/discussion.json"
 import de_discussion_composer from "./locales/de/discussion-composer.json"
 import de_discussion_delete from "./locales/de/discussion-delete.json"
-import de_donations from "./locales/de/donations.json"
+import de_donation_link from "./locales/de/donation-link.json"
 import de_enums from "./locales/de/enums.json"
 import de_event_bring from "./locales/de/event-bring.json"
 import de_event_cancel from "./locales/de/event-cancel.json"
@@ -251,7 +249,6 @@ import de_host_exports from "./locales/de/host-exports.json"
 import de_host_mode from "./locales/de/host-mode.json"
 import de_host_org from "./locales/de/host-org.json"
 import de_host_page_builder from "./locales/de/host-page-builder.json"
-import de_host_payments from "./locales/de/host-payments.json"
 import de_host_portfolio from "./locales/de/host-portfolio.json"
 import de_host_settings from "./locales/de/host-settings.json"
 import de_host_team from "./locales/de/host-team.json"
@@ -288,8 +285,8 @@ import de_report_cluster from "./locales/de/report-cluster.json"
 import de_report_content from "./locales/de/report-content.json"
 import de_report_detail from "./locales/de/report-detail.json"
 import de_report_linked from "./locales/de/report-linked.json"
-import de_report_picker from "./locales/de/report-picker.json"
 import de_report_list from "./locales/de/report-list.json"
+import de_report_picker from "./locales/de/report-picker.json"
 import de_report_row from "./locales/de/report-row.json"
 import de_report_wizard from "./locales/de/report-wizard.json"
 import de_search from "./locales/de/search.json"
@@ -320,7 +317,7 @@ import ko_conversation_reactions from "./locales/ko/conversation-reactions.json"
 import ko_discussion from "./locales/ko/discussion.json"
 import ko_discussion_composer from "./locales/ko/discussion-composer.json"
 import ko_discussion_delete from "./locales/ko/discussion-delete.json"
-import ko_donations from "./locales/ko/donations.json"
+import ko_donation_link from "./locales/ko/donation-link.json"
 import ko_enums from "./locales/ko/enums.json"
 import ko_event_bring from "./locales/ko/event-bring.json"
 import ko_event_cancel from "./locales/ko/event-cancel.json"
@@ -350,7 +347,6 @@ import ko_host_exports from "./locales/ko/host-exports.json"
 import ko_host_mode from "./locales/ko/host-mode.json"
 import ko_host_org from "./locales/ko/host-org.json"
 import ko_host_page_builder from "./locales/ko/host-page-builder.json"
-import ko_host_payments from "./locales/ko/host-payments.json"
 import ko_host_portfolio from "./locales/ko/host-portfolio.json"
 import ko_host_settings from "./locales/ko/host-settings.json"
 import ko_host_team from "./locales/ko/host-team.json"
@@ -387,8 +383,8 @@ import ko_report_cluster from "./locales/ko/report-cluster.json"
 import ko_report_content from "./locales/ko/report-content.json"
 import ko_report_detail from "./locales/ko/report-detail.json"
 import ko_report_linked from "./locales/ko/report-linked.json"
-import ko_report_picker from "./locales/ko/report-picker.json"
 import ko_report_list from "./locales/ko/report-list.json"
+import ko_report_picker from "./locales/ko/report-picker.json"
 import ko_report_row from "./locales/ko/report-row.json"
 import ko_report_wizard from "./locales/ko/report-wizard.json"
 import ko_search from "./locales/ko/search.json"
@@ -422,7 +418,7 @@ export const namespaces = [
   "discussion",
   "discussion-composer",
   "discussion-delete",
-  "donations",
+  "donation-link",
   "enums",
   "event-bring",
   "event-cancel",
@@ -452,7 +448,6 @@ export const namespaces = [
   "host-mode",
   "host-org",
   "host-page-builder",
-  "host-payments",
   "host-portfolio",
   "host-settings",
   "host-team",
@@ -489,8 +484,8 @@ export const namespaces = [
   "report-content",
   "report-detail",
   "report-linked",
-  "report-picker",
   "report-list",
+  "report-picker",
   "report-row",
   "report-wizard",
   "search",
@@ -526,7 +521,7 @@ export const resources: Resource = {
     "discussion": en_discussion,
     "discussion-composer": en_discussion_composer,
     "discussion-delete": en_discussion_delete,
-    "donations": en_donations,
+    "donation-link": en_donation_link,
     "enums": en_enums,
     "event-bring": en_event_bring,
     "event-cancel": en_event_cancel,
@@ -556,7 +551,6 @@ export const resources: Resource = {
     "host-mode": en_host_mode,
     "host-org": en_host_org,
     "host-page-builder": en_host_page_builder,
-    "host-payments": en_host_payments,
     "host-portfolio": en_host_portfolio,
     "host-settings": en_host_settings,
     "host-team": en_host_team,
@@ -593,8 +587,8 @@ export const resources: Resource = {
     "report-content": en_report_content,
     "report-detail": en_report_detail,
     "report-linked": en_report_linked,
-    "report-picker": en_report_picker,
     "report-list": en_report_list,
+    "report-picker": en_report_picker,
     "report-row": en_report_row,
     "report-wizard": en_report_wizard,
     "search": en_search,
@@ -627,7 +621,7 @@ export const resources: Resource = {
     "discussion": es_discussion,
     "discussion-composer": es_discussion_composer,
     "discussion-delete": es_discussion_delete,
-    "donations": es_donations,
+    "donation-link": es_donation_link,
     "enums": es_enums,
     "event-bring": es_event_bring,
     "event-cancel": es_event_cancel,
@@ -657,7 +651,6 @@ export const resources: Resource = {
     "host-mode": es_host_mode,
     "host-org": es_host_org,
     "host-page-builder": es_host_page_builder,
-    "host-payments": es_host_payments,
     "host-portfolio": es_host_portfolio,
     "host-settings": es_host_settings,
     "host-team": es_host_team,
@@ -694,8 +687,8 @@ export const resources: Resource = {
     "report-content": es_report_content,
     "report-detail": es_report_detail,
     "report-linked": es_report_linked,
-    "report-picker": es_report_picker,
     "report-list": es_report_list,
+    "report-picker": es_report_picker,
     "report-row": es_report_row,
     "report-wizard": es_report_wizard,
     "search": es_search,
@@ -728,7 +721,7 @@ export const resources: Resource = {
     "discussion": de_discussion,
     "discussion-composer": de_discussion_composer,
     "discussion-delete": de_discussion_delete,
-    "donations": de_donations,
+    "donation-link": de_donation_link,
     "enums": de_enums,
     "event-bring": de_event_bring,
     "event-cancel": de_event_cancel,
@@ -758,7 +751,6 @@ export const resources: Resource = {
     "host-mode": de_host_mode,
     "host-org": de_host_org,
     "host-page-builder": de_host_page_builder,
-    "host-payments": de_host_payments,
     "host-portfolio": de_host_portfolio,
     "host-settings": de_host_settings,
     "host-team": de_host_team,
@@ -795,8 +787,8 @@ export const resources: Resource = {
     "report-content": de_report_content,
     "report-detail": de_report_detail,
     "report-linked": de_report_linked,
-    "report-picker": de_report_picker,
     "report-list": de_report_list,
+    "report-picker": de_report_picker,
     "report-row": de_report_row,
     "report-wizard": de_report_wizard,
     "search": de_search,
@@ -829,7 +821,7 @@ export const resources: Resource = {
     "discussion": ko_discussion,
     "discussion-composer": ko_discussion_composer,
     "discussion-delete": ko_discussion_delete,
-    "donations": ko_donations,
+    "donation-link": ko_donation_link,
     "enums": ko_enums,
     "event-bring": ko_event_bring,
     "event-cancel": ko_event_cancel,
@@ -859,7 +851,6 @@ export const resources: Resource = {
     "host-mode": ko_host_mode,
     "host-org": ko_host_org,
     "host-page-builder": ko_host_page_builder,
-    "host-payments": ko_host_payments,
     "host-portfolio": ko_host_portfolio,
     "host-settings": ko_host_settings,
     "host-team": ko_host_team,
@@ -896,8 +887,8 @@ export const resources: Resource = {
     "report-content": ko_report_content,
     "report-detail": ko_report_detail,
     "report-linked": ko_report_linked,
-    "report-picker": ko_report_picker,
     "report-list": ko_report_list,
+    "report-picker": ko_report_picker,
     "report-row": ko_report_row,
     "report-wizard": ko_report_wizard,
     "search": ko_search,

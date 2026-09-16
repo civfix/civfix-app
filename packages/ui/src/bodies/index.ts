@@ -19,6 +19,17 @@ export {
 } from "./onboardingTour"
 export type { OnboardingTourPresenter } from "./onboardingTour"
 export { SettingsAccountBody } from "./SettingsAccountBody"
+export { DonationLinkEditor } from "./settings/DonationLinkEditor"
+export type { DonationLinkEditorProps } from "./settings/DonationLinkEditor"
+export {
+  DONATION_LINK_MAX_LENGTH,
+  donationLinkDirty,
+  donationLinkFieldError,
+  normalizeDonationLink,
+} from "./settings/donationLinkField"
+export type { DonationLinkFieldError } from "./settings/donationLinkField"
+export { donationLinkFor } from "./donationLink"
+export type { DonationLink, DonationLinkSource } from "./donationLink"
 export { SettingsPrivacyBody } from "./SettingsPrivacyBody"
 
 export { ConnectionsBody } from "./ConnectionsBody"

@@ -73,8 +73,6 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
       return id ? { kind: "cleanup", id } : null
     case "orgs":
       return id ? { kind: "org", slug: id } : null
-    case "me":
-      return id === "donations" ? { kind: "my-donations" } : null
     case "people":
       if (id && parts[2] === "followers") return { kind: "followers", id }
       if (id && parts[2] === "following") return { kind: "following", id }
@@ -180,8 +178,6 @@ export function pathForEntry(entry: DetailEntry | null): string {
         : `/cleanups/${entry.id}/ticket`
     case "org":
       return entry.slug ? `/orgs/${entry.slug}` : "/"
-    case "my-donations":
-      return "/me/donations"
     case "create-cleanup":
       return "/host"
     case "people":
@@ -341,8 +337,6 @@ export function titleForEntry(entry: DetailEntry | null): string {
       return "title.my_ticket"
     case "org":
       return "title.org"
-    case "my-donations":
-      return "title.my_donations"
     case "event-dashboard":
       return "title.event_dashboard"
     case "cluster":

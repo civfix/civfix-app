@@ -56,7 +56,6 @@ export type DetailKind =
   | "host-log-hours"
   | "my-ticket"
   | "org"
-  | "my-donations"
   | "event-dashboard"
 
 export const ALL_DETAIL_KINDS = [
@@ -102,7 +101,6 @@ export const ALL_DETAIL_KINDS = [
   "host-log-hours",
   "my-ticket",
   "org",
-  "my-donations",
   "event-dashboard",
 ] as const satisfies readonly DetailKind[]
 

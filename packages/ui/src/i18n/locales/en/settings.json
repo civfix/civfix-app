@@ -33,9 +33,5 @@
   "support_civfix": "Support civfix",
   "terms": "Terms of service",
   "privacy_policy": "Privacy policy",
-  "sign_out": "Sign out",
-  "donations": {
-    "label": "Donations",
-    "sub": "Your donation history and receipts"
-  }
+  "sign_out": "Sign out"
 }

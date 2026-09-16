@@ -153,33 +153,6 @@
     "suppressed": "차단됨",
     "skipped": "건너뜀"
   },
-  "donationStatus": {
-    "pending": "처리 중",
-    "succeeded": "완료",
-    "failed": "실패",
-    "refunded": "환불됨",
-    "partially_refunded": "부분 환불"
-  },
-  "donationDisputeState": {
-    "none": "없음",
-    "open": "진행 중",
-    "won": "승소",
-    "lost": "패소",
-    "warning": "경고"
-  },
-  "orgPaymentsState": {
-    "not_started": "시작 전",
-    "onboarding": "진행 중",
-    "ready": "준비 완료",
-    "at_risk": "확인 필요",
-    "blocked": "차단됨"
-  },
-  "donateState": {
-    "READY": "후원 받는 중",
-    "AT_RISK": "확인 필요",
-    "BLOCKED": "차단됨",
-    "OFF": "사용 안 함"
-  },
   "attendeeKind": {
     "member": "회원",
     "guest": "게스트"

@@ -130,20 +130,17 @@ test("a non-string target is never opened", () => {
   assert.equal(isExternalUrl(42), false)
 })
 
-test("an organization page and the donation history are push-link targets", () => {
+test("an organization page is a push-link target", () => {
   assert.equal(isInternalLink("/orgs/acme"), true)
   assert.equal(isInternalLink("/orgs/acme?tab=events"), true)
   assert.equal(isInternalLink("/orgs"), false)
   assert.equal(isInternalLink("/orgsomething"), false)
-  assert.equal(isInternalLink("/me/donations"), true)
-  assert.equal(isInternalLink("/me/donations?cursor=x"), true)
   assert.equal(isInternalLink("/me"), false)
-  assert.equal(isInternalLink("/me/donationsomething"), false)
+  assert.equal(isInternalLink("/me/anything"), false)
 })
 
-test("the host console and the donate page are never push-link targets", () => {
+test("the host console and unsubscribe are never push-link targets", () => {
   assert.equal(isInternalLink("/manage/events/e1"), false)
-  assert.equal(isInternalLink("/donate/acme"), false)
   assert.equal(isInternalLink("/unsubscribe"), false)
 })
 

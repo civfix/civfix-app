@@ -340,9 +340,3 @@ test("the quick broadcast stays in the sheet so its draft guard applies", () => 
   const { actions } = run([{ active: { kind: "host-broadcast-quick", id: "c1" }, now: 0 }])
   assert.equal(actions[0].type, "none")
 })
-
-test("my-donations is reached from settings in the sheet, never as a native screen", () => {
-  assert.equal(bridgeKey({ kind: "my-donations" }), null)
-  assert.equal(bridgeRoute({ kind: "my-donations" }), null)
-  assert.equal(nativeBridgeKey({ name: "me/donations" }), null)
-})
