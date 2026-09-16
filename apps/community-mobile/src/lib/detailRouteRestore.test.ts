@@ -8,6 +8,7 @@ import {
   INITIAL_BRIDGE_GUARD,
   bridgeDecision,
   detailRestorePlan,
+  detailShellSnapshot,
   nativeBridgeKey,
   restorableStack,
   stackWithoutBridged,
@@ -378,4 +379,40 @@ test("every detail route hosts its entry in a nested shell instead of seeding an
     assert.doesNotMatch(source, /DeepLinkHost/, `${file} must not seed ${kind} and dismiss to home`)
     assert.match(source, new RegExp(`kind: "${kind}"`), `${file} must host the ${kind} entry`)
   }
+})
+
+const cluster = { kind: "cluster", id: "cl1" } as DetailEntry
+const dropPin = { kind: "drop-pin" } as DetailEntry
+const bareView = { kind: "view" } as DetailEntry
+
+test("detailShellSnapshot excludes the entry the route seeds", () => {
+  assert.deepEqual(detailShellSnapshot([person, cleanup], identity(cleanup), identity), [person])
+})
+
+test("a route with NO entry snapshots the whole stack instead of dropping its null-identity rows", () => {
+  const stack = [cluster, dropPin, bareView, person]
+  assert.deepEqual(detailShellSnapshot(stack, null, identity), stack)
+})
+
+test("an unaddressable entry survives a snapshot taken for an addressable seed", () => {
+  assert.deepEqual(detailShellSnapshot([cluster, dropPin, cleanup], identity(cleanup), identity), [
+    cluster,
+    dropPin,
+  ])
+})
+
+test("the snapshot is a copy, so a later store mutation cannot rewrite the frozen stack", () => {
+  const stack = [person]
+  const snapshot = detailShellSnapshot(stack, null, identity)
+  assert.notEqual(snapshot, stack)
+  assert.deepEqual(snapshot, stack)
+})
+
+test("DetailRouteHost takes its snapshot through detailShellSnapshot, not a raw identity filter", () => {
+  const host = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "..", "components", "DetailRouteHost.tsx"),
+    "utf8",
+  )
+  assert.match(host, /detailShellSnapshot\(useNavStore\.getState\(\)\.stack, seedKey, entryIdentity\)/)
+  assert.doesNotMatch(host, /stack\.filter\(\(e\) => entryIdentity\(e\) !== seedKey\)/)
 })

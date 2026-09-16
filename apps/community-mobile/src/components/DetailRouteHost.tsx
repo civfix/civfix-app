@@ -12,7 +12,7 @@ import {
 } from "@civfix/ui"
 import { seedEntry } from "@/components/MobileNavAdapter"
 import { goHome, navTeardownEpoch } from "@/lib/goHome"
-import { detailRestorePlan, nativeBridgeKey } from "@/lib/navBridge"
+import { detailRestorePlan, detailShellSnapshot, nativeBridgeKey } from "@/lib/navBridge"
 import {
   enterNestedShell,
   exitNestedShell,
@@ -57,9 +57,7 @@ export default function DetailRouteHost({ entry }: DetailRouteHostProps): React.
 
   useLayoutEffect(() => {
     if (restoreRef.current === null) {
-      restoreRef.current = useNavStore
-        .getState()
-        .stack.filter((e) => entryIdentity(e) !== seedKey)
+      restoreRef.current = detailShellSnapshot(useNavStore.getState().stack, seedKey, entryIdentity)
       teardownEpochRef.current = navTeardownEpoch()
     }
     enterNestedShell(hostId, restoreRef.current)
