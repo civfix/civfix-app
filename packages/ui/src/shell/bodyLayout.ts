@@ -48,6 +48,8 @@ export const BODY_LAYOUT: Record<DetailKind | "home-view", BodyLayout> = {
   "my-ticket": "scroll",
   org: "scroll",
   "event-dashboard": "scroll",
+  announcement: "scroll",
+  announcements: "scroll",
   "home-view": "scroll",
 }
 

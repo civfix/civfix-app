@@ -10,6 +10,7 @@ export const ENTRY_IDENTITY_FIELDS = [
   "geoid",
   "slug",
   "seatId",
+  "announcementId",
 ] as const satisfies readonly (keyof DetailEntry)[]
 
 export function entryDiscriminator(entry: DetailEntry): string {
@@ -61,6 +62,12 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
       if (sub === "broadcast") return { kind: "host-broadcast-quick", id }
       if (sub === "team") return { kind: "host-team", id }
       if (sub === "hours") return { kind: "host-log-hours", id }
+      if (sub === "announcements") {
+        const announcementId = parts[3]
+        return announcementId
+          ? { kind: "announcement", id, announcementId }
+          : { kind: "announcements", id }
+      }
       if (sub === "ticket") {
         const seatId = parts[3]
         return seatId ? { kind: "my-ticket", id, seatId } : { kind: "my-ticket", id }
@@ -171,6 +178,13 @@ export function pathForEntry(entry: DetailEntry | null): string {
       return entry.id ? `/cleanups/${entry.id}/team` : "/cleanups"
     case "host-log-hours":
       return entry.id ? `/cleanups/${entry.id}/hours` : "/cleanups"
+    case "announcements":
+      return entry.id ? `/cleanups/${entry.id}/announcements` : "/cleanups"
+    case "announcement":
+      if (!entry.id) return "/cleanups"
+      return entry.announcementId
+        ? `/cleanups/${entry.id}/announcements/${entry.announcementId}`
+        : `/cleanups/${entry.id}/announcements`
     case "my-ticket":
       if (!entry.id) return "/cleanups"
       return entry.seatId
@@ -333,6 +347,10 @@ export function titleForEntry(entry: DetailEntry | null): string {
       return "title.host_team"
     case "host-log-hours":
       return "title.host_log_hours"
+    case "announcements":
+      return "title.announcements"
+    case "announcement":
+      return "title.announcement"
     case "my-ticket":
       return "title.my_ticket"
     case "org":
@@ -434,6 +452,8 @@ export function parentViewForEntry(entry: DetailEntry | null): View | null {
     case "host-team":
     case "host-log-hours":
     case "my-ticket":
+    case "announcement":
+    case "announcements":
     case "org":
     case "event-dashboard":
       return "events"

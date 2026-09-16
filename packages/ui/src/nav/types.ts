@@ -57,6 +57,8 @@ export type DetailKind =
   | "my-ticket"
   | "org"
   | "event-dashboard"
+  | "announcement"
+  | "announcements"
 
 export const ALL_DETAIL_KINDS = [
   "pin",
@@ -102,6 +104,8 @@ export const ALL_DETAIL_KINDS = [
   "my-ticket",
   "org",
   "event-dashboard",
+  "announcement",
+  "announcements",
 ] as const satisfies readonly DetailKind[]
 
 export const DEAD_DETAIL_KINDS = ["new-msg"] as const satisfies readonly DetailKind[]
@@ -137,6 +141,7 @@ export interface DetailEntry {
   profileTab?: "posts" | "events" | "hours" | "reports"
   slug?: string
   seatId?: string
+  announcementId?: string
   organizationId?: string
 }
 

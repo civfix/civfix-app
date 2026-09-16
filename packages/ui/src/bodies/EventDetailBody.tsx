@@ -53,6 +53,7 @@ import { EventHoursBlock } from "./EventHoursBlock"
 import { EventSlotsBlock } from "./EventSlotsBlock"
 import { EventGuestsBlock } from "./EventGuestsBlock"
 import { openHostDashboard } from "./hostDashboardTarget"
+import { EventAnnouncementsBlock } from "./host/EventAnnouncementsBlock"
 import { EventRosterBlock } from "./host/EventRosterBlock"
 import { RegistrationBlock } from "./host/registration/RegistrationBlock"
 import { eventDistanceLabel } from "./eventDistance"
@@ -563,6 +564,8 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
           </View>
         ) : null}
       </View>
+
+      <EventAnnouncementsBlock cleanupId={cleanup.id} />
 
       {showDetails ? (
         <View style={styles.section}>

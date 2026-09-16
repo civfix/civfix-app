@@ -46,6 +46,8 @@ import {
   MyTicketBody,
   OrgPageBody,
   EventDashboardBody,
+  AnnouncementBody,
+  AnnouncementsBody,
 } from "../bodies"
 import type { DetailEntry, View as NavView } from "../nav"
 import { VIEW_BODY, DETAIL_BODY, type BodyId } from "./bodyRoutes"
@@ -174,6 +176,15 @@ function renderBodyId(id: BodyId, entry: DetailEntry | null): React.ReactNode {
       return <OrgPageBody slug={entry?.slug ?? ""} />
     case "eventDashboard":
       return <EventDashboardBody />
+    case "announcements":
+      return <AnnouncementsBody id={entry?.id ?? ""} />
+    case "announcement":
+      return (
+        <AnnouncementBody
+          id={entry?.id ?? ""}
+          announcementId={entry?.announcementId ?? ""}
+        />
+      )
     case "stub": {
       const label = entry ? (entry.id ? `${entry.kind} #${entry.id}` : entry.kind) : "stub"
       return <Stub label={label} />

@@ -39,7 +39,9 @@
     "host_log_hours": "Freiwilligenstunden erfassen",
     "my_ticket": "Dein Ticket",
     "org": "Organisation",
-    "event_dashboard": "Event-Dashboard"
+    "event_dashboard": "Event-Dashboard",
+    "announcement": "Ankündigung",
+    "announcements": "Ankündigungen"
   },
   "tab": {
     "home": "Start",

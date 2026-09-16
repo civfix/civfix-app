@@ -72,6 +72,12 @@ export const queryKeys = {
   hostTicketTypes: (id: string) => ["host", id, "ticket-types"] as const,
   hostQuestions: (id: string) => ["host", id, "questions"] as const,
   hostTeam: (id: string) => ["host", id, "team"] as const,
+  eventAnnouncementsRoot: (id: string) => ["host", id, "announcements"] as const,
+  eventAnnouncements: (id: string) => ["host", id, "announcements", "list"] as const,
+  eventAnnouncement: (id: string, announcementId: string) =>
+    ["host", id, "announcements", "one", announcementId] as const,
+  eventAudiencePreview: (id: string, segment: string) =>
+    ["host", id, "audience-preview", segment] as const,
   hostWaitlist: (id: string) => ["host", id, "waitlist"] as const,
   myRegistration: (id: string) => ["host", id, "my-registration"] as const,
   myTickets: (id: string) => ["tickets", "mine", id] as const,

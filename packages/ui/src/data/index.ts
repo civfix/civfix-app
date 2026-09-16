@@ -253,6 +253,19 @@ export type {
 
 export { useHostedEventsAnalytics } from "./hooks/dashboard"
 
+export {
+  ANNOUNCEMENTS_PAGE_SIZE,
+  AUDIENCE_PREVIEW_DEBOUNCE_MS,
+  announcementRows,
+  audienceKey,
+  invalidateEventAnnouncements,
+  useAnnouncement,
+  useAudiencePreview,
+  useCreateAnnouncement,
+  useEventAnnouncements,
+} from "./hooks/announcements"
+export type { CreateAnnouncementVars } from "./hooks/announcements"
+
 
 export { fetchEventIcs, useEventIcs } from "./eventIcs"
 

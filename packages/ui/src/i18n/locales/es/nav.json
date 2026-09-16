@@ -39,7 +39,9 @@
     "host_log_hours": "Registrar horas de voluntariado",
     "my_ticket": "Tu entrada",
     "org": "Organización",
-    "event_dashboard": "Panel de eventos"
+    "event_dashboard": "Panel de eventos",
+    "announcement": "Anuncio",
+    "announcements": "Anuncios"
   },
   "tab": {
     "home": "Inicio",

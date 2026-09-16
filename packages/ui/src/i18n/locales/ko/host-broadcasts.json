@@ -154,5 +154,26 @@
     "body": "이미 전송된 메시지는 그대로 남습니다.",
     "banner": "남은 전송은 중단되고 차단됨으로 기록됩니다.",
     "confirm": "메시지 취소"
+  },
+  "announce": {
+    "section": "공지",
+    "section_error": "공지를 불러오지 못했습니다.",
+    "see_all": "공지 전체 보기 ({{total}})",
+    "see_all_a11y": "이 행사의 공지를 모두 보기",
+    "byline": "{{name}} · {{when}} 전",
+    "byline_host": "호스트",
+    "sent_when": "{{when}} 전에 보냄",
+    "notified": "{{total}}명 중 {{sent}}명에게 알림",
+    "failed": "{{failed}}건 실패",
+    "delivery_line": "{{audience}} 대상 · {{notified}}명에게 알림",
+    "open_event": "행사 열기",
+    "empty": "아직 공지가 없습니다.",
+    "retry": "다시 시도",
+    "show_more": "더 보기",
+    "loading_more": "불러오는 중…",
+    "list_error_title": "공지를 불러오지 못했습니다",
+    "list_error_body": "civfix에 연결하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.",
+    "detail_error_title": "공지를 볼 수 없습니다",
+    "detail_error_body": "이 공지를 불러오지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요."
   }
 }

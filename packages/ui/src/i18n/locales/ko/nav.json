@@ -38,7 +38,9 @@
     "host_log_hours": "봉사 시간 기록",
     "my_ticket": "내 티켓",
     "org": "단체",
-    "event_dashboard": "이벤트 대시보드"
+    "event_dashboard": "이벤트 대시보드",
+    "announcement": "공지",
+    "announcements": "공지"
   },
   "tab": {
     "home": "홈",

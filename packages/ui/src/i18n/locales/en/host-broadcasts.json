@@ -155,5 +155,26 @@
     "body": "Anything already sent stays sent.",
     "banner": "Remaining deliveries are stopped and recorded as suppressed.",
     "confirm": "Cancel the message"
+  },
+  "announce": {
+    "section": "Announcements",
+    "section_error": "Couldn't load announcements.",
+    "see_all": "All announcements ({{total}})",
+    "see_all_a11y": "See every announcement for this event",
+    "byline": "{{name}} · {{when}} ago",
+    "byline_host": "Host",
+    "sent_when": "Sent {{when}} ago",
+    "notified": "{{sent}} of {{total}} notified",
+    "failed": "{{failed}} failed",
+    "delivery_line": "Sent to {{audience}} · {{notified}} notified",
+    "open_event": "Open event",
+    "empty": "No announcements yet.",
+    "retry": "Try again",
+    "show_more": "Show more",
+    "loading_more": "Loading…",
+    "list_error_title": "Couldn't load announcements",
+    "list_error_body": "We could not reach civfix. Check your connection and try again.",
+    "detail_error_title": "Announcement unavailable",
+    "detail_error_body": "This announcement could not be loaded. Check your connection and try again."
   }
 }

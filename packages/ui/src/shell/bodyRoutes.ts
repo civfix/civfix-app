@@ -45,6 +45,8 @@ export type BodyId =
   | "myTicket"
   | "orgPage"
   | "eventDashboard"
+  | "announcement"
+  | "announcements"
   | "stub"
 
 export const VIEW_BODY: Record<View, BodyId> = {
@@ -102,4 +104,6 @@ export const DETAIL_BODY: Record<DetailKind, BodyId> = {
   "my-ticket": "myTicket",
   org: "orgPage",
   "event-dashboard": "eventDashboard",
+  announcement: "announcement",
+  announcements: "announcements",
 }

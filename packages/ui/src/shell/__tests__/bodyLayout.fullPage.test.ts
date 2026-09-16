@@ -377,7 +377,7 @@ describe("pageLayerKey - stable page identity", () => {
   })
 
   it("carries the same identity `portraitSurfaceTransitionKey` gives the web overlay", () => {
-    expect(pageLayerKey("home", { kind: "pin", id: "r1", lat: 1, lng: 2 }, 2)).toBe("2:pin:r1::::")
+    expect(pageLayerKey("home", { kind: "pin", id: "r1", lat: 1, lng: 2 }, 2)).toBe("2:pin:r1:::::")
     expect(pageLayerKey("home", { kind: "composer", composerMode: "reply", targetPostId: "p1" }, 0)).toBe(
       "0:composer:reply:p1",
     )
@@ -418,7 +418,7 @@ describe("pageLayerKey - stable page identity", () => {
     const acme: DetailEntry = { kind: "org", slug: "acme" }
     const river: DetailEntry = { kind: "org", slug: "river-keepers" }
     expect(pageLayerKey("home", acme, 1)).not.toBe(pageLayerKey("home", river, 1))
-    expect(pageLayerKey("home", acme, 1)).toBe("1:org::::acme:")
+    expect(pageLayerKey("home", acme, 1)).toBe("1:org::::acme::")
   })
 
   it("tells two leaderboards apart, which carry a geoid and never an id", () => {

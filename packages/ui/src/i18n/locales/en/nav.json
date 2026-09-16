@@ -39,7 +39,9 @@
     "host_log_hours": "Log volunteer hours",
     "my_ticket": "Your ticket",
     "org": "Organization",
-    "event_dashboard": "Event dashboard"
+    "event_dashboard": "Event dashboard",
+    "announcement": "Announcement",
+    "announcements": "Announcements"
   },
   "tab": {
     "home": "Home",

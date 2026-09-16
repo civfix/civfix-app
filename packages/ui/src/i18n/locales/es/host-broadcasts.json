@@ -155,5 +155,26 @@
     "body": "Lo que ya se ha enviado sigue enviado.",
     "banner": "Los envíos pendientes se detienen y quedan registrados como suprimidos.",
     "confirm": "Cancelar el mensaje"
+  },
+  "announce": {
+    "section": "Anuncios",
+    "section_error": "No se pudieron cargar los anuncios.",
+    "see_all": "Todos los anuncios ({{total}})",
+    "see_all_a11y": "Ver todos los anuncios de este evento",
+    "byline": "{{name}} · hace {{when}}",
+    "byline_host": "Anfitrión",
+    "sent_when": "Enviado hace {{when}}",
+    "notified": "{{sent}} de {{total}} notificados",
+    "failed": "{{failed}} con error",
+    "delivery_line": "Enviado a {{audience}} · {{notified}} notificados",
+    "open_event": "Abrir el evento",
+    "empty": "Todavía no hay anuncios.",
+    "retry": "Reintentar",
+    "show_more": "Ver más",
+    "loading_more": "Cargando…",
+    "list_error_title": "No se pudieron cargar los anuncios",
+    "list_error_body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo.",
+    "detail_error_title": "Anuncio no disponible",
+    "detail_error_body": "No se pudo cargar este anuncio. Revisa tu conexión e inténtalo de nuevo."
   }
 }
