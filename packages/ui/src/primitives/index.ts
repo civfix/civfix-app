@@ -62,6 +62,15 @@ export { StatusBadge, citizenReportStatusLabel } from "./StatusBadge"
 export { SuccessCheck } from "./SuccessCheck"
 export type { SuccessCheckProps } from "./SuccessCheck"
 
+export { SocialGlyph } from "./SocialGlyph"
+export type { SocialGlyphProps } from "./SocialGlyph"
+
+export { SOCIAL_LINK_GLYPH_SIZE, SOCIAL_LINK_HIT_SIZE, SocialLinksRow } from "./SocialLinksRow"
+export type { SocialLinksRowProps } from "./SocialLinksRow"
+
+export { presentSocialPlatforms } from "./socialLinksModel"
+export type { SocialLinkEntry } from "./socialLinksModel"
+
 export { NODE_GLYPH, nodeColor, kindForStatus, citizenStatusLabel } from "./report-timeline-labels"
 export type { NodeKind } from "./report-timeline-labels"
 export { TIMELINE_VISIBILITY_KINDS, timelineEntryRender, visibilityKindOf } from "./report-timeline-model"

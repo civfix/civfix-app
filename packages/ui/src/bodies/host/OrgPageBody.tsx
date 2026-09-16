@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import type { OrganizationDTO, SocialLinks } from "@civfix/shared"
+import type { OrganizationDTO } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../theme"
 import { Text, TextLink, Icon, iconMap } from "../../typography"
 import {
@@ -9,7 +9,9 @@ import {
   EventCard,
   Markdown,
   SecondaryButton,
+  SocialLinksRow,
   VerifiedBadge,
+  presentSocialPlatforms,
   shareLink,
   useToast,
 } from "../../primitives"
@@ -27,18 +29,6 @@ import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 import { formatHoursDisplay } from "../formatHours"
 import { canOpenOrgManage } from "./orgManageModel"
-
-const SOCIAL_ORDER = ["instagram", "x", "facebook", "tiktok", "youtube", "linkedin"] as const
-
-function socialEntries(links: SocialLinks | null | undefined): Array<{ key: string; url: string }> {
-  if (!links) return []
-  const out: Array<{ key: string; url: string }> = []
-  for (const key of SOCIAL_ORDER) {
-    const url = (links as Record<string, unknown>)[key]
-    if (typeof url === "string" && url.startsWith("https://")) out.push({ key, url })
-  }
-  return out
-}
 
 function OrgHeader({ org }: { org: OrganizationDTO }) {
   const styles = useStyles()
@@ -167,7 +157,7 @@ export function OrgPageBody({ slug }: { slug: string }) {
   const query = useOrganization(slug)
   const org = query.data ?? null
 
-  const socials = useMemo(() => socialEntries(org?.socialLinks), [org?.socialLinks])
+  const socials = useMemo(() => presentSocialPlatforms(org?.socialLinks), [org?.socialLinks])
 
   const websiteUrl =
     org?.websiteUrl && org.websiteUrl.startsWith("https://") ? org.websiteUrl : null
@@ -248,24 +238,7 @@ export function OrgPageBody({ slug }: { slug: string }) {
               <Text style={styles.linkText}>{t("links.website")}</Text>
             </Pressable>
           ) : null}
-          {socials.map((entry) => (
-            <Pressable
-              key={entry.key}
-              onPress={() => openUrl(entry.url)}
-              accessibilityRole="link"
-              accessibilityLabel={entry.key}
-              {...focusRingProps}
-              style={(state) => [
-                styles.linkChip,
-                webTransition,
-                webCursor(),
-                webHover(state) ? styles.linkChipHovered : null,
-              ]}
-            >
-              <Icon icon={iconMap.Link2} size={14} color={th.colors.textMuted} />
-              <Text style={styles.linkText}>{entry.key}</Text>
-            </Pressable>
-          ))}
+          <SocialLinksRow links={org.socialLinks} />
         </View>
       ) : null}
 

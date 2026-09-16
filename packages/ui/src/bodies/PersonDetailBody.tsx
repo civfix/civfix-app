@@ -20,6 +20,7 @@ import {
   SkeletonGroup,
   SkeletonList,
   SkeletonText,
+  SocialLinksRow,
   usePopoverAnchor,
   useToast,
 } from "../primitives"
@@ -411,6 +412,8 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
           <AffiliationRow organization={profile.organization} style={styles.affiliation} />
         ) : null}
 
+        <SocialLinksRow links={profile.socialLinks} style={styles.socialRow} />
+
         <ProfileStatsRow
           followers={profile.followers}
           following={profile.following}
@@ -771,6 +774,10 @@ const useStyles = makeThemedStyles((t) => ({
     maxWidth: 320,
   },
   affiliation: {
+    marginTop: t.space["3"],
+    marginHorizontal: t.space["4"],
+  },
+  socialRow: {
     marginTop: t.space["3"],
     marginHorizontal: t.space["4"],
   },
