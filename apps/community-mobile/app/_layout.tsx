@@ -626,7 +626,11 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
       <Text style={crash.title}>{copy.title}</Text>
       <Text style={crash.body}>{copy.body}</Text>
       {__DEV__ ? <Text style={crash.detail}>{String(error?.message ?? error)}</Text> : null}
-      <Pressable accessibilityRole="button" onPress={onRetry} style={crash.action}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onRetry}
+        style={({ pressed }) => [crash.action, pressed ? crash.actionPressed : null]}
+      >
         <Text style={crash.actionLabel}>{copy.action}</Text>
       </Pressable>
     </View>
@@ -683,6 +687,9 @@ function crashStyles(t: Theme) {
       paddingHorizontal: t.space["5"],
       borderRadius: t.radius.pill,
       backgroundColor: t.colors.brand.bloom,
+    },
+    actionPressed: {
+      opacity: 0.85,
     },
     actionLabel: {
       fontSize: t.fontSize["16"],
