@@ -39,7 +39,9 @@ function DashboardRow({ onOpen }: { onOpen: () => void }) {
         <Icon icon={iconMap.Calendar} size={16} color={th.colors.brand.sky} />
       </View>
       <View style={styles.dashboardMeta}>
-        <Text style={styles.dashboardTitle}>{t("dashboard.title")}</Text>
+        <Text style={styles.dashboardTitle} numberOfLines={1}>
+          {t("dashboard.title")}
+        </Text>
         <Text style={styles.dashboardSub} numberOfLines={1}>
           {t("dashboard.sub")}
         </Text>

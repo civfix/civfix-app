@@ -42,7 +42,9 @@ export function AffiliationRow({
         decorative
       />
       <View style={styles.copy}>
-        <Text style={styles.eyebrow}>{t("affiliation.label")}</Text>
+        <Text style={styles.eyebrow} numberOfLines={1}>
+          {t("affiliation.label")}
+        </Text>
         <Text style={styles.name} numberOfLines={1}>
           {organization.name}
         </Text>
