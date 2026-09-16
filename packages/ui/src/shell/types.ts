@@ -31,4 +31,5 @@ export interface AppShellProps {
    * omitted the shell falls back to `defaultRenderBody` (the BodyRouter).
    */
   renderBody?: (entry: DetailEntry | null, view: View) => React.ReactNode
+  stack?: readonly DetailEntry[]
 }

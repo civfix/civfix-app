@@ -75,15 +75,21 @@ const PANEL_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 export interface ExpandedShellProps {
   renderBody?: RenderBody
+  stack?: readonly DetailEntry[]
 }
 
-export function ExpandedShell({ renderBody = defaultRenderBody }: ExpandedShellProps) {
+export function ExpandedShell({
+  renderBody = defaultRenderBody,
+  stack: ownedStack,
+}: ExpandedShellProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("nav")
   const { width } = useWindowDimensions()
-  const stack = useNavStore((s) => s.stack)
-  const active = useNavStore((s) => s.active)
+  const liveStack = useNavStore((s) => s.stack)
+  const liveActive = useNavStore((s) => s.active)
+  const stack = ownedStack ?? liveStack
+  const active = ownedStack ? (ownedStack[ownedStack.length - 1] ?? null) : liveActive
   const view = useNavStore((s) => s.view)
   const storedWidth = useSidebarStore((s) => s.width)
   const setWidth = useSidebarStore((s) => s.setWidth)

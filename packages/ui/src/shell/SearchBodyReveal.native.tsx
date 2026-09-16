@@ -81,6 +81,8 @@ export function SearchBodyReveal({ active, renderBody, topInset, bottomInset }: 
     return { opacity, transform: [{ translateY }] }
   })
 
+  const body = useMemo(() => renderBody(null, "search"), [renderBody])
+
   if (!mounted) return null
 
   return (
@@ -90,7 +92,7 @@ export function SearchBodyReveal({ active, renderBody, topInset, bottomInset }: 
     >
       <DockClearanceFallbackContext.Provider value={bottomInset}>
         <ScrollHostProvider value={PORTRAIT_SCROLL_HOST}>
-          {renderBody(null, "search")}
+          {body}
         </ScrollHostProvider>
       </DockClearanceFallbackContext.Provider>
     </Animated.View>

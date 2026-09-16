@@ -62,6 +62,7 @@ export interface PortraitShellProps {
   view: NavView
   baseView: NavView
   fullPageDetails?: boolean
+  stack?: readonly DetailEntry[]
 }
 
 interface PortraitShellFrameProps extends PortraitShellProps {
@@ -80,12 +81,14 @@ export function PortraitShellFrame({
   keyboardInset,
   plan,
   renderBody,
+  stack: ownedStack,
   topInset,
   view,
 }: PortraitShellFrameProps) {
   const styles = useStyles()
   const tabBarHeight = useTabBarStore((state) => state.tabBarHeight)
-  const stack = useNavStore((state) => state.stack)
+  const liveStack = useNavStore((state) => state.stack)
+  const stack = ownedStack ?? liveStack
   const direction = useStackDirection(stack.length)
   const frame = portraitFramePlan(
     baseView,
