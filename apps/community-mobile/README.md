@@ -77,9 +77,23 @@ baked API base URL and their EAS Update channel:
 - `testflight` - dev/testing builds for TestFlight. Bakes
   `EXPO_PUBLIC_API_URL=https://api.civfix.dev`, so testers hit the staging API. Update channel
   `testflight`.
-- `production` - official App Store releases. Sets no `EXPO_PUBLIC_API_URL`,
-  so release builds fall back to the prod API `https://api.civfix.org`
-  (`src/lib/apiUrl.ts`). Update channel `production`.
+- `production` - official App Store releases. Sets no `EXPO_PUBLIC_API_URL`, so the base URL is
+  chosen at RUNTIME by install source: `https://api.civfix.dev` while that build is handed out
+  through TestFlight, `https://api.civfix.org` once the same build is downloaded from the App Store
+  (`src/lib/apiUrl.ts`, `src/lib/betaInstall.ts`). Update channel `production`.
+
+### How the runtime split is decided (iOS)
+
+iOS ships the App Store and TestFlight copies of a build with different StoreKit receipts: a store
+download gets `StoreKit/receipt` in the app's data container, a TestFlight install gets
+`StoreKit/sandboxReceipt`. `src/lib/betaInstall.ts` reads those two paths synchronously through
+`expo-file-system`, so `API_URL` is a plain module constant and one session can never straddle two
+APIs. `expo-application`'s `getIosApplicationReleaseTypeAsync()` cannot make this call: it reads the
+embedded provisioning profile, which reports `APP_STORE` for TestFlight and App Store alike.
+
+Precedence is `EXPO_PUBLIC_API_URL` (when baked) -> `__DEV__` localhost -> the receipt probe. The
+probe checks the store receipt FIRST, so a store download can never be routed to staging; anything
+it cannot read falls through to production.
 
 ### Hand-driven Xcode archive (`scripts/prep-archive.sh`)
 
@@ -286,7 +300,9 @@ to `eas build`), and never map the `testflight` channel onto a prod-published br
 Config plugins for the native modules (camera/mic/location permission strings, Google sign-in URL
 scheme, Apple auth, notifications) are declared in `apps/community-mobile/app.config.js`. The API base
 URL comes from `EXPO_PUBLIC_API_URL`, surfaced via `extra.apiUrl`; when unset, dev builds fall back
-to `http://localhost:8080` and release builds to `https://api.civfix.org` (`src/lib/apiUrl.ts`).
+to `http://localhost:8080` and release builds to whichever API the install source implies -
+`https://api.civfix.dev` from TestFlight, `https://api.civfix.org` from the App Store
+(`src/lib/apiUrl.ts`).
 
 ## pnpm + Expo + the shared packages
 

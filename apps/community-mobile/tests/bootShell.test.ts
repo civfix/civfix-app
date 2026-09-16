@@ -6,6 +6,7 @@ const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf
 const home = readFileSync(new URL("../app/index.tsx", import.meta.url), "utf8")
 const config = readFileSync(new URL("../src/config.ts", import.meta.url), "utf8")
 const apiUrlModule = readFileSync(new URL("../src/lib/apiUrl.ts", import.meta.url), "utf8")
+const betaInstallModule = readFileSync(new URL("../src/lib/betaInstall.ts", import.meta.url), "utf8")
 const appConfig = readFileSync(new URL("../app.config.js", import.meta.url), "utf8")
 
 test("the root layout exports an ErrorBoundary so expo-router can catch a boot crash", () => {
@@ -57,13 +58,33 @@ test("every external URL is validated before it reaches Linking.openURL", () => 
 
 test("a bare dev bundle points at localhost, never silently at production", () => {
   assert.match(apiUrlModule, /export const DEV_API_URL = "http:\/\/localhost:8080"/)
+  assert.match(apiUrlModule, /export const STAGING_API_URL = "https:\/\/api\.civfix\.dev"/)
   assert.match(apiUrlModule, /export const PROD_API_URL = "https:\/\/api\.civfix\.org"/)
 })
 
 test("the base URL goes through the guarded resolver, never a bare ?? on the baked value", () => {
-  assert.match(config, /resolveApiUrl\(extra\.apiUrl, __DEV__\)/)
+  assert.match(config, /resolveApiUrl\(extra\.apiUrl, __DEV__, isBetaInstall\(\)\)/)
   assert.doesNotMatch(config, /extra\.apiUrl \?\?/)
   assert.match(apiUrlModule, /typeof configured === "string"/)
+})
+
+test("the install probe reads the ACTIVE StoreKit receipt, store receipt winning over the sandbox one", () => {
+  assert.match(betaInstallModule, /if \(Platform\.OS !== "ios"\) return false/)
+  const body = betaInstallModule.slice(betaInstallModule.indexOf("export function isBetaInstall"))
+  const store = body.indexOf("storeKitReceiptPresent(APP_STORE_RECEIPT)")
+  const sandbox = body.indexOf("storeKitReceiptPresent(SANDBOX_RECEIPT)")
+  assert.ok(store > -1 && sandbox > store)
+  assert.match(betaInstallModule, /export const APP_STORE_RECEIPT = "receipt"/)
+  assert.match(betaInstallModule, /export const SANDBOX_RECEIPT = "sandboxReceipt"/)
+})
+
+test("the probe resolves the StoreKit folder from the app data container, not the bundle", () => {
+  assert.match(betaInstallModule, /Paths\.document\.parentDirectory, STORE_KIT_DIR, name/)
+  assert.doesNotMatch(betaInstallModule, /Paths\.bundle/)
+})
+
+test("an unreadable install probe degrades to the production API rather than throwing at boot", () => {
+  assert.match(betaInstallModule, /} catch \{\n\s+return false\n\s+}/)
 })
 
 test("the app config OMITS apiUrl when unset rather than baking a null Expo turns into {}", () => {

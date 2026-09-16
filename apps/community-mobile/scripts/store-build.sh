@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # iOS store build + upload to App Store Connect, wrapping the eas.json profiles:
 #
-#   scripts/store-build.sh testflight    dev/testing build for TestFlight — staging API (https://api.civfix.dev)
-#   scripts/store-build.sh appstore      official App Store release build — prod API (https://api.civfix.org)
+#   scripts/store-build.sh testflight    dev/testing build for TestFlight — staging API (https://api.civfix.dev), baked
+#   scripts/store-build.sh appstore      official App Store release build — bakes NO API URL; the app picks
+#                                        api.civfix.dev in TestFlight and api.civfix.org from the App Store
+#                                        at runtime (src/lib/apiUrl.ts + src/lib/betaInstall.ts)
 #
 # Runs `eas build --local` on this machine — a developer Mac or the macOS GitHub runner that
 # .github/workflows/deploy-mobile.yml drives. Unlike a raw Xcode archive, this applies the profile's
@@ -87,14 +89,14 @@ baked_api_url="$(printf '%s' "$baked_config" | node -e '
   process.stdout.write(typeof apiUrl === "string" ? apiUrl : "")
 ')"
 if [ "$baked_api_url" != "$expected_api_url" ]; then
-  echo "Baked API URL is '${baked_api_url:-<unset, falls back to https://api.civfix.org>}' but the ${profile} profile promises '${expected_api_url:-<unset, falls back to https://api.civfix.org>}'. Refusing to upload ${ipa}." >&2
+  echo "Baked API URL is '${baked_api_url:-<unset, resolved at runtime>}' but the ${profile} profile promises '${expected_api_url:-<unset, resolved at runtime>}'. Refusing to upload ${ipa}." >&2
   exit 1
 fi
 build_version="$(unzip -p "$ipa" 'Payload/*.app/Info.plist' | plutil -convert json -o - - | node -e '
   const plist = JSON.parse(require("fs").readFileSync(0, "utf8"))
   process.stdout.write(`${plist.CFBundleShortVersionString} (${plist.CFBundleVersion})`)
 ')"
-echo "Built ${ipa}: version ${build_version}, profile ${profile}, API ${baked_api_url:-https://api.civfix.org (default)}"
+echo "Built ${ipa}: version ${build_version}, profile ${profile}, API ${baked_api_url:-resolved at runtime (api.civfix.dev in TestFlight, api.civfix.org from the App Store)}"
 
 if [ "$submit" = 0 ]; then
   echo "Upload later with: eas submit --platform ios --profile ${profile} --path ${ipa}"
