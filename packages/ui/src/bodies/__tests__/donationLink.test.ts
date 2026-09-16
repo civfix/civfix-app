@@ -1,5 +1,8 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { donationLinkFor, type DonationLinkSource } from "../donationLink"
+
+const EVENT_DETAIL = readFileSync(new URL("../EventDetailBody.tsx", import.meta.url), "utf8")
 
 const ORG = {
   id: "o1",
@@ -72,5 +75,16 @@ describe("donationLinkFor", () => {
         }),
       ),
     ).toEqual({ url: "https://pay.example.org/creek", ownerName: "Ballona Creek cleanup" })
+  })
+})
+
+describe("event page donation placement", () => {
+  it("renders the donation card between the header and the sign-up blocks, only when a link resolves", () => {
+    const donate = EVENT_DETAIL.indexOf("<DonateBlock")
+    expect(donate).toBeGreaterThan(EVENT_DETAIL.indexOf("{cleanup.title}"))
+    expect(donate).toBeLessThan(EVENT_DETAIL.indexOf("<RegistrationBlock"))
+    expect(donate).toBeLessThan(EVENT_DETAIL.indexOf("<EventSlotsBlock"))
+    expect(EVENT_DETAIL).toContain("{donation ? (")
+    expect(EVENT_DETAIL.split("<DonateBlock")).toHaveLength(2)
   })
 })

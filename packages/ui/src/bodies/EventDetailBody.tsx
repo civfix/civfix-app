@@ -467,6 +467,12 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       </View>
 
+      {donation ? (
+        <View style={styles.donate}>
+          <DonateBlock url={donation.url} ownerName={donation.ownerName} />
+        </View>
+      ) : null}
+
       {isLive && !actsAsHost && hasTicketTypes && (isUpcoming || isRegistered) ? (
         <View style={styles.rsvp}>
           <RegistrationBlock cleanup={cleanup} onGuestRegister={onSignedOutRsvp} />
@@ -670,12 +676,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </EventActionRows>
       </View>
 
-      {donation ? (
-        <View style={styles.section}>
-          <DonateBlock url={donation.url} ownerName={donation.ownerName} />
-        </View>
-      ) : null}
-
       <ReportContentSheet
         visible={reporting}
         subjectLabel={t("report_sheet.subject")}
@@ -834,6 +834,9 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textMuted,
   },
 
+  donate: {
+    marginBottom: t.space["4"],
+  },
   rsvp: {
     marginTop: t.space["4"],
     marginBottom: t.space["4"],
