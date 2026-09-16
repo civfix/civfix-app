@@ -1,5 +1,28 @@
 # @civfix/shared
 
+## 0.49.0
+
+### Minor Changes
+
+- 3872b02: Admin report list rows carry a presigned `thumbnailUrl`
+
+  `AdminReportListItemDTO` gains `thumbnailUrl`: a presigned preview of the report's first ready image asset (the pipeline thumbnail when one exists, else the served image), so the admin reports list can render the report's own photo instead of the category pin. Nullable and defaulted to `null`, so a report with no usable image and a response from a server that does not yet send the field both parse unchanged.
+
+- 2d59670: Feed ranking contract: scored cursor, counts endpoint, realtime topics, `FEED_RANKING` schema
+
+  `GET /feed/home` keeps its method, path, query and response schemas; its `nextCursor` may now be a
+  ranked `"<score>|<postId>"` cursor alongside the legacy `"<iso>|<postId>"` one, and the contract
+  owns the codec (`FeedScoreCursorSchema`, `formatFeedScoreCursor`, `parseFeedScoreCursor`,
+  `quantizeFeedScore`, `isAfterFeedScoreCursor`, `FEED_SCORE_CURSOR_PRECISION`) so both forms stay
+  unambiguous and the continuation predicate has one definition.
+
+  New `getFeedCounts` (`POST /feed/counts`, auth required, no CSRF) takes up to
+  `FEED_COUNTS_MAX_IDS` post ids and returns counts only, with unreadable ids simply absent —
+  registry 318 → 319. `SignalTopicSchema` gains `feed` and `feed_counts` with `UserSignalSchema`
+  unchanged, so a stale client drops the new frames instead of failing. `FeedRankingConfigSchema` /
+  `FeedRankingConfig` / `DEFAULT_FEED_RANKING` add the strict, fully defaulted 27-knob ranking
+  profile that the backend loads from a JSON `FEED_RANKING` env var. All additive; see DECISIONS §47.
+
 ## 0.48.1
 
 ### Patch Changes
