@@ -1508,3 +1508,72 @@ the org-payouts amendment inside §33. Amended: §23 (`donationOrg` gone from th
 growth list, `/orgs/by-slug/:slug/donate` gone, `HostCapability` count), §33 and §34 (the
 `manage_payments` / `view_donations` capability lines, the donations eligibility gate) and §36
 (the insights `money` block).
+
+## 47. The home feed is ranked, not reverse-chronological (0.49.0)
+
+`GET /feed/home` keeps its name, method, path, query schema (`HomeFeedQuerySchema`) and response
+schema (`FeedPageDTO`). What changes is the ORDER of `items` and the MEANING of the opaque
+`nextCursor`: the server now scores every candidate with a linear affinity model (follow / self /
+mention / verified-org author / attached event / attached report / image / graded proximity, plus
+log-scaled likes, replies and reposts), multiplies by a floored recency half-life, a seen discount
+and Twitter's author-diversity discount, and orders `score DESC, id DESC`. Reverse-chron survives
+as the legacy path, not as the default.
+
+**The cursor carries both forms, and that is what makes this additive.** A ranked continuation is
+`"<score>|<postId>"` — the same two-part shape as the existing near cursor — with the score
+quantised to `FEED_SCORE_CURSOR_PRECISION` (6) decimal places so a float comparison against the
+cursor is exact. The contract owns the codec (`FeedScoreCursorSchema`, `formatFeedScoreCursor`,
+`parseFeedScoreCursor`, `quantizeFeedScore`, `isAfterFeedScoreCursor`) so the server, its tests and
+any future consumer read one definition of the continuation predicate
+(`score < cursorScore OR (score === cursorScore AND id < cursorId)`). A numeric first segment and
+an ISO first segment are unambiguously distinguishable, so the server dispatches: a score cursor
+continues the ranked set, an ISO `"<timestamp>|<uuid>"` cursor continues the legacy chronological
+query, anything else is a first page. A TestFlight build in the field holding an old cursor keeps
+paginating correctly, and the chronological statement stays tested because it is also the rollback
+lever if the ranker misbehaves on staging.
+
+**The ranking weights are a contract schema with an env-var carrier.** `FeedRankingConfigSchema` is
+`.strict()` with all 27 knobs defaulted, and `DEFAULT_FEED_RANKING` is `FeedRankingConfigSchema.parse({})`.
+The backend carries an override as one JSON-valued `FEED_RANKING` env var (the precedent is
+`FCM_SERVICE_ACCOUNT_JSON`; 27 separate vars would be 27 passes through the four-place env
+propagation rule), unset meaning the full default profile and a partial object merging onto it.
+`.strict()` makes a typo'd knob a named boot failure rather than a silently ignored setting. The
+schema lives here rather than in the backend so that the validator, the ranges and the documented
+defaults are shared by the server, its unit tests and any future operator UI that tunes them —
+tuning a weight is then a deploy, never a client release. There is no settings table and no
+write-config endpoint in this version; a Redis override layer behind two operator-plane endpoints
+is designed and deliberately deferred.
+
+**`getFeedCounts` is a POST that changes nothing (the converse of §17).** `POST /feed/counts`,
+`auth: "required"`, `csrf: false`, `v1`, request `FeedCountsRequestSchema`
+(`{ postIds }`, 1–`FEED_COUNTS_MAX_IDS` (100) ids, `.strict()`), response
+`FeedCountsResponseSchema` (`{ items: [{ id, counts }] }`). §17 said a state-changing endpoint may
+not be a GET; this is the other direction — a read whose input is up to 100 UUIDs (~3.7 kB of
+query string) takes a body. It is exempt from CSRF deliberately: CSRF protects against forced
+WRITES, and this handler performs none. Authorization is by omission — an id that is deleted,
+non-public or blocked in either direction against the caller is simply absent from `items`, never a
+404 and never an error, so the endpoint cannot be used to probe post existence. It returns counts
+and nothing else: no author, body, media or viewer state. Registry 318 → 319.
+
+**`SignalTopic` grows by `feed` and `feed_counts`.** `UserSignalSchema` is unchanged — a signal
+still carries only `{ topic, id? }`, so the `UserChannel` seam's invariant (a frame names a topic
+and an optional scoping id, never entity data; the client refetches authoritative state) holds and
+no authorization decision moves to the client. `feed` means "a post you would plausibly be served
+now exists" and drives the new-posts pill; `feed_counts` means "engagement changed on a post you
+are currently being served" and drives a debounced batch read of `getFeedCounts`. Growing the enum
+is safe for a client on 0.48.x precisely because `handleRawFrame` `safeParse`s every frame and
+DROPS what it cannot parse — an old client silently ignores both topics, which is correct, because
+it has no pill to update. Both publishes are fire-and-forget and both are skipped entirely when no
+`UserChannel` is wired.
+
+**"Verified poster" means verified ORG AFFILIATION.** The issue asked to weight a verified poster;
+there is no user-level verified flag in this contract, because §34 retired the verified neighbour
+in 0.43.0 and replaced it with organization affiliation. `orgVerifiedWeight` therefore applies when
+the author's primary affiliation is to a verified organization, or when the post is published as a
+verified organization. The operator-granted `user_moderation.report_verified` state stays admin-only
+and out of the ranker; surfacing it would need a new `PersonDTO` field and a privacy review.
+
+**Delivery set (§4.2, no consumer left behind).** civfix-backend `services/api` AND
+`services/media-worker`, civfix-admin, civfix-govt-web. `apps/community-web`,
+`apps/community-mobile` and `packages/ui` are workspace consumers and move in the same commit
+series. The backend must update `test/unit/route-coverage.test.ts` to 319.

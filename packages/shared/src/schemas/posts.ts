@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { IdSchema, PaginationQuerySchema, pageResponse } from "./common.js"
-import { PostDTOSchema, PostKindSchema, type PostDTO } from "./entities.js"
+import { PostCountsSchema, PostDTOSchema, PostKindSchema, type PostDTO } from "./entities.js"
 
 /**
  * Social-feed post request/response contracts. The PostDTO + PostKind primitives live in
@@ -104,6 +104,99 @@ export type UserPostsQuery = z.infer<typeof UserPostsQuerySchema>
 
 export const HomeFeedResponseSchema = FeedPageDTOSchema
 export type HomeFeedResponse = z.infer<typeof HomeFeedResponseSchema>
+
+export const FEED_SCORE_CURSOR_PRECISION = 6
+
+export const FeedScoreCursorSchema = z
+  .object({
+    score: z.number().finite().nonnegative(),
+    postId: IdSchema,
+  })
+  .strict()
+export type FeedScoreCursor = z.infer<typeof FeedScoreCursorSchema>
+
+const FEED_SCORE_CURSOR_RE = /^(\d+(?:\.\d+)?)\|([0-9a-fA-F-]{36})$/
+
+export function quantizeFeedScore(score: number): number {
+  const factor = 10 ** FEED_SCORE_CURSOR_PRECISION
+  return Math.round(score * factor) / factor
+}
+
+export function formatFeedScoreCursor(cursor: FeedScoreCursor): string {
+  const { score, postId } = FeedScoreCursorSchema.parse(cursor)
+  return `${quantizeFeedScore(score).toFixed(FEED_SCORE_CURSOR_PRECISION)}|${postId}`
+}
+
+export function parseFeedScoreCursor(cursor: string | null | undefined): FeedScoreCursor | null {
+  if (typeof cursor !== "string") return null
+  const match = FEED_SCORE_CURSOR_RE.exec(cursor.trim())
+  if (!match) return null
+  const parsed = FeedScoreCursorSchema.safeParse({
+    score: Number(match[1]),
+    postId: match[2],
+  })
+  return parsed.success ? parsed.data : null
+}
+
+export function isAfterFeedScoreCursor(
+  candidate: FeedScoreCursor,
+  cursor: FeedScoreCursor,
+): boolean {
+  const score = quantizeFeedScore(candidate.score)
+  const cursorScore = quantizeFeedScore(cursor.score)
+  if (score !== cursorScore) return score < cursorScore
+  return candidate.postId < cursor.postId
+}
+
+export const FeedRankingConfigSchema = z
+  .object({
+    baseWeight: z.number().min(0).max(1000).default(10),
+    followWeight: z.number().min(0).max(1000).default(100),
+    selfWeight: z.number().min(0).max(1000).default(60),
+    mentionWeight: z.number().min(0).max(1000).default(40),
+    nearbyWeight: z.number().min(0).max(1000).default(50),
+    nearbyRadiusKm: z.number().positive().max(500).default(40),
+    orgVerifiedWeight: z.number().min(0).max(1000).default(30),
+    attachEventWeight: z.number().min(0).max(1000).default(30),
+    attachReportWeight: z.number().min(0).max(1000).default(30),
+    imageWeight: z.number().min(0).max(1000).default(5),
+    likeWeight: z.number().min(0).max(1000).default(3),
+    replyWeight: z.number().min(0).max(1000).default(8),
+    repostWeight: z.number().min(0).max(1000).default(5),
+    halfLifeHours: z.number().positive().max(8760).default(36),
+    decayFloor: z.number().min(0).max(1).default(0.15),
+    diversityFloor: z.number().min(0).max(1).default(0.25),
+    diversityDecay: z.number().min(0).max(1).default(0.5),
+    seenDiscount: z.number().min(0).max(1).default(0.7),
+    minScore: z.number().min(0).max(1000).default(12),
+    minPageItems: z.number().int().min(0).max(50).default(5),
+    candidateWindowDays: z.number().int().positive().max(365).default(30),
+    candidateCap: z.number().int().min(50).max(2000).default(400),
+    clockBucketSeconds: z.number().int().min(1).max(3600).default(60),
+    snapshotTtlSeconds: z.number().int().min(0).max(3600).default(180),
+    servedTtlSeconds: z.number().int().min(60).max(86400).default(900),
+    viewerFanoutMax: z.number().int().min(0).max(10000).default(500),
+    newPostFanoutMax: z.number().int().min(0).max(100000).default(1000),
+  })
+  .strict()
+export type FeedRankingConfig = z.infer<typeof FeedRankingConfigSchema>
+
+export const DEFAULT_FEED_RANKING: FeedRankingConfig = FeedRankingConfigSchema.parse({})
+
+export const FEED_COUNTS_MAX_IDS = 100
+
+export const FeedCountsRequestSchema = z
+  .object({ postIds: z.array(IdSchema).min(1).max(FEED_COUNTS_MAX_IDS) })
+  .strict()
+export type FeedCountsRequest = z.infer<typeof FeedCountsRequestSchema>
+
+export const FeedPostCountsDTOSchema = z.object({ id: IdSchema, counts: PostCountsSchema })
+export type FeedPostCountsDTO = z.infer<typeof FeedPostCountsDTOSchema>
+
+export const FeedCountsResponseSchema = z
+  .object({ items: z.array(FeedPostCountsDTOSchema) })
+  .strict()
+export type FeedCountsResponse = z.infer<typeof FeedCountsResponseSchema>
 
 /**
  * A thread's direct replies, plus `authorReplies`: for each listed reply that the FOCAL POST'S AUTHOR has
