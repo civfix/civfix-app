@@ -505,9 +505,19 @@ import {
   EventAnalyticsRegistrationsResponseSchema,
   EventAnalyticsRequestSchema,
   EventAnalyticsSourcesResponseSchema,
+  GetEventAnalyticsRequestSchema,
+  GetEventAnalyticsResponseSchema,
   HostedEventsAnalyticsRequestSchema,
   HostedEventsAnalyticsResponseSchema,
 } from "../schemas/host/analytics.js"
+import {
+  CreateEventAnnouncementRequestSchema,
+  CreateEventAnnouncementResponseSchema,
+  GetEventAnnouncementRequestSchema,
+  GetEventAnnouncementResponseSchema,
+  ListEventAnnouncementsRequestSchema,
+  ListEventAnnouncementsResponseSchema,
+} from "../schemas/host/announcements.js"
 import {
   GetEventInsightsRequestSchema,
   GetEventInsightsResponseSchema,
@@ -3236,6 +3246,43 @@ export const hostEndpoints = {
     version: "v1",
   }),
 
+  createEventAnnouncement: def({
+    method: "POST",
+    path: "/cleanups/:id/announcements",
+    request: CreateEventAnnouncementRequestSchema,
+    response: CreateEventAnnouncementResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  listEventAnnouncements: def({
+    method: "GET",
+    path: "/cleanups/:id/announcements",
+    request: ListEventAnnouncementsRequestSchema,
+    response: ListEventAnnouncementsResponseSchema,
+    auth: "optional",
+    csrf: false,
+    version: "v1",
+  }),
+  getEventAnnouncement: def({
+    method: "GET",
+    path: "/cleanups/:id/announcements/:announcementId",
+    request: GetEventAnnouncementRequestSchema,
+    response: GetEventAnnouncementResponseSchema,
+    auth: "optional",
+    csrf: false,
+    version: "v1",
+  }),
+
+  getEventAnalytics: def({
+    method: "GET",
+    path: "/cleanups/:id/analytics",
+    request: GetEventAnalyticsRequestSchema,
+    response: GetEventAnalyticsResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
   eventAnalyticsOverview: def({
     method: "GET",
     path: "/cleanups/:id/analytics/overview",

@@ -216,6 +216,7 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
       "event_updated",
       "event_cancelled",
       "thank_you",
+      "announcement",
     ])
     expect([...BroadcastStatusSchema.options]).toEqual([
       "draft",

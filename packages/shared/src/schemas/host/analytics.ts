@@ -160,6 +160,134 @@ export const EventAnalyticsSourcesResponseSchema: z.ZodType<
   unknown
 > = EventAnalyticsSourcesObjectSchema
 
+export const MAX_EVENT_ANALYTICS_SERIES_POINTS = 400
+export const MAX_EVENT_ANALYTICS_ARRIVAL_BUCKETS = 96
+export const MAX_EVENT_ANALYTICS_PANEL_ROWS = 12
+export const EVENT_ANALYTICS_CARD_SERIES_POINTS = 30
+export const EVENT_ANALYTICS_CARD_SLOT_ROWS = 3
+export const EVENT_ANALYTICS_COMPARISON_MIN_EVENTS = 3
+export const EVENT_ANALYTICS_COMPARISON_WINDOW = 10
+
+export const EventAnalyticsScopeSchema = z.enum(["card", "full"])
+export type EventAnalyticsScope = z.infer<typeof EventAnalyticsScopeSchema>
+
+export const EventAnalyticsPhaseSchema = z.enum([
+  "upcoming",
+  "day_of",
+  "completed",
+  "archived",
+])
+export type EventAnalyticsPhase = z.infer<typeof EventAnalyticsPhaseSchema>
+
+export const GetEventAnalyticsRequestSchema = z
+  .object({ id: IdSchema, scope: EventAnalyticsScopeSchema.optional() })
+  .strict()
+export type GetEventAnalyticsRequest = z.infer<typeof GetEventAnalyticsRequestSchema>
+
+const EventAnalyticsLifecycleSchema = z.object({
+  createdAt: ISODateSchema,
+  startAt: ISODateSchema.nullable(),
+  endAt: ISODateSchema.nullable(),
+  completedAt: ISODateSchema.nullable(),
+})
+export type EventAnalyticsLifecycle = z.infer<typeof EventAnalyticsLifecycleSchema>
+
+const EventAnalyticsKpisSchema = z.object({
+  signups: z.number().int().nonnegative().nullable(),
+  capacity: z.number().int().nonnegative().nullable(),
+  waitlisted: z.number().int().nonnegative().nullable(),
+  cancelled: z.number().int().nonnegative().nullable(),
+  checkedIn: z.number().int().nonnegative().nullable(),
+  noShow: z.number().int().nonnegative().nullable(),
+  walkUps: z.number().int().nonnegative().nullable(),
+  pageViews: z.number().int().nonnegative().nullable(),
+  uniqueViewers: z.number().int().nonnegative().nullable(),
+  shares: z.number().int().nonnegative().nullable(),
+  donationClicks: z.number().int().nonnegative().nullable(),
+  hoursTotal: z.number().nonnegative().nullable(),
+  hoursVolunteers: z.number().int().nonnegative().nullable(),
+  reportsLinked: z.number().int().nonnegative().nullable(),
+  reportsResolved: z.number().int().nonnegative().nullable(),
+  postsCreated: z.number().int().nonnegative().nullable(),
+})
+export type EventAnalyticsKpis = z.infer<typeof EventAnalyticsKpisSchema>
+
+const EventAnalyticsRatesSchema = z.object({
+  checkIn: SuppressedRateSchema,
+  noShow: SuppressedRateSchema,
+  fill: SuppressedRateSchema,
+  viewToSignup: SuppressedRateSchema,
+  waitlistConversion: SuppressedRateSchema,
+})
+export type EventAnalyticsRates = z.infer<typeof EventAnalyticsRatesSchema>
+
+const EventAnalyticsDeltasSchema = z.object({
+  signups7d: z.number().int().nullable(),
+  views7d: z.number().int().nullable(),
+})
+export type EventAnalyticsDeltas = z.infer<typeof EventAnalyticsDeltasSchema>
+
+const EventAnalyticsSignupsSchema = z.object({
+  cumulative: z.array(SeriesPointSchema).max(MAX_EVENT_ANALYTICS_SERIES_POINTS).default([]),
+  daily: z.array(SeriesPointSchema).max(MAX_EVENT_ANALYTICS_SERIES_POINTS).default([]),
+  cancellations: z.array(SeriesPointSchema).max(MAX_EVENT_ANALYTICS_SERIES_POINTS).default([]),
+  bySlot: PanelSchema.optional(),
+  bySource: PanelSchema.optional(),
+})
+export type EventAnalyticsSignups = z.infer<typeof EventAnalyticsSignupsSchema>
+
+const EventAnalyticsReachSchema = z.object({
+  viewsDaily: z.array(SeriesPointSchema).max(MAX_EVENT_ANALYTICS_SERIES_POINTS).default([]),
+  funnel: z.array(FunnelStepSchema).default([]),
+})
+export type EventAnalyticsReach = z.infer<typeof EventAnalyticsReachSchema>
+
+const EventAnalyticsEventDaySchema = z.object({
+  arrivals: z.array(SeriesPointSchema).max(MAX_EVENT_ANALYTICS_ARRIVAL_BUCKETS).default([]),
+  bySlot: PanelSchema.optional(),
+})
+export type EventAnalyticsEventDay = z.infer<typeof EventAnalyticsEventDaySchema>
+
+const EventAnalyticsImpactSchema = z.object({
+  hoursBuckets: PanelSchema.optional(),
+  reportStatuses: PanelSchema.optional(),
+})
+export type EventAnalyticsImpact = z.infer<typeof EventAnalyticsImpactSchema>
+
+const EventAnalyticsComparisonSchema = z.object({
+  sampleSize: z.number().int().nonnegative(),
+  medians: z.object({
+    signups: z.number().nonnegative().nullable(),
+    checkInRate: z.number().nonnegative().nullable(),
+    hoursPerVolunteer: z.number().nonnegative().nullable(),
+    fillRate: z.number().nonnegative().nullable(),
+  }),
+})
+export type EventAnalyticsComparison = z.infer<typeof EventAnalyticsComparisonSchema>
+
+const GetEventAnalyticsObjectSchema = z.object({
+  generatedAt: ISODateSchema,
+  k: z.number().int().positive().default(ANALYTICS_SUPPRESSION_K),
+  scope: EventAnalyticsScopeSchema,
+  phase: EventAnalyticsPhaseSchema,
+  lifecycle: EventAnalyticsLifecycleSchema,
+  kpis: EventAnalyticsKpisSchema,
+  rates: EventAnalyticsRatesSchema,
+  deltas: EventAnalyticsDeltasSchema,
+  signups: EventAnalyticsSignupsSchema,
+  reach: EventAnalyticsReachSchema,
+  eventDay: EventAnalyticsEventDaySchema,
+  impact: EventAnalyticsImpactSchema,
+  comparison: EventAnalyticsComparisonSchema.nullable().optional(),
+})
+export type GetEventAnalyticsResponse = z.infer<typeof GetEventAnalyticsObjectSchema>
+
+export const GetEventAnalyticsResponseSchema: z.ZodType<
+  GetEventAnalyticsResponse,
+  z.ZodTypeDef,
+  unknown
+> = GetEventAnalyticsObjectSchema
+
 export const HostedEventsAnalyticsRequestSchema = z
   .object({
     range: PortfolioAnalyticsRangeSchema.optional(),
