@@ -210,7 +210,9 @@ export function ProfileEventsSection({
             emptyText={t("events.empty_none")}
             onOpenEvent={onOpenEvent}
           />
-          {more?.isError ? <Text style={sectionStyles.empty}>{t("events.load_more_error")}</Text> : null}
+          {more?.isError ? (
+            <Text style={sectionStyles.loadMoreError}>{t("events.load_more_error")}</Text>
+          ) : null}
           {more?.canLoadMore ? (
             <Pressable
               onPress={more.loadMore}
@@ -224,7 +226,9 @@ export function ProfileEventsSection({
                 pressed ? sectionStyles.loadMorePressed : null,
               ]}
             >
-              <Text style={sectionStyles.loadMoreText}>
+              <Text
+                style={more.isRetry ? sectionStyles.loadMoreAccentText : sectionStyles.loadMoreText}
+              >
                 {more.isLoadingMore
                   ? t("events.loading_more")
                   : more.isRetry

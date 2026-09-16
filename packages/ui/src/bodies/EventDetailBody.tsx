@@ -38,7 +38,7 @@ import {
   managesEvent,
   useEventQuestions,
 } from "../data/hooks/host"
-import { donationLinkFor } from "./donationLink"
+import { eventDonationLinkFor } from "./donationLink"
 import { useNavStore } from "../nav"
 import { useHaptics } from "../capabilities"
 import { useLocale, useRelativeTime, useT, useViewerTimeZone } from "../i18n"
@@ -260,7 +260,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
     useNavStore.getState().push({ kind: "my-ticket", id: cleanup.id, title: cleanup.title })
   }, [cleanup.id, cleanup.title])
   const hasTicketTypes = cleanup.ticketTypes.length > 0
-  const donation = useMemo(() => donationLinkFor(cleanup), [cleanup])
   const boundaryAt = nextEventBoundaryMs(cleanup, Date.now())
   const now = useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })
   useEventBoundaryRefresh(cleanup, now, cleanup.id)
@@ -270,6 +269,10 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const isEnded = hasEventEnded(cleanup, now)
   const isLive = !isCancelled && !isDone
   const isUpcoming = isLive && !isEnded
+  const donation = useMemo(
+    () => eventDonationLinkFor(cleanup, { status, actsAsHost }),
+    [cleanup, status, actsAsHost],
+  )
   const isRegistered = cleanup.myRegistration?.status === "registered"
   const holdsSeat = isRegistered && cleanup.myRegistration?.waitlistPosition == null
   const next = `/cleanups/${cleanup.id}`

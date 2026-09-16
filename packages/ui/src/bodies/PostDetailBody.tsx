@@ -47,7 +47,7 @@ export function PostDetailBody({ id }: { id: string }) {
         ]}
         onPress={() => useNavStore.getState().push({ kind: "post-thread", id })}
       >
-        <Text style={sectionStyles.loadMoreText}>{t("thread.view_conversation")}</Text>
+        <Text style={sectionStyles.loadMoreAccentText}>{t("thread.view_conversation")}</Text>
       </Pressable>
     </ScrollView>
   )

@@ -259,7 +259,7 @@ function AttendeeReceipt({
         style={({ pressed }) => [styles.credited, pressed ? styles.pressed : null]}
       >
         <Icon icon={iconMap.Award} size={16} color={th.colors.moss["700"]} />
-        <Text style={styles.creditedText} numberOfLines={1}>
+        <Text style={styles.creditedText}>
           {t(range ? "receipt.credited_shift" : "receipt.credited", vars)}
         </Text>
         <Icon icon={iconMap.ChevronRight} size={16} color={th.colors.moss["700"]} />

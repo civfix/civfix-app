@@ -57,4 +57,21 @@ export const useSectionStyles = makeThemedStyles((t) => ({
     fontSize: 13,
     color: t.colors.textMuted,
   },
+  /**
+   * The same pill, in ACCENT ink. The muted treatment reads as "more of the same, if you want it",
+   * which is right for a pager and wrong for the two pressables that are not pagers: the only way into
+   * a post's thread, and the retry that follows a failed page.
+   */
+  loadMoreAccentText: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: 13,
+    color: t.colors.accentText,
+  },
+  loadMoreError: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: 13.5,
+    color: t.colors.dangerInk,
+    paddingVertical: t.space["3"],
+    paddingHorizontal: 2,
+  },
 }))

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { donationLinkFor, type DonationLinkSource } from "../donationLink"
+import { donationLinkFor, eventDonationLinkFor, type DonationLinkSource } from "../donationLink"
 
 const EVENT_DETAIL = readFileSync(new URL("../EventDetailBody.tsx", import.meta.url), "utf8")
 
@@ -78,6 +78,35 @@ describe("donationLinkFor", () => {
   })
 })
 
+describe("eventDonationLinkFor", () => {
+  const withLink = source({ donationUrl: "https://pay.example.org/creek" })
+  const LINK = { url: "https://pay.example.org/creek", ownerName: "Jane Doe" }
+
+  it("shows the card to an attendee of an upcoming or active event", () => {
+    expect(eventDonationLinkFor(withLink, { status: "upcoming", actsAsHost: false })).toEqual(LINK)
+    expect(eventDonationLinkFor(withLink, { status: "active", actsAsHost: false })).toEqual(LINK)
+  })
+
+  it("KEEPS the card on a DONE event - donating after the day is the point of the receipt page", () => {
+    expect(eventDonationLinkFor(withLink, { status: "done", actsAsHost: false })).toEqual(LINK)
+  })
+
+  it("hides the card on a CANCELLED event, whatever the viewer is", () => {
+    expect(eventDonationLinkFor(withLink, { status: "cancelled", actsAsHost: false })).toBeNull()
+    expect(eventDonationLinkFor(withLink, { status: "cancelled", actsAsHost: true })).toBeNull()
+  })
+
+  it("hides the card from a viewer who runs the event, in every status", () => {
+    for (const status of ["upcoming", "active", "done"] as const) {
+      expect(eventDonationLinkFor(withLink, { status, actsAsHost: true }), status).toBeNull()
+    }
+  })
+
+  it("still resolves nothing when no level carries a link", () => {
+    expect(eventDonationLinkFor(source(), { status: "upcoming", actsAsHost: false })).toBeNull()
+  })
+})
+
 describe("event page donation placement", () => {
   it("renders the donation card between the header and the sign-up blocks, only when a link resolves", () => {
     const donate = EVENT_DETAIL.indexOf("<DonateBlock")
@@ -86,5 +115,10 @@ describe("event page donation placement", () => {
     expect(donate).toBeLessThan(EVENT_DETAIL.indexOf("<EventSlotsBlock"))
     expect(EVENT_DETAIL).toContain("{donation ? (")
     expect(EVENT_DETAIL.split("<DonateBlock")).toHaveLength(2)
+  })
+
+  it("resolves the card through the status/viewer-aware helper, not the bare link lookup", () => {
+    expect(EVENT_DETAIL).toContain("eventDonationLinkFor(cleanup, { status, actsAsHost })")
+    expect(EVENT_DETAIL).not.toContain("donationLinkFor(cleanup)")
   })
 })

@@ -28,8 +28,8 @@ export {
   normalizeDonationLink,
 } from "./settings/donationLinkField"
 export type { DonationLinkFieldError } from "./settings/donationLinkField"
-export { donationLinkFor } from "./donationLink"
-export type { DonationLink, DonationLinkSource } from "./donationLink"
+export { donationLinkFor, eventDonationLinkFor } from "./donationLink"
+export type { DonationLink, DonationLinkSource, DonationViewer } from "./donationLink"
 export { SettingsPrivacyBody } from "./SettingsPrivacyBody"
 
 export { ConnectionsBody } from "./ConnectionsBody"
