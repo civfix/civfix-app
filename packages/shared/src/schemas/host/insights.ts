@@ -84,16 +84,6 @@ export const EventInsightsHoursSchema = z.object({
 })
 export type EventInsightsHours = z.infer<typeof EventInsightsHoursSchema>
 
-export const EventInsightsMoneySchema = z.object({
-  currency: z.literal("USD"),
-  donationCount: z.number().int().nonnegative(),
-  grossMinor: z.number().int().nonnegative(),
-  netMinor: z.number().int(),
-  refundedMinor: z.number().int().nonnegative(),
-  lastChargedAt: ISODateSchema.nullable(),
-})
-export type EventInsightsMoney = z.infer<typeof EventInsightsMoneySchema>
-
 export const EventInsightsReturningSchema = z.object({
   seats: z.number().int().nonnegative(),
   ofRegistered: z.number().int().nonnegative(),
@@ -112,7 +102,6 @@ const EventInsightsObjectSchema = z.object({
   arrivals: z.array(ArrivalOffsetBucketSchema).max(MAX_INSIGHTS_ARRIVAL_BUCKETS).default([]),
   hours: EventInsightsHoursSchema,
   topVolunteers: z.array(LeaderboardEntryDTOSchema).max(MAX_INSIGHTS_TOP_VOLUNTEERS).default([]),
-  money: EventInsightsMoneySchema.nullable(),
   returning: EventInsightsReturningSchema.nullable(),
 })
 export type EventInsights = z.infer<typeof EventInsightsObjectSchema>

@@ -304,7 +304,7 @@ export type EventPageBlockKind = z.infer<typeof EventPageBlockKindSchema>
 export const ThemeAccentSchema = z.enum(["bloom", "moss", "sun", "sky", "lilac"])
 export type ThemeAccent = z.infer<typeof ThemeAccentSchema>
 
-export const HostExportKindSchema = z.enum(["roster", "answers", "checkins", "donations"])
+export const HostExportKindSchema = z.enum(["roster", "answers", "checkins"])
 export type HostExportKind = z.infer<typeof HostExportKindSchema>
 
 export const HostExportStatusSchema = z.enum([
@@ -333,8 +333,6 @@ export const HostCapabilitySchema = z.enum([
   "manage_org_link",
   "moderate_chat",
   "request_resources",
-  "manage_payments",
-  "view_donations",
   "manage_org_members",
 ])
 export type HostCapability = z.infer<typeof HostCapabilitySchema>
@@ -401,71 +399,10 @@ export const PageViewSourceSchema = z.enum([
 ])
 export type PageViewSource = z.infer<typeof PageViewSourceSchema>
 
-export const DonationStatusSchema = z.enum([
-  "pending",
-  "succeeded",
-  "failed",
-  "refunded",
-  "partially_refunded",
-])
-export type DonationStatus = z.infer<typeof DonationStatusSchema>
-
-export const PayoutStatusSchema = z.enum(["pending", "in_transit", "paid", "failed", "canceled"])
-export type PayoutStatus = z.infer<typeof PayoutStatusSchema>
-
-export const DonationDisputeStateSchema = z.enum(["none", "open", "won", "lost", "warning"])
-export type DonationDisputeState = z.infer<typeof DonationDisputeStateSchema>
-
-export const OrgPaymentsStateSchema = z.enum([
-  "not_started",
-  "onboarding",
-  "ready",
-  "at_risk",
-  "blocked",
-])
-export type OrgPaymentsState = z.infer<typeof OrgPaymentsStateSchema>
-
-export const DonateStateSchema = z.enum(["READY", "AT_RISK", "BLOCKED", "OFF"])
-export type DonateState = z.infer<typeof DonateStateSchema>
-
-export const EligibilityVerdictSchema = z.enum([
-  "unknown",
-  "eligible",
-  "grace",
-  "ineligible",
-  "review_required",
-])
-export type EligibilityVerdict = z.infer<typeof EligibilityVerdictSchema>
-
-export const EligibilitySourceSchema = z.enum([
-  "irs_pub78",
-  "irs_eo_bmf",
-  "irs_auto_revocation",
-  "ftb_revoked",
-  "ca_ag_mnos",
-  "ofac_sdn",
-  "central_org_confirmation",
-])
-export type EligibilitySource = z.infer<typeof EligibilitySourceSchema>
-
-export const LegalDocumentTypeSchema = z.enum([
-  "terms",
-  "privacy",
-  "cookies",
-  "subprocessors",
-  "donations",
-  "org_donation_agreement",
-  "donation_disclosure",
-])
+export const LegalDocumentTypeSchema = z.enum(["terms", "privacy", "cookies", "subprocessors"])
 export type LegalDocumentType = z.infer<typeof LegalDocumentTypeSchema>
 
-export const ConsentSurfaceSchema = z.enum([
-  "web_donate",
-  "web_org_settings",
-  "web_register",
-  "mobile_register",
-  "onboarding",
-])
+export const ConsentSurfaceSchema = z.enum(["web_register", "mobile_register", "onboarding"])
 export type ConsentSurface = z.infer<typeof ConsentSurfaceSchema>
 
 

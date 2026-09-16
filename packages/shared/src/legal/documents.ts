@@ -41,27 +41,6 @@ const DOCUMENTS: Readonly<Record<LegalDocumentType, LegalDocumentVersion>> = {
     effectiveAt: CURRENT_EFFECTIVE_AT,
     url: `${LEGAL_BASE_URL}/subprocessors`,
   },
-  donations: {
-    type: "donations",
-    version: CURRENT_VERSION,
-    sha256: "461190ba108e771ff6a3c89cec0b5451bf5d05ff89e33231ff4c5493e0723544",
-    effectiveAt: CURRENT_EFFECTIVE_AT,
-    url: `${LEGAL_BASE_URL}/donations`,
-  },
-  org_donation_agreement: {
-    type: "org_donation_agreement",
-    version: CURRENT_VERSION,
-    sha256: "9b6592f3d5218c4a275577e6ab56ee5d08cd15e0c59b562800f537c21567149e",
-    effectiveAt: CURRENT_EFFECTIVE_AT,
-    url: `${LEGAL_BASE_URL}/org-donation-agreement`,
-  },
-  donation_disclosure: {
-    type: "donation_disclosure",
-    version: CURRENT_VERSION,
-    sha256: "d5f86995dd134183128d16526d50a4676c09e25dc3ea5d8eb9c6f9dcdfd2fa10",
-    effectiveAt: CURRENT_EFFECTIVE_AT,
-    url: `${LEGAL_BASE_URL}/donation-disclosure`,
-  },
 }
 
 export const LEGAL_DOCUMENTS: readonly LegalDocumentVersion[] = Object.freeze(

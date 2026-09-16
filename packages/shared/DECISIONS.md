@@ -670,7 +670,7 @@ removed or re-valued, so every existing consumer that reads `tokens.color.*` is 
 An Eventbrite-class host toolset lands as SIBLING resources under `/cleanups/:id/...` plus
 `/orgs/*`, `/pages/:slug`, `/me/hosted-events` and `/me/host-exports/*`. `cleanups` is not renamed
 and `CleanupDTO` is not replaced: it GROWS by optional/nullable/defaulted fields (`endsAt`,
-`timezone`, `visibility`, `coverUrl`, `galleryUrls`, `donationUrl`, `donationOrg`, `pageSlug`,
+`timezone`, `visibility`, `coverUrl`, `galleryUrls`, `donationUrl`, `pageSlug`,
 `registrationOpensAt`/`ClosesAt`, `organization`, `ticketTypes`, `registrationState`,
 `myRegistration`, `myCapabilities`, the host counters). A pre-0.40.0 payload still parses and every
 existing consumer is untouched.
@@ -682,13 +682,13 @@ existing consumer is untouched.
   at the same position are fine. The problem is the VALUE space - a slug and a uuid are both plain
   path segments, so one handler would have to guess which it was given, and a slug shaped like a uuid
   would resolve to the wrong organization. The two public organization reads are therefore
-  `GET /orgs/by-slug/:slug` and `GET /orgs/by-slug/:slug/donate`; every other organization route is
-  `/orgs/:id/...`. The signup page is its own public namespace, `GET /pages/:slug`.
+  `GET /orgs/by-slug/:slug` and `GET /orgs/by-slug/:slug/events` (§46 retired
+  `GET /orgs/by-slug/:slug/donate`); every other organization route is `/orgs/:id/...`. The signup page is its own public namespace, `GET /pages/:slug`.
 - **`staff` is enum growth, deliberately.** `CleanupMemberRole` appends `staff` LAST (day-of helper:
   roster read + check-in, no guest contact, no answers, no analytics, no broadcast, no chat
   moderation). `parseResponse` never throws, so an older client degrades to "unknown role" rather
   than failing. The backend `CLEANUP_MEMBER_ROLE_VALUES` mirror must stay byte-identical.
-- **Capabilities, not roles, are the contract.** `HostCapability` (18 values) is what routes check
+- **Capabilities, not roles, are the contract.** `HostCapability` (17 values after §46) is what routes check
   and what `CleanupDTO.myCapabilities` / `HostedEventDTO.myCapabilities` carry. A client renders an
   action from a capability it holds and must treat an UNKNOWN capability string as "no extra
   permission" - that is what lets the matrix change without a client release.
@@ -861,40 +861,14 @@ is no analytics SDK, no cookie, no identifier, and no per-person series anywhere
   includes the viewer's scope, because two team members with different capabilities may legitimately
   see different numbers. The fixed `AnalyticsRange` enums exist to bound that key space.
 
-## 26. Donations: direct charges, integer minor units, one error code (0.40.0)
+## 26. RETIRED by §46 - donations: direct charges, integer minor units, one error code (0.40.0)
 
-civfix never holds funds. A donation is a DIRECT charge on the recipient organization's own
-connected account; the organization is the merchant of record, pays the processor's fees, and civfix
-takes a disclosed `application_fee` on top.
-
-- **Money is an integer minor unit plus an explicit currency, everywhere.** `MoneyDTO`
-  (`{ amountMinor, currency: "USD" }`) and `FeeBreakdownDTO` are integers with `z.number().int()`;
-  a float amount fails validation. There is no decimal string and no `number` of dollars in the
-  contract - rounding a donation is a compliance defect, not a display bug.
-- **The platform fee is omitted at zero, not sent as zero.** `platformFeeBps` of `0` means the
-  adapter omits `application_fee_amount` entirely, so turning the fee off is an env change with no
-  code change if counsel rules it unlawful.
-- **Donation status is monotonic; a dispute is a separate field.** `DonationStatus`
-  (`pending → succeeded → refunded/partially_refunded`, or `failed`) only ever advances, so
-  out-of-order webhooks are safe to apply. `DonationDisputeState` is its own column because a
-  disputed charge is still a succeeded charge, and collapsing the two would lose the receipt's basis.
-- **Exactly one new `ErrorCode`: `PAYMENT_UNAVAILABLE` (503).** It covers payments disabled, an
-  organization blocked or charges-disabled, an ineligible organization, and processor 5xx - every
-  case where the answer is "not now", indeterminate from the caller's side. There is no
-  `PAYMENT_DECLINED` (declines happen in the browser at confirm time; no server path produces one),
-  no `ORG_NOT_ELIGIBLE` and no `AMOUNT_OUT_OF_RANGE`: amount problems are `VALIDATION.fields`, a
-  missing organization is `NOT_FOUND`, and stale consent is `CONFLICT`.
-- **The donate page renders from ONE public read.** `DonationPageDTO` carries the organization, the
-  `donateState` gate, the connected account id, the fee preview, every server-authored disclosure
-  string, the disclosure version, the charitable registration number, the wallet list and the legal
-  document versions. A client never composes legally required text and never loads the payment
-  script for a state other than `READY`/`AT_RISK`.
-- **Donor identity is opt-in and default-off in the type system.** `DonorSharingPolicy.defaultOn` is
-  the literal `false`, and `OrgDonationRowDTO.donorName`/`donorEmail` are `null` for every donor who
-  did not opt in - not a placeholder the organization could de-anonymize.
-- **Nothing in the contract can carry card data or a secret.** No shape has a PAN, CVC, expiry,
-  payment method or Stripe key; the connected account id is public by necessity and the publishable
-  key is a build-time client variable, never an API response.
+Retired in 0.48.0. civfix no longer processes payments of any kind, so every shape this entry
+governed is gone: `MoneyDTO`, `FeeBreakdownDTO`, `DonationDTO`, `DonationPageDTO`, the `Payments`
+seam, `DonationStatus`/`DonationDisputeState`, the `application_fee` reasoning and
+`ErrorCode.PAYMENT_UNAVAILABLE`. An organization, a person and an event now each carry an EXTERNAL
+`donationUrl` that the client opens out of the app; civfix touches no funds and holds no donation
+record. See §46.
 
 ## 27. The admin plane gets its own reads, not a wider edge matcher (0.40.0)
 
@@ -1003,29 +977,11 @@ mutation-shaped call (DECISIONS §17 in reverse) and would still not stop the co
 signup URL, which is where residents actually get it. `GetGuestEventTicketRequest.token` is the
 CONTRAST: a capability token that authenticates a specific guest IS a secret, so it rides a POST body.
 
-## 31. The donation status ratchet has exactly one backward exception (0.40.0)
+## 31. RETIRED by §46 - the donation status ratchet has exactly one backward exception (0.40.0)
 
-`advanceStatus` is monotone over `DONATION_STATUS_RANK` and stays that way: fulfilment, dispute and
-webhook replay can only move a donation forward, which is what makes out-of-order Stripe deliveries
-safe.
-
-Refund totals are the one place that rule produced a wrong number. A card refund can be created
-`pending` and later move to `failed` (a card closed between the charge and the refund). With a
-ratchet, the donation that was marked `refunded` on the pending refund could never be corrected, so
-the org's payout ledger, the receipt, the §321 report and the platform-fee ledger all stayed wrong
-about money that never left civfix's control.
-
-`refundedDonationStatus({ current, amountMinor, refundedTotalMinor })` therefore DERIVES the status
-from the recomputed total instead of advancing to it:
-
-- a donation that has not settled (`pending`, `failed`) is returned unchanged — this exception never
-  un-settles a donation, and never resurrects one that failed;
-- inside the settled band the status is a pure function of the total: `0` → `succeeded`,
-  `< amountMinor` → `partially_refunded`, `>= amountMinor` → `refunded`.
-
-`isRefundStatusCorrection(current, next)` names the backward case so the caller can log it at error
-level — a correction is always worth an operator's attention, because the application fee civfix
-already returned for that refund cannot be un-refunded at Stripe.
+Retired in 0.48.0 with the rest of the platform-payments contract. `DONATION_STATUS_RANK`,
+`advanceStatus`, `refundedDonationStatus` and `isRefundStatusCorrection` shipped in
+`@civfix/shared/payments`, which no longer exists - there is no donation record to ratchet. See §46.
 
 ## 32. The admin plane manages organizations through its own writes, and an org invite is a record (0.41.0)
 
@@ -1130,8 +1086,8 @@ a client concern, not a tuple concern.
 privacy line is the point of the tier and it is drawn in two places at once: a coordinator can see
 that a person is coming and what they answered, and can never see an email or a phone number
 (`view_guest_contact`) and can never take the roster off the platform (`export`). Withholding one
-without the other would be theatre - an export IS the contact sheet. `manage_payments` and
-`view_donations` stay org-only, as for every event role.
+without the other would be theatre - an export IS the contact sheet. (`manage_payments` and
+`view_donations` were org-only tokens here; §46 removed both.)
 
 **Re-inviting an already-invited user is idempotent, not a 409.** `inviteEventTeamMember` follows
 §32's org-invite rule rather than inventing a second one: a repeat invite to the same identifier
@@ -1195,7 +1151,7 @@ verification, which is evidence-backed and does scale. So `VerificationStatus`, 
 `SetUserVerifiedRequest`, `PersonDTO.verified`, `LeaderboardEntryDTO.verified`,
 `AdminUserDTO.verificationStatus` and the `verification` media purpose are all REMOVED. Org
 verification is untouched (`OrgVerificationStatus`/`Kind`, `OrganizationRefDTO.verified`, the admin
-verification queue, the donations eligibility gate), and so is `reportVerified`, which is a
+verification queue), and so is `reportVerified`, which is a
 different claim about a different thing (this reporter's reports may be auto-forwarded to the city).
 
 These removals are NOT additive, and that is a deliberate exception to §11 rather than an oversight.
@@ -1267,9 +1223,9 @@ event, and `COHOST_CAPABILITIES` carries `export` - the attendee contact roster 
 withholds from admins. The two jobs needed two tokens: `manage_org_members` governs the ORG roster
 (list, invite, revoke, role, remove) and is held by owner and admin; `manage_team` stays
 event-shaped and organizer/owner-only. The org owner keeps the powers that are genuinely
-owner-shaped (`manage_payments`, `cancel_event`, `manage_org_link`, `request_resources`, `export`,
-`manage_team`). SEATING is narrower than managing: inviting is `manage_org_members`, but changing a
-member's ROLE is OWNER-only, which is what the web console has always enforced ("Only the owner can
+owner-shaped (`cancel_event`, `manage_org_link`, `request_resources`, `export`, `manage_team`;
+`manage_payments` was in this list until §46 removed it). SEATING is narrower than managing:
+inviting is `manage_org_members`, but changing a member's ROLE is OWNER-only, which is what the web console has always enforced ("Only the owner can
 change roles."); REMOVAL stays with any manager on a member the server marked `canRemove`, which is
 also what the console does. The backend that ADOPTS 0.43.0 must move its gates with it:
 `inviteOrganizationMember`, `listOrganizationMembers`, `listOrganizationInvites` and
@@ -1298,24 +1254,10 @@ recurring event, a published event PAGE does not (it owns a slug and its own ana
 `includePage` defaults false. The gate is `manage_event` and the copy counts against
 `assertHostEventBudget`, because a duplicate is a new event by every measure the budget cares about.
 
-**Org payouts amend §26 without breaking it: civfix still never holds funds.** §26 established that
-donations are DIRECT charges on the org's connected account. Payouts follow the same line: the
-`Payments` seam gains `retrieveBalance`, `createPayout` and `listPayouts`, and all three execute ON
-the connected account (Stripe-Account header). The money never enters a civfix balance, so
-`createOrgPayout` is the org moving its own funds to its own bank, not civfix disbursing. The
-endpoints are `getOrgBalance` (`GET /orgs/:id/payments/balance`, `view_donations`),
-`createOrgPayout` (`POST /orgs/:id/payments/payouts`, `manage_payments`, csrf, rate-limited, with a
-REQUIRED `idempotencyKey` - a retried payout is real money moving twice) and `listOrgPayouts`
-(`GET /orgs/:id/payments/payouts`, `view_donations`). `org_payouts` is an audit mirror of the Stripe
-object, not a ledger civfix reconciles against.
-
-`OrgBalanceDTO` carries the payout SCHEDULE next to the balances on purpose. The connected accounts
-are Stripe Standard, where an automatic daily schedule usually leaves `available` at ~0 and a manual
-payout then fails for a reason the user cannot see. Shipping the schedule with the balance lets the
-client disable the button and say why, instead of surfacing a Stripe error after the fact. Stripe's
-`payouts_not_allowed` and `balance_insufficient` map to `AppError.validation` / `AppError.conflict`
-with user-safe copy; `PayoutStatus` (`pending|in_transit|paid|failed|canceled`) mirrors Stripe's own
-vocabulary so the `payout.paid|failed|canceled` webhooks need no translation table.
+**RETIRED by §46 - org payouts amended §26 without breaking it.** The `Payments` seam's
+`retrieveBalance`/`createPayout`/`listPayouts`, `OrgBalanceDTO`, `PayoutStatus`, `org_payouts` and
+the three `getOrgBalance`/`createOrgPayout`/`listOrgPayouts` endpoints were removed in 0.48.0.
+There is no connected account to pay out from.
 
 **The admin plane shows memberships, and stops showing a verification status.**
 `AdminUserDTO.organizations` (`{ id, slug, name, role }[]`, optional) lets the Users page answer
@@ -1352,10 +1294,10 @@ brand, hue, chipInk, category and cleanup set are unchanged, and every DARK valu
 
 `getEventInsights` (`GET /cleanups/:id/insights`) returns one per-event read for the host surface:
 `phase`, a `clock`, seat counts, a registration trend, per-ticket-type and per-source seats, the
-broadcast log, arrival offsets, credited hours, donations and returning volunteers. Every number in
+broadcast log, arrival offsets, credited hours and returning volunteers. Every number in
 it is EXACT. There is no `suppressed` flag, no `k`, and no nullable count standing in for a hidden
-one - the nullability in the response means "this host cannot see donations" (`money`) or "there is
-no comparison set" (`returning`), never "this number was withheld".
+one - the nullability in the response means "there is no comparison set" (`returning`), never
+"this number was withheld". (A `money` block sat beside `returning` until §46 removed it.)
 
 That is a deliberate departure from §25, and it is narrow. §25's k-suppression protects a host from
 recovering an individual out of an aggregate. It cannot do that here, because the viewer of this
@@ -1378,10 +1320,6 @@ SHAPE is unchanged - the counts stay nullable and `k` stays in the envelope - be
 and a registry backend can skew for a deploy window, and an old server must still be able to answer
 with suppressed cells. The five `eventAnalytics*` panels and the `seriesClosure` machinery behind
 them are untouched and stay for the console and the CSV exports; §25 continues to govern them.
-
-`money.netMinor` is a SIGNED integer while `grossMinor` and `refundedMinor` stay non-negative: a fully
-refunded donation leaves the processor fee behind, so the honest net for that event is below zero and
-the client renders it as a negative amount rather than the server clamping the truth away at 0.
 
 `EventPhase` (`upcoming | live | ended | cancelled`) is the one phase vocabulary, and `eventPhase()`
 in `@civfix/shared/host` is the one implementation: `cancelled` from the status, `ended` from a `done`
@@ -1486,3 +1424,81 @@ This retires the "geographic centre of the contiguous US" (39.8283, -98.5795) fr
 Registry count 344 → 345.
 
 **`ipLocate()` and `GEOJS_URL` (`src/geocode.ts`) are deprecated as of 0.47.0.** They called a third party (get.geojs.io) straight from the client for the same "roughly where is this caller" answer this endpoint now gives first-party, and the consumer plane has no callers left: the report flow's location step, the address-search proximity bias, the create-event initial point and `useUserLocation` all resolve through `getApproximateLocation` (the `useApproximateLocation()` hook, or the imperative `fetchApproximateLocation()` in `@civfix/ui/data`, which share one query-cache entry with the map). The export stays in 0.47.0 because that version is already published and a removal is a recorded 0.x minor (§4.2); it is slated for removal in the next minor, whose DECISIONS entry names the delivery set. Nothing in civfix-backend ever imported it.
+
+## 46. Platform-processed donations removed; a donation link is an external URL (0.48.0)
+
+civfix does not middleman transactions. The whole platform-payments contract is REMOVED from
+`@civfix/shared`, and the only donation surface left is a link the host owns: an organization, a
+person and an event each carry an external `donationUrl`, and the client opens it out of the app.
+No money, no fee, no merchant of record, no donation record, no receipt, no payout, no eligibility
+check and no payment processor anywhere in the contract.
+
+**Removed.** Modules: `schemas/payments.ts`, `schemas/admin/payments.ts`, `interfaces/payments.ts`
+(the `Payments` seam, leaving 11), `fakes/payments.fake.ts` (`FakePayments`), the whole `payments/`
+subpath export (`fee-math`, `donation-state`, `eligibility` - the `./payments` entry is gone from
+`package.json` `exports` and from `tsup.config.ts`) and
+`legal/donation-disclosure-template.ts`. Entities: `MoneyDTO`, `FeeBreakdownDTO`, `DonationDTO`,
+`CleanupDonationOrgRef`, `OrganizationDTO.donationsEnabled`, `OrganizationDTO.donateSlug`,
+`CleanupDTO.donationOrg`, `PublicEventPageDTO.donateSlug`, `AdminOrgDTO.donationsEnabled`,
+`AdminOrgDTO.paymentsState`, `AdminOrgListQuery.donationsEnabled`, `EventInsights.money`
+(`EventInsightsMoney`), `ListOrgDonationExportsRequest`/`Response`. Enums: `DonationStatus`,
+`PayoutStatus`, `DonationDisputeState`, `OrgPaymentsState`, `DonateState`, `EligibilityVerdict`,
+`EligibilitySource`; `HostCapability` loses `manage_payments` and `view_donations` (19 -> 17);
+`HostExportKind` loses `donations` (the export kind had no producer left);
+`LegalDocumentType` loses `donations`, `org_donation_agreement` and `donation_disclosure` (4 left);
+`ConsentSurface` loses `web_donate` and `web_org_settings` and keeps exactly the registration
+surfaces `web_register`, `mobile_register`, `onboarding`. Errors:
+`ErrorCode.PAYMENT_UNAVAILABLE`, its 503 mapping and `AppError.paymentUnavailable`. Registry: the
+`paymentsEndpoints` group itself and 27 endpoints (18 payments + 9 admin), so `endpoints` goes
+345 -> 318 and the admin subset 107 -> 98. `getLegalVersions` (`GET /legal/versions`) lived in that
+group and is KEPT - it moved into `coreEndpoints` unchanged, same name, method, path and auth.
+
+**Kept.** `CleanupDTO.donationUrl` and `CleanupDTO.donationClicks`, the `donate` page block and its
+`SafeHttpsLinkSchema` url, `CreateCleanupRequest.donationUrl`, `PublicEventPageDTO.donationUrl`,
+the donation-click metric on `host/analytics.ts`, `LegalDocumentVersionDTO` and the terms /
+privacy / cookies / subprocessors documents, `HttpsUrlSchema` and `SafeHttpsLinkSchema`, and §25's
+"donation clicks are a metric, not a route".
+
+**Added, additive and nullable.** `HttpsUrlSchema` (unchanged shape: trimmed, `.url()`, max 500,
+`https://` prefix) now defines the field in all four places, and its DEFINITION moved from
+`schemas/host/organizations.ts` to `schemas/entities.ts` so an entity can use it without an import
+cycle (§4); `schemas/host/organizations.ts` re-exports it, so every existing import path still
+resolves.
+
+- `OrganizationDTO.donationUrl: HttpsUrl | null | undefined`, in the slot `donationsEnabled` /
+  `donateSlug` vacated, plus `UpdateOrganizationRequest.donationUrl?: HttpsUrl | null` and a
+  read-only `AdminOrgDTO.donationUrl`.
+- `PersonDTO.donationUrl: HttpsUrl | null | undefined`, which `UserProfileDTO` inherits through
+  its `PersonDTOSchema.extend(...)`, plus `UpdateProfileRequest.donationUrl?: HttpsUrl | null`
+  beside `socialLinks`.
+- `CleanupDTO.organization` narrows from `OrganizationRefDTO` to `CleanupOrganizationRef`, which is
+  `OrganizationRefDTO` extended with `donationUrl` - a SUPERSET, so every existing consumer of the
+  org ref (the affiliation badge, the linked-event card) is unaffected and the backend only has to
+  project the extra column on the cleanup path.
+
+**Resolution rule.** An event's effective donation link is
+
+```
+cleanup.donationUrl ?? cleanup.organization?.donationUrl ?? cleanup.organizer.donationUrl ?? null
+```
+
+Event first (the host set a link for THIS event), then the hosting organization, then the
+organizer as a person. `cleanup.organizer` is a `PersonDTO`, so its link rides along with no new
+projection. The result is an external https URL validated by `HttpsUrlSchema` and opened OUT of the
+app (in-app browser on native, a new context on web); civfix never processes the payment, never
+sees the amount and stores nothing but the click count it already stored.
+
+**Delivery set (this is a 0.x removal, §4.2).** civfix-backend `services/api` AND
+`services/media-worker`, civfix-admin, civfix-govt-web. civfix-govt-web is a tokens-only consumer
+and imports nothing removed here, but it still bumps under the no-consumer-left-behind rule.
+civfix-app's `apps/community-web` and `apps/community-mobile` and `packages/ui` are workspace
+consumers and move in the same commit series with no adoption step. The backend must also drop the
+Stripe adapter, the `Payments` seam wiring in `di.ts`, the donation/payout/eligibility services and
+routes and the `PAYMENTS_*`/`STRIPE_*`/`DONATION_*` env, and update
+`test/unit/route-coverage.test.ts` to 318.
+
+**Retired by this entry:** §26 (donations: direct charges), §31 (the donation status ratchet) and
+the org-payouts amendment inside §33. Amended: §23 (`donationOrg` gone from the `CleanupDTO`
+growth list, `/orgs/by-slug/:slug/donate` gone, `HostCapability` count), §33 and §34 (the
+`manage_payments` / `view_donations` capability lines, the donations eligibility gate) and §36
+(the insights `money` block).

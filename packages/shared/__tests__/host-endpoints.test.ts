@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest"
-import {
-  endpoints,
-  hostEndpoints,
-  paymentsEndpoints,
-  hostAdminEndpoints,
-} from "../src/client/endpoints.js"
+import { endpoints, hostEndpoints, hostAdminEndpoints } from "../src/client/endpoints.js"
 import { extractParams, fillPath } from "../src/client/client.js"
 
 
@@ -12,23 +7,20 @@ const UUID = "123e4567-e89b-12d3-a456-426614174000"
 
 const NEW_NAMES = [
   ...Object.keys(hostEndpoints),
-  ...Object.keys(paymentsEndpoints),
   ...Object.keys(hostAdminEndpoints),
 ] as Array<keyof typeof endpoints>
 
 const CSRF_FREE_MUTATIONS = new Set([
   "unsubscribeBroadcasts",
   "getGuestEventTicket",
-  "createDonationCheckout",
   "recordEventPageView",
 ])
 
 describe("host platform endpoint registry", () => {
-  it("adds 134 endpoints, of which 30 are admin", () => {
-    expect(NEW_NAMES).toHaveLength(134)
+  it("adds 106 endpoints, of which 21 are admin", () => {
+    expect(NEW_NAMES).toHaveLength(106)
     expect(Object.keys(hostEndpoints)).toHaveLength(85)
-    expect(Object.keys(paymentsEndpoints)).toHaveLength(19)
-    expect(Object.keys(hostAdminEndpoints)).toHaveLength(30)
+    expect(Object.keys(hostAdminEndpoints)).toHaveLength(21)
     for (const name of Object.keys(hostAdminEndpoints)) {
       expect(endpoints[name as keyof typeof endpoints].path.startsWith("/admin"), name).toBe(true)
     }
@@ -62,11 +54,9 @@ describe("host platform endpoint registry", () => {
     }
   })
 
-  it("routes organizations by uuid except the two public slug reads", () => {
+  it("routes organizations by uuid except the public slug reads", () => {
     expect(endpoints.getOrganization.path).toBe("/orgs/by-slug/:slug")
     expect(endpoints.getOrganization.auth).toBe("optional")
-    expect(endpoints.getPublicOrgDonationPage.path).toBe("/orgs/by-slug/:slug/donate")
-    expect(endpoints.getPublicOrgDonationPage.auth).toBe("optional")
     for (const name of Object.keys(endpoints)) {
       const e = endpoints[name as keyof typeof endpoints]
       if (!e.path.startsWith("/orgs/")) continue
@@ -131,15 +121,8 @@ describe("host platform endpoint registry", () => {
     expect(endpoints.previewEventBroadcast.path).not.toContain("/broadcasts/")
   })
 
-  it("gives the donations kind of host export a retrieval path of its own", () => {
-    expect(endpoints.listOrgDonationExports.path).toBe("/orgs/:id/donations/exports")
-    expect(endpoints.requestOrgDonationExport.path).toBe("/orgs/:id/donations/export")
+  it("keeps the host export download on its own /me path", () => {
     expect(endpoints.downloadHostExport.path).toBe("/me/host-exports/:id/download")
-  })
-
-  it("pins /admin/donations/summary as a STATIC sibling of the /admin/donations list", () => {
-    expect(endpoints.adminListDonations.path).toBe("/admin/donations")
-    expect(endpoints.adminDonationTotalsByOrg.path).toBe("/admin/donations/summary")
   })
 
   it("reads page CONTENT through the admin plane, not the public page route", () => {
@@ -278,11 +261,6 @@ describe("host platform endpoint registry", () => {
   it("fills :slug, :registrationId, :ticketTypeId and friends from the typed input", () => {
     const cases: Array<[keyof typeof endpoints, Record<string, string>, string]> = [
       ["getOrganization", { slug: "reach-out-la" }, "/orgs/by-slug/reach-out-la"],
-      [
-        "getPublicOrgDonationPage",
-        { slug: "reach-out-la" },
-        "/orgs/by-slug/reach-out-la/donate",
-      ],
       ["getPublicEventPage", { slug: "beach-sweep" }, "/pages/beach-sweep"],
       [
         "getEventRegistration",
@@ -312,7 +290,6 @@ describe("host platform endpoint registry", () => {
         `/cleanups/${UUID}/team/invites/${UUID}`,
       ],
       ["downloadHostExport", { id: UUID }, `/me/host-exports/${UUID}/download`],
-      ["getDonationStatus", { id: UUID }, `/donations/${UUID}/status`],
     ]
     for (const [name, input, expected] of cases) {
       const e = endpoints[name]

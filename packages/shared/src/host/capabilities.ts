@@ -55,14 +55,11 @@ const STAFF_CAPABILITIES: readonly HostCapability[] = ["view_event_private", "vi
 
 const ORG_OWNER_CAPABILITIES: readonly HostCapability[] = [
   ...ORGANIZER_CAPABILITIES,
-  "manage_payments",
-  "view_donations",
   "manage_org_members",
 ]
 
 const ORG_ADMIN_CAPABILITIES: readonly HostCapability[] = [
   ...COHOST_CAPABILITIES.filter((cap) => cap !== "export"),
-  "view_donations",
   "manage_org_members",
 ]
 

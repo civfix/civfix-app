@@ -504,7 +504,6 @@ describe("admin org management", () => {
     expect(base.success).toBe(true)
     if (base.success) {
       expect(base.data.memberCount).toBe(0)
-      expect(base.data.donationsEnabled).toBe(false)
       expect(base.data.suspendedAt).toBeUndefined()
     }
     expect(
@@ -525,13 +524,11 @@ describe("admin org management", () => {
       verified: "verified",
       kind: "nonprofit",
       suspended: "false",
-      donationsEnabled: "1",
       limit: "25",
     })
     expect(q.success).toBe(true)
     if (q.success) {
       expect(q.data.suspended).toBe(false)
-      expect(q.data.donationsEnabled).toBe(true)
       expect(q.data.limit).toBe(25)
     }
     expect(AdminOrgListQuerySchema.safeParse({ suspended: "yes" }).success).toBe(false)

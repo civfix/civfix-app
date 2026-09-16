@@ -13,7 +13,7 @@ const EVENT_ROLES: (CleanupMemberRole | null)[] = [null, ...CleanupMemberRoleSch
 const ORG_ROLES: (OrganizationMemberRole | null)[] = [null, ...OrganizationMemberRoleSchema.options]
 const ALL_CAPABILITIES = HostCapabilitySchema.options
 
-const ORG_ONLY: HostCapability[] = ["manage_payments", "view_donations", "manage_org_members"]
+const ORG_ONLY: HostCapability[] = ["manage_org_members"]
 const NOT_COHOST: HostCapability[] = [
   "manage_team",
   "cancel_event",
@@ -57,7 +57,6 @@ function expected(standing: HostStanding): HostCapability[] {
   }
   if (standing.orgRole === "admin") {
     for (const cap of eventCaps) if (!NOT_COHOST.includes(cap) && cap !== "export") out.add(cap)
-    out.add("view_donations")
     out.add("manage_org_members")
   }
   return [...out].sort()
@@ -77,7 +76,7 @@ describe("hostCapabilities", () => {
     expect(hostCapabilities({ eventRole: "member", orgRole: "member" }).size).toBe(0)
   })
 
-  it("gives an organizer every capability except the org-only payment ones", () => {
+  it("gives an organizer every capability except the org-only ones", () => {
     const caps = hostCapabilities({ eventRole: "organizer", orgRole: null })
     for (const cap of ALL_CAPABILITIES) {
       expect(caps.has(cap)).toBe(!ORG_ONLY.includes(cap))
@@ -111,8 +110,7 @@ describe("hostCapabilities", () => {
         "cancel_event",
         "manage_org_link",
         "request_resources",
-        "manage_payments",
-        "view_donations",
+        "manage_org_members",
       ]),
     )
     for (const cap of NOT_COORDINATOR) expect(caps.has(cap), cap).toBe(false)
@@ -150,27 +148,9 @@ describe("hostCapabilities", () => {
     expect(can({ eventRole: "member", orgRole: "member" }, "view_analytics")).toBe(false)
   })
 
-  it("gives manage_payments to the org owner only", () => {
-    for (const eventRole of EVENT_ROLES) {
-      expect(can({ eventRole, orgRole: "owner" }, "manage_payments")).toBe(true)
-      expect(can({ eventRole, orgRole: "admin" }, "manage_payments")).toBe(false)
-      expect(can({ eventRole, orgRole: "member" }, "manage_payments")).toBe(false)
-      expect(can({ eventRole, orgRole: null }, "manage_payments")).toBe(false)
-    }
-  })
-
-  it("gives view_donations to org owner and org admin only", () => {
-    for (const eventRole of EVENT_ROLES) {
-      expect(can({ eventRole, orgRole: "owner" }, "view_donations")).toBe(true)
-      expect(can({ eventRole, orgRole: "admin" }, "view_donations")).toBe(true)
-      expect(can({ eventRole, orgRole: "member" }, "view_donations")).toBe(false)
-      expect(can({ eventRole, orgRole: null }, "view_donations")).toBe(false)
-    }
-  })
-
-  it("withholds export, manage_team, cancel_event, manage_org_link, request_resources and manage_payments from an org admin", () => {
+  it("withholds export, manage_team, cancel_event, manage_org_link and request_resources from an org admin", () => {
     const caps = hostCapabilities({ eventRole: null, orgRole: "admin" })
-    const withheld = ["export", ...NOT_COHOST, "manage_payments"] as HostCapability[]
+    const withheld = ["export", ...NOT_COHOST] as HostCapability[]
     for (const cap of withheld) {
       expect(caps.has(cap)).toBe(false)
     }

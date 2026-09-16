@@ -140,16 +140,6 @@
         "default": "./dist/ics/index.cjs"
       }
     },
-    "./payments": {
-      "import": {
-        "types": "./dist/payments/index.d.ts",
-        "default": "./dist/payments/index.js"
-      },
-      "require": {
-        "types": "./dist/payments/index.d.cts",
-        "default": "./dist/payments/index.cjs"
-      }
-    },
     "./legal": {
       "import": {
         "types": "./dist/legal/index.d.ts",
