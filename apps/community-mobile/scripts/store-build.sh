@@ -83,10 +83,15 @@ eas build --platform ios --profile "$profile" --local --output "$ipa" ${eas_flag
 # Prove what was baked, from the artifact itself: expo-constants ships the resolved app config
 # inside the app bundle, which is exactly what the running app will read.
 baked_config="$(unzip -p "$ipa" 'Payload/*.app/EXConstants.bundle/app.config')"
+# An ABSENT key prints empty; anything else prints what it really is. Expo once baked
+# `apiUrl: process.env.X ?? null` through as `{}`, and collapsing every non-string to "" let that sail
+# past the appstore assertion, whose expectation IS the empty string.
 baked_api_url="$(printf '%s' "$baked_config" | node -e '
   const config = JSON.parse(require("fs").readFileSync(0, "utf8"))
-  const apiUrl = config.extra?.apiUrl
-  process.stdout.write(typeof apiUrl === "string" ? apiUrl : "")
+  const extra = config.extra
+  const apiUrl = extra === null || extra === undefined ? undefined : extra.apiUrl
+  if (apiUrl === undefined) process.stdout.write("")
+  else process.stdout.write(typeof apiUrl === "string" ? apiUrl : JSON.stringify(apiUrl))
 ')"
 if [ "$baked_api_url" != "$expected_api_url" ]; then
   echo "Baked API URL is '${baked_api_url:-<unset, resolved at runtime>}' but the ${profile} profile promises '${expected_api_url:-<unset, resolved at runtime>}'. Refusing to upload ${ipa}." >&2

@@ -109,11 +109,39 @@ changes that layout the probe goes permanently `false` - production for everyone
 direction but silent. A dev build logs the resolved container and both receipt stats under
 `[install-source]` so the assumption can be checked on a real device.
 
-**Persisted state is scoped to the API it was written against** (`src/lib/storageScope.ts`): the MMKV
-instances, the session token in the keychain and the secure-blob key all carry the API host as a
-suffix - except production, which deliberately keeps the legacy un-suffixed ids so existing App Store
-users are not signed out by this change. Without that scoping, a tester moving from TestFlight to the
-App Store would carry a staging session and a staging cache into a production session.
+**Identity-bearing state is scoped to the API it was written against** (`src/lib/storageScope.ts`).
+Four ids carry the API host as a suffix: the app MMKV instance (`civfix.app` - cached user, last
+identity, persisted query cache, prefs), the session token in the keychain
+(`civfix.session.token`), the secure-blob MMKV instance (`civfix.secure`) and its keychain encryption
+key (`civfix.secure-blobs.key`). Production deliberately keeps the legacy un-suffixed ids so existing
+App Store users are not signed out by this change.
+
+Three stores are deliberately NOT scoped, because none of them holds identity or server state: the map
+filter prefs including recent-search history (`civfix.ui.filters`, `@civfix/ui`
+`map/filterStorage.native.ts`), the sidebar width (`civfix.ui.sidebar`,
+`shell/sidebarStorage.native.ts`), and the push `device_id` (`civfix.device_id`, `src/lib/deviceId.ts`),
+which must stay stable per install for the backend's push-token ownership guard to recognise a
+same-device handoff.
+
+**Scoping alone does not protect the TestFlight -> App Store upgrade**, and that is the whole point of
+`src/lib/storageEnvMarker.ts` + `src/lib/legacyStorageReset.ts`. Production resolves to the LEGACY ids,
+so a prod build cannot tell its own leftovers from a pre-namespacing TestFlight install's staging
+leftovers sitting under the same ids. Every run therefore records its environment in an unscoped
+keychain item (`civfix.storage.env`), and `adoptStorageEnvironment()` runs at boot before the first
+session read: on a production boot whose marker names a non-production environment, it clears the four
+legacy ids (the blob encryption key is emptied through its own store rather than deleted, so an
+already-open MMKV instance is never re-keyed mid-process) and the in-memory query cache. The marker
+lives in the keychain, not MMKV, because the keychain is where the dangerous leftover survives an app
+DELETE - so delete-and-reinstall into the App Store copy is covered too.
+
+*What it cannot detect:* the FIRST upgrade off a build that predates the marker. There the marker is
+absent, and an absent marker beside a legacy session token is genuinely ambiguous - equally a
+long-standing App Store user whose session is legitimately theirs. Signing all of those out is the
+worse failure, so an absent marker keeps the state: that one upgrade still sends a staging token to
+prod, is rejected with a 401 and signs out, after briefly painting the cached staging user. Every later
+environment flip on that install is covered, because by then a marker exists. Note also that a purge
+clears `civfix.app` wholesale, so the locale, theme and onboarding-seen prefs of the discarded
+environment go with it.
 
 **Share links do not follow the split.** `app.config.js` `ios.associatedDomains` pins
 `applinks:civfix.org` / `applinks:www.civfix.org` only, so a `civfix.dev` link produced by a

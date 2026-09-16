@@ -11,7 +11,11 @@ export interface KeyValueStore {
   delete(key: string): void
 }
 
-function memoryStore(): KeyValueStore {
+interface ClearableStore extends KeyValueStore {
+  clearAll(): void
+}
+
+function memoryStore(): ClearableStore {
   const map = new Map<string, string>()
   return {
     getString: (key) => map.get(key),
@@ -21,10 +25,11 @@ function memoryStore(): KeyValueStore {
     delete: (key) => {
       map.delete(key)
     },
+    clearAll: () => map.clear(),
   }
 }
 
-function createStore(): KeyValueStore {
+function createStore(): ClearableStore {
   try {
     return new MMKV({ id: INSTANCE_ID })
   } catch {
@@ -32,7 +37,18 @@ function createStore(): KeyValueStore {
   }
 }
 
-export const storage: KeyValueStore = createStore()
+const store = createStore()
+
+export const storage: KeyValueStore = store
+
+/** Wipe this install's whole app store. Only the storage-environment reset has a reason to call it. */
+export function clearAppStorage(): void {
+  try {
+    store.clearAll()
+  } catch {
+    return
+  }
+}
 
 export const mmkvStateStorage: StateStorage = {
   getItem: (name) => storage.getString(name) ?? null,

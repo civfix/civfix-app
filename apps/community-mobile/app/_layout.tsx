@@ -71,6 +71,7 @@ import { chatSocket } from "@/lib/ws"
 import { usePrefsStore } from "@/store/prefsStore"
 import { resolveActiveLocale } from "@/lib/locale"
 import { goHome } from "@/lib/goHome"
+import { adoptStorageEnvironment } from "@/lib/legacyStorageReset"
 import { isExternalUrl } from "@/lib/links"
 import { codeScannerSupported } from "@/lib/scannerSupport"
 import {
@@ -328,7 +329,13 @@ function useBootstrap() {
     setUnauthorizedHandler(() => {
       useAuthStore.getState().markUnauthed()
     })
-    void hydrate()
+    // The storage-environment check runs BEFORE the first session read: on a production boot whose
+    // previous run was staging it drops that run's legacy session, cached user and query cache.
+    void adoptStorageEnvironment()
+      .catch(() => false)
+      .finally(() => {
+        void hydrate()
+      })
     return () => setUnauthorizedHandler(null)
   }, [hydrate])
 }
