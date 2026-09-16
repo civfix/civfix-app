@@ -14,14 +14,9 @@ export function DonateBlock({
   block: DonateBlockData
   page: PublicEventPageDTO
 }) {
-  const internal = page.donateSlug
-    ? `/donate/${encodeURIComponent(page.donateSlug)}/?event=${encodeURIComponent(page.event.id)}`
-    : null
   const supplied = block.url ?? page.donationUrl ?? null
-  const href = internal ?? (supplied !== null && isSafeMarkdownHref(supplied) ? supplied : null)
+  const href = supplied !== null && isSafeMarkdownHref(supplied) ? supplied : null
   if (href === null) return null
-
-  const external = internal === null
 
   return (
     <section className="signup-block signup-donate">
@@ -30,16 +25,14 @@ export function DonateBlock({
       <a
         className="signup-donate-cta"
         href={href}
-        {...(external ? { rel: "noreferrer noopener nofollow", target: "_blank" } : {})}
+        rel="noreferrer noopener nofollow"
+        target="_blank"
       >
         <HandHeart aria-hidden="true" size={18} /> Donate
       </a>
-      {page.donateSlug ? (
-        <p className="signup-hint">
-          Donations go to {page.organization?.name ?? "the host organization"}, which is the merchant
-          of record. civfix charges a disclosed platform fee and never holds the funds.
-        </p>
-      ) : null}
+      <p className="signup-hint">
+        This link goes to a site civfix does not run. civfix never handles the money.
+      </p>
     </section>
   )
 }

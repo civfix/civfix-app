@@ -1,7 +1,7 @@
 /* =========================================================================
    Public organization page: /orgs/<slug>
 
-   A standalone DOM route in the /e and /donate mould: the audience is a
+   A standalone DOM route in the /e mould: the audience is a
    visitor arriving from a shared link (often signed out, often on a phone),
    so the page is plain semantic HTML that paints without the app shell, the
    map or the RN stack. In-app navigation to an organization still opens the

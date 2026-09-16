@@ -56,6 +56,7 @@ export interface OrgProfileDraft {
   slugTouched: boolean
   description: string
   websiteUrl: string
+  donationUrl: string
   facebook: string
   instagram: string
   tiktok: string
@@ -69,6 +70,7 @@ export const EMPTY_ORG_DRAFT: OrgProfileDraft = {
   slugTouched: false,
   description: "",
   websiteUrl: "",
+  donationUrl: "",
   facebook: "",
   instagram: "",
   tiktok: "",
@@ -85,6 +87,7 @@ export function draftFromOrg(org: OrganizationDTO | null): OrgProfileDraft {
     slugTouched: true,
     description: org.description ?? "",
     websiteUrl: org.websiteUrl ?? "",
+    donationUrl: org.donationUrl ?? "",
     facebook: links.facebook ?? "",
     instagram: links.instagram ?? "",
     tiktok: links.tiktok ?? "",
@@ -118,14 +121,26 @@ interface ProfileBody {
   socialLinks: SocialLinks | null
 }
 
+function trimmedOrNull(value: string): string | null {
+  const trimmed = value.trim()
+  return trimmed === "" ? null : trimmed
+}
+
 function bodyFromDraft(draft: OrgProfileDraft, logo: ConsoleImage | null): ProfileBody {
   return {
     name: draft.name.trim(),
-    description: draft.description.trim() === "" ? null : draft.description.trim(),
-    websiteUrl: draft.websiteUrl.trim() === "" ? null : draft.websiteUrl.trim(),
+    description: trimmedOrNull(draft.description),
+    websiteUrl: trimmedOrNull(draft.websiteUrl),
     logoMediaId: logo?.mediaId ?? null,
     socialLinks: socialLinksFromDraft(draft),
   }
+}
+
+function editBodyFromDraft(
+  draft: OrgProfileDraft,
+  logo: ConsoleImage | null,
+): ProfileBody & { donationUrl: string | null } {
+  return { ...bodyFromDraft(draft, logo), donationUrl: trimmedOrNull(draft.donationUrl) }
 }
 
 function issuesToFields(issues: readonly { path: readonly PropertyKey[]; message: string }[]) {
@@ -173,11 +188,16 @@ export function OrgProfileForm({
   const slug = mode === "create" ? draft.slug : (org?.slug ?? draft.slug)
 
   const localErrors = useMemo(() => {
-    const body = bodyFromDraft(draft, logo)
     const parsed =
       mode === "create"
-        ? CreateOrganizationRequestSchema.safeParse({ ...body, slug: draft.slug.trim() })
-        : UpdateOrganizationRequestSchema.safeParse({ id: org?.id ?? "", ...body })
+        ? CreateOrganizationRequestSchema.safeParse({
+            ...bodyFromDraft(draft, logo),
+            slug: draft.slug.trim(),
+          })
+        : UpdateOrganizationRequestSchema.safeParse({
+            id: org?.id ?? "",
+            ...editBodyFromDraft(draft, logo),
+          })
     const out = parsed.success ? {} : issuesToFields(parsed.error.issues)
     if (mode === "create") {
       const problem = orgSlugProblem(draft.slug)
@@ -198,6 +218,9 @@ export function OrgProfileForm({
       out.websiteUrl = t("form.website_invalid", {
         defaultValue: "Enter a full https:// address.",
       })
+    }
+    if (out.donationUrl) {
+      out.donationUrl = t("form.donation_invalid", { defaultValue: "Must start with https://" })
     }
     for (const platform of SOCIAL_PLATFORMS) {
       const key = `socialLinks.${platform}`
@@ -221,9 +244,13 @@ export function OrgProfileForm({
       ? SOCIAL_PLATFORM_LABELS[key.slice("socialLinks.".length) as SocialPlatform]
       : t(`form.${key}`, {
           defaultValue:
-            { name: "Name", slug: "Handle", description: "Description", websiteUrl: "Website" }[
-              key
-            ] ?? key,
+            {
+              name: "Name",
+              slug: "Handle",
+              description: "Description",
+              websiteUrl: "Website",
+              donationUrl: "Donation link",
+            }[key] ?? key,
         })
   const summary: FieldError[] = Object.entries(fieldErrors).map(([key, message]) => ({
     id: `org-${key.replace(".", "-")}`,
@@ -232,9 +259,10 @@ export function OrgProfileForm({
 
   const save = useMutation({
     mutationFn: async () => {
-      const body = bodyFromDraft(draft, logo)
-      if (mode === "edit" && org) return api.updateOrganization({ id: org.id, ...body })
-      return api.createOrganization({ ...body, slug: draft.slug.trim() })
+      if (mode === "edit" && org) {
+        return api.updateOrganization({ id: org.id, ...editBodyFromDraft(draft, logo) })
+      }
+      return api.createOrganization({ ...bodyFromDraft(draft, logo), slug: draft.slug.trim() })
     },
     onSuccess: (saved) => {
       toast.toast({
@@ -478,6 +506,29 @@ export function OrgProfileForm({
               onChange={(event) => patch({ websiteUrl: event.target.value })}
             />
           </Field>
+          {mode === "edit" ? (
+            <Field
+              label={t("form.donationUrl", { defaultValue: "Donation link" })}
+              htmlFor="org-donation-url"
+              optional
+              error={showError("donationUrl")}
+              hint={t("form.donation_hint", {
+                defaultValue:
+                  "Must start with https://. Shown on your public page and your events; civfix never handles the money.",
+              })}
+            >
+              <TextInput
+                id="org-donation-url"
+                type="url"
+                inputMode="url"
+                placeholder="https://"
+                maxLength={500}
+                value={draft.donationUrl}
+                invalid={Boolean(showError("donationUrl"))}
+                onChange={(event) => patch({ donationUrl: event.target.value })}
+              />
+            </Field>
+          ) : null}
         </div>
       </section>
 
