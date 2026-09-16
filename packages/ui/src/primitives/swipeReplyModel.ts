@@ -10,6 +10,8 @@
  * drags never capture at all (dx must be POSITIVE - there is no left-swipe affordance).
  */
 
+import { startsInBackSwipeEdge } from "./backSwipeEdge"
+
 /** Minimum rightward travel (px) before the gesture claims the responder (finger slop). */
 export const SWIPE_CAPTURE_SLOP_PX = 10
 /** Release at/past this rightward travel (px) triggers the reply action (and the haptic tick). */
@@ -22,7 +24,8 @@ export const SWIPE_MAX_TRANSLATE_PX = 64
  * dominant (|dx| > |dy|) so the list's vertical scroll keeps vertical-ish drags. Positive-dx checks
  * make the |dx| explicit-abs redundant on the dx side.
  */
-export function shouldCaptureSwipe(dx: number, dy: number): boolean {
+export function shouldCaptureSwipe(dx: number, dy: number, startX = Number.POSITIVE_INFINITY): boolean {
+  if (startsInBackSwipeEdge(startX)) return false
   return dx > SWIPE_CAPTURE_SLOP_PX && dx > Math.abs(dy)
 }
 

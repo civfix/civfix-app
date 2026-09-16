@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Platform, Pressable, ScrollView, StyleSheet, ActivityIndicator, InteractionManager } from "react-native"
+import { View, Platform, Pressable, ScrollView, StyleSheet, ActivityIndicator } from "react-native"
 import { useQueryClient, type QueryClient } from "@tanstack/react-query"
 import type { ReportCategory, ReportType as SharedReportType } from "@civfix/shared"
 import type { ApiClient } from "@civfix/shared/client"
 import { type LatLng } from "@civfix/shared/geocode"
-import { makeThemedStyles, useTheme, categoryColor, wash, useLayoutMode, focusRingProps, type LayoutMode } from "../theme"
+import { makeThemedStyles, motion, useTheme, categoryColor, wash, useLayoutMode, focusRingProps, type LayoutMode } from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField, Toggle, KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
@@ -366,7 +366,7 @@ function DetailsStep() {
 
 const DEVICE_FIX_TIMEOUT_MS = 4000
 
-const VIEWFINDER_MOUNT_DEADLINE_MS = 600
+const VIEWFINDER_MOUNT_DELAY_MS = motion.pagePush.duration
 
 const PICK_LAYER_LINGER_MS = 400
 
@@ -883,12 +883,8 @@ export function ReportFlowBody() {
   const viewfinderVisible = rendersEmbeddedViewfinder(activeStep, hasMedia, Viewfinder != null, mode)
 
   useEffect(() => {
-    const handle = InteractionManager.runAfterInteractions(() => setViewfinderMountable(true))
-    const deadline = setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DEADLINE_MS)
-    return () => {
-      handle.cancel()
-      clearTimeout(deadline)
-    }
+    const handle = setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DELAY_MS)
+    return () => clearTimeout(handle)
   }, [])
   const viewfinderMounted = viewfinderVisible && viewfinderMountable
 

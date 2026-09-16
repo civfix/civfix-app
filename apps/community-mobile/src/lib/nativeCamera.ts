@@ -1,10 +1,10 @@
-import { InteractionManager } from "react-native"
 import { Directory, File, Paths } from "expo-file-system"
 import * as Crypto from "expo-crypto"
 import * as ImagePicker from "expo-image-picker"
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator"
 import { Image as ImageCompressor, Video as VideoCompressor } from "react-native-compressor"
 import { AppError, ErrorCode } from "@civfix/shared"
+import { motion } from "@civfix/ui/theme"
 import type {
   CameraCapability,
   CapturedMedia,
@@ -40,6 +40,7 @@ const VIDEO_MIN_COMPRESS_MB = 0
 const STALE_TEMP_AGE_MS = 60 * 60_000
 const SWEEP_DELETE_LIMIT = 40
 const SWEEP_SCAN_LIMIT = 400
+const SWEEP_DELAY_MS = motion.pagePop.duration
 
 const TEMP_OUTPUT_NAME =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|jpeg|png|mp4|mov|m4a)$/i
@@ -95,14 +96,20 @@ function sweepDirectory(directory: Directory, now: number, budget: number): numb
 function sweepStaleMediaTempFiles(): void {
   if (sweptThisSession) return
   sweptThisSession = true
-  InteractionManager.runAfterInteractions(() => {
+  setTimeout(() => {
     const now = Date.now()
+    let removed = 0
     try {
-      const removed = sweepDirectory(new Directory(Paths.cache, "ImageManipulator"), now, SWEEP_DELETE_LIMIT)
-      sweepDirectory(Paths.cache, now, SWEEP_DELETE_LIMIT - removed)
+      removed = sweepDirectory(new Directory(Paths.cache, "ImageManipulator"), now, SWEEP_DELETE_LIMIT)
     } catch {
     }
-  })
+    setTimeout(() => {
+      try {
+        sweepDirectory(Paths.cache, now, SWEEP_DELETE_LIMIT - removed)
+      } catch {
+      }
+    }, 0)
+  }, SWEEP_DELAY_MS)
 }
 
 async function sha256Hex(bytes: Uint8Array<ArrayBuffer>): Promise<string> {

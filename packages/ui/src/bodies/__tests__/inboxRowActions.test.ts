@@ -74,7 +74,7 @@ describe("the native swipe uses the house gesture primitive", () => {
     expect(swipeHook).toContain("onStartShouldSetPanResponder: () => false")
     expect(swipeHook).toContain("onStartShouldSetPanResponderCapture: () => false")
     expect(swipeHook).toContain("onPanResponderTerminationRequest: () => false")
-    expect(swipeHook).toContain("shouldCaptureActionsSwipe(g.dx, g.dy, openRef.current)")
+    expect(swipeHook).toContain("shouldCaptureActionsSwipe(g.dx, g.dy, openRef.current, g.x0)")
   })
 
   it("keeps every threshold in the pure model, the way swipeReplyModel does", () => {

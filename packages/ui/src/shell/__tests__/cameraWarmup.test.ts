@@ -77,10 +77,15 @@ describe("4. the body swap declares itself a non-interaction", () => {
     expect(bodyTransition).toMatch(/useNativeDriver: true,\n\s*isInteraction: false,/)
   })
 
-  it("leaves the camera deferral's own deadline in place", () => {
+  it("defers the camera mount on a real clock, past the page-push transition", () => {
     expect(reportBody).toContain(
-      "const deadline = setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DEADLINE_MS)",
+      "const handle = setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DELAY_MS)",
     )
+    expect(reportBody).toContain("const VIEWFINDER_MOUNT_DELAY_MS = motion.pagePush.duration")
+  })
+
+  it("does NOT gate the camera mount on runAfterInteractions either", () => {
+    expect(reportBody).not.toMatch(/InteractionManager/)
   })
 })
 

@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest"
+import { BACK_SWIPE_EDGE_PX } from "../backSwipeEdge"
 import {
   SWIPE_ACTIONS_CAPTURE_SLOP_PX,
   SWIPE_ACTIONS_FLING_VX,
@@ -92,5 +93,20 @@ describe("shouldSnapOpen", () => {
 
   it("never opens a row with no actions", () => {
     expect(shouldSnapOpen(-200, 0, -2)).toBe(false)
+  })
+})
+
+describe("the back-swipe edge is not the row's to claim", () => {
+  it("refuses a drag that starts inside the back-swipe edge, open or closed", () => {
+    expect(shouldCaptureActionsSwipe(-80, 0, false, 0)).toBe(false)
+    expect(shouldCaptureActionsSwipe(80, 0, true, BACK_SWIPE_EDGE_PX)).toBe(false)
+  })
+
+  it("still captures a drag that starts past the edge", () => {
+    expect(shouldCaptureActionsSwipe(-80, 0, false, BACK_SWIPE_EDGE_PX + 1)).toBe(true)
+  })
+
+  it("captures with no start position supplied, which is every non-native caller", () => {
+    expect(shouldCaptureActionsSwipe(-80, 0, false)).toBe(true)
   })
 })

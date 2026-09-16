@@ -71,7 +71,7 @@ export function useSwipeReply({ enabled, onTrigger }: SwipeReplyOptions): SwipeR
       onStartShouldSetPanResponder: () => false,
       onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponderCapture: () => false,
-      onMoveShouldSetPanResponder: (_evt, g) => stateRef.current.enabled && shouldCaptureSwipe(g.dx, g.dy),
+      onMoveShouldSetPanResponder: (_evt, g) => stateRef.current.enabled && shouldCaptureSwipe(g.dx, g.dy, g.x0),
       onPanResponderGrant: () => {
         tickedRef.current = false
       },

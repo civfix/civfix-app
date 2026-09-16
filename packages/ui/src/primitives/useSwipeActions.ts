@@ -112,7 +112,7 @@ export function useSwipeActions({ enabled, actionCount }: SwipeActionsOptions): 
       onMoveShouldSetPanResponder: (_evt, g) =>
         stateRef.current.enabled &&
         stateRef.current.width > 0 &&
-        shouldCaptureActionsSwipe(g.dx, g.dy, openRef.current),
+        shouldCaptureActionsSwipe(g.dx, g.dy, openRef.current, g.x0),
       onPanResponderGrant: () => {
         tickedRef.current = false
         closeOtherRow()
