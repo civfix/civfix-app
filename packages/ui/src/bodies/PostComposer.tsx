@@ -40,18 +40,21 @@ import {
 import { attachableEvents, attachableReports } from "../data/composerAttachable"
 import { useT } from "../i18n"
 import { useHaptics } from "../capabilities"
-import { useCreatePost } from "../data/hooks/posts"
+import { useCreatePost, usePost } from "../data/hooks/posts"
 import { useNavStore } from "../nav"
 import { makeKeyboardAwareScrollHost } from "../shell/KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, useScrollHost } from "../shell/ScrollHost"
 import { AuthorAsChips, authorAsSelection } from "./AuthorAsChips"
+import { EmbeddedPost } from "./EmbeddedPost"
 import { LinkedEventCard } from "./LinkedEventCard"
 import { LinkedReportCard } from "./LinkedReportCard"
+import { useListTimeAgo } from "./useListTimeAgo"
 import { useFeedScrollTopStore } from "./feed/feedScrollStore"
 import { clearStaleReportIntentAtComposerMount } from "./composerCreateFlow"
 import {
   activePostMentions,
   buildComposerEventRef,
+  buildComposerQuoteRef,
   buildPostComposerAttachPlan,
   buildPostComposerKeyboardPlan,
   buildPostComposerModel,
@@ -162,6 +165,8 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
   const back = useNavStore((state) => state.back)
   const push = useNavStore((state) => state.push)
   const { t } = useT("post-composer")
+  const { t: tf } = useT("home-feed")
+  const timeAgo = useListTimeAgo()
   const presentation = buildPostComposerModel(mode, t)
   const platform = Platform.OS === "ios" || Platform.OS === "android" || Platform.OS === "web"
     ? Platform.OS
@@ -237,6 +242,12 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
   const attachedReport = useMemo(
     () => resolveComposerReport(draft.attachedReportId, draft.attachedReport, reportItems),
     [draft.attachedReportId, draft.attachedReport, reportItems],
+  )
+  const quoteTargetId = mode === "quote" ? targetPostId : undefined
+  const quotedPost = usePost(quoteTargetId)
+  const quotedRef = useMemo(
+    () => (quotedPost.data ? buildComposerQuoteRef(quotedPost.data) : null),
+    [quotedPost.data],
   )
   const eventCandidates = useMemo(() => attachableEvents(eventItems, Date.now()), [eventItems])
   const reportCandidates = useMemo(() => attachableReports(reportItems), [reportItems])
@@ -527,6 +538,18 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
     </View>
   )
 
+  const quotedSection = quoteTargetId ? (
+    <View style={styles.quoted}>
+      {quotedRef ? (
+        <EmbeddedPost post={quotedRef} t={tf} timeAgo={timeAgo} />
+      ) : quotedPost.isError ? (
+        <Text style={styles.quotedUnavailable}>{t("quote.unavailable")}</Text>
+      ) : (
+        <View style={styles.quotedSkeleton} />
+      )}
+    </View>
+  ) : null
+
   const errorLines = (
     <>
       {attachments.attachError ? <Text style={styles.error}>{attachments.attachError}</Text> : null}
@@ -800,6 +823,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
       />
 
       {messageSection}
+      {quotedSection}
       {errorLines}
 
       {attachAreaVisible ? <View style={styles.attachDivider} /> : null}
@@ -893,6 +917,9 @@ const useStyles = makeThemedStyles((t) => ({
   listActionFlush: { paddingHorizontal: 0 },
   listActionPressed: { opacity: 0.55 },
   listActionText: { color: t.colors.accentText, fontFamily: t.fontFamily.bodyBold, fontSize: 13.5, lineHeight: 18 },
+  quoted: { marginTop: t.space["1"] },
+  quotedSkeleton: { height: 96, borderRadius: 16, backgroundColor: t.colors.surfaceTint },
+  quotedUnavailable: { padding: 14, borderRadius: 16, backgroundColor: t.colors.surfaceTint, fontFamily: t.fontFamily.bodyMedium, fontSize: 13.5, lineHeight: 19, color: t.colors.textMuted },
   attachedStack: { gap: 9 },
   panel: { maxHeight: 284 },
   pickerContent: { gap: 9, padding: 1 },

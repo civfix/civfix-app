@@ -2,11 +2,12 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { pageBottomReserve } from "../../shell/bodyLayout"
 import type { TFunction } from "i18next"
-import type { CleanupDTO } from "@civfix/shared"
+import type { CleanupDTO, PostDTO } from "@civfix/shared"
 import {
   POST_COMPOSER_ATTACH_CANDIDATE_CAP,
   activePostMentions,
   buildComposerEventRef,
+  buildComposerQuoteRef,
   buildPostComposerAttachPlan,
   buildPostComposerKeyboardPlan,
   buildPostComposerModel,
@@ -309,5 +310,37 @@ describe("activePostMentions", () => {
   it("short-circuits an empty mention list and an empty body", () => {
     expect(activePostMentions("@maria", [])).toEqual([])
     expect(activePostMentions("", [maria])).toEqual([])
+  })
+})
+
+describe("buildComposerQuoteRef", () => {
+  const post = {
+    id: "p1",
+    author: { id: "u1", name: "Ada", followers: 0, following: 0, isFollowing: false },
+    kind: "post",
+    body: "Storm drain is blocked again.",
+    createdAt: "2026-09-16T12:00:00.000Z",
+    counts: { likes: 0, reposts: 0, replies: 0, saves: 0 },
+    viewer: { liked: false, reposted: false, saved: false },
+    media: [],
+    mentions: [],
+  } as unknown as PostDTO
+
+  it("carries the body into the excerpt the embed renders", () => {
+    expect(buildComposerQuoteRef(post).excerpt).toBe("Storm drain is blocked again.")
+  })
+
+  it("normalizes the optional refs a PostRefDTO expects", () => {
+    const ref = buildComposerQuoteRef(post)
+    expect(ref.organization).toBeNull()
+    expect(ref.event).toBeNull()
+    expect(ref.report).toBeNull()
+    expect(ref.media).toEqual([])
+  })
+
+  it("keeps a body-less post renderable", () => {
+    const ref = buildComposerQuoteRef({ ...post, body: null } as PostDTO)
+    expect(ref.excerpt).toBe("")
+    expect(ref.body).toBeNull()
   })
 })

@@ -29,6 +29,9 @@
       "placeholder": "Add your take..."
     }
   },
+  "quote": {
+    "unavailable": "That post isn’t available."
+  },
   "action": {
     "post": "Post",
     "reply": "Reply",
