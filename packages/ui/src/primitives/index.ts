@@ -214,6 +214,8 @@ export {
   SWIPE_ACTION_WIDTH_PX,
   SWIPE_ACTIONS_SNAP_RATIO,
 } from "./swipeActionsModel"
+export { createSwipeStartTracker, UNTRACKED_SWIPE_START_X } from "./swipeStartTracker"
+export type { SwipeStartTracker } from "./swipeStartTracker"
 export { MessageContextMenu } from "./MessageContextMenu"
 export type {
   MessageContextMenuProps,

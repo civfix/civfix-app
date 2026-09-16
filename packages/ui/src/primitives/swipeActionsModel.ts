@@ -19,10 +19,10 @@ export function shouldCaptureActionsSwipe(
   open: boolean,
   startX = Number.POSITIVE_INFINITY,
 ): boolean {
-  if (startsInBackSwipeEdge(startX)) return false
   if (Math.abs(dx) <= SWIPE_ACTIONS_CAPTURE_SLOP_PX) return false
   if (Math.abs(dx) <= Math.abs(dy)) return false
-  return open || dx < 0
+  if (dx < 0) return true
+  return open && !startsInBackSwipeEdge(startX)
 }
 
 export function actionsTranslate(dx: number, restX: number, width: number): number {

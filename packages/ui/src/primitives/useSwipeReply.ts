@@ -10,7 +10,9 @@
  * Responder-chain contract (why bubble taps keep working):
  * - `onStartShouldSetPanResponder(Capture)` are BOTH false: touch-down never claims, so the child
  *   Pressables (bubble long-press/double-tap, ReplyQuote jump, reaction chips, mention links) receive
- *   presses exactly as before.
+ *   presses exactly as before. The capture handler still runs on every touch-down, which is the only
+ *   moment the finger's page X is known: RN fills `gestureState.x0` in onResponderGrant, long AFTER
+ *   the move negotiation that needs it, so the start position is recorded here instead.
  * - `onMoveShouldSetPanResponder` claims only on a rightward, horizontally-dominant drag past slop
  *   (shouldCaptureSwipe). A child Pressable holding the responder gets a termination request and RN's
  *   Pressability cancels cleanly (no stray press/long-press fires mid-swipe). Vertical drags never
@@ -26,6 +28,7 @@ import { useMemo, useRef } from "react"
 import { Animated, PanResponder, Platform, type GestureResponderHandlers } from "react-native"
 import { useHaptics } from "../capabilities"
 import { shouldCaptureSwipe, shouldTriggerReply, swipeProgress, swipeTranslate } from "./swipeReplyModel"
+import { createSwipeStartTracker } from "./swipeStartTracker"
 
 export interface SwipeReplyOptions {
   /** Row-level gate (e.g. canReply && !pending && !failed && !tombstone). Read fresh per event. */
@@ -57,6 +60,7 @@ export function useSwipeReply({ enabled, onTrigger }: SwipeReplyOptions): SwipeR
 
   const translateX = useRef(new Animated.Value(0)).current
   const progress = useRef(new Animated.Value(0)).current
+  const startTracker = useRef(createSwipeStartTracker()).current
 
   const responder = useMemo(() => {
     if (!isNative) return null
@@ -69,9 +73,13 @@ export function useSwipeReply({ enabled, onTrigger }: SwipeReplyOptions): SwipeR
     return PanResponder.create({
       // Never claim on touch-down: child Pressables keep their taps (contract above).
       onStartShouldSetPanResponder: () => false,
-      onStartShouldSetPanResponderCapture: () => false,
+      onStartShouldSetPanResponderCapture: (evt) => {
+        startTracker.noteTouchStart(evt.nativeEvent.pageX)
+        return false
+      },
       onMoveShouldSetPanResponderCapture: () => false,
-      onMoveShouldSetPanResponder: (_evt, g) => stateRef.current.enabled && shouldCaptureSwipe(g.dx, g.dy, g.x0),
+      onMoveShouldSetPanResponder: (_evt, g) =>
+        stateRef.current.enabled && shouldCaptureSwipe(g.dx, g.dy, startTracker.startX()),
       onPanResponderGrant: () => {
         tickedRef.current = false
       },
@@ -92,7 +100,7 @@ export function useSwipeReply({ enabled, onTrigger }: SwipeReplyOptions): SwipeR
       // Once engaged, keep the gesture: the list already lost the move negotiation.
       onPanResponderTerminationRequest: () => false,
     })
-  }, [isNative, translateX, progress])
+  }, [isNative, translateX, progress, startTracker])
 
   return {
     active: isNative && enabled,
