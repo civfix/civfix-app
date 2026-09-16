@@ -68,11 +68,44 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
 
-        bloom: color.bloom,
-        moss: color.moss,
-        sun: color.sun,
-        sky: color.sky,
-        lilac: color.lilac,
+        bloom: {
+          50: schemeVar("--bloom-50"),
+          100: schemeVar("--bloom-100"),
+          300: schemeVar("--bloom-300"),
+          500: schemeVar("--bloom"),
+          600: schemeVar("--bloom-600"),
+          700: schemeVar("--bloom-700"),
+        },
+        moss: {
+          50: schemeVar("--moss-50"),
+          100: schemeVar("--moss-100"),
+          300: schemeVar("--moss-300"),
+          500: schemeVar("--moss"),
+          600: schemeVar("--moss-600"),
+          700: schemeVar("--moss-700"),
+        },
+        sun: {
+          50: schemeVar("--sun-50"),
+          100: schemeVar("--sun-100"),
+          300: schemeVar("--sun-300"),
+          500: schemeVar("--sun"),
+          600: schemeVar("--sun-600"),
+          700: schemeVar("--sun-700"),
+        },
+        sky: {
+          50: schemeVar("--sky-50"),
+          100: schemeVar("--sky-100"),
+          300: schemeVar("--sky-300"),
+          500: schemeVar("--sky"),
+          600: schemeVar("--sky-600"),
+          700: schemeVar("--sky-700"),
+        },
+        lilac: {
+          50: schemeVar("--lilac-50"),
+          500: schemeVar("--lilac"),
+          600: schemeVar("--lilac-600"),
+          700: schemeVar("--lilac-700"),
+        },
 
         brand: color.brand,
 
@@ -88,9 +121,17 @@ const config: Config = {
           5: schemeVar("--ink-5"),
         },
 
-        cat: color.category,
+        cat: {
+          trash: schemeVar("--cat-trash"),
+          recycling: schemeVar("--cat-recycling"),
+          graffiti: schemeVar("--cat-graffiti"),
+          hazard: schemeVar("--cat-hazard"),
+          encampment: schemeVar("--cat-encampment"),
+          water: schemeVar("--cat-water"),
+          other: schemeVar("--cat-other"),
+        },
 
-        cleanup: color.cleanup,
+        cleanup: schemeVar("--cat-cleanup"),
 
         console: {
           surface: "var(--console-surface)",

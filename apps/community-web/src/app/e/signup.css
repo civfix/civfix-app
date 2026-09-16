@@ -384,7 +384,7 @@
 .signup-page textarea:focus-visible,
 .signup-page a:focus-visible {
   outline: none;
-  box-shadow: var(--ring);
+  box-shadow: var(--focus-ring);
 }
 
 .signup-state {

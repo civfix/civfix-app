@@ -73,7 +73,7 @@ export function AppDownloadBanner() {
         // status bar) but keeps the banner clear of the notch in any edge-to-edge browser chrome.
         padding: "calc(8px + env(safe-area-inset-top, 0px)) 12px 8px",
         background: "var(--card, #fff)",
-        borderBottom: "1px solid var(--ink5, rgba(0,0,0,0.08))",
+        borderBottom: "1px solid var(--ink-5)",
         boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
       }}
     >
@@ -91,7 +91,7 @@ export function AppDownloadBanner() {
           border: "none",
           borderRadius: 12,
           background: "transparent",
-          color: "var(--ink3, #6b6b6b)",
+          color: "var(--ink-3)",
           fontSize: 17,
           lineHeight: 1,
           cursor: "pointer",
@@ -119,7 +119,7 @@ export function AppDownloadBanner() {
             fontFamily: "var(--font-body, inherit)",
             fontSize: 12,
             lineHeight: 1.3,
-            color: "var(--ink3, #6b6b6b)",
+            color: "var(--ink-3)",
           }}
         >
           {t("app_promo.banner_subtitle")}
