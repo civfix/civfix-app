@@ -41,7 +41,8 @@
     "event_dashboard": "Event dashboard",
     "announcement": "Announcement",
     "announcements": "Announcements",
-    "host_announce": "Make announcement"
+    "host_announce": "Make announcement",
+    "event_analytics": "Event analytics"
   },
   "tab": {
     "home": "Home",

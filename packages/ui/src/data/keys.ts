@@ -67,6 +67,7 @@ export const queryKeys = {
   hostEvent: (id: string) => ["host", id] as const,
   hostCounters: (id: string) => ["host", id, "counters"] as const,
   eventInsights: (id: string) => ["host", id, "insights"] as const,
+  eventAnalytics: (id: string, scope: string) => ["host", id, "analytics", scope] as const,
   hostRoster: (id: string, filter: string, q: string) =>
     ["host", id, "roster", filter, q] as const,
   hostTicketTypes: (id: string) => ["host", id, "ticket-types"] as const,

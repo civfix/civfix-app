@@ -137,8 +137,12 @@ describe("the dashboard handoff is one file on both platforms", () => {
     expect(target).not.toContain("openExternal")
   })
 
-  it("leaves the console reachable through the targetable row instead", () => {
-    expect(body).toContain('<ConsoleLinkRow target={{ kind: "event", eventId: id }} />')
+  it("answers in the app instead of sending the host out to the console", () => {
+    expect(body).not.toContain("ConsoleLinkRow")
+    expect(body).toContain("<AnalyticsCarouselCard cleanupId={id} />")
+    expect(strip(read("../dashboard/AnalyticsCarouselCard.tsx"))).toContain(
+      'push({ kind: "event-analytics", id: cleanupId })',
+    )
   })
 
   it("collapses the event detail's host block to the single dashboard row", () => {
@@ -165,11 +169,8 @@ describe("the tickets row is gated on the platform, not on a capability every ho
     expect(reachSelector).toContain('from "./consoleReach.web"')
   })
 
-  it("opens the console through the one helper both surfaces share", () => {
+  it("opens the console through the one helper the tickets row still needs", () => {
     expect(body).toContain("openConsolePath(managePath(id), openExternal)")
-    expect(strip(read("../dashboard/ConsoleLinkRow.web.tsx"))).toContain(
-      "openConsolePath(pathFor(target), openExternal)",
-    )
   })
 })
 

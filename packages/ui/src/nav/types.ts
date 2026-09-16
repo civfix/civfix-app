@@ -59,6 +59,7 @@ export type DetailKind =
   | "event-dashboard"
   | "announcement"
   | "announcements"
+  | "event-analytics"
 
 export const ALL_DETAIL_KINDS = [
   "pin",
@@ -106,6 +107,7 @@ export const ALL_DETAIL_KINDS = [
   "event-dashboard",
   "announcement",
   "announcements",
+  "event-analytics",
 ] as const satisfies readonly DetailKind[]
 
 export const DEAD_DETAIL_KINDS = ["new-msg"] as const satisfies readonly DetailKind[]

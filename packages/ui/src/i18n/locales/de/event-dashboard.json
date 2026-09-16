@@ -169,10 +169,6 @@
     "invites_error": "Offene Einladungen konnten nicht geladen werden.",
     "invite_row_sub": "Eingeladen · {{role}}"
   },
-  "console": {
-    "open": "Vollständige Konsole öffnen",
-    "sub": "Eventseite, Tickets, Exporte und mehr"
-  },
   "state": {
     "signin_title": "Melde dich an, um dein Dashboard zu sehen",
     "signin_body": "Deine Events, Anmeldungen und Host-Werkzeuge erscheinen hier, sobald du angemeldet bist."

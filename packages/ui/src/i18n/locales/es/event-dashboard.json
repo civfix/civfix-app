@@ -169,10 +169,6 @@
     "invites_error": "No se pudieron cargar las invitaciones pendientes.",
     "invite_row_sub": "Invitado · {{role}}"
   },
-  "console": {
-    "open": "Abrir la consola completa",
-    "sub": "Página del evento, entradas, exportaciones y más"
-  },
   "state": {
     "signin_title": "Inicia sesión para ver tu panel",
     "signin_body": "Tus eventos, inscripciones y herramientas de anfitrión aparecen aquí al iniciar sesión."

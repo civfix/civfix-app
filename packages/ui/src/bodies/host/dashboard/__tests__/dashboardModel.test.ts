@@ -423,10 +423,10 @@ describe("dashboard wiring", () => {
     expect(body).toContain("openHostDashboard")
   })
 
-  it("renders the console link only on web", () => {
-    expect(source("../ConsoleLinkRow.native.tsx")).toContain("return null")
-    expect(source("../ConsoleLinkRow.web.tsx")).toContain("manageOrgPath")
-    expect(source("../ConsoleLinkRow.tsx")).toContain("./ConsoleLinkRow.web")
+  it("stops pointing the host at the web console at all", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).not.toContain("ConsoleLinkRow")
+    expect(source("../../HostModeBody.tsx")).not.toContain("ConsoleLinkRow")
   })
 
   it("sends an announcement straight through the new endpoint, with no draft machine in between", () => {
@@ -799,7 +799,7 @@ describe("portfolio surface", () => {
       "../CollaboratorsSection.tsx",
       "../OrgInviteSheet.tsx",
       "../DuplicateEventSheet.tsx",
-      "../ConsoleLinkRow.web.tsx",
+      "../AnalyticsCarouselCard.tsx",
     ]
     for (const file of files) {
       expect(source(file)).not.toContain("brand.bloom")
@@ -855,7 +855,7 @@ describe("portfolio surface", () => {
     expect(invites).not.toContain('justifyContent: "flex-end"')
   })
 
-  it("keeps the donation link, team and the console link in the shared list card", () => {
+  it("keeps the donation link and the team in the shared list card", () => {
     const donation = dashboardSource("DonationLinkRow.tsx")
     expect(donation).toContain('variant="list"')
     expect(donation).toContain('icon="HandHeart"')
@@ -863,7 +863,6 @@ describe("portfolio surface", () => {
     const team = dashboardSource("CollaboratorsSection.tsx")
     expect(team).toContain('variant="list"')
     expect(team).toContain("<ListRow")
-    expect(dashboardSource("ConsoleLinkRow.web.tsx")).toContain("<ListRow")
   })
 
   it("names every portfolio string the redesign reads, in all four locales", () => {

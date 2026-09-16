@@ -40,7 +40,8 @@
     "event_dashboard": "이벤트 대시보드",
     "announcement": "공지",
     "announcements": "공지",
-    "host_announce": "공지 작성"
+    "host_announce": "공지 작성",
+    "event_analytics": "행사 분석"
   },
   "tab": {
     "home": "홈",

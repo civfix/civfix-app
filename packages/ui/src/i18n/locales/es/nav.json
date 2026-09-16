@@ -41,7 +41,8 @@
     "event_dashboard": "Panel de eventos",
     "announcement": "Anuncio",
     "announcements": "Anuncios",
-    "host_announce": "Publicar un anuncio"
+    "host_announce": "Publicar un anuncio",
+    "event_analytics": "Analíticas del evento"
   },
   "tab": {
     "home": "Inicio",

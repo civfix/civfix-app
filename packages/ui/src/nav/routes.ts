@@ -62,6 +62,7 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
       if (sub === "announce") return { kind: "host-announce", id }
       if (sub === "team") return { kind: "host-team", id }
       if (sub === "hours") return { kind: "host-log-hours", id }
+      if (sub === "analytics") return { kind: "event-analytics", id }
       if (sub === "announcements") {
         const announcementId = parts[3]
         return announcementId
@@ -178,6 +179,8 @@ export function pathForEntry(entry: DetailEntry | null): string {
       return entry.id ? `/cleanups/${entry.id}/team` : "/cleanups"
     case "host-log-hours":
       return entry.id ? `/cleanups/${entry.id}/hours` : "/cleanups"
+    case "event-analytics":
+      return entry.id ? `/cleanups/${entry.id}/analytics` : "/cleanups"
     case "announcements":
       return entry.id ? `/cleanups/${entry.id}/announcements` : "/cleanups"
     case "announcement":
@@ -347,6 +350,8 @@ export function titleForEntry(entry: DetailEntry | null): string {
       return "title.host_team"
     case "host-log-hours":
       return "title.host_log_hours"
+    case "event-analytics":
+      return "title.event_analytics"
     case "announcements":
       return "title.announcements"
     case "announcement":
@@ -454,6 +459,7 @@ export function parentViewForEntry(entry: DetailEntry | null): View | null {
     case "my-ticket":
     case "announcement":
     case "announcements":
+    case "event-analytics":
     case "org":
     case "event-dashboard":
       return "events"

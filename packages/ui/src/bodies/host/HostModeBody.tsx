@@ -45,10 +45,10 @@ import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { appErrorCode } from "../errorCode"
 import { FeedNotice } from "../FeedNotice"
-import { ConsoleLinkRow } from "./dashboard/ConsoleLinkRow"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
 import { EventRosterBlock } from "./EventRosterBlock"
 import { HostAnnouncementsBlock } from "./HostAnnouncementsBlock"
+import { AnalyticsCarouselCard } from "./dashboard/AnalyticsCarouselCard"
 import { HeroSkeleton, RowsSkeleton, TilesSkeleton } from "./HostSkeletons"
 import { HostInsightsPanels } from "./HostInsightsPanels"
 import { HostWalkupSheet } from "./HostWalkupSheet"
@@ -448,6 +448,8 @@ export function HostModeBody({ id }: { id: string }) {
 
         {phase === "cancelled" ? <FeedNotice icon="Ban" title={t("cancelled_notice")} /> : null}
 
+        {can.viewAnalytics ? <AnalyticsCarouselCard cleanupId={id} /> : null}
+
         {can.viewAnalytics ? (
           <InsightsSection
             insights={insights.data}
@@ -483,8 +485,6 @@ export function HostModeBody({ id }: { id: string }) {
         ))}
 
         {can.broadcast ? <HostAnnouncementsBlock cleanupId={id} /> : null}
-
-        <ConsoleLinkRow target={{ kind: "event", eventId: id }} />
 
         {can.viewRoster ? (
           <SectionCard label={t("section.attendees")}>

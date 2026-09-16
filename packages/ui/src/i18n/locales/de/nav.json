@@ -41,7 +41,8 @@
     "event_dashboard": "Event-Dashboard",
     "announcement": "Ankündigung",
     "announcements": "Ankündigungen",
-    "host_announce": "Ankündigung schreiben"
+    "host_announce": "Ankündigung schreiben",
+    "event_analytics": "Auswertung"
   },
   "tab": {
     "home": "Start",

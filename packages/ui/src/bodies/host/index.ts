@@ -7,6 +7,36 @@ export { HostTeamBody } from "./HostTeamBody"
 export { HostLogHoursBody } from "./HostLogHoursBody"
 export { MyTicketBody } from "./MyTicketBody"
 export { OrgPageBody } from "./OrgPageBody"
+export { EventAnalyticsBody } from "./EventAnalyticsBody"
+export { AnalyticsCarouselCard } from "./dashboard/AnalyticsCarouselCard"
+export type { AnalyticsCarouselCardProps } from "./dashboard/AnalyticsCarouselCard"
+export {
+  ANALYTICS_PANELS,
+  ARCHIVAL_AFTER_DAYS,
+  LIFECYCLE_SEGMENTS,
+  analyticsPanelOrder,
+  comparisonVerdict,
+  comparisonVisible,
+  defaultSegment,
+  funnelBars,
+  hasSeriesData,
+  isArchivalEvent,
+  ratePercent,
+  reachRateVisible,
+  segmentEnabled,
+  segmentRange,
+  seriesPoints,
+  seriesValues,
+  sliceSeries,
+  slotsPanelVisible,
+  visibleAnalyticsPanels,
+} from "./analyticsModel"
+export type {
+  AnalyticsPanelKey,
+  ComparisonVerdict,
+  LifecycleSegment,
+  TimeRange,
+} from "./analyticsModel"
 export { AnnouncementBody } from "./AnnouncementBody"
 export type { AnnouncementBodyProps } from "./AnnouncementBody"
 export { AnnouncementsBody } from "./AnnouncementsBody"

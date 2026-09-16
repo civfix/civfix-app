@@ -116,6 +116,7 @@ test("an event push that names a host surface lands in a shell, not on a native 
     { entry: { kind: "host-team", id: "c1" } as const, route: "cleanups/[id]/team" },
     { entry: { kind: "host-log-hours", id: "c1" } as const, route: "cleanups/[id]/hours" },
     { entry: { kind: "my-ticket", id: "c1", seatId: "s1" } as const, route: "cleanups/[id]/ticket/[seatId]" },
+    { entry: { kind: "event-analytics", id: "c1" } as const, route: "cleanups/[id]/analytics" },
     { entry: { kind: "announcements", id: "c1" } as const, route: "cleanups/[id]/announcements" },
     {
       entry: { kind: "announcement", id: "c1", announcementId: "a1" } as const,
@@ -137,7 +138,7 @@ test("an event push that names a host surface lands in a shell, not on a native 
   }
 })
 
-test("a broadcast push that lands in the sheet claims no native bridge key", () => {
-  assert.equal(bridgeKey({ kind: "host-broadcast-quick", id: "c1" }), null)
+test("the announcement composer lands in the sheet and claims no native bridge key", () => {
+  assert.equal(bridgeKey({ kind: "host-announce", id: "c1" }), null)
   assert.equal(shellHostsEntries({ name: "compose" }), false)
 })

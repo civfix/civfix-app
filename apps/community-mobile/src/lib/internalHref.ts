@@ -3,6 +3,7 @@ import type { NativeRoute } from "./navBridge"
 export const SHELL_HOST_ROUTE_NAMES: readonly string[] = [
   "index",
   "cleanups/[id]",
+  "cleanups/[id]/analytics",
   "cleanups/[id]/announcements",
   "cleanups/[id]/announcements/[announcementId]",
   "cleanups/[id]/checkin",

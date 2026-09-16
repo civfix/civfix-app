@@ -47,7 +47,6 @@ import { NextUpSkeleton } from "./HostSkeletons"
 import { TopVolunteersCard } from "./TopVolunteersCard"
 import { AttentionCard } from "./dashboard/AttentionCard"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
-import { ConsoleLinkRow } from "./dashboard/ConsoleLinkRow"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
 import { FirstEventCard } from "./dashboard/FirstEventCard"
 import { HostedEventRow } from "./dashboard/HostedEventRow"
@@ -477,10 +476,6 @@ export function EventDashboardBody() {
 
         <DonationLinkRow org={scope.org} />
         {scope.org ? <CollaboratorsSection org={scope.org} /> : null}
-
-        <ConsoleLinkRow
-          target={activeOrgId ? { kind: "org", orgId: activeOrgId } : { kind: "portfolio" }}
-        />
       </View>
 
       <PopoverMenu

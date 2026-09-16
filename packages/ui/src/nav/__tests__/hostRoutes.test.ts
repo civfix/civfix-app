@@ -16,6 +16,7 @@ const HOST_KINDS = [
   "event-dashboard",
   "announcement",
   "announcements",
+  "event-analytics",
 ] as const
 
 describe("the new kinds are registered everywhere a kind must be registered", () => {
@@ -43,6 +44,7 @@ describe("URL round trip", () => {
     ["/cleanups/e1/hours", { kind: "host-log-hours", id: "e1" }],
     ["/cleanups/e1/ticket", { kind: "my-ticket", id: "e1" }],
     ["/cleanups/e1/ticket/seat-9", { kind: "my-ticket", id: "e1", seatId: "seat-9" }],
+    ["/cleanups/e1/analytics", { kind: "event-analytics", id: "e1" }],
     ["/cleanups/e1/announcements", { kind: "announcements", id: "e1" }],
     [
       "/cleanups/e1/announcements/a-9",
@@ -98,6 +100,7 @@ describe("parent view + flow protection", () => {
       "event-dashboard",
       "announcement",
       "announcements",
+      "event-analytics",
     ] as const) {
       expect(parentViewForEntry({ kind } as DetailEntry), kind).toBe("events")
     }
@@ -115,6 +118,7 @@ describe("parent view + flow protection", () => {
       "event-dashboard",
       "announcement",
       "announcements",
+      "event-analytics",
     ] as const) {
       expect(FLOW_KINDS.has(kind), kind).toBe(false)
     }

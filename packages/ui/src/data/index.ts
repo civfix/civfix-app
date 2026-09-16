@@ -253,6 +253,8 @@ export type {
 
 export { useHostedEventsAnalytics } from "./hooks/dashboard"
 
+export { EVENT_ANALYTICS_STALE_MS, useEventAnalytics } from "./hooks/analytics"
+
 export {
   ANNOUNCEMENTS_PAGE_SIZE,
   AUDIENCE_PREVIEW_DEBOUNCE_MS,
