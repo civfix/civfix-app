@@ -72,9 +72,20 @@ describe("the native swipe uses the house gesture primitive", () => {
 
   it("never claims on touch-down, so a row tap still opens the thread", () => {
     expect(swipeHook).toContain("onStartShouldSetPanResponder: () => false")
-    expect(swipeHook).toContain("onStartShouldSetPanResponderCapture: () => false")
     expect(swipeHook).toContain("onPanResponderTerminationRequest: () => false")
-    expect(swipeHook).toContain("shouldCaptureActionsSwipe(g.dx, g.dy, openRef.current, g.x0)")
+    const capture = /onStartShouldSetPanResponderCapture: \(evt\) => \{([\s\S]*?)\n      \}/.exec(
+      swipeHook,
+    )?.[1]
+    expect(capture, "the capture handler no longer exists").toBeDefined()
+    expect(capture).toContain("return false")
+  })
+
+  it("negotiates the move against the RECORDED touch-down x, never gestureState.x0", () => {
+    expect(swipeHook).toContain("startTracker.noteTouchStart(evt.nativeEvent.pageX)")
+    expect(swipeHook).toContain(
+      "shouldCaptureActionsSwipe(g.dx, g.dy, openRef.current, startTracker.startX())",
+    )
+    expect(swipeHook).not.toContain("g.x0")
   })
 
   it("keeps every threshold in the pure model, the way swipeReplyModel does", () => {
