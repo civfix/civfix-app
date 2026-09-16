@@ -50,6 +50,7 @@
     "removed": "Nachricht gelöscht",
     "failed_retry": "Fehler · tippen zum Wiederholen",
     "sending": "Wird gesendet",
+    "attachment_processing": "Anhang wird verarbeitet…",
     "edited": "(bearbeitet)",
     "retry_sending": "Erneut senden",
     "message_actions": "Nachrichtenoptionen",

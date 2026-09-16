@@ -389,6 +389,24 @@ export const useConversationStyles = makeThemedStyles((t) => ({
     color: t.colors.textSubtle,
   },
 
+  processingBubble: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    borderRadius: 18,
+    backgroundColor: t.colors.bgAlt,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
+  },
+  processingBubbleText: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontStyle: "italic",
+    fontSize: 13,
+    color: t.colors.textSubtle,
+  },
+
   metaLine: {
     flexDirection: "row",
     alignItems: "center",
