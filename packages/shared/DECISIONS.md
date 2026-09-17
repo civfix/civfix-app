@@ -1650,3 +1650,44 @@ the host has `EVENT_ANALYTICS_COMPARISON_MIN_EVENTS` (3) completed events. Compa
 computed server-side over the host's last `EVENT_ANALYTICS_COMPARISON_WINDOW` (10) completed events
 and compare a host only against themselves; there is no cross-host benchmark in this contract, and
 no per-attendee field anywhere in the response.
+
+## 50. Address resolution is a contract concern: a precision ladder plus source provenance (0.51.0)
+
+`POST /map/resolve-address` (`resolveAddress`, `auth: "optional"`, csrf false, v1) is the endpoint a
+creation flow calls to see a street-level line for a pin. It is NOT a rename of `reverseLabel`, which
+stays exactly as it is: `reverseLabel` only ever answers the TIGER `cityStateLabel`, and deployed
+clients keep calling it. The new response is `{ address: string | null, precision: AddressPrecision |
+null, cityStateLabel: string }` — `cityStateLabel` is always populated from the same locality seam, so
+a client can show the rough-area hint even when the provider chain returns nothing. Registry 323 → 324.
+
+**`AddressPrecision` is the honesty ladder, not a confidence score.** `street | intersection |
+landmark | locality`, ordered most-to-least specific in `ADDRESS_PRECISION_LADDER`, and an adapter
+may only claim the rung its data actually supports (a house number for `street`, two distinct named
+ways for `intersection`, a named non-residential feature for `landmark`). `isLocatedPrecision()` is
+the single predicate that decides "prefill the field" vs "make the human type one"; `locality` and
+`null` are both "not located". `needsNearPrefix()` marks the landmark rung so a display surface
+renders "Near <feature>" and never presents a POI as a postal address. The enum lives in
+`entities.ts` because it is cross-domain: the map response and the report DTO both carry it.
+
+**Two source enums, because events and reports verify differently.** `EventAddressSource`
+(`resolved | edited | manual`) records how a HOST arrived at `cleanups.address` — every value means a
+human saw the line, which is why `isVerifiedEventAddress()` accepts all three and why events carry no
+precision column. `ReportAddressSource` (`resolved | user`) records who produced `reports.addr`: the
+server's creation-time snapshot, or the reporter's own typing; `addrPrecision` is persisted beside it
+so a later display-side coarsening policy needs no re-geocoding. `isVerifiedReportAddress()` is
+therefore stricter than the event predicate — only `user` text or a `street` resolve counts as postal,
+and that is what gates sending the address (rather than the coordinates) to an external maps app.
+
+**`addressSource` doubles as the new-client flag; `address` stays wire-optional.** A client that has
+run the host verification gate always sends `address` AND `addressSource`. Its absence is how the
+server recognises an old build and applies the compat shim (resolve server-side, store source
+`resolved`) instead of publishing an addressless event. Making `address` required on the wire would be
+a TestFlight flag-day, so it is not. Length caps are now named — `MAX_EVENT_ADDRESS_LENGTH` (200),
+`MAX_REPORT_ADDR_LENGTH` (300, applied to both `CreateReportRequest` and `AnonReportRequest`) — so a
+composer's `maxLength` cannot drift from the schema again. The minimum-length and trim rules for a
+supplied event address are SERVICE-side, deliberately: tightening the request schema would reject
+payloads old clients can still legitimately send.
+
+**`geocodePointKey()` is the one cache key.** Five-decimal rounding (~1.1 m), formatted
+`"34.05223,-118.24368"`, shared so the backend's read-through geocode cache, the server-side create
+path and the client's query key all collapse onto the same row for one pin.
