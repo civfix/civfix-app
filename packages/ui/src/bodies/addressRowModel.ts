@@ -87,17 +87,6 @@ export function googleMapsUrl(input: AddressUrlInput): string | null {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordQuery(point))}`
 }
 
-export function geoUri(input: AddressUrlInput): string | null {
-  const point = input.point ?? null
-  if (!point) return null
-  const address = usableAddress(input.address)
-  const pin = coordQuery(point)
-  if (input.verified && address) return `geo:${pin}?q=${encodeURIComponent(address)}`
-  const title = usableAddress(input.title)
-  const label = title ? `(${encodeURIComponent(title)})` : ""
-  return `geo:${pin}?q=${encodeURIComponent(pin)}${label}`
-}
-
 export function addressRowAffordances(input: {
   variant: "full" | "compact"
   hasAddress: boolean
@@ -137,14 +126,9 @@ export function addressExternalPlan(input: {
   platform: "ios" | "android" | "web"
   appleUrl: string | null
   googleUrl: string | null
-  geoUrl: string | null
   hasCopy: boolean
 }): AddressExternalPlan {
-  if (input.platform === "web") {
-    return input.googleUrl ? { kind: "direct", url: input.googleUrl } : { kind: "none" }
-  }
-  if (input.platform === "android") {
-    if (input.geoUrl) return { kind: "direct", url: input.geoUrl }
+  if (input.platform !== "ios") {
     return input.googleUrl ? { kind: "direct", url: input.googleUrl } : { kind: "none" }
   }
   const options = addressMapsOptions({

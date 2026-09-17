@@ -5,7 +5,6 @@ import {
   addressRowAffordances,
   appleMapsUrl,
   applyNearPrefix,
-  geoUri,
   googleMapsUrl,
   stripNearPrefix,
 } from "../addressRowModel"
@@ -93,20 +92,14 @@ describe("googleMapsUrl", () => {
     )
     expect(googleMapsUrl({ address: null, point: null, verified: false })).toBeNull()
   })
-})
 
-describe("geoUri", () => {
-  it("always pins the real coordinates and only labels with verified text", () => {
-    expect(geoUri({ address: "123 Main St", point: POINT, verified: true })).toBe(
-      "geo:34.05223,-118.24368?q=123%20Main%20St",
+  it("carries a verified address with no point, and never leaks an unverified line", () => {
+    expect(googleMapsUrl({ address: "123 Main St", point: null, verified: true })).toBe(
+      "https://www.google.com/maps/search/?api=1&query=123%20Main%20St",
     )
     expect(
-      geoUri({ address: "123 Main St", point: POINT, verified: false, title: "Park cleanup" }),
-    ).toBe("geo:34.05223,-118.24368?q=34.05223%2C-118.24368(Park%20cleanup)")
-  })
-
-  it("is null without coordinates - geo: cannot carry a bare address", () => {
-    expect(geoUri({ address: "123 Main St", point: null, verified: true })).toBeNull()
+      googleMapsUrl({ address: "Vista Hermosa Park", point: null, verified: false }),
+    ).toBeNull()
   })
 })
 
@@ -192,7 +185,6 @@ describe("addressExternalPlan", () => {
   const urls = {
     appleUrl: "https://maps.apple.com/?address=a",
     googleUrl: "https://www.google.com/maps/search/?api=1&query=a",
-    geoUrl: "geo:1,2?q=a",
   }
 
   it("opens Google directly on web", () => {
@@ -202,17 +194,17 @@ describe("addressExternalPlan", () => {
     })
   })
 
-  it("fires the geo: URI on Android and lets the OS chooser decide", () => {
+  it("opens the same https Google URL on Android, which the host will actually accept", () => {
     expect(addressExternalPlan({ platform: "android", ...urls, hasCopy: true })).toEqual({
       kind: "direct",
-      url: urls.geoUrl,
+      url: urls.googleUrl,
     })
   })
 
-  it("falls back to Google on Android when there are no coordinates for a geo: URI", () => {
+  it("reports nothing to open on Android when there is no Google URL at all", () => {
     expect(
-      addressExternalPlan({ platform: "android", ...urls, geoUrl: null, hasCopy: true }),
-    ).toEqual({ kind: "direct", url: urls.googleUrl })
+      addressExternalPlan({ platform: "android", ...urls, googleUrl: null, hasCopy: true }),
+    ).toEqual({ kind: "none" })
   })
 
   it("presents the one sheet on iOS", () => {
@@ -228,7 +220,6 @@ describe("addressExternalPlan", () => {
         platform: "ios",
         appleUrl: null,
         googleUrl: null,
-        geoUrl: null,
         hasCopy: false,
       }),
     ).toEqual({ kind: "none" })
@@ -237,7 +228,6 @@ describe("addressExternalPlan", () => {
         platform: "web",
         appleUrl: null,
         googleUrl: null,
-        geoUrl: null,
         hasCopy: true,
       }),
     ).toEqual({ kind: "none" })

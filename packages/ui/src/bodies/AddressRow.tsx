@@ -25,7 +25,6 @@ import {
   addressRowAffordances,
   appleMapsUrl,
   applyNearPrefix,
-  geoUri,
   googleMapsUrl,
   type AddressMapsOption,
   type AddressPoint,
@@ -182,14 +181,12 @@ export function AddressRow({
   )
   const appleUrl = useMemo(() => appleMapsUrl(urlInput), [urlInput])
   const googleUrl = useMemo(() => googleMapsUrl(urlInput), [urlInput])
-  const geoUrl = useMemo(() => geoUri(urlInput), [urlInput])
 
   const hasExternalPlan =
     addressExternalPlan({
       platform: rowPlatform(),
       appleUrl,
       googleUrl,
-      geoUrl,
       hasCopy: false,
     }).kind !== "none"
 
@@ -250,7 +247,6 @@ export function AddressRow({
       platform: rowPlatform(),
       appleUrl,
       googleUrl,
-      geoUrl,
       hasCopy: affordances.copy,
     })
     if (plan.kind === "direct") {
@@ -258,7 +254,7 @@ export function AddressRow({
       return
     }
     if (plan.kind === "sheet") setSheetOpen(true)
-  }, [appleUrl, googleUrl, geoUrl, affordances.copy, openUrl])
+  }, [appleUrl, googleUrl, affordances.copy, openUrl])
 
   const onFocusMap = useCallback(() => {
     if (!point || !focusTarget) return

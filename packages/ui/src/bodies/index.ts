@@ -205,7 +205,6 @@ export {
   addressRowAffordances,
   appleMapsUrl,
   applyNearPrefix,
-  geoUri,
   googleMapsUrl,
 } from "./addressRowModel"
 export type { AddressPoint, AddressMapsOption, AddressExternalPlan } from "./addressRowModel"
