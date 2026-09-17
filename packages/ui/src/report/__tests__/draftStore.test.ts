@@ -230,3 +230,45 @@ describe("draftStore feed share", () => {
     expect(d.feedPostId).toBeNull()
   })
 })
+
+describe("draftStore address ownership", () => {
+  beforeEach(() => useDraftReportStore.getState().reset())
+
+  it("lets a resolved address prefill an untouched field", () => {
+    useDraftReportStore.getState().setPrefilledAddress("123 Main St, Inglewood, CA")
+    const d = useDraftReportStore.getState().draft
+    expect(d.addr).toBe("123 Main St, Inglewood, CA")
+    expect(d.addrEdited).toBe(false)
+  })
+
+  it("marks the field as the reporter's the moment they type, and never prefills over it", () => {
+    useDraftReportStore.getState().setAddress("Alley behind the market")
+    expect(useDraftReportStore.getState().draft.addrEdited).toBe(true)
+    useDraftReportStore.getState().setPrefilledAddress("123 Main St, Inglewood, CA")
+    expect(useDraftReportStore.getState().draft.addr).toBe("Alley behind the market")
+  })
+
+  it("keeps a cleared field the reporter's, so a prefill cannot refill what they emptied", () => {
+    useDraftReportStore.getState().setAddress("")
+    useDraftReportStore.getState().setPrefilledAddress("123 Main St")
+    expect(useDraftReportStore.getState().draft.addr).toBe("")
+  })
+
+  it("carries the ownership flag across a capture that re-seeds the draft", () => {
+    const s = useDraftReportStore.getState()
+    s.setPrefilledLocation(1, 2)
+    s.setAddress("Alley behind the market")
+    s.startFromCapture(cap("a"))
+    const d = useDraftReportStore.getState().draft
+    expect(d.addr).toBe("Alley behind the market")
+    expect(d.addrEdited).toBe(true)
+  })
+
+  it("reset() hands the field back to the geocoder", () => {
+    useDraftReportStore.getState().setAddress("Alley behind the market")
+    useDraftReportStore.getState().reset()
+    const d = useDraftReportStore.getState().draft
+    expect(d.addr).toBeNull()
+    expect(d.addrEdited).toBe(false)
+  })
+})

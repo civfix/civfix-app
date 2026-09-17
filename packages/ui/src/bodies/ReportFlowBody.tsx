@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Platform, Pressable, ScrollView, StyleSheet, ActivityIndicator } from "react-native"
 import { useQueryClient, type QueryClient } from "@tanstack/react-query"
 import type { ReportCategory, ReportType as SharedReportType } from "@civfix/shared"
+import { MAX_REPORT_ADDR_LENGTH } from "@civfix/shared"
 import type { ApiClient } from "@civfix/shared/client"
 import { type LatLng } from "@civfix/shared/geocode"
 import { makeThemedStyles, motion, useTheme, categoryColor, wash, useLayoutMode, focusRingProps, type LayoutMode } from "../theme"
@@ -13,6 +14,7 @@ import { PinSvg, glyphForCategory } from "../map"
 import {
   useApi,
   useAuthState,
+  useResolveAddress,
   useResolveJurisdiction,
   useReverseLabel,
   reverseLabelText,
@@ -33,6 +35,7 @@ import { StepTransition } from "../shell/StepTransition"
 import { WizardStepHeader } from "../shell/WizardStepHeader"
 import { useStackDirection } from "../shell/useStackDirection"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
+import { reportAddressPrefill } from "./reportAddressField"
 import { announce } from "../announce"
 import { appErrorCode } from "./errorCode"
 import { HEADER_CONTROL_SIZE } from "./headerControls"
@@ -524,7 +527,30 @@ function ReviewStep({
   const setLocation = useDraftReportStore((s) => s.setLocation)
   const clearLocation = useDraftReportStore((s) => s.clearLocation)
   const setAddress = useDraftReportStore((s) => s.setAddress)
+  const setPrefilledAddress = useDraftReportStore((s) => s.setPrefilledAddress)
   const [addrQuery, setAddrQuery] = useState("")
+
+  const addressResolution = useResolveAddress(point)
+  const nearAddress = useCallback((line: string) => t("review.where_near", { address: line }), [t])
+  const prefillRef = useRef(setPrefilledAddress)
+  prefillRef.current = setPrefilledAddress
+  useEffect(() => {
+    const next = reportAddressPrefill({
+      hasPoint: point !== null,
+      resolution: addressResolution.isPending ? undefined : (addressResolution.data ?? null),
+      currentAddr: draft.addr,
+      addrEdited: draft.addrEdited,
+      near: nearAddress,
+    })
+    if (next !== null) prefillRef.current(next)
+  }, [
+    point,
+    addressResolution.isPending,
+    addressResolution.data,
+    draft.addr,
+    draft.addrEdited,
+    nearAddress,
+  ])
   const layoutMode = useLayoutMode()
   const compact = layoutMode === "compact"
   const pickMode = layoutMode === "expanded" ? "main-map" : "standalone"
@@ -583,7 +609,7 @@ function ReviewStep({
           placeholder={t("review.where_placeholder")}
           value={draft.addr ?? ""}
           onChangeText={setAddress}
-          maxLength={200}
+          maxLength={MAX_REPORT_ADDR_LENGTH}
         />
       </View>
 
