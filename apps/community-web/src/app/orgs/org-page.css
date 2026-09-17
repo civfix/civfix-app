@@ -69,11 +69,6 @@
   letter-spacing: var(--tracking-snug);
   overflow-wrap: anywhere;
 }
-.orgpage-verified {
-  color: var(--fg-on-color);
-  fill: var(--sky-600);
-  flex: none;
-}
 .orgpage-handle {
   margin: var(--space-1) 0 0;
   color: var(--fg-3);

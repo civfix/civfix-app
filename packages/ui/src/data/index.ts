@@ -229,6 +229,7 @@ export type {
 } from "./hooks/host"
 
 export {
+  ORG_EVENTS_PAGE_SIZE,
   ORG_MEMBERS_PAGE_SIZE,
   actableOrganizations,
   invalidateMyOrgInvites,

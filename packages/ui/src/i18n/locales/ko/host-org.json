@@ -18,7 +18,6 @@
     "volunteers_other": "자원봉사자 {{count}}명"
   },
   "actions": {
-    "share": "이 단체 공유하기",
     "share_a11y": "이 단체 링크 공유하기"
   },
   "breadcrumb": {
@@ -53,10 +52,10 @@
     "empty_past": "아직 지난 행사가 없어요.",
     "loading": "행사를 불러오는 중…",
     "error": "행사를 불러오지 못했어요.",
-    "show_more": "더 보기",
+    "load_more": "더 불러오기",
     "loading_more": "불러오는 중…",
-    "show_more_upcoming_a11y": "예정된 행사 더 보기",
-    "show_more_past_a11y": "지난 행사 더 보기"
+    "load_more_upcoming_a11y": "예정된 행사 더 불러오기",
+    "load_more_past_a11y": "지난 행사 더 불러오기"
   },
   "form": {
     "donationUrl": "기부 링크",

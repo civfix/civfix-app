@@ -21,7 +21,6 @@
     "volunteers_other": "{{count}} volunteers"
   },
   "actions": {
-    "share": "Share this organization",
     "share_a11y": "Share a link to this organization"
   },
   "breadcrumb": {
@@ -56,10 +55,10 @@
     "empty_past": "No past events yet.",
     "loading": "Loading events…",
     "error": "Couldn't load events.",
-    "show_more": "Show more",
+    "load_more": "Load more",
     "loading_more": "Loading…",
-    "show_more_upcoming_a11y": "Show more upcoming events",
-    "show_more_past_a11y": "Show more past events"
+    "load_more_upcoming_a11y": "Load more upcoming events",
+    "load_more_past_a11y": "Load more past events"
   },
   "form": {
     "donationUrl": "Donation link",

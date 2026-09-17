@@ -139,12 +139,7 @@ export function OverviewScreen() {
             {event?.organization ? (
               <div className="flex flex-wrap items-baseline justify-between gap-token-2">
                 <dt className="text-token-13 text-console-ink-3">{t("details.organization")}</dt>
-                <dd className="flex items-center gap-token-2 text-token-14 text-console-ink-2">
-                  {event.organization.name}
-                  {event.organization.verified ? (
-                    <Chip kind="org-verification" value="verified" size="sm" />
-                  ) : null}
-                </dd>
+                <dd className="text-token-14 text-console-ink-2">{event.organization.name}</dd>
               </div>
             ) : null}
           </dl>

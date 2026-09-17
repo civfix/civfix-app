@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { BadgeCheck, CircleAlert, Globe, HeartHandshake, Loader2 } from "lucide-react"
+import { CircleAlert, Globe, HeartHandshake, Loader2 } from "lucide-react"
 import { ErrorCode, SOCIAL_PLATFORM_LABELS, socialLinkUrl } from "@civfix/shared"
 import type { OrganizationDTO, SocialPlatform } from "@civfix/shared"
 import { useOrganization } from "@civfix/ui/data"
@@ -154,21 +154,7 @@ function OrgDocument({ slug }: { slug: string }) {
             </span>
           )}
           <div className="orgpage-identity">
-            <h1>
-              {org.name}
-              {verified ? (
-                <BadgeCheck
-                  role="img"
-                  aria-label={
-                    org.verifiedKind
-                      ? kindLabel(t, org.verifiedKind)
-                      : t("public.verified", { defaultValue: "Verified" })
-                  }
-                  className="orgpage-verified"
-                  size={22}
-                />
-              ) : null}
-            </h1>
+            <h1>{org.name}</h1>
             <p className="orgpage-handle">{t("header.slug", { slug: org.slug })}</p>
             <ul
               className="orgpage-stats"

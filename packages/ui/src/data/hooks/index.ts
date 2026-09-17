@@ -148,6 +148,7 @@ export {
 export type { FeedFilter, CreatePostVars } from "./posts"
 
 export {
+  ORG_EVENTS_PAGE_SIZE,
   ORG_MEMBERS_PAGE_SIZE,
   actableOrganizations,
   invalidateMyOrgInvites,

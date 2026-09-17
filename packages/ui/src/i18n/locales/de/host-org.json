@@ -21,7 +21,6 @@
     "volunteers_other": "{{count}} Freiwillige"
   },
   "actions": {
-    "share": "Diese Organisation teilen",
     "share_a11y": "Einen Link zu dieser Organisation teilen"
   },
   "breadcrumb": {
@@ -56,10 +55,10 @@
     "empty_past": "Noch keine vergangenen Veranstaltungen.",
     "loading": "Veranstaltungen werden geladen…",
     "error": "Veranstaltungen konnten nicht geladen werden.",
-    "show_more": "Mehr anzeigen",
+    "load_more": "Mehr laden",
     "loading_more": "Wird geladen…",
-    "show_more_upcoming_a11y": "Mehr kommende Veranstaltungen anzeigen",
-    "show_more_past_a11y": "Mehr vergangene Veranstaltungen anzeigen"
+    "load_more_upcoming_a11y": "Mehr kommende Veranstaltungen laden",
+    "load_more_past_a11y": "Mehr vergangene Veranstaltungen laden"
   },
   "form": {
     "donationUrl": "Spendenlink",

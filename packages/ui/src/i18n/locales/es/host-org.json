@@ -21,7 +21,6 @@
     "volunteers_other": "{{count}} voluntarios"
   },
   "actions": {
-    "share": "Compartir esta organización",
     "share_a11y": "Compartir un enlace a esta organización"
   },
   "breadcrumb": {
@@ -56,10 +55,10 @@
     "empty_past": "Aún no hay eventos pasados.",
     "loading": "Cargando eventos…",
     "error": "No se pudieron cargar los eventos.",
-    "show_more": "Ver más",
+    "load_more": "Cargar más",
     "loading_more": "Cargando…",
-    "show_more_upcoming_a11y": "Ver más próximos eventos",
-    "show_more_past_a11y": "Ver más eventos pasados"
+    "load_more_upcoming_a11y": "Cargar más próximos eventos",
+    "load_more_past_a11y": "Cargar más eventos pasados"
   },
   "form": {
     "donationUrl": "Enlace de donación",

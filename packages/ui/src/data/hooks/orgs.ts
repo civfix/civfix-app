@@ -76,6 +76,8 @@ export function useUpdateOrganization(slug: string | undefined) {
 
 export type OrganizationEventsWindow = "upcoming" | "past"
 
+export const ORG_EVENTS_PAGE_SIZE = 3
+
 export function useOrganizationEvents(
   slug: string | undefined,
   when: OrganizationEventsWindow = "upcoming",
@@ -90,6 +92,7 @@ export function useOrganizationEvents(
       api.listOrganizationEvents({
         slug: slug as string,
         when,
+        limit: ORG_EVENTS_PAGE_SIZE,
         ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
       }),
     getNextPageParam: (lastPage: ListOrganizationEventsResponse) => lastPage.nextCursor ?? undefined,
