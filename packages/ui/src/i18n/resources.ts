@@ -10,6 +10,7 @@ import type { Resource } from "i18next"
 import en_about from "./locales/en/about.json"
 import en_account_blocked from "./locales/en/account-blocked.json"
 import en_account_delete from "./locales/en/account-delete.json"
+import en_address from "./locales/en/address.json"
 import en_appearance_settings from "./locales/en/appearance-settings.json"
 import en_channel_create from "./locales/en/channel-create.json"
 import en_common from "./locales/en/common.json"
@@ -109,6 +110,7 @@ import en_web_service_record from "./locales/en/web-service-record.json"
 import es_about from "./locales/es/about.json"
 import es_account_blocked from "./locales/es/account-blocked.json"
 import es_account_delete from "./locales/es/account-delete.json"
+import es_address from "./locales/es/address.json"
 import es_appearance_settings from "./locales/es/appearance-settings.json"
 import es_channel_create from "./locales/es/channel-create.json"
 import es_common from "./locales/es/common.json"
@@ -208,6 +210,7 @@ import es_web_service_record from "./locales/es/web-service-record.json"
 import de_about from "./locales/de/about.json"
 import de_account_blocked from "./locales/de/account-blocked.json"
 import de_account_delete from "./locales/de/account-delete.json"
+import de_address from "./locales/de/address.json"
 import de_appearance_settings from "./locales/de/appearance-settings.json"
 import de_channel_create from "./locales/de/channel-create.json"
 import de_common from "./locales/de/common.json"
@@ -307,6 +310,7 @@ import de_web_service_record from "./locales/de/web-service-record.json"
 import ko_about from "./locales/ko/about.json"
 import ko_account_blocked from "./locales/ko/account-blocked.json"
 import ko_account_delete from "./locales/ko/account-delete.json"
+import ko_address from "./locales/ko/address.json"
 import ko_appearance_settings from "./locales/ko/appearance-settings.json"
 import ko_channel_create from "./locales/ko/channel-create.json"
 import ko_common from "./locales/ko/common.json"
@@ -409,6 +413,7 @@ export const namespaces = [
   "about",
   "account-blocked",
   "account-delete",
+  "address",
   "appearance-settings",
   "channel-create",
   "common",
@@ -513,6 +518,7 @@ export const resources: Resource = {
     "about": en_about,
     "account-blocked": en_account_blocked,
     "account-delete": en_account_delete,
+    "address": en_address,
     "appearance-settings": en_appearance_settings,
     "channel-create": en_channel_create,
     "common": en_common,
@@ -614,6 +620,7 @@ export const resources: Resource = {
     "about": es_about,
     "account-blocked": es_account_blocked,
     "account-delete": es_account_delete,
+    "address": es_address,
     "appearance-settings": es_appearance_settings,
     "channel-create": es_channel_create,
     "common": es_common,
@@ -715,6 +722,7 @@ export const resources: Resource = {
     "about": de_about,
     "account-blocked": de_account_blocked,
     "account-delete": de_account_delete,
+    "address": de_address,
     "appearance-settings": de_appearance_settings,
     "channel-create": de_channel_create,
     "common": de_common,
@@ -816,6 +824,7 @@ export const resources: Resource = {
     "about": ko_about,
     "account-blocked": ko_account_blocked,
     "account-delete": ko_account_delete,
+    "address": ko_address,
     "appearance-settings": ko_appearance_settings,
     "channel-create": ko_channel_create,
     "common": ko_common,

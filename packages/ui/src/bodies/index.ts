@@ -197,6 +197,19 @@ export {
 } from "./eventSlotsModel"
 export type { SlotRowState, SlotWindow } from "./eventSlotsModel"
 
+export { AddressRow } from "./AddressRow"
+export type { AddressRowProps, AddressFocusTarget } from "./AddressRow"
+export {
+  addressExternalPlan,
+  addressMapsOptions,
+  addressRowAffordances,
+  appleMapsUrl,
+  applyNearPrefix,
+  geoUri,
+  googleMapsUrl,
+} from "./addressRowModel"
+export type { AddressPoint, AddressMapsOption, AddressExternalPlan } from "./addressRowModel"
+
 export { LinkedReportCard } from "./LinkedReportCard"
 export type { LinkedReportCardData } from "./LinkedReportCard"
 export { ReportLinkPicker } from "./ReportLinkPicker"
