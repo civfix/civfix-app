@@ -191,6 +191,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
+    paddingVertical: t.space["2"],
     overflow: "hidden",
     ...t.shadows.s1,
   },

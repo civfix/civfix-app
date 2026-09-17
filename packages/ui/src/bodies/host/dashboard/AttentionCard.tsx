@@ -1,4 +1,5 @@
 import React from "react"
+import { View } from "react-native"
 import type {
   CleanupMemberRole,
   HostedEventDTO,
@@ -8,6 +9,7 @@ import type {
 } from "@civfix/shared"
 import { IconTile, ListRow, SectionCard, LIST_DIVIDER_INSET } from "../../../primitives"
 import { useT } from "../../../i18n"
+import { makeThemedStyles } from "../../../theme"
 import { FeedNotice } from "../../FeedNotice"
 import { RowsSkeleton } from "../HostSkeletons"
 import { EventInviteRow, OrgInviteRow } from "./InviteRows"
@@ -71,18 +73,21 @@ export function AttentionCard({
   onLogHours,
 }: AttentionCardProps) {
   const { t } = useT("event-dashboard")
+  const styles = useStyles()
 
   const inviteCount = eventInvites.length + orgInvites.length
   if (invitesError) {
     return (
-      <SectionCard label={t("attention.section")}>
-        <FeedNotice
-          icon="CloudOff"
-          title={t("invites.error_title")}
-          body={t("invites.error_body")}
-          actionLabel={t("invites.retry")}
-          onAction={onRetryInvites}
-        />
+      <SectionCard label={t("attention.section")} variant="list">
+        <View style={styles.notice}>
+          <FeedNotice
+            icon="CloudOff"
+            title={t("invites.error_title")}
+            body={t("invites.error_body")}
+            actionLabel={t("invites.retry")}
+            onAction={onRetryInvites}
+          />
+        </View>
       </SectionCard>
     )
   }
@@ -128,3 +133,10 @@ export function AttentionCard({
     </SectionCard>
   )
 }
+
+const useStyles = makeThemedStyles((t) => ({
+  notice: {
+    paddingHorizontal: t.space["4"],
+    paddingVertical: t.space["2"],
+  },
+}))

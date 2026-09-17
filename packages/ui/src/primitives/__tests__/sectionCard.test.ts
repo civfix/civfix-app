@@ -53,9 +53,10 @@ describe("the section header never wraps", () => {
 })
 
 describe('variant="list" turns the card into a divided row stack', () => {
-  it("drops the card padding and clips the rows to the radius", () => {
+  it("drops the side padding, keeps a corner-clearing inset, and clips the rows to the radius", () => {
     const cardList = styleBlock("cardList")
-    expect(cardList).toContain("padding: 0")
+    expect(cardList).toContain("paddingHorizontal: 0")
+    expect(cardList).toContain('paddingVertical: t.space["2"]')
     expect(cardList).toContain('overflow: "hidden"')
     expect(src).toContain("list ? styles.cardList : null")
   })
@@ -116,7 +117,8 @@ describe("the card is token-only", () => {
     expect(card).toContain("borderRadius: t.radius.lg")
     expect(card).toContain("borderWidth: StyleSheet.hairlineWidth")
     expect(card).toContain("borderColor: t.colors.border")
-    expect(card).toContain('padding: t.space["4"]')
+    expect(card).toContain('paddingVertical: t.space["4"]')
+    expect(card).toContain('paddingHorizontal: t.space["4"]')
     expect(card).toContain("...t.shadows.s1")
   })
 })

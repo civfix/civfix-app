@@ -431,7 +431,7 @@ const useStyles = makeThemedStyles((t) => ({
   noteRow: {
     gap: t.space["1"],
     paddingHorizontal: t.space["4"],
-    paddingVertical: t.space["3"],
+    paddingVertical: t.space["2"],
   },
   moreRow: {
     alignItems: "center",

@@ -7,6 +7,7 @@ import { Text, TextLink, iconMap, type LucideIcon } from "../../typography"
 import {
   Avatar,
   LIST_DIVIDER_INSET,
+  LIST_ROW_MIN_HEIGHT,
   MetaDot,
   PopoverMenu,
   SectionCard,
@@ -555,16 +556,18 @@ const useStyles = makeThemedStyles((t) => ({
   },
   controlZone: {
     paddingHorizontal: t.space["4"],
-    paddingTop: t.space["4"],
+    paddingTop: t.space["2"],
     paddingBottom: t.space["2"],
   },
   notice: {
     paddingHorizontal: t.space["4"],
-    paddingVertical: t.space["3"],
+    paddingVertical: t.space["2"],
   },
   emptyRow: {
+    justifyContent: "center",
+    minHeight: LIST_ROW_MIN_HEIGHT,
     paddingHorizontal: t.space["4"],
-    paddingVertical: t.space["4"],
+    paddingVertical: t.space["2"],
   },
   moreRow: {
     alignItems: "center",
