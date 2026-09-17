@@ -68,7 +68,11 @@ export type { SocialGlyphProps } from "./SocialGlyph"
 export { SOCIAL_LINK_GLYPH_SIZE, SOCIAL_LINK_HIT_SIZE, SocialLinksRow } from "./SocialLinksRow"
 export type { SocialLinksRowProps } from "./SocialLinksRow"
 
-export { presentSocialPlatforms } from "./socialLinksModel"
+export {
+  SOCIAL_GLYPH_PATHS,
+  SOCIAL_GLYPH_VIEWBOX,
+  presentSocialPlatforms,
+} from "./socialLinksModel"
 export type { SocialLinkEntry } from "./socialLinksModel"
 
 export { NODE_GLYPH, nodeColor, kindForStatus, citizenStatusLabel } from "./report-timeline-labels"

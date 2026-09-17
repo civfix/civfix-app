@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { SOCIAL_PLATFORMS, socialLinkUrl } from "@civfix/shared"
 import { presentSocialPlatforms } from "../socialLinksModel"
 
-const GLYPHS = readFileSync(new URL("../SocialGlyph.tsx", import.meta.url), "utf8")
+const GLYPHS = readFileSync(new URL("../socialLinksModel.ts", import.meta.url), "utf8")
 const ORG_PAGE = readFileSync(new URL("../../bodies/host/OrgPageBody.tsx", import.meta.url), "utf8")
 
 describe("presentSocialPlatforms", () => {

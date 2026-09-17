@@ -179,6 +179,38 @@
   background: var(--bg-2);
 }
 
+.orgpage-socials {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.orgpage-links + .orgpage-socials {
+  margin-top: var(--space-3);
+}
+.orgpage-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--fg-3);
+}
+.orgpage-social:hover {
+  border-color: var(--border-strong);
+  color: var(--fg-1);
+}
+.orgpage-social:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ---- Footer / states ---- */
 .orgpage-foot {
   color: var(--fg-3);
