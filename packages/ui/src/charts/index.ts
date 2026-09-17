@@ -6,6 +6,8 @@ export { AreaLineChart } from "./AreaLineChart"
 export type { AreaLineChartProps } from "./AreaLineChart"
 export { ProgressRing } from "./ProgressRing"
 export type { ProgressRingProps } from "./ProgressRing"
+export { useMeasuredWidth } from "./useMeasuredWidth"
+export type { MeasuredWidth } from "./useMeasuredWidth"
 export {
   DEFAULT_BAR_GAP,
   DEFAULT_BAR_RADIUS,

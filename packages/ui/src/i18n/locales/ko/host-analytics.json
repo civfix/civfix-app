@@ -173,7 +173,6 @@
     "reach_rate": "{{rate}}%가 신청",
     "reach_spark_a11y": "일별 페이지 조회수",
     "reach_empty": "누군가 페이지를 방문하면 조회수가 쌓입니다",
-    "slots_ring_a11y": "자리의 {{rate}}%가 찼습니다",
     "slots_empty": "이 행사에는 시간대가 없습니다",
     "slots_bars_a11y": "시간대별 신청 수",
     "checkins_pre": "명 신청",
@@ -189,7 +188,10 @@
     "impact_volunteers": "자원봉사자",
     "impact_reports_linked": "연결된 제보",
     "impact_reports_resolved": "해결됨",
-    "impact_donations": "기부 링크 클릭"
+    "impact_donations": "기부 링크 클릭",
+    "slots_caption": "전체 교대 자리 중 채워진 비율",
+    "checkins_ring_a11y": "신청자의 {{rate}}%가 체크인했습니다",
+    "impact_bars_a11y": "자원봉사자, 연결된 신고, 해결된 신고, 후원 링크 탭"
   },
   "scrubber": {
     "label": "행사 흐름",

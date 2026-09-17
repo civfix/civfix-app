@@ -173,7 +173,6 @@
     "reach_rate": "{{rate}}% signed up",
     "reach_spark_a11y": "Page views per day",
     "reach_empty": "Views start counting once the page is visited",
-    "slots_ring_a11y": "{{rate}}% of spots filled",
     "slots_empty": "No shifts on this event",
     "slots_bars_a11y": "Sign-ups per shift",
     "checkins_pre": "signed up so far",
@@ -189,7 +188,10 @@
     "impact_volunteers": "volunteers",
     "impact_reports_linked": "reports linked",
     "impact_reports_resolved": "resolved",
-    "impact_donations": "donation taps"
+    "impact_donations": "donation taps",
+    "slots_caption": "of all shift spots filled",
+    "checkins_ring_a11y": "{{rate}}% of sign-ups checked in",
+    "impact_bars_a11y": "Volunteers, linked reports, resolved reports and donation taps"
   },
   "scrubber": {
     "label": "Lifecycle",

@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from "react"
-import { View, type LayoutChangeEvent } from "react-native"
+import React, { useState } from "react"
+import { View } from "react-native"
 import type { GetEventAnalyticsResponse, Panel, SeriesPoint } from "@civfix/shared"
 import { headingLevel, makeThemedStyles, useTheme } from "../../theme"
 import { Text } from "../../typography"
@@ -10,7 +10,7 @@ import {
   StatTileRow,
   statTileColumns,
 } from "../../primitives"
-import { AreaLineChart, BarChart, ProgressRing } from "../../charts"
+import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth } from "../../charts"
 import { useCleanup } from "../../data/hooks/cleanups"
 import { hasHostCapability } from "../../data/hooks/host"
 import { useEventAnalytics } from "../../data/hooks/analytics"
@@ -52,10 +52,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
   const query = useEventAnalytics(id, "full", { enabled: canView })
 
   const [segment, setSegment] = useState<LifecycleSegment | null>(null)
-  const [width, setWidth] = useState(0)
-  const onLayout = useCallback((event: LayoutChangeEvent) => {
-    setWidth(event.nativeEvent.layout.width)
-  }, [])
+  const { width: stackWidth, onLayout } = useMeasuredWidth()
 
   const data = query.data ?? null
   const now = Date.now()
@@ -102,8 +99,6 @@ export function EventAnalyticsBody({ id }: { id: string }) {
 
   if (query.isError || !data || !range) return errorState
 
-  const chartWidth = Math.max(0, width)
-
   return (
     <ScrollView
       style={styles.scroll}
@@ -131,10 +126,10 @@ export function EventAnalyticsBody({ id }: { id: string }) {
           }))}
         />
 
-        <KpiStrip data={data} width={chartWidth} />
+        <KpiStrip data={data} width={stackWidth} />
 
         <SectionCard label={t("page.signups_section")}>
-          <SignupsSection data={data} width={chartWidth} range={range} showMarker={active === "all"} />
+          <SignupsSection data={data} range={range} showMarker={active === "all"} />
         </SectionCard>
 
         <SectionCard label={t("page.funnel_section")}>
@@ -146,7 +141,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
         <SlotsSection data={data} />
 
         <SectionCard label={t("page.event_day_section")}>
-          <EventDaySection data={data} width={chartWidth} />
+          <EventDaySection data={data} />
         </SectionCard>
 
         <SectionCard label={t("page.impact_section")}>
@@ -209,18 +204,17 @@ function KpiStrip({ data, width }: { data: GetEventAnalyticsResponse; width: num
 
 function SignupsSection({
   data,
-  width,
   range,
   showMarker,
 }: {
   data: GetEventAnalyticsResponse
-  width: number
   range: { from: number; to: number }
   showMarker: boolean
 }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-analytics")
+  const { width, onLayout } = useMeasuredWidth()
   const cumulative = sliceSeries(data.signups.cumulative, range)
   const daily = sliceSeries(data.signups.daily, range)
   const cancellations = sliceSeries(data.signups.cancellations, range)
@@ -231,7 +225,7 @@ function SignupsSection({
   }
 
   return (
-    <View style={styles.block}>
+    <View style={styles.block} onLayout={onLayout}>
       <Text variant="label">{t("registration.cumulative")}</Text>
       <AreaLineChart
         series={seriesPoints(cumulative)}
@@ -375,10 +369,11 @@ function SlotsSection({ data }: { data: GetEventAnalyticsResponse }) {
   )
 }
 
-function EventDaySection({ data, width }: { data: GetEventAnalyticsResponse; width: number }) {
+function EventDaySection({ data }: { data: GetEventAnalyticsResponse }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-analytics")
+  const { width, onLayout } = useMeasuredWidth()
   const rate = ratePercent(data.rates.checkIn)
 
   if (data.phase === "upcoming") {
@@ -386,7 +381,7 @@ function EventDaySection({ data, width }: { data: GetEventAnalyticsResponse; wid
   }
 
   return (
-    <View style={styles.block}>
+    <View style={styles.block} onLayout={onLayout}>
       {hasSeriesData(data.eventDay.arrivals) ? (
         <BarChart
           bars={data.eventDay.arrivals.map((point) => ({

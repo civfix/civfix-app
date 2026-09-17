@@ -1,35 +1,59 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { Platform, Pressable, ScrollView, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native"
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from "react-native"
 import type { GetEventAnalyticsResponse } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover } from "../../../theme"
 import { Icon, Text, iconMap } from "../../../typography"
 import { IconTile, ListRow, SectionCard, SkeletonBlock, SkeletonGroup } from "../../../primitives"
-import { BarChart, ProgressRing, Sparkline } from "../../../charts"
+import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth } from "../../../charts"
 import { useEventAnalytics } from "../../../data/hooks/analytics"
 import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { FeedNotice } from "../../FeedNotice"
 import {
+  busiestRows,
+  carouselPage,
   hasSeriesData,
   isArchivalEvent,
+  latestPoints,
   ratePercent,
   reachRateVisible,
-  seriesValues,
+  seriesPoints,
   visibleAnalyticsPanels,
   type AnalyticsPanelKey,
 } from "../analyticsModel"
 
-const PANEL_HEIGHT = 148
+const HEADER_HEIGHT = 30
 
-const VISUAL_FRACTION = 0.42
+const CHART_HEIGHT = 132
 
-const SPARK_HEIGHT = 44
+const HEAD_GAP = 8
 
-const RING_SIZE = 64
+const PANEL_HEIGHT = HEADER_HEIGHT + HEAD_GAP + CHART_HEIGHT
+
+const RING_SIZE = 116
+
+const RING_THICKNESS = 10
+
+const RING_GUTTER = 12
 
 const DOT_SIZE = 6
 
 const CHEVRON_HIT = 28
+
+const FLAT_SERIES = [
+  { x: 0, y: 0 },
+  { x: 1, y: 0 },
+]
+
+const DASH = "—"
 
 const IS_WEB = Platform.OS === "web"
 
@@ -47,7 +71,7 @@ export function AnalyticsCarouselCard({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-analytics")
-  const [width, setWidth] = useState(0)
+  const { width, onLayout } = useMeasuredWidth()
   const [index, setIndex] = useState(0)
   const scroller = React.useRef<ScrollView>(null)
 
@@ -61,21 +85,16 @@ export function AnalyticsCarouselCard({
   )
   const active = panels[Math.min(index, Math.max(0, panels.length - 1))] ?? null
 
-  const onLayout = useCallback((event: LayoutChangeEvent) => {
-    setWidth(event.nativeEvent.layout.width)
-  }, [])
-
-  const onScroll = useCallback(
+  const onMomentumScrollEnd = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (width <= 0) return
-      setIndex(Math.round(event.nativeEvent.contentOffset.x / width))
+      setIndex(carouselPage(event.nativeEvent.contentOffset.x, width, panels.length))
     },
-    [width],
+    [panels.length, width],
   )
 
   const goTo = useCallback(
     (next: number) => {
-      const clamped = Math.max(0, Math.min(panels.length - 1, next))
+      const clamped = carouselPage(next * width, width, panels.length)
       setIndex(clamped)
       scroller.current?.scrollTo({ x: clamped * width, animated: true })
     },
@@ -101,8 +120,8 @@ export function AnalyticsCarouselCard({
       <SectionCard label={heading}>
         <SkeletonGroup>
           <View style={styles.skeleton}>
-            <SkeletonBlock width="40%" height={32} />
-            <SkeletonBlock width="100%" height={SPARK_HEIGHT} />
+            <SkeletonBlock width="40%" height={HEADER_HEIGHT} />
+            <SkeletonBlock width="100%" height={CHART_HEIGHT} />
           </View>
         </SkeletonGroup>
         {footer}
@@ -145,7 +164,7 @@ export function AnalyticsCarouselCard({
       label={heading}
       trailing={
         active ? (
-          <Text variant="caption" numberOfLines={1} accessibilityLiveRegion="polite">
+          <Text variant="caption" numberOfLines={1}>
             {t(`card.caption_${active}`)}
           </Text>
         ) : undefined
@@ -158,10 +177,11 @@ export function AnalyticsCarouselCard({
             horizontal
             pagingEnabled
             snapToInterval={width}
+            snapToAlignment="start"
+            disableIntervalMomentum
             decelerationRate="fast"
             showsHorizontalScrollIndicator={false}
-            onScroll={onScroll}
-            scrollEventThrottle={16}
+            onMomentumScrollEnd={onMomentumScrollEnd}
             accessibilityLabel={t("card.carousel_a11y")}
           >
             {panels.map((panel) => (
@@ -176,7 +196,7 @@ export function AnalyticsCarouselCard({
                 })}
                 {...focusRingProps}
                 style={(state) => [
-                  { width, height: PANEL_HEIGHT },
+                  { width },
                   styles.panel,
                   webCursor(),
                   webHover(state) ? styles.panelHovered : null,
@@ -188,7 +208,7 @@ export function AnalyticsCarouselCard({
           </ScrollView>
         ) : null}
 
-        {IS_WEB && index > 0 ? (
+        {IS_WEB && width > 0 && index > 0 ? (
           <Pressable
             onPress={() => goTo(index - 1)}
             accessibilityRole="button"
@@ -204,7 +224,7 @@ export function AnalyticsCarouselCard({
             <Icon icon={iconMap.ChevronLeft} size={16} color={th.colors.textMuted} />
           </Pressable>
         ) : null}
-        {IS_WEB && index < panels.length - 1 ? (
+        {IS_WEB && width > 0 && index < panels.length - 1 ? (
           <Pressable
             onPress={() => goTo(index + 1)}
             accessibilityRole="button"
@@ -255,40 +275,39 @@ function Panel({
   data: GetEventAnalyticsResponse
   width: number
 }) {
-  const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-analytics")
-  const visualWidth = Math.max(0, Math.round(width * VISUAL_FRACTION) - 16)
 
   if (panel === "signups") {
-    const values = seriesValues(data.signups.cumulative)
     const delta = data.deltas.signups7d ?? 0
     return (
       <PanelFrame
-        hero={String(data.kpis.signups ?? 0)}
+        value={String(data.kpis.signups ?? 0)}
         caption={
           data.kpis.capacity
             ? t("card.signups_of", { capacity: data.kpis.capacity })
             : t("card.signups_caption")
         }
-        secondary={delta > 0 ? t("card.signups_delta", { delta }) : undefined}
-        visual={
-          hasSeriesData(data.signups.cumulative) ? (
-            <Sparkline
-              points={values}
-              width={visualWidth}
-              height={SPARK_HEIGHT}
-              stroke={th.colors.accent}
-              fill={th.colors.selectedFill}
-              accessibilityLabel={t("card.signups_spark_a11y")}
-            />
-          ) : (
-            <Text variant="caption" style={styles.empty}>
-              {t("card.signups_empty")}
-            </Text>
-          )
-        }
-      />
+        pill={delta > 0 ? t("card.signups_delta", { delta }) : undefined}
+      >
+        {hasSeriesData(data.signups.cumulative) ? (
+          <AreaLineChart
+            series={seriesPoints(data.signups.cumulative)}
+            width={width}
+            height={CHART_HEIGHT}
+            stroke={th.colors.accent}
+            fill={th.colors.selectedFill}
+            {...(data.kpis.capacity
+              ? { refLineY: data.kpis.capacity, refLineColor: th.colors.chartInkMuted }
+              : {})}
+            gridColor={th.colors.border}
+            labelColor={th.colors.textSubtle}
+            accessibilityLabel={t("card.signups_spark_a11y")}
+          />
+        ) : (
+          <EmptyChart width={width} label={t("card.signups_empty")} />
+        )}
+      </PanelFrame>
     )
   }
 
@@ -296,134 +315,124 @@ function Panel({
     const rate = ratePercent(data.rates.viewToSignup)
     return (
       <PanelFrame
-        hero={String(data.kpis.pageViews ?? 0)}
+        value={String(data.kpis.pageViews ?? 0)}
         caption={t("card.reach_caption")}
-        secondary={
+        pill={
           reachRateVisible(data.kpis.pageViews, data.rates.viewToSignup) && rate !== null
             ? t("card.reach_rate", { rate })
             : undefined
         }
-        visual={
-          hasSeriesData(data.reach.viewsDaily) ? (
-            <Sparkline
-              points={seriesValues(data.reach.viewsDaily)}
-              width={visualWidth}
-              height={SPARK_HEIGHT}
-              stroke={th.colors.chartInkMuted}
-              accessibilityLabel={t("card.reach_spark_a11y")}
-            />
-          ) : (
-            <Text variant="caption" style={styles.empty}>
-              {t("card.reach_empty")}
-            </Text>
-          )
-        }
-      />
+      >
+        {hasSeriesData(data.reach.viewsDaily) ? (
+          <AreaLineChart
+            series={seriesPoints(data.reach.viewsDaily)}
+            width={width}
+            height={CHART_HEIGHT}
+            stroke={th.colors.chartInkMuted}
+            fill={th.colors.chartTrack}
+            gridColor={th.colors.border}
+            labelColor={th.colors.textSubtle}
+            accessibilityLabel={t("card.reach_spark_a11y")}
+          />
+        ) : (
+          <EmptyChart width={width} label={t("card.reach_empty")} />
+        )}
+      </PanelFrame>
     )
   }
 
   if (panel === "slots") {
     const fill = ratePercent(data.rates.fill)
-    const rows = data.signups.bySlot?.rows ?? []
+    const rows = busiestRows(data.signups.bySlot?.rows ?? [])
     return (
-      <View style={styles.slotsPanel}>
-        <ProgressRing
-          value={(fill ?? 0) / 100}
-          size={RING_SIZE}
-          color={th.colors.accent}
-          trackColor={th.colors.chartTrack}
-          accessibilityLabel={t("card.slots_ring_a11y", { rate: fill ?? 0 })}
-        >
-          <Text style={styles.ringValue}>{fill === null ? "—" : `${fill}%`}</Text>
-        </ProgressRing>
-        <View style={styles.slotsBars}>
-          {rows.length === 0 ? (
-            <Text variant="caption" style={styles.empty}>
-              {t("card.slots_empty")}
-            </Text>
-          ) : (
-            <BarChart
-              bars={rows.map((row) => ({
-                key: row.key,
-                label: row.label,
-                value: row.suppressed ? null : row.value,
-                color: th.colors.accent,
-              }))}
-              width={visualWidth}
-              height={SPARK_HEIGHT}
-              horizontal
-              labelColor={th.colors.textMuted}
-              accessibilityLabel={t("card.slots_bars_a11y")}
-            />
-          )}
-        </View>
-      </View>
+      <PanelFrame
+        value={fill === null ? DASH : `${fill}%`}
+        caption={t("card.slots_caption")}
+      >
+        {rows.length === 0 ? (
+          <EmptyChart width={width} label={t("card.slots_empty")} />
+        ) : (
+          <BarChart
+            bars={rows.map((row) => ({
+              key: row.key,
+              label: row.label,
+              value: row.suppressed ? null : row.value,
+              color: th.colors.accent,
+              valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
+            }))}
+            width={width}
+            horizontal
+            trackColor={th.colors.chartTrack}
+            labelColor={th.colors.textMuted}
+            accessibilityLabel={t("card.slots_bars_a11y")}
+          />
+        )}
+      </PanelFrame>
     )
   }
 
   if (panel === "checkins") {
-    if (data.phase === "upcoming") {
-      return (
-        <PanelFrame
-          hero={String(data.kpis.signups ?? 0)}
-          caption={t("card.checkins_pre")}
-          visual={
-            <Text variant="caption" style={styles.empty}>
-              {t("card.checkins_pre_visual")}
-            </Text>
-          }
-        />
-      )
-    }
-    const rate = ratePercent(data.rates.checkIn)
+    const upcoming = data.phase === "upcoming"
+    const rate = upcoming ? null : ratePercent(data.rates.checkIn)
+    const arrivals = upcoming ? [] : latestPoints(data.eventDay.arrivals)
+    const showBars = !upcoming && hasSeriesData(arrivals)
+    const barsWidth = Math.max(0, width - RING_SIZE - RING_GUTTER)
     return (
       <PanelFrame
-        hero={String(data.kpis.checkedIn ?? 0)}
-        caption={t("card.checkins_of", {
-          signups: data.kpis.signups ?? 0,
-          rate: rate ?? 0,
-        })}
-        secondary={
-          data.kpis.noShow ? t("card.checkins_no_shows", { noShow: data.kpis.noShow }) : undefined
+        value={String(upcoming ? (data.kpis.signups ?? 0) : (data.kpis.checkedIn ?? 0))}
+        caption={
+          upcoming
+            ? t("card.checkins_pre")
+            : t("card.checkins_of", { signups: data.kpis.signups ?? 0, rate: rate ?? 0 })
         }
-        visual={
-          hasSeriesData(data.eventDay.arrivals) ? (
+        pill={
+          !upcoming && data.kpis.noShow
+            ? t("card.checkins_no_shows", { noShow: data.kpis.noShow })
+            : undefined
+        }
+      >
+        <CheckinsChart
+          ring={(rate ?? 0) / 100}
+          ringLabel={rate === null ? DASH : `${rate}%`}
+          ringA11y={t("card.checkins_ring_a11y", { rate: rate ?? 0 })}
+          note={
+            showBars
+              ? null
+              : upcoming
+                ? t("card.checkins_pre_visual")
+                : t("card.checkins_empty")
+          }
+        >
+          {showBars ? (
             <BarChart
-              bars={data.eventDay.arrivals.map((point) => ({
+              bars={arrivals.map((point) => ({
                 key: point.day,
                 value: point.suppressed ? null : point.value,
                 color: th.colors.accent,
               }))}
-              width={visualWidth}
-              height={SPARK_HEIGHT}
+              width={barsWidth}
+              height={CHART_HEIGHT}
               labelColor={th.colors.textMuted}
               accessibilityLabel={t("card.checkins_bars_a11y")}
             />
-          ) : (
-            <Text variant="caption" style={styles.empty}>
-              {t("card.checkins_empty")}
-            </Text>
-          )
-        }
-      />
+          ) : null}
+        </CheckinsChart>
+      </PanelFrame>
     )
   }
 
   if (data.phase === "upcoming") {
     return (
       <PanelFrame
-        hero={String(data.kpis.reportsLinked ?? 0)}
+        value={String(data.kpis.reportsLinked ?? 0)}
         caption={t("card.impact_pre")}
-        visual={
-          <Text variant="caption" style={styles.empty}>
-            {t("card.impact_pre_visual")}
-          </Text>
-        }
-      />
+      >
+        <EmptyChart width={width} label={t("card.impact_pre_visual")} />
+      </PanelFrame>
     )
   }
 
-  const cells: Array<{ key: string; value: number }> = [
+  const cells = [
     { key: "volunteers", value: data.kpis.hoursVolunteers ?? 0 },
     { key: "reports_linked", value: data.kpis.reportsLinked ?? 0 },
     { key: "reports_resolved", value: data.kpis.reportsResolved ?? 0 },
@@ -431,56 +440,120 @@ function Panel({
   ]
   return (
     <PanelFrame
-      hero={t("card.hours_value", { hours: Math.round(data.kpis.hoursTotal ?? 0) })}
+      value={t("card.hours_value", { hours: Math.round(data.kpis.hoursTotal ?? 0) })}
       caption={t("card.impact_caption")}
-      visual={
-        <View style={styles.grid}>
-          {cells.map((cell) => (
-            <View key={cell.key} style={styles.gridCell}>
-              <Text style={[styles.gridValue, cell.value === 0 ? styles.gridDim : null]}>
-                {cell.value}
-              </Text>
-              <Text variant="caption" numberOfLines={1}>
-                {t(`card.impact_${cell.key}`)}
-              </Text>
-            </View>
-          ))}
-        </View>
-      }
-    />
+    >
+      <BarChart
+        bars={cells.map((cell) => ({
+          key: cell.key,
+          label: t(`card.impact_${cell.key}`),
+          value: cell.value,
+          color: th.colors.accent,
+          valueLabel: String(cell.value),
+        }))}
+        width={width}
+        horizontal
+        trackColor={th.colors.chartTrack}
+        labelColor={th.colors.textMuted}
+        accessibilityLabel={t("card.impact_bars_a11y")}
+      />
+    </PanelFrame>
   )
 }
 
 function PanelFrame({
-  hero,
+  value,
   caption,
-  secondary,
-  visual,
+  pill,
+  children,
 }: {
-  hero: string
+  value: string
   caption: string
-  secondary?: string
-  visual: React.ReactNode
+  pill?: string
+  children: React.ReactNode
 }) {
   const styles = useStyles()
   return (
     <View style={styles.frame}>
-      <View style={styles.frameText}>
-        <Text style={styles.hero} numberOfLines={1}>
-          {hero}
+      <View style={styles.head}>
+        <Text style={styles.value} numberOfLines={1}>
+          {value}
         </Text>
-        <Text variant="caption" numberOfLines={2}>
+        <Text variant="caption" numberOfLines={1} style={styles.caption}>
           {caption}
         </Text>
-        {secondary ? (
+        {pill ? (
           <View style={styles.pill}>
             <Text style={styles.pillText} numberOfLines={1}>
-              {secondary}
+              {pill}
             </Text>
           </View>
         ) : null}
       </View>
-      <View style={styles.frameVisual}>{visual}</View>
+      <View style={styles.chart}>{children}</View>
+    </View>
+  )
+}
+
+function EmptyChart({ width, label }: { width: number; label: string }) {
+  const styles = useStyles()
+  const th = useTheme()
+  return (
+    <View style={styles.emptyChart}>
+      <AreaLineChart
+        series={FLAT_SERIES}
+        width={width}
+        height={CHART_HEIGHT}
+        stroke={th.colors.chartTrack}
+        gridColor={th.colors.border}
+        labelColor={th.colors.textSubtle}
+        accessibilityLabel={label}
+      />
+      <View style={styles.emptyLabel} pointerEvents="none">
+        <Text variant="caption" numberOfLines={2} style={styles.emptyText}>
+          {label}
+        </Text>
+      </View>
+    </View>
+  )
+}
+
+function CheckinsChart({
+  ring,
+  ringLabel,
+  ringA11y,
+  note,
+  children,
+}: {
+  ring: number
+  ringLabel: string
+  ringA11y: string
+  note: string | null
+  children: React.ReactNode
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  return (
+    <View style={styles.checkins}>
+      <ProgressRing
+        value={ring}
+        size={RING_SIZE}
+        thickness={RING_THICKNESS}
+        color={th.colors.accent}
+        trackColor={th.colors.chartTrack}
+        accessibilityLabel={ringA11y}
+      >
+        <Text style={styles.ringValue}>{ringLabel}</Text>
+      </ProgressRing>
+      <View style={styles.checkinsSide}>
+        {note ? (
+          <Text variant="caption" numberOfLines={3} style={styles.emptyText}>
+            {note}
+          </Text>
+        ) : (
+          children
+        )}
+      </View>
     </View>
   )
 }
@@ -495,34 +568,37 @@ const useStyles = makeThemedStyles((t) => ({
     height: PANEL_HEIGHT,
   },
   panel: {
-    justifyContent: "center",
+    height: PANEL_HEIGHT,
+    overflow: "hidden",
     borderRadius: t.radius.md,
   },
   panelHovered: {
     backgroundColor: t.colors.bgAlt,
   },
   frame: {
+    height: PANEL_HEIGHT,
+    justifyContent: "flex-start",
+    gap: HEAD_GAP,
+  },
+  head: {
+    height: HEADER_HEIGHT,
     flexDirection: "row",
     alignItems: "center",
-    gap: t.space["3"],
+    gap: t.space["2"],
   },
-  frameText: {
-    flex: 1,
-    minWidth: 0,
-    gap: t.space["1"],
-  },
-  frameVisual: {
-    alignItems: "flex-end",
-    justifyContent: "center",
-  },
-  hero: {
+  value: {
     fontFamily: t.fontFamily.displayBold,
-    fontSize: t.fontSize["30"],
+    fontSize: t.fontSize["20"],
     color: t.colors.text,
     fontVariant: ["tabular-nums"],
+    flexShrink: 0,
+  },
+  caption: {
+    flexShrink: 1,
+    minWidth: 0,
   },
   pill: {
-    alignSelf: "flex-start",
+    flexShrink: 0,
     paddingHorizontal: t.space["2"],
     paddingVertical: 2,
     borderRadius: t.radius.pill,
@@ -533,42 +609,41 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["12"],
     color: t.colors.accentText,
   },
-  empty: {
-    color: t.colors.textSubtle,
-    textAlign: "right",
+  chart: {
+    height: CHART_HEIGHT,
+    justifyContent: "center",
+    overflow: "hidden",
   },
-  slotsPanel: {
+  emptyChart: {
+    height: CHART_HEIGHT,
+    justifyContent: "center",
+  },
+  emptyLabel: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: t.space["4"],
+  },
+  emptyText: {
+    color: t.colors.textSubtle,
+    textAlign: "center",
+  },
+  checkins: {
+    height: CHART_HEIGHT,
     flexDirection: "row",
     alignItems: "center",
-    gap: t.space["4"],
+    gap: RING_GUTTER,
   },
-  slotsBars: {
+  checkinsSide: {
     flex: 1,
     minWidth: 0,
+    justifyContent: "center",
   },
   ringValue: {
     fontFamily: t.fontFamily.displaySemiBold,
-    fontSize: t.fontSize["14"],
+    fontSize: t.fontSize["20"],
     color: t.colors.text,
     fontVariant: ["tabular-nums"],
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: t.space["2"],
-    maxWidth: 160,
-  },
-  gridCell: {
-    minWidth: 68,
-  },
-  gridValue: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: t.fontSize["16"],
-    color: t.colors.text,
-    fontVariant: ["tabular-nums"],
-  },
-  gridDim: {
-    color: t.colors.textSubtle,
   },
   dots: {
     flexDirection: "row",

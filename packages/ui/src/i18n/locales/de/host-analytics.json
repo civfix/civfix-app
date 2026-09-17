@@ -173,7 +173,6 @@
     "reach_rate": "{{rate}} % haben sich angemeldet",
     "reach_spark_a11y": "Seitenaufrufe pro Tag",
     "reach_empty": "Aufrufe werden gezählt, sobald jemand die Seite besucht",
-    "slots_ring_a11y": "{{rate}} % der Plätze belegt",
     "slots_empty": "Diese Veranstaltung hat keine Schichten",
     "slots_bars_a11y": "Anmeldungen pro Schicht",
     "checkins_pre": "bisher angemeldet",
@@ -189,7 +188,10 @@
     "impact_volunteers": "Freiwillige",
     "impact_reports_linked": "verknüpfte Meldungen",
     "impact_reports_resolved": "erledigt",
-    "impact_donations": "Spenden-Klicks"
+    "impact_donations": "Spenden-Klicks",
+    "slots_caption": "aller Schichtplätze belegt",
+    "checkins_ring_a11y": "{{rate}} % der Anmeldungen sind eingecheckt",
+    "impact_bars_a11y": "Freiwillige, verknüpfte Meldungen, gelöste Meldungen und Spendenlink-Klicks"
   },
   "scrubber": {
     "label": "Verlauf",

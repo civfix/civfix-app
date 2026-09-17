@@ -56,6 +56,7 @@ export function BarChart({
   const max = maxValue ?? chartMax(bars.flatMap((bar) => [bar.value, bar.stackValue ?? null]))
 
   if (horizontal) {
+    const measured = width > 0 ? width : null
     return (
       <View
         accessibilityRole="image"
@@ -64,7 +65,7 @@ export function BarChart({
       >
         {bars.map((bar) => (
           <View key={bar.key} style={styles.row}>
-            <View style={styles.rowHead}>
+            <View style={[styles.rowHead, measured ? { width: measured } : null]}>
               {bar.label ? (
                 <Text variant="caption" numberOfLines={1} style={styles.rowLabel}>
                   {bar.label}
@@ -80,12 +81,15 @@ export function BarChart({
               style={[
                 styles.track,
                 trackColor ? { backgroundColor: trackColor } : null,
+                measured ? { width: measured } : null,
                 { borderRadius: barRadius },
               ]}
             >
               <View
                 style={{
-                  width: `${barFraction(bar.value, max) * 100}%`,
+                  width: measured
+                    ? barFraction(bar.value, max) * measured
+                    : (`${barFraction(bar.value, max) * 100}%` as const),
                   height: "100%",
                   borderRadius: barRadius,
                   backgroundColor: bar.color,

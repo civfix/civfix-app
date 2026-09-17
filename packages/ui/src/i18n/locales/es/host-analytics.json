@@ -173,7 +173,6 @@
     "reach_rate": "{{rate}} % se inscribió",
     "reach_spark_a11y": "Visitas por día",
     "reach_empty": "Las visitas empiezan a contarse cuando alguien entra en la página",
-    "slots_ring_a11y": "{{rate}} % de las plazas ocupadas",
     "slots_empty": "Este evento no tiene turnos",
     "slots_bars_a11y": "Inscripciones por turno",
     "checkins_pre": "inscritos hasta ahora",
@@ -189,7 +188,10 @@
     "impact_volunteers": "voluntarios",
     "impact_reports_linked": "incidencias vinculadas",
     "impact_reports_resolved": "resueltas",
-    "impact_donations": "clics de donación"
+    "impact_donations": "clics de donación",
+    "slots_caption": "de las plazas de turno ocupadas",
+    "checkins_ring_a11y": "{{rate}}% de las inscripciones registraron su entrada",
+    "impact_bars_a11y": "Voluntarios, reportes vinculados, reportes resueltos y toques al enlace de donación"
   },
   "scrubber": {
     "label": "Ciclo del evento",

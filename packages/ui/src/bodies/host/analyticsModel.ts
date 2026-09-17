@@ -1,4 +1,5 @@
 import type {
+  BreakdownRow,
   EventAnalyticsLifecycle,
   EventAnalyticsPhase,
   FunnelStep,
@@ -151,6 +152,32 @@ export function seriesPoints(points: readonly SeriesPoint[]): { x: number; y: nu
 
 export function hasSeriesData(points: readonly SeriesPoint[]): boolean {
   return points.some((point) => !point.suppressed && (point.value ?? 0) > 0)
+}
+
+export const CARD_SLOT_ROWS = 4
+
+export const CARD_ARRIVAL_BUCKETS = 24
+
+export function busiestRows(rows: readonly BreakdownRow[], max = CARD_SLOT_ROWS): BreakdownRow[] {
+  if (max <= 0) return []
+  return [...rows]
+    .sort((a, b) => (b.suppressed ? -1 : (b.value ?? 0)) - (a.suppressed ? -1 : (a.value ?? 0)))
+    .slice(0, max)
+}
+
+export function latestPoints(
+  points: readonly SeriesPoint[],
+  max = CARD_ARRIVAL_BUCKETS,
+): SeriesPoint[] {
+  if (max <= 0) return []
+  return points.slice(Math.max(0, points.length - max))
+}
+
+export function carouselPage(offsetX: number, pageWidth: number, pageCount: number): number {
+  if (!Number.isFinite(offsetX) || !Number.isFinite(pageWidth) || pageWidth <= 0) return 0
+  const last = Math.max(0, pageCount - 1)
+  const page = Math.round(offsetX / pageWidth)
+  return page <= 0 ? 0 : page > last ? last : page
 }
 
 export function ratePercent(rate: SuppressedRate | undefined): number | null {
