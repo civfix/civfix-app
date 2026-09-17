@@ -140,19 +140,29 @@ describe("the event detail leads with the slot board, not an RSVP", () => {
     expect(eventDetail).not.toMatch(/\bRsvpPill\b/)
   })
 
-  it("puts the slot board directly under the header, above check-in and the roster", () => {
+  it("reads what the event IS before it asks you to commit, then keeps the board above the host rows", () => {
+    const details = eventDetail.indexOf('t("bring.heading")')
+    const host = eventDetail.indexOf('t("host.heading")')
     const board = eventDetail.indexOf("<EventSlotsBlock")
-    expect(board).toBeGreaterThan(-1)
+    expect(details).toBeGreaterThan(-1)
+    expect(details).toBeLessThan(host)
+    expect(host).toBeLessThan(board)
     expect(board).toBeLessThan(eventDetail.indexOf('t("host.check_in")'))
-    expect(board).toBeLessThan(eventDetail.indexOf('t("going.heading")'))
     expect(eventDetail.match(/<EventSlotsBlock/g) ?? []).toHaveLength(1)
   })
 
-  it("Repost is a quiet action row, so nothing competes with the board", () => {
+  it("Repost and Share are quiet header icons, so nothing competes with the board", () => {
     expect(eventDetail).not.toMatch(/styles\.secondaryTall/)
     expect(eventDetail).not.toMatch(/useLayoutMode/)
-    const repost = eventDetail.match(/label=\{t\("actions\.repost"\)\}[\s\S]*?\/>/)?.[0] ?? ""
-    expect(repost).toContain("onPress={onRepost}")
+    expect(eventDetail).not.toContain('label={t("actions.repost")}')
+    expect(eventDetail).not.toContain('label={t("actions.share")}')
+    const titleRow = eventDetail.match(/<View style=\{styles\.titleRow\}>[\s\S]*?\n {8}<\/View>/)?.[0] ?? ""
+    expect(titleRow).toContain("onPress={onRepost}")
+    expect(titleRow).toContain("onPress={onShare}")
+    expect(titleRow).toContain("iconMap.RefreshCw")
+    expect(titleRow).toContain("iconMap.Share")
+    expect(titleRow).toContain("hitSlop={6}")
+    expect(titleRow).toContain("focusRingProps")
     const actionRow = strip(read("../EventActionRow.tsx"))
     expect(actionRow).toContain("focusRingProps")
     expect(actionRow).toContain("webTransition")
@@ -165,7 +175,7 @@ describe("the event detail leads with the slot board, not an RSVP", () => {
     expect(leave).toContain("destructive")
     expect(leave).toContain('hint={t("actions.leave_hint")}')
     expect(leave).toContain("onPress={onLeave}")
-    expect(eventDetail).toContain("{going && !actsAsHost && isLive && !isEnded ? (")
+    expect(eventDetail).toContain("const showLeave = going && !actsAsHost && isLive && !isEnded")
     expect(eventDetail).toContain("join.mutate(true, {")
   })
 })

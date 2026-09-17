@@ -45,15 +45,14 @@ describe("EventDetailBody wiring", () => {
     expect(detail).toMatch(/\{canViewGuestContact \? \(\s*<View[^>]*>\s*<EventGuestsBlock/)
   })
 
-  it("gives an actor with only `view_roster` the CONTACT-FREE roster instead", () => {
-    expect(detail).toMatch(/\) : canViewRoster \? \(\s*<View[^>]*>\s*<EventRosterBlock/)
+  it("leaves the check-in roster to host tools, so the detail page carries one host list at most", () => {
+    expect(detail).not.toContain("EventRosterBlock")
+    expect(strip(read("../host/HostModeBody.tsx"))).toContain("<EventRosterBlock")
   })
 
-  it("derives BOTH gates from the capability set alone, never from a role string", () => {
+  it("derives the guest-contact gate from the capability set alone, never from a role string", () => {
     expect(detail).toContain('hasHostCapability(capabilityCleanup, "view_guest_contact")')
-    expect(detail).toContain('hasHostCapability(capabilityCleanup, "view_roster")')
     expect(detail).not.toMatch(/canViewGuestContact \|\| actsAsHost/)
-    expect(detail).not.toMatch(/canViewRoster \|\| actsAsHost/)
   })
 })
 

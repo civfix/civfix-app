@@ -6,17 +6,7 @@
     "ended": "This event has ended"
   },
   "going": {
-    "heading": "Who's going",
-    "count_one": "{{count}} going",
-    "count_other": "{{count}} going",
-    "empty": "No one's going yet.",
-    "you": "You",
-    "names_following": "You follow {{names}}",
-    "names": "{{names}}",
-    "view_all": "View all",
-    "a11y_show_fewer": "Show fewer names",
-    "a11y_show_everyone": "Show everyone going",
-    "a11y_view_everyone": "View everyone going"
+    "you": "You"
   },
   "actions": {
     "share": "Share",

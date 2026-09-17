@@ -124,7 +124,9 @@ describe("a member of a NON-ticketed event can still open their ticket", () => {
     expect(detail).toContain(
       "const holdsSeat = isRegistered && cleanup.myRegistration?.waitlistPosition == null",
     )
-    expect(detail).toContain("going && holdsSeat && isLive && (!hasTicketTypes || actsAsHost) ?")
+    expect(detail).toContain(
+      "const showTicket = going && holdsSeat && isLive && (!hasTicketTypes || actsAsHost)",
+    )
   })
 
   it("reuses the registration block's own copy rather than minting a second label", () => {

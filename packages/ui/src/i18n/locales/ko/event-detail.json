@@ -6,17 +6,7 @@
     "ended": "종료된 이벤트예요"
   },
   "going": {
-    "heading": "참석자",
-    "count_one": "{{count}}명 참가",
-    "count_other": "{{count}}명 참가",
-    "empty": "아직 참가자가 없어요.",
-    "you": "나",
-    "names_following": "{{names}} 팔로우 중",
-    "names": "{{names}}",
-    "view_all": "전체 보기",
-    "a11y_show_fewer": "이름 줄여서 보기",
-    "a11y_show_everyone": "참가자 전체 보기",
-    "a11y_view_everyone": "참가자 전체 보기"
+    "you": "나"
   },
   "actions": {
     "share": "공유",

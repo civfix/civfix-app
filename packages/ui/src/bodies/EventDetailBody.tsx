@@ -4,7 +4,7 @@ import type { CleanupDTO, ContentReportReason } from "@civfix/shared"
 import { eventWhenLabel } from "@civfix/shared/datetime"
 import { deriveCleanupStatus, nextEventBoundaryMs } from "@civfix/shared/host"
 import { radius, focusRingProps, headingLevel, makeThemedStyles, useTheme } from "../theme"
-import { Text, Icon, iconMap, TextLink } from "../typography"
+import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
   MetaDot,
@@ -21,7 +21,6 @@ import {
 import { DonateBlock } from "../primitives/DonateBlock"
 import {
   useCleanup,
-  useCleanupAttendees,
   useJoinCleanup,
   useAuthState,
   useRequireAuth,
@@ -54,15 +53,12 @@ import { EventSlotsBlock } from "./EventSlotsBlock"
 import { EventGuestsBlock } from "./EventGuestsBlock"
 import { openHostDashboard } from "./hostDashboardTarget"
 import { EventAnnouncementsBlock } from "./host/EventAnnouncementsBlock"
-import { EventRosterBlock } from "./host/EventRosterBlock"
 import { RegistrationBlock } from "./host/registration/RegistrationBlock"
 import { eventDistanceLabel } from "./eventDistance"
 import { hasEventEnded } from "./eventLifecycle"
 import { generalSlotBoard } from "./eventSlotsModel"
 import { buildComposerEventRef } from "./postComposerModel"
 import { usePostComposerStore } from "./postComposerStore"
-
-const GOING_AVATAR_CAP = 4
 
 const HERO_HEIGHT = 160
 
@@ -82,75 +78,6 @@ function EventHero({ cleanup }: { cleanup: CleanupDTO }) {
   return (
     <View style={[styles.hero, styles.heroBlank]}>
       <Icon icon={iconMap.Calendar} size={28} color={th.colors.textSubtle} />
-    </View>
-  )
-}
-
-function GoingRow({
-  cleanup,
-  goingCount,
-  onViewAll,
-}: {
-  cleanup: CleanupDTO
-  goingCount: number
-  onViewAll: () => void
-}) {
-  const styles = useStyles()
-  const { t } = useT("event-detail")
-  const { data } = useCleanupAttendees(cleanup.id)
-  const { user } = useAuthState()
-  const [expanded, setExpanded] = useState(false)
-
-  const attendees = data?.attendees ?? []
-  const stack = attendees.length > 0 ? attendees.slice(0, GOING_AVATAR_CAP) : [cleanup.organizer]
-  const names = attendees.map((p) => (user && p.id === user.id ? t("going.you") : p.name))
-
-  return (
-    <View style={styles.goingRow}>
-      <View style={styles.avStack}>
-        {stack.map((p, i) => (
-          <View key={p.id} style={i === 0 ? null : styles.avOverlap}>
-            <Avatar
-              name={p.name}
-              seed={p.id}
-              photoUrl={p.avatarUrl ?? null}
-              gradient={p.avatar ?? null}
-              size={28}
-            />
-          </View>
-        ))}
-      </View>
-      <View style={styles.goingMain}>
-        <Text style={styles.goingCount}>{t("going.count", { count: goingCount })}</Text>
-        {goingCount === 0 ? (
-          <Text style={styles.goingEmpty}>{t("going.empty")}</Text>
-        ) : names.length > 0 ? (
-          <Pressable
-            onPress={() => setExpanded((v) => !v)}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={expanded ? t("going.a11y_show_fewer") : t("going.a11y_show_everyone")}
-            {...focusRingProps}
-            style={({ pressed }) => (pressed ? styles.pressed : null)}
-          >
-            <Text style={styles.goingNames} numberOfLines={expanded ? undefined : 1}>
-              {data?.scope === "following"
-                ? t("going.names_following", { names: names.join(", ") })
-                : t("going.names", { names: names.join(", ") })}
-            </Text>
-          </Pressable>
-        ) : null}
-      </View>
-      {goingCount > 0 ? (
-        <TextLink
-          variant="label"
-          onPress={onViewAll}
-          standalone
-          accessibilityLabel={t("going.a11y_view_everyone")}
-        >
-          {t("going.view_all")}
-        </TextLink>
-      ) : null}
     </View>
   )
 }
@@ -249,7 +176,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const isCohost = myRole === "cohost"
   const canCheckIn = hasHostCapability(capabilityCleanup, "check_in")
   const canViewGuestContact = hasHostCapability(capabilityCleanup, "view_guest_contact")
-  const canViewRoster = hasHostCapability(capabilityCleanup, "view_roster")
   const actsAsHost = managesEvent(capabilityCleanup)
   const onOpenHostDashboard = useCallback(() => {
     openHostDashboard({ eventId: cleanup.id })
@@ -419,6 +345,13 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const showDetails =
     !!cleanup.description || cleanup.bring.length > 0 || showLinkedReports
 
+  const detailsFlush = showDetails ? styles.sectionFlush : null
+  const hostFlush = showDetails ? null : styles.sectionFlush
+  const showTicket = going && holdsSeat && isLive && (!hasTicketTypes || actsAsHost)
+  const showMessageCrew = !isCancelled
+  const showLeave = going && !actsAsHost && isLive && !isEnded
+  const showReport = !actsAsHost
+
   const statusText = isCancelled
     ? t("status.cancelled")
     : isDone
@@ -439,9 +372,38 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
       <EventHero cleanup={cleanup} />
 
       <View style={styles.header}>
-        <Text style={styles.title} numberOfLines={2} accessibilityRole="header" {...headingLevel(2)}>
-          {cleanup.title}
-        </Text>
+        <View style={styles.titleRow}>
+          <Text
+            style={styles.title}
+            numberOfLines={2}
+            accessibilityRole="header"
+            {...headingLevel(2)}
+          >
+            {cleanup.title}
+          </Text>
+          <Pressable
+            onPress={onShare}
+            accessibilityRole="button"
+            accessibilityLabel={t("actions.share_a11y")}
+            hitSlop={6}
+            {...focusRingProps}
+            style={({ pressed }) => [styles.titleBtn, pressed ? styles.titleBtnPressed : null]}
+          >
+            <Icon icon={iconMap.Share} size={17} color={th.colors.text} />
+          </Pressable>
+          {isCancelled ? null : (
+            <Pressable
+              onPress={onRepost}
+              accessibilityRole="button"
+              accessibilityLabel={t("actions.repost_a11y")}
+              hitSlop={6}
+              {...focusRingProps}
+              style={({ pressed }) => [styles.titleBtn, pressed ? styles.titleBtnPressed : null]}
+            >
+              <Icon icon={iconMap.RefreshCw} size={17} color={th.colors.text} />
+            </Pressable>
+          )}
+        </View>
         {statusText ? (
           <Text style={[styles.status, { color: statusColor }]}>{statusText}</Text>
         ) : null}
@@ -472,6 +434,57 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       </View>
 
+      {showDetails ? (
+        <View style={[styles.section, detailsFlush]}>
+          {cleanup.description ? (
+            <Text style={styles.description}>{cleanup.description}</Text>
+          ) : null}
+          {cleanup.bring.length > 0 ? (
+            <View style={styles.subsection}>
+              <Text style={styles.sectionTitle}>{t("bring.heading")}</Text>
+              {cleanup.bring.map((item, i) => (
+                <View key={`${item}-${i}`} style={styles.bringRow}>
+                  <Icon icon={iconMap.Check} size={14} color={th.colors.moss["700"]} />
+                  <Text style={styles.bringText}>{item}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {showLinkedReports ? (
+            <LinkedReportsStrip reports={cleanup.linkedReports} onOpenReport={onOpenReport} />
+          ) : null}
+        </View>
+      ) : null}
+
+      <View style={[styles.section, hostFlush]}>
+        <Text style={styles.sectionTitle}>{t("host.heading")}</Text>
+        <View style={styles.hostRow}>
+          {isOrganizer ? (
+            <View style={styles.hostWho}>
+              <HostIdentity cleanup={cleanup} isOrganizer />
+            </View>
+          ) : (
+            <>
+              <Pressable
+                onPress={onOpenOrganizer}
+                accessibilityRole="button"
+                accessibilityLabel={cleanup.organizer.name}
+                {...focusRingProps}
+                style={({ pressed }) => [styles.hostWho, pressed ? styles.pressed : null]}
+              >
+                <HostIdentity cleanup={cleanup} isOrganizer={false} />
+              </Pressable>
+              <FollowButton
+                personId={cleanup.organizer.id}
+                isFollowing={organizerProfile.data?.profile.isFollowing ?? false}
+                nextPath={next}
+                size="sm"
+              />
+            </>
+          )}
+        </View>
+      </View>
+
       {donation ? (
         <View style={styles.donate}>
           <DonateBlock url={donation.url} ownerName={donation.ownerName} />
@@ -485,7 +498,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
       ) : null}
 
       {boardSlots ? (
-        <View style={[styles.section, styles.sectionFlush]}>
+        <View style={styles.section}>
           {generalBoard ? (
             <Text style={styles.slotsNone}>{t("event-slots:block.none_yet")}</Text>
           ) : null}
@@ -509,14 +522,32 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       ) : null}
 
-      {going && holdsSeat && isLive && (!hasTicketTypes || actsAsHost) ? (
+      {showTicket || showMessageCrew ? (
         <View style={styles.section}>
           <EventActionRows>
-            <EventActionRow
-              icon={iconMap.Ticket}
-              label={t("host-ticket:mine.view_ticket")}
-              onPress={onOpenMyTicket}
-            />
+            {showTicket ? (
+              <EventActionRow
+                icon={iconMap.Ticket}
+                label={t("host-ticket:mine.view_ticket")}
+                onPress={onOpenMyTicket}
+              />
+            ) : null}
+            {showMessageCrew ? (
+              <EventActionRow
+                icon={iconMap.MessageCircle}
+                label={t("actions.message_crew")}
+                accessibilityLabel={t("actions.message_crew_a11y")}
+                disabled={!going && !actsAsHost}
+                hint={
+                  going || actsAsHost
+                    ? undefined
+                    : isEnded
+                      ? t("actions.message_crew_hint_ended")
+                      : t("actions.message_crew_hint")
+                }
+                onPress={onMessageCrew}
+              />
+            ) : null}
           </EventActionRows>
         </View>
       ) : null}
@@ -547,47 +578,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       ) : null}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("going.heading")}</Text>
-        <GoingRow cleanup={cleanup} goingCount={goingCount} onViewAll={onViewAllMembers} />
-        {canViewGuestContact ? (
-          <View style={styles.guestsWrap}>
-            <EventGuestsBlock
-              cleanupId={cleanup.id}
-              guestCount={cleanup.guestCount}
-              canViewContact
-            />
-          </View>
-        ) : canViewRoster ? (
-          <View style={styles.guestsWrap}>
-            <EventRosterBlock cleanupId={cleanup.id} canCheckIn={canCheckIn} />
-          </View>
-        ) : null}
-      </View>
-
       <EventAnnouncementsBlock cleanupId={cleanup.id} />
-
-      {showDetails ? (
-        <View style={styles.section}>
-          {cleanup.description ? (
-            <Text style={styles.description}>{cleanup.description}</Text>
-          ) : null}
-          {cleanup.bring.length > 0 ? (
-            <View style={styles.subsection}>
-              <Text style={styles.sectionTitle}>{t("bring.heading")}</Text>
-              {cleanup.bring.map((item, i) => (
-                <View key={`${item}-${i}`} style={styles.bringRow}>
-                  <Icon icon={iconMap.Check} size={14} color={th.colors.moss["700"]} />
-                  <Text style={styles.bringText}>{item}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-          {showLinkedReports ? (
-            <LinkedReportsStrip reports={cleanup.linkedReports} onOpenReport={onOpenReport} />
-          ) : null}
-        </View>
-      ) : null}
 
       {isDone ? (
         <View style={styles.section}>
@@ -600,88 +591,37 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       ) : null}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t("host.heading")}</Text>
-        <View style={styles.hostRow}>
-          {isOrganizer ? (
-            <View style={styles.hostWho}>
-              <HostIdentity cleanup={cleanup} isOrganizer />
-            </View>
-          ) : (
-            <>
-              <Pressable
-                onPress={onOpenOrganizer}
-                accessibilityRole="button"
-                accessibilityLabel={cleanup.organizer.name}
-                {...focusRingProps}
-                style={({ pressed }) => [styles.hostWho, pressed ? styles.pressed : null]}
-              >
-                <HostIdentity cleanup={cleanup} isOrganizer={false} />
-              </Pressable>
-              <FollowButton
-                personId={cleanup.organizer.id}
-                isFollowing={organizerProfile.data?.profile.isFollowing ?? false}
-                nextPath={next}
-                size="sm"
-              />
-            </>
-          )}
+      {canViewGuestContact ? (
+        <View style={styles.section}>
+          <EventGuestsBlock cleanupId={cleanup.id} guestCount={cleanup.guestCount} canViewContact />
         </View>
-      </View>
+      ) : null}
 
-      <View style={styles.section}>
-        <EventActionRows>
-          {isCancelled ? null : (
-            <EventActionRow
-              icon={iconMap.MessageCircle}
-              label={t("actions.message_crew")}
-              accessibilityLabel={t("actions.message_crew_a11y")}
-              disabled={!going && !actsAsHost}
-              hint={
-                going || actsAsHost
-                  ? undefined
-                  : isEnded
-                    ? t("actions.message_crew_hint_ended")
-                    : t("actions.message_crew_hint")
-              }
-              onPress={onMessageCrew}
-            />
-          )}
-          {isCancelled ? null : (
-            <EventActionRow
-              icon={iconMap.RefreshCw}
-              label={t("actions.repost")}
-              accessibilityLabel={t("actions.repost_a11y")}
-              onPress={onRepost}
-            />
-          )}
-          <EventActionRow
-            icon={iconMap.Share}
-            label={t("actions.share")}
-            accessibilityLabel={t("actions.share_a11y")}
-            onPress={onShare}
-          />
-          {going && !actsAsHost && isLive && !isEnded ? (
-            <EventActionRow
-              icon={iconMap.LogOut}
-              label={t("actions.leave")}
-              hint={t("actions.leave_hint")}
-              accessibilityLabel={t("actions.leave_a11y")}
-              destructive
-              disabled={join.isPending}
-              onPress={onLeave}
-            />
-          ) : null}
-          {actsAsHost ? null : (
-            <EventActionRow
-              icon={iconMap.Flag}
-              label={t("actions.report")}
-              accessibilityLabel={t("actions.report_a11y")}
-              onPress={onReport}
-            />
-          )}
-        </EventActionRows>
-      </View>
+      {showLeave || showReport ? (
+        <View style={styles.section}>
+          <EventActionRows>
+            {showLeave ? (
+              <EventActionRow
+                icon={iconMap.LogOut}
+                label={t("actions.leave")}
+                hint={t("actions.leave_hint")}
+                accessibilityLabel={t("actions.leave_a11y")}
+                destructive
+                disabled={join.isPending}
+                onPress={onLeave}
+              />
+            ) : null}
+            {showReport ? (
+              <EventActionRow
+                icon={iconMap.Flag}
+                label={t("actions.report")}
+                accessibilityLabel={t("actions.report_a11y")}
+                onPress={onReport}
+              />
+            ) : null}
+          </EventActionRows>
+        </View>
+      ) : null}
 
       <ReportContentSheet
         visible={reporting}
@@ -798,12 +738,35 @@ const useStyles = makeThemedStyles((t) => ({
     marginTop: t.space["4"],
     marginBottom: t.space["4"],
   },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["2"],
+  },
   title: {
+    flex: 1,
+    minWidth: 0,
     fontFamily: t.fontFamily.displayBold,
     fontSize: t.fontSize["24"],
     lineHeight: 28,
     color: t.colors.text,
     letterSpacing: -0.3,
+  },
+  titleBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: t.radius.pill,
+    flexShrink: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: t.colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
+    ...t.shadows.s1,
+  },
+  titleBtnPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.94 }],
   },
   status: {
     fontFamily: t.fontFamily.bodySemiBold,
@@ -870,42 +833,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   subsection: {
     gap: t.space["2"],
-  },
-
-  goingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-  },
-  avStack: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  avOverlap: {
-    marginLeft: -10,
-  },
-  goingMain: {
-    flex: 1,
-    minWidth: 0,
-    gap: 2,
-  },
-  goingCount: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
-  },
-  goingNames: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-  },
-  goingEmpty: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textSubtle,
-  },
-  guestsWrap: {
-    marginTop: t.space["3"],
   },
 
   description: {

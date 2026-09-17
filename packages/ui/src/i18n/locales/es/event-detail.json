@@ -6,17 +6,7 @@
     "ended": "Este evento ya terminó"
   },
   "going": {
-    "heading": "Quién asiste",
-    "count_one": "{{count}} asistente",
-    "count_other": "{{count}} asistentes",
-    "empty": "Todavía no va nadie.",
-    "you": "Tú",
-    "names_following": "Sigues a {{names}}",
-    "names": "{{names}}",
-    "view_all": "Ver todos",
-    "a11y_show_fewer": "Mostrar menos nombres",
-    "a11y_show_everyone": "Mostrar todos los asistentes",
-    "a11y_view_everyone": "Ver todos los asistentes"
+    "you": "Tú"
   },
   "actions": {
     "share": "Compartir",

@@ -6,17 +6,7 @@
     "ended": "Dieses Event ist beendet"
   },
   "going": {
-    "heading": "Wer kommt",
-    "count_one": "{{count}} dabei",
-    "count_other": "{{count}} dabei",
-    "empty": "Noch ist niemand dabei.",
-    "you": "Du",
-    "names_following": "Du folgst {{names}}",
-    "names": "{{names}}",
-    "view_all": "Alle anzeigen",
-    "a11y_show_fewer": "Weniger Namen anzeigen",
-    "a11y_show_everyone": "Alle Teilnehmer anzeigen",
-    "a11y_view_everyone": "Alle Teilnehmer ansehen"
+    "you": "Du"
   },
   "actions": {
     "share": "Teilen",
