@@ -1,11 +1,10 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
 const detail = strip(read("../EventDetailBody.tsx"))
-const guests = strip(read("../EventGuestsBlock.tsx"))
 const pill = strip(read("../../primitives/RsvpPill.tsx"))
 const sheet = strip(read("../../primitives/GuestRsvpSheet.tsx"))
 const modal = strip(read("../../primitives/ModalCardSheet.tsx"))
@@ -41,18 +40,16 @@ describe("EventDetailBody wiring", () => {
     expect(detail.match(/<GuestRsvpSheet/g)).toHaveLength(1)
   })
 
-  it("shows the guest CONTACT roster only to `view_guest_contact` - the capability its endpoint needs", () => {
-    expect(detail).toMatch(/\{canViewGuestContact \? \(\s*<View[^>]*>\s*<EventGuestsBlock/)
+  it("carries no guest list at all - the detail page never shows a guest's contact", () => {
+    expect(detail).not.toContain("EventGuestsBlock")
+    expect(detail).not.toContain("canViewGuestContact")
+    expect(detail).not.toContain("view_guest_contact")
+    expect(existsSync(new URL("../EventGuestsBlock.tsx", import.meta.url))).toBe(false)
   })
 
   it("leaves the check-in roster to host tools, so the detail page carries one host list at most", () => {
     expect(detail).not.toContain("EventRosterBlock")
     expect(strip(read("../host/HostModeBody.tsx"))).toContain("<EventRosterBlock")
-  })
-
-  it("derives the guest-contact gate from the capability set alone, never from a role string", () => {
-    expect(detail).toContain('hasHostCapability(capabilityCleanup, "view_guest_contact")')
-    expect(detail).not.toMatch(/canViewGuestContact \|\| actsAsHost/)
   })
 })
 
@@ -157,40 +154,5 @@ describe("GuestRsvpSheet", () => {
     expect(modal).toContain("handlersRef.current.onClose()")
     expect(modal).not.toContain("backdropDismissDisabled ? undefined : onCommit")
     expect(sheet).toContain('<SecondaryButton label={t("form.cancel")} onPress={onClose} size="sm" />')
-  })
-})
-
-describe("EventGuestsBlock", () => {
-  it("fetches nothing until the host expands it", () => {
-    expect(guests).toContain("useCleanupGuests(cleanupId, { enabled: expanded })")
-  })
-
-  it("renders loading, error and empty states before any row", () => {
-    expect(guests).toContain('t("guests.loading")')
-    expect(guests).toContain('t("guests.error")')
-    expect(guests).toContain('t("guests.empty")')
-  })
-
-  it("routes a scrubbed contact through i18n instead of hardcoding a glyph in the source", () => {
-    expect(guests).toContain("if (value === null)")
-    expect(guests).toContain('t("guests.contact_scrubbed")')
-  })
-
-  it("renders NO count when the server omitted guestCount, rather than a confident zero", () => {
-    expect(guests).toContain("guestCount?: number")
-    expect(guests).toContain("total === undefined ? null : (")
-    expect(detail).toContain("guestCount={cleanup.guestCount}")
-    expect(detail).not.toContain("cleanup.guestCount ?? 0")
-  })
-
-  it("mutes a cancelled guest instead of dropping the row", () => {
-    expect(guests).toContain("guest.cancelledAt !== null")
-    expect(guests).toContain("guestRowCancelled")
-  })
-
-  it("links the contact on web only", () => {
-    expect(guests).toContain('Platform.OS !== "web"')
-    expect(guests).toContain("mailto:")
-    expect(guests).toContain("tel:")
   })
 })

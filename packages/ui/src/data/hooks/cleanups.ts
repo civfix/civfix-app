@@ -1,5 +1,5 @@
 import type { Query, QueryClient, QueryFilters, UseMutationOptions } from "@tanstack/react-query"
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
   CleanupDTO,
   CleanupAttendeesResponse,
@@ -17,7 +17,6 @@ import type {
   GuestRsvpVerifyResponse,
   GuestRsvpCancelRequest,
   GuestRsvpCancelResponse,
-  GetCleanupGuestsResponse,
   LinkedReportRef,
 } from "@civfix/shared"
 import { useToast } from "../../primitives/toastContext"
@@ -472,7 +471,6 @@ export function guestRsvpVerifyMutationOptions(
       void qc.invalidateQueries(cleanupDetailFilters(id))
       invalidateCleanupLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(id) })
-      void qc.invalidateQueries({ queryKey: queryKeys.cleanupGuests(id) })
     },
   }
 }
@@ -499,22 +497,6 @@ export function useGuestRsvpCancel() {
   const api = useApi()
   return useMutation<GuestRsvpCancelResponse, unknown, GuestRsvpCancelRequest>({
     mutationFn: ({ token }) => api.guestRsvpCancel({ token }),
-  })
-}
-
-export function useCleanupGuests(id: string | undefined, opts: { enabled?: boolean } = {}) {
-  const api = useApi()
-  return useInfiniteQuery<GetCleanupGuestsResponse>({
-    queryKey: queryKeys.cleanupGuests(id ?? "unknown"),
-    enabled: !!id && (opts.enabled ?? false),
-    initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) =>
-      api.getCleanupGuests({
-        id: id as string,
-        ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
-      }),
-    getNextPageParam: (lastPage: GetCleanupGuestsResponse) => lastPage.nextCursor ?? undefined,
-    retry: false,
   })
 }
 

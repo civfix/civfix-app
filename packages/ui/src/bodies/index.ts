@@ -167,8 +167,6 @@ export { EventSlotsBlock } from "./EventSlotsBlock"
 export type { EventSlotsBlockProps } from "./EventSlotsBlock"
 export { EventHoursBlock } from "./EventHoursBlock"
 export type { EventHoursBlockProps } from "./EventHoursBlock"
-export { EventGuestsBlock } from "./EventGuestsBlock"
-export type { EventGuestsBlockProps } from "./EventGuestsBlock"
 export {
   addSlotDraft,
   buildSlotInputs,

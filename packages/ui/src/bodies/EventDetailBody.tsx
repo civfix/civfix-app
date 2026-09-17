@@ -52,7 +52,6 @@ import { LinkedReportCard } from "./LinkedReportCard"
 import { LINKED_REPORTS_COUNT_AT } from "./linkReportsModel"
 import { EventHoursBlock } from "./EventHoursBlock"
 import { EventSlotsBlock } from "./EventSlotsBlock"
-import { EventGuestsBlock } from "./EventGuestsBlock"
 import { openHostDashboard } from "./hostDashboardTarget"
 import { EventAnnouncementsBlock } from "./host/EventAnnouncementsBlock"
 import { RegistrationBlock } from "./host/registration/RegistrationBlock"
@@ -194,7 +193,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const isCohost = myRole === "cohost"
   const canCheckIn = hasHostCapability(capabilityCleanup, "check_in")
   const canViewRoster = hasHostCapability(capabilityCleanup, "view_roster")
-  const canViewGuestContact = hasHostCapability(capabilityCleanup, "view_guest_contact")
   const actsAsHost = managesEvent(capabilityCleanup)
   const onOpenHostDashboard = useCallback(() => {
     openHostDashboard({ eventId: cleanup.id })
@@ -615,12 +613,6 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
             actsAsHost={actsAsHost}
             joined={going}
           />
-        </View>
-      ) : null}
-
-      {canViewGuestContact ? (
-        <View style={styles.section}>
-          <EventGuestsBlock cleanupId={cleanup.id} guestCount={cleanup.guestCount} canViewContact />
         </View>
       ) : null}
 

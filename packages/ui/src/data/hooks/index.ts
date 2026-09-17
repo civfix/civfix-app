@@ -95,7 +95,6 @@ export {
   useGuestRsvpRequest,
   useGuestRsvpVerify,
   useGuestRsvpCancel,
-  useCleanupGuests,
   cleanupDetailFilters,
 } from "./cleanups"
 export type {

@@ -113,22 +113,5 @@
     "suggest_hint": "Suggestions come from each person's shift and the event's planned length. Confirm what people actually worked.",
     "suggest_chip": "{{hours}} h · {{slot}}",
     "suggest_chip_a11y": "Use {{hours}} hours from the {{slot}} shift for {{name}}"
-  },
-  "guests": {
-    "heading": "Guests",
-    "count_one": "{{count}} guest",
-    "count_other": "{{count}} guests",
-    "expand_a11y": "Show the guest list",
-    "collapse_a11y": "Hide the guest list",
-    "empty": "No guests yet.",
-    "loading": "Loading...",
-    "error": "Couldn't load guests.",
-    "load_more": "Load more",
-    "loading_more": "Loading...",
-    "load_more_a11y": "Load more guests",
-    "cancelled": "Cancelled",
-    "contact_scrubbed": "—",
-    "contact_a11y": "Contact {{name}}",
-    "contact_hidden": "Contact hidden"
   }
 }

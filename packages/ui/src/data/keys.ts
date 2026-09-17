@@ -15,7 +15,6 @@ export const queryKeys = {
     ["cleanups", when, "nearby", lat, lng, limit] as const,
   cleanup: (id: string) => ["cleanup", id] as const,
   cleanupAttendees: (id: string) => ["cleanup", id, "attendees"] as const,
-  cleanupGuests: (id: string) => ["cleanup", id, "guests"] as const,
   report: (id: string) => ["report", id] as const,
   reportChatParticipants: (id: string) => ["report", id, "chat-participants"] as const,
   reportSearch: (q: string, categories: readonly string[]) =>

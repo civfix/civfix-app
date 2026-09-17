@@ -113,22 +113,5 @@
     "suggest_hint": "Las sugerencias salen del turno de cada persona y de la duración prevista del evento. Confirma lo que realmente trabajaron.",
     "suggest_chip": "{{hours}} h · {{slot}}",
     "suggest_chip_a11y": "Usar {{hours}} horas del turno {{slot}} para {{name}}"
-  },
-  "guests": {
-    "heading": "Invitados",
-    "count_one": "{{count}} invitado",
-    "count_other": "{{count}} invitados",
-    "expand_a11y": "Mostrar la lista de invitados",
-    "collapse_a11y": "Ocultar la lista de invitados",
-    "empty": "Aún no hay invitados.",
-    "loading": "Cargando...",
-    "error": "No se pudieron cargar los invitados.",
-    "load_more": "Cargar más",
-    "loading_more": "Cargando...",
-    "load_more_a11y": "Cargar más invitados",
-    "cancelled": "Cancelado",
-    "contact_scrubbed": "—",
-    "contact_a11y": "Contactar a {{name}}",
-    "contact_hidden": "Contacto oculto"
   }
 }

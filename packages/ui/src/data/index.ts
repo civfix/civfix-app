@@ -123,7 +123,6 @@ export {
   useGuestRsvpRequest,
   useGuestRsvpVerify,
   useGuestRsvpCancel,
-  useCleanupGuests,
   cleanupDetailFilters,
 } from "./hooks"
 export type {
