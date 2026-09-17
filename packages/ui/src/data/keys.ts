@@ -8,6 +8,8 @@ export const queryKeys = {
   nearbyReports: (lat: number, lng: number, radiusKm: number) =>
     ["map", "reports", "near", lat, lng, radiusKm] as const,
   jurisdiction: (lat: number, lng: number) => ["jurisdiction", lat, lng] as const,
+  resolvedAddressRoot: ["geocode", "address"] as const,
+  resolvedAddress: (pointKey: string) => ["geocode", "address", pointKey] as const,
   cleanups: (when: string, limit: number) => ["cleanups", when, limit] as const,
   cleanupsNearby: (when: string, limit: number, lat: number, lng: number) =>
     ["cleanups", when, "nearby", lat, lng, limit] as const,
