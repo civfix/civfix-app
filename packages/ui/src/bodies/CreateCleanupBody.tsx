@@ -151,7 +151,6 @@ function SeedLocationFromReport({ reportId }: { reportId: string }) {
     draft.patch({
       ...v,
       coords: { lat: report.lat, lng: report.lng },
-      spot: v.spot.trim().length > 0 ? v.spot : addr,
       addrQuery: v.addrQuery.trim().length > 0 ? v.addrQuery : addr,
     })
   }, [query.data])

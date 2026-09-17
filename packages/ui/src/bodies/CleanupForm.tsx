@@ -529,13 +529,10 @@ export function CleanupForm({
 
   const onPickPlace = useCallback(
     (place: AddressPick) => {
-      patch({
-        coords: { lat: place.lat, lng: place.lng },
-        spot: value.spot.trim().length > 0 ? value.spot : place.name,
-      })
+      patch({ coords: { lat: place.lat, lng: place.lng } })
       if (pickMode === "main-map") useLocationPick.getState().setDraft(place.lat, place.lng)
     },
-    [patch, value.spot, pickMode],
+    [patch, pickMode],
   )
 
   const onDropPin = useCallback(
