@@ -69,5 +69,18 @@
     "time_past": "Wähle eine Uhrzeit, die noch nicht vorbei ist.",
     "end_too_soon": "Ende mindestens {{minutes}} Minuten nach dem Beginn.",
     "time_dst_gap": "Diese Uhrzeit gibt es an diesem Datum nicht, weil die Uhren vorgestellt werden. Wähle eine andere Uhrzeit."
+  },
+  "address": {
+    "label": "Treffpunkt-Adresse",
+    "placeholder": "Adresse, zu der die Teilnehmenden navigieren",
+    "placeholderManual": "Adresse des Treffpunkts eingeben",
+    "near": "In der Nähe von {{address}}",
+    "resolving": "Adresse für diesen Punkt wird gesucht ...",
+    "confirmHint": "Das sehen die Teilnehmenden zum Navigieren. Passe es an, falls es nicht stimmt.",
+    "manualRequired": "Für diesen Punkt gibt es keine Straßenadresse - bitte den Treffpunkt eingeben.",
+    "manualRequiredNear": "Für diesen Punkt in {{cityState}} gibt es keine Straßenadresse - bitte den Treffpunkt eingeben.",
+    "tooShort": "Gib mindestens 3 Zeichen ein, damit der Ort auffindbar ist.",
+    "pinMoved": "Punkt verschoben - prüfe die Adresse.",
+    "pinFirst": "Setze zuerst den Punkt, dann suchen wir die Adresse."
   }
 }

@@ -65,6 +65,7 @@ import {
   type CleanupFormSection,
   type CleanupFormValue,
 } from "./CleanupForm"
+import { composeEventAddress } from "./eventAddressField"
 import { formEndInstantMs, formInstantMs, isScheduleInFutureInZone } from "./calendarModel"
 import { addSlotDraft, buildSlotInputs, hasNamedSlot, makeSlotKey } from "./eventSlotsForm"
 import {
@@ -116,6 +117,7 @@ function wizardDraftOf(value: CleanupFormValue): EventWizardDraft {
     endTime: value.endTime,
     timezone: value.timezone,
     coords: value.coords,
+    address: value.address,
     slots: value.slots,
   }
 }
@@ -246,7 +248,8 @@ function ReviewSummary({
           value.timezone,
         )
       : null
-  const addr = value.coords ? reverseLabelText(label.data, value.coords) : null
+  const verified = value.address.trim()
+  const addr = verified.length > 0 ? verified : value.coords ? reverseLabelText(label.data, value.coords) : null
   const spot = value.spot.trim()
   const bring = value.bring.join(", ")
   const slots = value.slots
@@ -400,9 +403,11 @@ function HostForm({
   const stepErrorKey =
     step === "when" && form.date !== null && form.time !== null && !hasValidEventEnd(form)
       ? "wizard.when.error_end"
-      : step === "details" && hasNamedSlot(form.slots)
-        ? "wizard.details.error_invalid"
-        : `wizard.${step}.error`
+      : step === "where" && form.coords !== null
+        ? "wizard.where.error_address"
+        : step === "details" && hasNamedSlot(form.slots)
+          ? "wizard.details.error_invalid"
+          : `wizard.${step}.error`
   const showWizardBack =
     editingFromReview || prevEventStep(step) !== null || standalone === undefined
 
@@ -479,7 +484,12 @@ function HostForm({
   const onPublish = useCallback(() => {
     if (!canPublish || !form.coords || !scheduledAt || !endsAt) return
     setSubmitError(null)
-    const spotLine = form.spot.trim().slice(0, 200)
+    const verifiedAddress = composeEventAddress({
+      address: form.address,
+      addressSource: form.addressSource,
+      spot: form.spot,
+    })
+    if (!verifiedAddress) return
     const linkedReportIds =
       form.eventKind === "cleanup" && form.linkedReportIds.length > 0 ? form.linkedReportIds : undefined
     const slots = buildSlotInputs(form.slots)
@@ -493,7 +503,8 @@ function HostForm({
         scheduledAt: scheduledAt.toISOString(),
         endsAt: endsAt.toISOString(),
         timezone: form.timezone,
-        ...(spotLine.length > 0 ? { address: spotLine } : {}),
+        address: verifiedAddress.address,
+        addressSource: verifiedAddress.addressSource,
         ...(form.description.trim().length > 0 ? { description: form.description.trim() } : {}),
         ...(form.bring.length > 0 ? { bring: form.bring } : {}),
         ...(linkedReportIds ? { linkedReportIds } : {}),

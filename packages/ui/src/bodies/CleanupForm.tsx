@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Image, Pressable, StyleSheet } from "react-native"
+import { ActivityIndicator, View, Image, Pressable, StyleSheet } from "react-native"
 import {
   EVENT_KIND_VALUES,
+  MAX_EVENT_ADDRESS_LENGTH,
   MIN_EVENT_DURATION_MINUTES,
+  type EventAddressSource,
   type EventKind,
   type EventSlotDTO,
   type OrganizationRefDTO,
@@ -21,7 +23,21 @@ import {
 import { Text, Icon, iconMap } from "../typography"
 import { MIN_TOUCH_TARGET } from "../typography/TextLink"
 import { TextField, BringInput, MetaDot, SecondaryButton } from "../primitives"
-import { actableOrganizations, useMyOrganizations, useReverseLabel, reverseLabelText } from "../data"
+import {
+  actableOrganizations,
+  useMyOrganizations,
+  useResolveAddress,
+  useReverseLabel,
+  reverseLabelText,
+} from "../data"
+import {
+  eventAddressEdit,
+  eventAddressPinMoved,
+  eventAddressPrefill,
+  eventAddressStatus,
+  isEventAddressComplete,
+  type EventAddressValue,
+} from "./eventAddressField"
 import { useApi } from "../data/context"
 import { uploadMedia } from "../data/uploadMedia"
 import { useCamera } from "../capabilities"
@@ -67,6 +83,9 @@ export interface CleanupFormValue {
   eventKind: EventKind
   addrQuery: string
   spot: string
+  address: string
+  addressSource: EventAddressSource | null
+  addressPointKey: string | null
   coords: { lat: number; lng: number } | null
   date: Date | null
   time: Date | null
@@ -102,6 +121,9 @@ export function emptyCleanupForm(
     eventKind: "cleanup",
     addrQuery: "",
     spot: "",
+    address: "",
+    addressSource: null,
+    addressPointKey: null,
     coords: null,
     date: null,
     time: null,
@@ -145,6 +167,7 @@ export function isCleanupFormComplete(
   return (
     value.title.trim().length > 0 &&
     value.coords !== null &&
+    isEventAddressComplete(value.address) &&
     value.date !== null &&
     value.time !== null &&
     hasValidEventEnd(value) &&
@@ -304,6 +327,94 @@ function MeetLocationCompact({
         onCancel={() => setPicking(false)}
         pin={pin}
       />
+    </View>
+  )
+}
+
+function MeetAddressField({
+  value,
+  onPatch,
+}: {
+  value: CleanupFormValue
+  onPatch: (next: EventAddressValue) => void
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("event-form")
+  const resolution = useResolveAddress(value.coords)
+  const near = useCallback((line: string) => t("address.near", { address: line }), [t])
+
+  const current = useMemo<EventAddressValue>(
+    () => ({
+      address: value.address,
+      addressSource: value.addressSource,
+      addressPointKey: value.addressPointKey,
+    }),
+    [value.address, value.addressSource, value.addressPointKey],
+  )
+
+  const commit = useRef(onPatch)
+  commit.current = onPatch
+  useEffect(() => {
+    const next = eventAddressPrefill({
+      coords: value.coords,
+      resolution: resolution.isPending ? undefined : (resolution.data ?? null),
+      current,
+      near,
+    })
+    if (next) commit.current(next)
+  }, [value.coords, resolution.isPending, resolution.data, current, near])
+
+  const status = eventAddressStatus({
+    hasCoords: value.coords !== null,
+    isResolving: resolution.isPending,
+    addressSource: value.addressSource,
+  })
+  const pinMoved = eventAddressPinMoved({ coords: value.coords, current })
+  const missing = value.coords !== null && status !== "resolving" && !isEventAddressComplete(value.address)
+  const cityHint = resolution.data?.cityStateLabel?.trim() ?? ""
+
+  return (
+    <View style={styles.addressBlock}>
+      <TextField
+        label={t("address.label")}
+        placeholder={status === "manual" ? t("address.placeholderManual") : t("address.placeholder")}
+        value={value.address}
+        onChangeText={(text) =>
+          commit.current(eventAddressEdit({ text, coords: value.coords, current }))
+        }
+        maxLength={MAX_EVENT_ADDRESS_LENGTH}
+        editable={value.coords !== null}
+      />
+      {value.coords === null ? (
+        <Text style={styles.addressHint}>{t("address.pinFirst")}</Text>
+      ) : status === "resolving" ? (
+        <View style={styles.addressNote}>
+          <ActivityIndicator size="small" color={th.colors.textSubtle} />
+          <Text style={styles.addressHint}>{t("address.resolving")}</Text>
+        </View>
+      ) : status === "manual" && value.address.trim().length === 0 ? (
+        <View style={styles.addressNote}>
+          <Icon icon={iconMap.AlertCircle} size={13} color={th.colors.brand.bloom} />
+          <Text style={styles.addressError}>
+            {cityHint.length > 0
+              ? t("address.manualRequiredNear", { cityState: cityHint })
+              : t("address.manualRequired")}
+          </Text>
+        </View>
+      ) : missing ? (
+        <View style={styles.addressNote}>
+          <Icon icon={iconMap.AlertCircle} size={13} color={th.colors.brand.bloom} />
+          <Text style={styles.addressError}>{t("address.tooShort")}</Text>
+        </View>
+      ) : pinMoved ? (
+        <View style={styles.addressNote}>
+          <Icon icon={iconMap.Info} size={13} color={th.colors.textSubtle} />
+          <Text style={styles.addressHint}>{t("address.pinMoved")}</Text>
+        </View>
+      ) : (
+        <Text style={styles.addressHint}>{t("address.confirmHint")}</Text>
+      )}
     </View>
   )
 }
@@ -600,8 +711,9 @@ export function CleanupForm({
               placeholder={t("field.spotPlaceholder")}
               value={value.spot}
               onChangeText={(spot) => patch({ spot })}
-              maxLength={200}
+              maxLength={MAX_EVENT_ADDRESS_LENGTH}
             />
+            <MeetAddressField value={value} onPatch={patch} />
           </View>
 
           <ReportLinkPicker
@@ -791,6 +903,29 @@ const useStyles = makeThemedStyles((t) => ({
   },
   segmentTextActive: {
     color: t.colors.neutral.card,
+  },
+
+  addressBlock: {
+    gap: t.space["1"],
+  },
+  addressNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  addressHint: {
+    flexShrink: 1,
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    lineHeight: 16,
+    color: t.colors.textSubtle,
+  },
+  addressError: {
+    flexShrink: 1,
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    lineHeight: 16,
+    color: t.colors.brand.bloom,
   },
 
   compactLoc: {

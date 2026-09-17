@@ -25,7 +25,8 @@
     "where": {
       "title": "Where do you meet?",
       "help": "Drop the pin where neighbors should show up.",
-      "error": "Set the meeting point on the map."
+      "error": "Set the meeting point on the map.",
+      "error_address": "Confirm the meeting address before you continue."
     },
     "details": {
       "title": "Who do you need?",

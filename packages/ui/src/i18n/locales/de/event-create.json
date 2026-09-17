@@ -25,7 +25,8 @@
     "where": {
       "title": "Wo trefft ihr euch?",
       "help": "Setze den Pin dorthin, wo alle hinkommen sollen.",
-      "error": "Setze den Treffpunkt auf der Karte."
+      "error": "Setze den Treffpunkt auf der Karte.",
+      "error_address": "Bestätige die Treffpunkt-Adresse, bevor du fortfährst."
     },
     "details": {
       "title": "Wen brauchst du?",
