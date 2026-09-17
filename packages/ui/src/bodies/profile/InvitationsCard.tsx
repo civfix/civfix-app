@@ -6,13 +6,13 @@ import type {
   PendingEventTeamInviteDTO,
   PendingOrganizationInviteDTO,
 } from "@civfix/shared"
-import { SectionCard, LIST_DIVIDER_INSET } from "../../../primitives"
-import { useT } from "../../../i18n"
-import { makeThemedStyles } from "../../../theme"
-import { FeedNotice } from "../../FeedNotice"
-import { RowsSkeleton } from "../HostSkeletons"
+import { SectionCard, LIST_DIVIDER_INSET } from "../../primitives"
+import { useT } from "../../i18n"
+import { makeThemedStyles } from "../../theme"
+import { FeedNotice } from "../FeedNotice"
+import { RowsSkeleton } from "../host/HostSkeletons"
 import { EventInviteRow, OrgInviteRow } from "./InviteRows"
-import { INVITE_MAX_ROWS } from "./dashboardModel"
+import { inviteRowSlice } from "./invitesModel"
 
 export interface InvitationsCardProps {
   eventInvites: readonly PendingEventTeamInviteDTO[]
@@ -45,10 +45,10 @@ export function InvitationsCard({
   onAcceptOrgInvite,
   onDeclineOrgInvite,
 }: InvitationsCardProps) {
-  const { t } = useT("event-dashboard")
+  const { t } = useT("profile")
   const styles = useStyles()
 
-  const inviteCount = eventInvites.length + orgInvites.length
+  const slice = inviteRowSlice(eventInvites, orgInvites)
   if (invitesError) {
     return (
       <SectionCard label={t("invites.section")} variant="list">
@@ -64,8 +64,8 @@ export function InvitationsCard({
       </SectionCard>
     )
   }
-  if (invitesPending && inviteCount === 0) return <RowsSkeleton rows={1} />
-  if (inviteCount === 0) return null
+  if (invitesPending && slice.total === 0) return <RowsSkeleton rows={1} />
+  if (slice.total === 0) return null
 
   return (
     <SectionCard
@@ -73,7 +73,7 @@ export function InvitationsCard({
       variant="list"
       dividerInset={LIST_DIVIDER_INSET}
     >
-      {eventInvites.slice(0, INVITE_MAX_ROWS).map((invite) => (
+      {slice.events.map((invite) => (
         <EventInviteRow
           key={invite.id}
           invite={invite}
@@ -83,18 +83,16 @@ export function InvitationsCard({
           onDecline={onDeclineEventInvite}
         />
       ))}
-      {orgInvites
-        .slice(0, Math.max(0, INVITE_MAX_ROWS - eventInvites.length))
-        .map((invite) => (
-          <OrgInviteRow
-            key={invite.id}
-            invite={invite}
-            roleLabel={orgRoleLabel(invite.role)}
-            pending={pendingOrgInviteId === invite.id}
-            onAccept={onAcceptOrgInvite}
-            onDecline={onDeclineOrgInvite}
-          />
-        ))}
+      {slice.orgs.map((invite) => (
+        <OrgInviteRow
+          key={invite.id}
+          invite={invite}
+          roleLabel={orgRoleLabel(invite.role)}
+          pending={pendingOrgInviteId === invite.id}
+          onAccept={onAcceptOrgInvite}
+          onDecline={onDeclineOrgInvite}
+        />
+      ))}
     </SectionCard>
   )
 }

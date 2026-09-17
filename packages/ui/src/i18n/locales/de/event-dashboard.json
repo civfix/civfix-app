@@ -104,20 +104,6 @@
     "step_hours": "Danach schreibst du ihre Stunden gut",
     "cta": "Event erstellen"
   },
-  "invites": {
-    "section": "Einladungen",
-    "invited_by_unknown": "Jemand",
-    "event_invited_as": "{{name}} hat dich als {{role}} eingeladen",
-    "org_invited_as": "{{name}} hat dich als {{role}} eingeladen",
-    "accept": "Annehmen",
-    "decline": "Ablehnen",
-    "accept_a11y": "Einladung zu {{title}} annehmen",
-    "decline_a11y": "Einladung zu {{title}} ablehnen",
-    "error": "Das hat nicht geklappt. Versuche es erneut.",
-    "error_title": "Einladungen konnten nicht geladen werden",
-    "error_body": "civfix ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut.",
-    "retry": "Erneut versuchen"
-  },
   "team": {
     "section": "Team",
     "invite": "Einladen",

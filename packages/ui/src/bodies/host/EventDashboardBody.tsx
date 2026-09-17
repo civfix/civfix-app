@@ -23,22 +23,9 @@ import {
 import type { AnchorRect } from "../../primitives"
 import { NOW_TICK_MS, useAuthState, useEventBoundaryRefresh, useNow, useRequireAuth } from "../../data"
 import { actableOrganizations, useMyOrganizations } from "../../data/hooks/orgs"
-import {
-  hostedEventRows,
-  myEventInviteRows,
-  useAcceptMyEventInvite,
-  useDeclineMyEventInvite,
-  useEventInsights,
-  useMyEventInvites,
-  useMyHostedEvents,
-} from "../../data/hooks/host"
+import { hostedEventRows, useEventInsights, useMyHostedEvents } from "../../data/hooks/host"
 import { useCleanup } from "../../data/hooks/cleanups"
 import { useHostedEventsAnalytics } from "../../data/hooks/dashboard"
-import {
-  useAcceptMyOrgInvite,
-  useDeclineMyOrgInvite,
-  useMyOrgInvites,
-} from "../../data/hooks/orgs"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
@@ -52,7 +39,6 @@ import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
 import { FirstEventCard } from "./dashboard/FirstEventCard"
 import { HostedEventRow } from "./dashboard/HostedEventRow"
 import { ImpactCard } from "./dashboard/ImpactCard"
-import { InvitationsCard } from "./dashboard/InvitationsCard"
 import { NextUpCard } from "./dashboard/NextUpCard"
 import {
   analyticsFocusEvent,
@@ -123,12 +109,6 @@ export function EventDashboardBody() {
   const upcoming = useMyHostedEvents("upcoming", activeOrgId)
   const past = useMyHostedEvents("past", activeOrgId)
   const hosted = eventWindow === "past" ? past : upcoming
-  const eventInvites = useMyEventInvites()
-  const orgInvites = useMyOrgInvites()
-  const acceptEvent = useAcceptMyEventInvite()
-  const declineEvent = useDeclineMyEventInvite()
-  const acceptOrg = useAcceptMyOrgInvite()
-  const declineOrg = useDeclineMyOrgInvite()
 
   const events = useMemo(() => hostedEventRows(hosted.data?.pages), [hosted.data])
   const upcomingEvents = useMemo(() => hostedEventRows(upcoming.data?.pages), [upcoming.data])
@@ -158,12 +138,6 @@ export function EventDashboardBody() {
     nextUp?.phase === "live"
       ? (nextUpInsights.data?.seats.checkedIn ?? nextUp.event.checkedInCount)
       : null
-
-  const pendingEventInvites = useMemo(
-    () => myEventInviteRows(eventInvites.data),
-    [eventInvites.data],
-  )
-  const pendingOrgInviteRows = useMemo(() => orgInvites.data ?? [], [orgInvites.data])
 
   const roleLabel = useCallback(
     (role: CleanupMemberRole) => tEnums(`cleanupMemberRole.${role}`),
@@ -219,41 +193,6 @@ export function EventDashboardBody() {
   const onEdit = useCallback((event: HostedEventDTO) => {
     useNavStore.getState().push({ kind: "edit-cleanup", id: event.id })
   }, [])
-
-  const onInviteError = useCallback(() => {
-    toast.show(t("invites.error"), { variant: "error" })
-  }, [t, toast])
-
-  const acceptEventMutate = acceptEvent.mutate
-  const declineEventMutate = declineEvent.mutate
-  const acceptOrgMutate = acceptOrg.mutate
-  const declineOrgMutate = declineOrg.mutate
-
-  const onAcceptEventInvite = useCallback(
-    (inviteId: string) => acceptEventMutate({ inviteId }, { onError: onInviteError }),
-    [acceptEventMutate, onInviteError],
-  )
-  const onDeclineEventInvite = useCallback(
-    (inviteId: string) => declineEventMutate({ inviteId }, { onError: onInviteError }),
-    [declineEventMutate, onInviteError],
-  )
-  const onAcceptOrgInvite = useCallback(
-    (inviteId: string) => acceptOrgMutate({ inviteId }, { onError: onInviteError }),
-    [acceptOrgMutate, onInviteError],
-  )
-  const onDeclineOrgInvite = useCallback(
-    (inviteId: string) => declineOrgMutate({ inviteId }, { onError: onInviteError }),
-    [declineOrgMutate, onInviteError],
-  )
-
-  const pendingEventInviteId =
-    (acceptEvent.isPending ? acceptEvent.variables?.inviteId : undefined) ??
-    (declineEvent.isPending ? declineEvent.variables?.inviteId : undefined) ??
-    null
-  const pendingOrgInviteId =
-    (acceptOrg.isPending ? acceptOrg.variables?.inviteId : undefined) ??
-    (declineOrg.isPending ? declineOrg.variables?.inviteId : undefined) ??
-    null
 
   if (!isAuthenticated && !authPending) {
     return (
@@ -352,25 +291,6 @@ export function EventDashboardBody() {
             onShare={onShare}
           />
         ) : null}
-
-        <InvitationsCard
-          eventInvites={pendingEventInvites}
-          orgInvites={pendingOrgInviteRows}
-          invitesPending={eventInvites.isPending || orgInvites.isPending}
-          invitesError={eventInvites.isError || orgInvites.isError}
-          onRetryInvites={() => {
-            if (eventInvites.isError) void eventInvites.refetch()
-            if (orgInvites.isError) void orgInvites.refetch()
-          }}
-          eventRoleLabel={roleLabel}
-          orgRoleLabel={(role) => tEnums(`organizationMemberRole.${role}`)}
-          pendingEventInviteId={pendingEventInviteId}
-          pendingOrgInviteId={pendingOrgInviteId}
-          onAcceptEventInvite={onAcceptEventInvite}
-          onDeclineEventInvite={onDeclineEventInvite}
-          onAcceptOrgInvite={onAcceptOrgInvite}
-          onDeclineOrgInvite={onDeclineOrgInvite}
-        />
 
         {teaching ? <FirstEventCard onCreate={onCreate} /> : null}
 

@@ -104,20 +104,6 @@
     "step_hours": "You credit their hours after",
     "cta": "Create event"
   },
-  "invites": {
-    "section": "Invitations",
-    "invited_by_unknown": "Someone",
-    "event_invited_as": "{{name}} invited you as {{role}}",
-    "org_invited_as": "{{name}} invited you as {{role}}",
-    "accept": "Accept",
-    "decline": "Decline",
-    "accept_a11y": "Accept the invitation to {{title}}",
-    "decline_a11y": "Decline the invitation to {{title}}",
-    "error": "That did not work. Try again.",
-    "error_title": "Could not load your invitations",
-    "error_body": "We could not reach civfix. Check your connection and try again.",
-    "retry": "Try again"
-  },
   "team": {
     "section": "Team",
     "invite": "Invite",

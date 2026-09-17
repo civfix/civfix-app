@@ -10,7 +10,6 @@ import type {
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
 import { can } from "@civfix/shared/host"
 import {
-  INVITE_MAX_ROWS,
   analyticsFocusEvent,
   canManageOrgTeam,
   canSetOrgMemberRole,
@@ -438,7 +437,7 @@ describe("dashboard wiring", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).not.toContain("FeedBody")
     expect(body).not.toContain("feed/")
-    expect(body).toContain("./dashboard/InvitationsCard")
+    expect(body).toContain("./dashboard/NextUpCard")
   })
 
   it("routes the row actions at the nav kinds the plan named", () => {
@@ -815,11 +814,9 @@ describe("portfolio surface", () => {
     const files = [
       "../../EventDashboardBody.tsx",
       "../NextUpCard.tsx",
-      "../InvitationsCard.tsx",
       "../ImpactCard.tsx",
       "../FirstEventCard.tsx",
       "../HostedEventRow.tsx",
-      "../InviteRows.tsx",
       "../CollaboratorsSection.tsx",
       "../OrgInviteSheet.tsx",
       "../DuplicateEventSheet.tsx",
@@ -853,30 +850,12 @@ describe("portfolio surface", () => {
     expect(body).toContain('const ANALYTICS_RANGE = "all"')
     expect(body).toContain("<ImpactCard")
     expect(body).toContain("<TopVolunteersCard")
-    expect(body).toContain("<InvitationsCard")
     expect(body).toContain("<FirstEventCard")
-    expect(body).toContain("./dashboard/InvitationsCard")
-    expect(dashboardSource("InvitationsCard.tsx")).toContain("./InviteRows")
   })
 
-  it("demotes create-event and the invitation accept to secondary", () => {
+  it("demotes create-event to secondary", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("<SecondaryButton")
-    const invites = dashboardSource("InviteRows.tsx")
-    expect(invites).not.toContain("PrimaryButton")
-    expect(invites).toContain("<SecondaryButton")
-    expect(invites).toContain("<TextLink")
-  })
-
-  it("gives an invitation its own action line, so the title and the inviter stay readable", () => {
-    const invites = dashboardSource("InviteRows.tsx")
-    expect(invites.match(/footer=\{/g) ?? [], "both invite rows act below their text")
-      .toHaveLength(2)
-    expect(invites, "the trailing slot no longer squeezes the text column").not.toContain(
-      "trailing={",
-    )
-    expect(invites.match(/titleLines=\{2\}/g) ?? []).toHaveLength(2)
-    expect(invites).not.toContain('justifyContent: "flex-end"')
   })
 
   it("keeps the team in the shared list card, and leaves donation editing to the org page", () => {
@@ -908,7 +887,6 @@ describe("portfolio surface", () => {
       ["next_up", "more_shifts_a11y"],
       ["next_up", "meter_a11y"],
       ["analytics", "for_event"],
-      ["invites", "section"],
       ["impact", "section"],
       ["impact", "all_time"],
       ["impact", "unit_hours"],
@@ -975,17 +953,16 @@ describe("portfolio surface", () => {
     expect(rowSource).toContain('<PhaseDot phase="live" />')
   })
 
-  it("drops the needs-attention card and keeps invitations in one of their own", () => {
+  it("drops the needs-attention card, and leaves invitations to the profile", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).not.toContain("AttentionCard")
     expect(body).not.toContain("attentionRows")
     expect(body).not.toContain("host-log-hours")
     expect(existsSync(new URL("../AttentionCard.tsx", import.meta.url))).toBe(false)
-    const card = dashboardSource("InvitationsCard.tsx")
-    expect(card).toContain('t("invites.section")')
-    expect(card).not.toContain("attention.")
-    expect(card).not.toContain("TaskRow")
-    expect(card).toContain("if (inviteCount === 0) return null")
+    expect(body).not.toContain("Invite")
+    expect(body).not.toContain("invite")
+    expect(existsSync(new URL("../InvitationsCard.tsx", import.meta.url))).toBe(false)
+    expect(existsSync(new URL("../InviteRows.tsx", import.meta.url))).toBe(false)
   })
 
   it("puts the analytics carousel on the dashboard, named after the event it describes", () => {
@@ -998,11 +975,6 @@ describe("portfolio surface", () => {
     expect(dashboardSource("AnalyticsCarouselCard.tsx")).toContain(
       'const heading = label ?? t("card.title")',
     )
-  })
-
-  it("caps the invitation rows the small card shows", () => {
-    expect(INVITE_MAX_ROWS).toBe(3)
-    expect(dashboardSource("InvitationsCard.tsx")).toContain("INVITE_MAX_ROWS")
   })
 
   it("makes the hidden-shift line a pressable route into host tools", () => {

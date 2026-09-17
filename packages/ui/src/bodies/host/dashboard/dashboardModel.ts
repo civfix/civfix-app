@@ -28,8 +28,6 @@ import {
 import { addWallClockDays, formInstantMs } from "../../calendarModel"
 import { viewerTimeZone } from "../../../i18n"
 
-export const INVITE_MAX_ROWS = 3
-
 const DAY_MS = 86_400_000
 
 export interface DashboardScope {

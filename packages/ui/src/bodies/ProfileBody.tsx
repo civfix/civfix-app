@@ -21,6 +21,7 @@ import {
   type ProfileReports,
 } from "./ProfileView"
 import { ServiceHoursSection } from "./profile/ServiceHoursSection"
+import { InvitationsSection } from "./profile/InvitationsSection"
 import { pushCleanup } from "./navHelpers"
 
 function DashboardRow({ onOpen }: { onOpen: () => void }) {
@@ -175,7 +176,12 @@ export function ProfileBody() {
         onOpenSaved={onOpenSaved}
         reports={profileReports}
         hours={<ServiceHoursSection variant="own" totalHours={profile.volunteerHours} />}
-        dashboardSlot={<DashboardRow onOpen={onOpenDashboard} />}
+        dashboardSlot={
+          <View style={styles.dashboardStack}>
+            <InvitationsSection />
+            <DashboardRow onOpen={onOpenDashboard} />
+          </View>
+        }
       />
     </ScrollView>
   )
@@ -194,6 +200,9 @@ const useStyles = makeThemedStyles((t) => ({
   stateContent: {
     flexGrow: 1,
     justifyContent: "center",
+  },
+  dashboardStack: {
+    gap: t.space["4"],
   },
   dashboardRow: {
     flexDirection: "row",
