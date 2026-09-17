@@ -13,6 +13,12 @@ import { Text, Icon, iconMap } from "../typography"
 import { useFollowPerson, useRequireAuth } from "../data"
 import { useT } from "../i18n"
 
+const FOLLOW_MIN_TOUCH_TARGET = 44
+const FOLLOW_HEIGHT_SM = 30
+const FOLLOW_HEIGHT_MD = 42
+const FOLLOW_SM_HIT_SLOP = (FOLLOW_MIN_TOUCH_TARGET - FOLLOW_HEIGHT_SM) / 2
+const FOLLOW_MD_HIT_SLOP = (FOLLOW_MIN_TOUCH_TARGET - FOLLOW_HEIGHT_MD) / 2
+
 export interface FollowButtonProps {
   personId: string
   isFollowing: boolean
@@ -42,7 +48,7 @@ export function FollowButton({ personId, isFollowing, nextPath, size = "md", sty
       accessibilityRole="button"
       accessibilityState={{ selected: isFollowing, busy: follow.isPending }}
       accessibilityLabel={isFollowing ? t("button.following") : t("button.follow")}
-      hitSlop={6}
+      hitSlop={compact ? FOLLOW_SM_HIT_SLOP : FOLLOW_MD_HIT_SLOP}
       {...focusRingProps}
       style={(state) => [
         styles.base,
@@ -79,12 +85,12 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sm: {
     paddingHorizontal: t.space["3"],
-    height: 30,
+    height: FOLLOW_HEIGHT_SM,
     minWidth: 92,
   },
   md: {
     paddingHorizontal: t.space["5"],
-    height: 42,
+    height: FOLLOW_HEIGHT_MD,
   },
   idle: {
     backgroundColor: t.colors.brand.bloom,

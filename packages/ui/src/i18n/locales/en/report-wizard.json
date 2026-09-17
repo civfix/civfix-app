@@ -66,7 +66,8 @@
     "route_routable": "Auto-forwarded once verified - usually 1-3 business days.",
     "route_new_area": "New area - {{cityState}} is not set up for automatic routing yet. We will review and forward it manually.",
     "route_uncovered": "We do not cover this area yet, but your report is logged and reviewed manually.",
-    "route_resolving": "Resolving where this routes..."
+    "route_resolving": "Resolving where this routes...",
+    "where_near": "Near {{address}}"
   },
   "submit": {
     "submitting_title": "Filing your report",

@@ -121,9 +121,11 @@ describe("the entry points that focus it", () => {
 })
 
 describe("the field's material", () => {
-  it("keeps the docked pill's design literals and takes no new i18n key", () => {
-    expect(bodyCode).toContain("const FIELD_HEIGHT = 40")
-    expect(bodyCode).toMatch(/gap: 10,\s*\n\s*height: FIELD_HEIGHT,\s*\n\s*paddingHorizontal: 14,\s*\n\s*borderRadius: 12/)
+  it("keeps the docked pill on the shared list-field recipe and takes no new i18n key", () => {
+    expect(bodyCode).toContain("const MIN_TOUCH_TARGET = 44")
+    expect(bodyCode).toMatch(
+      /gap: 9,\s*\n\s*minHeight: MIN_TOUCH_TARGET,\s*\n\s*paddingHorizontal: 12,\s*\n\s*borderRadius: t\.radius\.md/,
+    )
     expect(bodyCode).toContain("backgroundColor: t.colors.surface")
     expect(bodyCode).toContain('searchModeFor("search", null).placeholder')
     expect(bodyCode).toContain('tSearch("a11y.clear")')

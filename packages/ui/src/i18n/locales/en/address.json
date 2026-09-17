@@ -1,0 +1,19 @@
+{
+  "row": {
+    "near": "Near {{address}}",
+    "copy": "Copy address",
+    "copied": "Address copied",
+    "copy_failed": "Couldn't copy the address",
+    "open_maps": "Open in a maps app",
+    "focus_a11y": "{{address}}",
+    "focus_hint": "Shows this spot on the map",
+    "static_a11y": "Address: {{address}}"
+  },
+  "sheet": {
+    "title": "Address",
+    "dismiss": "Close",
+    "apple": "Open in Apple Maps",
+    "google": "Open in Google Maps",
+    "copy": "Copy address"
+  }
+}

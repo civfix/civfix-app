@@ -133,7 +133,7 @@ describe("portrait frame wiring", () => {
     // Byte-identical key => React never remounts the profile subtree, so its tab selection and scroll
     // offset survive the round trip through the child.
     expect(withChild.overlay.transitionKey).toBe(personOnly.overlay.transitionKey)
-    expect(withChild.overlay.transitionKey).toBe("person:p::::")
+    expect(withChild.overlay.transitionKey).toBe("person:p:::::")
     // Covered by the child's sheet card => pointer-inert, or a tap in the bare strip above it would land
     // on the profile behind a modal.
     expect(personOnly.overlay.interactive).toBe(true)

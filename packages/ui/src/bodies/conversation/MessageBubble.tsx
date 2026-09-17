@@ -550,6 +550,12 @@ export const Bubble = React.memo(function Bubble({
   const showBodyText = !embedPlan.linkOnly
   const atts = message.attachments ?? []
   const hasBody = body.length > 0
+  const emptyRow =
+    !hasBody &&
+    !isPoll &&
+    atts.length === 0 &&
+    embedPlan.refs.length === 0 &&
+    message.kind !== "system"
   const toggleReaction = (emoji: ReactionEmoji) => onToggleReaction(message.id, emoji)
 
   const inFlight = mine && (pending || failed)
@@ -630,7 +636,12 @@ export const Bubble = React.memo(function Bubble({
         </View>
       ) : null}
       <View style={styles.bubbleRow}>
-        {!hasBody ? null : isWeb ? (
+        {emptyRow ? (
+          <View style={styles.processingBubble}>
+            <Icon icon={iconMap.Image} size={13} color={th.colors.textSubtle} />
+            <Text style={styles.processingBubbleText}>{t("bubble.attachment_processing")}</Text>
+          </View>
+        ) : !hasBody ? null : isWeb ? (
           <View ref={menuAnchorRef} style={[styles.bubble, bubbleChrome, bubbleTint]}>
             {bubbleInner}
             {flash ? <FlashOverlay mine={tinted} shape={bare ? "card" : "bubble"} /> : null}

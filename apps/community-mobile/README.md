@@ -69,7 +69,7 @@ pnpm --filter community-mobile exec expo run:ios      # or run:android
 
 Then start the bundler with `pnpm --filter community-mobile start` (runs `expo start --dev-client`).
 
-## Store builds: TestFlight (staging API) vs App Store (prod API)
+## Store-distribution profiles: `testflight` vs `production`
 
 Two store-distribution profiles exist in `apps/community-mobile/eas.json`, differing only in the
 baked API base URL and their EAS Update channel:
@@ -77,9 +77,81 @@ baked API base URL and their EAS Update channel:
 - `testflight` - dev/testing builds for TestFlight. Bakes
   `EXPO_PUBLIC_API_URL=https://api.civfix.dev`, so testers hit the staging API. Update channel
   `testflight`.
-- `production` - official App Store releases. Sets no `EXPO_PUBLIC_API_URL`,
-  so release builds fall back to the prod API `https://api.civfix.org`
-  (`src/lib/apiUrl.ts`). Update channel `production`.
+- `production` - official App Store releases. Sets no `EXPO_PUBLIC_API_URL`, so the base URL is
+  chosen at RUNTIME by install source: `https://api.civfix.dev` while that build is handed out
+  through TestFlight, `https://api.civfix.org` once the same build is downloaded from the App Store
+  (`src/lib/apiUrl.ts`, `src/lib/nativeBetaInstall.ts`). Update channel `production`.
+
+### How the runtime split is decided (iOS only)
+
+**This split exists on iOS and nowhere else.** `src/lib/nativeBetaInstall.ts` returns `false` for any
+other platform, so an Android release build - including one handed to internal-track testers - always
+resolves to the production API. Android's own testing tracks have no equivalent on-device marker.
+
+iOS ships the App Store and TestFlight copies of a build with different StoreKit receipts: a store
+download gets `StoreKit/receipt` in the app's data container, a TestFlight install gets
+`StoreKit/sandboxReceipt`. `src/lib/nativeBetaInstall.ts` reads those two paths synchronously through
+`expo-file-system`, so `API_URL` is a plain module constant and one session can never straddle two
+APIs. `expo-application`'s `getIosApplicationReleaseTypeAsync()` cannot make this call: it reads the
+embedded provisioning profile, which reports `APP_STORE` for TestFlight and App Store alike.
+
+Precedence is `EXPO_PUBLIC_API_URL` (when baked) -> `__DEV__` localhost -> the receipt probe.
+
+**Both receipts can be on disk at once.** Moving between TestFlight and the App Store is an in-place
+update and the previous receipt is not removed, so mere presence decides nothing: the **newer** file
+wins (`src/lib/storeKitReceipt.ts`). Everything ambiguous resolves to production - no sandbox receipt,
+a tie, an unreadable modification time, an unreadable container, a probe that throws: all `false`. A
+store download therefore cannot be routed to staging by any failure mode of this probe.
+
+**The container path is an assumption.** The probe reconstructs `Bundle.main.appStoreReceiptURL` as
+`<data container>/StoreKit/<name>`, derived from `Paths.document.parentDirectory`. If Apple ever
+changes that layout the probe goes permanently `false` - production for everyone, which is the safe
+direction but silent. A dev build logs the resolved container and both receipt stats under
+`[install-source]` so the assumption can be checked on a real device.
+
+**Identity-bearing state is scoped to the API it was written against** (`src/lib/storageScope.ts`).
+Four ids carry the API host as a suffix: the app MMKV instance (`civfix.app` - cached user, last
+identity, persisted query cache, prefs), the session token in the keychain
+(`civfix.session.token`), the secure-blob MMKV instance (`civfix.secure`) and its keychain encryption
+key (`civfix.secure-blobs.key`). Production deliberately keeps the legacy un-suffixed ids so existing
+App Store users are not signed out by this change.
+
+Three stores are deliberately NOT scoped, because none of them holds identity or server state: the map
+filter prefs including recent-search history (`civfix.ui.filters`, `@civfix/ui`
+`map/filterStorage.native.ts`), the sidebar width (`civfix.ui.sidebar`,
+`shell/sidebarStorage.native.ts`), and the push `device_id` (`civfix.device_id`, `src/lib/deviceId.ts`),
+which must stay stable per install for the backend's push-token ownership guard to recognise a
+same-device handoff.
+
+**Scoping alone does not protect the TestFlight -> App Store upgrade**, and that is the whole point of
+`src/lib/storageEnvMarker.ts` + `src/lib/legacyStorageReset.ts`. Production resolves to the LEGACY ids,
+so a prod build cannot tell its own leftovers from a pre-namespacing TestFlight install's staging
+leftovers sitting under the same ids. Every run therefore records its environment in an unscoped
+keychain item (`civfix.storage.env`), and `adoptStorageEnvironment()` runs at boot before the first
+session read: on a production boot whose marker names a non-production environment, it clears the four
+legacy ids (the blob encryption key is emptied through its own store rather than deleted, so an
+already-open MMKV instance is never re-keyed mid-process) and the in-memory query cache. The marker
+lives in the keychain, not MMKV, because the keychain is where the dangerous leftover survives an app
+DELETE - so delete-and-reinstall into the App Store copy is covered too.
+
+*What it cannot detect:* the FIRST upgrade off a build that predates the marker. There the marker is
+absent, and an absent marker beside a legacy session token is genuinely ambiguous - equally a
+long-standing App Store user whose session is legitimately theirs. Signing all of those out is the
+worse failure, so an absent marker keeps the state: that one upgrade still sends a staging token to
+prod, is rejected with a 401 and signs out, after briefly painting the cached staging user. Every later
+environment flip on that install is covered, because by then a marker exists. Note also that a purge
+clears `civfix.app` wholesale, so the locale, theme and onboarding-seen prefs of the discarded
+environment go with it.
+
+**Share links do not follow the split.** `app.config.js` `ios.associatedDomains` pins
+`applinks:civfix.org` / `applinks:www.civfix.org` only, so a `civfix.dev` link produced by a
+staging-resolved build opens in the browser rather than deep-linking into the app. Universal links
+work only against the production domain; adding `civfix.dev` would need a new entitlement and a
+matching apple-app-site-association file on that host.
+
+**App Review runs against staging.** A reviewer's copy is installed through the beta/sandbox path, so
+the probe returns `true` and review sessions hit `api.civfix.dev`. That is a deliberate, recorded
+property - see the "Environment" section of `APP-REVIEW-NOTES.md` and its pre-submission checklist.
 
 ### Hand-driven Xcode archive (`scripts/prep-archive.sh`)
 
@@ -93,8 +165,8 @@ read `.env` at *archive* time.
 So prep the native project with the target's `.env` in place, then archive by hand:
 
 ```sh
-pnpm --filter community-mobile prep:testflight   # -> https://api.civfix.dev
-pnpm --filter community-mobile prep:appstore     # -> https://api.civfix.org
+pnpm --filter community-mobile prep:testflight   # -> bakes https://api.civfix.dev
+pnpm --filter community-mobile prep:appstore     # -> bakes NOTHING; resolved at runtime
 apps/community-mobile/scripts/prep-archive.sh appstore --platform android
 ```
 
@@ -116,9 +188,11 @@ for every third-party dependency. Then: open `ios/civfix.xcworkspace`, destinati
 
 Two things this script exists to stop:
 
-- `.env` is gitignored and *persists*. A `testflight` prep silently governs every later local build
-  on that machine, so the `appstore` target writes `https://api.civfix.org` **explicitly** rather
-  than leaning on the fallback in `src/lib/apiUrl.ts`. Re-run the script before switching targets.
+- `.env` is gitignored and *persists*. A `testflight` prep would otherwise silently govern every
+  later local build on that machine. The script **rewrites `.env` on every run**, so the `appstore`
+  target's omission of `EXPO_PUBLIC_API_URL` is a real omission and not a leftover - and the banner
+  refuses to let you archive unless the built config carries **no `apiUrl` at all**. Baking one there
+  would freeze the runtime split to a single API. Re-run the script before switching targets.
 - `expo prebuild` deletes `DEVELOPMENT_TEAM` from the pbxproj on every run unless `ios.appleTeamId`
   is set, so a team picked by hand in Xcode's Signing & Capabilities pane vanishes on the next
   prebuild. The script reads the existing team back out and feeds it in via `CIVFIX_APPLE_TEAM_ID`.
@@ -143,7 +217,7 @@ Android ships by hand from this directory: prep the target, re-apply the machine
 Temurin 25).
 
 ```sh
-scripts/prep-archive.sh testflight --platform android   # or appstore -> https://api.civfix.org
+scripts/prep-archive.sh testflight --platform android   # or appstore; Android always resolves to https://api.civfix.org
 scripts/android-release-patches.sh
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-22.jdk/Contents/Home
 cd android && ./gradlew --no-daemon :app:assembleRelease   # or :app:bundleRelease for the Play .aab
@@ -286,7 +360,9 @@ to `eas build`), and never map the `testflight` channel onto a prod-published br
 Config plugins for the native modules (camera/mic/location permission strings, Google sign-in URL
 scheme, Apple auth, notifications) are declared in `apps/community-mobile/app.config.js`. The API base
 URL comes from `EXPO_PUBLIC_API_URL`, surfaced via `extra.apiUrl`; when unset, dev builds fall back
-to `http://localhost:8080` and release builds to `https://api.civfix.org` (`src/lib/apiUrl.ts`).
+to `http://localhost:8080` and release builds to whichever API the install source implies -
+`https://api.civfix.dev` from TestFlight, `https://api.civfix.org` from the App Store
+(`src/lib/apiUrl.ts`).
 
 ## pnpm + Expo + the shared packages
 

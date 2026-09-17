@@ -17,6 +17,18 @@
     "runsFor": "Runs for",
     "duration_hours": "{{count}} h"
   },
+  "cover": {
+    "label": "Cover image",
+    "hint": "Shown at the top of your event page instead of the map.",
+    "add": "Add a cover",
+    "replace": "Replace cover",
+    "remove": "Remove cover",
+    "uploading": "Uploading...",
+    "error_rejected": "That image could not be used. Try a different photo.",
+    "error_rate_limited": "Too many uploads. Wait a moment and try again.",
+    "error_generic": "Could not upload that image. Try again.",
+    "error_not_image": "Pick an image - a video can't be used as a cover."
+  },
   "linkedReports": {
     "label": "Reports at this spot",
     "loadError": "Could not load reports. Try again.",
@@ -58,5 +70,18 @@
     "time_past": "Pick a time that hasn't passed yet.",
     "end_too_soon": "End at least {{minutes}} minutes after the start.",
     "time_dst_gap": "That time doesn't exist on this date because the clocks jump forward. Pick another time."
+  },
+  "address": {
+    "label": "Meeting address",
+    "placeholder": "Street address people will navigate to",
+    "placeholderManual": "Type the meeting address",
+    "near": "Near {{address}}",
+    "resolving": "Looking up the address for this pin...",
+    "confirmHint": "This is what attendees will see and navigate to. Edit it if it's not right.",
+    "manualRequired": "We couldn't find a street address for this pin - enter the meeting address.",
+    "manualRequiredNear": "We couldn't find a street address for this pin in {{cityState}} - enter the meeting address.",
+    "tooShort": "Enter at least 3 characters so attendees can find the spot.",
+    "pinMoved": "Pin moved - double-check the address.",
+    "pinFirst": "Drop the pin first and we'll look up the address."
   }
 }

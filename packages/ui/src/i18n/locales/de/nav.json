@@ -34,12 +34,16 @@
     "drop_pin": "Hier hinzufügen",
     "host_mode": "Host-Modus",
     "host_checkin": "Check-in",
-    "host_broadcast_quick": "Kurznachricht",
     "host_team": "Team",
     "host_log_hours": "Freiwilligenstunden erfassen",
     "my_ticket": "Dein Ticket",
     "org": "Organisation",
-    "event_dashboard": "Event-Dashboard"
+    "event_dashboard": "Event-Dashboard",
+    "announcement": "Ankündigung",
+    "announcements": "Ankündigungen",
+    "host_announce": "Ankündigung schreiben",
+    "event_analytics": "Auswertung",
+    "org_manage": "Einstellungen der Organisation"
   },
   "tab": {
     "home": "Start",

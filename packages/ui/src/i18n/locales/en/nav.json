@@ -34,12 +34,16 @@
     "drop_pin": "Add here",
     "host_mode": "Host mode",
     "host_checkin": "Check-in",
-    "host_broadcast_quick": "Quick message",
     "host_team": "Team",
     "host_log_hours": "Log volunteer hours",
     "my_ticket": "Your ticket",
     "org": "Organization",
-    "event_dashboard": "Event dashboard"
+    "event_dashboard": "Event dashboard",
+    "announcement": "Announcement",
+    "announcements": "Announcements",
+    "host_announce": "Make announcement",
+    "event_analytics": "Event analytics",
+    "org_manage": "Organization settings"
   },
   "tab": {
     "home": "Home",

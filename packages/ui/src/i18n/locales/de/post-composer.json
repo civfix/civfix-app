@@ -29,6 +29,9 @@
       "placeholder": "Füge deine Sicht hinzu..."
     }
   },
+  "quote": {
+    "unavailable": "Dieser Beitrag ist nicht verfügbar."
+  },
   "action": {
     "post": "Posten",
     "reply": "Antworten",

@@ -97,6 +97,8 @@ export {
 } from "./hooks"
 export { useReverseLabel, reverseLabelText, coordsLabel } from "./hooks"
 export type { ReverseLabelPoint } from "./hooks"
+export { useResolveAddress, resolvedAddressValue } from "./hooks"
+export type { ResolveAddressPoint } from "./hooks"
 export { useNearbyCleanups, useFeedNotifications, NEARBY_RADIUS_M, useUserLocation } from "./hooks"
 export {
   useApproximateLocation,
@@ -121,7 +123,6 @@ export {
   useGuestRsvpRequest,
   useGuestRsvpVerify,
   useGuestRsvpCancel,
-  useCleanupGuests,
   cleanupDetailFilters,
 } from "./hooks"
 export type {
@@ -227,6 +228,7 @@ export type {
 } from "./hooks/host"
 
 export {
+  ORG_EVENTS_PAGE_SIZE,
   ORG_MEMBERS_PAGE_SIZE,
   actableOrganizations,
   invalidateMyOrgInvites,
@@ -244,6 +246,7 @@ export {
   useRemoveOrganizationMember,
   useRevokeOrganizationInvite,
   useSetOrganizationMemberRole,
+  useUpdateOrganization,
 } from "./hooks/orgs"
 export type {
   InviteOrganizationMemberVars,
@@ -252,6 +255,21 @@ export type {
 } from "./hooks/orgs"
 
 export { useHostedEventsAnalytics } from "./hooks/dashboard"
+
+export { EVENT_ANALYTICS_STALE_MS, useEventAnalytics } from "./hooks/analytics"
+
+export {
+  ANNOUNCEMENTS_PAGE_SIZE,
+  AUDIENCE_PREVIEW_DEBOUNCE_MS,
+  announcementRows,
+  audienceKey,
+  invalidateEventAnnouncements,
+  useAnnouncement,
+  useAudiencePreview,
+  useCreateAnnouncement,
+  useEventAnnouncements,
+} from "./hooks/announcements"
+export type { CreateAnnouncementVars } from "./hooks/announcements"
 
 
 export { fetchEventIcs, useEventIcs } from "./eventIcs"

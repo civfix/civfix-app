@@ -17,6 +17,8 @@ const NOTIFICATION_LINKS = [
   "/cleanups/c1/checkin",
   "/cleanups/c1/ticket",
   "/cleanups/c1/ticket/s1",
+  "/cleanups/c1/announcements",
+  "/cleanups/c1/announcements/a1",
   "/orgs/acme",
   "/people/u1",
   "/post/p1",
@@ -114,16 +116,30 @@ test("an event push that names a host surface lands in a shell, not on a native 
     { entry: { kind: "host-team", id: "c1" } as const, route: "cleanups/[id]/team" },
     { entry: { kind: "host-log-hours", id: "c1" } as const, route: "cleanups/[id]/hours" },
     { entry: { kind: "my-ticket", id: "c1", seatId: "s1" } as const, route: "cleanups/[id]/ticket/[seatId]" },
-    { entry: { kind: "org", slug: "acme" } as const, route: "orgs/[slug]" },
+    { entry: { kind: "event-analytics", id: "c1" } as const, route: "cleanups/[id]/analytics" },
+    { entry: { kind: "announcements", id: "c1" } as const, route: "cleanups/[id]/announcements" },
+    {
+      entry: { kind: "announcement", id: "c1", announcementId: "a1" } as const,
+      route: "cleanups/[id]/announcements/[announcementId]",
+    },
+    { entry: { kind: "org", slug: "acme" } as const, route: "orgs/[slug]/index" },
+    { entry: { kind: "org-manage", slug: "acme" } as const, route: "orgs/[slug]/manage" },
   ]
   for (const { entry, route } of SHELL_HOSTED) {
     assert.equal(bridgeKey(entry), null, `${entry.kind} still claims a bridge key`)
-    assert.equal(nativeBridgeKey({ name: route, params: { id: "c1", seatId: "s1", slug: "acme" } }), null, route)
+    assert.equal(
+      nativeBridgeKey({
+        name: route,
+        params: { id: "c1", seatId: "s1", slug: "acme", announcementId: "a1" },
+      }),
+      null,
+      route,
+    )
     assert.equal(shellHostsEntries({ name: route }), true, route)
   }
 })
 
-test("a broadcast push that lands in the sheet claims no native bridge key", () => {
-  assert.equal(bridgeKey({ kind: "host-broadcast-quick", id: "c1" }), null)
+test("the announcement composer lands in the sheet and claims no native bridge key", () => {
+  assert.equal(bridgeKey({ kind: "host-announce", id: "c1" }), null)
   assert.equal(shellHostsEntries({ name: "compose" }), false)
 })

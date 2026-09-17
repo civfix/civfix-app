@@ -192,6 +192,7 @@ const broadcastStatus = {
 
 const broadcastKind = {
   host_broadcast: { hue: "lilac", icon: Megaphone, labelKey: "enums:broadcastKind.host_broadcast" },
+  announcement: { hue: "sky", icon: Megaphone, labelKey: "enums:broadcastKind.announcement" },
   confirmation: { hue: "moss", icon: CircleCheck, labelKey: "enums:broadcastKind.confirmation" },
   waitlist_promoted: { hue: "sky", icon: Bell, labelKey: "enums:broadcastKind.waitlist_promoted" },
   reminder: { hue: "sun", icon: Clock, labelKey: "enums:broadcastKind.reminder" },

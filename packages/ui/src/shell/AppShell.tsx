@@ -14,10 +14,17 @@ import { SEARCH_IS_OVERLAY } from "./searchRevealPlatform"
 import { useTabBarStore } from "./tabBarStore"
 import type { AppShellProps } from "./types"
 
-export function AppShell({ map, mapControls, authOverlay, renderBody = defaultRenderBody }: AppShellProps) {
+export function AppShell({
+  map,
+  mapControls,
+  authOverlay,
+  renderBody = defaultRenderBody,
+  stack,
+}: AppShellProps) {
   const mode = useLayoutMode()
   const view = useNavStore((state) => state.view)
-  const active = useNavStore((state) => state.active)
+  const liveActive = useNavStore((state) => state.active)
+  const active = stack ? (stack[stack.length - 1] ?? null) : liveActive
   const seededDetailPage = useNavStore((state) => state.seededDetailPage)
   const fullPageDetails = DETAILS_ARE_FULL_PAGE || (mode === "compact" && seededDetailPage)
   const searchOverlayUp = SEARCH_IS_OVERLAY && view === "search"
@@ -54,7 +61,7 @@ export function AppShell({ map, mapControls, authOverlay, renderBody = defaultRe
         ) : null}
         {mountMapControls ? <View style={styles.controls}>{mapControls}</View> : null}
         {mode === "expanded" ? (
-          <ExpandedShell renderBody={renderBody} />
+          <ExpandedShell renderBody={renderBody} stack={stack} />
         ) : (
           <PortraitShell
             active={active}
@@ -63,6 +70,7 @@ export function AppShell({ map, mapControls, authOverlay, renderBody = defaultRe
             view={view}
             baseView={baseView}
             fullPageDetails={fullPageDetails}
+            stack={stack}
           />
         )}
         {authOverlay ? (

@@ -104,11 +104,13 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
-    padding: t.space["4"],
+    paddingVertical: t.space["4"],
+    paddingHorizontal: t.space["4"],
     ...t.shadows.s1,
   },
   cardList: {
-    padding: 0,
+    paddingVertical: t.space["2"],
+    paddingHorizontal: 0,
     overflow: "hidden",
   },
   divider: {

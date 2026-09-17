@@ -1,0 +1,28 @@
+{
+  "invalid": {
+    "title": "Este enlace no funciona",
+    "body": "El enlace de cancelación está incompleto. Abre el enlace de tu correo o mensaje de confirmación exactamente como se envió, o pide al organizador que te quite de la lista.",
+    "action": "Ir al mapa"
+  },
+  "confirm": {
+    "title": "¿Cancelar tu asistencia?",
+    "body": "Esto te quita de la lista de invitados del evento de tu mensaje de confirmación y avisa al organizador. Dejarás de recibir novedades sobre el evento.",
+    "cancel": "Cancelar mi asistencia",
+    "keep": "Mantener mi asistencia"
+  },
+  "cancelling": "Cancelando tu asistencia...",
+  "done": {
+    "title": "Tu asistencia está cancelada",
+    "body": "Ya no estás en la lista de invitados y se avisó al organizador. Puedes confirmar tu asistencia de nuevo cuando quieras desde la página del evento.",
+    "action": "Ir al mapa"
+  },
+  "error": {
+    "title": "No pudimos cancelar esa asistencia",
+    "fallback": "Algo salió mal. Por favor, inténtalo de nuevo.",
+    "retry": "Intentar de nuevo",
+    "notFound": "No encontramos esa confirmación de asistencia. Puede que el enlace haya expirado o que el evento ya haya terminado.",
+    "validation": "Este enlace de cancelación parece incorrecto o ha expirado.",
+    "rateLimited": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+    "network": "No pudimos conectar con civfix para cancelar tu asistencia. Revisa tu conexión e inténtalo de nuevo."
+  }
+}

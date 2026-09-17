@@ -349,6 +349,8 @@ function EventsHeader({
   )
 }
 
+const MIN_TOUCH_TARGET = 44
+
 const useStyles = makeThemedStyles((t) => ({
   list: {
     flex: 1,
@@ -467,7 +469,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: 9,
-    height: 42,
+    minHeight: MIN_TOUCH_TARGET,
     marginTop: t.space["2"],
     marginBottom: t.space["2"],
     paddingHorizontal: 12,

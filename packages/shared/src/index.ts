@@ -29,6 +29,7 @@ export * from "./types/ws.js"
 export * from "./types/domain.js"
 
 export * from "./geo.js"
+export * from "./address.js"
 
 export * from "./avatar.js"
 export * from "./datetime.js"

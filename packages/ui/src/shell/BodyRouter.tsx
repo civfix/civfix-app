@@ -40,12 +40,16 @@ import {
   DropPinBody,
   HostModeBody,
   HostCheckinBody,
-  HostBroadcastQuickBody,
+  HostAnnounceBody,
   HostTeamBody,
   HostLogHoursBody,
   MyTicketBody,
   OrgPageBody,
+  OrgManageBody,
   EventDashboardBody,
+  AnnouncementBody,
+  AnnouncementsBody,
+  EventAnalyticsBody,
 } from "../bodies"
 import type { DetailEntry, View as NavView } from "../nav"
 import { VIEW_BODY, DETAIL_BODY, type BodyId } from "./bodyRoutes"
@@ -160,8 +164,8 @@ function renderBodyId(id: BodyId, entry: DetailEntry | null): React.ReactNode {
       return <HostModeBody id={entry?.id ?? ""} />
     case "hostCheckin":
       return <HostCheckinBody id={entry?.id ?? ""} />
-    case "hostBroadcastQuick":
-      return <HostBroadcastQuickBody id={entry?.id ?? ""} />
+    case "hostAnnounce":
+      return <HostAnnounceBody id={entry?.id ?? ""} />
     case "hostTeam":
       return <HostTeamBody id={entry?.id ?? ""} />
     case "hostLogHours":
@@ -172,8 +176,21 @@ function renderBodyId(id: BodyId, entry: DetailEntry | null): React.ReactNode {
       )
     case "orgPage":
       return <OrgPageBody slug={entry?.slug ?? ""} />
+    case "orgManage":
+      return <OrgManageBody slug={entry?.slug ?? ""} />
     case "eventDashboard":
       return <EventDashboardBody />
+    case "eventAnalytics":
+      return <EventAnalyticsBody id={entry?.id ?? ""} />
+    case "announcements":
+      return <AnnouncementsBody id={entry?.id ?? ""} />
+    case "announcement":
+      return (
+        <AnnouncementBody
+          id={entry?.id ?? ""}
+          announcementId={entry?.announcementId ?? ""}
+        />
+      )
     case "stub": {
       const label = entry ? (entry.id ? `${entry.kind} #${entry.id}` : entry.kind) : "stub"
       return <Stub label={label} />

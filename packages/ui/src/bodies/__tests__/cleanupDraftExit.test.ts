@@ -58,6 +58,9 @@ function typedForm(over: Partial<CleanupFormValue> = {}): CleanupFormValue {
     eventKind: "cleanup",
     addrQuery: "Ocean Beach",
     spot: "By the north lot",
+    address: "1 Great Highway, San Francisco, CA",
+    addressSource: "resolved",
+    addressPointKey: "10.00000,20.00000",
     coords: { lat: 10, lng: 20 },
     date: null,
     time: null,
@@ -78,6 +81,8 @@ function typedForm(over: Partial<CleanupFormValue> = {}): CleanupFormValue {
     linkedReportIds: ["report-a"],
     shareToFeed: true,
     feedCaption: "",
+    coverMediaId: null,
+    coverPreviewUrl: null,
     ...over,
   }
 }

@@ -1,5 +1,60 @@
 # @civfix/shared
 
+## 0.51.0
+
+### Minor Changes
+
+- 4559605: Address system contract: street-level resolve endpoint, precision ladder, address provenance.
+
+  - New `resolveAddress` endpoint (`POST /map/resolve-address`, auth optional, csrf false, v1) with `ResolveAddressRequestSchema` (strict lat/lng) and `ResolveAddressResponseSchema` (`address`, `precision`, `cityStateLabel`). `reverseLabel` is unchanged. Registry 323 -> 324.
+  - New enums in `entities.ts`: `AddressPrecisionSchema` (`street | intersection | landmark | locality`), `EventAddressSourceSchema` (`resolved | edited | manual`), `ReportAddressSourceSchema` (`resolved | user`).
+  - `CleanupDTO.addressSource`, `CreateCleanupRequest.addressSource`, `UpdateCleanupRequest.addressSource` (all optional; `address` stays wire-optional for old clients).
+  - `ReportDTO.addrSource` and `ReportDTO.addrPrecision` (both optional).
+  - New `@civfix/shared/address` helpers: `ADDRESS_PRECISION_LADDER`, `isLocatedPrecision`, `needsNearPrefix`, `comparePrecision`, `isVerifiedEventAddress`, `isVerifiedReportAddress`, `roundGeocodeCoord`, `geocodePointKey`.
+  - Named length caps: `MAX_EVENT_ADDRESS_LENGTH` (200), `MAX_REPORT_ADDR_LENGTH` (300, now applied to the anon report request too).
+
+## 0.50.0
+
+### Minor Changes
+
+- 391d01c: Event announcements and one consolidated event-analytics read, both additive.
+
+  Announcements ride the existing broadcast pipeline as `BroadcastKind` `announcement` (appended
+  last): `AnnouncementDTO`, `AnnouncementAudience` (a `BroadcastSegment` subset proved by
+  `announcementAudienceToSegment`) and three endpoints — `createEventAnnouncement`
+  (POST `/cleanups/:id/announcements`, auth required, csrf), `listEventAnnouncements` and
+  `getEventAnnouncement` (GET, auth optional, since an announcement is public event content whose
+  audience decides who is notified, not who may read). Delivery counts and the audience snapshot are
+  optional fields present only on the host projection.
+
+  New `getEventAnalytics` (`GET /cleanups/:id/analytics`, auth required, `scope=card|full`) answers
+  the dashboard card and the analytics page in one round trip, composing the existing `SeriesPoint`,
+  `Panel`, `SuppressedRate` and `FunnelStep` schemas and keeping `ANALYTICS_SUPPRESSION_K`. The five
+  per-panel `eventAnalytics*` endpoints are unchanged. Registry 319 → 323; see DECISIONS §48 and §49.
+
+## 0.49.0
+
+### Minor Changes
+
+- 3872b02: Admin report list rows carry a presigned `thumbnailUrl`
+
+  `AdminReportListItemDTO` gains `thumbnailUrl`: a presigned preview of the report's first ready image asset (the pipeline thumbnail when one exists, else the served image), so the admin reports list can render the report's own photo instead of the category pin. Nullable and defaulted to `null`, so a report with no usable image and a response from a server that does not yet send the field both parse unchanged.
+
+- 2d59670: Feed ranking contract: scored cursor, counts endpoint, realtime topics, `FEED_RANKING` schema
+
+  `GET /feed/home` keeps its method, path, query and response schemas; its `nextCursor` may now be a
+  ranked `"<score>|<postId>"` cursor alongside the legacy `"<iso>|<postId>"` one, and the contract
+  owns the codec (`FeedScoreCursorSchema`, `formatFeedScoreCursor`, `parseFeedScoreCursor`,
+  `quantizeFeedScore`, `isAfterFeedScoreCursor`, `FEED_SCORE_CURSOR_PRECISION`) so both forms stay
+  unambiguous and the continuation predicate has one definition.
+
+  New `getFeedCounts` (`POST /feed/counts`, auth required, no CSRF) takes up to
+  `FEED_COUNTS_MAX_IDS` post ids and returns counts only, with unreadable ids simply absent —
+  registry 318 → 319. `SignalTopicSchema` gains `feed` and `feed_counts` with `UserSignalSchema`
+  unchanged, so a stale client drops the new frames instead of failing. `FeedRankingConfigSchema` /
+  `FeedRankingConfig` / `DEFAULT_FEED_RANKING` add the strict, fully defaulted 27-knob ranking
+  profile that the backend loads from a JSON `FEED_RANKING` env var. All additive; see DECISIONS §47.
+
 ## 0.48.1
 
 ### Patch Changes

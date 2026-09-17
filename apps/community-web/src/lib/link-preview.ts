@@ -128,6 +128,7 @@ export interface EventPreviewInput {
   scheduledAt?: string | null
   timezone?: string | null
   status?: string | null
+  coverUrl?: string | null
 }
 
 export interface PersonPreviewInput {
@@ -211,11 +212,13 @@ export function previewForEvent(
   const description =
     finishDescription([cancelled, when, `A volunteer event on ${SITE_NAME}`]) || DEFAULT_DESCRIPTION
 
+  const cover = isPublicMediaUrl(input.coverUrl) ? (input.coverUrl as string) : null
+
   return {
     title,
     description,
-    image: brandImageUrl(context.origin),
-    imageIsBrand: true,
+    image: cover ?? brandImageUrl(context.origin),
+    imageIsBrand: cover === null,
     url: context.url,
     origin: context.origin,
     type: "article",

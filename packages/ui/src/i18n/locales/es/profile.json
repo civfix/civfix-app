@@ -10,5 +10,19 @@
   "dashboard": {
     "title": "Panel de eventos",
     "sub": "Tus eventos, estadísticas y herramientas"
+  },
+  "invites": {
+    "section": "Invitaciones",
+    "invited_by_unknown": "Alguien",
+    "event_invited_as": "{{name}} te invitó como {{role}}",
+    "org_invited_as": "{{name}} te invitó como {{role}}",
+    "accept": "Aceptar",
+    "decline": "Rechazar",
+    "accept_a11y": "Aceptar la invitación a {{title}}",
+    "decline_a11y": "Rechazar la invitación a {{title}}",
+    "error": "No funcionó. Inténtalo de nuevo.",
+    "error_title": "No se pudieron cargar tus invitaciones",
+    "error_body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar"
   }
 }

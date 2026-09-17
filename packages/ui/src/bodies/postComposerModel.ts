@@ -3,6 +3,8 @@ import type {
   CleanupDTO,
   LinkedEventRef,
   LinkedReportRef,
+  PostDTO,
+  PostRefDTO,
   ReportDTO,
   UserMentionDTO,
 } from "@civfix/shared"
@@ -180,6 +182,21 @@ export function shouldClearStaleAttachedReport(args: {
 }): boolean {
   if (args.hasSnapshot) return false
   return args.attachedReportId != null && !args.resolved && args.loaded && !args.hasNextPage
+}
+
+export function buildComposerQuoteRef(post: PostDTO): PostRefDTO {
+  return {
+    id: post.id,
+    author: post.author,
+    organization: post.organization ?? null,
+    kind: post.kind,
+    excerpt: post.body ?? "",
+    createdAt: post.createdAt,
+    media: post.media ?? [],
+    body: post.body ?? null,
+    event: post.event ?? null,
+    report: post.report ?? null,
+  }
 }
 
 export function buildComposerEventRef(event: CleanupDTO, linkedAt = event.scheduledAt): LinkedEventRef {

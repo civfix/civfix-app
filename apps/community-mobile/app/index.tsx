@@ -26,13 +26,11 @@ import {
   shouldAdoptCenter,
   PRECISE_ZOOM,
   APPROX_ZOOM,
-  type DetailEntry,
   type MapCenterSource,
   type MapCenterTarget,
   type MapHandle,
   type MapProps,
   type RememberedCenter,
-  type View as NavView,
 } from "@civfix/ui"
 import {
   queryKeys,
@@ -44,8 +42,9 @@ import {
 import { useHaptics } from "@civfix/ui/capabilities"
 import { mobileHostMapPlan } from "@/components/hostMapPlan"
 import {
+  ROOT_SHELL_ID,
   clearNestedShellHosts,
-  nestedShellBodyEntry,
+  shellStackBelow,
   useNestedShellStore,
 } from "@/lib/nestedShellSignal"
 import { LocationPrimerSheet } from "@/components/LocationPrimerSheet"
@@ -520,19 +519,13 @@ export default function MapHomeScreen() {
     focusedCleanupId,
   ])
 
-  const nestedShell = useNestedShellStore()
-  const renderRootBody = useCallback(
-    (bodyEntry: DetailEntry | null, view: NavView): React.ReactNode => {
-      const plan = nestedShellBodyEntry(nestedShell, bodyEntry)
-      return plan.render ? defaultRenderBody(plan.entry, view) : null
-    },
-    [nestedShell],
-  )
+  const ownedStack = useNestedShellStore((s) => shellStackBelow(s, ROOT_SHELL_ID))
 
   return (
     <>
       <AppShell
-        renderBody={renderRootBody}
+        renderBody={defaultRenderBody}
+        {...(ownedStack ? { stack: ownedStack } : {})}
         map={mapPlan.renderMap ? mapElement : null}
         mapControls={
           mapPlan.renderMapControls ? (

@@ -60,15 +60,13 @@ describe("ComposerThumbs: the remove button lives INSIDE the thumb it belongs to
 describe("SearchBody: the field clear chip and the link actions clear 44pt", () => {
   const SRC = read("../SearchBody.tsx")
 
-  it("caps the clear chip's slop at the pinned 40pt pill it lives in", () => {
+  it("grows the clear chip's slop to the shared 44pt target inside the 44pt field", () => {
     const size = num(SRC, "FIELD_CLEAR_SIZE")
-    const field = num(SRC, "FIELD_HEIGHT")
-    expect(SRC).toContain("height: FIELD_HEIGHT")
+    expect(SRC).toContain("minHeight: MIN_TOUCH_TARGET")
     expect(SRC).toContain("hitSlop={FIELD_CLEAR_HIT_SLOP}")
     const vertical = grown(SRC, "FIELD_CLEAR_HIT_SLOP", "top", "bottom", size)
     const horizontal = grown(SRC, "FIELD_CLEAR_HIT_SLOP", "left", "right", size)
-    expect(vertical, "the slop must not escape the pill").toBeLessThanOrEqual(field)
-    expect(vertical).toBe(field)
+    expect(vertical).toBe(MIN_TOUCH_TARGET)
     expect(horizontal).toBe(MIN_TOUCH_TARGET)
   })
 

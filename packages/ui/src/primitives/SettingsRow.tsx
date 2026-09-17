@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
-import { makeThemedStyles, space, useTheme, focusRingProps, webCursor, headingLevel } from "../theme"
+import { makeThemedStyles, space, useTheme, focusRingProps, webCursor, webHover, webTransition, headingLevel } from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import { SettingsToggle } from "./SettingsToggle"
 
@@ -153,11 +153,13 @@ export function SettingsRow({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       {...focusRingProps}
-      style={({ pressed }) => [
+      style={(state) => [
         styles.row,
         webCursor(disabled),
+        webTransition,
         disabled ? styles.rowDisabled : null,
-        pressed && !disabled ? styles.rowPressed : null,
+        webHover(state) && !disabled ? styles.rowHovered : null,
+        state.pressed && !disabled ? styles.rowPressed : null,
       ]}
     >
       <RowContent label={label} icon={icon} sub={sub} destructive={destructive} />
@@ -189,6 +191,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
+    paddingVertical: t.space["2"],
     overflow: "hidden",
     ...t.shadows.s1,
   },
@@ -204,6 +207,9 @@ const useStyles = makeThemedStyles((t) => ({
     minHeight: SETTINGS_ROW_MIN_HEIGHT,
     paddingVertical: t.space["2"],
     paddingHorizontal: ROW_PAD_H,
+  },
+  rowHovered: {
+    backgroundColor: t.colors.surfaceTint,
   },
   rowPressed: {
     backgroundColor: t.colors.bgAlt,

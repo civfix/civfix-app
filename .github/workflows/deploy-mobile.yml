@@ -3,8 +3,10 @@ name: Deploy mobile (TestFlight)
 # Builds apps/community-mobile for iOS and uploads it to App Store Connect, where TestFlight hands it
 # to the internal tester group. Same shape as deploy-web.yml, one lane:
 #
-#   push to main                     -> the `testflight` profile  -> staging API (api.civfix.dev)
-#   manual run, profile=production   -> the `production` profile  -> prod API (api.civfix.org)
+#   push to main                     -> the `testflight` profile  -> staging API (api.civfix.dev), baked
+#   manual run, profile=production   -> the `production` profile  -> API chosen at runtime by install
+#                                       source: api.civfix.dev in TestFlight, api.civfix.org from the
+#                                       App Store (src/lib/apiUrl.ts + src/lib/nativeBetaInstall.ts)
 #
 # Nothing here submits for App Store review. A production build lands in App Store Connect exactly
 # like a staging one; attaching it to a version and submitting is the manual step, so a prod mobile
@@ -120,7 +122,7 @@ jobs:
           if (api !== expectedApi) {
             throw new Error(`profile '${profileName}' bakes EXPO_PUBLIC_API_URL='${api}', expected '${expectedApi}'`)
           }
-          console.log(`profile ${profileName}: EXPO_PUBLIC_API_URL='${api || "(unset -> https://api.civfix.org)"}'`)
+          console.log(`profile ${profileName}: EXPO_PUBLIC_API_URL='${api || "(unset -> resolved at runtime: api.civfix.dev in TestFlight, api.civfix.org from the App Store)"}'`)
           NODE
           echo "TARGET=$target" >> "$GITHUB_ENV"
 

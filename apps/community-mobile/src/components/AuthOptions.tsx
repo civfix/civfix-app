@@ -214,8 +214,8 @@ export function AuthOptions({
 
       {error ? (
         <View style={styles.errorRow}>
-          <Ionicons name="alert-circle" size={16} color={th.colors.bloom["600"]} />
-          <Text variant="caption" color={th.colors.bloom["700"]} style={styles.errorText}>
+          <Ionicons name="alert-circle" size={16} color={th.colors.dangerInk} />
+          <Text variant="caption" color={th.colors.dangerInk} style={styles.errorText}>
             {error}
           </Text>
         </View>

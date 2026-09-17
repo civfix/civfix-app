@@ -9,7 +9,7 @@ import {
   type ViewStyle,
 } from "react-native"
 import type { TFunction } from "i18next"
-import type { PostDTO, PostRefDTO } from "@civfix/shared"
+import type { PostDTO } from "@civfix/shared"
 import { Repeat2 } from "lucide-react-native/icons"
 import {
   POST_SURFACE,
@@ -35,6 +35,7 @@ import { PostActionBar } from "../primitives/PostActionBar"
 import { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "../primitives/PostOverflowButton"
 import { useNavStore } from "../nav/useNavStore"
 import { useLightbox } from "../lightbox"
+import { EmbeddedPost } from "./EmbeddedPost"
 import { LinkedEventCard } from "./LinkedEventCard"
 import { LinkedReportCard } from "./LinkedReportCard"
 import { localReportThumb } from "./localReportThumbs"
@@ -357,85 +358,6 @@ function FixShowcase({
         />
       ) : null}
     </View>
-  )
-}
-
-function EmbeddedPost({
-  post,
-  t,
-  timeAgo,
-  onPress,
-}: {
-  post: PostRefDTO
-  t: TFunction
-  timeAgo: (iso: string) => string
-  onPress: () => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const identity = React.useMemo(
-    () => buildPostIdentity(post.author, post.organization, t, t("post_card.deleted_account")),
-    [post.author, post.organization, t],
-  )
-  return (
-    <Pressable
-      onPress={(event) => {
-        stopPress(event)
-        onPress()
-      }}
-      accessibilityRole="button"
-      accessibilityLabel={t("post_card.open_quote_a11y")}
-      {...focusRingProps}
-      style={(state) => [
-        styles.embedded,
-        webTransition,
-        webCursor(false),
-        webHover(state) ? styles.embeddedHovered : null,
-        state.pressed ? styles.pressed : null,
-      ]}
-    >
-      <View style={styles.embeddedHeader}>
-        {post.author || identity.organization ? (
-          <Avatar
-            name={identity.avatarName}
-            seed={identity.avatarSeed}
-            photoUrl={identity.avatarUrl}
-            gradient={identity.avatarGradient}
-            size={20}
-            {...(identity.organization ? { style: styles.orgAvatar } : {})}
-            decorative
-          />
-        ) : null}
-        <Text variant="bodyStrong" numberOfLines={1} style={styles.embeddedAuthor}>
-          {identity.name}
-        </Text>
-        {identity.affiliation ? (
-          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
-        ) : null}
-        {identity.handleLabel ? (
-          <Text numberOfLines={1} style={styles.embeddedHandle}>
-            {identity.handleLabel}
-          </Text>
-        ) : null}
-        {identity.viaLabel ? (
-          <Text numberOfLines={1} style={styles.embeddedHandle}>
-            {identity.viaLabel}
-          </Text>
-        ) : null}
-        <Text style={styles.embeddedTime}>{`· ${timeAgo(post.createdAt)}`}</Text>
-      </View>
-      <Text
-        variant="body"
-        numberOfLines={4}
-        color={post.deleted ? th.colors.textMuted : th.colors.text}
-        style={styles.embeddedBody}
-      >
-        {post.deleted ? t("post_card.unavailable") : post.excerpt}
-      </Text>
-      {post.media.length > 0 && !post.deleted ? (
-        <PostMediaGrid media={post.media} t={t} radius={12} maxHeight={220} />
-      ) : null}
-    </Pressable>
   )
 }
 
@@ -1083,44 +1005,5 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: 10,
     lineHeight: 12,
     letterSpacing: 0.6,
-  },
-  embedded: {
-    gap: t.space["1"],
-    padding: t.space["3"],
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surface,
-  },
-  embeddedHovered: {
-    borderColor: t.colors.borderStrong,
-    backgroundColor: t.colors.surfaceTint,
-  },
-  embeddedHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["1"],
-  },
-  embeddedAuthor: {
-    flexShrink: 1,
-    fontSize: 14,
-    lineHeight: 19,
-  },
-  embeddedHandle: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
-    lineHeight: 18,
-    color: t.colors.textMuted,
-  },
-  embeddedTime: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
-    lineHeight: 18,
-    color: t.colors.textMuted,
-  },
-  embeddedBody: {
-    fontSize: 14,
-    lineHeight: 19,
   },
 }))

@@ -207,7 +207,7 @@ export function FilterBar({ facets, onReset, className }: FilterBarProps) {
                     const checked = facet.values.includes(option.value)
                     return (
                       <li key={option.value}>
-                        <label className="flex min-h-[36px] cursor-pointer items-center gap-token-2 rounded-xs px-token-2 py-1 text-token-13 text-console-ink-2 hover:bg-console-surface-alt">
+                        <label className="flex min-h-9 cursor-pointer items-center gap-token-2 rounded-xs px-token-2 py-1 text-token-13 text-console-ink-2 transition-colors duration-d1 hover:bg-console-surface-alt">
                           <input
                             type="checkbox"
                             checked={checked}
@@ -243,7 +243,7 @@ export function FilterBar({ facets, onReset, className }: FilterBarProps) {
             type="button"
             onClick={onReset}
             disabled={!anyActive}
-            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-pill px-token-2 text-token-13 font-semibold text-console-ink-3 hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-pill px-token-2 text-token-13 font-semibold text-console-ink-3 transition-colors duration-d1 hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             <RotateCcw aria-hidden className="h-3.5 w-3.5" />
             {t("filter.reset")}
@@ -262,7 +262,7 @@ export function FilterBar({ facets, onReset, className }: FilterBarProps) {
                 type="button"
                 aria-label={t("filter.remove_chip", { label: chip.label })}
                 onClick={chip.onRemove}
-                className="flex h-5 w-5 items-center justify-center rounded-pill text-console-ink-3 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
+                className="flex h-5 w-5 items-center justify-center rounded-pill text-console-ink-3 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
               >
                 <X aria-hidden className="h-3 w-3" />
               </button>

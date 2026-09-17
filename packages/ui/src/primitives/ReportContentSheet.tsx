@@ -92,7 +92,11 @@ export function ReportContentSheet({
             <Pressable
               key={value}
               {...focusRingProps}
-              style={[styles.reasonRow, selected ? styles.reasonRowSelected : null]}
+              style={({ pressed }) => [
+                styles.reasonRow,
+                selected ? styles.reasonRowSelected : null,
+                pressed ? styles.reasonRowPressed : null,
+              ]}
               accessibilityRole="button"
               accessibilityLabel={label}
               accessibilityState={{ selected }}
@@ -146,6 +150,9 @@ const useStyles = makeThemedStyles((t) => ({
   },
   reasonRowSelected: {
     borderColor: t.colors.accent,
+  },
+  reasonRowPressed: {
+    opacity: 0.6,
   },
   reasonLabel: {
     flex: 1,

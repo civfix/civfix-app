@@ -6,17 +6,7 @@
     "ended": "This event has ended"
   },
   "going": {
-    "heading": "Who's going",
-    "count_one": "{{count}} going",
-    "count_other": "{{count}} going",
-    "empty": "No one's going yet.",
-    "you": "You",
-    "names_following": "You follow {{names}}",
-    "names": "{{names}}",
-    "view_all": "View all",
-    "a11y_show_fewer": "Show fewer names",
-    "a11y_show_everyone": "Show everyone going",
-    "a11y_view_everyone": "View everyone going"
+    "you": "You"
   },
   "actions": {
     "share": "Share",
@@ -61,7 +51,9 @@
     "dashboard": "Host dashboard",
     "dashboard_a11y": "Open the host dashboard for this event",
     "check_in": "Check in attendees",
-    "check_in_a11y": "Open check-in for this event"
+    "check_in_a11y": "Open check-in for this event",
+    "view_roster": "View attendee list",
+    "view_roster_a11y": "Open the attendee list for this event"
   },
   "report_sheet": {
     "subject": "this event",
@@ -121,22 +113,5 @@
     "suggest_hint": "Suggestions come from each person's shift and the event's planned length. Confirm what people actually worked.",
     "suggest_chip": "{{hours}} h · {{slot}}",
     "suggest_chip_a11y": "Use {{hours}} hours from the {{slot}} shift for {{name}}"
-  },
-  "guests": {
-    "heading": "Guests",
-    "count_one": "{{count}} guest",
-    "count_other": "{{count}} guests",
-    "expand_a11y": "Show the guest list",
-    "collapse_a11y": "Hide the guest list",
-    "empty": "No guests yet.",
-    "loading": "Loading...",
-    "error": "Couldn't load guests.",
-    "load_more": "Load more",
-    "loading_more": "Loading...",
-    "load_more_a11y": "Load more guests",
-    "cancelled": "Cancelled",
-    "contact_scrubbed": "—",
-    "contact_a11y": "Contact {{name}}",
-    "contact_hidden": "Contact hidden"
   }
 }

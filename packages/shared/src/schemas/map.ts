@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { IdSchema, ISODateSchema, BBoxSchema, LatLngFields, LatLngSchema } from "./common.js"
-import { EventKindSchema } from "./entities.js"
+import { AddressPrecisionSchema, EventKindSchema } from "./entities.js"
 
 /**
  * Map tile metadata and jurisdiction / reverse-geocode resolution.
@@ -50,6 +50,16 @@ export const ReverseLabelResponseSchema = z.object({
   cityStateLabel: z.string(),
 })
 export type ReverseLabelResponse = z.infer<typeof ReverseLabelResponseSchema>
+
+export const ResolveAddressRequestSchema = LatLngSchema
+export type ResolveAddressRequest = z.infer<typeof ResolveAddressRequestSchema>
+
+export const ResolveAddressResponseSchema = z.object({
+  address: z.string().nullable(),
+  precision: AddressPrecisionSchema.nullable(),
+  cityStateLabel: z.string(),
+})
+export type ResolveAddressResponse = z.infer<typeof ResolveAddressResponseSchema>
 
 /**
  * Forward address autocomplete (POST /map/suggest). The server proxies the active geocoder provider

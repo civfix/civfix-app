@@ -114,6 +114,7 @@
     "community": "Community group"
   },
   "broadcastKind": {
+    "announcement": "Announcement",
     "host_broadcast": "Host message",
     "confirmation": "Confirmation",
     "waitlist_promoted": "Waitlist offer",

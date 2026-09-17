@@ -292,7 +292,7 @@ function makeStyles(t: Theme): Record<string, React.CSSProperties> {
     overlayDot: {
       width: 12,
       height: 12,
-      borderRadius: 999,
+      borderRadius: t.radius.pill,
       background: t.colors.brand.bloom,
       border: `2px solid ${t.colors.onAccent}`,
       boxShadow: shadowSchemes[t.scheme].pin,

@@ -139,12 +139,7 @@ export function OverviewScreen() {
             {event?.organization ? (
               <div className="flex flex-wrap items-baseline justify-between gap-token-2">
                 <dt className="text-token-13 text-console-ink-3">{t("details.organization")}</dt>
-                <dd className="flex items-center gap-token-2 text-token-14 text-console-ink-2">
-                  {event.organization.name}
-                  {event.organization.verified ? (
-                    <Chip kind="org-verification" value="verified" size="sm" />
-                  ) : null}
-                </dd>
+                <dd className="text-token-14 text-console-ink-2">{event.organization.name}</dd>
               </div>
             ) : null}
           </dl>
@@ -218,7 +213,7 @@ export function OverviewScreen() {
         {can("view_roster") ? (
           <ConsoleLink
             href={hrefForRoute({ kind: "event", eventId, section: "attendees" })}
-            className="inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+            className="inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
           >
             <Users aria-hidden className="h-4 w-4" />
             {t("quick.attendees")}
@@ -227,7 +222,7 @@ export function OverviewScreen() {
         {can("manage_tickets") ? (
           <ConsoleLink
             href={hrefForRoute({ kind: "event", eventId, section: "tickets" })}
-            className="inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+            className="inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
           >
             <Ticket aria-hidden className="h-4 w-4" />
             {t("quick.tickets")}
@@ -235,7 +230,7 @@ export function OverviewScreen() {
         ) : null}
         <a
           href={`/cleanups/${eventId}/`}
-          className="inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+          className="inline-flex min-h-11 items-center gap-token-2 rounded-sm border border-console-line bg-console-surface px-token-4 text-token-14 font-semibold text-console-ink shadow-console-1 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
         >
           <ExternalLink aria-hidden className="h-4 w-4" />
           {t("quick.public_view")}

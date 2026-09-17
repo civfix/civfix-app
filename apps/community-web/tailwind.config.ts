@@ -6,6 +6,8 @@ const { color, fontSize, radius, shadow, space } = tokens
 
 const px = (n: number): string => `${n}px`
 
+const ms = (n: number): string => `${n}ms`
+
 export type SchemeColor = (utils: { opacityValue?: string }) => string
 
 const schemeVar = (name: string): string =>
@@ -34,7 +36,7 @@ const config: Config = {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
+        border: "hsl(var(--shadcn-border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
@@ -56,23 +58,56 @@ const config: Config = {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "hsl(var(--shadcn-accent))",
+          foreground: "hsl(var(--shadcn-accent-foreground))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "hsl(var(--shadcn-card))",
+          foreground: "hsl(var(--shadcn-card-foreground))",
         },
 
-        bloom: color.bloom,
-        moss: color.moss,
-        sun: color.sun,
-        sky: color.sky,
-        lilac: color.lilac,
+        bloom: {
+          50: schemeVar("--bloom-50"),
+          100: schemeVar("--bloom-100"),
+          300: schemeVar("--bloom-300"),
+          500: schemeVar("--bloom"),
+          600: schemeVar("--bloom-600"),
+          700: schemeVar("--bloom-700"),
+        },
+        moss: {
+          50: schemeVar("--moss-50"),
+          100: schemeVar("--moss-100"),
+          300: schemeVar("--moss-300"),
+          500: schemeVar("--moss"),
+          600: schemeVar("--moss-600"),
+          700: schemeVar("--moss-700"),
+        },
+        sun: {
+          50: schemeVar("--sun-50"),
+          100: schemeVar("--sun-100"),
+          300: schemeVar("--sun-300"),
+          500: schemeVar("--sun"),
+          600: schemeVar("--sun-600"),
+          700: schemeVar("--sun-700"),
+        },
+        sky: {
+          50: schemeVar("--sky-50"),
+          100: schemeVar("--sky-100"),
+          300: schemeVar("--sky-300"),
+          500: schemeVar("--sky"),
+          600: schemeVar("--sky-600"),
+          700: schemeVar("--sky-700"),
+        },
+        lilac: {
+          50: schemeVar("--lilac-50"),
+          500: schemeVar("--lilac"),
+          600: schemeVar("--lilac-600"),
+          700: schemeVar("--lilac-700"),
+        },
 
         brand: color.brand,
 
@@ -88,32 +123,40 @@ const config: Config = {
           5: schemeVar("--ink-5"),
         },
 
-        cat: color.category,
+        cat: {
+          trash: schemeVar("--cat-trash"),
+          recycling: schemeVar("--cat-recycling"),
+          graffiti: schemeVar("--cat-graffiti"),
+          hazard: schemeVar("--cat-hazard"),
+          encampment: schemeVar("--cat-encampment"),
+          water: schemeVar("--cat-water"),
+          other: schemeVar("--cat-other"),
+        },
 
-        cleanup: color.cleanup,
+        cleanup: schemeVar("--cat-cleanup"),
 
         console: {
-          surface: "var(--console-surface)",
-          "surface-alt": "var(--console-surface-alt)",
-          tint: "var(--console-tint)",
-          canvas: "var(--console-canvas)",
-          line: "var(--console-line)",
-          "line-strong": "var(--console-line-strong)",
-          accent: "var(--console-accent)",
-          scrim: "var(--console-scrim)",
-          "toast-surface": "var(--console-toast-surface)",
-          "toast-ink": "var(--console-toast-ink)",
-          "toast-ink-dim": "var(--console-toast-ink-dim)",
+          surface: schemeVar("--console-surface"),
+          "surface-alt": schemeVar("--console-surface-alt"),
+          tint: schemeVar("--console-tint"),
+          canvas: schemeVar("--console-canvas"),
+          line: schemeVar("--console-line"),
+          "line-strong": schemeVar("--console-line-strong"),
+          accent: schemeVar("--console-accent"),
+          scrim: schemeVar("--console-scrim"),
+          "toast-surface": schemeVar("--console-toast-surface"),
+          "toast-ink": schemeVar("--console-toast-ink"),
+          "toast-ink-dim": schemeVar("--console-toast-ink-dim"),
           ink: {
-            DEFAULT: "var(--console-ink)",
-            2: "var(--console-ink-2)",
-            3: "var(--console-ink-3)",
+            DEFAULT: schemeVar("--console-ink"),
+            2: schemeVar("--console-ink-2"),
+            3: schemeVar("--console-ink-3"),
           },
-          bloom: { soft: "var(--console-hue-bloom-soft)", strong: "var(--console-hue-bloom-strong)" },
-          moss: { soft: "var(--console-hue-moss-soft)", strong: "var(--console-hue-moss-strong)" },
-          sun: { soft: "var(--console-hue-sun-soft)", strong: "var(--console-hue-sun-strong)" },
-          sky: { soft: "var(--console-hue-sky-soft)", strong: "var(--console-hue-sky-strong)" },
-          lilac: { soft: "var(--console-hue-lilac-soft)", strong: "var(--console-hue-lilac-strong)" },
+          bloom: { soft: schemeVar("--console-hue-bloom-soft"), strong: schemeVar("--console-hue-bloom-strong") },
+          moss: { soft: schemeVar("--console-hue-moss-soft"), strong: schemeVar("--console-hue-moss-strong") },
+          sun: { soft: schemeVar("--console-hue-sun-soft"), strong: schemeVar("--console-hue-sun-strong") },
+          sky: { soft: schemeVar("--console-hue-sky-soft"), strong: schemeVar("--console-hue-sky-strong") },
+          lilac: { soft: schemeVar("--console-hue-lilac-soft"), strong: schemeVar("--console-hue-lilac-strong") },
         },
       },
 
@@ -177,10 +220,10 @@ const config: Config = {
       },
 
       transitionDuration: {
-        d1: String(tokens.motion.dur.d1),
-        d2: String(tokens.motion.dur.d2),
-        d3: String(tokens.motion.dur.d3),
-        d4: String(tokens.motion.dur.d4),
+        d1: ms(tokens.motion.dur.d1),
+        d2: ms(tokens.motion.dur.d2),
+        d3: ms(tokens.motion.dur.d3),
+        d4: ms(tokens.motion.dur.d4),
       },
 
       keyframes: {

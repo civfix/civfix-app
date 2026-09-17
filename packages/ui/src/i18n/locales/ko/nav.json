@@ -33,12 +33,16 @@
     "drop_pin": "여기에 추가",
     "host_mode": "호스트 모드",
     "host_checkin": "체크인",
-    "host_broadcast_quick": "빠른 메시지",
     "host_team": "팀",
     "host_log_hours": "봉사 시간 기록",
     "my_ticket": "내 티켓",
     "org": "단체",
-    "event_dashboard": "이벤트 대시보드"
+    "event_dashboard": "이벤트 대시보드",
+    "announcement": "공지",
+    "announcements": "공지",
+    "host_announce": "공지 작성",
+    "event_analytics": "행사 분석",
+    "org_manage": "단체 설정"
   },
   "tab": {
     "home": "홈",

@@ -4,6 +4,8 @@ import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { CalendarX2, CheckCircle2, Loader2, SearchX } from "lucide-react"
 
+import { useT } from "@civfix/ui/i18n"
+
 import { DetailShell } from "@/components/detail-shell"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Button } from "@/components/ui/button"
@@ -14,6 +16,7 @@ import { readGuestManageToken } from "@/features/guest/guest-cancel-token"
 type Phase = "confirm" | "cancelling" | "done" | "error"
 
 export function GuestCancelView() {
+  const { t } = useT("web-guest-cancel")
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = readGuestManageToken(searchParams.get("token"))
@@ -36,21 +39,21 @@ export function GuestCancelView() {
       scrubTokenFromUrl()
     } catch (err) {
       if (requestSeq.current !== seq) return
-      setError(cancelErrorMessage(err))
+      setError(cancelErrorMessage(err, t))
       setPhase("error")
     }
-  }, [token])
+  }, [token, t])
 
   if (!token && phase === "confirm") {
     return (
       <DetailShell>
         <EmptyState
           icon={<SearchX className="h-6 w-6" aria-hidden="true" />}
-          title="This link doesn't work"
-          body="The cancellation link is incomplete. Open the link from your confirmation email or text exactly as it was sent, or ask the host to take you off the list."
+          title={t("invalid.title")}
+          body={t("invalid.body")}
           action={
             <Button variant="outline" onClick={goHome}>
-              Go to the map
+              {t("invalid.action")}
             </Button>
           }
         />
@@ -65,15 +68,10 @@ export function GuestCancelView() {
           <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-pill bg-moss-100 text-moss-600">
             <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           </span>
-          <h1 className="font-display text-token-30 font-extrabold text-ink">
-            Your RSVP is cancelled
-          </h1>
-          <p className="mx-auto mt-2 max-w-md text-token-15 text-ink-2">
-            You are off the guest list and the host has been told. You can RSVP again any time from the
-            event page.
-          </p>
+          <h1 className="font-display text-token-30 font-extrabold text-ink">{t("done.title")}</h1>
+          <p className="mx-auto mt-2 max-w-md text-token-15 text-ink-2">{t("done.body")}</p>
           <div className="mt-6 flex justify-center">
-            <Button onClick={goHome}>Go to the map</Button>
+            <Button onClick={goHome}>{t("done.action")}</Button>
           </div>
         </div>
       ) : phase === "cancelling" ? (
@@ -83,15 +81,15 @@ export function GuestCancelView() {
           className="flex flex-col items-center justify-center py-16 text-center"
         >
           <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-          <p className="mt-3 text-token-15 text-ink-2">Cancelling your RSVP...</p>
+          <p className="mt-3 text-token-15 text-ink-2">{t("cancelling")}</p>
         </div>
       ) : phase === "error" ? (
         <EmptyState
-          title="We couldn't cancel that RSVP"
-          body={error ?? "Something went wrong. Please try again."}
+          title={t("error.title")}
+          body={error ?? t("error.fallback")}
           action={
             <Button variant="outline" onClick={() => void cancelRsvp()}>
-              Try again
+              {t("error.retry")}
             </Button>
           }
         />
@@ -100,17 +98,14 @@ export function GuestCancelView() {
           <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-pill bg-bloom-50 text-primary">
             <CalendarX2 className="h-7 w-7" aria-hidden="true" />
           </span>
-          <h1 className="font-display text-token-30 font-extrabold text-ink">Cancel your RSVP?</h1>
-          <p className="mx-auto mt-2 max-w-md text-token-15 text-ink-2">
-            This takes you off the guest list for the event in your confirmation message and lets the
-            host know. You will stop getting updates about it.
-          </p>
+          <h1 className="font-display text-token-30 font-extrabold text-ink">{t("confirm.title")}</h1>
+          <p className="mx-auto mt-2 max-w-md text-token-15 text-ink-2">{t("confirm.body")}</p>
           <div className="mt-6 flex flex-col gap-2.5">
             <Button variant="destructive" onClick={() => void cancelRsvp()}>
-              Cancel my RSVP
+              {t("confirm.cancel")}
             </Button>
             <Button variant="outline" onClick={goHome}>
-              Keep my RSVP
+              {t("confirm.keep")}
             </Button>
           </div>
         </div>
@@ -130,14 +125,14 @@ function scrubTokenFromUrl(): void {
   window.history.replaceState(null, "", window.location.pathname)
 }
 
-function cancelErrorMessage(err: unknown): string {
+function cancelErrorMessage(err: unknown, t: (key: string) => string): string {
   return errorMessage(
     err,
     {
-      NOT_FOUND: "We couldn't find that RSVP. The link may have expired, or the event may be over.",
-      VALIDATION: "This cancellation link looks incorrect or has expired.",
-      RATE_LIMITED: "Too many attempts. Wait a moment and try again.",
+      NOT_FOUND: t("error.notFound"),
+      VALIDATION: t("error.validation"),
+      RATE_LIMITED: t("error.rateLimited"),
     },
-    { fallback: "We couldn't reach civfix to cancel this RSVP. Check your connection and try again." },
+    { fallback: t("error.network") },
   )
 }

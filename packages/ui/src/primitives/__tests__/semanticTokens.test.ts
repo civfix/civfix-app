@@ -99,9 +99,8 @@ describe("selection is neutral", () => {
     expect(segmented).toContain("segmentTextDisabled: {\n    color: t.colors.textSubtle,")
   })
 
-  it("keeps the three pickers that became segmented gated on their in-flight request", () => {
+  it("keeps the pickers that became segmented gated on their in-flight request", () => {
     const sites: [string, string][] = [
-      ["../../bodies/host/HostBroadcastQuickBody.tsx", "disabled={busy}"],
       ["../../bodies/host/HostTeamInviteSheet.tsx", "disabled={invite.isPending}"],
       ["../../bodies/host/dashboard/OrgInviteSheet.tsx", "disabled={invite.isPending}"],
     ]

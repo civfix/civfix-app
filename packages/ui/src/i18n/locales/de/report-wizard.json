@@ -66,7 +66,8 @@
     "route_routable": "Automatisch weitergeleitet nach Prüfung – meist 1–3 Werktage.",
     "route_new_area": "Neues Gebiet – {{cityState}} ist noch nicht für die automatische Weiterleitung eingerichtet. Wir prüfen und leiten manuell weiter.",
     "route_uncovered": "Dieses Gebiet decken wir noch nicht ab, aber dein Bericht wird gespeichert und manuell geprüft.",
-    "route_resolving": "Weiterleitung wird ermittelt..."
+    "route_resolving": "Weiterleitung wird ermittelt...",
+    "where_near": "In der Nähe von {{address}}"
   },
   "submit": {
     "submitting_title": "Bericht wird eingereicht",

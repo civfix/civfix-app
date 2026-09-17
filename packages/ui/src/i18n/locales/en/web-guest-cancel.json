@@ -1,0 +1,28 @@
+{
+  "invalid": {
+    "title": "This link doesn't work",
+    "body": "The cancellation link is incomplete. Open the link from your confirmation email or text exactly as it was sent, or ask the host to take you off the list.",
+    "action": "Go to the map"
+  },
+  "confirm": {
+    "title": "Cancel your RSVP?",
+    "body": "This takes you off the guest list for the event in your confirmation message and lets the host know. You will stop getting updates about it.",
+    "cancel": "Cancel my RSVP",
+    "keep": "Keep my RSVP"
+  },
+  "cancelling": "Cancelling your RSVP...",
+  "done": {
+    "title": "Your RSVP is cancelled",
+    "body": "You are off the guest list and the host has been told. You can RSVP again any time from the event page.",
+    "action": "Go to the map"
+  },
+  "error": {
+    "title": "We couldn't cancel that RSVP",
+    "fallback": "Something went wrong. Please try again.",
+    "retry": "Try again",
+    "notFound": "We couldn't find that RSVP. The link may have expired, or the event may be over.",
+    "validation": "This cancellation link looks incorrect or has expired.",
+    "rateLimited": "Too many attempts. Wait a moment and try again.",
+    "network": "We couldn't reach civfix to cancel this RSVP. Check your connection and try again."
+  }
+}

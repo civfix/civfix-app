@@ -24,10 +24,8 @@
     "more_shifts": "{{count}} weitere Schichten in den Host-Werkzeugen",
     "more_shifts_a11y": "Host-Werkzeuge öffnen, um alle {{total}} Schichten von {{title}} zu sehen"
   },
-  "attention": {
-    "section": "Zu erledigen",
-    "log_hours": "Stunden eintragen · {{count}} eingecheckt",
-    "log_hours_a11y": "Stunden für {{title}} eintragen"
+  "analytics": {
+    "for_event": "Auswertung für {{title}}"
   },
   "impact": {
     "section": "Wirkung",
@@ -64,7 +62,6 @@
     "open_a11y": "{{title}} öffnen",
     "actions_a11y": "Aktionen für {{title}}",
     "host_tools": "Host-Werkzeuge",
-    "email_attendees": "Teilnehmende anschreiben",
     "duplicate": "Duplizieren",
     "edit": "Bearbeiten",
     "show_more": "Mehr anzeigen",
@@ -96,7 +93,9 @@
     "meta_hours_not_logged": "Stunden nicht erfasst",
     "meta_cancelled": "Abgesagt",
     "meta_signed_up": "{{count}} angemeldet",
-    "meta_underway": "Vor {{ago}} begonnen"
+    "meta_underway": "Vor {{ago}} begonnen",
+    "open_chat": "Gruppenchat öffnen",
+    "announce": "Ankündigung schreiben"
   },
   "first_event": {
     "title": "Veranstalte dein erstes Event",
@@ -104,20 +103,6 @@
     "step_checkin": "Du checkst sie am Tag ein",
     "step_hours": "Danach schreibst du ihre Stunden gut",
     "cta": "Event erstellen"
-  },
-  "invites": {
-    "section": "Einladungen",
-    "invited_by_unknown": "Jemand",
-    "event_invited_as": "{{name}} hat dich als {{role}} eingeladen",
-    "org_invited_as": "{{name}} hat dich als {{role}} eingeladen",
-    "accept": "Annehmen",
-    "decline": "Ablehnen",
-    "accept_a11y": "Einladung zu {{title}} annehmen",
-    "decline_a11y": "Einladung zu {{title}} ablehnen",
-    "error": "Das hat nicht geklappt. Versuche es erneut.",
-    "error_title": "Einladungen konnten nicht geladen werden",
-    "error_body": "civfix ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut.",
-    "retry": "Erneut versuchen"
   },
   "team": {
     "section": "Team",
@@ -167,10 +152,6 @@
     "show_more_a11y": "Mehr Mitwirkende anzeigen",
     "invites_error": "Offene Einladungen konnten nicht geladen werden.",
     "invite_row_sub": "Eingeladen · {{role}}"
-  },
-  "console": {
-    "open": "Vollständige Konsole öffnen",
-    "sub": "Eventseite, Tickets, Exporte und mehr"
   },
   "state": {
     "signin_title": "Melde dich an, um dein Dashboard zu sehen",

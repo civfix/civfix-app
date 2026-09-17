@@ -262,7 +262,7 @@ describe("a LIVE event with no slots still has a way in", () => {
 
   it("keeps the explicit Leave event row, which is the only place membership is dropped", () => {
     expect(detail).toContain('label={t("actions.leave")}')
-    expect(detail).toContain("going && !actsAsHost && isLive && !isEnded ?")
+    expect(detail).toContain("const showLeave = going && !actsAsHost && isLive && !isEnded")
   })
 
   it("keeps the slot-less rendering for an ENDED or cancelled event", () => {

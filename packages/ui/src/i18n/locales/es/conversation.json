@@ -50,6 +50,7 @@
     "removed": "Mensaje eliminado",
     "failed_retry": "Error · toca para reintentar",
     "sending": "Enviando",
+    "attachment_processing": "Procesando el archivo adjunto…",
     "edited": "(editado)",
     "retry_sending": "Reintentar envío",
     "message_actions": "Acciones del mensaje",

@@ -28,8 +28,8 @@ export {
   normalizeDonationLink,
 } from "./settings/donationLinkField"
 export type { DonationLinkFieldError } from "./settings/donationLinkField"
-export { donationLinkFor } from "./donationLink"
-export type { DonationLink, DonationLinkSource } from "./donationLink"
+export { donationLinkFor, eventDonationLinkFor } from "./donationLink"
+export type { DonationLink, DonationLinkSource, DonationViewer } from "./donationLink"
 export { SettingsPrivacyBody } from "./SettingsPrivacyBody"
 
 export { ConnectionsBody } from "./ConnectionsBody"
@@ -167,8 +167,6 @@ export { EventSlotsBlock } from "./EventSlotsBlock"
 export type { EventSlotsBlockProps } from "./EventSlotsBlock"
 export { EventHoursBlock } from "./EventHoursBlock"
 export type { EventHoursBlockProps } from "./EventHoursBlock"
-export { EventGuestsBlock } from "./EventGuestsBlock"
-export type { EventGuestsBlockProps } from "./EventGuestsBlock"
 export {
   addSlotDraft,
   buildSlotInputs,
@@ -196,6 +194,18 @@ export {
   sortSlots,
 } from "./eventSlotsModel"
 export type { SlotRowState, SlotWindow } from "./eventSlotsModel"
+
+export { AddressRow } from "./AddressRow"
+export type { AddressRowProps, AddressFocusTarget } from "./AddressRow"
+export {
+  addressExternalPlan,
+  addressMapsOptions,
+  addressRowAffordances,
+  appleMapsUrl,
+  applyNearPrefix,
+  googleMapsUrl,
+} from "./addressRowModel"
+export type { AddressPoint, AddressMapsOption, AddressExternalPlan } from "./addressRowModel"
 
 export { LinkedReportCard } from "./LinkedReportCard"
 export type { LinkedReportCardData } from "./LinkedReportCard"

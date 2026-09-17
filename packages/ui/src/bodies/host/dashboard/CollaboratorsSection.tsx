@@ -38,6 +38,7 @@ import { useNavStore } from "../../../nav"
 import { FeedNotice } from "../../FeedNotice"
 import { RowsSkeleton } from "../HostSkeletons"
 import { appErrorCode } from "../../errorCode"
+import { lastAdminSeat } from "../orgManageModel"
 import { OrgInviteSheet } from "./OrgInviteSheet"
 import {
   canManageOrgTeam,
@@ -68,6 +69,7 @@ function MemberRow({
   viewerId,
   canManage,
   canSetRole,
+  lastAdmin,
   pending,
   onOpenPerson,
   onSetRole,
@@ -77,6 +79,7 @@ function MemberRow({
   viewerId: string | null
   canManage: boolean
   canSetRole: boolean
+  lastAdmin: boolean
   pending: boolean
   onOpenPerson: (navId: string) => void
   onSetRole: (userId: string, role: OrgSettableRole) => void
@@ -89,7 +92,7 @@ function MemberRow({
   const [menuStep, setMenuStep] = useState<string>(CLOSED)
   const [menuRect, setMenuRect] = useState<AnchorRect | null>(null)
   const { ref: menuAnchorRef, measure: measureMenu } = usePopoverAnchor(setMenuRect)
-  const actions = orgMemberActions({ member, viewerId, canManage, canSetRole })
+  const actions = orgMemberActions({ member, viewerId, canManage, canSetRole, lastAdmin })
   const person = member.person
   const roleLabel = tEnums(`organizationMemberRole.${member.role}`)
 
@@ -264,6 +267,7 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
     [membersQuery.data],
   )
   const invites = useMemo(() => pendingOrgInvites(invitesQuery.data ?? []), [invitesQuery.data])
+  const lastAdmin = !membersQuery.hasNextPage && lastAdminSeat(members)
   const quotaReached = orgInviteQuotaReached(invitesQuery.data ?? [])
   const managePending = setRole.isPending || removeMember.isPending
 
@@ -365,6 +369,7 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
             viewerId={viewerId}
             canManage={canManage}
             canSetRole={canSetRole}
+            lastAdmin={lastAdmin}
             pending={managePending}
             onOpenPerson={onOpenPerson}
             onSetRole={onSetRole}
@@ -426,7 +431,7 @@ const useStyles = makeThemedStyles((t) => ({
   noteRow: {
     gap: t.space["1"],
     paddingHorizontal: t.space["4"],
-    paddingVertical: t.space["3"],
+    paddingVertical: t.space["2"],
   },
   moreRow: {
     alignItems: "center",

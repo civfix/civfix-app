@@ -37,6 +37,11 @@ import {
   type HistoryCacheOp,
   type InboundFrame,
 } from "../inbound"
+import {
+  linkLocalChatAttachments,
+  rememberLocalChatAttachments,
+  restoreLocalChatAttachments,
+} from "../localChatAttachments"
 import { buildLocalReplyTo } from "../replyPreview"
 import { readAckToFlush, type PendingReadAck } from "../readAck"
 import { chatSendOutcome, type ChatConnState } from "../types"
@@ -353,6 +358,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     (message: ChatMessageDTO, explicitClientId?: string, viewerTruth?: boolean) => {
       const cid = effectiveClientId(message, explicitClientId)
       if (cid) {
+        linkLocalChatAttachments(cid, message.id)
         clearSendTimer(cid)
         outboxMentionsRef.current.delete(cid)
         offlineFailedRef.current.delete(cid)
@@ -692,6 +698,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
         clientId,
         ...(replyToId ? { replyToId, ...(replyTo ? { replyTo } : {}) } : {}),
       }
+      rememberLocalChatAttachments(clientId, attachments)
       setOutbox((prev) => [...prev, { clientId, message: optimistic, status: "sending" }])
       if (mentionedUserIds && mentionedUserIds.length > 0) {
         outboxMentionsRef.current.set(clientId, mentionedUserIds)
@@ -913,7 +920,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           if (seq !== aroundSeqRef.current) return true
           const items = page.items.filter((m) => m.cleanupId === roomId)
           aroundCursorsRef.current = { next: page.nextCursor ?? null, prev: page.prevCursor ?? null }
-          setAroundWindow(mergeChatItems(items, [], [], myUserId))
+          setAroundWindow(restoreLocalChatAttachments(mergeChatItems(items, [], [], myUserId)))
           setAroundLoading(false)
           return true
         })
@@ -946,7 +953,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
       .flatMap((p) => p.items)
       .filter((m) => m.cleanupId === roomId)
     const live = liveMessages.filter((m) => m.cleanupId === roomId)
-    return mergeChatItems(historyItems, live, outbox, myUserId)
+    return restoreLocalChatAttachments(mergeChatItems(historyItems, live, outbox, myUserId))
   }, [history.data, liveMessages, outbox, myUserId, roomId])
 
   const pins = useMemo<ChatMessageDTO[]>(() => {

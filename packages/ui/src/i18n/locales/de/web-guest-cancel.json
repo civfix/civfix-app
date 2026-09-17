@@ -1,0 +1,28 @@
+{
+  "invalid": {
+    "title": "Dieser Link funktioniert nicht",
+    "body": "Der Absage-Link ist unvollständig. Öffne den Link aus deiner Bestätigungs-E-Mail oder SMS genau so, wie er gesendet wurde, oder bitte den Gastgeber, dich von der Liste zu nehmen.",
+    "action": "Zur Karte"
+  },
+  "confirm": {
+    "title": "Zusage zurückziehen?",
+    "body": "Damit wirst du von der Gästeliste des Events aus deiner Bestätigungsnachricht genommen und der Gastgeber wird informiert. Du bekommst keine Updates mehr dazu.",
+    "cancel": "Zusage zurückziehen",
+    "keep": "Zusage behalten"
+  },
+  "cancelling": "Deine Zusage wird zurückgezogen...",
+  "done": {
+    "title": "Deine Zusage ist zurückgezogen",
+    "body": "Du stehst nicht mehr auf der Gästeliste und der Gastgeber wurde informiert. Du kannst jederzeit über die Eventseite erneut zusagen.",
+    "action": "Zur Karte"
+  },
+  "error": {
+    "title": "Die Zusage konnte nicht zurückgezogen werden",
+    "fallback": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "retry": "Erneut versuchen",
+    "notFound": "Wir konnten diese Zusage nicht finden. Der Link ist vielleicht abgelaufen oder das Event ist vorbei.",
+    "validation": "Dieser Absage-Link scheint falsch oder abgelaufen zu sein.",
+    "rateLimited": "Zu viele Versuche. Warte einen Moment und versuche es erneut.",
+    "network": "Wir konnten civfix nicht erreichen, um die Zusage zurückzuziehen. Prüfe deine Verbindung und versuche es erneut."
+  }
+}

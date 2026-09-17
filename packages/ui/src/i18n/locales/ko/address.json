@@ -1,0 +1,19 @@
+{
+  "row": {
+    "near": "{{address}} 근처",
+    "copy": "주소 복사",
+    "copied": "주소를 복사했습니다",
+    "copy_failed": "주소를 복사하지 못했습니다",
+    "open_maps": "지도 앱에서 열기",
+    "focus_a11y": "{{address}}",
+    "focus_hint": "지도에서 이 위치를 보여줍니다",
+    "static_a11y": "주소: {{address}}"
+  },
+  "sheet": {
+    "title": "주소",
+    "dismiss": "닫기",
+    "apple": "Apple 지도에서 열기",
+    "google": "Google 지도에서 열기",
+    "copy": "주소 복사"
+  }
+}

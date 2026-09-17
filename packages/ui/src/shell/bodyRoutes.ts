@@ -39,12 +39,16 @@ export type BodyId =
   | "dropPin"
   | "hostMode"
   | "hostCheckin"
-  | "hostBroadcastQuick"
+  | "hostAnnounce"
   | "hostTeam"
   | "hostLogHours"
   | "myTicket"
   | "orgPage"
   | "eventDashboard"
+  | "announcement"
+  | "announcements"
+  | "eventAnalytics"
+  | "orgManage"
   | "stub"
 
 export const VIEW_BODY: Record<View, BodyId> = {
@@ -96,10 +100,14 @@ export const DETAIL_BODY: Record<DetailKind, BodyId> = {
   "drop-pin": "dropPin",
   "host-mode": "hostMode",
   "host-checkin": "hostCheckin",
-  "host-broadcast-quick": "hostBroadcastQuick",
+  "host-announce": "hostAnnounce",
   "host-team": "hostTeam",
   "host-log-hours": "hostLogHours",
   "my-ticket": "myTicket",
   org: "orgPage",
+  "org-manage": "orgManage",
   "event-dashboard": "eventDashboard",
+  "event-analytics": "eventAnalytics",
+  announcement: "announcement",
+  announcements: "announcements",
 }

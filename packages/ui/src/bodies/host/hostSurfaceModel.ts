@@ -12,7 +12,7 @@ import type { SparkPoint } from "../../primitives/trendSparklineModel"
 import type { IconName } from "../../typography/icon-map"
 import { linkSheetMode } from "../linkReportsModel"
 
-export const MESSAGE_CTA_WINDOW_MS = 48 * 3_600_000
+export const ANNOUNCE_CTA_WINDOW_MS = 48 * 3_600_000
 
 export const ARRIVAL_BUCKET_MINUTES = 15
 
@@ -20,7 +20,7 @@ export const MAX_ARRIVAL_SPARK_BUCKETS = 32
 
 export type HostCtaKey =
   | "share"
-  | "message"
+  | "announce"
   | "check_in"
   | "scan"
   | "log_hours"
@@ -43,9 +43,8 @@ export type HostCardKey = "grow" | "communicate" | "operate" | "configure" | "da
 
 export type HostRowKey =
   | "share"
-  | "invite_team"
-  | "message"
-  | "email"
+  | "chat"
+  | "announce"
   | "check_in"
   | "scan"
   | "walkup"
@@ -61,9 +60,8 @@ export type HostRowKey =
 
 export const HOST_ROW_ICONS: Readonly<Record<HostRowKey, IconName>> = {
   share: "Link2",
-  invite_team: "UserPlus",
-  message: "Megaphone",
-  email: "Mail",
+  chat: "MessageCircle",
+  announce: "Megaphone",
   check_in: "QrCode",
   scan: "ScanLine",
   walkup: "UserPlus",
@@ -105,6 +103,7 @@ export interface HostSurfaceInput {
 
 export interface HostActionInput {
   stage: HostStage
+  ctas: readonly (HostCtaKey | null)[]
   can: HostSurfaceCapabilities
   unmarked: number
   scannerAvailable: boolean
@@ -157,27 +156,27 @@ export function hostPrimaryCta(input: HostSurfaceInput): HostCtaKey | null {
   if (stage === "past") return logHoursCta(input) ?? (can.manageEvent ? "duplicate" : null)
   if (stage === "wrapping_up") return logHoursCta(input) ?? checkInCta(input) ?? "share"
   if (stage === "soon" || stage === "underway") {
-    return checkInCta(input) ?? (can.broadcast ? "message" : "share")
+    return checkInCta(input) ?? (can.broadcast ? "announce" : "share")
   }
-  const soon = input.startsAt !== null && input.startsAt - input.now <= MESSAGE_CTA_WINDOW_MS
-  if (can.broadcast && soon && input.registeredSeats > 0) return "message"
+  const soon = input.startsAt !== null && input.startsAt - input.now <= ANNOUNCE_CTA_WINDOW_MS
+  if (can.broadcast && soon && input.registeredSeats > 0) return "announce"
   return "share"
 }
 
 export function hostSecondaryCta(input: HostSurfaceInput): HostCtaKey | null {
   const { can, stage } = input
   const primary = hostPrimaryCta(input)
-  const message = can.broadcast && primary !== "message" ? "message" : null
+  const announce = can.broadcast && primary !== "announce" ? "announce" : null
   const edit = can.manageEvent ? "edit" : null
   if (stage === "cancelled") return can.manageEvent ? "duplicate" : null
   if (stage === "upcoming") return edit
-  if (stage === "soon") return message ?? edit
-  if (stage === "underway") return message
+  if (stage === "soon") return announce ?? edit
+  if (stage === "underway") return announce
   if (stage === "wrapping_up") {
     const checkIn = checkInCta(input)
-    return checkIn !== null && primary !== checkIn ? checkIn : message
+    return checkIn !== null && primary !== checkIn ? checkIn : announce
   }
-  if (message !== null) return message
+  if (announce !== null) return announce
   return can.logHours && primary !== "log_hours" ? "log_hours" : null
 }
 
@@ -265,8 +264,27 @@ export function hostStatTiles(insights: EventInsights, phase: EventPhase): HostT
   return tiles
 }
 
+const CTA_ROW: Readonly<Record<HostCtaKey, HostRowKey>> = {
+  share: "share",
+  announce: "announce",
+  check_in: "check_in",
+  scan: "scan",
+  log_hours: "log_hours",
+  duplicate: "duplicate",
+  edit: "edit",
+}
+
+export function ctaRowKeys(ctas: readonly (HostCtaKey | null)[]): ReadonlySet<HostRowKey> {
+  const out = new Set<HostRowKey>()
+  for (const cta of ctas) {
+    if (cta !== null) out.add(CTA_ROW[cta])
+  }
+  return out
+}
+
 export function hostActionCards(input: HostActionInput): HostActionCard[] {
   const { can, stage } = input
+  const shown = ctaRowKeys(input.ctas)
   const cancelled = stage === "cancelled"
   const before = stage === "upcoming" || stage === "soon"
   const running = stage === "soon" || stage === "underway" || stage === "wrapping_up"
@@ -275,13 +293,10 @@ export function hostActionCards(input: HostActionInput): HostActionCard[] {
 
   const grow: HostRowKey[] = []
   if (!cancelled) grow.push("share")
-  if (!cancelled && can.manageTeam) grow.push("invite_team")
 
   const communicate: HostRowKey[] = []
-  if (!cancelled && can.broadcast) {
-    communicate.push("message")
-    communicate.push("email")
-  }
+  if (!cancelled) communicate.push("chat")
+  if (!cancelled && can.broadcast) communicate.push("announce")
 
   const operate: HostRowKey[] = []
   if (running && can.checkIn) operate.push(input.scannerAvailable ? "scan" : "check_in")
@@ -301,7 +316,7 @@ export function hostActionCards(input: HostActionInput): HostActionCard[] {
   ) {
     configure.push("linked_reports")
   }
-  if (before && can.manageTeam) configure.push("team")
+  if (!cancelled && can.manageTeam) configure.push("team")
   if (before && can.manageTickets && input.consoleReachable) configure.push("tickets")
   if (before && can.requestResources && input.hasOrganization) configure.push("resources")
   if ((stage === "past" || cancelled) && can.manageEvent) configure.push("duplicate")
@@ -316,7 +331,9 @@ export function hostActionCards(input: HostActionInput): HostActionCard[] {
     { key: "configure", rows: configure },
     { key: "danger", rows: danger },
   ]
-  return cards.filter((card) => card.rows.length > 0)
+  return cards
+    .map((card) => ({ key: card.key, rows: card.rows.filter((row) => !shown.has(row)) }))
+    .filter((card) => card.rows.length > 0)
 }
 
 export function registrationTrendPoints(trend: readonly SeatPoint[]): SparkPoint[] {

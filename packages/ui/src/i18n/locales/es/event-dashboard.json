@@ -24,10 +24,8 @@
     "more_shifts": "{{count}} turnos más en Herramientas de anfitrión",
     "more_shifts_a11y": "Abrir las herramientas de anfitrión para ver los {{total}} turnos de {{title}}"
   },
-  "attention": {
-    "section": "Requiere atención",
-    "log_hours": "Registrar horas · {{count}} con entrada registrada",
-    "log_hours_a11y": "Registrar horas de {{title}}"
+  "analytics": {
+    "for_event": "Analíticas de {{title}}"
   },
   "impact": {
     "section": "Impacto",
@@ -64,7 +62,6 @@
     "open_a11y": "Abrir {{title}}",
     "actions_a11y": "Acciones para {{title}}",
     "host_tools": "Herramientas de anfitrión",
-    "email_attendees": "Escribir a los asistentes",
     "duplicate": "Duplicar",
     "edit": "Editar",
     "show_more": "Ver más",
@@ -96,7 +93,9 @@
     "meta_hours_not_logged": "Horas sin registrar",
     "meta_cancelled": "Cancelado",
     "meta_signed_up": "{{count}} apuntados",
-    "meta_underway": "Empezó hace {{ago}}"
+    "meta_underway": "Empezó hace {{ago}}",
+    "open_chat": "Abrir el chat del grupo",
+    "announce": "Publicar un anuncio"
   },
   "first_event": {
     "title": "Organiza tu primer evento",
@@ -104,20 +103,6 @@
     "step_checkin": "Tú registras su entrada el día del evento",
     "step_hours": "Tú acreditas sus horas después",
     "cta": "Crear evento"
-  },
-  "invites": {
-    "section": "Invitaciones",
-    "invited_by_unknown": "Alguien",
-    "event_invited_as": "{{name}} te invitó como {{role}}",
-    "org_invited_as": "{{name}} te invitó como {{role}}",
-    "accept": "Aceptar",
-    "decline": "Rechazar",
-    "accept_a11y": "Aceptar la invitación a {{title}}",
-    "decline_a11y": "Rechazar la invitación a {{title}}",
-    "error": "No funcionó. Inténtalo de nuevo.",
-    "error_title": "No se pudieron cargar tus invitaciones",
-    "error_body": "No pudimos conectar con civfix. Revisa tu conexión e inténtalo de nuevo.",
-    "retry": "Reintentar"
   },
   "team": {
     "section": "Equipo",
@@ -167,10 +152,6 @@
     "show_more_a11y": "Mostrar más colaboradores",
     "invites_error": "No se pudieron cargar las invitaciones pendientes.",
     "invite_row_sub": "Invitado · {{role}}"
-  },
-  "console": {
-    "open": "Abrir la consola completa",
-    "sub": "Página del evento, entradas, exportaciones y más"
   },
   "state": {
     "signin_title": "Inicia sesión para ver tu panel",

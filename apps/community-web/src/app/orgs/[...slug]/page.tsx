@@ -1,4 +1,4 @@
-import { OrgPageView } from "@/features/org-page/org-page-view"
+import { OrgRoute } from "@/features/org-page/org-route"
 
 /**
  * Catch-all public organization page. Like /e/[...slug]: the static export emits one placeholder
@@ -13,5 +13,5 @@ export function generateStaticParams(): Array<{ slug: string[] }> {
 export const dynamicParams = false
 
 export default function OrgPage() {
-  return <OrgPageView />
+  return <OrgRoute />
 }

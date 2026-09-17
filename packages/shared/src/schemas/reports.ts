@@ -32,6 +32,8 @@ export type {
   MediaDTO,
 } from "./entities.js"
 
+export const MAX_REPORT_ADDR_LENGTH = 300
+
 export const CreateReportRequestSchema = z
   .object({
     idempotencyKey: IdSchema,
@@ -45,7 +47,7 @@ export const CreateReportRequestSchema = z
     description: z.string().max(2000).optional(),
     // Reverse-geocoded street address for the point (display label; lat/lng stays canonical). Optional:
     // a client that cannot resolve one omits it and the operator console falls back to the jurisdiction.
-    addr: z.string().max(300).optional(),
+    addr: z.string().max(MAX_REPORT_ADDR_LENGTH).optional(),
     ...LatLngFields,
     geomSource: GeomSourceSchema,
     capturedAt: ISODateSchema.optional(),

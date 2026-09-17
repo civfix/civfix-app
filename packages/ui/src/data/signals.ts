@@ -24,6 +24,9 @@ function baseKeysForTopic(topic: SignalTopic, id: string | null): ReadonlyArray<
       return [queryKeys.myReportsRoot]
     case "host":
       return [id ? queryKeys.hostEvent(id) : HOST_ROOT]
+    case "feed":
+    case "feed_counts":
+      return []
     default:
       return []
   }

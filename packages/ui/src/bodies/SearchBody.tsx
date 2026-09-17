@@ -583,10 +583,9 @@ function SearchResting({
 
 const MIN_TOUCH_TARGET = 44
 const FIELD_CLEAR_SIZE = 22
-const FIELD_HEIGHT = 40
 const FIELD_CLEAR_HIT_SLOP = {
-  top: (FIELD_HEIGHT - FIELD_CLEAR_SIZE) / 2,
-  bottom: (FIELD_HEIGHT - FIELD_CLEAR_SIZE) / 2,
+  top: (MIN_TOUCH_TARGET - FIELD_CLEAR_SIZE) / 2,
+  bottom: (MIN_TOUCH_TARGET - FIELD_CLEAR_SIZE) / 2,
   left: (MIN_TOUCH_TARGET - FIELD_CLEAR_SIZE) / 2,
   right: (MIN_TOUCH_TARGET - FIELD_CLEAR_SIZE) / 2,
 }
@@ -612,10 +611,10 @@ const useStyles = makeThemedStyles((t) => ({
   field: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    height: FIELD_HEIGHT,
-    paddingHorizontal: 14,
-    borderRadius: 12,
+    gap: 9,
+    minHeight: MIN_TOUCH_TARGET,
+    paddingHorizontal: 12,
+    borderRadius: t.radius.md,
     backgroundColor: t.colors.surface,
     ...(Platform.OS === "web"
       ? { borderWidth: 1, borderColor: wash(t.colors.borderStrong, 0.45, t) }

@@ -7,10 +7,12 @@ import { PrimaryButton, SecondaryButton, QrTicket, useToast } from "../../primit
 import { calendarSaveAvailable, saveCalendarFile } from "../../primitives/calendarFile"
 import { useCalendarFile } from "../../capabilities"
 import { useCancelEventRegistration, useMyEventTicket } from "../../data/hooks/host"
+import { useCleanup } from "../../data"
 import { useEventIcs } from "../../data/eventIcs"
 import { useLocale, useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
+import { AddressRow } from "../AddressRow"
 import { FeedNotice } from "../FeedNotice"
 import { appErrorCode } from "../errorCode"
 import {
@@ -18,10 +20,10 @@ import {
   ticketPageIndex,
   ticketPageWidth,
   ticketQrSize,
+  ticketAddressView,
   ticketSeatIndex,
   ticketSeatOffset,
   ticketWhen,
-  ticketWhere,
 } from "./ticketModel"
 
 export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
@@ -44,6 +46,11 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
   const pageRef = useRef(0)
 
   const ticket = query.data ?? null
+  const event = useCleanup(ticket?.cleanupId)
+  const where = useMemo(
+    () => (ticket ? ticketAddressView(ticket, event.data ?? null) : null),
+    [ticket, event.data],
+  )
   const seats = useMemo<MyEventTicketSeat[]>(() => ticket?.seats ?? [], [ticket])
   const pageWidth = ticketPageWidth(pagerWidth)
   const qrSize = ticketQrSize(pageWidth)
@@ -129,13 +136,14 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
           <Icon icon={iconMap.Calendar} size={14} color={th.colors.textSubtle} />
           <Text style={styles.meta}>{ticketWhen(ticket, locale)}</Text>
         </View>
-        {ticketWhere(ticket) ? (
-          <View style={styles.metaRow}>
-            <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
-            <Text style={styles.meta} numberOfLines={2}>
-              {ticketWhere(ticket)}
-            </Text>
-          </View>
+        {where?.address ? (
+          <AddressRow
+            address={where.address}
+            point={where.point}
+            verified={where.verified}
+            title={ticket.title}
+            numberOfLines={2}
+          />
         ) : null}
         {ticket.ticketTypeName ? (
           <View style={styles.metaRow}>

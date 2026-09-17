@@ -8,12 +8,13 @@ export const queryKeys = {
   nearbyReports: (lat: number, lng: number, radiusKm: number) =>
     ["map", "reports", "near", lat, lng, radiusKm] as const,
   jurisdiction: (lat: number, lng: number) => ["jurisdiction", lat, lng] as const,
+  resolvedAddressRoot: ["geocode", "address"] as const,
+  resolvedAddress: (pointKey: string) => ["geocode", "address", pointKey] as const,
   cleanups: (when: string, limit: number) => ["cleanups", when, limit] as const,
   cleanupsNearby: (when: string, limit: number, lat: number, lng: number) =>
     ["cleanups", when, "nearby", lat, lng, limit] as const,
   cleanup: (id: string) => ["cleanup", id] as const,
   cleanupAttendees: (id: string) => ["cleanup", id, "attendees"] as const,
-  cleanupGuests: (id: string) => ["cleanup", id, "guests"] as const,
   report: (id: string) => ["report", id] as const,
   reportChatParticipants: (id: string) => ["report", id, "chat-participants"] as const,
   reportSearch: (q: string, categories: readonly string[]) =>
@@ -67,11 +68,18 @@ export const queryKeys = {
   hostEvent: (id: string) => ["host", id] as const,
   hostCounters: (id: string) => ["host", id, "counters"] as const,
   eventInsights: (id: string) => ["host", id, "insights"] as const,
+  eventAnalytics: (id: string, scope: string) => ["host", id, "analytics", scope] as const,
   hostRoster: (id: string, filter: string, q: string) =>
     ["host", id, "roster", filter, q] as const,
   hostTicketTypes: (id: string) => ["host", id, "ticket-types"] as const,
   hostQuestions: (id: string) => ["host", id, "questions"] as const,
   hostTeam: (id: string) => ["host", id, "team"] as const,
+  eventAnnouncementsRoot: (id: string) => ["host", id, "announcements"] as const,
+  eventAnnouncements: (id: string) => ["host", id, "announcements", "list"] as const,
+  eventAnnouncement: (id: string, announcementId: string) =>
+    ["host", id, "announcements", "one", announcementId] as const,
+  eventAudiencePreview: (id: string, segment: string) =>
+    ["host", id, "audience-preview", segment] as const,
   hostWaitlist: (id: string) => ["host", id, "waitlist"] as const,
   myRegistration: (id: string) => ["host", id, "my-registration"] as const,
   myTickets: (id: string) => ["tickets", "mine", id] as const,

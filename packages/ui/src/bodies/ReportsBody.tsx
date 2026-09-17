@@ -210,12 +210,14 @@ function ReportsHeader({ expanded }: { expanded: boolean }) {
   )
 }
 
+const MIN_TOUCH_TARGET = 44
+
 const useStyles = makeThemedStyles((t) => ({
   searchField: {
     flexDirection: "row",
     alignItems: "center",
     gap: 9,
-    height: 42,
+    minHeight: MIN_TOUCH_TARGET,
     marginTop: t.space["2"],
     marginBottom: t.space["2"],
     paddingHorizontal: 12,

@@ -1,10 +1,10 @@
 import React, { memo, useCallback } from "react"
 import { View } from "react-native"
 import type { PendingEventTeamInviteDTO, PendingOrganizationInviteDTO } from "@civfix/shared"
-import { makeThemedStyles } from "../../../theme"
-import { TextLink, iconMap } from "../../../typography"
-import { IconTile, ListRow, SecondaryButton } from "../../../primitives"
-import { useT } from "../../../i18n"
+import { makeThemedStyles } from "../../theme"
+import { TextLink, iconMap } from "../../typography"
+import { IconTile, ListRow, SecondaryButton } from "../../primitives"
+import { useT } from "../../i18n"
 
 export interface EventInviteRowProps {
   invite: PendingEventTeamInviteDTO
@@ -26,7 +26,7 @@ function InviteActions({
   onDecline: () => void
 }) {
   const styles = useStyles()
-  const { t } = useT("event-dashboard")
+  const { t } = useT("profile")
   return (
     <View style={styles.actions}>
       <SecondaryButton
@@ -56,7 +56,7 @@ export const EventInviteRow = memo(function EventInviteRow({
   onAccept,
   onDecline,
 }: EventInviteRowProps) {
-  const { t } = useT("event-dashboard")
+  const { t } = useT("profile")
   const accept = useCallback(() => onAccept(invite.id), [onAccept, invite.id])
   const decline = useCallback(() => onDecline(invite.id), [onDecline, invite.id])
   const inviter = invite.invitedBy?.name ?? t("invites.invited_by_unknown")
@@ -93,7 +93,7 @@ export const OrgInviteRow = memo(function OrgInviteRow({
   onAccept,
   onDecline,
 }: OrgInviteRowProps) {
-  const { t } = useT("event-dashboard")
+  const { t } = useT("profile")
   const accept = useCallback(() => onAccept(invite.id), [onAccept, invite.id])
   const decline = useCallback(() => onDecline(invite.id), [onDecline, invite.id])
   const inviter = invite.invitedBy?.name ?? t("invites.invited_by_unknown")

@@ -17,7 +17,8 @@
     "empty_body_before": "커뮤니티의 게시물이 여기에 표시돼요. ",
     "empty_body_link": "로그인",
     "empty_body_after": "하고 첫 소식을 공유해 보세요.",
-    "caught_up": "모두 확인했어요"
+    "caught_up": "모두 확인했어요",
+    "new_posts_other": "새 게시물 {{count}}개"
   },
   "thread": {
     "title": "게시물",

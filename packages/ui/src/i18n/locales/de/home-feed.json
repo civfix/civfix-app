@@ -17,7 +17,9 @@
     "empty_body_before": "Beiträge aus deiner Community erscheinen hier. ",
     "empty_body_link": "Melde dich an",
     "empty_body_after": ", um die erste Neuigkeit zu teilen.",
-    "caught_up": "Du bist auf dem neuesten Stand"
+    "caught_up": "Du bist auf dem neuesten Stand",
+    "new_posts_one": "{{count}} neuer Beitrag",
+    "new_posts_other": "{{count}} neue Beiträge"
   },
   "thread": {
     "title": "Beitrag",

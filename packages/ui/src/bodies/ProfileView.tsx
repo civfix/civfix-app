@@ -1,10 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, StyleSheet, Linking } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
 import {
-  SOCIAL_PLATFORMS,
-  SOCIAL_PLATFORM_LABELS,
-  socialLinkUrl,
-  type SocialLinks,
   type UserProfileDTO,
   type CleanupDTO,
   type OrganizationRefDTO,
@@ -14,6 +10,7 @@ import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
   DonateBlock,
+  SocialLinksRow,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
@@ -37,39 +34,6 @@ import { splitProfileEvents, type ProfileEventTab } from "./profile/profileEvent
 
 export type { ProfilePosts } from "./profile/ProfilePostsSection"
 export type { ProfileReports } from "./profile/ProfileReportsSection"
-
-function SocialLinksRow({ links }: { links: SocialLinks | null | undefined }) {
-  const styles = useStyles()
-  const { t } = useT("profile-view")
-  if (!links) return null
-  const present = SOCIAL_PLATFORMS.filter((platform) => {
-    const value = links[platform]
-    return typeof value === "string" && value.trim().length > 0
-  })
-  if (present.length === 0) return null
-  return (
-    <View style={styles.socialRow}>
-      {present.map((platform) => {
-        const value = (links[platform] as string).trim()
-        const label = SOCIAL_PLATFORM_LABELS[platform]
-        return (
-          <Pressable
-            key={platform}
-            onPress={() => {
-              void Linking.openURL(socialLinkUrl(platform, value)).catch(() => {})
-            }}
-            accessibilityRole="link"
-            accessibilityLabel={t("social.link_a11y", { platform: label })}
-            {...focusRingProps}
-            style={({ pressed }) => [styles.socialChip, pressed ? styles.socialChipPressed : null]}
-          >
-            <Text style={styles.socialChipText}>{label}</Text>
-          </Pressable>
-        )
-      })}
-    </View>
-  )
-}
 
 export interface ProfileViewProps {
   profile: UserProfileDTO
@@ -210,14 +174,14 @@ export function ProfileView({
 
       {affiliation ? <AffiliationRow organization={affiliation} style={styles.affiliation} /> : null}
 
+      <SocialLinksRow links={profile.socialLinks} style={styles.socialRow} />
+
       <ProfileStatsRow
         followers={profile.followers}
         following={profile.following}
         stats={profile.stats}
         onOpenConnections={onOpenConnections}
       />
-
-      <SocialLinksRow links={profile.socialLinks} />
 
       <DonateBlock url={profile.donationUrl} ownerName={profile.name} variant="row" />
 
@@ -343,26 +307,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
 
   socialRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: t.space["2"],
     marginTop: HEADER_CLUSTER_GAP,
-  },
-  socialChip: {
-    paddingVertical: 6,
-    paddingHorizontal: t.space["3"],
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.bgAlt,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-  },
-  socialChipPressed: {
-    opacity: 0.8,
-  },
-  socialChipText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 12.5,
-    color: t.colors.accentText,
   },
 
   dashboardSlot: {

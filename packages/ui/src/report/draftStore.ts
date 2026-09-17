@@ -35,6 +35,7 @@ export interface DraftReport {
   locationPrefilled: boolean
   capturedAt: string | null
   addr: string | null
+  addrEdited: boolean
   media: DraftMedia[]
   shareToFeed: boolean
   feedCaption: string
@@ -53,6 +54,7 @@ interface DraftReportState {
   setPrefilledLocation: (lat: number, lng: number) => void
   clearLocation: () => void
   setAddress: (addr: string) => void
+  setPrefilledAddress: (addr: string) => void
   setMedia: (media: DraftMediaInput) => void
   startFromCapture: (media: CapturedMedia) => void
   addCapture: (media: CapturedMedia) => void
@@ -86,6 +88,7 @@ const EMPTY: DraftReport = {
   locationPrefilled: false,
   capturedAt: null,
   addr: null,
+  addrEdited: false,
   media: [],
   shareToFeed: false,
   feedCaption: "",
@@ -152,7 +155,9 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
     })),
   clearLocation: () =>
     set((s) => ({ draft: { ...s.draft, lat: null, lng: null, locationPrefilled: false } })),
-  setAddress: (addr) => set((s) => ({ draft: { ...s.draft, addr } })),
+  setAddress: (addr) => set((s) => ({ draft: { ...s.draft, addr, addrEdited: true } })),
+  setPrefilledAddress: (addr) =>
+    set((s) => (s.draft.addrEdited ? s : { draft: { ...s.draft, addr } })),
   setMedia: (media) => set((s) => ({ draft: { ...s.draft, media: [{ id: randomUuid(), ...media }] } })),
 
   startFromCapture: (media) => {
@@ -165,6 +170,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
               lng: s.draft.lng,
               geomSource: s.draft.geomSource,
               addr: s.draft.addr,
+              addrEdited: s.draft.addrEdited,
               locationPrefilled: true,
             }
           : null

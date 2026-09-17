@@ -10,7 +10,7 @@ const panels = strip(read("../HostInsightsPanels.tsx"))
 const model = strip(read("../hostSurfaceModel.ts"))
 const roster = strip(read("../EventRosterBlock.tsx"))
 const rosterList = strip(read("../RosterCheckinList.tsx"))
-const broadcast = strip(read("../HostBroadcastQuickBody.tsx"))
+const announce = strip(read("../HostAnnounceBody.tsx"))
 const invite = strip(read("../HostTeamInviteSheet.tsx"))
 const checkin = strip(read("../HostCheckinBody.tsx"))
 const ticket = strip(read("../MyTicketBody.tsx"))
@@ -30,9 +30,39 @@ const HOST_SOURCES: Record<string, string> = {
   "hostSurfaceModel.ts": model,
   "EventRosterBlock.tsx": roster,
   "RosterCheckinList.tsx": rosterList,
-  "HostBroadcastQuickBody.tsx": broadcast,
+  "HostAnnounceBody.tsx": announce,
   "HostTeamInviteSheet.tsx": invite,
 }
+
+describe("the comms rework", () => {
+  it("reaches the event group chat and the announcement composer, and emails nobody", () => {
+    expect(body).toContain('kind: "thread"')
+    expect(body).toContain('roomKind: "cleanup"')
+    expect(body).toContain('kind: "host-announce"')
+    expect(body).not.toContain("emailAttendeesPreset")
+    expect(body).not.toContain("setBroadcastPreset")
+    expect(body).not.toContain('t("row.email")')
+    expect(model).not.toContain('"email"')
+  })
+
+  it("suppresses a row the PhaseHeader is already showing, from the pure model", () => {
+    expect(body).toContain("ctas: [primary, secondary],")
+    expect(model).toContain("const shown = ctaRowKeys(input.ctas)")
+    expect(model).toContain("card.rows.filter((row) => !shown.has(row))")
+  })
+
+  it("lists what the host already sent, with the counts only this surface shows", () => {
+    expect(body).toContain("<HostAnnouncementsBlock cleanupId={id} />")
+    expect(strip(read("../HostAnnouncementsBlock.tsx"))).toContain("showDelivery")
+    expect(strip(read("../EventAnnouncementsBlock.tsx"))).not.toContain("showDelivery")
+  })
+
+  it("sends through the announcement endpoint, never the draft-and-send broadcast machine", () => {
+    expect(announce).toContain("useCreateAnnouncement")
+    expect(announce).not.toContain("useQuickBroadcast")
+    expect(announce).not.toContain("createEventBroadcast")
+  })
+})
 
 describe("the host surface spends its coral once", () => {
   it("renders exactly one PrimaryButton, and it is the PhaseHeader's CTA", () => {
@@ -51,7 +81,7 @@ describe("the host surface spends its coral once", () => {
   it("keeps every brand fill out of the host surface's own source", () => {
     for (const [name, source] of Object.entries(HOST_SOURCES)) {
       expect(source.match(/colors\.brand\.bloom/g) ?? [], `${name} still fills with the brand hue`)
-        .toHaveLength(name === "HostBroadcastQuickBody.tsx" ? 1 : 0)
+        .toHaveLength(0)
       expect(source.match(/"#[0-9a-fA-F]{3,8}"/g) ?? [], `${name} hardcodes a colour`).toHaveLength(0)
       expect(source.match(/colors\.bloom\["700"\]/g) ?? [], `${name} uses the old danger hue`)
         .toHaveLength(0)
@@ -90,9 +120,11 @@ describe("selection is neutral now", () => {
     expect(roster).not.toContain("styles.chipOn")
   })
 
-  it("gives the broadcast audience and the invite identifier a SegmentedControl", () => {
-    expect(broadcast).toContain("<SegmentedControl")
-    expect(broadcast).not.toContain("styles.segmentOn")
+  it("gives the announcement audience a radio list with live counts, and the invite a SegmentedControl", () => {
+    expect(announce).toContain('accessibilityRole="radiogroup"')
+    expect(announce).toContain('accessibilityRole="radio"')
+    expect(announce).toContain("useAudiencePreview")
+    expect(announce).not.toContain("styles.segmentOn")
     expect(invite).toContain("<SegmentedControl")
     expect(invite).not.toContain("styles.segmentOn")
   })
@@ -105,8 +137,12 @@ describe("the dashboard handoff is one file on both platforms", () => {
     expect(target).not.toContain("openExternal")
   })
 
-  it("leaves the console reachable through the targetable row instead", () => {
-    expect(body).toContain('<ConsoleLinkRow target={{ kind: "event", eventId: id }} />')
+  it("answers in the app instead of sending the host out to the console", () => {
+    expect(body).not.toContain("ConsoleLinkRow")
+    expect(body).toContain("<AnalyticsCarouselCard cleanupId={id} />")
+    expect(strip(read("../dashboard/AnalyticsCarouselCard.tsx"))).toContain(
+      'push({ kind: "event-analytics", id: cleanupId })',
+    )
   })
 
   it("collapses the event detail's host block to the single dashboard row", () => {
@@ -133,11 +169,8 @@ describe("the tickets row is gated on the platform, not on a capability every ho
     expect(reachSelector).toContain('from "./consoleReach.web"')
   })
 
-  it("opens the console through the one helper both surfaces share", () => {
+  it("opens the console through the one helper the tickets row still needs", () => {
     expect(body).toContain("openConsolePath(managePath(id), openExternal)")
-    expect(strip(read("../dashboard/ConsoleLinkRow.web.tsx"))).toContain(
-      "openConsolePath(pathFor(target), openExternal)",
-    )
   })
 })
 

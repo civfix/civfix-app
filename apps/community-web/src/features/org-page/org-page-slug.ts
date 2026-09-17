@@ -9,6 +9,14 @@ export type OrgSlugSource =
 
 const NONE: OrgSlugSource = { kind: "none" }
 
+export const ORG_MANAGE_SEGMENT = "manage"
+
+export function isOrgManagePath(pathname: string | null | undefined): boolean {
+  if (!pathname) return false
+  const segments = pathname.split("/").filter((segment) => segment.length > 0)
+  return segments[0] === ORG_PAGE_SEGMENT && segments[2] === ORG_MANAGE_SEGMENT
+}
+
 /**
  * Read the org slug from a live `/orgs/<slug>/` URL. Under the static export the route shell is
  * emitted at `/orgs/_/`, so the placeholder segment reads as "none" rather than as a slug.

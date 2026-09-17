@@ -1,4 +1,4 @@
-import type { CleanupDTO } from "@civfix/shared"
+import type { CleanupDTO, CleanupStatus } from "@civfix/shared"
 import { safeDonationUrl } from "../primitives/donationUrl"
 
 export interface DonationLink {
@@ -7,6 +7,19 @@ export interface DonationLink {
 }
 
 export type DonationLinkSource = Pick<CleanupDTO, "title" | "donationUrl" | "organization" | "organizer">
+
+export interface DonationViewer {
+  status: CleanupStatus
+  actsAsHost: boolean
+}
+
+export function eventDonationLinkFor(
+  cleanup: DonationLinkSource,
+  viewer: DonationViewer,
+): DonationLink | null {
+  if (viewer.status === "cancelled" || viewer.actsAsHost) return null
+  return donationLinkFor(cleanup)
+}
 
 export function donationLinkFor(cleanup: DonationLinkSource): DonationLink | null {
   const orgName = cleanup.organization?.name.trim() ?? ""

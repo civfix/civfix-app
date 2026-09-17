@@ -26,6 +26,11 @@ describe("invalidationKeysForTopic", () => {
     expect(invalidationKeysForTopic("reports")).toEqual([queryKeys.myReportsRoot])
   })
 
+  it("feed and feed_counts are deliberate no-ops - the pill and the counts patcher own them", () => {
+    expect(invalidationKeysForTopic("feed", undefined, "post-1")).toEqual([])
+    expect(invalidationKeysForTopic("feed_counts", undefined, "post-1")).toEqual([])
+  })
+
   it("an unknown topic yields no keys (never throws)", () => {
     // Cast through never: a future topic this client predates must be a safe no-op.
     expect(invalidationKeysForTopic("future_topic" as never)).toEqual([])

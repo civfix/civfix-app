@@ -99,7 +99,8 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
                 accessibilityRole="link"
                 accessibilityLabel={t("legal.terms_a11y")}
                 hitSlop={6}
-              {...focusRingProps}
+                {...focusRingProps}
+                style={({ pressed }) => (pressed ? styles.legalPressed : null)}
               >
                 <Text style={styles.legalLink}>{t("legal.terms")}</Text>
               </Pressable>
@@ -109,7 +110,8 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
                 accessibilityRole="link"
                 accessibilityLabel={t("legal.privacy_a11y")}
                 hitSlop={6}
-              {...focusRingProps}
+                {...focusRingProps}
+                style={({ pressed }) => (pressed ? styles.legalPressed : null)}
               >
                 <Text style={styles.legalLink}>{t("legal.privacy")}</Text>
               </Pressable>
@@ -210,6 +212,9 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: 12.5,
     color: t.colors.textSubtle,
     textDecorationLine: "underline",
+  },
+  legalPressed: {
+    opacity: 0.6,
   },
   legalDot: {
     fontFamily: t.fontFamily.bodyRegular,

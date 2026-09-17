@@ -1,3 +1,5 @@
+import { startsInBackSwipeEdge } from "./backSwipeEdge"
+
 export const SWIPE_ACTIONS_CAPTURE_SLOP_PX = 10
 export const SWIPE_ACTION_WIDTH_PX = 72
 export const SWIPE_ACTIONS_SNAP_RATIO = 0.5
@@ -11,10 +13,16 @@ export function actionsRestingX(open: boolean, width: number): number {
   return open ? -width : 0
 }
 
-export function shouldCaptureActionsSwipe(dx: number, dy: number, open: boolean): boolean {
+export function shouldCaptureActionsSwipe(
+  dx: number,
+  dy: number,
+  open: boolean,
+  startX = Number.POSITIVE_INFINITY,
+): boolean {
   if (Math.abs(dx) <= SWIPE_ACTIONS_CAPTURE_SLOP_PX) return false
   if (Math.abs(dx) <= Math.abs(dy)) return false
-  return open || dx < 0
+  if (dx < 0) return true
+  return open && !startsInBackSwipeEdge(startX)
 }
 
 export function actionsTranslate(dx: number, restX: number, width: number): number {

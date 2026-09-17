@@ -7,7 +7,7 @@ import {
   StyleSheet,
   type LayoutChangeEvent,
 } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps, headingLevel } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, headingLevel, webCursor, webTransition, webHover } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { useAppPromo } from "./useAppPromo"
@@ -53,7 +53,13 @@ export function AppPromoCard() {
           accessibilityLabel={t("app_promo.dismiss")}
           hitSlop={6}
           {...focusRingProps}
-          style={({ pressed }) => [styles.dismiss, pressed ? styles.dismissPressed : null]}
+          style={(state) => [
+            styles.dismiss,
+            webCursor(),
+            webTransition,
+            webHover(state) ? styles.hovered : null,
+            state.pressed ? styles.dismissPressed : null,
+          ]}
         >
           <Icon icon={iconMap.Close} size={15} color={th.colors.textMuted} />
         </Pressable>
@@ -70,7 +76,13 @@ export function AppPromoCard() {
             accessibilityLabel={t(link.labelKey)}
             {...linkKeyProps(() => void Linking.openURL(link.href))}
             {...focusRingProps}
-            style={({ pressed }) => [styles.badge, pressed ? styles.badgePressed : null]}
+            style={(state) => [
+              styles.badge,
+              webCursor(),
+              webTransition,
+              webHover(state) ? styles.hovered : null,
+              state.pressed ? styles.badgePressed : null,
+            ]}
           >
             <Image
               source={{ uri: link.badgeSrc }}
@@ -124,6 +136,9 @@ const useStyles = makeThemedStyles((t) => ({
   },
   dismissPressed: {
     opacity: 0.55,
+  },
+  hovered: {
+    opacity: 0.85,
   },
   body: {
     fontFamily: t.fontFamily.bodyRegular,

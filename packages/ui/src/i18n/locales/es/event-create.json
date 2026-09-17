@@ -25,7 +25,8 @@
     "where": {
       "title": "¿Dónde es el encuentro?",
       "help": "Marca en el mapa dónde deben llegar tus vecinos.",
-      "error": "Marca el punto de encuentro en el mapa."
+      "error": "Marca el punto de encuentro en el mapa.",
+      "error_address": "Confirma la dirección del encuentro antes de continuar."
     },
     "details": {
       "title": "¿A quién necesitas?",

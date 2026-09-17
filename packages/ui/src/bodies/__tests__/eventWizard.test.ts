@@ -50,6 +50,7 @@ function draft(over: Partial<EventWizardDraft> = {}): EventWizardDraft {
     endTime: FUTURE_END,
     timezone: DEVICE_ZONE,
     coords: { lat: 34.05, lng: -118.24 },
+    address: "123 Main St, Inglewood, CA",
     slots: [slot()],
     ...over,
   }
@@ -189,8 +190,10 @@ describe("per-step gating", () => {
     expect(eventStepSatisfied("details", draft({ slots: [outside] }), NOW)).toBe(false)
   })
 
-  it("where needs a meeting point", () => {
+  it("where needs a meeting point AND a confirmed address", () => {
     expect(eventStepSatisfied("where", draft({ coords: null }), NOW)).toBe(false)
+    expect(eventStepSatisfied("where", draft({ address: "" }), NOW)).toBe(false)
+    expect(eventStepSatisfied("where", draft({ address: "ab" }), NOW)).toBe(false)
     expect(eventStepSatisfied("where", draft(), NOW)).toBe(true)
   })
 

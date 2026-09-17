@@ -175,7 +175,7 @@ const scannerStyles = StyleSheet.create({
     right: 48,
     bottom: "22%",
     borderWidth: 2,
-    borderColor: stage.colors.neutral.card,
+    borderColor: stage.colors.onScrim,
     borderRadius: radius.lg,
   },
 })

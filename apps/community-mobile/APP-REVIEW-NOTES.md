@@ -3,6 +3,48 @@
 Paste the relevant section into **App Store Connect → App Review Information → Notes**
 (and into the Play Console reviewer notes where the equivalent field exists).
 
+The **Environment** section below is the exception: it is an internal pre-submission checklist, not
+reviewer-facing copy. Do not paste it into App Store Connect.
+
+---
+
+## Environment — App Review runs against STAGING (internal; do not paste)
+
+**The binary a reviewer runs talks to `api.civfix.dev`, not `api.civfix.org`.** This is deliberate
+and needs to be understood before every submission.
+
+The `production` EAS profile bakes no `EXPO_PUBLIC_API_URL`; the app picks its API at launch from its
+iOS install source — a TestFlight/beta install (`StoreKit/sandboxReceipt`) resolves to
+`https://api.civfix.dev`, an App Store download (`StoreKit/receipt`) to `https://api.civfix.org`
+(`src/lib/apiUrl.ts`, `src/lib/nativeBetaInstall.ts`; the mechanism is written up in `README.md`).
+App Review installs through the beta/sandbox path — the same fact behind StoreKit's 21007 sandbox
+receipt status — so the reviewer's copy sees a sandbox receipt and runs against **staging**.
+
+Consequences, accepted knowingly: the approval verdict is rendered against a binary whose production
+behaviour was never exercised by the reviewer, and anything the reviewer is asked to find has to exist
+on staging. There is no OTA update channel in this project that could flip an override for review
+only, and routing beta installs to staging is the property this app deliberately wants — testers must
+never write to the live civic record.
+
+**Pre-submission checklist — all of these are about the STAGING environment:**
+
+- [ ] `api.civfix.dev` is up and healthy (`/readyz`), and staging is on the same commit as the build
+      being submitted.
+- [ ] Staging carries reviewer-visible demo content: at least one event, organization or profile
+      that shows a **Donate** card, so the "Reviewer steps" under *External donation links* can
+      actually be followed. Without it the reviewer finds nothing and the note reads as false.
+- [ ] Staging carries a demo event with a ticket QR, so the check-in scanner note can be followed.
+- [ ] A working reviewer sign-in exists on staging and the credentials in App Store Connect →
+      App Review Information match it. **This is currently missing:** `REVIEWER_OTP_BYPASS` and
+      `REVIEWER_OTP_CODE` are absent from `civfix-infra/secrets/staging/api.sops.env` (and from the
+      prod one), so the reviewer-OTP path is fail-closed on staging today. Add both to the staging
+      SOPS file and redeploy before submitting, or give the reviewer an account whose OTP they can
+      actually receive.
+- [ ] Share links opened from the reviewer's build point at `civfix.dev` and resolve there; iOS
+      universal links are pinned to `civfix.org` only, so those links open in the browser rather than
+      deep-linking back into the app. Harmless, but do not write a reviewer step that depends on a
+      share link re-entering the app.
+
 ---
 
 ## External donation links

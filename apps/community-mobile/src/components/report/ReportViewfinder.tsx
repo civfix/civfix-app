@@ -464,12 +464,28 @@ export function ReportViewfinder({
 
       <View style={styles.controls}>
         <View style={styles.modes}>
-          <Pressable onPress={() => !recording && setMode("photo")} hitSlop={8}>
+          <Pressable
+            onPress={() => setMode("photo")}
+            disabled={recording}
+            accessibilityRole="button"
+            accessibilityLabel={t("mode.photo")}
+            accessibilityState={{ selected: mode === "photo", disabled: recording }}
+            hitSlop={8}
+            style={({ pressed }) => (pressed && !recording ? styles.pressed : null)}
+          >
             <Text style={[styles.modeText, mode === "photo" ? styles.modeOn : null]}>
               {t("mode.photo")}
             </Text>
           </Pressable>
-          <Pressable onPress={() => !recording && setMode("video")} hitSlop={8}>
+          <Pressable
+            onPress={() => setMode("video")}
+            disabled={recording}
+            accessibilityRole="button"
+            accessibilityLabel={t("mode.video")}
+            accessibilityState={{ selected: mode === "video", disabled: recording }}
+            hitSlop={8}
+            style={({ pressed }) => (pressed && !recording ? styles.pressed : null)}
+          >
             <Text style={[styles.modeText, mode === "video" ? styles.modeOn : null]}>
               {t("mode.video")}
             </Text>
@@ -482,7 +498,8 @@ export function ReportViewfinder({
             disabled={busy || recording}
             accessibilityRole="button"
             accessibilityLabel={t("gate.choose_library")}
-            style={styles.sideBtn}
+            hitSlop={8}
+            style={({ pressed }) => [styles.sideBtn, pressed && !(busy || recording) ? styles.pressed : null]}
           >
             <Ionicons name="images" size={22} color={th.colors.text} />
           </Pressable>
@@ -586,7 +603,7 @@ const cameraStyles = StyleSheet.create({
     right: 60,
     bottom: 60,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.18)",
+    borderColor: stage.colors.lightboxControl,
     borderStyle: "dashed",
     borderRadius: 8,
   },

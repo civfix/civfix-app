@@ -50,6 +50,7 @@
     "removed": "Message removed",
     "failed_retry": "Failed - tap to retry",
     "sending": "Sending",
+    "attachment_processing": "Attachment processing…",
     "edited": "(edited)",
     "retry_sending": "Retry sending",
     "message_actions": "Message actions",

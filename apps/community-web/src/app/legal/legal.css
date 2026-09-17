@@ -193,12 +193,17 @@
   padding: var(--space-3) var(--space-4);
   white-space: nowrap;
 }
-.legal-prose tbody td {
+.legal-prose tbody td,
+.legal-prose tbody th {
   padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--border-soft);
   vertical-align: top;
 }
-.legal-prose tbody tr:nth-child(even) td {
+.legal-prose tbody th {
+  text-align: left;
+}
+.legal-prose tbody tr:nth-child(even) td,
+.legal-prose tbody tr:nth-child(even) th {
   background: var(--card-tint);
 }
 

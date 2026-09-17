@@ -59,7 +59,8 @@ export interface HostedEventRowProps {
   onOpen: (event: HostedEventDTO) => void
   onCheckIn: (event: HostedEventDTO) => void
   onHostTools: (event: HostedEventDTO) => void
-  onEmailAttendees: (event: HostedEventDTO) => void
+  onOpenChat: (event: HostedEventDTO) => void
+  onAnnounce: (event: HostedEventDTO) => void
   onDuplicate: (event: HostedEventDTO) => void
   onEdit: (event: HostedEventDTO) => void
 }
@@ -146,7 +147,8 @@ export const HostedEventRow = memo(function HostedEventRow({
   onOpen,
   onCheckIn,
   onHostTools,
-  onEmailAttendees,
+  onOpenChat,
+  onAnnounce,
   onDuplicate,
   onEdit,
 }: HostedEventRowProps) {
@@ -252,13 +254,23 @@ export const HostedEventRow = memo(function HostedEventRow({
           },
         ]
       : []),
-    ...(actions.emailAttendees
+    ...(actions.chat
       ? [
           {
-            key: "email",
-            label: t("events.email_attendees"),
-            icon: "Mail" as const,
-            onPress: run(onEmailAttendees),
+            key: "chat",
+            label: t("events.open_chat"),
+            icon: "MessageCircle" as const,
+            onPress: run(onOpenChat),
+          },
+        ]
+      : []),
+    ...(actions.announce
+      ? [
+          {
+            key: "announce",
+            label: t("events.announce"),
+            icon: "Megaphone" as const,
+            onPress: run(onAnnounce),
           },
         ]
       : []),

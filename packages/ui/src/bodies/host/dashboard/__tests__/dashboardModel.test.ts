@@ -10,8 +10,7 @@ import type {
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
 import { can } from "@civfix/shared/host"
 import {
-  ATTENTION_MAX_ROWS,
-  attentionRows,
+  analyticsFocusEvent,
   canManageOrgTeam,
   canSetOrgMemberRole,
   collaboratorErrorKey,
@@ -141,7 +140,8 @@ describe("event row actions", () => {
     const actions = hostedEventActions(hosted({ myRole: "organizer" }), now)
     expect(actions).toEqual({
       hostTools: true,
-      emailAttendees: true,
+      chat: true,
+      announce: true,
       duplicate: true,
       edit: true,
     })
@@ -151,7 +151,8 @@ describe("event row actions", () => {
     const actions = hostedEventActions(hosted({ myRole: "staff" }), now)
     expect(actions).toEqual({
       hostTools: true,
-      emailAttendees: false,
+      chat: true,
+      announce: false,
       duplicate: false,
       edit: false,
     })
@@ -163,20 +164,28 @@ describe("event row actions", () => {
     expect(hostedEventCan(event, "manage_event")).toBe(false)
     expect(hostedEventActions(event, now)).toEqual({
       hostTools: true,
-      emailAttendees: false,
+      chat: true,
+      announce: false,
       duplicate: false,
       edit: false,
     })
   })
 
-  it("gives a plain attendee nothing, so the row shows no menu", () => {
+  it("gives a plain attendee the group chat and nothing else - the chat is every event's", () => {
     const actions = hostedEventActions(hosted(), now)
-    expect(hostedEventHasActions(actions)).toBe(false)
+    expect(actions).toEqual({
+      hostTools: false,
+      chat: true,
+      announce: false,
+      duplicate: false,
+      edit: false,
+    })
+    expect(hostedEventHasActions(actions)).toBe(true)
   })
 
-  it("lets broadcast alone unlock the email action", () => {
+  it("lets broadcast alone unlock the announcement action", () => {
     const actions = hostedEventActions(hosted({ myCapabilities: ["broadcast"] }), now)
-    expect(actions.emailAttendees).toBe(true)
+    expect(actions.announce).toBe(true)
     expect(actions.duplicate).toBe(false)
   })
 
@@ -201,7 +210,8 @@ describe("event row actions", () => {
     expect(hostedEventActions(underway, now).edit).toBe(true)
     const gone = hosted({ ...organizer, status: "cancelled" })
     expect(hostedEventActions(gone, now).edit).toBe(false)
-    expect(hostedEventActions(gone, now).emailAttendees).toBe(false)
+    expect(hostedEventActions(gone, now).announce).toBe(false)
+    expect(hostedEventActions(gone, now).chat).toBe(false)
   })
 })
 
@@ -226,6 +236,7 @@ describe("collaborator actions", () => {
         viewerId: "u9",
         canManage: true,
         canSetRole: false,
+        lastAdmin: false,
       }),
     ).toEqual({ roles: [], canRemove: true })
     expect(
@@ -234,6 +245,7 @@ describe("collaborator actions", () => {
         viewerId: "u9",
         canManage: true,
         canSetRole: false,
+        lastAdmin: false,
       }),
     ).toEqual({ roles: [], canRemove: false })
   })
@@ -246,25 +258,25 @@ describe("collaborator actions", () => {
   })
 
   it("offers nothing to a member who cannot manage the team", () => {
-    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: false, canSetRole: false }))
+    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: false, canSetRole: false, lastAdmin: false }))
       .toEqual({ roles: [], canRemove: false })
   })
 
   it("never offers actions on the owner or on yourself", () => {
     expect(
       orgMemberHasActions(
-        orgMemberActions({ member: member("u1", "owner"), viewerId: "u9", canManage: true, canSetRole: true }),
+        orgMemberActions({ member: member("u1", "owner"), viewerId: "u9", canManage: true, canSetRole: true, lastAdmin: false }),
       ),
     ).toBe(false)
     expect(
       orgMemberHasActions(
-        orgMemberActions({ member: member("u9", "admin"), viewerId: "u9", canManage: true, canSetRole: true }),
+        orgMemberActions({ member: member("u9", "admin"), viewerId: "u9", canManage: true, canSetRole: true, lastAdmin: false }),
       ),
     ).toBe(false)
   })
 
   it("offers the other role and removal to a manager", () => {
-    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true, canSetRole: true }))
+    expect(orgMemberActions({ member: member("u1", "member"), viewerId: "u9", canManage: true, canSetRole: true, lastAdmin: false }))
       .toEqual({ roles: ["admin"], canRemove: true })
   })
 
@@ -274,8 +286,33 @@ describe("collaborator actions", () => {
       viewerId: "u9",
       canManage: true,
       canSetRole: true,
+      lastAdmin: false,
     })
     expect(actions).toEqual({ roles: ["member"], canRemove: false })
+  })
+
+  it("pre-disables demotion and removal on the last admin seat rather than waiting for the server", () => {
+    expect(
+      orgMemberActions({
+        member: member("u1", "admin"),
+        viewerId: "u9",
+        canManage: true,
+        canSetRole: true,
+        lastAdmin: true,
+      }),
+    ).toEqual({ roles: [], canRemove: false })
+  })
+
+  it("still manages plain members while the org is down to one admin", () => {
+    expect(
+      orgMemberActions({
+        member: member("u1", "member"),
+        viewerId: "u9",
+        canManage: true,
+        canSetRole: true,
+        lastAdmin: true,
+      }),
+    ).toEqual({ roles: ["admin"], canRemove: true })
   })
 
   it("orders owners first, then admins, then members by name", () => {
@@ -400,29 +437,32 @@ describe("dashboard wiring", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).not.toContain("FeedBody")
     expect(body).not.toContain("feed/")
-    expect(body).toContain("./dashboard/AttentionCard")
+    expect(body).toContain("./dashboard/NextUpCard")
   })
 
   it("routes the row actions at the nav kinds the plan named", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain('kind: "create-cleanup"')
     expect(body).toContain('kind: "edit-cleanup"')
-    expect(body).toContain('kind: "host-broadcast-quick"')
+    expect(body).toContain('kind: "host-announce"')
+    expect(body).toContain('roomKind: "cleanup"')
     expect(body).toContain("openHostDashboard")
   })
 
-  it("renders the console link only on web", () => {
-    expect(source("../ConsoleLinkRow.native.tsx")).toContain("return null")
-    expect(source("../ConsoleLinkRow.web.tsx")).toContain("manageOrgPath")
-    expect(source("../ConsoleLinkRow.tsx")).toContain("./ConsoleLinkRow.web")
+  it("stops pointing the host at the web console at all", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).not.toContain("ConsoleLinkRow")
+    expect(source("../../HostModeBody.tsx")).not.toContain("ConsoleLinkRow")
   })
 
-  it("preselects email and the registered segment for the email-attendees entry", () => {
-    const broadcast = source("../../HostBroadcastQuickBody.tsx")
-    expect(broadcast).toContain("EMAIL_CHANNELS")
-    expect(broadcast).toContain('preset?.segment ?? "all_registered"')
+  it("sends an announcement straight through the new endpoint, with no draft machine in between", () => {
+    const announce = source("../../HostAnnounceBody.tsx")
+    expect(announce).toContain("useCreateAnnouncement")
+    expect(announce).toContain("useAudiencePreview")
+    expect(announce).not.toContain("useQuickBroadcast")
+    expect(announce).not.toContain("retainedDraft")
     const store = source("../dashboardStore.ts")
-    expect(store).toContain('segment: "all_registered"')
+    expect(store).not.toContain("broadcastPreset")
   })
 })
 
@@ -547,80 +587,78 @@ describe("next up", () => {
   })
 })
 
-describe("needs attention", () => {
+describe("the analytics card picks one hosted event", () => {
   const now = new Date("2026-09-10T12:00:00.000Z")
 
+  const hosted = (id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO =>
+    row(id, { myRole: "organizer", ...over })
+
+  const soon = (id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO =>
+    hosted(id, {
+      startsAt: "2026-09-12T17:00:00.000Z",
+      endsAt: "2026-09-12T21:00:00.000Z",
+      ...over,
+    })
+
   const finished = (id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO =>
-    row(id, {
-      myRole: "organizer",
+    hosted(id, {
       startsAt: "2026-09-08T17:00:00.000Z",
       endsAt: "2026-09-08T21:00:00.000Z",
       ...over,
     })
 
-  it("queues a finished event whose hours were never credited", () => {
-    const unpaid = finished("unpaid", { checkedInCount: 6, hoursCredited: 0 })
-    expect(attentionRows({ past: [unpaid], now })).toEqual([{ kind: "log_hours", event: unpaid }])
+  it("shows nothing at all to a viewer who hosts no events", () => {
+    expect(analyticsFocusEvent({ upcoming: [], past: [], now })).toBeNull()
   })
 
-  it("no longer asks anyone to mark an event completed - the clock does that", () => {
-    const ended = finished("ended", { checkedInCount: 0, hoursCredited: 0 })
-    expect(attentionRows({ past: [ended], now })).toEqual([])
-  })
-
-  it("leaves credited, empty and cancelled events alone", () => {
-    const credited = finished("credited", { checkedInCount: 6, hoursCredited: 12 })
-    const nobody = finished("nobody", { checkedInCount: 0, hoursCredited: 0 })
-    const gone = finished("gone", { status: "cancelled", checkedInCount: 6, hoursCredited: 0 })
-    expect(attentionRows({ past: [credited, nobody, gone], now })).toEqual([])
-  })
-
-  it("says nothing about an event that has not ended yet", () => {
-    const underway = finished("underway", {
+  it("prefers the event happening right now over the one happening next", () => {
+    const live = hosted("live", {
       startsAt: "2026-09-10T11:00:00.000Z",
       endsAt: "2026-09-10T15:00:00.000Z",
-      checkedInCount: 6,
-      hoursCredited: 0,
     })
-    expect(attentionRows({ past: [underway], now })).toEqual([])
+    const later = soon("later")
+    expect(hostedEventPhase(live, now)).toBe("live")
+    expect(analyticsFocusEvent({ upcoming: [later, live], past: [], now })?.id).toBe("live")
   })
 
-  it("treats hours the payload never carried as none logged, so the task is not silently dropped", () => {
-    // `hoursCredited` is `.optional()` on the wire. The row now routes to the hours editor, which shows
-    // the truth either way, so an older server's silence must not hide a real task from the host.
-    const silent = finished("silent", { checkedInCount: 6 })
-    expect(silent.hoursCredited).toBeUndefined()
-    expect(attentionRows({ past: [silent], now })).toEqual([{ kind: "log_hours", event: silent }])
-    const explicit = finished("explicit", { checkedInCount: 6, hoursCredited: 0 })
-    expect(attentionRows({ past: [explicit], now })).toEqual([
-      { kind: "log_hours", event: explicit },
-    ])
-  })
-
-  it("never queues a viewer the server would 403 - logging hours needs manage_event", () => {
-    const staff = finished("staff", {
-      myRole: "staff",
-      myCapabilities: ["view_roster", "check_in"],
-      checkedInCount: 6,
-      hoursCredited: 0,
+  it("falls to the soonest upcoming event when nothing is underway", () => {
+    const later = soon("later")
+    const latest = soon("latest", {
+      startsAt: "2026-09-20T17:00:00.000Z",
+      endsAt: "2026-09-20T21:00:00.000Z",
     })
-    expect(attentionRows({ past: [staff], now })).toEqual([])
+    expect(analyticsFocusEvent({ upcoming: [latest, later], past: [], now })?.id).toBe("later")
   })
 
-  it("puts the most recently ENDED event first", () => {
+  it("falls to the most recently ended event when nothing is ahead", () => {
     const older = finished("older", {
       startsAt: "2026-09-01T17:00:00.000Z",
       endsAt: "2026-09-01T21:00:00.000Z",
-      checkedInCount: 4,
-      hoursCredited: 0,
     })
-    const newer = finished("newer", { checkedInCount: 6, hoursCredited: 0 })
-    const rows = attentionRows({ past: [older, newer], now })
-    expect(rows.map((entry) => entry.event.id)).toEqual(["newer", "older"])
+    const newer = finished("newer")
+    expect(analyticsFocusEvent({ upcoming: [], past: [older, newer], now })?.id).toBe("newer")
   })
 
-  it("caps the queue at three rows for the caller", () => {
-    expect(ATTENTION_MAX_ROWS).toBe(3)
+  it("still prefers anything ahead over anything already finished", () => {
+    const ended = finished("ended")
+    const later = soon("later")
+    expect(analyticsFocusEvent({ upcoming: [later], past: [ended], now })?.id).toBe("later")
+  })
+
+  it("skips an event the server would refuse the numbers for", () => {
+    const blind = soon("blind", { myRole: "staff", myCapabilities: ["view_roster", "check_in"] })
+    expect(hostedEventCan(blind, "view_analytics")).toBe(false)
+    expect(analyticsFocusEvent({ upcoming: [blind], past: [], now })).toBeNull()
+    const seeing = soon("seeing", {
+      startsAt: "2026-09-20T17:00:00.000Z",
+      endsAt: "2026-09-20T21:00:00.000Z",
+    })
+    expect(analyticsFocusEvent({ upcoming: [blind, seeing], past: [], now })?.id).toBe("seeing")
+  })
+
+  it("never lands on a cancelled event as if it were still ahead", () => {
+    const gone = soon("gone", { status: "cancelled" })
+    expect(analyticsFocusEvent({ upcoming: [gone], past: [], now })).toBeNull()
   })
 })
 
@@ -776,16 +814,13 @@ describe("portfolio surface", () => {
     const files = [
       "../../EventDashboardBody.tsx",
       "../NextUpCard.tsx",
-      "../AttentionCard.tsx",
       "../ImpactCard.tsx",
       "../FirstEventCard.tsx",
       "../HostedEventRow.tsx",
-      "../InviteRows.tsx",
-      "../DonationLinkRow.tsx",
       "../CollaboratorsSection.tsx",
       "../OrgInviteSheet.tsx",
       "../DuplicateEventSheet.tsx",
-      "../ConsoleLinkRow.web.tsx",
+      "../AnalyticsCarouselCard.tsx",
     ]
     for (const file of files) {
       expect(source(file)).not.toContain("brand.bloom")
@@ -804,7 +839,7 @@ describe("portfolio surface", () => {
     const store = source("../dashboardStore.ts")
     expect(store).not.toContain("setTab")
     expect(store).not.toContain("setRange")
-    expect(store).toContain('segment: "all_registered"')
+    expect(store).not.toContain("broadcastPreset")
   })
 
   it("reads the portfolio through the new all-time model", () => {
@@ -815,41 +850,20 @@ describe("portfolio surface", () => {
     expect(body).toContain('const ANALYTICS_RANGE = "all"')
     expect(body).toContain("<ImpactCard")
     expect(body).toContain("<TopVolunteersCard")
-    expect(body).toContain("<AttentionCard")
     expect(body).toContain("<FirstEventCard")
-    expect(body).toContain("./dashboard/AttentionCard")
-    expect(dashboardSource("AttentionCard.tsx")).toContain("./InviteRows")
   })
 
-  it("demotes create-event and the invitation accept to secondary", () => {
+  it("demotes create-event to secondary", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("<SecondaryButton")
-    const invites = dashboardSource("InviteRows.tsx")
-    expect(invites).not.toContain("PrimaryButton")
-    expect(invites).toContain("<SecondaryButton")
-    expect(invites).toContain("<TextLink")
   })
 
-  it("gives an invitation its own action line, so the title and the inviter stay readable", () => {
-    const invites = dashboardSource("InviteRows.tsx")
-    expect(invites.match(/footer=\{/g) ?? [], "both invite rows act below their text")
-      .toHaveLength(2)
-    expect(invites, "the trailing slot no longer squeezes the text column").not.toContain(
-      "trailing={",
-    )
-    expect(invites.match(/titleLines=\{2\}/g) ?? []).toHaveLength(2)
-    expect(invites).not.toContain('justifyContent: "flex-end"')
-  })
-
-  it("keeps the donation link, team and the console link in the shared list card", () => {
-    const donation = dashboardSource("DonationLinkRow.tsx")
-    expect(donation).toContain('variant="list"')
-    expect(donation).toContain('icon="HandHeart"')
-    expect(donation).toContain("<ListRow")
+  it("keeps the team in the shared list card, and leaves donation editing to the org page", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).not.toContain("DonationLinkRow")
     const team = dashboardSource("CollaboratorsSection.tsx")
     expect(team).toContain('variant="list"')
     expect(team).toContain("<ListRow")
-    expect(dashboardSource("ConsoleLinkRow.web.tsx")).toContain("<ListRow")
   })
 
   it("names every portfolio string the redesign reads, in all four locales", () => {
@@ -872,9 +886,7 @@ describe("portfolio surface", () => {
       ["next_up", "more_shifts"],
       ["next_up", "more_shifts_a11y"],
       ["next_up", "meter_a11y"],
-      ["attention", "section"],
-      ["attention", "log_hours"],
-      ["attention", "log_hours_a11y"],
+      ["analytics", "for_event"],
       ["impact", "section"],
       ["impact", "all_time"],
       ["impact", "unit_hours"],
@@ -930,22 +942,39 @@ describe("portfolio surface", () => {
       expect(cat.next_up?.message_a11y).toBeUndefined()
       expect(cat.next_up?.share).toBeUndefined()
       expect(cat.events?.empty_past_title).toBeUndefined()
-      expect(cat.attention?.complete).toBeUndefined()
-      expect(cat.attention?.complete_a11y).toBeUndefined()
-      expect(cat.attention?.credit_hours).toBeUndefined()
-      expect(cat.attention?.credit_hours_a11y).toBeUndefined()
+      expect(cat.attention).toBeUndefined()
     }
   })
 
-  it("shows an underway row live, under Upcoming, and routes the attention row at the hours screen", () => {
+  it("shows an underway row live, under Upcoming", () => {
     const rowSource = dashboardRowSource()
     expect(rowSource).toContain('hostedEventStatus(event, now) === "active"')
     expect(rowSource).toContain('t("events.meta_underway", { ago: relative(event.startsAt, now) })')
     expect(rowSource).toContain('<PhaseDot phase="live" />')
-    expect(dashboardSource("AttentionCard.tsx")).toContain("attention.log_hours")
+  })
+
+  it("drops the needs-attention card, and leaves invitations to the profile", () => {
     const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain('push({ kind: "host-log-hours", id: event.id })')
-    expect(body).toContain("onLogHours={onLogHours}")
+    expect(body).not.toContain("AttentionCard")
+    expect(body).not.toContain("attentionRows")
+    expect(body).not.toContain("host-log-hours")
+    expect(existsSync(new URL("../AttentionCard.tsx", import.meta.url))).toBe(false)
+    expect(body).not.toContain("Invite")
+    expect(body).not.toContain("invite")
+    expect(existsSync(new URL("../InvitationsCard.tsx", import.meta.url))).toBe(false)
+    expect(existsSync(new URL("../InviteRows.tsx", import.meta.url))).toBe(false)
+  })
+
+  it("puts the analytics carousel on the dashboard, named after the event it describes", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("analyticsFocusEvent({ upcoming: upcomingEvents, past: pastEvents, now })")
+    expect(body).toContain("<AnalyticsCarouselCard")
+    expect(body).toContain("cleanupId={analyticsFocus.id}")
+    expect(body).toContain('label={t("analytics.for_event", { title: analyticsFocus.title })}')
+    expect(body).toContain("{analyticsFocus ? (")
+    expect(dashboardSource("AnalyticsCarouselCard.tsx")).toContain(
+      'const heading = label ?? t("card.title")',
+    )
   })
 
   it("makes the hidden-shift line a pressable route into host tools", () => {

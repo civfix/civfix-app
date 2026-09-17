@@ -5,6 +5,12 @@
  * a hex in @civfix/shared tokens (the source hex is named in the trailing comment so the mapping
  * back to the single source of truth is auditable). Tailwind utilities read these via
  * hsl(var(--token)) in tailwind.config.ts. We do not introduce any color that is not a token.
+ *
+ * Three of these names once collided with the ported handoff palette in styles/design.css, which is
+ * imported AFTER this file and unlayered, so its flat hex/rgba value won the cascade and the Tailwind
+ * utility emitted hsl(rgba(...)) - an invalid color the browser drops. Those three carry a shadcn-
+ * prefix here, the way design.css's own --ring became --focus-ring; design-css-tokens.test.ts asserts
+ * the two files' :root variable names stay disjoint.
  */
 
 @import "maplibre-gl/dist/maplibre-gl.css";
@@ -15,39 +21,39 @@
 
 @layer base {
   :root {
-    /* Surfaces. background = paper (#F4EFE6); card = white (#FFFFFF). */
+    /* Surfaces. background = paper (#F4EFE6); card = the warm card white (#FFFDF8). */
     --background: 38.6 38.9% 92.9%; /* neutral.paper  #F4EFE6 */
-    --foreground: 30.0 13.0% 9.0%; /* neutral.ink    #1A1714 */
+    --foreground: 34.3 26.9% 10.2%; /* neutral.ink    #211B13 */
 
-    --card: 0 0% 100%; /* neutral.card   #FFFFFF */
-    --card-foreground: 30.0 13.0% 9.0%; /* neutral.ink */
+    --shadcn-card: 42.9 100% 98.6%; /* neutral.card   #FFFDF8 */
+    --shadcn-card-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
 
-    --popover: 0 0% 100%; /* neutral.card   #FFFFFF */
-    --popover-foreground: 30.0 13.0% 9.0%; /* neutral.ink */
+    --popover: 42.9 100% 98.6%; /* neutral.card   #FFFDF8 */
+    --popover-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
 
-    /* Primary = bloom/coral (#FF7A6B) on white. */
-    --primary: 6.1 100% 71%; /* bloom.500      #FF7A6B */
+    /* Primary = bloom/coral (#F0685C) on white. */
+    --primary: 4.9 83.1% 65.1%; /* bloom.500      #F0685C */
     --primary-foreground: 0 0% 100%; /* white */
 
     /* Secondary = paper2 surface with ink text. */
     --secondary: 39.0 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
-    --secondary-foreground: 30.0 13.0% 9.0%; /* neutral.ink */
+    --secondary-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
 
     /* Muted = paper2 with ink3 text. */
     --muted: 39.0 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
-    --muted-foreground: 36.7 7.1% 50.6%; /* neutral.ink3   #8A8378 */
+    --muted-foreground: 38.2 8.8% 51%; /* neutral.ink3   #8D8577 */
 
-    /* Accent = sun (#FFCB47) with ink text (host-event accent). */
-    --accent: 43.0 100% 63.9%; /* sun.500        #FFCB47 */
-    --accent-foreground: 30.0 13.0% 9.0%; /* neutral.ink */
+    /* Accent = sun (#D9A21B) with ink text (host-event accent). */
+    --shadcn-accent: 42.6 77.9% 47.8%; /* sun.500        #D9A21B */
+    --shadcn-accent-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
 
-    /* Destructive = bloom.600 (#E55F50). */
-    --destructive: 6.0 74.1% 60.6%; /* bloom.600      #E55F50 */
+    /* Destructive = bloom.600 (#E4574A). */
+    --destructive: 5.1 74% 59.2%; /* bloom.600      #E4574A */
     --destructive-foreground: 0 0% 100%; /* white */
 
-    --border: 39.0 28.6% 86.3%; /* neutral.ink5   #E6DFD2 (hairlines) */
+    --shadcn-border: 39.0 28.6% 86.3%; /* neutral.ink5   #E6DFD2 (hairlines) */
     --input: 39.0 28.6% 86.3%; /* neutral.ink5   #E6DFD2 */
-    --ring: 6.1 100% 71%; /* bloom.500 focus ring */
+    --ring: 4.9 83.1% 65.1%; /* bloom.500      #F0685C focus ring */
 
     /* Radius base for shadcn components; matches token radius.lg (20px). */
     --radius: 20px;
@@ -109,8 +115,8 @@
     --background: 33.3 24.3% 7.3%; /* darkColor.neutral.paper  #17130E */
     --foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink    #F1EAE0 */
 
-    --card: 34.3 20.0% 13.7%; /* darkColor.neutral.card   #2A241C */
-    --card-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
+    --shadcn-card: 34.3 20.0% 13.7%; /* darkColor.neutral.card   #2A241C */
+    --shadcn-card-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
 
     --popover: 34.3 20.0% 13.7%; /* darkColor.neutral.card   #2A241C */
     --popover-foreground: 35.3 37.8% 91.2%; /* darkColor.neutral.ink */
@@ -124,13 +130,13 @@
     --muted: 35.0 22.2% 10.6%; /* darkColor.neutral.paper2 #211C15 */
     --muted-foreground: 37.1 8.9% 53.9%; /* darkColor.neutral.ink3   #948C7F */
 
-    --accent: 42.5 75.3% 55.5%; /* darkColor.sun.500        #E3B138 */
-    --accent-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper */
+    --shadcn-accent: 42.5 75.3% 55.5%; /* darkColor.sun.500        #E3B138 */
+    --shadcn-accent-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper */
 
     --destructive: 6.3 87.7% 74.5%; /* darkColor.bloom.600      #F79185 */
     --destructive-foreground: 33.3 24.3% 7.3%; /* darkColor.neutral.paper */
 
-    --border: 34.3 15.9% 17.3%; /* darkColor.neutral.ink5   #332D25 (hairlines) */
+    --shadcn-border: 34.3 15.9% 17.3%; /* darkColor.neutral.ink5   #332D25 (hairlines) */
     --input: 34.3 15.9% 17.3%; /* darkColor.neutral.ink5   #332D25 */
     --ring: 6.3 87.7% 74.5%; /* darkColor.bloom.600 #F79185 = FOCUS_RING_COLOR_DARK */
 

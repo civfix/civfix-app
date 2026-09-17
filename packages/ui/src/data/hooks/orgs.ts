@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query"
 import type {
   AcceptMyOrgInviteResponse,
+  UpdateOrganizationRequest,
   CleanupDTO,
   DeclineMyOrgInviteResponse,
   InviteOrganizationMemberResponse,
@@ -60,7 +61,22 @@ export function actableOrganizations(
   return orgs?.filter((org) => org.suspended !== true)
 }
 
+export function useUpdateOrganization(slug: string | undefined) {
+  const api = useApi()
+  const qc = useQueryClient()
+  return useMutation<OrganizationDTO, unknown, UpdateOrganizationRequest>({
+    mutationFn: (vars) => api.updateOrganization(vars),
+    onSuccess: (org) => {
+      qc.setQueryData(queryKeys.org(org.slug), org)
+      if (slug && slug !== org.slug) void qc.invalidateQueries({ queryKey: queryKeys.org(slug) })
+      void qc.invalidateQueries({ queryKey: queryKeys.myOrganizations })
+    },
+  })
+}
+
 export type OrganizationEventsWindow = "upcoming" | "past"
+
+export const ORG_EVENTS_PAGE_SIZE = 3
 
 export function useOrganizationEvents(
   slug: string | undefined,
@@ -76,6 +92,7 @@ export function useOrganizationEvents(
       api.listOrganizationEvents({
         slug: slug as string,
         when,
+        limit: ORG_EVENTS_PAGE_SIZE,
         ...(typeof pageParam === "string" ? { cursor: pageParam } : {}),
       }),
     getNextPageParam: (lastPage: ListOrganizationEventsResponse) => lastPage.nextCursor ?? undefined,

@@ -28,8 +28,6 @@ import {
 import { addWallClockDays, formInstantMs } from "../../calendarModel"
 import { viewerTimeZone } from "../../../i18n"
 
-export const ATTENTION_MAX_ROWS = 3
-
 const DAY_MS = 86_400_000
 
 export interface DashboardScope {
@@ -64,14 +62,16 @@ export function hostedEventCan(event: HostedEventStanding, capability: HostCapab
 
 export interface HostedEventActions {
   hostTools: boolean
-  emailAttendees: boolean
+  chat: boolean
+  announce: boolean
   duplicate: boolean
   edit: boolean
 }
 
 export const NO_HOSTED_EVENT_ACTIONS: HostedEventActions = {
   hostTools: false,
-  emailAttendees: false,
+  chat: false,
+  announce: false,
   duplicate: false,
   edit: false,
 }
@@ -82,14 +82,21 @@ export function hostedEventActions(event: HostedEventDTO, now: Date): HostedEven
   const status = hostedEventStatus(event, now)
   return {
     hostTools: manage || caps.has("view_roster"),
-    emailAttendees: caps.has("broadcast") && status !== "cancelled",
+    chat: status !== "cancelled",
+    announce: caps.has("broadcast") && status !== "cancelled",
     duplicate: manage,
     edit: manage && status !== "done" && status !== "cancelled",
   }
 }
 
 export function hostedEventHasActions(actions: HostedEventActions): boolean {
-  return actions.hostTools || actions.emailAttendees || actions.duplicate || actions.edit
+  return (
+    actions.hostTools ||
+    actions.chat ||
+    actions.announce ||
+    actions.duplicate ||
+    actions.edit
+  )
 }
 
 export function orgRoleCan(
@@ -165,36 +172,26 @@ export function nextUpEvent(
   return first ? { event: first.event, phase: first.phase } : null
 }
 
-export type AttentionRowKind = "log_hours"
-
-export interface AttentionRow {
-  kind: AttentionRowKind
-  event: HostedEventDTO
-}
-
-export interface AttentionRowsInput {
-  past: readonly HostedEventDTO[]
-  now: Date
-}
-
-function attentionKind(event: HostedEventDTO, now: Date): AttentionRowKind | null {
-  if (hostedEventStatus(event, now) !== "done") return null
-  if (!hostedEventCan(event, "manage_event")) return null
-  if (event.checkedInCount > 0 && (event.hoursCredited ?? 0) === 0) return "log_hours"
-  return null
-}
-
 function endedAt(event: HostedEventDTO): number {
   return eventEndsAtMs(hostedEventWindow(event)) ?? 0
 }
 
-export function attentionRows(input: AttentionRowsInput): AttentionRow[] {
-  const rows: AttentionRow[] = []
-  for (const event of input.past) {
-    const kind = attentionKind(event, input.now)
-    if (kind) rows.push({ kind, event })
-  }
-  return rows.sort((a, b) => endedAt(b.event) - endedAt(a.event))
+export interface AnalyticsFocusInput {
+  upcoming: readonly HostedEventDTO[]
+  past: readonly HostedEventDTO[]
+  now: Date
+}
+
+export function analyticsFocusEvent(input: AnalyticsFocusInput): HostedEventDTO | null {
+  const readable = [...input.upcoming, ...input.past].filter((event) =>
+    hostedEventCan(event, "view_analytics"),
+  )
+  const ahead = nextUpEvent(readable, input.now)
+  if (ahead) return ahead.event
+  const ended = readable
+    .filter((event) => hostedEventStatus(event, input.now) === "done")
+    .sort((a, b) => endedAt(b) - endedAt(a))
+  return ended[0] ?? null
 }
 
 export type ImpactHeroUnit = "hours" | "volunteers"
@@ -306,15 +303,20 @@ export function orgMemberActions(input: {
   viewerId: string | null
   canManage: boolean
   canSetRole: boolean
+  lastAdmin: boolean
 }): OrgMemberActions {
-  const { member, viewerId, canManage, canSetRole } = input
+  const { member, viewerId, canManage, canSetRole, lastAdmin } = input
   if (!canManage) return NO_ORG_MEMBER_ACTIONS
   if (member.person.deleted) return NO_ORG_MEMBER_ACTIONS
   if (member.role === "owner") return NO_ORG_MEMBER_ACTIONS
   if (viewerId !== null && member.person.id === viewerId) return NO_ORG_MEMBER_ACTIONS
+  const holdsTheLastAdminSeat = lastAdmin && member.role === "admin"
   return {
-    roles: canSetRole ? ORG_SETTABLE_ROLES.filter((role) => role !== member.role) : [],
-    canRemove: member.canRemove,
+    roles:
+      canSetRole && !holdsTheLastAdminSeat
+        ? ORG_SETTABLE_ROLES.filter((role) => role !== member.role)
+        : [],
+    canRemove: member.canRemove && !holdsTheLastAdminSeat,
   }
 }
 

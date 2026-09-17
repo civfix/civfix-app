@@ -8,9 +8,11 @@ import { useT } from "../i18n"
 import { useScrollHost } from "../shell/ScrollHost"
 import { PostCard } from "./PostCard"
 import { ProfileTimelineLane } from "./profile/ProfileTimelineLane"
+import { useSectionStyles } from "./profile/sectionStyles"
 
 export function SavedPostsBody() {
   const styles = useStyles()
+  const sectionStyles = useSectionStyles()
   const { t } = useT("home-feed")
   const { FlatList } = useScrollHost()
   const query = useSaves()
@@ -43,10 +45,13 @@ export function SavedPostsBody() {
       accessibilityState={{ disabled: isFetchingNextPage }}
       disabled={isFetchingNextPage}
       {...focusRingProps}
-      style={styles.more}
+      style={({ pressed }) => [
+        sectionStyles.loadMore,
+        pressed ? sectionStyles.loadMorePressed : null,
+      ]}
       onPress={loadMore}
     >
-      <Text style={styles.moreText}>
+      <Text style={sectionStyles.loadMoreText}>
         {isFetchingNextPage ? t("thread.loading") : t("saved.load_more")}
       </Text>
     </Pressable>
@@ -73,6 +78,4 @@ const useStyles = makeThemedStyles((t) => ({
   root: { flex: 1, backgroundColor: t.colors.bg },
   content: { flexGrow: 1, paddingBottom: t.space["4"] },
   state: { paddingVertical: t.space["6"], paddingHorizontal: t.space["4"], textAlign: "center", color: t.colors.textSubtle },
-  more: { alignSelf: "center", marginTop: t.space["4"], paddingHorizontal: t.space["5"], paddingVertical: t.space["2"], borderRadius: t.radius.pill, backgroundColor: t.colors.bgAlt },
-  moreText: { color: t.colors.accentText, fontFamily: t.fontFamily.bodyBold },
 }))

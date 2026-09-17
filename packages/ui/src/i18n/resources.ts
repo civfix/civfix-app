@@ -10,6 +10,7 @@ import type { Resource } from "i18next"
 import en_about from "./locales/en/about.json"
 import en_account_blocked from "./locales/en/account-blocked.json"
 import en_account_delete from "./locales/en/account-delete.json"
+import en_address from "./locales/en/address.json"
 import en_appearance_settings from "./locales/en/appearance-settings.json"
 import en_channel_create from "./locales/en/channel-create.json"
 import en_common from "./locales/en/common.json"
@@ -103,11 +104,13 @@ import en_web_auth from "./locales/en/web-auth.json"
 import en_web_claims from "./locales/en/web-claims.json"
 import en_web_common from "./locales/en/web-common.json"
 import en_web_errors from "./locales/en/web-errors.json"
+import en_web_guest_cancel from "./locales/en/web-guest-cancel.json"
 import en_web_registration from "./locales/en/web-registration.json"
 import en_web_service_record from "./locales/en/web-service-record.json"
 import es_about from "./locales/es/about.json"
 import es_account_blocked from "./locales/es/account-blocked.json"
 import es_account_delete from "./locales/es/account-delete.json"
+import es_address from "./locales/es/address.json"
 import es_appearance_settings from "./locales/es/appearance-settings.json"
 import es_channel_create from "./locales/es/channel-create.json"
 import es_common from "./locales/es/common.json"
@@ -201,11 +204,13 @@ import es_web_auth from "./locales/es/web-auth.json"
 import es_web_claims from "./locales/es/web-claims.json"
 import es_web_common from "./locales/es/web-common.json"
 import es_web_errors from "./locales/es/web-errors.json"
+import es_web_guest_cancel from "./locales/es/web-guest-cancel.json"
 import es_web_registration from "./locales/es/web-registration.json"
 import es_web_service_record from "./locales/es/web-service-record.json"
 import de_about from "./locales/de/about.json"
 import de_account_blocked from "./locales/de/account-blocked.json"
 import de_account_delete from "./locales/de/account-delete.json"
+import de_address from "./locales/de/address.json"
 import de_appearance_settings from "./locales/de/appearance-settings.json"
 import de_channel_create from "./locales/de/channel-create.json"
 import de_common from "./locales/de/common.json"
@@ -299,11 +304,13 @@ import de_web_auth from "./locales/de/web-auth.json"
 import de_web_claims from "./locales/de/web-claims.json"
 import de_web_common from "./locales/de/web-common.json"
 import de_web_errors from "./locales/de/web-errors.json"
+import de_web_guest_cancel from "./locales/de/web-guest-cancel.json"
 import de_web_registration from "./locales/de/web-registration.json"
 import de_web_service_record from "./locales/de/web-service-record.json"
 import ko_about from "./locales/ko/about.json"
 import ko_account_blocked from "./locales/ko/account-blocked.json"
 import ko_account_delete from "./locales/ko/account-delete.json"
+import ko_address from "./locales/ko/address.json"
 import ko_appearance_settings from "./locales/ko/appearance-settings.json"
 import ko_channel_create from "./locales/ko/channel-create.json"
 import ko_common from "./locales/ko/common.json"
@@ -397,6 +404,7 @@ import ko_web_auth from "./locales/ko/web-auth.json"
 import ko_web_claims from "./locales/ko/web-claims.json"
 import ko_web_common from "./locales/ko/web-common.json"
 import ko_web_errors from "./locales/ko/web-errors.json"
+import ko_web_guest_cancel from "./locales/ko/web-guest-cancel.json"
 import ko_web_registration from "./locales/ko/web-registration.json"
 import ko_web_service_record from "./locales/ko/web-service-record.json"
 
@@ -405,6 +413,7 @@ export const namespaces = [
   "about",
   "account-blocked",
   "account-delete",
+  "address",
   "appearance-settings",
   "channel-create",
   "common",
@@ -498,6 +507,7 @@ export const namespaces = [
   "web-claims",
   "web-common",
   "web-errors",
+  "web-guest-cancel",
   "web-registration",
   "web-service-record",
 ] as const
@@ -508,6 +518,7 @@ export const resources: Resource = {
     "about": en_about,
     "account-blocked": en_account_blocked,
     "account-delete": en_account_delete,
+    "address": en_address,
     "appearance-settings": en_appearance_settings,
     "channel-create": en_channel_create,
     "common": en_common,
@@ -601,6 +612,7 @@ export const resources: Resource = {
     "web-claims": en_web_claims,
     "web-common": en_web_common,
     "web-errors": en_web_errors,
+    "web-guest-cancel": en_web_guest_cancel,
     "web-registration": en_web_registration,
     "web-service-record": en_web_service_record,
   },
@@ -608,6 +620,7 @@ export const resources: Resource = {
     "about": es_about,
     "account-blocked": es_account_blocked,
     "account-delete": es_account_delete,
+    "address": es_address,
     "appearance-settings": es_appearance_settings,
     "channel-create": es_channel_create,
     "common": es_common,
@@ -701,6 +714,7 @@ export const resources: Resource = {
     "web-claims": es_web_claims,
     "web-common": es_web_common,
     "web-errors": es_web_errors,
+    "web-guest-cancel": es_web_guest_cancel,
     "web-registration": es_web_registration,
     "web-service-record": es_web_service_record,
   },
@@ -708,6 +722,7 @@ export const resources: Resource = {
     "about": de_about,
     "account-blocked": de_account_blocked,
     "account-delete": de_account_delete,
+    "address": de_address,
     "appearance-settings": de_appearance_settings,
     "channel-create": de_channel_create,
     "common": de_common,
@@ -801,6 +816,7 @@ export const resources: Resource = {
     "web-claims": de_web_claims,
     "web-common": de_web_common,
     "web-errors": de_web_errors,
+    "web-guest-cancel": de_web_guest_cancel,
     "web-registration": de_web_registration,
     "web-service-record": de_web_service_record,
   },
@@ -808,6 +824,7 @@ export const resources: Resource = {
     "about": ko_about,
     "account-blocked": ko_account_blocked,
     "account-delete": ko_account_delete,
+    "address": ko_address,
     "appearance-settings": ko_appearance_settings,
     "channel-create": ko_channel_create,
     "common": ko_common,
@@ -901,6 +918,7 @@ export const resources: Resource = {
     "web-claims": ko_web_claims,
     "web-common": ko_web_common,
     "web-errors": ko_web_errors,
+    "web-guest-cancel": ko_web_guest_cancel,
     "web-registration": ko_web_registration,
     "web-service-record": ko_web_service_record,
   },
