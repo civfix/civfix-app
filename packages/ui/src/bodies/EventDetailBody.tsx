@@ -193,6 +193,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const isOrganizer = myRole === "organizer"
   const isCohost = myRole === "cohost"
   const canCheckIn = hasHostCapability(capabilityCleanup, "check_in")
+  const canViewRoster = hasHostCapability(capabilityCleanup, "view_roster")
   const canViewGuestContact = hasHostCapability(capabilityCleanup, "view_guest_contact")
   const actsAsHost = managesEvent(capabilityCleanup)
   const onOpenHostDashboard = useCallback(() => {
@@ -576,13 +577,15 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
         </View>
       ) : null}
 
-      {!actsAsHost && canCheckIn && isLive ? (
+      {!actsAsHost && (canCheckIn || canViewRoster) && (isLive || canViewRoster) ? (
         <View style={styles.section}>
           <EventActionRows>
             <EventActionRow
-              icon={iconMap.QrCode}
-              label={t("host.check_in")}
-              accessibilityLabel={t("host.check_in_a11y")}
+              icon={isLive && canCheckIn ? iconMap.QrCode : iconMap.Users}
+              label={isLive && canCheckIn ? t("host.check_in") : t("host.view_roster")}
+              accessibilityLabel={
+                isLive && canCheckIn ? t("host.check_in_a11y") : t("host.view_roster_a11y")
+              }
               onPress={onOpenCheckin}
             />
           </EventActionRows>

@@ -51,7 +51,9 @@
     "dashboard": "Host-Dashboard",
     "dashboard_a11y": "Das Host-Dashboard dieser Veranstaltung öffnen",
     "check_in": "Teilnehmende einchecken",
-    "check_in_a11y": "Den Check-in dieser Veranstaltung öffnen"
+    "check_in_a11y": "Den Check-in dieser Veranstaltung öffnen",
+    "view_roster": "Teilnehmerliste ansehen",
+    "view_roster_a11y": "Die Teilnehmerliste dieses Events öffnen"
   },
   "report_sheet": {
     "subject": "dieses Event",

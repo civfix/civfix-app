@@ -51,7 +51,9 @@
     "dashboard": "Panel de anfitrión",
     "dashboard_a11y": "Abrir el panel de anfitrión de este evento",
     "check_in": "Registrar asistentes",
-    "check_in_a11y": "Abrir el registro de entrada de este evento"
+    "check_in_a11y": "Abrir el registro de entrada de este evento",
+    "view_roster": "Ver la lista de asistentes",
+    "view_roster_a11y": "Abrir la lista de asistentes de este evento"
   },
   "report_sheet": {
     "subject": "este evento",

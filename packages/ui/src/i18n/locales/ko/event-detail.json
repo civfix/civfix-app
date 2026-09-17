@@ -51,7 +51,9 @@
     "dashboard": "호스트 대시보드",
     "dashboard_a11y": "이 행사의 호스트 대시보드 열기",
     "check_in": "참가자 체크인",
-    "check_in_a11y": "이 행사의 체크인 열기"
+    "check_in_a11y": "이 행사의 체크인 열기",
+    "view_roster": "참가자 명단 보기",
+    "view_roster_a11y": "이 이벤트의 참가자 명단 열기"
   },
   "report_sheet": {
     "subject": "이 이벤트",

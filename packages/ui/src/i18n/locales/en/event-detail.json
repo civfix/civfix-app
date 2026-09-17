@@ -51,7 +51,9 @@
     "dashboard": "Host dashboard",
     "dashboard_a11y": "Open the host dashboard for this event",
     "check_in": "Check in attendees",
-    "check_in_a11y": "Open check-in for this event"
+    "check_in_a11y": "Open check-in for this event",
+    "view_roster": "View attendee list",
+    "view_roster_a11y": "Open the attendee list for this event"
   },
   "report_sheet": {
     "subject": "this event",
