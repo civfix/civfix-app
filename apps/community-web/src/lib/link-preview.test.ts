@@ -209,6 +209,18 @@ describe("previewForEvent", () => {
     expect(preview?.description).toBe("Sat, Sep 12, 1:00 PM EDT · A volunteer event on civfix")
   })
 
+  it("shares the host's uploaded cover, and the brand card when there is none", () => {
+    const withCover = previewForEvent({ ...base, coverUrl: "https://cdn.civfix.org/c/1.jpg" }, ctx)
+    expect(withCover?.image).toBe("https://cdn.civfix.org/c/1.jpg")
+    expect(withCover?.imageIsBrand).toBe(false)
+    expect(previewForEvent(base, ctx)?.imageIsBrand).toBe(true)
+  })
+
+  it("refuses a cover that is not a plain https media url", () => {
+    expect(previewForEvent({ ...base, coverUrl: "http://cdn.civfix.org/c/1.jpg" }, ctx)?.imageIsBrand).toBe(true)
+    expect(previewForEvent({ ...base, coverUrl: "https://cdn.civfix.org/c/1.jpg?token=x" }, ctx)?.imageIsBrand).toBe(true)
+  })
+
   it("uses the event title and a date-led fixed description", () => {
     const preview = previewForEvent(base, ctx)
     expect(preview?.title).toBe("Ballona Creek cleanup")

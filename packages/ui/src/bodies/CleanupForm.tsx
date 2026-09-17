@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable } from "react-native"
+import { View, Image, Pressable, StyleSheet } from "react-native"
 import {
   EVENT_KIND_VALUES,
   MIN_EVENT_DURATION_MINUTES,
@@ -19,8 +19,14 @@ import {
   focusRingProps,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { TextField, BringInput, MetaDot } from "../primitives"
+import { MIN_TOUCH_TARGET } from "../typography/TextLink"
+import { TextField, BringInput, MetaDot, SecondaryButton } from "../primitives"
 import { actableOrganizations, useMyOrganizations, useReverseLabel, reverseLabelText } from "../data"
+import { useApi } from "../data/context"
+import { uploadMedia } from "../data/uploadMedia"
+import { useCamera } from "../capabilities"
+import { appErrorCode } from "./errorCode"
+import { eventCoverErrorKey } from "./eventCoverModel"
 import { LocationPicker, PortraitMapPickStep, useLocationPick, eventPinTarget } from "../map"
 import { useLocale, useT, viewerTimeZone } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
@@ -52,6 +58,8 @@ import {
   type SlotWindowBounds,
 } from "./eventSlotsForm"
 
+const COVER_RATIO = 16 / 9
+
 export interface CleanupFormValue {
   organizationId: string | null
   title: string
@@ -69,6 +77,8 @@ export interface CleanupFormValue {
   linkedReportIds: string[]
   shareToFeed: boolean
   feedCaption: string
+  coverMediaId: string | null
+  coverPreviewUrl: string | null
 }
 
 export type CleanupFormSection = "basics" | "when" | "where" | "extras" | "share"
@@ -102,6 +112,8 @@ export function emptyCleanupForm(
     linkedReportIds: seedLinkedReportId ? [seedLinkedReportId] : [],
     shareToFeed: true,
     feedCaption: "",
+    coverMediaId: null,
+    coverPreviewUrl: null,
   }
 }
 
@@ -336,6 +348,34 @@ export function CleanupForm({
     [onChange, value],
   )
 
+  const api = useApi()
+  const camera = useCamera()
+  const [coverUploading, setCoverUploading] = useState(false)
+  const [coverErrorKey, setCoverErrorKey] = useState<string | null>(null)
+
+  const onPickCover = useCallback(() => {
+    if (coverUploading) return
+    void (async () => {
+      setCoverUploading(true)
+      setCoverErrorKey(null)
+      try {
+        const picked = await camera.pickFromLibrary()
+        if (!picked || picked.kind !== "image") return
+        const uploaded = await uploadMedia({ api, camera, media: picked })
+        patch({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })
+      } catch (err) {
+        setCoverErrorKey(eventCoverErrorKey(appErrorCode(err)))
+      } finally {
+        setCoverUploading(false)
+      }
+    })()
+  }, [api, camera, coverUploading, patch])
+
+  const onRemoveCover = useCallback(() => {
+    setCoverErrorKey(null)
+    patch({ coverMediaId: null, coverPreviewUrl: null })
+  }, [patch])
+
   const onChangeDate = useCallback(
     (date: Date) => {
       const before =
@@ -490,6 +530,52 @@ export function CleanupForm({
           />
 
           <KindSelector value={value.eventKind} onChange={onChangeKind} />
+
+          <View style={styles.fieldBlock}>
+            <Text style={styles.fieldLabel}>{t("cover.label")}</Text>
+            <Text style={styles.coverHint}>{t("cover.hint")}</Text>
+            {value.coverPreviewUrl ? (
+              <View style={styles.coverFrame}>
+                <Image
+                  source={{ uri: value.coverPreviewUrl }}
+                  style={styles.coverImage}
+                  resizeMode="cover"
+                  accessibilityIgnoresInvertColors
+                />
+              </View>
+            ) : null}
+            <View style={styles.coverActions}>
+              <SecondaryButton
+                size="sm"
+                label={
+                  coverUploading
+                    ? t("cover.uploading")
+                    : value.coverPreviewUrl
+                      ? t("cover.replace")
+                      : t("cover.add")
+                }
+                onPress={onPickCover}
+                disabled={coverUploading}
+              />
+              {value.coverPreviewUrl ? (
+                <Pressable
+                  onPress={onRemoveCover}
+                  disabled={coverUploading}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("cover.remove")}
+                  {...focusRingProps}
+                  style={(state) => [
+                    styles.coverGhost,
+                    webCursorPointer,
+                    state.pressed ? styles.coverGhostPressed : null,
+                  ]}
+                >
+                  <Text style={styles.coverGhostText}>{t("cover.remove")}</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {coverErrorKey ? <Text style={styles.coverError}>{t(coverErrorKey)}</Text> : null}
+          </View>
         </>
       ) : null}
 
@@ -609,6 +695,46 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
+  },
+  coverHint: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    color: t.colors.textSubtle,
+  },
+  coverFrame: {
+    aspectRatio: COVER_RATIO,
+    borderRadius: t.radius.lg,
+    overflow: "hidden",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
+    backgroundColor: t.colors.bgAlt,
+  },
+  coverImage: {
+    width: "100%",
+    height: "100%",
+  },
+  coverActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["3"],
+  },
+  coverGhost: {
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: "center",
+    paddingHorizontal: t.space["2"],
+  },
+  coverGhostPressed: {
+    opacity: 0.7,
+  },
+  coverGhostText: {
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["13"],
+    color: t.colors.textSubtle,
+  },
+  coverError: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    color: t.colors.brand.bloom,
   },
   labelRow: {
     flexDirection: "row",

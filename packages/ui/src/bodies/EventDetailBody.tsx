@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { View, Pressable, ScrollView, StyleSheet } from "react-native"
+import { View, Image, Pressable, ScrollView, StyleSheet } from "react-native"
 import type { CleanupDTO, ContentReportReason } from "@civfix/shared"
 import { eventWhenLabel } from "@civfix/shared/datetime"
 import { deriveCleanupStatus, nextEventBoundaryMs } from "@civfix/shared/host"
@@ -62,10 +62,26 @@ import { usePostComposerStore } from "./postComposerStore"
 
 const HERO_HEIGHT = 160
 
+const HERO_COVER_RATIO = 16 / 9
+
 function EventHero({ cleanup }: { cleanup: CleanupDTO }) {
   const styles = useStyles()
   const th = useTheme()
+  const cover = cleanup.coverUrl?.trim()
   const hasCoords = cleanup.lat != null && cleanup.lng != null
+
+  if (cover) {
+    return (
+      <View style={[styles.hero, styles.heroCover]}>
+        <Image
+          source={{ uri: cover }}
+          style={styles.heroImage}
+          resizeMode="cover"
+          accessibilityIgnoresInvertColors
+        />
+      </View>
+    )
+  }
 
   if (hasCoords) {
     return (
@@ -726,6 +742,14 @@ const useStyles = makeThemedStyles((t) => ({
     overflow: "hidden",
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
+  },
+  heroCover: {
+    aspectRatio: HERO_COVER_RATIO,
+    backgroundColor: t.colors.bgAlt,
+  },
+  heroImage: {
+    width: "100%",
+    height: "100%",
   },
   heroBlank: {
     height: HERO_HEIGHT,

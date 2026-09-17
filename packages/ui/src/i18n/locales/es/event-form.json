@@ -17,6 +17,17 @@
     "runsFor": "Dura",
     "duration_hours": "{{count}} h"
   },
+  "cover": {
+    "label": "Imagen de portada",
+    "hint": "Aparece arriba en la página de tu evento, en lugar del mapa.",
+    "add": "Añadir portada",
+    "replace": "Cambiar portada",
+    "remove": "Quitar portada",
+    "uploading": "Subiendo...",
+    "error_rejected": "No se pudo usar esa imagen. Prueba con otra foto.",
+    "error_rate_limited": "Demasiadas subidas. Espera un momento e inténtalo de nuevo.",
+    "error_generic": "No se pudo subir la imagen. Inténtalo de nuevo."
+  },
   "linkedReports": {
     "label": "Reportes en este lugar",
     "loadError": "No se pudieron cargar los reportes. Intenta de nuevo.",

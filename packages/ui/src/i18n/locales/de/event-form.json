@@ -17,6 +17,17 @@
     "runsFor": "Dauer",
     "duration_hours": "{{count}} Std."
   },
+  "cover": {
+    "label": "Titelbild",
+    "hint": "Erscheint oben auf deiner Veranstaltungsseite anstelle der Karte.",
+    "add": "Titelbild hinzufügen",
+    "replace": "Titelbild ersetzen",
+    "remove": "Titelbild entfernen",
+    "uploading": "Wird hochgeladen...",
+    "error_rejected": "Dieses Bild konnte nicht verwendet werden. Probiere ein anderes Foto.",
+    "error_rate_limited": "Zu viele Uploads. Warte kurz und versuche es erneut.",
+    "error_generic": "Bild konnte nicht hochgeladen werden. Versuche es erneut."
+  },
   "linkedReports": {
     "label": "Meldungen an diesem Ort",
     "loadError": "Meldungen konnten nicht geladen werden. Erneut versuchen.",

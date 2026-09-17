@@ -78,6 +78,8 @@ function typedForm(over: Partial<CleanupFormValue> = {}): CleanupFormValue {
     linkedReportIds: ["report-a"],
     shareToFeed: true,
     feedCaption: "",
+    coverMediaId: null,
+    coverPreviewUrl: null,
     ...over,
   }
 }

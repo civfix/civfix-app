@@ -17,6 +17,17 @@
     "runsFor": "Runs for",
     "duration_hours": "{{count}} h"
   },
+  "cover": {
+    "label": "Cover image",
+    "hint": "Shown at the top of your event page instead of the map.",
+    "add": "Add a cover",
+    "replace": "Replace cover",
+    "remove": "Remove cover",
+    "uploading": "Uploading...",
+    "error_rejected": "That image could not be used. Try a different photo.",
+    "error_rate_limited": "Too many uploads. Wait a moment and try again.",
+    "error_generic": "Could not upload that image. Try again."
+  },
   "linkedReports": {
     "label": "Reports at this spot",
     "loadError": "Could not load reports. Try again.",

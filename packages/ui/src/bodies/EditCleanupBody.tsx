@@ -26,6 +26,7 @@ import { wallClockInZone } from "@civfix/shared/datetime"
 import { CleanupForm, isCleanupFormComplete, type CleanupFormValue } from "./CleanupForm"
 import { linkedRefToCardData, useLinkedReportCards } from "./linkedReportCards"
 import { mustPersistEventEnd, seededEndTime } from "./eventWizard"
+import { eventCoverChanged } from "./eventCoverModel"
 import { buildSlotInputs, slotsFromCleanup } from "./eventSlotsForm"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
@@ -64,6 +65,8 @@ function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
     linkedReportIds: cleanup.eventKind === "cleanup" ? cleanup.linkedReports.map((r) => r.id) : [],
     shareToFeed: false,
     feedCaption: "",
+    coverMediaId: null,
+    coverPreviewUrl: cleanup.coverUrl ?? null,
   }
 }
 
@@ -131,6 +134,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
         ? { organizationId: form.organizationId }
         : {}),
       ...(form.eventKind === "cleanup" ? { linkedReportIds: form.linkedReportIds } : {}),
+      ...(eventCoverChanged(form, cleanup.coverUrl) ? { coverMediaId: form.coverMediaId } : {}),
     }
     update.mutate(
       { id: cleanup.id, patch },

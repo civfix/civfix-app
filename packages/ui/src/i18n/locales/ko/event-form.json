@@ -17,6 +17,17 @@
     "runsFor": "진행 시간",
     "duration_hours": "{{count}}시간"
   },
+  "cover": {
+    "label": "대표 이미지",
+    "hint": "이벤트 페이지 상단에 지도 대신 표시됩니다.",
+    "add": "대표 이미지 추가",
+    "replace": "대표 이미지 교체",
+    "remove": "대표 이미지 삭제",
+    "uploading": "업로드 중...",
+    "error_rejected": "이 이미지는 사용할 수 없습니다. 다른 사진을 선택하세요.",
+    "error_rate_limited": "업로드가 너무 잦습니다. 잠시 후 다시 시도하세요.",
+    "error_generic": "이미지를 업로드하지 못했습니다. 다시 시도하세요."
+  },
   "linkedReports": {
     "label": "이 장소의 제보",
     "loadError": "제보를 불러오지 못했어요. 다시 시도해 주세요.",

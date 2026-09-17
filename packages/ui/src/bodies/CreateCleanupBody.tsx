@@ -499,6 +499,7 @@ function HostForm({
         ...(linkedReportIds ? { linkedReportIds } : {}),
         slots,
         ...(form.organizationId ? { organizationId: form.organizationId } : {}),
+        ...(form.coverMediaId ? { coverMediaId: form.coverMediaId } : {}),
       },
       {
         onSuccess: (cleanup) => {
