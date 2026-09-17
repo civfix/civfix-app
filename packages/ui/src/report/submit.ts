@@ -39,6 +39,12 @@ function composeDescription(draft: DraftReport): string | undefined {
   return out.length > 0 ? out : undefined
 }
 
+export function submittedAddr(draft: Pick<DraftReport, "addr" | "addrEdited">): string | undefined {
+  if (!draft.addrEdited) return undefined
+  const line = draft.addr?.trim() ?? ""
+  return line.length > 0 ? line : undefined
+}
+
 export { putUpload, UPLOAD_PUT_BASE_TIMEOUT_MS, UPLOAD_MIN_BYTES_PER_SEC } from "../data/uploadMedia"
 
 async function uploadOne(
@@ -126,6 +132,7 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
     const mediaUploadIds = await uploadAll(api, camera, draft.media)
 
     const description = composeDescription(draft)
+    const addr = submittedAddr(draft)
     const submission: ReportSubmission = {
       idempotencyKey,
       category: draft.category as ReportCategory,
@@ -135,7 +142,7 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
       geomSource: draft.geomSource,
       mediaUploadIds,
       ...(draft.title.trim() ? { title: draft.title.trim() } : {}),
-      ...(draft.addr && draft.addr.trim() ? { addr: draft.addr.trim() } : {}),
+      ...(addr ? { addr } : {}),
       ...(description ? { description } : {}),
     }
 
@@ -186,7 +193,7 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
         title: draft.title,
         lat: result.lat,
         lng: result.lng,
-        addr: submission.addr ?? null,
+        addr: draft.addr?.trim() ?? null,
       }
       const localUri = draft.media[0]?.uri
       if (localUri) rememberLocalReportThumb(result.reportId, localUri)

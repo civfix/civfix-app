@@ -1677,6 +1677,12 @@ server's creation-time snapshot, or the reporter's own typing; `addrPrecision` i
 so a later display-side coarsening policy needs no re-geocoding. `isVerifiedReportAddress()` is
 therefore stricter than the event predicate — only `user` text or a `street` resolve counts as postal,
 and that is what gates sending the address (rather than the coordinates) to an external maps app.
+One caveat the compat shim below creates: the `resolved` rows IT writes are machine-resolved, so "every
+value means a human saw the line" holds only for events a NEW client published. A surface building an
+external-map URL therefore treats a line as text-searchable only when it is human-confirmed or resolved
+at street/intersection precision, and otherwise sends the coordinates — which is why the URL builders
+pair verified text with `ll`/`geo:` whenever a point exists and fall back to the point alone when the
+row carries no address at all.
 
 **`addressSource` doubles as the new-client flag; `address` stays wire-optional.** A client that has
 run the host verification gate always sends `address` AND `addressSource`. Its absence is how the
