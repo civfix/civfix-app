@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Image, Pressable, ScrollView, StyleSheet } from "react-native"
 import type { CleanupDTO, ContentReportReason } from "@civfix/shared"
+import { isVerifiedEventAddress } from "@civfix/shared"
 import { eventWhenLabel } from "@civfix/shared/datetime"
 import { deriveCleanupStatus, nextEventBoundaryMs } from "@civfix/shared/host"
 import { radius, focusRingProps, headingLevel, makeThemedStyles, useTheme } from "../theme"
@@ -44,6 +45,7 @@ import { useLocale, useRelativeTime, useT, useViewerTimeZone } from "../i18n"
 import { usePageIsActive } from "../shell/pageActive"
 import { useScrollHost } from "../shell/ScrollHost"
 import { MiniMap, useMapFocus } from "../map"
+import { AddressRow } from "./AddressRow"
 import { FeedNotice } from "./FeedNotice"
 import { EventActionRow, EventActionRows } from "./EventActionRow"
 import { LinkedReportCard } from "./LinkedReportCard"
@@ -241,6 +243,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const organizerProfile = useProfile(isOrganizer ? undefined : cleanup.organizer.id)
 
   const where = cleanup.address?.trim()
+  const hasPoint = cleanup.lat != null && cleanup.lng != null
   const dist = eventDistanceLabel(cleanup.dist)
   const goingCount = cleanup.going
 
@@ -433,20 +436,25 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
             <Icon icon={iconMap.Calendar} size={14} color={th.colors.textSubtle} />
             <Text style={styles.metaWhen}>{eventWhenLabel(cleanup, { locale, weekdays, viewerTimeZone })}</Text>
           </View>
-          <View style={styles.metaRow}>
-            <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
-            <Text style={styles.metaWhere} numberOfLines={1}>
-              {where ?? (cleanup.type === "route" ? t("where.route") : t("where.meeting_point"))}
-            </Text>
-            {dist ? (
-              <>
-                <MetaDot color={th.colors.textSubtle} />
-                <Text style={styles.metaDist} numberOfLines={1}>
-                  {t("where.distance_away", { dist })}
-                </Text>
-              </>
-            ) : null}
-          </View>
+          <AddressRow
+            address={where ?? null}
+            point={hasPoint ? { lat: cleanup.lat as number, lng: cleanup.lng as number } : null}
+            focusTarget={{ kind: "cleanup", id: cleanup.id, eventKind: cleanup.eventKind }}
+            verified={isVerifiedEventAddress(cleanup.addressSource, cleanup.address)}
+            fallbackLabel={cleanup.type === "route" ? t("where.route") : t("where.meeting_point")}
+            title={cleanup.title}
+            numberOfLines={2}
+            trailing={
+              dist ? (
+                <>
+                  <MetaDot color={th.colors.textSubtle} />
+                  <Text style={styles.metaDist} numberOfLines={1}>
+                    {t("where.distance_away", { dist })}
+                  </Text>
+                </>
+              ) : null
+            }
+          />
         </View>
       </View>
 
@@ -814,12 +822,6 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["14"],
     color: t.colors.text,
-  },
-  metaWhere: {
-    flexShrink: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["13"],
-    color: t.colors.textMuted,
   },
   metaDist: {
     flexShrink: 0,

@@ -11,6 +11,7 @@ import { useEventIcs } from "../../data/eventIcs"
 import { useLocale, useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
+import { AddressRow } from "../AddressRow"
 import { FeedNotice } from "../FeedNotice"
 import { appErrorCode } from "../errorCode"
 import {
@@ -130,12 +131,12 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
           <Text style={styles.meta}>{ticketWhen(ticket, locale)}</Text>
         </View>
         {ticketWhere(ticket) ? (
-          <View style={styles.metaRow}>
-            <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
-            <Text style={styles.meta} numberOfLines={2}>
-              {ticketWhere(ticket)}
-            </Text>
-          </View>
+          <AddressRow
+            address={ticketWhere(ticket)}
+            verified
+            title={ticket.title}
+            numberOfLines={2}
+          />
         ) : null}
         {ticket.ticketTypeName ? (
           <View style={styles.metaRow}>

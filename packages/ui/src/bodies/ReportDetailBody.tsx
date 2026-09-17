@@ -11,6 +11,7 @@ import type {
   ReportStatus,
   LinkedEventRef,
 } from "@civfix/shared"
+import { isVerifiedReportAddress } from "@civfix/shared"
 import { makeThemedStyles, radius, useTheme, focusRingProps, headingLevel, type Theme } from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import {
@@ -38,6 +39,7 @@ import {
 } from "../data"
 import { type NodeKind, NODE_GLYPH, nodeColor, kindForStatus, citizenStatusLabel } from "../primitives/report-timeline-labels"
 import { timelineEntryRender } from "../primitives/report-timeline-model"
+import { AddressRow } from "./AddressRow"
 import { clampGallerySelection, linkedEventToCleanup } from "./reportDetailModel"
 import type { ContentReportReason, ContentReportSubject } from "@civfix/shared"
 import { usePageIsActive } from "../shell/pageActive"
@@ -720,10 +722,15 @@ function ReportDetailContent({ report }: { report: ReportDTO }) {
 
       {report.addr ? (
         <View style={styles.locRow}>
-          <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
-          <Text style={styles.locText} numberOfLines={2}>
-            {report.addr}
-          </Text>
+          <AddressRow
+            address={report.addr}
+            point={{ lat: report.lat, lng: report.lng }}
+            focusTarget={{ kind: "report", id: report.id, category: report.category }}
+            precision={report.addrPrecision ?? null}
+            verified={isVerifiedReportAddress(report.addrSource, report.addrPrecision, report.addr)}
+            title={title}
+            numberOfLines={2}
+          />
         </View>
       ) : null}
 
@@ -990,16 +997,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
 
   locRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
     marginTop: t.space["2"],
-  },
-  locText: {
-    flex: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
-    color: t.colors.textMuted,
   },
 
   statusRow: {
