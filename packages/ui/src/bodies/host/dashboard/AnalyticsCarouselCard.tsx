@@ -36,15 +36,22 @@ const IS_WEB = Platform.OS === "web"
 export interface AnalyticsCarouselCardProps {
   cleanupId: string
   enabled?: boolean
+  label?: string
 }
 
-export function AnalyticsCarouselCard({ cleanupId, enabled = true }: AnalyticsCarouselCardProps) {
+export function AnalyticsCarouselCard({
+  cleanupId,
+  enabled = true,
+  label,
+}: AnalyticsCarouselCardProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-analytics")
   const [width, setWidth] = useState(0)
   const [index, setIndex] = useState(0)
   const scroller = React.useRef<ScrollView>(null)
+
+  const heading = label ?? t("card.title")
 
   const query = useEventAnalytics(cleanupId, "card", { enabled })
   const data = query.data ?? null
@@ -91,7 +98,7 @@ export function AnalyticsCarouselCard({ cleanupId, enabled = true }: AnalyticsCa
 
   if (query.isPending) {
     return (
-      <SectionCard label={t("card.title")}>
+      <SectionCard label={heading}>
         <SkeletonGroup>
           <View style={styles.skeleton}>
             <SkeletonBlock width="40%" height={32} />
@@ -105,7 +112,7 @@ export function AnalyticsCarouselCard({ cleanupId, enabled = true }: AnalyticsCa
 
   if (query.isError || !data) {
     return (
-      <SectionCard label={t("card.title")}>
+      <SectionCard label={heading}>
         <FeedNotice
           icon="CloudOff"
           title={t("card.error_title")}
@@ -120,7 +127,7 @@ export function AnalyticsCarouselCard({ cleanupId, enabled = true }: AnalyticsCa
 
   if (isArchivalEvent(data.lifecycle, data.phase, Date.now())) {
     return (
-      <SectionCard label={t("card.title")} trailing={<Text variant="caption">{t("card.final")}</Text>}>
+      <SectionCard label={heading} trailing={<Text variant="caption">{t("card.final")}</Text>}>
         <Text style={styles.archival}>
           {t("card.archival_summary", {
             hours: Math.round(data.kpis.hoursTotal ?? 0),
@@ -135,7 +142,7 @@ export function AnalyticsCarouselCard({ cleanupId, enabled = true }: AnalyticsCa
 
   return (
     <SectionCard
-      label={t("card.title")}
+      label={heading}
       trailing={
         active ? (
           <Text variant="caption" numberOfLines={1} accessibilityLiveRegion="polite">

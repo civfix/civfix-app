@@ -46,16 +46,16 @@ import { FeedNotice } from "../FeedNotice"
 import { openHostDashboard } from "../hostDashboardTarget"
 import { NextUpSkeleton } from "./HostSkeletons"
 import { TopVolunteersCard } from "./TopVolunteersCard"
-import { AttentionCard } from "./dashboard/AttentionCard"
+import { AnalyticsCarouselCard } from "./dashboard/AnalyticsCarouselCard"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
 import { FirstEventCard } from "./dashboard/FirstEventCard"
 import { HostedEventRow } from "./dashboard/HostedEventRow"
 import { ImpactCard } from "./dashboard/ImpactCard"
+import { InvitationsCard } from "./dashboard/InvitationsCard"
 import { NextUpCard } from "./dashboard/NextUpCard"
 import {
-  ATTENTION_MAX_ROWS,
-  attentionRows,
+  analyticsFocusEvent,
   dashboardScope,
   firstEventState,
   hostedEventPhase,
@@ -138,9 +138,9 @@ export function EventDashboardBody() {
   const now = useMemo(() => new Date(nowMs), [nowMs])
   const nextUp = nextUpEvent([...upcomingEvents, ...pastEvents], now)
   const kpis = portfolioKpis(upcoming.data?.pages)
-  const tasks = useMemo(
-    () => attentionRows({ past: pastEvents, now }).slice(0, ATTENTION_MAX_ROWS),
-    [pastEvents, now],
+  const analyticsFocus = useMemo(
+    () => analyticsFocusEvent({ upcoming: upcomingEvents, past: pastEvents, now }),
+    [upcomingEvents, pastEvents, now],
   )
   useEventBoundaryRefresh(
     nextUp ? hostedEventWindow(nextUp.event) : null,
@@ -204,10 +204,6 @@ export function EventDashboardBody() {
 
   const onAnnounce = useCallback((event: HostedEventDTO) => {
     useNavStore.getState().push({ kind: "host-announce", id: event.id })
-  }, [])
-
-  const onLogHours = useCallback((event: HostedEventDTO) => {
-    useNavStore.getState().push({ kind: "host-log-hours", id: event.id })
   }, [])
 
   const onShare = useCallback(
@@ -357,7 +353,7 @@ export function EventDashboardBody() {
           />
         ) : null}
 
-        <AttentionCard
+        <InvitationsCard
           eventInvites={pendingEventInvites}
           orgInvites={pendingOrgInviteRows}
           invitesPending={eventInvites.isPending || orgInvites.isPending}
@@ -374,14 +370,19 @@ export function EventDashboardBody() {
           onDeclineEventInvite={onDeclineEventInvite}
           onAcceptOrgInvite={onAcceptOrgInvite}
           onDeclineOrgInvite={onDeclineOrgInvite}
-          rows={teaching ? [] : tasks}
-          onLogHours={onLogHours}
         />
 
         {teaching ? <FirstEventCard onCreate={onCreate} /> : null}
 
         {teaching ? null : (
           <>
+            {analyticsFocus ? (
+              <AnalyticsCarouselCard
+                cleanupId={analyticsFocus.id}
+                label={t("analytics.for_event", { title: analyticsFocus.title })}
+              />
+            ) : null}
+
             <ImpactCard
               analytics={analytics.data}
               isPending={analytics.isPending}

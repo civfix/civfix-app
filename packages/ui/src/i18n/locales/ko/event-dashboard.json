@@ -24,10 +24,8 @@
     "more_shifts": "호스트 도구에 {{count}}개 교대 더 있음",
     "more_shifts_a11y": "호스트 도구를 열어 {{title}}의 교대 {{total}}개 모두 보기"
   },
-  "attention": {
-    "section": "처리할 일",
-    "log_hours": "봉사 시간 기록 · {{count}}명 체크인",
-    "log_hours_a11y": "{{title}}의 봉사 시간 기록"
+  "analytics": {
+    "for_event": "{{title}} 분석"
   },
   "impact": {
     "section": "성과",

@@ -10,8 +10,8 @@ import type {
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
 import { can } from "@civfix/shared/host"
 import {
-  ATTENTION_MAX_ROWS,
-  attentionRows,
+  INVITE_MAX_ROWS,
+  analyticsFocusEvent,
   canManageOrgTeam,
   canSetOrgMemberRole,
   collaboratorErrorKey,
@@ -438,7 +438,7 @@ describe("dashboard wiring", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).not.toContain("FeedBody")
     expect(body).not.toContain("feed/")
-    expect(body).toContain("./dashboard/AttentionCard")
+    expect(body).toContain("./dashboard/InvitationsCard")
   })
 
   it("routes the row actions at the nav kinds the plan named", () => {
@@ -588,80 +588,78 @@ describe("next up", () => {
   })
 })
 
-describe("needs attention", () => {
+describe("the analytics card picks one hosted event", () => {
   const now = new Date("2026-09-10T12:00:00.000Z")
 
+  const hosted = (id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO =>
+    row(id, { myRole: "organizer", ...over })
+
+  const soon = (id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO =>
+    hosted(id, {
+      startsAt: "2026-09-12T17:00:00.000Z",
+      endsAt: "2026-09-12T21:00:00.000Z",
+      ...over,
+    })
+
   const finished = (id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO =>
-    row(id, {
-      myRole: "organizer",
+    hosted(id, {
       startsAt: "2026-09-08T17:00:00.000Z",
       endsAt: "2026-09-08T21:00:00.000Z",
       ...over,
     })
 
-  it("queues a finished event whose hours were never credited", () => {
-    const unpaid = finished("unpaid", { checkedInCount: 6, hoursCredited: 0 })
-    expect(attentionRows({ past: [unpaid], now })).toEqual([{ kind: "log_hours", event: unpaid }])
+  it("shows nothing at all to a viewer who hosts no events", () => {
+    expect(analyticsFocusEvent({ upcoming: [], past: [], now })).toBeNull()
   })
 
-  it("no longer asks anyone to mark an event completed - the clock does that", () => {
-    const ended = finished("ended", { checkedInCount: 0, hoursCredited: 0 })
-    expect(attentionRows({ past: [ended], now })).toEqual([])
-  })
-
-  it("leaves credited, empty and cancelled events alone", () => {
-    const credited = finished("credited", { checkedInCount: 6, hoursCredited: 12 })
-    const nobody = finished("nobody", { checkedInCount: 0, hoursCredited: 0 })
-    const gone = finished("gone", { status: "cancelled", checkedInCount: 6, hoursCredited: 0 })
-    expect(attentionRows({ past: [credited, nobody, gone], now })).toEqual([])
-  })
-
-  it("says nothing about an event that has not ended yet", () => {
-    const underway = finished("underway", {
+  it("prefers the event happening right now over the one happening next", () => {
+    const live = hosted("live", {
       startsAt: "2026-09-10T11:00:00.000Z",
       endsAt: "2026-09-10T15:00:00.000Z",
-      checkedInCount: 6,
-      hoursCredited: 0,
     })
-    expect(attentionRows({ past: [underway], now })).toEqual([])
+    const later = soon("later")
+    expect(hostedEventPhase(live, now)).toBe("live")
+    expect(analyticsFocusEvent({ upcoming: [later, live], past: [], now })?.id).toBe("live")
   })
 
-  it("treats hours the payload never carried as none logged, so the task is not silently dropped", () => {
-    // `hoursCredited` is `.optional()` on the wire. The row now routes to the hours editor, which shows
-    // the truth either way, so an older server's silence must not hide a real task from the host.
-    const silent = finished("silent", { checkedInCount: 6 })
-    expect(silent.hoursCredited).toBeUndefined()
-    expect(attentionRows({ past: [silent], now })).toEqual([{ kind: "log_hours", event: silent }])
-    const explicit = finished("explicit", { checkedInCount: 6, hoursCredited: 0 })
-    expect(attentionRows({ past: [explicit], now })).toEqual([
-      { kind: "log_hours", event: explicit },
-    ])
-  })
-
-  it("never queues a viewer the server would 403 - logging hours needs manage_event", () => {
-    const staff = finished("staff", {
-      myRole: "staff",
-      myCapabilities: ["view_roster", "check_in"],
-      checkedInCount: 6,
-      hoursCredited: 0,
+  it("falls to the soonest upcoming event when nothing is underway", () => {
+    const later = soon("later")
+    const latest = soon("latest", {
+      startsAt: "2026-09-20T17:00:00.000Z",
+      endsAt: "2026-09-20T21:00:00.000Z",
     })
-    expect(attentionRows({ past: [staff], now })).toEqual([])
+    expect(analyticsFocusEvent({ upcoming: [latest, later], past: [], now })?.id).toBe("later")
   })
 
-  it("puts the most recently ENDED event first", () => {
+  it("falls to the most recently ended event when nothing is ahead", () => {
     const older = finished("older", {
       startsAt: "2026-09-01T17:00:00.000Z",
       endsAt: "2026-09-01T21:00:00.000Z",
-      checkedInCount: 4,
-      hoursCredited: 0,
     })
-    const newer = finished("newer", { checkedInCount: 6, hoursCredited: 0 })
-    const rows = attentionRows({ past: [older, newer], now })
-    expect(rows.map((entry) => entry.event.id)).toEqual(["newer", "older"])
+    const newer = finished("newer")
+    expect(analyticsFocusEvent({ upcoming: [], past: [older, newer], now })?.id).toBe("newer")
   })
 
-  it("caps the queue at three rows for the caller", () => {
-    expect(ATTENTION_MAX_ROWS).toBe(3)
+  it("still prefers anything ahead over anything already finished", () => {
+    const ended = finished("ended")
+    const later = soon("later")
+    expect(analyticsFocusEvent({ upcoming: [later], past: [ended], now })?.id).toBe("later")
+  })
+
+  it("skips an event the server would refuse the numbers for", () => {
+    const blind = soon("blind", { myRole: "staff", myCapabilities: ["view_roster", "check_in"] })
+    expect(hostedEventCan(blind, "view_analytics")).toBe(false)
+    expect(analyticsFocusEvent({ upcoming: [blind], past: [], now })).toBeNull()
+    const seeing = soon("seeing", {
+      startsAt: "2026-09-20T17:00:00.000Z",
+      endsAt: "2026-09-20T21:00:00.000Z",
+    })
+    expect(analyticsFocusEvent({ upcoming: [blind, seeing], past: [], now })?.id).toBe("seeing")
+  })
+
+  it("never lands on a cancelled event as if it were still ahead", () => {
+    const gone = soon("gone", { status: "cancelled" })
+    expect(analyticsFocusEvent({ upcoming: [gone], past: [], now })).toBeNull()
   })
 })
 
@@ -817,7 +815,7 @@ describe("portfolio surface", () => {
     const files = [
       "../../EventDashboardBody.tsx",
       "../NextUpCard.tsx",
-      "../AttentionCard.tsx",
+      "../InvitationsCard.tsx",
       "../ImpactCard.tsx",
       "../FirstEventCard.tsx",
       "../HostedEventRow.tsx",
@@ -855,10 +853,10 @@ describe("portfolio surface", () => {
     expect(body).toContain('const ANALYTICS_RANGE = "all"')
     expect(body).toContain("<ImpactCard")
     expect(body).toContain("<TopVolunteersCard")
-    expect(body).toContain("<AttentionCard")
+    expect(body).toContain("<InvitationsCard")
     expect(body).toContain("<FirstEventCard")
-    expect(body).toContain("./dashboard/AttentionCard")
-    expect(dashboardSource("AttentionCard.tsx")).toContain("./InviteRows")
+    expect(body).toContain("./dashboard/InvitationsCard")
+    expect(dashboardSource("InvitationsCard.tsx")).toContain("./InviteRows")
   })
 
   it("demotes create-event and the invitation accept to secondary", () => {
@@ -909,9 +907,8 @@ describe("portfolio surface", () => {
       ["next_up", "more_shifts"],
       ["next_up", "more_shifts_a11y"],
       ["next_up", "meter_a11y"],
-      ["attention", "section"],
-      ["attention", "log_hours"],
-      ["attention", "log_hours_a11y"],
+      ["analytics", "for_event"],
+      ["invites", "section"],
       ["impact", "section"],
       ["impact", "all_time"],
       ["impact", "unit_hours"],
@@ -967,22 +964,45 @@ describe("portfolio surface", () => {
       expect(cat.next_up?.message_a11y).toBeUndefined()
       expect(cat.next_up?.share).toBeUndefined()
       expect(cat.events?.empty_past_title).toBeUndefined()
-      expect(cat.attention?.complete).toBeUndefined()
-      expect(cat.attention?.complete_a11y).toBeUndefined()
-      expect(cat.attention?.credit_hours).toBeUndefined()
-      expect(cat.attention?.credit_hours_a11y).toBeUndefined()
+      expect(cat.attention).toBeUndefined()
     }
   })
 
-  it("shows an underway row live, under Upcoming, and routes the attention row at the hours screen", () => {
+  it("shows an underway row live, under Upcoming", () => {
     const rowSource = dashboardRowSource()
     expect(rowSource).toContain('hostedEventStatus(event, now) === "active"')
     expect(rowSource).toContain('t("events.meta_underway", { ago: relative(event.startsAt, now) })')
     expect(rowSource).toContain('<PhaseDot phase="live" />')
-    expect(dashboardSource("AttentionCard.tsx")).toContain("attention.log_hours")
+  })
+
+  it("drops the needs-attention card and keeps invitations in one of their own", () => {
     const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain('push({ kind: "host-log-hours", id: event.id })')
-    expect(body).toContain("onLogHours={onLogHours}")
+    expect(body).not.toContain("AttentionCard")
+    expect(body).not.toContain("attentionRows")
+    expect(body).not.toContain("host-log-hours")
+    expect(existsSync(new URL("../AttentionCard.tsx", import.meta.url))).toBe(false)
+    const card = dashboardSource("InvitationsCard.tsx")
+    expect(card).toContain('t("invites.section")')
+    expect(card).not.toContain("attention.")
+    expect(card).not.toContain("TaskRow")
+    expect(card).toContain("if (inviteCount === 0) return null")
+  })
+
+  it("puts the analytics carousel on the dashboard, named after the event it describes", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).toContain("analyticsFocusEvent({ upcoming: upcomingEvents, past: pastEvents, now })")
+    expect(body).toContain("<AnalyticsCarouselCard")
+    expect(body).toContain("cleanupId={analyticsFocus.id}")
+    expect(body).toContain('label={t("analytics.for_event", { title: analyticsFocus.title })}')
+    expect(body).toContain("{analyticsFocus ? (")
+    expect(dashboardSource("AnalyticsCarouselCard.tsx")).toContain(
+      'const heading = label ?? t("card.title")',
+    )
+  })
+
+  it("caps the invitation rows the small card shows", () => {
+    expect(INVITE_MAX_ROWS).toBe(3)
+    expect(dashboardSource("InvitationsCard.tsx")).toContain("INVITE_MAX_ROWS")
   })
 
   it("makes the hidden-shift line a pressable route into host tools", () => {

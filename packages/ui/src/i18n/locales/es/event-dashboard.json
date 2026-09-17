@@ -24,10 +24,8 @@
     "more_shifts": "{{count}} turnos más en Herramientas de anfitrión",
     "more_shifts_a11y": "Abrir las herramientas de anfitrión para ver los {{total}} turnos de {{title}}"
   },
-  "attention": {
-    "section": "Requiere atención",
-    "log_hours": "Registrar horas · {{count}} con entrada registrada",
-    "log_hours_a11y": "Registrar horas de {{title}}"
+  "analytics": {
+    "for_event": "Analíticas de {{title}}"
   },
   "impact": {
     "section": "Impacto",

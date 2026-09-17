@@ -24,10 +24,8 @@
     "more_shifts": "{{count}} weitere Schichten in den Host-Werkzeugen",
     "more_shifts_a11y": "Host-Werkzeuge öffnen, um alle {{total}} Schichten von {{title}} zu sehen"
   },
-  "attention": {
-    "section": "Zu erledigen",
-    "log_hours": "Stunden eintragen · {{count}} eingecheckt",
-    "log_hours_a11y": "Stunden für {{title}} eintragen"
+  "analytics": {
+    "for_event": "Auswertung für {{title}}"
   },
   "impact": {
     "section": "Wirkung",

@@ -2,20 +2,19 @@ import React from "react"
 import { View } from "react-native"
 import type {
   CleanupMemberRole,
-  HostedEventDTO,
   OrganizationMemberRole,
   PendingEventTeamInviteDTO,
   PendingOrganizationInviteDTO,
 } from "@civfix/shared"
-import { IconTile, ListRow, SectionCard, LIST_DIVIDER_INSET } from "../../../primitives"
+import { SectionCard, LIST_DIVIDER_INSET } from "../../../primitives"
 import { useT } from "../../../i18n"
 import { makeThemedStyles } from "../../../theme"
 import { FeedNotice } from "../../FeedNotice"
 import { RowsSkeleton } from "../HostSkeletons"
 import { EventInviteRow, OrgInviteRow } from "./InviteRows"
-import { ATTENTION_MAX_ROWS, type AttentionRow } from "./dashboardModel"
+import { INVITE_MAX_ROWS } from "./dashboardModel"
 
-export interface AttentionCardProps {
+export interface InvitationsCardProps {
   eventInvites: readonly PendingEventTeamInviteDTO[]
   orgInvites: readonly PendingOrganizationInviteDTO[]
   invitesPending: boolean
@@ -29,33 +28,9 @@ export interface AttentionCardProps {
   onDeclineEventInvite: (inviteId: string) => void
   onAcceptOrgInvite: (inviteId: string) => void
   onDeclineOrgInvite: (inviteId: string) => void
-  rows: readonly AttentionRow[]
-  onLogHours: (event: HostedEventDTO) => void
 }
 
-function TaskRow({
-  row,
-  onLogHours,
-}: {
-  row: AttentionRow
-  onLogHours: (event: HostedEventDTO) => void
-}) {
-  const { t } = useT("event-dashboard")
-  const { event } = row
-  return (
-    <ListRow
-      leading={<IconTile icon="Clock" tone="attention" />}
-      title={event.title}
-      titleLines={1}
-      sub={t("attention.log_hours", { count: event.checkedInCount })}
-      chevron
-      accessibilityLabel={t("attention.log_hours_a11y", { title: event.title })}
-      onPress={() => onLogHours(event)}
-    />
-  )
-}
-
-export function AttentionCard({
+export function InvitationsCard({
   eventInvites,
   orgInvites,
   invitesPending,
@@ -69,16 +44,14 @@ export function AttentionCard({
   onDeclineEventInvite,
   onAcceptOrgInvite,
   onDeclineOrgInvite,
-  rows,
-  onLogHours,
-}: AttentionCardProps) {
+}: InvitationsCardProps) {
   const { t } = useT("event-dashboard")
   const styles = useStyles()
 
   const inviteCount = eventInvites.length + orgInvites.length
   if (invitesError) {
     return (
-      <SectionCard label={t("attention.section")} variant="list">
+      <SectionCard label={t("invites.section")} variant="list">
         <View style={styles.notice}>
           <FeedNotice
             icon="CloudOff"
@@ -91,21 +64,16 @@ export function AttentionCard({
       </SectionCard>
     )
   }
-  if (invitesPending && inviteCount === 0 && rows.length === 0) {
-    return <RowsSkeleton rows={1} />
-  }
-  if (inviteCount === 0 && rows.length === 0) return null
-
-  const taskRoom = Math.max(0, ATTENTION_MAX_ROWS - inviteCount)
-  const tasks = rows.slice(0, taskRoom)
+  if (invitesPending && inviteCount === 0) return <RowsSkeleton rows={1} />
+  if (inviteCount === 0) return null
 
   return (
     <SectionCard
-      label={t("attention.section")}
+      label={t("invites.section")}
       variant="list"
       dividerInset={LIST_DIVIDER_INSET}
     >
-      {eventInvites.slice(0, ATTENTION_MAX_ROWS).map((invite) => (
+      {eventInvites.slice(0, INVITE_MAX_ROWS).map((invite) => (
         <EventInviteRow
           key={invite.id}
           invite={invite}
@@ -116,7 +84,7 @@ export function AttentionCard({
         />
       ))}
       {orgInvites
-        .slice(0, Math.max(0, ATTENTION_MAX_ROWS - eventInvites.length))
+        .slice(0, Math.max(0, INVITE_MAX_ROWS - eventInvites.length))
         .map((invite) => (
           <OrgInviteRow
             key={invite.id}
@@ -127,9 +95,6 @@ export function AttentionCard({
             onDecline={onDeclineOrgInvite}
           />
         ))}
-      {tasks.map((row) => (
-        <TaskRow key={`${row.kind}-${row.event.id}`} row={row} onLogHours={onLogHours} />
-      ))}
     </SectionCard>
   )
 }
