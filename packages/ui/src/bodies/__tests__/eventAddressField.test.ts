@@ -72,6 +72,71 @@ describe("eventAddressPrefill", () => {
     ).toBeNull()
   })
 
+  it("leaves a stored resolved address alone on edit mount when the pin has not moved", () => {
+    const stored: EventAddressValue = {
+      address: "123 Main St, Inglewood, CA",
+      addressSource: "resolved",
+      addressPointKey: KEY,
+    }
+    expect(
+      eventAddressPrefill({ coords: COORDS, resolution: null, current: stored, near }),
+    ).toBeNull()
+    expect(
+      eventAddressPrefill({
+        coords: COORDS,
+        resolution: resolved({ address: "500 Ocean Ave, Santa Monica, CA" }),
+        current: stored,
+        near,
+      }),
+    ).toBeNull()
+  })
+
+  it("adopts the point key for a stored address that arrived without one, without touching the text", () => {
+    const stored: EventAddressValue = {
+      address: "123 Main St, Inglewood, CA",
+      addressSource: "resolved",
+      addressPointKey: null,
+    }
+    expect(
+      eventAddressPrefill({
+        coords: COORDS,
+        resolution: resolved({ address: "500 Ocean Ave, Santa Monica, CA" }),
+        current: stored,
+        near,
+      }),
+    ).toEqual({
+      address: "123 Main St, Inglewood, CA",
+      addressSource: "resolved",
+      addressPointKey: KEY,
+    })
+  })
+
+  it("re-enters resolution for an empty manual line on a new point key", () => {
+    const emptyManual: EventAddressValue = {
+      address: "",
+      addressSource: "manual",
+      addressPointKey: "34.00000,-118.00000",
+    }
+    expect(
+      eventAddressPrefill({ coords: COORDS, resolution: resolved(), current: emptyManual, near }),
+    ).toEqual({
+      address: "123 Main St, Inglewood, CA",
+      addressSource: "resolved",
+      addressPointKey: KEY,
+    })
+  })
+
+  it("settles on an empty manual line whose own pin still resolves to nothing", () => {
+    expect(
+      eventAddressPrefill({
+        coords: COORDS,
+        resolution: null,
+        current: { address: "", addressSource: "manual", addressPointKey: KEY },
+        near,
+      }),
+    ).toBeNull()
+  })
+
   it("never clobbers text the host typed or edited", () => {
     const edited: EventAddressValue = {
       address: "Boathouse dock, 123 Main St",
@@ -198,6 +263,7 @@ describe("composeEventAddress", () => {
         address: "123 Main St, Inglewood, CA",
         addressSource: "resolved",
         spot: "Boathouse dock",
+        near,
       }),
     ).toEqual({
       address: "Boathouse dock, 123 Main St, Inglewood, CA",
@@ -207,13 +273,13 @@ describe("composeEventAddress", () => {
 
   it("sends the verified line untouched when there is no spot name", () => {
     expect(
-      composeEventAddress({ address: "123 Main St", addressSource: "resolved", spot: "  " }),
+      composeEventAddress({ address: "123 Main St", addressSource: "resolved", spot: "  ", near }),
     ).toEqual({ address: "123 Main St", addressSource: "resolved" })
   })
 
   it("keeps a manual line manual even with a spot name in front of it", () => {
     expect(
-      composeEventAddress({ address: "Gate 4", addressSource: "manual", spot: "Back lot" }),
+      composeEventAddress({ address: "Gate 4", addressSource: "manual", spot: "Back lot", near }),
     ).toEqual({ address: "Back lot, Gate 4", addressSource: "manual" })
   })
 
@@ -223,12 +289,37 @@ describe("composeEventAddress", () => {
         address: "Boathouse dock, 123 Main St",
         addressSource: "edited",
         spot: "Boathouse dock",
+        near,
       }),
     ).toEqual({ address: "Boathouse dock, 123 Main St", addressSource: "edited" })
   })
 
+  it("sees through the localized Near prefix rather than repeating the landmark", () => {
+    expect(
+      composeEventAddress({
+        address: "Near Vista Hermosa Park",
+        addressSource: "resolved",
+        spot: "vista hermosa park",
+        near,
+      }),
+    ).toEqual({ address: "Near Vista Hermosa Park", addressSource: "resolved" })
+  })
+
+  it("keeps a spot that is only a bare prefix of the first component", () => {
+    expect(
+      composeEventAddress({
+        address: "123 Main St, Inglewood, CA",
+        addressSource: "resolved",
+        spot: "12",
+        near,
+      }),
+    ).toEqual({ address: "12, 123 Main St, Inglewood, CA", addressSource: "edited" })
+  })
+
   it("refuses to build a payload from a blank address, so publish stays blocked", () => {
-    expect(composeEventAddress({ address: "   ", addressSource: null, spot: "Back lot" })).toBeNull()
+    expect(
+      composeEventAddress({ address: "   ", addressSource: null, spot: "Back lot", near }),
+    ).toBeNull()
   })
 
   it("clamps the composed line to the wire maximum", () => {
@@ -236,6 +327,7 @@ describe("composeEventAddress", () => {
       address: "y".repeat(190),
       addressSource: "resolved",
       spot: "z".repeat(40),
+      near,
     })
     expect(composed?.address.length).toBe(200)
   })
@@ -250,6 +342,25 @@ describe("eventAddressStatus", () => {
     expect(eventAddressStatus({ hasCoords: true, isResolving: true, addressSource: null })).toBe(
       "resolving",
     )
+  })
+
+  it("asks for a typed address once the lookup itself failed", () => {
+    expect(
+      eventAddressStatus({
+        hasCoords: true,
+        isResolving: false,
+        resolveFailed: true,
+        addressSource: null,
+      }),
+    ).toBe("manual")
+    expect(
+      eventAddressStatus({
+        hasCoords: true,
+        isResolving: false,
+        resolveFailed: false,
+        addressSource: null,
+      }),
+    ).toBe("resolving")
   })
 
   it("reports the settled source once one exists", () => {

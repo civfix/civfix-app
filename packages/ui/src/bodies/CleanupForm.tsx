@@ -28,6 +28,7 @@ import {
   useMyOrganizations,
   useResolveAddress,
   useReverseLabel,
+  resolvedAddressValue,
   reverseLabelText,
 } from "../data"
 import {
@@ -355,19 +356,21 @@ function MeetAddressField({
 
   const commit = useRef(onPatch)
   commit.current = onPatch
+  const settled = resolvedAddressValue(resolution)
   useEffect(() => {
     const next = eventAddressPrefill({
       coords: value.coords,
-      resolution: resolution.isPending ? undefined : (resolution.data ?? null),
+      resolution: settled,
       current,
       near,
     })
     if (next) commit.current(next)
-  }, [value.coords, resolution.isPending, resolution.data, current, near])
+  }, [value.coords, settled, current, near])
 
   const status = eventAddressStatus({
     hasCoords: value.coords !== null,
     isResolving: resolution.isPending,
+    resolveFailed: resolution.isError,
     addressSource: value.addressSource,
   })
   const pinMoved = eventAddressPinMoved({ coords: value.coords, current })
@@ -471,7 +474,11 @@ export function CleanupForm({
       setCoverErrorKey(null)
       try {
         const picked = await camera.pickFromLibrary()
-        if (!picked || picked.kind !== "image") return
+        if (!picked) return
+        if (picked.kind !== "image") {
+          setCoverErrorKey("cover.error_not_image")
+          return
+        }
         const uploaded = await uploadMedia({ api, camera, media: picked })
         patch({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })
       } catch (err) {

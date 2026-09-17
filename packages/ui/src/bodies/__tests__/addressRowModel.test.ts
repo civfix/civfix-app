@@ -7,6 +7,7 @@ import {
   applyNearPrefix,
   geoUri,
   googleMapsUrl,
+  stripNearPrefix,
 } from "../addressRowModel"
 
 const POINT = { lat: 34.05223, lng: -118.24368 }
@@ -31,6 +32,25 @@ describe("applyNearPrefix", () => {
   it("trims and never prefixes an empty line", () => {
     expect(applyNearPrefix("  123 Main St  ", "street", near)).toBe("123 Main St")
     expect(applyNearPrefix("   ", "landmark", near)).toBe("")
+  })
+})
+
+describe("stripNearPrefix", () => {
+  const korean = (address: string) => `${address} 근처`
+
+  it("peels the localized wrapper back off, whichever side it sits on", () => {
+    expect(stripNearPrefix("Near Vista Hermosa Park", near)).toBe("Vista Hermosa Park")
+    expect(stripNearPrefix("Vista Hermosa Park 근처", korean)).toBe("Vista Hermosa Park")
+  })
+
+  it("leaves a line that never carried the wrapper alone", () => {
+    expect(stripNearPrefix("123 Main St", near)).toBe("123 Main St")
+    expect(stripNearPrefix("  123 Main St  ", near)).toBe("123 Main St")
+    expect(stripNearPrefix("", near)).toBe("")
+  })
+
+  it("does not strip itself down to nothing", () => {
+    expect(stripNearPrefix("Near", near)).toBe("Near")
   })
 })
 
@@ -98,6 +118,7 @@ describe("addressRowAffordances", () => {
     hasFocusTarget: true,
     hasClipboard: true,
     hasOpenExternal: true,
+    hasExternalPlan: true,
   }
 
   it("gives the full variant all three affordances", () => {
@@ -117,11 +138,23 @@ describe("addressRowAffordances", () => {
     expect(addressRowAffordances({ ...base, hasOpenExternal: false }).externalMaps).toBe(false)
   })
 
-  it("still offers copy and maps for an address with no point (the ticket surface)", () => {
+  it("still offers copy and maps for a verified address with no point (the ticket surface)", () => {
     const withoutPoint = addressRowAffordances({ ...base, hasPoint: false, hasFocusTarget: false })
     expect(withoutPoint.focusMap).toBe(false)
     expect(withoutPoint.copy).toBe(true)
     expect(withoutPoint.externalMaps).toBe(true)
+  })
+
+  it("hides the maps button when nothing could be opened, leaving copy on its own", () => {
+    const noPlan = addressRowAffordances({
+      ...base,
+      hasPoint: false,
+      hasFocusTarget: false,
+      hasExternalPlan: false,
+    })
+    expect(noPlan.externalMaps).toBe(false)
+    expect(noPlan.copy).toBe(true)
+    expect(noPlan.longPressSheet).toBe(true)
   })
 
   it("does not focus the map without a target, so the row never hardcodes an entity", () => {

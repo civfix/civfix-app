@@ -12,6 +12,13 @@ export interface ResolveAddressPoint {
 
 const RESOLVED_ADDRESS_STALE_MS = 24 * 60 * 60 * 1000
 
+function isAddressNotFound(err: unknown): boolean {
+  if (typeof err !== "object" || err === null) return false
+  const code = (err as { code?: unknown }).code
+  const status = (err as { status?: unknown }).status
+  return code === "NOT_FOUND" || status === 404
+}
+
 export async function fetchResolvedAddress(
   api: Pick<ApiClient, "resolveAddress">,
   point: ResolveAddressPoint,
@@ -24,9 +31,19 @@ export async function fetchResolvedAddress(
       precision: res.precision ?? null,
       cityStateLabel: res.cityStateLabel?.trim() ?? "",
     }
-  } catch {
-    return null
+  } catch (err) {
+    if (isAddressNotFound(err)) return null
+    throw err
   }
+}
+
+export function resolvedAddressValue(query: {
+  isPending: boolean
+  isError: boolean
+  data: ResolveAddressResponse | null | undefined
+}): ResolveAddressResponse | null | undefined {
+  if (query.isPending || query.isError) return undefined
+  return query.data ?? null
 }
 
 export function useResolveAddress(

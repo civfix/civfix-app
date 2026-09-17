@@ -97,7 +97,7 @@ export {
 } from "./hooks"
 export { useReverseLabel, reverseLabelText, coordsLabel } from "./hooks"
 export type { ReverseLabelPoint } from "./hooks"
-export { useResolveAddress } from "./hooks"
+export { useResolveAddress, resolvedAddressValue } from "./hooks"
 export type { ResolveAddressPoint } from "./hooks"
 export { useNearbyCleanups, useFeedNotifications, NEARBY_RADIUS_M, useUserLocation } from "./hooks"
 export {

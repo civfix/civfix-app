@@ -26,7 +26,8 @@
     "uploading": "Wird hochgeladen...",
     "error_rejected": "Dieses Bild konnte nicht verwendet werden. Probiere ein anderes Foto.",
     "error_rate_limited": "Zu viele Uploads. Warte kurz und versuche es erneut.",
-    "error_generic": "Bild konnte nicht hochgeladen werden. Versuche es erneut."
+    "error_generic": "Bild konnte nicht hochgeladen werden. Versuche es erneut.",
+    "error_not_image": "Wähle ein Bild - ein Video kann nicht als Titelbild verwendet werden."
   },
   "linkedReports": {
     "label": "Meldungen an diesem Ort",

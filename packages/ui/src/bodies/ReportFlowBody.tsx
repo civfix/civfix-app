@@ -15,6 +15,7 @@ import {
   useApi,
   useAuthState,
   useResolveAddress,
+  resolvedAddressValue,
   useResolveJurisdiction,
   useReverseLabel,
   reverseLabelText,
@@ -534,23 +535,17 @@ function ReviewStep({
   const nearAddress = useCallback((line: string) => t("review.where_near", { address: line }), [t])
   const prefillRef = useRef(setPrefilledAddress)
   prefillRef.current = setPrefilledAddress
+  const settledAddress = resolvedAddressValue(addressResolution)
   useEffect(() => {
     const next = reportAddressPrefill({
       hasPoint: point !== null,
-      resolution: addressResolution.isPending ? undefined : (addressResolution.data ?? null),
+      resolution: settledAddress,
       currentAddr: draft.addr,
       addrEdited: draft.addrEdited,
       near: nearAddress,
     })
     if (next !== null) prefillRef.current(next)
-  }, [
-    point,
-    addressResolution.isPending,
-    addressResolution.data,
-    draft.addr,
-    draft.addrEdited,
-    nearAddress,
-  ])
+  }, [point, settledAddress, draft.addr, draft.addrEdited, nearAddress])
   const layoutMode = useLayoutMode()
   const compact = layoutMode === "compact"
   const pickMode = layoutMode === "expanded" ? "main-map" : "standalone"

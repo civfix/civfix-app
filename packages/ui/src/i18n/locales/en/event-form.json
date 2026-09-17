@@ -26,7 +26,8 @@
     "uploading": "Uploading...",
     "error_rejected": "That image could not be used. Try a different photo.",
     "error_rate_limited": "Too many uploads. Wait a moment and try again.",
-    "error_generic": "Could not upload that image. Try again."
+    "error_generic": "Could not upload that image. Try again.",
+    "error_not_image": "Pick an image - a video can't be used as a cover."
   },
   "linkedReports": {
     "label": "Reports at this spot",

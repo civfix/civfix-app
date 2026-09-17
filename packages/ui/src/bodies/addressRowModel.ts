@@ -37,6 +37,24 @@ export function applyNearPrefix(
   return needsNearPrefix(precision) ? near(line) : line
 }
 
+const NEAR_SENTINEL = "__NEAR_ADDRESS__"
+
+export function stripNearPrefix(address: string, near: (address: string) => string): string {
+  const value = address.trim()
+  if (value.length === 0) return value
+  const wrapped = near(NEAR_SENTINEL)
+  const at = wrapped.indexOf(NEAR_SENTINEL)
+  if (at < 0) return value
+  const head = wrapped.slice(0, at)
+  const tail = wrapped.slice(at + NEAR_SENTINEL.length)
+  if (head.length === 0 && tail.length === 0) return value
+  const lower = value.toLowerCase()
+  if (head.length > 0 && !lower.startsWith(head.toLowerCase())) return value
+  if (tail.length > 0 && !lower.endsWith(tail.toLowerCase())) return value
+  const inner = value.slice(head.length, value.length - tail.length).trim()
+  return inner.length > 0 ? inner : value
+}
+
 function usableAddress(address: string | null | undefined): string | null {
   const line = address?.trim() ?? ""
   return line.length > 0 ? line : null
@@ -87,12 +105,13 @@ export function addressRowAffordances(input: {
   hasFocusTarget: boolean
   hasClipboard: boolean
   hasOpenExternal: boolean
+  hasExternalPlan: boolean
 }): AddressRowAffordances {
   if (input.variant === "compact") {
     return { focusMap: false, copy: false, externalMaps: false, longPressSheet: false }
   }
   const copy = input.hasAddress && input.hasClipboard
-  const externalMaps = input.hasOpenExternal && (input.hasPoint || input.hasAddress)
+  const externalMaps = input.hasOpenExternal && input.hasExternalPlan
   return {
     focusMap: input.hasPoint && input.hasFocusTarget,
     copy,

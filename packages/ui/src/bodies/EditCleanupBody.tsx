@@ -60,7 +60,7 @@ function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
     address: cleanup.address ?? "",
     addressSource: cleanup.addressSource ?? (cleanup.address?.trim() ? "manual" : null),
     addressPointKey:
-      cleanup.lat != null && cleanup.lng != null && cleanup.address?.trim()
+      cleanup.lat != null && cleanup.lng != null
         ? geocodePointKey({ lat: cleanup.lat, lng: cleanup.lng })
         : null,
     coords: cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null,
@@ -83,6 +83,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-edit")
+  const { t: tForm } = useT("event-form")
   const update = useUpdateCleanup()
   const [form, setForm] = useState<CleanupFormValue>(() => formFromCleanup(cleanup))
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -129,6 +130,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
       address: form.address,
       addressSource: form.addressSource,
       spot: form.spot,
+      near: (line) => tForm("address.near", { address: line }),
     })
     if (!verifiedAddress) return
     const patch: Omit<UpdateCleanupRequest, "id"> = {
@@ -172,6 +174,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
     scheduledAt,
     update,
     t,
+    tForm,
   ])
 
   return (

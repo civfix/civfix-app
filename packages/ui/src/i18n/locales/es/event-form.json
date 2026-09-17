@@ -26,7 +26,8 @@
     "uploading": "Subiendo...",
     "error_rejected": "No se pudo usar esa imagen. Prueba con otra foto.",
     "error_rate_limited": "Demasiadas subidas. Espera un momento e inténtalo de nuevo.",
-    "error_generic": "No se pudo subir la imagen. Inténtalo de nuevo."
+    "error_generic": "No se pudo subir la imagen. Inténtalo de nuevo.",
+    "error_not_image": "Elige una imagen: no se puede usar un video como portada."
   },
   "linkedReports": {
     "label": "Reportes en este lugar",

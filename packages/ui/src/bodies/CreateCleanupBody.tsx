@@ -487,6 +487,7 @@ function HostForm({
       address: form.address,
       addressSource: form.addressSource,
       spot: form.spot,
+      near: (line) => tShare("address.near", { address: line }),
     })
     if (!verifiedAddress) return
     const linkedReportIds =

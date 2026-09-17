@@ -184,6 +184,15 @@ export function AddressRow({
   const googleUrl = useMemo(() => googleMapsUrl(urlInput), [urlInput])
   const geoUrl = useMemo(() => geoUri(urlInput), [urlInput])
 
+  const hasExternalPlan =
+    addressExternalPlan({
+      platform: rowPlatform(),
+      appleUrl,
+      googleUrl,
+      geoUrl,
+      hasCopy: false,
+    }).kind !== "none"
+
   const affordances = addressRowAffordances({
     variant,
     hasAddress: resolved.length > 0,
@@ -191,6 +200,7 @@ export function AddressRow({
     hasFocusTarget: focusTarget != null,
     hasClipboard: clipboard !== undefined,
     hasOpenExternal: openExternal !== undefined,
+    hasExternalPlan,
   })
 
   const onCopy = useCallback(() => {
@@ -370,14 +380,14 @@ const useStyles = makeThemedStyles((t) => ({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: t.space["2"],
   },
   main: {
     flex: 1,
     minWidth: 0,
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: t.space["2"],
     borderRadius: t.radius.sm,
     paddingVertical: 2,
   },
@@ -387,7 +397,7 @@ const useStyles = makeThemedStyles((t) => ({
   text: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
   compactText: {
