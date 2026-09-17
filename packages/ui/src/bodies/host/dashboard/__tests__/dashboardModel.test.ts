@@ -822,7 +822,6 @@ describe("portfolio surface", () => {
       "../FirstEventCard.tsx",
       "../HostedEventRow.tsx",
       "../InviteRows.tsx",
-      "../DonationLinkRow.tsx",
       "../CollaboratorsSection.tsx",
       "../OrgInviteSheet.tsx",
       "../DuplicateEventSheet.tsx",
@@ -882,11 +881,9 @@ describe("portfolio surface", () => {
     expect(invites).not.toContain('justifyContent: "flex-end"')
   })
 
-  it("keeps the donation link and the team in the shared list card", () => {
-    const donation = dashboardSource("DonationLinkRow.tsx")
-    expect(donation).toContain('variant="list"')
-    expect(donation).toContain('icon="HandHeart"')
-    expect(donation).toContain("<ListRow")
+  it("keeps the team in the shared list card, and leaves donation editing to the org page", () => {
+    const body = source("../../EventDashboardBody.tsx")
+    expect(body).not.toContain("DonationLinkRow")
     const team = dashboardSource("CollaboratorsSection.tsx")
     expect(team).toContain('variant="list"')
     expect(team).toContain("<ListRow")

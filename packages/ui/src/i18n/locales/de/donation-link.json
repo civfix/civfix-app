@@ -16,11 +16,5 @@
     "save": "Speichern",
     "dismiss": "Spendenlink schließen",
     "error": "Der Link konnte nicht gespeichert werden. Versuche es erneut."
-  },
-  "dashboard": {
-    "row": "Spendenlink",
-    "row_set": "Sichtbar bei deinen Events und auf deiner Seite: {{host}}",
-    "row_unset": "Noch nicht festgelegt",
-    "row_org_admin": "Nur Inhaberin oder Admin kann ihn setzen"
   }
 }

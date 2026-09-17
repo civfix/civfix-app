@@ -16,11 +16,5 @@
     "save": "Guardar",
     "dismiss": "Cerrar enlace de donación",
     "error": "No se pudo guardar el enlace. Inténtalo de nuevo."
-  },
-  "dashboard": {
-    "row": "Enlace de donación",
-    "row_set": "Visible en tus eventos y tu página: {{host}}",
-    "row_unset": "Aún sin configurar",
-    "row_org_admin": "Solo el propietario o un administrador puede configurarlo"
   }
 }

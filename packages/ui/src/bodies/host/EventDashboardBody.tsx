@@ -53,7 +53,6 @@ import { FirstEventCard } from "./dashboard/FirstEventCard"
 import { HostedEventRow } from "./dashboard/HostedEventRow"
 import { ImpactCard } from "./dashboard/ImpactCard"
 import { NextUpCard } from "./dashboard/NextUpCard"
-import { DonationLinkRow } from "./dashboard/DonationLinkRow"
 import {
   ATTENTION_MAX_ROWS,
   attentionRows,
@@ -475,7 +474,6 @@ export function EventDashboardBody() {
           </>
         )}
 
-        <DonationLinkRow org={scope.org} />
         {scope.org ? <CollaboratorsSection org={scope.org} /> : null}
       </View>
 
