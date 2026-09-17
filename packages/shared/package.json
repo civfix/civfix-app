@@ -1,6 +1,6 @@
 {
   "name": "@civfix/shared",
-  "version": "0.50.0",
+  "version": "0.51.0",
   "description": "civfix shared contract package: zod schemas, domain types, vendor interfaces, in-memory fakes, design tokens, and a typed API client. Single source of truth for backend, web, and mobile.",
   "license": "UNLICENSED",
   "private": false,
