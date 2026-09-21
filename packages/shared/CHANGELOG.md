@@ -1,5 +1,11 @@
 # @civfix/shared
 
+## 0.48.2
+
+### Patch Changes
+
+- terms of service and privacy policy 2026-09-21: the civfix software is AGPL-3.0 open source, and the operator is named as Reach Out Los Angeles Inc.
+
 ## 0.48.1
 
 ### Patch Changes
