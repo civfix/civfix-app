@@ -1,5 +1,5 @@
 civfix — the consumer plane (shared contract, shared UI, community web and mobile apps)
-Copyright (c) 2026 Reach Out Los Angeles and contributors
+Copyright (c) 2026 Reach Out Los Angeles Inc. and contributors
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU Affero General Public License as published by the Free
@@ -12,8 +12,8 @@ LICENSE file for more details.
 
 Corresponding source: https://github.com/civfix/civfix-app
 
-civfix is a project of Reach Out Los Angeles. The civfix name and logos are
-trademarks of Reach Out Los Angeles and are not licensed under the terms above.
+civfix is a project of Reach Out Los Angeles Inc.. The civfix name and logos are
+trademarks of Reach Out Los Angeles Inc. and are not licensed under the terms above.
 
 The applications built from this repository are additionally conveyed under
 the App Store and Play distribution exception in LICENSE-EXCEPTIONS.md.

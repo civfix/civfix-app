@@ -127,5 +127,5 @@ store binaries bundle `packages/shared` and `packages/ui`. Every file is
 covered by the declaration in [REUSE.toml](REUSE.toml); there are no per-file
 license headers. Contributions are accepted under the
 [Contributor License Agreement](CLA.md) — see [CONTRIBUTING.md](CONTRIBUTING.md).
-civfix is a project of Reach Out Los Angeles; the civfix name and logos are its
+civfix is a project of Reach Out Los Angeles Inc.; the civfix name and logos are its
 trademarks and are not covered by the license.

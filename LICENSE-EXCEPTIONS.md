@@ -2,7 +2,7 @@
 
 App Store and Play distribution exception for the civfix consumer applications.
 
-Copyright (c) 2026 Reach Out Los Angeles
+Copyright (c) 2026 Reach Out Los Angeles Inc.
 
 This repository is licensed under the GNU Affero General Public License,
 version 3 only ("AGPLv3"; see `LICENSE`). As an additional permission under
@@ -32,4 +32,4 @@ This permission is subject to the following conditions:
    is no longer permitted by this document.
 
 Nothing in this document grants any right to use the civfix name, logos or
-other trademarks of Reach Out Los Angeles.
+other trademarks of Reach Out Los Angeles Inc..
