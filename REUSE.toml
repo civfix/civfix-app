@@ -1,0 +1,10 @@
+version = 1
+SPDX-PackageName = "civfix-app"
+SPDX-PackageSupplier = "Organization: Reach Out Los Angeles"
+SPDX-PackageDownloadLocation = "https://github.com/civfix/civfix-app"
+
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Reach Out Los Angeles and contributors"
+SPDX-License-Identifier = "AGPL-3.0-only"
