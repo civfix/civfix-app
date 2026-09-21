@@ -116,3 +116,16 @@ it from `repo.civfix.org`.
 Record a changeset while developing (`pnpm changeset`), apply it before merging
 (`pnpm changeset version`), and merging to `main` publishes it. Full runbook, including how each
 external consumer adopts the new version: [RELEASING.md](RELEASING.md).
+
+## License
+
+civfix-app is free software, licensed under the
+[GNU Affero General Public License, version 3 only](LICENSE). The apps built
+from this repository are additionally conveyed under the
+[App Store and Play distribution exception](LICENSE-EXCEPTIONS.md), because the
+store binaries bundle `packages/shared` and `packages/ui`. Every file is
+covered by the declaration in [REUSE.toml](REUSE.toml); there are no per-file
+license headers. Contributions are accepted under the
+[Contributor License Agreement](CLA.md) — see [CONTRIBUTING.md](CONTRIBUTING.md).
+civfix is a project of Reach Out Los Angeles Inc.; the civfix name and logos are its
+trademarks and are not covered by the license.

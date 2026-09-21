@@ -2,6 +2,7 @@
   "name": "community-web",
   "version": "1.2.0",
   "private": true,
+  "license": "AGPL-3.0-only",
   "description": "civfix public user web app: static-exported Next.js SPA over the civfix API.",
   "type": "module",
   "scripts": {

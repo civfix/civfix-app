@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "civfix consumer plane: the @civfix/shared contract, the @civfix/ui component set, the community web app and the community mobile app.",
-  "license": "UNLICENSED",
+  "license": "AGPL-3.0-only",
   "packageManager": "pnpm@9.12.0",
   "engines": {
     "node": ">=22",
