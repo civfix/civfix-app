@@ -10,14 +10,16 @@ export interface LegalDocumentVersion {
 
 const CURRENT_VERSION = "2026-09-16"
 const CURRENT_EFFECTIVE_AT = "2026-09-16T00:00:00.000Z"
+const TERMS_VERSION = "2026-09-21"
+const TERMS_EFFECTIVE_AT = "2026-09-21T00:00:00.000Z"
 const LEGAL_BASE_URL = "https://civfix.org/legal"
 
 const DOCUMENTS: Readonly<Record<LegalDocumentType, LegalDocumentVersion>> = {
   terms: {
     type: "terms",
-    version: CURRENT_VERSION,
-    sha256: "afa437255814c5fb39e75f7507304b7a2618aa1397bcdbe3d66129385515ca36",
-    effectiveAt: CURRENT_EFFECTIVE_AT,
+    version: TERMS_VERSION,
+    sha256: "a201a7c5c297d82daa7eaa3f6f28fb1eac4fa77b9cd3707a8ec9a82de0fb0daf",
+    effectiveAt: TERMS_EFFECTIVE_AT,
     url: `${LEGAL_BASE_URL}/terms`,
   },
   privacy: {

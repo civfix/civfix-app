@@ -261,12 +261,21 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>11. Intellectual property in civfix</h2>
+        <h2>11. Intellectual property and open source</h2>
         <p>
-          civfix, including its software, design, brand, and the &ldquo;civfix&rdquo; name and logo, is
-          owned by us and our licensors and is protected by intellectual-property laws. These Terms do
-          not grant you any right to our trademarks, branding, or software except the limited right to
-          use civfix as intended. Map data and tiles are © OpenStreetMap contributors and © CARTO.
+          The civfix software is free and open-source software. We license it to everyone, including
+          you, under the GNU Affero General Public License, version 3 (AGPL-3.0). Under that license
+          you may use, study, change and share the software, and anyone who offers a changed version
+          of it as a service must make their changes available under the same license. The complete
+          source code is published at the &ldquo;Source code&rdquo; link in the footer of this page
+          and in the app&rsquo;s Settings.
+        </p>
+        <p>
+          The license covers the software only. The &ldquo;civfix&rdquo; name and logo, our other
+          brand assets and our design elements are our trademarks and property and are not licensed
+          under the AGPL-3.0; these Terms grant you no right to use them except as needed to use
+          civfix as intended. Your own content stays yours under section 4. Map data and tiles are ©
+          OpenStreetMap contributors and © CARTO.
         </p>
       </section>
 
