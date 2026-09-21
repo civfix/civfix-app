@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process"
 import { createRequire } from "node:module"
 import { existsSync, realpathSync } from "node:fs"
 import { dirname } from "node:path"
@@ -66,6 +67,21 @@ const maplibreGlDir = dirname(require.resolve("maplibre-gl/package.json"))
 
 const sharedContractDir = dirname(require.resolve("@civfix/shared/package.json"))
 
+function resolveCommitSha() {
+  const fromCi = process.env.GITHUB_SHA
+  if (fromCi) return fromCi
+  try {
+    return execSync("git rev-parse HEAD", {
+      cwd: dirname(fileURLToPath(import.meta.url)),
+      stdio: ["ignore", "pipe", "ignore"],
+    })
+      .toString()
+      .trim()
+  } catch {
+    return ""
+  }
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Static SPA export: emits the shell + JS into ./out with no server runtime.
@@ -78,6 +94,9 @@ const nextConfig = {
   // Trailing slashes make the static export host cleanly on static file servers
   // (each route becomes a directory with an index.html).
   trailingSlash: true,
+  env: {
+    NEXT_PUBLIC_COMMIT_SHA: resolveCommitSha(),
+  },
   // @civfix/shared ships ESM + CJS (built dist) and @civfix/ui ships untranspiled .tsx SOURCE, both
   // as workspace packages, so Next must transpile both plus the React-Native stack
   // (react-native-web renders RN primitives on web).
