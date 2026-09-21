@@ -6,6 +6,7 @@ import type { LegalDocumentType } from "@civfix/shared"
 import { Wordmark } from "@/components/brand"
 
 import { LEGAL_ENTITY } from "./legal-entity"
+import { SOURCE } from "@/lib/source"
 
 export type LegalDocId = "terms" | "privacy" | "cookies" | "subprocessors"
 
@@ -90,7 +91,12 @@ export function LegalPage({ active, title, intro, children }: LegalPageProps) {
         </article>
 
         <footer className="legal-foot">
-          <span>© 2026 {LEGAL_ENTITY}. All rights reserved.</span>
+          <span>
+            © 2026 {LEGAL_ENTITY}. Free software:{" "}
+            <a href={SOURCE.url} target="_blank" rel="noreferrer noopener">
+              Source code (AGPL-3.0)
+            </a>
+          </span>
           <nav aria-label="Legal documents">
             {DOCS.map((doc) => (
               <Link key={doc.id} href={doc.href}>

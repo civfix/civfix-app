@@ -4,7 +4,7 @@ import * as React from "react"
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
 import { AppError } from "@civfix/shared"
 import { colorSchemes } from "@civfix/shared/tokens"
-import { ToastProvider, entryFromPath, useNavStore } from "@civfix/ui"
+import { ToastProvider, entryFromPath, setSourceCommit, useNavStore } from "@civfix/ui"
 import { I18nProvider, FALLBACK_LOCALE } from "@civfix/ui/i18n"
 import {
   ThemeProvider,
@@ -50,6 +50,8 @@ setAppearancePreferenceStore({
   set: (p) => useAppearanceStore.getState().setPreference(p),
   subscribe: (l) => useAppearanceStore.subscribe(l),
 })
+
+setSourceCommit(process.env.NEXT_PUBLIC_COMMIT_SHA ?? "")
 
 const webCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),

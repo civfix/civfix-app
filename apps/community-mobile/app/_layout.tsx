@@ -49,9 +49,10 @@ import {
   setBrandAboutPresenter,
   setOnboardingTourPresenter,
   setScanPresenter,
+  setSourceCommit,
   setWebOrigin,
 } from "@civfix/ui"
-import { CARTO_API_KEY, DONATE_BROWSER_MODE, WEB_ORIGIN } from "@/config"
+import { CARTO_API_KEY, DONATE_BROWSER_MODE, SOURCE_COMMIT, WEB_ORIGIN } from "@/config"
 import { nativeCamera, setCameraNavigator } from "@/lib/nativeCamera"
 import { nativeCalendarFile } from "@/lib/nativeCalendarFile"
 import { nativeClipboard } from "@/lib/nativeClipboard"
@@ -176,6 +177,7 @@ async function openInAppBrowser(url: string): Promise<void> {
 }
 
 setWebOrigin(WEB_ORIGIN)
+setSourceCommit(SOURCE_COMMIT)
 
 const mobileCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),
