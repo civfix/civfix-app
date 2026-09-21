@@ -23,7 +23,7 @@ export default function TermsPage() {
         <p>
           civfix is available as a native app for iOS and Android and as a web app in your browser.
           These Terms of Service (the &ldquo;Terms&rdquo;) are a binding agreement between you and{" "}
-          <strong>Reach Out Los Angeles</strong>, a registered 501(&zwnj;c)(3) nonprofit organization that
+          <strong>Reach Out Los Angeles Inc.</strong>, a registered 501(&zwnj;c)(3) nonprofit organization that
           operates civfix (&ldquo;Reach Out Los Angeles,&rdquo; &ldquo;civfix,&rdquo; &ldquo;we,&rdquo;
           &ldquo;us,&rdquo; or &ldquo;our&rdquo;). By creating an account, submitting
           a report, or otherwise using civfix, you agree to these Terms and to our{" "}
