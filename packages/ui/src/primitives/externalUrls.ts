@@ -10,6 +10,24 @@ export function webOrigin(): string {
   return configuredWebOrigin
 }
 
+export const SOURCE_REPO_URL = "https://github.com/civfix/civfix-app"
+
+const COMMIT_SHA = /^[0-9a-f]{7,40}$/i
+
+let configuredSourceCommit = ""
+
+export function setSourceCommit(commit: string): void {
+  configuredSourceCommit = COMMIT_SHA.test(commit) ? commit.toLowerCase() : ""
+}
+
+export function sourceCommit(): string {
+  return configuredSourceCommit
+}
+
+export function sourceUrl(): string {
+  return configuredSourceCommit ? `${SOURCE_REPO_URL}/tree/${configuredSourceCommit}` : SOURCE_REPO_URL
+}
+
 export const DONATE_URL = "https://reachoutla.org/help"
 
 export const TERMS_URL = `${WEB_ORIGIN}/legal/terms`

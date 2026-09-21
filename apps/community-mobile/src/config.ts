@@ -10,6 +10,7 @@ type Extra = {
     iosClientId?: string
   }
   cartoApiKey?: string
+  sourceCommit?: string
 }
 
 const extra = (Constants.expoConfig?.extra ?? {}) as Extra
@@ -21,6 +22,8 @@ export const API_URL: string = resolveApiUrl(extra.apiUrl, __DEV__)
 export const WEB_ORIGIN: string = resolveWebOrigin(API_URL)
 
 export const CARTO_API_KEY: string = extra.cartoApiKey ?? ""
+
+export const SOURCE_COMMIT: string = extra.sourceCommit ?? ""
 
 export const DONATE_BROWSER_MODE: DonateBrowserMode = resolveDonateBrowserMode(
   process.env.EXPO_PUBLIC_DONATE_BROWSER_MODE,
