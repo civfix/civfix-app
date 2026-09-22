@@ -145,6 +145,12 @@ describe("the carousel measures itself and lets the chart be the panel", () => {
     expect(CARD.match(/<BarChart/g) ?? [], "sign-ups per day and hours per event").toHaveLength(2)
   })
 
+  it("keeps the hours bars distinct when two events carry the same title", () => {
+    expect(CARD).toContain("bars={rows.map((row, index) => ({")
+    expect(CARD).toContain("key: `${index}:${row.key}`,")
+    expect(BAR_CHART).toContain("<View key={bar.key} style={styles.row}>")
+  })
+
   it("lists the impact numbers as labelled rows rather than mixed-unit bars", () => {
     expect(CARD).toContain("summaryImpactRows(data.activity)")
     expect(CARD).toContain("function StatRows({ rows }")

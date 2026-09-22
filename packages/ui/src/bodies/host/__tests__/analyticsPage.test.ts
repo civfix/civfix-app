@@ -123,9 +123,26 @@ describe("the all-events mode answers for the whole portfolio", () => {
   })
 
   it("lets a by-event row set the filter instead of leaving the page", () => {
-    expect(BODY).toContain("onPress={() => onPickEvent(row.key)}")
+    expect(BODY).toContain("onPress={() => onPickEvent(row)}")
     expect(BODY).toContain("const rows = data.byEvent.rows.slice(0, MAX_BY_EVENT_ROWS)")
     expect(BODY).toContain("const MAX_BY_EVENT_ROWS = 12")
+  })
+
+  it("resolves the tapped row to an event id rather than to its title", () => {
+    expect(BODY).toContain("const target = eventRowTarget(row, options)")
+    expect(BODY).toContain("setPicked(target.id)")
+    expect(BODY).toContain("setPickedLabel(target.title)")
+    expect(BODY).not.toContain("onPickEvent: (id: string) => void")
+  })
+
+  it("keeps the by-event list keys unique even when two events share a title", () => {
+    expect(BODY).toContain("key={`${index}:${row.key}`}")
+  })
+
+  it("names the filter from the row when the picker has not fetched that event", () => {
+    expect(BODY).toContain(
+      "(options.find((option) => option.id === picked)?.title ?? pickedLabel)",
+    )
   })
 
   it("answers a press on that row, not only a web hover", () => {

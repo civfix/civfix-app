@@ -148,6 +148,26 @@ export function pickerOptions(
     .map((event) => ({ id: event.id, title: event.title }))
 }
 
+const EVENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export function isEventId(key: string): boolean {
+  return EVENT_ID.test(key)
+}
+
+export function eventRowTarget(
+  row: BreakdownRow,
+  options: readonly AnalyticsPickerOption[],
+): AnalyticsPickerOption | null {
+  if (isEventId(row.key)) {
+    const known = options.find((option) => option.id === row.key)
+    return { id: row.key, title: known?.title ?? row.label }
+  }
+  const byTitle = options.find(
+    (option) => option.title === row.label || option.title === row.key,
+  )
+  return byTitle === undefined ? null : { id: byTitle.id, title: byTitle.title }
+}
+
 export function carouselPage(offsetX: number, pageWidth: number, pageCount: number): number {
   if (!Number.isFinite(offsetX) || !Number.isFinite(pageWidth) || pageWidth <= 0) return 0
   const last = Math.max(0, pageCount - 1)

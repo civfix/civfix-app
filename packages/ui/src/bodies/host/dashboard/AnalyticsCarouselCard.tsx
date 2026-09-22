@@ -315,8 +315,8 @@ function Panel({
           <EmptyChart width={width} label={t("card.hours_empty")} />
         ) : (
           <BarChart
-            bars={rows.map((row) => ({
-              key: row.key,
+            bars={rows.map((row, index) => ({
+              key: `${index}:${row.key}`,
               label: row.label,
               value: row.suppressed ? null : row.value,
               color: th.colors.accent,

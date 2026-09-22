@@ -16,8 +16,10 @@ import {
   busiestRows,
   comparisonVerdict,
   comparisonVisible,
+  eventRowTarget,
   funnelBars,
   hasSeriesData,
+  isEventId,
   presetDays,
   rangeSlice,
   ratePercent,
@@ -262,6 +264,54 @@ describe("what a glance-sized panel is allowed to plot", () => {
     expect(busiestRows([row("a", 1)])).toHaveLength(1)
     expect(busiestRows([])).toEqual([])
     expect(busiestRows([row("a", 1)], 0)).toEqual([])
+  })
+})
+
+describe("a by-event row drills down to one event, never to a title", () => {
+  const ID_A = "11111111-1111-4111-8111-111111111111"
+  const ID_B = "22222222-2222-4222-8222-222222222222"
+  const eventRow = (key: string, label: string) => ({
+    key,
+    label,
+    value: 1,
+    suppressed: false,
+  })
+
+  it("tells an event id from a title", () => {
+    expect(isEventId(ID_A)).toBe(true)
+    expect(isEventId(ID_A.toUpperCase())).toBe(true)
+    expect(isEventId("Test1")).toBe(false)
+    expect(isEventId("")).toBe(false)
+  })
+
+  it("keeps two same-titled events apart by id", () => {
+    const options = [
+      { id: ID_A, title: "Test1" },
+      { id: ID_B, title: "Test1" },
+    ]
+    expect(eventRowTarget(eventRow(ID_A, "Test1"), options)?.id).toBe(ID_A)
+    expect(eventRowTarget(eventRow(ID_B, "Test1"), options)?.id).toBe(ID_B)
+  })
+
+  it("prefers the picker's own title for an event it already knows", () => {
+    const target = eventRowTarget(eventRow(ID_A, "Stale Title"), [{ id: ID_A, title: "Beach" }])
+    expect(target).toEqual({ id: ID_A, title: "Beach" })
+  })
+
+  it("still filters on an id the picker's fetched pages do not carry", () => {
+    expect(eventRowTarget(eventRow(ID_A, "Beach"), [])).toEqual({ id: ID_A, title: "Beach" })
+  })
+
+  it("falls back to a title lookup when an older server keyed the row by title", () => {
+    const options = [{ id: ID_B, title: "Park Cleanup" }]
+    expect(eventRowTarget(eventRow("Park Cleanup", "Park Cleanup"), options)).toEqual({
+      id: ID_B,
+      title: "Park Cleanup",
+    })
+  })
+
+  it("declines rather than filtering on a title no hosted event answers to", () => {
+    expect(eventRowTarget(eventRow("Ghost Event", "Ghost Event"), [])).toBeNull()
   })
 })
 

@@ -53,6 +53,7 @@ import {
   arrivalXLabels,
   comparisonVerdict,
   comparisonVisible,
+  eventRowTarget,
   funnelBars,
   hasSeriesData,
   presetDays,
@@ -109,6 +110,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
   const { relative, justNow } = useRelativeTime()
 
   const [picked, setPicked] = useState<string | null>(id === "" ? null : id)
+  const [pickedLabel, setPickedLabel] = useState<string | null>(null)
   const [preset, setPreset] = useState<AnalyticsRangePreset | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerRect, setPickerRect] = useState<AnchorRect | null>(null)
@@ -139,7 +141,10 @@ export function EventAnalyticsBody({ id }: { id: string }) {
   const generatedAt = all ? (summary.data?.generatedAt ?? null) : (event.data?.generatedAt ?? null)
   const updatedAgo = generatedAt === null ? null : relative(generatedAt, now)
 
-  const pickedTitle = options.find((option) => option.id === picked)?.title ?? null
+  const pickedTitle =
+    picked === null
+      ? null
+      : (options.find((option) => option.id === picked)?.title ?? pickedLabel)
 
   const filters = (
     <View style={styles.filters}>
@@ -196,6 +201,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
           onPress: () => {
             setPickerOpen(false)
             setPicked(null)
+            setPickedLabel(null)
             setPreset(null)
           },
         },
@@ -206,6 +212,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
           onPress: () => {
             setPickerOpen(false)
             setPicked(option.id)
+            setPickedLabel(option.title)
             setPreset(null)
           },
         })),
@@ -254,8 +261,11 @@ export function EventAnalyticsBody({ id }: { id: string }) {
       <AllEventsMode
         data={summary.data}
         width={stackWidth}
-        onPickEvent={(eventId) => {
-          setPicked(eventId)
+        onPickEvent={(row) => {
+          const target = eventRowTarget(row, options)
+          if (target === null) return
+          setPicked(target.id)
+          setPickedLabel(target.title)
           setPreset(null)
         }}
       />,
@@ -288,7 +298,7 @@ function AllEventsMode({
 }: {
   data: HostAnalyticsSummaryResponse
   width: number
-  onPickEvent: (id: string) => void
+  onPickEvent: (row: BreakdownRow) => void
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -352,12 +362,12 @@ function AllEventsMode({
           <Text variant="caption">{t("page.by_event_empty")}</Text>
         ) : (
           <View style={styles.block}>
-            {rows.map((row) => (
+            {rows.map((row, index) => (
               <EventBarRow
-                key={row.key}
+                key={`${index}:${row.key}`}
                 row={row}
                 max={chartMax(rows.map((each) => (each.suppressed ? null : each.value)))}
-                onPress={() => onPickEvent(row.key)}
+                onPress={() => onPickEvent(row)}
               />
             ))}
           </View>
