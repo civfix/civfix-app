@@ -1,5 +1,26 @@
 # @civfix/shared
 
+## 0.52.0
+
+### Minor Changes
+
+- Forward-email templates become a real, validated, previewable system. `forward-template.ts` adds
+  `DEFAULT_FORWARD_SUBJECT_TEMPLATE` / `DEFAULT_FORWARD_BODY_TEMPLATE` (the built-in default as a
+  template string), `FORWARD_TEMPLATE_SAMPLE_VALUES` (the static sample every preview renders with),
+  `FORWARD_TEMPLATE_VARIABLE_NAMES`, `forwardTemplateIssues` / `describeForwardTemplateIssue`,
+  `templateUsesToken`, and `ForwardTemplateSubjectSchema` / `ForwardTemplateBodySchema`, which
+  `SaveContactsRequest` and `PatchJurisdictionRequest` now use - a template containing an unknown
+  `{token}` or any `{{double-brace}}` is rejected at the boundary. The palette drops `{reporterName}`
+  (the packet never names the reporter) and `{dept}` (no department is modelled). Three admin
+  endpoints: `getForwardTemplateDefault` (`GET /admin/mail/forward-template`),
+  `setForwardTemplateDefault` (`PUT /admin/mail/forward-template`) and `previewForwardTemplate`
+  (`POST /admin/mail/forward-template/preview`); registry 318 -> 321. `RouteReportRequest` drops
+  `contactEmailOverride` - a report is routed only to its jurisdiction's contact on file.
+  `admin/common.ts` adds `ADMIN_REPORT_STATUS_TRANSITIONS` + `canTransitionReportStatus`, the one
+  report status machine the backend enforces and the admin UI renders. `MailMessageDTO` gains
+  `delivery` (`pending | sent | failed | null`) and `ReportOutreach` gains an optional `sendFailed`. Versions 0.49.0-0.51.0 on the registry were published
+  from an unmerged branch and are skipped. See DECISIONS §47.
+
 ## 0.48.2
 
 ### Patch Changes

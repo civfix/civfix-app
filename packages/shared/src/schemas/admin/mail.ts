@@ -13,6 +13,9 @@ export const MailAttachmentSchema = z
   .strict()
 export type MailAttachment = z.infer<typeof MailAttachmentSchema>
 
+export const MailDeliverySchema = z.enum(["pending", "sent", "failed"])
+export type MailDelivery = z.infer<typeof MailDeliverySchema>
+
 export const MailMessageDTOSchema = z
   .object({
     id: z.string(),
@@ -25,6 +28,7 @@ export const MailMessageDTOSchema = z
     attachments: z.array(MailAttachmentSchema),
     // Set when the backend truncated a long mail body. Optional; schema is .strict() so it must be declared.
     truncated: z.boolean().optional(),
+    delivery: MailDeliverySchema.nullable().optional(),
   })
   .strict()
 export type MailMessageDTO = z.infer<typeof MailMessageDTOSchema>

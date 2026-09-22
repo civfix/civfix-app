@@ -83,10 +83,12 @@ export const ReportOutreachSchema = z
     status: ReportOutreachStatusSchema,
     /** The per-report mail thread id (so the admin can open the city conversation), or null. */
     threadId: z.string().nullable(),
-    /** The address the report was sent to (the resolved or overridden contact), or null. */
+    /** The address the report was sent to (the jurisdiction's contact on file), or null. */
     routedTo: z.string().email().nullable(),
     /** ISO timestamp of the (first) send to the jurisdiction, or null. */
     routedAt: z.string().nullable(),
+    /** True when the latest send attempt was rejected by the mail provider (0.52.0; a resend is allowed). */
+    sendFailed: z.boolean().optional(),
   })
   .strict()
 export type ReportOutreach = z.infer<typeof ReportOutreachSchema>
@@ -244,16 +246,15 @@ export type SendFollowupRequest = z.infer<typeof SendFollowupRequestSchema>
 
 /**
  * Approve a report and email it to its jurisdiction ("Approve & send to jurisdiction"). Sends the full
- * report packet (details + photos) to the resolved routing contact - or to `contactEmailOverride` when
- * the operator types a one-off address - opens/reuses a per-report mail thread (so the city's reply
- * auto-routes back onto this report), and advances the report toward `acknowledged`. Fails 422
- * (NOT_ROUTABLE) when there is neither a resolved contact nor an override.
+ * report packet (details + photos) to the jurisdiction's resolved routing contact, opens/reuses a
+ * per-report mail thread (so the city's reply auto-routes back onto this report), and advances the
+ * report toward `acknowledged` when it is still in a pre-routed status. Fails 422 (NOT_ROUTABLE) when
+ * the jurisdiction has no routing contact on file - there is no one-off destination; set the contact in
+ * Jurisdictions first.
  */
 export const RouteReportRequestSchema = z
   .object({
     id: z.string(),
-    /** A one-off override of the jurisdiction's resolved contact for THIS send (else the resolved one). */
-    contactEmailOverride: z.string().email().nullable().optional(),
     /** Optional operator note included in the email packet + the report timeline. */
     note: z.string().max(4000).optional(),
   })
