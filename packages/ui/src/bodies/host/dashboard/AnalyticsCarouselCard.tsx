@@ -32,6 +32,8 @@ const HEADER_HEIGHT = 30
 
 const CHART_HEIGHT = 132
 
+const X_LABEL_ROW = 14
+
 const HEAD_GAP = 8
 
 const PANEL_HEIGHT = HEADER_HEIGHT + HEAD_GAP + CHART_HEIGHT
@@ -265,7 +267,7 @@ function Panel({
             }))}
             xLabels={weeklyXLabels(daily, weekLabel)}
             width={width}
-            height={CHART_HEIGHT}
+            height={CHART_HEIGHT - X_LABEL_ROW}
             labelColor={th.colors.textSubtle}
             accessibilityLabel={t("card.signups_spark_a11y")}
           />
