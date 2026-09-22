@@ -22,6 +22,13 @@
 # `eas build:version:set -p ios` above the highest build already in App Store Connect: an unset
 # counter is silently seeded from app.config.js's ios.buildNumber, and a number App Store Connect
 # has already seen is only rejected at upload time, after the whole build.
+#
+# The user-facing version (`version` in app.config.js, CFBundleShortVersionString) is NOT managed by
+# EAS: once App Store Connect approves a version, every later upload must carry a strictly higher
+# one, and eas-cli's remote counter cannot bump it. So before spending a build this script asks
+# Apple's public lookup API which version is live (scripts/store-version-gate.mjs, no credential)
+# and refuses a version that is not above it. The lookup can lag a few hours behind an approval
+# and an unreachable endpoint only warns; the upload itself remains the authority.
 set -euo pipefail
 
 caller_pwd="$PWD"
@@ -74,6 +81,8 @@ if [ -z "$ipa" ]; then
   mkdir -p build
   ipa="build/civfix-${target}-$(date +%Y%m%d-%H%M%S).ipa"
 fi
+
+node scripts/store-version-gate.mjs
 
 echo "Building iOS ipa locally (profile: ${profile}) -> ${ipa}"
 eas build --platform ios --profile "$profile" --local --output "$ipa" ${eas_flags[@]+"${eas_flags[@]}"}

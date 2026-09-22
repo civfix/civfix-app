@@ -231,7 +231,8 @@ pnpm --filter community-mobile build:appstore     # App Store release build -> p
 
 One-time prereqs: Xcode + command-line tools, `brew install fastlane`, `npm install -g eas-cli`,
 `eas login`. Append `--no-submit` (e.g. `pnpm --filter community-mobile build:testflight --
---no-submit`) to just produce the ipa without uploading; the ipa lands in
+--no-submit`) to just produce the ipa without uploading (the live-version check below still runs
+first); the ipa lands in
 `apps/community-mobile/build/` (gitignored) unless `--output <path>` says otherwise. After the
 build the script reads the resolved config back out of the ipa (`EXConstants.bundle/app.config`)
 and refuses to upload one whose baked API URL is not what the profile promises. Cloud equivalent,
@@ -264,6 +265,20 @@ What CI needs, none of it in this repository:
   `eas build:version:set -p ios` from this directory. An unset counter is silently seeded from
   `ios.buildNumber` in `app.config.js`, and a number App Store Connect has already seen is only
   rejected at upload time, after the whole build.
+
+The build number is the only version EAS moves. The user-facing version (`version` in
+`app.config.js`, mirrored in `package.json`; `CFBundleShortVersionString`) is bumped by hand, and
+the moment matters: App Store Connect accepts any number of builds for a version until that version
+is approved, then rejects every further upload of it ("You've already submitted this version of the
+app"). So **the first PR after an App Store release bumps `version`** — `npm version patch
+--no-git-tag-version` in this directory moves `package.json`, then set the same value in
+`app.config.js` — or every push to `main` fails at upload time. `scripts/store-build.sh` runs
+`scripts/store-version-gate.mjs` before it builds: it reads the live version from Apple's public
+lookup API (no credential) and refuses a version that is not strictly above it, so a missed bump
+fails in seconds instead of after a half-hour build. The lookup can lag a few hours behind an
+approval, and when Apple's endpoint is unreachable the gate warns and lets the build proceed, so in
+either case the upload still has the final say. The version is also the
+OTA runtime version (`runtimeVersion.policy: appVersion`), so a bump starts a fresh update lineage.
 
 `app.config.js` pins `ios.appleTeamId` to the civfix Apple team (`WMDUV888LH`), so `expo prebuild`
 writes that `DEVELOPMENT_TEAM` into the Xcode project. EAS-managed signing overrides it for store
