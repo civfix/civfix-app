@@ -65,9 +65,9 @@ Add the org-signup endpoints to the client registry.
 ```
 
 A change that touches only `@civfix/ui`, the apps, docs or tooling needs no changeset — nothing is
-published for it. (`.changeset/config.json` has `privatePackages: { version: true, tag: false }`, so
-`changeset version` may still bump the private packages' versions and changelogs; only
-`@civfix/shared` is ever published or tagged.)
+published for it. (`.changeset/config.json` has `privatePackages: { version: false, tag: false }`, so
+`changeset version` leaves the private packages alone; only `@civfix/shared` is ever published or
+tagged.)
 
 ## 2. Pre-flight
 
@@ -89,7 +89,11 @@ This bumps `packages/shared/package.json`'s `"version"`, writes/extends its `CHA
 DELETES the consumed `.changeset/*.md` files. Review the diff, then commit it
 (`config.json` has `"commit": false`, so changesets does not commit for you) and merge to `main`.
 
-Do NOT hand-edit the version; let `changeset version` own it.
+Do NOT hand-edit the version; let `changeset version` own it. The one exception is a version the
+registry already holds from a commit main never released: `0.54.0` and `0.55.0` were published from
+the `feat/feed-and-polish-batch` branch and are kept, so main's next release is `0.56.0`.
+`scripts/check-shared-version.mjs` (run by CI on every PR and by the publish workflow) fails with the
+next free number; set `"version"` and the new `CHANGELOG.md` heading to it by hand.
 
 `.github/workflows/publish-shared.yml` then runs on the `main` push:
 
@@ -97,11 +101,17 @@ Do NOT hand-edit the version; let `changeset version` own it.
   (the Verdaccio `ci-publisher` token; never echoed) and restores `.npmrc` at the end,
 - `pnpm install --frozen-lockfile`,
 - `pnpm --filter @civfix/shared build` (tsup -> `dist`),
-- `pnpm changeset publish` — publishes only when the version is ahead of the registry,
-- `git push origin --tags`, so each release is findable by its per-package tag
-  (`@civfix/shared@X.Y.Z`).
+- `node scripts/check-shared-version.mjs --release` — the check above, then it creates and pushes the
+  `@civfix/shared@X.Y.Z` tag on the main commit BEFORE anything is published, so a failed tag push
+  stops the run and a failed publish is simply retried by the next main push,
+- `pnpm changeset publish --no-git-tag` — publishes only when the version is ahead of the registry.
 
-There is no root version and no `vX.Y.Z` tag — versions and tags are package-scoped.
+The contract's versions and tags are package-scoped (`@civfix/shared@X.Y.Z`). A `vX.Y.Z` tag is
+something else entirely: a published `vX.Y.Z` GitHub release is the PRODUCTION deploy of this repo's
+web app, and it publishes nothing to the registry.
+
+The workflow only runs on `main`; a manual run on any other branch is skipped. A branch never
+publishes a real version — it uses a snapshot (next section).
 
 Verify:
 
@@ -109,6 +119,32 @@ Verify:
 gh run watch     # wait for "publish @civfix/shared" to go green
 npm view @civfix/shared version --registry https://repo.civfix.org/
 ```
+
+## Snapshot of an unmerged branch
+
+When a civfix-backend or civfix-admin branch needs contract changes that have not merged yet:
+
+```sh
+gh workflow run publish-shared-snapshot.yml --ref <your-civfix-app-branch>
+gh run watch    # the run summary prints the version
+```
+
+It publishes `<package.json version>-b-<branch slug>.g<short sha>` (e.g.
+`0.53.0-b-feat-feed-and-polish-batch.gc8c8f7e`) under the `snapshot` dist-tag. Nothing is committed and
+no tag is pushed. A caret range never matches a prerelease, so the consumer branch pins the exact
+version:
+
+```sh
+#   "@civfix/shared": "0.53.0-b-feat-feed-and-polish-batch.gc8c8f7e"
+pnpm install
+```
+
+The branch must contain this workflow (a manual run uses the branch's own copy of the file), so a
+branch cut before it existed needs `git merge origin/main` first. Re-run it after each push to the
+civfix-app branch that the consumer needs (a re-run on an unchanged
+commit fails: that version already exists). Before the consumer
+branch merges, the civfix-app PR merges, main publishes the real version, and the consumer moves back
+to a caret range (step 4). A consumer PR must never merge while it pins a snapshot.
 
 ## 4. Adopt the new version in each external consumer
 
@@ -142,6 +178,7 @@ up to date.
 - [ ] Tree clean; `pnpm build && pnpm typecheck && pnpm lint && pnpm test` green across the workspace.
 - [ ] Packaged shape sanity-checked if `files` / `exports` / tsup entries changed.
 - [ ] `pnpm changeset version` run; the version bump + CHANGELOG entry reviewed and committed.
+- [ ] No consumer branch still pins a snapshot version.
 - [ ] Merged to `main`; `publish-shared.yml` green; `npm view @civfix/shared version --registry
       https://repo.civfix.org/` shows the new version and the `@civfix/shared@X.Y.Z` tag exists.
 - [ ] Every external consumer bumped (civfix-backend x2 manifests, civfix-admin, the gov plane),
