@@ -29,13 +29,16 @@ const TITLE_MAX = 90
 const EVENT_TITLE_MAX = 80
 const DESCRIPTION_MAX = 200
 
-export type PreviewKind = "report" | "event" | "person" | "signup" | "org"
+export type PreviewKind = "report" | "event" | "person" | "signup" | "org" | "post"
 
 export interface LinkPreview {
   title: string
   description: string
   image: string
   imageIsBrand: boolean
+  imageWidth: number | null
+  imageHeight: number | null
+  card: "summary" | "summary_large_image"
   url: string
   origin: string
   type: "website" | "article" | "profile"
@@ -57,6 +60,9 @@ export function defaultPreview(context: PreviewContext): LinkPreview {
     description: DEFAULT_DESCRIPTION,
     image: brandImageUrl(context.origin),
     imageIsBrand: true,
+    imageWidth: null,
+    imageHeight: null,
+    card: "summary_large_image",
     url: context.url,
     origin: context.origin,
     type: "website",
@@ -109,18 +115,46 @@ function finishDescription(parts: readonly (string | null | undefined)[]): strin
   return clamp(joinParts(parts), DESCRIPTION_MAX)
 }
 
+const ON_SITE_SUFFIX = ` on ${SITE_NAME}`
+
+function onSite(headline: string): string {
+  return `${headline}${ON_SITE_SUFFIX}`
+}
+
+export interface MediaSlideInput {
+  kind?: string | null
+  status?: string | null
+  url?: string | null
+  thumbUrl?: string | null
+  width?: number | null
+  height?: number | null
+}
+
+interface PickedImage {
+  url: string
+  width: number | null
+  height: number | null
+}
+
+export function firstCarouselImage(
+  media: readonly MediaSlideInput[] | null | undefined,
+): PickedImage | null {
+  const slide = (media ?? []).find((item) => item.status === "ready")
+  if (!slide) return null
+  if (isPublicMediaUrl(slide.thumbUrl)) return { url: slide.thumbUrl, width: null, height: null }
+  if (slide.kind !== "image" || !isPublicMediaUrl(slide.url)) return null
+  const { width, height } = slide
+  const sized = typeof width === "number" && width > 0 && typeof height === "number" && height > 0
+  return { url: slide.url, width: sized ? width : null, height: sized ? height : null }
+}
+
 export interface ReportPreviewInput {
   category?: string | null
   type?: string | null
   status?: string | null
   visibility?: string | null
   cityName?: string | null
-  media?: readonly {
-    kind?: string | null
-    status?: string | null
-    url?: string | null
-    thumbUrl?: string | null
-  }[] | null
+  media?: readonly MediaSlideInput[] | null
 }
 
 export interface EventPreviewInput {
@@ -141,15 +175,6 @@ export interface PersonPreviewInput {
 
 function isPublicVisibility(visibility: string | null | undefined): boolean {
   return visibility === undefined || visibility === null || visibility === "public"
-}
-
-function reportImage(input: ReportPreviewInput): string | null {
-  for (const item of input.media ?? []) {
-    if (item.kind !== "image" || item.status !== "ready") continue
-    if (isPublicMediaUrl(item.thumbUrl)) return item.thumbUrl
-    if (isPublicMediaUrl(item.url)) return item.url
-  }
-  return null
 }
 
 export function previewForReport(
@@ -173,12 +198,15 @@ export function previewForReport(
     finishDescription([statusLabel ? `${kindLabel} — ${statusLabel}` : kindLabel, cityName]) ||
     DEFAULT_DESCRIPTION
 
-  const image = reportImage(input)
+  const image = firstCarouselImage(input.media)
   return {
     title: title || DEFAULT_TITLE,
     description,
-    image: image ?? brandImageUrl(context.origin),
+    image: image?.url ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
+    imageWidth: image?.width ?? null,
+    imageHeight: image?.height ?? null,
+    card: "summary_large_image",
     url: context.url,
     origin: context.origin,
     type: "article",
@@ -225,6 +253,9 @@ export function previewForEvent(
     description,
     image: cover ?? brandImageUrl(context.origin),
     imageIsBrand: cover === null,
+    imageWidth: null,
+    imageHeight: null,
+    card: "summary_large_image",
     url: context.url,
     origin: context.origin,
     type: "article",
@@ -250,6 +281,9 @@ export function previewForPerson(
     description,
     image: image ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
+    imageWidth: null,
+    imageHeight: null,
+    card: "summary_large_image",
     url: context.url,
     origin: context.origin,
     type: "profile",
@@ -298,6 +332,9 @@ export function previewForSignupPage(
     description,
     image: cover ?? brandImageUrl(context.origin),
     imageIsBrand: cover === null,
+    imageWidth: null,
+    imageHeight: null,
+    card: "summary_large_image",
     url: context.url,
     origin: context.origin,
     type: "article",
@@ -350,9 +387,89 @@ export function previewForOrganization(
     description: description || DEFAULT_DESCRIPTION,
     image: image ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
+    imageWidth: null,
+    imageHeight: null,
+    card: "summary_large_image",
     url: context.url,
     origin: context.origin,
     type: "profile",
+    noindex: false,
+  }
+}
+
+interface PostBylineInput {
+  name?: string | null
+  handle?: string | null
+  deleted?: boolean | null
+}
+
+interface PostSubjectInput {
+  kind?: string | null
+  body?: string | null
+  deleted?: boolean | null
+  author?: PostBylineInput | null
+  organization?: { name?: string | null; slug?: string | null } | null
+  media?: readonly MediaSlideInput[] | null
+  report?: { title?: string | null; thumbUrl?: string | null } | null
+  event?: { title?: string | null } | null
+}
+
+export interface PostPreviewInput extends PostSubjectInput {
+  repostOf?: PostSubjectInput | null
+}
+
+function bylineOf(subject: PostSubjectInput): string | null {
+  const org = subject.organization
+  if (org?.name) {
+    const name = oneLine(org.name)
+    return org.slug ? `${name} (@${oneLine(org.slug)})` : name
+  }
+  const author = subject.author
+  if (!author || author.deleted || !author.name) return null
+  const name = oneLine(author.name)
+  const handle = author.handle ? oneLine(author.handle).replace(/^@/, "") : ""
+  return handle ? `${name} (@${handle})` : name
+}
+
+function attachmentThumb(subject: PostSubjectInput): PickedImage | null {
+  const thumb = subject.report?.thumbUrl
+  return isPublicMediaUrl(thumb) ? { url: thumb, width: null, height: null } : null
+}
+
+export function previewForPost(
+  input: PostPreviewInput,
+  context: PreviewContext,
+): LinkPreview | null {
+  if (input.deleted || input.author?.deleted) return null
+  const isRepost =
+    input.kind === "repost" ||
+    (!oneLine(input.body ?? "") && !!input.repostOf && (input.media ?? []).length === 0)
+  const subject = isRepost ? input.repostOf : input
+  if (!subject || subject.deleted) return null
+  const byline = bylineOf(subject)
+  if (!byline) return null
+
+  const body = clamp(subject.body ?? "", DESCRIPTION_MAX)
+  const attached = subject.report?.title ?? subject.event?.title ?? ""
+  const description = body || (attached ? clamp(attached, DESCRIPTION_MAX) : "") || DEFAULT_DESCRIPTION
+
+  const quoted = !isRepost && input.repostOf && !input.repostOf.deleted ? input.repostOf : null
+  const image =
+    firstCarouselImage(subject.media) ??
+    attachmentThumb(subject) ??
+    (quoted ? (firstCarouselImage(quoted.media) ?? attachmentThumb(quoted)) : null)
+
+  return {
+    title: onSite(clamp(byline, TITLE_MAX)),
+    description,
+    image: image?.url ?? brandImageUrl(context.origin),
+    imageIsBrand: image === null,
+    imageWidth: image?.width ?? null,
+    imageHeight: image?.height ?? null,
+    card: "summary_large_image",
+    url: context.url,
+    origin: context.origin,
+    type: "article",
     noindex: false,
   }
 }
@@ -414,7 +531,13 @@ export function isManagedLink(rel: string | null | undefined): boolean {
 
 export function documentTitle(preview: LinkPreview): string {
   const suffix = ` · ${SITE_NAME}`
-  if (preview.title === SITE_NAME || preview.title.endsWith(suffix)) return preview.title
+  if (
+    preview.title === SITE_NAME ||
+    preview.title.endsWith(suffix) ||
+    preview.title.endsWith(ON_SITE_SUFFIX)
+  ) {
+    return preview.title
+  }
   return `${preview.title}${suffix}`
 }
 
@@ -440,6 +563,11 @@ function imageTags(preview: LinkPreview): readonly string[] {
       meta("property", "og:image:width", String(BRAND_IMAGE_WIDTH)),
       meta("property", "og:image:height", String(BRAND_IMAGE_HEIGHT)),
     )
+  } else if (preview.imageWidth && preview.imageHeight) {
+    tags.push(
+      meta("property", "og:image:width", String(preview.imageWidth)),
+      meta("property", "og:image:height", String(preview.imageHeight)),
+    )
   }
   tags.push(meta("property", "og:image:alt", preview.title))
   return tags
@@ -456,7 +584,7 @@ export function metaTagsHtml(preview: LinkPreview): string {
     meta("property", "og:title", preview.title),
     meta("property", "og:description", preview.description),
     ...imageTags(preview),
-    meta("name", "twitter:card", "summary_large_image"),
+    meta("name", "twitter:card", preview.card),
     meta("name", "twitter:title", preview.title),
     meta("name", "twitter:description", preview.description),
     meta("name", "twitter:image", preview.image),

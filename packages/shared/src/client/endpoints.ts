@@ -1398,7 +1398,7 @@ export const coreEndpoints = {
     path: "/posts/:id",
     request: null,
     response: GetPostResponseSchema,
-    auth: "required",
+    auth: "optional",
     csrf: false,
     version: "v1",
   }),

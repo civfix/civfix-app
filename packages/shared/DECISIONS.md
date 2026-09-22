@@ -1939,3 +1939,15 @@ implements `GET /me/hosted-events/analytics/summary` and must move
 asserts it. civfix-app adopts 0.55.0 to call the endpoint and to ship the funnel's new first step;
 civfix-admin and civfix-govt-web bump with the routine version propagation and call nothing new. No
 migration — every number here is aggregated from tables that already exist.
+
+## 55. A public post is guest-readable (0.55.1)
+
+`getPost` — `GET /posts/:id` — moves from `auth: "required"` to `auth: "optional"`, mirroring
+`getReport` and `getProfile`. A signed-out read of a PUBLIC post returns the ordinary `PostDTO`
+with every viewer flag false (the server reads it as `NIL_VIEWER_ID`, exactly as the guest feed
+does). A hidden or deleted post is a 404 byte-identical to an unknown id for every viewer, signed
+in or not — never a 401/403 that would confirm it exists. The consumer is the web edge preview of
+`/post/:id` (civfix-app `apps/community-web/functions/post`), which only ever makes guest reads.
+No schema changes; the typed client already attaches credentials for any `auth !== "public"`
+endpoint, so no call site changes on the wire. Delivery set: civfix-backend `services/api` serves
+the route to guests; `services/media-worker` and civfix-admin adopt the patch in range.

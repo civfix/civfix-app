@@ -1,3 +1,12 @@
+import {
+  HANDLE_REGEX,
+  ORG_SLUG_MAX,
+  ORG_SLUG_MIN,
+  PAGE_SLUG_MAX,
+  PAGE_SLUG_MIN,
+  REPORT_TYPE_CODE,
+} from "@civfix/shared"
+
 import { PERVASIVE_HEADERS } from "../src/lib/edge-headers"
 import {
   PRODUCTION_SITE_URL,
@@ -10,12 +19,14 @@ import {
   previewForEvent,
   previewForOrganization,
   previewForPerson,
+  previewForPost,
   previewForReport,
   previewForSignupPage,
   type EventPreviewInput,
   type LinkPreview,
   type OrganizationPreviewInput,
   type PersonPreviewInput,
+  type PostPreviewInput,
   type PreviewContext,
   type PreviewKind,
   type ReportPreviewInput,
@@ -42,7 +53,6 @@ export interface PreviewDeps {
   rewrite(shell: Response, preview: LinkPreview): Response
 }
 
-export const ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/
 export const API_TIMEOUT_MS = 1500
 export const PREVIEW_CACHE_TTL_SEC = 300
 export const PREVIEW_NEGATIVE_CACHE_TTL_SEC = 60
@@ -56,12 +66,28 @@ const ALLOWED_API_HOSTNAMES: readonly string[] = ["api.civfix.org", "api.civfix.
 
 export const HTML_CONTENT_TYPE = "text/html; charset=utf-8"
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+const REPORT_REF = new RegExp(`^(?:${Object.values(REPORT_TYPE_CODE).join("|")})-\\d{1,6}-\\d{6}$`)
+const EVENT_REF = /^EVENT-\d{1,6}-\d{6}$/
+const PAGE_SLUG = new RegExp(`^(?=.{${PAGE_SLUG_MIN},${PAGE_SLUG_MAX}}$)[a-z0-9]+(?:-[a-z0-9]+)*$`)
+const ORG_SLUG = new RegExp(`^(?=.{${ORG_SLUG_MIN},${ORG_SLUG_MAX}}$)[a-z0-9]+(?:-[a-z0-9]+)*$`)
+
+export const ID_PATTERNS: Record<PreviewKind, readonly RegExp[]> = {
+  report: [UUID, REPORT_REF],
+  event: [UUID, EVENT_REF, PAGE_SLUG],
+  person: [UUID, HANDLE_REGEX],
+  signup: [PAGE_SLUG],
+  org: [ORG_SLUG],
+  post: [UUID],
+}
+
 export const SHELL_PATH: Record<PreviewKind, string> = {
   report: "/pin/_/",
   event: "/cleanups/_/",
   person: "/people/_/",
   signup: "/e/_/",
   org: "/orgs/_/",
+  post: "/post/_/",
 }
 
 export const BROWSE_PATH: Record<PreviewKind, string> = {
@@ -70,6 +96,7 @@ export const BROWSE_PATH: Record<PreviewKind, string> = {
   person: "/__spa/people/",
   signup: "/e/_/",
   org: "/orgs/_/",
+  post: "/post/_/",
 }
 
 export const CANONICAL_PREFIX: Record<PreviewKind, string> = {
@@ -78,6 +105,7 @@ export const CANONICAL_PREFIX: Record<PreviewKind, string> = {
   person: "/people/",
   signup: "/e/",
   org: "/orgs/",
+  post: "/post/",
 }
 
 export const API_PREFIX: Record<PreviewKind, string> = {
@@ -86,6 +114,7 @@ export const API_PREFIX: Record<PreviewKind, string> = {
   person: "/v1/people/",
   signup: "/v1/pages/",
   org: "/v1/orgs/by-slug/",
+  post: "/v1/posts/",
 }
 
 export type PreviewOutcome = "found" | "missing" | "transient"
@@ -96,11 +125,12 @@ export type PreviewRoute =
   | { action: "shell" }
   | { action: "preview"; id: string }
 
-export function isValidPreviewId(id: string): boolean {
-  return ID_PATTERN.test(id)
+export function isValidPreviewId(kind: PreviewKind, id: string): boolean {
+  return ID_PATTERNS[kind].some((pattern) => pattern.test(id))
 }
 
 export function parsePreviewRoute(
+  kind: PreviewKind,
   method: string,
   raw: string | string[] | undefined,
 ): PreviewRoute {
@@ -108,7 +138,7 @@ export function parsePreviewRoute(
   const segments = (Array.isArray(raw) ? raw : raw ? [raw] : []).filter((part) => part.length > 0)
   if (segments.length === 0) return { action: "browse" }
   const id = segments[0] as string
-  if (segments.length > 1 || !isValidPreviewId(id)) return { action: "shell" }
+  if (segments.length > 1 || !isValidPreviewId(kind, id)) return { action: "shell" }
   return { action: "preview", id }
 }
 
@@ -234,7 +264,7 @@ export function resolveEntityId(kind: PreviewKind, payload: unknown, fallback: s
       : kind === "signup" || kind === "org"
         ? root?.slug
         : root?.id
-  return typeof raw === "string" && isValidPreviewId(raw) ? raw : fallback
+  return typeof raw === "string" && isValidPreviewId(kind, raw) ? raw : fallback
 }
 
 export function previewContextFor(
@@ -257,6 +287,7 @@ export function buildPreview(
   if (kind === "event") return previewForEvent(payload as EventPreviewInput, context)
   if (kind === "signup") return previewForSignupPage(payload as SignupPagePreviewInput, context)
   if (kind === "org") return previewForOrganization(payload as OrganizationPreviewInput, context)
+  if (kind === "post") return previewForPost(payload as PostPreviewInput, context)
   const profile = (payload as { profile?: unknown }).profile
   if (!profile || typeof profile !== "object") return null
   return previewForPerson(profile as PersonPreviewInput, context)
@@ -330,7 +361,7 @@ export async function runPreview(
   deps: PreviewDeps,
 ): Promise<Response> {
   const { request, env } = context
-  const route = parsePreviewRoute(request.method, context.params.path)
+  const route = parsePreviewRoute(kind, request.method, context.params.path)
 
   if (route.action === "passthrough") {
     return withPervasiveHeaders(await env.ASSETS.fetch(request))

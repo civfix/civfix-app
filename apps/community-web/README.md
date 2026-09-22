@@ -378,10 +378,10 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    preview image - and `public/_headers` pins `Content-Type: image/png` on both files so iMessage
    gets one un-redirected image response.
 2. **Per-entity previews at the edge.** The export is static, so this app's Pages Functions
-   (`apps/community-web/functions/{pin,cleanups,people,e,orgs}/[[path]].ts` - all paths below are
+   (`apps/community-web/functions/{pin,cleanups,people,e,orgs,post}/[[path]].ts` - all paths below are
    relative to this app dir, which is also the cwd `wrangler pages deploy` runs in) fetch the shell
    from `env.ASSETS`, call the PUBLIC guest API (`/v1/reports/:id`, `/v1/cleanups/:id`,
-   `/v1/people/:id`, ...) and rewrite `head > title` +
+   `/v1/people/:id`, `/v1/posts/:id`, ...) and rewrite `head > title` +
    the meta tags. The split is deliberate: `functions/_preview-core.ts` holds the whole security
    boundary as plain functions (route parsing, id validation, upstream request construction,
    fallback policy, cache key/TTL, header re-application) and is unit-tested in node
@@ -389,8 +389,8 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    `functions/_preview.ts` is only the `HTMLRewriter` glue, injected as `deps.rewrite`.
    Only `onRequestGet` is exported, so HEAD/POST/OPTIONS have no handler and Cloudflare passes them
    straight to the asset server (`parsePreviewRoute` re-asserts GET-only anyway).
-   `public/_routes.json` limits Function invocation to `/pin/*`, `/cleanups/*`, `/people/*`, `/e/*`
-   and `/orgs/*` (with
+   `public/_routes.json` limits Function invocation to `/pin/*`, `/cleanups/*`, `/people/*`, `/e/*`,
+   `/orgs/*` and `/post/*` (with
    `/cleanups/` and `/people/` excluded so the browse pages are never intercepted -
    `scripts/cf-pages-postbuild.mjs` fails the build if a colliding browse route is included but not
    excluded). Cloudflare does NOT apply `_headers` to Function responses, so
@@ -427,14 +427,21 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    environments - without it a staging negative entry could be replayed for a live prod url. The
    negative entry stores the outcome (`missing` / `transient`) so a cache replay makes the same
    noindex decision as the original fetch.
-4. **Ids.** Only a single path segment matching `/^[a-z0-9][a-z0-9_-]{0,63}$/` (the shape of the
-   API's uuid primary keys) is ever previewed. Anything else - a dot, uppercase, 65+ chars,
-   `..%2F`, a nested route such as `/pin/<id>/edit` - short-circuits to the plain SPA shell and
-   never reaches the API.
+4. **Ids.** Only a single path segment matching one of its kind's id shapes
+   (`ID_PATTERNS` in `functions/_preview-core.ts`, every one anchored and length-bounded) is ever
+   previewed: report -> a uuid or a reference code (`GR-12-000001`, type codes from
+   `REPORT_TYPE_CODE`); event -> a uuid, an `EVENT-12-000045` reference code or a page slug;
+   person -> a uuid or a handle (`HANDLE_REGEX`, mixed case allowed); org -> an org slug; signup ->
+   a page slug; post -> a uuid. The id is passed upstream exactly as shared, never lowercased: the
+   API matches reference codes case-sensitively, so `gr-12-000001` is not a report id and gets the
+   plain shell. Anything else - a dot, a wrong-case code, an over-long slug, `..%2F`, a nested route
+   such as `/pin/<id>/edit` - short-circuits to the plain SPA shell and never reaches the API.
 5. **Mapping** (pure + unit-tested in `src/lib/link-preview.ts`): report -> title and description
    are `REPORT_TYPE_LABELS`/`REPORT_CATEGORY_LABELS`, `REPORT_STATUS_LABELS` and the coarse
    `cityName` only (`Graffiti · Los Angeles, CA` / `Graffiti — In progress · Los Angeles, CA`);
-   image = the first `ready` image whose URL is an UNSIGNED https URL, else the brand image.
+   image = the FIRST `ready` slide of the carousel (`firstCarouselImage`): its thumbnail, else the
+   full image (with its width/height) when it is an image with no thumbnail, each only as an
+   UNSIGNED https URL; a slide that has neither is the brand image - never slide two.
    Event -> the event `title` (its public name, capped at 80 chars) + the schedule formatted in
    `America/Los_Angeles` + the fixed line `A volunteer event on civfix`. Person -> `Name (@handle)`
    + `On civfix` + a public avatar. `og:url`, `rel=canonical`, `og:image` and the icon links are
@@ -457,15 +464,17 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    A preview NEVER carries a street address (`addr` / `address`), coordinates, an email, or any
    viewer-specific field. Non-public reports (`visibility !== "public"`) and deleted accounts get
    the defaults, never a preview. Presigned media URLs are refused so no signed token is baked into
-   HTML that is cached at the edge. Posts (`/post/:id`) are deliberately NOT previewed: `getPost`
-   is `auth: "required"`, so there is no guest-readable payload to build one from.
+   HTML that is cached at the edge. Posts (`/post/:id`) are previewed from `GET /v1/posts/:id`,
+   which serves a PUBLIC post to a guest; a hidden or deleted post is a 404 there, so it unfurls as
+   the default card.
 7. **Open decisions (follow-ups, not implemented).**
    - Whether `/people/<id>` previews should ship `robots: noindex` (a public profile card is
      shareable but arguably should not be search-indexed) - needs a privacy-policy call.
    - Whether the Function needs its own rate-limit bucket (a shared-secret header from the Function
      to the API so `/v1/*` can meter edge-originated preview fetches separately from residents).
 8. **Verify after deploy:** `curl -sL https://civfix.org/pin/<id> | grep -i 'og:\|<title'` (any UA works;
-   the rewrite is UA-independent), then the Twitter/X card validator, Discord (paste the link) and
+   the rewrite is UA-independent), the same for a reference code
+   (`curl -sL https://civfix.org/pin/GR-12-000001`) and a post (`curl -sL https://civfix.org/post/<uuid>`), then the Twitter/X card validator, Discord (paste the link) and
    Slack's unfurl. For the Apple/WhatsApp path also curl as their crawlers -
    `-A 'facebookexternalhit/1.1 Facebot Twitterbot/1.0'` (iMessage) and `-A 'WhatsApp/2.23'` - and
    confirm `curl -sI https://civfix.org/og.png` answers `200` + `content-type: image/png` with no
