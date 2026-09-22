@@ -100,9 +100,9 @@ export function AreaLineChart({
       </Svg>
       {xTicks && xTicks.length > 0 ? (
         <View style={[styles.ticks, { width }]}>
-          {xTicks.map((tick) => (
+          {xTicks.map((tick, index) => (
             <Text
-              key={tick.label}
+              key={`${index}:${tick.label}`}
               variant="caption"
               numberOfLines={1}
               style={[styles.tick, { color: labelColor, left: xToPixels(tick.x, xMin, xMax, width) }]}

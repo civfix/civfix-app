@@ -4,6 +4,7 @@ import { test } from "node:test"
 import { isInternalLink } from "../src/lib/links.ts"
 import { bridgeKey, nativeBridgeKey, BRIDGE_ROUTE_NAMES } from "../src/lib/navBridge.ts"
 import { shellHostsEntries } from "../src/lib/internalHref.ts"
+import { threadEntryRoute } from "../src/lib/threadEntryRoutes.ts"
 
 const adapter = readFileSync(new URL("../src/components/MobileNavAdapter.tsx", import.meta.url), "utf8")
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
@@ -19,7 +20,9 @@ const NOTIFICATION_LINKS = [
   "/cleanups/c1/ticket/s1",
   "/cleanups/c1/announcements",
   "/cleanups/c1/announcements/a1",
+  "/cleanups/c1/analytics",
   "/orgs/acme",
+  "/orgs/acme/manage",
   "/people/u1",
   "/post/p1",
   "/reports",
@@ -136,6 +139,24 @@ test("an event push that names a host surface lands in a shell, not on a native 
       route,
     )
     assert.equal(shellHostsEntries({ name: route }), true, route)
+  }
+})
+
+test("those same shell surfaces are push-capable, so a tap from inside a thread stacks", () => {
+  const PUSHABLE = [
+    { entry: { kind: "announcements", id: "c1" } as const, pathname: "/cleanups/[id]/announcements" },
+    {
+      entry: { kind: "announcement", id: "c1", announcementId: "a1" } as const,
+      pathname: "/cleanups/[id]/announcements/[announcementId]",
+    },
+    { entry: { kind: "event-analytics", id: "c1" } as const, pathname: "/cleanups/[id]/analytics" },
+    { entry: { kind: "org-manage", slug: "acme" } as const, pathname: "/orgs/[slug]/manage" },
+  ]
+  for (const { entry, pathname } of PUSHABLE) {
+    const route = threadEntryRoute(entry)
+    assert.notEqual(route, null, `${entry.kind} still tears the stack down`)
+    assert.equal(route!.pathname, pathname)
+    assert.equal(shellHostsEntries({ name: pathname.replace(/^\//, "") }), true, pathname)
   }
 })
 

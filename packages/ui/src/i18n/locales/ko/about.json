@@ -4,6 +4,8 @@
   "close": "닫기",
   "support_civfix": "civfix 후원하기",
   "support_civfix_a11y": "Reach Out Los Angeles를 통해 civfix 후원하기",
+  "api_host": "API: {{host}} (베타)",
+  "api_host_a11y": "베타 빌드 — {{host}} API에 연결됨",
   "legal": {
     "terms": "이용약관",
     "terms_a11y": "이용약관",

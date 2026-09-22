@@ -64,7 +64,7 @@ function websiteLabel(href: string): string {
   }
 }
 
-function LoadingPage() {
+export function OrgPageLoading() {
   const { t } = useT("host-org")
   return (
     <OrgPageState busy title={t("public.loading_title", { defaultValue: "Loading" })}>
@@ -81,7 +81,7 @@ export function OrgPageView() {
     setSource(orgSlugFromPath(window.location.pathname))
   }, [])
 
-  if (source === null) return <LoadingPage />
+  if (source === null) return <OrgPageLoading />
   if (source.kind !== "slug") {
     return (
       <OrgPageState
@@ -103,7 +103,7 @@ function OrgDocument({ slug }: { slug: string }) {
   const query = useOrganization(slug)
   const { t } = useT("host-org")
 
-  if (query.isPending) return <LoadingPage />
+  if (query.isPending) return <OrgPageLoading />
 
   if (query.isError || !query.data) {
     const code = query.isError ? toAppError(query.error).code : ErrorCode.NOT_FOUND

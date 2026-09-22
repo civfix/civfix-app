@@ -4,7 +4,7 @@ import * as React from "react"
 
 import { HomeShell } from "@/components/home/home-shell"
 
-import { OrgPageView } from "./org-page-view"
+import { OrgPageLoading, OrgPageView } from "./org-page-view"
 import { isOrgManagePath } from "./org-page-slug"
 
 export function OrgRoute() {
@@ -14,6 +14,6 @@ export function OrgRoute() {
     setManage(isOrgManagePath(window.location.pathname))
   }, [])
 
-  if (manage === null) return null
+  if (manage === null) return <OrgPageLoading />
   return manage ? <HomeShell /> : <OrgPageView />
 }

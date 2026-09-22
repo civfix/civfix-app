@@ -9,6 +9,8 @@ import { presentSocialPlatforms } from "./socialLinksModel"
 
 export const SOCIAL_LINK_HIT_SIZE = 38
 export const SOCIAL_LINK_GLYPH_SIZE = 20
+export const SOCIAL_LINK_MIN_TARGET = 44
+const SOCIAL_LINK_HIT_SLOP = (SOCIAL_LINK_MIN_TARGET - SOCIAL_LINK_HIT_SIZE) / 2
 
 export interface SocialLinksRowProps {
   links: SocialLinks | null | undefined
@@ -35,6 +37,7 @@ export function SocialLinksRow({ links, style }: SocialLinksRowProps) {
             }}
             accessibilityRole="link"
             accessibilityLabel={t("social.link_a11y", { platform: SOCIAL_PLATFORM_LABELS[platform] })}
+            hitSlop={SOCIAL_LINK_HIT_SLOP}
             {...focusRingProps}
             style={(state) => [
               styles.button,

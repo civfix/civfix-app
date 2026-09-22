@@ -121,6 +121,10 @@ export {
   setSourceCommit,
   sourceCommit,
   sourceUrl,
+  PROD_API_HOST,
+  setApiHost,
+  apiHost,
+  offProductionApiHost,
 } from "./externalUrls"
 
 export { QrTicket } from "./QrTicket"

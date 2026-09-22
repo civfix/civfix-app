@@ -1,7 +1,7 @@
 import React from "react"
 import { StyleSheet, View } from "react-native"
 import Svg, { Circle, Path } from "react-native-svg"
-import { DEFAULT_RING_THICKNESS, clampFraction, progressArcPath } from "./chartGeometry"
+import { DEFAULT_RING_THICKNESS, clampFraction, progressArcPath, ringRadius } from "./chartGeometry"
 
 export interface ProgressRingProps {
   value: number
@@ -24,7 +24,7 @@ export function ProgressRing({
 }: ProgressRingProps) {
   const fraction = clampFraction(value)
   const arc = progressArcPath(fraction, size, thickness)
-  const radius = (size - thickness) / 2
+  const radius = ringRadius(size, thickness)
 
   return (
     <View

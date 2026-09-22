@@ -128,6 +128,7 @@ export interface EventPreviewInput {
   scheduledAt?: string | null
   timezone?: string | null
   status?: string | null
+  visibility?: string | null
   coverUrl?: string | null
 }
 
@@ -136,6 +137,10 @@ export interface PersonPreviewInput {
   handle?: string | null
   avatarUrl?: string | null
   deleted?: boolean | null
+}
+
+function isPublicVisibility(visibility: string | null | undefined): boolean {
+  return visibility === undefined || visibility === null || visibility === "public"
 }
 
 function reportImage(input: ReportPreviewInput): string | null {
@@ -212,7 +217,8 @@ export function previewForEvent(
   const description =
     finishDescription([cancelled, when, `A volunteer event on ${SITE_NAME}`]) || DEFAULT_DESCRIPTION
 
-  const cover = isPublicMediaUrl(input.coverUrl) ? input.coverUrl : null
+  const isPublic = isPublicVisibility(input.visibility)
+  const cover = isPublic && isPublicMediaUrl(input.coverUrl) ? input.coverUrl : null
 
   return {
     title,

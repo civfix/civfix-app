@@ -6,6 +6,7 @@ import {
   clampFraction,
   lineGeometry,
   progressArcPath,
+  ringRadius,
   valueToPixels,
   xToPixels,
 } from "../chartGeometry"
@@ -111,5 +112,15 @@ describe("the progress ring", () => {
     const full = progressArcPath(1, 64)
     expect(full.split("A").length - 1).toBe(2)
     expect(progressArcPath(2, 64)).toBe(full)
+  })
+
+  it("clamps the radius at zero when the stroke is thicker than the ring it draws", () => {
+    expect(ringRadius(64, 8)).toBe(28)
+    expect(ringRadius(8, 64)).toBe(0)
+    expect(ringRadius(0, 8)).toBe(0)
+    for (const path of [progressArcPath(0.25, 8, 64), progressArcPath(1, 8, 64)]) {
+      expect(path).not.toContain("-")
+      expect(path).not.toContain("NaN")
+    }
   })
 })

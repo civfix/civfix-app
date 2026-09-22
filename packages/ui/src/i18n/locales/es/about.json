@@ -4,6 +4,8 @@
   "close": "Cerrar",
   "support_civfix": "Apoya a civfix",
   "support_civfix_a11y": "Apoya a civfix a través de Reach Out Los Angeles",
+  "api_host": "API: {{host}} (beta)",
+  "api_host_a11y": "Versión beta: conectada a la API {{host}}",
   "legal": {
     "terms": "Términos",
     "terms_a11y": "Términos de servicio",

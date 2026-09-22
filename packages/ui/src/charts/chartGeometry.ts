@@ -125,6 +125,10 @@ export function valueToPixels(value: number, max: number, height: number): numbe
   return round(plotY(value, max, height))
 }
 
+export function ringRadius(size: number, thickness = DEFAULT_RING_THICKNESS): number {
+  return Math.max(0, (size - thickness) / 2)
+}
+
 export function progressArcPath(
   value: number,
   size: number,
@@ -132,7 +136,7 @@ export function progressArcPath(
 ): string {
   const fraction = clampFraction(value)
   if (fraction <= 0 || size <= 0) return ""
-  const r = (size - thickness) / 2
+  const r = ringRadius(size, thickness)
   const cx = size / 2
   const cy = size / 2
   if (fraction >= 1) {

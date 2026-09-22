@@ -1585,6 +1585,12 @@ and out of the ranker; surfacing it would need a new `PersonDTO` field and a pri
 `apps/community-mobile` and `packages/ui` are workspace consumers and move in the same commit
 series. The backend must update `test/unit/route-coverage.test.ts` to 319.
 
+**Lineage correction (0.54.0).** The 318 → 319 → 322 → 323 → 324 counts quoted through §47-§50
+were written against a 318-entry registry and were overtaken before this work shipped: §52 had
+already taken the released registry to 324, so these four sections land ON TOP of that, not
+before it. The counts stand as the per-section DELTAS they describe (+1, +3, +1, +1); the absolute
+figures do not. The shipped total is 330 — see §53.
+
 ## 48. An announcement is a broadcast the event page keeps (0.50.0)
 
 Event announcements do not get their own table, their own delivery pipeline or their own
@@ -1665,7 +1671,8 @@ creation flow calls to see a street-level line for a pin. It is NOT a rename of 
 stays exactly as it is: `reverseLabel` only ever answers the TIGER `cityStateLabel`, and deployed
 clients keep calling it. The new response is `{ address: string | null, precision: AddressPrecision |
 null, cityStateLabel: string }` — `cityStateLabel` is always populated from the same locality seam, so
-a client can show the rough-area hint even when the provider chain returns nothing. Registry 323 → 324.
+a client can show the rough-area hint even when the provider chain returns nothing. Registry +1
+(quoted as 323 → 324 when this was drafted; see §47's lineage correction and §53 for the real total).
 
 **`AddressPrecision` is the honesty ladder, not a confidence score.** `street | intersection |
 landmark | locality`, ordered most-to-least specific in `ADDRESS_PRECISION_LADDER`, and an adapter
@@ -1860,7 +1867,14 @@ plus a TTL comfortably longer than a scroll session.
 named boot failure rather than a silent no-op. Backwards compatible for every consumer that only
 reads `DEFAULT_FEED_RANKING`.
 
-**Delivery set (§4.2, no consumer left behind).** The registry is untouched (still 324 entries), so
-no consumer is forced to move. civfix-backend `services/api` adopts the new profile when it
-implements the split scorer and the seeded jitter; civfix-admin and civfix-govt-web bump with the
-routine version propagation. No migration, no endpoint, no client release.
+**Delivery set (§4.2, no consumer left behind).** The feed-ranking profile itself is additive, but
+0.54.0 is NOT a registry no-op: this release ships §47-§50 alongside it, so the registry moves
+324 → 330 — `getFeedCounts` (§47), the three announcement endpoints `createEventAnnouncement`,
+`listEventAnnouncements` and `getEventAnnouncement` (§48), `getEventAnalytics` (§49) and
+`resolveAddress` (§50). 104 of the 330 stay under `/admin`, unchanged. Every consumer MUST adopt
+0.54.0 to call the six new endpoints, and civfix-backend must move
+`test/unit/route-coverage.test.ts` to 330; `packages/shared/__tests__/client.test.ts` already
+asserts it. civfix-backend `services/api` also adopts the new ranking profile when it implements
+the split scorer and the seeded jitter; civfix-admin and civfix-govt-web bump with the routine
+version propagation. No migration for the ranking change itself, and nothing here is breaking for
+a consumer that stays on the endpoints it already calls.

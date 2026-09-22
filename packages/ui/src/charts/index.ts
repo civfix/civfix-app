@@ -16,6 +16,7 @@ export {
   clampFraction,
   lineGeometry,
   progressArcPath,
+  ringRadius,
   valueToPixels,
   xToPixels,
 } from "./chartGeometry"

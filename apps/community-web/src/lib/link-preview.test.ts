@@ -221,6 +221,24 @@ describe("previewForEvent", () => {
     expect(previewForEvent({ ...base, coverUrl: "https://cdn.civfix.org/c/1.jpg?token=x" }, ctx)?.imageIsBrand).toBe(true)
   })
 
+  it("withholds the cover of an event that is not public, exactly as the signup page does", () => {
+    const cover = "https://cdn.civfix.org/c/1.jpg"
+    for (const visibility of ["unlisted", "private"]) {
+      const preview = previewForEvent({ ...base, visibility, coverUrl: cover }, ctx)
+      expect(preview?.imageIsBrand).toBe(true)
+      expect(metaTagsHtml(preview!)).not.toContain(cover)
+    }
+    expect(previewForEvent({ ...base, visibility: "public", coverUrl: cover }, ctx)?.image).toBe(
+      cover,
+    )
+  })
+
+  it("treats a missing visibility as public, so an older server keeps its cover", () => {
+    const cover = "https://cdn.civfix.org/c/1.jpg"
+    expect(previewForEvent({ ...base, coverUrl: cover }, ctx)?.image).toBe(cover)
+    expect(previewForEvent({ ...base, visibility: null, coverUrl: cover }, ctx)?.image).toBe(cover)
+  })
+
   it("uses the event title and a date-led fixed description", () => {
     const preview = previewForEvent(base, ctx)
     expect(preview?.title).toBe("Ballona Creek cleanup")
