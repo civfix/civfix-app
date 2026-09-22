@@ -1,45 +1,79 @@
-import React, { useState } from "react"
-import { View } from "react-native"
-import type { BreakdownRow, GetEventAnalyticsResponse, Panel, SeriesPoint } from "@civfix/shared"
-import { headingLevel, makeThemedStyles, useTheme } from "../../theme"
-import { Text } from "../../typography"
+import React, { useMemo, useState } from "react"
+import { Pressable, View } from "react-native"
+import type {
+  AnalyticsRange,
+  BreakdownRow,
+  GetEventAnalyticsResponse,
+  HostAnalyticsSummaryResponse,
+  Panel,
+  SeriesPoint,
+  SuppressedRate,
+} from "@civfix/shared"
 import {
+  focusRingProps,
+  headingLevel,
+  makeThemedStyles,
+  useTheme,
+  webCursor,
+  webHover,
+} from "../../theme"
+import { Text, iconMap } from "../../typography"
+import type { AnchorRect } from "../../primitives"
+import {
+  Meter,
+  PopoverMenu,
+  SecondaryButton,
   SectionCard,
   SegmentedControl,
   StatTile,
   StatTileRow,
   statTileColumns,
+  usePopoverAnchor,
 } from "../../primitives"
-import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth, type ChartBar } from "../../charts"
+import {
+  BarChart,
+  ProgressRing,
+  barFraction,
+  chartMax,
+  useMeasuredWidth,
+  type ChartBar,
+} from "../../charts"
 import { useCleanup } from "../../data/hooks/cleanups"
-import { hasHostCapability } from "../../data/hooks/host"
-import { useEventAnalytics } from "../../data/hooks/analytics"
-import { useRelativeTime, useT } from "../../i18n"
+import { hasHostCapability, hostedEventRows, useMyHostedEvents } from "../../data/hooks/host"
+import { useEventAnalytics, useHostAnalyticsSummary } from "../../data/hooks/analytics"
+import { useLocale, useRelativeTime, useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 import { HeroSkeleton, TilesSkeleton } from "./HostSkeletons"
 import {
-  LIFECYCLE_SEGMENTS,
+  ALL_EVENTS_RANGE_PRESETS,
+  ANALYTICS_RANGE_PRESETS,
+  DEFAULT_ALL_EVENTS_PRESET,
+  DEFAULT_EVENT_PRESET,
+  arrivalXLabels,
   comparisonVerdict,
   comparisonVisible,
-  defaultSegment,
   funnelBars,
   hasSeriesData,
+  presetDays,
+  rangeSlice,
+  pickerOptions,
   ratePercent,
-  segmentEnabled,
-  segmentRange,
-  seriesPoints,
-  sliceSeries,
-  type LifecycleSegment,
+  weeklyXLabels,
+  type AnalyticsRangePreset,
 } from "./analyticsModel"
-
-const CHART_HEIGHT = 140
 
 const BARS_HEIGHT = 96
 
 const RING_SIZE = 96
 
 const DASH = "—"
+
+const MAX_BY_EVENT_ROWS = 12
+
+function summaryRange(preset: AnalyticsRangePreset): AnalyticsRange {
+  return preset === "whole_event" ? "all" : preset
+}
 
 function breakdownBars(
   rows: readonly BreakdownRow[],
@@ -55,124 +89,383 @@ function breakdownBars(
   }))
 }
 
+function useWeekLabel(): (day: string) => string {
+  const { locale } = useLocale()
+  return useMemo(() => {
+    let format: Intl.DateTimeFormat
+    try {
+      format = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" })
+    } catch {
+      format = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" })
+    }
+    return (day: string) => format.format(new Date(day))
+  }, [locale])
+}
+
 export function EventAnalyticsBody({ id }: { id: string }) {
   const styles = useStyles()
   const { ScrollView } = useScrollHost()
   const { t } = useT("host-analytics")
   const { relative, justNow } = useRelativeTime()
 
-  const cleanup = useCleanup(id)
-  const canView = hasHostCapability(cleanup.data, "view_analytics")
-  const query = useEventAnalytics(id, "full", { enabled: canView })
-
-  const [segment, setSegment] = useState<LifecycleSegment | null>(null)
+  const [picked, setPicked] = useState<string | null>(id === "" ? null : id)
+  const [preset, setPreset] = useState<AnalyticsRangePreset | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [pickerRect, setPickerRect] = useState<AnchorRect | null>(null)
+  const { ref: pickerAnchorRef, measure: measurePicker } = usePopoverAnchor(setPickerRect)
   const { width: stackWidth, onLayout } = useMeasuredWidth()
 
-  const data = query.data ?? null
-  const now = Date.now()
-  const active: LifecycleSegment =
-    segment ?? (data ? defaultSegment(data.phase, data.lifecycle, now) : "all")
-  const range = data ? segmentRange(active, data.lifecycle, now) : null
+  const all = picked === null
+  const presets: readonly AnalyticsRangePreset[] = all
+    ? ALL_EVENTS_RANGE_PRESETS
+    : ANALYTICS_RANGE_PRESETS
+  const fallback = all ? DEFAULT_ALL_EVENTS_PRESET : DEFAULT_EVENT_PRESET
+  const active: AnalyticsRangePreset =
+    preset !== null && presets.includes(preset) ? preset : fallback
 
-  const skeleton = (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <HeroSkeleton />
-      <TilesSkeleton columns={2} count={6} />
-    </ScrollView>
+  const upcoming = useMyHostedEvents("upcoming", null)
+  const past = useMyHostedEvents("past", null)
+  const options = useMemo(
+    () => pickerOptions(hostedEventRows(upcoming.data?.pages), hostedEventRows(past.data?.pages)),
+    [upcoming.data, past.data],
   )
 
-  const errorState = (
-    <View style={styles.fill}>
-      <FeedNotice
-        plain
-        icon="CloudOff"
-        title={t("state.error_title")}
-        body={t("state.error_body")}
-        actionLabel={t("card.retry")}
-        onAction={() => {
-          void cleanup.refetch()
-          void query.refetch()
-        }}
+  const summary = useHostAnalyticsSummary(null, summaryRange(active), { enabled: all })
+  const cleanup = useCleanup(picked ?? undefined)
+  const canView = hasHostCapability(cleanup.data, "view_analytics")
+  const event = useEventAnalytics(picked ?? undefined, "full", { enabled: !all && canView })
+
+  const now = Date.now()
+  const generatedAt = all ? (summary.data?.generatedAt ?? null) : (event.data?.generatedAt ?? null)
+  const updatedAgo = generatedAt === null ? null : relative(generatedAt, now)
+
+  const pickedTitle = options.find((option) => option.id === picked)?.title ?? null
+
+  const filters = (
+    <View style={styles.filters}>
+      <View ref={pickerAnchorRef} style={styles.pickerSlot}>
+        <SecondaryButton
+          size="sm"
+          trailingIcon={iconMap.ChevronDown}
+          label={pickedTitle ?? t("filter.all_events")}
+          accessibilityLabel={t("filter.event_a11y", {
+            name: pickedTitle ?? t("filter.all_events"),
+          })}
+          onPress={() => {
+            measurePicker()
+            setPickerOpen(true)
+          }}
+        />
+      </View>
+      <SegmentedControl
+        size="sm"
+        label={t("range.label")}
+        selected={active}
+        onSelect={(key) => setPreset(key as AnalyticsRangePreset)}
+        options={presets.map((key) => ({ key, label: t(`range.${key}`) }))}
       />
     </View>
   )
 
-  if (cleanup.isPending) return skeleton
+  const header = (
+    <View style={styles.header}>
+      <Text variant="title" accessibilityRole="header" {...headingLevel(1)}>
+        {all ? t("page.all_title") : t("page.title")}
+      </Text>
+      {updatedAgo === null ? null : (
+        <Text variant="caption">
+          {updatedAgo === justNow
+            ? t("page.updated_just_now")
+            : t("page.updated", { when: updatedAgo })}
+        </Text>
+      )}
+    </View>
+  )
 
-  if (cleanup.isError) return errorState
+  const picker = (
+    <PopoverMenu
+      visible={pickerOpen}
+      anchorRect={pickerRect}
+      align="left"
+      onClose={() => setPickerOpen(false)}
+      items={[
+        {
+          key: "all",
+          label: t("filter.all_events"),
+          ...(picked === null ? { icon: "Check" as const } : {}),
+          onPress: () => {
+            setPickerOpen(false)
+            setPicked(null)
+            setPreset(null)
+          },
+        },
+        ...options.map((option) => ({
+          key: option.id,
+          label: option.title,
+          ...(picked === option.id ? { icon: "Check" as const } : {}),
+          onPress: () => {
+            setPickerOpen(false)
+            setPicked(option.id)
+            setPreset(null)
+          },
+        })),
+      ]}
+    />
+  )
 
-  if (!canView) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
-      </View>
-    )
-  }
-
-  if (query.isPending) return skeleton
-
-  if (query.isError || !data || !range) return errorState
-
-  const updatedAgo = relative(data.generatedAt, now)
-
-  return (
+  const frame = (content: React.ReactNode) => (
     <ScrollView
       style={styles.scroll}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.stack} onLayout={onLayout}>
-        <View style={styles.header}>
-          <Text variant="title" accessibilityRole="header" {...headingLevel(1)}>
-            {t("page.title")}
-          </Text>
-          <Text variant="caption">
-            {updatedAgo === justNow
-              ? t("page.updated_just_now")
-              : t("page.updated", { when: updatedAgo })}
-          </Text>
-        </View>
+        {header}
+        {filters}
+        {content}
+      </View>
+      {picker}
+    </ScrollView>
+  )
 
-        <SegmentedControl
-          label={t("scrubber.label")}
-          selected={active}
-          onSelect={(key) => setSegment(key as LifecycleSegment)}
-          options={LIFECYCLE_SEGMENTS.map((key) => ({
-            key,
-            label: t(`scrubber.${key}`),
-            disabled: !segmentEnabled(key, data.lifecycle, now),
-          }))}
+  const skeleton = (
+    <View style={styles.stack}>
+      <HeroSkeleton />
+      <TilesSkeleton columns={2} count={6} />
+    </View>
+  )
+
+  const errorState = (retry: () => void) => (
+    <FeedNotice
+      plain
+      icon="CloudOff"
+      title={t("state.error_title")}
+      body={t("state.error_body")}
+      actionLabel={t("card.retry")}
+      onAction={retry}
+    />
+  )
+
+  if (all) {
+    if (summary.isPending) return frame(skeleton)
+    if (summary.isError || !summary.data)
+      return frame(errorState(() => void summary.refetch()))
+    return frame(
+      <AllEventsMode
+        data={summary.data}
+        width={stackWidth}
+        onPickEvent={(eventId) => {
+          setPicked(eventId)
+          setPreset(null)
+        }}
+      />,
+    )
+  }
+
+  if (cleanup.isPending) return frame(skeleton)
+
+  if (cleanup.isError) return frame(errorState(() => void cleanup.refetch()))
+
+  if (!canView) {
+    return frame(
+      <FeedNotice plain icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />,
+    )
+  }
+
+  if (event.isPending) return frame(skeleton)
+
+  if (event.isError || !event.data) return frame(errorState(() => void event.refetch()))
+
+  return frame(
+    <SingleEventMode data={event.data} width={stackWidth} days={presetDays(active)} now={now} />,
+  )
+}
+
+function AllEventsMode({
+  data,
+  width,
+  onPickEvent,
+}: {
+  data: HostAnalyticsSummaryResponse
+  width: number
+  onPickEvent: (id: string) => void
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("host-analytics")
+  const weekLabel = useWeekLabel()
+  const columns = statTileColumns(width)
+  const held = data.eventsHeld
+  const checkIn = held.count > 0 ? ratePercent(held.checkInRate) : null
+  const daily = data.signupsDaily
+  const rows = data.byEvent.rows.slice(0, MAX_BY_EVENT_ROWS)
+
+  return (
+    <>
+      <StatTileRow columns={columns}>
+        <StatTile label={t("kpi.signups")} value={String(data.activity.signups)} />
+        <StatTile
+          label={t("kpi.check_in_rate")}
+          value={checkIn === null ? null : `${checkIn}%`}
+          hint={t("kpi.checked_in_held", {
+            checkIns: held.checkIns,
+            registered: held.registered,
+            count: held.count,
+          })}
         />
+        <StatTile
+          label={t("kpi.hours")}
+          value={t("card.hours_value", { hours: Math.round(data.activity.hoursTotal) })}
+          hint={t("kpi.hours_people", { people: data.activity.hoursVolunteers })}
+        />
+        <StatTile label={t("kpi.events_held")} value={String(held.count)} />
+        <StatTile label={t("kpi.reports_linked")} value={String(data.activity.reportsLinked)} />
+        {data.activity.donationClicks > 0 ? (
+          <StatTile
+            label={t("kpi.donation_clicks")}
+            value={String(data.activity.donationClicks)}
+          />
+        ) : null}
+      </StatTileRow>
 
-        <KpiStrip data={data} width={stackWidth} />
+      <SectionCard label={t("page.signups_over_time")}>
+        {hasSeriesData(daily) ? (
+          <BarChart
+            bars={daily.map((point) => ({
+              key: point.day,
+              value: point.suppressed ? null : point.value,
+              color: th.colors.accent,
+            }))}
+            xLabels={weeklyXLabels(daily, weekLabel)}
+            width={width}
+            height={BARS_HEIGHT}
+            labelColor={th.colors.textSubtle}
+            accessibilityLabel={t("page.signups_over_time")}
+          />
+        ) : (
+          <Text variant="caption">{t("page.signups_empty")}</Text>
+        )}
+      </SectionCard>
 
-        <SectionCard label={t("page.signups_section")}>
-          <SignupsSection data={data} range={range} showMarker={active === "all"} />
-        </SectionCard>
+      <SectionCard label={t("page.by_event_section")}>
+        {rows.length === 0 ? (
+          <Text variant="caption">{t("page.by_event_empty")}</Text>
+        ) : (
+          <View style={styles.block}>
+            {rows.map((row) => (
+              <EventBarRow
+                key={row.key}
+                row={row}
+                max={chartMax(rows.map((each) => (each.suppressed ? null : each.value)))}
+                onPress={() => onPickEvent(row.key)}
+              />
+            ))}
+          </View>
+        )}
+      </SectionCard>
 
-        <SectionCard label={t("page.funnel_section")}>
-          <Funnel data={data} />
-        </SectionCard>
+      <Text variant="caption" style={styles.privacy}>
+        {t("suppressed.note", { k: data.k })}
+      </Text>
+    </>
+  )
+}
 
-        <SourcesSection panel={data.signups.bySource} />
-
-        <SlotsSection data={data} />
-
-        <SectionCard label={t("page.event_day_section")}>
-          <EventDaySection data={data} />
-        </SectionCard>
-
-        <SectionCard label={t("page.impact_section")}>
-          <ImpactSection data={data} />
-        </SectionCard>
-
-        {comparisonVisible(data) ? <ComparisonSection data={data} /> : null}
-
-        <Text variant="caption" style={styles.privacy}>
-          {t("suppressed.note", { k: data.k })}
+function EventBarRow({
+  row,
+  max,
+  onPress,
+}: {
+  row: BreakdownRow
+  max: number
+  onPress: () => void
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("host-analytics")
+  const value = row.suppressed ? null : row.value
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={t("page.by_event_a11y", {
+        name: row.label,
+        value: value === null ? DASH : value,
+      })}
+      {...focusRingProps}
+      style={(state) => [
+        styles.eventRow,
+        webCursor(),
+        state.pressed || webHover(state) ? styles.eventRowHovered : null,
+      ]}
+    >
+      <View style={styles.eventRowHead}>
+        <Text variant="caption" numberOfLines={1} style={styles.eventRowLabel}>
+          {row.label}
+        </Text>
+        <Text variant="caption" numberOfLines={1}>
+          {value === null ? DASH : String(value)}
         </Text>
       </View>
-    </ScrollView>
+      <View style={styles.funnelTrack}>
+        <View
+          style={[
+            styles.funnelFill,
+            {
+              width: `${Math.max(value === null ? 0 : 2, barFraction(value, max) * 100)}%`,
+              backgroundColor: value === null ? th.colors.chartTrack : th.colors.accent,
+            },
+          ]}
+        />
+      </View>
+    </Pressable>
+  )
+}
+
+function SingleEventMode({
+  data,
+  width,
+  days,
+  now,
+}: {
+  data: GetEventAnalyticsResponse
+  width: number
+  days: number | null
+  now: number
+}) {
+  const styles = useStyles()
+  const { t } = useT("host-analytics")
+
+  return (
+    <>
+      <KpiStrip data={data} width={width} />
+
+      <SectionCard label={t("page.signups_section")}>
+        <SignupsSection data={data} days={days} now={now} />
+      </SectionCard>
+
+      <SectionCard label={t("page.funnel_section")}>
+        <Funnel data={data} />
+      </SectionCard>
+
+      <SourcesSection panel={data.signups.bySource} pageViews={data.kpis.pageViews} rate={data.rates.viewToSignup} />
+
+      <SlotsSection data={data} />
+
+      <SectionCard label={t("page.event_day_section")}>
+        <EventDaySection data={data} />
+      </SectionCard>
+
+      <SectionCard label={t("page.impact_section")}>
+        <ImpactSection data={data} />
+      </SectionCard>
+
+      {comparisonVisible(data) ? <ComparisonSection data={data} /> : null}
+
+      <Text variant="caption" style={styles.privacy}>
+        {t("suppressed.note", { k: data.k })}
+      </Text>
+    </>
   )
 }
 
@@ -182,15 +475,19 @@ function KpiStrip({ data, width }: { data: GetEventAnalyticsResponse; width: num
   const checkIn = ratePercent(data.rates.checkIn)
   const fill = ratePercent(data.rates.fill)
   const pre = data.phase === "upcoming"
+  const views = data.kpis.pageViews ?? 0
+  const donations = data.kpis.donationClicks ?? 0
 
   return (
     <StatTileRow columns={columns}>
       <StatTile
         label={t("kpi.signups")}
         value={String(data.kpis.signups ?? 0)}
-        {...(data.kpis.capacity ? { hint: t("kpi.of_capacity", { capacity: data.kpis.capacity }) } : {})}
+        hint={t("range.whole_event")}
       />
-      <StatTile label={t("kpi.page_views")} value={String(data.kpis.pageViews ?? 0)} />
+      {views > 0 ? (
+        <StatTile label={t("kpi.page_views")} value={String(views)} />
+      ) : null}
       <StatTile
         label={t("kpi.check_in_rate")}
         value={pre || checkIn === null ? null : `${checkIn}%`}
@@ -215,67 +512,66 @@ function KpiStrip({ data, width }: { data: GetEventAnalyticsResponse; width: num
         value={t("card.hours_value", { hours: Math.round(data.kpis.hoursTotal ?? 0) })}
         hint={t("kpi.hours_people", { people: data.kpis.hoursVolunteers ?? 0 })}
       />
-      <StatTile label={t("kpi.donation_clicks")} value={String(data.kpis.donationClicks ?? 0)} />
+      {donations > 0 ? (
+        <StatTile label={t("kpi.donation_clicks")} value={String(donations)} />
+      ) : null}
     </StatTileRow>
   )
 }
 
 function SignupsSection({
   data,
-  range,
-  showMarker,
+  days,
+  now,
 }: {
   data: GetEventAnalyticsResponse
-  range: { from: number; to: number }
-  showMarker: boolean
+  days: number | null
+  now: number
 }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-analytics")
+  const weekLabel = useWeekLabel()
   const { width, onLayout } = useMeasuredWidth()
-  const cumulative = sliceSeries(data.signups.cumulative, range)
-  const daily = sliceSeries(data.signups.daily, range)
-  const cancellations = sliceSeries(data.signups.cancellations, range)
-  const startAt = Date.parse(data.lifecycle.startAt ?? "")
-
-  if (!hasSeriesData(cumulative) && !hasSeriesData(daily)) {
-    return <Text variant="caption">{t("page.signups_empty")}</Text>
-  }
+  const daily = rangeSlice(data.signups.daily, days, now)
+  const cancellations = rangeSlice(data.signups.cancellations, days, now)
+  const capacity = data.kpis.capacity
+  const signups = data.kpis.signups ?? 0
 
   return (
     <View style={styles.block} onLayout={onLayout}>
-      <Text variant="label">{t("registration.cumulative")}</Text>
-      <AreaLineChart
-        series={seriesPoints(cumulative)}
-        width={width}
-        height={CHART_HEIGHT}
-        stroke={th.colors.accent}
-        fill={th.colors.selectedFill}
-        {...(data.kpis.capacity
-          ? { refLineY: data.kpis.capacity, refLineColor: th.colors.chartInkMuted }
-          : {})}
-        {...(showMarker && Number.isFinite(startAt)
-          ? { markerX: startAt, markerColor: th.colors.chartInkMuted }
-          : {})}
-        gridColor={th.colors.border}
-        labelColor={th.colors.textSubtle}
-        accessibilityLabel={t("registration.over_time_a11y")}
-      />
+      {capacity ? (
+        <View style={styles.block}>
+          <Text variant="label">{t("page.capacity_line", { signups, capacity })}</Text>
+          <Meter
+            value={signups}
+            max={capacity}
+            accessibilityLabel={t("page.capacity_line", { signups, capacity })}
+          />
+        </View>
+      ) : null}
 
-      <Text variant="label">{t("registration.new")}</Text>
-      <BarChart
-        bars={daily.map((point, index) => ({
-          key: point.day,
-          value: point.suppressed ? null : point.value,
-          color: th.colors.accent,
-          stackValue: cancellationAt(cancellations, index),
-          stackColor: th.colors.dangerWash,
-        }))}
-        width={width}
-        height={BARS_HEIGHT}
-        labelColor={th.colors.textSubtle}
-        accessibilityLabel={t("registration.over_time_a11y")}
-      />
+      {hasSeriesData(daily) ? (
+        <>
+          <Text variant="label">{t("registration.new")}</Text>
+          <BarChart
+            bars={daily.map((point, index) => ({
+              key: point.day,
+              value: point.suppressed ? null : point.value,
+              color: th.colors.accent,
+              stackValue: cancellationAt(cancellations, index),
+              stackColor: th.colors.dangerWash,
+            }))}
+            xLabels={weeklyXLabels(daily, weekLabel)}
+            width={width}
+            height={BARS_HEIGHT}
+            labelColor={th.colors.textSubtle}
+            accessibilityLabel={t("registration.over_time_a11y")}
+          />
+        </>
+      ) : (
+        <Text variant="caption">{t("page.signups_empty")}</Text>
+      )}
     </View>
   )
 }
@@ -327,11 +623,21 @@ function Funnel({ data }: { data: GetEventAnalyticsResponse }) {
   )
 }
 
-function SourcesSection({ panel }: { panel: Panel | undefined }) {
+function SourcesSection({
+  panel,
+  pageViews,
+  rate,
+}: {
+  panel: Panel | undefined
+  pageViews: number | null
+  rate: SuppressedRate
+}) {
   const th = useTheme()
   const { t } = useT("host-analytics")
   const { t: tEnums } = useT("enums")
   const rows = panel?.rows ?? []
+  const views = pageViews ?? 0
+  const percent = ratePercent(rate)
   if (panel?.panelSuppressed || rows.length === 0) return null
   return (
     <SectionCard label={t("page.sources_section")}>
@@ -343,6 +649,9 @@ function SourcesSection({ panel }: { panel: Panel | undefined }) {
         labelColor={th.colors.textMuted}
         accessibilityLabel={t("page.sources_section")}
       />
+      {views > 0 && percent !== null ? (
+        <Text variant="caption">{t("page.sources_caption", { rate: percent, views })}</Text>
+      ) : null}
     </SectionCard>
   )
 }
@@ -384,6 +693,7 @@ function EventDaySection({ data }: { data: GetEventAnalyticsResponse }) {
   const { t } = useT("host-analytics")
   const { width, onLayout } = useMeasuredWidth()
   const rate = ratePercent(data.rates.checkIn)
+  const arrivals = data.eventDay.arrivals
 
   if (data.phase === "upcoming") {
     return <Text variant="caption">{t("page.event_day_pre")}</Text>
@@ -391,13 +701,20 @@ function EventDaySection({ data }: { data: GetEventAnalyticsResponse }) {
 
   return (
     <View style={styles.block} onLayout={onLayout}>
-      {hasSeriesData(data.eventDay.arrivals) ? (
+      {hasSeriesData(arrivals) ? (
         <BarChart
-          bars={data.eventDay.arrivals.map((point) => ({
+          bars={arrivals.map((point) => ({
             key: point.day,
             value: point.suppressed ? null : point.value,
             color: th.colors.accent,
           }))}
+          xLabels={arrivalXLabels(arrivals, (minutes) =>
+            minutes === 0
+              ? t("attendance.offset_start")
+              : minutes < 0
+                ? t("attendance.offset_before", { hours: Math.abs(minutes) / 60 })
+                : t("attendance.offset_after", { hours: minutes / 60 }),
+          )}
           width={width}
           height={BARS_HEIGHT}
           labelColor={th.colors.textSubtle}
@@ -532,9 +849,6 @@ const useStyles = makeThemedStyles((t) => ({
   scroll: {
     flex: 1,
   },
-  fill: {
-    flex: 1,
-  },
   content: {
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["2"],
@@ -546,8 +860,33 @@ const useStyles = makeThemedStyles((t) => ({
   header: {
     gap: t.space["1"],
   },
+  filters: {
+    gap: t.space["2"],
+  },
+  pickerSlot: {
+    alignSelf: "flex-start",
+    maxWidth: "100%",
+  },
   block: {
     gap: t.space["2"],
+  },
+  eventRow: {
+    gap: 2,
+    paddingVertical: t.space["1"],
+    paddingHorizontal: t.space["1"],
+    borderRadius: t.radius.sm,
+  },
+  eventRowHovered: {
+    backgroundColor: t.colors.bgAlt,
+  },
+  eventRowHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: t.space["2"],
+  },
+  eventRowLabel: {
+    flexShrink: 1,
   },
   funnelRow: {
     gap: 2,

@@ -41,7 +41,6 @@ import { HostedEventRow } from "./dashboard/HostedEventRow"
 import { ImpactCard } from "./dashboard/ImpactCard"
 import { NextUpCard } from "./dashboard/NextUpCard"
 import {
-  analyticsFocusEvent,
   dashboardScope,
   firstEventState,
   hostedEventPhase,
@@ -118,10 +117,6 @@ export function EventDashboardBody() {
   const now = useMemo(() => new Date(nowMs), [nowMs])
   const nextUp = nextUpEvent([...upcomingEvents, ...pastEvents], now)
   const kpis = portfolioKpis(upcoming.data?.pages)
-  const analyticsFocus = useMemo(
-    () => analyticsFocusEvent({ upcoming: upcomingEvents, past: pastEvents, now }),
-    [upcomingEvents, pastEvents, now],
-  )
   useEventBoundaryRefresh(
     nextUp ? hostedEventWindow(nextUp.event) : null,
     nowMs,
@@ -296,12 +291,7 @@ export function EventDashboardBody() {
 
         {teaching ? null : (
           <>
-            {analyticsFocus ? (
-              <AnalyticsCarouselCard
-                cleanupId={analyticsFocus.id}
-                label={t("analytics.for_event", { title: analyticsFocus.title })}
-              />
-            ) : null}
+            <AnalyticsCarouselCard orgId={activeOrgId} />
 
             <ImpactCard
               analytics={analytics.data}

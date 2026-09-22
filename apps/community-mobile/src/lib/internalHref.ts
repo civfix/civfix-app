@@ -13,6 +13,7 @@ export const SHELL_HOST_ROUTE_NAMES: readonly string[] = [
   "cleanups/[id]/ticket",
   "cleanups/[id]/ticket/[seatId]",
   "dashboard",
+  "host/analytics",
   "orgs/[slug]",
   "orgs/[slug]/manage",
   "people/[id]",

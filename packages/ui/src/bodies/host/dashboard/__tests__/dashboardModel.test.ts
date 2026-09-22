@@ -10,7 +10,6 @@ import type {
 import { MAX_ORG_INVITES_PER_ORG } from "@civfix/shared"
 import { can } from "@civfix/shared/host"
 import {
-  analyticsFocusEvent,
   canManageOrgTeam,
   canSetOrgMemberRole,
   collaboratorErrorKey,
@@ -587,81 +586,6 @@ describe("next up", () => {
   })
 })
 
-describe("the analytics card picks one hosted event", () => {
-  const now = new Date("2026-09-10T12:00:00.000Z")
-
-  const hosted = (id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO =>
-    row(id, { myRole: "organizer", ...over })
-
-  const soon = (id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO =>
-    hosted(id, {
-      startsAt: "2026-09-12T17:00:00.000Z",
-      endsAt: "2026-09-12T21:00:00.000Z",
-      ...over,
-    })
-
-  const finished = (id: string, over: Partial<HostedEventDTO> = {}): HostedEventDTO =>
-    hosted(id, {
-      startsAt: "2026-09-08T17:00:00.000Z",
-      endsAt: "2026-09-08T21:00:00.000Z",
-      ...over,
-    })
-
-  it("shows nothing at all to a viewer who hosts no events", () => {
-    expect(analyticsFocusEvent({ upcoming: [], past: [], now })).toBeNull()
-  })
-
-  it("prefers the event happening right now over the one happening next", () => {
-    const live = hosted("live", {
-      startsAt: "2026-09-10T11:00:00.000Z",
-      endsAt: "2026-09-10T15:00:00.000Z",
-    })
-    const later = soon("later")
-    expect(hostedEventPhase(live, now)).toBe("live")
-    expect(analyticsFocusEvent({ upcoming: [later, live], past: [], now })?.id).toBe("live")
-  })
-
-  it("falls to the soonest upcoming event when nothing is underway", () => {
-    const later = soon("later")
-    const latest = soon("latest", {
-      startsAt: "2026-09-20T17:00:00.000Z",
-      endsAt: "2026-09-20T21:00:00.000Z",
-    })
-    expect(analyticsFocusEvent({ upcoming: [latest, later], past: [], now })?.id).toBe("later")
-  })
-
-  it("falls to the most recently ended event when nothing is ahead", () => {
-    const older = finished("older", {
-      startsAt: "2026-09-01T17:00:00.000Z",
-      endsAt: "2026-09-01T21:00:00.000Z",
-    })
-    const newer = finished("newer")
-    expect(analyticsFocusEvent({ upcoming: [], past: [older, newer], now })?.id).toBe("newer")
-  })
-
-  it("still prefers anything ahead over anything already finished", () => {
-    const ended = finished("ended")
-    const later = soon("later")
-    expect(analyticsFocusEvent({ upcoming: [later], past: [ended], now })?.id).toBe("later")
-  })
-
-  it("skips an event the server would refuse the numbers for", () => {
-    const blind = soon("blind", { myRole: "staff", myCapabilities: ["view_roster", "check_in"] })
-    expect(hostedEventCan(blind, "view_analytics")).toBe(false)
-    expect(analyticsFocusEvent({ upcoming: [blind], past: [], now })).toBeNull()
-    const seeing = soon("seeing", {
-      startsAt: "2026-09-20T17:00:00.000Z",
-      endsAt: "2026-09-20T21:00:00.000Z",
-    })
-    expect(analyticsFocusEvent({ upcoming: [blind, seeing], past: [], now })?.id).toBe("seeing")
-  })
-
-  it("never lands on a cancelled event as if it were still ahead", () => {
-    const gone = soon("gone", { status: "cancelled" })
-    expect(analyticsFocusEvent({ upcoming: [gone], past: [], now })).toBeNull()
-  })
-})
-
 describe("impact", () => {
   const rate = (value: number | null) => ({
     value,
@@ -886,7 +810,6 @@ describe("portfolio surface", () => {
       ["next_up", "more_shifts"],
       ["next_up", "more_shifts_a11y"],
       ["next_up", "meter_a11y"],
-      ["analytics", "for_event"],
       ["impact", "section"],
       ["impact", "all_time"],
       ["impact", "unit_hours"],
@@ -965,15 +888,13 @@ describe("portfolio surface", () => {
     expect(existsSync(new URL("../InviteRows.tsx", import.meta.url))).toBe(false)
   })
 
-  it("puts the analytics carousel on the dashboard, named after the event it describes", () => {
+  it("scopes the analytics carousel to the dashboard's own org scope, not to one event", () => {
     const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain("analyticsFocusEvent({ upcoming: upcomingEvents, past: pastEvents, now })")
-    expect(body).toContain("<AnalyticsCarouselCard")
-    expect(body).toContain("cleanupId={analyticsFocus.id}")
-    expect(body).toContain('label={t("analytics.for_event", { title: analyticsFocus.title })}')
-    expect(body).toContain("{analyticsFocus ? (")
+    expect(body).toContain("<AnalyticsCarouselCard orgId={activeOrgId} />")
+    expect(body).not.toContain("analyticsFocus")
+    expect(body).not.toContain("analytics.for_event")
     expect(dashboardSource("AnalyticsCarouselCard.tsx")).toContain(
-      'const heading = label ?? t("card.title")',
+      "useHostAnalyticsSummary(orgId)",
     )
   })
 

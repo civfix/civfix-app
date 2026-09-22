@@ -1,13 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import type { BreakdownRow, SeriesPoint } from "@civfix/shared"
-import {
-  CARD_ARRIVAL_BUCKETS,
-  CARD_SLOT_ROWS,
-  busiestRows,
-  carouselPage,
-  latestPoints,
-} from "../analyticsModel"
+import { carouselPage } from "../analyticsModel"
 
 const CARD = readFileSync(
   new URL("../dashboard/AnalyticsCarouselCard.tsx", import.meta.url),
@@ -30,58 +23,74 @@ const constant = (name: string): number => {
   return parts.reduce((sum, part) => sum + (/^\d+$/.test(part) ? Number(part) : constant(part)), 0)
 }
 
-const row = (key: string, value: number | null, suppressed = false): BreakdownRow =>
-  ({ key, label: key, value, suppressed }) as BreakdownRow
-
-const point = (day: string, value: number): SeriesPoint =>
-  ({ day, value, suppressed: false }) as SeriesPoint
-
 describe("the numbers behind a carousel page", () => {
   it("lands on the page whose width the container measured", () => {
-    expect(carouselPage(0, 320, 5)).toBe(0)
-    expect(carouselPage(320, 320, 5)).toBe(1)
-    expect(carouselPage(1_280, 320, 5)).toBe(4)
+    expect(carouselPage(0, 320, 4)).toBe(0)
+    expect(carouselPage(320, 320, 4)).toBe(1)
+    expect(carouselPage(960, 320, 4)).toBe(3)
   })
 
   it("never divides by an unmeasured width", () => {
-    expect(carouselPage(640, 0, 5)).toBe(0)
-    expect(carouselPage(640, Number.NaN, 5)).toBe(0)
-    expect(carouselPage(Number.NaN, 320, 5)).toBe(0)
+    expect(carouselPage(640, 0, 4)).toBe(0)
+    expect(carouselPage(640, Number.NaN, 4)).toBe(0)
+    expect(carouselPage(Number.NaN, 320, 4)).toBe(0)
   })
 
   it("clamps a rubber-band overscroll to a real page", () => {
-    expect(carouselPage(-80, 320, 5)).toBe(0)
-    expect(carouselPage(9_999, 320, 5)).toBe(4)
+    expect(carouselPage(-80, 320, 4)).toBe(0)
+    expect(carouselPage(9_999, 320, 4)).toBe(3)
     expect(carouselPage(320, 320, 0)).toBe(0)
   })
 })
 
-describe("what a glance-sized panel is allowed to plot", () => {
-  it("keeps the busiest shifts, so the bars stay inside the panel", () => {
-    const rows = [row("a", 1), row("b", 9), row("c", 4), row("d", 7), row("e", 2), row("f", 6)]
-    expect(busiestRows(rows).map((r) => r.key)).toEqual(["b", "d", "f", "c"])
-    expect(busiestRows(rows)).toHaveLength(CARD_SLOT_ROWS)
+describe("the card reads the host's whole last 30 days, not one chosen event", () => {
+  it("takes an org scope rather than an event id", () => {
+    expect(CARD).toContain("export interface AnalyticsCarouselCardProps {\n  orgId: string | null\n}")
+    expect(CARD).toContain("useHostAnalyticsSummary(orgId)")
+    expect(CARD).not.toContain("cleanupId")
+    expect(CARD).not.toContain("useEventAnalytics")
   })
 
-  it("sinks a suppressed shift below every countable one", () => {
-    const rows = [row("hidden", null, true), row("a", 0), row("b", 3)]
-    expect(busiestRows(rows).map((r) => r.key)).toEqual(["b", "a", "hidden"])
+  it("shows the same four panels whatever phase the host's events are in", () => {
+    expect(CARD).toContain("const panels = SUMMARY_PANELS")
+    expect(CARD).not.toContain("visibleAnalyticsPanels")
+    expect(CARD).not.toContain("data.phase")
+    expect(CARD).not.toContain("isArchivalEvent")
   })
 
-  it("returns everything it has when there is less than a panelful", () => {
-    expect(busiestRows([row("a", 1)])).toHaveLength(1)
-    expect(busiestRows([])).toEqual([])
-    expect(busiestRows([row("a", 1)], 0)).toEqual([])
+  it("names the window in the card header instead of a per-panel caption", () => {
+    expect(CARD).toContain('{t("card.window")}')
+    expect(CARD).not.toMatch(/card\.caption_/)
   })
 
-  it("plots the most recent arrival buckets rather than a hairline smear", () => {
-    const points = Array.from({ length: 60 }, (_unused, i) => point(`b${i}`, i))
-    const tail = latestPoints(points)
-    expect(tail).toHaveLength(CARD_ARRIVAL_BUCKETS)
-    expect(tail[0]?.day).toBe(`b${60 - CARD_ARRIVAL_BUCKETS}`)
-    expect(tail[tail.length - 1]?.day).toBe("b59")
-    expect(latestPoints(points.slice(0, 3))).toHaveLength(3)
-    expect(latestPoints(points, 0)).toEqual([])
+  it("has dropped the shifts panel and the reach panel outright", () => {
+    expect(CARD).not.toContain("bySlot")
+    expect(CARD).not.toContain("busiestRows(data.signups")
+    expect(CARD).not.toContain("viewsDaily")
+    expect(CARD).not.toContain("reachRateVisible")
+  })
+
+  it("opens the all-events page rather than one event's analytics", () => {
+    expect(CARD).toContain('push({ kind: "host-analytics" })')
+    expect(CARD).not.toContain('kind: "event-analytics"')
+  })
+})
+
+describe("the whole card is one pressable surface, clipped to its own radius", () => {
+  it("is a list card whose rows can fill edge to edge", () => {
+    expect(CARD.match(/<SectionCard label=\{heading\} trailing=\{window\} variant="list">/g) ?? [])
+      .toHaveLength(3)
+    expect(CARD.match(/\{footer\}/g) ?? []).toHaveLength(3)
+  })
+
+  it("carries the carousel's own horizontal padding on the row, not on the card", () => {
+    expect(CARD).toContain("<View style={styles.pad}>")
+    expect(CARD).toMatch(/pad: \{\n\s+paddingHorizontal: t\.space\["4"\],\n\s+\}/)
+  })
+
+  it("answers a press, not only a web hover, on every pressable it draws", () => {
+    expect(CARD.match(/state\.pressed \|\| webHover\(state\)/g) ?? []).toHaveLength(3)
+    expect(CARD.match(/webHover\(state\)/g) ?? [], "no hover-only branch is left").toHaveLength(3)
   })
 })
 
@@ -113,7 +122,6 @@ describe("the carousel measures itself and lets the chart be the panel", () => {
     expect(CARD).toContain("carouselPage(event.nativeEvent.contentOffset.x, width, panels.length)")
     expect(CARD).not.toContain("onScroll=")
     expect(CARD).not.toContain("scrollEventThrottle")
-    expect(CARD).not.toContain("accessibilityLiveRegion")
   })
 
   it("gives the chart the bulk of the panel, at a height a phone can read", () => {
@@ -127,25 +135,26 @@ describe("the carousel measures itself and lets the chart be the panel", () => {
   it("hands every chart the measured width and an explicit numeric height", () => {
     expect(CARD.match(/width=\{width\}/g) ?? []).not.toHaveLength(0)
     expect(CARD).toContain("height={CHART_HEIGHT}")
-    expect(CARD).toContain("const barsWidth = Math.max(0, width - RING_SIZE - RING_GUTTER)")
-    expect(CARD).toContain("width={barsWidth}")
     expect(CARD).not.toMatch(/width=\{`\$\{/)
     expect(CARD).not.toContain('width: "100%"')
   })
 
-  it("makes every one of the five panels a chart", () => {
-    expect(CARD.match(/<AreaLineChart/g) ?? [], "signups, reach and the flat empty state")
-      .toHaveLength(3)
-    expect(CARD.match(/<BarChart/g) ?? [], "shifts, arrivals and impact").toHaveLength(3)
+  it("plots the daily sign-ups as bars with weekly labels, not a smear of days", () => {
+    expect(CARD).toContain("xLabels={weeklyXLabels(daily, weekLabel)}")
     expect(CARD).toContain("<ProgressRing")
-    expect(CARD).toContain("busiestRows(data.signups.bySlot?.rows ?? [])")
-    expect(CARD).toContain("latestPoints(data.eventDay.arrivals)")
+    expect(CARD.match(/<BarChart/g) ?? [], "sign-ups per day and hours per event").toHaveLength(2)
+  })
+
+  it("lists the impact numbers as labelled rows rather than mixed-unit bars", () => {
+    expect(CARD).toContain("summaryImpactRows(data.activity)")
+    expect(CARD).toContain("function StatRows({ rows }")
+    expect(CARD).not.toContain("card.impact_bars_a11y")
   })
 
   it("shapes the empty states like an axis rather than a sentence", () => {
     expect(CARD).toContain("function EmptyChart({ width, label }")
     expect(CARD).toContain("series={FLAT_SERIES}")
-    expect(CARD.match(/<EmptyChart/g) ?? []).toHaveLength(4)
+    expect(CARD.match(/<EmptyChart/g) ?? [], "sign-ups and hours").toHaveLength(2)
   })
 
   it("keeps every page the same height so the card cannot jump", () => {
@@ -173,7 +182,5 @@ describe("the chart primitives size themselves from what a parent measured", () 
     expect(ANALYTICS_BODY).toContain("useMeasuredWidth")
     expect(ANALYTICS_BODY.match(/onLayout=\{onLayout\}/g) ?? []).toHaveLength(3)
     expect(ANALYTICS_BODY).not.toContain("chartWidth")
-    expect(ANALYTICS_BODY).toContain("<SignupsSection data={data} range={range}")
-    expect(ANALYTICS_BODY).toContain("<EventDaySection data={data} />")
   })
 })

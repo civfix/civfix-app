@@ -139,10 +139,9 @@ describe("the dashboard handoff is one file on both platforms", () => {
 
   it("answers in the app instead of sending the host out to the console", () => {
     expect(body).not.toContain("ConsoleLinkRow")
-    expect(body).toContain("<AnalyticsCarouselCard cleanupId={id} />")
-    expect(strip(read("../dashboard/AnalyticsCarouselCard.tsx"))).toContain(
-      'push({ kind: "event-analytics", id: cleanupId })',
-    )
+    expect(body).not.toContain("AnalyticsCarouselCard")
+    expect(body).toContain('title={tAnalytics("card.view_full")}')
+    expect(body).toContain('push({ kind: "event-analytics", id })')
   })
 
   it("collapses the event detail's host block to the single dashboard row", () => {

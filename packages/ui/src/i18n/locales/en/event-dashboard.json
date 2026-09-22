@@ -24,9 +24,6 @@
     "more_shifts": "{{count}} more shifts in Host tools",
     "more_shifts_a11y": "Open host tools to see all {{total}} shifts for {{title}}"
   },
-  "analytics": {
-    "for_event": "Analytics for {{title}}"
-  },
   "impact": {
     "section": "Impact",
     "all_time": "All time",

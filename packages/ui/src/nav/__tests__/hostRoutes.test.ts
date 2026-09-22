@@ -17,6 +17,7 @@ const HOST_KINDS = [
   "announcement",
   "announcements",
   "event-analytics",
+  "host-analytics",
   "org-manage",
 ] as const
 
@@ -46,6 +47,7 @@ describe("URL round trip", () => {
     ["/cleanups/e1/ticket", { kind: "my-ticket", id: "e1" }],
     ["/cleanups/e1/ticket/seat-9", { kind: "my-ticket", id: "e1", seatId: "seat-9" }],
     ["/cleanups/e1/analytics", { kind: "event-analytics", id: "e1" }],
+    ["/host/analytics", { kind: "host-analytics" }],
     ["/cleanups/e1/announcements", { kind: "announcements", id: "e1" }],
     [
       "/cleanups/e1/announcements/a-9",
@@ -88,6 +90,16 @@ describe("URL round trip", () => {
   it("keeps an unknown /cleanups/:id/<sub> on the event detail rather than 404ing the shell", () => {
     expect(entryFromPath("/cleanups/e1/nonsense")).toEqual({ kind: "cleanup", id: "e1" })
   })
+
+  it("keeps /host on the host-an-event form and takes only /host/analytics elsewhere", () => {
+    expect(entryFromPath("/host")).toEqual({ kind: "create-cleanup" })
+    expect(entryFromPath("/host/nonsense")).toEqual({ kind: "create-cleanup" })
+  })
+
+  it("addresses the all-events page with no id at all, unlike the per-event one", () => {
+    expect(pathForEntry({ kind: "host-analytics" })).toBe("/host/analytics")
+    expect(pathForEntry({ kind: "host-analytics", id: "e1" })).toBe("/host/analytics")
+  })
 })
 
 describe("parent view + flow protection", () => {
@@ -104,6 +116,7 @@ describe("parent view + flow protection", () => {
       "announcement",
       "announcements",
       "event-analytics",
+      "host-analytics",
       "org-manage",
     ] as const) {
       expect(parentViewForEntry({ kind } as DetailEntry), kind).toBe("events")
@@ -123,6 +136,7 @@ describe("parent view + flow protection", () => {
       "announcement",
       "announcements",
       "event-analytics",
+      "host-analytics",
       "org-manage",
     ] as const) {
       expect(FLOW_KINDS.has(kind), kind).toBe(false)

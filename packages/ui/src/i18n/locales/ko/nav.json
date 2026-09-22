@@ -42,7 +42,8 @@
     "announcements": "공지",
     "host_announce": "공지 작성",
     "event_analytics": "행사 분석",
-    "org_manage": "단체 설정"
+    "org_manage": "단체 설정",
+    "host_analytics": "분석"
   },
   "tab": {
     "home": "홈",

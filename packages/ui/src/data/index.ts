@@ -256,7 +256,12 @@ export type {
 
 export { useHostedEventsAnalytics } from "./hooks/dashboard"
 
-export { EVENT_ANALYTICS_STALE_MS, useEventAnalytics } from "./hooks/analytics"
+export {
+  EVENT_ANALYTICS_STALE_MS,
+  HOST_ANALYTICS_SUMMARY_RANGE,
+  useEventAnalytics,
+  useHostAnalyticsSummary,
+} from "./hooks/analytics"
 
 export {
   ANNOUNCEMENTS_PAGE_SIZE,

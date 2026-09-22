@@ -133,6 +133,7 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
       if (id === "appearance") return { kind: "appearance-settings" }
       return null
     case "host":
+      if (id === "analytics") return { kind: "host-analytics" }
       return { kind: "create-cleanup" }
     case "groups":
       if (id === "new") return { kind: "new-group" }
@@ -182,6 +183,8 @@ export function pathForEntry(entry: DetailEntry | null): string {
       return entry.id ? `/cleanups/${entry.id}/hours` : "/cleanups"
     case "event-analytics":
       return entry.id ? `/cleanups/${entry.id}/analytics` : "/cleanups"
+    case "host-analytics":
+      return "/host/analytics"
     case "announcements":
       return entry.id ? `/cleanups/${entry.id}/announcements` : "/cleanups"
     case "announcement":
@@ -355,6 +358,8 @@ export function titleForEntry(entry: DetailEntry | null): string {
       return "title.host_log_hours"
     case "event-analytics":
       return "title.event_analytics"
+    case "host-analytics":
+      return "title.host_analytics"
     case "announcements":
       return "title.announcements"
     case "announcement":
@@ -465,6 +470,7 @@ export function parentViewForEntry(entry: DetailEntry | null): View | null {
     case "announcement":
     case "announcements":
     case "event-analytics":
+    case "host-analytics":
     case "org":
     case "org-manage":
     case "event-dashboard":

@@ -7,6 +7,8 @@ import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, iconMap, type LucideIcon } from "../../typography"
 import {
   CancelEventSheet,
+  IconTile,
+  ListRow,
   ModalCardSheet,
   PrimaryButton,
   SecondaryButton,
@@ -48,7 +50,6 @@ import { FeedNotice } from "../FeedNotice"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
 import { EventRosterBlock } from "./EventRosterBlock"
 import { HostAnnouncementsBlock } from "./HostAnnouncementsBlock"
-import { AnalyticsCarouselCard } from "./dashboard/AnalyticsCarouselCard"
 import { HeroSkeleton, RowsSkeleton, TilesSkeleton } from "./HostSkeletons"
 import { HostInsightsPanels } from "./HostInsightsPanels"
 import { HostWalkupSheet } from "./HostWalkupSheet"
@@ -166,6 +167,7 @@ export function HostModeBody({ id }: { id: string }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-mode")
+  const { t: tAnalytics } = useT("host-analytics")
   const { locale } = useLocale()
   const { relative, weekdays } = useRelativeTime()
   const viewerTimeZone = useViewerTimeZone()
@@ -448,7 +450,17 @@ export function HostModeBody({ id }: { id: string }) {
 
         {phase === "cancelled" ? <FeedNotice icon="Ban" title={t("cancelled_notice")} /> : null}
 
-        {can.viewAnalytics ? <AnalyticsCarouselCard cleanupId={id} /> : null}
+        {can.viewAnalytics ? (
+          <SectionCard variant="list">
+            <ListRow
+              leading={<IconTile icon="BarChart3" />}
+              title={tAnalytics("card.view_full")}
+              titleLines={1}
+              chevron
+              onPress={() => useNavStore.getState().push({ kind: "event-analytics", id })}
+            />
+          </SectionCard>
+        ) : null}
 
         {can.viewAnalytics ? (
           <InsightsSection

@@ -43,7 +43,8 @@
     "announcements": "Announcements",
     "host_announce": "Make announcement",
     "event_analytics": "Event analytics",
-    "org_manage": "Organization settings"
+    "org_manage": "Organization settings",
+    "host_analytics": "Analytics"
   },
   "tab": {
     "home": "Home",

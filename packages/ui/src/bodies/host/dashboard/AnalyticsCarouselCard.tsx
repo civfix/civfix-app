@@ -8,26 +8,24 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native"
-import type { GetEventAnalyticsResponse } from "@civfix/shared"
+import type { HostAnalyticsSummaryResponse } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover } from "../../../theme"
 import { Icon, Text, iconMap } from "../../../typography"
 import { IconTile, ListRow, SectionCard, SkeletonBlock, SkeletonGroup } from "../../../primitives"
 import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth } from "../../../charts"
-import { useEventAnalytics } from "../../../data/hooks/analytics"
-import { useT } from "../../../i18n"
+import { useHostAnalyticsSummary } from "../../../data/hooks/analytics"
+import { useLocale, useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { FeedNotice } from "../../FeedNotice"
 import {
+  SUMMARY_PANELS,
   busiestRows,
   carouselPage,
   hasSeriesData,
-  isArchivalEvent,
-  latestPoints,
   ratePercent,
-  reachRateVisible,
-  seriesPoints,
-  visibleAnalyticsPanels,
-  type AnalyticsPanelKey,
+  summaryImpactRows,
+  weeklyXLabels,
+  type SummaryPanelKey,
 } from "../analyticsModel"
 
 const HEADER_HEIGHT = 30
@@ -58,16 +56,10 @@ const DASH = "—"
 const IS_WEB = Platform.OS === "web"
 
 export interface AnalyticsCarouselCardProps {
-  cleanupId: string
-  enabled?: boolean
-  label?: string
+  orgId: string | null
 }
 
-export function AnalyticsCarouselCard({
-  cleanupId,
-  enabled = true,
-  label,
-}: AnalyticsCarouselCardProps) {
+export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-analytics")
@@ -75,15 +67,9 @@ export function AnalyticsCarouselCard({
   const [index, setIndex] = useState(0)
   const scroller = React.useRef<ScrollView>(null)
 
-  const heading = label ?? t("card.title")
-
-  const query = useEventAnalytics(cleanupId, "card", { enabled })
+  const query = useHostAnalyticsSummary(orgId)
   const data = query.data ?? null
-  const panels = useMemo<readonly AnalyticsPanelKey[]>(
-    () => (data ? visibleAnalyticsPanels(data) : []),
-    [data],
-  )
-  const active = panels[Math.min(index, Math.max(0, panels.length - 1))] ?? null
+  const panels = SUMMARY_PANELS
 
   const onMomentumScrollEnd = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -102,8 +88,8 @@ export function AnalyticsCarouselCard({
   )
 
   const openFull = useCallback(() => {
-    useNavStore.getState().push({ kind: "event-analytics", id: cleanupId })
-  }, [cleanupId])
+    useNavStore.getState().push({ kind: "host-analytics" })
+  }, [])
 
   const footer = (
     <ListRow
@@ -115,15 +101,24 @@ export function AnalyticsCarouselCard({
     />
   )
 
+  const heading = t("card.title")
+  const window = (
+    <Text variant="caption" numberOfLines={1}>
+      {t("card.window")}
+    </Text>
+  )
+
   if (query.isPending) {
     return (
-      <SectionCard label={heading}>
-        <SkeletonGroup>
-          <View style={styles.skeleton}>
-            <SkeletonBlock width="40%" height={HEADER_HEIGHT} />
-            <SkeletonBlock width="100%" height={CHART_HEIGHT} />
-          </View>
-        </SkeletonGroup>
+      <SectionCard label={heading} trailing={window} variant="list">
+        <View style={styles.pad}>
+          <SkeletonGroup>
+            <View style={styles.skeleton}>
+              <SkeletonBlock width="40%" height={HEADER_HEIGHT} />
+              <SkeletonBlock width="100%" height={CHART_HEIGHT} />
+            </View>
+          </SkeletonGroup>
+        </View>
         {footer}
       </SectionCard>
     )
@@ -131,134 +126,114 @@ export function AnalyticsCarouselCard({
 
   if (query.isError || !data) {
     return (
-      <SectionCard label={heading}>
-        <FeedNotice
-          icon="CloudOff"
-          title={t("card.error_title")}
-          body={t("card.error_body")}
-          actionLabel={t("card.retry")}
-          onAction={() => void query.refetch()}
-        />
-        {footer}
-      </SectionCard>
-    )
-  }
-
-  if (isArchivalEvent(data.lifecycle, data.phase, Date.now())) {
-    return (
-      <SectionCard label={heading} trailing={<Text variant="caption">{t("card.final")}</Text>}>
-        <Text style={styles.archival}>
-          {t("card.archival_summary", {
-            hours: Math.round(data.kpis.hoursTotal ?? 0),
-            volunteers: data.kpis.hoursVolunteers ?? 0,
-            attended: data.kpis.checkedIn ?? 0,
-          })}
-        </Text>
+      <SectionCard label={heading} trailing={window} variant="list">
+        <View style={styles.pad}>
+          <FeedNotice
+            icon="CloudOff"
+            title={t("card.error_title")}
+            body={t("card.error_body")}
+            actionLabel={t("card.retry")}
+            onAction={() => void query.refetch()}
+          />
+        </View>
         {footer}
       </SectionCard>
     )
   }
 
   return (
-    <SectionCard
-      label={heading}
-      trailing={
-        active ? (
-          <Text variant="caption" numberOfLines={1}>
-            {t(`card.caption_${active}`)}
-          </Text>
-        ) : undefined
-      }
-    >
-      <View style={styles.viewport} onLayout={onLayout}>
-        {width > 0 ? (
-          <ScrollView
-            ref={scroller}
-            horizontal
-            pagingEnabled
-            snapToInterval={width}
-            snapToAlignment="start"
-            disableIntervalMomentum
-            decelerationRate="fast"
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={onMomentumScrollEnd}
-            accessibilityLabel={t("card.carousel_a11y")}
-          >
-            {panels.map((panel) => (
-              <Pressable
-                key={panel}
-                onPress={openFull}
-                accessibilityRole="button"
-                accessibilityLabel={t("card.panel_a11y", {
-                  index: panels.indexOf(panel) + 1,
-                  total: panels.length,
-                  name: t(`card.panel_${panel}`),
-                })}
-                {...focusRingProps}
-                style={(state) => [
-                  { width },
-                  styles.panel,
-                  webCursor(),
-                  webHover(state) ? styles.panelHovered : null,
-                ]}
-              >
-                <Panel panel={panel} data={data} width={width} />
-              </Pressable>
-            ))}
-          </ScrollView>
-        ) : null}
+    <SectionCard label={heading} trailing={window} variant="list">
+      <View style={styles.pad}>
+        <View style={styles.viewport} onLayout={onLayout}>
+          {width > 0 ? (
+            <ScrollView
+              ref={scroller}
+              horizontal
+              pagingEnabled
+              snapToInterval={width}
+              snapToAlignment="start"
+              disableIntervalMomentum
+              decelerationRate="fast"
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={onMomentumScrollEnd}
+              accessibilityLabel={t("card.carousel_a11y")}
+            >
+              {panels.map((panel) => (
+                <Pressable
+                  key={panel}
+                  onPress={openFull}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("card.panel_a11y", {
+                    index: panels.indexOf(panel) + 1,
+                    total: panels.length,
+                    name: t(`card.panel_${panel}`),
+                  })}
+                  {...focusRingProps}
+                  style={(state) => [
+                    { width },
+                    styles.panel,
+                    webCursor(),
+                    state.pressed || webHover(state) ? styles.panelHovered : null,
+                  ]}
+                >
+                  <Panel panel={panel} data={data} width={width} />
+                </Pressable>
+              ))}
+            </ScrollView>
+          ) : null}
 
-        {IS_WEB && width > 0 && index > 0 ? (
-          <Pressable
-            onPress={() => goTo(index - 1)}
-            accessibilityRole="button"
-            accessibilityLabel={t("card.previous_a11y")}
-            {...focusRingProps}
-            style={(state) => [
-              styles.chevron,
-              styles.chevronLeft,
-              webCursor(),
-              webHover(state) ? styles.chevronHovered : null,
-            ]}
-          >
-            <Icon icon={iconMap.ChevronLeft} size={16} color={th.colors.textMuted} />
-          </Pressable>
-        ) : null}
-        {IS_WEB && width > 0 && index < panels.length - 1 ? (
-          <Pressable
-            onPress={() => goTo(index + 1)}
-            accessibilityRole="button"
-            accessibilityLabel={t("card.next_a11y")}
-            {...focusRingProps}
-            style={(state) => [
-              styles.chevron,
-              styles.chevronRight,
-              webCursor(),
-              webHover(state) ? styles.chevronHovered : null,
-            ]}
-          >
-            <Icon icon={iconMap.ChevronRight} size={16} color={th.colors.textMuted} />
-          </Pressable>
-        ) : null}
-      </View>
+          {IS_WEB && width > 0 && index > 0 ? (
+            <Pressable
+              onPress={() => goTo(index - 1)}
+              accessibilityRole="button"
+              accessibilityLabel={t("card.previous_a11y")}
+              {...focusRingProps}
+              style={(state) => [
+                styles.chevron,
+                styles.chevronLeft,
+                webCursor(),
+                state.pressed || webHover(state) ? styles.chevronHovered : null,
+              ]}
+            >
+              <Icon icon={iconMap.ChevronLeft} size={16} color={th.colors.textMuted} />
+            </Pressable>
+          ) : null}
+          {IS_WEB && width > 0 && index < panels.length - 1 ? (
+            <Pressable
+              onPress={() => goTo(index + 1)}
+              accessibilityRole="button"
+              accessibilityLabel={t("card.next_a11y")}
+              {...focusRingProps}
+              style={(state) => [
+                styles.chevron,
+                styles.chevronRight,
+                webCursor(),
+                state.pressed || webHover(state) ? styles.chevronHovered : null,
+              ]}
+            >
+              <Icon icon={iconMap.ChevronRight} size={16} color={th.colors.textMuted} />
+            </Pressable>
+          ) : null}
+        </View>
 
-      <View style={styles.dots}>
-        {panels.map((panel, dot) => (
-          <Pressable
-            key={panel}
-            onPress={() => goTo(dot)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: dot === index }}
-            accessibilityLabel={t("card.panel_a11y", {
-              index: dot + 1,
-              total: panels.length,
-              name: t(`card.panel_${panel}`),
-            })}
-            hitSlop={8}
-            {...focusRingProps}
-            style={[styles.dot, dot === index ? styles.dotOn : null]}
-          />
-        ))}
+        <View style={styles.dots}>
+          {panels.map((panel, dot) => (
+            <Pressable
+              key={panel}
+              onPress={() => goTo(dot)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: dot === index }}
+              accessibilityLabel={t("card.panel_a11y", {
+                index: dot + 1,
+                total: panels.length,
+                name: t(`card.panel_${panel}`),
+              })}
+              hitSlop={8}
+              {...focusRingProps}
+              style={[styles.dot, dot === index ? styles.dotOn : null]}
+            />
+          ))}
+        </View>
       </View>
 
       {footer}
@@ -271,36 +246,32 @@ function Panel({
   data,
   width,
 }: {
-  panel: AnalyticsPanelKey
-  data: GetEventAnalyticsResponse
+  panel: SummaryPanelKey
+  data: HostAnalyticsSummaryResponse
   width: number
 }) {
   const th = useTheme()
   const { t } = useT("host-analytics")
+  const { locale } = useLocale()
+  const weekLabel = useWeekLabel(locale)
 
   if (panel === "signups") {
-    const delta = data.deltas.signups7d ?? 0
+    const daily = data.signupsDaily
     return (
       <PanelFrame
-        value={String(data.kpis.signups ?? 0)}
-        caption={
-          data.kpis.capacity
-            ? t("card.signups_of", { capacity: data.kpis.capacity })
-            : t("card.signups_caption")
-        }
-        pill={delta > 0 ? t("card.signups_delta", { delta }) : undefined}
+        value={String(data.activity.signups)}
+        caption={t("card.signups_caption", { events: data.totals.events })}
       >
-        {hasSeriesData(data.signups.cumulative) ? (
-          <AreaLineChart
-            series={seriesPoints(data.signups.cumulative)}
+        {hasSeriesData(daily) ? (
+          <BarChart
+            bars={daily.map((point) => ({
+              key: point.day,
+              value: point.suppressed ? null : point.value,
+              color: th.colors.accent,
+            }))}
+            xLabels={weeklyXLabels(daily, weekLabel)}
             width={width}
             height={CHART_HEIGHT}
-            stroke={th.colors.accent}
-            fill={th.colors.selectedFill}
-            {...(data.kpis.capacity
-              ? { refLineY: data.kpis.capacity, refLineColor: th.colors.chartInkMuted }
-              : {})}
-            gridColor={th.colors.border}
             labelColor={th.colors.textSubtle}
             accessibilityLabel={t("card.signups_spark_a11y")}
           />
@@ -311,46 +282,37 @@ function Panel({
     )
   }
 
-  if (panel === "reach") {
-    const rate = ratePercent(data.rates.viewToSignup)
+  if (panel === "checkins") {
+    const held = data.eventsHeld
+    const ran = held.count > 0
+    const rate = ran ? ratePercent(held.checkInRate) : null
     return (
       <PanelFrame
-        value={String(data.kpis.pageViews ?? 0)}
-        caption={t("card.reach_caption")}
-        pill={
-          reachRateVisible(data.kpis.pageViews, data.rates.viewToSignup) && rate !== null
-            ? t("card.reach_rate", { rate })
-            : undefined
-        }
+        value={String(held.checkIns)}
+        caption={t("card.checkins_caption", {
+          registered: held.registered,
+          count: held.count,
+        })}
       >
-        {hasSeriesData(data.reach.viewsDaily) ? (
-          <AreaLineChart
-            series={seriesPoints(data.reach.viewsDaily)}
-            width={width}
-            height={CHART_HEIGHT}
-            stroke={th.colors.chartInkMuted}
-            fill={th.colors.chartTrack}
-            gridColor={th.colors.border}
-            labelColor={th.colors.textSubtle}
-            accessibilityLabel={t("card.reach_spark_a11y")}
-          />
-        ) : (
-          <EmptyChart width={width} label={t("card.reach_empty")} />
-        )}
+        <RingPanel
+          ring={(rate ?? 0) / 100}
+          ringLabel={rate === null ? DASH : `${rate}%`}
+          ringA11y={t("card.checkins_ring_a11y", { rate: rate ?? 0 })}
+          note={ran ? null : t("card.checkins_empty")}
+        />
       </PanelFrame>
     )
   }
 
-  if (panel === "slots") {
-    const fill = ratePercent(data.rates.fill)
-    const rows = busiestRows(data.signups.bySlot?.rows ?? [])
+  if (panel === "hours") {
+    const rows = busiestRows(data.hoursByEvent.rows)
     return (
       <PanelFrame
-        value={fill === null ? DASH : `${fill}%`}
-        caption={t("card.slots_caption")}
+        value={t("card.hours_value", { hours: Math.round(data.activity.hoursTotal) })}
+        caption={t("card.hours_caption", { volunteers: data.activity.hoursVolunteers })}
       >
         {rows.length === 0 ? (
-          <EmptyChart width={width} label={t("card.slots_empty")} />
+          <EmptyChart width={width} label={t("card.hours_empty")} />
         ) : (
           <BarChart
             bars={rows.map((row) => ({
@@ -364,112 +326,47 @@ function Panel({
             horizontal
             trackColor={th.colors.chartTrack}
             labelColor={th.colors.textMuted}
-            accessibilityLabel={t("card.slots_bars_a11y")}
+            accessibilityLabel={t("card.hours_bars_a11y")}
           />
         )}
       </PanelFrame>
     )
   }
 
-  if (panel === "checkins") {
-    const upcoming = data.phase === "upcoming"
-    const rate = upcoming ? null : ratePercent(data.rates.checkIn)
-    const arrivals = upcoming ? [] : latestPoints(data.eventDay.arrivals)
-    const showBars = !upcoming && hasSeriesData(arrivals)
-    const barsWidth = Math.max(0, width - RING_SIZE - RING_GUTTER)
-    return (
-      <PanelFrame
-        value={String(upcoming ? (data.kpis.signups ?? 0) : (data.kpis.checkedIn ?? 0))}
-        caption={
-          upcoming
-            ? t("card.checkins_pre")
-            : t("card.checkins_of", { signups: data.kpis.signups ?? 0, rate: rate ?? 0 })
-        }
-        pill={
-          !upcoming && data.kpis.noShow
-            ? t("card.checkins_no_shows", { noShow: data.kpis.noShow })
-            : undefined
-        }
-      >
-        <CheckinsChart
-          ring={(rate ?? 0) / 100}
-          ringLabel={rate === null ? DASH : `${rate}%`}
-          ringA11y={t("card.checkins_ring_a11y", { rate: rate ?? 0 })}
-          note={
-            showBars
-              ? null
-              : upcoming
-                ? t("card.checkins_pre_visual")
-                : t("card.checkins_empty")
-          }
-        >
-          {showBars ? (
-            <BarChart
-              bars={arrivals.map((point) => ({
-                key: point.day,
-                value: point.suppressed ? null : point.value,
-                color: th.colors.accent,
-              }))}
-              width={barsWidth}
-              height={CHART_HEIGHT}
-              labelColor={th.colors.textMuted}
-              accessibilityLabel={t("card.checkins_bars_a11y")}
-            />
-          ) : null}
-        </CheckinsChart>
-      </PanelFrame>
-    )
-  }
-
-  if (data.phase === "upcoming") {
-    return (
-      <PanelFrame
-        value={String(data.kpis.reportsLinked ?? 0)}
-        caption={t("card.impact_pre")}
-      >
-        <EmptyChart width={width} label={t("card.impact_pre_visual")} />
-      </PanelFrame>
-    )
-  }
-
-  const cells = [
-    { key: "volunteers", value: data.kpis.hoursVolunteers ?? 0 },
-    { key: "reports_linked", value: data.kpis.reportsLinked ?? 0 },
-    { key: "reports_resolved", value: data.kpis.reportsResolved ?? 0 },
-    { key: "donations", value: data.kpis.donationClicks ?? 0 },
-  ]
   return (
     <PanelFrame
-      value={t("card.hours_value", { hours: Math.round(data.kpis.hoursTotal ?? 0) })}
+      value={String(data.activity.reportsLinked)}
       caption={t("card.impact_caption")}
     >
-      <BarChart
-        bars={cells.map((cell) => ({
-          key: cell.key,
-          label: t(`card.impact_${cell.key}`),
-          value: cell.value,
-          color: th.colors.accent,
-          valueLabel: String(cell.value),
+      <StatRows
+        rows={summaryImpactRows(data.activity).map((row) => ({
+          key: row.key,
+          text: t(`card.impact_${row.key}`, { n: row.value }),
         }))}
-        width={width}
-        horizontal
-        trackColor={th.colors.chartTrack}
-        labelColor={th.colors.textMuted}
-        accessibilityLabel={t("card.impact_bars_a11y")}
       />
     </PanelFrame>
   )
 }
 
+function useWeekLabel(locale: string): (day: string) => string {
+  return useMemo(() => {
+    let format: Intl.DateTimeFormat
+    try {
+      format = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" })
+    } catch {
+      format = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" })
+    }
+    return (day: string) => format.format(new Date(day))
+  }, [locale])
+}
+
 function PanelFrame({
   value,
   caption,
-  pill,
   children,
 }: {
   value: string
   caption: string
-  pill?: string
   children: React.ReactNode
 }) {
   const styles = useStyles()
@@ -482,15 +379,21 @@ function PanelFrame({
         <Text variant="caption" numberOfLines={1} style={styles.caption}>
           {caption}
         </Text>
-        {pill ? (
-          <View style={styles.pill}>
-            <Text style={styles.pillText} numberOfLines={1}>
-              {pill}
-            </Text>
-          </View>
-        ) : null}
       </View>
       <View style={styles.chart}>{children}</View>
+    </View>
+  )
+}
+
+function StatRows({ rows }: { rows: readonly { key: string; text: string }[] }) {
+  const styles = useStyles()
+  return (
+    <View style={styles.statRows}>
+      {rows.map((row) => (
+        <Text key={row.key} variant="caption" numberOfLines={1} style={styles.statRow}>
+          {row.text}
+        </Text>
+      ))}
     </View>
   )
 }
@@ -518,18 +421,16 @@ function EmptyChart({ width, label }: { width: number; label: string }) {
   )
 }
 
-function CheckinsChart({
+function RingPanel({
   ring,
   ringLabel,
   ringA11y,
   note,
-  children,
 }: {
   ring: number
   ringLabel: string
   ringA11y: string
   note: string | null
-  children: React.ReactNode
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -550,15 +451,16 @@ function CheckinsChart({
           <Text variant="caption" numberOfLines={3} style={styles.emptyText}>
             {note}
           </Text>
-        ) : (
-          children
-        )}
+        ) : null}
       </View>
     </View>
   )
 }
 
 const useStyles = makeThemedStyles((t) => ({
+  pad: {
+    paddingHorizontal: t.space["4"],
+  },
   skeleton: {
     gap: t.space["2"],
     height: PANEL_HEIGHT,
@@ -597,22 +499,16 @@ const useStyles = makeThemedStyles((t) => ({
     flexShrink: 1,
     minWidth: 0,
   },
-  pill: {
-    flexShrink: 0,
-    paddingHorizontal: t.space["2"],
-    paddingVertical: 2,
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.selectedFill,
-  },
-  pillText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["12"],
-    color: t.colors.accentText,
-  },
   chart: {
     height: CHART_HEIGHT,
     justifyContent: "center",
     overflow: "hidden",
+  },
+  statRows: {
+    gap: t.space["2"],
+  },
+  statRow: {
+    color: t.colors.text,
   },
   emptyChart: {
     height: CHART_HEIGHT,
@@ -679,10 +575,5 @@ const useStyles = makeThemedStyles((t) => ({
   },
   chevronRight: {
     right: 0,
-  },
-  archival: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
   },
 }))

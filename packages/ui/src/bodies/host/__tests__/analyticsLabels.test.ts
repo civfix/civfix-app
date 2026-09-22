@@ -4,7 +4,7 @@ import { RegistrationSourceSchema } from "@civfix/shared"
 
 const LOCALES = ["en", "es", "de", "ko"] as const
 
-const EVENT_FUNNEL_STEPS = ["page_views", "signups", "checked_in", "logged_hours"] as const
+const EVENT_FUNNEL_STEPS = ["signups", "checked_in", "logged_hours"] as const
 
 const body = readFileSync(new URL("../EventAnalyticsBody.tsx", import.meta.url), "utf8")
 const markdown = readFileSync(
@@ -31,10 +31,17 @@ describe("the funnel labels key off the wire step id, not a prettier synonym", (
     }
   })
 
-  it("has dropped the old hours_logged spelling that never matched a wire id", () => {
+  it("has dropped every spelling the endpoint no longer emits", () => {
     for (const lng of LOCALES) {
-      expect(catalog(lng, "host-analytics").funnel?.["hours_logged"], lng).toBeUndefined()
+      const funnel = catalog(lng, "host-analytics").funnel ?? {}
+      expect(funnel["hours_logged"], `${lng} funnel.hours_logged`).toBeUndefined()
+      expect(funnel["page_views"], `${lng} funnel.page_views`).toBeUndefined()
     }
+  })
+
+  it("names the funnel for what it actually measures now", () => {
+    expect(catalog("en", "host-analytics").page?.["funnel_section"]).toBe("From sign-up to hours")
+    expect(code(body)).not.toContain("funnel.page_views")
   })
 
   it("resolves the label with no defaultValue, so a future miss fails loudly", () => {

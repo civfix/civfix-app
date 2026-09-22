@@ -108,6 +108,7 @@ export const DETAIL_BODY: Record<DetailKind, BodyId> = {
   "org-manage": "orgManage",
   "event-dashboard": "eventDashboard",
   "event-analytics": "eventAnalytics",
+  "host-analytics": "eventAnalytics",
   announcement: "announcement",
   announcements: "announcements",
 }

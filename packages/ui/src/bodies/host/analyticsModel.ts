@@ -1,142 +1,62 @@
 import type {
   BreakdownRow,
-  EventAnalyticsLifecycle,
-  EventAnalyticsPhase,
   FunnelStep,
   GetEventAnalyticsResponse,
+  HostAnalyticsSummaryActivity,
+  HostedEventDTO,
   SeriesPoint,
   SuppressedRate,
 } from "@civfix/shared"
 import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS } from "@civfix/shared"
+import { hostedEventCan } from "./dashboard/dashboardModel"
 
-export const ANALYTICS_PANELS = ["signups", "reach", "slots", "checkins", "impact"] as const
+export const SUMMARY_PANELS = ["signups", "checkins", "hours", "impact"] as const
 
-export type AnalyticsPanelKey = (typeof ANALYTICS_PANELS)[number]
-
-const PANEL_ORDER: Readonly<Record<EventAnalyticsPhase, readonly AnalyticsPanelKey[]>> = {
-  upcoming: ["signups", "reach", "slots", "checkins", "impact"],
-  day_of: ["checkins", "signups", "slots", "reach", "impact"],
-  completed: ["impact", "checkins", "signups", "reach", "slots"],
-  archived: ["impact", "checkins", "signups", "reach", "slots"],
-}
-
-export const ARCHIVAL_AFTER_DAYS = 30
-
-export const EVENT_DAY_PAD_MS = 2 * 3_600_000
-
-export const FOLLOW_UP_DAYS = 30
+export type SummaryPanelKey = (typeof SUMMARY_PANELS)[number]
 
 export const DAY_MS = 86_400_000
 
-export const REACH_RATE_MIN_VIEWS = 20
-
-export function analyticsPanelOrder(phase: EventAnalyticsPhase): readonly AnalyticsPanelKey[] {
-  return PANEL_ORDER[phase]
-}
-
-export function slotsPanelVisible(data: GetEventAnalyticsResponse): boolean {
-  const rows = data.signups.bySlot?.rows.length ?? 0
-  return rows > 0 || (data.kpis.capacity ?? 0) > 0
-}
-
-export function visibleAnalyticsPanels(
-  data: GetEventAnalyticsResponse,
-): readonly AnalyticsPanelKey[] {
-  const order = analyticsPanelOrder(data.phase)
-  return slotsPanelVisible(data) ? order : order.filter((panel) => panel !== "slots")
-}
-
-export function isArchivalEvent(
-  lifecycle: EventAnalyticsLifecycle,
-  phase: EventAnalyticsPhase,
-  now: number,
-): boolean {
-  if (phase === "archived") return true
-  if (phase !== "completed") return false
-  const ended = Date.parse(lifecycle.completedAt ?? lifecycle.endAt ?? "")
-  if (!Number.isFinite(ended)) return false
-  return now - ended > ARCHIVAL_AFTER_DAYS * DAY_MS
-}
-
-export const LIFECYCLE_SEGMENTS = ["lead_up", "event_day", "follow_up", "all"] as const
-
-export type LifecycleSegment = (typeof LIFECYCLE_SEGMENTS)[number]
-
-export interface TimeRange {
-  from: number
-  to: number
-}
+const DAY_BUCKET_KEY = /^\d{4}-\d{2}-\d{2}/
 
 function parse(value: string | null | undefined): number | null {
-  if (!value) return null
+  if (!value || !DAY_BUCKET_KEY.test(value)) return null
   const at = Date.parse(value)
   return Number.isFinite(at) ? at : null
 }
 
-export function segmentRange(
-  segment: LifecycleSegment,
-  lifecycle: EventAnalyticsLifecycle,
-  now: number,
-): TimeRange {
-  const created = parse(lifecycle.createdAt) ?? now
-  const start = parse(lifecycle.startAt)
-  const end = parse(lifecycle.endAt) ?? start
-  if (segment === "lead_up") return { from: created, to: start ?? now }
-  if (segment === "event_day" && start !== null) {
-    return { from: start - EVENT_DAY_PAD_MS, to: (end ?? start) + EVENT_DAY_PAD_MS }
-  }
-  if (segment === "follow_up" && end !== null) {
-    return { from: end, to: Math.min(now, end + FOLLOW_UP_DAYS * DAY_MS) }
-  }
-  return { from: created, to: now }
+export const ANALYTICS_RANGE_PRESETS = ["whole_event", "7d", "30d", "90d", "all"] as const
+
+export type AnalyticsRangePreset = (typeof ANALYTICS_RANGE_PRESETS)[number]
+
+export const ALL_EVENTS_RANGE_PRESETS = ["7d", "30d", "90d", "all"] as const
+
+export const DEFAULT_ALL_EVENTS_PRESET: AnalyticsRangePreset = "30d"
+
+export const DEFAULT_EVENT_PRESET: AnalyticsRangePreset = "whole_event"
+
+const PRESET_DAYS: Readonly<Record<AnalyticsRangePreset, number | null>> = {
+  whole_event: null,
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+  all: null,
 }
 
-export function segmentEnabled(
-  segment: LifecycleSegment,
-  lifecycle: EventAnalyticsLifecycle,
-  now: number,
-): boolean {
-  const start = parse(lifecycle.startAt)
-  const end = parse(lifecycle.endAt) ?? start
-  if (segment === "all") return true
-  if (segment === "lead_up") return start !== null
-  if (segment === "event_day") return start !== null && now >= start - EVENT_DAY_PAD_MS
-  return end !== null && now >= end
+export function presetDays(preset: AnalyticsRangePreset): number | null {
+  return PRESET_DAYS[preset]
 }
 
-export function defaultSegment(
-  phase: EventAnalyticsPhase,
-  lifecycle: EventAnalyticsLifecycle,
-  now: number,
-): LifecycleSegment {
-  const wanted: LifecycleSegment =
-    phase === "day_of" ? "event_day" : phase === "upcoming" ? "lead_up" : "follow_up"
-  return segmentEnabled(wanted, lifecycle, now) ? wanted : "all"
-}
-
-const DAY_BUCKET_KEY = /^\d{4}-\d{2}-\d{2}$/
-
-export function dayBucketed(points: readonly SeriesPoint[]): boolean {
-  return points.length > 0 && points.every((point) => DAY_BUCKET_KEY.test(point.day))
-}
-
-export function wholeDayRange(range: TimeRange): TimeRange {
-  return {
-    from: Math.floor(range.from / DAY_MS) * DAY_MS,
-    to: Math.floor(range.to / DAY_MS) * DAY_MS + DAY_MS - 1,
-  }
-}
-
-export function sliceSeries(
+export function rangeSlice(
   points: readonly SeriesPoint[],
-  range: TimeRange,
+  days: number | null,
+  now: number,
 ): readonly SeriesPoint[] {
-  const bounds = dayBucketed(points) ? wholeDayRange(range) : range
-  const sliced = points.filter((point) => {
+  if (days === null || days <= 0) return points
+  const from = Math.floor(now / DAY_MS) * DAY_MS - (days - 1) * DAY_MS
+  return points.filter((point) => {
     const at = parse(point.day)
-    return at === null ? true : at >= bounds.from && at <= bounds.to
+    return at === null ? true : at >= from
   })
-  return sliced.length > 0 ? sliced : points
 }
 
 export function seriesValues(points: readonly SeriesPoint[]): (number | null)[] {
@@ -156,8 +76,6 @@ export function hasSeriesData(points: readonly SeriesPoint[]): boolean {
 
 export const CARD_SLOT_ROWS = 4
 
-export const CARD_ARRIVAL_BUCKETS = 24
-
 export function busiestRows(rows: readonly BreakdownRow[], max = CARD_SLOT_ROWS): BreakdownRow[] {
   if (max <= 0) return []
   return [...rows]
@@ -165,12 +83,69 @@ export function busiestRows(rows: readonly BreakdownRow[], max = CARD_SLOT_ROWS)
     .slice(0, max)
 }
 
-export function latestPoints(
+const ISO_WEEK_START = 1
+
+export function weeklyXLabels(
   points: readonly SeriesPoint[],
-  max = CARD_ARRIVAL_BUCKETS,
-): SeriesPoint[] {
-  if (max <= 0) return []
-  return points.slice(Math.max(0, points.length - max))
+  label: (day: string) => string,
+): { index: number; text: string }[] {
+  const out: { index: number; text: string }[] = []
+  points.forEach((point, index) => {
+    const at = parse(point.day)
+    if (at === null) return
+    if (new Date(at).getUTCDay() !== ISO_WEEK_START) return
+    out.push({ index, text: label(point.day) })
+  })
+  return out
+}
+
+export const ARRIVAL_LABEL_MINUTES = [-60, 0, 60, 120] as const
+
+const MINUTE_BUCKET = /^-?\d+$/
+
+export function arrivalXLabels(
+  points: readonly SeriesPoint[],
+  label: (minutes: number) => string,
+): { index: number; text: string }[] {
+  const out: { index: number; text: string }[] = []
+  for (const minutes of ARRIVAL_LABEL_MINUTES) {
+    const index = points.findIndex(
+      (point) => MINUTE_BUCKET.test(point.day) && Number(point.day) === minutes,
+    )
+    if (index >= 0) out.push({ index, text: label(minutes) })
+  }
+  return out
+}
+
+export interface SummaryImpactRow {
+  key: "resolved" | "posts" | "donations"
+  value: number
+}
+
+export function summaryImpactRows(activity: HostAnalyticsSummaryActivity): SummaryImpactRow[] {
+  const rows: SummaryImpactRow[] = [
+    { key: "resolved", value: activity.reportsResolved },
+    { key: "posts", value: activity.postsCreated },
+  ]
+  if (activity.donationClicks > 0) rows.push({ key: "donations", value: activity.donationClicks })
+  return rows
+}
+
+export interface AnalyticsPickerOption {
+  id: string
+  title: string
+}
+
+export function pickerOptions(
+  upcoming: readonly HostedEventDTO[],
+  past: readonly HostedEventDTO[],
+): AnalyticsPickerOption[] {
+  const seen = new Set<string>()
+  return [...upcoming, ...past]
+    .filter((event) => hostedEventCan(event, "view_analytics"))
+    .filter((event) => (seen.has(event.id) ? false : (seen.add(event.id), true)))
+    .sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt))
+    .map((event) => ({ id: event.id, title: event.title }))
 }
 
 export function carouselPage(offsetX: number, pageWidth: number, pageCount: number): number {
@@ -183,10 +158,6 @@ export function carouselPage(offsetX: number, pageWidth: number, pageCount: numb
 export function ratePercent(rate: SuppressedRate | undefined): number | null {
   if (!rate || rate.suppressed || rate.value === null) return null
   return Math.round(rate.value * 100)
-}
-
-export function reachRateVisible(pageViews: number | null, rate: SuppressedRate): boolean {
-  return (pageViews ?? 0) >= REACH_RATE_MIN_VIEWS && ratePercent(rate) !== null
 }
 
 export interface FunnelBar {

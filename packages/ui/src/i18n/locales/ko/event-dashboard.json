@@ -24,9 +24,6 @@
     "more_shifts": "호스트 도구에 {{count}}개 교대 더 있음",
     "more_shifts_a11y": "호스트 도구를 열어 {{title}}의 교대 {{total}}개 모두 보기"
   },
-  "analytics": {
-    "for_event": "{{title}} 분석"
-  },
   "impact": {
     "section": "성과",
     "all_time": "전체 기간",

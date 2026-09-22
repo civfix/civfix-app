@@ -43,7 +43,8 @@
     "announcements": "Ankündigungen",
     "host_announce": "Ankündigung schreiben",
     "event_analytics": "Auswertung",
-    "org_manage": "Einstellungen der Organisation"
+    "org_manage": "Einstellungen der Organisation",
+    "host_analytics": "Auswertung"
   },
   "tab": {
     "home": "Start",

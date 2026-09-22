@@ -24,9 +24,6 @@
     "more_shifts": "{{count}} turnos más en Herramientas de anfitrión",
     "more_shifts_a11y": "Abrir las herramientas de anfitrión para ver los {{total}} turnos de {{title}}"
   },
-  "analytics": {
-    "for_event": "Analíticas de {{title}}"
-  },
   "impact": {
     "section": "Impacto",
     "all_time": "Histórico",

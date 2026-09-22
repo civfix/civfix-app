@@ -24,9 +24,6 @@
     "more_shifts": "{{count}} weitere Schichten in den Host-Werkzeugen",
     "more_shifts_a11y": "Host-Werkzeuge öffnen, um alle {{total}} Schichten von {{title}} zu sehen"
   },
-  "analytics": {
-    "for_event": "Auswertung für {{title}}"
-  },
   "impact": {
     "section": "Wirkung",
     "all_time": "Gesamt",

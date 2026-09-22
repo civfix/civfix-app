@@ -18,7 +18,6 @@ import { wallClockInZone, wallClockToInstantMs, type WallClock } from "@civfix/s
 import {
   can,
   deriveCleanupStatus,
-  eventEndsAtMs,
   eventPhase,
   hostCapabilities,
   hostStage,
@@ -170,28 +169,6 @@ export function nextUpEvent(
     })
   const first = dated[0]
   return first ? { event: first.event, phase: first.phase } : null
-}
-
-function endedAt(event: HostedEventDTO): number {
-  return eventEndsAtMs(hostedEventWindow(event)) ?? 0
-}
-
-export interface AnalyticsFocusInput {
-  upcoming: readonly HostedEventDTO[]
-  past: readonly HostedEventDTO[]
-  now: Date
-}
-
-export function analyticsFocusEvent(input: AnalyticsFocusInput): HostedEventDTO | null {
-  const readable = [...input.upcoming, ...input.past].filter((event) =>
-    hostedEventCan(event, "view_analytics"),
-  )
-  const ahead = nextUpEvent(readable, input.now)
-  if (ahead) return ahead.event
-  const ended = readable
-    .filter((event) => hostedEventStatus(event, input.now) === "done")
-    .sort((a, b) => endedAt(b) - endedAt(a))
-  return ended[0] ?? null
 }
 
 export type ImpactHeroUnit = "hours" | "volunteers"

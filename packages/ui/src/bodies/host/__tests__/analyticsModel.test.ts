@@ -1,31 +1,30 @@
 import { describe, expect, it } from "vitest"
 import type {
-  EventAnalyticsLifecycle,
   GetEventAnalyticsResponse,
+  HostAnalyticsSummaryActivity,
   SeriesPoint,
 } from "@civfix/shared"
 import {
-  ANALYTICS_PANELS,
-  ARCHIVAL_AFTER_DAYS,
+  ALL_EVENTS_RANGE_PRESETS,
+  ANALYTICS_RANGE_PRESETS,
+  ARRIVAL_LABEL_MINUTES,
   DAY_MS,
-  LIFECYCLE_SEGMENTS,
-  REACH_RATE_MIN_VIEWS,
-  analyticsPanelOrder,
+  DEFAULT_ALL_EVENTS_PRESET,
+  DEFAULT_EVENT_PRESET,
+  SUMMARY_PANELS,
+  arrivalXLabels,
+  busiestRows,
   comparisonVerdict,
   comparisonVisible,
-  defaultSegment,
   funnelBars,
   hasSeriesData,
-  isArchivalEvent,
+  presetDays,
+  rangeSlice,
   ratePercent,
-  reachRateVisible,
-  segmentEnabled,
-  segmentRange,
   seriesPoints,
   seriesValues,
-  sliceSeries,
-  slotsPanelVisible,
-  visibleAnalyticsPanels,
+  summaryImpactRows,
+  weeklyXLabels,
 } from "../analyticsModel"
 
 const CREATED = Date.parse("2026-09-01T00:00:00.000Z")
@@ -33,13 +32,6 @@ const START = Date.parse("2026-09-10T16:00:00.000Z")
 const END = Date.parse("2026-09-10T20:00:00.000Z")
 
 const iso = (at: number): string => new Date(at).toISOString()
-
-const LIFECYCLE: EventAnalyticsLifecycle = {
-  createdAt: iso(CREATED),
-  startAt: iso(START),
-  endAt: iso(END),
-  completedAt: null,
-}
 
 const rate = (value: number | null, suppressed = false) => ({
   value,
@@ -54,7 +46,12 @@ function analytics(over: Partial<GetEventAnalyticsResponse> = {}): GetEventAnaly
     k: 5,
     scope: "full",
     phase: "upcoming",
-    lifecycle: LIFECYCLE,
+    lifecycle: {
+      createdAt: iso(CREATED),
+      startAt: iso(START),
+      endAt: iso(END),
+      completedAt: null,
+    },
     kpis: {
       signups: 20,
       capacity: 40,
@@ -101,111 +98,170 @@ const dayPoint = (day: string, value: number | null): SeriesPoint => ({
   suppressed: false,
 })
 
-describe("the carousel reads as the event's own story", () => {
-  it("leads with sign-ups before the event, arrivals on the day and impact after", () => {
-    expect(analyticsPanelOrder("upcoming")[0]).toBe("signups")
-    expect(analyticsPanelOrder("day_of")[0]).toBe("checkins")
-    expect(analyticsPanelOrder("completed")[0]).toBe("impact")
-    expect(analyticsPanelOrder("archived")[0]).toBe("impact")
-  })
+const bucket = (minutes: number, value: number): SeriesPoint => ({
+  day: String(minutes),
+  value,
+  suppressed: false,
+})
 
-  it("names every panel in every order, so no order silently drops one", () => {
-    for (const phase of ["upcoming", "day_of", "completed", "archived"] as const) {
-      expect([...analyticsPanelOrder(phase)].sort()).toEqual([...ANALYTICS_PANELS].sort())
-    }
-  })
+const row = (key: string, value: number | null, suppressed = false) =>
+  ({ key, label: key, value, suppressed }) as const
 
-  it("drops the shifts panel when there is neither a shift nor a capacity to fill", () => {
-    const capped = analytics()
-    expect(slotsPanelVisible(capped)).toBe(true)
-    const uncapped = analytics({ kpis: { ...capped.kpis, capacity: null } })
-    expect(slotsPanelVisible(uncapped)).toBe(false)
-    expect(visibleAnalyticsPanels(uncapped)).not.toContain("slots")
-    expect(visibleAnalyticsPanels(uncapped)).toHaveLength(ANALYTICS_PANELS.length - 1)
-  })
+const activity = (
+  over: Partial<HostAnalyticsSummaryActivity> = {},
+): HostAnalyticsSummaryActivity => ({
+  signups: 0,
+  cancellations: 0,
+  hoursTotal: 0,
+  hoursVolunteers: 0,
+  reportsLinked: 0,
+  reportsResolved: 0,
+  postsCreated: 0,
+  donationClicks: 0,
+  ...over,
+})
 
-  it("keeps the panel when there are shifts but no capacity", () => {
-    const withSlots = analytics({
-      kpis: { ...analytics().kpis, capacity: null },
-      signups: {
-        cumulative: [],
-        daily: [],
-        cancellations: [],
-        bySlot: { panelSuppressed: false, rows: [{ key: "s1", label: "Trash", value: 3, suppressed: false }] },
-      },
-    })
-    expect(slotsPanelVisible(withSlots)).toBe(true)
+describe("the dashboard card is four fixed panels, not a phase-dependent shuffle", () => {
+  it("names the four panels the 30-day summary can always fill", () => {
+    expect([...SUMMARY_PANELS]).toEqual(["signups", "checkins", "hours", "impact"])
   })
 })
 
-describe("a long-finished event is a record, not a dashboard", () => {
-  it("collapses only once the window has passed", () => {
-    const ended = { ...LIFECYCLE, completedAt: iso(END) }
-    expect(isArchivalEvent(ended, "completed", END + DAY_MS)).toBe(false)
-    expect(isArchivalEvent(ended, "completed", END + (ARCHIVAL_AFTER_DAYS + 1) * DAY_MS)).toBe(true)
+describe("the range presets replace the lifecycle scrubber", () => {
+  it("offers a whole-event preset only when a single event is in scope", () => {
+    expect([...ANALYTICS_RANGE_PRESETS]).toEqual(["whole_event", "7d", "30d", "90d", "all"])
+    expect([...ALL_EVENTS_RANGE_PRESETS]).toEqual(["7d", "30d", "90d", "all"])
+    expect(ALL_EVENTS_RANGE_PRESETS).not.toContain("whole_event")
   })
 
-  it("trusts the server when it already says archived, and never collapses a live one", () => {
-    expect(isArchivalEvent(LIFECYCLE, "archived", END)).toBe(true)
-    expect(isArchivalEvent(LIFECYCLE, "day_of", END + 400 * DAY_MS)).toBe(false)
-    expect(isArchivalEvent({ ...LIFECYCLE, endAt: null, completedAt: null }, "completed", END)).toBe(
-      false,
+  it("opens on 30 days across every event and on the whole event for one", () => {
+    expect(DEFAULT_ALL_EVENTS_PRESET).toBe("30d")
+    expect(DEFAULT_EVENT_PRESET).toBe("whole_event")
+    expect(ANALYTICS_RANGE_PRESETS[0]).toBe("whole_event")
+  })
+
+  it("turns each preset into the number of days it slices, or none at all", () => {
+    expect(presetDays("7d")).toBe(7)
+    expect(presetDays("30d")).toBe(30)
+    expect(presetDays("90d")).toBe(90)
+    expect(presetDays("all")).toBeNull()
+    expect(presetDays("whole_event")).toBeNull()
+  })
+})
+
+describe("slicing a series only ever drops points", () => {
+  const series = [
+    dayPoint("2026-09-01", 1),
+    dayPoint("2026-09-08", 2),
+    dayPoint("2026-09-10", 3),
+  ]
+  const now = Date.parse("2026-09-10T20:00:00.000Z")
+
+  it("keeps the points inside the window and nothing older", () => {
+    expect(rangeSlice(series, 7, now).map((p) => p.value)).toEqual([2, 3])
+    expect(rangeSlice(series, 2, now).map((p) => p.value)).toEqual([3])
+  })
+
+  it("returns an EMPTY series rather than silently falling back to the whole one", () => {
+    expect(rangeSlice(series, 1, now + 30 * DAY_MS)).toEqual([])
+  })
+
+  it("passes the whole series through when there is no window to apply", () => {
+    expect(rangeSlice(series, null, now)).toEqual(series)
+    expect(rangeSlice(series, 0, now)).toEqual(series)
+  })
+
+  it("never drops a point whose bucket key is not a date", () => {
+    const buckets = [bucket(-60, 1), bucket(0, 4)]
+    expect(rangeSlice(buckets, 7, now)).toEqual(buckets)
+  })
+})
+
+describe("a daily chart labels weeks, not every single day", () => {
+  it("puts one label on the first day of each ISO week", () => {
+    const series = [
+      dayPoint("2026-09-05", 1),
+      dayPoint("2026-09-06", 1),
+      dayPoint("2026-09-07", 1),
+      dayPoint("2026-09-08", 1),
+      dayPoint("2026-09-14", 1),
+    ]
+    expect(weeklyXLabels(series, (day) => day)).toEqual([
+      { index: 2, text: "2026-09-07" },
+      { index: 4, text: "2026-09-14" },
+    ])
+  })
+
+  it("labels nothing at all when no Monday falls inside the stretch", () => {
+    expect(weeklyXLabels([dayPoint("2026-09-05", 1)], (day) => day)).toEqual([])
+    expect(weeklyXLabels([], (day) => day)).toEqual([])
+  })
+
+  it("skips a point whose bucket key is not a date rather than mislabelling it", () => {
+    expect(weeklyXLabels([bucket(0, 3)], (day) => day)).toEqual([])
+  })
+})
+
+describe("the arrivals chart labels the hour around the start, not the raw minute", () => {
+  it("anchors a label on each bucket the event-day scale needs", () => {
+    const buckets = [bucket(-60, 1), bucket(-45, 2), bucket(0, 9), bucket(60, 4), bucket(120, 1)]
+    expect(arrivalXLabels(buckets, (minutes) => String(minutes))).toEqual([
+      { index: 0, text: "-60" },
+      { index: 2, text: "0" },
+      { index: 3, text: "60" },
+      { index: 4, text: "120" },
+    ])
+    expect([...ARRIVAL_LABEL_MINUTES]).toEqual([-60, 0, 60, 120])
+  })
+
+  it("leaves out a label whose bucket the event never produced", () => {
+    expect(arrivalXLabels([bucket(0, 9)], String)).toEqual([{ index: 0, text: "0" }])
+    expect(arrivalXLabels([], String)).toEqual([])
+  })
+})
+
+describe("the impact panel counts exact aggregates, so a real zero reads as a zero", () => {
+  it("always names resolved reports and posts, even at nothing", () => {
+    expect(summaryImpactRows(activity())).toEqual([
+      { key: "resolved", value: 0 },
+      { key: "posts", value: 0 },
+    ])
+  })
+
+  it("adds the donation row only once a tap has actually happened", () => {
+    expect(summaryImpactRows(activity({ donationClicks: 0 })).map((r) => r.key)).not.toContain(
+      "donations",
     )
+    expect(summaryImpactRows(activity({ donationClicks: 3 }))).toContainEqual({
+      key: "donations",
+      value: 3,
+    })
+  })
+
+  it("reports the server's own counts rather than rounding them", () => {
+    const rows = summaryImpactRows(activity({ reportsResolved: 7, postsCreated: 2 }))
+    expect(rows).toEqual([
+      { key: "resolved", value: 7 },
+      { key: "posts", value: 2 },
+    ])
   })
 })
 
-describe("the lifecycle scrubber replaces a rolling window", () => {
-  it("names four phases and nothing that looks like a date picker", () => {
-    expect([...LIFECYCLE_SEGMENTS]).toEqual(["lead_up", "event_day", "follow_up", "all"])
+describe("what a glance-sized panel is allowed to plot", () => {
+  it("keeps the busiest rows, so the bars stay inside the panel", () => {
+    const rows = [row("a", 1), row("b", 9), row("c", 4), row("d", 7), row("e", 2), row("f", 6)]
+    expect(busiestRows(rows).map((r) => r.key)).toEqual(["b", "d", "f", "c"])
   })
 
-  it("runs lead-up from creation to the start, and follow-up from the end forward", () => {
-    expect(segmentRange("lead_up", LIFECYCLE, END)).toEqual({ from: CREATED, to: START })
-    const follow = segmentRange("follow_up", LIFECYCLE, END + DAY_MS)
-    expect(follow.from).toBe(END)
-    expect(follow.to).toBe(END + DAY_MS)
+  it("sinks a suppressed row below every countable one", () => {
+    const rows = [row("hidden", null, true), row("a", 0), row("b", 3)]
+    expect(busiestRows(rows).map((r) => r.key)).toEqual(["b", "a", "hidden"])
   })
 
-  it("pads the event-day window either side, so an early arrival is not cut off", () => {
-    const day = segmentRange("event_day", LIFECYCLE, END)
-    expect(day.from).toBeLessThan(START)
-    expect(day.to).toBeGreaterThan(END)
-  })
-
-  it("disables a segment that cannot have data yet", () => {
-    expect(segmentEnabled("follow_up", LIFECYCLE, START)).toBe(false)
-    expect(segmentEnabled("follow_up", LIFECYCLE, END + 1)).toBe(true)
-    expect(segmentEnabled("event_day", LIFECYCLE, CREATED)).toBe(false)
-    expect(segmentEnabled("all", LIFECYCLE, CREATED)).toBe(true)
-  })
-
-  it("opens on the phase the event is in, falling back to All when that one is dead", () => {
-    expect(defaultSegment("upcoming", LIFECYCLE, CREATED)).toBe("lead_up")
-    expect(defaultSegment("day_of", LIFECYCLE, START)).toBe("event_day")
-    expect(defaultSegment("completed", LIFECYCLE, END + DAY_MS)).toBe("follow_up")
-    expect(defaultSegment("completed", LIFECYCLE, START)).toBe("all")
-  })
-
-  it("slices the server's whole series client-side rather than refetching per segment", () => {
-    const series = [point(CREATED, 1), point(START, 5), point(END + DAY_MS, 9)]
-    expect(sliceSeries(series, { from: CREATED, to: START }).map((p) => p.value)).toEqual([1, 5])
-  })
-
-  it("keeps the whole series rather than drawing an empty chart when a slice is empty", () => {
-    const series = [point(CREATED, 1)]
-    expect(sliceSeries(series, { from: END, to: END + DAY_MS })).toEqual(series)
-  })
-
-  it("selects the event's own day from a daily-bucketed series, not the whole series", () => {
-    const series = [dayPoint("2026-09-09", 1), dayPoint("2026-09-10", 7), dayPoint("2026-09-11", 2)]
-    const day = segmentRange("event_day", LIFECYCLE, END)
-    expect(sliceSeries(series, day).map((p) => p.value)).toEqual([7])
-  })
-
-  it("still ends a daily lead-up at the day the event starts", () => {
-    const series = [dayPoint("2026-09-09", 1), dayPoint("2026-09-10", 7), dayPoint("2026-09-11", 2)]
-    const lead = segmentRange("lead_up", LIFECYCLE, END)
-    expect(sliceSeries(series, lead).map((p) => p.value)).toEqual([1, 7])
+  it("returns everything it has when there is less than a panelful", () => {
+    expect(busiestRows([row("a", 1)])).toHaveLength(1)
+    expect(busiestRows([])).toEqual([])
+    expect(busiestRows([row("a", 1)], 0)).toEqual([])
   })
 })
 
@@ -231,18 +287,10 @@ describe("a suppressed point never reads as a zero", () => {
     expect(ratePercent(rate(null))).toBeNull()
     expect(ratePercent(undefined)).toBeNull()
   })
-
-  it("hides the conversion rate under a handful of views instead of rounding a silly number", () => {
-    expect(reachRateVisible(REACH_RATE_MIN_VIEWS - 1, rate(0.5))).toBe(false)
-    expect(reachRateVisible(REACH_RATE_MIN_VIEWS, rate(0.5))).toBe(true)
-    expect(reachRateVisible(1000, rate(null, true))).toBe(false)
-    expect(reachRateVisible(null, rate(0.5))).toBe(false)
-  })
 })
 
-describe("the funnel is the lifecycle's own progress bar", () => {
+describe("the funnel is the event's own progress bar", () => {
   const steps = [
-    { step: "page_views", label: "Views", value: 100, suppressed: false },
     { step: "signups", label: "Sign-ups", value: 25, suppressed: false },
     { step: "checked_in", label: "Checked in", value: 0, suppressed: false },
     { step: "logged_hours", label: "Hours", value: 0, suppressed: false },
@@ -250,22 +298,27 @@ describe("the funnel is the lifecycle's own progress bar", () => {
 
   it("scales every bar against the top step and names each one's share of the step before", () => {
     const bars = funnelBars(steps)
+    expect(bars.map((bar) => bar.step)).toEqual(["signups", "checked_in", "logged_hours"])
     expect(bars[0]?.fraction).toBe(1)
     expect(bars[0]?.ofPrevious).toBeNull()
-    expect(bars[1]?.fraction).toBe(0.25)
-    expect(bars[1]?.ofPrevious).toBe(25)
   })
 
-  it("ghosts the steps the lifecycle has not reached, instead of drawing them as real zeroes", () => {
+  it("ghosts the steps the event has not reached, instead of drawing them as real zeroes", () => {
     const bars = funnelBars(steps)
     expect(bars[0]?.ghost).toBe(false)
+    expect(bars[1]?.ghost).toBe(true)
     expect(bars[2]?.ghost).toBe(true)
-    expect(bars[3]?.ghost).toBe(true)
   })
 
   it("survives a suppressed top step without dividing by it", () => {
-    const bars = funnelBars([{ step: "page_views", label: "Views", value: null, suppressed: true }])
-    expect(bars[0]).toEqual({ step: "page_views", value: null, fraction: 0, ofPrevious: null, ghost: true })
+    const bars = funnelBars([{ step: "signups", label: "Sign-ups", value: null, suppressed: true }])
+    expect(bars[0]).toEqual({
+      step: "signups",
+      value: null,
+      fraction: 0,
+      ofPrevious: null,
+      ghost: true,
+    })
   })
 
   it("draws nothing at all for an empty funnel", () => {

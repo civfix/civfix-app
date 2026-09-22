@@ -374,6 +374,7 @@ const NESTED_SHELL_ROUTES = [
   { file: "orgs/[slug]/index.tsx", kind: "org" },
   { file: "orgs/[slug]/manage.tsx", kind: "org-manage" },
   { file: "dashboard.tsx", kind: "event-dashboard" },
+  { file: "host/analytics.tsx", kind: "host-analytics" },
 ] as const
 
 test("every detail route hosts its entry in a nested shell instead of seeding and dismissing", () => {
