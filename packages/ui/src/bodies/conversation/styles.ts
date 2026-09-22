@@ -564,6 +564,12 @@ export const useConversationStyles = makeThemedStyles((t) => ({
     gap: 6,
     marginBottom: t.space["2"],
   },
+  composerNotice: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: t.space["2"],
+  },
   iconBtn: {
     width: CONTROL,
     height: CONTROL,

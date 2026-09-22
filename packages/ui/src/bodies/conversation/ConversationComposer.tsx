@@ -24,6 +24,7 @@ export function ConversationComposer({
   onCreatePoll,
   pollCreatePending,
   pollCreateError,
+  notice,
   style,
 }: {
   composer: ComposerModeState
@@ -34,6 +35,7 @@ export function ConversationComposer({
   onCreatePoll: (input: PollCreateInput) => Promise<boolean>
   pollCreatePending: boolean
   pollCreateError: string | null
+  notice?: string
   style?: StyleProp<ViewStyle>
 }) {
   const styles = useConversationStyles()
@@ -110,6 +112,15 @@ export function ConversationComposer({
           />
         )
       })() : null}
+
+      {notice ? (
+        <View style={styles.composerNotice}>
+          <Icon icon={iconMap.Info} size={13} color={th.colors.textSubtle} />
+          <Text variant="caption" color={th.colors.textSubtle} numberOfLines={2}>
+            {notice}
+          </Text>
+        </View>
+      ) : null}
 
       <View style={styles.composerField}>
         <Pressable

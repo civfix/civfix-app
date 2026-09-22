@@ -64,9 +64,13 @@ export const AdminUserListItemDTOSchema = z
   .strict()
 export type AdminUserListItemDTO = z.infer<typeof AdminUserListItemDTOSchema>
 
-/** Users list query: search matches name/handle/city; `filter` is active|suspended|flagged. */
+/**
+ * Users list query: search matches name/handle/city; `filter` is active|suspended|flagged|deleted|banned.
+ * `deleted` is the tombstoned (self-deleted) set, `banned` the permanently barred set - both orthogonal
+ * to `suspended`, which is the reversible status.
+ */
 export const AdminUserListQuerySchema = AdminListQuerySchema.extend({
-  filter: z.enum(["all", "active", "suspended", "flagged"]).optional(),
+  filter: z.enum(["all", "active", "suspended", "flagged", "deleted", "banned"]).optional(),
 })
 export type AdminUserListQuery = z.infer<typeof AdminUserListQuerySchema>
 
@@ -81,6 +85,8 @@ export const AdminUserCountsSchema = z
     active: z.number().int().nonnegative(),
     suspended: z.number().int().nonnegative(),
     flagged: z.number().int().nonnegative(),
+    deleted: z.number().int().nonnegative().optional(),
+    banned: z.number().int().nonnegative().optional(),
   })
   .strict()
 export type AdminUserCounts = z.infer<typeof AdminUserCountsSchema>

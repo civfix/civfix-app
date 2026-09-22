@@ -1,7 +1,10 @@
 import { z } from "zod"
 import { ReportCategorySchema } from "../common.js"
-import { pageResponse } from "../common.js"
-import { LinkedEventRefSchema } from "../entities.js"
+import { IdSchema, pageResponse } from "../common.js"
+import { ChatHistoryResponseSchema, ReportChatHistoryRequestSchema } from "../chat.js"
+import type { ChatHistoryResponse, ReportChatHistoryRequest } from "../chat.js"
+import { ChatMessageDTOSchema, LinkedEventRefSchema } from "../entities.js"
+import { MESSAGE_BODY_MAX } from "../../types/ws.js"
 import {
   AdminActorRefSchema,
   AdminCoordsSchema,
@@ -133,10 +136,13 @@ export type AdminReportListItemDTO = z.infer<typeof AdminReportListItemDTOSchema
 
 /**
  * Report list query: search matches title/place/id/reporter; `filter` is the status+flag facet the
- * design shows (all|submitted|in_progress|completed|flagged).
+ * design shows (all|submitted|in_progress|completed|flagged|needs_verification). `needs_verification`
+ * is the review queue: reports with no verification verdict yet, orthogonal to the civic status.
  */
 export const AdminReportListQuerySchema = AdminListQuerySchema.extend({
-  filter: z.enum(["all", "submitted", "in_progress", "completed", "flagged"]).optional(),
+  filter: z
+    .enum(["all", "submitted", "in_progress", "completed", "flagged", "needs_verification"])
+    .optional(),
 })
 export type AdminReportListQuery = z.infer<typeof AdminReportListQuerySchema>
 
@@ -152,6 +158,7 @@ export const AdminReportCountsSchema = z
     in_progress: z.number().int().nonnegative(),
     completed: z.number().int().nonnegative(),
     flagged: z.number().int().nonnegative(),
+    needsVerification: z.number().int().nonnegative().optional(),
   })
   .strict()
 export type AdminReportCounts = z.infer<typeof AdminReportCountsSchema>
@@ -287,3 +294,31 @@ export type SetReportVerdictRequest = z.infer<typeof SetReportVerdictRequestSche
 
 export const SetReportVerdictResponseSchema = z.object({ ok: z.literal(true) }).strict()
 export type SetReportVerdictResponse = z.infer<typeof SetReportVerdictResponseSchema>
+
+export const AdminReportMessagesRequestSchema = ReportChatHistoryRequestSchema
+export type AdminReportMessagesRequest = ReportChatHistoryRequest
+
+export const AdminReportMessagesResponseSchema = ChatHistoryResponseSchema
+export type AdminReportMessagesResponse = ChatHistoryResponse
+
+export const AdminSendReportMessageRequestSchema = z
+  .object({
+    id: IdSchema,
+    body: z.string().min(1).max(MESSAGE_BODY_MAX),
+  })
+  .strict()
+export type AdminSendReportMessageRequest = z.infer<typeof AdminSendReportMessageRequestSchema>
+
+export const AdminSendReportMessageResponseSchema = z
+  .object({ message: ChatMessageDTOSchema })
+  .strict()
+export type AdminSendReportMessageResponse = z.infer<typeof AdminSendReportMessageResponseSchema>
+
+export const AdminRemoveReportMessageRequestSchema = z
+  .object({
+    id: IdSchema,
+    messageId: IdSchema,
+    reason: z.string().max(500).optional(),
+  })
+  .strict()
+export type AdminRemoveReportMessageRequest = z.infer<typeof AdminRemoveReportMessageRequestSchema>

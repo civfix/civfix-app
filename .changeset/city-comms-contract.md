@@ -1,0 +1,5 @@
+---
+"@civfix/shared": minor
+---
+
+City communications contract. New built-in forward-email defaults: `DEFAULT_FORWARD_SUBJECT_TEMPLATE` is `[civfix: {referenceCode}] {title}` and `DEFAULT_FORWARD_BODY_TEMPLATE` states that replies reach civfix operators and the reporter, lists photos inline via `{photoCount}` / `{photoLinks}` (which suppresses the backend's auto-appended photo block) and ends with the public pin URL. Three admin report-chat endpoints in the new `adminReportChatEndpoints` group: `adminReportMessages` (GET, reusing the citizen report-chat history request/response shapes), `adminSendReportMessage` (POST) and `adminRemoveReportMessage` (POST, mirroring `removeUserMessage`). Additive list facets: `needs_verification` on the admin report filter with an optional `needsVerification` count, `user_report` on the moderation filter, `deleted` and `banned` on the users filter with optional matching counts, and optional `moderationQueue` / `inboxUnread` totals on the admin home summary.
