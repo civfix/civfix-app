@@ -183,7 +183,7 @@ export function ProfileView({
         onOpenConnections={onOpenConnections}
       />
 
-      <DonateBlock url={profile.donationUrl} ownerName={profile.name} variant="row" />
+      <DonateBlock url={profile.donationUrl} ownerName={profile.name} />
 
       {dashboardSlot ? <View style={styles.dashboardSlot}>{dashboardSlot}</View> : null}
 

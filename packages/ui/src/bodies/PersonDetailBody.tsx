@@ -421,7 +421,7 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
           onOpenConnections={onOpenConnections}
         />
 
-        <DonateBlock url={profile.donationUrl} ownerName={profile.name} variant="row" />
+        <DonateBlock url={profile.donationUrl} ownerName={profile.name} />
 
         <View style={styles.actions}>
           {profile.blockedByMe ? (
