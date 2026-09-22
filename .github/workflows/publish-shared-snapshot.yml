@@ -9,8 +9,9 @@ name: publish @civfix/shared snapshot
 # under the `snapshot` dist-tag. A caret range never matches a prerelease, so a consumer only gets it by
 # pinning that exact version, and it never takes a real version number from main. Nothing is committed
 # and no tag is pushed. The package is built before the registry token is written and published with
-# --ignore-scripts, so no lifecycle script from the branch runs while the token is present. Once the civfix-app PR merges and main publishes the real version, the consumer
-# branch moves its pin to the normal caret range.
+# --ignore-scripts, so no lifecycle script from the branch runs while the token is present. Once the
+# civfix-app PR merges and main publishes the real version, the consumer branch moves its pin to the
+# normal caret range.
 #
 # Required repository secret: NPM_TOKEN (the Verdaccio ci-publisher token).
 
