@@ -50,8 +50,6 @@ export type { LayersPopoverProps } from "./LayersPopover"
 export { useReportFilterStore, enabledCategoriesArray, FILTER_CATEGORIES } from "./filterStore"
 export type { ReportFilterState } from "./filterStore"
 
-export { MiniMap } from "./MiniMap"
-export type { MiniMapProps } from "./MiniMap.types"
 export { LocationPicker } from "./LocationPicker"
 export type { LocationPickerProps } from "./LocationPicker.types"
 

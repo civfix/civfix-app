@@ -44,7 +44,7 @@ import { useHaptics } from "../capabilities"
 import { useLocale, useRelativeTime, useT, useViewerTimeZone } from "../i18n"
 import { usePageIsActive } from "../shell/pageActive"
 import { useScrollHost } from "../shell/ScrollHost"
-import { MiniMap, useMapFocus } from "../map"
+import { useMapFocus } from "../map"
 import { AddressRow } from "./AddressRow"
 import { FeedNotice } from "./FeedNotice"
 import { EventActionRow, EventActionRows } from "./EventActionRow"
@@ -61,40 +61,20 @@ import { generalSlotBoard } from "./eventSlotsModel"
 import { buildComposerEventRef } from "./postComposerModel"
 import { usePostComposerStore } from "./postComposerStore"
 
-const HERO_HEIGHT = 160
-
 const HERO_COVER_RATIO = 16 / 9
 
 function EventHero({ cleanup }: { cleanup: CleanupDTO }) {
   const styles = useStyles()
-  const th = useTheme()
   const cover = cleanup.coverUrl?.trim()
-  const hasCoords = cleanup.lat != null && cleanup.lng != null
-
-  if (cover) {
-    return (
-      <View style={[styles.hero, styles.heroCover]}>
-        <Image
-          source={{ uri: cover }}
-          style={styles.heroImage}
-          resizeMode="cover"
-          accessibilityIgnoresInvertColors
-        />
-      </View>
-    )
-  }
-
-  if (hasCoords) {
-    return (
-      <View style={styles.hero}>
-        <MiniMap lat={cleanup.lat as number} lng={cleanup.lng as number} height={HERO_HEIGHT} />
-      </View>
-    )
-  }
-
+  if (!cover) return null
   return (
-    <View style={[styles.hero, styles.heroBlank]}>
-      <Icon icon={iconMap.Calendar} size={28} color={th.colors.textSubtle} />
+    <View style={[styles.hero, styles.heroCover]}>
+      <Image
+        source={{ uri: cover }}
+        style={styles.heroImage}
+        resizeMode="cover"
+        accessibilityIgnoresInvertColors
+      />
     </View>
   )
 }
@@ -669,7 +649,6 @@ function EventDetailSkeleton() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <SkeletonBlock width="100%" height={HERO_HEIGHT} radius={radius.lg} style={styles.skeletonHero} />
       <SkeletonGroup style={styles.header}>
         <SkeletonText width="76%" height={22} />
         <SkeletonText width="30%" height={12} style={styles.skeletonStatus} />
@@ -729,9 +708,6 @@ const useStyles = makeThemedStyles((t) => ({
   stateFill: {
     flex: 1,
   },
-  skeletonHero: {
-    marginTop: t.space["1"],
-  },
   skeletonStatus: {
     marginTop: t.space["1"],
   },
@@ -750,12 +726,6 @@ const useStyles = makeThemedStyles((t) => ({
   heroImage: {
     width: "100%",
     height: "100%",
-  },
-  heroBlank: {
-    height: HERO_HEIGHT,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.bgAlt,
   },
 
   header: {

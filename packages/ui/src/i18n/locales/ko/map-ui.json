@@ -43,7 +43,6 @@
   },
   "a11y": {
     "attribution": "CARTO / OSM",
-    "miniMap": "위치를 표시하는 지도",
     "homeMap": "제보 및 이벤트 지도",
     "picker": "지도를 탭하여 위치 핀을 놓거나, 핀을 드래그하여 미세 조정하세요",
     "userLocation": "내 위치"

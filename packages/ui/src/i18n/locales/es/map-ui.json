@@ -43,7 +43,6 @@
   },
   "a11y": {
     "attribution": "CARTO / OSM",
-    "miniMap": "Mapa que muestra la ubicación",
     "homeMap": "Mapa de reportes y eventos",
     "picker": "Toca el mapa para colocar el marcador de ubicación, o arrástralo para ajustarlo",
     "userLocation": "Tu ubicación"

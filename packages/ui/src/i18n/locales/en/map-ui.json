@@ -43,7 +43,6 @@
   },
   "a11y": {
     "attribution": "CARTO / OSM",
-    "miniMap": "Map showing the location",
     "homeMap": "Map of reports and events",
     "picker": "Tap the map to place the location pin, or drag the pin to fine-tune",
     "userLocation": "Your location"
