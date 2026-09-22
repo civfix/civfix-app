@@ -102,9 +102,11 @@ The mobile app deploys through `.github/workflows/deploy-mobile.yml` on the same
 GitHub-hosted Mac and uploads it to App Store Connect, where TestFlight hands it to the internal
 testers; a manual run with `profile=production` uploads a prod-API build, and attaching that build to
 a version and submitting it for review stays a human step in App Store Connect. The runner executes
-the same `scripts/store-build.sh` a developer runs locally (`eas build --local` + `eas submit`), so
-CI and laptop builds share one EAS credential store and one build-number counter. See that app's
-README for the prerequisites (an `EXPO_TOKEN` secret, EAS credentials, the remote build number).
+the same `scripts/store-build.sh` a developer runs locally (`eas build --local`, then a direct
+`fastlane pilot upload` to App Store Connect — no EAS Submit queue), so CI and laptop builds share
+one EAS signing-credential store and one build-number counter. See that app's README for the
+prerequisites (an `EXPO_TOKEN` secret, the App Store Connect API key secrets, EAS credentials, the
+remote build number).
 Android still ships only by hand.
 
 ## Publishing `@civfix/shared`

@@ -222,7 +222,9 @@ screen, and bump `ios.buildNumber` (or use a fresh simulator) to force a re-rend
 
 `apps/community-mobile/scripts/store-build.sh` wraps the whole local flow - it builds the ipa on
 this Mac with `eas build --local` (which, unlike a raw Xcode archive, applies the profile's env so
-the right API URL is baked in) and uploads it with `eas submit`:
+the right API URL is baked in) and then runs `scripts/store-upload.sh`, which uploads the ipa
+straight to App Store Connect with `fastlane pilot upload` — not `eas submit`, whose free-tier
+queue can hold a submission for hours:
 
 ```sh
 pnpm --filter community-mobile build:testflight   # TestFlight dev build -> staging API
@@ -230,14 +232,17 @@ pnpm --filter community-mobile build:appstore     # App Store release build -> p
 ```
 
 One-time prereqs: Xcode + command-line tools, `brew install fastlane`, `npm install -g eas-cli`,
-`eas login`. Append `--no-submit` (e.g. `pnpm --filter community-mobile build:testflight --
+`eas login`, and — to upload — an App Store Connect API key exported as `ASC_KEY_ID`,
+`ASC_ISSUER_ID` and `ASC_PRIVATE_KEY` (the `.p8` contents); the script refuses to start a build it
+could not upload. Append `--no-submit` (e.g. `pnpm --filter community-mobile build:testflight --
 --no-submit`) to just produce the ipa without uploading (the live-version check below still runs
 first); the ipa lands in
 `apps/community-mobile/build/` (gitignored) unless `--output <path>` says otherwise. After the
 build the script reads the resolved config back out of the ipa (`EXConstants.bundle/app.config`)
 and refuses to upload one whose baked API URL is not what the profile promises. Cloud equivalent,
 if the build doesn't need to happen on your machine: `eas build --platform ios --profile
-testflight|production --auto-submit` from `apps/community-mobile`.
+testflight|production` from `apps/community-mobile`, then `scripts/store-upload.sh <ipa>` against
+the downloaded artifact.
 
 ### CI (`.github/workflows/deploy-mobile.yml`)
 
@@ -258,9 +263,15 @@ What CI needs, none of it in this repository:
 
 - `EXPO_TOKEN` repository secret: an access token for a robot user in the Expo organisation that
   owns the project (`owner` in `app.config.js`), Developer role is enough.
+- `ASC_KEY_ID`, `ASC_ISSUER_ID` and `ASC_PRIVATE_KEY` repository secrets: an App Store Connect API
+  key made for CI (App Store Connect -> Users and Access -> Integrations -> App Store Connect API,
+  Developer role), its Issuer ID, and the full contents of the downloaded `AuthKey_<KEY_ID>.p8`.
+  This is what uploads the ipa, in a workflow step of its own so the key is never in scope for
+  the build; revoke it there if the repository is ever compromised.
 - EAS project credentials for `org.civfix.community` (expo.dev -> Project credentials -> iOS): the
   distribution certificate + App Store provisioning profile, and an App Store Connect API key under
-  Service credentials so `eas submit` never prompts for an Apple ID.
+  Service credentials, which EAS uses to manage that signing material (uploads no longer go
+  through EAS).
 - The remote build number initialised once, above the highest build already in App Store Connect:
   `eas build:version:set -p ios` from this directory. An unset counter is silently seeded from
   `ios.buildNumber` in `app.config.js`, and a number App Store Connect has already seen is only
