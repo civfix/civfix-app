@@ -174,8 +174,6 @@ export function ProfileView({
 
       {affiliation ? <AffiliationRow organization={affiliation} style={styles.affiliation} /> : null}
 
-      {dashboardSlot ? <View style={styles.dashboardSlot}>{dashboardSlot}</View> : null}
-
       <SocialLinksRow links={profile.socialLinks} style={styles.socialRow} />
 
       <ProfileStatsRow
@@ -188,6 +186,8 @@ export function ProfileView({
       <View style={styles.donate}>
         <DonateBlock url={profile.donationUrl} ownerName={profile.name} />
       </View>
+
+      {dashboardSlot ? <View style={styles.dashboardSlot}>{dashboardSlot}</View> : null}
 
       {actions ? <View style={styles.actions}>{actions}</View> : null}
 
