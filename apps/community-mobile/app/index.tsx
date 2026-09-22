@@ -273,6 +273,7 @@ export default function MapHomeScreen() {
   }, [])
 
   const resolveLocation = location.resolve
+  const awaitFirstFix = location.awaitFirstFix
 
   const recalledViewport = recallMapViewport() !== null
   const initialCenterOwnedRef = useRef(recalledViewport)
@@ -303,19 +304,25 @@ export default function MapHomeScreen() {
   const onLocate = useCallback(() => {
     const requestGeneration = beginCameraRequest()
     void (async () => {
-      const precise = await resolveLocation()
+      const { coords, prompted } = await resolveLocation()
       const fallback = approximatePointRef.current
       initialCenterOwnedRef.current = true
-      if (precise) {
+      if (coords) {
         adoptedSourceRef.current = "precise"
-        centerOnTarget({ ...precise, zoom: PRECISE_ZOOM }, requestGeneration)
+        centerOnTarget({ ...coords, zoom: PRECISE_ZOOM }, requestGeneration)
         return
       }
-      if (!fallback) return
-      adoptedSourceRef.current = "approximate"
-      centerOnTarget({ ...fallback, zoom: APPROX_ZOOM }, requestGeneration)
+      if (fallback) {
+        adoptedSourceRef.current = "approximate"
+        centerOnTarget({ ...fallback, zoom: APPROX_ZOOM }, requestGeneration)
+      }
+      if (!prompted) return
+      const firstFix = await awaitFirstFix()
+      if (!firstFix) return
+      adoptedSourceRef.current = "precise"
+      centerOnTarget({ ...firstFix, zoom: PRECISE_ZOOM }, requestGeneration)
     })()
-  }, [beginCameraRequest, centerOnTarget, resolveLocation])
+  }, [awaitFirstFix, beginCameraRequest, centerOnTarget, resolveLocation])
 
   const onboardingDone = useOnboardingStore((s) => s.completedVersion >= ONBOARDING_VERSION)
   const tourPresenting = useOnboardingStore((s) => s.presenting)

@@ -48,6 +48,18 @@ test("a late ready callback from an old map cannot consume the new map target", 
   assert.deepEqual(lifecycle.takePendingMapTarget(state, 21).target, target)
 })
 
+test("a late first fix on the SAME generation still flies when nothing newer began", () => {
+  const request = lifecycle.beginMapRequest(lifecycle.createMapLifecycleState())
+  const approximate = { lat: 34.05, lng: -118.25, zoom: 10 }
+  const precise = { lat: 34.0522, lng: -118.2437, zoom: 13 }
+  let state = lifecycle.resolveMapRequest(request.state, request.generation, approximate)
+  state = lifecycle.mountMap(state, 7)
+  state = lifecycle.markMapReady(state, 7)
+  state = lifecycle.takePendingMapTarget(state, 7).state
+  state = lifecycle.resolveMapRequest(state, request.generation, precise)
+  assert.deepEqual(state.pendingTarget?.target, precise)
+})
+
 test("a delayed initial-location result cannot replace a newer camera request", () => {
   const initial = lifecycle.beginMapRequest(lifecycle.createMapLifecycleState())
   const detail = lifecycle.beginMapRequest(initial.state)

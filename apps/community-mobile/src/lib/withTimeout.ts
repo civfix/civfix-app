@@ -23,6 +23,8 @@
  */
 export const GPS_TIMEOUT_MS = 4000
 
+export const FIRST_FIX_TIMEOUT_MS = 15_000
+
 /**
  * Cap how OLD a CACHED device fix may be before we stop treating it as "where the user is".
  *
