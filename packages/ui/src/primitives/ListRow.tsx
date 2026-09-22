@@ -53,6 +53,7 @@ export interface ListRowProps {
   footer?: React.ReactNode
   onPress?: () => void
   chevron?: boolean
+  pressedHighlight?: boolean
   accessibilityLabel?: string
   testID?: string
 }
@@ -66,6 +67,7 @@ export function ListRow({
   footer,
   onPress,
   chevron,
+  pressedHighlight = true,
   accessibilityLabel,
   testID,
 }: ListRowProps) {
@@ -125,8 +127,8 @@ export function ListRow({
         styles.row,
         webTransition,
         webCursor(),
-        webHover(state) ? styles.hovered : null,
-        state.pressed ? styles.pressed : null,
+        pressedHighlight && webHover(state) ? styles.hovered : null,
+        pressedHighlight && state.pressed ? styles.pressed : null,
       ]}
     >
       {content}

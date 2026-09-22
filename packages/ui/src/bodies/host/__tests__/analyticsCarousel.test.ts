@@ -85,12 +85,18 @@ describe("the whole card is one pressable surface, clipped to its own radius", (
 
   it("carries the carousel's own horizontal padding on the row, not on the card", () => {
     expect(CARD).toContain("<View style={styles.pad}>")
-    expect(CARD).toMatch(/pad: \{\n\s+paddingHorizontal: t\.space\["4"\],\n\s+\}/)
+    expect(CARD).toMatch(/pad: \{\n\s+paddingHorizontal: t\.space\["5"\],\n\s+\}/)
   })
 
-  it("answers a press, not only a web hover, on every pressable it draws", () => {
-    expect(CARD.match(/state\.pressed \|\| webHover\(state\)/g) ?? []).toHaveLength(3)
-    expect(CARD.match(/webHover\(state\)/g) ?? [], "no hover-only branch is left").toHaveLength(3)
+  it("keeps the stat panels inert: only the web chevrons are pressable", () => {
+    expect(CARD.match(/state\.pressed \|\| webHover\(state\)/g) ?? []).toHaveLength(2)
+    expect(CARD.match(/webHover\(state\)/g) ?? [], "no hover-only branch is left").toHaveLength(2)
+    expect(CARD).not.toContain("panelHovered")
+    expect(CARD).toMatch(/panels\.map\(\(panel\) => \(\n\s+<View/)
+  })
+
+  it("draws the footer row without a pressed or hover fill", () => {
+    expect(CARD).toContain("pressedHighlight={false}")
   })
 })
 

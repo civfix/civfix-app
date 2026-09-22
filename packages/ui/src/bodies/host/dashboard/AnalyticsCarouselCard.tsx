@@ -97,6 +97,7 @@ export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
       title={t("card.view_full")}
       titleLines={1}
       chevron
+      pressedHighlight={false}
       onPress={openFull}
     />
   )
@@ -159,25 +160,18 @@ export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
               accessibilityLabel={t("card.carousel_a11y")}
             >
               {panels.map((panel) => (
-                <Pressable
+                <View
                   key={panel}
-                  onPress={openFull}
-                  accessibilityRole="button"
+                  accessible
                   accessibilityLabel={t("card.panel_a11y", {
                     index: panels.indexOf(panel) + 1,
                     total: panels.length,
                     name: t(`card.panel_${panel}`),
                   })}
-                  {...focusRingProps}
-                  style={(state) => [
-                    { width },
-                    styles.panel,
-                    webCursor(),
-                    state.pressed || webHover(state) ? styles.panelHovered : null,
-                  ]}
+                  style={[{ width }, styles.panel]}
                 >
                   <Panel panel={panel} data={data} width={width} />
-                </Pressable>
+                </View>
               ))}
             </ScrollView>
           ) : null}
@@ -459,7 +453,7 @@ function RingPanel({
 
 const useStyles = makeThemedStyles((t) => ({
   pad: {
-    paddingHorizontal: t.space["4"],
+    paddingHorizontal: t.space["5"],
   },
   skeleton: {
     gap: t.space["2"],
@@ -473,9 +467,6 @@ const useStyles = makeThemedStyles((t) => ({
     height: PANEL_HEIGHT,
     overflow: "hidden",
     borderRadius: t.radius.md,
-  },
-  panelHovered: {
-    backgroundColor: t.colors.bgAlt,
   },
   frame: {
     height: PANEL_HEIGHT,
