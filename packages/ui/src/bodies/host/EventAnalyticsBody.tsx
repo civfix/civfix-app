@@ -41,10 +41,14 @@ const RING_SIZE = 96
 
 const DASH = "—"
 
-function breakdownBars(rows: readonly BreakdownRow[], color: string): ChartBar[] {
+function breakdownBars(
+  rows: readonly BreakdownRow[],
+  color: string,
+  label?: (row: BreakdownRow) => string,
+): ChartBar[] {
   return rows.map((row) => ({
     key: row.key,
-    label: row.label,
+    label: label ? label(row) : row.label,
     value: row.suppressed ? null : row.value,
     color,
     valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
@@ -55,7 +59,7 @@ export function EventAnalyticsBody({ id }: { id: string }) {
   const styles = useStyles()
   const { ScrollView } = useScrollHost()
   const { t } = useT("host-analytics")
-  const { relative } = useRelativeTime()
+  const { relative, justNow } = useRelativeTime()
 
   const cleanup = useCleanup(id)
   const canView = hasHostCapability(cleanup.data, "view_analytics")
@@ -109,6 +113,8 @@ export function EventAnalyticsBody({ id }: { id: string }) {
 
   if (query.isError || !data || !range) return errorState
 
+  const updatedAgo = relative(data.generatedAt, now)
+
   return (
     <ScrollView
       style={styles.scroll}
@@ -121,7 +127,9 @@ export function EventAnalyticsBody({ id }: { id: string }) {
             {t("page.title")}
           </Text>
           <Text variant="caption">
-            {t("page.updated", { when: relative(data.generatedAt, now) })}
+            {updatedAgo === justNow
+              ? t("page.updated_just_now")
+              : t("page.updated", { when: updatedAgo })}
           </Text>
         </View>
 
@@ -292,7 +300,7 @@ function Funnel({ data }: { data: GetEventAnalyticsResponse }) {
         <View key={bar.step} style={styles.funnelRow}>
           <View style={styles.funnelHead}>
             <Text variant="caption" numberOfLines={1} style={styles.funnelLabel}>
-              {t(`funnel.${bar.step}`, { defaultValue: bar.step })}
+              {t(`funnel.${bar.step}`)}
             </Text>
             <Text variant="caption" numberOfLines={1}>
               {bar.value === null
@@ -322,12 +330,15 @@ function Funnel({ data }: { data: GetEventAnalyticsResponse }) {
 function SourcesSection({ panel }: { panel: Panel | undefined }) {
   const th = useTheme()
   const { t } = useT("host-analytics")
+  const { t: tEnums } = useT("enums")
   const rows = panel?.rows ?? []
   if (panel?.panelSuppressed || rows.length === 0) return null
   return (
     <SectionCard label={t("page.sources_section")}>
       <BarChart
-        bars={breakdownBars(rows, th.colors.accent)}
+        bars={breakdownBars(rows, th.colors.accent, (row) =>
+          tEnums(`registrationSource.${row.key}`),
+        )}
         horizontal
         labelColor={th.colors.textMuted}
         accessibilityLabel={t("page.sources_section")}
@@ -446,12 +457,12 @@ function ImpactSection({ data }: { data: GetEventAnalyticsResponse }) {
 
       <Text variant="caption">
         {t("page.reports_line", {
-          linked: data.kpis.reportsLinked ?? 0,
+          count: data.kpis.reportsLinked ?? 0,
           resolved: data.kpis.reportsResolved ?? 0,
         })}
       </Text>
       <Text variant="caption">
-        {t("page.posts_line", { posts: data.kpis.postsCreated ?? 0 })}
+        {t("page.posts_line", { count: data.kpis.postsCreated ?? 0 })}
       </Text>
       {data.kpis.donationClicks ? (
         <Text variant="caption">

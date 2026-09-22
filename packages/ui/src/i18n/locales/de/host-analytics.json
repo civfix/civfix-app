@@ -36,7 +36,7 @@
     "page_views": "Seitenaufrufe",
     "signups": "Anmeldungen",
     "checked_in": "Eingecheckt",
-    "hours_logged": "Erfasste Stunden"
+    "logged_hours": "Erfasste Stunden"
   },
   "suppressed": {
     "explain": "Ausgeblendet, weil in dieser Gruppe weniger als {{k}} Personen sind.",
@@ -91,6 +91,7 @@
     "donation_clicks": "Klicks auf Spenden",
     "title": "Auswertung der Veranstaltung",
     "updated": "Aktualisiert vor {{when}}",
+    "updated_just_now": "Gerade aktualisiert",
     "signups_section": "Anmeldungen & Reichweite",
     "signups_empty": "In diesem Abschnitt gibt es noch keine Anmeldungen.",
     "funnel_section": "Vom Aufruf zu den Stunden",
@@ -109,8 +110,10 @@
     "hours_total": "{{hours}} Freiwilligenstunden",
     "hours_distribution": "Stunden pro Freiwilligem",
     "hours_empty": "Noch keine Stunden erfasst.",
-    "reports_line": "{{linked}} Meldungen verknüpft · {{resolved}} seitdem erledigt",
-    "posts_line": "{{posts}} Beiträge über diese Veranstaltung",
+    "reports_line_one": "{{count}} Meldung verknüpft · {{resolved}} seitdem erledigt",
+    "reports_line_other": "{{count}} Meldungen verknüpft · {{resolved}} seitdem erledigt",
+    "posts_line_one": "{{count}} Beitrag über diese Veranstaltung",
+    "posts_line_other": "{{count}} Beiträge über diese Veranstaltung",
     "donations_line": "{{clicks}} Klicks auf den Spendenlink",
     "comparison_section": "Im Vergleich zu deinen bisherigen Veranstaltungen",
     "comparison_caption": "Gegen den Median deiner letzten {{events}} abgeschlossenen Veranstaltungen.",

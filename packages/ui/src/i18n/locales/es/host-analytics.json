@@ -36,7 +36,7 @@
     "page_views": "Visitas",
     "signups": "Inscripciones",
     "checked_in": "Registrados",
-    "hours_logged": "Horas registradas"
+    "logged_hours": "Horas registradas"
   },
   "suppressed": {
     "explain": "Oculto porque en este grupo hay menos de {{k}} personas.",
@@ -91,6 +91,7 @@
     "donation_clicks": "Clics en donar",
     "title": "Analíticas del evento",
     "updated": "Actualizado hace {{when}}",
+    "updated_just_now": "Actualizado ahora mismo",
     "signups_section": "Inscripciones y alcance",
     "signups_empty": "Todavía no hay inscripciones en este tramo.",
     "funnel_section": "De la visita a las horas",
@@ -109,8 +110,10 @@
     "hours_total": "{{hours}} horas de voluntariado",
     "hours_distribution": "Horas por voluntario",
     "hours_empty": "Todavía no se han registrado horas.",
-    "reports_line": "{{linked}} incidencias vinculadas · {{resolved}} resueltas desde entonces",
-    "posts_line": "{{posts}} publicaciones sobre este evento",
+    "reports_line_one": "{{count}} incidencia vinculada · {{resolved}} resueltas desde entonces",
+    "reports_line_other": "{{count}} incidencias vinculadas · {{resolved}} resueltas desde entonces",
+    "posts_line_one": "{{count}} publicación sobre este evento",
+    "posts_line_other": "{{count}} publicaciones sobre este evento",
     "donations_line": "{{clicks}} clics en el enlace de donación",
     "comparison_section": "Frente a tus eventos anteriores",
     "comparison_caption": "Comparado con la mediana de tus últimos {{events}} eventos completados.",

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react"
-import { View, type StyleProp, type ViewStyle } from "react-native"
+import { Text as RNText, View, type StyleProp, type ViewStyle } from "react-native"
 import type { MarkdownInline, MarkdownNode } from "@civfix/shared/markdown"
 import { parseMarkdownSubset } from "@civfix/shared/markdown"
 import { makeThemedStyles } from "../theme"
@@ -28,29 +28,29 @@ function InlineRun({
         const key = `${keyPrefix}.${index}`
         switch (node.type) {
           case "text":
-            return <Text key={key}>{node.value}</Text>
+            return <React.Fragment key={key}>{node.value}</React.Fragment>
           case "strong":
             return (
-              <Text key={key} style={styles.strong}>
+              <RNText key={key} style={styles.strong}>
                 <InlineRun nodes={node.children} onOpenLink={onOpenLink} keyPrefix={key} />
-              </Text>
+              </RNText>
             )
           case "em":
             return (
-              <Text key={key} style={styles.em}>
+              <RNText key={key} style={styles.em}>
                 <InlineRun nodes={node.children} onOpenLink={onOpenLink} keyPrefix={key} />
-              </Text>
+              </RNText>
             )
           case "link":
             return (
-              <Text
+              <RNText
                 key={key}
                 style={styles.link}
                 accessibilityRole="link"
                 onPress={() => onOpenLink(node.href)}
               >
                 <InlineRun nodes={node.children} onOpenLink={onOpenLink} keyPrefix={key} />
-              </Text>
+              </RNText>
             )
         }
       })}

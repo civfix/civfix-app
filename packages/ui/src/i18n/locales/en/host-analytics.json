@@ -36,7 +36,7 @@
     "page_views": "Page views",
     "signups": "Sign-ups",
     "checked_in": "Checked in",
-    "hours_logged": "Logged hours"
+    "logged_hours": "Logged hours"
   },
   "suppressed": {
     "explain": "Hidden because fewer than {{k}} people are in this group.",
@@ -91,6 +91,7 @@
     "donation_clicks": "Donation clicks",
     "title": "Event analytics",
     "updated": "Updated {{when}} ago",
+    "updated_just_now": "Updated just now",
     "signups_section": "Sign-ups & reach",
     "signups_empty": "No sign-ups in this stretch yet.",
     "funnel_section": "From view to hours",
@@ -109,8 +110,10 @@
     "hours_total": "{{hours}} volunteer hours",
     "hours_distribution": "Hours per volunteer",
     "hours_empty": "No hours logged yet.",
-    "reports_line": "{{linked}} reports linked · {{resolved}} resolved since",
-    "posts_line": "{{posts}} posts about this event",
+    "reports_line_one": "{{count}} report linked · {{resolved}} resolved since",
+    "reports_line_other": "{{count}} reports linked · {{resolved}} resolved since",
+    "posts_line_one": "{{count}} post about this event",
+    "posts_line_other": "{{count}} posts about this event",
     "donations_line": "{{clicks}} donation-link taps",
     "comparison_section": "Vs. your previous events",
     "comparison_caption": "Against the median of your last {{events}} completed events.",

@@ -36,7 +36,7 @@
     "page_views": "페이지 조회",
     "signups": "신청",
     "checked_in": "체크인",
-    "hours_logged": "기록된 시간"
+    "logged_hours": "기록된 시간"
   },
   "suppressed": {
     "explain": "이 그룹의 인원이 {{k}}명 미만이라 숨겼습니다.",
@@ -91,6 +91,7 @@
     "donation_clicks": "기부 클릭",
     "title": "행사 분석",
     "updated": "{{when}} 전에 업데이트됨",
+    "updated_just_now": "방금 업데이트됨",
     "signups_section": "신청과 도달",
     "signups_empty": "이 구간에는 아직 신청이 없습니다.",
     "funnel_section": "조회에서 봉사 시간까지",
@@ -109,8 +110,10 @@
     "hours_total": "자원봉사 {{hours}}시간",
     "hours_distribution": "자원봉사자별 시간",
     "hours_empty": "아직 기록된 시간이 없습니다.",
-    "reports_line": "연결된 제보 {{linked}}건 · 이후 해결 {{resolved}}건",
-    "posts_line": "이 행사에 대한 게시물 {{posts}}개",
+    "reports_line_one": "연결된 제보 {{count}}건 · 이후 해결 {{resolved}}건",
+    "reports_line_other": "연결된 제보 {{count}}건 · 이후 해결 {{resolved}}건",
+    "posts_line_one": "이 행사에 대한 게시물 {{count}}개",
+    "posts_line_other": "이 행사에 대한 게시물 {{count}}개",
     "donations_line": "기부 링크 클릭 {{clicks}}회",
     "comparison_section": "이전 행사와 비교",
     "comparison_caption": "최근 완료된 행사 {{events}}건의 중앙값과 비교했습니다.",

@@ -245,7 +245,7 @@ describe("the funnel is the lifecycle's own progress bar", () => {
     { step: "page_views", label: "Views", value: 100, suppressed: false },
     { step: "signups", label: "Sign-ups", value: 25, suppressed: false },
     { step: "checked_in", label: "Checked in", value: 0, suppressed: false },
-    { step: "hours_logged", label: "Hours", value: 0, suppressed: false },
+    { step: "logged_hours", label: "Hours", value: 0, suppressed: false },
   ]
 
   it("scales every bar against the top step and names each one's share of the step before", () => {
