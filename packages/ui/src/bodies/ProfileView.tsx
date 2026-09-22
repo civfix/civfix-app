@@ -183,7 +183,9 @@ export function ProfileView({
         onOpenConnections={onOpenConnections}
       />
 
-      <DonateBlock url={profile.donationUrl} ownerName={profile.name} />
+      <View style={styles.donate}>
+        <DonateBlock url={profile.donationUrl} ownerName={profile.name} />
+      </View>
 
       {dashboardSlot ? <View style={styles.dashboardSlot}>{dashboardSlot}</View> : null}
 
@@ -304,6 +306,10 @@ const useStyles = makeThemedStyles((t) => ({
 
   affiliation: {
     marginTop: HEADER_BLOCK_GAP,
+  },
+
+  donate: {
+    marginTop: HEADER_CLUSTER_GAP,
   },
 
   socialRow: {

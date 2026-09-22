@@ -245,10 +245,10 @@ export function OrgPageBody({ slug }: { slug: string }) {
         ) : null}
       </View>
 
+      <DonateBlock url={org.donationUrl} ownerName={org.name} />
+
       <OrgEventsSection slug={slug} when="upcoming" />
       <OrgEventsSection slug={slug} when="past" />
-
-      <DonateBlock url={org.donationUrl} ownerName={org.name} />
     </ScrollView>
   )
 }

@@ -421,7 +421,9 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
           onOpenConnections={onOpenConnections}
         />
 
-        <DonateBlock url={profile.donationUrl} ownerName={profile.name} />
+        <View style={styles.donate}>
+          <DonateBlock url={profile.donationUrl} ownerName={profile.name} />
+        </View>
 
         <View style={styles.actions}>
           {profile.blockedByMe ? (
@@ -779,6 +781,11 @@ const useStyles = makeThemedStyles((t) => ({
   },
   socialRow: {
     marginTop: t.space["3"],
+    marginHorizontal: t.space["4"],
+  },
+
+  donate: {
+    marginTop: t.space["4"],
     marginHorizontal: t.space["4"],
   },
 
