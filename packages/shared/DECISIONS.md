@@ -1562,3 +1562,50 @@ move `published <-> resolved`.
 0.52.0 client still validates a pre-0.52.0 backend's reply) is the
 per-message truth about whether the provider accepted an outbound message, derived from the backend's
 mail events, so a thread pill can no longer say "Sent" over a rejected message.
+
+## 48. The city conversation is one room, read and written from both planes (0.53.0)
+
+**One room, two doors.** A report's discussion is a single chat room. The operator reads and writes it
+through `adminReportMessages` / `adminSendReportMessage`, which carry the SAME request and response
+shapes as the citizen `reportMessages` (`AdminReportMessagesRequestSchema` and
+`AdminReportMessagesResponseSchema` are the `ReportChatHistoryRequestSchema` /
+`ChatHistoryResponseSchema` the resident's client already uses). There is no parallel operator channel
+and no second DTO: a message rendered on the admin plane and on the resident's plane is the same row.
+`adminRemoveReportMessage` is the moderation twin of `removeUserMessage` on the users surface — same
+`{ id, messageId, reason? }` shape, same `AdminOkResponse`.
+
+**A city reply arrives as a system row.** The inbound jurisdiction reply already surfaces on the report
+timeline as a `kind: "reply"` entry carrying `body`. It now also arrives in the room as a chat message
+whose `system.kind` is `"reply"` and whose `system.body` is the city's text. `SystemMessageRow` renders
+that pair as a "Reply from the city" block rather than a status pill, so `system.status` is no longer
+the only thing a system row can mean. A `"reply"` system event with an empty `body` still falls back to
+the status presentation.
+
+**Forwarding is disclosed at the composer, not after the fact.** A report room whose jurisdiction is
+mentionable (the mention source's jurisdiction extra candidate, which already encodes "has a handle AND
+`canForwardToCity !== false`") shows the `discussion-composer:forward_disclaimer` caption above the
+input. The disclosure is a property of the room's routability, so it appears before the resident types
+the mention rather than as a confirmation afterwards.
+
+**The built-in forward template names the reporter's channel.** `DEFAULT_FORWARD_SUBJECT_TEMPLATE` is
+`[civfix: {referenceCode}] {title}` and the body states that replies reach civfix operators AND the
+reporter, lists the photo links inline via `{photoCount}` / `{photoLinks}`, and ends with the public
+pin URL. Because the body USES `{photoLinks}`, §47's rule suppresses the backend's auto-appended photo
+block — the packet mentions exactly the attachments it carries. The retired defaults' `{confirmations}`,
+`{status}` and `{jurisdictionName}` lines are gone; the palette still allows them, so an operator
+template may reinstate any of them.
+
+**Additive facets.** `AdminReportListQuery.filter` gains `needs_verification` (no verdict yet, orthogonal
+to the civic status) with an optional `AdminReportCounts.needsVerification` total; `ModerationListQuery.filter`
+gains `user_report` (a human flagged it, as opposed to an automated signal); `AdminUserListQuery.filter`
+gains `deleted` (tombstoned) and `banned` (permanently barred, distinct from the reversible `suspended`)
+with optional `AdminUserCounts.deleted` / `.banned`; `HomeSummaryResponse` gains optional
+`moderationQueue` and `inboxUnread` sidebar badge totals. Every count is optional, so a backend that has
+not computed it yet and a client that never reads it both still parse.
+
+**Registry shape.** The three new endpoints live in a fourth exported group,
+`adminReportChatEndpoints`, spread into `endpoints` alongside `coreEndpoints`, `hostEndpoints` and
+`hostAdminEndpoints`. `coreEndpoints` had reached the TypeScript declaration-serialization ceiling
+(TS7056), so a new group — not a new key on `coreEndpoints` — is how the registry grows from here. The
+registry is now 324 entries, 104 of them under `/admin`; the backend's
+`test/unit/route-coverage.test.ts` moves to 324.
