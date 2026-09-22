@@ -281,6 +281,64 @@ test("the bearer read is issued SYNCHRONOUSLY, ahead of the token clear that fol
   assert.equal(reads, 1)
 })
 
+test("teardown can AWAIT the bearer capture, so a slow keychain still beats the token clear", async () => {
+  const order: string[] = []
+  let release = () => {}
+  const held = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const { deps, store, sent } = lapsedProbe({
+    readBearer: async () => {
+      await held
+      order.push("bearer-read")
+      return "still-valid-bearer"
+    },
+  })
+  rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
+
+  const captured = unregisterLapsedSessionPush(deps)
+  const clearToken = async () => {
+    await captured
+    order.push("token-cleared")
+  }
+  const clearing = clearToken()
+  release()
+  await clearing
+  await tick()
+
+  assert.deepEqual(order, ["bearer-read", "token-cleared"])
+  assert.deepEqual(sent, [
+    {
+      registration: { platform: "ios", token: "ExponentPushToken[abc]" },
+      bearer: "still-valid-bearer",
+    },
+  ])
+})
+
+test("the awaited handle stays fire-and-forget: it never rejects and never waits on the network", async () => {
+  const thrower = lapsedProbe({
+    readBearer: async () => {
+      throw new Error("keychain gone")
+    },
+  })
+  rememberPushRegistration(thrower.store, { platform: "ios", token: "ExponentPushToken[abc]" })
+  await assert.doesNotReject(() => unregisterLapsedSessionPush(thrower.deps))
+
+  let settled = false
+  const hanging = lapsedProbe({
+    unregister: () =>
+      new Promise(() => {
+        settled = true
+      }),
+  })
+  rememberPushRegistration(hanging.store, { platform: "ios", token: "ExponentPushToken[abc]" })
+  await unregisterLapsedSessionPush(hanging.deps)
+  assert.equal(settled, true)
+
+  const none = lapsedProbe()
+  await assert.doesNotReject(() => unregisterLapsedSessionPush(none.deps))
+})
+
 test("a REJECTED unregister on an expired session never escapes teardown", async () => {
   let attempts = 0
   const { deps, store } = lapsedProbe({

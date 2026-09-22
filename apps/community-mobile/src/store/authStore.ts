@@ -19,6 +19,7 @@ import {
   unregisterLapsedSessionPush,
   type PushUnregisterDeps,
 } from "@/lib/pushRegistration"
+import { revokeServerSession, type SessionRevokeDeps } from "@/lib/sessionRevoke"
 import { queryClient } from "@/query/client"
 import {
   clearPersistedCache,
@@ -110,15 +111,30 @@ function pushUnregisterDeps(): PushUnregisterDeps {
   }
 }
 
-function tearDownIdentity(set: SetAuthState): void {
+function sessionRevokeDeps(): SessionRevokeDeps {
+  return {
+    readBearer: async () => {
+      const read = await readToken()
+      return read.ok ? read.token : null
+    },
+    revoke: (bearer, signal) =>
+      api.logout({
+        headers: { Authorization: `Bearer ${bearer}` },
+        signal,
+      }),
+  }
+}
+
+function tearDownIdentity(set: SetAuthState): Promise<void> {
   clearPersistedCache()
   chatSocket.disconnect()
   cacheUser(null)
-  unregisterLapsedSessionPush(pushUnregisterDeps())
+  const pushReleased = unregisterLapsedSessionPush(pushUnregisterDeps())
   queryClient.clear()
   set({ status: "unauthed", user: null, sessionPresent: false })
   resumeCachePersistence()
   identityTornDown = true
+  return pushReleased
 }
 
 function dropForeignIdentityState(): void {
@@ -168,7 +184,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     if (read.token === null) {
-      tearDownIdentity(set)
+      void tearDownIdentity(set)
       refreshGuestCapabilities(set)
       return
     }
@@ -187,12 +203,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         adoptIdentity(session.user, set)
         return
       }
-      tearDownIdentity(set)
+      await tearDownIdentity(set)
       await clearToken()
     } catch (err) {
       if (isUnauthorized(err)) {
         set({ networkOutcome: "ok" })
-        tearDownIdentity(set)
+        await tearDownIdentity(set)
         await clearToken()
         return
       }
@@ -242,7 +258,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await signOutUnregisteringPush({
       ...pushUnregisterDeps(),
       completeSignOut: async () => {
-        tearDownIdentity(set)
+        await revokeServerSession(sessionRevokeDeps())
+        await tearDownIdentity(set)
         rememberIdentity(null)
         await clearSecureBlobs()
         await clearToken()
@@ -252,6 +269,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   markUnauthed: () => {
     if (identityTornDown) return
-    tearDownIdentity(set)
+    void tearDownIdentity(set)
   },
 }))

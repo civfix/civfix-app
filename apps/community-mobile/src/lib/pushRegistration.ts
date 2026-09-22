@@ -100,19 +100,19 @@ export async function signOutUnregisteringPush(
   fireUnregister(deps, registration, bearer)
 }
 
-export function unregisterLapsedSessionPush(deps: PushUnregisterDeps): void {
+export function unregisterLapsedSessionPush(deps: PushUnregisterDeps): Promise<void> {
   const registration = readPushRegistration(deps.store)
   forgetPushRegistration(deps.store)
-  if (!registration) return
+  if (!registration) return Promise.resolve()
 
   let bearer: Promise<string | null>
   try {
     bearer = Promise.resolve(deps.readBearer())
   } catch {
-    return
+    return Promise.resolve()
   }
 
-  void bearer
+  return bearer
     .then((value) => {
       if (value) fireUnregister(deps, registration, value)
     })
