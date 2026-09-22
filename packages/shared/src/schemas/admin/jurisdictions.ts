@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { ForwardTemplateBodySchema, ForwardTemplateSubjectSchema } from "./forward-template.js"
 import { ReportCategorySchema } from "../common.js"
 import { pageResponse } from "../common.js"
 import { JurisdictionLayerSchema } from "../map.js"
@@ -25,8 +26,8 @@ export const SaveContactsRequestSchema = z
     contacts: z.record(ReportCategorySchema, z.string().email().nullable()).optional(),
     defaultEmails: z.array(z.string().email()).optional(),
     formUrl: z.string().url().nullable().optional(),
-    forwardSubjectTemplate: z.string().max(300).nullable().optional(),
-    forwardBodyTemplate: z.string().max(8000).nullable().optional(),
+    forwardSubjectTemplate: ForwardTemplateSubjectSchema.nullable().optional(),
+    forwardBodyTemplate: ForwardTemplateBodySchema.nullable().optional(),
   })
   .strict()
 export type SaveContactsRequest = z.infer<typeof SaveContactsRequestSchema>
@@ -198,8 +199,8 @@ export const PatchJurisdictionRequestSchema = z
     // null clears the override (=> use the built-in default); an empty string is also treated as clear
     // (mirrors the `handle` convention) - that coercion is applied server-side. `{token}` palette is
     // FORWARD_TEMPLATE_VARIABLES. Omit to leave a template unchanged.
-    forwardSubjectTemplate: z.string().max(300).nullable().optional(),
-    forwardBodyTemplate: z.string().max(8000).nullable().optional(),
+    forwardSubjectTemplate: ForwardTemplateSubjectSchema.nullable().optional(),
+    forwardBodyTemplate: ForwardTemplateBodySchema.nullable().optional(),
   })
   .strict()
 export type PatchJurisdictionRequest = z.infer<typeof PatchJurisdictionRequestSchema>

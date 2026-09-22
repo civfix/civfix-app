@@ -36,7 +36,15 @@ import {
   PatchJurisdictionRequestSchema,
 } from "../src/schemas/admin/jurisdictions.js"
 import {
+  DEFAULT_FORWARD_BODY_TEMPLATE,
+  DEFAULT_FORWARD_SUBJECT_TEMPLATE,
+  FORWARD_TEMPLATE_SAMPLE_VALUES,
+  FORWARD_TEMPLATE_VARIABLE_NAMES,
   FORWARD_TEMPLATE_VARIABLES,
+  PreviewForwardTemplateRequestSchema,
+  SetForwardTemplateDefaultRequestSchema,
+  describeForwardTemplateIssue,
+  forwardTemplateIssues,
   interpolateForwardTemplate,
 } from "../src/schemas/admin/forward-template.js"
 import {
@@ -385,8 +393,8 @@ describe("jurisdictions schemas", () => {
 
   it("interpolateForwardTemplate fills known tokens, leaves unknown ones, and HTML is caller's job", () => {
     const out = interpolateForwardTemplate(
-      "Ref {referenceCode} at {address} — {unknownToken} {reporterName}",
-      { referenceCode: "CVX-2K4P", address: "100 Main St", reporterName: "" },
+      "Ref {referenceCode} at {address} — {unknownToken} {operatorNote}",
+      { referenceCode: "CVX-2K4P", address: "100 Main St", operatorNote: "" },
     )
     // known tokens replaced (missing/empty value -> ""), unknown token left verbatim
     expect(out).toBe("Ref CVX-2K4P at 100 Main St — {unknownToken} ")
@@ -398,6 +406,73 @@ describe("jurisdictions schemas", () => {
       const bare = v.token.slice(1, -1)
       expect(interpolateForwardTemplate(v.token, { [bare]: "OK" })).toBe("OK")
     }
+  })
+
+  it("the palette never exposes the reporter's identity or an unmodelled department", () => {
+    expect(FORWARD_TEMPLATE_VARIABLE_NAMES).not.toContain("reporterName")
+    expect(FORWARD_TEMPLATE_VARIABLE_NAMES).not.toContain("dept")
+  })
+
+  it("sample values and the built-in defaults cover exactly the palette", () => {
+    expect(Object.keys(FORWARD_TEMPLATE_SAMPLE_VALUES).sort()).toEqual(
+      [...FORWARD_TEMPLATE_VARIABLE_NAMES].sort(),
+    )
+    expect(forwardTemplateIssues(DEFAULT_FORWARD_SUBJECT_TEMPLATE)).toEqual([])
+    expect(forwardTemplateIssues(DEFAULT_FORWARD_BODY_TEMPLATE)).toEqual([])
+    expect(interpolateForwardTemplate(DEFAULT_FORWARD_SUBJECT_TEMPLATE, FORWARD_TEMPLATE_SAMPLE_VALUES)).toBe(
+      "[civfix] Overflowing bin at 5th & Main - Los Angeles, CA - DU-42-000123",
+    )
+    expect(interpolateForwardTemplate(DEFAULT_FORWARD_BODY_TEMPLATE, FORWARD_TEMPLATE_SAMPLE_VALUES)).not.toMatch(
+      /\{[a-zA-Z]+\}/,
+    )
+  })
+
+  it("forwardTemplateIssues flags unknown tokens and double braces, and the schemas reject them", () => {
+    expect(forwardTemplateIssues("Hi {title} at {place}")).toEqual([])
+    expect(forwardTemplateIssues("Hi {{title}} at {reportTitle} {report.title}")).toEqual([
+      { kind: "double_braces", token: "{{title}}", index: 3 },
+      { kind: "unknown_token", token: "{reportTitle}", index: 16 },
+      { kind: "unknown_token", token: "{report.title}", index: 30 },
+    ])
+    expect(forwardTemplateIssues("no tokens, just { braces } and {} here")).toEqual([])
+    expect(forwardTemplateIssues("{{title}")).toEqual([
+      { kind: "double_braces", token: "{{title}", index: 0 },
+    ])
+    expect(forwardTemplateIssues("{title}}")).toEqual([{ kind: "stray_brace", token: "{title}}", index: 0 }])
+    expect(forwardTemplateIssues("a{b{title}}c")).toEqual([
+      { kind: "stray_brace", token: "{title}}", index: 3 },
+    ])
+    expect(forwardTemplateIssues("{reporterName}")).toEqual([
+      { kind: "unknown_token", token: "{reporterName}", index: 0 },
+    ])
+    const started = Date.now()
+    expect(forwardTemplateIssues(`{{${" ".repeat(7_000)}`)).toHaveLength(1)
+    expect(forwardTemplateIssues(`{${"a".repeat(7_000)}}`)).toEqual([])
+    expect(Date.now() - started).toBeLessThan(200)
+    expect(forwardTemplateIssues("{{a}}".repeat(1500))).toHaveLength(8)
+    expect(forwardTemplateIssues("{nope}".repeat(1200))).toHaveLength(8)
+    expect(forwardTemplateIssues("{".repeat(9000))).toEqual([])
+    const long = forwardTemplateIssues(`{${"b".repeat(60)}}`)[0]
+    expect(long && describeForwardTemplateIssue(long).length).toBeLessThan(120)
+    expect(
+      PatchJurisdictionRequestSchema.safeParse({ geoid: "1", forwardSubjectTemplate: "New {{title}}" }).success,
+    ).toBe(false)
+    expect(
+      PatchJurisdictionRequestSchema.safeParse({ geoid: "1", forwardBodyTemplate: "{title} at {place}" }).success,
+    ).toBe(true)
+    expect(
+      SaveContactsRequestSchema.safeParse({ geoid: "1", forwardBodyTemplate: "{reporterName}" }).success,
+    ).toBe(false)
+    expect(
+      SetForwardTemplateDefaultRequestSchema.safeParse({ subjectTemplate: null, bodyTemplate: "{title}" })
+        .success,
+    ).toBe(true)
+    expect(
+      SetForwardTemplateDefaultRequestSchema.safeParse({ subjectTemplate: "{{title}}", bodyTemplate: null })
+        .success,
+    ).toBe(false)
+    expect(PreviewForwardTemplateRequestSchema.safeParse({}).success).toBe(true)
+    expect(PreviewForwardTemplateRequestSchema.safeParse({ bodyTemplate: "{nope}" }).success).toBe(false)
   })
 })
 

@@ -309,6 +309,12 @@ import {
   ResendRequestSchema,
 } from "../schemas/admin/mail.js"
 import {
+  GetForwardTemplateDefaultResponseSchema,
+  SetForwardTemplateDefaultRequestSchema,
+  PreviewForwardTemplateRequestSchema,
+  PreviewForwardTemplateResponseSchema,
+} from "../schemas/admin/forward-template.js"
+import {
   InboxListQuerySchema,
   InboxListResponseSchema,
   GetInboxMessageResponseSchema,
@@ -2394,6 +2400,33 @@ export const coreEndpoints = {
     response: MailStatsResponseSchema,
     auth: "required",
     csrf: false,
+    version: "v1",
+  }),
+  getForwardTemplateDefault: def({
+    method: "GET",
+    path: "/admin/mail/forward-template",
+    request: null,
+    response: GetForwardTemplateDefaultResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  setForwardTemplateDefault: def({
+    method: "PUT",
+    path: "/admin/mail/forward-template",
+    request: SetForwardTemplateDefaultRequestSchema,
+    response: GetForwardTemplateDefaultResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  previewForwardTemplate: def({
+    method: "POST",
+    path: "/admin/mail/forward-template/preview",
+    request: PreviewForwardTemplateRequestSchema,
+    response: PreviewForwardTemplateResponseSchema,
+    auth: "required",
+    csrf: true,
     version: "v1",
   }),
 
