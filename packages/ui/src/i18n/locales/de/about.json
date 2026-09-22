@@ -8,6 +8,8 @@
     "terms": "Nutzungsbedingungen",
     "terms_a11y": "Nutzungsbedingungen",
     "privacy": "Datenschutz",
-    "privacy_a11y": "Datenschutzerklärung"
+    "privacy_a11y": "Datenschutzerklärung",
+    "source": "Quellcode",
+    "source_a11y": "Quellcode auf GitHub"
   }
 }

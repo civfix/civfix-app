@@ -9,6 +9,8 @@ import {
   DONATE_URL,
   PRIVACY_URL,
   TERMS_URL,
+  sourceCommit,
+  sourceUrl,
 } from "../primitives"
 import { useAuthState, useLogout, useRequireAuth } from "../data"
 import { useOpenExternal } from "../capabilities"
@@ -114,6 +116,12 @@ export function SettingsBody() {
         <SettingsRow icon="Heart" label={t("support_civfix")} onPress={() => openUrl(DONATE_URL)} />
         <SettingsRow icon="FileText" label={t("terms")} onPress={() => openUrl(TERMS_URL)} />
         <SettingsRow icon="Lock" label={t("privacy_policy")} onPress={() => openUrl(PRIVACY_URL)} />
+        <SettingsRow
+          icon="ExternalLink"
+          label={t("source_code")}
+          value={sourceCommit().slice(0, 7) || undefined}
+          onPress={() => openUrl(sourceUrl())}
+        />
       </SettingsSection>
 
       {signedOut ? null : (

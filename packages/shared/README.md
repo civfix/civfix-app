@@ -156,3 +156,9 @@ with no applied version bump publishes nothing. See [RELEASING.md](../../RELEASI
 steps, the 0.x caret rule and the consumer manifests.
 
 See DECISIONS.md for the taxonomy and structural decisions made while building this package.
+
+## License
+
+`@civfix/shared` is free software, licensed under the
+[GNU Affero General Public License, version 3 only](LICENSE), as part of the
+[civfix-app](https://github.com/civfix/civfix-app) repository.

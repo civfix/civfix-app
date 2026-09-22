@@ -95,7 +95,7 @@ export default function PrivacyPage() {
         <p>
           This Privacy Policy explains what personal information civfix collects, why we collect it, who
           we share it with, how long we keep it, and the choices and rights you have. civfix is operated
-          by <strong>Reach Out Los Angeles</strong>, a registered 501(&zwnj;c)(3) nonprofit organization
+          by <strong>Reach Out Los Angeles Inc.</strong>, a registered 501(&zwnj;c)(3) nonprofit organization
           (&ldquo;Reach Out Los Angeles,&rdquo; &ldquo;civfix,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;),
           which is the controller of the personal information described here. It covers the civfix iOS
           app, Android app, and web app.
@@ -516,7 +516,7 @@ export default function PrivacyPage() {
       <section>
         <h2>11. Contact us</h2>
         <p>
-          The data controller is <strong>Reach Out Los Angeles</strong>, a California 501(&zwnj;c)(3)
+          The data controller is <strong>Reach Out Los Angeles Inc.</strong>, a California 501(&zwnj;c)(3)
           nonprofit. For privacy questions or to exercise any of the rights in Section 8, contact{" "}
           <strong>Roman Aytur</strong> at <a href="mailto:roman@reachoutla.org">roman@reachoutla.org</a>.
           EEA and UK users have additional contact and complaint options in Section 8.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   PRIVACY_URL,
+  SOURCE_REPO_URL,
   TERMS_URL,
   WEB_ORIGIN,
   legalUrlFor,
@@ -8,10 +9,40 @@ import {
   manageOrgSettingsPath,
   manageUrl,
   orgPagePath,
+  setSourceCommit,
   setWebOrigin,
   signupPagePath,
+  sourceCommit,
+  sourceUrl,
   webOrigin,
 } from "../externalUrls"
+
+describe("the source link the AGPL asks every host to offer", () => {
+  it("points at the repository root until a host states the deployed commit", () => {
+    expect(sourceCommit()).toBe("")
+    expect(sourceUrl()).toBe(SOURCE_REPO_URL)
+  })
+
+  it("links the exact deployed tree once the host sets a commit sha", () => {
+    try {
+      setSourceCommit("ABCDEF1234567890abcdef1234567890abcdef12")
+      expect(sourceCommit()).toBe("abcdef1234567890abcdef1234567890abcdef12")
+      expect(sourceUrl()).toBe(`${SOURCE_REPO_URL}/tree/abcdef1234567890abcdef1234567890abcdef12`)
+      setSourceCommit("abc1234")
+      expect(sourceUrl()).toBe(`${SOURCE_REPO_URL}/tree/abc1234`)
+    } finally {
+      setSourceCommit("")
+    }
+  })
+
+  it("refuses anything that is not a commit sha, so a bad env value cannot forge the link", () => {
+    for (const bad of ["", "main", "abc", "../../evil", "abc1234; rm -rf", "g".repeat(40)]) {
+      setSourceCommit(bad)
+      expect(sourceCommit(), bad).toBe("")
+      expect(sourceUrl(), bad).toBe(SOURCE_REPO_URL)
+    }
+  })
+})
 
 describe("the configurable web origin", () => {
   it("defaults to production and follows the host's setter for post and manage links", () => {

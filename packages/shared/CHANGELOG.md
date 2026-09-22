@@ -21,6 +21,12 @@
   `delivery` (`pending | sent | failed | null`) and `ReportOutreach` gains an optional `sendFailed`. Versions 0.49.0-0.51.0 on the registry were published
   from an unmerged branch and are skipped. See DECISIONS §47.
 
+## 0.48.2
+
+### Patch Changes
+
+- terms of service and privacy policy 2026-09-21: the civfix software is AGPL-3.0 open source, and the operator is named as Reach Out Los Angeles Inc.
+
 ## 0.48.1
 
 ### Patch Changes
