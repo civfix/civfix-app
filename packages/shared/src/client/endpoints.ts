@@ -254,6 +254,11 @@ import {
   RouteReportResponseSchema,
   SetReportVerdictRequestSchema,
   SetReportVerdictResponseSchema,
+  AdminReportMessagesRequestSchema,
+  AdminReportMessagesResponseSchema,
+  AdminSendReportMessageRequestSchema,
+  AdminSendReportMessageResponseSchema,
+  AdminRemoveReportMessageRequestSchema,
 } from "../schemas/admin/reports.js"
 import {
   AdminEventListQuerySchema,
@@ -3555,12 +3560,44 @@ export const hostAdminEndpoints = {
   }),
 } as const
 
+export const adminReportChatEndpoints = {
+  adminReportMessages: def({
+    method: "GET",
+    path: "/admin/reports/:id/messages",
+    request: AdminReportMessagesRequestSchema,
+    response: AdminReportMessagesResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  adminSendReportMessage: def({
+    method: "POST",
+    path: "/admin/reports/:id/messages",
+    request: AdminSendReportMessageRequestSchema,
+    response: AdminSendReportMessageResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  adminRemoveReportMessage: def({
+    method: "POST",
+    path: "/admin/reports/:id/messages/:messageId/remove",
+    request: AdminRemoveReportMessageRequestSchema,
+    response: AdminOkResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+} as const
+
 export const endpoints: typeof coreEndpoints &
   typeof hostEndpoints &
-  typeof hostAdminEndpoints = {
+  typeof hostAdminEndpoints &
+  typeof adminReportChatEndpoints = {
   ...coreEndpoints,
   ...hostEndpoints,
   ...hostAdminEndpoints,
+  ...adminReportChatEndpoints,
 }
 
 export type Endpoints = typeof endpoints
