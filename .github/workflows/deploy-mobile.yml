@@ -25,6 +25,12 @@ name: Deploy mobile (TestFlight)
 # unset counter is seeded from app.config.js's ios.buildNumber, and a too-low number only fails at
 # upload time, after the whole build.
 #
+# The user-facing version (`version` in app.config.js) is the one thing EAS does not increment, and
+# App Store Connect refuses every upload of a version it has already approved. After an App Store
+# release, the next PR bumps `version` (and package.json) or every push here fails at upload time.
+# store-build.sh checks Apple's public lookup for the live version before it builds, so a missed
+# bump fails in seconds rather than after a half-hour build.
+#
 # Every build is cold: EAS local builds do no caching, and the generated ios/ tree is regenerated
 # from a clean copy each run. Only the CocoaPods download cache is worth restoring.
 
