@@ -117,14 +117,14 @@ export const FORWARD_TEMPLATE_SAMPLE_VALUES: Readonly<ForwardTemplateValues> = {
   photoCount: "2",
 }
 
-export const DEFAULT_FORWARD_SUBJECT_TEMPLATE = "[civfix] {title} - {place} - {referenceCode}"
+export const DEFAULT_FORWARD_SUBJECT_TEMPLATE = "[civfix: {referenceCode}] {title}"
 
 export const DEFAULT_FORWARD_BODY_TEMPLATE = [
-  "A resident reported a {category} issue in {place} through civfix on {submittedDate}. Replies to this email go to the civfix operators, not to the resident.",
-  "Reference: {referenceCode}\nCategory: {category}\nLocation: {address}\nCoordinates: {coordinates}\nConfirmed by: {confirmations} neighbors\nSubmitted: {submittedDate}",
-  "View the exact location on a map: {mapLink}",
+  "A resident reported a {category} issue in {place} through civfix on {submittedDate}. Replies to this email go to civfix operators and to the reporter.",
+  "Location: {address}\nCoordinates: {coordinates}\nView the exact location on a map: {mapLink}",
   "What was reported:\n{description}",
-  "civfix reference {referenceCode} - replies to this email reach the civfix operators.",
+  "Photo/Video Links (count: {photoCount}):\n{photoLinks}",
+  "replies to this email are made public at https://civfix.org/pin/{reportId}",
 ].join("\n\n")
 
 export const FORWARD_TEMPLATE_SUBJECT_MAX = 300

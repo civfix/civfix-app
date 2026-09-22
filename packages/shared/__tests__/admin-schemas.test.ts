@@ -420,7 +420,7 @@ describe("jurisdictions schemas", () => {
     expect(forwardTemplateIssues(DEFAULT_FORWARD_SUBJECT_TEMPLATE)).toEqual([])
     expect(forwardTemplateIssues(DEFAULT_FORWARD_BODY_TEMPLATE)).toEqual([])
     expect(interpolateForwardTemplate(DEFAULT_FORWARD_SUBJECT_TEMPLATE, FORWARD_TEMPLATE_SAMPLE_VALUES)).toBe(
-      "[civfix] Overflowing bin at 5th & Main - Los Angeles, CA - DU-42-000123",
+      "[civfix: DU-42-000123] Overflowing bin at 5th & Main",
     )
     expect(interpolateForwardTemplate(DEFAULT_FORWARD_BODY_TEMPLATE, FORWARD_TEMPLATE_SAMPLE_VALUES)).not.toMatch(
       /\{[a-zA-Z]+\}/,
