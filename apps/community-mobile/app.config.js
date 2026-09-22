@@ -18,6 +18,20 @@ const GOOGLE_IOS_URL_SCHEME =
   "com.googleusercontent.apps.521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t"
 
 const CARTO_API_KEY = process.env.EXPO_PUBLIC_CARTO_API_KEY ?? "cb1_2800_1_9e1f147ec5d25247379fe9cf"
+const SOURCE_COMMIT = resolveSourceCommit()
+
+function resolveSourceCommit() {
+  const fromCi = process.env.EAS_BUILD_GIT_COMMIT_HASH ?? process.env.GITHUB_SHA
+  if (fromCi) return fromCi
+  try {
+    return require("node:child_process")
+      .execSync("git rev-parse HEAD", { stdio: ["ignore", "pipe", "ignore"] })
+      .toString()
+      .trim()
+  } catch {
+    return ""
+  }
+}
 
 const SPLASH_BG_LIGHT = tokens.color.neutral.paper
 
@@ -255,6 +269,7 @@ module.exports = ({ config }) => ({
       iosClientId: GOOGLE_IOS_CLIENT_ID,
     },
     cartoApiKey: CARTO_API_KEY,
+    sourceCommit: SOURCE_COMMIT,
     eas: {
       projectId: "dea5514a-661e-4148-b099-ffe65443f806",
     },

@@ -8,6 +8,8 @@
     "terms": "이용약관",
     "terms_a11y": "이용약관",
     "privacy": "개인정보",
-    "privacy_a11y": "개인정보처리방침"
+    "privacy_a11y": "개인정보처리방침",
+    "source": "소스",
+    "source_a11y": "GitHub의 소스 코드"
   }
 }

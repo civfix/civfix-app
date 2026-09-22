@@ -8,6 +8,8 @@
     "terms": "Terms",
     "terms_a11y": "Terms of Service",
     "privacy": "Privacy",
-    "privacy_a11y": "Privacy Policy"
+    "privacy_a11y": "Privacy Policy",
+    "source": "Source",
+    "source_a11y": "Source code on GitHub"
   }
 }
