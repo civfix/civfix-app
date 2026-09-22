@@ -468,7 +468,6 @@ const useStyles = makeThemedStyles((t) => ({
   panel: {
     height: PANEL_HEIGHT,
     overflow: "hidden",
-    borderRadius: t.radius.md,
   },
   frame: {
     height: PANEL_HEIGHT,
