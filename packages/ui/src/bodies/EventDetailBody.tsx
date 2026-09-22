@@ -38,7 +38,7 @@ import {
   managesEvent,
   useEventQuestions,
 } from "../data/hooks/host"
-import { eventDonationLinkFor } from "./donationLink"
+import { donationLinkFor } from "./donationLink"
 import { useNavStore } from "../nav"
 import { useHaptics } from "../capabilities"
 import { useLocale, useRelativeTime, useT, useViewerTimeZone } from "../i18n"
@@ -213,10 +213,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
   const isEnded = hasEventEnded(cleanup, now)
   const isLive = !isCancelled && !isDone
   const isUpcoming = isLive && !isEnded
-  const donation = useMemo(
-    () => eventDonationLinkFor(cleanup, { status, actsAsHost }),
-    [cleanup, status, actsAsHost],
-  )
+  const donation = useMemo(() => donationLinkFor(cleanup), [cleanup])
   const isRegistered = cleanup.myRegistration?.status === "registered"
   const holdsSeat = isRegistered && cleanup.myRegistration?.waitlistPosition == null
   const next = `/cleanups/${cleanup.id}`
