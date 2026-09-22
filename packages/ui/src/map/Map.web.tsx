@@ -601,7 +601,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     const lng =
       mode === "compact" ? focus.lng : occludedCenterLng(focus.lng, shellOcclusionLeft(), FOCUS_ZOOM)
     map.easeTo({ center: [lng, focus.lat], zoom: FOCUS_ZOOM, duration: 600 })
-  }, [mapReady, mode, focus?.id, focus?.lat, focus?.lng])
+  }, [mapReady, mode, focus])
 
   return (
     <div className="cf-map-wrap" style={{ position: "relative", width: "100%", height: "100%" }}>

@@ -264,7 +264,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   useEffect(() => {
     if (!focus) return
     cameraRef.current?.flyTo({ center: [focus.lng, focus.lat], zoom: FOCUS_ZOOM, duration: 600 })
-  }, [focus?.id, focus?.lat, focus?.lng])
+  }, [focus])
 
   const markerPressedAtRef = useRef(0)
   const onPressMapRef = useRef(onPressMap)

@@ -158,3 +158,15 @@ describe("mapFocusStore: the retained-layer contract, at its two call sites", ()
     expect(src).toContain("useMapFocus.getState().clear()")
   })
 })
+
+describe("mapFocusStore: re-publish", () => {
+  it("every publish is a fresh object, so a re-publish of the same pin still notifies the map", () => {
+    const input = { id: "r1", lat: 34.05, lng: -118.24, category: "hazard" as const }
+    useMapFocus.getState().setReport(input)
+    const a = useMapFocus.getState().focus
+    useMapFocus.getState().setReport(input)
+    const b = useMapFocus.getState().focus
+    expect(a).not.toBe(b)
+    expect(a).toEqual(b)
+  })
+})
