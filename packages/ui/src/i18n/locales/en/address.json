@@ -5,8 +5,7 @@
     "copied": "Address copied",
     "copy_failed": "Couldn't copy the address",
     "open_maps": "Open in a maps app",
-    "focus_a11y": "{{address}}",
-    "focus_hint": "Shows this spot on the map",
+    "show_map": "Show on map",
     "static_a11y": "Address: {{address}}"
   },
   "sheet": {

@@ -5,8 +5,7 @@
     "copied": "주소를 복사했습니다",
     "copy_failed": "주소를 복사하지 못했습니다",
     "open_maps": "지도 앱에서 열기",
-    "focus_a11y": "{{address}}",
-    "focus_hint": "지도에서 이 위치를 보여줍니다",
+    "show_map": "지도에서 보기",
     "static_a11y": "주소: {{address}}"
   },
   "sheet": {

@@ -19,7 +19,6 @@ export interface AddressRowAffordances {
   focusMap: boolean
   copy: boolean
   externalMaps: boolean
-  longPressSheet: boolean
 }
 
 export type AddressExternalPlan =
@@ -97,15 +96,12 @@ export function addressRowAffordances(input: {
   hasExternalPlan: boolean
 }): AddressRowAffordances {
   if (input.variant === "compact") {
-    return { focusMap: false, copy: false, externalMaps: false, longPressSheet: false }
+    return { focusMap: false, copy: false, externalMaps: false }
   }
-  const copy = input.hasAddress && input.hasClipboard
-  const externalMaps = input.hasOpenExternal && input.hasExternalPlan
   return {
     focusMap: input.hasPoint && input.hasFocusTarget,
-    copy,
-    externalMaps,
-    longPressSheet: copy || externalMaps,
+    copy: input.hasAddress && input.hasClipboard,
+    externalMaps: input.hasOpenExternal && input.hasExternalPlan,
   }
 }
 

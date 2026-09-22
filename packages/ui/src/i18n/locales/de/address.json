@@ -5,8 +5,7 @@
     "copied": "Adresse kopiert",
     "copy_failed": "Adresse konnte nicht kopiert werden",
     "open_maps": "In einer Karten-App öffnen",
-    "focus_a11y": "{{address}}",
-    "focus_hint": "Zeigt diesen Ort auf der Karte",
+    "show_map": "Auf der Karte anzeigen",
     "static_a11y": "Adresse: {{address}}"
   },
   "sheet": {
