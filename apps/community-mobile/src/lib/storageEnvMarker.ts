@@ -18,3 +18,9 @@ export function purgesLegacyStorage(namespace: string, marker: string | null): b
   if (marker === null || marker === "") return false
   return marker !== PROD_STORAGE_ENV
 }
+
+export function writesStorageEnvMarker(namespace: string, marker: string | null): boolean {
+  if (marker === storageEnvFor(namespace)) return false
+  if (namespace === "") return true
+  return marker === null || marker === ""
+}

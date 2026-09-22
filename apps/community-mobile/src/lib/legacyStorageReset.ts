@@ -9,6 +9,7 @@ import {
   STORAGE_ENV_MARKER_KEY,
   purgesLegacyStorage,
   storageEnvFor,
+  writesStorageEnvMarker,
 } from "@/lib/storageEnvMarker"
 import { queryClient } from "@/query/client"
 import { clearPersistedCache, resumeCachePersistence } from "@/query/mmkv-persister"
@@ -47,8 +48,7 @@ export async function adoptStorageEnvironment(): Promise<boolean> {
   const marker = await readMarker()
   const purged = purgesLegacyStorage(namespace, marker)
   if (purged) await purge()
-  const next = storageEnvFor(namespace)
-  if (marker !== next) await writeMarker(next)
+  if (writesStorageEnvMarker(namespace, marker)) await writeMarker(storageEnvFor(namespace))
   if (__DEV__) {
     console.log(
       `[storage-env] namespace="${namespace || PROD_STORAGE_ENV}" previous=${marker ?? "<none>"} ` +
