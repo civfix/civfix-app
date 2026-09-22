@@ -1878,3 +1878,64 @@ asserts it. civfix-backend `services/api` also adopts the new ranking profile wh
 the split scorer and the seeded jitter; civfix-admin and civfix-govt-web bump with the routine
 version propagation. No migration for the ranking change itself, and nothing here is breaking for
 a consumer that stays on the endpoints it already calls.
+
+## 54. The host's own numbers are exact; only group breakdowns are suppressed (0.55.0)
+
+`hostedEventsAnalyticsSummary` — `GET /me/hosted-events/analytics/summary`, `auth: "required"`,
+csrf false, v1 — answers "what has this host actually done in this window" in ONE read, for the
+host-analytics page's KPI tiles and its two per-event panels. It sits BESIDE
+`hostedEventsAnalytics` (`/me/hosted-events/analytics`), which is unchanged: that read is the
+portfolio rollup (repeat attendance, best day/time, ranked volunteers) and keeps its own
+`PortfolioAnalyticsRange` (`30d|90d|365d|all`). The summary takes the per-event
+`AnalyticsRange` (`7d|30d|90d|all`) instead, because a host-wide window is a rolling window and the
+tiles sit next to the per-event surfaces that already speak that vocabulary. `range` and `orgId`
+are both optional and the request is `.strict()`; the server resolves an omitted `range` to `30d`
+and echoes the resolved value back, so a client never has to remember what it did not send.
+Registry 330 → 331.
+
+**The top-line aggregates are EXACT — effectively k=1 — and that is the whole point of a separate
+schema.** `activity` (signups, cancellations, hoursTotal, hoursVolunteers, reportsLinked,
+reportsResolved, postsCreated, donationClicks), `eventsHeld` (count, registered, checkIns,
+noShows) and `totals.events` are plain non-nullable numbers, not the nullable
+`value | null, suppressed` shape every other analytics field uses. These are the host's OWN
+totals over the host's OWN events: the host already sees every roster, every check-in scan and
+every credited hour in the manage console, so suppressing them protects nobody and only teaches
+the host to distrust the page. This is the precedent the portfolio read set with `totalHours` and
+`volunteersCredited` (§39) — a raw total a host is entitled to is never k-suppressed — and §49
+already stated the same rule for per-event KPIs ("the host's own raw totals are never
+suppressed"). A zero here means zero, and there is no "we are hiding this" state to render.
+
+**Group breakdowns stay k-suppressed, and the envelope's `k` still says so.** `eventsHeld.checkInRate`
+is a `SuppressedRate` and `byEvent` / `hoursByEvent` are ordinary `Panel`s of `BreakdownRow`s, so a
+rate or a row whose denominator falls below `k` comes back `value: null, suppressed: true`, and a
+whole panel can carry `panelSuppressed`. The distinction is not "aggregate vs. rate" but
+**whole vs. part**: a single number covering everything the host ran identifies nobody, while a
+row that splits those same people by event — and, downstream, by slot, ticket type or source — can
+isolate an individual on a small event. `k` therefore keeps defaulting to
+`ANALYTICS_SUPPRESSION_K` (5) in this envelope: it governs the parts, not the whole. The panels are
+capped at `MAX_HOST_SUMMARY_EVENT_ROWS` (12) rows each and `signupsDaily` at
+`MAX_HOST_SUMMARY_SERIES_POINTS` (365) points, so an "all" range over a long-lived host is a
+bounded payload; the server ranks and truncates rather than paginating. `window` (`from`, `to`)
+ships the resolved day-key bounds alongside `generatedAt` so a chart's x-domain and a "last 30
+days" label come from the server's clock, not the device's.
+
+**The per-event funnel drops its page-views first step.** The reach funnel on the per-event
+analytics surface started at page views, then narrowed to sign-ups and check-ins — but page views
+are counted by `recordEventPageView` against the public event page, while the KPI tiles beside the
+funnel read sign-ups and check-ins from the live registration and check-in tables. Two surfaces
+answering the same question from two sources disagree in practice (a view recorded against a page
+the event later unpublished, a sign-up taken in the manage console that never had a view), and the
+funnel's first step was where that disagreement showed. The funnel now begins at sign-ups, so every
+step and every tile is computed from the same live sources and a host reading down the page sees
+one set of numbers. `FunnelStep`, `EventAnalyticsReach.funnel` and the `pageViews` KPI itself are
+all unchanged on the wire — this is a change of WHAT the backend puts in the funnel array and what
+the client labels, not a schema break — and `eventAnalyticsSources` still serves page views as its
+own panel for hosts who want the reach question answered on its own terms.
+
+**Delivery set (§4.2, no consumer left behind).** This is purely additive: one new endpoint, one
+new request/response pair, no field removed or retyped anywhere. civfix-backend `services/api`
+implements `GET /me/hosted-events/analytics/summary` and must move
+`test/unit/route-coverage.test.ts` to 331; `packages/shared/__tests__/client.test.ts` already
+asserts it. civfix-app adopts 0.55.0 to call the endpoint and to ship the funnel's new first step;
+civfix-admin and civfix-govt-web bump with the routine version propagation and call nothing new. No
+migration — every number here is aggregated from tables that already exist.

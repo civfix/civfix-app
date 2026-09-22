@@ -330,3 +330,67 @@ export const HostedEventsAnalyticsResponseSchema: z.ZodType<
   z.ZodTypeDef,
   unknown
 > = HostedEventsAnalyticsObjectSchema
+
+export const HostAnalyticsSummaryRequestSchema = z
+  .object({
+    range: AnalyticsRangeSchema.optional(),
+    orgId: IdSchema.optional(),
+  })
+  .strict()
+export type HostAnalyticsSummaryRequest = z.infer<typeof HostAnalyticsSummaryRequestSchema>
+
+export const MAX_HOST_SUMMARY_SERIES_POINTS = 365
+export const MAX_HOST_SUMMARY_EVENT_ROWS = 12
+
+const HostAnalyticsSummaryWindowSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+})
+export type HostAnalyticsSummaryWindow = z.infer<typeof HostAnalyticsSummaryWindowSchema>
+
+const HostAnalyticsSummaryActivitySchema = z.object({
+  signups: z.number().int().nonnegative(),
+  cancellations: z.number().int().nonnegative(),
+  hoursTotal: z.number().nonnegative(),
+  hoursVolunteers: z.number().int().nonnegative(),
+  reportsLinked: z.number().int().nonnegative(),
+  reportsResolved: z.number().int().nonnegative(),
+  postsCreated: z.number().int().nonnegative(),
+  donationClicks: z.number().int().nonnegative(),
+})
+export type HostAnalyticsSummaryActivity = z.infer<typeof HostAnalyticsSummaryActivitySchema>
+
+const HostAnalyticsSummaryEventsHeldSchema = z.object({
+  count: z.number().int().nonnegative(),
+  registered: z.number().int().nonnegative(),
+  checkIns: z.number().int().nonnegative(),
+  noShows: z.number().int().nonnegative(),
+  checkInRate: SuppressedRateSchema,
+})
+export type HostAnalyticsSummaryEventsHeld = z.infer<typeof HostAnalyticsSummaryEventsHeldSchema>
+
+const HostSummaryEventPanelSchema = PanelSchema.extend({
+  rows: z.array(BreakdownRowSchema).max(MAX_HOST_SUMMARY_EVENT_ROWS).default([]),
+})
+
+const HostAnalyticsSummaryObjectSchema = z.object({
+  generatedAt: ISODateSchema,
+  range: AnalyticsRangeSchema.default("30d"),
+  k: z.number().int().positive().default(ANALYTICS_SUPPRESSION_K),
+  window: HostAnalyticsSummaryWindowSchema,
+  activity: HostAnalyticsSummaryActivitySchema,
+  eventsHeld: HostAnalyticsSummaryEventsHeldSchema,
+  totals: z.object({
+    events: z.number().int().nonnegative(),
+  }),
+  signupsDaily: z.array(SeriesPointSchema).max(MAX_HOST_SUMMARY_SERIES_POINTS).default([]),
+  byEvent: HostSummaryEventPanelSchema,
+  hoursByEvent: HostSummaryEventPanelSchema,
+})
+export type HostAnalyticsSummaryResponse = z.infer<typeof HostAnalyticsSummaryObjectSchema>
+
+export const HostAnalyticsSummaryResponseSchema: z.ZodType<
+  HostAnalyticsSummaryResponse,
+  z.ZodTypeDef,
+  unknown
+> = HostAnalyticsSummaryObjectSchema

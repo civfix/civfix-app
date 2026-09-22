@@ -17,9 +17,9 @@ const CSRF_FREE_MUTATIONS = new Set([
 ])
 
 describe("host platform endpoint registry", () => {
-  it("adds 110 endpoints, of which 21 are admin", () => {
-    expect(NEW_NAMES).toHaveLength(110)
-    expect(Object.keys(hostEndpoints)).toHaveLength(89)
+  it("adds 111 endpoints, of which 21 are admin", () => {
+    expect(NEW_NAMES).toHaveLength(111)
+    expect(Object.keys(hostEndpoints)).toHaveLength(90)
     expect(Object.keys(hostAdminEndpoints)).toHaveLength(21)
     for (const name of Object.keys(hostAdminEndpoints)) {
       expect(endpoints[name as keyof typeof endpoints].path.startsWith("/admin"), name).toBe(true)
@@ -187,8 +187,22 @@ describe("host platform endpoint registry", () => {
   it("keeps /me/hosted-events and /me/hosted-events/analytics fully static", () => {
     expect(endpoints.listMyHostedEvents.path).toBe("/me/hosted-events")
     expect(endpoints.hostedEventsAnalytics.path).toBe("/me/hosted-events/analytics")
+    expect(endpoints.hostedEventsAnalyticsSummary.path).toBe(
+      "/me/hosted-events/analytics/summary",
+    )
     expect(endpoints.listMyHostedEvents.path).not.toMatch(/:[A-Za-z0-9_]+/)
     expect(endpoints.hostedEventsAnalytics.path).not.toMatch(/:[A-Za-z0-9_]+/)
+    expect(endpoints.hostedEventsAnalyticsSummary.path).not.toMatch(/:[A-Za-z0-9_]+/)
+  })
+
+  it("seats the host-wide summary beside the portfolio read, GET and csrf-free", () => {
+    const e = endpoints.hostedEventsAnalyticsSummary
+    expect(e.method).toBe("GET")
+    expect(e.auth).toBe("required")
+    expect(e.csrf).toBe(false)
+    expect(e.version).toBe("v1")
+    expect(e.request).not.toBe(endpoints.hostedEventsAnalytics.request)
+    expect(e.path.startsWith(`${endpoints.hostedEventsAnalytics.path}/`)).toBe(true)
   })
 
   it("seats the invitee inbox under /me, token-free, with the id in the path (DECISIONS §33)", () => {

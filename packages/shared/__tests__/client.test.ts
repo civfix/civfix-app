@@ -22,7 +22,7 @@ function jsonResponse(
 describe("endpoint registry", () => {
   it("covers the full Phase 1 + admin surface with unique paths per method", () => {
     const names = Object.keys(endpoints)
-    expect(names.length).toBe(330)
+    expect(names.length).toBe(331)
     const seen = new Set<string>()
     for (const name of names) {
       const e = endpoints[name as keyof typeof endpoints]

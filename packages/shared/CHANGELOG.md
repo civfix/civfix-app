@@ -1,5 +1,11 @@
 # @civfix/shared
 
+## 0.55.0
+
+### Minor Changes
+
+- Add the host-wide analytics summary contract: `hostedEventsAnalyticsSummary` (`GET /me/hosted-events/analytics/summary`) with exact host aggregates and k-suppressed per-event panels.
+
 ## 0.54.0
 
 ### Minor Changes
