@@ -100,8 +100,19 @@ describe("what the redesign took off the single-event page", () => {
   })
 
   it("puts the whole event behind the sign-ups tile, since capacity now has its own meter", () => {
-    expect(BODY).toContain('hint={t("range.whole_event")}')
+    expect(BODY).toContain('hint={signups === null ? t("kpi.not_enough") : t("range.whole_event")}')
     expect(BODY).not.toContain("kpi.of_capacity")
+  })
+
+  it("reads the sign-ups tile off the whole-event source the funnel head uses", () => {
+    expect(BODY).toContain("const signups = wholeEventSignups(data)")
+    expect(BODY).toContain("value={signups === null ? null : String(signups)}")
+    expect(BODY).not.toContain("data.kpis.signups")
+  })
+
+  it("never lets a suppressed whole-event count reach a tile as a confident zero", () => {
+    expect(BODY).not.toContain("String(data.kpis.signups ?? 0)")
+    expect(BODY).toContain("checkedIn: wholeEventCheckedIn(data) ?? 0")
   })
 
   it("hides the page-view and donation tiles until there is something to show", () => {

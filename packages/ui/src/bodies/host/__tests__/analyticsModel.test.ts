@@ -27,6 +27,8 @@ import {
   seriesValues,
   summaryImpactRows,
   weeklyXLabels,
+  wholeEventCheckedIn,
+  wholeEventSignups,
 } from "../analyticsModel"
 
 const CREATED = Date.parse("2026-09-01T00:00:00.000Z")
@@ -373,6 +375,65 @@ describe("the funnel is the event's own progress bar", () => {
 
   it("draws nothing at all for an empty funnel", () => {
     expect(funnelBars([])).toEqual([])
+  })
+})
+
+describe("the whole-event tiles answer from the same source as the funnel head", () => {
+  const funnel = [
+    { step: "signups", label: "Sign-ups", value: 25, suppressed: false },
+    { step: "checked_in", label: "Checked in", value: 7, suppressed: false },
+    { step: "logged_hours", label: "Hours", value: 0, suppressed: false },
+  ]
+
+  const held = analytics({
+    kpis: { ...analytics().kpis, signups: null, checkedIn: null },
+    reach: { viewsDaily: [], funnel },
+    signups: {
+      cumulative: [],
+      daily: [
+        dayPoint("2026-09-08", 4),
+        dayPoint("2026-09-09", 6),
+        { day: "2026-09-10", value: null, suppressed: true },
+      ],
+      cancellations: [],
+    },
+  })
+
+  it("shows the whole-event count the funnel publishes, not a zero, when the kpi is withheld", () => {
+    expect(held.kpis.signups).toBeNull()
+    expect(wholeEventSignups(held)).toBe(25)
+    expect(wholeEventCheckedIn(held)).toBe(7)
+  })
+
+  it("never falls back to summing the daily series, which the suppressed days undercount", () => {
+    const sliced = rangeSlice(held.signups.daily, 30, Date.parse("2026-09-10T00:00:00.000Z"))
+    const sum = sliced.reduce((total, at) => total + (at.value ?? 0), 0)
+    expect(sum).toBe(10)
+    expect(wholeEventSignups(held)).not.toBe(sum)
+  })
+
+  it("prefers the kpi whenever the server does publish it", () => {
+    expect(wholeEventSignups(analytics({ reach: { viewsDaily: [], funnel } }))).toBe(20)
+  })
+
+  it("reads a published zero as a zero rather than reaching for the funnel", () => {
+    const none = analytics({
+      kpis: { ...analytics().kpis, signups: 0 },
+      reach: { viewsDaily: [], funnel },
+    })
+    expect(wholeEventSignups(none)).toBe(0)
+  })
+
+  it("stays unknown when neither the kpi nor the funnel may publish the count", () => {
+    const dark = analytics({
+      kpis: { ...analytics().kpis, signups: null, checkedIn: null },
+      reach: {
+        viewsDaily: [],
+        funnel: [{ step: "signups", label: "Sign-ups", value: null, suppressed: true }],
+      },
+    })
+    expect(wholeEventSignups(dark)).toBeNull()
+    expect(wholeEventCheckedIn(dark)).toBeNull()
   })
 })
 

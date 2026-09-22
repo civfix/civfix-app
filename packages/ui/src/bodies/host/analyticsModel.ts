@@ -204,6 +204,23 @@ export function funnelBars(steps: readonly FunnelStep[]): FunnelBar[] {
   })
 }
 
+export const FUNNEL_SIGNUPS_STEP = "signups"
+
+export const FUNNEL_CHECKED_IN_STEP = "checked_in"
+
+export function funnelCount(steps: readonly FunnelStep[], step: string): number | null {
+  const found = steps.find((entry) => entry.step === step)
+  return found === undefined || found.suppressed ? null : found.value
+}
+
+export function wholeEventSignups(data: GetEventAnalyticsResponse): number | null {
+  return data.kpis.signups ?? funnelCount(data.reach.funnel, FUNNEL_SIGNUPS_STEP)
+}
+
+export function wholeEventCheckedIn(data: GetEventAnalyticsResponse): number | null {
+  return data.kpis.checkedIn ?? funnelCount(data.reach.funnel, FUNNEL_CHECKED_IN_STEP)
+}
+
 export function comparisonVisible(data: GetEventAnalyticsResponse): boolean {
   const sample = data.comparison?.sampleSize ?? 0
   return sample >= EVENT_ANALYTICS_COMPARISON_MIN_EVENTS

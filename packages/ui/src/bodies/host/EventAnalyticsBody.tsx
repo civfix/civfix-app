@@ -61,6 +61,8 @@ import {
   pickerOptions,
   ratePercent,
   weeklyXLabels,
+  wholeEventCheckedIn,
+  wholeEventSignups,
   type AnalyticsRangePreset,
 } from "./analyticsModel"
 
@@ -487,13 +489,14 @@ function KpiStrip({ data, width }: { data: GetEventAnalyticsResponse; width: num
   const pre = data.phase === "upcoming"
   const views = data.kpis.pageViews ?? 0
   const donations = data.kpis.donationClicks ?? 0
+  const signups = wholeEventSignups(data)
 
   return (
     <StatTileRow columns={columns}>
       <StatTile
         label={t("kpi.signups")}
-        value={String(data.kpis.signups ?? 0)}
-        hint={t("range.whole_event")}
+        value={signups === null ? null : String(signups)}
+        hint={signups === null ? t("kpi.not_enough") : t("range.whole_event")}
       />
       {views > 0 ? (
         <StatTile label={t("kpi.page_views")} value={String(views)} />
@@ -507,8 +510,8 @@ function KpiStrip({ data, width }: { data: GetEventAnalyticsResponse; width: num
             : checkIn === null
               ? t("kpi.not_enough")
               : t("kpi.checked_in_of", {
-                  checkedIn: data.kpis.checkedIn ?? 0,
-                  signups: data.kpis.signups ?? 0,
+                  checkedIn: wholeEventCheckedIn(data) ?? 0,
+                  signups: signups ?? 0,
                 })
         }
       />
@@ -546,7 +549,7 @@ function SignupsSection({
   const daily = rangeSlice(data.signups.daily, days, now)
   const cancellations = rangeSlice(data.signups.cancellations, days, now)
   const capacity = data.kpis.capacity
-  const signups = data.kpis.signups ?? 0
+  const signups = wholeEventSignups(data) ?? 0
 
   return (
     <View style={styles.block} onLayout={onLayout}>
@@ -811,12 +814,14 @@ function ComparisonSection({ data }: { data: GetEventAnalyticsResponse }) {
       ? (data.kpis.hoursTotal ?? 0) / (data.kpis.hoursVolunteers as number)
       : null
 
+  const signups = wholeEventSignups(data)
+
   const rows: Array<{ key: string; value: number | null; median: number | null; text: string }> = [
     {
       key: "signups",
-      value: data.kpis.signups,
+      value: signups,
       median: comparison.medians.signups,
-      text: String(data.kpis.signups ?? 0),
+      text: signups === null ? DASH : String(signups),
     },
     {
       key: "check_in_rate",
