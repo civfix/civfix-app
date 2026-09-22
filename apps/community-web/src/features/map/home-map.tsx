@@ -27,6 +27,7 @@ import {
   MapPending,
   resolveMapCenter,
   shouldAdoptCenter,
+  holdsRememberedCamera,
   PRECISE_ZOOM,
   APPROX_ZOOM,
   type MapCenterSource,
@@ -39,7 +40,7 @@ import { useApproximateLocation, useCleanups, useMapReports } from "@civfix/ui/d
 
 import { decideRegionFetch } from "@/features/map/region-fetch"
 import { readCameraSnapshot, writeCameraSnapshot } from "@/features/map/camera-snapshot"
-import { resolvePreciseCenter, getBrowserPosition } from "@/lib/locate"
+import { resolvePreciseCenter, getBrowserPosition, geolocationPromptPending } from "@/lib/locate"
 import { useMapRecenterStore } from "@/features/map/map-recenter"
 
 /**
@@ -149,11 +150,14 @@ export function HomeMap() {
   // and even then only to UPGRADE the source (remembered -> approximate -> precise), never to repeat or
   // downgrade one (`shouldAdoptCenter`).
   const [preciseCenter, setPreciseCenter] = React.useState<MapLatLng | null>(null)
+  const promptGrantRef = React.useRef(false)
   React.useEffect(() => {
     let cancelled = false
     void (async () => {
+      const prompted = await geolocationPromptPending()
       const precise = await resolvePreciseCenter()
       if (cancelled || !precise) return
+      promptGrantRef.current = prompted
       setPreciseCenter(precise)
       setUserLocation(precise)
     })()
@@ -196,7 +200,7 @@ export function HomeMap() {
   const cameraOwnedRef = React.useRef(false)
   React.useEffect(() => {
     if (cameraOwnedRef.current) return
-    if (seedSourceRef.current === "remembered") return
+    if (holdsRememberedCamera(seedSourceRef.current, promptGrantRef.current)) return
     if (seedCenter === null) return
     const { center, source } = centerPlan
     if (!center || !source) return

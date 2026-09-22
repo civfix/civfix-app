@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   APPROX_ZOOM,
   PRECISE_ZOOM,
+  holdsRememberedCamera,
   isRememberedCenter,
   resolveMapCenter,
   shouldAdoptCenter,
@@ -144,5 +145,18 @@ describe("the remembered-centre validator both hosts persist through", () => {
     ]) {
       expect(isRememberedCenter(bad)).toBe(false)
     }
+  })
+})
+
+describe("holdsRememberedCamera", () => {
+  it("holds a remembered boot camera against a silent grant, and releases it for a prompted one", () => {
+    expect(holdsRememberedCamera("remembered", false)).toBe(true)
+    expect(holdsRememberedCamera("remembered", true)).toBe(false)
+  })
+
+  it("never holds a camera that did not boot from the snapshot", () => {
+    expect(holdsRememberedCamera("approximate", false)).toBe(false)
+    expect(holdsRememberedCamera("precise", false)).toBe(false)
+    expect(holdsRememberedCamera(null, false)).toBe(false)
   })
 })

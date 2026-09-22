@@ -108,6 +108,7 @@ export type { DropPinCameraRestorer } from "./dropPinFlow"
 export {
   resolveMapCenter,
   shouldAdoptCenter,
+  holdsRememberedCamera,
   isRememberedCenter,
   zoomForSource,
   PRECISE_ZOOM,

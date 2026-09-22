@@ -126,3 +126,44 @@ describe("getSharedBrowserFix dedupes every one-shot consumer onto one browser r
     await expect(getBrowserPosition()).resolves.toBeNull()
   })
 })
+
+describe("geolocationPromptPending reports only a still-unanswered prompt", () => {
+  it("is true when the Permissions API says prompt, and asks for the geolocation descriptor", async () => {
+    const query = vi.fn().mockResolvedValue({ state: "prompt" })
+    vi.stubGlobal("navigator", { geolocation: geo.geolocation, permissions: { query } })
+    const { geolocationPromptPending } = await freshModules()
+    await expect(geolocationPromptPending()).resolves.toBe(true)
+    expect(query).toHaveBeenCalledWith({ name: "geolocation" })
+  })
+
+  it("is false for an already-granted or denied permission", async () => {
+    for (const state of ["granted", "denied"]) {
+      vi.stubGlobal("navigator", {
+        geolocation: geo.geolocation,
+        permissions: { query: vi.fn().mockResolvedValue({ state }) },
+      })
+      const { geolocationPromptPending } = await freshModules()
+      await expect(geolocationPromptPending()).resolves.toBe(false)
+    }
+  })
+
+  it("is false without a Permissions API, and when the query rejects", async () => {
+    vi.stubGlobal("navigator", { geolocation: geo.geolocation })
+    await expect((await freshModules()).geolocationPromptPending()).resolves.toBe(false)
+    vi.stubGlobal("navigator", {
+      geolocation: geo.geolocation,
+      permissions: { query: vi.fn().mockRejectedValue(new TypeError("nope")) },
+    })
+    await expect((await freshModules()).geolocationPromptPending()).resolves.toBe(false)
+  })
+
+  it("never touches the one-shot fix, so it cannot raise a prompt of its own", async () => {
+    vi.stubGlobal("navigator", {
+      geolocation: geo.geolocation,
+      permissions: { query: vi.fn().mockResolvedValue({ state: "prompt" }) },
+    })
+    const { geolocationPromptPending } = await freshModules()
+    await geolocationPromptPending()
+    expect(geo.calls).toHaveLength(0)
+  })
+})

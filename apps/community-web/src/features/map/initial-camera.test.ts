@@ -58,6 +58,7 @@ describe("the resolved centre is the only centre", () => {
       "seedSourceRef.current =",
       "approximatePointRef.current =",
       "cameraOwnedRef.current =",
+      "promptGrantRef.current =",
     ]) {
       let at = renderBody.indexOf(write)
       while (at !== -1) {
@@ -83,11 +84,24 @@ describe("the camera adoption effect", () => {
     expect(fly).toBeGreaterThan(guard)
   })
 
-  it("never yanks a map that booted from the persisted camera", () => {
-    const boot = adoptEffect.indexOf('if (seedSourceRef.current === "remembered") return')
+  it("holds the persisted boot camera unless the user just answered the boot prompt with Allow", () => {
+    const hold = adoptEffect.indexOf(
+      "if (holdsRememberedCamera(seedSourceRef.current, promptGrantRef.current)) return",
+    )
     const fly = adoptEffect.indexOf("mapRef.current?.flyTo(")
-    expect(boot).toBeGreaterThan(-1)
-    expect(fly).toBeGreaterThan(boot)
+    expect(hold).toBeGreaterThan(-1)
+    expect(fly).toBeGreaterThan(hold)
+    expect(code).toContain("holdsRememberedCamera,")
+  })
+
+  it("reads the permission state BEFORE the request that may raise the prompt, and latches the answer before the centre lands", () => {
+    const mount = code.slice(code.indexOf("const prompted = await geolocationPromptPending()"))
+    const request = mount.indexOf("await resolvePreciseCenter()")
+    const latch = mount.indexOf("promptGrantRef.current = prompted")
+    const land = mount.indexOf("setPreciseCenter(precise)")
+    expect(request).toBeGreaterThan(0)
+    expect(latch).toBeGreaterThan(request)
+    expect(land).toBeGreaterThan(latch)
   })
 
   it("flies at most once, then hands the camera to the user", () => {

@@ -123,3 +123,9 @@ export function getBrowserPosition(): Promise<LatLng | null> {
     () => null,
   )
 }
+
+export async function geolocationPromptPending(): Promise<boolean> {
+  if (typeof navigator === "undefined" || !navigator.permissions) return false
+  const status = await navigator.permissions.query({ name: "geolocation" }).catch(() => null)
+  return status?.state === "prompt"
+}

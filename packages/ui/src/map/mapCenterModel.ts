@@ -91,6 +91,13 @@ export function shouldAdoptCenter(
   return SOURCE_RANK[next] > SOURCE_RANK[current]
 }
 
+export function holdsRememberedCamera(
+  seedSource: MapCenterSource | null,
+  grantedByPrompt: boolean,
+): boolean {
+  return seedSource === "remembered" && !grantedByPrompt
+}
+
 export function zoomForSource(source: MapCenterSource): number {
   return source === "precise" ? PRECISE_ZOOM : APPROX_ZOOM
 }
