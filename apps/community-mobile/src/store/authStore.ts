@@ -19,7 +19,6 @@ import {
   unregisterLapsedSessionPush,
   type PushUnregisterDeps,
 } from "@/lib/pushRegistration"
-import { revokeServerSession, type SessionRevokeDeps } from "@/lib/sessionRevoke"
 import { queryClient } from "@/query/client"
 import {
   clearPersistedCache,
@@ -105,20 +104,6 @@ function pushUnregisterDeps(): PushUnregisterDeps {
     },
     unregister: (registration, bearer, signal) =>
       api.pushUnregister(registration, {
-        headers: { Authorization: `Bearer ${bearer}` },
-        signal,
-      }),
-  }
-}
-
-function sessionRevokeDeps(): SessionRevokeDeps {
-  return {
-    readBearer: async () => {
-      const read = await readToken()
-      return read.ok ? read.token : null
-    },
-    revoke: (bearer, signal) =>
-      api.logout({
         headers: { Authorization: `Bearer ${bearer}` },
         signal,
       }),
@@ -257,8 +242,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     await signOutUnregisteringPush({
       ...pushUnregisterDeps(),
+      revokeSession: (bearer, signal) =>
+        api.logout({
+          headers: { Authorization: `Bearer ${bearer}` },
+          signal,
+        }),
       completeSignOut: async () => {
-        await revokeServerSession(sessionRevokeDeps())
         await tearDownIdentity(set)
         rememberIdentity(null)
         await clearSecureBlobs()

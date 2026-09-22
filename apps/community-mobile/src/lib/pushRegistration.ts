@@ -6,6 +6,8 @@ export const PUSH_REGISTRATION_KEY = "civfix.push.registration"
 
 export const PUSH_UNREGISTER_TIMEOUT_MS = 3000
 
+export const SESSION_REVOKE_TIMEOUT_MS = 3000
+
 export interface PersistedPushRegistration {
   platform: PushPlatform
   token: string
@@ -24,6 +26,7 @@ export interface PushUnregisterDeps {
 }
 
 export interface SignOutUnregisteringPushDeps extends PushUnregisterDeps {
+  revokeSession: (bearer: string, signal: AbortSignal) => Promise<unknown>
   completeSignOut: () => Promise<void>
 }
 
@@ -80,24 +83,57 @@ function fireUnregister(
   })()
 }
 
+function boundedCall(
+  call: (signal: AbortSignal) => Promise<unknown>,
+  timeoutMs: number,
+): Promise<boolean> {
+  const controller = new AbortController()
+  return new Promise<boolean>((resolve) => {
+    const abort = setTimeout(() => {
+      controller.abort()
+      resolve(false)
+    }, timeoutMs)
+    const settle = (released: boolean) => {
+      clearTimeout(abort)
+      resolve(released)
+    }
+    try {
+      void call(controller.signal).then(
+        () => settle(true),
+        () => settle(false),
+      )
+    } catch {
+      settle(false)
+    }
+  })
+}
+
 export async function signOutUnregisteringPush(
   deps: SignOutUnregisteringPushDeps,
 ): Promise<void> {
   const registration = readPushRegistration(deps.store)
+
   let bearer: string | null = null
-  if (registration) {
-    try {
-      bearer = await deps.readBearer()
-    } catch {
-      bearer = null
-    }
+  try {
+    bearer = await deps.readBearer()
+  } catch {
+    bearer = null
   }
 
   forgetPushRegistration(deps.store)
-  await deps.completeSignOut()
 
-  if (!registration || !bearer) return
-  fireUnregister(deps, registration, bearer)
+  if (bearer !== null) {
+    const held = bearer
+    if (registration) {
+      await boundedCall(
+        (signal) => deps.unregister(registration, held, signal),
+        PUSH_UNREGISTER_TIMEOUT_MS,
+      )
+    }
+    await boundedCall((signal) => deps.revokeSession(held, signal), SESSION_REVOKE_TIMEOUT_MS)
+  }
+
+  await deps.completeSignOut()
 }
 
 export function unregisterLapsedSessionPush(deps: PushUnregisterDeps): Promise<void> {

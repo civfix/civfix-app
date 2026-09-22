@@ -1,8 +1,10 @@
 import { test, mock } from "node:test"
 import assert from "node:assert/strict"
+import { readFileSync } from "node:fs"
 import {
   PUSH_REGISTRATION_KEY,
   PUSH_UNREGISTER_TIMEOUT_MS,
+  SESSION_REVOKE_TIMEOUT_MS,
   forgetPushRegistration,
   readPushRegistration,
   rememberPushRegistration,
@@ -33,6 +35,7 @@ function signOutProbe(overrides: Partial<SignOutUnregisteringPushDeps> = {}) {
   const store = overrides.store ?? memoryStore()
   const order: string[] = []
   const sent: { registration: PersistedPushRegistration; bearer: string }[] = []
+  const revoked: string[] = []
   const deps: SignOutUnregisteringPushDeps = {
     store,
     readBearer: async () => "current-bearer",
@@ -43,9 +46,13 @@ function signOutProbe(overrides: Partial<SignOutUnregisteringPushDeps> = {}) {
       order.push("unregistered")
       sent.push({ registration, bearer })
     },
+    revokeSession: async (bearer) => {
+      order.push("revoked")
+      revoked.push(bearer)
+    },
     ...overrides,
   }
-  return { deps, store, order, sent }
+  return { deps, store, order, sent, revoked }
 }
 
 test("a registration round-trips through the store", () => {
@@ -81,7 +88,7 @@ test("a missing, malformed or half-written value never yields a registration", (
 })
 
 test("sign-out unregisters the EXACT values registration persisted, with the captured bearer", async () => {
-  const { deps, store, sent } = signOutProbe()
+  const { deps, store, sent, revoked } = signOutProbe()
   rememberPushRegistration(store, { platform: "android", token: "ExponentPushToken[xyz]" })
 
   await signOutUnregisteringPush(deps)
@@ -93,28 +100,115 @@ test("sign-out unregisters the EXACT values registration persisted, with the cap
       bearer: "current-bearer",
     },
   ])
+  assert.deepEqual(revoked, ["current-bearer"])
   assert.equal(readPushRegistration(store), null)
 })
 
-test("the session is torn down BEFORE the unregister is ever attempted", async () => {
+test("the push token is released BEFORE the session is revoked, and both before local teardown", async () => {
   const { deps, store, order } = signOutProbe()
   rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
 
   await signOutUnregisteringPush(deps)
   await tick()
 
-  assert.deepEqual(order, ["signed-out", "unregistered"])
+  assert.deepEqual(order, ["unregistered", "revoked", "signed-out"])
 })
 
-test("an unregister that NEVER SETTLES still leaves sign-out complete", async () => {
-  const { deps, store, order } = signOutProbe({ unregister: () => new Promise<never>(() => {}) })
+test("the unregister and the revoke carry the SAME bearer, captured once before it is cleared", async () => {
+  let reads = 0
+  const { deps, store, sent, revoked } = signOutProbe({
+    readBearer: async () => {
+      reads += 1
+      return "live-bearer"
+    },
+  })
   rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
 
   await signOutUnregisteringPush(deps)
   await tick()
 
-  assert.deepEqual(order, ["signed-out"])
-  assert.equal(readPushRegistration(store), null)
+  assert.equal(reads, 1)
+  assert.equal(sent[0]?.bearer, "live-bearer")
+  assert.deepEqual(revoked, ["live-bearer"])
+})
+
+test("an unregister that NEVER SETTLES still leaves sign-out complete, and never stops the revoke", async () => {
+  mock.timers.enable({ apis: ["setTimeout"] })
+  try {
+    const { deps, store, order } = signOutProbe({ unregister: () => new Promise<never>(() => {}) })
+    rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
+
+    const signingOut = signOutUnregisteringPush(deps)
+    await tick()
+    assert.deepEqual(order, [])
+
+    mock.timers.tick(PUSH_UNREGISTER_TIMEOUT_MS)
+    await signingOut
+
+    assert.deepEqual(order, ["revoked", "signed-out"])
+    assert.equal(readPushRegistration(store), null)
+  } finally {
+    mock.timers.reset()
+  }
+})
+
+test("a revoke that NEVER SETTLES cannot hold sign-out open either", async () => {
+  mock.timers.enable({ apis: ["setTimeout"] })
+  try {
+    let signal: AbortSignal | null = null
+    const { deps, store, order } = signOutProbe({
+      revokeSession: (_bearer, received) => {
+        signal = received
+        return new Promise<never>(() => {})
+      },
+    })
+    rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
+
+    const signingOut = signOutUnregisteringPush(deps)
+    await tick()
+    assert.deepEqual(order, ["unregistered"])
+    assert.ok(signal)
+    assert.equal((signal as AbortSignal).aborted, false)
+
+    mock.timers.tick(SESSION_REVOKE_TIMEOUT_MS)
+    await signingOut
+
+    assert.equal((signal as AbortSignal).aborted, true)
+    assert.deepEqual(order, ["unregistered", "signed-out"])
+  } finally {
+    mock.timers.reset()
+  }
+})
+
+test("a REJECTED revoke still completes sign-out and never escapes", async () => {
+  let attempts = 0
+  const { deps, store, order } = signOutProbe({
+    revokeSession: async () => {
+      attempts += 1
+      throw new Error("503 service unavailable")
+    },
+  })
+  rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
+
+  await signOutUnregisteringPush(deps)
+  await tick()
+
+  assert.equal(attempts, 1)
+  assert.deepEqual(order, ["unregistered", "signed-out"])
+})
+
+test("a revoke that THROWS synchronously never escapes sign-out", async () => {
+  const { deps, store, order } = signOutProbe({
+    revokeSession: () => {
+      throw new Error("client blew up")
+    },
+  })
+  rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
+
+  await signOutUnregisteringPush(deps)
+  await tick()
+
+  assert.deepEqual(order, ["unregistered", "signed-out"])
 })
 
 test("a hung unregister is ABORTED once the bound lapses, not merely abandoned", async () => {
@@ -129,12 +223,13 @@ test("a hung unregister is ABORTED once the bound lapses, not merely abandoned",
     })
     rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
 
-    await signOutUnregisteringPush(deps)
+    const signingOut = signOutUnregisteringPush(deps)
     await tick()
 
     assert.ok(signal)
     assert.equal((signal as AbortSignal).aborted, false)
     mock.timers.tick(PUSH_UNREGISTER_TIMEOUT_MS)
+    await signingOut
     assert.equal((signal as AbortSignal).aborted, true)
   } finally {
     mock.timers.reset()
@@ -155,7 +250,7 @@ test("a REJECTED unregister still completes sign-out and never escapes", async (
   await tick()
 
   assert.equal(attempts, 1)
-  assert.deepEqual(order, ["signed-out"])
+  assert.deepEqual(order, ["revoked", "signed-out"])
   assert.equal(readPushRegistration(store), null)
 })
 
@@ -170,15 +265,19 @@ test("an unregister that THROWS synchronously never escapes sign-out", async () 
   await signOutUnregisteringPush(deps)
   await tick()
 
-  assert.deepEqual(order, ["signed-out"])
+  assert.deepEqual(order, ["revoked", "signed-out"])
 })
 
-test("an UNREADABLE keychain signs out without attempting an unauthenticated unregister", async () => {
+test("an UNREADABLE keychain signs out without attempting an unauthenticated call of either kind", async () => {
   let attempts = 0
+  let revokes = 0
   const { deps, store, order } = signOutProbe({
     readBearer: async () => null,
     unregister: async () => {
       attempts += 1
+    },
+    revokeSession: async () => {
+      revokes += 1
     },
   })
   rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
@@ -187,6 +286,7 @@ test("an UNREADABLE keychain signs out without attempting an unauthenticated unr
   await tick()
 
   assert.equal(attempts, 0)
+  assert.equal(revokes, 0)
   assert.deepEqual(order, ["signed-out"])
   assert.equal(readPushRegistration(store), null)
 })
@@ -205,10 +305,10 @@ test("a THROWING keychain read cannot block sign-out", async () => {
   assert.deepEqual(order, ["signed-out"])
 })
 
-test("no persisted registration means no bearer read and no unregister call at all", async () => {
+test("no persisted registration still revokes the session: the bearer is read for the logout", async () => {
   let reads = 0
   let attempts = 0
-  const { deps, order } = signOutProbe({
+  const { deps, order, revoked } = signOutProbe({
     readBearer: async () => {
       reads += 1
       return "current-bearer"
@@ -221,9 +321,10 @@ test("no persisted registration means no bearer read and no unregister call at a
   await signOutUnregisteringPush(deps)
   await tick()
 
-  assert.equal(reads, 0)
+  assert.equal(reads, 1)
   assert.equal(attempts, 0)
-  assert.deepEqual(order, ["signed-out"])
+  assert.deepEqual(revoked, ["current-bearer"])
+  assert.deepEqual(order, ["revoked", "signed-out"])
 })
 
 function lapsedProbe(overrides: Partial<PushUnregisterDeps> = {}) {
@@ -422,5 +523,18 @@ test("an UNREADABLE store never blocks sign-out", async () => {
   await signOutUnregisteringPush(deps)
   await tick()
 
-  assert.deepEqual(order, ["signed-out"])
+  assert.deepEqual(order, ["revoked", "signed-out"])
+})
+
+test("the store revokes on the EXPLICIT sign-out only, never on the lapsed or foreign paths", () => {
+  const source = readFileSync(new URL("../store/authStore.ts", import.meta.url), "utf8")
+  const signOut = source.slice(source.indexOf("  signOut: async () => {"))
+  const body = signOut.slice(0, signOut.indexOf("\n  },"))
+  assert.match(body, /revokeSession: \(bearer, signal\) =>/)
+  assert.match(body, /api\.logout\(/)
+  assert.equal(source.match(/revokeSession:/g)?.length, 1)
+  assert.equal(source.match(/api\.logout\(/g)?.length, 1)
+
+  const lapsed = source.slice(source.indexOf("  markUnauthed: () => {"))
+  assert.doesNotMatch(lapsed.slice(0, lapsed.indexOf("\n  },")), /revokeSession|api\.logout/)
 })
