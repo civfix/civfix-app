@@ -139,7 +139,9 @@ version:
 pnpm install
 ```
 
-Re-run it after each push to the civfix-app branch that the consumer needs (a re-run on an unchanged
+The branch must contain this workflow (a manual run uses the branch's own copy of the file), so a
+branch cut before it existed needs `git merge origin/main` first. Re-run it after each push to the
+civfix-app branch that the consumer needs (a re-run on an unchanged
 commit fails: that version already exists). Before the consumer
 branch merges, the civfix-app PR merges, main publishes the real version, and the consumer moves back
 to a caret range (step 4). A consumer PR must never merge while it pins a snapshot.
