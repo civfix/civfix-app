@@ -7,8 +7,10 @@ import {
   readPushRegistration,
   rememberPushRegistration,
   signOutUnregisteringPush,
+  unregisterLapsedSessionPush,
   type PersistedPushRegistration,
   type PushRegistrationStore,
+  type PushUnregisterDeps,
   type SignOutUnregisteringPushDeps,
 } from "./pushRegistration.ts"
 
@@ -222,6 +224,126 @@ test("no persisted registration means no bearer read and no unregister call at a
   assert.equal(reads, 0)
   assert.equal(attempts, 0)
   assert.deepEqual(order, ["signed-out"])
+})
+
+function lapsedProbe(overrides: Partial<PushUnregisterDeps> = {}) {
+  const store = overrides.store ?? memoryStore()
+  const sent: { registration: PersistedPushRegistration; bearer: string }[] = []
+  const deps: PushUnregisterDeps = {
+    store,
+    readBearer: async () => "stale-bearer",
+    unregister: async (registration, bearer) => {
+      sent.push({ registration, bearer })
+    },
+    ...overrides,
+  }
+  return { deps, store, sent }
+}
+
+test("an EXPIRED session still tells the server to release the push token", async () => {
+  const { deps, store, sent } = lapsedProbe()
+  rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
+
+  unregisterLapsedSessionPush(deps)
+  await tick()
+
+  assert.deepEqual(sent, [
+    {
+      registration: { platform: "ios", token: "ExponentPushToken[abc]" },
+      bearer: "stale-bearer",
+    },
+  ])
+  assert.equal(readPushRegistration(store), null)
+})
+
+test("the local registration is forgotten SYNCHRONOUSLY, before the call is even issued", () => {
+  const { deps, store, sent } = lapsedProbe()
+  rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
+
+  unregisterLapsedSessionPush(deps)
+
+  assert.equal(readPushRegistration(store), null)
+  assert.deepEqual(sent, [])
+})
+
+test("the bearer read is issued SYNCHRONOUSLY, ahead of the token clear that follows teardown", () => {
+  let reads = 0
+  const { deps, store } = lapsedProbe({
+    readBearer: async () => {
+      reads += 1
+      return "stale-bearer"
+    },
+  })
+  rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
+
+  unregisterLapsedSessionPush(deps)
+
+  assert.equal(reads, 1)
+})
+
+test("a REJECTED unregister on an expired session never escapes teardown", async () => {
+  let attempts = 0
+  const { deps, store } = lapsedProbe({
+    unregister: async () => {
+      attempts += 1
+      throw new Error("401 unauthorized")
+    },
+  })
+  rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
+
+  unregisterLapsedSessionPush(deps)
+  await tick()
+
+  assert.equal(attempts, 1)
+  assert.equal(readPushRegistration(store), null)
+})
+
+test("a THROWING or EMPTY keychain read leaves teardown complete and sends nothing", async () => {
+  const thrower = lapsedProbe({
+    readBearer: () => {
+      throw new Error("keychain gone")
+    },
+  })
+  rememberPushRegistration(thrower.store, { platform: "ios", token: "ExponentPushToken[abc]" })
+  unregisterLapsedSessionPush(thrower.deps)
+
+  const empty = lapsedProbe({ readBearer: async () => null })
+  rememberPushRegistration(empty.store, { platform: "ios", token: "ExponentPushToken[abc]" })
+  unregisterLapsedSessionPush(empty.deps)
+
+  await tick()
+
+  assert.deepEqual(thrower.sent, [])
+  assert.deepEqual(empty.sent, [])
+  assert.equal(readPushRegistration(thrower.store), null)
+  assert.equal(readPushRegistration(empty.store), null)
+})
+
+test("no persisted registration means an expired session reads no bearer and calls nothing", async () => {
+  let reads = 0
+  const { deps, sent } = lapsedProbe({
+    readBearer: async () => {
+      reads += 1
+      return "stale-bearer"
+    },
+  })
+
+  unregisterLapsedSessionPush(deps)
+  await tick()
+
+  assert.equal(reads, 0)
+  assert.deepEqual(sent, [])
+})
+
+test("sign-out's own teardown cannot double-unregister, the registration is already gone", async () => {
+  const { deps, store, sent } = lapsedProbe()
+  rememberPushRegistration(store, { platform: "ios", token: "ExponentPushToken[abc]" })
+
+  unregisterLapsedSessionPush(deps)
+  unregisterLapsedSessionPush(deps)
+  await tick()
+
+  assert.equal(sent.length, 1)
 })
 
 test("an UNREADABLE store never blocks sign-out", async () => {

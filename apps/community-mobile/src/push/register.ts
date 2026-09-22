@@ -7,6 +7,7 @@ import type { Href } from "expo-router"
 import { tokens } from "@civfix/shared/tokens"
 import { createI18n } from "@civfix/ui/i18n"
 import { api } from "@/api/client"
+import { isConflict } from "@/lib/errors"
 import { toInternalHref } from "@/lib/links"
 import { resolveActiveLocale } from "@/lib/locale"
 import { resolveDeviceId, type DeviceIdStore } from "@/lib/deviceId"
@@ -35,6 +36,7 @@ export type PushRegistrationResult =
   | { status: "registered"; token: string }
   | { status: "denied" }
   | { status: "unsupported"; reason: string }
+  | { status: "conflict"; reason: string }
   | { status: "error"; reason: string }
 
 function pushPlatform(): "ios" | "android" | "web" | null {
@@ -170,6 +172,11 @@ export async function registerForPushNotifications(
 
     return { status: "registered", token }
   } catch (err) {
+    if (isConflict(err)) {
+      const reason = "this device's push token is still owned by another account"
+      console.warn(`[push] registration refused: ${reason}; not retrying`, err)
+      return { status: "conflict", reason }
+    }
     const reason = err instanceof Error ? err.message : "unknown error"
     return { status: "error", reason }
   }

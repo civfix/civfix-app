@@ -64,6 +64,11 @@ export function isRateLimited(err: unknown): boolean {
   return isAppError(err) && err.code === ErrorCode.RATE_LIMITED
 }
 
+export function isConflict(err: unknown): boolean {
+  if (!isAppError(err)) return false
+  return err.code === ErrorCode.CONFLICT || err.httpStatus === 409
+}
+
 const NON_RETRYABLE_CODES: ReadonlySet<string> = new Set<string>([
   ErrorCode.UNAUTHORIZED,
   ErrorCode.FORBIDDEN,

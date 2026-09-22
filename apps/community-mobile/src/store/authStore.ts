@@ -14,7 +14,11 @@ import { chatSocket } from "@/lib/ws"
 import { storage } from "@/lib/mmkv"
 import { clearSecureBlobs } from "@/lib/nativeSecureStore"
 import { CACHED_USER_KEY, LAST_IDENTITY_KEY } from "@/lib/mmkv-keys"
-import { forgetPushRegistration, signOutUnregisteringPush } from "@/lib/pushRegistration"
+import {
+  signOutUnregisteringPush,
+  unregisterLapsedSessionPush,
+  type PushUnregisterDeps,
+} from "@/lib/pushRegistration"
 import { queryClient } from "@/query/client"
 import {
   clearPersistedCache,
@@ -91,11 +95,26 @@ function refreshGuestCapabilities(set: SetAuthState): void {
     .catch((err) => set({ networkOutcome: reachabilityOutcome(err) }))
 }
 
+function pushUnregisterDeps(): PushUnregisterDeps {
+  return {
+    store: storage,
+    readBearer: async () => {
+      const read = await readToken()
+      return read.ok ? read.token : null
+    },
+    unregister: (registration, bearer, signal) =>
+      api.pushUnregister(registration, {
+        headers: { Authorization: `Bearer ${bearer}` },
+        signal,
+      }),
+  }
+}
+
 function tearDownIdentity(set: SetAuthState): void {
   clearPersistedCache()
   chatSocket.disconnect()
   cacheUser(null)
-  forgetPushRegistration(storage)
+  unregisterLapsedSessionPush(pushUnregisterDeps())
   queryClient.clear()
   set({ status: "unauthed", user: null, sessionPresent: false })
   resumeCachePersistence()
@@ -221,22 +240,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signOut: async () => {
     await signOutUnregisteringPush({
-      store: storage,
-      readBearer: async () => {
-        const read = await readToken()
-        return read.ok ? read.token : null
-      },
+      ...pushUnregisterDeps(),
       completeSignOut: async () => {
         tearDownIdentity(set)
         rememberIdentity(null)
         await clearSecureBlobs()
         await clearToken()
       },
-      unregister: (registration, bearer, signal) =>
-        api.pushUnregister(registration, {
-          headers: { Authorization: `Bearer ${bearer}` },
-          signal,
-        }),
     })
   },
 

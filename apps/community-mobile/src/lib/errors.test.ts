@@ -2,7 +2,7 @@ import { test } from "node:test"
 import assert from "node:assert/strict"
 import { AppError, ErrorCode } from "@civfix/shared"
 import { parseError } from "@civfix/shared/client"
-import { isAppError, isRetryableError } from "./errors.ts"
+import { isAppError, isConflict, isRetryableError } from "./errors.ts"
 
 function crossRealmAppError(code: string, message = "cross-realm"): unknown {
   const err = new Error(message)
@@ -68,6 +68,37 @@ test("a transport failure is retryable - it is not an AppError at all", () => {
   assert.equal(isRetryableError(new Error("timeout")), true)
   assert.equal(isRetryableError(undefined), true)
   assert.equal(isRetryableError("UNAUTHORIZED"), true)
+})
+
+async function conflictFromTheWire(body: string): Promise<unknown> {
+  return parseError(
+    new Response(body, { status: 409, headers: { "content-type": "application/json" } }),
+  )
+}
+
+test("a push-token 409 is recognised as a conflict, enveloped or bare", async () => {
+  const enveloped = await conflictFromTheWire(
+    JSON.stringify({ error: { code: ErrorCode.CONFLICT, message: "token owned elsewhere" } }),
+  )
+  assert.equal(isConflict(enveloped), true)
+  assert.equal(isConflict(await conflictFromTheWire("<html>nginx</html>")), true)
+})
+
+test("a conflict is recognised in BOTH realms and from the status alone", () => {
+  assert.equal(isConflict(new AppError(ErrorCode.CONFLICT, "taken")), true)
+  assert.equal(isConflict(crossRealmAppError(ErrorCode.CONFLICT)), true)
+  assert.equal(
+    isConflict(Object.assign(crossRealmAppError(ErrorCode.INTERNAL), { httpStatus: 409 })),
+    true,
+  )
+})
+
+test("nothing else is a conflict - a 401 or a transport failure must stay retryable", () => {
+  assert.equal(isConflict(new AppError(ErrorCode.UNAUTHORIZED, "no")), false)
+  assert.equal(isConflict(new AppError(ErrorCode.INTERNAL, "boom")), false)
+  assert.equal(isConflict(crossRealmAppError(ErrorCode.RATE_LIMITED)), false)
+  assert.equal(isConflict(new TypeError("Network request failed")), false)
+  assert.equal(isConflict(undefined), false)
 })
 
 test("an AppError-shaped object with a non-string code is not treated as an AppError", () => {

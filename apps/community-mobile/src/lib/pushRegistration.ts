@@ -13,15 +13,18 @@ export interface PersistedPushRegistration {
 
 export type PushRegistrationStore = KeyValueStore
 
-export interface SignOutUnregisteringPushDeps {
+export interface PushUnregisterDeps {
   store: PushRegistrationStore
   readBearer: () => Promise<string | null>
-  completeSignOut: () => Promise<void>
   unregister: (
     registration: PersistedPushRegistration,
     bearer: string,
     signal: AbortSignal,
   ) => Promise<unknown>
+}
+
+export interface SignOutUnregisteringPushDeps extends PushUnregisterDeps {
+  completeSignOut: () => Promise<void>
 }
 
 export function rememberPushRegistration(
@@ -60,7 +63,7 @@ export function forgetPushRegistration(store: PushRegistrationStore): void {
 }
 
 function fireUnregister(
-  deps: SignOutUnregisteringPushDeps,
+  deps: PushUnregisterDeps,
   registration: PersistedPushRegistration,
   bearer: string,
 ): void {
@@ -95,4 +98,23 @@ export async function signOutUnregisteringPush(
 
   if (!registration || !bearer) return
   fireUnregister(deps, registration, bearer)
+}
+
+export function unregisterLapsedSessionPush(deps: PushUnregisterDeps): void {
+  const registration = readPushRegistration(deps.store)
+  forgetPushRegistration(deps.store)
+  if (!registration) return
+
+  let bearer: Promise<string | null>
+  try {
+    bearer = Promise.resolve(deps.readBearer())
+  } catch {
+    return
+  }
+
+  void bearer
+    .then((value) => {
+      if (value) fireUnregister(deps, registration, value)
+    })
+    .catch(() => undefined)
 }

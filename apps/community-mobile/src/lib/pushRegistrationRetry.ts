@@ -1,6 +1,6 @@
 export const PUSH_ATTEMPT_LIMIT = 3
 
-export type PushOutcomeStatus = "registered" | "denied" | "unsupported" | "error"
+export type PushOutcomeStatus = "registered" | "denied" | "unsupported" | "conflict" | "error"
 
 export interface PushAttemptState {
   attempts: number
@@ -19,7 +19,12 @@ export function shouldAttemptPushRegistration(state: PushAttemptState): boolean 
 }
 
 export function isPushOutcomeTerminal(status: PushOutcomeStatus): boolean {
-  return status === "registered" || status === "denied" || status === "unsupported"
+  return (
+    status === "registered" ||
+    status === "denied" ||
+    status === "unsupported" ||
+    status === "conflict"
+  )
 }
 
 export function isForegroundEdge(state: PushAttemptState, next: string): boolean {
