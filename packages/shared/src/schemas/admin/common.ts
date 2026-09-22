@@ -11,7 +11,7 @@ import { CursorSchema } from "../common.js"
  * section 8 and 01-design-enumeration section 4.
  *
  * The civfix report-status enum (submitted|held|published|acknowledged|in_progress|resolved|rejected)
- * and report-category enum (trash|recycling|graffiti|hazard|water|other) come from ../common.js and are
+ * and report-category enum (trash|recycling|graffiti|hazard|encampment|water|other) come from ../common.js and are
  * the canonical taxonomy the admin surfaces reuse directly.
  */
 
@@ -69,6 +69,7 @@ export type AdminCoords = z.infer<typeof AdminCoordsSchema>
  */
 export { ReportStatusSchema as AdminReportStatusSchema } from "../common.js"
 export type { ReportStatus as AdminReportStatus } from "../common.js"
+import type { ReportStatus as AdminReportStatus } from "../common.js"
 
 /** Operator-facing labels for the civfix report statuses (design showed Submitted/In progress/...). */
 export const ADMIN_REPORT_STATUS_LABELS = {
@@ -80,6 +81,20 @@ export const ADMIN_REPORT_STATUS_LABELS = {
   resolved: "Resolved",
   rejected: "Removed",
 } as const
+
+export const ADMIN_REPORT_STATUS_TRANSITIONS: Record<AdminReportStatus, readonly AdminReportStatus[]> = {
+  submitted: ["held", "published"],
+  held: ["published"],
+  published: ["acknowledged", "in_progress", "held"],
+  acknowledged: ["in_progress", "resolved", "published"],
+  in_progress: ["resolved", "acknowledged"],
+  resolved: ["in_progress"],
+  rejected: [],
+}
+
+export function canTransitionReportStatus(from: AdminReportStatus, to: AdminReportStatus): boolean {
+  return ADMIN_REPORT_STATUS_TRANSITIONS[from].includes(to)
+}
 
 /**
  * Cleanup (event) lifecycle. Design EVENT_STATUS = upcoming|in-progress|completed; civfix adds

@@ -1,7 +1,10 @@
 import { z } from "zod"
 import { ReportCategorySchema } from "../common.js"
-import { pageResponse } from "../common.js"
-import { LinkedEventRefSchema } from "../entities.js"
+import { IdSchema, pageResponse } from "../common.js"
+import { ChatHistoryResponseSchema, ReportChatHistoryRequestSchema } from "../chat.js"
+import type { ChatHistoryResponse, ReportChatHistoryRequest } from "../chat.js"
+import { ChatMessageDTOSchema, LinkedEventRefSchema } from "../entities.js"
+import { MESSAGE_BODY_MAX } from "../../types/ws.js"
 import {
   AdminActorRefSchema,
   AdminCoordsSchema,
@@ -83,10 +86,12 @@ export const ReportOutreachSchema = z
     status: ReportOutreachStatusSchema,
     /** The per-report mail thread id (so the admin can open the city conversation), or null. */
     threadId: z.string().nullable(),
-    /** The address the report was sent to (the resolved or overridden contact), or null. */
+    /** The address the report was sent to (the jurisdiction's contact on file), or null. */
     routedTo: z.string().email().nullable(),
     /** ISO timestamp of the (first) send to the jurisdiction, or null. */
     routedAt: z.string().nullable(),
+    /** True when the latest send attempt was rejected by the mail provider (0.52.0; a resend is allowed). */
+    sendFailed: z.boolean().optional(),
   })
   .strict()
 export type ReportOutreach = z.infer<typeof ReportOutreachSchema>
@@ -135,10 +140,13 @@ export type AdminReportListItemDTO = z.infer<typeof AdminReportListItemDTOSchema
 
 /**
  * Report list query: search matches title/place/id/reporter; `filter` is the status+flag facet the
- * design shows (all|submitted|in_progress|completed|flagged).
+ * design shows (all|submitted|in_progress|completed|flagged|needs_verification). `needs_verification`
+ * is the review queue: reports with no verification verdict yet, orthogonal to the civic status.
  */
 export const AdminReportListQuerySchema = AdminListQuerySchema.extend({
-  filter: z.enum(["all", "submitted", "in_progress", "completed", "flagged"]).optional(),
+  filter: z
+    .enum(["all", "submitted", "in_progress", "completed", "flagged", "needs_verification"])
+    .optional(),
 })
 export type AdminReportListQuery = z.infer<typeof AdminReportListQuerySchema>
 
@@ -154,6 +162,7 @@ export const AdminReportCountsSchema = z
     in_progress: z.number().int().nonnegative(),
     completed: z.number().int().nonnegative(),
     flagged: z.number().int().nonnegative(),
+    needsVerification: z.number().int().nonnegative().optional(),
   })
   .strict()
 export type AdminReportCounts = z.infer<typeof AdminReportCountsSchema>
@@ -248,16 +257,15 @@ export type SendFollowupRequest = z.infer<typeof SendFollowupRequestSchema>
 
 /**
  * Approve a report and email it to its jurisdiction ("Approve & send to jurisdiction"). Sends the full
- * report packet (details + photos) to the resolved routing contact - or to `contactEmailOverride` when
- * the operator types a one-off address - opens/reuses a per-report mail thread (so the city's reply
- * auto-routes back onto this report), and advances the report toward `acknowledged`. Fails 422
- * (NOT_ROUTABLE) when there is neither a resolved contact nor an override.
+ * report packet (details + photos) to the jurisdiction's resolved routing contact, opens/reuses a
+ * per-report mail thread (so the city's reply auto-routes back onto this report), and advances the
+ * report toward `acknowledged` when it is still in a pre-routed status. Fails 422 (NOT_ROUTABLE) when
+ * the jurisdiction has no routing contact on file - there is no one-off destination; set the contact in
+ * Jurisdictions first.
  */
 export const RouteReportRequestSchema = z
   .object({
     id: z.string(),
-    /** A one-off override of the jurisdiction's resolved contact for THIS send (else the resolved one). */
-    contactEmailOverride: z.string().email().nullable().optional(),
     /** Optional operator note included in the email packet + the report timeline. */
     note: z.string().max(4000).optional(),
   })
@@ -290,3 +298,31 @@ export type SetReportVerdictRequest = z.infer<typeof SetReportVerdictRequestSche
 
 export const SetReportVerdictResponseSchema = z.object({ ok: z.literal(true) }).strict()
 export type SetReportVerdictResponse = z.infer<typeof SetReportVerdictResponseSchema>
+
+export const AdminReportMessagesRequestSchema = ReportChatHistoryRequestSchema
+export type AdminReportMessagesRequest = ReportChatHistoryRequest
+
+export const AdminReportMessagesResponseSchema = ChatHistoryResponseSchema
+export type AdminReportMessagesResponse = ChatHistoryResponse
+
+export const AdminSendReportMessageRequestSchema = z
+  .object({
+    id: IdSchema,
+    body: z.string().min(1).max(MESSAGE_BODY_MAX),
+  })
+  .strict()
+export type AdminSendReportMessageRequest = z.infer<typeof AdminSendReportMessageRequestSchema>
+
+export const AdminSendReportMessageResponseSchema = z
+  .object({ message: ChatMessageDTOSchema })
+  .strict()
+export type AdminSendReportMessageResponse = z.infer<typeof AdminSendReportMessageResponseSchema>
+
+export const AdminRemoveReportMessageRequestSchema = z
+  .object({
+    id: IdSchema,
+    messageId: IdSchema,
+    reason: z.string().max(500).optional(),
+  })
+  .strict()
+export type AdminRemoveReportMessageRequest = z.infer<typeof AdminRemoveReportMessageRequestSchema>

@@ -65,6 +65,8 @@ export const HomeSummaryResponseSchema = z
     users: UsersSummarySchema,
     analytics: AnalyticsMiniSchema,
     livePins24h: z.number().int().nonnegative(),
+    moderationQueue: z.number().int().nonnegative().optional(),
+    inboxUnread: z.number().int().nonnegative().optional(),
   })
   .strict()
 export type HomeSummaryResponse = z.infer<typeof HomeSummaryResponseSchema>

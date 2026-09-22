@@ -105,9 +105,15 @@ export const ModerationListItemDTOSchema = z
   .strict()
 export type ModerationListItemDTO = z.infer<typeof ModerationListItemDTOSchema>
 
-/** Moderation list query: search matches flag/reporter/reason; `filter` narrows by kind/priority. */
+/**
+ * Moderation list query: search matches flag/reporter/reason; `filter` narrows by kind/priority.
+ * `user_report` is the human-reported facet (a neighbor flagged the content), as opposed to the
+ * automated signals.
+ */
 export const ModerationListQuerySchema = AdminListQuerySchema.extend({
-  filter: z.enum(["all", "image", "pattern", "appeal", "gps", "duplicate", "high"]).optional(),
+  filter: z
+    .enum(["all", "image", "pattern", "appeal", "gps", "duplicate", "high", "user_report"])
+    .optional(),
 })
 export type ModerationListQuery = z.infer<typeof ModerationListQuerySchema>
 

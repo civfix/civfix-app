@@ -66,6 +66,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   const { t } = useT("conversation")
   const { t: tPolls } = useT("conversation-polls")
   const { t: tDate } = useT("common-datetime")
+  const { t: tComposer } = useT("discussion-composer")
   const { locale } = useLocale()
   const now = todayKey()
   const chat: UseChatResult = useChat(id, roomKind, pinnedOnly ? SUPPRESS_READ_ACKS : undefined)
@@ -520,6 +521,18 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
     cachedChannel: meta.channel,
   })
   const composerDisabled = !!errorBanner || showJoinBanner || groupInfoGate !== "open"
+  const cityMentionCandidate = mentionSource.extraCandidates[0]
+  const composerNotice =
+    isReport &&
+    composerSlotMode === "composer" &&
+    !pinnedOnly &&
+    !composerDisabled &&
+    cityMentionCandidate
+      ? tComposer("forward_disclaimer", {
+          mention: `@${cityMentionCandidate.handle}`,
+          city: report.data?.cityName ?? tComposer("city_fallback"),
+        })
+      : undefined
   const composerPlaceholder = errorBanner || groupInfoGate === "blocked"
     ? t("composer.placeholder_unavailable")
     : isGroup
@@ -758,6 +771,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
           onCreatePoll={onCreatePoll}
           pollCreatePending={pollCreatePending}
           pollCreateError={pollCreateError}
+          notice={composerNotice}
           style={slotBottomStyle}
         />
       )}

@@ -1,5 +1,32 @@
 # @civfix/shared
 
+## 0.53.0
+
+### Minor Changes
+
+- c6ac49c: City communications contract. New built-in forward-email defaults: `DEFAULT_FORWARD_SUBJECT_TEMPLATE` is `[civfix: {referenceCode}] {title}` and `DEFAULT_FORWARD_BODY_TEMPLATE` states that replies reach civfix operators and the reporter, lists photos inline via `{photoCount}` / `{photoLinks}` (which suppresses the backend's auto-appended photo block) and ends with the public pin URL. Three admin report-chat endpoints in the new `adminReportChatEndpoints` group: `adminReportMessages` (GET, reusing the citizen report-chat history request/response shapes), `adminSendReportMessage` (POST) and `adminRemoveReportMessage` (POST, mirroring `removeUserMessage`). Additive list facets: `needs_verification` on the admin report filter with an optional `needsVerification` count, `user_report` on the moderation filter, `deleted` and `banned` on the users filter with optional matching counts, and optional `moderationQueue` / `inboxUnread` totals on the admin home summary.
+
+## 0.52.0
+
+### Minor Changes
+
+- Forward-email templates become a real, validated, previewable system. `forward-template.ts` adds
+  `DEFAULT_FORWARD_SUBJECT_TEMPLATE` / `DEFAULT_FORWARD_BODY_TEMPLATE` (the built-in default as a
+  template string), `FORWARD_TEMPLATE_SAMPLE_VALUES` (the static sample every preview renders with),
+  `FORWARD_TEMPLATE_VARIABLE_NAMES`, `forwardTemplateIssues` / `describeForwardTemplateIssue`,
+  `templateUsesToken`, and `ForwardTemplateSubjectSchema` / `ForwardTemplateBodySchema`, which
+  `SaveContactsRequest` and `PatchJurisdictionRequest` now use - a template containing an unknown
+  `{token}` or any `{{double-brace}}` is rejected at the boundary. The palette drops `{reporterName}`
+  (the packet never names the reporter) and `{dept}` (no department is modelled). Three admin
+  endpoints: `getForwardTemplateDefault` (`GET /admin/mail/forward-template`),
+  `setForwardTemplateDefault` (`PUT /admin/mail/forward-template`) and `previewForwardTemplate`
+  (`POST /admin/mail/forward-template/preview`); registry 318 -> 321. `RouteReportRequest` drops
+  `contactEmailOverride` - a report is routed only to its jurisdiction's contact on file.
+  `admin/common.ts` adds `ADMIN_REPORT_STATUS_TRANSITIONS` + `canTransitionReportStatus`, the one
+  report status machine the backend enforces and the admin UI renders. `MailMessageDTO` gains
+  `delivery` (`pending | sent | failed | null`) and `ReportOutreach` gains an optional `sendFailed`. Versions 0.49.0-0.51.0 on the registry were published
+  from the feed-and-polish branch, whose entries now sit below this one. See DECISIONS §51.
+
 ## 0.51.0
 
 ### Minor Changes
@@ -54,6 +81,12 @@
   unchanged, so a stale client drops the new frames instead of failing. `FeedRankingConfigSchema` /
   `FeedRankingConfig` / `DEFAULT_FEED_RANKING` add the strict, fully defaulted 27-knob ranking
   profile that the backend loads from a JSON `FEED_RANKING` env var. All additive; see DECISIONS §47.
+
+## 0.48.2
+
+### Patch Changes
+
+- terms of service and privacy policy 2026-09-21: the civfix software is AGPL-3.0 open source, and the operator is named as Reach Out Los Angeles Inc.
 
 ## 0.48.1
 

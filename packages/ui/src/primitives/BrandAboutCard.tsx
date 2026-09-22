@@ -5,7 +5,7 @@ import { Text, Icon, iconMap } from "../typography"
 import { useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
 import { Brand } from "./Brand"
-import { DONATE_URL, PRIVACY_URL, TERMS_URL } from "./externalUrls"
+import { DONATE_URL, PRIVACY_URL, TERMS_URL, sourceUrl } from "./externalUrls"
 
 /**
  * Zero-width non-joiner (U+200C). Interpolated into the eyebrow's `{{zwnj}}` slot (between "(" and "c") so
@@ -114,6 +114,16 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
                 style={({ pressed }) => (pressed ? styles.legalPressed : null)}
               >
                 <Text style={styles.legalLink}>{t("legal.privacy")}</Text>
+              </Pressable>
+              <Text style={styles.legalDot}>·</Text>
+              <Pressable
+                onPress={() => openLegal(sourceUrl())}
+                accessibilityRole="link"
+                accessibilityLabel={t("legal.source_a11y")}
+                hitSlop={6}
+              {...focusRingProps}
+              >
+                <Text style={styles.legalLink}>{t("legal.source")}</Text>
               </Pressable>
             </View>
           </ScrollView>

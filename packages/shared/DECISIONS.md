@@ -8,10 +8,11 @@ intended to be stable; changing them is a breaking change for consumers.
 `ReportCategory` is the canonical, color-bearing category for a report pin and is exactly:
 
 ```
-trash | recycling | graffiti | hazard | water | other
+trash | recycling | graffiti | hazard | encampment | water | other
 ```
 
-These map 1:1 to the pin/badge colors in `tokens.color.category`. `event` / cleanup is deliberately
+(`encampment` was split out of `hazard` in 0.20.0.) These map 1:1 to the pin/badge colors in
+`tokens.color.category`. `event` / cleanup is deliberately
 NOT a report category. Cleanups are a separate entity with their own pin color
 (`tokens.color.cleanup`, the sun-dark accent `#E5AE1C`).
 
@@ -36,13 +37,19 @@ a default city agency. The finalized mapping is:
 | id             | label                 | canonical category | gov name                           | gov email                 |
 | -------------- | --------------------- | ------------------ | ---------------------------------- | ------------------------- |
 | dump           | Illegal dumping       | trash              | LA Bureau of Sanitation            | sanitation@lacity.gov     |
-| encampment     | Encampment            | hazard             | LA Bureau of Sanitation            | sanitation@lacity.gov     |
+| encampment     | Encampment            | encampment         | LA Bureau of Sanitation            | sanitation@lacity.gov     |
 | graffiti       | Graffiti              | graffiti           | Office of Community Beautification | ocb@lacity.gov            |
-| infrastructure | Broken infrastructure | hazard             | LA Bureau of Street Services       | streetservices@lacity.gov |
+| infrastructure | Broken infrastructure | water              | LA Bureau of Street Services       | streetservices@lacity.gov |
 | pavement       | Pavement distress     | hazard             | LA Bureau of Street Services       | streetservices@lacity.gov |
-| vegetation     | Overgrown vegetation  | other              | LA Bureau of Street Services       | streetservices@lacity.gov |
+| vegetation     | Overgrown vegetation  | recycling          | LA Bureau of Street Services       | streetservices@lacity.gov |
 | water          | Water/leak            | water              | LADWP                              | customerservice@ladwp.com |
 | recycling      | Recycling             | recycling          | LA Bureau of Sanitation            | sanitation@lacity.gov     |
+
+The canonical-category column above is what `REPORT_TYPE_TO_CATEGORY` ships today (the table was
+corrected in 0.52.0 to match the code; it previously described `infrastructure -> hazard` and
+`vegetation -> other`). Whether "Broken infrastructure" should route to a jurisdiction's WATER contact
+and "Overgrown vegetation" to its RECYCLING contact is an open product decision - changing it is a
+contract change with a category backfill, like 0.20.0's `encampment` split.
 
 The `gov` addresses are placeholder routing for Phase 1 and represent the Los Angeles default
 fallback only. Real per-jurisdiction routing comes from the `jurisdictions` table resolved from a
@@ -1697,3 +1704,97 @@ payloads old clients can still legitimately send.
 **`geocodePointKey()` is the one cache key.** Five-decimal rounding (~1.1 m), formatted
 `"34.05223,-118.24368"`, shared so the backend's read-through geocode cache, the server-side create
 path and the client's query key all collapse onto the same row for one pin.
+
+## 51. Forward-email templates are validated, layered, previewable, and never one-off (0.52.0)
+
+**Palette.** `FORWARD_TEMPLATE_VARIABLES` is the whole vocabulary a forward template may use, in
+single-brace `{token}` form. `{reporterName}` is removed: the packet never names the reporter (the
+backend's H6 invariant), and a template chip must not defeat it. `{dept}` is removed: no department is
+modelled (it always rendered the jurisdiction name). A template containing an unknown `{token}` or any
+`{{double-brace}}` is rejected by `ForwardTemplateSubjectSchema` / `ForwardTemplateBodySchema` (used by
+`SaveContactsRequest`, `PatchJurisdictionRequest`, `SetForwardTemplateDefaultRequest`,
+`PreviewForwardTemplateRequest`), so a typo or the `{{var}}` convention from i18n mail can no longer
+reach the wire. `forwardTemplateIssues` is the same check for inline editor warnings; it is a linear
+scan over brace runs (no regex backtracking at the API boundary) and also flags half-typed braces such as
+`{{title}` and `{title}}`. Templates stored before 0.52.0 may still contain the retired tokens: the
+backend strips retired or unknown tokens from the TEMPLATE before interpolation (resident-authored text
+is never scanned) instead of mailing them, and re-saving such a
+template is refused until the retired token is removed (the editor shows the issue inline).
+
+**Layers.** Each field (subject, body) resolves independently: jurisdiction template -> the operator's
+stored default (`setForwardTemplateDefault`) -> the built-in `DEFAULT_FORWARD_SUBJECT_TEMPLATE` /
+`DEFAULT_FORWARD_BODY_TEMPLATE`. The built-in default is a template string, not code, so an editor can
+prefill it and "reset to default" means exactly that. The backend appends the photo list and the operator
+note as structured blocks when the body does not use `{photoLinks}` / `{operatorNote}`, so a templated
+packet can never arrive with attachments it does not mention.
+
+**Preview.** `previewForwardTemplate` renders through the SAME backend code that sends, against
+`FORWARD_TEMPLATE_SAMPLE_VALUES` - fixed, explicit sample data - and returns the subject, text and html
+plus which layer each field resolved from. There is no client-side render of "what the email will look
+like".
+
+**No one-off destination.** `RouteReportRequest.contactEmailOverride` is REMOVED (0.x minor; delivery set:
+civfix-backend api + media-worker, civfix-admin). A report is forwarded only to its jurisdiction's
+contact on file; routing a report whose jurisdiction has no contact fails `NOT_ROUTABLE`, and the fix is
+to set the contact in Jurisdictions.
+
+**Status machine.** `ADMIN_REPORT_STATUS_TRANSITIONS` / `canTransitionReportStatus` is the single report
+status machine: `submitted -> held | published`, `held -> published`, `published -> acknowledged |
+in_progress | held`, `acknowledged -> in_progress | resolved | published`, `in_progress -> resolved |
+acknowledged`, `resolved -> in_progress`, `rejected -> (none)`. `rejected` is reachable only through
+`removeReport`, never through `setReportStatus`. The backend enforces it; the admin renders exactly the
+reachable statuses. Two other writers move a report outside this table: routing it to its jurisdiction
+advances `submitted | held | published -> acknowledged`, and the reporter's own "Mark resolved" / "Reopen"
+move `published <-> resolved`.
+
+**Delivery state.** `MailMessageDTO.delivery` (`pending | sent | failed`, `null` for inbound; optional so a
+0.52.0 client still validates a pre-0.52.0 backend's reply) is the
+per-message truth about whether the provider accepted an outbound message, derived from the backend's
+mail events, so a thread pill can no longer say "Sent" over a rejected message.
+
+## 52. The city conversation is one room, read and written from both planes (0.53.0)
+
+**One room, two doors.** A report's discussion is a single chat room. The operator reads and writes it
+through `adminReportMessages` / `adminSendReportMessage`, which carry the SAME request and response
+shapes as the citizen `reportMessages` (`AdminReportMessagesRequestSchema` and
+`AdminReportMessagesResponseSchema` are the `ReportChatHistoryRequestSchema` /
+`ChatHistoryResponseSchema` the resident's client already uses). There is no parallel operator channel
+and no second DTO: a message rendered on the admin plane and on the resident's plane is the same row.
+`adminRemoveReportMessage` is the moderation twin of `removeUserMessage` on the users surface — same
+`{ id, messageId, reason? }` shape, same `AdminOkResponse`.
+
+**A city reply arrives as a system row.** The inbound jurisdiction reply already surfaces on the report
+timeline as a `kind: "reply"` entry carrying `body`. It now also arrives in the room as a chat message
+whose `system.kind` is `"reply"` and whose `system.body` is the city's text. `SystemMessageRow` renders
+that pair as a "Reply from the city" block rather than a status pill, so `system.status` is no longer
+the only thing a system row can mean. A `"reply"` system event with an empty `body` still falls back to
+the status presentation.
+
+**Forwarding is disclosed at the composer, not after the fact.** A report room whose jurisdiction is
+mentionable (the mention source's jurisdiction extra candidate, which already encodes "has a handle AND
+`canForwardToCity !== false`") shows the `discussion-composer:forward_disclaimer` caption above the
+input. The disclosure is a property of the room's routability, so it appears before the resident types
+the mention rather than as a confirmation afterwards.
+
+**The built-in forward template names the reporter's channel.** `DEFAULT_FORWARD_SUBJECT_TEMPLATE` is
+`[civfix: {referenceCode}] {title}` and the body states that replies reach civfix operators AND the
+reporter, lists the photo links inline via `{photoCount}` / `{photoLinks}`, and ends with the public
+pin URL. Because the body USES `{photoLinks}`, §51's rule suppresses the backend's auto-appended photo
+block — the packet mentions exactly the attachments it carries. The retired defaults' `{confirmations}`,
+`{status}` and `{jurisdictionName}` lines are gone; the palette still allows them, so an operator
+template may reinstate any of them.
+
+**Additive facets.** `AdminReportListQuery.filter` gains `needs_verification` (no verdict yet, orthogonal
+to the civic status) with an optional `AdminReportCounts.needsVerification` total; `ModerationListQuery.filter`
+gains `user_report` (a human flagged it, as opposed to an automated signal); `AdminUserListQuery.filter`
+gains `deleted` (tombstoned) and `banned` (permanently barred, distinct from the reversible `suspended`)
+with optional `AdminUserCounts.deleted` / `.banned`; `HomeSummaryResponse` gains optional
+`moderationQueue` and `inboxUnread` sidebar badge totals. Every count is optional, so a backend that has
+not computed it yet and a client that never reads it both still parse.
+
+**Registry shape.** The three new endpoints live in a fourth exported group,
+`adminReportChatEndpoints`, spread into `endpoints` alongside `coreEndpoints`, `hostEndpoints` and
+`hostAdminEndpoints`. `coreEndpoints` had reached the TypeScript declaration-serialization ceiling
+(TS7056), so a new group — not a new key on `coreEndpoints` — is how the registry grows from here. The
+registry is now 324 entries, 104 of them under `/admin`; the backend's
+`test/unit/route-coverage.test.ts` moves to 324.
