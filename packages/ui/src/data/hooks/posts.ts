@@ -107,7 +107,7 @@ export function patchPostInListCaches(
   )
 }
 
-export function applyCounts(post: PostDTO, counts: PostCounts): PostDTO {
+function applyCounts(post: PostDTO, counts: PostCounts): PostDTO {
   return { ...post, counts }
 }
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { View } from "react-native"
-import type { GetEventAnalyticsResponse, Panel, SeriesPoint } from "@civfix/shared"
+import type { BreakdownRow, GetEventAnalyticsResponse, Panel, SeriesPoint } from "@civfix/shared"
 import { headingLevel, makeThemedStyles, useTheme } from "../../theme"
 import { Text } from "../../typography"
 import {
@@ -10,7 +10,7 @@ import {
   StatTileRow,
   statTileColumns,
 } from "../../primitives"
-import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth } from "../../charts"
+import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth, type ChartBar } from "../../charts"
 import { useCleanup } from "../../data/hooks/cleanups"
 import { hasHostCapability } from "../../data/hooks/host"
 import { useEventAnalytics } from "../../data/hooks/analytics"
@@ -40,6 +40,16 @@ const BARS_HEIGHT = 96
 const RING_SIZE = 96
 
 const DASH = "—"
+
+function breakdownBars(rows: readonly BreakdownRow[], color: string): ChartBar[] {
+  return rows.map((row) => ({
+    key: row.key,
+    label: row.label,
+    value: row.suppressed ? null : row.value,
+    color,
+    valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
+  }))
+}
 
 export function EventAnalyticsBody({ id }: { id: string }) {
   const styles = useStyles()
@@ -317,13 +327,7 @@ function SourcesSection({ panel }: { panel: Panel | undefined }) {
   return (
     <SectionCard label={t("page.sources_section")}>
       <BarChart
-        bars={rows.map((row) => ({
-          key: row.key,
-          label: row.label,
-          value: row.suppressed ? null : row.value,
-          color: th.colors.accent,
-          valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
-        }))}
+        bars={breakdownBars(rows, th.colors.accent)}
         horizontal
         labelColor={th.colors.textMuted}
         accessibilityLabel={t("page.sources_section")}
@@ -343,13 +347,7 @@ function SlotsSection({ data }: { data: GetEventAnalyticsResponse }) {
     <SectionCard label={t("page.slots_section")}>
       {rows.length > 0 ? (
         <BarChart
-          bars={rows.map((row) => ({
-            key: row.key,
-            label: row.label,
-            value: row.suppressed ? null : row.value,
-            color: th.colors.accent,
-            valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
-          }))}
+          bars={breakdownBars(rows, th.colors.accent)}
           horizontal
           labelColor={th.colors.textMuted}
           accessibilityLabel={t("page.slots_section")}
@@ -437,13 +435,7 @@ function ImpactSection({ data }: { data: GetEventAnalyticsResponse }) {
       </Text>
       {buckets.length > 0 ? (
         <BarChart
-          bars={buckets.map((row) => ({
-            key: row.key,
-            label: row.label,
-            value: row.suppressed ? null : row.value,
-            color: th.colors.accent,
-            valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
-          }))}
+          bars={breakdownBars(buckets, th.colors.accent)}
           horizontal
           labelColor={th.colors.textMuted}
           accessibilityLabel={t("page.hours_distribution")}

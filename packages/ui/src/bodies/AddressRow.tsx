@@ -144,6 +144,37 @@ function AddressActionsSheet({
   )
 }
 
+function AddressIconButton({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: IconName
+  label: string
+  onPress: () => void
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      hitSlop={8}
+      {...focusRingProps}
+      style={(state) => [
+        styles.iconBtn,
+        webTransition,
+        webCursorPointer,
+        webHover(state) ? styles.iconBtnHovered : null,
+        state.pressed ? styles.pressed : null,
+      ]}
+    >
+      <Icon icon={iconMap[icon]} size={15} color={th.colors.textSubtle} />
+    </Pressable>
+  )
+}
+
 export function AddressRow({
   address,
   point,
@@ -327,40 +358,10 @@ export function AddressRow({
     <View style={styles.row}>
       {body}
       {affordances.copy ? (
-        <Pressable
-          onPress={onCopy}
-          accessibilityRole="button"
-          accessibilityLabel={t("row.copy")}
-          hitSlop={8}
-          {...focusRingProps}
-          style={(state) => [
-            styles.iconBtn,
-            webTransition,
-            webCursorPointer,
-            webHover(state) ? styles.iconBtnHovered : null,
-            state.pressed ? styles.pressed : null,
-          ]}
-        >
-          <Icon icon={iconMap.Copy} size={15} color={th.colors.textSubtle} />
-        </Pressable>
+        <AddressIconButton icon="Copy" label={t("row.copy")} onPress={onCopy} />
       ) : null}
       {affordances.externalMaps ? (
-        <Pressable
-          onPress={onExternal}
-          accessibilityRole="button"
-          accessibilityLabel={t("row.open_maps")}
-          hitSlop={8}
-          {...focusRingProps}
-          style={(state) => [
-            styles.iconBtn,
-            webTransition,
-            webCursorPointer,
-            webHover(state) ? styles.iconBtnHovered : null,
-            state.pressed ? styles.pressed : null,
-          ]}
-        >
-          <Icon icon={iconMap.Navigation} size={15} color={th.colors.textSubtle} />
-        </Pressable>
+        <AddressIconButton icon="Navigation" label={t("row.open_maps")} onPress={onExternal} />
       ) : null}
       <AddressActionsSheet
         visible={sheetOpen}

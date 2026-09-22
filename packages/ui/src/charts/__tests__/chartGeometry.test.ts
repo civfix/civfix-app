@@ -6,8 +6,6 @@ import {
   clampFraction,
   lineGeometry,
   progressArcPath,
-  sparklineAreaPath,
-  sparklineSegments,
   valueToPixels,
   xToPixels,
 } from "../chartGeometry"
@@ -21,31 +19,6 @@ describe("the y axis starts at zero and never at the smallest value", () => {
     expect(chartMax([0, 0, 0])).toBe(1)
     expect(chartMax([])).toBe(1)
     expect(chartMax([null, null])).toBe(1)
-  })
-})
-
-describe("a suppressed point is a gap, never a zero", () => {
-  it("breaks the polyline into one run per contiguous stretch of real numbers", () => {
-    const segments = sparklineSegments([1, 2, null, 4, 5], 40, 10, 5)
-    expect(segments).toHaveLength(2)
-    expect(segments[0]).toBe("0,8 10,6")
-    expect(segments[1]).toBe("30,2 40,0")
-  })
-
-  it("drops a run of one point, which would draw nothing and read as a stray dot", () => {
-    expect(sparklineSegments([1, null, 3, null, 5], 40, 10)).toEqual([])
-  })
-
-  it("draws nothing at all for an empty series or a zero-sized box", () => {
-    expect(sparklineSegments([], 40, 10)).toEqual([])
-    expect(sparklineSegments([1, 2, 3], 0, 10)).toEqual([])
-    expect(sparklineSegments([1, 2, 3], 40, 0)).toEqual([])
-  })
-
-  it("closes the area under the longest run down to the axis, and nowhere else", () => {
-    const area = sparklineAreaPath([0, 5], 40, 10, 5)
-    expect(area).toBe("M 0,10 L 0,10 L 40,0 L 40,10 Z")
-    expect(sparklineAreaPath([1, null, 3], 40, 10)).toBeNull()
   })
 })
 

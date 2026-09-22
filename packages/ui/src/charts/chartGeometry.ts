@@ -35,46 +35,6 @@ function plotY(value: number, max: number, height: number): number {
   return height - (value / max) * height
 }
 
-export function sparklineSegments(
-  values: readonly (number | null)[],
-  width: number,
-  height: number,
-  max = chartMax(values),
-): string[] {
-  if (values.length === 0 || width <= 0 || height <= 0) return []
-  const step = values.length === 1 ? 0 : width / (values.length - 1)
-  const segments: string[] = []
-  let run: string[] = []
-  values.forEach((value, index) => {
-    if (value === null || !Number.isFinite(value)) {
-      if (run.length > 0) segments.push(run.join(" "))
-      run = []
-      return
-    }
-    const x = values.length === 1 ? width / 2 : index * step
-    run.push(`${round(x)},${round(plotY(value, max, height))}`)
-  })
-  if (run.length > 0) segments.push(run.join(" "))
-  return segments.filter((segment) => segment.includes(" "))
-}
-
-export function sparklineAreaPath(
-  values: readonly (number | null)[],
-  width: number,
-  height: number,
-  max = chartMax(values),
-): string | null {
-  const segments = sparklineSegments(values, width, height, max)
-  if (segments.length === 0) return null
-  const longest = segments.reduce((a, b) => (b.length > a.length ? b : a))
-  const points = longest.split(" ")
-  const first = points[0] as string
-  const last = points[points.length - 1] as string
-  const firstX = first.split(",")[0] as string
-  const lastX = last.split(",")[0] as string
-  return `M ${firstX},${round(height)} L ${points.join(" L ")} L ${lastX},${round(height)} Z`
-}
-
 export interface BarInput {
   key: string
   value: number | null

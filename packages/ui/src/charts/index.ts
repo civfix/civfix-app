@@ -1,5 +1,3 @@
-export { Sparkline, SPARKLINE_STROKE_WIDTH } from "./Sparkline"
-export type { SparklineProps } from "./Sparkline"
 export { BarChart } from "./BarChart"
 export type { BarChartProps, ChartBar } from "./BarChart"
 export { AreaLineChart } from "./AreaLineChart"
@@ -18,8 +16,6 @@ export {
   clampFraction,
   lineGeometry,
   progressArcPath,
-  sparklineAreaPath,
-  sparklineSegments,
   valueToPixels,
   xToPixels,
 } from "./chartGeometry"

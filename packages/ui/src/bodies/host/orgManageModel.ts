@@ -12,10 +12,6 @@ import {
   UpdateOrganizationRequestSchema,
 } from "@civfix/shared"
 
-export const ORG_MANAGE_SECTIONS = ["profile", "links", "members"] as const
-
-export type OrgManageSection = (typeof ORG_MANAGE_SECTIONS)[number]
-
 export const ORG_COUNTER_AT = 0.9
 
 export interface OrgProfileDraft {

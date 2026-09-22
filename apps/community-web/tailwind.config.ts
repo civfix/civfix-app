@@ -16,6 +16,15 @@ const schemeVar = (name: string): string =>
       ? `var(${name})`
       : `color-mix(in srgb, var(${name}) calc(${opacityValue} * 100%), transparent)`) satisfies SchemeColor) as unknown as string
 
+const hueRamp = (hue: string) => ({
+  50: schemeVar(`--${hue}-50`),
+  100: schemeVar(`--${hue}-100`),
+  300: schemeVar(`--${hue}-300`),
+  500: schemeVar(`--${hue}`),
+  600: schemeVar(`--${hue}-600`),
+  700: schemeVar(`--${hue}-700`),
+})
+
 function fontSizeScale(): Record<string, string> {
   const out: Record<string, string> = {}
   for (const [k, v] of Object.entries(fontSize)) out[k] = v
@@ -70,38 +79,10 @@ const config: Config = {
           foreground: "hsl(var(--shadcn-card-foreground))",
         },
 
-        bloom: {
-          50: schemeVar("--bloom-50"),
-          100: schemeVar("--bloom-100"),
-          300: schemeVar("--bloom-300"),
-          500: schemeVar("--bloom"),
-          600: schemeVar("--bloom-600"),
-          700: schemeVar("--bloom-700"),
-        },
-        moss: {
-          50: schemeVar("--moss-50"),
-          100: schemeVar("--moss-100"),
-          300: schemeVar("--moss-300"),
-          500: schemeVar("--moss"),
-          600: schemeVar("--moss-600"),
-          700: schemeVar("--moss-700"),
-        },
-        sun: {
-          50: schemeVar("--sun-50"),
-          100: schemeVar("--sun-100"),
-          300: schemeVar("--sun-300"),
-          500: schemeVar("--sun"),
-          600: schemeVar("--sun-600"),
-          700: schemeVar("--sun-700"),
-        },
-        sky: {
-          50: schemeVar("--sky-50"),
-          100: schemeVar("--sky-100"),
-          300: schemeVar("--sky-300"),
-          500: schemeVar("--sky"),
-          600: schemeVar("--sky-600"),
-          700: schemeVar("--sky-700"),
-        },
+        bloom: hueRamp("bloom"),
+        moss: hueRamp("moss"),
+        sun: hueRamp("sun"),
+        sky: hueRamp("sky"),
         lilac: {
           50: schemeVar("--lilac-50"),
           500: schemeVar("--lilac"),

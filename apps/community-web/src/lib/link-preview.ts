@@ -89,7 +89,7 @@ export function clamp(value: string, max: number): string {
   return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`
 }
 
-export function isPublicMediaUrl(url: string | null | undefined): boolean {
+export function isPublicMediaUrl(url: string | null | undefined): url is string {
   if (!url) return false
   let parsed: URL
   try {
@@ -141,8 +141,8 @@ export interface PersonPreviewInput {
 function reportImage(input: ReportPreviewInput): string | null {
   for (const item of input.media ?? []) {
     if (item.kind !== "image" || item.status !== "ready") continue
-    if (isPublicMediaUrl(item.thumbUrl)) return item.thumbUrl as string
-    if (isPublicMediaUrl(item.url)) return item.url as string
+    if (isPublicMediaUrl(item.thumbUrl)) return item.thumbUrl
+    if (isPublicMediaUrl(item.url)) return item.url
   }
   return null
 }
@@ -212,7 +212,7 @@ export function previewForEvent(
   const description =
     finishDescription([cancelled, when, `A volunteer event on ${SITE_NAME}`]) || DEFAULT_DESCRIPTION
 
-  const cover = isPublicMediaUrl(input.coverUrl) ? (input.coverUrl as string) : null
+  const cover = isPublicMediaUrl(input.coverUrl) ? input.coverUrl : null
 
   return {
     title,
@@ -237,7 +237,7 @@ export function previewForPerson(
   const handle = input.handle ? oneLine(input.handle).replace(/^@/, "") : ""
   const title = clamp(handle ? `${name} (@${handle})` : name, TITLE_MAX)
   const description = finishDescription([title, `On ${SITE_NAME}`])
-  const image = isPublicMediaUrl(input.avatarUrl) ? (input.avatarUrl as string) : null
+  const image = isPublicMediaUrl(input.avatarUrl) ? input.avatarUrl : null
 
   return {
     title,
@@ -285,7 +285,7 @@ export function previewForSignupPage(
     finishDescription([cancelled, when, host || `An event on ${SITE_NAME}`]) ||
     DEFAULT_DESCRIPTION
 
-  const cover = isPublic && isPublicMediaUrl(input.coverUrl) ? (input.coverUrl as string) : null
+  const cover = isPublic && isPublicMediaUrl(input.coverUrl) ? input.coverUrl : null
 
   return {
     title,
@@ -337,7 +337,7 @@ export function previewForOrganization(
     events,
     input.description ? input.description : `Hosting volunteer events on ${SITE_NAME}`,
   ])
-  const image = isPublicMediaUrl(input.logoUrl) ? (input.logoUrl as string) : null
+  const image = isPublicMediaUrl(input.logoUrl) ? input.logoUrl : null
 
   return {
     title,
