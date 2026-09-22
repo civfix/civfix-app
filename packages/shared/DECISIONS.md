@@ -1798,3 +1798,69 @@ not computed it yet and a client that never reads it both still parse.
 (TS7056), so a new group — not a new key on `coreEndpoints` — is how the registry grows from here. The
 registry is now 324 entries, 104 of them under `/admin`; the backend's
 `test/unit/route-coverage.test.ts` moves to 324.
+
+## 53. The feed score is a global term plus a viewer term, and every refresh reshuffles (0.54.0)
+
+§47 introduced the ranked home feed as one linear affinity model. 0.54.0 keeps the schema, the
+cursor codec and the quantisation exactly as they are, and re-reads the same knobs as an explicit
+SUM OF TWO COMPONENTS, so that "why is this post here" always has a two-part answer.
+
+**The GLOBAL component is everything that is true of a post no matter who is looking**: `baseWeight`,
+`orgVerifiedWeight`, the attachment weights (`attachEventWeight`, `attachReportWeight`),
+`imageWeight`, and the log-scaled engagement terms (`likeWeight`, `replyWeight`, `repostWeight`).
+It is the same number for every viewer, so it can be computed once per post and cached across
+viewers rather than recomputed per fan-out. **The VIEWER component is everything that only means
+something relative to the caller**: `followWeight`, `selfWeight`, `mentionWeight`, and location
+(`nearbyWeight` graded over `nearbyRadiusKm`). The recency half-life, the seen discount and the
+author-diversity discount remain multiplicative modifiers applied to the sum, not members of either
+component. Nothing in the schema encodes the split — it is a statement about how the backend
+composes the same knobs — but the split is what makes the weights tunable with intent: raising
+`orgVerifiedWeight` changes what everyone sees, raising `followWeight` changes only how personal
+each feed is.
+
+**Location is weighted first, deliberately and by an order of magnitude.** `nearbyWeight`'s default
+moves 50 → 300. Proximity is graded to 0..1 across `nearbyRadiusKm` (40 km), so a post at the
+viewer's doorstep earns up to 300 points against `followWeight`'s 100 and `baseWeight`'s 10. That
+is the product claim, not a tuning accident: CivFix is a civic feed about a place, and a pothole
+two blocks away matters more to a reader than a well-liked post from someone they follow in another
+city. The old default made proximity a tie-breaker among socially-ranked posts; the new one makes
+the social terms tie-breakers among nearby posts. The knob's range (0..1000) is unchanged, so the
+old behaviour is still one `FEED_RANKING` env var away and no deploy is needed to walk it back. A
+viewer with no usable location simply scores 0 on this term and falls back to the social and global
+terms, which is the same degradation §45 already assumes.
+
+**`jitterAmount` (0..1, default 0.15) is the ± fraction of MULTIPLICATIVE score jitter applied per
+refresh.** At 0.15 each post's final score is scaled by a factor drawn from [0.85, 1.15]; at 0 the
+ranking is fully deterministic, which is what the unit tests and any A/B baseline want. The jitter
+is not per-request randomness: it is derived from a seed minted once per FIRST-PAGE request, so
+every post in one refresh is perturbed by one reproducible draw. Its job is to stop a stable
+candidate set from producing a byte-identical feed on every pull-to-refresh — near the top of the
+ranking, scores are close enough that a 15% band reorders neighbours while leaving the
+global-versus-viewer ordering intact. It is a presentation-layer shuffle within a rank band, never
+a re-weighting of the model.
+
+**Per-refresh jitter is pagination-safe because the snapshot, not the scorer, is the source of
+truth for a continuation.** The first page already ranks a candidate set and STORES it (see
+`snapshotTtlSeconds`); later pages slice that stored snapshot with the score cursor rather than
+re-running the ranker. The jitter is applied while the snapshot is built and BAKED INTO the stored
+scores, so the cursor a client holds refers to a number that still exists in the snapshot it came
+from, and `isAfterFeedScoreCursor` keeps its exact meaning. The cursor format is therefore
+unchanged — still `"<score>|<postId>"` at `FEED_SCORE_CURSOR_PRECISION` (6) — and no client, cached
+or in the field, needs to know that jitter exists. Two refreshes seconds apart produce two
+snapshots with two different jitter draws and two different orderings, and each paginates
+consistently within itself, which is exactly the desired behaviour: the reshuffle happens at
+refresh, never mid-scroll. The snapshot-MISS fallback (an expired or evicted snapshot, on a page
+the client is already paging through) is unchanged: the server re-ranks best-effort and filters by
+the cursor predicate, which may drop or repeat an item near the seam — jitter widens that seam
+slightly but does not create it, and the mitigation is the one already in place, `minPageItems`
+plus a TTL comfortably longer than a scroll session.
+
+**Knob count 27 → 28.** `FeedRankingConfigSchema` stays `.strict()` and fully defaulted, so
+`FEED_RANKING` overrides that omit `jitterAmount` keep 0.15 and a typo'd `jitterAmmount` is still a
+named boot failure rather than a silent no-op. Backwards compatible for every consumer that only
+reads `DEFAULT_FEED_RANKING`.
+
+**Delivery set (§4.2, no consumer left behind).** The registry is untouched (still 324 entries), so
+no consumer is forced to move. civfix-backend `services/api` adopts the new profile when it
+implements the split scorer and the seeded jitter; civfix-admin and civfix-govt-web bump with the
+routine version propagation. No migration, no endpoint, no client release.

@@ -22,7 +22,7 @@ describe("FeedRankingConfigSchema", () => {
   it("parses an empty object into the full default profile", () => {
     const parsed = FeedRankingConfigSchema.parse({})
     expect(parsed).toEqual(DEFAULT_FEED_RANKING)
-    expect(Object.keys(parsed)).toHaveLength(27)
+    expect(Object.keys(parsed)).toHaveLength(28)
   })
 
   it("carries the documented default weights", () => {
@@ -31,7 +31,7 @@ describe("FeedRankingConfigSchema", () => {
       followWeight: 100,
       selfWeight: 60,
       mentionWeight: 40,
-      nearbyWeight: 50,
+      nearbyWeight: 300,
       nearbyRadiusKm: 40,
       orgVerifiedWeight: 30,
       attachEventWeight: 30,
@@ -45,6 +45,7 @@ describe("FeedRankingConfigSchema", () => {
       diversityFloor: 0.25,
       diversityDecay: 0.5,
       seenDiscount: 0.7,
+      jitterAmount: 0.15,
       minScore: 12,
       minPageItems: 5,
       candidateWindowDays: 30,
@@ -67,6 +68,19 @@ describe("FeedRankingConfigSchema", () => {
   it("rejects an unknown key rather than ignoring it", () => {
     const res = FeedRankingConfigSchema.safeParse({ halfLifeHors: 12 })
     expect(res.success).toBe(false)
+  })
+
+  it("defaults the per-refresh jitter band and weights proximity above follow", () => {
+    expect(DEFAULT_FEED_RANKING.jitterAmount).toBe(0.15)
+    expect(DEFAULT_FEED_RANKING.nearbyWeight).toBe(300)
+    expect(DEFAULT_FEED_RANKING.nearbyWeight).toBeGreaterThan(DEFAULT_FEED_RANKING.followWeight)
+    expect(FeedRankingConfigSchema.parse({ jitterAmount: 0 }).jitterAmount).toBe(0)
+    expect(FeedRankingConfigSchema.parse({ jitterAmount: 1 }).jitterAmount).toBe(1)
+  })
+
+  it("rejects a jitter band outside the unit interval", () => {
+    expect(FeedRankingConfigSchema.safeParse({ jitterAmount: 1.01 }).success).toBe(false)
+    expect(FeedRankingConfigSchema.safeParse({ jitterAmount: -0.01 }).success).toBe(false)
   })
 
   it("rejects out-of-range values", () => {

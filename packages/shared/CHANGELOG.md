@@ -1,5 +1,20 @@
 # @civfix/shared
 
+## 0.54.0
+
+### Minor Changes
+
+- Feed ranking: per-refresh jitter knob, location-first default weighting
+
+  `FeedRankingConfigSchema` gains `jitterAmount` (0..1, default 0.15) — the ± fraction of
+  multiplicative score jitter applied per refresh, seeded once per first-page request and baked into
+  the stored ranking snapshot — and `nearbyWeight`'s default moves 50 → 300, so graded proximity
+  (0..1 over `nearbyRadiusKm`) outweighs `followWeight` (100). The knob count goes 27 → 28; the
+  schema stays `.strict()` and fully defaulted, and the score cursor format, quantisation and
+  `FEED_SCORE_CURSOR_PRECISION` are unchanged, so pagination and every existing client are
+  unaffected. See DECISIONS §53 for the global-vs-viewer score split and why baking jitter into the
+  snapshot keeps pagination consistent.
+
 ## 0.53.0
 
 ### Minor Changes
