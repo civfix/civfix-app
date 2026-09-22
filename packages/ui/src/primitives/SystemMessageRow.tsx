@@ -14,6 +14,21 @@ export const SystemMessageRow = React.memo(function SystemMessageRow({ message }
   const sys = message.system ?? null
   const status = (sys?.status ?? "") as ReportStatus
   const visibility = visibilityKindOf(sys?.kind)
+  const replyBody = sys?.kind === "reply" ? (sys.body ?? "").trim() : ""
+  if (replyBody) {
+    const replyColor = nodeColor("forwarded", th.scheme)
+    return (
+      <View style={styles.row} accessibilityRole="text">
+        <View style={styles.reply}>
+          <View style={styles.replyHead}>
+            <Icon icon={iconMap[NODE_GLYPH.forwarded]} size={12} color={replyColor} />
+            <Text style={[styles.text, { color: replyColor }]}>{t("timeline.reply_from_city")}</Text>
+          </View>
+          <Text style={styles.replyBody}>{replyBody}</Text>
+        </View>
+      </View>
+    )
+  }
   const nodeKind = visibility ?? kindForStatus(status)
   const label =
     visibility === "hidden"
@@ -51,4 +66,15 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
   },
   text: { fontFamily: t.fontFamily.bodySemiBold, fontSize: 11.5, textAlign: "center" },
+  reply: {
+    gap: 4,
+    paddingHorizontal: t.space["3"],
+    paddingVertical: t.space["2"],
+    borderRadius: t.radius.md,
+    backgroundColor: t.colors.bgAlt,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
+  },
+  replyHead: { flexDirection: "row", alignItems: "center", gap: 6 },
+  replyBody: { fontFamily: t.fontFamily.bodyRegular, fontSize: 13, color: t.colors.text },
 }))
