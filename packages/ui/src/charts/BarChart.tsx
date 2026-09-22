@@ -147,19 +147,25 @@ export function BarChart({
       </Svg>
       {xLabels && xLabels.length > 0 ? (
         <View style={[styles.xLabels, { width }]}>
-          {xLabels.map((label) => (
-            <Text
-              key={`${label.index}`}
-              variant="caption"
-              numberOfLines={1}
-              style={[
-                styles.xLabel,
-                { color: labelColor, left: (label.index / Math.max(1, bars.length)) * width },
-              ]}
-            >
-              {label.text}
-            </Text>
-          ))}
+          {xLabels.map((label) => {
+            const position = label.index / Math.max(1, bars.length)
+            return (
+              <Text
+                key={`${label.index}`}
+                variant="caption"
+                numberOfLines={1}
+                style={[
+                  styles.xLabel,
+                  { color: labelColor },
+                  position > 0.85
+                    ? { right: 0, textAlign: "right" }
+                    : { left: Math.max(0, position * width) },
+                ]}
+              >
+                {label.text}
+              </Text>
+            )
+          })}
         </View>
       ) : null}
     </View>
