@@ -1953,3 +1953,41 @@ still exclude replies. The consumer is the web edge preview of
 No schema changes; the typed client already attaches credentials for any `auth !== "public"`
 endpoint, so no call site changes on the wire. Delivery set: civfix-backend `services/api` serves
 the route to guests; `services/media-worker` and civfix-admin adopt the patch in range.
+
+## 56. The official account is server-flagged, never client-chosen; operators act as it and the audit keeps the human (0.57.0)
+
+**One platform identity, flagged by the server.** `PersonDTO` gains optional `official: boolean`. The
+backend sets it `true` on exactly one account, the platform-owned `@civfix` account that admin-panel
+posts to report and event chats are authored as, wherever it projects a `PersonDTO` for that account,
+and omits it for everyone else. No request schema carries it, no endpoint sets it, and no client
+derives it: web and mobile render what the server says and never compare an id, a handle or a display
+name, so a real account that happens to hold a lookalike name or an old handle is never badged.
+`UserProfileDTO` and `AttendeeDTO` extend `PersonDTO`, and chat senders, post authors and roster rows
+embed it, so the one field reaches every surface that shows a person.
+
+**This is not the verified neighbour coming back.** §34 retired `PersonDTO.verified` because it was a
+per-person trust claim an operator granted after a phone call and nothing could check. `official` is
+not grantable: it names the platform itself, the server decides it from a constant, and no console
+action toggles it on a person. The clients show it with the existing `VerifiedBadge` check (same glyph,
+same "Verified" label) next to the name in chat bubbles, post, reply and embed bylines, the profile
+header and people rows, because that is the platform's one verified mark. Organization verification is
+untouched, and the feed ranker's `orgVerifiedWeight` (§47) does not read this flag.
+
+**Operators act as it; the audit keeps the human.** The official account cannot sign in: it has no
+email and no linked identity, and session minting refuses it. An operator's admin-panel chat post is
+authored as the official account, and the acting operator is written to `audit_log` in the same
+transaction as the message, so residents see "CivFix" and the record shows who. Rate limits, including
+the `@city` forward throttle, stay per operator. Nothing in this contract names the acting operator;
+that stays on the admin plane. Posts made before this release keep their original authors.
+
+**Residents cannot block it.** The server refuses a block whose target is the official account, and
+the clients drop Block from its chat-message menu and its profile menu while Report stays. Muting a
+room is unaffected, so a resident who wants quiet still has it.
+
+**Delivery set (§4.2, no consumer left behind).** Additive: one optional boolean on an existing
+response shape. An older server omits it and an older client strips it. No endpoint and no registry
+change (still 331). civfix-app's web and mobile render the check and hide Block with no adoption step.
+civfix-backend `services/api` adopts 0.57.0 to set the flag, and `services/media-worker` bumps with it.
+civfix-admin and civfix-govt-web bump with the routine propagation and read nothing new. The release
+also types `PostDTOSchema` by name (CHANGELOG), which keeps the registry's declaration clear of the
+TS7056 cap this field would otherwise have crossed.
