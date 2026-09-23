@@ -172,6 +172,28 @@ both move together. The registry read is anonymous, so consumers need no token t
 If you deliberately skip a consumer, say so in the release notes so the others are not assumed to be
 up to date.
 
+## Rolling civfix.org back
+
+This is about the web app, not the contract. `deploy-web.yml` deploys production only for the
+NEWEST `vX.Y.Z` release merged into `main`, so re-publishing an old release (or running the workflow
+on an old tag) is refused rather than silently rolling civfix.org back. To put an older release back
+on purpose:
+
+```sh
+# Actions -> deploy-web -> Run workflow, "Use workflow from" = the older tag, rollback checked; or:
+gh workflow run deploy-web.yml --ref v1.2.3 -f rollback=true
+```
+
+The run rebuilds that tag with production values (a static export cannot be byte-promoted) and warns
+that it is deploying a release older than the newest one. It is a stopgap: the next release, or any
+later run on the newest tag, puts the newest code back. The durable fix is a new release from `main`.
+GitHub runs the workflow file as it was at the chosen tag, so this works only for a release whose
+`deploy-web.yml` already has the `rollback` input; to go back further, revert on `main` and release.
+
+The backend has no equivalent input. Its production release cannot be re-run on an older tag; roll it
+back on the box with `ops/rollback.sh` or `CIVFIX_REF=<tag|sha> ops/deploy.sh`
+(`civfix-infra/docs/RELEASING-PROD.md`).
+
 ## Checklist
 
 - [ ] Change committed; a `.changeset/*.md` names `@civfix/shared` and the bump level.
