@@ -100,7 +100,9 @@ describe("every house overlay reports the moment it has fully left the screen", 
   it("PopoverMenu runs every row action through the gate and settles off its own Modal", () => {
     expect(POPOVER).toContain("const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)")
     expect(POPOVER).toContain("const onModalDismiss = useModalClosed(rendered, settled)")
-    expect(POPOVER).toMatch(/const handlePress = useCallback\(\(item: PopoverMenuItem\) => run\(item\.onPress\), \[run\]\)/)
+    expect(POPOVER).toMatch(
+      /const handlePress = useCallback\(\(item: PopoverMenuItem\) => pressPopoverMenuItem\(item, run\), \[run\]\)/,
+    )
     expect(POPOVER).toContain("onDismiss={onModalDismiss}")
     expect(POPOVER).not.toMatch(/onClose\(\)\s*item\.onPress\(\)/)
   })

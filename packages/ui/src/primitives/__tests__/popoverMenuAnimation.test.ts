@@ -218,7 +218,8 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
   })
 
   it("runs an item's action only after it has asked the menu to close, never before", () => {
-    expect(popover).toMatch(/run\(item\.onPress\)/)
+    expect(popover).toMatch(/pressPopoverMenuItem\(item, run\)/)
+    expect(strip(read("../popoverMenuModel.ts"))).toMatch(/else run\(item\.onPress\)/)
     const gateHook = strip(read("../useDeferredOverlayAction.ts"))
     expect(gateHook).toMatch(/onClose\(\)\s+gate\.choose\(action\)/)
   })

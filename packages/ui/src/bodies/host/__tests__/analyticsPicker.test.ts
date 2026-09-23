@@ -22,9 +22,11 @@ describe("the analytics event picker", () => {
 })
 
 describe("More events in the analytics picker", () => {
-  it("reopens the picker once PopoverMenu has closed, so the next page loads into a visible list", () => {
+  it("keeps the picker open while the next page loads into it, instead of closing and reopening it", () => {
     const more = sliceBetween(body, 'key: "more",', "]\n          : []),")
-    expect(more).toMatch(/onPress: \(\) => \{\s*loadMoreEvents\(\)\s*measurePicker\(\)\s*setPickerOpen\(true\)\s*\}/)
-    expect(more).not.toContain("setPickerOpen(false)")
+    expect(more).toContain("keepOpen: true,")
+    expect(more).toMatch(/onPress: loadMoreEvents,/)
+    expect(more).not.toContain("setPickerOpen(")
+    expect(more).not.toContain("measurePicker(")
   })
 })

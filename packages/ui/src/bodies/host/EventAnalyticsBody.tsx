@@ -239,13 +239,8 @@ export function EventAnalyticsBody({ id }: { id: string }) {
                 key: "more",
                 label: loadingMoreEvents ? t("filter.loading_more") : t("filter.more_events"),
                 disabled: loadingMoreEvents,
-                // PopoverMenu dismisses on every press and runs this once it has closed; reopening
-                // keeps the list in view while the next page loads into it.
-                onPress: () => {
-                  loadMoreEvents()
-                  measurePicker()
-                  setPickerOpen(true)
-                },
+                keepOpen: true,
+                onPress: loadMoreEvents,
               },
             ]
           : []),
