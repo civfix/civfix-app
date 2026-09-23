@@ -1,37 +1,11 @@
-/**
- * ONE HEADING HIERARCHY PER SURFACE - the semantics half of the landscape pass (R3-9).
- *
- * react-native-web renders `accessibilityRole="header"` as a bare `<h1>`, every time, at every size. The
- * VISUAL hierarchy was well-formed (32 / 24 / 22 / 20 / 19 / 11) and the semantics were flat: /search
- * exposed SIX h1s at four type sizes ("civfix" the 16px brand pill, "Search" the 32px tab root, and four
- * 20px section labels), /profile five (an 11px "POSTS" eyebrow through the 22px display name). Navigating
- * by heading, a screen-reader user got a list in which a decorative wordmark, the page title and a section
- * label were peers - and the brand pill, a BUTTON, announced as the first heading on every route.
- *
- * THE LADDER (`theme/webAffordances.headingLevel` states it; this suite pins it):
- *   1 - the tab-root / stacked-panel title. Exactly one per rendered surface, and it is the only level a
- *       body may leave IMPLICIT, because an untagged RNW header already IS an <h1>.
- *   2 - a section inside that surface: "Suggested people", "Events in your area", the profile's display
- *       name under the panel's own "You", the profile's "POSTS" / "ACTIVITY" eyebrows, a prefs group.
- *   3 - a sub-label inside a section (the profile events section's "Hosting (3)" subhead).
- *
- * `aria-level` on an `<h1>` overrides the implicit level for assistive tech, so NO pixel moves and no DOM
- * tag changes. The browser-side proof that the ladder actually resolves to one level-1 per route is
- * `verify/headings.mjs`, which snapshots every h1-h6 / [role=heading] on 13 routes with its computed level
- * and fails unless each has exactly one.
- *
- * Source greps: these modules import react-native, which this package's node-environment vitest cannot
- * load, so the call sites are pinned by reading the source - the house pattern (see `focusRing.test.ts`).
- */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
-// `webAffordances` is read as TEXT rather than imported: it pulls in react-native, whose Flow-typed source
-// this package's node-environment vitest cannot parse (`import typeof ...`). Same reason `focusRing.test.ts`
-// greps it. The RUNTIME shape is checked by evaluating the one-line function body below.
+// These modules import react-native, whose Flow-typed source (`import typeof ...`) this package's node
+// vitest cannot parse, so they are read as text. The heading ladder itself is documented on `headingLevel`.
 const affordances = strip(read("../webAffordances.ts"))
 const themeIndex = read("../index.ts")
 const brand = strip(read("../../primitives/Brand.tsx"))
@@ -59,10 +33,9 @@ describe("the wordmark is a button, not a heading", () => {
 })
 
 /**
- * A body may leave AT MOST its own title implicit. `roles - levels` counts the headers a file does not
- * level explicitly; anything above the file's title budget is a section that would announce as a peer of
- * the page title. SearchBody and ReportFlowBody have TWO title elements each - a portrait one and an
- * expanded/root one, rendered in mutually exclusive branches - so their budget is 2.
+ * A body may leave at most its own title implicit: any other unleveled header would announce as a peer
+ * of the page title. SearchBody and ReportFlowBody render a portrait and an expanded title in mutually
+ * exclusive branches, so their budget is 2.
  */
 const TITLE_BUDGET: Record<string, number> = {
   "bodies/SearchBody.tsx": 2,

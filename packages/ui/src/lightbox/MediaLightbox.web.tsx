@@ -1,14 +1,7 @@
 /**
- * MediaLightbox (web seam) - the full-screen media viewer on web (react-native-web).
- *
- * The viewer itself lives in the shared <MediaLightboxBase> (hosted in an RNW-safe RN <Modal>, which on
- * react-native-web becomes a `position: fixed` layer that escapes every parent overflow/stacking context).
- * This seam adds the WEB-only deltas:
- *   - a window "keydown" listener while visible: Escape -> close, ArrowRight -> next, ArrowLeft -> prev.
- *     All DOM/window access is guarded with `typeof window !== "undefined"` so the SSR (Next) bundle never
- *     touches `window`. The handler reads the live index/count through a ref, so paging does NOT tear down
- *     and re-add the listener on every step.
- *   - `aria-modal` on the content container for assistive tech.
+ * RN's <Modal> becomes a `position: fixed` layer on react-native-web, escaping every parent overflow and
+ * stacking context. This seam adds the web keys (Escape, ArrowLeft, ArrowRight) and `aria-modal`; every
+ * window access is guarded so the static-export build never touches `window`.
  */
 import React, { useCallback, useEffect, useRef } from "react"
 import { MediaLightboxBase } from "./MediaLightboxBase"
@@ -19,8 +12,7 @@ export type { MediaLightboxViewProps }
 export function MediaLightboxView(props: MediaLightboxViewProps) {
   const { visible, items, index, onIndexChange, onClose } = props
 
-  // The keydown handler reads the CURRENT nav state from this ref, so the effect below subscribes once
-  // per open instead of re-subscribing on every index change.
+  // Read through a ref so the listener subscribes once per open, not on every index change.
   const navRef = useRef({ count: items.length, index, onIndexChange, onClose })
   navRef.current = { count: items.length, index, onIndexChange, onClose }
 

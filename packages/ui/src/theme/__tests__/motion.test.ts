@@ -38,7 +38,7 @@ const EXIT_PAIRS: ReadonlyArray<[string, TimingRecipe, TimingRecipe]> = [
   ["page drill", MOTION.pagePop, MOTION.pagePush],
 ]
 
-describe("motion vocabulary — perceived latency", () => {
+describe("motion vocabulary: perceived latency", () => {
   it("lands every OPEN between 200ms and 260ms", () => {
     for (const [, r] of OPENS) {
       expect(r.duration).toBeGreaterThanOrEqual(200)
@@ -60,7 +60,7 @@ describe("motion vocabulary — perceived latency", () => {
   })
 })
 
-describe("motion vocabulary — the standard curve is genuinely front-loaded", () => {
+describe("motion vocabulary: the standard curve is genuinely front-loaded", () => {
   it("covers over 60% of the travel in the first 30% of the duration", () => {
     expect(easeY(0.3)).toBeGreaterThan(0.6)
   })
@@ -89,14 +89,14 @@ describe("motion vocabulary — the standard curve is genuinely front-loaded", (
   })
 })
 
-describe("motion vocabulary — the sheet teardown guard is a fallback, not the driver", () => {
+describe("motion vocabulary: the sheet teardown guard is a fallback, not the driver", () => {
   it("outlasts the dismissal it backstops, but by no more than 150ms", () => {
     expect(MOTION.sheetTeardownGuardMs).toBeGreaterThan(MOTION.sheetDismiss.duration)
     expect(MOTION.sheetTeardownGuardMs - MOTION.sheetDismiss.duration).toBeLessThanOrEqual(150)
   })
 })
 
-describe("motion vocabulary — nothing in it is a spring any more", () => {
+describe("motion vocabulary: nothing in it is a spring any more", () => {
   it("keeps every recipe a deterministic timing, so no curve carries a tail", () => {
     const springs = (Object.entries(MOTION) as ReadonlyArray<[string, unknown]>).filter(
       (entry): entry is [string, Record<string, unknown>] =>
@@ -112,7 +112,7 @@ describe("motion vocabulary — nothing in it is a spring any more", () => {
   })
 })
 
-describe("motion vocabulary — the native page stack", () => {
+describe("motion vocabulary: the native page stack", () => {
   it("cancels a swipe at least as fast as it completes one", () => {
     expect(MOTION.pageSwipeCancel.duration).toBeLessThanOrEqual(MOTION.pageSwipeSettle.duration)
     expect(MOTION.pageSwipeCancel.duration).toBeGreaterThanOrEqual(140)

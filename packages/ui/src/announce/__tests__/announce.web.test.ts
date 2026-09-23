@@ -1,7 +1,4 @@
-/**
- * announce (web seam) regression tests. The package's vitest setup is plain node (no jsdom), so this
- * installs a MINIMAL fake `document` - only the handful of members the seam touches - on globalThis.
- */
+// The package's vitest runs in plain node (no jsdom), so this installs a minimal fake `document`.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 interface FakeElement {
@@ -63,7 +60,6 @@ describe("announce (web)", () => {
     const el = region("civfix-aria-live-polite")
     expect(el).not.toBeNull()
     expect(el?.attrs["aria-live"]).toBe("polite")
-    // Cleared synchronously; the text lands only after the deferred task.
     expect(el?.textContent).toBe("")
     vi.runAllTimers()
     expect(el?.textContent).toBe("Report filed")
@@ -89,7 +85,6 @@ describe("announce (web)", () => {
     expect(region("civfix-aria-live-polite")?.textContent).toBe("polite one")
     expect(region("civfix-aria-live-assertive")?.textContent).toBe("urgent one")
     expect(region("civfix-aria-live-assertive")?.attrs["aria-live"]).toBe("assertive")
-    // aria-live is set once at creation and never mutated afterwards.
     expect(region("civfix-aria-live-polite")?.attrs["aria-live"]).toBe("polite")
   })
 

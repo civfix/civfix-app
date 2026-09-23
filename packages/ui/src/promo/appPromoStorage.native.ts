@@ -1,13 +1,7 @@
 /**
- * App-promo dismissal storage - NATIVE seam.
- *
- * Mirrors appPromoStorage.web.ts but backs the zustand `persist` StateStorage with MMKV, the same engine
- * filterStorage.native.ts / sidebarStorage.native.ts use. MMKV is a native module, so it is constructed
- * lazily and a construction failure (e.g. an `expo export` static eval with no native module) degrades to
- * an in-memory Map so imports never crash.
- *
- * In practice the promo never renders on native (it is gated on `Platform.OS === "web"` - you do not
- * advertise the app inside the app), so this seam exists purely so Metro can resolve the import.
+ * The promo never renders on native (you do not advertise the app inside the app); this seam exists so
+ * Metro can resolve the import. MMKV is built lazily and falls back to memory when the native module is
+ * missing, as in an `expo export` static evaluation, so importing never crashes.
  */
 import { MMKV } from "react-native-mmkv"
 import type { StateStorage } from "zustand/middleware"
@@ -33,10 +27,9 @@ function memoryStore(): KV {
 
 function createStore(): KV {
   try {
-    // Dedicated instance id so the promo flag never collides with the app's other MMKV stores.
+    // A dedicated instance id keeps the promo flag clear of the app's other MMKV stores.
     return new MMKV({ id: "civfix.ui.app-promo" })
   } catch {
-    // No native module (static export eval): degrade to a memory store so imports never crash.
     return memoryStore()
   }
 }
