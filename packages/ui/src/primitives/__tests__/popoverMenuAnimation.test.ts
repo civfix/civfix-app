@@ -229,7 +229,7 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
     expect(anchoredPopover).not.toMatch(/backgroundColor: t\.colors\.surface/)
   })
 
-  it("is the presentation for the menus that used to wire their own Modal", () => {
+  it("is the presentation for PopoverMenu and the map theme toggle, neither wiring its own Modal", () => {
     expect(popover).toMatch(/<AnchoredPopover/)
     expect(popover).not.toMatch(/<Modal/)
     expect(mapThemeToggle).toMatch(/<AnchoredPopover/)
@@ -319,7 +319,7 @@ describe("every dropdown in the package rides the same motion", () => {
     }
   })
 
-  it("callers that used to unmount on close now stay mounted long enough to animate out", () => {
+  it("the inbox menu stays mounted after close long enough to animate out", () => {
     expect(inbox).toMatch(/\{menuEverOpened \? \(\s*<PopoverMenu\s+visible=\{menuOpen\}/)
     expect(inbox).not.toMatch(/\{menuOpen \? \(\s*<PopoverMenu\s+visible\s/)
   })

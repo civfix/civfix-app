@@ -15,7 +15,7 @@ const code = (rel: string): string =>
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/(^|[^:])\/\/.*$/gm, "$1")
 
-describe("APP-A11Y-009 TextField labels its input for VoiceOver", () => {
+describe("TextField labels its input for VoiceOver", () => {
   const field = code("../TextField.tsx")
 
   it("sets an explicit label after the spread, so a caller's own label still wins", () => {
@@ -27,7 +27,7 @@ describe("APP-A11Y-009 TextField labels its input for VoiceOver", () => {
   })
 })
 
-describe("APP-A11Y-010 the Terms links are reachable outside the checkbox", () => {
+describe("the Terms links are reachable outside the checkbox", () => {
   const terms = code("../TermsConfirmation.tsx")
   const checkbox = sliceBetween(terms, "<Pressable", "</Pressable>")
 
@@ -48,7 +48,7 @@ describe("APP-A11Y-010 the Terms links are reachable outside the checkbox", () =
   })
 })
 
-describe("APP-A11Y-011 dialog errors are announced", () => {
+describe("dialog errors are announced", () => {
   const sheet = code("../ModalCardSheet.tsx")
 
   it("gives the error an alert role and a polite live region", () => {
@@ -63,7 +63,7 @@ describe("APP-A11Y-011 dialog errors are announced", () => {
   })
 })
 
-describe("APP-A11Y-012 FilterChip announces the semantics its caller means", () => {
+describe("FilterChip announces the semantics its caller means", () => {
   const chip = code("../FilterChip.tsx")
 
   it("maps single, multiple and action to radio, checkbox and button", () => {
@@ -82,7 +82,7 @@ describe("APP-A11Y-012 FilterChip announces the semantics its caller means", () 
   })
 })
 
-describe("APP-A11Y-013 the one-time code field exposes its progress", () => {
+describe("the one-time code field exposes its progress", () => {
   it("reports how many digits are entered on native", () => {
     const input = code("../SegmentedCodeInput.tsx")
     expect(input).toContain('t("verification_code.progress", { count: value.length, total: length })')
@@ -90,7 +90,7 @@ describe("APP-A11Y-013 the one-time code field exposes its progress", () => {
   })
 })
 
-describe("APP-A11Y-014 EventCard's label keeps the date, place and organizer", () => {
+describe("EventCard's label keeps the date, place and organizer", () => {
   it("builds the label from the full detail template", () => {
     const card = code("../EventCard.tsx")
     expect(card).not.toContain('t("a11y.card", {')
@@ -99,7 +99,7 @@ describe("APP-A11Y-014 EventCard's label keeps the date, place and organizer", (
   })
 })
 
-describe("APP-A11Y-015 toasts interrupt only for errors, and hold while in use", () => {
+describe("toasts interrupt only for errors, and hold while in use", () => {
   it("uses status for success and info, alert for errors", () => {
     expect(toastLiveSemantics("success", true)).toEqual({ role: "status", liveRegion: "polite" })
     expect(toastLiveSemantics("info", true)).toEqual({ role: "status", liveRegion: "polite" })
@@ -117,7 +117,7 @@ describe("APP-A11Y-015 toasts interrupt only for errors, and hold while in use",
   })
 })
 
-describe("APP-A11Y-017 report reasons are a radio group", () => {
+describe("report reasons are a radio group", () => {
   it("wraps the reasons in a radiogroup of checked radios", () => {
     const sheet = code("../ReportContentSheet.tsx")
     expect(sheet).toContain('accessibilityRole="radiogroup"')
@@ -128,7 +128,7 @@ describe("APP-A11Y-017 report reasons are a radio group", () => {
   })
 })
 
-describe("APP-A11Y-018 the toggle label column is not a duplicate screen-reader stop", () => {
+describe("the toggle label column is not a duplicate screen-reader stop", () => {
   it.each(["../Toggle.tsx", "../SettingsRow.tsx"])("%s hides the label column and hints the switch", (file) => {
     const source = code(file)
     const column = sliceBetween(source, "focusable={false}", "<SettingsToggle")
@@ -142,7 +142,7 @@ describe("APP-A11Y-018 the toggle label column is not a duplicate screen-reader 
   })
 })
 
-describe("APP-A11Y-019 StatTile is one readable element", () => {
+describe("StatTile is one readable element", () => {
   it("speaks a word for an unknown value instead of the dash", () => {
     expect(statTileSpokenLabel("Check-ins", null, "Not available")).toBe("Check-ins: Not available")
     expect(statTileSpokenLabel("Check-ins", "12", "Not available")).toBe("Check-ins: 12")
@@ -157,7 +157,7 @@ describe("APP-A11Y-019 StatTile is one readable element", () => {
   })
 })
 
-describe("APP-A11Y-020 loading is announced", () => {
+describe("loading is announced", () => {
   it("labels the spinner and the skeleton path", () => {
     const view = code("../StateView.tsx")
     expect(view).toContain("<ActivityIndicator color={t.colors.brand.bloom} accessibilityLabel={loading} />")
@@ -165,7 +165,7 @@ describe("APP-A11Y-020 loading is announced", () => {
   })
 })
 
-describe("APP-A11Y-021 the About card is modal", () => {
+describe("the About card is modal", () => {
   it("confines screen readers and hands keyboard focus to the card", () => {
     const card = code("../BrandAboutCard.tsx")
     expect(card).toContain("accessibilityViewIsModal")
@@ -176,7 +176,7 @@ describe("APP-A11Y-021 the About card is modal", () => {
   })
 })
 
-describe("APP-A11Y-022 composer thumbs say which attachment they remove and when one is uploading", () => {
+describe("composer thumbs say which attachment they remove and when one is uploading", () => {
   it("numbers the remove control and labels the spinner", () => {
     const thumbs = code("../ComposerThumbs.tsx")
     expect(thumbs).toContain('t("media.remove_attachment_n", { index: index + 1, count: attachments.length })')
@@ -184,14 +184,14 @@ describe("APP-A11Y-022 composer thumbs say which attachment they remove and when
   })
 })
 
-describe("APP-A11Y-024 the reaction rows are labelled toolbars", () => {
+describe("the reaction rows are labelled toolbars", () => {
   it("never puts a bare label on a generic view", () => {
     const menu = code("../MessageContextMenu.tsx")
     expect(menu.match(/accessibilityRole="toolbar"\s+accessibilityLabel=\{t\("context_menu\.reactions"\)\}/g)).toHaveLength(2)
   })
 })
 
-describe("APP-A11Y-026 the switch knob honors reduced motion", () => {
+describe("the switch knob honors reduced motion", () => {
   it("drops the overshooting transition on web", () => {
     expect(code("../SettingsToggle.web.tsx")).toContain("transition: still ? undefined : KNOB_TRANSITION")
   })

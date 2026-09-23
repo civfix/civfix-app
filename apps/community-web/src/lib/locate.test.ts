@@ -59,7 +59,7 @@ describe("getSharedBrowserFix dedupes every one-shot consumer onto one browser r
     await expect(camera).resolves.toEqual({ lat: 34.05, lng: -118.25 })
   })
 
-  it("asks the browser under the ONE aligned timeout policy (useUserLocation's 4s, not the old 6s/8s split)", async () => {
+  it("asks the browser under the ONE aligned timeout policy (useUserLocation's 4s, not a 6s/8s split)", async () => {
     const { getSharedBrowserFix, DEVICE_FIX_TIMEOUT_MS, GEO_POSITION_OPTIONS } = await freshModules()
     void getSharedBrowserFix().catch(() => {})
     expect(DEVICE_FIX_TIMEOUT_MS).toBe(4000)

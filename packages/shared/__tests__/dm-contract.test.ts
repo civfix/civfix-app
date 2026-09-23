@@ -129,7 +129,7 @@ describe("ChatMessageDTO.roomKind is optional + backward compatible", () => {
   it("parses with roomKind:'dm'", () => {
     expect(ChatMessageDTOSchema.safeParse({ ...base, roomKind: "dm" }).success).toBe(true)
   })
-  it("parses with roomKind:'group' (P4)", () => {
+  it("parses with roomKind:'group'", () => {
     expect(ChatMessageDTOSchema.safeParse({ ...base, roomKind: "group" }).success).toBe(true)
   })
   it("rejects an unknown roomKind", () => {

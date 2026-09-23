@@ -66,7 +66,7 @@ describe("FakeChatService history paging", () => {
   })
 })
 
-describe("FakeChatService around-mode window (P2 jump-to-message)", () => {
+describe("FakeChatService around-mode window (jump-to-message)", () => {
   /** Seed 9 messages m0(oldest)..m8(newest) and return their ids by index. */
   async function seed(chat: FakeChatService): Promise<string[]> {
     const ids: string[] = []

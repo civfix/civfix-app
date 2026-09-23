@@ -186,7 +186,7 @@ describe("map-first tab bar model", () => {
     expect(resolvePreviousView("map", "messaging")).toBe("messaging")
   })
 
-  it("seeds prevView from the last-non-search view on a deep-link straight into Search (defect 8)", () => {
+  it("seeds prevView from the last-non-search view on a deep-link straight into Search", () => {
     expect(seedPreviousView("map", "home")).toBe("map")
     expect(seedPreviousView("search", "map")).toBe("map")
     expect(seedPreviousView("search", "home")).toBe("home")
@@ -367,7 +367,7 @@ describe("dockBottomGap on Android: the system nav bar is reserved IN FULL", () 
     }
   })
 
-  it("leaves iOS and web BYTE-IDENTICAL: the default arg reproduces the old formula for every inset", () => {
+  it("leaves iOS and web BYTE-IDENTICAL: the default arg yields max(inset - 12, 8) for every inset", () => {
     for (let inset = 0; inset <= 96; inset++) {
       expect(dockBottomGap(inset)).toBe(Math.max(inset - 12, 8))
       expect(dockBottomGap(inset)).toBe(dockBottomGap(inset, "other"))

@@ -23,7 +23,7 @@ function slice(start: string, end: string): string {
   return body.slice(from, to)
 }
 
-describe("the submit error screen (APP-BUG-157)", () => {
+describe("the submit error screen", () => {
   const errorBranch = flat(slice('if (phase === "error") {', 'return (\n    <View style={styles.stateFill}>\n      <View style={styles.successCheck}>'))
 
   it("offers Edit report and shows Try again only for a retryable failure", () => {
@@ -41,7 +41,7 @@ describe("the submit error screen (APP-BUG-157)", () => {
   })
 })
 
-describe("stale upload ids (APP-BUG-158)", () => {
+describe("stale upload ids", () => {
   it("drops the cached ids when the server refuses them, then rethrows", () => {
     expect(flat(submit)).toContain(
       "} catch (err) { if (invalidatesUploadIds(err) && isCurrent()) store.clearMediaUploadIds() throw err }",
@@ -49,14 +49,14 @@ describe("stale upload ids (APP-BUG-158)", () => {
   })
 })
 
-describe("description budget (APP-BUG-159)", () => {
+describe("description budget", () => {
   it("sizes the description field from the flags that are on", () => {
     expect(body).toContain("maxLength={descriptionMaxLength(draft.flags)}")
     expect(body).not.toContain("maxLength={2000}")
   })
 })
 
-describe("report type copy is localized (APP-BUG-161)", () => {
+describe("report type copy is localized", () => {
   it("keeps no English copy in the taxonomy", () => {
     expect(reportTypes).not.toMatch(/label:|sub:/)
     for (const type of REPORT_TYPES) expect(Object.keys(type).sort()).not.toContain("label")
@@ -76,7 +76,7 @@ describe("report type copy is localized (APP-BUG-161)", () => {
   })
 })
 
-describe("a cached null centre is resolved again when the picker opens (APP-BUG-162)", () => {
+describe("a cached null centre is resolved again when the picker opens", () => {
   it("refreshes only while a picker is open, and only past a null cache", () => {
     expect(body).toContain("function useApproxCenter(enabled: boolean, refreshIfNull: boolean): ApproxCenter {")
     expect(body).toContain("staleTime: refreshIfNull ? 0 : Infinity,")
@@ -89,7 +89,7 @@ describe("a cached null centre is resolved again when the picker opens (APP-BUG-
   })
 })
 
-describe("double taps (APP-BUG-167, APP-BUG-168)", () => {
+describe("double taps", () => {
   it("guards the capture landing with a ref, not the render-time busy flag", () => {
     const land = slice("const land = useCallback(", "\n  )\n")
     expect(land).toContain("if (busyRef.current) return")
@@ -103,7 +103,7 @@ describe("double taps (APP-BUG-167, APP-BUG-168)", () => {
   })
 })
 
-describe("a remount adopts the run it missed (APP-BUG-169)", () => {
+describe("a remount adopts the run it missed", () => {
   it("opens on the submitting state and follows an unclaimed run", () => {
     expect(flat(body)).toContain('useState<"idle" | "submitting" | "error" | "done">(() => submitRuns.unclaimed() ? "submitting" : "idle", )')
     expect(flat(body)).toContain("const pending = submitRuns.unclaimed() if (pending) followRun(pending)")
@@ -118,7 +118,7 @@ describe("a remount adopts the run it missed (APP-BUG-169)", () => {
   })
 })
 
-describe("a submission never crosses to the next viewer (B6)", () => {
+describe("a submission never crosses to the next viewer", () => {
   it("never leaves a composer hand-off for a later mount to adopt", () => {
     expect(flat(body)).toContain(
       'const submitRuns = createSubmitRunSlot<SubmitSettled>({ claimsItself: (settled) => settled.kind === "composer", })',
@@ -167,7 +167,7 @@ describe("a submission never crosses to the next viewer (B6)", () => {
   })
 })
 
-describe("the feed share row (APP-BUG-170)", () => {
+describe("the feed share row", () => {
   it("seeds once per submitted report instead of mirroring the prop", () => {
     expect(body).not.toContain("useEffect(() => setState(outcome), [outcome])")
     expect(flat(body)).toContain("<FeedShareOutcomeRow key={result.reportId} outcome={result.feedShare} share={share} />")
@@ -179,7 +179,7 @@ describe("the feed share row (APP-BUG-170)", () => {
   })
 })
 
-describe("capture seeding (APP-BUG-171)", () => {
+describe("capture seeding", () => {
   it("seeds a new report only from an otherwise empty draft, on both landing paths", () => {
     expect(body).toContain("if (captureSeedsNewReport(useDraftReportStore.getState().draft)) startFromCapture(captured)")
     expect(body).toContain("if (captureSeedsNewReport(store.draft)) store.startFromCapture(media)")
@@ -187,7 +187,7 @@ describe("capture seeding (APP-BUG-171)", () => {
   })
 })
 
-describe("post-submit invalidation (APP-BUG-173)", () => {
+describe("post-submit invalidation", () => {
   it("drops the key that matches nothing and the dead catches", () => {
     expect(submit).not.toContain('["mapReports"]')
     expect(submit).toContain("void queryClient.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })")
@@ -195,7 +195,7 @@ describe("post-submit invalidation (APP-BUG-173)", () => {
   })
 })
 
-describe("target sizes and radio semantics (APP-A11Y-080, APP-A11Y-085, APP-A11Y-089)", () => {
+describe("target sizes and radio semantics", () => {
   it("gives the capture remove button a 30px box around the 22px disc", () => {
     const remove = flat(slice("  captureRemove: {", "  captureHint: {"))
     expect(remove).toContain("width: 30, height: 30")

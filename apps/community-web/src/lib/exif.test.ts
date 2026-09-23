@@ -167,7 +167,7 @@ describe("readExifGps - malformed / absent -> null", () => {
   })
 })
 
-describe("readExifGps - offset hardening (P2-6, must not throw)", () => {
+describe("readExifGps - offset hardening (must not throw)", () => {
     const le = (n: number, bytes: number) => {
     const out: number[] = []
     for (let i = 0; i < bytes; i++) out.push((n >> (8 * i)) & 0xff)

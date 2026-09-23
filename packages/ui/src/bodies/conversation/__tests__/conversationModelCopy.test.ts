@@ -11,7 +11,7 @@ const code = (source: string): string =>
 
 const AUTHORS = Array.from({ length: 60 }, (_, i) => `user-${i}-${(i * 7919).toString(36)}`)
 
-describe("sender name colour (APP-A11Y-069)", () => {
+describe("sender name colour", () => {
   for (const scheme of ["light", "dark"] as const) {
     it(`meets 4.5:1 on the ${scheme} paper and card for every palette hue`, () => {
       const { paper, card } = colorSchemes[scheme].neutral
@@ -44,7 +44,7 @@ describe("sender name colour (APP-A11Y-069)", () => {
   })
 })
 
-describe("edit-save failure copy (APP-BUG-148)", () => {
+describe("edit-save failure copy", () => {
   it("says the message is gone when the edit target no longer exists", () => {
     expect(editErrorCopyKey(new AppError(ErrorCode.NOT_FOUND, "That message is no longer available."))).toBe(
       "composer.edit_unavailable",

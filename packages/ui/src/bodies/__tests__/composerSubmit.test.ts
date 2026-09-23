@@ -32,7 +32,7 @@ describe("resolveComposerSubmit", () => {
       })
     })
 
-    it("unchanged text is a noop (matches the old modal's save gate)", () => {
+    it("unchanged text is a noop", () => {
       expect(resolveComposerSubmit(editMode("same"), "same")).toEqual({ action: "noop" })
     })
 
@@ -60,7 +60,7 @@ describe("resolveComposerSubmit", () => {
     })
   })
 
-  describe("reply mode (P2 quoted replies)", () => {
+  describe("reply mode (quoted replies)", () => {
     it("routes like a send - the caller attaches the reply reference", () => {
       expect(
         resolveComposerSubmit({ kind: "reply", messageId: "m2", originalBody: "quoted" }, "hi"),

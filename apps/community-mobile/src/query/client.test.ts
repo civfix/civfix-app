@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs"
 
 const CLIENT = readFileSync(new URL("./client.ts", import.meta.url), "utf8")
 
-test("a returning screen reads the cache instead of refetching (issue #94)", () => {
+test("a returning screen reads the cache instead of refetching", () => {
   assert.match(CLIENT, /staleTime: 5 \* 60_000/)
   assert.match(CLIENT, /refetchOnWindowFocus: false/)
 })

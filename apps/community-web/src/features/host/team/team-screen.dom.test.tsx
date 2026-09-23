@@ -115,7 +115,7 @@ describe("TeamScreen role cell", () => {
     )
   })
 
-  it("lets a STAFF member be moved, which the old two-value cell could not do", async () => {
+  it("offers the role cell for a STAFF member", async () => {
     renderTeam([member({ role: "staff" })])
     expect(await screen.findByLabelText("role.change_a11y(name=Rosa)")).toBeTruthy()
   })

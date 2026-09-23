@@ -83,7 +83,7 @@ describe('variant="list" turns the card into a divided row stack', () => {
     expect(header).not.toContain("rowDivider")
   })
 
-  it("never carries a SegmentedControl as `trailing` - a range switch is a listHeader (D13)", () => {
+  it("never carries a SegmentedControl as `trailing` - a range switch is a listHeader", () => {
     const surfaces = [
       "../../bodies/host/EventDashboardBody.tsx",
       "../../bodies/host/HostInsightsPanels.tsx",

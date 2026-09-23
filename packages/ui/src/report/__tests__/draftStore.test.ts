@@ -271,7 +271,7 @@ describe("draftStore address ownership", () => {
   })
 })
 
-describe("removing the capture that placed the pin (APP-BUG-171)", () => {
+describe("removing the capture that placed the pin", () => {
   beforeEach(() => useDraftReportStore.getState().reset())
 
   const located = (uri: string) => cap(uri, { location: { lat: 1, lng: 2, source: "exif" } })

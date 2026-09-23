@@ -16,7 +16,7 @@ describe("coordsLabel", () => {
   })
 })
 
-describe("reverseLabelText (sub-4: address, else exact coords)", () => {
+describe("reverseLabelText (address, else exact coords)", () => {
   const point = { lat: 37.77493, lng: -122.41942 }
 
   it("shows the address when the geocoder resolved one", () => {

@@ -11,7 +11,7 @@ import { makeFakeDataContext } from "../fakes"
 /** A minimal stand-in user (only identity matters for these assertions). */
 const USER = { id: "u1" } as unknown as UserDTO
 
-describe("normalizeAuthState (R4: authed vs authenticated)", () => {
+describe("normalizeAuthState (authed vs authenticated)", () => {
   it("confirmed signed-in (authed + user, not pending) -> isAuthenticated", () => {
     expect(normalizeAuthState({ authed: true, pending: false, user: USER })).toEqual({
       isAuthenticated: true,

@@ -84,7 +84,7 @@ describe("the inline block is a summary plus a door to the map picker", () => {
     expect(picker).toContain('t("linkedReports.pick_on_map")')
   })
 
-  it("the old text-only search sheet is gone", () => {
+  it("no text-only search sheet exists; the barrel exports the ReportPicker", () => {
     expect(existsSync(new URL("../ReportSearchSheet.tsx", import.meta.url))).toBe(false)
     expect(bodiesIndex).not.toContain("ReportSearchSheet")
     expect(bodiesIndex).toContain('from "./reportPicker/ReportPicker"')

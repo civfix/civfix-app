@@ -341,7 +341,7 @@ describe("event<->report linking contract additions", () => {
     expect(z.object({ linkedEvents: AdminReportDTOSchema.shape.linkedEvents }).parse({}).linkedEvents).toEqual([])
   })
 
-  it("CreateCleanupRequest accepts the old payload and defaults eventKind", () => {
+  it("CreateCleanupRequest defaults eventKind when omitted and accepts it with linkedReportIds", () => {
     const parsed = CreateCleanupRequestSchema.parse({
       title: "Sweep",
       type: "site",

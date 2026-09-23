@@ -10,7 +10,7 @@ describe("pollInteractivity", () => {
     })
   })
 
-  it("a disabled OPEN poll with no vote yet is INERT - the case that used to look tappable", () => {
+  it("a disabled OPEN poll with no vote yet is INERT, not tappable", () => {
     expect(pollInteractivity({ closed: false, disabled: true, myVote: [] })).toEqual({
       showResults: false,
       votable: false,

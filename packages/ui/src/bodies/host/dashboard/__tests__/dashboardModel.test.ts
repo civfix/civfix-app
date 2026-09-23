@@ -632,7 +632,7 @@ describe("impact", () => {
     expect(model?.hero).toEqual({ value: 79, unit: "volunteers" })
   })
 
-  it("reads a 0.44-shaped payload without the hours fields", () => {
+  it("reads a payload without the hours fields", () => {
     const legacy = analytics()
     delete (legacy as { totalHours?: number }).totalHours
     delete (legacy as { volunteersCredited?: number }).volunteersCredited
@@ -720,7 +720,7 @@ describe("first event and past rows", () => {
 describe("portfolio surface", () => {
   const dashboardSource = (file: string): string => source(`../${file}`)
 
-  it("retires the old strip, bar row, tile grid and top-events card", () => {
+  it("ships no KPI strip, sparkline, portfolio stats or top-events card", () => {
     expect(existsSync(new URL("../KpiStrip.tsx", import.meta.url))).toBe(false)
     expect(existsSync(new URL("../Sparkline.tsx", import.meta.url))).toBe(false)
     expect(existsSync(new URL("../PortfolioStats.tsx", import.meta.url))).toBe(false)

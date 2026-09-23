@@ -158,7 +158,7 @@ describe("ExpandedShell BodyTransition - direction (stack length delta)", () => 
 
 const WEB_SEAM = readFileSync(new URL("../BodyTransition.web.tsx", import.meta.url), "utf8")
 
-describe("BodyTransition.web - one stable React identity per body (issue #94)", () => {
+describe("BodyTransition.web - one stable React identity per body", () => {
   it("renders TWO layers with constant slot keys and nothing else", () => {
     expect(WEB_SEAM).toContain('const OTHER_SLOT: Record<SlotId, SlotId> = { a: "b", b: "a" }')
     expect(WEB_SEAM).toMatch(/\{renderLayer\("a"\)\}\s*\{renderLayer\("b"\)\}/)

@@ -46,7 +46,7 @@ describe("LogEventHoursRequestSchema (per-attendee entries)", () => {
     ).toBe(false)
   })
 
-  it("rejects the old flat { id, hours } body (no fallback - apps move in lockstep)", () => {
+  it("rejects a flat { id, hours } body (no fallback - apps move in lockstep)", () => {
     expect(LogEventHoursRequestSchema.safeParse({ id: UUID, hours: 2 }).success).toBe(false)
   })
 

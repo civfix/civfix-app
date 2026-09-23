@@ -27,7 +27,7 @@ describe("every exit from the report wizard returns to the surface it was launch
     expect(body).toContain('onPress={() => useNavStore.getState().leaveReportFlow()}')
   })
 
-  it("drops the old back_to_map copy from every locale", () => {
+  it("carries no back_to_map copy in any locale", () => {
     for (const locale of LOCALES) {
       const catalog = read(`../../i18n/locales/${locale}/report-wizard.json`)
       expect(catalog).not.toContain("back_to_map")

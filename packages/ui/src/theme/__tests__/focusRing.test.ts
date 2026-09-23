@@ -104,7 +104,7 @@ describe("the ring's geometry", () => {
     expect(tokens.shadow.ring.startsWith("0 0 0 3px")).toBe(true)
   })
 
-  it("emits the offset into the injected rule rather than the old hard 0", () => {
+  it("emits the offset into the injected rule rather than a hard 0", () => {
     expect(affordancesCode).toContain("outline-offset:${FOCUS_RING_OFFSET}px")
     expect(affordancesCode).not.toContain("outline-offset:0")
     // WCAG 2.4.13 asks for a stroke of at least 2px.

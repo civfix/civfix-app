@@ -74,7 +74,7 @@ describe("WsServerMessageSchema realtime additions", () => {
     ).toBe(true)
   })
 
-  it("accepts roomKind 'group' (P4 room kind)", () => {
+  it("accepts roomKind 'group'", () => {
     expect(
       WsServerMessageSchema.safeParse({ type: "typing", cleanupId: ROOM, roomKind: "group", userId: USER })
         .success,

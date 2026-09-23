@@ -98,7 +98,7 @@ function buildFollowOptions(
   }) as unknown as LooseOptions
 }
 
-describe("issue #65: follow toggle patches the HANDLE-keyed profile detail (not just the UUID key)", () => {
+describe("follow toggle patches the HANDLE-keyed profile detail (not just the UUID key)", () => {
   it("patchProfileCaches flips a profile cached under its @handle when called with the UUID", () => {
     const qc = new QueryClient()
     // The detail screen caches the profile under the HANDLE, but profile.id is a UUID.

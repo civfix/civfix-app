@@ -478,7 +478,7 @@ describe("viewfinderSessionActive", () => {
     expect(viewfinderSessionActive("capture", false, true, true)).toBe(false)
   })
 
-  describe("the Search-overlay sequence (review finding 2)", () => {
+  describe("the Search-overlay sequence", () => {
     it("releases the session the instant Search opens over the Report tab, with every other input unchanged", () => {
       expect(viewfinderSessionActive("capture", true, false, true)).toBe(true)
       expect(viewfinderSessionActive("capture", true, false, false)).toBe(false)

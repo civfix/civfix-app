@@ -67,7 +67,7 @@ describe("attached-report chip", () => {
   })
 })
 
-describe("the reply attach sheet on iOS (APP-BUG-143)", () => {
+describe("the reply attach sheet on iOS", () => {
   const sheet = readFileSync(new URL("../ReplyAttachSheet.tsx", import.meta.url), "utf8")
   const sheetShell = sliceBetween(sheet, "export function ReplyAttachSheet(", "function PickerHeader(")
 

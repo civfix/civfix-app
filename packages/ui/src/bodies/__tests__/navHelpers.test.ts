@@ -31,7 +31,7 @@ describe("openPinnedMessages", () => {
   })
 })
 
-describe("openThread (group threads, P4)", () => {
+describe("openThread (group threads)", () => {
   it("a kind:'group' thread opens roomKind:'group' keyed on the refId (room id), carrying the title", () => {
     openThread({
       id: "t1",

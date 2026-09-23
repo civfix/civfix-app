@@ -401,7 +401,7 @@ describe("additive DTO growth stays backward compatible", () => {
     expect(row.myCapabilities).toEqual([])
   })
 
-  it("adds registration + ticket tokens to the guest verify response without breaking the old shape", () => {
+  it("defaults ticketTokens and leaves registration unset when the guest verify response omits them", () => {
     const parsed = GuestRsvpVerifyResponseSchema.parse({
       joined: true,
       going: 3,
@@ -1145,7 +1145,7 @@ describe("hours on the host read models (DECISIONS §39)", () => {
     }
   }
 
-  it("parses a 0.44-shaped analytics payload with no hours fields", () => {
+  it("parses an analytics payload with no hours fields", () => {
     const parsed = HostedEventsAnalyticsResponseSchema.parse(analytics())
     expect(parsed.totalHours).toBeUndefined()
     expect(parsed.volunteersCredited).toBeUndefined()

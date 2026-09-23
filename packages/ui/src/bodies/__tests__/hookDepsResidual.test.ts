@@ -17,7 +17,7 @@ function depsOf(hookSource: string): string[] {
     .filter(Boolean)
 }
 
-describe("feed header re-renders on a scheme switch (APP-BUG-288)", () => {
+describe("feed header re-renders on a scheme switch", () => {
   it("lists the themed styles it reads among the header memo's dependencies", () => {
     const header = sliceBetween(read("../FeedBody.tsx"), "const header = useMemo(", "const empty = useMemo(")
     expect(header).toContain("styles.header")

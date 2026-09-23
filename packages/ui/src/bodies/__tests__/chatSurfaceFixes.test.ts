@@ -33,7 +33,7 @@ const DOCK_INSET = code(read("../thread/useReplyDockInset.ts"))
 const FOCAL = code(read("../thread/ThreadFocalPost.tsx"))
 const REPLY_ROW = code(read("../thread/ThreadReplyRow.tsx"))
 
-describe("group link copy (APP-BUG-144)", () => {
+describe("group link copy", () => {
   it("copies an absolute, openable URL built from the router's own path", () => {
     expect(pathForEntry({ kind: "thread", id: "g1", roomKind: "group" })).toBe("/messages/group/g1")
     expect(GROUP_INFO).toContain(
@@ -43,7 +43,7 @@ describe("group link copy (APP-BUG-144)", () => {
   })
 })
 
-describe("ConversationBody depends on the stable chat methods, not the per-render chat object (APP-BUG-146)", () => {
+describe("ConversationBody depends on the stable chat methods, not the per-render chat object", () => {
   it("destructures the seven methods once", () => {
     expect(CONVERSATION).toMatch(
       /const \{\s*createPoll,\s*votePoll,\s*closePoll,\s*setPinned,\s*clearAround,\s*delete: deleteMessage,\s*toggleReaction,\s*\} = chat/,
@@ -58,7 +58,7 @@ describe("ConversationBody depends on the stable chat methods, not the per-rende
   })
 })
 
-describe("clipboard failures are told, not swallowed (APP-BUG-147)", () => {
+describe("clipboard failures are told, not swallowed", () => {
   it("toasts an error when the copy is refused", () => {
     expect(BUBBLE).toContain('.catch(() => toast.show(t("context_menu.copy_failed"), { variant: "error" }))')
     expect(GROUP_INFO).toContain('.catch(() => toast.show(t("link_copy_failed"), { variant: "error" }))')
@@ -67,7 +67,7 @@ describe("clipboard failures are told, not swallowed (APP-BUG-147)", () => {
   })
 })
 
-describe("MembersBody renderItem follows the colour scheme (APP-BUG-149)", () => {
+describe("MembersBody renderItem follows the colour scheme", () => {
   it("lists the themed styles in the renderItem dependencies", () => {
     const renderItem = sliceBetween(MEMBERS, "const renderItem = useCallback(", "const linkedRow")
     expect(renderItem).toContain("styles.slotEmpty")
@@ -75,7 +75,7 @@ describe("MembersBody renderItem follows the colour scheme (APP-BUG-149)", () =>
   })
 })
 
-describe("group and channel mutations claim the submit synchronously (APP-BUG-151)", () => {
+describe("group and channel mutations claim the submit synchronously", () => {
   const cases: [string, string, string, RegExp][] = [
     ["NewGroupBody create", NEW_GROUP, "submittingRef", /createGroup\.mutate\(/],
     ["NewChannelBody create", NEW_CHANNEL, "submittingRef", /createGroup\.mutate\(/],
@@ -100,7 +100,7 @@ describe("group and channel mutations claim the submit synchronously (APP-BUG-15
   }
 })
 
-describe("refs are written after commit, never during render (APP-BUG-155)", () => {
+describe("refs are written after commit, never during render", () => {
   it.each([
     ["ConversationBody chatRef", CONVERSATION, "chatRef.current = chat"],
     ["ConversationBody dataRef", CONVERSATION, "dataRef.current = data"],
@@ -113,7 +113,7 @@ describe("refs are written after commit, never during render (APP-BUG-155)", () 
   })
 })
 
-describe("room switch resets the pin cycle without a stale frame (APP-BUG-154)", () => {
+describe("room switch resets the pin cycle without a stale frame", () => {
   it("adjusts during render instead of in an effect", () => {
     expect(PIN_CYCLE).not.toContain("useEffect")
     expect(PIN_CYCLE).toMatch(/if \(cycleRoom !== roomKey\) \{\s*setCycleRoom\(roomKey\)\s*setPinActiveIndex\(0\)/)
@@ -125,14 +125,14 @@ describe("room switch resets the pin cycle without a stale frame (APP-BUG-154)",
   })
 })
 
-describe("the group edit sheet can discard a newly picked photo (APP-BUG-156)", () => {
+describe("the group edit sheet can discard a newly picked photo", () => {
   it("passes the clear label that GroupIdentityFields gates the button on", () => {
     expect(IDENTITY).toContain("const showClear = !!picked && !!labels.avatarClearA11y")
     expect(GROUP_INFO).toContain('avatarClearA11y: t("avatar_clear_a11y")')
   })
 })
 
-describe("the inbox row menu is reachable without hover on web (APP-A11Y-070)", () => {
+describe("the inbox row menu is reachable without hover on web", () => {
   it("always mounts the More chip on web and reveals it on hover, focus, open menu or touch", () => {
     expect(INBOX).not.toContain("{IS_WEB && (hovered || menuOpen) ? (")
     expect(INBOX).toContain(
@@ -144,7 +144,7 @@ describe("the inbox row menu is reachable without hover on web (APP-A11Y-070)", 
   })
 })
 
-describe("status and errors are announced (APP-A11Y-071)", () => {
+describe("status and errors are announced", () => {
   it("marks the connection row as a polite live region and the room error as an alert", () => {
     expect(CONVERSATION).toContain('<View style={styles.offlineRow} accessibilityLiveRegion="polite">')
     expect(CONVERSATION).toContain('<View style={styles.errorRow} accessibilityRole="alert">')
@@ -160,14 +160,14 @@ describe("status and errors are announced (APP-A11Y-071)", () => {
   })
 })
 
-describe("visibility options form a labelled radio group (APP-A11Y-072)", () => {
+describe("visibility options form a labelled radio group", () => {
   it("wraps the channel wizard and group edit options", () => {
     expect(NEW_CHANNEL).toContain('<View accessibilityRole="radiogroup" accessibilityLabel={t("visibility_title")}>')
     expect(GROUP_INFO).toMatch(/accessibilityRole="radiogroup"\s*accessibilityLabel=\{t\("visibility_label"\)\}/)
   })
 })
 
-describe("the conversation header exposes one title control (APP-A11Y-073)", () => {
+describe("the conversation header exposes one title control", () => {
   it("hides the avatar tap from assistive tech and the Tab order", () => {
     const avatarTap = sliceBetween(CONVO_BAR, "onPress={onTitlePress}", "<ThreadAvatar")
     expect(avatarTap).toContain("accessible={false}")
@@ -178,27 +178,27 @@ describe("the conversation header exposes one title control (APP-A11Y-073)", () 
   })
 })
 
-describe("typing indicator label is exposed on native (APP-A11Y-074)", () => {
+describe("typing indicator label is exposed on native", () => {
   it("makes the labelled View one accessible element", () => {
     expect(TYPING).toMatch(/accessible\s*accessibilityLabel=\{name \? t\("typing\.indicator_named"/)
   })
 })
 
-describe("the native bubble offers its long-press menu to screen readers (APP-A11Y-075)", () => {
+describe("the native bubble offers its long-press menu to screen readers", () => {
   it("declares a labelled longpress action that opens the context menu", () => {
     expect(BUBBLE).toContain('menuAvailable ? [{ name: "longpress", label: t("bubble.message_actions") }] : undefined')
     expect(BUBBLE).toMatch(/if \(e\.nativeEvent\.actionName === "longpress"\) openContextMenu\(\)/)
   })
 })
 
-describe("role chip text sits on the type scale (APP-A11Y-077)", () => {
+describe("role chip text sits on the type scale", () => {
   it("uses the 12 token instead of 9.5px", () => {
     expect(ROLE_CHIP).not.toContain("fontSize: 9.5")
     expect(ROLE_CHIP).toContain('fontSize: t.fontSize["12"]')
   })
 })
 
-describe("loading states are announced (APP-A11Y-078)", () => {
+describe("loading states are announced", () => {
   it("labels the attach sheet placeholders as busy progress", () => {
     const placeholders = REPLY_SHEET.match(
       /style=\{styles\.placeholder\}\s*accessible\s*accessibilityRole="progressbar"\s*accessibilityLabel=\{tCommon\("loading"\)\}\s*accessibilityState=\{\{ busy: true \}\}/g,
@@ -213,7 +213,7 @@ describe("loading states are announced (APP-A11Y-078)", () => {
   })
 })
 
-describe("pressable mentions announce as links (APP-A11Y-079)", () => {
+describe("pressable mentions announce as links", () => {
   it.each([
     ["MessageBubble", BUBBLE, /accessibilityRole="link"\s*onPress=\{\(\) => onOpenPerson\(\{ id: userId/],
     ["ThreadFocalPost", FOCAL, /accessibilityRole="link"\s*onPress=\{\(\) => openPerson\(segment\.userId\)\}/],

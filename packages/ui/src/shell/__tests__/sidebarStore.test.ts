@@ -38,7 +38,7 @@ describe("sidebarStore: defaults + setWidth", () => {
     expect(useSidebarStore.getState().width).toBe(413)
   })
 
-  it("accepts a width between the old 560 cap and the new one (the raise is not a no-op)", () => {
+  it("accepts a width of 600, above 560 and below the cap", () => {
     useSidebarStore.getState().setWidth(600)
     expect(useSidebarStore.getState().width).toBe(600)
   })

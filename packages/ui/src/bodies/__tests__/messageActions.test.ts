@@ -238,7 +238,7 @@ describe("buildMessageActions", () => {
   })
 })
 
-describe("buildMessageActions - pinnedOnlyView (P3 Task 3.8, the pinned-messages list)", () => {
+describe("buildMessageActions - pinnedOnlyView (the pinned-messages list)", () => {
   /** The pinned-view baseline: a delivered pinned row seen by a viewer WITHOUT the pin power. */
   const pinned = (overrides: Partial<MessageActionsInput> = {}): MessageActionsInput =>
     input({ pinnedOnlyView: true, isPinned: true, canPin: false, ...overrides })

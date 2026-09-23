@@ -14,7 +14,7 @@ import { adoptViewer, discardViewerDrafts } from "../../viewerScope"
 const BOTH_FLAGS = { blockingSidewalk: true, safetyHazard: true }
 const NO_FLAGS = { blockingSidewalk: false, safetyHazard: false }
 
-describe("a refused submission offers a way to change the report (APP-BUG-157)", () => {
+describe("a refused submission offers a way to change the report", () => {
   it("sends a slur-filtered title or description to the details step without a looping retry", () => {
     expect(submitErrorRecovery("VALIDATION", { title: "not allowed" }, STEP_ORDER_COMPACT)).toEqual({
       retryable: false,
@@ -61,7 +61,7 @@ describe("a refused submission offers a way to change the report (APP-BUG-157)",
   })
 })
 
-describe("stale upload ids are dropped after the server refuses them (APP-BUG-158)", () => {
+describe("stale upload ids are dropped after the server refuses them", () => {
   beforeEach(() => useDraftReportStore.getState().reset())
 
   it("recognises only a VALIDATION that names mediaUploadIds", () => {
@@ -86,7 +86,7 @@ describe("stale upload ids are dropped after the server refuses them (APP-BUG-15
   })
 })
 
-describe("the description field leaves room for the flag notes (APP-BUG-159)", () => {
+describe("the description field leaves room for the flag notes", () => {
   it("keeps a full-length description plus both flags inside the contract limit", () => {
     const max = descriptionMaxLength(BOTH_FLAGS)
     expect(max).toBeLessThan(REPORT_DESCRIPTION_MAX)
@@ -109,7 +109,7 @@ describe("the description field leaves room for the flag notes (APP-BUG-159)", (
   })
 })
 
-describe("one submission at a time, surviving a remount (APP-BUG-168, APP-BUG-169)", () => {
+describe("one submission at a time, surviving a remount", () => {
   function deferred<T>() {
     let resolve!: (v: T) => void
     const promise = new Promise<T>((r) => {
@@ -144,7 +144,7 @@ describe("one submission at a time, surviving a remount (APP-BUG-168, APP-BUG-16
   })
 })
 
-describe("a submission belongs to the viewer who started it (B6)", () => {
+describe("a submission belongs to the viewer who started it", () => {
   function deferred<T>() {
     let resolve!: (v: T) => void
     const promise = new Promise<T>((r) => {

@@ -205,7 +205,7 @@ function buildConnectionsFollowOptions(
   }) as unknown as LooseOptions
 }
 
-describe("follow toggle connections-list reconciliation (F3)", () => {
+describe("follow toggle connections-list reconciliation", () => {
   const viewer = "viewer-1"
 
   it("flips a following-list row optimistically and reconciles on success (unfollow)", async () => {
