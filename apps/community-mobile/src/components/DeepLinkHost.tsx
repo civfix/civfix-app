@@ -23,7 +23,7 @@ export default function DeepLinkHost({ seed, to, deps = [] }: DeepLinkHostProps)
     const plan = shimNavPlan(toRef.current)
     if (plan.type === "home") goHome(router)
     else router.replace(plan.href)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the caller's `deps` decide when to re-run; seed and to are read through refs
   }, [...deps, router])
 
   return <View style={styles.host} />

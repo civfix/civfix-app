@@ -1,12 +1,7 @@
 /**
- * The two device-fix bounds and the race that enforces one of them.
- *
- * These are worth a test because of WHERE they are used, not because the code is subtle: every
- * expo-location read in this app now goes through `withTimeout(..., GPS_TIMEOUT_MS)` for the fresh fix and
- * `{ maxAge: LAST_KNOWN_MAX_AGE_MS }` for the cached one, and the result of the first one to succeed is
- * written into a query cache with an infinite staleTime. So a `withTimeout` that swallowed a value, or
- * rejected instead of resolving null, or a bound quietly widened to Infinity, would each turn a bounded
- * degradation back into the session-long failure the module was extracted to prevent.
+ * The result of the first successful read is written into a query cache with an infinite staleTime, so a
+ * `withTimeout` that swallowed a value or rejected, or a bound widened to Infinity, would make one bad read
+ * last the whole session.
  */
 import { test } from "node:test"
 import assert from "node:assert/strict"

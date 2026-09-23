@@ -3,10 +3,8 @@ import { test } from "node:test"
 import { dropPinMenuAlreadyOpen, dropPinRestoreFlyArgs } from "./dropPinRestore.ts"
 
 test("dropPinRestoreFlyArgs transposes to THIS SCREEN'S flyTo(lng, lat, zoom)", () => {
-  // The shared package speaks {lat, lng, zoom}. The screen-local flyTo (app/index.tsx:267-279) takes LNG
-  // FIRST; MapHandle.flyTo (@civfix/ui map/types.ts:140), which app/index.tsx:243 calls inside
-  // replayPendingMapTarget, takes LAT first. Getting this backwards flies to a valid-but-wrong coordinate
-  // with no error at all - which is why it is tested.
+  // The map home's own flyTo takes LNG first; MapHandle.flyTo, called in replayPendingMapTarget, takes LAT
+  // first. Getting this backwards flies to a valid-but-wrong coordinate with no error.
   assert.deepEqual(dropPinRestoreFlyArgs({ lat: 34.05, lng: -118.25, zoom: 12.5 }), [
     -118.25,
     34.05,

@@ -66,7 +66,7 @@ export default function DetailRouteHost({ entry }: DetailRouteHostProps): React.
     }
     enterNestedShell(hostId, restoreRef.current)
     if (entry) seedEntry(entry)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reseed only when the entry's identity changes, not on every new entry object
   }, [seedKey])
 
   useEffect(() => {

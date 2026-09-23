@@ -1,13 +1,3 @@
-/**
- * Loads the civfix typefaces via @expo-google-fonts. The root layout gates rendering on `loaded` so
- * text never flashes in a fallback face. The registered family names line up with theme.fontFamily.
- *
- *   - Bricolage Grotesque (display / headings / dates / stats): 400/500/600/700.
- *   - Hanken Grotesk (body / UI): 400/500/600/700/800.
- *   - JetBrains Mono (emails in the report timeline, share links): 400/500.
- *   - Baloo 2 (the per-letter "civfix" wordmark): 800. The design's wordmark is Baloo 2 800 -
- *     rounder/heavier than Bricolage - so the logo pill, About header, and splash match the handoff.
- */
 import { useFonts } from "expo-font"
 import {
   BricolageGrotesque_400Regular,
