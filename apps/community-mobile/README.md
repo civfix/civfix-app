@@ -390,6 +390,18 @@ to `http://localhost:8080` and release builds to whichever API the install sourc
 `https://api.civfix.dev` from TestFlight, `https://api.civfix.org` from the App Store
 (`src/lib/apiUrl.ts`).
 
+## Brand assets
+
+Two manual generators produce the committed images (run from `apps/community-mobile`; `sharp` and
+`opentype.js` are dev-only tools, installed at the repo root with `--no-save`):
+
+- `node scripts/gen-icon-from-source.mjs [path/to.png]` writes `assets/icon.png` (1024, no alpha, for
+  iOS) and `assets/adaptive-icon.png` (Android foreground) from `assets/icon-source.png`, the source
+  of truth for the icon art.
+- `node scripts/gen-splash.mjs` writes `assets/splash.png`, the transparent "civfix" wordmark.
+
+`expo prebuild` regenerates the native launcher and splash resources from these PNGs.
+
 ## pnpm + Expo + the shared packages
 
 - `.npmrc` (root and this app's mirror) sets `node-linker=hoisted` so the store is a flat
