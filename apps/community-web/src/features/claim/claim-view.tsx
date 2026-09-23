@@ -107,6 +107,12 @@ export function ClaimView() {
     }
   }, [claimCode, queryReport])
 
+  // Runs after the effects above have taken the code into state and the handoff, which is what a reload
+  // of the cleaned-up address reads.
+  React.useEffect(() => {
+    if (queryCode || queryReport) scrubClaimParamsFromUrl()
+  }, [queryCode, queryReport])
+
   const runClaim = React.useCallback(async () => {
     if (!claimCode) return
     await runGuardedClaim({
@@ -171,6 +177,20 @@ export function ClaimView() {
       )}
     </DetailShell>
   )
+}
+
+/**
+ * The claim code is a bearer capability: whoever holds it can link the report into their account. Keep
+ * it out of the address bar (screenshots, shared links, session history) once the page has captured it.
+ */
+function scrubClaimParamsFromUrl(): void {
+  if (typeof window === "undefined") return
+  const params = new URLSearchParams(window.location.search)
+  params.delete("code")
+  params.delete("report")
+  const search = params.toString()
+  const url = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`
+  window.history.replaceState(window.history.state, "", url)
 }
 
 function Intro({
