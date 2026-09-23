@@ -474,23 +474,29 @@ describe("PageStack.native: the gesture stays UI-thread safe and correctly scope
   })
 })
 
-describe("PageStack.web: the web page host did not move", () => {
+describe("PageStack.web: retained whole-page layers, no gesture", () => {
   const web = readFileSync(new URL("../PageStack.web.tsx", import.meta.url), "utf8")
 
-  it("stays a SINGLE-body host with no gesture and no layering", () => {
+  it("stays worklet-free and gesture-free, and animates whole layers rather than a body transition", () => {
     expect(web).not.toMatch(/^import[^\n]*react-native-reanimated/m)
     expect(web).not.toMatch(/^import[^\n]*react-native-gesture-handler/m)
     expect(web).not.toMatch(/Gesture\.\w/)
     expect(web).not.toMatch(/useAnimatedStyle|useSharedValue/)
-    expect(web).toContain("<BodyTransition transitionKey={transitionKey} direction={direction}>")
+    expect(web).not.toMatch(/<BodyTransition\b/)
+    expect(web).toMatch(/rendered\.map\(\(layer, index\) =>/)
   })
 
-  it("keeps the safe-area inset and the keyboard inset on TWO nested boxes", () => {
-    expect(web).toMatch(/<View style=\{\[styles\.host, insets\]\}>/)
-    expect(web).toMatch(/style=\{\[styles\.hostContent, webKeyboardInset\]\}/)
+  it("keeps the safe-area inset and the keyboard inset on TWO nested boxes per layer", () => {
+    expect(web).toMatch(/style=\{\[styles\.layerContent, \{ paddingTop, paddingBottom: boxReserve \}\]\}/)
+    expect(web).toMatch(/style=\{\[styles\.layerContent, webKeyboardInset\]\}/)
   })
 
   it("keeps the header gated on hasDetailHeader, so an own-header body gets no phantom gap", () => {
-    expect(web).toMatch(/bodyMounted && hasDetailHeader\(entry\)/)
+    expect(web).toMatch(/hasDetailHeader\(entry\) \?/)
+  })
+
+  it("tells every retained body whether it is the page on top, and hides the rest from assistive tech", () => {
+    expect(web).toMatch(/<PageActiveProvider value=\{active\}>\{body\}<\/PageActiveProvider>/)
+    expect(web).toMatch(/aria-hidden=\{!active\}/)
   })
 })

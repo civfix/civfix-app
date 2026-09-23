@@ -516,7 +516,7 @@ describe("every shell host navigates in the SAME motion language (source-pinned)
   it("derives push vs pop from the STACK LENGTH, through the one shared derivation", () => {
     for (const [name, src] of Object.entries(hosts)) {
       if (name === "PageStack.web.tsx") {
-        expect(src, name).toMatch(/direction=\{direction\}/)
+        expect(src, name).toMatch(/webPageTransitionPlan\(\s*direction,/)
         continue
       }
       expect(src, name).toContain("useStackDirection")
@@ -526,8 +526,13 @@ describe("every shell host navigates in the SAME motion language (source-pinned)
 
   it("hands that direction to the body transition, never a hardcoded one", () => {
     for (const [name, src] of Object.entries(hosts)) {
-      if (name === "PortraitShell.shared.tsx" || name === "PageStack.web.tsx") {
+      if (name === "PortraitShell.shared.tsx") {
         expect(src, name).toMatch(/direction=\{direction\}/)
+        continue
+      }
+      if (name === "PageStack.web.tsx") {
+        expect(src, name).toMatch(/webPageTransitionPlan\(\s*direction,/)
+        expect(src, name).not.toMatch(/<BodyTransition\b/)
         continue
       }
       expect(src, name).toMatch(/<BodyTransition transitionKey=\{\w+\} direction=\{direction\}>/)

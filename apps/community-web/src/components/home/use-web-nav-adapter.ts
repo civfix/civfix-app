@@ -344,8 +344,10 @@ export function useWebNavAdapter(): void {
       if (typeof window === "undefined") return
       if (active) {
         requestAnimationFrame(() => {
-          const h = document.querySelector("[data-civfix-panel-heading]")
-          if (h instanceof HTMLElement) h.focus()
+          const h = Array.from(document.querySelectorAll("[data-civfix-panel-heading]"))
+            .filter((heading) => !heading.closest('[aria-hidden="true"]'))
+            .pop()
+          if (h instanceof HTMLElement) h.focus({ preventScroll: true })
         })
       }
     })

@@ -285,9 +285,12 @@ describe("I6 the composer carve-out is matched by a reserve on BOTH page stacks"
   })
 
   it("reserves for it on web with the visual-viewport inset", () => {
-    expect(read("../PageStack.web.tsx")).toMatch(
-      /<IosKeyboardAvoidingView style=\{\[styles\.hostContent, webKeyboardInset\]\} enabled=\{keyboardAvoidance\}>/,
+    const web = read("../PageStack.web.tsx")
+    expect(web).toMatch(
+      /<IosKeyboardAvoidingView\s+style=\{\[styles\.layerContent, webKeyboardInset\]\}\s+enabled=\{keyboardAvoidance\}\s*>/,
     )
+    expect(web).toMatch(/keyboardAvoidance=\{keyboardAvoidance && active\}/)
+    expect(web).toMatch(/webKeyboardInset=\{active \? webKeyboardInset : null\}/)
   })
 
   it("reserves for it on Android with the layer's own keyboard reserve", () => {
