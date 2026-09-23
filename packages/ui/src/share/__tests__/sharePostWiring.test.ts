@@ -20,6 +20,7 @@ const SHELL = code(read("../../shell/AppShell.tsx"))
 const BUBBLE = code(read("../../bodies/conversation/MessageBubble.tsx"))
 const MOBILE_LAYOUT = code(read("../../../../../apps/community-mobile/app/_layout.tsx"))
 const WEB_PROVIDERS = code(read("../../../../../apps/community-web/src/components/providers.tsx"))
+const WEB_NAV_ADAPTER = code(read("../../../../../apps/community-web/src/components/home/use-web-nav-adapter.ts"))
 
 describe("the share glyph opens the sheet, and the primitives layer stays independent of it", () => {
   it("routes PostActionBar's onShare through useSharePost, not straight at shareLink", () => {
@@ -349,11 +350,13 @@ describe("both hosts inject openInternalHref", () => {
     expect(MOBILE_LAYOUT).toContain("<InternalHrefBridge />")
   })
 
-  it("web pushes the parsed entry, because its shell persists across a push", () => {
-    expect(WEB_PROVIDERS).toMatch(/openInternalHref: \{\s*open: \(path: string\): boolean => \{/)
-    expect(WEB_PROVIDERS).toContain("const entry = entryFromPath(path)")
-    expect(WEB_PROVIDERS).toContain("useNavStore.getState().push(entry)")
-    expect(WEB_PROVIDERS).toContain("if (!entry) return false")
+  it("web pushes the entry its own address map parses, because its shell persists across a push", () => {
+    expect(WEB_PROVIDERS).toContain("openInternalHref: webOpenInternalHref,")
+    expect(WEB_NAV_ADAPTER).toMatch(/export const webOpenInternalHref: OpenInternalHrefCapability = \{/)
+    expect(WEB_NAV_ADAPTER).toContain("entryFor: entryFromWebPath,")
+    expect(WEB_NAV_ADAPTER).toContain("const entry = entryFromWebPath(path)")
+    expect(WEB_NAV_ADAPTER).toContain("useNavStore.getState().push(entry)")
+    expect(WEB_NAV_ADAPTER).toContain("if (!entry) return false")
   })
 })
 

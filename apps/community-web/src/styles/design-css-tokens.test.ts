@@ -48,6 +48,18 @@ describe("design.css neutrals mirror @civfix/shared tokens", () => {
     expect(CSS).toMatch(/\.cf-shell\s*\{[^}]*background:\s*var\(--paper\)/)
   })
 
+  it("pads every page outside the shell by all four safe areas once, at the body", () => {
+    const rule = CSS.match(/body:not\(:has\(\.cf-shell\)\)\s*\{([^}]*)\}/)
+    expect(rule).not.toBeNull()
+    const body = rule?.[1] ?? ""
+    expect(body).toMatch(/height:\s*auto;/)
+    expect(body).toMatch(/min-height:\s*100%;/)
+    expect(body.replace(/\s+/g, " ")).toContain(
+      "padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);",
+    )
+    expect(CSS.match(/safe-area-inset-bottom/g)).toHaveLength(1)
+  })
+
   it("keeps the shell clear of a landscape notch by consuming the side safe areas at the frame", () => {
     expect(CSS).toMatch(/\.cf-shell\s*\{[^}]*left:\s*env\(safe-area-inset-left, 0px\)/)
     expect(CSS).toMatch(/\.cf-shell\s*\{[^}]*right:\s*env\(safe-area-inset-right, 0px\)/)

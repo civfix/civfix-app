@@ -5,6 +5,7 @@ const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url)
 
 const adapter = read("./use-web-nav-adapter.ts")
 const preview = read("../dev/landscape-preview.tsx")
+const providers = read("../providers.tsx")
 
 describe("the mount seed takes its layout mode from the shared shell rule", () => {
   it("seeds the nav store through layoutModeFor, not a local orientation test", () => {
@@ -27,5 +28,14 @@ describe("focus follows the page on top", () => {
     expect(adapter).toContain(
       'lastFocusable("[data-civfix-panel-heading]") ?? lastFocusable("[data-civfix-page-layer]")',
     )
+  })
+})
+
+describe("in-app hrefs resolve through the web address map", () => {
+  it("hands the web mapping to the internal-href capability that notifications and chat links use", () => {
+    expect(adapter).toContain("entryFor: entryFromWebPath,")
+    expect(adapter).toMatch(/const entry = entryFromWebPath\(path\)\s+if \(!entry\) return false/)
+    expect(providers).toContain("openInternalHref: webOpenInternalHref,")
+    expect(providers).not.toContain("entryFromPath")
   })
 })

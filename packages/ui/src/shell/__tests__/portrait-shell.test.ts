@@ -556,3 +556,16 @@ describe("PortraitShell.web: the top inset counts the notch once", () => {
     expect(src).not.toMatch(/insets\.top \+ bannerHeight/)
   })
 })
+
+describe("web bottom safe area: the page box reserve owns it, the reply dock does not add it again", () => {
+  const dock = readFileSync(new URL("../../bodies/thread/useReplyDockInset.ts", import.meta.url), "utf8")
+  const shell = readFileSync(new URL("../PortraitShell.web.tsx", import.meta.url), "utf8")
+  const pages = readFileSync(new URL("../PageStack.web.tsx", import.meta.url), "utf8")
+
+  it("reserves the inset on the pinned-footer page box and rests the dock at zero on web", () => {
+    expect(shell).toContain("bottomSafeArea={insets.bottom}")
+    expect(pages).toContain('const boxReserve = reserve === "box" ? paddingBottom : 0')
+    expect(dock).toContain('const restingSafeArea = Platform.OS === "web" ? 0 : (insets?.bottom ?? 0)')
+    expect(dock).toContain("restPad: inset > 0 ? 0 : restingSafeArea")
+  })
+})

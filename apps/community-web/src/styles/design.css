@@ -245,6 +245,13 @@
   --ios-focus-zoom-floor: 16px;
 }
 
+body:not(:has(.cf-shell)) {
+  height: auto;
+  min-height: 100%;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
 @media (pointer: coarse) {
   .cf-shell input,
   .cf-shell textarea {

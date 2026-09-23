@@ -80,7 +80,10 @@ test("the first-fix cap lives beside the GPS cap and outlasts it", () => {
 })
 
 test("a user map gesture claims a newer camera generation, which strands the late first fix", () => {
-  assert.match(home, /const onUserCameraMove = useCallback\(\(\) => \{\n\s+beginCameraRequest\(\)\n\s+\}, \[beginCameraRequest\]\)/)
+  assert.match(
+    home,
+    /const onUserCameraMove = useCallback\(\(\) => \{\n\s+initialCenterOwnedRef\.current = true\n\s+beginCameraRequest\(\)\n\s+\}, \[beginCameraRequest\]\)/,
+  )
   assert.match(home, /onUserCameraMove=\{onUserCameraMove\}/)
 })
 
@@ -90,4 +93,16 @@ test("the native seam reports only user-driven camera starts", () => {
     nativeMap,
     /if \(!event\.nativeEvent\.userInteraction\) return\n\s+useMapFlyTo\.getState\(\)\.clear\(\)\n\s+onUserCameraMoveRef\.current\?\.\(\)/,
   )
+})
+
+test("the one-time launch move yields to an active Show on map target and to a gesture, as on web", () => {
+  const owned = adoptEffect.indexOf("initialCenterOwnedRef.current = true")
+  const yieldToTarget = adoptEffect.indexOf(
+    "if (useMapFocus.getState().focus || useMapFlyTo.getState().highlight) return",
+  )
+  const flight = adoptEffect.indexOf("centerOnTarget(center)")
+  assert.ok(owned > -1)
+  assert.ok(yieldToTarget > owned)
+  assert.ok(flight > yieldToTarget)
+  assert.ok(home.indexOf("const initialCenterOwnedRef = useRef(") < home.indexOf("const onUserCameraMove = useCallback("))
 })

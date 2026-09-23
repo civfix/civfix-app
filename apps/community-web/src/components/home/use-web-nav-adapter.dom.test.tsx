@@ -9,7 +9,7 @@ vi.mock("@civfix/ui", async () => {
 import { entryFromPath, useNavStore, type DetailEntry } from "@civfix/ui/nav"
 
 import { readNavHistory } from "./nav-history"
-import { useWebNavAdapter } from "./use-web-nav-adapter"
+import { useWebNavAdapter, webOpenInternalHref } from "./use-web-nav-adapter"
 
 function Host() {
   useWebNavAdapter()
@@ -172,6 +172,32 @@ describe("mount", () => {
     expect(nav().seededDetailPage).toBe(true)
     expect(path()).toBe("/post/p1/")
     expect(depth()).toBe(1)
+  })
+
+  it("opens a post notification as the same thread screen a reload or a cold link shows", async () => {
+    mount()
+    const entry = webOpenInternalHref.entryFor?.("/post/p1") ?? null
+    expect(entry).toEqual({ kind: "post-thread", id: "p1" })
+    await drive(() => nav().push(entry as DetailEntry))
+    expect(path()).toBe("/post/p1/")
+    await reload()
+    expect(nav().active).toEqual({ kind: "post-thread", id: "p1" })
+    cleanup()
+    window.history.replaceState(null, "", "/post/p1/")
+    mount()
+    expect(nav().active).toEqual({ kind: "post-thread", id: "p1" })
+  })
+
+  it("opens an in-chat post link as the thread too", async () => {
+    mount()
+    let opened = false
+    await drive(() => {
+      opened = webOpenInternalHref.open("/post/p2")
+    })
+    expect(opened).toBe(true)
+    expect(nav().active).toEqual({ kind: "post-thread", id: "p2" })
+    expect(path()).toBe("/post/p2/")
+    expect(webOpenInternalHref.open("/not-a-route")).toBe(false)
   })
 
   it("restores the stamped snapshot instead of re-seeding, so a reload keeps the stack", async () => {

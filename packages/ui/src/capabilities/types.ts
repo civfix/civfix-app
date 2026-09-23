@@ -1,4 +1,5 @@
 import type { ComponentType } from "react"
+import type { DetailEntry } from "../nav/types"
 
 
 export interface CapturedMedia {
@@ -87,6 +88,7 @@ export interface OpenExternalCapability {
 
 export interface OpenInternalHrefCapability {
   open(path: string): boolean
+  entryFor?(path: string | null | undefined): DetailEntry | null
 }
 
 export interface CalendarFileCapability {

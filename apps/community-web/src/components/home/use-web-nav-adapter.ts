@@ -9,6 +9,7 @@ import {
   type NavSnapshot,
   type NavTransition,
 } from "@civfix/ui"
+import type { OpenInternalHrefCapability } from "@civfix/ui/capabilities"
 
 import {
   entryFromWebPath,
@@ -50,6 +51,16 @@ function seedPathname(): string {
  */
 function seedStoreFromPath(pathname: string): void {
   useNavStore.getState().seed(entryFromWebPath(pathname), liveMode())
+}
+
+export const webOpenInternalHref: OpenInternalHrefCapability = {
+  entryFor: entryFromWebPath,
+  open: (path: string): boolean => {
+    const entry = entryFromWebPath(path)
+    if (!entry) return false
+    useNavStore.getState().push(entry)
+    return true
+  },
 }
 
 function lastFocusable(selector: string): Element | undefined {

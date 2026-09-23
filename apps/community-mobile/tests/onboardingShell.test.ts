@@ -216,7 +216,7 @@ test("no map is mounted until a real centre exists", () => {
 test("a better source upgrades the camera and a worse one never downgrades it", () => {
   assert.match(
     home,
-    /if \(!shouldAdoptCenter\(adoptedSourceRef\.current, source\)\) return\n\s+adoptedSourceRef\.current = source\n\s+initialCenterOwnedRef\.current = true\n\s+centerOnTarget\(center\)/,
+    /if \(!shouldAdoptCenter\(adoptedSourceRef\.current, source\)\) return\n\s+adoptedSourceRef\.current = source\n\s+initialCenterOwnedRef\.current = true\n\s+if \(useMapFocus\.getState\(\)\.focus \|\| useMapFlyTo\.getState\(\)\.highlight\) return\n\s+centerOnTarget\(center\)/,
   )
   assert.match(
     home,

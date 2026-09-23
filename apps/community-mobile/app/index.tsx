@@ -11,6 +11,8 @@ import {
   useLayoutMode,
   Map as SharedMap,
   MapControls,
+  useMapFlyTo,
+  useMapFocus,
   useMapViewport,
   useReportFilterStore,
   enabledCategoriesArray,
@@ -197,10 +199,6 @@ export default function MapHomeScreen() {
     [beginCameraRequest, replayPendingMapTarget],
   )
 
-  const onUserCameraMove = useCallback(() => {
-    beginCameraRequest()
-  }, [beginCameraRequest])
-
   useAndroidBackHandler()
 
   const centerOnTarget = useCallback(
@@ -281,6 +279,12 @@ export default function MapHomeScreen() {
 
   const recalledViewport = recallMapViewport() !== null
   const initialCenterOwnedRef = useRef(recalledViewport)
+
+  const onUserCameraMove = useCallback(() => {
+    initialCenterOwnedRef.current = true
+    beginCameraRequest()
+  }, [beginCameraRequest])
+
   const [rememberedCenter] = useState<RememberedCenter | null>(readLastCenter)
 
   const centerPlan = useMemo(
@@ -369,6 +373,7 @@ export default function MapHomeScreen() {
     if (!shouldAdoptCenter(adoptedSourceRef.current, source)) return
     adoptedSourceRef.current = source
     initialCenterOwnedRef.current = true
+    if (useMapFocus.getState().focus || useMapFlyTo.getState().highlight) return
     centerOnTarget(center)
   }, [centerPlan, seedCenter, centerOnTarget])
 
