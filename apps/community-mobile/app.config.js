@@ -83,8 +83,6 @@ const LOCATION_WHEN_IN_USE =
   "civfix uses your location to place your civic report at the right spot and to show issues and cleanups near you."
 const PHOTO_USAGE =
   "civfix needs access to your photos so you can attach an existing photo of a civic issue to a report."
-const CONTACTS_USAGE =
-  "civfix uses your contacts so you can invite people you know to volunteer events and cleanups. Only the contacts you choose to invite are used."
 
 /** @type {(ctx: import("expo/config").ConfigContext) => import("expo/config").ExpoConfig} */
 module.exports = ({ config }) => ({
@@ -121,7 +119,6 @@ module.exports = ({ config }) => ({
       NSMicrophoneUsageDescription: MIC_USAGE,
       NSLocationWhenInUseUsageDescription: LOCATION_WHEN_IN_USE,
       NSPhotoLibraryUsageDescription: PHOTO_USAGE,
-      NSContactsUsageDescription: CONTACTS_USAGE,
     },
     privacyManifests: {
       NSPrivacyTracking: false,
