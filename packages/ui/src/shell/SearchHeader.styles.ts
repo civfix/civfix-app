@@ -1,3 +1,4 @@
+import { StyleSheet } from "react-native"
 import { makeThemedStyles } from "../theme"
 
 export const useSearchHeaderStyles = makeThemedStyles((t) => ({
@@ -22,6 +23,7 @@ export const useSearchHeaderStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["15"],
     color: t.colors.text,
     padding: 0,
+    minWidth: 0,
   },
   signIn: {
     width: 32,
@@ -37,24 +39,36 @@ export const useSearchHeaderStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["2"],
-    paddingHorizontal: 14,
     paddingVertical: 10,
   },
-  homeCircle: {
-    width: 40,
+  dockedSearch: {
+    flex: 1,
     height: 40,
     borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.accent,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.glass.button.border,
+    overflow: "hidden",
   },
-  clear: {
+  dockedSearchContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 14,
+  },
+  dockButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.glass.button.border,
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: t.glass.sheet.input,
+  },
+  dockIcon: {
+    zIndex: 1,
+    pointerEvents: "none",
   },
   buttonHovered: {
     opacity: 0.85,
