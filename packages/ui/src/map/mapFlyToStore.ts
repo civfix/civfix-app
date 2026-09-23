@@ -1,20 +1,11 @@
 import { create } from "zustand"
+import type { FocusedEntity } from "./mapFocusStore"
 
-export interface MapFlyToTarget {
-  kind: "report" | "cleanup"
-  id: string
-  lat: number
-  lng: number
-}
+export type MapFlyToTarget = FocusedEntity
 
-export interface MapFlyToRequest extends MapFlyToTarget {
-  generation: number
-}
+export type MapFlyToRequest = MapFlyToTarget & { generation: number }
 
-export interface MapFlyToHighlight {
-  kind: MapFlyToTarget["kind"]
-  id: string
-}
+export type MapFlyToHighlight = MapFlyToTarget
 
 export interface MapFlyToState {
   request: MapFlyToRequest | null
@@ -33,7 +24,7 @@ export const useMapFlyTo = create<MapFlyToState>((set, get) => ({
     lastGeneration += 1
     set({
       request: { ...target, generation: lastGeneration },
-      highlight: { kind: target.kind, id: target.id },
+      highlight: target,
     })
   },
   consume: (generation) => {

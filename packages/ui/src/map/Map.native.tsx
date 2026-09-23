@@ -25,12 +25,12 @@ import { useClusters } from "./useClusters"
 import { mapPointsFor } from "./mapPoints"
 import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
 import { useLocationPick } from "./locationPickStore"
-import { useMapFocus } from "./mapFocusStore"
+import { useMapFocus, type FocusedEntity } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { useMapFlyTo } from "./mapFlyToStore"
 import { longPressHitsMarker, type LongPressMarker } from "./longPressGate"
-import { activeMarkerIds, markerNodeIsActive } from "./markerFocus"
+import { activeMarkerIds, flyToTargetOffMap, markerNodeIsActive } from "./markerFocus"
 import {
   clusterFallbackZoom,
   clusterListReports,
@@ -90,6 +90,32 @@ const MarkerNode = memo(function MarkerNode({ node, markerId, active, onPress }:
     </Marker>
   )
 })
+
+interface TargetMarkerProps {
+  target: FocusedEntity
+  onPressPin: (event: NativeSyntheticEvent<MarkerEvent>) => void
+  onPressCleanup: (event: NativeSyntheticEvent<MarkerEvent>) => void
+}
+
+function TargetMarker({ target, onPressPin, onPressCleanup }: TargetMarkerProps) {
+  if (target.kind === "cleanup") {
+    return (
+      <Marker
+        id={`cleanup-${target.id}`}
+        lngLat={[target.lng, target.lat]}
+        anchor="bottom"
+        onPress={onPressCleanup}
+      >
+        <EventPin active eventKind={target.eventKind} />
+      </Marker>
+    )
+  }
+  return (
+    <Marker id={`pin-${target.id}`} lngLat={[target.lng, target.lat]} anchor="bottom" onPress={onPressPin}>
+      <TeardropPin category={target.category} active />
+    </Marker>
+  )
+}
 
 export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref) {
   const {
@@ -184,14 +210,21 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     }
   }, [runner])
 
+  const offMapTarget = useMemo(
+    () => (focus ? null : flyToTargetOffMap(nodes, flyToHighlight)),
+    [focus, nodes, flyToHighlight],
+  )
+
   const hitMarkers = useMemo<LongPressMarker[]>(() => {
     if (focus) return [{ lat: focus.lat, lng: focus.lng }]
-    return nodes.map((node) => ({
+    const markers: LongPressMarker[] = nodes.map((node) => ({
       lat: node.lat,
       lng: node.lng,
       anchor: node.type === "cluster" ? ("center" as const) : ("bottom" as const),
     }))
-  }, [focus, nodes])
+    if (offMapTarget) markers.push({ lat: offMapTarget.lat, lng: offMapTarget.lng, anchor: "bottom" })
+    return markers
+  }, [focus, nodes, offMapTarget])
   const hitMarkersRef = useRef(hitMarkers)
   hitMarkersRef.current = hitMarkers
 
@@ -408,27 +441,12 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       {showUserLocation ? <UserLocation animated accuracy /> : null}
 
       {focus ? (
-        focus.kind === "cleanup" ? (
-          <Marker
-            key={`e:${focus.id}`}
-            id={`cleanup-${focus.id}`}
-            lngLat={[focus.lng, focus.lat]}
-            anchor="bottom"
-            onPress={handlePressCleanup}
-          >
-            <EventPin active eventKind={focus.eventKind} />
-          </Marker>
-        ) : (
-          <Marker
-            key={`r:${focus.id}`}
-            id={`pin-${focus.id}`}
-            lngLat={[focus.lng, focus.lat]}
-            anchor="bottom"
-            onPress={handlePressPin}
-          >
-            <TeardropPin category={focus.category} active />
-          </Marker>
-        )
+        <TargetMarker
+          key={`${focus.kind}:${focus.id}`}
+          target={focus}
+          onPressPin={handlePressPin}
+          onPressCleanup={handlePressCleanup}
+        />
       ) : (
         <>
           {markerNodes.rendered.map(({ node, markerId }) => (
@@ -448,6 +466,14 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
               }
             />
           ))}
+          {offMapTarget ? (
+            <TargetMarker
+              key={`flyto:${offMapTarget.kind}:${offMapTarget.id}`}
+              target={offMapTarget}
+              onPressPin={handlePressPin}
+              onPressCleanup={handlePressCleanup}
+            />
+          ) : null}
         </>
       )}
 

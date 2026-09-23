@@ -38,8 +38,8 @@ describe("showOnMap: compact", () => {
 
   it("publishes a fly-to request, not a focus, and switches to the Map tab", () => {
     showOnMap("compact", event)
-    expect(useMapFlyTo.getState().request).toMatchObject({ kind: "cleanup", id: "e1", lat: 34.05, lng: -118.24 })
-    expect(useMapFlyTo.getState().highlight).toEqual({ kind: "cleanup", id: "e1" })
+    expect(useMapFlyTo.getState().request).toMatchObject(event)
+    expect(useMapFlyTo.getState().highlight).toEqual(event)
     expect(useMapFocus.getState().focus).toBeNull()
     const nav = useNavStore.getState()
     expect(nav.view).toBe("map")
@@ -59,13 +59,13 @@ describe("showOnMap: compact", () => {
   it("the departing page's scoped release cannot touch the handoff", () => {
     showOnMap("compact", event)
     useMapFocus.getState().clearFor("e1")
-    expect(useMapFlyTo.getState().highlight).toEqual({ kind: "cleanup", id: "e1" })
+    expect(useMapFlyTo.getState().highlight).toEqual(event)
   })
 
   it("leaving the Map tab ends the highlight", () => {
     showOnMap("compact", event)
     useNavStore.getState().openDetail({ kind: "pin", id: "other" })
-    expect(useMapFlyTo.getState().highlight).toEqual({ kind: "cleanup", id: "e1" })
+    expect(useMapFlyTo.getState().highlight).toEqual(event)
     useNavStore.getState().selectView("home")
     expect(useMapFlyTo.getState().highlight).toBeNull()
     expect(useMapFlyTo.getState().request).toBeNull()
@@ -74,9 +74,9 @@ describe("showOnMap: compact", () => {
   it("the leave release fires once, then a later visit keeps its own highlight", () => {
     showOnMap("compact", event)
     useNavStore.getState().selectView("home")
-    useMapFlyTo.getState().requestFlyTo({ kind: "report", id: "r1", lat: 1, lng: 2 })
+    useMapFlyTo.getState().requestFlyTo(report)
     useNavStore.getState().selectView("events")
-    expect(useMapFlyTo.getState().highlight).toEqual({ kind: "report", id: "r1" })
+    expect(useMapFlyTo.getState().highlight).toEqual(report)
   })
 })
 

@@ -21,3 +21,13 @@ export function activeMarkerIds(
     cleanupId: focusedCleanupId ?? (highlight?.kind === "cleanup" ? highlight.id : null),
   }
 }
+
+export function flyToTargetOffMap(
+  nodes: readonly ClusterNode[],
+  highlight: MapFlyToHighlight | null,
+): MapFlyToHighlight | null {
+  if (!highlight) return null
+  const pinId = highlight.kind === "report" ? highlight.id : null
+  const cleanupId = highlight.kind === "cleanup" ? highlight.id : null
+  return nodes.some((node) => markerNodeIsActive(node, pinId, cleanupId)) ? null : highlight
+}

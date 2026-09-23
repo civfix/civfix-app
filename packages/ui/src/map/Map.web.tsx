@@ -36,11 +36,11 @@ import {
   expansionZoomOfCluster,
 } from "./clusterer"
 import { useLocationPick } from "./locationPickStore"
-import { useMapFocus } from "./mapFocusStore"
+import { useMapFocus, type FocusedEntity } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { useMapFlyTo } from "./mapFlyToStore"
-import { activeMarkerIds } from "./markerFocus"
+import { activeMarkerIds, flyToTargetOffMap } from "./markerFocus"
 import { makePinElement, applyPinElementTheme } from "./LocationPicker.web"
 import { occludedCenterLng } from "./dropPinCamera"
 import type { ClusterNode, MapClusterIndex } from "./clusterer"
@@ -232,27 +232,32 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
         node: <ThemeProvider preference={scheme}>{want.node}</ThemeProvider>,
       })
 
-    if (useMapFocus.getState().focus) {
-      const f = useMapFocus.getState().focus!
-      if (f.kind === "cleanup") {
-        put(`e:${f.id}`, {
-          signature: `${f.eventKind}|1`,
+    const putTargetMarker = (target: FocusedEntity) => {
+      if (target.kind === "cleanup") {
+        put(`e:${target.id}`, {
+          signature: `${target.eventKind}|1`,
           anchor: "bottom",
-          lngLat: [f.lng, f.lat],
-          node: <EventPin active eventKind={f.eventKind} />,
-          onClick: () => onPressCleanupRef.current?.(f.id),
+          lngLat: [target.lng, target.lat],
+          node: <EventPin active eventKind={target.eventKind} />,
+          onClick: () => onPressCleanupRef.current?.(target.id),
         })
       } else {
-        put(`r:${f.id}`, {
-          signature: `${f.category}|1`,
+        put(`r:${target.id}`, {
+          signature: `${target.category}|1`,
           anchor: "bottom",
-          lngLat: [f.lng, f.lat],
-          node: <TeardropPin category={f.category} active />,
-          onClick: () => onPressPinRef.current?.(f.id),
+          lngLat: [target.lng, target.lat],
+          node: <TeardropPin category={target.category} active />,
+          onClick: () => onPressPinRef.current?.(target.id),
         })
       }
+    }
+
+    const focused = useMapFocus.getState().focus
+    if (focused) {
+      putTargetMarker(focused)
     } else {
-      for (const node of query(mapBoundsToBBox(map), map.getZoom())) {
+      const nodes = query(mapBoundsToBBox(map), map.getZoom())
+      for (const node of nodes) {
         if (node.type === "cluster") {
           const tone = clusterToneFor(node.reportCount, node.eventCount)
           put(node.key, {
@@ -298,6 +303,8 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
           })
         }
       }
+      const offMapTarget = flyToTargetOffMap(nodes, flyToHighlight)
+      if (offMapTarget) putTargetMarker(offMapTarget)
     }
 
     const current = markersRef.current
@@ -385,11 +392,13 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       syncViewport()
     })
     map.on("moveend", syncViewport)
-    map.on("movestart", (e) => {
+    const endFlyToOnUserGesture = (e: { originalEvent?: unknown }) => {
       if (!e.originalEvent) return
       useMapFlyTo.getState().clear()
       onUserCameraMoveRef.current?.()
-    })
+    }
+    map.on("movestart", endFlyToOnUserGesture)
+    map.on("wheel", endFlyToOnUserGesture)
 
     const blockedTarget = (target: EventTarget | null): boolean => {
       if (pickActiveRef.current) return true
@@ -605,7 +614,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   React.useEffect(() => {
     indexRef.current = index
     if (mapReady) runner.flush()
-  }, [runner, mapReady, index, points, activePinId, activeCleanupId, focus, th.scheme])
+  }, [runner, mapReady, index, points, activePinId, activeCleanupId, flyToHighlight, focus, th.scheme])
 
   React.useEffect(() => {
     const map = mapRef.current

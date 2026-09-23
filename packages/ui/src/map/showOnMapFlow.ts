@@ -31,7 +31,7 @@ export function showOnMap(mode: LayoutMode, target: FocusedEntity): void {
     useNavStore.getState().setSnap(1)
     return
   }
-  useMapFlyTo.getState().requestFlyTo({ kind: target.kind, id: target.id, lat: target.lat, lng: target.lng })
+  useMapFlyTo.getState().requestFlyTo(target)
   useNavStore.getState().selectView("map")
   armMapLeaveRelease()
 }
