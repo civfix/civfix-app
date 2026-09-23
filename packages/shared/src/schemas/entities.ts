@@ -105,6 +105,7 @@ export const PersonDTOSchema = z.object({
   organization: OrganizationRefDTOSchema.nullable().optional(),
   donationUrl: HttpsUrlSchema.nullable().optional(),
   deleted: z.boolean().optional(),
+  official: z.boolean().optional(),
 })
 export type PersonDTO = z.infer<typeof PersonDTOSchema>
 
