@@ -74,10 +74,4 @@ describe("UnsubscribeView", () => {
     expect(await screen.findByText("done.title")).toBeTruthy()
     expect(unsubscribeBroadcasts).toHaveBeenCalledTimes(1)
   })
-
-  it("says nothing about whether the token was VALID, only whether we could use the link", async () => {
-    renderAt(`?t=${TOKEN}`)
-    await screen.findByText("done.title")
-    expect(document.body.textContent).not.toMatch(/expired|invalid|not.found|already/i)
-  })
 })

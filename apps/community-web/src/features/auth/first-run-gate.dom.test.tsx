@@ -148,6 +148,32 @@ describe("a failed sign-out from the first-run gate", () => {
     expect(logout).toHaveBeenCalledTimes(2)
   })
 
+  it("moves keyboard focus out of the gate's trap to the notice, and back to the gate on dismiss", async () => {
+    logout.mockRejectedValue(new TypeError("Failed to fetch"))
+    renderAppLayers()
+    const gate = screen.getByRole("dialog")
+    const signOut = within(gate).getByRole("button", { name: "sign_out" })
+    signOut.focus()
+
+    await act(async () => {
+      fireEvent.click(signOut)
+    })
+
+    const notice = await screen.findByRole("alert")
+    const retry = within(notice).getByRole("button", { name: "sign_out_failed.retry" })
+    const close = within(notice).getByRole("button", { name: "close" })
+    expect(document.activeElement).toBe(retry)
+
+    // The gate's trap listens on its own card; Tab inside the notice must not be pulled back into it.
+    close.focus()
+    expect(fireEvent.keyDown(close, { key: "Tab" })).toBe(true)
+    expect(close.closest("[inert]")).toBeNull()
+
+    fireEvent.click(close)
+    expect(screen.queryByRole("alert")).toBeNull()
+    expect(document.activeElement).toBe(signOut)
+  })
+
   it("keeps a notice already on screen when the gate opens out of the gate's inert layer", () => {
     useSignOutRetryStore.setState({ failed: true })
     renderAppLayers()
