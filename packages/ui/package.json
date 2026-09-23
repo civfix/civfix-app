@@ -89,7 +89,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json --emitDeclarationOnly --outDir dist-types",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.vitest.json",
     "test": "vitest run",
     "lint": "eslint .",
     "i18n:check": "node scripts/check-i18n-keys.mjs",

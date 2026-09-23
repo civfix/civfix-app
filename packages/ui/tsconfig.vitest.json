@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["vitest.config.ts", "vitest.dom.setup.ts"],
+  "exclude": ["node_modules", "dist-types"]
+}
