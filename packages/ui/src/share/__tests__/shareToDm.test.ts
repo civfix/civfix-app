@@ -5,6 +5,7 @@ import {
   SHARE_DM_MAX_RECIPIENTS,
   applyRecipientChange,
   buildSharePlan,
+  clampShareNote,
   composeShareBody,
   dmThreadIdsByPeer,
   recentDmPeers,
@@ -83,6 +84,25 @@ describe("the message body a share sends", () => {
 
   it("never reports a negative budget for an absurdly long link", () => {
     expect(shareNoteMaxLength("https://civfix.org/".padEnd(MESSAGE_BODY_MAX + 50, "x"))).toBe(0)
+  })
+
+  it("keeps a note that fits untouched", () => {
+    expect(clampShareNote("hi 👋", 10)).toBe("hi 👋")
+  })
+
+  it("never cuts an emoji in half at the cap, which would send a lone surrogate", () => {
+    const clamped = clampShareNote("ab👋cd", 3)
+    expect(clamped).toBe("ab")
+    expect(clamped).not.toMatch(/[\uD800-\uDBFF]$/)
+  })
+
+  it("keeps a whole emoji that ends exactly on the cap", () => {
+    expect(clampShareNote("ab👋cd", 4)).toBe("ab👋")
+  })
+
+  it("cuts plain text at the cap", () => {
+    expect(clampShareNote("abcdef", 3)).toBe("abc")
+    expect(clampShareNote("abc", 0)).toBe("")
   })
 })
 

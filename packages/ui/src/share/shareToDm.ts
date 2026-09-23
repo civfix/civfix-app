@@ -52,6 +52,15 @@ export function shareNoteMaxLength(url: string): number {
   return Math.max(0, MESSAGE_BODY_MAX - url.length - 1)
 }
 
+// The cap counts UTF-16 code units like the server does, but a paste on web can land mid surrogate pair;
+// the orphaned high surrogate would reach the recipient as a broken glyph.
+export function clampShareNote(note: string, max: number): string {
+  if (note.length <= max) return note
+  const cut = note.slice(0, Math.max(0, max))
+  const last = cut.charCodeAt(cut.length - 1)
+  return last >= 0xd800 && last <= 0xdbff ? cut.slice(0, -1) : cut
+}
+
 export function toShareRecipient(person: PersonDTO): ShareRecipient {
   return { id: person.id, name: person.name }
 }

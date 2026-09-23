@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { WsClientMessage, WsServerMessage } from "@civfix/shared"
 import type { ChatConnState, ChatSendResult, ChatSocketLike } from "../../data/types"
-import { runShareToDm } from "../shareDelivery"
+import { makeShareRuns, runShareToDm } from "../shareDelivery"
 import { buildSharePlan, type SharePlanEntry } from "../shareToDm"
 
 const ACK_MS = 40
 const OPEN_MS = 20
 
-type SendBehaviour = "ack" | "silence" | "error" | "transport-error" | "dropped"
+type SendBehaviour = "ack" | "silence" | "error" | "transport-error" | "dropped" | "queued-late-ack"
 
 class FakeSocket implements ChatSocketLike {
   retained = 0
@@ -66,6 +66,10 @@ class FakeSocket implements ChatSocketLike {
     if (behaviour === "dropped") return "dropped"
     if (frame.type !== "send") return "sent"
     const { clientId, cleanupId } = frame
+    if (behaviour === "queued-late-ack") {
+      setTimeout(() => this.emitAck(clientId, cleanupId), ACK_MS * 2)
+      return "queued"
+    }
     if (behaviour === "ack") {
       queueMicrotask(() => this.emitAck(clientId, cleanupId))
     } else if (behaviour === "error") {
@@ -320,5 +324,85 @@ describe("a late ack for a finished recipient cannot corrupt a later one", () =>
     const { summary } = await promise
     expect(summary.sent).toEqual([])
     expect(summary.stopped).toBe(true)
+  })
+})
+
+describe("a frame the socket queued for its reconnect", () => {
+  it("waits the longer queued window, so a message that lands is not reported as failed", async () => {
+    const socket = new FakeSocket("open", "queued-late-ack")
+    const { summary } = await run(socket, plan(1), { queuedAckTimeoutMs: ACK_MS * 5 })
+    expect(summary.status).toBe("all")
+    expect(summary.stopped).toBe(false)
+  })
+
+  it("still stops the run once the queued window runs out", async () => {
+    const socket = new FakeSocket("open", "queued-late-ack")
+    const { summary } = await run(socket, plan(2), { queuedAckTimeoutMs: ACK_MS })
+    expect(summary.stopped).toBe(true)
+    expect(socket.sent).toHaveLength(1)
+  })
+
+  it("keeps the ordinary ack window for a frame that was written", async () => {
+    const socket = new FakeSocket("open", "silence")
+    const started = Date.now()
+    const { summary } = await run(socket, plan(1), { queuedAckTimeoutMs: ACK_MS * 50 })
+    expect(summary.stopped).toBe(true)
+    expect(Date.now() - started).toBeLessThan(ACK_MS * 10)
+  })
+})
+
+describe("the run reports every room it opened, not only the acked ones", () => {
+  it("returns a room whose send timed out, so a retry can reuse it", async () => {
+    const socket = new FakeSocket("open", (index) => (index === 0 ? "ack" : "silence"))
+    const { rooms, resolved } = await run(socket, plan(3))
+    expect(rooms).toEqual(["room-u0"])
+    expect([...resolved]).toEqual([
+      ["u0", "room-u0"],
+      ["u1", "room-u1"],
+    ])
+  })
+
+  it("leaves out a recipient whose room could not be opened", async () => {
+    const socket = new FakeSocket()
+    const { resolved } = await runShareToDm(
+      {
+        socket,
+        resolveRoom: (id) => Promise.resolve(id === "u1" ? null : `room-${id}`),
+        ackTimeoutMs: ACK_MS,
+        openTimeoutMs: OPEN_MS,
+      },
+      { entries: plan(2), body: "b" },
+    )
+    expect([...resolved.keys()]).toEqual(["u0"])
+  })
+})
+
+describe("each run carries its own abort token", () => {
+  it("aborts every run in flight", () => {
+    const runs = makeShareRuns()
+    const first = runs.begin()
+    const second = runs.begin()
+    runs.abortAll()
+    expect(first.aborted).toBe(true)
+    expect(second.aborted).toBe(true)
+  })
+
+  it("never clears an earlier run's abort when a new run begins", () => {
+    const runs = makeShareRuns()
+    const first = runs.begin()
+    runs.abortAll()
+    const second = runs.begin()
+    expect(first.aborted).toBe(true)
+    expect(second.aborted).toBe(false)
+  })
+
+  it("stays busy until the last run in flight ends", () => {
+    const runs = makeShareRuns()
+    const first = runs.begin()
+    const second = runs.begin()
+    runs.end(first)
+    expect(runs.busy).toBe(true)
+    runs.end(second)
+    expect(runs.busy).toBe(false)
   })
 })

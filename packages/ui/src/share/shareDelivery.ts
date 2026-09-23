@@ -14,6 +14,7 @@ export interface ShareDeliveryDeps {
   socket: ChatSocketLike
   resolveRoom: (recipientId: string) => Promise<string | null>
   ackTimeoutMs: number
+  queuedAckTimeoutMs?: number
   openTimeoutMs?: number
   isAborted?: () => boolean
 }
@@ -26,6 +27,39 @@ export interface ShareDeliveryInput {
 export interface ShareRunResult {
   summary: ShareRunSummary
   rooms: string[]
+  resolved: Map<string, string>
+}
+
+export interface ShareRunToken {
+  aborted: boolean
+}
+
+export interface ShareRuns {
+  begin: () => ShareRunToken
+  end: (token: ShareRunToken) => void
+  abortAll: () => void
+  readonly busy: boolean
+}
+
+// One token per run, so starting a run can never clear the abort of another that is still in flight.
+export function makeShareRuns(): ShareRuns {
+  const live = new Set<ShareRunToken>()
+  return {
+    begin: () => {
+      const token: ShareRunToken = { aborted: false }
+      live.add(token)
+      return token
+    },
+    end: (token) => {
+      live.delete(token)
+    },
+    abortAll: () => {
+      for (const token of live) token.aborted = true
+    },
+    get busy() {
+      return live.size > 0
+    },
+  }
 }
 
 export function waitForSocketOpen(socket: ChatSocketLike, timeoutMs: number): Promise<boolean> {
@@ -59,6 +93,7 @@ export function waitForSocketOpen(socket: ChatSocketLike, timeoutMs: number): Pr
 interface AckWaiter {
   settled: Promise<AckVerdict>
   cancel: () => void
+  extend: (timeoutMs: number) => void
 }
 
 export function ackWaiter(
@@ -91,8 +126,18 @@ export function ackWaiter(
     else if (frame.type === "error" && frame.cleanupId === roomId) finish("rejected")
     else if (frame.type === "error" && frame.cleanupId == null) finish("transport")
   })
-  timer = setTimeout(() => finish("timeout"), timeoutMs)
-  return { settled, cancel: () => finish("timeout") }
+  const arm = (ms: number): void => {
+    if (timer !== null) clearTimeout(timer)
+    timer = setTimeout(() => finish("timeout"), ms)
+  }
+  arm(timeoutMs)
+  return {
+    settled,
+    cancel: () => finish("timeout"),
+    extend: (ms) => {
+      if (resolveSettled !== null) arm(ms)
+    },
+  }
 }
 
 export async function runShareToDm(
@@ -101,12 +146,13 @@ export async function runShareToDm(
 ): Promise<ShareRunResult> {
   const outcomes = new Map<string, ShareDeliveryOutcome>()
   const rooms = new Set<string>()
+  const resolved = new Map<string, string>()
   const openTimeoutMs = deps.openTimeoutMs ?? SHARE_SOCKET_OPEN_TIMEOUT_MS
   const aborted = (): boolean => deps.isAborted?.() === true
   let stopped = false
 
   if (entries.length === 0) {
-    return { summary: summarizeShareRun(entries, outcomes, false), rooms: [] }
+    return { summary: summarizeShareRun(entries, outcomes, false), rooms: [], resolved }
   }
 
   deps.socket.retain()
@@ -121,6 +167,7 @@ export async function runShareToDm(
         outcomes.set(entry.clientId, "failed")
         continue
       }
+      resolved.set(entry.recipient.id, roomId)
       if (aborted()) {
         stopped = true
         break
@@ -144,6 +191,9 @@ export async function runShareToDm(
         stopped = true
         break
       }
+      // A queued frame is flushed on reconnect and usually lands; give it the composer's longer window
+      // rather than reporting a failure for a message the recipient then receives.
+      if (outcome === "queued") waiter.extend(deps.queuedAckTimeoutMs ?? deps.ackTimeoutMs)
       const verdict = await waiter.settled
       if (verdict === "acked") {
         outcomes.set(entry.clientId, "sent")
@@ -161,5 +211,5 @@ export async function runShareToDm(
     deps.socket.release()
   }
 
-  return { summary: summarizeShareRun(entries, outcomes, stopped), rooms: [...rooms] }
+  return { summary: summarizeShareRun(entries, outcomes, stopped), rooms: [...rooms], resolved }
 }
