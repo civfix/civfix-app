@@ -10,12 +10,26 @@ const { version } = JSON.parse(
 );
 const tag = `${PACKAGE}@${version}`;
 
-const viewed = JSON.parse(
-  execFileSync("npm", ["view", PACKAGE, "versions", "--json"], {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"],
-  }),
-);
+const readPublishedVersions = () => {
+  try {
+    return execFileSync("npm", ["view", PACKAGE, "versions", "--json"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+  } catch (error) {
+    const stderr = String(error.stderr ?? "");
+    const reason = /\bcode (E[A-Z0-9]+)\b/.exec(stderr)?.[1] ?? String(error.message).split("\n")[0];
+    console.error(
+      [
+        `Could not read the published ${PACKAGE} versions from the registry (${reason}).`,
+        "The registry is unreachable or does not hold the package; check the registry in .npmrc and re-run.",
+      ].join("\n"),
+    );
+    process.exit(1);
+  }
+};
+
+const viewed = JSON.parse(readPublishedVersions());
 const published = Array.isArray(viewed) ? viewed : [viewed];
 
 const git = (...args) => spawnSync("git", args, { encoding: "utf8" });
@@ -53,7 +67,7 @@ const nextFreeVersion = () => {
         }
       }
       return highest;
-    });
+    }, [0, 0, 0]);
   return `${major}.${minor + 1}.0`;
 };
 

@@ -29,6 +29,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: node --test scripts/*.test.mjs
       - run: node scripts/check-shared-version.mjs
       - run: pnpm turbo run build typecheck lint test --filter="./packages/*"
       - run: pnpm --filter @civfix/ui i18n:check
