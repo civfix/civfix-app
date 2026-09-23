@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { statTileSpokenLabel, STAT_VALUE_UNKNOWN } from "../statTileModel"
 import { toastLiveSemantics } from "../toastModel"
+import { a11yState } from "../../theme/a11yState"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (rel: string): string =>
@@ -74,7 +75,9 @@ describe("APP-A11Y-012 FilterChip announces the semantics its caller means", () 
   })
 
   it("gives an action chip no checked state and speaks the count in the default label", () => {
-    expect(chip).toContain('selection === "action" ? { disabled } : { checked: selected, disabled }')
+    expect(chip).toContain('{...a11yState(selection === "action" ? { disabled } : { checked: selected, disabled })}')
+    expect(a11yState({ disabled: false })).not.toHaveProperty("aria-checked")
+    expect(a11yState({ checked: true, disabled: false })).toMatchObject({ "aria-checked": true })
     expect(chip).toContain("count === undefined ? label : `${label}, ${count}`")
   })
 })
@@ -119,7 +122,8 @@ describe("APP-A11Y-017 report reasons are a radio group", () => {
     const sheet = code("../ReportContentSheet.tsx")
     expect(sheet).toContain('accessibilityRole="radiogroup"')
     expect(sheet).toContain('accessibilityRole="radio"')
-    expect(sheet).toContain("accessibilityState={{ checked: selected }}")
+    expect(sheet).toContain("{...a11yState({ checked: selected })}")
+    expect(a11yState({ checked: false })).toMatchObject({ "aria-checked": false })
     expect(sheet).not.toContain("accessibilityState={{ selected }}")
   })
 })

@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "./TextInput"
 import type { ContentReportReason } from "@civfix/shared"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { a11yState, makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
@@ -98,7 +98,7 @@ export function ReportContentSheet({
               ]}
               accessibilityRole="radio"
               accessibilityLabel={label}
-              accessibilityState={{ checked: selected }}
+              {...a11yState({ checked: selected })}
               disabled={pending}
               onPress={() => setReason(value)}
             >

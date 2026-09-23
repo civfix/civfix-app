@@ -1,6 +1,7 @@
 import React from "react"
 import { Platform, Pressable, View, type View as RNView, type ViewStyle } from "react-native"
 import {
+  a11yState,
   focusRingProps,
   makeThemedStyles,
   radius,
@@ -58,7 +59,7 @@ export function PostOverflowButton({ label, onPress, buttonRef, expanded }: Post
       }}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ expanded }}
+      {...a11yState({ expanded })}
       {...WEB_MENU_TRIGGER_PROPS}
       hitSlop={8}
       {...focusRingProps}

@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { makeThemedStyles, useTheme, webCursor, webHover, focusRingProps } from "../theme"
+import { a11yState, makeThemedStyles, useTheme, webCursor, webHover, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { LegalDocumentType } from "@civfix/shared"
 import { currentVersion } from "@civfix/shared/legal"
@@ -52,7 +52,7 @@ export function TermsConfirmation({
       <Pressable
         onPress={toggle}
         accessibilityRole="checkbox"
-        accessibilityState={{ checked: confirmed }}
+        {...a11yState({ checked: confirmed })}
         accessibilityLabel={t("a11y.affirmation")}
         {...focusRingProps}
         style={(state) => [

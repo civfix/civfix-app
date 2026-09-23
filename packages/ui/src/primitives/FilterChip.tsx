@@ -1,6 +1,7 @@
 import React from "react"
 import { Pressable } from "react-native"
 import {
+  a11yState,
   focusRingProps,
   makeThemedStyles,
   webCursor,
@@ -51,7 +52,7 @@ export function FilterChip({
       onPress={onPress}
       disabled={disabled}
       accessibilityRole={SELECTION_ROLE[selection]}
-      accessibilityState={selection === "action" ? { disabled } : { checked: selected, disabled }}
+      {...a11yState(selection === "action" ? { disabled } : { checked: selected, disabled })}
       accessibilityLabel={accessibilityLabel ?? (count === undefined ? label : `${label}, ${count}`)}
       hitSlop={CHIP_HIT_SLOP}
       {...focusRingProps}
