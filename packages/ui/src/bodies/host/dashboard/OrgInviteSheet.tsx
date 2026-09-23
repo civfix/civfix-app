@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import type { OrgInviteIdentifierKind } from "@civfix/shared"
@@ -51,14 +51,13 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
   const [focused, setFocused] = useState(false)
   const [errorText, setErrorText] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!visible) return
+  const onClosed = useCallback(() => {
     setIdentifierKind("handle")
     setIdentifier("")
     setRole("member")
     setErrorText(null)
-    invite.reset()
-  }, [visible])
+    if (!invite.isPending) invite.reset()
+  }, [invite])
 
   const value = inviteIdentifierValue(identifierKind, identifier)
   const canSubmit = value !== null && !invite.isPending
@@ -92,6 +91,7 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
     <ModalCardSheet
       visible={visible}
       onClose={onClose}
+      onClosed={onClosed}
       onCommit={submit}
       headerIcon="UserPlus"
       headerIconColor={th.colors.moss["700"]}

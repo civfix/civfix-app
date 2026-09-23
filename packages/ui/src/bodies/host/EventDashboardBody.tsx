@@ -373,8 +373,9 @@ export function EventDashboardBody() {
                     variant="label"
                     standalone
                     accessibilityLabel={t("events.show_more")}
+                    disabled={hosted.isFetchingNextPage}
                     onPress={() => {
-                      void hosted.fetchNextPage()
+                      if (!hosted.isFetchingNextPage) void hosted.fetchNextPage()
                     }}
                   >
                     {hosted.isFetchingNextPage ? t("events.loading_more") : t("events.show_more")}

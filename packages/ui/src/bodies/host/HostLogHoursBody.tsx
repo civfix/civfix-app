@@ -3,7 +3,15 @@ import { View } from "react-native"
 import { nextEventBoundaryMs, hasEventEnded } from "@civfix/shared/host"
 import { makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
-import { managesEvent, useCleanup, useEventHours, useNow, NOW_TICK_MS } from "../../data"
+import {
+  cleanupHostStanding,
+  managesEvent,
+  useAuthState,
+  useCleanup,
+  useEventHours,
+  useNow,
+  NOW_TICK_MS,
+} from "../../data"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
@@ -17,9 +25,13 @@ export function HostLogHoursBody({ id }: { id: string }) {
   const { ScrollView } = useScrollHost()
 
   const cleanup = useCleanup(id)
-  const hours = useEventHours(id)
-
+  const viewerId = useAuthState().user?.id ?? null
   const event = cleanup.data ?? null
+  const manages = event !== null && managesEvent(cleanupHostStanding(event, viewerId))
+  // A non-manager's hours request can only 403, which would surface as an error ahead of the
+  // denied state; an undefined id keeps the query disabled.
+  const hours = useEventHours(manages ? id : undefined)
+
   const boundaryAt = event === null ? null : nextEventBoundaryMs(event, Date.now())
   const now = useNow(boundaryAt === null ? 0 : NOW_TICK_MS, { boundaryAt })
 
@@ -30,7 +42,7 @@ export function HostLogHoursBody({ id }: { id: string }) {
   const gate = hostLogHoursGate({
     loading: cleanup.isLoading || hours.isLoading,
     failed: cleanup.isError || hours.isError || event === null,
-    manages: event !== null && managesEvent(event),
+    manages,
     ended: event !== null && hasEventEnded(event, now),
   })
 

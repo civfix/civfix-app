@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View, Pressable } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import type { EventTeamInviteIdentifierKind, EventTeamRole } from "@civfix/shared"
@@ -53,14 +53,13 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
   const [focused, setFocused] = useState(false)
   const [errorText, setErrorText] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!visible) return
+  const onClosed = useCallback(() => {
     setIdentifierKind("handle")
     setIdentifier("")
     setRole("staff")
     setErrorText(null)
-    invite.reset()
-  }, [visible])
+    if (!invite.isPending) invite.reset()
+  }, [invite])
 
   const tiers = eventTeamTiers()
   const value = inviteIdentifierValue(identifierKind, identifier)
@@ -95,6 +94,7 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
     <ModalCardSheet
       visible={visible}
       onClose={onClose}
+      onClosed={onClosed}
       onCommit={submit}
       headerIcon="UserPlus"
       headerIconColor={th.colors.moss["700"]}

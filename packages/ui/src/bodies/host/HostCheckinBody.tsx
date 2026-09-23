@@ -16,8 +16,9 @@ import { formatStatValue } from "../../primitives/statTileModel"
 import { presentScanner } from "../../primitives/scannerPresenter"
 import { useScannerAvailable } from "../../primitives/useScannerAvailable"
 import { useHaptics } from "../../capabilities"
-import { useCleanup } from "../../data"
+import { useAuthState, useCleanup } from "../../data"
 import {
+  cleanupHostStanding,
   hasHostCapability,
   rosterRows,
   useCheckInEventSeat,
@@ -94,7 +95,8 @@ export function HostCheckinBody({ id }: { id: string }) {
   const [rosterFocused, setRosterFocused] = useState(false)
   const canScan = useScannerAvailable()
 
-  const canCheckIn = hasHostCapability(cleanup.data, "check_in")
+  const viewerId = useAuthState().user?.id ?? null
+  const canCheckIn = hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), "check_in")
   const counters = useHostCounters(id, { enabled: canCheckIn })
   const rosterQuery = useDebouncedValue(rosterSearch, 250)
   const roster = useHostRoster(id, {

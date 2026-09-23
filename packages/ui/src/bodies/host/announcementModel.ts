@@ -79,6 +79,10 @@ export function announcementCounts(announcement: AnnouncementDTO): {
   }
 }
 
+export function seeAllTotal(loaded: number, hasMore: boolean): number | null {
+  return hasMore ? null : loaded
+}
+
 export function announcementSentAt(announcement: AnnouncementDTO): string {
   return announcement.sentAt ?? announcement.createdAt
 }

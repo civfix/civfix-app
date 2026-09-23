@@ -311,7 +311,7 @@ export function HostModeBody({ id }: { id: string }) {
           return () => setLinkingOpen(true)
         case "resources":
           return () => setRequesting(true)
-        default:
+        case "cancel":
           return () => setCancelling(true)
       }
     },

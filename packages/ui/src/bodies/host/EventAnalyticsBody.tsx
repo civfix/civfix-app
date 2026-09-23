@@ -39,7 +39,13 @@ import {
   type ChartBar,
 } from "../../charts"
 import { useCleanup } from "../../data/hooks/cleanups"
-import { hasHostCapability, hostedEventRows, useMyHostedEvents } from "../../data/hooks/host"
+import {
+  cleanupHostStanding,
+  hasHostCapability,
+  hostedEventRows,
+  useMyHostedEvents,
+} from "../../data/hooks/host"
+import { useAuthState } from "../../data"
 import { useEventAnalytics, useHostAnalyticsSummary } from "../../data/hooks/analytics"
 import { useLocale, useRelativeTime, useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
@@ -60,6 +66,7 @@ import {
   rangeSlice,
   pickerOptions,
   ratePercent,
+  weekDayLabel,
   weeklyXLabels,
   wholeEventCheckedIn,
   wholeEventSignups,
@@ -94,15 +101,7 @@ function breakdownBars(
 
 function useWeekLabel(): (day: string) => string {
   const { locale } = useLocale()
-  return useMemo(() => {
-    let format: Intl.DateTimeFormat
-    try {
-      format = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" })
-    } catch {
-      format = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" })
-    }
-    return (day: string) => format.format(new Date(day))
-  }, [locale])
+  return useMemo(() => weekDayLabel(locale), [locale])
 }
 
 export function EventAnalyticsBody({ id }: { id: string }) {
@@ -114,6 +113,13 @@ export function EventAnalyticsBody({ id }: { id: string }) {
   const [picked, setPicked] = useState<string | null>(id === "" ? null : id)
   const [pickedLabel, setPickedLabel] = useState<string | null>(null)
   const [preset, setPreset] = useState<AnalyticsRangePreset | null>(null)
+  const [routeId, setRouteId] = useState(id)
+  if (id !== routeId) {
+    setRouteId(id)
+    setPicked(id === "" ? null : id)
+    setPickedLabel(null)
+    setPreset(null)
+  }
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerRect, setPickerRect] = useState<AnchorRect | null>(null)
   const { ref: pickerAnchorRef, measure: measurePicker } = usePopoverAnchor(setPickerRect)
@@ -134,9 +140,17 @@ export function EventAnalyticsBody({ id }: { id: string }) {
     [upcoming.data, past.data],
   )
 
+  const moreEvents = upcoming.hasNextPage || past.hasNextPage
+  const loadingMoreEvents = upcoming.isFetchingNextPage || past.isFetchingNextPage
+  const loadMoreEvents = () => {
+    if (upcoming.hasNextPage && !upcoming.isFetchingNextPage) void upcoming.fetchNextPage()
+    if (past.hasNextPage && !past.isFetchingNextPage) void past.fetchNextPage()
+  }
+
   const summary = useHostAnalyticsSummary(null, summaryRange(active), { enabled: all })
   const cleanup = useCleanup(picked ?? undefined)
-  const canView = hasHostCapability(cleanup.data, "view_analytics")
+  const viewerId = useAuthState().user?.id ?? null
+  const canView = hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), "view_analytics")
   const event = useEventAnalytics(picked ?? undefined, "full", { enabled: !all && canView })
 
   const now = Date.now()
@@ -218,6 +232,19 @@ export function EventAnalyticsBody({ id }: { id: string }) {
             setPreset(null)
           },
         })),
+        ...(moreEvents
+          ? [
+              {
+                key: "more",
+                label: loadingMoreEvents ? t("filter.loading_more") : t("filter.more_events"),
+                disabled: loadingMoreEvents,
+                onPress: () => {
+                  setPickerOpen(false)
+                  loadMoreEvents()
+                },
+              },
+            ]
+          : []),
       ]}
     />
   )
@@ -604,7 +631,7 @@ function Funnel({ data }: { data: GetEventAnalyticsResponse }) {
   if (bars.length === 0) return <Text variant="caption">{t("page.funnel_empty")}</Text>
 
   return (
-    <View style={styles.block} accessibilityLabel={t("funnel.a11y")}>
+    <View style={styles.block} role="group" accessibilityLabel={t("funnel.a11y")}>
       {bars.map((bar) => (
         <View key={bar.step} style={styles.funnelRow}>
           <View style={styles.funnelHead}>

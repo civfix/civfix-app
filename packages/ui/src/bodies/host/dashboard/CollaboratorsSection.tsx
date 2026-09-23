@@ -390,8 +390,9 @@ export function CollaboratorsSection({ org }: CollaboratorsSectionProps) {
               variant="label"
               standalone
               accessibilityLabel={t("team.show_more_a11y")}
+              disabled={membersQuery.isFetchingNextPage}
               onPress={() => {
-                void membersQuery.fetchNextPage()
+                if (!membersQuery.isFetchingNextPage) void membersQuery.fetchNextPage()
               }}
             >
               {membersQuery.isFetchingNextPage ? t("team.loading_more") : t("team.show_more")}
