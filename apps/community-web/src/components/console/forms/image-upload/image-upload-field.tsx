@@ -62,14 +62,32 @@ export function ImageUploadField({
   const [dragging, setDragging] = useState(false)
   const counter = useRef(0)
   const mounted = useRef(true)
+  const abortRef = useRef<AbortController | null>(null)
+  const pendingPreviews = useRef(new Map<string, string>())
   const valuesRef = useRef(values)
   valuesRef.current = values
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mounted.current = true
+    const controller = new AbortController()
+    abortRef.current = controller
+    const previews = pendingPreviews.current
+    return () => {
       mounted.current = false
+      controller.abort()
+      for (const url of previews.values()) releaseCaptured(url)
+      previews.clear()
+    }
+  }, [])
+
+  const commit = useCallback(
+    (next: ConsoleImage[]) => {
+      // Uploads finish independently; the ref must move before the parent re-renders or a
+      // second completion in the same tick would overwrite the first.
+      valuesRef.current = next
+      onChange(next)
     },
-    [],
+    [onChange],
   )
 
   const room = Math.max(0, max - values.length - slots.filter((s) => s.state === "uploading").length)
@@ -78,12 +96,15 @@ export function ImageUploadField({
     async (mediaUri: string, media: Parameters<typeof uploadConsoleImage>[0]["media"]) => {
       counter.current += 1
       const key = `upload-${counter.current}`
+      pendingPreviews.current.set(key, mediaUri)
       setSlots((prev) => [...prev, { key, previewUrl: mediaUri, state: "uploading" }])
+      const signal = abortRef.current?.signal
       try {
-        const result = await uploadConsoleImage({ api, media })
+        const result = await uploadConsoleImage({ api, media, ...(signal ? { signal } : {}) })
         if (!mounted.current) return
+        pendingPreviews.current.delete(key)
         setSlots((prev) => prev.filter((slot) => slot.key !== key))
-        onChange([...valuesRef.current, { mediaId: result.mediaId, url: mediaUri }])
+        commit([...valuesRef.current, { mediaId: result.mediaId, url: mediaUri }])
       } catch (err) {
         if (!mounted.current) return
         setSlots((prev) =>
@@ -99,7 +120,7 @@ export function ImageUploadField({
         )
       }
     },
-    [api, onChange, t],
+    [api, commit, t],
   )
 
   const pick = useCallback(async () => {
@@ -135,7 +156,13 @@ export function ImageUploadField({
   const remove = (mediaId: string) => {
     const target = valuesRef.current.find((value) => value.mediaId === mediaId)
     if (target && target.url.startsWith("blob:")) releaseCaptured(target.url)
-    onChange(valuesRef.current.filter((value) => value.mediaId !== mediaId))
+    commit(valuesRef.current.filter((value) => value.mediaId !== mediaId))
+  }
+
+  const dismiss = (slot: UploadSlot) => {
+    releaseCaptured(slot.previewUrl)
+    pendingPreviews.current.delete(slot.key)
+    setSlots((prev) => prev.filter((s) => s.key !== slot.key))
   }
 
   return (
@@ -157,7 +184,7 @@ export function ImageUploadField({
               label={t("upload.remove")}
               disabled={disabled}
               onClick={() => remove(value.mediaId)}
-              className="absolute -right-1.5 -top-1.5 h-5 w-5 rounded-pill border border-console-line bg-console-surface text-console-ink-3 shadow-console-1"
+              className="absolute -right-2 -top-2 h-6 w-6 rounded-pill border border-console-line bg-console-surface text-console-ink-3 shadow-console-1"
             >
               <X aria-hidden className="h-3 w-3" />
             </ConsoleIconButton>
@@ -188,7 +215,7 @@ export function ImageUploadField({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setSlots((prev) => prev.filter((s) => s.key !== slot.key))}
+                  onClick={() => dismiss(slot)}
                   className="rounded-xs text-token-12 font-semibold text-console-bloom-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
                 >
                   {t("action.dismiss")}
