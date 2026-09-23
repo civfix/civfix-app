@@ -14,9 +14,15 @@ export function listTimeAgo(iso: string, opts: ListTimeAgoOptions = {}): string 
   })
 }
 
-export function distanceLabel(dist: number | null | undefined): string {
+export function distanceLabel(dist: number | null | undefined, locale = "en"): string {
   if (dist == null || Number.isNaN(dist)) return ""
-  return dist < 10 ? `${dist.toFixed(1)} mi` : `${Math.round(dist)} mi`
+  const digits = dist < 10 ? 1 : 0
+  const value = dist.toLocaleString(locale, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+    useGrouping: false,
+  })
+  return `${value} mi`
 }
 
 export function clockTime(iso: string, locale?: string): string {

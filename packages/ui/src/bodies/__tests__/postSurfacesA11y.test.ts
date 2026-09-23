@@ -47,6 +47,27 @@ describe("the post row is a pointer convenience, not an accessibility element (A
   })
 })
 
+describe("the thread reply row follows the same row contract (APP-A11Y-103/104)", () => {
+  const replyRow = code("../thread/ThreadReplyRow.tsx")
+  const row = between(replyRow, "<Pressable\n        onPress={openThread}", "style=")
+
+  it("spreads the shared row props and exposes no role, label, focus ring or key handler", () => {
+    expect(row).toContain("{...ROW_A11Y_PROPS}")
+    expect(row).not.toContain("accessibilityRole")
+    expect(row).not.toContain("accessibilityLabel")
+    expect(row).not.toContain("focusRingProps")
+    expect(row).not.toContain("linkKeyProps")
+  })
+
+  it("leaves the reply's Comment action as the keyboard and screen-reader way into the thread", () => {
+    expect(replyRow).toContain("onComment={openThread}")
+  })
+
+  it("retires the row role export nobody should reach for again", () => {
+    expect(code("../PostCard.tsx")).not.toContain("export const ROW_ROLE")
+  })
+})
+
 describe("a repost's comment and quote target the original (APP-BUG-203)", () => {
   const card = code("../PostCard.tsx")
 

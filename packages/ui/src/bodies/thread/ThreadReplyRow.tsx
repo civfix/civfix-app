@@ -17,7 +17,7 @@ import type { DetailEntry } from "../../nav/types"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
-import { ROW_ROLE, WEB_ROW_FOCUS_INSET, linkKeyProps } from "../PostCard"
+import { ROW_A11Y_PROPS, WEB_ROW_FOCUS_INSET } from "../PostCard"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "../../primitives/PostOverflowButton"
 import { PostOverflowMenu } from "../PostOverflowMenu"
@@ -128,11 +128,8 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
       <Pressable
         onPress={openThread}
         disabled={isOptimistic}
-        accessibilityRole={ROW_ROLE}
-        accessibilityLabel={t("post_card.open_thread_a11y", { name: identity.name })}
-        {...focusRingProps}
+        {...ROW_A11Y_PROPS}
         {...hoverProps}
-        {...(isOptimistic ? null : linkKeyProps(openThread))}
         style={(state) => [
           styles.outer,
           hairline ? styles.outerRule : null,
@@ -209,6 +206,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
                   label={t("post_card.more_a11y")}
                   onPress={openMenu}
                   buttonRef={menuTrigger.ref}
+                  expanded={menuOpen}
                 />
               )}
             </View>

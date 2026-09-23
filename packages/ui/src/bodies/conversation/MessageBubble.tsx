@@ -11,7 +11,7 @@ import { buildReactionChipModel } from "../../primitives/reactionChipModel"
 import { useClipboard, useOpenExternal, useOpenInternalHref } from "../../capabilities"
 import { useLightbox } from "../../lightbox"
 import { announce } from "../../announce"
-import { useT } from "../../i18n"
+import { useLocale, useT } from "../../i18n"
 import { buildMessageActions, isBlockableAuthor, type MessageActionKey } from "../messageActions"
 import { clockTime } from "../relativeTime"
 import { appLinkOrigins, mentionLookup, tokenizeChatBody, type ChatBodyToken, type ChatLinkTarget } from "./chatLinks"
@@ -317,6 +317,7 @@ export const Bubble = React.memo(function Bubble({
   const th = useTheme()
   const { t } = useT("conversation")
   const { t: td } = useT("discussion")
+  const { locale } = useLocale()
   const { t: tp } = useT("conversation-polls")
   const { message, mine, pending, failed } = item
   const body = message.body ?? ""
@@ -762,7 +763,7 @@ export const Bubble = React.memo(function Bubble({
       })() : null}
       {(groupEnd || edited) && !inFlight ? (
         <View style={styles.metaLine}>
-          {groupEnd ? <Text style={styles.timeText}>{clockTime(message.createdAt)}</Text> : null}
+          {groupEnd ? <Text style={styles.timeText}>{clockTime(message.createdAt, locale)}</Text> : null}
           {edited ? <Text style={styles.editedText}>{t("bubble.edited")}</Text> : null}
         </View>
       ) : null}

@@ -80,8 +80,6 @@ const EMPTY_MEDIA: PostDTO["media"] = []
 
 const IS_WEB = Platform.OS === "web"
 
-export const ROW_ROLE = IS_WEB ? "link" : "button"
-
 /**
  * The row is a pointer convenience, never an accessibility element: it wraps the name, permalink, mention,
  * media, action-bar and menu controls. On iOS an accessible Pressable hides all of them from VoiceOver, and
@@ -164,6 +162,7 @@ function MetaRow({
   onOpenPost,
   onOpenMenu,
   menuRef,
+  menuOpen,
 }: {
   model: PostCardModel
   t: TFunction
@@ -172,6 +171,7 @@ function MetaRow({
   onOpenPost: () => void
   onOpenMenu: () => void
   menuRef: React.Ref<RNView>
+  menuOpen: boolean
 }) {
   const styles = useStyles()
   const identity = model.identity
@@ -256,7 +256,7 @@ function MetaRow({
 
       <View style={styles.metaSpacer} />
 
-      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} />
+      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} expanded={menuOpen} />
     </View>
   )
 }
@@ -556,6 +556,7 @@ export const PostCard = React.memo(function PostCard({
                 onOpenPost={() => openPost(embedded.id)}
                 onOpenMenu={openMenu}
                 menuRef={menuTrigger.ref}
+                menuOpen={menuOpen}
               />
             ) : (
               <MetaRow
@@ -566,6 +567,7 @@ export const PostCard = React.memo(function PostCard({
                 onOpenPost={() => openPost(post.id)}
                 onOpenMenu={openMenu}
                 menuRef={menuTrigger.ref}
+                menuOpen={menuOpen}
               />
             )}
 
@@ -708,6 +710,7 @@ function EmbeddedPostMeta({
   onOpenPost,
   onOpenMenu,
   menuRef,
+  menuOpen,
 }: {
   identity: PostIdentity
   createdAt: string
@@ -718,6 +721,7 @@ function EmbeddedPostMeta({
   onOpenPost: () => void
   onOpenMenu: () => void
   menuRef: React.Ref<RNView>
+  menuOpen: boolean
 }) {
   const styles = useStyles()
   const linkable = identity.organization != null || identity.personId != null
@@ -788,7 +792,7 @@ function EmbeddedPostMeta({
 
       <View style={styles.metaSpacer} />
 
-      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} />
+      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} expanded={menuOpen} />
     </View>
   )
 }

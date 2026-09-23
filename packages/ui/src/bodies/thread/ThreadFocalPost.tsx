@@ -5,7 +5,7 @@ import type { PostDTO, PostRefDTO } from "@civfix/shared"
 import { Repeat2 } from "lucide-react-native/icons"
 import { makeThemedStyles, useTheme, categoryColor, focusRingProps, wash } from "../../theme"
 import { Text, Icon } from "../../typography"
-import { useT } from "../../i18n"
+import { useLocale, useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
 import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
 import { VerifiedBadge } from "../../primitives/VerifiedBadge"
@@ -102,6 +102,7 @@ export function ThreadFocalPost({
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("home-feed")
+  const { locale } = useLocale()
   const push = useNavStore((state) => state.push)
   const openEntry = onOpenEntry ?? push
   const timeAgo = useListTimeAgo()
@@ -164,7 +165,7 @@ export function ThreadFocalPost({
     },
     [lightbox, media],
   )
-  const timestamp = focalTimestamp(post.createdAt)
+  const timestamp = focalTimestamp(post.createdAt, locale)
   const timestampLine = post.editedAt != null ? `${timestamp} · ${t("thread.edited")}` : timestamp
 
   return (
@@ -220,6 +221,7 @@ export function ThreadFocalPost({
           label={t("post_card.more_a11y")}
           onPress={openMenu}
           buttonRef={menuTrigger.ref}
+          expanded={menuOpen}
         />
       </View>
 

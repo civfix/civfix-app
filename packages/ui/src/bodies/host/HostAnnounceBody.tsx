@@ -277,6 +277,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
                   key={slot.id}
                   label={slot.title}
                   selected={slotIds.includes(slot.id)}
+                  selection="multiple"
                   onPress={() => toggleSlot(slot.id)}
                 />
               ))

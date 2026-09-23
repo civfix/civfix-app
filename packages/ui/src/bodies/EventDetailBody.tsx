@@ -225,7 +225,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
 
   const where = cleanup.address?.trim()
   const hasPoint = cleanup.lat != null && cleanup.lng != null
-  const dist = eventDistanceLabel(cleanup.dist)
+  const dist = eventDistanceLabel(cleanup.dist, locale)
   const goingCount = cleanup.going
 
   const onMessageCrew = useCallback(() => {

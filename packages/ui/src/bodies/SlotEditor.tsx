@@ -434,6 +434,7 @@ export function SlotEditor({
             key={count}
             label={String(count)}
             selected={false}
+            selection="action"
             disabled={!offeredSplits.includes(count)}
             onPress={() => onSplit(count)}
             accessibilityLabel={t("editor.split_count_a11y", { count })}
@@ -490,6 +491,7 @@ export function SlotEditor({
           <FilterChip
             label={t("editor.suggest_general")}
             selected={false}
+            selection="action"
             onPress={onSuggestGeneral}
             accessibilityLabel={t("editor.suggest_general_a11y")}
           />

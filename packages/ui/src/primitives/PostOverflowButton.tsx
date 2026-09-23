@@ -29,6 +29,8 @@ const WEB_MORE_TARGET: ViewStyle = IS_WEB
     }
   : {}
 
+const WEB_MENU_TRIGGER_PROPS = IS_WEB ? ({ "aria-haspopup": "menu" } as object) : null
+
 const WEB_MORE_HALO_TOP: ViewStyle = IS_WEB
   ? { top: (RHYTHM.overflowTarget - RHYTHM.overflowHalo) / 2 }
   : {}
@@ -37,9 +39,10 @@ export interface PostOverflowButtonProps {
   label: string
   onPress: () => void
   buttonRef: React.Ref<RNView>
+  expanded: boolean
 }
 
-export function PostOverflowButton({ label, onPress, buttonRef }: PostOverflowButtonProps) {
+export function PostOverflowButton({ label, onPress, buttonRef, expanded }: PostOverflowButtonProps) {
   const styles = useStyles()
   const th = useTheme()
   const buttonStyle = React.useMemo(
@@ -55,6 +58,8 @@ export function PostOverflowButton({ label, onPress, buttonRef }: PostOverflowBu
       }}
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ expanded }}
+      {...WEB_MENU_TRIGGER_PROPS}
       hitSlop={8}
       {...focusRingProps}
       style={buttonStyle}
