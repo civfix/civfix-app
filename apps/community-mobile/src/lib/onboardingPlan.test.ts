@@ -5,6 +5,8 @@ import {
   ONBOARDING_PAGES,
   ONBOARDING_PAGE_COUNT,
   clampPageIndex,
+  demoChatAt,
+  demoEventAt,
   onboardingBackPlan,
   onboardingEnterPlan,
   pageIndexForOffset,
@@ -149,4 +151,28 @@ test("the decision reads nothing but the two inputs, so it cannot go sticky", ()
       assert.equal(onboardingEnterPlan({ loadingGateMounted, reduceMotion }), once)
     }
   }
+})
+
+test("the tour's demo event is always the coming Saturday at 09:00 local, never in the past", () => {
+  const days = [0, 1, 2, 3, 4, 5, 6]
+  for (const offset of days) {
+    for (const hour of [0, 8, 9, 10, 23]) {
+      const now = new Date(2026, 8, 20 + offset, hour, 30)
+      const at = new Date(demoEventAt(now))
+      assert.equal(at.getDay(), 6, now.toString())
+      assert.equal(at.getHours(), 9, now.toString())
+      assert.equal(at.getMinutes(), 0, now.toString())
+      assert.ok(at.getTime() > now.getTime(), now.toString())
+      assert.ok(at.getTime() - now.getTime() <= 7 * 24 * 60 * 60_000, now.toString())
+    }
+  }
+  assert.ok(new Date(demoEventAt(new Date(2026, 8, 23, 12))).getTime() > Date.parse("2026-09-12T16:00:00.000Z"))
+})
+
+test("the demo chat was sent moments ago, oldest first", () => {
+  const now = new Date(2026, 8, 23, 18, 44)
+  const [ask, reply] = demoChatAt(now)
+  assert.ok(Date.parse(ask) < Date.parse(reply))
+  assert.ok(Date.parse(reply) < now.getTime())
+  assert.ok(now.getTime() - Date.parse(ask) <= 10 * 60_000)
 })

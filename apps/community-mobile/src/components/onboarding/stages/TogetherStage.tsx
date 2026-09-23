@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import { StyleSheet, View } from "react-native"
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from "react-native-reanimated"
 import type { ChatItem } from "@civfix/shared"
@@ -17,6 +17,7 @@ import {
 } from "@civfix/ui"
 import { useLocale, useT } from "@civfix/ui/i18n"
 import { makeThemedStyles, space, useTheme } from "@/theme"
+import { demoChatAt, demoEventAt } from "@/lib/onboardingPlan"
 import {
   DEMO_ATTENDEES,
   DEMO_GOING_AFTER,
@@ -109,16 +110,20 @@ export function TogetherStage({ active, reduceMotion }: StageProps) {
   const goingCount = step >= 2 ? DEMO_GOING_AFTER : DEMO_GOING_BEFORE
   const typingVisible = active && step === TYPING_STEP
 
+  const [shownAt] = useState(() => new Date())
+  const scheduledAt = useMemo(() => demoEventAt(shownAt), [shownAt])
+  const sentAt = useMemo(() => demoChatAt(shownAt), [shownAt])
+
   const eventTitle = t("together.stage.event_title")
   const eventAddress = t("together.stage.event_address")
   const cleanup = useMemo(
-    () => demoCleanup(eventTitle, eventAddress, goingCount),
-    [eventTitle, eventAddress, goingCount],
+    () => demoCleanup(eventTitle, eventAddress, goingCount, scheduledAt),
+    [eventTitle, eventAddress, goingCount, scheduledAt],
   )
 
   const askBody = t("together.stage.chat_1")
   const replyBody = t("together.stage.chat_2")
-  const chat = useMemo(() => demoChatItems(askBody, replyBody), [askBody, replyBody])
+  const chat = useMemo(() => demoChatItems(askBody, replyBody, sentAt), [askBody, replyBody, sentAt])
 
   const pinStyle = useAnimatedStyle(() => {
     const drop = GRAVITY_EASE(segment(progress.value, W_PIN[0], W_PIN[1]))
