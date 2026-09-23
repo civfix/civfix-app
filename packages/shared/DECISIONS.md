@@ -283,14 +283,14 @@ the cleanup *group* chat surface is untouched and pre-DM clients keep parsing:
   participant, so the inbox renders their `@handle` + avatar without a second fetch. Null/omitted for
   cleanup/group threads. `kind:"dm"` + `refId` already existed (the contract was pre-shaped for DMs).
 - **Username search, NOT a directory dump.** `SearchUsersRequest` REQUIRES a non-empty `q` (a leading
-  `@` is stripped server-side) — there is deliberately no list-everyone form. `searchUsers` (GET
-  `/users/search`) is auth-required and returns `UserSearchResultDTO` — a minimal `{id, handle,
+  `@` is stripped server-side); there is deliberately no list-everyone form. `searchUsers` (GET
+  `/users/search`) is auth-required and returns `UserSearchResultDTO`: a minimal `{id, handle,
   displayName, avatar, avatarUrl?}` with NO email/bio/follower counts and a non-null handle. `listPeople`
   (GET `/people`) was tightened to `auth: "required"` and its `q` is required server-side, killing
   anonymous enumeration of the user base.
-- **DM endpoints.** `openDm` (POST `/dm`, csrf) is idempotent — a thread is unique per unordered user
+- **DM endpoints.** `openDm` (POST `/dm`, csrf) is idempotent: a thread is unique per unordered user
   pair, so it returns the same `MessageThreadDTO` on replay; it rejects with `FORBIDDEN` (403) when the
-  target disabled DMs (and no thread exists yet) OR either party blocked the other — deliberately
+  target disabled DMs (and no thread exists yet) OR either party blocked the other, deliberately
   indistinguishable so neither state leaks. `dmMessages` (GET `/dm/:id/messages`, `:id` ← `threadId`)
   mirrors `cleanupMessages` and reuses `ChatHistoryResponse`. DM *send* reuses the WS `send` frame with
   `roomKind:"dm"`; no new WS frame types.
@@ -299,11 +299,11 @@ the cleanup *group* chat surface is untouched and pre-DM clients keep parsing:
   the user from search AND rejects new `openDm` toward them, but existing threads keep working.
 - **Blocking.** `blockUser`/`unblockUser` (POST/DELETE `/users/:id/block`, csrf) + `listBlocks` (GET
   `/me/blocks`). Blocking hides the DM thread for both sides and rejects sends, so a user can stop an
-  existing conversation. Block vs DM-disabled both surface as `FORBIDDEN` (no leak). No new `ErrorCode` —
+  existing conversation. Block vs DM-disabled both surface as `FORBIDDEN` (no leak). No new `ErrorCode`:
   `FORBIDDEN`/`NOT_FOUND` cover every DM failure.
 - **Seam.** `PersistChatInput` gained an optional `roomKind` that rides onto the persisted DTO so the
   in-process fake (USE_FAKE_CHAT dev path) renders DMs too. The `ChatService` interface methods are
-  otherwise unchanged — DM fan-out reuses the opaque-keyed `joinRoom/leaveRoom/broadcast/broadcastEvent`
+  otherwise unchanged: DM fan-out reuses the opaque-keyed `joinRoom/leaveRoom/broadcast/broadcastEvent`
   with a `dm:<id>` room key; DM persistence/history are routed to a DB-backed dm repository in the
   backend (not a new shared seam).
 
@@ -316,17 +316,17 @@ what gates that. Two decisions follow.
 
 - `EmailOtpVerifyRequest.code` is a UNION: `/^\d{6}$/` (the emailed OTP) OR a string of
   `REVIEWER_OTP_CODE_MIN_LENGTH`..`REVIEWER_OTP_CODE_MAX_LENGTH` characters (20..128, the reviewer
-  code). The former sole 6-digit regex made the bypass unreachable — the backend validates the body
+  code). The former sole 6-digit regex made the bypass unreachable: the backend validates the body
   with this schema BEFORE the service that owns the bypass decision, so a valid reviewer code was
   rejected at the boundary and `verifyOtp` never saw it. Widening an accepted input set is additive and
   backward compatible: every payload valid under the old schema is still valid, no response shape
   changes, and the schema stays `.strict()` so unknown keys are still rejected. The schema deliberately
-  does NOT try to enforce "long code only for the reviewer email" — authorization is the server's job
+  does NOT try to enforce "long code only for the reviewer email": authorization is the server's job
   (the code is compared only for `REVIEWER_OTP_EMAIL`, only when the deployment enabled the bypass, and
   the comparison is the only thing that can mint a session), and encoding it here would leak an
   auth rule into a client-side validator that clients can skip anyway.
 - `REVIEWER_OTP_EMAIL = "reviewer@civfix.org"` and the two length bounds are exported from
-  `schemas/auth.ts` (the auth domain owns them, alongside the schema that uses the bounds — the same
+  `schemas/auth.ts` (the auth domain owns them, alongside the schema that uses the bounds; the same
   placement as `MAX_IMAGE_BYTES` in `schemas/media.ts`). Clients need the address to branch their code
   entry UI onto a plain long-code field instead of a 6-digit segmented input; the backend currently
   keeps its own copy (`services/api/src/auth/otp.ts`) and should collapse onto this one so the address
@@ -341,10 +341,10 @@ explicit direction. The endpoint MERGED a named person's public actions into one
 cursor-paginated, auth-OPTIONAL stream keyed by user id or `@handle`. The server produced four kinds:
 `created_report`, `hosted_event`, `attended_event`, `followed_user`. (The enum also carried
 `commented_event`, but its repository leg had already been removed so a cleanup/group-chat message
-could never surface as activity — a dead value at the time of removal.)
+could never surface as activity. It was a dead value at the time of removal.)
 
 Every individual row was already public somewhere else, but the MERGE was not: it turned scattered,
-individually-innocuous records into a per-person behavioral timeline that anyone — signed out — could
+individually-innocuous records into a per-person behavioral timeline that anyone (even signed out) could
 page through and archive. That is a profiling surface rather than a civic-record surface, and the
 aggregate is the thing this decision refuses.
 
@@ -363,7 +363,7 @@ separate decision that has not been made here.
 
 No data was deleted and no migration was written: the stream was a read-model UNION over tables
 (reports, cleanups, follows) that other features own and keep using. Removing the read surface is the
-whole change — there is nothing to un-persist because the aggregate was never stored.
+whole change: there is nothing to un-persist because the aggregate was never stored.
 
 The precedent this sets: a derived AGGREGATE of public rows is its own privacy decision, judged on the
 aggregate's own merits, and is not automatically justified by each row being public. Anything that
@@ -378,10 +378,10 @@ is optional so existing implementers keep compiling. Nothing here is a shape cha
 
 - **Quiet-hours `tz` (`QuietHoursSchema.tz`)**: `z.string().min(1).max(64).nullable().optional()`. An IANA
   zone name (e.g. `America/Los_Angeles`); the server evaluates the quiet-hours window in this zone. When
-  null or absent, quiet-hours suppression is DISABLED (fail-open) rather than evaluated in UTC — an
+  null or absent, quiet-hours suppression is DISABLED (fail-open) rather than evaluated in UTC; an
   absent zone must never silently mute at the wrong wall-clock time. It MUST stay optional:
   `UpdateNotificationPrefsRequestSchema` is `NotificationPrefsDTOSchema.partial().strict()`, and
-  `.partial()` is shallow — the nested `quietHours` object is validated in full on ingress, so a required
+  `.partial()` is shallow: the nested `quietHours` object is validated in full on ingress, so a required
   `tz` would 422 every existing prefs PATCH.
 
 - **`AbuseChecks.verifyTurnstile` expectation param**: the signature gains a third optional
@@ -391,7 +391,7 @@ is optional so existing implementers keep compiling. Nothing here is a shape cha
   last `expect` it received so tests can assert propagation; its verdict is unchanged.
 
 - **`POST /push/unregister` (`pushUnregister` + `UnregisterPushTokenRequest`)**: client-driven push-token
-  revocation — `{ platform, token }`, `.strict()`, `token` bounded `1..2048`, reusing
+  revocation: `{ platform, token }`, `.strict()`, `token` bounded `1..2048`, reusing
   `RegisterPushTokenResponseSchema` (do not invent a response shape). It is DECOUPLED from logout: the
   server-side logout backstop that revoked tokens is dropped, so `logout` stays `request: null`. The
   request body is required; there is no body-less tolerance (that concern only applied to the dropped
@@ -401,26 +401,26 @@ is optional so existing implementers keep compiling. Nothing here is a shape cha
   same `PaginationQuerySchema` cursor/limit query as the other cursor-paginated GETs (`listNotifications`,
   `listPeople`), and the response gains `nextCursor: z.string().nullable().optional()`. Both are additive:
   an old client's bare GET still validates (query fields optional) and ignores `nextCursor`, seeing page
-  one — identical behavior for block lists under the page size.
+  one (identical behavior for block lists under the page size).
 
 - **`MailMessageDTO.truncated`**: `z.boolean().optional()`. `MailMessageDTOSchema` is `.strict()`, so
   without a declared field the backend cannot signal that it truncated a long mail body. Optional so
   older payloads stay valid.
 
 - **Input tightenings (no shipped client violates them)**: the WS client `send` frame `clientId` is bounded
-  `1..64` (producers emit ≤36-char ids — `packages/ui/src/data/hooks/chat.ts` `newClientId()`); RESPONSE /
+  `1..64` (producers emit ≤36-char ids: `packages/ui/src/data/hooks/chat.ts` `newClientId()`); RESPONSE /
   server-ack `clientId` fields are deliberately NOT touched (tightening a payload a new client must parse
   from an old server would break it). `RegisterPushTokenRequest.token` (and the new unregister twin) is
   bounded `1..2048` (Expo device tokens ~40 chars). `EventHoursEntry.hours` gains a `MIN_EVENT_HOURS`
-  (0.01) floor exported beside `MAX_EVENT_HOURS`; no `.multipleOf(0.01)` (float-equality hazard) — 2-dp
+  (0.01) floor exported beside `MAX_EVENT_HOURS`; no `.multipleOf(0.01)` (float-equality hazard); 2-dp
   rounding stays a backend concern. Anon `AnonReportRequest.mediaUploadIds` is capped at `.max(5)`,
   aligning with the authed `CreateReportRequest` twin.
 
 ## 17. A state-changing endpoint may not be a GET: `claimNudge` becomes POST (0.37.0)
 
 `claimNudge` was registered as `GET /claim/nudge` with `request: null`, and the caller passed its
-`anonToken` as a query param. Since the claim-code hashing fix the handler is a MUTATION — it mints
-and rotates the pending claim code — so the GET registration was two defects at once, and the method
+`anonToken` as a query param. Since the claim-code hashing fix the handler is a MUTATION (it mints
+and rotates the pending claim code), so the GET registration was two defects at once, and the method
 is the fix for both.
 
 - **CSRF via top-level navigation.** The anonymous session rides on the `civfix_anon` cookie, which is
@@ -429,12 +429,12 @@ is the fix for both.
   victim's pending claim code. `SameSite=Lax` does NOT send the cookie on a cross-site POST, so moving
   the endpoint to POST closes the vector by construction.
 - **Secret in the URL.** The mobile client has no anon cookie and passed `?anonToken=...` instead,
-  putting a bearer-equivalent secret into request URLs — the one part of a request that edge proxies,
+  putting a bearer-equivalent secret into request URLs, the one part of a request that edge proxies,
   access logs, and `Referer` headers all retain. A body keeps it out of all three.
 
 The registry row is now `POST /claim/nudge | ClaimNudgeRequest(body) | ClaimNudgeResponse | optional |
-csrf:false`, and `ClaimNudgeRequestSchema` is `z.object({ anonToken: z.string().optional() }).strict()`
-— the exact shape (and optionality) the backend's route-local query schema already validated, so only
+csrf:false`, and `ClaimNudgeRequestSchema` is `z.object({ anonToken: z.string().optional() }).strict()`:
+the exact shape (and optionality) the backend's route-local query schema already validated, so only
 the transport moves. `anonToken` stays optional because the cookie is still the primary carrier; the
 field exists for the cookie-less mobile caller.
 
@@ -445,7 +445,7 @@ the endpoint exists for while adding nothing POST has not already denied the cro
 
 This is BREAKING (a method change; the generated client method goes from `api.claimNudge()` to
 `api.claimNudge({ anonToken? })` posting a body). On 0.x it ships as a minor bump, and the backend
-adopts the new range together with its route change — the handler must read `request.body`, not
+adopts the new range together with its route change: the handler must read `request.body`, not
 `request.query`. The precedent: an endpoint that mints, rotates, or invalidates a credential is a
 mutation regardless of how read-shaped its response looks, and it is registered with a non-GET method
 from the start.
@@ -458,18 +458,18 @@ will not create an account to say so. Guest RSVP closes that gap WITHOUT minting
 directory, and the shape of the contract is what keeps that promise.
 
 - **A guest is a row scoped to one event, not an identity.** `CleanupGuestDTO` carries a name, the
-  channel they verified on, the contact string, and the join/cancel timestamps — and nothing else. There
+  channel they verified on, the contact string, and the join/cancel timestamps, and nothing else. There
   is no guest account, no cross-event identity, no handle, and no way to look a guest up by contact.
   The same person RSVPing to two events is two unrelated rows, deliberately: correlating them would
   build the person-level directory this design refuses. This mirrors the gov plane's deliberate absence
   of a `ResidentDTO`.
 - **Contact is visible on exactly one read surface.** `getCleanupGuests` (`GET /cleanups/:id/guests`,
   `auth: "required"`) is the only endpoint that returns a guest's email or phone, and the server scopes
-  it to the event's organizer and cohosts — the people who need to reach their own attendees. Contact
+  it to the event's organizer and cohosts: the people who need to reach their own attendees. Contact
   never rides on `CleanupDTO`, never appears on the public attendee roster, and never reaches a plain
   member. `CleanupGuestDTO.email` / `.phone` are `nullable` (not optional) because they are NULLed in
-  place on two separate triggers: the retention scrub ~30 days after the event's `scheduledAt` passes —
-  or, for a cancelled event, ~30 days after the RSVP itself was made — AND
+  place on two separate triggers: the retention scrub ~30 days after the event's `scheduledAt` passes
+  (or, for a cancelled event, ~30 days after the RSVP itself was made) AND
   immediately when the guest themselves cancels. A cancel is an explicit "stop contacting me", so it
   must not leave the host holding a working phone number for another month; the row survives as the
   record that someone RSVPd and withdrew, the means of contacting them does not. Every guest with a
@@ -477,12 +477,12 @@ directory, and the shape of the contract is what keeps that promise.
   contact is already gone.
 - **The roster is bounded.** `getCleanupGuests` takes `GetCleanupGuestsRequest`
   (`PaginationQuerySchema` + the event `id`) and its response carries
-  `nextCursor: z.string().nullable().optional()` beside the full `count` — the same shape the blocks
+  `nextCursor: z.string().nullable().optional()` beside the full `count`, the same shape the blocks
   list took in section 16. An unbounded array is not acceptable for any list, and least of all for one
   carrying contact details for an event that may have drawn hundreds of guests. `count` spans ALL
   pages, so it equals `guests.length` only on a single-page roster.
 - **There is ONE guest count, and it means "still coming".** `GetCleanupGuestsResponse.count` and
-  `CleanupDTO.guestCount` both count ACTIVE guests (`cancelled_at IS NULL`) — deliberately the same
+  `CleanupDTO.guestCount` both count ACTIVE guests (`cancelled_at IS NULL`): deliberately the same
   number from two surfaces, so a client may use whichever it has without the header changing when a
   page loads. The ROWS are a superset: `getCleanupGuests` still returns cancelled guests (contact
   NULLed, `cancelledAt` set) because withdrawing is part of the record a host reads. So `count` is
@@ -497,46 +497,46 @@ directory, and the shape of the contract is what keeps that promise.
 
   This is a SEMANTIC WIDENING of a field shipped clients already read, and it is the one part of this
   release that is not purely additive, so the rule is pinned here once and applies to every `going` in
-  the contract — `CleanupDTO.going`, `CleanupAttendeesResponse.going`, `JoinCleanupResponse.going` /
-  `LeaveCleanupResponse.going`, and `RemoveMemberResponse.going`: ALL of them count members plus
+  the contract (`CleanupDTO.going`, `CleanupAttendeesResponse.going`, `JoinCleanupResponse.going` /
+  `LeaveCleanupResponse.going`, and `RemoveMemberResponse.going`): ALL of them count members plus
   verified, non-cancelled guests, and they must always agree with each other. The backend may not
   implement four different answers, and `CleanupAttendeesResponse.going` in particular stays exactly
   equal to `CleanupDTO.going` (its doc comment's promise) even though `attendees` lists only users. The
   consequence a client must handle: `going - attendees.length` is an overflow count that now includes
-  guests, who have no roster row and never will — the same "+N others" overflow the scope-`following`
+  guests, who have no roster row and never will. It is the same "+N others" overflow the scope-`following`
   roster already produces, so a client that renders the difference as a plain number stays correct,
   while one that assumes every counted attendee is fetchable does not.
 - **Verification is what makes a guest real.** RSVP is two steps: `guestRsvpRequest` sends a code to the
-  claimed contact, `guestRsvpVerify` redeems it and joins. Both are `auth: "public"` and `csrf: false` —
+  claimed contact, `guestRsvpVerify` redeems it and joins. Both are `auth: "public"` and `csrf: false`:
   CSRF tokens are a cookie-session defense and a guest has no session (the same reasoning as
   `claimNudge`, section 17). The anti-abuse controls are therefore carried in the body: a Turnstile token
-  (bounded 1..2048) and a `website` honeypot typed `z.string().optional()` — accepted at the boundary
+  (bounded 1..2048) and a `website` honeypot typed `z.string().optional()`, accepted at the boundary
   and treated as an abuse signal server-side, exactly as `AnonReportRequest.honeypot` has always been.
   It is deliberately NOT `.max(0)`: a strict rejection returns an `AppError` whose `fields` names the
   offending key, teaching a bot in one request precisely which field to stop filling, and a honeypot
   that announces itself is not a honeypot. Accept-and-flag means a bot's request looks like it worked.
   Rate limiting per event and per contact is the server's job. `guestRsvpVerify.code` reuses the OTP
-  union — a 6-digit code OR a `REVIEWER_OTP_CODE_MIN_LENGTH`..`MAX` string — so the app-store reviewer
+  union (a 6-digit code OR a `REVIEWER_OTP_CODE_MIN_LENGTH`..`MAX` string), so the app-store reviewer
   bypass (section 14) reaches the guest flow instead of dying at the boundary, exactly as it did for
   sign-in. That union is now `OtpCodeSchema`, exported once from `schemas/auth.ts` and shared by
   `EmailOtpVerifyRequest` and `GuestRsvpVerifyRequest`, so the two accepted code spaces cannot drift.
   The bypass is now reachable on a PUBLIC endpoint with a caller-supplied contact, so the backend MUST
-  keep it gated on the deployment flag AND the reviewer contact specifically — otherwise any deployment
+  keep it gated on the deployment flag AND the reviewer contact specifically; otherwise any deployment
   with the flag on lets a caller attach an arbitrary phone number as a verified guest.
 - **A rejected code says WHY in `fields`, not in the code.** Every `guestRsvpVerify` refusal of the code
   itself stays `UNAUTHORIZED` (a wrong code, an expired or absent one, and a spent attempt budget are
   indistinguishable to an attacker by status code). The client still has to tell "try again" from "start
   over", so the reason rides in `AppError.fields` under `GUEST_OTP_ERROR_FIELD` (`"otp"`) with a
-  `GuestOtpErrorReason` value — `invalid_code`, `attempts_exhausted`, or `locked_out`. The first two are
+  `GuestOtpErrorReason` value: `invalid_code`, `attempts_exhausted`, or `locked_out`. The first two are
   verdicts on the submitted code; `locked_out` is a THROTTLE (the per-IP verify fail window), which is why
-  the UI renders it as "wait and retry" and offers no start-over — a fresh code from the same IP would
+  the UI renders it as "wait and retry" and offers no start-over: a fresh code from the same IP would
   still be unverifiable until the window passes. All constants are exported from
   the contract so backend and UI key on the same strings instead of inferring intent from an ErrorCode:
   the earlier UI read `RATE_LIMITED` for exhaustion, which the backend never emits, so the start-over
   state was dead and every real code failure rendered the generic error.
 - **Cancelling is capability-based, not identity-based.** `guestRsvpVerify` returns a `manageToken`; a
   guest cancels with `guestRsvpCancel` (`POST /guest-rsvp/cancel`) by presenting it. The token is the
-  ONLY thing that authorizes the cancel, so the endpoint takes no event id and no contact — it cannot be
+  ONLY thing that authorizes the cancel, so the endpoint takes no event id and no contact; it cannot be
   used to probe whether an address RSVPd to an event, and an unsubscribe link stays a single opaque
   URL. `GUEST_MANAGE_TOKEN_MIN_LENGTH` (20) is a secret-material floor, matching the reviewer-code
   floor, and `GuestRsvpVerifyResponse.manageToken` carries the SAME bounds as the cancel request, so a
@@ -550,7 +550,7 @@ directory, and the shape of the contract is what keeps that promise.
 
 Outbound SMS is the eleventh seam: `SmsSender { send(to, body): Promise<SentSms> }` in
 `interfaces/sms-sender.ts`, with `FakeSmsSender` beside the other fakes. It is deliberately the
-narrowest interface in the set — one method, a destination, a body, and a returned provider id for
+narrowest interface in the set: one method, a destination, a body, and a returned provider id for
 delivery correlation. No templates, no bulk send, no delivery-status callbacks: SMS is a per-provider
 minefield of formats and every capability added here would have to be implemented by every future
 adapter. The vendor SDK lives only in a backend adapter wired through `di.ts`, so the whole backend
@@ -558,7 +558,7 @@ still boots with zero credentials on the fake.
 
 - **`to` is E.164 and, for now, US-only.** `GuestPhoneSchema` is `/^\+1[2-9]\d{9}$/`: a `+1` country
   code and an area code that cannot start with 0 or 1 (which are not assignable). This is a
-  deliberately narrow validator, not an approximation of a general phone parser — every widening is a
+  deliberately narrow validator, not an approximation of a general phone parser; every widening is a
   contract change made on purpose. Rejecting at the boundary matters because SMS costs money per
   message and international destinations cost multiples of a US one, so a malformed or premium-rate
   destination is a spend bug, not just a validation miss.
@@ -570,7 +570,7 @@ still boots with zero credentials on the fake.
   have hit its cap. `guestSmsEnabled: z.boolean().optional()` is added to BOTH `SessionResponse` and
   `SessionCheckResponse` so a client can hide the SMS channel instead of offering a button that always
   fails. `SessionCheckResponse` carries it because `GET /auth/session` is the surface a logged-OUT web
-  visitor actually reaches — and a logged-out visitor is precisely who the guest flow exists for; the
+  visitor actually reaches, and a logged-out visitor is precisely who the guest flow exists for; the
   sign-in-only placement would advertise the capability to the one audience that does not need it.
   Optional on both, so a server that omits it and a consumer built before it stay valid; absent means
   "do not offer SMS".
@@ -580,7 +580,7 @@ still boots with zero credentials on the fake.
   already means "this event is closed to new RSVPs". A client that read the bare code as an SMS refusal
   made a guest who picked SMS for a closed event lose their typed number, told them text messages were
   unavailable (false), hid the real reason, and failed them again on email. Widening that heuristic is
-  not the fix — a refusal that needs signalling without a field path is a contract gap to close here.
+  not the fix: a refusal that needs signalling without a field path is a contract gap to close here.
 - **The daily cap is one budget for every outbound guest text.** `SMS_DAILY_CAP` is reserved before the
   verification code, the RSVP confirmation, AND each fan-out recipient's text, on one counter. Metering
   only the OTP let anyone holding a few self-owned events turn the per-event fan-out throttle into
@@ -592,12 +592,12 @@ still boots with zero credentials on the fake.
 `UserProfileDTO.pastEvents` was the profile's only event list and it was being read as "this person's
 events", which is two different products with two different privacy answers.
 
-- **`pastEvents` is strictly past** — events that have already happened. It is a civic record of what
+- **`pastEvents` is strictly past**: events that have already happened. It is a civic record of what
   someone did, the same category of public fact as a published report.
 - **`upcomingEvents`** (`z.array(CleanupDTOSchema).optional()`) is new and is scoped by viewer: for a
   PUBLIC viewer it carries only the events this person is HOSTING; for the profile owner viewing their
-  own profile it carries hosting AND attending. Hosting is already public — an event page names its
-  organizer and invites the neighborhood — so publishing it adds nothing. Attending is different: it is
+  own profile it carries hosting AND attending. Hosting is already public (an event page names its
+  organizer and invites the neighborhood), so publishing it adds nothing. Attending is different: it is
   a statement of where a named person will physically be at a known future time, which is exactly the
   aggregate section 15 refused to build. The asymmetry is the whole decision; a future request to show
   attendance publicly needs a fresh compliance decision, not this field.
@@ -605,22 +605,22 @@ events", which is two different products with two different privacy answers.
   `getProfileEvents` (`GET /people/:id/events`, `auth: "optional"`) pages it with the shared
   `PaginationQuerySchema` + `pageResponse(CleanupDTOSchema)` helpers rather than a bespoke shape, and
   `UserProfileDTO.pastEventsCursor` (`z.string().nullable().optional()`) hands the client the cursor to
-  continue from the inline first page. `getProfileEvents` serves the PAST list only — it carries no
+  continue from the inline first page. `getProfileEvents` serves the PAST list only; it carries no
   window discriminator, because the upcoming list is viewer-scoped (see above) and bounded server-side
-  rather than paged; adding a window param later is additive if that changes. Per the house rule the request carries NO default page size — the
+  rather than paged; adding a window param later is additive if that changes. Per the house rule the request carries NO default page size; the
   service owns it. `ProfileEventsRequest.id` is `z.string()`, not `IdSchema`, because the profile routes
   key on a uuid OR an `@handle` (matching `ConnectionsListQuery`); an `IdSchema` here would 422 every
   handle-addressed request.
 
 Everything in sections 18-20 is additive in SHAPE: every new response field is optional or nullable, no
 existing field changed shape, and the five new endpoints are new registry rows. The one behavioral
-change is `going` including verified guests, pinned in section 18 — it needs no client edit to keep
+change is `going` including verified guests, pinned in section 18; it needs no client edit to keep
 parsing, but it does change what an already-deployed client's turnout number means.
 
 OPEN COMPLIANCE ITEM, recorded here because the contract commits to it: guest RSVP is the first PII the
 platform holds for people who are NOT users, and phone numbers are a PII class the platform has never
 held at all. Two things must be settled before this ships, and neither is decided by this contract
-change: (1) the SMS consent artifact — US SMS consent has to be evidenced, and `GuestRsvpRequest`
+change: (1) the SMS consent artifact: US SMS consent has to be evidenced, and `GuestRsvpRequest`
 currently records no explicit opt-in and no disclosure version, so if consent must be auditable the
 request grows those fields (additive; the schema is unshipped); (2) the ~30-day guest scrub is a NEW
 retention TTL that does not yet exist in `civfix-backend/docs/retention-cleanup.md` and must land there
@@ -631,8 +631,8 @@ with the backend implementation.
 The inbox row's "Delete" is a per-viewer visibility change, not a delete. `toggleConversationHidden`
 (PUT `/conversations/hidden`, auth required, csrf, `{ roomKind, roomId, hidden }`) records the caller's
 own hide; the room, its messages and every other participant's inbox are untouched. This follows the
-same rule as the rest of the chat surface — chat/DM deletes are tombstones, published civic content is
-never cascaded away — and it is the only reading that stays honest when the other side is still typing
+same rule as the rest of the chat surface (chat/DM deletes are tombstones, published civic content is
+never cascaded away), and it is the only reading that stays honest when the other side is still typing
 into a thread you "deleted".
 
 - **Hidden is a WATERMARK, not a flag.** The server stores the instant of the hide and the threads list
@@ -643,7 +643,7 @@ into a thread you "deleted".
   Every thread family (cleanup, dm, report, group) `LEFT JOIN`s `conversation_hides` on the viewer +
   room and keeps a row only when `hidden_at IS NULL OR <latest activity> > hidden_at`, so the `LIMIT`
   counts visible rows only. A page is exact: `listThreads` returns a full page whenever a full page of
-  visible rooms exists, and `nextCursor` is never paired with a short or empty page — a client's
+  visible rooms exists, and `nextCursor` is never paired with a short or empty page; a client's
   `onEndReached` cannot stall on a window that happened to be all hidden. The comparison is a strict
   `>` against native `timestamptz`, so the microsecond-precision `hidden_at` is compared against the
   untruncated activity instant rather than a millisecond-rounded copy of it.
@@ -881,7 +881,7 @@ record. See §46.
 
 The operator console reaches the API only through `/v1/admin/*`: the Access-gated edge site proxies
 that prefix to the API and serves the SPA for everything else. The first cut of the host-platform
-contract left three operator reads with no reachable route — the verification-evidence document
+contract left three operator reads with no reachable route: the verification-evidence document
 (`getMedia`), the signup-page content (`getPublicEventPage`), and the served legal versions
 (`getLegalVersions`).
 
@@ -893,7 +893,7 @@ was rejected on two counts, and the second is the decisive one:
 2. **It would have made an unaudited media read reachable from the operator host.** Showing an
    operator the identity documents someone uploaded to prove a legal entity is defensible only if
    "who looked at whose evidence" is answerable. The citizen route does not audit, and it serves a
-   public-CDN URL for a public-lane asset — permanent and unsigned.
+   public-CDN URL for a public-lane asset, permanent and unsigned.
 
 So the admin plane gets `adminGetMedia`, `adminGetEventPage` and `adminGetLegalVersions`. The media
 read is audited per subject (`media.viewed`, in `AUDIT_READ_ACTIONS` so it does not flood the
@@ -914,12 +914,12 @@ first cut of 0.40.0 and both are fixed to `QueryBooleanSchema` (`schemas/common.
 `true`/`false`/`1`/`0` and the real boolean, and 422s anything else rather than guessing.
 
 Use `QueryBooleanSchema` for every boolean that can arrive in a query string. `z.coerce.number()` is
-fine — numeric coercion of a string is unambiguous and a bad value fails the int/positive refinements.
+fine: numeric coercion of a string is unambiguous and a bad value fails the int/positive refinements.
 
 ## 29. The calendar entry is a JSON endpoint, not a second content type (0.40.0)
 
 `MyEventTicketDTO.icsUrl` had no endpoint to point at. `getEventIcs` (`GET /cleanups/:id/ics`)
-returns `{ ics, filename }` — the RFC 5545 document inside the ordinary JSON envelope — rather than a
+returns `{ ics, filename }` (the RFC 5545 document inside the ordinary JSON envelope) rather than a
 `text/calendar` body.
 
 Every versioned path in this contract is a typed JSON endpoint, and the generated client's
@@ -936,19 +936,19 @@ helper settles both:
 
 1. `icsUrl` is a JSON URL, so a native client cannot simply hand it to the system. Opening it shows a
    page of JSON, not a calendar entry. Add-to-calendar on a native host therefore needs the host to
-   write the document to a file and offer it to a share sheet — which is a host capability, not
+   write the document to a file and offer it to a share sheet, which is a host capability, not
    something `@civfix/ui` can import. The affordance stays hidden where no host provides one.
 2. The visibility gate means a registrant with no host standing (a private event) and an anonymous
    visitor on an access-code signup page both 404 here, so a client that has the event in hand still
    needs the local `buildIcs` path.
 
 Because the same event can be built by more than one surface, `@civfix/shared/ics` exports
-**`eventIcsUid(cleanupId)`** — `cleanup-<id>@civfix.org`, the UID the server already used. A calendar
+**`eventIcsUid(cleanupId)`**: `cleanup-<id>@civfix.org`, the UID the server already used. A calendar
 dedupes on UID, so every builder calling it means one entry rather than one copy per surface. New
 `.ics` builders call it; none invents its own UID scheme.
 
 **A shared UID is a promise about content, not just about identity.** A builder may only use it if it
-can say everything the server document says — in particular `STATUS:CANCELLED`. The public signup page
+can say everything the server document says, in particular `STATUS:CANCELLED`. The public signup page
 qualifies (`PublicEventPageDTO.event` carries `status`, `description` and the page URL). The ticket
 screen does NOT: `MyEventTicketDTO.status` is the REGISTRATION's status and there is no event-lifecycle
 field on it, so a local build there would re-confirm a cancelled event under the server's own identity.
@@ -1363,16 +1363,16 @@ their 113 existing usages.
   asserted in `__tests__/tokens.test.ts` holds without moving a hue.
 - **The chart ink is chosen against the chart surface, not borrowed from a chip ramp.** Light is
   `moss.600` and dark is a step that exists nowhere else (`#5FA05A`): the dark `moss` ramp is tuned
-  for text and chips and fails the perceptual lightness band for a chart mark. One series only — no
+  for text and chips and fails the perceptual lightness band for a chart mark. One series only: no
   dark two-series palette clears the chroma floor against `neutral.card`.
 - **The CTA keeps the coral fill and takes an ink label.** `@civfix/ui` derives `onCta` from the
   scheme's neutrals (light `neutral.ink` on `brand.bloom` = 5.56:1, dark `neutral.paper` = 6.87:1)
-  rather than moving the brand hue to `bloom.700`, which would have made the accent read as danger —
+  rather than moving the brand hue to `bloom.700`, which would have made the accent read as danger,
   the exact confusion this group removes. `onAccent` is unchanged; §22's on-accent floor is unaffected.
 
 ## 38. A signup slot may be a shift, and a shift is identified by title plus window (0.45.0)
 
-`EventSlotDTO`/`EventSlotInput` gain `startsAt`/`endsAt` (both optional, both-or-neither, `ISODate` instants like `scheduledAt`). A slot with no window is what every slot was before: a role that spans the event. A slot with a window is a shift; the server refuses one shorter than `MIN_SLOT_DURATION_MINUTES` (the creditable-event minimum), one that falls outside the event's `scheduledAt..endsAt`, and any timed slot on an event with no `endsAt`. The community wizard therefore always sends `endsAt` on CREATE (the field has existed since §23; only the form was missing); on EDIT it sends the field only when the host moved the window — the date, the start, the end or a duration chip — or when a slot in that same save carries a window and the event has no stored end yet, which is the one case where omitting it would make the server reject the host's own shift. An unrelated edit to a legacy event therefore leaves its `endsAt` null, and such an event keeps the 4 h phase fallback until one of those two things happens.
+`EventSlotDTO`/`EventSlotInput` gain `startsAt`/`endsAt` (both optional, both-or-neither, `ISODate` instants like `scheduledAt`). A slot with no window is what every slot was before: a role that spans the event. A slot with a window is a shift; the server refuses one shorter than `MIN_SLOT_DURATION_MINUTES` (the creditable-event minimum), one that falls outside the event's `scheduledAt..endsAt`, and any timed slot on an event with no `endsAt`. The community wizard therefore always sends `endsAt` on CREATE (the field has existed since §23; only the form was missing); on EDIT it sends the field only when the host moved the window (the date, the start, the end or a duration chip) or when a slot in that same save carries a window and the event has no stored end yet, which is the one case where omitting it would make the server reject the host's own shift. An unrelated edit to a legacy event therefore leaves its `endsAt` null, and such an event keeps the 4 h phase fallback until one of those two things happens.
 
 **Uniqueness is (event, lower(title), window).** 0063's title-only rule existed because every surface names a slot by its title; every surface now prints the window beside the title, so two "Sweep" shifts at different times are distinct to a human and to the index, while two untimed "Sweep" rows stay rejected.
 
@@ -1384,9 +1384,9 @@ their 113 existing usages.
 
 ## 39. Hours by organization are an aggregation over `cleanups.organization_id`, and a host's ranked list is named (0.45.0)
 
-The ledger keeps no organization column and gains none: an organization's volunteer hours are the live (`voided_at IS NULL`), event-sourced (`source = 'event'`) rows whose `cleanup_id` belongs to a cleanup posted as that organization (`cleanups.organization_id`). A member's personal event contributes nothing to their organization, and `users.primary_organization_id` is never consulted. A hard-deleted organization's events fall out of every by-org figure (`ON DELETE SET NULL`); a soft-deleted or suspended one is dropped from `byOrganization` chips (its page is a 404) while the hours stay in `totalHours`. `byOrganization` is a set of chips, not a partition of the total — exactly as `byJurisdiction` already is.
+The ledger keeps no organization column and gains none: an organization's volunteer hours are the live (`voided_at IS NULL`), event-sourced (`source = 'event'`) rows whose `cleanup_id` belongs to a cleanup posted as that organization (`cleanups.organization_id`). A member's personal event contributes nothing to their organization, and `users.primary_organization_id` is never consulted. A hard-deleted organization's events fall out of every by-org figure (`ON DELETE SET NULL`); a soft-deleted or suspended one is dropped from `byOrganization` chips (its page is a 404) while the hours stay in `totalHours`. `byOrganization` is a set of chips, not a partition of the total, exactly as `byJurisdiction` already is.
 
-**Two numbers, one rule.** Public surfaces honor `users.show_volunteer_hours` (`IS NOT FALSE`): the organization page's `volunteerHours`/`volunteerCount` exclude an opted-out person, because an organization with one public event and one attendee would otherwise publish that attendee's hours. Host surfaces do not: `EventInsights.topVolunteers` and the portfolio's `totalHours`/`volunteersCredited`/`topVolunteers` are exact and named, under §36's argument — the reader holds `view_roster` on every event in the set and can already read each credited row through `getEventHours`. Deleted accounts stay in totals and leave the ranked rows. Blocked-pair anonymisation is not applied on host surfaces: the portfolio cache is keyed per org role, not per viewer, so a viewer-dependent row would leak across viewers.
+**Two numbers, one rule.** Public surfaces honor `users.show_volunteer_hours` (`IS NOT FALSE`): the organization page's `volunteerHours`/`volunteerCount` exclude an opted-out person, because an organization with one public event and one attendee would otherwise publish that attendee's hours. Host surfaces do not: `EventInsights.topVolunteers` and the portfolio's `totalHours`/`volunteersCredited`/`topVolunteers` are exact and named, under §36's argument: the reader holds `view_roster` on every event in the set and can already read each credited row through `getEventHours`. Deleted accounts stay in totals and leave the ranked rows. Blocked-pair anonymisation is not applied on host surfaces: the portfolio cache is keyed per org role, not per viewer, so a viewer-dependent row would leak across viewers.
 
 The portfolio hours fields are computed over the same `cleanupIds` as `totals`/`byEvent` and share their range behaviour (the whole hosted set); the dashboard requests `range: "all"` and labels the block "All time". `HostedEventDTO.hoursCredited` is the same sum per event, so the list and the total agree. `LeaderboardEntryDTO` moves to `entities.ts` because two domains now consume it. The PDF transcript and its fingerprint are untouched. No new endpoint: the registry stays at 344.
 
@@ -1400,33 +1400,33 @@ The portfolio hours fields are computed over the same `cleanupIds` as `totals`/`
 
 `cleanups.ends_at` is `NOT NULL` (0168 backfilled `scheduled_at + 4 h`, the client's default duration, for rows that never had one). `createCleanup` defaults a missing `endsAt` to the same 4 h (the wire field stays optional for old clients); an explicit null is rejected on create and update; the window must be `MIN_EVENT_DURATION_MINUTES`–`MAX_EVENT_DURATION_MINUTES` (15 min–24 h). Those two bounds and `DEFAULT_EVENT_DURATION_MINUTES` are exported from `schemas/cleanups.ts` as the single source the client form, the shared `DEFAULT_EVENT_DURATION_MS` and the server's `cleanup-rules.ts` all derive from.
 
-`creditableHoursForEvent` uses `completed_at` when a legacy completion stamp exists (the host's own attestation, §0103's rationale) and `ends_at` otherwise; the cap never returns null again. Hours are loggable from the end instant on, with no closing window — a late correction must stay possible. The daily cap groups by the calendar day **in the event's zone** (`DEFAULT_EVENT_TIME_ZONE` when unknown), not UTC.
+`creditableHoursForEvent` uses `completed_at` when a legacy completion stamp exists (the host's own attestation, §0103's rationale) and `ends_at` otherwise; the cap never returns null again. Hours are loggable from the end instant on, with no closing window; a late correction must stay possible. The daily cap groups by the calendar day **in the event's zone** (`DEFAULT_EVENT_TIME_ZONE` when unknown), not UTC.
 
 ## 42. An event's times live in the event's zone (0.46.0)
 
 Clients write `timezone` (the creator's IANA zone, overridable in the form) on create and edit; `timezone` stays nullable for legacy rows and old clients, and the server invents none. `LinkedEventRef` carries it too, so an event attached to a post renders in the event's zone like every other surface.
 
-The shared formatters (`eventChip`, `dowLabel`, `timeLabel`, `timeRangeLabel`) take an optional trailing `timeZone`, and `eventWhenParts`/`eventWhenLabel` compose the canonical when-line from it. Every event surface renders in the event zone and appends the short zone name **only when its offset differs from the viewer's zone at that instant** — so two spellings of one zone never produce a suffix, and a Denver viewer of an LA event sees `Sat, Sep 5 · 1:00 – 4:00 PM PDT`. A range whose end lands on a later calendar day in the event zone prefixes the end weekday (`10:00 PM – Sun 2:00 AM`). An unknown or malformed zone degrades to the viewer's zone rather than throwing in a render path; the instant is exact either way, only the "which wall clock" answer is lost.
+The shared formatters (`eventChip`, `dowLabel`, `timeLabel`, `timeRangeLabel`) take an optional trailing `timeZone`, and `eventWhenParts`/`eventWhenLabel` compose the canonical when-line from it. Every event surface renders in the event zone and appends the short zone name **only when its offset differs from the viewer's zone at that instant**, so two spellings of one zone never produce a suffix, and a Denver viewer of an LA event sees `Sat, Sep 5 · 1:00 – 4:00 PM PDT`. A range whose end lands on a later calendar day in the event zone prefixes the end weekday (`10:00 PM – Sun 2:00 AM`). An unknown or malformed zone degrades to the viewer's zone rather than throwing in a render path; the instant is exact either way, only the "which wall clock" answer is lost.
 
-The wall-clock↔instant conversion (`wallClockToInstantMs`) is the picker's boundary: it returns null for a wall clock the spring-forward gap skipped, and resolves an autumn fall-back duplicate to the **earlier** of the two instants. Backend day math (`AT TIME ZONE`) uses the event zone with the LA default; the DB session is pinned to UTC. `ISODateSchema` still coerces offset-less strings against the server clock — tightening it is a breaking change deferred to a later decision.
+The wall-clock↔instant conversion (`wallClockToInstantMs`) is the picker's boundary: it returns null for a wall clock the spring-forward gap skipped, and resolves an autumn fall-back duplicate to the **earlier** of the two instants. Backend day math (`AT TIME ZONE`) uses the event zone with the LA default; the DB session is pinned to UTC. `ISODateSchema` still coerces offset-less strings against the server clock; tightening it is a breaking change deferred to a later decision.
 
 ## 43. Every event has at least one sign-up slot, and the event page is slot-first (docs now; schema tightening in the next minor)
 
-The commitment unit on an event is the slot: the detail page no longer offers an event-level RSVP to a signed-in viewer, and "going" is what holding a slot makes you. The server refuses a create (`POST /cleanups`, `duplicate`) whose slot list is missing or empty and an update whose `slots` is `[]` (`AppError.validation({ slots })`); omitting `slots` on update still means "leave the board alone". The wire schema is **unchanged in this version** — `CreateCleanupRequest.slots` stays `.optional()` so no registry consumer has to move — and the tightening (`slots: z.array(…).min(1).max(MAX_EVENT_SLOTS)` required on create, `.min(1)` on update) is scheduled for the next minor with a DECISIONS entry naming the delivery set (§4.2 removal rule). Migration 0169 backfills one whole-event `General volunteers` slot (capacity = the event's capacity, usually unlimited) on every not-cancelled, not-ended event that had none, and a claim per existing member; ended and cancelled events keep `slots: []`, so clients keep a slot-less rendering for past events.
+The commitment unit on an event is the slot: the detail page no longer offers an event-level RSVP to a signed-in viewer, and "going" is what holding a slot makes you. The server refuses a create (`POST /cleanups`, `duplicate`) whose slot list is missing or empty and an update whose `slots` is `[]` (`AppError.validation({ slots })`); omitting `slots` on update still means "leave the board alone". The wire schema is **unchanged in this version** (`CreateCleanupRequest.slots` stays `.optional()` so no registry consumer has to move), and the tightening (`slots: z.array(…).min(1).max(MAX_EVENT_SLOTS)` required on create, `.min(1)` on update) is scheduled for the next minor with a DECISIONS entry naming the delivery set (§4.2 removal rule). Migration 0169 backfills one whole-event `General volunteers` slot (capacity = the event's capacity, usually unlimited) on every not-cancelled, not-ended event that had none, and a claim per existing member; ended and cancelled events keep `slots: []`, so clients keep a slot-less rendering for past events.
 
 **What does not change.** `going` is still members + verified guests (§DECISIONS on `going`), guests hold no slot (`cleanup_guests` has no `user_id`), so the sum of `slots[].claimed` is never the turnout. `releaseSlot` still leaves membership in place; leaving an event is `leaveCleanup`, exposed as its own action. `EventSlotDTO` gains nothing: per-slot claimants are `GET /cleanups/:id/attendees` grouped by the `slot` ref every attendee already carries, under the same follow-only rule for non-members, with counts public. `RegisterForEventRequest.slotId` exists and is still unsent by the clients; wiring it into registration is the next increment.
 
 ## 44. A sign-up on a non-ticketed event is a free registration (0.46.x, doc-only)
 
-Every host surface that matters on the day — the roster (`GET /cleanups/:id/registrations`), check-in by scan or by hand, the live counters, the insights seat rollups, the no-show sweep, `getMyEventTicket` and the `all_registered` broadcast lane — is keyed on `cleanup_registration_seats`, but a sign-up on an event with no ticket types wrote only a `cleanup_members` row (plus a `cleanup_slot_claims` row when a slot was picked), so slot-based hosts saw an empty attendee list, zero counters and no way to check anyone in. Joining or claiming a slot on an event with **zero ticket types** now mints a free one-seat registration (`party_size` 1, `source: 'self'`, `ticket_type_id` NULL) in the same transaction as the membership upsert, with the same HMAC-derived `ticket_token_hash` the scanner expects; it deliberately bypasses `registerIn`, so there is no ticket-type auto-pick, no `cleanups.capacity` gate (slot capacity has been the binding gate since 0169) and no `idempotency_keys` row. Leaving the event or being removed by a host cancels that registration and its seat; releasing a slot does not, because releasing keeps membership (§43). Ticketed events are untouched — `registerIn` remains the only path that creates their registrations, and the seat write short-circuits the moment an event has a ticket type. This is contract-invisible: no endpoint, schema or client change, and the route-coverage count stays 344. Events that already had members are repaired out of band by `pnpm --filter @civfix/api db:backfill:signup-seats -- --yes`, an idempotent, rehearse-by-default Node one-shot (a SQL migration cannot compute the token HMAC) scoped to non-organizer members of non-cancelled, not-yet-ended, ticket-type-free events who hold no active registration; see `civfix-backend/docs/signup-seats-backfill.md`.
+Every host surface that matters on the day (the roster (`GET /cleanups/:id/registrations`), check-in by scan or by hand, the live counters, the insights seat rollups, the no-show sweep, `getMyEventTicket` and the `all_registered` broadcast lane) is keyed on `cleanup_registration_seats`, but a sign-up on an event with no ticket types wrote only a `cleanup_members` row (plus a `cleanup_slot_claims` row when a slot was picked), so slot-based hosts saw an empty attendee list, zero counters and no way to check anyone in. Joining or claiming a slot on an event with **zero ticket types** now mints a free one-seat registration (`party_size` 1, `source: 'self'`, `ticket_type_id` NULL) in the same transaction as the membership upsert, with the same HMAC-derived `ticket_token_hash` the scanner expects; it deliberately bypasses `registerIn`, so there is no ticket-type auto-pick, no `cleanups.capacity` gate (slot capacity has been the binding gate since 0169) and no `idempotency_keys` row. Leaving the event or being removed by a host cancels that registration and its seat; releasing a slot does not, because releasing keeps membership (§43). Ticketed events are untouched: `registerIn` remains the only path that creates their registrations, and the seat write short-circuits the moment an event has a ticket type. This is contract-invisible: no endpoint, schema or client change, and the route-coverage count stays 344. Events that already had members are repaired out of band by `pnpm --filter @civfix/api db:backfill:signup-seats -- --yes`, an idempotent, rehearse-by-default Node one-shot (a SQL migration cannot compute the token HMAC) scoped to non-organizer members of non-cancelled, not-yet-ended, ticket-type-free events who hold no active registration; see `civfix-backend/docs/signup-seats-backfill.md`.
 
 ## 45. The server always answers "roughly where is this caller", so no client ever needs a default centre (0.47.0)
 
-`GET /geo/approximate` (`getApproximateLocation`, `auth: "optional"`, `csrf: false`, `v1`, empty `.strict()` request) returns `{ lat, lng, radiusKm, source }` where `source` is `"ip"` when the point was derived from the caller's address and `"region"` when the server fell back to its configured home region (Los Angeles for civfix). **It never 404s and never returns an empty body**: a caller that reaches the API always gets a usable centre, which is the whole point of the endpoint — it exists so that no client has to carry a fallback coordinate of its own.
+`GET /geo/approximate` (`getApproximateLocation`, `auth: "optional"`, `csrf: false`, `v1`, empty `.strict()` request) returns `{ lat, lng, radiusKm, source }` where `source` is `"ip"` when the point was derived from the caller's address and `"region"` when the server fell back to its configured home region (Los Angeles for civfix). **It never 404s and never returns an empty body**: a caller that reaches the API always gets a usable centre, which is the whole point of the endpoint: it exists so that no client has to carry a fallback coordinate of its own.
 
 This retires the "geographic centre of the contiguous US" (39.8283, -98.5795) from the consumer plane. That constant had four independent homes (`Map.native`, `Map.web`, the mobile `config.ts`, the web `locate.ts`) and every one of them answered "we do not know where you are" with "you are in Kansas". The replacement rule is: precise device location when the OS has granted it and a fix arrives, otherwise this endpoint, and while neither has resolved the map sits at the viewer's persisted last-known centre (mobile MMKV / web `localStorage`) or renders nothing at all. A failed request is retried with backoff rather than swapped for a coordinate.
 
-`radiusKm` is advisory — the accuracy the server claims for the point — and is what lets a client pick a metro-wide zoom for an IP estimate instead of a street-level one. It is not a privacy control: the server coarsens nothing on the client's behalf and clients must not present an approximate point as the user's position (no location dot).
+`radiusKm` is advisory (the accuracy the server claims for the point) and is what lets a client pick a metro-wide zoom for an IP estimate instead of a street-level one. It is not a privacy control: the server coarsens nothing on the client's behalf and clients must not present an approximate point as the user's position (no location dot).
 
 Registry count 344 → 345.
 
@@ -1527,7 +1527,7 @@ and Twitter's author-diversity discount, and orders `score DESC, id DESC`. Rever
 as the legacy path, not as the default.
 
 **The cursor carries both forms, and that is what makes this additive.** A ranked continuation is
-`"<score>|<postId>"` — the same two-part shape as the existing near cursor — with the score
+`"<score>|<postId>"` (the same two-part shape as the existing near cursor), with the score
 quantised to `FEED_SCORE_CURSOR_PRECISION` (6) decimal places so a float comparison against the
 cursor is exact. The contract owns the codec (`FeedScoreCursorSchema`, `formatFeedScoreCursor`,
 `parseFeedScoreCursor`, `quantizeFeedScore`, `isAfterFeedScoreCursor`) so the server, its tests and
@@ -1546,7 +1546,7 @@ The backend carries an override as one JSON-valued `FEED_RANKING` env var (the p
 propagation rule), unset meaning the full default profile and a partial object merging onto it.
 `.strict()` makes a typo'd knob a named boot failure rather than a silently ignored setting. The
 schema lives here rather than in the backend so that the validator, the ranges and the documented
-defaults are shared by the server, its unit tests and any future operator UI that tunes them —
+defaults are shared by the server, its unit tests and any future operator UI that tunes them;
 tuning a weight is then a deploy, never a client release. There is no settings table and no
 write-config endpoint in this version; a Redis override layer behind two operator-plane endpoints
 is designed and deliberately deferred.
@@ -1555,21 +1555,21 @@ is designed and deliberately deferred.
 `auth: "required"`, `csrf: false`, `v1`, request `FeedCountsRequestSchema`
 (`{ postIds }`, 1–`FEED_COUNTS_MAX_IDS` (100) ids, `.strict()`), response
 `FeedCountsResponseSchema` (`{ items: [{ id, counts }] }`). §17 said a state-changing endpoint may
-not be a GET; this is the other direction — a read whose input is up to 100 UUIDs (~3.7 kB of
+not be a GET; this is the other direction: a read whose input is up to 100 UUIDs (~3.7 kB of
 query string) takes a body. It is exempt from CSRF deliberately: CSRF protects against forced
-WRITES, and this handler performs none. Authorization is by omission — an id that is deleted,
+WRITES, and this handler performs none. Authorization is by omission: an id that is deleted,
 non-public or blocked in either direction against the caller is simply absent from `items`, never a
 404 and never an error, so the endpoint cannot be used to probe post existence. It returns counts
 and nothing else: no author, body, media or viewer state. Registry 318 → 319.
 
-**`SignalTopic` grows by `feed` and `feed_counts`.** `UserSignalSchema` is unchanged — a signal
+**`SignalTopic` grows by `feed` and `feed_counts`.** `UserSignalSchema` is unchanged: a signal
 still carries only `{ topic, id? }`, so the `UserChannel` seam's invariant (a frame names a topic
 and an optional scoping id, never entity data; the client refetches authoritative state) holds and
 no authorization decision moves to the client. `feed` means "a post you would plausibly be served
 now exists" and drives the new-posts pill; `feed_counts` means "engagement changed on a post you
 are currently being served" and drives a debounced batch read of `getFeedCounts`. Growing the enum
 is safe for a client on 0.48.x precisely because `handleRawFrame` `safeParse`s every frame and
-DROPS what it cannot parse — an old client silently ignores both topics, which is correct, because
+DROPS what it cannot parse; an old client silently ignores both topics, which is correct, because
 it has no pill to update. Both publishes are fire-and-forget and both are skipped entirely when no
 `UserChannel` is wired.
 
@@ -1589,13 +1589,13 @@ series. The backend must update `test/unit/route-coverage.test.ts` to 319.
 were written against a 318-entry registry and were overtaken before this work shipped: §52 had
 already taken the released registry to 324, so these four sections land ON TOP of that, not
 before it. The counts stand as the per-section DELTAS they describe (+1, +3, +1, +1); the absolute
-figures do not. The shipped total is 330 — see §53.
+figures do not. The shipped total is 330 (see §53).
 
 ## 48. An announcement is a broadcast the event page keeps (0.50.0)
 
 Event announcements do not get their own table, their own delivery pipeline or their own
-notification type. An announcement IS a `broadcasts` row with `kind: "announcement"` — the eighth
-and last value of `BroadcastKindSchema` (appended, per §33's mirroring rule) — so segment
+notification type. An announcement IS a `broadcasts` row with `kind: "announcement"`, the eighth
+and last value of `BroadcastKindSchema` (appended, per §33's mirroring rule), so segment
 resolution, the chunked fan-out, `broadcast_deliveries`, `email_suppressions`,
 `broadcast_unsubscribes`, `cleanup_broadcast_mutes` and the `event_broadcast` notification type all
 apply unchanged and stay tested once. What the new kind buys is the one behaviour a broadcast does
@@ -1605,18 +1605,18 @@ content-scrub job and it is readable by everyone who can read the event.
 **Targeting decides who is NOTIFIED, never who can READ.** This is the single visibility rule, and
 it is why `listEventAnnouncements` and `getEventAnnouncement` are `auth: "optional"` rather than
 `required`: an event page is a public surface, a push tap must land on a readable page for a
-signed-out visitor, and a non-public event gates its announcements exactly as it gates itself — if
+signed-out visitor, and a non-public event gates its announcements exactly as it gates itself: if
 `getCleanup` answers, so do these. Per-recipient mutes suppress the notification and never the page.
 
 **`AnnouncementAudience` is a proper subset of `BroadcastSegment`, proved by a function.**
-`all_registered | checked_in | not_checked_in | waitlist | slots` — `ticket_types` and `guests_only`
+`all_registered | checked_in | not_checked_in | waitlist | slots`; `ticket_types` and `guests_only`
 stay broadcast-console-only. The subset is not a comment: `announcementAudienceToSegment` returns
 the audience AS a `BroadcastSegment`, so widening the audience union without widening the segment
 union is a compile error in this package rather than a runtime 500 in the resolver.
 
 **One DTO, two projections, distinguished by which optional fields are present.**
 `AnnouncementDTO` carries `audience`, `recipientCount`, `sentCount` and `failedCount` as OPTIONAL
-fields. The public projection omits them entirely — a reader outside the audience is never told the
+fields. The public projection omits them entirely: a reader outside the audience is never told the
 message was not meant for them, and delivery counts are host operational data. The host projection
 (the dashboard history block and the detail screen's host line) includes them. Omission, not zeroing:
 `recipientCount: 0` is a real announcement sent to nobody, which the compose flow deliberately
@@ -1634,7 +1634,7 @@ pre-empt the 429 rather than discover it.
 
 ## 49. Event analytics is one consolidated read, alongside the five it will replace (0.50.0)
 
-`getEventAnalytics` — `GET /cleanups/:id/analytics`, `auth: "required"`, csrf false, v1 — answers a
+`getEventAnalytics` (`GET /cleanups/:id/analytics`, `auth: "required"`, csrf false, v1) answers a
 whole event's analytics in ONE round trip for BOTH surfaces, selected by `scope`: `card` for the
 dashboard carousel, `full` for the analytics page. The five per-panel endpoints
 (`eventAnalyticsOverview|Registrations|Checkins|Broadcasts|Sources`) are NOT removed and NOT
@@ -1642,14 +1642,14 @@ changed; they serve the `/manage` console, which is retired on its own schedule.
 later, separate breaking change. Registry 322 → 323.
 
 **`scope` replaces `range`, and that is the point.** The per-panel endpoints take
-`AnalyticsRange` (`7d|30d|90d|all`) — a rolling window, which is the wrong frame for a single dated
+`AnalyticsRange` (`7d|30d|90d|all`), a rolling window, which is the wrong frame for a single dated
 event. The consolidated response always covers the whole lifecycle and ships `lifecycle`
 (`createdAt`, `startAt`, `endAt`, `completedAt`) plus `phase`
 (`upcoming | day_of | completed | archived`), so the client slices its own x-domain for the
 lead-up / event-day / follow-up scrubber with no refetch. `scope` is a payload-size lever, never a
 different question: `card` fills `kpis`, `rates`, `deltas`, `phase`, `lifecycle` and the three
 card series capped at `EVENT_ANALYTICS_CARD_SERIES_POINTS`, and leaves the breakdown `Panel`s
-absent. Absent, not empty — an omitted `signups.bySlot` means "not in this scope", while
+absent. Absent, not empty: an omitted `signups.bySlot` means "not in this scope", while
 `{ rows: [] }` means "asked, and there are none".
 
 **It composes the existing analytics vocabulary rather than inventing a second one.**
@@ -1657,7 +1657,7 @@ absent. Absent, not empty — an omitted `signups.bySlot` means "not in this sco
 still defaults to `ANALYTICS_SUPPRESSION_K` (5) with the same convention: rates and breakdown rows
 whose denominator is below `k` come back `value: null, suppressed: true`, while the host's own raw
 totals (signups, views, hours) are never suppressed. Every count in `kpis` is nullable so a metric
-that does not exist yet says so instead of lying with a zero — `uniqueViewers` and `shares` are
+that does not exist yet says so instead of lying with a zero: `uniqueViewers` and `shares` are
 null until the distinct-viewer rollup and the share counter exist, and `comparison` is null until
 the host has `EVENT_ANALYTICS_COMPARISON_MIN_EVENTS` (3) completed events. Comparison medians are
 computed server-side over the host's last `EVENT_ANALYTICS_COMPARISON_WINDOW` (10) completed events
@@ -1670,7 +1670,7 @@ no per-attendee field anywhere in the response.
 creation flow calls to see a street-level line for a pin. It is NOT a rename of `reverseLabel`, which
 stays exactly as it is: `reverseLabel` only ever answers the TIGER `cityStateLabel`, and deployed
 clients keep calling it. The new response is `{ address: string | null, precision: AddressPrecision |
-null, cityStateLabel: string }` — `cityStateLabel` is always populated from the same locality seam, so
+null, cityStateLabel: string }`; `cityStateLabel` is always populated from the same locality seam, so
 a client can show the rough-area hint even when the provider chain returns nothing. Registry +1
 (quoted as 323 → 324 when this was drafted; see §47's lineage correction and §53 for the real total).
 
@@ -1684,17 +1684,17 @@ renders "Near <feature>" and never presents a POI as a postal address. The enum 
 `entities.ts` because it is cross-domain: the map response and the report DTO both carry it.
 
 **Two source enums, because events and reports verify differently.** `EventAddressSource`
-(`resolved | edited | manual`) records how a HOST arrived at `cleanups.address` — every value means a
+(`resolved | edited | manual`) records how a HOST arrived at `cleanups.address`: every value means a
 human saw the line, which is why `isVerifiedEventAddress()` accepts all three and why events carry no
 precision column. `ReportAddressSource` (`resolved | user`) records who produced `reports.addr`: the
 server's creation-time snapshot, or the reporter's own typing; `addrPrecision` is persisted beside it
 so a later display-side coarsening policy needs no re-geocoding. `isVerifiedReportAddress()` is
-therefore stricter than the event predicate — only `user` text or a `street` resolve counts as postal,
+therefore stricter than the event predicate: only `user` text or a `street` resolve counts as postal,
 and that is what gates sending the address (rather than the coordinates) to an external maps app.
 One caveat the compat shim below creates: the `resolved` rows IT writes are machine-resolved, so "every
 value means a human saw the line" holds only for events a NEW client published. A surface building an
 external-map URL therefore treats a line as text-searchable only when it is human-confirmed or resolved
-at street/intersection precision, and otherwise sends the coordinates — which is why the URL builders
+at street/intersection precision, and otherwise sends the coordinates, which is why the URL builders
 pair verified text with `ll`/`geo:` whenever a point exists and fall back to the point alone when the
 row carries no address at all.
 
@@ -1702,8 +1702,8 @@ row carries no address at all.
 run the host verification gate always sends `address` AND `addressSource`. Its absence is how the
 server recognises an old build and applies the compat shim (resolve server-side, store source
 `resolved`) instead of publishing an addressless event. Making `address` required on the wire would be
-a TestFlight flag-day, so it is not. Length caps are now named — `MAX_EVENT_ADDRESS_LENGTH` (200),
-`MAX_REPORT_ADDR_LENGTH` (300, applied to both `CreateReportRequest` and `AnonReportRequest`) — so a
+a TestFlight flag-day, so it is not. Length caps are now named (`MAX_EVENT_ADDRESS_LENGTH` at 200,
+`MAX_REPORT_ADDR_LENGTH` at 300 for both `CreateReportRequest` and `AnonReportRequest`), so a
 composer's `maxLength` cannot drift from the schema again. The minimum-length and trim rules for a
 supplied event address are SERVICE-side, deliberately: tightening the request schema would reject
 payloads old clients can still legitimately send.
@@ -1767,7 +1767,7 @@ shapes as the citizen `reportMessages` (`AdminReportMessagesRequestSchema` and
 `AdminReportMessagesResponseSchema` are the `ReportChatHistoryRequestSchema` /
 `ChatHistoryResponseSchema` the resident's client already uses). There is no parallel operator channel
 and no second DTO: a message rendered on the admin plane and on the resident's plane is the same row.
-`adminRemoveReportMessage` is the moderation twin of `removeUserMessage` on the users surface — same
+`adminRemoveReportMessage` is the moderation twin of `removeUserMessage` on the users surface: same
 `{ id, messageId, reason? }` shape, same `AdminOkResponse`.
 
 **A city reply arrives as a system row.** The inbound jurisdiction reply already surfaces on the report
@@ -1787,7 +1787,7 @@ the mention rather than as a confirmation afterwards.
 `[civfix: {referenceCode}] {title}` and the body states that replies reach civfix operators AND the
 reporter, lists the photo links inline via `{photoCount}` / `{photoLinks}`, and ends with the public
 pin URL. Because the body USES `{photoLinks}`, §51's rule suppresses the backend's auto-appended photo
-block — the packet mentions exactly the attachments it carries. The retired defaults' `{confirmations}`,
+block: the packet mentions exactly the attachments it carries. The retired defaults' `{confirmations}`,
 `{status}` and `{jurisdictionName}` lines are gone; the palette still allows them, so an operator
 template may reinstate any of them.
 
@@ -1802,7 +1802,7 @@ not computed it yet and a client that never reads it both still parse.
 **Registry shape.** The three new endpoints live in a fourth exported group,
 `adminReportChatEndpoints`, spread into `endpoints` alongside `coreEndpoints`, `hostEndpoints` and
 `hostAdminEndpoints`. `coreEndpoints` had reached the TypeScript declaration-serialization ceiling
-(TS7056), so a new group — not a new key on `coreEndpoints` — is how the registry grows from here. The
+(TS7056), so a new group (not a new key on `coreEndpoints`) is how the registry grows from here. The
 registry is now 324 entries, 104 of them under `/admin`; the backend's
 `test/unit/route-coverage.test.ts` moves to 324.
 
@@ -1820,8 +1820,8 @@ viewers rather than recomputed per fan-out. **The VIEWER component is everything
 something relative to the caller**: `followWeight`, `selfWeight`, `mentionWeight`, and location
 (`nearbyWeight` graded over `nearbyRadiusKm`). The recency half-life, the seen discount and the
 author-diversity discount remain multiplicative modifiers applied to the sum, not members of either
-component. Nothing in the schema encodes the split — it is a statement about how the backend
-composes the same knobs — but the split is what makes the weights tunable with intent: raising
+component. Nothing in the schema encodes the split (it is a statement about how the backend
+composes the same knobs), but the split is what makes the weights tunable with intent: raising
 `orgVerifiedWeight` changes what everyone sees, raising `followWeight` changes only how personal
 each feed is.
 
@@ -1841,7 +1841,7 @@ refresh.** At 0.15 each post's final score is scaled by a factor drawn from [0.8
 ranking is fully deterministic, which is what the unit tests and any A/B baseline want. The jitter
 is not per-request randomness: it is derived from a seed minted once per FIRST-PAGE request, so
 every post in one refresh is perturbed by one reproducible draw. Its job is to stop a stable
-candidate set from producing a byte-identical feed on every pull-to-refresh — near the top of the
+candidate set from producing a byte-identical feed on every pull-to-refresh: near the top of the
 ranking, scores are close enough that a 15% band reorders neighbours while leaving the
 global-versus-viewer ordering intact. It is a presentation-layer shuffle within a rank band, never
 a re-weighting of the model.
@@ -1852,13 +1852,13 @@ truth for a continuation.** The first page already ranks a candidate set and STO
 re-running the ranker. The jitter is applied while the snapshot is built and BAKED INTO the stored
 scores, so the cursor a client holds refers to a number that still exists in the snapshot it came
 from, and `isAfterFeedScoreCursor` keeps its exact meaning. The cursor format is therefore
-unchanged — still `"<score>|<postId>"` at `FEED_SCORE_CURSOR_PRECISION` (6) — and no client, cached
+unchanged, still `"<score>|<postId>"` at `FEED_SCORE_CURSOR_PRECISION` (6), and no client, cached
 or in the field, needs to know that jitter exists. Two refreshes seconds apart produce two
 snapshots with two different jitter draws and two different orderings, and each paginates
 consistently within itself, which is exactly the desired behaviour: the reshuffle happens at
 refresh, never mid-scroll. The snapshot-MISS fallback (an expired or evicted snapshot, on a page
 the client is already paging through) is unchanged: the server re-ranks best-effort and filters by
-the cursor predicate, which may drop or repeat an item near the seam — jitter widens that seam
+the cursor predicate, which may drop or repeat an item near the seam; jitter widens that seam
 slightly but does not create it, and the mitigation is the one already in place, `minPageItems`
 plus a TTL comfortably longer than a scroll session.
 
@@ -1869,7 +1869,7 @@ reads `DEFAULT_FEED_RANKING`.
 
 **Delivery set (§4.2, no consumer left behind).** The feed-ranking profile itself is additive, but
 0.54.0 is NOT a registry no-op: this release ships §47-§50 alongside it, so the registry moves
-324 → 330 — `getFeedCounts` (§47), the three announcement endpoints `createEventAnnouncement`,
+324 → 330: `getFeedCounts` (§47), the three announcement endpoints `createEventAnnouncement`,
 `listEventAnnouncements` and `getEventAnnouncement` (§48), `getEventAnalytics` (§49) and
 `resolveAddress` (§50). 104 of the 330 stay under `/admin`, unchanged. Every consumer MUST adopt
 0.54.0 to call the six new endpoints, and civfix-backend must move
@@ -1881,8 +1881,8 @@ a consumer that stays on the endpoints it already calls.
 
 ## 54. The host's own numbers are exact; only group breakdowns are suppressed (0.55.0)
 
-`hostedEventsAnalyticsSummary` — `GET /me/hosted-events/analytics/summary`, `auth: "required"`,
-csrf false, v1 — answers "what has this host actually done in this window" in ONE read, for the
+`hostedEventsAnalyticsSummary` (`GET /me/hosted-events/analytics/summary`, `auth: "required"`,
+csrf false, v1) answers "what has this host actually done in this window" in ONE read, for the
 host-analytics page's KPI tiles and its two per-event panels. It sits BESIDE
 `hostedEventsAnalytics` (`/me/hosted-events/analytics`), which is unchanged: that read is the
 portfolio rollup (repeat attendance, best day/time, ranked volunteers) and keeps its own
@@ -1893,7 +1893,7 @@ are both optional and the request is `.strict()`; the server resolves an omitted
 and echoes the resolved value back, so a client never has to remember what it did not send.
 Registry 330 → 331.
 
-**The top-line aggregates are EXACT — effectively k=1 — and that is the whole point of a separate
+**The top-line aggregates are EXACT (effectively k=1), and that is the whole point of a separate
 schema.** `activity` (signups, cancellations, hoursTotal, hoursVolunteers, reportsLinked,
 reportsResolved, postsCreated, donationClicks), `eventsHeld` (count, registered, checkIns,
 noShows) and `totals.events` are plain non-nullable numbers, not the nullable
@@ -1901,7 +1901,7 @@ noShows) and `totals.events` are plain non-nullable numbers, not the nullable
 totals over the host's OWN events: the host already sees every roster, every check-in scan and
 every credited hour in the manage console, so suppressing them protects nobody and only teaches
 the host to distrust the page. This is the precedent the portfolio read set with `totalHours` and
-`volunteersCredited` (§39) — a raw total a host is entitled to is never k-suppressed — and §49
+`volunteersCredited` (§39): a raw total a host is entitled to is never k-suppressed. And §49
 already stated the same rule for per-event KPIs ("the host's own raw totals are never
 suppressed"). A zero here means zero, and there is no "we are hiding this" state to render.
 
@@ -1910,7 +1910,7 @@ is a `SuppressedRate` and `byEvent` / `hoursByEvent` are ordinary `Panel`s of `B
 rate or a row whose denominator falls below `k` comes back `value: null, suppressed: true`, and a
 whole panel can carry `panelSuppressed`. The distinction is not "aggregate vs. rate" but
 **whole vs. part**: a single number covering everything the host ran identifies nobody, while a
-row that splits those same people by event — and, downstream, by slot, ticket type or source — can
+row that splits those same people by event (and, downstream, by slot, ticket type or source) can
 isolate an individual on a small event. `k` therefore keeps defaulting to
 `ANALYTICS_SUPPRESSION_K` (5) in this envelope: it governs the parts, not the whole. The panels are
 capped at `MAX_HOST_SUMMARY_EVENT_ROWS` (12) rows each and `signupsDaily` at
@@ -1920,7 +1920,7 @@ ships the resolved day-key bounds alongside `generatedAt` so a chart's x-domain 
 days" label come from the server's clock, not the device's.
 
 **The per-event funnel drops its page-views first step.** The reach funnel on the per-event
-analytics surface started at page views, then narrowed to sign-ups and check-ins — but page views
+analytics surface started at page views, then narrowed to sign-ups and check-ins, but page views
 are counted by `recordEventPageView` against the public event page, while the KPI tiles beside the
 funnel read sign-ups and check-ins from the live registration and check-in tables. Two surfaces
 answering the same question from two sources disagree in practice (a view recorded against a page
@@ -1928,8 +1928,8 @@ the event later unpublished, a sign-up taken in the manage console that never ha
 funnel's first step was where that disagreement showed. The funnel now begins at sign-ups, so every
 step and every tile is computed from the same live sources and a host reading down the page sees
 one set of numbers. `FunnelStep`, `EventAnalyticsReach.funnel` and the `pageViews` KPI itself are
-all unchanged on the wire — this is a change of WHAT the backend puts in the funnel array and what
-the client labels, not a schema break — and `eventAnalyticsSources` still serves page views as its
+all unchanged on the wire (this is a change of WHAT the backend puts in the funnel array and what
+the client labels, not a schema break), and `eventAnalyticsSources` still serves page views as its
 own panel for hosts who want the reach question answered on its own terms.
 
 **Delivery set (§4.2, no consumer left behind).** This is purely additive: one new endpoint, one
@@ -1938,15 +1938,15 @@ implements `GET /me/hosted-events/analytics/summary` and must move
 `test/unit/route-coverage.test.ts` to 331; `packages/shared/__tests__/client.test.ts` already
 asserts it. civfix-app adopts 0.55.0 to call the endpoint and to ship the funnel's new first step;
 civfix-admin and civfix-govt-web bump with the routine version propagation and call nothing new. No
-migration — every number here is aggregated from tables that already exist.
+migration: every number here is aggregated from tables that already exist.
 
 ## 55. A public post is guest-readable (0.57.0)
 
-`getPost` — `GET /posts/:id` — moves from `auth: "required"` to `auth: "optional"`, mirroring
+`getPost` (`GET /posts/:id`) moves from `auth: "required"` to `auth: "optional"`, mirroring
 `getReport` and `getProfile`. A signed-out read of a PUBLIC post returns the ordinary `PostDTO`
 with every viewer flag false (the server reads it as `NIL_VIEWER_ID`, exactly as the guest feed
 does). A hidden or deleted post is a 404 byte-identical to an unknown id for every viewer, signed
-in or not — never a 401/403 that would confirm it exists. The route also serves a PUBLIC REPLY to
+in or not, never a 401/403 that would confirm it exists. The route also serves a PUBLIC REPLY to
 a guest; this is accepted: a signed-in user could always read replies by id, and the guest feeds
 still exclude replies. The consumer is the web edge preview of
 `/post/:id` (civfix-app `apps/community-web/functions/post`), which only ever makes guest reads.
