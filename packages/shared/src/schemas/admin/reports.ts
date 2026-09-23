@@ -114,7 +114,10 @@ export type ReportMedia = z.infer<typeof ReportMediaSchema>
 /**
  * A report list row. `status` is the civfix report status; `flagged` is the orthogonal abuse marker.
  * `confirmations` is the count of report_follows. `submitted` carries both the relative and absolute
- * timestamp. `hasPhoto` drives the "photo attached" affordance without sending media on the list.
+ * timestamp. `hasPhoto` drives the "photo attached" affordance without sending media on the list;
+ * `thumbnailUrl` is a presigned preview of the report's first ready image (the pipeline thumbnail when
+ * one exists, else the served image), so a row can show the photo in place of the category pin. It is
+ * null for a report with no usable image, and defaulted so an older server's response still parses.
  */
 export const AdminReportListItemDTOSchema = z
   .object({
@@ -130,6 +133,7 @@ export const AdminReportListItemDTOSchema = z
     coords: AdminCoordsSchema,
     address: z.string(),
     hasPhoto: z.boolean(),
+    thumbnailUrl: z.string().nullable().default(null),
   })
   .strict()
 export type AdminReportListItemDTO = z.infer<typeof AdminReportListItemDTOSchema>

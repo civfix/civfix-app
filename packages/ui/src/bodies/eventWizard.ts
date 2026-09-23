@@ -6,6 +6,7 @@ import {
   wallClockToFormDate,
 } from "./calendarModel"
 import { wallClockInZone } from "@civfix/shared/datetime"
+import { isEventAddressComplete } from "./eventAddressField"
 import {
   hasNamedSlot,
   slotDraftWindow,
@@ -81,6 +82,7 @@ export interface EventWizardDraft {
   endTime: Date | null
   timezone: string
   coords: { lat: number; lng: number } | null
+  address: string
   slots: readonly SlotDraft[]
 }
 
@@ -120,7 +122,7 @@ export function eventStepSatisfied(
         )
       )
     case "where":
-      return draft.coords !== null
+      return draft.coords !== null && isEventAddressComplete(draft.address)
     case "details":
       return hasNamedSlot(draft.slots) && slotsValid(draft.slots, undefined, eventDraftWindow(draft))
     case "review":

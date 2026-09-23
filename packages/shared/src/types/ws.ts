@@ -10,7 +10,14 @@ export const EDIT_WINDOW_HOURS = 48
 export const RoomKindSchema = z.enum(["cleanup", "dm", "report", "group"])
 export type RoomKind = z.infer<typeof RoomKindSchema>
 
-export const SignalTopicSchema = z.enum(["notifications", "threads", "reports", "host"])
+export const SignalTopicSchema = z.enum([
+  "notifications",
+  "threads",
+  "reports",
+  "host",
+  "feed",
+  "feed_counts",
+])
 export type SignalTopic = z.infer<typeof SignalTopicSchema>
 
 export const UserSignalSchema = z

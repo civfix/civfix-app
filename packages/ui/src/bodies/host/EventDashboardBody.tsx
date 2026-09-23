@@ -7,6 +7,7 @@ import { Text, TextLink, iconMap, type LucideIcon } from "../../typography"
 import {
   Avatar,
   LIST_DIVIDER_INSET,
+  LIST_ROW_MIN_HEIGHT,
   MetaDot,
   PopoverMenu,
   SectionCard,
@@ -22,22 +23,9 @@ import {
 import type { AnchorRect } from "../../primitives"
 import { NOW_TICK_MS, useAuthState, useEventBoundaryRefresh, useNow, useRequireAuth } from "../../data"
 import { actableOrganizations, useMyOrganizations } from "../../data/hooks/orgs"
-import {
-  hostedEventRows,
-  myEventInviteRows,
-  useAcceptMyEventInvite,
-  useDeclineMyEventInvite,
-  useEventInsights,
-  useMyEventInvites,
-  useMyHostedEvents,
-} from "../../data/hooks/host"
+import { hostedEventRows, useEventInsights, useMyHostedEvents } from "../../data/hooks/host"
 import { useCleanup } from "../../data/hooks/cleanups"
 import { useHostedEventsAnalytics } from "../../data/hooks/dashboard"
-import {
-  useAcceptMyOrgInvite,
-  useDeclineMyOrgInvite,
-  useMyOrgInvites,
-} from "../../data/hooks/orgs"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
@@ -45,18 +33,14 @@ import { FeedNotice } from "../FeedNotice"
 import { openHostDashboard } from "../hostDashboardTarget"
 import { NextUpSkeleton } from "./HostSkeletons"
 import { TopVolunteersCard } from "./TopVolunteersCard"
-import { AttentionCard } from "./dashboard/AttentionCard"
+import { AnalyticsCarouselCard } from "./dashboard/AnalyticsCarouselCard"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
-import { ConsoleLinkRow } from "./dashboard/ConsoleLinkRow"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
 import { FirstEventCard } from "./dashboard/FirstEventCard"
 import { HostedEventRow } from "./dashboard/HostedEventRow"
 import { ImpactCard } from "./dashboard/ImpactCard"
 import { NextUpCard } from "./dashboard/NextUpCard"
-import { DonationLinkRow } from "./dashboard/DonationLinkRow"
 import {
-  ATTENTION_MAX_ROWS,
-  attentionRows,
   dashboardScope,
   firstEventState,
   hostedEventPhase,
@@ -65,7 +49,7 @@ import {
   portfolioKpis,
   sharePathFor,
 } from "./dashboard/dashboardModel"
-import { emailAttendeesPreset, useDashboardStore } from "./dashboard/dashboardStore"
+import { useDashboardStore } from "./dashboard/dashboardStore"
 
 type EventWindow = "upcoming" | "past"
 
@@ -108,7 +92,6 @@ export function EventDashboardBody() {
 
   const requestedOrgId = useDashboardStore((s) => s.orgId)
   const setOrgId = useDashboardStore((s) => s.setOrgId)
-  const setBroadcastPreset = useDashboardStore((s) => s.setBroadcastPreset)
 
   const [eventWindow, setEventWindow] = useState<EventWindow>("upcoming")
   const [duplicating, setDuplicating] = useState<HostedEventDTO | null>(null)
@@ -125,12 +108,6 @@ export function EventDashboardBody() {
   const upcoming = useMyHostedEvents("upcoming", activeOrgId)
   const past = useMyHostedEvents("past", activeOrgId)
   const hosted = eventWindow === "past" ? past : upcoming
-  const eventInvites = useMyEventInvites()
-  const orgInvites = useMyOrgInvites()
-  const acceptEvent = useAcceptMyEventInvite()
-  const declineEvent = useDeclineMyEventInvite()
-  const acceptOrg = useAcceptMyOrgInvite()
-  const declineOrg = useDeclineMyOrgInvite()
 
   const events = useMemo(() => hostedEventRows(hosted.data?.pages), [hosted.data])
   const upcomingEvents = useMemo(() => hostedEventRows(upcoming.data?.pages), [upcoming.data])
@@ -140,10 +117,6 @@ export function EventDashboardBody() {
   const now = useMemo(() => new Date(nowMs), [nowMs])
   const nextUp = nextUpEvent([...upcomingEvents, ...pastEvents], now)
   const kpis = portfolioKpis(upcoming.data?.pages)
-  const tasks = useMemo(
-    () => attentionRows({ past: pastEvents, now }).slice(0, ATTENTION_MAX_ROWS),
-    [pastEvents, now],
-  )
   useEventBoundaryRefresh(
     nextUp ? hostedEventWindow(nextUp.event) : null,
     nowMs,
@@ -160,12 +133,6 @@ export function EventDashboardBody() {
     nextUp?.phase === "live"
       ? (nextUpInsights.data?.seats.checkedIn ?? nextUp.event.checkedInCount)
       : null
-
-  const pendingEventInvites = useMemo(
-    () => myEventInviteRows(eventInvites.data),
-    [eventInvites.data],
-  )
-  const pendingOrgInviteRows = useMemo(() => orgInvites.data ?? [], [orgInvites.data])
 
   const roleLabel = useCallback(
     (role: CleanupMemberRole) => tEnums(`cleanupMemberRole.${role}`),
@@ -195,16 +162,17 @@ export function EventDashboardBody() {
     useNavStore.getState().push({ kind: "host-checkin", id: event.id })
   }, [])
 
-  const onEmailAttendees = useCallback(
-    (event: HostedEventDTO) => {
-      setBroadcastPreset(emailAttendeesPreset(event.id))
-      useNavStore.getState().push({ kind: "host-broadcast-quick", id: event.id })
-    },
-    [setBroadcastPreset],
-  )
+  const onOpenChat = useCallback((event: HostedEventDTO) => {
+    useNavStore.getState().push({
+      kind: "thread",
+      id: event.id,
+      roomKind: "cleanup",
+      title: event.title,
+    })
+  }, [])
 
-  const onLogHours = useCallback((event: HostedEventDTO) => {
-    useNavStore.getState().push({ kind: "host-log-hours", id: event.id })
+  const onAnnounce = useCallback((event: HostedEventDTO) => {
+    useNavStore.getState().push({ kind: "host-announce", id: event.id })
   }, [])
 
   const onShare = useCallback(
@@ -220,41 +188,6 @@ export function EventDashboardBody() {
   const onEdit = useCallback((event: HostedEventDTO) => {
     useNavStore.getState().push({ kind: "edit-cleanup", id: event.id })
   }, [])
-
-  const onInviteError = useCallback(() => {
-    toast.show(t("invites.error"), { variant: "error" })
-  }, [t, toast])
-
-  const acceptEventMutate = acceptEvent.mutate
-  const declineEventMutate = declineEvent.mutate
-  const acceptOrgMutate = acceptOrg.mutate
-  const declineOrgMutate = declineOrg.mutate
-
-  const onAcceptEventInvite = useCallback(
-    (inviteId: string) => acceptEventMutate({ inviteId }, { onError: onInviteError }),
-    [acceptEventMutate, onInviteError],
-  )
-  const onDeclineEventInvite = useCallback(
-    (inviteId: string) => declineEventMutate({ inviteId }, { onError: onInviteError }),
-    [declineEventMutate, onInviteError],
-  )
-  const onAcceptOrgInvite = useCallback(
-    (inviteId: string) => acceptOrgMutate({ inviteId }, { onError: onInviteError }),
-    [acceptOrgMutate, onInviteError],
-  )
-  const onDeclineOrgInvite = useCallback(
-    (inviteId: string) => declineOrgMutate({ inviteId }, { onError: onInviteError }),
-    [declineOrgMutate, onInviteError],
-  )
-
-  const pendingEventInviteId =
-    (acceptEvent.isPending ? acceptEvent.variables?.inviteId : undefined) ??
-    (declineEvent.isPending ? declineEvent.variables?.inviteId : undefined) ??
-    null
-  const pendingOrgInviteId =
-    (acceptOrg.isPending ? acceptOrg.variables?.inviteId : undefined) ??
-    (declineOrg.isPending ? declineOrg.variables?.inviteId : undefined) ??
-    null
 
   if (!isAuthenticated && !authPending) {
     return (
@@ -354,31 +287,12 @@ export function EventDashboardBody() {
           />
         ) : null}
 
-        <AttentionCard
-          eventInvites={pendingEventInvites}
-          orgInvites={pendingOrgInviteRows}
-          invitesPending={eventInvites.isPending || orgInvites.isPending}
-          invitesError={eventInvites.isError || orgInvites.isError}
-          onRetryInvites={() => {
-            if (eventInvites.isError) void eventInvites.refetch()
-            if (orgInvites.isError) void orgInvites.refetch()
-          }}
-          eventRoleLabel={roleLabel}
-          orgRoleLabel={(role) => tEnums(`organizationMemberRole.${role}`)}
-          pendingEventInviteId={pendingEventInviteId}
-          pendingOrgInviteId={pendingOrgInviteId}
-          onAcceptEventInvite={onAcceptEventInvite}
-          onDeclineEventInvite={onDeclineEventInvite}
-          onAcceptOrgInvite={onAcceptOrgInvite}
-          onDeclineOrgInvite={onDeclineOrgInvite}
-          rows={teaching ? [] : tasks}
-          onLogHours={onLogHours}
-        />
-
         {teaching ? <FirstEventCard onCreate={onCreate} /> : null}
 
         {teaching ? null : (
           <>
+            <AnalyticsCarouselCard orgId={activeOrgId} />
+
             <ImpactCard
               analytics={analytics.data}
               isPending={analytics.isPending}
@@ -446,7 +360,8 @@ export function EventDashboardBody() {
                   onOpen={onOpenEvent}
                   onCheckIn={onCheckIn}
                   onHostTools={onHostTools}
-                  onEmailAttendees={onEmailAttendees}
+                  onOpenChat={onOpenChat}
+                  onAnnounce={onAnnounce}
                   onDuplicate={setDuplicating}
                   onEdit={onEdit}
                 />
@@ -470,12 +385,7 @@ export function EventDashboardBody() {
           </>
         )}
 
-        <DonationLinkRow org={scope.org} />
         {scope.org ? <CollaboratorsSection org={scope.org} /> : null}
-
-        <ConsoleLinkRow
-          target={activeOrgId ? { kind: "org", orgId: activeOrgId } : { kind: "portfolio" }}
-        />
       </View>
 
       <PopoverMenu
@@ -555,16 +465,18 @@ const useStyles = makeThemedStyles((t) => ({
   },
   controlZone: {
     paddingHorizontal: t.space["4"],
-    paddingTop: t.space["4"],
+    paddingTop: t.space["2"],
     paddingBottom: t.space["2"],
   },
   notice: {
     paddingHorizontal: t.space["4"],
-    paddingVertical: t.space["3"],
+    paddingVertical: t.space["2"],
   },
   emptyRow: {
+    justifyContent: "center",
+    minHeight: LIST_ROW_MIN_HEIGHT,
     paddingHorizontal: t.space["4"],
-    paddingVertical: t.space["4"],
+    paddingVertical: t.space["2"],
   },
   moreRow: {
     alignItems: "center",

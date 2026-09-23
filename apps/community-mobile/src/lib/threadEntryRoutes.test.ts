@@ -39,6 +39,33 @@ test("maps every push-capable thread tap to a pushed route", () => {
   })
 })
 
+test("the shell kinds a thread can now reach stack on top instead of tearing the stack down", () => {
+  assert.deepEqual(threadEntryRoute({ kind: "announcements", id: "c1" }), {
+    pathname: "/cleanups/[id]/announcements",
+    params: { id: "c1" },
+  })
+  assert.deepEqual(threadEntryRoute({ kind: "announcement", id: "c1", announcementId: "a1" }), {
+    pathname: "/cleanups/[id]/announcements/[announcementId]",
+    params: { id: "c1", announcementId: "a1" },
+  })
+  assert.deepEqual(threadEntryRoute({ kind: "event-analytics", id: "c1" }), {
+    pathname: "/cleanups/[id]/analytics",
+    params: { id: "c1" },
+  })
+  assert.deepEqual(threadEntryRoute({ kind: "org-manage", slug: "acme" }), {
+    pathname: "/orgs/[slug]/manage",
+    params: { slug: "acme" },
+  })
+})
+
+test("an announcement without its announcement id is refused rather than pushed half-addressed", () => {
+  assert.equal(threadEntryRoute({ kind: "announcement", id: "c1" }), null)
+  assert.equal(threadEntryRoute({ kind: "announcement", announcementId: "a1" }), null)
+  assert.equal(threadEntryRoute({ kind: "announcements" }), null)
+  assert.equal(threadEntryRoute({ kind: "event-analytics" }), null)
+  assert.equal(threadEntryRoute({ kind: "org-manage" }), null)
+})
+
 test("an org byline on a post opens the organization instead of dropping the tap", () => {
   assert.notEqual(threadEntryRoute({ kind: "org", slug: "river-keepers" }), null)
   assert.equal(threadEntryRoute({ kind: "org" }), null)
@@ -71,6 +98,11 @@ test("every mapped pathname has a real expo-router route file", () => {
     threadEntryRoute({ kind: "post-thread", id: "x" }),
     threadEntryRoute({ kind: "post", id: "x" }),
     threadEntryRoute({ kind: "composer", composerMode: "quote", targetPostId: "x" }),
+    threadEntryRoute({ kind: "announcements", id: "x" }),
+    threadEntryRoute({ kind: "announcement", id: "x", announcementId: "a" }),
+    threadEntryRoute({ kind: "event-analytics", id: "x" }),
+    threadEntryRoute({ kind: "org", slug: "x" }),
+    threadEntryRoute({ kind: "org-manage", slug: "x" }),
   ].map((route) => {
     assert.notEqual(route, null)
     return route!.pathname

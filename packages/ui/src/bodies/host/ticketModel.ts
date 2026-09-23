@@ -1,4 +1,6 @@
-import type { MyEventTicketDTO } from "@civfix/shared"
+import type { EventAddressSource, MyEventTicketDTO } from "@civfix/shared"
+import { isVerifiedEventAddress } from "@civfix/shared"
+import type { AddressPoint } from "../addressRowModel"
 
 interface TicketWhen {
   startsAt: string
@@ -27,6 +29,30 @@ export function ticketWhen(ticket: TicketWhen, locale?: string): string {
 export function ticketWhere(ticket: { address?: string | null | undefined }): string | null {
   const value = ticket.address?.trim()
   return value && value.length > 0 ? value : null
+}
+
+export interface TicketAddressView {
+  address: string | null
+  point: AddressPoint | null
+  verified: boolean
+}
+
+export interface TicketAddressEvent {
+  lat?: number | null | undefined
+  lng?: number | null | undefined
+  address?: string | null | undefined
+  addressSource?: EventAddressSource | null | undefined
+}
+
+export function ticketAddressView(
+  ticket: { address?: string | null | undefined },
+  event: TicketAddressEvent | null | undefined,
+): TicketAddressView {
+  const address = ticketWhere(ticket) ?? (event ? ticketWhere(event) : null)
+  if (!event) return { address, point: null, verified: false }
+  const point =
+    event.lat != null && event.lng != null ? { lat: event.lat, lng: event.lng } : null
+  return { address, point, verified: isVerifiedEventAddress(event.addressSource, address) }
 }
 
 export function ticketSeatCount(ticket: MyEventTicketDTO): number {

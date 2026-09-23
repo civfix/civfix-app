@@ -16,11 +16,5 @@
     "save": "Save",
     "dismiss": "Close donation link",
     "error": "Could not save the link. Try again."
-  },
-  "dashboard": {
-    "row": "Donation link",
-    "row_set": "Live on your events and page: {{host}}",
-    "row_unset": "Not set yet",
-    "row_org_web": "Set it in the organization settings on the web"
   }
 }

@@ -48,11 +48,12 @@ import {
   ToastProvider,
   setBrandAboutPresenter,
   setOnboardingTourPresenter,
+  setApiHost,
   setScanPresenter,
   setSourceCommit,
   setWebOrigin,
 } from "@civfix/ui"
-import { CARTO_API_KEY, DONATE_BROWSER_MODE, SOURCE_COMMIT, WEB_ORIGIN } from "@/config"
+import { API_URL, CARTO_API_KEY, DONATE_BROWSER_MODE, SOURCE_COMMIT, WEB_ORIGIN } from "@/config"
 import { nativeCamera, setCameraNavigator } from "@/lib/nativeCamera"
 import { nativeCalendarFile } from "@/lib/nativeCalendarFile"
 import { nativeClipboard } from "@/lib/nativeClipboard"
@@ -72,6 +73,7 @@ import { chatSocket } from "@/lib/ws"
 import { usePrefsStore } from "@/store/prefsStore"
 import { resolveActiveLocale } from "@/lib/locale"
 import { goHome } from "@/lib/goHome"
+import { adoptStorageEnvironment } from "@/lib/legacyStorageReset"
 import { isExternalUrl } from "@/lib/links"
 import { codeScannerSupported } from "@/lib/scannerSupport"
 import {
@@ -178,6 +180,7 @@ async function openInAppBrowser(url: string): Promise<void> {
 
 setWebOrigin(WEB_ORIGIN)
 setSourceCommit(SOURCE_COMMIT)
+setApiHost(API_URL)
 
 const mobileCapabilities: PlatformCapabilities = {
   ...makeFakeCapabilities(),
@@ -330,7 +333,11 @@ function useBootstrap() {
     setUnauthorizedHandler(() => {
       useAuthStore.getState().markUnauthed()
     })
-    void hydrate()
+    void adoptStorageEnvironment()
+      .catch(() => false)
+      .finally(() => {
+        void hydrate()
+      })
     return () => setUnauthorizedHandler(null)
   }, [hydrate])
 }
@@ -628,7 +635,11 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
       <Text style={crash.title}>{copy.title}</Text>
       <Text style={crash.body}>{copy.body}</Text>
       {__DEV__ ? <Text style={crash.detail}>{String(error?.message ?? error)}</Text> : null}
-      <Pressable accessibilityRole="button" onPress={onRetry} style={crash.action}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onRetry}
+        style={({ pressed }) => [crash.action, pressed ? crash.actionPressed : null]}
+      >
         <Text style={crash.actionLabel}>{copy.action}</Text>
       </Pressable>
     </View>
@@ -685,6 +696,9 @@ function crashStyles(t: Theme) {
       paddingHorizontal: t.space["5"],
       borderRadius: t.radius.pill,
       backgroundColor: t.colors.brand.bloom,
+    },
+    actionPressed: {
+      opacity: 0.85,
     },
     actionLabel: {
       fontSize: t.fontSize["16"],

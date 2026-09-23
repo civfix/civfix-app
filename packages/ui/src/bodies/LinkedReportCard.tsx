@@ -186,11 +186,12 @@ export function LinkedReportCard({
           onPress={onRemove}
           accessibilityRole="button"
           accessibilityLabel={t("card.removeA11yLabel", { title })}
-          hitSlop={8}
           {...focusRingProps}
           style={({ pressed }) => [styles.removeBtn, webCursor(), pressed ? styles.pressed : null]}
         >
-          <Icon icon={iconMap.Close} size={14} color={th.colors.neutral.card} />
+          <View style={styles.removeVisual}>
+            <Icon icon={iconMap.Close} size={13} color={th.colors.neutral.card} />
+          </View>
         </Pressable>
       </View>
     )
@@ -332,8 +333,14 @@ const useStyles = makeThemedStyles((t) => ({
   },
   removeBtn: {
     position: "absolute",
-    top: -6,
-    right: -6,
+    top: -16,
+    right: -16,
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  removeVisual: {
     width: 24,
     height: 24,
     borderRadius: 12,

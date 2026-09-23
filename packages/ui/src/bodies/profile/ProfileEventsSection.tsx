@@ -210,7 +210,9 @@ export function ProfileEventsSection({
             emptyText={t("events.empty_none")}
             onOpenEvent={onOpenEvent}
           />
-          {more?.isError ? <Text style={sectionStyles.empty}>{t("events.load_more_error")}</Text> : null}
+          {more?.isError ? (
+            <Text style={sectionStyles.loadMoreError}>{t("events.load_more_error")}</Text>
+          ) : null}
           {more?.canLoadMore ? (
             <Pressable
               onPress={more.loadMore}
@@ -219,9 +221,14 @@ export function ProfileEventsSection({
               accessibilityState={{ disabled: more.isLoadingMore, busy: more.isLoadingMore }}
               accessibilityLabel={t("events.load_more_a11y")}
               {...focusRingProps}
-              style={styles.more}
+              style={({ pressed }) => [
+                sectionStyles.loadMore,
+                pressed ? sectionStyles.loadMorePressed : null,
+              ]}
             >
-              <Text style={styles.moreText}>
+              <Text
+                style={more.isRetry ? sectionStyles.loadMoreAccentText : sectionStyles.loadMoreText}
+              >
                 {more.isLoadingMore
                   ? t("events.loading_more")
                   : more.isRetry
@@ -237,16 +244,6 @@ export function ProfileEventsSection({
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  more: {
-    alignSelf: "flex-start",
-    paddingVertical: t.space["1"],
-    borderRadius: t.radius.sm,
-  },
-  moreText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
-    color: t.colors.accentText,
-  },
   seg: {
     flexDirection: "row",
     gap: 4,

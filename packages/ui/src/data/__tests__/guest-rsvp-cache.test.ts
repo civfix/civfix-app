@@ -176,7 +176,7 @@ describe("guestRsvpVerifyMutationOptions", () => {
     })
   })
 
-  it("invalidates the list prefix, the roster and the guest roster", () => {
+  it("invalidates the list prefix and the roster", () => {
     const qc = new QueryClient()
     const invalidated = trackInvalidations(qc)
 
@@ -184,7 +184,6 @@ describe("guestRsvpVerifyMutationOptions", () => {
 
     expect(invalidated).toContainEqual(["cleanups"])
     expect(invalidated).toContainEqual(queryKeys.cleanupAttendees(UUID))
-    expect(invalidated).toContainEqual(queryKeys.cleanupGuests(UUID))
   })
 
   it("invalidates the detail through the alias filters, so a refcode entry refetches too", async () => {
@@ -197,11 +196,7 @@ describe("guestRsvpVerifyMutationOptions", () => {
   })
 })
 
-describe("guest roster and profile-events cache keys", () => {
-  it("keeps the guest roster out of the detail alias filters (length-3 key)", () => {
-    expect(queryKeys.cleanupGuests(UUID)).toEqual(["cleanup", UUID, "guests"])
-  })
-
+describe("profile-events cache keys", () => {
   it("anchors the profile events page on the cursor it continues from", () => {
     expect(queryKeys.profileEvents("me", "cur1")).toEqual(["profile", "me", "events", "cur1"])
     expect(queryKeys.profileEvents("me", null)).toEqual(["profile", "me", "events", null])

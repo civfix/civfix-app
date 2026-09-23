@@ -40,7 +40,9 @@ import type {
   ApiClient,
   PostDTO,
   PostComposeInput,
+  PostCounts,
   FeedPageDTO,
+  FeedPostCountsDTO,
   ListRepliesResponse,
   DeletePostResponse,
 } from "@civfix/shared"
@@ -103,6 +105,40 @@ export function patchPostInListCaches(
         }
       : prev,
   )
+}
+
+function applyCounts(post: PostDTO, counts: PostCounts): PostDTO {
+  return { ...post, counts }
+}
+
+export function patchPostCountsInCaches(
+  qc: QueryClient,
+  items: ReadonlyArray<FeedPostCountsDTO>,
+): void {
+  if (items.length === 0) return
+  const byId = new Map<string, PostCounts>(items.map(({ id, counts }) => [id, counts]))
+  qc.setQueriesData<InfiniteData<FeedPageDTO>>({ queryKey: queryKeys.postsRoot }, (prev) => {
+    if (!isInfinitePosts(prev)) return prev
+    let touched = false
+    const pages = prev.pages.map((page) => {
+      let pageTouched = false
+      const nextItems = page.items.map((it) => {
+        const counts = byId.get(it.id)
+        if (!counts) return it
+        pageTouched = true
+        return applyCounts(it, counts)
+      })
+      if (!pageTouched) return page
+      touched = true
+      return { ...page, items: nextItems }
+    })
+    return touched ? { ...prev, pages } : prev
+  })
+  for (const [id, counts] of byId) {
+    qc.setQueryData<PostDTO>(queryKeys.post(id), (prev) =>
+      prev ? applyCounts(prev, counts) : prev,
+    )
+  }
 }
 
 /** Find the target post's current value in any list cache under the prefix (for the rollback snapshot). */

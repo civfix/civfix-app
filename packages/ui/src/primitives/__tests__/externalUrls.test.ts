@@ -1,14 +1,18 @@
 import { describe, expect, it } from "vitest"
 import {
   PRIVACY_URL,
+  PROD_API_HOST,
   SOURCE_REPO_URL,
   TERMS_URL,
   WEB_ORIGIN,
+  apiHost,
   legalUrlFor,
   managePath,
   manageOrgSettingsPath,
   manageUrl,
   orgPagePath,
+  offProductionApiHost,
+  setApiHost,
   setSourceCommit,
   setWebOrigin,
   signupPagePath,
@@ -93,5 +97,32 @@ describe("manage + org + signup paths", () => {
     expect(managePath("a b")).toBe("/manage/events/a%20b")
     expect(orgPagePath("a/b")).toBe("/orgs/a%2Fb")
     expect(manageOrgSettingsPath("a/b")).toBe("/manage/orgs/a%2Fb/settings")
+  })
+})
+
+describe("the resolved API host, so a beta plane switch is never invisible", () => {
+  it("stays silent until a host states one, and stays silent on production", () => {
+    try {
+      expect(apiHost()).toBe("")
+      expect(offProductionApiHost()).toBe("")
+      setApiHost(`https://${PROD_API_HOST}`)
+      expect(apiHost()).toBe(PROD_API_HOST)
+      expect(offProductionApiHost()).toBe("")
+    } finally {
+      setApiHost("")
+    }
+  })
+
+  it("names the host whenever the build is talking to anything but production", () => {
+    try {
+      for (const url of ["https://api.civfix.dev", "https://API.CivFix.dev/", "api.civfix.dev"]) {
+        setApiHost(url)
+        expect(offProductionApiHost(), url).toBe("api.civfix.dev")
+      }
+      setApiHost("http://localhost:8080")
+      expect(offProductionApiHost()).toBe("localhost:8080")
+    } finally {
+      setApiHost("")
+    }
   })
 })

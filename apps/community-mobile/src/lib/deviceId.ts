@@ -1,13 +1,11 @@
 /**
  * Stable per-install device identifier for push-token registration.
  *
- * WHY: the backend `push_tokens` upsert carries an OWNERSHIP-STEAL guard (P1-3) — an Expo push token,
- * which is stable per app-install (the SAME string regardless of which account is signed in), is only
- * (re)assigned to the registering user when that user already owns it OR presents the SAME non-null
- * `device_id` as proof of genuine same-device handoff. Without a device id every account after the FIRST
- * one signed in on a device hits the guard, the upsert returns "conflict", and that account gets NO
- * push-token row. Sending a stable device id lets the guard transfer the token to whoever is currently
- * signed in on the device, which is the correct behaviour.
+ * The id is sent with every push registration and stored for diagnostics and bookkeeping only; it no
+ * longer proves anything to the backend. The `push_tokens` upsert reclaims a row for the registering
+ * user when that user already owns it or when the row was revoked by a sign-out — an Expo push token is
+ * stable per app-install (the SAME string regardless of which account is signed in), so a row that is
+ * still ACTIVE under another account is refused with "conflict".
  *
  * `resolveDeviceId` is the pure functional core (store + uuid generator injected) so it is unit-testable
  * without the native SecureStore/Crypto modules; `getDeviceId` (in src/push/register.ts) is the thin
@@ -35,7 +33,7 @@ export async function resolveDeviceId(
     return fresh
   } catch {
     // SecureStore unavailable (e.g. unsigned simulator with no Keychain): fall back to no device id so
-    // registration still proceeds — same as the pre-fix behaviour, just without same-device handoff.
+    // registration still proceeds, just without the bookkeeping.
     return null
   }
 }

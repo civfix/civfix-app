@@ -26,7 +26,7 @@ export function ToggleRow({
   return (
     <div
       className={cn(
-        "flex min-h-[44px] items-center gap-token-3 border-b border-console-line py-token-3 last:border-b-0",
+        "flex min-h-11 items-center gap-token-3 border-b border-console-line py-token-3 last:border-b-0",
         className,
       )}
     >

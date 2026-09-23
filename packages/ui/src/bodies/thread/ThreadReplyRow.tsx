@@ -156,6 +156,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               accessibilityLabel={identityA11yLabel(identity, t)}
               hitSlop={5}
               {...focusRingProps}
+              style={({ pressed }) => (pressed ? styles.pressed : null)}
             >
               <Avatar
                 name={identity.avatarName}

@@ -12,6 +12,7 @@ import { OtpCodeSchema } from "./auth.js"
 import {
   AttendeeDTOSchema as AttendeeDTOSchemaInternal,
   CleanupDTOSchema,
+  EventAddressSourceSchema,
   EventKindSchema,
   EventRegistrationDTOSchema,
   HostEventEmailSchema,
@@ -40,6 +41,7 @@ export const MIN_SLOT_DURATION_MINUTES = 15
 export const MAX_GENERATED_SHIFTS = 4
 export const MAX_BRING_ITEMS = 30
 export const MAX_LINKED_REPORTS = 200
+export const MAX_EVENT_ADDRESS_LENGTH = 200
 export const MIN_EVENT_DURATION_MINUTES = 15
 export const MAX_EVENT_DURATION_MINUTES = 1440
 export const DEFAULT_EVENT_DURATION_MINUTES = 240
@@ -113,7 +115,8 @@ export const CreateCleanupRequestSchema = z
     ...LatLngFields,
     scheduledAt: ISODateSchema,
     bring: z.array(z.string()).max(MAX_BRING_ITEMS).optional(),
-    address: z.string().max(200).optional(),
+    address: z.string().max(MAX_EVENT_ADDRESS_LENGTH).optional(),
+    addressSource: EventAddressSourceSchema.optional(),
     linkedReportIds: z.array(IdSchema).max(MAX_LINKED_REPORTS).optional(),
     slots: z.array(EventSlotInputSchema).max(MAX_EVENT_SLOTS).optional(),
     ...HostEventFields,
@@ -132,7 +135,8 @@ export const UpdateCleanupRequestSchema = z
     scheduledAt: ISODateSchema.optional(),
     lat: z.number().min(-90).max(90).optional(),
     lng: z.number().min(-180).max(180).optional(),
-    address: z.string().max(200).optional(),
+    address: z.string().max(MAX_EVENT_ADDRESS_LENGTH).optional(),
+    addressSource: EventAddressSourceSchema.optional(),
     bring: z.array(z.string()).max(MAX_BRING_ITEMS).optional(),
     linkedReportIds: z.array(IdSchema).max(MAX_LINKED_REPORTS).optional(),
     slots: z.array(EventSlotInputSchema).max(MAX_EVENT_SLOTS).optional(),

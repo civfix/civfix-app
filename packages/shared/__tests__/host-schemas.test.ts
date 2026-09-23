@@ -84,6 +84,10 @@ import {
 import {
   ANALYTICS_SUPPRESSION_K,
   EventAnalyticsOverviewResponseSchema,
+  HostAnalyticsSummaryRequestSchema,
+  HostAnalyticsSummaryResponseSchema,
+  MAX_HOST_SUMMARY_EVENT_ROWS,
+  MAX_HOST_SUMMARY_SERIES_POINTS,
   SuppressedRateSchema,
 } from "../src/schemas/host/analytics.js"
 import {
@@ -129,7 +133,7 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
     ])
   })
 
-  it("keeps event_broadcast, event_team_invite then org_invite at the tail of NotificationType and host LAST in SignalTopic", () => {
+  it("keeps event_broadcast, event_team_invite then org_invite at the tail of NotificationType and the feed topics LAST in SignalTopic", () => {
     expect(NotificationTypeSchema.options.at(-3)).toBe("event_broadcast")
     expect(NotificationTypeSchema.options.at(-2)).toBe("event_team_invite")
     expect(NotificationTypeSchema.options.at(-1)).toBe("org_invite")
@@ -138,6 +142,8 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
       "threads",
       "reports",
       "host",
+      "feed",
+      "feed_counts",
     ])
   })
 
@@ -214,6 +220,7 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
       "event_updated",
       "event_cancelled",
       "thank_you",
+      "announcement",
     ])
     expect([...BroadcastStatusSchema.options]).toEqual([
       "draft",
@@ -608,6 +615,114 @@ describe("analytics envelopes carry suppression, never opens or clicks", () => {
     })
     expect(r.value).toBeNull()
     expect(r.suppressed).toBe(true)
+  })
+})
+
+describe("host-wide analytics summary (DECISIONS §54)", () => {
+  function summary(extra: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+      generatedAt: ISO,
+      window: { from: "2026-08-23", to: "2026-09-21" },
+      activity: {
+        signups: 412,
+        cancellations: 18,
+        hoursTotal: 486.75,
+        hoursVolunteers: 96,
+        reportsLinked: 31,
+        reportsResolved: 22,
+        postsCreated: 14,
+        donationClicks: 7,
+      },
+      eventsHeld: {
+        count: 9,
+        registered: 412,
+        checkIns: 337,
+        noShows: 41,
+        checkInRate: { value: 0.81, numerator: 337, denominator: 412, suppressed: false },
+      },
+      totals: { events: 9 },
+      byEvent: { rows: [{ key: UUID, label: "Beach sweep", value: 54 }] },
+      hoursByEvent: { rows: [{ key: UUID, label: "Beach sweep", value: 120 }] },
+      ...extra,
+    }
+  }
+
+  it("takes an optional range and orgId and rejects anything else", () => {
+    expect(HostAnalyticsSummaryRequestSchema.parse({})).toEqual({})
+    expect(HostAnalyticsSummaryRequestSchema.parse({ range: "90d", orgId: UUID })).toEqual({
+      range: "90d",
+      orgId: UUID,
+    })
+    expect(HostAnalyticsSummaryRequestSchema.safeParse({ range: "365d" }).success).toBe(false)
+    expect(HostAnalyticsSummaryRequestSchema.safeParse({ scope: "card" }).success).toBe(false)
+  })
+
+  it("parses a full payload and keeps the per-event panels suppressible", () => {
+    const parsed = HostAnalyticsSummaryResponseSchema.parse(
+      summary({
+        range: "90d",
+        signupsDaily: [{ day: "2026-09-01", value: 12 }],
+        hoursByEvent: { panelSuppressed: true, rows: [] },
+      }),
+    )
+    expect(parsed.range).toBe("90d")
+    expect(parsed.activity.hoursTotal).toBe(486.75)
+    expect(parsed.eventsHeld.checkInRate.value).toBe(0.81)
+    expect(parsed.signupsDaily[0]?.suppressed).toBe(false)
+    expect(parsed.byEvent.panelSuppressed).toBe(false)
+    expect(parsed.hoursByEvent.panelSuppressed).toBe(true)
+  })
+
+  it("defaults the range to 30d, k to the suppression floor, and the series to empty", () => {
+    const parsed = HostAnalyticsSummaryResponseSchema.parse(summary())
+    expect(parsed.range).toBe("30d")
+    expect(parsed.k).toBe(ANALYTICS_SUPPRESSION_K)
+    expect(parsed.signupsDaily).toEqual([])
+  })
+
+  it("keeps the host's own aggregates exact rather than nullable", () => {
+    expect(
+      HostAnalyticsSummaryResponseSchema.safeParse(
+        summary({ activity: { ...(summary().activity as object), signups: null } }),
+      ).success,
+    ).toBe(false)
+    expect(
+      HostAnalyticsSummaryResponseSchema.safeParse(
+        summary({ activity: { ...(summary().activity as object), hoursTotal: -1 } }),
+      ).success,
+    ).toBe(false)
+    expect(
+      HostAnalyticsSummaryResponseSchema.safeParse(
+        summary({ activity: { ...(summary().activity as object), hoursVolunteers: 1.5 } }),
+      ).success,
+    ).toBe(false)
+  })
+
+  it("caps the daily series at a year and each per-event panel at twelve rows", () => {
+    expect(MAX_HOST_SUMMARY_SERIES_POINTS).toBe(365)
+    expect(MAX_HOST_SUMMARY_EVENT_ROWS).toBe(12)
+    const series = Array.from({ length: MAX_HOST_SUMMARY_SERIES_POINTS }, (_p, i) => ({
+      day: `day-${i}`,
+      value: i,
+    }))
+    expect(
+      HostAnalyticsSummaryResponseSchema.parse(summary({ signupsDaily: series })).signupsDaily,
+    ).toHaveLength(MAX_HOST_SUMMARY_SERIES_POINTS)
+    expect(
+      HostAnalyticsSummaryResponseSchema.safeParse(
+        summary({ signupsDaily: [...series, { day: "overflow", value: 1 }] }),
+      ).success,
+    ).toBe(false)
+    const rows = Array.from({ length: MAX_HOST_SUMMARY_EVENT_ROWS + 1 }, (_r, i) => ({
+      key: `event-${i}`,
+      label: `Event ${i}`,
+      value: i,
+    }))
+    expect(HostAnalyticsSummaryResponseSchema.safeParse(summary({ byEvent: { rows } })).success)
+      .toBe(false)
+    expect(
+      HostAnalyticsSummaryResponseSchema.safeParse(summary({ hoursByEvent: { rows } })).success,
+    ).toBe(false)
   })
 })
 

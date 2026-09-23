@@ -200,6 +200,39 @@ describe("the card's timeline has no scrollbar, and a fade instead", () => {
     expect(SRC).toMatch(/<View pointerEvents="none" style=\{fadeStyle\}/)
     expect(SRC).toMatch(/const fadeStyle = useMemo\(\s*\(\) => \[styles\.scrollFade/)
     expect(SRC).toContain("{ bottom: promoHeight }")
-    expect(SRC).toContain("if (!isExpanded || !IS_WEB) return list")
+    expect(SRC).toContain(
+      '{isExpanded && IS_WEB ? <View pointerEvents="none" style={fadeStyle} /> : null}',
+    )
+    expect(SRC).not.toContain("if (!isExpanded || !IS_WEB) return list")
+  })
+})
+
+describe("the new-posts pill overlays the list on every surface", () => {
+  const SRC = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
+
+  it("hosts the list in the one relative wrapper the pill needs, on both platforms", () => {
+    expect(SRC).toContain("<View style={styles.scrollHost}>")
+    expect(SRC).toContain("<NewPostsPill count={pendingNewPosts} onPress={showNewPosts} />")
+  })
+
+  it("tapping it scrolls to top, refetches the ranked first page, and clears the count", () => {
+    expect(SRC).toMatch(
+      /const showNewPosts = useCallback\(\(\) => \{\s*useFeedScrollTopStore\.getState\(\)\.requestScrollTop\(\)\s*void refetch\(\)\s*useFeedLiveStore\.getState\(\)\.clearNewPosts\(\)\s*\}, \[refetch\]\)/,
+    )
+  })
+
+  it("pull-to-refresh also clears the pending count", () => {
+    expect(SRC).toMatch(/setRefreshing\(true\)\s*useFeedLiveStore\.getState\(\)\.clearNewPosts\(\)/)
+  })
+
+  it("scrolling back to the top clears the pill without a surprise refetch", () => {
+    expect(SRC).toContain("onScroll={onListScroll}")
+    expect(SRC).toContain("clearsPendingAtOffset(event.nativeEvent.contentOffset.y")
+    expect(SRC).not.toMatch(/onListScroll[\s\S]{0,200}?refetch/)
+  })
+
+  it("keeps the feed exactly in server rank order, de-duplicated by id only", () => {
+    expect(SRC).toContain("dedupePostsById(feed.data?.pages.flatMap((page) => page.items) ?? [])")
+    expect(SRC).not.toMatch(/posts\s*\.\s*sort|\.toSorted\(/)
   })
 })

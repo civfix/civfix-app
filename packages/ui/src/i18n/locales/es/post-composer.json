@@ -29,6 +29,9 @@
       "placeholder": "Añade tu comentario..."
     }
   },
+  "quote": {
+    "unavailable": "Esa publicación no está disponible."
+  },
   "action": {
     "post": "Publicar",
     "reply": "Responder",

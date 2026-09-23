@@ -114,6 +114,7 @@
     "community": "커뮤니티 단체"
   },
   "broadcastKind": {
+    "announcement": "공지",
     "host_broadcast": "호스트 메시지",
     "confirmation": "확인 안내",
     "waitlist_promoted": "대기자 자리 안내",

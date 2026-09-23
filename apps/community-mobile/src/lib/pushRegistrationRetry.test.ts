@@ -15,6 +15,20 @@ test("only a decided outcome is terminal - a transient error stays retryable", (
   assert.equal(isPushOutcomeTerminal("error"), false)
 })
 
+test("a 409 conflict is a DECIDED outcome - retrying it cannot change the answer", () => {
+  assert.equal(isPushOutcomeTerminal("conflict"), true)
+})
+
+test("a conflict settles the session, so no foreground edge ever re-attempts it", () => {
+  const state = freshPushAttemptState()
+  state.attempts += 1
+  assert.equal(isPushOutcomeTerminal("conflict"), true)
+  state.settled = true
+  isForegroundEdge(state, "background")
+  assert.equal(isForegroundEdge(state, "active"), true)
+  assert.equal(shouldAttemptPushRegistration(state), false)
+})
+
 test("a fresh authed session attempts registration", () => {
   assert.equal(
     shouldAttemptPushRegistration({ ...freshPushAttemptState() }),

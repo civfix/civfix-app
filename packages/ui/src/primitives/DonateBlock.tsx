@@ -1,6 +1,6 @@
 import React, { useCallback } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../theme"
+import { View, StyleSheet } from "react-native"
+import { makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
@@ -11,10 +11,9 @@ import { donationUrlHost, safeDonationUrl } from "./donationUrl"
 export interface DonateBlockProps {
   url: string | null | undefined
   ownerName: string
-  variant?: "card" | "row"
 }
 
-export function DonateBlock({ url, ownerName, variant = "card" }: DonateBlockProps) {
+export function DonateBlock({ url, ownerName }: DonateBlockProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("donation-link")
@@ -31,33 +30,6 @@ export function DonateBlock({ url, ownerName, variant = "card" }: DonateBlockPro
   const host = donationUrlHost(safeUrl)
   const supports = t("card.supports", { name: ownerName })
   const openLabel = t("card.open_a11y", { name: ownerName, host })
-
-  if (variant === "row") {
-    return (
-      <Pressable
-        onPress={onPress}
-        accessibilityRole="link"
-        accessibilityLabel={openLabel}
-        {...focusRingProps}
-        style={(state) => [
-          styles.row,
-          webTransition,
-          webCursor(),
-          webHover(state) ? styles.rowHovered : null,
-          state.pressed ? styles.pressed : null,
-        ]}
-      >
-        <Icon icon={iconMap.HandHeart} size={16} color={th.colors.bloom["700"]} />
-        <View style={styles.rowMeta}>
-          <Text style={styles.rowLabel}>{t("card.title")}</Text>
-          <Text style={styles.host} numberOfLines={1}>
-            {supports} · {host}
-          </Text>
-        </View>
-        <Icon icon={iconMap.ExternalLink} size={16} color={th.colors.textSubtle} />
-      </Pressable>
-    )
-  }
 
   return (
     <View style={styles.card}>
@@ -118,27 +90,5 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["12"],
     lineHeight: 16,
     color: t.colors.textSubtle,
-  },
-  row: {
-    minHeight: 44,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-    paddingVertical: t.space["2"],
-  },
-  rowHovered: {
-    backgroundColor: t.colors.bgAlt,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  rowMeta: {
-    flex: 1,
-    minWidth: 0,
-  },
-  rowLabel: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
   },
 }))

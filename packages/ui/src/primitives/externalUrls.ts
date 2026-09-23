@@ -28,6 +28,29 @@ export function sourceUrl(): string {
   return configuredSourceCommit ? `${SOURCE_REPO_URL}/tree/${configuredSourceCommit}` : SOURCE_REPO_URL
 }
 
+export const PROD_API_HOST = "api.civfix.org"
+
+let configuredApiHost = ""
+
+export function setApiHost(apiUrl: string): void {
+  const value = apiUrl.trim()
+  let host = value
+  try {
+    host = new URL(value).host
+  } catch {
+    host = value
+  }
+  configuredApiHost = host.toLowerCase().replace(/^\/+|\/+$/g, "")
+}
+
+export function apiHost(): string {
+  return configuredApiHost
+}
+
+export function offProductionApiHost(): string {
+  return configuredApiHost && configuredApiHost !== PROD_API_HOST ? configuredApiHost : ""
+}
+
 export const DONATE_URL = "https://reachoutla.org/help"
 
 export const TERMS_URL = `${WEB_ORIGIN}/legal/terms`

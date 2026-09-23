@@ -1516,7 +1516,203 @@ growth list, `/orgs/by-slug/:slug/donate` gone, `HostCapability` count), §33 an
 `manage_payments` / `view_donations` capability lines, the donations eligibility gate) and §36
 (the insights `money` block).
 
-## 47. Forward-email templates are validated, layered, previewable, and never one-off (0.52.0)
+## 47. The home feed is ranked, not reverse-chronological (0.49.0)
+
+`GET /feed/home` keeps its name, method, path, query schema (`HomeFeedQuerySchema`) and response
+schema (`FeedPageDTO`). What changes is the ORDER of `items` and the MEANING of the opaque
+`nextCursor`: the server now scores every candidate with a linear affinity model (follow / self /
+mention / verified-org author / attached event / attached report / image / graded proximity, plus
+log-scaled likes, replies and reposts), multiplies by a floored recency half-life, a seen discount
+and Twitter's author-diversity discount, and orders `score DESC, id DESC`. Reverse-chron survives
+as the legacy path, not as the default.
+
+**The cursor carries both forms, and that is what makes this additive.** A ranked continuation is
+`"<score>|<postId>"` — the same two-part shape as the existing near cursor — with the score
+quantised to `FEED_SCORE_CURSOR_PRECISION` (6) decimal places so a float comparison against the
+cursor is exact. The contract owns the codec (`FeedScoreCursorSchema`, `formatFeedScoreCursor`,
+`parseFeedScoreCursor`, `quantizeFeedScore`, `isAfterFeedScoreCursor`) so the server, its tests and
+any future consumer read one definition of the continuation predicate
+(`score < cursorScore OR (score === cursorScore AND id < cursorId)`). A numeric first segment and
+an ISO first segment are unambiguously distinguishable, so the server dispatches: a score cursor
+continues the ranked set, an ISO `"<timestamp>|<uuid>"` cursor continues the legacy chronological
+query, anything else is a first page. A TestFlight build in the field holding an old cursor keeps
+paginating correctly, and the chronological statement stays tested because it is also the rollback
+lever if the ranker misbehaves on staging.
+
+**The ranking weights are a contract schema with an env-var carrier.** `FeedRankingConfigSchema` is
+`.strict()` with all 27 knobs defaulted, and `DEFAULT_FEED_RANKING` is `FeedRankingConfigSchema.parse({})`.
+The backend carries an override as one JSON-valued `FEED_RANKING` env var (the precedent is
+`FCM_SERVICE_ACCOUNT_JSON`; 27 separate vars would be 27 passes through the four-place env
+propagation rule), unset meaning the full default profile and a partial object merging onto it.
+`.strict()` makes a typo'd knob a named boot failure rather than a silently ignored setting. The
+schema lives here rather than in the backend so that the validator, the ranges and the documented
+defaults are shared by the server, its unit tests and any future operator UI that tunes them —
+tuning a weight is then a deploy, never a client release. There is no settings table and no
+write-config endpoint in this version; a Redis override layer behind two operator-plane endpoints
+is designed and deliberately deferred.
+
+**`getFeedCounts` is a POST that changes nothing (the converse of §17).** `POST /feed/counts`,
+`auth: "required"`, `csrf: false`, `v1`, request `FeedCountsRequestSchema`
+(`{ postIds }`, 1–`FEED_COUNTS_MAX_IDS` (100) ids, `.strict()`), response
+`FeedCountsResponseSchema` (`{ items: [{ id, counts }] }`). §17 said a state-changing endpoint may
+not be a GET; this is the other direction — a read whose input is up to 100 UUIDs (~3.7 kB of
+query string) takes a body. It is exempt from CSRF deliberately: CSRF protects against forced
+WRITES, and this handler performs none. Authorization is by omission — an id that is deleted,
+non-public or blocked in either direction against the caller is simply absent from `items`, never a
+404 and never an error, so the endpoint cannot be used to probe post existence. It returns counts
+and nothing else: no author, body, media or viewer state. Registry 318 → 319.
+
+**`SignalTopic` grows by `feed` and `feed_counts`.** `UserSignalSchema` is unchanged — a signal
+still carries only `{ topic, id? }`, so the `UserChannel` seam's invariant (a frame names a topic
+and an optional scoping id, never entity data; the client refetches authoritative state) holds and
+no authorization decision moves to the client. `feed` means "a post you would plausibly be served
+now exists" and drives the new-posts pill; `feed_counts` means "engagement changed on a post you
+are currently being served" and drives a debounced batch read of `getFeedCounts`. Growing the enum
+is safe for a client on 0.48.x precisely because `handleRawFrame` `safeParse`s every frame and
+DROPS what it cannot parse — an old client silently ignores both topics, which is correct, because
+it has no pill to update. Both publishes are fire-and-forget and both are skipped entirely when no
+`UserChannel` is wired.
+
+**"Verified poster" means verified ORG AFFILIATION.** The issue asked to weight a verified poster;
+there is no user-level verified flag in this contract, because §34 retired the verified neighbour
+in 0.43.0 and replaced it with organization affiliation. `orgVerifiedWeight` therefore applies when
+the author's primary affiliation is to a verified organization, or when the post is published as a
+verified organization. The operator-granted `user_moderation.report_verified` state stays admin-only
+and out of the ranker; surfacing it would need a new `PersonDTO` field and a privacy review.
+
+**Delivery set (§4.2, no consumer left behind).** civfix-backend `services/api` AND
+`services/media-worker`, civfix-admin, civfix-govt-web. `apps/community-web`,
+`apps/community-mobile` and `packages/ui` are workspace consumers and move in the same commit
+series. The backend must update `test/unit/route-coverage.test.ts` to 319.
+
+**Lineage correction (0.54.0).** The 318 → 319 → 322 → 323 → 324 counts quoted through §47-§50
+were written against a 318-entry registry and were overtaken before this work shipped: §52 had
+already taken the released registry to 324, so these four sections land ON TOP of that, not
+before it. The counts stand as the per-section DELTAS they describe (+1, +3, +1, +1); the absolute
+figures do not. The shipped total is 330 — see §53.
+
+## 48. An announcement is a broadcast the event page keeps (0.50.0)
+
+Event announcements do not get their own table, their own delivery pipeline or their own
+notification type. An announcement IS a `broadcasts` row with `kind: "announcement"` — the eighth
+and last value of `BroadcastKindSchema` (appended, per §33's mirroring rule) — so segment
+resolution, the chunked fan-out, `broadcast_deliveries`, `email_suppressions`,
+`broadcast_unsubscribes`, `cleanup_broadcast_mutes` and the `event_broadcast` notification type all
+apply unchanged and stay tested once. What the new kind buys is the one behaviour a broadcast does
+not have: an announcement is PERMANENT PUBLIC EVENT CONTENT, so it is exempt from the broadcast
+content-scrub job and it is readable by everyone who can read the event.
+
+**Targeting decides who is NOTIFIED, never who can READ.** This is the single visibility rule, and
+it is why `listEventAnnouncements` and `getEventAnnouncement` are `auth: "optional"` rather than
+`required`: an event page is a public surface, a push tap must land on a readable page for a
+signed-out visitor, and a non-public event gates its announcements exactly as it gates itself — if
+`getCleanup` answers, so do these. Per-recipient mutes suppress the notification and never the page.
+
+**`AnnouncementAudience` is a proper subset of `BroadcastSegment`, proved by a function.**
+`all_registered | checked_in | not_checked_in | waitlist | slots` — `ticket_types` and `guests_only`
+stay broadcast-console-only. The subset is not a comment: `announcementAudienceToSegment` returns
+the audience AS a `BroadcastSegment`, so widening the audience union without widening the segment
+union is a compile error in this package rather than a runtime 500 in the resolver.
+
+**One DTO, two projections, distinguished by which optional fields are present.**
+`AnnouncementDTO` carries `audience`, `recipientCount`, `sentCount` and `failedCount` as OPTIONAL
+fields. The public projection omits them entirely — a reader outside the audience is never told the
+message was not meant for them, and delivery counts are host operational data. The host projection
+(the dashboard history block and the detail screen's host line) includes them. Omission, not zeroing:
+`recipientCount: 0` is a real announcement sent to nobody, which the compose flow deliberately
+allows, and a zero would be indistinguishable from a redaction. `status` is always present because
+the public list shows `sending`/`sent` immediately while the dashboard needs `failed` for its error
+chip.
+
+**Registry 319 → 322.** `createEventAnnouncement` (POST `/cleanups/:id/announcements`, required,
+csrf), `listEventAnnouncements` (GET, optional, paginated) and `getEventAnnouncement`
+(GET `/cleanups/:id/announcements/:announcementId`, optional). Compose has no channel toggles, no
+drafts and no scheduling: `ANNOUNCEMENT_CHANNELS` is fixed at `["inapp", "push", "email"]` and
+delivery is immediate, because the full broadcast console still exists for everything else.
+`MAX_EVENT_ANNOUNCEMENTS_PER_DAY` (10 per event per rolling 24h) is stated here so the client can
+pre-empt the 429 rather than discover it.
+
+## 49. Event analytics is one consolidated read, alongside the five it will replace (0.50.0)
+
+`getEventAnalytics` — `GET /cleanups/:id/analytics`, `auth: "required"`, csrf false, v1 — answers a
+whole event's analytics in ONE round trip for BOTH surfaces, selected by `scope`: `card` for the
+dashboard carousel, `full` for the analytics page. The five per-panel endpoints
+(`eventAnalyticsOverview|Registrations|Checkins|Broadcasts|Sources`) are NOT removed and NOT
+changed; they serve the `/manage` console, which is retired on its own schedule. Removing them is a
+later, separate breaking change. Registry 322 → 323.
+
+**`scope` replaces `range`, and that is the point.** The per-panel endpoints take
+`AnalyticsRange` (`7d|30d|90d|all`) — a rolling window, which is the wrong frame for a single dated
+event. The consolidated response always covers the whole lifecycle and ships `lifecycle`
+(`createdAt`, `startAt`, `endAt`, `completedAt`) plus `phase`
+(`upcoming | day_of | completed | archived`), so the client slices its own x-domain for the
+lead-up / event-day / follow-up scrubber with no refetch. `scope` is a payload-size lever, never a
+different question: `card` fills `kpis`, `rates`, `deltas`, `phase`, `lifecycle` and the three
+card series capped at `EVENT_ANALYTICS_CARD_SERIES_POINTS`, and leaves the breakdown `Panel`s
+absent. Absent, not empty — an omitted `signups.bySlot` means "not in this scope", while
+`{ rows: [] }` means "asked, and there are none".
+
+**It composes the existing analytics vocabulary rather than inventing a second one.**
+`SeriesPoint`, `Panel`, `BreakdownRow`, `SuppressedRate` and `FunnelStep` are reused as-is, and `k`
+still defaults to `ANALYTICS_SUPPRESSION_K` (5) with the same convention: rates and breakdown rows
+whose denominator is below `k` come back `value: null, suppressed: true`, while the host's own raw
+totals (signups, views, hours) are never suppressed. Every count in `kpis` is nullable so a metric
+that does not exist yet says so instead of lying with a zero — `uniqueViewers` and `shares` are
+null until the distinct-viewer rollup and the share counter exist, and `comparison` is null until
+the host has `EVENT_ANALYTICS_COMPARISON_MIN_EVENTS` (3) completed events. Comparison medians are
+computed server-side over the host's last `EVENT_ANALYTICS_COMPARISON_WINDOW` (10) completed events
+and compare a host only against themselves; there is no cross-host benchmark in this contract, and
+no per-attendee field anywhere in the response.
+
+## 50. Address resolution is a contract concern: a precision ladder plus source provenance (0.51.0)
+
+`POST /map/resolve-address` (`resolveAddress`, `auth: "optional"`, csrf false, v1) is the endpoint a
+creation flow calls to see a street-level line for a pin. It is NOT a rename of `reverseLabel`, which
+stays exactly as it is: `reverseLabel` only ever answers the TIGER `cityStateLabel`, and deployed
+clients keep calling it. The new response is `{ address: string | null, precision: AddressPrecision |
+null, cityStateLabel: string }` — `cityStateLabel` is always populated from the same locality seam, so
+a client can show the rough-area hint even when the provider chain returns nothing. Registry +1
+(quoted as 323 → 324 when this was drafted; see §47's lineage correction and §53 for the real total).
+
+**`AddressPrecision` is the honesty ladder, not a confidence score.** `street | intersection |
+landmark | locality`, ordered most-to-least specific in `ADDRESS_PRECISION_LADDER`, and an adapter
+may only claim the rung its data actually supports (a house number for `street`, two distinct named
+ways for `intersection`, a named non-residential feature for `landmark`). `isLocatedPrecision()` is
+the single predicate that decides "prefill the field" vs "make the human type one"; `locality` and
+`null` are both "not located". `needsNearPrefix()` marks the landmark rung so a display surface
+renders "Near <feature>" and never presents a POI as a postal address. The enum lives in
+`entities.ts` because it is cross-domain: the map response and the report DTO both carry it.
+
+**Two source enums, because events and reports verify differently.** `EventAddressSource`
+(`resolved | edited | manual`) records how a HOST arrived at `cleanups.address` — every value means a
+human saw the line, which is why `isVerifiedEventAddress()` accepts all three and why events carry no
+precision column. `ReportAddressSource` (`resolved | user`) records who produced `reports.addr`: the
+server's creation-time snapshot, or the reporter's own typing; `addrPrecision` is persisted beside it
+so a later display-side coarsening policy needs no re-geocoding. `isVerifiedReportAddress()` is
+therefore stricter than the event predicate — only `user` text or a `street` resolve counts as postal,
+and that is what gates sending the address (rather than the coordinates) to an external maps app.
+One caveat the compat shim below creates: the `resolved` rows IT writes are machine-resolved, so "every
+value means a human saw the line" holds only for events a NEW client published. A surface building an
+external-map URL therefore treats a line as text-searchable only when it is human-confirmed or resolved
+at street/intersection precision, and otherwise sends the coordinates — which is why the URL builders
+pair verified text with `ll`/`geo:` whenever a point exists and fall back to the point alone when the
+row carries no address at all.
+
+**`addressSource` doubles as the new-client flag; `address` stays wire-optional.** A client that has
+run the host verification gate always sends `address` AND `addressSource`. Its absence is how the
+server recognises an old build and applies the compat shim (resolve server-side, store source
+`resolved`) instead of publishing an addressless event. Making `address` required on the wire would be
+a TestFlight flag-day, so it is not. Length caps are now named — `MAX_EVENT_ADDRESS_LENGTH` (200),
+`MAX_REPORT_ADDR_LENGTH` (300, applied to both `CreateReportRequest` and `AnonReportRequest`) — so a
+composer's `maxLength` cannot drift from the schema again. The minimum-length and trim rules for a
+supplied event address are SERVICE-side, deliberately: tightening the request schema would reject
+payloads old clients can still legitimately send.
+
+**`geocodePointKey()` is the one cache key.** Five-decimal rounding (~1.1 m), formatted
+`"34.05223,-118.24368"`, shared so the backend's read-through geocode cache, the server-side create
+path and the client's query key all collapse onto the same row for one pin.
+
+## 51. Forward-email templates are validated, layered, previewable, and never one-off (0.52.0)
 
 **Palette.** `FORWARD_TEMPLATE_VARIABLES` is the whole vocabulary a forward template may use, in
 single-brace `{token}` form. `{reporterName}` is removed: the packet never names the reporter (the
@@ -1563,7 +1759,7 @@ move `published <-> resolved`.
 per-message truth about whether the provider accepted an outbound message, derived from the backend's
 mail events, so a thread pill can no longer say "Sent" over a rejected message.
 
-## 48. The city conversation is one room, read and written from both planes (0.53.0)
+## 52. The city conversation is one room, read and written from both planes (0.53.0)
 
 **One room, two doors.** A report's discussion is a single chat room. The operator reads and writes it
 through `adminReportMessages` / `adminSendReportMessage`, which carry the SAME request and response
@@ -1590,7 +1786,7 @@ the mention rather than as a confirmation afterwards.
 **The built-in forward template names the reporter's channel.** `DEFAULT_FORWARD_SUBJECT_TEMPLATE` is
 `[civfix: {referenceCode}] {title}` and the body states that replies reach civfix operators AND the
 reporter, lists the photo links inline via `{photoCount}` / `{photoLinks}`, and ends with the public
-pin URL. Because the body USES `{photoLinks}`, §47's rule suppresses the backend's auto-appended photo
+pin URL. Because the body USES `{photoLinks}`, §51's rule suppresses the backend's auto-appended photo
 block — the packet mentions exactly the attachments it carries. The retired defaults' `{confirmations}`,
 `{status}` and `{jurisdictionName}` lines are gone; the palette still allows them, so an operator
 template may reinstate any of them.
@@ -1609,3 +1805,137 @@ not computed it yet and a client that never reads it both still parse.
 (TS7056), so a new group — not a new key on `coreEndpoints` — is how the registry grows from here. The
 registry is now 324 entries, 104 of them under `/admin`; the backend's
 `test/unit/route-coverage.test.ts` moves to 324.
+
+## 53. The feed score is a global term plus a viewer term, and every refresh reshuffles (0.54.0)
+
+§47 introduced the ranked home feed as one linear affinity model. 0.54.0 keeps the schema, the
+cursor codec and the quantisation exactly as they are, and re-reads the same knobs as an explicit
+SUM OF TWO COMPONENTS, so that "why is this post here" always has a two-part answer.
+
+**The GLOBAL component is everything that is true of a post no matter who is looking**: `baseWeight`,
+`orgVerifiedWeight`, the attachment weights (`attachEventWeight`, `attachReportWeight`),
+`imageWeight`, and the log-scaled engagement terms (`likeWeight`, `replyWeight`, `repostWeight`).
+It is the same number for every viewer, so it can be computed once per post and cached across
+viewers rather than recomputed per fan-out. **The VIEWER component is everything that only means
+something relative to the caller**: `followWeight`, `selfWeight`, `mentionWeight`, and location
+(`nearbyWeight` graded over `nearbyRadiusKm`). The recency half-life, the seen discount and the
+author-diversity discount remain multiplicative modifiers applied to the sum, not members of either
+component. Nothing in the schema encodes the split — it is a statement about how the backend
+composes the same knobs — but the split is what makes the weights tunable with intent: raising
+`orgVerifiedWeight` changes what everyone sees, raising `followWeight` changes only how personal
+each feed is.
+
+**Location is weighted first, deliberately and by an order of magnitude.** `nearbyWeight`'s default
+moves 50 → 300. Proximity is graded to 0..1 across `nearbyRadiusKm` (40 km), so a post at the
+viewer's doorstep earns up to 300 points against `followWeight`'s 100 and `baseWeight`'s 10. That
+is the product claim, not a tuning accident: CivFix is a civic feed about a place, and a pothole
+two blocks away matters more to a reader than a well-liked post from someone they follow in another
+city. The old default made proximity a tie-breaker among socially-ranked posts; the new one makes
+the social terms tie-breakers among nearby posts. The knob's range (0..1000) is unchanged, so the
+old behaviour is still one `FEED_RANKING` env var away and no deploy is needed to walk it back. A
+viewer with no usable location simply scores 0 on this term and falls back to the social and global
+terms, which is the same degradation §45 already assumes.
+
+**`jitterAmount` (0..1, default 0.15) is the ± fraction of MULTIPLICATIVE score jitter applied per
+refresh.** At 0.15 each post's final score is scaled by a factor drawn from [0.85, 1.15]; at 0 the
+ranking is fully deterministic, which is what the unit tests and any A/B baseline want. The jitter
+is not per-request randomness: it is derived from a seed minted once per FIRST-PAGE request, so
+every post in one refresh is perturbed by one reproducible draw. Its job is to stop a stable
+candidate set from producing a byte-identical feed on every pull-to-refresh — near the top of the
+ranking, scores are close enough that a 15% band reorders neighbours while leaving the
+global-versus-viewer ordering intact. It is a presentation-layer shuffle within a rank band, never
+a re-weighting of the model.
+
+**Per-refresh jitter is pagination-safe because the snapshot, not the scorer, is the source of
+truth for a continuation.** The first page already ranks a candidate set and STORES it (see
+`snapshotTtlSeconds`); later pages slice that stored snapshot with the score cursor rather than
+re-running the ranker. The jitter is applied while the snapshot is built and BAKED INTO the stored
+scores, so the cursor a client holds refers to a number that still exists in the snapshot it came
+from, and `isAfterFeedScoreCursor` keeps its exact meaning. The cursor format is therefore
+unchanged — still `"<score>|<postId>"` at `FEED_SCORE_CURSOR_PRECISION` (6) — and no client, cached
+or in the field, needs to know that jitter exists. Two refreshes seconds apart produce two
+snapshots with two different jitter draws and two different orderings, and each paginates
+consistently within itself, which is exactly the desired behaviour: the reshuffle happens at
+refresh, never mid-scroll. The snapshot-MISS fallback (an expired or evicted snapshot, on a page
+the client is already paging through) is unchanged: the server re-ranks best-effort and filters by
+the cursor predicate, which may drop or repeat an item near the seam — jitter widens that seam
+slightly but does not create it, and the mitigation is the one already in place, `minPageItems`
+plus a TTL comfortably longer than a scroll session.
+
+**Knob count 27 → 28.** `FeedRankingConfigSchema` stays `.strict()` and fully defaulted, so
+`FEED_RANKING` overrides that omit `jitterAmount` keep 0.15 and a typo'd `jitterAmmount` is still a
+named boot failure rather than a silent no-op. Backwards compatible for every consumer that only
+reads `DEFAULT_FEED_RANKING`.
+
+**Delivery set (§4.2, no consumer left behind).** The feed-ranking profile itself is additive, but
+0.54.0 is NOT a registry no-op: this release ships §47-§50 alongside it, so the registry moves
+324 → 330 — `getFeedCounts` (§47), the three announcement endpoints `createEventAnnouncement`,
+`listEventAnnouncements` and `getEventAnnouncement` (§48), `getEventAnalytics` (§49) and
+`resolveAddress` (§50). 104 of the 330 stay under `/admin`, unchanged. Every consumer MUST adopt
+0.54.0 to call the six new endpoints, and civfix-backend must move
+`test/unit/route-coverage.test.ts` to 330; `packages/shared/__tests__/client.test.ts` already
+asserts it. civfix-backend `services/api` also adopts the new ranking profile when it implements
+the split scorer and the seeded jitter; civfix-admin and civfix-govt-web bump with the routine
+version propagation. No migration for the ranking change itself, and nothing here is breaking for
+a consumer that stays on the endpoints it already calls.
+
+## 54. The host's own numbers are exact; only group breakdowns are suppressed (0.55.0)
+
+`hostedEventsAnalyticsSummary` — `GET /me/hosted-events/analytics/summary`, `auth: "required"`,
+csrf false, v1 — answers "what has this host actually done in this window" in ONE read, for the
+host-analytics page's KPI tiles and its two per-event panels. It sits BESIDE
+`hostedEventsAnalytics` (`/me/hosted-events/analytics`), which is unchanged: that read is the
+portfolio rollup (repeat attendance, best day/time, ranked volunteers) and keeps its own
+`PortfolioAnalyticsRange` (`30d|90d|365d|all`). The summary takes the per-event
+`AnalyticsRange` (`7d|30d|90d|all`) instead, because a host-wide window is a rolling window and the
+tiles sit next to the per-event surfaces that already speak that vocabulary. `range` and `orgId`
+are both optional and the request is `.strict()`; the server resolves an omitted `range` to `30d`
+and echoes the resolved value back, so a client never has to remember what it did not send.
+Registry 330 → 331.
+
+**The top-line aggregates are EXACT — effectively k=1 — and that is the whole point of a separate
+schema.** `activity` (signups, cancellations, hoursTotal, hoursVolunteers, reportsLinked,
+reportsResolved, postsCreated, donationClicks), `eventsHeld` (count, registered, checkIns,
+noShows) and `totals.events` are plain non-nullable numbers, not the nullable
+`value | null, suppressed` shape every other analytics field uses. These are the host's OWN
+totals over the host's OWN events: the host already sees every roster, every check-in scan and
+every credited hour in the manage console, so suppressing them protects nobody and only teaches
+the host to distrust the page. This is the precedent the portfolio read set with `totalHours` and
+`volunteersCredited` (§39) — a raw total a host is entitled to is never k-suppressed — and §49
+already stated the same rule for per-event KPIs ("the host's own raw totals are never
+suppressed"). A zero here means zero, and there is no "we are hiding this" state to render.
+
+**Group breakdowns stay k-suppressed, and the envelope's `k` still says so.** `eventsHeld.checkInRate`
+is a `SuppressedRate` and `byEvent` / `hoursByEvent` are ordinary `Panel`s of `BreakdownRow`s, so a
+rate or a row whose denominator falls below `k` comes back `value: null, suppressed: true`, and a
+whole panel can carry `panelSuppressed`. The distinction is not "aggregate vs. rate" but
+**whole vs. part**: a single number covering everything the host ran identifies nobody, while a
+row that splits those same people by event — and, downstream, by slot, ticket type or source — can
+isolate an individual on a small event. `k` therefore keeps defaulting to
+`ANALYTICS_SUPPRESSION_K` (5) in this envelope: it governs the parts, not the whole. The panels are
+capped at `MAX_HOST_SUMMARY_EVENT_ROWS` (12) rows each and `signupsDaily` at
+`MAX_HOST_SUMMARY_SERIES_POINTS` (365) points, so an "all" range over a long-lived host is a
+bounded payload; the server ranks and truncates rather than paginating. `window` (`from`, `to`)
+ships the resolved day-key bounds alongside `generatedAt` so a chart's x-domain and a "last 30
+days" label come from the server's clock, not the device's.
+
+**The per-event funnel drops its page-views first step.** The reach funnel on the per-event
+analytics surface started at page views, then narrowed to sign-ups and check-ins — but page views
+are counted by `recordEventPageView` against the public event page, while the KPI tiles beside the
+funnel read sign-ups and check-ins from the live registration and check-in tables. Two surfaces
+answering the same question from two sources disagree in practice (a view recorded against a page
+the event later unpublished, a sign-up taken in the manage console that never had a view), and the
+funnel's first step was where that disagreement showed. The funnel now begins at sign-ups, so every
+step and every tile is computed from the same live sources and a host reading down the page sees
+one set of numbers. `FunnelStep`, `EventAnalyticsReach.funnel` and the `pageViews` KPI itself are
+all unchanged on the wire — this is a change of WHAT the backend puts in the funnel array and what
+the client labels, not a schema break — and `eventAnalyticsSources` still serves page views as its
+own panel for hosts who want the reach question answered on its own terms.
+
+**Delivery set (§4.2, no consumer left behind).** This is purely additive: one new endpoint, one
+new request/response pair, no field removed or retyped anywhere. civfix-backend `services/api`
+implements `GET /me/hosted-events/analytics/summary` and must move
+`test/unit/route-coverage.test.ts` to 331; `packages/shared/__tests__/client.test.ts` already
+asserts it. civfix-app adopts 0.55.0 to call the endpoint and to ship the funnel's new first step;
+civfix-admin and civfix-govt-web bump with the routine version propagation and call nothing new. No
+migration — every number here is aggregated from tables that already exist.

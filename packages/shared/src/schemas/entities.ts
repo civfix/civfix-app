@@ -227,6 +227,20 @@ export type ReportTimelineEntryDTO = z.infer<typeof ReportTimelineEntryDTOSchema
 export const ReportVisibilitySchema = z.enum(["public", "hidden"])
 export type ReportVisibility = z.infer<typeof ReportVisibilitySchema>
 
+export const AddressPrecisionSchema = z.enum([
+  "street",
+  "intersection",
+  "landmark",
+  "locality",
+])
+export type AddressPrecision = z.infer<typeof AddressPrecisionSchema>
+
+export const EventAddressSourceSchema = z.enum(["resolved", "edited", "manual"])
+export type EventAddressSource = z.infer<typeof EventAddressSourceSchema>
+
+export const ReportAddressSourceSchema = z.enum(["resolved", "user"])
+export type ReportAddressSource = z.infer<typeof ReportAddressSourceSchema>
+
 export const ReportDTOSchema = z.object({
   id: IdSchema,
   referenceCode: z.string().optional(),
@@ -235,6 +249,8 @@ export const ReportDTOSchema = z.object({
   title: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   addr: z.string().nullable().optional(),
+  addrSource: ReportAddressSourceSchema.nullable().optional(),
+  addrPrecision: AddressPrecisionSchema.nullable().optional(),
   status: ReportStatusSchema,
   visibility: ReportVisibilitySchema,
   ...LatLngFields,
@@ -716,6 +732,7 @@ const CleanupObjectSchema = z.object({
   myRole: CleanupMemberRoleSchema.nullable().optional(),
   bring: z.array(z.string()),
   address: z.string().nullable().default(null),
+  addressSource: EventAddressSourceSchema.nullable().optional(),
   dist: z.number().nullable().optional(),
   linkedReports: z.array(LinkedReportRefSchema).default([]),
   slots: z.array(EventSlotDTOSchema).default([]),

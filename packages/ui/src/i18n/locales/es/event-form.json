@@ -17,6 +17,18 @@
     "runsFor": "Dura",
     "duration_hours": "{{count}} h"
   },
+  "cover": {
+    "label": "Imagen de portada",
+    "hint": "Aparece arriba en la página de tu evento, en lugar del mapa.",
+    "add": "Añadir portada",
+    "replace": "Cambiar portada",
+    "remove": "Quitar portada",
+    "uploading": "Subiendo...",
+    "error_rejected": "No se pudo usar esa imagen. Prueba con otra foto.",
+    "error_rate_limited": "Demasiadas subidas. Espera un momento e inténtalo de nuevo.",
+    "error_generic": "No se pudo subir la imagen. Inténtalo de nuevo.",
+    "error_not_image": "Elige una imagen: no se puede usar un video como portada."
+  },
   "linkedReports": {
     "label": "Reportes en este lugar",
     "loadError": "No se pudieron cargar los reportes. Intenta de nuevo.",
@@ -58,5 +70,18 @@
     "time_past": "Elige una hora que aún no haya pasado.",
     "end_too_soon": "Termina al menos {{minutes}} minutos después del inicio.",
     "time_dst_gap": "Esa hora no existe en esta fecha porque los relojes se adelantan. Elige otra hora."
+  },
+  "address": {
+    "label": "Dirección del punto de encuentro",
+    "placeholder": "Dirección a la que navegarán los asistentes",
+    "placeholderManual": "Escribe la dirección del punto de encuentro",
+    "near": "Cerca de {{address}}",
+    "resolving": "Buscando la dirección de este punto...",
+    "confirmHint": "Esto es lo que verán los asistentes para llegar. Edítalo si no es correcto.",
+    "manualRequired": "No encontramos una dirección para este punto: escribe la dirección del encuentro.",
+    "manualRequiredNear": "No encontramos una dirección para este punto en {{cityState}}: escribe la dirección del encuentro.",
+    "tooShort": "Escribe al menos 3 caracteres para que puedan encontrar el sitio.",
+    "pinMoved": "Moviste el punto: revisa la dirección.",
+    "pinFirst": "Coloca primero el punto y buscaremos la dirección."
   }
 }

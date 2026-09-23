@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
-import { space, useLayoutMode, focusRingProps, makeThemedStyles, useTheme } from "../theme"
+import { space, useLayoutMode, focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../theme"
 import { Brand, GlassButton, Avatar, openBrandAbout } from "../primitives"
 import { Text, Icon, iconMap } from "../typography"
 import { BlurSurface } from "../surface"
@@ -82,7 +82,14 @@ export function MapControls({ topInset = 0, onLocate }: MapControlsProps) {
       accessibilityRole="button"
       accessibilityLabel={t("brand.home")}
       {...focusRingProps}
-      style={({ pressed }) => [styles.logoPill, th.shadows.s2, pressed ? styles.pressed : null]}
+      style={(state) => [
+        styles.logoPill,
+        th.shadows.s2,
+        webCursor(),
+        webTransition,
+        webHover(state) ? styles.hovered : null,
+        state.pressed ? styles.pressed : null,
+      ]}
     >
       <BlurSurface kind="button" style={StyleSheet.absoluteFill} pointerEvents="none" />
       <Brand size={23} />
@@ -187,7 +194,14 @@ function ProfileEntry() {
         accessibilityLabel={t("profile.signIn")}
         hitSlop={6}
         {...focusRingProps}
-        style={({ pressed }) => [styles.signInPill, th.shadows.s2, pressed ? styles.pressed : null]}
+        style={(state) => [
+          styles.signInPill,
+          th.shadows.s2,
+          webCursor(),
+          webTransition,
+          webHover(state) ? styles.hovered : null,
+          state.pressed ? styles.pressed : null,
+        ]}
       >
         <BlurSurface kind="button" style={StyleSheet.absoluteFill} pointerEvents="none" />
         <Text style={styles.signInText}>{t("profile.signIn")}</Text>
@@ -202,7 +216,14 @@ function ProfileEntry() {
       accessibilityLabel={t("profile.open")}
       hitSlop={6}
       {...focusRingProps}
-      style={({ pressed }) => [styles.profileWrap, th.shadows.s2, pressed ? styles.pressed : null]}
+      style={(state) => [
+        styles.profileWrap,
+        th.shadows.s2,
+        webCursor(),
+        webTransition,
+        webHover(state) ? styles.hovered : null,
+        state.pressed ? styles.pressed : null,
+      ]}
     >
       <Avatar
         name={user?.displayName ?? "You"}
@@ -282,6 +303,9 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyBold,
     fontSize: 14,
     color: t.colors.text,
+  },
+  hovered: {
+    opacity: 0.85,
   },
   pressed: {
     opacity: 0.9,

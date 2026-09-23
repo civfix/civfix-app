@@ -1,6 +1,6 @@
 import React from "react"
 import { Pressable } from "react-native"
-import { focusRingProps, makeThemedStyles, useTheme, webHover, webTransition } from "../theme"
+import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useNavStore } from "../nav"
 import { useT } from "../i18n"
@@ -31,6 +31,7 @@ export function DetailTrailingButton({ action }: DetailTrailingButtonProps) {
       {...focusRingProps}
       style={(state) => [
         styles.chip,
+        webCursor(),
         webTransition,
         webHover(state) ? styles.chipHovered : null,
         state.pressed ? styles.pressed : null,

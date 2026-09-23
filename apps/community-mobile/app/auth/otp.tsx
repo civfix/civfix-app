@@ -169,7 +169,7 @@ export default function OtpScreen() {
       >
         <View style={styles.content}>
           <View style={[styles.iconWrap, landscape && styles.iconWrapLandscape]}>
-            <Ionicons name="mail-open-outline" size={28} color={th.colors.brand.bloom} />
+            <Ionicons name="mail-open-outline" size={30} color={th.colors.brand.bloom} />
           </View>
 
           <Text variant="display" style={styles.title}>
@@ -226,8 +226,8 @@ export default function OtpScreen() {
 
           {error ? (
             <View style={styles.errorRow}>
-              <Ionicons name="alert-circle" size={16} color={th.colors.bloom["600"]} />
-              <Text variant="caption" color={th.colors.bloom["700"]} style={styles.errorText}>
+              <Ionicons name="alert-circle" size={16} color={th.colors.dangerInk} />
+              <Text variant="caption" color={th.colors.dangerInk} style={styles.errorText}>
                 {error}
               </Text>
             </View>
@@ -254,7 +254,15 @@ export default function OtpScreen() {
             <Text variant="caption" color={th.colors.textSubtle}>
               {t("resend.prompt")}
             </Text>
-            <Pressable onPress={onResend} disabled={cooldown > 0 || resending} hitSlop={8}>
+            <Pressable
+              onPress={onResend}
+              disabled={cooldown > 0 || resending}
+              accessibilityRole="button"
+              accessibilityLabel={t("resend.action")}
+              accessibilityState={{ disabled: cooldown > 0 || resending }}
+              hitSlop={8}
+              style={({ pressed }) => (pressed && !(cooldown > 0 || resending) ? styles.resendPressed : null)}
+            >
               <Text
                 variant="caption"
                 color={cooldown > 0 ? th.colors.textSubtle : th.colors.brand.bloom}
@@ -348,5 +356,8 @@ const useStyles = makeThemedStyles((t) => ({
   },
   resendText: {
     fontFamily: t.fontFamily.bodySemiBold,
+  },
+  resendPressed: {
+    opacity: 0.6,
   },
 }))

@@ -94,9 +94,10 @@ describe("no surface marks an event completed any more", () => {
 })
 
 describe("an ended event closes RSVP without closing check-in", () => {
-  it("gates the non-host check-in row on the LIVE status, never on the end time", () => {
+  it("keeps the staff row reachable past the end, and never gates it on the end time", () => {
     const source = code(body)
-    expect(source).toContain("!actsAsHost && canCheckIn && isLive")
+    expect(source).toContain("!actsAsHost && (canCheckIn || canViewRoster) && (isLive || canViewRoster)")
+    expect(source).toContain('const canViewRoster = hasHostCapability(capabilityCleanup, "view_roster")')
     expect(source).not.toMatch(/canCheckIn && isUpcoming/)
   })
 

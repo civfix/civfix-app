@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable } from "react-native"
+import { ActivityIndicator, View, Image, Pressable, StyleSheet } from "react-native"
 import {
   EVENT_KIND_VALUES,
+  MAX_EVENT_ADDRESS_LENGTH,
   MIN_EVENT_DURATION_MINUTES,
+  type EventAddressSource,
   type EventKind,
   type EventSlotDTO,
   type OrganizationRefDTO,
@@ -19,8 +21,29 @@ import {
   focusRingProps,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { TextField, BringInput, MetaDot } from "../primitives"
-import { actableOrganizations, useMyOrganizations, useReverseLabel, reverseLabelText } from "../data"
+import { MIN_TOUCH_TARGET } from "../typography/TextLink"
+import { TextField, BringInput, MetaDot, SecondaryButton } from "../primitives"
+import {
+  actableOrganizations,
+  useMyOrganizations,
+  useResolveAddress,
+  useReverseLabel,
+  resolvedAddressValue,
+  reverseLabelText,
+} from "../data"
+import {
+  eventAddressEdit,
+  eventAddressPinMoved,
+  eventAddressPrefill,
+  eventAddressStatus,
+  isEventAddressComplete,
+  type EventAddressValue,
+} from "./eventAddressField"
+import { useApi } from "../data/context"
+import { uploadMedia } from "../data/uploadMedia"
+import { useCamera } from "../capabilities"
+import { appErrorCode } from "./errorCode"
+import { eventCoverErrorKey } from "./eventCoverModel"
 import { LocationPicker, PortraitMapPickStep, useLocationPick, eventPinTarget } from "../map"
 import { useLocale, useT, viewerTimeZone } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
@@ -52,6 +75,8 @@ import {
   type SlotWindowBounds,
 } from "./eventSlotsForm"
 
+const COVER_RATIO = 16 / 9
+
 export interface CleanupFormValue {
   organizationId: string | null
   title: string
@@ -59,6 +84,9 @@ export interface CleanupFormValue {
   eventKind: EventKind
   addrQuery: string
   spot: string
+  address: string
+  addressSource: EventAddressSource | null
+  addressPointKey: string | null
   coords: { lat: number; lng: number } | null
   date: Date | null
   time: Date | null
@@ -69,6 +97,8 @@ export interface CleanupFormValue {
   linkedReportIds: string[]
   shareToFeed: boolean
   feedCaption: string
+  coverMediaId: string | null
+  coverPreviewUrl: string | null
 }
 
 export type CleanupFormSection = "basics" | "when" | "where" | "extras" | "share"
@@ -92,6 +122,9 @@ export function emptyCleanupForm(
     eventKind: "cleanup",
     addrQuery: "",
     spot: "",
+    address: "",
+    addressSource: null,
+    addressPointKey: null,
     coords: null,
     date: null,
     time: null,
@@ -102,6 +135,8 @@ export function emptyCleanupForm(
     linkedReportIds: seedLinkedReportId ? [seedLinkedReportId] : [],
     shareToFeed: true,
     feedCaption: "",
+    coverMediaId: null,
+    coverPreviewUrl: null,
   }
 }
 
@@ -133,6 +168,7 @@ export function isCleanupFormComplete(
   return (
     value.title.trim().length > 0 &&
     value.coords !== null &&
+    isEventAddressComplete(value.address) &&
     value.date !== null &&
     value.time !== null &&
     hasValidEventEnd(value) &&
@@ -296,6 +332,96 @@ function MeetLocationCompact({
   )
 }
 
+function MeetAddressField({
+  value,
+  onPatch,
+}: {
+  value: CleanupFormValue
+  onPatch: (next: EventAddressValue) => void
+}) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("event-form")
+  const resolution = useResolveAddress(value.coords)
+  const near = useCallback((line: string) => t("address.near", { address: line }), [t])
+
+  const current = useMemo<EventAddressValue>(
+    () => ({
+      address: value.address,
+      addressSource: value.addressSource,
+      addressPointKey: value.addressPointKey,
+    }),
+    [value.address, value.addressSource, value.addressPointKey],
+  )
+
+  const commit = useRef(onPatch)
+  commit.current = onPatch
+  const settled = resolvedAddressValue(resolution)
+  useEffect(() => {
+    const next = eventAddressPrefill({
+      coords: value.coords,
+      resolution: settled,
+      current,
+      near,
+    })
+    if (next) commit.current(next)
+  }, [value.coords, settled, current, near])
+
+  const status = eventAddressStatus({
+    hasCoords: value.coords !== null,
+    isResolving: resolution.isPending,
+    resolveFailed: resolution.isError,
+    addressSource: value.addressSource,
+  })
+  const pinMoved = eventAddressPinMoved({ coords: value.coords, current })
+  const missing = value.coords !== null && status !== "resolving" && !isEventAddressComplete(value.address)
+  const cityHint = resolution.data?.cityStateLabel?.trim() ?? ""
+
+  return (
+    <View style={styles.addressBlock}>
+      <TextField
+        label={t("address.label")}
+        placeholder={status === "manual" ? t("address.placeholderManual") : t("address.placeholder")}
+        value={value.address}
+        onChangeText={(text) =>
+          commit.current(eventAddressEdit({ text, coords: value.coords, current }))
+        }
+        maxLength={MAX_EVENT_ADDRESS_LENGTH}
+        editable={value.coords !== null}
+      />
+      {value.coords === null ? (
+        <Text style={styles.addressHint}>{t("address.pinFirst")}</Text>
+      ) : status === "resolving" ? (
+        <View style={styles.addressNote}>
+          <ActivityIndicator size="small" color={th.colors.textSubtle} />
+          <Text style={styles.addressHint}>{t("address.resolving")}</Text>
+        </View>
+      ) : status === "manual" && value.address.trim().length === 0 ? (
+        <View style={styles.addressNote}>
+          <Icon icon={iconMap.AlertCircle} size={13} color={th.colors.brand.bloom} />
+          <Text style={styles.addressError}>
+            {cityHint.length > 0
+              ? t("address.manualRequiredNear", { cityState: cityHint })
+              : t("address.manualRequired")}
+          </Text>
+        </View>
+      ) : missing ? (
+        <View style={styles.addressNote}>
+          <Icon icon={iconMap.AlertCircle} size={13} color={th.colors.brand.bloom} />
+          <Text style={styles.addressError}>{t("address.tooShort")}</Text>
+        </View>
+      ) : pinMoved ? (
+        <View style={styles.addressNote}>
+          <Icon icon={iconMap.Info} size={13} color={th.colors.textSubtle} />
+          <Text style={styles.addressHint}>{t("address.pinMoved")}</Text>
+        </View>
+      ) : (
+        <Text style={styles.addressHint}>{t("address.confirmHint")}</Text>
+      )}
+    </View>
+  )
+}
+
 export function CleanupForm({
   value,
   onChange,
@@ -335,6 +461,38 @@ export function CleanupForm({
     (partial: Partial<CleanupFormValue>) => onChange({ ...value, ...partial }),
     [onChange, value],
   )
+
+  const api = useApi()
+  const camera = useCamera()
+  const [coverUploading, setCoverUploading] = useState(false)
+  const [coverErrorKey, setCoverErrorKey] = useState<string | null>(null)
+
+  const onPickCover = useCallback(() => {
+    if (coverUploading) return
+    void (async () => {
+      setCoverUploading(true)
+      setCoverErrorKey(null)
+      try {
+        const picked = await camera.pickFromLibrary()
+        if (!picked) return
+        if (picked.kind !== "image") {
+          setCoverErrorKey("cover.error_not_image")
+          return
+        }
+        const uploaded = await uploadMedia({ api, camera, media: picked })
+        patch({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })
+      } catch (err) {
+        setCoverErrorKey(eventCoverErrorKey(appErrorCode(err)))
+      } finally {
+        setCoverUploading(false)
+      }
+    })()
+  }, [api, camera, coverUploading, patch])
+
+  const onRemoveCover = useCallback(() => {
+    setCoverErrorKey(null)
+    patch({ coverMediaId: null, coverPreviewUrl: null })
+  }, [patch])
 
   const onChangeDate = useCallback(
     (date: Date) => {
@@ -378,13 +536,10 @@ export function CleanupForm({
 
   const onPickPlace = useCallback(
     (place: AddressPick) => {
-      patch({
-        coords: { lat: place.lat, lng: place.lng },
-        spot: value.spot.trim().length > 0 ? value.spot : place.name,
-      })
+      patch({ coords: { lat: place.lat, lng: place.lng } })
       if (pickMode === "main-map") useLocationPick.getState().setDraft(place.lat, place.lng)
     },
-    [patch, value.spot, pickMode],
+    [patch, pickMode],
   )
 
   const onDropPin = useCallback(
@@ -490,6 +645,52 @@ export function CleanupForm({
           />
 
           <KindSelector value={value.eventKind} onChange={onChangeKind} />
+
+          <View style={styles.fieldBlock}>
+            <Text style={styles.fieldLabel}>{t("cover.label")}</Text>
+            <Text style={styles.coverHint}>{t("cover.hint")}</Text>
+            {value.coverPreviewUrl ? (
+              <View style={styles.coverFrame}>
+                <Image
+                  source={{ uri: value.coverPreviewUrl }}
+                  style={styles.coverImage}
+                  resizeMode="cover"
+                  accessibilityIgnoresInvertColors
+                />
+              </View>
+            ) : null}
+            <View style={styles.coverActions}>
+              <SecondaryButton
+                size="sm"
+                label={
+                  coverUploading
+                    ? t("cover.uploading")
+                    : value.coverPreviewUrl
+                      ? t("cover.replace")
+                      : t("cover.add")
+                }
+                onPress={onPickCover}
+                disabled={coverUploading}
+              />
+              {value.coverPreviewUrl ? (
+                <Pressable
+                  onPress={onRemoveCover}
+                  disabled={coverUploading}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("cover.remove")}
+                  {...focusRingProps}
+                  style={(state) => [
+                    styles.coverGhost,
+                    webCursorPointer,
+                    state.pressed ? styles.coverGhostPressed : null,
+                  ]}
+                >
+                  <Text style={styles.coverGhostText}>{t("cover.remove")}</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {coverErrorKey ? <Text style={styles.coverError}>{t(coverErrorKey)}</Text> : null}
+          </View>
         </>
       ) : null}
 
@@ -514,8 +715,9 @@ export function CleanupForm({
               placeholder={t("field.spotPlaceholder")}
               value={value.spot}
               onChangeText={(spot) => patch({ spot })}
-              maxLength={200}
+              maxLength={MAX_EVENT_ADDRESS_LENGTH}
             />
+            <MeetAddressField value={value} onPatch={patch} />
           </View>
 
           <ReportLinkPicker
@@ -610,6 +812,46 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
+  coverHint: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    color: t.colors.textSubtle,
+  },
+  coverFrame: {
+    aspectRatio: COVER_RATIO,
+    borderRadius: t.radius.lg,
+    overflow: "hidden",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
+    backgroundColor: t.colors.bgAlt,
+  },
+  coverImage: {
+    width: "100%",
+    height: "100%",
+  },
+  coverActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["3"],
+  },
+  coverGhost: {
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: "center",
+    paddingHorizontal: t.space["2"],
+  },
+  coverGhostPressed: {
+    opacity: 0.7,
+  },
+  coverGhostText: {
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: t.fontSize["13"],
+    color: t.colors.textSubtle,
+  },
+  coverError: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    color: t.colors.brand.bloom,
+  },
   labelRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -665,6 +907,29 @@ const useStyles = makeThemedStyles((t) => ({
   },
   segmentTextActive: {
     color: t.colors.neutral.card,
+  },
+
+  addressBlock: {
+    gap: t.space["1"],
+  },
+  addressNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  addressHint: {
+    flexShrink: 1,
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    lineHeight: 16,
+    color: t.colors.textSubtle,
+  },
+  addressError: {
+    flexShrink: 1,
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: t.fontSize["12"],
+    lineHeight: 16,
+    color: t.colors.brand.bloom,
   },
 
   compactLoc: {

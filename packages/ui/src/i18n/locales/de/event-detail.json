@@ -6,17 +6,7 @@
     "ended": "Dieses Event ist beendet"
   },
   "going": {
-    "heading": "Wer kommt",
-    "count_one": "{{count}} dabei",
-    "count_other": "{{count}} dabei",
-    "empty": "Noch ist niemand dabei.",
-    "you": "Du",
-    "names_following": "Du folgst {{names}}",
-    "names": "{{names}}",
-    "view_all": "Alle anzeigen",
-    "a11y_show_fewer": "Weniger Namen anzeigen",
-    "a11y_show_everyone": "Alle Teilnehmer anzeigen",
-    "a11y_view_everyone": "Alle Teilnehmer ansehen"
+    "you": "Du"
   },
   "actions": {
     "share": "Teilen",
@@ -61,7 +51,9 @@
     "dashboard": "Host-Dashboard",
     "dashboard_a11y": "Das Host-Dashboard dieser Veranstaltung öffnen",
     "check_in": "Teilnehmende einchecken",
-    "check_in_a11y": "Den Check-in dieser Veranstaltung öffnen"
+    "check_in_a11y": "Den Check-in dieser Veranstaltung öffnen",
+    "view_roster": "Teilnehmerliste ansehen",
+    "view_roster_a11y": "Die Teilnehmerliste dieses Events öffnen"
   },
   "report_sheet": {
     "subject": "dieses Event",
@@ -121,22 +113,5 @@
     "suggest_hint": "Die Vorschläge stammen aus der Schicht der jeweiligen Person und der geplanten Dauer der Veranstaltung. Bestätige, was tatsächlich geleistet wurde.",
     "suggest_chip": "{{hours}} Std. · {{slot}}",
     "suggest_chip_a11y": "{{hours}} Stunden aus der Schicht {{slot}} für {{name}} übernehmen"
-  },
-  "guests": {
-    "heading": "Gäste",
-    "count_one": "{{count}} Gast",
-    "count_other": "{{count}} Gäste",
-    "expand_a11y": "Gästeliste anzeigen",
-    "collapse_a11y": "Gästeliste ausblenden",
-    "empty": "Noch keine Gäste.",
-    "loading": "Wird geladen...",
-    "error": "Gäste konnten nicht geladen werden.",
-    "load_more": "Mehr laden",
-    "loading_more": "Wird geladen...",
-    "load_more_a11y": "Mehr Gäste laden",
-    "cancelled": "Abgesagt",
-    "contact_scrubbed": "—",
-    "contact_a11y": "{{name}} kontaktieren",
-    "contact_hidden": "Kontakt ausgeblendet"
   }
 }

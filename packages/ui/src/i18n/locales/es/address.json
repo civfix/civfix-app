@@ -1,0 +1,19 @@
+{
+  "row": {
+    "near": "Cerca de {{address}}",
+    "copy": "Copiar dirección",
+    "copied": "Dirección copiada",
+    "copy_failed": "No se pudo copiar la dirección",
+    "open_maps": "Abrir en una app de mapas",
+    "focus_a11y": "{{address}}",
+    "focus_hint": "Muestra este punto en el mapa",
+    "static_a11y": "Dirección: {{address}}"
+  },
+  "sheet": {
+    "title": "Dirección",
+    "dismiss": "Cerrar",
+    "apple": "Abrir en Apple Maps",
+    "google": "Abrir en Google Maps",
+    "copy": "Copiar dirección"
+  }
+}

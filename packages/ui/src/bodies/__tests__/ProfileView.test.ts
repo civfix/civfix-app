@@ -46,15 +46,15 @@ describe("the tree the tab bar replaced", () => {
     expect(SOURCE).not.toMatch(/profileViewModel/)
   })
 
-  it("runs the stats row between the bio and the social chips, above the bar", () => {
+  it("runs the social icon row between the bio and the stats row, above the bar", () => {
     const bio = SOURCE.indexOf("<Text style={styles.bio}>")
-    const stats = SOURCE.indexOf("<ProfileStatsRow")
     const social = SOURCE.indexOf("<SocialLinksRow")
+    const stats = SOURCE.indexOf("<ProfileStatsRow")
     const bar = SOURCE.indexOf("<ProfileTabBar")
     expect(bio).toBeGreaterThan(-1)
-    expect(stats).toBeGreaterThan(bio)
-    expect(social).toBeGreaterThan(stats)
-    expect(bar).toBeGreaterThan(social)
+    expect(social).toBeGreaterThan(bio)
+    expect(stats).toBeGreaterThan(social)
+    expect(bar).toBeGreaterThan(stats)
   })
 
   it("keeps no trace of the card stack it replaced", () => {

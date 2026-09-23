@@ -29,7 +29,7 @@ export function TopVolunteersCard({ entries, label, caption }: TopVolunteersCard
 const useStyles = makeThemedStyles((t) => ({
   caption: {
     paddingHorizontal: t.space["4"],
-    paddingVertical: t.space["3"],
+    paddingVertical: t.space["2"],
     lineHeight: 16,
   },
 }))

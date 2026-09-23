@@ -51,12 +51,17 @@ export type DetailKind =
   | "drop-pin"
   | "host-mode"
   | "host-checkin"
-  | "host-broadcast-quick"
+  | "host-announce"
   | "host-team"
   | "host-log-hours"
   | "my-ticket"
   | "org"
   | "event-dashboard"
+  | "announcement"
+  | "announcements"
+  | "event-analytics"
+  | "host-analytics"
+  | "org-manage"
 
 export const ALL_DETAIL_KINDS = [
   "pin",
@@ -96,12 +101,17 @@ export const ALL_DETAIL_KINDS = [
   "drop-pin",
   "host-mode",
   "host-checkin",
-  "host-broadcast-quick",
+  "host-announce",
   "host-team",
   "host-log-hours",
   "my-ticket",
   "org",
   "event-dashboard",
+  "announcement",
+  "announcements",
+  "event-analytics",
+  "host-analytics",
+  "org-manage",
 ] as const satisfies readonly DetailKind[]
 
 export const DEAD_DETAIL_KINDS = ["new-msg"] as const satisfies readonly DetailKind[]
@@ -137,6 +147,7 @@ export interface DetailEntry {
   profileTab?: "posts" | "events" | "hours" | "reports"
   slug?: string
   seatId?: string
+  announcementId?: string
   organizationId?: string
 }
 

@@ -161,6 +161,15 @@ export function restorableStack(
   })
 }
 
+export function detailShellSnapshot(
+  stack: readonly DetailEntry[],
+  seedKey: string | null,
+  identityOf: (entry: DetailEntry) => string | null,
+): DetailEntry[] {
+  if (seedKey === null) return [...stack]
+  return stack.filter((entry) => identityOf(entry) !== seedKey)
+}
+
 export function detailRestorePlan(input: DetailRestoreInput): DetailRestorePlan {
   if (input.tornDown) {
     return input.activeKey !== null && input.activeKey === input.seedKey

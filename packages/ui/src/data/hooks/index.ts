@@ -65,6 +65,9 @@ export {
 export { useReverseLabel, reverseLabelText, coordsLabel } from "./reverseLabel"
 export type { ReverseLabelPoint } from "./reverseLabel"
 
+export { useResolveAddress, resolvedAddressValue } from "./resolveAddress"
+export type { ResolveAddressPoint } from "./resolveAddress"
+
 export { useNearbyCleanups, useFeedNotifications, NEARBY_RADIUS_M } from "./feed"
 
 export { useUserLocation } from "./location"
@@ -92,7 +95,6 @@ export {
   useGuestRsvpRequest,
   useGuestRsvpVerify,
   useGuestRsvpCancel,
-  useCleanupGuests,
   cleanupDetailFilters,
 } from "./cleanups"
 export type {
@@ -145,6 +147,7 @@ export {
 export type { FeedFilter, CreatePostVars } from "./posts"
 
 export {
+  ORG_EVENTS_PAGE_SIZE,
   ORG_MEMBERS_PAGE_SIZE,
   actableOrganizations,
   invalidateMyOrgInvites,

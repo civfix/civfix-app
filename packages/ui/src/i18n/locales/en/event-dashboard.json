@@ -24,11 +24,6 @@
     "more_shifts": "{{count}} more shifts in Host tools",
     "more_shifts_a11y": "Open host tools to see all {{total}} shifts for {{title}}"
   },
-  "attention": {
-    "section": "Needs attention",
-    "log_hours": "Log hours · {{count}} checked in",
-    "log_hours_a11y": "Log hours for {{title}}"
-  },
   "impact": {
     "section": "Impact",
     "all_time": "All time",
@@ -64,7 +59,6 @@
     "open_a11y": "Open {{title}}",
     "actions_a11y": "Actions for {{title}}",
     "host_tools": "Host tools",
-    "email_attendees": "Email attendees",
     "duplicate": "Duplicate",
     "edit": "Edit",
     "show_more": "Show more",
@@ -96,7 +90,9 @@
     "meta_hours_not_logged": "Hours not logged",
     "meta_cancelled": "Cancelled",
     "meta_signed_up": "{{count}} signed up",
-    "meta_underway": "Started {{ago}} ago"
+    "meta_underway": "Started {{ago}} ago",
+    "open_chat": "Open group chat",
+    "announce": "Make announcement"
   },
   "first_event": {
     "title": "Host your first event",
@@ -104,20 +100,6 @@
     "step_checkin": "You check them in on the day",
     "step_hours": "You credit their hours after",
     "cta": "Create event"
-  },
-  "invites": {
-    "section": "Invitations",
-    "invited_by_unknown": "Someone",
-    "event_invited_as": "{{name}} invited you as {{role}}",
-    "org_invited_as": "{{name}} invited you as {{role}}",
-    "accept": "Accept",
-    "decline": "Decline",
-    "accept_a11y": "Accept the invitation to {{title}}",
-    "decline_a11y": "Decline the invitation to {{title}}",
-    "error": "That did not work. Try again.",
-    "error_title": "Could not load your invitations",
-    "error_body": "We could not reach civfix. Check your connection and try again.",
-    "retry": "Try again"
   },
   "team": {
     "section": "Team",
@@ -167,10 +149,6 @@
     "show_more_a11y": "Show more collaborators",
     "invites_error": "Could not load pending invitations.",
     "invite_row_sub": "Invited · {{role}}"
-  },
-  "console": {
-    "open": "Open full console",
-    "sub": "Page builder, tickets, exports and more"
   },
   "state": {
     "signin_title": "Sign in to see your dashboard",

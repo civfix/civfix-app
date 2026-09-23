@@ -6,6 +6,7 @@ import { test } from "node:test"
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 const mapHome = read("../app/index.tsx")
 const viewfinder = read("../src/components/report/ReportViewfinder.tsx")
+const nativeCamera = read("../src/lib/nativeCamera.ts")
 
 function mapElementMemo(): string {
   const start = mapHome.indexOf("const mapElement = useMemo(")
@@ -155,4 +156,20 @@ test("the photo shutter asks the library to stay silent", () => {
   )
   assert.ok(take.includes("enableShutterSound: false"))
   assert.ok(take.includes('flash: "off"'))
+})
+
+test("the stale-temp sweep waits out the pop on a real clock, not on runAfterInteractions", () => {
+  assert.ok(
+    !nativeCamera.includes("InteractionManager"),
+    "runAfterInteractions is a bare setImmediate under RN 0.81 - it defers nothing",
+  )
+  assert.ok(nativeCamera.includes("const SWEEP_DELAY_MS = motion.pagePop.duration"))
+  assert.ok(nativeCamera.includes("}, SWEEP_DELAY_MS)"))
+})
+
+test("the sweep yields between directories, so one turn is never two full scans", () => {
+  const sweep = nativeCamera.slice(nativeCamera.indexOf("function sweepStaleMediaTempFiles()"))
+  const body = sweep.slice(0, sweep.indexOf("\n}\n"))
+  assert.equal((body.match(/setTimeout\(/g) ?? []).length, 2)
+  assert.ok(body.includes("}, 0)"))
 })

@@ -33,6 +33,14 @@ function resolveSourceCommit() {
   }
 }
 
+const EAS_DEVELOPMENT_PROFILES = ["development"]
+
+function apsEnvironmentMode() {
+  const profile = process.env.EAS_BUILD_PROFILE
+  if (!profile) return "development"
+  return EAS_DEVELOPMENT_PROFILES.includes(profile) ? "development" : "production"
+}
+
 const SPLASH_BG_LIGHT = tokens.color.neutral.paper
 
 const APP_LINK_HOSTS = ["civfix.org", "www.civfix.org"]
@@ -229,6 +237,7 @@ module.exports = ({ config }) => ({
       "expo-notifications",
       {
         color: "#FF7A6B",
+        mode: apsEnvironmentMode(),
       },
     ],
     [

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native"
 import type { TFunction } from "i18next"
 import type { PostDTO, PostRefDTO } from "@civfix/shared"
 import { Repeat2 } from "lucide-react-native/icons"
-import { makeThemedStyles, useTheme, categoryColor, focusRingProps, wash, webCursor, webHover, webTransition } from "../../theme"
+import { makeThemedStyles, useTheme, categoryColor, focusRingProps, wash } from "../../theme"
 import { Text, Icon } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
@@ -16,6 +16,7 @@ import {
 } from "../../primitives/PostActionBar"
 import { useNavStore } from "../../nav/useNavStore"
 import type { DetailEntry } from "../../nav/types"
+import { EmbeddedPost } from "../EmbeddedPost"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
@@ -23,7 +24,6 @@ import { PostMediaGrid } from "../PostMediaGrid"
 import { PostOverflowButton } from "../../primitives/PostOverflowButton"
 import {
   buildPostCardModel,
-  buildPostIdentity,
   identityA11yLabel,
   postMenuSubject,
   repostSubjectAuthorId,
@@ -86,78 +86,6 @@ function ReplyToLine({
     >
       <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
         {label}
-      </Text>
-    </Pressable>
-  )
-}
-
-function EmbeddedPost({
-  post,
-  t,
-  timeAgo,
-  prominent,
-  onPress,
-}: {
-  post: PostRefDTO
-  t: TFunction
-  timeAgo: (iso: string) => string
-  prominent: boolean
-  onPress: () => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  const identity = React.useMemo(
-    () => buildPostIdentity(post.author, post.organization, t, t("post_card.deleted_account")),
-    [post.author, post.organization, t],
-  )
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={prominent ? t("post_card.open_repost_a11y") : t("post_card.open_quote_a11y")}
-      {...focusRingProps}
-      style={(state) => [
-        styles.embedded,
-        prominent ? styles.embeddedProminent : null,
-        webTransition,
-        webCursor(false),
-        webHover(state) ? styles.embeddedHovered : null,
-        state.pressed ? styles.pressed : null,
-      ]}
-    >
-      <View style={styles.embeddedHeader}>
-        {post.author || identity.organization ? (
-          <Avatar
-            name={identity.avatarName}
-            seed={identity.avatarSeed}
-            photoUrl={identity.avatarUrl}
-            gradient={identity.avatarGradient}
-            size={prominent ? 40 : 26}
-            {...(identity.organization ? { style: styles.orgAvatar } : {})}
-            decorative
-          />
-        ) : null}
-        <Text variant="bodyStrong" numberOfLines={1} style={styles.embeddedAuthor}>
-          {identity.name}
-        </Text>
-        {identity.affiliation ? (
-          <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
-        ) : null}
-        {identity.viaLabel ? (
-          <Text variant="caption" color={th.colors.textSubtle} numberOfLines={1}>
-            {identity.viaLabel}
-          </Text>
-        ) : null}
-        <Text variant="caption" color={th.colors.textSubtle}>
-          {timeAgo(post.createdAt)}
-        </Text>
-      </View>
-      <Text
-        variant="body"
-        color={post.deleted ? th.colors.textSubtle : th.colors.text}
-        style={prominent ? styles.embeddedBodyProminent : null}
-      >
-        {post.deleted ? t("post_card.unavailable") : post.excerpt}
       </Text>
     </Pressable>
   )
@@ -566,36 +494,6 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyBold,
     fontSize: 10.5,
     lineHeight: 12,
-  },
-  embedded: {
-    gap: t.space["2"],
-    padding: t.space["3"],
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surfaceTint,
-  },
-  embeddedHovered: {
-    borderColor: t.colors.borderStrong,
-    backgroundColor: t.colors.surfaceTint,
-  },
-  embeddedProminent: {
-    paddingHorizontal: 2,
-    paddingVertical: 0,
-    borderWidth: 0,
-    backgroundColor: "transparent",
-  },
-  embeddedBodyProminent: {
-    fontSize: 14.5,
-    lineHeight: 21,
-  },
-  embeddedHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  embeddedAuthor: {
-    flexShrink: 1,
   },
   timestamp: {
     marginTop: 14,

@@ -17,6 +17,18 @@
     "runsFor": "Dauer",
     "duration_hours": "{{count}} Std."
   },
+  "cover": {
+    "label": "Titelbild",
+    "hint": "Erscheint oben auf deiner Veranstaltungsseite anstelle der Karte.",
+    "add": "Titelbild hinzufügen",
+    "replace": "Titelbild ersetzen",
+    "remove": "Titelbild entfernen",
+    "uploading": "Wird hochgeladen...",
+    "error_rejected": "Dieses Bild konnte nicht verwendet werden. Probiere ein anderes Foto.",
+    "error_rate_limited": "Zu viele Uploads. Warte kurz und versuche es erneut.",
+    "error_generic": "Bild konnte nicht hochgeladen werden. Versuche es erneut.",
+    "error_not_image": "Wähle ein Bild - ein Video kann nicht als Titelbild verwendet werden."
+  },
   "linkedReports": {
     "label": "Meldungen an diesem Ort",
     "loadError": "Meldungen konnten nicht geladen werden. Erneut versuchen.",
@@ -58,5 +70,18 @@
     "time_past": "Wähle eine Uhrzeit, die noch nicht vorbei ist.",
     "end_too_soon": "Ende mindestens {{minutes}} Minuten nach dem Beginn.",
     "time_dst_gap": "Diese Uhrzeit gibt es an diesem Datum nicht, weil die Uhren vorgestellt werden. Wähle eine andere Uhrzeit."
+  },
+  "address": {
+    "label": "Treffpunkt-Adresse",
+    "placeholder": "Adresse, zu der die Teilnehmenden navigieren",
+    "placeholderManual": "Adresse des Treffpunkts eingeben",
+    "near": "In der Nähe von {{address}}",
+    "resolving": "Adresse für diesen Punkt wird gesucht ...",
+    "confirmHint": "Das sehen die Teilnehmenden zum Navigieren. Passe es an, falls es nicht stimmt.",
+    "manualRequired": "Für diesen Punkt gibt es keine Straßenadresse - bitte den Treffpunkt eingeben.",
+    "manualRequiredNear": "Für diesen Punkt in {{cityState}} gibt es keine Straßenadresse - bitte den Treffpunkt eingeben.",
+    "tooShort": "Gib mindestens 3 Zeichen ein, damit der Ort auffindbar ist.",
+    "pinMoved": "Punkt verschoben - prüfe die Adresse.",
+    "pinFirst": "Setze zuerst den Punkt, dann suchen wir die Adresse."
   }
 }

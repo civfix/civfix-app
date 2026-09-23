@@ -22,6 +22,8 @@ export * from "./bodies"
 export * from "./map"
 export * from "./report"
 
+export * from "./charts"
+
 // Cross-platform full-screen media viewer ("lightbox"): a host mounts <MediaLightboxProvider> once
 // near the root (AppShell does this), and any body opens it via useLightbox().open(items, startIndex).
 export * from "./lightbox"

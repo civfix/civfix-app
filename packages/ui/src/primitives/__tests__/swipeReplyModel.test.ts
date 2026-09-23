@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest"
+import { BACK_SWIPE_EDGE_PX } from "../backSwipeEdge"
 import {
   SWIPE_CAPTURE_SLOP_PX,
   SWIPE_MAX_TRANSLATE_PX,
@@ -54,5 +55,21 @@ describe("swipeProgress", () => {
     expect(swipeProgress(SWIPE_TRIGGER_PX)).toBe(1)
     expect(swipeProgress(96)).toBe(1)
     expect(swipeProgress(-10)).toBe(0)
+  })
+})
+
+describe("the back-swipe edge is not the row's to claim", () => {
+  it("refuses a rightward drag whose touch-down landed inside the edge, however far it travels", () => {
+    expect(shouldCaptureSwipe(80, 0, 0)).toBe(false)
+    expect(shouldCaptureSwipe(80, 0, BACK_SWIPE_EDGE_PX)).toBe(false)
+  })
+
+  it("still captures a drag that starts past the edge", () => {
+    expect(shouldCaptureSwipe(80, 0, BACK_SWIPE_EDGE_PX + 1)).toBe(true)
+  })
+
+  it("captures when no touch-down was recorded, so an untracked gesture is never mistaken for an edge one", () => {
+    expect(shouldCaptureSwipe(80, 0)).toBe(true)
+    expect(shouldCaptureSwipe(80, 0, Number.POSITIVE_INFINITY)).toBe(true)
   })
 })

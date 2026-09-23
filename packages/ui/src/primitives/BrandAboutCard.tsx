@@ -5,7 +5,7 @@ import { Text, Icon, iconMap } from "../typography"
 import { useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
 import { Brand } from "./Brand"
-import { DONATE_URL, PRIVACY_URL, TERMS_URL, sourceUrl } from "./externalUrls"
+import { DONATE_URL, PRIVACY_URL, TERMS_URL, offProductionApiHost, sourceUrl } from "./externalUrls"
 
 /**
  * Zero-width non-joiner (U+200C). Interpolated into the eyebrow's `{{zwnj}}` slot (between "(" and "c") so
@@ -23,6 +23,7 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
   const th = useTheme()
   const openExternal = useOpenExternal()
   const { t } = useT("about")
+  const offProductionHost = offProductionApiHost()
 
   const progress = useRef(new Animated.Value(0)).current
   useEffect(() => {
@@ -99,7 +100,8 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
                 accessibilityRole="link"
                 accessibilityLabel={t("legal.terms_a11y")}
                 hitSlop={6}
-              {...focusRingProps}
+                {...focusRingProps}
+                style={({ pressed }) => (pressed ? styles.legalPressed : null)}
               >
                 <Text style={styles.legalLink}>{t("legal.terms")}</Text>
               </Pressable>
@@ -109,7 +111,8 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
                 accessibilityRole="link"
                 accessibilityLabel={t("legal.privacy_a11y")}
                 hitSlop={6}
-              {...focusRingProps}
+                {...focusRingProps}
+                style={({ pressed }) => (pressed ? styles.legalPressed : null)}
               >
                 <Text style={styles.legalLink}>{t("legal.privacy")}</Text>
               </Pressable>
@@ -124,6 +127,15 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
                 <Text style={styles.legalLink}>{t("legal.source")}</Text>
               </Pressable>
             </View>
+
+            {offProductionHost ? (
+              <Text
+                style={styles.apiHost}
+                accessibilityLabel={t("api_host_a11y", { host: offProductionHost })}
+              >
+                {t("api_host", { host: offProductionHost })}
+              </Text>
+            ) : null}
           </ScrollView>
         </Animated.View>
       </View>
@@ -221,9 +233,19 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textSubtle,
     textDecorationLine: "underline",
   },
+  legalPressed: {
+    opacity: 0.6,
+  },
   legalDot: {
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: 12.5,
     color: t.colors.textSubtle,
+  },
+  apiHost: {
+    fontFamily: t.fontFamily.bodyRegular,
+    fontSize: 11,
+    textAlign: "center",
+    color: t.colors.textSubtle,
+    marginTop: t.space["3"],
   },
 }))

@@ -278,10 +278,10 @@ export function OrgOverview() {
                   href={website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-token-2 inline-flex items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
+                  className="mt-token-2 inline-flex max-w-full items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
                 >
-                  {org.websiteUrl}
-                  <ExternalLink aria-hidden className="h-3.5 w-3.5" />
+                  <span className="truncate">{org.websiteUrl}</span>
+                  <ExternalLink aria-hidden className="h-3.5 w-3.5 shrink-0" />
                 </a>
               ) : null}
             </div>
@@ -324,14 +324,14 @@ export function OrgOverview() {
           <div className="mt-token-4 flex flex-wrap gap-token-2">
             <ConsoleLink
               href={hrefForRoute({ kind: "org", orgId, section: "members" })}
-              className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+              className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
             >
               <Users aria-hidden className="h-4 w-4" />
               {t("nav.members")}
             </ConsoleLink>
             <ConsoleLink
               href={hrefForRoute({ kind: "org", orgId, section: "events" })}
-              className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+              className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
             >
               <CalendarDays aria-hidden className="h-4 w-4" />
               {t("nav.events_section", { defaultValue: "Events" })}

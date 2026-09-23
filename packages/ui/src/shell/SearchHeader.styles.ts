@@ -56,4 +56,10 @@ export const useSearchHeaderStyles = makeThemedStyles((t) => ({
     justifyContent: "center",
     backgroundColor: t.glass.sheet.input,
   },
+  buttonHovered: {
+    opacity: 0.85,
+  },
+  buttonPressed: {
+    opacity: 0.6,
+  },
 }))

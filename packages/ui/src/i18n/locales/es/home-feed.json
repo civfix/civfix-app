@@ -17,7 +17,9 @@
     "empty_body_before": "Aquí aparecerán las publicaciones de tu comunidad. ",
     "empty_body_link": "Inicia sesión",
     "empty_body_after": " para compartir la primera.",
-    "caught_up": "Estás al día"
+    "caught_up": "Estás al día",
+    "new_posts_one": "{{count}} publicación nueva",
+    "new_posts_other": "{{count}} publicaciones nuevas"
   },
   "thread": {
     "title": "Publicación",

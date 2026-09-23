@@ -73,7 +73,7 @@ export function SecondaryButton({
       >
         {label}
       </Text>
-      {TrailingIconCmp ? <TrailingIconCmp size={16} color={t.colors.textSubtle} /> : null}
+      {TrailingIconCmp ? <TrailingIconCmp size={iconSize} color={t.colors.textSubtle} /> : null}
     </Pressable>
   )
 }

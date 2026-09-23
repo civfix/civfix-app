@@ -34,7 +34,7 @@ export function ScreenHeader({
     else router.replace("/")
   }
 
-  const glyphColor = overlay ? th.colors.neutral.card : th.colors.text
+  const glyphColor = overlay ? th.colors.onScrim : th.colors.text
 
   return (
     <View

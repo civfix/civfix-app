@@ -218,7 +218,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
 
   return createPortal(
     <div role="dialog" aria-modal="true" aria-labelledby="cf-auth-title">
-      <div className="modal-scrim" onClick={() => setOpen(false)} />
+      <div className="modal-scrim" aria-hidden="true" onClick={() => setOpen(false)} />
       <div
         className="modal-card"
         style={vvShift ? { transform: `translate(-50%, calc(-50% + ${vvShift}px))` } : undefined}
@@ -235,7 +235,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
             onClick={() => setOpen(false)}
             aria-label={t("close")}
           >
-            <X width={16} height={16} />
+            <X width={16} height={16} aria-hidden="true" />
           </button>
 
           {step === "choices" && (
@@ -248,7 +248,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
           )}
           {step === "email" && (
             <>
-              <h3 id="cf-auth-title" className="cf-auth-title" style={{ fontSize: 22 }}>
+              <h3 id="cf-auth-title" className="cf-auth-title">
                 {t("email.title")}
               </h3>
               <p className="cf-auth-sub">{t("email.subtitle")}</p>
@@ -256,7 +256,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
           )}
           {step === "code" && (
             <>
-              <h3 id="cf-auth-title" className="cf-auth-title" style={{ fontSize: 22 }}>
+              <h3 id="cf-auth-title" className="cf-auth-title">
                 {t("code.title")}
               </h3>
               <p className="cf-auth-sub">

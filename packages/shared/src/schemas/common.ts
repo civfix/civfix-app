@@ -347,6 +347,7 @@ export const BroadcastKindSchema = z.enum([
   "event_updated",
   "event_cancelled",
   "thank_you",
+  "announcement",
 ])
 export type BroadcastKind = z.infer<typeof BroadcastKindSchema>
 

@@ -24,11 +24,6 @@
     "more_shifts": "호스트 도구에 {{count}}개 교대 더 있음",
     "more_shifts_a11y": "호스트 도구를 열어 {{title}}의 교대 {{total}}개 모두 보기"
   },
-  "attention": {
-    "section": "처리할 일",
-    "log_hours": "봉사 시간 기록 · {{count}}명 체크인",
-    "log_hours_a11y": "{{title}}의 봉사 시간 기록"
-  },
   "impact": {
     "section": "성과",
     "all_time": "전체 기간",
@@ -64,7 +59,6 @@
     "open_a11y": "{{title}} 열기",
     "actions_a11y": "{{title}} 작업",
     "host_tools": "호스트 도구",
-    "email_attendees": "참가자에게 이메일 보내기",
     "duplicate": "복제",
     "edit": "수정",
     "show_more": "더 보기",
@@ -96,7 +90,9 @@
     "meta_hours_not_logged": "시간 미기록",
     "meta_cancelled": "취소됨",
     "meta_signed_up": "{{count}}명 신청",
-    "meta_underway": "{{ago}} 전 시작"
+    "meta_underway": "{{ago}} 전 시작",
+    "open_chat": "그룹 채팅 열기",
+    "announce": "공지 작성"
   },
   "first_event": {
     "title": "첫 이벤트를 열어보세요",
@@ -104,20 +100,6 @@
     "step_checkin": "행사 당일 체크인합니다",
     "step_hours": "끝난 뒤 봉사 시간을 인정합니다",
     "cta": "이벤트 만들기"
-  },
-  "invites": {
-    "section": "초대",
-    "invited_by_unknown": "누군가",
-    "event_invited_as": "{{name}}님이 {{role}}(으)로 초대했습니다",
-    "org_invited_as": "{{name}}님이 {{role}}(으)로 초대했습니다",
-    "accept": "수락",
-    "decline": "거절",
-    "accept_a11y": "{{title}} 초대 수락",
-    "decline_a11y": "{{title}} 초대 거절",
-    "error": "처리하지 못했습니다. 다시 시도해 주세요.",
-    "error_title": "초대를 불러올 수 없어요",
-    "error_body": "civfix에 연결하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.",
-    "retry": "다시 시도"
   },
   "team": {
     "section": "팀",
@@ -167,10 +149,6 @@
     "show_more_a11y": "협력자 더 보기",
     "invites_error": "대기 중인 초대를 불러오지 못했어요.",
     "invite_row_sub": "초대됨 · {{role}}"
-  },
-  "console": {
-    "open": "전체 콘솔 열기",
-    "sub": "이벤트 페이지, 티켓, 내보내기 등"
   },
   "state": {
     "signin_title": "대시보드를 보려면 로그인하세요",

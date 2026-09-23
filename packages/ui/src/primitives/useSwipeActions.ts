@@ -10,6 +10,7 @@ import {
   shouldCaptureActionsSwipe,
   shouldSnapOpen,
 } from "./swipeActionsModel"
+import { createSwipeStartTracker } from "./swipeStartTracker"
 
 let openRowCloser: (() => void) | null = null
 
@@ -44,6 +45,7 @@ export function useSwipeActions({ enabled, actionCount }: SwipeActionsOptions): 
   const tickedRef = useRef(false)
   const translateX = useRef(new Animated.Value(0)).current
   const progress = useRef(new Animated.Value(0)).current
+  const startTracker = useRef(createSwipeStartTracker()).current
   const stateRef = useRef({ enabled, width, haptics })
   stateRef.current = { enabled, width, haptics }
 
@@ -107,12 +109,15 @@ export function useSwipeActions({ enabled, actionCount }: SwipeActionsOptions): 
     if (!isNative) return null
     return PanResponder.create({
       onStartShouldSetPanResponder: () => false,
-      onStartShouldSetPanResponderCapture: () => false,
+      onStartShouldSetPanResponderCapture: (evt) => {
+        startTracker.noteTouchStart(evt.nativeEvent.pageX)
+        return false
+      },
       onMoveShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponder: (_evt, g) =>
         stateRef.current.enabled &&
         stateRef.current.width > 0 &&
-        shouldCaptureActionsSwipe(g.dx, g.dy, openRef.current),
+        shouldCaptureActionsSwipe(g.dx, g.dy, openRef.current, startTracker.startX()),
       onPanResponderGrant: () => {
         tickedRef.current = false
         closeOtherRow()
@@ -136,7 +141,7 @@ export function useSwipeActions({ enabled, actionCount }: SwipeActionsOptions): 
       onPanResponderTerminate: () => settle(openRef.current),
       onPanResponderTerminationRequest: () => false,
     })
-  }, [isNative, translateX, progress, closeOtherRow, openActions, snapClosed, settle])
+  }, [isNative, translateX, progress, startTracker, closeOtherRow, openActions, snapClosed, settle])
 
   const active = isNative && enabled && width > 0
   return {

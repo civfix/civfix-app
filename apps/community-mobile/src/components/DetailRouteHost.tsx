@@ -12,8 +12,14 @@ import {
 } from "@civfix/ui"
 import { seedEntry } from "@/components/MobileNavAdapter"
 import { goHome, navTeardownEpoch } from "@/lib/goHome"
-import { detailRestorePlan, nativeBridgeKey } from "@/lib/navBridge"
-import { enterNestedShell, exitNestedShell, rootIsTopRoute } from "@/lib/nestedShellSignal"
+import { detailRestorePlan, detailShellSnapshot, nativeBridgeKey } from "@/lib/navBridge"
+import {
+  enterNestedShell,
+  exitNestedShell,
+  rootIsTopRoute,
+  shellStackBelow,
+  useNestedShellStore,
+} from "@/lib/nestedShellSignal"
 import { secondaryShellBackAction } from "@/lib/secondaryShellBack"
 
 export interface DetailRouteHostProps {
@@ -28,7 +34,9 @@ export default function DetailRouteHost({ entry }: DetailRouteHostProps): React.
   const router = useRouter()
   const navigationRef = useNavigationContainerRef()
   const hostId = useId()
-  const nativeGestureOwnsBack = useNavStore((s) => s.stack.length <= 1)
+  const ownedStack = useNestedShellStore((s) => shellStackBelow(s, hostId))
+  const liveStackLength = useNavStore((s) => s.stack.length)
+  const nativeGestureOwnsBack = (ownedStack ? ownedStack.length : liveStackLength) <= 1
 
   const entryRef = useRef(entry)
   entryRef.current = entry
@@ -48,23 +56,36 @@ export default function DetailRouteHost({ entry }: DetailRouteHostProps): React.
   focusedBridgeKeyRef.current = focusedBridgeKey
 
   useLayoutEffect(() => {
-    if (!entry) return
     if (restoreRef.current === null) {
-      restoreRef.current = useNavStore
-        .getState()
-        .stack.filter((e) => entryIdentity(e) !== seedKey)
+      restoreRef.current = detailShellSnapshot(useNavStore.getState().stack, seedKey, entryIdentity)
       teardownEpochRef.current = navTeardownEpoch()
     }
-    seedEntry(entry)
+    enterNestedShell(hostId, restoreRef.current)
+    if (entry) seedEntry(entry)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seedKey])
 
   useEffect(() => {
-    const restore = restoreRef.current
-    enterNestedShell(
-      hostId,
-      restore && restore.length > 0 ? (restore[restore.length - 1] ?? null) : null,
-    )
+    return () => {
+      const restore = restoreRef.current
+      restoreRef.current = null
+      if (restore === null) return
+      const state = useNavStore.getState()
+      const plan = detailRestorePlan({
+        restore,
+        seedKey: seedKeyRef.current,
+        activeKey: entryIdentity(state.active),
+        stackLength: state.stack.length,
+        left: leftRef.current,
+        tornDown: navTeardownEpoch() !== teardownEpochRef.current,
+        focusedBridgeKey: focusedBridgeKeyRef.current(),
+      })
+      if (plan.type === "restore") state.setStack(plan.stack)
+      else if (plan.type === "clear") state.setStack([])
+    }
+  }, [])
+
+  useEffect(() => {
     return () => exitNestedShell(hostId)
   }, [hostId])
 
@@ -118,31 +139,17 @@ export default function DetailRouteHost({ entry }: DetailRouteHostProps): React.
     }, [router]),
   )
 
-  useEffect(() => {
-    return () => {
-      const restore = restoreRef.current
-      restoreRef.current = null
-      if (restore === null) return
-      const state = useNavStore.getState()
-      const plan = detailRestorePlan({
-        restore,
-        seedKey: seedKeyRef.current,
-        activeKey: entryIdentity(state.active),
-        stackLength: state.stack.length,
-        left: leftRef.current,
-        tornDown: navTeardownEpoch() !== teardownEpochRef.current,
-        focusedBridgeKey: focusedBridgeKeyRef.current(),
-      })
-      if (plan.type === "restore") state.setStack(plan.stack)
-      else if (plan.type === "clear") state.setStack([])
-    }
-  }, [])
-
   return (
     <>
       <Stack.Screen options={{ gestureEnabled: nativeGestureOwnsBack }} />
       <NestedShellHostProvider>
-        <AppShell map={null} mapControls={null} authOverlay={null} renderBody={renderSecondaryBody} />
+        <AppShell
+          map={null}
+          mapControls={null}
+          authOverlay={null}
+          renderBody={renderSecondaryBody}
+          {...(ownedStack ? { stack: ownedStack } : {})}
+        />
       </NestedShellHostProvider>
     </>
   )

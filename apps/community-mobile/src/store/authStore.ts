@@ -14,7 +14,11 @@ import { chatSocket } from "@/lib/ws"
 import { storage } from "@/lib/mmkv"
 import { clearSecureBlobs } from "@/lib/nativeSecureStore"
 import { CACHED_USER_KEY, LAST_IDENTITY_KEY } from "@/lib/mmkv-keys"
-import { forgetPushRegistration, signOutUnregisteringPush } from "@/lib/pushRegistration"
+import {
+  signOutUnregisteringPush,
+  unregisterLapsedSessionPush,
+  type PushUnregisterDeps,
+} from "@/lib/pushRegistration"
 import { queryClient } from "@/query/client"
 import {
   clearPersistedCache,
@@ -91,15 +95,31 @@ function refreshGuestCapabilities(set: SetAuthState): void {
     .catch((err) => set({ networkOutcome: reachabilityOutcome(err) }))
 }
 
-function tearDownIdentity(set: SetAuthState): void {
+function pushUnregisterDeps(): PushUnregisterDeps {
+  return {
+    store: storage,
+    readBearer: async () => {
+      const read = await readToken()
+      return read.ok ? read.token : null
+    },
+    unregister: (registration, bearer, signal) =>
+      api.pushUnregister(registration, {
+        headers: { Authorization: `Bearer ${bearer}` },
+        signal,
+      }),
+  }
+}
+
+function tearDownIdentity(set: SetAuthState): Promise<void> {
   clearPersistedCache()
   chatSocket.disconnect()
   cacheUser(null)
-  forgetPushRegistration(storage)
+  const pushReleased = unregisterLapsedSessionPush(pushUnregisterDeps())
   queryClient.clear()
   set({ status: "unauthed", user: null, sessionPresent: false })
   resumeCachePersistence()
   identityTornDown = true
+  return pushReleased
 }
 
 function dropForeignIdentityState(): void {
@@ -149,7 +169,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     if (read.token === null) {
-      tearDownIdentity(set)
+      void tearDownIdentity(set)
       refreshGuestCapabilities(set)
       return
     }
@@ -168,12 +188,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         adoptIdentity(session.user, set)
         return
       }
-      tearDownIdentity(set)
+      await tearDownIdentity(set)
       await clearToken()
     } catch (err) {
       if (isUnauthorized(err)) {
         set({ networkOutcome: "ok" })
-        tearDownIdentity(set)
+        await tearDownIdentity(set)
         await clearToken()
         return
       }
@@ -221,27 +241,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signOut: async () => {
     await signOutUnregisteringPush({
-      store: storage,
-      readBearer: async () => {
-        const read = await readToken()
-        return read.ok ? read.token : null
-      },
+      ...pushUnregisterDeps(),
+      revokeSession: (bearer, signal) =>
+        api.logout({
+          headers: { Authorization: `Bearer ${bearer}` },
+          signal,
+        }),
       completeSignOut: async () => {
-        tearDownIdentity(set)
+        await tearDownIdentity(set)
         rememberIdentity(null)
         await clearSecureBlobs()
         await clearToken()
       },
-      unregister: (registration, bearer, signal) =>
-        api.pushUnregister(registration, {
-          headers: { Authorization: `Bearer ${bearer}` },
-          signal,
-        }),
     })
   },
 
   markUnauthed: () => {
     if (identityTornDown) return
-    tearDownIdentity(set)
+    void tearDownIdentity(set)
   },
 }))

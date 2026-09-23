@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest"
+import { BACK_SWIPE_EDGE_PX } from "../backSwipeEdge"
 import {
   SWIPE_ACTIONS_CAPTURE_SLOP_PX,
   SWIPE_ACTIONS_FLING_VX,
@@ -92,5 +93,26 @@ describe("shouldSnapOpen", () => {
 
   it("never opens a row with no actions", () => {
     expect(shouldSnapOpen(-200, 0, -2)).toBe(false)
+  })
+})
+
+describe("the back-swipe edge is not the row's to claim", () => {
+  it("only the RIGHTWARD drag can collide with the edge pop, so only that one is excluded", () => {
+    expect(shouldCaptureActionsSwipe(80, 0, true, 0)).toBe(false)
+    expect(shouldCaptureActionsSwipe(80, 0, true, BACK_SWIPE_EDGE_PX)).toBe(false)
+  })
+
+  it("reveals the lane on a LEFTWARD drag that began inside the edge - the pop goes the other way", () => {
+    expect(shouldCaptureActionsSwipe(-80, 0, false, 0)).toBe(true)
+    expect(shouldCaptureActionsSwipe(-80, 0, true, BACK_SWIPE_EDGE_PX)).toBe(true)
+  })
+
+  it("still drags an open row shut from outside the edge", () => {
+    expect(shouldCaptureActionsSwipe(80, 0, true, BACK_SWIPE_EDGE_PX + 1)).toBe(true)
+  })
+
+  it("captures when no touch-down was recorded, so an untracked gesture is never mistaken for an edge one", () => {
+    expect(shouldCaptureActionsSwipe(-80, 0, false)).toBe(true)
+    expect(shouldCaptureActionsSwipe(80, 0, true)).toBe(true)
   })
 })

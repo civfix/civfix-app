@@ -29,6 +29,7 @@ import { useMapFocus } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { longPressHitsMarker, type LongPressMarker } from "./longPressGate"
+import { markerNodeIsActive } from "./markerFocus"
 import {
   clusterFallbackZoom,
   clusterListReports,
@@ -47,6 +48,47 @@ const MARKER_PRESS_GUARD_MS = 350
 const NO_REPORTS: MapProps["reports"] = []
 const NO_CLEANUPS: MapProps["cleanups"] = []
 const NO_AGGREGATES: MapProps["reportAggregates"] = []
+
+interface MarkerNodeProps {
+  node: ClusterNode
+  markerId: string
+  active: boolean
+  onPress: (event: NativeSyntheticEvent<MarkerEvent>) => void
+}
+
+const MarkerNode = memo(function MarkerNode({ node, markerId, active, onPress }: MarkerNodeProps) {
+  const lngLat = useMemo<[number, number]>(() => [node.lng, node.lat], [node.lng, node.lat])
+
+  if (node.type === "cluster") {
+    return (
+      <Marker id={markerId} lngLat={lngLat} onPress={onPress}>
+        <ClusterBubble
+          count={node.count}
+          tone={clusterToneFor(node.reportCount, node.eventCount)}
+        />
+      </Marker>
+    )
+  }
+  if (node.type === "report") {
+    return (
+      <Marker id={markerId} lngLat={lngLat} anchor="bottom" onPress={onPress}>
+        <TeardropPin category={node.pin.category} active={active} />
+      </Marker>
+    )
+  }
+  if (node.type === "event") {
+    return (
+      <Marker id={markerId} lngLat={lngLat} anchor="bottom" onPress={onPress}>
+        <EventPin active={active} eventKind={node.event.eventKind} />
+      </Marker>
+    )
+  }
+  return (
+    <Marker id={markerId} lngLat={lngLat} anchor="bottom" onPress={onPress}>
+      <BlendPin count={node.reports.length} active={active} eventKind={node.event.eventKind} />
+    </Marker>
+  )
+})
 
 export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref) {
   const {
@@ -356,58 +398,23 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
         )
       ) : (
         <>
-          {markerNodes.rendered.map(({ node, markerId }) =>
-            node.type === "cluster" ? (
-              <Marker
-                key={node.key}
-                id={markerId}
-                lngLat={[node.lng, node.lat]}
-                onPress={handlePressCluster}
-              >
-                <ClusterBubble
-                  count={node.count}
-                  tone={clusterToneFor(node.reportCount, node.eventCount)}
-                />
-              </Marker>
-            ) : node.type === "report" ? (
-              <Marker
-                key={node.key}
-                id={markerId}
-                lngLat={[node.lng, node.lat]}
-                anchor="bottom"
-                onPress={handlePressPin}
-              >
-                <TeardropPin category={node.pin.category} active={focusedPinId === node.id} />
-              </Marker>
-            ) : node.type === "event" ? (
-              <Marker
-                key={node.key}
-                id={markerId}
-                lngLat={[node.lng, node.lat]}
-                anchor="bottom"
-                onPress={handlePressCleanup}
-              >
-                <EventPin
-                  active={focusedCleanupId === node.id}
-                  eventKind={node.event.eventKind}
-                />
-              </Marker>
-            ) : (
-              <Marker
-                key={node.key}
-                id={markerId}
-                lngLat={[node.lng, node.lat]}
-                anchor="bottom"
-                onPress={handlePressBlend}
-              >
-                <BlendPin
-                  count={node.reports.length}
-                  active={focusedCleanupId === node.id}
-                  eventKind={node.event.eventKind}
-                />
-              </Marker>
-            ),
-          )}
+          {markerNodes.rendered.map(({ node, markerId }) => (
+            <MarkerNode
+              key={node.key}
+              node={node}
+              markerId={markerId}
+              active={markerNodeIsActive(node, focusedPinId, focusedCleanupId)}
+              onPress={
+                node.type === "cluster"
+                  ? handlePressCluster
+                  : node.type === "report"
+                    ? handlePressPin
+                    : node.type === "event"
+                      ? handlePressCleanup
+                      : handlePressBlend
+              }
+            />
+          ))}
         </>
       )}
 

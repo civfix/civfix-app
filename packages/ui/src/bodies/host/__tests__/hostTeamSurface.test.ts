@@ -12,12 +12,12 @@ const members = strip(read("../../MembersBody.tsx"))
 const detail = strip(read("../../EventDetailBody.tsx"))
 
 describe("host mode reaches the team", () => {
-  it("gates the Team rows on manage_team, not on a role string", () => {
+  it("gates the ONE Team row on manage_team, not on a role string", () => {
     expect(mode).toContain('manageTeam: hasHostCapability(standing, "manage_team")')
     expect(mode).not.toMatch(/myRole === "(organizer|cohost)"/)
     const model = strip(read("../hostSurfaceModel.ts"))
-    expect(model).toContain('if (!cancelled && can.manageTeam) grow.push("invite_team")')
-    expect(model).toContain('if (before && can.manageTeam) configure.push("team")')
+    expect(model).toContain('if (!cancelled && can.manageTeam) configure.push("team")')
+    expect(model).not.toContain("invite_team")
   })
 
   it("builds the standing once from the DTO plus the viewer, so a legacy organizer still passes", () => {

@@ -66,7 +66,7 @@ export function EventSwitcher({ eventId, section, className }: EventSwitcherProp
                 aria-current={row.id === eventId ? "page" : undefined}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "flex min-h-11 flex-col justify-center rounded-xs px-token-2 py-1 text-token-13 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring",
+                  "flex min-h-11 flex-col justify-center rounded-xs px-token-2 py-1 text-token-13 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring",
                   row.id === eventId ? "text-console-ink" : "text-console-ink-2",
                 )}
               >

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { AccessibilityInfo, Pressable, StyleSheet, View } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps, type Theme } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, type Theme, webCursor, webTransition, webHover } from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
 import type { ShareTileTone } from "./shareSheetModel"
 
@@ -58,7 +58,14 @@ export function ShareActionTile({
       accessibilityValue={status === undefined ? undefined : { text: status }}
       accessibilityState={{ disabled }}
       {...focusRingProps}
-      style={({ pressed }) => [styles.tile, pressed ? styles.pressed : null, disabled ? styles.disabled : null]}
+      style={(state) => [
+        styles.tile,
+        webCursor(disabled),
+        webTransition,
+        webHover(state) && !disabled ? styles.hovered : null,
+        state.pressed ? styles.pressed : null,
+        disabled ? styles.disabled : null,
+      ]}
     >
       <View style={[styles.circle, tone === "default" ? null : { borderColor: color }]}>
         <Icon icon={iconMap[icon]} size={22} color={color} />
@@ -88,6 +95,9 @@ const useStyles = makeThemedStyles((t) => ({
   },
   label: {
     textAlign: "center",
+  },
+  hovered: {
+    opacity: 0.85,
   },
   pressed: {
     opacity: 0.7,

@@ -4,6 +4,8 @@
   "close": "Schließen",
   "support_civfix": "civfix unterstützen",
   "support_civfix_a11y": "civfix über Reach Out Los Angeles unterstützen",
+  "api_host": "API: {{host}} (Beta)",
+  "api_host_a11y": "Beta-Build – verbunden mit der API {{host}}",
   "legal": {
     "terms": "Nutzungsbedingungen",
     "terms_a11y": "Nutzungsbedingungen",

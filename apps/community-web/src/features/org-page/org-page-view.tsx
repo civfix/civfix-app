@@ -2,11 +2,16 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { BadgeCheck, CircleAlert, Globe, HeartHandshake, Link2, Loader2 } from "lucide-react"
-import { ErrorCode, SOCIAL_PLATFORMS, SOCIAL_PLATFORM_LABELS, socialLinkUrl } from "@civfix/shared"
+import { CircleAlert, Globe, HeartHandshake, Loader2 } from "lucide-react"
+import { ErrorCode, SOCIAL_PLATFORM_LABELS, socialLinkUrl } from "@civfix/shared"
 import type { OrganizationDTO, SocialPlatform } from "@civfix/shared"
 import { useOrganization } from "@civfix/ui/data"
 import { Trans, useT } from "@civfix/ui/i18n"
+import {
+  SOCIAL_GLYPH_PATHS,
+  SOCIAL_GLYPH_VIEWBOX,
+  presentSocialPlatforms,
+} from "@civfix/ui/social"
 
 import { toAppError } from "@/lib/api"
 import { renderMarkdownNodes } from "@/features/signup-page/markdown-dom"
@@ -27,17 +32,18 @@ function kindLabel(t: Translate, kind: NonNullable<OrganizationDTO["verifiedKind
   return t(`public.kind_${kind}`, { defaultValue: KIND_LABEL[kind] })
 }
 
-function socialEntries(org: OrganizationDTO): Array<{ platform: SocialPlatform; url: string }> {
-  const links = org.socialLinks
-  if (!links) return []
-  const out: Array<{ platform: SocialPlatform; url: string }> = []
-  for (const platform of SOCIAL_PLATFORMS) {
-    const value = links[platform]
-    if (typeof value !== "string" || value.trim() === "") continue
-    const url = socialLinkUrl(platform, value.trim())
-    if (url.startsWith("https://")) out.push({ platform, url })
-  }
-  return out
+function SocialGlyph({ platform }: { platform: SocialPlatform }) {
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width={20}
+      height={20}
+      viewBox={`0 0 ${SOCIAL_GLYPH_VIEWBOX} ${SOCIAL_GLYPH_VIEWBOX}`}
+    >
+      <path d={SOCIAL_GLYPH_PATHS[platform]} fill="currentColor" />
+    </svg>
+  )
 }
 
 function httpsHref(url: string | null | undefined): string | null {
@@ -58,7 +64,7 @@ function websiteLabel(href: string): string {
   }
 }
 
-function LoadingPage() {
+export function OrgPageLoading() {
   const { t } = useT("host-org")
   return (
     <OrgPageState busy title={t("public.loading_title", { defaultValue: "Loading" })}>
@@ -75,7 +81,7 @@ export function OrgPageView() {
     setSource(orgSlugFromPath(window.location.pathname))
   }, [])
 
-  if (source === null) return <LoadingPage />
+  if (source === null) return <OrgPageLoading />
   if (source.kind !== "slug") {
     return (
       <OrgPageState
@@ -97,7 +103,7 @@ function OrgDocument({ slug }: { slug: string }) {
   const query = useOrganization(slug)
   const { t } = useT("host-org")
 
-  if (query.isPending) return <LoadingPage />
+  if (query.isPending) return <OrgPageLoading />
 
   if (query.isError || !query.data) {
     const code = query.isError ? toAppError(query.error).code : ErrorCode.NOT_FOUND
@@ -131,7 +137,7 @@ function OrgDocument({ slug }: { slug: string }) {
   const org = query.data
   const verified = org.verifiedStatus === "verified"
   const website = httpsHref(org.websiteUrl)
-  const socials = socialEntries(org)
+  const socials = presentSocialPlatforms(org.socialLinks)
   const donate = httpsHref(org.donationUrl)
   const description = org.description ? parseMarkdownSubset(org.description) : []
 
@@ -148,21 +154,7 @@ function OrgDocument({ slug }: { slug: string }) {
             </span>
           )}
           <div className="orgpage-identity">
-            <h1>
-              {org.name}
-              {verified ? (
-                <BadgeCheck
-                  role="img"
-                  aria-label={
-                    org.verifiedKind
-                      ? kindLabel(t, org.verifiedKind)
-                      : t("public.verified", { defaultValue: "Verified" })
-                  }
-                  className="orgpage-verified"
-                  size={22}
-                />
-              ) : null}
-            </h1>
+            <h1>{org.name}</h1>
             <p className="orgpage-handle">{t("header.slug", { slug: org.slug })}</p>
             <ul
               className="orgpage-stats"
@@ -209,29 +201,35 @@ function OrgDocument({ slug }: { slug: string }) {
             className="orgpage-section"
             aria-label={t("public.links", { defaultValue: "Links" })}
           >
-            <ul className="orgpage-links">
-              {website ? (
+            {website ? (
+              <ul className="orgpage-links">
                 <li>
                   <a href={website} target="_blank" rel="noopener noreferrer" className="orgpage-link">
                     <Globe aria-hidden="true" size={16} />
                     {websiteLabel(website)}
                   </a>
                 </li>
-              ) : null}
-              {socials.map((entry) => (
-                <li key={entry.platform}>
-                  <a
-                    href={entry.url}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className="orgpage-link"
-                  >
-                    <Link2 aria-hidden="true" size={16} />
-                    {SOCIAL_PLATFORM_LABELS[entry.platform]}
-                  </a>
-                </li>
-              ))}
-            </ul>
+              </ul>
+            ) : null}
+            {socials.length > 0 ? (
+              <ul className="orgpage-socials">
+                {socials.map((entry) => (
+                  <li key={entry.platform}>
+                    <a
+                      href={socialLinkUrl(entry.platform, entry.value)}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="orgpage-social"
+                      aria-label={t("profile-view:social.link_a11y", {
+                        platform: SOCIAL_PLATFORM_LABELS[entry.platform],
+                      })}
+                    >
+                      <SocialGlyph platform={entry.platform} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </section>
         ) : null}
 

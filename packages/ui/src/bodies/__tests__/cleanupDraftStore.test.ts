@@ -15,6 +15,9 @@ function mkForm(seedLinkedReportId?: string): CleanupFormValue {
     eventKind: "cleanup",
     addrQuery: "",
     spot: "",
+    address: "",
+    addressSource: null,
+    addressPointKey: null,
     coords: null,
     date: null,
     time: null,
@@ -26,6 +29,8 @@ function mkForm(seedLinkedReportId?: string): CleanupFormValue {
     // "Announce to the feed" defaults ON for a NEW event (emptyCleanupForm), and carries an empty caption.
     shareToFeed: true,
     feedCaption: "",
+    coverMediaId: null,
+    coverPreviewUrl: null,
   }
 }
 

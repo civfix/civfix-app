@@ -50,6 +50,7 @@
     "removed": "삭제된 메시지",
     "failed_retry": "실패 · 탭하여 재시도",
     "sending": "전송 중",
+    "attachment_processing": "첸부 파일 처리 중…",
     "edited": "(수정됨)",
     "retry_sending": "다시 보내기",
     "message_actions": "메시지 작업",

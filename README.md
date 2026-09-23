@@ -100,7 +100,9 @@ build cannot ship the staging API URL to civfix.org or the production one to the
 The mobile app deploys through `.github/workflows/deploy-mobile.yml` on the same lane: a push to
 `main` that touches the app or the packages builds the `testflight` profile (staging API) on a
 GitHub-hosted Mac and uploads it to App Store Connect, where TestFlight hands it to the internal
-testers; a manual run with `profile=production` uploads a prod-API build, and attaching that build to
+testers; a manual run with `profile=production` uploads a build that bakes no API URL at all and
+picks one at runtime from its iOS install source (`api.civfix.dev` while it is handed out through
+TestFlight, `api.civfix.org` once it is downloaded from the App Store), and attaching that build to
 a version and submitting it for review stays a human step in App Store Connect. The runner executes
 the same `scripts/store-build.sh` a developer runs locally (`eas build --local`, then a direct
 `fastlane pilot upload` to App Store Connect — no EAS Submit queue), so CI and laptop builds share

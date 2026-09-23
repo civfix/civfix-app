@@ -7,6 +7,7 @@ import {
   GeomSourceSchema,
   ReportStatusSchema,
 } from "./common.js"
+import { MAX_REPORT_ADDR_LENGTH } from "./reports.js"
 
 /**
  * Anonymous (logged-out) report submission, gated by Turnstile, plus claim-code status checks.
@@ -24,7 +25,7 @@ export const AnonReportRequestSchema = z
     title: z.string().max(120).optional(),
     description: z.string().max(2000).optional(),
     // Reverse-geocoded street address (display label; lat/lng stays canonical; optional).
-    addr: z.string().max(300).optional(),
+    addr: z.string().max(MAX_REPORT_ADDR_LENGTH).optional(),
     lat: z.number().min(-90).max(90),
     lng: z.number().min(-180).max(180),
     geomSource: GeomSourceSchema,

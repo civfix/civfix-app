@@ -35,7 +35,7 @@
       "channel": "testflight",
       "autoIncrement": true,
       "env": {
-        "//api": "Dev/TestFlight testing builds bake the staging API base URL. App Store releases use the production profile, which sets no EXPO_PUBLIC_API_URL and therefore falls back to https://api.civfix.org (src/lib/apiUrl.ts).",
+        "//api": "Dev/TestFlight testing builds bake the staging API base URL, pinning this profile to https://api.civfix.dev however it is installed. The production profile below bakes nothing, so src/lib/apiUrl.ts picks its API at RUNTIME from the active StoreKit receipt: https://api.civfix.dev while that build is handed out through TestFlight, https://api.civfix.org once it is downloaded from the App Store.",
         "//donate": "How a host's external donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. The link is the host's own third-party page; no payment happens anywhere in civfix. OTA-flippable with `eas update` if App Review ever objects to the in-app browser (see APP-REVIEW-NOTES.md).",
         "EXPO_PUBLIC_DONATE_BROWSER_MODE": "in-app",
         "EXPO_PUBLIC_API_URL": "https://api.civfix.dev",
@@ -58,6 +58,7 @@
       "channel": "production",
       "autoIncrement": true,
       "env": {
+        "//api": "Deliberately sets no EXPO_PUBLIC_API_URL. On iOS ONLY, src/lib/apiUrl.ts resolves the base URL at runtime from the active StoreKit receipt, so one binary talks to https://api.civfix.dev while it is under test in TestFlight and to https://api.civfix.org once the same build is downloaded from the App Store. Every other platform resolves to https://api.civfix.org, so an Android internal-track tester is on production. Baking a URL here would freeze iOS to one of the two.",
         "//dsym": "iOS links React Native's prebuilt core frameworks (buildReactNativeFromSource: false in app.config.js), so App Store Connect's 'Upload Symbols Failed' warning for React.framework / ReactNativeDependencies.framework (alongside hermes and MapLibre) is expected and non-blocking.",
         "//donate": "How a host's external donation link leaves the app: in-app = SFSafariViewController / Android Custom Tab with the address bar visible (the default when unset), system = the OS browser. The link is the host's own third-party page; no payment happens anywhere in civfix. OTA-flippable with `eas update` if App Review ever objects to the in-app browser (see APP-REVIEW-NOTES.md).",
         "EXPO_PUBLIC_DONATE_BROWSER_MODE": "in-app",

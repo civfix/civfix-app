@@ -40,7 +40,7 @@ export function SavedTabs({ tabs, activeId, onChange, label, className }: SavedT
             title={tab.disabled ? tab.disabledReason : undefined}
             onClick={() => onChange(tab.id)}
             className={cn(
-              "inline-flex min-h-[44px] shrink-0 items-center gap-token-1 whitespace-nowrap rounded-pill px-token-3 text-token-13 font-semibold transition-colors duration-d1 ease-out focus-visible:outline-none focus-visible:shadow-console-ring",
+              "inline-flex min-h-11 shrink-0 items-center gap-token-1 whitespace-nowrap rounded-pill px-token-3 text-token-13 font-semibold transition-colors duration-d1 ease-out focus-visible:outline-none focus-visible:shadow-console-ring",
               active
                 ? "border border-console-line bg-console-surface text-console-ink shadow-console-1"
                 : "text-console-ink-3 hover:bg-console-surface-alt hover:text-console-ink-2",

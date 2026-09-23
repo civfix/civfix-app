@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { View, Pressable, TextInput } from "react-native"
-import { space, useTheme } from "../theme"
+import { focusRingProps, space, useTheme, webCursor, webHover, webTransition } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { Avatar } from "../primitives"
 import { useT } from "../i18n"
@@ -61,9 +61,16 @@ function DockedSearchBar(props: SearchHeaderProps) {
           accessibilityRole="button"
           accessibilityLabel={t("a11y.home")}
           hitSlop={8}
-          style={styles.homeCircle}
+          {...focusRingProps}
+          style={(state) => [
+            styles.homeCircle,
+            webCursor(),
+            webTransition,
+            webHover(state) ? styles.buttonHovered : null,
+            state.pressed ? styles.buttonPressed : null,
+          ]}
         >
-          <Icon icon={iconMap.Home} size={20} color={th.colors.onAccent} />
+          <Icon icon={iconMap.Home} size={18} color={th.colors.onAccent} />
         </Pressable>
       ) : null}
       <SearchPill
@@ -83,7 +90,14 @@ function DockedSearchBar(props: SearchHeaderProps) {
           accessibilityRole="button"
           accessibilityLabel={t("a11y.clear")}
           hitSlop={8}
-          style={styles.clear}
+          {...focusRingProps}
+          style={(state) => [
+            styles.clear,
+            webCursor(),
+            webTransition,
+            webHover(state) ? styles.buttonHovered : null,
+            state.pressed ? styles.buttonPressed : null,
+          ]}
         >
           <Icon icon={iconMap.Close} size={18} color={th.colors.text} />
         </Pressable>
@@ -108,7 +122,14 @@ export function SearchHeader(props: SearchHeaderProps) {
           accessibilityRole="button"
           accessibilityLabel={t("a11y.sign_in")}
           hitSlop={8}
-          style={styles.signIn}
+          {...focusRingProps}
+          style={(state) => [
+            styles.signIn,
+            webCursor(),
+            webTransition,
+            webHover(state) ? styles.buttonHovered : null,
+            state.pressed ? styles.buttonPressed : null,
+          ]}
         >
           <Icon icon={iconMap.LogIn} size={18} color={th.colors.text} />
         </Pressable>
@@ -118,6 +139,13 @@ export function SearchHeader(props: SearchHeaderProps) {
           accessibilityRole="button"
           accessibilityLabel={t("a11y.open_profile")}
           hitSlop={8}
+          {...focusRingProps}
+          style={(state) => [
+            webCursor(),
+            webTransition,
+            webHover(state) ? styles.buttonHovered : null,
+            state.pressed ? styles.buttonPressed : null,
+          ]}
         >
           <Avatar name={userName} photoUrl={userPhotoUrl ?? null} size={32} />
         </Pressable>

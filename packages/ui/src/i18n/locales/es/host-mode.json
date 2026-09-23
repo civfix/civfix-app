@@ -22,12 +22,12 @@
   },
   "cta": {
     "share": "Compartir evento",
-    "message": "Escribir a los asistentes",
     "check_in": "Registrar entrada",
     "scan": "Escanear entradas",
     "log_hours": "Registrar horas de voluntariado",
     "duplicate": "Duplicar evento",
-    "edit": "Editar evento"
+    "edit": "Editar evento",
+    "announce": "Publicar un anuncio"
   },
   "hero": {
     "registered": "Inscritos",
@@ -101,11 +101,6 @@
   },
   "row": {
     "share": "Compartir enlace",
-    "invite_team": "Invitar a alguien al equipo",
-    "message": "Escribir a los asistentes",
-    "message_sub": "Push y en la app",
-    "email": "Enviar correo a los asistentes",
-    "email_sub": "Lo envía civfix. Las direcciones no se comparten.",
     "check_in": "Registrar entrada",
     "check_in_sub_one": "Queda {{count}} por registrar",
     "check_in_sub_other": "Quedan {{count}} por registrar",
@@ -127,7 +122,11 @@
     "log_hours_none": "Nadie registró su entrada",
     "linked_reports": "Reportes vinculados",
     "linked_reports_sub": "Reportes que atenderá esta limpieza",
-    "linked_reports_none": "Aún no hay ninguno vinculado"
+    "linked_reports_none": "Aún no hay ninguno vinculado",
+    "chat": "Abrir el chat del grupo",
+    "chat_sub": "Habla con toda la gente del evento",
+    "announce": "Publicar un anuncio",
+    "announce_sub": "Avisa por correo y notificación a quien elijas"
   },
   "no_shows": {
     "title": "¿Marcar el resto como ausencias?",

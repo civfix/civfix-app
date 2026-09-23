@@ -71,6 +71,11 @@
       "react-native": "./src/report/index.ts",
       "default": "./src/report/index.ts"
     },
+    "./social": {
+      "types": "./dist-types/primitives/socialLinksModel.d.ts",
+      "react-native": "./src/primitives/socialLinksModel.ts",
+      "default": "./src/primitives/socialLinksModel.ts"
+    },
     "./i18n": {
       "types": "./dist-types/i18n/index.d.ts",
       "react-native": "./src/i18n/index.ts",

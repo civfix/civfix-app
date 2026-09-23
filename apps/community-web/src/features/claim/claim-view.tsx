@@ -217,7 +217,7 @@ function Intro({
       <div className="mt-6 flex justify-center">
         {isAuthenticated ? (
           <p className="inline-flex items-center gap-2 text-token-14 text-ink-3">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             {t("linking")}
           </p>
         ) : (
@@ -272,7 +272,7 @@ function ClaimedReport({ report }: { report: ReportDTO }) {
       <div className="mt-5 flex flex-col gap-2.5">
         <Button onClick={() => router.push(`/pin/${report.id}`)}>
           {t("linked.viewReport")}
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Button>
         <Button variant="outline" onClick={() => router.push("/reports")}>
           {t("linked.yourReports")}

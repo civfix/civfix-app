@@ -163,6 +163,7 @@ export function MessageContextMenu({
         accessibilityRole="button"
         accessibilityLabel={tReactions(`label.${emoji}`)}
         accessibilityState={{ selected }}
+        hitSlop={compact ? { top: 8, bottom: 8 } : { top: 4, bottom: 4 }}
         {...focusRingProps}
         style={(state) => [
           compact ? styles.glyphButtonCompact : styles.glyphButton,

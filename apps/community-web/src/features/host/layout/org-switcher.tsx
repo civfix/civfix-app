@@ -74,7 +74,7 @@ export function OrgSwitcher({ orgId, section, className }: OrgSwitcherProps) {
                 aria-current={org.id === orgId ? "page" : undefined}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "flex min-h-11 items-center gap-token-3 rounded-xs px-token-2 py-1 text-token-13 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring",
+                  "flex min-h-11 items-center gap-token-3 rounded-xs px-token-2 py-1 text-token-13 transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring",
                   org.id === orgId ? "text-console-ink" : "text-console-ink-2",
                 )}
               >
@@ -104,7 +104,7 @@ export function OrgSwitcher({ orgId, section, className }: OrgSwitcherProps) {
             <ConsoleLink
               href={hrefForRoute({ kind: "org-new" })}
               onClick={() => setOpen(false)}
-              className="flex min-h-11 items-center gap-token-3 rounded-xs px-token-2 py-1 text-token-13 font-semibold text-console-ink-2 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
+              className="flex min-h-11 items-center gap-token-3 rounded-xs px-token-2 py-1 text-token-13 font-semibold text-console-ink-2 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
             >
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-dashed border-console-line-strong text-console-ink-3">
                 <Plus aria-hidden className="h-4 w-4" />

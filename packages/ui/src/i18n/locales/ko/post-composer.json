@@ -29,6 +29,9 @@
       "placeholder": "의견을 덧붙여 보세요..."
     }
   },
+  "quote": {
+    "unavailable": "해당 게시물을 불러올 수 없어요."
+  },
   "action": {
     "post": "게시",
     "reply": "답글",

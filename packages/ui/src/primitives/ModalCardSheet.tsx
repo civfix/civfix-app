@@ -156,7 +156,7 @@ export function ModalCardSheet({
               ) : (
                 <Icon icon={iconMap[headerIcon]} size={16} color={headerIconColor ?? t.colors.text} />
               )}
-              <Text variant="bodyStrong" color={t.colors.text} style={styles.title}>
+              <Text variant="bodyStrong" color={t.colors.text} style={styles.title} numberOfLines={1}>
                 {title}
               </Text>
               {fullBleed ? (

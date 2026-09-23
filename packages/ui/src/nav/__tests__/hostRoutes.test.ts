@@ -8,12 +8,17 @@ import { BODY_LAYOUT } from "../../shell/bodyLayout"
 const HOST_KINDS = [
   "host-mode",
   "host-checkin",
-  "host-broadcast-quick",
+  "host-announce",
   "host-team",
   "host-log-hours",
   "my-ticket",
   "org",
   "event-dashboard",
+  "announcement",
+  "announcements",
+  "event-analytics",
+  "host-analytics",
+  "org-manage",
 ] as const
 
 describe("the new kinds are registered everywhere a kind must be registered", () => {
@@ -36,12 +41,20 @@ describe("URL round trip", () => {
   const cases: Array<[string, DetailEntry]> = [
     ["/cleanups/e1/host", { kind: "host-mode", id: "e1" }],
     ["/cleanups/e1/checkin", { kind: "host-checkin", id: "e1" }],
-    ["/cleanups/e1/broadcast", { kind: "host-broadcast-quick", id: "e1" }],
+    ["/cleanups/e1/announce", { kind: "host-announce", id: "e1" }],
     ["/cleanups/e1/team", { kind: "host-team", id: "e1" }],
     ["/cleanups/e1/hours", { kind: "host-log-hours", id: "e1" }],
     ["/cleanups/e1/ticket", { kind: "my-ticket", id: "e1" }],
     ["/cleanups/e1/ticket/seat-9", { kind: "my-ticket", id: "e1", seatId: "seat-9" }],
+    ["/cleanups/e1/analytics", { kind: "event-analytics", id: "e1" }],
+    ["/host/analytics", { kind: "host-analytics" }],
+    ["/cleanups/e1/announcements", { kind: "announcements", id: "e1" }],
+    [
+      "/cleanups/e1/announcements/a-9",
+      { kind: "announcement", id: "e1", announcementId: "a-9" },
+    ],
     ["/orgs/river-keepers", { kind: "org", slug: "river-keepers" }],
+    ["/orgs/river-keepers/manage", { kind: "org-manage", slug: "river-keepers" }],
   ]
 
   it.each(cases)("%s", (path, entry) => {
@@ -71,10 +84,21 @@ describe("URL round trip", () => {
     expect(pathForEntry({ kind: "host-team" })).toBe("/cleanups")
     expect(pathForEntry({ kind: "host-log-hours" })).toBe("/cleanups")
     expect(pathForEntry({ kind: "org" })).toBe("/")
+    expect(pathForEntry({ kind: "org-manage" })).toBe("/")
   })
 
   it("keeps an unknown /cleanups/:id/<sub> on the event detail rather than 404ing the shell", () => {
     expect(entryFromPath("/cleanups/e1/nonsense")).toEqual({ kind: "cleanup", id: "e1" })
+  })
+
+  it("keeps /host on the host-an-event form and takes only /host/analytics elsewhere", () => {
+    expect(entryFromPath("/host")).toEqual({ kind: "create-cleanup" })
+    expect(entryFromPath("/host/nonsense")).toEqual({ kind: "create-cleanup" })
+  })
+
+  it("addresses the all-events page with no id at all, unlike the per-event one", () => {
+    expect(pathForEntry({ kind: "host-analytics" })).toBe("/host/analytics")
+    expect(pathForEntry({ kind: "host-analytics", id: "e1" })).toBe("/host/analytics")
   })
 })
 
@@ -83,19 +107,24 @@ describe("parent view + flow protection", () => {
     for (const kind of [
       "host-mode",
       "host-checkin",
-      "host-broadcast-quick",
+      "host-announce",
       "host-team",
       "host-log-hours",
       "my-ticket",
       "org",
       "event-dashboard",
+      "announcement",
+      "announcements",
+      "event-analytics",
+      "host-analytics",
+      "org-manage",
     ] as const) {
       expect(parentViewForEntry({ kind } as DetailEntry), kind).toBe("events")
     }
   })
 
-  it("protects the quick broadcast draft - and ONLY it - among the new kinds", () => {
-    expect(FLOW_KINDS.has("host-broadcast-quick")).toBe(true)
+  it("protects the announcement draft - and ONLY it - among the new kinds", () => {
+    expect(FLOW_KINDS.has("host-announce")).toBe(true)
     for (const kind of [
       "host-mode",
       "host-checkin",
@@ -104,6 +133,11 @@ describe("parent view + flow protection", () => {
       "my-ticket",
       "org",
       "event-dashboard",
+      "announcement",
+      "announcements",
+      "event-analytics",
+      "host-analytics",
+      "org-manage",
     ] as const) {
       expect(FLOW_KINDS.has(kind), kind).toBe(false)
     }

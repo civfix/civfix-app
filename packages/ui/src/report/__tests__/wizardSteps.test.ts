@@ -317,7 +317,7 @@ describe("the capture step's embedded viewfinder wiring", () => {
 
   it("defers CONSTRUCTING the camera past the tab transition, without flashing the card it replaced", () => {
     expect(wizardSource).toContain(
-      "const handle = InteractionManager.runAfterInteractions(() => setViewfinderMountable(true))",
+      "const handle = setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DELAY_MS)",
     )
     expect(wizardSource).toContain("{viewfinderVisible ? (")
     expect(wizardSource).toContain("const viewfinderMounted = viewfinderVisible && viewfinderMountable")
@@ -647,15 +647,15 @@ describe("the derived-viewfinder wiring (source-pinned)", () => {
     expect(wizardCode).not.toMatch(/setViewfinder(Visible|Open)/)
   })
 
-  it("keeps the deferral cancellable, mount-scoped, and bounded by a deadline", () => {
+  it("keeps the deferral cancellable, mount-scoped, and on a clock that actually defers", () => {
     const effect =
-      /useEffect\(\(\) => \{\n\s*const handle = InteractionManager\.runAfterInteractions[\s\S]*?\}, \[\]\)/.exec(
+      /useEffect\(\(\) => \{\n\s*const handle = setTimeout[\s\S]*?\}, \[\]\)/.exec(
         wizardSource,
       )?.[0]
     expect(effect).toBeTruthy()
-    expect(effect).toContain("handle.cancel()")
-    expect(effect).toContain("setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DEADLINE_MS)")
-    expect(effect).toContain("clearTimeout(deadline)")
+    expect(effect).toContain("clearTimeout(handle)")
+    expect(wizardSource).toContain("const VIEWFINDER_MOUNT_DELAY_MS = motion.pagePush.duration")
+    expect(wizardSource).not.toMatch(/InteractionManager/)
   })
 
   it("passes the host surface ONLY what the capability contract says it gets", () => {

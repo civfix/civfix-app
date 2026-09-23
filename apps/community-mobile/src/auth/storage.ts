@@ -1,7 +1,9 @@
 import * as SecureStore from "expo-secure-store"
 import { storage } from "@/lib/mmkv"
+import { scopeStorageId } from "@/lib/storageScope"
+import { API_URL } from "@/config"
 
-const TOKEN_KEY = "civfix.session.token"
+const TOKEN_KEY = scopeStorageId("civfix.session.token", API_URL)
 
 const OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,

@@ -22,12 +22,12 @@
   },
   "cta": {
     "share": "행사 공유",
-    "message": "참가자에게 메시지",
     "check_in": "체크인",
     "scan": "티켓 스캔",
     "log_hours": "봉사 시간 기록",
     "duplicate": "행사 복제",
-    "edit": "행사 수정"
+    "edit": "행사 수정",
+    "announce": "공지 작성"
   },
   "hero": {
     "registered": "등록",
@@ -101,11 +101,6 @@
   },
   "row": {
     "share": "링크 공유",
-    "invite_team": "팀원 초대",
-    "message": "참가자에게 메시지",
-    "message_sub": "푸시 및 앱 내 알림",
-    "email": "참가자에게 이메일",
-    "email_sub": "civfix가 발송합니다. 주소는 공개되지 않습니다.",
     "check_in": "체크인",
     "check_in_sub_one": "{{count}}명 체크인 대기",
     "check_in_sub_other": "{{count}}명 체크인 대기",
@@ -127,7 +122,11 @@
     "log_hours_none": "체크인한 사람이 없습니다",
     "linked_reports": "연결된 제보",
     "linked_reports_sub": "이 정리 활동에서 처리할 제보",
-    "linked_reports_none": "아직 연결된 제보가 없어요"
+    "linked_reports_none": "아직 연결된 제보가 없어요",
+    "chat": "그룹 채팅 열기",
+    "chat_sub": "행사에 참여하는 사람들과 대화하기",
+    "announce": "공지 작성",
+    "announce_sub": "선택한 사람들에게 이메일과 푸시로 알립니다"
   },
   "no_shows": {
     "title": "나머지를 불참으로 표시할까요?",

@@ -114,6 +114,7 @@
     "community": "Grupo comunitario"
   },
   "broadcastKind": {
+    "announcement": "Anuncio",
     "host_broadcast": "Mensaje del anfitrión",
     "confirmation": "Confirmación",
     "waitlist_promoted": "Plaza de lista de espera",

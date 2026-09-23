@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable, ActivityIndicator } from "react-native"
 import type { CleanupDTO, UpdateCleanupRequest } from "@civfix/shared"
+import { geocodePointKey } from "@civfix/shared"
 import { makeThemedStyles, useTheme, noShadow, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
@@ -24,8 +25,10 @@ import {
 } from "./calendarModel"
 import { wallClockInZone } from "@civfix/shared/datetime"
 import { CleanupForm, isCleanupFormComplete, type CleanupFormValue } from "./CleanupForm"
+import { composeEventAddress } from "./eventAddressField"
 import { linkedRefToCardData, useLinkedReportCards } from "./linkedReportCards"
 import { mustPersistEventEnd, seededEndTime } from "./eventWizard"
+import { eventCoverChanged } from "./eventCoverModel"
 import { buildSlotInputs, slotsFromCleanup } from "./eventSlotsForm"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
@@ -53,7 +56,13 @@ function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
     description: cleanup.description ?? "",
     eventKind: cleanup.eventKind,
     addrQuery: "",
-    spot: cleanup.address ?? "",
+    spot: "",
+    address: cleanup.address ?? "",
+    addressSource: cleanup.addressSource ?? (cleanup.address?.trim() ? "manual" : null),
+    addressPointKey:
+      cleanup.lat != null && cleanup.lng != null
+        ? geocodePointKey({ lat: cleanup.lat, lng: cleanup.lng })
+        : null,
     coords: cleanup.lat != null && cleanup.lng != null ? { lat: cleanup.lat, lng: cleanup.lng } : null,
     date: when,
     time: when,
@@ -64,6 +73,8 @@ function formFromCleanup(cleanup: CleanupDTO): CleanupFormValue {
     linkedReportIds: cleanup.eventKind === "cleanup" ? cleanup.linkedReports.map((r) => r.id) : [],
     shareToFeed: false,
     feedCaption: "",
+    coverMediaId: null,
+    coverPreviewUrl: cleanup.coverUrl ?? null,
   }
 }
 
@@ -72,6 +83,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("event-edit")
+  const { t: tForm } = useT("event-form")
   const update = useUpdateCleanup()
   const [form, setForm] = useState<CleanupFormValue>(() => formFromCleanup(cleanup))
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -114,7 +126,13 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   const onSave = useCallback(() => {
     if (!canSave || !form.coords || !scheduledAt || !endsAt) return
     setSaveError(null)
-    const spotLine = form.spot.trim().slice(0, 200)
+    const verifiedAddress = composeEventAddress({
+      address: form.address,
+      addressSource: form.addressSource,
+      spot: form.spot,
+      near: (line) => tForm("address.near", { address: line }),
+    })
+    if (!verifiedAddress) return
     const patch: Omit<UpdateCleanupRequest, "id"> = {
       title: form.title.trim(),
       eventKind: form.eventKind,
@@ -124,13 +142,15 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
       ...(persistEventEnd ? { endsAt: endsAt.toISOString() } : {}),
       ...(form.timezone !== (cleanup.timezone ?? null) ? { timezone: form.timezone } : {}),
       description: form.description.trim(),
-      address: spotLine,
+      address: verifiedAddress.address,
+      addressSource: verifiedAddress.addressSource,
       bring: form.bring,
       slots: buildSlotInputs(form.slots),
       ...(form.organizationId !== (cleanup.organization?.id ?? null)
         ? { organizationId: form.organizationId }
         : {}),
       ...(form.eventKind === "cleanup" ? { linkedReportIds: form.linkedReportIds } : {}),
+      ...(eventCoverChanged(form, cleanup.coverUrl) ? { coverMediaId: form.coverMediaId } : {}),
     }
     update.mutate(
       { id: cleanup.id, patch },
@@ -154,6 +174,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
     scheduledAt,
     update,
     t,
+    tForm,
   ])
 
   return (

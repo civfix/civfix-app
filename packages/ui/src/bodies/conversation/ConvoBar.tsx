@@ -82,7 +82,7 @@ export function ConvoBar({
           accessibilityLabel={titlePressLabel}
           hitSlop={6}
           {...focusRingProps}
-          style={styles.avatarTap}
+          style={({ pressed }) => [styles.avatarTap, pressed ? styles.convoSubPressed : null]}
         >
           <ThreadAvatar thread={avatarThread} size={38} />
         </Pressable>

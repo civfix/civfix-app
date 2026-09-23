@@ -249,7 +249,7 @@ function SentInvite({ invite }: { invite: OrganizationInviteDTO }) {
       data-testid="org-invite-sent"
       className="flex flex-col gap-token-4 p-token-4"
     >
-      <div className="flex items-start gap-token-3 rounded-md border border-console-moss-strong/30 bg-console-moss-soft px-token-4 py-token-3">
+      <div className="flex items-start gap-token-3 rounded-sm border border-console-moss-strong/40 bg-console-moss-soft px-token-4 py-token-3">
         <MailCheck aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-console-moss-strong" />
         <div className="min-w-0 flex-1">
           <p className="text-token-13 font-bold text-console-moss-strong">

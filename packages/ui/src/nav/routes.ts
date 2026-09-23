@@ -10,6 +10,7 @@ export const ENTRY_IDENTITY_FIELDS = [
   "geoid",
   "slug",
   "seatId",
+  "announcementId",
 ] as const satisfies readonly (keyof DetailEntry)[]
 
 export function entryDiscriminator(entry: DetailEntry): string {
@@ -58,9 +59,16 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
       if (sub === "edit") return { kind: "edit-cleanup", id }
       if (sub === "host") return { kind: "host-mode", id }
       if (sub === "checkin") return { kind: "host-checkin", id }
-      if (sub === "broadcast") return { kind: "host-broadcast-quick", id }
+      if (sub === "announce") return { kind: "host-announce", id }
       if (sub === "team") return { kind: "host-team", id }
       if (sub === "hours") return { kind: "host-log-hours", id }
+      if (sub === "analytics") return { kind: "event-analytics", id }
+      if (sub === "announcements") {
+        const announcementId = parts[3]
+        return announcementId
+          ? { kind: "announcement", id, announcementId }
+          : { kind: "announcements", id }
+      }
       if (sub === "ticket") {
         const seatId = parts[3]
         return seatId ? { kind: "my-ticket", id, seatId } : { kind: "my-ticket", id }
@@ -72,7 +80,8 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
     case "e":
       return id ? { kind: "cleanup", id } : null
     case "orgs":
-      return id ? { kind: "org", slug: id } : null
+      if (!id) return null
+      return parts[2] === "manage" ? { kind: "org-manage", slug: id } : { kind: "org", slug: id }
     case "people":
       if (id && parts[2] === "followers") return { kind: "followers", id }
       if (id && parts[2] === "following") return { kind: "following", id }
@@ -124,6 +133,7 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
       if (id === "appearance") return { kind: "appearance-settings" }
       return null
     case "host":
+      if (id === "analytics") return { kind: "host-analytics" }
       return { kind: "create-cleanup" }
     case "groups":
       if (id === "new") return { kind: "new-group" }
@@ -165,12 +175,23 @@ export function pathForEntry(entry: DetailEntry | null): string {
       return entry.id ? `/cleanups/${entry.id}/host` : "/cleanups"
     case "host-checkin":
       return entry.id ? `/cleanups/${entry.id}/checkin` : "/cleanups"
-    case "host-broadcast-quick":
-      return entry.id ? `/cleanups/${entry.id}/broadcast` : "/cleanups"
+    case "host-announce":
+      return entry.id ? `/cleanups/${entry.id}/announce` : "/cleanups"
     case "host-team":
       return entry.id ? `/cleanups/${entry.id}/team` : "/cleanups"
     case "host-log-hours":
       return entry.id ? `/cleanups/${entry.id}/hours` : "/cleanups"
+    case "event-analytics":
+      return entry.id ? `/cleanups/${entry.id}/analytics` : "/cleanups"
+    case "host-analytics":
+      return "/host/analytics"
+    case "announcements":
+      return entry.id ? `/cleanups/${entry.id}/announcements` : "/cleanups"
+    case "announcement":
+      if (!entry.id) return "/cleanups"
+      return entry.announcementId
+        ? `/cleanups/${entry.id}/announcements/${entry.announcementId}`
+        : `/cleanups/${entry.id}/announcements`
     case "my-ticket":
       if (!entry.id) return "/cleanups"
       return entry.seatId
@@ -178,6 +199,8 @@ export function pathForEntry(entry: DetailEntry | null): string {
         : `/cleanups/${entry.id}/ticket`
     case "org":
       return entry.slug ? `/orgs/${entry.slug}` : "/"
+    case "org-manage":
+      return entry.slug ? `/orgs/${entry.slug}/manage` : "/"
     case "create-cleanup":
       return "/host"
     case "people":
@@ -327,16 +350,26 @@ export function titleForEntry(entry: DetailEntry | null): string {
       return "title.host_mode"
     case "host-checkin":
       return "title.host_checkin"
-    case "host-broadcast-quick":
-      return "title.host_broadcast_quick"
+    case "host-announce":
+      return "title.host_announce"
     case "host-team":
       return "title.host_team"
     case "host-log-hours":
       return "title.host_log_hours"
+    case "event-analytics":
+      return "title.event_analytics"
+    case "host-analytics":
+      return "title.host_analytics"
+    case "announcements":
+      return "title.announcements"
+    case "announcement":
+      return "title.announcement"
     case "my-ticket":
       return "title.my_ticket"
     case "org":
       return "title.org"
+    case "org-manage":
+      return "title.org_manage"
     case "event-dashboard":
       return "title.event_dashboard"
     case "cluster":
@@ -430,11 +463,16 @@ export function parentViewForEntry(entry: DetailEntry | null): View | null {
     case "cleanups":
     case "host-mode":
     case "host-checkin":
-    case "host-broadcast-quick":
+    case "host-announce":
     case "host-team":
     case "host-log-hours":
     case "my-ticket":
+    case "announcement":
+    case "announcements":
+    case "event-analytics":
+    case "host-analytics":
     case "org":
+    case "org-manage":
     case "event-dashboard":
       return "events"
     case "person":

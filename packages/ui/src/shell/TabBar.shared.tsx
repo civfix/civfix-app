@@ -113,7 +113,7 @@ export function TabButton({
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
       accessibilityLabel={label}
-      style={styles.tab}
+      style={({ pressed }) => [styles.tab, pressed ? styles.pressed : null]}
     >
       <Icon icon={tab.icon} size={24} color={color} />
     </Pressable>

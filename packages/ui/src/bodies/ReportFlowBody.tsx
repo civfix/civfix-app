@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, Platform, Pressable, ScrollView, StyleSheet, ActivityIndicator, InteractionManager } from "react-native"
+import { View, Platform, Pressable, ScrollView, StyleSheet, ActivityIndicator } from "react-native"
 import { useQueryClient, type QueryClient } from "@tanstack/react-query"
 import type { ReportCategory, ReportType as SharedReportType } from "@civfix/shared"
+import { MAX_REPORT_ADDR_LENGTH } from "@civfix/shared"
 import type { ApiClient } from "@civfix/shared/client"
 import { type LatLng } from "@civfix/shared/geocode"
-import { makeThemedStyles, useTheme, categoryColor, wash, useLayoutMode, focusRingProps, type LayoutMode } from "../theme"
+import { makeThemedStyles, motion, useTheme, categoryColor, wash, useLayoutMode, focusRingProps, type LayoutMode } from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField, Toggle, KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
@@ -13,6 +14,8 @@ import { PinSvg, glyphForCategory } from "../map"
 import {
   useApi,
   useAuthState,
+  useResolveAddress,
+  resolvedAddressValue,
   useResolveJurisdiction,
   useReverseLabel,
   reverseLabelText,
@@ -33,6 +36,7 @@ import { StepTransition } from "../shell/StepTransition"
 import { WizardStepHeader } from "../shell/WizardStepHeader"
 import { useStackDirection } from "../shell/useStackDirection"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
+import { reportAddressPrefill } from "./reportAddressField"
 import { announce } from "../announce"
 import { appErrorCode } from "./errorCode"
 import { HEADER_CONTROL_SIZE } from "./headerControls"
@@ -366,7 +370,7 @@ function DetailsStep() {
 
 const DEVICE_FIX_TIMEOUT_MS = 4000
 
-const VIEWFINDER_MOUNT_DEADLINE_MS = 600
+const VIEWFINDER_MOUNT_DELAY_MS = motion.pagePush.duration
 
 const PICK_LAYER_LINGER_MS = 400
 
@@ -524,7 +528,24 @@ function ReviewStep({
   const setLocation = useDraftReportStore((s) => s.setLocation)
   const clearLocation = useDraftReportStore((s) => s.clearLocation)
   const setAddress = useDraftReportStore((s) => s.setAddress)
+  const setPrefilledAddress = useDraftReportStore((s) => s.setPrefilledAddress)
   const [addrQuery, setAddrQuery] = useState("")
+
+  const addressResolution = useResolveAddress(point)
+  const nearAddress = useCallback((line: string) => t("review.where_near", { address: line }), [t])
+  const prefillRef = useRef(setPrefilledAddress)
+  prefillRef.current = setPrefilledAddress
+  const settledAddress = resolvedAddressValue(addressResolution)
+  useEffect(() => {
+    const next = reportAddressPrefill({
+      hasPoint: point !== null,
+      resolution: settledAddress,
+      currentAddr: draft.addr,
+      addrEdited: draft.addrEdited,
+      near: nearAddress,
+    })
+    if (next !== null) prefillRef.current(next)
+  }, [point, settledAddress, draft.addr, draft.addrEdited, nearAddress])
   const layoutMode = useLayoutMode()
   const compact = layoutMode === "compact"
   const pickMode = layoutMode === "expanded" ? "main-map" : "standalone"
@@ -583,7 +604,7 @@ function ReviewStep({
           placeholder={t("review.where_placeholder")}
           value={draft.addr ?? ""}
           onChangeText={setAddress}
-          maxLength={200}
+          maxLength={MAX_REPORT_ADDR_LENGTH}
         />
       </View>
 
@@ -883,12 +904,8 @@ export function ReportFlowBody() {
   const viewfinderVisible = rendersEmbeddedViewfinder(activeStep, hasMedia, Viewfinder != null, mode)
 
   useEffect(() => {
-    const handle = InteractionManager.runAfterInteractions(() => setViewfinderMountable(true))
-    const deadline = setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DEADLINE_MS)
-    return () => {
-      handle.cancel()
-      clearTimeout(deadline)
-    }
+    const handle = setTimeout(() => setViewfinderMountable(true), VIEWFINDER_MOUNT_DELAY_MS)
+    return () => clearTimeout(handle)
   }, [])
   const viewfinderMounted = viewfinderVisible && viewfinderMountable
 

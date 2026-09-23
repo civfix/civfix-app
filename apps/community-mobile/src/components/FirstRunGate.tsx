@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { View, StyleSheet, ActivityIndicator } from "react-native"
+import { View, StyleSheet, ActivityIndicator, Pressable } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
 import { isValidHandle } from "@civfix/shared"
@@ -161,8 +161,8 @@ function FirstRunForm() {
 
             {error ? (
               <View style={styles.errorRow}>
-                <Ionicons name="alert-circle-outline" size={15} color={th.colors.brand.bloom} />
-                <Text variant="caption" color={th.colors.brand.bloom}>
+                <Ionicons name="alert-circle" size={16} color={th.colors.dangerInk} />
+                <Text variant="caption" color={th.colors.dangerInk}>
                   {error}
                 </Text>
               </View>
@@ -176,14 +176,17 @@ function FirstRunForm() {
 
           <KeyboardPinnedFooter style={styles.footer} safeAreaBottom={insets.bottom}>
             <PrimaryButton label={t("continue")} loading={submitting} disabled={!canSubmit} onPress={() => void onSubmit()} />
-            <Text
-              variant="caption"
-              color={th.colors.textSubtle}
-              style={styles.signOut}
+            <Pressable
               onPress={() => void signOut()}
+              accessibilityRole="button"
+              accessibilityLabel={t("signout.action")}
+              hitSlop={8}
+              style={({ pressed }) => [styles.signOut, pressed ? styles.signOutPressed : null]}
             >
-              {t("signout.prompt")} {t("signout.action")}
-            </Text>
+              <Text variant="caption" color={th.colors.textSubtle} style={styles.signOutText}>
+                {t("signout.prompt")} {t("signout.action")}
+              </Text>
+            </Pressable>
           </KeyboardPinnedFooter>
         </KeyboardPinnedSurface>
       </IosKeyboardAvoidingView>
@@ -216,7 +219,7 @@ function HandleHint({
     content = t("handle.checking")
   } else if (available) {
     content = t("handle.available", { handle })
-    color = th.colors.moss["700"]
+    color = th.colors.successInk
   } else if (taken) {
     content = t("handle.taken", { handle })
     color = th.colors.brand.bloom
@@ -260,5 +263,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderTopColor: t.colors.border,
     backgroundColor: t.colors.bg,
   },
-  signOut: { textAlign: "center", marginTop: t.space["3"] },
+  signOut: { alignSelf: "center", marginTop: t.space["3"] },
+  signOutPressed: { opacity: 0.6 },
+  signOutText: { textAlign: "center" },
 }))

@@ -214,6 +214,7 @@ function ThreadRowAction({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={a11yLabel ?? label}
+      {...focusRingProps}
       style={({ pressed }) => [
         styles.swipeAction,
         tone === "read"

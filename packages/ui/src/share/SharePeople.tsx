@@ -1,7 +1,7 @@
 import React, { memo, useCallback } from "react"
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from "react-native"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, webCursor, webTransition, webHover } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { Avatar } from "../primitives/Avatar"
@@ -48,7 +48,13 @@ const PersonTile = memo(function PersonTile({
       accessibilityState={{ checked: selected }}
       accessibilityLabel={t("recipients.select_a11y", { name: person.displayName })}
       {...focusRingProps}
-      style={({ pressed }) => [styles.tile, pressed ? styles.pressed : null]}
+      style={(state) => [
+        styles.tile,
+        webCursor(),
+        webTransition,
+        webHover(state) ? styles.hovered : null,
+        state.pressed ? styles.pressed : null,
+      ]}
     >
       <View style={[styles.tileAvatar, selected ? styles.tileAvatarSelected : null]}>
         <Avatar
@@ -91,7 +97,13 @@ const PersonRow = memo(function PersonRow({
       accessibilityState={{ checked: selected }}
       accessibilityLabel={t("recipients.select_a11y", { name: person.displayName })}
       {...focusRingProps}
-      style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
+      style={(state) => [
+        styles.row,
+        webCursor(),
+        webTransition,
+        webHover(state) ? styles.hovered : null,
+        state.pressed ? styles.pressed : null,
+      ]}
     >
       <Avatar
         name={person.displayName}
@@ -237,6 +249,9 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.brand.moss,
     borderWidth: 2,
     borderColor: t.colors.surface,
+  },
+  hovered: {
+    opacity: 0.85,
   },
   pressed: {
     opacity: 0.7,
