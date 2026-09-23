@@ -5,7 +5,7 @@
   "support_civfix": "Support civfix",
   "support_civfix_a11y": "Support civfix through Reach Out Los Angeles",
   "api_host": "API: {{host}} (beta)",
-  "api_host_a11y": "Beta build — connected to the {{host}} API",
+  "api_host_a11y": "Beta build, connected to the {{host}} API",
   "legal": {
     "terms": "Terms",
     "terms_a11y": "Terms of Service",

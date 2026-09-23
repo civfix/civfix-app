@@ -19,5 +19,6 @@ export { resolveLocale, supportedLocales, FALLBACK_LOCALE } from "./resolveLocal
 export { resolveActiveLocale } from "./resolveActiveLocale"
 export type { LocaleSources } from "./resolveActiveLocale"
 export { createI18n, defaultNS } from "./config"
+export { EMPTY_VALUE } from "./emptyValue"
 
 export type { SupportedLocale } from "@civfix/shared"

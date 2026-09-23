@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { EMPTY_VALUE } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
@@ -127,7 +128,7 @@ export function StackedBars({
                         x: x + barW / 2,
                         y: PAD.top + plotH - 6,
                         title: label,
-                        rows: [{ label: suppressedLabel, value: "\u2014" }],
+                        rows: [{ label: suppressedLabel, value: EMPTY_VALUE }],
                       })
                     }
                     onMouseLeave={() => setTip(null)}

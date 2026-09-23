@@ -28,7 +28,7 @@ export function AnalyticsValue({ value, kind = "count", k = 5 }: AnalyticsValueP
     const label = t("suppressed.explain", { k })
     return (
       <span className="text-console-ink-3" title={label} aria-label={label}>
-        &mdash;
+        {EMPTY_VALUE}
       </span>
     )
   }

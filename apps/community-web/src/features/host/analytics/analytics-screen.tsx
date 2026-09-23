@@ -163,7 +163,7 @@ export function AnalyticsScreen() {
     const generatedAt =
       tabQuery.data?.generatedAt ?? overview.data?.generatedAt ?? new Date().toISOString()
     const head = provenanceRows({
-      title: `${event?.title ?? ""} — ${t(`tab.${tab}`)}`,
+      title: `${event?.title ?? ""} · ${t(`tab.${tab}`)}`,
       reference: event?.referenceCode ?? null,
       generatedAt,
       generatedAtLabel: format.dateTime(generatedAt),

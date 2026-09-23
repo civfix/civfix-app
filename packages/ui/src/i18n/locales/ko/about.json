@@ -1,11 +1,11 @@
 {
-  "eyebrow": "Reach Out Los Angeles 제공 — 501({{zwnj}}c)(3) 비영리단체",
+  "eyebrow": "501({{zwnj}}c)(3) 비영리단체 Reach Out Los Angeles 제공",
   "lede": "civfix는 시민들이 서로, 그리고 지역 정부와 연결될 수 있도록 돕습니다. 지역사회의 목소리를 실질적인 시민 행동으로 이어드립니다.",
   "close": "닫기",
   "support_civfix": "civfix 후원하기",
   "support_civfix_a11y": "Reach Out Los Angeles를 통해 civfix 후원하기",
   "api_host": "API: {{host}} (베타)",
-  "api_host_a11y": "베타 빌드 — {{host}} API에 연결됨",
+  "api_host_a11y": "베타 빌드, {{host}} API에 연결됨",
   "legal": {
     "terms": "이용약관",
     "terms_a11y": "이용약관",

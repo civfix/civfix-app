@@ -16,7 +16,7 @@ import {
   normalizeCertificateCode,
   type VerifyCertificateResponse,
 } from "@civfix/shared"
-import { useT } from "@civfix/ui/i18n"
+import { EMPTY_VALUE, useT } from "@civfix/ui/i18n"
 
 import { DetailShell } from "@/components/detail-shell"
 import { Button } from "@/components/ui/button"
@@ -399,9 +399,9 @@ function Disclaimer() {
 
 /** An absent or unparseable timestamp renders as a placeholder, never "Invalid Date". */
 function formatDate(iso: string | null | undefined, locale: string): string {
-  if (!iso) return "—"
+  if (!iso) return EMPTY_VALUE
   const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return "—"
+  if (Number.isNaN(date.getTime())) return EMPTY_VALUE
   try {
     return new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(date)
   } catch {

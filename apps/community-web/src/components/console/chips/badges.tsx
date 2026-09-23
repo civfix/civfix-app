@@ -1,6 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
+import { EMPTY_VALUE } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
@@ -67,7 +68,7 @@ export function SuppressedValue({ label, className }: { label: string; className
       title={label}
       aria-label={label}
     >
-      &mdash;
+      {EMPTY_VALUE}
     </span>
   )
 }

@@ -182,7 +182,7 @@
     "panel_hours": "Volunteer hours",
     "checkins_caption": "of {{registered}} sign-ups · {{count}} events held",
     "hours_caption": "logged by {{volunteers}} volunteers",
-    "hours_empty": "No hours logged in the last 30 days — log them from Host tools",
+    "hours_empty": "No hours logged in the last 30 days. Log them from Host tools.",
     "hours_bars_a11y": "Volunteer hours per event",
     "impact_resolved": "{{n}} resolved",
     "impact_posts": "{{n}} posts about your events"

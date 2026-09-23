@@ -27,7 +27,7 @@ export interface ConsoleFormatters {
 const MINOR_UNITS = 100
 
 /** The visible "no value" mark; JSX should render `EmptyValue`, which also names it for readers. */
-export const EMPTY_VALUE = "\u2014"
+export { EMPTY_VALUE } from "@civfix/ui/i18n"
 
 export function formatMoneyMinor(
   amountMinor: number,

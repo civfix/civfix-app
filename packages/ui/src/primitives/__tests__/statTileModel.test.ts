@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { EMPTY_VALUE } from "../../i18n/emptyValue"
 import {
   formatRate,
   formatStatValue,
@@ -22,7 +23,7 @@ describe("formatStatValue", () => {
   it("returns null for an unknown value so the caller renders the em dash", () => {
     expect(formatStatValue(null)).toBeNull()
     expect(formatStatValue(Number.NaN)).toBeNull()
-    expect(STAT_VALUE_UNKNOWN).toBe("—")
+    expect(STAT_VALUE_UNKNOWN).toBe(EMPTY_VALUE)
   })
 })
 

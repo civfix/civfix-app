@@ -182,7 +182,7 @@
     "panel_hours": "자원봉사 시간",
     "checkins_caption": "신청 {{registered}}명 중 · 진행한 이벤트 {{count}}개",
     "hours_caption": "자원봉사자 {{volunteers}}명이 기록",
-    "hours_empty": "최근 30일간 기록된 시간이 없습니다 — 호스트 도구에서 기록하세요",
+    "hours_empty": "최근 30일간 기록된 시간이 없습니다. 호스트 도구에서 기록하세요",
     "hours_bars_a11y": "이벤트별 자원봉사 시간",
     "impact_resolved": "{{n}}건 해결",
     "impact_posts": "내 이벤트 관련 게시물 {{n}}개"
