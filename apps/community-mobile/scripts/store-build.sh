@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 # iOS store build + upload to App Store Connect, wrapping the eas.json build profiles:
 #
-#   scripts/store-build.sh testflight    dev/testing build for TestFlight — staging API (https://api.civfix.dev), baked
-#   scripts/store-build.sh appstore      official App Store release build — bakes NO API URL; the app picks
+#   scripts/store-build.sh testflight    dev/testing build for TestFlight: staging API (https://api.civfix.dev), baked
+#   scripts/store-build.sh appstore      official App Store release build: bakes NO API URL; the app picks
 #                                        api.civfix.dev in TestFlight and api.civfix.org from the App Store
 #                                        at runtime (src/lib/apiUrl.ts + src/lib/nativeBetaInstall.ts)
 #
-# Runs `eas build --local` on this machine — a developer Mac or the macOS GitHub runner that
+# Runs `eas build --local` on this machine: a developer Mac or the macOS GitHub runner that
 # .github/workflows/deploy-mobile.yml drives. Unlike a raw Xcode archive, this applies the profile's
 # env (EXPO_PUBLIC_API_URL), so the right API base URL is baked in; after the build the script reads
 # the config back OUT OF THE IPA and refuses to upload one whose baked API URL is not the profile's.
 # The ipa is then handed to scripts/store-upload.sh, which uploads it straight to App Store Connect
-# with `fastlane pilot upload` and an App Store Connect API key — not `eas submit`, whose free-tier
+# with `fastlane pilot upload` and an App Store Connect API key, not `eas submit`, whose free-tier
 # queue can hold a submission for hours. It appears in TestFlight once App Store Connect finishes
 # processing. An appstore upload additionally needs the manual App Store Connect step: attach the
-# build to a version and submit for review — and never pick a testflight-profile build number there.
+# build to a version and submit for review, and never pick a testflight-profile build number there.
 #
 #   --no-submit        only produce the ipa (printed path) without uploading
 #   --output <path>    write the ipa there instead of build/civfix-<target>-<timestamp>.ipa
@@ -103,8 +103,8 @@ eas build --platform ios --profile "$profile" --local --output "$ipa" ${eas_flag
 # Prove what was baked, from the artifact itself: expo-constants ships the resolved app config
 # inside the app bundle, which is exactly what the running app will read.
 baked_config="$(unzip -p "$ipa" 'Payload/*.app/EXConstants.bundle/app.config')"
-# An ABSENT key prints empty; anything else prints what it really is, so the `{}` Expo once baked for a
-# null config value cannot sail past the appstore assertion, whose expectation IS the empty string.
+# An absent key prints empty and anything else prints what it really is, so a `{}` that Expo can bake
+# for a null config value cannot pass the appstore assertion, whose expectation is the empty string.
 baked_api_url="$(printf '%s' "$baked_config" | node -e '
   const config = JSON.parse(require("fs").readFileSync(0, "utf8"))
   const extra = config.extra
