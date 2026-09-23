@@ -24,9 +24,9 @@ const AUTH_DEPENDENT_KEYS: readonly (readonly unknown[])[] = [
   // Feeds, replies, saves and post details carry the viewer's liked/saved/reposted flags.
   queryKeys.postsRoot,
   queryKeys.postRoot,
-  ["report"],
-  ["cleanup"],
-  ["chat"],
+  queryKeys.reportRoot,
+  queryKeys.cleanupRoot,
+  queryKeys.chatRoot,
 ]
 
 function invalidateAuthDependentQueries(

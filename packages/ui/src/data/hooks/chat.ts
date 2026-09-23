@@ -167,6 +167,13 @@ function isErrorCode(err: unknown, code: ErrorCode): boolean {
   return err instanceof AppError && err.code === code
 }
 
+export function markResending(outbox: OutboxEntry[], clientIds: ReadonlySet<string>): OutboxEntry[] {
+  if (clientIds.size === 0) return outbox
+  return outbox.map((e) =>
+    e.status === "failed" && clientIds.has(e.clientId) ? { ...e, status: "sending" } : e,
+  )
+}
+
 export interface UseChatOptions {
   suppressReadAcks?: boolean
 }
@@ -638,15 +645,9 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     const open = connection === "open"
     if (open && !wasOpenRef.current) {
       const replay = replayableEntries(outbox, offlineFailedRef.current, coreQueuedRef.current)
-      if (replay.some((e) => e.status === "failed")) {
-        setOutbox((prev) =>
-          prev.map((e) =>
-            e.status === "failed" && offlineFailedRef.current.has(e.clientId)
-              ? { ...e, status: "sending" }
-              : e,
-          ),
-        )
-      }
+      // Captured now: dispatch() below clears offlineFailedRef before this updater runs.
+      const resend = new Set(replay.filter((e) => e.status === "failed").map((e) => e.clientId))
+      if (resend.size > 0) setOutbox((prev) => markResending(prev, resend))
       for (const entry of replay) {
         dispatch(
           entry.clientId,

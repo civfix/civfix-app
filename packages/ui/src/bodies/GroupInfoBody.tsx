@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, Image, StyleSheet } from "react-native"
-import { useQueryClient } from "@tanstack/react-query"
 import type { GroupMemberDTO, GroupRole, PersonDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, focusRingProps, headingLevel } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
@@ -25,7 +24,6 @@ import {
   useSetGroupMemberRole,
   useToggleMute,
   useAuthState,
-  queryKeys,
 } from "../data"
 import { pathForEntry, useNavStore } from "../nav"
 import { absoluteUrl } from "../primitives/share"
@@ -179,7 +177,6 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("group-info")
-  const qc = useQueryClient()
 
   const info = useGroupInfo(id)
   const members = useGroupMembers(id)
@@ -218,13 +215,8 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
   const picked = avatar.attachments[0] ?? null
 
   const onToggleMute = useCallback(() => {
-    toggleMute.mutate(
-      { muted: !(group?.muted ?? false) },
-      {
-        onSuccess: () => void qc.invalidateQueries({ queryKey: queryKeys.groupInfo(id) }),
-      },
-    )
-  }, [toggleMute, group?.muted, qc, id])
+    toggleMute.mutate({ muted: !(group?.muted ?? false) })
+  }, [toggleMute, group?.muted])
 
   const openAdd = useCallback(() => {
     setAddSelected([])

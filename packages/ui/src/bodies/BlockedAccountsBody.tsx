@@ -1,10 +1,11 @@
-import React, { memo, useCallback, useState } from "react"
-import { View, Pressable, StyleSheet } from "react-native"
+import React, { memo, useCallback, useMemo, useState } from "react"
+import { ActivityIndicator, View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, iconMap } from "../typography"
 import { Avatar, EmptyState, LoadingState, useToast } from "../primitives"
 import { useListBlocks, useUnblockUser } from "../data"
+import { blockedAccountsOf } from "../data/hooks/direct"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { idKeyExtractor } from "./navHelpers"
@@ -67,7 +68,11 @@ export function BlockedAccountsBody() {
   const toast = useToast()
   const query = useListBlocks()
   const unblock = useUnblockUser()
-  const items = query.data?.blocked ?? []
+  const items = useMemo(() => blockedAccountsOf(query.data), [query.data])
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = query
+  const onEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) void fetchNextPage()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   const [pendingIds, setPendingIds] = useState<readonly string[]>([])
 
@@ -98,6 +103,15 @@ export function BlockedAccountsBody() {
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       renderItem={renderItem}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.4}
+      ListFooterComponent={
+        isFetchingNextPage ? (
+          <View style={styles.footer}>
+            <ActivityIndicator size="small" color={th.colors.textSubtle} />
+          </View>
+        ) : null
+      }
       ListEmptyComponent={
         query.isLoading ? (
           <LoadingState skeleton="person" rows={6} />
@@ -136,6 +150,10 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["2"],
     paddingBottom: t.space["8"],
+  },
+  footer: {
+    paddingVertical: t.space["4"],
+    alignItems: "center",
   },
   listEmpty: {
     flexGrow: 1,

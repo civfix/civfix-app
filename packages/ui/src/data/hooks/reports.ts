@@ -316,7 +316,7 @@ export function useUnlistReport(id: string) {
         },
         onSuccess: (client, res) => {
           patchReportVisibilityInLists(client, id, res.visibility)
-          void client.invalidateQueries({ queryKey: ["map", "reports"] })
+          void client.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })
         },
       },
     }),

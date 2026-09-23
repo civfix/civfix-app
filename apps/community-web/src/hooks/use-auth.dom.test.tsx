@@ -32,6 +32,9 @@ describe("useRefreshSession", () => {
     client.setQueryData(queryKeys.post("p1"), { id: "p1", likedByMe: false })
     client.setQueryData(queryKeys.homeFeed("all", "public"), { items: [] })
     client.setQueryData(queryKeys.mapReports(null, []), { pins: [] })
+    client.setQueryData(queryKeys.report("r1"), { id: "r1" })
+    client.setQueryData(queryKeys.cleanupAttendees("c1"), { items: [] })
+    client.setQueryData(queryKeys.chatHistory("room", "group"), { messages: [] })
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
     )
@@ -44,5 +47,8 @@ describe("useRefreshSession", () => {
     expect(client.getQueryState(queryKeys.post("p1"))?.isInvalidated).toBe(true)
     expect(client.getQueryState(queryKeys.homeFeed("all", "public"))?.isInvalidated).toBe(true)
     expect(client.getQueryState(queryKeys.mapReports(null, []))?.isInvalidated).toBe(false)
+    expect(client.getQueryState(queryKeys.report("r1"))?.isInvalidated).toBe(true)
+    expect(client.getQueryState(queryKeys.cleanupAttendees("c1"))?.isInvalidated).toBe(true)
+    expect(client.getQueryState(queryKeys.chatHistory("room", "group"))?.isInvalidated).toBe(true)
   })
 })

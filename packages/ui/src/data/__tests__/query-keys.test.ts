@@ -160,3 +160,24 @@ describe("queryKeys.jurisdiction (rounded coords)", () => {
     expect(key(37.7749, -122.4194)[0]).toBe("jurisdiction")
   })
 })
+
+describe("family roots for prefix invalidation", () => {
+  it("mapReportsRoot prefixes every map pin variant", () => {
+    expect(queryKeys.mapReportsRoot).toEqual(["map", "reports"])
+    expect(isPrefixOf(queryKeys.mapReportsRoot, queryKeys.mapReports({ w: 1 }, ["graffiti"]))).toBe(true)
+    expect(isPrefixOf(queryKeys.mapReportsRoot, queryKeys.nearbyReportPins(1, 2))).toBe(true)
+    expect(isPrefixOf(queryKeys.mapReportsRoot, queryKeys.nearbyReports(1, 2, 3))).toBe(true)
+  })
+
+  it("reportRoot, cleanupRoot and chatRoot prefix their detail, attendee and history keys", () => {
+    expect(queryKeys.reportRoot).toEqual(["report"])
+    expect(queryKeys.cleanupRoot).toEqual(["cleanup"])
+    expect(queryKeys.chatRoot).toEqual(["chat"])
+    expect(isPrefixOf(queryKeys.reportRoot, queryKeys.report("r1"))).toBe(true)
+    expect(isPrefixOf(queryKeys.reportRoot, queryKeys.reportChatParticipants("r1"))).toBe(true)
+    expect(isPrefixOf(queryKeys.cleanupRoot, queryKeys.cleanup("c1"))).toBe(true)
+    expect(isPrefixOf(queryKeys.cleanupRoot, queryKeys.cleanupAttendees("c1"))).toBe(true)
+    expect(isPrefixOf(queryKeys.cleanupRoot, queryKeys.eventIcs("c1"))).toBe(true)
+    expect(isPrefixOf(queryKeys.chatRoot, queryKeys.chatHistory("room", "group"))).toBe(true)
+  })
+})
