@@ -36,8 +36,8 @@ export function contrastRatio(a: string, b: string): number {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
 }
 
-export function mixWithWhite(hex: string, amount: number): string {
-  const weight = Math.min(1, Math.max(0, amount))
+export function mixWithWhite(hex: string, colorWeight: number): string {
+  const weight = Math.min(1, Math.max(0, colorWeight))
   const mixed = channels(hex).map((value) => Math.round(weight * value + (1 - weight) * 255))
   return `#${mixed.map((c) => c.toString(16).padStart(2, "0")).join("").toUpperCase()}`
 }

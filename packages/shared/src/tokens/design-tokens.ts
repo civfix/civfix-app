@@ -23,85 +23,138 @@ const darkNeutral = {
   ink5: "#332D25",
 } as const
 
+const lightBloom = {
+  "50": "#FDEAE7",
+  "100": "#FAD0CB",
+  "300": "#F5A199",
+  "500": "#F0685C",
+  "600": "#E4574A",
+  "700": "#C74537",
+} as const
+
+const lightMoss = {
+  "50": "#EAF3E8",
+  "100": "#CFE5CB",
+  "300": "#98C790",
+  "500": "#63A45A",
+  "600": "#4C8A47",
+  "700": "#2F7D46",
+} as const
+
+const lightSun = {
+  "50": "#F8EED3",
+  "100": "#EDDCAC",
+  "300": "#E7C155",
+  "500": "#D9A21B",
+  "600": "#B98A14",
+  "700": "#81610E",
+} as const
+
+const lightSky = {
+  "50": "#E9F1FA",
+  "100": "#CFE0F1",
+  "300": "#A5C6E6",
+  "500": "#74A9D8",
+  "600": "#4E86BE",
+  "700": "#356291",
+} as const
+
+const lightLilac = {
+  "50": "#F0EAFA",
+  "500": "#9B7ED9",
+  "600": "#7A5CC0",
+  "700": "#7457B6",
+} as const
+
+const darkBloom = {
+  "50": "#3A211E",
+  "100": "#4C2A26",
+  "300": "#B25549",
+  "500": "#F4796C",
+  "600": "#F79185",
+  "700": "#FAB0A7",
+} as const
+
+const darkMoss = {
+  "50": "#1F2E1D",
+  "100": "#2A3F27",
+  "300": "#5E8F57",
+  "500": "#78B56E",
+  "600": "#93C78A",
+  "700": "#A9D6A1",
+} as const
+
+const darkSun = {
+  "50": "#332A14",
+  "100": "#4A3C18",
+  "300": "#B08A28",
+  "500": "#E3B138",
+  "600": "#F0C455",
+  "700": "#F5D480",
+} as const
+
+const darkSky = {
+  "50": "#1B2733",
+  "100": "#243646",
+  "300": "#5A87B0",
+  "500": "#8BB9E2",
+  "600": "#A6CAEA",
+  "700": "#C2DBF1",
+} as const
+
+const darkLilac = {
+  "50": "#2B2438",
+  "500": "#AE95E2",
+  "600": "#C3B0EB",
+  "700": "#D5C7F1",
+} as const
+
 export const tokens = {
   color: {
     brand: {
-      bloom: "#F0685C",
-      moss: "#63A45A",
-      sun: "#D9A21B",
-      sunDark: "#B98A14",
-      sky: "#74A9D8",
-      lilac: "#9B7ED9",
+      bloom: lightBloom["500"],
+      moss: lightMoss["500"],
+      sun: lightSun["500"],
+      sunDark: lightSun["600"],
+      sky: lightSky["500"],
+      lilac: lightLilac["500"],
     },
-    bloom: {
-      "50": "#FDEAE7",
-      "100": "#FAD0CB",
-      "300": "#F5A199",
-      "500": "#F0685C",
-      "600": "#E4574A",
-      "700": "#C74537",
-    },
-    moss: {
-      "50": "#EAF3E8",
-      "100": "#CFE5CB",
-      "300": "#98C790",
-      "500": "#63A45A",
-      "600": "#4C8A47",
-      "700": "#2F7D46",
-    },
-    sun: {
-      "50": "#F8EED3",
-      "100": "#EDDCAC",
-      "300": "#E7C155",
-      "500": "#D9A21B",
-      "600": "#B98A14",
-      "700": "#81610E",
-    },
-    sky: {
-      "50": "#E9F1FA",
-      "100": "#CFE0F1",
-      "300": "#A5C6E6",
-      "500": "#74A9D8",
-      "600": "#4E86BE",
-      "700": "#356291",
-    },
-    lilac: {
-      "50": "#F0EAFA",
-      "500": "#9B7ED9",
-      "600": "#7A5CC0",
-      "700": "#7457B6",
-    },
+    bloom: lightBloom,
+    moss: lightMoss,
+    sun: lightSun,
+    sky: lightSky,
+    lilac: lightLilac,
     chipInk: {
       bloom: "#BD4234",
       moss: "#2D7743",
-      sun: "#81610E",
-      sky: "#356291",
-      lilac: "#7457B6",
+      sun: lightSun["700"],
+      sky: lightSky["700"],
+      lilac: lightLilac["700"],
     },
     semantic: {
-      selectedFill: "#211B13",
-      selectedInk: "#FFFDF8",
+      selectedFill: lightNeutral.ink,
+      selectedInk: lightNeutral.card,
       dangerInk: "#A62F22",
       dangerFill: "#A62F22",
       onDanger: "#FFFFFF",
       dangerWash: "#F9E4E1",
-      successInk: "#2F7D46",
-      successWash: "#EAF3E8",
-      chartInk: "#4C8A47",
-      chartInkMuted: "#BDB5A6",
+      successInk: lightMoss["700"],
+      successWash: lightMoss["50"],
+      chartInk: lightMoss["600"],
+      chartInkMuted: lightNeutral.ink4,
       chartTrack: lightNeutral.paper2,
     },
     neutral: lightNeutral,
     category: {
       trash: "#776C60",
-      recycling: "#63A45A",
-      graffiti: "#9B7ED9",
-      hazard: "#E4574A",
+      recycling: lightMoss["500"],
+      graffiti: lightLilac["500"],
+      hazard: lightBloom["600"],
       encampment: "#3E9E8E",
-      water: "#74A9D8",
-      other: "#8D8577",
+      water: lightSky["500"],
+      other: lightNeutral.ink3,
     },
-    cleanup: "#D9A21B",
+    cleanup: lightSun["500"],
   },
   scan: {
     qrInk: "#000000",
@@ -196,82 +249,49 @@ export type ColorSchemeName = "light" | "dark"
 
 export const darkColor: ColorPalette = {
   brand: {
-    bloom: "#F4796C",
-    moss: "#78B56E",
-    sun: "#E3B138",
-    sunDark: "#F0C455",
-    sky: "#8BB9E2",
-    lilac: "#AE95E2",
+    bloom: darkBloom["500"],
+    moss: darkMoss["500"],
+    sun: darkSun["500"],
+    sunDark: darkSun["600"],
+    sky: darkSky["500"],
+    lilac: darkLilac["500"],
   },
-  bloom: {
-    "50": "#3A211E",
-    "100": "#4C2A26",
-    "300": "#B25549",
-    "500": "#F4796C",
-    "600": "#F79185",
-    "700": "#FAB0A7",
-  },
-  moss: {
-    "50": "#1F2E1D",
-    "100": "#2A3F27",
-    "300": "#5E8F57",
-    "500": "#78B56E",
-    "600": "#93C78A",
-    "700": "#A9D6A1",
-  },
-  sun: {
-    "50": "#332A14",
-    "100": "#4A3C18",
-    "300": "#B08A28",
-    "500": "#E3B138",
-    "600": "#F0C455",
-    "700": "#F5D480",
-  },
-  sky: {
-    "50": "#1B2733",
-    "100": "#243646",
-    "300": "#5A87B0",
-    "500": "#8BB9E2",
-    "600": "#A6CAEA",
-    "700": "#C2DBF1",
-  },
-  lilac: {
-    "50": "#2B2438",
-    "500": "#AE95E2",
-    "600": "#C3B0EB",
-    "700": "#D5C7F1",
-  },
+  bloom: darkBloom,
+  moss: darkMoss,
+  sun: darkSun,
+  sky: darkSky,
+  lilac: darkLilac,
   chipInk: {
-    bloom: "#FAB0A7",
-    moss: "#A9D6A1",
-    sun: "#F5D480",
-    sky: "#C2DBF1",
-    lilac: "#D5C7F1",
+    bloom: darkBloom["700"],
+    moss: darkMoss["700"],
+    sun: darkSun["700"],
+    sky: darkSky["700"],
+    lilac: darkLilac["700"],
   },
   semantic: {
-    selectedFill: "#F1EAE0",
-    selectedInk: "#2A241C",
+    selectedFill: darkNeutral.ink,
+    selectedInk: darkNeutral.card,
     dangerInk: "#FFB4AB",
     dangerFill: "#FFB4AB",
-    onDanger: "#17130E",
-    dangerWash: "#3A211E",
-    successInk: "#A9D6A1",
-    successWash: "#1F2E1D",
+    onDanger: darkNeutral.paper,
+    dangerWash: darkBloom["50"],
+    successInk: darkMoss["700"],
+    successWash: darkMoss["50"],
     chartInk: "#5FA05A",
-    chartInkMuted: "#4F473C",
+    chartInkMuted: darkNeutral.ink4,
     chartTrack: darkNeutral.paper2,
   },
   neutral: darkNeutral,
   category: {
     trash: "#A89C8E",
-    recycling: "#78B56E",
+    recycling: darkMoss["500"],
     graffiti: "#B79FE6",
-    hazard: "#F4796C",
+    hazard: darkBloom["500"],
     encampment: "#5EBBAA",
-    water: "#8BB9E2",
+    water: darkSky["500"],
     other: "#A39B8D",
   },
-  cleanup: "#E3B138",
+  cleanup: darkSun["500"],
 }
 
 export const darkShadow: ShadowTokens = {
@@ -316,10 +336,8 @@ export function cleanupColorFor(scheme: ColorSchemeName): string {
   return colorSchemes[scheme].cleanup
 }
 
-export function categoryColor(
-  category: CategoryColorKey | string,
-  scheme: ColorSchemeName = "light",
-): string {
+/** Any category string is accepted; one with no palette entry falls back to the `other` colour. */
+export function categoryColor(category: string, scheme: ColorSchemeName = "light"): string {
   const map = colorSchemes[scheme].category as Record<string, string>
   return map[category] ?? colorSchemes[scheme].category.other
 }
