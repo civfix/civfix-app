@@ -201,17 +201,31 @@
         return document.getElementById(id).value.trim();
       }
 
+      // A blocking error must interrupt (role=alert); success and progress stay polite. The text is
+      // cleared before the role flips so the new message is announced under the new role.
+      function showStatus(kind, text) {
+        status.textContent = '';
+        status.setAttribute('role', kind === 'err' ? 'alert' : 'status');
+        status.textContent = text;
+        status.className = 'form-status ' + kind;
+      }
+
+      function setBusy(busy) {
+        btn.disabled = busy;
+        if (busy) btn.setAttribute('aria-busy', 'true');
+        else btn.removeAttribute('aria-busy');
+      }
+
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
         if (!turnstileToken) {
-          status.textContent = "One more step: please complete the “I’m not a robot” check above, then hit the button again.";
-          status.className = 'form-status err';
+          showStatus('err', "One more step: please complete the “I’m not a robot” check above, then hit the button again.");
           return;
         }
 
-        btn.disabled = true;
+        setBusy(true);
         status.className = 'form-status';
 
         var payload = {
@@ -234,22 +248,18 @@
         }).then(function (res) {
           if (res.ok) {
             form.reset();
-            status.textContent = "Got it. Our event coordination team will call you soon to talk through the details. We've sent a confirmation to your email.";
-            status.className = 'form-status ok';
+            showStatus('ok', "Got it. Our event coordination team will call you soon to talk through the details. We've sent a confirmation to your email.");
           } else if (res.status === 403) {
-            status.textContent = "We couldn't verify that you're human. Please redo the “I’m not a robot” check and try again.";
-            status.className = 'form-status err';
+            showStatus('err', "We couldn't verify that you're human. Please redo the “I’m not a robot” check and try again.");
           } else if (res.status === 429) {
-            status.textContent = "Too many attempts from this connection. Please wait a few minutes and try again.";
-            status.className = 'form-status err';
+            showStatus('err', "Too many attempts from this connection. Please wait a few minutes and try again.");
           } else {
             throw new Error('bad response');
           }
         }).catch(function () {
-          status.textContent = "Something went wrong on our end. Please email roman@reachoutla.org and we'll take it from there.";
-          status.className = 'form-status err';
+          showStatus('err', "Something went wrong on our end. Please email roman@reachoutla.org and we'll take it from there.");
         }).finally(function () {
-          btn.disabled = false;
+          setBusy(false);
           turnstileToken = '';
           if (turnstileWidgetId !== null && window.turnstile) {
             turnstile.reset(turnstileWidgetId);
