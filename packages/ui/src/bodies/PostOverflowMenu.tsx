@@ -128,17 +128,21 @@ function PostOverflowMenuContent({
     })
   }, [t, toast, undoRepostMutate])
 
+  // The delete's optimistic update removes the row this menu belongs to, and TanStack drops per-call
+  // mutate callbacks once their observer unmounts, so the outcome is read from the promise instead.
+  const deletePost = del.mutateAsync
   const runDelete = useCallback(() => {
     onBusyChange(true)
-    del.mutate(subjectId, {
-      onSuccess: () => {
-        toast.show(t("post_card.menu.deleted"))
-        onDeleted?.()
-      },
-      onError: () => toast.show(t("post_card.menu.delete_failed"), { variant: "error" }),
-      onSettled: () => onBusyChange(false),
-    })
-  }, [del, onBusyChange, onDeleted, subjectId, t, toast])
+    deletePost(subjectId)
+      .then(
+        () => {
+          toast.show(t("post_card.menu.deleted"))
+          onDeleted?.()
+        },
+        () => toast.show(t("post_card.menu.delete_failed"), { variant: "error" }),
+      )
+      .finally(() => onBusyChange(false))
+  }, [deletePost, onBusyChange, onDeleted, subjectId, t, toast])
 
   const closeConfirmDelete = useCallback(
     () => onConfirmingDeleteChange(false),

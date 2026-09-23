@@ -350,3 +350,34 @@ export const selectPostComposerTargetId = (state: PostComposerState): string | n
   if (state.draft.mode === "reply") return state.draft.replyToPostId
   return null
 }
+
+/**
+ * Whether `draft` is still the cleared slot a submit of `staged` left behind: nothing typed or attached
+ * since, and the same mode and target. Anything else means the user moved on, and putting the failed
+ * draft back would overwrite newer work or turn their next post into a reply to someone else.
+ */
+export function postComposerSlotIsUntouched(draft: PostComposerDraft, staged: PostComposerDraft): boolean {
+  return (
+    draft.body.trim().length === 0 &&
+    draft.mentionedUsers.length === 0 &&
+    draft.media.length === 0 &&
+    draft.attachedEventId === null &&
+    draft.attachedReportId === null &&
+    draft.pendingCreate === null &&
+    draft.mode === staged.mode &&
+    draft.replyToPostId === staged.replyToPostId &&
+    draft.quotePostId === staged.quotePostId
+  )
+}
+
+/**
+ * The failure half of a submit. It runs from the mutation PROMISE, not a per-call `onError`: TanStack
+ * drops per-call callbacks once the composer that fired them unmounts (close, swipe-back, tab switch),
+ * which silently lost the text. Returns whether the draft went back.
+ */
+export function restoreFailedPostSubmit(staged: PostComposerDraft): boolean {
+  const { draft, restore } = usePostComposerStore.getState()
+  if (!postComposerSlotIsUntouched(draft, staged)) return false
+  restore(staged)
+  return true
+}

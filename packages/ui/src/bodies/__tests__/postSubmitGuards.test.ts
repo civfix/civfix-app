@@ -23,7 +23,7 @@ describe("the post composers guard against a double submit", () => {
     it(`${name} checks the ref before it does any work`, () => {
       const check = source.indexOf("if (submittingRef.current) return")
       const claim = source.indexOf("submittingRef.current = true")
-      const mutate = source.search(/create\.mutate\(/)
+      const mutate = source.search(/create\.mutate(Async)?\(/)
       expect(check).toBeGreaterThan(-1)
       expect(claim).toBeGreaterThan(check)
       expect(mutate).toBeGreaterThan(claim)
@@ -74,7 +74,7 @@ describe("PostOverflowMenu mounts on demand", () => {
     // The confirm menu closes the moment the row fires, so without the busy flag the 400ms retention
     // timer would unmount this subtree mid-request and drop the success/failure toast.
     expect(source).toMatch(/const active = props\.visible \|\| reportOpen \|\| busy \|\| confirmingDelete/)
-    expect(source).toMatch(/onBusyChange\(true\)\s*\n\s*del\.mutate\(subjectId/)
-    expect(source).toMatch(/onSettled: \(\) => onBusyChange\(false\)/)
+    expect(source).toMatch(/onBusyChange\(true\)\s*\n\s*deletePost\(subjectId\)/)
+    expect(source).toMatch(/\.finally\(\(\) => onBusyChange\(false\)\)/)
   })
 })
