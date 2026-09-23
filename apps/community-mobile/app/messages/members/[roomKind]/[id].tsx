@@ -35,7 +35,7 @@ export default function RoomMembersScreen() {
           <Icon icon={iconMap.ArrowLeft} size={BACK_ICON_SIZE} color={th.colors.text} />
         </Pressable>
         <View pointerEvents="none" style={styles.titleWrap}>
-          <Text style={styles.title}>
+          <Text accessibilityRole="header" style={styles.title}>
             {t(roomKind === "report" || roomKind === "cleanup" ? "title.chat_info" : "title.members")}
           </Text>
         </View>

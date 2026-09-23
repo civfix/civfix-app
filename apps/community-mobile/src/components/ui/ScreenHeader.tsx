@@ -59,7 +59,13 @@ export function ScreenHeader({
       </Pressable>
 
       {title ? (
-        <Text variant="title" numberOfLines={1} color={glyphColor} style={styles.title}>
+        <Text
+          variant="title"
+          numberOfLines={1}
+          accessibilityRole="header"
+          color={glyphColor}
+          style={styles.title}
+        >
           {title}
         </Text>
       ) : (

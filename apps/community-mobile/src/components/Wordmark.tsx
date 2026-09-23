@@ -16,7 +16,12 @@ export function Wordmark({ size = 23 }: { size?: number }) {
   // Baloo 2 is a tall, rounded face; tracking scales with size (design uses -0.05em).
   const letterSpacing = -size * 0.05
   return (
-    <View style={styles.row} accessibilityRole="header" accessibilityLabel={t("a11y.brand_logo")}>
+    <View
+      style={styles.row}
+      accessible
+      accessibilityRole="header"
+      accessibilityLabel={t("a11y.brand_logo")}
+    >
       {WORDMARK_LETTERS.map((letter, i) => (
         <Text
           key={`${letter}-${i}`}

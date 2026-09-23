@@ -50,7 +50,9 @@ export default function GroupInfoScreen() {
           <Icon icon={iconMap.ArrowLeft} size={BACK_ICON_SIZE} color={th.colors.text} />
         </Pressable>
         <View pointerEvents="none" style={styles.titleWrap}>
-          <Text style={styles.title}>{t("title.group_info")}</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            {t("title.group_info")}
+          </Text>
         </View>
         <View style={styles.headerSpacer} />
       </View>
