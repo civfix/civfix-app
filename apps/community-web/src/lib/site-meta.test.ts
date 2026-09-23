@@ -59,7 +59,7 @@ describe("resolveSiteOrigin", () => {
     for (const url of [
       "https://civfix.dev/cleanups/abc",
       "https://www.civfix.dev/cleanups/abc",
-      "https://dev.civfix-web.pages.dev/cleanups/abc",
+      "https://staging.civfix-web.pages.dev/cleanups/abc",
     ]) {
       expect(resolveSiteOrigin(url)).toBe(STAGING_SITE_URL)
     }
@@ -92,7 +92,8 @@ describe("resolveSiteOrigin", () => {
 
   it("matches hostnames exactly, with no suffix or substring rule", () => {
     expect(canonicalSiteOriginFor("civfix.org")).toBe(PRODUCTION_SITE_URL)
-    expect(canonicalSiteOriginFor("dev.civfix-web.pages.dev")).toBe(STAGING_SITE_URL)
+    expect(canonicalSiteOriginFor("staging.civfix-web.pages.dev")).toBe(STAGING_SITE_URL)
+    expect(canonicalSiteOriginFor("dev.civfix-web.pages.dev")).toBeNull()
     expect(canonicalSiteOriginFor("preview.civfix-web.pages.dev")).toBeNull()
     expect(canonicalSiteOriginFor("civfix.org.evil.com")).toBeNull()
     expect(canonicalSiteOriginFor("notcivfix.dev")).toBeNull()

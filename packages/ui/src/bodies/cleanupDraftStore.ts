@@ -11,6 +11,7 @@
 import { create } from "zustand"
 import { randomId } from "../data/randomId"
 import type { CleanupFormValue } from "./CleanupForm"
+import { registerViewerScopedDrafts } from "../viewerScope"
 
 interface CleanupDraftState {
   /** A host flow is in progress (drives the report detail's "Back to your event" bar + keep-on-unmount). */
@@ -70,3 +71,5 @@ export const useCleanupDraft = create<CleanupDraftState>((set, get) => ({
 
   clear: () => set({ active: false, value: null, idempotencyKey: null }),
 }))
+
+registerViewerScopedDrafts(useCleanupDraft, { discard: () => useCleanupDraft.getState().clear() })

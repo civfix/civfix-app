@@ -28,7 +28,7 @@ export const PRODUCTION_HOSTNAMES: readonly string[] = [
 export const STAGING_HOSTNAMES: readonly string[] = [
   "civfix.dev",
   "www.civfix.dev",
-  "dev.civfix-web.pages.dev",
+  "staging.civfix-web.pages.dev",
 ]
 
 export function canonicalSiteOriginFor(hostname: string): string | null {

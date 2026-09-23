@@ -229,6 +229,7 @@ describe("the composer's genuine-exit discard", () => {
       replyToPostId: "post-parent",
       organizationId: null,
       pendingCreate: null,
+      ownerId: null,
     })
     expect(usePostComposerStore.getState().claimedCreate).toBeNull()
   })

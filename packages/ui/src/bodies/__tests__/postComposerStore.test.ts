@@ -1,7 +1,10 @@
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import type { LinkedEventRef, UserMentionDTO } from "@civfix/shared"
 import {
   restoreFailedPostSubmit,
+  selectPostComposerDraft,
+  selectPostComposerDraftHidden,
+  selectPostComposerDraftOwner,
   selectPostComposerMediaUploadIds,
   selectPostComposerMentionedUserIds,
   selectPostComposerTargetId,
@@ -52,6 +55,7 @@ describe("postComposerStore", () => {
       replyToPostId: null,
       organizationId: null,
       pendingCreate: null,
+      ownerId: null,
     })
   })
 
@@ -153,6 +157,7 @@ describe("postComposerStore", () => {
       replyToPostId: null,
       organizationId: null,
       pendingCreate: null,
+      ownerId: null,
     })
   })
 
@@ -180,6 +185,7 @@ describe("postComposerStore", () => {
       replyToPostId: "post-parent",
       organizationId: null,
       pendingCreate: null,
+      ownerId: null,
     })
     expect(selectPostComposerTargetId(usePostComposerStore.getState())).toBe("post-parent")
   })
@@ -201,6 +207,109 @@ describe("postComposerStore", () => {
 
     usePostComposerStore.getState().setOrganizationId(null)
     expect(usePostComposerStore.getState().draft.organizationId).toBeNull()
+  })
+
+  it("adoptViewer wipes what the previous viewer wrote when a different account arrives", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    const store = usePostComposerStore.getState()
+    store.setOrganizationId("org-a")
+    store.setBody("Private note from @mayal")
+    store.toggleMention(maya)
+    store.setAttachedEvent(selectedEvent)
+    store.setPendingCreate("report")
+    store.claimPendingCreate("report")
+
+    usePostComposerStore.getState().adoptViewer("user-b")
+    expect(usePostComposerStore.getState().draft).toEqual({
+      body: "",
+      mentionedUsers: [],
+      attachedEventId: null,
+      attachedEvent: null,
+      attachedReportId: null,
+      attachedReport: null,
+      media: [],
+      mode: "post",
+      organizationId: null,
+      quotePostId: null,
+      replyToPostId: null,
+      pendingCreate: null,
+      ownerId: null,
+    })
+    expect(usePostComposerStore.getState().claimedCreate).toBeNull()
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
+  it("a viewer change keeps the mounted composer's reply target", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().reset({ mode: "reply", targetPostId: "post-parent" })
+    usePostComposerStore.getState().setBody("Replying as a")
+
+    usePostComposerStore.getState().adoptViewer("user-b")
+    expect(usePostComposerStore.getState().draft).toMatchObject({
+      body: "",
+      mode: "reply",
+      replyToPostId: "post-parent",
+      quotePostId: null,
+    })
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
+  it("keeps a signed-in author's draft through a transient loss of the viewer, hidden meanwhile", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().setOrganizationId("org-a")
+    usePostComposerStore.getState().setBody("A long draft")
+
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(selectPostComposerDraft(usePostComposerStore.getState()).body).toBe("")
+    expect(selectPostComposerDraft(usePostComposerStore.getState()).organizationId).toBeNull()
+    usePostComposerStore.getState().setBody("typed by nobody")
+
+    usePostComposerStore.getState().adoptViewer("user-a")
+    expect(selectPostComposerDraft(usePostComposerStore.getState())).toMatchObject({
+      body: "A long draft",
+      organizationId: "org-a",
+    })
+
+    usePostComposerStore.getState().adoptViewer("user-a")
+    expect(usePostComposerStore.getState().draft.body).toBe("A long draft")
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
+  it("an explicit sign-out wipes the draft but keeps the composer's route", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().reset({ mode: "quote", targetPostId: "post-quoted" })
+    usePostComposerStore.getState().setBody("Quote by a")
+    usePostComposerStore.getState().setOrganizationId("org-a")
+
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+    usePostComposerStore.getState().adoptViewer("user-a")
+
+    expect(usePostComposerStore.getState().draft).toMatchObject({
+      body: "",
+      organizationId: null,
+      mode: "quote",
+      quotePostId: "post-quoted",
+    })
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
+  it("restore drops a staged draft once its author is no longer the viewer", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().setBody("Posted by a")
+    const staged = usePostComposerStore.getState().draft
+    usePostComposerStore.getState().reset({ mode: "post", targetPostId: null })
+
+    // A 401 during the create: the host signs the viewer out before the mutation's onError runs.
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+    usePostComposerStore.getState().restore(staged)
+
+    expect(usePostComposerStore.getState().draft.body).toBe("")
+    usePostComposerStore.getState().adoptViewer("user-b")
+    expect(selectPostComposerDraft(usePostComposerStore.getState()).body).toBe("")
+    usePostComposerStore.getState().adoptViewer(null)
   })
 
   it("reset(keep) routes a quote target to quotePostId, never replyToPostId", () => {
@@ -369,6 +478,7 @@ describe("postComposerStore create round trip", () => {
       replyToPostId: "post-parent",
       organizationId: null,
       pendingCreate: null,
+      ownerId: null,
     })
   })
 
@@ -389,6 +499,11 @@ describe("postComposerStore create round trip", () => {
 })
 
 describe("restoreFailedPostSubmit (the failure half of a submit, run from the mutation promise)", () => {
+  afterEach(() => {
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
   const stage = (mode: "post" | "reply" | "quote", targetPostId: string | null, body: string) => {
     const store = usePostComposerStore.getState()
     store.setMode(mode)
@@ -420,5 +535,74 @@ describe("restoreFailedPostSubmit (the failure half of a submit, run from the mu
     expect(restoreFailedPostSubmit(staged)).toBe(false)
     expect(usePostComposerStore.getState().draft.mode).toBe("post")
     expect(usePostComposerStore.getState().draft.replyToPostId).toBeNull()
+  })
+
+  it("never hands a failed draft to a different account that signed in while it was in flight", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    const staged = stage("post", null, "Written by a")
+    expect(staged.ownerId).toBe("user-a")
+
+    usePostComposerStore.getState().adoptViewer("user-b")
+    expect(restoreFailedPostSubmit(staged)).toBe(false)
+    expect(selectPostComposerDraft(usePostComposerStore.getState()).body).toBe("")
+    expect(usePostComposerStore.getState().draft.body).toBe("")
+    expect(usePostComposerStore.getState().draft.ownerId).not.toBe("user-a")
+  })
+
+  it("never restores a signed-in author's failed draft while the viewer is unknown", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    const staged = stage("post", null, "Written by a")
+
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(restoreFailedPostSubmit(staged)).toBe(false)
+    expect(usePostComposerStore.getState().draft.body).toBe("")
+  })
+
+  it("restores the failed draft for the author who wrote it", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    const staged = stage("post", null, "Written by a")
+
+    expect(restoreFailedPostSubmit(staged)).toBe(true)
+    expect(usePostComposerStore.getState().draft).toEqual(staged)
+  })
+})
+
+describe("postComposerStore viewer scope", () => {
+  afterEach(() => {
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
+  it("names the draft's owner, or the viewer a fresh draft will belong to, as a stable mount key", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    expect(selectPostComposerDraftOwner(usePostComposerStore.getState())).toBe("user-a")
+    usePostComposerStore.getState().setBody("typed by a")
+    expect(selectPostComposerDraftOwner(usePostComposerStore.getState())).toBe("user-a")
+
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(selectPostComposerDraftOwner(usePostComposerStore.getState())).toBe("user-a")
+
+    usePostComposerStore.getState().adoptViewer("user-b")
+    expect(selectPostComposerDraftOwner(usePostComposerStore.getState())).toBe("user-b")
+
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(selectPostComposerDraftOwner(usePostComposerStore.getState())).toBeNull()
+  })
+
+  it("reports a signed-in author's draft as hidden only while another viewer (or none) is current", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().setBody("typed by a")
+    expect(selectPostComposerDraftHidden(usePostComposerStore.getState())).toBe(false)
+
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(selectPostComposerDraftHidden(usePostComposerStore.getState())).toBe(true)
+
+    usePostComposerStore.getState().adoptViewer("user-a")
+    expect(selectPostComposerDraftHidden(usePostComposerStore.getState())).toBe(false)
+
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(selectPostComposerDraftHidden(usePostComposerStore.getState())).toBe(false)
   })
 })

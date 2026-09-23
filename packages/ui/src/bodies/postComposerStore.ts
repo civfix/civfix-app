@@ -5,6 +5,7 @@
  */
 import { create } from "zustand"
 import type { LinkedEventRef, LinkedReportRef, UserMentionDTO } from "@civfix/shared"
+import { registerViewerScopedDrafts } from "../viewerScope"
 
 export type PostComposerMode = "post" | "quote" | "reply"
 export type PostComposerMediaStatus = "pending" | "uploading" | "ready" | "failed"
@@ -67,10 +68,17 @@ export interface PostComposerDraft {
    * composer exit (`discardAttachments`), and by `reset`.
    */
   pendingCreate: PostComposerPendingCreate
+  /**
+   * The viewer who wrote the content, stamped on every content edit. A draft is shown to, submitted by
+   * and restored for that viewer only; null is a signed-out author.
+   */
+  ownerId: string | null
 }
 
 export interface PostComposerState {
   draft: PostComposerDraft
+  /** Who is using the composer now, as the host's auth layer reports it (null when signed out). */
+  viewerId: string | null
   /**
    * The LIVE create run: the armed intent, transitioned onto the flow run that actually picked it up.
    *
@@ -150,6 +158,15 @@ export interface PostComposerState {
    * draft first and restores it here when the mutation errors.
    */
   restore: (draft: PostComposerDraft) => void
+  /**
+   * The draft belongs to whoever typed it. On a shared device an account switch must not hand the next
+   * account the previous one's text, mentions, attachments or author organization, which it could then
+   * publish under its own name, so a different signed-in viewer wipes it. A null viewer only hides it:
+   * a session check that did not get an answer must not cost a signed-in author their draft.
+   */
+  adoptViewer: (viewerId: string | null) => void
+  /** An explicit sign-out: wipe what the viewer wrote, keeping only the mounted composer's route. */
+  discardViewerDraft: () => void
 }
 
 function emptyDraft(): PostComposerDraft {
@@ -166,6 +183,17 @@ function emptyDraft(): PostComposerDraft {
     quotePostId: null,
     replyToPostId: null,
     pendingCreate: null,
+    ownerId: null,
+  }
+}
+
+/** What survives a change of author: the mode and target come from the mounted composer's route. */
+function routeOnly(draft: PostComposerDraft): PostComposerDraft {
+  return {
+    ...emptyDraft(),
+    mode: draft.mode,
+    quotePostId: draft.quotePostId,
+    replyToPostId: draft.replyToPostId,
   }
 }
 
@@ -187,13 +215,31 @@ function serializeEvent(event: LinkedEventRef): LinkedEventRef {
   return { ...event, organizer: { ...event.organizer } }
 }
 
+/**
+ * A content edit by the current viewer. Another signed-in author's draft is left untouched (its author
+ * is only momentarily unknown), and a signed-out author's content never carries over to a signed-in one.
+ */
 function replaceDraft(update: (draft: PostComposerDraft) => PostComposerDraft) {
+  return (state: PostComposerState): Partial<PostComposerState> => {
+    const { draft, viewerId } = state
+    if (draft.ownerId === viewerId) return { draft: update(draft) }
+    if (draft.ownerId !== null) return state
+    return { draft: { ...update(routeOnly(draft)), ownerId: viewerId } }
+  }
+}
+
+function ownOrganizationId(state: PostComposerState): string | null {
+  return state.draft.ownerId === state.viewerId ? state.draft.organizationId : null
+}
+
+function replaceRoute(update: (draft: PostComposerDraft) => PostComposerDraft) {
   return (state: PostComposerState) => ({ draft: update(state.draft) })
 }
 
 export const usePostComposerStore = create<PostComposerState>((set) => ({
   draft: emptyDraft(),
   claimedCreate: null,
+  viewerId: null,
 
   setBody: (body) => set(replaceDraft((draft) => ({ ...draft, body }))),
 
@@ -305,16 +351,26 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
 
   removeMedia: (uri) => set(replaceDraft((draft) => ({ ...draft, media: draft.media.filter((item) => item.uri !== uri) }))),
 
-  setMode: (mode) => set(replaceDraft((draft) => ({ ...draft, mode }))),
+  setMode: (mode) => set(replaceRoute((draft) => ({ ...draft, mode }))),
 
   setOrganizationId: (organizationId) =>
     set(replaceDraft((draft) => ({ ...draft, organizationId }))),
 
-  setQuotePostId: (quotePostId) => set(replaceDraft((draft) => ({ ...draft, quotePostId }))),
+  setQuotePostId: (quotePostId) => set(replaceRoute((draft) => ({ ...draft, quotePostId }))),
 
-  setReplyToPostId: (replyToPostId) => set(replaceDraft((draft) => ({ ...draft, replyToPostId }))),
+  setReplyToPostId: (replyToPostId) => set(replaceRoute((draft) => ({ ...draft, replyToPostId }))),
 
-  restore: (draft) => set({ draft: { ...draft } }),
+  restore: (draft) => set((state) => (draft.ownerId === state.viewerId ? { draft: { ...draft } } : state)),
+
+  adoptViewer: (viewerId) =>
+    set((state) => {
+      if (state.viewerId === viewerId) return state
+      const owner = state.draft.ownerId
+      if (viewerId === null || owner === null || owner === viewerId) return { viewerId }
+      return { viewerId, claimedCreate: null, draft: routeOnly(state.draft) }
+    }),
+
+  discardViewerDraft: () => set((state) => ({ claimedCreate: null, draft: routeOnly(state.draft) })),
 
   reset: (keep) =>
     set((state) => ({
@@ -324,26 +380,57 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
       draft: keep
         ? {
             ...emptyDraft(),
-            organizationId: state.draft.organizationId,
+            organizationId: ownOrganizationId(state),
+            ownerId: state.viewerId,
             mode: keep.mode,
             replyToPostId: keep.mode === "reply" ? (keep.targetPostId ?? null) : null,
             quotePostId: keep.mode === "quote" ? (keep.targetPostId ?? null) : null,
           }
-        : { ...emptyDraft(), organizationId: state.draft.organizationId },
+        : { ...emptyDraft(), organizationId: ownOrganizationId(state), ownerId: state.viewerId },
     })),
 }))
 
-/** Lightweight selectors keep components from repeating submission and reference-mode derivation. */
-export const selectPostComposerDraft = (state: PostComposerState): PostComposerDraft => state.draft
+registerViewerScopedDrafts(usePostComposerStore, {
+  discard: () => usePostComposerStore.getState().discardViewerDraft(),
+  onViewer: (viewerId) => usePostComposerStore.getState().adoptViewer(viewerId),
+})
 
+const hiddenDrafts = new WeakMap<PostComposerDraft, PostComposerDraft>()
+
+/**
+ * The draft as the current viewer may see and submit it: another author's content is hidden behind the
+ * route-only shell (memoized per draft so subscribers get a stable reference).
+ */
+export const selectPostComposerDraft = (state: PostComposerState): PostComposerDraft => {
+  if (state.draft.ownerId === state.viewerId) return state.draft
+  let hidden = hiddenDrafts.get(state.draft)
+  if (!hidden) {
+    hidden = routeOnly(state.draft)
+    hiddenDrafts.set(state.draft, hidden)
+  }
+  return hidden
+}
+
+/**
+ * Whose draft a mounted composer is showing: its author, or for an untouched draft the viewer who will
+ * write it. Composers remount on it, so thumbnails they carry in local state never pass to a new owner.
+ */
+export const selectPostComposerDraftOwner = (state: PostComposerState): string | null =>
+  state.draft.ownerId ?? state.viewerId
+
+/** A signed-in author's draft while nobody (or another account) is the viewer: shown empty, read-only. */
+export const selectPostComposerDraftHidden = (state: PostComposerState): boolean =>
+  state.draft.ownerId !== null && state.draft.ownerId !== state.viewerId
+
+/** Lightweight selectors keep components from repeating submission and reference-mode derivation. */
 export const selectPostComposerMentionedUserIds = (state: PostComposerState): string[] =>
-  state.draft.mentionedUsers.map((user) => user.id)
+  selectPostComposerDraft(state).mentionedUsers.map((user) => user.id)
 
 export const selectPostComposerMediaUploadIds = (state: PostComposerState): string[] =>
-  state.draft.media.flatMap((media) => (media.status === "ready" && media.uploadId ? [media.uploadId] : []))
+  selectPostComposerDraft(state).media.flatMap((media) => (media.status === "ready" && media.uploadId ? [media.uploadId] : []))
 
 export const selectPostComposerHasPendingMedia = (state: PostComposerState): boolean =>
-  state.draft.media.some((media) => media.status === "pending" || media.status === "uploading")
+  selectPostComposerDraft(state).media.some((media) => media.status === "pending" || media.status === "uploading")
 
 export const selectPostComposerTargetId = (state: PostComposerState): string | null => {
   if (state.draft.mode === "quote") return state.draft.quotePostId
@@ -373,10 +460,13 @@ export function postComposerSlotIsUntouched(draft: PostComposerDraft, staged: Po
 /**
  * The failure half of a submit. It runs from the mutation PROMISE, not a per-call `onError`: TanStack
  * drops per-call callbacks once the composer that fired them unmounts (close, swipe-back, tab switch),
- * which silently lost the text. Returns whether the draft went back.
+ * which silently lost the text. A draft goes back only to the viewer who wrote it: an account switch or
+ * sign-out while the request was in flight must not hand the text to whoever is signed in now. Returns
+ * whether the draft went back.
  */
 export function restoreFailedPostSubmit(staged: PostComposerDraft): boolean {
-  const { draft, restore } = usePostComposerStore.getState()
+  const { draft, viewerId, restore } = usePostComposerStore.getState()
+  if (staged.ownerId !== viewerId) return false
   if (!postComposerSlotIsUntouched(draft, staged)) return false
   restore(staged)
   return true

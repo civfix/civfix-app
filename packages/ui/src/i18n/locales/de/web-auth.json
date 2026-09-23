@@ -33,5 +33,9 @@
     "VALIDATION": "Dieser Code sieht nicht richtig aus. Bitte prüfen und erneut versuchen.",
     "RATE_LIMITED": "Zu viele Versuche. Bitte kurz warten und erneut versuchen.",
     "UNAUTHORIZED": "Dieser Code ist ungültig oder abgelaufen. Bitte neuen Code anfordern."
+  },
+  "sign_out_failed": {
+    "message": "Abmelden hat nicht geklappt, du bist also weiterhin angemeldet. Prüfe deine Verbindung und versuche es erneut.",
+    "retry": "Erneut versuchen"
   }
 }

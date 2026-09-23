@@ -51,7 +51,9 @@ export function stripTeamInviteFromUrl(): void {
   const nextSearch = inSearch ? withoutToken(searchBody) : searchBody
   const nextHash = inHash ? withoutToken(hashBody) : hashBody
   const url = `${pathname}${nextSearch === "" ? "" : `?${nextSearch}`}${nextHash === "" ? "" : `#${nextHash}`}`
-  window.history.replaceState(window.history.state, "", url)
+  // No state object: Next's patched replaceState skips syncing its router for an entry it marked (__NA),
+  // so it would keep the old URL and write it back on its next navigation.
+  window.history.replaceState(null, "", url)
 }
 
 export function takeTeamInviteFromUrl(): EventTeamInviteLink | null {

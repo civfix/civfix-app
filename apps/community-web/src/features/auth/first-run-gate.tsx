@@ -15,6 +15,7 @@ import {
   useUpdateProfile,
 } from "@/hooks/use-profile-registration"
 import { errorMessage } from "@/lib/error-messages"
+import { SESSION_ALERT_ATTR } from "@/styles/z-layers"
 
 export function FirstRunGate() {
   const required = useFirstRunRequired()
@@ -30,7 +31,8 @@ const LAST_NAME_MAX = DISPLAY_NAME_MAX - FIRST_NAME_MAX - 1
 
 /**
  * Make everything outside `el` inert (unfocusable, hidden from assistive tech) and return the undo.
- * aria-modal alone does not stop Tab from reaching the app behind a blocking gate.
+ * aria-modal alone does not stop Tab from reaching the app behind a blocking gate. The session-alert
+ * layer sits above the gate on purpose (a failed sign-out from the gate reports there), so it stays live.
  */
 function inertOutside(el: HTMLElement): () => void {
   const changed: Element[] = []
@@ -39,7 +41,7 @@ function inertOutside(el: HTMLElement): () => void {
     const parent: HTMLElement | null = node.parentElement
     if (!parent) break
     for (const sibling of Array.from(parent.children)) {
-      if (sibling === node || sibling.hasAttribute("inert")) continue
+      if (sibling === node || sibling.hasAttribute("inert") || sibling.hasAttribute(SESSION_ALERT_ATTR)) continue
       sibling.setAttribute("inert", "")
       changed.push(sibling)
     }

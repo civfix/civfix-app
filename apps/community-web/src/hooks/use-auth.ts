@@ -2,11 +2,19 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
+import { ErrorCode } from "@civfix/shared"
 
-import { api } from "@/lib/api"
+import { api, isAppErrorLike } from "@/lib/api"
 import { queryKeys } from "@/lib/query"
 import { clearPersistedCache } from "@/lib/query-persist"
-import { useAuthStore, selectIsAuthenticated, selectAuthResolved } from "@/store/auth-store"
+import {
+  isConfirmedSignedOut,
+  useAuthStore,
+  selectIsAuthenticated,
+  selectAuthResolved,
+  SESSION_SETTLE_TIMEOUT_MS,
+} from "@/store/auth-store"
+import { useSignOutRetryStore } from "@/store/sign-out-retry-store"
 
 /**
  * Queries whose result depends on the viewer's identity. On sign-in/sign-out we invalidate only
@@ -27,6 +35,7 @@ const AUTH_DEPENDENT_KEYS: readonly (readonly unknown[])[] = [
   queryKeys.reportRoot,
   queryKeys.cleanupRoot,
   queryKeys.chatRoot,
+  ["volunteer"],
 ]
 
 function invalidateAuthDependentQueries(
@@ -100,20 +109,57 @@ export function useRefreshSession() {
   }, [setSession, setStatus, setAnonymous, queryClient])
 }
 
-/** Sign the user out: POST /auth/logout (CSRF-protected), then clear local state. */
+/**
+ * How long a sign-out waits for POST /auth/logout before giving up and offering the retry. The CSRF
+ * resolver may first wait out the boot-time session check (SESSION_SETTLE_TIMEOUT_MS), so the deadline
+ * covers that wait plus a slow request.
+ */
+export const SIGN_OUT_DEADLINE_MS = SESSION_SETTLE_TIMEOUT_MS + 7_000
+
+/**
+ * POST /auth/logout. True when the server ended the session, or it had already ended (UNAUTHORIZED).
+ * Any other failure, the deadline included, leaves the httpOnly cookie valid. No header is passed: the
+ * client's CSRF resolver reads the token at call time, after the boot-time session check has settled.
+ */
+function revokeServerSession(): Promise<boolean> {
+  const controller = new AbortController()
+  return new Promise<boolean>((resolve) => {
+    const deadline = setTimeout(() => {
+      controller.abort()
+      resolve(false)
+    }, SIGN_OUT_DEADLINE_MS)
+    api.logout({ signal: controller.signal }).then(
+      () => {
+        clearTimeout(deadline)
+        resolve(true)
+      },
+      (err: unknown) => {
+        clearTimeout(deadline)
+        resolve(isAppErrorLike(err) && err.code === ErrorCode.UNAUTHORIZED)
+      },
+    )
+  })
+}
+
+/**
+ * Sign the user out: POST /auth/logout (CSRF-protected), then clear local state. Never rejects (callers
+ * `void` it). Fails closed: while the server has not ended the session the cookie would sign the user
+ * straight back in on reload, so a failed POST keeps them visibly signed in and raises the retry notice.
+ */
 export function useLogout() {
   const clear = useAuthStore((s) => s.clear)
   const queryClient = useQueryClient()
 
   return React.useCallback(async () => {
-    try {
-      await api.logout()
-    } catch {
-      // Even if the call fails (already expired, backend down), drop local state.
-    }
+    const signOut = useSignOutRetryStore.getState()
+    if (!signOut.begin()) return
+    const revoked = await revokeServerSession()
+    // A 401 elsewhere may have signed the user out while this request hung: nothing is left to retry.
+    signOut.finish(revoked || isConfirmedSignedOut(useAuthStore.getState()))
+    if (!revoked) return
     clear()
-    // Fail-closed (shared-device safety): wipe the persisted query cache and the in-memory cache so the
-    // previous user's lists can never paint for the next person on this browser. The next load is cold.
+    // Shared-device safety: wipe the persisted query cache and the in-memory cache so the previous
+    // user's lists can never paint for the next person on this browser. The next load is cold.
     clearPersistedCache()
     queryClient.clear()
   }, [clear, queryClient])

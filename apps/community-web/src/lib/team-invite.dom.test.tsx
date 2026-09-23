@@ -15,6 +15,8 @@ import {
 const CLEANUP_ID = "22222222-2222-4222-8222-222222222222"
 const TOKEN = "abcdefghijklmnopqrstuvwxyz0123456789ABCD"
 
+const NEXT_ROUTER_STATE = { __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: ["", {}] }
+
 function url(): string {
   return `${window.location.pathname}${window.location.search}${window.location.hash}`
 }
@@ -74,6 +76,13 @@ describe("stripTeamInviteFromUrl", () => {
     at(`/cleanups/${CLEANUP_ID}?from=email#top`)
     stripTeamInviteFromUrl()
     expect(url()).toBe(`/cleanups/${CLEANUP_ID}?from=email#top`)
+  })
+
+  it("hands Next an unmarked entry so its router adopts the scrubbed URL", () => {
+    window.history.replaceState(NEXT_ROUTER_STATE, "", `/cleanups/${CLEANUP_ID}#teamInvite=${TOKEN}`)
+    stripTeamInviteFromUrl()
+    expect(url()).toBe(`/cleanups/${CLEANUP_ID}`)
+    expect((window.history.state as { __NA?: unknown } | null)?.__NA).toBeUndefined()
   })
 
   it("replaces rather than pushes, so Back never lands on the token again", () => {

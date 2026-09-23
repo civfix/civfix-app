@@ -86,6 +86,8 @@ export function stripInviteTokenFromUrl(): void {
   if (typeof window === "undefined") return
   const { pathname, search, hash } = window.location
   if (search === "" && hash === "") return
-  window.history.replaceState(window.history.state, "", pathname)
+  // No state object: Next's patched replaceState skips syncing its router for an entry it marked (__NA),
+  // so it would keep the old URL and write it back on its next navigation.
+  window.history.replaceState(null, "", pathname)
   notifyConsoleUrlChanged()
 }

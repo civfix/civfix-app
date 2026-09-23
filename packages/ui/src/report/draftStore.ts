@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import type { CapturedMedia } from "../capabilities"
+import { registerViewerScopedDrafts } from "../viewerScope"
 
 export interface DraftMedia {
   id: string
@@ -286,3 +287,5 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
       freshSeeds: s.freshSeeds + 1,
     })),
 }))
+
+registerViewerScopedDrafts(useDraftReportStore, { discard: () => useDraftReportStore.getState().reset() })
