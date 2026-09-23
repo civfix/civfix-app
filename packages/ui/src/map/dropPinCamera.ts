@@ -56,8 +56,7 @@ export interface DropPinCameraInput {
    */
   occlusionLeft?: number
   /**
-   * @deprecated Pass {@link occlusionLeft} instead; `occlusionLeft` wins when both are present. Kept
-   * because the mobile host still passes it.
+   * @deprecated No caller passes it; {@link occlusionLeft} replaces it and wins when both are present.
    */
   sidebarWidth?: number
   mode: "compact" | "expanded"

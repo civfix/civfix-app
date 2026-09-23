@@ -87,7 +87,7 @@ describe("what the redesign took off the single-event page", () => {
     expect(BODY).toContain("{capacity ? (")
   })
 
-  it("keeps the daily bars and cancellations, now with weekly labels", () => {
+  it("keeps the daily bars and cancellations, with weekly labels", () => {
     expect(BODY).toContain("stackValue: cancellationAt(cancellations, index)")
     expect(BODY.match(/xLabels=\{weeklyXLabels\(daily, weekLabel\)\}/g) ?? []).toHaveLength(2)
   })
@@ -99,7 +99,7 @@ describe("what the redesign took off the single-event page", () => {
     expect(BODY).toContain('t("attendance.offset_after", { hours: minutes / 60 })')
   })
 
-  it("puts the whole event behind the sign-ups tile, since capacity now has its own meter", () => {
+  it("puts the whole event behind the sign-ups tile, since capacity has its own meter", () => {
     expect(BODY).toContain('hint={signups === null ? t("kpi.not_enough") : t("range.whole_event")}')
     expect(BODY).not.toContain("kpi.of_capacity")
   })
@@ -127,7 +127,7 @@ describe("what the redesign took off the single-event page", () => {
 })
 
 describe("the all-events mode answers for the whole portfolio", () => {
-  it("names the events-held and reports-linked tiles the summary now carries", () => {
+  it("names the events-held and reports-linked tiles the summary carries", () => {
     expect(BODY).toContain('t("kpi.events_held")')
     expect(BODY).toContain('t("kpi.reports_linked")')
     expect(BODY).toContain('t("kpi.checked_in_held"')

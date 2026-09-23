@@ -19,6 +19,7 @@ export function postSubmitDestination(kind: PostKind): PostSubmitDestination {
 
 export interface PostDraft {
   body: string
+  /** The server refuses an event the author neither hosts nor attends. */
   eventId?: string | null
   reportId?: string | null
   /** Staged items, including ones still uploading. */

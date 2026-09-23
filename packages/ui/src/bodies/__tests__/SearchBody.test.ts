@@ -69,7 +69,7 @@ describe("SearchBody top-anchored recents", () => {
     expect(source).toMatch(/const showRecents = surface === "recents" && \(!expanded \|\| recentCount > 0\)/)
     expect(source).toMatch(/const showDiscovery = surface === "discovery" \|\| expanded/)
     // `expanded` is a LAYOUT prop (it only tells Discovery to yield its large title to the landscape
-    // head, see bodies/searchField.test.ts) plus, here, the landscape-only rule that discovery STAYS under
+    // head, see bodies/__tests__/searchField.test.ts) plus, here, the landscape-only rule that discovery STAYS under
     // the focused field. With `expanded` false (compact) the two gates are exact opposites.
     expect(source).toMatch(/\{showRecents \? <RecentlySearched \/> : null\}/)
     expect(source).toMatch(/\{showDiscovery \? <Discovery expanded=\{expanded\} \/> : null\}/)
@@ -194,7 +194,7 @@ describe("Discovery leaderboard survives an empty board", () => {
     expect(source).not.toMatch(/\{name \? <Text style=\{styles\.leaderboardSub\}/)
   })
 
-  it("still bans the layout tokens THE RULE forbids, now that the empty branch exists too", () => {
+  it("keeps the empty-board branch free of the layout tokens the top-anchored recents ban", () => {
     for (const banned of [
       /contentContainerStyle=\{\[/,
       /flexGrow/,

@@ -164,7 +164,7 @@ describe("dropPinCamera: expanded takes the frame plan's occlusionLeft", () => {
     expect(both.lng).not.toBe(expanded({ sidebarWidth: SIDEBAR_DEFAULT_WIDTH, currentZoom: 17 }).lng)
   })
 
-  it("keeps the legacy sidebarWidth caller working (civfix-mobile's tablet host)", () => {
+  it("keeps the deprecated sidebarWidth input working", () => {
     expect(expanded({ sidebarWidth: 440, currentZoom: 17 })).toEqual(
       expanded({ occlusionLeft: 440, currentZoom: 17 }),
     )

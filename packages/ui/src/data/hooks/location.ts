@@ -31,7 +31,7 @@
  *
  * IT NEVER REQUESTS ANYTHING ITSELF. Every step above goes through the injected capability or a plain
  * network call, and this hook adds no permission prompt of its own: an eager
- * `requestForegroundPermissions` on a shared mount path blacks out the report camera.
+ * `requestForegroundPermissionsAsync` on a shared mount path blacks out the report camera.
  *
  * This lives apart from feed.ts (which is deliberately capability-free) because it depends on the platform
  * capability seam; feed.ts stays framework-light and just accepts the resolved `near` as a plain argument.

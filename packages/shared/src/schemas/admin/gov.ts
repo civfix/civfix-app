@@ -89,7 +89,6 @@ export const ApproveGovClaimRequestSchema = z
   .strict()
 export type ApproveGovClaimRequest = z.infer<typeof ApproveGovClaimRequestSchema>
 
-/** Reject a claim with a reason. */
 export const RejectGovClaimRequestSchema = z
   .object({
     id: z.string(),

@@ -34,7 +34,7 @@ test("restorableStack keeps an unbridged entry", () => {
   assert.deepEqual(restorableStack([cleanup], null), [cleanup])
 })
 
-test("restorableStack keeps every host surface, because none of them is bridged any more", () => {
+test("restorableStack keeps every host surface, because none of them is bridged", () => {
   assert.deepEqual(restorableStack([dashboard, hostCheckin], null), [dashboard, hostCheckin])
 })
 

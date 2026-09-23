@@ -7,15 +7,15 @@
  * seam cannot tell shells apart, so the shell injects the components through context and the body
  * consumes them. With no provider mounted the plain RN components are used, so a body works stand-alone.
  *
- * CompactShell.native injects plain RN scrollables wrapped by its handoff, keyboard-aware and
- * minimize-aware decorators (see its SHEET_SCROLL_HOST); the web and expanded shells inject the plain
- * defaults. Because a body owns its scroll through this host, the shells render every body raw in a
- * flex:1 region and never wrap it in a second ScrollView.
+ * CompactShell.native adds the handoff, keyboard-aware and minimize-aware decorators (see its
+ * SHEET_SCROLL_HOST); the web, expanded and portrait shells inject the keyboard-aware plain host. Because a
+ * body owns its scroll through this host, the shells render every body raw in a flex:1 region and never
+ * wrap it in a second ScrollView.
  *
  * Nested vertical scrollers: every decorator assumes the scrollable it wraps is the surface's main scroll
  * region. A body that renders a second vertical scroller inside the sheet must give it its own
- * `<ScrollHostProvider value={PLAIN_SCROLL_HOST}>` (as GroupInfoBody does); otherwise pulling down inside
- * it arms the sheet handoff from its own offset 0 and collapses the whole sheet.
+ * `<ScrollHostProvider value={PLAIN_SCROLL_HOST}>`; otherwise pulling down inside it arms the sheet
+ * handoff from its own offset 0 and collapses the whole sheet.
  *
  * Component props stay loose because the injected components do not share a single TS type; only the
  * list's imperative handle is named, and every decorator forwards its ref to the RN FlatList underneath.

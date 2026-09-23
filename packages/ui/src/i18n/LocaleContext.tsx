@@ -1,6 +1,6 @@
 /**
  * Shared bodies switch the locale without knowing how the host persists it (web: localStorage, mobile:
- * MMKV, both PATCH /me). The i18next instance itself lives in I18nProvider.
+ * MMKV, both PUT /me/settings). The i18next instance itself lives in I18nProvider.
  */
 import { createContext, useContext } from "react"
 import type { SupportedLocale } from "@civfix/shared"

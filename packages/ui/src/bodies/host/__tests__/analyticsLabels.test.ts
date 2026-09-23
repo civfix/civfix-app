@@ -39,7 +39,7 @@ describe("the funnel labels key off the wire step id, not a prettier synonym", (
     }
   })
 
-  it("names the funnel for what it actually measures now", () => {
+  it("names the funnel for what it measures", () => {
     expect(catalog("en", "host-analytics").page?.["funnel_section"]).toBe("From sign-up to hours")
     expect(code(body)).not.toContain("funnel.page_views")
   })

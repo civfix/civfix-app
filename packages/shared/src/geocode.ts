@@ -315,8 +315,8 @@ const GEOJS_URL = "https://get.geojs.io/v1/ip/geo.json"
  * endpoint. Returns null on any failure so callers can fall back to a map center. Used as the proximity
  * source when device location sharing is denied or unavailable.
  *
- * @deprecated A third-party data flow with no consumer-plane callers left. Use `GET /geo/approximate`
- * (`getApproximateLocation`, DECISIONS #45).
+ * @deprecated since 0.47.0. A third-party data flow with no consumer-plane callers left. Use
+ * `GET /geo/approximate` (`getApproximateLocation`, DECISIONS #45).
  */
 export async function ipLocate(signal?: AbortSignal): Promise<LatLng | null> {
   try {

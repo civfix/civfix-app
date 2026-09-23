@@ -369,7 +369,7 @@ describe("dismissGesture: a surface with no drag always keeps its control", () =
    * The iOS edge swipe is additive: reporting it as a dismiss gesture would let the compact-root hide
    * branch remove the only visible exit from every page, including on platforms without the swipe.
    */
-  it("is NOT reported by the page host, even though a page now has an edge swipe", () => {
+  it("is NOT reported by the page host, even though a page has an edge swipe", () => {
     const native = readFileSync(new URL("../PageStack.native.tsx", import.meta.url), "utf8")
     expect(native).toContain("Gesture.Pan()")
     expect(native).not.toContain("dismissGesture={true}")

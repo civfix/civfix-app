@@ -119,7 +119,7 @@ describe("the picker cannot silently inherit the event pin again (source-pinned)
     expect(wizard).toContain("pin={pickPin}")
   })
 
-  it("the host-an-event form keeps the event appearance, now stated rather than defaulted", () => {
+  it("the host-an-event form keeps the event appearance, stated rather than defaulted", () => {
     expect(cleanupForm).toContain(
       "const pin = useMemo(() => eventPinTarget(value.eventKind), [value.eventKind])",
     )

@@ -20,7 +20,7 @@ describe("formatStatValue", () => {
     expect(formatStatValue(1284, "de")).toBe("1.284")
   })
 
-  it("returns null for an unknown value so the caller renders the em dash", () => {
+  it("returns null for an unknown value so the caller renders the shared empty mark", () => {
     expect(formatStatValue(null)).toBeNull()
     expect(formatStatValue(Number.NaN)).toBeNull()
     expect(STAT_VALUE_UNKNOWN).toBe(EMPTY_VALUE)

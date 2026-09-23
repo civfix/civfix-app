@@ -20,7 +20,7 @@ function jsonResponse(
 }
 
 describe("endpoint registry", () => {
-  it("covers the full Phase 1 + admin surface with unique paths per method", () => {
+  it("covers every registered endpoint with a unique path per method", () => {
     const names = Object.keys(endpoints)
     expect(names.length).toBe(333)
     const seen = new Set<string>()

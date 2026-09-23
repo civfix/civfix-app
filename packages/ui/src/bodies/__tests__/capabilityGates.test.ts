@@ -40,7 +40,7 @@ describe("one legacy-role predicate, shared by every host gate", () => {
   })
 })
 
-describe("the role-string gates now read capabilities", () => {
+describe("the host gates read capabilities, not role strings", () => {
   it("EditCleanupBody admits whoever may manage the event", () => {
     expect(edit).toContain(
       "const isHost = managesEvent(cleanupHostStanding(query.data, user?.id ?? null))",

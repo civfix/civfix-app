@@ -18,7 +18,7 @@ export const PostComposeInputSchema = z
     body: z.string().trim().max(2000).optional(),
     replyToId: IdSchema.optional(),
     repostOfId: IdSchema.optional(),
-    eventId: IdSchema.optional(),
+    eventId: IdSchema.optional(), // the server refuses an event the author neither hosts nor attends
     reportId: IdSchema.optional(),
     mediaUploadIds: z.array(IdSchema).max(4).default([]),
     mentionedUserIds: z.array(IdSchema).max(20).default([]),

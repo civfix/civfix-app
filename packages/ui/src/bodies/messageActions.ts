@@ -40,7 +40,6 @@
 
 import type { PersonDTO } from "@civfix/shared"
 
-/** A subset of ContextMenuActionKey. */
 export type MessageActionKey =
   | "reply"
   | "copy"

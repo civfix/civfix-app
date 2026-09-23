@@ -228,7 +228,6 @@ export const GOV_VERIFICATION_CHECK_LABELS: Record<GovVerificationCheck, string>
   callback: "Callback",
 }
 
-/** Per-check verification state. */
 export const GovCheckStatusSchema = z.enum(["verified", "pending"])
 export type GovCheckStatus = z.infer<typeof GovCheckStatusSchema>
 

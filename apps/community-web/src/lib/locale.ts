@@ -38,8 +38,8 @@ function writeStoredLocale(code: SupportedLocale): void {
   }
 }
 
-// Records which user's server locale missed the last PATCH, so the choice is synced on that user's
-// next confirmed session instead of being lost. Scoped by user id: on a shared browser another
+// Records which user's server locale missed the last settings sync, so the choice is synced on that
+// user's next confirmed session instead of being lost. Scoped by user id: on a shared browser another
 // account's server setting must never be rewritten from this device's stored choice.
 const UNSYNCED_LOCALE_KEY = "civfix.locale.unsynced"
 
@@ -75,7 +75,7 @@ function syncServerLocale(userId: string, code: SupportedLocale): Promise<void> 
 }
 
 /**
- * Retry a locale PATCH that failed for the now-confirmed user. Runs only on a live-confirmed session
+ * Retry a locale settings sync that failed for the now-confirmed user. Runs only on a live-confirmed session
  * (never the optimistic snapshot, which has no CSRF token yet).
  */
 export function reconcileUnsyncedLocale(): Promise<void> {
@@ -134,8 +134,8 @@ export function useResolvedLocale(): {
     writeStoredLocale(next)
     setLocaleState(next)
 
-    // The server value drives server-generated text and cross-device sync. A failed PATCH is recorded
-    // and retried on this user's next confirmed session; the local choice already took effect.
+    // The server value drives server-generated text and cross-device sync. A failed settings sync is
+    // recorded and retried on this user's next confirmed session; the local choice already took effect.
     const { status, user, setSession } = useAuthStore.getState()
     if (status === "authenticated" && user) {
       setSession({ user: { ...user, locale: next } })

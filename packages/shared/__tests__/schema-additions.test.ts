@@ -409,7 +409,7 @@ describe("canonical report type taxonomy", () => {
     expect(WEB_REPORT_TYPE_BY_ID.vegetation.category).toBe("recycling")
   })
 
-  it("CreateReportRequest now REQUIRES a type", () => {
+  it("CreateReportRequest requires a type", () => {
     const base = {
       idempotencyKey: UUID,
       category: "trash",

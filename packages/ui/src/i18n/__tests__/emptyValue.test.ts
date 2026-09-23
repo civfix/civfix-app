@@ -9,7 +9,7 @@ describe("the shared empty-value mark", () => {
     expect(EMPTY_VALUE).not.toBe("\u2014")
   })
 
-  it("is exported from the RN-free i18n entry the host console may import", () => {
+  it("is exported from the i18n entry the host console may import", () => {
     expect(i18n.EMPTY_VALUE).toBe(EMPTY_VALUE)
   })
 })

@@ -76,8 +76,8 @@ jobs:
           fetch-depth: 0
 
       - name: Prove the production ref (tag shape + merged into main + newest release)
-        # A branch-protection control: `main` requires a reviewed PR and tags do not, so without this a
-        # tag on an unreviewed branch would go straight to civfix.org. civfix-backend's deploy.yml
+        # A branch-protection control: `main` only accepts a squash-merged PR with green CI and tags do
+        # not, so without this a tag on an unmerged branch would go straight to civfix.org. civfix-backend's deploy.yml
         # carries the same proof; keep the regex identical to that one and to CIVFIX_RELEASE_TAG_REGEX
         # in civfix-infra. The newest-release check stops a re-published old release (or a dispatch on
         # an old tag) from silently rolling civfix.org back; a deliberate rollback sets `rollback`.

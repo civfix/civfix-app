@@ -177,7 +177,6 @@ export type UserMessageItemDTO = z.infer<typeof UserMessageItemDTOSchema>
 export const UserMessagesResponseSchema = pageResponse(UserMessageItemDTOSchema)
 export type UserMessagesResponse = z.infer<typeof UserMessagesResponseSchema>
 
-/** Flag / unflag a user. */
 export const FlagUserRequestSchema = z
   .object({
     id: z.string(),

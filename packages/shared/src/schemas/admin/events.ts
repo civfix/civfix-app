@@ -117,7 +117,6 @@ export const SetEventStatusRequestSchema = z
   .strict()
 export type SetEventStatusRequest = z.infer<typeof SetEventStatusRequestSchema>
 
-/** Flag / unflag an event. */
 export const FlagEventRequestSchema = z
   .object({
     id: z.string(),
@@ -135,7 +134,6 @@ export const CancelRequestSchema = z
   .strict()
 export type CancelRequest = z.infer<typeof CancelRequestSchema>
 
-/** Post an update to the cleanup attendees. */
 export const PostMessageRequestSchema = z
   .object({
     id: z.string(),

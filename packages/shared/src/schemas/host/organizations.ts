@@ -246,7 +246,8 @@ export const ListMyOrgInvitesResponseSchema: z.ZodType<ListMyOrgInvitesResponse,
 /**
  * Accept/decline are token-free: the invite is addressed to the session's account, so a capability
  * token handed to the client only to come straight back would be a secret in flight for no gain
- * (§33). `acceptOrganizationInvite` ({ token }) stays the path for the emailed link.
+ * (§33). Ownership is `organization_invites.user_id` = the viewer (DECISIONS §33/§34).
+ * `acceptOrganizationInvite` ({ token }) stays the path for the emailed link.
  */
 export const AcceptMyOrgInviteRequestSchema = z.object({ inviteId: IdSchema }).strict()
 export type AcceptMyOrgInviteRequest = z.infer<typeof AcceptMyOrgInviteRequestSchema>

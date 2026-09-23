@@ -66,8 +66,8 @@ export const SuggestPlacesRequestSchema = z
     proximityZoom: z.number().optional(),
     limit: z.number().int().positive().max(20).optional(),
     /**
-     * Preferred label language (the caller's app locale). The server defaults to "en" and, for Photon,
-     * falls back to English for any language it does not serve.
+     * Preferred label language (the caller's app locale). Optional so older clients keep working. The
+     * server defaults to "en" and, for Photon, falls back to English for any language it does not serve.
      */
     language: z.string().min(2).max(10).optional(),
   })

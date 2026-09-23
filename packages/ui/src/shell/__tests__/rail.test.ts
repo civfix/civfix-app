@@ -40,7 +40,7 @@ describe("the rail's material and geometry", () => {
   })
 })
 
-describe("the brand pill lives here now", () => {
+describe("the rail carries the brand pill", () => {
   it("renders the civfix wordmark as the row's first item, never covered", () => {
     expect(rail).toContain('import { Brand, openBrandAbout } from "../primitives"')
     expect(rail).toContain("<Brand size={BRAND_SIZE}")
@@ -132,7 +132,7 @@ describe("motion", () => {
     expect(rail).toContain("isWeb && !reduceMotion")
   })
 
-  it("slides the lozenge on translateX, not translateY - the row lays out horizontally now", () => {
+  it("slides the lozenge on translateX, not translateY - the row lays out horizontally", () => {
     expect(rail).toContain("transform: [{ translateX: railItemLeft(")
     expect(code).not.toContain("translateY: railItemTop")
   })

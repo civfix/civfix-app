@@ -144,7 +144,7 @@ describe("the post overflow menu stays mounted until the surface it opened has a
     expect(OVERFLOW).toMatch(/<ReportContentSheet[\s\S]*?onClosed=\{onSurfaceClosed\}/)
   })
 
-  it("opens the report sheet from the row action, which the menu now defers until it has closed", () => {
+  it("opens the report sheet from the row action, which the menu defers until it has closed", () => {
     expect(OVERFLOW).toMatch(/const startReport = useCallback\(\s*\(\) => requireAuth\(\(\) => onReportOpenChange\(true\)/)
     expect(OVERFLOW).toMatch(/key: "report",[\s\S]*?onPress: startReport/)
   })

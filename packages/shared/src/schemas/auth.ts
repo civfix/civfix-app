@@ -86,6 +86,7 @@ export const EmailOtpVerifyRequestSchema = z
 export type EmailOtpVerifyRequest = z.infer<typeof EmailOtpVerifyRequestSchema>
 
 export const UserDTOSchema = z.object({
+  // The UUID is an internal identifier and is never rendered.
   id: IdSchema,
   displayName: z.string(),
   handle: z.string().nullable().optional(),

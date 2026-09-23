@@ -204,7 +204,6 @@ export const SetReportStatusRequestSchema = z
   .strict()
 export type SetReportStatusRequest = z.infer<typeof SetReportStatusRequestSchema>
 
-/** Flag / unflag a report. */
 export const FlagReportRequestSchema = z
   .object({
     id: z.string(),

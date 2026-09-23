@@ -21,7 +21,8 @@
  *
  * KEY HYGIENE: every key here comes from the canonical `queryKeys` factory, so a mutation's invalidation
  * and a read surface's key cannot drift apart. The certificate list is the ONE deliberate exception to the
- * `["volunteer"]` prefix and must stay off it (see the note on `queryKeys.myCertificates`).
+ * `["volunteer"]` prefix and must stay off it, so volunteer invalidations do not refetch the certificate
+ * list.
  */
 import {
   useInfiniteQuery,
@@ -247,8 +248,8 @@ export function useLogEventHours() {
  * GET /me/volunteer-hours/certificates - the viewer's issued service-hours documents.
  *
  * Each row carries a PRESIGNED `url` that expires in minutes, which is why this query is keyed off the
- * `["volunteer"]` prefix entirely (see `queryKeys.myCertificates`) and why a stale entry is refetched
- * rather than trusted: an expired link must be re-minted, not replayed.
+ * `["volunteer"]` prefix entirely and why a stale entry is refetched rather than trusted: an expired
+ * link must be re-minted, not replayed.
  */
 export function useMyServiceHoursCertificates() {
   const api = useApi()

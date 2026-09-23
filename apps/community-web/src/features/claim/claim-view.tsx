@@ -30,7 +30,7 @@ function useClaimGate(): ClaimGate {
 
 /**
  * Links an anonymously submitted report to the signed-in account. The claim code comes from the `code`
- * query param, then the localStorage handoff saved at submit time, then GET /claim/nudge (the server's
+ * query param, then the localStorage handoff saved at submit time, then POST /claim/nudge (the server's
  * pending claim when the code is cookie-bound).
  */
 export function ClaimView() {

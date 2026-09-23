@@ -63,7 +63,6 @@ const FLAT_SERIES = [
   { x: 1, y: 0 },
 ]
 
-
 const IS_WEB = Platform.OS === "web"
 
 const WEB_PAGE_SCROLL_THROTTLE_MS = 100

@@ -164,8 +164,9 @@ export const LeaderboardResponseSchema = z.object({
    * The signed-in viewer's own standing, even when they are past the fetched page. Null when the
    * viewer has no hours here. Absent for anonymous viewers.
    *
-   * These two fields make the response viewer-dependent, so it must never be publicly cached for a
-   * signed-in viewer, or a shared cache will serve one viewer's rank to everyone.
+   * These two fields make the response viewer-dependent, so the route sends public Cache-Control only
+   * for the anonymous body and private otherwise, with Vary: Cookie, Authorization on both, or a
+   * shared cache will serve one viewer's rank to everyone.
    */
   viewerRank: z.number().int().positive().nullable().optional(),
   viewerHours: z.number().nonnegative().nullable().optional(),

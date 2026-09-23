@@ -9,7 +9,8 @@
  *
  * A body that writes a global on mount gates the write on `usePageIsActive()` and releases it with an
  * id-scoped clear (`useMapFocus.clearFor(id)`), never an unconditional one: the gate stops an inactive page
- * asserting, the scoped release stops a departing page clearing what the surviving page owns.
+ * asserting, the scoped release stops a departing page clearing what the surviving page owns. Include
+ * `isActive` in the effect deps so a page revealed by a pop re-asserts its focus.
  *
  * Defaults to true because every other host mounts exactly one body at a time. Shared bodies import this
  * module directly rather than through the shell barrel, which would close an import cycle via BodyRouter.

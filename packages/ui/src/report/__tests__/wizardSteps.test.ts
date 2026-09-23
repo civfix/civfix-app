@@ -280,7 +280,7 @@ describe("wizardHeaderMode", () => {
     }
   })
 
-  it("speaks the tab-root vocabulary at the LANDSCAPE view root, where the rail is now the exit", () => {
+  it("speaks the tab-root vocabulary at the LANDSCAPE view root, where the rail is the exit", () => {
     expect(wizardHeaderMode("expanded", true, true)).toBe("tab-root")
     expect(wizardHeaderMode("expanded", false, true)).toBe("tab-root")
   })

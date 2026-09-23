@@ -143,7 +143,6 @@ export const RemoveModerationRequestSchema = z
   .strict()
 export type RemoveModerationRequest = z.infer<typeof RemoveModerationRequestSchema>
 
-/** Extend the hold on an item. */
 export const HoldModerationRequestSchema = z
   .object({
     id: z.string(),

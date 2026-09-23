@@ -181,7 +181,7 @@ describe("endpoint registry wires the DM/privacy surface correctly", () => {
     expect(endpoints.dmMessages.auth).toBe("required")
   })
 
-  it("listPeople is now auth-required (no anonymous enumeration)", () => {
+  it("listPeople is auth-required (no anonymous enumeration)", () => {
     expect(endpoints.listPeople.auth).toBe("required")
   })
 
