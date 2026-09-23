@@ -20,6 +20,8 @@ import {
   MAX_EVENT_HOURS,
   MAX_EVENT_HOURS_ENTRIES,
 } from "../src/schemas/volunteer.js"
+import * as entities from "../src/schemas/entities.js"
+import * as root from "../src/index.js"
 
 const UUID = "00000000-0000-0000-0000-000000000001"
 
@@ -317,11 +319,9 @@ describe("hours by organization (0.45.0, DECISIONS §39)", () => {
     name: "Bayview Stewards",
   }
 
-  it("still exports LeaderboardEntryDTOSchema from the package root after the entities.ts move", async () => {
-    const root = await import("../src/index.js")
+  it("still exports LeaderboardEntryDTOSchema from the package root after the entities.ts move", () => {
     expect(root.LeaderboardEntryDTOSchema).toBe(LeaderboardEntryDTOSchema)
     expect(root.OrgHoursDTOSchema).toBe(OrgHoursDTOSchema)
-    const entities = await import("../src/schemas/entities.js")
     expect(entities.LeaderboardEntryDTOSchema).toBe(LeaderboardEntryDTOSchema)
     expect(entities.OrgHoursDTOSchema).toBe(OrgHoursDTOSchema)
   })
