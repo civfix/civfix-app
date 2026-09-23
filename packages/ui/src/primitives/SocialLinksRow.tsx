@@ -1,10 +1,11 @@
 import React from "react"
-import { Linking, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native"
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native"
 import { SOCIAL_PLATFORM_LABELS, socialLinkUrl, type SocialLinks } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../theme"
 import { useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
 import { SocialGlyph } from "./SocialGlyph"
+import { useToast } from "./toastContext"
 import { presentSocialPlatforms } from "./socialLinksModel"
 
 export const SOCIAL_LINK_HIT_SIZE = 38
@@ -22,6 +23,7 @@ export function SocialLinksRow({ links, style }: SocialLinksRowProps) {
   const th = useTheme()
   const { t } = useT("profile-view")
   const openExternal = useOpenExternal()
+  const toast = useToast()
   const present = presentSocialPlatforms(links)
   if (present.length === 0) return null
   return (
@@ -32,8 +34,12 @@ export function SocialLinksRow({ links, style }: SocialLinksRowProps) {
           <Pressable
             key={platform}
             onPress={() => {
-              if (openExternal) void openExternal.open(url).catch(() => {})
-              else void Linking.openURL(url).catch(() => {})
+              const failed = () => toast.show(t("social.link_failed"), { variant: "error" })
+              if (!openExternal) {
+                failed()
+                return
+              }
+              void openExternal.open(url).catch(failed)
             }}
             accessibilityRole="link"
             accessibilityLabel={t("social.link_a11y", { platform: SOCIAL_PLATFORM_LABELS[platform] })}

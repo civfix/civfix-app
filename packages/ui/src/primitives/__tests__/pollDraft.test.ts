@@ -11,13 +11,20 @@ import {
   POLL_OPTION_MAX,
   POLL_MIN_OPTIONS,
   POLL_MAX_OPTIONS,
+  type PollDraft,
 } from "../pollDraft"
+
+const texts = (draft: PollDraft): string[] => draft.options.map((o) => o.text)
+const draftOf = (question: string, options: string[]): PollDraft => ({
+  question,
+  options: options.map((text, i) => ({ id: `row-${i}`, text })),
+})
 
 describe("pollDraft", () => {
   it("starts empty with POLL_MIN_OPTIONS blank rows", () => {
     const d = emptyPollDraft()
     expect(d.question).toBe("")
-    expect(d.options).toEqual(["", ""])
+    expect(texts(d)).toEqual(["", ""])
     expect(d.options.length).toBe(POLL_MIN_OPTIONS)
   })
 
@@ -29,19 +36,19 @@ describe("pollDraft", () => {
   it("caps each option at POLL_OPTION_MAX", () => {
     const long = "y".repeat(POLL_OPTION_MAX + 20)
     const d = setOption(emptyPollDraft(), 0, long)
-    expect(d.options[0]!.length).toBe(POLL_OPTION_MAX)
+    expect(d.options[0]!.text.length).toBe(POLL_OPTION_MAX)
   })
 
   it("auto-appends a blank row once the LAST row becomes non-blank", () => {
     // Typing into the second (last) row appends a third empty row.
     const d = setOption(emptyPollDraft(), 1, "Second")
-    expect(d.options).toEqual(["", "Second", ""])
+    expect(texts(d)).toEqual(["", "Second", ""])
   })
 
   it("does NOT auto-append when editing a non-last row", () => {
     const d = setOption(emptyPollDraft(), 0, "First")
     // Row 0 is not the last row, so no append.
-    expect(d.options).toEqual(["First", ""])
+    expect(texts(d)).toEqual(["First", ""])
   })
 
   it("auto-append stops at POLL_MAX_OPTIONS (10)", () => {
@@ -65,7 +72,7 @@ describe("pollDraft", () => {
     // Above the floor: removes.
     const three = setOption(emptyPollDraft(), 1, "B") // -> ["", "B", ""]
     const removed = removeOption(three, 0)
-    expect(removed.options).toEqual(["B", ""])
+    expect(texts(removed)).toEqual(["B", ""])
   })
 
   it("removeOption is a no-op for an out-of-range index", () => {
@@ -78,13 +85,13 @@ describe("pollDraft", () => {
   })
 
   it("canCreatePoll requires a non-empty question AND >= 2 real options", () => {
-    expect(canCreatePoll({ question: "  ", options: ["A", "B"] })).toBe(false)
-    expect(canCreatePoll({ question: "Q?", options: ["A", ""] })).toBe(false)
-    expect(canCreatePoll({ question: "Q?", options: ["A", "B", ""] })).toBe(true)
+    expect(canCreatePoll(draftOf("  ", ["A", "B"]))).toBe(false)
+    expect(canCreatePoll(draftOf("Q?", ["A", ""]))).toBe(false)
+    expect(canCreatePoll(draftOf("Q?", ["A", "B", ""]))).toBe(true)
   })
 
   it("toCreateInput trims the question and blank rows", () => {
-    expect(toCreateInput({ question: "  Pick one  ", options: ["  A", "B ", "", "  "] })).toEqual({
+    expect(toCreateInput(draftOf("  Pick one  ", ["  A", "B ", "", "  "]))).toEqual({
       question: "Pick one",
       options: ["A", "B"],
     })

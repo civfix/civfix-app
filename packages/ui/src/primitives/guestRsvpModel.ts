@@ -3,9 +3,13 @@ import {
   GUEST_RSVP_TURNSTILE_ACTION,
   GuestOtpErrorReason,
   MAX_GUEST_NAME,
+  type EventQuestionDTO,
   type GuestContactChannel,
+  type TicketTypeDTO,
 } from "@civfix/shared"
 import { isEventEndedRefusal } from "../bodies/errorCode"
+import { initialAnswers, type AnswerMap } from "../bodies/host/registration/questionModel"
+import { defaultTicketTypeId } from "../bodies/host/registration/registrationModel"
 
 export type GuestRsvpStep = "choice" | "form" | "code" | "success"
 
@@ -136,4 +140,19 @@ export function guestResendReadyAt(nowMs: number, resendAfterSec: number): numbe
 export function guestResendSecondsLeft(readyAtMs: number | null, nowMs: number): number {
   if (readyAtMs === null) return 0
   return Math.max(0, Math.ceil((readyAtMs - nowMs) / 1000))
+}
+
+/**
+ * The ticket type the sheet registers for: the viewer's pick while it is still offered, else the
+ * default. Deriving it (instead of seeding state once on open) covers ticket types that load after the
+ * sheet opened or drop the picked type on a refetch, so a registration never goes out without one.
+ */
+export function effectiveTicketTypeId(types: readonly TicketTypeDTO[], chosen: string | null): string | null {
+  if (chosen !== null && types.some((type) => type.id === chosen)) return chosen
+  return defaultTicketTypeId(types)
+}
+
+/** What the viewer answered, over every question's default (questions may arrive after the sheet opened). */
+export function answersWithDefaults(questions: readonly EventQuestionDTO[], typed: AnswerMap): AnswerMap {
+  return { ...initialAnswers(questions), ...typed }
 }

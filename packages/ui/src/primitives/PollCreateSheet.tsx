@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View, Pressable } from "react-native"
 import { TextInput } from "./TextInput"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
@@ -8,6 +8,7 @@ import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
 import { Toggle } from "./Toggle"
 import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+import { useResetOnOpen } from "./useModalClosed"
 import {
   emptyPollDraft,
   setQuestion,
@@ -45,13 +46,11 @@ export function PollCreateSheet({ visible, pending = false, error, onCreate, onC
   const [anonymous, setAnonymous] = useState(true)
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (visible) {
-      setDraft(emptyPollDraft())
-      setAllowMultiple(false)
-      setAnonymous(true)
-    }
-  }, [visible])
+  useResetOnOpen(visible, () => {
+    setDraft(emptyPollDraft())
+    setAllowMultiple(false)
+    setAnonymous(true)
+  })
 
   const canSubmit = !pending && canCreatePoll(draft)
 
@@ -95,21 +94,21 @@ export function PollCreateSheet({ visible, pending = false, error, onCreate, onC
 
       <View style={styles.options}>
         {draft.options.map((opt, idx) => (
-          <View key={idx} style={styles.optionRow}>
+          <View key={opt.id} style={styles.optionRow}>
             <TextInput
-              value={opt}
+              value={opt.text}
               onChangeText={(v) => setDraft((d) => setOption(d, idx, v))}
               editable={!pending}
               maxLength={POLL_OPTION_MAX}
               placeholder={t("option_placeholder", { index: idx + 1 })}
               placeholderTextColor={th.colors.textSubtle}
               accessibilityLabel={t("option_placeholder", { index: idx + 1 })}
-              onFocus={() => setFocusedField(`o${idx}`)}
+              onFocus={() => setFocusedField(opt.id)}
               onBlur={() => setFocusedField(null)}
               style={[
                 webInputReset,
                 styles.optionInput,
-                focusedField === `o${idx}` ? modalSheetInputFocusedStyle(th) : null,
+                focusedField === opt.id ? modalSheetInputFocusedStyle(th) : null,
               ]}
             />
             {removable ? (

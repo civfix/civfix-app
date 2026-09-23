@@ -1,3 +1,5 @@
+import qrcode from "qrcode-generator"
+
 export const QR_QUIET_ZONE = 4
 
 export const QR_ERROR_CORRECTION = "M" as const
@@ -38,4 +40,32 @@ export function qrPath(
     }
   }
   return { path: segments.join(""), size, moduleCount }
+}
+
+function qrModules(value: string): boolean[][] {
+  const qr = qrcode(0, QR_ERROR_CORRECTION)
+  qr.addData(value)
+  qr.make()
+  const count = qr.getModuleCount()
+  const rows: boolean[][] = []
+  for (let row = 0; row < count; row++) {
+    const cells: boolean[] = []
+    for (let col = 0; col < count; col++) cells.push(qr.isDark(row, col))
+    rows.push(cells)
+  }
+  return rows
+}
+
+/**
+ * The drawable code for `value`, or null when there is nothing to draw: an empty value, or one the
+ * encoder refuses (over QR capacity). The caller must show a visible fallback for null, never a blank plate.
+ */
+export function qrTicketPath(value: string): QrPath | null {
+  if (value.length === 0) return null
+  try {
+    const rendered = qrPath(qrModules(value), 1, QR_QUIET_ZONE)
+    return rendered.path.length > 0 ? rendered : null
+  } catch {
+    return null
+  }
 }

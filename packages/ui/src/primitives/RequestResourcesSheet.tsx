@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { TextInput } from "./TextInput"
 import { makeThemedStyles, useTheme, webInputReset } from "../theme"
 import { Text } from "../typography"
@@ -6,6 +6,7 @@ import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
 import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+import { useResetOnOpen } from "./useModalClosed"
 
 const MESSAGE_MAX = 2000
 
@@ -32,9 +33,7 @@ export function RequestResourcesSheet({
   const [message, setMessage] = useState("")
   const [focused, setFocused] = useState(false)
 
-  useEffect(() => {
-    if (visible) setMessage("")
-  }, [visible])
+  useResetOnOpen(visible, () => setMessage(""))
 
   const canSubmit = !pending && message.trim().length > 0
 

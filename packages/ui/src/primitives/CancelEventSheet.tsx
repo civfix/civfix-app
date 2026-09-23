@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { TextInput } from "./TextInput"
 import { makeThemedStyles, useTheme, webInputReset } from "../theme"
 import { Text } from "../typography"
@@ -6,6 +6,7 @@ import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
 import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
 import { useT } from "../i18n"
+import { useResetOnOpen } from "./useModalClosed"
 
 const REASON_MAX = 500
 
@@ -30,9 +31,7 @@ export function CancelEventSheet({
   const [reason, setReason] = useState("")
   const [focused, setFocused] = useState(false)
 
-  useEffect(() => {
-    if (visible) setReason("")
-  }, [visible])
+  useResetOnOpen(visible, () => setReason(""))
 
   const commit = useCallback(() => {
     if (pending) return

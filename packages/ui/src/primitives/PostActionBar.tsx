@@ -40,6 +40,7 @@ import {
   postActionHaloFamily,
   postActionHaloInset,
   postActionLayout,
+  postDetailPath,
   type PostActionHaloFamily,
   type PostActionKey,
   type PostActionLayout,
@@ -72,6 +73,8 @@ export interface PostActionBarProps {
   title?: string
   onComment?: () => void
   onQuote?: () => void
+  /** Where a signed-out viewer returns after the sign-in a Like, Repost or Save asks for. */
+  nextPath?: string
   variant?: PostActionVariant
   style?: StyleProp<ViewStyle>
 }
@@ -318,6 +321,7 @@ export function PostActionBar({
   title,
   onComment,
   onQuote,
+  nextPath,
   variant = "card",
   style,
 }: PostActionBarProps) {
@@ -355,6 +359,7 @@ export function PostActionBar({
     [sharePost, shareTitle],
   )
 
+  const authNext = nextPath ?? postDetailPath(postId)
   const likeMutate = like.mutate
   const repostMutate = repost.mutate
   const saveMutate = save.mutate
@@ -363,7 +368,7 @@ export function PostActionBar({
       buildPostActionModel(
         { postId, counts, viewer },
         {
-          onLike: (currently) => requireAuth(() => likeMutate(currently), { next: "/" }),
+          onLike: (currently) => requireAuth(() => likeMutate(currently), { next: authNext }),
           onRepost: isOwnPost
             ? undefined
             : (currently) =>
@@ -373,14 +378,14 @@ export function PostActionBar({
                     return
                   }
                   openRepostMenu()
-                }, { next: "/" }),
+                }, { next: authNext }),
           onComment,
-          onSave: (currently) => requireAuth(() => saveMutate(currently), { next: "/" }),
+          onSave: (currently) => requireAuth(() => saveMutate(currently), { next: authNext }),
           onShare,
         },
         variant === "reply" ? REPLY_MODEL_OPTIONS : undefined,
       ),
-    [postId, counts, viewer, isOwnPost, requireAuth, likeMutate, repostMutate, saveMutate, onComment, onQuote, openRepostMenu, onShare, variant],
+    [postId, counts, viewer, isOwnPost, requireAuth, authNext, likeMutate, repostMutate, saveMutate, onComment, onQuote, openRepostMenu, onShare, variant],
   )
 
   const reposted = viewer.reposted
