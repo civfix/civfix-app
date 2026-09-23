@@ -127,7 +127,6 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
 
         <View style={styles.divider} />
 
-        {/* Reports row (expands) */}
         <Pressable
           style={({ pressed }) => [styles.row, pressed ? styles.rowPressed : null]}
           onPress={() => setReportsOpen((o) => !o)}

@@ -279,7 +279,6 @@ function ClaimedReport({ report }: { report: ReportDTO }) {
         <p className="mt-1.5 text-token-15 text-ink-3">{t("linked.body")}</p>
       </div>
 
-      {/* Linked report card */}
       <div className="mt-6 rounded-lg border border-ink-5 bg-cardflat p-4 shadow-s1">
         <div className="flex items-center justify-between gap-3">
           <span className="truncate font-display text-token-18 font-bold text-ink">{title}</span>

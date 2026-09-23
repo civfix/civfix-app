@@ -108,7 +108,7 @@ const NAMED_ENTITIES = {
   rdquo: "”",
   lsquo: "‘",
   rsquo: "’",
-  mdash: "—",
+  mdash: "\u2014",
   ndash: "–",
   hellip: "…",
   zwnj: "",
