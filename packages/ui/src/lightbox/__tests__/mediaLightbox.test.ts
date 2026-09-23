@@ -220,6 +220,21 @@ describe("the web pointer surface", () => {
     expect(web).toContain("useEffect(() => clearUnzoomTimer, [clearUnzoomTimer])")
   })
 
+  it("snaps without a transition when the viewer asks for reduced motion", () => {
+    expect(web).toContain("const reduceMotion = useReducedMotion() === true")
+    expect(web).toContain("const animate = animated && !reduceMotionRef.current")
+    expect(web).toContain('node.style.transitionProperty = animate ? "transform" : "none"')
+    expect(web).toContain("node.style.transitionDuration = `${animate ? SETTLE_MS : 0}ms`")
+    expect(web).toContain('if (!animate || typeof window === "undefined") {')
+  })
+
+  it("zooms from the keyboard about the centre, and removes the listener with the others", () => {
+    expect(web).toContain("const action = zoomKeyAction(event)")
+    expect(web).toMatch(/focalX: rect\.width \/ 2,\s*focalY: rect\.height \/ 2,/)
+    expect(web).toContain('window.addEventListener("keydown", onKeyDown)')
+    expect(web).toContain('window.removeEventListener("keydown", onKeyDown)')
+  })
+
   it("reads the pointer-worded zoom hint, not the touch one", () => {
     expect(web).toContain('accessibilityHint={t("control.zoom_hint_pointer")}')
     expect(native).toContain('accessibilityHint={t("control.zoom_hint")}')

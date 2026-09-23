@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, type ViewStyle } from "react-native"
-import { EASE_STANDARD_CSS, motion, webNoSelect } from "../theme"
+import { EASE_STANDARD_CSS, motion, useReducedMotion, webNoSelect } from "../theme"
 import { useT } from "../i18n"
 import {
   ZOOM_IDENTITY,
@@ -9,12 +9,14 @@ import {
   doubleTapZoomTransform,
   focalZoomTransform,
   isZoomed,
+  keyZoomScale,
   panZoomTransform,
   pointerDistance,
   pointerMidpoint,
   settleZoomTransform,
   wheelZoomScale,
   zoomGeometry,
+  zoomKeyAction,
   type ZoomPoint,
   type ZoomTransform,
 } from "./lightboxZoom"
@@ -77,6 +79,9 @@ export function ZoomableMedia({
   )
   const geometryRef = useRef(geometry)
   geometryRef.current = geometry
+  const reduceMotion = useReducedMotion() === true
+  const reduceMotionRef = useRef(reduceMotion)
+  reduceMotionRef.current = reduceMotion
 
   const setSurfaceNode = useCallback((node: unknown) => {
     setSurface((node ?? null) as HTMLElement | null)
@@ -95,11 +100,12 @@ export function ZoomableMedia({
 
   const apply = useCallback(
     (next: ZoomTransform, animated = false) => {
+      const animate = animated && !reduceMotionRef.current
       transformRef.current = next
       const node = contentRef.current
       if (node) {
-        node.style.transitionProperty = animated ? "transform" : "none"
-        node.style.transitionDuration = `${SETTLE_MS}ms`
+        node.style.transitionProperty = animate ? "transform" : "none"
+        node.style.transitionDuration = `${animate ? SETTLE_MS : 0}ms`
         node.style.transitionTimingFunction = EASE_STANDARD_CSS
         node.style.transform = cssZoomTransform(next)
       }
@@ -108,7 +114,7 @@ export function ZoomableMedia({
         setZoomed(true)
         return
       }
-      if (!animated || typeof window === "undefined") {
+      if (!animate || typeof window === "undefined") {
         setZoomed(false)
         return
       }
@@ -272,6 +278,29 @@ export function ZoomableMedia({
       event.preventDefault()
     }
 
+    const onKeyDown = (event: KeyboardEvent) => {
+      const action = zoomKeyAction(event)
+      if (action === null) return
+      event.preventDefault()
+      cancelWheelSettle()
+      if (action === "reset") {
+        apply(ZOOM_IDENTITY, true)
+        return
+      }
+      rect = surface.getBoundingClientRect()
+      const current = transformRef.current
+      const stepped = focalZoomTransform({
+        transform: current,
+        nextScale: keyZoomScale(current.scale, action, geometryRef.current.maxScale),
+        focalX: rect.width / 2,
+        focalY: rect.height / 2,
+        surfaceWidth: rect.width,
+        surfaceHeight: rect.height,
+        geometry: geometryRef.current,
+      })
+      apply(settleZoomTransform(stepped, geometryRef.current), true)
+    }
+
     surface.addEventListener("pointerdown", onPointerDown)
     surface.addEventListener("pointermove", onPointerMove)
     surface.addEventListener("pointerup", onPointerEnd)
@@ -281,6 +310,7 @@ export function ZoomableMedia({
     surface.addEventListener("dragstart", onDragStart)
     window.addEventListener("pointerup", onPointerEnd)
     window.addEventListener("pointercancel", onPointerEnd)
+    window.addEventListener("keydown", onKeyDown)
     return () => {
       cancelWheelSettle()
       surface.removeEventListener("pointerdown", onPointerDown)
@@ -292,6 +322,7 @@ export function ZoomableMedia({
       surface.removeEventListener("dragstart", onDragStart)
       window.removeEventListener("pointerup", onPointerEnd)
       window.removeEventListener("pointercancel", onPointerEnd)
+      window.removeEventListener("keydown", onKeyDown)
     }
   }, [apply, surface])
 
