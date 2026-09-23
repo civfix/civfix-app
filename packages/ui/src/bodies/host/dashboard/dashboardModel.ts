@@ -110,9 +110,8 @@ export function canManageOrgTeam(role: OrganizationMemberRole | null | undefined
 }
 
 /**
- * Changing a member's ROLE is owner-shaped, matching the web console's
- * "Only the owner can change roles." refusal. Removal is not: the console lets any manager remove
- * a member the server marked `canRemove`, and the two surfaces have to agree.
+ * Only the owner may change a member's role, while any manager may remove a member the server
+ * marked `canRemove`; this matches the web console, and the two surfaces have to agree.
  */
 export function canSetOrgMemberRole(role: OrganizationMemberRole | null | undefined): boolean {
   return role === "owner"

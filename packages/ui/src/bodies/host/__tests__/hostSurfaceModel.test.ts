@@ -36,8 +36,8 @@ const iso = (at: number): string => new Date(at).toISOString()
 
 /**
  * Every stage in these tests is DERIVED from a real window through the shared clock, never hand-injected:
- * a stage the clock cannot produce is a state the app can never be in, and pinning the CTA table to one
- * is how the old suite ended up asserting on a phase/status pair that could not co-exist.
+ * a stage the clock cannot produce is a state the app can never be in, so a hand-injected stage could
+ * pin the CTA table to a phase/status pair that cannot co-exist.
  */
 function stageOf(startsAt: number, endsAt: number, status: EventWindowLike["status"] = "upcoming"): HostStage {
   return hostStage({ status, scheduledAt: iso(startsAt), endsAt: iso(endsAt) }, NOW)
