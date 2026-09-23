@@ -174,6 +174,7 @@ export function parseMarkdownSubset(src: string, options: ParseMarkdownOptions =
   const nodes: MarkdownNode[] = []
   let paragraph: string[] = []
   let list: MarkdownList | null = null
+  let droppedListItem = false
 
   const closeParagraph = (): void => {
     if (paragraph.length === 0) return
@@ -203,11 +204,14 @@ export function parseMarkdownSubset(src: string, options: ParseMarkdownOptions =
       if (list !== null && list.ordered !== marker.ordered) closeList()
       if (list === null) list = { type: "list", ordered: marker.ordered, items: [] }
       const item = listItemFrom(marker.text)
-      if (item !== null && list.items.length < MARKDOWN_MAX_LIST_ITEMS) list.items.push(item)
+      droppedListItem = list.items.length >= MARKDOWN_MAX_LIST_ITEMS
+      if (item !== null && !droppedListItem) list.items.push(item)
       continue
     }
 
     if (list !== null) {
+      // A continuation of an item dropped past the cap belongs to that item, not the last kept one.
+      if (droppedListItem) continue
       const last = list.items[list.items.length - 1]
       if (last !== undefined) {
         for (const child of parseInline(` ${line.trim()}`, 0)) {
