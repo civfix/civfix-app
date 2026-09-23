@@ -59,3 +59,18 @@ describe("the store badges answer the keyboard", () => {
     expect(badge).toContain("{...linkKeyProps(")
   })
 })
+
+describe("the store badges open through the host's external-link capability", () => {
+  it("never calls Linking straight from a badge, which bypasses the host and drops a rejection", () => {
+    expect(SRC).not.toContain("void Linking.openURL(link.href)")
+    expect(SRC).toContain("const openExternal = useOpenExternal()")
+    expect(SRC).toMatch(/openExternal \? openExternal\.open\(href\) : Linking\.openURL\(href\)/)
+    const badge = SRC.slice(SRC.indexOf("{links.map("), SRC.indexOf("</Pressable>", SRC.indexOf("{links.map(")))
+    expect(badge).toContain("onPress={() => openStore(link.href)}")
+    expect(badge).toContain("{...linkKeyProps(() => openStore(link.href))}")
+  })
+
+  it("tells the reader when the store could not be opened", () => {
+    expect(SRC).toMatch(/opening\.catch\(\(\) => \{\s*toast\.show\(t\("app_promo\.open_failed"\), \{ variant: "error" \}\)/)
+  })
+})
