@@ -123,6 +123,7 @@ function useReducedMotion(): boolean {
       .then((value) => {
         if (mounted) setReduced(value)
       })
+      // An unreadable setting leaves motion on until the change listener below reports otherwise.
       .catch(() => undefined)
     const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduced)
     return () => {
@@ -532,9 +533,15 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
                 />
               ) : null}
               {attachments.attachError ? (
-                <Text style={styles.error}>{attachments.attachError}</Text>
+                <Text style={styles.error} accessibilityRole="alert">
+                  {attachments.attachError}
+                </Text>
               ) : null}
-              {create.isError ? <Text style={styles.error}>{t("submit_error")}</Text> : null}
+              {create.isError ? (
+                <Text style={styles.error} accessibilityRole="alert">
+                  {t("submit_error")}
+                </Text>
+              ) : null}
 
               {/* NO flexWrap. Two fixed-width controls + a flex spacer cannot wrap at any width in any
                   locale - which structurally kills the old bar's 2-and-3-line wrapping bug. */}
@@ -594,29 +601,26 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
           ) : null}
         </View>
 
-        {/* Mounted only while open: its two candidate queries must not fire for every thread you read. */}
-        {attachOpen ? (
-          <ReplyAttachSheet
-            visible={attachOpen}
-            onClose={() => setAttachOpen(false)}
-            anchor={attachAnchor}
-            canAttachMedia={canAttachMedia}
-            onPhoto={() => void attachments.onAttach()}
-            onCamera={() => void attachments.onCapture()}
-            attachedEventId={draft.attachedEventId}
-            attachedReportId={draft.attachedReportId}
-            onSelectEvent={(event: LinkedEventRef, _cleanup: CleanupDTO) =>
-              setAttachedEvent(targetId, event)
-            }
-            onSelectReport={(report) => {
-              setAttachedReportId(targetId, report.id)
-              // Prime the SAME cache entry `useReport` above reads, with the full row the sheet already
-              // has in hand - otherwise the chip would show the generic label for a beat while a fetch
-              // for a report we just received in full round-trips to the server.
-              queryClient.setQueryData<ReportDTO>(queryKeys.report(report.id), report)
-            }}
-          />
-        ) : null}
+        <ReplyAttachSheet
+          visible={attachOpen}
+          onClose={() => setAttachOpen(false)}
+          anchor={attachAnchor}
+          canAttachMedia={canAttachMedia}
+          onPhoto={() => void attachments.onAttach()}
+          onCamera={() => void attachments.onCapture()}
+          attachedEventId={draft.attachedEventId}
+          attachedReportId={draft.attachedReportId}
+          onSelectEvent={(event: LinkedEventRef, _cleanup: CleanupDTO) =>
+            setAttachedEvent(targetId, event)
+          }
+          onSelectReport={(report) => {
+            setAttachedReportId(targetId, report.id)
+            // Prime the SAME cache entry `useReport` above reads, with the full row the sheet already
+            // has in hand - otherwise the chip would show the generic label for a beat while a fetch
+            // for a report we just received in full round-trips to the server.
+            queryClient.setQueryData<ReportDTO>(queryKeys.report(report.id), report)
+          }}
+        />
       </View>
     )
   },

@@ -77,18 +77,12 @@ export function ReplyAttachSheet({
   const isWeb = Platform.OS === "web"
   const insets = React.useContext(SafeAreaInsetsContext)
   const [level, setLevel] = React.useState<AttachLevel>("menu")
-
-  React.useEffect(() => {
+  // Reset while rendering, not in an effect, so a reopened sheet never paints the last picker for a frame.
+  const [shownVisible, setShownVisible] = React.useState(visible)
+  if (visible !== shownVisible) {
+    setShownVisible(visible)
     if (visible) setLevel("menu")
-  }, [visible])
-
-  const events = useAttendingCleanups()
-  const reports = useMyReports()
-  const eventItems = events.data ?? []
-  const reportItems = React.useMemo(
-    () => reports.data?.pages.flatMap((page) => page.items) ?? [],
-    [reports.data],
-  )
+  }
 
   const rows: readonly MenuRowKey[] = isWeb
     ? (["photo", "event", "report"] as const)
@@ -105,6 +99,8 @@ export function ReplyAttachSheet({
       return
     }
     const action = key === "photo" ? onPhoto : onCamera
+    // iOS cannot present the picker while this modal is still dismissing, so the action waits for
+    // `onDismiss`, which RN only fires while the sheet stays mounted with visible={false}.
     if (Platform.OS === "ios") {
       pendingActionRef.current = action
       onClose()
@@ -148,93 +144,30 @@ export function ReplyAttachSheet({
     )
   }
 
-  const pickerHeader = (title: string) => (
-    <View style={styles.pickerHeader}>
-      <Pressable
-        onPress={() => setLevel("menu")}
-        accessibilityRole="button"
-        accessibilityLabel={t("attach.back")}
-        hitSlop={8}
-        {...focusRingProps}
-        style={({ pressed }) => [styles.backButton, pressed ? styles.rowPressed : null]}
-      >
-        <Icon icon={iconMap.ChevronLeft} size={20} color={th.colors.text} />
-      </Pressable>
-      <Text style={styles.pickerTitle} numberOfLines={1}>
-        {title}
-      </Text>
-    </View>
-  )
-
-  const pickerBody = () => {
-    const maxHeight = Math.round(winH * 0.5)
-    if (level === "events") {
-      return (
-        <>
-          {pickerHeader(t("attach.event"))}
-          <ScrollView style={{ maxHeight }} contentContainerStyle={styles.pickerContent}>
-            {events.isLoading ? <View style={styles.placeholder} /> : null}
-            {!events.isLoading && eventItems.length === 0 ? (
-              <Text style={styles.empty}>{t("empty_events")}</Text>
-            ) : null}
-            {eventItems.map((event) => (
-              <LinkedEventCard
-                key={event.id}
-                event={buildComposerEventRef(event)}
-                cleanup={event}
-                layout="list"
-                timeZone={event.timezone ?? undefined}
-                selectable
-                selected={event.id === attachedEventId}
-                onPress={() => {
-                  onSelectEvent(buildComposerEventRef(event, new Date().toISOString()), event)
-                  onClose()
-                }}
-              />
-            ))}
-          </ScrollView>
-        </>
-      )
-    }
-    return (
-      <>
-        {pickerHeader(t("attach.report"))}
-        <ScrollView style={{ maxHeight }} contentContainerStyle={styles.pickerContent}>
-          {reports.isLoading ? <View style={styles.placeholder} /> : null}
-          {!reports.isLoading && reportItems.length === 0 ? (
-            <Text style={styles.empty}>{t("empty_reports")}</Text>
-          ) : null}
-          {reportItems.map((report) => (
-            <LinkedReportCard
-              key={report.id}
-              report={report}
-              layout="list"
-              selectable
-              selected={report.id === attachedReportId}
-              onPress={() => {
-                onSelectReport(report)
-                onClose()
-              }}
-            />
-          ))}
-          {reports.hasNextPage ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ disabled: reports.isFetchingNextPage }}
-              disabled={reports.isFetchingNextPage}
-              onPress={() => {
-                if (reports.hasNextPage && !reports.isFetchingNextPage) void reports.fetchNextPage()
-              }}
-              {...focusRingProps}
-              style={({ pressed }) => [styles.listAction, pressed ? styles.rowPressed : null]}
-            >
-              <Text style={styles.listActionText}>{t("section.show_more")}</Text>
-            </Pressable>
-          ) : null}
-        </ScrollView>
-      </>
+  const maxHeight = Math.round(winH * 0.5)
+  const backToMenu = () => setLevel("menu")
+  const pickerBody = () =>
+    level === "events" ? (
+      <EventsPicker
+        maxHeight={maxHeight}
+        attachedEventId={attachedEventId}
+        onBack={backToMenu}
+        onSelect={(event, cleanup) => {
+          onSelectEvent(event, cleanup)
+          onClose()
+        }}
+      />
+    ) : (
+      <ReportsPicker
+        maxHeight={maxHeight}
+        attachedReportId={attachedReportId}
+        onBack={backToMenu}
+        onSelect={(report) => {
+          onSelectReport(report)
+          onClose()
+        }}
+      />
     )
-  }
 
   const content = level === "menu" ? <>{rows.map(renderMenuRow)}</> : pickerBody()
 
@@ -298,6 +231,143 @@ export function ReplyAttachSheet({
         </View>
       </View>
     </Modal>
+  )
+}
+
+interface PickerHeaderProps {
+  title: string
+  onBack: () => void
+}
+
+function PickerHeader({ title, onBack }: PickerHeaderProps) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("post-composer")
+  return (
+    <View style={styles.pickerHeader}>
+      <Pressable
+        onPress={onBack}
+        accessibilityRole="button"
+        accessibilityLabel={t("attach.back")}
+        hitSlop={8}
+        {...focusRingProps}
+        style={({ pressed }) => [styles.backButton, pressed ? styles.rowPressed : null]}
+      >
+        <Icon icon={iconMap.ChevronLeft} size={20} color={th.colors.text} />
+      </Pressable>
+      <Text style={styles.pickerTitle} numberOfLines={1}>
+        {title}
+      </Text>
+    </View>
+  )
+}
+
+interface EventsPickerProps {
+  maxHeight: number
+  attachedEventId: string | null
+  onBack: () => void
+  onSelect: (event: LinkedEventRef, cleanup: CleanupDTO) => void
+}
+
+/** Its own component so the candidate query runs only once this level opens, not for every thread read. */
+function EventsPicker({ maxHeight, attachedEventId, onBack, onSelect }: EventsPickerProps) {
+  const styles = useStyles()
+  const { t } = useT("post-composer")
+  const { t: tCommon } = useT("common")
+  const events = useAttendingCleanups()
+  const eventItems = events.data ?? []
+  return (
+    <>
+      <PickerHeader title={t("attach.event")} onBack={onBack} />
+      <ScrollView style={{ maxHeight }} contentContainerStyle={styles.pickerContent}>
+        {events.isLoading ? (
+          <View
+            style={styles.placeholder}
+            accessible
+            accessibilityRole="progressbar"
+            accessibilityLabel={tCommon("loading")}
+            accessibilityState={{ busy: true }}
+          />
+        ) : null}
+        {!events.isLoading && eventItems.length === 0 ? (
+          <Text style={styles.empty}>{t("empty_events")}</Text>
+        ) : null}
+        {eventItems.map((event) => (
+          <LinkedEventCard
+            key={event.id}
+            event={buildComposerEventRef(event)}
+            cleanup={event}
+            layout="list"
+            timeZone={event.timezone ?? undefined}
+            selectable
+            selected={event.id === attachedEventId}
+            onPress={() => onSelect(buildComposerEventRef(event, new Date().toISOString()), event)}
+          />
+        ))}
+      </ScrollView>
+    </>
+  )
+}
+
+interface ReportsPickerProps {
+  maxHeight: number
+  attachedReportId: string | null
+  onBack: () => void
+  onSelect: (report: ReportDTO) => void
+}
+
+/** Its own component so the candidate query runs only once this level opens, not for every thread read. */
+function ReportsPicker({ maxHeight, attachedReportId, onBack, onSelect }: ReportsPickerProps) {
+  const styles = useStyles()
+  const { t } = useT("post-composer")
+  const { t: tCommon } = useT("common")
+  const reports = useMyReports()
+  const reportItems = React.useMemo(
+    () => reports.data?.pages.flatMap((page) => page.items) ?? [],
+    [reports.data],
+  )
+  return (
+    <>
+      <PickerHeader title={t("attach.report")} onBack={onBack} />
+      <ScrollView style={{ maxHeight }} contentContainerStyle={styles.pickerContent}>
+        {reports.isLoading ? (
+          <View
+            style={styles.placeholder}
+            accessible
+            accessibilityRole="progressbar"
+            accessibilityLabel={tCommon("loading")}
+            accessibilityState={{ busy: true }}
+          />
+        ) : null}
+        {!reports.isLoading && reportItems.length === 0 ? (
+          <Text style={styles.empty}>{t("empty_reports")}</Text>
+        ) : null}
+        {reportItems.map((report) => (
+          <LinkedReportCard
+            key={report.id}
+            report={report}
+            layout="list"
+            selectable
+            selected={report.id === attachedReportId}
+            onPress={() => onSelect(report)}
+          />
+        ))}
+        {reports.hasNextPage ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: reports.isFetchingNextPage }}
+            disabled={reports.isFetchingNextPage}
+            onPress={() => {
+              if (reports.hasNextPage && !reports.isFetchingNextPage) void reports.fetchNextPage()
+            }}
+            {...focusRingProps}
+            style={({ pressed }) => [styles.listAction, pressed ? styles.rowPressed : null]}
+          >
+            <Text style={styles.listActionText}>{t("section.show_more")}</Text>
+          </Pressable>
+        ) : null}
+      </ScrollView>
+    </>
   )
 }
 

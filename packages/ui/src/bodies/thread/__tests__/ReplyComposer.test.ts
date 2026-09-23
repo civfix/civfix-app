@@ -71,3 +71,24 @@ describe("attached-report chip", () => {
     expect(composer).not.toContain("setAttachedReport(")
   })
 })
+
+describe("the reply attach sheet on iOS (APP-BUG-143)", () => {
+  const sheet = readFileSync(new URL("../ReplyAttachSheet.tsx", import.meta.url), "utf8")
+  const sheetShell = sheet.slice(
+    sheet.indexOf("export function ReplyAttachSheet("),
+    sheet.indexOf("function PickerHeader("),
+  )
+
+  it("stays mounted when it closes, so RN Modal can fire the onDismiss that runs Photo and Camera", () => {
+    expect(composer).not.toMatch(/\{attachOpen \? \(\s*<ReplyAttachSheet/)
+    expect(composer).toMatch(/<ReplyAttachSheet\s+visible=\{attachOpen\}/)
+    expect(sheetShell).toContain("onDismiss={onModalDismiss}")
+  })
+
+  it("keeps the candidate queries out of the always-mounted shell", () => {
+    expect(sheetShell).not.toContain("useAttendingCleanups(")
+    expect(sheetShell).not.toContain("useMyReports(")
+    expect(sheet.slice(sheet.indexOf("function EventsPicker("))).toContain("useAttendingCleanups()")
+    expect(sheet.slice(sheet.indexOf("function ReportsPicker("))).toContain("useMyReports()")
+  })
+})
