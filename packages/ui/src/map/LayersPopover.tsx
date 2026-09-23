@@ -23,11 +23,12 @@
 import React, { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
 import { motion, categoryColor, focusRingProps, makeThemedStyles, useTheme } from "../theme"
+import { useReducedMotion } from "../theme/useReducedMotion"
 import { KNOB_OFF_X, KNOB_ON_X, trackOffColor } from "../primitives/SettingsToggle.types"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { BlurSurface } from "../surface"
-import { TeardropPin } from "./pins"
+import { TeardropPin, inkOnFill } from "./pins"
 import { useReportFilterStore, FILTER_CATEGORIES } from "./filterStore"
 
 /**
@@ -91,9 +92,16 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
   // Track the in-flight animation so a rapid open/close toggle STOPS the previous one before starting a
   // new one - otherwise two timings race on the same Animated.Value and the card jumps/stutters.
   const animRef = useRef<Animated.CompositeAnimation | null>(null)
+  const reducedMotion = useReducedMotion() === true
 
   useEffect(() => {
     animRef.current?.stop()
+    if (reducedMotion) {
+      animRef.current = null
+      progress.setValue(isClosing ? 0 : 1)
+      if (isClosing) onClosedRef.current?.()
+      return
+    }
     const anim = Animated.timing(progress, {
       toValue: isClosing ? 0 : 1,
       duration: LAYERS_POPOVER_ANIM_MS,
@@ -107,8 +115,8 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
       if (finished && isClosing) onClosedRef.current?.()
     })
     return () => anim.stop()
-    // `progress` is a stable Animated.Value ref, so `isClosing` is the only meaningful dependency.
-  }, [isClosing])
+    // `progress` is a stable Animated.Value ref, so it is not a dependency.
+  }, [isClosing, reducedMotion])
 
   // cfFadeUp entrance: a 14px rise + fade (+ a subtle scale settle). The distance/scale come from the
   // shared `motion.fadeUp` token so every popover/toast in the redesign shares one recipe.
@@ -232,7 +240,9 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
                       on ? { backgroundColor: color, borderColor: color } : styles.checkOff,
                     ]}
                   >
-                    {on ? <Icon icon={iconMap.Check} size={12} color={th.colors.onAccent} /> : null}
+                    {on ? (
+                      <Icon icon={iconMap.Check} size={12} color={inkOnFill(color, th.scheme, th.colors.onAccent)} />
+                    ) : null}
                   </View>
                 </Pressable>
               )

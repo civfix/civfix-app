@@ -90,11 +90,34 @@ export function PortraitMapPickStep({
   }, [mapRegistered, localPoint])
   const cancel = useCallback(() => onCancelRef.current(), [])
 
+  const topBarRef = useRef<View>(null)
+
+  useEffect(() => {
+    if (!live) return
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    // Only a keyboard opener moves focus into the search: on a phone a focused input raises the soft
+    // keyboard over the map the step exists to show.
+    if (opener?.matches(":focus-visible")) {
+      const topBar = topBarRef.current as unknown as HTMLElement | null
+      topBar?.querySelector("input")?.focus()
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return
+      e.preventDefault()
+      onCancelRef.current()
+    }
+    document.addEventListener("keydown", onKeyDown)
+    return () => {
+      document.removeEventListener("keydown", onKeyDown)
+      if (opener?.isConnected) opener.focus()
+    }
+  }, [live])
+
   if (!live || typeof document === "undefined") return null
 
   const chrome = (
     <View style={styles.host} pointerEvents="box-none">
-      <View style={styles.topBar} pointerEvents="auto">
+      <View ref={topBarRef} style={styles.topBar} pointerEvents="auto">
         <View style={styles.titleRow}>
           <Icon icon={iconMap.MapPin} size={16} color={th.colors.brand.bloom} />
           <Text style={styles.title} numberOfLines={1}>

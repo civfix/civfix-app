@@ -1,4 +1,6 @@
+import type { EventKind } from "@civfix/shared"
 import type { ClusterNode } from "./clusterer"
+import type { FocusedEntity } from "./mapFocusStore"
 import type { MapFlyToHighlight } from "./mapFlyToStore"
 
 export function markerNodeIsActive(
@@ -30,4 +32,38 @@ export function flyToTargetOffMap(
   const pinId = highlight.kind === "report" ? highlight.id : null
   const cleanupId = highlight.kind === "cleanup" ? highlight.id : null
   return nodes.some((node) => markerNodeIsActive(node, pinId, cleanupId)) ? null : highlight
+}
+
+export type MarkerLabelT = (key: string, options?: Record<string, unknown>) => string
+
+function reportMarkerLabel(category: string, title: string | null | undefined, t: MarkerLabelT): string {
+  const categoryLabel = t(`enums:category.${category}`)
+  const named = title?.trim()
+  return named
+    ? t("a11y.reportPin", { category: categoryLabel, title: named })
+    : t("a11y.reportPinUntitled", { category: categoryLabel })
+}
+
+function eventMarkerLabel(eventKind: EventKind, title: string | null | undefined, t: MarkerLabelT): string {
+  const kindLabel = t(`enums:eventKind.${eventKind}`)
+  const named = title?.trim()
+  return named
+    ? t("a11y.eventPin", { kind: kindLabel, title: named })
+    : t("a11y.eventPinUntitled", { kind: kindLabel })
+}
+
+/** The screen-reader name of one map marker; `t` is the `map-ui` translator. */
+export function markerA11yLabel(node: ClusterNode, t: MarkerLabelT): string {
+  if (node.type === "cluster") return t("a11y.cluster", { count: node.count })
+  if (node.type === "report") return reportMarkerLabel(node.pin.category, node.pin.title, t)
+  const event = eventMarkerLabel(node.event.eventKind, node.event.title, t)
+  if (node.type === "event") return event
+  return t("a11y.blendPin", { event, count: node.reports.length })
+}
+
+/** The name of the standalone focus / fly-to marker, which carries no title. */
+export function targetMarkerA11yLabel(target: FocusedEntity, t: MarkerLabelT): string {
+  return target.kind === "cleanup"
+    ? eventMarkerLabel(target.eventKind, null, t)
+    : reportMarkerLabel(target.category, null, t)
 }

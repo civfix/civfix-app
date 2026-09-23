@@ -183,13 +183,14 @@ function ProfileEntry() {
   const { user, isAuthenticated, isPending } = useAuthState()
   const requireAuth = useRequireAuth()
   const { t } = useT("map-ui")
+  const { t: tNav } = useT("nav")
 
   if (isPending) return null
 
   if (!isAuthenticated) {
     return (
       <Pressable
-        onPress={() => requireAuth(() => {})}
+        onPress={() => requireAuth(() => useNavStore.getState().push({ kind: "profile" }))}
         accessibilityRole="button"
         accessibilityLabel={t("profile.signIn")}
         hitSlop={6}
@@ -226,7 +227,7 @@ function ProfileEntry() {
       ]}
     >
       <Avatar
-        name={user?.displayName ?? "You"}
+        name={user?.displayName ?? tNav("fallback_you")}
         photoUrl={user?.avatarUrl ?? null}
         seed={user?.id}
         size={HEADER_AVATAR_SIZE}

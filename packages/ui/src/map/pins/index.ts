@@ -13,5 +13,7 @@ export {
   reportPinTarget,
   clusterToneFor,
   clusterBubbleAppearance,
+  inkOnFill,
+  pinOutlineFor,
 } from "./appearance"
 export type { PinTarget, PinAppearance, ClusterTone, ClusterBubbleAppearance } from "./appearance"

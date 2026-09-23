@@ -4,6 +4,7 @@ import type { EventKind } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text } from "../../typography"
 import { EventPin } from "./EventPin"
+import { inkOnFill } from "./appearance"
 
 const COUNT_SIZE = 18
 
@@ -22,7 +23,7 @@ export const BlendPin = React.memo(function BlendPin({
     <View>
       <EventPin active={active} eventKind={eventKind} />
       <View style={[styles.count, t.shadows.s2]}>
-        <Text variant="caption" color={t.colors.onAccent}>
+        <Text variant="caption" color={inkOnFill(t.colors.brand.bloom, t.scheme, t.colors.onAccent)}>
           {count > 99 ? "99+" : String(count)}
         </Text>
       </View>
