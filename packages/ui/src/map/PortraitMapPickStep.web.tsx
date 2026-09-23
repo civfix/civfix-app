@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { View, StyleSheet } from "react-native"
 import { makeThemedStyles, useTheme } from "../theme"
@@ -39,6 +39,11 @@ export function PortraitMapPickStep({
   onCancelRef.current = onCancel
 
   const pointRef = useRef<LatLng | null>(value ?? null)
+  // The seed below runs on the open edge only, reading whatever value the parent holds at that moment.
+  const valueRef = useRef(value)
+  useLayoutEffect(() => {
+    valueRef.current = value
+  })
   const pinRef = useRef(pin)
   pinRef.current = pin
 
@@ -46,8 +51,8 @@ export function PortraitMapPickStep({
 
   useEffect(() => {
     if (!live) return
-    setLocalPoint(value ?? null)
-    pointRef.current = value ?? null
+    setLocalPoint(valueRef.current ?? null)
+    pointRef.current = valueRef.current ?? null
   }, [live])
 
   useEffect(() => {

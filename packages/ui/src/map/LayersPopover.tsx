@@ -115,8 +115,7 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
       if (finished && isClosing) onClosedRef.current?.()
     })
     return () => anim.stop()
-    // `progress` is a stable Animated.Value ref, so it is not a dependency.
-  }, [isClosing, reducedMotion])
+  }, [isClosing, reducedMotion, progress])
 
   // cfFadeUp entrance: a 14px rise + fade (+ a subtle scale settle). The distance/scale come from the
   // shared `motion.fadeUp` token so every popover/toast in the redesign shares one recipe.

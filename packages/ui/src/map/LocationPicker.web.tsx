@@ -59,6 +59,10 @@ function InlineLocationPicker({
   const onChangeRef = React.useRef(onChange)
   onChangeRef.current = onChange
   const [placed, setPlaced] = React.useState<boolean>(value != null)
+  const valueRef = React.useRef(value)
+  React.useLayoutEffect(() => {
+    valueRef.current = value
+  })
 
   const seedRef = React.useRef<LatLng | null>(null)
   if (seedRef.current == null) seedRef.current = value ?? initialCenter ?? null
@@ -107,7 +111,7 @@ function InlineLocationPicker({
     map.keyboard.disableRotation()
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right")
 
-    if (value) ensureMarker(map, start)
+    if (valueRef.current) ensureMarker(map, start)
 
     map.on("click", (e) => {
       ensureMarker(map, e.lngLat).setLngLat(e.lngLat)
@@ -121,7 +125,7 @@ function InlineLocationPicker({
       mapRef.current = null
       markerRef.current = null
     }
-  }, [cameraSeed])
+  }, [cameraSeed, ensureMarker])
 
   React.useEffect(() => {
     const marker = markerRef.current
@@ -156,7 +160,7 @@ function InlineLocationPicker({
       marker.setLngLat([value.lng, value.lat])
       map.easeTo({ center: [value.lng, value.lat], zoom: Math.max(map.getZoom(), PICKER_ZOOM), duration: 400 })
     }
-  }, [value])
+  }, [value, ensureMarker])
 
 
   if (!cameraSeed) {
@@ -203,9 +207,13 @@ function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPicker
   onClearRef.current = onClear
   const pinRef = React.useRef(pin)
   pinRef.current = pin
+  const valueRef = React.useRef(value)
+  React.useLayoutEffect(() => {
+    valueRef.current = value
+  })
 
   React.useEffect(() => {
-    useLocationPick.getState().start(value ?? null, pinRef.current)
+    useLocationPick.getState().start(valueRef.current ?? null, pinRef.current)
     return () => {
       useLocationPick.getState().cancel()
     }
@@ -214,9 +222,6 @@ function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPicker
   React.useEffect(() => {
     useLocationPick.getState().setPin(pin)
   }, [pin])
-
-  const valueRef = React.useRef(value)
-  valueRef.current = value
 
   React.useEffect(() => {
     if (!draft) return

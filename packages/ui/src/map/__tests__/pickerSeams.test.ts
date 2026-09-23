@@ -94,7 +94,7 @@ describe("the layers popover honours reduced motion", () => {
     expect(popover).toMatch(
       /if \(reducedMotion\) \{\n\s+animRef\.current = null\n\s+progress\.setValue\(isClosing \? 0 : 1\)\n\s+if \(isClosing\) onClosedRef\.current\?\.\(\)\n\s+return\n\s+\}/,
     )
-    expect(popover).toContain("}, [isClosing, reducedMotion])")
+    expect(popover).toContain("}, [isClosing, reducedMotion, progress])")
   })
 })
 

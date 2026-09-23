@@ -76,6 +76,11 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
     const themeRef = React.useRef(th)
     themeRef.current = th
     const cartoApiKey = useCartoApiKey()
+    // The map is built once; a later key reaches it through the style-swap effect, not a rebuild.
+    const cartoApiKeyRef = React.useRef(cartoApiKey)
+    React.useLayoutEffect(() => {
+      cartoApiKeyRef.current = cartoApiKey
+    })
     const containerRef = React.useRef<HTMLDivElement | null>(null)
     const mapRef = React.useRef<MlMap | null>(null)
     const markersRef = React.useRef<globalThis.Map<string, MarkerEntry>>(new globalThis.Map())
@@ -241,7 +246,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       const map = new maplibregl.Map({
         container: containerRef.current,
         style: rasterMapStyle(DEFAULT_ATTRIBUTION, {
-          cartoApiKey,
+          cartoApiKey: cartoApiKeyRef.current,
           scheme: themeRef.current.scheme,
         }) as maplibregl.StyleSpecification,
         center: [seed.center.lng, seed.center.lat],
@@ -285,7 +290,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
         meetingMarkerRef.current = null
         setMapReady(false)
       }
-    }, [])
+    }, [runner])
 
     const radiusFeature = React.useMemo(() => radiusCircleFeature(center, radiusM), [center, radiusM])
 

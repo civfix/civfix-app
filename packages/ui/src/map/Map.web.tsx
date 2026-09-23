@@ -135,6 +135,11 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   )
 
   const cartoApiKey = useCartoApiKey()
+  // The map is built once; later basemap inputs reach it through the style-swap effect, not a rebuild.
+  const basemapRef = React.useRef({ mapStyle, cartoApiKey })
+  React.useLayoutEffect(() => {
+    basemapRef.current = { mapStyle, cartoApiKey }
+  })
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const mapRef = React.useRef<MlMap | null>(null)
   const markersRef = React.useRef<globalThis.Map<string, MarkerEntry>>(new globalThis.Map())
@@ -383,13 +388,14 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     ensureMapFocusRingStyle()
     const markers = markersRef.current
     const seed = initialCenterRef.current
+    const basemap = basemapRef.current
 
     styleSchemeRef.current = themeRef.current.scheme
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: (mapStyle ??
+      style: (basemap.mapStyle ??
         rasterMapStyle(DEFAULT_ATTRIBUTION, {
-          cartoApiKey,
+          cartoApiKey: basemap.cartoApiKey,
           scheme: themeRef.current.scheme,
         })) as maplibregl.StyleSpecification,
       center: [seed.lng, seed.lat] as [number, number],
@@ -495,7 +501,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       attribCtrlRef.current = null
       setMapReady(false)
     }
-  }, [])
+  }, [runner])
 
   React.useEffect(() => {
     const map = mapRef.current

@@ -82,7 +82,7 @@ describe("cause 1, web - the maplibre-gl picker is not constructed until a real 
   it("keys map construction on the seed ALONE (its cleanup removes the map)", () => {
     // The dep list is load-bearing in a way the native seam's is not: this effect's cleanup calls
     // `map.remove()`, so widening it to `value` would tear down and rebuild the map on every tap.
-    expect(webPicker).toContain("}, [cameraSeed])")
+    expect(webPicker).toContain("}, [cameraSeed, ensureMarker])")
     expect(webPicker).toContain("if (mapRef.current || !containerRef.current || !cameraSeed) return")
   })
 

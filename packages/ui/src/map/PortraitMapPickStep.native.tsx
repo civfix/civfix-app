@@ -53,9 +53,9 @@ export function PortraitMapPickStep({
 
   const onPickPlace = useCallback(
     (place: AddressPick) => setLocalPoint({ lat: place.lat, lng: place.lng }),
-    [],
+    [setLocalPoint],
   )
-  const onMapDrop = useCallback((lat: number, lng: number) => setLocalPoint({ lat, lng }), [])
+  const onMapDrop = useCallback((lat: number, lng: number) => setLocalPoint({ lat, lng }), [setLocalPoint])
 
   const confirm = useCallback(() => {
     if (!localPoint) return
