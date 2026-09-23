@@ -4,6 +4,7 @@ import type { AttendeeDTO, EventHoursResponse } from "@civfix/shared"
 import { MAX_EVENT_HOURS } from "@civfix/shared"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
+import { MIN_TOUCH_TARGET } from "../typography/TextLink"
 import { Avatar, TextField, useToast } from "../primitives"
 import { useAuthState, useCleanupAttendees, useLogEventHours } from "../data"
 import { useLocale, useRelativeTime, useT } from "../i18n"
@@ -407,7 +408,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["2"],
   },
   btn: {
-    height: 38,
+    minHeight: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["4"],
     borderRadius: t.radius.pill,
     alignItems: "center",

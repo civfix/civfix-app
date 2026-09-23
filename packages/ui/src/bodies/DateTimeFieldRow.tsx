@@ -115,7 +115,7 @@ export function DateTimeFieldRow({
         <View style={styles.fieldRow}>{body}</View>
       )}
       {error ? (
-        <View style={styles.errorRow}>
+        <View style={styles.errorRow} accessibilityRole="alert" accessibilityLiveRegion="polite">
           <Icon icon={iconMap.AlertCircle} size={13} color={th.colors.accentText} />
           <Text numberOfLines={2} style={styles.errorText}>
             {error}
@@ -177,7 +177,7 @@ export function InlineDateTimePickerLayout({
   const earliestDate = minDate ?? todayInZone(timeZone)
   const startFloor =
     date !== null && sameDay(date, todayInZone(timeZone)) ? nowClockInZone(timeZone) : null
-  const activeDuration = durationChipFor(date, time, endTime)
+  const activeDuration = durationChipFor(date, time, endTime, timeZone)
 
   const selectDuration = (hours: DurationChipHours) => {
     if (!date || !time || !onEndTimeChange) return

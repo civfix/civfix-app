@@ -25,12 +25,13 @@
  * No `Modal`, no `FlatList`, no inner `ScrollView` - the expansion grows the card inside the page's
  * existing scroller (see the same constraint on `SlotEditor`).
  */
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, LayoutAnimation, Platform } from "react-native"
 import { useQueryClient } from "@tanstack/react-query"
 import type { AttendeeDTO, EventSlotDTO } from "@civfix/shared"
 import { timeRangeLabel } from "@civfix/shared/datetime"
 import {
+  headingLevel,
   makeThemedStyles,
   useTheme,
   useReducedMotion,
@@ -492,7 +493,7 @@ function SlotRow({
   }
 
   const disclosureLabel = range
-    ? `${t("row.window_a11y", { title: slot.title, range })}, ${t("row.claimed_count", { count: slot.claimed })}`
+    ? t("row.window_count_a11y", { title: slot.title, range, count: slot.claimed })
     : t("row.expand_a11y", { title: slot.title, count: slot.claimed })
 
   return (
@@ -562,7 +563,7 @@ function SlotRow({
                 ))}
                 <Text style={styles.facesNames} numberOfLines={1}>
                   {previewOverflow > 0
-                    ? `${previewNames} ${t("row.faces_more", { count: previewOverflow })}`
+                    ? t("row.faces_names_more", { names: previewNames, count: previewOverflow })
                     : previewNames}
                 </Text>
               </View>
@@ -631,6 +632,8 @@ export function EventSlotsBlock({
   const ticketed = mode === "registration"
   const general = mode === "general"
   const boardBusy = general ? join.isPending : claim.isPending
+  // `boardBusy` is the value of the last render, so two taps inside one frame both read it as false.
+  const inFlight = useRef(false)
 
   const onError = useCallback(
     (err: unknown) => {
@@ -651,11 +654,18 @@ export function EventSlotsBlock({
       // gesture queue (or a host that re-fires onPress) could still re-enter here mid-flight and start a
       // second PUT of the same singular resource.
       if (boardBusy) return
+      if (inFlight.current) return
       requireAuth(
         () => {
+          if (inFlight.current) return
+          inFlight.current = true
+          const settle = () => {
+            inFlight.current = false
+          }
           setPendingSlotId(tappedId)
           if (general) {
             join.mutate(slotId === null, {
+              onSettled: settle,
               onSuccess: () => {
                 setPendingSlotId(null)
                 if (slotId === null) return
@@ -669,6 +679,7 @@ export function EventSlotsBlock({
           claim.mutate(
             { slotId },
             {
+              onSettled: settle,
               onSuccess: () => {
                 setPendingSlotId(null)
                 // Releasing needs no confirmation and no announcement - the row flips back visibly. A
@@ -793,7 +804,9 @@ export function EventSlotsBlock({
   return (
     <View style={styles.block}>
       <View style={styles.head}>
-        <Text style={styles.eyebrow}>{t("block.heading")}</Text>
+        <Text style={styles.eyebrow} accessibilityRole="header" {...headingLevel(3)}>
+          {t("block.heading")}
+        </Text>
         <Text style={styles.filled} numberOfLines={1}>
           {summary.kind === "capped" && summary.capacity !== null && summary.capacity > 0
             ? t("block.filled", { claimed: summary.claimed, capacity: summary.capacity })

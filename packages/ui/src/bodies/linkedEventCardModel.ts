@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next"
 import type { LinkedEventRef } from "@civfix/shared"
-import { sameOffsetAt, zoneShortName } from "@civfix/shared/datetime"
+import { isValidTimeZone, sameOffsetAt, zoneShortName } from "@civfix/shared/datetime"
 
 export interface LinkedEventCardModel {
   title: string
@@ -41,11 +41,14 @@ function formatter(locale: string, timeZone: string | undefined, options: Intl.D
   const key = `${locale}|${timeZone ?? ""}|${JSON.stringify(options)}`
   const cached = formatterCache.get(key)
   if (cached) return cached
+  // A bad zone falls back to the viewer's zone only; the locale stays, so one malformed row never
+  // flips the card to English.
+  const zoned = timeZone && isValidTimeZone(timeZone) ? { ...options, timeZone } : options
   let made: Intl.DateTimeFormat
   try {
-    made = new Intl.DateTimeFormat(locale, { ...options, ...(timeZone ? { timeZone } : {}) })
+    made = new Intl.DateTimeFormat(locale, zoned)
   } catch {
-    made = new Intl.DateTimeFormat("en-US", options)
+    made = new Intl.DateTimeFormat("en-US", zoned)
   }
   formatterCache.set(key, made)
   return made

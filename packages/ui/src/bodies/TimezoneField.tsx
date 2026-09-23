@@ -9,12 +9,14 @@ import {
   webTransition,
   webHover,
 } from "../theme"
-import { Text, TextLink, Icon, iconMap } from "../typography"
+import { Text, Icon, iconMap } from "../typography"
 import { TextField } from "../primitives"
 import { useLocale, useT, useViewerTimeZone } from "../i18n"
 import { zoneDisplayName } from "./calendarModel"
 
 const MAX_TIMEZONE_ROWS = 8
+
+const DAY_MS = 86_400_000
 
 const displayNames = new Map<string, string>()
 
@@ -25,8 +27,9 @@ function allTimeZones(): readonly string[] {
   return everyZone
 }
 
+// Keyed by day as well: the name carries the current offset (PST vs PDT), which a DST change moves.
 function cachedDisplayName(timeZone: string, locale: string): string {
-  const key = `${locale}|${timeZone}`
+  const key = `${Math.floor(Date.now() / DAY_MS)}|${locale}|${timeZone}`
   const cached = displayNames.get(key)
   if (cached !== undefined) return cached
   const name = zoneDisplayName(timeZone, locale)
@@ -100,9 +103,17 @@ export function TimezoneField({ value, onChange }: TimezoneFieldProps) {
           {t("timezone.caption", { zone: zoneLabel })}
         </Text>
         {onChange ? (
-          <TextLink variant="caption" onPress={() => setOpen((prev) => !prev)}>
-            {t("timezone.change")}
-          </TextLink>
+          <Pressable
+            onPress={() => setOpen((prev) => !prev)}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: open }}
+            {...focusRingProps}
+            style={(state) => [webCursorPointer, state.pressed ? styles.pressed : null]}
+          >
+            <Text variant="caption" style={styles.changeLink}>
+              {t("timezone.change")}
+            </Text>
+          </Pressable>
         ) : null}
       </View>
 
@@ -163,9 +174,9 @@ function ZoneRow({
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="button"
+      accessibilityRole="radio"
       accessibilityLabel={title}
-      accessibilityState={{ selected }}
+      accessibilityState={{ checked: selected }}
       {...focusRingProps}
       style={(state) => [
         styles.zoneRow,
@@ -204,6 +215,11 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
+  },
+  changeLink: {
+    fontFamily: t.fontFamily.bodySemiBold,
+    color: t.colors.textMuted,
+    textDecorationLine: "underline",
   },
   panel: {
     marginTop: t.space["1"],

@@ -59,7 +59,13 @@ export function SlotWindowPicker({
   const styles = useStyles()
   const { t } = useT("event-slots")
   const { locale } = useLocale()
-  const [invalidEdge, setInvalidEdge] = useState<"start" | "end" | null>(null)
+  // A refused pick is judged against the event window of that moment; once the host moves the event,
+  // the old verdict no longer applies, so the error is keyed to the window it was raised against.
+  const windowKey = `${eventStart.getTime()}|${eventEnd.getTime()}`
+  const [refused, setRefused] = useState<{ edge: "start" | "end"; windowKey: string } | null>(null)
+  const invalidEdge = refused?.windowKey === windowKey ? refused.edge : null
+  const setInvalidEdge = (edge: "start" | "end" | null) =>
+    setRefused(edge === null ? null : { edge, windowKey })
 
   const latestStart = eventEnd.getTime() - MIN_SLOT_DURATION_MS
   const earliestEnd = startsAt.getTime() + MIN_SLOT_DURATION_MS

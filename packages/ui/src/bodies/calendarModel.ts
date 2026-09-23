@@ -204,17 +204,27 @@ export function endTimeSelectable(
   )
 }
 
-export function eventDurationMs(date: Date, start: Date, end: Date): number {
-  return resolveEventEnd(date, start, end).getTime() - mergeDateTime(date, start).getTime()
+/**
+ * Real elapsed time between the start and end clocks. With `timeZone` the clocks are read in the EVENT's
+ * zone, which is where the saved window lives; without it, in the device zone. NaN when either clock does
+ * not exist in that zone (a DST gap).
+ */
+export function eventDurationMs(date: Date, start: Date, end: Date, timeZone?: string): number {
+  if (timeZone === undefined) {
+    return resolveEventEnd(date, start, end).getTime() - mergeDateTime(date, start).getTime()
+  }
+  const window = eventWindowInZone(date, start, end, timeZone)
+  return window?.end ? window.end.getTime() - window.start.getTime() : Number.NaN
 }
 
 export function durationChipFor(
   date: Date | null,
   start: Date | null,
   end: Date | null,
+  timeZone?: string,
 ): DurationChipHours | null {
   if (!date || !start || !end) return null
-  const elapsed = eventDurationMs(date, start, end)
+  const elapsed = eventDurationMs(date, start, end, timeZone)
   if (elapsed <= 0) return null
   return DURATION_CHIP_HOURS.find((h) => h * 3_600_000 === elapsed) ?? null
 }
