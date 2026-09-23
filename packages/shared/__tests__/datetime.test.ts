@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
 import {
   relativeAgo,
   eventChip,
@@ -92,6 +92,15 @@ describe("relativeAgo options + inputs", () => {
   it("returns '' for an unparseable input rather than throwing", () => {
     expect(relativeAgo("not a date", NOW)).toBe("")
     expect(relativeAgo(Number.NaN, NOW)).toBe("")
+  })
+
+  it("returns '' for an infinite or out-of-range epoch instead of 'now' or 'Infinityw'", () => {
+    const absoluteFallback = vi.fn(() => "fallback")
+    expect(relativeAgo(Number.POSITIVE_INFINITY, NOW)).toBe("")
+    expect(relativeAgo(Number.NEGATIVE_INFINITY, NOW)).toBe("")
+    expect(relativeAgo(-1e300, NOW, { absoluteFallback })).toBe("")
+    expect(relativeAgo(NOW.getTime() - 60_000, Number.POSITIVE_INFINITY)).toBe("")
+    expect(absoluteFallback).not.toHaveBeenCalled()
   })
 })
 

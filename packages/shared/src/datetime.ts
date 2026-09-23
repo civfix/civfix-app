@@ -79,7 +79,9 @@ function toEpochMs(value: Date | string | number): number | null {
     return Number.isNaN(t) ? null : t
   }
   if (typeof value === "number") {
-    return Number.isNaN(value) ? null : value
+    // Infinity and out-of-range epochs are not real times: they would render as "now" or reach
+    // absoluteFallback as an Invalid Date.
+    return Number.isNaN(new Date(value).getTime()) ? null : value
   }
   const t = Date.parse(value)
   return Number.isNaN(t) ? null : t
@@ -100,7 +102,7 @@ export function relativeAgo(
   const fromMs = toEpochMs(date)
   if (fromMs === null) return ""
   const nowMs = now === undefined ? Date.now() : now instanceof Date ? now.getTime() : now
-  if (Number.isNaN(nowMs)) return ""
+  if (!Number.isFinite(nowMs)) return ""
 
   const justNow = opts?.justNow ?? "now"
   const units = opts?.units
