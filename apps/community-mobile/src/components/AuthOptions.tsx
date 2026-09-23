@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { View, Platform } from "react-native"
 import { useRouter, useLocalSearchParams, usePathname } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
@@ -12,7 +12,7 @@ import {
 } from "@react-native-google-signin/google-signin"
 import type { OAuthProvider } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "@/theme"
-import { KeyboardRevealGroup, Text, PrimaryButton, TextField } from "@civfix/ui"
+import { KeyboardRevealGroup, Text, PrimaryButton, TextField, announce } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import {
   signInWithApple,
@@ -50,6 +50,10 @@ export function AuthOptions({
   const [emailMode, setEmailMode] = useState(false)
   const [busy, setBusy] = useState<Busy>(null)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (error) announce(error)
+  }, [error])
 
   const goNext = useCallback(() => {
     if (!shouldReplaceOnSignIn(pathname, next)) return

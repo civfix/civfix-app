@@ -15,6 +15,7 @@ import {
   TermsConfirmation,
   Text,
   TextField,
+  announce,
   makeKeyboardAwareScrollHost,
 } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
@@ -37,7 +38,14 @@ function splitName(displayName: string): { first: string; last: string } {
   return { first: parts[0]!, last: parts.slice(1).join(" ") }
 }
 
-type Availability = { checking: boolean; available: boolean | null; reason: string | null }
+type Availability = {
+  checking: boolean
+  available: boolean | null
+  reason: string | null
+  failed: boolean
+}
+
+const UNCHECKED: Availability = { checking: false, available: null, reason: null, failed: false }
 
 function FirstRunForm() {
   const { t } = useT("mobile-auth-registration")
@@ -52,7 +60,8 @@ function FirstRunForm() {
   const [first, setFirst] = useState(seeded.first)
   const [last, setLast] = useState(seeded.last)
   const [handle, setHandle] = useState("")
-  const [avail, setAvail] = useState<Availability>({ checking: false, available: null, reason: null })
+  const [avail, setAvail] = useState<Availability>(UNCHECKED)
+  const [checkAttempt, setCheckAttempt] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [ageConfirmed, setAgeConfirmed] = useState(false)
@@ -67,24 +76,32 @@ function FirstRunForm() {
 
   useEffect(() => {
     if (!handleValid) {
-      setAvail({ checking: false, available: null, reason: null })
+      setAvail(UNCHECKED)
       return
     }
     let cancelled = false
-    setAvail({ checking: true, available: null, reason: null })
+    setAvail({ ...UNCHECKED, checking: true })
     const t = setTimeout(async () => {
       try {
         const res = await api.checkHandle({ handle: trimmedHandle })
-        if (!cancelled) setAvail({ checking: false, available: res.available, reason: res.reason ?? null })
+        if (!cancelled) {
+          setAvail({ ...UNCHECKED, available: res.available, reason: res.reason ?? null })
+        }
       } catch {
-        if (!cancelled) setAvail({ checking: false, available: null, reason: null })
+        if (!cancelled) setAvail({ ...UNCHECKED, failed: true })
       }
     }, 350)
     return () => {
       cancelled = true
       clearTimeout(t)
     }
-  }, [trimmedHandle, handleValid])
+  }, [trimmedHandle, handleValid, checkAttempt])
+
+  const retryHandleCheck = useCallback(() => setCheckAttempt((n) => n + 1), [])
+
+  useEffect(() => {
+    if (error) announce(error)
+  }, [error])
 
   const onSubmit = useCallback(async () => {
     if (!canSubmit) return
@@ -95,6 +112,7 @@ function FirstRunForm() {
       setUser(res.user)
     } catch (err) {
       setError(friendlyError(t, err))
+    } finally {
       setSubmitting(false)
     }
   }, [canSubmit, trimmedHandle, displayName, setUser, t])
@@ -157,6 +175,8 @@ function FirstRunForm() {
               checking={avail.checking}
               available={available}
               taken={handleValid && avail.available === false}
+              checkFailed={handleValid && avail.failed}
+              onRetry={retryHandleCheck}
             />
 
             {error ? (
@@ -200,12 +220,16 @@ function HandleHint({
   checking,
   available,
   taken,
+  checkFailed,
+  onRetry,
 }: {
   handle: string
   valid: boolean
   checking: boolean
   available: boolean
   taken: boolean
+  checkFailed: boolean
+  onRetry: () => void
 }) {
   const { t } = useT("mobile-auth-registration")
   const th = useTheme()
@@ -223,6 +247,9 @@ function HandleHint({
   } else if (taken) {
     content = t("handle.taken", { handle })
     color = th.colors.brand.bloom
+  } else if (checkFailed) {
+    content = t("handle.check_failed")
+    color = th.colors.dangerInk
   }
   return (
     <View style={styles.hintRow}>
@@ -230,6 +257,18 @@ function HandleHint({
       <Text variant="caption" color={color}>
         {content}
       </Text>
+      {checkFailed && !checking ? (
+        <Pressable
+          onPress={onRetry}
+          accessibilityRole="button"
+          hitSlop={8}
+          style={({ pressed }) => (pressed ? styles.retryPressed : null)}
+        >
+          <Text variant="caption" color={th.colors.accentText} style={styles.retryText}>
+            {t("handle.retry")}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   )
 }
@@ -266,4 +305,6 @@ const useStyles = makeThemedStyles((t) => ({
   signOut: { alignSelf: "center", marginTop: t.space["3"] },
   signOutPressed: { opacity: 0.6 },
   signOutText: { textAlign: "center" },
+  retryText: { fontFamily: t.fontFamily.bodySemiBold },
+  retryPressed: { opacity: 0.6 },
 }))
