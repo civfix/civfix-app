@@ -171,14 +171,22 @@ export class ChatSocketCore implements ChatSocketLike {
         this.socket!.send(JSON.stringify(frame))
         return "sent"
       } catch {
-        if (!this.queueWhileClosed) return "dropped"
-        this.sendQueue.push(frame)
-        return "queued"
+        // A socket that reports OPEN but throws on send never fires onclose by itself, so a queued
+        // frame would wait for an unrelated close. Recycle it so the queue flushes on the next open.
+        this.closeSocket()
+        this.scheduleReconnect()
+        return this.enqueue(frame)
       }
     }
-    if (!this.queueWhileClosed) return "dropped"
+    const outcome = this.enqueue(frame)
+    if (outcome === "queued") this.ensureOpen()
+    return outcome
+  }
+
+  private enqueue(frame: WsClientMessage): ChatSendOutcome {
+    // Typing is ephemeral: flushed after a reconnect it would show peers a stale indicator.
+    if (!this.queueWhileClosed || frame.type === "typing") return "dropped"
     this.sendQueue.push(frame)
-    this.ensureOpen()
     return "queued"
   }
 
