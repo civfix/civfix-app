@@ -134,19 +134,29 @@ test("a PRE-WARMED viewfinder spends no location read and no network request", (
     viewfinder.indexOf("export function ReportViewfinder("),
   )
   for (const reader of readers) assert.ok(shutterFn.includes(reader))
-  const callers = viewfinder.match(/readShutterLocation\(\)/g) ?? []
-  assert.equal(callers.length, 2, "readShutterLocation is declared once and called once, at the shutter")
+  const callers = viewfinder.match(/readShutterLocation\b/g) ?? []
+  assert.equal(callers.length, 2, "readShutterLocation is declared once and handed once to locateCapture")
 })
 
 test("the SHUTTER still attaches the device fix - the location-step skip depends on it", () => {
   assert.ok(viewfinder.includes("async function readShutterLocation()"))
-  assert.ok(viewfinder.includes("const fix = await readShutterLocation()"))
-  assert.ok(
-    viewfinder.includes(
-      'fix ? { ...media, location: { lat: fix.lat, lng: fix.lng, source: "device" } } : media',
-    ),
+  assert.ok(viewfinder.includes("const located = await locateCapture(media, origin, readShutterLocation)"))
+  const take = viewfinder.slice(
+    viewfinder.indexOf("const onTakePhoto = useCallback"),
+    viewfinder.indexOf("const beginRecording = useCallback"),
   )
+  assert.ok(take.includes('}, "camera")'), "a photo shutter capture is a camera capture")
+  const record = viewfinder.slice(viewfinder.indexOf("onRecordingFinished:"), viewfinder.indexOf("onRecordingError:"))
+  assert.ok(record.includes('}, "camera")'), "a recorded video is a camera capture")
   assert.ok(viewfinder.includes("Location.requestForegroundPermissionsAsync()"))
+})
+
+test("a LIBRARY pick is emitted as a library capture, so it never takes the current device fix", () => {
+  const pick = viewfinder.slice(viewfinder.indexOf("const onPickFromLibrary = useCallback"))
+  const body = pick.slice(0, pick.indexOf("}, [busy, emitCapture])"))
+  assert.ok(body.includes("emitCapture("))
+  assert.ok(body.includes('}, "library")'))
+  assert.ok(!body.includes('"camera"'))
 })
 
 test("the photo shutter asks the library to stay silent", () => {
