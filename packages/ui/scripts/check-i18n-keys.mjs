@@ -44,17 +44,29 @@
  *   - RENAMED destructures (`const { t: tFoo } = useT(ns)`) are NOT tracked — only calls to the literal
  *     identifier `t(` are scanned. Closing that would mean parsing the destructuring pattern per file,
  *     which is the parser this check deliberately stays away from; renamed call sites are a known gap.
+ *
+ * EMPTY-VALUE CHECK: the i18next config sets `returnEmptyString: true`, so an empty value renders as
+ * nothing instead of falling back to English. That is right for a sentence fragment a locale's word order
+ * leaves empty, and wrong for anything else (an unauthored MT stub would silently blank the UI). Every
+ * empty string in any catalog therefore fails unless its `<lng>/<ns>:<key>` is in INTENTIONAL_EMPTY.
  */
 import { readdirSync, readFileSync } from "node:fs"
 import { dirname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const localesDir = join(__dirname, "..", "src", "i18n", "locales")
+const localesDir = process.env.CIVFIX_I18N_LOCALES_DIR ?? join(__dirname, "..", "src", "i18n", "locales")
 const srcDir = join(__dirname, "..", "src")
 
 const SOURCE = "en"
 const TARGETS = ["es", "de", "ko"]
+
+const INTENTIONAL_EMPTY = new Set([
+  "ko/account-delete:verify.enterPre",
+  "ko/host-ticket:consent.terms_lead",
+  "ko/messages-list:signed_out.body_before",
+  "ko/onboarding-terms:label.lead",
+])
 
 /** Collect the dotted key paths of a catalog object. Arrays are leaves (the path, not the elements). */
 function keyPaths(obj, prefix = "") {
@@ -121,6 +133,34 @@ for (const ns of namespaces) {
       if (extra.length) console.error(`EXTRA KEYS in ${lng}/${ns}.json (not in en):\n  ${extra.join("\n  ")}`)
     }
   }
+}
+
+/** Dotted paths of every empty-string leaf, including empty array elements (`path[i]`). */
+function emptyValuePaths(obj, prefix = "") {
+  const out = []
+  if (obj === null || typeof obj !== "object") return out
+  for (const [k, v] of Object.entries(obj)) {
+    const path = Array.isArray(obj) ? `${prefix}[${k}]` : prefix ? `${prefix}.${k}` : k
+    if (v === "") out.push(path)
+    else if (v !== null && typeof v === "object") out.push(...emptyValuePaths(v, path))
+  }
+  return out
+}
+
+const emptyFailures = []
+for (const lng of [SOURCE, ...TARGETS]) {
+  for (const ns of namespaces) {
+    for (const path of emptyValuePaths(readCatalog(lng, ns) ?? {})) {
+      const id = `${lng}/${ns}:${path}`
+      if (!INTENTIONAL_EMPTY.has(id)) emptyFailures.push(id)
+    }
+  }
+}
+if (emptyFailures.length) {
+  failures += emptyFailures.length
+  console.error(
+    `EMPTY VALUES (they render blank; author them, or allowlist a deliberate word-order fragment):\n  ${emptyFailures.join("\n  ")}`,
+  )
 }
 
 // ---- SOURCE-KEY CHECK: every t(...) call site under src/ must resolve against en (see module doc). ----
@@ -198,5 +238,5 @@ if (failures > 0) {
   process.exit(1)
 }
 console.log(
-  `i18n key check OK: ${namespaces.length} namespaces key-complete across ${TARGETS.join(", ")}; source t(...) call sites all resolve against en.`,
+  `i18n key check OK: ${namespaces.length} namespaces key-complete across ${TARGETS.join(", ")}; no unexpected empty values; source t(...) call sites all resolve against en.`,
 )
