@@ -16,7 +16,9 @@ function isStoredCenter(body: unknown): body is StoredCenter {
 function clearLastCenter(): void {
   try {
     storage.delete(LAST_MAP_CENTER_KEY)
-  } catch {}
+  } catch {
+    // The remembered center is a cache; an undeletable entry is rejected by the version check on read.
+  }
 }
 
 export function readLastCenter(): RememberedCenter | null {
@@ -30,7 +32,9 @@ export function readLastCenter(): RememberedCenter | null {
   try {
     const body = JSON.parse(raw) as unknown
     if (isStoredCenter(body)) return { lat: body.lat, lng: body.lng, zoom: body.zoom }
-  } catch {}
+  } catch {
+    // Unparseable JSON is treated like a stale version: dropped below, and the map opens at its default.
+  }
   clearLastCenter()
   return null
 }
@@ -40,5 +44,7 @@ export function writeLastCenter(center: RememberedCenter): void {
   if (!isStoredCenter(body)) return
   try {
     storage.set(LAST_MAP_CENTER_KEY, JSON.stringify(body))
-  } catch {}
+  } catch {
+    // Losing the remembered center only costs the next launch its viewport; never fail the map for it.
+  }
 }

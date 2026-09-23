@@ -57,6 +57,7 @@ export const nativeGeolocation: GeolocationCapability = {
         }
         subscription = sub
       } catch {
+        // The live watch is best-effort; getCurrentPosition reports failures and callers keep their last fix.
       }
     })()
     return () => {

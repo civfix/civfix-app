@@ -326,6 +326,11 @@ function MobileI18nProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+// Only the error's name is logged: its message can carry keychain paths or a notification payload.
+function errorName(err: unknown): string {
+  return err instanceof Error ? err.name : typeof err
+}
+
 function useBootstrap() {
   const hydrate = useAuthStore((s) => s.hydrate)
 
@@ -334,7 +339,9 @@ function useBootstrap() {
       useAuthStore.getState().markUnauthed()
     })
     void adoptStorageEnvironment()
-      .catch(() => false)
+      .catch((err: unknown) => {
+        console.warn("[storage-env] the storage purge failed; hydrating anyway", errorName(err))
+      })
       .finally(() => {
         void hydrate()
       })
@@ -429,7 +436,8 @@ function useNotificationDeepLinks() {
     try {
       handle(Notifications.getLastNotificationResponse())
       Notifications.clearLastNotificationResponse()
-    } catch {
+    } catch (err) {
+      console.warn("[push] the notification that launched the app could not be read", errorName(err))
     }
 
     return () => sub.remove()
