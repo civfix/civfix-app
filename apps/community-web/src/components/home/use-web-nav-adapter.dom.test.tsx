@@ -38,8 +38,12 @@ async function wait(ms: number): Promise<void> {
   })
 }
 
+// Captured before any test fakes timers: jsdom queues history traversals on its own timers, which fake
+// timers never touch, so settling must keep queueing behind them on the real clock.
+const queueTask = globalThis.setTimeout
+
 async function nextTask(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 0))
+  await new Promise((resolve) => queueTask(resolve, 0))
 }
 
 // jsdom runs history.go/back/forward as two chained zero-delay tasks and fires popstate from the second.
@@ -156,6 +160,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  vi.useRealTimers()
 })
 
 describe("mount", () => {
@@ -521,15 +526,22 @@ describe("two Backs before the first has landed", () => {
     mount()
     await drive(() => nav().push(PIN_A))
     await drive(() => nav().push(PERSON))
+    // The push has to fall inside the adapter's traversal timeout, so the clock is driven by hand.
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
     delayGo(500)
 
     await drive(() => nav().back())
-    await wait(200)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200)
+    })
     await act(async () => {
       nav().push(PIN_B)
     })
-    await wait(600)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600)
+    })
     await settle()
+    vi.useRealTimers()
 
     expect(nav().stack).toEqual([PIN_A, PIN_B])
     expect(path()).toBe("/pin/b/")
