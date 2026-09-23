@@ -76,7 +76,7 @@ export function useShareToDm(): ShareToDmApi {
             ackTimeoutMs: SEND_TIMEOUT_MS,
             queuedAckTimeoutMs: QUEUED_SEND_TIMEOUT_MS,
             openTimeoutMs: SHARE_SOCKET_OPEN_TIMEOUT_MS,
-            isAborted: () => run.aborted,
+            signal: run.signal,
           },
           { entries, body },
         )

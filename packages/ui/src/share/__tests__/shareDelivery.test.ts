@@ -116,6 +116,19 @@ const run = (socket: ChatSocketLike, entries: SharePlanEntry[], over = {}) =>
     { entries, body: "https://civfix.org/post/p1" },
   )
 
+function settleState<T>(promise: Promise<T>): { promise: Promise<T>; readonly done: boolean } {
+  const state = { promise, done: false }
+  void promise.then(
+    () => {
+      state.done = true
+    },
+    () => {
+      state.done = true
+    },
+  )
+  return state
+}
+
 beforeEach(() => {
   vi.useRealTimers()
 })
@@ -194,30 +207,36 @@ describe("a per-recipient refusal keeps the run going", () => {
 
 describe("a transport failure STOPS the run instead of timing out per recipient", () => {
   it("stops on a missing ack rather than paying the timeout ten times", async () => {
+    vi.useFakeTimers()
     const socket = new FakeSocket("open", (index) => (index === 0 ? "ack" : "silence"))
     const entries = plan(4)
-    const started = Date.now()
-    const { summary } = await run(socket, entries)
+    const settled = settleState(run(socket, entries))
+    await vi.advanceTimersByTimeAsync(ACK_MS - 1)
+    expect(settled.done).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(settled.done).toBe(true)
+    const { summary } = await settled.promise
 
     expect(socket.sent).toHaveLength(2)
     expect(summary.stopped).toBe(true)
     expect(summary.status).toBe("partial")
     expect(summary.sent.map((r) => r.id)).toEqual(["u0"])
     expect(summary.failed.map((r) => r.id)).toEqual(["u1", "u2", "u3"])
-    expect(Date.now() - started).toBeLessThan(ACK_MS * 3)
   })
 
   it("stops at once on a server error frame that names no room", async () => {
+    vi.useFakeTimers()
     const socket = new FakeSocket("open", (index) => (index === 0 ? "ack" : "transport-error"))
     const entries = plan(4)
-    const started = Date.now()
-    const { summary } = await run(socket, entries)
+    const settled = settleState(run(socket, entries))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(settled.done).toBe(true)
+    const { summary } = await settled.promise
 
     expect(socket.sent).toHaveLength(2)
     expect(summary.stopped).toBe(true)
     expect(summary.sent.map((r) => r.id)).toEqual(["u0"])
     expect(summary.failed.map((r) => r.id)).toEqual(["u1", "u2", "u3"])
-    expect(Date.now() - started).toBeLessThan(ACK_MS)
   })
 
   it("stops when the socket drops the frame", async () => {
@@ -244,18 +263,18 @@ describe("a transport failure STOPS the run instead of timing out per recipient"
 describe("the run is abortable", () => {
   it("stops before the next send and keeps what already went out", async () => {
     const socket = new FakeSocket()
-    let aborted = false
+    const controller = new AbortController()
     const entries = plan(4)
     const { summary } = await runShareToDm(
       {
         socket,
         resolveRoom: (id) => {
-          if (id === "u2") aborted = true
+          if (id === "u2") controller.abort()
           return Promise.resolve(`room-${id}`)
         },
         ackTimeoutMs: ACK_MS,
         openTimeoutMs: OPEN_MS,
-        isAborted: () => aborted,
+        signal: controller.signal,
       },
       { entries, body: "b" },
     )
@@ -273,7 +292,7 @@ describe("the run is abortable", () => {
         socket,
         resolveRoom: room,
         ackTimeoutMs: ACK_MS,
-        isAborted: () => true,
+        signal: AbortSignal.abort(),
       },
       { entries: plan(3), body: "b" },
     )
@@ -281,6 +300,71 @@ describe("the run is abortable", () => {
     expect(summary.stopped).toBe(true)
     expect(socket.retained).toBe(1)
     expect(socket.released).toBe(1)
+  })
+})
+
+describe("an abort ends the run at once, so a reopened sheet can send straight away", () => {
+  it("cancels the ack wait instead of sitting out the timeout", async () => {
+    vi.useFakeTimers()
+    const socket = new FakeSocket("open", "silence")
+    const controller = new AbortController()
+    const settled = settleState(run(socket, plan(2), { ackTimeoutMs: ACK_MS * 100, signal: controller.signal }))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(socket.sent).toHaveLength(1)
+    expect(settled.done).toBe(false)
+    controller.abort()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(settled.done).toBe(true)
+    const { summary } = await settled.promise
+    expect(summary.stopped).toBe(true)
+    expect(socket.sent).toHaveLength(1)
+    expect(socket.subscriberCount).toBe(0)
+    expect(socket.released).toBe(1)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it("cancels the wait for a socket that is still connecting", async () => {
+    vi.useFakeTimers()
+    const socket = new FakeSocket("connecting")
+    const controller = new AbortController()
+    const settled = settleState(run(socket, plan(1), { openTimeoutMs: ACK_MS * 100, signal: controller.signal }))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(settled.done).toBe(false)
+    controller.abort()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(settled.done).toBe(true)
+    expect(socket.sent).toEqual([])
+    expect(socket.released).toBe(1)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it("stops waiting on a thread that is still opening, and a late failure of it stays handled", async () => {
+    vi.useFakeTimers()
+    const socket = new FakeSocket()
+    const controller = new AbortController()
+    let failOpen: (err: Error) => void = () => undefined
+    const opening = new Promise<string | null>((_, reject) => {
+      failOpen = reject
+    })
+    const settled = settleState(run(socket, plan(1), { resolveRoom: () => opening, signal: controller.signal }))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(settled.done).toBe(false)
+    controller.abort()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(settled.done).toBe(true)
+    const { summary, resolved } = await settled.promise
+    expect(summary.stopped).toBe(true)
+    expect(resolved.size).toBe(0)
+    failOpen(new Error("late"))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(socket.sent).toEqual([])
+  })
+
+  it("aborts a run begun from makeShareRuns through its token's signal", () => {
+    const runs = makeShareRuns()
+    const token = runs.begin()
+    runs.abortAll()
+    expect(token.signal.aborted).toBe(true)
   })
 })
 
@@ -343,11 +427,15 @@ describe("a frame the socket queued for its reconnect", () => {
   })
 
   it("keeps the ordinary ack window for a frame that was written", async () => {
+    vi.useFakeTimers()
     const socket = new FakeSocket("open", "silence")
-    const started = Date.now()
-    const { summary } = await run(socket, plan(1), { queuedAckTimeoutMs: ACK_MS * 50 })
+    const settled = settleState(run(socket, plan(1), { queuedAckTimeoutMs: ACK_MS * 50 }))
+    await vi.advanceTimersByTimeAsync(ACK_MS - 1)
+    expect(settled.done).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(settled.done).toBe(true)
+    const { summary } = await settled.promise
     expect(summary.stopped).toBe(true)
-    expect(Date.now() - started).toBeLessThan(ACK_MS * 10)
   })
 })
 

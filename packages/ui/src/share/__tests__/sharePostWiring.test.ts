@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween, sliceFrom } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (source: string): string =>
@@ -228,8 +229,9 @@ describe("a send in flight can never seal the sheet", () => {
   it("keys completion to the run, so reopening the sheet cannot re-attach a cancelled one", () => {
     expect(SESSION).toMatch(/const runId = \+\+runSeq\.current\s*liveRun\.current = runId/)
     expect(SESSION).not.toContain("cancelledRef")
-    const reopen = SESSION.slice(SESSION.indexOf("useEffect(() => {\n    if (!visible) return"))
-    expect(reopen.slice(0, reopen.indexOf("}, [visible])"))).not.toContain("liveRun")
+    const reopen = sliceBetween(SESSION, "useEffect(() => {\n    if (!visible) return", "}, [visible])")
+    expect(reopen).toContain("setSelected(NO_SELECTION)")
+    expect(reopen).not.toContain("liveRun")
   })
 
   it("starts at most one run at a time, whatever fires Send twice before a re-render", () => {
@@ -253,14 +255,14 @@ describe("the DM send path", () => {
   })
 
   it("stops the whole run on any transport failure, and only continues past a server refusal", () => {
-    expect(DELIVERY).toMatch(/if \(!\(await waitForSocketOpen\(deps\.socket, openTimeoutMs\)\)\) \{\s*stopped = true\s*break/)
+    expect(DELIVERY).toMatch(/if \(!\(await waitForSocketOpen\(deps\.socket, openTimeoutMs, deps\.signal\)\)\) \{\s*stopped = true\s*break/)
     expect(DELIVERY).toMatch(/if \(outcome === "dropped"\) \{\s*waiter\.cancel\(\)\s*stopped = true\s*break/)
     expect(DELIVERY).toMatch(/if \(verdict === "rejected"\) \{\s*outcomes\.set\(entry\.clientId, "failed"\)\s*continue/)
     expect(DELIVERY).toMatch(/stopped = true\s*break\s*\}\s*\} finally/)
   })
 
   it("checks the abort flag before resolving a thread and again before writing a frame", () => {
-    const loop = DELIVERY.slice(DELIVERY.indexOf("for (const entry of entries)"))
+    const loop = sliceFrom(DELIVERY, "for (const entry of entries)")
     const checks = loop.match(/if \(aborted\(\)\) \{/g) ?? []
     expect(checks.length).toBeGreaterThanOrEqual(2)
   })
@@ -279,7 +281,7 @@ describe("the DM send path", () => {
 
   it("gives every run its own abort token instead of one flag each send resets", () => {
     expect(HOOK).toContain("const run = runs.begin()")
-    expect(HOOK).toContain("isAborted: () => run.aborted")
+    expect(HOOK).toContain("signal: run.signal")
     expect(HOOK).toMatch(/\} finally \{\s*runs\.end\(run\)/)
     expect(HOOK).not.toContain("abortedRef")
   })
