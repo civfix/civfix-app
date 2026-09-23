@@ -146,7 +146,7 @@ describe("APP-A11Y-019 StatTile is one readable element", () => {
   it("speaks a word for an unknown value instead of the dash", () => {
     expect(statTileSpokenLabel("Check-ins", null, "Not available")).toBe("Check-ins: Not available")
     expect(statTileSpokenLabel("Check-ins", "12", "Not available")).toBe("Check-ins: 12")
-    expect(statTileSpokenLabel("Check-ins", null, "Not available")).not.toContain(STAT_VALUE_UNKNOWN)
+    expect(statTileSpokenLabel("Signups", null, "Not available")).not.toContain(STAT_VALUE_UNKNOWN)
   })
 
   it("groups the tile without the non-ARIA summary role", () => {
