@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Platform,
   type AccessibilityActionEvent,
+  type PressableStateCallbackType,
   type ViewStyle,
 } from "react-native"
 import { TextInput } from "../primitives/TextInput"
@@ -56,6 +57,7 @@ import { HeaderProfileButton } from "./HeaderProfileButton"
 import { matchesThreadQuery } from "./messagesListModel"
 import { idKeyExtractor, openThread, openNewGroup, openNewChannel } from "./navHelpers"
 import { useRowHover } from "./rowHover"
+import { isCoarsePointer } from "../shell/webMedia"
 import { useTickingListTimeAgo } from "./useListTimeAgo"
 
 type TFn = ReturnType<typeof useT>["t"]
@@ -83,6 +85,16 @@ const ROW_MENU_HIT_SLOP = (MIN_TOUCH_TARGET - ROW_MENU_CHIP) / 2
 const SWIPE_ACTION_GLYPH = 18
 
 const IS_WEB = Platform.OS === "web"
+
+/**
+ * The row "More" chip is always mounted on web, because hover alone left keyboard, screen-reader and
+ * touch-browser users with no path to mute, mark read or delete (rn-web ignores accessibilityActions).
+ * It stays visible on a coarse pointer, where there is no hover to reveal it.
+ */
+function rowMenuChipShown(state: PressableStateCallbackType, hoveredOrOpen: boolean): boolean {
+  if (hoveredOrOpen || isCoarsePointer()) return true
+  return (state as PressableStateCallbackType & { focused?: boolean }).focused === true
+}
 const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB
   ? ({ outlineOffset: -(FOCUS_RING_WIDTH + FOCUS_RING_OFFSET) } as unknown as ViewStyle)
   : {}
@@ -436,7 +448,7 @@ const ThreadRow = React.memo(function ThreadRow({
       ) : (
         rowContent
       )}
-      {IS_WEB && (hovered || menuOpen) ? (
+      {IS_WEB ? (
         <View style={styles.menuHost}>
           <Pressable
             ref={menuRef}
@@ -452,6 +464,7 @@ const ThreadRow = React.memo(function ThreadRow({
             style={(state) => [
               styles.menuChip,
               webTransition,
+              rowMenuChipShown(state, hovered || menuOpen) ? null : styles.menuChipConcealed,
               webHover(state) ? styles.menuChipHovered : null,
               state.pressed ? styles.menuChipPressed : null,
             ]}
@@ -768,6 +781,9 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
+  },
+  menuChipConcealed: {
+    opacity: 0,
   },
   menuChipHovered: {
     backgroundColor: t.colors.surfaceTint,

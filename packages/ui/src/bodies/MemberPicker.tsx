@@ -5,7 +5,7 @@ import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { Avatar, EmptyState } from "../primitives"
+import { Avatar, EmptyState, LoadingState } from "../primitives"
 import { useUserSearch, normalizeUserSearchTerm } from "../data"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
@@ -113,6 +113,7 @@ export function MemberPicker({
   const th = useTheme()
   const { FlatList } = useScrollHost()
   const { t } = useT("group-create")
+  const { t: tCommon } = useT("common")
   const [query, setQuery] = useState("")
   const [focused, setFocused] = useState(false)
   const search = useUserSearch(query)
@@ -195,7 +196,16 @@ export function MemberPicker({
             title={t("empty.prompt.title")}
             body={emptyPromptBody ?? t("empty.prompt.body")}
           />
-        ) : searchPending ? null : search.isError ? (
+        ) : searchPending ? (
+          <View
+            accessible
+            accessibilityRole="progressbar"
+            accessibilityLabel={tCommon("loading")}
+            accessibilityState={{ busy: true }}
+          >
+            <LoadingState skeleton="person" rows={3} />
+          </View>
+        ) : search.isError ? (
           <EmptyState
             variant="detail"
             tone="neutral"

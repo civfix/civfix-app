@@ -220,6 +220,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
                     <Text
                       key={`${segment.userId}-${index}`}
                       style={styles.bodyMention}
+                      accessibilityRole="link"
                       onPress={(event) => {
                         stopPress(event)
                         openPerson(segment.userId)

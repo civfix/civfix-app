@@ -246,6 +246,7 @@ export function ThreadFocalPost({
               <Text
                 key={`${segment.userId}-${index}`}
                 style={styles.bodyMention}
+                accessibilityRole="link"
                 onPress={() => openPerson(segment.userId)}
               >
                 {segment.text}
