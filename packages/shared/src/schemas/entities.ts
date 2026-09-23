@@ -828,7 +828,7 @@ export const PostViewerSchema = z.object({
 })
 export type PostViewer = z.infer<typeof PostViewerSchema>
 
-export const PostDTOSchema = z.object({
+const PostDTOObjectSchema = z.object({
   id: IdSchema,
   author: PersonDTOSchema,
   /**
@@ -851,7 +851,9 @@ export const PostDTOSchema = z.object({
   replyTo: PostRefDTOSchema.nullable().optional(),
   threadRootId: IdSchema.nullable().optional(),
 })
-export type PostDTO = z.infer<typeof PostDTOSchema>
+export type PostDTO = z.infer<typeof PostDTOObjectSchema>
+
+export const PostDTOSchema: z.ZodType<PostDTO, z.ZodTypeDef, unknown> = PostDTOObjectSchema
 
 
 export const ChatMessageKindSchema = z.enum([
