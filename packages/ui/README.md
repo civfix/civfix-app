@@ -264,8 +264,8 @@ override to add and no version to adopt: `apps/community-web` and `apps/communit
 next reload. Verify a single React Native with `pnpm why react-native` (expect exactly one).
 
 THE DIST-TYPES RULE (the single most important gotcha): bundlers read the source live, but consumers
-TYPECHECK against `dist-types/`, so stale declarations produce phantom type errors — or phantom green
-— against the previous `@civfix/ui` shape. Turbo orders this for you (`typecheck`, `lint`, `test` and
+TYPECHECK against `dist-types/`, so stale declarations produce phantom type errors (or phantom green)
+against the previous `@civfix/ui` shape. Turbo orders this for you (`typecheck`, `lint`, `test` and
 `dev` all `dependsOn: ["^build"]`), so run the task through turbo rather than calling `tsc` directly:
 
 ```sh

@@ -196,7 +196,7 @@ prints which branch it took either way. The preview Function makes the SAME call
 (`shouldNoindex` in `functions/_preview-core.ts`), so a staging share card carries the meta tag even
 though Cloudflare does not apply `_headers` to Function responses. Both control files are annotated
 with the full rationale, all verified against `wrangler pages dev`. None of this affects `next dev` or
-a local static-server preview — Cloudflare consumes these only at deploy time.
+a local static-server preview; Cloudflare consumes these only at deploy time.
 
 ## Deploy
 
@@ -210,7 +210,7 @@ release always deploys.
 
 The Pages config lives in this app, not at the repo root: `apps/community-web/wrangler.jsonc` supplies
 the project name and `pages_build_output_dir: "out"`, and `wrangler` picks up the sibling
-`apps/community-web/functions/` dir relative to its cwd — which is why the workflow's deploy step runs
+`apps/community-web/functions/` dir relative to its cwd, which is why the workflow's deploy step runs
 with `working-directory: apps/community-web`. The same layout makes `wrangler pages dev` serve `out/`
 through the real Pages routing engine.
 

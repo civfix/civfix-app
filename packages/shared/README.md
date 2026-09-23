@@ -20,7 +20,7 @@ consumable from Next.js (web), Metro (React Native), and Node.
 
 Inside this repo, `apps/community-web` and `apps/community-mobile` take it as `"@civfix/shared":
 "workspace:*"`. Consumers resolve its `exports` from the BUILT `dist` (gitignored), so it must be
-built before anything can resolve it — turbo's `^build` handles that for every root task, and the
+built before anything can resolve it; turbo's `^build` handles that for every root task, and the
 mobile app's `postinstall` runs `pnpm --filter @civfix/shared build` so EAS builders get one too.
 
 Outside this repo (`civfix-backend`'s `services/api` + `services/media-worker`, `civfix-admin`, the
@@ -149,7 +149,7 @@ it is the full runbook. In short:
    `pnpm changeset publish --no-git-tag` (authenticated by the `NPM_TOKEN` repo secret for the
    `ci-publisher` account), which publishes when the version is ahead of the registry.
 4. Bump the `@civfix/shared` range in every consumer OUTSIDE this repo (civfix-backend x2 manifests,
-   civfix-admin, the gov plane) and refresh its lockfile. The two apps in this repo need nothing —
+   civfix-admin, the gov plane) and refresh its lockfile. The two apps in this repo need nothing:
    they take `workspace:*`. No consumer may ever depend on `@civfix/ui`.
 
 The contract's versions and tags are package-scoped (`@civfix/shared@X.Y.Z`). A `vX.Y.Z` GitHub

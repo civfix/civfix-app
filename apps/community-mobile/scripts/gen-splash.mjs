@@ -70,7 +70,7 @@ function wordmarkPaths(cx, baselineY, fontSize) {
 /**
  * Splash: the per-letter "civfix" wordmark (real Baloo 2 800 glyph paths), centered on a transparent
  * canvas. The field behind it is the splash backgroundColor in app.config.js (the paper token, one
- * value per scheme) — never painted here, or the light asset would show a bright box in dark mode.
+ * value per scheme). It is never painted here, or the light asset would show a bright box in dark mode.
  */
 function splashSvg(size) {
   // Larger wordmark so the logo reads at a comfortable size once `contain`-fit on a tall phone (the
