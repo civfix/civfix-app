@@ -100,6 +100,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     userLocation = null,
     showUserLocation = false,
     onRegionChange,
+    onUserCameraMove,
     onPressPin,
     onPressCleanup,
     onPressCluster,
@@ -143,6 +144,8 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
   const onRegionChangeRef = useRef(onRegionChange)
   onRegionChangeRef.current = onRegionChange
+  const onUserCameraMoveRef = useRef(onUserCameraMove)
+  onUserCameraMoveRef.current = onUserCameraMove
 
   const initialCenterRef = useRef(initialCenter)
   const initialViewState = useMemo(
@@ -230,6 +233,13 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       commitRegion({ west, south, east, north }, event.nativeEvent.zoom)
     },
     [commitRegion],
+  )
+
+  const handleRegionWillChange = useCallback(
+    (event: { nativeEvent: ViewStateChangeEvent }) => {
+      if (event.nativeEvent.userInteraction) onUserCameraMoveRef.current?.()
+    },
+    [],
   )
 
   const handleMapLoad = useCallback(() => {
@@ -366,6 +376,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       attributionPosition={{ bottom: insets.bottom + 96, right: 8 }}
       compass={false}
       onDidFinishLoadingMap={handleMapLoad}
+      onRegionWillChange={handleRegionWillChange}
       onRegionDidChange={handleRegion}
       onPress={handleMapPress}
       onLongPress={handleMapLongPress}

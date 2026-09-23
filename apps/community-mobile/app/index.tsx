@@ -197,6 +197,10 @@ export default function MapHomeScreen() {
     [beginCameraRequest, replayPendingMapTarget],
   )
 
+  const onUserCameraMove = useCallback(() => {
+    beginCameraRequest()
+  }, [beginCameraRequest])
+
   useAndroidBackHandler()
 
   const centerOnTarget = useCallback(
@@ -490,6 +494,7 @@ export default function MapHomeScreen() {
       <ManagedMap
         onMapHandle={setMapHandle}
         onInstanceRegionChange={onRegionChange}
+        onUserCameraMove={onUserCameraMove}
         initialCenter={mapSeed}
         reports={pins}
         reportAggregates={reportAggregates}
@@ -510,6 +515,7 @@ export default function MapHomeScreen() {
     seedCenter,
     setMapHandle,
     onRegionChange,
+    onUserCameraMove,
     location.coords,
     location.permission,
     pins,

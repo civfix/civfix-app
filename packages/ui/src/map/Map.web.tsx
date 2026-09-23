@@ -114,6 +114,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     userLocation = null,
     showUserLocation = false,
     onRegionChange,
+    onUserCameraMove,
     onPressPin,
     onPressCleanup,
     onPressCluster,
@@ -153,6 +154,8 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
 
   const onRegionChangeRef = React.useRef(onRegionChange)
   onRegionChangeRef.current = onRegionChange
+  const onUserCameraMoveRef = React.useRef(onUserCameraMove)
+  onUserCameraMoveRef.current = onUserCameraMove
   const onPressMapRef = React.useRef(onPressMap)
   onPressMapRef.current = onPressMap
   const onPressPinRef = React.useRef(onPressPin)
@@ -372,6 +375,9 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       syncViewport()
     })
     map.on("moveend", syncViewport)
+    map.on("movestart", (e) => {
+      if (e.originalEvent) onUserCameraMoveRef.current?.()
+    })
 
     const blockedTarget = (target: EventTarget | null): boolean => {
       if (pickActiveRef.current) return true

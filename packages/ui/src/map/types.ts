@@ -68,6 +68,7 @@ export interface MapProps {
    * the Map reclusters locally on zoom with no network, which is what keeps zoom/merge smooth.
    */
   onRegionChange?: (bbox: BBox, zoom: number) => void
+  onUserCameraMove?: () => void
   /** A report pin was tapped (the app opens the full report detail). */
   onPressPin?: (id: string) => void
   /**

@@ -6,6 +6,10 @@ import { FIRST_FIX_TIMEOUT_MS, GPS_TIMEOUT_MS } from "../src/lib/withTimeout.ts"
 const hook = readFileSync(new URL("../src/hooks/useUserLocation.ts", import.meta.url), "utf8")
 const home = readFileSync(new URL("../app/index.tsx", import.meta.url), "utf8")
 const timeouts = readFileSync(new URL("../src/lib/withTimeout.ts", import.meta.url), "utf8")
+const nativeMap = readFileSync(
+  new URL("../../../packages/ui/src/map/Map.native.tsx", import.meta.url),
+  "utf8",
+)
 
 const refreshBody = hook.slice(
   hook.indexOf("const refresh = useCallback("),
@@ -64,4 +68,14 @@ test("the silent adoption effect stays latched off by a locate and never waits f
 test("the first-fix cap lives beside the GPS cap and outlasts it", () => {
   assert.match(timeouts, /export const FIRST_FIX_TIMEOUT_MS = /)
   assert.ok(FIRST_FIX_TIMEOUT_MS > GPS_TIMEOUT_MS)
+})
+
+test("a user map gesture claims a newer camera generation, which strands the late first fix", () => {
+  assert.match(home, /const onUserCameraMove = useCallback\(\(\) => \{\n\s+beginCameraRequest\(\)\n\s+\}, \[beginCameraRequest\]\)/)
+  assert.match(home, /onUserCameraMove=\{onUserCameraMove\}/)
+})
+
+test("the native seam reports only user-driven camera starts", () => {
+  assert.match(nativeMap, /onRegionWillChange=\{handleRegionWillChange\}/)
+  assert.match(nativeMap, /if \(event\.nativeEvent\.userInteraction\) onUserCameraMoveRef\.current\?\.\(\)/)
 })
