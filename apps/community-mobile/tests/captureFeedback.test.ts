@@ -26,7 +26,6 @@ test("a failed capture tells the user, with an error toast and an error haptic",
 test("every capture path that can fail reports it instead of only clearing the spinner", () => {
   assert.match(callbackBody("onTakePhoto"), /catch \{\s*reportCaptureFailure\("error\.photo"\)\s*\}/)
   assert.match(callbackBody("onPickFromLibrary"), /catch \{\s*reportCaptureFailure\("error\.library"\)\s*\}/)
-  assert.match(callbackBody("onToggleRecord"), /catch \{\s*setRecordingState\(false\)\s*reportCaptureFailure\("error\.recording"\)\s*\}/)
 
   const onError = viewfinder.slice(viewfinder.indexOf("onRecordingError: () => {"))
   assert.match(
@@ -36,12 +35,24 @@ test("every capture path that can fail reports it instead of only clearing the s
   assert.doesNotMatch(viewfinder, /catch \{\s*setBusy\(false\)\s*\}/)
 })
 
+test("a user stop that races the hard stop never shows a false failure", () => {
+  const toggle = callbackBody("onToggleRecord")
+  const start = toggle.indexOf("if (recordingRef.current) {")
+  assert.ok(start > -1)
+  const end = toggle.indexOf("return", start)
+  assert.ok(end > start)
+  const stopBranch = toggle.slice(start, end)
+  assert.match(stopBranch, /clearHardStop\(\)\s*setBusy\(true\)\s*stopRecordingQuietly\(cameraRef\.current\)/)
+  assert.doesNotMatch(stopBranch, /reportCaptureFailure/)
+  assert.doesNotMatch(toggle, /await cameraRef\.current\.stopRecording\(\)/)
+})
+
 test("cleanup stops share one justified quiet-stop helper instead of anonymous no-op catches", () => {
   assert.doesNotMatch(viewfinder, /\.catch\(\(\) => \{\}\)/)
   const helper = viewfinder.slice(viewfinder.indexOf("function stopRecordingQuietly"))
   assert.match(viewfinder, /\/\/ .*onRecordingError\.\nfunction stopRecordingQuietly/)
   assert.match(helper, /camera\?\.stopRecording\(\)\.catch\(\(\) => undefined\)/)
-  assert.equal((viewfinder.match(/stopRecordingQuietly\(cameraRef\.current\)/g) ?? []).length, 3)
+  assert.equal((viewfinder.match(/stopRecordingQuietly\(cameraRef\.current\)/g) ?? []).length, 4)
 })
 
 test("the shutter exposes its disabled and busy state to screen readers", () => {

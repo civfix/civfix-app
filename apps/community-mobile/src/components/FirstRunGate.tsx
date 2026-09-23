@@ -28,6 +28,7 @@ const { ScrollView: FirstRunScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCR
 const DISPLAY_NAME_MAX = 80
 const FIRST_NAME_MAX = 40
 const LAST_NAME_MAX = DISPLAY_NAME_MAX - FIRST_NAME_MAX - 1
+const MIN_TOUCH_TARGET = 44
 
 export function FirstRunGate() {
   const status = useAuthStore((s) => s.status)
@@ -111,6 +112,10 @@ function FirstRunForm() {
   useEffect(() => {
     if (error) announce(error)
   }, [error])
+
+  useEffect(() => {
+    if (avail.failed) announce(t("handle.check_failed"))
+  }, [avail.failed, t])
 
   const onSubmit = useCallback(async () => {
     if (!canSubmit) return
@@ -270,8 +275,7 @@ function HandleHint({
         <Pressable
           onPress={onRetry}
           accessibilityRole="button"
-          hitSlop={8}
-          style={({ pressed }) => (pressed ? styles.retryPressed : null)}
+          style={({ pressed }) => [styles.retryTarget, pressed ? styles.retryPressed : null]}
         >
           <Text variant="caption" color={th.colors.accentText} style={styles.retryText}>
             {t("handle.retry")}
@@ -314,6 +318,7 @@ const useStyles = makeThemedStyles((t) => ({
   signOut: { alignSelf: "center", marginTop: t.space["3"] },
   signOutPressed: { opacity: 0.6 },
   signOutText: { textAlign: "center" },
+  retryTarget: { minHeight: MIN_TOUCH_TARGET, justifyContent: "center", paddingHorizontal: t.space["2"] },
   retryText: { fontFamily: t.fontFamily.bodySemiBold },
   retryPressed: { opacity: 0.6 },
 }))

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native"
 import { Icon, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
@@ -16,15 +16,18 @@ export function BootOfflineGate() {
   const styles = useStyles.for(LAUNCH_SCHEME)
   const signOut = useAuthStore((s) => s.signOut)
   const [signingOut, setSigningOut] = useState(false)
+  const inFlight = useRef(false)
   const onSignOut = useCallback(async () => {
-    if (signingOut) return
+    if (inFlight.current) return
+    inFlight.current = true
     setSigningOut(true)
     try {
       await signOut()
     } finally {
+      inFlight.current = false
       setSigningOut(false)
     }
-  }, [signOut, signingOut])
+  }, [signOut])
 
   return (
     <View style={styles.gate}>

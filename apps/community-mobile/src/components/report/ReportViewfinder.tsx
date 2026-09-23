@@ -356,12 +356,7 @@ export function ReportViewfinder({
     if (recordingRef.current) {
       clearHardStop()
       setBusy(true)
-      try {
-        await cameraRef.current.stopRecording()
-      } catch {
-        setRecordingState(false)
-        reportCaptureFailure("error.recording")
-      }
+      stopRecordingQuietly(cameraRef.current)
       return
     }
 
@@ -373,7 +368,7 @@ export function ReportViewfinder({
       return
     }
     beginRecording()
-  }, [audioEnabled, beginRecording, busy, clearHardStop, mic, reportCaptureFailure, setRecordingState])
+  }, [audioEnabled, beginRecording, busy, clearHardStop, mic])
 
   const onPickFromLibrary = useCallback(async () => {
     if (busy) return

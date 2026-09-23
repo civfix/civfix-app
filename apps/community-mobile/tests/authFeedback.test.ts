@@ -44,3 +44,21 @@ test("a failed username check says so and offers a retry instead of leaving Cont
   assert.match(hint, /onPress=\{onRetry\}/)
   assert.match(hint, /\{t\("handle\.retry"\)\}/)
 })
+
+test("a failed username check is announced, and its retry is a full-size touch target", () => {
+  assert.match(
+    firstRun,
+    /useEffect\(\(\) => \{\s*if \(avail\.failed\) announce\(t\("handle\.check_failed"\)\)\s*\}, \[avail\.failed, t\]\)/,
+  )
+
+  const hintStart = firstRun.indexOf("function HandleHint(")
+  assert.ok(hintStart > -1)
+  const retryStart = firstRun.indexOf("onPress={onRetry}", hintStart)
+  assert.ok(retryStart > hintStart)
+  const retryEnd = firstRun.indexOf("</Pressable>", retryStart)
+  assert.ok(retryEnd > retryStart)
+  const retry = firstRun.slice(retryStart, retryEnd)
+  assert.match(retry, /styles\.retryTarget/)
+  assert.match(firstRun, /const MIN_TOUCH_TARGET = 44\n/)
+  assert.match(firstRun, /retryTarget: \{[^}]*minHeight: MIN_TOUCH_TARGET/)
+})
