@@ -4,18 +4,12 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
-/**
- * Button primitive themed to the warm civfix palette. Variants map to design tokens via the
- * Tailwind semantic colors (primary = bloom/coral, accent = sun, secondary = paper2).
- */
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-token-14 font-semibold transition-colors duration-d2 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-paper disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        // Coral primary CTA (Report an issue).
         primary: "bg-primary text-primary-foreground shadow-s1 hover:bg-bloom-600",
-        // Sun-yellow CTA with ink text (Host an event).
         sun: "bg-sun-500 text-ink shadow-s1 hover:bg-sun-600",
         secondary: "bg-secondary text-secondary-foreground hover:bg-ink-5",
         outline: "border border-ink-5 bg-cardflat text-ink hover:bg-paper2",

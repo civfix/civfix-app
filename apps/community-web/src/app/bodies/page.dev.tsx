@@ -1,11 +1,8 @@
 "use client"
 
-// STAGE 4 SLICE 1 BODIES GALLERY route (UI-unification, documents/18-ui-unification.md).
-//
-// An isolated, non-product route that renders the shared @civfix/ui People/Profile bodies through
-// react-native-web against fake data, so slice 1 can be VISUALLY VERIFIED at /bodies at both
-// breakpoints with no backend. Loaded via next/dynamic(ssr:false) so the RNW runtime mounts client-side
-// only. A `.dev.tsx` route: only `next dev` serves it (next.config.mjs pageExtensionsFor).
+// Loaded with ssr: false so the react-native-web runtime mounts client-side only and never runs
+// during the static export. Only `next dev` serves `.dev.tsx` routes (pageExtensionsFor in
+// next.config.mjs).
 
 import dynamic from "next/dynamic"
 

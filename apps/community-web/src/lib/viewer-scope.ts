@@ -14,13 +14,11 @@ function viewerIdOf(state: AuthState): string | null {
 }
 
 /**
- * Shared-device safety: what this browser holds for a signed-in viewer (the persisted and in-memory
- * query caches, the anonymous-report claim handoff they saved, a locale change still waiting to reach
- * their account, every draft in @civfix/ui) is dropped the moment that viewer is confirmed gone:
- * sign-out, a 401 that ended the session, a live "not signed in" answer, or a different account
- * signing in. A guest signing in keeps the claim handoff, because claiming
- * their own anonymous report is exactly what that handoff is for; the handoff then belongs to the account a
- * live session answer confirms, so that account's departure purges it.
+ * Shared-device safety: everything this browser holds for a signed-in viewer (query caches, their claim
+ * handoff, a pending locale sync, every @civfix/ui draft) is dropped the moment that viewer is confirmed
+ * gone: sign-out, a 401 that ended the session, a live "not signed in" answer, or another account
+ * signing in. A guest signing in keeps the claim handoff, since claiming their own anonymous report is
+ * what it is for; it then belongs to the confirmed account and leaves with it.
  */
 export function installViewerScope(queryClient: QueryClient): () => void {
   const initial = useAuthStore.getState()

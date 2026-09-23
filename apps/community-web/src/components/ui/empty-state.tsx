@@ -6,18 +6,8 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 /**
- * The shared empty / error / prompt panel used across the app.
- *
- * Two families collapse into one component via the `size` variant:
- *  - "sm"   == the sidebar section placeholder (rounded-md dashed panel, body text only).
- *  - "md"   == the full dashed panel (rounded-lg, px-6 py-12) with an optional tinted icon bubble,
- *              a display-font title, a body line, and an optional CTA. This is the ~px-6 py-12 markup
- *              that was hand-duplicated across cleanups, people, profiles, reports, claim, host, etc.
- *  - "card" == the same md layout WITHOUT the dashed border, for use inside an existing bordered card
- *              (the inbox and notifications empty states sit inside a card already).
- *
- * The icon is passed as a fully-formed element (e.g. `<CalendarX2 className="h-7 w-7" />`) so each
- * call site keeps its exact icon sizing; only the tinted bubble wrapper is standardized here.
+ * "card" is the md layout without the dashed border, for use inside an already bordered card. The icon
+ * is passed as a fully formed element so each call site keeps its exact icon sizing.
  */
 const panelVariants = cva("text-center", {
   variants: {
@@ -58,7 +48,6 @@ const bodyVariants = cva("mx-auto max-w-sm text-ink-3", {
   },
 })
 
-/** Background/foreground tints for the icon bubble (token-driven; no palette hexes). */
 const iconToneClasses: Record<NonNullable<EmptyStateProps["iconTone"]>, string> = {
   neutral: "bg-paper2 text-ink-3",
   sun: "bg-sun-100 text-sun-600",
@@ -79,7 +68,6 @@ export interface EmptyStateProps extends VariantProps<typeof panelVariants> {
    */
   titleAs?: "h1" | "h2" | "h3" | "h4"
   body?: React.ReactNode
-  /** A <Button> or link rendered under the body (md/card), or under the text (sm). */
   action?: React.ReactNode
   className?: string
 }
@@ -94,7 +82,6 @@ export function EmptyState({
   size = "md",
   className,
 }: EmptyStateProps) {
-  // The sidebar (sm) variant is body + optional action only, with tighter action spacing.
   if (size === "sm") {
     return (
       <div className={cn(panelVariants({ size }), className)}>

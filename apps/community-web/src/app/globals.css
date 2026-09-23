@@ -1,16 +1,11 @@
 /*
- * Global styles for community-web.
+ * The shadcn/ui semantic theme. Every value is the HSL form of a hex in @civfix/shared tokens; the
+ * trailing comment names the source token so the mapping stays auditable.
  *
- * The CSS custom properties below are the shadcn/ui semantic theme. Every value is the HSL form of
- * a hex in @civfix/shared tokens (the source hex is named in the trailing comment so the mapping
- * back to the single source of truth is auditable). Tailwind utilities read these via
- * hsl(var(--token)) in tailwind.config.ts. We do not introduce any color that is not a token.
- *
- * Three of these names once collided with the ported handoff palette in styles/design.css, which is
- * imported AFTER this file and unlayered, so its flat hex/rgba value won the cascade and the Tailwind
- * utility emitted hsl(rgba(...)) - an invalid color the browser drops. Those three carry a shadcn-
- * prefix here, the way design.css's own --ring became --focus-ring; design-css-tokens.test.ts asserts
- * the two files' :root variable names stay disjoint.
+ * styles/design.css is imported AFTER this file and unlayered, so a :root name shared with it would win
+ * the cascade with a flat hex/rgba value and the Tailwind utility would emit an invalid hsl(rgba(...)).
+ * That is why some names here carry a shadcn- prefix; design-css-tokens.test.ts asserts the two files'
+ * :root variable names stay disjoint.
  */
 
 @import "maplibre-gl/dist/maplibre-gl.css";
@@ -21,7 +16,6 @@
 
 @layer base {
   :root {
-    /* Surfaces. background = paper (#F4EFE6); card = the warm card white (#FFFDF8). */
     --background: 38.6 38.9% 92.9%; /* neutral.paper  #F4EFE6 */
     --foreground: 34.3 26.9% 10.2%; /* neutral.ink    #211B13 */
 
@@ -31,23 +25,18 @@
     --popover: 42.9 100% 98.6%; /* neutral.card   #FFFDF8 */
     --popover-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
 
-    /* Primary = bloom/coral (#F0685C) on white. */
     --primary: 4.9 83.1% 65.1%; /* bloom.500      #F0685C */
     --primary-foreground: 0 0% 100%; /* white */
 
-    /* Secondary = paper2 surface with ink text. */
     --secondary: 39.0 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
     --secondary-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
 
-    /* Muted = paper2 with ink3 text. */
     --muted: 39.0 32.3% 87.8%; /* neutral.paper2 #EAE3D6 */
     --muted-foreground: 38.2 8.8% 51%; /* neutral.ink3   #8D8577 */
 
-    /* Accent = sun (#D9A21B) with ink text (host-event accent). */
     --shadcn-accent: 42.6 77.9% 47.8%; /* sun.500        #D9A21B */
     --shadcn-accent-foreground: 34.3 26.9% 10.2%; /* neutral.ink */
 
-    /* Destructive = bloom.600 (#E4574A). */
     --destructive: 5.1 74% 59.2%; /* bloom.600      #E4574A */
     --destructive-foreground: 0 0% 100%; /* white */
 
@@ -67,18 +56,13 @@
     --font-mono-stack: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
 
     /*
-     * ----- Host Console semantic surface layer (`/manage/*`) -----
+     * Host Console (`/manage/*`) semantic surface layer. The raw hue scales (bg-sun-50, text-bloom-600)
+     * are light-only literals, and the console is the one screen set that needs scheme-correct hue
+     * surfaces without a per-component branch, so it reads these through the `console.*` Tailwind group.
      *
-     * The neutral Tailwind utilities (bg-paper, bg-cardflat, text-ink-3) resolve to the design.css
-     * variables and already follow the scheme; the raw HUE scales (bg-sun-50, text-bloom-600) are still
-     * LIGHT-ONLY literals. The console is the one screen set that needs scheme-correct hue surfaces
-     * without a per-component branch, so it consumes this semantic layer through the `console.*`
-     * Tailwind color group instead of the raw hue scales.
-     *
-     * Every value below is a `colorSchemes[scheme]` entry from @civfix/shared/tokens; the hue pairs are
+     * Every value is a `colorSchemes[scheme]` entry from @civfix/shared/tokens; the hue pairs are
      * `color[hue][50]` (soft) over `color.chipInk[hue]` (strong), the one pair that clears WCAG AA in
-     * BOTH schemes. src/components/console/console-tokens.test.ts parses this file and asserts every
-     * value against the contract, so these literals cannot drift.
+     * both schemes. console-tokens.test.ts asserts every value against the contract.
      */
     --console-canvas: #F4EFE6;
     --console-surface: #FFFDF8;
@@ -199,7 +183,6 @@
     letter-spacing: -0.01em;
   }
 
-  /* Respect users who prefer reduced motion across our transitions/animations. */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -213,15 +196,11 @@
 }
 
 @layer utilities {
-  /*
-   * Teardrop pin shape used by map markers and the header create buttons' decorative dots.
-   * Mirrors tokens.radius.pin = "50% 50% 50% 6px" but as a utility so it is reusable in JSX.
-   */
+  /* tokens.radius.pin as a utility, so JSX can use the teardrop shape. */
   .rounded-pin {
     border-radius: 50% 50% 50% 6px;
   }
 
-  /* Hide scrollbars on the sidebar scroll area while keeping it scrollable. */
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -232,33 +211,25 @@
 }
 
 /*
- * The "Skip to content" landing zone (components/home/home-shell.tsx).
- *
- * The link resolves its target when it is activated and focuses the CARD's own scroll region - a
- * container, not a control - after tagging it with this attribute. Chrome answers programmatic focus
- * that arrived from a keyboard activation with its default blue ring, which would paint a 440x872 UA
- * rectangle across the whole card on a surface whose focus vocabulary is the shared coral ring, with
- * square corners inside the card's rounded mask. The skip is confirmed by the very next Tab arriving on
- * the card's first control - and, for assistive tech, by the reading position moving into the card - so
- * the container answers focus with nothing painted, the treatment GOV.UK's skip-link target uses. Only
- * container landings are tagged: when the card is hidden (the Map surface) the link falls back to the
- * rail, and a real control keeps its own ring.
+ * "Skip to content" focuses the card's scroll region, a container rather than a control. Chrome paints
+ * its default blue ring over programmatic focus that followed a keyboard activation, which would outline
+ * the whole card. The next Tab (and the reading position for assistive tech) already confirms the skip,
+ * so the container paints nothing, as GOV.UK's skip-link target does. Only container landings are
+ * tagged, so a real control keeps its own ring.
  */
 [data-cf-skip-target]:focus {
   outline: none;
 }
 
-/* The MapLibre canvas should never trap text selection cursors over UI chrome. */
+/* maplibre-gl.css sets its own Helvetica font stack on the map container. */
 .maplibregl-map {
   font-family: var(--font-body-stack);
 }
 
 /*
- * MapLibre control + attribution restyle to match the brand over warm paper (--radius-md, --shadow-2 from
- * design.css). The zoom group + the compact attribution badge are added by the shared @civfix/ui Map
- * (.web seam) ONLY in the expanded layout; the compact layout gets a chrome-free map. The control STYLING
- * is unconditional, but the bottom-left LEFT OFFSET (to clear the expanded card) is applied ONLY under the
- * `data-cf-layout` the shell publishes from useLayoutMode() - the same answer the JS shell branches on.
+ * The control styling is unconditional, but the bottom-left offset that clears the expanded card is
+ * keyed on the `data-cf-layout` the shell publishes from useLayoutMode(), the same answer the JS shell
+ * branches on.
  */
 .cf-shell .maplibregl-ctrl-group {
   border: none;
@@ -283,27 +254,17 @@
   color: var(--ink-2);
 }
 /*
- * The attribution follows the shell's LIVE left occlusion instead of a hardcoded width. `.cf-shell`
- * carries `--cf-occlusion-left` = the frame plan's `occlusionLeft` (the card's own 14px left inset plus
- * the card's width, or the bare inset in map mode where the card is hidden - the top nav strip is a
- * horizontal bar now and costs the map no LEFT-edge space of its own), rewritten per frame while the
- * resize handle is dragged - so the badge tracks the card's edge live and never snaps on release. The
- * `+ 14px` is the shell's own card-inset family, keeping the badge off the card's edge.
+ * `--cf-occlusion-left` is the frame plan's `occlusionLeft` (the card's 14px inset plus its width, or
+ * the bare inset when the card is hidden), rewritten per frame during a resize drag so the badge tracks
+ * the card's edge live. The `+ 14px` keeps the badge off the card's edge. The 454px fallback is 14 plus
+ * the 440px default card, where a first paint sits before the host writes the property.
  *
- * FALLBACK 454px = 14 + the 440 default card, i.e. exactly where a first paint sits before the host has
- * written the property (and where the badge stays if it never does) - the old literal went stale the
- * moment the default width moved, which is the bug class this replaces.
+ * Deliberately not transitioned: the rule is driven per frame during a drag, so easing `left` would
+ * make the badge lag the handle.
  *
- * DELIBERATELY NOT TRANSITIONED: this rule is driven per-frame during a drag, so easing `left` would
- * make the badge lag the handle by the whole duration. It steps instantly with the var - on the card's
- * hide/show it simply arrives before the card finishes sliding, which is the cheaper mismatch.
- *
- * ...and it is BOUNDED ON THE RIGHT by the zoom group. Left-anchoring alone let the badge keep its
- * intrinsic single-line width (284px), which could run into the bottom-right +/- group at the smallest
- * legal expanded width. `right` gives the bottom-left container a DEFINITE width - the live clear strip
- * minus the zoom group - so the badge shrink-wraps to what is actually free and the credit reflows to a
- * second line instead of being occluded. 56px = the group's 32px buttons + its own 10px margin + the
- * same 14px inset the left edge uses, so badge and zoom group are 14px apart at every width.
+ * `right` gives the container a definite width so the badge's 284px single-line credit reflows instead
+ * of running into the zoom group at the smallest expanded width. 56px is the group's 32px buttons plus
+ * its 10px margin plus the same 14px inset, so badge and group stay 14px apart.
  */
 .cf-shell[data-cf-layout="expanded"] .maplibregl-ctrl-bottom-left {
   left: calc(var(--cf-occlusion-left, 454px) + 14px);
@@ -314,8 +275,6 @@
   white-space: normal;
   overflow-wrap: break-word;
 }
-/* Compact is the mobile sheet over a chrome-free map (no zoom group; the attribution is the only
-   control). Tuck the required attribution up into the peek sheet's footprint so the translucent
-   sheet covers it, matching the mobile design where no control badge floats over the map - rather
-   than letting it sit as a readable strip in the gap below the sheet. */
+/* Compact tucks the required attribution under the translucent peek sheet, matching the mobile
+   design where no control badge floats over the map. */
 .cf-shell[data-cf-layout="compact"] .maplibregl-ctrl-bottom-left { left: 16px; bottom: 28px; }

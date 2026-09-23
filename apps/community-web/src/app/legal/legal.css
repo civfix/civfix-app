@@ -1,13 +1,5 @@
-/* =========================================================================
-   Legal pages: readable long-form document styling for /legal/*
-   (Terms, Privacy Policy, Cookies, Sub-processors).
-
-   These are static, content-only routes (no data fetching), so the styling is
-   a small descendant-selector "prose" block driven entirely by the design
-   tokens defined in design.css (var(--ink), var(--font-display), etc.). That
-   keeps the four documents consistent and on-brand without repeating Tailwind
-   utilities on every heading / paragraph / list item.
-   ========================================================================= */
+/* The /legal/* documents are content-only, so a small descendant-selector prose block driven by the
+   design.css tokens keeps them consistent without Tailwind utilities on every element. */
 
 .legal-page {
   min-height: 100dvh;
@@ -15,14 +7,12 @@
   color: var(--fg-1);
 }
 
-/* The centered, comfortably-narrow reading column. */
 .legal-shell {
   max-width: 760px;
   margin: 0 auto;
   padding: var(--space-6) var(--space-5) var(--space-16);
 }
 
-/* ---- Header: brand + back-to-app + cross-document nav ---- */
 .legal-top {
   display: flex;
   align-items: center;
@@ -31,7 +21,6 @@
   padding: var(--space-2) 0 var(--space-6);
 }
 
-/* The brand wordmark in the legal header, larger than its default inherited size. */
 .legal-top .cf-logo {
   font-size: 30px;
 }
@@ -84,7 +73,6 @@
   border-color: transparent;
 }
 
-/* ---- Document title block ---- */
 .legal-title {
   font-family: var(--font-display);
   font-weight: 700;
@@ -100,7 +88,6 @@
   margin: 0 0 var(--space-6);
 }
 
-/* ---- Long-form prose ---- */
 .legal-prose {
   font-family: var(--font-body);
   font-size: var(--fs-16);
@@ -161,7 +148,6 @@
   padding: 0.05em 0.35em;
 }
 
-/* A subtle callout for definitions / important notes inside a document. */
 .legal-prose .legal-note {
   background: var(--bg-2);
   border-left: 3px solid var(--ink-4);
@@ -171,7 +157,6 @@
   color: var(--ink-2);
 }
 
-/* ---- Tables (sub-processors) ---- */
 .legal-prose .legal-table-wrap {
   overflow-x: auto;
   margin: 0 0 var(--space-5);
@@ -207,7 +192,6 @@
   background: var(--card-tint);
 }
 
-/* ---- Footer ---- */
 .legal-foot {
   margin-top: var(--space-12);
   padding-top: var(--space-5);

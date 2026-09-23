@@ -3,22 +3,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { chatSocket, wsUrlFromApiBase } from "@/lib/ws"
 
 /**
- * The WEB wiring of the shared chat-socket core (@civfix/ui/realtime): its browser transport (ws URL
- * derivation + a cookie-authenticated `new WebSocket`) and the behavior options this host selects.
+ * The core's generic mechanics are tested once in @civfix/ui; these pin what only this host can get
+ * wrong: the ws URL derivation, `queueWhileClosed` (flushed in order, including the stop-and-requeue on
+ * a mid-flush failure) and `teardownPolicy: "intent"` (the socket is shared with the signals channel).
  *
- * The core's generic mechanics - frame validation, auto-rejoin, room rejection, backoff, the
- * forward-compat drop of unknown frames - are unit-tested once in the package
- * (src/realtime/__tests__/chatSocketCore.test.ts). What is pinned HERE is what only this host can get
- * wrong:
- *   - `wsUrlFromApiBase` (http->ws, https->wss, base path preserved, inert without a window),
- *   - `queueWhileClosed`: a frame sent while the socket is down is queued and flushed IN ORDER on open
- *     (the composer relies on it), including the stop-and-requeue on a mid-flush failure,
- *   - `teardownPolicy: "intent"`: this ONE socket is shared with the always-on signals channel, so
- *     neither a `release()` nor a `disconnect()` may tear it out from under the other holder.
- *
- * These tests run in the node env (no DOM): we stub `window.WebSocket` with a fake that records sent
- * frames and lets us drive open/close events by hand. `chatSocket` is a module singleton, so each test
- * calls `chatSocket.disconnect()` in afterEach to return it to a clean, torn-down state.
+ * The node env has no DOM, so `window.WebSocket` is a fake that records frames. `chatSocket` is a module
+ * singleton, so afterEach disconnects it back to a clean state.
  */
 
 class FakeWebSocket {

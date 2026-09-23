@@ -1,16 +1,13 @@
 /*
- * Self-hosted @font-face declarations for the web font contract.
+ * react-native-web emits the raw runtime font names the @civfix/ui components use (for example
+ * `font-family: "HankenGrotesk_600SemiBold"`), so the web host registers each one, plus the legacy
+ * Manrope and Bricolage Grotesque aliases kept for compatibility, against the Hanken Grotesk variable
+ * asset at an explicit weight. Baloo 2 is a separate, brand-only face.
  *
- * The unified @civfix/ui components render via react-native-web, which emits raw runtime names such as
- * `font-family: "HankenGrotesk_600SemiBold"`. The web host registers those names and retains the legacy
- * Manrope and Bricolage Grotesque aliases for compatibility, mapping every UI alias to the licensed
- * Hanken Grotesk variable asset at an explicit weight. Baloo 2 remains a separate, brand-only face.
- *
- * Absolute /fonts/... URLs resolve identically in `next dev` and in the static export (output: "export")
- * with no bundler URL rewriting. font-display: swap avoids blocking first paint.
+ * Absolute /fonts/... URLs resolve identically in `next dev` and in the static export with no bundler
+ * URL rewriting.
  */
 
-/* Hanken Grotesk - the variable UI face used directly by host CSS. */
 @font-face {
   font-family: "HankenGrotesk";
   font-style: normal;
@@ -19,7 +16,6 @@
   src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
 }
 
-/* Current shared runtime aliases, each pinned to its intended variable-font weight. */
 @font-face {
   font-family: "HankenGrotesk_400Regular";
   font-style: normal;
@@ -56,7 +52,6 @@
   src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
 }
 
-/* Legacy shared display aliases, intentionally backed by Hanken Grotesk on web. */
 @font-face {
   font-family: "BricolageGrotesque_400Regular";
   font-style: normal;
@@ -86,7 +81,6 @@
   src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
 }
 
-/* Legacy shared body aliases, also backed by Hanken Grotesk on web. */
 @font-face {
   font-family: "Manrope_400Regular";
   font-style: normal;
@@ -123,7 +117,6 @@
   src: url("/fonts/HankenGrotesk_Variable.woff2") format("woff2");
 }
 
-/* JetBrains Mono (numeric / mono) */
 @font-face {
   font-family: "JetBrainsMono_400Regular";
   font-style: normal;
@@ -139,7 +132,6 @@
   src: url("/fonts/JetBrainsMono_500Medium.woff2") format("woff2");
 }
 
-/* Baloo 2 800 - the per-letter "civfix" wordmark */
 @font-face {
   font-family: "Baloo2_800ExtraBold";
   font-style: normal;

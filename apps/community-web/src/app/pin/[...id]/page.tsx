@@ -1,12 +1,9 @@
 import { PinDetailRoute } from "@/features/pin/pin-detail-route"
 
 /**
- * Static-export note: this is a CATCH-ALL ([...id]) route. With output:"export", dynamic segments
- * must enumerate their params at build time via generateStaticParams. We cannot know real report ids
- * ahead of time, so we emit a single placeholder shell ({ id: ["_"] }) and read the actual id
- * client-side (PinDetailRoute -> HomeShell -> use-web-nav-adapter's entryFromPath, which seeds the nav
- * store from window.location). To serve arbitrary /pin/<id> URLs on a static host,
- * configure a SPA fallback (rewrite unknown paths to the emitted shell). See the app README.
+ * output: "export" needs every dynamic segment enumerated at build time, so this emits one placeholder
+ * shell and the real report id is read client-side. public/_redirects rewrites every /pin/<id> deep
+ * link to that shell.
  */
 export function generateStaticParams(): Array<{ id: string[] }> {
   return [{ id: ["_"] }]

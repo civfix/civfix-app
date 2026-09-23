@@ -16,12 +16,12 @@ const require = createRequire(import.meta.url)
  * hand the shared shell a zero inset, two react-native-webs register two StyleSheet pools. Aliasing
  * each bare specifier to the app's single resolved directory collapses them onto one instance.
  *
- * react/react-dom are deliberately ABSENT: Next already aliases those (to its own vendored copies, per
- * build layer AND per `react-server` condition), so the ui source shares the app's React for free -
- * while an alias of ours would CLOBBER Next's, hand the RSC prerender the client build of React, and
- * fail the export with "Cannot read properties of null (reading 'useRef')". lucide-react-native is
- * deliberately ABSENT: it is stateless icon source, and its `/icons` subpath is only reachable through
- * its exports map, which a directory alias would bypass.
+ * react/react-dom are deliberately ABSENT: Next already aliases those to its own vendored copies (per
+ * build layer and per `react-server` condition), so the ui source shares the app's React. An alias of
+ * ours would clobber Next's, hand the RSC prerender the client build of React, and fail the export with
+ * "Cannot read properties of null (reading 'useRef')". lucide-react-native is deliberately ABSENT: it
+ * is stateless, and its `/icons` subpath is only reachable through its exports map, which a directory
+ * alias would bypass.
  *
  * Packages are located on disk (app node_modules first, then the hoisted workspace store) rather than
  * through `require.resolve(name + "/package.json")` because several RN packages do not expose
@@ -99,7 +99,6 @@ export function pageExtensionsFor(phase) {
 
 /** @type {(phase: string) => import('next').NextConfig} */
 const nextConfig = (phase) => ({
-  // Static SPA export: emits the shell + JS into ./out with no server runtime.
   output: "export",
   pageExtensions: pageExtensionsFor(phase),
   reactStrictMode: true,
@@ -107,15 +106,13 @@ const nextConfig = (phase) => ({
   images: {
     unoptimized: true,
   },
-  // Trailing slashes make the static export host cleanly on static file servers
-  // (each route becomes a directory with an index.html).
+  // Each route becomes a directory with an index.html, which static hosts serve without rewrites.
   trailingSlash: true,
   env: {
     NEXT_PUBLIC_COMMIT_SHA: resolveCommitSha(),
   },
-  // @civfix/shared ships ESM + CJS (built dist) and @civfix/ui ships untranspiled .tsx SOURCE, both
-  // as workspace packages, so Next must transpile both plus the React-Native stack
-  // (react-native-web renders RN primitives on web).
+  // @civfix/ui ships untranspiled .tsx source and the React Native stack ships untranspiled too, so
+  // Next must transpile them.
   transpilePackages: [
     "@civfix/shared",
     "@civfix/ui",
@@ -129,30 +126,22 @@ const nextConfig = (phase) => ({
     "@gorhom/bottom-sheet",
   ],
   webpack: (config) => {
-    // Alias bare "react-native" imports to react-native-web so the shared @civfix/ui
-    // source (authored in RN primitives) resolves to the web implementation.
+    // @civfix/ui is authored in RN primitives; on web they resolve to react-native-web.
     config.resolve.alias = {
       ...config.resolve.alias,
       ...dedupedSingletons,
       "react-native-web": reactNativeWebDir,
-      // EXACT-match the bare "react-native" specifier -> react-native-web (the common case, authored
-      // RN primitives in @civfix/ui).
       "react-native$": reactNativeWebDir,
-      // NON-exact fallback for deep "react-native/Libraries/..." SUBPATH imports. The `$` rule above is
-      // exact-match only, so without this any deep RN subpath (pulled in transitively by the map stack
-      // or other RN deps) would try to resolve into the real react-native package and fail to bundle on
-      // web ("Module not found: react-native/Libraries/..."). Aliasing the bare prefix collapses those
-      // subpaths onto react-native-web too. MUST come AFTER the `$` rule so the exact case wins first.
+      // Deep "react-native/Libraries/..." imports pulled in transitively would otherwise resolve into
+      // the real react-native package and fail to bundle on web. MUST come after the exact `$` rule so
+      // the exact case wins first.
       "react-native": reactNativeWebDir,
-      // Single @tanstack/react-query instance (app + @civfix/ui share one QueryClient context).
       "@tanstack/react-query$": reactQueryDir,
-      // Single maplibre-gl instance (app + @civfix/ui Map.web share one worker pool, so the
-      // style loads). See the maplibreGlDir note above.
       "maplibre-gl$": maplibreGlDir,
       "@civfix/shared$": sharedContractDir,
       "@civfix/shared/client$": sharedContractDir,
     }
-    // Prefer platform-specific .web.* files when @civfix/ui ships .web/.native seams.
+    // @civfix/ui's .web/.native platform seams resolve to the .web file.
     config.resolve.extensions = [
       ".web.tsx",
       ".web.ts",

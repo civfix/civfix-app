@@ -1,19 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 
 /**
- * The app-wide one-shot geolocation dedupe (lib/locate.ts `getSharedBrowserFix`).
- *
- * The regression this pins: the web app used to issue TWO independent
- * `navigator.geolocation.getCurrentPosition` calls on a cold load - the map camera's resolver (6s
- * timeout) and the GeolocationCapability behind @civfix/ui's `useUserLocation` (which caps its own wait
- * at 4s) - so the two settled at different moments and each settle fired its own refetch wave
- * ("everything loads twice"). The contract now: every one-shot consumer funnels through ONE shared
- * browser request under ONE timeout policy ({@link DEVICE_FIX_TIMEOUT_MS} = the 4s `useUserLocation`
- * already enforces), successes are reused for the browser-cache window, and failures do not stick (a
- * later deliberate retry gets a fresh attempt).
- *
- * The module caches at module level, so each test re-imports a FRESH module via `vi.resetModules()` +
- * dynamic import (the same pattern the module-cached `resolvePreciseCenter` forces).
+ * The module caches at module level, so each test re-imports a fresh module via `vi.resetModules()`
+ * and a dynamic import.
  */
 
 type SuccessCb = (pos: { coords: { latitude: number; longitude: number; accuracy: number | null } }) => void
@@ -37,7 +26,6 @@ function makeGeoStub() {
 
 let geo: ReturnType<typeof makeGeoStub>
 
-/** Fresh module instances (their module-level caches empty) against the current navigator stub. */
 async function freshModules() {
   vi.resetModules()
   const locate = await import("@/lib/locate")

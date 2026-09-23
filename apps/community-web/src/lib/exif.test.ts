@@ -3,14 +3,6 @@ import { describe, it, expect } from "vitest"
 import { readExifGps } from "@/lib/exif"
 
 /**
- * Tests for the dependency-free JPEG EXIF GPS reader. We synthesize minimal but spec-correct JPEG byte
- * streams (SOI + APP1 "Exif" + a little-endian TIFF whose IFD0 points to a GPS IFD) so the happy path
- * is exercised end to end, and assert the parser returns null for the many malformed shapes.
- */
-
-// ---- byte-builder helpers (little-endian TIFF) ----
-
-/**
  * Build a JPEG buffer: SOI, an APP1 EXIF segment wrapping the given TIFF block, then EOI. The APP1
  * size field covers the "Exif\0\0" id (6 bytes) + the TIFF block + the 2 size bytes themselves.
  */
@@ -176,8 +168,7 @@ describe("readExifGps - malformed / absent -> null", () => {
 })
 
 describe("readExifGps - offset hardening (P2-6, must not throw)", () => {
-  /** Little-endian 4-byte helper. */
-  const le = (n: number, bytes: number) => {
+    const le = (n: number, bytes: number) => {
     const out: number[] = []
     for (let i = 0; i < bytes; i++) out.push((n >> (8 * i)) & 0xff)
     return out

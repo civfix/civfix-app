@@ -1,22 +1,10 @@
-/* =========================================================================
-   civfix Web - design system, ported from the real PinIt Web handoff
-   Source of truth:
-     civfix Web (User)-handoff/civfix-web-user/project/ds/colors_and_type.css
-     civfix Web (User)-handoff/civfix-web-user/project/styles.css
-   This file brings the design's ACTUAL CSS (tokens + shell/component classes)
-   into the app. Where the design and the app's Tailwind/globals conflict for
-   the shell, the design CSS wins. Class names mirror the handoff so the ported
-   JSX structure maps 1:1.
-
-   Font reconciliation: globals.css owns --font-display / --font-body /
-   --font-mono and points UI text to self-hosted Hanken Grotesk. Every design
-   class that reads var(--font-display) therefore resolves to that UI family.
-   ========================================================================= */
+/* The design system's own CSS: tokens plus the shell and component classes. Class names mirror the
+   design so the ported JSX structure maps 1:1, and where the design conflicts with Tailwind or
+   globals.css for the shell, this file wins. globals.css owns --font-display / --font-body /
+   --font-mono (self-hosted Hanken Grotesk), so every class reading var(--font-display) resolves to
+   that UI family. */
 
 :root {
-  /* ====================================================================
-     COLOR - Brand (verbatim from colors_and_type.css)
-     ==================================================================== */
   --bloom-50:  #FDEAE7;
   --bloom-100: #FAD0CB;
   --bloom-300: #F5A199;
@@ -52,9 +40,6 @@
   --lilac-600: #7A5CC0;
   --lilac-700: #7457B6;
 
-  /* ====================================================================
-     COLOR - Neutrals (warm)
-     ==================================================================== */
   --paper:    #F4EFE6;
   --paper-2:  #EAE3D6;
   --card:     #FFFDF8;
@@ -66,9 +51,6 @@
   --ink-4:    #BDB5A6;
   --ink-5:    #E6DFD2;
 
-  /* ====================================================================
-     COLOR - Semantic
-     ==================================================================== */
   --fg-1: var(--ink);
   --fg-2: var(--ink-2);
   --fg-3: var(--ink-3);
@@ -85,7 +67,7 @@
   /* Surfaces that are NOT a flat token: the frosted top-bar pills, the media-overlay chips, the
      modal scrim, the switch track, and the foreground that sits on an INVERTED fill (an --ink or
      *-700 background). Each one is a var so the .dark block at the foot of this file can flip it;
-     none of them may be written as a literal in a rule again. */
+     never write one as a literal in a rule. */
   --glass:            rgba(255,255,255,0.96);
   --glass-hover:      #FFFFFF;
   --glass-soft:       rgba(255,255,255,0.7);
@@ -102,7 +84,6 @@
   --info:     var(--sky);
   --danger:   var(--bloom-600);
 
-  /* Map / category colors - used for pin types */
   --cat-trash:      #776C60;
   --cat-recycling:  var(--moss);
   --cat-graffiti:   var(--lilac);
@@ -112,9 +93,6 @@
   --cat-water:      var(--sky);
   --cat-other:      #8D8577;
 
-  /* ====================================================================
-     TYPOGRAPHY - scale + metrics (families come from next/font)
-     ==================================================================== */
   --fs-12: 0.75rem;
   --fs-13: 0.8125rem;
   --fs-14: 0.875rem;
@@ -138,9 +116,6 @@
   --tracking-base:   0;
   --tracking-wide:   0.06em;
 
-  /* ====================================================================
-     SHAPE & SPACE
-     ==================================================================== */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -161,9 +136,6 @@
   --radius-pill: 999px;
   --radius-pin: 50% 50% 50% 6px;
 
-  /* ====================================================================
-     ELEVATION - layered warm-tinted shadows
-     ==================================================================== */
   --shadow-1: 0 1px 0 rgba(26,23,20,0.04),
               0 1px 2px rgba(26,23,20,0.05);
 
@@ -186,9 +158,6 @@
 
   --focus-ring: 0 0 0 3px rgba(240,104,92,0.30);
 
-  /* ====================================================================
-     MOTION
-     ==================================================================== */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -198,17 +167,10 @@
   --dur-3: 320ms;
   --dur-4: 500ms;
 
-  /* The layout vars (--sidebar-w / --sidebar-gap) are GONE: the landscape card is a react-native-web
-     surface sized by shell/sidebarStore (drag-resizable, persisted), and the only CSS that needed its
-     geometry - the maplibre attribution offset in globals.css - reads the live --cf-occlusion-left the
-     shell publishes. A frozen 384px copy here could only ever drift out of agreement with it. */
 }
 
-/* =========================================================================
-   SEMANTIC TYPE STYLES on the design classes (families resolve via next/font)
-   These intentionally only target design classes / scoped elements so the
-   rest of the Tailwind app is untouched.
-   ========================================================================= */
+/* These only target design classes and scoped elements, so the rest of the Tailwind app is
+   untouched. */
 .cf-design .display {
   font-family: var(--font-display);
   font-size: var(--fs-64);
@@ -227,13 +189,6 @@
   font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
-/* =========================================================================
-   SHELL LAYOUT - the make-or-break composition
-   The map is full-bleed behind everything; the sidebar is a floating rounded
-   paper card; the top bar is a transparent strip of floating frosted pills.
-   ========================================================================= */
-
-/* The fixed root the shell mounts into. */
 .cf-shell {
   position: fixed;
   inset: 0;
@@ -259,24 +214,7 @@ body:not(:has(.cf-shell)) {
   }
 }
 
-/*
- * NOTE (FH-09, the card's desktop scroll affordance): there is deliberately NO scrollbar rule here.
- * The landscape card's timeline styles its own bar from the list that owns it - `WEB_THIN_SCROLLBAR`
- * in @civfix/ui `bodies/FeedBody.tsx` passes `scrollbarWidth: "thin"` + `scrollbarColor: borderStrong
- * (= neutral.ink4) transparent` through react-native-web, gated on `Platform.OS === "web"` AND the
- * expanded (landscape) layout mode. A host rule here would need a DOM hook the shared component does
- * not expose, would duplicate a treatment that already lands, and could only ever drift from it.
- * Verified computed on the feed scroller at 1440x900: scrollbar-width "thin",
- * scrollbar-color "rgb(189,181,166) rgba(0,0,0,0)"; portrait keeps "none".
- */
-
-/* ---- Skip link (WCAG 2.4.1) --------------------------------------------- */
-/*
- * A keyboard-only "Skip to content" affordance: the first focusable element in the shell, visually
- * hidden off-screen until it receives focus, at which point it slides on-screen as a coral pill that
- * jumps the caret/scroll to <main id="main">. Pointer users never see it; Tab from a fresh load lands
- * here first.
- */
+/* Skip link (WCAG 2.4.1): off-screen until it receives focus, so pointer users never see it. */
 .cf-skip-link {
   position: absolute;
   top: -40px;
@@ -298,7 +236,6 @@ body:not(:has(.cf-shell)) {
   box-shadow: var(--focus-ring), var(--shadow-2);
 }
 
-/* ---- Map ---------------------------------------------------------------- */
 .cf-map {
   position: absolute;
   inset: 0;
@@ -308,20 +245,16 @@ body:not(:has(.cf-shell)) {
   overflow: hidden;
 }
 
-/*
- * The shared @civfix/ui Map (.web seam) renders its maplibre-gl container as `.cf-map-canvas`. It must
- * fill the `.cf-map` slot (maplibre needs an explicitly-sized container). UI-unification slice 5A.
- */
+/* maplibre-gl needs an explicitly sized container. */
 .cf-map-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   /*
-   * Map long-press "drop a pin" (Area 3): iOS Safari pops its own callout/selection UI on a long press
-   * over a canvas, which would fight the gesture. The .web Map seam deliberately never calls
-   * preventDefault() on touchstart (that marks the handler active and resets pan/zoom), so the callout is
-   * suppressed here in CSS instead.
+   * iOS Safari pops its own callout/selection UI on a long press over a canvas, which would fight the
+   * long-press "drop a pin" gesture. The .web Map seam never calls preventDefault() on touchstart (that
+   * marks the handler active and resets pan/zoom), so the callout is suppressed here in CSS instead.
    */
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -334,10 +267,7 @@ body:not(:has(.cf-shell)) {
   user-select: none;
 }
 
-/*
- * The user-location dot the shared Map draws on web (the native map uses the OS location dot). A coral
- * dot with a soft ring, mirroring the design's location puck.
- */
+/* Web only: the native map draws the OS location dot. */
 .cf-map-user-dot {
   width: 16px;
   height: 16px;
@@ -347,7 +277,6 @@ body:not(:has(.cf-shell)) {
   box-shadow: 0 0 0 2px rgba(255, 90, 77, 0.35), var(--shadow-2);
 }
 
-/* ---- Top bar (floats over the map; transparent strip) ------------------- */
 .top-bar {
   position: fixed;
   top: 14px;
@@ -379,7 +308,6 @@ body:not(:has(.cf-shell)) {
 .logo-card:hover { transform: translateY(-1px); }
 .logo-card:active { transform: scale(0.98); }
 
-/* civfix per-letter wordmark (mirrors the mobile handoff brand.jsx + CSS) */
 .cf-logo {
   font-family: "Baloo2_800ExtraBold", var(--font-display);
   font-weight: 800;
@@ -399,7 +327,6 @@ body:not(:has(.cf-shell)) {
 .cf-logo .s6 { color: var(--bloom); }
 .cf-logo--card { font-size: 22px; }
 
-/* Cold-boot splash brand (components/boot-splash) — a larger, centered wordmark on first load. */
 .cf-splash-mark { font-size: 44px; }
 
 .top-actions {
@@ -481,7 +408,6 @@ body:not(:has(.cf-shell)) {
 }
 .avatar-btn:hover { transform: translateY(-1px); }
 
-/* ---- Reports dropdown (multi-select, in the top bar) -------------------- */
 .reports-dd { position: relative; flex-shrink: 0; }
 .reports-trigger {
   display: inline-flex;
@@ -532,9 +458,6 @@ body:not(:has(.cf-shell)) {
   font-feature-settings: "tnum";
 }
 
-/* ---- Map layers control (top-bar popover; web-native — matches the bell/account dropdowns) ----
-   Rebuilt on the web app's own popover chrome (radix PopoverContent) instead of the old 1:1 port of
-   the mobile LayersPopover card. Events is a real on/off switch; report categories are a flat list. */
 .cf-lyr-head {
   padding: 6px 8px 8px;
   font-size: 11px;
@@ -589,7 +512,6 @@ body:not(:has(.cf-shell)) {
   color: var(--ink-3);
   margin-top: 1px;
 }
-/* Real on/off switch for the Events layer (moss when on; the knob slides right). */
 .cf-lyr-switch {
   position: relative;
   width: 38px;
@@ -661,7 +583,6 @@ body:not(:has(.cf-shell)) {
 .cf-lyr-cat:hover {
   background: var(--paper-2);
 }
-/* Teardrop category pin (the civfix rotated-rounded-square marker), tinted per category. */
 .cf-lyr-pin {
   width: 13px;
   height: 13px;
@@ -768,7 +689,6 @@ body:not(:has(.cf-shell)) {
   font-weight: 600;
 }
 
-/* ---- Modal -------------------------------------------------------------- */
 .modal-scrim {
   position: fixed;
   inset: 0;
@@ -797,7 +717,6 @@ body:not(:has(.cf-shell)) {
   overflow-y: auto;
 }
 
-/* ---- Post-drop nudge (success modal) ----------------------------------- */
 .cf-nudge-hero {
   display: flex;
   justify-content: center;
@@ -878,7 +797,6 @@ body:not(:has(.cf-shell)) {
   line-height: 1.45;
 }
 
-/* ---- Pin (report) detail ----------------------------------------------- */
 .cf-pin-hero {
   position: relative;
   width: 100%;
@@ -996,7 +914,6 @@ body:not(:has(.cf-shell)) {
   color: var(--bloom-700);
 }
 
-/* Vertical status timeline (22px nodes + connector rails) */
 .cf-pin-timeline-wrap {
   margin-bottom: 18px;
 }
@@ -1082,7 +999,6 @@ body:not(:has(.cf-shell)) {
   line-height: 1.4;
 }
 
-/* Follow-up composer (your own reports) */
 .cf-followup {
   padding: 12px;
   background: var(--card);
@@ -1095,7 +1011,6 @@ body:not(:has(.cf-shell)) {
   margin-top: 8px;
 }
 
-/* ---- Buttons ------------------------------------------------------------ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -1139,7 +1054,6 @@ body:not(:has(.cf-shell)) {
 .btn.disabled, .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn.disabled:hover, .btn:disabled:hover { transform: none; }
 
-/* ---- Badge -------------------------------------------------------------- */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -1154,7 +1068,6 @@ body:not(:has(.cf-shell)) {
 }
 .badge .dot { width: 6px; height: 6px; border-radius: 50%; }
 
-/* ---- Form fields (report / host flows) --------------------------------- */
 .input,
 textarea.input {
   width: 100%;
@@ -1188,7 +1101,6 @@ textarea.input {
   line-height: 1.4;
 }
 
-/* ---- Report-type rows (report flow step 1) ----------------------------- */
 .rt-list { display: flex; flex-direction: column; gap: 7px; }
 .rt-row {
   display: flex;
@@ -1223,7 +1135,6 @@ textarea.input {
   flex-shrink: 0;
 }
 
-/* ---- Step rail (3-step report wizard) ---------------------------------- */
 .step-rail {
   display: flex;
   gap: 5px;
@@ -1239,7 +1150,6 @@ textarea.input {
 .step-rail .step.active { background: var(--bloom); }
 .step-rail .step.done { background: var(--moss); }
 
-/* ---- Photo drop area --------------------------------------------------- */
 .photo-drop {
   border: 2px dashed var(--ink-4);
   border-radius: 14px;
@@ -1316,12 +1226,10 @@ textarea.input {
 .cf-loc-map {
   margin-top: 8px;
 }
-/* The actual map surface; the picker now stacks a search box above it inside .cf-loc-map. */
 .cf-loc-mapbox {
   height: 180px;
   margin-top: 8px;
 }
-/* Address / coordinate search box above the map; live suggestions float over the map below it. */
 .cf-loc-search {
   position: relative;
   display: flex;
@@ -1359,7 +1267,6 @@ textarea.input {
   color: var(--ink-3);
   pointer-events: none;
 }
-/* The suggestions dropdown, absolutely anchored under the input so it overlays the map. */
 .cf-loc-suggest {
   position: absolute;
   top: calc(100% + 6px);
@@ -1418,7 +1325,6 @@ textarea.input {
   line-height: 1.4;
 }
 
-/* ---- Report drop wizard (in-sidebar panel) ----------------------------- */
 .cf-report-nav {
   display: flex;
   gap: 6px;
@@ -1537,7 +1443,6 @@ textarea.input {
   flex-shrink: 0;
 }
 
-/* ---- Avatar ------------------------------------------------------------- */
 .cf-avatar {
   border-radius: 50%;
   color: var(--fg-on-color);
@@ -1550,7 +1455,6 @@ textarea.input {
   overflow: hidden;
 }
 
-/* ---- Account gate (anon users) ----------------------------------------- */
 .gate {
   background: var(--card-tint);
   border: 1px solid var(--border-soft);
@@ -1573,7 +1477,6 @@ textarea.input {
   text-wrap: pretty;
 }
 
-/* ---- Toast -------------------------------------------------------------- */
 .toast {
   position: fixed;
   bottom: 100px;
@@ -1601,7 +1504,6 @@ textarea.input {
 }
 .toast.success { background: var(--moss-700); }
 
-/* ---- Events list (Going / Past / Suggested) + cleanup detail ----------- */
 .event-tabs {
   display: flex;
   gap: 4px;
@@ -1730,7 +1632,6 @@ textarea.input {
   color: var(--ink-3);
 }
 
-/* Cleanup detail */
 .cf-clean-hero {
   padding: 16px;
   background: linear-gradient(135deg, var(--sun-50), var(--moss-50));
@@ -1786,7 +1687,6 @@ textarea.input {
 }
 .friends-going-text { font-size: 12.5px; color: var(--ink-2); }
 .friends-going-text b { color: var(--ink); }
-/* The going pill stacks the count over the optional "who's going" names line. */
 .friends-going-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
 .cf-attendees {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 6px;
@@ -1796,7 +1696,6 @@ textarea.input {
   font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
   text-transform: uppercase; color: var(--ink-3);
 }
-/* Collapsed: a single ellipsized line; expanded lifts the clamp so every name wraps into view. */
 .cf-attendees-names { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .cf-attendees.expanded .cf-attendees-names { white-space: normal; overflow: visible; }
 .cf-attendees-more {
@@ -1834,7 +1733,6 @@ textarea.input {
 .cf-clean-actions-row > .btn { flex: 1; }
 .cf-clean-error { text-align: center; font-size: 12px; color: var(--bloom-700); margin-top: 8px; }
 
-/* Host an event (create-cleanup panel) */
 .cf-host-note {
   display: flex; align-items: center; gap: 9px;
   padding: 10px 12px; margin-bottom: 16px;
@@ -1848,7 +1746,6 @@ textarea.input {
 .cf-host-row > .field { flex: 1; }
 .cf-host-gate { padding-top: 8px; }
 
-/* What-to-bring chip builder (host flow) */
 .bring-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .bring-chip {
   display: inline-flex; align-items: center; gap: 5px;
@@ -1888,13 +1785,6 @@ textarea.input {
 .bring-suggest button:hover { transform: translateY(-1px); border-color: var(--moss-300); }
 .bring-suggest button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* =========================================================================
-   PEOPLE discovery + PERSON / OWN profile + ACTIVITY feed
-   Ported from styles.css (.people-search, .follow-card, .event-mini,
-   .person-row, .live-dot) + the panels-social/panels-cleanups inline styles.
-   ========================================================================= */
-
-/* People search box (discovery) */
 .people-search {
   display: flex;
   align-items: center;
@@ -1933,7 +1823,6 @@ textarea.input {
 }
 .people-search .clear:hover { background: var(--border-soft); color: var(--ink); }
 
-/* Section label (uppercase, tracked) shared across the social panels */
 .cf-social-label {
   font-size: 11px;
   font-weight: 700;
@@ -1949,12 +1838,10 @@ textarea.input {
   line-height: 1.4;
 }
 
-/* List wrappers in the social panels */
 .cf-people-list { display: flex; flex-direction: column; gap: 4px; }
 .cf-follow-list { display: flex; flex-direction: column; gap: 10px; }
 .cf-mini-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
 
-/* A person result row (search results + suggestions) */
 .person-row {
   display: flex;
   gap: 12px;
@@ -1979,7 +1866,6 @@ textarea.input {
   text-wrap: pretty;
 }
 
-/* Following card - a person + the events they are going to */
 .follow-card {
   background: var(--card);
   border: 1px solid var(--border-soft);
@@ -2005,7 +1891,6 @@ textarea.input {
 }
 .follow-card-empty { font-size: 12px; color: var(--ink-3); padding: 4px 2px 2px; }
 
-/* Mini event row (a cleanup someone is going to) */
 .event-mini {
   display: flex;
   align-items: center;
@@ -2053,15 +1938,12 @@ textarea.input {
 }
 .event-mini > svg { color: var(--ink-4); flex-shrink: 0; }
 
-/* Profile cover / identity (person + own) */
 .cf-profile-cover {
   padding: 18px;
   border-radius: 18px;
   margin-bottom: 16px;
   text-align: center;
 }
-/* Person profile cover carries a soft hairline (the design's PersonProfile); the own-profile cover
-   (MyProfile) has none. */
 .cf-profile-cover.person {
   background: linear-gradient(135deg, var(--moss-50), var(--sun-50));
   border: 1px solid var(--border-soft);
@@ -2087,7 +1969,6 @@ textarea.input {
 .cf-profile-actions { display: flex; gap: 8px; justify-content: center; }
 .cf-profile-actions .btn { flex-shrink: 0; }
 
-/* Profile stat strip (Followers / Following large numbers) */
 .cf-profile-stats {
   display: flex;
   gap: 4px;
@@ -2116,7 +1997,6 @@ textarea.input {
   margin-top: 4px;
 }
 
-/* Own-profile navigation rows (My reports / My events / Following / Settings) */
 .cf-nav-list { display: flex; flex-direction: column; gap: 2px; }
 .cf-nav-row {
   display: flex;
@@ -2148,7 +2028,6 @@ textarea.input {
 .cf-nav-sub { font-size: 11px; color: var(--ink-3); }
 .cf-nav-row > svg { color: var(--ink-3); flex-shrink: 0; }
 
-/* Activity feed */
 .live-dot {
   width: 6px; height: 6px;
   background: var(--moss);
@@ -2231,16 +2110,6 @@ textarea.input {
   color: var(--ink-3);
 }
 
-/* =========================================================================
-   MESSAGES - inbox thread rows, conversation bubbles, composer
-   Ported from styles.css (.thread-row, .group-tag, .unread-pill, .msg,
-   .msg-composer) + the panels-social.jsx ThreadView header. The bubble/
-   composer presentation is faithful to the design; the day divider, the
-   "New message" entry, and the pending/failed send affordances back the
-   real WS chat (useChat) and are styled in the same language.
-   ========================================================================= */
-
-/* Inbox: "New message" entry button (secondary pill, label left + chevron). */
 .cf-inbox-new {
   display: flex;
   align-items: center;
@@ -2255,7 +2124,6 @@ textarea.input {
   gap: 8px;
 }
 
-/* Optional All / Direct / Group filter strip above the inbox list. */
 .cf-inbox-filter {
   display: flex;
   align-items: center;
@@ -2291,7 +2159,6 @@ textarea.input {
   line-height: 1.5;
 }
 
-/* Thread row (inbox). */
 .thread-row {
   display: flex;
   gap: 12px;
@@ -2369,7 +2236,6 @@ textarea.input {
   font-feature-settings: "tnum";
 }
 
-/* Group avatar tile (inbox + conversation header), when a thread has no DM avatar. */
 .cf-thread-group {
   width: 40px; height: 40px;
   border-radius: 50%;
@@ -2381,7 +2247,6 @@ textarea.input {
   justify-content: center;
 }
 
-/* ---- Conversation (thread) view --------------------------------------- */
 .cf-thread {
   display: flex;
   flex-direction: column;
@@ -2423,7 +2288,6 @@ textarea.input {
   font-size: 11px;
   font-family: inherit;
 }
-/* Live "N online" presence chip in the thread sub-line: a small green dot + the count. */
 .cf-thread-header .cf-online {
   display: inline-flex;
   align-items: center;
@@ -2467,7 +2331,6 @@ textarea.input {
   letter-spacing: -0.01em;
 }
 
-/* Day divider between message groups. */
 .cf-msg-day {
   display: flex;
   align-items: center;
@@ -2485,8 +2348,8 @@ textarea.input {
   background: var(--border-soft);
 }
 
-/* Message bubble. Each row settles in with a small fade + rise on mount (transform-only, so it never
-   shifts scrollHeight and the auto-scroll-to-bottom stays accurate). */
+/* The entrance animation is transform-only, so it never shifts scrollHeight and the
+   auto-scroll-to-bottom stays accurate. */
 .msg {
   display: flex;
   gap: 8px;
@@ -2549,7 +2412,6 @@ textarea.input {
   gap: 3px;
 }
 
-/* Composer (footer pill input + round coral send). */
 .msg-composer {
   display: flex;
   gap: 8px;
@@ -2593,7 +2455,6 @@ textarea.input {
   transition: background 120ms, transform 120ms ease-out;
 }
 .msg-composer .send:hover { background: var(--bloom-600); }
-/* A small tactile pop on hover and squash on press (only while enabled). */
 .msg-composer .send:not(:disabled):hover { transform: scale(1.06); }
 .msg-composer .send:not(:disabled):active { transform: scale(0.9); }
 .msg-composer .send:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -2606,8 +2467,6 @@ textarea.input {
   font-size: 12px;
   color: var(--ink-3);
 }
-/* "X is typing" hint above the composer: animated bouncing dots + a muted label, the whole row easing
-   in. Subtle/muted to match .cf-composer-offline. */
 .cf-typing {
   margin: 0 0 6px;
   padding: 0 2px;
@@ -2625,7 +2484,6 @@ textarea.input {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Three dots that bounce in sequence — the classic "typing" pulse. */
 .cf-typing-dots {
   display: inline-flex;
   align-items: center;
@@ -2645,7 +2503,6 @@ textarea.input {
   0%, 70%, 100% { transform: translateY(0); opacity: 0.45; }
   35%           { transform: translateY(-4px); opacity: 1; }
 }
-/* Shared "settle in" entrance: a small fade + rise. Used by the typing row and each message bubble. */
 @keyframes cf-fade-rise {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -2655,7 +2512,6 @@ textarea.input {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* New-message multi-select picker. */
 .cf-newmsg-label {
   font-size: 11px;
   font-weight: 700;
@@ -2704,11 +2560,6 @@ textarea.input {
   background: var(--bloom);
 }
 
-/* =========================================================================
-   AUTH MODAL - gradient header band + provider pills + OTP grid
-   Ported from styles.css (.auth-method, .auth-divider, .otp-row, .otp-cell)
-   and the panels-social.jsx AuthModal (gradient header + moss teardrop).
-   ========================================================================= */
 .cf-auth-header {
   padding: 28px 28px 22px;
   background: var(--paper);
@@ -2816,7 +2667,6 @@ textarea.input {
   padding: 14px 16px;
 }
 
-/* OTP 6-cell grid. */
 .otp-row {
   display: flex;
   gap: 8px;
@@ -2861,7 +2711,6 @@ textarea.input {
   margin: 0;
 }
 
-/* ---- Universal map: brand teardrop pin markers (MapLibre custom markers) - */
 .pi-map-pin {
   position: relative;
   cursor: pointer;
@@ -2889,7 +2738,6 @@ textarea.input {
   font-feature-settings: "tnum";
 }
 
-/* MapLibre cluster bubble, styled to the brand. */
 .pi-cluster {
   display: flex;
   align-items: center;
@@ -2904,21 +2752,8 @@ textarea.input {
   cursor: pointer;
 }
 
-/* MapLibre control + attribution styling now lives solely in app/globals.css, orientation-gated so the
-   bottom-left offset clears the landscape rail + card in landscape only. The copy that used to live here
-   applied that offset UNCONDITIONALLY (and the <=720px block below repositioned the controls for the
-   old 56vh DOM sheet), which fought the orientation-selected shell - both were removed. */
-
-/* =========================================================================
-   NARROW (<=720px)
-   What is left of the old "sidebar becomes a bottom sheet" block. The sheet it
-   described is gone: narrow viewports render the shared CompactShell (a
-   react-native-web surface with its own detents), not a 56vh .side-panel, and
-   the top bar it also retuned was the ported DOM chrome the shared MapControls
-   replaced. Every rule for those - and the no-op `.cf-map { left: 0 }`, which
-   only ever undid a sidebar offset the base rule (`inset: 0`) no longer has -
-   went with them. The auth modal is still real DOM, so its rule stays.
-   ========================================================================= */
+/* Narrow viewports render the shared CompactShell; the auth modal is the only DOM surface that still
+   needs a narrow rule. */
 @media (max-width: 720px) {
   .modal-card {
     width: calc(100vw - 16px);
@@ -2927,10 +2762,8 @@ textarea.input {
   }
 }
 
-/* ---- Inline middot separator (ASCII-safe) ------------------------------ */
-/* A small round dot used between inline meta runs (time, place, counts) where
-   the design renders a middot glyph. Reproduces the look with a styled element
-   so the source stays ASCII-only. Decorative: always pair with aria-hidden. */
+/* Draws the design's middot as a styled element so the source stays ASCII-only. Decorative: always
+   pair with aria-hidden. */
 .cf-dot {
   display: inline-block;
   width: 3px;
@@ -2944,26 +2777,20 @@ textarea.input {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* `.side-panel *` was dropped with the class itself - the landscape card is a react-native-web surface
-     now, and it reads `prefers-reduced-motion` in JS (theme/motion) rather than through this sweep. */
   .cf-design *, .top-bar *, .pi-map-pin, .cf-thread * {
     transition: none !important;
     animation: none !important;
   }
 }
 
-/* =========================================================================
-   DARK SCHEME
-   Every color-bearing custom property above, re-stated for the dark scheme. The values are the
-   SAME hexes the shared dark theme uses (@civfix/shared tokens `darkColor` / `darkShadow`, plus the
-   scheme extras in @civfix/ui theme/schemes.ts), so the host CSS and the react-native-web components
-   that mount inside it cannot disagree. Note the tint ramps INVERT in dark (a *-700 is the LIGHTEST
-   step): rules that fill with --ink or a *-700 therefore read their foreground from
-   --fg-on-inverse, which flips to near-black here.
+/* Every color-bearing custom property above, re-stated for the dark scheme with the SAME hexes the
+   shared dark theme uses (@civfix/shared tokens `darkColor` / `darkShadow`, plus the scheme extras in
+   @civfix/ui theme/schemes.ts), so the host CSS and the react-native-web components inside it cannot
+   disagree. The tint ramps INVERT in dark (a *-700 is the LIGHTEST step), so rules that fill with
+   --ink or a *-700 read their foreground from --fg-on-inverse, which flips to near-black here.
 
    The `.dark` class is put on <html> before first paint by the inline script in app/layout.tsx and
-   kept in sync by ThemeDomBinding (components/providers.tsx). :root.dark outranks the :root block.
-   ========================================================================= */
+   kept in sync by ThemeDomBinding (components/providers.tsx). :root.dark outranks the :root block. */
 :root.dark {
   --bloom-50:  #3A211E;
   --bloom-100: #4C2A26;
