@@ -318,9 +318,11 @@ export function AddressRow({
   }
 
   const body = (
-    <View style={styles.main} accessible accessibilityLabel={t("row.static_a11y", { address: display })}>
-      <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
-      {text}
+    <View style={styles.main}>
+      <View style={styles.label} accessible accessibilityLabel={t("row.static_a11y", { address: display })}>
+        <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
+        {text}
+      </View>
       {trailing}
     </View>
   )
@@ -377,6 +379,13 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["2"],
     borderRadius: t.radius.sm,
     paddingVertical: 2,
+  },
+  label: {
+    flexShrink: 1,
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["2"],
   },
   block: {
     gap: t.space["1"],

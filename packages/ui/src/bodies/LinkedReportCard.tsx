@@ -65,31 +65,8 @@ export function LinkedReportCard({
   const isList = layout === "list"
   const interactive = !!onPress && !disabled
 
-  const card = (
-    <Pressable
-      onPress={onPress}
-      disabled={!interactive}
-      accessibilityRole={selectable ? "checkbox" : "button"}
-      accessibilityState={
-        selectable ? { checked: selected, disabled } : disabled ? { disabled } : undefined
-      }
-      accessibilityLabel={a11yLabel ?? t("card.a11yLabel", { title, category: categoryLabel })}
-      {...focusRingProps}
-      style={(state) => [
-        styles.card,
-        isList ? styles.cardList : styles.cardStrip,
-        webTransition,
-        webCursor(!interactive),
-        selectable && selected ? styles.cardSelected : null,
-        webHover(state) && interactive
-          ? selectable && selected
-            ? styles.hoveredSelected
-            : styles.hovered
-          : null,
-        state.pressed && interactive ? styles.pressed : null,
-        disabled ? styles.disabled : null,
-      ]}
-    >
+  const content = (
+    <>
       {report.thumbUrl ? (
         isList ? (
           <FramedImage
@@ -175,8 +152,42 @@ export function LinkedReportCard({
           {selected ? <Icon icon={iconMap.Check} size={14} color={th.colors.onAccent} /> : null}
         </View>
       ) : null}
-    </Pressable>
+    </>
   )
+
+  const card =
+    onPress || selectable ? (
+      <Pressable
+        onPress={onPress}
+        disabled={!interactive}
+        accessibilityRole={selectable ? "checkbox" : "button"}
+        accessibilityState={
+          selectable ? { checked: selected, disabled } : disabled ? { disabled } : undefined
+        }
+        accessibilityLabel={a11yLabel ?? t("card.a11yLabel", { title, category: categoryLabel })}
+        {...focusRingProps}
+        style={(state) => [
+          styles.card,
+          isList ? styles.cardList : styles.cardStrip,
+          webTransition,
+          webCursor(!interactive),
+          selectable && selected ? styles.cardSelected : null,
+          webHover(state) && interactive
+            ? selectable && selected
+              ? styles.hoveredSelected
+              : styles.hovered
+            : null,
+          state.pressed && interactive ? styles.pressed : null,
+          disabled ? styles.disabled : null,
+        ]}
+      >
+        {content}
+      </Pressable>
+    ) : (
+      <View style={[styles.card, isList ? styles.cardList : styles.cardStrip, disabled ? styles.disabled : null]}>
+        {content}
+      </View>
+    )
 
   if (onRemove) {
     return (
