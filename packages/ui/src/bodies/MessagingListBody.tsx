@@ -57,7 +57,7 @@ import { HeaderProfileButton } from "./HeaderProfileButton"
 import { matchesThreadQuery } from "./messagesListModel"
 import { idKeyExtractor, openThread, openNewGroup, openNewChannel } from "./navHelpers"
 import { useRowHover } from "./rowHover"
-import { isCoarsePointer } from "../shell/webMedia"
+import { useCoarsePointer } from "../shell/useCoarsePointer"
 import { useTickingListTimeAgo } from "./useListTimeAgo"
 
 type TFn = ReturnType<typeof useT>["t"]
@@ -85,15 +85,18 @@ const ROW_MENU_HIT_SLOP = (MIN_TOUCH_TARGET - ROW_MENU_CHIP) / 2
 const SWIPE_ACTION_GLYPH = 18
 
 const IS_WEB = Platform.OS === "web"
-const COARSE_POINTER = IS_WEB && isCoarsePointer()
 
 /**
  * The row "More" chip is always mounted on web, because hover alone left keyboard, screen-reader and
  * touch-browser users with no path to mute, mark read or delete (rn-web ignores accessibilityActions).
  * It stays visible on a coarse pointer, where there is no hover to reveal it.
  */
-function rowMenuChipShown(state: PressableStateCallbackType, hoveredOrOpen: boolean): boolean {
-  if (hoveredOrOpen || COARSE_POINTER) return true
+function rowMenuChipShown(
+  state: PressableStateCallbackType,
+  hoveredOrOpen: boolean,
+  coarsePointer: boolean,
+): boolean {
+  if (hoveredOrOpen || coarsePointer) return true
   return (state as PressableStateCallbackType & { focused?: boolean }).focused === true
 }
 const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB
@@ -249,9 +252,11 @@ function ThreadRowAction({
 const ThreadRow = React.memo(function ThreadRow({
   thread,
   onPress,
+  coarsePointer,
 }: {
   thread: MessageThreadDTO
   onPress: (t: MessageThreadDTO) => void
+  coarsePointer: boolean
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -465,7 +470,7 @@ const ThreadRow = React.memo(function ThreadRow({
             style={(state) => [
               styles.menuChip,
               webTransition,
-              rowMenuChipShown(state, hovered || menuOpen) ? null : styles.menuChipConcealed,
+              rowMenuChipShown(state, hovered || menuOpen, coarsePointer) ? null : styles.menuChipConcealed,
               webHover(state) ? styles.menuChipHovered : null,
               state.pressed ? styles.menuChipPressed : null,
             ]}
@@ -511,10 +516,13 @@ export function MessagingListBody() {
   )
 
   const onPressItem = useCallback((thread: MessageThreadDTO) => openThread(thread), [])
+  const coarsePointer = useCoarsePointer()
 
   const renderItem = useCallback(
-    ({ item }: { item: MessageThreadDTO }) => <ThreadRow thread={item} onPress={onPressItem} />,
-    [onPressItem],
+    ({ item }: { item: MessageThreadDTO }) => (
+      <ThreadRow thread={item} onPress={onPressItem} coarsePointer={coarsePointer} />
+    ),
+    [onPressItem, coarsePointer],
   )
 
   const threads = useMemo(() => (query.data?.pages ?? []).flatMap((p) => p.items), [query.data])

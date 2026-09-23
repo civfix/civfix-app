@@ -135,9 +135,11 @@ describe("the group edit sheet can discard a newly picked photo (APP-BUG-156)", 
 describe("the inbox row menu is reachable without hover on web (APP-A11Y-070)", () => {
   it("always mounts the More chip on web and reveals it on hover, focus, open menu or touch", () => {
     expect(INBOX).not.toContain("{IS_WEB && (hovered || menuOpen) ? (")
-    expect(INBOX).toContain("rowMenuChipShown(state, hovered || menuOpen) ? null : styles.menuChipConcealed")
-    expect(INBOX).toContain("const COARSE_POINTER = IS_WEB && isCoarsePointer()")
-    expect(INBOX).toMatch(/if \(hoveredOrOpen \|\| COARSE_POINTER\) return true/)
+    expect(INBOX).toContain(
+      "rowMenuChipShown(state, hovered || menuOpen, coarsePointer) ? null : styles.menuChipConcealed",
+    )
+    expect(INBOX).toContain("const coarsePointer = useCoarsePointer()")
+    expect(INBOX).toMatch(/if \(hoveredOrOpen \|\| coarsePointer\) return true/)
     expect(INBOX).toMatch(/\.focused === true/)
   })
 })

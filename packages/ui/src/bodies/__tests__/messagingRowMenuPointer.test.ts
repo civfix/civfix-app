@@ -1,25 +1,46 @@
 /**
- * The web thread row's "More" chip style callback runs for every row on every hover, focus and press
- * change; the pointer kind cannot change under it, so it is probed once per page load, not per callback.
- * MessagingListBody imports react-native, so this pins the source.
+ * The web thread row's "More" chip stays visible on a coarse pointer. The pointer kind used to be probed
+ * at module scope, which touched the browser at import time (prerender false, client true) and never
+ * followed a change. It is now read by `useCoarsePointer` once per list render and handed to every row,
+ * so the per-row style callback, which runs on every hover, focus and press change, never probes.
+ * MessagingListBody imports react-native, so this pins the source; the hook itself is tested directly.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 
 const source = readFileSync(new URL("../MessagingListBody.tsx", import.meta.url), "utf8")
   .replace(/\/\*[\s\S]*?\*\//g, "")
   .replace(/^\s*\/\/.*$/gm, "")
 
-describe("the row menu chip reads the pointer kind once", () => {
-  it("probes the pointer at module scope and never inside the per-row predicate", () => {
-    expect(source.match(/isCoarsePointer\(\)/g)).toHaveLength(1)
-    expect(source).toMatch(/^const COARSE_POINTER = IS_WEB && isCoarsePointer\(\)$/m)
-    const start = source.indexOf("function rowMenuChipShown(")
-    expect(start).toBeGreaterThan(-1)
-    const end = source.indexOf("\n}\n", start)
-    expect(end).toBeGreaterThan(start)
-    const predicate = source.slice(start, end)
-    expect(predicate).toContain("COARSE_POINTER")
-    expect(predicate).not.toContain("isCoarsePointer(")
+describe("the row menu chip reads the pointer kind once per list render", () => {
+  it("never probes the pointer at module scope", () => {
+    expect(source).not.toContain("isCoarsePointer")
+    expect(source).not.toMatch(/^const COARSE_POINTER\b/m)
+    expect(source).toContain('import { useCoarsePointer } from "../shell/useCoarsePointer"')
+  })
+
+  it("subscribes in the list body, not in each row", () => {
+    expect(source.match(/useCoarsePointer\(\)/g)).toHaveLength(1)
+    const row = sliceBetween(source, "const ThreadRow = React.memo(", "export function MessagingListBody(")
+    expect(row).not.toContain("useCoarsePointer(")
+    const list = sliceBetween(source, "export function MessagingListBody(", "const renderItem = useCallback(")
+    expect(list).toContain("const coarsePointer = useCoarsePointer()")
+  })
+
+  it("hands the value to every row and re-renders the rows when it changes", () => {
+    const renderItem = sliceBetween(source, "const renderItem = useCallback(", "const threads = useMemo(")
+    expect(renderItem).toContain("coarsePointer={coarsePointer}")
+    expect(renderItem).toMatch(/\[onPressItem, coarsePointer\]/)
+    const row = sliceBetween(source, "const ThreadRow = React.memo(", "}) {")
+    expect(row).toContain("coarsePointer: boolean")
+  })
+
+  it("keeps the per-row predicate a pure read of what it is given", () => {
+    const predicate = sliceBetween(source, "function rowMenuChipShown(", "\n}\n")
+    expect(predicate).toContain("coarsePointer: boolean")
+    expect(predicate).toContain("if (hoveredOrOpen || coarsePointer) return true")
+    expect(predicate).not.toContain("useCoarsePointer(")
+    expect(source).toContain("rowMenuChipShown(state, hovered || menuOpen, coarsePointer)")
   })
 })
