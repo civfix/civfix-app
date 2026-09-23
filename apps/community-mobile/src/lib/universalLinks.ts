@@ -32,7 +32,11 @@ const WEB_URL = /^https:\/\/([^/?#]+)([/?#].*)?$/i
 
 const SCHEME = /^([a-z][a-z0-9+.-]*):/i
 
-export function resolveIncomingPath(raw: unknown): IncomingLink {
+export interface ResolveOptions {
+  isDev?: boolean
+}
+
+export function resolveIncomingPath(raw: unknown, { isDev = false }: ResolveOptions = {}): IncomingLink {
   if (typeof raw !== "string" || raw === "") return { type: "home" }
 
   const web = WEB_URL.exec(raw)
@@ -44,7 +48,7 @@ export function resolveIncomingPath(raw: unknown): IncomingLink {
   const scheme = SCHEME.exec(raw)
   if (scheme) {
     if (!APP_SCHEMES.has(scheme[1].toLowerCase())) return { type: "home" }
-    return fromAppSchemeUrl(raw, raw.slice(scheme[0].length))
+    return fromAppSchemeUrl(raw, scheme[1].toLowerCase(), raw.slice(scheme[0].length), isDev)
   }
 
   if (!raw.startsWith("/") || raw.startsWith("//")) return { type: "home" }
@@ -56,7 +60,24 @@ function isWebHost(authority: string): boolean {
   return WEB_HOSTS.has(host.endsWith(":443") ? host.slice(0, -":443".length) : host)
 }
 
-const TEAM_INVITE_PARAM = "teamInvite"
+/**
+ * Query parameters an outside link may hand each route. Anything else is dropped, because route
+ * screens trust their params as in-app state: `/messages/<id>` would otherwise take `peerId` /
+ * `peerName` from a link (a spoofed DM header and Block target), `/compose` a reply/quote target, and
+ * a `teamInvite` token would leak into route params. The in-app bridge pushes those params directly
+ * through the router and never comes through here.
+ */
+const ATTRIBUTION_QUERY: ReadonlySet<string> = new Set(["from"])
+const REPORTS_QUERY: ReadonlySet<string> = new Set(["from", "tab"])
+const ROOM_THREAD_QUERY: ReadonlySet<string> = new Set(["from", "roomKind"])
+
+const ROOM_THREAD_PATH = /^\/messages\/[^/]+$/
+
+function allowedQueryFor(path: string): ReadonlySet<string> {
+  if (path === "/reports") return REPORTS_QUERY
+  if (ROOM_THREAD_PATH.test(path)) return ROOM_THREAD_QUERY
+  return ATTRIBUTION_QUERY
+}
 
 function decodeParamName(raw: string): string {
   try {
@@ -66,23 +87,14 @@ function decodeParamName(raw: string): string {
   }
 }
 
-function internalQuery(query: string): string {
+function internalQuery(path: string, query: string): string {
   if (query === "") return ""
+  const allowed = allowedQueryFor(path)
   const kept = query
     .slice(1)
     .split("&")
-    .filter((pair) => pair !== "" && decodeParamName(pair.split("=")[0] ?? "") !== TEAM_INVITE_PARAM)
+    .filter((pair) => pair !== "" && allowed.has(decodeParamName(pair.split("=")[0] ?? "")))
   return kept.length === 0 ? "" : `?${kept.join("&")}`
-}
-
-function rawWithoutInviteToken(raw: string): string {
-  const hashAt = raw.indexOf("#")
-  const hash = hashAt === -1 ? "" : raw.slice(hashAt)
-  const withoutHash = hashAt === -1 ? raw : raw.slice(0, hashAt)
-  const queryAt = withoutHash.indexOf("?")
-  if (queryAt === -1) return raw
-  const kept = internalQuery(withoutHash.slice(queryAt))
-  return `${withoutHash.slice(0, queryAt)}${kept}${hash}`
 }
 
 function splitPath(raw: string): { parts: string[]; query: string } {
@@ -103,20 +115,25 @@ function fromPath(raw: string, originalUrl: string | null): IncomingLink {
 
   const path = internalPathFor(parts)
   if (path === null || path === "/") return { type: "home" }
-  return { type: "internal", path: `${path}${internalQuery(query)}` }
+  return { type: "internal", path: `${path}${internalQuery(path, query)}` }
 }
 
-function fromAppSchemeUrl(raw: string, afterScheme: string): IncomingLink {
+/**
+ * Default-deny: any other app on the device can open a scheme URL, so only paths in the route table
+ * reach the router. Dev-client launcher and Metro (`exp://`) URLs pass through verbatim in dev builds
+ * only; a release build has no dev client to receive them.
+ */
+function fromAppSchemeUrl(raw: string, scheme: string, afterScheme: string, isDev: boolean): IncomingLink {
   const body = afterScheme.startsWith("//") ? afterScheme.slice(2) : afterScheme
   const { parts, query } = splitPath(body)
 
-  if (parts[0] === DEV_CLIENT_SEGMENT) return { type: "internal", path: raw }
+  if (parts[0] === DEV_CLIENT_SEGMENT) return isDev ? { type: "internal", path: raw } : { type: "home" }
   if (BROWSER_ONLY_ROOTS.has(parts[0] ?? "")) return { type: "home" }
 
   const path = internalPathFor(parts)
-  if (path === null) return { type: "internal", path: rawWithoutInviteToken(raw) }
+  if (path === null) return isDev && scheme === "exp" ? { type: "internal", path: raw } : { type: "home" }
   if (path === "/") return { type: "home" }
-  return { type: "internal", path: `${path}${internalQuery(query)}` }
+  return { type: "internal", path: `${path}${internalQuery(path, query)}` }
 }
 
 function internalPathFor(parts: readonly string[]): string | null {
