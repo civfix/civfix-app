@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { MyEventTicketDTO } from "@civfix/shared"
+import { pinDeviceTimeZone } from "../../__tests__/deviceTimeZone"
 import { formatTicketCode, ticketSeatCount, ticketWhen, ticketWhere } from "../ticketModel"
 
 describe("ticketWhen", () => {
@@ -26,13 +27,18 @@ describe("ticketWhen", () => {
     expect(ticketWhen({ ...base, endsAt: "2026-07-25T20:00:00.000Z" }, "en-US")).toBe(ticketWhen(base, "en-US"))
   })
 
-  it("falls back to the device zone for an unknown zone rather than failing", () => {
-    const label = ticketWhen({ startsAt: "2026-07-25T12:00:00.000Z", timezone: "Mars/Olympus" }, "en-US")
-    expect(label.startsWith("Sat, Jul 25 · ")).toBe(true)
-  })
-
   it("is empty for an unparseable start", () => {
     expect(ticketWhen({ startsAt: "not-a-date", timezone: "UTC" }, "en-US")).toBe("")
+  })
+})
+
+describe("ticketWhen with the device in Los Angeles", () => {
+  pinDeviceTimeZone("America/Los_Angeles")
+
+  it("falls back to the device zone for an unknown zone rather than failing", () => {
+    expect(ticketWhen({ startsAt: "2026-07-25T12:00:00.000Z", timezone: "Mars/Olympus" }, "en-US")).toBe(
+      "Sat, Jul 25 · 5:00 AM PDT",
+    )
   })
 })
 

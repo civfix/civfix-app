@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { EventTeamInviteDTO, EventTeamMemberDTO } from "@civfix/shared"
+import { pinDeviceTimeZone } from "../../__tests__/deviceTimeZone"
 import {
   NO_TEAM_MEMBER_ACTIONS,
   inviteDisplayName,
@@ -120,8 +121,20 @@ describe("inviteErrorKey edges", () => {
 })
 
 describe("teamDateLabel edges", () => {
-  it("formats a medium date in the requested locale", () => {
-    expect(teamDateLabel("2026-03-05T12:00:00.000Z", "en-US")).toBe("Mar 5, 2026")
+  describe("with the device on UTC", () => {
+    pinDeviceTimeZone("UTC")
+
+    it("formats a medium date in the requested locale", () => {
+      expect(teamDateLabel("2026-03-05T12:00:00.000Z", "en-US")).toBe("Mar 5, 2026")
+    })
+  })
+
+  describe("with the device on Kiritimati (UTC+14)", () => {
+    pinDeviceTimeZone("Pacific/Kiritimati")
+
+    it("takes the calendar day from the device zone", () => {
+      expect(teamDateLabel("2026-03-05T12:00:00.000Z", "en-US")).toBe("Mar 6, 2026")
+    })
   })
 
   it("is empty for an empty string", () => {

@@ -39,7 +39,7 @@ describe("checkinResultRender full table", () => {
 
 describe("normalizeManualCode edges", () => {
   it("strips runs of mixed hyphens and whitespace, including non-breaking spaces", () => {
-    expect(normalizeManualCode("ab - cd ef\n-gh")).toBe("ABCDEFGH")
+    expect(normalizeManualCode("ab - cd\u00a0ef\n-gh")).toBe("ABCDEFGH")
   })
 
   it("keeps other punctuation", () => {

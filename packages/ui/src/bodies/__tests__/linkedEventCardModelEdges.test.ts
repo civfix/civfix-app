@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
 import type { LinkedEventRef } from "@civfix/shared"
 import { buildLinkedEventCardModel } from "../linkedEventCardModel"
+import { pinDeviceTimeZone } from "./deviceTimeZone"
 
 const t = ((key: string, options: Record<string, unknown> = {}) =>
   `${key}${JSON.stringify(options)}`) as unknown as TFunction
@@ -17,8 +18,6 @@ const organizer: LinkedEventRef["organizer"] = {
   isFollowing: false,
 }
 
-// Noon UTC is the same Saturday in every zone from UTC-12 to UTC+11, so assertions that fall back to the
-// device zone hold on any developer machine.
 const event: LinkedEventRef = {
   id: "event-1",
   title: "Beach Cleanup",
@@ -45,25 +44,6 @@ describe("buildLinkedEventCardModel locale and zone", () => {
     expect(model.scheduleLabel).toBe("sam. 12:00 UTC")
   })
 
-  it("currently drops the locale as well as the zone when the event zone is not a valid IANA name", () => {
-    const model = buildLinkedEventCardModel(event, t, "fr-FR", "Mars/Olympus")
-    expect(model.month).toBe("JUL")
-    expect(model.day).toBe("25")
-    expect(model.scheduleLabel.startsWith("Sat ")).toBe(true)
-  })
-
-  it("currently omits the zone name when the event zone is invalid, whatever the viewer zone", () => {
-    const model = buildLinkedEventCardModel(event, t, "en-US", "Mars/Olympus", {
-      viewerTimeZone: "America/New_York",
-    })
-    expect(model.scheduleLabel).toMatch(/^Sat \d{1,2}:\d{2} [AP]M$/)
-  })
-
-  it("falls back to US English for an invalid locale tag", () => {
-    const model = buildLinkedEventCardModel(event, t, "not a locale!!", "UTC")
-    expect(model).toMatchObject({ month: "JUL", day: "25", scheduleLabel: "Sat 12:00 PM" })
-  })
-
   it("adds no zone suffix without a viewer zone", () => {
     const model = buildLinkedEventCardModel(event, t, "en-US", "America/Los_Angeles")
     expect(model.scheduleLabel).toBe("Sat 5:00 AM")
@@ -73,6 +53,36 @@ describe("buildLinkedEventCardModel locale and zone", () => {
     const late = { ...event, scheduledAt: "2026-07-26T02:00:00.000Z" }
     const model = buildLinkedEventCardModel(late, t, "en-US", "America/Los_Angeles")
     expect(model).toMatchObject({ month: "JUL", day: "25", scheduleLabel: "Sat 7:00 PM" })
+  })
+})
+
+describe("buildLinkedEventCardModel device-zone fallbacks, with the device in Los Angeles", () => {
+  pinDeviceTimeZone("America/Los_Angeles")
+
+  it("currently drops the locale as well as the zone when the event zone is not a valid IANA name", () => {
+    const model = buildLinkedEventCardModel(event, t, "fr-FR", "Mars/Olympus")
+    expect(model).toMatchObject({ month: "JUL", day: "25", scheduleLabel: "Sat 5:00 AM" })
+  })
+
+  it("currently omits the zone name when the event zone is invalid, whatever the viewer zone", () => {
+    const model = buildLinkedEventCardModel(event, t, "en-US", "Mars/Olympus", {
+      viewerTimeZone: "America/New_York",
+    })
+    expect(model.scheduleLabel).toBe("Sat 5:00 AM")
+  })
+
+  it("currently drops the event zone as well as the locale for an invalid locale tag", () => {
+    const model = buildLinkedEventCardModel(event, t, "not a locale!!", "America/New_York")
+    expect(model).toMatchObject({ month: "JUL", day: "25", scheduleLabel: "Sat 5:00 AM" })
+  })
+})
+
+describe("buildLinkedEventCardModel device-zone fallbacks, with the device on UTC", () => {
+  pinDeviceTimeZone("UTC")
+
+  it("falls back to US English for an invalid locale tag", () => {
+    const model = buildLinkedEventCardModel(event, t, "not a locale!!", "UTC")
+    expect(model).toMatchObject({ month: "JUL", day: "25", scheduleLabel: "Sat 12:00 PM" })
   })
 })
 
