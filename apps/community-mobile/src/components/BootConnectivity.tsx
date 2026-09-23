@@ -1,5 +1,5 @@
-import React, { useCallback } from "react"
-import { Pressable, StyleSheet, View } from "react-native"
+import React, { useCallback, useState } from "react"
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native"
 import { Icon, Text, iconMap } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 import { focusRingProps, makeThemedStyles, useTheme } from "@/theme"
@@ -15,9 +15,16 @@ export function BootOfflineGate() {
   const th = launchTheme
   const styles = useStyles.for(LAUNCH_SCHEME)
   const signOut = useAuthStore((s) => s.signOut)
-  const onSignOut = useCallback(() => {
-    void signOut()
-  }, [signOut])
+  const [signingOut, setSigningOut] = useState(false)
+  const onSignOut = useCallback(async () => {
+    if (signingOut) return
+    setSigningOut(true)
+    try {
+      await signOut()
+    } finally {
+      setSigningOut(false)
+    }
+  }, [signOut, signingOut])
 
   return (
     <View style={styles.gate}>
@@ -40,11 +47,18 @@ export function BootOfflineGate() {
       </Pressable>
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel={t("boot.sign_out")}
+        accessibilityState={{ disabled: signingOut, busy: signingOut }}
+        disabled={signingOut}
         onPress={onSignOut}
         {...focusRingProps}
         style={({ pressed }) => [styles.secondary, pressed ? styles.pressed : null]}
       >
-        <Text style={styles.secondaryLabel}>{t("boot.sign_out")}</Text>
+        {signingOut ? (
+          <ActivityIndicator color={th.colors.textMuted} />
+        ) : (
+          <Text style={styles.secondaryLabel}>{t("boot.sign_out")}</Text>
+        )}
       </Pressable>
     </View>
   )

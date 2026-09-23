@@ -110,3 +110,14 @@ test("the live appearance hook re-applies the native root background when the sc
   assert.match(hook, /void SystemUI\.setBackgroundColorAsync\(theme\.colors\.bg\)/)
   assert.match(hook, /\}, \[theme\.colors\.bg\]\)/)
 })
+
+test("the offline gate's sign-out shows it is working and cannot be pressed twice", () => {
+  const gate = connectivity.slice(
+    connectivity.indexOf("export function BootOfflineGate"),
+    connectivity.indexOf("export function BootConnectivityNotice"),
+  )
+  assert.match(gate, /if \(signingOut\) return\s*setSigningOut\(true\)\s*try \{\s*await signOut\(\)\s*\} finally \{\s*setSigningOut\(false\)\s*\}/)
+  const button = gate.slice(gate.indexOf("onPress={onSignOut}") - 300)
+  assert.match(button, /accessibilityState=\{\{ disabled: signingOut, busy: signingOut \}\}\s*disabled=\{signingOut\}\s*onPress=\{onSignOut\}/)
+  assert.match(button, /\{signingOut \? \(\s*<ActivityIndicator color=\{th\.colors\.textMuted\} \/>/)
+})
