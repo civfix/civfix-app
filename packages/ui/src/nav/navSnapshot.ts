@@ -1,5 +1,5 @@
 import type { DetailEntry, View } from "./types"
-import { entryIdentity } from "./routes"
+import { ENTRY_IDENTITY_FIELDS, entryIdentity } from "./routes"
 
 export interface NavReturn {
   view: View
@@ -28,23 +28,22 @@ export interface NavSnapshotSource {
   reportReturn: NavReturn | null
 }
 
-const PERSISTED_KEYS = [
+const SESSION_FIELDS = [
   "view",
-  "id",
-  "roomKind",
   "title",
   "lat",
   "lng",
   "reportId",
-  "geoid",
   "jumpToMessageId",
   "composerMode",
   "targetPostId",
   "profileTab",
-  "slug",
-  "seatId",
   "organizationId",
 ] as const satisfies readonly Exclude<keyof DetailEntry, "kind">[]
+
+// Identity fields come from the router's own list so a new addressing field
+// can never be silently dropped from history and report-return snapshots.
+const PERSISTED_KEYS = [...ENTRY_IDENTITY_FIELDS, ...SESSION_FIELDS] as const
 
 export function persistableEntry(entry: DetailEntry): DetailEntry {
   const out: DetailEntry = { kind: entry.kind }
