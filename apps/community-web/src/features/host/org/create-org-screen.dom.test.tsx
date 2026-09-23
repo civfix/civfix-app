@@ -13,6 +13,10 @@ import { renderConsole } from "@/components/console/__testing__/harness"
 import { ConsoleApp } from "../console-app"
 import { ConsoleNavigationProvider } from "../console-context"
 import { CreateOrgScreen } from "./create-org-screen"
+// ConsoleApp loads the org overview with React.lazy. Importing it here transforms it at collection
+// time, so the lazy import resolves from the module cache instead of cold-transforming inside a
+// findBy window, which a loaded machine outlasts.
+import "./org-screen"
 import { OrgProfileForm, socialLinksFromDraft, EMPTY_ORG_DRAFT } from "./org-profile-form"
 
 const ORG_ID = "11111111-1111-4111-8111-111111111111"
