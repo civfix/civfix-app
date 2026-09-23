@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "./TextInput"
 import type { ContentReportReason } from "@civfix/shared"
@@ -8,6 +8,7 @@ import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
 import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+import { useResetOnOpen } from "./useModalClosed"
 
 const REASON_VALUES: ReadonlyArray<ContentReportReason> = [
   "spam",
@@ -48,12 +49,10 @@ export function ReportContentSheet({
   const [details, setDetails] = useState("")
   const [focused, setFocused] = useState(false)
 
-  useEffect(() => {
-    if (visible) {
-      setReason(null)
-      setDetails("")
-    }
-  }, [visible])
+  useResetOnOpen(visible, () => {
+    setReason(null)
+    setDetails("")
+  })
 
   const canSubmit = !pending && reason != null
 
@@ -84,7 +83,7 @@ export function ReportContentSheet({
         {t("prompt")}
       </Text>
 
-      <View style={styles.reasons}>
+      <View style={styles.reasons} accessibilityRole="radiogroup" accessibilityLabel={t("prompt")}>
         {REASON_VALUES.map((value) => {
           const selected = reason === value
           const label = t(`reason.${value}`)
@@ -97,9 +96,9 @@ export function ReportContentSheet({
                 selected ? styles.reasonRowSelected : null,
                 pressed ? styles.reasonRowPressed : null,
               ]}
-              accessibilityRole="button"
+              accessibilityRole="radio"
               accessibilityLabel={label}
-              accessibilityState={{ selected }}
+              accessibilityState={{ checked: selected }}
               disabled={pending}
               onPress={() => setReason(value)}
             >

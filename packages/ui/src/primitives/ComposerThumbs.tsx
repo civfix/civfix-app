@@ -20,7 +20,7 @@ export function ComposerThumbs({ attachments, onRemove, singleRow = false, style
   if (attachments.length === 0) return null
   return (
     <View style={[styles.thumbs, singleRow ? styles.thumbsSingleRow : null, style]}>
-      {attachments.map((a) => (
+      {attachments.map((a, index) => (
         <View key={a.id} style={styles.thumb}>
           <MediaPreview
             uri={a.uri}
@@ -31,13 +31,13 @@ export function ComposerThumbs({ attachments, onRemove, singleRow = false, style
           />
           {!a.uploadId ? (
             <View style={styles.thumbUploading}>
-              <ActivityIndicator size="small" color={th.colors.onScrim} />
+              <ActivityIndicator size="small" color={th.colors.onScrim} accessibilityLabel={t("media.uploading")} />
             </View>
           ) : null}
           <Pressable
             onPress={() => onRemove(a.id)}
             accessibilityRole="button"
-            accessibilityLabel={t("media.remove_attachment")}
+            accessibilityLabel={t("media.remove_attachment_n", { index: index + 1, count: attachments.length })}
             hitSlop={THUMB_REMOVE_HIT_SLOP}
             {...focusRingProps}
             style={({ pressed }) => [styles.thumbRemove, pressed ? styles.pressed : null]}

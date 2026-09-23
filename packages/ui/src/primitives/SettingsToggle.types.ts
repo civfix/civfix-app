@@ -6,6 +6,7 @@ export interface SettingsToggleProps {
   onValueChange: (next: boolean) => void
   onColor?: string
   accessibilityLabel?: string
+  accessibilityHint?: string
 }
 
 export const TRACK_OFF_ALPHA = 0.16

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react"
-import { Animated, Easing, Pressable, ScrollView, StyleSheet, View } from "react-native"
+import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native"
 import { makeThemedStyles, useTheme, focusRingProps, webScrimProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useOpenExternal } from "../capabilities"
@@ -25,6 +25,12 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
   const { t } = useT("about")
   const offProductionHost = offProductionApiHost()
 
+  const closeRef = useRef<View>(null)
+  useEffect(() => {
+    // Keyboard focus would otherwise stay on the control behind the scrim that opened this card.
+    if (Platform.OS === "web") closeRef.current?.focus()
+  }, [])
+
   const progress = useRef(new Animated.Value(0)).current
   useEffect(() => {
     Animated.timing(progress, {
@@ -49,7 +55,14 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
   ]
 
   return (
-    <View style={StyleSheet.absoluteFill}>
+    <View
+      style={StyleSheet.absoluteFill}
+      role="dialog"
+      aria-modal
+      aria-label={t("dialog_a11y")}
+      accessibilityViewIsModal
+      onAccessibilityEscape={onClose}
+    >
       <Animated.View style={[StyleSheet.absoluteFill, styles.scrim, { opacity: progress }]}>
         <Pressable
           style={StyleSheet.absoluteFill}
@@ -63,6 +76,7 @@ export function BrandAboutCard({ onClose }: BrandAboutCardProps) {
       <View style={styles.center} pointerEvents="box-none">
         <Animated.View style={[styles.card, { opacity: progress, transform: cardTransform }]}>
           <Pressable
+            ref={closeRef}
             onPress={onClose}
             accessibilityRole="button"
             accessibilityLabel={t("close")}

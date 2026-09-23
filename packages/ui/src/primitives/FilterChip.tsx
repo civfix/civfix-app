@@ -13,6 +13,19 @@ export const FILTER_CHIP_MIN_TOUCH_TARGET = 44
 export const FILTER_CHIP_HEIGHT = 34
 const CHIP_HIT_SLOP = (FILTER_CHIP_MIN_TOUCH_TARGET - FILTER_CHIP_HEIGHT) / 2
 
+/**
+ * What pressing the chip means to assistive tech: one choice of a set ("single", a radio), one of
+ * several independent toggles ("multiple", a checkbox), or a plain command with no selected state
+ * ("action", a button).
+ */
+export type FilterChipSelection = "single" | "multiple" | "action"
+
+const SELECTION_ROLE = {
+  single: "radio",
+  multiple: "checkbox",
+  action: "button",
+} as const satisfies Record<FilterChipSelection, string>
+
 export interface FilterChipProps {
   label: string
   selected: boolean
@@ -20,6 +33,7 @@ export interface FilterChipProps {
   count?: number
   disabled?: boolean
   accessibilityLabel?: string
+  selection?: FilterChipSelection
 }
 
 export function FilterChip({
@@ -29,15 +43,16 @@ export function FilterChip({
   count,
   disabled = false,
   accessibilityLabel,
+  selection = "single",
 }: FilterChipProps) {
   const styles = useStyles()
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      accessibilityRole="radio"
-      accessibilityState={{ checked: selected, disabled }}
-      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityRole={SELECTION_ROLE[selection]}
+      accessibilityState={selection === "action" ? { disabled } : { checked: selected, disabled }}
+      accessibilityLabel={accessibilityLabel ?? (count === undefined ? label : `${label}, ${count}`)}
       hitSlop={CHIP_HIT_SLOP}
       {...focusRingProps}
       style={(state) => [

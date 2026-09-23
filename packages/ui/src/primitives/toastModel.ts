@@ -27,3 +27,18 @@ export function toastBottomOffset(
   const keyboard = Math.max(0, keyboardHeight)
   return Math.round(Math.max(base, keyboard) + gap)
 }
+
+export interface ToastLiveSemantics {
+  role: "alert" | "status"
+  liveRegion: "assertive" | "polite" | "none"
+}
+
+/**
+ * Only an error interrupts; success and info are status messages. Native speaks every toast through one
+ * explicit announcement, so its live region stays off there to avoid a second reading.
+ */
+export function toastLiveSemantics(variant: ToastVariant, web: boolean): ToastLiveSemantics {
+  const role = variant === "error" ? "alert" : "status"
+  if (!web) return { role, liveRegion: "none" }
+  return { role, liveRegion: variant === "error" ? "assertive" : "polite" }
+}

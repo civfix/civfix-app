@@ -1,5 +1,5 @@
 import React, { useCallback, useImperativeHandle, useRef, useState } from "react"
-import { View, Pressable, type TextInput as RNTextInput } from "react-native"
+import { View, Pressable, Platform, type TextInput as RNTextInput } from "react-native"
 import { TextInput } from "./TextInput"
 import { makeThemedStyles, webInputReset, focusRingProps } from "../theme"
 import { Text } from "../typography"
@@ -45,6 +45,12 @@ export function SegmentedCodeInput({
 
   const cells = Array.from({ length }, (_, i) => i)
   const activeIndex = Math.min(value.length, length - 1)
+  // On native this press target is the one accessible element and hides the typed digits; web reaches the
+  // real input instead, and aria-valuetext is not allowed on a button there.
+  const progress =
+    Platform.OS === "web"
+      ? undefined
+      : { text: t("verification_code.progress", { count: value.length, total: length }) }
 
   return (
     <Pressable
@@ -52,6 +58,7 @@ export function SegmentedCodeInput({
       accessibilityRole="button"
       accessibilityLabel={t("verification_code.label")}
       accessibilityHint={t("verification_code.hint")}
+      accessibilityValue={progress}
       {...focusRingProps}
       style={styles.row}
     >

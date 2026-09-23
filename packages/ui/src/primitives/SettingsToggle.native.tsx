@@ -1,7 +1,7 @@
 import React from "react"
 import { Pressable } from "react-native"
 import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated"
-import { makeThemedStyles, useTheme, webCursor, focusRingProps } from "../theme"
+import { makeThemedStyles, useReducedMotion, useTheme, webCursor, focusRingProps } from "../theme"
 import {
   type SettingsToggleProps,
   trackOffColor,
@@ -16,12 +16,15 @@ export function SettingsToggle({
   onValueChange,
   onColor,
   accessibilityLabel,
+  accessibilityHint,
 }: SettingsToggleProps) {
   const styles = useStyles()
   const t = useTheme()
-  const knobStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: withSpring(value ? KNOB_ON_X : KNOB_OFF_X, SPRING) }],
-  }))
+  const still = useReducedMotion() !== false
+  const knobStyle = useAnimatedStyle(() => {
+    const x = value ? KNOB_ON_X : KNOB_OFF_X
+    return { transform: [{ translateX: still ? x : withSpring(x, SPRING) }] }
+  })
 
   return (
     <Pressable
@@ -30,6 +33,7 @@ export function SettingsToggle({
       aria-checked={value}
       accessibilityState={{ checked: value }}
       accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
       hitSlop={6}
       {...focusRingProps}
       style={[

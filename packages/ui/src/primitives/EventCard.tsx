@@ -14,11 +14,18 @@ export function EventCard({ cleanup, onPress }: { cleanup: CleanupDTO; onPress: 
   const { t } = useT("event-card")
   const when = useEventWhen(cleanup)
   const where = cleanup.address?.trim()
+  const a11yLabel = t("a11y.card_detail", {
+    title: cleanup.title,
+    when: when.time === "" ? t("linked.schedule_unavailable") : `${when.dow}, ${when.date}, ${when.timeWithZone}`,
+    location: where || t("linked.location_fallback"),
+    going: t("going", { count: cleanup.going }),
+    organizer: `${t("organizer.by_prefix")} ${cleanup.organizer.name}`,
+  })
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={t("a11y.card", { title: cleanup.title, count: cleanup.going })}
+      accessibilityLabel={a11yLabel}
       {...focusRingProps}
       style={(state) => [
         styles.card,

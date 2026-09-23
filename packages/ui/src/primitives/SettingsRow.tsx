@@ -46,7 +46,7 @@ export function SettingsSection({ label, children, style }: SettingsSectionProps
       ) : null}
       <View style={styles.card}>
         {rows.map((row, index) => (
-          <React.Fragment key={index}>
+          <React.Fragment key={React.isValidElement(row) && row.key != null ? row.key : index}>
             {index > 0 ? <View style={styles.divider} /> : null}
             {row}
           </React.Fragment>
@@ -118,6 +118,8 @@ export function SettingsRow({
           onPress={() => toggle.onValueChange(!toggle.value)}
           focusable={false}
           {...({ tabIndex: -1 } as object)}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
           {...focusRingProps}
           style={[styles.toggleTextCol, webCursor()]}
         >
@@ -128,6 +130,7 @@ export function SettingsRow({
           onValueChange={toggle.onValueChange}
           onColor={t.colors.brand.bloom}
           accessibilityLabel={accessibilityLabel ?? label}
+          accessibilityHint={sub}
         />
       </View>
     )
