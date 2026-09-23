@@ -35,7 +35,7 @@
     "UNAUTHORIZED": "Ese código no es válido o ha vencido. Solicita uno nuevo."
   },
   "sign_out_failed": {
-    "message": "No pudimos cerrar tu sesión. Revisa tu conexión e inténtalo de nuevo.",
+    "message": "No pudimos cerrar tu sesión, así que sigue abierta. Revisa tu conexión e inténtalo de nuevo.",
     "retry": "Intentar de nuevo"
   }
 }

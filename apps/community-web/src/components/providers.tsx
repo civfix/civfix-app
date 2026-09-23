@@ -42,7 +42,7 @@ import { useResolvedLocale } from "@/lib/locale"
 import { useAuthGate } from "@/hooks/use-auth-gate"
 import { useLogout } from "@/hooks/use-auth"
 import { AuthHydrator } from "@/components/auth/auth-hydrator"
-import { SignOutFailureToast } from "@/components/auth/sign-out-failure-toast"
+import { SignOutFailureNotice } from "@/components/auth/sign-out-failure-notice"
 import { BootSplash } from "@/components/boot-splash"
 import { RealtimeChannel } from "@/components/realtime/realtime-channel"
 import { FirstRunGate } from "@/features/auth/first-run-gate"
@@ -229,7 +229,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               <ToastProvider>
                 <BootSplash>{children}</BootSplash>
                 <FirstRunGate />
-                <SignOutFailureToast />
+                <SignOutFailureNotice />
               </ToastProvider>
             </I18nMount>
           </ThemeMount>

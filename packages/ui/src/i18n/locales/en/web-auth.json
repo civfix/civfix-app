@@ -35,7 +35,7 @@
     "UNAUTHORIZED": "That code is invalid or expired. Request a new one."
   },
   "sign_out_failed": {
-    "message": "Couldn't sign you out. Check your connection and try again.",
+    "message": "Couldn't sign you out, so you're still signed in. Check your connection and try again.",
     "retry": "Try again"
   }
 }

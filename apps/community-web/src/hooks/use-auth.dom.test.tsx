@@ -17,7 +17,8 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   },
 }))
 
-const { useLogout, useRefreshSession, retrySignOut } = await import("@/hooks/use-auth")
+const { useLogout, useRefreshSession } = await import("@/hooks/use-auth")
+const { resolveCsrfToken } = await import("@/lib/api")
 const { useAuthStore } = await import("@/store/auth-store")
 const { useSignOutRetryStore } = await import("@/store/sign-out-retry-store")
 
@@ -30,6 +31,8 @@ const USER: UserDTO = {
   profileComplete: true,
   createdAt: "2026-01-01T00:00:00.000Z",
 }
+
+const CACHE_KEY = "civfix.query.cache.v2"
 
 let queryClient: QueryClient
 
@@ -44,13 +47,21 @@ async function signOut(): Promise<void> {
   })
 }
 
+function expectStillSignedIn(): void {
+  expect(useAuthStore.getState()).toMatchObject({ status: "authenticated", user: USER })
+  expect(queryClient.getQueryData(["notifications", 20])).toEqual({ items: ["private"] })
+  expect(window.localStorage.getItem(CACHE_KEY)).toBe("{}")
+}
+
 beforeEach(() => {
   logout.mockReset()
   session.mockReset()
   window.localStorage.clear()
   queryClient = new QueryClient()
-  useSignOutRetryStore.setState({ failures: 0, csrfToken: null })
+  useSignOutRetryStore.setState({ pending: false, failed: false })
   useAuthStore.getState().setSession({ user: USER, csrfToken: "csrf-a" })
+  queryClient.setQueryData(["notifications", 20], { items: ["private"] })
+  window.localStorage.setItem(CACHE_KEY, "{}")
 })
 
 afterEach(() => {
@@ -59,25 +70,24 @@ afterEach(() => {
 })
 
 describe("useLogout", () => {
-  it("still signs out locally when the request never reached the server, and asks for a retry", async () => {
+  it("keeps the user visibly signed in when the request never reached the server", async () => {
     logout.mockRejectedValue(new TypeError("Failed to fetch"))
 
     await signOut()
 
-    expect(useAuthStore.getState().user).toBeNull()
-    expect(useAuthStore.getState().status).toBe("anonymous")
-    expect(useSignOutRetryStore.getState()).toMatchObject({ failures: 1, csrfToken: "csrf-a" })
+    expectStillSignedIn()
+    expect(useSignOutRetryStore.getState()).toMatchObject({ pending: false, failed: true })
   })
 
-  it("treats a server error as a failed sign-out, because the session cookie survives it", async () => {
+  it("keeps the user signed in on a server error, because the session cookie survives it", async () => {
     logout.mockRejectedValue(
       new AppError(ErrorCode.INTERNAL, "boom", { httpStatus: 500 }),
     )
 
     await signOut()
 
-    expect(useAuthStore.getState().user).toBeNull()
-    expect(useSignOutRetryStore.getState().failures).toBe(1)
+    expectStillSignedIn()
+    expect(useSignOutRetryStore.getState().failed).toBe(true)
   })
 
   it("counts an already-expired session (UNAUTHORIZED) as signed out", async () => {
@@ -86,50 +96,60 @@ describe("useLogout", () => {
     await signOut()
 
     expect(useAuthStore.getState().user).toBeNull()
-    expect(useSignOutRetryStore.getState().failures).toBe(0)
+    expect(queryClient.getQueryCache().getAll()).toHaveLength(0)
+    expect(window.localStorage.getItem(CACHE_KEY)).toBeNull()
+    expect(useSignOutRetryStore.getState().failed).toBe(false)
   })
 
-  it("asks for nothing more when the server confirmed the sign-out", async () => {
+  it("clears everything once the server confirmed the sign-out", async () => {
     logout.mockResolvedValue({ ok: true })
 
     await signOut()
 
-    expect(useAuthStore.getState().user).toBeNull()
-    expect(useSignOutRetryStore.getState().failures).toBe(0)
+    expect(useAuthStore.getState()).toMatchObject({ status: "anonymous", user: null })
+    expect(queryClient.getQueryCache().getAll()).toHaveLength(0)
+    expect(window.localStorage.getItem(CACHE_KEY)).toBeNull()
+    expect(useSignOutRetryStore.getState()).toMatchObject({ pending: false, failed: false })
   })
-})
 
-describe("retrySignOut", () => {
-  it("re-posts with the CSRF token of the session being ended, then settles", async () => {
+  it("a retry after a failure re-runs the normal sign-out and clears the notice", async () => {
     logout.mockRejectedValueOnce(new TypeError("Failed to fetch"))
     await signOut()
+    expect(useSignOutRetryStore.getState().failed).toBe(true)
 
     logout.mockResolvedValueOnce({ ok: true })
-    await retrySignOut()
-
-    expect(logout).toHaveBeenLastCalledWith({ headers: { "x-csrf-token": "csrf-a" } })
-    expect(useSignOutRetryStore.getState().csrfToken).toBeNull()
-  })
-
-  it("asks again when the retry fails too", async () => {
-    logout.mockRejectedValue(new TypeError("Failed to fetch"))
     await signOut()
 
-    await retrySignOut()
-
-    expect(useSignOutRetryStore.getState()).toMatchObject({ failures: 2, csrfToken: "csrf-a" })
+    expect(useAuthStore.getState().user).toBeNull()
+    expect(useSignOutRetryStore.getState().failed).toBe(false)
   })
 
-  it("never ends a session that someone has signed in to since", async () => {
-    logout.mockRejectedValueOnce(new TypeError("Failed to fetch"))
-    await signOut()
+  it("sends the CSRF token the settled session holds, never one captured during the boot window", async () => {
+    useAuthStore.setState({ csrfToken: null, optimistic: true })
+    const tokensAtCall: (string | undefined)[] = []
+    logout.mockImplementation(async (...args: unknown[]) => {
+      expect(args).toEqual([])
+      tokensAtCall.push(await resolveCsrfToken())
+      throw new TypeError("Failed to fetch")
+    })
+
+    const { result } = renderHook(() => useLogout(), { wrapper })
+    let pending!: Promise<void>
+    act(() => {
+      pending = result.current()
+    })
+    await act(async () => {
+      useAuthStore.getState().setSession({ user: USER, csrfToken: "csrf-b" })
+      await pending
+    })
+
     logout.mockClear()
-    useAuthStore.getState().setSession({ user: { ...USER, id: "22222222-2222-4222-8222-222222222222" } })
+    await act(async () => {
+      await result.current()
+    })
 
-    await retrySignOut()
-
-    expect(logout).not.toHaveBeenCalled()
-    expect(useSignOutRetryStore.getState().csrfToken).toBeNull()
+    expect(tokensAtCall).toEqual(["csrf-b", "csrf-b"])
+    expectStillSignedIn()
   })
 })
 
