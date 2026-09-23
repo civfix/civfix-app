@@ -18,7 +18,9 @@ const reportTypes = code(read("../../report/reportTypes.ts"))
 function slice(start: string, end: string): string {
   const from = body.indexOf(start)
   expect(from, start).toBeGreaterThanOrEqual(0)
-  return body.slice(from, body.indexOf(end, from))
+  const to = body.indexOf(end, from + start.length)
+  expect(to, end).toBeGreaterThan(from)
+  return body.slice(from, to)
 }
 
 describe("the submit error screen (APP-BUG-157)", () => {
@@ -42,7 +44,7 @@ describe("the submit error screen (APP-BUG-157)", () => {
 describe("stale upload ids (APP-BUG-158)", () => {
   it("drops the cached ids when the server refuses them, then rethrows", () => {
     expect(flat(submit)).toContain(
-      "} catch (err) { if (invalidatesUploadIds(err)) store.clearMediaUploadIds() throw err }",
+      "} catch (err) { if (invalidatesUploadIds(err) && isCurrent()) store.clearMediaUploadIds() throw err }",
     )
   })
 })
@@ -96,7 +98,7 @@ describe("double taps (APP-BUG-167, APP-BUG-168)", () => {
   })
 
   it("starts every submission through the module-level single-flight slot", () => {
-    expect(body).toContain("const submitRuns = createSubmitRunSlot<SubmitSettled>()")
+    expect(body).toContain("const submitRuns = createSubmitRunSlot<SubmitSettled>({")
     expect(flat(body)).toContain("const run = submitRuns.start(performSubmit) if (run) followRun(run)")
   })
 })
@@ -105,7 +107,7 @@ describe("a remount adopts the run it missed (APP-BUG-169)", () => {
   it("opens on the submitting state and follows an unclaimed run", () => {
     expect(flat(body)).toContain('useState<"idle" | "submitting" | "error" | "done">(() => submitRuns.unclaimed() ? "submitting" : "idle", )')
     expect(flat(body)).toContain("const pending = submitRuns.unclaimed() if (pending) followRun(pending)")
-    expect(body).toContain("if (!bodyMounted.current) return\n        submitRuns.claim(run)")
+    expect(body).toContain("if (!bodyMounted.current) return\n        if (!submitRuns.claim(run)")
   })
 
   it("does the work of a run outside React state so an unmounted body loses nothing", () => {
@@ -113,6 +115,55 @@ describe("a remount adopts the run it missed (APP-BUG-169)", () => {
     expect(perform).not.toMatch(/setSubmitPhase|setResult|setShareSnapshot|setSubmitError/)
     expect(perform).toContain('return { kind: "done", result: res, share }')
     expect(perform).toContain('return { kind: "error", error: err }')
+  })
+})
+
+describe("a submission never crosses to the next viewer (B6)", () => {
+  it("never leaves a composer hand-off for a later mount to adopt", () => {
+    expect(flat(body)).toContain(
+      'const submitRuns = createSubmitRunSlot<SubmitSettled>({ claimsItself: (settled) => settled.kind === "composer", })',
+    )
+  })
+
+  it("stops sending on the departed viewer's behalf between uploads, the report and the feed share", () => {
+    const pipeline = submit.slice(submit.indexOf("export function useReportSubmit("), submit.indexOf("export function useFeedShareRetry("))
+    expect(pipeline).toContain("return useCallback(async (isCurrent: () => boolean = () => true): Promise<ReportSubmitOutcome> => {")
+    const uploads = pipeline.indexOf("const mediaUploadIds = await uploadAll(")
+    const guards = [...pipeline.matchAll(/if \(!isCurrent\(\)\) throw new SubmitRunDiscarded\(\)/g)].map((m) => m.index!)
+    const create = pipeline.indexOf("result = await createReport()")
+    const share = pipeline.indexOf("let feedShare: FeedShareOutcome")
+    expect(uploads).toBeGreaterThan(-1)
+    expect(create).toBeGreaterThan(-1)
+    expect(share).toBeGreaterThan(-1)
+    expect(guards.some((g) => g > uploads && g < create)).toBe(true)
+    expect(guards.some((g) => g > create && g < share)).toBe(true)
+    expect(pipeline).toContain("if (invalidatesUploadIds(err) && isCurrent()) store.clearMediaUploadIds()")
+  })
+
+  it("does no post-settle work for a discarded run and shows it to nobody", () => {
+    const perform = flat(slice("const performSubmit = useCallback(", "}, [fromComposer, submit, reset, t, haptics])"))
+    expect(perform).toContain("async (isCurrent: () => boolean): Promise<SubmitSettled> => {")
+    expect(perform).toContain("const res = await submit(isCurrent)")
+    expect(perform).toContain('if (!isCurrent()) return { kind: "discarded" }')
+    expect(perform.indexOf('if (!isCurrent()) return { kind: "discarded" }')).toBeLessThan(perform.indexOf("haptics.success()"))
+    expect(perform).toContain('if (err instanceof SubmitRunDiscarded || !isCurrent()) return { kind: "discarded" }')
+    const follow = flat(slice("const followRun = useCallback(", "[t, stepOrder],"))
+    expect(follow).toContain('if (!submitRuns.claim(run) || settled.kind === "discarded") { setSubmitPhase("idle") return }')
+  })
+
+  it("resets a mounted body's submit state when the drafts are wiped for a new viewer", () => {
+    expect(body).toContain("const draftGeneration = useViewerDraftGeneration()")
+    const adjust = flat(slice("if (submitGeneration !== draftGeneration) {", "\n  }\n"))
+    for (const reset of [
+      "setSubmitGeneration(draftGeneration)",
+      'setSubmitPhase("idle")',
+      "setSubmitError(null)",
+      "setSubmitRecovery(null)",
+      "setResult(null)",
+      "setShareSnapshot(null)",
+    ]) {
+      expect(adjust).toContain(reset)
+    }
   })
 })
 

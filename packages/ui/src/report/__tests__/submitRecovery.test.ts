@@ -9,6 +9,7 @@ import {
   invalidatesUploadIds,
 } from "../submit"
 import { useDraftReportStore } from "../draftStore"
+import { adoptViewer, discardViewerDrafts } from "../../viewerScope"
 
 const BOTH_FLAGS = { blockingSidewalk: true, safetyHazard: true }
 const NO_FLAGS = { blockingSidewalk: false, safetyHazard: false }
@@ -140,5 +141,74 @@ describe("one submission at a time, surviving a remount (APP-BUG-168, APP-BUG-16
     expect(slot.unclaimed()).toBe(run)
     slot.claim(run)
     expect(slot.unclaimed()).toBeNull()
+  })
+})
+
+describe("a submission belongs to the viewer who started it (B6)", () => {
+  function deferred<T>() {
+    let resolve!: (v: T) => void
+    const promise = new Promise<T>((r) => {
+      resolve = r
+    })
+    return { promise, resolve }
+  }
+
+  beforeEach(() => {
+    adoptViewer(null)
+    discardViewerDrafts()
+  })
+
+  it("drops A's run on sign-out: B's flow finds nothing to adopt and the task learns it was discarded", async () => {
+    adoptViewer("user-a")
+    const slot = createSubmitRunSlot<string>()
+    const gate = deferred<void>()
+    let stillCurrent: boolean | null = null
+    const run = slot.start(async (isCurrent) => {
+      await gate.promise
+      stillCurrent = isCurrent()
+      return "filed by A"
+    })!
+
+    discardViewerDrafts()
+    adoptViewer(null)
+    adoptViewer("user-b")
+
+    expect(slot.unclaimed()).toBeNull()
+    gate.resolve()
+    await run
+    expect(stillCurrent).toBe(false)
+    expect(slot.unclaimed()).toBeNull()
+    expect(slot.claim(run)).toBe(false)
+    expect(slot.start(async () => "B's own report")).not.toBeNull()
+  })
+
+  it("drops A's run on a switch to another account without a sign-out in between", async () => {
+    adoptViewer("user-a")
+    const slot = createSubmitRunSlot<string>()
+    const run = slot.start(async () => "filed by A")!
+    adoptViewer("user-b")
+    await run
+    expect(slot.unclaimed()).toBeNull()
+  })
+
+  it("keeps the run through a transient loss of the same viewer", async () => {
+    adoptViewer("user-a")
+    const slot = createSubmitRunSlot<string>()
+    const run = slot.start(async (isCurrent) => (isCurrent() ? "current" : "discarded"))!
+    adoptViewer(null)
+    adoptViewer("user-a")
+    await expect(run).resolves.toBe("current")
+    expect(slot.unclaimed()).toBe(run)
+    expect(slot.claim(run)).toBe(true)
+  })
+
+  it("never leaves a run that claims itself (a composer hand-off) for the next mount to adopt", async () => {
+    const slot = createSubmitRunSlot<{ kind: string }>({ claimsItself: (settled) => settled.kind === "composer" })
+    await slot.start(async () => ({ kind: "composer" }))
+    expect(slot.unclaimed()).toBeNull()
+
+    const failed = slot.start(async () => ({ kind: "error" }))!
+    await failed
+    expect(slot.unclaimed()).toBe(failed)
   })
 })

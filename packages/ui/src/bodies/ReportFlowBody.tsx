@@ -79,8 +79,11 @@ import {
   useFeedShareRetry,
   createSubmitRunSlot,
   descriptionMaxLength,
+  SubmitRunDiscarded,
   type ReportSubmitOutcome,
 } from "../report/submit"
+import { routeCardState } from "../report/routeCard"
+import { useViewerDraftGeneration } from "../viewerScope"
 import { useT } from "../i18n"
 import type { TFunction } from "i18next"
 
@@ -592,7 +595,7 @@ function ReviewStep({
     [setLocation],
   )
   const jurisdiction = useResolveJurisdiction(point)
-  const jd = jurisdiction.data
+  const route = routeCardState(point !== null, jurisdiction)
   const category = draft.category as ReportCategory | null
   const pin = useMemo(() => reportPinTarget(category), [category])
 
@@ -642,21 +645,31 @@ function ReviewStep({
         </View>
         <View style={styles.routeText}>
           <Text style={styles.routeLabel}>{t("review.route_label")}</Text>
-          {!point ? (
+          {route.kind === "no_point" ? (
             <Text style={styles.routeSub}>{t("review.route_no_point")}</Text>
-          ) : jd?.routable ? (
+          ) : route.kind === "routable" ? (
             <>
-              <Text style={styles.routeName}>{jd.name}</Text>
+              <Text style={styles.routeName}>{route.name}</Text>
               <Text style={styles.routeSub}>{t("review.route_routable")}</Text>
             </>
-          ) : jd ? (
+          ) : route.kind === "new_area" ? (
             <Text style={styles.routeSub}>
-              {t("review.route_new_area", { cityState: jd.cityStateLabel })}
+              {t("review.route_new_area", { cityState: route.cityState })}
             </Text>
-          ) : jurisdiction.data === null ? (
+          ) : route.kind === "uncovered" ? (
             <Text style={styles.routeSub}>
               {t("review.route_uncovered")}
             </Text>
+          ) : route.kind === "unavailable" ? (
+            <View style={styles.routeRetry}>
+              <Text style={styles.routeSub}>{t("review.route_unavailable")}</Text>
+              <PrimaryButton
+                label={t("submit.try_again")}
+                variant="outline"
+                icon={iconMap.RefreshCw}
+                onPress={() => void jurisdiction.refetch()}
+              />
+            </View>
           ) : (
             <Text style={styles.routeSub}>{t("review.route_resolving")}</Text>
           )}
@@ -901,8 +914,11 @@ type SubmitSettled =
   | { kind: "done"; result: ReportSubmitOutcome; share: ShareSnapshot }
   | { kind: "composer" }
   | { kind: "error"; error: unknown }
+  | { kind: "discarded" }
 
-const submitRuns = createSubmitRunSlot<SubmitSettled>()
+const submitRuns = createSubmitRunSlot<SubmitSettled>({
+  claimsItself: (settled) => settled.kind === "composer",
+})
 
 export function ReportFlowBody() {
   const styles = useStyles()
@@ -944,6 +960,17 @@ export function ReportFlowBody() {
   const [submitRecovery, setSubmitRecovery] = useState<SubmitRecovery | null>(null)
   const [result, setResult] = useState<ReportSubmitOutcome | null>(null)
   const [shareSnapshot, setShareSnapshot] = useState<ShareSnapshot | null>(null)
+  // A wipe for a new viewer drops the slot's run; a body still on screen must drop what it showed of it too.
+  const draftGeneration = useViewerDraftGeneration()
+  const [submitGeneration, setSubmitGeneration] = useState(draftGeneration)
+  if (submitGeneration !== draftGeneration) {
+    setSubmitGeneration(draftGeneration)
+    setSubmitPhase("idle")
+    setSubmitError(null)
+    setSubmitRecovery(null)
+    setResult(null)
+    setShareSnapshot(null)
+  }
   const scrollRef = useRef<{ scrollTo?: (opts: { y: number; animated?: boolean }) => void } | null>(null)
   const revealShareBlock = useCallback((y: number) => {
     scrollRef.current?.scrollTo?.({ y, animated: true })
@@ -1034,7 +1061,10 @@ export function ReportFlowBody() {
       setSubmitRecovery(null)
       void run.then((settled) => {
         if (!bodyMounted.current) return
-        submitRuns.claim(run)
+        if (!submitRuns.claim(run) || settled.kind === "discarded") {
+          setSubmitPhase("idle")
+          return
+        }
         if (settled.kind === "composer") {
           setSubmitPhase("idle")
           return
@@ -1060,9 +1090,10 @@ export function ReportFlowBody() {
     if (pending) followRun(pending)
   }, [followRun])
 
-  const performSubmit = useCallback(async (): Promise<SubmitSettled> => {
+  const performSubmit = useCallback(async (isCurrent: () => boolean): Promise<SubmitSettled> => {
     try {
-      const res = await submit()
+      const res = await submit(isCurrent)
+      if (!isCurrent()) return { kind: "discarded" }
       const d = useDraftReportStore.getState().draft
       const share: ShareSnapshot = {
         title: d.title.trim() || t("review.untitled"),
@@ -1096,6 +1127,7 @@ export function ReportFlowBody() {
       reset()
       return { kind: "done", result: res, share }
     } catch (err) {
+      if (err instanceof SubmitRunDiscarded || !isCurrent()) return { kind: "discarded" }
       haptics.error()
       return { kind: "error", error: err }
     }
@@ -1668,6 +1700,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.neutral.card,
   },
   routeText: { flex: 1 },
+  routeRetry: { gap: t.space["2"], alignItems: "flex-start" },
   routeLabel: {
     fontFamily: t.fontFamily.bodyExtraBold,
     fontSize: 10.5,

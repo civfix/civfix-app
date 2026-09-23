@@ -23,6 +23,7 @@ import {
 } from "../bodies/feedShare"
 import { rememberLocalReportThumb } from "../bodies/localReportThumbs"
 import { appErrorCode, appErrorFields } from "../bodies/errorCode"
+import { registerViewerScopedDrafts } from "../viewerScope"
 import { useDraftReportStore } from "./draftStore"
 import type { DraftFlags, DraftMedia, DraftReport } from "./draftStore"
 
@@ -67,29 +68,40 @@ export function invalidatesUploadIds(err: unknown): boolean {
 }
 
 export interface SubmitRunSlot<T> {
-  start: (task: () => Promise<T>) => Promise<T> | null
+  /** `isCurrent` turns false once the viewer who started the run is gone (sign-out or account switch). */
+  start: (task: (isCurrent: () => boolean) => Promise<T>) => Promise<T> | null
   unclaimed: () => Promise<T> | null
-  claim: (run: Promise<T>) => void
+  /** False when `run` is no longer the slot's run, so its outcome belongs to nobody on screen. */
+  claim: (run: Promise<T>) => boolean
+}
+
+export interface SubmitRunSlotOptions<T> {
+  /** A settled value that needs no body to show it, so no later mount may adopt it. */
+  claimsItself?: (settled: T) => boolean
 }
 
 // One report submission at a time, held outside React so it outlives the body: a second tap before the
 // re-render, or a remount while the first run is in flight, must not upload the media and share to the
 // feed a second time. A run whose body unmounted before it settled stays unclaimed so the next mount can
-// show its outcome instead of dropping it.
-export function createSubmitRunSlot<T>(): SubmitRunSlot<T> {
-  let current: { run: Promise<T>; settled: boolean; claimed: boolean } | null = null
-  return {
+// show its outcome instead of dropping it. The slot is viewer scoped: a sign-out or an account switch drops
+// the run, so the next viewer's flow never shows, retries or shares the previous viewer's report.
+export function createSubmitRunSlot<T>(options: SubmitRunSlotOptions<T> = {}): SubmitRunSlot<T> {
+  type Entry = { run: Promise<T>; settled: boolean; claimed: boolean }
+  let current: Entry | null = null
+  const slot: SubmitRunSlot<T> = {
     start(task) {
       if (current && !current.settled) return null
-      const entry: { run: Promise<T>; settled: boolean; claimed: boolean } = {
-        run: Promise.resolve().then(task),
-        settled: false,
-        claimed: false,
-      }
-      const markSettled = () => {
-        entry.settled = true
-      }
-      entry.run.then(markSettled, markSettled)
+      const isCurrent = () => current === entry
+      const entry: Entry = { run: Promise.resolve().then(() => task(isCurrent)), settled: false, claimed: false }
+      entry.run.then(
+        (value) => {
+          entry.settled = true
+          if (options.claimsItself?.(value)) entry.claimed = true
+        },
+        () => {
+          entry.settled = true
+        },
+      )
       current = entry
       return entry.run
     },
@@ -97,8 +109,24 @@ export function createSubmitRunSlot<T>(): SubmitRunSlot<T> {
       return current && !current.claimed ? current.run : null
     },
     claim(run) {
-      if (current?.run === run) current.claimed = true
+      if (current?.run !== run) return false
+      current.claimed = true
+      return true
     },
+  }
+  registerViewerScopedDrafts(slot, {
+    discard: () => {
+      current = null
+    },
+  })
+  return slot
+}
+
+/** Thrown inside a submission whose viewer left mid-flight, so nothing more is sent on their behalf. */
+export class SubmitRunDiscarded extends Error {
+  constructor() {
+    super("The viewer who started this submission is gone.")
+    this.name = "SubmitRunDiscarded"
   }
 }
 
@@ -165,7 +193,7 @@ export interface ReportSubmitOptions {
   forComposer?: boolean
 }
 
-export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<ReportSubmitOutcome> {
+export function useReportSubmit(options?: ReportSubmitOptions): (isCurrent?: () => boolean) => Promise<ReportSubmitOutcome> {
   const forComposer = options?.forComposer === true
   const api = useApi()
   const camera = useCamera()
@@ -176,7 +204,7 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
   const me = useMyProfile().data?.profile ?? (user ? personFromAuthUser(user) : null)
   const createPostAsync = useCreatePost().mutateAsync
 
-  return useCallback(async (): Promise<ReportSubmitOutcome> => {
+  return useCallback(async (isCurrent: () => boolean = () => true): Promise<ReportSubmitOutcome> => {
     const store = useDraftReportStore.getState()
     const draft = store.draft
 
@@ -199,6 +227,7 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
     const idempotencyKey = store.ensureIdempotencyKey()
 
     const mediaUploadIds = await uploadAll(api, camera, draft.media)
+    if (!isCurrent()) throw new SubmitRunDiscarded()
 
     const description = composeDescription(draft)
     const addr = submittedAddr(draft)
@@ -243,9 +272,10 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
     try {
       result = await createReport()
     } catch (err) {
-      if (invalidatesUploadIds(err)) store.clearMediaUploadIds()
+      if (invalidatesUploadIds(err) && isCurrent()) store.clearMediaUploadIds()
       throw err
     }
+    if (!isCurrent()) throw new SubmitRunDiscarded()
 
     let feedShare: FeedShareOutcome = { status: "skipped" }
     const shareable =

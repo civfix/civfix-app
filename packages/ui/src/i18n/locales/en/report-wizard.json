@@ -67,6 +67,7 @@
     "route_new_area": "New area - {{cityState}} is not set up for automatic routing yet. We will review and forward it manually.",
     "route_uncovered": "We do not cover this area yet, but your report is logged and reviewed manually.",
     "route_resolving": "Resolving where this routes...",
+    "route_unavailable": "We could not check where this routes right now. You can still send your report.",
     "where_near": "Near {{address}}"
   },
   "submit": {
