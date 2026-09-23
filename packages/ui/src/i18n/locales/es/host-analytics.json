@@ -133,6 +133,7 @@
     "by_event_section": "Por evento",
     "by_event_empty": "Aún no hay eventos en este rango.",
     "by_event_a11y": "{{name}}, {{value}} inscripciones. Abrir las analíticas de este evento.",
+    "by_event_unknown_a11y": "{{name}}, inscripciones no disponibles. Abrir las analíticas de este evento.",
     "capacity_line": "{{signups}} de {{capacity}} plazas",
     "sources_caption": "El {{rate}} % de {{views}} visitas a la página se inscribió"
   },
@@ -182,7 +183,7 @@
     "panel_hours": "Horas de voluntariado",
     "checkins_caption": "de {{registered}} inscripciones · {{count}} eventos celebrados",
     "hours_caption": "registradas por {{volunteers}} voluntarios",
-    "hours_empty": "Sin horas registradas en los últimos 30 días: regístralas desde Herramientas de anfitrión",
+    "hours_empty": "Sin horas registradas en los últimos 30 días: regístralas desde Herramientas de anfitrión.",
     "hours_bars_a11y": "Horas de voluntariado por evento",
     "impact_resolved": "{{n}} resueltos",
     "impact_posts": "{{n}} publicaciones sobre tus eventos"

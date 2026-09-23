@@ -57,6 +57,7 @@ import {
   DEFAULT_ALL_EVENTS_PRESET,
   DEFAULT_EVENT_PRESET,
   arrivalXLabels,
+  byEventRowA11y,
   comparisonVerdict,
   comparisonVisible,
   eventRowTarget,
@@ -77,7 +78,6 @@ import {
 const BARS_HEIGHT = 96
 
 const RING_SIZE = 96
-
 
 const MAX_BY_EVENT_ROWS = 12
 
@@ -425,10 +425,7 @@ function EventBarRow({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={t("page.by_event_a11y", {
-        name: row.label,
-        value: value === null ? EMPTY_VALUE : value,
-      })}
+      accessibilityLabel={byEventRowA11y(t, row.label, value)}
       {...focusRingProps}
       style={(state) => [
         styles.eventRow,

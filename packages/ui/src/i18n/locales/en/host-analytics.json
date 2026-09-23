@@ -133,6 +133,7 @@
     "by_event_section": "By event",
     "by_event_empty": "No events in this range yet.",
     "by_event_a11y": "{{name}}, {{value}} sign-ups. Open this event's analytics.",
+    "by_event_unknown_a11y": "{{name}}, sign-ups not available. Open this event's analytics.",
     "capacity_line": "{{signups}} of {{capacity}} spots",
     "sources_caption": "{{rate}}% of {{views}} page views signed up"
   },
