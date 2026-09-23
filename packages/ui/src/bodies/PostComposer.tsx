@@ -82,6 +82,7 @@ import {
 import { postSubmitDestination, resolvePostSubmit } from "./postComposerSubmit"
 import { trackPostComposerMount, type PostComposerExitHost } from "./postComposerExit"
 import {
+  selectPostComposerDraft,
   selectPostComposerHasPendingMedia,
   usePostComposerStore,
   type PostComposerMedia,
@@ -186,7 +187,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
   const events = useAttendingCleanups()
   const haptics = useHaptics()
   const create = useCreatePost()
-  const draft = usePostComposerStore((state) => state.draft)
+  const draft = usePostComposerStore(selectPostComposerDraft)
   const setBody = usePostComposerStore((state) => state.setBody)
   const setMentionedUsers = usePostComposerStore((state) => state.setMentionedUsers)
   const setAttachedEvent = usePostComposerStore((state) => state.setAttachedEvent)
@@ -205,7 +206,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
   const reports = useMyReports()
   const attachments = useComposerAttachments(POST_COMPOSER_MEDIA_CAP)
   const [carriedSnapshot] = useState(() =>
-    snapshotCarriedMedia(usePostComposerStore.getState().draft.media),
+    snapshotCarriedMedia(draft.media),
   )
   const [carriedMedia, setCarriedMedia] = useState<PostComposerMedia[]>(() => carriedSnapshot.carried)
   const [droppedMedia, setDroppedMedia] = useState(() => carriedSnapshot.dropped)
@@ -391,7 +392,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
       replyToId: resolution.input.replyToId ?? null,
       threadRootId: resolution.input.replyToId ?? null,
     }
-    const staged = usePostComposerStore.getState().draft
+    const staged = selectPostComposerDraft(usePostComposerStore.getState())
     reset({ mode, targetPostId: targetPostId ?? null })
     create.mutate({ input: resolution.input, optimistic }, {
       onError: () => {

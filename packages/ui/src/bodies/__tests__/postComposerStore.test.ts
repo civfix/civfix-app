@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import type { LinkedEventRef, UserMentionDTO } from "@civfix/shared"
 import {
+  selectPostComposerDraft,
   selectPostComposerMediaUploadIds,
   selectPostComposerMentionedUserIds,
   selectPostComposerTargetId,
@@ -51,6 +52,7 @@ describe("postComposerStore", () => {
       replyToPostId: null,
       organizationId: null,
       pendingCreate: null,
+      ownerId: null,
     })
   })
 
@@ -152,6 +154,7 @@ describe("postComposerStore", () => {
       replyToPostId: null,
       organizationId: null,
       pendingCreate: null,
+      ownerId: null,
     })
   })
 
@@ -179,6 +182,7 @@ describe("postComposerStore", () => {
       replyToPostId: "post-parent",
       organizationId: null,
       pendingCreate: null,
+      ownerId: null,
     })
     expect(selectPostComposerTargetId(usePostComposerStore.getState())).toBe("post-parent")
   })
@@ -202,7 +206,7 @@ describe("postComposerStore", () => {
     expect(usePostComposerStore.getState().draft.organizationId).toBeNull()
   })
 
-  it("adoptViewer wipes the previous viewer's whole draft when the account changes or signs out", () => {
+  it("adoptViewer wipes what the previous viewer wrote when a different account arrives", () => {
     usePostComposerStore.getState().adoptViewer("user-a")
     const store = usePostComposerStore.getState()
     store.setOrganizationId("org-a")
@@ -226,24 +230,83 @@ describe("postComposerStore", () => {
       quotePostId: null,
       replyToPostId: null,
       pendingCreate: null,
+      ownerId: null,
     })
     expect(usePostComposerStore.getState().claimedCreate).toBeNull()
-
-    usePostComposerStore.getState().setBody("Draft by user b")
     usePostComposerStore.getState().adoptViewer(null)
-    expect(usePostComposerStore.getState().draft.body).toBe("")
   })
 
-  it("adoptViewer keeps the draft when the same viewer is adopted again", () => {
+  it("a viewer change keeps the mounted composer's reply target", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().reset({ mode: "reply", targetPostId: "post-parent" })
+    usePostComposerStore.getState().setBody("Replying as a")
+
+    usePostComposerStore.getState().adoptViewer("user-b")
+    expect(usePostComposerStore.getState().draft).toMatchObject({
+      body: "",
+      mode: "reply",
+      replyToPostId: "post-parent",
+      quotePostId: null,
+    })
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
+  it("keeps a signed-in author's draft through a transient loss of the viewer, hidden meanwhile", () => {
     usePostComposerStore.getState().adoptViewer("user-a")
     usePostComposerStore.getState().setOrganizationId("org-a")
-    usePostComposerStore.getState().setBody("Still typing")
+    usePostComposerStore.getState().setBody("A long draft")
+
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(selectPostComposerDraft(usePostComposerStore.getState()).body).toBe("")
+    expect(selectPostComposerDraft(usePostComposerStore.getState()).organizationId).toBeNull()
+    usePostComposerStore.getState().setBody("typed by nobody")
 
     usePostComposerStore.getState().adoptViewer("user-a")
-    expect(usePostComposerStore.getState().draft.body).toBe("Still typing")
-    expect(usePostComposerStore.getState().draft.organizationId).toBe("org-a")
+    expect(selectPostComposerDraft(usePostComposerStore.getState())).toMatchObject({
+      body: "A long draft",
+      organizationId: "org-a",
+    })
 
-    usePostComposerStore.getState().setOrganizationId(null)
+    usePostComposerStore.getState().adoptViewer("user-a")
+    expect(usePostComposerStore.getState().draft.body).toBe("A long draft")
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
+  it("an explicit sign-out wipes the draft but keeps the composer's route", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().reset({ mode: "quote", targetPostId: "post-quoted" })
+    usePostComposerStore.getState().setBody("Quote by a")
+    usePostComposerStore.getState().setOrganizationId("org-a")
+
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+    usePostComposerStore.getState().adoptViewer("user-a")
+
+    expect(usePostComposerStore.getState().draft).toMatchObject({
+      body: "",
+      organizationId: null,
+      mode: "quote",
+      quotePostId: "post-quoted",
+    })
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
+  it("restore drops a staged draft once its author is no longer the viewer", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().setBody("Posted by a")
+    const staged = usePostComposerStore.getState().draft
+    usePostComposerStore.getState().reset({ mode: "post", targetPostId: null })
+
+    // A 401 during the create: the host signs the viewer out before the mutation's onError runs.
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+    usePostComposerStore.getState().restore(staged)
+
+    expect(usePostComposerStore.getState().draft.body).toBe("")
+    usePostComposerStore.getState().adoptViewer("user-b")
+    expect(selectPostComposerDraft(usePostComposerStore.getState()).body).toBe("")
+    usePostComposerStore.getState().adoptViewer(null)
   })
 
   it("reset(keep) routes a quote target to quotePostId, never replyToPostId", () => {
@@ -412,6 +475,7 @@ describe("postComposerStore create round trip", () => {
       replyToPostId: "post-parent",
       organizationId: null,
       pendingCreate: null,
+      ownerId: null,
     })
   })
 

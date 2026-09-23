@@ -30,7 +30,11 @@ import {
   snapshotCarriedMedia,
 } from "../postComposerMedia"
 import { resolvePostSubmit } from "../postComposerSubmit"
-import { usePostComposerStore, type PostComposerMedia } from "../postComposerStore"
+import {
+  selectPostComposerDraft,
+  usePostComposerStore,
+  type PostComposerMedia,
+} from "../postComposerStore"
 import { AuthorAsChips, authorAsSelection } from "../AuthorAsChips"
 import { useNavStore } from "../../nav"
 import {
@@ -56,14 +60,14 @@ export function InlineComposer() {
   const cardRef = useRef<View>(null)
   const submittingRef = useRef(false)
 
-  const body = usePostComposerStore((state) => state.draft.body)
-  const mentionedUsers = usePostComposerStore((state) => state.draft.mentionedUsers)
+  const body = usePostComposerStore((state) => selectPostComposerDraft(state).body)
+  const mentionedUsers = usePostComposerStore((state) => selectPostComposerDraft(state).mentionedUsers)
   const setBody = usePostComposerStore((state) => state.setBody)
   const setMentionedUsers = usePostComposerStore((state) => state.setMentionedUsers)
   const setMedia = usePostComposerStore((state) => state.setMedia)
   const setOrganizationId = usePostComposerStore((state) => state.setOrganizationId)
-  const draftOrganizationId = usePostComposerStore((state) => state.draft.organizationId)
-  const ownsDraft = usePostComposerStore((state) => inlineComposerOwnsDraft(state.draft))
+  const draftOrganizationId = usePostComposerStore((state) => selectPostComposerDraft(state).organizationId)
+  const ownsDraft = usePostComposerStore((state) => inlineComposerOwnsDraft(selectPostComposerDraft(state)))
 
   const myOrgs = useMyOrganizations()
   const actableOrgs = actableOrganizations(myOrgs.data)
@@ -129,12 +133,12 @@ export function InlineComposer() {
   )
 
   const openComposer = useCallback(() => {
-    const draft = usePostComposerStore.getState().draft
+    const draft = selectPostComposerDraft(usePostComposerStore.getState())
     if (!inlineComposerOwnsDraft(draft)) {
       useNavStore.getState().push({ kind: "composer", ...composerEntryFor(draft) })
       return
     }
-    const snapshot = snapshotCarriedMedia(usePostComposerStore.getState().draft.media)
+    const snapshot = snapshotCarriedMedia(draft.media)
     setCarriedMedia(snapshot.carried)
     setDroppedMedia(snapshot.dropped)
     setOpen(true)
@@ -276,7 +280,7 @@ export function InlineComposer() {
       replyToId: null,
       threadRootId: null,
     }
-    const staged = usePostComposerStore.getState().draft
+    const staged = selectPostComposerDraft(usePostComposerStore.getState())
     usePostComposerStore.getState().reset({ mode: "post", targetPostId: null })
     create.mutate(
       { input: resolution.input, optimistic },
