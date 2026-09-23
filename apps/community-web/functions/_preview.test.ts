@@ -329,7 +329,7 @@ describe("cache policy", () => {
     const response = await runPreview(prod.context, "report", { rewrite: prod.rewrite })
     expect(prod.fetchSpy).toHaveBeenCalledTimes(1)
     const html = await response.text()
-    expect(html).toContain('<meta property="og:title" content="Graffiti · Los Angeles, CA">')
+    expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
     expect(html).not.toContain("robots")
   })
 })
@@ -487,7 +487,7 @@ describe("runPreview", () => {
       const h = harness({ url: `https://${host}/pin/${id}` })
       const html = await (await runPreview(h.context, "report", { rewrite: h.rewrite })).text()
       expect(html).toContain('<meta name="robots" content="noindex">')
-      expect(html).toContain('<meta property="og:title" content="Graffiti · Los Angeles, CA">')
+      expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
     }
   })
 
@@ -498,7 +498,7 @@ describe("runPreview", () => {
       const h = harness({ url: `https://${host}/pin/${id}` })
       const html = await (await runPreview(h.context, "report", { rewrite: h.rewrite })).text()
       expect(html).not.toContain("robots")
-      expect(html).toContain('<meta property="og:title" content="Graffiti · Los Angeles, CA">')
+      expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
     }
   })
 
@@ -542,7 +542,7 @@ describe("runPreview", () => {
     expect(h.rewrite).toHaveBeenCalledTimes(1)
     expect(response.headers.get("Cache-Control")).toBe("public, max-age=0, must-revalidate")
     const html = await response.text()
-    expect(html).toContain('<meta property="og:title" content="Graffiti · Los Angeles, CA">')
+    expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
   })
 })
 
@@ -601,29 +601,30 @@ describe("preview head on the staging host", () => {
     const { html, response } = await renderEvent(
       `https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}`,
     )
-    const description = "Sat, Sep 12, 10:00 AM PDT · A volunteer event on civfix"
+    const description = "Sat, Sep 12, 10:00 AM PDT · Bring gloves. Ask for Dana at 12 Elm St, apt 5."
+    const title = "Ballona Creek cleanup on civfix"
 
     expect(response.headers.get("Content-Type")).toBe(HTML_CONTENT_TYPE)
     for (const tag of [
-      "<title>Ballona Creek cleanup · civfix</title>",
+      `<title>${title}</title>`,
       `<meta name="description" content="${description}">`,
       '<meta property="og:site_name" content="civfix">',
       '<meta property="og:type" content="article">',
       '<meta property="og:locale" content="en_US">',
       `<meta property="og:url" content="https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}">`,
-      '<meta property="og:title" content="Ballona Creek cleanup">',
+      `<meta property="og:title" content="${title}">`,
       `<meta property="og:description" content="${description}">`,
       '<meta property="og:image" content="https://civfix.dev/og.png">',
       '<meta property="og:image:secure_url" content="https://civfix.dev/og.png">',
       '<meta property="og:image:type" content="image/png">',
       '<meta property="og:image:width" content="1200">',
       '<meta property="og:image:height" content="630">',
-      '<meta property="og:image:alt" content="Ballona Creek cleanup">',
+      `<meta property="og:image:alt" content="${title}">`,
       '<meta name="twitter:card" content="summary_large_image">',
-      '<meta name="twitter:title" content="Ballona Creek cleanup">',
+      `<meta name="twitter:title" content="${title}">`,
       `<meta name="twitter:description" content="${description}">`,
       '<meta name="twitter:image" content="https://civfix.dev/og.png">',
-      '<meta name="twitter:image:alt" content="Ballona Creek cleanup">',
+      `<meta name="twitter:image:alt" content="${title}">`,
       `<link rel="canonical" href="https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}">`,
       '<link rel="icon" href="https://civfix.dev/favicon.svg" type="image/svg+xml">',
       '<link rel="apple-touch-icon" href="https://civfix.dev/apple-touch-icon.png" sizes="180x180">',
@@ -633,11 +634,10 @@ describe("preview head on the staging host", () => {
     expect(html).not.toContain("civfix.org")
   })
 
-  it("still refuses to echo host-authored free text", async () => {
+  it("carries the host's description but never the address field", async () => {
     const { html } = await renderEvent(`https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}`)
-    for (const secret of ["gloves", "Dana", "Elm St", "Secret Ln"]) {
-      expect(html).not.toContain(secret)
-    }
+    expect(html).toContain("gloves")
+    expect(html).not.toContain("Secret Ln")
   })
 
   it("takes the origin from the served host only, never from a client-supplied header", async () => {

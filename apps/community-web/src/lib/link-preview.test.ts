@@ -17,6 +17,7 @@ import {
   previewForPerson,
   previewForPost,
   previewForReport,
+  previewForSignupPage,
   withNoindex,
   type EventPreviewInput,
   type OrganizationPreviewInput,
@@ -107,35 +108,37 @@ describe("previewForReport", () => {
     cityName: "Los Angeles, CA",
   }
 
-  it("builds title and description from controlled vocabulary only", () => {
+  it("builds an X-style title from the type label and city, and a status-led description", () => {
     const preview = previewForReport(base, ctx)
-    expect(preview?.title).toBe("Graffiti · Los Angeles, CA")
+    expect(preview?.title).toBe("Graffiti in Los Angeles, CA on civfix")
     expect(preview?.description).toBe("Graffiti — In progress · Los Angeles, CA")
     expect(preview?.type).toBe("article")
+    expect(preview?.card).toBe("summary_large_image")
   })
 
-  it("never echoes the resident's own title or body text", () => {
-    const html = metaTagsHtml(
-      previewForReport(
-        {
-          ...base,
-          title: "Underpass tagging by the skate ramp",
-          description: "My neighbour Dana keeps spraying the wall behind 12 Elm.",
-        } as ReportPreviewInput,
-        ctx,
-      )!,
+  it("carries the resident's title and description, status first", () => {
+    const preview = previewForReport(
+      {
+        ...base,
+        title: "Underpass tagging by the skate ramp",
+        description: "My neighbour Dana keeps spraying the wall behind 12 Elm.",
+      },
+      ctx,
+    )!
+    expect(preview.description).toBe(
+      "In progress · Underpass tagging by the skate ramp · My neighbour Dana keeps spraying the wall behind 12 Elm.",
     )
-    expect(html).not.toContain("Underpass")
-    expect(html).not.toContain("skate ramp")
-    expect(html).not.toContain("Dana")
-    expect(html).not.toContain("neighbour")
-    expect(html).toContain("Graffiti — In progress · Los Angeles, CA")
+    expect(metaTagsHtml(preview)).toContain("Underpass")
   })
 
   it("falls back to the category label when the type is unknown", () => {
     expect(previewForReport({ ...base, type: null }, ctx)?.title).toBe(
-      "Graffiti · Los Angeles, CA",
+      "Graffiti in Los Angeles, CA on civfix",
     )
+  })
+
+  it("drops the city from the title when the server sent none", () => {
+    expect(previewForReport({ ...base, cityName: null }, ctx)?.title).toBe("Graffiti on civfix")
   })
 
   it("refuses to preview a non-public report", () => {
@@ -232,10 +235,16 @@ describe("previewForEvent", () => {
     expect(preview?.description).toBe("Sat, Sep 12, 1:00 PM EDT · A volunteer event on civfix")
   })
 
-  it("shares the host's uploaded cover, and the brand card when there is none", () => {
-    const withCover = previewForEvent({ ...base, coverUrl: "https://cdn.civfix.org/c/1.jpg" }, ctx)
-    expect(withCover?.image).toBe("https://cdn.civfix.org/c/1.jpg")
+  it("uses the cover, else the first gallery image, else the brand card", () => {
+    const cover = "https://cdn.civfix.org/c/1.jpg"
+    const gallery = ["https://cdn.civfix.org/g/1.jpg", "https://cdn.civfix.org/g/2.jpg"]
+    const withCover = previewForEvent({ ...base, coverUrl: cover, galleryUrls: gallery }, ctx)
+    expect(withCover?.image).toBe(cover)
     expect(withCover?.imageIsBrand).toBe(false)
+    expect(previewForEvent({ ...base, galleryUrls: gallery }, ctx)?.image).toBe(gallery[0])
+    expect(
+      previewForEvent({ ...base, galleryUrls: ["https://cdn.civfix.org/g/1.jpg?sig=1"] }, ctx)?.image,
+    ).toBe(BRAND_IMAGE)
     expect(previewForEvent(base, ctx)?.imageIsBrand).toBe(true)
   })
 
@@ -244,16 +253,20 @@ describe("previewForEvent", () => {
     expect(previewForEvent({ ...base, coverUrl: "https://cdn.civfix.org/c/1.jpg?token=x" }, ctx)?.imageIsBrand).toBe(true)
   })
 
-  it("withholds the cover of an event that is not public, exactly as the signup page does", () => {
+  it("keeps an unlisted event shareable by link with a text card, no cover and noindex, and refuses a private one", () => {
     const cover = "https://cdn.civfix.org/c/1.jpg"
-    for (const visibility of ["unlisted", "private"]) {
-      const preview = previewForEvent({ ...base, visibility, coverUrl: cover }, ctx)
-      expect(preview?.imageIsBrand).toBe(true)
-      expect(metaTagsHtml(preview!)).not.toContain(cover)
-    }
-    expect(previewForEvent({ ...base, visibility: "public", coverUrl: cover }, ctx)?.image).toBe(
-      cover,
-    )
+    const unlisted = previewForEvent(
+      { ...base, visibility: "unlisted", coverUrl: cover, galleryUrls: [cover] },
+      ctx,
+    )!
+    expect(unlisted.title).toBe("Ballona Creek cleanup on civfix")
+    expect(unlisted.imageIsBrand).toBe(true)
+    expect(unlisted.noindex).toBe(true)
+    expect(metaTagsHtml(unlisted)).not.toContain(cover)
+    expect(previewForEvent({ ...base, visibility: "private", coverUrl: cover }, ctx)).toBeNull()
+    const open = previewForEvent({ ...base, visibility: "public", coverUrl: cover }, ctx)
+    expect(open?.image).toBe(cover)
+    expect(open?.noindex).toBe(false)
   })
 
   it("treats a missing visibility as public, so an older server keeps its cover", () => {
@@ -262,28 +275,40 @@ describe("previewForEvent", () => {
     expect(previewForEvent({ ...base, visibility: null, coverUrl: cover }, ctx)?.image).toBe(cover)
   })
 
-  it("uses the event title and a date-led fixed description", () => {
+  it("uses the event title and a date-led description", () => {
     const preview = previewForEvent(base, ctx)
-    expect(preview?.title).toBe("Ballona Creek cleanup")
+    expect(preview?.title).toBe("Ballona Creek cleanup on civfix")
     expect(preview?.description).toBe("Sat, Sep 12, 10:00 AM PDT · A volunteer event on civfix")
     expect(preview?.imageIsBrand).toBe(true)
   })
 
-  it("never echoes the host's description and caps the title at 80 chars", () => {
-    const html = metaTagsHtml(
-      previewForEvent(
-        {
-          ...base,
-          description: "Bring gloves. Ask for Dana at 12 Elm St, apt 5.",
-        } as EventPreviewInput,
-        ctx,
-      )!,
+  it("carries the host's description after the schedule and caps the headline at 80 chars", () => {
+    const preview = previewForEvent(
+      { ...base, description: "Bring gloves. Ask for Dana at 12 Elm St, apt 5." },
+      ctx,
     )
-    expect(html).not.toContain("gloves")
-    expect(html).not.toContain("Dana")
-    expect(html).not.toContain("Elm St")
+    expect(preview?.description).toBe(
+      "Sat, Sep 12, 10:00 AM PDT · Bring gloves. Ask for Dana at 12 Elm St, apt 5.",
+    )
     const long = previewForEvent({ ...base, title: "Cleanup ".repeat(20) }, ctx)!
-    expect(long.title.length).toBeLessThanOrEqual(81)
+    expect(long.title.length).toBeLessThanOrEqual(91)
+    expect(long.title.endsWith("… on civfix")).toBe(true)
+  })
+
+  it("names the host: the organization when there is one, else the organizer", () => {
+    expect(
+      previewForEvent(
+        { ...base, organization: { name: "Reach Out LA" }, organizer: { name: "Ada", handle: "ada" } },
+        ctx,
+      )?.description,
+    ).toBe("Sat, Sep 12, 10:00 AM PDT · Reach Out LA · A volunteer event on civfix")
+    expect(
+      previewForEvent({ ...base, organizer: { name: "Ada", handle: "ada" } }, ctx)?.description,
+    ).toBe("Sat, Sep 12, 10:00 AM PDT · Ada (@ada) · A volunteer event on civfix")
+    expect(
+      previewForEvent({ ...base, organizer: { name: "Ada", handle: "ada", deleted: true } }, ctx)
+        ?.description,
+    ).toBe("Sat, Sep 12, 10:00 AM PDT · A volunteer event on civfix")
   })
 
   it("marks a cancelled event and never exposes the meeting address", () => {
@@ -307,31 +332,37 @@ describe("previewForPerson", () => {
     avatarUrl: "https://cdn.civfix.org/a/1.jpg",
   }
 
-  it("builds the display-name and handle title", () => {
+  it("builds the display-name and handle title on civfix, as a summary card", () => {
     const preview = previewForPerson(base, ctx)
-    expect(preview?.title).toBe("Ada Rivera (@ada)")
-    expect(preview?.description).toBe("Ada Rivera (@ada) · On civfix")
+    expect(preview?.title).toBe("Ada Rivera (@ada) on civfix")
+    expect(preview?.description).toBe(DEFAULT_DESCRIPTION)
     expect(preview?.image).toBe("https://cdn.civfix.org/a/1.jpg")
+    expect(preview?.card).toBe("summary")
     expect(preview?.type).toBe("profile")
   })
 
-  it("never echoes the bio", () => {
-    const html = metaTagsHtml(
-      previewForPerson(
-        { ...base, bio: "Organizer in Mar Vista, reach me at ada@example.com" } as PersonPreviewInput,
-        ctx,
-      )!,
-    )
-    expect(html).not.toContain("Mar Vista")
-    expect(html).not.toContain("ada@example.com")
-    expect(html).not.toContain("Organizer")
+  it("uses the bio as the description", () => {
+    const preview = previewForPerson(
+      { ...base, bio: "Organizer in Mar Vista. Saturdays at the creek." },
+      ctx,
+    )!
+    expect(preview.description).toBe("Organizer in Mar Vista. Saturdays at the creek.")
+    expect(metaTagsHtml(preview)).toContain("Mar Vista")
   })
 
-  it("falls back when there is no handle or public avatar", () => {
+  it("never reads the account email field", () => {
+    const html = metaTagsHtml(
+      previewForPerson({ ...base, email: "ada@example.com" } as PersonPreviewInput, ctx)!,
+    )
+    expect(html).not.toContain("ada@example.com")
+  })
+
+  it("falls back to a large brand card when there is no handle or public avatar", () => {
     const preview = previewForPerson({ name: "Ada Rivera", handle: null }, ctx)
-    expect(preview?.title).toBe("Ada Rivera")
-    expect(preview?.description).toBe("Ada Rivera · On civfix")
+    expect(preview?.title).toBe("Ada Rivera on civfix")
+    expect(preview?.description).toBe(DEFAULT_DESCRIPTION)
     expect(preview?.image).toBe(BRAND_IMAGE)
+    expect(preview?.card).toBe("summary_large_image")
   })
 
   it("refuses to preview a deleted account", () => {
@@ -496,24 +527,24 @@ describe("metaTagsHtml", () => {
   it("emits the full open-graph and twitter set with the canonical url", () => {
     const html = metaTagsHtml(previewForPerson({ name: "Ada", handle: "ada" }, ctx)!)
     for (const tag of [
-      '<meta name="description" content="Ada (@ada) · On civfix">',
+      `<meta name="description" content="${DEFAULT_DESCRIPTION}">`,
       '<meta property="og:site_name" content="civfix">',
       '<meta property="og:type" content="profile">',
       '<meta property="og:locale" content="en_US">',
       '<meta property="og:url" content="https://civfix.org/pin/abc">',
-      '<meta property="og:title" content="Ada (@ada)">',
-      '<meta property="og:description" content="Ada (@ada) · On civfix">',
+      '<meta property="og:title" content="Ada (@ada) on civfix">',
+      `<meta property="og:description" content="${DEFAULT_DESCRIPTION}">`,
       '<meta property="og:image" content="https://civfix.org/og.png">',
       '<meta property="og:image:secure_url" content="https://civfix.org/og.png">',
       '<meta property="og:image:type" content="image/png">',
       '<meta property="og:image:width" content="1200">',
       '<meta property="og:image:height" content="630">',
-      '<meta property="og:image:alt" content="Ada (@ada)">',
+      '<meta property="og:image:alt" content="Ada (@ada) on civfix">',
       '<meta name="twitter:card" content="summary_large_image">',
-      '<meta name="twitter:title" content="Ada (@ada)">',
-      '<meta name="twitter:description" content="Ada (@ada) · On civfix">',
+      '<meta name="twitter:title" content="Ada (@ada) on civfix">',
+      `<meta name="twitter:description" content="${DEFAULT_DESCRIPTION}">`,
       '<meta name="twitter:image" content="https://civfix.org/og.png">',
-      '<meta name="twitter:image:alt" content="Ada (@ada)">',
+      '<meta name="twitter:image:alt" content="Ada (@ada) on civfix">',
       '<link rel="canonical" href="https://civfix.org/pin/abc">',
       '<link rel="icon" href="https://civfix.org/favicon.svg" type="image/svg+xml">',
       '<link rel="apple-touch-icon" href="https://civfix.org/apple-touch-icon.png" sizes="180x180">',
@@ -540,8 +571,9 @@ describe("metaTagsHtml", () => {
     expect(html).not.toContain("civfix.org")
   })
 
-  it("omits the brand image dimensions and type when a content photo is used", () => {
+  it("emits a summary card for an avatar and omits the brand dimensions and type", () => {
     const html = metaTagsHtml(previewForPerson(personWithAvatar, ctx)!)
+    expect(html).toContain('<meta name="twitter:card" content="summary">')
     expect(html).not.toContain("og:image:width")
     expect(html).not.toContain("og:image:height")
     expect(html).not.toContain("og:image:type")
@@ -637,9 +669,9 @@ describe("robots is a managed meta tag", () => {
 
 describe("documentTitle", () => {
   it("suffixes the og:title with the site name", () => {
-    expect(documentTitle(previewForPerson({ name: "Ada", handle: "ada" }, ctx)!)).toBe(
-      "Ada (@ada) · civfix",
-    )
+    expect(
+      documentTitle(previewForSignupPage({ event: { title: "Beach cleanup" } }, ctx)!),
+    ).toBe("Beach cleanup · civfix")
   })
 
   it("leaves a title that already ends with \" on civfix\" alone", () => {
@@ -649,7 +681,7 @@ describe("documentTitle", () => {
   })
 
   it("never doubles a title that already ends with the site name", () => {
-    expect(documentTitle(previewForEvent({ title: "Cleanup · civfix" }, ctx)!)).toBe(
+    expect(documentTitle(previewForSignupPage({ event: { title: "Cleanup · civfix" } }, ctx)!)).toBe(
       "Cleanup · civfix",
     )
   })
@@ -679,7 +711,8 @@ describe("previewForOrganization", () => {
 
   it("builds the name-and-handle title and a verified, counted description", () => {
     const preview = previewForOrganization(base, ctx)
-    expect(preview?.title).toBe("River Keepers LA (@river-keepers)")
+    expect(preview?.title).toBe("River Keepers LA (@river-keepers) on civfix")
+    expect(preview?.card).toBe("summary")
     expect(preview?.description).toBe(
       "Verified nonprofit · 12 events · We keep the LA River clean, one Saturday at a time.",
     )

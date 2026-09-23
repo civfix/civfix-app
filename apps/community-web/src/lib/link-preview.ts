@@ -121,6 +121,23 @@ function onSite(headline: string): string {
   return `${headline}${ON_SITE_SUFFIX}`
 }
 
+function withHandle(name: string, handle: string | null | undefined): string {
+  const bare = handle ? oneLine(handle).replace(/^@/, "") : ""
+  return bare ? `${name} (@${bare})` : name
+}
+
+interface BylineInput {
+  name?: string | null
+  handle?: string | null
+  deleted?: boolean | null
+}
+
+function personByline(person: BylineInput | null | undefined): string | null {
+  if (!person || person.deleted || !person.name) return null
+  const name = oneLine(person.name)
+  return name ? withHandle(name, person.handle) : null
+}
+
 export interface MediaSlideInput {
   kind?: string | null
   status?: string | null
@@ -154,6 +171,8 @@ export interface ReportPreviewInput {
   status?: string | null
   visibility?: string | null
   cityName?: string | null
+  title?: string | null
+  description?: string | null
   media?: readonly MediaSlideInput[] | null
 }
 
@@ -163,12 +182,17 @@ export interface EventPreviewInput {
   timezone?: string | null
   status?: string | null
   visibility?: string | null
+  description?: string | null
   coverUrl?: string | null
+  galleryUrls?: readonly string[] | null
+  organizer?: BylineInput | null
+  organization?: { name?: string | null } | null
 }
 
 export interface PersonPreviewInput {
   name?: string | null
   handle?: string | null
+  bio?: string | null
   avatarUrl?: string | null
   deleted?: boolean | null
 }
@@ -189,18 +213,20 @@ export function previewForReport(
     : undefined
   const kindLabel = typeLabel ?? categoryLabel ?? "Report"
   const cityName = input.cityName ? oneLine(input.cityName) : ""
-  const title = clamp(joinParts([kindLabel, cityName]), TITLE_MAX)
+  const headline = cityName ? `${kindLabel} in ${cityName}` : kindLabel
 
   const statusLabel = input.status
     ? REPORT_STATUS_LABELS[input.status as ReportStatus]
     : undefined
   const description =
-    finishDescription([statusLabel ? `${kindLabel} — ${statusLabel}` : kindLabel, cityName]) ||
+    (joinParts([input.title, input.description])
+      ? finishDescription([statusLabel, input.title, input.description])
+      : finishDescription([statusLabel ? `${kindLabel} — ${statusLabel}` : kindLabel, cityName])) ||
     DEFAULT_DESCRIPTION
 
   const image = firstCarouselImage(input.media)
   return {
-    title: title || DEFAULT_TITLE,
+    title: onSite(clamp(headline, TITLE_MAX)),
     description,
     image: image?.url ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
@@ -237,19 +263,28 @@ export function previewForEvent(
   input: EventPreviewInput,
   context: PreviewContext,
 ): LinkPreview | null {
+  if (input.visibility === "private") return null
   const title = input.title ? clamp(input.title, EVENT_TITLE_MAX) : ""
   if (!title) return null
 
   const when = formatEventWhen(input.scheduledAt, input.timezone)
   const cancelled = input.status === "cancelled" ? "Cancelled" : null
+  const host = input.organization?.name
+    ? oneLine(input.organization.name)
+    : personByline(input.organizer)
   const description =
-    finishDescription([cancelled, when, `A volunteer event on ${SITE_NAME}`]) || DEFAULT_DESCRIPTION
+    finishDescription([
+      cancelled,
+      when,
+      host,
+      input.description || `A volunteer event on ${SITE_NAME}`,
+    ]) || DEFAULT_DESCRIPTION
 
   const isPublic = isPublicVisibility(input.visibility)
-  const cover = isPublic && isPublicMediaUrl(input.coverUrl) ? input.coverUrl : null
+  const cover = isPublic ? eventCover(input) : null
 
   return {
-    title,
+    title: onSite(title),
     description,
     image: cover ?? brandImageUrl(context.origin),
     imageIsBrand: cover === null,
@@ -259,31 +294,34 @@ export function previewForEvent(
     url: context.url,
     origin: context.origin,
     type: "article",
-    noindex: false,
+    noindex: !isPublic,
   }
+}
+
+function eventCover(input: EventPreviewInput): string | null {
+  if (isPublicMediaUrl(input.coverUrl)) return input.coverUrl
+  const first = input.galleryUrls?.[0]
+  return isPublicMediaUrl(first) ? first : null
 }
 
 export function previewForPerson(
   input: PersonPreviewInput,
   context: PreviewContext,
 ): LinkPreview | null {
-  if (input.deleted) return null
-  const name = input.name ? oneLine(input.name) : ""
-  if (!name) return null
+  const byline = personByline(input)
+  if (!byline) return null
 
-  const handle = input.handle ? oneLine(input.handle).replace(/^@/, "") : ""
-  const title = clamp(handle ? `${name} (@${handle})` : name, TITLE_MAX)
-  const description = finishDescription([title, `On ${SITE_NAME}`])
+  const description = (input.bio ? clamp(input.bio, DESCRIPTION_MAX) : "") || DEFAULT_DESCRIPTION
   const image = isPublicMediaUrl(input.avatarUrl) ? input.avatarUrl : null
 
   return {
-    title,
+    title: onSite(clamp(byline, TITLE_MAX)),
     description,
     image: image ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
     imageWidth: null,
     imageHeight: null,
-    card: "summary_large_image",
+    card: image ? "summary" : "summary_large_image",
     url: context.url,
     origin: context.origin,
     type: "profile",
@@ -365,8 +403,7 @@ export function previewForOrganization(
   const name = input.name ? oneLine(input.name) : ""
   if (!name) return null
 
-  const handle = input.slug ? oneLine(input.slug) : ""
-  const title = clamp(handle ? `${name} (@${handle})` : name, TITLE_MAX)
+  const title = onSite(clamp(withHandle(name, input.slug), TITLE_MAX))
   const verified =
     input.verifiedStatus === "verified"
       ? (ORG_KIND_LABEL[input.verifiedKind ?? ""] ?? "Verified organization")
@@ -389,7 +426,7 @@ export function previewForOrganization(
     imageIsBrand: image === null,
     imageWidth: null,
     imageHeight: null,
-    card: "summary_large_image",
+    card: image ? "summary" : "summary_large_image",
     url: context.url,
     origin: context.origin,
     type: "profile",
@@ -397,17 +434,11 @@ export function previewForOrganization(
   }
 }
 
-interface PostBylineInput {
-  name?: string | null
-  handle?: string | null
-  deleted?: boolean | null
-}
-
 interface PostSubjectInput {
   kind?: string | null
   body?: string | null
   deleted?: boolean | null
-  author?: PostBylineInput | null
+  author?: BylineInput | null
   organization?: { name?: string | null; slug?: string | null } | null
   media?: readonly MediaSlideInput[] | null
   report?: { title?: string | null; thumbUrl?: string | null } | null
@@ -420,15 +451,8 @@ export interface PostPreviewInput extends PostSubjectInput {
 
 function bylineOf(subject: PostSubjectInput): string | null {
   const org = subject.organization
-  if (org?.name) {
-    const name = oneLine(org.name)
-    return org.slug ? `${name} (@${oneLine(org.slug)})` : name
-  }
-  const author = subject.author
-  if (!author || author.deleted || !author.name) return null
-  const name = oneLine(author.name)
-  const handle = author.handle ? oneLine(author.handle).replace(/^@/, "") : ""
-  return handle ? `${name} (@${handle})` : name
+  if (org?.name) return withHandle(oneLine(org.name), org.slug)
+  return personByline(subject.author)
 }
 
 function attachmentThumb(subject: PostSubjectInput): PickedImage | null {

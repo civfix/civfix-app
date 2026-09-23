@@ -436,15 +436,28 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    API matches reference codes case-sensitively, so `gr-12-000001` is not a report id and gets the
    plain shell. Anything else - a dot, a wrong-case code, an over-long slug, `..%2F`, a nested route
    such as `/pin/<id>/edit` - short-circuits to the plain SPA shell and never reaches the API.
-5. **Mapping** (pure + unit-tested in `src/lib/link-preview.ts`): report -> title and description
-   are `REPORT_TYPE_LABELS`/`REPORT_CATEGORY_LABELS`, `REPORT_STATUS_LABELS` and the coarse
-   `cityName` only (`Graffiti · Los Angeles, CA` / `Graffiti — In progress · Los Angeles, CA`);
-   image = the FIRST `ready` slide of the carousel (`firstCarouselImage`): its thumbnail, else the
-   full image (with its width/height) when it is an image with no thumbnail, each only as an
-   UNSIGNED https URL; a slide that has neither is the brand image - never slide two.
-   Event -> the event `title` (its public name, capped at 80 chars) + the schedule formatted in
-   `America/Los_Angeles` + the fixed line `A volunteer event on civfix`. Person -> `Name (@handle)`
-   + `On civfix` + a public avatar. `og:url`, `rel=canonical`, `og:image` and the icon links are
+5. **Mapping** (pure + unit-tested in `src/lib/link-preview.ts`) follows X's card format: the
+   title is `<who or what> on civfix` (headline clamped at 90 chars, 80 for an event title, before
+   the suffix), the description is the entity's own public text clamped at 200 chars, and the
+   image is the entity's first picture. Report -> `Graffiti in Los Angeles, CA on civfix` (type or
+   category label + the coarse `cityName`; reports are publicly anonymous, so there is no byline)
+   and `In progress · <title> · <description>`, falling back to
+   `Graffiti — In progress · Los Angeles, CA` when the resident wrote neither. Post ->
+   `Ada Rivera (@ada) on civfix` (the organization's name and slug when it was posted as one) and
+   the body, else the attached report's or event's title; a plain repost renders the ORIGINAL
+   post's card, a quote keeps the quoter's text and borrows the quoted post's image only when it
+   has none. Event -> `<title> on civfix` and `Cancelled? · <schedule in the event's zone> · <host>
+   · <description, else "A volunteer event on civfix">`, host = the organization, else
+   `Name (@handle)` of a live organizer. Person -> `Name (@handle) on civfix` and the bio. Org ->
+   `Name (@slug) on civfix` and `Verified … · N events · <description>`. Signup pages keep the
+   host's own `seo` title/description. Images: a report or post uses the FIRST `ready` slide of
+   the carousel (`firstCarouselImage`) - its thumbnail, else the full image (with its
+   width/height as `og:image:width`/`height`) when it is an image with no thumbnail; a slide that
+   has neither is the brand image, never slide two. A post with no media falls back to the
+   attached report's thumbnail. An event uses its cover, else its first gallery image; a person
+   their avatar; an org its logo. Every image must be an UNSIGNED https URL. `twitter:card` is
+   `summary_large_image`, except `summary` for an avatar or logo (a square picture in a large
+   card is a blurry crop). `og:url`, `rel=canonical`, `og:image` and the icon links are
    built from the request's ENVIRONMENT origin - `resolveSiteOrigin(request.url)` in
    `src/lib/site-meta.ts`, which maps an exact known hostname onto that environment's ONE canonical
    origin (`civfix.org` / `www.civfix.org` / `civfix-web.pages.dev` -> `https://civfix.org`;
@@ -455,15 +468,19 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    header, so the origin cannot be poisoned into a preview; it exists so a staging card points at
    `https://civfix.dev/og.png` (which exists) instead of a prod URL that 404s. The entity id still
    comes from the DTO, falling back to the validated route id.
-6. **Privacy rules (load-bearing).** A preview NEVER carries user-authored free text: the report
-   `title` and `description`, the event `description` and the profile `bio` are all dropped, and
-   the corresponding fields are absent from `ReportPreviewInput` / `EventPreviewInput` /
-   `PersonPreviewInput` so they cannot be reintroduced by accident (`link-preview.test.ts` asserts
-   none of them ever reach the emitted tags). Only server-controlled vocabulary - enum labels, the
-   formatted schedule, the coarse `cityName`, and a person's own display name/handle - is injected.
-   A preview NEVER carries a street address (`addr` / `address`), coordinates, an email, or any
-   viewer-specific field. Non-public reports (`visibility !== "public"`) and deleted accounts get
-   the defaults, never a preview. Presigned media URLs are refused so no signed token is baked into
+6. **Privacy rules (load-bearing).** A preview carries the entity's OWN public text in X's
+   format; it NEVER carries a street-address field, coordinates, an account email or a
+   viewer-specific field, never a non-public or deleted entity (unlisted events excepted: text
+   card, no cover, noindex), never a presigned URL. Text a resident typed into a PUBLIC field - a
+   post body, a report title/description, an event description, an org description, a profile
+   bio - is theirs to publish and is carried as written (escaped, one line, clamped). What is
+   dropped, per field: `addr` / `address` (report, event, signup event), `lat` / `lng`, `email`,
+   and every viewer field (`viewer.*`, `mine`, `chatUnread`, `following`, `isFollowing`,
+   `blockedByMe`, `myRole`), plus a post's counts and mentions; none of them is declared on the
+   `*PreviewInput` types, so they cannot be read by accident (`link-preview.test.ts` asserts they
+   never reach the emitted tags). Non-public reports (`visibility !== "public"`), private events,
+   deleted accounts, deleted posts and reposts of a deleted post get the defaults, never a
+   preview. Presigned media URLs are refused so no signed token is baked into
    HTML that is cached at the edge. Posts (`/post/:id`) are previewed from `GET /v1/posts/:id`,
    which serves a PUBLIC post to a guest; a hidden or deleted post is a 404 there, so it unfurls as
    the default card.
