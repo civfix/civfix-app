@@ -60,8 +60,6 @@ export interface ReplyDockInset {
 export function useReplyDockInset(): ReplyDockInset {
   // The legacy shell seam: 0 on native, the visualViewport overlap on web. See the table above.
   const shell = useKeyboardInset()
-  // NOT `useSafeAreaInsets()`: this hook renders on web too, where there is no SafeAreaProvider and the
-  // hook throws. The context form degrades to zeros, exactly like ConversationBody does.
   const insets = useContext(SafeAreaInsetsContext)
   const [own, setOwn] = useState(0)
   const restingWindowHeight = useRestingWindowHeight()
@@ -101,5 +99,6 @@ export function useReplyDockInset(): ReplyDockInset {
   }, [])
 
   const inset = Math.max(shell, own)
-  return { inset, restPad: inset > 0 ? 0 : (insets?.bottom ?? 0), visible: inset > 0 }
+  const restingSafeArea = Platform.OS === "web" ? 0 : (insets?.bottom ?? 0)
+  return { inset, restPad: inset > 0 ? 0 : restingSafeArea, visible: inset > 0 }
 }

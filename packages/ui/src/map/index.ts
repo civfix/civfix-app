@@ -50,8 +50,6 @@ export type { LayersPopoverProps } from "./LayersPopover"
 export { useReportFilterStore, enabledCategoriesArray, FILTER_CATEGORIES } from "./filterStore"
 export type { ReportFilterState } from "./filterStore"
 
-export { MiniMap } from "./MiniMap"
-export type { MiniMapProps } from "./MiniMap.types"
 export { LocationPicker } from "./LocationPicker"
 export type { LocationPickerProps } from "./LocationPicker.types"
 
@@ -74,6 +72,10 @@ export type { LocationPickState, PickDraft } from "./locationPickStore"
 
 export { useMapFocus } from "./mapFocusStore"
 export type { MapFocusState, FocusedReport, FocusedEvent, FocusedEntity } from "./mapFocusStore"
+
+export { useMapFlyTo } from "./mapFlyToStore"
+export type { MapFlyToState, MapFlyToTarget, MapFlyToRequest, MapFlyToHighlight } from "./mapFlyToStore"
+export { showOnMap } from "./showOnMapFlow"
 
 export { useMapViewport } from "./mapViewportStore"
 export type { MapViewportState, MapViewport } from "./mapViewportStore"
@@ -108,6 +110,7 @@ export type { DropPinCameraRestorer } from "./dropPinFlow"
 export {
   resolveMapCenter,
   shouldAdoptCenter,
+  holdsRememberedCamera,
   isRememberedCenter,
   zoomForSource,
   PRECISE_ZOOM,

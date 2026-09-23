@@ -43,7 +43,6 @@
   },
   "a11y": {
     "attribution": "CARTO / OSM",
-    "miniMap": "Karte mit dem Standort",
     "homeMap": "Karte mit Meldungen und Events",
     "picker": "Tippe auf die Karte, um die Standortmarkierung zu setzen, oder ziehe sie zum Feinjustieren",
     "userLocation": "Dein Standort"

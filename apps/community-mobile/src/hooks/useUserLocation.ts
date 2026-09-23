@@ -1,16 +1,22 @@
 import { useEffect, useMemo, useState, useCallback } from "react"
 import * as Location from "expo-location"
 import type { LatLng } from "@civfix/shared/geocode"
-import { GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS, withTimeout } from "@/lib/withTimeout"
+import { FIRST_FIX_TIMEOUT_MS, GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS, withTimeout } from "@/lib/withTimeout"
 
 export type LocationPermission = "undetermined" | "granted" | "denied"
+
+export interface LocationRefreshResult {
+  coords: LatLng | null
+  prompted: boolean
+}
 
 export interface UserLocationState {
   permission: LocationPermission
   permissionResolved: boolean
   coords: LatLng | null
-  resolve: () => Promise<LatLng | null>
-  refresh: () => Promise<LatLng | null>
+  resolve: () => Promise<LocationRefreshResult>
+  refresh: () => Promise<LocationRefreshResult>
+  awaitFirstFix: () => Promise<LatLng | null>
 }
 
 export function useUserLocation(): UserLocationState {
@@ -18,13 +24,13 @@ export function useUserLocation(): UserLocationState {
   const [permissionResolved, setPermissionResolved] = useState(false)
   const [coords, setCoords] = useState<LatLng | null>(null)
 
-  const readFix = useCallback(async (): Promise<LatLng | null> => {
+  const readFix = useCallback(async (timeoutMs: number = GPS_TIMEOUT_MS): Promise<LatLng | null> => {
     try {
       const pos =
         (await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS })) ??
         (await withTimeout(
           Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
-          GPS_TIMEOUT_MS,
+          timeoutMs,
         ))
       if (!pos) return null
       const next = { lat: pos.coords.latitude, lng: pos.coords.longitude }
@@ -35,16 +41,20 @@ export function useUserLocation(): UserLocationState {
     }
   }, [])
 
-  const refresh = useCallback(async (): Promise<LatLng | null> => {
+  const refresh = useCallback(async (): Promise<LocationRefreshResult> => {
+    const before = await Location.getForegroundPermissionsAsync().catch(() => null)
     const { status } = await Location.requestForegroundPermissionsAsync()
     setPermissionResolved(true)
     if (status !== Location.PermissionStatus.GRANTED) {
       setPermission("denied")
-      return null
+      return { coords: null, prompted: false }
     }
     setPermission("granted")
-    return readFix()
+    const prompted = before !== null && before.status !== Location.PermissionStatus.GRANTED
+    return { coords: await readFix(), prompted }
   }, [readFix])
+
+  const awaitFirstFix = useCallback(() => readFix(FIRST_FIX_TIMEOUT_MS), [readFix])
 
   useEffect(() => {
     let active = true
@@ -71,7 +81,8 @@ export function useUserLocation(): UserLocationState {
       coords,
       resolve: refresh,
       refresh,
+      awaitFirstFix,
     }),
-    [permission, permissionResolved, coords, refresh],
+    [permission, permissionResolved, coords, refresh, awaitFirstFix],
   )
 }

@@ -126,3 +126,77 @@ describe("getSharedBrowserFix dedupes every one-shot consumer onto one browser r
     await expect(getBrowserPosition()).resolves.toBeNull()
   })
 })
+
+describe("resolvePreciseCenterAfterPrompt counts a grant as prompted only on a prompt -> granted transition", () => {
+  function stubPermissions(query: ReturnType<typeof vi.fn>) {
+    vi.stubGlobal("navigator", { geolocation: geo.geolocation, permissions: { query } })
+  }
+
+  function sequence(...states: string[]) {
+    const query = vi.fn()
+    for (const state of states) query.mockResolvedValueOnce({ state })
+    return query
+  }
+
+  async function settle(resolveFix: boolean) {
+    const { resolvePreciseCenterAfterPrompt } = await freshModules()
+    const pending = resolvePreciseCenterAfterPrompt()
+    await vi.waitFor(() => expect(geo.calls).toHaveLength(1))
+    if (resolveFix) geo.calls[0]!.resolve(34.05, -118.24)
+    else geo.calls[0]!.reject()
+    return pending
+  }
+
+  it("is prompted when the state was prompt before the request and granted after the fix", async () => {
+    const query = sequence("prompt", "granted")
+    stubPermissions(query)
+    await expect(settle(true)).resolves.toEqual({ precise: { lat: 34.05, lng: -118.24 }, prompted: true })
+    expect(query).toHaveBeenCalledTimes(2)
+    expect(query).toHaveBeenCalledWith({ name: "geolocation" })
+  })
+
+  it("reads the before state ahead of the browser request", async () => {
+    const query = sequence("prompt", "granted")
+    stubPermissions(query)
+    const { resolvePreciseCenterAfterPrompt } = await freshModules()
+    const pending = resolvePreciseCenterAfterPrompt()
+    await vi.waitFor(() => expect(geo.calls).toHaveLength(1))
+    expect(query).toHaveBeenCalledTimes(1)
+    geo.calls[0]!.resolve(34.05, -118.24)
+    await pending
+    expect(query).toHaveBeenCalledTimes(2)
+  })
+
+  it("is not prompted when WebKit still says prompt after the fix, since no dialog was answered", async () => {
+    stubPermissions(sequence("prompt", "prompt"))
+    await expect(settle(true)).resolves.toMatchObject({ prompted: false })
+  })
+
+  it("is not prompted when the second query rejects", async () => {
+    const query = vi.fn().mockResolvedValueOnce({ state: "prompt" }).mockRejectedValueOnce(new TypeError("nope"))
+    stubPermissions(query)
+    await expect(settle(true)).resolves.toMatchObject({ prompted: false })
+  })
+
+  it("is not prompted for a permission already granted or denied before the request, and never re-queries", async () => {
+    for (const state of ["granted", "denied"]) {
+      geo = makeGeoStub()
+      const query = sequence(state, "granted")
+      stubPermissions(query)
+      await expect(settle(state === "granted")).resolves.toMatchObject({ prompted: false })
+      expect(query).toHaveBeenCalledTimes(1)
+    }
+  })
+
+  it("is not prompted when the prompt was answered with Block", async () => {
+    stubPermissions(sequence("prompt", "denied"))
+    await expect(settle(false)).resolves.toEqual({ precise: null, prompted: false })
+  })
+
+  it("is not prompted without a Permissions API, or when the first query rejects", async () => {
+    await expect(settle(true)).resolves.toMatchObject({ prompted: false })
+    geo = makeGeoStub()
+    stubPermissions(vi.fn().mockRejectedValue(new TypeError("nope")))
+    await expect(settle(true)).resolves.toMatchObject({ prompted: false })
+  })
+})

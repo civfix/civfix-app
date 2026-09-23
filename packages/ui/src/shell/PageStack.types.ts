@@ -1,23 +1,14 @@
 /**
  * Shared props for the portrait shell's OVERLAY (full-page) host.
  *
- * ONE CHOKE POINT, TWO PRESENTATIONS. Every shell-owned page on native - all ~24 converted details plus
- * the four bodies that draw their own header - is mounted by this host and by nothing else, which is why
- * swipe-back and push/pop animation land here once instead of per body. The two seams are genuinely
- * different components, not one component with a flag:
+ * ONE CHOKE POINT, TWO PRESENTATIONS. Every shell-owned page - all ~24 converted details plus the four
+ * bodies that draw their own header - is mounted by this host and by nothing else, which is why push/pop
+ * animation lands here once instead of per body. Both seams keep N retained, keyed layers from
+ * `entries`/`layerKeys` and slide whole pages on push/pop; they differ in the driver:
  *
- *   PageStack.web    ONE body, no gesture, no layering: the exact markup PortraitShell.shared carried
- *                    before the seam existed (KeyboardAvoidingView -> shell DetailHeader -> ScrollHost ->
- *                    BodyTransition), consuming `entry`/`transitionKey`/`direction`. Web presents details
- *                    as a pull-up sheet and reaches this layer only for the handful of table-"full" kinds,
- *                    so there is no page stack to animate and nothing to change.
- *   PageStack.native N retained, keyed layers from `entries`/`layerKeys`, an interactive left-edge back
- *                    swipe, and full-width push/pop slides.
- *
- * BOTH SHAPES ARE CARRIED because both are correct for their seam - `entry` is not a derived convenience
- * that native could recompute, it is what `portraitFramePlan` already published and what web still needs
- * unchanged. `entry === entries[entries.length - 1]` by construction (`portraitFramePlan` derives both
- * from one `fullEntryStack` scan).
+ *   PageStack.web    CSS transitions on transform/opacity, direction from `useStackDirection`, no
+ *                    gesture (the browser owns back-swipe), instant on a history restore.
+ *   PageStack.native reanimated shared values plus an interactive left-edge back swipe.
  */
 import type { DetailEntry, View as NavView } from "../nav"
 import type { BodyTransitionDirection } from "./BodyTransition.types"
@@ -27,18 +18,12 @@ import type { ScrollHostValue } from "./ScrollHost"
 export type PageStackRenderBody = (entry: DetailEntry | null, view: NavView) => React.ReactNode
 
 export interface PageStackProps {
-  /** WEB: the single overlay body (`frame.overlay.entry`). Null when no page is up. */
-  entry: DetailEntry | null
-  /** WEB: `frame.overlay.transitionKey` - the BodyTransition identity. */
-  transitionKey: string
-  /** WEB: the BodyTransition direction (`useStackDirection(stack.length)`). */
+  /** WEB: the push/pop/replace direction of the latest change (`useStackDirection(stack.length)`). */
   direction: BodyTransitionDirection
-  /** NATIVE: the whole page stack, BOTTOM first (`frame.overlay.entries`). */
+  /** The whole page stack, BOTTOM first (`frame.overlay.entries`). */
   entries: readonly DetailEntry[]
-  /** NATIVE: `frame.overlay.layerKeys` - the stable React key of each layer, parallel to `entries`. */
+  /** `frame.overlay.layerKeys` - the stable React key of each layer, parallel to `entries`. */
   layerKeys: readonly string[]
-  /** `frame.overlay.bodyMounted` - is there a page at all? */
-  bodyMounted: boolean
   /** `frame.overlay.interactive` - false while a sheet rides above a still-mounted page. */
   interactive: boolean
   /** `frame.overlay.keyboardAvoidance` - the composer's shell-level keyboard inset. */
@@ -46,11 +31,11 @@ export interface PageStackProps {
   /** WEB only: the measured soft-keyboard reserve, or null. Native gets it from KeyboardAvoidingView. */
   webKeyboardInset: { paddingBottom: number } | null
   /**
-   * The safe-area padding a page wears. Applied INSIDE this host (per layer on native, on the host's own
-   * box on web) rather than on the shell's overlay wrapper: a native layer must cover the full screen -
+   * The safe-area padding a page wears. Applied INSIDE this host, per layer, rather than on the shell's
+   * overlay wrapper: a layer must cover the full screen -
    * background and all - while it slides, and an absolutely-positioned child of a PADDED box is laid out
-   * against the padding edge, which would leave the status-bar strip showing whatever is behind. On
-   * native the BOTTOM half is routed per page (`pageBottomReserve`): a page whose body owns its scroll
+   * against the padding edge, which would leave the status-bar strip showing whatever is behind. The
+   * BOTTOM half is routed per page (`pageBottomReserve`): a page whose body owns its scroll
    * wears it as scroll-CONTENT padding, so its list runs under the home indicator instead of being cut
    * off above a strip of layer background; only a footer-pinning page keeps it on the box.
    */

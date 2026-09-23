@@ -516,7 +516,7 @@ describe("every shell host navigates in the SAME motion language (source-pinned)
   it("derives push vs pop from the STACK LENGTH, through the one shared derivation", () => {
     for (const [name, src] of Object.entries(hosts)) {
       if (name === "PageStack.web.tsx") {
-        expect(src, name).toMatch(/direction=\{direction\}/)
+        expect(src, name).toMatch(/webPageTransitionPlan\(\s*direction,/)
         continue
       }
       expect(src, name).toContain("useStackDirection")
@@ -526,8 +526,13 @@ describe("every shell host navigates in the SAME motion language (source-pinned)
 
   it("hands that direction to the body transition, never a hardcoded one", () => {
     for (const [name, src] of Object.entries(hosts)) {
-      if (name === "PortraitShell.shared.tsx" || name === "PageStack.web.tsx") {
+      if (name === "PortraitShell.shared.tsx") {
         expect(src, name).toMatch(/direction=\{direction\}/)
+        continue
+      }
+      if (name === "PageStack.web.tsx") {
+        expect(src, name).toMatch(/webPageTransitionPlan\(\s*direction,/)
+        expect(src, name).not.toMatch(/<BodyTransition\b/)
         continue
       }
       expect(src, name).toMatch(/<BodyTransition transitionKey=\{\w+\} direction=\{direction\}>/)
@@ -540,5 +545,27 @@ describe("every shell host navigates in the SAME motion language (source-pinned)
   it("keeps the native page stack the ONLY host that owns a page-level gesture", () => {
     expect(hosts["PageStack.web.tsx"]).not.toMatch(/Gesture\.\w/)
     expect(hosts["PortraitShell.shared.tsx"]).toMatch(/<PageStack/)
+  })
+})
+
+describe("PortraitShell.web: the top inset counts the notch once", () => {
+  const src = readFileSync(new URL("../PortraitShell.web.tsx", import.meta.url), "utf8")
+
+  it("takes the larger of the safe-area top and a banner that already pads for it", () => {
+    expect(src).toContain("topInset={Math.max(insets.top, bannerHeight)}")
+    expect(src).not.toMatch(/insets\.top \+ bannerHeight/)
+  })
+})
+
+describe("web bottom safe area: the page box reserve owns it, the reply dock does not add it again", () => {
+  const dock = readFileSync(new URL("../../bodies/thread/useReplyDockInset.ts", import.meta.url), "utf8")
+  const shell = readFileSync(new URL("../PortraitShell.web.tsx", import.meta.url), "utf8")
+  const pages = readFileSync(new URL("../PageStack.web.tsx", import.meta.url), "utf8")
+
+  it("reserves the inset on the pinned-footer page box and rests the dock at zero on web", () => {
+    expect(shell).toContain("bottomSafeArea={insets.bottom}")
+    expect(pages).toContain('const boxReserve = reserve === "box" ? paddingBottom : 0')
+    expect(dock).toContain('const restingSafeArea = Platform.OS === "web" ? 0 : (insets?.bottom ?? 0)')
+    expect(dock).toContain("restPad: inset > 0 ? 0 : restingSafeArea")
   })
 })

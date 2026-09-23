@@ -265,10 +265,8 @@ export function PortraitShellFrame({
         ]}
       >
         <PageStack
-          bodyMounted={frame.overlay.bodyMounted}
           direction={direction}
           entries={frame.overlay.entries}
-          entry={frame.overlay.entry}
           insets={overlayInsets}
           interactive={frame.overlay.interactive}
           keyboardAvoidance={frame.overlay.keyboardAvoidance}
@@ -276,7 +274,6 @@ export function PortraitShellFrame({
           renderBody={renderBody}
           scrollHost={overlayScrollHost}
           stack={stack}
-          transitionKey={frame.overlay.transitionKey}
           view={view}
           webKeyboardInset={webKeyboardInset}
         />

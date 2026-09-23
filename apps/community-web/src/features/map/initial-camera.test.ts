@@ -58,6 +58,7 @@ describe("the resolved centre is the only centre", () => {
       "seedSourceRef.current =",
       "approximatePointRef.current =",
       "cameraOwnedRef.current =",
+      "promptGrantRef.current =",
     ]) {
       let at = renderBody.indexOf(write)
       while (at !== -1) {
@@ -72,8 +73,15 @@ describe("the resolved centre is the only centre", () => {
 
 describe("the camera adoption effect", () => {
   it("reads the published focus and gives the camera up to it", () => {
-    expect(adoptEffect).toContain("if (useMapFocus.getState().focus) return")
+    expect(adoptEffect).toContain("if (useMapFocus.getState().focus || useMapFlyTo.getState().highlight) return")
     expect(code).toContain("useMapFocus,")
+  })
+
+  it("gives the camera up to a Show on map fly-to as well", () => {
+    expect(code).toContain("useMapFlyTo,")
+    const guard = adoptEffect.indexOf("useMapFlyTo.getState().highlight")
+    expect(guard).toBeGreaterThan(-1)
+    expect(adoptEffect.indexOf("mapRef.current?.flyTo(")).toBeGreaterThan(guard)
   })
 
   it("checks at ADOPT time, not at mount, so a later focus still wins by publishing", () => {
@@ -83,11 +91,31 @@ describe("the camera adoption effect", () => {
     expect(fly).toBeGreaterThan(guard)
   })
 
-  it("never yanks a map that booted from the persisted camera", () => {
-    const boot = adoptEffect.indexOf('if (seedSourceRef.current === "remembered") return')
+  it("holds the persisted boot camera unless the user just answered the boot prompt with Allow", () => {
+    const hold = adoptEffect.indexOf(
+      "if (holdsRememberedCamera(seedSourceRef.current, promptGrantRef.current)) return",
+    )
     const fly = adoptEffect.indexOf("mapRef.current?.flyTo(")
-    expect(boot).toBeGreaterThan(-1)
-    expect(fly).toBeGreaterThan(boot)
+    expect(hold).toBeGreaterThan(-1)
+    expect(fly).toBeGreaterThan(hold)
+    expect(code).toContain("holdsRememberedCamera,")
+  })
+
+  it("resolves the centre together with its prompt answer, and latches the answer before the centre lands", () => {
+    const mount = code.slice(code.indexOf("const { precise, prompted } = await resolvePreciseCenterAfterPrompt()"))
+    const latch = mount.indexOf("promptGrantRef.current = prompted")
+    const land = mount.indexOf("setPreciseCenter(precise)")
+    expect(code).toContain("const { precise, prompted } = await resolvePreciseCenterAfterPrompt()")
+    expect(latch).toBeGreaterThan(0)
+    expect(land).toBeGreaterThan(latch)
+  })
+
+  it("a user gesture on the map claims the camera, so a late adoption never overrides it", () => {
+    expect(code).toMatch(
+      /const onUserCameraMove = React\.useCallback\(\(\) => \{\n\s+cameraOwnedRef\.current = true\n\s+\}, \[\]\)/,
+    )
+    const map = code.slice(code.indexOf("<SharedMap"))
+    expect(map).toContain("onUserCameraMove={onUserCameraMove}")
   })
 
   it("flies at most once, then hands the camera to the user", () => {

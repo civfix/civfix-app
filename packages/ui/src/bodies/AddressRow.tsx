@@ -5,6 +5,7 @@ import type { AddressPrecision, EventKind, ReportCategory } from "@civfix/shared
 import {
   focusRingProps,
   makeThemedStyles,
+  useLayoutMode,
   useTheme,
   webCursorPointer,
   webHover,
@@ -16,8 +17,7 @@ import { Icon, Text, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { useClipboard, useHaptics, useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
-import { useMapFocus } from "../map"
-import { useNavStore } from "../nav"
+import { showOnMap } from "../map"
 import { useToast } from "../primitives"
 import {
   addressExternalPlan,
@@ -193,6 +193,7 @@ export function AddressRow({
   const clipboard = useClipboard()
   const openExternal = useOpenExternal()
   const haptics = useHaptics()
+  const mode = useLayoutMode()
   const toast = useToast()
   const [sheetOpen, setSheetOpen] = useState(false)
 
@@ -290,23 +291,13 @@ export function AddressRow({
   const onFocusMap = useCallback(() => {
     if (!point || !focusTarget) return
     haptics.selection()
-    if (focusTarget.kind === "report") {
-      useMapFocus
-        .getState()
-        .setReport({ id: focusTarget.id, lat: point.lat, lng: point.lng, category: focusTarget.category })
-    } else {
-      useMapFocus
-        .getState()
-        .setEvent({ id: focusTarget.id, lat: point.lat, lng: point.lng, eventKind: focusTarget.eventKind })
-    }
-    useNavStore.getState().setSnap(1)
-  }, [focusTarget, haptics, point])
-
-  const onLongPress = useCallback(() => {
-    if (!affordances.longPressSheet || sheetOptions.length === 0) return
-    haptics.impactLight()
-    setSheetOpen(true)
-  }, [affordances.longPressSheet, haptics, sheetOptions.length])
+    showOnMap(
+      mode,
+      focusTarget.kind === "report"
+        ? { kind: "report", id: focusTarget.id, lat: point.lat, lng: point.lng, category: focusTarget.category }
+        : { kind: "cleanup", id: focusTarget.id, lat: point.lat, lng: point.lng, eventKind: focusTarget.eventKind },
+    )
+  }, [focusTarget, haptics, mode, point])
 
   if (!display) return null
 
@@ -326,28 +317,8 @@ export function AddressRow({
     )
   }
 
-  const body = affordances.focusMap ? (
-    <Pressable
-      onPress={onFocusMap}
-      onLongPress={affordances.longPressSheet ? onLongPress : undefined}
-      accessibilityRole="button"
-      accessibilityLabel={t("row.focus_a11y", { address: display })}
-      accessibilityHint={t("row.focus_hint")}
-      {...focusRingProps}
-      style={(state) => [
-        styles.main,
-        webTransition,
-        webCursorPointer,
-        webHover(state) ? styles.mainHovered : null,
-        state.pressed ? styles.pressed : null,
-      ]}
-    >
-      <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
-      {text}
-      {trailing}
-    </Pressable>
-  ) : (
-    <View style={styles.main} accessibilityLabel={t("row.static_a11y", { address: display })}>
+  const body = (
+    <View style={styles.main} accessible accessibilityLabel={t("row.static_a11y", { address: display })}>
       <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
       {text}
       {trailing}
@@ -355,13 +326,32 @@ export function AddressRow({
   )
 
   return (
-    <View style={styles.row}>
-      {body}
-      {affordances.copy ? (
-        <AddressIconButton icon="Copy" label={t("row.copy")} onPress={onCopy} />
-      ) : null}
-      {affordances.externalMaps ? (
-        <AddressIconButton icon="Navigation" label={t("row.open_maps")} onPress={onExternal} />
+    <View style={styles.block}>
+      <View style={styles.row}>
+        {body}
+        {affordances.copy ? (
+          <AddressIconButton icon="Copy" label={t("row.copy")} onPress={onCopy} />
+        ) : null}
+        {affordances.externalMaps ? (
+          <AddressIconButton icon="Navigation" label={t("row.open_maps")} onPress={onExternal} />
+        ) : null}
+      </View>
+      {affordances.focusMap ? (
+        <Pressable
+          onPress={onFocusMap}
+          accessibilityRole="button"
+          {...focusRingProps}
+          style={(state) => [
+            styles.showMap,
+            webTransition,
+            webCursorPointer,
+            webHover(state) ? styles.showMapHovered : null,
+            state.pressed ? styles.pressed : null,
+          ]}
+        >
+          <Icon icon={iconMap.Map} size={14} color={th.colors.accentText} />
+          <Text style={[styles.showMapText, webNoSelect]}>{t("row.show_map")}</Text>
+        </Pressable>
       ) : null}
       <AddressActionsSheet
         visible={sheetOpen}
@@ -388,8 +378,26 @@ const useStyles = makeThemedStyles((t) => ({
     borderRadius: t.radius.sm,
     paddingVertical: 2,
   },
-  mainHovered: {
+  block: {
+    gap: t.space["1"],
+  },
+  showMap: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: t.space["1"],
+    marginLeft: 14 + t.space["2"],
+    paddingVertical: 2,
+    paddingHorizontal: t.space["1"],
+    borderRadius: t.radius.pill,
+  },
+  showMapHovered: {
     backgroundColor: t.colors.surfaceTint,
+  },
+  showMapText: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: t.fontSize["13"],
+    color: t.colors.accentText,
   },
   text: {
     flexShrink: 1,

@@ -25,6 +25,10 @@ vi.mock("@/components/home/use-web-nav-adapter", () => ({
   useWebNavAdapter: vi.fn(),
 }))
 
+vi.mock("react-native-safe-area-context", () => ({
+  SafeAreaProvider: ({ children }: { children: React.ReactNode }) => children,
+}))
+
 const teamInviteAccept = vi.hoisted(() => vi.fn())
 
 vi.mock("@/components/home/use-team-invite-accept", () => ({
@@ -61,11 +65,22 @@ function renderShell(): React.ReactElement<{ children?: React.ReactNode }> {
   return AppShellFrame()
 }
 
+function findAppShell(nodes: React.ReactNode): React.ReactElement<AppShellSlots> | undefined {
+  for (const child of React.Children.toArray(nodes)) {
+    if (isAppShellElement(child)) return child
+    if (React.isValidElement<{ children?: React.ReactNode }>(child)) {
+      const nested = findAppShell(child.props.children)
+      if (nested) return nested
+    }
+  }
+  return undefined
+}
+
 function appShellSlots(): AppShellSlots {
   const shell = renderShell()
   const shellChildren = React.Children.toArray(shell.props.children)
   const content = shellChildren.find(isMainElement)
-  const appShell = React.Children.toArray(content?.props.children ?? shellChildren).find(isAppShellElement)
+  const appShell = findAppShell(content?.props.children ?? shellChildren)
 
   if (!appShell) throw new Error("HomeShell did not render AppShell")
   return appShell.props

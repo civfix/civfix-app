@@ -25,11 +25,12 @@ import { useClusters } from "./useClusters"
 import { mapPointsFor } from "./mapPoints"
 import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
 import { useLocationPick } from "./locationPickStore"
-import { useMapFocus } from "./mapFocusStore"
+import { useMapFocus, type FocusedEntity } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
+import { useMapFlyTo } from "./mapFlyToStore"
 import { longPressHitsMarker, type LongPressMarker } from "./longPressGate"
-import { markerNodeIsActive } from "./markerFocus"
+import { activeMarkerIds, flyToTargetOffMap, markerNodeIsActive } from "./markerFocus"
 import {
   clusterFallbackZoom,
   clusterListReports,
@@ -90,6 +91,32 @@ const MarkerNode = memo(function MarkerNode({ node, markerId, active, onPress }:
   )
 })
 
+interface TargetMarkerProps {
+  target: FocusedEntity
+  onPressPin: (event: NativeSyntheticEvent<MarkerEvent>) => void
+  onPressCleanup: (event: NativeSyntheticEvent<MarkerEvent>) => void
+}
+
+function TargetMarker({ target, onPressPin, onPressCleanup }: TargetMarkerProps) {
+  if (target.kind === "cleanup") {
+    return (
+      <Marker
+        id={`cleanup-${target.id}`}
+        lngLat={[target.lng, target.lat]}
+        anchor="bottom"
+        onPress={onPressCleanup}
+      >
+        <EventPin active eventKind={target.eventKind} />
+      </Marker>
+    )
+  }
+  return (
+    <Marker id={`pin-${target.id}`} lngLat={[target.lng, target.lat]} anchor="bottom" onPress={onPressPin}>
+      <TeardropPin category={target.category} active />
+    </Marker>
+  )
+}
+
 export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref) {
   const {
     reports = NO_REPORTS,
@@ -100,6 +127,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     userLocation = null,
     showUserLocation = false,
     onRegionChange,
+    onUserCameraMove,
     onPressPin,
     onPressCleanup,
     onPressCluster,
@@ -143,6 +171,8 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
   const onRegionChangeRef = useRef(onRegionChange)
   onRegionChangeRef.current = onRegionChange
+  const onUserCameraMoveRef = useRef(onUserCameraMove)
+  onUserCameraMoveRef.current = onUserCameraMove
 
   const initialCenterRef = useRef(initialCenter)
   const initialViewState = useMemo(
@@ -155,6 +185,10 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
 
   const focus = useMapFocus((s) => s.focus)
   const droppedPin = useDroppedPin((s) => s.pin)
+  const flyToRequest = useMapFlyTo((s) => s.request)
+  const flyToHighlight = useMapFlyTo((s) => s.highlight)
+  const activeIds = activeMarkerIds(focusedPinId, focusedCleanupId, flyToHighlight)
+  const [mapLoaded, setMapLoaded] = useState(false)
 
   const recomputeRef = useRef<() => void>(() => {})
   recomputeRef.current = () => {
@@ -176,14 +210,21 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     }
   }, [runner])
 
+  const offMapTarget = useMemo(
+    () => (focus ? null : flyToTargetOffMap(nodes, flyToHighlight)),
+    [focus, nodes, flyToHighlight],
+  )
+
   const hitMarkers = useMemo<LongPressMarker[]>(() => {
     if (focus) return [{ lat: focus.lat, lng: focus.lng }]
-    return nodes.map((node) => ({
+    const markers: LongPressMarker[] = nodes.map((node) => ({
       lat: node.lat,
       lng: node.lng,
       anchor: node.type === "cluster" ? ("center" as const) : ("bottom" as const),
     }))
-  }, [focus, nodes])
+    if (offMapTarget) markers.push({ lat: offMapTarget.lat, lng: offMapTarget.lng, anchor: "bottom" })
+    return markers
+  }, [focus, nodes, offMapTarget])
   const hitMarkersRef = useRef(hitMarkers)
   hitMarkersRef.current = hitMarkers
 
@@ -232,7 +273,17 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     [commitRegion],
   )
 
+  const handleRegionWillChange = useCallback(
+    (event: { nativeEvent: ViewStateChangeEvent }) => {
+      if (!event.nativeEvent.userInteraction) return
+      useMapFlyTo.getState().clear()
+      onUserCameraMoveRef.current?.()
+    },
+    [],
+  )
+
   const handleMapLoad = useCallback(() => {
+    setMapLoaded(true)
     const pending = mapNativeRef.current?.getViewState()
     if (!pending) {
       runner.request()
@@ -254,7 +305,17 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   useEffect(() => {
     if (!focus) return
     cameraRef.current?.flyTo({ center: [focus.lng, focus.lat], zoom: FOCUS_ZOOM, duration: 600 })
-  }, [focus?.id, focus?.lat, focus?.lng])
+  }, [focus])
+
+  useEffect(() => {
+    if (!flyToRequest || !mapLoaded) return
+    cameraRef.current?.flyTo({
+      center: [flyToRequest.lng, flyToRequest.lat],
+      zoom: FOCUS_ZOOM,
+      duration: 600,
+    })
+    useMapFlyTo.getState().consume(flyToRequest.generation)
+  }, [flyToRequest, mapLoaded])
 
   const markerPressedAtRef = useRef(0)
   const onPressMapRef = useRef(onPressMap)
@@ -287,12 +348,14 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
 
   const handlePressPin = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
     markerPressedAtRef.current = Date.now()
+    useMapFlyTo.getState().clear()
     const id = event.nativeEvent.id.slice("pin-".length)
     hapticsRef.current.selection()
     onPressPinRef.current?.(id)
   }, [])
   const handlePressCluster = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
     markerPressedAtRef.current = Date.now()
+    useMapFlyTo.getState().clear()
     const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
     if (!node || node.type !== "cluster") return
     hapticsRef.current.selection()
@@ -316,12 +379,14 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   }, [])
   const handlePressCleanup = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
     markerPressedAtRef.current = Date.now()
+    useMapFlyTo.getState().clear()
     const id = event.nativeEvent.id.slice("cleanup-".length)
     hapticsRef.current.selection()
     onPressCleanupRef.current?.(id)
   }, [])
   const handlePressBlend = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
     markerPressedAtRef.current = Date.now()
+    useMapFlyTo.getState().clear()
     const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
     if (!node || node.type !== "blend") return
     hapticsRef.current.selection()
@@ -366,6 +431,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       attributionPosition={{ bottom: insets.bottom + 96, right: 8 }}
       compass={false}
       onDidFinishLoadingMap={handleMapLoad}
+      onRegionWillChange={handleRegionWillChange}
       onRegionDidChange={handleRegion}
       onPress={handleMapPress}
       onLongPress={handleMapLongPress}
@@ -375,27 +441,12 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       {showUserLocation ? <UserLocation animated accuracy /> : null}
 
       {focus ? (
-        focus.kind === "cleanup" ? (
-          <Marker
-            key={`e:${focus.id}`}
-            id={`cleanup-${focus.id}`}
-            lngLat={[focus.lng, focus.lat]}
-            anchor="bottom"
-            onPress={handlePressCleanup}
-          >
-            <EventPin active eventKind={focus.eventKind} />
-          </Marker>
-        ) : (
-          <Marker
-            key={`r:${focus.id}`}
-            id={`pin-${focus.id}`}
-            lngLat={[focus.lng, focus.lat]}
-            anchor="bottom"
-            onPress={handlePressPin}
-          >
-            <TeardropPin category={focus.category} active />
-          </Marker>
-        )
+        <TargetMarker
+          key={`${focus.kind}:${focus.id}`}
+          target={focus}
+          onPressPin={handlePressPin}
+          onPressCleanup={handlePressCleanup}
+        />
       ) : (
         <>
           {markerNodes.rendered.map(({ node, markerId }) => (
@@ -403,7 +454,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
               key={node.key}
               node={node}
               markerId={markerId}
-              active={markerNodeIsActive(node, focusedPinId, focusedCleanupId)}
+              active={markerNodeIsActive(node, activeIds.pinId, activeIds.cleanupId)}
               onPress={
                 node.type === "cluster"
                   ? handlePressCluster
@@ -415,6 +466,14 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
               }
             />
           ))}
+          {offMapTarget ? (
+            <TargetMarker
+              key={`flyto:${offMapTarget.kind}:${offMapTarget.id}`}
+              target={offMapTarget}
+              onPressPin={handlePressPin}
+              onPressCleanup={handlePressCleanup}
+            />
+          ) : null}
         </>
       )}
 

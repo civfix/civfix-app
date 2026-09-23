@@ -20,7 +20,11 @@ import {
   shellStackBelow,
   useNestedShellStore,
 } from "@/lib/nestedShellSignal"
-import { secondaryShellBackAction } from "@/lib/secondaryShellBack"
+import {
+  secondaryShellBackAction,
+  secondaryShellLeaveAction,
+  type SecondaryShellLeaveAction,
+} from "@/lib/secondaryShellBack"
 
 export interface DetailRouteHostProps {
   entry: DetailEntry | null
@@ -98,11 +102,17 @@ export default function DetailRouteHost({ entry }: DetailRouteHostProps): React.
     }, [hostId, navigationRef]),
   )
 
-  const leave = useCallback(() => {
-    leftRef.current = true
-    if (router.canGoBack()) router.back()
-    else goHome(router)
-  }, [router])
+  const leave = useCallback(
+    (action: SecondaryShellLeaveAction) => {
+      leftRef.current = true
+      if (action === "home" || !router.canGoBack()) {
+        goHome(router)
+        return
+      }
+      router.back()
+    },
+    [router],
+  )
 
   const armedRef = useRef(false)
   useFocusEffect(
@@ -110,7 +120,7 @@ export default function DetailRouteHost({ entry }: DetailRouteHostProps): React.
       if (useNavStore.getState().active === null && entryRef.current) seedEntry(entryRef.current)
       if (useNavStore.getState().active === null) {
         armedRef.current = false
-        leave()
+        leave("back")
         return
       }
       armedRef.current = true
@@ -121,7 +131,7 @@ export default function DetailRouteHost({ entry }: DetailRouteHostProps): React.
         }
         if (!armedRef.current) return
         armedRef.current = false
-        leave()
+        leave(secondaryShellLeaveAction(state.lastTransition))
       })
     }, [leave]),
   )

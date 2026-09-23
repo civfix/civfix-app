@@ -41,15 +41,14 @@ describe("eventCoverErrorKey", () => {
 })
 
 describe("the event hero", () => {
-  it("prefers an uploaded cover, and keeps the map as the no-cover fallback", () => {
+  it("renders the uploaded cover, and nothing at all without one", () => {
     const hero = detail.match(/function EventHero\([\s\S]*?\n\}/)?.[0] ?? ""
     expect(hero).toContain("const cover = cleanup.coverUrl?.trim()")
-    const coverAt = hero.indexOf("if (cover)")
-    const coordsAt = hero.indexOf("if (hasCoords)")
-    expect(coverAt).toBeGreaterThan(-1)
-    expect(coordsAt).toBeGreaterThan(coverAt)
-    expect(hero).toContain("<MiniMap")
+    expect(hero).toContain("if (!cover) return null")
     expect(hero).toContain('resizeMode="cover"')
+    expect(hero).not.toContain("hasCoords")
+    expect(detail).not.toContain("MiniMap")
+    expect(detail).not.toContain("heroBlank")
   })
 })
 

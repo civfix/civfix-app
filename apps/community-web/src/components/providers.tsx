@@ -4,7 +4,7 @@ import * as React from "react"
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query"
 import { AppError } from "@civfix/shared"
 import { colorSchemes } from "@civfix/shared/tokens"
-import { ToastProvider, entryFromPath, setSourceCommit, useNavStore } from "@civfix/ui"
+import { ToastProvider, setSourceCommit } from "@civfix/ui"
 import { I18nProvider, FALLBACK_LOCALE } from "@civfix/ui/i18n"
 import {
   ThemeProvider,
@@ -44,6 +44,7 @@ import { AuthHydrator } from "@/components/auth/auth-hydrator"
 import { BootSplash } from "@/components/boot-splash"
 import { RealtimeChannel } from "@/components/realtime/realtime-channel"
 import { FirstRunGate } from "@/features/auth/first-run-gate"
+import { webOpenInternalHref } from "@/components/home/use-web-nav-adapter"
 
 setAppearancePreferenceStore({
   get: () => useAppearanceStore.getState().preference,
@@ -63,14 +64,7 @@ const webCapabilities: PlatformCapabilities = {
       window.open(url, "_blank", "noopener,noreferrer")
     },
   },
-  openInternalHref: {
-    open: (path: string): boolean => {
-      const entry = entryFromPath(path)
-      if (!entry) return false
-      useNavStore.getState().push(entry)
-      return true
-    },
-  },
+  openInternalHref: webOpenInternalHref,
   blurSurface: { supported: false },
 }
 

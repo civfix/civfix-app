@@ -12,7 +12,12 @@ import {
 
 type NavMode = "compact" | "expanded"
 
-const PAGE_SEED_KINDS: ReadonlySet<DetailKind> = new Set<DetailKind>(["cleanup", "pin", "post"])
+const PAGE_SEED_KINDS: ReadonlySet<DetailKind> = new Set<DetailKind>([
+  "cleanup",
+  "pin",
+  "post",
+  "post-thread",
+])
 
 export interface NavStore extends NavState {
   mode: NavMode

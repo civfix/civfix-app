@@ -181,7 +181,7 @@ describe("post endpoint registry", () => {
   // a readable header next to a 401'd posts tab.
   const specs = [
     [endpoints.createPost, "POST", "/posts", true, "required"],
-    [endpoints.getPost, "GET", "/posts/:id", false, "required"],
+    [endpoints.getPost, "GET", "/posts/:id", false, "optional"],
     [endpoints.deletePost, "DELETE", "/posts/:id", true, "required"],
     [endpoints.listReplies, "GET", "/posts/:id/replies", false, "required"],
     [endpoints.repostPost, "POST", "/posts/:id/repost", true, "required"],

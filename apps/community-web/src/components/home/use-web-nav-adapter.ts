@@ -3,15 +3,16 @@
 import * as React from "react"
 import {
   useNavStore,
-  entryFromPath,
   layoutModeFor,
   takeNavSnapshot,
   ROOT_NAV_SNAPSHOT,
   type NavSnapshot,
   type NavTransition,
 } from "@civfix/ui"
+import type { OpenInternalHrefCapability } from "@civfix/ui/capabilities"
 
 import {
+  entryFromWebPath,
   pathForSnapshot,
   readNavHistory,
   reconcilePlan,
@@ -49,7 +50,23 @@ function seedPathname(): string {
  * layout mode.
  */
 function seedStoreFromPath(pathname: string): void {
-  useNavStore.getState().seed(entryFromPath(pathname), liveMode())
+  useNavStore.getState().seed(entryFromWebPath(pathname), liveMode())
+}
+
+export const webOpenInternalHref: OpenInternalHrefCapability = {
+  entryFor: entryFromWebPath,
+  open: (path: string): boolean => {
+    const entry = entryFromWebPath(path)
+    if (!entry) return false
+    useNavStore.getState().push(entry)
+    return true
+  },
+}
+
+function lastFocusable(selector: string): Element | undefined {
+  return Array.from(document.querySelectorAll(selector))
+    .filter((element) => !element.closest('[aria-hidden="true"], [inert]'))
+    .pop()
 }
 
 function liveSnapshot(): NavSnapshot {
@@ -344,8 +361,9 @@ export function useWebNavAdapter(): void {
       if (typeof window === "undefined") return
       if (active) {
         requestAnimationFrame(() => {
-          const h = document.querySelector("[data-civfix-panel-heading]")
-          if (h instanceof HTMLElement) h.focus()
+          const target =
+            lastFocusable("[data-civfix-panel-heading]") ?? lastFocusable("[data-civfix-page-layer]")
+          if (target instanceof HTMLElement) target.focus({ preventScroll: true })
         })
       }
     })

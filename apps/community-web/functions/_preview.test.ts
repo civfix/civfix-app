@@ -32,8 +32,10 @@ import {
   type PreviewContextArg,
   type PreviewEnv,
 } from "./_preview-core"
+import type { PreviewKind } from "../src/lib/link-preview"
 
 const SHELL_HTML = "<html><head><title>civfix</title></head><body></body></html>"
+const UUID = "8f14e45f-ceea-467a-9b2e-9a1f0d7c1b22"
 const REPORT_PAYLOAD = {
   id: "8f14e45f-ceea-467a-9b2e-9a1f0d7c1b22",
   visibility: "public",
@@ -116,43 +118,48 @@ afterEach(() => {
 
 describe("parsePreviewRoute", () => {
   it("only ever previews a GET", () => {
-    expect(parsePreviewRoute("HEAD", ["abc"])).toEqual({ action: "passthrough" })
-    expect(parsePreviewRoute("POST", ["abc"])).toEqual({ action: "passthrough" })
-    expect(parsePreviewRoute("OPTIONS", ["abc"])).toEqual({ action: "passthrough" })
-    expect(parsePreviewRoute("get", ["abc"])).toEqual({ action: "preview", id: "abc" })
+    expect(parsePreviewRoute("report", "HEAD", [UUID])).toEqual({ action: "passthrough" })
+    expect(parsePreviewRoute("report", "POST", [UUID])).toEqual({ action: "passthrough" })
+    expect(parsePreviewRoute("report", "OPTIONS", [UUID])).toEqual({ action: "passthrough" })
+    expect(parsePreviewRoute("report", "get", [UUID])).toEqual({ action: "preview", id: UUID })
   })
 
   it("serves the browse page for the bare prefix", () => {
-    expect(parsePreviewRoute("GET", undefined)).toEqual({ action: "browse" })
-    expect(parsePreviewRoute("GET", [])).toEqual({ action: "browse" })
-    expect(parsePreviewRoute("GET", [""])).toEqual({ action: "browse" })
+    expect(parsePreviewRoute("report", "GET", undefined)).toEqual({ action: "browse" })
+    expect(parsePreviewRoute("report", "GET", [])).toEqual({ action: "browse" })
+    expect(parsePreviewRoute("report", "GET", [""])).toEqual({ action: "browse" })
   })
 
   it("leaves nested SPA routes such as /pin/<id>/edit untouched", () => {
-    expect(parsePreviewRoute("GET", ["abc", "edit"])).toEqual({ action: "shell" })
-    expect(parsePreviewRoute("GET", ["abc", "chat", "1"])).toEqual({ action: "shell" })
+    expect(parsePreviewRoute("report", "GET", [UUID, "edit"])).toEqual({ action: "shell" })
+    expect(parsePreviewRoute("report", "GET", [UUID, "chat", "1"])).toEqual({ action: "shell" })
   })
 
-  it("rejects every id shape that is not a plain lowercase entity id", () => {
-    for (const bad of [
-      "a.b",
-      "ABCDEF",
-      "MixedCase",
-      "a".repeat(65),
-      "..%2F",
-      "..%2Fetc",
-      "../secret",
-      "a/b",
-      "a b",
-      "a?b",
-      "%2e%2e",
-      "-leading",
-      "",
-    ]) {
-      expect(isValidPreviewId(bad)).toBe(false)
+  it("accepts exactly the id shapes each kind's API resolves, case intact", () => {
+    const matrix: Record<PreviewKind, { ok: readonly string[]; bad: readonly string[] }> = {
+      report: {
+        ok: [UUID, "GR-12-000001", "DU-4970-000001"],
+        bad: ["gr-12-000001", "EVENT-12-000045", "XX-1-000001", "GR-12-1"],
+      },
+      event: {
+        ok: [UUID, "EVENT-12-000045", "beach-cleanup-may"],
+        bad: ["Event-12-000045", "EVENT-12-45", "GR-12-000001", "Beach-Cleanup", "ab"],
+      },
+      person: {
+        ok: [UUID, "ada", "Ada_Rivera"],
+        bad: ["ab", "ada.r", "a".repeat(21), "ada-r"],
+      },
+      org: { ok: ["river-keepers"], bad: ["River-Keepers", "ab", "a".repeat(41)] },
+      signup: { ok: ["beach-cleanup-may"], bad: ["a".repeat(61)] },
+      post: { ok: [UUID], bad: ["GR-12-000001", "ada"] },
     }
-    expect(isValidPreviewId("8f14e45f-ceea-467a-9b2e-9a1f0d7c1b22")).toBe(true)
-    expect(isValidPreviewId("a".repeat(64))).toBe(true)
+    const hostile = ["a.b", "..%2F", "../secret", "a/b", "a b", "a?b", "%2e%2e", "-leading", ""]
+    for (const [kind, { ok, bad }] of Object.entries(matrix) as [PreviewKind, (typeof matrix)[PreviewKind]][]) {
+      for (const id of ok) expect(isValidPreviewId(kind, id), `${kind} ${id}`).toBe(true)
+      for (const id of [...bad, ...hostile]) {
+        expect(isValidPreviewId(kind, id), `${kind} ${id}`).toBe(false)
+      }
+    }
   })
 })
 
@@ -166,6 +173,22 @@ describe("buildUpstreamRequest", () => {
     expect(request.headers.get("accept")).toBe("application/json")
     expect(request.signal).toBeTruthy()
     expect(API_TIMEOUT_MS).toBe(1500)
+  })
+
+  it("forwards a reference code and a mixed-case handle upstream unchanged", () => {
+    const base = "https://api.civfix.org"
+    expect(buildUpstreamRequest("report", "GR-12-000001", base).url).toBe(
+      "https://api.civfix.org/v1/reports/GR-12-000001",
+    )
+    expect(buildUpstreamRequest("event", "EVENT-12-000045", base).url).toBe(
+      "https://api.civfix.org/v1/cleanups/EVENT-12-000045",
+    )
+    expect(buildUpstreamRequest("person", "Ada_Rivera", base).url).toBe(
+      "https://api.civfix.org/v1/people/Ada_Rivera",
+    )
+    expect(buildUpstreamRequest("post", UUID, base).url).toBe(
+      `https://api.civfix.org/v1/posts/${UUID}`,
+    )
   })
 
   it("percent-encodes the id into the upstream path", () => {
@@ -306,7 +329,7 @@ describe("cache policy", () => {
     const response = await runPreview(prod.context, "report", { rewrite: prod.rewrite })
     expect(prod.fetchSpy).toHaveBeenCalledTimes(1)
     const html = await response.text()
-    expect(html).toContain('<meta property="og:title" content="Graffiti · Los Angeles, CA">')
+    expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
     expect(html).not.toContain("robots")
   })
 })
@@ -347,12 +370,34 @@ describe("runPreview", () => {
   })
 
   it("never lets a hostile id reach upstream", async () => {
-    for (const bad of ["..%2F", "../secret", "a.b", "ABCDEF", "a".repeat(65)]) {
+    for (const bad of [
+      "..%2F",
+      "../secret",
+      "a.b",
+      "ABCDEF",
+      "a".repeat(65),
+      "gr-12-000001",
+      "EVENT-12-000045",
+      "Ada",
+    ]) {
       const h = harness({ path: [bad] })
       const response = await runPreview(h.context, "report", { rewrite: h.rewrite })
       expect(h.fetchSpy).not.toHaveBeenCalled()
       expect(await response.text()).toBe(SHELL_HTML)
     }
+  })
+
+  it("previews a report shared by its reference code", async () => {
+    const cache = makeCache()
+    vi.stubGlobal("caches", { default: cache })
+    const h = harness({ url: "https://civfix.org/pin/GR-12-000001", path: ["GR-12-000001"] })
+    const html = await (await runPreview(h.context, "report", { rewrite: h.rewrite })).text()
+    expect(h.fetchSpy.mock.calls[0]?.[0]?.url).toBe(
+      "https://api.civfix.org/v1/reports/GR-12-000001",
+    )
+    await Promise.all(h.waited)
+    expect([...cache.entries.keys()].some((key) => key.includes("/report/GR-12-000001"))).toBe(true)
+    expect(html).toContain(`<meta property="og:url" content="https://civfix.org/pin/${UUID}">`)
   })
 
   it("falls back to the branded default head on 404, 500, 429 and a timeout", async () => {
@@ -442,7 +487,7 @@ describe("runPreview", () => {
       const h = harness({ url: `https://${host}/pin/${id}` })
       const html = await (await runPreview(h.context, "report", { rewrite: h.rewrite })).text()
       expect(html).toContain('<meta name="robots" content="noindex">')
-      expect(html).toContain('<meta property="og:title" content="Graffiti · Los Angeles, CA">')
+      expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
     }
   })
 
@@ -453,7 +498,7 @@ describe("runPreview", () => {
       const h = harness({ url: `https://${host}/pin/${id}` })
       const html = await (await runPreview(h.context, "report", { rewrite: h.rewrite })).text()
       expect(html).not.toContain("robots")
-      expect(html).toContain('<meta property="og:title" content="Graffiti · Los Angeles, CA">')
+      expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
     }
   })
 
@@ -497,7 +542,7 @@ describe("runPreview", () => {
     expect(h.rewrite).toHaveBeenCalledTimes(1)
     expect(response.headers.get("Cache-Control")).toBe("public, max-age=0, must-revalidate")
     const html = await response.text()
-    expect(html).toContain('<meta property="og:title" content="Graffiti · Los Angeles, CA">')
+    expect(html).toContain('<meta property="og:title" content="Graffiti in Los Angeles, CA on civfix">')
   })
 })
 
@@ -523,11 +568,11 @@ describe("canonical url", () => {
   it("reads the person id out of the profile envelope", () => {
     const preview = buildPreview(
       "person",
-      { profile: { id: "ada-id", name: "Ada Rivera", handle: "ada" } },
+      { profile: { id: "5b2d7e1c-3f4a-4b6c-8d9e-0a1b2c3d4e5f", name: "Ada Rivera", handle: "ada" } },
       "route-id",
       "https://civfix.org",
     )
-    expect(preview?.url).toBe("https://civfix.org/people/ada-id")
+    expect(preview?.url).toBe("https://civfix.org/people/5b2d7e1c-3f4a-4b6c-8d9e-0a1b2c3d4e5f")
   })
 })
 
@@ -556,29 +601,30 @@ describe("preview head on the staging host", () => {
     const { html, response } = await renderEvent(
       `https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}`,
     )
-    const description = "Sat, Sep 12, 10:00 AM PDT · A volunteer event on civfix"
+    const description = "Sat, Sep 12, 10:00 AM PDT · Bring gloves. Ask for Dana at 12 Elm St, apt 5."
+    const title = "Ballona Creek cleanup on civfix"
 
     expect(response.headers.get("Content-Type")).toBe(HTML_CONTENT_TYPE)
     for (const tag of [
-      "<title>Ballona Creek cleanup · civfix</title>",
+      `<title>${title}</title>`,
       `<meta name="description" content="${description}">`,
       '<meta property="og:site_name" content="civfix">',
       '<meta property="og:type" content="article">',
       '<meta property="og:locale" content="en_US">',
       `<meta property="og:url" content="https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}">`,
-      '<meta property="og:title" content="Ballona Creek cleanup">',
+      `<meta property="og:title" content="${title}">`,
       `<meta property="og:description" content="${description}">`,
       '<meta property="og:image" content="https://civfix.dev/og.png">',
       '<meta property="og:image:secure_url" content="https://civfix.dev/og.png">',
       '<meta property="og:image:type" content="image/png">',
       '<meta property="og:image:width" content="1200">',
       '<meta property="og:image:height" content="630">',
-      '<meta property="og:image:alt" content="Ballona Creek cleanup">',
+      `<meta property="og:image:alt" content="${title}">`,
       '<meta name="twitter:card" content="summary_large_image">',
-      '<meta name="twitter:title" content="Ballona Creek cleanup">',
+      `<meta name="twitter:title" content="${title}">`,
       `<meta name="twitter:description" content="${description}">`,
       '<meta name="twitter:image" content="https://civfix.dev/og.png">',
-      '<meta name="twitter:image:alt" content="Ballona Creek cleanup">',
+      `<meta name="twitter:image:alt" content="${title}">`,
       `<link rel="canonical" href="https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}">`,
       '<link rel="icon" href="https://civfix.dev/favicon.svg" type="image/svg+xml">',
       '<link rel="apple-touch-icon" href="https://civfix.dev/apple-touch-icon.png" sizes="180x180">',
@@ -588,11 +634,10 @@ describe("preview head on the staging host", () => {
     expect(html).not.toContain("civfix.org")
   })
 
-  it("still refuses to echo host-authored free text", async () => {
+  it("carries the host's description but never the address field", async () => {
     const { html } = await renderEvent(`https://civfix.dev/cleanups/${EVENT_PAYLOAD.id}`)
-    for (const secret of ["gloves", "Dana", "Elm St", "Secret Ln"]) {
-      expect(html).not.toContain(secret)
-    }
+    expect(html).toContain("gloves")
+    expect(html).not.toContain("Secret Ln")
   })
 
   it("takes the origin from the served host only, never from a client-supplied header", async () => {
@@ -769,5 +814,103 @@ describe("signup page previews (/e/:slug)", () => {
     expect(response.status).toBe(200)
     expect(h.assets.mock.calls[0]?.[0]?.toString()).toContain("/e/_/")
     expect(h.rewrite).not.toHaveBeenCalled()
+  })
+})
+
+const POST_ID = "0c9a4f3e-2b1d-4e6f-9a8b-7c6d5e4f3a2b"
+const POST_PAYLOAD = {
+  id: POST_ID,
+  kind: "post",
+  body: "Cleared the storm drain on Venice Blvd this morning.",
+  author: { id: "a1", name: "Ada Rivera", handle: "ada", email: "ada@example.com" },
+  organization: null,
+  media: [
+    {
+      id: "m1",
+      kind: "image",
+      status: "ready",
+      url: "https://cdn.civfix.dev/media/m1.jpg",
+      thumbUrl: "https://cdn.civfix.dev/media/m1_thumb.jpg",
+      width: 3024,
+      height: 4032,
+    },
+  ],
+  viewer: { liked: true, reposted: false, saved: true },
+}
+
+function postHarness(options: { path?: string[]; upstream?: () => Promise<Response> } = {}): Harness {
+  return harness({
+    url: `https://civfix.dev/post/${POST_ID}`,
+    path: options.path ?? [POST_ID],
+    upstream: options.upstream ?? (async () => new Response(JSON.stringify(POST_PAYLOAD), { status: 200 })),
+  })
+}
+
+describe("post previews (/post/:id)", () => {
+  it("reads the post from /v1/posts/<id> and serves the /post/_/ shell", async () => {
+    const h = harness({
+      url: `https://civfix.org/post/${POST_ID}`,
+      path: [POST_ID],
+      upstream: async () => new Response(JSON.stringify(POST_PAYLOAD), { status: 200 }),
+    })
+    await runPreview(h.context, "post", { rewrite: h.rewrite })
+    expect(String(h.assets.mock.calls[0]?.[0])).toBe("https://civfix.org/post/_/")
+    expect(h.fetchSpy.mock.calls[0]?.[0]?.url).toBe(`https://api.civfix.org/v1/posts/${POST_ID}`)
+  })
+
+  it("canonicalizes to /post/<id> from the DTO", () => {
+    const preview = buildPreview("post", POST_PAYLOAD, "route-id", "https://civfix.org")
+    expect(preview?.url).toBe(`https://civfix.org/post/${POST_ID}`)
+  })
+
+  it("emits the author byline, body, first image and article type on the staging origin", async () => {
+    const h = postHarness()
+    const html = await (await runPreview(h.context, "post", { rewrite: h.rewrite })).text()
+    const title = "Ada Rivera (@ada) on civfix"
+    const body = POST_PAYLOAD.body
+    const thumb = "https://cdn.civfix.dev/media/m1_thumb.jpg"
+    for (const tag of [
+      `<title>${title}</title>`,
+      '<meta name="robots" content="noindex">',
+      `<meta name="description" content="${body}">`,
+      '<meta property="og:type" content="article">',
+      `<meta property="og:url" content="https://civfix.dev/post/${POST_ID}">`,
+      `<meta property="og:title" content="${title}">`,
+      `<meta property="og:description" content="${body}">`,
+      `<meta property="og:image" content="${thumb}">`,
+      `<meta property="og:image:secure_url" content="${thumb}">`,
+      `<meta property="og:image:alt" content="${title}">`,
+      '<meta name="twitter:card" content="summary_large_image">',
+      `<meta name="twitter:title" content="${title}">`,
+      `<meta name="twitter:description" content="${body}">`,
+      `<meta name="twitter:image" content="${thumb}">`,
+      `<link rel="canonical" href="https://civfix.dev/post/${POST_ID}">`,
+    ]) {
+      expect(html).toContain(tag)
+    }
+    expect(html).not.toContain("og:image:width")
+    expect(html).not.toContain("ada@example.com")
+  })
+
+  it("serves the branded default, noindexed, when the API answers 404 — a hidden post is indistinguishable from a missing one", async () => {
+    const h = harness({
+      url: `https://civfix.org/post/${POST_ID}`,
+      path: [POST_ID],
+      upstream: async () => new Response(JSON.stringify({ error: { code: "NOT_FOUND" } }), { status: 404 }),
+    })
+    const html = await (await runPreview(h.context, "post", { rewrite: h.rewrite })).text()
+    expect(html).toContain('<meta property="og:title" content="civfix">')
+    expect(html).toContain('<meta name="robots" content="noindex">')
+    expect(html).toContain(`<link rel="canonical" href="https://civfix.org/post/${POST_ID}">`)
+  })
+
+  it("leaves /post/<id>/thread as the SPA shell and rejects a non-uuid id before any upstream call", async () => {
+    for (const path of [[POST_ID, "thread"], ["GR-12-000001"], ["ada"], [POST_ID.toUpperCase()]]) {
+      const h = postHarness({ path })
+      const response = await runPreview(h.context, "post", { rewrite: h.rewrite })
+      expect(h.fetchSpy).not.toHaveBeenCalled()
+      expect(h.rewrite).not.toHaveBeenCalled()
+      expect(await response.text()).toBe(SHELL_HTML)
+    }
   })
 })

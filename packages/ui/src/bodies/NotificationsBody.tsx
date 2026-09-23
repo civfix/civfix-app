@@ -6,6 +6,7 @@ import { Text, Icon, iconMap, type IconName } from "../typography"
 import { EmptyState, LoadingState, SignInPrompt } from "../primitives"
 import { useNotifications, useMarkNotificationsRead, useAuthState, useRequireAuth } from "../data"
 import { useNavStore, entryFromPath, isRootLink } from "../nav"
+import { useOpenInternalHref } from "../capabilities"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { idKeyExtractor } from "./navHelpers"
@@ -117,14 +118,15 @@ export function NotificationsBody() {
     if (unreadIds.length > 0) mutateRead(unreadIds)
   }, [notifications, mutateRead])
 
+  const entryForHref = useOpenInternalHref()?.entryFor ?? entryFromPath
   const onPressItem = useCallback(
     (item: NotificationDTO) => {
       if (!item.read) mutateRead([item.id])
-      const entry = entryFromPath(item.link)
+      const entry = entryForHref(item.link)
       if (entry) useNavStore.getState().push(entry)
       else if (isRootLink(item.link)) useNavStore.getState().selectView("home")
     },
-    [mutateRead],
+    [entryForHref, mutateRead],
   )
 
   const renderItem = useCallback(

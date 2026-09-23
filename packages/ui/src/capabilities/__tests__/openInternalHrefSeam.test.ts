@@ -9,7 +9,9 @@ const code = (source: string): string =>
 describe("openInternalHref is an OPTIONAL capability, like every other host seam", () => {
   it("is declared on PlatformCapabilities as optional, so a host without one still typechecks", () => {
     const types = code(read("../types.ts"))
-    expect(types).toMatch(/export interface OpenInternalHrefCapability \{\s*open\(path: string\): boolean\s*\}/)
+    expect(types).toMatch(
+      /export interface OpenInternalHrefCapability \{\s*open\(path: string\): boolean\s*entryFor\?\(path: string \| null \| undefined\): DetailEntry \| null\s*\}/,
+    )
     expect(types).toContain("openInternalHref?: OpenInternalHrefCapability")
   })
 

@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { beforeEach, describe, expect, it } from "vitest"
 import { MOTION } from "../../theme/motion"
+import { tokens } from "@civfix/shared/tokens"
 import {
   DOCK_OCCLUSION_SINK,
   DOCK_SHEET_CLEAR,
@@ -392,10 +393,12 @@ describe("dockBottomGap on Android: the system nav bar is reserved IN FULL", () 
     expect(logic).toMatch(/platform: DockPlatform = "other"/)
   })
 
-  it("leaves the WEB dock structurally immune — it never consults an inset at all", () => {
+  it("keeps the WEB dock off the Android branch: the measured safe area through the iOS rule, floored at today's gap", () => {
     const web = readFileSync(new URL("../TabBar.web.tsx", import.meta.url), "utf8")
-    expect(web).toMatch(/paddingBottom: space\["3"\]/)
-    expect(web).not.toMatch(/dockBottomGap|dockKeyboardRestOffset|useSafeAreaInsets|Platform\.OS/)
+    expect(web).toMatch(/paddingBottom: Math\.max\(space\["3"\], dockBottomGap\(insets\?\.bottom \?\? 0\)\)/)
+    expect(web).not.toMatch(/dockKeyboardRestOffset|useSafeAreaInsets|Platform\.OS|"android"/)
+    expect(Math.max(tokens.space["3"], dockBottomGap(0))).toBe(tokens.space["3"])
+    expect(dockBottomGap(34)).toBeGreaterThan(tokens.space["3"])
   })
 })
 

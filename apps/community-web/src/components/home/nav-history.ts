@@ -1,6 +1,7 @@
 import {
   ALL_DETAIL_KINDS,
   ALL_VIEWS,
+  entryFromPath,
   entryIdentity,
   pathForEntry,
   pathForView,
@@ -174,9 +175,18 @@ function exportPath(path: string): string {
   return path.endsWith("/") ? path : `${path}/`
 }
 
+export function entryFromWebPath(path: string | null | undefined): DetailEntry | null {
+  const entry = entryFromPath(path)
+  return entry?.kind === "post" && entry.id ? { kind: "post-thread", id: entry.id } : entry
+}
+
+export function webPathForEntry(entry: DetailEntry): string {
+  return entry.kind === "post-thread" && entry.id ? `/post/${entry.id}` : pathForEntry(entry)
+}
+
 export function pathForSnapshot(snapshot: NavSnapshot): string {
   const active = snapshot.stack[snapshot.stack.length - 1]
-  if (active && active.kind !== "drop-pin") return exportPath(pathForEntry(active))
+  if (active && active.kind !== "drop-pin") return exportPath(webPathForEntry(active))
   const viewPath = pathForView(snapshot.view)
   if (viewPath) return exportPath(viewPath)
   const listKind = LIST_KIND_FOR_VIEW[snapshot.view]

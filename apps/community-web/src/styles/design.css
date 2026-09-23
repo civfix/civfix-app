@@ -237,8 +237,26 @@
 .cf-shell {
   position: fixed;
   inset: 0;
+  left: env(safe-area-inset-left, 0px);
+  right: env(safe-area-inset-right, 0px);
   background: var(--paper);
   overflow: hidden;
+  touch-action: manipulation;
+  --ios-focus-zoom-floor: 16px;
+}
+
+body:not(:has(.cf-shell)) {
+  height: auto;
+  min-height: 100%;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
+@media (pointer: coarse) {
+  .cf-shell input,
+  .cf-shell textarea {
+    font-size: var(--ios-focus-zoom-floor);
+  }
 }
 
 /*

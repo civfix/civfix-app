@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { View, type ViewStyle } from "react-native"
+import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { space, useTheme } from "../theme"
 import { useTabBarStore } from "./tabBarStore"
-import { compactBottomChrome, tabPillTransition } from "./tabBarLogic"
+import { compactBottomChrome, dockBottomGap, tabPillTransition } from "./tabBarLogic"
 import { SearchHeader } from "./SearchHeader.web"
 import {
   TABS,
@@ -39,7 +40,11 @@ export function TabBar() {
 
   useEffect(() => () => setTabBarHeight(0), [setTabBarHeight])
 
-  const containerStyle = [styles.container, { paddingBottom: space["3"] }]
+  const insets = useContext(SafeAreaInsetsContext)
+  const containerStyle = [
+    styles.container,
+    { paddingBottom: Math.max(space["3"], dockBottomGap(insets?.bottom ?? 0)) },
+  ]
 
   if (compactBottomChrome(view) === "docked-search") {
     return (

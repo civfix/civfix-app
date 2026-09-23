@@ -56,6 +56,7 @@ export const metadata: Metadata = {
     description: DEFAULT_DESCRIPTION,
     images: [{ url: BRAND_IMAGE_PATH, alt: SITE_NAME }],
   },
+  appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: "default" },
 }
 
 export const viewport: Viewport = {
@@ -65,6 +66,7 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 }
 
 const APPEARANCE_SCRIPT = `(function(){try{

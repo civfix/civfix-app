@@ -48,6 +48,44 @@ test("a late ready callback from an old map cannot consume the new map target", 
   assert.deepEqual(lifecycle.takePendingMapTarget(state, 21).target, target)
 })
 
+test("a late first fix on the SAME generation still flies when nothing newer began", () => {
+  const request = lifecycle.beginMapRequest(lifecycle.createMapLifecycleState())
+  const approximate = { lat: 34.05, lng: -118.25, zoom: 10 }
+  const precise = { lat: 34.0522, lng: -118.2437, zoom: 13 }
+  let state = lifecycle.resolveMapRequest(request.state, request.generation, approximate)
+  state = lifecycle.mountMap(state, 7)
+  state = lifecycle.markMapReady(state, 7)
+  state = lifecycle.takePendingMapTarget(state, 7).state
+  state = lifecycle.resolveMapRequest(state, request.generation, precise)
+  assert.deepEqual(state.pendingTarget?.target, precise)
+})
+
+test("a user gesture during the first-fix wait supersedes the locate, so the late fix never flies", () => {
+  const request = lifecycle.beginMapRequest(lifecycle.createMapLifecycleState())
+  const approximate = { lat: 34.05, lng: -118.25, zoom: 10 }
+  const precise = { lat: 40.758, lng: -73.9855, zoom: 13 }
+  let state = lifecycle.resolveMapRequest(request.state, request.generation, approximate)
+  state = lifecycle.mountMap(state, 8)
+  state = lifecycle.markMapReady(state, 8)
+  state = lifecycle.takePendingMapTarget(state, 8).state
+
+  const gesture = lifecycle.beginMapRequest(state)
+  state = lifecycle.resolveMapRequest(gesture.state, request.generation, precise)
+
+  assert.equal(state.pendingTarget, null)
+  assert.equal(lifecycle.takePendingMapTarget(state, 8).target, null)
+})
+
+test("without a gesture the late first fix on the locate generation flies", () => {
+  const request = lifecycle.beginMapRequest(lifecycle.createMapLifecycleState())
+  const precise = { lat: 40.758, lng: -73.9855, zoom: 13 }
+  let state = lifecycle.mountMap(request.state, 9)
+  state = lifecycle.markMapReady(state, 9)
+  state = lifecycle.resolveMapRequest(state, request.generation, precise)
+
+  assert.deepEqual(lifecycle.takePendingMapTarget(state, 9).target, precise)
+})
+
 test("a delayed initial-location result cannot replace a newer camera request", () => {
   const initial = lifecycle.beginMapRequest(lifecycle.createMapLifecycleState())
   const detail = lifecycle.beginMapRequest(initial.state)

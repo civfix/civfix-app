@@ -1,86 +1,311 @@
-/**
- * PageStack (WEB seam) - the portrait overlay layer's host, VERBATIM as PortraitShell.shared carried it.
- *
- * This file is a MOVE, not a rewrite, and it is meant to stay one. Web presents details as the pull-up
- * sheet (`detailPresentationPlatform` -> DETAILS_ARE_FULL_PAGE false), so this layer only ever holds the
- * handful of table-"full" kinds - one at a time, with nothing beneath to reveal and no edge-swipe
- * vocabulary on a desktop pointer. There is no page stack here to animate, so the correct web change was
- * none: same two-box padding structure (so the overlay inset and the keyboard inset still SUM as nested
- * boxes rather than overriding each other), same `hasDetailHeader` gate, same `dismissGesture={false}`,
- * same ScrollHostProvider, same BodyTransition.
- *
- * `entries`/`layerKeys` are accepted and ignored: they are PageStack.native's inputs, and the seam splits
- * on the file extension rather than on a runtime flag so the web bundle never pulls in reanimated or
- * react-native-gesture-handler.
- */
-import React, { useMemo } from "react"
-import { StyleSheet, View } from "react-native"
-import { BodyTransition } from "./BodyTransition"
+import React, { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { StyleSheet, useWindowDimensions, View, type ViewStyle } from "react-native"
+import { useNavStore, type DetailEntry, type View as NavView } from "../nav"
+import { makeThemedStyles, motion } from "../theme"
+import type { BodyTransitionDirection } from "./BodyTransition.types"
+import { pageBottomReserve } from "./bodyLayout"
+import { ContentBottomReserveProvider, contentBottomReserveScrollHost } from "./ContentBottomReserve"
 import { IosKeyboardAvoidingView } from "./IosKeyboardAvoidingView"
-import type { PageStackProps } from "./PageStack.types"
-import { ScrollHostProvider } from "./ScrollHost"
+import { PageActiveProvider } from "./pageActive"
+import type { PageStackProps, PageStackRenderBody } from "./PageStack.types"
+import {
+  pageLayerPointerEvents,
+  pageLayerTokens,
+  type PageLayerPointerEvents,
+  type PageMotionTokens,
+  type PageTransitionPlan,
+  type PageTransitionTiming,
+} from "./pageStackModel"
+import {
+  isInstantPagePlan,
+  pagePlanDuration,
+  restingLayerProgress,
+  webLayerCss,
+  webLayerProgress,
+  webLayerTransition,
+  webPageTransitionPlan,
+} from "./pageStackWebModel"
+import { ScrollHostProvider, type ScrollHostValue } from "./ScrollHost"
 import { DetailHeader, hasDetailHeader } from "./SheetHeader.shared"
+import { isCoarsePointer, prefersReducedMotion } from "./webMedia"
+
+const TIMING: PageTransitionTiming = {
+  pushDuration: motion.pagePush.duration,
+  popDuration: motion.pagePop.duration,
+  fadeDuration: motion.bodyReplace.duration,
+}
+const PAGE_MOTION: PageMotionTokens = {
+  travelRatio: motion.pageTravelRatio,
+  parallaxRatio: motion.pageParallaxRatio,
+  scrimOpacity: motion.pageScrimOpacity,
+}
+const ANIMATED_TOKENS = pageLayerTokens(PAGE_MOTION, false, false)
+const REDUCED_TOKENS = pageLayerTokens(PAGE_MOTION, true, false)
+const SETTLE_SLACK_MS = 60
+
+interface StackLayer {
+  key: string
+  entry: DetailEntry
+  stack: readonly DetailEntry[]
+}
+
+interface Phase {
+  nav: number
+  direction: BodyTransitionDirection
+  plan: PageTransitionPlan
+  leaving: StackLayer | null
+  flipped: boolean
+}
+
+interface StackState {
+  signature: string
+  nav: number
+  phase: Phase | null
+}
+
+function restoredByHistory(): boolean {
+  const type = useNavStore.getState().lastTransition?.type
+  return type === "restore" || type === "seed"
+}
 
 export function PageStack({
-  bodyMounted,
   direction,
-  entry,
+  entries,
   insets,
   keyboardAvoidance,
+  layerKeys,
   renderBody,
   scrollHost,
   stack,
-  transitionKey,
   view,
   webKeyboardInset,
 }: PageStackProps) {
-  // The overlay body was memoized on exactly these four inputs before this seam existed, and it stays
-  // memoized here: PortraitShellFrame re-renders on every keyboard inset change, tab-bar measurement and
-  // sheet presence flip, and rebuilding the element on each would re-render the whole page tree.
-  const body = useMemo(
-    () => (bodyMounted ? renderBody(entry, view) : null),
-    [bodyMounted, entry, renderBody, view],
+  const styles = useStyles()
+  const width = useWindowDimensions().width
+  const hostRef = useRef<View>(null)
+  const signature = layerKeys.join("|")
+  const stackSlices = useMemo(() => stack.map((_, index) => stack.slice(0, index + 1)), [stack])
+  const layers = useMemo<StackLayer[]>(
+    () =>
+      entries.map((entry, depth) => ({
+        key: layerKeys[depth] ?? `${depth}`,
+        entry,
+        stack: stackSlices[stack.indexOf(entry)] ?? stack,
+      })),
+    [entries, layerKeys, stack, stackSlices],
   )
+  const committedRef = useRef<readonly StackLayer[]>(layers)
+  const [state, setState] = useState<StackState>(() => ({ signature, nav: 0, phase: null }))
+
+  if (state.signature !== signature) {
+    const plan = webPageTransitionPlan(
+      direction,
+      {
+        restored: restoredByHistory(),
+        reduceMotion: prefersReducedMotion(),
+        keyboardBound: keyboardAvoidance,
+        coarsePointer: isCoarsePointer(),
+      },
+      TIMING,
+    )
+    const nav = state.nav + 1
+    const committed = committedRef.current
+    const gone = committed[committed.length - 1]
+    const leaving = plan.retainLeaving && gone && !layerKeys.includes(gone.key) ? gone : null
+    setState({
+      signature,
+      nav,
+      phase: isInstantPagePlan(plan) ? null : { nav, direction, plan, leaving, flipped: false },
+    })
+  }
+
+  useLayoutEffect(() => {
+    committedRef.current = layers
+  }, [layers])
+
+  const phase = state.phase
+  const settle = useCallback((nav: number) => {
+    setState((cur) => (cur.phase && cur.phase.nav === nav ? { ...cur, phase: null } : cur))
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!phase || phase.flipped) return
+    const host = hostRef.current as unknown as { offsetHeight?: number } | null
+    void host?.offsetHeight
+    const nav = phase.nav
+    setState((cur) =>
+      cur.phase && cur.phase.nav === nav && !cur.phase.flipped
+        ? { ...cur, phase: { ...cur.phase, flipped: true } }
+        : cur,
+    )
+    const fallback = setTimeout(() => settle(nav), pagePlanDuration(phase.plan) + SETTLE_SLACK_MS)
+    return () => clearTimeout(fallback)
+  }, [phase?.nav])
+
+  const rendered = phase?.leaving ? [...layers, phase.leaving] : layers
+  const topIndex = rendered.length - 1
+  const realTopIndex = layers.length - 1
+  if (topIndex < 0) return null
+  const tokens = prefersReducedMotion() ? REDUCED_TOKENS : ANIMATED_TOKENS
+  const hasLeaving = phase?.leaving != null
+
   return (
-    <View style={[styles.host, insets]}>
-      <IosKeyboardAvoidingView style={[styles.hostContent, webKeyboardInset]} enabled={keyboardAvoidance}>
-        {/* THE SHELL-LEVEL PAGE HEADER. It is what lets a "scroll" body become a full page with NO edit
-            of its own: the sheet gave it a DetailBar (title + leading chip) from CompactShell, and the
-            overlay layer used to give it nothing at all - a page with no title and, worse, no way off.
-            Same component, same i18n key, same ONE affordance gate, only `dismissGesture` differs (a
-            page has no grab handle to drag, so the chip may never be traded away for one).
-            The bodies that own their header return the " " sentinel and render nothing here - which is
-            why the HOST is gated on `hasDetailHeader` too: an empty padded wrapper would open a phantom
-            12pt gap above every one of them. */}
-        {bodyMounted && hasDetailHeader(entry) ? (
-          <View style={styles.header}>
-            <DetailHeader active={entry} stack={stack} dismissGesture={false} />
-          </View>
-        ) : null}
-        <ScrollHostProvider value={scrollHost}>
-          <BodyTransition transitionKey={transitionKey} direction={direction}>
-            {body}
-          </BodyTransition>
-        </ScrollHostProvider>
-      </IosKeyboardAvoidingView>
+    <View ref={hostRef} style={styles.host}>
+      {rendered.map((layer, index) => {
+        const progress = phase
+          ? webLayerProgress({
+              index,
+              topIndex,
+              hasLeaving,
+              direction: phase.direction,
+              flipped: phase.flipped,
+              slide: phase.plan.slide,
+            })
+          : restingLayerProgress(index, topIndex)
+        const css = webLayerCss(progress, width, tokens)
+        const active = index === realTopIndex
+        const topmost = index === topIndex
+        return (
+          <WebPageLayer
+            key={layer.key}
+            active={active}
+            entry={layer.entry}
+            keyboardAvoidance={keyboardAvoidance && active}
+            onSettle={settle}
+            opacity={css.opacity}
+            paddingBottom={insets.paddingBottom}
+            paddingTop={insets.paddingTop}
+            pointer={pageLayerPointerEvents({ active, isLeaving: hasLeaving && topmost, hasLeaving })}
+            renderBody={renderBody}
+            scrimOpacity={topmost ? null : css.scrimOpacity}
+            scrollHost={scrollHost}
+            settleNav={phase?.flipped && topmost ? phase.nav : null}
+            settleProperty={phase?.plan.slide ? "transform" : "opacity"}
+            stack={layer.stack}
+            transform={css.transform}
+            transition={phase ? webLayerTransition(phase.plan, phase.flipped) : "none"}
+            view={view}
+            webKeyboardInset={active ? webKeyboardInset : null}
+          />
+        )
+      })}
     </View>
   )
 }
 
-const styles = StyleSheet.create({
-  // The padded outer box. It was the shell's own overlay <View> (an absolute fill carrying
-  // `overlayInsets`); as a flex:1 child of that same absolute fill it describes the identical rect, and
-  // keeping it SEPARATE from the KeyboardAvoidingView below is what preserves the nesting the web
-  // keyboard reserve depends on - `paddingBottom: safeArea` and `paddingBottom: keyboardInset` on one
-  // node would override, on two they add.
+interface WebPageLayerProps {
+  active: boolean
+  entry: DetailEntry
+  keyboardAvoidance: boolean
+  onSettle: (nav: number) => void
+  opacity: number
+  paddingBottom: number
+  paddingTop: number
+  pointer: PageLayerPointerEvents
+  renderBody: PageStackRenderBody
+  scrimOpacity: number | null
+  scrollHost: ScrollHostValue
+  settleNav: number | null
+  settleProperty: "transform" | "opacity"
+  stack: readonly DetailEntry[]
+  transform: string
+  transition: string
+  view: NavView
+  webKeyboardInset: { paddingBottom: number } | null
+}
+
+const WebPageLayer = memo(function WebPageLayer({
+  active,
+  entry,
+  keyboardAvoidance,
+  onSettle,
+  opacity,
+  paddingBottom,
+  paddingTop,
+  pointer,
+  renderBody,
+  scrimOpacity,
+  scrollHost,
+  settleNav,
+  settleProperty,
+  stack,
+  transform,
+  transition,
+  view,
+  webKeyboardInset,
+}: WebPageLayerProps) {
+  const styles = useStyles()
+  const layerRef = useRef<View>(null)
+  const body = useMemo(() => renderBody(entry, view), [entry, renderBody, view])
+  const reserve = pageBottomReserve(entry.kind)
+  const boxReserve = reserve === "box" ? paddingBottom : 0
+  const contentReserve = reserve === "content" ? paddingBottom : 0
+  const bodyScrollHost =
+    reserve === "content" ? contentBottomReserveScrollHost(scrollHost) : scrollHost
+  const motionStyle = { transform, opacity, transition } as unknown as ViewStyle
+  const scrimStyle = { opacity: scrimOpacity ?? 0, transition } as unknown as ViewStyle
+
+  useLayoutEffect(() => {
+    const node = layerRef.current as unknown as HTMLElement | null
+    if (!node) return
+    if (active) node.removeAttribute("inert")
+    else node.setAttribute("inert", "")
+  }, [active])
+
+  const onTransitionEnd = (event: any) => {
+    if (settleNav === null) return
+    if (event?.target !== event?.currentTarget) return
+    if (event?.propertyName && event.propertyName !== settleProperty) return
+    onSettle(settleNav)
+  }
+
+  return (
+    <View
+      ref={layerRef}
+      style={[styles.layer, motionStyle]}
+      pointerEvents={pointer}
+      aria-hidden={!active}
+      tabIndex={-1}
+      {...({ onTransitionEnd, dataSet: { civfixPageLayer: "" } } as any)}
+    >
+      <View style={[styles.layerContent, { paddingTop, paddingBottom: boxReserve }]}>
+        <IosKeyboardAvoidingView
+          style={[styles.layerContent, webKeyboardInset]}
+          enabled={keyboardAvoidance}
+        >
+          {hasDetailHeader(entry) ? (
+            <View style={styles.header}>
+              <DetailHeader active={entry} stack={stack} dismissGesture={false} />
+            </View>
+          ) : null}
+          <ContentBottomReserveProvider value={contentReserve}>
+            <ScrollHostProvider value={bodyScrollHost}>
+              <PageActiveProvider value={active}>{body}</PageActiveProvider>
+            </ScrollHostProvider>
+          </ContentBottomReserveProvider>
+        </IosKeyboardAvoidingView>
+      </View>
+      {scrimOpacity === null ? null : (
+        <View style={[styles.scrim, scrimStyle]} pointerEvents="none" />
+      )}
+    </View>
+  )
+})
+
+const useStyles = makeThemedStyles((t) => ({
   host: { flex: 1 },
-  hostContent: { flex: 1 },
-  // The page header's host. Its geometry is CompactShell.native's `headerHost` + `headerVPad` at a
-  // non-peeked snap (paddingHorizontal 14, paddingTop 0, paddingBottom 12), so the bar a body wears as a
-  // page reads the same as the bar it wore in the sheet. `flexShrink: 0` so a tall body cannot squeeze it.
+  layer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: t.colors.bg,
+  },
+  layerContent: { flex: 1 },
   header: {
     flexShrink: 0,
     paddingHorizontal: 14,
     paddingBottom: 12,
   },
-})
+  scrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: t.colors.shadowColor,
+  },
+}))

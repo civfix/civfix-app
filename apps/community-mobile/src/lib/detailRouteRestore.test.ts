@@ -421,3 +421,12 @@ test("DetailRouteHost takes its snapshot through detailShellSnapshot, not a raw 
   assert.match(host, /detailShellSnapshot\(useNavStore\.getState\(\)\.stack, seedKey, entryIdentity\)/)
   assert.doesNotMatch(host, /stack\.filter\(\(e\) => entryIdentity\(e\) !== seedKey\)/)
 })
+
+test("DetailRouteHost dismisses to the root shell when a view switch empties the store", () => {
+  const host = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "..", "components", "DetailRouteHost.tsx"),
+    "utf8",
+  )
+  assert.ok(host.includes("leave(secondaryShellLeaveAction(state.lastTransition))"))
+  assert.ok(host.includes('if (action === "home" || !router.canGoBack())'))
+})

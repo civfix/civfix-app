@@ -11,7 +11,7 @@
  * re-exports the web seam so tooling gets a concrete implementation + types. Re-exporting the explicit
  * `./PortraitMapPickStep.web` specifier (not the bare path) avoids resolving back into this module. (No
  * web-only import here - it only re-binds the web seam's export - so the shared-source import-guard is met;
- * mirrors the LocationPicker / MiniMap seam selectors.)
+ * mirrors the LocationPicker seam selector.)
  */
 export { PortraitMapPickStep } from "./PortraitMapPickStep.web"
 export type { PortraitMapPickStepProps } from "./PortraitMapPickStep.types"

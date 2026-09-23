@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
@@ -70,4 +70,15 @@ describe("I7 a platform seam is never shadowed by its own selector", () => {
     if (!selector) return
     expect(selector.extension).toBe(platformExtensions[0])
   })
+})
+
+describe("details present as full pages on every platform", () => {
+  it.each(["detailPresentationPlatform.ts", "detailPresentationPlatform.web.ts", "detailPresentationPlatform.native.ts"])(
+    "%s",
+    (file) => {
+      expect(readFileSync(new URL(`../${file}`, import.meta.url), "utf8")).toContain(
+        "DETAILS_ARE_FULL_PAGE = true",
+      )
+    },
+  )
 })

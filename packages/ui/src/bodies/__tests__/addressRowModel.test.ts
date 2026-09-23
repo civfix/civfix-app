@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import {
   addressExternalPlan,
@@ -114,12 +115,11 @@ describe("addressRowAffordances", () => {
     hasExternalPlan: true,
   }
 
-  it("gives the full variant all three affordances", () => {
+  it("gives the full variant copy, maps and the show-on-map action", () => {
     expect(addressRowAffordances(base)).toEqual({
       focusMap: true,
       copy: true,
       externalMaps: true,
-      longPressSheet: true,
     })
   })
 
@@ -147,7 +147,6 @@ describe("addressRowAffordances", () => {
     })
     expect(noPlan.externalMaps).toBe(false)
     expect(noPlan.copy).toBe(true)
-    expect(noPlan.longPressSheet).toBe(true)
   })
 
   it("does not focus the map without a target, so the row never hardcodes an entity", () => {
@@ -159,7 +158,6 @@ describe("addressRowAffordances", () => {
       focusMap: false,
       copy: false,
       externalMaps: false,
-      longPressSheet: false,
     })
   })
 })
@@ -231,5 +229,34 @@ describe("addressExternalPlan", () => {
         hasCopy: true,
       }),
     ).toEqual({ kind: "none" })
+  })
+})
+
+describe("AddressRow source", () => {
+  const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
+  const row = strip(readFileSync(new URL("../AddressRow.tsx", import.meta.url), "utf8"))
+
+  it("never turns the address text into an unlabelled press target", () => {
+    expect(row).not.toContain('accessibilityHint={t("row.focus_hint")}')
+    expect(row).not.toContain("onLongPress")
+    expect(row).toContain('t("row.static_a11y", { address: display })')
+  })
+
+  it("offers a labelled Show on map action gated on focusMap and wired to onFocusMap", () => {
+    expect(row).toContain('t("row.show_map")')
+    const gateAt = row.indexOf("affordances.focusMap ? (")
+    expect(gateAt).toBeGreaterThan(-1)
+    expect(row.indexOf("onPress={onFocusMap}")).toBeGreaterThan(gateAt)
+  })
+
+  it("routes Show on map through the shared flow with the layout mode", () => {
+    const focus = /const onFocusMap = useCallback\([\s\S]*?\n {2}\}, \[/.exec(row)?.[0] ?? ""
+    expect(focus).toContain("showOnMap(\n      mode,")
+    expect(focus).not.toContain("useMapFocus")
+    expect(focus).not.toContain("selectView(")
+  })
+
+  it("exposes the static address as one labelled accessibility element", () => {
+    expect(row).toContain('<View style={styles.main} accessible accessibilityLabel={t("row.static_a11y", { address: display })}>')
   })
 })
