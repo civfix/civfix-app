@@ -210,7 +210,7 @@ describe("apiBaseFor", () => {
 
   it("uses the staging API only for an exactly-matching staging host", () => {
     expect(apiBaseFor("https://civfix.dev/pin/abc", { ASSETS: assets })).toBe("https://api.civfix.dev")
-    expect(apiBaseFor("https://dev.civfix-web.pages.dev/pin/abc", { ASSETS: assets })).toBe(
+    expect(apiBaseFor("https://staging.civfix-web.pages.dev/pin/abc", { ASSETS: assets })).toBe(
       "https://api.civfix.dev",
     )
     expect(apiBaseFor("https://civfix.dev.evil.com/pin/abc", { ASSETS: assets })).toBe(
@@ -255,7 +255,7 @@ describe("cache policy", () => {
     expect(prod).not.toBe(staging)
     expect(prod).toBe(previewCacheKey("report", "abc", hostOf("https://www.civfix.org/pin/abc")))
     expect(staging).toBe(
-      previewCacheKey("report", "abc", hostOf("https://dev.civfix-web.pages.dev/pin/abc")),
+      previewCacheKey("report", "abc", hostOf("https://staging.civfix-web.pages.dev/pin/abc")),
     )
   })
 
@@ -482,7 +482,7 @@ describe("runPreview", () => {
 
   it("noindexes every card served off a non-production origin, live entity included", async () => {
     const id = "8f14e45f-ceea-467a-9b2e-9a1f0d7c1b22"
-    for (const host of ["civfix.dev", "www.civfix.dev", "dev.civfix-web.pages.dev"]) {
+    for (const host of ["civfix.dev", "www.civfix.dev", "staging.civfix-web.pages.dev"]) {
       vi.stubGlobal("caches", { default: makeCache() })
       const h = harness({ url: `https://${host}/pin/${id}` })
       const html = await (await runPreview(h.context, "report", { rewrite: h.rewrite })).text()

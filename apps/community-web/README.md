@@ -464,7 +464,7 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    built from the request's ENVIRONMENT origin - `resolveSiteOrigin(request.url)` in
    `src/lib/site-meta.ts`, which maps an exact known hostname onto that environment's ONE canonical
    origin (`civfix.org` / `www.civfix.org` / `civfix-web.pages.dev` -> `https://civfix.org`;
-   `civfix.dev` / `www.civfix.dev` / `dev.civfix-web.pages.dev` -> `https://civfix.dev`), requires
+   `civfix.dev` / `www.civfix.dev` / `staging.civfix-web.pages.dev` -> `https://civfix.dev`), requires
    https on the default port, and otherwise falls back to `DEFAULT_SITE_URL`. There is no suffix or
    substring rule, and one environment still has exactly one canonical host, so the alias hostnames
    cannot be indexed as duplicates. It never reads `Host`, `X-Forwarded-Host` or any other client-supplied
