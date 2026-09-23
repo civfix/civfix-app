@@ -103,7 +103,7 @@ export function DropPinBody({ lat, lng }: DropPinBodyProps) {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.locationRow} accessibilityLabel={t("dropPin.locationA11y")}>
+      <View style={styles.locationRow}>
         <Icon icon={iconMap.MapPin} size={16} color={th.colors.brand.bloom} />
         <Text style={styles.locationText} numberOfLines={2}>
           {display}

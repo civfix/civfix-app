@@ -175,6 +175,7 @@ function TimelineRow({ node, last }: { node: TimelineNode; last: boolean }) {
               onPress={() => setOpen((o) => !o)}
               accessibilityRole="button"
               accessibilityLabel={t("timeline.pending_a11y")}
+              accessibilityState={{ expanded: open }}
               hitSlop={8}
               {...focusRingProps}
               style={styles.tlInfoBtn}
@@ -333,13 +334,13 @@ function StatusTile({ kind, variant }: { kind: StatusTileKind; variant: "hero" |
   const label = t(labelKey)
   if (variant === "thumb") {
     return (
-      <View style={[styles.thumb, styles.thumbStatus]} accessibilityLabel={label}>
+      <View style={[styles.thumb, styles.thumbStatus]} accessible accessibilityRole="image" accessibilityLabel={label}>
         <Icon icon={iconMap[icon]} size={16} color={color} />
       </View>
     )
   }
   return (
-    <View style={styles.statusHero} accessibilityLabel={label}>
+    <View style={styles.statusHero}>
       <Icon icon={iconMap[icon]} size={26} color={color} />
       <Text style={styles.statusHeroText}>{label}</Text>
     </View>
@@ -381,7 +382,7 @@ function ReportGallery({
       const total = ownerPending.length + pending
       return (
         <View style={styles.gallery}>
-          <View style={styles.processingBlock} accessibilityLabel={t("gallery.processing_a11y")}>
+          <View style={styles.processingBlock}>
             <Icon icon={iconMap.Clock} size={26} color={th.colors.textSubtle} />
             <Text style={styles.processingTitle}>{t("gallery.processing_title")}</Text>
             <Text style={styles.processingBody}>{t("gallery.processing_body", { count: total })}</Text>
