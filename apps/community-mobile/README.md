@@ -3,8 +3,6 @@
 The civfix community user app: React Native + Expo (custom dev client) + expo-router + TypeScript. It
 lives in the `civfix-app` monorepo alongside the web app and the two shared packages it consumes.
 
-Stack (locked): React Native + Expo (dev client) + expo-router + TypeScript.
-
 ## Layout
 
 ```
@@ -24,13 +22,11 @@ civfix-app/
 config from this app directory, and `node-linker=hoisted` is the layout Metro, the config plugins and
 CocoaPods are proven on.
 
-## Versions chosen
-
-Targeting the current stable Expo SDK with the broadest native-library compatibility.
+## Key versions
 
 | Package | Version | Notes |
 | --- | --- | --- |
-| expo | ~54.0.0 | SDK 54 (current stable line with the widest 3rd-party RN support) |
+| expo | ~54.0.36 | SDK 54 |
 | react-native | 0.81.5 | SDK 54 pin |
 | react / react-dom | 19.1.0 | SDK 54 pin |
 | expo-router | ~6.0.24 | file-based routing |
@@ -41,18 +37,16 @@ Targeting the current stable Expo SDK with the broadest native-library compatibi
 | @maplibre/maplibre-react-native | ^11.3.0 | map; requires RN >= 0.80 (OK on SDK 54) |
 | react-native-svg | 15.12.1 | teardrop pins, avatars |
 | react-native-safe-area-context | ~5.6.0 | |
-| react-native-mmkv | ^3.3.3 | v3 (no Nitro) for the later chat queue; see "Deferred libs" |
-| react-native-vision-camera | ^4.7.3 | v4 (pre-Nitro) for the later report camera |
+| react-native-mmkv | ^3.3.3 | v3 (no Nitro); see "Pinned library majors" |
+| react-native-vision-camera | ^4.7.3 | v4 (pre-Nitro); see "Pinned library majors" |
 | @tanstack/react-query / zustand | ^5 / ^5 | data + state |
 
-### Reanimated v3 vs v4
+### Reanimated v4
 
-The build brief asked for Reanimated v3 with `react-native-reanimated/plugin`. Every current stable
-Expo SDK (54/55/56) bundles **Reanimated v4**, which moved the worklet Babel transform into the
-separate `react-native-worklets` package. Forcing v3 onto SDK 54 (RN 0.81, new architecture) is
-unsupported and breaks expo-doctor and `@gorhom/bottom-sheet` v5's worklet expectations. We therefore
-use the SDK-bundled Reanimated v4 + `react-native-worklets/plugin` (last in babel.config.js). This is
-the only configuration that passes expo-doctor cleanly.
+Expo SDK 54 bundles **Reanimated v4**, which moved the worklet Babel transform into the separate
+`react-native-worklets` package, so `babel.config.js` uses `react-native-worklets/plugin` (last in the
+plugin list), not `react-native-reanimated/plugin`. Reanimated v3 is unsupported on SDK 54 (RN 0.81,
+new architecture) and breaks expo-doctor and `@gorhom/bottom-sheet` v5's worklet expectations.
 
 ## Building (REQUIRES a dev client - not Expo Go)
 
@@ -172,19 +166,12 @@ apps/community-mobile/scripts/prep-archive.sh appstore --platform android
 
 It runs `pnpm install --frozen-lockfile`, writes `.env`, re-runs `expo prebuild` + `pod install`,
 clears the Metro cache, then prints the config it actually produced (API URL, build number, update
-channel, signing team, and the `@civfix/*` versions **resolved on disk**) and fails rather than
-leave you with a mis-baked project.
+channel, signing team) and fails rather than leave you with a mis-baked project.
 
-The lockfile sync is not ceremony. **An Xcode archive bundles JS straight out of `node_modules`, and
-nothing else in the pipeline notices when that is stale.** On 2026-08-11 `pnpm-lock.yaml` and
-`package.json` both said `@civfix/ui` 0.51.1 while `node_modules` still held 0.50.0 — `pnpm install`
-had never been run after the bump commit. Typecheck and all 222 tests went green because they
-resolve that same stale copy, so the only symptom would have been a TestFlight build missing the
-last two days of UI fixes. Always trust the resolved-version line in the banner over `package.json`.
-That exact drift can no longer happen now that `@civfix/shared` and `@civfix/ui` are workspace
-packages (the archive bundles the live source / the freshly built `dist`), but the sync still matters
-for every third-party dependency. Then: open `ios/civfix.xcworkspace`, destination **Any iOS Device (arm64)**,
-**Product > Archive**, **Distribute App > App Store Connect**.
+The lockfile sync matters because an Xcode archive bundles JS straight out of `node_modules` and
+nothing else in the pipeline notices when a third-party dependency there is stale. Then: open
+`ios/civfix.xcworkspace`, destination **Any iOS Device (arm64)**, **Product > Archive**,
+**Distribute App > App Store Connect**.
 
 Two things this script exists to stop:
 
@@ -219,7 +206,7 @@ Temurin 25).
 ```sh
 scripts/prep-archive.sh testflight --platform android   # or appstore; Android always resolves to https://api.civfix.org
 scripts/android-release-patches.sh
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-22.jdk/Contents/Home
+export JAVA_HOME="$(/usr/libexec/java_home -v 22)"
 cd android && ./gradlew --no-daemon :app:assembleRelease   # or :app:bundleRelease for the Play .aab
 ```
 
@@ -383,8 +370,11 @@ for TestFlight testers, publish the `testflight` channel with
 `EXPO_PUBLIC_API_URL=https://api.civfix.dev` set at `eas update` time (profile `env` applies only
 to `eas build`), and never map the `testflight` channel onto a prod-published branch.
 
-Config plugins for the native modules (camera/mic/location permission strings, Google sign-in URL
-scheme, Apple auth, notifications) are declared in `apps/community-mobile/app.config.js`. The API base
+Config plugins are declared in `apps/community-mobile/app.config.js`: expo-router,
+expo-localization, expo-build-properties, MapLibre, expo-secure-store, Apple authentication,
+expo-location, expo-notifications, vision-camera, expo-image-picker, Google sign-in (URL scheme) and
+expo-splash-screen. The iOS permission strings it sets are camera, microphone, location when in use
+and photo library. The API base
 URL comes from `EXPO_PUBLIC_API_URL`, surfaced via `extra.apiUrl`; when unset, dev builds fall back
 to `http://localhost:8080` and release builds to whichever API the install source implies -
 `https://api.civfix.dev` from TestFlight, `https://api.civfix.org` from the App Store
@@ -427,13 +417,17 @@ civfix-admin, the gov plane) can adopt the published version - see the repo-root
 
 Most user-facing screens live in `@civfix/ui` (`packages/ui`), the shared React Native UI consumed by
 both this app and `community-web` (web renders it via react-native-web). The same `.tsx` is authored
-once and the layout adapts to screen WIDTH (`>= 840px` sidebar shell - iPad landscape; `< 840px`
-bottom-sheet shell - phone, iPad portrait), not to platform. This app stays the native host: it
-provides the data context (Bearer auth, the API client, the chat WebSocket), the platform
-capabilities (vision-camera, geolocation, secure-store, push, MMKV/AsyncStorage persistence, haptics,
-expo-blur), the maplibre-react-native basemap, and the `expo-router` deep-link adapter. The preserved
-native shell (animated splash, forced sign-in gate, push register, `civfix://` deep links) is
-unchanged - it only injects capabilities into the shared UI. `packages/ui/README.md` covers the
+once and the layout adapts to orientation and width, not to platform: a landscape window at least
+`EXPANDED_MIN_WIDTH` wide gets the expanded sidebar shell, every other window (portrait, or landscape
+too narrow for the chrome) the compact bottom-sheet shell (`useLayoutMode` in
+`packages/ui/src/theme/useLayoutMode.ts`, deciding through `layoutModeFor` in
+`packages/ui/src/shell/expandedFramePlan.ts`). This app stays the native host: it provides the data
+context (Bearer auth, the API client, the chat WebSocket), the platform capabilities (vision-camera,
+geolocation, secure-store, push, haptics, expo-blur, clipboard, calendar file, open-external), MMKV
+persistence, the maplibre-react-native map, and the `expo-router` deep-link adapter
+(`src/lib/navBridge.ts`). The native shell (animated splash, onboarding, push registration,
+`civfix://` and universal-link deep links) injects those into the shared UI; sign-in is required per
+action through `useAuthGate`, so guests can browse. `packages/ui/README.md` covers the
 architecture (the five seams) and the authoring rules.
 
 `@civfix/ui` ships untranspiled `.tsx` SOURCE (not a bundle) and emits only `.d.ts`. Metro consumes
@@ -450,20 +444,18 @@ rebuilt first - turbo does that automatically (`typecheck` dependsOn `^build`), 
 
 ## Design tokens -> RN theme
 
-`src/theme/index.ts` adapts the platform-neutral shared tokens (`@civfix/shared/tokens`) into
-RN-native values: rem font sizes -> px numbers, CSS box-shadows -> RN shadow/elevation objects,
-numeric radii (the CSS-only `pin` corner is dropped), the category color map, and the loaded
-`@expo-google-fonts` family names. It re-exports `categoryColor()` and adds a `wordmark` color list.
-Do not hardcode hex/size values in components; import from the theme.
+The RN theme lives in `@civfix/ui/theme`, which adapts the shared tokens (`@civfix/shared/tokens`)
+into RN values. `src/theme/index.ts` re-exports it (so `@/theme` imports keep working) and adds only
+the wordmark letters. Do not hardcode hex/size values in components; import from the theme.
 
 ## Map basemap (decision)
 
-- **The map ALWAYS uses the OpenStreetMap (CARTO Voyager) raster basemap.** This is the intentional,
-  permanent basemap (`src/components/map/mapStyle.ts` -> `rasterMapStyle`), matching the design and the
-  web app. An earlier plan would have served Protomaps PMTiles vector tiles from R2 (via
-  `GET /map/tileinfo`); that plan was overridden, so the map needs nothing from R2 - or from the
-  backend - to render. `GET /map/tileinfo` is still called only for its attribution string; the basemap
-  draws regardless of whether it resolves. There is no `protomaps-mlrn` / PMTiles dependency.
+- **The map ALWAYS uses the hardcoded CARTO raster basemap**: Voyager in light, Dark Matter in dark,
+  defined once in `packages/ui/src/map/mapStyle.ts` and shared with the web app. The tile URLs and
+  attribution are hardcoded, so the map needs nothing from the backend to render and the app does not
+  call `GET /map/tileinfo`. The public CARTO key (`EXPO_PUBLIC_CARTO_API_KEY`, which `app.config.js`
+  defaults and surfaces through `extra`) is appended to the tile URLs; a blank key leaves them
+  untouched. There is no PMTiles dependency.
 
 ### Onboarding map stills
 
@@ -478,26 +470,15 @@ zoom and point size each still was cut from) that `tests/onboardingMapArt.test.t
 so editing a scene without regenerating fails the suite — and with `--preview <dir>` also writes
 copies with the pin spots marked for checking the framing after moving a scene.
 
-## Deferred / incompatible libraries
+## Pinned library majors
 
 - **react-native-mmkv** is pinned to v3 (not v4) and **react-native-vision-camera** to v4 (not v5)
   because the latest majors require `react-native-nitro-modules` + `react-native-nitro-image`, which
-  add native-build surface for libraries not used until later steps. v3/v4 install, typecheck, and
-  pass expo-doctor, and have stable config plugins. Both are declared + configured now so the later
-  report/chat steps need no new native config.
-- **react-native-video / react-native-compressor** are declared for the later media flow; they
-  autolink and need no config-plugin entry.
-
-## @civfix/shared gaps observed (no shared changes made)
-
-The contract was sufficient to build the map home. Minor gaps for a future shared revision:
-
-1. No dedicated map-cleanups endpoint: cleanup pins on the map reuse `GET /cleanups` with a `near`
-   filter. A bbox-scoped cleanup-pins endpoint (parallel to `GET /map/reports`) would be cleaner for
-   dense maps.
-2. No push-token / device-registration helper types beyond `RegisterPushTokenRequest`; fine for now.
-3. `TileInfoResponse.pmtilesUrl` is typed but the mobile map intentionally does not consume it (the map
-   uses the OpenStreetMap raster basemap; see "Map basemap" above). The app reads only `attribution`.
+  add native-build surface. v3/v4 install, typecheck, pass expo-doctor, and have stable config
+  plugins.
+- **react-native-video** (media playback in `@civfix/ui`'s `MediaPreview.native`) and
+  **react-native-compressor** (capture compression in `src/lib/nativeCamera.ts`) autolink and need
+  no config-plugin entry.
 
 ## Verify
 
