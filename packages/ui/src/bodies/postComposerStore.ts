@@ -150,7 +150,15 @@ export interface PostComposerState {
    * draft first and restores it here when the mutation errors.
    */
   restore: (draft: PostComposerDraft) => void
+  /**
+   * The draft belongs to whoever typed it. On a shared device a sign-out or account switch must not hand
+   * the next account the previous one's text, mentions, attachments or author organization, which it
+   * could then publish under its own name. Same-viewer calls are no-ops so a remount keeps the draft.
+   */
+  adoptViewer: (viewerId: string | null) => void
 }
+
+const NO_VIEWER = Symbol("no-viewer")
 
 function emptyDraft(): PostComposerDraft {
   return {
@@ -191,9 +199,12 @@ function replaceDraft(update: (draft: PostComposerDraft) => PostComposerDraft) {
   return (state: PostComposerState) => ({ draft: update(state.draft) })
 }
 
-export const usePostComposerStore = create<PostComposerState>((set) => ({
+type PostComposerStore = PostComposerState & { viewerId: string | null | typeof NO_VIEWER }
+
+export const usePostComposerStore = create<PostComposerStore>((set, get) => ({
   draft: emptyDraft(),
   claimedCreate: null,
+  viewerId: NO_VIEWER,
 
   setBody: (body) => set(replaceDraft((draft) => ({ ...draft, body }))),
 
@@ -316,6 +327,11 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
 
   restore: (draft) => set({ draft: { ...draft } }),
 
+  adoptViewer: (viewerId) => {
+    if (get().viewerId === viewerId) return
+    set({ viewerId, claimedCreate: null, draft: emptyDraft() })
+  },
+
   reset: (keep) =>
     set((state) => ({
       // A cleared draft has no create run: whatever was armed or claimed belonged to the post that just
@@ -332,6 +348,11 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
         : { ...emptyDraft(), organizationId: state.draft.organizationId },
     })),
 }))
+
+/** For the hosts' auth layer, which owns sign-in and sign-out; see `PostComposerState.adoptViewer`. */
+export function adoptPostComposerViewer(viewerId: string | null): void {
+  usePostComposerStore.getState().adoptViewer(viewerId)
+}
 
 /** Lightweight selectors keep components from repeating submission and reference-mode derivation. */
 export const selectPostComposerDraft = (state: PostComposerState): PostComposerDraft => state.draft

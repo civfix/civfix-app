@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import type { UserDTO } from "@civfix/shared"
+import { adoptPostComposerViewer } from "@civfix/ui"
 import { api } from "@/api/client"
 import {
   SESSION_RESTORE_DEADLINE_MS,
@@ -261,3 +262,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     void tearDownIdentity(set)
   },
 }))
+
+// A post draft belongs to the account that typed it: a sign-out or account switch on a shared device must
+// not hand it to the next account. Subscribing covers every path that moves `user`.
+useAuthStore.subscribe((state) => adoptPostComposerViewer(state.user?.id ?? null))

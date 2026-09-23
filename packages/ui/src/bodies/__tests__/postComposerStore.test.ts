@@ -202,6 +202,50 @@ describe("postComposerStore", () => {
     expect(usePostComposerStore.getState().draft.organizationId).toBeNull()
   })
 
+  it("adoptViewer wipes the previous viewer's whole draft when the account changes or signs out", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    const store = usePostComposerStore.getState()
+    store.setOrganizationId("org-a")
+    store.setBody("Private note from @mayal")
+    store.toggleMention(maya)
+    store.setAttachedEvent(selectedEvent)
+    store.setPendingCreate("report")
+    store.claimPendingCreate("report")
+
+    usePostComposerStore.getState().adoptViewer("user-b")
+    expect(usePostComposerStore.getState().draft).toEqual({
+      body: "",
+      mentionedUsers: [],
+      attachedEventId: null,
+      attachedEvent: null,
+      attachedReportId: null,
+      attachedReport: null,
+      media: [],
+      mode: "post",
+      organizationId: null,
+      quotePostId: null,
+      replyToPostId: null,
+      pendingCreate: null,
+    })
+    expect(usePostComposerStore.getState().claimedCreate).toBeNull()
+
+    usePostComposerStore.getState().setBody("Draft by user b")
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(usePostComposerStore.getState().draft.body).toBe("")
+  })
+
+  it("adoptViewer keeps the draft when the same viewer is adopted again", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().setOrganizationId("org-a")
+    usePostComposerStore.getState().setBody("Still typing")
+
+    usePostComposerStore.getState().adoptViewer("user-a")
+    expect(usePostComposerStore.getState().draft.body).toBe("Still typing")
+    expect(usePostComposerStore.getState().draft.organizationId).toBe("org-a")
+
+    usePostComposerStore.getState().setOrganizationId(null)
+  })
+
   it("reset(keep) routes a quote target to quotePostId, never replyToPostId", () => {
     usePostComposerStore.getState().reset({ mode: "quote", targetPostId: "post-quoted" })
 

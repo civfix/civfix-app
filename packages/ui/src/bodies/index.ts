@@ -58,6 +58,7 @@ export { SearchResults } from "./SearchResults"
 export { PostCard } from "./PostCard"
 export { LinkedEventCard } from "./LinkedEventCard"
 export { PostComposer } from "./PostComposer"
+export { adoptPostComposerViewer } from "./postComposerStore"
 export {
   openReportFlow,
   stackAfterComposerReturn,
