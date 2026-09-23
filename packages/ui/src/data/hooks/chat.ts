@@ -232,6 +232,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
   const lastAckedIdRef = useRef<string | null>(null)
   const pendingAckRef = useRef<PendingReadAck | null>(null)
   const wasOpenRef = useRef(false)
+  const replayOnReconnectRef = useRef<() => void>(() => {})
   const patchMessageRef = useRef<(messageId: string, patch: Partial<ChatMessageDTO>) => void>(() => {})
   const outboxMentionsRef = useRef<Map<string, string[]>>(new Map())
   const offlineFailedRef = useRef<Set<string>>(new Set())
@@ -645,9 +646,10 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
       })
   }, [api, canReadHistory, isDm, isReport, isGroup, queryClient, roomId, roomKind, isHistoryFetchInFlight])
 
-  useEffect(() => {
-    const open = connection === "open"
-    if (open && !wasOpenRef.current) {
+  // The reconnect effect is keyed on the connection edge alone; the replay reads the outbox, history and
+  // senders of the last committed render through this ref instead of re-running on each of them.
+  useLayoutEffect(() => {
+    replayOnReconnectRef.current = () => {
       const replay = replayableEntries(outbox, offlineFailedRef.current, coreQueuedRef.current)
       // Captured now: dispatch() below clears offlineFailedRef before this updater runs.
       const resend = new Set(replay.filter((e) => e.status === "failed").map((e) => e.clientId))
@@ -669,6 +671,11 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
         refreshNewestPage()
       }
     }
+  })
+
+  useEffect(() => {
+    const open = connection === "open"
+    if (open && !wasOpenRef.current) replayOnReconnectRef.current()
     wasOpenRef.current = open
   }, [connection])
 
@@ -851,7 +858,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
         throw err
       }
     },
-    [isDm, isReport, isGroup, api, roomId, roomKind, findMessage, patchMessage],
+    [isDm, isReport, isGroup, api, roomId, findMessage, patchMessage],
   )
 
   const setPinned = useCallback(
@@ -906,7 +913,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
         throw err
       }
     },
-    [api, roomId, roomKind, findMessage, patchMessage],
+    [api, findMessage, patchMessage],
   )
 
   const closePoll = useCallback(
