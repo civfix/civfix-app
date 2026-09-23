@@ -5,7 +5,7 @@ import type { BBox } from "@civfix/shared"
 import { useTheme, ThemeProvider, type ColorSchemeName } from "../theme"
 import { alpha } from "../theme/alpha"
 import { useCartoApiKey } from "../data"
-import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
+import { rasterMapStyle, carryStyleOverlay, DEFAULT_ATTRIBUTION } from "./mapStyle"
 import { TeardropPin, EventPin, ClusterBubble } from "./pins"
 import { useClusters } from "./useClusters"
 import { createIdleRunner, type IdleRunner } from "./clusterSchedule"
@@ -194,7 +194,6 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
         el.style.opacity = want.muted ? String(REPORT_PICK_MUTED_OPACITY) : "1"
         el.setAttribute("role", "button")
         el.setAttribute("tabindex", "0")
-        el.setAttribute("aria-label", want.label)
         if (want.selected !== null) el.setAttribute("aria-pressed", String(want.selected))
         const onClick: { fn?: () => void } = { fn: want.onClick }
         el.addEventListener("click", (e: MouseEvent) => {
@@ -212,6 +211,8 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
         const marker = new maplibregl.Marker({ element: el, anchor: want.anchor })
           .setLngLat(want.lngLat)
           .addTo(map)
+        // After addTo: maplibre's addTo overwrites aria-label with its generic "Map marker".
+        el.setAttribute("aria-label", want.label)
         current.set(key, { marker, root, signature: want.signature, onClick })
       }
     }
@@ -248,7 +249,10 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
         attributionControl: { compact: true },
         dragRotate: false,
         pitchWithRotate: false,
+        touchPitch: false,
       })
+      map.touchZoomRotate.disableRotation()
+      map.keyboard.disableRotation()
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right")
 
       const syncViewport = () => {
@@ -336,13 +340,13 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
         el.style.opacity = "0.9"
         el.style.pointerEvents = "none"
         el.setAttribute("role", "img")
-        el.setAttribute("aria-label", meetingPointLabel)
         const root = createRoot(el)
         root.render(node)
         meetingRootRef.current = root
         meetingMarkerRef.current = new maplibregl.Marker({ element: el, anchor: "bottom" })
           .setLngLat([center.lng, center.lat])
           .addTo(map)
+        el.setAttribute("aria-label", meetingPointLabel)
       } else {
         meetingMarkerRef.current.setLngLat([center.lng, center.lat])
         meetingMarkerRef.current.getElement().setAttribute("aria-label", meetingPointLabel)
@@ -356,6 +360,7 @@ export const ReportPickMap = React.forwardRef<ReportPickMapHandle, ReportPickMap
       styleSchemeRef.current = th.scheme
       map.setStyle(
         rasterMapStyle(DEFAULT_ATTRIBUTION, { cartoApiKey, scheme: th.scheme }) as maplibregl.StyleSpecification,
+        { transformStyle: carryStyleOverlay(RADIUS_SOURCE_ID) },
       )
     }, [mapReady, cartoApiKey, th.scheme])
 

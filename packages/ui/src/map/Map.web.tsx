@@ -40,7 +40,7 @@ import { useMapFocus, type FocusedEntity } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { useMapFlyTo } from "./mapFlyToStore"
-import { activeMarkerIds, flyToTargetOffMap } from "./markerFocus"
+import { activeMarkerIds, flyToTargetOffMap, markerA11yLabel, targetMarkerA11yLabel } from "./markerFocus"
 import { makePinElement, applyPinElementTheme } from "./LocationPicker.web"
 import { occludedCenterLng } from "./dropPinCamera"
 import type { ClusterNode, MapClusterIndex } from "./clusterer"
@@ -60,7 +60,8 @@ function ensureMapFocusRingStyle(): void {
     `.cf-map-canvas canvas:focus-visible{outline:2px solid ${FOCUS_RING_COLOR};` +
     `outline-offset:${CANVAS_RING_INSET}px;}` +
     `.cf-map-canvas .maplibregl-ctrl button:focus-visible,` +
-    `.cf-map-canvas .maplibregl-ctrl summary:focus-visible{` +
+    `.cf-map-canvas .maplibregl-ctrl summary:focus-visible,` +
+    `.cf-map-canvas .maplibregl-marker:focus-visible{` +
     `outline:${FOCUS_RING_OUTLINE};outline-offset:${FOCUS_RING_OFFSET}px;}`
   document.head.appendChild(el)
 }
@@ -102,6 +103,7 @@ interface Desired {
   anchor: "bottom" | "center"
   lngLat: [number, number]
   node: React.ReactNode
+  label: string
   onClick?: () => void
 }
 
@@ -239,6 +241,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
           anchor: "bottom",
           lngLat: [target.lng, target.lat],
           node: <EventPin active eventKind={target.eventKind} />,
+          label: targetMarkerA11yLabel(target, t),
           onClick: () => onPressCleanupRef.current?.(target.id),
         })
       } else {
@@ -247,6 +250,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
           anchor: "bottom",
           lngLat: [target.lng, target.lat],
           node: <TeardropPin category={target.category} active />,
+          label: targetMarkerA11yLabel(target, t),
           onClick: () => onPressPinRef.current?.(target.id),
         })
       }
@@ -265,6 +269,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
             anchor: "center",
             lngLat: [node.lng, node.lat],
             node: <ClusterBubble count={node.count} tone={tone} />,
+            label: markerA11yLabel(node, t),
             onClick: () => pressCluster(node),
           })
         } else if (node.type === "report") {
@@ -274,6 +279,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
             anchor: "bottom",
             lngLat: [node.lng, node.lat],
             node: <TeardropPin category={node.pin.category} active={active} />,
+            label: markerA11yLabel(node, t),
             onClick: () => onPressPinRef.current?.(node.id),
           })
         } else if (node.type === "event") {
@@ -283,6 +289,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
             anchor: "bottom",
             lngLat: [node.lng, node.lat],
             node: <EventPin active={active} eventKind={node.event.eventKind} />,
+            label: markerA11yLabel(node, t),
             onClick: () => onPressCleanupRef.current?.(node.id),
           })
         } else {
@@ -296,6 +303,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
             node: (
               <BlendPin count={blendReports.length} active={active} eventKind={event.eventKind} />
             ),
+            label: markerA11yLabel(node, t),
             onClick: () =>
               onPressBlendRef.current
                 ? onPressBlendRef.current(event, blendReports)
@@ -317,6 +325,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
         current.delete(key)
       } else {
         entry.marker.setLngLat(want.lngLat)
+        entry.marker.getElement().setAttribute("aria-label", want.label)
         entry.onClick.fn = want.onClick
       }
     }
@@ -325,8 +334,17 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       const el = document.createElement("div")
       el.style.cursor = want.onClick ? "pointer" : "default"
       el.style.lineHeight = "0"
+      el.setAttribute("role", "button")
+      el.setAttribute("tabindex", "0")
       const onClick: { fn?: () => void } = { fn: want.onClick }
       el.addEventListener("click", (e: MouseEvent) => {
+        e.stopPropagation()
+        useMapFlyTo.getState().clear()
+        onClick.fn?.()
+      })
+      el.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (e.key !== "Enter" && e.key !== " ") return
+        e.preventDefault()
         e.stopPropagation()
         useMapFlyTo.getState().clear()
         onClick.fn?.()
@@ -336,6 +354,8 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       const marker = new maplibregl.Marker({ element: el, anchor: want.anchor })
         .setLngLat(want.lngLat)
         .addTo(map)
+      // After addTo: maplibre's addTo overwrites aria-label with its generic "Map marker".
+      el.setAttribute("aria-label", want.label)
       current.set(key, { marker, root, signature: want.signature, onClick })
     }
   }
@@ -346,7 +366,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       flyTo: (lat, lng, zoom) => {
         const map = mapRef.current
         if (!map) return
-        map.easeTo({ center: [lng, lat], zoom: zoom ?? FLYTO_ZOOM, duration: 600 })
+        map.easeTo({ center: [lng, lat], zoom: zoom ?? Math.max(map.getZoom(), FLYTO_ZOOM), duration: 600 })
       },
       recenter: () => {
         const map = mapRef.current
@@ -377,7 +397,10 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       attributionControl: false,
       dragRotate: false,
       pitchWithRotate: false,
+      touchPitch: false,
     })
+    map.touchZoomRotate.disableRotation()
+    map.keyboard.disableRotation()
 
     const syncViewport = () => {
       const bbox = mapBoundsToBBox(map)
@@ -515,10 +538,11 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     if (!userMarkerRef.current) {
       const el = document.createElement("div")
       el.className = "cf-map-user-dot"
-      el.setAttribute("aria-label", t("a11y.userLocation"))
+      el.setAttribute("role", "img")
       userMarkerRef.current = new maplibregl.Marker({ element: el, anchor: "center" })
         .setLngLat([userLocation!.lng, userLocation!.lat])
         .addTo(map)
+      el.setAttribute("aria-label", t("a11y.userLocation"))
     } else {
       userMarkerRef.current.setLngLat([userLocation!.lng, userLocation!.lat])
       userMarkerRef.current.getElement().setAttribute("aria-label", t("a11y.userLocation"))
@@ -577,7 +601,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       const el = document.createElement("div")
       el.style.lineHeight = "0"
       el.style.pointerEvents = "none"
-      el.setAttribute("aria-label", t("dropPin.locationA11y"))
+      el.setAttribute("role", "img")
       const root = createRoot(el)
       root.render(
         <ThemeProvider preference={th.scheme}>
@@ -588,6 +612,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       dropMarkerRef.current = new maplibregl.Marker({ element: el, anchor: "bottom" })
         .setLngLat([droppedPin.lng, droppedPin.lat])
         .addTo(map)
+      el.setAttribute("aria-label", t("dropPin.locationA11y"))
     } else {
       dropMarkerRef.current.setLngLat([droppedPin.lng, droppedPin.lat])
       dropMarkerRef.current.getElement().setAttribute("aria-label", t("dropPin.locationA11y"))
@@ -640,6 +665,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       <div
         className="cf-map-canvas"
         ref={containerRef}
+        role="region"
         aria-label={t("a11y.homeMap")}
         style={{ width: "100%", height: "100%" }}
       />

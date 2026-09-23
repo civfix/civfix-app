@@ -10,8 +10,8 @@
  *   - AddressSearch READS the latest viewport at search time and passes its center (+ zoom) as the Photon
  *     proximity bias, so suggestions lean toward the visible map.
  *
- * The center is the bbox midpoint (the maps disable rotation, so the rendered bounds are axis-aligned and
- * the midpoint is the true center). When no map is mounted (a cold deep-link, or the mobile flow opened
+ * The center is the bbox midpoint (the maps disable rotation and pitch, so the rendered bounds are
+ * axis-aligned and the midpoint is the true center). When no map is mounted (a cold deep-link, or the mobile flow opened
  * without the home map) the store stays null and AddressSearch falls back to its device -> IP chain.
  *
  * Pure zustand (mirrors mapFocusStore.ts) - no next / expo / react-native / maplibre - so it unit-tests
@@ -36,7 +36,7 @@ export interface MapViewportState {
   clear: () => void
 }
 
-/** The center of a bounds rectangle (axis-aligned: the maps disable rotation, so this is the true center). */
+/** The center of a bounds rectangle (axis-aligned: the maps disable rotation and pitch, so this is the true center). */
 function bboxCenter(bbox: BBox): { lat: number; lng: number } {
   return { lat: (bbox.north + bbox.south) / 2, lng: (bbox.west + bbox.east) / 2 }
 }

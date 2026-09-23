@@ -96,3 +96,25 @@ export function rasterMapStyle(
     ],
   }
 }
+
+interface OverlayCarrierStyle {
+  sources: Record<string, unknown>
+  layers: readonly { id: string; source?: string }[]
+}
+
+/**
+ * A maplibre `setStyle` transformStyle that keeps one app-owned geojson overlay across a basemap swap.
+ * The default diffing swap drops every source and layer the next style does not list, and never fires
+ * `style.load`, so an overlay re-added from that event would stay gone until its own data next changed.
+ */
+export function carryStyleOverlay(sourceId: string) {
+  return <S extends OverlayCarrierStyle>(previous: S | undefined, next: S): S => {
+    const source = previous?.sources[sourceId]
+    if (!previous || !source) return next
+    return {
+      ...next,
+      sources: { ...next.sources, [sourceId]: source },
+      layers: [...next.layers, ...previous.layers.filter((layer) => layer.source === sourceId)],
+    }
+  }
+}

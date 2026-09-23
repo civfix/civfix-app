@@ -18,14 +18,11 @@
  * on each axis, so the pressed coordinate and every marker coordinate convert to screen offsets with
  * two divisions.
  *
- * KNOWN GAP - A ROTATED MAP. The `degPerPx` derivation is valid only while the map is UNROTATED. Neither
- * seam disables rotation today: `Map.web.tsx` turns off `dragRotate` and `pitchWithRotate` but leaves
- * two-finger `touchZoomRotate` on, and `Map.native.tsx` passes no rotate/pitch props at all (the library
- * defaults them ON). While the user holds a rotated bearing, the bbox is the AXIS-ALIGNED envelope of a
- * rotated viewport, so degPerPx is overstated and the hit box shrinks in screen terms. The consequence is
- * bounded and one-directional: iOS marker suppression gets less sensitive (a press near a pin's edge may
- * drop a pin) - it never suppresses a press that should have been accepted, and Android is unaffected
- * because its own native hit test still runs first.
+ * REQUIRES AN UNROTATED, UNPITCHED MAP. The `degPerPx` derivation is valid only while the bbox is the
+ * viewport itself, so both seams disable every rotate and pitch gesture (`Map.web.tsx` also turns off the
+ * two-finger and keyboard rotation maplibre-gl leaves on; `Map.native.tsx` passes `touchRotate` and
+ * `touchPitch` false against the library's ON defaults). A rotated bearing would make the bbox the
+ * axis-aligned envelope of a rotated viewport and shrink the hit box in screen terms.
  *
  * FAILS OPEN. A missing / zero-width / wrapped (antimeridian) bbox, a zero-size viewport, or any
  * non-finite input returns FALSE - "no marker was hit" - so the long press is ACCEPTED. Refusing to drop

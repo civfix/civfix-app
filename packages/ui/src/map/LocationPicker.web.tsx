@@ -1,7 +1,7 @@
 import * as React from "react"
 import maplibregl from "maplibre-gl"
 import { tokens, shadowSchemes } from "@civfix/shared/tokens"
-import { useTheme, EASE_STANDARD_CSS, type Theme } from "../theme"
+import { useTheme, EASE_STANDARD_CSS, type ColorSchemeName, type Theme } from "../theme"
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
@@ -42,6 +42,7 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const mapRef = React.useRef<maplibregl.Map | null>(null)
   const markerRef = React.useRef<maplibregl.Marker | null>(null)
+  const styleSchemeRef = React.useRef<ColorSchemeName | null>(null)
   const onChangeRef = React.useRef(onChange)
   onChangeRef.current = onChange
   const [placed, setPlaced] = React.useState<boolean>(value != null)
@@ -75,6 +76,7 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
     if (mapRef.current || !containerRef.current || !cameraSeed) return
     const start: [number, number] = [cameraSeed.lng, cameraSeed.lat]
 
+    styleSchemeRef.current = themeRef.current.scheme
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: rasterMapStyle(DEFAULT_ATTRIBUTION, {
@@ -86,7 +88,10 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
       attributionControl: false,
       dragRotate: false,
       pitchWithRotate: false,
+      touchPitch: false,
     })
+    map.touchZoomRotate.disableRotation()
+    map.keyboard.disableRotation()
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right")
 
     if (value) ensureMarker(map, start)
@@ -112,6 +117,18 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
 
   React.useEffect(() => {
     const map = mapRef.current
+    if (!map || styleSchemeRef.current === th.scheme) return
+    styleSchemeRef.current = th.scheme
+    map.setStyle(
+      rasterMapStyle(DEFAULT_ATTRIBUTION, {
+        cartoApiKey: cartoApiKeyRef.current,
+        scheme: th.scheme,
+      }) as maplibregl.StyleSpecification,
+    )
+  }, [th.scheme])
+
+  React.useEffect(() => {
+    const map = mapRef.current
     if (!map) return
     if (!value) {
       markerRef.current?.remove()
@@ -130,7 +147,11 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
 
 
   if (!cameraSeed) {
-    return <div style={{ ...styles.wrap, height }} aria-label={t("a11y.picker")} aria-busy />
+    return (
+      <div style={{ ...styles.wrap, ...styles.pending, height }} role="status" aria-busy>
+        {t("hint.pending")}
+      </div>
+    )
   }
 
   return (
@@ -138,11 +159,16 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
       <div
         ref={containerRef}
         style={styles.canvas}
+        role="region"
         aria-label={t("a11y.picker")}
       />
       <div style={styles.hint}>{placed ? t("hint.move") : t("hint.place")}</div>
     </div>
   )
+}
+
+function samePickPoint(a: LatLng, b: LatLng): boolean {
+  return Math.abs(a.lat - b.lat) < 1e-9 && Math.abs(a.lng - b.lng) < 1e-9
 }
 
 function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPickerProps) {
@@ -169,11 +195,22 @@ function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPicker
     useLocationPick.getState().setPin(pin)
   }, [pin])
 
+  const valueRef = React.useRef(value)
+  valueRef.current = value
+
   React.useEffect(() => {
     if (!draft) return
-    if (value && Math.abs(draft.lat - value.lat) < 1e-9 && Math.abs(draft.lng - value.lng) < 1e-9) return
+    const current = valueRef.current
+    if (current && samePickPoint(draft, current)) return
     onChangeRef.current(draft.lat, draft.lng)
-  }, [draft, value])
+  }, [draft])
+
+  React.useEffect(() => {
+    if (!value) return
+    const current = useLocationPick.getState().draft
+    if (current && samePickPoint(current, value)) return
+    useLocationPick.getState().setDraft(value.lat, value.lng)
+  }, [value])
 
   const point = draft ?? value ?? null
 
@@ -243,6 +280,15 @@ function makeStyles(t: Theme): Record<string, React.CSSProperties> {
     canvas: {
       width: "100%",
       height: "100%",
+    },
+    pending: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: t.space["4"],
+      textAlign: "center",
+      font: `600 12.5px/1.3 ${t.fontFamily.bodySemiBold}, system-ui, sans-serif`,
+      color: t.colors.textSubtle,
     },
     hint: {
       position: "absolute",

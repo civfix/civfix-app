@@ -17,6 +17,7 @@ import {
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec"
 import type { BBox } from "@civfix/shared"
 import { useTheme } from "../theme"
+import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { useHaptics } from "../capabilities"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
@@ -30,7 +31,13 @@ import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { useMapFlyTo } from "./mapFlyToStore"
 import { longPressHitsMarker, type LongPressMarker } from "./longPressGate"
-import { activeMarkerIds, flyToTargetOffMap, markerNodeIsActive } from "./markerFocus"
+import {
+  activeMarkerIds,
+  flyToTargetOffMap,
+  markerA11yLabel,
+  markerNodeIsActive,
+  targetMarkerA11yLabel,
+} from "./markerFocus"
 import {
   clusterFallbackZoom,
   clusterListReports,
@@ -59,34 +66,44 @@ interface MarkerNodeProps {
 
 const MarkerNode = memo(function MarkerNode({ node, markerId, active, onPress }: MarkerNodeProps) {
   const lngLat = useMemo<[number, number]>(() => [node.lng, node.lat], [node.lng, node.lat])
+  const { t } = useT("map-ui")
+  const label = markerA11yLabel(node, t)
 
   if (node.type === "cluster") {
     return (
       <Marker id={markerId} lngLat={lngLat} onPress={onPress}>
-        <ClusterBubble
-          count={node.count}
-          tone={clusterToneFor(node.reportCount, node.eventCount)}
-        />
+        <View accessible accessibilityRole="button" accessibilityLabel={label}>
+          <ClusterBubble
+            count={node.count}
+            tone={clusterToneFor(node.reportCount, node.eventCount)}
+          />
+        </View>
       </Marker>
     )
   }
   if (node.type === "report") {
     return (
       <Marker id={markerId} lngLat={lngLat} anchor="bottom" onPress={onPress}>
-        <TeardropPin category={node.pin.category} active={active} />
+        <View accessible accessibilityRole="button" accessibilityLabel={label}>
+          <TeardropPin category={node.pin.category} active={active} />
+        </View>
       </Marker>
     )
   }
   if (node.type === "event") {
     return (
       <Marker id={markerId} lngLat={lngLat} anchor="bottom" onPress={onPress}>
-        <EventPin active={active} eventKind={node.event.eventKind} />
+        <View accessible accessibilityRole="button" accessibilityLabel={label}>
+          <EventPin active={active} eventKind={node.event.eventKind} />
+        </View>
       </Marker>
     )
   }
   return (
     <Marker id={markerId} lngLat={lngLat} anchor="bottom" onPress={onPress}>
-      <BlendPin count={node.reports.length} active={active} eventKind={node.event.eventKind} />
+      <View accessible accessibilityRole="button" accessibilityLabel={label}>
+        <BlendPin count={node.reports.length} active={active} eventKind={node.event.eventKind} />
+      </View>
     </Marker>
   )
 })
@@ -98,6 +115,8 @@ interface TargetMarkerProps {
 }
 
 function TargetMarker({ target, onPressPin, onPressCleanup }: TargetMarkerProps) {
+  const { t } = useT("map-ui")
+  const label = targetMarkerA11yLabel(target, t)
   if (target.kind === "cleanup") {
     return (
       <Marker
@@ -106,13 +125,17 @@ function TargetMarker({ target, onPressPin, onPressCleanup }: TargetMarkerProps)
         anchor="bottom"
         onPress={onPressCleanup}
       >
-        <EventPin active eventKind={target.eventKind} />
+        <View accessible accessibilityRole="button" accessibilityLabel={label}>
+          <EventPin active eventKind={target.eventKind} />
+        </View>
       </Marker>
     )
   }
   return (
     <Marker id={`pin-${target.id}`} lngLat={[target.lng, target.lat]} anchor="bottom" onPress={onPressPin}>
-      <TeardropPin category={target.category} active />
+      <View accessible accessibilityRole="button" accessibilityLabel={label}>
+        <TeardropPin category={target.category} active />
+      </View>
     </Marker>
   )
 }
@@ -430,6 +453,8 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       logo={false}
       attributionPosition={{ bottom: insets.bottom + 96, right: 8 }}
       compass={false}
+      touchRotate={false}
+      touchPitch={false}
       onDidFinishLoadingMap={handleMapLoad}
       onRegionWillChange={handleRegionWillChange}
       onRegionDidChange={handleRegion}
