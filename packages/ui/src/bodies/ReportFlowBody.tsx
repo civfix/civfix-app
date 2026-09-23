@@ -9,7 +9,7 @@ import { makeThemedStyles, motion, useTheme, categoryColor, wash, useLayoutMode,
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField, Toggle, KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
-import { LocationPicker, PortraitMapPickStep, useLocationPick, reportPinTarget } from "../map"
+import { LocationPicker, PortraitMapPickStep, reportPinTarget } from "../map"
 import { PinSvg, glyphForCategory } from "../map"
 import {
   useApi,
@@ -429,13 +429,20 @@ async function resolveApproxCenter(
 
 // `refreshIfNull` is the picker being open: a session-cached null (denied, or offline) is resolved again
 // then, so a permission granted since can place the map. A cached point is never re-resolved or replaced.
-function useApproxCenter(enabled: boolean, refreshIfNull: boolean): LatLng | null {
+interface ApproxCenter {
+  center: LatLng | null
+  /** The current resolution attempt finished without a point; the pickers then ask for an address. */
+  settled: boolean
+}
+
+function useApproxCenter(enabled: boolean, refreshIfNull: boolean): ApproxCenter {
   const geo = useGeolocation()
   const api = useApi()
   const qc: QueryClient = useQueryClient()
   const [center, setCenter] = useState<LatLng | null>(
     () => qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null,
   )
+  const [settledFor, setSettledFor] = useState<boolean | null>(null)
   useEffect(() => {
     if (!enabled || center) return
     const cached = qc.getQueryData<LatLng | null>(queryKeys.userLocation)
@@ -444,6 +451,11 @@ function useApproxCenter(enabled: boolean, refreshIfNull: boolean): LatLng | nul
       return
     }
     let cancelled = false
+    const settle = (c: LatLng | null) => {
+      if (cancelled) return
+      if (c) setCenter(c)
+      else setSettledFor(refreshIfNull)
+    }
     void qc
       .fetchQuery<LatLng | null>({
         queryKey: queryKeys.userLocation,
@@ -452,18 +464,12 @@ function useApproxCenter(enabled: boolean, refreshIfNull: boolean): LatLng | nul
         gcTime: Infinity,
         retry: false,
       })
-      .then(
-        (c) => {
-          if (!cancelled && c) setCenter(c)
-        },
-        () => {
-        },
-      )
+      .then(settle, () => settle(null))
     return () => {
       cancelled = true
     }
   }, [geo, api, qc, enabled, center, refreshIfNull])
-  return center
+  return { center, settled: enabled && center === null && settledFor === refreshIfNull }
 }
 
 function CompactLocationField({
@@ -582,11 +588,8 @@ function ReviewStep({
     [setLocation],
   )
   const onPickPlace = useCallback(
-    (place: AddressPick) => {
-      setLocation(place.lat, place.lng, "manual")
-      if (pickMode === "main-map") useLocationPick.getState().setDraft(place.lat, place.lng)
-    },
-    [setLocation, pickMode],
+    (place: AddressPick) => setLocation(place.lat, place.lng, "manual"),
+    [setLocation],
   )
   const jurisdiction = useResolveJurisdiction(point)
   const jd = jurisdiction.data
@@ -622,7 +625,7 @@ function ReviewStep({
         ) : (
           <>
             <AddressSearch value={addrQuery} onChangeText={setAddrQuery} onPick={onPickPlace} />
-            <LocationPicker value={point} onChange={onDropPin} onClear={clearLocation} initialCenter={initialCenter ?? undefined} mode={pickMode} pin={pin} />
+            <LocationPicker value={point} onChange={onDropPin} onClear={clearLocation} initialCenter={initialCenter.center ?? undefined} centerSettled={initialCenter.settled} mode={pickMode} pin={pin} />
           </>
         )}
         <TextField
@@ -1333,7 +1336,8 @@ export function ReportFlowBody() {
         inert={!pickLayerOpen}
         presentation="layer"
         value={pickPoint}
-        initialCenter={pickCenter}
+        initialCenter={pickCenter.center}
+        centerSettled={pickCenter.settled}
         onConfirm={onPickConfirm}
         onCancel={onPickCancel}
         pin={pickPin}

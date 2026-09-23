@@ -19,6 +19,7 @@ export function PortraitMapPickStep({
   visible,
   value,
   initialCenter,
+  centerSettled,
   onConfirm,
   onCancel,
   pin,
@@ -135,6 +136,7 @@ export function PortraitMapPickStep({
             value={localPoint}
             onChange={onInlineChange}
             initialCenter={initialCenter ?? undefined}
+            centerSettled={centerSettled}
             mode="standalone"
             height={INLINE_PICK_HEIGHT}
             pin={pin}

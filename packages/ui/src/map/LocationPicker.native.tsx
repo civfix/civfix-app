@@ -58,7 +58,13 @@ import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
 import { PinSvg, pinAppearanceFor } from "./pins"
-import { PICKER_ZOOM, PICKER_HEIGHT, type LatLng, type LocationPickerProps } from "./LocationPicker.types"
+import {
+  PICKER_ZOOM,
+  PICKER_HEIGHT,
+  pickerSurface,
+  type LatLng,
+  type LocationPickerProps,
+} from "./LocationPicker.types"
 
 // MapLibre's Map.onPress passes either event shape; both carry lngLat (the touched coordinate).
 type MapPress = NativeSyntheticEvent<PressEvent> | NativeSyntheticEvent<PressEventWithFeatures>
@@ -67,6 +73,7 @@ export function LocationPicker({
   value,
   onChange,
   initialCenter,
+  centerSettled,
   height = PICKER_HEIGHT,
   interactive = false,
   fullBleed = false,
@@ -173,10 +180,16 @@ export function LocationPicker({
   if (!initialViewState) {
     return (
       <View style={fullBleed ? styles.wrapFull : [styles.wrap, { height }]}>
-        <View style={styles.pending} accessibilityRole="progressbar" accessibilityLiveRegion="polite">
-          <ActivityIndicator color={th.colors.textSubtle} />
-          <Text style={styles.pendingText}>{t("hint.pending")}</Text>
-        </View>
+        {pickerSurface(cameraSeed, centerSettled) === "search" ? (
+          <View style={styles.pending} accessibilityLiveRegion="polite">
+            <Text style={styles.pendingText}>{t("hint.search_address")}</Text>
+          </View>
+        ) : (
+          <View style={styles.pending} accessibilityRole="progressbar" accessibilityLiveRegion="polite">
+            <ActivityIndicator color={th.colors.textSubtle} />
+            <Text style={styles.pendingText}>{t("hint.pending")}</Text>
+          </View>
+        )}
       </View>
     )
   }

@@ -76,7 +76,7 @@ describe("report type copy is localized (APP-BUG-161)", () => {
 
 describe("a cached null centre is resolved again when the picker opens (APP-BUG-162)", () => {
   it("refreshes only while a picker is open, and only past a null cache", () => {
-    expect(body).toContain("function useApproxCenter(enabled: boolean, refreshIfNull: boolean): LatLng | null {")
+    expect(body).toContain("function useApproxCenter(enabled: boolean, refreshIfNull: boolean): ApproxCenter {")
     expect(body).toContain("staleTime: refreshIfNull ? 0 : Infinity,")
     expect(flat(body)).toContain(
       'useApproxCenter( hasMedia || activeStep === "location" || activeStep === "review" || picking, picking, )',

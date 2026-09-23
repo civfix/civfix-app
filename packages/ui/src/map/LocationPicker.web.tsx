@@ -5,7 +5,13 @@ import { useTheme, EASE_STANDARD_CSS, type ColorSchemeName, type Theme } from ".
 import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
-import { PICKER_ZOOM, PICKER_HEIGHT, type LatLng, type LocationPickerProps } from "./LocationPicker.types"
+import {
+  PICKER_ZOOM,
+  PICKER_HEIGHT,
+  pickerSurface,
+  type LatLng,
+  type LocationPickerProps,
+} from "./LocationPicker.types"
 import { useLocationPick } from "./locationPickStore"
 import { pinAppearanceFor } from "./pins"
 
@@ -27,7 +33,14 @@ export function makePinElement(t: Theme, fill: string): HTMLDivElement {
   return el
 }
 
-function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_HEIGHT, pin }: LocationPickerProps) {
+function InlineLocationPicker({
+  value,
+  onChange,
+  initialCenter,
+  centerSettled,
+  height = PICKER_HEIGHT,
+  pin,
+}: LocationPickerProps) {
   const { t } = useT("map-ui")
   const th = useTheme()
   const styles = React.useMemo(() => makeStyles(th), [th])
@@ -147,6 +160,13 @@ function InlineLocationPicker({ value, onChange, initialCenter, height = PICKER_
 
 
   if (!cameraSeed) {
+    if (pickerSurface(cameraSeed, centerSettled) === "search") {
+      return (
+        <div style={{ ...styles.wrap, ...styles.pending, height }} role="status">
+          {t("hint.search_address")}
+        </div>
+      )
+    }
     return (
       <div style={{ ...styles.wrap, ...styles.pending, height }} role="status" aria-busy>
         {t("hint.pending")}

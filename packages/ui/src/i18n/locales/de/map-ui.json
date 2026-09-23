@@ -59,7 +59,8 @@
     "move": "Tippen, um die Markierung zu verschieben",
     "moveMainMap": "Tippe auf die Karte, um die Markierung zu verschieben",
     "empty": "Noch kein Standort festgelegt",
-    "pending": "Dein Bereich wird ermittelt. Du kannst auch nach einer Adresse suchen, um die Markierung zu setzen."
+    "pending": "Dein Bereich wird ermittelt. Du kannst auch nach einer Adresse suchen, um die Markierung zu setzen.",
+    "search_address": "Dein Bereich wurde nicht gefunden. Suche nach einer Adresse, um die Markierung zu setzen."
   },
   "pickStep": {
     "title": "Standort festlegen",

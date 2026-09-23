@@ -44,7 +44,7 @@ import { uploadMedia } from "../data/uploadMedia"
 import { useCamera } from "../capabilities"
 import { appErrorCode } from "./errorCode"
 import { eventCoverErrorKey } from "./eventCoverModel"
-import { LocationPicker, PortraitMapPickStep, useLocationPick, eventPinTarget } from "../map"
+import { LocationPicker, PortraitMapPickStep, eventPinTarget } from "../map"
 import { useLocale, useT, viewerTimeZone } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
 import { AuthorAsChips, authorAsSelection, type AuthorAsOption } from "./AuthorAsChips"
@@ -547,11 +547,8 @@ export function CleanupForm({
   )
 
   const onPickPlace = useCallback(
-    (place: AddressPick) => {
-      patch({ coords: { lat: place.lat, lng: place.lng } })
-      if (pickMode === "main-map") useLocationPick.getState().setDraft(place.lat, place.lng)
-    },
-    [patch, pickMode],
+    (place: AddressPick) => patch({ coords: { lat: place.lat, lng: place.lng } }),
+    [patch],
   )
 
   const onDropPin = useCallback(

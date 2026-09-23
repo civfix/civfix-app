@@ -43,6 +43,11 @@ export interface LocationPickerProps {
    * for the first is what opened the report wizard's pin-drop map on a field 2,000 miles from the reporter.
    */
   initialCenter?: LatLng
+  /**
+   * The host finished resolving `initialCenter` and learned nothing (location refused, no approximate
+   * point, backend off). With no `value` either, the picker asks for an address instead of loading forever.
+   */
+  centerSettled?: boolean
   /** Map height (design `.pi-host-map` = 200 for the inline picker). */
   height?: number
   /**
@@ -88,6 +93,13 @@ export interface LocationPickerProps {
 // jump to the neutral US centre) STRUCTURALLY - they construct no map until a real centre exists and show a
 // warm placeholder meanwhile - so the constant has no callers left and is gone rather than deprecated. A
 // fallback that does not exist cannot be reached for by the next person in a hurry.
+
+export type PickerSurface = "map" | "pending" | "search"
+
+export function pickerSurface(cameraSeed: LatLng | null, centerSettled: boolean | undefined): PickerSurface {
+  if (cameraSeed) return "map"
+  return centerSettled ? "search" : "pending"
+}
 
 /** The picker's default camera zoom + the inline-picker height. */
 export const PICKER_ZOOM = 14

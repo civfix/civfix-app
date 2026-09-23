@@ -18,6 +18,7 @@ export function PortraitMapPickStep({
   visible,
   value,
   initialCenter,
+  centerSettled,
   onConfirm,
   onCancel,
   pin,
@@ -83,6 +84,7 @@ export function PortraitMapPickStep({
         value={localPoint}
         onChange={onMapDrop}
         initialCenter={initialCenter ?? undefined}
+        centerSettled={centerSettled}
         mode="standalone"
         interactive
         fullBleed
