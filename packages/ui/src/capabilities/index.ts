@@ -44,7 +44,7 @@ export {
   FakeClipboard,
   fakeBlurSurface,
   fakeHaptics,
-  fakeOpenExternal,
-  fakeOpenInternalHref,
+  makeFakeOpenExternal,
+  makeFakeOpenInternalHref,
   FakeContactsInvite,
 } from "./fakes"

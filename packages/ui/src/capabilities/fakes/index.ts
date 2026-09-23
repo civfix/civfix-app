@@ -15,18 +15,22 @@ import type {
   ClipboardCapability,
 } from "../types"
 
+// Inline bytes and no location: the fake ships in the web export's dev galleries, where it must never
+// fetch from a third-party host or stand in for a device GPS fix.
+export const FAKE_CAPTURE_URI =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAJCAIAAAC0SDtlAAAAFElEQVR4nGOYtXg1SYhhVMOg0AAAdT0SkOo9AVoAAAAASUVORK5CYII="
+
 export class FakeCamera implements CameraCapability {
   isAvailable(): boolean {
     return false
   }
   capture(_opts?: { mode?: "photo" | "video"; orientation?: "portrait" | "device" }): Promise<CapturedMedia | null> {
     return Promise.resolve({
-      uri: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+      uri: FAKE_CAPTURE_URI,
       kind: "image",
-      mime: "image/jpeg",
-      width: 1280,
-      height: 720,
-      location: { lat: 37.7599, lng: -122.4148, source: "device" },
+      mime: "image/png",
+      width: 16,
+      height: 9,
     })
   }
   pickFromLibrary(): Promise<CapturedMedia | null> {
@@ -112,28 +116,35 @@ function recordOpen(log: string[], url: string): void {
   if (log.length > FAKE_OPEN_EXTERNAL_LOG_MAX) log.splice(0, log.length - FAKE_OPEN_EXTERNAL_LOG_MAX)
 }
 
-export const fakeOpenExternal: OpenExternalCapability & {
-  opened: string[]
-  openedInApp: string[]
-} = {
-  opened: [],
-  openedInApp: [],
-  open(url: string): Promise<void> {
-    recordOpen(fakeOpenExternal.opened, url)
-    return Promise.resolve()
-  },
-  openInAppBrowser(url: string): Promise<void> {
-    recordOpen(fakeOpenExternal.openedInApp, url)
-    return Promise.resolve()
-  },
+export type FakeOpenExternal = OpenExternalCapability & { opened: string[]; openedInApp: string[] }
+
+export function makeFakeOpenExternal(): FakeOpenExternal {
+  const fake: FakeOpenExternal = {
+    opened: [],
+    openedInApp: [],
+    open(url: string): Promise<void> {
+      recordOpen(fake.opened, url)
+      return Promise.resolve()
+    },
+    openInAppBrowser(url: string): Promise<void> {
+      recordOpen(fake.openedInApp, url)
+      return Promise.resolve()
+    },
+  }
+  return fake
 }
 
-export const fakeOpenInternalHref: OpenInternalHrefCapability & { opened: string[] } = {
-  opened: [],
-  open(path: string): boolean {
-    recordOpen(fakeOpenInternalHref.opened, path)
-    return true
-  },
+export type FakeOpenInternalHref = OpenInternalHrefCapability & { opened: string[] }
+
+export function makeFakeOpenInternalHref(): FakeOpenInternalHref {
+  const fake: FakeOpenInternalHref = {
+    opened: [],
+    open(path: string): boolean {
+      recordOpen(fake.opened, path)
+      return true
+    },
+  }
+  return fake
 }
 
 export class FakeContactsInvite implements ContactsInviteAdapter {
@@ -167,8 +178,8 @@ export function makeFakeCapabilities(): PlatformCapabilities {
     persistence: new FakePersistence(),
     blurSurface: fakeBlurSurface,
     haptics: fakeHaptics,
-    openExternal: fakeOpenExternal,
-    openInternalHref: fakeOpenInternalHref,
+    openExternal: makeFakeOpenExternal(),
+    openInternalHref: makeFakeOpenInternalHref(),
     clipboard: new FakeClipboard(),
   }
 }
