@@ -1,4 +1,4 @@
-import type { BroadcastSegment } from "@civfix/shared"
+import type { BroadcastSegment, DeliveryStatus } from "@civfix/shared"
 
 export type AudienceKind = BroadcastSegment["kind"]
 
@@ -102,4 +102,19 @@ export function broadcastCan(
     default:
       return { edit: false, send: false, schedule: false, cancel: false, delete: false }
   }
+}
+
+export const DELIVERY_STATUS_FILTERS: readonly (DeliveryStatus | "all")[] = [
+  "all",
+  "sent",
+  "failed",
+  "suppressed",
+  "pending",
+]
+
+/** A status the filter control does not offer would leave it with nothing selected. */
+export function deliveryStatusFrom(value: string | undefined): DeliveryStatus | "all" {
+  return value !== undefined && (DELIVERY_STATUS_FILTERS as readonly string[]).includes(value)
+    ? (value as DeliveryStatus | "all")
+    : "all"
 }

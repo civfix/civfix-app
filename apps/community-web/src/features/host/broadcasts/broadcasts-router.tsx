@@ -3,11 +3,7 @@
 import { useState } from "react"
 import { Megaphone, Plus } from "lucide-react"
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type {
-  BroadcastDTO,
-  DeliveryStatus,
-  ListEventBroadcastsResponse,
-} from "@civfix/shared"
+import type { BroadcastDTO, ListEventBroadcastsResponse } from "@civfix/shared"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -27,22 +23,7 @@ import { useConsoleFormat } from "../format"
 import { consoleKeys } from "../console-keys"
 import { BroadcastComposer } from "./broadcast-composer"
 import { DeliveryDrawer } from "./delivery-drawer"
-import { broadcastCan } from "./audience"
-
-const DELIVERY_STATUSES: readonly DeliveryStatus[] = [
-  "pending",
-  "in_flight",
-  "sent",
-  "failed",
-  "suppressed",
-  "skipped",
-]
-
-function deliveryStatusFrom(value: string | undefined): DeliveryStatus | "all" {
-  return value !== undefined && (DELIVERY_STATUSES as readonly string[]).includes(value)
-    ? (value as DeliveryStatus)
-    : "all"
-}
+import { broadcastCan, deliveryStatusFrom } from "./audience"
 
 function BroadcastsList() {
   const { t } = useT("host-broadcasts")
@@ -77,7 +58,7 @@ function BroadcastsList() {
     onSuccess: () => {
       toast.toast({ title: t("cancelled"), tone: "success" })
       setPendingCancel(null)
-      void qc.invalidateQueries({ queryKey: consoleKeys.broadcasts(eventId, "all") })
+      void qc.invalidateQueries({ queryKey: consoleKeys.broadcastsRoot(eventId) })
     },
     onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
   })
@@ -224,7 +205,14 @@ function BroadcastDetail({ broadcastId }: { broadcastId: string }) {
       onRetry={() => void broadcast.refetch()}
       skeleton={<LoadingState count={6} />}
     >
-      {broadcast.data ? <BroadcastComposer broadcast={broadcast.data} /> : null}
+      {broadcast.data ? (
+        // Keyed on the server's version: after a save or schedule the composer re-seeds from the
+        // saved broadcast instead of keeping the pre-save draft it was mounted with.
+        <BroadcastComposer
+          key={broadcast.data.updatedAt ?? broadcast.data.createdAt}
+          broadcast={broadcast.data}
+        />
+      ) : null}
     </StateGate>
   )
 }

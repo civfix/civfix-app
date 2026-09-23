@@ -29,7 +29,12 @@ import { ConfirmModal } from "@/components/console/overlay/confirm-modal"
 
 import { useConsoleEvent, useConsoleNavigation } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
-import { useConsoleFormat } from "../format"
+import {
+  isoToZonedInput,
+  useConsoleFormat,
+  useConsoleInputZone,
+  zonedInputToIso,
+} from "../format"
 import { consoleKeys } from "../console-keys"
 import {
   AUDIENCE_KINDS,
@@ -67,7 +72,7 @@ const EMPTY: ComposerDraft = {
   scheduledAt: "",
 }
 
-function draftFrom(broadcast: BroadcastDTO | null): ComposerDraft {
+function draftFrom(broadcast: BroadcastDTO | null, timeZone: string): ComposerDraft {
   if (!broadcast) return EMPTY
   const audience = audienceFrom(broadcast.segment)
   return {
@@ -79,8 +84,35 @@ function draftFrom(broadcast: BroadcastDTO | null): ComposerDraft {
     ticketTypeIds: [...audience.ticketTypeIds],
     slotIds: [...audience.slotIds],
     channels: broadcast.channels.filter((channel) => channel !== "sms"),
-    scheduledAt: broadcast.scheduledAt ? broadcast.scheduledAt.slice(0, 16) : "",
+    scheduledAt: isoToZonedInput(broadcast.scheduledAt, timeZone),
   }
+}
+
+/**
+ * Send, test send and schedule all act on the SAVED broadcast, so any unsaved change to what it
+ * says or who gets it blocks them. The schedule time is left out: editing it is how scheduling
+ * works, and it is sent with the schedule call itself.
+ */
+export function composerContentChanged(draft: ComposerDraft, saved: ComposerDraft): boolean {
+  const content = ({ scheduledAt: _scheduledAt, ...rest }: ComposerDraft) =>
+    JSON.stringify({
+      ...rest,
+      ticketTypeIds: [...rest.ticketTypeIds].sort(),
+      slotIds: [...rest.slotIds].sort(),
+      channels: [...rest.channels].sort(),
+    })
+  return content(draft) !== content(saved)
+}
+
+/** An untouched time is sent back exactly as stored, so re-scheduling cannot drift. */
+export function scheduleInstant(
+  draftValue: string,
+  saved: { input: string; iso: string | null },
+  timeZone: string,
+): string | null {
+  if (saved.iso !== null && draftValue === saved.input) return saved.iso
+  const parsed = zonedInputToIso(draftValue, timeZone)
+  return parsed.kind === "instant" ? parsed.iso : null
 }
 
 export interface BroadcastComposerProps {
@@ -95,15 +127,17 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
   const qc = useQueryClient()
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
-  const format = useConsoleFormat()
   const { eventId, event } = useConsoleEvent()
+  const zone = useConsoleInputZone(event?.timezone)
+  const format = useConsoleFormat(zone)
   const { go } = useConsoleNavigation()
 
   const ticketTypes = useEventTicketTypes(eventId)
   const slots = event?.slots ?? []
 
-  const draftKey = consoleDraftKey(`broadcast.${eventId}`, broadcast?.id ?? "new", viewerId)
-  const initial = useMemo(() => draftFrom(broadcast), [broadcast])
+  // v2 scope: drafts saved before the event-zone fix hold the schedule as a UTC wall clock.
+  const draftKey = consoleDraftKey(`broadcast.v2.${eventId}`, broadcast?.id ?? "new", viewerId)
+  const initial = useMemo(() => draftFrom(broadcast, zone), [broadcast, zone])
   const { draft, patch, restored, dismissRestored, clear } = useDraft(draftKey, initial)
 
   const [serverFields, setServerFields] = useState<Record<string, string>>({})
@@ -116,6 +150,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
     ticketTypeIds: draft.ticketTypeIds,
     slotIds: draft.slotIds,
   }
+  const unsaved = broadcast !== null && composerContentChanged(draft, initial)
   const readiness = composerReadiness({
     subject: draft.subject,
     bodyMd: draft.bodyMd,
@@ -218,11 +253,11 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
   })
 
   const schedule = useMutation({
-    mutationFn: () =>
+    mutationFn: (scheduledAt: string) =>
       api.scheduleEventBroadcast({
         id: eventId,
         broadcastId: broadcast?.id as string,
-        scheduledAt: new Date(draft.scheduledAt).toISOString(),
+        scheduledAt,
       }),
     onSuccess: (res) => {
       toast.toast({ title: t("composer.scheduled"), tone: "success" })
@@ -234,6 +269,24 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
       toast.toast({ title: errors.message(err), tone: "danger" })
     },
   })
+
+  const zoneName = format.zoneLabel(broadcast?.scheduledAt ?? new Date().toISOString())
+  const scheduleNow = () => {
+    const scheduledAt = scheduleInstant(
+      draft.scheduledAt,
+      { input: initial.scheduledAt, iso: broadcast?.scheduledAt ?? null },
+      zone,
+    )
+    if (scheduledAt === null) {
+      setServerFields((current) => ({
+        ...current,
+        scheduledAt: t("composer.schedule_not_in_zone", { zone: zoneName ?? zone }),
+      }))
+      return
+    }
+    schedule.mutate(scheduledAt)
+  }
+  const testCapped = testSends >= 5
 
   const summaryErrors = [
     ...(submitCount > 0 && !readiness.subject
@@ -286,8 +339,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
             <ConsoleButton
               variant="outline"
               size="sm"
-              disabled={testSend.isPending || testSends >= 5}
-              title={testSends >= 5 ? t("composer.test_cap") : undefined}
+              disabled={testSend.isPending || testCapped || unsaved}
               onClick={() => testSend.mutate()}
             >
               <TestTube aria-hidden className="h-4 w-4" />
@@ -309,13 +361,23 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
             </ConsoleButton>
           ) : null}
           {broadcast && gates.send ? (
-            <ConsoleButton size="sm" disabled={send.isPending} onClick={() => setConfirmSend(true)}>
+            <ConsoleButton
+              size="sm"
+              disabled={send.isPending || unsaved}
+              onClick={() => setConfirmSend(true)}
+            >
               <Send aria-hidden className="h-4 w-4" />
               {t("composer.send")}
             </ConsoleButton>
           ) : null}
         </div>
       </div>
+
+      {unsaved || (broadcast && testCapped) ? (
+        <p role="status" className="text-token-12 text-console-ink-3">
+          {unsaved ? t("composer.save_before_send") : t("composer.test_cap")}
+        </p>
+      ) : null}
 
       <ErrorSummary errors={summaryErrors} submitCount={submitCount} />
 
@@ -460,21 +522,25 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
               <Field
                 label={t("composer.schedule_at")}
                 htmlFor="broadcast-schedule"
+                hint={zoneName ? t("composer.schedule_zone_hint", { zone: zoneName }) : undefined}
                 error={serverFields.scheduledAt}
               >
                 <TextInput
                   id="broadcast-schedule"
                   type="datetime-local"
                   value={draft.scheduledAt}
-                  onChange={(event) => patch({ scheduledAt: event.target.value })}
+                  onChange={(event) => {
+                    patch({ scheduledAt: event.target.value })
+                    setServerFields(({ scheduledAt: _stale, ...rest }) => rest)
+                  }}
                 />
               </Field>
               <ConsoleButton
                 size="sm"
                 variant="outline"
                 className="mt-token-3"
-                disabled={draft.scheduledAt === "" || schedule.isPending}
-                onClick={() => schedule.mutate()}
+                disabled={draft.scheduledAt === "" || schedule.isPending || unsaved}
+                onClick={scheduleNow}
               >
                 <Clock aria-hidden className="h-4 w-4" />
                 {t("composer.schedule_action")}
@@ -482,7 +548,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
               {broadcast.scheduledAt ? (
                 <p className="mt-token-2 text-token-12 text-console-ink-3">
                   {t("composer.scheduled_for", {
-                    when: format.dateTime(broadcast.scheduledAt),
+                    when: format.whenLabel(broadcast.scheduledAt),
                   })}
                 </p>
               ) : null}

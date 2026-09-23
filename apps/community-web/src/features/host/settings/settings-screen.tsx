@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { MAX_EVENT_REMINDER_OFFSETS } from "@civfix/shared"
 import type { EventVisibility, OrganizationDTO } from "@civfix/shared"
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
@@ -20,17 +21,14 @@ import { ConsoleLink } from "../layout/console-link"
 import { hrefForRoute } from "@/components/console/route"
 import { useConsoleErrors } from "../error-copy"
 import { invalidateEvent } from "../console-invalidate"
+import { isoToZonedInput, useConsoleFormat, useConsoleInputZone, zonedFieldPatch } from "../format"
+import type { ZonedFieldPatch } from "../format"
 
 const REMINDER_OFFSETS = [60, 180, 1440, 2880, 10080] as const
 
-function toLocal(iso: string | null | undefined): string {
-  return iso ? iso.slice(0, 16) : ""
-}
-
-function toIso(local: string): string | null {
-  if (local === "") return null
-  const parsed = new Date(local)
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString()
+interface RegistrationWindow {
+  registrationOpensAt: string
+  registrationClosesAt: string
 }
 
 export function SettingsScreen() {
@@ -43,6 +41,8 @@ export function SettingsScreen() {
   const { eventId, event, can } = useConsoleEvent()
   const { go } = useConsoleNavigation()
   const { t: to } = useT("host-org")
+  const zone = useConsoleInputZone(event?.timezone)
+  const format = useConsoleFormat(zone)
 
   const canLinkOrg = can("manage_org_link")
   const orgs = useMyOrganizations()
@@ -60,6 +60,10 @@ export function SettingsScreen() {
   const [visibility, setVisibility] = useState<EventVisibility>("public")
   const [opensAt, setOpensAt] = useState("")
   const [closesAt, setClosesAt] = useState("")
+  const [savedWindow, setSavedWindow] = useState<RegistrationWindow>({
+    registrationOpensAt: "",
+    registrationClosesAt: "",
+  })
   const [donationUrl, setDonationUrl] = useState("")
   const [replyTo, setReplyTo] = useState("")
   const [reminders, setReminders] = useState<string[]>([])
@@ -71,28 +75,42 @@ export function SettingsScreen() {
   useEffect(() => {
     if (!event || hydrated) return
     setVisibility(event.visibility)
-    setOpensAt(toLocal(event.registrationOpensAt))
-    setClosesAt(toLocal(event.registrationClosesAt))
+    const stored = {
+      registrationOpensAt: isoToZonedInput(event.registrationOpensAt, zone),
+      registrationClosesAt: isoToZonedInput(event.registrationClosesAt, zone),
+    }
+    setOpensAt(stored.registrationOpensAt)
+    setClosesAt(stored.registrationClosesAt)
+    setSavedWindow(stored)
     setDonationUrl(event.donationUrl ?? "")
     setReminders((event.reminderOffsetsMinutes ?? []).map(String))
     setOrganizationId(event.organization?.id ?? "")
     setHydrated(true)
-  }, [event, hydrated])
+  }, [event, hydrated, zone])
+
+  const zoneName = format.zoneLabel(event?.scheduledAt ?? new Date().toISOString())
+  const currentWindow = { registrationOpensAt: opensAt, registrationClosesAt: closesAt }
+  const windowPatch = zonedFieldPatch(savedWindow, currentWindow, zone)
 
   const save = useMutation({
-    mutationFn: () =>
+    mutationFn: ({
+      patch,
+    }: {
+      patch: ZonedFieldPatch<keyof RegistrationWindow>["patch"]
+      window: RegistrationWindow
+    }) =>
       api.updateCleanup({
         id: eventId,
         visibility,
-        registrationOpensAt: toIso(opensAt),
-        registrationClosesAt: toIso(closesAt),
+        ...patch,
         donationUrl: donationUrl.trim() === "" ? null : donationUrl.trim(),
         reminderOffsetsMinutes: reminders.length > 0 ? reminders.map(Number) : null,
         ...(replyTo.trim() !== "" ? { hostReplyTo: replyTo.trim() } : {}),
         ...(canLinkOrg ? { organizationId: organizationId === "" ? null : organizationId } : {}),
       }),
-    onSuccess: () => {
+    onSuccess: (_result, { window: savedInputs }) => {
       toast.toast({ title: t("saved"), tone: "success" })
+      setSavedWindow(savedInputs)
       setFields({})
       invalidateEvent(qc, eventId)
     },
@@ -101,6 +119,15 @@ export function SettingsScreen() {
       toast.toast({ title: errors.message(err), tone: "danger" })
     },
   })
+
+  const onSave = () => {
+    if (windowPatch.invalid.length > 0) {
+      const message = t("registration.time_not_in_zone", { zone: zoneName ?? zone })
+      setFields(Object.fromEntries(windowPatch.invalid.map((field) => [field, message])))
+      return
+    }
+    save.mutate({ patch: windowPatch.patch, window: currentWindow })
+  }
 
   const cancelEvent = useMutation({
     mutationFn: (reason: string | undefined) =>
@@ -161,6 +188,11 @@ export function SettingsScreen() {
               />
             </Field>
           </div>
+          {zoneName ? (
+            <p className="text-token-12 text-console-ink-3">
+              {t("registration.zone_hint", { zone: zoneName })}
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -169,7 +201,13 @@ export function SettingsScreen() {
           {t("messaging.title")}
         </h2>
         <div className="flex flex-col gap-token-4">
-          <Field label={t("messaging.reminders")} hint={t("messaging.reminders_hint")}>
+          <Field
+            label={t("messaging.reminders")}
+            hint={`${t("messaging.reminders_hint")} ${t("messaging.reminders_max", {
+              count: MAX_EVENT_REMINDER_OFFSETS,
+            })}`}
+            error={fields.reminderOffsetsMinutes}
+          >
             <ChipMultiSelect
               label={t("messaging.reminders")}
               values={reminders}
@@ -177,6 +215,9 @@ export function SettingsScreen() {
               options={REMINDER_OFFSETS.map((minutes) => ({
                 value: String(minutes),
                 label: t(`messaging.offset_${minutes}`),
+                disabled:
+                  !reminders.includes(String(minutes)) &&
+                  reminders.length >= MAX_EVENT_REMINDER_OFFSETS,
               }))}
             />
           </Field>
@@ -290,7 +331,7 @@ export function SettingsScreen() {
       </section>
 
       <div className="flex justify-end">
-        <ConsoleButton disabled={save.isPending} onClick={() => save.mutate()}>
+        <ConsoleButton disabled={save.isPending} onClick={onSave}>
           {tc("action.save")}
         </ConsoleButton>
       </div>

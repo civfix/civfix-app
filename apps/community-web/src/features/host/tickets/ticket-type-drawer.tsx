@@ -26,6 +26,13 @@ import { fieldErrorsFrom } from "@/components/console/query-state"
 
 import { useConsoleErrors } from "../error-copy"
 import { invalidateEvent } from "../console-invalidate"
+import { useConsoleEvent } from "../console-context"
+import {
+  isoToZonedInput,
+  useConsoleFormat,
+  useConsoleInputZone,
+  zonedFieldPatch,
+} from "../format"
 
 interface TicketDraft {
   name: string
@@ -51,25 +58,19 @@ const EMPTY_DRAFT: TicketDraft = {
   waitlistEnabled: false,
 }
 
-function draftFrom(type: TicketTypeDTO | null): TicketDraft {
+function draftFrom(type: TicketTypeDTO | null, timeZone: string): TicketDraft {
   if (!type) return EMPTY_DRAFT
   return {
     name: type.name,
     description: type.description ?? "",
     capacity: type.capacity === null || type.capacity === undefined ? "" : String(type.capacity),
-    salesOpensAt: type.salesOpensAt ? type.salesOpensAt.slice(0, 16) : "",
-    salesClosesAt: type.salesClosesAt ? type.salesClosesAt.slice(0, 16) : "",
+    salesOpensAt: isoToZonedInput(type.salesOpensAt, timeZone),
+    salesClosesAt: isoToZonedInput(type.salesClosesAt, timeZone),
     visibility: type.visibility,
     accessCode: "",
     maxPartySize: type.maxPartySize,
     waitlistEnabled: type.waitlistEnabled,
   }
-}
-
-function toIso(local: string): string | null {
-  if (local === "") return null
-  const parsed = new Date(local)
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString()
 }
 
 export interface TicketTypeDrawerProps {
@@ -87,12 +88,26 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
   const qc = useQueryClient()
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
+  const zone = useConsoleInputZone(useConsoleEvent().event?.timezone)
+  const zoneName = useConsoleFormat(zone).zoneLabel(new Date().toISOString())
 
-  const draftKey = consoleDraftKey(`ticket.${eventId}`, ticketType?.id ?? "new", viewerId)
-  const initial = useMemo(() => draftFrom(ticketType), [ticketType])
+  // v2 scope: drafts saved before the event-zone fix hold sales times as UTC wall clocks.
+  const draftKey = consoleDraftKey(`ticket.v2.${eventId}`, ticketType?.id ?? "new", viewerId)
+  const initial = useMemo(() => draftFrom(ticketType, zone), [ticketType, zone])
   const { draft, patch, restored, dismissRestored, clear } = useDraft(draftKey, initial)
   const [serverFields, setServerFields] = useState<Record<string, string>>({})
   const [submitCount, setSubmitCount] = useState(0)
+
+  const sales = useMemo(() => {
+    const pick = (from: TicketDraft) => ({
+      salesOpensAt: from.salesOpensAt,
+      salesClosesAt: from.salesClosesAt,
+    })
+    return {
+      changed: zonedFieldPatch(ticketType ? pick(initial) : null, pick(draft), zone),
+      all: zonedFieldPatch(null, pick(draft), zone).patch,
+    }
+  }, [draft, initial, ticketType, zone])
 
   const localErrors = useMemo(() => {
     const parsed = CreateEventTicketTypeRequestSchema.safeParse({
@@ -100,21 +115,24 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
       name: draft.name.trim(),
       ...(draft.description.trim() ? { description: draft.description.trim() } : {}),
       ...(draft.capacity ? { capacity: Number(draft.capacity) } : {}),
-      ...(toIso(draft.salesOpensAt) ? { salesOpensAt: toIso(draft.salesOpensAt) } : {}),
-      ...(toIso(draft.salesClosesAt) ? { salesClosesAt: toIso(draft.salesClosesAt) } : {}),
+      ...(sales.all.salesOpensAt ? { salesOpensAt: sales.all.salesOpensAt } : {}),
+      ...(sales.all.salesClosesAt ? { salesClosesAt: sales.all.salesClosesAt } : {}),
       visibility: draft.visibility,
       ...(draft.accessCode ? { accessCode: draft.accessCode } : {}),
       maxPartySize: draft.maxPartySize,
       waitlistEnabled: draft.waitlistEnabled,
     })
-    if (parsed.success) return {}
     const out: Record<string, string> = {}
+    for (const bound of sales.changed.invalid) {
+      out[bound] = t("field.sales_time_not_in_zone", { zone: zoneName ?? zone })
+    }
+    if (parsed.success) return out
     for (const issue of parsed.error.issues) {
       const key = String(issue.path[0] ?? "form")
       if (!out[key]) out[key] = issue.message
     }
     return out
-  }, [draft, eventId])
+  }, [draft, eventId, sales, t, zone, zoneName])
 
   const fieldErrors = { ...localErrors, ...serverFields }
   const summary: FieldError[] = Object.entries(fieldErrors).map(([key, message]) => ({
@@ -128,8 +146,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
         name: draft.name.trim(),
         description: draft.description.trim() === "" ? null : draft.description.trim(),
         capacity: draft.capacity === "" ? null : Number(draft.capacity),
-        salesOpensAt: toIso(draft.salesOpensAt),
-        salesClosesAt: toIso(draft.salesClosesAt),
+        ...sales.changed.patch,
         visibility: draft.visibility,
         maxPartySize: draft.maxPartySize,
         waitlistEnabled: draft.waitlistEnabled,
@@ -224,7 +241,12 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
         </Field>
 
         <div className="grid gap-token-3 sm:grid-cols-2">
-          <Field label={t("field.sales_opens")} htmlFor="ticket-opens" optional>
+          <Field
+            label={t("field.sales_opens")}
+            htmlFor="ticket-opens"
+            optional
+            error={submitCount > 0 ? fieldErrors.salesOpensAt : undefined}
+          >
             <TextInput
               id="ticket-opens"
               type="datetime-local"
@@ -232,7 +254,12 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
               onChange={(event) => patch({ salesOpensAt: event.target.value })}
             />
           </Field>
-          <Field label={t("field.sales_closes")} htmlFor="ticket-closes" optional>
+          <Field
+            label={t("field.sales_closes")}
+            htmlFor="ticket-closes"
+            optional
+            error={submitCount > 0 ? fieldErrors.salesClosesAt : undefined}
+          >
             <TextInput
               id="ticket-closes"
               type="datetime-local"
@@ -241,6 +268,11 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
             />
           </Field>
         </div>
+        {zoneName ? (
+          <p className="-mt-token-2 text-token-12 text-console-ink-3">
+            {t("field.sales_zone_hint", { zone: zoneName })}
+          </p>
+        ) : null}
 
         <Field label={t("field.visibility")} htmlFor="ticket-visibility">
           <Select

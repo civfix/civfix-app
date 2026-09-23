@@ -3,8 +3,18 @@
 import { useEffect, useState } from "react"
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { EventQuestionDef, EventQuestionDTO, EventQuestionKind } from "@civfix/shared"
-import { MAX_EVENT_QUESTIONS, MAX_QUESTION_PROMPT } from "@civfix/shared"
+import type {
+  EventQuestionCondition,
+  EventQuestionDef,
+  EventQuestionDTO,
+  EventQuestionKind,
+  EventQuestionOption,
+} from "@civfix/shared"
+import {
+  MAX_EVENT_QUESTIONS,
+  MAX_QUESTION_OPTION_LABEL,
+  MAX_QUESTION_PROMPT,
+} from "@civfix/shared"
 import { useApi, useEventQuestions } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -29,7 +39,9 @@ const KINDS: readonly EventQuestionKind[] = [
   "consent",
 ]
 
-interface DraftQuestion {
+const MAX_OPTION_VALUE = 80
+
+export interface DraftQuestion {
   key: string
   id?: string
   kind: EventQuestionKind
@@ -37,18 +49,15 @@ interface DraftQuestion {
   helpText: string
   required: boolean
   options: string
+  /** The saved options: stored answers and other questions' `showIf` refer to these values. */
+  savedOptions: readonly EventQuestionOption[]
   consentText: string
   ticketTypeId: string
+  showIf: EventQuestionCondition | null
+  maxSelections: number | null
 }
 
-let counter = 0
-
-function newKey(): string {
-  counter += 1
-  return `q-${counter}`
-}
-
-function toDraft(question: EventQuestionDTO): DraftQuestion {
+export function toDraft(question: EventQuestionDTO): DraftQuestion {
   return {
     key: question.id,
     id: question.id,
@@ -57,20 +66,64 @@ function toDraft(question: EventQuestionDTO): DraftQuestion {
     helpText: question.helpText ?? "",
     required: question.required,
     options: question.options.map((option) => option.label).join("\n"),
+    savedOptions: question.options,
     consentText: question.consentText ?? "",
     ticketTypeId: question.ticketTypeId ?? "",
+    showIf: question.showIf ?? null,
+    maxSelections: question.maxSelections ?? null,
   }
 }
 
-function optionList(raw: string): { value: string; label: string }[] {
-  return raw
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
-    .map((label) => ({ value: label.toLowerCase().slice(0, 80), label: label.slice(0, 120) }))
+function uniqueValue(label: string, taken: ReadonlySet<string>): string {
+  const base = label.toLowerCase().slice(0, MAX_OPTION_VALUE)
+  if (!taken.has(base)) return base
+  for (let n = 2; ; n += 1) {
+    const suffix = `-${n}`
+    const candidate = `${base.slice(0, MAX_OPTION_VALUE - suffix.length)}${suffix}`
+    if (!taken.has(candidate)) return candidate
+  }
 }
 
-function toDef(draft: DraftQuestion, index: number): EventQuestionDef {
+/**
+ * Keeps each saved option's value: an unchanged label keeps its value wherever it moved, and a
+ * line edited in place keeps the value of the option it replaced, so a relabel never orphans stored
+ * answers. Only a genuinely new line gets a value derived from its label, deduplicated because the
+ * server does not reject two options with the same value.
+ */
+export function optionList(
+  raw: string,
+  saved: readonly EventQuestionOption[] = [],
+): EventQuestionOption[] {
+  const labels = raw
+    .split("\n")
+    .map((line) => line.trim().slice(0, MAX_QUESTION_OPTION_LABEL))
+    .filter((line) => line.length > 0)
+  const used = new Set<number>()
+  const values: (string | null)[] = labels.map((label) => {
+    const index = saved.findIndex((option, i) => !used.has(i) && option.label === label)
+    if (index === -1) return null
+    used.add(index)
+    return saved[index]!.value
+  })
+  labels.forEach((_, position) => {
+    if (values[position] !== null) return
+    const replaced = saved[position]
+    if (replaced && !used.has(position)) {
+      used.add(position)
+      values[position] = replaced.value
+    }
+  })
+  const taken = new Set(values.filter((value): value is string => value !== null))
+  return labels.map((label, position) => {
+    const kept = values[position]
+    if (kept !== null && kept !== undefined) return { value: kept, label }
+    const value = uniqueValue(label, taken)
+    taken.add(value)
+    return { value, label }
+  })
+}
+
+export function toDef(draft: DraftQuestion, index: number): EventQuestionDef {
   const base = {
     ...(draft.id ? { id: draft.id } : {}),
     prompt: draft.prompt.trim(),
@@ -78,12 +131,22 @@ function toDef(draft: DraftQuestion, index: number): EventQuestionDef {
     required: draft.required,
     sortOrder: index,
     ...(draft.ticketTypeId ? { ticketTypeId: draft.ticketTypeId } : {}),
+    ...(draft.showIf ? { showIf: draft.showIf } : {}),
   }
   switch (draft.kind) {
     case "single_select":
-      return { ...base, kind: "single_select", options: optionList(draft.options) }
+      return {
+        ...base,
+        kind: "single_select",
+        options: optionList(draft.options, draft.savedOptions),
+      }
     case "multi_select":
-      return { ...base, kind: "multi_select", options: optionList(draft.options) }
+      return {
+        ...base,
+        kind: "multi_select",
+        options: optionList(draft.options, draft.savedOptions),
+        ...(draft.maxSelections !== null ? { maxSelections: draft.maxSelections } : {}),
+      }
     case "consent":
       return { ...base, kind: "consent", consentText: draft.consentText.trim() }
     case "long_text":
@@ -93,6 +156,13 @@ function toDef(draft: DraftQuestion, index: number): EventQuestionDef {
     default:
       return { ...base, kind: "short_text" }
   }
+}
+
+let counter = 0
+
+function newKey(): string {
+  counter += 1
+  return `q-${counter}`
 }
 
 export function QuestionsEditor({
@@ -144,6 +214,9 @@ export function QuestionsEditor({
       (prev ?? []).map((item) => (item.key === key ? { ...item, ...patch } : item)),
     )
 
+  const questionName = (draft: DraftQuestion, index: number) =>
+    draft.prompt.trim() || t("questions.untitled", { n: index + 1 })
+
   const move = (index: number, delta: number) =>
     setDrafts((prev) => {
       const next = [...(prev ?? [])]
@@ -184,8 +257,11 @@ export function QuestionsEditor({
                   helpText: "",
                   required: false,
                   options: "",
+                  savedOptions: [],
                   consentText: "",
                   ticketTypeId: "",
+                  showIf: null,
+                  maxSelections: null,
                 },
               ])
             }
@@ -221,21 +297,21 @@ export function QuestionsEditor({
                   <span className="text-token-12 font-bold text-console-ink-3">{index + 1}</span>
                   <span className="min-w-0 flex-1" />
                   <ConsoleIconButton
-                    label={t("questions.move_up")}
+                    label={t("questions.move_up_named", { name: questionName(draft, index) })}
                     disabled={index === 0}
                     onClick={() => move(index, -1)}
                   >
                     <ArrowUp aria-hidden className="h-4 w-4" />
                   </ConsoleIconButton>
                   <ConsoleIconButton
-                    label={t("questions.move_down")}
+                    label={t("questions.move_down_named", { name: questionName(draft, index) })}
                     disabled={index === list.length - 1}
                     onClick={() => move(index, 1)}
                   >
                     <ArrowDown aria-hidden className="h-4 w-4" />
                   </ConsoleIconButton>
                   <ConsoleIconButton
-                    label={t("questions.remove")}
+                    label={t("questions.remove_named", { name: questionName(draft, index) })}
                     onClick={() =>
                       setDrafts((prev) => (prev ?? []).filter((item) => item.key !== draft.key))
                     }
