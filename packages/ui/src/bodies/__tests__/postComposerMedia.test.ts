@@ -2,6 +2,7 @@
  * The composer draft's media survives a remount ONLY because the persisted list is merged with this
  * mount's picks instead of being overwritten by the (always-empty-on-mount) local attachment hook.
  */
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { PendingAttachment } from "../../primitives/useComposerAttachments"
 import {
@@ -10,6 +11,7 @@ import {
   isCarriedMediaId,
   mergePostComposerMedia,
   mergePostComposerThumbs,
+  postComposerCanAttach,
   snapshotCarriedMedia,
   toPostComposerMedia,
 } from "../postComposerMedia"
@@ -107,5 +109,28 @@ describe("carried media snapshot", () => {
 
   it("is a no-op for an empty draft", () => {
     expect(snapshotCarriedMedia([])).toEqual({ carried: [], dropped: 0 })
+  })
+})
+
+describe("postComposerCanAttach", () => {
+  it("counts carried draft media against the cap, not just this mount's picks", () => {
+    // Two carried + two picked is full: the hook alone (2 of 4 picks) would still open the picker, and
+    // the merge would then slice the fifth item off after it uploaded.
+    expect(postComposerCanAttach({ hookCanAttach: true, carried: 2, picked: 2 })).toBe(false)
+    expect(postComposerCanAttach({ hookCanAttach: true, carried: 2, picked: 1 })).toBe(true)
+    expect(postComposerCanAttach({ hookCanAttach: true, carried: 0, picked: POST_COMPOSER_MEDIA_CAP })).toBe(false)
+  })
+
+  it("never overrides the hook's own refusal (no camera, busy, or its own cap)", () => {
+    expect(postComposerCanAttach({ hookCanAttach: false, carried: 0, picked: 0 })).toBe(false)
+  })
+
+  it("is what BOTH composers gate the add-media control on", () => {
+    for (const file of ["../PostComposer.tsx", "../feed/InlineComposer.tsx"]) {
+      const source = readFileSync(new URL(file, import.meta.url), "utf8")
+      expect(source, file).toMatch(/const canAttachMedia = postComposerCanAttach\(\{/)
+      expect(source, file).toContain("disabled={!canAttachMedia}")
+      expect(source, file).not.toContain("disabled={!attachments.canAttach}")
+    }
   })
 })

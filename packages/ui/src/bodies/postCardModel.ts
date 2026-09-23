@@ -108,17 +108,20 @@ export function splitPostBodyMentions(
   const alternatives = [...byHandle.values()]
     .map((mention) => mention.handle.replace(/^@/, "").trim()).filter(Boolean)
     .sort((a, b) => b.length - a.length).map(escapeRegExp)
-  const pattern = new RegExp(`@(${alternatives.join("|")})(?![\\w])`, "gi")
+  // Same left boundary as chat's mentionMatch: `bob@maria.com` must not tint (or send) a mention.
+  const pattern = new RegExp(`(^|[^\\w@])@(${alternatives.join("|")})(?![\\w])`, "gi")
   const segments: PostBodySegment[] = []
   let cursor = 0
   let match: RegExpExecArray | null
   while ((match = pattern.exec(body)) !== null) {
-    if (match.index > cursor) segments.push({ kind: "text", text: body.slice(cursor, match.index) })
-    const matchedHandle = match[1] ?? ""
+    const start = match.index + (match[1] ?? "").length
+    if (start > cursor) segments.push({ kind: "text", text: body.slice(cursor, start) })
+    const matchedHandle = match[2] ?? ""
+    const token = body.slice(start, pattern.lastIndex)
     const mention = byHandle.get(matchedHandle.toLocaleLowerCase())
     segments.push(mention
-      ? { kind: "mention", text: match[0], userId: mention.id, handle: mention.handle.replace(/^@/, "") }
-      : { kind: "text", text: match[0] })
+      ? { kind: "mention", text: token, userId: mention.id, handle: mention.handle.replace(/^@/, "") }
+      : { kind: "text", text: token })
     cursor = pattern.lastIndex
   }
   if (cursor < body.length) segments.push({ kind: "text", text: body.slice(cursor) })
@@ -225,4 +228,18 @@ function replyingToLabel(post: PostDTO, t: TFunction): string | null {
   return handle
     ? t("post_card.replying_to", { handle: `@${handle}` })
     : t("post_card.replying_to", { handle: parentAuthor.name })
+}
+
+/** One label per grid cell: four identical "Post attachment" alts give a screen reader nothing to tell apart. */
+export function postMediaA11yLabel(
+  t: TFunction,
+  kind: PostDTO["media"][number]["kind"],
+  index: number,
+  count: number,
+): string {
+  if (count <= 1) return t("post_card.media_a11y")
+  const position = { index: index + 1, count }
+  return kind === "video"
+    ? t("post_card.media_video_position_a11y", position)
+    : t("post_card.media_photo_position_a11y", position)
 }

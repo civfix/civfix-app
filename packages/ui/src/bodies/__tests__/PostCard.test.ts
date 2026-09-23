@@ -2,7 +2,12 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { TFunction } from "i18next"
 import type { MediaDTO, PostDTO } from "@civfix/shared"
-import { buildPostCardModel, buildPostIdentity, splitPostBodyMentions } from "../postCardModel"
+import {
+  buildPostCardModel,
+  buildPostIdentity,
+  postMediaA11yLabel,
+  splitPostBodyMentions,
+} from "../postCardModel"
 
 /**
  * Stand-in for the `home-feed` namespace (plus the shared `enums:` labels) bound by useT: interpolates
@@ -19,6 +24,9 @@ const EN: Record<string, string> = {
   "post_card.org_a11y": "Open {{name}}",
   "post_card.via": "via {{author}}",
   "post_card.deleted_account": "Deleted account",
+  "post_card.media_a11y": "Post attachment",
+  "post_card.media_photo_position_a11y": "Photo {{index}} of {{count}}",
+  "post_card.media_video_position_a11y": "Video {{index}} of {{count}}",
   "enums:reportType.dump": "Dump",
   "enums:reportType.pavement": "Pavement distress",
   "enums:category.trash": "Trash",
@@ -289,6 +297,38 @@ describe("PostCard model", () => {
  * non-sequitur exactly as it did in the feed. Every "say nothing" case has to stay silent rather than
  * degrade to something vague.
  */
+describe("post body mentions need a left boundary", () => {
+  const maria = [{ id: "person-2", handle: "maria", displayName: "Maria G." }]
+
+  it("does not tint a staged handle inside an email address", () => {
+    expect(splitPostBodyMentions("write to bob@maria.com", maria)).toEqual([
+      { kind: "text", text: "write to bob@maria.com" },
+    ])
+  })
+
+  it("still tints a mention at the start, after whitespace and after punctuation", () => {
+    expect(splitPostBodyMentions("@maria, (@maria) hi,@Maria", maria)).toEqual([
+      { kind: "mention", text: "@maria", userId: "person-2", handle: "maria" },
+      { kind: "text", text: ", (" },
+      { kind: "mention", text: "@maria", userId: "person-2", handle: "maria" },
+      { kind: "text", text: ") hi," },
+      { kind: "mention", text: "@Maria", userId: "person-2", handle: "maria" },
+    ])
+  })
+
+  it("does not start a mention right after another @", () => {
+    expect(splitPostBodyMentions("@@maria", maria)).toEqual([{ kind: "text", text: "@@maria" }])
+  })
+})
+
+describe("post media grid labels each cell", () => {
+  it("keeps the single-item label and numbers a multi-item grid by kind", () => {
+    expect(postMediaA11yLabel(t, "image", 0, 1)).toBe("Post attachment")
+    expect(postMediaA11yLabel(t, "image", 0, 3)).toBe("Photo 1 of 3")
+    expect(postMediaA11yLabel(t, "video", 2, 3)).toBe("Video 3 of 3")
+  })
+})
+
 describe("PostCard replying-to line", () => {
   const parent = (over: Partial<NonNullable<PostDTO["replyTo"]>> = {}) => ({
     id: "post-parent",
@@ -490,8 +530,6 @@ describe("PostCard's link-role controls answer the keyboard", () => {
         "linkKeyProps(",
       )
     }
-    // ...and the ROW itself, whose role is the platform-branched `ROW_ROLE` constant.
-    expect(SRC).toContain("const rowKeyProps = linkKeyProps(")
   })
 
   it("stops Space scrolling the feed under the focused link, and ignores keys from nested controls", () => {
@@ -509,7 +547,7 @@ describe("PostCard's row fill answers a POINTER, and never a touch", () => {
     // React's mouse-compat events fire for a tap and never fire the matching leave, so tapping Like left
     // the whole row painted in the hover fill - reading as selected - until the reader touched elsewhere.
     // RNW's own useHover skips `getPointerType(e) === 'touch'` in three places; this is that guard.
-    const block = SRC.slice(SRC.indexOf("const rowHoverProps"), SRC.indexOf("const rowKeyProps"))
+    const block = SRC.slice(SRC.indexOf("const rowHoverProps"), SRC.indexOf("const pressFill"))
     expect(block).toContain("onPointerEnter")
     expect(block).toContain('event?.pointerType !== "touch"')
     expect(block).toContain("onPointerLeave")

@@ -8,7 +8,9 @@ import {
   buildFeedMotionModel,
   buildFeedHeaderModel,
   createFeedEntranceTracker,
+  feedFooterState,
   feedViewState,
+  postDetailViewState,
 } from "../feedModel"
 
 const EN: Record<string, string> = {
@@ -234,5 +236,45 @@ describe("the new-posts pill overlays the list on every surface", () => {
   it("keeps the feed exactly in server rank order, de-duplicated by id only", () => {
     expect(SRC).toContain("dedupePostsById(feed.data?.pages.flatMap((page) => page.items) ?? [])")
     expect(SRC).not.toMatch(/posts\s*\.\s*sort|\.toSorted\(/)
+  })
+})
+
+describe("the feed footer after a failed page", () => {
+  const loaded = { state: "loaded" as const, isFetchingNextPage: false, isFetchNextPageError: false, hasNextPage: true }
+
+  it("offers a retry when the next page failed, instead of rendering nothing", () => {
+    expect(feedFooterState({ ...loaded, isFetchNextPageError: true })).toBe("load-more-failed")
+  })
+
+  it("shows the skeleton while a retry is in flight and the caught-up line only at the end", () => {
+    expect(feedFooterState({ ...loaded, isFetchNextPageError: true, isFetchingNextPage: true })).toBe("loading-more")
+    expect(feedFooterState({ ...loaded, hasNextPage: false })).toBe("caught-up")
+    expect(feedFooterState(loaded)).toBe("idle")
+    expect(feedFooterState({ ...loaded, state: "loading", isFetchNextPageError: true })).toBe("idle")
+  })
+
+  it("wires the retry to the same in-flight-safe pager the list uses", () => {
+    const source = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
+    const footer = source.slice(source.indexOf("const footer = useMemo("), source.indexOf("const contentStyle"))
+    expect(footer).toContain('footerState === "load-more-failed"')
+    expect(footer).toContain('title={t("feed.load_more_error")}')
+    expect(footer).toContain("onAction={loadMore}")
+    expect(source).toContain("isFetchNextPageError: feed.isFetchNextPageError")
+  })
+})
+
+describe("the post detail screen's states", () => {
+  it("reads a pending query as loading and only a real failure (or no id) as an error", () => {
+    expect(postDetailViewState({ hasId: true, hasData: false, isError: false })).toBe("loading")
+    expect(postDetailViewState({ hasId: true, hasData: false, isError: true })).toBe("error")
+    expect(postDetailViewState({ hasId: false, hasData: false, isError: false })).toBe("error")
+    expect(postDetailViewState({ hasId: true, hasData: true, isError: true })).toBe("ready")
+  })
+
+  it("offers a retry on the error", () => {
+    const source = readFileSync(new URL("../PostDetailBody.tsx", import.meta.url), "utf8")
+    expect(source).toContain("postDetailViewState(")
+    expect(source).toContain("onAction={id ? () => void query.refetch() : undefined}")
+    expect(source).not.toContain("query.isLoading || query.isError || !query.data")
   })
 })

@@ -36,6 +36,7 @@ import {
   buildFeedHeaderModel,
   buildFeedMotionModel,
   createFeedEntranceTracker,
+  feedFooterState,
   feedViewState,
   type FeedEntranceTracker,
 } from "./feedModel"
@@ -220,6 +221,12 @@ export function FeedBody() {
   const fetchNextPage = feed.fetchNextPage
   const hasNextPage = feed.hasNextPage
   const isFetchingNextPage = feed.isFetchingNextPage
+  const footerState = feedFooterState({
+    state,
+    isFetchingNextPage,
+    isFetchNextPageError: feed.isFetchNextPageError,
+    hasNextPage,
+  })
   const loadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) void fetchNextPage()
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
@@ -279,11 +286,16 @@ export function FeedBody() {
     () => (
       <View style={emptyStyle}>
         {state === "loading" ? (
-          <>
+          <View
+            accessible
+            accessibilityRole="progressbar"
+            accessibilityLabel={t("feed.loading")}
+            accessibilityState={{ busy: true }}
+          >
             <FeedSkeleton />
             <FeedSkeleton />
             <FeedSkeleton />
-          </>
+          </View>
         ) : null}
         {state === "error" && isAuthenticated ? (
           <FeedNotice
@@ -323,8 +335,17 @@ export function FeedBody() {
   const footer = useMemo(
     () => (
       <View style={footerStyle}>
-        {state === "loaded" && isFetchingNextPage ? <FeedSkeleton /> : null}
-        {state === "loaded" && !hasNextPage && !isFetchingNextPage ? (
+        {footerState === "loading-more" ? <FeedSkeleton /> : null}
+        {footerState === "load-more-failed" ? (
+          <FeedNotice
+            icon="CloudOff"
+            title={t("feed.load_more_error")}
+            body={t("feed.error_body")}
+            actionLabel={t("feed.retry")}
+            onAction={loadMore}
+          />
+        ) : null}
+        {footerState === "caught-up" ? (
           <View style={styles.caughtUp}>
             <Text style={styles.caughtUpText}>{t("feed.caught_up")}</Text>
           </View>
@@ -332,7 +353,7 @@ export function FeedBody() {
         {promoHeight > 0 ? null : <View style={styles.bottomPad} />}
       </View>
     ),
-    [state, isFetchingNextPage, hasNextPage, promoHeight, t, footerStyle, styles],
+    [footerState, loadMore, promoHeight, t, footerStyle, styles],
   )
 
   const contentStyle = useMemo(

@@ -98,3 +98,47 @@ export function feedViewState({
   if (isError) return "error"
   return "empty"
 }
+
+export type FeedFooterState = "loading-more" | "load-more-failed" | "caught-up" | "idle"
+
+/**
+ * A failed `fetchNextPage` leaves `hasNextPage` true and the list length unchanged, so FlatList never fires
+ * `onEndReached` again: without its own state the footer rendered nothing and the feed just stopped.
+ */
+export function feedFooterState({
+  state,
+  isFetchingNextPage,
+  isFetchNextPageError,
+  hasNextPage,
+}: {
+  state: FeedViewState
+  isFetchingNextPage: boolean
+  isFetchNextPageError: boolean
+  hasNextPage: boolean
+}): FeedFooterState {
+  if (state !== "loaded") return "idle"
+  if (isFetchingNextPage) return "loading-more"
+  if (isFetchNextPageError) return "load-more-failed"
+  if (!hasNextPage) return "caught-up"
+  return "idle"
+}
+
+export type PostDetailViewState = "loading" | "error" | "ready"
+
+/**
+ * Only an actual failure (or no id at all) is an error. A query that is still pending but not fetching,
+ * such as one paused while offline, is still loading and must not read as "This post couldn't be loaded".
+ */
+export function postDetailViewState({
+  hasId,
+  hasData,
+  isError,
+}: {
+  hasId: boolean
+  hasData: boolean
+  isError: boolean
+}): PostDetailViewState {
+  if (hasData) return "ready"
+  if (isError || !hasId) return "error"
+  return "loading"
+}
