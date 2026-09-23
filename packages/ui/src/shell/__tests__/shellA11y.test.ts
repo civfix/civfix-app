@@ -4,6 +4,8 @@ import {
   SHEET_SNAP_RANGE,
   sheetSnapForAccessibilityAction,
   sheetSnapForKey,
+  sheetSnapKeyOutcome,
+  sheetSnapValueKey,
   stepSheetSnap,
 } from "../tabBarLogic"
 
@@ -100,7 +102,7 @@ describe("compact sheet grab handle", () => {
     const native = read("CompactShell.native.tsx")
     const handle = native.slice(native.indexOf("function SheetGrabHandle("), native.indexOf("function makeBackground("))
     expect(handle).toContain('accessibilityRole="adjustable"')
-    expect(handle).toContain("accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap }}")
+    expect(handle).toContain("accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}")
     expect(handle).toContain("accessibilityActions={ADJUST_ACTIONS}")
     expect(handle).toContain("onAccessibilityAction={(e) => onAdjust(e.nativeEvent.actionName)}")
   })
@@ -120,5 +122,40 @@ describe("compact sheet grab handle", () => {
     expect(web).toMatch(
       /const settleTransition =\s*dragging \|\| !snapAnimated \|\| prefersReducedMotion\(\) \? "none" : SETTLE_TRANSITION/,
     )
+  })
+})
+
+describe("compact sheet grab handle at a bound and its spoken value", () => {
+  it("consumes a slider key at a bound without changing the snap, so ArrowDown at peek never re-collapses", () => {
+    expect(sheetSnapKeyOutcome(0, "ArrowDown")).toEqual({ consumed: true, next: null })
+    expect(sheetSnapKeyOutcome(0, "Home")).toEqual({ consumed: true, next: null })
+    expect(sheetSnapKeyOutcome(2, "ArrowUp")).toEqual({ consumed: true, next: null })
+    expect(sheetSnapKeyOutcome(1, "ArrowDown")).toEqual({ consumed: true, next: 0 })
+    expect(sheetSnapKeyOutcome(2, "Enter")).toEqual({ consumed: true, next: 0 })
+    expect(sheetSnapKeyOutcome(1, "Tab")).toEqual({ consumed: false, next: null })
+  })
+
+  it("names each snap instead of reading 0, 1 or 2", () => {
+    expect([0, 1, 2].map((snap) => sheetSnapValueKey(snap as 0 | 1 | 2))).toEqual([
+      "a11y.sheet_snap.collapsed",
+      "a11y.sheet_snap.half",
+      "a11y.sheet_snap.full",
+    ])
+  })
+
+  it("the web handle applies only a changed snap and speaks the snap name", () => {
+    const web = read("CompactShell.web.tsx")
+    const handler = web.slice(web.indexOf("const onHandleKeyDown"), web.indexOf("const settleTransition"))
+    expect(handler.length).toBeGreaterThan(0)
+    expect(handler).toContain("sheetSnapKeyOutcome(cur, event.key)")
+    expect(handler).toMatch(/if \(outcome\.next === null\) return\s+setSnap\(outcome\.next\)/)
+    expect(elementAround(web, "style={styles.handleArea}")).toContain('"aria-valuetext": tNav(sheetSnapValueKey(snap))')
+  })
+
+  it("the native handle speaks the snap name as its value text", () => {
+    const native = read("CompactShell.native.tsx")
+    const handle = native.slice(native.indexOf("function SheetGrabHandle("), native.indexOf("function makeBackground("))
+    expect(handle.length).toBeGreaterThan(0)
+    expect(handle).toContain("accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}")
   })
 })

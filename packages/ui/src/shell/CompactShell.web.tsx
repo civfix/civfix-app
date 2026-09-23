@@ -17,7 +17,13 @@ import { ScrollHostProvider, PLAIN_SCROLL_HOST } from "./ScrollHost"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
 import { cssTransition } from "./motionCss"
 import { shellBodyKey } from "./bodyLayout"
-import { SHEET_SNAP_RANGE, compactBottomChrome, sheetSnapForKey, sheetSnapPoints } from "./tabBarLogic"
+import {
+  SHEET_SNAP_RANGE,
+  compactBottomChrome,
+  sheetSnapKeyOutcome,
+  sheetSnapPoints,
+  sheetSnapValueKey,
+} from "./tabBarLogic"
 import { isCoarsePointer, prefersReducedMotion } from "./webMedia"
 import { BodyTransition } from "./BodyTransition.web"
 import { useStackDirection } from "./useStackDirection"
@@ -165,11 +171,12 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
 
   const onHandleKeyDown = (event: { key?: string; preventDefault?: () => void }) => {
     const cur = snapRef.current
-    const next = sheetSnapForKey(cur, event.key)
-    if (next === null) return
+    const outcome = sheetSnapKeyOutcome(cur, event.key)
+    if (!outcome.consumed) return
     event.preventDefault?.()
-    setSnap(next)
-    if (shouldCollapseOnSettle(next, cur)) collapseToParent()
+    if (outcome.next === null) return
+    setSnap(outcome.next)
+    if (shouldCollapseOnSettle(outcome.next, cur)) collapseToParent()
   }
 
   const settleTransition =
@@ -208,6 +215,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
             "aria-valuemin": SHEET_SNAP_RANGE.min,
             "aria-valuemax": SHEET_SNAP_RANGE.max,
             "aria-valuenow": snap,
+            "aria-valuetext": tNav(sheetSnapValueKey(snap)),
             "aria-orientation": "vertical",
             tabIndex: 0,
             onKeyDown: onHandleKeyDown,

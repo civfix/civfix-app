@@ -82,6 +82,7 @@ import {
   dockOcclusionFromSheet,
   sheetSnapForAccessibilityAction,
   sheetSnapPoints,
+  sheetSnapValueKey,
 } from "./tabBarLogic"
 import { sheetDockOcclusion } from "./sheetDockOcclusion.native"
 import type { CompactShellProps } from "./CompactShell.types"
@@ -238,13 +239,14 @@ function SheetGrabHandle({
   onAdjust: (actionName: string) => void
 }) {
   const styles = useStyles()
+  const { t } = useT("nav")
   const snap = useNavStore((s) => s.snap)
   return (
     <Pressable
       onPress={onCycle}
       accessibilityRole="adjustable"
       accessibilityLabel={label}
-      accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap }}
+      accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}
       accessibilityActions={ADJUST_ACTIONS}
       onAccessibilityAction={(e) => onAdjust(e.nativeEvent.actionName)}
       style={styles.handleArea}

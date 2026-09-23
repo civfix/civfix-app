@@ -67,3 +67,31 @@ export function targetMarkerA11yLabel(target: FocusedEntity, t: MarkerLabelT): s
     ? eventMarkerLabel(target.eventKind, null, t)
     : reportMarkerLabel(target.category, null, t)
 }
+
+/** The only part of maplibre's MarkerEvent the map's press handlers read. */
+export interface MarkerPressEvent {
+  nativeEvent: { id: string }
+}
+
+const MARKER_A11Y_ACTIONS = [{ name: "activate" }] as const
+
+/**
+ * A native marker's pin is wrapped in an accessible view, which becomes the screen reader's focus target
+ * instead of maplibre's native marker; without an explicit activate action a VoiceOver or TalkBack
+ * double-tap on it never reaches the marker's onPress.
+ */
+export function markerButtonA11y(
+  label: string,
+  markerId: string,
+  onPress: (event: MarkerPressEvent) => void,
+) {
+  return {
+    accessible: true,
+    accessibilityRole: "button" as const,
+    accessibilityLabel: label,
+    accessibilityActions: MARKER_A11Y_ACTIONS,
+    onAccessibilityAction: (event: { nativeEvent: { actionName: string } }) => {
+      if (event.nativeEvent.actionName === "activate") onPress({ nativeEvent: { id: markerId } })
+    },
+  }
+}

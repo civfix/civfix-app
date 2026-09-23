@@ -161,3 +161,25 @@ describe("the line chart places its ticks through the shared rule", () => {
     }
   })
 })
+
+describe("the drawn bar chart and the progress ring are each one labelled image", () => {
+  const imageRoots = (file: string): string[] => {
+    const src = readFileSync(new URL(file, import.meta.url), "utf8")
+    return src.match(/<View\s[^>]*accessibilityLabel=\{accessibilityLabel\}[^>]*>/g) ?? []
+  }
+
+  it("marks the svg bar chart's root accessible, so its bars are not separate stops", () => {
+    const svgRoot = imageRoots("../BarChart.tsx").filter((root) => root.includes("styles.column"))
+    expect(svgRoot).toHaveLength(1)
+    expect(svgRoot[0]).toMatch(/\baccessible\b/)
+    expect(svgRoot[0]).toContain('accessibilityRole="image"')
+  })
+
+  it("marks the progress ring's root accessible", () => {
+    const roots = imageRoots("../ProgressRing.tsx")
+    expect(roots).toHaveLength(1)
+    expect(roots[0]).toMatch(/\baccessible\b/)
+    expect(roots[0]).toContain('accessibilityRole="image"')
+  })
+})
+

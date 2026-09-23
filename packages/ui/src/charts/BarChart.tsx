@@ -117,7 +117,7 @@ export function BarChart({
   )
 
   return (
-    <View accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={styles.column}>
+    <View accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={styles.column}>
       <Svg width={width} height={height}>
         {rects.map((rect, index) => {
           const bar = bars[index] as ChartBar

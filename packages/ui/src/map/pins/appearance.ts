@@ -55,9 +55,18 @@ export function clusterToneFor(reportCount: number, eventCount: number): Cluster
 
 /** Whichever of the scheme's ink or `onAccent` reads better on `fill`, for a glyph, count or check. */
 export function inkOnFill(fill: string, scheme: ColorSchemeName, onAccent: string): string {
+  const key = `${scheme}|${onAccent}|${fill}`
+  const known = inkByFill.get(key)
+  if (known !== undefined) return known
   const ink = colorSchemes[scheme].neutral.ink
-  return contrastRatio(ink, fill) >= contrastRatio(onAccent, fill) ? ink : onAccent
+  const chosen = contrastRatio(ink, fill) >= contrastRatio(onAccent, fill) ? ink : onAccent
+  inkByFill.set(key, chosen)
+  return chosen
 }
+
+// Every rendered pin asks both questions; the fills are the finite token set, so each answer is scored once.
+const inkByFill = new Map<string, string>()
+const outlineByScheme = new Map<ColorSchemeName, string | null>()
 
 function pinFillsOf(scheme: ColorSchemeName): string[] {
   const { brand, category } = colorSchemes[scheme]
@@ -74,6 +83,13 @@ function pinFillsOf(scheme: ColorSchemeName): string[] {
  * One outline for all pins in a scheme (not per fill) so the pin family keeps a single silhouette.
  */
 export function pinOutlineFor(scheme: ColorSchemeName): string | null {
+  if (outlineByScheme.has(scheme)) return outlineByScheme.get(scheme) ?? null
+  const outline = scoreOutline(scheme)
+  outlineByScheme.set(scheme, outline)
+  return outline
+}
+
+function scoreOutline(scheme: ColorSchemeName): string | null {
   const ground = basemapPaper(scheme)
   if (pinFillsOf(scheme).every((fill) => contrastRatio(fill, ground) >= PIN_NON_TEXT_CONTRAST)) return null
   const { ink, paper } = colorSchemes[scheme].neutral

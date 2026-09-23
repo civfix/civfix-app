@@ -265,6 +265,29 @@ export function sheetSnapForKey(current: Snap, key: string | undefined): Snap | 
   }
 }
 
+/**
+ * A slider key is consumed even at a bound (so it never scrolls the page), but only a changed snap is
+ * applied: re-applying peek would run the settle-at-peek collapse again and pop one more detail per press.
+ */
+export function sheetSnapKeyOutcome(
+  current: Snap,
+  key: string | undefined,
+): { consumed: boolean; next: Snap | null } {
+  const next = sheetSnapForKey(current, key)
+  if (next === null) return { consumed: false, next: null }
+  return { consumed: true, next: next === current ? null : next }
+}
+
+const SHEET_SNAP_VALUE_KEYS = [
+  "a11y.sheet_snap.collapsed",
+  "a11y.sheet_snap.half",
+  "a11y.sheet_snap.full",
+] as const satisfies readonly string[]
+
+export function sheetSnapValueKey(snap: Snap): (typeof SHEET_SNAP_VALUE_KEYS)[Snap] {
+  return SHEET_SNAP_VALUE_KEYS[snap]
+}
+
 export function searchRiseTransition({
   coarsePointer,
   reduceMotion,

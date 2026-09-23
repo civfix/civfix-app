@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { markerA11yLabel, targetMarkerA11yLabel, type MarkerLabelT } from "../markerFocus"
+import { markerA11yLabel, markerButtonA11y, targetMarkerA11yLabel, type MarkerLabelT } from "../markerFocus"
 import type { ClusterNode } from "../clusterer"
 
 const t: MarkerLabelT = (key, options) => (options ? `${key}${JSON.stringify(options)}` : key)
@@ -95,9 +95,32 @@ describe("web markers are keyboard reachable buttons with a real name", () => {
 
 describe("native markers are accessible buttons", () => {
   it("wraps every home-map marker's pin in a labelled accessible button view", () => {
-    const wrappers = mapNative.match(/<View accessible accessibilityRole="button" accessibilityLabel=\{label\}>/g) ?? []
+    const wrappers = mapNative.match(/<View \{\.\.\.markerButtonA11y\(label, [^)]+\)\}>/g) ?? []
     expect(wrappers).toHaveLength(6)
     expect(mapNative).toContain("const label = markerA11yLabel(node, t)")
     expect(mapNative).toContain("const label = targetMarkerA11yLabel(target, t)")
+  })
+})
+
+describe("a screen reader's activate presses the native marker", () => {
+  it("declares the activate action and routes it to the marker's own press with its id", () => {
+    const pressed: string[] = []
+    const props = markerButtonA11y("Water leak", "pin-r1", (event) => pressed.push(event.nativeEvent.id))
+    expect(props).toMatchObject({
+      accessible: true,
+      accessibilityRole: "button",
+      accessibilityLabel: "Water leak",
+      accessibilityActions: [{ name: "activate" }],
+    })
+    props.onAccessibilityAction({ nativeEvent: { actionName: "magicTap" } })
+    expect(pressed).toEqual([])
+    props.onAccessibilityAction({ nativeEvent: { actionName: "activate" } })
+    expect(pressed).toEqual(["pin-r1"])
+  })
+
+  it("gives each marker kind its own press, and the focus marker the pin or cleanup press by kind", () => {
+    expect(mapNative).toContain("markerButtonA11y(label, markerId, onPress)")
+    expect(mapNative).toContain("markerButtonA11y(label, `cleanup-${target.id}`, onPressCleanup)")
+    expect(mapNative).toContain("markerButtonA11y(label, `pin-${target.id}`, onPressPin)")
   })
 })
