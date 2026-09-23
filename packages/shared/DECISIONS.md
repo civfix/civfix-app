@@ -1946,7 +1946,9 @@ migration — every number here is aggregated from tables that already exist.
 `getReport` and `getProfile`. A signed-out read of a PUBLIC post returns the ordinary `PostDTO`
 with every viewer flag false (the server reads it as `NIL_VIEWER_ID`, exactly as the guest feed
 does). A hidden or deleted post is a 404 byte-identical to an unknown id for every viewer, signed
-in or not — never a 401/403 that would confirm it exists. The consumer is the web edge preview of
+in or not — never a 401/403 that would confirm it exists. The route also serves a PUBLIC REPLY to
+a guest; this is accepted: a signed-in user could always read replies by id, and the guest feeds
+still exclude replies. The consumer is the web edge preview of
 `/post/:id` (civfix-app `apps/community-web/functions/post`), which only ever makes guest reads.
 No schema changes; the typed client already attaches credentials for any `auth !== "public"`
 endpoint, so no call site changes on the wire. Delivery set: civfix-backend `services/api` serves

@@ -35,6 +35,16 @@ const ctx: PreviewContext = {
 
 const BRAND_IMAGE = "https://civfix.org/og.png"
 
+const SIZED_IMAGE = {
+  kind: "image",
+  status: "ready",
+  url: "https://cdn.x/a.jpg",
+  width: 1600,
+  height: 1200,
+}
+
+const SIZED_THUMBED = { ...SIZED_IMAGE, thumbUrl: "https://cdn.x/a_t.jpg" }
+
 describe("contract shapes", () => {
   it("accepts the published DTOs without a cast", () => {
     const report: ReportPreviewInput = {} as ReportDTO
@@ -60,6 +70,19 @@ describe("escaping and clamping", () => {
   it("clamps on a word boundary and appends an ellipsis", () => {
     expect(clamp("the quick brown fox jumps", 12)).toBe("the quick…")
     expect(clamp("short", 12)).toBe("short")
+  })
+
+  it("clamps on code points, so an emoji or a CJK supplementary character is never split", () => {
+    const emoji = String.fromCodePoint(0x1f600)
+    const clamped = clamp(`${"a".repeat(199)}${emoji}${emoji}`, 200)
+    expect(clamped).toBe(`${"a".repeat(199)}${emoji}…`)
+    expect(clamped).not.toMatch(/[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/)
+
+    const han = "漢字".repeat(150)
+    expect(clamp(han, 200)).toBe(`${han.slice(0, 200)}…`)
+    const rare = String.fromCodePoint(0x20000)
+    expect(clamp(rare.repeat(201), 200)).toBe(`${rare.repeat(200)}…`)
+    expect(clamp(rare.repeat(200), 200)).toBe(rare.repeat(200))
   })
 
   it("never emits an unescaped tag from user content", () => {
@@ -157,19 +180,15 @@ describe("previewForReport", () => {
     ).toBe("https://cdn.x/b.jpg")
 
     const thumbed = withMedia([
-      { kind: "image", status: "ready", url: "https://cdn.x/a.jpg", thumbUrl: "https://cdn.x/a_t.jpg", width: 1600, height: 1200 },
+      SIZED_THUMBED,
     ])
     expect(thumbed.image).toBe("https://cdn.x/a_t.jpg")
     expect(thumbed.imageIsBrand).toBe(false)
-    expect(thumbed.imageWidth).toBeNull()
-    expect(thumbed.imageHeight).toBeNull()
 
     const full = withMedia([
-      { kind: "image", status: "ready", url: "https://cdn.x/a.jpg", width: 1600, height: 1200 },
+      SIZED_IMAGE,
     ])
     expect(full.image).toBe("https://cdn.x/a.jpg")
-    expect(full.imageWidth).toBe(1600)
-    expect(full.imageHeight).toBe(1200)
 
     expect(
       withMedia([{ kind: "video", status: "ready", url: "https://cdn.x/v.mp4", thumbUrl: "https://cdn.x/v_t.jpg" }]).image,
@@ -253,16 +272,29 @@ describe("previewForEvent", () => {
     expect(previewForEvent({ ...base, coverUrl: "https://cdn.civfix.org/c/1.jpg?token=x" }, ctx)?.imageIsBrand).toBe(true)
   })
 
-  it("keeps an unlisted event shareable by link with a text card, no cover and noindex, and refuses a private one", () => {
+  it("keeps an unlisted event shareable by link with a title + schedule card, no cover, no host text and noindex, and refuses a private one", () => {
     const cover = "https://cdn.civfix.org/c/1.jpg"
     const unlisted = previewForEvent(
-      { ...base, visibility: "unlisted", coverUrl: cover, galleryUrls: [cover] },
+      {
+        ...base,
+        visibility: "unlisted",
+        coverUrl: cover,
+        galleryUrls: [cover],
+        description: "Meet by the blue gate behind the school.",
+        organizer: { name: "Ada Rivera", handle: "ada" },
+        organization: { name: "River Keepers LA" },
+      },
       ctx,
     )!
     expect(unlisted.title).toBe("Ballona Creek cleanup on civfix")
+    expect(unlisted.description).toContain("Sat, Sep 12, 10:00 AM PDT")
+    expect(unlisted.description).toBe("Sat, Sep 12, 10:00 AM PDT · A volunteer event on civfix")
     expect(unlisted.imageIsBrand).toBe(true)
     expect(unlisted.noindex).toBe(true)
-    expect(metaTagsHtml(unlisted)).not.toContain(cover)
+    const unlistedHtml = metaTagsHtml(unlisted)
+    for (const leaked of [cover, "blue gate", "Ada Rivera", "@ada", "River Keepers"]) {
+      expect(unlistedHtml).not.toContain(leaked)
+    }
     expect(previewForEvent({ ...base, visibility: "private", coverUrl: cover }, ctx)).toBeNull()
     const open = previewForEvent({ ...base, visibility: "public", coverUrl: cover }, ctx)
     expect(open?.image).toBe(cover)
@@ -397,26 +429,24 @@ describe("previewForPost", () => {
     expect(preview?.title).toBe("River Keepers LA (@river-keepers) on civfix")
   })
 
-  it("uses the first ready slide of the post's media and emits dimensions only for a full-size image", () => {
+  it("uses the first ready slide of the post's media and never carries its stored dimensions", () => {
     const thumbed = previewForPost(
       {
         ...base,
         media: [
-          { kind: "image", status: "ready", url: "https://cdn.x/a.jpg", thumbUrl: "https://cdn.x/a_t.jpg", width: 1600, height: 1200 },
+          SIZED_THUMBED,
         ],
       },
       ctx,
     )!
     expect(thumbed.image).toBe("https://cdn.x/a_t.jpg")
-    expect(thumbed.imageWidth).toBeNull()
 
     const full = previewForPost(
-      { ...base, media: [{ kind: "image", status: "ready", url: "https://cdn.x/a.jpg", width: 1600, height: 1200 }] },
+      { ...base, media: [SIZED_IMAGE] },
       ctx,
     )!
     expect(full.image).toBe("https://cdn.x/a.jpg")
-    expect(full.imageWidth).toBe(1600)
-    expect(full.imageHeight).toBe(1200)
+    expect(metaTagsHtml(full)).not.toContain("1600")
   })
 
   it("falls back to the attached report's thumbnail when the post carries no media", () => {
@@ -515,6 +545,34 @@ describe("previewForPost", () => {
     expect(html).not.toContain("4242")
     expect(html).not.toContain("secretfriend")
   })
+
+  it("never leaks an attached report's address or coordinates, or an attached event's location or organizer bio", () => {
+    const html = metaTagsHtml(
+      previewForPost(
+        {
+          ...base,
+          body: null,
+          report: {
+            title: "Overflowing bin on 5th",
+            addr: "1234 Elm Street, Apt 5",
+            lat: 34.0522,
+            lng: -118.2437,
+          },
+          event: {
+            title: "Ballona Creek cleanup",
+            lat: 33.9911,
+            lng: -118.4265,
+            organizer: { name: "Dana", handle: "dana", bio: "Call me at 555-0199" },
+          },
+        } as PostPreviewInput,
+        ctx,
+      )!,
+    )
+    expect(html).toContain("Overflowing bin on 5th")
+    for (const leaked of ["Elm Street", "34.05", "118.24", "33.99", "118.42", "555-0199"]) {
+      expect(html).not.toContain(leaked)
+    }
+  })
 })
 
 const personWithAvatar: PersonPreviewInput = {
@@ -584,23 +642,24 @@ describe("metaTagsHtml", () => {
 })
 
 describe("metaTagsHtml image dimensions", () => {
-  it("emits width and height for a full-size media image and nothing for a thumbnail", () => {
+  it("emits width and height only for the brand image, never for entity media, whose stored size may predate its rotation", () => {
     const post: PostPreviewInput = { body: "Hi", author: { name: "Ada", handle: "ada" } }
     const full = metaTagsHtml(
       previewForPost(
-        { ...post, media: [{ kind: "image", status: "ready", url: "https://cdn.x/a.jpg", width: 1600, height: 1200 }] },
+        { ...post, media: [SIZED_IMAGE] },
         ctx,
       )!,
     )
-    expect(full).toContain('<meta property="og:image:width" content="1600">')
-    expect(full).toContain('<meta property="og:image:height" content="1200">')
+    expect(full).toContain('<meta property="og:image" content="https://cdn.x/a.jpg">')
+    expect(full).not.toContain("og:image:width")
+    expect(full).not.toContain("og:image:height")
     expect(full).not.toContain("og:image:type")
 
     const thumb = metaTagsHtml(
       previewForPost(
         {
           ...post,
-          media: [{ kind: "image", status: "ready", url: "https://cdn.x/a.jpg", thumbUrl: "https://cdn.x/a_t.jpg", width: 1600, height: 1200 }],
+          media: [SIZED_THUMBED],
         },
         ctx,
       )!,

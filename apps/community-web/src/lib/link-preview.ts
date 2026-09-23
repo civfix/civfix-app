@@ -36,8 +36,6 @@ export interface LinkPreview {
   description: string
   image: string
   imageIsBrand: boolean
-  imageWidth: number | null
-  imageHeight: number | null
   card: "summary" | "summary_large_image"
   url: string
   origin: string
@@ -60,8 +58,6 @@ export function defaultPreview(context: PreviewContext): LinkPreview {
     description: DEFAULT_DESCRIPTION,
     image: brandImageUrl(context.origin),
     imageIsBrand: true,
-    imageWidth: null,
-    imageHeight: null,
     card: "summary_large_image",
     url: context.url,
     origin: context.origin,
@@ -88,11 +84,11 @@ export function oneLine(value: string): string {
 }
 
 export function clamp(value: string, max: number): string {
-  const text = oneLine(value)
-  if (text.length <= max) return text
-  const cut = text.slice(0, max)
+  const chars = Array.from(oneLine(value))
+  if (chars.length <= max) return chars.join("")
+  const cut = chars.slice(0, max)
   const lastSpace = cut.lastIndexOf(" ")
-  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`
+  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).join("").trimEnd()}…`
 }
 
 export function isPublicMediaUrl(url: string | null | undefined): url is string {
@@ -143,26 +139,15 @@ export interface MediaSlideInput {
   status?: string | null
   url?: string | null
   thumbUrl?: string | null
-  width?: number | null
-  height?: number | null
-}
-
-interface PickedImage {
-  url: string
-  width: number | null
-  height: number | null
 }
 
 export function firstCarouselImage(
   media: readonly MediaSlideInput[] | null | undefined,
-): PickedImage | null {
+): string | null {
   const slide = (media ?? []).find((item) => item.status === "ready")
   if (!slide) return null
-  if (isPublicMediaUrl(slide.thumbUrl)) return { url: slide.thumbUrl, width: null, height: null }
-  if (slide.kind !== "image" || !isPublicMediaUrl(slide.url)) return null
-  const { width, height } = slide
-  const sized = typeof width === "number" && width > 0 && typeof height === "number" && height > 0
-  return { url: slide.url, width: sized ? width : null, height: sized ? height : null }
+  if (isPublicMediaUrl(slide.thumbUrl)) return slide.thumbUrl
+  return slide.kind === "image" && isPublicMediaUrl(slide.url) ? slide.url : null
 }
 
 export interface ReportPreviewInput {
@@ -228,10 +213,8 @@ export function previewForReport(
   return {
     title: onSite(clamp(headline, TITLE_MAX)),
     description,
-    image: image?.url ?? brandImageUrl(context.origin),
+    image: image ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
-    imageWidth: image?.width ?? null,
-    imageHeight: image?.height ?? null,
     card: "summary_large_image",
     url: context.url,
     origin: context.origin,
@@ -269,18 +252,12 @@ export function previewForEvent(
 
   const when = formatEventWhen(input.scheduledAt, input.timezone)
   const cancelled = input.status === "cancelled" ? "Cancelled" : null
-  const host = input.organization?.name
-    ? oneLine(input.organization.name)
-    : personByline(input.organizer)
-  const description =
-    finishDescription([
-      cancelled,
-      when,
-      host,
-      input.description || `A volunteer event on ${SITE_NAME}`,
-    ]) || DEFAULT_DESCRIPTION
-
+  const tagline = `A volunteer event on ${SITE_NAME}`
   const isPublic = isPublicVisibility(input.visibility)
+  const description =
+    (isPublic
+      ? finishDescription([cancelled, when, eventHost(input), input.description || tagline])
+      : finishDescription([cancelled, when, tagline])) || DEFAULT_DESCRIPTION
   const cover = isPublic ? eventCover(input) : null
 
   return {
@@ -288,14 +265,16 @@ export function previewForEvent(
     description,
     image: cover ?? brandImageUrl(context.origin),
     imageIsBrand: cover === null,
-    imageWidth: null,
-    imageHeight: null,
     card: "summary_large_image",
     url: context.url,
     origin: context.origin,
     type: "article",
     noindex: !isPublic,
   }
+}
+
+function eventHost(input: EventPreviewInput): string | null {
+  return input.organization?.name ? oneLine(input.organization.name) : personByline(input.organizer)
 }
 
 function eventCover(input: EventPreviewInput): string | null {
@@ -319,8 +298,6 @@ export function previewForPerson(
     description,
     image: image ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
-    imageWidth: null,
-    imageHeight: null,
     card: image ? "summary" : "summary_large_image",
     url: context.url,
     origin: context.origin,
@@ -370,8 +347,6 @@ export function previewForSignupPage(
     description,
     image: cover ?? brandImageUrl(context.origin),
     imageIsBrand: cover === null,
-    imageWidth: null,
-    imageHeight: null,
     card: "summary_large_image",
     url: context.url,
     origin: context.origin,
@@ -424,8 +399,6 @@ export function previewForOrganization(
     description: description || DEFAULT_DESCRIPTION,
     image: image ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
-    imageWidth: null,
-    imageHeight: null,
     card: image ? "summary" : "summary_large_image",
     url: context.url,
     origin: context.origin,
@@ -455,9 +428,9 @@ function bylineOf(subject: PostSubjectInput): string | null {
   return personByline(subject.author)
 }
 
-function attachmentThumb(subject: PostSubjectInput): PickedImage | null {
+function attachmentThumb(subject: PostSubjectInput): string | null {
   const thumb = subject.report?.thumbUrl
-  return isPublicMediaUrl(thumb) ? { url: thumb, width: null, height: null } : null
+  return isPublicMediaUrl(thumb) ? thumb : null
 }
 
 export function previewForPost(
@@ -486,10 +459,8 @@ export function previewForPost(
   return {
     title: onSite(clamp(byline, TITLE_MAX)),
     description,
-    image: image?.url ?? brandImageUrl(context.origin),
+    image: image ?? brandImageUrl(context.origin),
     imageIsBrand: image === null,
-    imageWidth: image?.width ?? null,
-    imageHeight: image?.height ?? null,
     card: "summary_large_image",
     url: context.url,
     origin: context.origin,
@@ -586,11 +557,6 @@ function imageTags(preview: LinkPreview): readonly string[] {
       meta("property", "og:image:type", BRAND_IMAGE_TYPE),
       meta("property", "og:image:width", String(BRAND_IMAGE_WIDTH)),
       meta("property", "og:image:height", String(BRAND_IMAGE_HEIGHT)),
-    )
-  } else if (preview.imageWidth && preview.imageHeight) {
-    tags.push(
-      meta("property", "og:image:width", String(preview.imageWidth)),
-      meta("property", "og:image:height", String(preview.imageHeight)),
     )
   }
   tags.push(meta("property", "og:image:alt", preview.title))

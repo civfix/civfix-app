@@ -448,11 +448,14 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    post's card, a quote keeps the quoter's text and borrows the quoted post's image only when it
    has none. Event -> `<title> on civfix` and `Cancelled? · <schedule in the event's zone> · <host>
    · <description, else "A volunteer event on civfix">`, host = the organization, else
-   `Name (@handle)` of a live organizer. Person -> `Name (@handle) on civfix` and the bio. Org ->
+   `Name (@handle)` of a live organizer; an UNLISTED event keeps only its title and
+   `Cancelled? · <schedule> · A volunteer event on civfix` (see 6). Person -> `Name (@handle) on civfix` and the bio. Org ->
    `Name (@slug) on civfix` and `Verified … · N events · <description>`. Signup pages keep the
    host's own `seo` title/description. Images: a report or post uses the FIRST `ready` slide of
-   the carousel (`firstCarouselImage`) - its thumbnail, else the full image (with its
-   width/height as `og:image:width`/`height`) when it is an image with no thumbnail; a slide that
+   the carousel (`firstCarouselImage`) - its thumbnail, else the full image when it is an image
+   with no thumbnail (never with `og:image:width`/`height`: the media worker stores the
+   pre-rotation size, so a portrait phone photo's stored dimensions can be swapped; only the
+   brand `og.png` carries dimensions); a slide that
    has neither is the brand image, never slide two. A post with no media falls back to the
    attached report's thumbnail. An event uses its cover, else its first gallery image; a person
    their avatar; an org its logo. Every image must be an UNSIGNED https URL. `twitter:card` is
@@ -470,8 +473,10 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    comes from the DTO, falling back to the validated route id.
 6. **Privacy rules (load-bearing).** A preview carries the entity's OWN public text in X's
    format; it NEVER carries a street-address field, coordinates, an account email or a
-   viewer-specific field, never a non-public or deleted entity (unlisted events excepted: text
-   card, no cover, noindex), never a presigned URL. Text a resident typed into a PUBLIC field - a
+   viewer-specific field, never a non-public or deleted entity, never a presigned URL. Owner's
+   decision: unlisted events stay shareable by link with a title + schedule card, noindex, no
+   cover, no host text - no organizer or organization byline and no event description, exactly
+   what an unlisted link showed before the X format. Text a resident typed into a PUBLIC field - a
    post body, a report title/description, an event description, an org description, a profile
    bio - is theirs to publish and is carried as written (escaped, one line, clamped). What is
    dropped, per field: `addr` / `address` (report, event, signup event), `lat` / `lng`, `email`,
@@ -483,7 +488,7 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    preview. Presigned media URLs are refused so no signed token is baked into
    HTML that is cached at the edge. Posts (`/post/:id`) are previewed from `GET /v1/posts/:id`,
    which serves a PUBLIC post to a guest; a hidden or deleted post is a 404 there, so it unfurls as
-   the default card.
+   the default card. That route also serves a PUBLIC reply to a guest (accepted, `DECISIONS.md` §55).
 7. **Open decisions (follow-ups, not implemented).**
    - Whether `/people/<id>` previews should ship `robots: noindex` (a public profile card is
      shareable but arguably should not be search-indexed) - needs a privacy-policy call.
