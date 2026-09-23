@@ -12,8 +12,8 @@ import {
 import * as ImagePicker from "expo-image-picker"
 import * as Location from "expo-location"
 import { fontFamily, fontSize, makeThemedStyles, radius, themeFor, useTheme } from "@/theme"
-import { Text, PrimaryButton } from "@civfix/ui"
-import type { CameraViewfinderProps, CapturedMedia } from "@civfix/ui/capabilities"
+import { Text, PrimaryButton, useToast } from "@civfix/ui"
+import { useHaptics, type CameraViewfinderProps, type CapturedMedia } from "@civfix/ui/capabilities"
 import { useT } from "@civfix/ui/i18n"
 import {
   BACKGROUNDED_PARK_GRACE_MS,
@@ -37,6 +37,8 @@ import { locateCapture, type CaptureOrigin } from "@/lib/captureLocation"
 
 type CaptureMode = "photo" | "video"
 
+type CaptureFailure = "error.photo" | "error.recording" | "error.library"
+
 export type ReportViewfinderProps = Omit<CameraViewfinderProps, "onCancel"> & {
   resumeGrace?: boolean
 }
@@ -44,6 +46,11 @@ export type ReportViewfinderProps = Omit<CameraViewfinderProps, "onCancel"> & {
 const stage = themeFor("light")
 
 const RECORDING_RED = "#FF3B30"
+
+// A stop that races the recording's own end rejects harmlessly; a real failure reaches onRecordingError.
+function stopRecordingQuietly(camera: Camera | null): void {
+  camera?.stopRecording().catch(() => undefined)
+}
 
 async function readShutterLocation(): Promise<{ lat: number; lng: number } | null> {
   try {
@@ -78,6 +85,8 @@ export function ReportViewfinder({
   const { t } = useT("mobile-report-camera")
   const th = useTheme()
   const styles = useStyles()
+  const toast = useToast()
+  const haptics = useHaptics()
 
   const cameraPermission = useCameraPermission()
   const mic = useMicrophonePermission()
@@ -198,9 +207,7 @@ export function ReportViewfinder({
   )
 
   const stopIfRecording = useCallback(() => {
-    if (recordingRef.current) {
-      cameraRef.current?.stopRecording().catch(() => {})
-    }
+    if (recordingRef.current) stopRecordingQuietly(cameraRef.current)
   }, [])
 
   useLayoutEffect(() => {
@@ -219,6 +226,16 @@ export function ReportViewfinder({
       clearTick()
     }
   }, [clearHardStop, clearTick])
+
+  const reportCaptureFailure = useCallback(
+    (failure: CaptureFailure) => {
+      if (!mountedRef.current) return
+      setBusy(false)
+      haptics.error()
+      toast.show(t(failure), { variant: "error" })
+    },
+    [haptics, t, toast],
+  )
 
   const emitCapture = useCallback(
     (media: CapturedMedia, origin: CaptureOrigin) => {
@@ -251,9 +268,9 @@ export function ReportViewfinder({
         height: photo.height,
       }, "camera")
     } catch {
-      setBusy(false)
+      reportCaptureFailure("error.photo")
     }
-  }, [busy, emitCapture])
+  }, [busy, emitCapture, reportCaptureFailure])
 
   const beginRecording = useCallback(() => {
     if (!cameraRef.current) return
@@ -281,18 +298,16 @@ export function ReportViewfinder({
       onRecordingError: () => {
         if (!mountedRef.current) return
         setRecordingState(false)
-        setBusy(false)
+        reportCaptureFailure("error.recording")
       },
     })
 
     clearHardStop()
     hardStopRef.current = setTimeout(() => {
       hardStopRef.current = null
-      if (cameraRef.current && recordingRef.current) {
-        cameraRef.current.stopRecording().catch(() => {})
-      }
+      if (recordingRef.current) stopRecordingQuietly(cameraRef.current)
     }, MAX_VIDEO_SECONDS * 1000)
-  }, [clearHardStop, clearTick, emitCapture, setRecordingState])
+  }, [clearHardStop, clearTick, emitCapture, reportCaptureFailure, setRecordingState])
 
   useEffect(() => {
     if (!pendingRecordRef.current) return
@@ -332,7 +347,7 @@ export function ReportViewfinder({
   useEffect(() => {
     if (sessionRunning || !recordingRef.current) return
     clearHardStop()
-    cameraRef.current?.stopRecording().catch(() => {})
+    stopRecordingQuietly(cameraRef.current)
   }, [sessionRunning, clearHardStop])
 
   const onToggleRecord = useCallback(async () => {
@@ -345,7 +360,7 @@ export function ReportViewfinder({
         await cameraRef.current.stopRecording()
       } catch {
         setRecordingState(false)
-        setBusy(false)
+        reportCaptureFailure("error.recording")
       }
       return
     }
@@ -358,7 +373,7 @@ export function ReportViewfinder({
       return
     }
     beginRecording()
-  }, [audioEnabled, beginRecording, busy, clearHardStop, mic, setRecordingState])
+  }, [audioEnabled, beginRecording, busy, clearHardStop, mic, reportCaptureFailure, setRecordingState])
 
   const onPickFromLibrary = useCallback(async () => {
     if (busy) return
@@ -384,9 +399,9 @@ export function ReportViewfinder({
         ...(isVideo && asset.duration ? { durationSec: asset.duration / 1000 } : {}),
       }, "library")
     } catch {
-      setBusy(false)
+      reportCaptureFailure("error.library")
     }
-  }, [busy, emitCapture])
+  }, [busy, emitCapture, reportCaptureFailure])
 
   if (!cameraPermission.hasPermission || device == null) {
     const denied = !cameraPermission.hasPermission
@@ -507,6 +522,7 @@ export function ReportViewfinder({
             onPress={mode === "photo" ? onTakePhoto : onToggleRecord}
             disabled={busy && !recording}
             accessibilityRole="button"
+            accessibilityState={{ disabled: busy && !recording, busy }}
             accessibilityLabel={
               mode === "photo"
                 ? t("shutter.take_photo")
