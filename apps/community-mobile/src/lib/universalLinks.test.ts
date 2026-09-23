@@ -1,5 +1,8 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
+import { existsSync, readdirSync, statSync } from "node:fs"
+import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { resolveIncomingPath } from "./universalLinks.ts"
 
 const internal = (path: string) => ({ type: "internal", path }) as const
@@ -317,7 +320,13 @@ const LEGITIMATE_LINKS: readonly (readonly [string, string])[] = [
   ["/cleanups/c1/hours", "/cleanups/c1/hours"],
   ["/cleanups/c1/ticket", "/cleanups/c1/ticket"],
   ["/cleanups/c1/ticket/s2", "/cleanups/c1/ticket/s2"],
+  ["/cleanups/c1/analytics", "/cleanups/c1/analytics"],
+  ["/cleanups/c1/announcements", "/cleanups/c1/announcements"],
+  ["/cleanups/c1/announcements/a1", "/cleanups/c1/announcements/a1"],
+  ["/cleanups/c1/announce", "/cleanups/c1"],
   ["/cleanups/c1/nope", "/cleanups/c1"],
+  ["/orgs/acme/manage", "/orgs/acme/manage"],
+  ["/host/analytics", "/host/analytics"],
   ["/reports", "/reports"],
   ["/reports/r1", "/pin/r1"],
   ["/pin/r1", "/pin/r1"],
@@ -430,5 +439,48 @@ test("an outside link never opens the composer as a reply or quote", () => {
     "civfix://compose?targetPostId=p1",
   ]) {
     assert.deepEqual(resolveIncomingPath(link), internal("/compose"), link)
+  }
+})
+
+test("an event's announcements and analytics and an org's manage page open their own screens", () => {
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/cleanups/c1/announcements/a1"),
+    internal("/cleanups/c1/announcements/a1"),
+  )
+  assert.deepEqual(
+    resolveIncomingPath("https://civfix.org/cleanups/c1/announcements/"),
+    internal("/cleanups/c1/announcements"),
+  )
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/analytics"), internal("/cleanups/c1/analytics"))
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/orgs/acme/manage"), internal("/orgs/acme/manage"))
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/host/analytics"), internal("/host/analytics"))
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/orgs/acme/nope"), internal("/orgs/acme"))
+})
+
+test("the web-only announce composer falls back to the event, since mobile has no route for it", () => {
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/cleanups/c1/announce"), internal("/cleanups/c1"))
+})
+
+const APP_DIR = fileURLToPath(new URL("../../app/", import.meta.url))
+
+function routeFileExists(dir: string, segments: readonly string[]): boolean {
+  const entries = readdirSync(dir)
+  if (segments.length === 0) return entries.includes("index.tsx")
+  const [head, ...rest] = segments
+  const dynamic = entries.filter((entry) => /^\[[^\]]+\](\.tsx)?$/.test(entry)).map((entry) => entry.replace(/\.tsx$/, ""))
+  return [head!, ...dynamic].some((name) => {
+    if (rest.length === 0 && entries.includes(`${name}.tsx`)) return true
+    const child = join(dir, name)
+    return existsSync(child) && statSync(child).isDirectory() && routeFileExists(child, rest)
+  })
+}
+
+test("every in-app link lands on a route file that exists", () => {
+  for (const [link] of LEGITIMATE_LINKS) {
+    const resolved = resolveIncomingPath(link)
+    assert.equal(resolved.type, "internal", link)
+    if (resolved.type !== "internal") continue
+    const pathname = resolved.path.split("?")[0]!
+    assert.ok(routeFileExists(APP_DIR, pathname.split("/").filter(Boolean)), `${link} -> ${pathname}`)
   }
 })
