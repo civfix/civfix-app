@@ -18,7 +18,6 @@ import {
   togglePostComposerAttachmentPanel,
 } from "../postComposerModel"
 
-/** Stand-in for the `post-composer` namespace bound by useT (see LinkedEventCard.test for the pattern). */
 const EN: Record<string, string> = {
   "mode.post.title": "New post",
   "mode.post.placeholder": "Share an update with your neighborhood...",
@@ -49,7 +48,6 @@ const nonAttendingEvent = {
   organizer: { id: "organizer-1", name: "Maya Lopez" },
 } as CleanupDTO
 
-/** Signed-in full-screen "post" baseline for attach-plan cases; override per test. */
 function planArgs(overrides: Partial<Parameters<typeof buildPostComposerAttachPlan>[0]> = {}) {
   return {
     mode: "post" as const,
@@ -92,9 +90,8 @@ describe("PostComposer presentation model", () => {
     expect(resolveComposerEvent(nonAttendingEvent.id, selectedEvent, [])).toEqual(selectedEvent)
   })
 
-  // The `owner` field and the `compact: true` case are GONE with the compact composer itself. The
-  // docked reply bar is now bodies/thread/ReplyComposer, which owns its keyboard inset via
-  // `useReplyDockInset` instead of declaring a host that could not honor it on native.
+  // The docked reply bar (thread/ReplyComposer) owns its keyboard inset via `useReplyDockInset`, so this
+  // plan declares no host inset that native could not honor.
   it("leaves the keyboard plan free of iOS-only scroll insets on every platform", () => {
     expect(buildPostComposerKeyboardPlan({ platform: "ios" })).toEqual({
       scrollView: { keyboardDismissMode: "interactive" },
@@ -293,8 +290,8 @@ describe("activePostMentions", () => {
   const foo = { id: "person-3", handle: "foo", displayName: "Foo B." }
 
   it("drops a mention whose @handle the author deleted from the body", () => {
-    // Repro: autocomplete "@foo", delete the text, post something unrelated. `onMention` only ever ADDS,
-    // so without this re-filter the unrelated post would persist (and notify) a stale mention.
+    // `onMention` only ever adds, so without this re-filter a post whose "@foo" was deleted would persist
+    // (and notify) a stale mention.
     expect(activePostMentions("Fresh trash on 4th.", [foo])).toEqual([])
   })
 

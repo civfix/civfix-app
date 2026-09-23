@@ -35,7 +35,7 @@ const picked: PendingAttachment = {
 
 describe("post composer media merge", () => {
   it("keeps the persisted draft media when the composer remounts with an empty pick list", () => {
-    // The regression: an empty local hook used to overwrite the draft, orphaning finalized uploadIds.
+    // An empty local hook must not overwrite the draft and orphan its finalized uploadIds.
     expect(mergePostComposerMedia([carried], [])).toEqual([carried])
     expect(mergePostComposerThumbs([carried], [])).toEqual([
       { id: "carried:0:file:///staged.jpg", uri: carried.uri, kind: "image", posterUri: null, uploadId: "upload-1" },
@@ -67,8 +67,8 @@ describe("post composer media merge", () => {
   })
 
   it("gives the SAME asset picked twice two distinct carried keys", () => {
-    // The regression: keying on the uri alone produced duplicate React keys, and removing one thumb
-    // filtered on that uri — deleting both copies at once.
+    // Keying on the uri alone would give duplicate React keys, and removing one thumb by uri would delete
+    // both copies.
     const twin = { ...carried, uploadId: "upload-2" }
     const thumbs = mergePostComposerThumbs([carried, twin], [])
     expect(thumbs.map((thumb) => thumb.id)).toEqual([
@@ -94,8 +94,8 @@ describe("carried media snapshot", () => {
   })
 
   it("drops an upload that can never finish and reports how many went", () => {
-    // The regression: the pipeline that would have written this item's uploadId died with the mount that
-    // picked it, so carrying it forward spun its thumbnail forever and kept Post disabled for good.
+    // The pipeline that would write this item's uploadId died with the mount that picked it, so carrying
+    // it forward would spin its thumbnail forever and keep Post disabled.
     expect(snapshotCarriedMedia([carried, unfinished])).toEqual({ carried: [carried], dropped: 1 })
     expect(snapshotCarriedMedia([unfinished, { ...unfinished, status: "failed" }])).toEqual({
       carried: [],

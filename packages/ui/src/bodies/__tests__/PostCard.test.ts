@@ -198,10 +198,9 @@ describe("PostCard model", () => {
     })
   })
 
-  // The fix showcase is an ATTACHMENT on the row, never a replacement for it: a post's linked report
-  // resolves on the CITY's schedule, so a card that swapped out the author + body would make an ordinary
-  // post mutate days after publication. `showFixShowcase` is the only fix-driven render switch, and the
-  // author row / body / handle / tap-through are unconditional. See postCardModel's invariant note.
+  // The fix showcase is an attachment on the row, never a replacement: a linked report resolves on the
+  // city's schedule, so swapping out the author and body would make an ordinary post mutate days after
+  // publication. `showFixShowcase` is the only fix-driven render switch.
   it("keeps the fix treatment additive - the post itself is never replaced", () => {
     const model = buildPostCardModel(
       basePost({ report: resolvedReport, media: [media("before"), media("after")] }),
@@ -209,7 +208,6 @@ describe("PostCard model", () => {
     )
 
     expect(model.showFixShowcase).toBe(true)
-    // Everything the old fix-confirmed header deleted is still modelled.
     expect(model.handleLabel).toBe("@friendsofballona")
     expect(model.timeLabel).not.toBe("")
   })
@@ -293,10 +291,8 @@ describe("PostCard model", () => {
 })
 
 /**
- * The "Replying to @x" line. A reply no longer reaches the HOME feed, but it still surfaces on its author's
- * profile, in Saved and at its own permalink - where without a parent reference the row reads as a
- * non-sequitur exactly as it did in the feed. Every "say nothing" case has to stay silent rather than
- * degrade to something vague.
+ * A reply surfaces on its author's profile, in Saved and at its own permalink, where without a parent
+ * reference it reads as a non-sequitur. Every "say nothing" case stays silent rather than going vague.
  */
 describe("post body mentions need a left boundary", () => {
   const maria = [{ id: "person-2", handle: "maria", displayName: "Maria G." }]
@@ -489,9 +485,8 @@ describe("post identity resolves who the card presents as", () => {
 })
 
 /**
- * THE ROW'S WEB AFFORDANCES, asserted by SOURCE because this package has no RN renderer (the house pattern
- * - see PostActionBar.test.ts's header for why a grep is the right instrument for "which element carries
- * which prop"). Each block below is a defect that shipped once and cannot be expressed as a pure value.
+ * Asserted against the source because this package has no RN renderer, and "which element carries which
+ * prop" cannot be expressed as a pure value.
  */
 describe("PostCard's link-role controls answer the keyboard", () => {
   const SRC = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
@@ -510,11 +505,9 @@ describe("PostCard's link-role controls answer the keyboard", () => {
   }
 
   it("hands Enter AND Space back to every role=link control, not just the row", () => {
-    // react-native-web activates `role="link"` with NEITHER key (PressResponder.isValidKeyPress accepts
-    // Space only for a button-ish element; the keyup handler skips onPress for a link, assuming a browser
-    // click that only ever comes from a real <a href>). The first cut of this fix taught the ROW and
-    // stopped there, leaving the name link - which is the ANNOUNCED profile affordance, since the avatar
-    // deliberately leaves the tab order - and the timestamp permalink as keyboard-dead tab stops.
+    // react-native-web activates `role="link"` with neither key (PressResponder.isValidKeyPress accepts
+    // Space only for a button-ish element; the keyup handler skips onPress for a link, assuming a real
+    // <a href>). The name link is the announced profile affordance because the avatar leaves the tab order.
     expect(SRC).toContain("export function linkKeyProps")
     for (const marker of [
       "accessibilityLabel={identityA11yLabel(identity, t)}", // MetaRow name

@@ -1,17 +1,7 @@
 /**
- * PostCard's row rhythm (bodies/postCardRhythm.ts).
- *
- * These are not "does the object have keys" tests. Each one pins an ALIGNMENT CLAIM that PostCard.tsx used
- * to make in a prose comment while the numbers underneath it quietly disagreed - which is how the reported
- * "the spacing in the feed does not look good" shipped:
- *
- *   - the content column starts at AVATAR + GUTTER_GAP (a comment; nothing checked it);
- *   - the repost strip's label lines up with that column (true only by coincidence of a 13px icon and a
- *     6px gap, and it de-synced the moment the gutter moved);
- *   - an attachment is separated from the body by a timeline-sized gap, not by the text gap (the actual
- *     defect: RN `gap` is uniform, so a photo grid sat 3px under the body text);
- *   - the meta row's height is its TEXT's height and carries no height-cancelling negative margin (the
- *     invariant whose violation made every repost row sit ~18px above its avatar's centre).
+ * Each test pins an alignment claim the row makes, so prose and numbers cannot quietly disagree: the content
+ * column, the repost label on it, the attachment gap versus the text gap, and a meta row whose height is its
+ * text's with no height-cancelling negative margin.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
@@ -31,9 +21,8 @@ const OVERFLOW_BUTTON_SOURCE = readFileSync(
 )
 
 /**
- * The body of a `const NAME: ViewStyle = { ... }` / `NAME: { ... }` block, for the source-grep guards, with
- * `//` comments stripped - these blocks DESCRIBE the margins they must not contain, so a naive grep would
- * fail on the very comment that documents the invariant.
+ * `//` comments are stripped because these blocks may describe the margins they must not contain, and a
+ * naive grep would fail on the comment that documents the invariant.
  */
 function styleBlock(name: string, source: string = POST_CARD_SOURCE): string {
   const start = source.indexOf(name)
@@ -77,9 +66,9 @@ describe("PostCard row rhythm", () => {
     }
   })
 
-  // THE REPORTED DEFECT. RN `gap` is uniform across a column's children, so a single value cannot serve
-  // both the text blocks and the attachments. `attachmentExtraMargin` is the difference an attachment
-  // wrapper adds; if these two ever converge again, photos collide with the body text like they did.
+  // RN `gap` is uniform across a column's children, so a single value cannot serve both the text blocks and
+  // the attachments. `attachmentExtraMargin` is the difference an attachment wrapper adds; if the two
+  // converge, photos collide with the body text.
   it("separates an attachment from the body by three text gaps, not one", () => {
     expect(r.attachmentGap).toBe(r.textGap * 3)
     expect(r.attachmentGap).toBeGreaterThanOrEqual(12)
@@ -88,12 +77,9 @@ describe("PostCard row rhythm", () => {
   })
 
   /**
-   * ...and the gap is only that gap while a wrapper exists ONLY when its payload does. This one is invisible
-   * to every assertion about the rhythm object: PostMediaGrid returns null with no media, but the wrapper
-   * `View` still mounted, and a zero-height flex child still spends the column's `gap` on each side plus its
-   * own `marginTop` - so a media-less quote sat `attachmentGap` + `textGap` + `attachmentExtraMargin` = 24pt
-   * under the body text, exactly double, while ThreadFocalPost and ThreadReplyRow (which do guard on length)
-   * showed the same post at 12pt. Read from the source because it is a JSX condition, not a number.
+   * PostMediaGrid returns null with no media, but a mounted zero-height wrapper still spends the column's
+   * `gap` on each side plus its own `marginTop`, doubling the space under the body text. Read from the
+   * source because it is a JSX condition, not a number.
    */
   it("mounts the media attachment wrapper only when there IS media", () => {
     expect(POST_CARD_SOURCE).toMatch(/media\.length > 0 \? \(\s*<View style=\{styles\.attachment\}>\s*<PostMediaGrid/)
@@ -103,12 +89,11 @@ describe("PostCard row rhythm", () => {
   // this is the property that makes a height-cancelling margin unnecessary rather than merely absent.
   it("sizes the overflow button to the row, so it has no height for a margin to cancel", () => {
     expect(r.overflowBoxHeight).toBe(r.metaRowMinHeight)
-    // The 44pt floor is spent on the WIDTH - the axis react-native-web can actually deliver, since it drops
-    // hitSlop entirely - and the height stays the row's, which is what keeps it inside its parent's bounds.
+    // The 44pt floor is spent on the width, the axis react-native-web can deliver since it drops hitSlop;
+    // the height stays the row's, which keeps the button inside its parent's bounds.
     expect(r.overflowTarget).toBeGreaterThan(r.overflowBoxHeight)
-    // The disc may overhang, because it is drawn (absolute) rather than laid out. The GLYPH may not: it is
-    // the at-rest affordance and every pixel of it has to be inside the button, or a tap on it dispatches
-    // to the row Pressable on Android and opens the thread instead of the menu.
+    // The absolute disc may overhang; the glyph may not, or on Android a tap on it dispatches to the row
+    // Pressable and opens the thread instead of the menu.
     expect(r.overflowHaloTop).toBeLessThan(0)
     expect(r.overflowGlyph).toBeLessThanOrEqual(r.overflowBoxHeight)
     expect(r.overflowHaloLeft).toBe((r.overflowTarget - r.overflowHalo) / 2)
@@ -116,20 +101,16 @@ describe("PostCard row rhythm", () => {
   })
 
   /**
-   * THE REGRESSION TEST FOR THE REPOST BUG, and the only shape of it that can actually fail.
-   *
-   * The bug was `metaRow: { marginTop: -8, marginBottom: -6 }` in PostCard.tsx's StyleSheet. `PostCardRhythm`
-   * does not model those margins and never will - they are the ABSENCE of a declaration - so no assertion
-   * about this object can see them come back. Re-add them and every numeric test in this file still passes
-   * while every repost row is ~18px misaligned again. So this one reads the source, the way
-   * shell/__tests__/backAffordance.test.ts and tabBar.test.ts already do for claims that live in markup.
+   * A negative margin on the shared meta-row style is the absence-of-a-declaration that no rhythm number can
+   * see, and `EmbeddedPostMeta` shares the style without the button, so it would misalign every repost row.
+   * Only the source can show it.
    */
   it("lets no negative margin back into the shared meta-row style", () => {
     const block = styleBlock("const META_ROW: ViewStyle =")
     expect(block).toContain("minHeight: POST_CARD_RHYTHM.metaRowMinHeight")
     expect(block).not.toMatch(/margin[A-Za-z]*:\s*-/)
-    // ...and the same for the button, whose own height must stay the row's rather than being cancelled back
-    // to it. `position: absolute` here is the Android wrong-action bug (see postCardRhythm's header).
+    // The button's own height must stay the row's rather than being cancelled back to it, and an absolute
+    // button would extend past its parent, where Android dispatches the tap to the row.
     const button = styleBlock("moreButton: {", OVERFLOW_BUTTON_SOURCE)
     expect(button).toContain("height: RHYTHM.overflowBoxHeight")
     expect(button).not.toContain("position: \"absolute\"")
@@ -137,11 +118,9 @@ describe("PostCard row rhythm", () => {
   })
 
   /**
-   * ...and the ONE negative margin the rule above does allow: `WEB_MORE_TARGET` grows the overflow button
-   * to the full `overflowTarget` SQUARE on web (where hit-testing has no ancestor-bounds rule, so the
-   * Android reason for the 22pt cap does not apply) and hands the growth straight back as margin. That is
-   * legal precisely because it cancels its OWN box's growth rather than a height a shared style forced on
-   * somebody else - but only while the two halves agree, so pin the identity rather than the literals.
+   * The one negative margin allowed: on web, where hit-testing has no ancestor-bounds rule, `WEB_MORE_TARGET`
+   * grows the button to the full `overflowTarget` square and hands the growth back as margin. It cancels its
+   * own box's growth only while the two halves agree, so the identity is pinned rather than the literals.
    */
   it("gives back exactly what the web target grows, so the row's rhythm is unchanged", () => {
     const grown = styleBlock("const WEB_MORE_TARGET: ViewStyle =", OVERFLOW_BUTTON_SOURCE)
@@ -167,8 +146,8 @@ describe("PostCard row rhythm", () => {
     expect(r.overflowTarget).toBeGreaterThanOrEqual(44)
   })
 
-  // The row has TWO circular affordances (the "..." and each action glyph). They must be the same disc, or
-  // the one on the "..." reads as an oversized blob - which it did, because it tinted its whole 44pt box.
+  // The row's two circular affordances (the "..." and each action glyph) must be the same disc, or the one
+  // on the "..." reads as an oversized blob.
   it("gives the overflow button the same halo the action glyphs get, inside a bigger target", () => {
     expect(r.overflowHalo).toBe(postActionLayout("timeline").haloSize)
     expect(r.overflowHalo).toBeLessThan(r.overflowTarget)
@@ -182,9 +161,8 @@ describe("PostCard row rhythm", () => {
     expect(r.repostIndent).toBeGreaterThan(0)
   })
 
-  // Why `rowPaddingBottom` is 0 rather than sloppy: the action bar's own 44pt box already contributes
-  // ~12pt of empty space under its glyph row, which matches the row's TOP padding. A real bottom padding
-  // on top of it double-counts, which is what made the action row's rhythm read lopsided.
+  // The action bar's own 44pt box already contributes ~12pt of empty space under its glyph row, matching the
+  // row's top padding; a real bottom padding on top of it double-counts and reads lopsided.
   it("lets the action bar's intrinsic slack BE the row's bottom padding", () => {
     expect(r.actionRowSlack).toBe((r.actionRowTarget - r.actionGlyph) / 2)
     expect(r.rowPaddingBottom).toBe(0)
@@ -199,11 +177,9 @@ describe("PostCard row rhythm", () => {
     expect(r.actionGlyphInset).toBe(postActionGlyphInset(timeline))
   })
 
-  // The loading state has to reproduce the LOADED row's vertical rhythm, or the feed jumps under the reader
-  // as the placeholders are replaced - which is what `skeletonCard` matching the flat row's avatar and
-  // gutter was for. It was only half delivered: the wrapper still carried `gap: 12` while the real rows have
-  // none (the flat feed's ItemSeparatorComponent is null and each row draws its own hairline), so three
-  // skeletons sat 36pt apart and the rows that replaced them 25pt apart.
+  // The loading state has to reproduce the loaded row's vertical rhythm, or the feed jumps under the reader
+  // as the placeholders are replaced. Flat rows have no list gap (each draws its own hairline), so the
+  // skeleton list must not add one either.
   it("gives the loading skeleton the same row-to-row rhythm as a loaded row", () => {
     const feed = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
     expect(feed).toContain("list: { gap: POST_SURFACE === \"flat\" ? 0 : 12 }")
@@ -216,16 +192,10 @@ describe("PostCard row rhythm", () => {
 })
 
 /**
- * DOES THE ACTION ROW FIT? - the question the first cut answered in prose and got wrong.
+ * Whether the row fits is not self-evident from a StyleSheet (an in-flow halo or a count `<Text>` without
+ * `flexShrink` makes the numbers print over the neighbouring disc), so it is checked as arithmetic.
  *
- * Making the 34pt halo the in-flow content of each button grew every counted button by ~14pt. Four counted
- * buttons plus a 40 -> 44 target is ~+46pt on a column that had ~37pt of slack, so a popular post's row
- * needed ~334pt inside ~317pt on a 375pt screen - and because a count `<Text>` has no `flexShrink` by
- * default, the boxes shrank to their 44pt floor and the numbers printed over the neighbouring disc. The
- * halo is absolute now and the count is shrinkable, but neither of those is self-evident from reading a
- * StyleSheet, so the fit is arithmetic here instead.
- *
- * The widths below are TEXT MEASUREMENTS, not tokens: Hanken Grotesk Medium at 13px has a digit advance of
+ * The widths below are text measurements, not tokens: Hanken Grotesk Medium at 13px has a digit advance of
  * ~0.55em (7.2px), a full stop ~0.28em (3.7px) and a K/M/B ~0.62em (8.1px). Deliberately generous.
  */
 describe("the timeline action row fits the narrowest supported screen", () => {
@@ -249,7 +219,7 @@ describe("the timeline action row fits the narrowest supported screen", () => {
   })
 
   it("fits a popular post with room to spare", () => {
-    // 1243 likes, 214 replies, 88 reposts, 41 saves - the exact profile that overflowed by 17pt.
+    // 1243 likes, 214 replies, 88 reposts, 41 saves: a popular post's realistic counts.
     const natural = postActionRowWidth(timeline, {
       comment: label("214"),
       repost: label("88"),
@@ -257,7 +227,7 @@ describe("the timeline action row fits the narrowest supported screen", () => {
       save: label("41"),
     })
     expect(natural).toBeLessThanOrEqual(available)
-    // Not "it just fits": a row with no slack has none for a larger system font either. 20pt today.
+    // A row with no slack has none for a larger system font either.
     expect(available - natural).toBeGreaterThanOrEqual(12)
   })
 
@@ -269,9 +239,8 @@ describe("the timeline action row fits the narrowest supported screen", () => {
   })
 
   it("degrades by truncating a count rather than colliding, once nothing could fit", () => {
-    // Four simultaneous four-character counts. This has NEVER fitted - the 40pt-target row it replaced
-    // needed 325 of 303 - so the guarantee is not that it fits but that the boxes can still reach their
-    // 44pt floor, which is what leaves the overflow inside a shrinkable `<Text>` instead of on the row.
+    // Four simultaneous four-character counts cannot fit, so the guarantee is that the boxes can still reach
+    // their 44pt floor, which leaves the overflow inside a shrinkable `<Text>` instead of on the row.
     const worst = postActionRowWidth(timeline, {
       comment: label("9.9K"), repost: label("9.9K"), like: label("9.9K"), save: label("9.9K"),
     })

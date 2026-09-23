@@ -1,31 +1,18 @@
 /**
- * Reconciling the composer's TWO media sources.
- *
- * `useComposerAttachments` owns the pick -> presign -> PUT -> finalize pipeline in COMPONENT-LOCAL state,
- * so it starts empty on every mount. The zustand draft (postComposerStore) is the surviving one — its whole
- * point is that a partially written post outlives the composer unmounting for an event/report/profile step.
- *
- * Mirroring the local hook straight into the store therefore ERASED the persisted media on every remount
- * (an empty local list overwrote a populated draft, orphaning already-finalized uploadIds). The composer
- * instead snapshots the draft's media once at mount ("carried") and appends the freshly picked items, so a
- * round-trip through another screen keeps the staged media visible, removable, and submittable.
- *
- * IDENTITY: the hook keys a pick by a process-unique `id` (the same asset can be picked twice, so the uri
- * cannot be the identity). A carried item outlived the process state that minted its id, so it is re-keyed
- * by its POSITION in the carried snapshot, `carried:<index>:<uri>` — unambiguous against the hook's `att-N`
- * ids, unique even when one asset was picked twice (the uri alone was NOT: two copies collided into one
- * React key, and removing either thumb deleted both), and enough to route a remove to the right source.
- * Carried and picked items can never collide: `carried` is snapshotted at mount and only shrinks.
+ * Reconciles the composer's two media sources. `useComposerAttachments` keeps picks in component state
+ * that starts empty on every mount, while the zustand draft survives the composer unmounting, so the
+ * composer snapshots the draft's media at mount ("carried") and appends fresh picks instead of mirroring
+ * the hook into the store, which would erase finalized uploads. A carried item is keyed by its position,
+ * `carried:<index>:<uri>`, because its process-unique id is gone and the uri alone collides when one asset
+ * is picked twice; `carried` only shrinks after mount, so it cannot collide with the hook's `att-N` ids.
  */
 import type { PendingAttachment } from "../primitives/useComposerAttachments"
 import type { PostComposerMedia } from "./postComposerStore"
 
-/** How many media items one post can carry (the composer's `useComposerAttachments(...)` cap). */
 export const POST_COMPOSER_MEDIA_CAP = 4
 
 const CARRIED_ID_PREFIX = "carried:"
 
-/** The store shape for one freshly picked attachment; "ready" only once its upload has finalized. */
 export function toPostComposerMedia(item: PendingAttachment): PostComposerMedia {
   return {
     uri: item.uri,
@@ -36,7 +23,6 @@ export function toPostComposerMedia(item: PendingAttachment): PostComposerMedia 
   }
 }
 
-/** Thumb-strip shape for an item carried over from the persisted draft (see IDENTITY above). */
 export function toPendingAttachment(media: PostComposerMedia, index: number): PendingAttachment {
   return {
     id: `${CARRIED_ID_PREFIX}${index}:${media.uri}`,
@@ -47,16 +33,11 @@ export function toPendingAttachment(media: PostComposerMedia, index: number): Pe
   }
 }
 
-/** Whether a thumb id addresses the carried draft media rather than this mount's live pick list. */
 export function isCarriedMediaId(id: string): boolean {
   return id.startsWith(CARRIED_ID_PREFIX)
 }
 
-/**
- * The carried item's INDEX behind a `carried:<index>:<uri>` thumb id, or null when the id is not a
- * carried one. Removal goes by index, never by uri: two picks of the same asset share a uri, so filtering
- * on it dropped BOTH thumbs when the user removed one.
- */
+/** Removal goes by index, never by uri: two picks of the same asset share a uri. */
 export function carriedMediaIndex(id: string): number | null {
   if (!isCarriedMediaId(id)) return null
   const rest = id.slice(CARRIED_ID_PREFIX.length)
@@ -66,32 +47,21 @@ export function carriedMediaIndex(id: string): number | null {
   return Number.isInteger(index) && index >= 0 ? index : null
 }
 
-/** What the composer's mount-time snapshot of the persisted draft media yields. */
 export interface CarriedMediaSnapshot {
-  /** The items this mount can show, submit, and remove. */
   carried: PostComposerMedia[]
-  /** How many unfinishable items were dropped (drives the "add them again" notice). */
   dropped: number
 }
 
 /**
- * Snapshot the surviving draft's media for this mount, DROPPING anything whose upload never finalized.
- *
- * An item is only submittable once its `uploadId` lands. That id is written by the upload pipeline living
- * in the mount that picked it: if the composer unmounts mid-upload (an event/report/profile step), the
- * pipeline's `setAttachments` no-ops into the dead mount and the persisted entry stays
- * `{ status: "uploading", uploadId: null }` FOREVER. Nothing can resume it either — the prepared bytes and
- * mime live in that closure, not in the (deliberately JSON-only) draft. Carrying such an item forward gave
- * the user a thumbnail spinning forever, `selectPostComposerHasPendingMedia` stuck true, and a permanently
- * disabled Post button whose only escape was guessing to delete the thumb. So it is dropped here and the
- * composer says so (post-composer:media_dropped), leaving the + button as the retry.
+ * Drops items whose upload never finalized: the pipeline that would set their `uploadId` died with the
+ * mount that picked them, and the bytes are not in the JSON-only draft, so they could never finish and would
+ * hold the Post button disabled. The composer tells the user so they can add them again.
  */
 export function snapshotCarriedMedia(media: readonly PostComposerMedia[]): CarriedMediaSnapshot {
   const carried = media.filter((item) => item.uploadId != null && item.status === "ready")
   return { carried, dropped: media.length - carried.length }
 }
 
-/** Carried (persisted-draft) items first, then this mount's picks, capped. */
 export function mergePostComposerMedia(
   carried: readonly PostComposerMedia[],
   picked: readonly PendingAttachment[],
@@ -100,7 +70,6 @@ export function mergePostComposerMedia(
   return [...carried, ...picked.map(toPostComposerMedia)].slice(0, cap)
 }
 
-/** The same merge, in the thumb-strip's shape (carried items re-keyed, live picks kept verbatim). */
 export function mergePostComposerThumbs(
   carried: readonly PostComposerMedia[],
   picked: readonly PendingAttachment[],
@@ -110,9 +79,8 @@ export function mergePostComposerThumbs(
 }
 
 /**
- * Whether the add-media control may open the picker. The hook only counts its OWN picks against the cap,
- * so with carried draft media it would accept picks the merge above then slices off, uploading media that
- * no post ever claims.
+ * The hook only counts its own picks against the cap, so with carried media it would accept picks the
+ * merge then slices off, uploading media no post ever claims.
  */
 export function postComposerCanAttach(input: {
   hookCanAttach: boolean

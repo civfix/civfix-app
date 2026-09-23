@@ -139,7 +139,7 @@ describe("PostActionBar model", () => {
 
     expect(model.map((action) => action.key)).toEqual(["like", "repost", "comment", "share"])
     expect(model.find((action) => action.key === "save")).toBeUndefined()
-    // An empty/absent omit list is the historical five-action array, byte for byte.
+    // An empty or absent omit list yields the full five-action array.
     expect(buildPostActionModel({ postId: "post-1", counts, viewer }, {}, { omit: [] }))
       .toEqual(buildPostActionModel({ postId: "post-1", counts, viewer }))
   })
@@ -165,8 +165,8 @@ describe("PostActionBar model", () => {
     expect(reply.keys).toEqual(["like", "repost", "comment", "share"])
     expect(reply).toMatchObject({
       justify: "flex-start",
-      // 8, not the old 24: 24 was tuned for BARE 32pt boxes. Each box now paints a 28pt press halo, so 24
-      // left the discs adrift and four counted buttons overflowed an indented reply on a narrow phone.
+      // Each 32pt box paints a 28pt halo, so a wider gap leaves the discs adrift and four counted buttons
+      // overflow an indented reply on a narrow phone.
       gap: 8,
       minHeight: 32,
       glyphSize: 17,
@@ -178,19 +178,14 @@ describe("PostActionBar model", () => {
 })
 
 /**
- * The HALO's geometry contract.
- *
- * The reported defect was "the highlight around the comment/repost/like/save does not look good": a liked /
- * reposted / saved action painted a PERMANENT pale fill on the whole Pressable, and because the count Text
- * lives inside that Pressable the painted shape was a ~52-60 x 40 stadium that swallowed the number. The
- * replacement is a transient circular disc behind the glyph alone. These assertions are what keep it a disc
- * INSIDE its tap box, and keep the row's negative margin in sync with it.
+ * The halo is a transient disc behind the glyph alone; filling the whole Pressable would swallow the count
+ * that lives inside it. These keep the disc inside its tap box and the row's negative margin in sync.
  */
 describe("PostActionBar halo geometry", () => {
   const variants: readonly PostActionVariant[] = ["timeline", "card", "focal", "reply"]
 
-  // THE core invariant. At or above `target.minWidth` the halo bleeds past its own tap box and adjacent
-  // halos touch, which is exactly how the old fill read as one continuous block.
+  // At or above `target.minWidth` the halo bleeds past its own tap box and adjacent halos read as one
+  // continuous block.
   it("keeps every halo strictly smaller than its own tap target", () => {
     for (const variant of variants) {
       const layout = postActionLayout(variant)
@@ -212,8 +207,7 @@ describe("PostActionBar halo geometry", () => {
   })
 
   // `PostActionBar.styles.rowTimeline` cancels this exact number with a negative margin so the leading
-  // glyph is flush with the body text above it. Deriving it is the guard: the row used to hard-code -6 to
-  // cancel a 6pt padding, so the 40 -> 44 target change would have silently shifted the whole action row.
+  // glyph is flush with the body text above it; a hard-coded margin would drift when the target changes.
   it("derives the glyph inset from (target, halo, glyph) so the row margin cannot desync", () => {
     for (const variant of variants) {
       const layout = postActionLayout(variant)
@@ -232,8 +226,8 @@ describe("PostActionBar halo geometry", () => {
       expect(target.minWidth).toBeGreaterThanOrEqual(44)
       expect(target.minHeight).toBeGreaterThanOrEqual(44)
     }
-    // `reply` is a compact SECONDARY surface and native reaches 48 through the bar's hitSlop: 8. A knowing
-    // exception, pinned here so it is a decision someone owns rather than a finding in a later audit.
+    // `reply` is a compact secondary surface and native reaches 48 through the bar's hitSlop: 8. Pinned so
+    // the exception stays a deliberate decision.
     expect(postActionLayout("reply").target).toEqual({ minWidth: 32, minHeight: 32 })
   })
 
@@ -261,22 +255,17 @@ describe("PostActionBar halo geometry", () => {
 })
 
 /**
- * THE BOX GEOMETRY, which is where the halo redesign leaked into the row's WIDTH.
- *
- * The disc is decoration and is positioned absolutely, so a button's natural width is the GLYPH's - not the
- * halo's. The first cut made the 34pt disc the in-flow content, and four counted buttons then needed ~46pt
- * more than the narrowest screen's content column had. These pin the two facts that keep the row honest:
- * the box's single derived padding, and the width that padding implies.
+ * The disc is absolute decoration, so a button's natural width is the glyph's; an in-flow disc makes four
+ * counted buttons overflow the narrowest screen's content column. These pin the box's single derived
+ * padding and the width it implies.
  */
 describe("PostActionBar box geometry", () => {
   const variants: readonly PostActionVariant[] = ["timeline", "card", "focal", "reply"]
 
   /**
-   * THE IDENTITY THAT LETS ONE NUMBER CANCEL BOTH ROW EDGES. haloInset + haloOverhang collapses to
-   * (target - glyph) / 2, so a box with that much paddingLEFT, NO paddingRight and `minWidth: target` puts
-   * the glyph dead-centre - which is why `rowTimeline`, `ThreadFocalPost.actionBar` and
-   * `ThreadReplyRow.actionsWrap` can each cancel with a single `-postActionGlyphInset(layout)`. Add a real
-   * paddingRight and the trailing glyph stops being the mirror of the leading one.
+   * This identity is what lets one number cancel both row edges: a box with that much paddingLeft, no
+   * paddingRight and `minWidth: target` centres the glyph, so `rowTimeline`, `ThreadFocalPost.actionBar` and
+   * `ThreadReplyRow.actionsWrap` each cancel with a single `-postActionGlyphInset(layout)`.
    */
   it("collapses the glyph inset to (target - glyph) / 2, independent of the halo", () => {
     for (const variant of variants) {
@@ -297,22 +286,19 @@ describe("PostActionBar box geometry", () => {
     for (const variant of variants) {
       const layout = postActionLayout(variant)
       expect(postActionCountGap(layout)).toBe(postActionHaloOverhang(layout))
-      // The glyph's right edge to the disc's right edge, measured from the box's left edge.
       const glyphRight = postActionGlyphInset(layout) + layout.glyphSize
       const haloRight = postActionHaloInset(layout) + layout.haloSize
       expect(glyphRight + postActionCountGap(layout)).toBe(haloRight)
     }
   })
 
-  // The regression this replaces, priced. This is the assertion that fails if `layout.haloSize` ever leaks
-  // back into the box's flex basis.
+  // Fails if `layout.haloSize` ever leaks into the box's flex basis.
   it("prices a counted button off the GLYPH, never off the disc", () => {
     const timeline = postActionLayout("timeline")
     const count = 26.2 // "1.2K" in Hanken Grotesk Medium 13px
     expect(postActionButtonWidth(timeline, count)).toBe(13 + 18 + 8 + count)
-    // The shipped-once alternative: `paddingHorizontal: haloInset` around an IN-FLOW 34pt disc, then the
-    // row's `gap` again before the count. 48 + count instead of 39 + count, i.e. 9pt per counted button -
-    // times the four counted buttons, the 36pt that turned a 17pt overflow at 375pt into 20pt of slack.
+    // `paddingHorizontal: haloInset` around an in-flow 34pt disc, then the row's `gap` before the count,
+    // costs 9pt per counted button: 36pt across four, enough to overflow a 375pt screen.
     const inFlow = 2 * postActionHaloInset(timeline) + timeline.haloSize + timeline.gap + count
     expect(inFlow - postActionButtonWidth(timeline, count)).toBe(9)
   })
@@ -336,13 +322,9 @@ describe("PostActionBar box geometry", () => {
 })
 
 /**
- * WHAT THE MARKUP HAS TO DO, since the model above cannot see it.
- *
- * `postActionButtonWidth` describes a box with one derived paddingLeft and an ABSOLUTE halo. If PostActionBar
- * goes back to `paddingHorizontal: haloInset` around an in-flow disc, every arithmetic assertion in this file
- * and in postCardRhythm.test.ts keeps passing while the row overflows again at 375pt. Same for the web
- * transform conflict: it is a property of which element carries which style, and no pure value can express
- * it. Source greps, in the house style (shell/__tests__/backAffordance.test.ts, tabBar.test.ts).
+ * The model above cannot see the markup: if PostActionBar put `paddingHorizontal: haloInset` around an
+ * in-flow disc, every arithmetic assertion here and in postCardRhythm.test.ts would still pass while the row
+ * overflows at 375pt. Which element carries which style is only checkable against the source.
  */
 describe("PostActionBar markup honours the geometry it is modelled on", () => {
   const src = (path: string): string => readFileSync(new URL(path, import.meta.url), "utf8")
@@ -362,7 +344,7 @@ describe("PostActionBar markup honours the geometry it is modelled on", () => {
     expect(box).toContain("paddingLeft: postActionGlyphInset(layout)")
     expect(box).toContain("gap: postActionCountGap(layout)")
     expect(box).toContain("position: \"absolute\"")
-    // The two that put the 34pt disc back into the flex basis, which is the ~14pt-per-button regression.
+    // Either would put the 34pt disc back into the flex basis.
     expect(box).not.toContain("paddingHorizontal")
     expect(box).not.toContain("paddingRight")
   })
@@ -381,19 +363,17 @@ describe("PostActionBar markup honours the geometry it is modelled on", () => {
 
   it("runs the halo on the HOUSE curve, which one hand-rolled transition is one property short of", () => {
     // `transitionProperty` + `transitionDuration` with no timing function leaves the browser on its `ease`
-    // default. These five hit circles are the most-repeated transition on the home surface (20 per
-    // four-post feed), so "the whole redesign runs one curve" was true of everything except the elements a
-    // reader touches most. Same constant `webTransition` and `shell/motionCss` emit - the three cannot
-    // drift, and a bare duration+property pair here is the regression this pins.
+    // default. These are the most-repeated transition on the home surface, so they use the same constant
+    // `webTransition` and `shell/motionCss` emit.
     const halo = between(BAR, "const HALO_TRANSITION", "const RING_FOOTPRINT")
     expect(halo).toContain("transitionTimingFunction: EASE_STANDARD_CSS")
     expect(BAR).toContain("EASE_STANDARD_CSS,")
   })
 
   it("gives the 44pt hit box the radius its halo owns, so the focus ring is not a square on a circle", () => {
-    // `focusRingProps` sits on the Pressable, the radius lived on the absolutely-drawn halo CHILD, and an
-    // outline traces the element it is on: keyboard focus drew a coral SQUARE around a circular disc.
-    // The box paints nothing, so this is invisible to everything except the ring.
+    // `focusRingProps` sits on the Pressable and an outline traces the element it is on, so without the
+    // radius here keyboard focus draws a square around the circular halo child. The box paints nothing, so
+    // this is invisible to everything except the ring.
     const action = between(BAR, "  action: {", "  disabled: {")
     expect(action).toContain("borderRadius: t.radius.pill")
   })
@@ -402,8 +382,7 @@ describe("PostActionBar markup honours the geometry it is modelled on", () => {
     const timeline = between(BAR, "rowTimeline: {", "spacer: {")
     expect(timeline).toContain("marginLeft: -TIMELINE_GLYPH_INSET")
     expect(timeline).toContain("marginRight: -TIMELINE_GLYPH_INSET")
-    // The thread's two live call sites, which cancelled the OLD 6pt padding with hard-coded -2 and -6 long
-    // after the boxes became 44 and 32 - so the focal bar sat 9.5pt inside the paragraph above it.
+    // The thread's two call sites derive their margins too; hard-coded ones drift inside the paragraph above.
     expect(src("../thread/ThreadFocalPost.tsx"))
       .toContain("marginHorizontal: -postActionGlyphInset(postActionLayout(\"focal\"))")
     expect(src("../thread/ThreadReplyRow.tsx"))
@@ -417,16 +396,9 @@ describe("PostActionBar markup honours the geometry it is modelled on", () => {
   })
 
   /**
-   * The halo's two stops, and the one colour that must never come back.
-   *
-   * `surfaceTint` (#F8F1E4) was the single warm near-white given to all five actions, and it is what the
-   * reported bug ("the highlight ... does not look good") was actually looking at: dE 3.9 from the sand row,
-   * i.e. barely a colour at all, painted across a 60x40 stadium. The replacements sit at dE 6.9-15.5 on the
-   * row and 9.4-19.2 on the hovered row, with press stronger than hover in every family - MEASURED in CIE
-   * Lab, since a WCAG contrast RATIO cannot see a hue shift at equal luminance and reports these as ~1.0:1.
-   * The measurement itself lives in the source comment above HALO_TINTS (the theme pulls react-native, which
-   * this pure test will not import); what is assertable here is that the stops are the palette's and not a
-   * regression to the near-white or to an invented hex.
+   * `surfaceTint` is only dE 3.9 from the sand row, barely a colour at all; the palette stops sit at dE
+   * 6.9-15.5, measured in CIE Lab because a WCAG contrast ratio cannot see a hue shift at equal luminance.
+   * Asserted here: the stops come from the palette, never the near-white or an invented hex.
    */
   it("tints each halo from the palette, never from the near-white that caused the report", () => {
     const tints = between(BAR, "function haloTints", "const HALO_TRANSITION")

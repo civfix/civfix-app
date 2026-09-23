@@ -324,9 +324,8 @@ describe("postComposerStore", () => {
 })
 
 /**
- * The create-and-return round trip: the composer leaves to build a report/event and comes back with it
- * attached. The draft is module-level precisely so it survives that navigation, and the intent has to
- * survive with it (launching the report wizard is `selectView`, which clears the detail stack).
+ * The intent lives on the module-level draft because opening the report wizard (`selectView`) clears the
+ * detail stack, so a nav entry could not carry it.
  */
 describe("postComposerStore create round trip", () => {
   const reportRef = {
@@ -402,9 +401,8 @@ describe("postComposerStore create round trip", () => {
     expect(usePostComposerStore.getState().draft.pendingCreate).toBeNull()
   })
 
-  // THE ARMED INTENT IS NOT AN ANSWER TO "was THIS run launched from the composer?". A run takes ownership of
-  // it at activation, so an abandoned launch cannot be picked up by an unrelated one later. The full lifetime
-  // (including the race with the composer's exit discard) is in postComposerExit.test.ts.
+  // A run takes ownership of the armed intent at activation, so an abandoned launch cannot be picked up by
+  // an unrelated run later.
   it("claiming moves the intent from ARMED to CLAIMED, atomically", () => {
     const store = usePostComposerStore.getState()
     store.setPendingCreate("report")
@@ -449,8 +447,7 @@ describe("postComposerStore create round trip", () => {
     expect(usePostComposerStore.getState().claimedCreate).toBeNull()
   })
 
-  // Closing the composer: the SELECTIONS go, the prose stays. See postComposerExit.ts for what counts as a
-  // close, and postComposerExit.test.ts for the discard driven through the real exit rule.
+  // Closing the composer drops the selections and keeps the prose.
   it("discardAttachments drops attachments, media and intent while keeping body and mentions", () => {
     const store = usePostComposerStore.getState()
     store.setBody("Look at this @mayal")
