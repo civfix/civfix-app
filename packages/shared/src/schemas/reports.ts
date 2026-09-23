@@ -6,11 +6,11 @@ import {
   LatLngFields,
   ReportCategorySchema,
   ReportTypeSchema,
-  GeomSourceSchema,
   PaginationQuerySchema,
   pageResponse,
 } from "./common.js"
 import { ReportDTOSchema, ReportPinDTOSchema } from "./entities.js"
+import { ReportContentFields, ReportMediaAndHoneypotFields } from "./internal-fields.js"
 
 export {
   ReportDTOSchema,
@@ -27,25 +27,14 @@ export type {
   MediaDTO,
 } from "./entities.js"
 
-export const MAX_REPORT_ADDR_LENGTH = 300
+export { MAX_REPORT_ADDR_LENGTH } from "./internal-fields.js"
 
 export const CreateReportRequestSchema = z
   .object({
     idempotencyKey: IdSchema,
-    category: ReportCategorySchema,
-    type: ReportTypeSchema,
-    // A photo-only report omits the title and reads as the category label.
-    title: z.string().max(120).optional(),
-    description: z.string().max(2000).optional(),
-    // Display label only; lat/lng stays canonical. Without it the operator console falls back to the
-    // jurisdiction.
-    addr: z.string().max(MAX_REPORT_ADDR_LENGTH).optional(),
-    ...LatLngFields,
-    geomSource: GeomSourceSchema,
+    ...ReportContentFields,
     capturedAt: ISODateSchema.optional(),
-    mediaUploadIds: z.array(IdSchema).max(5),
-    // Anti-spam honeypot: empty or absent for a legitimate submission.
-    honeypot: z.string().optional(),
+    ...ReportMediaAndHoneypotFields,
   })
   .strict()
 export type CreateReportRequest = z.infer<typeof CreateReportRequestSchema>

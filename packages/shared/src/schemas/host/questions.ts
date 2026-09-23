@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { EventQuestionKindSchema, IdSchema, ISODateSchema } from "../common.js"
+import { SortOrderInputSchema } from "../internal-fields.js"
 
 
 export { EventQuestionKindSchema } from "../common.js"
@@ -12,10 +13,11 @@ export const MAX_QUESTION_OPTIONS = 30
 export const MAX_QUESTION_OPTION_LABEL = 120
 export const MAX_SHORT_TEXT_ANSWER = 200
 export const MAX_LONG_TEXT_ANSWER = 2000
+const MAX_QUESTION_OPTION_VALUE = 80
 
 export const EventQuestionOptionSchema = z
   .object({
-    value: z.string().trim().min(1).max(80),
+    value: z.string().trim().min(1).max(MAX_QUESTION_OPTION_VALUE),
     label: z.string().trim().min(1).max(MAX_QUESTION_OPTION_LABEL),
   })
   .strict()
@@ -24,7 +26,7 @@ export type EventQuestionOption = z.infer<typeof EventQuestionOptionSchema>
 export const EventQuestionConditionSchema = z
   .object({
     questionId: IdSchema,
-    equals: z.union([z.string().max(80), z.boolean()]),
+    equals: z.union([z.string().max(MAX_QUESTION_OPTION_VALUE), z.boolean()]),
   })
   .strict()
 export type EventQuestionCondition = z.infer<typeof EventQuestionConditionSchema>
@@ -35,7 +37,7 @@ const EventQuestionCommonFields = {
   helpText: z.string().max(MAX_QUESTION_HELP).nullable().optional(),
   required: z.boolean().default(false),
   ticketTypeId: IdSchema.nullable().optional(),
-  sortOrder: z.number().int().min(0).max(1000).optional(),
+  sortOrder: SortOrderInputSchema,
   showIf: EventQuestionConditionSchema.nullable().optional(),
 } as const
 

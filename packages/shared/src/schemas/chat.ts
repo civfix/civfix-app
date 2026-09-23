@@ -1,7 +1,7 @@
 import { z } from "zod"
-import { IdSchema, pageResponse } from "./common.js"
+import { IdSchema, MESSAGE_BODY_MAX, pageResponse, RoomKindSchema } from "./common.js"
 import { ChatMessageDTOSchema, PersonDTOSchema, ReactionEmojiSchema } from "./entities.js"
-import { MESSAGE_BODY_MAX, RoomKindSchema } from "../types/ws.js"
+import { MAX_MENTIONED_USERS } from "./internal-fields.js"
 
 
 export { ChatMessageDTOSchema, ChatMessageKindSchema } from "./entities.js"
@@ -97,7 +97,7 @@ export const EditChatMessageRequestSchema = z
     threadId: IdSchema,
     messageId: IdSchema,
     body: z.string().min(1).max(MESSAGE_BODY_MAX),
-    mentionedUserIds: z.array(IdSchema).max(20).optional(),
+    mentionedUserIds: z.array(IdSchema).max(MAX_MENTIONED_USERS).optional(),
   })
   .strict()
 export type EditChatMessageRequest = z.infer<typeof EditChatMessageRequestSchema>
@@ -108,7 +108,7 @@ export const EditMessageRequestSchema = z
     roomId: IdSchema,
     messageId: IdSchema,
     body: z.string().min(1).max(MESSAGE_BODY_MAX),
-    mentionedUserIds: z.array(IdSchema).max(20).optional(),
+    mentionedUserIds: z.array(IdSchema).max(MAX_MENTIONED_USERS).optional(),
   })
   .strict()
 export type EditMessageRequest = z.infer<typeof EditMessageRequestSchema>

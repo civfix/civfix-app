@@ -6,8 +6,9 @@ import {
   PaginationQuerySchema,
 } from "../common.js"
 import { EventAnswerDTOSchema, EventRegistrationDTOSchema } from "../entities.js"
+import { IdempotencyKeySchema } from "../internal-fields.js"
 import { AccessCodeSchema, MAX_PARTY_SIZE } from "./tickets.js"
-import { EventAnswerInputSchema } from "./questions.js"
+import { EventAnswerInputSchema, MAX_EVENT_QUESTIONS } from "./questions.js"
 
 
 export {
@@ -63,12 +64,12 @@ export type RegisterOutcome = z.infer<typeof RegisterOutcomeSchema>
 export const RegisterForEventRequestSchema = z
   .object({
     id: IdSchema,
-    idempotencyKey: z.string().min(8).max(128),
+    idempotencyKey: IdempotencyKeySchema,
     ticketTypeId: IdSchema.optional(),
     partySize: z.number().int().min(1).max(MAX_PARTY_SIZE).default(1),
     attendeeNames: z.array(z.string().trim().min(1).max(MAX_ATTENDEE_NAME)).max(MAX_PARTY_SIZE).optional(),
     accessCode: AccessCodeSchema.optional(),
-    answers: z.array(EventAnswerInputSchema).max(20).optional(),
+    answers: z.array(EventAnswerInputSchema).max(MAX_EVENT_QUESTIONS).optional(),
     consent: EventConsentInputSchema.optional(),
     slotId: IdSchema.nullable().optional(),
     joinWaitlistIfFull: z.boolean().default(false),

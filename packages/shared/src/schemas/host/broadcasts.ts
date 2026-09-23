@@ -9,7 +9,7 @@ import {
   PaginationQuerySchema,
   pageResponse,
 } from "../common.js"
-import { BroadcastDTOSchema } from "../entities.js"
+import { BroadcastDTOSchema, HttpsUrlSchema } from "../entities.js"
 import { MARKDOWN_SUBSET_MAX_CHARS } from "../../markdown/parse.js"
 
 
@@ -50,7 +50,7 @@ export const HostBroadcastChannelsSchema = z
   .max(3)
   .refine(hostBroadcastChannelsValid, { message: PUSH_REQUIRES_INAPP_MESSAGE })
 
-export const HttpsCtaUrlSchema = z.string().trim().url().max(500).startsWith("https://")
+export const HttpsCtaUrlSchema = HttpsUrlSchema
 
 const BroadcastDraftFields = {
   subject: z.string().trim().min(1).max(MAX_BROADCAST_SUBJECT),
@@ -59,6 +59,15 @@ const BroadcastDraftFields = {
   ctaUrl: HttpsCtaUrlSchema.nullable().optional(),
   segment: BroadcastSegmentSchema,
   channels: HostBroadcastChannelsSchema,
+} as const
+
+const BroadcastDraftPatchFields = {
+  subject: BroadcastDraftFields.subject.optional(),
+  bodyMd: BroadcastDraftFields.bodyMd.optional(),
+  ctaLabel: BroadcastDraftFields.ctaLabel,
+  ctaUrl: BroadcastDraftFields.ctaUrl,
+  segment: BroadcastDraftFields.segment.optional(),
+  channels: BroadcastDraftFields.channels.optional(),
 } as const
 
 export const ListEventBroadcastsRequestSchema = PaginationQuerySchema.extend({
@@ -92,12 +101,7 @@ export const UpdateEventBroadcastRequestSchema = z
   .object({
     id: IdSchema,
     broadcastId: IdSchema,
-    subject: z.string().trim().min(1).max(MAX_BROADCAST_SUBJECT).optional(),
-    bodyMd: z.string().trim().min(1).max(MAX_BROADCAST_BODY).optional(),
-    ctaLabel: z.string().trim().max(MAX_BROADCAST_CTA_LABEL).nullable().optional(),
-    ctaUrl: HttpsCtaUrlSchema.nullable().optional(),
-    segment: BroadcastSegmentSchema.optional(),
-    channels: HostBroadcastChannelsSchema.optional(),
+    ...BroadcastDraftPatchFields,
   })
   .strict()
 export type UpdateEventBroadcastRequest = z.infer<typeof UpdateEventBroadcastRequestSchema>
@@ -119,12 +123,7 @@ export const PreviewEventBroadcastRequestSchema = z
   .object({
     id: IdSchema,
     broadcastId: IdSchema.optional(),
-    subject: z.string().trim().min(1).max(MAX_BROADCAST_SUBJECT).optional(),
-    bodyMd: z.string().trim().min(1).max(MAX_BROADCAST_BODY).optional(),
-    ctaLabel: z.string().trim().max(MAX_BROADCAST_CTA_LABEL).nullable().optional(),
-    ctaUrl: HttpsCtaUrlSchema.nullable().optional(),
-    segment: BroadcastSegmentSchema.optional(),
-    channels: HostBroadcastChannelsSchema.optional(),
+    ...BroadcastDraftPatchFields,
   })
   .strict()
 export type PreviewEventBroadcastRequest = z.infer<typeof PreviewEventBroadcastRequestSchema>

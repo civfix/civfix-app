@@ -13,6 +13,7 @@ import {
   ISODateSchema,
   LatLngFields,
   LegalDocumentTypeSchema,
+  MAX_PARTY_SIZE,
   OrganizationMemberRoleSchema,
   OrgVerificationKindSchema,
   OrgVerificationStatusSchema,
@@ -352,7 +353,7 @@ const TicketTypeDTOObjectSchema = z.object({
   salesClosesAt: ISODateSchema.nullable().optional(),
   visibility: TicketTypeVisibilitySchema.default("public"),
   accessCodeSet: z.boolean().default(false),
-  maxPartySize: z.number().int().min(1).max(10).default(1),
+  maxPartySize: z.number().int().min(1).max(MAX_PARTY_SIZE).default(1),
   sortOrder: z.number().int().default(0),
   questionIds: z.array(IdSchema).default([]),
   soldOut: z.boolean().default(false),
@@ -398,7 +399,7 @@ const EventRegistrationObjectSchema = z.object({
   guestName: z.string().nullable().optional(),
   ticketTypeId: IdSchema.nullable().optional(),
   ticketTypeName: z.string().nullable().optional(),
-  partySize: z.number().int().min(1).max(10).default(1),
+  partySize: z.number().int().min(1).max(MAX_PARTY_SIZE).default(1),
   seatCount: z.number().int().nonnegative().default(1),
   seats: z.array(EventSeatDTOSchema).default([]),
   status: RegistrationStatusSchema.default("registered"),
@@ -796,10 +797,7 @@ export type PostKindValue = (typeof POST_KIND_VALUES)[number]
 const PostRefObjectSchema = z.object({
   id: IdSchema,
   author: PersonDTOSchema.nullable(),
-  /**
-   * The organization this post was published as (DECISIONS §34). When present the client renders
-   * the org as the byline and the author as "via @handle". Null for a personal post.
-   */
+  /** Same byline rule as `PostDTO.organization`. */
   organization: OrganizationRefDTOSchema.nullable().optional(),
   kind: PostKindSchema,
   excerpt: z.string(),

@@ -119,6 +119,9 @@ export type ListOrganizationMembersResponse = z.infer<typeof ListOrganizationMem
 export const ListOrganizationMembersResponseSchema: z.ZodType<ListOrganizationMembersResponse, z.ZodTypeDef, unknown> =
   ListOrganizationMembersResponseObjectSchema
 
+export const OrganizationInviteRoleSchema = z.enum(["admin", "member"])
+export type OrganizationInviteRole = z.infer<typeof OrganizationInviteRoleSchema>
+
 export const OrgInviteIdentifierKindSchema = z.enum(["handle", "email"])
 export type OrgInviteIdentifierKind = z.infer<typeof OrgInviteIdentifierKindSchema>
 
@@ -127,13 +130,10 @@ export const InviteOrganizationMemberRequestSchema = z
     id: IdSchema,
     identifierKind: OrgInviteIdentifierKindSchema,
     identifier: z.string().trim().min(1).max(254),
-    role: z.enum(["admin", "member"]),
+    role: OrganizationInviteRoleSchema,
   })
   .strict()
 export type InviteOrganizationMemberRequest = z.infer<typeof InviteOrganizationMemberRequestSchema>
-
-export const OrganizationInviteRoleSchema = z.enum(["admin", "member"])
-export type OrganizationInviteRole = z.infer<typeof OrganizationInviteRoleSchema>
 
 export const OrganizationInviteStatusSchema = z.enum([
   "pending",
@@ -267,7 +267,7 @@ export const SetOrganizationMemberRoleRequestSchema = z
   .object({
     id: IdSchema,
     userId: IdSchema,
-    role: z.enum(["admin", "member"]),
+    role: OrganizationInviteRoleSchema,
   })
   .strict()
 export type SetOrganizationMemberRoleRequest = z.infer<
