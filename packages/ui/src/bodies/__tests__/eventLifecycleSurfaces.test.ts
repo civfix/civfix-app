@@ -1,18 +1,17 @@
 /**
- * Source-text guards for the event LIFECYCLE surfaces: the restructured `EventDetailBody` region, the
- * `EventHoursBlock` and the relocated `LogHoursEditor`.
+ * Source-text guards for the event LIFECYCLE surfaces: the `EventDetailBody` region, the `EventHoursBlock`
+ * and the `LogHoursEditor`.
  *
  * The pure state machines are covered by `eventLifecycle.test.ts`. What is left is the wiring, and every
  * assertion here guards a rule that typecheck cannot see and review reliably misses:
  *
- *   1. Nothing marks an event completed any more. Status is a clock reading, so a surface that still
- *      imported the retired confirm dialog or the retired completion gate would be writing state the
- *      server no longer changes.
+ *   1. Nothing marks an event completed. Status is a clock reading, so a surface that imported a confirm
+ *      dialog or a completion gate would be writing state the server does not change.
  *   2. `EventHoursBlock` imports no reanimated and no `Modal`/`FlatList`/`ScrollView`. It renders inside
  *      the event body's scroller, which on compact IS the gorhom sheet: a nested vertical scroller
- *      swallows the sheet's pan, and reanimated is the 0.36.1 worklet-factory crash class.
- *   3. The hours editor is GONE from the body. Its whole point was moving out of the dead zone below the
- *      host card and into the DONE region; a stray re-mount would show it twice on a finished event.
+ *      swallows the sheet's pan, and reanimated brings the worklet-factory crash class.
+ *   3. The hours editor is NOT in the body. It belongs in the DONE region; a stray re-mount would show it
+ *      twice on a finished event.
  *   4. The attendee receipt degrades through `?? false`. `anyLogged` is `.optional()` on the wire, and a
  *      bare truthiness read against an older server would tell every attendee they were skipped.
  *   5. Every `t("…")` key these files reference exists in `en/event-detail.json`. i18next has no

@@ -92,8 +92,8 @@ describe("calendarModel", () => {
   })
 
   it("keys slots independently of the label so a DST spring-forward day cannot collide", () => {
-    // US spring-forward (2:00-2:59 AM does not exist on 8 Mar 2026) used to normalize 2:00/2:30 to
-    // 3:00/3:30, duplicating both the label and the React key. Labels now come off a fixed base date.
+    // US spring-forward (2:00-2:59 AM does not exist on 8 Mar 2026) would normalize 2:00/2:30 to 3:00/3:30
+    // and duplicate both the label and the React key, which is why labels come off a fixed base date.
     const slots = timeSlots("en-US")
     const twoAm = slots.find((s) => s.hours === 2 && s.minutes === 0)
     const threeAm = slots.find((s) => s.hours === 3 && s.minutes === 0)

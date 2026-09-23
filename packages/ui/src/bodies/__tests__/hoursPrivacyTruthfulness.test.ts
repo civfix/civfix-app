@@ -1,17 +1,15 @@
 /**
- * The 0.38.1 truthfulness guards for the service-hours privacy surfaces, plus the locale-aware hours
- * formatter.
+ * Truthfulness guards for the service-hours privacy surfaces, plus the locale-aware hours formatter.
  *
  * `show_volunteer_hours` is a NULLABLE TRI-STATE and the server reads it as
- * `(IS NOT FALSE) AS aggregate, (IS TRUE) AS items`. 0.38.0 read it as a boolean everywhere, which made
- * the UI assert the OPPOSITE of the truth for every account that has never touched the switch - i.e.
- * every account that exists:
+ * `(IS NOT FALSE) AS aggregate, (IS TRUE) AS items`. Reading it as a boolean makes the UI assert the
+ * OPPOSITE of the truth for every account that has never touched the switch, which is every account:
  *
- *   1. the own-profile indicator printed a padlock + "Hidden from your profile" over a total that is
+ *   1. the own-profile indicator would print a padlock + "Hidden from your profile" over a total that is
  *      public and a leaderboard placement that exists;
- *   2. the public Hours tab printed a real total directly above "No volunteer hours logged yet.";
- *   3. the settings helper promised "your total hours and the leaderboard stay public either way", which
- *      is precisely what turning the switch OFF takes away.
+ *   2. the public Hours tab would print a real total directly above "No volunteer hours logged yet.";
+ *   3. the settings helper would promise "your total hours and the leaderboard stay public either way",
+ *      which is precisely what turning the switch OFF takes away.
  *
  * These are source + catalog guards because the surfaces are components: the states are branches over a
  * tri-state, and the only thing a re-render can silently undo is the branch itself.
@@ -86,7 +84,7 @@ describe("ServiceHoursSection tri-state truthfulness", () => {
     // true -> public, false -> private, undefined (never chosen) -> the third string.
     expect(body).toContain('choice === true ? "public" : choice === false ? "private" : "default"')
     expect(body).toContain("visibility.${state}")
-    // The 0.38.0 shape: one boolean picking between exactly two strings.
+    // The boolean shape: one choice picking between exactly two strings.
     expect(body).not.toContain('t("visibility.public") : t("visibility.private")')
   })
 

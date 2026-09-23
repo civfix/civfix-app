@@ -238,8 +238,8 @@ describe("a LIVE event with no slots still has a way in", () => {
   const block = code(SOURCES["EventSlotsBlock.tsx"])
 
   it("falls back to a one-row general board instead of a sentence with no join path", () => {
-    // Reachable in the deploy window before the backend's default-slot backfill lands, and off any
-    // `getCleanup` cached before it. A notice with no pill, no slot and no guest line strands the
+    // Reachable for an event the default-slot backfill has not reached, and off any `getCleanup`
+    // cached before it. A notice with no pill, no slot and no guest line strands the
     // viewer on a live event they cannot sign up for.
     expect(detail).toContain(
       "generalSlotBoard({ title: generalTitle, joined: going, going: goingCount })",

@@ -11,11 +11,9 @@ import type { EventSlotDTO } from "@civfix/shared"
 import { isEventEndedRefusal } from "./errorCode"
 
 export type SlotRowState =
-  /** Claimable: has room (or is unlimited) and the viewer holds nothing. */
   | "open"
   /** The viewer's own slot; the trailing pill releases it. */
   | "mine"
-  /** No room left and the viewer does not hold it. */
   | "full"
   /** Claimable, but the viewer already holds a DIFFERENT slot - one tap switches. */
   | "switch"
@@ -101,8 +99,8 @@ export const GENERAL_SLOT_ID = "general"
 /**
  * The one-row board a LIVE event with no slots falls back to, so the page keeps a working join path.
  *
- * Reachable in two windows: before migration 0169's default-slot backfill lands, and off a cached
- * `getCleanup` written before it. The row mirrors membership rather than a claim - `claimed` is the
+ * Reachable only for an event the default-slot backfill has not reached, or off a cached `getCleanup`
+ * written before it. The row mirrors membership rather than a claim - `claimed` is the
  * event's member count and `mine` is the viewer's own membership - and `EventSlotsBlock`'s `general`
  * mode commits it through the join/leave mutation, so nothing here ever addresses `PUT /slot`.
  */
@@ -127,13 +125,10 @@ export function generalSlotBoard(input: {
 }
 
 export type SlotViewerState =
-  /** The viewer holds one of these slots (a host who claimed one lands here too). */
   | "holds"
   /** Joined, but holding no slot - the one state the board actively nudges. */
   | "going_no_slot"
-  /** Signed in, not joined. */
   | "not_going"
-  /** Auth has RESOLVED to signed-out. */
   | "signed_out"
   /** Acting host holding no slot: they organise the board, they are never nagged to fill it. */
   | "host"

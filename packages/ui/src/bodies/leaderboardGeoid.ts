@@ -9,10 +9,6 @@
  *   2. the first `byJurisdiction` entry of the viewer's own hours (signed in only) - server-sorted
  *      highest-first, so this is the community the viewer actually serves.
  *   3. `null` - the section is hidden. Never guess.
- *
- * This replaces the hard-coded `myHours.byJurisdiction[0]` reads that used to sit inline in the
- * profile and social bodies, which also silently assumed index 0 exists under
- * `noUncheckedIndexedAccess`.
  */
 
 export interface DiscoveryGeoid {
