@@ -135,10 +135,10 @@ test("a browser-only bare path is rebuilt against the web origin", () => {
   )
 })
 
-test("the dev harness routes stay in the browser", () => {
-  assert.deepEqual(resolveIncomingPath("/landscape"), external("https://civfix.org/landscape"))
-  assert.deepEqual(resolveIncomingPath("/skeleton"), external("https://civfix.org/skeleton"))
-  assert.deepEqual(resolveIncomingPath("/bodies"), external("https://civfix.org/bodies"))
+test("the dev galleries are not browser-only roots: production never serves them", () => {
+  assert.deepEqual(resolveIncomingPath("/landscape"), home)
+  assert.deepEqual(resolveIncomingPath("/skeleton"), home)
+  assert.deepEqual(resolveIncomingPath("/bodies"), home)
 })
 
 test("a scheme link gets the SAME alias table as a web link", () => {
@@ -165,7 +165,7 @@ test("a scheme link to the app root is the map-home", () => {
 })
 
 test("a browser-only root reached over a scheme goes home, never to a browser", () => {
-  for (const root of ["guest", "claim", "legal/terms", "service-record/ABC123", "landscape"]) {
+  for (const root of ["guest", "claim", "legal/terms", "service-record/ABC123", "unsubscribe"]) {
     assert.deepEqual(resolveIncomingPath(`civfix://${root}`), home)
   }
 })

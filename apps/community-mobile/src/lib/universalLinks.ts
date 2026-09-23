@@ -17,9 +17,6 @@ const BROWSER_ONLY_ROOTS = new Set([
   "service-record",
   "legal",
   ".well-known",
-  "landscape",
-  "skeleton",
-  "bodies",
   "manage",
   "unsubscribe",
 ])
