@@ -25,6 +25,10 @@ import { friendlyError } from "@/lib/errors"
 
 const { ScrollView: FirstRunScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
+const DISPLAY_NAME_MAX = 80
+const FIRST_NAME_MAX = 40
+const LAST_NAME_MAX = DISPLAY_NAME_MAX - FIRST_NAME_MAX - 1
+
 export function FirstRunGate() {
   const status = useAuthStore((s) => s.status)
   const incomplete = useAuthStore((s) => s.user?.profileComplete === false)
@@ -72,7 +76,12 @@ function FirstRunForm() {
   const displayName = `${first.trim()} ${last.trim()}`.trim()
   const available = handleValid && avail.available === true
   const canSubmit =
-    available && displayName.length > 0 && ageConfirmed && termsConfirmed && !submitting
+    available &&
+    displayName.length > 0 &&
+    displayName.length <= DISPLAY_NAME_MAX &&
+    ageConfirmed &&
+    termsConfirmed &&
+    !submitting
 
   useEffect(() => {
     if (!handleValid) {
@@ -144,7 +153,7 @@ function FirstRunForm() {
                   placeholder={t("field.first_name.placeholder")}
                   value={first}
                   onChangeText={setFirst}
-                  maxLength={40}
+                  maxLength={FIRST_NAME_MAX}
                   autoComplete="given-name"
                 />
               </View>
@@ -154,7 +163,7 @@ function FirstRunForm() {
                   placeholder={t("field.last_name.placeholder")}
                   value={last}
                   onChangeText={setLast}
-                  maxLength={40}
+                  maxLength={LAST_NAME_MAX}
                   autoComplete="family-name"
                 />
               </View>

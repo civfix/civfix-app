@@ -18,6 +18,7 @@ import {
   enabledCategoriesArray,
   useSidebarStore,
   clampSidebarWidth,
+  expandedFramePlan,
   defaultRenderBody,
   openDropPinMenu,
   dropPinCameraTarget,
@@ -447,7 +448,11 @@ export default function MapHomeScreen() {
         topInset: insets.top,
         sheetDetent: useNavStore.getState().snap,
         mode: layoutMode,
-        sidebarWidth: clampSidebarWidth(useSidebarStore.getState().width, windowWidth),
+        occlusionLeft: expandedFramePlan({
+          view: useNavStore.getState().view,
+          stackLength: useNavStore.getState().stack.length,
+          sidebarWidth: clampSidebarWidth(useSidebarStore.getState().width, windowWidth),
+        }).occlusionLeft,
       })
       if (viewportBefore) {
         captureDropPinCamera(
