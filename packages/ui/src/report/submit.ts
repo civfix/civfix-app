@@ -22,21 +22,84 @@ import {
   type FeedShareTarget,
 } from "../bodies/feedShare"
 import { rememberLocalReportThumb } from "../bodies/localReportThumbs"
+import { appErrorCode, appErrorFields } from "../bodies/errorCode"
 import { useDraftReportStore } from "./draftStore"
-import type { DraftMedia, DraftReport } from "./draftStore"
+import type { DraftFlags, DraftMedia, DraftReport } from "./draftStore"
 
-function composeDescription(draft: DraftReport): string | undefined {
+// Mirrors CreateReportRequestSchema's `description` max(2000); the composed text (typed description plus
+// the flag notes) is what the server measures.
+export const REPORT_DESCRIPTION_MAX = 2000
+
+const DESCRIPTION_NOTE_SEPARATOR = "\n\n"
+
+function flagNotes(flags: DraftFlags): string {
+  const notes: string[] = []
+  if (flags.blockingSidewalk) notes.push("Blocking the sidewalk or road.")
+  if (flags.safetyHazard) notes.push("Reported as a safety hazard.")
+  return notes.join(" ")
+}
+
+export function composeDescription(draft: Pick<DraftReport, "description" | "flags">): string | undefined {
   const parts: string[] = []
   const desc = draft.description.trim()
   if (desc.length > 0) parts.push(desc)
 
-  const notes: string[] = []
-  if (draft.flags.blockingSidewalk) notes.push("Blocking the sidewalk or road.")
-  if (draft.flags.safetyHazard) notes.push("Reported as a safety hazard.")
-  if (notes.length > 0) parts.push(notes.join(" "))
+  const notes = flagNotes(draft.flags)
+  if (notes.length > 0) parts.push(notes)
 
-  const out = parts.join("\n\n").trim()
+  const out = parts.join(DESCRIPTION_NOTE_SEPARATOR).trim()
   return out.length > 0 ? out : undefined
+}
+
+export function descriptionMaxLength(flags: DraftFlags): number {
+  const notes = flagNotes(flags)
+  return notes.length > 0
+    ? REPORT_DESCRIPTION_MAX - DESCRIPTION_NOTE_SEPARATOR.length - notes.length
+    : REPORT_DESCRIPTION_MAX
+}
+
+// The server names only the array, not the id it could not claim (expired, swept, or already bound), so
+// every cached upload id is dropped and the next attempt uploads the bytes again.
+export function invalidatesUploadIds(err: unknown): boolean {
+  if (appErrorCode(err) !== ErrorCode.VALIDATION) return false
+  const fields = appErrorFields(err)
+  return fields !== undefined && Object.keys(fields).some((key) => key.split(".")[0] === "mediaUploadIds")
+}
+
+export interface SubmitRunSlot<T> {
+  start: (task: () => Promise<T>) => Promise<T> | null
+  unclaimed: () => Promise<T> | null
+  claim: (run: Promise<T>) => void
+}
+
+// One report submission at a time, held outside React so it outlives the body: a second tap before the
+// re-render, or a remount while the first run is in flight, must not upload the media and share to the
+// feed a second time. A run whose body unmounted before it settled stays unclaimed so the next mount can
+// show its outcome instead of dropping it.
+export function createSubmitRunSlot<T>(): SubmitRunSlot<T> {
+  let current: { run: Promise<T>; settled: boolean; claimed: boolean } | null = null
+  return {
+    start(task) {
+      if (current && !current.settled) return null
+      const entry: { run: Promise<T>; settled: boolean; claimed: boolean } = {
+        run: Promise.resolve().then(task),
+        settled: false,
+        claimed: false,
+      }
+      const markSettled = () => {
+        entry.settled = true
+      }
+      entry.run.then(markSettled, markSettled)
+      current = entry
+      return entry.run
+    },
+    unclaimed() {
+      return current && !current.claimed ? current.run : null
+    },
+    claim(run) {
+      if (current?.run === run) current.claimed = true
+    },
+  }
 }
 
 export function submittedAddr(draft: Pick<DraftReport, "addr" | "addrEdited">): string | undefined {
@@ -118,13 +181,19 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
     const draft = store.draft
 
     if (!draft.category) {
-      throw new AppError(ErrorCode.VALIDATION, t("errors.no_category"))
+      throw new AppError(ErrorCode.VALIDATION, t("errors.no_category"), {
+        fields: { category: t("errors.no_category") },
+      })
     }
     if (draft.lat == null || draft.lng == null) {
-      throw new AppError(ErrorCode.VALIDATION, t("errors.no_location"))
+      throw new AppError(ErrorCode.VALIDATION, t("errors.no_location"), {
+        fields: { lat: t("errors.no_location") },
+      })
     }
     if (draft.media.length === 0) {
-      throw new AppError(ErrorCode.VALIDATION, t("errors.no_media"))
+      throw new AppError(ErrorCode.VALIDATION, t("errors.no_media"), {
+        fields: { media: t("errors.no_media") },
+      })
     }
 
     const idempotencyKey = store.ensureIdempotencyKey()
@@ -146,10 +215,8 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
       ...(description ? { description } : {}),
     }
 
-    let result: ReportSubmitResult
-    if (hostSubmit) {
-      result = await hostSubmit(submission)
-    } else {
+    const createReport = async (): Promise<ReportSubmitResult> => {
+      if (hostSubmit) return hostSubmit(submission)
       const body: CreateReportRequest = {
         idempotencyKey: submission.idempotencyKey,
         category: submission.category,
@@ -163,7 +230,7 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
         ...(submission.description ? { description: submission.description } : {}),
       }
       const report = await api.createReport(body)
-      result = {
+      return {
         reportId: report.id,
         lat: report.lat,
         lng: report.lng,
@@ -172,6 +239,13 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
       }
     }
 
+    let result: ReportSubmitResult
+    try {
+      result = await createReport()
+    } catch (err) {
+      if (invalidatesUploadIds(err)) store.clearMediaUploadIds()
+      throw err
+    }
 
     let feedShare: FeedShareOutcome = { status: "skipped" }
     const shareable =
@@ -216,9 +290,8 @@ export function useReportSubmit(options?: ReportSubmitOptions): () => Promise<Re
       }
     }
 
-    void queryClient.invalidateQueries({ queryKey: ["mapReports"] }).catch(() => {})
-    void queryClient.invalidateQueries({ queryKey: ["map", "reports"] }).catch(() => {})
-    void queryClient.invalidateQueries({ queryKey: queryKeys.myReportsRoot }).catch(() => {})
+    void queryClient.invalidateQueries({ queryKey: ["map", "reports"] })
+    void queryClient.invalidateQueries({ queryKey: queryKeys.myReportsRoot })
 
     return { ...result, feedShare }
   }, [api, camera, createPostAsync, forComposer, hostSubmit, isAuthenticated, me, queryClient, t])

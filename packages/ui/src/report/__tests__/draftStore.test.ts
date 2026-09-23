@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest"
-import { useDraftReportStore, MAX_DRAFT_MEDIA } from "../draftStore"
+import { useDraftReportStore, MAX_DRAFT_MEDIA, captureSeedsNewReport } from "../draftStore"
 import type { CapturedMedia } from "../../capabilities"
 
 /**
@@ -270,5 +270,79 @@ describe("draftStore address ownership", () => {
     const d = useDraftReportStore.getState().draft
     expect(d.addr).toBeNull()
     expect(d.addrEdited).toBe(false)
+  })
+})
+
+describe("removing the capture that placed the pin (APP-BUG-171)", () => {
+  beforeEach(() => useDraftReportStore.getState().reset())
+
+  const located = (uri: string) => cap(uri, { location: { lat: 1, lng: 2, source: "exif" } })
+
+  it("clears the location the removed capture supplied", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(located("a"))
+    s.addCapture(cap("b"))
+    const first = useDraftReportStore.getState().draft.media[0]!
+    s.removeMedia(first.id)
+    const d = useDraftReportStore.getState().draft
+    expect(d.media.map((m) => m.uri)).toEqual(["b"])
+    expect(d.lat).toBeNull()
+    expect(d.lng).toBeNull()
+  })
+
+  it("keeps the location when a different capture is removed", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(located("a"))
+    s.addCapture(cap("b"))
+    s.removeMedia(useDraftReportStore.getState().draft.media[1]!.id)
+    expect(useDraftReportStore.getState().draft.lat).toBe(1)
+  })
+
+  it("keeps a pin the reporter placed by hand after the capture", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(located("a"))
+    s.setLocation(40.5, -74.2, "manual")
+    s.removeMedia(useDraftReportStore.getState().draft.media[0]!.id)
+    const d = useDraftReportStore.getState().draft
+    expect(d.lat).toBe(40.5)
+    expect(d.geomSource).toBe("manual")
+  })
+
+  it("keeps a prefilled map point when the capture is removed", () => {
+    const s = useDraftReportStore.getState()
+    s.setPrefilledLocation(37.7749, -122.4194)
+    s.startFromCapture(located("a"))
+    s.removeMedia(useDraftReportStore.getState().draft.media[0]!.id)
+    expect(useDraftReportStore.getState().draft.lat).toBe(37.7749)
+  })
+
+  it("does not treat a media-less draft with authored details as a new report", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(located("a"))
+    s.setCategory("graffiti", "Graffiti", "graffiti")
+    s.setDescription("On the north wall")
+    s.removeMedia(useDraftReportStore.getState().draft.media[0]!.id)
+    expect(captureSeedsNewReport(useDraftReportStore.getState().draft)).toBe(false)
+    s.addCapture(cap("b", { location: { lat: 3, lng: 4, source: "device" } }))
+    const d = useDraftReportStore.getState().draft
+    expect(d.category).toBe("graffiti")
+    expect(d.description).toBe("On the north wall")
+    expect(d.media.map((m) => m.uri)).toEqual(["b"])
+    expect([d.lat, d.lng, d.geomSource]).toEqual([3, 4, "device"])
+    s.removeMedia(d.media[0]!.id)
+    expect(useDraftReportStore.getState().draft.lat).toBeNull()
+  })
+
+  it("still seeds a new report from an empty or prefilled-only draft", () => {
+    expect(captureSeedsNewReport(useDraftReportStore.getState().draft)).toBe(true)
+    useDraftReportStore.getState().setPrefilledLocation(1, 2)
+    expect(captureSeedsNewReport(useDraftReportStore.getState().draft)).toBe(true)
+  })
+
+  it("never lets a later capture replace an existing pin", () => {
+    const s = useDraftReportStore.getState()
+    s.startFromCapture(located("a"))
+    s.addCapture(cap("b", { location: { lat: 9, lng: 9, source: "device" } }))
+    expect(useDraftReportStore.getState().draft.lat).toBe(1)
   })
 })

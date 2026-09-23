@@ -577,7 +577,7 @@ describe("a landed capture lands on 'Your captures', it does not advance the wiz
       wizardSource,
     )?.[0]
     expect(land).toBeTruthy()
-    expect(land).toContain("if (useDraftReportStore.getState().draft.media.length === 0) startFromCapture(captured)")
+    expect(land).toContain("if (captureSeedsNewReport(useDraftReportStore.getState().draft)) startFromCapture(captured)")
     expect(land).toContain("else addCapture(captured)")
     expect(land).not.toContain("setStep")
     expect(land).not.toContain("advance")
