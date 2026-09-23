@@ -38,8 +38,31 @@ async function wait(ms: number): Promise<void> {
   })
 }
 
+async function nextTask(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 0))
+}
+
+// jsdom runs history.go/back/forward as two chained zero-delay tasks and fires popstate from the second.
+// Equal-delay timers run first in, first out, so two tasks queued here always run after a traversal that
+// is already in flight, however loaded the machine is. A landing can start another traversal, so repeat
+// until two tasks pass with no popstate.
 async function settle(): Promise<void> {
-  await wait(20)
+  await act(async () => {
+    let landed = true
+    const onPop = () => {
+      landed = true
+    }
+    window.addEventListener("popstate", onPop)
+    try {
+      while (landed) {
+        landed = false
+        await nextTask()
+        await nextTask()
+      }
+    } finally {
+      window.removeEventListener("popstate", onPop)
+    }
+  })
 }
 
 async function drive(run: () => void): Promise<void> {
@@ -484,6 +507,7 @@ describe("two Backs before the first has landed", () => {
 
     await drive(() => nav().back())
     await wait(700)
+    await settle()
     expect(path()).toBe("/pin/a/")
     expect(depth()).toBe(1)
     expect(nav().stack).toEqual([PIN_A])
@@ -505,6 +529,7 @@ describe("two Backs before the first has landed", () => {
       nav().push(PIN_B)
     })
     await wait(600)
+    await settle()
 
     expect(nav().stack).toEqual([PIN_A, PIN_B])
     expect(path()).toBe("/pin/b/")
