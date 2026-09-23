@@ -3,22 +3,14 @@
 The PUBLIC civfix user web app: a Next.js 15 (App Router) + React 19 + TypeScript + Tailwind +
 shadcn/ui application, built as a STATIC-EXPORTED SPA (`output: "export"`). All dynamic data is
 fetched at runtime from the civfix API via the typed `@civfix/shared` client. There is no web server
-at runtime; the export emits a static shell + JS to `out/`.
+at runtime; the export emits a static shell + JS to `out/`. The only server-side code is the
+Cloudflare Pages Functions in `functions/` (see "Rich link previews").
 
-STEP 1 delivered the design system + providers + API client + the home map-browse screen (persistent
-sidebar, top bar, auth modal). STEP 2 added the public surfaces: the anonymous report submit flow
-(`/report`), the pin detail view (`/pin/[...id]`), the account-claim flow (`/claim`), and the public
-cleanups browse (`/cleanups`, `/cleanups/[...id]`). STEP 3 adds the PinIt Web social surfaces:
-
-- People discovery (`/people`) and a person profile (`/people/[...id]`) with a Follow toggle.
-- The signed-in viewer's own profile (`/profile`).
-- The Events page (`/events`) with Going / Past / Suggested tabs.
-- Host an event (`/host`).
-- Notifications: the top-bar activity bell popover and a full page (`/notifications`) with an
-  activity list and a preferences panel.
-
-The messages detail (`/messages/[...id]`) is the realtime conversation view: paged history from
-`GET /cleanups/:id/messages`, live messages over the WebSocket, and optimistic sends with retry.
+Most of the UI is the shared `@civfix/ui` package (the `AppShell`, the feature bodies, the Map seam
+and the `@civfix/ui/data` hooks), rendered through react-native-web. This app is the web HOST: it
+supplies the route shells, the providers (API client, auth, capabilities, theme, i18n), the URL <->
+nav-store bridge, and the web-only surfaces such as the host console (`/manage/*`), the public event
+signup pages (`/e/*`) and the organization pages (`/orgs/*`).
 
 ## Run
 
@@ -30,10 +22,11 @@ pnpm build        # turbo: builds @civfix/shared (tsup dist) + @civfix/ui (dist-
                   # then this app's static export
 pnpm typecheck
 pnpm lint
+pnpm test
 ```
 
 `@civfix/shared` and `@civfix/ui` are `workspace:*` dependencies in this repo, so an edit to either
-lands here directly - no registry install, no version range to bump. `@civfix/shared` is consumed
+lands here directly: no registry install, no version range to bump. `@civfix/shared` is consumed
 from its built `dist` and `@civfix/ui` from its `.tsx` source (with `dist-types` for `tsc`); turbo's
 `^build` ordering means every root `build` / `typecheck` / `lint` / `test` / `dev` builds them first.
 
@@ -41,24 +34,33 @@ Per-app (from `apps/community-web/`):
 
 ```
 pnpm dev          # next dev (http://localhost:3000)
-pnpm build        # next build -> static export in ./out
-pnpm start        # NOTE: next start does NOT serve an exported app; use a static file server on ./out
+pnpm build        # next build -> static export in ./out, then scripts/cf-pages-postbuild.mjs
+pnpm og-image     # regenerate public/og.png + public/apple-touch-icon.png
 ```
 
-Serve the export with any static host, e.g. `python -m http.server 4173 --directory out`.
+`predev` / `prebuild` run `scripts/copy-contract-fonts.mjs` first (see "Fonts"). `next start` does
+NOT serve an exported app; serve `out/` with a static file server, e.g.
+`python3 -m http.server 4173 --directory out` (a plain file server does not apply `_redirects`, so
+deep links to catch-all routes 404 there; `wrangler pages dev` serves them through the real Pages
+routing).
 
 ## Environment
 
-Copy `.env.example` to `.env.local` and adjust. All public vars are inlined at build time.
+Copy `.env.example` to `.env.local` and adjust. All public vars are inlined at build time, so a
+change needs a rebuild, not a restart.
 
 | Variable                        | Default                 | Purpose                                            |
 | ------------------------------- | ----------------------- | -------------------------------------------------- |
-| `NEXT_PUBLIC_API_URL`           | `http://localhost:8080` | civfix API base URL.                               |
+| `NEXT_PUBLIC_API_URL`           | `http://localhost:8080` | civfix API base URL. The chat WebSocket URL is derived from it. |
 | `NEXT_PUBLIC_TURNSTILE_SITEKEY` | (unset)                 | Cloudflare Turnstile sitekey. Unset = dev no-op.   |
 | `NEXT_PUBLIC_SITE_URL`          | `https://civfix.org`    | Canonical origin of this build; `metadataBase` for every og/twitter image. Reduced to a bare origin by `normalizeSiteUrl()`, so a trailing slash or a path is harmless. |
+| `NEXT_PUBLIC_CARTO_API_KEY`     | (unset)                 | Publishable CARTO basemap key, appended to the tile URLs when set. Unset, the same CARTO tiles render with CARTO's watermark. |
+
+`NEXT_PUBLIC_COMMIT_SHA` is not an input: `next.config.mjs` sets it from `GITHUB_SHA` (else
+`git rev-parse HEAD`) for the "Source" link.
 
 The app builds and runs with the backend OFF: every data hook handles loading, empty, and error
-states, and the map falls back to a plain warm basemap with a small non-blocking notice.
+states, and the CARTO basemap renders without the backend (only the pins are missing).
 
 ### Running the local app against the staging API
 
@@ -90,25 +92,37 @@ dev convenience.
 ## How tokens map into Tailwind
 
 `@civfix/shared/tokens` is the single source of truth for color, type, spacing, radius, shadow, and
-motion. `tailwind.config.ts` imports the `tokens` object and maps every scale into the theme, so app
+motion. `tailwind.config.ts` imports the `tokens` object and maps the scales into the theme, so app
 code uses semantic utilities and never hardcodes a hex that exists in tokens:
 
 - Colors: `bg-paper` `bg-paper2` `bg-cardflat` `text-ink` `text-ink-3` `border-ink-5`,
   the brand scales `bg-bloom-500` `text-moss-600` `bg-sun-500` `bg-sky-500` `bg-lilac-500`,
-  the report category colors `text-cat-graffiti` / `bg-cat-trash`, and `bg-cleanup`.
+  the report category colors `text-cat-graffiti` / `bg-cat-trash`, and `bg-cleanup`. These resolve
+  to CSS variables declared in `src/styles/design.css` (a light `:root` block and a `:root.dark`
+  block; `design-css-tokens.test.ts` asserts they match the token hexes), so they follow the color
+  scheme. The host console (`/manage/*`) uses the scheme-aware `console.*` group from `globals.css`.
 - shadcn semantic colors (`background`, `primary`, `secondary`, `accent`, `muted`, `destructive`,
   `card`, `popover`, `border`, `ring`) are wired to CSS variables in `globals.css`. Those variables
   are the HSL form of token hexes (the source hex is named in a comment beside each one).
-- Fonts: `font-display` (Bricolage Grotesque), `font-body` (Manrope), `font-mono` (JetBrains Mono),
-  loaded via `next/font/google` and exposed as `--font-*` CSS variables.
 - Type ramp: `text-token-12 .. text-token-64`. Spacing: `p-token-4`, `gap-token-6`, etc.
-- Radius: `rounded-sm` (10) `rounded-md` (14) `rounded-lg` (20) `rounded-xl` (28); the teardrop pin
-  shape is the `.rounded-pin` utility (`50% 50% 50% 6px`, mirrors `tokens.radius.pin`).
+- Radius: `rounded-xs` (6) `rounded-sm` (10) `rounded-md` (14) `rounded-lg` (20) `rounded-xl` (28)
+  `rounded-2xl` (36) `rounded-pill`; the teardrop pin shape is the `.rounded-pin` utility
+  (`50% 50% 50% 6px`, mirrors `tokens.radius.pin`).
 - Shadow: `shadow-s1 .. shadow-s4`, `shadow-pin`, `shadow-ring`. Motion: `duration-d1..d4`,
   `ease-out`/`ease-spring`/`ease-in-out`.
 
-Map pin colors come from the shared `categoryColor()` / `cleanupColor` helpers directly (inline
-styles on the marker DOM), so they always match the tokens.
+Map pin colors come from the shared `categoryColor()` / `cleanupColor` helpers inside `@civfix/ui`'s
+Map seam, so they always match the tokens.
+
+### Fonts
+
+Fonts are self-hosted; nothing is fetched from a font CDN at runtime. `scripts/copy-contract-fonts.mjs`
+copies the woff2 files into `public/fonts/` (from the installed `@fontsource` packages, plus the
+tracked Hanken Grotesk variable font, whose checksum and license it verifies), and
+`src/styles/contract-fonts.css` declares an `@font-face` for every literal family name the shared UI
+emits through react-native-web (e.g. `HankenGrotesk_600SemiBold`). `globals.css` points
+`--font-display` / `--font-body` at Hanken Grotesk and `--font-mono` at JetBrains Mono, which back the
+`font-display` / `font-body` / `font-mono` utilities. Baloo 2 is the brand wordmark face only.
 
 ## API client wiring (cookie + CSRF + X-Client)
 
@@ -120,158 +134,57 @@ styles on the marker DOM), so they always match the tokens.
 - The shared client always sends `credentials: "include"`, so the httpOnly session cookie rides
   along on every request (web cookie-session auth).
 - `defaultHeaders: { "x-client": "web" }` so the backend can distinguish web from mobile.
-- `getCsrfToken` reads the CSRF token from the auth store at call time; the shared client injects it
-  as `x-csrf-token` only on CSRF endpoints (mutations).
+- `getCsrfToken` (`resolveCsrfToken`) reads the CSRF token from the auth store at call time, first
+  waiting out the optimistic boot window; the shared client injects it as `x-csrf-token` only on
+  CSRF endpoints (mutations).
 - `onUnauthorized` clears the auth store on a 401 so the UI flips to signed-out.
 - `toAppError()` normalizes thrown values (including network failures when the backend is down) into
   the shared `AppError` shape for consistent error UI.
 
 ## State and data
 
-- `src/store/auth-store.ts` (zustand): `user`, `csrfToken`, `roles`, `status`. Hydrated once from
+- `src/store/auth-store.ts` (zustand): `status`, `user`, `csrfToken`, `roles`, and `optimistic` (the
+  signed-in state restored from a local snapshot before the session check lands). Revalidated from
   `GET /auth/session` by `src/components/auth/auth-hydrator.tsx`.
-- `src/store/report-filter-store.ts`: which report categories are visible on the map (drives the
-  top-bar filter and the map pins).
-- `src/store/anon-report-draft.ts`: persisted (sessionStorage) report draft, created now, used by
-  the `/report` flow in the next step.
-- `src/store/ui-store.ts`: auth modal + mobile bottom-sheet open state.
-- `src/lib/query.ts`: React Query client (conservative retries; never retries 4xx).
-- Data hooks in `src/hooks/` wrap the shared client. Auth-required queries (`my reports`, `threads`,
-  `notifications`) are gated on authentication so they do not fire guaranteed-401 requests when
-  signed out.
+- `src/store/ui-store.ts`: the auth modal's open state (the bottom sheet belongs to `AppShell`).
+- `src/store/appearance-store.ts`: the light / dark / system preference (localStorage), registered as
+  `@civfix/ui`'s appearance store.
+- `src/store/claim-handoff.ts`: the `reportId` + `claimCode` of the last anonymous submit, kept in
+  localStorage for the `/claim` flow. The report draft itself lives in `@civfix/ui`'s report wizard.
+- `src/lib/query.ts`: `makeQueryClient()` (conservative retries; never retries 4xx);
+  `src/lib/query-persist.ts` persists a safelisted slice of the cache across reloads.
+- Data hooks come from `@civfix/ui/data`, keyed by its `queryKeys`; `src/hooks/` holds only the
+  web-host hooks (auth, auth gate, realtime channel, debounce, visual-viewport shift, profile
+  registration).
 
-## Home screen
+## Routing and static export
 
-- Top bar (`src/components/home/top-bar.tsx`): "Show reports" category filter popover (six categories
-  with color dots, checkboxes, Select all / Clear all, active-count badge), an activity bell with an
-  unread badge, and a Sign in button / account avatar menu.
-- Home sidebar (`src/components/home/home-sidebar.tsx`): header bar, search box, the two create CTAs
-  ("Report an issue" -> `/report`, "Host an event" -> `/host`), and three sections:
-  - Events near you (`GET /cleanups`): date badge, title, time + location hint, overlapping member
-    avatars, going count, "You're hosting" / "You're in" tags. Public, with empty + signed-out states.
-  - Your reports (`GET /reports`, auth): category dot, title, neighborhood + timestamp, status badge.
-  - Messages (`GET /threads`, auth): avatar/group icon, name, timestamp, last-message preview, unread
-    badge.
-  All sections show skeletons while loading and tidy empty/error states.
-- Auth modal (`src/components/auth/auth-modal.tsx`): Google/Apple redirect to the API OAuth start
-  endpoints; email -> `POST /auth/otp/request` -> 6-digit code -> `POST /auth/otp/verify`, then the
-  auth store refreshes from `/auth/session` and the modal closes.
-- Map (`src/features/map/`): MapLibre GL over the OpenStreetMap (CARTO Voyager) raster basemap. The
-  basemap is fixed and needs nothing from the backend or R2. Report pins are category-color teardrops
-  (`categoryColor()`, the teardrop radius), cleanup pins are sun-yellow teardrops with an RSVP count
-  badge, fed by `GET /map/reports` and `GET /cleanups`. Clicking a pin routes to `/pin/[id]` or
-  `/cleanups/[id]`.
+`src/app/*` holds thin route shells. Most routes (`/`, `/pin/*`, `/cleanups/*`, `/people/*`,
+`/messages/*`, `/post/*`, `/compose/*`, ...) render the same `HomeShell`
+(`src/components/home/home-shell.tsx`), which mounts `@civfix/ui`'s `AppShell` client-side
+(`dynamic(..., { ssr: false })`). `use-web-nav-adapter.ts` seeds the shared nav store from
+`window.location` and keeps the URL in sync with raw `history.pushState`, so the shell never remounts
+on navigation.
 
-### Basemap
-
-The map ALWAYS renders the OpenStreetMap (CARTO Voyager) raster basemap (attribution "(c)
-OpenStreetMap contributors, (c) CARTO") over a warm paper background, so first paint shows a real
-street map and never depends on the backend or R2. Report/cleanup pins render on top of it.
-
-## Social surfaces (STEP 3)
-
-- People discovery (`src/features/people/people-discover.tsx`, route `/people`): a search box over
-  `GET /people` plus people cards (initials-gradient avatar from `PersonDTO.avatar`, name, handle,
-  one-line bio, follower count, and a Follow toggle). The home sidebar search submits here
-  (`/people?q=...`, read via `useSearchParams` inside a `Suspense` boundary). Cards open the profile.
-- Follow toggle (`src/features/people/follow-button.tsx` + `useToggleFollow` in
-  `src/hooks/use-people.ts`): an outline "Follow" / filled "Following" button with an OPTIMISTIC
-  update. `onMutate` snapshots the current `{ isFollowing, followers }` (from any cached list row or
-  the profile), cancels in-flight queries, and writes the toggled state into BOTH the people lists
-  and the person's profile cache; `POST/DELETE /people/:id/follow`; `onError` rolls back to the
-  snapshot; `onSuccess` writes the server's authoritative count. Auth-gated (prompts sign-in).
-- Person profile (`src/features/people/person-profile.tsx`, route `/people/[...id]`): large avatar,
-  name (h4 Bricolage), handle, bio, the Followers/Following/Reports/Cleanups stat strip, a Follow
-  toggle + a Message button (auth-gated; routes to `/messages/:id`), and past events. The contract has
-  no mutual-followers list, so the design's "Followed by ..." hint is omitted rather than faked.
-- My profile (`src/features/people/my-profile.tsx`, route `/profile`): `GET /me/profile` with avatar,
-  name, handle, bio, stats, and past events, plus a Notifications entry and a Share button (Web Share
-  API, falling back to copy-link). Read-oriented for Phase 1; editing is a follow-up. Signed-out
-  prompts sign-in.
-- Events page (`src/features/cleanups/events-tabs.tsx`, route `/events`): Going / Past / Suggested
-  tabs. The list endpoint only filters by `when`, so `useEventsTabs` (`src/hooks/use-cleanups.ts`)
-  fetches the upcoming + past lists once each and derives the buckets CLIENT-SIDE: Going = upcoming &&
-  `joined`; Suggested = upcoming && !`joined` && not hosted-by-me; Past = past && (`joined` ||
-  hosted-by-me). Hosted vs Attended is decided by comparing `organizer.id` to the current user id.
-  Going/Past are viewer-specific (signed-out prompts sign-in); Suggested is public.
-- Host an event (`src/features/host/host-form.tsx`, route `/host`): a vertical form whose sections
-  mirror the design steps (Title, Description, Name the spot + a draggable map pin reusing the report
-  `LocationPicker`, Date + Time native pickers, and the "What to bring" moss chip input in
-  `src/features/host/bring-input.tsx` with the six suggestion pills). Publish is disabled until Title,
-  the spot line, Date, and Time are set; the pin is seeded to the city center so lat/lng are always
-  valid. On publish: `POST /cleanups` (type `site`, ISO `scheduledAt` built from date+time, the spot
-  folded into the description since the contract has no location string), then route to the new
-  `/cleanups/:id`. Auth-gated. The home sidebar "Host an event" button links here.
-- Notifications (`src/features/notifications/*`): the activity bell (`activity-bell.tsx`) opens a
-  popover of recent notifications (icon-by-type, title, body, relative time, unread dot, link nav)
-  with "Mark all read" and a link to the full page; the unread count drives the bell badge. The full
-  page (`/notifications`) shows the activity list plus a preferences panel (`GET/PUT
-  /notifications/prefs`: switches for push, report updates, cleanup chat, new followers, and a
-  quiet-hours window). Mark-read and prefs use optimistic cache writes (the notifications UI now lives
-  in `@civfix/ui`'s shared bodies via `@civfix/ui/data`). All auth-gated.
-- Messages (`src/features/messages/*`): the inbox (`/messages`, `inbox.tsx`) lists threads from
-  `GET /threads` (`useInboxThreads`) as rows (avatar/group icon, title, timestamp, last-message
-  preview with a "You:" prefix from `lastFromMe`, unread badge) with an All/Direct/Group filter;
-  tapping a row opens `/messages/:id`. The conversation (`conversation.tsx`, catch-all
-  `/messages/[...id]`, id read via `usePathname`) is a full-height chat: a fixed header (back, title +
-  member count from `GET /cleanups/:id`, info), a scrollable bubble list (mine right/coral, others
-  left with sender name + time, day-grouped sender labels), a "reconnecting/offline" indicator, and a
-  pinned composer (Enter sends, Shift+Enter newlines). The "Message" / "Message event crew" buttons on
-  the person profile and cleanup detail route here. All auth-gated.
-- Realtime chat plumbing: `src/lib/ws.ts` is a transport-only typed WebSocket client (connect,
-  join/leave/send, subscribe, exponential backoff + jitter reconnect, an offline send queue flushed on
-  open). EVERY inbound frame is validated with `WsServerMessageSchema` and every outbound frame with
-  `WsClientMessageSchema` (invalid frames are logged and dropped). `src/hooks/use-chat.ts`
-  (`useChat(cleanupId)`) layers the data model on top: history via React Query `useInfiniteQuery` over
-  `GET /cleanups/:id/messages` (older pages via the `before` cursor on scroll-up), live messages from
-  the socket, and an outbox for OPTIMISTIC sends (a pending bubble is appended with a `clientId`, then
-  reconciled - replaced - when the matching `{type:"ack",clientId}` / `{type:"message"}` arrives;
-  dedupe is by `clientId` then message `id`; a send that is not acked within ~12s flips to a retryable
-  "failed"). The socket is opened from an effect (browser-only) and torn down (leave + close) on
-  unmount, so the static export never connects during prerender. Offline / no-backend degrades
-  cleanly: the history query shows an error/empty state and the composer shows an offline banner while
-  the socket retries with backoff.
-
-## IMPORTANT: static export + dynamic detail routes (for the next agent)
-
-With `output: "export"` there is no server, so a dynamic route segment must enumerate its params at
-build time via `generateStaticParams`. We cannot know real report/cleanup/thread ids ahead of time,
-and `export const dynamicParams = true` is NOT honored by the static export for unknown runtime ids.
-
-The strategy used here:
-
-- The detail routes are CATCH-ALL routes: `app/pin/[...id]`, `app/cleanups/[...id]`,
-  `app/messages/[...id]`, and `app/people/[...id]`. Each `generateStaticParams` returns a single
-  placeholder (`{ id: ["_"] }`) so the export emits one shell HTML per route, and the page reads the
-  ACTUAL id client-side via `useDetailId` (which uses `usePathname`, NOT `useParams`).
-- IMPORTANT: read the id from `usePathname()`, NOT `useParams()`. In a static export the catch-all is
-  prerendered with the placeholder param, so `useParams()` returns the BUILD-TIME `_`, not the live
-  URL segment. `src/hooks/use-detail-id.ts` parses the real id out of `usePathname()` (and treats the
-  `_` placeholder as "no id"), which is correct both for client-side `router.push` navigations and for
-  a fallback-served deep link like `/pin/<uuid>/`.
-- To serve arbitrary `/pin/<real-id>` URLs on a static host, configure a SPA FALLBACK so unknown
-  paths are rewritten to the emitted shell (e.g. on Cloudflare Pages / Netlify / S3+CloudFront, route
-  unmatched paths under `/pin/*`, `/cleanups/*`, `/messages/*`, `/people/*` to the catch-all
-  `index.html`). With
-  Next's own router (client-side `router.push`), navigation already works without any extra config.
-  NOTE: a HARD refresh / deep link of a non-enumerated id under `next dev` returns 500 (a dev-server
-  artifact of `output: export` + `dynamicParams = false`); the static export + SPA fallback serves it
-  correctly. The pin/cleanup detail views (`src/features/pin`, `src/features/cleanups`), the person
-  profile (`src/features/people`), and the conversation (`src/features/messages`) are all real
-  client-rendered views read from `usePathname()`.
-
-`trailingSlash: true` is enabled, so each route exports as a directory with an `index.html`.
+With `output: "export"` a dynamic segment must enumerate its params at build time, and real ids are
+unknown then. Every detail route is therefore a CATCH-ALL (`app/pin/[...id]`, `app/e/[...slug]`,
+`app/manage/[...path]`, ...) whose `generateStaticParams` returns the single placeholder `_` with
+`dynamicParams = false`, so the export emits one shell per route at `out/<route>/_/index.html`. The
+real id is read client-side from the URL, never from `useParams()` (which would return the build-time
+`_`). `trailingSlash: true` is enabled, so each route exports as a directory with an `index.html`.
 
 The Cloudflare Pages deployment ships two control files in `public/` (copied verbatim into `out/`):
-`_redirects` implements the SPA fallback above with **directory-form** rewrite destinations (Pages
-silently drops any rule whose destination ends in `/index.html` as an infinite loop) and pins the real
-`/cleanups`, `/people`, `/messages` browse pages first so the catch-all rewrite can't shadow them (on
+`_redirects` implements the SPA fallback (`/<route>/* -> /<route>/_/ 200`) with **directory-form**
+rewrite destinations (Pages silently drops any rule whose destination ends in `/index.html` as an
+infinite loop) and pins the real `/cleanups`, `/people`, `/messages`, `/compose` browse pages first so
+the catch-all rewrite can't shadow them (on
 Pages a `_redirects` rule wins over a matching static asset, and the `*` splat matches the bare
 `/<route>/` too). `_headers` sets immutable caching for `/_next/static/*`, revalidated caching for the
 HTML shells, and the security-header suite (CSP, frame-ancestors, nosniff, Referrer-Policy,
 Permissions-Policy, COOP, HSTS) the static host would otherwise lack. The protective rules target
 `/__spa/<route>/` copies of the browse pages, which `scripts/cf-pages-postbuild.mjs` (run after
-`next build` via the `build` script) produces from the export. That same postbuild step appends a
+`next build` via the `build` script) produces from the export; it also fails the build when a
+catch-all placeholder shell has no matching `_redirects` rule. That same postbuild step appends a
 `/*` -> `X-Robots-Tag: noindex, nofollow` rule to the EMITTED `out/_headers` (never to
 `public/_headers`) whenever the build's normalized site origin is not `https://civfix.org` - staging
 serves the same civic content on a second public hostname, so without it every `civfix.dev` URL is an
@@ -289,9 +202,9 @@ a local static-server preview — Cloudflare consumes these only at deploy time.
 
 `.github/workflows/deploy-web.yml` builds this app's static export and publishes it to the Cloudflare
 Pages project `civfix-web` with `wrangler pages deploy` (Direct Upload, not Pages' own git build):
-a push to `main` publishes STAGING to the `staging` branch (https://civfix.dev), and a published `v*`
-release rebuilds the same commit with production values and publishes it to the Pages production branch
-(https://civfix.org). On a push, only paths that feed the web build trigger it, so a mobile-only change
+a push to `main` publishes STAGING to the `staging` branch (alias `staging.civfix-web.pages.dev`,
+served as https://civfix.dev), and a published `v*` release rebuilds the same commit with production
+values and publishes it to the Pages production branch `main` (https://civfix.org). On a push, only paths that feed the web build trigger it, so a mobile-only change
 never redeploys the site; a release always deploys.
 
 The Pages config lives in this app, not at the repo root: `apps/community-web/wrangler.jsonc` supplies
@@ -299,62 +212,6 @@ the project name and `pages_build_output_dir: "out"`, and `wrangler` picks up th
 `apps/community-web/functions/` dir relative to its cwd — which is why the workflow's deploy step runs
 with `working-directory: apps/community-web`. The same layout makes `wrangler pages dev` serve `out/`
 through the real Pages routing engine.
-
-## @civfix/shared notes
-
-The `@civfix/shared` dependency was bumped to the refined contract at the start of Step 2, which
-CLOSED three Step-1 gaps: `MessageThreadDTO.lastFromMe` (the "You:" prefix), `CleanupDTO.address`
-(a real location line on the events list and detail), and `ReportClusterResponse.counts` (per-category
-filter counts). Step 2 consumes `CleanupDTO.address` in the cleanups browse + detail, and the report
-flow uses `WEB_REPORT_TYPES`, the `/media` presign/finalize contract, `AnonReportRequest/Response`,
-`ClaimNudgeResponse`, and `ClaimReportRequest/Response`.
-
-Remaining (cosmetic / enrichment) gaps, shared NOT further modified:
-
-1. There is no report follow-up / comment endpoint, so the pin detail's owner "Send a follow-up"
-   composer is wired but degrades gracefully (it acknowledges locally rather than POSTing). A
-   `POST /reports/:id/comments` (or similar) would make it live; it is the single place to wire it.
-2. The anon report contract (`AnonReportRequest`) has no dedicated `title` field. The flow collects a
-   required title for UX and folds it into the `description` (headline first), since the city only
-   receives a description. A first-class `title` would let the detail view show it verbatim.
-3. The cleanups LIST endpoint returns the organizer but not the attendee roster, so the home events
-   avatar stack still shows the organizer plus generic stand-ins. An optional capped
-   `recentMembers: PersonDTO[]` on the list item would let the stack show real faces.
-
-Step 3 surfaced two more (cosmetic) gaps, shared NOT further modified:
-
-4. `UserProfileDTO` (from `GET /people/:id` and `/me/profile`) has no `avatar` gradient pair, while
-   the `PersonDTO` list row does. The person profile therefore falls back to a neutral initials avatar
-   instead of carrying the gradient through from the discovery card. Adding `avatar?: [string,string]`
-   to `UserProfileDTO` would keep the avatar gradient consistent between the card and the profile.
-5. `CreateCleanupRequest` has no human-readable location/spot string (only `lat`/`lng`); the server
-   derives `CleanupDTO.address`. The host form collects a required "Name the spot" line for UX and
-   folds it into the description (named first), mirroring the report flow's title handling. A
-   first-class `spot`/`locationLabel` field would let the host's exact wording show verbatim.
-
-None of these block Step 3; all are cosmetic or enrichment.
-
-Step 4 (messages + realtime chat) surfaced three more (cosmetic / enrichment) gaps, shared NOT
-modified:
-
-6. The realtime contract is cleanup-centric: history is `GET /cleanups/:id/messages` and the WS frames
-   carry a `cleanupId`. The thread list, however, includes `dm` and `group` kinds keyed by their own
-   id. The conversation view therefore treats `/messages/:id` as a cleanup chat (the Phase-1 reality);
-   a `dm` thread opened from a person profile loads its header from `GET /cleanups/:id` and shows a
-   graceful "unavailable" state if that id is not a cleanup. A unified `GET /threads/:id/messages` (or a
-   DM message endpoint + a `dm`/`group` WS room) would let the same view serve direct messages.
-7. `MessageThreadDTO` carries `title` but no avatar gradient / member faces, so the inbox row and the
-   conversation header use an initials avatar (or the cleanup organizer). An optional
-   `avatar?: [string,string]` and/or capped `members: PersonDTO[]` would let rows and the group header
-   show real faces.
-8. The `presence` WS frame carries only `userId` + `state` (no display name); presence is currently
-   informational and the header indicator is driven by the socket connection state rather than a live
-   roster. A name/handle on the presence frame (or a roster fetch) would enable a "typing.../online"
-   member display.
-
-None of these block Step 4; all are cosmetic or enrichment. The Step-4 surfaces consume the full
-realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `@civfix/shared`
-`WsClientMessageSchema` / `WsServerMessageSchema` frames over the API `/ws` endpoint.
 
 ## Rich link previews (Open Graph / Twitter cards)
 
@@ -462,10 +319,10 @@ realtime contract as-is: `GET /threads`, `GET /cleanups/:id/messages`, and the `
    `summary_large_image`, except `summary` for an avatar or logo (a square picture in a large
    card is a blurry crop). `og:url`, `rel=canonical`, `og:image` and the icon links are
    built from the request's ENVIRONMENT origin - `resolveSiteOrigin(request.url)` in
-   `src/lib/site-meta.ts`, which maps an exact known hostname onto that environment's ONE canonical
-   origin (`civfix.org` / `www.civfix.org` / `civfix-web.pages.dev` -> `https://civfix.org`;
-   `civfix.dev` / `www.civfix.dev` / `dev.civfix-web.pages.dev` -> `https://civfix.dev`), requires
-   https on the default port, and otherwise falls back to `DEFAULT_SITE_URL`. There is no suffix or
+   `src/lib/site-meta.ts`, which maps an exact known hostname (`PRODUCTION_HOSTNAMES` /
+   `STAGING_HOSTNAMES` in that file) onto that environment's ONE canonical origin
+   (`https://civfix.org` / `https://civfix.dev`), requires https on the default port, and otherwise
+   falls back to `DEFAULT_SITE_URL`. There is no suffix or
    substring rule, and one environment still has exactly one canonical host, so the alias hostnames
    cannot be indexed as duplicates. It never reads `Host`, `X-Forwarded-Host` or any other client-supplied
    header, so the origin cannot be poisoned into a preview; it exists so a staging card points at

@@ -9,9 +9,9 @@
   // per-entity Open Graph / Twitter meta into the detail-route shells (see
   // apps/community-web/README.md, "Rich link previews"). `wrangler pages deploy` picks up
   // ./functions relative to the cwd the deploy runs in (this app directory, see
-  // .github/workflows/deploy-web.yml), and apps/community-web/public/_routes.json narrows invocation to
-  // /pin/*, /cleanups/*, /people/*, /e/* and /orgs/* so every other request still goes straight to the asset server
-  // (and its _redirects / _headers). compatibility_date pins the Workers runtime those Functions run
+  // .github/workflows/deploy-web.yml), and apps/community-web/public/_routes.json lists the only paths
+  // that invoke them, so every other request still goes straight to the asset server (and its
+  // _redirects / _headers). compatibility_date pins the Workers runtime those Functions run
   // on; HTMLRewriter, AbortSignal.timeout and caches.default are all available at this date.
   "compatibility_date": "2024-12-01"
 }
