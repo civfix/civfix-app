@@ -1940,7 +1940,7 @@ asserts it. civfix-app adopts 0.55.0 to call the endpoint and to ship the funnel
 civfix-admin and civfix-govt-web bump with the routine version propagation and call nothing new. No
 migration — every number here is aggregated from tables that already exist.
 
-## 55. A public post is guest-readable (0.55.1)
+## 55. A public post is guest-readable (0.57.0)
 
 `getPost` — `GET /posts/:id` — moves from `auth: "required"` to `auth: "optional"`, mirroring
 `getReport` and `getProfile`. A signed-out read of a PUBLIC post returns the ordinary `PostDTO`
