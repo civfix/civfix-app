@@ -14,18 +14,32 @@ name: Deploy mobile (TestFlight)
 # derived from the git tag and a web-only release must not produce a mobile build.
 #
 # The build runs `eas build --local` on this GitHub-hosted Mac through scripts/store-build.sh — the
-# same script a developer runs on a laptop — so CI and manual builds share ONE credential store and
-# ONE remote build-number counter (both held by EAS). No Apple credential lives in this repository.
-# EAS free plan: local builds and `eas submit` consume no build quota. Standard macOS runners are
-# free on a public repository; this workflow assumes that and never runs on pull requests.
+# same script a developer runs on a laptop — so CI and manual builds share ONE signing credential
+# store and ONE remote build-number counter (both held by EAS). The upload is a separate step,
+# scripts/store-upload.sh, straight from this runner to App Store Connect with `fastlane pilot
+# upload` and an App Store Connect API key held as secrets: `eas submit` is not used, because its
+# free-tier queue can sit on a submission for hours. The key is in scope for that one step only,
+# never for the build and the dependency code it runs. EAS free plan: local builds consume no build
+# quota. Standard macOS runners are free on a public repository; this workflow assumes that and
+# never runs on pull requests.
 #
 # Required repository configuration (Settings -> Secrets and variables -> Actions):
-#   Secrets:  EXPO_TOKEN — an access token for a robot user in the Expo org that owns the project.
+#   Secrets:  EXPO_TOKEN      — an access token for a robot user in the Expo org that owns the project.
+#             ASC_KEY_ID      — App Store Connect API key: the Key ID (a key made for CI, Developer role).
+#             ASC_ISSUER_ID   — the Issuer ID from the same App Store Connect API page.
+#             ASC_PRIVATE_KEY — the full contents of the downloaded AuthKey_<KEY_ID>.p8 file.
 # Required on EAS (Project credentials, iOS): a distribution certificate + App Store provisioning
-# profile, an App Store Connect API key (Service credentials), and a remote build number initialised
+# profile, an App Store Connect API key (Service credentials, which EAS uses to manage that signing
+# material — uploads no longer go through it), and a remote build number initialised
 # with `eas build:version:set -p ios` above the highest build already in App Store Connect — an
 # unset counter is seeded from app.config.js's ios.buildNumber, and a too-low number only fails at
 # upload time, after the whole build.
+#
+# The user-facing version (`version` in app.config.js) is the one thing EAS does not increment, and
+# App Store Connect refuses every upload of a version it has already approved. After an App Store
+# release, the next PR bumps `version` (and package.json) or every push here fails at upload time.
+# store-build.sh checks Apple's public lookup for the live version before it builds, so a missed
+# bump fails in seconds rather than after a half-hour build.
 #
 # Every build is cold: EAS local builds do no caching, and the generated ios/ tree is regenerated
 # from a clean copy each run. Only the CocoaPods download cache is worth restoring.
@@ -79,6 +93,17 @@ jobs:
               ;;
           esac
           echo "ref $GITHUB_REF -> profile $PROFILE"
+
+      - name: Refuse to build without the App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          for var in ASC_KEY_ID ASC_ISSUER_ID ASC_PRIVATE_KEY; do
+            [ -n "${!var}" ] || { echo "::error::repository secret $var is not set; the upload to App Store Connect needs it."; exit 1; }
+          done
 
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -140,7 +165,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cocoapods-
 
-      - name: Build the ipa and upload it to App Store Connect
+      - name: Build the ipa
         # No artifact is kept: on a public repository anyone could download it, and an App Store
         # signed ipa is only installable through TestFlight anyway. The build log records the
         # version and build number.
@@ -148,4 +173,13 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           CI: "true"
-        run: scripts/store-build.sh "$TARGET" --output "$RUNNER_TEMP/civfix-$TARGET.ipa"
+        run: scripts/store-build.sh "$TARGET" --no-submit --output "$RUNNER_TEMP/civfix-$TARGET.ipa"
+
+      - name: Upload the ipa to App Store Connect
+        working-directory: apps/community-mobile
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          CI: "true"
+        run: scripts/store-upload.sh "$RUNNER_TEMP/civfix-$TARGET.ipa"
