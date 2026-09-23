@@ -20,8 +20,10 @@ const AUTH_DEPENDENT_KEYS: readonly (readonly unknown[])[] = [
   // ["threads"] is a PREFIX of every inbox variant, so this one entry covers the whole family.
   queryKeys.threads,
   queryKeys.notificationsRoot,
-  queryKeys.notificationPrefs,
-  ["profile"],
+  queryKeys.profileRoot,
+  // Feeds, replies, saves and post details carry the viewer's liked/saved/reposted flags.
+  queryKeys.postsRoot,
+  queryKeys.postRoot,
   ["report"],
   ["cleanup"],
   ["chat"],

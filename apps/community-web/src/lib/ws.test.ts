@@ -152,21 +152,22 @@ describe("chatSocket send queue (queueWhileClosed)", () => {
   it("queues a frame sent while the socket is down and flushes it on open", () => {
     chatSocket.connect()
     const socket = latest()
-    // Not open yet: the typing frame is queued (no throw, nothing sent).
-    chatSocket.send({ type: "typing", cleanupId: ROOM_A })
+    // Not open yet: the chat message is queued (no throw, nothing sent). Typing frames are ephemeral
+    // and dropped while closed, so a real message is what exercises the queue.
+    chatSocket.send({ type: "send", cleanupId: ROOM_A, clientId: "c1", body: "hi" })
     expect(socket.sent).toHaveLength(0)
 
     socket.fireOpen()
-    expect(socket.parsedSent().some((f) => f.type === "typing" && f.cleanupId === ROOM_A)).toBe(true)
+    expect(socket.parsedSent().some((f) => f.type === "send" && f.cleanupId === ROOM_A)).toBe(true)
   })
 
   it("preserves frame ORDER when a send fails partway through the flush", () => {
     chatSocket.connect()
     const first = latest()
     // Three frames queued while the socket is down, in the order the user produced them.
-    chatSocket.send({ type: "typing", cleanupId: ROOM_A })
-    chatSocket.send({ type: "typing", cleanupId: ROOM_B })
-    chatSocket.send({ type: "typing", cleanupId: ROOM_C })
+    chatSocket.send({ type: "send", cleanupId: ROOM_A, clientId: "a", body: "1" })
+    chatSocket.send({ type: "send", cleanupId: ROOM_B, clientId: "b", body: "2" })
+    chatSocket.send({ type: "send", cleanupId: ROOM_C, clientId: "c", body: "3" })
 
     // The SECOND send throws (the socket flipped to CLOSING mid-flush). The flush must stop there
     // rather than carrying on to the third frame: delivering C while B goes back on the queue would put

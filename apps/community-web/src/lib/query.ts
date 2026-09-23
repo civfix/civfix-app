@@ -1,7 +1,7 @@
 "use client"
 
 import { QueryClient } from "@tanstack/react-query"
-import { AppError, ErrorCode } from "@civfix/shared"
+import { toAppError } from "@civfix/shared"
 
 /**
  * Create a React Query client tuned for a public, runtime-fetching SPA.
@@ -27,18 +27,10 @@ export function makeQueryClient(): QueryClient {
         // with a short gcTime so they are reaped on their old schedule rather than held for 24h.
         gcTime: 24 * 60 * 60_000,
         refetchOnWindowFocus: false,
-        retry: (failureCount, error) => {
-          if (error instanceof AppError) {
-            const noRetry: ErrorCode[] = [
-              ErrorCode.UNAUTHORIZED,
-              ErrorCode.FORBIDDEN,
-              ErrorCode.NOT_FOUND,
-              ErrorCode.VALIDATION,
-            ]
-            if (noRetry.includes(error.code)) return false
-          }
-          return failureCount < 2
-        },
+        // Structural, not instanceof: a second @civfix/shared copy (vitest, a mis-deduped bundle)
+        // throws a foreign-realm AppError. toAppError maps a network failure to INTERNAL (500), so
+        // only transport and server faults retry; every 4xx (including 429) fails fast.
+        retry: (failureCount, error) => toAppError(error).httpStatus >= 500 && failureCount < 2,
       },
       mutations: {
         retry: false,

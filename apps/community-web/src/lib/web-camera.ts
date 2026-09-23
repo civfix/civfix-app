@@ -37,6 +37,12 @@ import { sha256Hex, mediaKindFromFile } from "@/lib/media"
 /** object-URL -> the File it was created from, so prepareUpload can read the original bytes. */
 const fileByUri = new Map<string, File>()
 
+// Engines without the file-input `cancel` event (Safari < 16.4, Chrome < 113) signal a dismissed picker
+// only by focus returning to the window, and there is no feature test for that event (`oncancel` exists
+// on every element because of <dialog>). So the focus fallback is always armed, with a grace long enough
+// that a `change` landing after the focus (a camera handing back a large photo) still wins.
+export const PICKER_FOCUS_CANCEL_GRACE_MS = 3000
+
 /**
  * Open a one-shot file input and resolve with the chosen File (or null if cancelled). `useCapture` adds
  * the `capture` attribute so a mobile browser opens the rear camera directly; without it the OS picker
@@ -52,15 +58,23 @@ function pickFile(useCapture: boolean): Promise<File | null> {
     input.style.position = "fixed"
     input.style.left = "-9999px"
     let settled = false
+    let graceTimer: ReturnType<typeof setTimeout> | null = null
+    const onWindowFocus = () => {
+      graceTimer = setTimeout(() => {
+        if (!input.files?.length) finish(null)
+      }, PICKER_FOCUS_CANCEL_GRACE_MS)
+    }
     const finish = (file: File | null) => {
       if (settled) return
       settled = true
+      if (graceTimer !== null) clearTimeout(graceTimer)
+      window.removeEventListener("focus", onWindowFocus)
       input.remove()
       resolve(file)
     }
     input.addEventListener("change", () => finish(input.files?.[0] ?? null))
-    // The browser fires no "cancel" on older engines; the modern `cancel` event covers it where present.
     input.addEventListener("cancel", () => finish(null))
+    window.addEventListener("focus", onWindowFocus, { once: true })
     document.body.appendChild(input)
     input.click()
   })
