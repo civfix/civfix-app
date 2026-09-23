@@ -187,6 +187,52 @@ describe("installViewerScope", () => {
     expect(readClaimHandoff()).toEqual({ reportId: "report-b", claimCode: "CLAIM-CODE-B" })
   })
 
+  it("purges a handoff saved during an optimistic boot once that viewer is confirmed and then signs out", () => {
+    writeAuthSnapshot(USER_A)
+    useAuthStore.setState({ status: "authenticated", user: USER_A, optimistic: true })
+    teardown = installViewerScope(qc)
+    saveClaimHandoff({ reportId: "report-1", claimCode: "CLAIM-CODE-1" })
+
+    useAuthStore.getState().setSession({ user: USER_A })
+    expect(readClaimHandoff()).toEqual({ reportId: "report-1", claimCode: "CLAIM-CODE-1" })
+    useAuthStore.getState().clear()
+
+    expect(readClaimHandoff()).toBeNull()
+  })
+
+  it("purges a guest's handoff once the account that signed in with it signs out", () => {
+    teardown = installViewerScope(qc)
+    saveClaimHandoff({ reportId: "report-1", claimCode: "CLAIM-CODE-1" })
+
+    useAuthStore.getState().setSession({ user: USER_A })
+    expect(readClaimHandoff()).toEqual({ reportId: "report-1", claimCode: "CLAIM-CODE-1" })
+    useAuthStore.getState().clear()
+
+    expect(readClaimHandoff()).toBeNull()
+  })
+
+  it("purges a guest's handoff once the account that signed in with it is replaced by another", () => {
+    teardown = installViewerScope(qc)
+    saveClaimHandoff({ reportId: "report-1", claimCode: "CLAIM-CODE-1" })
+
+    useAuthStore.getState().setSession({ user: USER_A })
+    useAuthStore.getState().setSession({ user: USER_B })
+
+    expect(readClaimHandoff()).toBeNull()
+  })
+
+  it("keeps a handoff through an expired snapshot, the guest state and the sign-in that comes back to claim it", () => {
+    writeAuthSnapshot(USER_A)
+    useAuthStore.setState({ status: "authenticated", user: USER_A, optimistic: true })
+    teardown = installViewerScope(qc)
+    saveClaimHandoff({ reportId: "report-1", claimCode: "CLAIM-CODE-1" })
+
+    useAuthStore.getState().setSession({ user: null })
+    useAuthStore.getState().setSession({ user: USER_A })
+
+    expect(readClaimHandoff()).toEqual({ reportId: "report-1", claimCode: "CLAIM-CODE-1" })
+  })
+
   it("drops a failed sign-out's notice once the session ends another way (a 401)", () => {
     useAuthStore.getState().setSession({ user: USER_A })
     teardown = installViewerScope(qc)

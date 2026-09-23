@@ -4,7 +4,7 @@ import type { QueryClient } from "@tanstack/react-query"
 import { adoptViewer, discardViewerDrafts } from "@civfix/ui"
 
 import { clearPersistedCache } from "@/lib/query-persist"
-import { clearClaimHandoffOwnedBy } from "@/store/claim-handoff"
+import { adoptUnownedClaimHandoff, clearClaimHandoffOwnedBy } from "@/store/claim-handoff"
 import { isConfirmedSignedOut, useAuthStore, type AuthState } from "@/store/auth-store"
 import { useSignOutRetryStore } from "@/store/sign-out-retry-store"
 
@@ -17,14 +17,18 @@ function viewerIdOf(state: AuthState): string | null {
  * query caches, the anonymous-report claim handoff they saved, every draft in @civfix/ui) is dropped the
  * moment that viewer is confirmed gone: sign-out, a 401 that ended the session, a live "not signed in"
  * answer, or a different account signing in. A guest signing in keeps the claim handoff, because claiming
- * their own anonymous report is exactly what that handoff is for.
+ * their own anonymous report is exactly what that handoff is for; the handoff then belongs to the account a
+ * live session answer confirms, so that account's departure purges it.
  */
 export function installViewerScope(queryClient: QueryClient): () => void {
-  let confirmedViewerId = viewerIdOf(useAuthStore.getState())
+  const initial = useAuthStore.getState()
+  let confirmedViewerId = viewerIdOf(initial)
   adoptViewer(confirmedViewerId)
+  adoptUnownedClaimHandoff(initial)
   return useAuthStore.subscribe((state) => {
     const viewerId = viewerIdOf(state)
     adoptViewer(viewerId)
+    adoptUnownedClaimHandoff(state)
     if (viewerId === confirmedViewerId) return
     if (viewerId === null && !isConfirmedSignedOut(state)) return
     const departedViewerId = confirmedViewerId

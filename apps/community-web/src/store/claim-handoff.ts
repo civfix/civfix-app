@@ -7,7 +7,7 @@
  * handle - which must outlive the wizard's session - is web-app-local.
  */
 
-import { useAuthStore } from "@/store/auth-store"
+import { useAuthStore, type AuthState } from "@/store/auth-store"
 
 export interface ClaimHandoff {
   /** Null when the code arrived in a link that did not name its report. */
@@ -17,18 +17,23 @@ export interface ClaimHandoff {
 
 interface StoredClaimHandoff extends ClaimHandoff {
   /**
-   * The confirmed viewer it was saved under, or null for a guest or a not-yet-confirmed session. Only
-   * that viewer's departure may purge it: a code saved during an optimistic boot must survive the
-   * snapshot turning out expired, since it is what the sign-in round trip comes back to claim.
+   * The confirmed viewer it belongs to: the one it was saved under, or else the first viewer a live
+   * session answer confirms afterwards (adoptUnownedClaimHandoff). Null only until then, for a guest or a
+   * not-yet-confirmed session. Only the owner's departure may purge it: a code saved during an optimistic
+   * boot must survive the snapshot turning out expired, since it is what the sign-in round trip comes back
+   * to claim, yet must not outlive the account that confirmed on this device.
    */
   ownerId: string | null
 }
 
 const CLAIM_HANDOFF_KEY = "civfix.claim-handoff"
 
-function confirmedViewerId(): string | null {
-  const state = useAuthStore.getState()
+function confirmedViewerIdOf(state: AuthState): string | null {
   return state.status === "authenticated" && !state.optimistic ? (state.user?.id ?? null) : null
+}
+
+function confirmedViewerId(): string | null {
+  return confirmedViewerIdOf(useAuthStore.getState())
 }
 
 /** Persist the most recent submit's claim handle. No-op on the server / when storage is unavailable. */
@@ -58,6 +63,25 @@ export function readClaimHandoff(): ClaimHandoff | null {
     return null
   } catch {
     return null
+  }
+}
+
+/** Give an unowned saved claim handle to the viewer `state` confirms; a no-op until one is confirmed. */
+export function adoptUnownedClaimHandoff(state: AuthState): void {
+  const ownerId = confirmedViewerIdOf(state)
+  if (ownerId === null || typeof window === "undefined") return
+  try {
+    const raw = window.localStorage.getItem(CLAIM_HANDOFF_KEY)
+    if (!raw) return
+    const parsed = JSON.parse(raw) as Partial<StoredClaimHandoff>
+    if (parsed.ownerId !== null) return
+    const handoff = readClaimHandoff()
+    if (!handoff) return
+    const stored: StoredClaimHandoff = { ...handoff, ownerId }
+    window.localStorage.setItem(CLAIM_HANDOFF_KEY, JSON.stringify(stored))
+  } catch {
+    // Storage blocked or unreadable: the handle stays as it was, and an unreadable one is purged on the
+    // next departure anyway.
   }
 }
 
