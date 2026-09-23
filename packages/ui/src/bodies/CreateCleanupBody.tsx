@@ -324,6 +324,7 @@ function HostForm({
     () => (seedPoint ? { lat: seedPoint.lat, lng: seedPoint.lng } : (userLocation.data ?? null)),
     [seedPoint, userLocation.data],
   )
+  const centerSettled = seedPoint != null || !userLocation.isPending
 
   const [mountPlan] = useState<HostDraftMountPlan>(() => {
     const initial: CleanupFormValue = seedPoint
@@ -572,6 +573,7 @@ function HostForm({
               onChange={setForm}
               onPatch={mergeIntoDraft}
               initialCenter={initialCenter}
+              centerSettled={centerSettled}
               sections={STEP_SECTIONS.review}
               showFeedShare
               feedShareBusy={create.isPending}
@@ -589,6 +591,7 @@ function HostForm({
             onChange={setForm}
             onPatch={mergeIntoDraft}
             initialCenter={initialCenter}
+            centerSettled={centerSettled}
             sections={STEP_SECTIONS[step]}
             showFeedShare={false}
           />

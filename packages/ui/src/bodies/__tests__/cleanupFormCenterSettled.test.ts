@@ -36,3 +36,20 @@ describe("the event form's pickers learn when the centre resolution settled with
     expect(form).toMatch(/<MeetLocationCompact[\s\S]*?centerSettled=\{centerSettled\}[\s\S]*?\/>/)
   })
 })
+
+describe("event form hosts report when the picker centre has settled", () => {
+  const read = (file: string) => readFileSync(new URL(`../${file}`, import.meta.url), "utf8")
+
+  it("the create flow passes settled once the location lookup finished or a seed point exists", () => {
+    const create = read("CreateCleanupBody.tsx")
+    expect(create).toContain("const centerSettled = seedPoint != null || !userLocation.isPending")
+    const forms = create.match(/<CleanupForm\n[\s\S]*?\/>/g) ?? []
+    expect(forms.length).toBe(2)
+    for (const f of forms) expect(f).toContain("centerSettled={centerSettled}")
+  })
+
+  it("the edit flow has nothing to resolve, so its picker is settled from the start", () => {
+    const edit = read("EditCleanupBody.tsx")
+    expect(edit).toMatch(/<CleanupForm[\s\S]*?\bcenterSettled\b[\s\S]*?\/>/)
+  })
+})

@@ -203,6 +203,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
         value={form}
         onChange={setForm}
         onPatch={mergeForm}
+        centerSettled
         initialCenter={form.coords}
         existingSlots={cleanup.slots}
         eventEndUnsaved={cleanup.endsAt == null}
