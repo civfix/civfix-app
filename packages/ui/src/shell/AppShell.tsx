@@ -6,6 +6,7 @@ import { ExpandedShell } from "./ExpandedShell"
 import { PortraitShell } from "./PortraitShell"
 import { defaultRenderBody } from "./BodyRouter"
 import { MediaLightboxProvider } from "../lightbox"
+import { useMapFocus } from "../map/mapFocusStore"
 import { SharePostProvider } from "../share/SharePostProvider"
 import { effectiveBaseView, portraitShellPlan } from "./bodyLayout"
 import { DETAILS_ARE_FULL_PAGE } from "./detailPresentationPlatform"
@@ -45,6 +46,10 @@ export function AppShell({
   React.useEffect(() => {
     useNavStore.getState().setMode(mode)
   }, [mode])
+
+  React.useEffect(() => {
+    if (view !== "map") useMapFocus.getState().releaseHandoff()
+  }, [view])
 
   return (
     <MediaLightboxProvider>

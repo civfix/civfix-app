@@ -19,13 +19,16 @@ export interface FocusedEvent {
 
 export type FocusedEntity = FocusedReport | FocusedEvent
 
+export type FocusOwner = "page" | "handoff"
+
 export interface MapFocusState {
   focus: FocusedEntity | null
-  setReport: (report: Omit<FocusedReport, "kind">) => void
-  setEvent: (event: Omit<FocusedEvent, "kind">) => void
+  owner: FocusOwner
+  setReport: (report: Omit<FocusedReport, "kind">, owner?: FocusOwner) => void
+  setEvent: (event: Omit<FocusedEvent, "kind">, owner?: FocusOwner) => void
   clear: () => void
   /**
-   * Release the focus ONLY if `id` still owns it. The release valve for a body that publishes focus from
+   * Release a PAGE-owned focus only if `id` still owns it. The release valve for a body that publishes focus from
    * a mount effect and lets go on unmount.
    *
    * WHY IT EXISTS. This is a singleton, and `shell/PageStack.native` keeps every page on the stack mounted
@@ -46,16 +49,22 @@ export interface MapFocusState {
    * (a body that has no coordinates to focus at all).
    */
   clearFor: (id: string) => void
+  releaseHandoff: () => void
 }
 
 export const useMapFocus = create<MapFocusState>((set, get) => ({
   focus: null,
-  setReport: (report) => set({ focus: { kind: "report", ...report } }),
-  setEvent: (event) => set({ focus: { kind: "cleanup", ...event } }),
-  clear: () => set({ focus: null }),
+  owner: "page",
+  setReport: (report, owner = "page") => set({ focus: { kind: "report", ...report }, owner }),
+  setEvent: (event, owner = "page") => set({ focus: { kind: "cleanup", ...event }, owner }),
+  clear: () => set({ focus: null, owner: "page" }),
   // Guarded with `get()` rather than by returning the state unchanged from `set`: a no-op that never
   // calls `set` cannot notify a subscriber, so a stale-id release costs the map exactly nothing.
   clearFor: (id) => {
-    if (get().focus?.id === id) set({ focus: null })
+    const state = get()
+    if (state.owner === "page" && state.focus?.id === id) set({ focus: null })
+  },
+  releaseHandoff: () => {
+    if (get().owner === "handoff") set({ focus: null, owner: "page" })
   },
 }))
