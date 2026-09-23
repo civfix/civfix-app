@@ -1,10 +1,8 @@
 /**
- * The search body's surface selection + the EXIT FREEZE.
- *
- * Modelled on `bodyFadeStyle`'s freeze-while-closing (shell/CompactShell.native.tsx:557-568): the live
+ * Modelled on `bodyFadeStyle`'s freeze-while-closing (shell/CompactShell.native.tsx): the live
  * value is written into a holding cell only while NOT closing, and the closing branch returns the cell.
  * Here the cell is the SURFACE plus the query it was built for, because `selectView` clears the query in
- * the same store update that changes the view — holding the surface without the query would re-render
+ * the same store update that changes the view; holding the surface without the query would re-render
  * SearchResults with an empty query, which is a content change on the fade frames all the same.
  */
 import { describe, expect, it } from "vitest"
@@ -19,7 +17,7 @@ describe("searchSurfaceState", () => {
   it("is results for a typed query, carrying the trimmed query", () => {
     expect(searchSurfaceState("  Echo Park  ", false)).toEqual({ surface: "results", query: "Echo Park" })
   })
-  it("is results even while the bar is pinned — typing wins over focus", () => {
+  it("is results even while the bar is pinned: typing wins over focus", () => {
     expect(searchSurfaceState("Echo Park", true)).toEqual({ surface: "results", query: "Echo Park" })
   })
   it("is recents when the docked bar is pinned with no query", () => {
@@ -30,7 +28,7 @@ describe("searchSurfaceState", () => {
   })
 })
 
-describe("resolveSearchSurfaceState — freeze-while-exiting", () => {
+describe("resolveSearchSurfaceState: freeze-while-exiting", () => {
   const RESULTS: SearchSurfaceState = { surface: "results", query: "echo park" }
   // What SearchBody computes on the FIRST frame of an exit: selectView cleared the query in the same
   // store update that changed the view, and the blur drops `pinned` a frame later.

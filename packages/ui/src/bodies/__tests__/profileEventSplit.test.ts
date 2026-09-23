@@ -5,7 +5,7 @@
  *    Each list feeds its own pair of buckets and is split only by organizer - no time predicate runs, so a
  *    past list is never re-sliced and a future-dated row the server put in `pastEvents` still renders.
  *  - LEGACY (0.37 and older): no `upcomingEvents` field at all, and `pastEvents` carries future events
- *    too. Passing `undefined` selects the original time-based split verbatim.
+ *    too. Passing `undefined` selects the time-based split.
  *
  * The distinction that bites: an EMPTY upcoming array is the modern path (the server answered "nothing
  * upcoming"), NOT the legacy one. Only `undefined` means "this server does not send the field".

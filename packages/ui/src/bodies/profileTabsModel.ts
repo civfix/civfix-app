@@ -1,10 +1,6 @@
 /**
- * The shared profile TAB BAR model - one control, both profiles (own `ProfileView` and other-person
- * `PersonDetailBody`).
- *
- * The default is POSTS on both, deliberately: a profile whose first screen is a segmented control
- * pointing at Events buries the thing people came to read, and having posts be section 1 of 1 (rather
- * than 4 of 4, under settings) is the structural half of the "ugly posts" fix.
+ * The default is POSTS on both profiles, deliberately: a profile whose first screen is a segmented
+ * control pointing at Events buries the thing people came to read.
  *
  * Availability FILTERS the fixed order; it never reorders it, so the tabs never dance between two
  * profiles. `posts` and `events` are always available (each owns its own empty copy), which is what
@@ -13,7 +9,6 @@
 
 export type ProfileTabId = "posts" | "events" | "hours" | "reports"
 
-/** Fixed presentation order. Availability filters this list; it never reorders it. */
 export const PROFILE_TAB_ORDER: readonly ProfileTabId[] = ["posts", "events", "hours", "reports"]
 export const PROFILE_DEFAULT_TAB: ProfileTabId = "posts"
 

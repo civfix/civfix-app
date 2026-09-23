@@ -39,8 +39,8 @@ describe("SearchResults groups", () => {
 
 /**
  * Source-text guards, the house pattern for a component invariant in a package with no RN renderer (see
- * SearchBody.test.ts, which guards its top-anchored layout the same way). These pin the two halves of the
- * change that a future edit could silently undo: the row is the SHARED ReportRowView rather than a
+ * SearchBody.test.ts, which guards its top-anchored layout the same way). These pin two invariants a
+ * future edit could silently undo: the row is the SHARED ReportRowView rather than a
  * re-hand-rolled pin glyph with a description subtitle, and the viewer location is threaded from EVERY
  * call site (a new third call site that forgets `viewer` reds on the length assertion, not just on tsc).
  */
@@ -58,9 +58,9 @@ describe("report hits render through the shared ReportRowView", () => {
   })
 
   /**
-   * The press-feedback shape guard. A card hit's rounded chrome used to live on a plain wrapper `View` with
-   * the Pressable nested inside its 12pt gutters, so the pressed state painted a square-cornered rectangle
-   * inset from the card's 18pt corners and the gutters took no touches. The chrome and the press style must
+   * The press-feedback shape guard. With a card hit's rounded chrome on a plain wrapper `View` and the
+   * Pressable nested inside its 12pt gutters, the pressed state paints a square-cornered rectangle inset
+   * from the card's 18pt corners and the gutters take no touches. The chrome and the press style must
    * stay on the ROW's own Pressable - and `overflow: "hidden"` is never the way to reconcile them, because on
    * iOS it clips the layer drawing the card's shadow.
    */
@@ -110,10 +110,10 @@ describe("report hits render through the shared ReportRowView", () => {
 })
 
 /**
- * The leaderboard row is now ONE component for two families of surface: the search page and the two
- * host screens (`TopVolunteersCard`). Source guards, because neither half is renderable here - the
- * extraction is only load-bearing while `SearchResults.tsx` holds no copy of it and the shared file
- * keeps the 56pt list geometry every other list row in the app was retuned to.
+ * The leaderboard row is ONE component for two families of surface: the search page and the two host
+ * screens (`TopVolunteersCard`). Source guards, because neither half is renderable here: the shared row
+ * only holds while `SearchResults.tsx` keeps no copy of it and the shared file keeps the 56pt list
+ * geometry every other list row in the app uses.
  */
 describe("the leaderboard row lives in its own module", () => {
   const searchResults = readFileSync(new URL("../SearchResults.tsx", import.meta.url), "utf8")

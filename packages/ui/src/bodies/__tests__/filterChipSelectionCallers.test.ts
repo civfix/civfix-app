@@ -1,5 +1,5 @@
 /**
- * APP-A11Y-012 callers: FilterChip defaults to radio semantics. The announce slot picker is a MULTI-select
+ * FilterChip defaults to radio semantics. The announce slot picker is a MULTI-select
  * and the slot editor's split-count and suggest-general chips are plain actions, so each names its role.
  * These bodies import react-native, which the node test environment cannot load, so the guard is scoped
  * to the exact chip element.

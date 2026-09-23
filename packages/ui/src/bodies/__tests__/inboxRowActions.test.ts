@@ -1,10 +1,10 @@
 /**
- * THE INBOX ROW'S TWO NEW AFFORDANCES - a live timestamp, and per-row mute / mark-read - pinned at the
- * seams a screenshot cannot reach.
+ * The inbox row's live timestamp and per-row mute / mark-read, pinned at the seams a screenshot cannot
+ * reach.
  *
- *  1. THE TIMESTAMP IS RENDERED, NOT RECEIVED. The row used to print the server's `ago` string, which is
- *     computed once per response and then frozen: an inbox left open reads "now" an hour later. The row
- *     now formats `lastMessageAt` (the ISO stamp the API sends beside `ago`) through the SAME localized
+ *  1. THE TIMESTAMP IS RENDERED, NOT RECEIVED. The server's `ago` string is computed once per response
+ *     and then frozen, so an inbox left open would read "now" an hour later. The row formats
+ *     `lastMessageAt` (the ISO stamp the API sends beside `ago`) through the SAME localized
  *     seam every other list uses, and only falls back to `ago` for pages cached before the field existed.
  *     Ticking is ONE module-level interval with a `useSyncExternalStore` subscription per row - a
  *     `setInterval` inside the row component would be one timer per visible thread.
@@ -43,7 +43,7 @@ describe("the row's timestamp is client-rendered and ticks", () => {
     expect(inbox).toContain("const timeAgo = useTickingListTimeAgo()")
     expect(inbox).toContain("const stamp = thread.lastMessageAt ? timeAgo(thread.lastMessageAt) : thread.ago")
     expect(inbox).toContain("{stamp ? <Text style={styles.ago}>{stamp}</Text> : null}")
-    // The raw server string is no longer rendered directly.
+    // The frozen server string must not render directly.
     expect(inbox).not.toContain("{thread.ago ? <Text")
   })
 

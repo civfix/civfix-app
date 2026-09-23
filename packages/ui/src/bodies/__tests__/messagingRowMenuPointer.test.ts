@@ -1,8 +1,8 @@
 /**
- * The web thread row's "More" chip stays visible on a coarse pointer. The pointer kind used to be probed
- * at module scope, which touched the browser at import time (prerender false, client true) and never
- * followed a change. It is now read by `useCoarsePointer` once per list render and handed to every row,
- * so the per-row style callback, which runs on every hover, focus and press change, never probes.
+ * The web thread row's "More" chip stays visible on a coarse pointer. Probing the pointer kind at module
+ * scope would touch the browser at import time (prerender false, client true) and never follow a change,
+ * so it is read by `useCoarsePointer` once per list render and handed to every row, and the per-row
+ * style callback, which runs on every hover, focus and press change, never probes.
  * MessagingListBody imports react-native, so this pins the source; the hook itself is tested directly.
  */
 import { readFileSync } from "node:fs"

@@ -1,10 +1,10 @@
 /**
- * Post mutations whose OUTCOME must survive the component that fired them (APP-BUG-201, APP-BUG-202).
+ * Post mutations whose OUTCOME must survive the component that fired them.
  *
  * TanStack v5's MutationObserver runs the per-call `mutate(vars, { onSuccess, onError, onSettled })`
  * callbacks only while it still has listeners. Deleting a post optimistically removes the row that owns
  * the overflow menu, and closing the composer (or swiping back) unmounts it mid-request, so those
- * callbacks were silently dropped: no delete toast, and a failed post took the user's text with it. The
+ * callbacks would be silently dropped: no delete toast, and a failed post taking the user's text with it. The
  * first block pins that library behaviour; the rest pin that each surface reads the outcome from the
  * mutation promise instead. The surfaces import react-native, so they are checked by source (the house
  * pattern for this package).

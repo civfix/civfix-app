@@ -1,14 +1,12 @@
-/** The uppercase section eyebrow and the "Hosting (3)" style subhead shared by the profile sections. */
 import React from "react"
 import { View } from "react-native"
 import { Text } from "../../typography"
 import { headingLevel } from "../../theme"
 import { useSectionStyles } from "./sectionStyles"
 
-// LEVELS (see `theme/webAffordances.headingLevel`): the profile panel's own title ("You" / the person's
-// name) is the surface's level 1, an 11px eyebrow ("POSTS", "ACTIVITY") introduces a SECTION of it, and a
-// "Hosting (3)" subhead sits inside a section. Before this, RNW rendered all three - and the panel title,
-// and the brand wordmark - as peer <h1>s, so heading navigation on /profile listed five equals.
+// Heading levels (see `theme/webAffordances.headingLevel`): the profile panel's own title ("You" / the
+// person's name) is level 1, an eyebrow ("POSTS", "ACTIVITY") introduces a section of it, and a
+// "Hosting (3)" subhead sits inside a section. Without explicit levels RNW renders them all as peer <h1>s.
 export function SectionEyebrow({ children }: { children: string }) {
   const sectionStyles = useSectionStyles()
   return (

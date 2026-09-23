@@ -1,19 +1,16 @@
 /**
- * PURE surface selection for the Search page, plus THE EXIT FREEZE. No react, no react-native — SearchBody
- * only renders what these return.
- *
- * WHY IT EXISTS. Leaving Search fires TWO hard content remounts on the fade frames: `selectView` clears
- * `query` (nav/useNavStore.ts:220-255), so the results surface swaps to the resting one, and one frame
- * later the field's blur drops `searchBarStore.pinned`, swapping RecentlySearched to Discovery — three
+ * THE EXIT FREEZE. Leaving Search fires TWO hard content remounts on the fade frames: `selectView` clears
+ * `query` (nav/useNavStore.ts), so the results surface swaps to the resting one, and one frame later the
+ * field's blur drops `searchBarStore.pinned`, swapping RecentlySearched to Discovery: three
  * react-query-backed sections plus a horizontal ScrollView of avatar cards and FollowButtons, mounting on
  * exactly the frames the overlay is fading and the glass is morphing.
  *
- * THE SHAPE is `bodyFadeStyle`'s freeze-while-closing (shell/CompactShell.native.tsx:557-568): write the
+ * THE SHAPE is `bodyFadeStyle`'s freeze-while-closing (shell/CompactShell.native.tsx): write the
  * live value into a holding cell ONLY while not closing, and return the cell while closing. The cell here
  * carries the query as well as the surface, because holding "results" while the query is already "" would
- * still re-render SearchResults with different props — a content change on the fade frames all the same.
+ * still re-render SearchResults with different props, a content change on the fade frames all the same.
  *
- * IT IS A FREEZE, NOT A CROSSFADE. No second copy of the body is mounted (the spec forbids that on native:
+ * IT IS A FREEZE, NOT A CROSSFADE. No second copy of the body is mounted (it cannot work on native, where
  * bodies register into gorhom's one shared active-scrollable registry) and no ScrollHost identity changes
  * (that would swap the ScrollView component TYPE and remount the whole subtree). Only WHICH children the
  * one resident body renders is held.
@@ -22,15 +19,12 @@
  * the SAME render that clears the query. A flag published from an effect commits one render later, by
  * which point the swap this exists to prevent has already happened.
  *
- * NOTE FOR THE NEXT READER: this changes WHICH content renders, never HOW IT IS LAID OUT, and it is gated
- * on the dock morph, never on a keyboard signal. See THE RULE at SearchBody.tsx (`SearchResting`) —
- * commit a637875 (@civfix/ui 0.33.0) gated this surface's layout on the keyboard and was reverted at the
- * user's explicit request.
+ * This changes WHICH content renders, never HOW IT IS LAID OUT, and it is gated on the dock morph, never
+ * on a keyboard signal: gating this surface's layout on the keyboard was tried and rejected.
  */
 import type { View } from "../nav"
 import { getSearchBodyMode } from "./searchRecentStore"
 
-/** Which of the three search surfaces renders. */
 export type SearchSurface = "results" | "recents" | "discovery"
 
 /** Everything SearchBody needs to render one surface: the surface AND the query it was built for. */
@@ -70,7 +64,7 @@ export function resolveSearchSurfaceState(
  *
  * `view !== "search"` is derived (see the module header) so the freeze is live on the very frame the query
  * clears. `exitSettled` is published by the dock morph's exit timing once the overlay has finished fading
- * (searchBarStore.searchExitSettled) — releasing there, rather than at the next Search ENTER, keeps the
+ * (searchBarStore.searchExitSettled). Releasing there, rather than at the next Search ENTER, keeps the
  * held surface's teardown off both the fade-out frames AND the enter spring's opening frames. It matters
  * that the release happens at all: SearchBodyReveal.native is MOUNT-ONCE (it keeps the search body
  * resident forever after the first open), so a freeze that never released would strand a stale surface.

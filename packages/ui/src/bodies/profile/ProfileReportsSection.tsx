@@ -1,7 +1,3 @@
-/**
- * The "Your reports" section of the own profile: the three most recent reports plus a "See all" row.
- * Extracted from ProfileView (which also rendered every string here in raw English).
- */
 import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { ReportDTO } from "@civfix/shared"
@@ -12,7 +8,6 @@ import { useT } from "../../i18n"
 import { SectionEyebrow } from "./SectionHeadings"
 import { useSectionStyles } from "./sectionStyles"
 
-/** What ProfileView's host feeds the reports section. */
 export interface ProfileReports {
   items: ReportDTO[]
   isLoading: boolean

@@ -1,17 +1,15 @@
 /**
  * NO BODY WRITES A ZUSTAND STORE FROM A RENDER-PHASE `useState` INITIALIZER.
  *
- * THE CRASH THIS PINS. `CreateCleanupBody`'s host form began/merged the persistent event draft inside a
- * lazy `useState(() => ...)` initializer - which runs during RENDER. A zustand `set` notifies every
- * subscriber synchronously, so the launching report's body was told to re-render mid-render and React threw
- * on every "Host an event" opened from a report:
+ * A lazy `useState(() => ...)` initializer runs during RENDER, and a zustand `set` notifies every
+ * subscriber synchronously. Beginning/merging the persistent event draft there made the launching
+ * report's body re-render mid-render, and React threw on every "Host an event" opened from a report:
  *
  *   Cannot update a component (`ReportDetailContent`) while rendering a different component (`HostForm`).
  *
- * The write was old; what made it FIRE was `shell/PageStack.native` retaining the report page mounted
- * underneath the host page, so the subscriber now exists at the moment of the write. Every retained
- * under-layer makes the next such write a crash, which is why the rule is checked across ALL bodies rather
- * than at the one call site that happened to break.
+ * `shell/PageStack.native` retains the report page mounted underneath the host page, so the subscriber
+ * exists at the moment of the write. Every retained under-layer makes the next such write a crash, which
+ * is why the rule is checked across ALL bodies rather than at one call site.
  *
  * WHY SOURCE GREPS: this package's vitest runs in a node environment and cannot load `react-native`, so no
  * test here mounts a component (see postScrollOwnership.test.ts / slotSurfaces.test.ts for the same

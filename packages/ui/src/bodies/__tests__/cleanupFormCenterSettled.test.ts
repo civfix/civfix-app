@@ -1,8 +1,8 @@
 /**
- * APP-BUG-162 for events: the event form's pickers showed the loading placeholder forever when the host's
- * centre resolution settled with nothing (location refused, no approximate point, backend off). The form
- * now carries the host's settled flag to both pickers, as the report flow does. The pickers import
- * react-native / maplibre, so the wiring is pinned by source.
+ * Without the host's settled flag, the event form's pickers show the loading placeholder forever when the
+ * host's centre resolution settles with nothing (location refused, no approximate point, backend off), so
+ * the form carries it to both pickers, as the report flow does. The pickers import react-native /
+ * maplibre, so the wiring is pinned by source.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"

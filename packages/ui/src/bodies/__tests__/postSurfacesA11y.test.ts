@@ -1,5 +1,5 @@
 /**
- * Accessibility and correctness props on the feed / post surfaces that only exist as JSX (PR 4, C13a).
+ * Accessibility and correctness props on the feed / post surfaces that only exist as JSX.
  * These modules import react-native, which this package's node-environment vitest cannot load, so each
  * assertion is scoped to the exact element and prop it guards (the house pattern, see PostCard.test.ts).
  */

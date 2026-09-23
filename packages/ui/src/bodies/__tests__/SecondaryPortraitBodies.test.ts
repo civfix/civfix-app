@@ -32,18 +32,10 @@ describe("secondary portrait behavior models", () => {
   })
 
   /**
-   * A DELIBERATE REVERSAL, recorded rather than quietly dropped.
-   *
-   * This case used to assert the opposite: "keeps profile sections in reference order WITHOUT a
-   * misleading Events and Posts selector". That was the right call at the time. Posts was then a short
-   * trailing section under Impact, Events and Your Reports, and a two-way selector over Events and Posts
-   * implied a symmetry between them that did not exist.
-   *
-   * P7 changes the premise, so the conclusion changes with it. The timeline is now the profile's PRIMARY
-   * content, not its footer; the control is four PEER sections (Posts, Events, Hours, Reports) with a
-   * default and an availability model; and it is the same control on the own profile and on someone
-   * else's, where a bespoke Events/Posts segmented control already existed and defaulted to Events. The
-   * selector is no longer misleading because the sections it selects between really are peers.
+   * The timeline is the profile's PRIMARY content, not its footer, and the control is four PEER sections
+   * (Posts, Events, Hours, Reports) with a default and an availability model, the same control on the
+   * own profile and on someone else's. A selector is not misleading here because the sections it selects
+   * between really are peers.
    */
   it("puts Posts first and selects it by default on every profile", () => {
     expect(PROFILE_TAB_ORDER[0]).toBe("posts")

@@ -1,5 +1,5 @@
 /**
- * Source guards for the two new own/public service-hours surfaces.
+ * Source guards for the own/public service-hours surfaces.
  *
  * These are the rules typecheck cannot see and that a well-meaning refactor breaks first:
  *
@@ -13,7 +13,7 @@
  *      popup blocker kills: `window.open` in a promise continuation has lost its user-activation token.
  *
  * Plus the two `typeMeta` cases in NotificationsBody, which are trivially droppable in a merge and whose
- * absence is invisible (both new bells silently fall through to the generic grey `Bell`).
+ * absence is invisible (both bells silently fall through to the generic grey `Bell`).
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
@@ -101,8 +101,8 @@ describe("service-hours profile surfaces", () => {
     expect(code(privacy)).toContain("user?.showVolunteerHours === true")
     expect(privacy).not.toContain("user?.showVolunteerHours ?? true")
     expect(privacy).toContain("savePrivacy({ showVolunteerHours: next })")
-    // The switch moved OUT of the notification prefs body with the PRIVACY section - it must not
-    // survive in both places, or two surfaces write the same tri-state from two different reads.
+    // The switch lives only in the PRIVACY section: in both places, two surfaces would write the same
+    // tri-state from two different reads.
     expect(code(prefs)).not.toContain("showVolunteerHours")
   })
 })

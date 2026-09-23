@@ -123,7 +123,7 @@ describe("title first, then the surface's own field", () => {
 })
 
 describe("every view root names itself, and only at a view root", () => {
-  it("EventsBody titles the events root — the surface the rail deliberately lights no lozenge for", () => {
+  it("EventsBody titles the events root, the surface the rail deliberately lights no lozenge for", () => {
     expect(events).toContain("useNavStore((s) => s.stack.length === 0)")
     expect(events).toMatch(/showTitle=\{layout === "expanded" && atViewRoot\}/)
     expect(events).toContain('tNav("title.cleanups")')
