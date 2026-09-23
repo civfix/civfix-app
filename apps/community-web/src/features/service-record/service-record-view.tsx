@@ -123,7 +123,7 @@ export function ServiceRecordView() {
       // Make the address bar a shareable permalink for the code just checked. REPLACE (not push) so the
       // browser Back button still leaves the page rather than walking back through typed codes.
       if (typeof window !== "undefined") {
-        window.history.replaceState(window.history.state, "", serviceRecordPath(code))
+        window.history.replaceState(null, "", serviceRecordPath(code))
       }
       void verify(code)
     },
@@ -135,7 +135,7 @@ export function ServiceRecordView() {
     setInput("")
     setPhase({ kind: "idle" })
     if (typeof window !== "undefined") {
-      window.history.replaceState(window.history.state, "", "/service-record/")
+      window.history.replaceState(null, "", "/service-record/")
     }
   }, [])
 
