@@ -56,6 +56,7 @@ export const metadata: Metadata = {
     description: DEFAULT_DESCRIPTION,
     images: [{ url: BRAND_IMAGE_PATH, alt: SITE_NAME }],
   },
+  appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: "default" },
 }
 
 export const viewport: Viewport = {
