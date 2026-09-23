@@ -25,7 +25,7 @@ describe("EmptyState inline layout", () => {
     expect(INLINE_EMPTY_LAYOUT.gap).toBe(space["3"])
   })
 
-  it("keeps the glyph at row scale — there is no bubble to inflate the block", () => {
+  it("keeps the glyph at row scale: there is no bubble to inflate the block", () => {
     expect(INLINE_EMPTY_LAYOUT.iconSize).toBeGreaterThanOrEqual(20)
     expect(INLINE_EMPTY_LAYOUT.iconSize).toBeLessThanOrEqual(24)
     expect(inlineBranch).not.toContain("IconBubble")

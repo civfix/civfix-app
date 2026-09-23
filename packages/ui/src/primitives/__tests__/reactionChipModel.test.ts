@@ -1,9 +1,3 @@
-/**
- * Unit tests for `buildReactionChipModel` (P1 Task 1.3) - the pure mapping from a message's
- * `ReactionSummaryDTO[]` to the ordered chip models `ReactionChips` renders in-bubble. The component is
- * a thin renderer over this builder (returns null when the model is empty), so the ordering/filtering
- * contract is tested here without a React renderer.
- */
 import { describe, expect, it } from "vitest"
 import { REACTION_EMOJIS, type ReactionSummaryDTO } from "@civfix/shared"
 import { buildReactionChipModel, REACTION_GLYPH } from "../reactionChipModel"

@@ -1,7 +1,6 @@
 /**
- * Regression coverage for the primitive correctness fixes of PR 4. Pure models are exercised directly;
- * components that cannot render under plain Node are pinned by narrow source assertions on the exact
- * line that carried the bug.
+ * Pure models are exercised directly; components that cannot render under plain Node are pinned by narrow
+ * source assertions on the exact line that carried the bug.
  */
 import { readFileSync } from "node:fs"
 import React from "react"

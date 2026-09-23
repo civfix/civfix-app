@@ -66,10 +66,8 @@ describe("pollDraft", () => {
   })
 
   it("removeOption drops a row only while above POLL_MIN_OPTIONS", () => {
-    // At the floor: no-op.
     const floor = emptyPollDraft()
     expect(removeOption(floor, 0)).toBe(floor)
-    // Above the floor: removes.
     const three = setOption(emptyPollDraft(), 1, "B") // -> ["", "B", ""]
     const removed = removeOption(three, 0)
     expect(texts(removed)).toEqual(["B", ""])

@@ -1,11 +1,3 @@
-/**
- * Unit test for `resolveThreadAvatar` - the pure mapping from a message thread to what the leading
- * ThreadAvatar should render. This is the contract that makes messaging avatars consistent with the rest
- * of the app: a DM shows the peer's REAL backend/provider photo when set, otherwise the SAME solid
- * brand-color + single-letter monogram every other surface (connections/feed/profile) renders via
- * `Avatar`; a group/cleanup keeps a glyph on that same solid color (gradients are retired). The component
- * is a thin renderer over this resolver, so the decision logic is tested here without a React renderer.
- */
 import { describe, expect, it } from "vitest"
 import { avatarColor, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
 import { resolveThreadAvatar } from "../threadAvatarResolve"

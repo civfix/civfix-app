@@ -21,8 +21,8 @@ const rsvpPill = code("../RsvpPill.tsx")
 
 describe("usePopScale", () => {
   it("uses react-native Animated, NOT reanimated", () => {
-    // This hook is consumed by primitives rendering inside the gorhom sheet; reanimated is where the
-    // 0.36.1 worklet-factory crash class lives, so it must stay out of this module entirely.
+    // Primitives rendering inside the gorhom sheet consume this hook, and reanimated is where the
+    // worklet-factory crash class lives, so it must stay out of this module entirely.
     expect(source).toContain('from "react-native"')
     expect(source).not.toContain("reanimated")
   })

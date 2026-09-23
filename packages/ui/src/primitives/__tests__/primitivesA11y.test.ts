@@ -1,7 +1,6 @@
 /**
- * Regression coverage for the primitive accessibility fixes of PR 4. These components are React Native
- * views that cannot render under plain Node, so most checks are narrow source assertions on the exact
- * prop that carries the semantics; pure models are exercised directly.
+ * These components are React Native views that cannot render under plain Node, so most checks are narrow
+ * source assertions on the exact prop that carries the semantics; pure models are exercised directly.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
