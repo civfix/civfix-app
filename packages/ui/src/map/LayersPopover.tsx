@@ -20,7 +20,7 @@
  * Presentational props are limited to `eventsNearby` (an optional live count the host may pass for the
  * Events sub-label); everything else comes from the store.
  */
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
 import { motion, categoryColor, focusRingProps, makeThemedStyles, useTheme } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
@@ -88,7 +88,9 @@ export function LayersPopover({ eventsNearby, isClosing = false, onClosed }: Lay
   const progress = useRef(new Animated.Value(0)).current
   // Keep the latest onClosed in a ref so the effect can fire it without re-running on identity churn.
   const onClosedRef = useRef(onClosed)
-  onClosedRef.current = onClosed
+  useLayoutEffect(() => {
+    onClosedRef.current = onClosed
+  })
   // Track the in-flight animation so a rapid open/close toggle STOPS the previous one before starting a
   // new one - otherwise two timings race on the same Animated.Value and the card jumps/stutters.
   const animRef = useRef<Animated.CompositeAnimation | null>(null)

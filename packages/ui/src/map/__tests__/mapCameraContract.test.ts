@@ -35,9 +35,9 @@ describe("the Show on map fly-to on both seams", () => {
     expect(mapNative).toContain("{focus ? (")
     expect(mapNative).not.toMatch(/flyTo(Request|Highlight) \?/)
     expect(mapNative).toContain("if (focus) return [{ lat: focus.lat, lng: focus.lng }]")
-    expect(mapWeb).toContain("const focused = useMapFocus.getState().focus\n    if (focused) {")
+    expect(mapWeb).toContain("const focused = useMapFocus.getState().focus\n      if (focused) {")
     expect(mapWeb).not.toMatch(/useMapFlyTo\.getState\(\)\.(request|highlight)\) \{/)
-    expect(mapWeb).toContain("const nodes = query(mapBoundsToBBox(map), map.getZoom())\n      for (const node of nodes) {")
+    expect(mapWeb).toContain("const nodes = query(mapBoundsToBBox(map), map.getZoom())\n        for (const node of nodes) {")
   })
 
   it("lights the fly-to pin through the per-node active path", () => {
@@ -70,7 +70,7 @@ describe("a Show on map target the map has not loaded", () => {
   it("draws one standalone target marker only when the id is not among the rendered nodes", () => {
     expect(mapNative).toContain("() => (focus ? null : flyToTargetOffMap(nodes, flyToHighlight))")
     expect(mapNative).toMatch(/\{offMapTarget \? \(\n\s+<TargetMarker\n\s+key=\{`flyto:\$\{offMapTarget\.kind\}:\$\{offMapTarget\.id\}`\}\n\s+target=\{offMapTarget\}/)
-    expect(mapWeb).toContain("const offMapTarget = flyToTargetOffMap(nodes, flyToHighlight)\n      if (offMapTarget) putTargetMarker(offMapTarget)")
+    expect(mapWeb).toContain("const offMapTarget = flyToTargetOffMap(nodes, flyToHighlight)\n        if (offMapTarget) putTargetMarker(offMapTarget)")
   })
 
   it("keeps the whole marker tree beside the standalone marker", () => {

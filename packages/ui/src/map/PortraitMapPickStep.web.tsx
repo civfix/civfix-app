@@ -34,18 +34,18 @@ export function PortraitMapPickStep({
   const [localPoint, setLocalPoint] = useState<LatLng | null>(value)
 
   const onConfirmRef = useRef(onConfirm)
-  onConfirmRef.current = onConfirm
   const onCancelRef = useRef(onCancel)
-  onCancelRef.current = onCancel
+  const pinRef = useRef(pin)
 
   const pointRef = useRef<LatLng | null>(value ?? null)
   // The seed below runs on the open edge only, reading whatever value the parent holds at that moment.
   const valueRef = useRef(value)
   useLayoutEffect(() => {
+    onConfirmRef.current = onConfirm
+    onCancelRef.current = onCancel
+    pinRef.current = pin
     valueRef.current = value
   })
-  const pinRef = useRef(pin)
-  pinRef.current = pin
 
   usePickStepSheetSnap(live)
 

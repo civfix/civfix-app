@@ -45,22 +45,22 @@ function InlineLocationPicker({
   const th = useTheme()
   const styles = React.useMemo(() => makeStyles(th), [th])
   const themeRef = React.useRef(th)
-  themeRef.current = th
   const pinFill = pinAppearanceFor(pin, th.scheme).fill
   const pinFillRef = React.useRef(pinFill)
-  pinFillRef.current = pinFill
   const cartoApiKey = useCartoApiKey()
   const cartoApiKeyRef = React.useRef(cartoApiKey)
-  cartoApiKeyRef.current = cartoApiKey
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const mapRef = React.useRef<maplibregl.Map | null>(null)
   const markerRef = React.useRef<maplibregl.Marker | null>(null)
   const styleSchemeRef = React.useRef<ColorSchemeName | null>(null)
   const onChangeRef = React.useRef(onChange)
-  onChangeRef.current = onChange
   const [placed, setPlaced] = React.useState<boolean>(value != null)
   const valueRef = React.useRef(value)
   React.useLayoutEffect(() => {
+    themeRef.current = th
+    pinFillRef.current = pinFill
+    cartoApiKeyRef.current = cartoApiKey
+    onChangeRef.current = onChange
     valueRef.current = value
   })
 
@@ -202,13 +202,13 @@ function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPicker
   const draft = useLocationPick((s) => s.draft)
 
   const onChangeRef = React.useRef(onChange)
-  onChangeRef.current = onChange
   const onClearRef = React.useRef(onClear)
-  onClearRef.current = onClear
   const pinRef = React.useRef(pin)
-  pinRef.current = pin
   const valueRef = React.useRef(value)
   React.useLayoutEffect(() => {
+    onChangeRef.current = onChange
+    onClearRef.current = onClear
+    pinRef.current = pin
     valueRef.current = value
   })
 

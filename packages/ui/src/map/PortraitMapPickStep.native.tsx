@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { BackHandler, Modal, View, StyleSheet } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { space, makeThemedStyles } from "../theme"
@@ -43,9 +43,11 @@ export function PortraitMapPickStep({
   )
 
   const onConfirmRef = useRef(onConfirm)
-  onConfirmRef.current = onConfirm
   const onCancelRef = useRef(onCancel)
-  onCancelRef.current = onCancel
+  useLayoutEffect(() => {
+    onConfirmRef.current = onConfirm
+    onCancelRef.current = onCancel
+  })
 
   usePickStepSheetSnap(visible && presentation === "modal")
 

@@ -152,12 +152,10 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   const mode = useLayoutMode()
   const th = useTheme()
   const themeRef = React.useRef(th)
-  themeRef.current = th
   const pickActive = useLocationPick((s) => s.active)
   const pickDraft = useLocationPick((s) => s.draft)
   const pickPin = useLocationPick((s) => s.pin)
   const pickActiveRef = React.useRef(pickActive)
-  pickActiveRef.current = pickActive
 
   const focus = useMapFocus((s) => s.focus)
   const flyToRequest = useMapFlyTo((s) => s.request)
@@ -169,25 +167,29 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   )
 
   const onRegionChangeRef = React.useRef(onRegionChange)
-  onRegionChangeRef.current = onRegionChange
   const onUserCameraMoveRef = React.useRef(onUserCameraMove)
-  onUserCameraMoveRef.current = onUserCameraMove
   const onPressMapRef = React.useRef(onPressMap)
-  onPressMapRef.current = onPressMap
   const onPressPinRef = React.useRef(onPressPin)
-  onPressPinRef.current = onPressPin
   const onPressCleanupRef = React.useRef(onPressCleanup)
-  onPressCleanupRef.current = onPressCleanup
   const userLocationRef = React.useRef(userLocation)
-  userLocationRef.current = userLocation
   const onPressClusterRef = React.useRef(onPressCluster)
-  onPressClusterRef.current = onPressCluster
   const onPressBlendRef = React.useRef(onPressBlend)
-  onPressBlendRef.current = onPressBlend
   const onLongPressMapRef = React.useRef(onLongPressMap)
-  onLongPressMapRef.current = onLongPressMap
   const modeRef = React.useRef(mode)
-  modeRef.current = mode
+  React.useLayoutEffect(() => {
+    themeRef.current = th
+    pickActiveRef.current = pickActive
+    onRegionChangeRef.current = onRegionChange
+    onUserCameraMoveRef.current = onUserCameraMove
+    onPressMapRef.current = onPressMap
+    onPressPinRef.current = onPressPin
+    onPressCleanupRef.current = onPressCleanup
+    userLocationRef.current = userLocation
+    onPressClusterRef.current = onPressCluster
+    onPressBlendRef.current = onPressBlend
+    onLongPressMapRef.current = onLongPressMap
+    modeRef.current = mode
+  })
 
   const droppedPin = useDroppedPin((s) => s.pin)
   const dropMarkerRef = React.useRef<Marker | null>(null)
@@ -226,144 +228,146 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   const runnerRef = React.useRef<IdleRunner | null>(null)
   if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => reconcileRef.current())
   const runner = runnerRef.current
-  reconcileRef.current = () => {
-    const map = mapRef.current
-    if (!map || !mapReady) return
+  React.useLayoutEffect(() => {
+    reconcileRef.current = () => {
+      const map = mapRef.current
+      if (!map || !mapReady) return
 
-    const scheme = themeRef.current.scheme
-    const desired = new globalThis.Map<string, Desired>()
-    const put = (key: string, want: Desired) =>
-      desired.set(key, {
-        ...want,
-        signature: `${want.signature}|${scheme}`,
-        node: <ThemeProvider preference={scheme}>{want.node}</ThemeProvider>,
-      })
-
-    const putTargetMarker = (target: FocusedEntity) => {
-      if (target.kind === "cleanup") {
-        put(`e:${target.id}`, {
-          signature: `${target.eventKind}|1`,
-          anchor: "bottom",
-          lngLat: [target.lng, target.lat],
-          node: <EventPin active eventKind={target.eventKind} />,
-          label: targetMarkerA11yLabel(target, t),
-          onClick: () => onPressCleanupRef.current?.(target.id),
+      const scheme = themeRef.current.scheme
+      const desired = new globalThis.Map<string, Desired>()
+      const put = (key: string, want: Desired) =>
+        desired.set(key, {
+          ...want,
+          signature: `${want.signature}|${scheme}`,
+          node: <ThemeProvider preference={scheme}>{want.node}</ThemeProvider>,
         })
-      } else {
-        put(`r:${target.id}`, {
-          signature: `${target.category}|1`,
-          anchor: "bottom",
-          lngLat: [target.lng, target.lat],
-          node: <TeardropPin category={target.category} active />,
-          label: targetMarkerA11yLabel(target, t),
-          onClick: () => onPressPinRef.current?.(target.id),
-        })
-      }
-    }
 
-    const focused = useMapFocus.getState().focus
-    if (focused) {
-      putTargetMarker(focused)
-    } else {
-      const nodes = query(mapBoundsToBBox(map), map.getZoom())
-      for (const node of nodes) {
-        if (node.type === "cluster") {
-          const tone = clusterToneFor(node.reportCount, node.eventCount)
-          put(node.key, {
-            signature: `${node.count}|${tone}`,
-            anchor: "center",
-            lngLat: [node.lng, node.lat],
-            node: <ClusterBubble count={node.count} tone={tone} />,
-            label: markerA11yLabel(node, t),
-            onClick: () => pressCluster(node),
-          })
-        } else if (node.type === "report") {
-          const active = activePinId === node.id
-          put(node.key, {
-            signature: `${node.pin.category}|${active ? 1 : 0}`,
+      const putTargetMarker = (target: FocusedEntity) => {
+        if (target.kind === "cleanup") {
+          put(`e:${target.id}`, {
+            signature: `${target.eventKind}|1`,
             anchor: "bottom",
-            lngLat: [node.lng, node.lat],
-            node: <TeardropPin category={node.pin.category} active={active} />,
-            label: markerA11yLabel(node, t),
-            onClick: () => onPressPinRef.current?.(node.id),
-          })
-        } else if (node.type === "event") {
-          const active = activeCleanupId === node.id
-          put(node.key, {
-            signature: `${node.event.eventKind}|${active ? 1 : 0}`,
-            anchor: "bottom",
-            lngLat: [node.lng, node.lat],
-            node: <EventPin active={active} eventKind={node.event.eventKind} />,
-            label: markerA11yLabel(node, t),
-            onClick: () => onPressCleanupRef.current?.(node.id),
+            lngLat: [target.lng, target.lat],
+            node: <EventPin active eventKind={target.eventKind} />,
+            label: targetMarkerA11yLabel(target, t),
+            onClick: () => onPressCleanupRef.current?.(target.id),
           })
         } else {
-          const active = activeCleanupId === node.id
-          const event = node.event
-          const blendReports = node.reports
-          put(node.key, {
-            signature: `${event.eventKind}|${blendReports.length}|${active ? 1 : 0}`,
+          put(`r:${target.id}`, {
+            signature: `${target.category}|1`,
             anchor: "bottom",
-            lngLat: [node.lng, node.lat],
-            node: (
-              <BlendPin count={blendReports.length} active={active} eventKind={event.eventKind} />
-            ),
-            label: markerA11yLabel(node, t),
-            onClick: () =>
-              onPressBlendRef.current
-                ? onPressBlendRef.current(event, blendReports)
-                : onPressCleanupRef.current?.(event.id),
+            lngLat: [target.lng, target.lat],
+            node: <TeardropPin category={target.category} active />,
+            label: targetMarkerA11yLabel(target, t),
+            onClick: () => onPressPinRef.current?.(target.id),
           })
         }
       }
-      const offMapTarget = flyToTargetOffMap(nodes, flyToHighlight)
-      if (offMapTarget) putTargetMarker(offMapTarget)
-    }
 
-    const current = markersRef.current
-    for (const [key, entry] of current) {
-      const want = desired.get(key)
-      if (!want || want.signature !== entry.signature) {
-        const stale = entry.root
-        queueMicrotask(() => stale.unmount())
-        entry.marker.remove()
-        current.delete(key)
+      const focused = useMapFocus.getState().focus
+      if (focused) {
+        putTargetMarker(focused)
       } else {
-        entry.marker.setLngLat(want.lngLat)
-        entry.marker.getElement().setAttribute("aria-label", want.label)
-        entry.onClick.fn = want.onClick
+        const nodes = query(mapBoundsToBBox(map), map.getZoom())
+        for (const node of nodes) {
+          if (node.type === "cluster") {
+            const tone = clusterToneFor(node.reportCount, node.eventCount)
+            put(node.key, {
+              signature: `${node.count}|${tone}`,
+              anchor: "center",
+              lngLat: [node.lng, node.lat],
+              node: <ClusterBubble count={node.count} tone={tone} />,
+              label: markerA11yLabel(node, t),
+              onClick: () => pressCluster(node),
+            })
+          } else if (node.type === "report") {
+            const active = activePinId === node.id
+            put(node.key, {
+              signature: `${node.pin.category}|${active ? 1 : 0}`,
+              anchor: "bottom",
+              lngLat: [node.lng, node.lat],
+              node: <TeardropPin category={node.pin.category} active={active} />,
+              label: markerA11yLabel(node, t),
+              onClick: () => onPressPinRef.current?.(node.id),
+            })
+          } else if (node.type === "event") {
+            const active = activeCleanupId === node.id
+            put(node.key, {
+              signature: `${node.event.eventKind}|${active ? 1 : 0}`,
+              anchor: "bottom",
+              lngLat: [node.lng, node.lat],
+              node: <EventPin active={active} eventKind={node.event.eventKind} />,
+              label: markerA11yLabel(node, t),
+              onClick: () => onPressCleanupRef.current?.(node.id),
+            })
+          } else {
+            const active = activeCleanupId === node.id
+            const event = node.event
+            const blendReports = node.reports
+            put(node.key, {
+              signature: `${event.eventKind}|${blendReports.length}|${active ? 1 : 0}`,
+              anchor: "bottom",
+              lngLat: [node.lng, node.lat],
+              node: (
+                <BlendPin count={blendReports.length} active={active} eventKind={event.eventKind} />
+              ),
+              label: markerA11yLabel(node, t),
+              onClick: () =>
+                onPressBlendRef.current
+                  ? onPressBlendRef.current(event, blendReports)
+                  : onPressCleanupRef.current?.(event.id),
+            })
+          }
+        }
+        const offMapTarget = flyToTargetOffMap(nodes, flyToHighlight)
+        if (offMapTarget) putTargetMarker(offMapTarget)
+      }
+
+      const current = markersRef.current
+      for (const [key, entry] of current) {
+        const want = desired.get(key)
+        if (!want || want.signature !== entry.signature) {
+          const stale = entry.root
+          queueMicrotask(() => stale.unmount())
+          entry.marker.remove()
+          current.delete(key)
+        } else {
+          entry.marker.setLngLat(want.lngLat)
+          entry.marker.getElement().setAttribute("aria-label", want.label)
+          entry.onClick.fn = want.onClick
+        }
+      }
+      for (const [key, want] of desired) {
+        if (current.has(key)) continue
+        const el = document.createElement("div")
+        el.style.cursor = want.onClick ? "pointer" : "default"
+        el.style.lineHeight = "0"
+        el.setAttribute("role", "button")
+        el.setAttribute("tabindex", "0")
+        const onClick: { fn?: () => void } = { fn: want.onClick }
+        el.addEventListener("click", (e: MouseEvent) => {
+          e.stopPropagation()
+          useMapFlyTo.getState().clear()
+          onClick.fn?.()
+        })
+        el.addEventListener("keydown", (e: KeyboardEvent) => {
+          if (e.key !== "Enter" && e.key !== " ") return
+          e.preventDefault()
+          e.stopPropagation()
+          useMapFlyTo.getState().clear()
+          onClick.fn?.()
+        })
+        const root = createRoot(el)
+        root.render(want.node)
+        const marker = new maplibregl.Marker({ element: el, anchor: want.anchor })
+          .setLngLat(want.lngLat)
+          .addTo(map)
+        // After addTo: maplibre's addTo overwrites aria-label with its generic "Map marker".
+        el.setAttribute("aria-label", want.label)
+        current.set(key, { marker, root, signature: want.signature, onClick })
       }
     }
-    for (const [key, want] of desired) {
-      if (current.has(key)) continue
-      const el = document.createElement("div")
-      el.style.cursor = want.onClick ? "pointer" : "default"
-      el.style.lineHeight = "0"
-      el.setAttribute("role", "button")
-      el.setAttribute("tabindex", "0")
-      const onClick: { fn?: () => void } = { fn: want.onClick }
-      el.addEventListener("click", (e: MouseEvent) => {
-        e.stopPropagation()
-        useMapFlyTo.getState().clear()
-        onClick.fn?.()
-      })
-      el.addEventListener("keydown", (e: KeyboardEvent) => {
-        if (e.key !== "Enter" && e.key !== " ") return
-        e.preventDefault()
-        e.stopPropagation()
-        useMapFlyTo.getState().clear()
-        onClick.fn?.()
-      })
-      const root = createRoot(el)
-      root.render(want.node)
-      const marker = new maplibregl.Marker({ element: el, anchor: want.anchor })
-        .setLngLat(want.lngLat)
-        .addTo(map)
-      // After addTo: maplibre's addTo overwrites aria-label with its generic "Map marker".
-      el.setAttribute("aria-label", want.label)
-      current.set(key, { marker, root, signature: want.signature, onClick })
-    }
-  }
+  })
 
   React.useImperativeHandle(
     ref,

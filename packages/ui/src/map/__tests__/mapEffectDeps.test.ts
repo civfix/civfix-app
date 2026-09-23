@@ -5,9 +5,36 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { expectWrittenInLayoutEffect, sliceBetween } from "../../__tests__/sourceGuards"
+import {
+  expectWrittenInLayoutEffect,
+  layoutEffectBodies,
+  sliceBetween,
+  sliceFrom,
+} from "../../__tests__/sourceGuards"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
+
+/**
+ * A discarded concurrent render must not leave a latest-value ref holding props that never committed,
+ * so every write to one of these refs sits inside a layout effect of the component.
+ */
+function expectNoRenderPhaseRefWrites(component: string, refs: readonly string[]): void {
+  const effects = layoutEffectBodies(component)
+    .map((effect) => effect.body)
+    .join("\n")
+  for (const ref of refs) {
+    const write = new RegExp(`(?<![\\w$.])${ref}\\.current\\s*=(?!=)`, "g")
+    const total = component.match(write)?.length ?? 0
+    const inEffects = effects.match(write)?.length ?? 0
+    expect(total, `${ref} is never written`).toBeGreaterThan(0)
+    expect(total - inEffects, `${ref}.current is written during render`).toBe(0)
+  }
+}
+
+function expectLatestValueRefs(component: string, refs: Record<string, string>): void {
+  for (const [ref, value] of Object.entries(refs)) expectWrittenInLayoutEffect(component, `${ref}.current = ${value}`)
+  expectNoRenderPhaseRefWrites(component, Object.keys(refs))
+}
 
 describe("LocationPicker.web", () => {
   const src = read("../LocationPicker.web.tsx")
@@ -74,5 +101,84 @@ describe("PortraitMapPickStep", () => {
     expect(sliceBetween(src, "const setLocalPoint = useCallback(", "const onConfirmRef")).toContain("    [],\n  )")
     expect(sliceBetween(src, "const onPickPlace = useCallback(", "const onMapDrop")).toContain("[setLocalPoint],")
     expect(src).toContain("setLocalPoint({ lat, lng }), [setLocalPoint])")
+  })
+})
+
+describe("latest-value refs are written after commit, never during render", () => {
+  it("LayersPopover", () => {
+    const component = sliceFrom(read("../LayersPopover.tsx"), "export function LayersPopover(")
+    expectLatestValueRefs(component, { onClosedRef: "onClosed" })
+  })
+
+  it("LocationPicker.web inline picker", () => {
+    const src = read("../LocationPicker.web.tsx")
+    const inline = sliceBetween(src, "function InlineLocationPicker(", "function samePickPoint(")
+    expectLatestValueRefs(inline, {
+      themeRef: "th",
+      pinFillRef: "pinFill",
+      cartoApiKeyRef: "cartoApiKey",
+      onChangeRef: "onChange",
+    })
+  })
+
+  it("LocationPicker.web main-map picker", () => {
+    const src = read("../LocationPicker.web.tsx")
+    const mainMap = sliceBetween(src, "function MainMapLocationPicker(", "export function LocationPicker(")
+    expectLatestValueRefs(mainMap, { onChangeRef: "onChange", onClearRef: "onClear", pinRef: "pin" })
+  })
+
+  it("Map.web", () => {
+    const component = sliceFrom(read("../Map.web.tsx"), "export const Map = React.forwardRef")
+    expectLatestValueRefs(component, {
+      themeRef: "th",
+      pickActiveRef: "pickActive",
+      onRegionChangeRef: "onRegionChange",
+      onUserCameraMoveRef: "onUserCameraMove",
+      onPressMapRef: "onPressMap",
+      onPressPinRef: "onPressPin",
+      onPressCleanupRef: "onPressCleanup",
+      userLocationRef: "userLocation",
+      onPressClusterRef: "onPressCluster",
+      onPressBlendRef: "onPressBlend",
+      onLongPressMapRef: "onLongPressMap",
+      modeRef: "mode",
+    })
+  })
+
+  it("Map.web publishes its reconcile closure after commit", () => {
+    const component = sliceFrom(read("../Map.web.tsx"), "export const Map = React.forwardRef")
+    expectWrittenInLayoutEffect(component, "reconcileRef.current = () => {")
+    expectNoRenderPhaseRefWrites(component, ["reconcileRef"])
+  })
+
+  it("ReportPickMap.web", () => {
+    const component = sliceFrom(read("../ReportPickMap.web.tsx"), "export const ReportPickMap = React.forwardRef")
+    expectLatestValueRefs(component, {
+      themeRef: "th",
+      onRegionChangeRef: "onRegionChange",
+      onPressPinRef: "onPressPin",
+      onPressMapRef: "onPressMap",
+      stateOfRef: "stateOf",
+      lookForRef: "lookFor",
+      pinLabelRef: "pinLabel",
+      clusterLabelRef: "clusterLabel",
+      focusedIdRef: "focusedId",
+    })
+  })
+
+  it("ReportPickMap.web publishes its reconcile closure after commit", () => {
+    const component = sliceFrom(read("../ReportPickMap.web.tsx"), "export const ReportPickMap = React.forwardRef")
+    expectWrittenInLayoutEffect(component, "reconcileRef.current = () => {")
+    expectNoRenderPhaseRefWrites(component, ["reconcileRef"])
+  })
+
+  it("PortraitMapPickStep.web", () => {
+    const component = sliceFrom(read("../PortraitMapPickStep.web.tsx"), "export function PortraitMapPickStep(")
+    expectLatestValueRefs(component, { pinRef: "pin", onConfirmRef: "onConfirm", onCancelRef: "onCancel" })
+  })
+
+  it("PortraitMapPickStep.native", () => {
+    const component = sliceFrom(read("../PortraitMapPickStep.native.tsx"), "export function PortraitMapPickStep(")
+    expectLatestValueRefs(component, { onConfirmRef: "onConfirm", onCancelRef: "onCancel" })
   })
 })
