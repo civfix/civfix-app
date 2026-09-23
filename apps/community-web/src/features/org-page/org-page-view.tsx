@@ -141,7 +141,7 @@ function OrgDocument({ slug }: { slug: string }) {
       <div className="orgpage-shell">
         <header className="orgpage-header">
           {org.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
+            // eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export"
             <img className="orgpage-logo" src={org.logoUrl} alt="" width={88} height={88} />
           ) : (
             <span className="orgpage-logo orgpage-logo-fallback" aria-hidden="true">

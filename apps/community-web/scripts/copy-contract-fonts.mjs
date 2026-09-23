@@ -1,18 +1,11 @@
-// Copy the self-hosted woff2 files for the 12 "contract" font-family names into public/fonts/.
+// react-native-web emits raw `font-family: "Manrope_600SemiBold"` strings, the @expo-google-fonts
+// family names the native app registers. next/font registers fonts under hashed internal names and
+// cannot pin an arbitrary family name, so those literal names would resolve to nothing on web. Each
+// weight is self-hosted under its literal name via a real @font-face (src/styles/contract-fonts.css),
+// copied into public/ so the static export needs no bundler URL resolution.
 //
-// WHY THIS EXISTS:
-//   The unified @civfix/ui component set renders shared typography via react-native-web, which emits
-//   raw `font-family: "Manrope_600SemiBold"` (etc.) strings - the exact @expo-google-fonts family
-//   names the native app registers. The web app's next/font setup registers Bricolage/Manrope/
-//   JetBrains under hashed, framework-internal family names (and ships NO Baloo 2 or Manrope 800), so
-//   those literal names resolve to NOTHING on web. This step self-hosts each weight under its literal
-//   contract name via a real @font-face (see src/styles/contract-fonts.css), which is the only way to
-//   pin an arbitrary family name (next/font cannot). Copying into public/ (absolute /fonts/... URLs)
-//   is the most robust option for the static export (output: "export") - no bundler URL resolution.
-//
-// Contract font source files come straight from the installed @fontsource packages. Hanken Grotesk is
-// not an installed package dependency, so its tracked Google Fonts CDN bytes, checksum, provenance,
-// and OFL license are verified below on every build instead of relying on an implicit network fetch.
+// Hanken Grotesk is not an installed package, so its tracked Google Fonts bytes, checksum, provenance
+// and OFL license are verified on every build instead of relying on an implicit network fetch.
 import { createHash } from "node:crypto"
 import { existsSync, mkdirSync, copyFileSync, readFileSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
@@ -33,28 +26,23 @@ const HANKEN = {
     "https://fonts.gstatic.com/s/hankengrotesk/v12/ieVn2YZDLWuGJpnzaiwFXS9tYtpd59CxCis4.woff2",
 }
 
-// Each entry: the literal contract family name -> the @fontsource package + its latin woff2 file.
-// The destination filename is the literal family name so the mapping is self-documenting in public/.
+// The destination filename is the literal family name, so the mapping is self-documenting in public/.
 const FONTS = [
-  // Bricolage Grotesque (display / headings)
   { family: "BricolageGrotesque_400Regular", pkg: "@fontsource/bricolage-grotesque", file: "bricolage-grotesque-latin-400-normal.woff2" },
   { family: "BricolageGrotesque_500Medium", pkg: "@fontsource/bricolage-grotesque", file: "bricolage-grotesque-latin-500-normal.woff2" },
   { family: "BricolageGrotesque_600SemiBold", pkg: "@fontsource/bricolage-grotesque", file: "bricolage-grotesque-latin-600-normal.woff2" },
   { family: "BricolageGrotesque_700Bold", pkg: "@fontsource/bricolage-grotesque", file: "bricolage-grotesque-latin-700-normal.woff2" },
-  // Manrope (body / UI), including the 800 weight web previously lacked entirely.
   { family: "Manrope_400Regular", pkg: "@fontsource/manrope", file: "manrope-latin-400-normal.woff2" },
   { family: "Manrope_500Medium", pkg: "@fontsource/manrope", file: "manrope-latin-500-normal.woff2" },
   { family: "Manrope_600SemiBold", pkg: "@fontsource/manrope", file: "manrope-latin-600-normal.woff2" },
   { family: "Manrope_700Bold", pkg: "@fontsource/manrope", file: "manrope-latin-700-normal.woff2" },
   { family: "Manrope_800ExtraBold", pkg: "@fontsource/manrope", file: "manrope-latin-800-normal.woff2" },
-  // JetBrains Mono (numeric / mono)
   { family: "JetBrainsMono_400Regular", pkg: "@fontsource/jetbrains-mono", file: "jetbrains-mono-latin-400-normal.woff2" },
   { family: "JetBrainsMono_500Medium", pkg: "@fontsource/jetbrains-mono", file: "jetbrains-mono-latin-500-normal.woff2" },
-  // Baloo 2 800: the per-letter "civfix" wordmark.
   { family: "Baloo2_800ExtraBold", pkg: "@fontsource/baloo-2", file: "baloo-2-latin-800-normal.woff2" },
 ]
 
-// Resolve a package's installed directory via its package.json (works under pnpm's symlinked layout).
+// Resolved through package.json so it works under pnpm's symlinked layout.
 function pkgFilesDir(pkg) {
   const pkgJson = require.resolve(`${pkg}/package.json`)
   return join(dirname(pkgJson), "files")

@@ -152,7 +152,7 @@ function SignupDocument({
 function FallbackHero({ page }: { page: PublicEventPageDTO }) {
   return (
     <header className="signup-hero">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export" */}
       {page.coverUrl ? <img className="signup-hero-cover" src={page.coverUrl} alt="" /> : null}
       <div className="signup-hero-body">
         {page.organization ? <p className="signup-hero-org">{page.organization.name}</p> : null}

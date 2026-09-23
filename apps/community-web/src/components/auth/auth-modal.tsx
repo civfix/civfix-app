@@ -22,12 +22,9 @@ type Step = "choices" | "email" | "code"
 const OTP_LENGTH = 6
 
 /**
- * Redirect to a backend OAuth start endpoint, asking it to return to the current origin - or to a
- * same-origin console path (`returnPath`, allowlisted by oauthReturnPath) when the caller has one to
- * come back to, such as an org invite waiting to be accepted. Only providers with a working web
- * redirect flow are offered here: Google, and Apple when the server has the Sign in with Apple WEB
- * Services ID configured (APPLE_OAUTH_WEB_CLIENT_ID). Both are surfaced via enabledProviders and land
- * on /auth/{provider}/start, which sets the cookie session on the callback and redirects back.
+ * The return target is the current origin, or a same-origin console path allowlisted by oauthReturnPath
+ * (such as an org invite waiting to be accepted). Apple is offered only when the server has a Sign in
+ * with Apple web Services ID configured.
  */
 function startOAuth(provider: "google" | "apple", returnPath?: string | null) {
   const origin = typeof window !== "undefined" ? window.location.origin : ""
@@ -45,21 +42,6 @@ export interface AuthModalProps {
   oauthReturnPath?: string | null
 }
 
-/**
- * The "Welcome to civfix" authentication modal, restyled to the design (panels-social.jsx AuthModal):
- * a 24px warm-paper modal card with a gradient header band (moss-50 -> sun-50) carrying the step-aware
- * copy, then the .auth-method pill buttons (Apple / Google / Continue with email), the email field, and
- * the 6-cell .otp-cell grid with Resend.
- *
- * IMPORTANT: only the PRESENTATION is rebuilt. The auth wiring is unchanged:
- *  - Google / Apple: full-page redirect to the API OAuth start endpoints (cookie session is set on the
- *    callback, then the API redirects back to the app).
- *  - Email: POST /auth/otp/request -> 6-digit code -> POST /auth/otp/verify. The verify response carries
- *    the user AND the CSRF token (web cookie flow); we capture BOTH immediately via setSession so the
- *    very next mutation can echo x-csrf-token, then refresh the auth store from /auth/session and close.
- *
- * Open state is controlled via the UI store so any "Sign in" button can open it.
- */
 export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
   const { t } = useT("web-auth")
   const open = useUiStore((s) => s.authModalOpen)
@@ -80,7 +62,6 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
   const cardRef = React.useRef<HTMLDivElement | null>(null)
   useFocusTrap(cardRef, open)
 
-  // Reset the internal flow whenever the dialog is closed.
   React.useEffect(() => {
     if (!open) {
       setStep("choices")
@@ -93,14 +74,12 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
     }
   }, [open])
 
-  // Tick down the resend cooldown.
   React.useEffect(() => {
     if (resendAfter <= 0) return
     const t = setInterval(() => setResendAfter((s) => Math.max(0, s - 1)), 1000)
     return () => clearInterval(t)
   }, [resendAfter])
 
-  // Close on Escape while open (parity with the previous Dialog behavior).
   React.useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -110,10 +89,8 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
     return () => window.removeEventListener("keydown", onKey)
   }, [open, setOpen])
 
-  // Keep the centered card above the soft keyboard on mobile web. `.modal-card` is `position:fixed` centered
-  // in the LAYOUT viewport (top:50%/translateY(-50%)), which the keyboard does not shrink - so the email
-  // input / OTP cells would sit under it. The shared hook shifts the card so it stays centered in the
-  // VISIBLE area above the keyboard (0 while closed, and on desktop / with no keyboard).
+  // `.modal-card` is centered in the layout viewport, which the mobile soft keyboard does not shrink, so
+  // the inputs would sit under the keyboard. The shift re-centers the card in the visible area above it.
   const vvShift = useVisualViewportShift(open)
 
   const requestCode = React.useCallback(
@@ -140,22 +117,18 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
       setError(null)
       setSubmitting(true)
       try {
-        // The verify response carries the user AND the CSRF token (web cookie flow). Capture both
-        // immediately so the very next mutation can echo x-csrf-token, without waiting on the
-        // /auth/session refresh below (which may or may not re-issue the token).
+        // Capture the CSRF token from the verify response so the very next mutation can echo it: the
+        // /auth/session refresh below may not re-issue the token.
         const res = await api.otpVerify({ email, code: rawCode })
         setSession({
           user: res.user,
           csrfToken: res.csrfToken,
           guestSmsEnabled: res.guestSmsEnabled,
         })
-        // Refresh roles and let protected queries refetch under the new identity. The store preserves
-        // the CSRF token captured above if the session check does not return one.
         await refreshSession()
         setOpen(false)
       } catch (err) {
         setError(authErrorMessage(err, t))
-        // Clear the entry so the user can re-key the code; focus follows once the cells re-enable.
         setCells(emptyOtpCells(OTP_LENGTH))
         setFailedVerifies((n) => n + 1)
       } finally {
@@ -171,11 +144,8 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
     if (failedVerifies > 0 && !submitting) otpRefs.current[0]?.focus()
   }, [failedVerifies, submitting])
 
-  // Apply input at cell i and keep the cells in sync. `raw` may be one typed digit OR
-  // several at once - a paste, or the browser autofilling the whole one-time-code into the first cell
-  // (cell 0 carries autoComplete="one-time-code"). applyOtpInput distributes the digits across cells and
-  // tells us where to move focus and whether the code is now complete; we then auto-submit with the
-  // code in hand, so there is no need to wait for the render that shows the last digit.
+  // `raw` may carry several digits: a paste, or the browser autofilling the whole one-time code into the
+  // first cell. Submitting with the code in hand avoids waiting for the render that shows the last digit.
   const setOtpAt = React.useCallback(
     (i: number, raw: string) => {
       const { cells: next, focusIndex } = applyOtpInput(cells, i, raw)
@@ -198,7 +168,6 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
     const text = e.clipboardData.getData("text")
     if (!text.replace(/\D/g, "")) return
     e.preventDefault()
-    // Paste fills from the first cell. Route through the same distribution logic as typing/autofill.
     const { cells: next, focusIndex } = applyOtpInput(emptyOtpCells(OTP_LENGTH), 0, text)
     setCells(next)
     otpRefs.current[focusIndex]?.focus()
@@ -210,14 +179,12 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
   if (!open) return null
   if (typeof document === "undefined") return null
 
-  // Until the session check has populated providers (it always includes "email" once loaded),
-  // optimistically show Google so it isn't hidden during the brief hydration window; once known, gate
-  // strictly so the button only appears when the server has Google OAuth configured.
+  // Once loaded, providers always include "email", so an empty list means the session check has not
+  // answered yet; Google shows optimistically during that window.
   const providersKnown = enabledProviders.length > 0
   const showGoogle = providersKnown ? enabledProviders.includes("google") : true
-  // Apple appears only once the server CONFIRMS it (its web flow needs a Services ID). Unlike Google we do
-  // NOT optimistically show it during the brief hydration window, since most deployments won't have web
-  // Apple configured and a button that flashes in then vanishes is worse than one that appears a beat late.
+  // Apple waits for confirmation: most deployments lack a web Services ID, and a button that flashes in
+  // then vanishes is worse than one that appears a beat late.
   const showApple = providersKnown ? enabledProviders.includes("apple") : false
 
   const goBack = () => {
@@ -323,9 +290,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
               </button>
 
               <div className="cf-auth-trust">{t("choices.trust")}</div>
-              {/* The Terms/Privacy consent disclaimer that used to sit here is removed: consent is now
-                  captured by the explicit TermsConfirmation checkbox in the first-run onboarding gate
-                  (features/auth/first-run-gate.tsx), which the user must check before Continue enables. */}
+              {/* No consent disclaimer here: consent is the explicit checkbox in the first-run gate. */}
             </>
           )}
 
@@ -394,8 +359,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
                 </p>
               )}
 
-              {/* Explicit submit. Auto-submit fires on the 6th digit, but the user can always click
-                  here - and this is the fallback if autofocus/auto-submit does not fire. */}
+              {/* The fallback when autofocus or auto-submit on the last digit does not fire. */}
               <button
                 type="button"
                 className="btn primary block lg"
@@ -441,11 +405,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
   )
 }
 
-/**
- * Friendly copy for the handful of auth errors the user can act on. Maps server error CODES (not raw
- * server message text) to localized client strings; the caller passes its namespace-bound `t` since this
- * module-level helper cannot call the `useT` hook itself.
- */
+/** Maps server error codes, never raw server message text, to localized copy. */
 function authErrorMessage(err: unknown, t: (key: string) => string): string {
   return errorMessage(err, {
     VALIDATION: t("errors.VALIDATION"),

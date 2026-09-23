@@ -901,7 +901,7 @@ describe("post previews (/post/:id)", () => {
     expect(html).not.toContain("ada@example.com")
   })
 
-  it("serves the branded default, noindexed, when the API answers 404 — a hidden post is indistinguishable from a missing one", async () => {
+  it("serves the branded default, noindexed, when the API answers 404: a hidden post is indistinguishable from a missing one", async () => {
     const h = harness({
       url: `https://civfix.org/post/${POST_ID}`,
       path: [POST_ID],

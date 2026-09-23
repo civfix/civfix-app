@@ -39,13 +39,13 @@ export function HeroBlock({ block, page }: { block: HeroBlockData; page: PublicE
 
   return (
     <header className="signup-hero">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export" */}
       {image ? <img className="signup-hero-cover" src={image} alt="" /> : null}
       <div className="signup-hero-body">
         {page.organization ? (
           <p className="signup-hero-org">
             {page.organization.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
+              // eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export"
               <img src={page.organization.logoUrl} alt="" width={24} height={24} />
             ) : null}
             {page.organization.name}

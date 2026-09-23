@@ -2,11 +2,7 @@
 
 import { useRealtimeChannel } from "@/hooks/use-realtime-channel"
 
-/**
- * Mounts the always-on per-user realtime channel for the app's lifetime (renders nothing). Placed in
- * the providers next to <AuthHydrator/> so the socket is held open while authenticated and per-user
- * signal frames invalidate the relevant queries app-wide. See useRealtimeChannel.
- */
+/** Mounted in the providers so the per-user socket stays open for the app's lifetime while signed in. */
 export function RealtimeChannel() {
   useRealtimeChannel()
   return null

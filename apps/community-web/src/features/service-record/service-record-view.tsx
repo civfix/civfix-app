@@ -28,27 +28,13 @@ import {
 } from "@/features/service-record/service-record-code"
 
 /**
- * /service-record/<code> - the PUBLIC service-hours certificate verification page.
- *
- * The audience is a school registrar or a court clerk holding a printed civfix transcript, on a desktop
- * browser, with no civfix account. Three consequences shape this file:
- *
- *  1. It is plain DOM inside the existing DetailShell (the /claim precedent), NOT a @civfix/ui body.
- *     react-native-web bodies print badly (absolutely-positioned flex scaffolding, no page breaks), and
- *     printing is a first-class use of this page - see service-record.css's `@media print` block.
- *  2. It calls the shared client with NO auth. `verifyServiceHoursCertificate` is declared
- *     `auth: "public"`, so the client attaches no bearer at all: the page works signed-out and cold.
- *  3. The code comes from `window.location.pathname`, never `usePathname()`. Under output:"export" the
- *     Cloudflare rule `/service-record/* -> /service-record/_/ 200` rewrites the request server-side, so
- *     Next's router sees the placeholder document while the address bar still holds the real deep link.
- *     The parsing (and the `/_/` placeholder guard) lives in the pure service-record-code.ts, mirroring
- *     `seedPathname()` in components/home/use-web-nav-adapter.ts.
- *
- * The response is deliberately thin (no user id, no PDF url, no per-activity rows) - everything shown
- * here is already printed on the document the verifier is holding, which is why the disclaimer says so.
+ * The public certificate verification page, for a registrar or court clerk holding a printed transcript
+ * with no civfix account. It is plain DOM rather than a @civfix/ui body because react-native-web bodies
+ * print badly (absolutely positioned flex scaffolding, no page breaks), and printing is a first-class use
+ * here. The response is deliberately thin: everything shown is already printed on the document.
  */
 
-/** What the page is currently showing. `record` covers both verdicts; `status` distinguishes them. */
+/** `record` covers both verdicts; `status` distinguishes them. */
 type Phase =
   | { readonly kind: "idle" }
   | { readonly kind: "checking" }
@@ -62,10 +48,10 @@ export function ServiceRecordView() {
   const [phase, setPhase] = React.useState<Phase>({ kind: "idle" })
   const [input, setInput] = React.useState("")
 
-  // Sequences the verify GETs: only the LATEST request may write state, so a fast second submit cannot
-  // be overwritten by the first response landing late.
+  // Only the latest request may write state, so a fast second submit is never overwritten by the first
+  // response landing late.
   const requestSeq = React.useRef(0)
-  // The mount seed runs at most once (React 19 StrictMode double-invokes effects; refs survive that).
+  // StrictMode double-invokes effects; a ref survives that, so the mount seed runs once.
   const seeded = React.useRef(false)
 
   const verify = React.useCallback(async (code: string) => {
@@ -92,8 +78,6 @@ export function ServiceRecordView() {
     }
   }, [])
 
-  // Seed from the live URL on mount. A cold deep link verifies immediately; a bare /service-record/ (or
-  // the /_/ placeholder document itself) falls through to the "enter a code" form.
   React.useEffect(() => {
     if (seeded.current) return
     seeded.current = true
@@ -112,16 +96,14 @@ export function ServiceRecordView() {
   const onSubmit = React.useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
-      // The same loose-in/canonical-out normalization the URL path goes through, so a code typed with or
-      // without the printed "CFX-" prefix and dashes behaves identically to one that arrived as a link.
+      // The same normalization as the URL path, so a typed code behaves exactly like one from a link.
       const code = normalizeCertificateCode(input)
       if (code === null) {
         requestSeq.current += 1 // abandon anything in flight so it cannot overwrite this verdict
         setPhase({ kind: "error", reason: "badCode" })
         return
       }
-      // Make the address bar a shareable permalink for the code just checked. REPLACE (not push) so the
-      // browser Back button still leaves the page rather than walking back through typed codes.
+      // Replace, not push, so Back leaves the page rather than walking back through typed codes.
       if (typeof window !== "undefined") {
         window.history.replaceState(null, "", serviceRecordPath(code))
       }
@@ -156,7 +138,6 @@ export function ServiceRecordView() {
   )
 }
 
-/** The "no code yet" state: the value prop plus a single input a verifier types the printed code into. */
 function CodeForm({
   value,
   onChange,
@@ -203,7 +184,6 @@ function CodeForm({
   )
 }
 
-/** The in-flight state. Deliberately quiet: the round trip is a single small GET. */
 function CheckingState({ label }: { label: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center" aria-live="polite">
@@ -214,9 +194,8 @@ function CheckingState({ label }: { label: string }) {
 }
 
 /**
- * The verdict card for a code the server recognized: warm moss when the record stands, muted ink when
- * the holder withdrew it. Both print (see service-record.css); both carry the disclaimer, because both
- * confirm only the existence and totals of a record, never its individual activities.
+ * Both verdicts carry the disclaimer, because both confirm only the existence and totals of a record,
+ * never its individual activities.
  */
 function RecordVerdict({
   record,
@@ -311,7 +290,6 @@ function RecordVerdict({
   )
 }
 
-/** One label/value pair in the summary grid. */
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -322,15 +300,13 @@ function Field({ label, value }: { label: string; value: string }) {
 }
 
 /**
- * The document hash, so a verifier can confirm the PDF in front of them is byte-identical to the one
- * civfix issued. Copy is best-effort: the Clipboard API is unavailable on insecure origins and in some
- * embedded browsers, and the value stays selectable either way.
+ * Copy is best-effort: the Clipboard API is unavailable on insecure origins and in some embedded
+ * browsers, and the value stays selectable either way.
  */
 function Fingerprint({ sha256 }: { sha256: string }) {
   const { t } = useT("web-service-record")
   const [copied, setCopied] = React.useState(false)
 
-  // Clear the "Copied" flash, and cancel the timer if the page navigates away first.
   React.useEffect(() => {
     if (!copied) return
     const timer = setTimeout(() => setCopied(false), 2000)
@@ -372,7 +348,6 @@ function Fingerprint({ sha256 }: { sha256: string }) {
   )
 }
 
-/** The three failure verdicts. All three offer the same way out: check another code. */
 function ErrorVerdict({
   reason,
   onReset,
@@ -412,10 +387,7 @@ function ErrorVerdict({
   )
 }
 
-/**
- * The one sentence that defines what this page is: it confirms the RECORD, not its contents. Rendered on
- * every state (including the empty form) so it is never something a verifier only sees after a match.
- */
+/** Rendered in every state, including the empty form, so a verifier never sees it only after a match. */
 function Disclaimer() {
   const { t } = useT("web-service-record")
   return (
@@ -425,7 +397,7 @@ function Disclaimer() {
   )
 }
 
-/** Locale-aware medium date; an absent/unparseable timestamp renders as an em dash, never "Invalid Date". */
+/** An absent or unparseable timestamp renders as a placeholder, never "Invalid Date". */
 function formatDate(iso: string | null | undefined, locale: string): string {
   if (!iso) return "—"
   const date = new Date(iso)
@@ -438,7 +410,7 @@ function formatDate(iso: string | null | undefined, locale: string): string {
   }
 }
 
-/** Hours carry a fractional part (0.25h granularity in the ledger), so keep up to two decimals. */
+/** The ledger has 0.25h granularity, so keep up to two decimals. */
 function formatHours(hours: number, locale: string): string {
   try {
     return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(hours)
@@ -447,7 +419,6 @@ function formatHours(hours: number, locale: string): string {
   }
 }
 
-/** Whole-number count (activities on the document). */
 function formatCount(count: number, locale: string): string {
   try {
     return new Intl.NumberFormat(locale).format(count)

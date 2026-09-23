@@ -1,22 +1,10 @@
 "use client"
 
-// STAGE 2 PRIMITIVES GALLERY / VERIFICATION SURFACE (UI-unification, documents/18-ui-unification.md).
+// Renders every shared primitive through react-native-web so contract fonts, lucide glyphs, the
+// backdrop-filter BlurSurface and layout can be checked visually at both breakpoints.
 //
-// This web-app-local component (NOT shipped from @civfix/ui) renders EVERY shared @civfix/ui primitive
-// through react-native-web in representative states, so increment 2D - the Stage 2 exit gate - can
-// VISUALLY VERIFY that the shared RN-authored primitives render faithfully on web at both breakpoints:
-// correct contract fonts (the 12 self-hosted @expo-google-fonts family names), lucide glyphs as SVG,
-// a real backdrop-filter BlurSurface, and clean layout/colors. It is reachable only at the isolated
-// /skeleton route and is NOT part of product navigation; it is removed or gated in Stage 5.
-//
-// The whole tree is wrapped in <CapabilitiesProvider value={makeFakeCapabilities()}> so any
-// capability-touching primitive renders against the in-memory fakes (no native modules on web).
-//
-// IMPORTANT: every COMPONENT UNDER TEST is a shared @civfix/ui primitive (rendered via RNW). The
-// surrounding layout chrome (sections, rows, the colorful blur backdrop) is intentionally plain DOM /
-// inline styles, NOT react-native View: the web app's own tsconfig does not carry react-native types
-// (RN is only a webpack alias to react-native-web at bundle time, owned by the @civfix/ui source). The
-// chrome does not affect the verification - it only positions the real primitives.
+// The surrounding chrome is plain DOM, not react-native View: the web app's tsconfig carries no
+// react-native types, because RN is only a webpack alias to react-native-web owned by @civfix/ui.
 
 import React, { useState } from "react"
 import {
@@ -85,11 +73,10 @@ const STATUSES: ReportStatus[] = [
 
 const CATEGORIES: ReportCategory[] = ["trash", "recycling", "graffiti", "hazard", "encampment", "water", "other"]
 
-// A near-future date for the DateBadge (relative to "today" so it stays representative over time).
+// Relative to today so the DateBadge stays representative over time.
 const NEAR_FUTURE_ISO = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
 
-// A small inline data-URI SVG so a real photoUrl Avatar renders without any network dependency
-// (a teal->magenta gradient avatar). Keeps the gallery hermetic for the verification run.
+// A data URI keeps the photo Avatar free of any network dependency.
 const PHOTO_URL =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
@@ -103,12 +90,11 @@ const PHOTO_URL =
       "</svg>",
   )
 
-// Exercises the new Avatar `style` passthrough (the s1 drop shadow 2C wanted on the web profile avatar).
 const staticTheme = themeFor("light")
 
 const avatarShadowStyle = staticTheme.shadows.s1
 
-/** A labeled section card. data-section makes each block easy to target from preview_inspect. */
+/** data-section makes each block easy to target from the verification tooling. */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   const theme = useTheme()
   return (
@@ -141,7 +127,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-/** A tiny caption above a single specimen so its state is self-describing in the screenshot. */
 function Specimen({ note, children }: { note: string; children: React.ReactNode }) {
   const theme = useTheme()
   return (
@@ -154,7 +139,6 @@ function Specimen({ note, children }: { note: string; children: React.ReactNode 
   )
 }
 
-/** A full-width stacking column (for the toggles / fields that read as vertical rows). */
 function Stack({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -171,7 +155,6 @@ function Stack({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** A fixed box that frames the flex-filling StateView blocks. */
 function StateBox({ children }: { children: React.ReactNode }) {
   const theme = useTheme()
   return (
@@ -191,7 +174,7 @@ function StateBox({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** A colorful striped backdrop that a BlurSurface floats over, so the backdrop-filter is visible. */
+/** Stripes behind the BlurSurface, so the backdrop-filter is visible. */
 function BlurStage({ note, children }: { note: string; children: React.ReactNode }) {
   const theme = useTheme()
   return (
@@ -395,7 +378,6 @@ function HostDashboardPanel({ scheme }: { scheme: ColorSchemeName }) {
 
 export default function PrimitivesGallery() {
   const theme = useTheme()
-  // Interactive state so the Toggle / SettingsToggle / inputs are tappable during verification.
   const [toggleA, setToggleA] = useState(true)
   const [toggleB, setToggleB] = useState(false)
   const [settingsA, setSettingsA] = useState(true)
@@ -416,7 +398,7 @@ export default function PrimitivesGallery() {
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
           <Text variant="display">Primitives gallery</Text>
           <Text variant="body" color={theme.colors.textMuted}>
-            Stage 2 exit gate - every shared @civfix/ui primitive via react-native-web.
+            Every shared @civfix/ui primitive via react-native-web.
           </Text>
         </div>
 
@@ -687,8 +669,6 @@ export default function PrimitivesGallery() {
   )
 }
 
-// BlurSurface style props (it forwards `style` onto its react-native-web View). Plain objects are an
-// accepted RN ViewStyle shape; keeping them outside the JSX keeps the render tree readable.
 const blurButtonStyle = {
   paddingHorizontal: 16,
   paddingVertical: 10,
