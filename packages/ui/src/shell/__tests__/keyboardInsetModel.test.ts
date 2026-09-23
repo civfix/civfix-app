@@ -1,7 +1,5 @@
 /**
- * The PURE keyboard model (shell/keyboardInsetModel.ts) — the leaf both `useKeyboardAnchor` seams
- * consume. Every number here is the arithmetic behind the primary sim measurement: the docked search
- * bar's bottom edge must land 8pt above the keyboard top, not 36pt above it.
+ * The arithmetic behind the docked search bar landing 8pt above the keyboard top.
  *
  * Geometry of record (iPhone 17 Pro, 874pt window, 34pt bottom inset, 345pt keyboard):
  *   keyboard top y529 -> overlap 345; dock rest offset 36 -> lift 317; risen bar bottom y521.
@@ -33,7 +31,7 @@ import {
 describe("the pure model stays the RN-free leaf both platform seams consume", () => {
   const model = () => readFileSync(new URL("../keyboardInsetModel.ts", import.meta.url), "utf8")
 
-  it("imports nothing at all — every platform fact arrives as a parameter", () => {
+  it("imports nothing at all: every platform fact arrives as a parameter", () => {
     expect(model()).not.toMatch(/^import /m)
     expect(model()).not.toMatch(/from "react-native"/)
   })
@@ -69,8 +67,8 @@ describe("keyboardLift", () => {
     }
   })
   it("pins the literal default equal to KEYBOARD_SURFACE_GAP", () => {
-    // The `gap = 8` default is a LITERAL on purpose: reanimated cannot capture a module const referenced
-    // in a worklet's default-parameter list. This is the guard that the literal never drifts from the const.
+    // The `gap = 8` default is a literal because reanimated cannot capture a module const referenced in a
+    // worklet's default-parameter list; this keeps the literal equal to the const.
     expect(KEYBOARD_SURFACE_GAP).toBe(8)
     expect(keyboardLift(0, 36)).toBe(keyboardLift(0, 36, KEYBOARD_SURFACE_GAP))
     expect(keyboardLift(345, 36)).toBe(keyboardLift(345, 36, KEYBOARD_SURFACE_GAP))
@@ -96,7 +94,7 @@ describe("keyboardOverlapFrom", () => {
     expect(keyboardOverlapFrom({ screenY: 529, height: 345 }, 874, "ios")).toBe(345)
     expect(keyboardOverlapFrom({ screenY: 874 }, 874, "ios")).toBe(0)
   })
-  it("takes the HEIGHT branch on Android — screenY is the window bottom, not the keyboard top", () => {
+  it("takes the HEIGHT branch on Android: screenY is the window bottom, not the keyboard top", () => {
     expect(keyboardOverlapFrom({ screenY: 529, height: 345 }, 874, "android")).toBe(345)
   })
   it("is zero for a missing event", () => {
@@ -139,7 +137,7 @@ describe("keyboardViewportOverlap", () => {
       systemBarInset,
     })
 
-  it("is keyboardOverlapFrom on iOS — the screenY branch, resting height and system bar ignored", () => {
+  it("is keyboardOverlapFrom on iOS: the screenY branch, resting height and system bar ignored", () => {
     const ios = (
       endCoordinates: { screenY?: number; height?: number } | undefined,
       windowHeight: number,
@@ -195,7 +193,7 @@ describe("keyboardViewportOverlap", () => {
   })
 })
 
-describe("keyboardMirrorOverlap — the UI-thread mirror lands in the JS thread's units", () => {
+describe("keyboardMirrorOverlap: the UI-thread mirror lands in the JS thread's units", () => {
   const NAV_BAR = 48
   const WINDOW = 874
   const IME_BOTTOM_INSET = 345
@@ -251,13 +249,13 @@ describe("keyboardMirrorOverlap — the UI-thread mirror lands in the JS thread'
   })
 })
 
-describe("shouldRecaptureRestingHeight — a rotation is not a keyboard", () => {
+describe("shouldRecaptureRestingHeight: a rotation is not a keyboard", () => {
   it("takes any resize while the keyboard is closed", () => {
     expect(shouldRecaptureRestingHeight({ keyboardOpen: false, prevWidth: 402, nextWidth: 402 })).toBe(true)
     expect(shouldRecaptureRestingHeight({ keyboardOpen: false, prevWidth: 402, nextWidth: 874 })).toBe(true)
   })
 
-  it("REFUSES the keyboard's own resize — same width, only the height moved", () => {
+  it("REFUSES the keyboard's own resize: same width, only the height moved", () => {
     expect(shouldRecaptureRestingHeight({ keyboardOpen: true, prevWidth: 402, nextWidth: 402 })).toBe(false)
   })
 
@@ -339,7 +337,7 @@ describe("the iOS keyboard progress curves", () => {
   })
 })
 
-describe("reduceKeyboard — the ownership matrix", () => {
+describe("reduceKeyboard: the ownership matrix", () => {
   const IDLE: KeyboardPhase = "idle"
   const ENGAGED: KeyboardPhase = "engaged"
 
@@ -348,7 +346,7 @@ describe("reduceKeyboard — the ownership matrix", () => {
       { phase: "engaged", target: 345, duration: 250, reserveOverlap: 345 },
     )
   })
-  it("will-show while NOT owned is inert — the dock must not move for a foreign field", () => {
+  it("will-show while NOT owned is inert: the dock must not move for a foreign field", () => {
     expect(reduceKeyboard(IDLE, { type: "will-show", overlap: 345, duration: 250, enabled: false })).toEqual(
       { phase: "idle", target: 0, duration: 0, reserveOverlap: 0 },
     )
@@ -418,9 +416,8 @@ describe("reduceKeyboard — the ownership matrix", () => {
     ).toEqual({ phase: "idle", target: 0, duration: 0, reserveOverlap: 0 })
   })
   it("losing ownership MID-CLOSE CARRIES the reservation instead of collapsing it in one frame", () => {
-    // THE defect. iOS posts keyboardWillHide FIRST (the will-hide branch above HOLDS the reserve) and the
-    // field's blur lands one tick LATER. Zeroing the reserve on that blur re-laid-out the search layer's
-    // scroll content (411 -> 94 of bottom padding, iPhone 17 Pro) in a single un-animated frame, mid-descent.
+    // iOS posts keyboardWillHide first and the field's blur lands one tick later. Zeroing the reserve on
+    // that blur re-lays-out the search layer's scroll content in one un-animated frame, mid-descent.
     expect(
       reduceKeyboard(ENGAGED, {
         type: "ownership",
@@ -432,10 +429,8 @@ describe("reduceKeyboard — the ownership matrix", () => {
       }),
     ).toEqual({ phase: "engaged", target: 0, duration: 220, reserveOverlap: 345 })
   })
-  // GUARD (green before this task): the carry-at-will-hide logic must keep reserveOverlap alive until did-settle
-  // (never released at blur, only at landing after the keyboard has settled).
   it("releases the CARRIED reservation at did-settle, never at the blur", () => {
-    // The landing is the ONLY release. By then the keyboard is down, so the layout step is invisible.
+    // The landing is the only release; by then the keyboard is down, so the layout step is invisible.
     expect(reduceKeyboard(ENGAGED, { type: "did-settle", overlap: 0, enabled: false })).toEqual({
       phase: "idle",
       target: 0,
@@ -448,16 +443,13 @@ describe("reduceKeyboard — the ownership matrix", () => {
       reduceKeyboard(ENGAGED, { type: "ownership", enabled: false, liveOverlap: 345, handoffMs: 220, closing: true }),
     ).toEqual({ phase: "engaged", target: 0, duration: 220, reserveOverlap: 0 })
   })
-  // GUARD (green before this task): non-close ownership loss must not reserve (another surface owns the keyboard
-  // while it stays visible, so we transition to idle immediately without carrying the reservation).
   it("still releases immediately when the ownership loss is NOT a close (the foreign-keyboard handoff)", () => {
     // Another surface's field took the keyboard while it stays UP: we own nothing, so we reserve nothing.
     expect(
       reduceKeyboard(ENGAGED, { type: "ownership", enabled: false, liveOverlap: 345, handoffMs: 220, closing: false }),
     ).toEqual({ phase: "idle", target: 0, duration: 220, reserveOverlap: 0 })
   })
-  // GUARD (green before this task): ownership loss during a close while in idle state (we never owned the keyboard)
-  // must stay inert and not falsely carry the hint (only engaged closes can carry).
+  // Only an engaged close can carry the hint.
   it("a mid-close ownership loss we never owned is still inert", () => {
     expect(
       reduceKeyboard(IDLE, {
@@ -472,10 +464,9 @@ describe("reduceKeyboard — the ownership matrix", () => {
   })
 })
 
-describe("isRedundantClose — one close, ONE curve", () => {
-  // The will-hide close (target 0) is already running on the OS's own reported duration when the blur's
-  // ownership command arrives with the same target on keyboardHandoffMs. Applying it restarts an ease-out
-  // mid-flight: the dock re-accelerates while the real keyboard keeps decelerating.
+describe("isRedundantClose: one close, ONE curve", () => {
+  // The blur's ownership command arrives with the same target while the will-hide close is running;
+  // applying it would restart an ease-out mid-flight and re-accelerate the dock.
   const BLUR_CLOSE: KeyboardCommand = { phase: "engaged", target: 0, duration: 220, reserveOverlap: 345 }
 
   it("skips the blur command that lands on a still-running will-hide close", () => {
@@ -484,14 +475,14 @@ describe("isRedundantClose — one close, ONE curve", () => {
   it("applies the command when nothing is in flight", () => {
     expect(isRedundantClose(BLUR_CLOSE, null)).toBe(false)
   })
-  it("NEVER skips the landing — a zero-duration command is what releases the carried reserve", () => {
+  it("NEVER skips the landing: a zero-duration command is what releases the carried reserve", () => {
     expect(isRedundantClose({ phase: "idle", target: 0, duration: 0, reserveOverlap: 0 }, 0)).toBe(false)
   })
-  it("applies a command with a DIFFERENT target — a will-show retargeting mid-close must win", () => {
+  it("applies a command with a DIFFERENT target: a will-show retargeting mid-close must win", () => {
     expect(isRedundantClose({ phase: "engaged", target: 345, duration: 250, reserveOverlap: 345 }, 0)).toBe(false)
   })
   it("treats a 0 in-flight target as a real record, not as absent", () => {
-    // The close everyone cares about targets exactly 0; a falsy check here would disable the whole fix.
+    // The close that matters targets exactly 0, so a falsy check here would disable the dedupe.
     expect(isRedundantClose(BLUR_CLOSE, 0)).toBe(true)
     expect(isRedundantClose({ ...BLUR_CLOSE, target: 345 }, 345)).toBe(true)
   })
@@ -549,7 +540,7 @@ describe("revealScrollDelta", () => {
     expect(revealScrollDelta(field(529 - 52 - 16))).toBe(0)
   })
 
-  it("clamps a field TALLER than the visible band to its own top — never scrolls the label away", () => {
+  it("clamps a field TALLER than the visible band to its own top: never scrolls the label away", () => {
     expect(revealScrollDelta({ ...field(300, 600), visibleTop: 120 })).toBe(180)
   })
 
@@ -564,7 +555,7 @@ describe("revealScrollDelta", () => {
   })
 })
 
-describe("scrollKeyboardReserve — a SHORT step can still reveal its last field", () => {
+describe("scrollKeyboardReserve: a SHORT step can still reveal its last field", () => {
   const CONTENT = 520
   const VIEWPORT = 780
   const OVERLAP = 345

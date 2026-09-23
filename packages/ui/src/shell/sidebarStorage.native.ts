@@ -1,12 +1,6 @@
 /**
- * Sidebar-width persistence storage - NATIVE seam.
- *
- * Mirrors sidebarStorage.web.ts but backs the zustand `persist` StateStorage with MMKV (synchronous
- * on-device key/value), the same engine filterStorage.native.ts uses. Native has no cookies, so the chosen
- * width persists in a dedicated MMKV instance instead. MMKV is a native module, so it is constructed lazily
- * and a construction failure (e.g. an `expo export` static eval with no native module) degrades to an
- * in-memory Map so imports never crash. Metro resolves `./sidebarStorage` to THIS file on native; web never
- * bundles it.
+ * MMKV is a native module, so it is constructed lazily and a construction failure (an `expo export`
+ * static eval) degrades to an in-memory Map so imports never crash.
  */
 import { MMKV } from "react-native-mmkv"
 import type { StateStorage } from "zustand/middleware"

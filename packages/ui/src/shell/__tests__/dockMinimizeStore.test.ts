@@ -1,10 +1,7 @@
 /**
- * dockMinimizeStore - the stateful wrapper around the pure `reduceMinimize` hysteresis.
- *
- * The reducer itself is covered by minimizeScrollLogic.test.ts; what is exercised here is the store's own
- * behaviour: the singleton tracker it threads between frames, the `reset` re-seed, and the SUPPRESSED path
- * (Search, where the dock is the search field) - which must track the offset without toggling AND without
- * carrying its directional accumulator across the suppressed stretch.
+ * The store's own behaviour around the pure reducer: the singleton tracker, the `reset` re-seed, and the
+ * suppressed Search path, which must track the offset without toggling and without carrying its
+ * directional accumulator across the suppressed stretch.
  */
 import { beforeEach, describe, expect, it } from "vitest"
 import { useDockMinimizeStore } from "../dockMinimizeStore"

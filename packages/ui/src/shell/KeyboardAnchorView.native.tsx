@@ -1,7 +1,4 @@
-/**
- * KeyboardAnchorView (native seam) — an Animated.View carrying the anchor's reanimated lift style.
- * The anchor's style goes LAST so a caller's static `style` can never clobber the transform.
- */
+/** The anchor's style goes last so a caller's static `style` can never clobber the transform. */
 import React from "react"
 import Animated from "react-native-reanimated"
 import type { KeyboardAnchorViewProps } from "./KeyboardAnchorView.types"

@@ -1,7 +1,6 @@
 /**
- * KeyboardAnchorView (web seam) — a plain RN View. On web `anchor.liftStyle` is already a plain style
- * object carrying a CSS `translateY` + `transition`, so no animated host is needed (and reanimated must
- * never reach the RNW bundle). The anchor's style goes LAST, matching the native seam.
+ * A plain View: on web `anchor.liftStyle` is already a plain CSS style, and reanimated must never reach
+ * the react-native-web bundle.
  */
 import React from "react"
 import { View } from "react-native"

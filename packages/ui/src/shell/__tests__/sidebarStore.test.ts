@@ -1,7 +1,6 @@
 /**
- * Unit tests for the landscape sidebar width store + its clamp helper. Pure zustand + a pure function, so
- * vitest exercises them directly (the cookie/MMKV persistence seam is a no-op in the node test env, which
- * is fine: these cover the width math and the v1->v2 migration, not the storage round-trip).
+ * The cookie/MMKV persistence seam is a no-op under node, so these cover the width math and the v1 -> v2
+ * migration, not the storage round-trip.
  */
 import { beforeEach, describe, expect, it } from "vitest"
 import {
@@ -16,8 +15,7 @@ import {
 import { MAP_MIN_CLEAR, NAV_LEFT } from "../expandedFramePlan"
 
 beforeEach(() => {
-  // Reset to the first-run default between tests (persistence is a no-op in node, but the in-memory state
-  // would otherwise leak across cases).
+  // The in-memory state would otherwise leak across cases.
   useSidebarStore.setState({ width: SIDEBAR_DEFAULT_WIDTH })
 })
 
@@ -30,8 +28,7 @@ describe("sidebarStore: defaults + setWidth", () => {
   it("setWidth clamps to the SAME [MIN, MAX] band as clampSidebarWidth, and rounds", () => {
     useSidebarStore.getState().setWidth(10_000)
     expect(useSidebarStore.getState().width).toBe(SIDEBAR_MAX_WIDTH)
-    // The write clamp is what every drag release commits through, so a second, tighter cap here would
-    // silently swallow the raised maximum. It must be the absolute band, nothing narrower.
+    // Every drag release commits through this write, so a tighter cap here would swallow a raised maximum.
     expect(SIDEBAR_MAX_WIDTH).toBe(640)
 
     useSidebarStore.getState().setWidth(10)
@@ -61,11 +58,9 @@ describe("clampSidebarWidth", () => {
   })
 
   it("always leaves the map its guaranteed clear strip beside the card", () => {
-    // 840 = the smallest legal landscape: 840 - 14 (the shell's own left inset) - 280 (map) => the card
-    // may reach 546, no more (SIDEBAR_MAX_WIDTH 640 stays the binding cap once the viewport is wide enough).
+    // The smallest legal landscape: 840 - 14 (left inset) - 280 (map) = 546.
     expect(clampSidebarWidth(9999, 840)).toBe(840 - NAV_LEFT - MAP_MIN_CLEAR)
     expect(clampSidebarWidth(9999, 840)).toBe(546)
-    // ...and the default still fits under that cap, so a fresh 840-wide tablet shows 440.
     expect(clampSidebarWidth(SIDEBAR_DEFAULT_WIDTH, 840)).toBe(440)
   })
 
@@ -76,8 +71,7 @@ describe("clampSidebarWidth", () => {
   })
 
   it("on a viewport too small for the min, collapses to the available width (the strip still wins)", () => {
-    // 700 - 14 - 280 = 406 is above the min; 590 - 14 - 280 = 296 is below it, and the cap must win so the
-    // card never eats into the map's strip.
+    // 590 - 14 - 280 = 296 is below the min; the cap must still win so the card never eats the map strip.
     expect(clampSidebarWidth(500, 700)).toBe(406)
     expect(clampSidebarWidth(500, 590)).toBe(296)
   })

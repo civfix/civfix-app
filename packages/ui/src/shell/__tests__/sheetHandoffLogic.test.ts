@@ -1,16 +1,11 @@
 /**
- * The PURE sheet-handoff math (shell/sheetHandoffLogic.ts) — the content-scroll -> sheet-drag handoff
- * that makes a pull-down at the top of a sheet body collapse the sheet.
+ * Positions are gorhom's `animatedPosition`: the sheet's top edge in container px, larger = lower. The
+ * detents for an 874pt window are [756 (peek), 378 (mid), 91 (full)].
  *
- * Positions are gorhom's `animatedPosition`: the sheet's TOP edge in container px, LARGER = lower on
- * screen. The detent list of record for an 874pt window is [756 (peek), 378 (mid), 91 (full)].
- *
- * THE REGRESSION THIS FILE EXISTS FOR: gorhom's `animateToPosition` early-returns on
- * `position === animatedPosition.get()` BEFORE it emits onAnimate/onChange, so a drag that lands EXACTLY
- * on the peek detent silently strands the sheet — visually collapsed, store still on the old snap, no
- * recovery path. Hence FLOOR_EPSILON, and hence `handoffDestinationIndex` returning an INDEX (a position
- * that is not an exact `detents` member makes gorhom's `indexOf` return -1, which routes into
- * handleOnClose == a full sheet dismissal).
+ * gorhom's `animateToPosition` early-returns on `position === animatedPosition.get()` before emitting
+ * onAnimate/onChange, so a drag landing exactly on peek strands the sheet with the store on the old snap:
+ * hence FLOOR_EPSILON. A position that is not an exact `detents` member makes gorhom's `indexOf` return
+ * -1, which it routes to handleOnClose (a full dismissal): hence `handoffDestinationIndex` returns an index.
  */
 import { describe, expect, it } from "vitest"
 import {
@@ -72,12 +67,10 @@ describe("handoffPosition", () => {
     expect(handoffPosition(MID, 100, 100, FULL, PEEK)).toBe(MID)
     expect(handoffPosition(MID, 160, 100, FULL, PEEK)).toBe(MID + 60)
   })
-  it("is downward-only — an upward pull gives the drag back to the scroll view", () => {
+  it("is downward-only: an upward pull gives the drag back to the scroll view", () => {
     expect(handoffPosition(MID, 40, 100, FULL, PEEK)).toBe(MID)
   })
   it("clamps EPSILON-SHORT of the peek floor, never exactly on it", () => {
-    // The whole point: an exact landing makes gorhom's animateToPosition early-return before it emits
-    // any callback, stranding the sheet at peek with the store still on the old snap.
     expect(handoffPosition(MID, 1000, 0, FULL, PEEK)).toBe(PEEK - FLOOR_EPSILON)
     expect(handoffPosition(MID, 1000, 0, FULL, PEEK)).toBe(755.5)
     expect(handoffPosition(MID, 1000, 0, FULL, PEEK)).not.toBe(PEEK)

@@ -386,7 +386,7 @@ describe("dockBottomGap on Android: the system nav bar is reserved IN FULL", () 
     expect(native.match(/Platform\.OS ===/g)).toHaveLength(1)
   })
 
-  it("keeps the platform signal a PARAMETER — tabBarLogic stays react-native-free", () => {
+  it("keeps the platform signal a PARAMETER: tabBarLogic stays react-native-free", () => {
     const logic = readFileSync(new URL("../tabBarLogic.ts", import.meta.url), "utf8")
     expect(logic).not.toMatch(/from "react-native"/)
     expect(logic).toMatch(/export type DockPlatform = "android" \| "other"/)
@@ -690,7 +690,7 @@ describe("tab-strip drag: gesture callbacks stay UI-thread safe", () => {
 describe("the keyboard-aware scroll seam measures the keyboard instead of trusting the window", () => {
   const seam = () => readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
 
-  it("never reads endCoordinates.screenY — on Android it is the window bottom, not the keyboard top", () => {
+  it("never reads endCoordinates.screenY: on Android it is the window bottom, not the keyboard top", () => {
     expect(seam()).not.toMatch(/screenY/)
   })
 
@@ -779,7 +779,7 @@ describe("useKeyboardReserve is a seam pair, and iOS pays nothing for it", () =>
     )
   })
 
-  it("adds NOTHING of its own on top of the anchor — the safe-area pad is an explicit restOffset", () => {
+  it("adds NOTHING of its own on top of the anchor: the safe-area pad is an explicit restOffset", () => {
     const native = read("../useKeyboardReserve.native.ts")
     expect(native).not.toMatch(/SafeAreaInsetsContext/)
     expect(native).not.toMatch(/reserved \+ /)

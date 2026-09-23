@@ -1,36 +1,27 @@
 /**
- * sheetHandoffLogic — PURE math for the compact sheet's CONTENT-SCROLL -> SHEET-DRAG handoff.
+ * Pure math for the compact sheet's content-scroll to sheet-drag handoff. gorhom's `animatedPosition` is
+ * the sheet's top edge in container px (larger = lower); detents[0] is peek (largest).
  *
- * gorhom's `animatedPosition` is the sheet's TOP edge in container px: LARGER = lower on screen.
- * `detents` are those same positions, detents[0] = peek (largest) .. detents[n-1] = full (smallest).
- *
- * THE CONTRACT:
- *  - DOWNWARD-ONLY, and DOMINANTLY so. Pulling up at the top of the content must give the drag back to
- *    the scroll view, and a mostly-sideways drag must be left to whatever horizontal scroller is under
- *    the finger (see HANDOFF_AXIS_RATIO).
- *  - NO LOST PIXELS: the caller re-baselines every frame the list is still consuming the drag, so the
- *    instant the list bottoms out at offset 0 the sheet moves from THAT finger position, zero dead zone.
- *  - The sheet can never be dragged past its detents (no enablePanDownToClose, so peek is the floor).
- *  - THE DRAG NEVER LANDS EXACTLY ON A DETENT (see FLOOR_EPSILON) — gorhom's animateToPosition
- *    early-returns on `position === animatedPosition.get()` BEFORE emitting onAnimate/onChange, so an
- *    exact landing would silently strand the sheet at peek with the store still on the old snap.
+ *  - Downward-only, and dominantly so: pulling up gives the drag back to the scroll view, and a mostly
+ *    sideways drag is left to any horizontal scroller under the finger.
+ *  - No lost pixels: the caller re-baselines every frame the list still consumes the drag, so the sheet
+ *    moves from the finger position the instant the list bottoms out.
+ *  - The drag never lands exactly on a detent: gorhom's animateToPosition early-returns on
+ *    `position === animatedPosition.get()` before emitting onAnimate/onChange, which would strand the
+ *    sheet at peek with the store still on the old snap.
  */
 
-/** Downward finger travel (pt) at the top of the content before the sheet takes the drag.
- *  8, NOT 2: the content region is a fixed height, so most detail bodies do not scroll at mid snap and
- *  scrollY is pinned at 0 across the whole body — the pan is armed everywhere. Activating an RNGH Pan
- *  cancels the RN touch responder underneath it, so a 2pt threshold cancels any press with >=2pt of
- *  downward finger drift. iOS's own scroll pan threshold is ~10pt. */
+/** Most detail bodies do not scroll at mid snap, so the pan is armed across the whole body, and an
+ *  activating RNGH Pan cancels the RN touch responder beneath it: a 2pt slop cancelled any press with 2pt
+ *  of downward drift. iOS's own scroll pan threshold is about 10pt. */
 export const HANDOFF_SLOP = 8
 
-/** Sub-pixel standoff from the detent bounds. See the exact-equality note above. */
+/** Sub-pixel standoff from the detent bounds (see the exact-landing note above). */
 export const FLOOR_EPSILON = 0.5
 
-/** How much more VERTICAL than horizontal the finger must have travelled for the sheet to take the drag.
- *  Without an axis test, a swipe across a nested HORIZONTAL scroller (the report detail's photo strip,
- *  the event detail's linked-reports strip — both plain RN ScrollViews the host never wraps, so the
- *  `horizontal` pass-through never sees them) engages on its incidental downward drift: the ancestor pan
- *  activates, the strip's own scroll is cancelled, and the sheet is dragged toward peek instead. */
+/** Without an axis test, a swipe across a nested horizontal strip (plain RN ScrollViews the host never
+ *  wraps, such as a report's photo strip) engaged on its incidental downward drift, cancelling the strip's
+ *  scroll and dragging the sheet instead. */
 export const HANDOFF_AXIS_RATIO = 1.5
 
 export function shouldEngageHandoff(
@@ -62,9 +53,8 @@ export function handoffPosition(
   return next
 }
 
-/** The detent INDEX a released handoff settles on. Returning an INDEX (not a position) makes the
- *  exact-membership requirement structural: the caller reads detents[i], so indexOf can never be -1
- *  (which gorhom maps to handleOnClose == full dismissal). */
+/** Returns an index, not a position, so the caller reads detents[i] and can never hit indexOf -1, which
+ *  gorhom maps to handleOnClose (a full dismissal). */
 export function handoffDestinationIndex(
   position: number,
   velocityY: number,

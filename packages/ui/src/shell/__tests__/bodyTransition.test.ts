@@ -1,27 +1,13 @@
 /**
- * Unit test for the ExpandedShell body-transition derivation (issue #60): the `transitionKey` + the
- * push/pop/replace `direction` the shell feeds into <BodyTransition>.
+ * The expanded shell's `transitionKey` and push/pop/replace `direction`, driven through real store
+ * transitions (push appends, back pops, selectView clears, openDetail replaces). The key derivation is
+ * replicated from ExpandedShell.tsx; the direction predicate is the real shared `directionForStackLengths`.
  *
- * Like backAffordance.test.ts, these are PURE predicates over the live nav store - no React Native
- * renderer (the package has no react-test-renderer / testing-library). The derivation in
- * ExpandedShell.tsx is:
- *   transitionKey = shellBodyKey(active, `view:${view}`) (the entry's full identity, else the view)
- *   direction     = stack longer than last render => "push"; shorter => "pop"; equal => "replace".
- * The direction predicate is now the REAL shared `directionForStackLengths` (useStackDirection.ts, used
- * by all three shells); the key derivation is still replicated. We drive both through real store
- * transitions (push appends, back pops, selectView clears, openDetail replaces), asserting each step.
- *
- * The second describe block below pins the .web seam's MOUNT invariant by source text (issue #94): the
- * wrapper used to swap between an UNKEYED settled child and two template-keyed animation layers, and
- * React reconciles unkeyed <-> keyed as delete+create in both directions - so one away-and-back trip
- * mounted the destination body twice and re-parented (therefore remounted) the body that was leaving.
- * Every mount re-ran the feed's refetch-if-stale, replayed the entrance animation and reset every
- * react-native-web <Image> to its blank IDLE state: the double reload + flicker the issue reports.
- * The seam now ping-pongs between two layers with CONSTANT keys, so each body keeps ONE React identity
- * across the animating <-> settled boundary. The RENDERED proof of that (mount/unmount counts driven
- * through A -> B -> A with fake timers) lives where a real React renderer exists:
- * apps/community-web/src/components/home/body-transition-mounts.dom.test.tsx. These assertions guard the
- * structure that proof depends on, in the package that owns the file.
+ * The second block pins the web seam's mount invariant by source text: swapping between an unkeyed settled
+ * child and keyed animation layers makes React delete and re-create the body on every away-and-back trip,
+ * re-running the feed's refetch, replaying the entrance and blanking every react-native-web <Image>. The
+ * seam ping-pongs between two constant-key layers so each body keeps one React identity. The rendered
+ * proof lives in apps/community-web/src/components/home/body-transition-mounts.dom.test.tsx.
  */
 import { readFileSync } from "node:fs"
 import { beforeEach, describe, expect, it } from "vitest"
@@ -36,7 +22,6 @@ function transitionKey(active: DetailEntry | null, view: NavView): string {
   return shellBodyKey(active, `view:${view}`)
 }
 
-/** Reset the singleton store to a clean home state in the EXPANDED layout (so push appends). */
 function resetExpanded(): void {
   useNavStore.setState({
     view: "home",
@@ -45,7 +30,7 @@ function resetExpanded(): void {
     snap: 0,
     query: "",
     mode: "expanded",
-    // See the nav store's origin invariant: a raw setState runs no reducer, so clear it explicitly.
+    // A raw setState runs no reducer, so the origin must be cleared explicitly.
     originView: null,
   })
 }

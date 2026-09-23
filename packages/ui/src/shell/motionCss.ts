@@ -1,4 +1,4 @@
-/** Pure CSS-transition builders over the shared motion vocabulary. No RN, no DOM — unit-testable. */
+/** Pure CSS-transition builders over the shared motion vocabulary: no RN and no DOM, so unit-testable. */
 import type { TimingRecipe } from "../theme/motion"
 import { EASE_STANDARD_CSS } from "../theme/motion"
 

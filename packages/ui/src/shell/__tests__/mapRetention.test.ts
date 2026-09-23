@@ -1,22 +1,11 @@
 /**
- * MAP RETENTION, FIRED (tab-lag fix, issue 1 - the second half).
- *
- * `portraitShellPlan`'s `retainMap` argument shipped implemented-but-unpassed; this file is the guard for
- * the pass that actually turns it on. Its assertions come in three layers, because the retention only works
- * if all three hold and each is independently deletable:
- *
- *   1. THE SEAM. `mapRetentionPlatform` is native-true / web-false, like its two siblings.
- *   2. THE WIRING. AppShell passes it, LAZILY. The whole no-regression argument for web, and the whole
- *      no-cold-start-cost argument for native, live in ~4 lines of that file, so they are pinned by source
- *      read - this package has no RN renderer, which is the same reason portrait-shell.test.ts pins the
- *      keep-alive slot that way.
- *   3. THE SAFETY INVARIANT. A retained map is only acceptable because something opaque is painted over it.
- *      That is `renderBaseBody`, and it must stay the exact complement of the UNretained `mountMap` - i.e.
- *      the retention may never open a view that shows a hidden map through a gap.
- *
- * The pure-behaviour half of `retainMap` (it moves `mountMap` and nothing else) is pinned next door in
- * portrait-shell.test.ts's "retaining the map across compact tab switches" block; this file deliberately
- * does not restate it, and asserts the FIRING that block was written before.
+ * Retention only works if three things hold, each independently deletable:
+ *   1. the seam: `mapRetentionPlatform` is native-true / web-false;
+ *   2. the wiring: AppShell passes it lazily, pinned by source read because this package has no RN
+ *      renderer;
+ *   3. the safety invariant: a retained map is acceptable only because an opaque base body is painted over
+ *      it, so `renderBaseBody` must stay the exact complement of the unretained `mountMap`.
+ * The pure behaviour of `retainMap` is pinned in portrait-shell.test.ts and not restated here.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
@@ -33,9 +22,8 @@ const VIEWS = ["home", "map", "messaging", "report", "search", "social"] as cons
 
 describe("the mapRetentionPlatform seam", () => {
   it("is native-only, with the bare module defaulting to the web answer", () => {
-    // Same shape as detailPresentationPlatform / searchRevealPlatform: the extension-less module is what
-    // tsc, vitest and any bundler that resolves neither extension land on, so it must BE the web answer -
-    // the `.web` sibling is belt and braces, not the source of the default.
+    // The extension-less module is what tsc, vitest and any bundler that resolves neither extension
+    // land on, so it must be the web answer itself.
     expect(MAP_IS_RETAINED).toBe(false)
     expect(MAP_IS_RETAINED_WEB).toBe(false)
     expect(MAP_IS_RETAINED_NATIVE).toBe(true)
@@ -44,8 +32,7 @@ describe("the mapRetentionPlatform seam", () => {
 
 describe("AppShell fires it", () => {
   it("passes the flag into portraitShellPlan's retainMap argument", () => {
-    // The one edit that turns the parameter from decoration into behaviour. If this line loses its fourth
-    // argument, every assertion below still passes and the app silently goes back to rebuilding the map.
+    // If this call loses its fourth argument every assertion below still passes and the map is rebuilt.
     expect(appShell).toContain('import { MAP_IS_RETAINED } from "./mapRetentionPlatform"')
     expect(appShell).toContain(
       "portraitShellPlan(baseView, active, fullPageDetails, mapRetained)",
@@ -59,10 +46,8 @@ describe("AppShell fires it", () => {
   })
 
   it("derives `fullPageDetails` from the platform flag OR a seeded deep link, and passes THAT", () => {
-    // The third argument stopped being the bare platform constant when a cold-loaded /cleanups/<id> had
-    // to render as a page on compact web too. It is still the constant on native (where it is already
-    // true, so the OR is the identity) and still false on web for every IN-APP open - only the nav
-    // store's `seededDetailPage` can raise it there, and only while the shell is compact.
+    // A cold-loaded /cleanups/<id> renders as a page on compact web too, so only the nav store's
+    // `seededDetailPage` can raise the flag on web; on native the constant is already true.
     expect(appShell).toContain(
       "const seededDetailPage = useNavStore((state) => state.seededDetailPage)",
     )
@@ -75,20 +60,15 @@ describe("AppShell fires it", () => {
   })
 
   it("LATCHES it lazily instead of passing the platform flag straight through", () => {
-    // The app boots into `home`, not `map` (useNavStore's initial view). Passing MAP_IS_RETAINED directly
-    // would therefore build a MapLibre surface - and fire its first /map/reports bbox fetch - during cold
-    // start, for a user who may never open the Map tab: paying for a tab switch that never happens. The
-    // latch trips on the first frame a map is actually mounted and is never released.
+    // The app boots into `home`, so passing MAP_IS_RETAINED directly would build a MapLibre surface and
+    // fire its first bbox fetch during cold start. The latch trips on the first frame a map is mounted.
     expect(appShell).toContain("const [mapRetained, setMapRetained] = React.useState(false)")
     expect(appShell).toMatch(/if \(MAP_IS_RETAINED && mountMap\) setMapRetained\(true\)/)
-    // Gated on the FLAG, not just on `mountMap`: on web the setter must never be called at all, or the web
-    // shell picks up an extra state flip + re-render it does not have today.
+    // Gated on the flag, not just `mountMap`, so web never pays an extra state flip and re-render.
     expect(appShell).not.toMatch(/if \(mountMap\) setMapRetained\(true\)/)
   })
 
   it("leaves web byte-identical: the latch can only ever be false there", () => {
-    // `mapRetained` starts false and the only setter is behind MAP_IS_RETAINED, so on web
-    // `portraitShellPlan(..., false)` is the historic three-argument call exactly.
     expect(MAP_IS_RETAINED).toBe(false)
     for (const view of VIEWS) {
       expect(portraitShellPlan(view, null, false, MAP_IS_RETAINED), view).toEqual(
@@ -100,9 +80,8 @@ describe("AppShell fires it", () => {
 
 describe("the retained map is always covered", () => {
   it("draws an opaque base body on every view the retention keeps it mounted for", () => {
-    // THE SAFETY INVARIANT, and the only reason hiding is allowed to stand in for unmounting. The retained
-    // instance sits at z0; PortraitShell.shared paints `styles.opaqueSurface` for any mounted base body, so
-    // a view that both retains the map AND renders no base body would show a live map nobody asked for.
+    // The only reason hiding may stand in for unmounting: the retained map sits at z0 under
+    // `styles.opaqueSurface`, so a view that retains the map but renders no base body would show it.
     for (const view of VIEWS) {
       const retained = portraitShellPlan(view, null, false, true)
       expect(retained.mountMap, view).toBe(true)
@@ -113,8 +92,7 @@ describe("the retained map is always covered", () => {
   })
 
   it("holds under the page seam too (the two flags are orthogonal)", () => {
-    // Converting a detail kind to a full page changes the OVERLAY layer, never the base surface, so the
-    // cover survives the conversion waves. Cheap to state, and it is the thing that would quietly rot.
+    // A full-page detail changes the overlay layer, never the base surface, so the cover survives.
     for (const view of VIEWS) {
       expect(portraitShellPlan(view, null, true, true).renderBaseBody, view).toBe(
         portraitShellPlan(view, null, false, false).renderBaseBody,

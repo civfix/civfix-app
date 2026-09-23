@@ -90,7 +90,7 @@ describe("reduceScrollKeyboard", () => {
     expect(run(held, { type: "hold-expired" })).toMatchObject({ holding: false, reserve: 0 })
   })
 
-  it("cancels the release when a hide is followed by a show — the keyboardType flip", () => {
+  it("cancels the release when a hide is followed by a show: the keyboardType flip", () => {
     const next = run(opened(), { type: "hide" }, focus(MINE), show(297))
     expect(next).toMatchObject({ holding: false, reserve: 313 })
     expect(run(next, { type: "hold-expired" }).reserve).toBe(313)
