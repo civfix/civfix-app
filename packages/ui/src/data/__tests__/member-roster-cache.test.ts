@@ -1,9 +1,7 @@
 /**
- * Unit test for the WS4 member-removal roster reconciliation. `useRemoveMember` patches the cached
- * attendee roster on success with {@link rosterWithoutMember}: the removed row drops out immediately
- * and the server's authoritative `going` is adopted, so the MembersBody list and every going-counter
- * update without waiting for the invalidation refetch. Driven here against a real QueryClient (the
- * data/__tests__ house pattern: pure cache logic, no renderer).
+ * `useRemoveMember` patches the cached attendee roster on success with {@link rosterWithoutMember}: the
+ * removed row drops out and the server's authoritative `going` is adopted, so the MembersBody list and
+ * every going-counter update without waiting for the invalidation refetch.
  */
 import { describe, expect, it } from "vitest"
 import { QueryClient } from "@tanstack/react-query"

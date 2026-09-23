@@ -1,6 +1,6 @@
 /**
- * APP-BUG-150: muting a group from the conversation pill or the inbox row refreshed only the inbox, so
- * GroupInfoBody's Mute/Unmute row stayed stale. The hook now owns the group-info refresh for every caller.
+ * Muting a group from the conversation pill or the inbox row must also refresh GroupInfoBody's
+ * Mute/Unmute row, so the hook owns the group-info refresh for every caller.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"

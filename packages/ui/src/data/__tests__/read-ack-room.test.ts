@@ -1,18 +1,10 @@
 /**
- * Regression test for the ROOM-SWITCH read-ack leak in `useChat`.
- *
- * BUG. The socket lifecycle effect's cleanup flushes the debounced read watermark before it leaves the
- * room, and it used to flush through a ref that a `useLayoutEffect` re-pointed at the current
- * `sendReadAck`. `roomId` is a changeable PROP (BodyRouter renders ConversationBody unkeyed), and React
- * commits the next render's LAYOUT effects BEFORE running the previous render's PASSIVE cleanups - so on
- * an in-place room switch that ref already pointed at room B's closure while the pending watermark was
- * still room A's message id. The flush sent `{ upToId: <A's id>, cleanupId: B }`: A's unread badge stayed
- * lit (the exact bug the flush was added to fix) and B was told the viewer read a message not in it.
- *
- * FIX. The watermark carries the room it was queued for (`PendingReadAck`), and the cleanup builds the
- * frame from its OWN closed-over roomId/roomKind - flushing only a watermark that belongs to that room.
- * `readAckToFlush` is that decision, exercised here directly (this package tests pure logic only; the
- * hook itself needs a React renderer).
+ * `useChat` flushes the debounced read watermark in the socket effect's cleanup, and on an in-place room
+ * switch (BodyRouter renders ConversationBody unkeyed) React commits the next render's LAYOUT effects
+ * before the previous render's PASSIVE cleanups, so a render-synced ref already points at room B while the
+ * watermark is still room A's. The watermark therefore carries the room it was queued for, and
+ * `readAckToFlush` releases it only to that room's teardown; otherwise A's badge stays lit and B is told
+ * the viewer read a message that is not in it.
  */
 import { describe, expect, it } from "vitest"
 import { readAckToFlush, type PendingReadAck } from "../readAck"

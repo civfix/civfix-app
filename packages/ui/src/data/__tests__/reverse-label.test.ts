@@ -1,8 +1,6 @@
 /**
- * Unit tests for the sub-4 reverse-label DISPLAY logic (issue #61): `reverseLabelText` folds the resolved
- * geocoder label + the point into one string - the ADDRESS when one resolves, else the exact coordinates to
- * 5 decimals - and `coordsLabel` is the coords fallback itself. Pure (no hooks / no network), so vitest
- * exercises them directly.
+ * `reverseLabelText` folds the resolved geocoder label and the point into one string: the address when one
+ * resolves, else the exact coordinates to 5 decimals (`coordsLabel`).
  */
 import { describe, expect, it } from "vitest"
 import { coordsLabel, fetchReverseLabel, reverseLabelText } from "../hooks/reverseLabel"

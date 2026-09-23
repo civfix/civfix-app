@@ -1,5 +1,5 @@
 /**
- * applyVoteLocally (P6 Task 6.7) - the PURE optimistic-vote transform for a poll DTO. `chat.votePoll`
+ * applyVoteLocally: the PURE optimistic-vote transform for a poll DTO. `chat.votePoll`
  * snapshots the poll, applies this, calls the server, and rolls back on error (the same
  * snapshot->patch->settle shape as toggleReaction / edit). Extracted so the counter arithmetic
  * unit-tests without React (package convention: pure-logic vitest).
@@ -20,10 +20,7 @@ import type { PollDTO } from "@civfix/shared"
 
 /**
  * Return a new PollDTO reflecting the viewer voting for exactly `newIdxs` (an empty array = retract).
- *
- * @param poll     The current poll payload (the optimistic base).
- * @param newIdxs  The option idxs the viewer is now voting for (empty = un-vote).
- * @param hadVoted Whether the viewer had a vote BEFORE this change (poll.myVote.length > 0).
+ * `hadVoted` is whether the viewer had a vote BEFORE this change (poll.myVote.length > 0).
  */
 export function applyVoteLocally(poll: PollDTO, newIdxs: number[], hadVoted: boolean): PollDTO {
   const chosen = new Set(newIdxs)

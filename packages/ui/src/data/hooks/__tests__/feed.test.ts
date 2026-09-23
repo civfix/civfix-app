@@ -1,12 +1,8 @@
 /**
- * Unit test for the "events near you" proximity CUTOFF (`useNearbyCleanups`).
- *
- * The hook itself needs a React renderer (this package tests pure logic only - see posts.test.ts), so we
- * drive the pure `filterCleanupsWithinRadius` the hook's `select` applies. The regression it guards:
- * the 50 km cutoff is a FEED/sidebar policy, and applying it to a MAP marker layer silently deletes pins
- * for anyone whose nearest event is further away (the list is anchored to the viewer, not the viewport,
- * so panning can never bring them back). The map hosts opt out with `radiusM: null`, which the hook turns
- * into NO `select` at all - asserted here as "the raw list passes through unchanged".
+ * The "events near you" cutoff `useNearbyCleanups` applies in `select` (`filterCleanupsWithinRadius`).
+ * The 50 km cutoff is a feed/sidebar policy: on a MAP marker layer it would silently delete pins for anyone
+ * whose nearest event is further away, and panning can never bring them back because the list is anchored
+ * to the viewer. Map hosts opt out with `radiusM: null`, which must pass the raw list through unchanged.
  */
 import { describe, expect, it } from "vitest"
 import type { CleanupDTO } from "@civfix/shared"

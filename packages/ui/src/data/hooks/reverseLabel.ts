@@ -1,6 +1,6 @@
 /**
  * `useReverseLabel` - reverse-geocode a {lat,lng} to a human-readable label for the report/location-pick
- * UI (issue #61 sub-task 4). Wraps the SHARED `api.reverseLabel({lat,lng})` (POST /map/reverse-label) in a
+ * UI. Wraps the SHARED `api.reverseLabel({lat,lng})` (POST /map/reverse-label) in a
  * React Query so a placed pin shows its ADDRESS (the geocoder's `cityStateLabel`, which is the most precise
  * label the server can resolve) instead of just bare coordinates.
  *
@@ -12,12 +12,12 @@
  *     it is never cached as a 5-minute-fresh "no address". Callers read `data` through `reverseLabelText`,
  *     which renders `undefined` (pending or errored) and `null` alike as the coordinates.
  *
- * The exported `reverseLabelText(label, point)` helper folds the user decision (sub-4): show the ADDRESS
- * when one resolves, else fall back to the exact coordinates `lat.toFixed(5), lng.toFixed(5)`. Pure (no
+ * The exported `reverseLabelText(label, point)` helper shows the ADDRESS when one resolves, else falls
+ * back to the exact coordinates `lat.toFixed(5), lng.toFixed(5)`. Pure (no
  * hooks) so it is unit-testable and reusable by both the report step and the map-pick step.
  *
  * Framework-light: reaches the host API client through the injected data context (useApi); no expo / next /
- * maplibre import. Does NOT edit @civfix/shared (reuses the existing reverseLabel endpoint).
+ * maplibre import.
  */
 import { useQuery } from "@tanstack/react-query"
 import type { ApiClient } from "@civfix/shared/client"
@@ -36,7 +36,7 @@ function roundLabelCoord(n: number): number {
   return Math.round(n * 100000) / 100000
 }
 
-/** The exact-coordinate fallback string (sub-4: 5 decimals) shown when no address resolves. */
+/** The exact-coordinate fallback string (5 decimals) shown when no address resolves. */
 export function coordsLabel(point: ReverseLabelPoint): string {
   return `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`
 }

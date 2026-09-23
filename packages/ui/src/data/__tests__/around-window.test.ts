@@ -1,8 +1,7 @@
 /**
- * Unit tests for `applyUpdatesToWindow` (chat P2, Task 2.7) - the pure update fold `useChat` runs
- * over its detached around-mode window when `message_update` frames arrive: upsert-by-id for
- * messages ALREADY in the window (edits, tombstones), and DROP anything else - a detached window
- * never grows.
+ * `applyUpdatesToWindow` is the pure fold `useChat` runs over its detached around-mode window when
+ * `message_update` frames arrive: it upserts by id the messages ALREADY in the window (edits,
+ * tombstones) and drops anything else, so a detached window never grows.
  */
 import { describe, expect, it } from "vitest"
 import type { ChatItem, ChatMessageDTO, PersonDTO } from "@civfix/shared"

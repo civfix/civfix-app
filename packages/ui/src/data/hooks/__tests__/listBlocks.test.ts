@@ -1,6 +1,6 @@
 /**
- * APP-BUG-214: the blocked-accounts list read only the first page of GET /me/blocks (server default 50),
- * so anyone past the 50th block could never be seen or unblocked in-app. The hook now pages by cursor.
+ * The blocked-accounts list must page GET /me/blocks by cursor: the server returns 50 rows by default, so
+ * reading only the first page leaves anyone past the 50th block impossible to see or unblock in-app.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"

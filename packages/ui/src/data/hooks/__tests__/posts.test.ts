@@ -1,10 +1,7 @@
 /**
- * Unit test for the post hooks' optimistic caching (U39). This package tests pure logic only (no React
- * renderer), so - exactly like `data/__tests__/follow-cache.test.ts` drives the follow toggle's
- * `optimisticListPatch` options directly - we build the SAME `useMutation` options the post hooks build
- * (`buildToggleMutation` / `buildCreateMutation` / `buildDeleteMutation`) against a real QueryClient and
- * exercise their onMutate/onError/onSuccess phases. That is the exact optimistic contract the feed /
- * thread / saves surfaces rely on.
+ * The post hooks' optimistic caching, driven through the same `useMutation` options the hooks build
+ * (`buildToggleMutation` / `buildCreateMutation` / `buildDeleteMutation`) against a real QueryClient,
+ * because this package has no React renderer.
  */
 import { describe, expect, it } from "vitest"
 import { QueryClient, type InfiniteData } from "@tanstack/react-query"
@@ -21,7 +18,7 @@ import {
 /**
  * react-query's option callbacks carry extra trailing params (mutation / context) in their full type.
  * The tests exercise only the cache-patch BEHAVIOR, so the built options are viewed through this loose
- * alias (mirroring follow-cache.test.ts's `LooseOptions`) to invoke onMutate/onError/onSuccess directly.
+ * alias to invoke onMutate/onError/onSuccess directly.
  */
 interface Loose<V, R> {
   onMutate: (v: V) => Promise<any>

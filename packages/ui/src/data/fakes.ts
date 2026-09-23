@@ -61,10 +61,6 @@ export function makeFakeApiClient(): ApiClient {
   ) as ApiClient
 }
 
-// ---------------------------------------------------------------------------
-// Fake social-feed data (seed posts + the post client methods)
-// ---------------------------------------------------------------------------
-
 /** ISO timestamp `days` from now (negative = the past). */
 function fakeIso(days: number): string {
   return new Date(Date.now() + days * 86_400_000).toISOString()
@@ -145,7 +141,6 @@ function fakeRef(post: PostDTO): PostRefDTO {
   }
 }
 
-// 1. Plain text post.
 const POST_TEXT: PostDTO = {
   id: "post_text",
   author: FAKE_LUIS,
@@ -163,7 +158,6 @@ const POST_TEXT: PostDTO = {
   threadRootId: null,
 }
 
-// 2. Post with an attached event (LinkedEventRef).
 const POST_EVENT: PostDTO = {
   id: "post_event",
   author: FAKE_MAYA,
@@ -181,7 +175,6 @@ const POST_EVENT: PostDTO = {
   threadRootId: null,
 }
 
-// 3. A repost (kind:"repost" + repostOf preview) of the plain text post.
 const POST_REPOST: PostDTO = {
   id: "post_repost",
   author: FAKE_DANA,
@@ -199,7 +192,6 @@ const POST_REPOST: PostDTO = {
   threadRootId: null,
 }
 
-// 4. A reply to the plain text post.
 const POST_REPLY: PostDTO = {
   id: "post_reply",
   author: FAKE_DANA,
@@ -217,7 +209,6 @@ const POST_REPLY: PostDTO = {
   threadRootId: POST_TEXT.id,
 }
 
-// 5. A "fix confirmed" post with an attached report (LinkedReportRef).
 const POST_FIX: PostDTO = {
   id: "post_fix",
   author: FAKE_MAYA,
@@ -235,7 +226,7 @@ const POST_FIX: PostDTO = {
   threadRootId: null,
 }
 
-/** All seed posts. Timeline order (newest first) for the home feed. */
+/** Newest first, the timeline order of the home feed. */
 const SEED_POSTS: PostDTO[] = [POST_REPOST, POST_EVENT, POST_TEXT, POST_REPLY, POST_FIX]
 
 function findSeed(id: string): PostDTO | undefined {

@@ -1,16 +1,12 @@
 /**
- * Unit test for the UNIFIED unread-badge derivation (`useTotalUnread`), the hook both map homes -
- * mobile's `app/index` and web's `WebMapControls` - now render their Messaging dot from.
- *
- * This package tests pure logic only (no React renderer - see posts.test.ts), so we drive the hook's
- * `select` (the exported `sumThreadUnread`) directly, plus the key/page-size policy the hook is built on.
- *
- * The regressions guarded here:
- *   - the badge must sum ONE page of /threads and survive a drifted envelope (the client does not
- *     validate responses, and this hook renders inside an always-mounted control stack);
- *   - the badge must NOT live on the `["threads"]` inbox key itself - an always-active observer there
- *     makes React Query refetch every loaded page of the INFINITE inbox on each invalidation - while
- *     still sitting UNDER that prefix, so one ack / realtime signal refreshes badge and list together.
+ * `useTotalUnread` drives the Messaging dot on both map homes (mobile's `app/index`, web's
+ * `WebMapControls`). With no React renderer here, the suite drives its `select` (`sumThreadUnread`) and
+ * the key/page-size policy it is built on:
+ *   - the badge sums ONE page of /threads and survives a drifted envelope (the client does not validate
+ *     responses, and this hook renders inside an always-mounted control stack);
+ *   - the badge must NOT live on the `["threads"]` inbox key itself (an always-active observer there makes
+ *     React Query refetch every loaded page of the INFINITE inbox on each invalidation), yet it sits UNDER
+ *     that prefix so one ack or realtime signal refreshes badge and list together.
  */
 import { describe, expect, it } from "vitest"
 import type { ListThreadsResponse, MessageThreadDTO } from "@civfix/shared"

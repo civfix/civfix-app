@@ -1,12 +1,7 @@
 /**
- * Unit tests for the data-seam auth normalization (stage 4A, locks R4 - the single "authed" vs
- * "authenticated" rule). `normalizeAuthState` is a pure function over the host's raw signals, so vitest
- * exercises it directly with no React renderer (mirrors the pure nav tests). We assert that each of the
- * three host shapes - confirmed signed-in, signed-out, still-resolving - and the optimistic-authed and
- * degenerate (authed-but-no-user) edge cases normalize to the right { isAuthenticated, user, isPending }.
- *
- * The fake DataContext is also checked end-to-end: its injected `useAuthState` hook returns exactly the
- * configured AuthState, which is what a body/gallery relies on.
+ * `normalizeAuthState` is the single rule that maps a host's raw "authed" signals onto the data seam's
+ * "authenticated" state. The fake DataContext is checked too, because bodies and the gallery rely on its
+ * `useAuthState` returning exactly the configured AuthState.
  */
 import { describe, expect, it } from "vitest"
 import type { UserDTO } from "@civfix/shared"

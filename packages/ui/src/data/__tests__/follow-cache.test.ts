@@ -1,15 +1,9 @@
 /**
- * Unit test for the people-list cache reconciliation the shared follow toggle performs (Stage 4 slice 1,
- * task 5). `useFollowPerson` patches the person across TWO cache shapes nested under the `["people"]`
- * prefix - the primary infinite list (exact `["people"]`) and any FLAT `PersonDTO[]` (e.g. the web
- * home-sidebar's `peopleSearch` rows at `["people", "search", q]`). The hook itself needs a React
- * renderer (this package tests pure logic only), so here we drive the SAME `optimisticListPatch` options
- * the hook builds against a real QueryClient, asserting both shapes flip optimistically and roll back on
- * error - which is the reconciliation contract the SocialBody / home-sidebar rely on.
- *
- * Mirrors how `useFollowPerson` is assembled: the primary infinite patch on `["people"]` PLUS an `also`
- * that does a prefix `setQueriesData` over `["people"]` to reach the flat lists (and snapshots them for
- * rollback). We exercise the options' onMutate/onError/onSuccess directly.
+ * `useFollowPerson` patches the person across two cache shapes under the `["people"]` prefix: the
+ * infinite list at exact `["people"]` and any flat `PersonDTO[]` nested beneath it (reached by an `also`
+ * prefix `setQueriesData`). The hook needs a React renderer this package does not have, so the suite
+ * drives the same `optimisticListPatch` options against a real QueryClient and asserts both shapes flip
+ * optimistically and roll back on error.
  */
 import { describe, expect, it } from "vitest"
 import { QueryClient, type InfiniteData } from "@tanstack/react-query"
