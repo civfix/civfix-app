@@ -17,7 +17,9 @@ export interface OverlayProps {
   align?: "start" | "end"
   side?: "bottom" | "top"
   width?: number
-  label?: string
+  label: string
+  /** Panel id, so the trigger can point `aria-controls` at it. */
+  id?: string
   className?: string
 }
 
@@ -30,6 +32,7 @@ export function Overlay({
   side = "bottom",
   width = 280,
   label,
+  id,
   className,
 }: OverlayProps) {
   const narrow = useIsNarrow()
@@ -37,7 +40,7 @@ export function Overlay({
   const panelRef = useRef<HTMLDivElement>(null)
 
   useEscape(open, onClose)
-  useFocusTrap(panelRef, open && narrow)
+  useFocusTrap(panelRef, open, narrow)
 
   useEffect(() => {
     if (!open || narrow) return
@@ -65,6 +68,7 @@ export function Overlay({
                 />
                 <div
                   ref={panelRef}
+                  id={id}
                   role="dialog"
                   aria-modal="true"
                   aria-label={label}
@@ -94,6 +98,7 @@ export function Overlay({
       {open ? (
         <div
           ref={panelRef}
+          id={id}
           role="dialog"
           aria-label={label}
           style={{ width }}
