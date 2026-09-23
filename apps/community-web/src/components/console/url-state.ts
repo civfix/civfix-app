@@ -174,12 +174,25 @@ export function drawerClosePlan(state: unknown): DrawerClosePlan {
 
 export function closeConsoleDrawer(keys: readonly ConsoleParamKey[]): void {
   if (typeof window === "undefined") return
+  const patch: ConsoleParamPatch = {}
+  for (const key of keys) patch[key] = null
   if (drawerClosePlan(window.history.state) === "back") {
+    const { pathname, hash } = window.location
+    const expected = serializeConsoleParams(applyConsolePatch(paramsSnapshot(), patch))
+    // A non-modal drawer leaves the page filters usable, and their replace writes land on the
+    // drawer's own entry. Carry them onto the entry Back returns to instead of reverting them.
+    window.addEventListener(
+      "popstate",
+      () => {
+        if (window.location.pathname !== pathname) return
+        if (serializeConsoleParams(parseConsoleSearch(window.location.search)) === expected) return
+        window.history.replaceState(window.history.state, "", `${pathname}${expected}${hash}`)
+      },
+      { once: true },
+    )
     window.history.back()
     return
   }
-  const patch: ConsoleParamPatch = {}
-  for (const key of keys) patch[key] = null
   setConsoleParams(patch, "replace")
 }
 
