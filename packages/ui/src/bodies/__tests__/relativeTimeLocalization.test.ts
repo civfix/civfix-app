@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { dayLabel, listTimeAgo, todayKey } from "../relativeTime"
+import { clockTime, dayLabel, focalTimestamp, listTimeAgo, todayKey } from "../relativeTime"
 import { buildRenderItems } from "../conversation/conversationModel"
 import type { ChatItem } from "@civfix/shared"
 
@@ -148,5 +148,24 @@ describe("every list timestamp goes through the localized seam", () => {
     const model = readFileSync(new URL("../postCardModel.ts", import.meta.url), "utf8")
     expect(model).toContain("timeAgo?: (iso: string) => string")
     expect(model).toContain("(options.timeAgo ?? listTimeAgo)(post.createdAt)")
+  })
+})
+
+describe("clock and focal timestamps follow the app locale, not the device's", () => {
+  const afternoon = localIso(2026, 2, 14, 15)
+  const clock = (locale: string) =>
+    new Date(afternoon).toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })
+  const date = (locale: string) =>
+    new Date(afternoon).toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })
+
+  it("formats the chat clock time in the supplied locale", () => {
+    expect(clock("ko-KR")).not.toBe(clock("en-US"))
+    expect(clockTime(afternoon, "ko-KR")).toBe(clock("ko-KR"))
+    expect(clockTime(afternoon, "en-US")).toBe(clock("en-US"))
+  })
+
+  it("formats the thread focal timestamp in the supplied locale", () => {
+    expect(date("de-DE")).not.toBe(date("en-US"))
+    expect(focalTimestamp(afternoon, "de-DE")).toBe(`${clock("de-DE")} · ${date("de-DE")}`)
   })
 })

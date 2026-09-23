@@ -19,17 +19,17 @@ export function distanceLabel(dist: number | null | undefined): string {
   return dist < 10 ? `${dist.toFixed(1)} mi` : `${Math.round(dist)} mi`
 }
 
-export function clockTime(iso: string): string {
+export function clockTime(iso: string, locale?: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ""
-  return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+  return d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })
 }
 
-export function focalTimestamp(iso: string): string {
+export function focalTimestamp(iso: string, locale?: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ""
-  const date = d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
-  return `${clockTime(iso)} · ${date}`
+  const date = d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })
+  return `${clockTime(iso, locale)} · ${date}`
 }
 
 function dayKeyOf(d: Date): string {
