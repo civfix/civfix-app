@@ -1,10 +1,12 @@
 import { useMemo } from "react"
-import { avatarGradient, type ChatItem, type MessageThreadDTO, type PersonDTO, type RoomKind } from "@civfix/shared"
+import { AVATAR_PALETTE, avatarGradient, type ChatItem, type MessageThreadDTO, type PersonDTO, type RoomKind } from "@civfix/shared"
 import type { TFunction } from "i18next"
 import { useT } from "../../i18n"
 import { useThreads } from "../../data"
 import type { ChatRoomError } from "../../data"
 import { dayKey, dayLabel, type DayLabelOptions } from "../relativeTime"
+import { appErrorCode } from "../errorCode"
+import { colorSchemes, type ColorSchemeName } from "../../theme/schemes"
 
 export interface ConvoMeta {
   kind: MessageThreadDTO["kind"]
@@ -36,6 +38,18 @@ export function senderColor(authorId: string): string {
   return avatarGradient(authorId)[0]
 }
 
+/** Indexed like AVATAR_PALETTE, whose order the shared avatar module fixes. */
+const SENDER_INK = ["bloom", "moss", "sun", "sky", "lilac"] as const
+
+/**
+ * The sender name's TEXT colour. The raw brand hue from `senderColor` is under 4.5:1 on paper (WCAG
+ * 1.4.3), so text takes the same hue from the AA-validated chip ink ramp for the active scheme.
+ */
+export function senderNameColor(authorId: string, scheme: ColorSchemeName): string {
+  const index = AVATAR_PALETTE.indexOf(avatarGradient(authorId)[0])
+  return colorSchemes[scheme].chipInk[SENDER_INK[index] ?? "bloom"]
+}
+
 export function getScrollableNode(
   list: { getScrollableNode?: () => unknown } | null,
 ): { scrollTop: number; scrollHeight: number } | null {
@@ -58,6 +72,11 @@ const TRANSIENT_ERROR_COPY_KEYS: Record<string, string> = {
 
 export function transientErrorCopyKey(code: string): string {
   return TRANSIENT_ERROR_COPY_KEYS[code] ?? "room_error.transient"
+}
+
+/** The edit-save failure toast. Never the error's own message: AppError text is English-only. */
+export function editErrorCopyKey(err: unknown): string {
+  return appErrorCode(err) === "NOT_FOUND" ? "composer.edit_unavailable" : "composer.save_error"
 }
 
 export function roomErrorCopy(error: ChatRoomError | null, meta: ConvoMeta, t: TFunction): string | null {

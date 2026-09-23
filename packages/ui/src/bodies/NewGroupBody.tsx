@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
@@ -36,6 +36,8 @@ export function NewGroupBody() {
   const picked = avatar.attachments[0] ?? null
 
   const createGroup = useCreateGroup()
+  /** Claimed synchronously: `isPending` lags a same-frame double activation (double click, key repeat). */
+  const submittingRef = useRef(false)
 
   const excludeIds = useMemo(() => (viewerId ? [viewerId] : []), [viewerId])
 
@@ -49,7 +51,9 @@ export function NewGroupBody() {
   }, [selected.length])
 
   const onCreate = useCallback(() => {
+    if (submittingRef.current) return
     if (!canCreateGroup(name, description) || avatar.uploading || createGroup.isPending) return
+    submittingRef.current = true
     setSubmitError(false)
     createGroup.mutate(
       {
@@ -68,6 +72,9 @@ export function NewGroupBody() {
           ])
         },
         onError: () => setSubmitError(true),
+        onSettled: () => {
+          submittingRef.current = false
+        },
       },
     )
   }, [name, description, avatar.uploading, createGroup, selected, picked])
@@ -126,7 +133,11 @@ export function NewGroupBody() {
                 descriptionPlaceholder: t("description_placeholder"),
               }}
             />
-            {submitError ? <Text style={styles.errorText}>{t("create_error")}</Text> : null}
+            {submitError ? (
+              <Text style={styles.errorText} accessibilityRole="alert">
+                {t("create_error")}
+              </Text>
+            ) : null}
           </ScrollView>
           <KeyboardPinnedFooter style={styles.footer}>
             <PrimaryButton

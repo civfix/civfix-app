@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from "react"
+import React, { memo, useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, Image, StyleSheet } from "react-native"
 import { useQueryClient } from "@tanstack/react-query"
 import type { GroupMemberDTO, GroupRole, PersonDTO } from "@civfix/shared"
@@ -27,7 +27,8 @@ import {
   useAuthState,
   queryKeys,
 } from "../data"
-import { useNavStore } from "../nav"
+import { pathForEntry, useNavStore } from "../nav"
+import { absoluteUrl } from "../primitives/share"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { MemberPicker } from "./MemberPicker"
@@ -197,6 +198,10 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
   const updateGroup = useUpdateGroup()
   const removeMember = useRemoveGroupMember()
   const setRole = useSetGroupMemberRole()
+  // Claimed synchronously: `isPending` lags a same-frame double activation (double click, key repeat).
+  const addingRef = useRef(false)
+  const savingRef = useRef(false)
+  const leavingRef = useRef(false)
 
   const [addOpen, setAddOpen] = useState(false)
   const [addSelected, setAddSelected] = useState<PersonDTO[]>([])
@@ -227,13 +232,18 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
     setAddOpen(true)
   }, [])
   const onAddConfirm = useCallback(() => {
+    if (addingRef.current) return
     if (addSelected.length === 0 || addMembers.isPending) return
+    addingRef.current = true
     setAddError(false)
     addMembers.mutate(
       { id, memberIds: addSelected.map((p) => p.id) },
       {
         onSuccess: () => setAddOpen(false),
         onError: () => setAddError(true),
+        onSettled: () => {
+          addingRef.current = false
+        },
       },
     )
   }, [addSelected, addMembers, id])
@@ -253,7 +263,9 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
   }, [group?.name, group?.description, group?.visibility, picked, avatar])
   const editValid = canCreateGroup(editName, editDescription)
   const onEditSave = useCallback(() => {
+    if (savingRef.current) return
     if (!editValid || avatar.uploading || updateGroup.isPending) return
+    savingRef.current = true
     setEditError(false)
     const draft = normalizeGroupDraft(editName, editDescription)
     updateGroup.mutate(
@@ -270,12 +282,17 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
           setEditOpen(false)
         },
         onError: () => setEditError(true),
+        onSettled: () => {
+          savingRef.current = false
+        },
       },
     )
   }, [editValid, avatar, updateGroup, id, editName, editDescription, editVisibility, isOwner, group?.visibility, picked])
 
   const onLeaveConfirm = useCallback(() => {
+    if (leavingRef.current) return
     if (!viewerId || removeMember.isPending) return
+    leavingRef.current = true
     setLeaveError(false)
     removeMember.mutate(
       { id, userId: viewerId },
@@ -286,6 +303,9 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
           else useNavStore.getState().setStack([{ kind: "messages" }])
         },
         onError: () => setLeaveError(true),
+        onSettled: () => {
+          leavingRef.current = false
+        },
       },
     )
   }, [viewerId, removeMember, id, onBack])
@@ -301,9 +321,9 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
   const onCopyLink = useCallback(() => {
     if (!clipboard) return
     void clipboard
-      .setString(`/messages/group/${id}`)
+      .setString(absoluteUrl(pathForEntry({ kind: "thread", id, roomKind: "group" })))
       .then(() => toast.show(t("link_copied"), { variant: "success" }))
-      .catch(() => {})
+      .catch(() => toast.show(t("link_copy_failed"), { variant: "error" }))
   }, [clipboard, id, toast, t])
 
   const onRowActionError = useCallback(() => {
@@ -494,6 +514,7 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
           fallbackAvatarUrl={group?.avatar?.url ?? null}
           labels={{
             avatarA11y: t("avatar_a11y"),
+            avatarClearA11y: t("avatar_clear_a11y"),
             nameLabel: t("name_label"),
             namePlaceholder: t("name_placeholder"),
             descriptionLabel: t("description_label"),
@@ -503,7 +524,11 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
         {isOwner ? (
           <View style={styles.visibilityEdit}>
             <Text style={styles.visibilityEditLabel}>{t("visibility_label")}</Text>
-            <View style={styles.visibilitySegment}>
+            <View
+              style={styles.visibilitySegment}
+              accessibilityRole="radiogroup"
+              accessibilityLabel={t("visibility_label")}
+            >
               {(["private", "public"] as const).map((v) => {
                 const active = editVisibility === v
                 return (

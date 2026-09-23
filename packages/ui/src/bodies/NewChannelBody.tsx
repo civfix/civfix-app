@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
@@ -46,6 +46,8 @@ export function NewChannelBody() {
   const picked = avatar.attachments[0] ?? null
 
   const createGroup = useCreateGroup()
+  /** Claimed synchronously: `isPending` lags a same-frame double activation (double click, key repeat). */
+  const submittingRef = useRef(false)
 
   const excludeIds = useMemo(() => (viewerId ? [viewerId] : []), [viewerId])
 
@@ -60,7 +62,9 @@ export function NewChannelBody() {
   }, [name, description, avatar.uploading])
 
   const onCreate = useCallback(() => {
+    if (submittingRef.current) return
     if (!canCreateChannel(name, description) || avatar.uploading || createGroup.isPending) return
+    submittingRef.current = true
     setSubmitError(false)
     createGroup.mutate(
       {
@@ -79,6 +83,9 @@ export function NewChannelBody() {
           ])
         },
         onError: () => setSubmitError(true),
+        onSettled: () => {
+          submittingRef.current = false
+        },
       },
     )
   }, [name, description, visibility, avatar.uploading, createGroup, selected, picked])
@@ -160,37 +167,39 @@ export function NewChannelBody() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {VISIBILITY_OPTIONS.map((opt) => {
-              const active = visibility === opt.value
-              return (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => setVisibility(opt.value)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: active }}
-                  accessibilityLabel={t(`${opt.value}_label`)}
-                  {...focusRingProps}
-                  style={({ pressed }) => [
-                    styles.radioRow,
-                    active ? styles.radioRowActive : null,
-                    pressed ? styles.radioPressed : null,
-                  ]}
-                >
-                  <Icon
-                    icon={iconMap[opt.icon]}
-                    size={20}
-                    color={active ? th.colors.brand.moss : th.colors.textMuted}
-                  />
-                  <View style={styles.radioText}>
-                    <Text style={styles.radioLabel}>{t(`${opt.value}_label`)}</Text>
-                    <Text style={styles.radioHint}>{t(`${opt.value}_hint`)}</Text>
-                  </View>
-                  <View style={[styles.radioDot, active ? styles.radioDotActive : null]}>
-                    {active ? <View style={styles.radioDotInner} /> : null}
-                  </View>
-                </Pressable>
-              )
-            })}
+            <View accessibilityRole="radiogroup" accessibilityLabel={t("visibility_title")}>
+              {VISIBILITY_OPTIONS.map((opt) => {
+                const active = visibility === opt.value
+                return (
+                  <Pressable
+                    key={opt.value}
+                    onPress={() => setVisibility(opt.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: active }}
+                    accessibilityLabel={t(`${opt.value}_label`)}
+                    {...focusRingProps}
+                    style={({ pressed }) => [
+                      styles.radioRow,
+                      active ? styles.radioRowActive : null,
+                      pressed ? styles.radioPressed : null,
+                    ]}
+                  >
+                    <Icon
+                      icon={iconMap[opt.icon]}
+                      size={20}
+                      color={active ? th.colors.brand.moss : th.colors.textMuted}
+                    />
+                    <View style={styles.radioText}>
+                      <Text style={styles.radioLabel}>{t(`${opt.value}_label`)}</Text>
+                      <Text style={styles.radioHint}>{t(`${opt.value}_hint`)}</Text>
+                    </View>
+                    <View style={[styles.radioDot, active ? styles.radioDotActive : null]}>
+                      {active ? <View style={styles.radioDotInner} /> : null}
+                    </View>
+                  </Pressable>
+                )
+              })}
+            </View>
           </ScrollView>
           <KeyboardPinnedFooter style={styles.footer}>
             <PrimaryButton label={t("next")} onPress={() => setStep("members")} />
@@ -206,7 +215,11 @@ export function NewChannelBody() {
               emptyPromptBody={t("subscriber_prompt")}
             />
           </View>
-          {submitError ? <Text style={[styles.errorText, styles.submitError]}>{t("create_error")}</Text> : null}
+          {submitError ? (
+            <Text style={[styles.errorText, styles.submitError]} accessibilityRole="alert">
+              {t("create_error")}
+            </Text>
+          ) : null}
           <KeyboardPinnedFooter style={styles.footer}>
             <PrimaryButton
               label={t("create")}

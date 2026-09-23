@@ -4,7 +4,7 @@
  * and "reply" (P2: a plain send aimed at a quoted message). Owns submit, so the edit/send/reply
  * decision lives in one place (the pure resolveComposerSubmit) instead of in the JSX.
  */
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Platform } from "react-native"
 import type { NativeSyntheticEvent, TextInputKeyPressEventData } from "react-native"
 import { MESSAGE_BODY_MAX, type ChatMessageDTO, type UserSearchResultDTO } from "@civfix/shared"
@@ -18,6 +18,7 @@ import { conversationFieldEscape } from "../../shell/shellKeyModel"
 import { useT } from "../../i18n"
 import { resolveComposerSubmit, type ComposerSubmitMode } from "../composerSubmit"
 import { bodyMentionsHandle } from "./mentionMatch"
+import { editErrorCopyKey } from "./conversationModel"
 import { CONTROL, COMPOSER_MAX } from "./styles"
 
 export type ComposerModeValue = { kind: "edit" | "reply"; message: ChatMessageDTO } | null
@@ -66,13 +67,15 @@ export function useComposerMode({
 
   // Mirror of the live draft state for callbacks that must stay referentially STABLE (onOpenEdit feeds
   // every rendered Bubble via renderItem - depending on `draft` directly would re-render the whole list
-  // per keystroke). Assigned every render, so reads are always fresh.
+  // per keystroke). Assigned on every commit (never during render), so handler reads are always fresh.
   const draftStateRef = useRef<{ draft: string; mentioned: UserSearchResultDTO[] }>({ draft: "", mentioned: [] })
-  draftStateRef.current = { draft, mentioned }
   // Same stability trick for the composer mode: onOpenReply is fed to every Bubble via renderItem and
-  // must not churn when the mode or an edit save toggles. Assigned every render, reads always fresh.
+  // must not churn when the mode or an edit save toggles.
   const composerModeStateRef = useRef<{ mode: ComposerModeValue; editPending: boolean }>({ mode: null, editPending: false })
-  composerModeStateRef.current = { mode: composerMode, editPending }
+  useLayoutEffect(() => {
+    draftStateRef.current = { draft, mentioned }
+    composerModeStateRef.current = { mode: composerMode, editPending }
+  })
   // The pre-edit composer draft, parked when edit mode opens and restored when it ends (cancel or save).
   const savedDraftRef = useRef<{ draft: string; mentioned: UserSearchResultDTO[] } | null>(null)
 
@@ -133,7 +136,7 @@ export function useComposerMode({
         .catch((err: unknown) => {
           // Keep the mode + edited text so the user can retry; surface the failure as a toast.
           setEditPending(false)
-          toast.show(err instanceof Error ? err.message : t("composer.save_error"), { variant: "error" })
+          toast.show(t(editErrorCopyKey(err)), { variant: "error" })
         })
       return
     }

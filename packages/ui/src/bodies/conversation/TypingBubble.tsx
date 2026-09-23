@@ -58,6 +58,8 @@ export const TypingBubble = React.memo(function TypingBubble({ name, color }: { 
   return (
     <View
       style={[styles.bubbleWrap, styles.bubbleWrapTheirs, styles.bubbleWrapGroupStart]}
+      // A native View exposes its label only as one accessible element. No live region: busy rooms would chatter.
+      accessible
       accessibilityLabel={name ? t("typing.indicator_named", { name }) : t("typing.indicator")}
     >
       {name ? (

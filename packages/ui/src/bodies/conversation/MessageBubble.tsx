@@ -17,7 +17,7 @@ import { clockTime } from "../relativeTime"
 import { appLinkOrigins, mentionLookup, tokenizeChatBody, type ChatBodyToken, type ChatLinkTarget } from "./chatLinks"
 import { planChatEmbeds, type CivfixLinkRef } from "./civfixLinks"
 import { ChatLinkEmbeds } from "./ChatLinkEmbeds"
-import { senderColor } from "./conversationModel"
+import { senderNameColor } from "./conversationModel"
 import { useConversationStyles } from "./styles"
 
 export const FLASH_DURATION_MS = 900
@@ -77,6 +77,7 @@ export function renderChatTokens(
         <Text
           key={`m${i}`}
           style={tintStyle}
+          accessibilityRole="link"
           onPress={() => onOpenPerson({ id: userId, handle: token.handle })}
         >
           {token.text}
@@ -464,7 +465,7 @@ export const Bubble = React.memo(function Bubble({
         void clipboard
           .setString(body)
           .then(() => toast.show(t("context_menu.copied"), { variant: "success" }))
-          .catch(() => {})
+          .catch(() => toast.show(t("context_menu.copy_failed"), { variant: "error" }))
       },
       edit: openEdit,
       pin: () => {
@@ -615,7 +616,7 @@ export const Bubble = React.memo(function Bubble({
         const from = message.from
         const name = (
           <Text
-            style={[styles.who, from.official ? styles.whoBadged : null, { color: senderColor(from.id) }]}
+            style={[styles.who, from.official ? styles.whoBadged : null, { color: senderNameColor(from.id, th.scheme) }]}
             numberOfLines={1}
             onPress={from.deleted ? undefined : () => onOpenPerson(from)}
             accessibilityRole={from.deleted ? undefined : "button"}
@@ -659,6 +660,16 @@ export const Bubble = React.memo(function Bubble({
             onPress={onBubblePress}
             onLongPress={menuAvailable ? openContextMenu : undefined}
             delayLongPress={300}
+            accessibilityActions={
+              menuAvailable ? [{ name: "longpress", label: t("bubble.message_actions") }] : undefined
+            }
+            onAccessibilityAction={
+              menuAvailable
+                ? (e) => {
+                    if (e.nativeEvent.actionName === "longpress") openContextMenu()
+                  }
+                : undefined
+            }
             {...focusRingProps}
             style={[styles.bubble, bubbleChrome, bubbleTint]}
           >
