@@ -5,7 +5,7 @@
  * Like backAffordance.test.ts, these are PURE predicates over the live nav store - no React Native
  * renderer (the package has no react-test-renderer / testing-library). The derivation in
  * ExpandedShell.tsx is:
- *   transitionKey = active ? `${kind}:${id ?? ""}` : isHome ? "home" : `view:${view}`
+ *   transitionKey = shellBodyKey(active, `view:${view}`) (the entry's full identity, else the view)
  *   direction     = stack longer than last render => "push"; shorter => "pop"; equal => "replace".
  * The direction predicate is now the REAL shared `directionForStackLengths` (useStackDirection.ts, used
  * by all three shells); the key derivation is still replicated. We drive both through real store
@@ -28,11 +28,12 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { useNavStore } from "../../nav"
 import type { DetailEntry, View as NavView } from "../../nav"
 import { directionForStackLengths as directionFor } from "../useStackDirection"
+import { shellBodyKey } from "../bodyLayout"
+import { entryDiscriminator } from "../../nav/routes"
 
-/** Mirror of ExpandedShell.tsx's transitionKey derivation. */
+/** ExpandedShell.tsx's transitionKey derivation. */
 function transitionKey(active: DetailEntry | null, view: NavView): string {
-  const isHome = !active && view === "home"
-  return active ? `${active.kind}:${active.id ?? ""}` : isHome ? "home" : `view:${view}`
+  return shellBodyKey(active, `view:${view}`)
 }
 
 /** Reset the singleton store to a clean home state in the EXPANDED layout (so push appends). */
@@ -52,9 +53,9 @@ function resetExpanded(): void {
 beforeEach(resetExpanded)
 
 describe("ExpandedShell BodyTransition - transitionKey", () => {
-  it("keys home as 'home' (no active, home view)", () => {
+  it("keys home as 'view:home' (no active, home view)", () => {
     const s = useNavStore.getState()
-    expect(transitionKey(s.active, s.view)).toBe("home")
+    expect(transitionKey(s.active, s.view)).toBe("view:home")
   })
 
   it("keys a list view as 'view:<view>'", () => {
@@ -64,16 +65,16 @@ describe("ExpandedShell BodyTransition - transitionKey", () => {
     expect(transitionKey(s.active, s.view)).toBe("view:events")
   })
 
-  it("keys an open detail as '<kind>:<id>'", () => {
+  it("keys an open detail by the entry's full identity", () => {
     useNavStore.getState().push({ kind: "pin", id: "abc" })
     const s = useNavStore.getState()
-    expect(transitionKey(s.active, s.view)).toBe("pin:abc")
+    expect(transitionKey(s.active, s.view)).toBe(entryDiscriminator({ kind: "pin", id: "abc" }))
   })
 
-  it("keys an id-less detail as '<kind>:'", () => {
+  it("keys an id-less detail by its kind", () => {
     useNavStore.getState().push({ kind: "profile" })
     const s = useNavStore.getState()
-    expect(transitionKey(s.active, s.view)).toBe("profile:")
+    expect(transitionKey(s.active, s.view)).toBe(entryDiscriminator({ kind: "profile" }))
   })
 
   it("changes key when the active detail changes (drives an animation)", () => {
@@ -81,9 +82,21 @@ describe("ExpandedShell BodyTransition - transitionKey", () => {
     const first = transitionKey(useNavStore.getState().active, useNavStore.getState().view)
     useNavStore.getState().push({ kind: "person", id: "b" })
     const second = transitionKey(useNavStore.getState().active, useNavStore.getState().view)
-    expect(first).toBe("pin:a")
-    expect(second).toBe("person:b")
     expect(first).not.toBe(second)
+  })
+
+  it("changes key between two entities that share a kind and have no id (org slug, leaderboard geoid)", () => {
+    useNavStore.getState().push({ kind: "org", slug: "a" })
+    const first = transitionKey(useNavStore.getState().active, useNavStore.getState().view)
+    useNavStore.getState().push({ kind: "org", slug: "b" })
+    const second = transitionKey(useNavStore.getState().active, useNavStore.getState().view)
+    expect(first).not.toBe(second)
+    expect(transitionKey({ kind: "leaderboard", geoid: "06" }, "home")).not.toBe(
+      transitionKey({ kind: "leaderboard", geoid: "36" }, "home"),
+    )
+    expect(transitionKey({ kind: "announcement", id: "c", announcementId: "1" }, "home")).not.toBe(
+      transitionKey({ kind: "announcement", id: "c", announcementId: "2" }, "home"),
+    )
   })
 })
 

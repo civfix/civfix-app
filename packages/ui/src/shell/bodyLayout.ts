@@ -134,6 +134,13 @@ export function portraitSurfaceTransitionKey(
   return entryDiscriminator(active)
 }
 
+// Keys on the store's full entry identity: kind + id alone collides for entries
+// addressed by slug, geoid, seat or announcement, which would reuse one body
+// instance (and its local state) across two different entities.
+export function shellBodyKey(active: DetailEntry | null, restingKey: string): string {
+  return active ? entryDiscriminator(active) : restingKey
+}
+
 export function topmostFullEntry(
   stack: readonly DetailEntry[],
   fullPageDetails = false,
