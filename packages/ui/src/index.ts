@@ -22,6 +22,8 @@ export * from "./bodies"
 export * from "./map"
 export * from "./report"
 
+export { adoptViewer, discardViewerDrafts } from "./viewerScope"
+
 export * from "./charts"
 
 // Cross-platform full-screen media viewer ("lightbox"): a host mounts <MediaLightboxProvider> once

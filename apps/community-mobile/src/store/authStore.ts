@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import type { UserDTO } from "@civfix/shared"
-import { adoptPostComposerViewer, discardPostComposerDraft } from "@civfix/ui"
+import { adoptViewer, discardViewerDrafts } from "@civfix/ui"
 import { api } from "@/api/client"
 import {
   SESSION_RESTORE_DEADLINE_MS,
@@ -117,7 +117,7 @@ function tearDownIdentity(set: SetAuthState): Promise<void> {
   cacheUser(null)
   const pushReleased = unregisterLapsedSessionPush(pushUnregisterDeps())
   queryClient.clear()
-  discardPostComposerDraft()
+  discardViewerDrafts()
   set({ status: "unauthed", user: null, sessionPresent: false })
   resumeCachePersistence()
   identityTornDown = true
@@ -264,7 +264,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 }))
 
-// A post draft belongs to the account that typed it: an account switch on a shared device must not hand it
-// to the next account. Subscribing covers every path that moves `user`; a confirmed sign-out also wipes
-// the draft in tearDownIdentity, while a transient unauthed state (an unreadable Keychain) only hides it.
-useAuthStore.subscribe((state) => adoptPostComposerViewer(state.user?.id ?? null))
+// Drafts (post, reply, report, event) belong to the account that wrote them: an account switch on a shared
+// device must not hand them to the next account. Subscribing covers every path that moves `user`, the
+// foreign-identity sign-in included (the registry wipes when a different account arrives); a confirmed
+// teardown wipes them in tearDownIdentity, while a transient unauthed state (an unreadable Keychain)
+// keeps them for the same account.
+useAuthStore.subscribe((state) => adoptViewer(state.user?.id ?? null))

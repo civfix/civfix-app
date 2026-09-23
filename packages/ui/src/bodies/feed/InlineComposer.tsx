@@ -32,6 +32,7 @@ import {
 import { resolvePostSubmit } from "../postComposerSubmit"
 import {
   selectPostComposerDraft,
+  selectPostComposerDraftOwner,
   usePostComposerStore,
   type PostComposerMedia,
 } from "../postComposerStore"
@@ -49,6 +50,11 @@ import {
 const AVATAR_SIZE = 40
 
 export function InlineComposer() {
+  const draftOwner = usePostComposerStore(selectPostComposerDraftOwner)
+  return <InlineComposerForOwner key={draftOwner ?? ""} />
+}
+
+function InlineComposerForOwner() {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("post-composer")

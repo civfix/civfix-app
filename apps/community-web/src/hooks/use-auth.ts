@@ -7,7 +7,13 @@ import { ErrorCode } from "@civfix/shared"
 import { api, isAppErrorLike } from "@/lib/api"
 import { queryKeys } from "@/lib/query"
 import { clearPersistedCache } from "@/lib/query-persist"
-import { useAuthStore, selectIsAuthenticated, selectAuthResolved } from "@/store/auth-store"
+import {
+  isConfirmedSignedOut,
+  useAuthStore,
+  selectIsAuthenticated,
+  selectAuthResolved,
+  SESSION_SETTLE_TIMEOUT_MS,
+} from "@/store/auth-store"
 import { useSignOutRetryStore } from "@/store/sign-out-retry-store"
 
 /**
@@ -102,17 +108,35 @@ export function useRefreshSession() {
 }
 
 /**
- * POST /auth/logout. True when the server ended the session, or it had already ended (UNAUTHORIZED).
- * Any other failure leaves the httpOnly cookie valid. No header is passed: the client's CSRF resolver
- * reads the token at call time, after the boot-time session check has settled.
+ * How long a sign-out waits for POST /auth/logout before giving up and offering the retry. The CSRF
+ * resolver may first wait out the boot-time session check (SESSION_SETTLE_TIMEOUT_MS), so the deadline
+ * covers that wait plus a slow request.
  */
-async function revokeServerSession(): Promise<boolean> {
-  try {
-    await api.logout()
-    return true
-  } catch (err) {
-    return isAppErrorLike(err) && err.code === ErrorCode.UNAUTHORIZED
-  }
+export const SIGN_OUT_DEADLINE_MS = SESSION_SETTLE_TIMEOUT_MS + 7_000
+
+/**
+ * POST /auth/logout. True when the server ended the session, or it had already ended (UNAUTHORIZED).
+ * Any other failure, the deadline included, leaves the httpOnly cookie valid. No header is passed: the
+ * client's CSRF resolver reads the token at call time, after the boot-time session check has settled.
+ */
+function revokeServerSession(): Promise<boolean> {
+  const controller = new AbortController()
+  return new Promise<boolean>((resolve) => {
+    const deadline = setTimeout(() => {
+      controller.abort()
+      resolve(false)
+    }, SIGN_OUT_DEADLINE_MS)
+    api.logout({ signal: controller.signal }).then(
+      () => {
+        clearTimeout(deadline)
+        resolve(true)
+      },
+      (err: unknown) => {
+        clearTimeout(deadline)
+        resolve(isAppErrorLike(err) && err.code === ErrorCode.UNAUTHORIZED)
+      },
+    )
+  })
 }
 
 /**
@@ -128,7 +152,8 @@ export function useLogout() {
     const signOut = useSignOutRetryStore.getState()
     if (!signOut.begin()) return
     const revoked = await revokeServerSession()
-    signOut.finish(revoked)
+    // A 401 elsewhere may have signed the user out while this request hung: nothing is left to retry.
+    signOut.finish(revoked || isConfirmedSignedOut(useAuthStore.getState()))
     if (!revoked) return
     clear()
     // Shared-device safety: wipe the persisted query cache and the in-memory cache so the previous

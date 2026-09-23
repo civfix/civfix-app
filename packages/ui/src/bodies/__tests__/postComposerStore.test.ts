@@ -1,7 +1,9 @@
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import type { LinkedEventRef, UserMentionDTO } from "@civfix/shared"
 import {
   selectPostComposerDraft,
+  selectPostComposerDraftHidden,
+  selectPostComposerDraftOwner,
   selectPostComposerMediaUploadIds,
   selectPostComposerMentionedUserIds,
   selectPostComposerTargetId,
@@ -492,5 +494,45 @@ describe("postComposerStore create round trip", () => {
 
     usePostComposerStore.getState().restore(staged)
     expect(usePostComposerStore.getState().draft).toEqual(staged)
+  })
+})
+
+describe("postComposerStore viewer scope", () => {
+  afterEach(() => {
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
+  it("names the draft's owner, or the viewer a fresh draft will belong to, as a stable mount key", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    expect(selectPostComposerDraftOwner(usePostComposerStore.getState())).toBe("user-a")
+    usePostComposerStore.getState().setBody("typed by a")
+    expect(selectPostComposerDraftOwner(usePostComposerStore.getState())).toBe("user-a")
+
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(selectPostComposerDraftOwner(usePostComposerStore.getState())).toBe("user-a")
+
+    usePostComposerStore.getState().adoptViewer("user-b")
+    expect(selectPostComposerDraftOwner(usePostComposerStore.getState())).toBe("user-b")
+
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(selectPostComposerDraftOwner(usePostComposerStore.getState())).toBeNull()
+  })
+
+  it("reports a signed-in author's draft as hidden only while another viewer (or none) is current", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    usePostComposerStore.getState().setBody("typed by a")
+    expect(selectPostComposerDraftHidden(usePostComposerStore.getState())).toBe(false)
+
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(selectPostComposerDraftHidden(usePostComposerStore.getState())).toBe(true)
+
+    usePostComposerStore.getState().adoptViewer("user-a")
+    expect(selectPostComposerDraftHidden(usePostComposerStore.getState())).toBe(false)
+
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(selectPostComposerDraftHidden(usePostComposerStore.getState())).toBe(false)
   })
 })

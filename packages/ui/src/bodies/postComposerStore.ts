@@ -5,6 +5,7 @@
  */
 import { create } from "zustand"
 import type { LinkedEventRef, LinkedReportRef, UserMentionDTO } from "@civfix/shared"
+import { registerViewerScopedDrafts } from "../viewerScope"
 
 export type PostComposerMode = "post" | "quote" | "reply"
 export type PostComposerMediaStatus = "pending" | "uploading" | "ready" | "failed"
@@ -389,15 +390,10 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
     })),
 }))
 
-/** For the hosts' auth layer, which owns sign-in and sign-out; see `PostComposerState.adoptViewer`. */
-export function adoptPostComposerViewer(viewerId: string | null): void {
-  usePostComposerStore.getState().adoptViewer(viewerId)
-}
-
-/** For the hosts' auth layer, on an explicit sign-out; see `PostComposerState.discardViewerDraft`. */
-export function discardPostComposerDraft(): void {
-  usePostComposerStore.getState().discardViewerDraft()
-}
+registerViewerScopedDrafts(usePostComposerStore, {
+  discard: () => usePostComposerStore.getState().discardViewerDraft(),
+  onViewer: (viewerId) => usePostComposerStore.getState().adoptViewer(viewerId),
+})
 
 const hiddenDrafts = new WeakMap<PostComposerDraft, PostComposerDraft>()
 
@@ -414,6 +410,17 @@ export const selectPostComposerDraft = (state: PostComposerState): PostComposerD
   }
   return hidden
 }
+
+/**
+ * Whose draft a mounted composer is showing: its author, or for an untouched draft the viewer who will
+ * write it. Composers remount on it, so thumbnails they carry in local state never pass to a new owner.
+ */
+export const selectPostComposerDraftOwner = (state: PostComposerState): string | null =>
+  state.draft.ownerId ?? state.viewerId
+
+/** A signed-in author's draft while nobody (or another account) is the viewer: shown empty, read-only. */
+export const selectPostComposerDraftHidden = (state: PostComposerState): boolean =>
+  state.draft.ownerId !== null && state.draft.ownerId !== state.viewerId
 
 /** Lightweight selectors keep components from repeating submission and reference-mode derivation. */
 export const selectPostComposerMentionedUserIds = (state: PostComposerState): string[] =>

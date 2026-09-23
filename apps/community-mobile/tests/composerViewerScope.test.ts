@@ -12,15 +12,13 @@ function functionBody(name: string): string {
   return store.slice(start, end)
 }
 
-test("every identity change reaches the post composer, so a draft never outlives its account", () => {
-  assert.match(store, /import \{ adoptPostComposerViewer, discardPostComposerDraft \} from "@civfix\/ui"/)
-  assert.match(
-    store,
-    /useAuthStore\.subscribe\(\(state\) => adoptPostComposerViewer\(state\.user\?\.id \?\? null\)\)/,
-  )
+test("every identity change reaches the @civfix/ui draft registry, so no draft outlives its account", () => {
+  assert.match(store, /import \{ adoptViewer, discardViewerDrafts \} from "@civfix\/ui"/)
+  assert.match(store, /useAuthStore\.subscribe\(\(state\) => adoptViewer\(state\.user\?\.id \?\? null\)\)/)
+  assert.doesNotMatch(store, /PostComposer/)
 })
 
-test("a confirmed identity teardown wipes the draft; a transient unauthed state only hides it", () => {
-  assert.match(functionBody("tearDownIdentity"), /\n  discardPostComposerDraft\(\)\n/)
-  assert.equal(store.match(/discardPostComposerDraft\(\)/g)?.length, 1)
+test("a confirmed identity teardown wipes every draft; a transient unauthed state keeps them", () => {
+  assert.match(functionBody("tearDownIdentity"), /\n  discardViewerDrafts\(\)\n/)
+  assert.equal(store.match(/discardViewerDrafts\(\)/g)?.length, 1)
 })

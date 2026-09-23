@@ -22,6 +22,7 @@
 import { create } from "zustand"
 import type { LinkedEventRef, UserMentionDTO } from "@civfix/shared"
 import type { PostComposerMedia } from "../postComposerStore"
+import { registerViewerScopedDrafts } from "../../viewerScope"
 
 /** One thread's in-progress reply. Deliberately JSON-safe: no upload closures, no React state. */
 export interface ReplyDraft {
@@ -164,6 +165,10 @@ export const useReplyDraftStore = create<ReplyDraftState>((set, get) => ({
       return { drafts }
     }),
 }))
+
+registerViewerScopedDrafts(useReplyDraftStore, {
+  discard: () => useReplyDraftStore.setState({ drafts: {} }),
+})
 
 /**
  * Selector factory: does this thread's draft hold media that has not finished uploading?

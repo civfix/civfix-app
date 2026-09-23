@@ -17,7 +17,7 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   },
 }))
 
-const { useLogout, useRefreshSession } = await import("@/hooks/use-auth")
+const { SIGN_OUT_DEADLINE_MS, useLogout, useRefreshSession } = await import("@/hooks/use-auth")
 const { resolveCsrfToken } = await import("@/lib/api")
 const { useAuthStore } = await import("@/store/auth-store")
 const { useSignOutRetryStore } = await import("@/store/sign-out-retry-store")
@@ -67,6 +67,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   useAuthStore.getState().clear()
+  vi.useRealTimers()
 })
 
 describe("useLogout", () => {
@@ -124,11 +125,54 @@ describe("useLogout", () => {
     expect(useSignOutRetryStore.getState().failed).toBe(false)
   })
 
+  it("gives up on a sign-out request that never answers, so the retry is never stuck behind it", async () => {
+    vi.useFakeTimers()
+    let signal: AbortSignal | undefined
+    logout.mockImplementation((options: { signal?: AbortSignal }) => {
+      signal = options.signal
+      return new Promise(() => undefined)
+    })
+
+    const { result } = renderHook(() => useLogout(), { wrapper })
+    let pending!: Promise<void>
+    act(() => {
+      pending = result.current()
+    })
+    expect(useSignOutRetryStore.getState().pending).toBe(true)
+
+    await act(async () => {
+      vi.advanceTimersByTime(SIGN_OUT_DEADLINE_MS)
+      await pending
+    })
+
+    expect(signal?.aborted).toBe(true)
+    expect(useSignOutRetryStore.getState()).toMatchObject({ pending: false, failed: true })
+    expectStillSignedIn()
+  })
+
+  it("raises no notice when the session ended another way while the request was in flight", async () => {
+    let fail!: (err: unknown) => void
+    logout.mockImplementation(() => new Promise((_, reject) => (fail = reject)))
+
+    const { result } = renderHook(() => useLogout(), { wrapper })
+    let pending!: Promise<void>
+    act(() => {
+      pending = result.current()
+    })
+    await act(async () => {
+      useAuthStore.getState().clear()
+      fail(new TypeError("Failed to fetch"))
+      await pending
+    })
+
+    expect(useSignOutRetryStore.getState()).toMatchObject({ pending: false, failed: false })
+  })
+
   it("sends the CSRF token the settled session holds, never one captured during the boot window", async () => {
     useAuthStore.setState({ csrfToken: null, optimistic: true })
     const tokensAtCall: (string | undefined)[] = []
     logout.mockImplementation(async (...args: unknown[]) => {
-      expect(args).toEqual([])
+      expect(args).toEqual([{ signal: expect.any(AbortSignal) }])
       tokensAtCall.push(await resolveCsrfToken())
       throw new TypeError("Failed to fetch")
     })
