@@ -1,5 +1,11 @@
 # @civfix/shared
 
+## 0.56.0
+
+### Minor Changes
+
+- First release from `main` of the contract published from the `feat/feed-and-polish-batch` branch as 0.49.0, 0.50.0, 0.51.0, 0.54.0 and 0.55.0 (entries below): admin report list thumbnails, feed ranking, event announcements and consolidated event analytics, the street-level address system, per-refresh feed jitter with location-first weighting, and the host-wide analytics summary. No contract change beyond those entries; the branch versions stay on the registry, so main's release takes the next free number.
+
 ## 0.55.0
 
 ### Minor Changes
