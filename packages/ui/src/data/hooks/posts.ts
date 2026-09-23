@@ -29,10 +29,10 @@
  * clobber each other. `onSuccess` reconciles with the server's authoritative full PostDTO; `onSettled`
  * invalidates the authoritative key.
  *
- * AUTH POSTURE. Every post endpoint is `auth:"required"` (§4.4), so the queries bake
- * `enabled: isAuthenticated` in here (web's posture, matching `useMyProfile` / `useFollowSuggestions`)
- * and never fire a guaranteed-401 while signed out. The per-person / per-post reads additionally gate
- * on a present id.
+ * AUTH POSTURE. The auth-required post endpoints bake `enabled: isAuthenticated` in here (web's
+ * posture, matching `useMyProfile` / `useFollowSuggestions`) and never fire a guaranteed-401 while
+ * signed out. `getPost` and `listUserPosts` are auth-OPTIONAL public reads, so `usePost` and
+ * `useUserPosts` gate on the id alone. The per-person / per-post reads all gate on a present id.
  */
 import type { QueryClient, InfiniteData, UseMutationOptions } from "@tanstack/react-query"
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -451,13 +451,12 @@ function coercePostPages(data: InfiniteData<FeedPageDTO>): InfiniteData<FeedPage
   }
 }
 
-/** GET /posts/:id - a single post's detail. Auth-required; additionally gated on a present id. */
+/** GET /posts/:id - a single post's detail. Auth-OPTIONAL (a guest reads the public projection); gated on a present id. */
 export function usePost(id: string | undefined) {
   const api = useApi()
-  const { isAuthenticated } = useAuthState()
   return useQuery<PostDTO>({
     queryKey: queryKeys.post(id ?? "unknown"),
-    enabled: isAuthenticated && !!id,
+    enabled: !!id,
     queryFn: () => api.getPost({ id: id as string }),
     retry: false,
   })

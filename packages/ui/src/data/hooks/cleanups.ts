@@ -24,6 +24,7 @@ import { useT } from "../../i18n/useT"
 import { appErrorCode, appErrorFields, isEventEndedRefusal } from "../../bodies/errorCode"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
+import { listItems } from "../types"
 
 const CLEANUPS_LIST_PREFIX = ["cleanups"] as const
 
@@ -74,7 +75,7 @@ export function useCleanups(when: When, limit = 50) {
   const api = useApi()
   return useQuery<CleanupDTO[]>({
     queryKey: queryKeys.cleanups(when, limit),
-    queryFn: async () => (await api.listCleanups({ when, limit })).items,
+    queryFn: async () => listItems((await api.listCleanups({ when, limit }))?.items),
   })
 }
 
@@ -303,6 +304,7 @@ export function updateCleanupMutationOptions(
     },
     onSettled: (_data, _err, { id }) => {
       void qc.invalidateQueries(cleanupDetailFilters(id))
+      void qc.invalidateQueries({ queryKey: queryKeys.eventIcs(id) })
       invalidateCleanupLists(qc)
       invalidateHostedEventLists(qc)
     },
@@ -335,6 +337,7 @@ export function useCancelCleanup() {
       invalidateCleanupLists(qc)
       invalidateHostedEventLists(qc)
       void qc.invalidateQueries({ queryKey: queryKeys.cleanupAttendees(cleanup.id) })
+      void qc.invalidateQueries({ queryKey: queryKeys.eventIcs(cleanup.id) })
     },
   })
 }

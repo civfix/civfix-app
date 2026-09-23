@@ -6,6 +6,9 @@ import { queryKeys } from "../keys"
 
 export const APPROXIMATE_LOCATION_STALE_MS = 60 * 60 * 1000
 
+// A per-query `retry` replaces the host QueryClient's default cap, so the bound has to live here.
+export const APPROXIMATE_LOCATION_RETRY_LIMIT = 2
+
 const PERMANENT: readonly ErrorCode[] = [
   ErrorCode.NOT_FOUND,
   ErrorCode.VALIDATION,
@@ -13,7 +16,8 @@ const PERMANENT: readonly ErrorCode[] = [
   ErrorCode.FORBIDDEN,
 ]
 
-export function approximateLocationShouldRetry(_failureCount: number, error: unknown): boolean {
+export function approximateLocationShouldRetry(failureCount: number, error: unknown): boolean {
+  if (failureCount >= APPROXIMATE_LOCATION_RETRY_LIMIT) return false
   if (error instanceof AppError && PERMANENT.includes(error.code)) return false
   return true
 }

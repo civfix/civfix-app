@@ -12,7 +12,7 @@ export interface ResolveAddressPoint {
 
 const RESOLVED_ADDRESS_STALE_MS = 24 * 60 * 60 * 1000
 
-function isAddressNotFound(err: unknown): boolean {
+export function isAddressNotFound(err: unknown): boolean {
   if (typeof err !== "object" || err === null) return false
   const code = (err as { code?: unknown }).code
   const status = (err as { status?: unknown }).status

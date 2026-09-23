@@ -5,7 +5,8 @@
  * exercises them directly.
  */
 import { describe, expect, it } from "vitest"
-import { coordsLabel, reverseLabelText } from "../hooks/reverseLabel"
+import { coordsLabel, fetchReverseLabel, reverseLabelText } from "../hooks/reverseLabel"
+import { fetchJurisdiction } from "../hooks/reports"
 
 describe("coordsLabel", () => {
   it("formats lat/lng to exactly 5 decimals", () => {
@@ -46,5 +47,44 @@ describe("reverseLabelText (sub-4: address, else exact coords)", () => {
 
   it("prefers the address even when a point is present", () => {
     expect(reverseLabelText("123 Main St", point)).toBe("123 Main St")
+  })
+})
+
+describe("fetchReverseLabel (a transient failure is not cached as 'no address')", () => {
+  const point = { lat: 37.77493, lng: -122.41942 }
+  const api = (reverseLabel: () => Promise<unknown>) =>
+    ({ reverseLabel }) as unknown as Parameters<typeof fetchReverseLabel>[0]
+
+  it("returns the trimmed label", async () => {
+    await expect(fetchReverseLabel(api(async () => ({ cityStateLabel: " Oakland, CA " })), point)).resolves.toBe(
+      "Oakland, CA",
+    )
+  })
+
+  it("returns null when the geocoder cannot place the point", async () => {
+    await expect(fetchReverseLabel(api(async () => ({ cityStateLabel: "" })), point)).resolves.toBeNull()
+    await expect(
+      fetchReverseLabel(api(() => Promise.reject(Object.assign(new Error("nf"), { code: "NOT_FOUND" }))), point),
+    ).resolves.toBeNull()
+  })
+
+  it("rejects a network or rate-limit failure instead of resolving null", async () => {
+    await expect(fetchReverseLabel(api(() => Promise.reject(new TypeError("Failed to fetch"))), point)).rejects.toThrow()
+    const rateLimited = Object.assign(new Error("Too Many Requests"), { status: 429, code: "RATE_LIMITED" })
+    await expect(fetchReverseLabel(api(() => Promise.reject(rateLimited)), point)).rejects.toBe(rateLimited)
+  })
+})
+
+describe("fetchJurisdiction (a transient failure is not cached as 'no jurisdiction')", () => {
+  const api = (resolveJurisdiction: () => Promise<unknown>) =>
+    ({ resolveJurisdiction }) as unknown as Parameters<typeof fetchJurisdiction>[0]
+
+  it("returns null for an uncovered point", async () => {
+    await expect(fetchJurisdiction(api(async () => null), 1, 2)).resolves.toBeNull()
+  })
+
+  it("rejects a server or network failure instead of resolving null", async () => {
+    const serverError = Object.assign(new Error("boom"), { status: 500, code: "INTERNAL" })
+    await expect(fetchJurisdiction(api(() => Promise.reject(serverError)), 1, 2)).rejects.toBe(serverError)
   })
 })

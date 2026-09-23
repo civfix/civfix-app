@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
 import type { NotificationDTO, NotificationPrefsDTO } from "@civfix/shared"
 import { queryKeys } from "../keys"
+import { notificationListFilters } from "../hooks/notifications"
 
 const NOTIFICATIONS_PREFIX = queryKeys.notificationsRoot
 
@@ -80,5 +83,30 @@ describe("mark-notifications-read cache reconciliation (slice 4)", () => {
     ])
     const restoredPreview = qc.getQueryData<NotificationDTO[]>(queryKeys.notifications(20))!
     expect(restoredPreview.map((n) => n.read)).toEqual([false])
+  })
+})
+
+describe("mark-read scope", () => {
+  it("invalidates the notification lists but never the prefs entry that shares the root", async () => {
+    const qc = new QueryClient()
+    qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(50), [note("n1", false)])
+    qc.setQueryData<NotificationDTO[]>(queryKeys.notifications(20), [note("n1", false)])
+    qc.setQueryData<NotificationPrefsDTO>(queryKeys.notificationPrefs, PREFS)
+
+    await qc.invalidateQueries(notificationListFilters)
+
+    expect(qc.getQueryState(queryKeys.notifications(50))?.isInvalidated).toBe(true)
+    expect(qc.getQueryState(queryKeys.notifications(20))?.isInvalidated).toBe(true)
+    expect(qc.getQueryState(queryKeys.notificationPrefs)?.isInvalidated).toBe(false)
+  })
+})
+
+describe("useUpdatePrivacySettings user snapshot", () => {
+  it("syncs its user ref in a layout effect, never by a write during render", () => {
+    const src = readFileSync(join(__dirname, "..", "hooks", "notifications.ts"), "utf8")
+    const fn = src.slice(src.indexOf("export function useUpdatePrivacySettings"))
+    const body = fn.slice(0, fn.indexOf("return useMutation"))
+    expect(body).not.toMatch(/^ {2}userRef\.current = user$/m)
+    expect(body).toMatch(/useLayoutEffect\(\(\) => \{\n\s+userRef\.current = user\n\s+\}, \[user\]\)/)
   })
 })

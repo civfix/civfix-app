@@ -150,4 +150,13 @@ describe("hooks/posts.ts", () => {
     expect(fn).toContain("enabled: !!id")
     expect(fn).not.toContain("isAuthenticated")
   })
+
+  it("serves a single post to guests - getPost is auth-optional, so a signed-out detail must load", () => {
+    const fn = postsSource.slice(
+      postsSource.indexOf("export function usePost("),
+      postsSource.indexOf("function coerceReplyPages"),
+    )
+    expect(fn).toContain("enabled: !!id")
+    expect(fn).not.toContain("isAuthenticated")
+  })
 })

@@ -19,6 +19,7 @@ import { useApi } from "../context"
 import { useAuthState } from "../context"
 import { useOnUserUpdated } from "../context"
 import { queryKeys } from "../keys"
+import { listItems } from "../types"
 import { optimisticListPatch } from "../optimistic"
 import { useDebouncedValue } from "./useDebouncedValue"
 import {
@@ -108,7 +109,7 @@ export function useFollowSuggestions() {
     enabled: isAuthenticated,
     queryFn: async () => {
       const res = await api.followSuggestions({ limit: FOLLOW_SUGGESTIONS_LIMIT })
-      return res.results
+      return listItems(res?.results)
     },
     retry: false,
     staleTime: 60_000,
@@ -392,9 +393,10 @@ export function useUpdateProfile() {
     mutationFn: (body) => api.updateProfile(body),
     onSuccess: (res) => {
       onUserUpdated?.(res.user)
-      void qc.invalidateQueries({ queryKey: queryKeys.myProfile })
       void qc.invalidateQueries({ queryKey: queryKeys.profile(res.user.id) })
       void qc.invalidateQueries({ queryKey: PEOPLE_LIST_KEY })
+      // Settings builds its next save from this profile, so mutateAsync must not resolve before it is fresh.
+      return qc.invalidateQueries({ queryKey: queryKeys.myProfile })
     },
   })
 }

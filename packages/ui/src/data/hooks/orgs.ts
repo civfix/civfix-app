@@ -25,6 +25,7 @@ import type {
 } from "@civfix/shared"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
+import { listItems } from "../types"
 
 export function useOrganization(slug: string | undefined) {
   const api = useApi()
@@ -42,7 +43,7 @@ export function useMyOrganizations() {
   return useQuery<OrganizationDTO[]>({
     queryKey: queryKeys.myOrganizations,
     enabled: isAuthenticated,
-    queryFn: async () => (await api.listMyOrganizations({})).items,
+    queryFn: async () => listItems((await api.listMyOrganizations({}))?.items),
     retry: false,
   })
 }
@@ -152,7 +153,7 @@ export function useOrganizationInvites(orgId: string | undefined, opts: { enable
   return useQuery<OrganizationInviteDTO[]>({
     queryKey: queryKeys.orgInvites(orgId ?? "unknown"),
     enabled: !!orgId && isAuthenticated && (opts.enabled ?? true),
-    queryFn: async () => (await api.listOrganizationInvites({ id: orgId as string })).items,
+    queryFn: async () => listItems((await api.listOrganizationInvites({ id: orgId as string }))?.items),
     retry: false,
   })
 }
@@ -231,7 +232,7 @@ export function useMyOrgInvites(opts: { enabled?: boolean } = {}) {
   return useQuery<PendingOrganizationInviteDTO[]>({
     queryKey: queryKeys.myOrgInvites,
     enabled: isAuthenticated && (opts.enabled ?? true),
-    queryFn: async () => (await api.listMyOrgInvites({})).items,
+    queryFn: async () => listItems((await api.listMyOrgInvites({}))?.items),
     retry: false,
   })
 }

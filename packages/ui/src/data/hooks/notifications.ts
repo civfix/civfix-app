@@ -1,5 +1,5 @@
-import { useRef } from "react"
-import type { QueryClient } from "@tanstack/react-query"
+import { useLayoutEffect, useRef } from "react"
+import type { Query, QueryClient } from "@tanstack/react-query"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
   GetProfileResponse,
@@ -12,9 +12,14 @@ import type {
 } from "@civfix/shared"
 import { useApi, useAuthState, useOnUserUpdated } from "../context"
 import { queryKeys } from "../keys"
+import { listItems } from "../types"
 import { optimisticPatch } from "../optimistic"
 
-const NOTIFICATIONS_PREFIX = queryKeys.notificationsRoot
+// `notificationPrefs` shares the `notifications` root, so a bare prefix would also cancel and refetch it.
+export const notificationListFilters = {
+  queryKey: queryKeys.notificationsRoot,
+  predicate: (query: Query) => typeof query.queryKey[1] === "number",
+}
 
 const INBOX_LIMIT = 50
 
@@ -24,7 +29,7 @@ export function useNotifications(limit = INBOX_LIMIT) {
   const query = useQuery<NotificationDTO[]>({
     queryKey: queryKeys.notifications(limit),
     enabled: isAuthenticated,
-    queryFn: async () => (await api.listNotifications({ limit })).items,
+    queryFn: async () => listItems((await api.listNotifications({ limit }))?.items),
   })
   const unreadCount = (query.data ?? []).filter((n) => !n.read).length
   return { ...query, unreadCount }
@@ -40,9 +45,9 @@ export function useMarkNotificationsRead() {
       return api.markNotificationsRead({ ids })
     },
     onMutate: async (ids) => {
-      await qc.cancelQueries({ queryKey: NOTIFICATIONS_PREFIX })
+      await qc.cancelQueries(notificationListFilters)
       const previous = qc
-        .getQueriesData<NotificationDTO[]>({ queryKey: NOTIFICATIONS_PREFIX })
+        .getQueriesData<NotificationDTO[]>(notificationListFilters)
         .filter(([, data]) => Array.isArray(data)) as Array<
         readonly [readonly unknown[], NotificationDTO[] | undefined]
       >
@@ -53,7 +58,7 @@ export function useMarkNotificationsRead() {
       for (const [key, data] of ctx?.previous ?? []) qc.setQueryData(key as unknown[], data)
     },
     onSettled: () => {
-      void qc.invalidateQueries({ queryKey: NOTIFICATIONS_PREFIX })
+      void qc.invalidateQueries(notificationListFilters)
     },
   })
 }
@@ -64,7 +69,7 @@ interface MarkReadCtx {
 
 function patchReadInFlatLists(qc: QueryClient, ids: string[]): void {
   const idSet = new Set(ids)
-  qc.setQueriesData<NotificationDTO[]>({ queryKey: NOTIFICATIONS_PREFIX }, (prev) =>
+  qc.setQueriesData<NotificationDTO[]>(notificationListFilters, (prev) =>
     Array.isArray(prev) ? prev.map((n) => (idSet.has(n.id) ? { ...n, read: true } : n)) : prev,
   )
 }
@@ -118,7 +123,9 @@ export function useUpdatePrivacySettings() {
   const onUserUpdated = useOnUserUpdated()
   const { user } = useAuthState()
   const userRef = useRef(user)
-  userRef.current = user
+  useLayoutEffect(() => {
+    userRef.current = user
+  }, [user])
 
   return useMutation<UpdateSettingsResponse, unknown, PrivacySettingsVars, PrivacySettingsCtx>({
     scope: { id: "me-settings" },
