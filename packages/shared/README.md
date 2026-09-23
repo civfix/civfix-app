@@ -63,7 +63,7 @@ import { createApiClient } from "@civfix/shared/client"
 | ------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Root barrel   | `@civfix/shared`            | All schemas + inferred types, entity/domain types, error taxonomy, WS frame schemas, roles, geo helpers, and convenience re-exports of every subpath below.                    |
 | Design tokens | `@civfix/shared/tokens`     | `tokens` const plus named scale exports (`color`, `fontSize`, ...), `categoryColor`, `CategoryColorKey`, `cleanupColor`, `colorSchemes`, `qrInk`/`qrPaper`.                    |
-| Interfaces    | `@civfix/shared/interfaces` | The 12 vendor-neutral interfaces (types only): Storage, Mailer, SmsSender, InboundMail, Geocoder, ChatService, UserChannel, PushSender, RoutingProvider, AbuseChecks, Jobs, Payments, and their supporting types. |
+| Interfaces    | `@civfix/shared/interfaces` | The 11 vendor-neutral interfaces (types only): Storage, Mailer, SmsSender, InboundMail, Geocoder, ChatService, UserChannel, PushSender, RoutingProvider, AbuseChecks, Jobs, and their supporting types. |
 | Fakes         | `@civfix/shared/fakes`      | A dependency-free in-memory implementation of each interface for unit tests and credential-free boot.                                                                          |
 | Client        | `@civfix/shared/client`     | `endpoints` registry and `createApiClient` typed client factory.                                                                                                               |
 | Avatar        | `@civfix/shared/avatar`     | Deterministic avatar pair helpers.                                                                                                                                             |
@@ -74,14 +74,13 @@ import { createApiClient } from "@civfix/shared/client"
 | Host          | `@civfix/shared/host`       | Host-platform pure logic: the capability matrix, k-anonymity suppression, the `derive` read-model selectors, grapheme helpers, broadcast rendering + link inspection, `GUEST_RSVP_TURNSTILE_ACTION`, and the shared safe-URL predicate. |
 | Markdown      | `@civfix/shared/markdown`   | The constrained markdown SUBSET parser and its AST, `markdownToPlainText`, and the `isSafeHttpsUrl`/`isSafeMarkdownHref` link predicate.                                        |
 | ICS           | `@civfix/shared/ics`        | `buildIcs` (RFC 5545, UTC stamps) and `eventIcsUid`, the one calendar identity every surface builds for an event.                                                               |
-| Payments      | `@civfix/shared/payments`   | Fee math (integer minor units), donation-state ranking, and charitable-eligibility evaluation.                                                                                  |
-| Legal         | `@civfix/shared/legal`      | The legal document set with its versions and hashes, plus the donation-disclosure template.                                                                                    |
+| Legal         | `@civfix/shared/legal`      | The legal document set (terms, privacy, ...) with each document's version, effective date, URL and SHA-256.                                                                   |
 | Chip contrast | `@civfix/shared/chip-contrast` | The WCAG 2.x contrast helpers behind the chip inks.                                                                                                                         |
 
 ## Schemas
 
-Schemas live under `src/schemas` grouped by domain (`auth`, `reports`, `map`, `cleanups`, `chat`,
-`social`, `notifications`, `anon`, `claim`, `media`) with shared primitives and the canonical
+Schemas live under `src/schemas` grouped by domain (one file or folder per domain, e.g. `auth`,
+`reports`, `cleanups`, `chat`, `posts`, `admin/`, `host/`) with shared primitives and the canonical
 taxonomy in `common`. Cross-domain entity DTOs (Person, Report, Cleanup, ChatMessage, Media) live in
 `schemas/entities` to break what would otherwise be an import cycle; the domain files re-export them.
 
@@ -101,7 +100,7 @@ enqueue.
 
 ## Typed API client
 
-`endpoints` is a strongly typed registry of every Phase 1 endpoint (method, path, request schema or
+`endpoints` is a strongly typed registry of every API endpoint (method, path, request schema or
 null, response schema, auth level, csrf flag). `createApiClient` turns the registry into typed
 methods that infer their request and response from the schemas, fill path params, attach the bearer
 and CSRF headers when required, parse JSON, and throw a typed `AppError` on non-2xx responses. It is
@@ -117,6 +116,7 @@ const api = createApiClient({
 const report = await api.createReport({
   idempotencyKey: crypto.randomUUID(),
   category: "trash",
+  type: "dump",
   lat: 34.05,
   lng: -118.24,
   geomSource: "device",
@@ -143,16 +143,18 @@ it is the full runbook. In short:
    with the change.
 2. `pnpm changeset version` applies the pending changesets (bumps `package.json` `version`, writes
    the `CHANGELOG.md`), reviewed and committed by hand (`config.json` has `"commit": false`).
-3. Merge to `main`: `.github/workflows/publish-shared.yml` builds the package and runs
-   `pnpm changeset publish` (authenticated by the `NPM_TOKEN` repo secret for the `ci-publisher`
-   account), which publishes when the version is ahead of the registry and pushes the per-package tag
-   (`@civfix/shared@X.Y.Z`).
+3. Merge to `main`: `.github/workflows/publish-shared.yml` builds the package, runs
+   `scripts/check-shared-version.mjs --release` (checks the version against the registry, then
+   creates and pushes the per-package tag `@civfix/shared@X.Y.Z` on the main commit), and then
+   `pnpm changeset publish --no-git-tag` (authenticated by the `NPM_TOKEN` repo secret for the
+   `ci-publisher` account), which publishes when the version is ahead of the registry.
 4. Bump the `@civfix/shared` range in every consumer OUTSIDE this repo (civfix-backend x2 manifests,
    civfix-admin, the gov plane) and refresh its lockfile. The two apps in this repo need nothing —
    they take `workspace:*`. No consumer may ever depend on `@civfix/ui`.
 
-There is no root version and no `vX.Y.Z` tag - versions and tags are package-scoped. A push to `main`
-with no applied version bump publishes nothing. See [RELEASING.md](../../RELEASING.md) for the exact
+The contract's versions and tags are package-scoped (`@civfix/shared@X.Y.Z`). A `vX.Y.Z` GitHub
+release is something else: it is the production deploy of this repo's apps and publishes nothing to
+the registry. A push to `main` with no applied version bump publishes nothing. See [RELEASING.md](../../RELEASING.md) for the exact
 steps, the 0.x caret rule and the consumer manifests.
 
 See DECISIONS.md for the taxonomy and structural decisions made while building this package.
