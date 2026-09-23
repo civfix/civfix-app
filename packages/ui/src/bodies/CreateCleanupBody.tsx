@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
 import { View, Pressable, StyleSheet, ActivityIndicator } from "react-native"
 import {
   makeThemedStyles,
@@ -22,18 +21,17 @@ import {
   useToast,
 } from "../primitives"
 import {
-  useApi,
   useCreateCleanup,
   useAuthState,
   useRequireAuth,
   useReport,
   useReverseLabel,
+  useUserLocation,
   reverseLabelText,
-  fetchApproximateLocation,
 } from "../data"
 import { useCreatePost } from "../data/hooks/posts"
 import { buildFeedShareInput, buildOptimisticFeedSharePost } from "./feedShare"
-import { useGeolocation, useHaptics } from "../capabilities"
+import { useHaptics } from "../capabilities"
 import { announce } from "../announce"
 import { useNavStore } from "../nav"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider, useScrollHost } from "../shell/ScrollHost"
@@ -67,7 +65,7 @@ import {
 } from "./CleanupForm"
 import { composeEventAddress } from "./eventAddressField"
 import { formEndInstantMs, formInstantMs, isScheduleInFutureInZone } from "./calendarModel"
-import { addSlotDraft, buildSlotInputs, hasNamedSlot, makeSlotKey } from "./eventSlotsForm"
+import { buildSlotInputs, hasNamedSlot } from "./eventSlotsForm"
 import {
   EVENT_WIZARD_STEPS,
   eventStepIndex,
@@ -99,14 +97,8 @@ const STEP_ICONS: Record<Exclude<EventWizardStep, "review">, LucideIcon> = {
   details: iconMap.Users,
 }
 
-/**
- * The >=1 slot floor applied to a RESUMED draft. `emptyCleanupForm` already seeds a fresh one, so this
- * only catches a draft begun before the floor existed - it must stay a pure plan tweak, because the
- * store write happens in the mount effect (see `planHostDraftMount`'s doc).
- */
-function withSeededSlot(plan: HostDraftMountPlan): HostDraftMountPlan {
-  if (plan.value.slots.length > 0) return plan
-  return { ...plan, value: { ...plan.value, slots: addSlotDraft([], makeSlotKey()) } }
+function mergeIntoDraft(partial: Partial<CleanupFormValue>) {
+  useCleanupDraft.getState().merge(partial)
 }
 
 function wizardDraftOf(value: CleanupFormValue): EventWizardDraft {
@@ -326,33 +318,12 @@ function HostForm({
   const create = useCreateCleanup()
   const createPostAsync = useCreatePost().mutateAsync
   const toast = useToast()
-  const geo = useGeolocation()
-  const api = useApi()
-  const qc = useQueryClient()
   const haptics = useHaptics()
-  const [initialCenter, setInitialCenter] = useState<LatLng | null>(
-    seedPoint ? { lat: seedPoint.lat, lng: seedPoint.lng } : null,
+  const userLocation = useUserLocation()
+  const initialCenter = useMemo<LatLng | null>(
+    () => (seedPoint ? { lat: seedPoint.lat, lng: seedPoint.lng } : (userLocation.data ?? null)),
+    [seedPoint, userLocation.data],
   )
-  useEffect(() => {
-    if (seedPoint) return undefined
-    let cancelled = false
-    void (async () => {
-      let point: LatLng | null = null
-      try {
-        if (geo.isAvailable()) {
-          const pos = await geo.getCurrentPosition()
-          point = { lat: pos.latitude, lng: pos.longitude }
-        }
-      } catch {
-        point = null
-      }
-      if (!point) point = await fetchApproximateLocation(api, qc)
-      if (!cancelled && point) setInitialCenter(point)
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [geo, api, qc])
 
   const [mountPlan] = useState<HostDraftMountPlan>(() => {
     const initial: CleanupFormValue = seedPoint
@@ -362,16 +333,12 @@ function HostForm({
         }
       : emptyCleanupForm(seedReportId, seedOrganizationId)
     const { active, value } = useCleanupDraft.getState()
-    return withSeededSlot(
-      planHostDraftMount({ active, value }, seedReportId, draftSeedReportId, initial, seedPoint),
-    )
+    return planHostDraftMount({ active, value }, seedReportId, draftSeedReportId, initial, seedPoint)
   })
   const startedFresh = mountPlan.startedFresh
   const [draftCommitted, setDraftCommitted] = useState(false)
   useEffect(() => {
     commitHostDraftMount(useCleanupDraft.getState(), mountPlan)
-    const resumed = useCleanupDraft.getState().value
-    if (resumed && resumed.slots.length === 0) useCleanupDraft.getState().patch(mountPlan.value)
     draftSeedReportId = mountPlan.seedReportId
     setDraftCommitted(true)
   }, [mountPlan])
@@ -480,7 +447,11 @@ function HostForm({
     return at === null ? null : new Date(at)
   }, [form.date, form.endTime, form.time, form.timezone])
 
+  const publishing = useRef(false)
   const onPublish = useCallback(() => {
+    // `canPublish` reads `create.isPending`, which only flips on the next render, so a second tap
+    // landing before it would start a second create.
+    if (publishing.current) return
     if (!canPublish || !form.coords || !scheduledAt || !endsAt) return
     setSubmitError(null)
     const verifiedAddress = composeEventAddress({
@@ -493,6 +464,8 @@ function HostForm({
     const linkedReportIds =
       form.eventKind === "cleanup" && form.linkedReportIds.length > 0 ? form.linkedReportIds : undefined
     const slots = buildSlotInputs(form.slots)
+    const { idempotencyKey } = useCleanupDraft.getState()
+    publishing.current = true
     create.mutate(
       {
         title: form.title.trim(),
@@ -511,8 +484,12 @@ function HostForm({
         slots,
         ...(form.organizationId ? { organizationId: form.organizationId } : {}),
         ...(form.coverMediaId ? { coverMediaId: form.coverMediaId } : {}),
+        ...(idempotencyKey ? { idempotencyKey } : {}),
       },
       {
+        onSettled: () => {
+          publishing.current = false
+        },
         onSuccess: (cleanup) => {
           haptics.success()
           const shareInput = form.shareToFeed
@@ -593,6 +570,7 @@ function HostForm({
             <CleanupForm
               value={form}
               onChange={setForm}
+              onPatch={mergeIntoDraft}
               initialCenter={initialCenter}
               sections={STEP_SECTIONS.review}
               showFeedShare
@@ -609,6 +587,7 @@ function HostForm({
           <CleanupForm
             value={form}
             onChange={setForm}
+            onPatch={mergeIntoDraft}
             initialCenter={initialCenter}
             sections={STEP_SECTIONS[step]}
             showFeedShare={false}

@@ -1,6 +1,7 @@
 import {
   endTimeSelectable,
   eventWindowInZone,
+  formInstantMs,
   isScheduleInFutureInZone,
   isScheduleUntouched,
   wallClockToFormDate,
@@ -9,6 +10,7 @@ import { wallClockInZone } from "@civfix/shared/datetime"
 import { isEventAddressComplete } from "./eventAddressField"
 import {
   hasNamedSlot,
+  shiftSlotDrafts,
   slotDraftWindow,
   slotsValid,
   type SlotDraft,
@@ -84,6 +86,25 @@ export interface EventWizardDraft {
   coords: { lat: number; lng: number } | null
   address: string
   slots: readonly SlotDraft[]
+}
+
+/**
+ * Slot drafts hold absolute instants while the event window is a wall clock read in the event's zone, so
+ * a zone change moves the window and must carry every timed slot with it by the same delta. A DST gap in
+ * either zone leaves the slots alone, as the date and start-time handlers do.
+ */
+export function slotsAfterZoneChange(
+  slots: SlotDraft[],
+  date: Date | null,
+  time: Date | null,
+  fromZone: string,
+  toZone: string,
+): SlotDraft[] {
+  if (!date || !time || fromZone === toZone) return slots
+  const before = formInstantMs(date, time, fromZone)
+  const after = formInstantMs(date, time, toZone)
+  if (before === null || after === null) return slots
+  return shiftSlotDrafts(slots, after - before)
 }
 
 export function eventDraftWindow(draft: EventScheduleDraft): SlotWindowBounds | null {

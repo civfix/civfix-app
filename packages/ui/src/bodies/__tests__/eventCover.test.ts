@@ -63,15 +63,16 @@ describe("the cover picker rides the shared upload seam", () => {
   it("keeps the uploaded id and the preview uri as two separate fields", () => {
     expect(form).toContain("coverMediaId: string | null")
     expect(form).toContain("coverPreviewUrl: string | null")
-    expect(form).toContain("patch({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })")
+    expect(form).toContain("onPatch({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })")
     expect(form).toContain("patch({ coverMediaId: null, coverPreviewUrl: null })")
   })
 
   it("threads the id into create and the change-aware patch into edit", () => {
     expect(create).toContain("...(form.coverMediaId ? { coverMediaId: form.coverMediaId } : {})")
     expect(edit).toContain(
-      "...(eventCoverChanged(form, cleanup.coverUrl) ? { coverMediaId: form.coverMediaId } : {})",
+      "...(eventCoverChanged(form, seededCoverUrl) ? { coverMediaId: form.coverMediaId } : {})",
     )
+    expect(edit).toContain("const [seededCoverUrl] = useState(() => cleanup.coverUrl ?? null)")
     expect(edit).toContain("coverPreviewUrl: cleanup.coverUrl ?? null")
   })
 })
