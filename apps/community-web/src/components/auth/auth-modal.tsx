@@ -370,7 +370,6 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
               >
                 {Array.from({ length: OTP_LENGTH }).map((_, i) => (
                   <input
-                    // eslint-disable-next-line react/no-array-index-key
                     key={i}
                     ref={(el) => {
                       otpRefs.current[i] = el
