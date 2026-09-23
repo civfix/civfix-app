@@ -384,6 +384,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
       <div className="grid gap-token-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="flex flex-col gap-token-4">
           <Field
+            announceError={false}
             label={t("composer.subject")}
             htmlFor="broadcast-subject"
             counter={`${draft.subject.length}/${MAX_BROADCAST_SUBJECT}`}
@@ -399,6 +400,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
           </Field>
 
           <Field
+            announceError={false}
             label={t("composer.body")}
             htmlFor="broadcast-body"
             hint={t("composer.body_hint")}
@@ -416,6 +418,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
 
           <div className="grid gap-token-3 sm:grid-cols-2">
             <Field
+              announceError={false}
               label={t("composer.cta_label")}
               htmlFor="broadcast-cta-label"
               optional
@@ -430,6 +433,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
               />
             </Field>
             <Field
+              announceError={false}
               label={t("composer.cta_url")}
               htmlFor="broadcast-cta-url"
               optional
@@ -520,6 +524,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
                 {t("composer.schedule")}
               </h2>
               <Field
+                announceError={false}
                 label={t("composer.schedule_at")}
                 htmlFor="broadcast-schedule"
                 hint={zoneName ? t("composer.schedule_zone_hint", { zone: zoneName }) : undefined}

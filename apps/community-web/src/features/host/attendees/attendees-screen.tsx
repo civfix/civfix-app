@@ -11,7 +11,11 @@ import type {
 import { useApi, useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
-import { closeConsoleDrawer, useConsoleUrlState } from "@/components/console/url-state"
+import {
+  closeConsoleDrawer,
+  useConsoleUrlState,
+  type ConsoleParamPatch,
+} from "@/components/console/url-state"
 import { useGate } from "@/components/console/query-state"
 import { ConsoleButton } from "@/components/console/button"
 import { EmptyState, StateGate } from "@/components/console/states"
@@ -91,15 +95,22 @@ export function AttendeesScreen() {
   )
   const selection = useSelection(selectableIds)
 
-  useEffect(() => {
+  const setFilters = (patch: ConsoleParamPatch) => {
     selection.clear()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, sort, search, ticketTypeId])
+    set({ ...patch, cursor: null })
+  }
 
   const [confirmNoShow, setConfirmNoShow] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   // The URL is the only source of the open attendee, so browser Back closes the drawer.
   const openRow = rows.find((row) => row.id === params.attendee) ?? null
+  // A settled roster without the open row (a filter or a removal dropped it) would otherwise leave
+  // ?attendee behind, and the drawer would pop back open when a later filter brings the row back.
+  const attendeeGone =
+    params.attendee != null && openRow === null && roster.isSuccess && !roster.isFetching
+  useEffect(() => {
+    if (attendeeGone) closeConsoleDrawer(["attendee"])
+  }, [attendeeGone])
 
   const refresh = () => invalidateEvent(qc, eventId)
 
@@ -190,7 +201,7 @@ export function AttendeesScreen() {
             label: t("filter.search"),
             value: search,
             placeholder: t("filter.search_placeholder"),
-            onChange: (value: string) => set({ q: value === "" ? null : value, cursor: null }),
+            onChange: (value: string) => setFilters({ q: value === "" ? null : value }),
           },
         ]),
     ...((ticketTypes.data?.length ?? 0) > 1
@@ -204,8 +215,7 @@ export function AttendeesScreen() {
               label: type.name,
             })),
             values: ticketTypeId ? [ticketTypeId] : [],
-            onChange: (values: string[]) =>
-              set({ ticket: values[values.length - 1] ?? null, cursor: null }),
+            onChange: (values: string[]) => setFilters({ ticket: values[values.length - 1] ?? null }),
           },
         ]
       : []),
@@ -285,7 +295,7 @@ export function AttendeesScreen() {
         <SavedTabs
           label={t("filter.tabs")}
           activeId={filter}
-          onChange={(id) => set({ status: id === "all" ? null : id, cursor: null })}
+          onChange={(id) => setFilters({ status: id === "all" ? null : id })}
           tabs={ROSTER_FILTERS.map((id) => ({ id, label: t(`filter.${id}`) }))}
         />
         <div className="flex items-center gap-token-2">
@@ -305,7 +315,7 @@ export function AttendeesScreen() {
 
       <FilterBar
         facets={facets}
-        onReset={() => set({ q: null, ticket: null, cursor: null })}
+        onReset={() => setFilters({ q: null, ticket: null })}
       />
 
       <p className="text-token-12 text-console-ink-3">
@@ -333,7 +343,7 @@ export function AttendeesScreen() {
             variant={search !== "" || ticketTypeId !== null ? "filtered" : "none"}
             title={t("empty.title")}
             body={t("empty.body")}
-            onClearFilters={() => set({ q: null, ticket: null, status: null, cursor: null })}
+            onClearFilters={() => setFilters({ q: null, ticket: null, status: null })}
           />
         }
       >
@@ -349,7 +359,7 @@ export function AttendeesScreen() {
             if (!base) return
             const resolved: RegistrationRosterSort =
               base === "registered_at_desc" && next.dir === "asc" ? "registered_at_asc" : base
-            set({ sort: resolved, cursor: null })
+            setFilters({ sort: resolved })
           }}
           selection={waitlistView ? undefined : selection}
           rowSelectLabel={(row) =>

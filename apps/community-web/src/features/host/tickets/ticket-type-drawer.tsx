@@ -197,6 +197,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
         <ErrorSummary errors={submitCount > 0 ? summary : []} submitCount={submitCount} />
 
         <Field
+          announceError={false}
           label={t("field.name")}
           htmlFor="ticket-name"
           error={submitCount > 0 ? fieldErrors.name : undefined}
@@ -211,6 +212,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
         </Field>
 
         <Field
+          announceError={false}
           label={t("field.description")}
           htmlFor="ticket-description"
           optional
@@ -225,6 +227,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
         </Field>
 
         <Field
+          announceError={false}
           label={t("field.capacity")}
           htmlFor="ticket-capacity"
           optional
@@ -242,6 +245,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
 
         <div className="grid gap-token-3 sm:grid-cols-2">
           <Field
+            announceError={false}
             label={t("field.sales_opens")}
             htmlFor="ticket-opens"
             optional
@@ -255,6 +259,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
             />
           </Field>
           <Field
+            announceError={false}
             label={t("field.sales_closes")}
             htmlFor="ticket-closes"
             optional
@@ -274,7 +279,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
           </p>
         ) : null}
 
-        <Field label={t("field.visibility")} htmlFor="ticket-visibility">
+        <Field announceError={false} label={t("field.visibility")} htmlFor="ticket-visibility">
           <Select
             id="ticket-visibility"
             value={draft.visibility}
@@ -291,6 +296,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
 
         {draft.visibility === "access_code" ? (
           <Field
+            announceError={false}
             label={t("field.access_code")}
             htmlFor="ticket-access-code"
             hint={ticketType?.accessCodeSet ? t("field.access_code_set") : t("field.access_code_hint")}
@@ -306,6 +312,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
         ) : null}
 
         <Field
+          announceError={false}
           label={t("field.max_party")}
           htmlFor="ticket-party"
           hint={t("field.max_party_hint", { max: MAX_PARTY_SIZE })}

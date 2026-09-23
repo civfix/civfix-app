@@ -391,6 +391,7 @@ export function OrgProfileForm({
         </p>
         <div className="flex flex-col gap-token-4 sm:flex-row sm:items-start">
           <Field
+            announceError={false}
             label={t("form.logo", { defaultValue: "Logo" })}
             optional
             hint={t("form.logo_hint", { defaultValue: "Square image, shown at small sizes." })}
@@ -400,6 +401,7 @@ export function OrgProfileForm({
           </Field>
           <div className="flex min-w-0 flex-1 flex-col gap-token-4">
             <Field
+              announceError={false}
               label={t("form.name", { defaultValue: "Name" })}
               htmlFor="org-name"
               error={showError("name")}
@@ -416,6 +418,7 @@ export function OrgProfileForm({
             </Field>
             {mode === "create" ? (
               <Field
+                announceError={false}
                 label={t("form.slug", { defaultValue: "Handle" })}
                 htmlFor="org-slug"
                 error={submitCount > 0 && slugStatus?.tone === "error" ? slugStatus.message : undefined}
@@ -447,6 +450,7 @@ export function OrgProfileForm({
               </Field>
             ) : (
               <Field
+                announceError={false}
                 label={t("form.slug", { defaultValue: "Handle" })}
                 htmlFor="org-slug"
                 hint={t("form.slug_locked", {
@@ -477,6 +481,7 @@ export function OrgProfileForm({
         </h2>
         <div className="flex flex-col gap-token-4">
           <Field
+            announceError={false}
             label={t("form.description", { defaultValue: "Description" })}
             htmlFor="org-description"
             optional
@@ -495,6 +500,7 @@ export function OrgProfileForm({
             />
           </Field>
           <Field
+            announceError={false}
             label={t("form.websiteUrl", { defaultValue: "Website" })}
             htmlFor="org-website"
             optional
@@ -514,6 +520,7 @@ export function OrgProfileForm({
           </Field>
           {mode === "edit" ? (
             <Field
+              announceError={false}
               label={t("form.donationUrl")}
               htmlFor="org-donation-url"
               optional
@@ -550,6 +557,7 @@ export function OrgProfileForm({
             const id = `org-social-${platform}`
             return (
               <Field
+                announceError={false}
                 key={platform}
                 label={SOCIAL_PLATFORM_LABELS[platform]}
                 htmlFor={id}

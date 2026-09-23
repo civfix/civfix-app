@@ -100,6 +100,34 @@ describe("AttendeesScreen", () => {
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Ada" })).toBeNull())
   })
 
+  it("closes the attendee drawer when a filter drops its row, so it cannot reopen later", async () => {
+    const user = userEvent.setup()
+    const client = renderAttendees([registration()])
+    client.listEventRegistrations.mockImplementation(async (req: { filter?: string }) => ({
+      items: req.filter === "checked_in" ? [] : [registration()],
+      nextCursor: null,
+    }))
+    await user.click(await screen.findByRole("button", { name: "table.open_row(name=Ada)" }))
+    expect(await screen.findByRole("dialog", { name: "Ada" })).toBeTruthy()
+
+    await user.click(screen.getByRole("button", { name: "filter.checked_in" }))
+    await waitFor(() => expect(new URLSearchParams(window.location.search).get("attendee")).toBeNull())
+
+    await user.click(screen.getByRole("button", { name: "filter.all" }))
+    await screen.findByRole("button", { name: "table.open_row(name=Ada)" })
+    expect(screen.queryByRole("dialog", { name: "Ada" })).toBeNull()
+  })
+
+  it("clears the bulk selection when the status tab changes", async () => {
+    const user = userEvent.setup()
+    renderAttendees([registration()])
+    await user.click(await screen.findByRole("checkbox", { name: "table.select_row(name=Ada)" }))
+    expect(screen.getByRole("button", { name: /bulk\.remove/ })).toBeTruthy()
+
+    await user.click(screen.getByRole("button", { name: "filter.registered" }))
+    await waitFor(() => expect(screen.queryByRole("button", { name: /bulk\.remove/ })).toBeNull())
+  })
+
   it("checks in every pending seat with one summary toast", async () => {
     const user = userEvent.setup()
     const client = renderAttendees([registration()])
