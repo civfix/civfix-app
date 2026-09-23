@@ -80,6 +80,11 @@ function writeUnsyncedUserId(userId: string | null): void {
   }
 }
 
+/** Drops the pending-sync marker when its viewer leaves this browser; it names a user id. */
+export function forgetUnsyncedLocale(): void {
+  writeUnsyncedUserId(null)
+}
+
 function syncServerLocale(userId: string, code: SupportedLocale): Promise<void> {
   return api.updateSettings({ locale: code }).then(
     () => writeUnsyncedUserId(null),

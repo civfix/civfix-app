@@ -187,6 +187,7 @@
 
       var form = document.getElementById('coach-form');
       var status = document.getElementById('form-status');
+      var alertNode = null;
       var btn = form.querySelector('button[type=submit]');
 
       var turnstileToken = '';
@@ -208,11 +209,25 @@
         return document.getElementById(id).value.trim();
       }
 
-      // A blocking error must interrupt (role=alert); success and progress stay polite. The text is
-      // cleared before the role flips so the new message is announced under the new role.
+      // A blocking error must interrupt, so it goes in a freshly inserted role=alert node: screen
+      // readers announce an alert on insertion, but not reliably when an existing node flips its role.
+      // Success stays in the polite status region, which exists from page load.
       function showStatus(kind, text) {
-        status.textContent = '';
-        status.setAttribute('role', kind === 'err' ? 'alert' : 'status');
+        if (alertNode) {
+          alertNode.parentNode.removeChild(alertNode);
+          alertNode = null;
+        }
+        if (kind === 'err') {
+          status.textContent = '';
+          status.className = 'form-status';
+          alertNode = document.createElement('p');
+          alertNode.id = 'form-error';
+          alertNode.className = 'form-status err';
+          alertNode.setAttribute('role', 'alert');
+          alertNode.textContent = text;
+          status.parentNode.insertBefore(alertNode, status);
+          return;
+        }
         status.textContent = text;
         status.className = 'form-status ' + kind;
       }

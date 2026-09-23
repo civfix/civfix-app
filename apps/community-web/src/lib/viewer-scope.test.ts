@@ -17,6 +17,7 @@ const { useSignOutRetryStore } = await import("@/store/sign-out-retry-store")
 const { writeAuthSnapshot } = await import("@/lib/auth-snapshot")
 
 const STORAGE_KEY = "civfix.query.cache.v2"
+const UNSYNCED_LOCALE_KEY = "civfix.locale.unsynced"
 
 const USER_A: UserDTO = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -87,6 +88,23 @@ describe("installViewerScope", () => {
     expectViewerStateGone()
     expect(adoptViewer).toHaveBeenLastCalledWith(null)
     expect(discardViewerDrafts).toHaveBeenCalledTimes(1)
+  })
+
+  it("forgets a departed viewer's pending locale sync, on sign-out and on an account switch", () => {
+    useAuthStore.getState().setSession({ user: USER_A })
+    teardown = installViewerScope(qc)
+    storage.setItem(UNSYNCED_LOCALE_KEY, USER_A.id)
+
+    useAuthStore.getState().setAnonymous()
+    expect(storage.getItem(UNSYNCED_LOCALE_KEY)).toBe(USER_A.id)
+
+    useAuthStore.getState().clear()
+    expect(storage.getItem(UNSYNCED_LOCALE_KEY)).toBeNull()
+
+    useAuthStore.getState().setSession({ user: USER_A })
+    storage.setItem(UNSYNCED_LOCALE_KEY, USER_A.id)
+    useAuthStore.getState().setSession({ user: USER_B })
+    expect(storage.getItem(UNSYNCED_LOCALE_KEY)).toBeNull()
   })
 
   it("keeps everything through a session check that got no answer, then the same viewer again", () => {

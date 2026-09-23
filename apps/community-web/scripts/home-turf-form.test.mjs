@@ -36,6 +36,7 @@ function mountPage({ fetchImpl, solveTurnstile }) {
   const submit = () => form.dispatchEvent(new window.Event("submit", { cancelable: true }))
   return {
     status: doc.getElementById("form-status"),
+    alert: () => doc.getElementById("form-error"),
     button: form.querySelector("button[type=submit]"),
     solveTurnstile: () => widget.callback("token"),
     submit,
@@ -45,11 +46,18 @@ function mountPage({ fetchImpl, solveTurnstile }) {
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 describe("home-turf coach form status", () => {
-  it("announces the missing robot check as an alert", () => {
+  it("announces the missing robot check in a freshly inserted alert, never by flipping a role", () => {
     const page = mountPage({ fetchImpl: () => new Promise(() => {}), solveTurnstile: false })
     page.submit()
-    expect(page.status.getAttribute("role")).toBe("alert")
-    expect(page.status.textContent).toContain("not a robot")
+    const first = page.alert()
+    expect(first.getAttribute("role")).toBe("alert")
+    expect(first.textContent).toContain("not a robot")
+    expect(page.status.getAttribute("role")).toBe("status")
+
+    page.submit()
+    expect(page.alert()).not.toBe(first)
+    expect(first.isConnected).toBe(false)
+    expect(page.status.getAttribute("role")).toBe("status")
   })
 
   it("marks the button busy while submitting and alerts on a rejected submit", async () => {
@@ -66,21 +74,22 @@ describe("home-turf coach form status", () => {
     await settle()
     expect(page.button.hasAttribute("aria-busy")).toBe(false)
     expect(page.button.disabled).toBe(false)
-    expect(page.status.getAttribute("role")).toBe("alert")
-    expect(page.status.textContent).toContain("Too many attempts")
+    expect(page.alert().getAttribute("role")).toBe("alert")
+    expect(page.alert().textContent).toContain("Too many attempts")
   })
 
-  it("returns to a polite status when a submit succeeds after an error", async () => {
+  it("clears the alert and reports success politely when a submit succeeds after an error", async () => {
     const page = mountPage({
       fetchImpl: () => Promise.resolve({ ok: true, status: 200 }),
       solveTurnstile: false,
     })
     page.submit()
-    expect(page.status.getAttribute("role")).toBe("alert")
+    expect(page.alert()).not.toBeNull()
 
     page.solveTurnstile()
     page.submit()
     await settle()
+    expect(page.alert()).toBeNull()
     expect(page.status.getAttribute("role")).toBe("status")
     expect(page.status.textContent).toContain("Got it")
   })
