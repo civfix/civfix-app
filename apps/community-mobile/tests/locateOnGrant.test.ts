@@ -34,7 +34,16 @@ test("refresh reads the permission silently BEFORE it asks, so it knows whether 
   const request = refreshBody.indexOf("Location.requestForegroundPermissionsAsync()")
   assert.ok(before > -1)
   assert.ok(request > before)
-  assert.match(refreshBody, /const prompted = before\?\.status !== Location\.PermissionStatus\.GRANTED/)
+  assert.match(
+    refreshBody,
+    /const prompted = before !== null && before\.status !== Location\.PermissionStatus\.GRANTED/,
+  )
+})
+
+test("a rejected permission probe never counts as a prompted grant", () => {
+  assert.match(refreshBody, /getForegroundPermissionsAsync\(\)\.catch\(\(\) => null\)/)
+  assert.match(refreshBody, /before !== null &&/)
+  assert.doesNotMatch(refreshBody, /before\?\./)
 })
 
 test("the first-fix wait is the same fix read under the longer cap", () => {

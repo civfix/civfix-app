@@ -124,8 +124,19 @@ export function getBrowserPosition(): Promise<LatLng | null> {
   )
 }
 
-export async function geolocationPromptPending(): Promise<boolean> {
-  if (typeof navigator === "undefined" || !navigator.permissions) return false
+async function geolocationPermissionState(): Promise<PermissionState | null> {
+  if (typeof navigator === "undefined" || !navigator.permissions) return null
   const status = await navigator.permissions.query({ name: "geolocation" }).catch(() => null)
-  return status?.state === "prompt"
+  return status?.state ?? null
+}
+
+export async function resolvePreciseCenterAfterPrompt(): Promise<{
+  precise: LatLng | null
+  prompted: boolean
+}> {
+  const before = await geolocationPermissionState()
+  const precise = await resolvePreciseCenter()
+  if (before !== "prompt") return { precise, prompted: false }
+  const after = await geolocationPermissionState()
+  return { precise, prompted: after === "granted" }
 }

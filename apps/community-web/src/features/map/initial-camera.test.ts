@@ -94,14 +94,21 @@ describe("the camera adoption effect", () => {
     expect(code).toContain("holdsRememberedCamera,")
   })
 
-  it("reads the permission state BEFORE the request that may raise the prompt, and latches the answer before the centre lands", () => {
-    const mount = code.slice(code.indexOf("const prompted = await geolocationPromptPending()"))
-    const request = mount.indexOf("await resolvePreciseCenter()")
+  it("resolves the centre together with its prompt answer, and latches the answer before the centre lands", () => {
+    const mount = code.slice(code.indexOf("const { precise, prompted } = await resolvePreciseCenterAfterPrompt()"))
     const latch = mount.indexOf("promptGrantRef.current = prompted")
     const land = mount.indexOf("setPreciseCenter(precise)")
-    expect(request).toBeGreaterThan(0)
-    expect(latch).toBeGreaterThan(request)
+    expect(code).toContain("const { precise, prompted } = await resolvePreciseCenterAfterPrompt()")
+    expect(latch).toBeGreaterThan(0)
     expect(land).toBeGreaterThan(latch)
+  })
+
+  it("a user gesture on the map claims the camera, so a late adoption never overrides it", () => {
+    expect(code).toMatch(
+      /const onUserCameraMove = React\.useCallback\(\(\) => \{\n\s+cameraOwnedRef\.current = true\n\s+\}, \[\]\)/,
+    )
+    const map = code.slice(code.indexOf("<SharedMap"))
+    expect(map).toContain("onUserCameraMove={onUserCameraMove}")
   })
 
   it("flies at most once, then hands the camera to the user", () => {

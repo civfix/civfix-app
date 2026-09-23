@@ -40,7 +40,7 @@ import { useApproximateLocation, useCleanups, useMapReports } from "@civfix/ui/d
 
 import { decideRegionFetch } from "@/features/map/region-fetch"
 import { readCameraSnapshot, writeCameraSnapshot } from "@/features/map/camera-snapshot"
-import { resolvePreciseCenter, getBrowserPosition, geolocationPromptPending } from "@/lib/locate"
+import { resolvePreciseCenterAfterPrompt, getBrowserPosition } from "@/lib/locate"
 import { useMapRecenterStore } from "@/features/map/map-recenter"
 
 /**
@@ -141,21 +141,12 @@ export function HomeMap() {
   // once. Measured on an earlier build without the guard: /cleanups/e1 landed on the clear-strip centre
   // 1/4 cold loads at both 840x630 and 1440x900 (the marker at x=-5416 on the misses). Reading the store
   // at ADOPT time (not at mount) is what makes the guard honest: whoever published last wins.
-  //
-  // AND IT DOES NOT FLY AT ALL WHEN THE MAP BOOTED FROM THE PERSISTED CAMERA. `bootCamera` already put
-  // the first frame where the user last left the map (the standard maps-app boot), so flying to the
-  // freshly-resolved location would yank the camera off it AND re-trigger the second region fetch this
-  // seed exists to eliminate. The resolve still runs - for the dot, and for the Locate button, which
-  // remains the deliberate way to recenter. Only a first-ever visit (no snapshot) ever takes a flight,
-  // and even then only to UPGRADE the source (remembered -> approximate -> precise), never to repeat or
-  // downgrade one (`shouldAdoptCenter`).
   const [preciseCenter, setPreciseCenter] = React.useState<MapLatLng | null>(null)
   const promptGrantRef = React.useRef(false)
   React.useEffect(() => {
     let cancelled = false
     void (async () => {
-      const prompted = await geolocationPromptPending()
-      const precise = await resolvePreciseCenter()
+      const { precise, prompted } = await resolvePreciseCenterAfterPrompt()
       if (cancelled || !precise) return
       promptGrantRef.current = prompted
       setPreciseCenter(precise)
@@ -253,6 +244,10 @@ export function HomeMap() {
     if (decision.action === "keep") return
     requestedBboxRef.current = decision.region
     setBbox(decision.region)
+  }, [])
+
+  const onUserCameraMove = React.useCallback(() => {
+    cameraOwnedRef.current = true
   }, [])
 
   // Commit the requested region as LOADED only once its query really resolved with data for it. If the
@@ -385,6 +380,7 @@ export function HomeMap() {
       userLocation={userLocation}
       showUserLocation={userLocation != null}
       onRegionChange={onRegionChange}
+      onUserCameraMove={onUserCameraMove}
       onPressPin={onPressPin}
       onPressCleanup={onPressCleanup}
       onPressCluster={onPressCluster}

@@ -50,7 +50,7 @@ export function useUserLocation(): UserLocationState {
       return { coords: null, prompted: false }
     }
     setPermission("granted")
-    const prompted = before?.status !== Location.PermissionStatus.GRANTED
+    const prompted = before !== null && before.status !== Location.PermissionStatus.GRANTED
     return { coords: await readFix(), prompted }
   }, [readFix])
 
