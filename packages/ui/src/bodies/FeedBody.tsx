@@ -274,6 +274,7 @@ export function FeedBody() {
     ),
     [
       headerStyle,
+      styles,
       headerModel.title,
       headerModel.showComposer,
       headerModel.showInlineComposer,

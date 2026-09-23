@@ -98,7 +98,7 @@ export function useReplyDockInset(): ReplyDockInset {
     return () => {
       for (const sub of subs) sub.remove()
     }
-  }, [])
+  }, [restingWindowHeight])
 
   const inset = Math.max(shell, own)
   const restingSafeArea = Platform.OS === "web" ? 0 : (insets?.bottom ?? 0)

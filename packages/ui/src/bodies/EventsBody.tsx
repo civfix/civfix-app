@@ -181,7 +181,7 @@ export function EventsBody() {
   const { t } = useT("event-list")
   const { FlatList } = useScrollHost()
   const query = useCleanups("upcoming")
-  const all = query.data ?? []
+  const all = useMemo(() => query.data ?? [], [query.data])
   const { isAuthenticated } = useAuthState()
   const attendingQuery = useAttendingCleanups()
   const location = useUserLocation().data ?? null

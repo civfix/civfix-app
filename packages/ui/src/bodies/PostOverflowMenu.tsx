@@ -228,7 +228,6 @@ function PostOverflowMenuContent({
       clipboard,
       copyLink,
       del.isPending,
-      isOwn,
       isOwnRepost,
       onConfirmingDeleteChange,
       onOpenOriginal,

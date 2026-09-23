@@ -18,6 +18,10 @@ import {
 
 const isAndroid = Platform.OS === "android"
 
+function pickerSeed(value: Date | null | undefined, fallback: Date | null | undefined): Date {
+  return value ?? fallback ?? new Date()
+}
+
 function Caret() {
   const th = useTheme()
   return <Icon icon={iconMap.ChevronDown} size={16} color={th.colors.textSubtle} />
@@ -35,7 +39,7 @@ export function DateFieldRow({
   spaced,
 }: DateFieldRowProps) {
   const th = useTheme()
-  const current = value ?? minDate ?? new Date()
+  const current = pickerSeed(value, minDate)
 
   const commit = useCallback(
     (event: DateTimePickerEvent, picked?: Date) => {
@@ -47,13 +51,13 @@ export function DateFieldRow({
 
   const openDialog = useCallback(() => {
     DateTimePickerAndroid.open({
-      value: current,
+      value: pickerSeed(value, minDate),
       mode: "date",
       display: "default",
       minimumDate: minDate ?? undefined,
       onChange: commit,
     })
-  }, [commit, current, minDate])
+  }, [commit, minDate, value])
 
   return (
     <DateTimeFieldRow
@@ -102,7 +106,7 @@ export function TimeFieldRow({
 }: TimeFieldRowProps) {
   const th = useTheme()
   const { locale } = useLocale()
-  const current = value ?? day ?? new Date()
+  const current = pickerSeed(value, day)
 
   const commit = useCallback(
     (event: DateTimePickerEvent, picked?: Date) => {
@@ -116,14 +120,14 @@ export function TimeFieldRow({
 
   const openDialog = useCallback(() => {
     DateTimePickerAndroid.open({
-      value: current,
+      value: pickerSeed(value, day),
       mode: "time",
       display: "default",
       is24Hour: uses24HourClock(locale),
       minuteInterval: minuteInterval ?? TIME_PICKER_MINUTE_INTERVAL,
       onChange: commit,
     })
-  }, [commit, current, locale, minuteInterval])
+  }, [commit, day, locale, minuteInterval, value])
 
   return (
     <DateTimeFieldRow

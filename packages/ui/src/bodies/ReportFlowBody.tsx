@@ -558,7 +558,10 @@ function ReviewStep({
   const draft = useDraftReportStore((s) => s.draft)
   const setShareToFeed = useDraftReportStore((s) => s.setShareToFeed)
   const setFeedCaption = useDraftReportStore((s) => s.setFeedCaption)
-  const point = draft.lat != null && draft.lng != null ? { lat: draft.lat, lng: draft.lng } : null
+  const point = useMemo(
+    () => (draft.lat != null && draft.lng != null ? { lat: draft.lat, lng: draft.lng } : null),
+    [draft.lat, draft.lng],
+  )
   const setLocation = useDraftReportStore((s) => s.setLocation)
   const clearLocation = useDraftReportStore((s) => s.clearLocation)
   const setAddress = useDraftReportStore((s) => s.setAddress)
@@ -982,10 +985,8 @@ export function ReportFlowBody() {
   const hasLocation = useDraftReportStore((s) => s.draft.lat != null && s.draft.lng != null)
 
   const orphaned = stepOrder.indexOf(step) < 0
-  const activeStep = useMemo(
-    () => (orphaned ? resumeStep(useDraftReportStore.getState().draft, mode) : step),
-    [orphaned, step, mode, hasMedia, hasLocation, reportTypeId, title],
-  )
+  const resumedStep = useDraftReportStore((s) => resumeStep(s.draft, mode))
+  const activeStep = orphaned ? resumedStep : step
   useEffect(() => {
     if (orphaned) setStep(activeStep)
   }, [orphaned, activeStep])
