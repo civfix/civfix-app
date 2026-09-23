@@ -1,6 +1,6 @@
 import React from "react"
 import { readFileSync } from "node:fs"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { slotGroupHeaderA11yLabel } from "../rosterSlotGroups"
 
 // These bodies import react-native, which this package's node vitest cannot load, so the exact props
@@ -13,7 +13,6 @@ const slotsBlock = code("../EventSlotsBlock.tsx")
 const slotEditor = code("../SlotEditor.tsx")
 const slotWindow = code("../SlotWindowPicker.tsx")
 const timezoneField = code("../TimezoneField.tsx")
-const actionRow = code("../EventActionRow.tsx")
 const detail = code("../EventDetailBody.tsx")
 const form = code("../CleanupForm.tsx")
 const fieldRow = code("../DateTimeFieldRow.tsx")
@@ -23,8 +22,13 @@ const hoursEditor = code("../LogHoursEditor.tsx")
 
 const pressableWith = (src: string, anchor: string) => {
   const at = src.indexOf(anchor)
+  expect(at, `${anchor} is gone - re-scope the guard, do not delete it`).toBeGreaterThan(-1)
   const open = src.lastIndexOf("<Pressable", at)
-  return at < 0 || open < 0 ? "" : src.slice(open, src.indexOf("</Pressable>", at))
+  expect(open, `no <Pressable opens before ${anchor}`).toBeGreaterThan(-1)
+  expect(src.slice(open, at), `${anchor} is not inside the nearest Pressable`).not.toContain("</Pressable>")
+  const close = src.indexOf("</Pressable>", at)
+  expect(close).toBeGreaterThan(at)
+  return src.slice(open, close)
 }
 
 describe("the events list", () => {
@@ -120,7 +124,7 @@ describe("the date and time rows", () => {
 
 describe("the time zone field", () => {
   it("refreshes a zone's name per day, so a DST change reads PDT rather than a cached PST", () => {
-    expect(timezoneField).toContain("const key = `${Math.floor(Date.now() / DAY_MS)}|${locale}|${timeZone}`")
+    expect(timezoneField).toContain("const displayNames = makeZoneDisplayNameCache()")
   })
 
   it("exposes the change toggle as a disclosure and the zones as radios", () => {
@@ -148,7 +152,10 @@ describe("the event detail", () => {
   it("tags every section title as a level-3 heading under the level-2 event title", () => {
     for (const key of ['t("bring.heading")', 't("host.heading")', 'reports.length > LINKED_REPORTS_COUNT_AT']) {
       const at = detail.indexOf(key)
-      const tag = detail.slice(detail.lastIndexOf("<Text", at), at)
+      expect(at, key).toBeGreaterThan(-1)
+      const open = detail.lastIndexOf("<Text", at)
+      expect(open, key).toBeGreaterThan(-1)
+      const tag = detail.slice(open, at)
       expect(tag, key).toContain('accessibilityRole="header" {...headingLevel(3)}')
     }
   })
@@ -160,15 +167,35 @@ describe("the event detail", () => {
     expect(hero).toContain("accessibilityElementsHidden")
   })
 
-  it("keys the action rows by the element key, so a row appearing does not remount its siblings", () => {
-    expect(actionRow).toContain("key={React.isValidElement(row) ? (row.key ?? index) : index}")
-    const rows = React.Children.toArray([null, React.createElement("b", null), React.createElement("i", null)])
-    const withFirst = React.Children.toArray([
-      React.createElement("a", null),
-      React.createElement("b", null),
-      React.createElement("i", null),
-    ])
-    expect((rows[0] as React.ReactElement).key).toBe((withFirst[1] as React.ReactElement).key)
+  it("keys the action rows by the element key, so a row appearing does not remount its siblings", async () => {
+    vi.doMock("react-native", () => ({ View: "View", Pressable: "Pressable", StyleSheet: { hairlineWidth: 1 } }))
+    vi.doMock("../../theme", () => ({
+      makeThemedStyles: () => () => ({}),
+      useTheme: () => ({}),
+      focusRingProps: {},
+      webCursor: () => null,
+      webHover: () => false,
+      webTransition: null,
+    }))
+    vi.doMock("../../typography", () => ({ Text: "Text", Icon: "Icon", iconMap: {} }))
+    const { EventActionRows } = await import("../EventActionRow")
+    const rowKeys = (children: React.ReactNode[]): Record<string, React.Key | null> => {
+      const out = EventActionRows({ children }) as React.ReactElement<{ children: React.ReactElement[] }>
+      return Object.fromEntries(
+        out.props.children.map((fragment) => {
+          const row = (fragment.props as { children: React.ReactNode[] }).children[1] as React.ReactElement
+          return [String(row.type), fragment.key]
+        }),
+      )
+    }
+    const row = (name: string) => React.createElement(name, null)
+
+    const without = rowKeys([null, row("share"), row("report")])
+    const withFirst = rowKeys([row("calendar"), row("share"), row("report")])
+    expect(Object.keys(without)).toEqual(["share", "report"])
+    expect(without.share).toBe(withFirst.share)
+    expect(without.report).toBe(withFirst.report)
+    expect(withFirst.calendar).not.toBe(withFirst.share)
   })
 })
 

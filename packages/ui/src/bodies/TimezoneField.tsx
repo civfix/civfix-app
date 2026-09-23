@@ -12,29 +12,17 @@ import {
 import { Text, Icon, iconMap } from "../typography"
 import { TextField } from "../primitives"
 import { useLocale, useT, useViewerTimeZone } from "../i18n"
-import { zoneDisplayName } from "./calendarModel"
+import { makeZoneDisplayNameCache } from "./calendarModel"
 
 const MAX_TIMEZONE_ROWS = 8
 
-const DAY_MS = 86_400_000
-
-const displayNames = new Map<string, string>()
+const displayNames = makeZoneDisplayNameCache()
 
 let everyZone: readonly string[] | null = null
 
 function allTimeZones(): readonly string[] {
   everyZone ??= supportedTimeZones()
   return everyZone
-}
-
-// Keyed by day as well: the name carries the current offset (PST vs PDT), which a DST change moves.
-function cachedDisplayName(timeZone: string, locale: string): string {
-  const key = `${Math.floor(Date.now() / DAY_MS)}|${locale}|${timeZone}`
-  const cached = displayNames.get(key)
-  if (cached !== undefined) return cached
-  const name = zoneDisplayName(timeZone, locale)
-  displayNames.set(key, name)
-  return name
 }
 
 function normalize(value: string): string {
@@ -59,7 +47,7 @@ export function matchingTimeZones(
   const byId = new Set(out)
   for (const zone of zones) {
     if (byId.has(zone)) continue
-    if (normalize(cachedDisplayName(zone, locale)).includes(needle)) {
+    if (normalize(displayNames.get(zone, locale)).includes(needle)) {
       out.push(zone)
       if (out.length === limit) break
     }
@@ -81,8 +69,8 @@ export function TimezoneField({ value, onChange }: TimezoneFieldProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
 
-  const zoneLabel = cachedDisplayName(value, locale)
-  const deviceLabel = cachedDisplayName(deviceZone, locale)
+  const zoneLabel = displayNames.get(value, locale)
+  const deviceLabel = displayNames.get(deviceZone, locale)
 
   const rows = useMemo(
     () => matchingTimeZones(query.trim() === "" ? COMMON_TIMEZONES : allTimeZones(), query, locale),
@@ -144,7 +132,7 @@ export function TimezoneField({ value, onChange }: TimezoneFieldProps) {
           {rows.map((zone) => (
             <ZoneRow
               key={zone}
-              title={cachedDisplayName(zone, locale)}
+              title={displayNames.get(zone, locale)}
               subtitle={zone}
               selected={value === zone}
               onPress={() => pick(zone)}

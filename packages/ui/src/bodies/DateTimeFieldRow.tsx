@@ -15,7 +15,7 @@ import {
   DURATION_CHIP_HOURS,
   durationChipFor,
   endsNextDay,
-  endTimeAfter,
+  endTimeAfterInZone,
   nowClockInZone,
   sameDay,
   todayInZone,
@@ -181,7 +181,7 @@ export function InlineDateTimePickerLayout({
 
   const selectDuration = (hours: DurationChipHours) => {
     if (!date || !time || !onEndTimeChange) return
-    onEndTimeChange(endTimeAfter(date, time, hours * 3_600_000))
+    onEndTimeChange(endTimeAfterInZone(date, time, hours * 3_600_000, timeZone))
   }
 
   return (

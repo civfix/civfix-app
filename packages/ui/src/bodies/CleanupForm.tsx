@@ -250,11 +250,13 @@ function MeetLocationCompact({
   onConfirmPoint,
   onClear,
   initialCenter,
+  centerSettled,
 }: {
   value: CleanupFormValue
   onConfirmPoint: (lat: number, lng: number) => void
   onClear: () => void
   initialCenter: LatLng | null
+  centerSettled: boolean | undefined
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -320,6 +322,7 @@ function MeetLocationCompact({
         visible={picking}
         value={value.coords}
         initialCenter={initialCenter}
+        centerSettled={centerSettled}
         onConfirm={(lat, lng) => {
           onConfirmPoint(lat, lng)
           setPicking(false)
@@ -426,6 +429,7 @@ export function CleanupForm({
   onChange,
   onPatch,
   initialCenter,
+  centerSettled,
   existingSlots,
   eventEndUnsaved = false,
   scheduleUnchanged = false,
@@ -440,6 +444,8 @@ export function CleanupForm({
   /** Merges into the host's CURRENT value; for writes that land after an await. */
   onPatch: (partial: Partial<CleanupFormValue>) => void
   initialCenter?: LatLng | null
+  /** The host's centre resolution finished with no point, so the pickers offer address search instead of waiting. */
+  centerSettled?: boolean
   existingSlots?: readonly EventSlotDTO[]
   eventEndUnsaved?: boolean
   scheduleUnchanged?: boolean
@@ -713,11 +719,12 @@ export function CleanupForm({
                 onConfirmPoint={onDropPin}
                 onClear={() => patch({ coords: null })}
                 initialCenter={initialCenter ?? null}
+                centerSettled={centerSettled}
               />
             ) : (
               <>
                 <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
-                <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} mode={pickMode} pin={pin} />
+                <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} centerSettled={centerSettled} mode={pickMode} pin={pin} />
               </>
             )}
             <TextField
