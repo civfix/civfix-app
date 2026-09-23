@@ -257,6 +257,17 @@ export const useConversationStyles = makeThemedStyles((t) => ({
     marginLeft: 4,
     marginBottom: 2,
   },
+  whoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    maxWidth: "100%",
+    marginBottom: 2,
+  },
+  whoBadged: {
+    flexShrink: 1,
+    marginBottom: 0,
+  },
   bubble: {
     paddingHorizontal: 13,
     paddingVertical: 9,

@@ -23,6 +23,7 @@ import {
   SocialLinksRow,
   usePopoverAnchor,
   useToast,
+  VerifiedBadge,
 } from "../primitives"
 import type { PopoverMenuItem, AnchorRect } from "../primitives"
 import {
@@ -368,7 +369,9 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
   }
   const menuItems: PopoverMenuItem[] = profile.blockedByMe
     ? [unblockMenuItem, reportMenuItem]
-    : [blockMenuItem, reportMenuItem]
+    : profile.official
+      ? [reportMenuItem]
+      : [blockMenuItem, reportMenuItem]
 
   const tabsModel = buildProfileTabsModel(requestedTab, {
     posts: true,
@@ -393,6 +396,7 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
             <Text style={styles.name} numberOfLines={1}>
               {profile.name}
             </Text>
+            {profile.official ? <VerifiedBadge size="md" /> : null}
           </View>
           {profile.handle ? (
             <View style={styles.handleRow}>

@@ -14,6 +14,7 @@ import {
 import { Text } from "../typography"
 import { Avatar } from "../primitives/Avatar"
 import { OrgAffiliationBadge } from "../primitives/OrgAffiliationBadge"
+import { VerifiedBadge } from "../primitives/VerifiedBadge"
 import { PostMediaGrid } from "./PostMediaGrid"
 import { buildPostIdentity } from "./postCardModel"
 
@@ -52,6 +53,7 @@ export function EmbeddedPost({ post, t, timeAgo, prominent = false, onPress }: E
         <Text variant="bodyStrong" numberOfLines={1} style={styles.author}>
           {identity.name}
         </Text>
+        {identity.official ? <VerifiedBadge size="sm" /> : null}
         {identity.affiliation ? (
           <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
         ) : null}

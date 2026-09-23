@@ -8,6 +8,7 @@ import { Text, Icon } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
 import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
+import { VerifiedBadge } from "../../primitives/VerifiedBadge"
 import {
   PostActionBar,
   formatPostActionCount,
@@ -202,6 +203,7 @@ export function ThreadFocalPost({
               <Text numberOfLines={1} style={styles.authorName}>
                 {identity.name}
               </Text>
+              {identity.official ? <VerifiedBadge size="sm" /> : null}
               {identity.affiliation ? (
                 <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
               ) : null}

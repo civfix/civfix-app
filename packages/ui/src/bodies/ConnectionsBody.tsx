@@ -5,7 +5,7 @@ import type { PersonDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { Avatar, FollowButton, EmptyState, LoadingState, OrgAffiliationBadge } from "../primitives"
+import { Avatar, FollowButton, EmptyState, LoadingState, OrgAffiliationBadge, VerifiedBadge } from "../primitives"
 import { useFollowers, useFollowing } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
@@ -42,6 +42,7 @@ const ConnectionRow = memo(function ConnectionRow({
             <Text style={styles.name} numberOfLines={1}>
               {person.name}
             </Text>
+            {person.official ? <VerifiedBadge size="sm" /> : null}
             {person.organization ? (
               <OrgAffiliationBadge organization={person.organization} size="sm" interactive={false} />
             ) : null}

@@ -40,6 +40,8 @@
  *   Copy/edit never appear on a poll; delete still follows the normal own/moderator delete gate.
  */
 
+import type { PersonDTO } from "@civfix/shared"
+
 /** The action keys this phase produces (a subset of ContextMenuActionKey). */
 export type MessageActionKey =
   | "reply"
@@ -161,4 +163,10 @@ export function buildMessageActions(input: MessageActionsInput): MessageActionDe
     if (input.isGroupRoom && input.authorBlockable) actions.push({ key: "block", destructive: true })
   }
   return actions
+}
+
+export function isBlockableAuthor(
+  author: Pick<PersonDTO, "id" | "deleted" | "official"> | null | undefined,
+): boolean {
+  return Boolean(author && author.id && !author.deleted && !author.official)
 }
