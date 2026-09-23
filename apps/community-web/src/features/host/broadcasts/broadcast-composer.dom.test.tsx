@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { cleanup, screen, waitFor } from "@testing-library/react"
+import { cleanup, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { BroadcastDTO, CleanupDTO } from "@civfix/shared"
 
@@ -97,6 +97,53 @@ describe("BroadcastComposer schedule", () => {
     expect(client.scheduleEventBroadcast.mock.calls[0]![0]).toMatchObject({
       scheduledAt: "2026-09-19T15:30:00.000Z",
     })
+  })
+})
+
+describe("BroadcastComposer schedule errors", () => {
+  it("names the zone for a skipped DST hour and links the summary to the schedule input", async () => {
+    const user = userEvent.setup()
+    const client = renderComposer(broadcast())
+    const input = screen.getByLabelText(/composer\.schedule_at/)
+    await user.type(input, "2026-03-08T02:30")
+    await user.click(screen.getByRole("button", { name: "composer.schedule_action" }))
+
+    expect(client.scheduleEventBroadcast).not.toHaveBeenCalled()
+    const message = "composer.schedule_not_in_zone(zone=Pacific Time)"
+    const link = screen.getAllByText(message).find((node) => node.tagName === "BUTTON")!
+    await user.click(link)
+    expect(document.activeElement).toBe(input)
+  })
+})
+
+function storedDrafts(): string[] {
+  return Object.keys(window.localStorage).filter((key) => key.includes(`broadcast.v2.${EVENT_ID}`))
+}
+
+describe("BroadcastComposer draft after a schedule or send", () => {
+  it("drops the stored draft once the schedule is accepted", async () => {
+    const user = userEvent.setup()
+    const client = renderComposer(broadcast())
+    await user.type(screen.getByLabelText(/composer\.schedule_at/), "2026-09-19T08:30")
+    expect(storedDrafts()).toHaveLength(1)
+
+    await user.click(screen.getByRole("button", { name: "composer.schedule_action" }))
+    await waitFor(() => expect(client.scheduleEventBroadcast).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(storedDrafts()).toHaveLength(0))
+  })
+
+  it("drops the stored draft once the send is accepted", async () => {
+    const user = userEvent.setup()
+    const client = renderComposer(broadcast())
+    await user.type(screen.getByLabelText(/composer\.schedule_at/), "2026-09-19T08:30")
+    expect(storedDrafts()).toHaveLength(1)
+
+    await user.click(screen.getByRole("button", { name: "composer.send" }))
+    const dialog = await screen.findByRole("alertdialog")
+    await user.click(within(dialog).getByRole("checkbox"))
+    await user.click(within(dialog).getByRole("button", { name: "composer.send" }))
+    await waitFor(() => expect(client.sendEventBroadcast).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(storedDrafts()).toHaveLength(0))
   })
 })
 

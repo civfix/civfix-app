@@ -29,8 +29,8 @@ import { invalidateEvent } from "../console-invalidate"
 import { useConsoleEvent } from "../console-context"
 import {
   isoToZonedInput,
-  useConsoleFormat,
   useConsoleInputZone,
+  useInputZoneNames,
   zonedFieldPatch,
 } from "../format"
 
@@ -73,6 +73,18 @@ function draftFrom(type: TicketTypeDTO | null, timeZone: string): TicketDraft {
   }
 }
 
+const FIELD_INPUT_IDS: Readonly<Record<string, string>> = {
+  salesOpensAt: "ticket-opens",
+  salesClosesAt: "ticket-closes",
+  accessCode: "ticket-access-code",
+  maxPartySize: "ticket-party",
+}
+
+/** The input an error-summary link focuses for a request field. */
+export function ticketFieldInputId(field: string): string {
+  return FIELD_INPUT_IDS[field] ?? `ticket-${field}`
+}
+
 export interface TicketTypeDrawerProps {
   eventId: string
   ticketType: TicketTypeDTO | null
@@ -89,12 +101,12 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
   const zone = useConsoleInputZone(useConsoleEvent().event?.timezone)
-  const zoneName = useConsoleFormat(zone).zoneLabel(new Date().toISOString())
 
   // v2 scope: drafts saved before the event-zone fix hold sales times as UTC wall clocks.
   const draftKey = consoleDraftKey(`ticket.v2.${eventId}`, ticketType?.id ?? "new", viewerId)
   const initial = useMemo(() => draftFrom(ticketType, zone), [ticketType, zone])
   const { draft, patch, restored, dismissRestored, clear } = useDraft(draftKey, initial)
+  const zoneNames = useInputZoneNames(zone, [draft.salesOpensAt, draft.salesClosesAt])
   const [serverFields, setServerFields] = useState<Record<string, string>>({})
   const [submitCount, setSubmitCount] = useState(0)
 
@@ -124,7 +136,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
     })
     const out: Record<string, string> = {}
     for (const bound of sales.changed.invalid) {
-      out[bound] = t("field.sales_time_not_in_zone", { zone: zoneName ?? zone })
+      out[bound] = t("field.sales_time_not_in_zone", { zone: zoneNames.name })
     }
     if (parsed.success) return out
     for (const issue of parsed.error.issues) {
@@ -132,11 +144,11 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
       if (!out[key]) out[key] = issue.message
     }
     return out
-  }, [draft, eventId, sales, t, zone, zoneName])
+  }, [draft, eventId, sales, t, zoneNames.name])
 
   const fieldErrors = { ...localErrors, ...serverFields }
   const summary: FieldError[] = Object.entries(fieldErrors).map(([key, message]) => ({
-    id: `ticket-${key}`,
+    id: ticketFieldInputId(key),
     message: `${t(`field.${key}`, { defaultValue: key })}: ${message}`,
   }))
 
@@ -273,9 +285,9 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
             />
           </Field>
         </div>
-        {zoneName ? (
+        {zoneNames.hint ? (
           <p className="-mt-token-2 text-token-12 text-console-ink-3">
-            {t("field.sales_zone_hint", { zone: zoneName })}
+            {t("field.sales_zone_hint", { zone: zoneNames.hint })}
           </p>
         ) : null}
 

@@ -242,7 +242,7 @@
   },
   "invites": {
     "title": "Invitaciones pendientes",
-    "subtitle": "Las invitaciones caducan a los 14 días. Revoca una para que el enlace deje de funcionar.",
+    "subtitle": "Las invitaciones caducan a los {{days}} días. Revoca una para que el enlace deje de funcionar.",
     "unknown": "Alguien",
     "invited_by": "Invitación de {{name}}",
     "expired": "Caducada",

@@ -150,6 +150,54 @@ export function useConsoleInputZone(eventZone: string | null | undefined): strin
   return consoleInputZone(eventZone, useViewerTimeZone())
 }
 
+/**
+ * The zone's generic name ("Pacific Time"). A short name like PDT is right on one side of a DST
+ * change only, so a label taken at another instant (today, the event start) can contradict the time
+ * typed into the input it describes.
+ */
+export function zoneGenericName(timeZone: string, locale: string): string {
+  if (!isValidTimeZone(timeZone)) return timeZone
+  const name = new Intl.DateTimeFormat(locale, { timeZone, timeZoneName: "longGeneric" })
+    .formatToParts(0)
+    .find((part) => part.type === "timeZoneName")?.value
+  return name || timeZone
+}
+
+/** Null when the viewer reads every relevant instant at the input zone's offset. */
+export function inputZoneHintName(
+  timeZone: string,
+  viewerZone: string,
+  instantsMs: readonly number[],
+  locale: string,
+): string | null {
+  const differs = instantsMs.some((at) => !sameOffsetAt(at, timeZone, viewerZone))
+  return differs ? zoneGenericName(timeZone, locale) : null
+}
+
+/**
+ * `name` labels errors about the zone; `hint` is null when the viewer's own clock already matches
+ * the zone now, at `reference`, and at every time currently typed into `inputs`.
+ */
+export function useInputZoneNames(
+  timeZone: string,
+  inputs: readonly string[],
+  reference?: string | null,
+): { name: string; hint: string | null } {
+  const { locale } = useLocale()
+  const viewerTimeZone = useViewerTimeZone()
+  const instants = [Date.now()]
+  const referenceMs = reference ? Date.parse(reference) : Number.NaN
+  if (!Number.isNaN(referenceMs)) instants.push(referenceMs)
+  for (const input of inputs) {
+    const parsed = zonedInputToIso(input, timeZone)
+    if (parsed.kind === "instant") instants.push(Date.parse(parsed.iso))
+  }
+  return {
+    name: zoneGenericName(timeZone, locale),
+    hint: inputZoneHintName(timeZone, viewerTimeZone, instants, locale),
+  }
+}
+
 export function isoToZonedInput(iso: string | null | undefined, timeZone: string): string {
   if (!iso) return ""
   const at = Date.parse(iso)

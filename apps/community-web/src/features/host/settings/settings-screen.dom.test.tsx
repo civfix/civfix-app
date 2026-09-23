@@ -64,7 +64,7 @@ describe("SettingsScreen registration window", () => {
         "2026-09-12T10:00",
       ),
     )
-    expect(screen.getByText("registration.zone_hint(zone=PDT)")).toBeTruthy()
+    expect(screen.getByText("registration.zone_hint(zone=Pacific Time)")).toBeTruthy()
   })
 
   it("does not move an untouched window when another setting is saved", async () => {

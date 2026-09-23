@@ -21,7 +21,12 @@ import { ConsoleLink } from "../layout/console-link"
 import { hrefForRoute } from "@/components/console/route"
 import { useConsoleErrors } from "../error-copy"
 import { invalidateEvent } from "../console-invalidate"
-import { isoToZonedInput, useConsoleFormat, useConsoleInputZone, zonedFieldPatch } from "../format"
+import {
+  isoToZonedInput,
+  useConsoleInputZone,
+  useInputZoneNames,
+  zonedFieldPatch,
+} from "../format"
 import type { ZonedFieldPatch } from "../format"
 
 const REMINDER_OFFSETS = [60, 180, 1440, 2880, 10080] as const
@@ -42,7 +47,6 @@ export function SettingsScreen() {
   const { go } = useConsoleNavigation()
   const { t: to } = useT("host-org")
   const zone = useConsoleInputZone(event?.timezone)
-  const format = useConsoleFormat(zone)
 
   const canLinkOrg = can("manage_org_link")
   const orgs = useMyOrganizations()
@@ -88,7 +92,7 @@ export function SettingsScreen() {
     setHydrated(true)
   }, [event, hydrated, zone])
 
-  const zoneName = format.zoneLabel(event?.scheduledAt ?? new Date().toISOString())
+  const zoneNames = useInputZoneNames(zone, [opensAt, closesAt], event?.scheduledAt)
   const currentWindow = { registrationOpensAt: opensAt, registrationClosesAt: closesAt }
   const windowPatch = zonedFieldPatch(savedWindow, currentWindow, zone)
 
@@ -122,7 +126,7 @@ export function SettingsScreen() {
 
   const onSave = () => {
     if (windowPatch.invalid.length > 0) {
-      const message = t("registration.time_not_in_zone", { zone: zoneName ?? zone })
+      const message = t("registration.time_not_in_zone", { zone: zoneNames.name })
       setFields(Object.fromEntries(windowPatch.invalid.map((field) => [field, message])))
       return
     }
@@ -188,9 +192,9 @@ export function SettingsScreen() {
               />
             </Field>
           </div>
-          {zoneName ? (
+          {zoneNames.hint ? (
             <p className="text-token-12 text-console-ink-3">
-              {t("registration.zone_hint", { zone: zoneName })}
+              {t("registration.zone_hint", { zone: zoneNames.hint })}
             </p>
           ) : null}
         </div>

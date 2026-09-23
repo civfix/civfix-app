@@ -44,3 +44,21 @@ describe("useDraft restore", () => {
     expect(window.localStorage.getItem(KEY)).toBeNull()
   })
 })
+
+describe("useDraft retired scopes", () => {
+  it("sweeps the pre-event-zone ticket and broadcast drafts of every viewer, and nothing else", () => {
+    const envelope = JSON.stringify({ version: "v1", savedAt: Date.now(), owner: "viewer-1", value: {} })
+    const retired = [
+      consoleDraftKey("ticket.v1.evt_1", "tt_1", "viewer-1"),
+      consoleDraftKey("broadcast.v1.evt_1", "new", "viewer-2"),
+      consoleDraftKey("ticket.v1.evt_2", "new", null),
+    ]
+    const kept = [consoleDraftKey("ticket.v2.evt_1", "tt_1", "viewer-1"), "civfix.locale"]
+    for (const key of [...retired, ...kept]) window.localStorage.setItem(key, envelope)
+
+    renderHook(() => useDraft(KEY, { title: "" }))
+
+    for (const key of retired) expect(window.localStorage.getItem(key), key).toBeNull()
+    for (const key of kept) expect(window.localStorage.getItem(key), key).not.toBeNull()
+  })
+})

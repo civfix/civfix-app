@@ -67,6 +67,26 @@ function storageRemove(key: string): void {
   }
 }
 
+// Scopes retired when the event-zone fix changed what a saved time means. Nothing reads them any
+// more, and they can hold an access code or an unsent message body, so they are removed on sight.
+const RETIRED_SCOPE_PREFIXES = ["ticket.v1.", "broadcast.v1."]
+
+function isRetiredDraftKey(key: string): boolean {
+  if (!key.startsWith(DRAFT_KEY_PREFIX)) return false
+  const afterOwner = key.slice(DRAFT_KEY_PREFIX.length).split(".").slice(1).join(".")
+  return RETIRED_SCOPE_PREFIXES.some((prefix) => afterOwner.startsWith(prefix))
+}
+
+function sweepRetiredDrafts(): void {
+  let keys: string[]
+  try {
+    keys = Object.keys(window.localStorage)
+  } catch {
+    return
+  }
+  for (const key of keys) if (isRetiredDraftKey(key)) storageRemove(key)
+}
+
 function parseEnvelope(raw: string): unknown {
   try {
     return JSON.parse(raw)
@@ -133,6 +153,7 @@ export function useDraft<T extends object>(
   useEffect(() => {
     if (loaded.current) return
     loaded.current = true
+    sweepRetiredDrafts()
     if (skipRestore) return
     const saved = readDraft(key, initialRef.current)
     if (saved) {

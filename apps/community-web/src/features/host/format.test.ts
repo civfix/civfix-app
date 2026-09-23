@@ -5,7 +5,14 @@ vi.mock("@civfix/ui/i18n", () => ({
   useViewerTimeZone: () => "UTC",
 }))
 
-import { consoleInputZone, isoToZonedInput, zonedFieldPatch, zonedInputToIso } from "./format"
+import {
+  consoleInputZone,
+  inputZoneHintName,
+  isoToZonedInput,
+  zoneGenericName,
+  zonedFieldPatch,
+  zonedInputToIso,
+} from "./format"
 
 const LA = "America/Los_Angeles"
 const OPENS = "2026-09-12T17:00:00.000Z"
@@ -66,5 +73,22 @@ describe("zonedFieldPatch", () => {
       patch: { opensAt: null },
       invalid: ["closesAt"],
     })
+  })
+})
+
+describe("naming the zone a console time input is read in", () => {
+  const SUMMER = Date.parse("2026-07-01T12:00:00.000Z")
+  const WINTER = Date.parse("2026-12-01T12:00:00.000Z")
+
+  it("uses the zone's generic name, which holds on both sides of a DST change", () => {
+    expect(zoneGenericName(LA, "en")).toBe("Pacific Time")
+    expect(zoneGenericName(LA, "de")).not.toMatch(/PDT|PST/)
+  })
+
+  it("names the zone when the viewer reads any relevant instant at another offset", () => {
+    expect(inputZoneHintName(LA, "America/Phoenix", [SUMMER], "en")).toBeNull()
+    expect(inputZoneHintName(LA, "America/Phoenix", [SUMMER, WINTER], "en")).toBe("Pacific Time")
+    expect(inputZoneHintName(LA, "America/New_York", [WINTER], "en")).toBe("Pacific Time")
+    expect(inputZoneHintName(LA, LA, [SUMMER, WINTER], "en")).toBeNull()
   })
 })

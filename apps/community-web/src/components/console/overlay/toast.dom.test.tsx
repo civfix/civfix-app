@@ -82,6 +82,20 @@ describe("ConsoleToastProvider", () => {
     expect(visibleToast()).toBeNull()
   })
 
+  it("does not hold the next toast after the hovered one was dismissed from under the pointer", () => {
+    showToast()
+    const region = screen.getByRole("region", { name: "toast.region" })
+    fireEvent.pointerEnter(region)
+    fireEvent.click(screen.getByRole("button", { name: "action.dismiss" }))
+    expect(visibleToast()).toBeNull()
+
+    fireEvent.click(screen.getByRole("button", { name: "save" }))
+    act(() => {
+      vi.advanceTimersByTime(5001)
+    })
+    expect(visibleToast()).toBeNull()
+  })
+
   it("holds a timed toast while keyboard focus is inside it", () => {
     showToast()
     const dismiss = screen.getByRole("button", { name: "action.dismiss" })

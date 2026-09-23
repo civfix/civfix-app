@@ -166,6 +166,9 @@ export function ConsoleToastProvider({ children }: { children: ReactNode }) {
   )
 
   useEffect(() => {
+    // A toast removed from under the pointer does not reliably fire pointerleave on the stack, and an
+    // empty stack has no hit area left to leave, so a stale hover would hold every later toast.
+    if (items.length === 0) pointerInside.current = false
     if (typeof document !== "undefined") syncPause(document.activeElement)
   }, [items, syncPause])
 

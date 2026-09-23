@@ -146,11 +146,21 @@ describe("QuestionsEditor", () => {
     showIf: { questionId: "88888888-8888-4888-8888-888888888888", equals: "yes" },
     sortOrder: 0,
   }
+  const CONDITION_TARGET: EventQuestionDTO = {
+    ...QUESTION,
+    id: "88888888-8888-4888-8888-888888888888",
+    kind: "checkbox",
+    prompt: "Need a shirt?",
+    options: [],
+    maxSelections: null,
+    showIf: null,
+    sortOrder: 1,
+  }
 
   it("saves a question without rewriting its option values, condition or limit", async () => {
     const user = userEvent.setup()
-    const client = renderTickets([], [QUESTION])
-    await screen.findByLabelText("questions.prompt", {}, { timeout: 3000 })
+    const client = renderTickets([], [QUESTION, CONDITION_TARGET])
+    await screen.findAllByLabelText("questions.prompt", {}, { timeout: 3000 })
     await user.click(screen.getByRole("button", { name: "action.save" }))
     await waitFor(() => expect(client.saveEventQuestions).toHaveBeenCalledTimes(1))
     const [saved] = (client.saveEventQuestions.mock.calls[0]![0] as { questions: unknown[] })

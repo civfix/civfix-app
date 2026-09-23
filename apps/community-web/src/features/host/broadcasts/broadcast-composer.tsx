@@ -33,6 +33,7 @@ import {
   isoToZonedInput,
   useConsoleFormat,
   useConsoleInputZone,
+  useInputZoneNames,
   zonedInputToIso,
 } from "../format"
 import { consoleKeys } from "../console-keys"
@@ -113,6 +114,19 @@ export function scheduleInstant(
   if (saved.iso !== null && draftValue === saved.input) return saved.iso
   const parsed = zonedInputToIso(draftValue, timeZone)
   return parsed.kind === "instant" ? parsed.iso : null
+}
+
+const FIELD_INPUT_IDS: Readonly<Record<string, string>> = {
+  bodyMd: "broadcast-body",
+  ctaLabel: "broadcast-cta-label",
+  ctaUrl: "broadcast-cta-url",
+  segment: "broadcast-audience",
+  scheduledAt: "broadcast-schedule",
+}
+
+/** The input an error-summary link focuses for a request field. */
+export function broadcastFieldInputId(field: string): string {
+  return FIELD_INPUT_IDS[field] ?? `broadcast-${field}`
 }
 
 export interface BroadcastComposerProps {
@@ -242,6 +256,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
     onSuccess: (res) => {
       toast.toast({ title: t("composer.sending"), tone: "success" })
       setConfirmSend(false)
+      clear()
       qc.setQueryData(consoleKeys.broadcast(eventId, res.id), res)
       void qc.invalidateQueries({ queryKey: consoleKeys.broadcasts(eventId, "all") })
     },
@@ -261,6 +276,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
       }),
     onSuccess: (res) => {
       toast.toast({ title: t("composer.scheduled"), tone: "success" })
+      clear()
       qc.setQueryData(consoleKeys.broadcast(eventId, res.id), res)
       void qc.invalidateQueries({ queryKey: consoleKeys.broadcasts(eventId, "all") })
     },
@@ -270,7 +286,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
     },
   })
 
-  const zoneName = format.zoneLabel(broadcast?.scheduledAt ?? new Date().toISOString())
+  const zoneNames = useInputZoneNames(zone, [draft.scheduledAt], broadcast?.scheduledAt)
   const scheduleNow = () => {
     const scheduledAt = scheduleInstant(
       draft.scheduledAt,
@@ -280,7 +296,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
     if (scheduledAt === null) {
       setServerFields((current) => ({
         ...current,
-        scheduledAt: t("composer.schedule_not_in_zone", { zone: zoneName ?? zone }),
+        scheduledAt: t("composer.schedule_not_in_zone", { zone: zoneNames.name }),
       }))
       return
     }
@@ -302,7 +318,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
       ? [{ id: "broadcast-channels", message: t("composer.error_channels") }]
       : []),
     ...Object.entries(serverFields).map(([key, message]) => ({
-      id: `broadcast-${key}`,
+      id: broadcastFieldInputId(key),
       message,
     })),
   ]
@@ -527,7 +543,11 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
                 announceError={false}
                 label={t("composer.schedule_at")}
                 htmlFor="broadcast-schedule"
-                hint={zoneName ? t("composer.schedule_zone_hint", { zone: zoneName }) : undefined}
+                hint={
+                  zoneNames.hint
+                    ? t("composer.schedule_zone_hint", { zone: zoneNames.hint })
+                    : undefined
+                }
                 error={serverFields.scheduledAt}
               >
                 <TextInput

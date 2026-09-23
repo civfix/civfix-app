@@ -123,7 +123,19 @@ export function optionList(
   })
 }
 
-export function toDef(draft: DraftQuestion, index: number): EventQuestionDef {
+/**
+ * With `keptIds`, a condition pointing at a question that is not part of this save is dropped:
+ * deleting a question must not leave another one conditional on something that no longer exists.
+ */
+export function toDef(
+  draft: DraftQuestion,
+  index: number,
+  keptIds?: ReadonlySet<string>,
+): EventQuestionDef {
+  const showIf =
+    draft.showIf && (keptIds === undefined || keptIds.has(draft.showIf.questionId))
+      ? draft.showIf
+      : null
   const base = {
     ...(draft.id ? { id: draft.id } : {}),
     prompt: draft.prompt.trim(),
@@ -131,7 +143,7 @@ export function toDef(draft: DraftQuestion, index: number): EventQuestionDef {
     required: draft.required,
     sortOrder: index,
     ...(draft.ticketTypeId ? { ticketTypeId: draft.ticketTypeId } : {}),
-    ...(draft.showIf ? { showIf: draft.showIf } : {}),
+    ...(showIf ? { showIf } : {}),
   }
   switch (draft.kind) {
     case "single_select":
@@ -156,6 +168,11 @@ export function toDef(draft: DraftQuestion, index: number): EventQuestionDef {
     default:
       return { ...base, kind: "short_text" }
   }
+}
+
+export function toDefs(drafts: readonly DraftQuestion[]): EventQuestionDef[] {
+  const keptIds = new Set(drafts.flatMap((draft) => (draft.id ? [draft.id] : [])))
+  return drafts.map((draft, index) => toDef(draft, index, keptIds))
 }
 
 let counter = 0
@@ -194,7 +211,7 @@ export function QuestionsEditor({
     mutationFn: () =>
       api.saveEventQuestions({
         id: eventId,
-        questions: list.map((draft, index) => toDef(draft, index)),
+        questions: toDefs(list),
       }),
     onSuccess: (res) => {
       toast.toast({ title: t("questions.saved"), tone: "success" })

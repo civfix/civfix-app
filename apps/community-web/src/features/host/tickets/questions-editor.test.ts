@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import type { EventQuestionDTO } from "@civfix/shared"
 import { EventQuestionDefSchema } from "@civfix/shared"
 
-import { optionList, toDef, toDraft } from "./questions-editor"
+import { optionList, toDef, toDefs, toDraft } from "./questions-editor"
 
 const EVENT_ID = "33333333-3333-4333-8333-333333333333"
 const QUESTION_ID = "77777777-7777-4777-8777-777777777777"
@@ -50,6 +50,19 @@ describe("toDef", () => {
     const def = toDef(draft, 0)
     expect(def).not.toHaveProperty("maxSelections")
     expect(EventQuestionDefSchema.safeParse(def).success).toBe(true)
+  })
+})
+
+describe("toDefs", () => {
+  it("drops a condition whose target question is deleted in the same save", () => {
+    const target = toDraft(question({ id: OTHER_ID, kind: "checkbox", options: [], showIf: null }))
+    const dependent = toDraft(question())
+
+    expect(toDefs([target, dependent])[1]).toMatchObject({ showIf: { questionId: OTHER_ID } })
+
+    const [def] = toDefs([dependent])
+    expect(def).not.toHaveProperty("showIf")
+    expect(def).toMatchObject({ id: QUESTION_ID, sortOrder: 0 })
   })
 })
 

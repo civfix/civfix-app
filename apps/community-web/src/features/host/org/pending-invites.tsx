@@ -16,7 +16,7 @@ import { useConsoleToast } from "@/components/console/overlay/toast"
 import { useConsoleOrg } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
 import { consoleKeys } from "../console-keys"
-import { daysUntil, inviteIsExpired, visibleInvites } from "./org-invites"
+import { ORG_INVITE_TTL_DAYS, daysUntil, inviteIsExpired, visibleInvites } from "./org-invites"
 import { suspendedForbiddenCopy } from "./suspended-banner"
 
 /**
@@ -113,7 +113,8 @@ export function PendingInvites() {
         </h2>
         <p className="text-token-12 text-console-ink-3">
           {t("invites.subtitle", {
-            defaultValue: "Invites expire after 14 days. Revoke one to stop the link working.",
+            days: ORG_INVITE_TTL_DAYS,
+            defaultValue: `Invites expire after ${ORG_INVITE_TTL_DAYS} days. Revoke one to stop the link working.`,
           })}
         </p>
       </div>
