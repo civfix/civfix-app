@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { useMapFocus } from "../mapFocusStore"
 
 beforeEach(() => {
-  useMapFocus.setState({ focus: null, owner: "page" })
+  useMapFocus.setState({ focus: null })
 })
 
 describe("mapFocusStore: defaults", () => {
@@ -156,60 +156,6 @@ describe("mapFocusStore: the retained-layer contract, at its two call sites", ()
     // Its no-coords branch keeps the UNCONDITIONAL clear on purpose: "this event has no location" really
     // does mean the map has nothing to show, and it only runs while this page is the active one.
     expect(src).toContain("useMapFocus.getState().clear()")
-  })
-
-  it("AppShell releases the handoff when the user leaves the Map tab", () => {
-    const src = read("../../shell/AppShell.tsx")
-    expect(src).toContain('if (view !== "map") useMapFocus.getState().releaseHandoff()')
-    expect(src).toContain('from "../map/mapFocusStore"')
-  })
-})
-
-describe("mapFocusStore: handoff", () => {
-  const r1 = { id: "r1", lat: 34.05, lng: -118.24, category: "hazard" as const }
-
-  it("a handoff publish survives the departing page's scoped release", () => {
-    useMapFocus.getState().setReport(r1, "handoff")
-    let notifications = 0
-    const unsubscribe = useMapFocus.subscribe(() => {
-      notifications += 1
-    })
-    useMapFocus.getState().clearFor("r1")
-    expect(useMapFocus.getState().focus?.id).toBe("r1")
-    expect(notifications).toBe(0)
-    unsubscribe()
-  })
-
-  it("the next page publish takes the slot back, and its own release clears it", () => {
-    useMapFocus.getState().setReport(r1, "handoff")
-    useMapFocus.getState().setReport(r1)
-    expect(useMapFocus.getState().owner).toBe("page")
-    useMapFocus.getState().clearFor("r1")
-    expect(useMapFocus.getState().focus).toBeNull()
-  })
-
-  it("releaseHandoff clears only a handoff", () => {
-    useMapFocus.getState().setReport(r1)
-    let notifications = 0
-    const unsubscribe = useMapFocus.subscribe(() => {
-      notifications += 1
-    })
-    useMapFocus.getState().releaseHandoff()
-    expect(notifications).toBe(0)
-    expect(useMapFocus.getState().focus?.id).toBe("r1")
-    useMapFocus.getState().setReport(r1, "handoff")
-    notifications = 0
-    useMapFocus.getState().releaseHandoff()
-    expect(useMapFocus.getState().focus).toBeNull()
-    expect(useMapFocus.getState().owner).toBe("page")
-    expect(notifications).toBe(1)
-    unsubscribe()
-  })
-
-  it("clear() resets ownership", () => {
-    useMapFocus.getState().setEvent({ id: "e1", lat: 1, lng: 2, eventKind: "cleanup" }, "handoff")
-    useMapFocus.getState().clear()
-    expect(useMapFocus.getState().owner).toBe("page")
   })
 })
 

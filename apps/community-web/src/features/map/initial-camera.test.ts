@@ -73,8 +73,15 @@ describe("the resolved centre is the only centre", () => {
 
 describe("the camera adoption effect", () => {
   it("reads the published focus and gives the camera up to it", () => {
-    expect(adoptEffect).toContain("if (useMapFocus.getState().focus) return")
+    expect(adoptEffect).toContain("if (useMapFocus.getState().focus || useMapFlyTo.getState().highlight) return")
     expect(code).toContain("useMapFocus,")
+  })
+
+  it("gives the camera up to a Show on map fly-to as well", () => {
+    expect(code).toContain("useMapFlyTo,")
+    const guard = adoptEffect.indexOf("useMapFlyTo.getState().highlight")
+    expect(guard).toBeGreaterThan(-1)
+    expect(adoptEffect.indexOf("mapRef.current?.flyTo(")).toBeGreaterThan(guard)
   })
 
   it("checks at ADOPT time, not at mount, so a later focus still wins by publishing", () => {

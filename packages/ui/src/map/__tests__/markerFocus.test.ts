@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { markerNodeIsActive } from "../markerFocus"
+import { activeMarkerIds, markerNodeIsActive } from "../markerFocus"
 import type { ClusterNode } from "../clusterer"
 
 const mapNative = readFileSync(new URL("../Map.native.tsx", import.meta.url), "utf8")
@@ -33,12 +33,28 @@ describe("markerNodeIsActive", () => {
   })
 })
 
+describe("activeMarkerIds", () => {
+  it("lights the fly-to pin when the host has no focused marker", () => {
+    expect(activeMarkerIds(null, null, { kind: "report", id: "r1" })).toEqual({ pinId: "r1", cleanupId: null })
+    expect(activeMarkerIds(null, null, { kind: "cleanup", id: "c1" })).toEqual({ pinId: null, cleanupId: "c1" })
+  })
+
+  it("lets the host's own focused marker win", () => {
+    expect(activeMarkerIds("r2", null, { kind: "report", id: "r1" })).toEqual({ pinId: "r2", cleanupId: null })
+    expect(activeMarkerIds(null, "c2", { kind: "cleanup", id: "c1" })).toEqual({ pinId: null, cleanupId: "c2" })
+  })
+
+  it("lights nothing without a highlight or a focus", () => {
+    expect(activeMarkerIds(null, null, null)).toEqual({ pinId: null, cleanupId: null })
+  })
+})
+
 describe("a focus change must not re-render every marker", () => {
   it("renders each marker through one memoized component, not inline JSX", () => {
     expect(mapNative).toContain("const MarkerNode = memo(function MarkerNode(")
     expect(mapNative).toContain("<MarkerNode")
     expect(mapNative).toContain(
-      "active={markerNodeIsActive(node, focusedPinId, focusedCleanupId)}",
+      "active={markerNodeIsActive(node, activeIds.pinId, activeIds.cleanupId)}",
     )
   })
 

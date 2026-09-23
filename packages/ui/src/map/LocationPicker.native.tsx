@@ -27,7 +27,7 @@
  * PAN recognizer, so leaving drag-pan enabled lets the embedded map swallow every vertical drag that
  * starts on it - in the gorhom sheet that defeats the sheet's scroll-vs-drag coordination entirely and
  * the whole form becomes unscrollable in portrait. So BY DEFAULT the map's pan/zoom/rotate/pitch gestures
- * are DISABLED (mirrors MiniMap.native's "drag stays with the sheet" decision); only the discrete
+ * are DISABLED (the drag stays with the sheet); only the discrete
  * `onPress` tap survives, which is all the inline pin-drop model needs. Tap is not a pan, so disabling
  * pan never blocks dropping the pin.
  *
@@ -90,8 +90,7 @@ export function LocationPicker({
   // Structural MapStyleInput -> the concrete StyleSpecification the native Map wants (mirrors Map.native).
   // rasterMapStyle() rebuilds a deeply-nested style object every call; LocationPicker re-renders on every
   // tap (setPicked) and on every parent `value` change, so memoize it to a stable identity. The attribution
-  // is a module constant and the CARTO key is build-time env, so [cartoApiKey] is the correct dep
-  // (mirrors MiniMap.native.tsx).
+  // is a module constant and the CARTO key is build-time env, so [cartoApiKey] is the correct dep.
   const cartoApiKey = useCartoApiKey()
   const mapStyle = useMemo(
     () =>
@@ -190,8 +189,8 @@ export function LocationPicker({
         attribution={false}
         // Drag / zoom gestures follow `interactive`. DEFAULT (false): the embedded inline picker lives in
         // the host form's scroll body (the gorhom BottomSheetScrollView in portrait), so every gesture is
-        // disabled and the drag stays with the sheet - only the discrete `onPress` tap drops/moves the pin
-        // (mirrors MiniMap). FULL-SCREEN picker (`interactive`): no sheet to protect, so the map is the
+        // disabled and the drag stays with the sheet - only the discrete `onPress` tap drops/moves the pin.
+        // FULL-SCREEN picker (`interactive`): no sheet to protect, so the map is the
         // moveable home map (pan / zoom / rotate), and the same `onPress` tap still drops the pin.
         dragPan={interactive}
         touchZoom={interactive}
@@ -224,7 +223,7 @@ export function LocationPicker({
 
       {/* Basemap attribution (App-Store-audit H10): the native maplibre attribution control is suppressed
           (attribution={false}) to keep the picker chrome clean, so a static CARTO/OSM credit stands in for
-          it - the same static credit pattern MiniMap.native.tsx uses. In fullBleed it is lifted above the
+          it. In fullBleed it is lifted above the
           host's floating confirm/cancel bar via attributionBottomInset. */}
       <Text
         style={[
@@ -289,7 +288,7 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: 12.5,
     color: t.colors.text,
   },
-  // Static basemap credit (bottom-right), mirroring MiniMap.native.tsx's CARTO/OSM credit.
+  // Static basemap credit (bottom-right) for the CARTO/OSM tiles.
   credit: {
     position: "absolute",
     bottom: 4,

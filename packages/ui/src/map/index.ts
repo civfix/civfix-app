@@ -71,13 +71,11 @@ export { useLocationPick } from "./locationPickStore"
 export type { LocationPickState, PickDraft } from "./locationPickStore"
 
 export { useMapFocus } from "./mapFocusStore"
-export type {
-  MapFocusState,
-  FocusedReport,
-  FocusedEvent,
-  FocusedEntity,
-  FocusOwner,
-} from "./mapFocusStore"
+export type { MapFocusState, FocusedReport, FocusedEvent, FocusedEntity } from "./mapFocusStore"
+
+export { useMapFlyTo } from "./mapFlyToStore"
+export type { MapFlyToState, MapFlyToTarget, MapFlyToRequest, MapFlyToHighlight } from "./mapFlyToStore"
+export { showOnMap } from "./showOnMapFlow"
 
 export { useMapViewport } from "./mapViewportStore"
 export type { MapViewportState, MapViewport } from "./mapViewportStore"

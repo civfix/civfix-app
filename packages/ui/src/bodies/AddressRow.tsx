@@ -17,8 +17,7 @@ import { Icon, Text, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { useClipboard, useHaptics, useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
-import { useMapFocus } from "../map"
-import { useNavStore } from "../nav"
+import { showOnMap } from "../map"
 import { useToast } from "../primitives"
 import {
   addressExternalPlan,
@@ -27,7 +26,6 @@ import {
   appleMapsUrl,
   applyNearPrefix,
   googleMapsUrl,
-  showOnMapPlan,
   type AddressMapsOption,
   type AddressPoint,
 } from "./addressRowModel"
@@ -293,22 +291,12 @@ export function AddressRow({
   const onFocusMap = useCallback(() => {
     if (!point || !focusTarget) return
     haptics.selection()
-    const plan = showOnMapPlan(mode)
-    const focus = useMapFocus.getState()
-    if (focusTarget.kind === "report") {
-      focus.setReport(
-        { id: focusTarget.id, lat: point.lat, lng: point.lng, category: focusTarget.category },
-        plan.owner,
-      )
-    } else {
-      focus.setEvent(
-        { id: focusTarget.id, lat: point.lat, lng: point.lng, eventKind: focusTarget.eventKind },
-        plan.owner,
-      )
-    }
-    const nav = useNavStore.getState()
-    if (plan.switchView) nav.selectView("map")
-    else nav.setSnap(1)
+    showOnMap(
+      mode,
+      focusTarget.kind === "report"
+        ? { kind: "report", id: focusTarget.id, lat: point.lat, lng: point.lng, category: focusTarget.category }
+        : { kind: "cleanup", id: focusTarget.id, lat: point.lat, lng: point.lng, eventKind: focusTarget.eventKind },
+    )
   }, [focusTarget, haptics, mode, point])
 
   if (!display) return null
@@ -330,7 +318,7 @@ export function AddressRow({
   }
 
   const body = (
-    <View style={styles.main} accessibilityLabel={t("row.static_a11y", { address: display })}>
+    <View style={styles.main} accessible accessibilityLabel={t("row.static_a11y", { address: display })}>
       <Icon icon={iconMap.MapPin} size={14} color={th.colors.textSubtle} />
       {text}
       {trailing}

@@ -24,6 +24,7 @@ import {
   // The detail-panel focus camera's published target. Read (never written) here, so the one-time initial
   // center cannot fly away from a deep-linked detail - see the effect below.
   useMapFocus,
+  useMapFlyTo,
   MapPending,
   resolveMapCenter,
   shouldAdoptCenter,
@@ -198,7 +199,7 @@ export function HomeMap() {
     if (!shouldAdoptCenter(adoptedSourceRef.current, source)) return
     adoptedSourceRef.current = source
     cameraOwnedRef.current = true
-    if (useMapFocus.getState().focus) return
+    if (useMapFocus.getState().focus || useMapFlyTo.getState().highlight) return
     mapRef.current?.flyTo(center.lat, center.lng, center.zoom)
   }, [centerPlan, seedCenter])
 

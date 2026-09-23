@@ -39,6 +39,8 @@ import { useLocationPick } from "./locationPickStore"
 import { useMapFocus } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
+import { useMapFlyTo } from "./mapFlyToStore"
+import { activeMarkerIds } from "./markerFocus"
 import { makePinElement, applyPinElementTheme } from "./LocationPicker.web"
 import { occludedCenterLng } from "./dropPinCamera"
 import type { ClusterNode, MapClusterIndex } from "./clusterer"
@@ -151,6 +153,13 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   pickActiveRef.current = pickActive
 
   const focus = useMapFocus((s) => s.focus)
+  const flyToRequest = useMapFlyTo((s) => s.request)
+  const flyToHighlight = useMapFlyTo((s) => s.highlight)
+  const { pinId: activePinId, cleanupId: activeCleanupId } = activeMarkerIds(
+    focusedPinId,
+    focusedCleanupId,
+    flyToHighlight,
+  )
 
   const onRegionChangeRef = React.useRef(onRegionChange)
   onRegionChangeRef.current = onRegionChange
@@ -254,7 +263,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
             onClick: () => pressCluster(node),
           })
         } else if (node.type === "report") {
-          const active = focusedPinId === node.id
+          const active = activePinId === node.id
           put(node.key, {
             signature: `${node.pin.category}|${active ? 1 : 0}`,
             anchor: "bottom",
@@ -263,7 +272,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
             onClick: () => onPressPinRef.current?.(node.id),
           })
         } else if (node.type === "event") {
-          const active = focusedCleanupId === node.id
+          const active = activeCleanupId === node.id
           put(node.key, {
             signature: `${node.event.eventKind}|${active ? 1 : 0}`,
             anchor: "bottom",
@@ -272,7 +281,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
             onClick: () => onPressCleanupRef.current?.(node.id),
           })
         } else {
-          const active = focusedCleanupId === node.id
+          const active = activeCleanupId === node.id
           const event = node.event
           const blendReports = node.reports
           put(node.key, {
@@ -312,6 +321,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       const onClick: { fn?: () => void } = { fn: want.onClick }
       el.addEventListener("click", (e: MouseEvent) => {
         e.stopPropagation()
+        useMapFlyTo.getState().clear()
         onClick.fn?.()
       })
       const root = createRoot(el)
@@ -376,7 +386,9 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
     })
     map.on("moveend", syncViewport)
     map.on("movestart", (e) => {
-      if (e.originalEvent) onUserCameraMoveRef.current?.()
+      if (!e.originalEvent) return
+      useMapFlyTo.getState().clear()
+      onUserCameraMoveRef.current?.()
     })
 
     const blockedTarget = (target: EventTarget | null): boolean => {
@@ -593,7 +605,7 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   React.useEffect(() => {
     indexRef.current = index
     if (mapReady) runner.flush()
-  }, [runner, mapReady, index, points, focusedPinId, focusedCleanupId, focus, th.scheme])
+  }, [runner, mapReady, index, points, activePinId, activeCleanupId, focus, th.scheme])
 
   React.useEffect(() => {
     const map = mapRef.current
@@ -602,6 +614,17 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       mode === "compact" ? focus.lng : occludedCenterLng(focus.lng, shellOcclusionLeft(), FOCUS_ZOOM)
     map.easeTo({ center: [lng, focus.lat], zoom: FOCUS_ZOOM, duration: 600 })
   }, [mapReady, mode, focus])
+
+  React.useEffect(() => {
+    const map = mapRef.current
+    if (!map || !mapReady || !flyToRequest) return
+    const lng =
+      mode === "compact"
+        ? flyToRequest.lng
+        : occludedCenterLng(flyToRequest.lng, shellOcclusionLeft(), FOCUS_ZOOM)
+    map.easeTo({ center: [lng, flyToRequest.lat], zoom: FOCUS_ZOOM, duration: 600 })
+    useMapFlyTo.getState().consume(flyToRequest.generation)
+  }, [mapReady, mode, flyToRequest])
 
   return (
     <div className="cf-map-wrap" style={{ position: "relative", width: "100%", height: "100%" }}>

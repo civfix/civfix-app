@@ -28,8 +28,9 @@ import { useLocationPick } from "./locationPickStore"
 import { useMapFocus } from "./mapFocusStore"
 import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
+import { useMapFlyTo } from "./mapFlyToStore"
 import { longPressHitsMarker, type LongPressMarker } from "./longPressGate"
-import { markerNodeIsActive } from "./markerFocus"
+import { activeMarkerIds, markerNodeIsActive } from "./markerFocus"
 import {
   clusterFallbackZoom,
   clusterListReports,
@@ -158,6 +159,10 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
 
   const focus = useMapFocus((s) => s.focus)
   const droppedPin = useDroppedPin((s) => s.pin)
+  const flyToRequest = useMapFlyTo((s) => s.request)
+  const flyToHighlight = useMapFlyTo((s) => s.highlight)
+  const activeIds = activeMarkerIds(focusedPinId, focusedCleanupId, flyToHighlight)
+  const [mapLoaded, setMapLoaded] = useState(false)
 
   const recomputeRef = useRef<() => void>(() => {})
   recomputeRef.current = () => {
@@ -237,12 +242,15 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
 
   const handleRegionWillChange = useCallback(
     (event: { nativeEvent: ViewStateChangeEvent }) => {
-      if (event.nativeEvent.userInteraction) onUserCameraMoveRef.current?.()
+      if (!event.nativeEvent.userInteraction) return
+      useMapFlyTo.getState().clear()
+      onUserCameraMoveRef.current?.()
     },
     [],
   )
 
   const handleMapLoad = useCallback(() => {
+    setMapLoaded(true)
     const pending = mapNativeRef.current?.getViewState()
     if (!pending) {
       runner.request()
@@ -265,6 +273,16 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     if (!focus) return
     cameraRef.current?.flyTo({ center: [focus.lng, focus.lat], zoom: FOCUS_ZOOM, duration: 600 })
   }, [focus])
+
+  useEffect(() => {
+    if (!flyToRequest || !mapLoaded) return
+    cameraRef.current?.flyTo({
+      center: [flyToRequest.lng, flyToRequest.lat],
+      zoom: FOCUS_ZOOM,
+      duration: 600,
+    })
+    useMapFlyTo.getState().consume(flyToRequest.generation)
+  }, [flyToRequest, mapLoaded])
 
   const markerPressedAtRef = useRef(0)
   const onPressMapRef = useRef(onPressMap)
@@ -297,12 +315,14 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
 
   const handlePressPin = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
     markerPressedAtRef.current = Date.now()
+    useMapFlyTo.getState().clear()
     const id = event.nativeEvent.id.slice("pin-".length)
     hapticsRef.current.selection()
     onPressPinRef.current?.(id)
   }, [])
   const handlePressCluster = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
     markerPressedAtRef.current = Date.now()
+    useMapFlyTo.getState().clear()
     const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
     if (!node || node.type !== "cluster") return
     hapticsRef.current.selection()
@@ -326,12 +346,14 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   }, [])
   const handlePressCleanup = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
     markerPressedAtRef.current = Date.now()
+    useMapFlyTo.getState().clear()
     const id = event.nativeEvent.id.slice("cleanup-".length)
     hapticsRef.current.selection()
     onPressCleanupRef.current?.(id)
   }, [])
   const handlePressBlend = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
     markerPressedAtRef.current = Date.now()
+    useMapFlyTo.getState().clear()
     const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
     if (!node || node.type !== "blend") return
     hapticsRef.current.selection()
@@ -414,7 +436,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
               key={node.key}
               node={node}
               markerId={markerId}
-              active={markerNodeIsActive(node, focusedPinId, focusedCleanupId)}
+              active={markerNodeIsActive(node, activeIds.pinId, activeIds.cleanupId)}
               onPress={
                 node.type === "cluster"
                   ? handlePressCluster

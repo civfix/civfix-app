@@ -86,5 +86,8 @@ test("a user map gesture claims a newer camera generation, which strands the lat
 
 test("the native seam reports only user-driven camera starts", () => {
   assert.match(nativeMap, /onRegionWillChange=\{handleRegionWillChange\}/)
-  assert.match(nativeMap, /if \(event\.nativeEvent\.userInteraction\) onUserCameraMoveRef\.current\?\.\(\)/)
+  assert.match(
+    nativeMap,
+    /if \(!event\.nativeEvent\.userInteraction\) return\n\s+useMapFlyTo\.getState\(\)\.clear\(\)\n\s+onUserCameraMoveRef\.current\?\.\(\)/,
+  )
 })

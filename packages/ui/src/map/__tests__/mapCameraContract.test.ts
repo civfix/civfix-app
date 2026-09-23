@@ -29,3 +29,38 @@ describe("the focus ease on both seams", () => {
     expect(mapNative).not.toContain("focus?.id, focus?.lat")
   })
 })
+
+describe("the Show on map fly-to on both seams", () => {
+  it("never gates the marker tree on the fly-to request: only a focus narrows the map to one pin", () => {
+    expect(mapNative).toContain("{focus ? (")
+    expect(mapNative).not.toMatch(/flyTo(Request|Highlight) \?/)
+    expect(mapNative).toContain("if (focus) return [{ lat: focus.lat, lng: focus.lng }]")
+    expect(mapWeb).toContain("if (useMapFocus.getState().focus) {")
+    expect(mapWeb).not.toMatch(/useMapFlyTo\.getState\(\)\.(request|highlight)\) \{/)
+    expect(mapWeb).toContain("for (const node of query(mapBoundsToBBox(map), map.getZoom()))")
+  })
+
+  it("lights the fly-to pin through the per-node active path", () => {
+    expect(mapNative).toContain("activeMarkerIds(focusedPinId, focusedCleanupId, flyToHighlight)")
+    expect(mapNative).toContain("active={markerNodeIsActive(node, activeIds.pinId, activeIds.cleanupId)}")
+    expect(mapWeb).toContain("activeMarkerIds(\n    focusedPinId,\n    focusedCleanupId,\n    flyToHighlight,\n  )")
+    expect(mapWeb).toContain("const active = activePinId === node.id")
+    expect(mapWeb).toContain("}, [runner, mapReady, index, points, activePinId, activeCleanupId, focus, th.scheme])")
+  })
+
+  it("eases to the request at the focus zoom once the map is ready, then consumes it", () => {
+    expect(mapNative).toContain("if (!flyToRequest || !mapLoaded) return")
+    expect(mapNative).toContain("useMapFlyTo.getState().consume(flyToRequest.generation)")
+    expect(mapNative).toContain("}, [flyToRequest, mapLoaded])")
+    expect(mapWeb).toContain("if (!map || !mapReady || !flyToRequest) return")
+    expect(mapWeb).toContain("map.easeTo({ center: [lng, flyToRequest.lat], zoom: FOCUS_ZOOM, duration: 600 })")
+    expect(mapWeb).toContain("useMapFlyTo.getState().consume(flyToRequest.generation)")
+  })
+
+  it("ends the highlight on a user camera gesture or a marker tap", () => {
+    expect(mapNative).toMatch(/if \(!event\.nativeEvent\.userInteraction\) return\n\s+useMapFlyTo\.getState\(\)\.clear\(\)/)
+    expect(mapNative.match(/markerPressedAtRef\.current = Date\.now\(\)\n\s+useMapFlyTo\.getState\(\)\.clear\(\)/g)).toHaveLength(4)
+    expect(mapWeb).toMatch(/if \(!e\.originalEvent\) return\n\s+useMapFlyTo\.getState\(\)\.clear\(\)/)
+    expect(mapWeb).toMatch(/e\.stopPropagation\(\)\n\s+useMapFlyTo\.getState\(\)\.clear\(\)\n\s+onClick\.fn\?\.\(\)/)
+  })
+})
