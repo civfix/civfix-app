@@ -25,8 +25,11 @@ vi.mock("@/hooks/use-auth", () => ({ useIsAuthenticated: () => false }))
 const { ClaimView } = await import("./claim-view")
 const { readClaimHandoff, clearClaimHandoff } = await import("@/store/claim-handoff")
 
+// The shape Next's app router leaves on its own history entries; __NA marks an entry it wrote itself.
+const NEXT_ROUTER_STATE = { __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: ["", {}] }
+
 function renderAt(url: string) {
-  window.history.replaceState({ keep: "router-state" }, "", url)
+  window.history.replaceState(NEXT_ROUTER_STATE, "", url)
   render(<ClaimView />)
 }
 
@@ -44,7 +47,9 @@ describe("ClaimView", () => {
 
     expect(window.location.pathname).toBe("/claim/")
     expect(window.location.search).toBe("?ref=mail")
-    expect(window.history.state).toEqual({ keep: "router-state" })
+    // Next's patched replaceState skips syncing its router for an entry marked __NA, and would later
+    // write ?code= back; an unmarked call is adopted (Next copies its own internals onto it).
+    expect((window.history.state as { __NA?: unknown } | null)?.__NA).toBeUndefined()
     expect(screen.getByText("intro.signIn")).toBeTruthy()
   })
 
@@ -55,6 +60,13 @@ describe("ClaimView", () => {
 
     render(<ClaimView />)
     expect(screen.getByText("intro.signIn")).toBeTruthy()
+  })
+
+  it("keeps a code that arrived without a report id for a reload or sign-in round trip", () => {
+    renderAt("/claim/?code=CLAIM-CODE-2")
+
+    expect(window.location.search).toBe("")
+    expect(readClaimHandoff()).toEqual({ reportId: null, claimCode: "CLAIM-CODE-2" })
   })
 
   it("leaves an address without a claim code alone", () => {

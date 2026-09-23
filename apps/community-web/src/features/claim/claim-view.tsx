@@ -81,8 +81,13 @@ export function ClaimView() {
   // Resolve the claim code from the handoff / nudge when not provided in the URL.
   React.useEffect(() => {
     if (claimCode) {
-      // If we also have a report id from the URL or handoff, keep the handoff fresh for retries.
-      if (queryReport) saveClaimHandoff({ reportId: queryReport, claimCode })
+      // A code from the URL is about to be scrubbed from the address bar, so the handoff is the only copy
+      // a reload or a sign-in round trip can read back.
+      if (claimCode === queryCode) {
+        const saved = readClaimHandoff()
+        const reportId = queryReport ?? (saved?.claimCode === claimCode ? saved.reportId : null)
+        saveClaimHandoff({ reportId, claimCode })
+      }
       return
     }
     const handoff = readClaimHandoff()
@@ -105,7 +110,7 @@ export function ClaimView() {
     return () => {
       cancelled = true
     }
-  }, [claimCode, queryReport])
+  }, [claimCode, queryCode, queryReport])
 
   // Runs after the effects above have taken the code into state and the handoff, which is what a reload
   // of the cleaned-up address reads.
@@ -190,7 +195,10 @@ function scrubClaimParamsFromUrl(): void {
   params.delete("report")
   const search = params.toString()
   const url = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`
-  window.history.replaceState(window.history.state, "", url)
+  // No state object: Next's patched replaceState skips syncing its router for an entry it marked (__NA),
+  // which would leave the old ?code= in the router's URL to be written back on its next navigation. An
+  // unmarked call is adopted, and Next copies its own internals onto the entry itself.
+  window.history.replaceState(null, "", url)
 }
 
 function Intro({

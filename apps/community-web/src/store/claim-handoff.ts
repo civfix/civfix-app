@@ -8,7 +8,8 @@
  */
 
 export interface ClaimHandoff {
-  reportId: string
+  /** Null when the code arrived in a link that did not name its report. */
+  reportId: string | null
   claimCode: string
 }
 
@@ -31,7 +32,10 @@ export function readClaimHandoff(): ClaimHandoff | null {
     const raw = window.localStorage.getItem(CLAIM_HANDOFF_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw) as Partial<ClaimHandoff>
-    if (typeof parsed.reportId === "string" && typeof parsed.claimCode === "string") {
+    if (
+      (typeof parsed.reportId === "string" || parsed.reportId === null) &&
+      typeof parsed.claimCode === "string"
+    ) {
       return { reportId: parsed.reportId, claimCode: parsed.claimCode }
     }
     return null
