@@ -1,41 +1,41 @@
 "use client"
 
 import * as React from "react"
+import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock, PublicEventPageDTO } from "@civfix/shared"
 
 type HeroBlockData = Extract<EventPageBlock, { kind: "hero" }>
 
-const WHEN = new Intl.DateTimeFormat("en-US", {
+const WHEN_OPTIONS: Intl.DateTimeFormatOptions = {
   weekday: "long",
   month: "long",
   day: "numeric",
   hour: "numeric",
   minute: "2-digit",
   timeZoneName: "short",
-})
+}
 
-export function formatEventWhen(startsAt: string, timezone: string | null): string | null {
+export function formatEventWhen(
+  startsAt: string,
+  timezone: string | null,
+  locale: string,
+): string | null {
   const at = new Date(startsAt)
   if (Number.isNaN(at.getTime())) return null
-  if (timezone === null) return WHEN.format(at)
-  try {
-    return new Intl.DateTimeFormat("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      timeZoneName: "short",
-      timeZone: timezone,
-    }).format(at)
-  } catch {
-    return WHEN.format(at)
+  if (timezone !== null) {
+    try {
+      return new Intl.DateTimeFormat(locale, { ...WHEN_OPTIONS, timeZone: timezone }).format(at)
+    } catch {
+      // An unknown IANA zone from the host: fall back to the viewer's zone, which is still labelled.
+    }
   }
+  return new Intl.DateTimeFormat(locale, WHEN_OPTIONS).format(at)
 }
 
 export function HeroBlock({ block, page }: { block: HeroBlockData; page: PublicEventPageDTO }) {
+  const { i18n } = useT("web-signup")
   const image = block.imageUrl ?? page.coverUrl
-  const when = formatEventWhen(page.event.startsAt, page.event.timezone ?? null)
+  const when = formatEventWhen(page.event.startsAt, page.event.timezone ?? null, i18n.language)
 
   return (
     <header className="signup-hero">

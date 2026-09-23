@@ -132,37 +132,42 @@ export function clampPartySize(value: number, max: number): number {
   return Math.min(Math.max(1, Math.floor(value)), Math.max(1, max))
 }
 
-export function outcomeMessage(outcome: RegisterOutcome): string {
+/**
+ * The i18n key (namespace-qualified) for a register outcome. Refusals reuse the host-ticket
+ * `outcome.*` copy the in-app registration shows; the two success shapes have no refusal key, so the
+ * signup page owns them.
+ */
+export function outcomeMessageKey(outcome: RegisterOutcome): string {
   switch (outcome) {
     case "registered":
     case "replayed":
-      return "You're registered."
-    case "already_registered":
-      return "You're already registered for this event."
+      return "web-signup:outcome.registered"
     case "waitlisted":
-      return "You're on the waitlist."
+      return "web-signup:outcome.waitlisted"
+    case "already_registered":
+      return "host-ticket:outcome.already_registered"
     case "full":
-      return "This event is full."
+      return "host-ticket:outcome.full"
     case "party_too_large":
-      return "That party size is larger than this ticket allows."
+      return "host-ticket:outcome.party_too_large"
     case "sales_closed":
-      return "Sales for this ticket have closed."
+      return "host-ticket:outcome.sales_closed"
     case "registration_closed":
-      return "Registration for this event has closed."
+      return "host-ticket:outcome.registration_closed"
     case "ticket_type_not_found":
-      return "That ticket is no longer available."
+      return "host-ticket:outcome.ticket_type_not_found"
     case "access_code_required":
-      return "This ticket needs an access code."
+      return "host-ticket:outcome.access_code_required"
     case "access_code_invalid":
-      return "That access code is not valid."
+      return "host-ticket:outcome.access_code_invalid"
     case "answers_invalid":
-      return "Please check your answers and try again."
+      return "host-ticket:outcome.answers_invalid"
     case "banned":
-      return "You can't register for this event."
+      return "host-ticket:outcome.banned"
     case "closed":
-      return "This event is no longer accepting registrations."
+      return "host-ticket:outcome.closed"
     case "not_found":
-      return "This event could not be found."
+      return "host-ticket:outcome.not_found"
   }
 }
 

@@ -5,6 +5,7 @@ import Link from "next/link"
 import { CalendarPlus, CircleAlert, Loader2 } from "lucide-react"
 import { ErrorCode, type PublicEventPageDTO } from "@civfix/shared"
 import { buildIcs, eventIcsUid } from "@civfix/shared/ics"
+import { Trans, useT } from "@civfix/ui/i18n"
 
 import { api, toAppError } from "@/lib/api"
 import { downloadBlob } from "@/lib/download-blob"
@@ -20,6 +21,7 @@ type ViewState =
   | { readonly kind: "ready"; readonly page: PublicEventPageDTO }
 
 export function SignupView() {
+  const { t } = useT("web-signup")
   const [state, setState] = React.useState<ViewState>({ kind: "loading" })
   const [accessCode, setAccessCode] = React.useState<string | null>(null)
   const [reloadKey, setReloadKey] = React.useState(0)
@@ -57,6 +59,7 @@ export function SignupView() {
 
   React.useEffect(() => {
     if (viewedSlug === null) return
+    // Best-effort analytics for the host: a lost page-view count must never disturb the visitor.
     void api
       .recordEventPageView({ slug: viewedSlug, source: pageViewSource(document.referrer) })
       .catch(() => undefined)
@@ -64,17 +67,16 @@ export function SignupView() {
 
   if (state.kind === "loading") {
     return (
-      <SignupState busy title="Loading">
-        Fetching this event&rsquo;s page.
+      <SignupState busy title={t("state.loading_title")}>
+        {t("state.loading_body")}
       </SignupState>
     )
   }
 
   if (state.kind === "not_found") {
     return (
-      <SignupState title="We couldn't find that page">
-        This signup link is not valid, or the page has been taken down. Find the event on{" "}
-        <Link href="/">civfix</Link>.
+      <SignupState title={t("state.not_found_title")}>
+        <Trans t={t} i18nKey="state.not_found_body" components={[<Link key="home" href="/" />]} />
       </SignupState>
     )
   }
@@ -82,10 +84,10 @@ export function SignupView() {
   if (state.kind === "offline") {
     return (
       <SignupState
-        title="We couldn't load this page"
-        action={{ label: "Try again", onClick: () => setReloadKey((key) => key + 1) }}
+        title={t("state.offline_title")}
+        action={{ label: t("state.retry"), onClick: () => setReloadKey((key) => key + 1) }}
       >
-        Check your connection and try again.
+        {t("state.offline_body")}
       </SignupState>
     )
   }
@@ -100,6 +102,7 @@ function SignupDocument({
   page: PublicEventPageDTO
   initialAccessCode: string | null
 }) {
+  const { t } = useT("web-signup")
   const style = React.useMemo(
     () => accentVars(page.theme.accent) as React.CSSProperties,
     [page.theme.accent],
@@ -131,8 +134,15 @@ function SignupDocument({
         <CalendarButton page={page} />
 
         <footer className="signup-foot">
-          Hosted on <Link href="/">civfix</Link> · <a href="/legal/terms">Terms</a> ·{" "}
-          <a href="/legal/privacy">Privacy</a>
+          <Trans
+            t={t}
+            i18nKey="footer"
+            components={[
+              <Link key="home" href="/" />,
+              <a key="terms" href="/legal/terms" />,
+              <a key="privacy" href="/legal/privacy" />,
+            ]}
+          />
         </footer>
       </div>
     </main>
@@ -153,6 +163,7 @@ function FallbackHero({ page }: { page: PublicEventPageDTO }) {
 }
 
 function CalendarButton({ page }: { page: PublicEventPageDTO }) {
+  const { t } = useT("web-signup")
   const download = React.useCallback(() => {
     const ics = buildIcs({
       uid: eventIcsUid(page.event.id),
@@ -170,7 +181,7 @@ function CalendarButton({ page }: { page: PublicEventPageDTO }) {
 
   return (
     <button type="button" className="signup-secondary" onClick={download}>
-      <CalendarPlus aria-hidden="true" size={16} /> Add to calendar
+      <CalendarPlus aria-hidden="true" size={16} /> {t("calendar")}
     </button>
   )
 }

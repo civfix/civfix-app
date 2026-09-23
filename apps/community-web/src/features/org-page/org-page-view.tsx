@@ -19,17 +19,18 @@ import { parseMarkdownSubset } from "@civfix/shared/markdown"
 
 import { orgSlugFromPath } from "./org-page-slug"
 
-const KIND_LABEL: Record<NonNullable<OrganizationDTO["verifiedKind"]>, string> = {
-  nonprofit: "Verified nonprofit",
-  government: "Verified government",
-  community: "Verified community group",
-}
-
 type Translate = (key: string, options?: Record<string, unknown>) => string
 
 /** The public page's copy lives in the `host-org` namespace next to its stats (`stats.*`). */
 function kindLabel(t: Translate, kind: NonNullable<OrganizationDTO["verifiedKind"]>): string {
-  return t(`public.kind_${kind}`, { defaultValue: KIND_LABEL[kind] })
+  switch (kind) {
+    case "nonprofit":
+      return t("public.kind_nonprofit")
+    case "government":
+      return t("public.kind_government")
+    case "community":
+      return t("public.kind_community")
+  }
 }
 
 function SocialGlyph({ platform }: { platform: SocialPlatform }) {
@@ -67,8 +68,8 @@ function websiteLabel(href: string): string {
 export function OrgPageLoading() {
   const { t } = useT("host-org")
   return (
-    <OrgPageState busy title={t("public.loading_title", { defaultValue: "Loading" })}>
-      {t("public.loading_body", { defaultValue: "Fetching this organization." })}
+    <OrgPageState busy title={t("public.loading_title")}>
+      {t("public.loading_body")}
     </OrgPageState>
   )
 }
@@ -84,13 +85,10 @@ export function OrgPageView() {
   if (source === null) return <OrgPageLoading />
   if (source.kind !== "slug") {
     return (
-      <OrgPageState
-        title={t("public.not_found_title", { defaultValue: "We couldn't find that organization" })}
-      >
+      <OrgPageState title={t("public.not_found_title")}>
         <Trans
           t={t}
           i18nKey="public.invalid_link_body"
-          defaults="This link is not valid. Check the link you followed, or find organizations on <0>civfix</0>."
           components={[<Link key="home" href="/" />]}
         />
       </OrgPageState>
@@ -109,13 +107,10 @@ function OrgDocument({ slug }: { slug: string }) {
     const code = query.isError ? toAppError(query.error).code : ErrorCode.NOT_FOUND
     if (code === ErrorCode.NOT_FOUND) {
       return (
-        <OrgPageState
-          title={t("public.not_found_title", { defaultValue: "We couldn't find that organization" })}
-        >
+        <OrgPageState title={t("public.not_found_title")}>
           <Trans
             t={t}
             i18nKey="public.not_found_body"
-            defaults="It may have been renamed or removed. Find organizations on <0>civfix</0>."
             components={[<Link key="home" href="/" />]}
           />
         </OrgPageState>
@@ -123,13 +118,13 @@ function OrgDocument({ slug }: { slug: string }) {
     }
     return (
       <OrgPageState
-        title={t("public.error_title", { defaultValue: "We couldn't load this page" })}
+        title={t("public.error_title")}
         action={{
-          label: t("public.retry", { defaultValue: "Try again" }),
+          label: t("public.retry"),
           onClick: () => void query.refetch(),
         }}
       >
-        {t("public.error_body", { defaultValue: "Check your connection and try again." })}
+        {t("public.error_body")}
       </OrgPageState>
     )
   }
@@ -156,10 +151,7 @@ function OrgDocument({ slug }: { slug: string }) {
           <div className="orgpage-identity">
             <h1>{org.name}</h1>
             <p className="orgpage-handle">{t("header.slug", { slug: org.slug })}</p>
-            <ul
-              className="orgpage-stats"
-              aria-label={t("public.at_a_glance", { defaultValue: "At a glance" })}
-            >
+            <ul className="orgpage-stats" aria-label={t("public.at_a_glance")}>
               {verified && org.verifiedKind ? (
                 <li className="orgpage-stat orgpage-stat-verified">
                   {kindLabel(t, org.verifiedKind)}
@@ -183,24 +175,18 @@ function OrgDocument({ slug }: { slug: string }) {
             rel="noopener noreferrer"
           >
             <HeartHandshake aria-hidden="true" size={18} />
-            {t("public.donate", { name: org.name, defaultValue: `Donate to ${org.name}` })}
+            {t("public.donate", { name: org.name })}
           </a>
         ) : null}
 
         {description.length > 0 ? (
-          <section
-            className="orgpage-section"
-            aria-label={t("public.about", { defaultValue: "About" })}
-          >
+          <section className="orgpage-section" aria-label={t("public.about")}>
             <div className="orgpage-prose">{renderMarkdownNodes(description)}</div>
           </section>
         ) : null}
 
         {website || socials.length > 0 ? (
-          <section
-            className="orgpage-section"
-            aria-label={t("public.links", { defaultValue: "Links" })}
-          >
+          <section className="orgpage-section" aria-label={t("public.links")}>
             {website ? (
               <ul className="orgpage-links">
                 <li>
@@ -239,7 +225,6 @@ function OrgDocument({ slug }: { slug: string }) {
               t={t}
               i18nKey="public.footer_hosts"
               values={{ name: org.name }}
-              defaults="{{name}} hosts volunteer events on <0>civfix</0>."
               components={[<Link key="home" href="/" />]}
             />
           </p>
@@ -247,7 +232,6 @@ function OrgDocument({ slug }: { slug: string }) {
             <Trans
               t={t}
               i18nKey="public.footer_console"
-              defaults="Run an organization? <0>Open the host console</0>."
               components={[<Link key="console" href="/manage/" />]}
             />
           </p>
