@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils"
 import {
   ChartKeyboardTwins,
   ChartLegend,
-  ChartSummary,
   ChartTooltip,
   formatCompact,
   NUM_CLASS,
@@ -83,7 +82,7 @@ export function LineArea({
     1,
     ...series.flatMap((s) => s.values.filter((v): v is number => v !== null)),
   )
-  const ticks = niceTicks(maxValue)
+  const ticks = niceTicks(maxValue, 4, { integer: true })
   const tickMax = ticks[ticks.length - 1] ?? maxValue
   const xAt = (i: number) => PAD.left + (count <= 1 ? plotW / 2 : (i / (count - 1)) * plotW)
   const yAt = (v: number) => PAD.top + plotH * (1 - v / tickMax)
@@ -116,7 +115,6 @@ export function LineArea({
 
   return (
     <div ref={ref} className={cn("relative w-full", className)}>
-      <ChartSummary text={summary} />
       {width > 0 ? (
         <svg
           width={width}
@@ -235,7 +233,7 @@ export function LineArea({
           ) : null}
         </svg>
       ) : (
-        <div style={{ height }} />
+        <div role="img" aria-label={summary} style={{ height }} />
       )}
       <ChartTooltip tip={tip} />
       <ChartKeyboardTwins

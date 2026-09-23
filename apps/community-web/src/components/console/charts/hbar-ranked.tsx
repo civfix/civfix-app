@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
 
-import { ChartSummary, formatCompact, NUM_CLASS } from "./chart-utils"
+import { formatCompact, NUM_CLASS } from "./chart-utils"
 import { useChartPalette } from "./palette"
 
 export interface HBarItem {
@@ -39,7 +39,6 @@ export function HBarRanked({
 
   return (
     <div className={cn("flex flex-col gap-token-1", className)} role="list" aria-label={summary}>
-      <ChartSummary text={summary} />
       {items.map((item) => {
         const pct = Math.min(100, (item.value / scaleMax) * 100)
         const color = item.color ?? palette.hue.sky
@@ -73,15 +72,15 @@ export function HBarRanked({
         )
         if (onPress) {
           return (
-            <button
-              key={item.id}
-              type="button"
-              role="listitem"
-              onClick={() => onPress(item.id)}
-              className="flex min-h-11 w-full items-center gap-token-3 rounded-sm px-token-2 text-left hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
-            >
-              {body}
-            </button>
+            <div key={item.id} role="listitem">
+              <button
+                type="button"
+                onClick={() => onPress(item.id)}
+                className="flex min-h-11 w-full items-center gap-token-3 rounded-sm px-token-2 text-left hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+              >
+                {body}
+              </button>
+            </div>
           )
         }
         return (

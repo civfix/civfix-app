@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils"
 import {
   ChartKeyboardTwins,
   ChartLegend,
-  ChartSummary,
   ChartTooltip,
   formatCompact,
   NUM_CLASS,
@@ -60,7 +59,7 @@ export function StackedBars({
   const totals = labels.map((_, i) => series.reduce((sum, s) => sum + (s.values[i] ?? 0), 0))
   const suppressedAt = labels.map((_, i) => series.some((s) => s.values[i] === null))
   const maxValue = Math.max(1, ...totals)
-  const ticks = niceTicks(maxValue)
+  const ticks = niceTicks(maxValue, 4, { integer: true })
   const tickMax = ticks[ticks.length - 1] ?? maxValue
   const slot = count > 0 ? plotW / count : 0
   const barW = Math.max(4, Math.min(36, slot * 0.62))
@@ -68,7 +67,6 @@ export function StackedBars({
 
   return (
     <div ref={ref} className={cn("relative w-full", className)}>
-      <ChartSummary text={summary} />
       {width > 0 ? (
         <svg
           width={width}
@@ -176,7 +174,7 @@ export function StackedBars({
           })}
         </svg>
       ) : (
-        <div style={{ height }} />
+        <div role="img" aria-label={summary} style={{ height }} />
       )}
       <ChartTooltip tip={tip} />
       <ChartKeyboardTwins

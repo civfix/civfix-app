@@ -29,12 +29,16 @@ export function useMeasuredWidth<T extends HTMLElement>() {
   return { ref, width }
 }
 
-export function niceTicks(maxValue: number, count = 4): number[] {
+export function niceTicks(
+  maxValue: number,
+  count = 4,
+  options: { integer?: boolean } = {},
+): number[] {
   if (maxValue <= 0) return [0, 1]
   const rawStep = maxValue / count
   const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
   const residual = rawStep / magnitude
-  const step =
+  const niceStep =
     residual > 5
       ? 10 * magnitude
       : residual > 2
@@ -42,6 +46,7 @@ export function niceTicks(maxValue: number, count = 4): number[] {
         : residual > 1
           ? 2 * magnitude
           : magnitude
+  const step = options.integer ? Math.max(1, niceStep) : niceStep
   const ticks: number[] = []
   for (let value = 0; value <= maxValue + step * 0.001; value += step) {
     ticks.push(Number(value.toFixed(6)))
@@ -86,7 +91,6 @@ export function ChartTooltip({ tip }: { tip: TooltipState | null }) {
   if (!tip) return null
   return (
     <div
-      role="status"
       className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full rounded-sm border border-console-line bg-console-surface px-token-3 py-token-2 shadow-console-2"
       style={{ left: tip.x, top: tip.y - 8 }}
     >
@@ -133,10 +137,6 @@ export function ChartLegend({ items, className }: { items: LegendItem[]; classNa
       ))}
     </div>
   )
-}
-
-export function ChartSummary({ text }: { text: string }) {
-  return <p className="sr-only">{text}</p>
 }
 
 export interface ChartMark {
