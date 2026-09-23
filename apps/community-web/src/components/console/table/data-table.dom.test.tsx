@@ -69,13 +69,47 @@ function Harness({
 }
 
 describe("DataTable", () => {
-  it("publishes aria-sort on every column header and marks the active one", () => {
+  it("publishes aria-sort only on sortable column headers and marks the active one", () => {
     renderConsole(<Harness sort={{ columnId: "name", dir: "asc" }} onSortChange={() => {}} />)
     const headers = screen.getAllByRole("columnheader")
     expect(headers.map((header) => header.getAttribute("aria-sort"))).toEqual([
       "ascending",
-      "none",
+      null,
     ])
+  })
+
+  it("marks an inactive sortable column as unsorted", () => {
+    renderConsole(<Harness sort={null} onSortChange={() => {}} />)
+    expect(screen.getAllByRole("columnheader")[0]?.getAttribute("aria-sort")).toBe("none")
+  })
+
+  it("publishes no aria-sort when the table cannot be re-sorted", () => {
+    renderConsole(<Harness sort={{ columnId: "name", dir: "asc" }} />)
+    const headers = screen.getAllByRole("columnheader")
+    expect(headers.map((header) => header.getAttribute("aria-sort"))).toEqual([null, null])
+  })
+
+  it("announces loading once and marks the table busy while it loads", () => {
+    renderConsole(
+      <DataTable
+        caption="Attendees"
+        columns={COLUMNS}
+        rows={[]}
+        rowKey={(row) => row.id}
+        loading
+      />,
+      { withToasts: false },
+    )
+    const table = screen.getByRole("table", { name: "Attendees" })
+    expect(table.getAttribute("aria-busy")).toBe("true")
+    expect(screen.getByRole("status").textContent).toBe("state.loading")
+    expect(screen.getAllByText("state.loading")).toHaveLength(1)
+  })
+
+  it("does not pretend the header sticks inside its horizontal scroll box", () => {
+    renderConsole(<Harness />)
+    const head = screen.getByRole("table").querySelector("thead")
+    expect(head?.className ?? "").not.toMatch(/\bsticky\b/)
   })
 
   it("flips the direction on a second activation of the same column", async () => {

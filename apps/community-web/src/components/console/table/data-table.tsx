@@ -7,7 +7,7 @@ import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
-import { Skeleton } from "../states"
+import { LoadingState, Skeleton } from "../states"
 import { useIsNarrow } from "../use-media-query"
 import type { SelectionApi } from "./use-selection"
 
@@ -71,7 +71,6 @@ export interface DataTableProps<T> {
   skeletonRows?: number
   maxColumnPriority?: number
   renderCard?: (row: T) => ReactNode
-  stickyHeader?: boolean
   emptyState?: ReactNode
   className?: string
 }
@@ -92,7 +91,6 @@ export function DataTable<T>({
   skeletonRows = 10,
   maxColumnPriority,
   renderCard,
-  stickyHeader = true,
   emptyState,
   className,
 }: DataTableProps<T>) {
@@ -114,17 +112,7 @@ export function DataTable<T>({
 
   if (narrow && renderCard) {
     if (loading) {
-      return (
-        <div
-          role="status"
-          aria-label={t("state.loading")}
-          className={cn("flex flex-col gap-token-2", className)}
-        >
-          {Array.from({ length: Math.min(skeletonRows, 6) }, (_, i) => (
-            <Skeleton key={i} shape="card" />
-          ))}
-        </div>
-      )
+      return <LoadingState shape="card" count={Math.min(skeletonRows, 6)} className={className} />
     }
     if (rows.length === 0) return <div className={className}>{emptyState}</div>
     return (
@@ -159,10 +147,13 @@ export function DataTable<T>({
           edges.right ? "opacity-100" : "opacity-0",
         )}
       />
+      <p role="status" className="sr-only">
+        {loading ? t("state.loading") : null}
+      </p>
       <div ref={scrollRef} className="overflow-x-auto rounded-md">
-        <table className="w-full border-collapse text-left">
+        <table aria-busy={loading || undefined} className="w-full border-collapse text-left">
           <caption className="sr-only">{caption}</caption>
-          <thead className={cn(stickyHeader && "sticky top-0 z-10")}>
+          <thead>
             <tr className="border-b border-console-line bg-console-tint">
               {selection ? (
                 <th scope="col" className="w-10 px-token-3 py-token-2">
@@ -187,7 +178,13 @@ export function DataTable<T>({
                     scope="col"
                     style={column.width ? { width: column.width } : undefined}
                     aria-sort={
-                      active ? (sort?.dir === "asc" ? "ascending" : "descending") : "none"
+                      column.sortable && onSortChange
+                        ? active
+                          ? sort?.dir === "asc"
+                            ? "ascending"
+                            : "descending"
+                          : "none"
+                        : undefined
                     }
                     className={cn(
                       "whitespace-nowrap px-token-3 py-token-2 text-token-12 font-bold uppercase tracking-wider text-console-ink-3",
