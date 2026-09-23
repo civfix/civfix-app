@@ -130,7 +130,10 @@
     "helper": "Elige qué organización aparece junto a tu nombre.",
     "automatic": "Automática",
     "automatic_sub": "Usar la organización a la que te uniste primero.",
-    "selected": "Seleccionada",
     "error": "No se pudo guardar tu organización. Inténtalo de nuevo."
+  },
+  "save_error": {
+    "rate_limited": "Demasiados cambios seguidos. Espera un momento e inténtalo de nuevo.",
+    "validation": "No se aceptó ese valor. Revisa lo que escribiste e inténtalo de nuevo."
   }
 }

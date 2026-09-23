@@ -47,7 +47,8 @@
     "no_access_title": "Du hast keinen Zugriff",
     "no_access_body": "Bitte eine organisierende Person, dir die passende Rolle zu geben.",
     "not_found_title": "Nicht gefunden",
-    "not_found_body": "Diese Seite existiert nicht oder wurde entfernt."
+    "not_found_body": "Diese Seite existiert nicht oder wurde entfernt.",
+    "no_value": "Keine Angabe"
   },
   "hours": {
     "not_yet_title": "Diese Veranstaltung ist noch nicht vorbei",
@@ -119,7 +120,10 @@
     "link_prompt": "Füge einen https-Link ein",
     "link_invalid": "Es lassen sich nur https-Links einfügen.",
     "preview": "Vorschau",
-    "preview_empty": "Dein Text erscheint hier."
+    "preview_empty": "Dein Text erscheint hier.",
+    "remaining_one": "Noch {{count}} Zeichen übrig",
+    "remaining_other": "Noch {{count}} Zeichen übrig",
+    "shortcut_ctrl": "Strg+{{key}}"
   },
   "upload": {
     "hint": "Zieh ein Bild hierher oder klicke, um eins auszuwählen.",
@@ -151,5 +155,8 @@
     "title": "In der Konsole ist ein Fehler aufgetreten",
     "body": "Auf dem Server ging nichts verloren. Lade diese Ansicht neu, um weiterzumachen.",
     "retry": "Ansicht neu laden"
+  },
+  "toast": {
+    "region": "Benachrichtigungen"
   }
 }

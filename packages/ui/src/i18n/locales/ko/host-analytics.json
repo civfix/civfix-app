@@ -75,7 +75,6 @@
   },
   "messaging": {
     "totals": "메시지",
-    "active_days": "전송한 날",
     "recipients": "수신자",
     "unsubscribes": "수신 거부",
     "no_tracking": "civfix는 열람이나 클릭을 추적하지 않으므로 여기에 표시할 내용이 없습니다.",
@@ -86,7 +85,8 @@
     "suppressed": "차단됨",
     "over_time": "기간별 전송 추이",
     "over_time_a11y": "일별 전송",
-    "sends": "전송"
+    "sends": "전송",
+    "broadcasts_sent": "보낸 메시지"
   },
   "page": {
     "views": "페이지 조회수",
@@ -194,6 +194,8 @@
   },
   "filter": {
     "all_events": "모든 이벤트",
-    "event_a11y": "이벤트: {{name}}"
+    "event_a11y": "이벤트: {{name}}",
+    "more_events": "이벤트 더 보기",
+    "loading_more": "이벤트를 더 불러오는 중…"
   }
 }

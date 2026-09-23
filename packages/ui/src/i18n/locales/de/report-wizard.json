@@ -81,7 +81,8 @@
     "done": "Fertig",
     "announce_error": "Bericht konnte nicht eingereicht werden. {{detail}}",
     "announce_held": "Pin gesetzt und in der Warteschlange zur Prüfung.",
-    "announce_live": "Pin gesetzt. Bericht eingereicht."
+    "announce_live": "Pin gesetzt. Bericht eingereicht.",
+    "edit_report": "Bericht bearbeiten"
   },
   "errors": {
     "no_category": "Bitte vor dem Senden eine Kategorie auswählen.",
@@ -92,7 +93,9 @@
     "turnstile_failed": "Wir konnten nicht bestätigen, dass du ein Mensch bist. Seite neu laden und Prüfung wiederholen.",
     "media_rejected": "Dieses Foto konnte nicht akzeptiert werden. Versuche ein anderes.",
     "unauthorized": "Deine Sitzung ist möglicherweise abgelaufen. Erneut anmelden und wiederholen.",
-    "generic": "Einreichung gerade nicht möglich. Bitte erneut versuchen."
+    "generic": "Einreichung gerade nicht möglich. Bitte erneut versuchen.",
+    "validation_text": "Titel, Beschreibung oder Adresse können so nicht angenommen werden. Bearbeite sie und sende den Bericht erneut.",
+    "validation_media": "Eines deiner Fotos oder Videos ist nicht mehr verfügbar. Versuche erneut, es hochzuladen, oder bearbeite den Bericht, um es zu ersetzen."
   },
   "share": {
     "label": "Im Feed teilen",
@@ -107,5 +110,29 @@
     "failed_rate_limited": "Zu viele Beiträge. Versuch es in einer Minute.",
     "retry": "Erneut versuchen",
     "signed_out_hint": "Erstelle ein Konto, um Berichte im Feed zu teilen."
+  },
+  "types": {
+    "dump": {
+      "sub": "Illegale Ablagerung, Sperrmüll"
+    },
+    "encampment": {
+      "sub": "Lager wohnungsloser Menschen"
+    },
+    "graffiti": {
+      "sub": "Tags, Vandalismus"
+    },
+    "infrastructure": {
+      "sub": "Ampel, Straßenlaterne, Überflutung"
+    },
+    "pavement": {
+      "sub": "Schlagloch, kaputter Gehweg"
+    },
+    "vegetation": {
+      "sub": "Gestrüpp, Unkraut, versperrter Weg"
+    },
+    "other": {
+      "sub": "Etwas anderes"
+    },
+    "row_a11y": "{{label}}. {{sub}}"
   }
 }

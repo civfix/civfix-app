@@ -81,7 +81,8 @@
     "done": "Listo",
     "announce_error": "No se pudo enviar tu reporte. {{detail}}",
     "announce_held": "Pin colocado y en cola para revisión.",
-    "announce_live": "Pin colocado. Reporte enviado."
+    "announce_live": "Pin colocado. Reporte enviado.",
+    "edit_report": "Editar reporte"
   },
   "errors": {
     "no_category": "Elige una categoría antes de enviar.",
@@ -92,7 +93,9 @@
     "turnstile_failed": "No pudimos verificar que eres humano. Recarga la página y completa la verificación de nuevo.",
     "media_rejected": "No se pudo aceptar esa foto. Prueba con una diferente.",
     "unauthorized": "Tu sesión puede haber expirado. Inicia sesión de nuevo e intenta otra vez.",
-    "generic": "No pudimos enviar el reporte ahora. Por favor intenta de nuevo."
+    "generic": "No pudimos enviar el reporte ahora. Por favor intenta de nuevo.",
+    "validation_text": "Algo en el título, la descripción o la dirección no se puede aceptar. Edítalo y vuelve a enviar el reporte.",
+    "validation_media": "Una foto o un video de tu reporte ya no está disponible. Intenta de nuevo para subirlo, o edita el reporte para reemplazarlo."
   },
   "share": {
     "label": "Compartir en el feed",
@@ -107,5 +110,29 @@
     "failed_rate_limited": "Demasiadas publicaciones. Inténtalo en un minuto.",
     "retry": "Reintentar",
     "signed_out_hint": "Crea una cuenta para compartir reportes en el feed."
+  },
+  "types": {
+    "dump": {
+      "sub": "Vertido ilegal, objetos voluminosos"
+    },
+    "encampment": {
+      "sub": "Campamento de personas sin hogar"
+    },
+    "graffiti": {
+      "sub": "Rayones, vandalismo"
+    },
+    "infrastructure": {
+      "sub": "Semáforo, alumbrado público, inundación"
+    },
+    "pavement": {
+      "sub": "Bache, acera en mal estado"
+    },
+    "vegetation": {
+      "sub": "Maleza, hierba, paso bloqueado"
+    },
+    "other": {
+      "sub": "Otra cosa"
+    },
+    "row_a11y": "{{label}}. {{sub}}"
   }
 }

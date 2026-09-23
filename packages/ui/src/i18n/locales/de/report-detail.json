@@ -36,7 +36,6 @@
     "processing_title": "Fotos werden noch verarbeitet...",
     "processing_body_one": "Es erscheint hier, sobald die Verarbeitung abgeschlossen ist.",
     "processing_body_other": "{{count}} Fotos erscheinen hier nach der Verarbeitung.",
-    "processing_a11y": "Fotos werden noch verarbeitet",
     "tile_processing": "Wird verarbeitet...",
     "tile_rejected": "Konnte nicht gepostet werden",
     "tile_held": "In Prüfung",

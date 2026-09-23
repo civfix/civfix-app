@@ -33,6 +33,10 @@
     "no_results": {
       "title": "Niemanden gefunden",
       "body": "Kein Konto entspricht \"@{{handle}}\". Prüfe die Schreibweise oder probiere einen anderen Handle."
+    },
+    "signed_out": {
+      "title": "Melde dich an, um Personen zu suchen",
+      "body": "Für die Suche nach Personen per Name oder @handle brauchst du ein Konto."
     }
   }
 }

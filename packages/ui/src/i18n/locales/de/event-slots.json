@@ -27,7 +27,10 @@
     "expand_a11y": "{{title}}, {{count}} eingetragen",
     "expand_hint": "Zeigt, wer eingetragen ist",
     "collapse_hint": "Blendet aus, wer eingetragen ist",
-    "faces_more": "+{{count}}"
+    "faces_more": "+{{count}}",
+    "window_count_a11y_one": "{{title}}, {{range}}, {{count}} eingetragen",
+    "window_count_a11y_other": "{{title}}, {{range}}, {{count}} eingetragen",
+    "faces_names_more": "{{names}} +{{count}}"
   },
   "editor": {
     "add_first": "Aufgabe hinzufügen",
@@ -87,7 +90,11 @@
   "roster": {
     "unassigned": "Keine Aufgabe",
     "empty_slot": "Noch niemand",
-    "window_a11y": "{{title}} von {{range}}"
+    "window_a11y": "{{title}} von {{range}}",
+    "window_count_a11y_one": "{{title}} von {{range}}, {{count}} eingetragen",
+    "window_count_a11y_other": "{{title}} von {{range}}, {{count}} eingetragen",
+    "window_capacity_a11y_one": "{{title}} von {{range}}, {{count}} von {{capacity}} eingetragen",
+    "window_capacity_a11y_other": "{{title}} von {{range}}, {{count}} von {{capacity}} eingetragen"
   },
   "toast": {
     "claimed": "Eingetragen",

@@ -81,7 +81,8 @@
     "done": "완료",
     "announce_error": "신고를 제출할 수 없어요. {{detail}}",
     "announce_held": "핀이 꽂혔고 검토 대기 중이에요.",
-    "announce_live": "핀이 꽂혔어요. 신고가 제출됐어요."
+    "announce_live": "핀이 꽂혔어요. 신고가 제출됐어요.",
+    "edit_report": "신고 수정"
   },
   "errors": {
     "no_category": "제출하기 전에 카테고리를 선택해 주세요.",
@@ -92,7 +93,9 @@
     "turnstile_failed": "사람임을 확인할 수 없어요. 페이지를 새로고침하고 인증을 다시 완료해 주세요.",
     "media_rejected": "해당 사진을 사용할 수 없어요. 다른 사진으로 시도해 주세요.",
     "unauthorized": "세션이 만료됐을 수 있어요. 다시 로그인한 후 시도해 주세요.",
-    "generic": "지금은 제출할 수 없어요. 다시 시도해 주세요."
+    "generic": "지금은 제출할 수 없어요. 다시 시도해 주세요.",
+    "validation_text": "제목, 설명, 주소 중에 허용되지 않는 내용이 있어요. 수정한 뒤 신고를 다시 보내 주세요.",
+    "validation_media": "사진이나 동영상 중 하나를 더 이상 사용할 수 없어요. 다시 업로드하거나 신고를 수정해 교체해 주세요."
   },
   "share": {
     "label": "피드에 공유",
@@ -107,5 +110,29 @@
     "failed_rate_limited": "게시물이 너무 많아요. 잠시 후 다시 시도해 주세요.",
     "retry": "다시 시도",
     "signed_out_hint": "계정을 만들면 신고를 피드에 공유할 수 있어요."
+  },
+  "types": {
+    "dump": {
+      "sub": "불법 투기, 대형 폐기물"
+    },
+    "encampment": {
+      "sub": "노숙인 텐트촌"
+    },
+    "graffiti": {
+      "sub": "태깅, 기물 파손"
+    },
+    "infrastructure": {
+      "sub": "신호등, 가로등, 침수"
+    },
+    "pavement": {
+      "sub": "포트홀, 파손된 보도"
+    },
+    "vegetation": {
+      "sub": "덤불, 잡초, 막힌 길"
+    },
+    "other": {
+      "sub": "기타 문제"
+    },
+    "row_a11y": "{{label}}. {{sub}}"
   }
 }

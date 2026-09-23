@@ -89,7 +89,10 @@
     "error_subject": "Añade un asunto.",
     "error_body": "Escribe el mensaje.",
     "error_audience": "Elige quién lo recibe.",
-    "error_channels": "Elige al menos un canal."
+    "error_channels": "Elige al menos un canal.",
+    "save_before_send": "Guarda los cambios antes de enviar, probar o programar este mensaje.",
+    "schedule_not_in_zone": "Esa hora no existe en {{zone}} por el cambio de horario. Elige otra hora.",
+    "schedule_zone_hint": "Se envía a esta hora en la zona horaria del evento ({{zone}})."
   },
   "audience": {
     "all_registered": "Todos los inscritos",
@@ -204,6 +207,7 @@
     "error_conflict": "Este evento ya no admite anuncios.",
     "error_validation": "Revisa el título, el mensaje y los enlaces.",
     "error_held": "Este anuncio quedó retenido para revisión.",
-    "error_generic": "No se pudo enviar tu anuncio. Inténtalo de nuevo."
+    "error_generic": "No se pudo enviar tu anuncio. Inténtalo de nuevo.",
+    "see_all_open": "Todos los anuncios"
   }
 }

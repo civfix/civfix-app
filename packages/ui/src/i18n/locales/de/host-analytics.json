@@ -75,7 +75,6 @@
   },
   "messaging": {
     "totals": "Nachrichten",
-    "active_days": "Tage mit Versand",
     "recipients": "Empfänger*innen",
     "unsubscribes": "Abmeldungen",
     "no_tracking": "civfix erfasst weder Öffnungen noch Klicks, deshalb gibt es hier nichts zu berichten.",
@@ -86,7 +85,8 @@
     "suppressed": "Unterdrückt",
     "over_time": "Versand im Zeitverlauf",
     "over_time_a11y": "Versand pro Tag",
-    "sends": "Sendungen"
+    "sends": "Sendungen",
+    "broadcasts_sent": "Gesendete Rundnachrichten"
   },
   "page": {
     "views": "Seitenaufrufe",
@@ -194,6 +194,8 @@
   },
   "filter": {
     "all_events": "Alle Veranstaltungen",
-    "event_a11y": "Veranstaltung: {{name}}"
+    "event_a11y": "Veranstaltung: {{name}}",
+    "more_events": "Weitere Veranstaltungen anzeigen",
+    "loading_more": "Weitere Veranstaltungen werden geladen…"
   }
 }

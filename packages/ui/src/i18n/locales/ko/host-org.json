@@ -5,7 +5,8 @@
     "error_body": "이 단체를 불러오지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요."
   },
   "header": {
-    "slug": "@{{slug}}"
+    "slug": "@{{slug}}",
+    "public_page": "공개 페이지"
   },
   "links": {
     "website": "웹사이트",
@@ -28,7 +29,11 @@
   "nav": {
     "events": "행사",
     "overview": "개요",
-    "members": "구성원"
+    "members": "구성원",
+    "new_org": "새 단체",
+    "events_section": "행사",
+    "verification": "인증",
+    "settings": "설정"
   },
   "overview": {
     "title": "단체",
@@ -38,12 +43,23 @@
     "donation_link": "기부 링크",
     "no_donation_link": "기부 링크 없음",
     "add_donation_link": "링크 추가",
-    "edit_donation_link": "링크 수정"
+    "edit_donation_link": "링크 수정",
+    "verification": "인증",
+    "about": "소개",
+    "edit": "프로필 편집",
+    "no_description": "아직 소개가 없습니다. 이 단체가 하는 일을 알려 주세요.",
+    "public_title": "공개 페이지",
+    "public_body": "링크가 있는 사람은 누구나 로고, 소개, 링크, 인증 배지를 볼 수 있습니다.",
+    "your_role": "내 역할"
   },
   "members": {
     "title": "구성원",
     "joined": "{{when}} 합류",
-    "read_only": "이 단체에 누가 속할지는 소유자만 변경할 수 있습니다."
+    "read_only": "이 단체에 누가 속할지는 소유자만 변경할 수 있습니다.",
+    "subtitle": "소유자는 역할과 결제를 관리하고, 관리자는 프로필과 행사를 운영하며, 구성원은 명단을 볼 수 있습니다.",
+    "you": "나",
+    "empty_title": "아직 구성원이 없습니다",
+    "empty_body": "팀원을 초대해 이 단체 이름으로 함께 행사를 주최하세요."
   },
   "events": {
     "upcoming": "예정된 행사",
@@ -55,12 +71,44 @@
     "load_more": "더 불러오기",
     "loading_more": "불러오는 중…",
     "load_more_upcoming_a11y": "예정된 행사 더 불러오기",
-    "load_more_past_a11y": "지난 행사 더 불러오기"
+    "load_more_past_a11y": "지난 행사 더 불러오기",
+    "title": "행사",
+    "subtitle": "이 단체에 연결된 행사입니다. 행사 설정의 단체 항목에서 연결할 수 있습니다.",
+    "empty_title": "아직 연결된 행사가 없습니다",
+    "empty_body": "행사를 만든 뒤 행사 설정의 단체 항목에서 이 단체를 선택하세요. 연결된 행사에는 단체 이름과 인증 배지가 표시됩니다."
   },
   "form": {
     "donationUrl": "기부 링크",
     "donation_hint": "https://로 시작해야 합니다. 공개 페이지와 이벤트에 표시되며, civfix는 금전을 처리하지 않습니다.",
-    "donation_invalid": "https://로 시작해야 합니다"
+    "donation_invalid": "https://로 시작해야 합니다",
+    "identity_title": "기본 정보",
+    "identity_body": "행사, 영수증, 공개 페이지에 단체가 표시되는 방식입니다.",
+    "logo": "로고",
+    "logo_hint": "정사각형 이미지이며 작은 크기로 표시됩니다.",
+    "name": "이름",
+    "slug": "핸들",
+    "slug_hint": "공개 페이지 주소는 {{host}}/orgs/<handle>입니다. 영문 소문자, 숫자, 하이픈을 쓸 수 있습니다.",
+    "slug_locked": "단체를 만든 뒤에는 핸들을 변경할 수 없습니다.",
+    "slug_ok": "사용할 수 있습니다",
+    "slug_empty": "공개 페이지에 쓸 핸들을 정하세요.",
+    "slug_short": "핸들은 {{min}}자 이상이어야 합니다.",
+    "slug_long": "핸들은 최대 {{max}}자까지 쓸 수 있습니다.",
+    "slug_format": "영문 소문자, 숫자, 하이픈만 쓰고 하이픈은 연달아 쓰지 마세요.",
+    "slug_taken": "이미 사용 중인 핸들입니다. 다른 핸들을 입력하세요.",
+    "slug_reserved": "예약된 핸들입니다. 다른 핸들을 입력하세요.",
+    "about_title": "단체 소개",
+    "description": "소개",
+    "description_hint": "무슨 일을 누구를 위해 하는지 적어 주세요. 공개 페이지에 표시됩니다.",
+    "websiteUrl": "웹사이트",
+    "website_hint": "https://로 시작해야 합니다",
+    "website_invalid": "https://로 시작하는 전체 주소를 입력하세요.",
+    "social_title": "소셜 링크",
+    "social_body": "아이디만 입력하면 링크는 저희가 만듭니다. 모두 선택 사항입니다.",
+    "whatsapp_invalid": "국가 번호를 포함해 숫자만 입력해 주세요.",
+    "handle_invalid": "아이디에는 영문, 숫자, 점, 밑줄을 쓸 수 있습니다.",
+    "create_action": "단체 만들기",
+    "saved": "단체 정보를 저장했습니다",
+    "created": "단체를 만들었습니다"
   },
   "manage": {
     "action": "관리",
@@ -97,5 +145,183 @@
     "error_validation": "입력한 내용을 확인한 뒤 다시 시도해 주세요.",
     "error_rate_limited": "변경 요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요.",
     "error_generic": "변경 사항을 저장하지 못했습니다. 다시 시도해 주세요."
+  },
+  "public": {
+    "kind_nonprofit": "인증된 비영리 단체",
+    "kind_government": "인증된 공공기관",
+    "kind_community": "인증된 커뮤니티 단체",
+    "loading_title": "불러오는 중",
+    "loading_body": "단체 정보를 가져오는 중입니다.",
+    "not_found_title": "단체를 찾을 수 없습니다",
+    "invalid_link_body": "올바른 링크가 아닙니다. 연 링크를 확인하거나 <0>civfix</0>에서 단체를 찾아보세요.",
+    "not_found_body": "이름이 바뀌었거나 삭제되었을 수 있습니다. <0>civfix</0>에서 단체를 찾아보세요.",
+    "error_title": "이 페이지를 불러오지 못했습니다",
+    "retry": "다시 시도",
+    "error_body": "연결 상태를 확인한 뒤 다시 시도해 주세요.",
+    "at_a_glance": "한눈에 보기",
+    "donate": "{{name}}에 기부하기",
+    "about": "소개",
+    "links": "링크",
+    "footer_hosts": "{{name}}은(는) <0>civfix</0>에서 자원봉사 행사를 주최합니다.",
+    "footer_console": "단체를 운영하시나요? <0>호스트 콘솔 열기</0>"
+  },
+  "accept": {
+    "signed_out_title": "초대를 수락하려면 로그인하세요",
+    "signed_out_body": "초대를 받은 이메일 주소로 로그인하세요. 로그인하면 바로 이 페이지로 돌아옵니다.",
+    "sign_in": "로그인",
+    "title": "단체 초대",
+    "heading": "단체에 초대받았습니다",
+    "body": "초대를 수락하면 이 단체의 팀에 합류합니다. 단체의 행사와 콘솔을 볼 수 있고, 단체 이름으로 행사를 주최할 수 있습니다.",
+    "not_now": "나중에",
+    "action": "초대 수락",
+    "joined": "{{name}}에 합류했습니다",
+    "joined_as_owner": "회원님은 소유자입니다.",
+    "joined_as_admin": "회원님은 관리자입니다.",
+    "joined_as_member": "회원님은 구성원입니다.",
+    "error_invalid_title": "유효하지 않거나 취소된 초대입니다",
+    "error_invalid_body": "초대를 받은 이메일 주소로 로그인했는지 확인하거나, 단체에 새 초대를 요청하세요.",
+    "error_expired_title": "만료된 초대입니다",
+    "error_expired_body": "단체에 새 초대를 요청하세요.",
+    "error_wrong_email_title": "다른 이메일 주소로 보낸 초대입니다",
+    "error_wrong_email_body": "초대를 받은 주소로 로그인한 뒤 링크를 다시 여세요.",
+    "error_other_body": "변경된 내용은 없습니다. 다시 시도할 수 있습니다."
+  },
+  "switcher": {
+    "label": "단체",
+    "empty": "아직 속한 단체가 없습니다.",
+    "new": "새 단체"
+  },
+  "create": {
+    "title": "새 단체",
+    "subtitle": "공동의 이름으로 행사를 주최하고, 팀원을 초대하고, 인증을 받으세요."
+  },
+  "invite": {
+    "action": "초대",
+    "title": "구성원 초대",
+    "identifier_kind": "찾는 방법",
+    "by_handle": "civfix 핸들",
+    "by_email": "이메일",
+    "handle": "핸들",
+    "email": "이메일 주소",
+    "email_hint": "초대 메일을 보내 드립니다. 초대는 {{days}}일 후 만료됩니다.",
+    "handle_hint": "상대방 civfix 프로필의 @핸들입니다.",
+    "role": "역할",
+    "role_admin_hint": "관리자는 프로필을 수정하고, 인증을 신청하고, 구성원을 초대합니다.",
+    "role_member_hint": "구성원은 단체의 행사와 명단을 볼 수 있습니다.",
+    "send": "초대 보내기",
+    "added": "{{name}} 님을 추가했습니다",
+    "sent": "초대를 보냈습니다",
+    "sent_email_body_other": "{{email}} 주소로 초대 메일을 보냈습니다. 초대는 {{count}}일 후 만료됩니다.",
+    "sent_user_body_other": "{{name}} 님에게 초대를 보냈습니다. 초대는 {{count}}일 후 만료됩니다.",
+    "sent_to": "받는 사람",
+    "sent_hint": "초대받은 주소로 civfix에 로그인하면 수락할 수 있습니다. 대기 중인 초대 목록에서 초대를 취소할 수 있습니다.",
+    "another": "다른 사람 초대",
+    "done": "완료",
+    "error_not_found": "그 핸들을 쓰는 사람을 찾지 못했습니다.",
+    "error_conflict": "이미 구성원이거나 대기 중인 초대가 있습니다."
+  },
+  "role": {
+    "change_a11y": "{{name}} 님의 역할 변경",
+    "confirm_title": "역할을 변경할까요?",
+    "confirm_body": "이 단체에서 {{name}} 님의 역할이 {{role}}(으)로 바뀝니다.",
+    "confirm_action": "역할 변경",
+    "updated": "역할을 변경했습니다",
+    "error_forbidden": "소유자만 역할을 변경할 수 있습니다."
+  },
+  "remove": {
+    "a11y": "{{name}} 님 내보내기",
+    "action": "내보내기",
+    "confirm_title": "구성원을 내보낼까요?",
+    "confirm_body": "{{name}} 님은 이 단체의 행사와 콘솔에 더 이상 접근할 수 없습니다. 나중에 다시 초대할 수 있습니다.",
+    "done": "{{name}} 님을 내보냈습니다"
+  },
+  "invites": {
+    "title": "대기 중인 초대",
+    "subtitle": "초대는 14일 후 만료됩니다. 초대를 취소하면 링크가 더 이상 작동하지 않습니다.",
+    "unknown": "초대받은 사람",
+    "invited_by": "{{name}} 님이 초대함",
+    "expired": "만료됨",
+    "expires_in_other": "{{count}}일 후 만료",
+    "status_expired": "만료됨",
+    "revoke": "취소",
+    "revoke_a11y": "{{name}}에게 보낸 초대 취소",
+    "revoke_title": "초대를 취소할까요?",
+    "revoke_body": "{{name}}에게 보낸 초대 링크가 더 이상 작동하지 않습니다. 나중에 다시 초대할 수 있습니다.",
+    "revoked": "{{name}}에게 보낸 초대를 취소했습니다",
+    "error_title": "대기 중인 초대를 불러오지 못했습니다",
+    "error_not_found": "이미 수락되었거나 취소된 초대입니다."
+  },
+  "next": {
+    "title": "다음 단계",
+    "welcome_title": "{{name}} 준비가 끝났습니다. 다음 단계:",
+    "progress": "{{total}}개 중 {{done}}개 완료",
+    "dismiss": "숨기기",
+    "done": "완료",
+    "profile_title": "프로필 완성하기",
+    "profile_body": "공개 페이지에서 사람들이 알아볼 수 있도록 로고와 소개를 추가하세요.",
+    "members_title": "팀 초대하기",
+    "members_body": "관리자는 행사를 운영하고 프로필을 수정할 수 있으며, 구성원은 명단을 볼 수 있습니다.",
+    "verification_title": "인증 신청하기",
+    "verification_body": "주최하는 모든 행사에 배지가 표시됩니다.",
+    "events_title": "행사 연결하기",
+    "events_body": "행사 설정을 열고 단체 항목에서 이 단체를 선택하세요."
+  },
+  "no_access_title": "소유자와 관리자만 변경할 수 있습니다",
+  "no_access_body": "이 단체의 소유자나 관리자에게 변경을 요청하세요.",
+  "settings": {
+    "intro": "변경 사항은 공개 페이지와 이 단체에 연결된 모든 행사에 반영됩니다."
+  },
+  "suspended": {
+    "title": "civfix가 이 단체를 정지했습니다.",
+    "body": "구성원은 단체를 볼 수는 있지만 변경할 수는 없습니다. 정지가 해제될 때까지 행사, 초대, 인증, 설정은 읽기 전용입니다.",
+    "error_forbidden": "이 단체는 정지되어 지금은 변경할 수 없습니다."
+  },
+  "verification": {
+    "verified_title": "인증된 단체입니다",
+    "verified_body": "행사에 사람들이 신뢰할 수 있는 인증 배지가 표시됩니다.",
+    "pending_title": "신청서 검토 중",
+    "pending_body": "제출하신 서류를 검토하고 있습니다. 결정이 나는 대로 알려 드리며, 보통 영업일 기준으로 며칠이 걸립니다.",
+    "rejected_title": "신청이 승인되지 않았습니다",
+    "rejected_body": "아래 사유를 확인하고 부족한 부분을 보완한 뒤 새 서류로 다시 신청하세요.",
+    "unverified_title": "아직 인증되지 않았습니다",
+    "unverified_body": "인증을 받으면 행사에 배지가 표시됩니다. 단체 유형을 알려 주시고 증빙 서류를 첨부하세요.",
+    "submitted": "제출일",
+    "reviewed": "검토일",
+    "reason": "사유",
+    "no_reason": "사유가 제공되지 않았습니다.",
+    "reapply": "다시 신청",
+    "apply_title": "인증 신청",
+    "field_kind": "단체 유형",
+    "kind_nonprofit_hint": "등록된 501(c)(3) 단체 또는 이에 준하는 단체.",
+    "kind_government_hint": "시, 카운티, 주 또는 연방 정부의 기관이나 부서.",
+    "kind_community_hint": "주민 협의회, 학교 동아리, 상호부조 모임 같은 비공식 단체.",
+    "field_einNumber": "EIN",
+    "ein_hint": "형식: XX-XXXXXXX. 입력하면 검토가 빨라집니다.",
+    "ein_invalid": "9자리 EIN을 XX-XXXXXXX 형식으로 입력하세요.",
+    "field_documents": "서류",
+    "documents_hint": "IRS 면세 판정서, 설립 문서, 단체 레터헤드, 정부 발급 신분증의 사진이나 스캔 이미지를 최대 {{max}}개까지 첨부하세요. 검토 담당자만 볼 수 있습니다.",
+    "documents_required": "서류를 하나 이상 첨부하세요.",
+    "field_note": "검토 담당자에게 남길 메모",
+    "note_placeholder": "서류가 이 단체의 것임을 확인하는 데 도움이 되는 내용을 적어 주세요.",
+    "submit": "검토 요청",
+    "confirm_title": "검토를 요청할까요?",
+    "confirm_body_other": "단체 유형: {{kind}}, 첨부 서류 {{count}}개. 검토하는 동안에는 신청서를 수정할 수 없습니다.",
+    "submitted_toast": "신청서를 제출했습니다"
+  },
+  "portfolio": {
+    "empty_title": "단체로 주최하기",
+    "empty_body": "단체는 비영리 단체, 기관, 커뮤니티 모임이 함께 쓰는 공동 명의입니다. 행사에 단체 이름과 배지가 표시되고, 팀원들이 그 이름으로 함께 주최합니다.",
+    "empty_cta": "단체 만들기"
+  },
+  "event_link": {
+    "title": "단체",
+    "body": "이 행사를 단체 이름으로 주최하세요. 행사에 단체 이름과 인증 배지가 표시되고, 단체 관리자가 행사를 관리할 수 있습니다.",
+    "field": "주최",
+    "current": "현재 {{name}}에 연결되어 있습니다.",
+    "current_suspended": "정지된 단체인 {{name}}에 연결되어 있습니다. 연결은 유지되지만, 연결을 해제하면 다시 선택할 수 없습니다.",
+    "personal": "개인 (단체 없음)",
+    "personal_hint": "개인 행사는 내 이름으로 주최됩니다.",
+    "none": "아직 소유자나 관리자로 있는 단체가 없습니다.",
+    "create": "단체 만들기"
   }
 }

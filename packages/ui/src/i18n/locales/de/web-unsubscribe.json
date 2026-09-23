@@ -1,0 +1,15 @@
+{
+  "working": {
+    "title": "Wird abgemeldet…",
+    "body": "Einen Moment."
+  },
+  "done": {
+    "title": "Du bist von den Nachrichten dieser Veranstaltung abgemeldet.",
+    "body": "Du erhältst keine weiteren Updates vom Host dieser Veranstaltung. Bei einer Absage kann dich trotzdem eine Nachricht erreichen, denn das musst du über eine Veranstaltung wissen, für die du dich angemeldet hast."
+  },
+  "unusable": {
+    "title": "Dieser Link ließ sich nicht verwenden",
+    "body": "Dieser Abmeldelink konnte nicht verarbeitet werden, daher können wir dir nicht bestätigen, dass es geklappt hat. Manche Mail-Apps kürzen lange Links oder brechen sie um. Öffne den Link noch einmal aus der ursprünglichen E-Mail oder nutze den Link zu den Einstellungen unten."
+  },
+  "settings_prompt": "Um allgemein festzulegen, was civfix dir schickt, öffne die <0>Benachrichtigungseinstellungen</0>."
+}

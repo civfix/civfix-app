@@ -18,11 +18,15 @@
     "video": "Video",
     "image_unavailable": "Bild nicht verfügbar",
     "video_unavailable": "Video nicht verfügbar",
-    "remove_attachment": "Anhang entfernen"
+    "remove_attachment_n_one": "Anhang {{index}} von {{count}} entfernen",
+    "remove_attachment_n_other": "Anhang {{index}} von {{count}} entfernen",
+    "uploading": "Wird hochgeladen"
   },
   "verification_code": {
     "label": "Bestätigungscode",
-    "hint": "Öffnet die Tastatur zur Eingabe des Codes"
+    "hint": "Öffnet die Tastatur zur Eingabe des Codes",
+    "progress_one": "{{count}} von {{total}} Ziffern eingegeben",
+    "progress_other": "{{count}} von {{total}} Ziffern eingegeben"
   },
   "post_actions": {
     "like": "Gefällt mir",
@@ -37,5 +41,21 @@
   },
   "wizard_step_count": "Schritt {{current}} von {{total}}",
   "verified_badge": "Verifiziert",
-  "org_affiliation": "Zugehörig zu {{name}}"
+  "org_affiliation": "Zugehörig zu {{name}}",
+  "attach_error": {
+    "busy": "Warte, bis der aktuelle Anhang hochgeladen ist.",
+    "limit_one": "Du kannst nur {{count}} Anhang auf einmal hinzufügen.",
+    "limit_other": "Du kannst bis zu {{count}} Anhänge auf einmal hinzufügen.",
+    "library": "Die Mediathek konnte nicht geöffnet werden.",
+    "camera": "Die Kamera konnte nicht geöffnet werden.",
+    "rejected": "Diese Datei konnte nicht verwendet werden. Versuche ein anderes Foto oder Video.",
+    "rate_limited": "Zu viele Uploads. Warte kurz und versuche es erneut.",
+    "upload": "Dieser Anhang konnte nicht hochgeladen werden."
+  },
+  "stat_unknown": "Nicht verfügbar",
+  "qr_ticket": {
+    "unavailable": "Der QR-Code konnte nicht erstellt werden. Zeige stattdessen den Code darunter."
+  },
+  "caption_remaining_a11y_one": "Noch {{count}} Zeichen übrig",
+  "caption_remaining_a11y_other": "Noch {{count}} Zeichen übrig"
 }

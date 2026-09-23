@@ -18,5 +18,6 @@
   "blocked": {
     "label": "Blockierte Konten",
     "sub": "Personen, die du blockiert hast"
-  }
+  },
+  "save_error": "Diese Änderung konnte nicht gespeichert werden. Versuche es erneut."
 }

@@ -42,16 +42,24 @@
     "open": "Mein Profil"
   },
   "a11y": {
-    "attribution": "CARTO / OSM",
     "homeMap": "Karte mit Meldungen und Events",
     "picker": "Tippe auf die Karte, um die Standortmarkierung zu setzen, oder ziehe sie zum Feinjustieren",
-    "userLocation": "Dein Standort"
+    "userLocation": "Dein Standort",
+    "reportPin": "Meldung ({{category}}): {{title}}",
+    "reportPinUntitled": "Meldung ({{category}})",
+    "eventPin": "Event ({{kind}}): {{title}}",
+    "eventPinUntitled": "Event ({{kind}})",
+    "blendPin_one": "{{event}}, mit {{count}} verknüpften Meldung",
+    "blendPin_other": "{{event}}, mit {{count}} verknüpften Meldungen",
+    "cluster_one": "Gruppe mit {{count}} Markierung",
+    "cluster_other": "Gruppe mit {{count}} Markierungen"
   },
   "hint": {
     "place": "Tippe auf die Karte, um die Markierung zu setzen",
     "move": "Tippen, um die Markierung zu verschieben",
     "moveMainMap": "Tippe auf die Karte, um die Markierung zu verschieben",
-    "empty": "Noch kein Standort festgelegt"
+    "empty": "Noch kein Standort festgelegt",
+    "pending": "Dein Bereich wird ermittelt. Du kannst auch nach einer Adresse suchen, um die Markierung zu setzen."
   },
   "pickStep": {
     "title": "Standort festlegen",

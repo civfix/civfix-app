@@ -42,16 +42,22 @@
     "open": "내 프로필 보기"
   },
   "a11y": {
-    "attribution": "CARTO / OSM",
     "homeMap": "제보 및 이벤트 지도",
     "picker": "지도를 탭하여 위치 핀을 놓거나, 핀을 드래그하여 미세 조정하세요",
-    "userLocation": "내 위치"
+    "userLocation": "내 위치",
+    "reportPin": "{{category}} 신고: {{title}}",
+    "reportPinUntitled": "{{category}} 신고",
+    "eventPin": "{{kind}} 이벤트: {{title}}",
+    "eventPinUntitled": "{{kind}} 이벤트",
+    "blendPin_other": "{{event}}, 연결된 신고 {{count}}건",
+    "cluster_other": "핀 {{count}}개 묶음"
   },
   "hint": {
     "place": "지도를 탭하여 핀을 놓으세요",
     "move": "탭하여 핀을 이동하세요",
     "moveMainMap": "지도를 탭하여 핀을 이동하세요",
-    "empty": "아직 설정된 위치가 없습니다"
+    "empty": "아직 설정된 위치가 없습니다",
+    "pending": "내 지역을 찾는 중이에요. 주소를 검색해서 핀을 놓을 수도 있어요."
   },
   "pickStep": {
     "title": "위치 설정",

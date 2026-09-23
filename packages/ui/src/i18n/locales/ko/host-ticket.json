@@ -17,7 +17,8 @@
     "required_error": "이 항목은 필수입니다.",
     "required_summary": "필수 질문에 답해 주세요.",
     "loading": "질문을 불러오는 중…",
-    "error": "질문을 불러오지 못했습니다."
+    "error": "질문을 불러오지 못했습니다.",
+    "required_a11y": "{{prompt}}, 필수"
   },
   "consent": {
     "terms_lead": "",
@@ -47,7 +48,12 @@
     "seats_other": "{{count}}자리",
     "position": "대기 순번 {{position}}",
     "view_ticket": "티켓 보기",
-    "cancel": "등록 취소"
+    "cancel": "등록 취소",
+    "cancel_title": "등록을 취소할까요?",
+    "cancel_body": "자리는 바로 반환됩니다. 행사 정원이 차면 다시 등록할 때 대기자 명단에 오르게 됩니다.",
+    "cancel_waitlist_title": "대기자 명단에서 나갈까요?",
+    "cancel_waitlist_body": "지금의 대기 순번을 잃게 됩니다. 다시 등록하면 맨 뒤에서 기다리게 됩니다.",
+    "cancel_keep": "자리 유지하기"
   },
   "state": {
     "loading": "티켓을 불러오는 중…",

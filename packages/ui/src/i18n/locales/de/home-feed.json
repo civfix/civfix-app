@@ -19,7 +19,9 @@
     "empty_body_after": ", um die erste Neuigkeit zu teilen.",
     "caught_up": "Du bist auf dem neuesten Stand",
     "new_posts_one": "{{count}} neuer Beitrag",
-    "new_posts_other": "{{count}} neue Beiträge"
+    "new_posts_other": "{{count}} neue Beiträge",
+    "loading": "Beiträge werden geladen",
+    "load_more_error": "Weitere Beiträge konnten nicht geladen werden."
   },
   "thread": {
     "title": "Beitrag",
@@ -100,6 +102,8 @@
     },
     "replying_to": "Antwort an {{handle}}",
     "via": "von {{author}}",
-    "org_a11y": "{{name}} öffnen"
+    "org_a11y": "{{name}} öffnen",
+    "media_photo_position_a11y": "Foto {{index}} von {{count}}",
+    "media_video_position_a11y": "Video {{index}} von {{count}}"
   }
 }

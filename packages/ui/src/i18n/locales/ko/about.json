@@ -13,5 +13,6 @@
     "privacy_a11y": "개인정보처리방침",
     "source": "소스",
     "source_a11y": "GitHub의 소스 코드"
-  }
+  },
+  "dialog_a11y": "civfix 소개"
 }

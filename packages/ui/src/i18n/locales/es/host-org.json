@@ -5,7 +5,8 @@
     "error_body": "No pudimos cargar esta organización. Revisa tu conexión e inténtalo de nuevo."
   },
   "header": {
-    "slug": "@{{slug}}"
+    "slug": "@{{slug}}",
+    "public_page": "Página pública"
   },
   "links": {
     "website": "Sitio web",
@@ -31,7 +32,11 @@
   "nav": {
     "events": "Eventos",
     "overview": "Resumen",
-    "members": "Miembros"
+    "members": "Miembros",
+    "new_org": "Nueva organización",
+    "events_section": "Eventos",
+    "verification": "Verificación",
+    "settings": "Ajustes"
   },
   "overview": {
     "title": "Organización",
@@ -41,12 +46,23 @@
     "donation_link": "Enlace de donación",
     "no_donation_link": "Sin enlace de donación",
     "add_donation_link": "Añadir un enlace",
-    "edit_donation_link": "Editar enlace"
+    "edit_donation_link": "Editar enlace",
+    "verification": "Verificación",
+    "about": "Acerca de",
+    "edit": "Editar perfil",
+    "no_description": "Todavía no hay descripción. Cuéntale a la gente qué hace esta organización.",
+    "public_title": "Página pública",
+    "public_body": "Cualquiera con el enlace ve tu logo, tu descripción, tus enlaces y tu insignia de verificación.",
+    "your_role": "Tu rol"
   },
   "members": {
     "title": "Miembros",
     "joined": "Se unió {{when}}",
-    "read_only": "Solo la persona propietaria puede cambiar quién pertenece a esta organización."
+    "read_only": "Solo la persona propietaria puede cambiar quién pertenece a esta organización.",
+    "subtitle": "Los propietarios gestionan los roles y la facturación; los administradores llevan el perfil y los eventos; los miembros ven la lista de miembros.",
+    "you": "Tú",
+    "empty_title": "Todavía no hay miembros",
+    "empty_body": "Invita a tu equipo para que pueda coorganizar eventos con esta organización."
   },
   "events": {
     "upcoming": "Próximos eventos",
@@ -58,12 +74,44 @@
     "load_more": "Cargar más",
     "loading_more": "Cargando…",
     "load_more_upcoming_a11y": "Cargar más próximos eventos",
-    "load_more_past_a11y": "Cargar más eventos pasados"
+    "load_more_past_a11y": "Cargar más eventos pasados",
+    "title": "Eventos",
+    "subtitle": "Eventos vinculados a esta organización. Vincula uno desde los Ajustes del evento, en Organización.",
+    "empty_title": "Todavía no hay eventos vinculados",
+    "empty_body": "Crea un evento, abre sus Ajustes y elige esta organización en Organización. Los eventos vinculados muestran el nombre y la insignia de verificación de la organización."
   },
   "form": {
     "donationUrl": "Enlace de donación",
     "donation_hint": "Debe empezar por https://. Se muestra en tu página pública y en tus eventos; civfix nunca gestiona el dinero.",
-    "donation_invalid": "Debe empezar por https://"
+    "donation_invalid": "Debe empezar por https://",
+    "identity_title": "Identidad",
+    "identity_body": "Cómo aparece la organización en los eventos, los recibos y su página pública.",
+    "logo": "Logo",
+    "logo_hint": "Imagen cuadrada; se muestra en tamaños pequeños.",
+    "name": "Nombre",
+    "slug": "Identificador",
+    "slug_hint": "Tu página pública estará en {{host}}/orgs/<identificador>. Letras minúsculas, números y guiones.",
+    "slug_locked": "El identificador no se puede cambiar una vez creada la organización.",
+    "slug_ok": "Se ve bien",
+    "slug_empty": "Elige un identificador para la página pública.",
+    "slug_short": "El identificador necesita al menos {{min}} caracteres.",
+    "slug_long": "El identificador puede tener como máximo {{max}} caracteres.",
+    "slug_format": "Usa letras minúsculas, números y guiones simples.",
+    "slug_taken": "Ese identificador ya está en uso. Prueba con otro.",
+    "slug_reserved": "Ese identificador está reservado. Prueba con otro.",
+    "about_title": "Acerca de",
+    "description": "Descripción",
+    "description_hint": "Qué hacen y a quién sirven. Se muestra en la página pública.",
+    "websiteUrl": "Sitio web",
+    "website_hint": "Debe empezar por https://",
+    "website_invalid": "Escribe una dirección https:// completa.",
+    "social_title": "Redes sociales",
+    "social_body": "Solo el nombre de usuario; nosotros creamos el enlace. Todo es opcional.",
+    "whatsapp_invalid": "Escribe el número con prefijo de país, solo dígitos.",
+    "handle_invalid": "Los nombres de usuario admiten letras, números, puntos y guiones bajos.",
+    "create_action": "Crear organización",
+    "saved": "Organización guardada",
+    "created": "Organización creada"
   },
   "manage": {
     "action": "Gestionar",
@@ -100,5 +148,187 @@
     "error_validation": "Revisa los campos e inténtalo de nuevo.",
     "error_rate_limited": "Demasiados cambios seguidos. Espera un momento e inténtalo de nuevo.",
     "error_generic": "No se pudo guardar el cambio. Inténtalo de nuevo."
+  },
+  "public": {
+    "kind_nonprofit": "Organización sin fines de lucro verificada",
+    "kind_government": "Entidad gubernamental verificada",
+    "kind_community": "Grupo comunitario verificado",
+    "loading_title": "Cargando",
+    "loading_body": "Cargando esta organización.",
+    "not_found_title": "No encontramos esa organización",
+    "invalid_link_body": "Este enlace no es válido. Revisa el enlace que seguiste o busca organizaciones en <0>civfix</0>.",
+    "not_found_body": "Puede que haya cambiado de nombre o se haya eliminado. Busca organizaciones en <0>civfix</0>.",
+    "error_title": "No pudimos cargar esta página",
+    "retry": "Intentar de nuevo",
+    "error_body": "Revisa tu conexión e inténtalo de nuevo.",
+    "at_a_glance": "De un vistazo",
+    "donate": "Donar a {{name}}",
+    "about": "Acerca de",
+    "links": "Enlaces",
+    "footer_hosts": "{{name}} organiza eventos de voluntariado en <0>civfix</0>.",
+    "footer_console": "¿Diriges una organización? <0>Abre la consola de anfitrión</0>."
+  },
+  "accept": {
+    "signed_out_title": "Inicia sesión para aceptar tu invitación",
+    "signed_out_body": "Usa el correo al que se envió la invitación. Volverás aquí directamente en cuanto inicies sesión.",
+    "sign_in": "Iniciar sesión",
+    "title": "Invitación a una organización",
+    "heading": "Te invitaron a unirte a una organización",
+    "body": "Al aceptar, te unes a su equipo: verás los eventos y la consola de la organización, y podrás organizar eventos en su nombre.",
+    "not_now": "Ahora no",
+    "action": "Aceptar la invitación",
+    "joined": "Te uniste a {{name}}",
+    "joined_as_owner": "Eres el propietario.",
+    "joined_as_admin": "Eres administrador.",
+    "joined_as_member": "Eres miembro.",
+    "error_invalid_title": "Esta invitación no es válida o fue revocada",
+    "error_invalid_body": "Comprueba que iniciaste sesión con el correo al que se envió la invitación, o pide a la organización que te envíe una nueva.",
+    "error_expired_title": "Esta invitación caducó",
+    "error_expired_body": "Pide a la organización que te envíe una nueva.",
+    "error_wrong_email_title": "Esta invitación se envió a otro correo",
+    "error_wrong_email_body": "Inicia sesión con la dirección que la recibió y vuelve a abrir el enlace.",
+    "error_other_body": "No cambió nada. Puedes intentarlo de nuevo."
+  },
+  "switcher": {
+    "label": "Organizaciones",
+    "empty": "Todavía no formas parte de ninguna organización.",
+    "new": "Nueva organización"
+  },
+  "create": {
+    "title": "Nueva organización",
+    "subtitle": "Organiza eventos con un nombre compartido, invita a tu equipo y obtén la verificación."
+  },
+  "invite": {
+    "action": "Invitar",
+    "title": "Invitar a un miembro",
+    "identifier_kind": "Buscar por",
+    "by_handle": "Usuario de civfix",
+    "by_email": "Correo",
+    "handle": "Nombre de usuario",
+    "email": "Dirección de correo",
+    "email_hint": "Le enviaremos una invitación por correo; caduca en {{days}} días.",
+    "handle_hint": "El @usuario de su perfil de civfix.",
+    "role": "Rol",
+    "role_admin_hint": "Los administradores editan el perfil, solicitan la verificación e invitan a miembros.",
+    "role_member_hint": "Los miembros ven los eventos y la lista de miembros de la organización.",
+    "send": "Enviar la invitación",
+    "added": "Se añadió a {{name}}",
+    "sent": "Invitación enviada",
+    "sent_email_body_one": "Enviamos una invitación a {{email}}; caduca en {{count}} día.",
+    "sent_email_body_other": "Enviamos una invitación a {{email}}; caduca en {{count}} días.",
+    "sent_user_body_one": "Enviamos una invitación a {{name}}; caduca en {{count}} día.",
+    "sent_user_body_other": "Enviamos una invitación a {{name}}; caduca en {{count}} días.",
+    "sent_to": "Enviada a",
+    "sent_hint": "La aceptan iniciando sesión en civfix con la dirección invitada. Puedes revocarla desde la lista de invitaciones pendientes.",
+    "another": "Invitar a otra persona",
+    "done": "Listo",
+    "error_not_found": "No encontramos a nadie con ese nombre de usuario.",
+    "error_conflict": "Esa persona ya es miembro o ya tiene una invitación abierta."
+  },
+  "role": {
+    "change_a11y": "Cambiar el rol de {{name}}",
+    "confirm_title": "¿Cambiar el rol?",
+    "confirm_body": "El rol de {{name}} en esta organización cambiará a {{role}}.",
+    "confirm_action": "Cambiar rol",
+    "updated": "Rol actualizado",
+    "error_forbidden": "Solo el propietario puede cambiar los roles."
+  },
+  "remove": {
+    "a11y": "Quitar a {{name}}",
+    "action": "Quitar",
+    "confirm_title": "¿Quitar al miembro?",
+    "confirm_body": "{{name}} perderá el acceso a los eventos y la consola de esta organización. Puedes volver a invitar a esa persona más adelante.",
+    "done": "Se quitó a {{name}}"
+  },
+  "invites": {
+    "title": "Invitaciones pendientes",
+    "subtitle": "Las invitaciones caducan a los 14 días. Revoca una para que el enlace deje de funcionar.",
+    "unknown": "Alguien",
+    "invited_by": "Invitación de {{name}}",
+    "expired": "Caducada",
+    "expires_in_one": "Caduca en {{count}} día",
+    "expires_in_other": "Caduca en {{count}} días",
+    "status_expired": "Caducada",
+    "revoke": "Revocar",
+    "revoke_a11y": "Revocar la invitación de {{name}}",
+    "revoke_title": "¿Revocar la invitación?",
+    "revoke_body": "El enlace de invitación de {{name}} dejará de funcionar. Puedes volver a invitar a esa persona más adelante.",
+    "revoked": "Se revocó la invitación de {{name}}",
+    "error_title": "No se pudieron cargar las invitaciones pendientes",
+    "error_not_found": "Esa invitación ya fue aceptada o revocada."
+  },
+  "next": {
+    "title": "Próximos pasos",
+    "welcome_title": "{{name}} está lista. Próximos pasos:",
+    "progress": "{{done}} de {{total}} completados",
+    "dismiss": "Ocultar",
+    "done": "Hecho",
+    "profile_title": "Completa el perfil",
+    "profile_body": "Añade un logo y una descripción para que la gente te reconozca en la página pública.",
+    "members_title": "Invita a tu equipo",
+    "members_body": "Los administradores pueden llevar eventos y editar el perfil; los miembros ven la lista de miembros.",
+    "verification_title": "Solicita la verificación",
+    "verification_body": "Una insignia en cada evento que organices.",
+    "events_title": "Vincula un evento",
+    "events_body": "Abre los Ajustes de un evento y elige esta organización en Organización."
+  },
+  "no_access_title": "Solo propietarios y administradores",
+  "no_access_body": "Pide a un propietario o administrador de esta organización que haga el cambio.",
+  "settings": {
+    "intro": "Los cambios se muestran en la página pública y en cada evento vinculado a esta organización."
+  },
+  "suspended": {
+    "title": "civfix suspendió esta organización.",
+    "body": "Los miembros pueden verla, pero no cambiarla. Los eventos, las invitaciones, la verificación y los ajustes son de solo lectura hasta que se levante la suspensión.",
+    "error_forbidden": "Esta organización está suspendida, así que no se puede cambiar por ahora."
+  },
+  "verification": {
+    "verified_title": "Esta organización está verificada",
+    "verified_body": "Tus eventos llevan una insignia de verificación en la que la gente puede confiar.",
+    "pending_title": "Solicitud en revisión",
+    "pending_body": "Estamos revisando tus documentos. Te avisaremos en cuanto haya una decisión, normalmente en unos pocos días hábiles.",
+    "rejected_title": "Solicitud no aprobada",
+    "rejected_body": "Revisa el motivo de abajo, corrige lo que falta y vuelve a solicitarla con documentos actualizados.",
+    "unverified_title": "Aún sin verificar",
+    "unverified_body": "La verificación añade una insignia a tus eventos. Cuéntanos qué tipo de organización es la tuya y adjunta pruebas.",
+    "submitted": "Enviada",
+    "reviewed": "Revisada",
+    "reason": "Motivo",
+    "no_reason": "No se indicó ningún motivo.",
+    "reapply": "Solicitar de nuevo",
+    "apply_title": "Solicitar la verificación",
+    "field_kind": "Tipo de organización",
+    "kind_nonprofit_hint": "Una organización 501(c)(3) registrada o similar.",
+    "kind_government_hint": "Una agencia o un departamento municipal, del condado, estatal o federal.",
+    "kind_community_hint": "Un consejo vecinal, un club escolar, un grupo de ayuda mutua u otro grupo informal.",
+    "field_einNumber": "EIN",
+    "ein_hint": "Formato XX-XXXXXXX. Agiliza la revisión.",
+    "ein_invalid": "Escribe el EIN de 9 dígitos como XX-XXXXXXX.",
+    "field_documents": "Documentos",
+    "documents_hint": "Fotos o escaneos (imágenes) de tu carta de determinación del IRS, acta constitutiva, papel membretado o una credencial oficial del gobierno, hasta {{max}}. Solo nuestros revisores los ven.",
+    "documents_required": "Adjunta al menos un documento.",
+    "field_note": "Nota para quien revisa",
+    "note_placeholder": "Cualquier dato que nos ayude a relacionar los documentos con esta organización.",
+    "submit": "Enviar a revisión",
+    "confirm_title": "¿Enviar a revisión?",
+    "confirm_body_one": "Tipo de organización: {{kind}}, con {{count}} documento adjunto. No podrás editar la solicitud mientras esté en revisión.",
+    "confirm_body_other": "Tipo de organización: {{kind}}, con {{count}} documentos adjuntos. No podrás editar la solicitud mientras esté en revisión.",
+    "submitted_toast": "Solicitud enviada"
+  },
+  "portfolio": {
+    "empty_title": "Organiza eventos como organización",
+    "empty_body": "Una organización es una identidad compartida para una entidad sin fines de lucro, una agencia o un grupo comunitario: los eventos llevan su nombre y su insignia, y tu equipo coorganiza con ella.",
+    "empty_cta": "Crear una organización"
+  },
+  "event_link": {
+    "title": "Organización",
+    "body": "Organiza este evento con una organización: llevará su nombre y su insignia de verificación, y sus administradores podrán gestionar el evento.",
+    "field": "Organizado por",
+    "current": "Vinculado actualmente a {{name}}.",
+    "current_suspended": "Vinculado a {{name}}, que está suspendida: sigue vinculado, pero no se podrá volver a elegir si lo desvinculas.",
+    "personal": "Personal (sin organización)",
+    "personal_hint": "Los eventos personales se organizan con tu propio nombre.",
+    "none": "Todavía no eres propietario ni administrador de ninguna organización.",
+    "create": "Crear una"
   }
 }

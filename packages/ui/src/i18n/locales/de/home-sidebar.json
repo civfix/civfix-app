@@ -20,7 +20,9 @@
   "results": {
     "people": "Personen",
     "events": "Events",
-    "reports": "Meldungen"
+    "reports": "Meldungen",
+    "load_more_reports": "Weitere Meldungen anzeigen",
+    "loading_more": "Wird geladen…"
   },
   "search_page": {
     "title": "Suche",

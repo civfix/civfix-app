@@ -64,7 +64,8 @@
     "close": "Schließen",
     "settings": "Einstellungen",
     "resize_sidebar": "Seitenleiste anpassen",
-    "drag_handle": "Ziehpunkt"
+    "drag_handle": "Ziehpunkt",
+    "show_tab_bar": "Tab-Leiste einblenden"
   },
   "fallback_you": "Du"
 }

@@ -64,7 +64,8 @@
     "close": "Cerrar",
     "settings": "Ajustes",
     "resize_sidebar": "Redimensionar barra lateral",
-    "drag_handle": "Controlador de arrastre"
+    "drag_handle": "Controlador de arrastre",
+    "show_tab_bar": "Mostrar la barra de pestañas"
   },
   "fallback_you": "Tú"
 }

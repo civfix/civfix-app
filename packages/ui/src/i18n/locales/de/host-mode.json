@@ -78,7 +78,8 @@
     "title": "Nach Ticketart",
     "of": "{{registered}} von {{capacity}}",
     "waiting_one": "{{count}} wartet",
-    "waiting_other": "{{count}} warten"
+    "waiting_other": "{{count}} warten",
+    "meter_a11y": "{{name}}: {{registered}} von {{capacity}} angemeldet"
   },
   "arrivals": {
     "title": "Ankünfte",

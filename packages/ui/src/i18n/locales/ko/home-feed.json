@@ -18,7 +18,9 @@
     "empty_body_link": "로그인",
     "empty_body_after": "하고 첫 소식을 공유해 보세요.",
     "caught_up": "모두 확인했어요",
-    "new_posts_other": "새 게시물 {{count}}개"
+    "new_posts_other": "새 게시물 {{count}}개",
+    "loading": "게시물을 불러오는 중",
+    "load_more_error": "게시물을 더 불러오지 못했어요."
   },
   "thread": {
     "title": "게시물",
@@ -96,6 +98,8 @@
     },
     "replying_to": "{{handle}}님에게 답글",
     "via": "{{author}} 작성",
-    "org_a11y": "{{name}} 열기"
+    "org_a11y": "{{name}} 열기",
+    "media_photo_position_a11y": "사진 {{count}}장 중 {{index}}번째",
+    "media_video_position_a11y": "동영상 {{count}}개 중 {{index}}번째"
   }
 }

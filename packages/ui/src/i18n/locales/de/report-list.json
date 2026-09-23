@@ -7,7 +7,9 @@
   "search": {
     "placeholder": "Meldungen durchsuchen",
     "a11y": "Meldungen durchsuchen",
-    "clear_a11y": "Suche löschen"
+    "clear_a11y": "Suche löschen",
+    "partial_one": "Treffer aus deiner neuesten Meldung.",
+    "partial_other": "Treffer aus deinen {{count}} neuesten Meldungen."
   },
   "empty": {
     "no_match": {
