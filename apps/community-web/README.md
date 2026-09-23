@@ -117,8 +117,8 @@ Map seam, so they always match the tokens.
 ### Fonts
 
 Fonts are self-hosted; nothing is fetched from a font CDN at runtime. `scripts/copy-contract-fonts.mjs`
-copies the woff2 files into `public/fonts/` (from the installed `@fontsource` packages, plus the
-tracked Hanken Grotesk variable font, whose checksum and license it verifies), and
+copies the woff2 files into `public/fonts/` from the installed `@fontsource` packages and verifies
+the checksum and license of the tracked Hanken Grotesk variable font, and
 `src/styles/contract-fonts.css` declares an `@font-face` for every literal family name the shared UI
 emits through react-native-web (e.g. `HankenGrotesk_600SemiBold`). `globals.css` points
 `--font-display` / `--font-body` at Hanken Grotesk and `--font-mono` at JetBrains Mono, which back the
@@ -143,7 +143,7 @@ emits through react-native-web (e.g. `HankenGrotesk_600SemiBold`). `globals.css`
 
 ## State and data
 
-- `src/store/auth-store.ts` (zustand): `status`, `user`, `csrfToken`, `roles`, and `optimistic` (the
+- `src/store/auth-store.ts` (zustand): `status`, `user`, `csrfToken`, `roles`, `enabledProviders`, `guestSmsEnabled` and `optimistic` (the
   signed-in state restored from a local snapshot before the session check lands). Revalidated from
   `GET /auth/session` by `src/components/auth/auth-hydrator.tsx`.
 - `src/store/ui-store.ts`: the auth modal's open state (the bottom sheet belongs to `AppShell`).
@@ -204,8 +204,9 @@ a local static-server preview — Cloudflare consumes these only at deploy time.
 Pages project `civfix-web` with `wrangler pages deploy` (Direct Upload, not Pages' own git build):
 a push to `main` publishes STAGING to the `staging` branch (alias `staging.civfix-web.pages.dev`,
 served as https://civfix.dev), and a published `v*` release rebuilds the same commit with production
-values and publishes it to the Pages production branch `main` (https://civfix.org). On a push, only paths that feed the web build trigger it, so a mobile-only change
-never redeploys the site; a release always deploys.
+values and publishes it to the Pages production branch `main` (https://civfix.org). On a push,
+only paths that feed the web build trigger it, so a mobile-only change never redeploys the site; a
+release always deploys.
 
 The Pages config lives in this app, not at the repo root: `apps/community-web/wrangler.jsonc` supplies
 the project name and `pages_build_output_dir: "out"`, and `wrangler` picks up the sibling

@@ -166,7 +166,7 @@ apps/community-mobile/scripts/prep-archive.sh appstore --platform android
 
 It runs `pnpm install --frozen-lockfile`, writes `.env`, re-runs `expo prebuild` + `pod install`,
 clears the Metro cache, then prints the config it actually produced (API URL, build number, update
-channel, signing team) and fails rather than leave you with a mis-baked project.
+channel, signing team, and the `@civfix/ui` / `@civfix/shared` versions on disk) and fails rather than leave you with a mis-baked project.
 
 The lockfile sync matters because an Xcode archive bundles JS straight out of `node_modules` and
 nothing else in the pipeline notices when a third-party dependency there is stale. Then: open
@@ -373,8 +373,9 @@ to `eas build`), and never map the `testflight` channel onto a prod-published br
 Config plugins are declared in `apps/community-mobile/app.config.js`: expo-router,
 expo-localization, expo-build-properties, MapLibre, expo-secure-store, Apple authentication,
 expo-location, expo-notifications, vision-camera, expo-image-picker, Google sign-in (URL scheme) and
-expo-splash-screen. The iOS permission strings it sets are camera, microphone, location when in use
-and photo library. The API base
+expo-splash-screen. Its `infoPlist` block sets the camera, microphone, location-when-in-use and
+photo-library strings; the plugins add the location-always pair (expo-location defaults) and Face ID
+(expo-secure-store). The API base
 URL comes from `EXPO_PUBLIC_API_URL`, surfaced via `extra.apiUrl`; when unset, dev builds fall back
 to `http://localhost:8080` and release builds to whichever API the install source implies -
 `https://api.civfix.dev` from TestFlight, `https://api.civfix.org` from the App Store

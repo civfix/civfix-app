@@ -153,9 +153,11 @@ it is the full runbook. In short:
    they take `workspace:*`. No consumer may ever depend on `@civfix/ui`.
 
 The contract's versions and tags are package-scoped (`@civfix/shared@X.Y.Z`). A `vX.Y.Z` GitHub
-release is something else: it is the production deploy of this repo's apps and publishes nothing to
-the registry. A push to `main` with no applied version bump publishes nothing. See [RELEASING.md](../../RELEASING.md) for the exact
-steps, the 0.x caret rule and the consumer manifests.
+release is something else: it is the production deploy of community-web (a rebuild of the tagged
+commit) and publishes nothing to the registry. Mobile production goes out through a manual
+`deploy-mobile.yml` run with `profile=production`, never through a release. A push to `main` with no
+applied version bump publishes nothing. See [RELEASING.md](../../RELEASING.md) for the exact steps,
+the 0.x caret rule and the consumer manifests.
 
 See DECISIONS.md for the taxonomy and structural decisions made while building this package.
 
