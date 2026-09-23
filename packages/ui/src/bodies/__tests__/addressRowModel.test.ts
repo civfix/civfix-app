@@ -7,6 +7,7 @@ import {
   appleMapsUrl,
   applyNearPrefix,
   googleMapsUrl,
+  showOnMapPlan,
   stripNearPrefix,
 } from "../addressRowModel"
 
@@ -232,6 +233,16 @@ describe("addressExternalPlan", () => {
   })
 })
 
+describe("showOnMapPlan", () => {
+  it("keeps the rail open with a page-owned focus on the expanded layout", () => {
+    expect(showOnMapPlan("expanded")).toEqual({ owner: "page", switchView: false })
+  })
+
+  it("hands the focus off and switches to the Map tab on the compact layout", () => {
+    expect(showOnMapPlan("compact")).toEqual({ owner: "handoff", switchView: true })
+  })
+})
+
 describe("AddressRow source", () => {
   const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
   const row = strip(readFileSync(new URL("../AddressRow.tsx", import.meta.url), "utf8"))
@@ -249,8 +260,14 @@ describe("AddressRow source", () => {
     expect(row.indexOf("onPress={onFocusMap}")).toBeGreaterThan(gateAt)
   })
 
-  it("reveals the map by dropping the sheet to its mid detent after focusing", () => {
+  it("hands off and switches to the Map tab on compact, keeps the rail on expanded", () => {
     const focus = /const onFocusMap = useCallback\([\s\S]*?\n {2}\}, \[/.exec(row)?.[0] ?? ""
-    expect(focus).toContain("useNavStore.getState().setSnap(1)")
+    expect(focus).toContain("showOnMapPlan(mode)")
+    expect(focus).toContain("plan.owner")
+    expect(focus).toContain('if (plan.switchView) nav.selectView("map")')
+    expect(focus).toContain("else nav.setSnap(1)")
+    const switchAt = focus.indexOf("selectView(")
+    expect(switchAt).toBeGreaterThan(focus.indexOf("setReport("))
+    expect(switchAt).toBeGreaterThan(focus.indexOf("setEvent("))
   })
 })

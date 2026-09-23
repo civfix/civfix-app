@@ -5,6 +5,7 @@ import type { AddressPrecision, EventKind, ReportCategory } from "@civfix/shared
 import {
   focusRingProps,
   makeThemedStyles,
+  useLayoutMode,
   useTheme,
   webCursorPointer,
   webHover,
@@ -26,6 +27,7 @@ import {
   appleMapsUrl,
   applyNearPrefix,
   googleMapsUrl,
+  showOnMapPlan,
   type AddressMapsOption,
   type AddressPoint,
 } from "./addressRowModel"
@@ -193,6 +195,7 @@ export function AddressRow({
   const clipboard = useClipboard()
   const openExternal = useOpenExternal()
   const haptics = useHaptics()
+  const mode = useLayoutMode()
   const toast = useToast()
   const [sheetOpen, setSheetOpen] = useState(false)
 
@@ -290,17 +293,23 @@ export function AddressRow({
   const onFocusMap = useCallback(() => {
     if (!point || !focusTarget) return
     haptics.selection()
+    const plan = showOnMapPlan(mode)
+    const focus = useMapFocus.getState()
     if (focusTarget.kind === "report") {
-      useMapFocus
-        .getState()
-        .setReport({ id: focusTarget.id, lat: point.lat, lng: point.lng, category: focusTarget.category })
+      focus.setReport(
+        { id: focusTarget.id, lat: point.lat, lng: point.lng, category: focusTarget.category },
+        plan.owner,
+      )
     } else {
-      useMapFocus
-        .getState()
-        .setEvent({ id: focusTarget.id, lat: point.lat, lng: point.lng, eventKind: focusTarget.eventKind })
+      focus.setEvent(
+        { id: focusTarget.id, lat: point.lat, lng: point.lng, eventKind: focusTarget.eventKind },
+        plan.owner,
+      )
     }
-    useNavStore.getState().setSnap(1)
-  }, [focusTarget, haptics, point])
+    const nav = useNavStore.getState()
+    if (plan.switchView) nav.selectView("map")
+    else nav.setSnap(1)
+  }, [focusTarget, haptics, mode, point])
 
   if (!display) return null
 

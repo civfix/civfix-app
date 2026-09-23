@@ -1,5 +1,7 @@
 import type { AddressPrecision } from "@civfix/shared"
 import { needsNearPrefix } from "@civfix/shared"
+import type { LayoutMode } from "../theme"
+import type { FocusOwner } from "../map/mapFocusStore"
 
 export interface AddressPoint {
   lat: number
@@ -19,6 +21,11 @@ export interface AddressRowAffordances {
   focusMap: boolean
   copy: boolean
   externalMaps: boolean
+}
+
+export interface ShowOnMapPlan {
+  owner: FocusOwner
+  switchView: boolean
 }
 
 export type AddressExternalPlan =
@@ -135,4 +142,10 @@ export function addressExternalPlan(input: {
   })
   if (options.length === 0) return { kind: "none" }
   return { kind: "sheet", options }
+}
+
+export function showOnMapPlan(mode: LayoutMode): ShowOnMapPlan {
+  return mode === "expanded"
+    ? { owner: "page", switchView: false }
+    : { owner: "handoff", switchView: true }
 }
