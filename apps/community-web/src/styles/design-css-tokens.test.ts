@@ -47,6 +47,11 @@ describe("design.css neutrals mirror @civfix/shared tokens", () => {
   it("paints the shell and the boot splash from the same variable", () => {
     expect(CSS).toMatch(/\.cf-shell\s*\{[^}]*background:\s*var\(--paper\)/)
   })
+
+  it("keeps the shell clear of a landscape notch by consuming the side safe areas at the frame", () => {
+    expect(CSS).toMatch(/\.cf-shell\s*\{[^}]*left:\s*env\(safe-area-inset-left, 0px\)/)
+    expect(CSS).toMatch(/\.cf-shell\s*\{[^}]*right:\s*env\(safe-area-inset-right, 0px\)/)
+  })
 })
 
 const HUES = [

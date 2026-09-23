@@ -71,7 +71,8 @@ export function AppDownloadBanner() {
         gap: 10,
         // Safe-area padding is a no-op in a normal Safari tab (its viewport already starts below the
         // status bar) but keeps the banner clear of the notch in any edge-to-edge browser chrome.
-        padding: "calc(8px + env(safe-area-inset-top, 0px)) 12px 8px",
+        padding:
+          "calc(8px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) 8px calc(12px + env(safe-area-inset-left, 0px))",
         background: "var(--card, #fff)",
         borderBottom: "1px solid var(--ink-5)",
         boxShadow: "0 1px 3px rgba(0,0,0,0.06)",

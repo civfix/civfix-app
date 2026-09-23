@@ -499,4 +499,12 @@ describe("PageStack.web: retained whole-page layers, no gesture", () => {
     expect(web).toMatch(/<PageActiveProvider value=\{active\}>\{body\}<\/PageActiveProvider>/)
     expect(web).toMatch(/aria-hidden=\{!active\}/)
   })
+
+  it("makes every retained layer below the top inert and gives each layer a focus fallback", () => {
+    expect(web).toMatch(/if \(active\) node\.removeAttribute\("inert"\)\s*else node\.setAttribute\("inert", ""\)/)
+    expect(web).toMatch(/\}, \[active\]\)/)
+    expect(web).toMatch(/ref=\{layerRef\}/)
+    expect(web).toMatch(/tabIndex=\{-1\}/)
+    expect(web).toMatch(/dataSet: \{ civfixPageLayer: "" \}/)
+  })
 })

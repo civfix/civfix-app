@@ -10,7 +10,7 @@ describe("the mount seed takes its layout mode from the shared shell rule", () =
   it("seeds the nav store through layoutModeFor, not a local orientation test", () => {
     expect(adapter).toContain("layoutModeFor,")
     expect(adapter).toContain("return layoutModeFor(window.innerWidth, window.innerHeight)")
-    expect(adapter).toContain("seed(entryFromPath(pathname), liveMode())")
+    expect(adapter).toContain("seed(entryFromWebPath(pathname), liveMode())")
     expect(adapter).not.toContain("window.innerWidth >= window.innerHeight")
   })
 
@@ -18,5 +18,14 @@ describe("the mount seed takes its layout mode from the shared shell rule", () =
     expect(preview).toContain('import { layoutModeFor } from "@civfix/ui"')
     expect(preview).toContain("return layoutModeFor(window.innerWidth, window.innerHeight)")
     expect(preview).not.toContain("window.innerWidth >= window.innerHeight")
+  })
+})
+
+describe("focus follows the page on top", () => {
+  it("skips hidden and inert layers and falls back to the page layer when it has no heading", () => {
+    expect(adapter).toContain(`.filter((element) => !element.closest('[aria-hidden="true"], [inert]'))`)
+    expect(adapter).toContain(
+      'lastFocusable("[data-civfix-panel-heading]") ?? lastFocusable("[data-civfix-page-layer]")',
+    )
   })
 })

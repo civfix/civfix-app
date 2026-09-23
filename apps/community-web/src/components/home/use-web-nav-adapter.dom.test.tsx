@@ -165,6 +165,15 @@ describe("mount", () => {
     expect(nav().view).toBe("report")
   })
 
+  it("opens a cold shared post link as its thread and keeps the short address", () => {
+    window.history.replaceState(null, "", "/post/p1")
+    mount()
+    expect(nav().stack).toEqual([{ kind: "post-thread", id: "p1" }])
+    expect(nav().seededDetailPage).toBe(true)
+    expect(path()).toBe("/post/p1/")
+    expect(depth()).toBe(1)
+  })
+
   it("restores the stamped snapshot instead of re-seeding, so a reload keeps the stack", async () => {
     mount()
     await drive(() => nav().push(PIN_A))

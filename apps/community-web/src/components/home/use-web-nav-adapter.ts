@@ -3,7 +3,6 @@
 import * as React from "react"
 import {
   useNavStore,
-  entryFromPath,
   layoutModeFor,
   takeNavSnapshot,
   ROOT_NAV_SNAPSHOT,
@@ -12,6 +11,7 @@ import {
 } from "@civfix/ui"
 
 import {
+  entryFromWebPath,
   pathForSnapshot,
   readNavHistory,
   reconcilePlan,
@@ -49,7 +49,13 @@ function seedPathname(): string {
  * layout mode.
  */
 function seedStoreFromPath(pathname: string): void {
-  useNavStore.getState().seed(entryFromPath(pathname), liveMode())
+  useNavStore.getState().seed(entryFromWebPath(pathname), liveMode())
+}
+
+function lastFocusable(selector: string): Element | undefined {
+  return Array.from(document.querySelectorAll(selector))
+    .filter((element) => !element.closest('[aria-hidden="true"], [inert]'))
+    .pop()
 }
 
 function liveSnapshot(): NavSnapshot {
@@ -344,10 +350,9 @@ export function useWebNavAdapter(): void {
       if (typeof window === "undefined") return
       if (active) {
         requestAnimationFrame(() => {
-          const h = Array.from(document.querySelectorAll("[data-civfix-panel-heading]"))
-            .filter((heading) => !heading.closest('[aria-hidden="true"]'))
-            .pop()
-          if (h instanceof HTMLElement) h.focus({ preventScroll: true })
+          const target =
+            lastFocusable("[data-civfix-panel-heading]") ?? lastFocusable("[data-civfix-page-layer]")
+          if (target instanceof HTMLElement) target.focus({ preventScroll: true })
         })
       }
     })

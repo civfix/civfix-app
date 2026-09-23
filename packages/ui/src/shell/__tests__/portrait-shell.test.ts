@@ -547,3 +547,12 @@ describe("every shell host navigates in the SAME motion language (source-pinned)
     expect(hosts["PortraitShell.shared.tsx"]).toMatch(/<PageStack/)
   })
 })
+
+describe("PortraitShell.web: the top inset counts the notch once", () => {
+  const src = readFileSync(new URL("../PortraitShell.web.tsx", import.meta.url), "utf8")
+
+  it("takes the larger of the safe-area top and a banner that already pads for it", () => {
+    expect(src).toContain("topInset={Math.max(insets.top, bannerHeight)}")
+    expect(src).not.toMatch(/insets\.top \+ bannerHeight/)
+  })
+})

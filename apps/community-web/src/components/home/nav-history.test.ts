@@ -8,6 +8,7 @@ import {
 } from "@civfix/ui/nav"
 
 import {
+  entryFromWebPath,
   pathForSnapshot,
   readNavHistory,
   reconcilePlan,
@@ -400,12 +401,27 @@ describe("pathForSnapshot", () => {
       snapshot({ stack: [{ kind: "person", id: "u1" }] }),
       snapshot({ stack: [{ kind: "thread", id: "t1", roomKind: "dm" }] }),
       snapshot({ stack: [{ kind: "activity" }] }),
+      snapshot({ stack: [{ kind: "post", id: "p1" }] }),
+      snapshot({ stack: [{ kind: "post-thread", id: "p1" }] }),
     ]
     for (const source of cases) {
       const path = pathForSnapshot(source)
-      const entry = entryFromPath(path)
+      const entry = entryFromWebPath(path)
       expect(entry).not.toBeNull()
       expect(pathForSnapshot(snapshot({ ...source, stack: [entry as DetailEntry] }))).toBe(path)
     }
+  })
+})
+
+describe("web post addresses", () => {
+  it("writes a post thread at the short shared address, never the /thread form", () => {
+    expect(pathForSnapshot(snapshot({ stack: [{ kind: "post-thread", id: "p1" }] }))).toBe("/post/p1/")
+  })
+
+  it("reads a shared post link as its thread on web while the shared parser keeps it a post", () => {
+    expect(entryFromPath("/post/p1")).toEqual({ kind: "post", id: "p1" })
+    expect(entryFromWebPath("/post/p1")).toEqual({ kind: "post-thread", id: "p1" })
+    expect(entryFromWebPath("/post/p1/thread")).toEqual({ kind: "post-thread", id: "p1" })
+    expect(entryFromWebPath("/pin/a")).toEqual(entryFromPath("/pin/a"))
   })
 })

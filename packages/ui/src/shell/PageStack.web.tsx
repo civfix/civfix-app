@@ -235,6 +235,7 @@ const WebPageLayer = memo(function WebPageLayer({
   webKeyboardInset,
 }: WebPageLayerProps) {
   const styles = useStyles()
+  const layerRef = useRef<View>(null)
   const body = useMemo(() => renderBody(entry, view), [entry, renderBody, view])
   const reserve = pageBottomReserve(entry.kind)
   const boxReserve = reserve === "box" ? paddingBottom : 0
@@ -243,6 +244,13 @@ const WebPageLayer = memo(function WebPageLayer({
     reserve === "content" ? contentBottomReserveScrollHost(scrollHost) : scrollHost
   const motionStyle = { transform, opacity, transition } as unknown as ViewStyle
   const scrimStyle = { opacity: scrimOpacity ?? 0, transition } as unknown as ViewStyle
+
+  useLayoutEffect(() => {
+    const node = layerRef.current as unknown as HTMLElement | null
+    if (!node) return
+    if (active) node.removeAttribute("inert")
+    else node.setAttribute("inert", "")
+  }, [active])
 
   const onTransitionEnd = (event: any) => {
     if (settleNav === null) return
@@ -253,10 +261,12 @@ const WebPageLayer = memo(function WebPageLayer({
 
   return (
     <View
+      ref={layerRef}
       style={[styles.layer, motionStyle]}
       pointerEvents={pointer}
       aria-hidden={!active}
-      {...({ onTransitionEnd } as any)}
+      tabIndex={-1}
+      {...({ onTransitionEnd, dataSet: { civfixPageLayer: "" } } as any)}
     >
       <View style={[styles.layerContent, { paddingTop, paddingBottom: boxReserve }]}>
         <IosKeyboardAvoidingView

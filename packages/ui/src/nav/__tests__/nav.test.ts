@@ -93,6 +93,7 @@ describe("route round-trip (entryFromPath . pathForEntry)", () => {
     ["language-settings", { kind: "language-settings" }],
     ["appearance-settings", { kind: "appearance-settings" }],
     ["report (view)", { kind: "view", view: "report" }],
+    ["post", { kind: "post", id: "post-1" }],
     ["post-thread", { kind: "post-thread", id: "post-1" }],
     ["composer", { kind: "composer" }],
     ["quote composer", { kind: "composer", composerMode: "quote", targetPostId: "post-1" }],
@@ -102,13 +103,6 @@ describe("route round-trip (entryFromPath . pathForEntry)", () => {
   it.each(cases)("round-trips %s", (_label, entry) => {
     const path = pathForEntry(entry)
     expect(entryFromPath(path)).toEqual(entry)
-  })
-
-  it("opens a shared post link as its thread, and still resolves the legacy /thread path", () => {
-    expect(pathForEntry({ kind: "post-thread", id: "p1" })).toBe("/post/p1")
-    expect(pathForEntry({ kind: "post", id: "p1" })).toBe("/post/p1")
-    expect(entryFromPath("/post/p1")).toEqual({ kind: "post-thread", id: "p1" })
-    expect(entryFromPath("/post/p1/thread")).toEqual({ kind: "post-thread", id: "p1" })
   })
 
   it("distinguishes the dm discriminator in the URL", () => {

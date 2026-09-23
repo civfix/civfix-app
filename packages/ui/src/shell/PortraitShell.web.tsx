@@ -14,7 +14,7 @@ export function PortraitShell(props: PortraitShellProps) {
   return (
     <PortraitShellFrame
       {...props}
-      topInset={insets.top + bannerHeight}
+      topInset={Math.max(insets.top, bannerHeight)}
       bottomChromeFallback={initialTabBarFootprint("web")}
       bottomSafeArea={insets.bottom}
       keyboardInset={keyboardInset}

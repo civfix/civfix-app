@@ -35,9 +35,7 @@ const SCROLL_KINDS = ALL_DETAIL_KINDS.filter((kind) => BODY_LAYOUT[kind] === "sc
 const FULL_KINDS = ALL_DETAIL_KINDS.filter((kind) => BODY_LAYOUT[kind] === "full")
 
 describe("resolveBodyLayout - the sheet/page seam", () => {
-  it("is the strict IDENTITY of BODY_LAYOUT at fullPageDetails=false (the resolver is the identity at flag=false)", () => {
-    // The whole web-regression argument in one assertion: with the flag false nothing this seam adds can
-    // change what a kind presents as, for ANY kind, so civfix-web is byte-identical by construction.
+  it("is the strict IDENTITY of BODY_LAYOUT at fullPageDetails=false", () => {
     for (const kind of ALL_DETAIL_KINDS) {
       expect(resolveBodyLayout(kind, false), kind).toBe(BODY_LAYOUT[kind])
     }
