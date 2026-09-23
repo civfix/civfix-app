@@ -86,7 +86,7 @@ function restore(queryClient: QueryClient): void {
   }
 
   const snapshotUserId = readAuthSnapshot()?.id ?? null
-  if (envelope.userId !== snapshotUserId) {
+  if (envelope.userId === null || envelope.userId !== snapshotUserId) {
     clearPersistedCache()
     return
   }
@@ -100,6 +100,15 @@ function restore(queryClient: QueryClient): void {
 
 function persist(queryClient: QueryClient): void {
   if (!hasStorage()) return
+  // Only a server-confirmed viewer may stamp the cache. After a 401 or sign-out the in-memory cache
+  // still holds the previous viewer's notifications, threads and reports, and writing it for "nobody"
+  // would restore it for the next visitor on this browser. An optimistic guess leaves the envelope as is.
+  const { status, optimistic, user } = useAuthStore.getState()
+  if (status !== "authenticated" || !user) {
+    clearPersistedCache()
+    return
+  }
+  if (optimistic) return
   try {
     const clientState = dehydrate(queryClient, {
       shouldDehydrateQuery,
@@ -112,7 +121,7 @@ function persist(queryClient: QueryClient): void {
     const envelope: CacheEnvelope = {
       buster: BUSTER,
       timestamp: Date.now(),
-      userId: useAuthStore.getState().user?.id ?? null,
+      userId: user.id,
       clientState,
     }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope))

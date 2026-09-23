@@ -2,11 +2,13 @@
 
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
+import { ErrorCode } from "@civfix/shared"
 
-import { api } from "@/lib/api"
+import { api, isAppErrorLike } from "@/lib/api"
 import { queryKeys } from "@/lib/query"
 import { clearPersistedCache } from "@/lib/query-persist"
 import { useAuthStore, selectIsAuthenticated, selectAuthResolved } from "@/store/auth-store"
+import { useSignOutRetryStore } from "@/store/sign-out-retry-store"
 
 /**
  * Queries whose result depends on the viewer's identity. On sign-in/sign-out we invalidate only
@@ -25,6 +27,7 @@ const AUTH_DEPENDENT_KEYS: readonly (readonly unknown[])[] = [
   ["report"],
   ["cleanup"],
   ["chat"],
+  ["volunteer"],
 ]
 
 function invalidateAuthDependentQueries(
@@ -98,21 +101,50 @@ export function useRefreshSession() {
   }, [setSession, setStatus, setAnonymous, queryClient])
 }
 
-/** Sign the user out: POST /auth/logout (CSRF-protected), then clear local state. */
+/**
+ * POST /auth/logout. True when the server ended the session, or it had already ended (UNAUTHORIZED).
+ * Any other failure leaves the httpOnly cookie valid. `csrfToken` is for a retry after the auth store
+ * has already dropped its token.
+ */
+async function revokeServerSession(csrfToken?: string | null): Promise<boolean> {
+  try {
+    await api.logout(csrfToken ? { headers: { "x-csrf-token": csrfToken } } : undefined)
+    return true
+  } catch (err) {
+    return isAppErrorLike(err) && err.code === ErrorCode.UNAUTHORIZED
+  }
+}
+
+/** Re-attempt a sign-out that failed on the server (the toast's retry action). */
+export async function retrySignOut(): Promise<void> {
+  const retry = useSignOutRetryStore.getState()
+  // Someone signed in since: that is their session now, not the one the user tried to end.
+  if (useAuthStore.getState().user) {
+    retry.settle()
+    return
+  }
+  const csrfToken = retry.csrfToken
+  if (await revokeServerSession(csrfToken)) retry.settle()
+  else retry.fail(csrfToken)
+}
+
+/**
+ * Sign the user out: POST /auth/logout (CSRF-protected), then clear local state. Never rejects (callers
+ * `void` it). A failed POST still clears local state but is reported through the sign-out retry store.
+ */
 export function useLogout() {
   const clear = useAuthStore((s) => s.clear)
   const queryClient = useQueryClient()
 
   return React.useCallback(async () => {
-    try {
-      await api.logout()
-    } catch {
-      // Even if the call fails (already expired, backend down), drop local state.
-    }
+    const csrfToken = useAuthStore.getState().csrfToken
+    const revoked = await revokeServerSession()
     clear()
     // Fail-closed (shared-device safety): wipe the persisted query cache and the in-memory cache so the
     // previous user's lists can never paint for the next person on this browser. The next load is cold.
     clearPersistedCache()
     queryClient.clear()
+    if (revoked) useSignOutRetryStore.getState().settle()
+    else useSignOutRetryStore.getState().fail(csrfToken)
   }, [clear, queryClient])
 }

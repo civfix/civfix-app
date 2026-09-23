@@ -28,6 +28,7 @@ import {
 
 import { makeQueryClient } from "@/lib/query"
 import { restorePersistedCache, installCachePersistenceWriter } from "@/lib/query-persist"
+import { installViewerScope } from "@/lib/viewer-scope"
 import { api } from "@/lib/api"
 import { chatSocket } from "@/lib/ws"
 import { webCamera } from "@/lib/web-camera"
@@ -41,6 +42,7 @@ import { useResolvedLocale } from "@/lib/locale"
 import { useAuthGate } from "@/hooks/use-auth-gate"
 import { useLogout } from "@/hooks/use-auth"
 import { AuthHydrator } from "@/components/auth/auth-hydrator"
+import { SignOutFailureToast } from "@/components/auth/sign-out-failure-toast"
 import { BootSplash } from "@/components/boot-splash"
 import { RealtimeChannel } from "@/components/realtime/realtime-channel"
 import { FirstRunGate } from "@/features/auth/first-run-gate"
@@ -212,6 +214,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return installCachePersistenceWriter(clientRef.current!)
   }, [])
 
+  React.useEffect(() => {
+    return installViewerScope(clientRef.current!)
+  }, [])
+
   return (
     <QueryClientProvider client={clientRef.current}>
       <WebDataProvider>
@@ -223,6 +229,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               <ToastProvider>
                 <BootSplash>{children}</BootSplash>
                 <FirstRunGate />
+                <SignOutFailureToast />
               </ToastProvider>
             </I18nMount>
           </ThemeMount>
