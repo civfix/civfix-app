@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest"
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest"
 import {
   relativeAgo,
   eventChip,
@@ -24,6 +24,7 @@ import {
  * fallback past one week, and the invalid-input guard.
  */
 
+const LA_ZONE = "America/Los_Angeles"
 const NOW = new Date("2026-06-01T12:00:00.000Z")
 const nowMs = NOW.getTime()
 
@@ -105,13 +106,26 @@ describe("relativeAgo options + inputs", () => {
 })
 
 /**
- * eventChip / dowLabel / timeLabel are the pure date/clock formatters the profile + event surfaces share.
- * The instants are pinned at noon UTC so the calendar day is the same across every test-machine timezone
- * (a noon-UTC date never rolls back to the prior day or forward to the next in any real TZ offset).
+ * eventChip / dowLabel / timeLabel fall back to the device zone and locale. Noon UTC is already the next
+ * day in UTC+13 and UTC+14, and the default locale follows LANG, so these suites pin the device zone
+ * and pass an explicit locale instead of relying on the machine running them.
  */
+function pinDeviceTimeZone(zone: string): void {
+  beforeEach(() => {
+    vi.stubEnv("TZ", zone)
+    const canonical = new Intl.DateTimeFormat("en-US", { timeZone: zone }).resolvedOptions().timeZone
+    expect(new Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(canonical)
+  })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+}
+
 describe("eventChip", () => {
+  pinDeviceTimeZone(LA_ZONE)
+
   it("returns the day number and uppercase short month", () => {
-    const chip = eventChip("2026-05-30T12:00:00.000Z")
+    const chip = eventChip("2026-05-30T12:00:00.000Z", "en-US")
     expect(chip.day).toBe("30")
     expect(chip.month).toBe("MAY")
   })
@@ -122,9 +136,11 @@ describe("eventChip", () => {
 })
 
 describe("dowLabel", () => {
+  pinDeviceTimeZone(LA_ZONE)
+
   it("returns the short weekday for the local day", () => {
-    // 2026-06-07 noon UTC is a Sunday in every real timezone offset.
     expect(dowLabel("2026-06-07T12:00:00.000Z")).toBe("Sun")
+    expect(dowLabel("2026-06-07T06:00:00.000Z")).toBe("Sat")
   })
 
   it("returns '' for an unparseable input", () => {
@@ -133,9 +149,10 @@ describe("dowLabel", () => {
 })
 
 describe("timeLabel", () => {
+  pinDeviceTimeZone(LA_ZONE)
+
   it("renders an hour:minute AM/PM clock for a valid instant", () => {
-    // Don't pin the exact wall-clock time (it shifts with the machine TZ); assert the SHAPE.
-    expect(timeLabel("2026-06-07T12:00:00.000Z")).toMatch(/^\d{1,2}:\d{2}\s?(AM|PM)$/)
+    expect(timeLabel("2026-06-07T12:00:00.000Z", "en-US")).toMatch(/^5:00\sAM$/)
   })
 
   it("returns '' for an unparseable input", () => {

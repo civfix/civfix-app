@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 
 /**
  * Source-text guards (the package ships no renderer). The composers mirror their draft into component
@@ -12,9 +13,7 @@ const inlineComposer = readFileSync(new URL("../feed/InlineComposer.tsx", import
 const threadBody = readFileSync(new URL("../PostThreadBody.tsx", import.meta.url), "utf8")
 
 function exportedFunction(src: string, name: string): string {
-  const start = src.indexOf(`export function ${name}(`)
-  expect(start, `${name} is not exported as a function`).toBeGreaterThan(-1)
-  return src.slice(start, src.indexOf("\n}\n", start))
+  return sliceBetween(src, `export function ${name}(`, "\n}\n")
 }
 
 describe("composers remount when their draft changes hands", () => {
@@ -32,9 +31,7 @@ describe("composers remount when their draft changes hands", () => {
 
   it("keys the thread's reply composer on the draft generation", () => {
     expect(threadBody).toContain("useViewerDraftGeneration()")
-    const start = threadBody.indexOf("<ReplyComposer\n")
-    expect(start).toBeGreaterThan(-1)
-    const mount = threadBody.slice(start, threadBody.indexOf("/>", start))
+    const mount = sliceBetween(threadBody, "<ReplyComposer\n", "/>")
     expect(mount).toContain("key={draftGeneration}")
   })
 })

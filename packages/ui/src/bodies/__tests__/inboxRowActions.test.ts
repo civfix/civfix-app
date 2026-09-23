@@ -26,6 +26,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -73,9 +74,11 @@ describe("the native swipe uses the house gesture primitive", () => {
   it("never claims on touch-down, so a row tap still opens the thread", () => {
     expect(swipeHook).toContain("onStartShouldSetPanResponder: () => false")
     expect(swipeHook).toContain("onPanResponderTerminationRequest: () => false")
-    const at = swipeHook.indexOf("onStartShouldSetPanResponderCapture: (evt) => {")
-    expect(at, "the capture handler no longer exists").toBeGreaterThan(-1)
-    const body = swipeHook.slice(at, swipeHook.indexOf("onMoveShouldSetPanResponderCapture", at))
+    const body = sliceBetween(
+      swipeHook,
+      "onStartShouldSetPanResponderCapture: (evt) => {",
+      "onMoveShouldSetPanResponderCapture",
+    )
     expect(body).toContain("return false")
   })
 

@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
+import { sliceFrom } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (source: string): string =>
@@ -61,7 +62,7 @@ describe("every post surface can be reported", () => {
 describe("the overflow button is one primitive with one hit target", () => {
   it("tells assistive tech it opens a menu and whether that menu is open (APP-A11Y-105)", () => {
     expect(BUTTON).toContain("expanded: boolean")
-    expect(BUTTON).toContain("accessibilityState={{ expanded }}")
+    expect(BUTTON).toContain("{...a11yState({ expanded })}")
     expect(BUTTON).toContain('const WEB_MENU_TRIGGER_PROPS = IS_WEB ? ({ "aria-haspopup": "menu" } as object) : null')
     expect(BUTTON).toContain("{...WEB_MENU_TRIGGER_PROPS}")
   })
@@ -155,7 +156,7 @@ describe("deleting from a menu leaves the surface consistent", () => {
     expect(keys).toContain('postsRoot: ["posts"] as const')
     expect(keys).toContain('postReplies: (id: string) => ["posts", "replies", id] as const')
     const hooks = code(read("../../data/hooks/posts.ts"))
-    const fromDelete = hooks.slice(hooks.indexOf("export function buildDeleteMutation"))
+    const fromDelete = sliceFrom(hooks, "export function buildDeleteMutation")
     const deleteMutation = fromDelete.slice(0, fromDelete.indexOf("export function", 1))
     expect(deleteMutation).toContain("qc.invalidateQueries({ queryKey: queryKeys.postsRoot })")
   })

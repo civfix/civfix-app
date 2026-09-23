@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import type { TFunction } from "i18next"
 import type { MediaDTO, PostDTO } from "@civfix/shared"
 import {
@@ -500,7 +501,11 @@ describe("PostCard's link-role controls answer the keyboard", () => {
     const at = SRC.indexOf(marker)
     expect(at, `${marker} is gone from PostCard.tsx - re-scope the guard, do not delete it`).toBeGreaterThan(-1)
     const open = SRC.lastIndexOf("<Pressable", at)
-    const close = SRC.indexOf(">", SRC.indexOf("style=", open))
+    expect(open, `no <Pressable opens before ${marker}`).toBeGreaterThan(-1)
+    const style = SRC.indexOf("style=", open)
+    expect(style, `${marker} is not inside a Pressable props block`).toBeGreaterThan(at)
+    const close = SRC.indexOf(">", style)
+    expect(close).toBeGreaterThan(style)
     return SRC.slice(open, close)
   }
 
@@ -533,7 +538,7 @@ describe("PostCard's link-role controls answer the keyboard", () => {
   })
 
   it("stops Space scrolling the feed under the focused link, and ignores keys from nested controls", () => {
-    const helper = SRC.slice(SRC.indexOf("function activateOnLinkKey"), SRC.indexOf("export function linkKeyProps"))
+    const helper = sliceBetween(SRC, "function activateOnLinkKey", "export function linkKeyProps")
     expect(helper).toContain('e.key !== "Enter"')
     expect(helper).toContain("e.target !== e.currentTarget")
     expect(helper).toContain("e.preventDefault?.()")
@@ -547,7 +552,7 @@ describe("PostCard's row fill answers a POINTER, and never a touch", () => {
     // React's mouse-compat events fire for a tap and never fire the matching leave, so tapping Like left
     // the whole row painted in the hover fill - reading as selected - until the reader touched elsewhere.
     // RNW's own useHover skips `getPointerType(e) === 'touch'` in three places; this is that guard.
-    const block = SRC.slice(SRC.indexOf("const rowHoverProps"), SRC.indexOf("const pressFill"))
+    const block = sliceBetween(SRC, "const rowHoverProps", "const pressFill")
     expect(block).toContain("onPointerEnter")
     expect(block).toContain('event?.pointerType !== "touch"')
     expect(block).toContain("onPointerLeave")
@@ -572,7 +577,7 @@ describe("the flat row's focus ring is drawn INSIDE its own box", () => {
     // `[data-focus-ring]:focus-visible` (0,2,0) - so as a StyleSheet entry the inset silently loses and
     // the ring stays outside. A plain object is written inline, which outranks any stylesheet rule.
     expect(SRC).toMatch(/const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB/)
-    const rowFlat = SRC.slice(SRC.indexOf("rowFlat: {"), SRC.indexOf("rowFlatHovered"))
+    const rowFlat = sliceBetween(SRC, "rowFlat: {", "rowFlatHovered")
     expect(rowFlat).not.toContain("WEB_ROW_FOCUS_INSET")
     expect(SRC).toContain("isFlat ? WEB_ROW_FOCUS_INSET : null")
   })

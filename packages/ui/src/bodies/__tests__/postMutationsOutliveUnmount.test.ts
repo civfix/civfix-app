@@ -11,6 +11,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it, vi } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import { MutationObserver, QueryClient } from "@tanstack/react-query"
 
 const code = (relative: string): string =>
@@ -35,7 +36,7 @@ describe("the TanStack behaviour these fixes rely on", () => {
 
 describe("deleting from the overflow menu", () => {
   const menu = code("../PostOverflowMenu.tsx")
-  const runDelete = menu.slice(menu.indexOf("const runDelete"), menu.indexOf("const closeConfirmDelete"))
+  const runDelete = sliceBetween(menu, "const runDelete", "const closeConfirmDelete")
 
   it("reads the toast and onDeleted from the promise, not from per-call callbacks", () => {
     expect(menu).toContain("const deletePost = del.mutateAsync")
@@ -55,9 +56,14 @@ describe("a failed post keeps its text after the composer is gone", () => {
   for (const file of ["../PostComposer.tsx", "../feed/InlineComposer.tsx"]) {
     const source = code(file)
     const start = source.indexOf("const staged =")
-    const submit = source.slice(start, source.indexOf("\n  }", source.indexOf(".catch(", start)))
+    const catchAt = source.indexOf(".catch(", start)
+    const end = source.indexOf("\n  }", catchAt)
+    const submit = source.slice(start, end)
 
     it(`${file} restores from the promise's rejection, guarded against a newer draft`, () => {
+      expect(start, `${file}: const staged = is gone`).toBeGreaterThan(-1)
+      expect(catchAt, `${file}: no .catch( after const staged =`).toBeGreaterThan(start)
+      expect(end, `${file}: the submit block no longer closes after .catch(`).toBeGreaterThan(catchAt)
       expect(submit).toMatch(/create\s*\.mutateAsync\(/)
       expect(submit).not.toContain("onError:")
       expect(submit).toMatch(/\.catch\(\(\) => \{\s*haptics\.error\(\)\s*const restored = restoreFailedPostSubmit\(staged\)/)

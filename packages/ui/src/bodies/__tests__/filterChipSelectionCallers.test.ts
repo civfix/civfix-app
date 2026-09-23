@@ -13,7 +13,11 @@ function chipWith(source: string, marker: string): string {
   const at = source.indexOf(marker)
   expect(at, `${marker} is gone - re-scope the guard`).toBeGreaterThan(-1)
   const start = source.lastIndexOf("<FilterChip", at)
-  return source.slice(start, source.indexOf("/>", at))
+  expect(start, `no <FilterChip opens before ${marker}`).toBeGreaterThan(-1)
+  expect(source.slice(start, at), `${marker} is not inside the nearest FilterChip`).not.toContain("/>")
+  const end = source.indexOf("/>", at)
+  expect(end).toBeGreaterThan(at)
+  return source.slice(start, end)
 }
 
 describe("FilterChip callers declare their selection semantics", () => {

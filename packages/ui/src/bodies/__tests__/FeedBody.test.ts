@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import type { TFunction } from "i18next"
 import {
   FEED_ROW_BATCH_MS,
@@ -98,9 +99,7 @@ describe("the feed header's compose control", () => {
   const BUTTON_SOURCE = readFileSync(new URL("../HeaderIconButton.tsx", import.meta.url), "utf8")
 
   const actionsRow = (src: string) => {
-    const from = src.indexOf("<View style={styles.headerActions}>")
-    expect(from, "the header's trailing-actions row must still be findable").toBeGreaterThan(-1)
-    return src.slice(from, src.indexOf("</View>", from))
+    return sliceBetween(src, "<View style={styles.headerActions}>", "</View>")
   }
 
   it("is the shared header icon button on both roots, not a bespoke pill on one of them", () => {
@@ -255,7 +254,7 @@ describe("the feed footer after a failed page", () => {
 
   it("wires the retry to the same in-flight-safe pager the list uses", () => {
     const source = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
-    const footer = source.slice(source.indexOf("const footer = useMemo("), source.indexOf("const contentStyle"))
+    const footer = sliceBetween(source, "const footer = useMemo(", "const contentStyle")
     expect(footer).toContain('footerState === "load-more-failed"')
     expect(footer).toContain('title={t("feed.load_more_error")}')
     expect(footer).toContain("onAction={loadMore}")

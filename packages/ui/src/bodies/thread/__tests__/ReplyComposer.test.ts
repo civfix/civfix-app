@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../../__tests__/sourceGuards"
 
 /**
  * Source-text guards for two composer properties the package's other checks cannot see: it ships no React
@@ -23,10 +24,7 @@ const body = readFileSync(new URL("../../PostThreadBody.tsx", import.meta.url), 
 
 describe("one composer per thread", () => {
   it("remounts the screen when the focal post changes, so no composer state rides along", () => {
-    const wrapper = body.slice(
-      body.indexOf("export function PostThreadBody"),
-      body.indexOf("function PostThread({"),
-    )
+    const wrapper = sliceBetween(body, "export function PostThreadBody", "function PostThread({")
     expect(wrapper).toContain("key={props.id}")
     expect(wrapper, "the exported wrapper must stay hook-free, or the key stops remounting state")
       .not.toMatch(/\buse[A-Z]/)
@@ -40,10 +38,7 @@ describe("one composer per thread", () => {
 })
 
 describe("a posted reply", () => {
-  const success = composer.slice(
-    composer.indexOf("onSuccess: (post) => {"),
-    composer.indexOf("onSettled:"),
-  )
+  const success = sliceBetween(composer, "onSuccess: (post) => {", "onSettled:")
 
   it("releases the field instead of re-focusing it, so the chip and the keyboard both go", () => {
     expect(success).toContain("grow.ref.current?.blur()")
@@ -74,10 +69,7 @@ describe("attached-report chip", () => {
 
 describe("the reply attach sheet on iOS (APP-BUG-143)", () => {
   const sheet = readFileSync(new URL("../ReplyAttachSheet.tsx", import.meta.url), "utf8")
-  const sheetShell = sheet.slice(
-    sheet.indexOf("export function ReplyAttachSheet("),
-    sheet.indexOf("function PickerHeader("),
-  )
+  const sheetShell = sliceBetween(sheet, "export function ReplyAttachSheet(", "function PickerHeader(")
 
   it("stays mounted when it closes, so RN Modal can fire the onDismiss that runs Photo and Camera", () => {
     expect(composer).not.toMatch(/\{attachOpen \? \(\s*<ReplyAttachSheet/)

@@ -34,7 +34,7 @@ describe("i18n:check rejects an empty value nobody allowlisted", () => {
     fixture = null
   })
 
-  const runCheck = (mutate?: (dir: string) => void): string => {
+  const runCheck = (mutate?: (dir: string) => void): { status: number | null; stderr: string } => {
     fixture = mkdtempSync(join(tmpdir(), "civfix-i18n-"))
     cpSync(LOCALES_DIR, fixture, { recursive: true })
     mutate?.(fixture)
@@ -42,7 +42,7 @@ describe("i18n:check rejects an empty value nobody allowlisted", () => {
       env: { ...process.env, CIVFIX_I18N_LOCALES_DIR: fixture },
       encoding: "utf8",
     })
-    return result.stderr
+    return { status: result.status, stderr: result.stderr }
   }
 
   const blank = (dir: string, file: string, key: string): void => {
@@ -53,17 +53,21 @@ describe("i18n:check rejects an empty value nobody allowlisted", () => {
   }
 
   it("accepts the four allowlisted Korean fragments", () => {
-    expect(runCheck()).not.toContain("EMPTY VALUES")
+    const { status, stderr } = runCheck()
+    expect(stderr).not.toContain("EMPTY VALUES")
+    expect(status, stderr).toBe(0)
   })
 
   it("fails on an empty value in a non-English catalog", () => {
-    const stderr = runCheck((dir) => blank(dir, "es/share-post.json", "title"))
+    const { status, stderr } = runCheck((dir) => blank(dir, "es/share-post.json", "title"))
+    expect(status).toBe(1)
     expect(stderr).toContain("EMPTY VALUES")
     expect(stderr).toContain("es/share-post:title")
   })
 
   it("fails on an empty value in the English source", () => {
-    const stderr = runCheck((dir) => blank(dir, "en/share-post.json", "title"))
+    const { status, stderr } = runCheck((dir) => blank(dir, "en/share-post.json", "title"))
+    expect(status).toBe(1)
     expect(stderr).toContain("en/share-post:title")
   })
 })

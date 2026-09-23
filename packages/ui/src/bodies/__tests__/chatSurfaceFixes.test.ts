@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { pathForEntry } from "../../nav"
+import { expectWrittenInLayoutEffect, sliceBetween } from "../../__tests__/sourceGuards"
 
 /**
  * Source guards for chat and messaging fixes the package cannot render in node (no React Native
@@ -68,7 +69,7 @@ describe("clipboard failures are told, not swallowed (APP-BUG-147)", () => {
 
 describe("MembersBody renderItem follows the colour scheme (APP-BUG-149)", () => {
   it("lists the themed styles in the renderItem dependencies", () => {
-    const renderItem = MEMBERS.slice(MEMBERS.indexOf("const renderItem = useCallback("), MEMBERS.indexOf("const linkedRow"))
+    const renderItem = sliceBetween(MEMBERS, "const renderItem = useCallback(", "const linkedRow")
     expect(renderItem).toContain("styles.slotEmpty")
     expect(renderItem).toMatch(/cleanupTimeZone,\s*styles,\s*\]/)
   })
@@ -108,11 +109,7 @@ describe("refs are written after commit, never during render (APP-BUG-155)", () 
     ["useJumpToMessage dataRef", JUMP, "dataRef.current = data"],
     ["useReplyDockInset systemBarInsetRef", DOCK_INSET, "systemBarInsetRef.current = insets?.bottom ?? 0"],
   ])("%s", (_name, source, assignment) => {
-    const at = source.indexOf(assignment)
-    expect(at).toBeGreaterThan(-1)
-    const effectAt = source.lastIndexOf("useLayoutEffect(() => {", at)
-    expect(effectAt).toBeGreaterThan(-1)
-    expect(source.slice(effectAt, at)).not.toContain("})")
+    expectWrittenInLayoutEffect(source, assignment)
   })
 })
 
@@ -139,7 +136,8 @@ describe("the inbox row menu is reachable without hover on web (APP-A11Y-070)", 
   it("always mounts the More chip on web and reveals it on hover, focus, open menu or touch", () => {
     expect(INBOX).not.toContain("{IS_WEB && (hovered || menuOpen) ? (")
     expect(INBOX).toContain("rowMenuChipShown(state, hovered || menuOpen) ? null : styles.menuChipConcealed")
-    expect(INBOX).toMatch(/if \(hoveredOrOpen \|\| isCoarsePointer\(\)\) return true/)
+    expect(INBOX).toContain("const COARSE_POINTER = IS_WEB && isCoarsePointer()")
+    expect(INBOX).toMatch(/if \(hoveredOrOpen \|\| COARSE_POINTER\) return true/)
     expect(INBOX).toMatch(/\.focused === true/)
   })
 })
@@ -169,7 +167,7 @@ describe("visibility options form a labelled radio group (APP-A11Y-072)", () => 
 
 describe("the conversation header exposes one title control (APP-A11Y-073)", () => {
   it("hides the avatar tap from assistive tech and the Tab order", () => {
-    const avatarTap = CONVO_BAR.slice(CONVO_BAR.indexOf("onPress={onTitlePress}"), CONVO_BAR.indexOf("<ThreadAvatar"))
+    const avatarTap = sliceBetween(CONVO_BAR, "onPress={onTitlePress}", "<ThreadAvatar")
     expect(avatarTap).toContain("accessible={false}")
     expect(avatarTap).toContain("focusable={false}")
     expect(avatarTap).toContain('importantForAccessibility="no-hide-descendants"')
