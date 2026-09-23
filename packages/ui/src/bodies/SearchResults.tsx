@@ -311,7 +311,9 @@ export function SearchResults({ query: rawQuery }: { query: string }) {
               <View style={styles.group}>{hits.reports.map((report) => <ReportHitRow key={report.id} report={report} viewer={location ?? null} />)}</View>
               {showMoreReports ? (
                 <Pressable
-                  onPress={reportSearch.fetchNextPage}
+                  onPress={() => {
+                    if (!reportSearch.isFetchingNextPage) void reportSearch.fetchNextPage()
+                  }}
                   disabled={reportSearch.isFetchingNextPage}
                   accessibilityRole="button"
                   accessibilityLabel={t("results.load_more_reports")}

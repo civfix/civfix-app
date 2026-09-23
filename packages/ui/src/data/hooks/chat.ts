@@ -612,8 +612,12 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           : api.cleanupMessages({ cleanupId: roomId, limit: PAGE_SIZE })
     req
       .then((page) => {
-        // After an in-place room switch the journal belongs to the new room.
-        if (roomGenerationRef.current !== generation) return
+        // After an in-place room switch the journal belongs to the new room; the room left keeps its gap,
+        // so its cached history must refetch when it is opened again.
+        if (roomGenerationRef.current !== generation) {
+          void queryClient.invalidateQueries({ queryKey: key, refetchType: "none" })
+          return
+        }
         const current = queryClient.getQueryData<ChatHistoryData>(key)
         if (!current || current.pages.length === 0) return
         const op: HistoryCacheOp = {

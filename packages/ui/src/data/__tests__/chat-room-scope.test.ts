@@ -49,11 +49,23 @@ describe("frameInRoom", () => {
 describe("room switch scoping in useChat", () => {
   it("drops a gap-fill page that resolves after the room changed instead of journaling it into the new room", () => {
     const refresh = section("const refreshNewestPage = useCallback", "}, [api, canReadHistory")
-    const guard = refresh.indexOf("if (roomGenerationRef.current !== generation) return")
+    const guard = refresh.indexOf("if (roomGenerationRef.current !== generation) {")
     expect(guard).toBeGreaterThan(-1)
     expect(guard).toBeLessThan(refresh.indexOf("cacheOpsRef.current.push(op)"))
     const reset = section("setLiveMessages([])\n    setOutbox([])", "}, [roomId, roomKind, clearTypingState])")
     expect(reset).toContain("roomGenerationRef.current++")
+  })
+
+  it("marks the room it left stale when its gap-fill is dropped, so reopening that room refetches the gap", () => {
+    const refresh = section("const refreshNewestPage = useCallback", "}, [api, canReadHistory")
+    const from = refresh.indexOf("if (roomGenerationRef.current !== generation) {")
+    expect(from).toBeGreaterThan(-1)
+    const to = refresh.indexOf("return\n", from)
+    expect(to).toBeGreaterThan(from)
+    expect(refresh.slice(from, to)).toContain(
+      'void queryClient.invalidateQueries({ queryKey: key, refetchType: "none" })',
+    )
+    expect(refresh.slice(0, from)).toContain("const key = queryKeys.chatHistory(roomId, roomKind)")
   })
 
   it("renders only the current room's pending bubbles", () => {
