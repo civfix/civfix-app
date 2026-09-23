@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import {
   STEP_ORDER_COMPACT,
   STEP_ORDER_EXPANDED,
@@ -628,10 +629,7 @@ describe("the capture review shows no location banner", () => {
   })
 
   it("stops CaptureStep reading the draft's coordinate at all", () => {
-    const captureStep = wizardSource.slice(
-      wizardSource.indexOf("function CaptureStep("),
-      wizardSource.indexOf("function CategoryStep("),
-    )
+    const captureStep = sliceBetween(wizardSource, "function CaptureStep(", "function CategoryStep(")
     expect(captureStep).not.toContain("useReverseLabel")
     expect(captureStep).not.toContain("reverseLabelText")
     expect(captureStep).not.toContain("s.draft.lat")
@@ -742,10 +740,7 @@ describe("the wizard's STEP transition (source-pinned)", () => {
   })
 
   it("animates the STEP BODY only - the header, viewfinder layer and footer CTA stay put", () => {
-    const transition = wizardSource.slice(
-      wizardSource.indexOf("<StepTransition"),
-      wizardSource.indexOf("</StepTransition>"),
-    )
+    const transition = sliceBetween(wizardSource, "<StepTransition", "</StepTransition>")
     expect(transition).toContain("transitionKey={activeStep}")
     expect(transition).toContain("direction={stepDirection}")
     for (const step of ["CaptureStep", "LocationStep", "CategoryStep", "DetailsStep", "ReviewStep"]) {
@@ -757,10 +752,7 @@ describe("the wizard's STEP transition (source-pinned)", () => {
   })
 
   it("keeps the scroll host, its ref and the keyboard behaviour OUTSIDE the animated layer", () => {
-    const scroll = wizardSource.slice(
-      wizardSource.indexOf("<ScrollView"),
-      wizardSource.indexOf("<StepTransition"),
-    )
+    const scroll = sliceBetween(wizardSource, "<ScrollView", "<StepTransition")
     expect(scroll).toContain("ref={scrollRef}")
     expect(scroll).toContain('keyboardShouldPersistTaps="handled"')
   })

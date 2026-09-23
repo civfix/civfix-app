@@ -5,6 +5,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import type { ChatMessageDTO, OutboxEntry } from "@civfix/shared"
 import { markResending } from "../hooks/chat"
 
@@ -30,7 +31,7 @@ describe("markResending", () => {
 
 describe("useChat reconnect replay", () => {
   const chat = readFileSync(new URL("../hooks/chat.ts", import.meta.url), "utf8")
-  const reconnect = chat.slice(chat.indexOf("const replay = replayableEntries("), chat.indexOf("for (const entry of replay)"))
+  const reconnect = sliceBetween(chat, "const replay = replayableEntries(", "for (const entry of replay)")
 
   it("captures the ids to flip before dispatch clears offlineFailedRef", () => {
     expect(reconnect).toContain("markResending(prev, resend)")

@@ -9,6 +9,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween, sliceFrom } from "../../../__tests__/sourceGuards"
 import { LeaderboardQuerySchema } from "@civfix/shared"
 import { leaderboardNextOffset } from "../volunteer"
 
@@ -47,10 +48,7 @@ describe("hooks/volunteer.ts", () => {
 
   it("leaves the PUBLIC hours query auth-optional (gated on the id alone)", () => {
     // A signed-out visitor must see a public profile's hours; the server decides what is publishable.
-    const fn = volunteerSource.slice(
-      volunteerSource.indexOf("export function usePublicHoursEntries"),
-      volunteerSource.indexOf("export function useEventHours"),
-    )
+    const fn = sliceBetween(volunteerSource, "export function usePublicHoursEntries", "export function useEventHours")
     expect(fn).toContain("enabled: !!userId")
     expect(fn).not.toContain("isAuthenticated")
   })
@@ -86,7 +84,7 @@ describe("hooks/volunteer.ts", () => {
   })
 
   it("invalidates the event read-back and the itemised ledger after logging hours", () => {
-    const fn = volunteerSource.slice(volunteerSource.indexOf("export function useLogEventHours"))
+    const fn = sliceFrom(volunteerSource, "export function useLogEventHours")
     expect(fn).toContain("queryKeys.eventHours(id)")
     expect(fn).toContain("queryKeys.volunteerEntries")
     expect(fn).toContain("queryKeys.volunteerLeaderboardAll")
@@ -116,10 +114,7 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
     // returns. Writing only the detail left the card BEHIND the sheet reading "RSVP" and the old count
     // until that list happened to refetch. This is the same pair `useJoinCleanup` applies.
     // The claim wiring lives in the exported options builder (the hook just injects the api client).
-    const fn = cleanupsSource.slice(
-      cleanupsSource.indexOf("export function claimEventSlotMutationOptions"),
-      cleanupsSource.indexOf("export interface SetMemberRoleVars"),
-    )
+    const fn = sliceBetween(cleanupsSource, "export function claimEventSlotMutationOptions", "export interface SetMemberRoleVars")
     expect(fn).toContain(
       "patchCleanupInFlatLists(qc, cleanupId, { joined: res.joined, going: res.going })",
     )
@@ -131,10 +126,7 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
     // An org-hosted event is listed twice: under ["cleanups"] and under the org page's own
     // ["org-events"] key. Invalidating only the first left an org's Upcoming/Past sections showing an
     // event that had since been edited, cancelled or duplicated.
-    const helper = cleanupsSource.slice(
-      cleanupsSource.indexOf("function invalidateCleanupLists"),
-      cleanupsSource.indexOf("export function useCleanups"),
-    )
+    const helper = sliceBetween(cleanupsSource, "function invalidateCleanupLists", "export function useCleanups")
     expect(helper).toContain("queryKey: CLEANUPS_LIST_PREFIX")
     expect(helper).toContain("queryKey: queryKeys.orgEventsRoot")
   })
@@ -143,19 +135,13 @@ describe("hooks/cleanups.ts - the bare-alias response rule", () => {
 
 describe("hooks/posts.ts", () => {
   it("no longer gates a person's timeline on auth - a signed-out profile must show posts", () => {
-    const fn = postsSource.slice(
-      postsSource.indexOf("export function useUserPosts"),
-      postsSource.indexOf("export function useSaves"),
-    )
+    const fn = sliceBetween(postsSource, "export function useUserPosts", "export function useSaves")
     expect(fn).toContain("enabled: !!id")
     expect(fn).not.toContain("isAuthenticated")
   })
 
   it("serves a single post to guests - getPost is auth-optional, so a signed-out detail must load", () => {
-    const fn = postsSource.slice(
-      postsSource.indexOf("export function usePost("),
-      postsSource.indexOf("function coerceReplyPages"),
-    )
+    const fn = sliceBetween(postsSource, "export function usePost(", "function coerceReplyPages")
     expect(fn).toContain("enabled: !!id")
     expect(fn).not.toContain("isAuthenticated")
   })

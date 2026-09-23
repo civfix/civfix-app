@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween, sliceFrom } from "../../__tests__/sourceGuards"
 import {
   SHEET_SNAP_RANGE,
   sheetSnapForAccessibilityAction,
@@ -26,7 +27,7 @@ describe("web dock tab bar semantics", () => {
   const web = read("TabBar.web.tsx")
 
   it("emits aria-selected on each tab, since RNW drops accessibilityState.selected", () => {
-    const tab = shared.slice(shared.indexOf("export function TabButton"), shared.indexOf("export function SearchOrb"))
+    const tab = sliceBetween(shared, "export function TabButton", "export function SearchOrb")
     expect(tab).toContain('{...({ "aria-selected": active } as object)}')
   })
 
@@ -37,7 +38,7 @@ describe("web dock tab bar semantics", () => {
   })
 
   it("exposes the search orb's state as aria-pressed, not an invalid selected on a button", () => {
-    const orb = shared.slice(shared.indexOf("export function SearchOrb"))
+    const orb = sliceFrom(shared, "export function SearchOrb")
     expect(orb).toContain('{...({ "aria-pressed": active } as object)}')
   })
 })
@@ -48,7 +49,7 @@ describe("native dock tab bar semantics", () => {
   it("names the docked search field and hides its decorative placeholder from screen readers", () => {
     const input = elementAround(native, "value={dockedSearch.value}")
     expect(input).toContain("accessibilityLabel={dockedSearch.placeholder}")
-    const hint = native.slice(native.indexOf("<Animated.Text"), native.indexOf("</Animated.Text>"))
+    const hint = sliceBetween(native, "<Animated.Text", "</Animated.Text>")
     expect(hint).toContain("accessibilityElementsHidden")
     expect(hint).toContain('importantForAccessibility="no"')
   })
@@ -100,7 +101,7 @@ describe("compact sheet grab handle", () => {
 
   it("is adjustable on native: a value and increment/decrement actions, not just a double-tap", () => {
     const native = read("CompactShell.native.tsx")
-    const handle = native.slice(native.indexOf("function SheetGrabHandle("), native.indexOf("function makeBackground("))
+    const handle = sliceBetween(native, "function SheetGrabHandle(", "function makeBackground(")
     expect(handle).toContain('accessibilityRole="adjustable"')
     expect(handle).toContain("accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}")
     expect(handle).toContain("accessibilityActions={ADJUST_ACTIONS}")
@@ -145,7 +146,7 @@ describe("compact sheet grab handle at a bound and its spoken value", () => {
 
   it("the web handle applies only a changed snap and speaks the snap name", () => {
     const web = read("CompactShell.web.tsx")
-    const handler = web.slice(web.indexOf("const onHandleKeyDown"), web.indexOf("const settleTransition"))
+    const handler = sliceBetween(web, "const onHandleKeyDown", "const settleTransition")
     expect(handler.length).toBeGreaterThan(0)
     expect(handler).toContain("sheetSnapKeyOutcome(cur, event.key)")
     expect(handler).toMatch(/if \(outcome\.next === null\) return\s+setSnap\(outcome\.next\)/)
@@ -154,7 +155,7 @@ describe("compact sheet grab handle at a bound and its spoken value", () => {
 
   it("the native handle speaks the snap name as its value text", () => {
     const native = read("CompactShell.native.tsx")
-    const handle = native.slice(native.indexOf("function SheetGrabHandle("), native.indexOf("function makeBackground("))
+    const handle = sliceBetween(native, "function SheetGrabHandle(", "function makeBackground(")
     expect(handle.length).toBeGreaterThan(0)
     expect(handle).toContain("accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}")
   })

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import { QueryClient } from "@tanstack/react-query"
 import type { NotificationDTO, NotificationPrefsDTO } from "@civfix/shared"
 import { queryKeys } from "../keys"
@@ -104,8 +105,7 @@ describe("mark-read scope", () => {
 describe("useUpdatePrivacySettings user snapshot", () => {
   it("syncs its user ref in a layout effect, never by a write during render", () => {
     const src = readFileSync(join(__dirname, "..", "hooks", "notifications.ts"), "utf8")
-    const fn = src.slice(src.indexOf("export function useUpdatePrivacySettings"))
-    const body = fn.slice(0, fn.indexOf("return useMutation"))
+    const body = sliceBetween(src, "export function useUpdatePrivacySettings", "return useMutation")
     expect(body).not.toMatch(/^ {2}userRef\.current = user$/m)
     expect(body).toMatch(/useLayoutEffect\(\(\) => \{\n\s+userRef\.current = user\n\s+\}, \[user\]\)/)
   })

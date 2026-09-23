@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import type { DetailEntry, View } from "../../nav"
 import {
   SEARCH_REVEAL_EXIT_WINDOW,
@@ -360,10 +361,7 @@ describe("the Report tab's keep-alive slot", () => {
 
   it("keeps the slot under the ONE base scroll host (a second host would remount what it retains)", () => {
     expect(portrait).toMatch(/const baseScrollHost = PORTRAIT_BASE_SCROLL_HOST\b/)
-    const hostBlock = portrait.slice(
-      portrait.indexOf("<ScrollHostProvider value={baseScrollHost}>"),
-      portrait.indexOf("</ScrollHostProvider>"),
-    )
+    const hostBlock = sliceBetween(portrait, "<ScrollHostProvider value={baseScrollHost}>", "</ScrollHostProvider>")
     expect(hostBlock).toMatch(/reportSlotMounted \?/)
     expect(hostBlock.indexOf("<BodyTransition")).toBeLessThan(hostBlock.indexOf("reportSlotMounted ?"))
   })
@@ -470,8 +468,7 @@ describe("the home + messages keep-alive slots", () => {
   })
 
   it("mounts a slot in the same commit it becomes visible, never a frame later", () => {
-    const hook = portrait.slice(portrait.indexOf("function useKeepAliveSlotMounted("))
-    const body = hook.slice(0, hook.indexOf("\n}\n"))
+    const body = sliceBetween(portrait, "function useKeepAliveSlotMounted(", "\n}\n")
     expect(body).toMatch(/return mounted \|\| visible\s*$/)
   })
 })

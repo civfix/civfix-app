@@ -5,6 +5,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween, sliceFrom } from "../../__tests__/sourceGuards"
 import { statTileSpokenLabel, STAT_VALUE_UNKNOWN } from "../statTileModel"
 import { toastLiveSemantics } from "../toastModel"
 import { a11yState } from "../../theme/a11yState"
@@ -19,7 +20,7 @@ describe("APP-A11Y-009 TextField labels its input for VoiceOver", () => {
   const field = code("../TextField.tsx")
 
   it("sets an explicit label after the spread, so a caller's own label still wins", () => {
-    const input = field.slice(field.indexOf("<TextInput"), field.indexOf("placeholderTextColor"))
+    const input = sliceBetween(field, "<TextInput", "placeholderTextColor")
     expect(input.indexOf("{...rest}")).toBeLessThan(input.indexOf("accessibilityLabel="))
     expect(input).toContain("accessibilityLabel={rest.accessibilityLabel ?? label}")
     expect(input).toContain("accessibilityHint={rest.accessibilityHint ?? helper}")
@@ -29,7 +30,7 @@ describe("APP-A11Y-009 TextField labels its input for VoiceOver", () => {
 
 describe("APP-A11Y-010 the Terms links are reachable outside the checkbox", () => {
   const terms = code("../TermsConfirmation.tsx")
-  const checkbox = terms.slice(terms.indexOf("<Pressable"), terms.indexOf("</Pressable>"))
+  const checkbox = sliceBetween(terms, "<Pressable", "</Pressable>")
 
   it("keeps the checkbox to the box and its short label", () => {
     expect(checkbox).toContain('accessibilityRole="checkbox"')
@@ -38,7 +39,7 @@ describe("APP-A11Y-010 the Terms links are reachable outside the checkbox", () =
   })
 
   it("renders both legal links after the checkbox closes", () => {
-    const after = terms.slice(terms.indexOf("</Pressable>"))
+    const after = sliceFrom(terms, "</Pressable>")
     expect(after.match(/accessibilityRole="link"/g)).toHaveLength(2)
   })
 
@@ -52,7 +53,7 @@ describe("APP-A11Y-011 dialog errors are announced", () => {
   const sheet = code("../ModalCardSheet.tsx")
 
   it("gives the error an alert role and a polite live region", () => {
-    const error = sheet.slice(sheet.indexOf("{error ? ("), sheet.indexOf("{error}"))
+    const error = sliceBetween(sheet, "{error ? (", "{error}")
     expect(error).toContain('accessibilityRole="alert"')
     expect(error).toContain('accessibilityLiveRegion="polite"')
     expect(error).not.toContain("numberOfLines")
@@ -131,7 +132,7 @@ describe("APP-A11Y-017 report reasons are a radio group", () => {
 describe("APP-A11Y-018 the toggle label column is not a duplicate screen-reader stop", () => {
   it.each(["../Toggle.tsx", "../SettingsRow.tsx"])("%s hides the label column and hints the switch", (file) => {
     const source = code(file)
-    const column = source.slice(source.indexOf("focusable={false}"), source.indexOf("<SettingsToggle"))
+    const column = sliceBetween(source, "focusable={false}", "<SettingsToggle")
     expect(column).toContain("accessibilityElementsHidden")
     expect(column).toContain('importantForAccessibility="no-hide-descendants"')
     expect(source).toMatch(/accessibilityHint=\{(helper|sub)\}/)

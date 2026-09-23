@@ -6,6 +6,7 @@
 import { readFileSync } from "node:fs"
 import React from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import { REPORT_CATEGORY_LABELS, type EventQuestionDTO, type TicketTypeDTO } from "@civfix/shared"
 import { uploadAttachErrorKey } from "../composerAttachmentId"
 import { postDetailPath } from "../postActionModel"
@@ -39,7 +40,7 @@ describe("APP-BUG-037 CategoryChip localizes its label", () => {
   })
 
   it("keeps the decorative swatch out of the accessibility tree", () => {
-    const swatch = chip.slice(chip.indexOf("<View\n        aria-hidden"), chip.indexOf("styles.swatch"))
+    const swatch = sliceBetween(chip, "<View\n        aria-hidden", "styles.swatch")
     expect(swatch).toContain("accessibilityElementsHidden")
     expect(swatch).toContain('importantForAccessibility="no-hide-descendants"')
   })
