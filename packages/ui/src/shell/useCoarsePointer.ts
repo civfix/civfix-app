@@ -1,21 +1,15 @@
 import { useSyncExternalStore } from "react"
-
-const COARSE_POINTER_QUERY = "(pointer: coarse)"
-
-function coarsePointerQuery(): MediaQueryList | null {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return null
-  return window.matchMedia(COARSE_POINTER_QUERY)
-}
+import { COARSE_POINTER_QUERY, isCoarsePointer, mediaQuery } from "./webMedia"
 
 export function subscribeCoarsePointer(notify: () => void): () => void {
-  const query = coarsePointerQuery()
+  const query = mediaQuery(COARSE_POINTER_QUERY)
   if (!query) return () => {}
   query.addEventListener("change", notify)
   return () => query.removeEventListener("change", notify)
 }
 
 export function readCoarsePointer(): boolean {
-  return coarsePointerQuery()?.matches ?? false
+  return isCoarsePointer()
 }
 
 /** The static export prerenders with no window; hydration must see the same `false` the markup was built with. */
