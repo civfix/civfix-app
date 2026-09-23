@@ -145,8 +145,7 @@ export function entryFromPath(path: string | null | undefined): DetailEntry | nu
     case "dashboard":
       return { kind: "event-dashboard" }
     case "post":
-      if (id && parts[2] === "thread") return { kind: "post-thread", id }
-      return id ? { kind: "post", id } : null
+      return id ? { kind: "post-thread", id } : null
     case "compose":
       if (id === "quote" && parts[2]) {
         return { kind: "composer", composerMode: "quote", targetPostId: parts[2] }
@@ -258,7 +257,7 @@ export function pathForEntry(entry: DetailEntry | null): string {
     case "post":
       return entry.id ? `/post/${entry.id}` : "/"
     case "post-thread":
-      return entry.id ? `/post/${entry.id}/thread` : "/"
+      return entry.id ? `/post/${entry.id}` : "/"
     case "composer":
       return entry.composerMode === "quote" && entry.targetPostId
         ? `/compose/quote/${entry.targetPostId}`

@@ -1,11 +1,9 @@
 /**
  * The mobile sheet -> PAGE presentation seam (`resolveBodyLayout` + `SHEET_ONLY_KINDS`).
  *
- * WHY THIS FILE EXISTS AT ALL. `bodyLayout` is shared by civfix-web and civfix-mobile, and this package's
- * vitest run resolves the EXTENSION-LESS modules - i.e. the WEB seam, where `DETAILS_ARE_FULL_PAGE` is
- * false. So every other assertion in this directory exercises the sheet path and the page path would ship
- * completely untested. The flag is a plain parameter precisely so it can be passed as `true` here without
- * a bundler, a renderer or a mock.
+ * WHY THIS FILE EXISTS AT ALL. `bodyLayout` is shared by civfix-web and civfix-mobile, and
+ * `DETAILS_ARE_FULL_PAGE` is now true on both. The flag is a plain parameter precisely so both values can
+ * be passed here without a bundler, a renderer or a mock.
  *
  * The two halves are deliberately different in kind:
  *   - the INVARIANTS (drop-pin is never a page, the dock never shows over a detail, `home-view` never
@@ -37,7 +35,7 @@ const SCROLL_KINDS = ALL_DETAIL_KINDS.filter((kind) => BODY_LAYOUT[kind] === "sc
 const FULL_KINDS = ALL_DETAIL_KINDS.filter((kind) => BODY_LAYOUT[kind] === "full")
 
 describe("resolveBodyLayout - the sheet/page seam", () => {
-  it("is the strict IDENTITY of BODY_LAYOUT at fullPageDetails=false (the web guarantee)", () => {
+  it("is the strict IDENTITY of BODY_LAYOUT at fullPageDetails=false (the resolver is the identity at flag=false)", () => {
     // The whole web-regression argument in one assertion: with the flag false nothing this seam adds can
     // change what a kind presents as, for ANY kind, so civfix-web is byte-identical by construction.
     for (const kind of ALL_DETAIL_KINDS) {
