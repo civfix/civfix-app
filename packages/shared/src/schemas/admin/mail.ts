@@ -1,6 +1,12 @@
 import { z } from "zod"
-import { pageResponse } from "../common.js"
-import { AdminListQuerySchema, MailDirectionSchema, MailStatusSchema } from "./common.js"
+import { IdSchema, pageResponse } from "../common.js"
+import {
+  AdminListQuerySchema,
+  MailAuthVerdictSchema,
+  MailDirectionSchema,
+  MailReplyPublicationSchema,
+  MailStatusSchema,
+} from "./common.js"
 
 
 
@@ -29,6 +35,8 @@ export const MailMessageDTOSchema = z
     // Set when the backend truncated a long mail body. Optional; schema is .strict() so it must be declared.
     truncated: z.boolean().optional(),
     delivery: MailDeliverySchema.nullable().optional(),
+    authVerdict: MailAuthVerdictSchema.nullable().optional(),
+    publication: MailReplyPublicationSchema.nullable().optional(),
   })
   .strict()
 export type MailMessageDTO = z.infer<typeof MailMessageDTOSchema>
@@ -124,3 +132,18 @@ export const ResendRequestSchema = z
   })
   .strict()
 export type ResendRequest = z.infer<typeof ResendRequestSchema>
+
+export const PublishMailReplyRequestSchema = z
+  .object({
+    id: IdSchema,
+    messageId: IdSchema,
+  })
+  .strict()
+export type PublishMailReplyRequest = z.infer<typeof PublishMailReplyRequestSchema>
+
+export const PublishMailReplyResponseSchema = z
+  .object({
+    publication: MailReplyPublicationSchema,
+  })
+  .strict()
+export type PublishMailReplyResponse = z.infer<typeof PublishMailReplyResponseSchema>

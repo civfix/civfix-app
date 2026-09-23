@@ -1991,3 +1991,49 @@ civfix-backend `services/api` adopts 0.57.0 to set the flag, and `services/media
 civfix-admin and civfix-govt-web bump with the routine propagation and read nothing new. The release
 also types `PostDTOSchema` by name (CHANGELOG), which keeps the registry's declaration clear of the
 TS7056 cap this field would otherwise have crossed.
+
+## 57. The Mail inbox is one feed of unmatched mail and city replies; a withheld reply goes public only through an audited operator action (0.57.0)
+
+**One feed, two sources.** `listInboxFeed` (`GET /admin/inbox/feed`) returns, newest first under ONE
+keyset cursor, the catch-all `inbound_emails` rows (`source: "email"`, the `listInbox` item shape plus
+`authVerdict`) and the inbound replies that threaded onto outreach (`source: "reply"`, carrying
+`threadId`, `reportId`, `cleanupId` and the thread's `threadStatus`, so every row links to its report or
+thread). It is a tagged union on `source`, both members `.strict()`. It cannot be assembled from the
+existing reads: `listMail` is thread-level and its `dir` filter follows the latest message, building
+per-message rows client-side would be one `getMailThread` per thread (and one audit-read row each), and
+two independently cursored lists mis-order at page boundaries. `listInbox`, `getInboxMessage` and
+`setInboxStatus` are unchanged, so the Home tile keeps counting catch-all mail only. A reply row's
+`unread` is its thread's flag; there is no per-message read state.
+
+| filter | `email` items | `reply` items |
+| --- | --- | --- |
+| `all` | every status, archived included | all |
+| `unread` | `status = unread` | thread unread |
+| `replies` | none | all |
+| `review` | none | withheld, not yet published, thread `needs_action`, thread linked to a report or event |
+| `unmatched` | every status | none |
+| `archived` | `status = archived` | none |
+
+**Verdict and publication are server-derived, never client-set.** `MailAuthVerdict` (`pass`, `fail`,
+`unknown`) is the inbound sender-authentication verdict the backend stored when the mail arrived; it
+rides on `InboundEmailListItemDTO` (and so `InboundEmailDTO`), on inbound `MailMessageDTO`s and on feed
+reply items, and is null for outbound messages. `MailReplyPublication` says whether a threaded reply
+reached the public surfaces: `published` once its effects were applied, `withheld` while it is held back
+(its sender is not affiliated with the thread's outbound recipients, or a token-addressed reply failed
+authentication) and nothing has been applied, `pending` when it is approved but its effects have not
+completed yet, and null when the thread has no report or event to publish to. Both new fields are
+optional on the existing DTOs, so a server on 0.56 or earlier still validates.
+
+**Publishing is an audited operator override of the affiliation gate.** `publishMailReply` (`POST
+/admin/mail/:id/messages/:messageId/publish`, csrf) approves one withheld reply: the approval and its
+`mail.reply_published` audit row commit together, then exactly the effects a verified reply gets run
+under the same effects lease. An effects failure answers `pending` and the inbound sweep re-drives it;
+an already published reply is a no-op that writes no second audit row; a thread with no report or event
+is refused with CONFLICT because there is nowhere public to publish to.
+
+**Registry.** The two endpoints are a fifth group, `adminInboxEndpoints`, spread into `endpoints` beside
+`adminReportChatEndpoints` for the TS7056 reason §52 gives. The registry moves 331 to 333, 106 of them
+under `/admin`; civfix-backend's `test/unit/route-coverage.test.ts` moves with it. The backend adopts
+0.57.0 for the endpoints and the new fields, and civfix-admin adopts it for the unified Inbox and the
+review action; `services/media-worker` bumps alongside the api and civfix-govt-web with the routine
+propagation. No seam or fake changes.

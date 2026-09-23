@@ -154,6 +154,24 @@ export const MAIL_STATUS_LABELS: Record<MailStatus, string> = {
 export const MailDirectionSchema = z.enum(["in", "out"])
 export type MailDirection = z.infer<typeof MailDirectionSchema>
 
+export const MailAuthVerdictSchema = z.enum(["pass", "fail", "unknown"])
+export type MailAuthVerdict = z.infer<typeof MailAuthVerdictSchema>
+
+export const MAIL_AUTH_VERDICT_LABELS: Record<MailAuthVerdict, string> = {
+  pass: "Verified sender",
+  fail: "Failed sender check",
+  unknown: "Sender not checked",
+}
+
+export const MailReplyPublicationSchema = z.enum(["withheld", "pending", "published"])
+export type MailReplyPublication = z.infer<typeof MailReplyPublicationSchema>
+
+export const MAIL_REPLY_PUBLICATION_LABELS: Record<MailReplyPublication, string> = {
+  withheld: "Withheld",
+  pending: "Publishing",
+  published: "Published",
+}
+
 /** Account status driving suspend / ban (design USER_STATUS = active|suspended|review, plus banned). */
 export const UserStatusSchema = z.enum(["active", "suspended", "review", "banned"])
 export type UserStatus = z.infer<typeof UserStatusSchema>
