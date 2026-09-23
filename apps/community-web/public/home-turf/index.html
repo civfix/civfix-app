@@ -174,7 +174,13 @@
 
   <script>
     (function () {
-      var ENDPOINT = 'https://api.civfix.org/forms/home-turf';
+      // This page ships unchanged to staging, so a staging submission must not reach the production
+      // coordination inbox. Keep in sync with STAGING_HOSTNAMES in src/lib/site-meta.ts.
+      var STAGING_HOSTNAMES = ['civfix.dev', 'www.civfix.dev', 'staging.civfix-web.pages.dev'];
+      var API_ORIGIN = STAGING_HOSTNAMES.indexOf(window.location.hostname) === -1
+        ? 'https://api.civfix.org'
+        : 'https://api.civfix.dev';
+      var ENDPOINT = API_ORIGIN + '/forms/home-turf';
       var TURNSTILE_SITEKEY = '0x4AAAAAADdyjEqI8Rc720Mq';
       var TURNSTILE_ACTION = 'home-turf';
 
