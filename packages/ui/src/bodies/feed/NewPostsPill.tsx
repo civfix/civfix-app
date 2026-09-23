@@ -1,13 +1,15 @@
 import React, { useEffect, useRef } from "react"
-import { Animated, Easing, Platform, Pressable, StyleSheet } from "react-native"
+import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet } from "react-native"
 import { focusRingProps, makeThemedStyles, motion, useTheme } from "../../theme"
 import { useReducedMotion } from "../../theme/useReducedMotion"
 import { Icon, Text, iconMap } from "../../typography"
 import { useT } from "../../i18n"
+import { shouldAnnounceNewPosts } from "./feedLiveModel"
 
 const ENTER = motion.fadeUp
 const USE_NATIVE_DRIVER = Platform.OS !== "web"
 const LIVE_REGION: "polite" | "none" = Platform.OS === "web" ? "polite" : "none"
+const ANNOUNCES_NATIVELY = Platform.OS !== "web"
 const MIN_TOUCH_TARGET = 44
 
 export function NewPostsPill({ count, onPress }: { count: number; onPress: () => void }) {
@@ -17,6 +19,16 @@ export function NewPostsPill({ count, onPress }: { count: number; onPress: () =>
   const reducedMotion = useReducedMotion() === true
   const progress = useRef(new Animated.Value(0)).current
   const visible = count > 0
+  const label = t("feed.new_posts", { count })
+  const previousCountRef = useRef(0)
+
+  useEffect(() => {
+    const previous = previousCountRef.current
+    previousCountRef.current = count
+    if (ANNOUNCES_NATIVELY && shouldAnnounceNewPosts(previous, count)) {
+      AccessibilityInfo.announceForAccessibility(label)
+    }
+  }, [count, label])
 
   useEffect(() => {
     if (!visible) {
@@ -48,8 +60,6 @@ export function NewPostsPill({ count, onPress }: { count: number; onPress: () =>
           },
         ],
       }
-
-  const label = t("feed.new_posts", { count })
 
   return (
     <Animated.View style={[styles.slot, motionStyle]} pointerEvents="box-none">

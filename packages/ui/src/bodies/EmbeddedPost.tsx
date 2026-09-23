@@ -1,5 +1,5 @@
 import React from "react"
-import { Pressable, StyleSheet, View } from "react-native"
+import { Platform, Pressable, StyleSheet, View } from "react-native"
 import type { TFunction } from "i18next"
 import type { PostRefDTO } from "@civfix/shared"
 import {
@@ -19,6 +19,10 @@ import { PostMediaGrid } from "./PostMediaGrid"
 import { buildPostIdentity } from "./postCardModel"
 
 export const EMBEDDED_POST_BODY_CLAMP_LINES = 4
+
+// On iOS an accessible Pressable is one element whose label replaces the quoted text, so native lets the
+// author, excerpt and media be read in place instead.
+const NATIVE_CARD_A11Y = Platform.OS === "web" ? null : { accessible: false }
 
 export interface EmbeddedPostProps {
   post: PostRefDTO
@@ -95,6 +99,7 @@ export function EmbeddedPost({ post, t, timeAgo, prominent = false, onPress }: E
       }}
       accessibilityRole="button"
       accessibilityLabel={prominent ? t("post_card.open_repost_a11y") : t("post_card.open_quote_a11y")}
+      {...NATIVE_CARD_A11Y}
       {...focusRingProps}
       style={(state) => [
         styles.card,
