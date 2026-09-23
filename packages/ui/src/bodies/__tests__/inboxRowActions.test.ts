@@ -176,7 +176,8 @@ describe("the destructive third action", () => {
 describe("web gets a hover menu instead, and both platforms get a non-gesture path", () => {
   it("reveals the overflow chip on hover (or while its menu is open) and opens the house PopoverMenu", () => {
     expect(inbox).toContain("const { hovered, hoverProps } = useRowHover()")
-    expect(inbox).toContain("{IS_WEB && (hovered || menuOpen) ? (")
+    expect(inbox).toContain("{IS_WEB ? (")
+    expect(inbox).toContain("rowMenuChipShown(state, hovered || menuOpen) ? null : styles.menuChipConcealed")
     expect(inbox).toContain("icon={iconMap.Ellipsis}")
     expect(inbox).toContain("<PopoverMenu")
     expect(inbox).toContain("usePopoverAnchor(setAnchorRect)")
