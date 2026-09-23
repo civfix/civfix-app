@@ -9,6 +9,7 @@ import {
   TextField,
 } from "../../primitives"
 import { useT } from "../../i18n"
+import { profileSaveErrorKey } from "../errorCode"
 import { useEditorStyles } from "./editorStyles"
 
 export interface BioEditorProps {
@@ -44,7 +45,7 @@ export function BioEditor({ currentBio, saving, onSave }: BioEditorProps) {
     setSubmitError(null)
     void onSave(trimmed)
       .then(() => setEditing(false))
-      .catch(() => setSubmitError(t("bio.error.generic")))
+      .catch((err: unknown) => setSubmitError(t(profileSaveErrorKey(err, "bio.error.generic"))))
   }
 
   return (

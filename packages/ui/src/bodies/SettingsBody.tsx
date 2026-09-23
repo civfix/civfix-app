@@ -11,6 +11,7 @@ import {
   TERMS_URL,
   sourceCommit,
   sourceUrl,
+  useToast,
 } from "../primitives"
 import { useAuthState, useLogout, useRequireAuth } from "../data"
 import { useOpenExternal } from "../capabilities"
@@ -26,6 +27,7 @@ export function SettingsBody() {
   const requireAuth = useRequireAuth()
   const logout = useLogout()
   const openExternal = useOpenExternal()
+  const toast = useToast()
   const { locale } = useLocale()
   const appearance = useAppearancePreference()
   const { t: tAppearance } = useT("appearance-settings")
@@ -37,9 +39,14 @@ export function SettingsBody() {
 
   const openUrl = useCallback(
     (url: string) => {
-      void openExternal?.open(url)
+      const showOpenError = () => toast.show(t("open_error"), { variant: "error" })
+      if (!openExternal) {
+        showOpenError()
+        return
+      }
+      openExternal.open(url).catch(showOpenError)
     },
-    [openExternal],
+    [openExternal, toast, t],
   )
 
   const localeName =

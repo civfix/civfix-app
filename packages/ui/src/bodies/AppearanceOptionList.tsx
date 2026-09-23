@@ -26,7 +26,6 @@ const AppearanceRow = React.memo(function AppearanceRow({
   sub,
   selected,
   pending,
-  selectedLabel,
   onSelect,
 }: {
   code: AppearancePreference
@@ -34,7 +33,6 @@ const AppearanceRow = React.memo(function AppearanceRow({
   sub?: string
   selected: boolean
   pending: boolean
-  selectedLabel: string
   onSelect: (code: AppearancePreference) => void
 }) {
   const styles = useStyles()
@@ -66,7 +64,7 @@ const AppearanceRow = React.memo(function AppearanceRow({
           </Text>
         ) : null}
       </View>
-      <View style={styles.trailing} accessibilityLabel={selected ? selectedLabel : undefined}>
+      <View style={styles.trailing}>
         {pending ? (
           <ActivityIndicator size="small" color={t.colors.brand.bloom} />
         ) : selected ? (
@@ -117,7 +115,6 @@ export function AppearanceOptionList() {
               sub={code === "system" ? t("option.system_sub") : undefined}
               selected={row.selected}
               pending={row.pending}
-              selectedLabel={t("selected")}
               onSelect={onSelect}
             />
           </React.Fragment>

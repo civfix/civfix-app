@@ -10,6 +10,7 @@ import {
   SkeletonGroup,
   SkeletonList,
   SkeletonText,
+  useToast,
 } from "../primitives"
 import {
   useNotificationPrefs,
@@ -41,21 +42,27 @@ export function NotificationPrefsBody() {
 
   const query = useNotificationPrefs()
   const update = useUpdateNotificationPrefs()
+  const toast = useToast()
   const prefs = query.data
+
+  const onSaveError = useCallback(
+    () => toast.show(t("save_error"), { variant: "error" }),
+    [toast, t],
+  )
 
   const onTogglePush = useCallback(
     (next: boolean) => {
-      update.mutate({ push: next })
+      update.mutate({ push: next }, { onError: onSaveError })
       if (next && push.isAvailable()) void push.registerForToken()
     },
-    [update, push],
+    [update, push, onSaveError],
   )
 
   const onToggle = useCallback(
     (key: keyof NotificationPrefsDTO, next: boolean) => {
-      update.mutate({ [key]: next })
+      update.mutate({ [key]: next }, { onError: onSaveError })
     },
-    [update],
+    [update, onSaveError],
   )
 
   if (!isAuthenticated && !isPending) {

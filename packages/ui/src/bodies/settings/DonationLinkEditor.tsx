@@ -9,6 +9,7 @@ import {
 } from "../../primitives"
 import { donationUrlHost, safeDonationUrl } from "../../primitives/donationUrl"
 import { useT } from "../../i18n"
+import { profileSaveErrorKey } from "../errorCode"
 import { useEditorStyles } from "./editorStyles"
 import {
   DONATION_LINK_MAX_LENGTH,
@@ -50,7 +51,7 @@ export function DonationLinkEditor({ currentUrl, saving, onSave }: DonationLinkE
     setSubmitError(null)
     void onSave(url)
       .then(() => setEditing(false))
-      .catch(() => setSubmitError(t("editor.error")))
+      .catch((err: unknown) => setSubmitError(t(profileSaveErrorKey(err, "editor.error"))))
   }
   const save = () => {
     if (!canSave) return

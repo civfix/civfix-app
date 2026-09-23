@@ -9,12 +9,10 @@ import { useLocale, useT, supportedLocales } from "../i18n"
 function LocaleRow({
   nativeName,
   selected,
-  selectedLabel,
   onPress,
 }: {
   nativeName: string
   selected: boolean
-  selectedLabel: string
   onPress: () => void
 }) {
   const styles = useStyles()
@@ -23,7 +21,8 @@ function LocaleRow({
     <Pressable
       onPress={onPress}
       accessibilityRole="radio"
-      accessibilityState={{ selected }}
+      accessibilityState={{ checked: selected }}
+      aria-checked={selected}
       accessibilityLabel={nativeName}
       {...focusRingProps}
       style={({ pressed }) => [
@@ -36,7 +35,7 @@ function LocaleRow({
         {nativeName}
       </Text>
       {selected ? (
-        <View style={styles.check} accessibilityLabel={selectedLabel}>
+        <View style={styles.check}>
           <Icon icon={iconMap.Check} size={16} color={t.colors.onAccent} />
         </View>
       ) : (
@@ -76,7 +75,6 @@ export function LanguageSettingsBody() {
             key={l.code}
             nativeName={l.nativeName}
             selected={l.code === locale}
-            selectedLabel={t("selected")}
             onPress={() => onSelect(l.code)}
           />
         ))}

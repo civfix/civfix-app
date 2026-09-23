@@ -58,6 +58,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
   const [code, setCode] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [codeFocused, setCodeFocused] = useState(false)
+  const [codeFocusRequest, setCodeFocusRequest] = useState(0)
   const codeRef = useRef<RNTextInput>(null)
 
   useEffect(() => {
@@ -67,6 +68,12 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
       setError(null)
     }
   }, [visible])
+
+  useEffect(() => {
+    if (!visible || codeFocusRequest === 0) return
+    const timer = setTimeout(() => codeRef.current?.focus(), 50)
+    return () => clearTimeout(timer)
+  }, [visible, codeFocusRequest])
 
   const hasEmail = !!email
 
@@ -79,7 +86,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
         onSuccess: () => {
           setStep("verify")
           setCode("")
-          setTimeout(() => codeRef.current?.focus(), 50)
+          setCodeFocusRequest((n) => n + 1)
         },
         onError: (e) => setError(sendErrorMessage(e, t)),
       },
@@ -188,7 +195,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
             disabled={requestCode.isPending}
             accessibilityRole="button"
             accessibilityLabel={t("actions.resend")}
-            hitSlop={6}
+            accessibilityState={{ disabled: requestCode.isPending, busy: requestCode.isPending }}
             {...focusRingProps}
             style={styles.resend}
           >
@@ -215,17 +222,17 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: 13,
     lineHeight: 18,
-    color: t.colors.bloom["700"],
+    color: t.colors.dangerInk,
   },
   warnStrong: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    color: t.colors.bloom["700"],
+    color: t.colors.dangerInk,
   },
   warnSub: {
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: 12,
     lineHeight: 16,
-    color: t.colors.bloom["600"],
+    color: t.colors.dangerInk,
   },
   body: {
     fontFamily: t.fontFamily.bodyRegular,
@@ -255,7 +262,8 @@ const useStyles = makeThemedStyles((t) => ({
       : { borderColor: t.colors.accent },
   resend: {
     alignSelf: "flex-start",
-    paddingVertical: 2,
+    minHeight: 44,
+    justifyContent: "center",
   },
   resendText: {
     fontFamily: t.fontFamily.bodyBold,
