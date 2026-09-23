@@ -29,6 +29,9 @@ could resolve it per platform.
 - Consumers transpile the source themselves: Metro honors the `react-native` export condition on mobile;
   web adds `@civfix/ui` (and the RN stack) to `transpilePackages` and aliases `react-native` to
   `react-native-web`.
+- A seam `X` is `X.web.tsx` + `X.native.tsx` plus an extensionless `X.tsx` that re-exports the web
+  file. Metro picks `.native` and the web bundler picks `.web`, so only platform-unaware tooling (tsc,
+  vitest) ever reads the extensionless selector; keep it a one-line re-export.
 
 Consequence (the #1 gotcha): bundlers consume the SOURCE, but `tsc` consumes the `dist-types`. The
 declaration types must be rebuilt before a consumer typecheck sees a change (the dist-types rule,
