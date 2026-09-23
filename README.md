@@ -80,21 +80,20 @@ backend, Postgres/Redis, the media worker and the seeded data for end-to-end run
 
 ## Branches and deploys
 
-**`main` is staging. Production is a `v*` release.** There is no `dev` branch — every feature branch PRs
-into `main`, and a merge is assumed to be production-ready, but it lands on staging first and is promoted
-to production only when a release is cut (issue
-[civfix/issue-tracker#108](https://github.com/civfix/issue-tracker/issues/108)). PRs into `main` run
-`.github/workflows/ci.yml` (three jobs: packages, web, mobile).
+**`main` is staging. Production is a `v*` release.** There is no `dev` branch: every feature branch PRs
+into `main`, and a merge must be production-ready, but it lands on staging first and reaches
+production only when a release is cut. PRs into `main` run `.github/workflows/ci.yml` (three jobs:
+packages, web, mobile).
 
 | Event | What happens |
 | --- | --- |
-| push to `main` | `deploy-web.yml` builds the web static export against `api.civfix.dev` and publishes it to the `staging` branch of the Cloudflare Pages project `civfix-web` (https://civfix.dev). `publish-shared.yml` publishes `@civfix/shared` if its version is ahead of the registry. |
+| push to `main` | `deploy-web.yml` builds the web static export against `api.civfix.dev` and publishes it to the `staging` branch of the Cloudflare Pages project `civfix-web` (alias `staging.civfix-web.pages.dev`, served as https://civfix.dev). `publish-shared.yml` publishes `@civfix/shared` if its version is ahead of the registry. |
 | published `v*` release | `deploy-web.yml` rebuilds **the same commit** against `api.civfix.org` with Turnstile on, and publishes it to the Pages production branch (https://civfix.org). |
 
 A static export inlines every `NEXT_PUBLIC_*` at build time, so production is a rebuild of the release
 commit rather than a byte-copy of the staging artifact — unlike the backend, whose Docker images really
 are promoted as-is. The workflow resolves those values once and then asserts they match the target, so a
-build cannot ship the staging API URL to civfix.org or the production one to the public preview.
+build cannot ship the staging API URL to civfix.org or the production one to civfix.dev.
 
 The mobile app deploys through `.github/workflows/deploy-mobile.yml` on the same lane: a push to
 `main` that touches the app or the packages builds the `testflight` profile (staging API) on a

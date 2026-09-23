@@ -90,10 +90,9 @@ DELETES the consumed `.changeset/*.md` files. Review the diff, then commit it
 (`config.json` has `"commit": false`, so changesets does not commit for you) and merge to `main`.
 
 Do NOT hand-edit the version; let `changeset version` own it. The one exception is a version the
-registry already holds from a commit main never released: `0.54.0` and `0.55.0` were published from
-the `feat/feed-and-polish-batch` branch and are kept, so main's next release is `0.56.0`.
-`scripts/check-shared-version.mjs` (run by CI on every PR and by the publish workflow) fails with the
-next free number; set `"version"` and the new `CHANGELOG.md` heading to it by hand.
+registry already holds from a commit main never released. `scripts/check-shared-version.mjs` (run by
+CI on every PR and by the publish workflow) fails on such a version and names the next free number;
+set `"version"` and the new `CHANGELOG.md` heading to it by hand.
 
 `.github/workflows/publish-shared.yml` then runs on the `main` push:
 
