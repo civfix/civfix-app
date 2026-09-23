@@ -6,6 +6,7 @@ import {
   type ChatHistoryResponse,
   type ChatMessageDTO,
   type OutboxEntry,
+  type RoomKind,
 } from "@civfix/shared"
 
 export interface InboundFrame {
@@ -223,6 +224,15 @@ const FATAL_ROOM_ERROR_CODES: ReadonlySet<string> = new Set([
   ErrorCode.NOT_FOUND,
   ErrorCode.UNAUTHORIZED,
 ])
+
+// Room ids are unique only within a kind, and the server omits `roomKind` on cleanup-room frames.
+export function frameInRoom(
+  frame: { cleanupId?: string; roomKind?: RoomKind },
+  roomId: string,
+  roomKind: RoomKind,
+): boolean {
+  return frame.cleanupId === roomId && (frame.roomKind ?? "cleanup") === roomKind
+}
 
 export function isFatalRoomErrorCode(code: string): boolean {
   return FATAL_ROOM_ERROR_CODES.has(code)

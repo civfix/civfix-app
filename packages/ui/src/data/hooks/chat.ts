@@ -28,6 +28,7 @@ import {
   applyHistoryCacheOps,
   foldInboundBatch,
   foldInboundIntoPages,
+  frameInRoom,
   isFatalRoomErrorCode,
   isSendRejectionErrorCode,
   journalFrames,
@@ -207,6 +208,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
   const [aroundWindow, setAroundWindow] = useState<ChatItem[] | null>(null)
   const [aroundLoading, setAroundLoading] = useState(false)
   const aroundSeqRef = useRef(0)
+  const roomGenerationRef = useRef(0)
   const aroundCursorsRef = useRef<{ next: string | null; prev: string | null } | null>(null)
   const [connection, setConnection] = useState<ChatConnState>(socket.getStatus())
   const [joinRejected, setJoinRejected] = useState<ChatRoomError | null>(null)
@@ -409,7 +411,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           }
           break
         case "reaction":
-          if (frame.cleanupId === roomId) {
+          if (frameInRoom(frame, roomId, roomKind)) {
             const local = findMessage(frame.message.id)
             if (local) {
               patchMessageRef.current(frame.message.id, preserveViewerFields(local, frame.message))
@@ -417,10 +419,10 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           }
           break
         case "presence_snapshot":
-          if (frame.cleanupId === roomId) setOnlineUserIds(new Set(frame.userIds))
+          if (frameInRoom(frame, roomId, roomKind)) setOnlineUserIds(new Set(frame.userIds))
           break
         case "presence":
-          if (frame.cleanupId === roomId) {
+          if (frameInRoom(frame, roomId, roomKind)) {
             setOnlineUserIds((prev) => {
               const next = new Set(prev)
               if (frame.state === "join") next.add(frame.userId)
@@ -430,10 +432,10 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           }
           break
         case "typing":
-          if (frame.cleanupId === roomId && frame.userId !== myUserId) markTyping(frame.userId)
+          if (frameInRoom(frame, roomId, roomKind) && frame.userId !== myUserId) markTyping(frame.userId)
           break
         case "error":
-          if (frame.cleanupId === roomId && (frame.roomKind ?? "cleanup") === roomKind) {
+          if (frameInRoom(frame, roomId, roomKind)) {
             if (isFatalRoomErrorCode(frame.code)) {
               socket.markRoomRejected(roomId, roomKind)
               setJoinRejected({ code: frame.code, message: frame.message })
@@ -513,6 +515,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     offlineFailedRef.current.clear()
     coreQueuedRef.current.clear()
     cacheOpsRef.current = []
+    roomGenerationRef.current++
     setTransientError(null)
     setOnlineUserIds(new Set())
     clearTypingState()
@@ -592,6 +595,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     const key = queryKeys.chatHistory(roomId, roomKind)
     const existing = queryClient.getQueryData<ChatHistoryData>(key)
     if (!existing || existing.pages.length === 0) return
+    const generation = roomGenerationRef.current
     const req = isDm
       ? api.dmMessages({ threadId: roomId, limit: PAGE_SIZE })
       : isReport
@@ -601,6 +605,8 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           : api.cleanupMessages({ cleanupId: roomId, limit: PAGE_SIZE })
     req
       .then((page) => {
+        // After an in-place room switch the journal belongs to the new room.
+        if (roomGenerationRef.current !== generation) return
         const current = queryClient.getQueryData<ChatHistoryData>(key)
         if (!current || current.pages.length === 0) return
         const op: HistoryCacheOp = {
@@ -623,7 +629,9 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           })
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        void queryClient.invalidateQueries({ queryKey: key, refetchType: "none" })
+      })
   }, [api, canReadHistory, isDm, isReport, isGroup, queryClient, roomId, roomKind, isHistoryFetchInFlight])
 
   useEffect(() => {
@@ -953,7 +961,8 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
       .flatMap((p) => p.items)
       .filter((m) => m.cleanupId === roomId)
     const live = liveMessages.filter((m) => m.cleanupId === roomId)
-    return restoreLocalChatAttachments(mergeChatItems(historyItems, live, outbox, myUserId))
+    const pending = outbox.filter((e) => e.message.cleanupId === roomId)
+    return restoreLocalChatAttachments(mergeChatItems(historyItems, live, pending, myUserId))
   }, [history.data, liveMessages, outbox, myUserId, roomId])
 
   const pins = useMemo<ChatMessageDTO[]>(() => {
