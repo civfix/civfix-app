@@ -24,7 +24,7 @@ const BROWSER_ONLY_ROOTS = new Set([
   "unsubscribe",
 ])
 
-const SETTINGS_CHILDREN = new Set(["account", "privacy", "blocked", "language"])
+const SETTINGS_CHILDREN = new Set(["account", "privacy", "blocked", "language", "appearance"])
 
 const ROOM_KINDS = new Set(["dm", "report", "cleanup", "group"])
 
