@@ -67,8 +67,8 @@ function storageRemove(key: string): void {
   }
 }
 
-// Scopes retired when the event-zone fix changed what a saved time means. Nothing reads them any
-// more, and they can hold an access code or an unsent message body, so they are removed on sight.
+// Nothing reads these scopes any more, and they can hold an access code or an unsent message body,
+// so they are removed on sight.
 const RETIRED_SCOPE_PREFIXES = ["ticket.v1.", "broadcast.v1."]
 
 function isRetiredDraftKey(key: string): boolean {

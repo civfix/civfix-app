@@ -170,7 +170,7 @@ export function ImageUploadField({
       <div className={cn("flex flex-wrap items-start gap-token-2")}>
         {values.map((value) => (
           <div key={value.mediaId} className="relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- static export: next/image cannot optimize */}
             <img
               src={value.url}
               alt=""
