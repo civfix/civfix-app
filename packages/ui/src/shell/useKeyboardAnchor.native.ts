@@ -15,7 +15,7 @@
  * THREADING INVARIANT (frozen, see useKeyboardAnchor.types.ts): `lift` is per-frame on the UI thread;
  * `reserved` is per-transition on the JS thread. Never conflate them.
  */
-import { useContext, useEffect, useRef, useState } from "react"
+import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   Keyboard,
   Platform,
@@ -91,18 +91,29 @@ export function useKeyboardAnchor({
   const phase = useRef<KeyboardPhase>("idle")
   const enabledRef = useRef(enabled)
   const winRef = useRef(windowH)
-  winRef.current = windowH
   const systemBarRef = useRef(systemBarInset)
-  systemBarRef.current = systemBarInset
+  const restOffsetRef = useRef(restOffset)
+  const gapRef = useRef(gap)
+  // Keyboard events arrive between renders; they read the last COMMITTED geometry through these refs,
+  // which also keeps `apply` and the listeners below stable across layout changes.
+  useLayoutEffect(() => {
+    winRef.current = windowH
+    systemBarRef.current = systemBarInset
+    restOffsetRef.current = restOffset
+    gapRef.current = gap
+  })
 
-  const measuredOverlap = (endCoordinates: { screenY?: number; height?: number } | undefined) =>
-    keyboardViewportOverlap({
-      endCoordinates,
-      windowHeight: winRef.current,
-      restingWindowHeight: restingWindowHeight.current,
-      platform: PLATFORM,
-      systemBarInset: systemBarRef.current,
-    })
+  const measuredOverlap = useCallback(
+    (endCoordinates: { screenY?: number; height?: number } | undefined) =>
+      keyboardViewportOverlap({
+        endCoordinates,
+        windowHeight: winRef.current,
+        restingWindowHeight: restingWindowHeight.current,
+        platform: PLATFORM,
+        systemBarInset: systemBarRef.current,
+      }),
+    [restingWindowHeight],
+  )
 
   /** The OVERLAP currently reserved (not the derived lift) — replayed into `will-hide` as `reserveHint`
    *  so the reservation is HELD through the close animation instead of collapsing a frame after blur. */
@@ -146,11 +157,11 @@ export function useKeyboardAnchor({
     },
   )
 
-  const apply = (cmd: KeyboardCommand, closing: boolean) => {
+  const apply = useCallback((cmd: KeyboardCommand, closing: boolean) => {
     phase.current = cmd.phase
     setEngaged(cmd.phase === "engaged")
     reserveOverlapRef.current = cmd.reserveOverlap
-    setReserved(keyboardLift(cmd.reserveOverlap, restOffset, gap))
+    setReserved(keyboardLift(cmd.reserveOverlap, restOffsetRef.current, gapRef.current))
     // ONE CLOSE, ONE CURVE. The phase + reservation above STILL apply — that is exactly how the mid-close
     // blur carries the reservation (reduceKeyboard's `closing` branch). Only the ANIMATION command is
     // dropped, because reanimated would restart the ease-out from the current value and re-accelerate the
@@ -169,7 +180,7 @@ export function useKeyboardAnchor({
       easing: closing ? iosKeyboardCloseEasing : iosKeyboardOpenEasing,
       reduceMotion: ReduceMotion.System,
     })
-  }
+  }, [overlap, owned])
 
   // (C) iOS NOTIFICATION TRANSITIONS, re-timed off the OS's OWN reported duration (ms).
   //     Android is NOT registered for will*: its duration is documented "always 0" and its insets
@@ -230,7 +241,7 @@ export function useKeyboardAnchor({
       }),
     )
     return () => subs.forEach((s) => s.remove())
-  }, [restOffset, gap])
+  }, [apply, measuredOverlap])
 
   // (D) OWNERSHIP CHANGES.
   //     `enabledRef` is assigned SYNCHRONOUSLY here (not during render) so an in-flight willShow can be
@@ -270,7 +281,7 @@ export function useKeyboardAnchor({
       !enabled,
     )
     // NO setTimeout releasing `owned`: `enabledSv` now holds the mirror off, so there is nothing to release.
-  }, [enabled, enabledSv])
+  }, [apply, enabled, enabledSv, measuredOverlap])
 
   const lift = useDerivedValue(() => keyboardLift(overlap.value, restSv.value, gapSv.value))
   const liftStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -lift.value }] }))

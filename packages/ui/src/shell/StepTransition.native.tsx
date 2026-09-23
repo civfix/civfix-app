@@ -17,7 +17,9 @@ export function StepTransition({ children, direction, style, transitionKey }: St
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reduceMotion = useReducedMotion() === true
   const reduceMotionRef = useRef(reduceMotion)
-  reduceMotionRef.current = reduceMotion
+  useLayoutEffect(() => {
+    reduceMotionRef.current = reduceMotion
+  })
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     widthRef.current = e.nativeEvent.layout.width
@@ -73,7 +75,7 @@ export function StepTransition({ children, direction, style, transitionKey }: St
       },
       Math.max(plan.duration, plan.fadeDuration) + SETTLE_GUARD_MS,
     )
-  }, [transitionKey])
+  }, [direction, opacity, transitionKey, translateX])
 
   return (
     <Animated.View onLayout={onLayout} style={[style, { opacity, transform: [{ translateX }] }]}>

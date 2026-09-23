@@ -234,7 +234,8 @@ describe("BodyTransition.web - one stable React identity per body (issue #94)", 
   it("creates an Animation ONLY in the render-phase update that increments nav, which its effect keys on", () => {
     expect(WEB_SEAM.match(/flipped: false,\s*\n?\s*outDropped: false/g)).toHaveLength(1)
     expect(WEB_SEAM).toContain("nav: state.nav + 1")
-    expect(WEB_SEAM).toContain("}, [state.nav])")
+    expect(WEB_SEAM).toContain("if (state.nav === armedNavRef.current) return")
+    expect(WEB_SEAM).toContain("}, [activeSlot, anim, state.nav])")
   })
 
   it("leaves the inactive layer inert instead of letting it intercept the pointer", () => {

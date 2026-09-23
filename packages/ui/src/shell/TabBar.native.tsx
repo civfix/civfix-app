@@ -199,6 +199,7 @@ export function TabBar() {
     let mounted = true
     AccessibilityInfo.isReduceMotionEnabled()
       .then((enabled) => mounted && setReduceMotion(!!enabled))
+      // A failed probe keeps motion on; the reduceMotionChanged listener below still corrects it.
       .catch(() => {})
     const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => setReduceMotion(!!enabled))
     return () => {
