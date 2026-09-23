@@ -10,6 +10,7 @@ import { ToggleRow } from "@/components/console/forms/toggle-row"
 import { RichTextEditor } from "@/components/console/forms/rich-text/editor"
 import { ConsoleButton, ConsoleIconButton } from "@/components/console/button"
 
+import { rowKey, withRowKey } from "./blocks"
 import type { BlockIssue } from "./blocks"
 
 export interface BlockEditorProps {
@@ -109,7 +110,7 @@ export function BlockEditor({ block, onChange, errors = {} }: BlockEditorProps) 
           <ul className="flex flex-col gap-token-2">
             {block.items.map((item, index) => (
               <ListRow
-                key={`${block.id}-item-${index}`}
+                key={rowKey(item)}
                 label={t("block.agenda.item", { n: index + 1 })}
                 onRemove={() =>
                   onChange({ items: block.items.filter((_, i) => i !== index) })
@@ -182,7 +183,9 @@ export function BlockEditor({ block, onChange, errors = {} }: BlockEditorProps) 
             size="sm"
             disabled={block.items.length >= 30}
             onClick={() =>
-              onChange({ items: [...block.items, { title: "", time: null, description: null }] })
+              onChange({
+                items: [...block.items, withRowKey({ title: "", time: null, description: null })],
+              })
             }
           >
             <Plus aria-hidden className="h-4 w-4" />
@@ -205,7 +208,7 @@ export function BlockEditor({ block, onChange, errors = {} }: BlockEditorProps) 
           <ul className="flex flex-col gap-token-2">
             {block.entries.map((entry, index) => (
               <ListRow
-                key={`${block.id}-host-${index}`}
+                key={rowKey(entry)}
                 label={t("block.hosts.entry", { n: index + 1 })}
                 onRemove={() =>
                   onChange({ entries: block.entries.filter((_, i) => i !== index) })
@@ -277,7 +280,7 @@ export function BlockEditor({ block, onChange, errors = {} }: BlockEditorProps) 
             variant="outline"
             size="sm"
             disabled={block.entries.length >= 20}
-            onClick={() => onChange({ entries: [...block.entries, { name: "" }] })}
+            onClick={() => onChange({ entries: [...block.entries, withRowKey({ name: "" })] })}
           >
             <Plus aria-hidden className="h-4 w-4" />
             {t("block.hosts.add")}
@@ -299,7 +302,7 @@ export function BlockEditor({ block, onChange, errors = {} }: BlockEditorProps) 
           <ul className="flex flex-col gap-token-2">
             {block.items.map((item, index) => (
               <ListRow
-                key={`${block.id}-faq-${index}`}
+                key={rowKey(item)}
                 label={t("block.faq.item", { n: index + 1 })}
                 onRemove={() => onChange({ items: block.items.filter((_, i) => i !== index) })}
               >
@@ -348,7 +351,9 @@ export function BlockEditor({ block, onChange, errors = {} }: BlockEditorProps) 
             variant="outline"
             size="sm"
             disabled={block.items.length >= 30}
-            onClick={() => onChange({ items: [...block.items, { question: "", answer: "" }] })}
+            onClick={() =>
+              onChange({ items: [...block.items, withRowKey({ question: "", answer: "" })] })
+            }
           >
             <Plus aria-hidden className="h-4 w-4" />
             {t("block.faq.add")}
@@ -397,7 +402,7 @@ export function BlockEditor({ block, onChange, errors = {} }: BlockEditorProps) 
           <ul className="flex flex-col gap-token-2">
             {block.entries.map((entry, index) => (
               <ListRow
-                key={`${block.id}-sponsor-${index}`}
+                key={rowKey(entry)}
                 label={t("block.sponsors.entry", { n: index + 1 })}
                 onRemove={() =>
                   onChange({ entries: block.entries.filter((_, i) => i !== index) })
@@ -450,7 +455,7 @@ export function BlockEditor({ block, onChange, errors = {} }: BlockEditorProps) 
             variant="outline"
             size="sm"
             disabled={block.entries.length >= 20}
-            onClick={() => onChange({ entries: [...block.entries, { name: "" }] })}
+            onClick={() => onChange({ entries: [...block.entries, withRowKey({ name: "" })] })}
           >
             <Plus aria-hidden className="h-4 w-4" />
             {t("block.sponsors.add")}

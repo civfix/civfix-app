@@ -125,6 +125,41 @@ function listKeyOf(block: Draftable): (typeof LIST_KEYS)[number] | null {
 }
 
 /**
+ * Client-only identity for an editable list row, so React keeps each row's DOM (focus, caret,
+ * uncontrolled state) with the row itself when a middle row is removed. It is a symbol because
+ * the row schemas are `.strict()` and carry no id: object spread copies it through every edit,
+ * while `Object.entries` and `JSON.stringify` never see it, so `normalizeBlocksForSave` (which
+ * rebuilds each row from its string keys) and the request body cannot carry it.
+ */
+const ROW_KEY = Symbol("pageBuilderRowKey")
+
+type KeyedRow = { [ROW_KEY]?: string }
+
+let rowCounter = 0
+
+export function withRowKey<T extends object>(row: T): T {
+  rowCounter += 1
+  return { ...row, [ROW_KEY]: `row-${rowCounter}` }
+}
+
+export function rowKey(row: object): string | undefined {
+  return (row as KeyedRow)[ROW_KEY]
+}
+
+/** Keys every list row of blocks loaded from the server, copying rather than touching the cache. */
+export function withRowKeys(blocks: readonly EventPageBlock[]): EventPageBlock[] {
+  return blocks.map((block) => {
+    const source = block as unknown as Draftable
+    const listKey = listKeyOf(source)
+    if (!listKey) return block
+    return {
+      ...source,
+      [listKey]: (source[listKey] as Row[]).map(withRowKey),
+    } as unknown as EventPageBlock
+  })
+}
+
+/**
  * Trims every text field, turns a cleared optional field into null (so a cleared donate link falls
  * back to the organization's page instead of failing validation) and drops list rows the host
  * added but never filled in. `rowIndex[i]` is the editor row the i-th kept row came from.

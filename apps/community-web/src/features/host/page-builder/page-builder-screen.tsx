@@ -40,6 +40,7 @@ import {
   moveBlock,
   normalizeBlocksForSave,
   replaceBlock,
+  withRowKeys,
 } from "./blocks"
 import { BlockEditor } from "./block-editor"
 import { PagePreview } from "./page-preview"
@@ -76,7 +77,7 @@ export function PageBuilderScreen() {
 
   useEffect(() => {
     if (!page.data || blocks !== null) return
-    setBlocks(page.data.blocks as EventPageBlock[])
+    setBlocks(withRowKeys(page.data.blocks as EventPageBlock[]))
     setSlug(page.data.slug ?? "")
     setAccent(page.data.theme.accent)
     setNoindex(page.data.seo.noindex)
