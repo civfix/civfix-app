@@ -4,6 +4,7 @@ import Svg, { Line, Path } from "react-native-svg"
 import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"
 import {
+  axisLabelPlacement,
   chartMax,
   lineGeometry,
   valueToPixels,
@@ -57,11 +58,11 @@ export function AreaLineChart({
   const geometry = lineGeometry(series, width, height, { max, xMin, xMax })
 
   if (width <= 0 || height <= 0) {
-    return <View style={{ width, height }} accessibilityLabel={accessibilityLabel} />
+    return <View style={{ width, height }} accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} />
   }
 
   return (
-    <View accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={styles.root}>
+    <View accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={styles.root}>
       <Svg width={width} height={height}>
         <Line x1={0} y1={height} x2={width} y2={height} stroke={gridColor} strokeWidth={1} />
         {refLineY !== undefined && refLineColor ? (
@@ -105,7 +106,11 @@ export function AreaLineChart({
               key={`${index}:${tick.label}`}
               variant="caption"
               numberOfLines={1}
-              style={[styles.tick, { color: labelColor, left: xToPixels(tick.x, xMin, xMax, width) }]}
+              style={[
+                styles.tick,
+                { color: labelColor },
+                axisLabelPlacement(xMax > xMin ? (tick.x - xMin) / (xMax - xMin) : 0, width),
+              ]}
             >
               {tick.label}
             </Text>

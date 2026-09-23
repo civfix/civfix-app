@@ -6,6 +6,7 @@ import { Text } from "../typography"
 import {
   DEFAULT_BAR_GAP,
   DEFAULT_BAR_RADIUS,
+  axisLabelPlacement,
   barFraction,
   barRects,
   chartMax,
@@ -157,9 +158,7 @@ export function BarChart({
                 style={[
                   styles.xLabel,
                   { color: labelColor },
-                  position > 0.85
-                    ? { right: 0, textAlign: "right" }
-                    : { left: Math.max(0, position * width) },
+                  axisLabelPlacement(position, width),
                 ]}
               >
                 {label.text}

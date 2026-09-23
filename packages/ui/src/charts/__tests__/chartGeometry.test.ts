@@ -1,5 +1,7 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import {
+  axisLabelPlacement,
   barFraction,
   barRects,
   chartMax,
@@ -121,6 +123,41 @@ describe("the progress ring", () => {
     for (const path of [progressArcPath(0.25, 8, 64), progressArcPath(1, 8, 64)]) {
       expect(path).not.toContain("-")
       expect(path).not.toContain("NaN")
+    }
+  })
+})
+
+describe("x-axis labels stay inside the plot", () => {
+  it("anchors a label at the right end by its right edge, so the last tick cannot run off the chart", () => {
+    expect(axisLabelPlacement(1, 300)).toEqual({ right: 0, textAlign: "right" })
+    expect(axisLabelPlacement(0.9, 300)).toEqual({ right: 0, textAlign: "right" })
+  })
+
+  it("anchors every other label by its left edge at its own position", () => {
+    expect(axisLabelPlacement(0, 300)).toEqual({ left: 0 })
+    expect(axisLabelPlacement(0.5, 300)).toEqual({ left: 150 })
+  })
+
+  it("clamps a stray fraction instead of placing a label off the plot", () => {
+    expect(axisLabelPlacement(-0.2, 300)).toEqual({ left: 0 })
+    expect(axisLabelPlacement(Number.NaN, 300)).toEqual({ left: 0 })
+  })
+})
+
+describe("the line chart places its ticks through the shared rule", () => {
+  const SRC = readFileSync(new URL("../AreaLineChart.tsx", import.meta.url), "utf8")
+
+  it("never left-anchors a tick at its raw pixel x", () => {
+    expect(SRC).not.toMatch(/left: xToPixels\(tick\.x/)
+    expect(SRC).toContain("axisLabelPlacement(")
+  })
+
+  it("exposes both the empty and the drawn chart as one labelled image", () => {
+    const views = SRC.match(/<View[^>]*accessibilityLabel=\{accessibilityLabel\}[^>]*>/g) ?? []
+    expect(views).toHaveLength(2)
+    for (const view of views) {
+      expect(view).toContain("accessible ")
+      expect(view).toContain('accessibilityRole="image"')
     }
   })
 })
