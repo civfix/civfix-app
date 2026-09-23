@@ -468,6 +468,12 @@ describe("the home + messages keep-alive slots", () => {
     expect(portrait).toMatch(/if \(!retained \|\| mounted\) return/)
     expect(portrait).toContain("return () => clearTimeout(handle)")
   })
+
+  it("mounts a slot in the same commit it becomes visible, never a frame later", () => {
+    const hook = portrait.slice(portrait.indexOf("function useKeepAliveSlotMounted("))
+    const body = hook.slice(0, hook.indexOf("\n}\n"))
+    expect(body).toMatch(/return mounted \|\| visible\s*$/)
+  })
 })
 
 describe("retaining the map across compact tab switches (`retainMap`)", () => {

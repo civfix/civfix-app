@@ -112,6 +112,7 @@ export function TabButton({
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
+      {...({ "aria-selected": active } as object)}
       accessibilityLabel={label}
       style={({ pressed }) => [styles.tab, pressed ? styles.pressed : null]}
     >
@@ -129,6 +130,7 @@ export function SearchOrb({ active, onPress }: { active: boolean; onPress: () =>
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
+      {...({ "aria-pressed": active } as object)}
       accessibilityLabel={t("tab.search")}
       style={({ pressed }) => [styles.orb, th.shadows.s3, pressed ? styles.pressed : null]}
     >

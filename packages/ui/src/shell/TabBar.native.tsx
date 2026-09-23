@@ -154,6 +154,7 @@ function MorphTabCell({
       accessibilityState={{ selected: active }}
       accessibilityLabel={label}
       pointerEvents={interactive ? "auto" : "none"}
+      {...a11yReachableWhen(interactive)}
       style={[styles.tabHit, { left: index * tabW, width: tabW }]}
     >
       <Animated.View style={[styles.iconBox, wrapStyle]}>
@@ -164,6 +165,15 @@ function MorphTabCell({
 }
 
 const MorphTab = memo(MorphTabCell)
+
+// pointerEvents only stops touches: a screen reader still reaches a view it
+// gates, so every morphing hit target also leaves the a11y tree while inert.
+function a11yReachableWhen(reachable: boolean) {
+  return {
+    accessibilityElementsHidden: !reachable,
+    importantForAccessibility: reachable ? ("auto" as const) : ("no-hide-descendants" as const),
+  }
+}
 
 export function TabBar() {
   const styles = useStyles()
@@ -421,7 +431,7 @@ export function TabBar() {
                 />
 
                 <GestureDetector gesture={pan}>
-                  <Animated.View style={[styles.tabStrip, { width: wide }]}>
+                  <Animated.View style={[styles.tabStrip, { width: wide }]} accessibilityRole="tablist">
                     {TABS.map((tab, i) => (
                       <MorphTab
                         key={tab.id}
@@ -446,8 +456,9 @@ export function TabBar() {
                 <Pressable
                   onPress={resetMinimize}
                   accessibilityRole="button"
-                  accessibilityLabel={t(TABS[Math.max(persistIndex, 0)]!.labelKey)}
+                  accessibilityLabel={t("a11y.show_tab_bar")}
                   pointerEvents={minimizedActive ? "auto" : "none"}
+                  {...a11yReachableWhen(minimizedActive)}
                   style={styles.exitHit}
                 />
 
@@ -456,6 +467,7 @@ export function TabBar() {
                   accessibilityRole="button"
                   accessibilityLabel={tSearch("a11y.home")}
                   pointerEvents={searchActive ? "auto" : "none"}
+                  {...a11yReachableWhen(searchActive)}
                   style={styles.exitHit}
                 />
 
@@ -465,6 +477,7 @@ export function TabBar() {
                   accessibilityState={{ selected: searchActive }}
                   accessibilityLabel={t("tab.search")}
                   pointerEvents={searchActive ? "none" : "auto"}
+                  {...a11yReachableWhen(!searchActive)}
                   style={[styles.orbHit, { left: regionW - H, width: H }]}
                 />
 
@@ -478,11 +491,13 @@ export function TabBar() {
                 <Animated.View
                   style={[styles.field, fieldStyle]}
                   pointerEvents={searchActive ? "auto" : "none"}
+                  {...a11yReachableWhen(searchActive)}
                 >
                   <Animated.View style={[StyleSheet.absoluteFill, inputStyle]}>
                     <TextInput
                       value={dockedSearch.value}
                       placeholder=""
+                      accessibilityLabel={dockedSearch.placeholder}
                       style={styles.input}
                       returnKeyType="search"
                       editable={searchActive}
@@ -494,12 +509,18 @@ export function TabBar() {
                       onBlur={onFieldBlur}
                     />
                   </Animated.View>
-                  <Animated.Text style={[styles.placeholderLabel, placeholderStyle]} numberOfLines={1} pointerEvents="none">
+                  <Animated.Text
+                    style={[styles.placeholderLabel, placeholderStyle]}
+                    numberOfLines={1}
+                    pointerEvents="none"
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
+                  >
                     {dockedSearch.placeholder}
                   </Animated.Text>
                 </Animated.View>
 
-                <Animated.View style={[styles.clear, clearStyle]} pointerEvents={pinned ? "auto" : "none"}>
+                <Animated.View style={[styles.clear, clearStyle]} pointerEvents={pinned ? "auto" : "none"} {...a11yReachableWhen(pinned)}>
                   <Pressable
                     onPress={onClearSearch}
                     accessibilityRole="button"
