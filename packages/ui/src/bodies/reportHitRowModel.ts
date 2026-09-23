@@ -1,20 +1,6 @@
 /**
- * Pure row-model for a REPORT hit in the search surfaces (the grouped "Reports" results and the resting
- * "Reports nearby" discovery section) - the field resolution behind the shared `ReportRowView`, lifted out
- * of the component so the fallback chain is unit-testable with no RN in the loop. Mirrors the resolution
- * the other two ReportRowView callers do inline (ReportsBody's renderItem, ClusterReportsBody's row).
- *
- * The subtitle is LOCATION, not the report body (that is the whole point of the change): "0.4 mi · 1200 S
- * Hope St", degrading to whichever half is present, and only falling back to the description when neither
- * is - so a row never shows an empty secondary line.
- *
- * UNITS, the trap this module exists to contain: `haversineMeters` returns METRES (geo.ts:19-30,
- * EARTH_RADIUS_M = 6_371_000), `distanceLabel` formats MILES (relativeTime.ts:34-37). The conversion is
- * explicit here, once. A metres value handed straight to `distanceLabel` renders "645 mi" for the
- * quarter-mile walk that should read "0.4 mi" - measured, not hypothetical.
- *
- * Pure + deterministic: the caller passes the already-localized category label (i18n is a React concern)
- * and the resolved viewer point, so nothing here reads a hook, a store, or the clock.
+ * `haversineMeters` returns metres and `distanceLabel` formats miles, so the conversion happens here, once: a
+ * metres value passed straight through renders "645 mi" for a walk that should read "0.4 mi".
  */
 import { haversineMeters, type LatLng } from "@civfix/shared"
 import { distanceLabel } from "./relativeTime"
@@ -32,9 +18,7 @@ export interface ReportHitLike {
   lng: number
 }
 
-/** The three display fields a search report row hands to `ReportRowView`. */
 export interface ReportHitRowModel {
-  /** Report title, falling back to the caller-supplied localized category label. */
   title: string
   /** "{distance} · {address}", either half alone, else the description, else null. */
   subtitle: string | null

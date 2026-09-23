@@ -1,7 +1,7 @@
 /**
- * B5: `useResolveJurisdiction` rethrows a transient failure so it is not cached, but the review step's route
- * card had no error branch and read "Resolving where this routes..." forever. The card's state now comes
- * from `routeCardState`; the body renders RN, so its wiring is pinned by source.
+ * `useResolveJurisdiction` rethrows a transient failure so it is not cached, so the route card needs its own
+ * error state or it reads "Resolving where this routes..." forever. The body renders RN, so its wiring is
+ * pinned by source.
  */
 import { readFileSync } from "node:fs"
 import type { JurisdictionDTO } from "@civfix/shared"

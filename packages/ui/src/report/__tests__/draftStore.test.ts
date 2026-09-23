@@ -3,9 +3,8 @@ import { useDraftReportStore, MAX_DRAFT_MEDIA, captureSeedsNewReport } from "../
 import type { CapturedMedia } from "../../capabilities"
 
 /**
- * Draft-store media tests. The reported bug: adding a second image/video DROPPED the first because the
- * capture step called `startFromCapture` (which RESETS the draft) for every add. The fix routes the
- * first capture through `startFromCapture` (seed) and every later one through `addCapture` (append).
+ * `startFromCapture` resets the draft, so only the first capture may seed through it; every later one must
+ * append through `addCapture` or the earlier media is dropped.
  */
 
 function cap(uri: string, over: Partial<CapturedMedia> = {}): CapturedMedia {
@@ -95,8 +94,7 @@ describe("draftStore media", () => {
     ])
   })
 
-  // The review-step map "Reset" (issue #50) wipes the placed pin via clearLocation, returning the location
-  // to unset so the routing card shows the passive "place the pin" prompt again.
+  // The review-step map "Reset" returns the location to unset so the routing card prompts for a pin again.
   it("clearLocation wipes lat/lng (back to unset) without disturbing the rest of the draft", () => {
     const s = useDraftReportStore.getState()
     s.startFromCapture(cap("a"))
@@ -113,7 +111,7 @@ describe("draftStore media", () => {
 })
 
 /**
- * The map long-press "Report an issue here" provenance (Area 3). `locationPrefilled` is a DISTINCT flag
+ * The map long-press "Report an issue here" provenance. `locationPrefilled` is a DISTINCT flag
  * from geomSource "manual": the wizard's own compact LocationStep and the ReviewStep's onDropPin /
  * onPickPlace all call setLocation(lat, lng, "manual"), so keying off geomSource would silently drop the
  * LOCATION step for every ordinary reporter who confirms a location.
