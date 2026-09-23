@@ -316,6 +316,8 @@ import {
   MarkMailReadRequestSchema,
   SetMailStatusRequestSchema,
   ResendRequestSchema,
+  PublishMailReplyRequestSchema,
+  PublishMailReplyResponseSchema,
 } from "../schemas/admin/mail.js"
 import {
   GetForwardTemplateDefaultResponseSchema,
@@ -328,6 +330,8 @@ import {
   InboxListResponseSchema,
   GetInboxMessageResponseSchema,
   SetInboxStatusRequestSchema,
+  InboxFeedQuerySchema,
+  InboxFeedResponseSchema,
 } from "../schemas/admin/inbox.js"
 import {
   AnalyticsKpisResponseSchema,
@@ -3670,14 +3674,37 @@ export const adminReportChatEndpoints = {
   }),
 } as const
 
+export const adminInboxEndpoints = {
+  listInboxFeed: def({
+    method: "GET",
+    path: "/admin/inbox/feed",
+    request: InboxFeedQuerySchema,
+    response: InboxFeedResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  publishMailReply: def({
+    method: "POST",
+    path: "/admin/mail/:id/messages/:messageId/publish",
+    request: PublishMailReplyRequestSchema,
+    response: PublishMailReplyResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+} as const
+
 export const endpoints: typeof coreEndpoints &
   typeof hostEndpoints &
   typeof hostAdminEndpoints &
-  typeof adminReportChatEndpoints = {
+  typeof adminReportChatEndpoints &
+  typeof adminInboxEndpoints = {
   ...coreEndpoints,
   ...hostEndpoints,
   ...hostAdminEndpoints,
   ...adminReportChatEndpoints,
+  ...adminInboxEndpoints,
 }
 
 export type Endpoints = typeof endpoints

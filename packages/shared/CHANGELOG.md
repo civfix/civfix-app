@@ -1,5 +1,18 @@
 # @civfix/shared
 
+## 0.57.0
+
+### Minor Changes
+
+- Admin inbox feed and reply publication. A fifth registry group, `adminInboxEndpoints`, adds `listInboxFeed` (`GET /admin/inbox/feed`, one keyset-paged feed of catch-all inbound email and threaded city replies, filtered by `InboxFeedFilter`) and `publishMailReply` (`POST /admin/mail/:id/messages/:messageId/publish`, csrf), so the registry is 333 entries with 106 under `/admin`. New `MailAuthVerdict` (`pass` / `fail` / `unknown`) and `MailReplyPublication` (`withheld` / `pending` / `published`) enums with label maps; optional `authVerdict` on `InboundEmailListItemDTO` / `InboundEmailDTO` and optional `authVerdict` + `publication` on `MailMessageDTO`, so an older server still validates. See DECISIONS §57.
+- `PersonDTO` gains an optional, server-set `official: boolean`. The backend sets it on the one platform-owned account that admin-panel chat posts are authored as, and omits it for everyone else; no request carries it and no endpoint sets it. Because `UserProfileDTO`, `AttendeeDTO`, `ChatMessageDTO.from` and every post author embed `PersonDTO`, the flag reaches chat authors, profiles and people lists alike. Additive: an older server omits it and an older client strips it. See DECISIONS §56.
+
+### Patch Changes
+
+- `getPost` is `auth: "optional"`: a public post is guest-readable (share-link previews).
+- The `{photoLinks}` forward-template token's description now matches what the backend renders: one numbered line per photo or video (`- Photo 1: <link>`, `- Video 1: <link>`), or `(none)` when the report has no media. `FORWARD_TEMPLATE_SAMPLE_VALUES.photoLinks` stays a newline-separated URL list, since the backend builds its preview media from it.
+- `PostDTOSchema` is now annotated as `z.ZodType<PostDTO, z.ZodTypeDef, unknown>` (the same object schema, one named type instead of a structural blow-up), the treatment `PostRefDTOSchema` and `CleanupDTOSchema` already carry. The `coreEndpoints` declaration was within a few percent of the TS7056 serializer cap, so any new field on a DTO that `PostDTO` inlines (`PersonDTO` above all) failed the `.d.ts` build; naming it takes roughly a sixth off that declaration. `parse`/`safeParse`/`nullable`/`optional` and the inferred `PostDTO` are unchanged; the schema is no longer a `ZodObject`, so `.shape`/`.extend` on it (used nowhere) would need the underlying object.
+
 ## 0.56.0
 
 ### Minor Changes

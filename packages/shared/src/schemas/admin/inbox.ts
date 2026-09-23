@@ -1,6 +1,11 @@
 import { z } from "zod"
 import { pageResponse } from "../common.js"
-import { AdminListQuerySchema } from "./common.js"
+import {
+  AdminListQuerySchema,
+  MailAuthVerdictSchema,
+  MailReplyPublicationSchema,
+  MailStatusSchema,
+} from "./common.js"
 import { MailAttachmentSchema } from "./mail.js"
 
 /**
@@ -46,6 +51,7 @@ export const InboundEmailListItemDTOSchema = z
     status: InboundEmailStatusSchema,
     unread: z.boolean(),
     hasAttachments: z.boolean(),
+    authVerdict: MailAuthVerdictSchema.nullable().optional(),
   })
   .strict()
 export type InboundEmailListItemDTO = z.infer<typeof InboundEmailListItemDTOSchema>
@@ -92,3 +98,55 @@ export const SetInboxStatusRequestSchema = z
   })
   .strict()
 export type SetInboxStatusRequest = z.infer<typeof SetInboxStatusRequestSchema>
+
+export const InboxFeedFilterSchema = z.enum(["all", "unread", "replies", "review", "unmatched", "archived"])
+export type InboxFeedFilter = z.infer<typeof InboxFeedFilterSchema>
+
+export const INBOX_FEED_FILTER_LABELS: Record<InboxFeedFilter, string> = {
+  all: "All",
+  unread: "Unread",
+  replies: "Replies",
+  review: "Needs review",
+  unmatched: "Unmatched",
+  archived: "Archived",
+}
+
+export const InboxFeedQuerySchema = AdminListQuerySchema.extend({
+  filter: InboxFeedFilterSchema.optional(),
+})
+export type InboxFeedQuery = z.infer<typeof InboxFeedQuerySchema>
+
+export const InboxFeedEmailItemDTOSchema = InboundEmailListItemDTOSchema.extend({
+  source: z.literal("email"),
+}).strict()
+export type InboxFeedEmailItemDTO = z.infer<typeof InboxFeedEmailItemDTOSchema>
+
+export const InboxFeedReplyItemDTOSchema = z
+  .object({
+    source: z.literal("reply"),
+    id: z.string(),
+    threadId: z.string(),
+    reportId: z.string().nullable(),
+    cleanupId: z.string().nullable(),
+    org: z.string(),
+    from: z.string(),
+    subject: z.string(),
+    preview: z.string(),
+    ts: z.string(),
+    unread: z.boolean(),
+    threadStatus: MailStatusSchema,
+    hasAttachments: z.boolean(),
+    authVerdict: MailAuthVerdictSchema.nullable(),
+    publication: MailReplyPublicationSchema.nullable(),
+  })
+  .strict()
+export type InboxFeedReplyItemDTO = z.infer<typeof InboxFeedReplyItemDTOSchema>
+
+export const InboxFeedItemDTOSchema = z.discriminatedUnion("source", [
+  InboxFeedEmailItemDTOSchema,
+  InboxFeedReplyItemDTOSchema,
+])
+export type InboxFeedItemDTO = z.infer<typeof InboxFeedItemDTOSchema>
+
+export const InboxFeedResponseSchema = pageResponse(InboxFeedItemDTOSchema)
+export type InboxFeedResponse = z.infer<typeof InboxFeedResponseSchema>
