@@ -14,7 +14,9 @@ const code = (relative: string): string =>
 const between = (source: string, from: string, to: string): string => {
   const start = source.indexOf(from)
   expect(start, `${from} is gone - re-scope the guard, do not delete it`).toBeGreaterThan(-1)
-  return source.slice(start, source.indexOf(to, start + from.length))
+  const end = source.indexOf(to, start + from.length)
+  expect(end, `${to} no longer follows ${from}`).toBeGreaterThan(start)
+  return source.slice(start, end)
 }
 
 describe("the post row is a pointer convenience, not an accessibility element (APP-A11Y-103/104)", () => {
@@ -40,10 +42,10 @@ describe("the post row is a pointer convenience, not an accessibility element (A
     expect(permalink).toContain("linkKeyProps(onOpenPost)")
   })
 
-  it("lets native read the quote card's content instead of one label", () => {
+  it("keeps the quote card one actionable button whose label carries its author and text", () => {
     const embed = code("../EmbeddedPost.tsx")
-    expect(embed).toContain('const NATIVE_CARD_A11Y = Platform.OS === "web" ? null : { accessible: false }')
-    expect(between(embed, "<Pressable", "style=")).toContain("{...NATIVE_CARD_A11Y}")
+    expect(embed).not.toContain("accessible: false")
+    expect(between(embed, "<Pressable", "style=")).toContain("accessibilityLabel={label}")
   })
 })
 

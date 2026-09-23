@@ -85,6 +85,7 @@ const ROW_MENU_HIT_SLOP = (MIN_TOUCH_TARGET - ROW_MENU_CHIP) / 2
 const SWIPE_ACTION_GLYPH = 18
 
 const IS_WEB = Platform.OS === "web"
+const COARSE_POINTER = IS_WEB && isCoarsePointer()
 
 /**
  * The row "More" chip is always mounted on web, because hover alone left keyboard, screen-reader and
@@ -92,7 +93,7 @@ const IS_WEB = Platform.OS === "web"
  * It stays visible on a coarse pointer, where there is no hover to reveal it.
  */
 function rowMenuChipShown(state: PressableStateCallbackType, hoveredOrOpen: boolean): boolean {
-  if (hoveredOrOpen || isCoarsePointer()) return true
+  if (hoveredOrOpen || COARSE_POINTER) return true
   return (state as PressableStateCallbackType & { focused?: boolean }).focused === true
 }
 const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB
