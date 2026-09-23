@@ -19,9 +19,9 @@ import { useAuthStore } from "@/store/auth-store"
  *  - the safelist EXCLUDES volatile/sensitive queries (map, chat, search, session);
  *  - a buster mismatch and a max-age expiry both discard (and remove) the persisted entry on restore;
  *  - an empty cache on persist REMOVES the key rather than writing an empty envelope (fail-closed);
- *  - user scoping is fail-closed: only a server-confirmed viewer is ever persisted, and restore hydrates
- *    only when the envelope user id matches the optimistic auth snapshot, discarding (and removing) a
- *    different id or a signed-out (null) envelope;
+ *  - user scoping is fail-closed: only a server-confirmed viewer (or a confirmed signed-out visitor) is
+ *    ever persisted, and restore hydrates only when the envelope user id matches the optimistic auth
+ *    snapshot, discarding (and removing) on ANY mismatch (different id, or null-vs-present either way);
  *  - every path is a no-op when `window` is absent (the static-export build has no window).
  *
  * `shouldDehydrateQuery` is exercised through the public writer rather than imported directly, so the
@@ -74,8 +74,8 @@ let storage: ReturnType<typeof makeStorage>
 beforeEach(() => {
   storage = makeStorage()
   vi.stubGlobal("window", { localStorage: storage })
-  // The persist writer only writes for a confirmed session and stamps it with that user. Start each test
-  // signed out; a test that needs a persisted envelope signs in explicitly.
+  // The persist writer stamps the cache with the confirmed viewer (null for a signed-out visitor). Start
+  // each test signed out; a test that needs a signed-in envelope signs in explicitly.
   useAuthStore.getState().clear()
 })
 
@@ -313,11 +313,16 @@ describe("installCachePersistence restore guards", () => {
   })
 
   it("discards (and removes) when the envelope userId is null but a snapshot user is present", () => {
-    // Only an older build wrote a signed-out (userId:null) envelope; the writer no longer does.
-    writeEnvelopeForUser()
-    const envelope = JSON.parse(storage.map.get(STORAGE_KEY)!) as Envelope
-    envelope.userId = null
-    storage.setItem(STORAGE_KEY, JSON.stringify(envelope))
+    // A signed-OUT writer stamps userId:null (the default in these tests).
+    vi.useFakeTimers()
+    const writer = new QueryClient()
+    writer.setQueryData(["notifications", 20], { items: [1] })
+    const tw = installCachePersistence(writer)
+    writer.setQueryData(["notifications", 20], { items: [1, 2] })
+    vi.advanceTimersByTime(1000)
+    tw()
+    vi.useRealTimers()
+    expect((JSON.parse(storage.map.get(STORAGE_KEY)!) as Envelope).userId).toBeNull()
 
     // ...but a user is signed in by boot time (snapshot present): null-vs-present is a mismatch.
     writeAuthSnapshot(USER)
@@ -342,14 +347,42 @@ describe("installCachePersistence only persists a server-confirmed viewer", () =
     return teardown
   }
 
-  it("persists nothing while signed out", () => {
+  it("round-trips a signed-out visitor's cache, stamped for nobody", () => {
     vi.useFakeTimers()
     const qc = new QueryClient()
     qc.setQueryData(["cleanups", "upcoming"], { items: [] })
     const teardown = installCachePersistence(qc)
-    qc.setQueryData(["reports", "mine", 3], { items: [] })
+    qc.setQueryData(["cleanups", "upcoming"], { items: ["public"] })
     vi.advanceTimersByTime(1000)
-    expect(storage.map.has(STORAGE_KEY)).toBe(false)
+    teardown()
+    expect(readEnvelope().userId).toBeNull()
+
+    const reader = new QueryClient()
+    const tr = installCachePersistence(reader)
+    expect(reader.getQueryData(["cleanups", "upcoming"])).toEqual({ items: ["public"] })
+    tr()
+  })
+
+  it("keeps a signed-in warm cache while the session is being re-checked", () => {
+    const qc = new QueryClient()
+    const teardown = seedSignedInEnvelope(qc)
+
+    useAuthStore.getState().setStatus("loading")
+    qc.setQueryData(["notifications", 20], { items: ["private", "newer"] })
+    vi.advanceTimersByTime(1000)
+    expect(readEnvelope().userId).toBe(USER.id)
+    teardown()
+  })
+
+  it("leaves a signed-in envelope alone after a session check that got no answer", () => {
+    const qc = new QueryClient()
+    const teardown = seedSignedInEnvelope(qc)
+    const before = storage.map.get(STORAGE_KEY)
+
+    useAuthStore.getState().setAnonymous()
+    qc.setQueryData(["notifications", 20], { items: ["private", "newer"] })
+    vi.advanceTimersByTime(1000)
+    expect(storage.map.get(STORAGE_KEY)).toBe(before)
     teardown()
   })
 
@@ -379,20 +412,16 @@ describe("installCachePersistence only persists a server-confirmed viewer", () =
     teardown()
   })
 
-  it("never restores a signed-out (userId:null) envelope, even for a signed-out visitor", () => {
-    storage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        buster: "v1",
-        timestamp: Date.now(),
-        userId: null,
-        clientState: { mutations: [], queries: [] },
-      }),
-    )
+  it("discards (and removes) a signed-in envelope when no snapshot user is present", () => {
     const qc = new QueryClient()
-    const teardown = installCachePersistence(qc)
+    seedSignedInEnvelope(qc)()
+    useAuthStore.getState().clear()
+
+    const reader = new QueryClient()
+    const tr = installCachePersistence(reader)
+    expect(reader.getQueryData(["notifications", 20])).toBeUndefined()
     expect(storage.map.has(STORAGE_KEY)).toBe(false)
-    teardown()
+    tr()
   })
 })
 

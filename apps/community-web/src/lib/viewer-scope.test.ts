@@ -3,9 +3,11 @@ import { QueryClient } from "@tanstack/react-query"
 import type { UserDTO } from "@civfix/shared"
 
 const adoptPostComposerViewer = vi.fn()
+const discardPostComposerDraft = vi.fn()
 
 vi.mock("@civfix/ui", () => ({
   adoptPostComposerViewer: (viewerId: string | null) => adoptPostComposerViewer(viewerId),
+  discardPostComposerDraft: () => discardPostComposerDraft(),
 }))
 
 const { installViewerScope } = await import("@/lib/viewer-scope")
@@ -60,6 +62,7 @@ beforeEach(() => {
   storage = makeStorage()
   vi.stubGlobal("window", { localStorage: storage })
   adoptPostComposerViewer.mockReset()
+  discardPostComposerDraft.mockReset()
   useAuthStore.getState().clear()
   qc = new QueryClient()
 })
@@ -80,6 +83,47 @@ describe("installViewerScope", () => {
 
     expectViewerStateGone()
     expect(adoptPostComposerViewer).toHaveBeenLastCalledWith(null)
+    expect(discardPostComposerDraft).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps everything through a session check that got no answer, then the same viewer again", () => {
+    useAuthStore.getState().setSession({ user: USER_A })
+    teardown = installViewerScope(qc)
+    seedViewerState()
+
+    useAuthStore.getState().setAnonymous()
+    expect(adoptPostComposerViewer).toHaveBeenLastCalledWith(null)
+    useAuthStore.getState().setSession({ user: USER_A })
+
+    expect(qc.getQueryData(["notifications", 20])).toEqual({ items: ["private"] })
+    expect(storage.map.has(STORAGE_KEY)).toBe(true)
+    expect(readClaimHandoff()).not.toBeNull()
+    expect(discardPostComposerDraft).not.toHaveBeenCalled()
+    expect(adoptPostComposerViewer).toHaveBeenLastCalledWith(USER_A.id)
+  })
+
+  it("purges once a live answer confirms the viewer is gone after a check that got no answer", () => {
+    useAuthStore.getState().setSession({ user: USER_A })
+    teardown = installViewerScope(qc)
+    seedViewerState()
+
+    useAuthStore.getState().setAnonymous()
+    useAuthStore.getState().setSession({ user: null })
+
+    expectViewerStateGone()
+    expect(discardPostComposerDraft).toHaveBeenCalledTimes(1)
+  })
+
+  it("purges when a different account arrives after a check that got no answer", () => {
+    useAuthStore.getState().setSession({ user: USER_A })
+    teardown = installViewerScope(qc)
+    seedViewerState()
+
+    useAuthStore.getState().setAnonymous()
+    useAuthStore.getState().setSession({ user: USER_B })
+
+    expectViewerStateGone()
+    expect(adoptPostComposerViewer).toHaveBeenLastCalledWith(USER_B.id)
   })
 
   it("purges when a different account signs in without signing out first", () => {
