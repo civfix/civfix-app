@@ -190,7 +190,7 @@ describe("capture seeding (APP-BUG-171)", () => {
 describe("post-submit invalidation (APP-BUG-173)", () => {
   it("drops the key that matches nothing and the dead catches", () => {
     expect(submit).not.toContain('["mapReports"]')
-    expect(submit).toContain('void queryClient.invalidateQueries({ queryKey: ["map", "reports"] })')
+    expect(submit).toContain("void queryClient.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })")
     expect(submit).not.toContain("invalidateQueries({ queryKey: queryKeys.myReportsRoot }).catch")
   })
 })

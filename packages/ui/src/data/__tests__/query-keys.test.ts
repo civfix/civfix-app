@@ -181,3 +181,15 @@ describe("family roots for prefix invalidation", () => {
     expect(isPrefixOf(queryKeys.chatRoot, queryKeys.chatHistory("room", "group"))).toBe(true)
   })
 })
+
+describe("factories that replaced raw key literals keep the exact arrays", () => {
+  it("reverseLabel keys by the rounded point, and by nulls when there is no point", () => {
+    expect(queryKeys.reverseLabel(37.7749, -122.4194)).toEqual(["reverse-label", 37.7749, -122.4194])
+    expect(queryKeys.reverseLabel(null, null)).toEqual(["reverse-label", null, null])
+  })
+
+  it("handleAvailable keys by the candidate exactly as each host passes it", () => {
+    expect(queryKeys.handleAvailable("Ada")).toEqual(["handle-available", "Ada"])
+    expect(queryKeys.handleAvailable("ada")).toEqual(["handle-available", "ada"])
+  })
+})

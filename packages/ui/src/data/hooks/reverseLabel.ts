@@ -22,6 +22,7 @@
 import { useQuery } from "@tanstack/react-query"
 import type { ApiClient } from "@civfix/shared/client"
 import { useApi } from "../context"
+import { queryKeys } from "../keys"
 import { isAddressNotFound } from "./resolveAddress"
 
 /** A simple lat/lng the reverse-label query reads. */
@@ -76,7 +77,7 @@ export function useReverseLabel(point: ReverseLabelPoint | null) {
   const lat = point ? roundLabelCoord(point.lat) : 0
   const lng = point ? roundLabelCoord(point.lng) : 0
   return useQuery<string | null>({
-    queryKey: ["reverse-label", point ? lat : null, point ? lng : null] as const,
+    queryKey: queryKeys.reverseLabel(point ? lat : null, point ? lng : null),
     enabled: point !== null,
     queryFn: () => fetchReverseLabel(api, point!),
     retry: false,

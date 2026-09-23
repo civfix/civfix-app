@@ -49,6 +49,8 @@ export const queryKeys = {
   following: (id: string) => ["connections", "following", id] as const,
   userLocation: ["user-location"] as const,
   approximateLocation: ["geo", "approximate"] as const,
+  reverseLabel: (lat: number | null, lng: number | null) => ["reverse-label", lat, lng] as const,
+  handleAvailable: (handle: string) => ["handle-available", handle] as const,
 
   postsRoot: ["posts"] as const,
   homeFeedRoot: (filter: string) => ["posts", "feed", filter] as const,

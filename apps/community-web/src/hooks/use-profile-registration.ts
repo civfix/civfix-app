@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { isValidHandle, type UpdateProfileRequest } from "@civfix/shared"
 
 import { api } from "@/lib/api"
+import { queryKeys } from "@/lib/query"
 import { useAuthStore } from "@/store/auth-store"
 import { useCurrentUser, useIsAuthenticated } from "@/hooks/use-auth"
 import { useDebouncedValue } from "@/hooks/use-debounce"
@@ -27,7 +28,7 @@ export function useHandleAvailability(handle: string) {
   const debounced = useDebouncedValue(handle.trim(), 350)
   const valid = isValidHandle(debounced)
   return useQuery({
-    queryKey: ["handle-available", debounced.toLowerCase()],
+    queryKey: queryKeys.handleAvailable(debounced.toLowerCase()),
     enabled: valid,
     queryFn: () => api.checkHandle({ handle: debounced }),
     retry: false,

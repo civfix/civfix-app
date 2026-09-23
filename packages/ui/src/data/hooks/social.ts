@@ -409,7 +409,7 @@ export function useHandleAvailability(handle: string, currentHandle: string | nu
     isValidHandle(candidate) &&
     candidate.toLowerCase() !== (currentHandle ?? "").trim().toLowerCase()
   return useQuery<HandleAvailableResponse>({
-    queryKey: ["handle-available", candidate],
+    queryKey: queryKeys.handleAvailable(candidate),
     enabled,
     queryFn: () => api.checkHandle({ handle: candidate }),
     retry: false,

@@ -320,7 +320,7 @@ export function useReportSubmit(options?: ReportSubmitOptions): (isCurrent?: () 
       }
     }
 
-    void queryClient.invalidateQueries({ queryKey: ["map", "reports"] })
+    void queryClient.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })
     void queryClient.invalidateQueries({ queryKey: queryKeys.myReportsRoot })
 
     return { ...result, feedShare }
