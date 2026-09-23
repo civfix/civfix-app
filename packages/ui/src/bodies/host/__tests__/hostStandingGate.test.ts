@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../../__tests__/sourceGuards"
 import { cleanupHostStanding, hasHostCapability, managesEvent } from "../../../data/hooks/host"
 
 const code = (src: string): string =>
@@ -64,7 +65,8 @@ describe("host mode's action switch", () => {
   it("names the cancel action instead of routing every unknown key to it", () => {
     const src = read("../HostModeBody.tsx")
     expect(src).toContain('case "cancel":\n          return () => setCancelling(true)')
-    const actionFor = src.slice(src.indexOf("const actionFor = useCallback("))
-    expect(actionFor.slice(0, actionFor.indexOf("[onAnnounce,"))).not.toContain("default:")
+    const actionFor = sliceBetween(src, "const actionFor = useCallback(", "[onAnnounce,")
+    expect(actionFor).toContain('case "cancel":')
+    expect(actionFor).not.toContain("default:")
   })
 })

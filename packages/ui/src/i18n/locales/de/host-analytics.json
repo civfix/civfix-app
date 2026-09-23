@@ -177,6 +177,7 @@
     "impact_caption": "Mit deinen Veranstaltungen verknüpfte Meldungen",
     "impact_donations": "{{n}} Klicks auf den Spendenlink",
     "checkins_ring_a11y": "{{rate}} % der Anmeldungen sind eingecheckt",
+    "checkins_ring_unknown_a11y": "Check-in-Quote nicht verfügbar",
     "window": "Letzte 30 Tage",
     "panel_hours": "Freiwilligenstunden",
     "checkins_caption": "von {{registered}} Anmeldungen · {{count}} Veranstaltungen durchgeführt",

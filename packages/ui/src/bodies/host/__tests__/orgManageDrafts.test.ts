@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../../__tests__/sourceGuards"
 
 const code = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
@@ -13,10 +14,10 @@ describe("the org manage drafts", () => {
   })
 
   it("reset only the section that was saved, from the saved organization", () => {
-    const profileSave = body.slice(body.indexOf("save.mutate(profilePayload("), body.indexOf("const saveLinks"))
+    const profileSave = sliceBetween(body, "save.mutate(profilePayload(", "const saveLinks")
     expect(profileSave).toContain("setProfile(profileDraftFrom(updated))")
     expect(profileSave).not.toContain("setLinks(")
-    const linksSave = body.slice(body.indexOf("save.mutate(linksPayload("), body.indexOf("const pickLogo"))
+    const linksSave = sliceBetween(body, "save.mutate(linksPayload(", "const pickLogo")
     expect(linksSave).toContain("setLinks(linksDraftFrom(updated))")
     expect(linksSave).not.toContain("setProfile(")
   })

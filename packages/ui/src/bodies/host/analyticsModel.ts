@@ -198,6 +198,13 @@ export function ratePercent(rate: SuppressedRate | undefined): number | null {
   return Math.round(rate.value * 100)
 }
 
+export function checkInRingA11y(
+  t: (key: string, options?: Record<string, unknown>) => string,
+  rate: number | null,
+): string {
+  return rate === null ? t("card.checkins_ring_unknown_a11y") : t("card.checkins_ring_a11y", { rate })
+}
+
 export interface FunnelBar {
   step: string
   value: number | null

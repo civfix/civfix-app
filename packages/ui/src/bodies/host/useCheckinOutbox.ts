@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { focusManager, onlineManager, useQueryClient } from "@tanstack/react-query"
 import { useApi, useAuthState } from "../../data"
 import { invalidateHostEvent } from "../../data/hooks/host"
@@ -44,6 +44,8 @@ export function bufferedForReload<T>(
   return bufferOwnerId === ownerId ? [...buffered] : []
 }
 
+// onlineManager is fed by the browser's online event on web; React Native has no connectivity
+// module yet, so on native only the foreground wake (AppState -> focusManager) fires here.
 export function subscribeOutboxWake(onWake: () => void): () => void {
   const offFocus = focusManager.subscribe((focused) => {
     if (focused) onWake()
@@ -63,7 +65,6 @@ export function useCheckinOutbox(cleanupId: string): CheckinOutbox {
   const store = useSecureStore()
   const ownerId = useAuthState().user?.id ?? null
   const ownerIdRef = useRef(ownerId)
-  ownerIdRef.current = ownerId
   const [state, setState] = useState<CheckinOutboxState>(EMPTY_CHECKIN_OUTBOX)
   const [replaying, setReplaying] = useState(false)
   const [report, setReport] = useState<CheckinReplayReport | null>(null)
@@ -119,9 +120,12 @@ export function useCheckinOutbox(cleanupId: string): CheckinOutbox {
   }, [api, cleanupId, commit, qc])
 
   const commitRef = useRef(commit)
-  commitRef.current = commit
   const replayRef = useRef(replay)
-  replayRef.current = replay
+  useLayoutEffect(() => {
+    ownerIdRef.current = ownerId
+    commitRef.current = commit
+    replayRef.current = replay
+  })
 
   // Keyed on what selects the stored blob only: `commit`/`replay` change identity with `api`/`qc`,
   // and a reload for the same owner must keep the scans queued before the first load resolved.

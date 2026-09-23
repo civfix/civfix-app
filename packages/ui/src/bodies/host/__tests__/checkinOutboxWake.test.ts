@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs"
 import { afterEach, describe, expect, it } from "vitest"
 import { focusManager, onlineManager } from "@tanstack/react-query"
 import { bufferedForReload, subscribeOutboxWake } from "../useCheckinOutbox"
+import { expectWrittenInLayoutEffect } from "../../../__tests__/sourceGuards"
 
 const code = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
@@ -30,9 +31,16 @@ describe("the load effect", () => {
     expect(hook).not.toContain("}, [cleanupId, commit, ownerId, replay, store])")
     expect(hook).toContain("commitRef.current(merged)")
   })
+
+  it.each(["ownerIdRef.current = ownerId", "commitRef.current = commit", "replayRef.current = replay"])(
+    "reads %s from the last committed render, never a discarded one",
+    (assignment) => {
+      expectWrittenInLayoutEffect(hook, assignment)
+    },
+  )
 })
 
-describe("subscribeOutboxWake", () => {
+describe("subscribeOutboxWake: foreground on both platforms, reconnect on web", () => {
   afterEach(() => {
     focusManager.setFocused(undefined)
     onlineManager.setOnline(true)
@@ -50,7 +58,7 @@ describe("subscribeOutboxWake", () => {
     off()
   })
 
-  it("wakes the replay when the connection returns, not when it drops", () => {
+  it("wakes the replay when onlineManager reports the connection back (web; native has no connectivity feed yet), not when it drops", () => {
     let wakes = 0
     const off = subscribeOutboxWake(() => {
       wakes += 1

@@ -22,6 +22,7 @@ import {
   busiestRows,
   carouselPage,
   hasSeriesData,
+  checkInRingA11y,
   ratePercent,
   summaryImpactRows,
   weekDayLabel,
@@ -312,7 +313,7 @@ function Panel({
         <RingPanel
           ring={(rate ?? 0) / 100}
           ringLabel={rate === null ? DASH : `${rate}%`}
-          ringA11y={t("card.checkins_ring_a11y", { rate: rate ?? 0 })}
+          ringA11y={checkInRingA11y(t, rate)}
           note={ran ? null : t("card.checkins_empty")}
         />
       </PanelFrame>

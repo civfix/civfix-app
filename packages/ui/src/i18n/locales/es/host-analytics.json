@@ -177,6 +177,7 @@
     "impact_caption": "Reportes vinculados a tus eventos",
     "impact_donations": "{{n}} toques en el enlace de donación",
     "checkins_ring_a11y": "{{rate}}% de las inscripciones registraron su entrada",
+    "checkins_ring_unknown_a11y": "Tasa de registro no disponible",
     "window": "Últimos 30 días",
     "panel_hours": "Horas de voluntariado",
     "checkins_caption": "de {{registered}} inscripciones · {{count}} eventos celebrados",

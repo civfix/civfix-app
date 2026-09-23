@@ -177,6 +177,7 @@
     "impact_caption": "Reports linked to your events",
     "impact_donations": "{{n}} donation-link taps",
     "checkins_ring_a11y": "{{rate}}% of sign-ups checked in",
+    "checkins_ring_unknown_a11y": "Check-in rate not available",
     "window": "Last 30 days",
     "panel_hours": "Volunteer hours",
     "checkins_caption": "of {{registered}} sign-ups · {{count}} events held",

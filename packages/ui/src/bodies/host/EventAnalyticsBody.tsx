@@ -65,6 +65,7 @@ import {
   presetDays,
   rangeSlice,
   pickerOptions,
+  checkInRingA11y,
   ratePercent,
   weekDayLabel,
   weeklyXLabels,
@@ -238,9 +239,12 @@ export function EventAnalyticsBody({ id }: { id: string }) {
                 key: "more",
                 label: loadingMoreEvents ? t("filter.loading_more") : t("filter.more_events"),
                 disabled: loadingMoreEvents,
+                // PopoverMenu dismisses on every press and runs this once it has closed; reopening
+                // keeps the list in view while the next page loads into it.
                 onPress: () => {
-                  setPickerOpen(false)
                   loadMoreEvents()
+                  measurePicker()
+                  setPickerOpen(true)
                 },
               },
             ]
@@ -770,7 +774,7 @@ function EventDaySection({ data }: { data: GetEventAnalyticsResponse }) {
           size={RING_SIZE}
           color={th.colors.accent}
           trackColor={th.colors.chartTrack}
-          accessibilityLabel={t("attendance.check_in_rate")}
+          accessibilityLabel={checkInRingA11y(t, rate)}
         >
           <Text style={styles.ringValue}>{rate === null ? DASH : `${rate}%`}</Text>
         </ProgressRing>

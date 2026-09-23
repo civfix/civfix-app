@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../../__tests__/sourceGuards"
 
 const code = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
@@ -48,10 +49,7 @@ describe("small controls reach 44 px on native and at least 24 px on web", () =>
 })
 
 describe("the terms consent row", () => {
-  const termsRow = consent.slice(
-    consent.indexOf("checked={value.terms}"),
-    consent.indexOf("</Row>", consent.indexOf("checked={value.terms}")),
-  )
+  const termsRow = sliceBetween(consent, "checked={value.terms}", "</Row>")
 
   it("keeps the checkbox label as plain text, with no link nested inside the checkbox", () => {
     expect(termsRow).not.toContain('accessibilityRole="link"')

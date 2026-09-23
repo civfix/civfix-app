@@ -177,6 +177,7 @@
     "impact_caption": "내 이벤트에 연결된 신고",
     "impact_donations": "후원 링크 탭 {{n}}회",
     "checkins_ring_a11y": "신청자의 {{rate}}%가 체크인했습니다",
+    "checkins_ring_unknown_a11y": "체크인율을 확인할 수 없습니다",
     "window": "최근 30일",
     "panel_hours": "자원봉사 시간",
     "checkins_caption": "신청 {{registered}}명 중 · 진행한 이벤트 {{count}}개",
