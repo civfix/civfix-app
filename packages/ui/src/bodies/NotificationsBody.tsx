@@ -58,11 +58,14 @@ const NotificationRow = memo(function NotificationRow({
   const { t } = useT("notifications")
   const meta = typeMeta(item.type, th)
   const press = useCallback(() => onPress(item), [onPress, item])
+  const a11yDetails = [item.body, timeAgo(item.createdAt)].filter(Boolean)
   return (
     <Pressable
       onPress={press}
       accessibilityRole="button"
-      accessibilityLabel={item.read ? item.title : t("row.unreadSuffix", { title: item.title })}
+      accessibilityLabel={item.read
+        ? [item.title, ...a11yDetails].join(", ")
+        : [t("row.unreadSuffix", { title: item.title }), ...a11yDetails].join(", ")}
       {...focusRingProps}
       style={(state) => [
         styles.row,
@@ -180,7 +183,7 @@ export function NotificationsBody() {
         />
       </View>
     )
-  }, [isAuthenticated, isPending, query.isLoading, query.isError, requireAuth, t])
+  }, [isAuthenticated, isPending, query.isLoading, query.isError, requireAuth, t, styles, th])
 
   return (
     <FlatList

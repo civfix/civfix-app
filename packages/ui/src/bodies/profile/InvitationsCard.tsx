@@ -49,18 +49,21 @@ export function InvitationsCard({
   const styles = useStyles()
 
   const slice = inviteRowSlice(eventInvites, orgInvites)
-  if (invitesError) {
+  const errorNotice = invitesError ? (
+    <View style={styles.notice}>
+      <FeedNotice
+        icon="CloudOff"
+        title={t("invites.error_title")}
+        body={t("invites.error_body")}
+        actionLabel={t("invites.retry")}
+        onAction={onRetryInvites}
+      />
+    </View>
+  ) : null
+  if (errorNotice && slice.total === 0) {
     return (
       <SectionCard label={t("invites.section")} variant="list">
-        <View style={styles.notice}>
-          <FeedNotice
-            icon="CloudOff"
-            title={t("invites.error_title")}
-            body={t("invites.error_body")}
-            actionLabel={t("invites.retry")}
-            onAction={onRetryInvites}
-          />
-        </View>
+        {errorNotice}
       </SectionCard>
     )
   }
@@ -93,6 +96,7 @@ export function InvitationsCard({
           onDecline={onDeclineOrgInvite}
         />
       ))}
+      {errorNotice}
     </SectionCard>
   )
 }

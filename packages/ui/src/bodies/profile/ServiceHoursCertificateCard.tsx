@@ -161,7 +161,7 @@ export function ServiceHoursCertificateCard({ totalHours }: ServiceHoursCertific
       void clipboard
         .setString(text)
         .then(() => toast.show(t("transcript.copied"), { variant: "success" }))
-        .catch(() => {})
+        .catch(() => toast.show(t("transcript.copy_error"), { variant: "error" }))
     },
     [clipboard, toast, t],
   )
@@ -395,6 +395,7 @@ export function ServiceHoursCertificateCard({ totalHours }: ServiceHoursCertific
                 onPress={() => setConfirmingRevoke(false)}
                 accessibilityRole="button"
                 accessibilityLabel={t("transcript.revoke_cancel")}
+                hitSlop={CONFIRM_BTN_HIT_SLOP}
                 {...focusRingProps}
                 style={({ pressed }) => [styles.confirmKeep, pressed ? styles.pressedDim : null]}
               >
@@ -406,6 +407,7 @@ export function ServiceHoursCertificateCard({ totalHours }: ServiceHoursCertific
                 accessibilityRole="button"
                 accessibilityLabel={t("transcript.revoke_ok")}
                 accessibilityState={{ busy: revoke.isPending }}
+                hitSlop={CONFIRM_BTN_HIT_SLOP}
                 {...focusRingProps}
                 style={({ pressed }) => [styles.confirmRevoke, pressed ? styles.pressedDim : null]}
               >
@@ -418,6 +420,7 @@ export function ServiceHoursCertificateCard({ totalHours }: ServiceHoursCertific
             onPress={() => setConfirmingRevoke(true)}
             accessibilityRole="button"
             accessibilityLabel={t("transcript.revoke_a11y")}
+            hitSlop={REVOKE_LINK_HIT_SLOP}
             {...focusRingProps}
             style={({ pressed }) => [styles.revokeLink, pressed ? styles.pressedDim : null]}
           >
@@ -435,6 +438,15 @@ function minutesLeft(expiresAt: string, now: number): number {
   if (Number.isNaN(at)) return 0
   return Math.max(0, Math.ceil((at - now) / 60_000))
 }
+
+const MIN_TOUCH_TARGET = 44
+const CONFIRM_BTN_HEIGHT = 34
+const CONFIRM_BTN_HIT_SLOP = {
+  top: (MIN_TOUCH_TARGET - CONFIRM_BTN_HEIGHT) / 2,
+  bottom: (MIN_TOUCH_TARGET - CONFIRM_BTN_HEIGHT) / 2,
+}
+// The link renders about 25pt tall (12.5px label, 4px padding); 10pt of slop each way reaches 44.
+const REVOKE_LINK_HIT_SLOP = { top: 10, bottom: 10, left: 8, right: 8 }
 
 const useStyles = makeThemedStyles((t) => ({
   wrap: {
@@ -639,7 +651,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["2"],
   },
   confirmKeep: {
-    height: 34,
+    height: CONFIRM_BTN_HEIGHT,
     paddingHorizontal: t.space["4"],
     alignItems: "center",
     justifyContent: "center",
@@ -654,7 +666,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
   },
   confirmRevoke: {
-    height: 34,
+    height: CONFIRM_BTN_HEIGHT,
     paddingHorizontal: t.space["4"],
     alignItems: "center",
     justifyContent: "center",

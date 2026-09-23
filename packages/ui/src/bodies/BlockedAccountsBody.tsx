@@ -46,6 +46,8 @@ const BlockedRow = memo(function BlockedRow({
         disabled={pending}
         accessibilityRole="button"
         accessibilityLabel={t("row.unblockA11y", { name: person.name })}
+        accessibilityState={{ disabled: pending, busy: pending }}
+        hitSlop={UNBLOCK_HIT_SLOP}
         {...focusRingProps}
         style={({ pressed }) => [styles.unblock, pressed ? styles.unblockPressed : null]}
       >
@@ -122,6 +124,10 @@ export function BlockedAccountsBody() {
   )
 }
 
+const MIN_TOUCH_TARGET = 44
+const UNBLOCK_HEIGHT = 34
+const UNBLOCK_HIT_SLOP = (MIN_TOUCH_TARGET - UNBLOCK_HEIGHT) / 2
+
 const useStyles = makeThemedStyles((t) => ({
   list: {
     flex: 1,
@@ -168,7 +174,7 @@ const useStyles = makeThemedStyles((t) => ({
   unblock: {
     flexShrink: 0,
     paddingHorizontal: t.space["3"] + 1,
-    height: 34,
+    height: UNBLOCK_HEIGHT,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: t.radius.pill,

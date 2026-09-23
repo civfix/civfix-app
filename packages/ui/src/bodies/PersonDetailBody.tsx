@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo, useState } from "react"
-import { View, Pressable, Modal, Platform, StyleSheet } from "react-native"
+import { View, Pressable, Platform, StyleSheet } from "react-native"
 import {
   resolveAvatarGradient,
   type CleanupDTO,
   type ContentReportReason,
 } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
-import { makeThemedStyles, radius, useTheme, wash, focusRingProps, useLayoutMode, webScrimProps } from "../theme"
+import { makeThemedStyles, radius, useTheme, wash, focusRingProps, useLayoutMode } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
@@ -14,8 +14,11 @@ import {
   EmptyState,
   FollowButton,
   MetaDot,
+  ModalCardSheet,
   PopoverMenu,
+  PrimaryButton,
   ReportContentSheet,
+  SecondaryButton,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonList,
@@ -197,6 +200,9 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
 
   const startBlock = useCallback(() => {
     setConfirmingBlock(true)
+  }, [])
+  const closeBlockConfirm = useCallback(() => {
+    setConfirmingBlock(false)
   }, [])
   const confirmBlock = useCallback(() => {
     const blockId = profile?.id
@@ -543,7 +549,7 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
               <MiniEventRow
                 key={`h-${ev.id}`}
                 event={ev}
-                role={t("events.role_hosting")}
+                role={t("profile-view:events.badge_hosted")}
                 onPress={() => onOpenEvent(ev)}
               />
             ))}
@@ -551,7 +557,7 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
               <MiniEventRow
                 key={`g-${ev.id}`}
                 event={ev}
-                role={t("events.role_going")}
+                role={t("profile-view:events.badge_went")}
                 onPress={() => onOpenEvent(ev)}
               />
             ))}
@@ -602,48 +608,29 @@ export function PersonDetailBody({ id, onBack }: { id: string; onBack?: () => vo
         items={menuItems}
       />
 
-      <Modal
+      <ModalCardSheet
         visible={confirmingBlock}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setConfirmingBlock(false)}
+        onClose={closeBlockConfirm}
+        headerIcon="Ban"
+        tone="danger"
+        title={t("block.confirm")}
+        dismissLabel={t("block.cancel")}
+        actions={
+          <>
+            <SecondaryButton label={t("block.cancel")} onPress={closeBlockConfirm} size="sm" />
+            <PrimaryButton
+              label={t("block.confirm")}
+              variant="destructive"
+              onPress={confirmBlock}
+              loading={blockUser.isPending}
+            />
+          </>
+        }
       >
-        <View style={styles.confirmRoot}>
-          <Pressable
-            style={styles.confirmBackdrop}
-            accessibilityRole="button"
-            accessibilityLabel={t("block.cancel")}
-            onPress={() => setConfirmingBlock(false)}
-            {...webScrimProps}
-          />
-          <View style={styles.confirm} accessibilityRole="alert">
-            <Text style={styles.confirmText}>
-              {t("block.confirm_message", { name: profile.name })}
-            </Text>
-            <View style={styles.confirmRow}>
-              <Pressable
-                onPress={() => setConfirmingBlock(false)}
-                accessibilityRole="button"
-                accessibilityLabel={t("block.cancel")}
-                {...focusRingProps}
-                style={({ pressed }) => [styles.confirmCancel, pressed ? styles.pressed : null]}
-              >
-                <Text style={styles.confirmCancelText}>{t("block.cancel")}</Text>
-              </Pressable>
-              <Pressable
-                onPress={confirmBlock}
-                disabled={blockUser.isPending}
-                accessibilityRole="button"
-                accessibilityLabel={t("block.confirm")}
-                {...focusRingProps}
-                style={({ pressed }) => [styles.confirmBlock, pressed ? styles.pressed : null]}
-              >
-                <Text style={styles.confirmBlockText}>{t("block.confirm")}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        <Text style={styles.confirmText}>
+          {t("block.confirm_message", { name: profile.name })}
+        </Text>
+      </ModalCardSheet>
 
       <ReportContentSheet
         visible={reporting}
@@ -841,66 +828,11 @@ const useStyles = makeThemedStyles((t) => ({
     borderWidth: 1.5,
     borderColor: t.colors.borderStrong,
   },
-  confirmRoot: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: t.space["4"],
-  },
-  confirmBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: t.colors.scrimModal,
-  },
-  confirm: {
-    width: "100%",
-    maxWidth: 320,
-    padding: t.space["4"],
-    gap: t.space["3"],
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s3,
-  },
   confirmText: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 13.5,
+    lineHeight: 19,
     color: t.colors.text,
-  },
-  confirmRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: t.space["2"],
-  },
-  confirmCancel: {
-    paddingHorizontal: t.space["3"],
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: t.radius.pill,
-  },
-  confirmCancelText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 13,
-    color: t.colors.textMuted,
-  },
-  confirmBlock: {
-    paddingHorizontal: t.space["3"],
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: t.radius.pill,
-    backgroundColor: t.colors.brand.bloom,
-  },
-  confirmBlockText: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
-    color: t.colors.onAccent,
-  },
-  pressed: {
-    opacity: 0.85,
   },
 
   events: {
