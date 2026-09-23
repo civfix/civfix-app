@@ -73,6 +73,11 @@ export interface EmptyStateProps extends VariantProps<typeof panelVariants> {
   icon?: React.ReactNode
   iconTone?: "neutral" | "sun" | "moss" | "bloom" | "sky" | "lilac"
   title?: string
+  /**
+   * Heading level for the title. When the empty state IS the page (a claim or cancel link that
+   * failed), pass "h1" so the document is not left without a top-level heading.
+   */
+  titleAs?: "h1" | "h2" | "h3" | "h4"
   body?: React.ReactNode
   /** A <Button> or link rendered under the body (md/card), or under the text (sm). */
   action?: React.ReactNode
@@ -83,6 +88,7 @@ export function EmptyState({
   icon,
   iconTone = "neutral",
   title,
+  titleAs: TitleTag = "h2",
   body,
   action,
   size = "md",
@@ -110,7 +116,7 @@ export function EmptyState({
           {icon}
         </span>
       )}
-      {title && <h4 className={titleVariants({ size })}>{title}</h4>}
+      {title && <TitleTag className={titleVariants({ size })}>{title}</TitleTag>}
       {body && <p className={bodyVariants({ size })}>{body}</p>}
       {action && <div className="mt-4 flex justify-center">{action}</div>}
     </div>

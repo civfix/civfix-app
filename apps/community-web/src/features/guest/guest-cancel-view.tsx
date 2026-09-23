@@ -50,6 +50,7 @@ export function GuestCancelView() {
         <EmptyState
           icon={<SearchX className="h-6 w-6" aria-hidden="true" />}
           title={t("invalid.title")}
+          titleAs="h1"
           body={t("invalid.body")}
           action={
             <Button variant="outline" onClick={goHome}>
@@ -86,6 +87,7 @@ export function GuestCancelView() {
       ) : phase === "error" ? (
         <EmptyState
           title={t("error.title")}
+          titleAs="h1"
           body={error ?? t("error.fallback")}
           action={
             <Button variant="outline" onClick={() => void cancelRsvp()}>

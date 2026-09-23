@@ -208,7 +208,7 @@ function report(
     visibility: "public",
     lat: 37.7599,
     lng: -122.4148,
-    geomSource: "user",
+    geomSource: "manual",
     createdAt,
     publishedAt: status === "submitted" ? null : createdAt,
     mine: true,

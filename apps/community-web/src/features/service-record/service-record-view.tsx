@@ -361,8 +361,12 @@ function Fingerprint({ sha256 }: { sha256: string }) {
           className="sr-no-print inline-flex shrink-0 items-center gap-1.5 rounded-sm px-2 py-1 text-token-13 font-semibold text-ink-2 transition-colors duration-d2 ease-out hover:bg-paper2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-          {copied && <span>{t("copied")}</span>}
         </button>
+        {/* Outside the button: its accessible name is fixed by aria-label, so text inside it is never
+            announced. The region stays mounted so screen readers pick up the change. */}
+        <span role="status" className="sr-no-print shrink-0 py-1 text-token-13 font-semibold text-ink-2">
+          {copied ? t("copied") : ""}
+        </span>
       </div>
     </div>
   )
@@ -382,8 +386,8 @@ function ErrorVerdict({
 
   return (
     <div>
-      {/* The page keeps a real <h1> in every state; EmptyState's own title is an <h4>, which would
-          leave this (publicly linkable) document headingless. */}
+      {/* The page keeps a real <h1> in every state, so this publicly linkable document is never
+          headingless whatever the failure reason. */}
       <h1 className="mb-4 text-center font-display text-token-30 font-extrabold text-ink">
         {t("title")}
       </h1>

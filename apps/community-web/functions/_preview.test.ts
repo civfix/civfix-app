@@ -12,6 +12,7 @@ import {
   HTML_CONTENT_TYPE,
   PREVIEW_CACHE_TTL_SEC,
   PREVIEW_NEGATIVE_CACHE_TTL_SEC,
+  PREVIEW_TRANSIENT_CACHE_TTL_SEC,
   apiBaseFor,
   buildPreview,
   buildUpstreamRequest,
@@ -195,8 +196,8 @@ describe("buildUpstreamRequest", () => {
     expect(buildUpstreamRequest("event", "a-b_c", "https://api.civfix.dev").url).toBe(
       "https://api.civfix.dev/v1/cleanups/a-b_c",
     )
-    expect(buildUpstreamRequest("person", "abc", "https://api.civfix.org").url).toBe(
-      "https://api.civfix.org/v1/people/abc",
+    expect(buildUpstreamRequest("person", "ada@x/y z", "https://api.civfix.org").url).toBe(
+      "https://api.civfix.org/v1/people/ada%40x%2Fy%20z",
     )
   })
 })
@@ -257,6 +258,13 @@ describe("cache policy", () => {
     expect(staging).toBe(
       previewCacheKey("report", "abc", hostOf("https://dev.civfix-web.pages.dev/pin/abc")),
     )
+  })
+
+  it("caches a transient upstream failure for less time than a definite miss", () => {
+    expect(negativeCacheResponse("transient").headers.get("Cache-Control")).toBe(
+      `public, max-age=${PREVIEW_TRANSIENT_CACHE_TTL_SEC}`,
+    )
+    expect(PREVIEW_TRANSIENT_CACHE_TTL_SEC).toBeLessThan(PREVIEW_NEGATIVE_CACHE_TTL_SEC)
   })
 
   it("uses a 300s positive and a 60s negative TTL", () => {
@@ -796,7 +804,7 @@ describe("signup page previews (/e/:slug)", () => {
     )
   })
 
-  it("serves the branded default and noindexes when the API is unreachable", async () => {
+  it("serves the branded default, without noindexing, when the API is unreachable", async () => {
     const h = harness({
       url: "https://civfix.org/e/beach-cleanup-may",
       path: ["beach-cleanup-may"],
@@ -806,6 +814,7 @@ describe("signup page previews (/e/:slug)", () => {
     const preview = h.rewrite.mock.calls[0]?.[1] as LinkPreview
     expect(preview.title).toBe("civfix")
     expect(preview.imageIsBrand).toBe(true)
+    expect(preview.noindex).toBe(false)
   })
 
   it("serves the placeholder shell for a bare /e/ visit rather than a 404", async () => {

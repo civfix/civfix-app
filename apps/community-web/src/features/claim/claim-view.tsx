@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ShieldCheck, CheckCircle2, MapPin, Loader2, ArrowRight } from "lucide-react"
-import type { ReportDTO } from "@civfix/shared"
+import { ErrorCode, type ReportDTO } from "@civfix/shared"
 
 import { useT } from "@civfix/ui/i18n"
 
@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { StatusBadge } from "@civfix/ui"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { api } from "@/lib/api"
+import { api, toAppError } from "@/lib/api"
 import { errorMessage } from "@/lib/error-messages"
 import { useIsAuthenticated } from "@/hooks/use-auth"
 import { useUiStore } from "@/store/ui-store"
@@ -58,6 +58,8 @@ export function ClaimView() {
   const [phase, setPhase] = React.useState<Phase>("intro")
   const [report, setReport] = React.useState<ReportDTO | null>(null)
   const [error, setError] = React.useState<string | null>(null)
+  const [nudgeFailed, setNudgeFailed] = React.useState(false)
+  const [nudgeAttempt, setNudgeAttempt] = React.useState(0)
   // Guard so the auto-claim effect runs the POST at most once.
   const claimAttempted = React.useRef(false)
   // Sequences the claim POSTs so only the LATEST attempt may write the page state (see claim-run.ts).
@@ -99,13 +101,16 @@ export function ClaimView() {
         setClaimCode(res.claimCode)
         saveClaimHandoff({ reportId: res.reportId, claimCode: res.claimCode })
       })
-      .catch(() => {
-        // No pending claim (or backend down): stay on the intro with a "nothing to claim" message.
+      .catch((err: unknown) => {
+        if (cancelled) return
+        // NOT_FOUND is the server's "no pending claim" answer and leaves the "nothing to claim" state;
+        // anything else (offline, 5xx, rate limit) is unknown, so offer a retry instead.
+        if (toAppError(err).code !== ErrorCode.NOT_FOUND) setNudgeFailed(true)
       })
     return () => {
       cancelled = true
     }
-  }, [claimCode, queryReport])
+  }, [claimCode, queryReport, nudgeAttempt])
 
   const runClaim = React.useCallback(async () => {
     if (!claimCode) return
@@ -161,6 +166,15 @@ export function ClaimView() {
             }
           }}
         />
+      ) : nudgeFailed && !claimCode ? (
+        <ErrorState
+          title={t("lookup_failed.title")}
+          message={t("lookup_failed.body")}
+          onRetry={() => {
+            setNudgeFailed(false)
+            setNudgeAttempt((n) => n + 1)
+          }}
+        />
       ) : (
         <Intro
           hasCode={Boolean(claimCode)}
@@ -190,6 +204,7 @@ function Intro({
       <EmptyState
         icon={<ShieldCheck className="h-6 w-6" aria-hidden="true" />}
         title={t("empty.title")}
+        titleAs="h1"
         body={t("empty.body")}
         action={
           <Button variant="outline" onClick={onBrowse}>
@@ -293,11 +308,20 @@ function ClaimingState() {
   )
 }
 
-function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+function ErrorState({
+  title,
+  message,
+  onRetry,
+}: {
+  title?: string
+  message: string
+  onRetry: () => void
+}) {
   const { t } = useT("web-claims")
   return (
     <EmptyState
-      title={t("error.title")}
+      title={title ?? t("error.title")}
+      titleAs="h1"
       body={message}
       action={
         <Button variant="outline" onClick={onRetry}>
