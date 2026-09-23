@@ -19,7 +19,7 @@
   },
   "cover": {
     "label": "Titelbild",
-    "hint": "Erscheint oben auf deiner Veranstaltungsseite anstelle der Karte.",
+    "hint": "Erscheint oben auf deiner Veranstaltungsseite.",
     "add": "Titelbild hinzufügen",
     "replace": "Titelbild ersetzen",
     "remove": "Titelbild entfernen",

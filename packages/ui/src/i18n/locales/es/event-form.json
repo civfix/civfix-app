@@ -19,7 +19,7 @@
   },
   "cover": {
     "label": "Imagen de portada",
-    "hint": "Aparece arriba en la página de tu evento, en lugar del mapa.",
+    "hint": "Aparece arriba en la página de tu evento.",
     "add": "Añadir portada",
     "replace": "Cambiar portada",
     "remove": "Quitar portada",
