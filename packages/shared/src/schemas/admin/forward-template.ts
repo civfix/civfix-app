@@ -79,7 +79,7 @@ export const FORWARD_TEMPLATE_VARIABLES: readonly ForwardTemplateVariable[] = [
   {
     token: "{photoLinks}",
     label: "Photo links",
-    description: "Newline-separated URLs to the report's photos.",
+    description: "One line per photo or video, numbered by kind (e.g. - Photo 1: <link>), or (none).",
   },
   {
     token: "{photoCount}",
