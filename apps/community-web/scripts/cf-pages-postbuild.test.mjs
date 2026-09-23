@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto"
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
@@ -10,10 +10,13 @@ import {
   canonicalDocumentText,
   extractLegalArticle,
   isPlaceholderLegalHash,
+  DEV_ONLY_ROUTES,
+  leakedDevRoutes,
   legalDocumentHash,
   missingAasaExcludes,
   spaFallbackGaps,
 } from "./postbuild-gates.mjs"
+import { pageExtensionsFor } from "../next.config.mjs"
 
 const appDir = join(fileURLToPath(new URL(".", import.meta.url)), "..")
 const publicDir = join(appDir, "public")
@@ -157,5 +160,31 @@ describe("legal placeholder detection", () => {
 
   it("does not mistake a real content hash for a placeholder", () => {
     expect(isPlaceholderLegalHash("terms", "2026-09-06", "0".repeat(64))).toBe(false)
+  })
+})
+
+describe("dev-only gallery routes", () => {
+  it("flags a gallery that reached the export, as a directory or a flat html file", () => {
+    expect(leakedDevRoutes(["index.html", "bodies", "map", "skeleton.html", "_next"])).toEqual([
+      "bodies",
+      "skeleton",
+    ])
+    expect(leakedDevRoutes(["index.html", "map", "legal"])).toEqual([])
+  })
+
+  it("are routes only under the dev server, never in a production build", () => {
+    expect(pageExtensionsFor("phase-development-server")).toContain("dev.tsx")
+    expect(pageExtensionsFor("phase-production-build")).not.toContain("dev.tsx")
+  })
+
+  it("exist only as page.dev.tsx / layout.dev.tsx so a production export cannot pick them up", () => {
+    for (const route of DEV_ONLY_ROUTES) {
+      const dir = join(appDir, "src", "app", route)
+      expect(existsSync(join(dir, "page.dev.tsx")), route).toBe(true)
+      for (const ext of pageExtensionsFor("phase-production-build")) {
+        expect(existsSync(join(dir, `page.${ext}`)), `${route}/page.${ext}`).toBe(false)
+        expect(existsSync(join(dir, `layout.${ext}`)), `${route}/layout.${ext}`).toBe(false)
+      }
+    }
   })
 })

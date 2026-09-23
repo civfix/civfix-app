@@ -1,5 +1,14 @@
 import { createHash } from "node:crypto"
 
+// The fake-data dev galleries (next.config.mjs pageExtensionsFor). A production export must not ship
+// them: they show a fake signed-in shell and pull third-party sample media.
+export const DEV_ONLY_ROUTES = ["bodies", "skeleton", "landscape"]
+
+export function leakedDevRoutes(outEntries) {
+  const names = new Set(outEntries)
+  return DEV_ONLY_ROUTES.filter((route) => names.has(route) || names.has(`${route}.html`))
+}
+
 export function spaFallbackGaps(shellRoutes, redirects) {
   const rules = new Set()
   for (const raw of redirects.split("\n")) {

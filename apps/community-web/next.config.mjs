@@ -3,6 +3,7 @@ import { createRequire } from "node:module"
 import { existsSync, realpathSync } from "node:fs"
 import { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants.js"
 
 const require = createRequire(import.meta.url)
 
@@ -82,10 +83,25 @@ function resolveCommitSha() {
   }
 }
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const DEFAULT_PAGE_EXTENSIONS = ["tsx", "ts", "jsx", "js"]
+
+/**
+ * The fake-data dev galleries (/bodies, /skeleton, /landscape) are `page.dev.tsx` / `layout.dev.tsx`,
+ * which only the dev server treats as routes. A production export never contains them: they render a
+ * fake signed-in shell and load third-party sample media. scripts/cf-pages-postbuild.mjs fails the
+ * build if one ever reaches out/.
+ */
+export function pageExtensionsFor(phase) {
+  return phase === PHASE_DEVELOPMENT_SERVER
+    ? ["dev.tsx", ...DEFAULT_PAGE_EXTENSIONS]
+    : DEFAULT_PAGE_EXTENSIONS
+}
+
+/** @type {(phase: string) => import('next').NextConfig} */
+const nextConfig = (phase) => ({
   // Static SPA export: emits the shell + JS into ./out with no server runtime.
   output: "export",
+  pageExtensions: pageExtensionsFor(phase),
   reactStrictMode: true,
   // Required for output: "export" (no Image Optimization server).
   images: {
@@ -146,6 +162,6 @@ const nextConfig = {
     ]
     return config
   },
-}
+})
 
 export default nextConfig
