@@ -1,8 +1,3 @@
-/**
- * Unit tests for resolveChannelComposerMode (P5 Task 5.4): the pure composer-slot selector for
- * chat_group rooms. Channels are broadcast rooms - only owner/admins compose, subscribers are read-only
- * (Mute pill), public-channel non-members get a Join pill; everything else keeps the normal composer.
- */
 import { describe, expect, it } from "vitest"
 import { resolveChannelComposerMode, resolveGroupInfoGate } from "../channelComposerMode"
 

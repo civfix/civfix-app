@@ -1,6 +1,5 @@
 /**
- * resolveMentionSource (P2 Task 2.9) - the PURE per-room-kind decision for what the composer's
- * @-mention typeahead may suggest. ConversationBody feeds the result straight into
+ * The per-room-kind decision for what the composer's @-mention typeahead may suggest. ConversationBody feeds the result straight into
  * MentionAutocomplete's `candidates` / `extraCandidates` props; this module owns only the
  * which-source-for-which-room logic so it unit-tests without React (package convention:
  * pure-logic vitest).
@@ -13,15 +12,14 @@
  *   - report:  UNSCOPED (`candidates: null`) - the GLOBAL mention search. Report-chat membership is
  *              enforced SERVER-side on resolve (a mention of a non-member resolves to nothing), so
  *              the client deliberately does NOT try to fetch/filter the member list. Report rooms
- *              ALSO get the report's routable jurisdiction as an extra candidate (D12) - suggested
+ *              ALSO get the report's routable jurisdiction as an extra candidate, suggested
  *              alongside users only when the city has a handle AND is reachable (canForwardToCity,
  *              which defaults to true when the DTO omits it). MentionAutocomplete lists extras
- *              FIRST and renders the jurisdiction row with a gov glyph, exactly as the old report
- *              DiscussionComposer did before report discussion became the report room.
+ *              FIRST and renders the jurisdiction row with a gov glyph.
  *   - group:   SCOPED to the member roster's FIRST PAGE (useGroupMembers), minus the viewer and the
  *              handleless, with a GLOBAL fallback (`candidates: null`) while the roster has not
  *              loaded yet - the server scopes mention RESOLUTION to chat_group_members either way,
- *              so an unscoped typeahead never lets a non-member mention actually land (P4 Task 4.9).
+ *              so an unscoped typeahead never lets a non-member mention actually land.
  *              Null/loaded distinction: `groupMembers` null/undefined = not loaded -> global;
  *              a LOADED roster always yields a scoped array - in a solo group that array is []
  *              (the only member is the viewer, so nobody is taggable). No extra candidates.
@@ -73,7 +71,6 @@ export interface MentionSource {
   extraCandidates: JurisdictionMentionCandidate[]
 }
 
-/** Map a person row onto the UserSearchResultDTO shape the autocomplete renders. */
 function toUserCandidate(p: MentionPersonInput): UserSearchResultDTO {
   return {
     id: p.id,
@@ -84,7 +81,6 @@ function toUserCandidate(p: MentionPersonInput): UserSearchResultDTO {
   }
 }
 
-/** Decide the @-mention candidate source for a room. See the module doc for the matrix. */
 export function resolveMentionSource(input: MentionSourceInput): MentionSource {
   const { roomKind, peer, attendees, groupMembers, viewerId, report } = input
   if (roomKind === "dm") {
@@ -113,9 +109,6 @@ export function resolveMentionSource(input: MentionSourceInput): MentionSource {
     }
   }
   if (roomKind === "group") {
-    // Group: the member roster's first page minus the viewer and the handleless; while the roster
-    // has not loaded, fall back to the GLOBAL search (the server scopes resolution to members).
-    // A loaded solo-group roster filters down to [] - only the viewer is a member.
     return {
       candidates: groupMembers
         ? groupMembers.filter((m) => !!m.handle && m.id !== viewerId).map(toUserCandidate)
@@ -123,7 +116,6 @@ export function resolveMentionSource(input: MentionSourceInput): MentionSource {
       extraCandidates: [],
     }
   }
-  // cleanup: the attendee roster minus the viewer and the handleless.
   return {
     candidates: (attendees ?? [])
       .filter((a) => !!a.handle && a.id !== viewerId)

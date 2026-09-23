@@ -64,7 +64,6 @@ describe("resolveMentionSource", () => {
         }),
       )
       expect(src.extraCandidates).toEqual([])
-      // The global user source stays on regardless.
       expect(src.candidates).toBeNull()
     })
 

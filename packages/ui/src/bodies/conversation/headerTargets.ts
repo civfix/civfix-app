@@ -16,14 +16,10 @@
  * `leave`, silently freezing live chat for the survivor.
  *
  * A HIDDEN AFFORDANCE IS THE HONEST OUTCOME, not a degradation: a control that navigates nowhere is a lie,
- * and the fix for any given target is to give that host a real destination and pass the handler (which is
- * exactly what the mobile `/groups/[id]/info` and `/messages/members/[roomKind]/[id]` routes now do for
- * group-info and members). Same shape as `hostFormNavEscape` in composerCreateFlow.ts: the platform fact
- * ("can a shell-owned surface be drawn above me?") is stated once, in one pure place, instead of being
- * re-derived at each affordance.
- *
- * `pinnedList` is the original of the pattern (P3 Task 3.8) and keeps its exact previous semantics; the
- * other three are the same decision, made once each.
+ * and the fix for any given target is to give that host a real destination and pass the handler (as the
+ * mobile `/groups/[id]/info` and `/messages/members/[roomKind]/[id]` routes do for group-info and
+ * members). The platform fact ("can a shell-owned surface be drawn above me?") is stated once, in one
+ * pure place, instead of being re-derived at each affordance.
  */
 
 export interface ConvoHeaderTargetInput {

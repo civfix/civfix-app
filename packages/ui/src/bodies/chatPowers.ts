@@ -1,10 +1,10 @@
 /**
- * chatPowers (P3 Task 3.7) - the PURE per-room-kind moderation matrix for the chat UI: who may
- * pin/unpin messages, and who may delete OTHER people's messages. These flags only gate what the
- * context menu OFFERS - the server stays authoritative and re-checks every pin/unpin/delete
- * request (an out-of-date client showing a row it shouldn't just gets a 403).
+ * The per-room-kind moderation matrix for the chat UI: who may pin/unpin messages, and who may delete
+ * OTHER people's messages. These flags only gate what the context menu OFFERS; the server stays
+ * authoritative and re-checks every pin/unpin/delete request (an out-of-date client showing a row it
+ * shouldn't just gets a 403).
  *
- * Mirror of the server matrix (P3 backend; group lane P4):
+ * Mirror of the server matrix:
  *   pin/unpin:
  *     - dm:      either participant (rendering the room at all implies participation).
  *     - cleanup: whoever holds `moderate_chat` - organizer, co-host or coordinator.
@@ -36,12 +36,10 @@ export interface ChatPowerSignals {
   myGroupRole?: "owner" | "admin" | "member" | null
 }
 
-/** Owner/admin of a group room - the single role gate both group powers share. */
 function isGroupModerator(s: ChatPowerSignals): boolean {
   return s.myGroupRole === "owner" || s.myGroupRole === "admin"
 }
 
-/** May the viewer pin/unpin messages in this room? (Server-authoritative; UI gate only.) */
 export function canPinIn(s: ChatPowerSignals): boolean {
   switch (s.roomKind) {
     case "dm":
@@ -57,7 +55,6 @@ export function canPinIn(s: ChatPowerSignals): boolean {
   }
 }
 
-/** May the viewer delete OTHERS' messages in this room? (Server-authoritative; UI gate only.) */
 export function canDeleteOthersIn(s: ChatPowerSignals): boolean {
   switch (s.roomKind) {
     case "dm":

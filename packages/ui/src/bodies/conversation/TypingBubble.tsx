@@ -9,14 +9,12 @@ import { useConversationStyles } from "./styles"
 function TypingDots() {
   const styles = useConversationStyles()
   const dots = useRef([new Animated.Value(0), new Animated.Value(0), new Animated.Value(0)]).current
-  // REDUCED MOTION: a typing indicator is the one animation in the conversation that never stops on its
-  // own, so it is also the one most worth silencing. `useReducedMotion` is the package's shared
-  // AccessibilityInfo store (one query + one listener for the whole app, `prefers-reduced-motion` on
-  // web); `null` means "not answered yet", which animates - the setting is off for almost everyone.
+  // A typing indicator is the one animation in the conversation that never stops on its own, so it is the
+  // one most worth silencing under reduced motion. `null` means "not answered yet", which animates: the
+  // setting is off for almost everyone.
   const reduceMotion = useReducedMotion() === true
   useEffect(() => {
     if (reduceMotion) {
-      // Three static dots at full ink: the row still READS as a typing indicator without the travel.
       for (const value of dots) value.setValue(1)
       return
     }

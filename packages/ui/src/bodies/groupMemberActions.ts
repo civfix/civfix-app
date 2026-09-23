@@ -1,6 +1,5 @@
 /**
- * groupMemberActions (P4 Task 4.8) - the PURE per-member management matrix for the group-info roster.
- * Given the VIEWER's role, the TARGET row's role and whether the row is the viewer themselves, return
+ * The per-member management matrix for the group-info roster. Given the VIEWER's role, the TARGET row's role and whether the row is the viewer themselves, return
  * the ordered action keys the row's overflow kebab may offer. Client-side mirror of the server's
  * membership guards (the server re-checks every request); unit-tested as a full matrix.
  *

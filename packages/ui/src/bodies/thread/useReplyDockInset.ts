@@ -1,10 +1,9 @@
 /**
- * useReplyDockInset - how far the thread's docked reply composer must lift to sit ON the keyboard.
+ * How far the thread's docked reply composer must lift to sit ON the keyboard.
  *
- * THE BUG THIS FIXES: on the post-thread screen the composer row, its attach affordances and the Reply
- * button all rendered BEHIND the soft keyboard - you could not see what you were typing. The old
- * `PostThreadBody` applied `useKeyboardInset()`, which is a hard-coded `0` on native
- * (`shell/useKeyboardInset.native.ts`), so nothing lifted at all on the phone.
+ * The shell's `useKeyboardInset()` is a hard-coded `0` on native (`shell/useKeyboardInset.native.ts`), so
+ * on its own it would leave the composer row, its attach affordances and the Reply button BEHIND the soft
+ * keyboard on the phone.
  *
  * THE DESIGN, and why it cannot double-apply:
  *
@@ -29,14 +28,14 @@
  * `buildReplyComposerHeightPlan` needs the number synchronously in JS on the same render). Because this
  * hook never asks the anchor for a lift, a surface can never receive both.
  *
- * THE ONE THING THAT WOULD BREAK IT is an ANCESTOR also reserving the keyboard: on mobile web
- * `PortraitShell.shared` used to apply `paddingBottom: keyboardInset` to the post-thread overlay. That is
- * removed for `post-thread` in `shell/bodyLayout.ts` (`surfaceKeyboardAvoidance`), and
- * `shell/__tests__/portrait-shell.test.ts` pins it. The two changes MUST ship in the same version.
+ * THE ONE THING THAT WOULD BREAK IT is an ANCESTOR also reserving the keyboard: the mobile-web portrait
+ * shell must not pad the post-thread overlay by the keyboard inset. `shell/bodyLayout.ts`
+ * (`surfaceKeyboardAvoidance`) keeps `post-thread` out of it, and `shell/__tests__/portrait-shell.test.ts`
+ * pins that.
  *
  * `restPad` exists because iOS's `endCoordinates.height` is measured from the SCREEN bottom and already
  * covers the home-indicator strip: adding `insets.bottom` on top of a live keyboard inset would reopen a
- * 34pt dead gap (the exact defect the search dock had). So the safe-area pad applies only at rest.
+ * 34pt dead gap. So the safe-area pad applies only at rest.
  */
 import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Dimensions, Keyboard, Platform, type KeyboardEvent } from "react-native"
@@ -58,7 +57,6 @@ export interface ReplyDockInset {
 }
 
 export function useReplyDockInset(): ReplyDockInset {
-  // The legacy shell seam: 0 on native, the visualViewport overlap on web. See the table above.
   const shell = useKeyboardInset()
   const insets = useContext(SafeAreaInsetsContext)
   const [own, setOwn] = useState(0)
