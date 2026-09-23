@@ -71,18 +71,9 @@ describe("mapFocusStore: clear", () => {
 })
 
 /**
- * `clearFor` - the OWNERSHIP guard retained page layers made worth having.
- *
- * `shell/PageStack.native` keeps every page on the nav stack MOUNTED so a pop can reveal its parent, so
- * two focus-publishing bodies (ReportDetailBody / EventDetailBody) can be mounted at once over this ONE
- * focus slot.
- *
- * WHAT THIS IS NOT. It is not the thing that fixes the pop: React flushes a commit's passive effects in
- * two whole-tree passes - every cleanup (`commitPassiveUnmountOnFiber`) then every create
- * (`commitPassiveMountOnFiber`) - so the departing page's release always lands BEFORE the revealed page
- * re-asserts, and the `usePageIsActive()` gate means a buried or leaving layer registers no cleanup at
- * all. The gate is the protection; this is the ownership check that makes a LATE or out-of-order release
- * harmless whatever produces one. These tests pin that property, not a sequence React can emit.
+ * `PageStack.native` keeps every stacked page mounted, so two focus-publishing bodies can share the one
+ * focus slot. The `usePageIsActive()` gate is the protection; these tests pin the ownership check that
+ * makes a late or out-of-order release harmless, not a sequence React emits today.
  */
 describe("mapFocusStore: clearFor", () => {
   it("releases the focus when the caller still owns it", () => {
@@ -92,8 +83,6 @@ describe("mapFocusStore: clearFor", () => {
   })
 
   it("is a NO-OP when someone else has taken the focus - the ownership guard", () => {
-    // A release that lands AFTER another body has claimed the slot must not wipe it, whatever produced
-    // that ordering. (Not the pop: see the suite doc - a pop's cleanup runs before any create.)
     useMapFocus.getState().setReport({ id: "child", lat: 1, lng: 2, category: "hazard" })
     useMapFocus.getState().setReport({ id: "parent", lat: 3, lng: 4, category: "graffiti" })
     useMapFocus.getState().clearFor("child")
@@ -107,8 +96,7 @@ describe("mapFocusStore: clearFor", () => {
   })
 
   it("does not NOTIFY subscribers on a stale release", () => {
-    // The guard is a `get()` test rather than "return the state unchanged from set", so a stale release
-    // costs the map no re-render at all - which matters because it fires on every pop of a detail page.
+    // A stale release fires on every pop of a detail page, so it must cost the map no re-render.
     useMapFocus.getState().setReport({ id: "parent", lat: 3, lng: 4, category: "graffiti" })
     let notifications = 0
     const unsubscribe = useMapFocus.subscribe(() => {
@@ -134,10 +122,8 @@ describe("mapFocusStore: clearFor", () => {
 })
 
 /**
- * The two callers, pinned by source assertion: this package has no RN renderer, so "does the cleanup use
- * the scoped release" cannot be observed by executing the bodies. Both halves matter - the `isActive`
- * gate stops a BURIED page asserting focus, and the scoped release stops a DEPARTING page clearing what
- * the surviving one owns - so both are asserted, per body.
+ * Pinned by source because this package has no RN renderer. The `isActive` gate stops a buried page
+ * asserting focus and the scoped release stops a departing page clearing what the survivor owns.
  */
 describe("mapFocusStore: the retained-layer contract, at its two call sites", () => {
   const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -153,8 +139,8 @@ describe("mapFocusStore: the retained-layer contract, at its two call sites", ()
     const src = read("../../bodies/EventDetailBody.tsx")
     expect(src).toContain("const isActive = usePageIsActive()")
     expect(src).toContain("return () => useMapFocus.getState().clearFor(cleanup.id)")
-    // Its no-coords branch keeps the UNCONDITIONAL clear on purpose: "this event has no location" really
-    // does mean the map has nothing to show, and it only runs while this page is the active one.
+    // Unconditional on purpose: an event with no location leaves the map nothing to show, and this branch
+    // runs only while the page is active.
     expect(src).toContain("useMapFocus.getState().clear()")
   })
 })

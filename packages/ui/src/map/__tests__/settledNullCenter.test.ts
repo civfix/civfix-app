@@ -1,8 +1,7 @@
 /**
- * APP-BUG-162: when the host's centre resolution settles with nothing (location refused and no
- * approximate point, or the backend off), both picker seams kept showing the loading placeholder
- * forever. A settled-null centre now shows a "search an address" state; a value or a later centre
- * still mounts the map. The seams import react-native / maplibre, so their wiring is pinned by source.
+ * A centre resolution that settles with nothing must show a "search an address" state instead of loading
+ * forever; a value or a later centre still mounts the map. The seams import react-native and maplibre,
+ * so their wiring is pinned by source.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"

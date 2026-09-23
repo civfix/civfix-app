@@ -11,7 +11,6 @@ import {
   SERVER_PIN_ZOOM,
 } from "./mapRegion.ts"
 
-/** A square viewport centered on (0,0) with the given half-size in degrees. */
 function viewportOf(half: number): BBox {
   return { west: -half, east: half, south: -half, north: half }
 }
@@ -19,7 +18,6 @@ function viewportOf(half: number): BBox {
 const VIEWPORT = viewportOf(0.1)
 const REGION = padBbox(VIEWPORT, PAD_FACTOR)
 
-/** Shift a bbox east by `d` degrees (a pan). */
 function shifted(b: BBox, d: number): BBox {
   return { ...b, west: b.west + d, east: b.east + d }
 }
@@ -35,7 +33,6 @@ test("the first settle requests a padded region", () => {
 })
 
 test("settles inside the in-flight region are deduped", () => {
-  // A long pan settles repeatedly while its query is still running: no second request.
   const decision = decideRegionFetch(
     { loaded: null, requested: REGION },
     shifted(VIEWPORT, 0.005),
@@ -67,10 +64,8 @@ test("zooming in past the loaded sample refetches a tighter region", () => {
 })
 
 test("a FAILED region fetch (both refs cleared) re-requests on the next settle", () => {
-  // The screen clears `loaded` + `requested` when the reports query errors, because the shared
-  // useMapReports sets retry:false. Committing the region as loaded at REQUEST time instead (the old
-  // behavior) left this settle reporting "keep" forever - the map stranded on empty pins while the user
-  // panned inside a region whose fetch had failed.
+  // useMapReports sets retry:false, so a region committed as loaded at request time would report "keep"
+  // forever and strand the map on empty pins.
   const afterError = decideRegionFetch({ loaded: null, requested: null }, shifted(VIEWPORT, 0.005))
   assert.equal(afterError.action, "request")
 })

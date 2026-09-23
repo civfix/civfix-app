@@ -13,15 +13,8 @@ import {
 } from "./region-fetch"
 
 /**
- * Region-fetch decisions for the web home map (see region-fetch.ts).
- *
- * The two regressions these lock down (a settle-driven map that consulted only ONE of the two regions):
- *   1. Duplicate-fetch churn: while the query for a NEW region is in flight, every further settle inside
- *      it re-padded and re-requested a slightly different bbox because the decision was made against the
- *      still-LOADED old region.
- *   2. A stranded, pin-less map: panning out and then quickly back (before the new region resolved) was
- *      suppressed by the loaded region, so the in-flight FAR region's points landed under a viewport that
- *      no longer showed them and nothing re-requested the visible area.
+ * A settle-driven map that consults only one of its two regions either restarts an in-flight request on
+ * every settle of a pan, or strands the map on a far region's pins after a quick pan out and back.
  */
 
 function box(west: number, south: number, east: number, north: number): BBox {
@@ -68,8 +61,7 @@ describe("padBbox", () => {
   })
 
   it("always yields a region that covers the viewport it was padded from", () => {
-    // The self-coverage invariant: without it a settle would request forever (request -> still not
-    // covered -> request ...). Checked across shapes/scales the map really sees.
+    // Without self-coverage a settle would request forever.
     for (const viewport of [V1, V2, FAR, box(-122.5, 37.6, -122.3, 37.8), box(-0.01, 51.5, 0.01, 51.52)]) {
       expect(regionCovers(padBbox(viewport, 0.6), viewport)).toBe(true)
     }
@@ -98,14 +90,10 @@ describe("decideRegionFetch", () => {
   })
 
   it("keeps the in-flight request when the viewport is inside it but outside the loaded region", () => {
-    // Regression 1: the settles of a pan into a new area must NOT restart the request that is already
-    // fetching that area just because the previously LOADED region does not cover the viewport.
     expect(decideRegionFetch(state(R1, R2), box(41, 1, 49, 9))).toEqual({ action: "keep" })
   })
 
   it("reverts to the loaded region when the viewport pans back off the in-flight one", () => {
-    // Regression 2: re-point the query at the region we already hold (a cache hit) so the pins on
-    // screen belong to the visible area instead of the region still loading 40 degrees away.
     const decision = decideRegionFetch(state(R1, R2), V1)
     expect(decision).toEqual({ action: "revert", region: R1 })
     // Identity matters: the same bbox object re-uses the cached query entry rather than keying a new one.
@@ -117,8 +105,6 @@ describe("decideRegionFetch", () => {
   })
 
   it("re-requests after a failed fetch cleared both regions, even without moving", () => {
-    // The commit effect nulls both refs on error; the next settle must fetch again rather than treat
-    // the failed region as covered.
     expect(decideRegionFetch(state(null, null), box(1, 1, 9, 9))).toEqual({
       action: "request",
       region: padBbox(box(1, 1, 9, 9), 0.6),
@@ -141,8 +127,6 @@ describe("settle sequences", () => {
     map.resolve()
     expect(map.requests).toHaveLength(1)
 
-    // A pan east: the first settle that leaves R1 requests R2; every later settle inside R2 is deduped
-    // while that query is still in flight (no resolve() between them).
     expect(map.settle(box(38, 0, 48, 10))).toBe("request")
     expect(map.settle(box(39, 0, 49, 10))).toBe("keep")
     expect(map.settle(box(38.5, 0.5, 48.5, 10.5))).toBe("keep")
@@ -159,8 +143,6 @@ describe("settle sequences", () => {
     expect(map.settle(V1)).toBe("revert")
     expect(map.state.requested).toBe(loaded)
 
-    // Once that (cached) region commits, the map is back in a steady state - no extra fetch, and the
-    // next settle in the same place is a no-op instead of the map sitting pin-less until the user moves.
     map.resolve()
     expect(map.state.loaded).toBe(loaded)
     expect(map.settle(box(1, 1, 9, 9))).toBe("keep")
@@ -192,8 +174,7 @@ describe("the server pin threshold", () => {
   })
 
   it("refetches the moment the viewport crosses into pins, without waiting out the hysteresis", () => {
-    // Coverage alone would hold the aggregate region for another ~1.13 zoom levels, so the bubbles stayed
-    // on screen long after the map should have broken into individual pins.
+    // Coverage alone would hold the aggregate region for another ~1.13 zoom levels.
     expect(regionCovers(AGGREGATE_REGION, PIN_VIEWPORT)).toBe(true)
     expect(decideRegionFetch(state(AGGREGATE_REGION, AGGREGATE_REGION), PIN_VIEWPORT)).toEqual({
       action: "request",

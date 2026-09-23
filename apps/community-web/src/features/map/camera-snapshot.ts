@@ -1,41 +1,31 @@
 import type { BBox } from "@civfix/shared"
 
 /**
- * The home map's LAST-SETTLED camera, persisted in localStorage so the next boot can seed the shared
- * Map's `initialCenter` synchronously and render the user's metro on the very first frame.
+ * Seeds the shared Map's `initialCenter` synchronously from the last-settled camera, so a returning
+ * visitor's first frame is their metro and the load-time region fetch is the only one (no second fetch
+ * after a locate-then-fly). Written on every region settle, so it is "where the map last sat", not just
+ * where geolocation put it.
  *
- * Why: without a seed the map boots at the neutral statewide default (zoom 4), `map.on("load")` fires a
- * region fetch for a continental bbox, and only when the async location resolve lands does the camera
- * fly to the user - whose moveend fires region fetch #2. Every cold load therefore fetched (and
- * repainted) the map twice. Booting AT the last-settled camera makes the load-time fetch the only one
- * for every returning visitor; only a genuine first visit (no snapshot yet) still takes the one
- * locate-then-fly camera flight.
- *
- * The write happens on EVERY region settle (home-map.tsx `onRegionChange`), so the snapshot is simply
- * "where the map last sat" - the standard maps-app boot camera - not just where geolocation put it.
- *
- * Mirrors lib/auth-snapshot.ts: versioned key, `window` guards (the module is evaluated during the
- * Next.js static-export build), and every failure mode - missing storage, private-mode SecurityError,
- * quota, corrupt JSON, shape/range drift - degrades to a clean miss. Never throws.
+ * The `window` guards exist because the module is evaluated during the Next static-export build. Every
+ * storage failure (missing storage, private-mode SecurityError, quota, corrupt JSON, shape or range drift)
+ * degrades to a clean miss.
  */
 
-/** Storage key. Version is in the key so a future shape bump is a clean miss, not a wrong-shape parse. */
+/** Versioned so a future shape bump is a clean miss, not a wrong-shape parse. */
 export const CAMERA_SNAPSHOT_KEY = "civfix.map.camera.v1"
 const CAMERA_SNAPSHOT_VERSION = 1
 
-/** A boot camera: where to put the map's first frame. Matches the shared Map's `initialCenter` shape. */
 export interface CameraSnapshot {
   lat: number
   lng: number
   zoom: number
 }
 
-/** Persisted body. The version literal also lives here to guard a hand-edited or half-migrated value. */
+/** The version literal also lives in the body to guard a hand-edited or half-migrated value. */
 interface SnapshotBody extends CameraSnapshot {
   v: typeof CAMERA_SNAPSHOT_VERSION
 }
 
-/** Range-check a candidate: finite, on-globe, and a zoom maplibre can actually hold. */
 function isCameraSnapshot(body: unknown): body is SnapshotBody {
   if (typeof body !== "object" || body === null) return false
   const { v, lat, lng, zoom } = body as Partial<SnapshotBody>
@@ -54,11 +44,6 @@ function isCameraSnapshot(body: unknown): body is SnapshotBody {
   )
 }
 
-/**
- * Read the last-settled camera, or null when absent/unreadable. Any failure - no window, missing key,
- * bad JSON, version/shape/range mismatch, or a SecurityError from a privacy-mode localStorage - clears
- * the key (best effort) and returns null. Never throws.
- */
 export function readCameraSnapshot(): CameraSnapshot | null {
   if (typeof window === "undefined") return null
 
@@ -66,7 +51,6 @@ export function readCameraSnapshot(): CameraSnapshot | null {
   try {
     raw = window.localStorage.getItem(CAMERA_SNAPSHOT_KEY)
   } catch {
-    // SecurityError (storage disabled / partitioned). Nothing to clear; treat as a miss.
     return null
   }
   if (raw === null) return null
@@ -75,7 +59,7 @@ export function readCameraSnapshot(): CameraSnapshot | null {
     const body = JSON.parse(raw) as unknown
     if (isCameraSnapshot(body)) return { lat: body.lat, lng: body.lng, zoom: body.zoom }
   } catch {
-    // Corrupt JSON: fall through to clear + miss.
+    // Corrupt JSON falls through to the clear-and-miss below.
   }
 
   clearCameraSnapshot()
@@ -83,11 +67,9 @@ export function readCameraSnapshot(): CameraSnapshot | null {
 }
 
 /**
- * Best-effort persist of a settled viewport's center + zoom. The center is the bbox midpoint - the
- * same derivation the shared `useMapViewport` store uses for its own `center`. A viewport that fails
- * the range check (a transient NaN mid-teardown, an antimeridian-wrapped bbox) is skipped rather than
- * poisoning the next boot; quota / private-mode write failures are ignored (the snapshot is an
- * optimization, not state).
+ * The center is the bbox midpoint, matching the shared `useMapViewport` store. A viewport that fails the
+ * range check (a transient NaN mid-teardown, an antimeridian-wrapped bbox) is skipped rather than
+ * poisoning the next boot.
  */
 export function writeCameraSnapshot(viewport: BBox, zoom: number): void {
   if (typeof window === "undefined") return
@@ -101,16 +83,15 @@ export function writeCameraSnapshot(viewport: BBox, zoom: number): void {
   try {
     window.localStorage.setItem(CAMERA_SNAPSHOT_KEY, JSON.stringify(body))
   } catch {
-    // Quota exceeded or storage unavailable (private mode).
+    // Quota or private mode: the snapshot is an optimization, not state.
   }
 }
 
-/** Best-effort removal of the persisted camera. */
 export function clearCameraSnapshot(): void {
   if (typeof window === "undefined") return
   try {
     window.localStorage.removeItem(CAMERA_SNAPSHOT_KEY)
   } catch {
-    // Storage unavailable: nothing to do.
+    // Best effort: storage may be unavailable.
   }
 }

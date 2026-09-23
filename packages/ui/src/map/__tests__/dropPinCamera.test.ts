@@ -20,9 +20,9 @@ import {
 } from "../../shell/sidebarStore"
 import { expandedFramePlan, NAV_LEFT } from "../../shell/expandedFramePlan"
 
-/** The sim device (iPhone 16-class portrait) the verification script measures against. */
+/** An iPhone 16-class portrait window. */
 const WINDOW_H = 874
-/** `insets.top` on that device. `sheetTopReserve` is this plus the shared 32pt gap - what CompactShell uses. */
+/** `insets.top` on that device; CompactShell's `sheetTopReserve` adds the shared 32pt gap. */
 const SAFE_TOP = 59
 const TOP_RESERVE = SAFE_TOP + 32
 const SF = { lat: 37.7749, lng: -122.4194 }
@@ -86,7 +86,6 @@ describe("dropPinCamera: expanded (the sidebar occludes HORIZONTALLY)", () => {
   it("shifts the CENTRE west so the pin slides into the strip BESIDE the panel", () => {
     const target = expanded()
     expect(target.lng).toBeLessThan(SF.lng)
-    // The panel does not occlude vertically, so the latitude must come back byte-for-byte.
     expect(target.lat).toBe(SF.lat)
   })
 
@@ -134,13 +133,8 @@ describe("dropPinCamera: expanded (the sidebar occludes HORIZONTALLY)", () => {
   })
 })
 
-// --- occlusionLeft: the WHOLE left chrome, not just the card -------------------------------------------
-//
-// The top nav strip is a horizontal bar now (shell/expandedFramePlan) - it costs the map no LEFT-edge
-// space of its own, so the card's own inset is the whole story. Offsetting by half the CARD leaves the
-// pin west of the visible strip's centre by half the shell's inset, and in map mode (card hidden) the old
-// input has nothing to say at all even though the inset itself still applies. The frame plan answers both
-// in one number, so the camera takes THAT.
+// Half the card alone leaves the pin west of the strip's centre by half the shell's inset, and says
+// nothing in map mode where only the inset occludes.
 
 describe("dropPinCamera: expanded takes the frame plan's occlusionLeft", () => {
   const frame = (over: Partial<Parameters<typeof expandedFramePlan>[0]> = {}) =>
@@ -156,9 +150,6 @@ describe("dropPinCamera: expanded takes the frame plan's occlusionLeft", () => {
   })
 
   it("STILL shifts in map mode, where the card is hidden and only the shell's own inset occludes", () => {
-    // `/map` with an empty stack: cardVisible false, occlusionLeft = NAV_LEFT. A long press there
-    // pushes the drop-pin entry (so the card comes back) - but the value the caller reads AFTER
-    // `openDropPinMenu` already reflects that, and this bare-inset case is what a hidden card must produce.
     const hidden = frame({ view: "map" })
     expect(hidden.cardVisible).toBe(false)
     expect(hidden.occlusionLeft).toBe(NAV_LEFT)
@@ -260,9 +251,7 @@ describe("dropPinCamera: compact", () => {
 })
 
 describe("dropPinCamera: compact, the SETTLED detent (not a hardcoded mid)", () => {
-  // `openIfPeeked` bumps a PEEKED sheet to mid but KEEPS a FULL one, so a long press in the strip above an
-  // already-full sheet opens the menu at FULL. Offsetting by mid/2 there put the pin BELOW the sheet's top
-  // edge (hidden) - these are the tests that failed before `sheetDetent` existed.
+  // Offsetting by mid/2 for a sheet settled at FULL would put the pin below the sheet's top edge.
   it("defaults to MID, so an older caller is unchanged", () => {
     expect(compact({ sheetDetent: undefined })).toEqual(compact({ sheetDetent: 1 }))
   })
@@ -298,26 +287,14 @@ describe("dropPinCamera: compact, the SETTLED detent (not a hardcoded mid)", () 
   })
 })
 
-// --- The real acceptance criterion: WHERE ON SCREEN DOES THE PIN END UP? ------------------------------
-//
-// Every assertion above measures a DELTA, which cannot tell "centred in the visible strip" from "shoved off
-// the top of the window". These invert the projection back to a screen y and assert the pin lands inside the
-// strip of map the user can actually SEE - between the safe-area inset / banner at the top and the sheet's
-// top edge at the bottom. That is the assertion the FULL detent failed: `sheetSnapPoints` clamps `full` to
-// `windowHeight - sheetTopReserve`, so at FULL the whole strip IS the top reserve, and offsetting by full/2
-// put the pin at reserve/2 - above `insets.top`, i.e. under the Dynamic Island.
+// Deltas alone cannot tell "centred in the visible strip" from "shoved off the top of the window", so
+// these invert the projection back to a screen y.
 
-/** `mercatorYfromLat`, re-derived here rather than imported (the module keeps it private on purpose). */
+/** Re-derived because the module keeps `mercatorYfromLat` private. */
 const mercY = (lat: number) =>
   (180 - (180 / Math.PI) * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360))) / 360
 
-/**
- * The pin's screen y, in px from the top of the window, given the camera the module returned.
- *
- * The camera CENTRE is at `windowHeight / 2` by definition, and the pressed point sits
- * `(mercY(centre) - mercY(pin)) * worldPx(zoom)` px above it - so this is the inverse of everything
- * `dropPinCameraTarget` does, computed from the OUTPUT only.
- */
+/** The inverse of `dropPinCameraTarget`, computed from its output only. */
 function pinScreenY(
   windowHeight: number,
   pressedLat: number,
@@ -327,13 +304,12 @@ function pinScreenY(
 }
 
 /**
- * `DROP_PIN_SIZE` from `map/pins/DropPin`, restated as a literal: that module imports react-native, and this
- * suite is a pure `.ts` unit test with no RN renderer. The marker is anchored at its BOTTOM, so the art
- * occupies `[pinY - 52, pinY]`.
+ * `DROP_PIN_SIZE` restated as a literal because `map/pins/DropPin` imports react-native. The marker is
+ * anchored at its bottom, so the art occupies `[pinY - 52, pinY]`.
  */
 const DROP_PIN_ART = 52
 
-/** Real portrait devices: [label, windowHeight, insets.top]. */
+/** [label, windowHeight, insets.top]. */
 const NOTCHED = [
   ["iPhone 16 (the sim target)", 874, 59],
   ["iPhone SE-class notch", 852, 47],
@@ -358,17 +334,14 @@ describe("dropPinCamera: the pin lands in VISIBLE map on a notched phone", () =>
       for (const detent of [0, 1, 2] as const) {
         const occluded = sheetSnapPoints(windowHeight, sheetTopReserve)[detent]
         const y = pinScreenY(windowHeight, SF.lat, at(detent))
-        // Inside the visible strip: below the notch, above the sheet's top edge.
         expect(y).toBeGreaterThanOrEqual(safeTop)
         expect(y).toBeLessThanOrEqual(windowHeight - occluded)
-        // And exactly CENTRED in it, which is the stated intent rather than merely "not clipped".
         expect(y).toBeCloseTo((safeTop + (windowHeight - occluded)) / 2, 6)
       }
     })
 
     it(`${label}: without topInset the FULL detent puts the pin UNDER the notch (the bug)`, () => {
-      // The old behaviour, preserved verbatim when `topInset` is omitted - which is exactly why it must be
-      // passed. If this ever starts failing, the default changed and the back-compat claim is stale.
+      // If this starts failing, the `topInset` default changed.
       const y = pinScreenY(
         windowHeight,
         SF.lat,
@@ -387,9 +360,7 @@ describe("dropPinCamera: the pin lands in VISIBLE map on a notched phone", () =>
     it(`${label}: at MID the whole 52pt teardrop clears the notch; at FULL it cannot fit at all`, () => {
       const midY = pinScreenY(windowHeight, SF.lat, at(1))
       expect(midY - DROP_PIN_ART).toBeGreaterThan(safeTop)
-      // FULL leaves only `sheetTopReserve - safeTop` px of usable map (32 on every one of these devices), so
-      // the art is TALLER than the strip whatever the camera does. This is the geometry `dropPinFlow` acts
-      // on by settling compact at MID - see `dropPinFlow.test.ts`.
+      // The geometry `dropPinFlow` acts on by settling compact at MID.
       expect(windowHeight - sheetSnapPoints(windowHeight, sheetTopReserve)[2] - safeTop).toBeLessThan(
         DROP_PIN_ART,
       )
@@ -397,8 +368,6 @@ describe("dropPinCamera: the pin lands in VISIBLE map on a notched phone", () =>
   }
 
   it("centres in the strip under a measured web banner too (no safe-area API there)", () => {
-    // Mobile web: reserve is just the 32pt gutter, and the top occluder is the app-download banner's
-    // MEASURED height (useAppPromoStore.bannerHeight), which is 0 once dismissed.
     const banner = 72
     const y = pinScreenY(
       812,
@@ -419,8 +388,7 @@ describe("dropPinCamera: the pin lands in VISIBLE map on a notched phone", () =>
   })
 
   it("pins the sim device's MID magnitude with the inset folded in", () => {
-    // 874/91 -> mid 487; offset (487 - 59)/2 = 214px; at lat 37.7749 / z17 that is 9.074e-4 deg (vs the
-    // 1.033e-3 the same press produces with topInset omitted).
+    // 874/91 -> mid 487; offset (487 - 59)/2 = 214px; at lat 37.7749 / z17 that is 9.074e-4 deg.
     const delta = SF.lat - compact({ sheetDetent: 1, topInset: SAFE_TOP, currentZoom: 17 }).lat
     expect(delta).toBeGreaterThan(9.074e-4 - 5e-7)
     expect(delta).toBeLessThan(9.074e-4 + 5e-7)
@@ -435,18 +403,10 @@ describe("dropPinCamera: the pin lands in VISIBLE map on a notched phone", () =>
   })
 })
 
-// --- The same acceptance criterion, LANDSCAPE ---------------------------------------------------------
-//
-// The mirror of `pinScreenY`: the strip the user can see runs from the chrome's right edge
-// (`occlusionLeft`) to the window's, and the pin must land in its CENTRE - not merely "somewhere east of
-// the card". This is the test that fails if the camera keeps offsetting by half the CARD (45px too far
-// west at every width) or forgets the rail entirely in map mode.
+// Fails if the camera offsets by half the card (45px too far west at every width) or forgets the rail
+// in map mode.
 
-/**
- * The pin's screen x, in px from the left of the window, given the camera the module returned. The camera
- * CENTRE is at `windowWidth / 2` by definition and `mercatorXfromLng` is linear, so this is the exact
- * inverse of the expanded branch, computed from the OUTPUT only.
- */
+/** `mercatorXfromLng` is linear, so this is the exact inverse of the expanded branch. */
 function pinScreenX(
   windowWidth: number,
   pressedLng: number,
@@ -468,7 +428,6 @@ describe("dropPinCamera: the pin lands in the CLEAR map strip beside the rail + 
     it(`${label}: the pin is centred in the visible strip, never under the chrome`, () => {
       const { occlusionLeft } = expandedFramePlan({
         view,
-        // Map mode with an empty stack is the card-hidden case; every other view paints the card.
         stackLength: 0,
         sidebarWidth: clampSidebarWidth(storedWidth, windowWidth),
       })
@@ -484,14 +443,12 @@ describe("dropPinCamera: the pin lands in the CLEAR map strip beside the rail + 
       expect(x).toBeGreaterThan(occlusionLeft)
       expect(x).toBeLessThan(windowWidth)
       expect(x).toBeCloseTo((occlusionLeft + windowWidth) / 2, 6)
-      // The latitude is the pressed one, byte-for-byte: nothing occludes vertically in landscape.
       expect(target.lat).toBe(SF.lat)
     })
   }
 
   it("the OLD half-the-card offset lands the pin 7px west of the strip's centre", () => {
-    // Why `occlusionLeft` replaced `sidebarWidth`: half the shell's own left inset is the whole error, at
-    // every width. Preserved as a test so the legacy input's behaviour is documented rather than assumed.
+    // Documents the deprecated `sidebarWidth` input: half the shell's own left inset is the whole error.
     const legacy = dropPinCameraTarget({
       ...SF,
       currentZoom: 17,
@@ -507,15 +464,13 @@ describe("dropPinCamera: the pin lands in the CLEAR map strip beside the rail + 
 
 describe("dropPinCamera: topInset is fed from a live store, so it must degrade", () => {
   it("treats a non-finite or negative inset as 0 rather than cancelling the shift", () => {
-    // `useSafeAreaInsets()` before the first layout pass / a promo height before the banner paints.
     for (const topInset of [Number.NaN, Number.POSITIVE_INFINITY, -40, undefined]) {
       expect(compact({ topInset })).toEqual(compact({ topInset: 0 }))
     }
   })
 
   it("clamps an inset TALLER than the visible strip to the sheet's top edge, never below it", () => {
-    // Mobile web at FULL with a banner: reserve 32 vs a 72px banner, so the strip is NEGATIVE and no camera
-    // can show the pin. The least-bad answer is the sheet's top edge - the pin must not sink UNDER the sheet.
+    // Mobile web at FULL with a banner: the strip is negative, so the sheet's top edge is the least-bad answer.
     const full = sheetSnapPoints(812, 32)[2]
     const y = pinScreenY(
       812,
@@ -534,8 +489,7 @@ describe("dropPinCamera: topInset is fed from a live store, so it must degrade",
   })
 
   it("pushes the centre NORTH when the top occluder is taller than the sheet", () => {
-    // A 120px banner over a PEEKED (96px) sheet: the visible strip's centre is genuinely BELOW the window's,
-    // so the offset is negative and the pin must sit below the window centre - not be left unshifted.
+    // A 120px banner over a 96px peeked sheet puts the strip's centre below the window's.
     const target = compact({ sheetDetent: 0, topInset: 120, currentZoom: 17 })
     expect(target.lat).toBeGreaterThan(SF.lat)
     const y = pinScreenY(WINDOW_H, SF.lat, target)
@@ -547,17 +501,12 @@ describe("dropPinCamera: topInset is fed from a live store, so it must degrade",
   })
 })
 
-// --- THE RESTORE: putting the camera BACK when the pull-up is dismissed ----------------------------
-//
-// Everything above answers "where must the camera GO for a long press". These answer the mirror question:
-// "when the pull-up goes away, may the camera go BACK". The hard part is not the math - `snapshot.from` IS
-// the answer - it is telling a DISMISSAL from a COMMITMENT, because both of them take the drop-pin entry
-// off the nav stack by the same door.
+// The hard part of the restore is telling a dismissal from a commitment: both take the drop-pin entry off
+// the nav stack.
 
-/** Where the user WAS before the long press: a wider view of a different part of town. */
+/** A wider view of a different part of town. */
 const FROM: DropPinCameraTarget = { lat: 37.7935, lng: -122.4399, zoom: 13 }
 
-/** The camera the sim device's MID-detent drop-pin fly is ASKED to land on for a long press at SF. */
 const FLOWN: DropPinCameraTarget = dropPinCameraTarget({
   ...SF,
   currentZoom: FROM.zoom,
@@ -568,7 +517,6 @@ const FLOWN: DropPinCameraTarget = dropPinCameraTarget({
   mode: "compact",
 })
 
-/** A viewport parked exactly on a camera - what `useMapViewport` publishes once a fly settles. */
 const parkedOn = (camera: DropPinCameraTarget) => ({
   center: { lat: camera.lat, lng: camera.lng },
   zoom: camera.zoom,
@@ -611,19 +559,13 @@ describe("shouldRestoreDropPinCamera: a dismissal restores, a COMMITMENT does no
   })
 
   it("does NOT restore when the VIEW changed - 'Report an issue here' is a commitment", () => {
-    // DropPinBody.onReport -> useDraftReportStore.setPrefilledLocation (DropPinBody.tsx:98) ->
-    // useNavStore.selectView("report") (DropPinBody.tsx:101), and `selectView` EMPTIES the stack - so the
-    // drop-pin entry leaves by the very same door Cancel uses. The only tell is that the user is now on
-    // another surface, which is what the recorded view catches.
+    // `selectView("report")` empties the stack exactly as Cancel does; only the view tells them apart.
     expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ view: "report" }))).toBe(false)
   })
 
   it("does NOT restore on the [drop-pin, cleanup] PUBLISH-THEN-DISMISS trap", () => {
-    // A create flow stacked over the pin publishes into [drop-pin, cleanup]: `stackAfterFlowPublished`
-    // (bodies/composerCreateFlow.ts:125-134) truncates only up to the topmost FLOW kind, leaving
-    // [drop-pin, cleanup] - which is exactly why CreateCleanupBody.tsx:357 clears the marker BY HAND
-    // there. The drop-pin entry finally leaves the stack when that EVENT detail is dismissed, and
-    // restoring then would yank the camera off the event the user just created.
+    // `stackAfterFlowPublished` truncates only to the topmost flow kind, so the drop-pin entry leaves when
+    // the new event's detail is dismissed; restoring then would yank the camera off that event.
     expect(
       shouldRestoreDropPinCamera(
         snapshot(),
@@ -642,9 +584,7 @@ describe("shouldRestoreDropPinCamera: a dismissal restores, a COMMITMENT does no
   })
 
   it("DOES restore from EXPANDED's appended stack, where the pin is not at index 0", () => {
-    // `openDropPinMenu` uses `push` on expanded (dropPinFlow.ts:106 - the sidebar's panel stack), so the
-    // entry lands on TOP of whatever panel was already open. The rule is POSITIONAL - is the drop pin the
-    // top of the stack that is going away - not "is it the only entry".
+    // Expanded pushes onto the open panel stack, so the rule is positional, not "is it the only entry".
     expect(
       shouldRestoreDropPinCamera(
         snapshot(),
@@ -660,26 +600,23 @@ describe("shouldRestoreDropPinCamera: a dismissal restores, a COMMITMENT does no
   })
 
   it("does NOT restore with no live viewport - no map is mounted, so there is nothing to fly", () => {
-    // Both seams call `useMapViewport.getState().clear()` on unmount (Map.native.tsx:113,
-    // Map.web.tsx:376). A fly issued then would QUEUE and replay onto the NEXT mounted map - a camera
-    // yank on a surface the user has already left.
+    // A fly issued with no map queues and replays onto the next mounted map.
     expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport: null }))).toBe(false)
   })
 })
 
-/** The inverse of `mercY` (maplibre's `latFromMercatorY`), re-derived for the same reason `mercY` is. */
+/** maplibre's `latFromMercatorY`, re-derived for the same reason `mercY` is. */
 const latFromMercY = (y: number) => {
   const y2 = 180 - y * 360
   return (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90
 }
 
-/** Move a camera EAST by `px` screen pixels at its own zoom. Mercator X is linear, so this is exact. */
+/** Mercator X is linear, so this is exact. */
 const nudgeEastPx = (camera: DropPinCameraTarget, px: number) => ({
   center: { lat: camera.lat, lng: camera.lng + (px / worldPx(camera.zoom)) * 360 },
   zoom: camera.zoom,
 })
 
-/** Move a camera SOUTH by `px` screen pixels at its own zoom (the inverse of the module's own shift). */
 const nudgeSouthPx = (camera: DropPinCameraTarget, px: number) => ({
   center: {
     lat: latFromMercY(mercY(camera.lat) + px / worldPx(camera.zoom)),
@@ -694,9 +631,6 @@ describe("shouldRestoreDropPinCamera: a pan or zoom while the menu is open CANCE
     expect((DROP_PIN_PAN_TOLERANCE_PX / worldPx(17)) * 360).toBeCloseTo(6.4373e-5, 9)
   })
 
-  // GUARD (green before this task): before the pan/zoom gate existed, `shouldRestoreDropPinCamera`
-  // restored unconditionally once the view/stack/viewport checks passed, so an 11px nudge already
-  // returned true with no tolerance math involved at all.
   it("tolerates a sub-threshold nudge in BOTH axes (settle noise, not intent)", () => {
     for (const viewport of [nudgeEastPx(FLOWN, 11), nudgeSouthPx(FLOWN, 11), nudgeEastPx(FLOWN, -11)]) {
       expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport }))).toBe(true)
@@ -710,7 +644,6 @@ describe("shouldRestoreDropPinCamera: a pan or zoom while the menu is open CANCE
   })
 
   it("measures SCREEN PIXELS, not degrees: the same degree delta passes at z17 and fails at z20", () => {
-    // 4 px at z17 ...
     const degrees = (4 / worldPx(17)) * 360
     const at17: DropPinCameraTarget = { ...FLOWN, zoom: 17 }
     expect(
@@ -719,7 +652,7 @@ describe("shouldRestoreDropPinCamera: a pan or zoom while the menu is open CANCE
         dismissal({ viewport: { center: { lat: at17.lat, lng: at17.lng + degrees }, zoom: 17 } }),
       ),
     ).toBe(true)
-    // ... is 32 px at z20, where the map is 8x more magnified: the SAME degrees are now a real pan.
+    // The same degrees are 32 px at z20.
     const at20: DropPinCameraTarget = { ...FLOWN, zoom: 20 }
     expect(
       shouldRestoreDropPinCamera(
@@ -739,7 +672,6 @@ describe("shouldRestoreDropPinCamera: a pan or zoom while the menu is open CANCE
   })
 
   it("tolerates the host's own arrival slop - mapLifecycle's SETTLED_ZOOM_EPSILON is the same 0.1", () => {
-    // Anything the host calls "arrived" must never be called "panned", or the restore silently vanishes.
     expect(DROP_PIN_PAN_ZOOM_TOLERANCE).toBe(0.1)
     expect(
       shouldRestoreDropPinCamera(
@@ -749,20 +681,14 @@ describe("shouldRestoreDropPinCamera: a pan or zoom while the menu is open CANCE
     ).toBe(true)
   })
 
-  // GUARD (green before this task): with no pan/zoom gate yet, any non-null viewport that passed the
-  // view/stack checks already restored unconditionally, so a viewport parked on `from` returned true
-  // whether or not the module compared against it.
   it("restores when the viewport is still on the PRE-PRESS camera (dismissed MID-FLY)", () => {
-    // Map.native publishes to useMapViewport only on settle (handleRegion at :228, wired to
-    // onRegionDidChange at :360), so a long press followed immediately by a map tap finds the store still
-    // holding the camera we are about to restore TO. Measuring only against `flownTo` would read that as a
-    // 214px-or-worse pan and drop the restore for the fastest, most common dismissal there is.
+    // Map.native publishes to useMapViewport only on region settle, so an immediate map tap still finds
+    // the pre-press camera in the store.
     expect(shouldRestoreDropPinCamera(snapshot(), dismissal({ viewport: parkedOn(FROM) }))).toBe(true)
   })
 
   it("does NOT let a LOW-ZOOM pre-press camera launder a pan at the drop-pin zoom", () => {
-    // The dangerous shape: `from` at z13 is 16x less magnified, so a 160px pan at z17 is only 10px in
-    // z13's world - inside the tolerance. Each endpoint must therefore match on ZOOM as well as position.
+    // A 160px pan at z17 is only 10px in z13's world, inside the tolerance without the zoom gate.
     const nearbyWideFrom: DropPinCameraTarget = { lat: FLOWN.lat, lng: FLOWN.lng, zoom: 13 }
     expect(
       shouldRestoreDropPinCamera(
@@ -772,12 +698,8 @@ describe("shouldRestoreDropPinCamera: a pan or zoom while the menu is open CANCE
     ).toBe(false)
   })
 
-  // GUARD (green before this task): same cause as the sub-threshold-nudge guard above - with no
-  // pan/zoom gate yet, no distance math ran at all, so the antimeridian-wrapped viewport already
-  // restored regardless of the (not-yet-written) delta calculation.
   it("measures the SHORTEST way round the antimeridian, not the long way", () => {
-    // A camera on the dateline with the viewport reported 8px EAST of it, which maplibre wraps to a
-    // NEGATIVE longitude. A naive subtraction reads that as ~360 deg and would cancel every restore there.
+    // maplibre wraps 8px east of the dateline to a negative longitude; a naive subtraction reads ~360 deg.
     const atDateline: DropPinCameraTarget = { lat: 0, lng: 179.99998, zoom: 17 }
     const wrapped = {
       center: { lat: 0, lng: atDateline.lng + (8 / worldPx(17)) * 360 - 360 },
@@ -799,16 +721,9 @@ describe("shouldRestoreDropPinCamera: a pan or zoom while the menu is open CANCE
     }
   })
 
-  // GUARD (green before this task): the curvature bound it pins is pure pre-existing math (mercY /
-  // worldPx, no new constants), and the final `shouldRestoreDropPinCamera` call needed no tolerance
-  // logic either - the unconditional pre-gate restore already returned true for this viewport.
   it("THE TOLERANCE FLOOR: the bbox-midpoint source is a rounding error at the drop-pin zoom", () => {
-    // `useMapViewport.center` is the ARITHMETIC bbox midpoint (mapViewportStore.ts:39-42), not the
-    // Mercator camera centre. The gap is a second-order curvature term, pi*sin(lat)*H^2/(4*worldPx(z)) px,
-    // which on the sim device (874px tall) at z17 is 0.0055px - so 12px is a ~2200x margin. THAT is why a
-    // pixel tolerance can be an order of magnitude tighter than mapLifecycle's zoom-blind 1e-4-DEGREE
-    // settle epsilon (18.6-23.6px at z17) without becoming flaky. The bound below is 0.02px, ~3.6x the
-    // measured value: tight enough that a regression to a degrees-based or zoom-blind source fails here.
+    // The bbox-midpoint vs Mercator-centre gap is pi*sin(lat)*H^2/(4*worldPx(z)) px, 0.0055px here. The
+    // 0.02px bound is tight enough that a degrees-based or zoom-blind source fails.
     const halfHeight = WINDOW_H / 2
     const north = latFromMercY(mercY(FLOWN.lat) - halfHeight / worldPx(17))
     const south = latFromMercY(mercY(FLOWN.lat) + halfHeight / worldPx(17))

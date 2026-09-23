@@ -1,5 +1,5 @@
-// The unified react-native-svg map pins (UI-unification Stage 4 slice 5A). ONE set used by BOTH the
-// native map (MarkerView children) and the web map (mounted into maplibre markers via createRoot).
+// One pin set for both maps: native renders them as MarkerView children, web mounts them into maplibre
+// markers via createRoot.
 export { TeardropPin } from "./TeardropPin"
 export { EventPin } from "./EventPin"
 export { BlendPin } from "./BlendPin"
