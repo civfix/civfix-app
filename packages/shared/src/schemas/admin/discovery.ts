@@ -5,15 +5,9 @@ import { JurisdictionLayerSchema } from "../map.js"
 import { AdminListQuerySchema, PrioritySchema } from "./common.js"
 
 /**
- * Discovery / "Jurisdictions" queue: pins landing where civfix has no routing contact yet. The
- * operator researches the jurisdiction (by GEOID), saves a per-category routing contact, and reports
- * start flowing. List (population-sorted), detail, add-note, flag, and save-draft. The "Save & route"
- * action lives in jurisdictions.ts (it writes the jurisdiction contacts). See enumeration 2.B.
+ * Discovery queue: pins landing where civfix has no routing contact yet. Saving contacts and routing
+ * lives in jurisdictions.ts because it writes the jurisdiction contacts.
  */
-
-// ---------------------------------------------------------------------------
-// Fragments
-// ---------------------------------------------------------------------------
 
 /** A per-category waiting-report count map (category -> count of waiting reports for the GEOID). */
 export const PerCategoryCountsSchema = z.record(
@@ -32,10 +26,7 @@ export const DiscoveryNoteSchema = z
   .strict()
 export type DiscoveryNote = z.infer<typeof DiscoveryNoteSchema>
 
-/**
- * Which report categories are already routed vs still missing a contact for this jurisdiction. Drives
- * the "needs contact / routed" pills and the per-type attention flags in the routing-contacts grid.
- */
+/** Which report categories are already routed vs still missing a contact for this jurisdiction. */
 export const ContactStateSchema = z
   .object({
     routed: z.array(ReportCategorySchema),
@@ -55,14 +46,10 @@ export const DiscoverySamplePinSchema = z
   .strict()
 export type DiscoverySamplePin = z.infer<typeof DiscoverySamplePinSchema>
 
-// ---------------------------------------------------------------------------
-// List
-// ---------------------------------------------------------------------------
-
 /**
  * A discovery queue row. `category` is the dominant waiting category (drives the leading pin);
  * `perCategoryCounts` is the full per-category breakdown. `reports` is the total waiting count. `pop`
- * is the jurisdiction population (TIGER provenance is cosmetic). `overSla` flags the 24h discovery SLA
+ * is the jurisdiction population. `overSla` flags the 24h discovery SLA
  * breach. `notes` carries the operator-note history.
  */
 export const DiscoveryTaskDTOSchema = z
@@ -70,7 +57,7 @@ export const DiscoveryTaskDTOSchema = z
     id: z.string(),
     geoid: z.string(),
     place: z.string(),
-    // The jurisdiction TYPE (city/county/state/federal land/tribal) for the type chip on a queue row.
+    // The jurisdiction TYPE (city/county/state/federal land/tribal).
     layer: JurisdictionLayerSchema,
     category: ReportCategorySchema,
     catLabel: z.string(),
@@ -89,7 +76,7 @@ export type DiscoveryTaskDTO = z.infer<typeof DiscoveryTaskDTOSchema>
 
 /**
  * Discovery list query: search matches place or GEOID; `filter` is the attention facet
- * (all|attention|clear); `sort` is pop|reports (default pop, population-sorted per spec).
+ * (all|attention|clear); `sort` is pop|reports (default pop).
  */
 export const DiscoveryListQuerySchema = AdminListQuerySchema.extend({
   filter: z.enum(["all", "attention", "clear"]).optional(),
@@ -99,10 +86,6 @@ export type DiscoveryListQuery = z.infer<typeof DiscoveryListQuerySchema>
 
 export const DiscoveryListResponseSchema = pageResponse(DiscoveryTaskDTOSchema)
 export type DiscoveryListResponse = z.infer<typeof DiscoveryListResponseSchema>
-
-// ---------------------------------------------------------------------------
-// Detail
-// ---------------------------------------------------------------------------
 
 /** An existing per-category routing contact for the jurisdiction (email per category). */
 export const DiscoveryContactSchema = z
@@ -123,7 +106,7 @@ export const DiscoveryTaskDetailDTOSchema = DiscoveryTaskDTOSchema.extend({
   // does not pin a GeoJSON shape. Nullable when no geometry is on file (a text label is shown).
   placeGeojson: z.unknown().nullable(),
   samplePins: z.array(DiscoverySamplePinSchema),
-  // The mini-map center + zoom the design's PinItMap consumes (center [lat,lng]).
+  // The mini-map center ([lat, lng]) and zoom.
   center: z.tuple([z.number(), z.number()]).nullable(),
   zoom: z.number().nullable(),
 }).strict()
@@ -132,13 +115,9 @@ export type DiscoveryTaskDetailDTO = z.infer<typeof DiscoveryTaskDetailDTOSchema
 export const GetDiscoveryTaskResponseSchema = DiscoveryTaskDetailDTOSchema
 export type GetDiscoveryTaskResponse = z.infer<typeof GetDiscoveryTaskResponseSchema>
 
-// ---------------------------------------------------------------------------
-// Mutations
-// ---------------------------------------------------------------------------
-
 /**
- * Append an operator note to a discovery task ("Add a note for the next operator..."). `id` fills the
- * :id path param (the client reads it from the body and the server reads it from the path).
+ * Append an operator note to a discovery task. `id` fills the :id path param (the client reads it from
+ * the body and the server reads it from the path).
  */
 export const AddNoteRequestSchema = z
   .object({
@@ -148,7 +127,7 @@ export const AddNoteRequestSchema = z
   .strict()
 export type AddNoteRequest = z.infer<typeof AddNoteRequestSchema>
 
-/** Flag a discovery task / jurisdiction for review ("Flag for review"). */
+/** Flag a discovery task / jurisdiction for review. */
 export const FlagDiscoveryRequestSchema = z
   .object({
     id: z.string(),
@@ -157,10 +136,7 @@ export const FlagDiscoveryRequestSchema = z
   .strict()
 export type FlagDiscoveryRequest = z.infer<typeof FlagDiscoveryRequestSchema>
 
-/**
- * Save the routing-contact draft without routing ("Save draft"). A per-category email map plus the
- * optional default email(s) and reporting form URL, mirroring SaveContactsRequest but not routing.
- */
+/** Save the routing-contact draft; the same fields as SaveContactsRequest, but nothing is routed. */
 export const SaveDraftRequestSchema = z
   .object({
     id: z.string(),

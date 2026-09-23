@@ -10,9 +10,7 @@ import {
 
 /**
  * Gov-provisioning queue: an operator verifies an applicant's LinkedIn / municipal Directory / phone
- * Callback, then provisions gov_admin linked to the jurisdiction (by GEOID). List + detail, update a
- * verification check, approve (provision), reject. All audited. See enumeration 2.H, endpoints
- * #36-#40.
+ * Callback, then provisions gov_admin linked to the jurisdiction (by GEOID). Every action is audited.
  */
 
 /** One verification check's state: its status, optional evidence link, and an operator note. */
@@ -36,8 +34,8 @@ export const GovChecksSchema = z
 export type GovChecks = z.infer<typeof GovChecksSchema>
 
 /**
- * A gov-provisioning claim. `verified[]`/`pending[]` are the completed vs outstanding checks (the row
- * pills); `checks` is the full per-check map shown in the detail. `method` is how they reached us;
+ * A gov-provisioning claim. `verified[]`/`pending[]` are the completed vs outstanding checks;
+ * `checks` is the full per-check map. `method` is how they reached us;
  * `jurisdictionGeoid` is the jurisdiction to link on approval.
  */
 export const GovClaimDTOSchema = z
@@ -70,10 +68,6 @@ export type GovClaimListResponse = z.infer<typeof GovClaimListResponseSchema>
 export const GetGovClaimResponseSchema = GovClaimDTOSchema
 export type GetGovClaimResponse = z.infer<typeof GetGovClaimResponseSchema>
 
-// ---------------------------------------------------------------------------
-// Mutations
-// ---------------------------------------------------------------------------
-
 /** Mark a verification check verified/pending with optional evidence + note. */
 export const VerifyCheckRequestSchema = z
   .object({
@@ -95,7 +89,7 @@ export const ApproveGovClaimRequestSchema = z
   .strict()
 export type ApproveGovClaimRequest = z.infer<typeof ApproveGovClaimRequestSchema>
 
-/** Reject a claim with a reason ("Reject / request more info"). */
+/** Reject a claim with a reason. */
 export const RejectGovClaimRequestSchema = z
   .object({
     id: z.string(),

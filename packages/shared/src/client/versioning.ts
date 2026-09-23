@@ -1,5 +1,5 @@
 /**
- * API versioning model - the single source of truth for the version->wire-path mapping.
+ * API versioning model: the single source of truth for the version->wire-path mapping.
  *
  * Every endpoint declares a `version`; the wire path is computed centrally by `versionedPath` so the
  * typed client and the backend route helper derive identical paths by construction. Versioned
@@ -7,7 +7,7 @@
  * are deliberately `"unversioned"` (e.g. `/healthz`, the web-redirect OAuth start/callback routes).
  */
 
-export type ApiVersion = "v1" // extend to "v1" | "v2" later
+export type ApiVersion = "v1"
 export type EndpointVersion = ApiVersion | "unversioned"
 
 export const API_VERSIONS = ["v1"] as const satisfies readonly ApiVersion[]

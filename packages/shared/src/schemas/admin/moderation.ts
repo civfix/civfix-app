@@ -10,15 +10,7 @@ import {
   PrioritySchema,
 } from "./common.js"
 
-/**
- * Moderation queue: held media / coordinated clusters / appeals with signals, user context, similar
- * items, and the approve / remove / hold / appeal actions. List + detail. Items clear from the queue
- * on action. See enumeration 2.I, endpoints #41-#46.
- */
-
-// ---------------------------------------------------------------------------
-// Fragments
-// ---------------------------------------------------------------------------
+/** Moderation queue. An item clears from the queue once an operator acts on it. */
 
 /** A single signal cell in the moderation detail grid (label, value, tone). */
 export const ModerationSignalSchema = z
@@ -68,10 +60,6 @@ export const ModerationMediaSchema = z
   .strict()
 export type ModerationMedia = z.infer<typeof ModerationMediaSchema>
 
-// ---------------------------------------------------------------------------
-// List item
-// ---------------------------------------------------------------------------
-
 /**
  * A moderation queue row. `flag` is the label; `reporter` the who; `reason` the why; `kind` what the
  * item is about; `priority` the band. `category` can be null for non-report items (appeals).
@@ -86,20 +74,19 @@ export const ModerationListItemDTOSchema = z
     age: z.string(),
     priority: PrioritySchema,
     kind: ModerationKindSchema,
-    // What KIND of subject this item points at (chiefly for citizen `user_report` items: report|comment|
-    // message|event|profile|photo|user|chat). Additive + optional so an older server that does not yet
-    // compute it still parses; inherited by ModerationItemDTO via .extend.
+    // What KIND of subject this item points at (chiefly for citizen `user_report` items). Optional so an
+    // older server still parses.
     subjectType: ModerationSubjectTypeSchema.optional(),
     // The id of the reported SUBJECT (report/user/event/comment/…, per `subjectType`). This remains the
     // real content id even when navigation requires a different parent entity.
     subjectId: z.string(),
     // Explicit admin navigation target. Chat/photo subjects resolve to a parent report/event only when
-    // repository metadata proves that relationship; standalone content keeps both fields null. Defaults
-    // preserve compatibility while an older backend is still being rolled forward.
+    // repository metadata proves that relationship; standalone content keeps both fields null. Defaulted so
+    // an older server still parses.
     destinationKind: ModerationDestinationKindSchema.nullable().default(null),
     destinationId: z.string().nullable().default(null),
     // The id of the REPORTER (the who behind `reporter`), so their name can link to their account. Null
-    // for anonymous/system-originated reports. Inherited by ModerationItemDTO via .extend.
+    // for anonymous/system-originated reports.
     reporterId: z.string().nullable(),
   })
   .strict()
@@ -120,10 +107,6 @@ export type ModerationListQuery = z.infer<typeof ModerationListQuerySchema>
 export const ModerationListResponseSchema = pageResponse(ModerationListItemDTOSchema)
 export type ModerationListResponse = z.infer<typeof ModerationListResponseSchema>
 
-// ---------------------------------------------------------------------------
-// Detail
-// ---------------------------------------------------------------------------
-
 /**
  * Full moderation detail: the list shape plus the description, the auto-action banner, the place, the
  * signals grid, the user-context snapshot, similar items, and the held media references.
@@ -141,10 +124,6 @@ export type ModerationItemDTO = z.infer<typeof ModerationItemDTOSchema>
 
 export const GetModerationItemResponseSchema = ModerationItemDTOSchema
 export type GetModerationItemResponse = z.infer<typeof GetModerationItemResponseSchema>
-
-// ---------------------------------------------------------------------------
-// Mutations
-// ---------------------------------------------------------------------------
 
 /** Approve / publish a held item. */
 export const ApproveModerationRequestSchema = z
@@ -164,7 +143,7 @@ export const RemoveModerationRequestSchema = z
   .strict()
 export type RemoveModerationRequest = z.infer<typeof RemoveModerationRequestSchema>
 
-/** Extend the hold on an item ("Hold"). */
+/** Extend the hold on an item. */
 export const HoldModerationRequestSchema = z
   .object({
     id: z.string(),

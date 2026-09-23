@@ -56,9 +56,8 @@ export class FakeChatService implements ChatService {
   }
 
   /**
-   * Fan a non-message server frame (presence delta / typing) to the room's connections, skipping the
-   * optional excluded connection (the originator). In-process parity with the real WS+Redis adapter so
-   * the all-fakes dev path renders presence + typing too.
+   * Fan a non-message server frame (presence delta / typing) to the room, skipping the originator. Keeps
+   * parity with the real WS+Redis adapter so the all-fakes dev path renders presence + typing too.
    */
   broadcastEvent(
     cleanupId: string,
@@ -84,8 +83,8 @@ export class FakeChatService implements ChatService {
       from: fakePerson(input.userId),
       body: input.body,
       kind: input.kind ?? "text",
-      // The fake has no media pipeline (no media_assets / presign), so it cannot resolve `mediaUploadIds`
-      // into real MediaDTOs - a media send over the all-fakes dev path echoes back with no attachments.
+      // The fake has no media pipeline, so a media send over the all-fakes dev path echoes back with no
+      // attachments.
       attachments: null,
       createdAt: new Date().toISOString(),
       editedAt: null,
@@ -110,12 +109,11 @@ export class FakeChatService implements ChatService {
     // Newest first. `before` is the id to page backwards from.
     const ordered = [...log].reverse()
 
-    // Around-mode (P2 2.4): center the window on the target — ceil(limit/2) rows at-or-older than it
-    // (target INCLUDED) + floor(limit/2) strictly newer, still newest-first. nextCursor = the older end
-    // (null when the window reaches the tail), prevCursor = the newer end (null at the live head;
-    // clients consume it as a "there are newer messages" signal — there is no `after` param today).
-    // A target that does not exist in this room is a 404, unlike an unknown `before` cursor (which
-    // falls back to the newest page): a jump target the client explicitly named must exist.
+    // Around-mode centers the window on the target: ceil(limit/2) rows at-or-older than it (target
+    // INCLUDED) + floor(limit/2) strictly newer, still newest-first. nextCursor is the older end (null at
+    // the tail), prevCursor the newer end (null at the live head); clients read prevCursor only as a
+    // "there are newer messages" signal, since there is no `after` param. An unknown target is a 404,
+    // unlike an unknown `before` cursor: a jump target the client explicitly named must exist.
     if (around !== undefined) {
       const idx = ordered.findIndex((m) => m.id === around)
       // NOT AppError: the fakes entry is bundled separately from the package index, so its AppError

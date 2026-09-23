@@ -13,7 +13,7 @@ import { RoomKindSchema, WsServerMessageSchema } from "../src/types/ws.js"
 import { endpoints } from "../src/client/endpoints.js"
 
 /**
- * Chat P4 contract: group rooms — the "group" room kind on the unified chat rails, plus the
+ * Chat group contract: the "group" room kind on the unified chat rails, plus the
  * chat_groups DTOs and the 9-route /groups management surface.
  */
 

@@ -9,16 +9,6 @@ import {
   RelAbsTimeSchema,
 } from "./common.js"
 
-/**
- * Admin events surface (the civfix cleanups domain). List (filter by event status + flagged +
- * search), detail (desc, timeline, attendee messages, turnout), and operator actions: set status,
- * flag/unflag, cancel, post an update to attendees. "Cancel event" -> cancelled. See enumeration 2.D.
- */
-
-// ---------------------------------------------------------------------------
-// Fragments
-// ---------------------------------------------------------------------------
-
 /** An organizer reference, reusing the shared actor ref (id/name/handle/joined). */
 export const EventOrganizerSchema = AdminActorRefSchema
 export type EventOrganizer = z.infer<typeof EventOrganizerSchema>
@@ -44,7 +34,7 @@ export const EventTimelineItemSchema = z
   .strict()
 export type EventTimelineItem = z.infer<typeof EventTimelineItemSchema>
 
-/** A message posted to the cleanup group ("Message attendees" thread). */
+/** A message posted to the cleanup group. */
 export const EventMessageSchema = z
   .object({
     who: z.string(),
@@ -54,10 +44,6 @@ export const EventMessageSchema = z
   .strict()
 export type EventMessage = z.infer<typeof EventMessageSchema>
 
-// ---------------------------------------------------------------------------
-// List item
-// ---------------------------------------------------------------------------
-
 /**
  * An event list row. `attendees`/`capacity` drive the turnout bar; `bags` is the post-event outcome.
  * `date` carries both the relative and absolute timestamp. `status` is the cleanup lifecycle status.
@@ -66,8 +52,7 @@ export const AdminEventListItemDTOSchema = z
   .object({
     id: z.string(),
     status: EventStatusSchema,
-    // What kind of event this is (cleanup vs other_volunteer). Defaults to "cleanup" so a server that
-    // does not yet supply it, and already-built consumers, still parse.
+    // Defaults to "cleanup" so an older server's response still parses.
     eventKind: EventKindSchema.default("cleanup"),
     flagged: z.boolean(),
     title: z.string(),
@@ -109,18 +94,13 @@ export const AdminEventListResponseSchema = pageResponse(AdminEventListItemDTOSc
 })
 export type AdminEventListResponse = z.infer<typeof AdminEventListResponseSchema>
 
-// ---------------------------------------------------------------------------
-// Detail
-// ---------------------------------------------------------------------------
-
 /** Full event detail: the list shape plus description, address, timeline, and attendee messages. */
 export const AdminEventDTOSchema = AdminEventListItemDTOSchema.extend({
   desc: z.string(),
   address: z.string(),
   timeline: z.array(EventTimelineItemSchema),
   messages: z.array(EventMessageSchema),
-  // The reports this event is linked to (its cleanup-coverage gallery; reuses the shared light ref
-  // from entities). Defaults to [] so a server that does not yet supply it, and older consumers, parse.
+  // The reports this event is linked to. Defaulted so an older server's response still parses.
   linkedReports: z.array(LinkedReportRefSchema).default([]),
 }).strict()
 export type AdminEventDTO = z.infer<typeof AdminEventDTOSchema>
@@ -128,11 +108,7 @@ export type AdminEventDTO = z.infer<typeof AdminEventDTOSchema>
 export const GetAdminEventResponseSchema = AdminEventDTOSchema
 export type GetAdminEventResponse = z.infer<typeof GetAdminEventResponseSchema>
 
-// ---------------------------------------------------------------------------
-// Mutations
-// ---------------------------------------------------------------------------
-
-/** Set the event status from the "Set status" buttons (cleanups status + timeline; audited). */
+/** Set the event status (writes the cleanup timeline; audited). */
 export const SetEventStatusRequestSchema = z
   .object({
     id: z.string(),
@@ -141,7 +117,7 @@ export const SetEventStatusRequestSchema = z
   .strict()
 export type SetEventStatusRequest = z.infer<typeof SetEventStatusRequestSchema>
 
-/** Flag / unflag an event ("Flag"/"Flagged" toggle). */
+/** Flag / unflag an event. */
 export const FlagEventRequestSchema = z
   .object({
     id: z.string(),
@@ -150,7 +126,7 @@ export const FlagEventRequestSchema = z
   .strict()
 export type FlagEventRequest = z.infer<typeof FlagEventRequestSchema>
 
-/** Cancel an event ("Cancel event" -> cancelled). */
+/** Cancel an event (status `cancelled`). */
 export const CancelRequestSchema = z
   .object({
     id: z.string(),
@@ -159,7 +135,7 @@ export const CancelRequestSchema = z
   .strict()
 export type CancelRequest = z.infer<typeof CancelRequestSchema>
 
-/** Post an update to the cleanup attendees ("Post update"). */
+/** Post an update to the cleanup attendees. */
 export const PostMessageRequestSchema = z
   .object({
     id: z.string(),
@@ -169,9 +145,9 @@ export const PostMessageRequestSchema = z
 export type PostMessageRequest = z.infer<typeof PostMessageRequestSchema>
 
 /**
- * Log a cleanup's outcome ("Log outcome"): the number of bags collected. This is the ONLY write path for
- * cleanups.bags - without it the field is permanently 0 and the bags stats on the events + analytics
- * surfaces read as no-data. Operator-entered on the event detail; writes a cleanup_timeline 'outcome' row.
+ * Log a cleanup's outcome: the number of bags collected. This is the ONLY write path for cleanups.bags;
+ * without it the bags stats on the events + analytics surfaces read as no-data. Writes a
+ * cleanup_timeline 'outcome' row.
  */
 export const SetEventOutcomeRequestSchema = z
   .object({
@@ -181,10 +157,7 @@ export const SetEventOutcomeRequestSchema = z
   .strict()
 export type SetEventOutcomeRequest = z.infer<typeof SetEventOutcomeRequestSchema>
 
-/**
- * Link one or more reports to an event (the operator's event<->report linking action). `id` carries the
- * :id path param per the sibling-mutation convention; `reportIds` are the reports to associate.
- */
+/** Link one or more reports to an event. `id` fills the :id path param. */
 export const LinkEventReportsRequestSchema = z
   .object({
     id: z.string(),

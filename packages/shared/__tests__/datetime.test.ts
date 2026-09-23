@@ -19,9 +19,8 @@ import {
 } from "../src/datetime.js"
 
 /**
- * relativeAgo reconciles three former impls into one. These lock every bucket boundary with an injected
- * `now` so the function is deterministic, plus the future case, the justNow override, the absolute
- * fallback past one week, and the invalid-input guard.
+ * These lock every relativeAgo bucket boundary with an injected `now`, plus the future case, the justNow
+ * override, the absolute fallback past one week, and the invalid-input guard.
  */
 
 const LA_ZONE = "America/Los_Angeles"

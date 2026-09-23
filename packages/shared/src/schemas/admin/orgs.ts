@@ -71,7 +71,7 @@ const AdminOrgDTOObjectSchema = z.object({
   owner: AdminActorRefSchema.nullable().optional(),
   verification: AdminOrgVerificationListItemDTOSchema.nullable().optional(),
   donationUrl: z.string().nullable().optional(),
-  // 0.41.0 additions, all optional so a 0.40.0 server payload still parses.
+  // Optional so an older server payload still parses.
   suspendedAt: ISODateSchema.nullable().optional(),
   suspendedReason: z.string().nullable().optional(),
   updatedAt: ISODateSchema.nullable().optional(),
@@ -100,10 +100,6 @@ export type DecideOrgVerificationRequest = z.infer<typeof DecideOrgVerificationR
 
 export const DecideOrgVerificationResponseSchema = AdminOrgDTOSchema
 export type DecideOrgVerificationResponse = z.infer<typeof DecideOrgVerificationResponseSchema>
-
-// ---------------------------------------------------------------------------
-// Org management (0.41.0): list, create, edit, suspend, members, events
-// ---------------------------------------------------------------------------
 
 const AdminReasonSchema = z.string().trim().min(1).max(1000)
 

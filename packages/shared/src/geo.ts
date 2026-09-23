@@ -13,9 +13,7 @@ function toRadians(deg: number): number {
   return (deg * Math.PI) / 180
 }
 
-/**
- * Great-circle distance between two points in meters using the haversine formula.
- */
+/** Great-circle distance in meters (haversine). */
 export function haversineMeters(a: LatLngLike, b: LatLngLike): number {
   const dLat = toRadians(b.lat - a.lat)
   const dLng = toRadians(b.lng - a.lng)
@@ -29,9 +27,6 @@ export function haversineMeters(a: LatLngLike, b: LatLngLike): number {
   return EARTH_RADIUS_M * c
 }
 
-/**
- * Great-circle distance in kilometers.
- */
 export function haversineKm(a: LatLngLike, b: LatLngLike): number {
   return haversineMeters(a, b) / 1000
 }

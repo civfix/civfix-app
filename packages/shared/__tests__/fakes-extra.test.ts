@@ -4,9 +4,8 @@ import { FakeChatService } from "../src/fakes/chat-service.fake.js"
 import { FakeAbuseChecks } from "../src/fakes/abuse-checks.fake.js"
 
 /**
- * Extra coverage for the fakes' pure math the audit flagged: the deterministic id factory, the chat
- * history cursor paging, and the abuse FNV hash. (The base fakes.test.ts covers interface conformance
- * and the happy paths; this drills the cursor/hash edges.)
+ * Edge coverage for the fakes' pure math: the deterministic id factory, the chat history cursor paging,
+ * and the abuse FNV hash. fakes.test.ts covers interface conformance and the happy paths.
  */
 
 const enc = new TextEncoder()
@@ -28,8 +27,8 @@ describe("makeIdFactory", () => {
     expect(a()).not.toBe(b())
   })
 
-  // Regression: 0 is a fixed point of xorshift32, so seed 0 used to emit ONE id forever and every
-  // fake row silently collided.
+  // 0 is a fixed point of xorshift32, so an unguarded seed 0 would emit ONE id forever and every fake
+  // row would silently collide.
   it("still generates distinct ids for a seed that truncates to 0", () => {
     for (const seed of [0, 2 ** 32]) {
       const next = makeIdFactory(seed)

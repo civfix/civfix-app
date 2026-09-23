@@ -29,11 +29,11 @@ describe("versionedPath", () => {
 
 describe("endpoint version invariants", () => {
   // The ONLY endpoints that must stay off the version prefix, and exactly why each one must:
-  //   /healthz                — infra liveness probe (Caddy, rate-limit allowlist, Docker, deploy gate)
-  //   /auth/google/start      — the web button navigates the browser here directly (hardcoded)
-  //   /auth/google/callback   — the redirect_uri registered in Google Cloud Console; must stay byte-stable
-  //   /auth/apple/start       — the web button navigates the browser here directly (hardcoded), mirroring Google
-  //   /auth/apple/callback    — the redirect URI registered with Sign in with Apple; must stay byte-stable
+  //   /healthz               : infra liveness probe (Caddy, rate-limit allowlist, Docker, deploy gate)
+  //   /auth/google/start     : the web button navigates the browser here directly (hardcoded)
+  //   /auth/google/callback  : the redirect_uri registered in Google Cloud Console; must stay byte-stable
+  //   /auth/apple/start      : the web button navigates the browser here directly (hardcoded), mirroring Google
+  //   /auth/apple/callback   : the redirect URI registered with Sign in with Apple; must stay byte-stable
   // Pinning this set guards against a future contract edit silently moving one under /v1 (which would
   // break infra probes or Google/Apple sign-in) or forgetting `version` on a new endpoint.
   const UNVERSIONED: Record<string, string> = {
@@ -44,7 +44,7 @@ describe("endpoint version invariants", () => {
     appleCallback: "/auth/apple/callback",
   }
 
-  it("exactly these endpoints are unversioned — no more, no fewer", () => {
+  it("exactly these endpoints are unversioned, no more and no fewer", () => {
     const actual = Object.entries(endpoints)
       .filter(([, ep]) => ep.version === "unversioned")
       .map(([name]) => name)

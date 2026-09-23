@@ -48,7 +48,7 @@ function isKnownTimeZone(timezone: string): boolean {
 
 function escapeText(value: string): string {
   return value
-    // eslint-disable-next-line no-control-regex
+    // eslint-disable-next-line no-control-regex -- ICS text must not carry control characters
     .replace(/[\u0000-\u0009\u000b\u000c\u000e-\u001f\u007f]/gu, "")
     .replace(/\\/gu, "\\\\")
     .replace(/;/gu, "\\;")
@@ -58,7 +58,7 @@ function escapeText(value: string): string {
 }
 
 function escapeParam(value: string): string {
-  // eslint-disable-next-line no-control-regex
+  // eslint-disable-next-line no-control-regex -- ICS params must not carry control characters
   return value.replace(/[\u0000-\u001f\u007f";:,]/gu, "")
 }
 

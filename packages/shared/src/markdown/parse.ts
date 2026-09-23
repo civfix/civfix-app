@@ -19,7 +19,7 @@ export interface ParseMarkdownOptions {
 const ESCAPABLE = new Set(["\\", "`", "*", "_", "[", "]", "(", ")", "#", "+", "-", ".", "!", ">", "|"])
 const UNORDERED_ITEM = /^ {0,3}[-*+][ \t]+(.*)$/
 const ORDERED_ITEM = /^ {0,3}\d{1,9}[.)][ \t]+(.*)$/
-// eslint-disable-next-line no-control-regex
+// eslint-disable-next-line no-control-regex -- matching control characters is the point
 const CONTROL_CHARS_GLOBAL = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/gu
 
 function pushText(nodes: MarkdownInline[], value: string): void {

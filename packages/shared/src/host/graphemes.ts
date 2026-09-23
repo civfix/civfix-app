@@ -1,6 +1,6 @@
 const ZWJ = 0x200d
 const COMBINING = /^\p{M}$/u
-// eslint-disable-next-line no-misleading-character-class
+// eslint-disable-next-line no-misleading-character-class -- each code point is tested alone, never as a joined sequence
 const EXTENDER = /^[\u200d\ufe00-\ufe0f\u{1f3fb}-\u{1f3ff}]$/u
 const REGIONAL = /^[\u{1f1e6}-\u{1f1ff}]$/u
 

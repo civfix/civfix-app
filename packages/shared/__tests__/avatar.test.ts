@@ -11,8 +11,7 @@ import { tokens } from "../src/tokens/design-tokens.js"
 /**
  * The avatar gradient is the single source server + clients share, so these lock its determinism,
  * palette membership, distinctness, and (critically) that the palette is DERIVED from the brand tokens
- * rather than re-copied. Mirrors the backend's existing social-service avatar tests so behavior is
- * identical when the backend re-points at this shared symbol.
+ * rather than re-copied.
  */
 
 const A = "11111111-1111-1111-1111-111111111111"
@@ -99,7 +98,7 @@ describe("monogram", () => {
     expect(monogram("   ")).toBe("?")
   })
 
-  // Regression: charAt(0) returned half a surrogate pair, which rendered as the replacement box.
+  // charAt(0) would return half a surrogate pair, which renders as the replacement box.
   it("takes a whole code point for astral-plane names", () => {
     expect(monogram("\u{1F335} Cactus Crew")).toBe("\u{1F335}")
     expect([...monogram("\u{20BB7}bc")]).toHaveLength(1)

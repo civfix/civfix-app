@@ -8,7 +8,7 @@ import {
 import { endpoints } from "../src/client/endpoints.js"
 
 /**
- * Chat P3 contract: message pinning — pinnedAt on the message DTO, the unified roomKind-scoped
+ * Chat pin contract: pinnedAt on the message DTO, the unified roomKind-scoped
  * setMessagePinned endpoint, and `pins` on initial history pages (full DTOs, pinned_at DESC, cap 25).
  */
 
