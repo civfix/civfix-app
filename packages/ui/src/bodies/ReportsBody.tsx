@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   View,
   Pressable,
@@ -19,7 +19,7 @@ import { useScrollHost } from "../shell/ScrollHost"
 import { idKeyExtractor } from "./navHelpers"
 import { ReportRowView } from "./ReportRow"
 import { useListTimeAgo } from "./useListTimeAgo"
-import { matchesReportQuery } from "./reportsListModel"
+import { matchesReportQuery, searchBackfill } from "./reportsListModel"
 import { useT } from "../i18n"
 
 export function firstReportPhoto(report: ReportDTO): MediaDTO | undefined {
@@ -59,6 +59,16 @@ export function ReportsBody() {
   )
 
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = query
+  const backfill = searchBackfill({
+    filtering,
+    pagesLoaded: query.data?.pages.length ?? 0,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPageFailed: query.isFetchNextPageError,
+  })
+  useEffect(() => {
+    if (backfill === "fetch") void fetchNextPage()
+  }, [backfill, fetchNextPage])
   const onEndReached = useCallback(() => {
     if (filtering) return
     if (hasNextPage && !isFetchingNextPage) void fetchNextPage()
@@ -115,6 +125,8 @@ export function ReportsBody() {
           />
         ) : isPending || query.isLoading ? (
           <LoadingState skeleton="report" rows={7} />
+        ) : q && (backfill === "fetch" || backfill === "busy") ? (
+          <LoadingState skeleton="report" rows={3} />
         ) : q ? (
           <EmptyState
             variant="detail"
@@ -142,10 +154,14 @@ export function ReportsBody() {
         )
       }
       ListFooterComponent={
-        !filtering && reports.length > 0 && isFetchingNextPage ? (
+        reports.length > 0 && isFetchingNextPage ? (
           <View style={styles.footer}>
             <ActivityIndicator size="small" color={th.colors.textSubtle} />
           </View>
+        ) : backfill === "partial" ? (
+          <Text variant="caption" color={th.colors.textSubtle} style={styles.partialHint}>
+            {t("search.partial", { count: all.length })}
+          </Text>
         ) : null
       }
     />
@@ -183,11 +199,14 @@ function ReportsSearchField({
           onPress={() => onChangeText("")}
           accessibilityRole="button"
           accessibilityLabel={t("search.clear_a11y")}
-          hitSlop={6}
           {...focusRingProps}
-          style={({ pressed }) => [styles.clearBtn, pressed ? styles.clearBtnPressed : null]}
+          style={styles.clearTarget}
         >
-          <Icon icon={iconMap.Close} size={14} color={th.colors.textSubtle} />
+          {({ pressed }) => (
+            <View style={[styles.clearBtn, pressed ? styles.clearBtnPressed : null]}>
+              <Icon icon={iconMap.Close} size={14} color={th.colors.textSubtle} />
+            </View>
+          )}
         </Pressable>
       ) : null}
     </View>
@@ -238,6 +257,14 @@ const useStyles = makeThemedStyles((t) => ({
     fontSize: 14,
     color: t.colors.text,
   },
+  clearTarget: {
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
+    marginRight: -11,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
   clearBtn: {
     width: 22,
     height: 22,
@@ -263,6 +290,10 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["4"],
   },
   footer: {
+    paddingVertical: t.space["4"],
+  },
+  partialHint: {
+    textAlign: "center",
     paddingVertical: t.space["4"],
   },
 
