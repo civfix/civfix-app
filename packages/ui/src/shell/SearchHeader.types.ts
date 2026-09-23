@@ -43,7 +43,7 @@ export interface SearchHeaderProps {
 
   /**
    * Feed-first redesign (P3): the Apple-Music DOCKED variant. When true the header renders as a
-   * bottom-docked search bar (design §3.2) - a leading coral Home circle, the search pill, and a trailing
+   * bottom-docked search bar (design §3.2) - a leading glass Home circle, the search pill, and a trailing
    * ✕ clear - that RISES above the keyboard on focus (native: reanimated withTiming translateY; web: CSS
    * translateY driven by the visual-viewport keyboard inset, with the same iOS instant-guard the sheet
    * uses). Default false keeps the historic in-sheet top-header behavior for every other view unchanged.
