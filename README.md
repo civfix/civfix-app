@@ -15,7 +15,6 @@ stay separate and consume `@civfix/shared` from the private registry.
 | `packages/ui` | `@civfix/ui` (private) | The shared React Native UI (theme, primitives, shells, nav store, feature bodies, the Map seam) rendered on web via react-native-web. Never published. [README](packages/ui/README.md) |
 | `apps/community-web` | `community-web` | Next.js 15 static-export SPA (React 19 + RN-web + shadcn) plus its Cloudflare Pages config and Functions. [README](apps/community-web/README.md) |
 | `apps/community-mobile` | `community-mobile` | React Native + Expo SDK 54 user app; custom dev client only, never Expo Go. [README](apps/community-mobile/README.md) |
-| `docs/superpowers` | — | Older design/plan documents, kept for history. |
 
 ## Toolchain
 
