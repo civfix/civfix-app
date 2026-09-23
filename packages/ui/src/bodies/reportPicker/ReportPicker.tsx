@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { Pressable, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { MAX_LINKED_REPORTS, haversineMeters, type BBox, type ReportPinDTO } from "@civfix/shared"
@@ -27,6 +27,7 @@ import { announce } from "../../announce"
 import { useT } from "../../i18n"
 import { ReportPickMap, type ReportPickMapHandle } from "../../map"
 import { FeedNotice } from "../FeedNotice"
+import { appErrorCode } from "../errorCode"
 import { pinToCardData, reportToCardData, useLinkedReportCards } from "../linkedReportCards"
 import { METERS_PER_MILE } from "../reportHitRowModel"
 import { distanceLabel } from "../relativeTime"
@@ -52,6 +53,7 @@ import {
   pickerFetchRegion,
   pickerListItems,
   pickerListState,
+  pickerQueryFailures,
   pickerRows,
   pickerSections,
   pinPresentation,
@@ -190,7 +192,7 @@ function ReportPickerSurface({
   const [tooWide, setTooWide] = useState(false)
   const [page, setPage] = useState<PageState>({ key: "", visible: PICKER_PAGE_FIRST })
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     useReportPickerFilters.getState().reset()
   }, [])
 
@@ -375,11 +377,19 @@ function ReportPickerSurface({
     else onClose()
   }, [busy, diff.dirty, ids, onClose, onCommit])
 
+  const failed = pickerQueryFailures({
+    regionError: region.isError,
+    searching,
+    searchError: search.isError,
+    lookupActive: lookupKey !== null,
+    lookupError: lookup.isError,
+    lookupErrorCode: appErrorCode(lookup.error),
+  })
   const listState = pickerListState({
     hasRegion: !tooWide,
     pending:
       region.isPending || (searching && search.isLoading) || (lookupKey !== null && lookup.isLoading),
-    error: region.isError,
+    error: failed.region || failed.search || failed.lookup,
     searching: typed,
     pinCount: pins.length,
     layerCount: enabled.size,
@@ -584,7 +594,11 @@ function ReportPickerSurface({
             icon="CloudOff"
             title={t("load_error")}
             actionLabel={t("retry")}
-            onAction={() => void region.refetch()}
+            onAction={() => {
+              if (failed.region) void region.refetch()
+              if (failed.search) search.refetch()
+              if (failed.lookup) void lookup.refetch()
+            }}
           />
         ) : (
           <Text style={styles.stateText}>

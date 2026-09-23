@@ -161,7 +161,8 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
   })
 
   it("starts every event with the default layers instead of the last event's", () => {
-    expect(surface).toMatch(/useEffect\(\(\) => \{\s*useReportPickerFilters\.getState\(\)\.reset\(\)\s*\}, \[\]\)/)
+    // A layout effect: the reset lands before the first paint, so no frame shows the last event's layers.
+    expect(surface).toMatch(/useLayoutEffect\(\(\) => \{\s*useReportPickerFilters\.getState\(\)\.reset\(\)\s*\}, \[\]\)/)
   })
 
   it("a pin tap focuses then toggles; a row tap toggles and eases the map", () => {

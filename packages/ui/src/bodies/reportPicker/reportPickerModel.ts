@@ -550,3 +550,28 @@ export function pickerListState(input: {
   if (input.layerCount === 0) return "no_layers"
   return "empty"
 }
+
+/**
+ * Which of the picker's queries failed. A failed search or code lookup is an error, not "no reports match"
+ * for the typed query; a lookup that answers NOT_FOUND is the honest "no such code", so it is not a failure.
+ */
+export interface PickerQueryFailures {
+  region: boolean
+  search: boolean
+  lookup: boolean
+}
+
+export function pickerQueryFailures(input: {
+  regionError: boolean
+  searching: boolean
+  searchError: boolean
+  lookupActive: boolean
+  lookupError: boolean
+  lookupErrorCode?: string | undefined
+}): PickerQueryFailures {
+  return {
+    region: input.regionError,
+    search: input.searching && input.searchError,
+    lookup: input.lookupActive && input.lookupError && input.lookupErrorCode !== "NOT_FOUND",
+  }
+}
