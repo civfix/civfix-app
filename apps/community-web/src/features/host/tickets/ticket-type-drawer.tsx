@@ -102,7 +102,8 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
   const errors = useConsoleErrors()
   const zone = useConsoleInputZone(useConsoleEvent().event?.timezone)
 
-  // v2 scope: drafts saved before the event-zone fix hold sales times as UTC wall clocks.
+  // The key is versioned because older drafts hold sales times as UTC wall clocks, not in the
+  // event's zone.
   const draftKey = consoleDraftKey(`ticket.v2.${eventId}`, ticketType?.id ?? "new", viewerId)
   const initial = useMemo(() => draftFrom(ticketType, zone), [ticketType, zone])
   const { draft, patch, restored, dismissRestored, clear } = useDraft(draftKey, initial)

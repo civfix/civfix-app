@@ -32,7 +32,7 @@ export function PagePreview({ title, accent, coverUrl, blocks, className }: Page
       )}
     >
       {coverUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
+        // eslint-disable-next-line @next/next/no-img-element -- static export: next/image cannot optimize
         <img src={coverUrl} alt="" className="aspect-[16/9] w-full object-cover" />
       ) : null}
       <div className="flex flex-col gap-token-5 p-token-4">

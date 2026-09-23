@@ -149,7 +149,8 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
   const ticketTypes = useEventTicketTypes(eventId)
   const slots = event?.slots ?? []
 
-  // v2 scope: drafts saved before the event-zone fix hold the schedule as a UTC wall clock.
+  // The key is versioned because older drafts hold the schedule as a UTC wall clock, not in the
+  // event's zone.
   const draftKey = consoleDraftKey(`broadcast.v2.${eventId}`, broadcast?.id ?? "new", viewerId)
   const initial = useMemo(() => draftFrom(broadcast, zone), [broadcast, zone])
   const { draft, patch, restored, dismissRestored, clear } = useDraft(draftKey, initial)
