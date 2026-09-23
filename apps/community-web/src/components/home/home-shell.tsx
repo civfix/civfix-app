@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import dynamic from "next/dynamic"
+import { SafeAreaProvider, type Metrics } from "react-native-safe-area-context"
 import { useLayoutMode } from "@civfix/ui/theme"
 import { useT } from "@civfix/ui/i18n"
 
@@ -168,6 +169,13 @@ function skipToContent(event: React.MouseEvent<HTMLAnchorElement>): void {
   target.focus({ preventScroll: true })
 }
 
+const NO_SAFE_AREA: Metrics = {
+  insets: { top: 0, right: 0, bottom: 0, left: 0 },
+  frame: { x: 0, y: 0, width: 0, height: 0 },
+}
+
+const SHELL_FILL = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 } as const
+
 function ShellFrame({ children }: { children: React.ReactNode }) {
   const shell = React.useRef<HTMLDivElement>(null)
   const layoutMode = useLayoutMode()
@@ -207,24 +215,26 @@ export function AppShellFrame() {
         {/* The fixed banner comes before the app shell in DOM order, while the skip link targets this
             stable main landmark in both map and non-map compact views. */}
         <AppDownloadBanner />
-        <AppShell
-          map={
-            <div className="cf-map">
-              <MapView />
-            </div>
-          }
-          mapControls={
-            <nav aria-label={t("a11y.map_controls")}>
-              <WebMapControls />
-            </nav>
-          }
-          authOverlay={
-            <>
-              <AuthModal />
-              <WebBrandAbout />
-            </>
-          }
-        />
+        <SafeAreaProvider initialMetrics={NO_SAFE_AREA} style={SHELL_FILL}>
+          <AppShell
+            map={
+              <div className="cf-map">
+                <MapView />
+              </div>
+            }
+            mapControls={
+              <nav aria-label={t("a11y.map_controls")}>
+                <WebMapControls />
+              </nav>
+            }
+            authOverlay={
+              <>
+                <AuthModal />
+                <WebBrandAbout />
+              </>
+            }
+          />
+        </SafeAreaProvider>
       </main>
     </ShellFrame>
   )

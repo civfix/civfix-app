@@ -239,6 +239,15 @@
   inset: 0;
   background: var(--paper);
   overflow: hidden;
+  touch-action: manipulation;
+  --ios-focus-zoom-floor: 16px;
+}
+
+@media (pointer: coarse) {
+  .cf-shell input,
+  .cf-shell textarea {
+    font-size: var(--ios-focus-zoom-floor);
+  }
 }
 
 /*
