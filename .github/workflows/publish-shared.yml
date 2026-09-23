@@ -9,8 +9,15 @@ name: publish @civfix/shared
 #
 # Flow: `pnpm changeset` while developing -> `pnpm changeset version` before merging -> this workflow
 # runs `changeset publish`, which is a no-op when nothing is ahead of the registry (so it runs on every
-# main push and a failed publish is retried by the next one). Tags are pushed so each release is
-# findable (@civfix/shared@X.Y.Z); changesets creates annotated tags, hence the git identity step.
+# main push and a failed publish is retried by the next one). Each release is findable by its annotated
+# @civfix/shared@X.Y.Z tag, hence the git identity step.
+#
+# Only main publishes real versions: a manual run on any other branch is skipped. A branch that needs
+# its contract on the registry uses publish-shared-snapshot.yml, which publishes a prerelease no caret
+# range can match. scripts/check-shared-version.mjs refuses a version the registry already holds from
+# a commit main never released (0.54.0 and 0.55.0 were published from a branch that way), and pushes
+# the @civfix/shared@X.Y.Z tag BEFORE the publish, so a failed publish is retried by the next main push
+# and a failed tag push stops before anything reaches the registry.
 #
 # Required repository secret: NPM_TOKEN (the Verdaccio ci-publisher token).
 
@@ -28,6 +35,7 @@ concurrency:
 
 jobs:
   publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,10 +65,10 @@ jobs:
             echo "//repo.civfix.org/:_authToken=${NPM_TOKEN}"
             echo "git-checks=false"
           } >> .npmrc
+      - name: Tag the release on main
+        run: node scripts/check-shared-version.mjs --release
       - name: Publish
-        run: pnpm changeset publish
-      - name: Push release tags
-        run: git push origin --tags
+        run: pnpm changeset publish --no-git-tag
 
       - name: Restore .npmrc
         if: always()

@@ -68,20 +68,5 @@
         "EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME": "com.googleusercontent.apps.521996499476-0oghodcp5h8o3anfob8k71ltj9h6ab1t"
       }
     }
-  },
-  "submit": {
-    "testflight": {
-      "extends": "production"
-    },
-    "production": {
-      "ios": {
-        "ascAppId": "6781838072",
-        "appleTeamId": "WMDUV888LH"
-      },
-      "android": {
-        "serviceAccountKeyPath": "REPLACE_WITH_PATH_TO_PLAY_SERVICE_ACCOUNT_JSON",
-        "track": "internal"
-      }
-    }
   }
 }
