@@ -24,7 +24,8 @@ import { ConfirmModal } from "@/components/console/overlay/confirm-modal"
 
 import { useConsoleEvent, useConsoleNavigation } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
-import { useConsoleFormat } from "../format"
+import { EMPTY_VALUE, useConsoleFormat } from "../format"
+import { EmptyValue } from "../analytics/analytics-value"
 import { ExportMenu } from "../exports/export-menu"
 import { useConsoleRoster } from "./use-roster"
 import { AttendeeDrawer } from "./attendee-drawer"
@@ -54,8 +55,8 @@ export function AttendeesScreen() {
   const qc = useQueryClient()
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
-  const format = useConsoleFormat()
   const { eventId, event, can } = useConsoleEvent()
+  const format = useConsoleFormat(event?.timezone ?? undefined)
   const { go } = useConsoleNavigation()
   const { params, set } = useConsoleUrlState()
 
@@ -95,9 +96,10 @@ export function AttendeesScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, sort, search, ticketTypeId])
 
-  const [openId, setOpenId] = useState<string | null>(null)
   const [confirmNoShow, setConfirmNoShow] = useState(false)
-  const openRow = rows.find((row) => row.id === (params.attendee ?? openId)) ?? null
+  const [confirmRemove, setConfirmRemove] = useState(false)
+  // The URL is the only source of the open attendee, so browser Back closes the drawer.
+  const openRow = rows.find((row) => row.id === params.attendee) ?? null
 
   const refresh = () => invalidateEvent(qc, eventId)
 
@@ -172,6 +174,7 @@ export function AttendeesScreen() {
         tone: failed > 0 ? "danger" : "success",
       })
       selection.clear()
+      setConfirmRemove(false)
       refresh()
     },
     onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
@@ -234,11 +237,11 @@ export function AttendeesScreen() {
       id: "ticketType",
       label: t("column.ticket_type"),
       columnPriority: 1,
-      render: (row) => row.ticketTypeName ?? "—",
+      render: (row) => row.ticketTypeName ?? <EmptyValue />,
     },
     {
       id: "seats",
-      label: waitlistView ? t("column.party") : t("column.seats"),
+      label: waitlistView ? t("drawer.party") : t("column.seats"),
       align: "right",
       render: (row) => format.number(waitlistView ? row.partySize : row.seatCount),
     },
@@ -264,7 +267,7 @@ export function AttendeesScreen() {
       label: t("column.checked_in_at"),
       sortable: !waitlistView,
       columnPriority: 2,
-      render: (row) => (row.checkedInAt ? format.time(row.checkedInAt) : "—"),
+      render: (row) => (row.checkedInAt ? format.time(row.checkedInAt) : <EmptyValue />),
     },
   ]
 
@@ -357,10 +360,7 @@ export function AttendeesScreen() {
               }),
             })
           }
-          onRowPress={waitlistView ? undefined : (row) => {
-            setOpenId(row.id)
-            set({ attendee: row.id }, "push")
-          }}
+          onRowPress={waitlistView ? undefined : (row) => set({ attendee: row.id }, "push")}
           rowPressLabel={(row) =>
             t("table.open_row", {
               name: attendeeDisplayName(row, {
@@ -377,7 +377,7 @@ export function AttendeesScreen() {
                 guest: t("row.guest"),
                 deleted: t("row.deleted_user"),
               })}
-              sub={`${row.ticketTypeName ?? "—"} · ${format.number(waitlistView ? row.partySize : row.seatCount)}`}
+              sub={`${row.ticketTypeName ?? EMPTY_VALUE} · ${format.number(waitlistView ? row.partySize : row.seatCount)}`}
               chips={
                 waitlistView ? (
                   <Chip kind="waitlist-status" value="waiting" size="sm" />
@@ -388,10 +388,7 @@ export function AttendeesScreen() {
               onPress={
                 waitlistView
                   ? undefined
-                  : () => {
-                      setOpenId(row.id)
-                      set({ attendee: row.id }, "push")
-                    }
+                  : () => set({ attendee: row.id }, "push")
               }
             />
           )}
@@ -442,7 +439,7 @@ export function AttendeesScreen() {
                   icon: Trash2,
                   destructive: true,
                   disabled: bulkRemove.isPending,
-                  onPress: () => bulkRemove.mutate({ ids: [...selection.selectedIds] }),
+                  onPress: () => setConfirmRemove(true),
                 },
               ]
             : []),
@@ -472,6 +469,23 @@ export function AttendeesScreen() {
         onConfirm={() => bulkNoShow.mutate([...selection.selectedIds])}
       />
 
+      <ConfirmModal
+        open={confirmRemove}
+        severity="danger"
+        title={t("bulk_remove.title", { count: selection.count })}
+        body={t("bulk_remove.body", { count: selection.count })}
+        reasonField={{ label: t("remove.reason"), required: false }}
+        confirmLabel={t("remove.confirm")}
+        busy={bulkRemove.isPending}
+        onCancel={() => setConfirmRemove(false)}
+        onConfirm={(payload) =>
+          bulkRemove.mutate({
+            ids: [...selection.selectedIds],
+            ...(payload.reason ? { reason: payload.reason } : {}),
+          })
+        }
+      />
+
       <AttendeeDrawer
         key={openRow?.id ?? "none"}
         eventId={eventId}
@@ -481,10 +495,7 @@ export function AttendeesScreen() {
         canManage={can("manage_event")}
         canCheckIn={can("check_in")}
         canManageTickets={can("manage_tickets")}
-        onClose={() => {
-          setOpenId(null)
-          closeConsoleDrawer(["attendee"])
-        }}
+        onClose={() => closeConsoleDrawer(["attendee"])}
       />
     </div>
   )

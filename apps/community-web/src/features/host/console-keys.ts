@@ -3,6 +3,7 @@ export const consoleKeys = {
   page: (eventId: string) => ["host", eventId, "page"] as const,
   slugCheck: (eventId: string, slug: string) =>
     ["host", eventId, "page", "slug-check", slug] as const,
+  broadcastsRoot: (eventId: string) => ["host", eventId, "broadcasts"] as const,
   broadcasts: (eventId: string, status: string) =>
     ["host", eventId, "broadcasts", status] as const,
   broadcast: (eventId: string, broadcastId: string) =>

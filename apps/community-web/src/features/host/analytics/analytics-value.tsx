@@ -2,7 +2,18 @@
 
 import { useT } from "@civfix/ui/i18n"
 
-import { useConsoleFormat } from "../format"
+import { EMPTY_VALUE, useConsoleFormat } from "../format"
+
+/** A bare dash is read aloud as "em dash"; this shows the dash and tells a screen reader "none". */
+export function EmptyValue() {
+  const { t } = useT("host-common")
+  return (
+    <>
+      <span aria-hidden>{EMPTY_VALUE}</span>
+      <span className="sr-only">{t("state.no_value")}</span>
+    </>
+  )
+}
 
 export interface AnalyticsValueProps {
   value: number | null

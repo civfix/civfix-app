@@ -22,7 +22,7 @@ import { SegmentedControl } from "@/components/console/forms/segmented-control"
 
 import { useConsoleErrors } from "../error-copy"
 import { invalidateOrg } from "../console-invalidate"
-import { ORG_INVITE_TTL_DAYS, daysUntil } from "./org-invites"
+import { ORG_INVITE_TTL_DAYS, daysUntil, normalizeInviteIdentifier } from "./org-invites"
 import { suspendedForbiddenCopy } from "./suspended-banner"
 
 export type InvitableRole = "admin" | "member"
@@ -67,7 +67,7 @@ export function InviteMemberDrawer({ orgId, open, onClose, disabled = false }: I
       api.inviteOrganizationMember({
         id: orgId,
         identifierKind,
-        identifier: identifier.trim().replace(/^@/, ""),
+        identifier: normalizeInviteIdentifier(identifierKind, identifier),
         role,
       }),
     onSuccess: (result: InviteOrganizationMemberResponse) => {

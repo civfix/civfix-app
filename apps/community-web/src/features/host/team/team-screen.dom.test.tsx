@@ -191,4 +191,18 @@ describe("TeamScreen invite drawer", () => {
       }),
     )
   })
+
+  it("drops a pasted leading @ from a handle, as the organization invite does", async () => {
+    const user = userEvent.setup()
+    const { client } = renderTeam([member()])
+    await user.click(await screen.findByRole("button", { name: /invite.action/ }))
+    await user.type(screen.getByLabelText("invite.handle"), " @rosa ")
+    await user.click(screen.getByRole("button", { name: "invite.send" }))
+
+    await waitFor(() => expect(client.inviteEventTeamMember).toHaveBeenCalledTimes(1))
+    expect(client.inviteEventTeamMember.mock.calls[0]![0]).toMatchObject({
+      identifierKind: "handle",
+      identifier: "rosa",
+    })
+  })
 })
