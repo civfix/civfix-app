@@ -6,6 +6,7 @@ import { makeThemedStyles, useTheme, focusRingProps, webCursor, webHover, webTra
 import { Text } from "../../typography"
 import { Avatar } from "../../primitives/Avatar"
 import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
+import { VerifiedBadge } from "../../primitives/VerifiedBadge"
 import { SkeletonBlock, SkeletonGroup } from "../../primitives/skeleton"
 import { useCleanup, useOrganization, useProfile, useReport } from "../../data"
 import { usePost } from "../../data/hooks/posts"
@@ -222,6 +223,7 @@ function PostEmbedCard({
             <Text variant="bodyStrong" numberOfLines={1} style={styles.name}>
               {identity.name}
             </Text>
+            {identity.official ? <VerifiedBadge size="sm" /> : null}
             {identity.affiliation ? (
               <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
             ) : null}
@@ -317,6 +319,7 @@ function PersonEmbedCard({ profile, onPress }: { profile: UserProfileDTO; onPres
             <Text variant="bodyStrong" numberOfLines={1} style={styles.name}>
               {profile.name}
             </Text>
+            {profile.official ? <VerifiedBadge size="sm" /> : null}
             {profile.organization ? (
               <OrgAffiliationBadge organization={profile.organization} size="sm" interactive={false} />
             ) : null}

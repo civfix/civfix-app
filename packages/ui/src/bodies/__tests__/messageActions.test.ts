@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { buildMessageActions, type MessageActionsInput } from "../messageActions"
+import { buildMessageActions, isBlockableAuthor, type MessageActionsInput } from "../messageActions"
 
 /** A delivered, copyable, replyable baseline; each case overrides what it is about. */
 function input(overrides: Partial<MessageActionsInput> = {}): MessageActionsInput {
@@ -304,5 +304,30 @@ describe("buildMessageActions - pinnedOnlyView (P3 Task 3.8, the pinned-messages
   it("pinnedOnlyView omitted or false leaves the live-thread matrix untouched", () => {
     expect(keys(input())).toEqual(["reply", "copy", "report"])
     expect(keys(input({ pinnedOnlyView: false }))).toEqual(["reply", "copy", "report"])
+  })
+})
+
+describe("isBlockableAuthor", () => {
+  const author = { id: "person-1" }
+
+  it("a live account can be blocked", () => {
+    expect(isBlockableAuthor(author)).toBe(true)
+    expect(isBlockableAuthor({ ...author, deleted: false, official: false })).toBe(true)
+  })
+
+  it("the server-flagged official account never offers block", () => {
+    expect(isBlockableAuthor({ ...author, official: true })).toBe(false)
+    expect(keys(input({ isGroupRoom: true, authorBlockable: isBlockableAuthor({ ...author, official: true }) }))).toEqual([
+      "reply",
+      "copy",
+      "report",
+    ])
+  })
+
+  it("a deleted, id-less or missing author has nothing to block", () => {
+    expect(isBlockableAuthor({ ...author, deleted: true })).toBe(false)
+    expect(isBlockableAuthor({ id: "" })).toBe(false)
+    expect(isBlockableAuthor(null)).toBe(false)
+    expect(isBlockableAuthor(undefined)).toBe(false)
   })
 })

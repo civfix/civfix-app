@@ -420,6 +420,16 @@ describe("post identity resolves who the card presents as", () => {
     expect(buildPostIdentity(affiliated, org, t, "Deleted account").affiliation).toBeNull()
   })
 
+  it("marks the byline official only for a server-flagged author posting as themselves", () => {
+    const official = { ...author, official: true }
+
+    expect(buildPostIdentity(official, null, t, "Deleted account").official).toBe(true)
+    expect(buildPostIdentity(official, org, t, "Deleted account").official).toBe(false)
+    expect(buildPostIdentity(author, null, t, "Deleted account").official).toBe(false)
+    expect(buildPostIdentity({ ...author, official: false }, null, t, "Deleted account").official).toBe(false)
+    expect(buildPostIdentity(null, null, t, "Deleted account").official).toBe(false)
+  })
+
   it("falls back to the deleted-account name with no person and no org", () => {
     const identity = buildPostIdentity(null, null, t, "Deleted account")
 

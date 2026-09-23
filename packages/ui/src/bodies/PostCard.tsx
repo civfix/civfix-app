@@ -30,6 +30,7 @@ import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { Avatar } from "../primitives/Avatar"
 import { OrgAffiliationBadge } from "../primitives/OrgAffiliationBadge"
+import { VerifiedBadge } from "../primitives/VerifiedBadge"
 import { MediaPreview } from "../primitives/MediaPreview"
 import { PostActionBar } from "../primitives/PostActionBar"
 import { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "../primitives/PostOverflowButton"
@@ -188,6 +189,7 @@ function MetaRow({
         <Text variant="bodyStrong" numberOfLines={1} style={styles.authorName}>
           {identity.name}
         </Text>
+        {identity.official ? <VerifiedBadge size="sm" /> : null}
         {identity.affiliation ? (
           <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
         ) : null}
@@ -730,6 +732,7 @@ function EmbeddedPostMeta({
         <Text variant="bodyStrong" numberOfLines={1} style={styles.authorName}>
           {identity.name}
         </Text>
+        {identity.official ? <VerifiedBadge size="sm" /> : null}
         {identity.affiliation ? (
           <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
         ) : null}

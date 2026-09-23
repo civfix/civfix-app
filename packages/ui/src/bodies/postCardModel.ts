@@ -21,6 +21,7 @@ export interface PostCardModelOptions {
 export interface PostIdentity {
   organization: OrganizationRefDTO | null
   affiliation: OrganizationRefDTO | null
+  official: boolean
   name: string
   personName: string
   handleLabel: string | null
@@ -44,6 +45,7 @@ export function buildPostIdentity(
   return {
     organization: org,
     affiliation: org ? null : (author?.organization ?? null),
+    official: !org && author?.official === true,
     name: org ? org.name : personName,
     personName,
     handleLabel: org || !handle ? null : `@${handle}`,

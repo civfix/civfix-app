@@ -5,14 +5,14 @@ import { type ChatItem, type ChatMessageDTO, type UserMentionDTO, type ReactionE
 import { useTheme, webCursorPointer, webTransition, webHover, focusRingProps } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import type { LucideIcon } from "../../typography"
-import { MessageContextMenu, ReactionChips, ReplyQuote, MediaPreview, PopoverMenu, usePopoverAnchor, useDoubleTap, useSwipeReply, useToast, PollBubble } from "../../primitives"
+import { MessageContextMenu, ReactionChips, ReplyQuote, MediaPreview, PopoverMenu, usePopoverAnchor, useDoubleTap, useSwipeReply, useToast, PollBubble, VerifiedBadge } from "../../primitives"
 import type { PopoverMenuItem, AnchorRect, ContextMenuAction } from "../../primitives"
 import { buildReactionChipModel } from "../../primitives/reactionChipModel"
 import { useClipboard, useOpenExternal, useOpenInternalHref } from "../../capabilities"
 import { useLightbox } from "../../lightbox"
 import { announce } from "../../announce"
 import { useT } from "../../i18n"
-import { buildMessageActions, type MessageActionKey } from "../messageActions"
+import { buildMessageActions, isBlockableAuthor, type MessageActionKey } from "../messageActions"
 import { clockTime } from "../relativeTime"
 import { appLinkOrigins, mentionLookup, tokenizeChatBody, type ChatBodyToken, type ChatLinkTarget } from "./chatLinks"
 import { planChatEmbeds, type CivfixLinkRef } from "./civfixLinks"
@@ -421,7 +421,7 @@ export const Bubble = React.memo(function Bubble({
     canPin: canPin && Boolean(onSetPinned),
     isPinned: Boolean(message.pinnedAt),
     canDeleteOthers,
-    authorBlockable: Boolean(from && from.id && !from.deleted),
+    authorBlockable: isBlockableAuthor(from),
     canReply,
     pinnedOnlyView,
     isPoll,
@@ -613,9 +613,9 @@ export const Bubble = React.memo(function Bubble({
     <>
       {showName && message.from ? (() => {
         const from = message.from
-        return (
+        const name = (
           <Text
-            style={[styles.who, { color: senderColor(from.id) }]}
+            style={[styles.who, from.official ? styles.whoBadged : null, { color: senderColor(from.id) }]}
             numberOfLines={1}
             onPress={from.deleted ? undefined : () => onOpenPerson(from)}
             accessibilityRole={from.deleted ? undefined : "button"}
@@ -623,6 +623,13 @@ export const Bubble = React.memo(function Bubble({
           >
             {from.name}
           </Text>
+        )
+        if (!from.official) return name
+        return (
+          <View style={styles.whoRow}>
+            {name}
+            <VerifiedBadge size="sm" />
+          </View>
         )
       })() : null}
       {message.forwardedToCity ? (

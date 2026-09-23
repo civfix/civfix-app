@@ -6,6 +6,7 @@ import { Text } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
 import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
+import { VerifiedBadge } from "../../primitives/VerifiedBadge"
 import {
   PostActionBar,
   postActionGlyphInset,
@@ -175,6 +176,7 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
               <Text numberOfLines={1} style={styles.metaName}>
                 {identity.name}
               </Text>
+              {identity.official ? <VerifiedBadge size="sm" /> : null}
               {identity.affiliation ? (
                 <OrgAffiliationBadge organization={identity.affiliation} size="sm" interactive={false} />
               ) : null}
