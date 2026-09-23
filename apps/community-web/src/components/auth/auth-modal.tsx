@@ -7,10 +7,11 @@ import { Mail, Loader2, X } from "lucide-react"
 import { Trans, useT } from "@civfix/ui/i18n"
 
 import { AppleGlyph, GoogleGlyph } from "@/components/auth/provider-glyphs"
+import { useFocusTrap } from "@/components/console/overlay/use-focus-trap"
 import { api, API_BASE_URL } from "@/lib/api"
 import { errorMessage } from "@/lib/error-messages"
 import { oauthRedirectTarget } from "@/lib/oauth-return"
-import { applyOtpInput } from "@/lib/otp"
+import { applyOtpInput, emptyOtpCells, otpCode } from "@/lib/otp"
 import { useRefreshSession } from "@/hooks/use-auth"
 import { useVisualViewportShift } from "@/hooks/use-visual-viewport-shift"
 import { useAuthStore } from "@/store/auth-store"
@@ -69,22 +70,26 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
 
   const [step, setStep] = React.useState<Step>("choices")
   const [email, setEmail] = React.useState("")
-  const [code, setCode] = React.useState("")
+  const [cells, setCells] = React.useState<string[]>(() => emptyOtpCells(OTP_LENGTH))
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [resendAfter, setResendAfter] = React.useState<number>(0)
+  const [failedVerifies, setFailedVerifies] = React.useState(0)
 
   const otpRefs = React.useRef<Array<HTMLInputElement | null>>([])
+  const cardRef = React.useRef<HTMLDivElement | null>(null)
+  useFocusTrap(cardRef, open)
 
   // Reset the internal flow whenever the dialog is closed.
   React.useEffect(() => {
     if (!open) {
       setStep("choices")
       setEmail("")
-      setCode("")
+      setCells(emptyOtpCells(OTP_LENGTH))
       setError(null)
       setSubmitting(false)
       setResendAfter(0)
+      setFailedVerifies(0)
     }
   }, [open])
 
@@ -119,7 +124,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
       try {
         const res = await api.otpRequest({ email })
         setResendAfter(res.resendAfterSec)
-        setCode("")
+        setCells(emptyOtpCells(OTP_LENGTH))
         setStep("code")
       } catch (err) {
         setError(authErrorMessage(err, t))
@@ -150,9 +155,9 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
         setOpen(false)
       } catch (err) {
         setError(authErrorMessage(err, t))
-        // Clear the entry so the user can re-key the code.
-        setCode("")
-        otpRefs.current[0]?.focus()
+        // Clear the entry so the user can re-key the code; focus follows once the cells re-enable.
+        setCells(emptyOtpCells(OTP_LENGTH))
+        setFailedVerifies((n) => n + 1)
       } finally {
         setSubmitting(false)
       }
@@ -160,28 +165,31 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
     [email, refreshSession, setSession, setOpen, t],
   )
 
-  // Apply input at cell i and keep the single `code` string in sync. `raw` may be one typed digit OR
+  // The cells are disabled while a verify is in flight, so a failed verify can only return focus to the
+  // first cell after `submitting` has committed back to false.
+  React.useEffect(() => {
+    if (failedVerifies > 0 && !submitting) otpRefs.current[0]?.focus()
+  }, [failedVerifies, submitting])
+
+  // Apply input at cell i and keep the cells in sync. `raw` may be one typed digit OR
   // several at once - a paste, or the browser autofilling the whole one-time-code into the first cell
   // (cell 0 carries autoComplete="one-time-code"). applyOtpInput distributes the digits across cells and
-  // tells us where to move focus and whether the code is now complete; we then auto-submit. The verify
-  // pipeline is unchanged. (The previous `!next.includes("")` guard was always false - every string
-  // includes the empty string - so typing the code never auto-submitted.)
+  // tells us where to move focus and whether the code is now complete; we then auto-submit with the
+  // code in hand, so there is no need to wait for the render that shows the last digit.
   const setOtpAt = React.useCallback(
     (i: number, raw: string) => {
-      const { code: next, focusIndex, complete } = applyOtpInput(code, i, raw, OTP_LENGTH)
-      setCode(next)
+      const { cells: next, focusIndex } = applyOtpInput(cells, i, raw)
+      setCells(next)
       otpRefs.current[focusIndex]?.focus()
-      if (complete && !submitting) {
-        // Defer so React commits the final digit before we verify.
-        setTimeout(() => verifyCode(next), 0)
-      }
       setError(null)
+      const complete = otpCode(next)
+      if (complete !== null && !submitting) void verifyCode(complete)
     },
-    [code, submitting, verifyCode],
+    [cells, submitting, verifyCode],
   )
 
   const onOtpKeyDown = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !code[i] && i > 0) {
+    if (e.key === "Backspace" && !cells[i] && i > 0) {
       otpRefs.current[i - 1]?.focus()
     }
   }
@@ -191,11 +199,12 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
     if (!text.replace(/\D/g, "")) return
     e.preventDefault()
     // Paste fills from the first cell. Route through the same distribution logic as typing/autofill.
-    const { code: next, focusIndex, complete } = applyOtpInput("", 0, text, OTP_LENGTH)
-    setCode(next)
+    const { cells: next, focusIndex } = applyOtpInput(emptyOtpCells(OTP_LENGTH), 0, text)
+    setCells(next)
     otpRefs.current[focusIndex]?.focus()
-    if (complete && !submitting) setTimeout(() => verifyCode(next), 0)
     setError(null)
+    const complete = otpCode(next)
+    if (complete !== null && !submitting) void verifyCode(complete)
   }
 
   if (!open) return null
@@ -220,6 +229,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
     <div role="dialog" aria-modal="true" aria-labelledby="cf-auth-title">
       <div className="modal-scrim" aria-hidden="true" onClick={() => setOpen(false)} />
       <div
+        ref={cardRef}
         className="modal-card"
         style={vvShift ? { transform: `translate(-50%, calc(-50% + ${vvShift}px))` } : undefined}
       >
@@ -366,7 +376,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
                       otpRefs.current[i] = el
                     }}
                     className="otp-cell"
-                    value={code[i] ?? ""}
+                    value={cells[i] ?? ""}
                     autoFocus={i === 0}
                     onChange={(e) => setOtpAt(i, e.target.value)}
                     onKeyDown={(e) => onOtpKeyDown(i, e)}
@@ -391,8 +401,11 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
                 type="button"
                 className="btn primary block lg"
                 style={{ marginBottom: 12 }}
-                disabled={code.length !== OTP_LENGTH || submitting}
-                onClick={() => verifyCode(code)}
+                disabled={otpCode(cells) === null || submitting}
+                onClick={() => {
+                  const complete = otpCode(cells)
+                  if (complete !== null) void verifyCode(complete)
+                }}
               >
                 {submitting && <Loader2 className="cf-spin h-4 w-4" aria-hidden="true" />}
                 {submitting ? t("code.verifying") : t("code.verify")}

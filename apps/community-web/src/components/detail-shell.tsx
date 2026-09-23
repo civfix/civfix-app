@@ -7,6 +7,15 @@ import { useT } from "@civfix/ui/i18n"
 
 import { Wordmark } from "@/components/brand"
 
+function cameFromThisSite(): boolean {
+  if (!document.referrer) return false
+  try {
+    return new URL(document.referrer).origin === window.location.origin
+  } catch {
+    return false
+  }
+}
+
 /**
  * Shared chrome for the standalone (non-shell) views - today only /claim.
  *
@@ -32,8 +41,9 @@ export function DetailShell({
 
   const handleBack = React.useCallback(() => {
     if (onBack) return onBack()
-    // Prefer going back; fall back to the home map if there is no history (deep link / fresh tab).
-    if (typeof window !== "undefined" && window.history.length > 1) {
+    // Go back only to a civfix page. history.length also counts the external page (an email, a search
+    // result) the visitor came from, and Back must not send them off the site; those land on the map.
+    if (typeof window !== "undefined" && window.history.length > 1 && cameFromThisSite()) {
       router.back()
     } else {
       router.push("/")

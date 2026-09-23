@@ -6,6 +6,7 @@ import { isValidHandle } from "@civfix/shared"
 
 import { Avatar, AgeConfirmation, TermsConfirmation } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
+import { useFocusTrap } from "@/components/console/overlay/use-focus-trap"
 import { useCurrentUser, useLogout } from "@/hooks/use-auth"
 import { useVisualViewportShift } from "@/hooks/use-visual-viewport-shift"
 import {
@@ -19,6 +20,34 @@ export function FirstRunGate() {
   const required = useFirstRunRequired()
   if (!required) return null
   return <FirstRunForm />
+}
+
+// Mirrors UpdateProfileRequestSchema's displayName max. The two fields plus the joining space must fit,
+// or the server rejects the save with a VALIDATION error the user cannot act on.
+const DISPLAY_NAME_MAX = 80
+const FIRST_NAME_MAX = 40
+const LAST_NAME_MAX = DISPLAY_NAME_MAX - FIRST_NAME_MAX - 1
+
+/**
+ * Make everything outside `el` inert (unfocusable, hidden from assistive tech) and return the undo.
+ * aria-modal alone does not stop Tab from reaching the app behind a blocking gate.
+ */
+function inertOutside(el: HTMLElement): () => void {
+  const changed: Element[] = []
+  let node: HTMLElement | null = el
+  while (node && node !== document.body) {
+    const parent: HTMLElement | null = node.parentElement
+    if (!parent) break
+    for (const sibling of Array.from(parent.children)) {
+      if (sibling === node || sibling.hasAttribute("inert")) continue
+      sibling.setAttribute("inert", "")
+      changed.push(sibling)
+    }
+    node = parent
+  }
+  return () => {
+    for (const sibling of changed) sibling.removeAttribute("inert")
+  }
 }
 
 function splitName(displayName: string): { first: string; last: string } {
@@ -46,7 +75,12 @@ function FirstRunForm() {
   const available = handleValid && avail.data?.available === true
   const displayName = `${first.trim()} ${last.trim()}`.trim()
   const canSubmit =
-    available && displayName.length > 0 && ageConfirmed && termsConfirmed && !update.isPending
+    available &&
+    displayName.length > 0 &&
+    displayName.length <= DISPLAY_NAME_MAX &&
+    ageConfirmed &&
+    termsConfirmed &&
+    !update.isPending
 
   const onSubmit = React.useCallback(() => {
     if (!canSubmit) return
@@ -57,8 +91,17 @@ function FirstRunForm() {
 
   const vvShift = useVisualViewportShift()
 
+  const dialogRef = React.useRef<HTMLDivElement | null>(null)
+  const cardRef = React.useRef<HTMLDivElement | null>(null)
+  useFocusTrap(cardRef, true)
+  React.useEffect(() => {
+    const dialog = dialogRef.current
+    return dialog ? inertOutside(dialog) : undefined
+  }, [])
+
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="first-run-title"
@@ -76,6 +119,7 @@ function FirstRunForm() {
       }}
     >
       <div
+        ref={cardRef}
         style={{
           width: "100%",
           maxWidth: 440,
@@ -107,7 +151,7 @@ function FirstRunForm() {
                 className="input"
                 value={first}
                 onChange={(e) => setFirst(e.target.value)}
-                maxLength={40}
+                maxLength={FIRST_NAME_MAX}
                 autoComplete="given-name"
                 placeholder={t("first_name_placeholder")}
               />
@@ -119,7 +163,7 @@ function FirstRunForm() {
                 className="input"
                 value={last}
                 onChange={(e) => setLast(e.target.value)}
-                maxLength={40}
+                maxLength={LAST_NAME_MAX}
                 autoComplete="family-name"
                 placeholder={t("last_name_placeholder")}
               />
@@ -140,7 +184,12 @@ function FirstRunForm() {
               placeholder={t("username_placeholder")}
               aria-describedby="fr-handle-hint"
             />
-            <p id="fr-handle-hint" className="help" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <p
+              id="fr-handle-hint"
+              className="help"
+              aria-live="polite"
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
+            >
               <HandleHint
                 handle={trimmedHandle}
                 valid={handleValid}
