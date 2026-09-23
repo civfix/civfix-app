@@ -26,7 +26,7 @@ const user = (extra: Record<string, unknown> = {}) => ({
   ...extra,
 })
 
-describe("UpdateSettingsRequestSchema — showVolunteerHours", () => {
+describe("UpdateSettingsRequestSchema: showVolunteerHours", () => {
   it("accepts the flag on its own", () => {
     expect(UpdateSettingsRequestSchema.parse({ showVolunteerHours: false })).toEqual({
       showVolunteerHours: false,
@@ -56,7 +56,7 @@ describe("UpdateSettingsRequestSchema — showVolunteerHours", () => {
   })
 })
 
-describe("UserProfileDTOSchema — showVolunteerHours", () => {
+describe("UserProfileDTOSchema: showVolunteerHours", () => {
   it("parses a legacy payload that omits the flag (older servers)", () => {
     const parsed = UserProfileDTOSchema.parse(profile({ volunteerHours: 12 }))
     expect(parsed.showVolunteerHours).toBeUndefined()
@@ -88,7 +88,7 @@ describe("UserProfileDTOSchema — showVolunteerHours", () => {
   })
 })
 
-describe("UserDTOSchema — showVolunteerHours", () => {
+describe("UserDTOSchema: showVolunteerHours", () => {
   it("parses with and without the flag", () => {
     expect(UserDTOSchema.parse(user()).showVolunteerHours).toBeUndefined()
     expect(UserDTOSchema.parse(user({ showVolunteerHours: false })).showVolunteerHours).toBe(false)
@@ -100,7 +100,7 @@ describe("UserDTOSchema — showVolunteerHours", () => {
   })
 })
 
-describe("NotificationTypeSchema — appended service-hours types", () => {
+describe("NotificationTypeSchema: appended service-hours types", () => {
   it("parses both new values", () => {
     expect(NotificationTypeSchema.parse("cleanup_slot")).toBe("cleanup_slot")
     expect(NotificationTypeSchema.parse("hours_logged")).toBe("hours_logged")
@@ -145,7 +145,7 @@ describe("NotificationTypeSchema — appended service-hours types", () => {
 })
 
 describe("NotificationPrefsDTOSchema", () => {
-  it("gains no bucket for the service-hours types — both ride cleanupChat", () => {
+  it("gains no bucket for the service-hours types; both ride cleanupChat", () => {
     expect(Object.keys(NotificationPrefsDTOSchema.shape)).toEqual([
       "push",
       "cleanupChat",

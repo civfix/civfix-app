@@ -271,7 +271,7 @@ describe("host platform enum tuples (mirrored byte-identical by the backend)", (
 })
 
 describe("BroadcastSegment discriminated union", () => {
-  it("accepts every v1 branch and rejects a compound segment", () => {
+  it("accepts every branch and rejects a compound segment", () => {
     expect(BroadcastSegmentSchema.parse({ kind: "all_registered" })).toEqual({
       kind: "all_registered",
     })
@@ -311,7 +311,7 @@ describe("additive DTO growth stays backward compatible", () => {
     lng: -118,
   }
 
-  it("parses a pre-0.40.0 CleanupDTO and defaults every host field", () => {
+  it("parses a CleanupDTO without host fields and defaults every one", () => {
     const parsed = CleanupDTOSchema.parse(minimalCleanup)
     expect(parsed.visibility).toBe("public")
     expect(parsed.galleryUrls).toEqual([])
@@ -742,7 +742,7 @@ describe("organization creation", () => {
   })
 })
 
-describe("organization invites (0.41.0)", () => {
+describe("organization invites", () => {
   const person = { id: UUID2, name: "Ada", followers: 0, following: 0, isFollowing: false }
   const emailInvite = {
     id: UUID,
@@ -780,7 +780,7 @@ describe("organization invites (0.41.0)", () => {
     expect(MAX_ORG_INVITES_PER_ORG).toBe(50)
   })
 
-  it("keeps the 0.40.0 invite response parsing and adds the pending record additively", () => {
+  it("keeps the older invite response parsing and adds the pending record additively", () => {
     const legacy = { ok: true, member: null, invited: true }
     const r = InviteOrganizationMemberResponseSchema.safeParse(legacy)
     expect(r.success).toBe(true)
@@ -1003,7 +1003,7 @@ describe("event collaborators: the coordinator tier and the invitee inbox (DECIS
   })
 })
 
-describe("organization affiliation, events and the invite inbox (0.43.0)", () => {
+describe("organization affiliation, events and the invite inbox (DECISIONS §34)", () => {
   const orgRef = { id: UUID, slug: "reach-out-la", name: "Reach Out LA" }
   const person = { id: UUID2, name: "Ada", followers: 0, following: 0, isFollowing: false }
 
@@ -1100,7 +1100,7 @@ describe("organization affiliation, events and the invite inbox (0.43.0)", () =>
   })
 })
 
-describe("hours on the host read models (0.45.0, DECISIONS §39)", () => {
+describe("hours on the host read models (DECISIONS §39)", () => {
   function volunteer(rank: number): unknown {
     return { rank, userId: UUID2, name: "Maya", hours: 7.5 - rank }
   }

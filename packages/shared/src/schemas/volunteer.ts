@@ -7,30 +7,27 @@ import {
 } from "./entities.js"
 
 /**
- * `"report"` is HISTORICAL ONLY and must stay in this list. Nothing writes a report credit any more
- * (filing a report is not volunteer service), but pre-2026-07-28 ledger rows, the frozen `snapshot` of
- * every already-issued certificate, and older servers all still carry the value — dropping it would make
- * those payloads fail to parse. Do NOT add a new source that credits reports.
+ * `"report"` is historical only and must stay in this list. Nothing writes a report credit any more
+ * (filing a report is not volunteer service), but old ledger rows, the frozen `snapshot` of every
+ * already-issued certificate, and older servers still carry the value, so dropping it would make those
+ * payloads fail to parse. Do not add a new source that credits reports.
  */
 export const VOLUNTEER_HOURS_SOURCES = ["report", "event", "manual"] as const
 export const VolunteerHoursSourceSchema = z.enum(VOLUNTEER_HOURS_SOURCES)
 export type VolunteerHoursSource = z.infer<typeof VolunteerHoursSourceSchema>
 
 /**
- * @deprecated RETIRED 2026-07-28 — filing a report is not volunteer service, and nothing credits it any
- * more. The backend's `awardReportHours` was deleted (interface and both implementations) and
- * services/api/drizzle/0065_void_report_volunteer_hours.sql voided every credit it ever wrote. The
- * constant survives only to document what the historical `source='report'` rows are worth; crediting
- * anything with it would put report filings back on the public leaderboard and on signed PDF transcripts.
+ * @deprecated Filing a report is not volunteer service and nothing credits it. The constant only
+ * documents what the historical `source='report'` rows are worth; crediting anything with it would put
+ * report filings back on the public leaderboard and on signed PDF transcripts.
  */
 export const REPORT_VOLUNTEER_HOURS = 0.1
 /** Smallest creditable event-hours amount (2-dp minimum; rounding is enforced backend-side). */
 export const MIN_EVENT_HOURS = 0.01
 export const MAX_EVENT_HOURS = 24
 /**
- * Upper bound on the number of per-attendee rows one LogEventHours call may carry, so the backend
- * imports the cap instead of re-declaring it (volunteer-hours-service.ts). A single event roster is
- * never near this; the cap exists so one request cannot fan out an unbounded write + notify batch.
+ * Upper bound on the per-attendee rows one LogEventHours call may carry. A single event roster is never
+ * near this; the cap exists so one request cannot fan out an unbounded write + notify batch.
  */
 export const MAX_EVENT_HOURS_ENTRIES = 2000
 
@@ -61,8 +58,8 @@ export const VolunteerHoursCreditorSchema = z.object({
   name: z.string(),
   handle: z.string().nullable().optional(),
   /**
-   * 0.43.0: the creditor's primary organization affiliation (DECISIONS §34), replacing the retired
-   * `verified` neighbor flag. Null when the creditor belongs to no organization.
+   * The creditor's primary organization affiliation (DECISIONS §34). Null when the creditor belongs to
+   * no organization.
    */
   organization: OrganizationRefDTOSchema.nullable().optional(),
 })
@@ -130,9 +127,9 @@ export const PublicVolunteerHoursResponseSchema = z.object({
    */
   items: z.array(VolunteerHoursEntryDTOSchema).default([]),
   /**
-   * @deprecated ALWAYS 0 since 2026-07-28. Report filings are not volunteer service and are no longer
-   * credited, so the server emits a hard 0 rather than reading the ledger. The field stays on the wire —
-   * it is `.default(0)` and removing it would be a hard break for shipped clients — but do not render it.
+   * @deprecated Always 0. Report filings are not volunteer service, so the server emits a hard 0 rather
+   * than reading the ledger. The field stays on the wire because removing it would break shipped
+   * clients; do not render it.
    */
   reportHours: z.number().nonnegative().default(0),
   nextCursor: z.string().nullable().default(null),
@@ -143,16 +140,8 @@ export { LeaderboardEntryDTOSchema, OrgHoursDTOSchema } from "./entities.js"
 export type { LeaderboardEntryDTO, OrgHoursDTO } from "./entities.js"
 
 /**
- * ⚠ `geoid` is NEW and REQUIRED. It consumes the :geoid path param — the client's extractParams
- * pulls it out of this input and queryOmitKeys keeps it out of the query string, exactly like
- * LogEventHoursRequest.id / UserPostsQuery.id. It kills the `as unknown as` cast at
- * packages/ui/src/data/hooks/volunteer.ts:35-39.
- *
- * ⚠⚠ THE BACKEND ROUTE MUST MERGE IT BEFORE PARSING. volunteer-hours.routes.ts:115 currently parses
- * this schema against request.query, which never contains geoid — a required key there turns every
- * leaderboard request into a 422. The route must become
- *   parse(LeaderboardQuerySchema, { ...(request.query as object), geoid })
- * in the SAME release that bumps the shared dep.
+ * `geoid` consumes the `:geoid` path param, so the route must merge it into the query before parsing
+ * (request.query never contains it, and the key is required).
  */
 export const LeaderboardQuerySchema = z.object({
   geoid: z.string().min(1).max(64),
@@ -175,9 +164,8 @@ export const LeaderboardResponseSchema = z.object({
    * The signed-in viewer's own standing, even when they are past the fetched page. Null when the
    * viewer has no hours here. Absent for anonymous viewers.
    *
-   * ⚠ these two fields make this response VIEWER-DEPENDENT, so one URL now has two bodies. The
-   * route must split Cache-Control (public only for the anonymous body, private + Vary: Cookie
-   * otherwise) or a shared cache will serve one viewer's rank to everyone.
+   * These two fields make the response viewer-dependent, so it must never be publicly cached for a
+   * signed-in viewer, or a shared cache will serve one viewer's rank to everyone.
    */
   viewerRank: z.number().int().positive().nullable().optional(),
   viewerHours: z.number().nonnegative().nullable().optional(),
@@ -194,11 +182,9 @@ export const EventHoursEntrySchema = z
 export type EventHoursEntry = z.infer<typeof EventHoursEntrySchema>
 
 /**
- * POST /cleanups/:id/hours (route path unchanged) - PER-ATTENDEE hours: the acting host (organizer or
- * cohost, gated on their standing on the event) credits each listed attendee individually. Every entry's userId must be a member of the cleanup; re-logging upserts per row.
- * This replaced the v1 flat `{ id, hours }` body that credited the same hours to all members - apps
- * and backend move in lockstep, no fallback. `id` consumes the `:id` path param (merge pattern as
- * CancelCleanupRequest). strict() rejects any other key.
+ * POST /cleanups/:id/hours: per-attendee hours. The acting host (organizer or cohost, gated on their
+ * standing on the event) credits each listed attendee individually. Every entry's userId must be a
+ * member of the cleanup; re-logging upserts per row. `id` consumes the `:id` path param.
  */
 export const LogEventHoursRequestSchema = z
   .object({
@@ -208,16 +194,15 @@ export const LogEventHoursRequestSchema = z
   .strict()
 export type LogEventHoursRequest = z.infer<typeof LogEventHoursRequestSchema>
 
-/** `credited` = number of attendee rows written (one per entry). */
+/** `credited` is the number of attendee rows written (one per entry). */
 export const LogEventHoursResponseSchema = z.object({
   credited: z.number().int().nonnegative(),
 })
 export type LogEventHoursResponse = z.infer<typeof LogEventHoursResponseSchema>
 
 /**
- * GET /cleanups/:id/hours - the read-back of already-logged hours for one event. Same path as the
- * POST above, different method. `id` consumes the `:id` path param, so the route must merge it
- * before parsing (`parse(EventHoursQuerySchema, { ...(request.query as object), id })`).
+ * GET /cleanups/:id/hours: the read-back of already-logged hours for one event. `id` consumes the
+ * `:id` path param, so the route must merge it into the query before parsing.
  */
 export const EventHoursQuerySchema = z.object({ id: IdSchema }).strict()
 export type EventHoursQuery = z.infer<typeof EventHoursQuerySchema>

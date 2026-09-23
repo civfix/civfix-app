@@ -15,12 +15,6 @@ import {
 import { MediaPurposeSchema } from "../common.js"
 import { endpoints } from "../../client/endpoints.js"
 
-/**
- * Social-feed contract (P0): the PostDTO round-trips; the PostComposeInput cross-field refinements
- * hold (quote⇒repostOfId, reply⇒replyToId, and a post must carry a body/attachment/media); the
- * shared FeedPageDTO shape; and the 13 post endpoints are wired into the registry.
- */
-
 const UUID_A = "11111111-1111-1111-1111-111111111111"
 const UUID_B = "22222222-2222-2222-2222-222222222222"
 const UUID_C = "33333333-3333-3333-3333-333333333333"
@@ -175,10 +169,9 @@ describe("FeedPageDTOSchema + HomeFeedQuerySchema", () => {
 })
 
 describe("post endpoint registry", () => {
-  // [endpoint, method, path, csrf, auth]. The home feed is OPTIONAL auth so a signed-out reader can read
-  // the public/global feed; every write + the personal lists stay required. listUserPosts is OPTIONAL for
-  // the same reason: getProfile is already "optional", so a signed-out profile page would otherwise render
-  // a readable header next to a 401'd posts tab.
+  // [endpoint, method, path, csrf, auth]. The home feed is optional auth so a signed-out reader can read
+  // the public feed. listUserPosts is optional because getProfile is, so a signed-out profile page would
+  // otherwise render a readable header next to a 401'd posts tab.
   const specs = [
     [endpoints.createPost, "POST", "/posts", true, "required"],
     [endpoints.getPost, "GET", "/posts/:id", false, "optional"],

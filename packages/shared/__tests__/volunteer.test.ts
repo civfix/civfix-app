@@ -276,12 +276,9 @@ describe("volunteer DTOs", () => {
   })
 
   /**
-   * REPORT_VOLUNTEER_HOURS is RETIRED (deprecated 2026-07-28): filing a report is not volunteer service,
-   * nothing credits it any more, and backend migration 0065 voided every credit it ever wrote. It is kept
-   * only to document what the historical `source='report'` rows are worth — hence a frozen value, not an
-   * "agreed" one. `"report"` likewise stays in VOLUNTEER_HOURS_SOURCES: those old ledger rows, the frozen
-   * snapshot of every issued certificate, and older servers all still carry it, so dropping the enum
-   * member would make their payloads fail to parse.
+   * REPORT_VOLUNTEER_HOURS only documents what the historical `source='report'` rows are worth, so its
+   * value is frozen. `"report"` stays in VOLUNTEER_HOURS_SOURCES because old ledger rows, issued
+   * certificate snapshots and older servers still carry it.
    */
   it("the retired report auto-award constant is frozen, and its source stays parseable", () => {
     expect(REPORT_VOLUNTEER_HOURS).toBe(0.1)
@@ -310,7 +307,7 @@ describe("volunteer DTOs", () => {
   })
 })
 
-describe("hours by organization (0.45.0, DECISIONS §39)", () => {
+describe("hours by organization (DECISIONS §39)", () => {
   const org = {
     id: UUID2,
     slug: "bayview-stewards",
