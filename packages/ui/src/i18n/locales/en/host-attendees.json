@@ -115,5 +115,11 @@
     "partial_other": "{{count}} could not be done.",
     "export_hint": "Export",
     "export_reason": "Exports cover the whole event, not a selection. Use the Export button above."
+  },
+  "bulk_remove": {
+    "title_one": "Remove {{count}} registration?",
+    "title_other": "Remove {{count}} registrations?",
+    "body_one": "{{count}} registration will lose its seats. They can sign up again unless registration is closed.",
+    "body_other": "{{count}} registrations will lose their seats. They can sign up again unless registration is closed."
   }
 }

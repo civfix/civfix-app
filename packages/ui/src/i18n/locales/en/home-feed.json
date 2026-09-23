@@ -19,7 +19,9 @@
     "empty_body_after": " to share the first update.",
     "caught_up": "You're all caught up",
     "new_posts_one": "{{count}} new post",
-    "new_posts_other": "{{count}} new posts"
+    "new_posts_other": "{{count}} new posts",
+    "loading": "Loading posts",
+    "load_more_error": "More posts couldn't load."
   },
   "thread": {
     "title": "Post",
@@ -100,6 +102,8 @@
     },
     "replying_to": "Replying to {{handle}}",
     "via": "via {{author}}",
-    "org_a11y": "Open {{name}}"
+    "org_a11y": "Open {{name}}",
+    "media_photo_position_a11y": "Photo {{index}} of {{count}}",
+    "media_video_position_a11y": "Video {{index}} of {{count}}"
   }
 }

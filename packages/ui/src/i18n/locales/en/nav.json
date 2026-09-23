@@ -64,7 +64,8 @@
     "close": "Close",
     "settings": "Settings",
     "resize_sidebar": "Resize sidebar",
-    "drag_handle": "Drag handle"
+    "drag_handle": "Drag handle",
+    "show_tab_bar": "Show tab bar"
   },
   "fallback_you": "You"
 }

@@ -1,0 +1,15 @@
+{
+  "working": {
+    "title": "Unsubscribing…",
+    "body": "One moment."
+  },
+  "done": {
+    "title": "You're unsubscribed from this event's messages.",
+    "body": "You will not get any more updates from the host of this event. You may still receive a notice if the event is cancelled, because that is something you need to know about an event you signed up for."
+  },
+  "unusable": {
+    "title": "We couldn't use this link",
+    "body": "This unsubscribe link could not be completed, so we cannot tell you that it worked. Some mail apps shorten or wrap long links; try opening the link from the original email again, or use the settings link below."
+  },
+  "settings_prompt": "To change what civfix sends you generally, open <0>notification settings</0>."
+}

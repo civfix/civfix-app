@@ -46,5 +46,7 @@
   "link_copied": "Link copied",
   "visibility_label": "Visibility",
   "visibility_public": "Public",
-  "visibility_private": "Private"
+  "visibility_private": "Private",
+  "link_copy_failed": "Couldn't copy the link",
+  "avatar_clear_a11y": "Discard the new photo"
 }

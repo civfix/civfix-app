@@ -107,6 +107,8 @@ import en_web_errors from "./locales/en/web-errors.json"
 import en_web_guest_cancel from "./locales/en/web-guest-cancel.json"
 import en_web_registration from "./locales/en/web-registration.json"
 import en_web_service_record from "./locales/en/web-service-record.json"
+import en_web_signup from "./locales/en/web-signup.json"
+import en_web_unsubscribe from "./locales/en/web-unsubscribe.json"
 import es_about from "./locales/es/about.json"
 import es_account_blocked from "./locales/es/account-blocked.json"
 import es_account_delete from "./locales/es/account-delete.json"
@@ -207,6 +209,8 @@ import es_web_errors from "./locales/es/web-errors.json"
 import es_web_guest_cancel from "./locales/es/web-guest-cancel.json"
 import es_web_registration from "./locales/es/web-registration.json"
 import es_web_service_record from "./locales/es/web-service-record.json"
+import es_web_signup from "./locales/es/web-signup.json"
+import es_web_unsubscribe from "./locales/es/web-unsubscribe.json"
 import de_about from "./locales/de/about.json"
 import de_account_blocked from "./locales/de/account-blocked.json"
 import de_account_delete from "./locales/de/account-delete.json"
@@ -307,6 +311,8 @@ import de_web_errors from "./locales/de/web-errors.json"
 import de_web_guest_cancel from "./locales/de/web-guest-cancel.json"
 import de_web_registration from "./locales/de/web-registration.json"
 import de_web_service_record from "./locales/de/web-service-record.json"
+import de_web_signup from "./locales/de/web-signup.json"
+import de_web_unsubscribe from "./locales/de/web-unsubscribe.json"
 import ko_about from "./locales/ko/about.json"
 import ko_account_blocked from "./locales/ko/account-blocked.json"
 import ko_account_delete from "./locales/ko/account-delete.json"
@@ -407,6 +413,8 @@ import ko_web_errors from "./locales/ko/web-errors.json"
 import ko_web_guest_cancel from "./locales/ko/web-guest-cancel.json"
 import ko_web_registration from "./locales/ko/web-registration.json"
 import ko_web_service_record from "./locales/ko/web-service-record.json"
+import ko_web_signup from "./locales/ko/web-signup.json"
+import ko_web_unsubscribe from "./locales/ko/web-unsubscribe.json"
 
 /** Every namespace (catalog file) the app loads. `config.ts` passes this to i18next's `ns`. */
 export const namespaces = [
@@ -510,6 +518,8 @@ export const namespaces = [
   "web-guest-cancel",
   "web-registration",
   "web-service-record",
+  "web-signup",
+  "web-unsubscribe",
 ] as const
 
 /** The assembled i18next resources: locale -> namespace -> catalog object. */
@@ -615,6 +625,8 @@ export const resources: Resource = {
     "web-guest-cancel": en_web_guest_cancel,
     "web-registration": en_web_registration,
     "web-service-record": en_web_service_record,
+    "web-signup": en_web_signup,
+    "web-unsubscribe": en_web_unsubscribe,
   },
   es: {
     "about": es_about,
@@ -717,6 +729,8 @@ export const resources: Resource = {
     "web-guest-cancel": es_web_guest_cancel,
     "web-registration": es_web_registration,
     "web-service-record": es_web_service_record,
+    "web-signup": es_web_signup,
+    "web-unsubscribe": es_web_unsubscribe,
   },
   de: {
     "about": de_about,
@@ -819,6 +833,8 @@ export const resources: Resource = {
     "web-guest-cancel": de_web_guest_cancel,
     "web-registration": de_web_registration,
     "web-service-record": de_web_service_record,
+    "web-signup": de_web_signup,
+    "web-unsubscribe": de_web_unsubscribe,
   },
   ko: {
     "about": ko_about,
@@ -921,5 +937,7 @@ export const resources: Resource = {
     "web-guest-cancel": ko_web_guest_cancel,
     "web-registration": ko_web_registration,
     "web-service-record": ko_web_service_record,
+    "web-signup": ko_web_signup,
+    "web-unsubscribe": ko_web_unsubscribe,
   },
 }

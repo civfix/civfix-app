@@ -130,7 +130,10 @@
     "helper": "Pick which organization shows next to your name.",
     "automatic": "Automatic",
     "automatic_sub": "Use the organization you joined first.",
-    "selected": "Selected",
     "error": "Couldn't save your organization. Try again."
+  },
+  "save_error": {
+    "rate_limited": "Too many changes in a row. Wait a moment and try again.",
+    "validation": "That wasn't accepted. Check what you entered and try again."
   }
 }

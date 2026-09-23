@@ -5,7 +5,8 @@
     "error_body": "We could not load this organization. Check your connection and try again."
   },
   "header": {
-    "slug": "@{{slug}}"
+    "slug": "@{{slug}}",
+    "public_page": "Public page"
   },
   "links": {
     "website": "Website",
@@ -31,7 +32,11 @@
   "nav": {
     "events": "Events",
     "overview": "Overview",
-    "members": "Members"
+    "members": "Members",
+    "new_org": "New organization",
+    "events_section": "Events",
+    "verification": "Verification",
+    "settings": "Settings"
   },
   "overview": {
     "title": "Organization",
@@ -41,12 +46,23 @@
     "donation_link": "Donation link",
     "no_donation_link": "No donation link",
     "add_donation_link": "Add a link",
-    "edit_donation_link": "Edit link"
+    "edit_donation_link": "Edit link",
+    "verification": "Verification",
+    "about": "About",
+    "edit": "Edit profile",
+    "no_description": "No description yet. Tell people what this organization does.",
+    "public_title": "Public page",
+    "public_body": "Anyone with the link sees your logo, description, links and verification badge.",
+    "your_role": "Your role"
   },
   "members": {
     "title": "Members",
     "joined": "Joined {{when}}",
-    "read_only": "Only the owner can change who belongs to this organization."
+    "read_only": "Only the owner can change who belongs to this organization.",
+    "subtitle": "Owners manage roles and billing; admins run the profile and events; members see the roster.",
+    "you": "You",
+    "empty_title": "No members yet",
+    "empty_body": "Invite teammates so they can co-host under this organization."
   },
   "events": {
     "upcoming": "Upcoming events",
@@ -58,12 +74,44 @@
     "load_more": "Load more",
     "loading_more": "Loading…",
     "load_more_upcoming_a11y": "Load more upcoming events",
-    "load_more_past_a11y": "Load more past events"
+    "load_more_past_a11y": "Load more past events",
+    "title": "Events",
+    "subtitle": "Events linked to this organization. Link one from the event's Settings under Organization.",
+    "empty_title": "No events linked yet",
+    "empty_body": "Create an event, then open its Settings and pick this organization under Organization. Linked events show the organization's name and verification badge."
   },
   "form": {
     "donationUrl": "Donation link",
     "donation_hint": "Must start with https://. Shown on your public page and your events; civfix never handles the money.",
-    "donation_invalid": "Must start with https://"
+    "donation_invalid": "Must start with https://",
+    "identity_title": "Identity",
+    "identity_body": "How the organization appears on events, receipts and its public page.",
+    "logo": "Logo",
+    "logo_hint": "Square image, shown at small sizes.",
+    "name": "Name",
+    "slug": "Handle",
+    "slug_hint": "Your public page lives at {{host}}/orgs/<handle>. Lowercase letters, numbers and dashes.",
+    "slug_locked": "Handles cannot be changed once the organization exists.",
+    "slug_ok": "Looks good",
+    "slug_empty": "Choose a handle for the public page.",
+    "slug_short": "Handles need at least {{min}} characters.",
+    "slug_long": "Handles can be at most {{max}} characters.",
+    "slug_format": "Use lowercase letters, numbers and single dashes.",
+    "slug_taken": "That handle is already taken. Try another.",
+    "slug_reserved": "That handle is reserved. Try another.",
+    "about_title": "About",
+    "description": "Description",
+    "description_hint": "What you do and who you serve. Shown on the public page.",
+    "websiteUrl": "Website",
+    "website_hint": "Must start with https://",
+    "website_invalid": "Enter a full https:// address.",
+    "social_title": "Social links",
+    "social_body": "Just the handle - we build the link. All optional.",
+    "whatsapp_invalid": "Enter the number with country code, digits only.",
+    "handle_invalid": "Handles use letters, numbers, dots and underscores.",
+    "create_action": "Create organization",
+    "saved": "Organization saved",
+    "created": "Organization created"
   },
   "manage": {
     "action": "Manage",
@@ -100,5 +148,187 @@
     "error_validation": "Please check the fields and try again.",
     "error_rate_limited": "Too many changes just now. Please wait and try again.",
     "error_generic": "That change could not be saved. Please try again."
+  },
+  "public": {
+    "kind_nonprofit": "Verified nonprofit",
+    "kind_government": "Verified government",
+    "kind_community": "Verified community group",
+    "loading_title": "Loading",
+    "loading_body": "Fetching this organization.",
+    "not_found_title": "We couldn't find that organization",
+    "invalid_link_body": "This link is not valid. Check the link you followed, or find organizations on <0>civfix</0>.",
+    "not_found_body": "It may have been renamed or removed. Find organizations on <0>civfix</0>.",
+    "error_title": "We couldn't load this page",
+    "retry": "Try again",
+    "error_body": "Check your connection and try again.",
+    "at_a_glance": "At a glance",
+    "donate": "Donate to {{name}}",
+    "about": "About",
+    "links": "Links",
+    "footer_hosts": "{{name}} hosts volunteer events on <0>civfix</0>.",
+    "footer_console": "Run an organization? <0>Open the host console</0>."
+  },
+  "accept": {
+    "signed_out_title": "Sign in to accept your invitation",
+    "signed_out_body": "Use the email address the invitation was sent to. You'll come straight back here once you're signed in.",
+    "sign_in": "Sign in",
+    "title": "Organization invitation",
+    "heading": "You've been invited to join an organization",
+    "body": "Accepting adds you to its team: you'll see the organization's events and console, and you can host events under its name.",
+    "not_now": "Not now",
+    "action": "Accept invitation",
+    "joined": "You joined {{name}}",
+    "joined_as_owner": "You're the owner.",
+    "joined_as_admin": "You're an admin.",
+    "joined_as_member": "You're a member.",
+    "error_invalid_title": "This invitation is invalid or was revoked",
+    "error_invalid_body": "Check that you're signed in with the email address the invitation was sent to, or ask the organization to send a new one.",
+    "error_expired_title": "This invitation has expired",
+    "error_expired_body": "Ask the organization to send a new one.",
+    "error_wrong_email_title": "This invitation was sent to a different email",
+    "error_wrong_email_body": "Sign in with the address that received it, then open the link again.",
+    "error_other_body": "Nothing changed. You can try again."
+  },
+  "switcher": {
+    "label": "Organizations",
+    "empty": "You are not part of an organization yet.",
+    "new": "New organization"
+  },
+  "create": {
+    "title": "New organization",
+    "subtitle": "Host events under a shared name, invite teammates and get verified."
+  },
+  "invite": {
+    "action": "Invite",
+    "title": "Invite a member",
+    "identifier_kind": "Find them by",
+    "by_handle": "civfix handle",
+    "by_email": "Email",
+    "handle": "Handle",
+    "email": "Email address",
+    "email_hint": "We'll email them an invite; it expires in {{days}} days.",
+    "handle_hint": "The @handle on their civfix profile.",
+    "role": "Role",
+    "role_admin_hint": "Admins edit the profile, apply for verification and invite members.",
+    "role_member_hint": "Members see the organization's events and roster.",
+    "send": "Send invite",
+    "added": "Added {{name}}",
+    "sent": "Invitation sent",
+    "sent_email_body_one": "We emailed {{email}} an invite; it expires in {{count}} day.",
+    "sent_email_body_other": "We emailed {{email}} an invite; it expires in {{count}} days.",
+    "sent_user_body_one": "We sent {{name}} an invite; it expires in {{count}} day.",
+    "sent_user_body_other": "We sent {{name}} an invite; it expires in {{count}} days.",
+    "sent_to": "Sent to",
+    "sent_hint": "They accept by signing in to civfix with the invited address. You can revoke it from the pending invites list.",
+    "another": "Invite another",
+    "done": "Done",
+    "error_not_found": "We could not find anyone with that handle.",
+    "error_conflict": "They are already a member, or already have an open invitation."
+  },
+  "role": {
+    "change_a11y": "Change role for {{name}}",
+    "confirm_title": "Change role?",
+    "confirm_body": "{{name}}'s role in this organization will change to {{role}}.",
+    "confirm_action": "Change role",
+    "updated": "Role updated",
+    "error_forbidden": "Only the owner can change roles."
+  },
+  "remove": {
+    "a11y": "Remove {{name}}",
+    "action": "Remove",
+    "confirm_title": "Remove member?",
+    "confirm_body": "{{name}} will lose access to this organization's events and console. They can be invited again later.",
+    "done": "Removed {{name}}"
+  },
+  "invites": {
+    "title": "Pending invites",
+    "subtitle": "Invites expire after 14 days. Revoke one to stop the link working.",
+    "unknown": "Someone",
+    "invited_by": "Invited by {{name}}",
+    "expired": "Expired",
+    "expires_in_one": "Expires in {{count}} day",
+    "expires_in_other": "Expires in {{count}} days",
+    "status_expired": "Expired",
+    "revoke": "Revoke",
+    "revoke_a11y": "Revoke the invite for {{name}}",
+    "revoke_title": "Revoke invite?",
+    "revoke_body": "{{name}}'s invite link will stop working. You can invite them again later.",
+    "revoked": "Revoked the invite for {{name}}",
+    "error_title": "Pending invites did not load",
+    "error_not_found": "That invitation was already accepted or revoked."
+  },
+  "next": {
+    "title": "Next steps",
+    "welcome_title": "{{name}} is ready. Next steps:",
+    "progress": "{{done}} of {{total}} done",
+    "dismiss": "Hide",
+    "done": "Done",
+    "profile_title": "Complete the profile",
+    "profile_body": "Add a logo and a description so people recognize you on the public page.",
+    "members_title": "Invite your team",
+    "members_body": "Admins can run events and edit the profile; members see the roster.",
+    "verification_title": "Apply for verification",
+    "verification_body": "A badge on every event you host.",
+    "events_title": "Link an event",
+    "events_body": "Open an event's Settings and pick this organization under Organization."
+  },
+  "no_access_title": "Owners and admins only",
+  "no_access_body": "Ask an owner or admin of this organization to make the change.",
+  "settings": {
+    "intro": "Changes show on the public page and on every event linked to this organization."
+  },
+  "suspended": {
+    "title": "This organization is suspended by civfix.",
+    "body": "Members can view but not change it. Events, invites, verification and settings are read-only until the suspension is lifted.",
+    "error_forbidden": "This organization is suspended, so it can't be changed right now."
+  },
+  "verification": {
+    "verified_title": "This organization is verified",
+    "verified_body": "Your events carry a verified badge people can trust.",
+    "pending_title": "Application under review",
+    "pending_body": "We are reviewing your documents. We will notify you as soon as there is a decision, usually within a few business days.",
+    "rejected_title": "Application not approved",
+    "rejected_body": "Review the reason below, fix what is missing, and apply again with updated documents.",
+    "unverified_title": "Not yet verified",
+    "unverified_body": "Verification adds a badge to your events. Tell us what kind of organization you are and attach proof.",
+    "submitted": "Submitted",
+    "reviewed": "Reviewed",
+    "reason": "Reason",
+    "no_reason": "No reason was given.",
+    "reapply": "Apply again",
+    "apply_title": "Apply for verification",
+    "field_kind": "Organization type",
+    "kind_nonprofit_hint": "A registered 501(c)(3) or similar.",
+    "kind_government_hint": "A city, county, state or federal agency or department.",
+    "kind_community_hint": "A neighborhood council, school club, mutual-aid group or other informal group.",
+    "field_einNumber": "EIN",
+    "ein_hint": "Format XX-XXXXXXX. Speeds up review.",
+    "ein_invalid": "Enter the 9-digit EIN as XX-XXXXXXX.",
+    "field_documents": "Documents",
+    "documents_hint": "Photos or scans (images) of your IRS determination letter, charter, letterhead or a government ID card, up to {{max}}. Only our reviewers see them.",
+    "documents_required": "Attach at least one document.",
+    "field_note": "Note for the reviewer",
+    "note_placeholder": "Anything that helps us match the documents to this organization.",
+    "submit": "Submit for review",
+    "confirm_title": "Submit for review?",
+    "confirm_body_one": "Organization type: {{kind}}, with {{count}} document attached. You will not be able to edit the application while it is under review.",
+    "confirm_body_other": "Organization type: {{kind}}, with {{count}} documents attached. You will not be able to edit the application while it is under review.",
+    "submitted_toast": "Application submitted"
+  },
+  "portfolio": {
+    "empty_title": "Host as an organization",
+    "empty_body": "An organization is a shared identity for a nonprofit, agency or community group: events carry its name and badge, and teammates co-host under it.",
+    "empty_cta": "Create an organization"
+  },
+  "event_link": {
+    "title": "Organization",
+    "body": "Host this event under an organization: it carries the organization's name and verification badge, and its admins can manage the event.",
+    "field": "Hosted by",
+    "current": "Currently linked to {{name}}.",
+    "current_suspended": "Linked to {{name}}, which is suspended: it stays linked, but it can't be chosen again once unlinked.",
+    "personal": "Personal (no organization)",
+    "personal_hint": "Personal events are hosted under your own name.",
+    "none": "You are not an owner or admin of any organization yet.",
+    "create": "Create one"
   }
 }

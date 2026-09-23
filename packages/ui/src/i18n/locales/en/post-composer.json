@@ -65,5 +65,6 @@
     "personal": "You",
     "a11y": "Post as {{name}}",
     "group_a11y": "Choose who this post is from"
-  }
+  },
+  "submit_error_restored": "Your post couldn't be published. Your draft is saved in the composer."
 }

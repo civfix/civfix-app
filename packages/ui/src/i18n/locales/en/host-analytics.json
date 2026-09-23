@@ -75,7 +75,6 @@
   },
   "messaging": {
     "totals": "Messaging",
-    "active_days": "Days with a send",
     "recipients": "Recipients",
     "unsubscribes": "Unsubscribes",
     "no_tracking": "civfix does not track opens or clicks, so there is nothing here to report.",
@@ -86,7 +85,8 @@
     "suppressed": "Suppressed",
     "over_time": "Sends over time",
     "over_time_a11y": "Sends per day",
-    "sends": "Sends"
+    "sends": "Sends",
+    "broadcasts_sent": "Broadcasts sent"
   },
   "page": {
     "views": "Page views",
@@ -194,6 +194,8 @@
   },
   "filter": {
     "all_events": "All events",
-    "event_a11y": "Event: {{name}}"
+    "event_a11y": "Event: {{name}}",
+    "more_events": "Show more events",
+    "loading_more": "Loading more events…"
   }
 }

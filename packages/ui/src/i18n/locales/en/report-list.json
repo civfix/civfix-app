@@ -7,7 +7,9 @@
   "search": {
     "placeholder": "Search your reports",
     "a11y": "Search your reports",
-    "clear_a11y": "Clear search"
+    "clear_a11y": "Clear search",
+    "partial_one": "Showing matches from your most recent report.",
+    "partial_other": "Showing matches from your {{count}} most recent reports."
   },
   "empty": {
     "no_match": {

@@ -81,7 +81,8 @@
     "done": "Done",
     "announce_error": "Could not submit your report. {{detail}}",
     "announce_held": "Pin dropped and queued for review.",
-    "announce_live": "Pin dropped. Report submitted."
+    "announce_live": "Pin dropped. Report submitted.",
+    "edit_report": "Edit report"
   },
   "errors": {
     "no_category": "Pick a category before submitting.",
@@ -92,7 +93,9 @@
     "turnstile_failed": "We could not verify you are human. Refresh and complete the check again.",
     "media_rejected": "That photo could not be accepted. Try a different one.",
     "unauthorized": "Your session may have expired. Sign in again and retry.",
-    "generic": "We could not submit right now. Please try again."
+    "generic": "We could not submit right now. Please try again.",
+    "validation_text": "Something in the title, description or address can't be accepted. Edit it, then send the report again.",
+    "validation_media": "One of your photos or videos is no longer available. Try again to upload it, or edit the report to replace it."
   },
   "share": {
     "label": "Share to the feed",
@@ -107,5 +110,29 @@
     "failed_rate_limited": "Too many posts. Try again in a minute.",
     "retry": "Retry",
     "signed_out_hint": "Create an account to share reports to the feed."
+  },
+  "types": {
+    "dump": {
+      "sub": "Illegal dumping, bulky items"
+    },
+    "encampment": {
+      "sub": "Unhoused encampment"
+    },
+    "graffiti": {
+      "sub": "Tags, vandalism"
+    },
+    "infrastructure": {
+      "sub": "Traffic light, streetlamp, flooding"
+    },
+    "pavement": {
+      "sub": "Pothole, bad sidewalk"
+    },
+    "vegetation": {
+      "sub": "Brush, weeds, blocked path"
+    },
+    "other": {
+      "sub": "Something else"
+    },
+    "row_a11y": "{{label}}. {{sub}}"
   }
 }

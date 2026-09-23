@@ -51,7 +51,12 @@
     "empty": "No blocks yet. Add one to start building the page.",
     "move_up": "Move up",
     "move_down": "Move down",
-    "remove": "Remove this block"
+    "remove": "Remove this block",
+    "fix_errors": "Some blocks need attention before the page can be saved.",
+    "item_name": "{{kind}} block {{n}}",
+    "move_up_named": "Move {{name}} up",
+    "move_down_named": "Move {{name}} down",
+    "remove_named": "Remove {{name}}"
   },
   "block": {
     "title": "Heading",
@@ -116,6 +121,13 @@
       "body": "Contact details",
       "reply_to": "Reply-to address",
       "reply_to_hint": "Shown on the page so people can reach you."
+    },
+    "remove_row": "Remove {{label}}",
+    "error": {
+      "required": "Fill this in, or remove the row.",
+      "url": "Enter a full link that starts with https://.",
+      "email": "Enter a valid email address.",
+      "invalid": "Check this field."
     }
   },
   "preview": {
