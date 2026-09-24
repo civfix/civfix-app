@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
-import { makeThemedStyles, useTheme } from "@/theme"
+import { PRESSED_OPACITY, makeThemedStyles, useTheme } from "@/theme"
 import { Text, PopoverMenu, usePopoverAnchor, type AnchorRect, type PopoverMenuItem } from "@civfix/ui"
 import { useLocale, useT, supportedLocales } from "@civfix/ui/i18n"
 import { Wordmark } from "@/components/Wordmark"
@@ -120,6 +120,6 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["2"],
   },
   pressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
 }))

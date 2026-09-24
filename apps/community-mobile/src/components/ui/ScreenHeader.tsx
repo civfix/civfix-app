@@ -11,17 +11,9 @@ export interface ScreenHeaderProps {
   title?: string
   closeIcon?: boolean
   onBack?: () => void
-  right?: React.ReactNode
-  overlay?: boolean
 }
 
-export function ScreenHeader({
-  title,
-  closeIcon = false,
-  onBack,
-  right,
-  overlay = false,
-}: ScreenHeaderProps) {
+export function ScreenHeader({ title, closeIcon = false, onBack }: ScreenHeaderProps) {
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const { t } = useT("mobile-a11y")
@@ -34,26 +26,18 @@ export function ScreenHeader({
     else router.replace("/")
   }
 
-  const glyphColor = overlay ? th.colors.onScrim : th.colors.text
+  const glyphColor = th.colors.text
 
   return (
     <View
-      style={[
-        styles.header,
-        overlay ? styles.overlay : styles.solid,
-        { paddingTop: insets.top + th.space["2"] },
-      ]}
+      style={[styles.header, styles.solid, { paddingTop: insets.top + th.space["2"] }]}
     >
       <Pressable
         onPress={handleBack}
         accessibilityRole="button"
         accessibilityLabel={closeIcon ? t("button_close") : t("button_back")}
         hitSlop={10}
-        style={({ pressed }) => [
-          styles.iconBtn,
-          overlay ? styles.iconBtnOverlay : null,
-          pressed ? styles.pressed : null,
-        ]}
+        style={({ pressed }) => [styles.iconBtn, pressed ? styles.pressed : null]}
       >
         <Ionicons name={closeIcon ? "close" : "chevron-back"} size={22} color={glyphColor} />
       </Pressable>
@@ -72,7 +56,7 @@ export function ScreenHeader({
         <View style={styles.title} />
       )}
 
-      <View style={styles.rightSlot}>{right}</View>
+      <View style={styles.rightSlot} />
     </View>
   )
 }
@@ -87,18 +71,12 @@ const useStyles = makeThemedStyles((t) => ({
   solid: {
     backgroundColor: t.colors.bg,
   },
-  overlay: {
-    backgroundColor: "transparent",
-  },
   iconBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-  },
-  iconBtnOverlay: {
-    backgroundColor: t.colors.scrim,
   },
   title: {
     flex: 1,

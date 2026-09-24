@@ -29,6 +29,9 @@ const DISPLAY_NAME_MAX = 80
 const FIRST_NAME_MAX = 40
 const LAST_NAME_MAX = DISPLAY_NAME_MAX - FIRST_NAME_MAX - 1
 const MIN_TOUCH_TARGET = 44
+// The upper bound of the shared HANDLE_REGEX, so the field stops where validation would reject.
+const HANDLE_MAX_LENGTH = 20
+const HANDLE_CHECK_DEBOUNCE_MS = 350
 
 export function FirstRunGate() {
   const status = useAuthStore((s) => s.status)
@@ -91,7 +94,7 @@ function FirstRunForm() {
     }
     let cancelled = false
     setAvail({ ...UNCHECKED, checking: true })
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       try {
         const res = await api.checkHandle({ handle: trimmedHandle })
         if (!cancelled) {
@@ -100,10 +103,10 @@ function FirstRunForm() {
       } catch {
         if (!cancelled) setAvail({ ...UNCHECKED, failed: true })
       }
-    }, 350)
+    }, HANDLE_CHECK_DEBOUNCE_MS)
     return () => {
       cancelled = true
-      clearTimeout(t)
+      clearTimeout(timer)
     }
   }, [trimmedHandle, handleValid, checkAttempt])
 
@@ -178,8 +181,8 @@ function FirstRunForm() {
               label={t("field.username.label")}
               placeholder={t("field.username.placeholder")}
               value={handle}
-              onChangeText={(t) => setHandle(t.replace(/^@+/, ""))}
-              maxLength={20}
+              onChangeText={(text) => setHandle(text.replace(/^@+/, ""))}
+              maxLength={HANDLE_MAX_LENGTH}
               autoCapitalize="none"
               autoCorrect={false}
             />

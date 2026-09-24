@@ -3,6 +3,7 @@ import type { UserDTO } from "@civfix/shared"
 import { adoptViewer, discardViewerDrafts } from "@civfix/ui"
 import { queryKeys } from "@civfix/ui/data"
 import { api } from "@/api/client"
+import type { AuthStatus } from "@/lib/lifecycleTypes"
 import {
   SESSION_RESTORE_DEADLINE_MS,
   isRequestDeadlineError,
@@ -15,7 +16,7 @@ import { isAppError, isUnauthorized } from "@/lib/errors"
 import { chatSocket } from "@/lib/ws"
 import { storage } from "@/lib/mmkv"
 import { clearSecureBlobs } from "@/lib/nativeSecureStore"
-import { CACHED_USER_KEY, LAST_IDENTITY_KEY } from "@/lib/mmkv-keys"
+import { CACHED_USER_KEY, LAST_IDENTITY_KEY } from "@/lib/mmkvKeys"
 import {
   signOutUnregisteringPush,
   unregisterLapsedSessionPush,
@@ -26,9 +27,7 @@ import {
   clearPersistedCache,
   purgeQueryCache,
   resumeCachePersistence,
-} from "@/query/mmkv-persister"
-
-export type AuthStatus = "idle" | "loading" | "authed" | "unauthed"
+} from "@/query/mmkvPersister"
 
 export type HydrateMode = "boot" | "foreground"
 

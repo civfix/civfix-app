@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs"
 import { test } from "node:test"
 
 const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf8")
+const rootStack = readFileSync(new URL("../src/boot/RootStack.tsx", import.meta.url), "utf8")
+const bootBackdrop = readFileSync(new URL("../src/boot/BootBackdrop.tsx", import.meta.url), "utf8")
+const crashScreen = readFileSync(new URL("../src/components/CrashScreen.tsx", import.meta.url), "utf8")
+const appearanceTheme = readFileSync(new URL("../src/boot/appearanceTheme.ts", import.meta.url), "utf8")
 const launchThemeModule = readFileSync(
   new URL("../src/boot/launchTheme.ts", import.meta.url),
   "utf8",
@@ -18,22 +22,28 @@ const connectivity = readFileSync(
 
 test("the launch background is the light theme, never a scheme resolved at boot", () => {
   assert.match(launchThemeModule, /export const LAUNCH_SCHEME: ColorSchemeName = "light"/)
-  assert.match(layout, /import \{ LAUNCH_SCHEME, launchTheme \} from "@\/boot\/launchTheme"/)
+  assert.match(layout, /import \{ launchTheme \} from "@\/boot\/launchTheme"/)
+  assert.match(rootStack, /import \{ LAUNCH_SCHEME, launchTheme \} from "@\/boot\/launchTheme"/)
   assert.match(layout, /^void SystemUI\.setBackgroundColorAsync\(launchTheme\.colors\.bg\)$/m)
-  assert.doesNotMatch(layout, /^const \w+ = themeFor\(/m)
+  for (const source of [layout, rootStack, bootBackdrop]) {
+    assert.doesNotMatch(source, /^const \w+ = themeFor\(/m)
+  }
 })
 
 test("the launch theme reaches the root layout only where the paper must stay light", () => {
   assert.deepEqual(
-    [...layout.matchAll(/launchTheme\.[A-Za-z0-9_.]+/g)].map((m) => m[0]),
+    [layout, rootStack, bootBackdrop].flatMap((source) =>
+      [...source.matchAll(/launchTheme\.[A-Za-z0-9_.]+/g)].map((m) => m[0]),
+    ),
     ["launchTheme.colors.bg", "launchTheme.colors.bg", "launchTheme.colors.bg"],
   )
 })
 
 test("the pre-fonts gate paints the launch theme, not the live scheme", () => {
-  const backdrop = layout.slice(
-    layout.indexOf("function BootBackdrop"),
-    layout.indexOf("let inAppBrowserOpen"),
+  assert.match(layout, /if \(!fontsReady\) \{\s*return <BootBackdrop \/>/)
+  const backdrop = bootBackdrop.slice(
+    bootBackdrop.indexOf("function BootBackdrop"),
+    bootBackdrop.indexOf("const styles = StyleSheet.create({"),
   )
   assert.match(backdrop, /<StatusBar style="dark" \/>/)
   assert.match(backdrop, /<View style=\{styles\.gate\} \/>/)
@@ -41,13 +51,13 @@ test("the pre-fonts gate paints the launch theme, not the live scheme", () => {
 })
 
 test("the gate stylesheet bakes the launch colour, so it cannot drift with the scheme", () => {
-  const sheet = layout.slice(layout.indexOf("const styles = StyleSheet.create({"))
+  const sheet = bootBackdrop.slice(bootBackdrop.indexOf("const styles = StyleSheet.create({"))
   assert.match(sheet, /gate: \{\n\s+flex: 1,\n\s+backgroundColor: launchTheme\.colors\.bg,\n\s+\}/)
-  assert.match(sheet, /function crashStyles\(t: Theme\)/)
+  assert.match(crashScreen, /function crashStyles\(t: Theme\)/)
 })
 
 test("the system chrome and the native root background follow the launch scheme while the gate is up", () => {
-  const stack = layout.slice(layout.indexOf("function RootStack"), layout.indexOf("export default"))
+  const stack = rootStack.slice(rootStack.indexOf("function RootStack"))
   assert.match(stack, /const liveScheme = useColorSchemeName\(\)/)
   assert.match(stack, /const scheme = launchGate \? LAUNCH_SCHEME : liveScheme/)
   assert.match(
@@ -96,17 +106,14 @@ test("the offline boot gate is painted light too, while the sign-in notice stays
 })
 
 test("the crash screen themes itself from the live scheme, like the app proper", () => {
-  const boundary = layout.slice(layout.indexOf("export function ErrorBoundary"))
+  const boundary = crashScreen.slice(crashScreen.indexOf("export function ErrorBoundary"))
   assert.match(boundary, /const theme = useAppearanceTheme\(\)/)
   assert.match(boundary, /const crash = useMemo\(\(\) => crashStyles\(theme\), \[theme\]\)/)
   assert.match(boundary, /<StatusBar style=\{theme\.scheme === "dark" \? "light" : "dark"\} \/>/)
 })
 
 test("the live appearance hook re-applies the native root background when the scheme changes", () => {
-  const hook = layout.slice(
-    layout.indexOf("function useAppearanceTheme"),
-    layout.indexOf("function BootBackdrop"),
-  )
+  const hook = appearanceTheme.slice(appearanceTheme.indexOf("function useAppearanceTheme"))
   assert.match(hook, /void SystemUI\.setBackgroundColorAsync\(theme\.colors\.bg\)/)
   assert.match(hook, /\}, \[theme\.colors\.bg\]\)/)
 })

@@ -66,5 +66,6 @@ test("the JS boot screen paints the flat launch background, never a wash over it
 test("the native root view sits on the launch paper before the first paint, the app's after", () => {
   assert.match(layout, /import \* as SystemUI from "expo-system-ui"/)
   assert.match(layout, /void SystemUI\.setBackgroundColorAsync\(launchTheme\.colors\.bg\)/)
-  assert.match(layout, /void SystemUI\.setBackgroundColorAsync\(launchGate \? launchTheme\.colors\.bg : t\.colors\.bg\)/)
+  const rootStack = readFileSync(new URL("../src/boot/RootStack.tsx", import.meta.url), "utf8")
+  assert.match(rootStack, /void SystemUI\.setBackgroundColorAsync\(launchGate \? launchTheme\.colors\.bg : t\.colors\.bg\)/)
 })

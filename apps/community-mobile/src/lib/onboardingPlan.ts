@@ -1,3 +1,5 @@
+import type { AuthStatus } from "@/lib/lifecycleTypes"
+
 export const ONBOARDING_PAGE_COUNT = 5
 
 export type OnboardingPage = "report" | "track" | "together" | "theme" | "ready"
@@ -12,20 +14,16 @@ export const ONBOARDING_PAGES: readonly OnboardingPage[] = [
 
 export const ONBOARDING_LAST_INDEX = ONBOARDING_PAGE_COUNT - 1
 
-export type OnboardingAuthStatus = "idle" | "loading" | "authed" | "unauthed"
-
 export interface OnboardingEligibility {
   completedVersion: number
   currentVersion: number
   replayRequested: boolean
-  fontsReady: boolean
   gateActive: boolean
-  authStatus: OnboardingAuthStatus
+  authStatus: AuthStatus
   profileIncomplete: boolean
 }
 
 export function shouldShowOnboarding(input: OnboardingEligibility): boolean {
-  if (!input.fontsReady) return false
   if (input.gateActive) return false
   if (input.authStatus !== "authed" && input.authStatus !== "unauthed") return false
   if (input.profileIncomplete) return false

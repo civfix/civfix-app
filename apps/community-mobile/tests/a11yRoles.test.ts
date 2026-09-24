@@ -13,11 +13,14 @@ test("the wordmark is one focusable header, not six letters", () => {
 })
 
 test("screen titles are exposed as headers", () => {
+  const routeHeader = read("../src/components/ui/RouteHeader.tsx")
+  assert.match(routeHeader, /<Text accessibilityRole="header" style=\{styles\.title\}>\s*\{title\}/)
+
   const groupInfo = read("../app/groups/[id]/info.tsx")
-  assert.match(groupInfo, /<Text accessibilityRole="header" style=\{styles\.title\}>\s*\{t\("title\.group_info"\)\}/)
+  assert.match(groupInfo, /<RouteHeader title=\{t\("title\.group_info"\)\}/)
 
   const members = read("../app/messages/members/[roomKind]/[id].tsx")
-  assert.match(members, /<Text accessibilityRole="header" style=\{styles\.title\}>\s*\{t\(roomKind/)
+  assert.match(members, /<RouteHeader\s+title=\{t\(roomKind/)
 
   const header = read("../src/components/ui/ScreenHeader.tsx")
   const title = header.slice(header.indexOf("{title ? ("), header.indexOf("{title}"))

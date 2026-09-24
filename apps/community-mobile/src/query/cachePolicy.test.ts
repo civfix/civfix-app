@@ -10,7 +10,7 @@ import {
   makePersistScheduler,
   shouldDehydrateMutation,
   type CacheEnvelope,
-} from "./cache-policy.ts"
+} from "./cachePolicy.ts"
 
 const BUSTER = cacheBuster("1.1.0")
 

@@ -1,6 +1,6 @@
 import React from "react"
 import { Pressable, View } from "react-native"
-import { makeThemedStyles, useTheme } from "@/theme"
+import { PRESSED_OPACITY, makeThemedStyles, useTheme } from "@/theme"
 import { Text, PrimaryButton } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 
@@ -57,6 +57,6 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["4"],
   },
   pressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
 }))

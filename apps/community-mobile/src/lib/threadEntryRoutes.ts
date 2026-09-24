@@ -1,11 +1,7 @@
 import type { DetailEntry } from "@civfix/ui"
+import type { NativeRouteTarget } from "@/lib/navBridge"
 
-export interface ThreadEntryRoute {
-  pathname: string
-  params: Record<string, string>
-}
-
-export function threadEntryRoute(entry: DetailEntry): ThreadEntryRoute | null {
+export function threadEntryRoute(entry: DetailEntry): NativeRouteTarget | null {
   switch (entry.kind) {
     case "person":
       return entry.id ? { pathname: "/people/[id]", params: { id: entry.id } } : null

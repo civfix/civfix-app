@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState, useCallback } from "react"
 import * as Location from "expo-location"
 import type { LatLng } from "@civfix/shared/geocode"
+import type { LocationPermission } from "@/lib/locationPrimerPlan"
 import { FIRST_FIX_TIMEOUT_MS, GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS, withTimeout } from "@/lib/withTimeout"
-
-export type LocationPermission = "undetermined" | "granted" | "denied"
 
 export interface LocationRefreshResult {
   coords: LatLng | null
@@ -15,7 +14,6 @@ export interface UserLocationState {
   permissionResolved: boolean
   coords: LatLng | null
   resolve: () => Promise<LocationRefreshResult>
-  refresh: () => Promise<LocationRefreshResult>
   awaitFirstFix: () => Promise<LatLng | null>
 }
 
@@ -80,7 +78,6 @@ export function useUserLocation(): UserLocationState {
       permissionResolved,
       coords,
       resolve: refresh,
-      refresh,
       awaitFirstFix,
     }),
     [permission, permissionResolved, coords, refresh, awaitFirstFix],

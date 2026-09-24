@@ -1,7 +1,7 @@
 import { QueryClient, dehydrate, hydrate } from "@tanstack/react-query"
 import Constants from "expo-constants"
 import { storage } from "@/lib/mmkv"
-import { CACHED_USER_KEY } from "@/lib/mmkv-keys"
+import { CACHED_USER_KEY } from "@/lib/mmkvKeys"
 import {
   CACHE_KEY,
   WRITE_DEBOUNCE_MS,
@@ -14,7 +14,7 @@ import {
   shouldDehydrateQuery,
   type CacheEnvelope,
   type PersistScheduler,
-} from "@/query/cache-policy"
+} from "@/query/cachePolicy"
 
 const BUSTER: string = cacheBuster(Constants.expoConfig?.version)
 

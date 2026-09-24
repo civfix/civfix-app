@@ -8,7 +8,7 @@ export const BRIDGE_ROUTE_NAMES = {
   composer: "compose",
 } as const
 
-export interface BridgeRoute {
+export interface NativeRouteTarget {
   pathname: string
   params: Record<string, string>
 }
@@ -27,7 +27,7 @@ export interface BridgeGuard {
 export type BridgeAction =
   | { type: "none" }
   | { type: "drop"; key: string }
-  | { type: "bridge"; key: string; route: BridgeRoute }
+  | { type: "bridge"; key: string; route: NativeRouteTarget }
 
 export interface BridgeDecision {
   action: BridgeAction
@@ -68,7 +68,7 @@ export function nativeBridgeKey(route: NativeRoute | null | undefined): string |
   return null
 }
 
-export function bridgeRoute(entry: DetailEntry): BridgeRoute | null {
+export function bridgeRoute(entry: DetailEntry): NativeRouteTarget | null {
   if (entry.kind === "composer") {
     return {
       pathname: `/${BRIDGE_ROUTE_NAMES.composer}`,

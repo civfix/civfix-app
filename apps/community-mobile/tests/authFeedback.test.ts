@@ -34,7 +34,11 @@ test("the first-run form always clears its spinner once the profile save settles
 
 test("a failed username check says so and offers a retry instead of leaving Continue dead", () => {
   const check = firstRun.slice(firstRun.indexOf("const res = await api.checkHandle"))
-  assert.match(check.slice(0, check.indexOf("}, 350)")), /catch \{\s*if \(!cancelled\) setAvail\(\{ \.\.\.UNCHECKED, failed: true \}\)/)
+  assert.match(firstRun, /const HANDLE_CHECK_DEBOUNCE_MS = 350\n/)
+  assert.match(
+    check.slice(0, check.indexOf("}, HANDLE_CHECK_DEBOUNCE_MS)")),
+    /catch \{\s*if \(!cancelled\) setAvail\(\{ \.\.\.UNCHECKED, failed: true \}\)/,
+  )
   assert.match(firstRun, /\}, \[trimmedHandle, handleValid, checkAttempt\]\)/)
   assert.match(firstRun, /checkFailed=\{handleValid && avail\.failed\}/)
   assert.match(firstRun, /onRetry=\{retryHandleCheck\}/)

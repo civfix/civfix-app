@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 import { mmkvStateStorage } from "@/lib/mmkv"
-import { LOCATION_PRIMER_KEY } from "@/lib/mmkv-keys"
+import { LOCATION_PRIMER_KEY } from "@/lib/mmkvKeys"
 
 export type LocationChoice = "precise" | "approximate"
 

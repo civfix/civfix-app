@@ -1,27 +1,16 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
-import { createRequire } from "node:module"
-import { dirname, join } from "node:path"
 import { test } from "node:test"
 import { isInternalLink } from "../src/lib/links.ts"
 import { bridgeKey } from "../src/lib/navBridge.ts"
+import { loadNavRoutes } from "./helpers/navRoutes.ts"
 
 type RouteEntry = { kind: string; id?: string }
 
-async function loadNavRoutes(): Promise<{
+const { entryFromPath, pathForEntry } = await loadNavRoutes<{
   entryFromPath: (path: string) => RouteEntry | null
   pathForEntry: (entry: RouteEntry) => string
-}> {
-  const require = createRequire(import.meta.url)
-  const routesPath = join(dirname(require.resolve("@civfix/ui/package.json")), "src", "nav", "routes.ts")
-  const ts = require("typescript")
-  const { outputText } = ts.transpileModule(readFileSync(routesPath, "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-  })
-  return import(`data:text/javascript,${encodeURIComponent(outputText)}`)
-}
-
-const { entryFromPath, pathForEntry } = await loadNavRoutes()
+}>()
 const adapter = readFileSync(new URL("../src/components/MobileNavAdapter.tsx", import.meta.url), "utf8")
 
 test("a /post/<id> notification or chat link opens the in-shell post page, not the bridged thread route", () => {

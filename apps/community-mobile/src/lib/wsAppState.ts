@@ -1,7 +1,5 @@
 import type { ChatConnState } from "@civfix/ui/data"
-
-// RN's AppStateStatus restated so this policy stays free of react-native and unit-testable.
-export type AppLifecycleState = "active" | "background" | "inactive" | "unknown" | "extension"
+import type { AppLifecycleState } from "@/lib/lifecycleTypes"
 
 export interface AppStateSocket {
   getStatus(): ChatConnState

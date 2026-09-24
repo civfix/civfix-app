@@ -3,7 +3,7 @@ export type IncomingLink =
   | { type: "external"; url: string }
   | { type: "home" }
 
-export const WEB_ORIGIN = "https://civfix.org"
+const WEB_ORIGIN = "https://civfix.org"
 
 const WEB_HOSTS = new Set(["civfix.org", "www.civfix.org"])
 
@@ -133,63 +133,65 @@ function fromAppSchemeUrl(raw: string, scheme: string, afterScheme: string, isDe
   return { type: "internal", path: `${path}${internalQuery(path, query)}` }
 }
 
+type RouteResolver = (
+  a: string | undefined,
+  b: string | undefined,
+  c: string | undefined,
+) => string | null
+
+const LEAF_ROOTS = ["map", "search", "about", "profile", "dashboard", "discover", "saves", "report"]
+
+function leafRoute(path: string): RouteResolver {
+  return (a) => (a ? null : path)
+}
+
+// A Map, not an object literal: the root segment is attacker-chosen, and `constructor` or `__proto__` must
+// miss the table rather than resolve through Object.prototype.
+const ROUTES: ReadonlyMap<string, RouteResolver> = new Map<string, RouteResolver>([
+  ...LEAF_ROOTS.map((root): [string, RouteResolver] => [root, leafRoute(`/${root}`)]),
+  ["compose", () => "/compose"],
+  ["host", (a) => (a === "analytics" ? "/host/analytics" : "/host-event")],
+  ["host-event", () => "/host-event"],
+  ["events", (a) => (a ? `/cleanups/${a}` : "/cleanups")],
+  ["e", (a) => (a ? `/cleanups/${a}` : null)],
+  ["orgs", (a, b) => orgPathFor(a, b)],
+  ["cleanups", (a, b, c) => (a ? cleanupPathFor(a, b, c) : "/cleanups")],
+  ["reports", (a) => (a ? `/pin/${a}` : "/reports")],
+  ["pin", (a) => (a ? `/pin/${a}` : null)],
+  ["people", (a) => (a ? `/people/${a}` : "/people")],
+  ["leaderboard", (a) => (a ? `/leaderboard/${a}` : null)],
+  ["post", (a) => (a ? `/post/${a}` : null)],
+  ["notifications", (a) => notificationsPathFor(a)],
+  ["settings", (a) => settingsPathFor(a)],
+  ["groups", (a, b) => groupsPathFor(a, b)],
+  ["channels", (a) => (a === "new" ? "/messages" : null)],
+  ["messages", (a, b, c) => messagesPathFor(a, b, c)],
+])
+
 function internalPathFor(parts: readonly string[]): string | null {
   const [base, a, b, c] = parts
+  if (base === undefined) return "/"
+  return ROUTES.get(base)?.(a, b, c) ?? null
+}
 
-  switch (base) {
-    case undefined:
-      return "/"
-    case "map":
-    case "search":
-    case "about":
-    case "profile":
-    case "dashboard":
-    case "discover":
-    case "saves":
-    case "report":
-      return a ? null : `/${base}`
-    case "compose":
-      return "/compose"
-    case "host":
-      return a === "analytics" ? "/host/analytics" : "/host-event"
-    case "host-event":
-      return "/host-event"
-    case "events":
-      return a ? `/cleanups/${a}` : "/cleanups"
-    case "e":
-      return a ? `/cleanups/${a}` : null
-    case "orgs":
-      if (!a) return null
-      return b === "manage" ? `/orgs/${a}/manage` : `/orgs/${a}`
-    case "cleanups":
-      if (!a) return "/cleanups"
-      return cleanupPathFor(a, b, c)
-    case "reports":
-      return a ? `/pin/${a}` : "/reports"
-    case "pin":
-      return a ? `/pin/${a}` : null
-    case "people":
-      return a ? `/people/${a}` : "/people"
-    case "leaderboard":
-      return a ? `/leaderboard/${a}` : null
-    case "post":
-      return a ? `/post/${a}` : null
-    case "notifications":
-      if (!a) return "/notifications"
-      return a === "prefs" ? "/notifications/prefs" : null
-    case "settings":
-      if (!a) return "/settings"
-      return SETTINGS_CHILDREN.has(a) ? `/settings/${a}` : null
-    case "groups":
-      if (a === "new") return "/messages"
-      return a && b === "info" ? `/groups/${a}/info` : null
-    case "channels":
-      return a === "new" ? "/messages" : null
-    case "messages":
-      return messagesPathFor(a, b, c)
-    default:
-      return null
-  }
+function orgPathFor(slug: string | undefined, sub: string | undefined): string | null {
+  if (!slug) return null
+  return sub === "manage" ? `/orgs/${slug}/manage` : `/orgs/${slug}`
+}
+
+function notificationsPathFor(sub: string | undefined): string | null {
+  if (!sub) return "/notifications"
+  return sub === "prefs" ? "/notifications/prefs" : null
+}
+
+function settingsPathFor(child: string | undefined): string | null {
+  if (!child) return "/settings"
+  return SETTINGS_CHILDREN.has(child) ? `/settings/${child}` : null
+}
+
+function groupsPathFor(id: string | undefined, sub: string | undefined): string | null {
+  if (id === "new") return "/messages"
+  return id && sub === "info" ? `/groups/${id}/info` : null
 }
 
 const CLEANUP_CHILDREN = new Set(["edit", "host", "checkin", "team", "hours", "analytics"])

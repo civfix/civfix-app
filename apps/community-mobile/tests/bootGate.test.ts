@@ -179,7 +179,9 @@ test("a session restore that cannot reach the server records how it failed", () 
 })
 
 test("the loading gate is bounded by the boot model, never by an open-ended auth status", () => {
-  const body = layout.slice(layout.indexOf("const gateActive ="), layout.indexOf("const setGateActive"))
+  const launchGate = readFileSync(new URL("../src/boot/useLaunchGate.ts", import.meta.url), "utf8")
+  const body = launchGate.slice(launchGate.indexOf("const gateActive ="), launchGate.indexOf("const setGateActive"))
+  assert.ok(body.length > 0)
   assert.match(body, /boot\.phase === "connecting"/)
   assert.doesNotMatch(body, /status === "loading"/)
   assert.doesNotMatch(body, /status === "idle"/)

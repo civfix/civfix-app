@@ -39,7 +39,7 @@ import {
   useStageStep,
   useStageTimeline,
 } from "./stageMotion"
-import { STAGE_ASPECT_RATIO, type StageProps } from "./stageTypes"
+import { STAGE_ASPECT_RATIO, noop, pinHeightFor, type StageProps } from "./stageTypes"
 
 const TOTAL_MS = 4800
 
@@ -62,7 +62,7 @@ const W_ROW = stageWindow(TOTAL_MS, 2700, 3160)
 const STEP_STOPS = stageStops(TOTAL_MS, 2700, 2700 + 1000, 2700 + 2000)
 
 const PIN_SIZE = 30
-const PIN_HEIGHT = Math.round(PIN_SIZE * (76 / 64))
+const PIN_HEIGHT = pinHeightFor(PIN_SIZE)
 const CLUSTER_SIZE = 34
 const ROW_SLIDE = 120
 
@@ -85,8 +85,6 @@ const DOCK_ICONS: readonly LucideIcon[] = [
 const DOCK_SELECTED_INDEX = 1
 
 const POP = motion.pop
-
-function noop(): void {}
 
 function TrackPin({
   index,
