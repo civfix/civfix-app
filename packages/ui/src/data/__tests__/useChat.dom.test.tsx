@@ -310,12 +310,12 @@ describe("useChat history load", () => {
     expect(ids(result.current)).toEqual(["m1"])
   })
 
-  it("retains, joins and reports the socket status on mount, then leaves and releases on unmount", async () => {
+  it("joins, retains and reports the socket status on mount, then leaves and releases on unmount", async () => {
     const socket = new FakeChatSocket("connecting")
     const { result, unmount } = renderChat({ api: makeChatApi({}), socket })
     await settle()
 
-    expect(socket.log).toEqual(["retain", "join cleanup:room-a"])
+    expect(socket.log).toEqual(["join cleanup:room-a", "retain"])
     expect(result.current.connection).toBe("connecting")
     expect(result.current.liveDisabled).toBe(false)
 
@@ -323,7 +323,7 @@ describe("useChat history load", () => {
     expect(result.current.connection).toBe("open")
 
     unmount()
-    expect(socket.log).toEqual(["retain", "join cleanup:room-a", "leave cleanup:room-a", "release"])
+    expect(socket.log).toEqual(["join cleanup:room-a", "retain", "leave cleanup:room-a", "release"])
   })
 
   it("keeps a signed-out cleanup room offline: no history, no join, live disabled", async () => {
@@ -472,7 +472,7 @@ describe("useChat inbound frames", () => {
     expect(result.current.items[0]?.message.reactions).toEqual([{ emoji: "like", count: 2, mine: true }])
   })
 
-  it("currently applies typing, presence and reaction frames by room id alone, ignoring a mismatched roomKind", async () => {
+  it("ignores typing, presence and reaction frames whose roomKind does not match", async () => {
     const socket = new FakeChatSocket()
     const { result } = renderChat({
       api: makeChatApi({ [ROOM_A]: page([msg("m1", 10)]) }),
@@ -480,6 +480,7 @@ describe("useChat inbound frames", () => {
       props: { roomKind: "group" },
     })
     await settle()
+    const reactionsBefore = result.current.items[0]?.message.reactions
 
     socket.emit({ type: "typing", cleanupId: ROOM_A, roomKind: "dm", userId: OTHER })
     socket.emit({ type: "presence_snapshot", cleanupId: ROOM_A, roomKind: "dm", userIds: [OTHER] })
@@ -490,9 +491,9 @@ describe("useChat inbound frames", () => {
       message: msg("m1", 10, { reactions: [{ emoji: "heart", count: 1, mine: false }] }),
     })
 
-    expect(result.current.typingUserIds).toEqual([OTHER])
-    expect(result.current.onlineCount).toBe(1)
-    expect(result.current.items[0]?.message.reactions).toEqual([{ emoji: "heart", count: 1, mine: false }])
+    expect(result.current.typingUserIds).toEqual([])
+    expect(result.current.onlineCount).toBe(0)
+    expect(result.current.items[0]?.message.reactions).toEqual(reactionsBefore)
   })
 })
 
@@ -505,7 +506,7 @@ describe("useChat send lifecycle", () => {
     act(() => result.current.send("  hi  "))
 
     const [frame] = socket.framesOf("send")
-    expect(frame).toEqual({ type: "send", cleanupId: ROOM_A, clientId: expect.any(String), body: "hi" })
+    expect(frame).toEqual({ type: "send", cleanupId: ROOM_A, clientId: expect.any(String) as string, body: "hi" })
     const item = result.current.items.at(-1)
     expect(item).toMatchObject({ pending: true, failed: false, mine: true })
     expect(item?.message).toMatchObject({
@@ -536,7 +537,7 @@ describe("useChat send lifecycle", () => {
       type: "send",
       cleanupId: ROOM_A,
       roomKind: "dm",
-      clientId: expect.any(String),
+      clientId: expect.any(String) as string,
       body: "yo",
       mentionedUserIds: ["u-x"],
       mediaUploadIds: ["up-1"],
@@ -640,7 +641,7 @@ describe("useChat send lifecycle", () => {
     expect(sends[1]?.mentionedUserIds).toEqual(["u-x"])
   })
 
-  it("currently keeps showing a replayed dropped message as failed until its ack lands", async () => {
+  it("shows a replayed dropped message as pending until its ack lands", async () => {
     const socket = new FakeChatSocket()
     socket.outcome = "dropped"
     const { result } = renderChat({ api: makeChatApi({}), socket })
@@ -653,7 +654,7 @@ describe("useChat send lifecycle", () => {
     await settle()
 
     expect(socket.framesOf("send")).toHaveLength(2)
-    expect(result.current.items[0]).toMatchObject({ pending: false, failed: true })
+    expect(result.current.items[0]).toMatchObject({ pending: true, failed: false })
 
     const clientId = socket.framesOf("send")[1]!.clientId
     socket.emit({ type: "ack", clientId, message: msg("srv-1", 3600, { from: person(ME, "Mia Me"), body: "hi" }) })
@@ -1061,7 +1062,7 @@ describe("useChat around window", () => {
 })
 
 describe("useChat room switch", () => {
-  it("currently releases and re-retains the socket when the room changes in place", async () => {
+  it("keeps the socket retained when the room changes in place, leaving room A and joining room B", async () => {
     const socket = new FakeChatSocket()
     const { rerender } = renderChat({ api: makeChatApi({}), socket })
     await settle()
@@ -1070,11 +1071,9 @@ describe("useChat room switch", () => {
     await settle()
 
     expect(socket.log).toEqual([
-      "retain",
       "join cleanup:room-a",
-      "leave cleanup:room-a",
-      "release",
       "retain",
+      "leave cleanup:room-a",
       "join cleanup:room-b",
     ])
   })
@@ -1105,7 +1104,7 @@ describe("useChat room switch", () => {
     expect(result.current.aroundLoading).toBe(false)
   })
 
-  it("currently renders room A's pending bubble in the first render of room B", async () => {
+  it("renders none of room A's pending bubbles in the first render of room B", async () => {
     const socket = new FakeChatSocket()
     const { result, rerender, frames } = renderChat({ api: makeChatApi({}), socket })
     await settle()
@@ -1115,7 +1114,7 @@ describe("useChat room switch", () => {
     await settle()
 
     const firstOfB = frames.find((f) => f.roomId === ROOM_B)
-    expect(firstOfB?.result.items.map((it) => it.message.body)).toEqual(["hi"])
+    expect(firstOfB?.result.items).toEqual([])
     expect(result.current.items).toEqual([])
   })
 

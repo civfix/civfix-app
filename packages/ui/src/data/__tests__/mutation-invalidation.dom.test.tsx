@@ -6,6 +6,7 @@ import {
   useMutation,
   type InvalidateQueryFilters,
 } from "@tanstack/react-query"
+import type * as TanstackQuery from "@tanstack/react-query"
 import type { ReactNode } from "react"
 import { beforeEach, describe, expect, it, vi, type RunnerTask } from "vitest"
 import type { UserDTO } from "@civfix/shared"
@@ -23,7 +24,6 @@ import {
   useClaimEventSlot,
   useCreateCleanup,
   useDuplicateCleanup,
-  useGuestRsvpCancel,
   useGuestRsvpRequest,
   useGuestRsvpVerify,
   useJoinCleanup,
@@ -32,7 +32,7 @@ import {
   useSetMemberRole,
   useUpdateCleanup,
 } from "../hooks/cleanups"
-import { useBlockUser, useOpenDm, useStartDm, useUnblockUser } from "../hooks/direct"
+import { useBlockUser, useStartDm, useUnblockUser } from "../hooks/direct"
 import {
   useAddGroupMembers,
   useCreateGroup,
@@ -49,9 +49,7 @@ import {
   useDeclineMyEventInvite,
   useInviteEventTeamMember,
   useJoinEventWaitlist,
-  useLeaveEventWaitlist,
   useMarkEventNoShows,
-  useQuickBroadcast,
   useRegisterForEvent,
   useRevokeEventTeamInvite,
   useScanEventTicket,
@@ -80,7 +78,7 @@ import {
   useLeaveReportChat,
   useMarkThreadRead,
   useToggleMute,
-} from "../hooks/report-chat"
+} from "../hooks/reportChat"
 import { useResolveReport, useUnlistReport } from "../hooks/reports"
 import { useReverseLabel } from "../hooks/reverseLabel"
 import { useFollowPerson, useHandleAvailability, useUpdateProfile } from "../hooks/social"
@@ -92,7 +90,7 @@ import {
 
 // A pass-through spy, so the coverage guard can tell which exported hooks build a mutation.
 vi.mock("@tanstack/react-query", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@tanstack/react-query")>()
+  const actual = await importOriginal<typeof TanstackQuery>()
   return { ...actual, useMutation: vi.fn(actual.useMutation) }
 })
 
@@ -113,6 +111,7 @@ const CLEANUP_DETAIL: Invalidation = { predicateMatches: [["cleanup", EVENT], ["
 const HOST_EVENT: Invalidation[] = [key("host", EVENT), key("host", EVENT, "insights"), CLEANUP_DETAIL]
 const CLEANUP_LISTS: Invalidation[] = [key("cleanups"), key("org-events")]
 const HOSTED_EVENT_LISTS: Invalidation[] = [key("hosted-events"), key("profile")]
+const NOTIFICATION_LISTS: Invalidation[] = [{ predicateMatches: [["notifications", 20]] }]
 const MY_EVENT_INVITES: Invalidation[] = [key("event-invites", "mine"), key("hosted-events"), key("notifications")]
 
 function seededClient(): QueryClient {
@@ -121,6 +120,8 @@ function seededClient(): QueryClient {
   qc.setQueryData(["cleanup", EVENT_ALIAS], { id: EVENT, joined: false, going: 3 })
   qc.setQueryData(["cleanup", OTHER_EVENT], { id: OTHER_EVENT, joined: false, going: 1 })
   qc.setQueryData(["cleanup", EVENT, "attendees"], { attendees: [], going: 3 })
+  qc.setQueryData(["notifications", 20], [])
+  qc.setQueryData(["notifications", "prefs"], {})
   return qc
 }
 
@@ -204,9 +205,9 @@ describe("social.ts mutation invalidations", () => {
   it("useUpdateProfile invalidates my profile, the updated profile and the people lists", async () => {
     const api = { updateProfile: resolves({ user: { id: ME.id } }) }
     expect(await invalidationsOf(() => useUpdateProfile(), { handle: "mia", displayName: "Mia Me" }, api)).toEqual([
-      key("profile", "me"),
       key("profile", ME.id),
       key("people"),
+      key("profile", "me"),
     ])
   })
 })
@@ -229,7 +230,6 @@ describe("host.ts mutation invalidations", () => {
       { ticketTypeId: "tt" },
       { joinEventWaitlist: resolves({ entry: {} }) },
     ],
-    ["useLeaveEventWaitlist", () => useLeaveEventWaitlist(EVENT), {}, { leaveEventWaitlist: resolves({}) }],
   ] as const)("%s invalidates the host event, its insights and every cached detail of it", async (_name, useHook, vars, api) => {
     expect(await invalidationsOf(useHook as () => Mutating<unknown>, vars, api)).toEqual(HOST_EVENT)
   })
@@ -264,7 +264,7 @@ describe("host.ts mutation invalidations", () => {
         await invalidationsOf(() => useRegisterForEvent(EVENT), { idempotencyKey: "idem-key-1" } as never, {
           registerForEvent: resolves({ outcome, registration: null, ticketTokens: [] }),
         }),
-      ).toEqual([...HOST_EVENT, key("tickets", "mine", EVENT), key("cleanups")])
+      ).toEqual([...HOST_EVENT, key("tickets", "mine", EVENT), ...CLEANUP_LISTS])
     },
   )
 
@@ -281,7 +281,7 @@ describe("host.ts mutation invalidations", () => {
       await invalidationsOf(() => useCancelEventRegistration(EVENT), { registrationId: "r" }, {
         cancelEventRegistration: resolves({}),
       }),
-    ).toEqual([...HOST_EVENT, key("tickets", "mine", EVENT), key("cleanups")])
+    ).toEqual([...HOST_EVENT, key("tickets", "mine", EVENT), ...CLEANUP_LISTS])
   })
 
   it("useAcceptMyEventInvite invalidates my invites and the accepted event", async () => {
@@ -298,24 +298,6 @@ describe("host.ts mutation invalidations", () => {
         declineMyEventInvite: resolves({}),
       }),
     ).toEqual(MY_EVENT_INVITES)
-  })
-
-  it("useQuickBroadcast invalidates the host event after a send and after a discard", async () => {
-    const api = {
-      createEventBroadcast: resolves({ id: "b-1" }),
-      sendEventBroadcast: resolves({ id: "b-1", status: "sending" }),
-    }
-    const { result, invalidations } = renderWithData(() => useQuickBroadcast(EVENT), api)
-
-    await act(async () => {
-      await result.current.mutateAsync({ subject: "s", bodyMd: "b", segment: { kind: "all" } as never })
-    })
-    expect(invalidations).toEqual(HOST_EVENT)
-
-    await act(async () => {
-      await result.current.discard.mutateAsync()
-    })
-    expect(invalidations).toEqual([...HOST_EVENT, ...HOST_EVENT])
   })
 })
 
@@ -340,18 +322,18 @@ describe("cleanups.ts mutation invalidations", () => {
     ).toEqual(expected)
   })
 
-  it("useUpdateCleanup invalidates every cached detail, the cleanup lists and the hosted-event lists", async () => {
+  it("useUpdateCleanup invalidates every cached detail, the calendar file, the cleanup lists and the hosted-event lists", async () => {
     expect(
       await invalidationsOf(() => useUpdateCleanup(), { id: EVENT, patch: { title: "New" } }, {
         updateCleanup: resolves(cleanupDto(EVENT)),
       }),
-    ).toEqual([CLEANUP_DETAIL, ...CLEANUP_LISTS, ...HOSTED_EVENT_LISTS])
+    ).toEqual([CLEANUP_DETAIL, key("cleanup", EVENT, "ics"), ...CLEANUP_LISTS, ...HOSTED_EVENT_LISTS])
   })
 
-  it("useCancelCleanup invalidates the lists, the hosted-event lists and the roster", async () => {
+  it("useCancelCleanup invalidates the lists, the hosted-event lists, the roster and the calendar file", async () => {
     expect(
       await invalidationsOf(() => useCancelCleanup(), { id: EVENT }, { cancelCleanup: resolves(cleanupDto(EVENT)) }),
-    ).toEqual([...CLEANUP_LISTS, ...HOSTED_EVENT_LISTS, key("cleanup", EVENT, "attendees")])
+    ).toEqual([...CLEANUP_LISTS, ...HOSTED_EVENT_LISTS, key("cleanup", EVENT, "attendees"), key("cleanup", EVENT, "ics")])
   })
 
   it("useClaimEventSlot invalidates the lists, the roster and the event insights", async () => {
@@ -386,7 +368,7 @@ describe("cleanups.ts mutation invalidations", () => {
     ).toEqual([CLEANUP_DETAIL, ...CLEANUP_LISTS, key("cleanup", EVENT, "attendees")])
   })
 
-  it("useRequestEventResources, useGuestRsvpRequest and useGuestRsvpCancel invalidate nothing", async () => {
+  it("useRequestEventResources and useGuestRsvpRequest invalidate nothing", async () => {
     expect(
       await invalidationsOf(() => useRequestEventResources(EVENT), { message: "m" }, {
         requestEventResources: resolves({}),
@@ -396,9 +378,6 @@ describe("cleanups.ts mutation invalidations", () => {
       await invalidationsOf(() => useGuestRsvpRequest(EVENT), { email: "a@b.co" } as never, {
         guestRsvpRequest: resolves({}),
       }),
-    ).toEqual([])
-    expect(
-      await invalidationsOf(() => useGuestRsvpCancel(), { token: "t" }, { guestRsvpCancel: resolves({}) }),
     ).toEqual([])
   })
 })
@@ -527,7 +506,7 @@ describe("groups.ts mutation invalidations", () => {
   })
 })
 
-describe("report-chat.ts mutation invalidations", () => {
+describe("reportChat.ts mutation invalidations", () => {
   it("useJoinReportChat and useLeaveReportChat invalidate the report and the threads", async () => {
     expect(await invalidationsOf(() => useJoinReportChat(), REPORT, { joinReportChat: resolves({}) })).toEqual([
       key("report", REPORT),
@@ -541,12 +520,12 @@ describe("report-chat.ts mutation invalidations", () => {
 
   it("useToggleMute, useHideConversation and useMarkThreadRead invalidate the threads", async () => {
     expect(
-      await invalidationsOf(() => useToggleMute("report", REPORT), { muted: true }, {
+      await invalidationsOf(() => useToggleMute(), { roomKind: "report", roomId: REPORT, muted: true }, {
         toggleConversationMute: resolves({}),
       }),
     ).toEqual([key("threads")])
     expect(
-      await invalidationsOf(() => useHideConversation("report", REPORT), { hidden: true }, {
+      await invalidationsOf(() => useHideConversation(), { roomKind: "report", roomId: REPORT, hidden: true }, {
         toggleConversationHidden: resolves({}),
       }),
     ).toEqual([key("threads")])
@@ -650,12 +629,6 @@ describe("moderation.ts mutation invalidations", () => {
 })
 
 describe("direct.ts mutation invalidations", () => {
-  it("useOpenDm invalidates the threads", async () => {
-    expect(
-      await invalidationsOf(() => useOpenDm(), PERSON, { openDm: resolves({ thread: { id: "dm-1", refId: null } }) }),
-    ).toEqual([key("threads")])
-  })
-
   it("useStartDm opens the DM behind the auth gate, invalidates the threads and resolves the room", async () => {
     const onResolved = vi.fn()
     const { result, invalidations } = renderWithData(() => useStartDm(), {
@@ -686,15 +659,15 @@ describe("direct.ts mutation invalidations", () => {
 })
 
 describe("notifications.ts mutation invalidations", () => {
-  it("useMarkNotificationsRead invalidates every notifications query", async () => {
+  it("useMarkNotificationsRead invalidates the notification lists but not the prefs", async () => {
     expect(
       await invalidationsOf(() => useMarkNotificationsRead(), ["n-1"], { markNotificationsRead: resolves({ ok: true }) }),
-    ).toEqual([key("notifications")])
+    ).toEqual(NOTIFICATION_LISTS)
   })
 
-  it("currently invalidates every notifications query even when no id was marked", async () => {
+  it("currently invalidates the notification lists even when no id was marked", async () => {
     const api = { markNotificationsRead: vi.fn() }
-    expect(await invalidationsOf(() => useMarkNotificationsRead(), [], api)).toEqual([key("notifications")])
+    expect(await invalidationsOf(() => useMarkNotificationsRead(), [], api)).toEqual(NOTIFICATION_LISTS)
     expect(api.markNotificationsRead).not.toHaveBeenCalled()
   })
 
@@ -773,7 +746,7 @@ describe("report/submit.ts invalidations", () => {
     useDraftReportStore.getState().reset()
   })
 
-  it("currently invalidates the unused mapReports key as well as the map report pins and my reports", async () => {
+  it("invalidates the map report pins and my reports", async () => {
     const store = useDraftReportStore.getState()
     store.setCategory("graffiti", "Graffiti")
     store.setLocation(34.05, -118.25, "manual")
@@ -788,7 +761,7 @@ describe("report/submit.ts invalidations", () => {
       await result.current()
     })
 
-    expect(invalidations).toEqual([key("mapReports"), key("map", "reports"), key("reports", "mine")])
+    expect(invalidations).toEqual([key("map", "reports"), key("reports", "mine")])
   })
 })
 
@@ -818,12 +791,13 @@ describe("literal query keys the key consolidation will move into queryKeys", ()
     const { result, queryClient } = renderWithData(() => useHandleAvailability("Maya_1", null), api)
 
     await waitFor(() => expect(result.current.data).toEqual({ available: true }))
-    expect(api.checkHandle).toHaveBeenCalledWith({ handle: "Maya_1" })
+    expect(api.checkHandle.mock.calls[0]?.[0]).toEqual({ handle: "Maya_1" })
+    expect(api.checkHandle.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal)
     expect(queryClient.getQueryCache().find({ queryKey: ["handle-available", "Maya_1"], exact: true })).toBeDefined()
   })
 })
 
-const HOOK_MODULES = import.meta.glob<Record<string, unknown>>(["../hooks/*.ts", "!../hooks/index.ts"], {
+const HOOK_MODULES = import.meta.glob<Record<string, unknown>>(["../hooks/*.ts", "!../hooks/index.ts", "!../hooks/chat[A-Z]*.ts"], {
   eager: true,
 })
 
@@ -833,6 +807,7 @@ const PROBE_ARGS: Record<string, readonly unknown[]> = {
   useAudiencePreview: [EVENT, { kind: "all" }],
   useChat: [EVENT],
   useHandleAvailability: ["", null],
+  useHandleAvailabilityCheck: ["", null],
   useMapReports: [{ bbox: null }],
   useMentionSearch: [""],
   useReportSearch: [{}],

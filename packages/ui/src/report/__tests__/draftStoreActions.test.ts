@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import { MAX_DRAFT_MEDIA, useDraftReportStore } from "../draftStore"
+import { MAX_REPORT_MEDIA } from "@civfix/shared"
+import { useDraftReportStore } from "../draftStore"
 import type { CapturedMedia } from "../../capabilities"
 
 function cap(uri: string, over: Partial<CapturedMedia> = {}): CapturedMedia {
@@ -143,22 +144,22 @@ describe("draftStore location writes", () => {
 })
 
 describe("draftStore location and media coupling", () => {
-  it("currently keeps the removed capture's EXIF point when that capture is removed", () => {
+  it("drops the removed capture's EXIF point when that capture is removed", () => {
     store().startFromCapture(cap("a", { location: { lat: 1, lng: 2, source: "exif" } }))
     store().addCapture(cap("b"))
     store().removeMedia(draft().media[0]?.id ?? "")
     expect(draft().media.map((m) => m.uri)).toEqual(["b"])
-    expect(draft()).toMatchObject({ lat: 1, lng: 2, geomSource: "exif" })
+    expect(draft()).toMatchObject({ lat: null, lng: null, locationMediaId: null })
   })
 
-  it("currently keeps the point after every capture is removed", () => {
+  it("drops the point once the capture that supplied it is removed", () => {
     store().startFromCapture(cap("a", { location: { lat: 1, lng: 2, source: "exif" } }))
     store().removeMedia("a")
     expect(draft().media).toEqual([])
-    expect(draft()).toMatchObject({ lat: 1, lng: 2, geomSource: "exif" })
+    expect(draft()).toMatchObject({ lat: null, lng: null, locationMediaId: null })
   })
 
-  it("currently wipes category, title and description when a capture follows removing every capture", () => {
+  it("startFromCapture always starts a fresh report, even after every capture was removed", () => {
     store().startFromCapture(cap("a", { location: { lat: 1, lng: 2, source: "exif" } }))
     store().setCategory("trash", "Dump", "dump")
     store().setTitle("Couch")
@@ -196,8 +197,8 @@ describe("draftStore media helpers", () => {
     expect(draft().media[0]?.id).toBeTruthy()
   })
 
-  it("addMedia appends and caps at MAX_DRAFT_MEDIA, dropping the newest overflow", () => {
-    for (let i = 0; i < MAX_DRAFT_MEDIA + 2; i++) {
+  it("addMedia appends and caps at MAX_REPORT_MEDIA, dropping the newest overflow", () => {
+    for (let i = 0; i < MAX_REPORT_MEDIA + 2; i++) {
       store().addMedia({ uri: String(i), kind: "image", mime: "image/jpeg" })
     }
     expect(draft().media.map((m) => m.uri)).toEqual(["0", "1", "2", "3", "4"])

@@ -151,7 +151,7 @@ describe("buildOptimisticFeedSharePost shape", () => {
       author: me,
       caption: "",
       report: { id: "r", category: "hazard", type: null, title: "Hole", lat: 1, lng: 2 },
-      now: "t",
+      now: "2026-07-25T10:00:00.000Z",
     })
     expect(post.report).toEqual({
       id: "r",
@@ -162,7 +162,7 @@ describe("buildOptimisticFeedSharePost shape", () => {
       lng: 2,
       addr: null,
       thumbUrl: null,
-      linkedAt: "t",
+      linkedAt: "2026-07-25T10:00:00.000Z",
     })
   })
 

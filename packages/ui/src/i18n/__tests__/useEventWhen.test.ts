@@ -3,6 +3,7 @@
  * and the three context hooks replaced, the hook runs as a plain function and its composition can be
  * pinned without a renderer.
  */
+import type * as React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { eventWhenParts } from "@civfix/shared/datetime"
 
@@ -13,7 +14,7 @@ const ctx = vi.hoisted(() => ({
 }))
 
 vi.mock("react", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("react")>()),
+  ...(await importOriginal<typeof React>()),
   useMemo: <T>(factory: () => T): T => factory(),
 }))
 

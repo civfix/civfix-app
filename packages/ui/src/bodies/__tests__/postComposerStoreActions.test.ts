@@ -3,7 +3,6 @@ import type { LinkedEventRef, LinkedReportRef, UserMentionDTO } from "@civfix/sh
 import {
   selectPostComposerDraft,
   selectPostComposerHasPendingMedia,
-  selectPostComposerMediaUploadIds,
   usePostComposerStore,
   type PostComposerMedia,
 } from "../postComposerStore"
@@ -79,12 +78,12 @@ describe("postComposerStore serialization", () => {
 })
 
 describe("postComposerStore attachments", () => {
-  it("keeps the event snapshot when the same id is set again and drops it for a different id", () => {
-    store().setAttachedEvent(event)
-    store().setAttachedEventId("event-1")
-    expect(draft().attachedEvent?.id).toBe("event-1")
-    store().setAttachedEventId("event-2")
-    expect(draft()).toMatchObject({ attachedEventId: "event-2", attachedEvent: null })
+  it("keeps the report snapshot when the same id is set again and drops it for a different id", () => {
+    store().setAttachedReport(report)
+    store().setAttachedReportId("report-1")
+    expect(draft().attachedReport?.id).toBe("report-1")
+    store().setAttachedReportId("report-2")
+    expect(draft()).toMatchObject({ attachedReportId: "report-2", attachedReport: null })
   })
 
   it("clears both event halves when the event is detached", () => {
@@ -101,47 +100,14 @@ describe("postComposerStore attachments", () => {
 })
 
 describe("postComposerStore media", () => {
-  it("replaces a re-added uri and moves it to the end", () => {
-    store().addMedia(media("a"))
-    store().addMedia(media("b"))
-    store().addMedia(media("a", { status: "ready", uploadId: "u-a" }))
-    expect(draft().media.map((m) => [m.uri, m.status])).toEqual([
-      ["b", "pending"],
-      ["a", "ready"],
-    ])
-  })
-
-  it("updates the status of every item sharing a uri and leaves the upload id alone", () => {
-    store().setMedia([media("a", { uploadId: "u1" }), media("b")])
-    store().setMediaStatus("a", "failed")
-    expect(draft().media[0]).toMatchObject({ status: "failed", uploadId: "u1" })
-    expect(draft().media[1]?.status).toBe("pending")
-  })
-
-  it("ignores an update for a uri that is not staged", () => {
-    store().setMedia([media("a")])
-    store().setMediaUpload("zz", "u", "ready")
-    expect(draft().media).toEqual([media("a")])
-  })
-
   it("reports pending media only for pending or uploading items", () => {
     const state = () => usePostComposerStore.getState()
     store().setMedia([media("a", { status: "ready", uploadId: "u" }), media("b", { status: "failed" })])
     expect(selectPostComposerHasPendingMedia(state())).toBe(false)
-    store().setMediaStatus("b", "uploading")
+    store().setMedia([media("a", { status: "ready", uploadId: "u" }), media("b", { status: "uploading" })])
     expect(selectPostComposerHasPendingMedia(state())).toBe(true)
-    store().setMediaStatus("b", "pending")
+    store().setMedia([media("a", { status: "ready", uploadId: "u" }), media("b")])
     expect(selectPostComposerHasPendingMedia(state())).toBe(true)
-  })
-
-  it("submits only ready items that carry an upload id", () => {
-    store().setMedia([
-      media("a", { status: "ready", uploadId: "u-a" }),
-      media("b", { status: "ready", uploadId: null }),
-      media("c", { status: "failed", uploadId: "u-c" }),
-      media("d", { status: "uploading", uploadId: "u-d" }),
-    ])
-    expect(selectPostComposerMediaUploadIds(usePostComposerStore.getState())).toEqual(["u-a"])
   })
 })
 

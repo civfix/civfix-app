@@ -15,8 +15,6 @@ const ENTRY_CARRYING: Record<IdentityField, DetailEntry> = {
   announcementId: { kind: "announcement", id: "c1", announcementId: "a1" },
 }
 
-const KEPT_FIELDS = ENTRY_IDENTITY_FIELDS.filter((field) => field !== "announcementId")
-
 function resetStore(): void {
   useNavStore.setState({
     view: "home",
@@ -51,29 +49,17 @@ describe("nav snapshot keeps every route identity field", () => {
     expect(Object.keys(ENTRY_CARRYING).sort()).toEqual([...ENTRY_IDENTITY_FIELDS].sort())
   })
 
-  it.each(KEPT_FIELDS)("persistableEntry keeps %s", (field) => {
+  it.each(ENTRY_IDENTITY_FIELDS)("persistableEntry keeps %s", (field) => {
     const entry = ENTRY_CARRYING[field]
     expect(persistableEntry(entry)[field]).toBe(entry[field])
     expect(entryIdentity(persistableEntry(entry))).toBe(entryIdentity(entry))
   })
 
-  it.each(KEPT_FIELDS)("%s survives snapshot -> restore", (field) => {
+  it.each(ENTRY_IDENTITY_FIELDS)("%s survives snapshot -> restore", (field) => {
     const entry = ENTRY_CARRYING[field]
     const restored = snapshotAndRestore(entry)
     expect(restored).toEqual(entry)
     expect(entryIdentity(restored)).toBe(entryIdentity(entry))
     expect(useNavStore.getState().active).toEqual(entry)
-  })
-
-  it("currently drops announcementId from a persisted entry", () => {
-    const entry = ENTRY_CARRYING.announcementId
-    expect(persistableEntry(entry)).toEqual({ kind: "announcement", id: "c1" })
-    expect(entryIdentity(persistableEntry(entry))).not.toBe(entryIdentity(entry))
-  })
-
-  it("currently drops announcementId across snapshot -> restore", () => {
-    const restored = snapshotAndRestore(ENTRY_CARRYING.announcementId)
-    expect(restored).toEqual({ kind: "announcement", id: "c1" })
-    expect(restored?.announcementId).toBeUndefined()
   })
 })

@@ -4,16 +4,11 @@ import {
   endOffsetMs,
   endTimeAfter,
   endsNextDay,
-  formWallClock,
-  isScheduleInFuture,
+  formInstantMs,
   isScheduleInFutureInZone,
   isScheduleUntouched,
-  isTimeSlotSelectable,
-  monthGrid,
   uses24HourClock,
-  wallClockExistsOn,
   wallClockToFormDate,
-  weekStartForLocale,
   zoneDisplayName,
 } from "../calendarModel"
 
@@ -24,45 +19,19 @@ const at = (h: number, m = 0) => new Date(2026, 6, 24, h, m, 0, 0)
 const clock = (h: number, m = 0) => new Date(2000, 0, 1, h, m, 0, 0)
 
 describe("wall-clock helpers", () => {
-  it("round-trips a form day and clock through a wall clock", () => {
-    const wall = formWallClock(DAY, clock(13, 45))
-    expect(wall).toEqual({ year: 2026, month: 7, day: 24, hours: 13, minutes: 45 })
+  it("maps a wall clock onto the device-local form date", () => {
+    const wall = { year: 2026, month: 7, day: 24, hours: 13, minutes: 45 }
     expect(wallClockToFormDate(wall).getTime()).toBe(at(13, 45).getTime())
   })
 
   it("drops seconds from the typed clock", () => {
-    expect(formWallClock(DAY, new Date(2000, 0, 1, 9, 5, 59, 999))).toMatchObject({ hours: 9, minutes: 5 })
-  })
-
-  it("says an ordinary clock exists on an ordinary day", () => {
-    expect(wallClockExistsOn(DAY, 2, 30)).toBe(true)
-    expect(wallClockExistsOn(DAY, 23, 30)).toBe(true)
+    expect(formInstantMs(DAY, new Date(2000, 0, 1, 9, 5, 59, 999), "UTC")).toBe(Date.UTC(2026, 6, 24, 9, 5))
   })
 })
 
-describe("isTimeSlotSelectable", () => {
-  it("allows every slot before a day is chosen", () => {
-    expect(isTimeSlotSelectable(null, 0, 0, at(12))).toBe(true)
-  })
-
-  it("keeps a slot selectable for the one-minute grace after it passes", () => {
-    const now = at(12)
-    expect(isTimeSlotSelectable(DAY, 12, 0, now)).toBe(true)
-    expect(isTimeSlotSelectable(DAY, 11, 30, now)).toBe(false)
-    expect(isTimeSlotSelectable(DAY, 12, 0, new Date(now.getTime() + PAST_SCHEDULE_GRACE_MS - 1))).toBe(true)
-    expect(isTimeSlotSelectable(DAY, 12, 0, new Date(now.getTime() + PAST_SCHEDULE_GRACE_MS))).toBe(false)
-  })
-})
-
-describe("isScheduleInFuture grace", () => {
+describe("isScheduleInFutureInZone grace", () => {
   it("accepts a start up to one minute in the past and refuses one at the grace edge", () => {
     expect(PAST_SCHEDULE_GRACE_MS).toBe(60_000)
-    const start = at(10)
-    expect(isScheduleInFuture(DAY, clock(10), new Date(start.getTime() + 59_999))).toBe(true)
-    expect(isScheduleInFuture(DAY, clock(10), new Date(start.getTime() + 60_000))).toBe(false)
-  })
-
-  it("applies the same grace in an explicit zone", () => {
     const startUtc = Date.parse("2026-07-24T10:00:00.000Z")
     expect(isScheduleInFutureInZone(DAY, clock(10), "UTC", startUtc + 59_999)).toBe(true)
     expect(isScheduleInFutureInZone(DAY, clock(10), "UTC", startUtc + 60_000)).toBe(false)
@@ -110,14 +79,6 @@ describe("end clock arithmetic", () => {
   })
 })
 
-describe("monthGrid edges", () => {
-  it("lays out a leap-year February", () => {
-    const grid = monthGrid(2028, 1)
-    expect(grid.filter((cell) => cell !== null)).toHaveLength(29)
-    expect(grid.length % 7).toBe(0)
-  })
-})
-
 describe("locale clock conventions", () => {
   it("reads 12-hour for US English and Korean, 24-hour for German and Spanish", () => {
     expect(uses24HourClock("en-US")).toBe(false)
@@ -128,10 +89,6 @@ describe("locale clock conventions", () => {
 
   it("falls back to 12-hour for an invalid locale tag", () => {
     expect(uses24HourClock("!!bad")).toBe(false)
-  })
-
-  it("starts the week on Monday for British English", () => {
-    expect(weekStartForLocale("en-GB")).toBe(1)
   })
 })
 

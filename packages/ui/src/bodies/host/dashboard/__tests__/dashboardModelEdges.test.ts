@@ -1,14 +1,12 @@
 import { describe, expect, it } from "vitest"
 import type { HostedEventDTO, OrganizationMemberDTO } from "@civfix/shared"
+import { hasHostCapability } from "../../../../data/hooks/host"
 import {
-  NO_HOSTED_EVENT_ACTIONS,
-  NO_ORG_MEMBER_ACTIONS,
-  ORG_MEMBER_ROLE_ORDER,
+  type HostedEventActions,
   canSetOrgMemberRole,
   collaboratorErrorKey,
   dashboardScope,
   duplicateErrorKey,
-  hostedEventCapabilities,
   hostedEventHasActions,
   hostedEventWhen,
   nextDuplicateStart,
@@ -17,7 +15,6 @@ import {
   orgInviteErrorKey,
   orgInviteIdentifierErrorKey,
   orgMemberActions,
-  orgMemberRank,
   pastRowMeta,
   portfolioKpis,
 } from "../dashboardModel"
@@ -102,18 +99,20 @@ describe("dashboard scope edges", () => {
 
 describe("hosted event capabilities", () => {
   it("derives the legacy organizer's capabilities from the role when the server sends none", () => {
-    const caps = hostedEventCapabilities({ myCapabilities: [], myRole: "organizer" })
-    expect(caps.has("manage_event")).toBe(true)
+    expect(hasHostCapability(hosted({ myCapabilities: [], myRole: "organizer" }), "manage_event")).toBe(true)
   })
 
   it("grants nothing to a row with no capabilities and no role", () => {
-    expect(hostedEventCapabilities({ myCapabilities: [] }).size).toBe(0)
+    const row = hosted({ myCapabilities: [], myRole: null })
+    expect(hasHostCapability(row, "manage_event")).toBe(false)
+    expect(hasHostCapability(row, "view_roster")).toBe(false)
   })
 
   it("has no actions only when every flag is off", () => {
-    expect(hostedEventHasActions(NO_HOSTED_EVENT_ACTIONS)).toBe(false)
-    for (const key of Object.keys(NO_HOSTED_EVENT_ACTIONS) as (keyof typeof NO_HOSTED_EVENT_ACTIONS)[]) {
-      expect(hostedEventHasActions({ ...NO_HOSTED_EVENT_ACTIONS, [key]: true }), key).toBe(true)
+    const none: HostedEventActions = { hostTools: false, chat: false, announce: false, duplicate: false, edit: false }
+    expect(hostedEventHasActions(none)).toBe(false)
+    for (const key of Object.keys(none) as (keyof HostedEventActions)[]) {
+      expect(hostedEventHasActions({ ...none, [key]: true }), key).toBe(true)
     }
   })
 
@@ -175,12 +174,8 @@ describe("portfolio and past-row edges", () => {
 
 describe("org member edges", () => {
   it("ranks owners, admins and members, and an unknown role last", () => {
-    expect(ORG_MEMBER_ROLE_ORDER).toEqual(["owner", "admin", "member"])
-    expect(orgMemberRank("owner")).toBe(0)
-    expect(orgMemberRank("future" as never)).toBe(3)
-    expect(orderedOrgMembers([member("z", "future" as never), member("a", "member")]).map((m) => m.person.id)).toEqual(
-      ["a", "z"],
-    )
+    const rows = [member("z", "future" as never), member("m", "member"), member("a", "admin"), member("o", "owner")]
+    expect(orderedOrgMembers(rows).map((m) => m.person.id)).toEqual(["o", "a", "m", "z"])
   })
 
   it("reserves the role change for the owner alone", () => {
@@ -194,7 +189,7 @@ describe("org member edges", () => {
     const deleted = member("d", "member", { person: { id: "d", name: "d", handle: null, deleted: true } } as never)
     expect(
       orgMemberActions({ member: deleted, viewerId: null, canManage: true, canSetRole: true, lastAdmin: false }),
-    ).toBe(NO_ORG_MEMBER_ACTIONS)
+    ).toEqual({ roles: [], canRemove: false })
   })
 
   it("offers a promotion to admin for a member when the viewer is unknown", () => {

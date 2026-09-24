@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
-import type { MyEventTicketDTO } from "@civfix/shared"
 import { pinDeviceTimeZone } from "../../__tests__/deviceTimeZone"
-import { formatTicketCode, ticketSeatCount, ticketWhen, ticketWhere } from "../ticketModel"
+import { ticketAddressView, ticketWhen } from "../ticketModel"
 
 describe("ticketWhen", () => {
   it("prints the day and the zoned clock in the ticket's own zone", () => {
@@ -42,32 +41,11 @@ describe("ticketWhen with the device in Los Angeles", () => {
   })
 })
 
-describe("ticketWhere", () => {
-  it("trims the address and treats blank or missing as none", () => {
-    expect(ticketWhere({ address: "  1 Main St " })).toBe("1 Main St")
-    expect(ticketWhere({ address: "   " })).toBeNull()
-    expect(ticketWhere({ address: null })).toBeNull()
-    expect(ticketWhere({})).toBeNull()
-  })
-})
-
-describe("ticketSeatCount", () => {
-  it("counts the seats on the ticket", () => {
-    const ticket = { seats: [{ id: "a" }, { id: "b" }, { id: "c" }] } as unknown as MyEventTicketDTO
-    expect(ticketSeatCount(ticket)).toBe(3)
-  })
-})
-
-describe("formatTicketCode edges", () => {
-  it("trims before grouping and leaves an exact multiple with no trailing dash", () => {
-    expect(formatTicketCode("  abcdefgh ")).toBe("ABCD-EFGH")
-  })
-
-  it("does not strip existing hyphens, so a printed code re-grouped is not idempotent", () => {
-    expect(formatTicketCode("ABCD-EFGH")).toBe("ABCD--EFG-H")
-  })
-
-  it("prints a short token as a single group", () => {
-    expect(formatTicketCode("ab")).toBe("AB")
+describe("ticketAddressView without an event", () => {
+  it("trims the ticket address and treats blank or missing as none", () => {
+    expect(ticketAddressView({ address: "  1 Main St " }, null).address).toBe("1 Main St")
+    expect(ticketAddressView({ address: "   " }, null).address).toBeNull()
+    expect(ticketAddressView({ address: null }, null).address).toBeNull()
+    expect(ticketAddressView({}, null).address).toBeNull()
   })
 })

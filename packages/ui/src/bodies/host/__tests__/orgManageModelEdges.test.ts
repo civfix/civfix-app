@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { OrganizationMemberDTO } from "@civfix/shared"
 import {
-  SOCIAL_PREFIX,
   counterVisible,
   lastAdminSeat,
   linksDraftFrom,
@@ -34,16 +33,6 @@ describe("org link payloads", () => {
 
   it("trims the website and donation links", () => {
     expect(linksPayload(ID, { ...blankLinks, websiteUrl: "  https://a.org  " }).websiteUrl).toBe("https://a.org")
-  })
-
-  it("names the prefix shown before each platform field", () => {
-    expect(SOCIAL_PREFIX).toEqual({
-      facebook: "facebook.com/",
-      instagram: "instagram.com/",
-      tiktok: "tiktok.com/@",
-      x: "x.com/",
-      whatsapp: "+",
-    })
   })
 })
 
@@ -97,10 +86,6 @@ describe("org gating edges", () => {
 })
 
 describe("org error key edges", () => {
-  it("currently reads every CONFLICT as the last-admin refusal", () => {
-    expect(orgManageErrorKey("CONFLICT")).toBe("manage.error_last_admin")
-  })
-
   it("maps a rate limit on the logo upload to the shared rate-limit line", () => {
     expect(orgLogoErrorKey("RATE_LIMITED")).toBe("manage.error_rate_limited")
     expect(orgLogoErrorKey("VALIDATION")).toBe("manage.logo_error")

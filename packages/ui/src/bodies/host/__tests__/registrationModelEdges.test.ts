@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { RegisterOutcomeSchema, type MyEventRegistrationRef, type TicketTypeDTO } from "@civfix/shared"
-import {
-  defaultTicketTypeId,
-  registerErrorKey,
-  registerOutcomeKey,
-  registrationSurface,
-  selectableTicketTypes,
-} from "../registration/registrationModel"
+import { defaultTicketTypeId, registerOutcomeKey, sortedTicketTypes } from "@civfix/shared/host"
+import { registerErrorKey, registrationSurface } from "../registration/registrationModel"
 
 const type = (over: Partial<TicketTypeDTO> = {}): TicketTypeDTO => ({
   id: "tt1",
@@ -60,8 +55,8 @@ describe("defaultTicketTypeId edges", () => {
 
   it("keeps the input order for equal sort orders and never mutates the input", () => {
     const input = [type({ id: "x" }), type({ id: "y" })]
-    expect(selectableTicketTypes(input).map((t) => t.id)).toEqual(["x", "y"])
-    expect(selectableTicketTypes(input)).not.toBe(input)
+    expect(sortedTicketTypes(input).map((t) => t.id)).toEqual(["x", "y"])
+    expect(sortedTicketTypes(input)).not.toBe(input)
   })
 })
 

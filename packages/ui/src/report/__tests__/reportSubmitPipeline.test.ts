@@ -3,37 +3,47 @@
  * and every hook the submitter reads is replaced by a hand-built dependency, so calling the hook returns the
  * real submit function wired to fakes. The draft store is the real zustand store.
  */
+import type * as TanstackQuery from "@tanstack/react-query"
+import type * as React from "react"
+import type { CreateReportRequest } from "@civfix/shared"
 import { AppError, ErrorCode } from "@civfix/shared"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import type * as Capabilities from "../../capabilities"
 import type { CapturedMedia } from "../../capabilities"
+import type * as Data from "../../data"
+import type * as Posts from "../../data/hooks/posts"
+import type { CreatePostVars } from "../../data/hooks/posts"
+import type * as UploadMedia from "../../data/uploadMedia"
+import type { UploadMediaInput } from "../../data/uploadMedia"
+import type * as I18n from "../../i18n"
 
 const deps = vi.hoisted(() => ({
   api: {
-    createReport: vi.fn(),
+    createReport: vi.fn<(body: CreateReportRequest) => Promise<unknown>>(),
     listUserPosts: vi.fn(),
   },
   camera: { kind: "fake-camera" },
   hostSubmit: null as null | ((submission: unknown) => Promise<unknown>),
   auth: { isAuthenticated: true, user: null as unknown, isPending: false },
   profile: null as unknown,
-  createPost: vi.fn(),
-  uploadMediaId: vi.fn(),
-  invalidateQueries: vi.fn(),
+  createPost: vi.fn<(vars: CreatePostVars) => Promise<unknown>>(),
+  uploadMediaId: vi.fn<(input: UploadMediaInput) => Promise<string>>(),
+  invalidateQueries: vi.fn<(filters: { queryKey: readonly unknown[] }) => Promise<void>>(),
   rememberLocalReportThumb: vi.fn(),
 }))
 
 vi.mock("react", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("react")>()),
+  ...(await importOriginal<typeof React>()),
   useCallback: <T>(fn: T): T => fn,
 }))
 
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@tanstack/react-query")>()),
+  ...(await importOriginal<typeof TanstackQuery>()),
   useQueryClient: () => ({ invalidateQueries: deps.invalidateQueries }),
 }))
 
 vi.mock("../../data", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../data")>()),
+  ...(await importOriginal<typeof Data>()),
   useApi: () => deps.api,
   useAuthState: () => deps.auth,
   useMyProfile: () => ({ data: deps.profile ? { profile: deps.profile } : undefined }),
@@ -41,22 +51,22 @@ vi.mock("../../data", async (importOriginal) => ({
 }))
 
 vi.mock("../../data/uploadMedia", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../data/uploadMedia")>()),
+  ...(await importOriginal<typeof UploadMedia>()),
   uploadMediaId: deps.uploadMediaId,
 }))
 
 vi.mock("../../data/hooks/posts", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../data/hooks/posts")>()),
+  ...(await importOriginal<typeof Posts>()),
   useCreatePost: () => ({ mutateAsync: deps.createPost }),
 }))
 
 vi.mock("../../capabilities", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../capabilities")>()),
+  ...(await importOriginal<typeof Capabilities>()),
   useCamera: () => deps.camera,
 }))
 
 vi.mock("../../i18n", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../i18n")>()),
+  ...(await importOriginal<typeof I18n>()),
   useT: () => ({ t: (key: string) => key }),
 }))
 
@@ -171,8 +181,8 @@ describe("useReportSubmit request composition (api branch)", () => {
     s.setCategory("hazard", "")
     await useReportSubmit()()
     const body = deps.api.createReport.mock.calls[0]?.[0]
-    expect(body.type).toBe("other")
-    expect(body.geomSource).toBe("device")
+    expect(body?.type).toBe("other")
+    expect(body?.geomSource).toBe("device")
     expect(body).not.toHaveProperty("title")
   })
 
@@ -233,13 +243,13 @@ describe("useReportSubmit request composition (api branch)", () => {
     expect(deps.api.createReport.mock.calls[0]?.[0].description).toBe("Reported as a safety hazard.")
   })
 
-  it("currently appends the flag notes past the 2000-character description limit", async () => {
+  it("appends the flag notes without truncating, leaving the length cap to the description input", async () => {
     seedReadyDraft()
     const s = useDraftReportStore.getState()
     s.setDescription("x".repeat(2000))
     s.setFlag("blockingSidewalk", true)
     await useReportSubmit()()
-    const description: string = deps.api.createReport.mock.calls[0]?.[0].description
+    const description = deps.api.createReport.mock.calls[0]?.[0].description ?? ""
     expect(description).toBe(`${"x".repeat(2000)}\n\nBlocking the sidewalk or road.`)
     expect(description.length).toBeGreaterThan(2000)
   })
@@ -308,10 +318,10 @@ describe("useReportSubmit uploads and retries", () => {
     useDraftReportStore.getState().addCapture(cap("file:///c.jpg", { width: 10, height: 20 }))
     await useReportSubmit()()
     const [first, second] = deps.uploadMediaId.mock.calls.map(([arg]) => arg)
-    expect(first.api).toBe(deps.api)
-    expect(first.camera).toBe(deps.camera)
-    expect(first.media).toEqual({ uri: "file:///a.jpg", kind: "image", mime: "image/jpeg" })
-    expect(second.media).toEqual({
+    expect(first?.api).toBe(deps.api)
+    expect(first?.camera).toBe(deps.camera)
+    expect(first?.media).toEqual({ uri: "file:///a.jpg", kind: "image", mime: "image/jpeg" })
+    expect(second?.media).toEqual({
       uri: "file:///c.jpg",
       kind: "image",
       mime: "image/jpeg",
@@ -365,9 +375,9 @@ describe("useReportSubmit uploads and retries", () => {
     await submit()
     expect(deps.uploadMediaId).toHaveBeenCalledTimes(1)
     const [firstBody, secondBody] = deps.api.createReport.mock.calls.map(([body]) => body)
-    expect(secondBody.idempotencyKey).toBe(firstBody.idempotencyKey)
-    expect(secondBody.mediaUploadIds).toEqual(["up-1"])
-    expect(firstBody.mediaUploadIds).toEqual(["up-1"])
+    expect(secondBody?.idempotencyKey).toBe(firstBody?.idempotencyKey)
+    expect(secondBody?.mediaUploadIds).toEqual(["up-1"])
+    expect(firstBody?.mediaUploadIds).toEqual(["up-1"])
   })
 
   it("mints an idempotency key for a draft that has none and keeps it on the draft", async () => {
@@ -384,12 +394,11 @@ describe("useReportSubmit uploads and retries", () => {
 })
 
 describe("useReportSubmit cache invalidation", () => {
-  it("invalidates the legacy map key, the map-reports prefix and my-reports after a submit", async () => {
+  it("invalidates the map-reports prefix and my-reports after a submit", async () => {
     seedReadyDraft()
     await useReportSubmit()()
     expect(deps.invalidateQueries.mock.calls.map(([arg]) => arg)).toEqual([
-      { queryKey: ["mapReports"] },
-      { queryKey: ["map", "reports"] },
+      { queryKey: queryKeys.mapReportsRoot },
       { queryKey: queryKeys.myReportsRoot },
     ])
   })
@@ -421,15 +430,15 @@ describe("useReportSubmit feed share", () => {
     const out = await useReportSubmit()()
     expect(out.feedShare).toEqual({ status: "posted", postId: "post-1" })
     expect(useDraftReportStore.getState().draft.feedPostId).toBe("post-1")
-    const [{ input, optimistic }] = deps.createPost.mock.calls[0] ?? []
-    expect(input).toEqual({
+    const vars = deps.createPost.mock.calls[0]?.[0]
+    expect(vars?.input).toEqual({
       kind: "post",
       body: "Look at this",
       reportId: "r-1",
       mediaUploadIds: [],
       mentionedUserIds: [],
     })
-    expect(optimistic.author.id).toBe("me-1")
+    expect(vars?.optimistic.author.id).toBe("me-1")
     expect(deps.rememberLocalReportThumb).toHaveBeenCalledWith("r-1", "file:///a.jpg")
   })
 

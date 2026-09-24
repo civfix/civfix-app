@@ -18,7 +18,7 @@ describe("eventDistanceLabel precision boundary", () => {
     expect(eventDistanceLabel(1609.344 * 2.25)).toBe("2.3 mi")
   })
 
-  it("prints an infinite distance verbatim rather than nothing", () => {
-    expect(eventDistanceLabel(Number.POSITIVE_INFINITY)).toBe("Infinity mi")
+  it("prints an infinite distance as the locale's infinity sign rather than nothing", () => {
+    expect(eventDistanceLabel(Number.POSITIVE_INFINITY)).toBe("∞ mi")
   })
 })

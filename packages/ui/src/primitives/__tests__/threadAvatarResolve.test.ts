@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { avatarColor, monogram } from "@civfix/shared"
+import { avatarColor } from "@civfix/shared"
 import { resolveThreadAvatar, type ThreadAvatarInput } from "../threadAvatarResolve"
 
 const PEER = { id: "peer-1", name: "maria lopez", avatarUrl: null, avatar: null as never }
@@ -26,23 +26,13 @@ describe("resolveThreadAvatar seed fallback", () => {
   })
 })
 
-describe("resolveThreadAvatar name and letter", () => {
-  it("names a DM after the peer and uppercases the monogram", () => {
-    const r = resolveThreadAvatar(input({ peer: PEER }))
-    expect(r.name).toBe("maria lopez")
-    expect(r.letter).toBe("M")
+describe("resolveThreadAvatar name", () => {
+  it("names a DM after the peer", () => {
+    expect(resolveThreadAvatar(input({ peer: PEER })).name).toBe("maria lopez")
   })
 
   it("names a group after the thread title, ignoring an attached peer", () => {
-    const r = resolveThreadAvatar(input({ kind: "cleanup", title: "beach crew", peer: PEER }))
-    expect(r.name).toBe("beach crew")
-    expect(r.letter).toBe(monogram("beach crew"))
-  })
-
-  it("derives the letter with the shared monogram helper", () => {
-    for (const title of ["@sam", "  zed", "", "Élodie"]) {
-      expect(resolveThreadAvatar(input({ title })).letter).toBe(monogram(title))
-    }
+    expect(resolveThreadAvatar(input({ kind: "cleanup", title: "beach crew", peer: PEER })).name).toBe("beach crew")
   })
 })
 

@@ -9,7 +9,6 @@ import {
   slotRowState,
   slotViewerState,
   slotWindow,
-  sortSlots,
 } from "../eventSlotsModel"
 
 function slot(over: Partial<EventSlotDTO> = {}): EventSlotDTO {
@@ -102,8 +101,8 @@ describe("slot windows and ordering edges", () => {
     expect(currentShifts([shift], new Date("2026-09-01T10:00:00.000Z"))).toHaveLength(0)
   })
 
-  it("orders equal sortOrder by a locale-aware title compare", () => {
+  it("orders untimed slots of equal sortOrder by a locale-aware title compare", () => {
     const rows = [slot({ id: "b", title: "b" }), slot({ id: "B", title: "B" }), slot({ id: "a", title: "a" })]
-    expect(sortSlots(rows).map((s) => s.title)).toEqual(["a", "b", "B"])
+    expect(slotDisplayOrder(rows).map((s) => s.title)).toEqual(["a", "b", "B"])
   })
 })

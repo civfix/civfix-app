@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { MAX_GUEST_NAME } from "@civfix/shared"
+import { EMAIL_MAX_LENGTH, MAX_GUEST_NAME } from "@civfix/shared"
 import {
-  GUEST_EMAIL_MAX,
   GUEST_RSVP_CODE_LENGTH,
   canSubmitGuestForm,
   emptyGuestRsvpForm,
@@ -15,7 +14,7 @@ import {
   guestResendReadyAt,
   guestResendSecondsLeft,
   guestSmsUnavailable,
-} from "../guestRsvpModel"
+} from "../registration/guestRsvpModel"
 
 describe("guest RSVP form defaults", () => {
   it("starts blank on the email channel unless told otherwise", () => {
@@ -63,7 +62,7 @@ describe("guest name and email boundaries", () => {
   })
 
   it("accepts an email exactly at the maximum length and rejects one past it", () => {
-    const local = "a".repeat(GUEST_EMAIL_MAX - "@b.co".length)
+    const local = "a".repeat(EMAIL_MAX_LENGTH - "@b.co".length)
     expect(guestEmailValue(`${local}@b.co`)).toBe(`${local}@b.co`)
     expect(guestEmailValue(`a${local}@b.co`)).toBeNull()
   })
@@ -93,13 +92,13 @@ describe("guest request error key edges", () => {
 })
 
 describe("guest sms refusal edges", () => {
-  it("reads a channel field as a refusal whatever its value or the code", () => {
-    expect(guestSmsUnavailable("sms", undefined, { channel: "" })).toBe(true)
-    expect(guestSmsUnavailable("sms", "VALIDATION", { channel: "sms_disabled", phone: "x" })).toBe(true)
+  it("reads a channel field as a refusal whatever its value", () => {
+    expect(guestSmsUnavailable("sms", { channel: "" })).toBe(true)
+    expect(guestSmsUnavailable("sms", { channel: "sms_disabled", phone: "x" })).toBe(true)
   })
 
   it("does not read an sms refusal without fields", () => {
-    expect(guestSmsUnavailable("sms", "CONFLICT", undefined)).toBe(false)
+    expect(guestSmsUnavailable("sms", undefined)).toBe(false)
   })
 })
 

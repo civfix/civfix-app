@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { REPORT_TYPE_TO_CATEGORY, REPORT_TYPE_VALUES } from "@civfix/shared"
-import { REPORT_TYPES, reportTypeById } from "../reportTypes"
+import { REPORT_TYPES } from "../reportTypes"
 
 describe("REPORT_TYPES", () => {
   it("lists the rows in the wizard's display order", () => {
@@ -34,38 +34,8 @@ describe("REPORT_TYPES", () => {
     })
   })
 
-  it("pins the English label and sub line that double as the draft's default title", () => {
-    expect(REPORT_TYPES.map((row) => [row.label, row.sub])).toEqual([
-      ["Dump", "Illegal dumping, bulky items"],
-      ["Encampment", "Unhoused encampment"],
-      ["Graffiti", "Tags, vandalism"],
-      ["Broken infrastructure", "Traffic light, streetlamp, flooding"],
-      ["Pavement distress", "Pothole, bad sidewalk"],
-      ["Overgrown vegetation", "Brush, weeds, blocked path"],
-      ["Other", "Something else"],
-    ])
-  })
-
   it("marks only the Other row with the neutral glyph", () => {
     expect(REPORT_TYPES.filter((row) => row.glyph).map((row) => row.id)).toEqual(["other"])
     expect(REPORT_TYPES.find((row) => row.id === "dump")).not.toHaveProperty("glyph")
-  })
-})
-
-describe("reportTypeById", () => {
-  it("returns the row for a known id", () => {
-    expect(reportTypeById("pavement")).toMatchObject({ id: "pavement", category: "hazard" })
-  })
-
-  it("returns the same object the list holds", () => {
-    expect(reportTypeById("graffiti")).toBe(REPORT_TYPES.find((row) => row.id === "graffiti"))
-  })
-
-  it("returns undefined for null, undefined, an unknown id or a different case", () => {
-    expect(reportTypeById(null)).toBeUndefined()
-    expect(reportTypeById(undefined)).toBeUndefined()
-    expect(reportTypeById("pothole")).toBeUndefined()
-    expect(reportTypeById("Dump")).toBeUndefined()
-    expect(reportTypeById("")).toBeUndefined()
   })
 })

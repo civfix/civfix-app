@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 import type { EventTeamInviteDTO, EventTeamMemberDTO } from "@civfix/shared"
 import { pinDeviceTimeZone } from "../../__tests__/deviceTimeZone"
 import {
-  NO_TEAM_MEMBER_ACTIONS,
   inviteDisplayName,
   inviteErrorKey,
   inviteIdentifierValue,
@@ -55,10 +54,10 @@ describe("teamMemberActions edges", () => {
     })
   })
 
-  it("returns the shared empty constant when nothing is allowed", () => {
-    expect(teamMemberActions({ member: member("o", "organizer"), viewerId: null, canManageTeam: true })).toBe(
-      NO_TEAM_MEMBER_ACTIONS,
-    )
+  it("returns one shared empty value when nothing is allowed", () => {
+    const organizer = teamMemberActions({ member: member("o", "organizer"), viewerId: null, canManageTeam: true })
+    expect(organizer).toEqual({ roles: [], canRemove: false })
+    expect(teamMemberActions({ member: member("m", "member"), viewerId: null, canManageTeam: false })).toBe(organizer)
   })
 
   it("has actions when only removal is allowed, and none when neither is", () => {

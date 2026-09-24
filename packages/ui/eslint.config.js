@@ -47,7 +47,7 @@ const TYPED_RULES = {
 
 export default tseslint.config(
   {
-    ignores: ["dist-types/**", "node_modules/**", "*.config.js", "*.config.ts", "scripts/**"],
+    ignores: ["dist-types/**", "node_modules/**", "*.config.js", "*.config.ts", "vitest.dom.setup.ts", "scripts/**"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,

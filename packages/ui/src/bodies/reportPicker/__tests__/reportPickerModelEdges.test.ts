@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
 import type { BBox, LinkedReportRef, ReportPinDTO } from "@civfix/shared"
 import type { LinkedReportCardEntry } from "../../linkedReportCards"
+import { toggleLinkedReportId } from "../../linkReportsModel"
 import {
   PICKER_MAX_FETCH_SPAN_DEG,
   QUERY_RANK,
-  bboxSpan,
   optimisticLinkedRefs,
   pickerFetchRegion,
   pickerListItems,
@@ -19,7 +19,6 @@ import {
   rowIndexOf,
   rowOrdinalOf,
   selectionDiff,
-  togglePickerId,
 } from "../reportPickerModel"
 
 const LA = { lat: 34.0522, lng: -118.2437 }
@@ -27,13 +26,6 @@ const LA = { lat: 34.0522, lng: -118.2437 }
 function pin(id: string, over: Partial<ReportPinDTO> = {}): ReportPinDTO {
   return { id, category: "trash", status: "published", lat: LA.lat, lng: LA.lng, ...over }
 }
-
-describe("bboxSpan", () => {
-  it("is the larger of the two sides", () => {
-    expect(bboxSpan({ west: 0, east: 0.2, south: 0, north: 0.1 })).toBeCloseTo(0.2)
-    expect(bboxSpan({ west: 0, east: 0.1, south: 0, north: 0.3 })).toBeCloseTo(0.3)
-  })
-})
 
 describe("pickerFetchRegion edges", () => {
   it("accepts a viewport exactly at the span cap and refuses one just past it", () => {
@@ -201,8 +193,8 @@ describe("selection edges", () => {
 
   it("honours a custom cap and never mutates the input", () => {
     const ids = ["a", "b"]
-    expect(togglePickerId(ids, "c", 2)).toEqual({ ids: ["a", "b"], outcome: "at_limit" })
-    expect(togglePickerId(ids, "a", 2)).toEqual({ ids: ["b"], outcome: "removed" })
+    expect(toggleLinkedReportId(ids, "c", 2)).toEqual({ ids: ["a", "b"], outcome: "at_limit" })
+    expect(toggleLinkedReportId(ids, "a", 2)).toEqual({ ids: ["b"], outcome: "removed" })
     expect(ids).toEqual(["a", "b"])
   })
 

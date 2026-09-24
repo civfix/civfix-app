@@ -1,13 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { EventQuestionDTO } from "@civfix/shared"
-import {
-  answerPayload,
-  missingRequired,
-  questionVisible,
-  seedAnswers,
-  toggleMultiSelect,
-  visibleQuestions,
-} from "../registration/questionModel"
+import { answerPayload, missingRequired, questionVisible, visibleQuestions } from "@civfix/shared/host"
+import { seedAnswers, toggleMultiSelect } from "../registration/questionModel"
 
 const q = (over: Partial<EventQuestionDTO> & { id: string }): EventQuestionDTO => ({
   cleanupId: "e1",
@@ -65,10 +59,6 @@ describe("questionVisible type mismatches", () => {
 describe("answers edges", () => {
   it("treats an unchecked required consent as missing", () => {
     expect(missingRequired([q({ id: "c", kind: "consent", required: true })], { c: false })).toEqual(["c"])
-  })
-
-  it("sends a blank REQUIRED answer so the server can refuse it", () => {
-    expect(answerPayload([q({ id: "a", required: true })], { a: "  " })).toEqual([{ questionId: "a", value: "  " }])
   })
 
   it("sends no entry for a question with no answer at all", () => {

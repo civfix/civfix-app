@@ -34,7 +34,7 @@ const RNView = standIn("View")
 
 const HARNESS_MODULES: Record<string, unknown> = {
   react: realRequire("react"),
-  "react/jsx-runtime": realRequire("react/jsx-runtime"),
+  "react/jsx-runtime": realRequire("react/jsx-runtime") as unknown,
   "react-native": {
     View: RNView,
     StyleSheet: { create: <T,>(styles: T): T => styles, hairlineWidth: 1 },

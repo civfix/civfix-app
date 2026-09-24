@@ -59,21 +59,21 @@ describe("buildLinkedEventCardModel locale and zone", () => {
 describe("buildLinkedEventCardModel device-zone fallbacks, with the device in Los Angeles", () => {
   pinDeviceTimeZone("America/Los_Angeles")
 
-  it("currently drops the locale as well as the zone when the event zone is not a valid IANA name", () => {
+  it("keeps the locale and falls back to the device zone when the event zone is not a valid IANA name", () => {
     const model = buildLinkedEventCardModel(event, t, "fr-FR", "Mars/Olympus")
-    expect(model).toMatchObject({ month: "JUL", day: "25", scheduleLabel: "Sat 5:00 AM" })
+    expect(model).toMatchObject({ month: "JUIL.", day: "25", scheduleLabel: "sam. 05:00" })
   })
 
-  it("currently omits the zone name when the event zone is invalid, whatever the viewer zone", () => {
+  it("omits the zone name when the event zone is invalid, whatever the viewer zone", () => {
     const model = buildLinkedEventCardModel(event, t, "en-US", "Mars/Olympus", {
       viewerTimeZone: "America/New_York",
     })
     expect(model.scheduleLabel).toBe("Sat 5:00 AM")
   })
 
-  it("currently drops the event zone as well as the locale for an invalid locale tag", () => {
+  it("keeps the event zone and falls back to US English for an invalid locale tag", () => {
     const model = buildLinkedEventCardModel(event, t, "not a locale!!", "America/New_York")
-    expect(model).toMatchObject({ month: "JUL", day: "25", scheduleLabel: "Sat 5:00 AM" })
+    expect(model).toMatchObject({ month: "JUL", day: "25", scheduleLabel: "Sat 8:00 AM" })
   })
 })
 
