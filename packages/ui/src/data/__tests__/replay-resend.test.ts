@@ -30,8 +30,8 @@ describe("markResending", () => {
 })
 
 describe("useChat reconnect replay", () => {
-  const chat = readFileSync(new URL("../hooks/chat.ts", import.meta.url), "utf8")
-  const reconnect = sliceBetween(chat, "const replay = replayableEntries(", "for (const entry of replay)")
+  const outbox = readFileSync(new URL("../hooks/chatOutbox.ts", import.meta.url), "utf8")
+  const reconnect = sliceBetween(outbox, "const replay = replayableEntries(", "for (const entry of replay)")
 
   it("captures the ids to flip before dispatch clears offlineFailedRef", () => {
     expect(reconnect).toContain("markResending(prev, resend)")
