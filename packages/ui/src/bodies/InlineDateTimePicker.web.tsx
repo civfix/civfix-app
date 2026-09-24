@@ -8,6 +8,7 @@ import {
   type InlineDateTimePickerProps,
   type TimeFieldRowProps,
 } from "./InlineDateTimePicker.types"
+import { timeCarrier } from "./calendarModel"
 
 function pad(value: number): string {
   return String(value).padStart(2, "0")
@@ -152,9 +153,7 @@ export function TimeFieldRow({
           onChange={(event) => {
             const parsed = parseTimeInput(event.target.value)
             if (parsed === null) return
-            const next = new Date(day ?? value ?? new Date())
-            next.setHours(parsed.hours, parsed.minutes, 0, 0)
-            onChange(next)
+            onChange(timeCarrier(day ?? value ?? new Date(), parsed.hours, parsed.minutes))
           }}
         />
       }

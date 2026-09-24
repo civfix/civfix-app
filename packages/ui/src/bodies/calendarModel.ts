@@ -98,6 +98,28 @@ export function timeSlots(locale: string): TimeSlot[] {
 
 export const PAST_SCHEDULE_GRACE_MS = 60_000
 
+function clockAnchorDay(day: Date): Date {
+  const start = new Date(day)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(day)
+  end.setHours(23, 59, 0, 0)
+  if (start.getTimezoneOffset() === end.getTimezoneOffset()) return start
+  start.setDate(start.getDate() - 1)
+  return start
+}
+
+/**
+ * The form's time field: a device-local Date whose hours and minutes are the event-zone clock; the day
+ * comes from the date field. A Date on the DEVICE's own DST-change day cannot hold a clock in its
+ * spring-forward gap (setHours moves 02:30 to 03:30, and that clock would be saved), so on such a day
+ * the carrier sits on the day before, which never changes offset too.
+ */
+export function timeCarrier(day: Date, hours: number, minutes: number): Date {
+  const carrier = clockAnchorDay(day)
+  carrier.setHours(hours, minutes, 0, 0)
+  return carrier
+}
+
 export function mergeDateTime(date: Date, time: Date): Date {
   const merged = new Date(date)
   merged.setHours(time.getHours(), time.getMinutes(), 0, 0)
@@ -241,6 +263,14 @@ export function wallClockToFormDate(wallClock: WallClock): Date {
   )
 }
 
+export function wallClockToFormTime(wallClock: WallClock): Date {
+  return timeCarrier(
+    new Date(wallClock.year, wallClock.month - 1, wallClock.day, 12),
+    wallClock.hours,
+    wallClock.minutes,
+  )
+}
+
 export function addWallClockDays(wallClock: WallClock, days: number): WallClock {
   const anchor = new Date(Date.UTC(wallClock.year, wallClock.month - 1, wallClock.day, 12))
   const moved = new Date(anchor.getTime() + days * DAY_MS)
@@ -284,7 +314,7 @@ export function todayInZone(timeZone: string, now: number = Date.now()): Date {
 }
 
 export function nowClockInZone(timeZone: string, now: number = Date.now()): Date {
-  return wallClockToFormDate(wallClockInZone(now, timeZone))
+  return wallClockToFormTime(wallClockInZone(now, timeZone))
 }
 
 export function eventWindowInZone(
