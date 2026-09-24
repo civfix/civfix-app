@@ -17,7 +17,8 @@ import { Avatar } from "../../primitives"
 import { joinParts } from "../../primitives/joinParts"
 import { useT } from "../../i18n"
 import { SlotGroupHeader } from "../SlotGroupHeader"
-import { groupRosterBySlot, rosterListKey, type RosterListItem } from "../rosterSlotGroups"
+import { rosterListKey } from "../rosterSlotGroups"
+import { rosterCheckinItems, type RosterCheckinItem } from "./rosterListModel"
 
 const CHECK_IN_MIN_HEIGHT = 32
 
@@ -113,9 +114,15 @@ export const RosterCheckinRow = React.memo(function RosterCheckinRow({
   )
 })
 
-export interface RosterCheckinListProps {
-  rows: readonly EventRegistrationDTO[]
-  slots: readonly EventSlotDTO[]
+export function useRosterListItems(
+  rows: readonly EventRegistrationDTO[],
+  slots: readonly EventSlotDTO[],
+): RosterCheckinItem[] {
+  const { t } = useT("event-slots")
+  return useMemo(() => rosterCheckinItems(rows, slots, t("roster.unassigned")), [rows, slots, t])
+}
+
+export interface RosterRowOptions {
   timeZone: string | undefined
   canCheckIn: boolean
   pending: boolean
@@ -123,54 +130,51 @@ export interface RosterCheckinListProps {
   onUndo: (seatId: string) => void
 }
 
-export function RosterCheckinList({
-  rows,
-  slots,
-  timeZone,
-  canCheckIn,
-  pending,
-  onCheckIn,
-  onUndo,
-}: RosterCheckinListProps) {
-  const { t } = useT("event-slots")
-  const items = useMemo<RosterListItem<EventRegistrationDTO>[]>(
-    () =>
-      slots.length > 0
-        ? groupRosterBySlot(rows, slots, { unassignedTitle: t("roster.unassigned") })
-        : rows.map((person) => ({ kind: "member", person }) as const),
-    [rows, slots, t],
-  )
+export function rosterItemRenderer({ timeZone, canCheckIn, pending, onCheckIn, onUndo }: RosterRowOptions) {
+  return function renderRosterItem({ item }: { item: RosterCheckinItem }) {
+    if (item.kind === "slot-header") {
+      return (
+        <SlotGroupHeader
+          key={rosterListKey(item)}
+          title={item.title}
+          claimed={item.claimed}
+          capacity={item.capacity}
+          startsAt={item.startsAt}
+          endsAt={item.endsAt}
+          timeZone={timeZone}
+        />
+      )
+    }
+    if (item.kind === "slot-empty") return null
+    return (
+      <RosterCheckinRow
+        key={rosterListKey(item)}
+        row={item.person}
+        canCheckIn={canCheckIn}
+        pending={pending}
+        onCheckIn={onCheckIn}
+        onUndo={onUndo}
+      />
+    )
+  }
+}
 
-  return (
-    <View>
-      {items.map((item) => {
-        if (item.kind === "slot-header") {
-          return (
-            <SlotGroupHeader
-              key={rosterListKey(item)}
-              title={item.title}
-              claimed={item.claimed}
-              capacity={item.capacity}
-              startsAt={item.startsAt}
-              endsAt={item.endsAt}
-              timeZone={timeZone}
-            />
-          )
-        }
-        if (item.kind === "slot-empty") return null
-        return (
-          <RosterCheckinRow
-            key={rosterListKey(item)}
-            row={item.person}
-            canCheckIn={canCheckIn}
-            pending={pending}
-            onCheckIn={onCheckIn}
-            onUndo={onUndo}
-          />
-        )
-      })}
-    </View>
+export function useRosterItemRenderer({ timeZone, canCheckIn, pending, onCheckIn, onUndo }: RosterRowOptions) {
+  return useMemo(
+    () => rosterItemRenderer({ timeZone, canCheckIn, pending, onCheckIn, onUndo }),
+    [timeZone, canCheckIn, pending, onCheckIn, onUndo],
   )
+}
+
+export interface RosterCheckinListProps extends RosterRowOptions {
+  rows: readonly EventRegistrationDTO[]
+  slots: readonly EventSlotDTO[]
+}
+
+export function RosterCheckinList({ rows, slots, ...rowOptions }: RosterCheckinListProps) {
+  const items = useRosterListItems(rows, slots)
+  const renderItem = useRosterItemRenderer(rowOptions)
+  return <View>{items.map((item) => renderItem({ item }))}</View>
 }
 
 const useStyles = makeThemedStyles((t) => ({

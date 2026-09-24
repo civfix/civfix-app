@@ -163,6 +163,8 @@ interface SearchHits {
 
 const NO_HITS: SearchHits = { events: [], reports: [], people: [] }
 
+const NO_PEOPLE: readonly UserSearchResultDTO[] = []
+
 export function SearchResults({ query: rawQuery }: { query: string }) {
   const styles = useStyles()
   const th = useTheme()
@@ -203,11 +205,12 @@ export function SearchResults({ query: rawQuery }: { query: string }) {
     () => filterEventHits(cleanupsQuery.data ?? [], rawQuery),
     [cleanupsQuery.data, rawQuery],
   )
-  const live: SearchHits = {
-    events: eventHits,
-    reports: reportSearch.items,
-    people: peopleSearch.data?.results ?? [],
-  }
+  const reportHits = reportSearch.items
+  const peopleHits = peopleSearch.data?.results ?? NO_PEOPLE
+  const live = useMemo<SearchHits>(
+    () => ({ events: eventHits, reports: reportHits, people: peopleHits }),
+    [eventHits, reportHits, peopleHits],
+  )
   const liveCount = live.events.length + live.reports.length + live.people.length
   const heldRef = useRef<SearchHits>(NO_HITS)
   const selection = selectSearchHits(live, heldRef.current, liveCount, settled)
@@ -241,10 +244,14 @@ export function SearchResults({ query: rawQuery }: { query: string }) {
   }
 
   const loadMoreReports = reportSearch.fetchNextPage
-  const rows = searchResultRows(hits, {
-    show: showMoreReports,
-    loading: reportSearch.isFetchingNextPage,
-  })
+  const rows = useMemo(
+    () =>
+      searchResultRows(hits, {
+        show: showMoreReports,
+        loading: reportSearch.isFetchingNextPage,
+      }),
+    [hits, showMoreReports, reportSearch.isFetchingNextPage],
+  )
   const viewer = location ?? null
   const renderItem = useCallback(
     ({ item }: { item: ResultRow }) => {

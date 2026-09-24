@@ -15,6 +15,13 @@ describe("search results report paging", () => {
     expect(src).toMatch(/searchResultRows\(hits, \{\s*show: showMoreReports,\s*loading: reportSearch\.isFetchingNextPage,\s*\}\)/)
   })
 
+  it("rebuilds the rows only when the painted hits or the paging flags change, so mounted cells keep their items", () => {
+    expect(src).toContain("const peopleHits = peopleSearch.data?.results ?? NO_PEOPLE")
+    expect(src).toContain("[eventHits, reportHits, peopleHits],")
+    expect(src).toContain("[hits, showMoreReports, reportSearch.isFetchingNextPage],")
+    expect(src).toContain("keyExtractor={rowKey}")
+  })
+
   it("never hands the press event to fetchNextPage and ignores a press while a page is in flight", () => {
     expect(src).not.toContain("onPress={reportSearch.fetchNextPage}")
     expect(src).not.toContain("onPress={onLoadMore}")

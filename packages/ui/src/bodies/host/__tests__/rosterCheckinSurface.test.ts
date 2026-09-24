@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
+import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
 import { ROSTER_FILTERS, visibleRosterFilters } from "../rosterFiltersModel"
+import { requestNextRosterPage, rosterCheckinItems } from "../rosterListModel"
 import { SEARCH_DEBOUNCE_MS } from "../../../data/hooks/useDebouncedValue"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -11,12 +13,17 @@ const list = code(read("../RosterCheckinList.tsx"))
 const block = code(read("../EventRosterBlock.tsx"))
 const checkin = code(read("../HostCheckinBody.tsx"))
 const checkinRoster = code(["../checkin/CheckinRosterSection.tsx", "../checkin/useCheckinRoster.ts"].map(read).join("\n"))
-const checkinRows = code(read("../checkin/CheckinRosterRows.tsx"))
+const listModel = code(read("../rosterListModel.ts"))
 const manualEntry = code(read("../checkin/CheckinManualEntry.tsx"))
 const paged = code(read("../RosterPagedList.tsx"))
 const detail = code(read("../../EventDetailBody.tsx"))
 const registration = code(read("../registration/registrationModel.ts"))
 const slotsBlock = code(read("../../EventSlotsBlock.tsx"))
+
+const slot = (id: string): EventSlotDTO => ({ id, title: `Slot ${id}`, claimed: 0, sortOrder: 0 })
+
+const signup = (id: string, slotId?: string): EventRegistrationDTO =>
+  ({ id, slot: slotId ? { id: slotId, title: `Slot ${slotId}` } : null }) as unknown as EventRegistrationDTO
 
 describe("visibleRosterFilters", () => {
   it("offers every filter on a ticketed event", () => {
@@ -41,11 +48,16 @@ describe("there is ONE check-in row in the package", () => {
     expect(list).toContain("export const RosterCheckinRow")
     expect(paged).toContain("<RosterCheckinList {...list} />")
     expect(block).toContain("<RosterPagedList")
-    expect(checkinRows).toContain('import { RosterCheckinRow } from "../RosterCheckinList"')
-    expect(checkinRows).toContain("<RosterCheckinRow")
+    expect(list.match(/<RosterCheckinRow\b/g) ?? []).toHaveLength(1)
+    expect(checkin).toContain('import { useRosterItemRenderer, useRosterListItems } from "./RosterCheckinList"')
+    expect(checkin).toContain("const renderRosterItem = useRosterItemRenderer({")
     expect(checkin).toContain("renderItem={renderRosterItem}")
     expect(checkin).toContain("<CheckinRosterSection")
-    for (const surface of [block, checkin, checkinRoster, checkinRows, paged]) {
+    for (const surface of [block, checkin, checkinRoster, paged]) {
+      expect(surface).not.toContain("<RosterCheckinRow")
+      expect(surface).not.toContain("<SlotGroupHeader")
+    }
+    for (const surface of [block, checkin, checkinRoster, paged]) {
       expect(surface).not.toContain("<Avatar")
     }
   })
@@ -57,7 +69,7 @@ describe("there is ONE check-in row in the package", () => {
     expect(list).toContain("nextCheckinSeat(row)")
     expect(list).toContain("lastCheckedInSeat(row)")
     expect(list).not.toContain("function nextCheckinSeat")
-    for (const surface of [block, checkin, checkinRoster, checkinRows, paged]) {
+    for (const surface of [block, checkin, checkinRoster, listModel, paged]) {
       expect(surface).not.toContain("function nextCheckinSeat")
     }
   })
@@ -65,35 +77,48 @@ describe("there is ONE check-in row in the package", () => {
 
 describe("both roster surfaces group by slot through the shared model", () => {
   it("reuses groupRosterBySlot rather than bucketing rows again", () => {
-    for (const rows of [list, checkinRows]) {
-      expect(rows).toContain("groupRosterBySlot(rows, slots,")
-      expect(rows).toContain("<SlotGroupHeader")
-    }
-    expect(list).toContain("rosterListKey(item)")
+    expect(listModel).toContain("groupRosterBySlot(rows, slots, { unassignedTitle })")
+    expect(list).toContain('rosterCheckinItems(rows, slots, t("roster.unassigned"))')
+    expect(list.match(/<SlotGroupHeader\b/g) ?? []).toHaveLength(1)
+    expect(list).toContain("const items = useRosterListItems(rows, slots)")
+    expect(list).toContain("items.map((item) => renderItem({ item }))")
+    expect(list.match(/key=\{rosterListKey\(item\)\}/g) ?? []).toHaveLength(2)
     expect(checkin).toContain("keyExtractor={rosterListKey}")
-    for (const surface of [block, checkin, checkinRoster, paged]) {
+    for (const surface of [block, checkin, checkinRoster, paged, list]) {
       expect(surface).not.toContain("groupRosterBySlot")
     }
   })
 
   it("omits the empty-slot title, because a paged and filtered roster cannot call a slot empty", () => {
-    for (const rows of [list, checkinRows]) {
-      expect(rows).not.toContain("emptySlotTitle")
-      expect(rows).toContain('item.kind === "slot-empty"')
-    }
+    for (const src of [list, listModel]) expect(src).not.toContain("emptySlotTitle")
+    expect(list).toContain('if (item.kind === "slot-empty") return null')
+    const items = rosterCheckinItems([signup("r1", "s1")], [slot("s1"), slot("s2")], "No slot")
+    expect(items.map((item) => item.kind)).toEqual(["slot-header", "member"])
   })
 
   it("falls back to a flat list when the event authored no slots at all", () => {
-    expect(list).toContain("slots.length > 0")
-    expect(checkinRows).toContain("slots.length > 0")
+    expect(listModel).toContain("slots.length > 0")
+    const rows = [signup("r1", "s1"), signup("r2")]
+    expect(rosterCheckinItems(rows, [], "No slot")).toEqual([
+      { kind: "member", person: rows[0] },
+      { kind: "member", person: rows[1] },
+    ])
+  })
+
+  it("groups by the event's slots, with the unassigned rows last under the caller's title", () => {
+    const rows = [signup("r1"), signup("r2", "s1")]
+    const items = rosterCheckinItems(rows, [slot("s1")], "No slot")
+    expect(items.map((item) => item.kind)).toEqual(["slot-header", "member", "slot-header", "member"])
+    expect(items[2]).toMatchObject({ kind: "slot-header", slotId: null, title: "No slot" })
+    expect(items[3]).toEqual({ kind: "member", person: rows[0] })
   })
 
   it("feeds it the event's own slots and zone, never the device's", () => {
     expect(block).toContain("cleanup.data?.slots ?? NO_SLOTS")
     expect(block).toContain("cleanup.data?.timezone ?? undefined")
-    expect(checkin).toContain("useCheckinRosterItems(rosterState.waiting, cleanup.data?.slots ?? NO_SLOTS)")
+    expect(checkin).toContain("useRosterListItems(rosterState.waiting, cleanup.data?.slots ?? NO_SLOTS)")
     expect(checkin).toContain("timeZone: cleanup.data?.timezone ?? undefined,")
-    expect(checkinRows).toContain("timeZone={timeZone}")
+    expect(list).toContain("timeZone={timeZone}")
   })
 })
 
@@ -132,12 +157,27 @@ describe("the check-in screen shows who is still waiting", () => {
   })
 
   it("pages the list rather than dropping attendees past the first page", () => {
-    expect(checkin).toContain("<CheckinRosterMore paging={rosterState.roster} />")
-    expect(paged).toContain("hasNextPage ?")
-    for (const pager of [paged, checkinRows]) {
-      expect(pager).toContain("if (!hasNextPage || isFetchingNextPage) return")
-      expect(pager).toContain("void fetchNextPage()")
+    expect(checkin).toContain("<RosterLoadMore paging={rosterState.roster} />")
+    expect(paged).toContain("<RosterLoadMore paging={paging} />")
+    expect(paged).toContain("if (!hasNextPage) return null")
+    expect(paged).toContain("requestNextRosterPage({ fetchNextPage, hasNextPage, isFetchingNextPage })")
+    expect(listModel).toContain("if (!paging.hasNextPage || paging.isFetchingNextPage) return")
+    expect(listModel).toContain("void paging.fetchNextPage()")
+    for (const surface of [block, checkin, checkinRoster, list]) {
+      expect(surface).not.toContain("fetchNextPage")
     }
+  })
+
+  it("fetches the next page only when one exists and none is already in flight", () => {
+    const paging = (hasNextPage: boolean, isFetchingNextPage: boolean) => {
+      const fetchNextPage = vi.fn(() => Promise.resolve())
+      requestNextRosterPage({ hasNextPage, isFetchingNextPage, fetchNextPage })
+      return fetchNextPage
+    }
+    expect(paging(true, false)).toHaveBeenCalledTimes(1)
+    expect(paging(true, true)).not.toHaveBeenCalled()
+    expect(paging(false, false)).not.toHaveBeenCalled()
+    expect(paging(false, true)).not.toHaveBeenCalled()
   })
 
   it("lists the check-in roster as the screen's own virtualized rows, never a mapped list in a ScrollView", () => {
@@ -146,12 +186,12 @@ describe("the check-in screen shows who is still waiting", () => {
     expect(checkin).not.toContain("<RosterPagedList")
     expect(checkin).toContain("data={rosterListed ? rosterItems : NO_ROSTER_ITEMS}")
     expect(checkinRoster).not.toContain("<RosterPagedList")
-    const imports = checkinRows.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
+    const imports = listModel.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
     expect(imports).not.toMatch(/\bFlatList\b|\bScrollView\b/)
   })
 
   it("mounts no scroller of its own inside the screen's ScrollView", () => {
-    for (const src of [list, paged]) {
+    for (const src of [list, paged, listModel]) {
       const imports = src.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
       expect(imports).not.toMatch(/\bFlatList\b/)
       expect(imports).not.toMatch(/\bScrollView\b/)

@@ -15,17 +15,14 @@ import { ManualCodeEntry } from "./checkin/CheckinManualEntry"
 import { HostBodyState } from "./HostBodyState"
 import { CheckinRosterSection } from "./checkin/CheckinRosterSection"
 import { checkinRosterListed } from "./checkin/checkinRosterModel"
-import {
-  CheckinRosterMore,
-  useCheckinRosterItems,
-  useCheckinRosterRenderer,
-  type CheckinRosterItem,
-} from "./checkin/CheckinRosterRows"
+import { useRosterItemRenderer, useRosterListItems } from "./RosterCheckinList"
+import { RosterLoadMore } from "./RosterPagedList"
+import type { RosterCheckinItem } from "./rosterListModel"
 import { useCheckinRoster } from "./checkin/useCheckinRoster"
 import { useCheckinDesk } from "./checkin/useCheckinDesk"
 
 const NO_SLOTS: readonly EventSlotDTO[] = []
-const NO_ROSTER_ITEMS: readonly CheckinRosterItem[] = []
+const NO_ROSTER_ITEMS: readonly RosterCheckinItem[] = []
 
 export function HostCheckinBody({ id }: { id: string }) {
   const styles = useStyles()
@@ -40,9 +37,10 @@ export function HostCheckinBody({ id }: { id: string }) {
   const canCheckIn = hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), "check_in")
   const counters = useHostCounters(id, { enabled: canCheckIn })
   const rosterState = useCheckinRoster(id, canCheckIn, desk.undo)
-  const rosterItems = useCheckinRosterItems(rosterState.waiting, cleanup.data?.slots ?? NO_SLOTS)
-  const renderRosterItem = useCheckinRosterRenderer({
+  const rosterItems = useRosterListItems(rosterState.waiting, cleanup.data?.slots ?? NO_SLOTS)
+  const renderRosterItem = useRosterItemRenderer({
     timeZone: cleanup.data?.timezone ?? undefined,
+    canCheckIn,
     pending: rosterState.pending,
     onCheckIn: rosterState.onRosterCheckIn,
     onUndo: rosterState.onRosterUndo,
@@ -131,7 +129,7 @@ export function HostCheckinBody({ id }: { id: string }) {
           />
         </View>
       }
-      ListFooterComponent={rosterListed ? <CheckinRosterMore paging={rosterState.roster} /> : null}
+      ListFooterComponent={rosterListed ? <RosterLoadMore paging={rosterState.roster} /> : null}
     />
   )
 }
