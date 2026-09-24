@@ -48,8 +48,12 @@ describe("there is ONE check-in row in the package", () => {
   })
 
   it("takes the seat to check in and the seat to undo from the shared pure helpers", () => {
-    expect(list).toContain("export function nextCheckinSeat")
-    expect(list).toContain("export function lastCheckedInSeat")
+    expect(list).toContain(
+      'import { attendeeDisplayName, lastCheckedInSeat, nextCheckinSeat } from "@civfix/shared/host"',
+    )
+    expect(list).toContain("nextCheckinSeat(row)")
+    expect(list).toContain("lastCheckedInSeat(row)")
+    expect(list).not.toContain("function nextCheckinSeat")
     for (const surface of [block, checkin, checkinRoster, paged]) {
       expect(surface).not.toContain("function nextCheckinSeat")
     }

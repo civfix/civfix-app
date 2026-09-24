@@ -4,7 +4,7 @@ import type { TicketTypeDTO } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
-import { ticketTypeSelectable } from "./registrationModel"
+import { ticketTypeSelectable } from "@civfix/shared/host"
 
 export interface TicketTypePickerProps {
   ticketTypes: readonly TicketTypeDTO[]

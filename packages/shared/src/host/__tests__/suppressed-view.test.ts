@@ -1,13 +1,13 @@
-import type { Panel, SeriesPoint } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
-
+import type { Panel, SeriesPoint } from "../../schemas/host/analytics.js"
 import {
   panelIsBlank,
   seriesHasSuppressedPoints,
   seriesIsChartable,
   seriesValuesForChart,
   visibleRows,
-} from "./suppression"
+  visibleValue,
+} from "../suppressed-view.js"
 
 function point(value: number | null, suppressed = value === null): SeriesPoint {
   return { day: "2026-03-01", value, suppressed }
@@ -62,5 +62,19 @@ describe("analytics suppression", () => {
 
   it("keeps a real zero distinguishable from a suppressed point", () => {
     expect(seriesValuesForChart([point(0, false), point(null)])).toEqual([0, null])
+  })
+
+  it("never shows a number the server flagged as suppressed, even when one came with it", () => {
+    expect(visibleValue({ value: 4, suppressed: true })).toBeNull()
+    expect(visibleValue({ value: 4, suppressed: false })).toBe(4)
+    expect(seriesValuesForChart([point(3), point(4, true)])).toEqual([3, null])
+    expect(seriesIsChartable([point(3), point(4, true)])).toBe(false)
+    expect(seriesHasSuppressedPoints([point(3), point(4, true)])).toBe(true)
+    const panel: Panel = {
+      panelSuppressed: false,
+      rows: [{ key: "a", label: "A", value: 4, suppressed: true }],
+    }
+    expect(visibleRows(panel)).toEqual([])
+    expect(panelIsBlank(panel)).toBe(true)
   })
 })

@@ -10,6 +10,15 @@ import {
   type EventCheckinCountersDTO,
   type EventRegistrationDTO,
 } from "@civfix/shared"
+import {
+  attendeeDisplayName,
+  checkableSeatIds,
+  checkinResultRender,
+  formatTicketCode,
+  normalizeTicketCode,
+  ticketCodeReady,
+  type CheckinTone,
+} from "@civfix/shared/host"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -26,7 +35,6 @@ import { Donut, Histogram } from "@/components/console/charts"
 
 import { useConsoleErrors } from "../error-copy"
 import { EMPTY_VALUE, type ConsoleFormatters } from "../format"
-import { attendeeDisplayName, checkableSeatIds } from "../attendees/roster-filters"
 import { checkInSeats } from "../attendees/check-in-seats"
 import type { useConsoleRoster } from "../attendees/use-roster"
 import {
@@ -34,27 +42,13 @@ import {
   invalidateEvent,
   markRosterSeatsCheckedIn,
 } from "../console-invalidate"
-import { formatTicketCode, normalizeTicketCode, ticketCodeReady } from "./ticket-code"
 
 const WALKUP_MIN_PARTY = 1
 
-type ResultTone = "moss" | "sky" | "sun" | "bloom"
-
-const OUTCOME_TONE: Record<CheckinResultDTO["outcome"], ResultTone> = {
-  checked_in: "moss",
-  already: "sky",
-  waitlisted: "sun",
-  cancelled: "bloom",
-  no_show: "bloom",
-  wrong_event: "bloom",
-  unknown_token: "bloom",
-}
-
-const TONE_CLASSES: Record<ResultTone, string> = {
-  moss: "border-console-moss-strong/40 bg-console-moss-soft text-console-moss-strong",
-  sky: "border-console-sky-strong/40 bg-console-sky-soft text-console-sky-strong",
-  sun: "border-console-sun-strong/40 bg-console-sun-soft text-console-sun-strong",
-  bloom: "border-console-bloom-strong/40 bg-console-bloom-soft text-console-bloom-strong",
+const TONE_CLASSES: Record<CheckinTone, string> = {
+  success: "border-console-moss-strong/40 bg-console-moss-soft text-console-moss-strong",
+  warning: "border-console-sun-strong/40 bg-console-sun-soft text-console-sun-strong",
+  error: "border-console-bloom-strong/40 bg-console-bloom-soft text-console-bloom-strong",
 }
 
 const PANEL_CLASS =
@@ -69,14 +63,15 @@ export function ScanResultCard({
   onDismiss: () => void
 }) {
   const { t } = useT("host-checkin")
+  const render = checkinResultRender(result.outcome, result.firstTime)
   return (
     <div
       role="status"
-      className={`flex items-start gap-token-3 rounded-md border p-token-4 ${TONE_CLASSES[OUTCOME_TONE[result.outcome]]}`}
+      className={`flex items-start gap-token-3 rounded-md border p-token-4 ${TONE_CLASSES[render.tone]}`}
     >
       <div className="min-w-0 flex-1">
-        <p className="text-token-15 font-bold">{t(`result.${result.outcome}_title`)}</p>
-        <p className="text-token-13">{t(`result.${result.outcome}_body`)}</p>
+        <p className="text-token-15 font-bold">{t(render.titleKey)}</p>
+        <p className="text-token-13">{t(render.bodyKey)}</p>
         {result.attendeeName ? (
           <p className="mt-token-1 text-token-14 font-semibold">{result.attendeeName}</p>
         ) : null}
@@ -125,9 +120,8 @@ export function ManualCheckinForm({
         className="flex flex-wrap items-end gap-token-3"
         onSubmit={(event) => {
           event.preventDefault()
-          const token = normalizeTicketCode(code)
-          if (!ticketCodeReady(token)) return
-          scan.mutate(token)
+          if (!ticketCodeReady(code)) return
+          scan.mutate(normalizeTicketCode(code))
         }}
       >
         <Field label={t("manual.label")} className="min-w-[260px] flex-1">
@@ -146,7 +140,7 @@ export function ManualCheckinForm({
         </Field>
         <ConsoleButton
           type="submit"
-          disabled={scan.isPending || !ticketCodeReady(normalizeTicketCode(code))}
+          disabled={scan.isPending || !ticketCodeReady(code)}
         >
           {t("manual.submit")}
         </ConsoleButton>

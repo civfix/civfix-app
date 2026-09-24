@@ -27,11 +27,11 @@ import { EMPTY_VALUE, useConsoleFormat } from "../format"
 import { ExportMenu } from "../exports/export-menu"
 import { useConsoleRoster } from "./use-roster"
 import { AttendeeDrawer } from "./attendee-drawer"
+import { attendeeDisplayName } from "@civfix/shared/host"
 import { AttendeeBulkActions } from "./attendee-bulk-actions"
 import { AttendanceChip, attendeeColumns, rosterSortFor, rosterSortState } from "./attendee-columns"
 import {
   ROSTER_FILTERS,
-  attendeeDisplayName,
   isRosterFilter,
   isRosterSort,
   isWaitlistProjection,

@@ -55,18 +55,6 @@ export function ticketAddressView(
   return { address, point, verified: isVerifiedEventAddress(event.addressSource, address) }
 }
 
-const TICKET_CODE_GROUP = 4
-
-export function formatTicketCode(token: string): string {
-  const value = token.trim().toUpperCase()
-  if (value.length === 0) return ""
-  const groups: string[] = []
-  for (let i = 0; i < value.length; i += TICKET_CODE_GROUP) {
-    groups.push(value.slice(i, i + TICKET_CODE_GROUP))
-  }
-  return groups.join("-")
-}
-
 const QR_MAX = 260
 const QR_MIN = 160
 const QR_PAGE_INSET = 96

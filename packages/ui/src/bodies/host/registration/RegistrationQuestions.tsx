@@ -15,7 +15,8 @@ import {
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
 import { modalSheetInputFocusedStyle as fieldFocusedStyle } from "../../../primitives/ModalCardSheet"
-import { type AnswerMap, toggleMultiSelect } from "./questionModel"
+import type { AnswerMap } from "@civfix/shared/host"
+import { toggleMultiSelect } from "./questionModel"
 import { INPUT_MIN_HEIGHT } from "../hostLayout"
 
 export interface RegistrationQuestionsProps {

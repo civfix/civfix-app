@@ -8,6 +8,7 @@ import type {
   SuppressedRate,
 } from "@civfix/shared"
 import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS } from "@civfix/shared"
+import { visibleValue } from "@civfix/shared/host"
 import { hostedEventCan } from "./dashboard/dashboardModel"
 import { DAY_MS } from "../timeUnits"
 import { dedupeById } from "../../primitives/listKeys"
@@ -60,7 +61,7 @@ export function rangeSlice(
 }
 
 export function hasSeriesData(points: readonly SeriesPoint[]): boolean {
-  return points.some((point) => !point.suppressed && (point.value ?? 0) > 0)
+  return points.some((point) => (visibleValue(point) ?? 0) > 0)
 }
 
 const CARD_SLOT_ROWS = 4
@@ -86,24 +87,6 @@ export function weeklyXLabels(
     out.push({ index, text: label(point.day) })
   })
   return out
-}
-
-const WEEK_LABEL_FORMAT: Intl.DateTimeFormatOptions = {
-  day: "numeric",
-  month: "short",
-  // Day keys are plain calendar dates that `new Date(key)` reads as UTC midnight; formatting that
-  // instant in the viewer's zone shows the previous day everywhere west of UTC.
-  timeZone: "UTC",
-}
-
-export function weekDayLabel(locale: string): (day: string) => string {
-  let format: Intl.DateTimeFormat
-  try {
-    format = new Intl.DateTimeFormat(locale, WEEK_LABEL_FORMAT)
-  } catch {
-    format = new Intl.DateTimeFormat(undefined, WEEK_LABEL_FORMAT)
-  }
-  return (day: string) => format.format(new Date(day))
 }
 
 export const ARRIVAL_LABEL_MINUTES = [-60, 0, 60, 120] as const
@@ -214,7 +197,7 @@ export function funnelBars(steps: readonly FunnelStep[]): FunnelBar[] {
   const top = steps.find((step) => step.value !== null && !step.suppressed)?.value ?? 0
   let previous: number | null = null
   return steps.map((step) => {
-    const value = step.suppressed ? null : step.value
+    const value = visibleValue(step)
     const fraction = value === null || top <= 0 ? 0 : Math.min(1, value / top)
     const ofPrevious =
       value === null || previous === null || previous <= 0
@@ -232,7 +215,7 @@ const FUNNEL_CHECKED_IN_STEP = "checked_in"
 
 function funnelCount(steps: readonly FunnelStep[], step: string): number | null {
   const found = steps.find((entry) => entry.step === step)
-  return found === undefined || found.suppressed ? null : found.value
+  return found === undefined ? null : visibleValue(found)
 }
 
 export function wholeEventSignups(data: GetEventAnalyticsResponse): number | null {

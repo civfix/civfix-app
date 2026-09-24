@@ -5,7 +5,8 @@ import { SecondaryButton, fieldFocusedStyle } from "../../../primitives"
 import { MIN_TOUCH_TARGET, makeThemedStyles, useTheme, webInputReset } from "../../../theme"
 import { Text } from "../../../typography"
 import { useT } from "../../../i18n"
-import { MANUAL_CODE_MAX, manualCodeReady } from "../checkinResult"
+import { TICKET_TOKEN_MAX } from "@civfix/shared"
+import { ticketCodeReady } from "@civfix/shared/host"
 
 export interface ManualCodeEntryProps {
   code: string
@@ -34,7 +35,7 @@ export function ManualCodeEntry({
         value={code}
         onChangeText={onChangeCode}
         editable={!busy}
-        maxLength={MANUAL_CODE_MAX}
+        maxLength={TICKET_TOKEN_MAX}
         autoCapitalize="characters"
         autoCorrect={false}
         placeholder={t("manual.placeholder")}
@@ -48,7 +49,7 @@ export function ManualCodeEntry({
       <SecondaryButton
         label={t("manual.submit")}
         onPress={onSubmit}
-        disabled={busy || !manualCodeReady(code)}
+        disabled={busy || !ticketCodeReady(code)}
       />
     </View>
   )

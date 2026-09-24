@@ -9,6 +9,12 @@ import type {
   HostedEventsWhen,
   ListMyHostedEventsResponse,
 } from "@civfix/shared"
+import {
+  seriesHasSuppressedPoints,
+  seriesIsChartable,
+  seriesValuesForChart,
+  weekDayLabel,
+} from "@civfix/shared/host"
 import { useApi, useMyHostedEvents, useMyOrganizations, hostedEventRows } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -25,14 +31,9 @@ import { useConsoleHomeNav } from "../layout/home-nav"
 import { MAX_BOTTOM_TABS } from "../layout/nav-items"
 import { useConsoleNavigation } from "../console-context"
 import { consoleKeys } from "../console-keys"
-import { useConsoleFormat, seriesDayLabel } from "../format"
+import { useConsoleFormat } from "../format"
 import { HOSTED_WHENS, HostedEventRow, isHostedWhen, openEventCreator } from "../hosted-events"
 import { AnalyticsValue, EmptyValue, SuppressionNote } from "../analytics/analytics-value"
-import {
-  seriesHasSuppressedPoints,
-  seriesIsChartable,
-  seriesValuesForChart,
-} from "../analytics/suppression"
 
 const PORTFOLIO_ANALYTICS_RANGE = "90d"
 const TOP_EVENTS_SHOWN = 8
@@ -228,6 +229,7 @@ function PortfolioTrend({ analytics }: { analytics: UseQueryResult<HostedEventsA
   const series = analytics.data?.series ?? []
   const k = analytics.data?.k ?? ANALYTICS_SUPPRESSION_K
   const sparkValues = seriesValuesForChart(series)
+  const dayLabel = weekDayLabel(format.locale)
   const byEvent = analytics.data?.byEvent
   return (
     <section
@@ -258,8 +260,8 @@ function PortfolioTrend({ analytics }: { analytics: UseQueryResult<HostedEventsA
             width={SPARKLINE_WIDTH}
             height={SPARKLINE_HEIGHT}
             label={t("trend.a11y", {
-              from: seriesDayLabel(series[0]?.day ?? "", format.locale),
-              to: seriesDayLabel(series[series.length - 1]?.day ?? "", format.locale),
+              from: dayLabel(series[0]?.day ?? ""),
+              to: dayLabel(series[series.length - 1]?.day ?? ""),
             })}
           />
           <dl className="flex flex-wrap gap-token-5">

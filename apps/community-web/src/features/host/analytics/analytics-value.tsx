@@ -1,5 +1,6 @@
 "use client"
 
+import { ANALYTICS_SUPPRESSION_K } from "@civfix/shared"
 import { useT } from "@civfix/ui/i18n"
 
 import { EMPTY_VALUE, useConsoleFormat } from "../format"
@@ -21,7 +22,7 @@ export interface AnalyticsValueProps {
   k?: number
 }
 
-export function AnalyticsValue({ value, kind = "count", k = 5 }: AnalyticsValueProps) {
+export function AnalyticsValue({ value, kind = "count", k = ANALYTICS_SUPPRESSION_K }: AnalyticsValueProps) {
   const { t } = useT("host-analytics")
   const format = useConsoleFormat()
   if (value === null) {
@@ -35,14 +36,14 @@ export function AnalyticsValue({ value, kind = "count", k = 5 }: AnalyticsValueP
   return <>{kind === "rate" ? format.percent(value) : format.number(value)}</>
 }
 
-export function SuppressionNote({ k = 5 }: { k?: number }) {
+export function SuppressionNote({ k = ANALYTICS_SUPPRESSION_K }: { k?: number }) {
   const { t } = useT("host-analytics")
   return (
     <p className="mt-token-2 text-token-12 text-console-ink-3">{t("suppressed.note", { k })}</p>
   )
 }
 
-export function PanelSuppressed({ k = 5 }: { k?: number }) {
+export function PanelSuppressed({ k = ANALYTICS_SUPPRESSION_K }: { k?: number }) {
   const { t } = useT("host-analytics")
   return (
     <p

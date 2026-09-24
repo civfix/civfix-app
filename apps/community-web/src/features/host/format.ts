@@ -105,16 +105,6 @@ export function useConsoleFormat(timeZone?: string): ConsoleFormatters {
   )
 }
 
-export function seriesDayLabel(day: string, locale: string): string {
-  const parsed = /^\d{4}-\d{2}-\d{2}$/.test(day) ? new Date(`${day}T00:00:00Z`) : new Date(day)
-  if (Number.isNaN(parsed.getTime())) return day
-  return new Intl.DateTimeFormat(locale, {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  }).format(parsed)
-}
-
 const pad = (value: number, width = 2) => String(value).padStart(width, "0")
 
 /**

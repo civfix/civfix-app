@@ -1,3 +1,5 @@
+import { ANALYTICS_SUPPRESSION_K } from "@civfix/shared"
+
 import type { CsvRow } from "./csv"
 
 export interface ProvenanceInput {
@@ -36,7 +38,7 @@ export function provenanceRows(input: ProvenanceInput): CsvRow[] {
       : filters.map((filter) => `${filter.label}=${filter.value}`).join("; "),
   ])
   if (input.suppressed) {
-    rows.push([input.labels.suppression, String(input.suppressionK ?? 5)])
+    rows.push([input.labels.suppression, String(input.suppressionK ?? ANALYTICS_SUPPRESSION_K)])
   }
   for (const note of input.notes ?? []) rows.push([input.labels.note, note])
   rows.push([])

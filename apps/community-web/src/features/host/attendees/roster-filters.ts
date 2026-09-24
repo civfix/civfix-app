@@ -43,26 +43,12 @@ export function rowSupportsRegistrationActions(
   return !isWaitlistProjection(filter) && row.status !== "cancelled"
 }
 
-export function checkableSeatIds(row: EventRegistrationDTO): string[] {
-  return row.seats
-    .filter((seat) => seat.status === "active" && seat.checkedInAt === null)
-    .map((seat) => seat.id)
-}
-
 export function attendanceOf(
   row: EventRegistrationDTO,
 ): "checked_in" | "not_checked_in" | "no_show" {
   if (row.checkedInAt !== null && row.checkedInAt !== undefined) return "checked_in"
   if (row.seats.some((seat) => seat.noShowAt)) return "no_show"
   return "not_checked_in"
-}
-
-export function attendeeDisplayName(
-  row: EventRegistrationDTO,
-  fallbacks: { guest: string; deleted: string },
-): string {
-  if (row.person) return row.person.deleted ? fallbacks.deleted : row.person.name
-  return row.guestName ?? fallbacks.guest
 }
 
 export function checkInSeatsInRow(

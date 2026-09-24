@@ -3,7 +3,16 @@ import { View, StyleSheet } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import type { CleanupDTO, EventAnswerValue, EventQuestionDTO } from "@civfix/shared"
 import { ACCESS_CODE_MAX } from "@civfix/shared"
-import { hasEventEnded } from "@civfix/shared/host"
+import {
+  answerPayload,
+  clampPartySize,
+  hasEventEnded,
+  missingRequired,
+  registerOutcomeKey,
+  sortedTicketTypes,
+  visibleQuestions,
+  type AnswerMap,
+} from "@civfix/shared/host"
 import { makeThemedStyles, useTheme, webInputReset } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
@@ -36,21 +45,8 @@ import {
 } from "./consentModel"
 import { WaitlistJoinCard } from "./WaitlistJoinCard"
 import { INPUT_MIN_HEIGHT } from "../hostLayout"
-import {
-  answerPayload,
-  seedAnswers,
-  missingRequired,
-  visibleQuestions,
-  type AnswerMap,
-} from "./questionModel"
-import {
-  clampPartySize,
-  registerErrorKey,
-  registerOutcomeKey,
-  registrationSurface,
-  resolveTicketTypeId,
-  sortedTicketTypes,
-} from "./registrationModel"
+import { seedAnswers } from "./questionModel"
+import { registerErrorKey, registrationSurface, resolveTicketTypeId } from "./registrationModel"
 
 const NO_QUESTIONS: readonly EventQuestionDTO[] = []
 

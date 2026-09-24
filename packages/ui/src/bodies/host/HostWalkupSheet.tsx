@@ -3,6 +3,7 @@ import { View } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import type { TicketTypeDTO } from "@civfix/shared"
 import { MAX_ATTENDEE_NAME } from "@civfix/shared"
+import { clampPartySize, registerOutcomeKey, sortedTicketTypes } from "@civfix/shared/host"
 import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
 import { Text } from "../../typography"
 import {
@@ -19,12 +20,7 @@ import { appErrorCode } from "../../data/errorCode"
 import { TicketTypePicker } from "./registration/TicketTypePicker"
 import { PartySizeStepper } from "./registration/PartySizeStepper"
 import { INPUT_MIN_HEIGHT } from "./hostLayout"
-import {
-  clampPartySize,
-  registerOutcomeKey,
-  resolveTicketTypeId,
-  sortedTicketTypes,
-} from "./registration/registrationModel"
+import { resolveTicketTypeId } from "./registration/registrationModel"
 
 export interface HostWalkupSheetProps {
   visible: boolean

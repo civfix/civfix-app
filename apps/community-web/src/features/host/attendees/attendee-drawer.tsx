@@ -13,7 +13,8 @@ import { Chip } from "@/components/console/chips/chip"
 
 import { useConsoleEvent } from "../console-context"
 import { useConsoleFormat } from "../format"
-import { attendanceOf, attendeeDisplayName, checkableSeatIds } from "./roster-filters"
+import { attendeeDisplayName, checkableSeatIds } from "@civfix/shared/host"
+import { attendanceOf } from "./roster-filters"
 import { useAttendeeDrawerActions } from "./use-attendee-drawer-actions"
 import {
   AnswersSection,

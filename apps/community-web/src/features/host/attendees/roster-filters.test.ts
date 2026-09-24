@@ -4,9 +4,7 @@ import { describe, expect, it } from "vitest"
 import {
   ROSTER_FILTERS,
   attendanceOf,
-  attendeeDisplayName,
   checkInSeatsInRow,
-  checkableSeatIds,
   isRosterFilter,
   isRosterSort,
   isWaitlistProjection,
@@ -56,8 +54,6 @@ function row(over: Partial<EventRegistrationDTO> = {}): EventRegistrationDTO {
   }
 }
 
-const NAMES = { guest: "Guest", deleted: "Deleted user" }
-
 describe("roster filters", () => {
   it("recognises every contract filter and sort", () => {
     for (const filter of ROSTER_FILTERS) expect(isRosterFilter(filter)).toBe(true)
@@ -83,17 +79,6 @@ describe("roster filters", () => {
     expect(rowSupportsRegistrationActions(row({ status: "cancelled" }), "all")).toBe(false)
   })
 
-  it("offers only active seats not yet checked in", () => {
-    const r = row({
-      seats: [
-        seat({ id: "a" }),
-        seat({ id: "b", checkedInAt: "2026-03-01T10:00:00.000Z" }),
-        seat({ id: "c", status: "cancelled" }),
-      ],
-    })
-    expect(checkableSeatIds(r)).toEqual(["a"])
-  })
-
   it("derives attendance, preferring checked-in over a stale no-show stamp", () => {
     expect(attendanceOf(row())).toBe("not_checked_in")
     expect(attendanceOf(row({ seats: [seat({ noShowAt: "2026-03-02T00:00:00.000Z" })] }))).toBe(
@@ -107,26 +92,6 @@ describe("roster filters", () => {
         }),
       ),
     ).toBe("checked_in")
-  })
-
-  it("names a member, a guest and a deleted user distinctly", () => {
-    expect(attendeeDisplayName(row({ guestName: "Ann" }), NAMES)).toBe("Ann")
-    expect(attendeeDisplayName(row(), NAMES)).toBe("Guest")
-    expect(
-      attendeeDisplayName(
-        row({
-          person: {
-            id: "p1",
-            name: "Ann",
-            followers: 0,
-            following: 0,
-            isFollowing: false,
-            deleted: true,
-          },
-        }),
-        NAMES,
-      ),
-    ).toBe("Deleted user")
   })
 })
 

@@ -1,4 +1,5 @@
-import type { CleanupDTO, RegisterOutcome, RegistrationState, TicketTypeDTO } from "@civfix/shared"
+import type { CleanupDTO, RegistrationState, TicketTypeDTO } from "@civfix/shared"
+import { defaultTicketTypeId, ticketTypeSelectable } from "@civfix/shared/host"
 
 export type RegistrationSurface =
   | "hidden"
@@ -43,26 +44,6 @@ export function registrationSurface(input: RegistrationSurfaceInput): Registrati
   }
 }
 
-export function sortedTicketTypes(types: readonly TicketTypeDTO[]): TicketTypeDTO[] {
-  return [...types].sort((a, b) => a.sortOrder - b.sortOrder)
-}
-
-export function ticketTypeSelectable(type: TicketTypeDTO): boolean {
-  return type.salesOpen && !type.soldOut
-}
-
-export function clampPartySize(value: number, max: number): number {
-  const ceiling = Math.max(1, Math.floor(max))
-  if (!Number.isFinite(value)) return 1
-  return Math.min(ceiling, Math.max(1, Math.floor(value)))
-}
-
-export function defaultTicketTypeId(types: readonly TicketTypeDTO[]): string | null {
-  const sorted = sortedTicketTypes(types)
-  const open = sorted.find(ticketTypeSelectable)
-  return (open ?? sorted[0])?.id ?? null
-}
-
 export function resolveTicketTypeId(
   types: readonly TicketTypeDTO[],
   pickedId: string | null,
@@ -70,39 +51,6 @@ export function resolveTicketTypeId(
   const picked = types.find((type) => type.id === pickedId)
   if (picked && (ticketTypeSelectable(picked) || !types.some(ticketTypeSelectable))) return picked.id
   return defaultTicketTypeId(types)
-}
-
-export function registerOutcomeKey(outcome: RegisterOutcome): string | null {
-  switch (outcome) {
-    case "registered":
-    case "replayed":
-    case "waitlisted":
-      return null
-    case "already_registered":
-      return "outcome.already_registered"
-    case "full":
-      return "outcome.full"
-    case "party_too_large":
-      return "outcome.party_too_large"
-    case "sales_closed":
-      return "outcome.sales_closed"
-    case "registration_closed":
-      return "outcome.registration_closed"
-    case "ticket_type_not_found":
-      return "outcome.ticket_type_not_found"
-    case "access_code_required":
-      return "outcome.access_code_required"
-    case "access_code_invalid":
-      return "outcome.access_code_invalid"
-    case "answers_invalid":
-      return "outcome.answers_invalid"
-    case "banned":
-      return "outcome.banned"
-    case "closed":
-      return "outcome.closed"
-    case "not_found":
-      return "outcome.not_found"
-  }
 }
 
 export function registerErrorKey(code: string | undefined): string {

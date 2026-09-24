@@ -8,6 +8,14 @@ import {
   type GuestContactChannel,
   type TicketTypeDTO,
 } from "@civfix/shared"
+import {
+  answerPayload,
+  clampPartySize,
+  missingRequired,
+  sortedTicketTypes,
+  visibleQuestions,
+  type AnswerMap,
+} from "@civfix/shared/host"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
@@ -29,13 +37,6 @@ import {
   consentPayload,
   type ConsentState,
 } from "./consentModel"
-import {
-  answerPayload,
-  missingRequired,
-  visibleQuestions,
-  type AnswerMap,
-} from "./questionModel"
-import { clampPartySize, sortedTicketTypes } from "./registrationModel"
 import { INPUT_MIN_HEIGHT } from "../hostLayout"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"

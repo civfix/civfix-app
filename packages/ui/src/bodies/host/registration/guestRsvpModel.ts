@@ -8,8 +8,8 @@ import {
   type TicketTypeDTO,
 } from "@civfix/shared"
 import { isEventEndedRefusal } from "../../../data/errorCode"
-import { initialAnswers, type AnswerMap } from "./questionModel"
-import { defaultTicketTypeId } from "./registrationModel"
+import { defaultTicketTypeId, type AnswerMap } from "@civfix/shared/host"
+import { initialAnswers } from "./questionModel"
 
 export type GuestRsvpStep = "choice" | "form" | "code" | "success"
 

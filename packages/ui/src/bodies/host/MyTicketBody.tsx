@@ -7,6 +7,7 @@ import {
   type NativeSyntheticEvent,
 } from "react-native"
 import type { MyEventTicketSeat } from "@civfix/shared"
+import { formatTicketCode } from "@civfix/shared/host"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { PrimaryButton, SecondaryButton, QrTicket, useToast } from "../../primitives"
@@ -23,7 +24,6 @@ import { CancelRegistrationSheet } from "./registration/RegistrationBlock"
 import { FeedNotice } from "../FeedNotice"
 import { appErrorCode } from "../../data/errorCode"
 import {
-  formatTicketCode,
   ticketPageIndex,
   ticketPageWidth,
   ticketQrSize,
