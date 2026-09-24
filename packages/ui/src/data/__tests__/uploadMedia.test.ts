@@ -76,7 +76,7 @@ describe("uploadMedia", () => {
       camera: camera({ byteSize: 0 }),
       media: MEDIA,
       fetchImpl: okFetch(),
-    }).catch((e) => e)
+    }).catch((e: unknown) => e)
     expect(err).toBeInstanceOf(AppError)
     expect((err as AppError).code).toBe("MEDIA_REJECTED")
     expect(calls).toEqual([])
@@ -91,7 +91,7 @@ describe("uploadMedia", () => {
       },
     }
     const err = await uploadMedia({ api: client, camera: broken, media: MEDIA, fetchImpl: okFetch() }).catch(
-      (e) => e,
+      (e: unknown) => e,
     )
     expect((err as AppError).code).toBe("MEDIA_REJECTED")
   })
@@ -100,7 +100,7 @@ describe("uploadMedia", () => {
     const { client, calls } = api()
     const doFetch = vi.fn(async () => new Response(null, { status: 403 })) as unknown as typeof fetch
     const err = await uploadMedia({ api: client, camera: camera(), media: MEDIA, fetchImpl: doFetch }).catch(
-      (e) => e,
+      (e: unknown) => e,
     )
     expect((err as AppError).message).toContain("403")
     expect(calls).toEqual(["presign"])
@@ -206,7 +206,7 @@ describe("the web progress path (XMLHttpRequest)", () => {
         camera: camera(),
         media: MEDIA,
         onProgress: () => {},
-      }).catch((e) => e)
+      }).catch((e: unknown) => e)
       expect((err as AppError).message).toContain("403")
       expect(calls).toEqual(["presign"])
     } finally {

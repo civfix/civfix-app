@@ -4,6 +4,7 @@ import type { TokenRead } from "@/auth/storage"
 import { carriedBearerToken, makeSessionTeardown, makeSingleFlight } from "./unauthorized.ts"
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve))
+const failOnError = (err: unknown) => assert.fail(err instanceof Error ? err : String(err))
 
 test("the bearer VALUE is recovered whatever shape the headers arrived in", () => {
   assert.equal(carriedBearerToken({ Authorization: "Bearer abc.def" }), "abc.def")
@@ -107,7 +108,7 @@ test("a burst of concurrent 401s runs the sign-out cascade exactly ONCE", async 
       runs++
       await gate
     },
-    assert.fail,
+    failOnError,
   )
 
   trigger("same")
@@ -129,7 +130,7 @@ test("the latch releases, so a genuinely later 401 signs out again", async () =>
     async () => {
       runs++
     },
-    assert.fail,
+    failOnError,
   )
 
   trigger("same")
@@ -149,7 +150,7 @@ test("two DIFFERENT keys never block each other, even in the same tick", async (
       started.push(bearer)
       await tick()
     },
-    assert.fail,
+    failOnError,
   )
 
   trigger("stale")

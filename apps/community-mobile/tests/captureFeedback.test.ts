@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { URL } from "node:url"
 
 const viewfinder = readFileSync(
   new URL("../src/components/report/ReportViewfinder.tsx", import.meta.url),
@@ -56,7 +57,7 @@ test("cleanup stops share one justified quiet-stop helper instead of anonymous n
 })
 
 test("the shutter exposes its disabled and busy state to screen readers", () => {
-  const shutter = viewfinder.slice(viewfinder.indexOf("onPress={mode === \"photo\" ? onTakePhoto : onToggleRecord}"))
+  const shutter = viewfinder.slice(viewfinder.indexOf("onPress={() => void (mode === \"photo\" ? onTakePhoto() : onToggleRecord())}"))
   const props = shutter.slice(0, shutter.indexOf("style="))
   assert.match(props, /disabled=\{busy && !recording\}/)
   assert.match(props, /accessibilityState=\{\{ disabled: busy && !recording, busy \}\}/)

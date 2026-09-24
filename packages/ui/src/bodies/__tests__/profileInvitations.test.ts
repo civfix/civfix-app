@@ -8,7 +8,7 @@ const source = (file: string): string => readFileSync(new URL(file, import.meta.
 const catalog = (lng: string, ns: string): Record<string, unknown> =>
   JSON.parse(
     readFileSync(new URL(`../../i18n/locales/${lng}/${ns}.json`, import.meta.url), "utf8"),
-  )
+  ) as Record<string, unknown>
 
 const ev = (id: string): { id: string } => ({ id })
 

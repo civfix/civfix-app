@@ -9,7 +9,7 @@ const code = (src: string): string =>
 function catalog(ns: string): Record<string, unknown> {
   return JSON.parse(
     readFileSync(new URL(`../../../i18n/locales/en/${ns}.json`, import.meta.url), "utf8"),
-  )
+  ) as Record<string, unknown>
 }
 
 const en = { "host-analytics": catalog("host-analytics") }

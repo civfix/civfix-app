@@ -32,7 +32,7 @@ describe("every exit from the report wizard returns to the surface it was launch
     for (const locale of LOCALES) {
       const catalog = read(`../../i18n/locales/${locale}/report-wizard.json`)
       expect(catalog).not.toContain("back_to_map")
-      expect(JSON.parse(catalog).submit.done).toBeTruthy()
+      expect((JSON.parse(catalog) as { submit: { done?: string } }).submit.done).toBeTruthy()
     }
   })
 })

@@ -40,8 +40,8 @@ test("a failed ticket mint never puts the bearer in the socket URL and opens not
   })
   const opened = await openTicketedSocket(deps)
   assert.equal(opened, null)
-  assert.deepEqual(urls, [])
   assert.ok(urls.every((url) => !url.includes(BEARER) && !url.includes("token=")))
+  assert.deepEqual(urls, [])
 })
 
 test("an empty ticket response is treated as unavailable, not as a reason to send the bearer", async () => {

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { URL } from "node:url"
 import {
   BOOT_DEADLINE_MS,
   BOOT_GATE_THRESHOLDS_MS,
@@ -320,7 +321,7 @@ test("the splash offers the connecting line and the retry the model asks for", (
 test("a shared request is only joined by callers under the same key: a token write starts a fresh one", async () => {
   let key = 1
   let runs = 0
-  const gates: Array<(value: string) => void> = []
+  const gates: ((value: string) => void)[] = []
   const check = sharedDeadlineRequest(
     () =>
       new Promise<string>((resolve) => {

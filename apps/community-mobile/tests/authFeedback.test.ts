@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"
+import { URL } from "node:url"
 import { MIN_TOUCH_TARGET } from "../../../packages/ui/src/theme/touchTarget.ts"
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")

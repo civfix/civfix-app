@@ -46,9 +46,11 @@ describe("useChat effect order", () => {
 describe("room-bound callbacks follow an in-place room switch", () => {
   it("findMessage and patchMessage re-create when the room id or kind changes", () => {
     const find = sliceBetween(HISTORY, "const findMessage = useCallback", "const isHistoryFetchInFlight")
-    expect(find).toContain("[queryClient, roomId, roomKind],")
+    expect(find).toContain("[queryClient, roomId, roomKind, aroundWindowRef, liveMessagesRef],")
     const patch = sliceBetween(HISTORY, "const patchMessage = useCallback", "const resetHistoryJournal")
-    expect(patch).toContain("[queryClient, roomId, roomKind, isHistoryFetchInFlight],")
+    expect(patch).toContain(
+      "[queryClient, roomId, roomKind, isHistoryFetchInFlight, setLiveMessages, setAroundWindow],",
+    )
   })
 
   it("delete and votePoll inherit that identity through findMessage and patchMessage", () => {

@@ -1,9 +1,8 @@
 import assert from "node:assert/strict"
-import { createRequire } from "node:module"
 import { test } from "node:test"
+import { appConfigFactory } from "./helpers/appConfig.ts"
 
-const require = createRequire(import.meta.url)
-const appConfig = require("../app.config.js")({ config: {} })
+const appConfig = appConfigFactory({ config: {} })
 
 const LOWEST_UNUSED_PLAY_VERSION_CODE = 6
 

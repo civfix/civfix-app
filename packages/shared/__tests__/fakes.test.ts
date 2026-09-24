@@ -145,7 +145,7 @@ describe("FakeChatService", () => {
     const msg = await chat.persist({ cleanupId: "cleanup-1", userId: "user-1", body: "hello" })
     await chat.broadcast("cleanup-1", msg)
     expect(received).toHaveLength(1)
-    expect(JSON.parse(received[0]!).message.body).toBe("hello")
+    expect(JSON.parse(received[0]!)).toMatchObject({ message: { body: "hello" } })
 
     await chat.persist({ cleanupId: "cleanup-1", userId: "user-1", body: "second" })
     const page = await chat.history("cleanup-1", undefined, 1)

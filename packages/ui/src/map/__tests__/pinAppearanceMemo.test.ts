@@ -5,12 +5,13 @@
  * computed once per input.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import type * as ChipContrast from "@civfix/shared/chip-contrast"
 import { colorSchemes } from "@civfix/shared/tokens"
 
 const calls = vi.hoisted(() => ({ count: 0 }))
 
 vi.mock("@civfix/shared/chip-contrast", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@civfix/shared/chip-contrast")>()
+  const actual = await importOriginal<typeof ChipContrast>()
   return {
     ...actual,
     contrastRatio: (a: string, b: string) => {

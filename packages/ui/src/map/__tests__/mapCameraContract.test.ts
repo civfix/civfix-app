@@ -26,7 +26,7 @@ describe("MapHandle.flyTo on the native seam", () => {
 
 describe("the focus ease on both seams", () => {
   it("keys on the focus object, so re-publishing the same pin eases back to it", () => {
-    expect(webCamera).toContain("}, [mapReady, mode, focus])")
+    expect(webCamera).toContain("}, [mapReady, mode, focus, mapRef, occlusionLeftRef])")
     expect(mapWeb).toContain("useFocusAndFlyToCamera(mapRef, mapReady, mode, focus, flyToRequest, occlusionLeftRef)")
     expect(mapNative).toContain("}, [focus])")
     expect(webCamera).not.toContain("focus?.id, focus?.lat")

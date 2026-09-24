@@ -24,6 +24,15 @@ function neverSettlesFetch(): typeof fetch {
     })) as unknown as typeof fetch
 }
 
+function rejection(upload: Promise<void>): Promise<AppError> {
+  return upload.then(
+    () => {
+      throw new Error("expected the upload to reject")
+    },
+    (e: unknown) => e as AppError,
+  )
+}
+
 describe("putUpload", () => {
   afterEach(() => vi.useRealTimers())
 
@@ -32,7 +41,7 @@ describe("putUpload", () => {
   })
 
   it("(b) throws AppError INTERNAL with the status in the message on a non-ok response", async () => {
-    const err = await putUpload("https://x", {}, "body" as BodyInit, 1000, statusFetch(403)).catch((e) => e)
+    const err = await rejection(putUpload("https://x", {}, "body" as BodyInit, 1000, statusFetch(403)))
     expect(err).toBeInstanceOf(AppError)
     expect(err.code).toBe(ErrorCode.INTERNAL)
     expect(err.message).toContain("403")
@@ -40,9 +49,7 @@ describe("putUpload", () => {
 
   it("(c) wraps a rejecting fetch in AppError INTERNAL, preserving the cause", async () => {
     const cause = new Error("network down")
-    const err = await putUpload("https://x", {}, "body" as BodyInit, 1000, rejectingFetch(cause)).catch(
-      (e) => e,
-    )
+    const err = await rejection(putUpload("https://x", {}, "body" as BodyInit, 1000, rejectingFetch(cause)))
     expect(err).toBeInstanceOf(AppError)
     expect(err.code).toBe(ErrorCode.INTERNAL)
     expect(err.cause).toBe(cause)
@@ -51,7 +58,7 @@ describe("putUpload", () => {
   it("(d) aborts and rejects with AppError when the PUT never settles past the timeout", async () => {
     vi.useFakeTimers()
     const promise = putUpload("https://x", {}, "body" as BodyInit, 1000, neverSettlesFetch())
-    const assertion = promise.catch((e) => e)
+    const assertion = rejection(promise)
     await vi.advanceTimersByTimeAsync(UPLOAD_PUT_BASE_TIMEOUT_MS + 1)
     const err = await assertion
     expect(err).toBeInstanceOf(AppError)
@@ -65,7 +72,7 @@ describe("putUpload", () => {
     expect(computedDeadline).toBeGreaterThan(UPLOAD_PUT_BASE_TIMEOUT_MS)
 
     const big = putUpload("https://x", {}, "body" as BodyInit, bigByteSize, neverSettlesFetch())
-    const bigAssertion = big.catch((e) => e)
+    const bigAssertion = rejection(big)
     await vi.advanceTimersByTimeAsync(UPLOAD_PUT_BASE_TIMEOUT_MS + 1)
     expect(await Promise.race([bigAssertion, Promise.resolve("pending")])).toBe("pending")
     await vi.advanceTimersByTimeAsync(computedDeadline - UPLOAD_PUT_BASE_TIMEOUT_MS)
@@ -74,7 +81,7 @@ describe("putUpload", () => {
     expect(bigErr.code).toBe(ErrorCode.INTERNAL)
 
     const small = putUpload("https://x", {}, "body" as BodyInit, 1000, neverSettlesFetch())
-    const smallAssertion = small.catch((e) => e)
+    const smallAssertion = rejection(small)
     await vi.advanceTimersByTimeAsync(UPLOAD_PUT_BASE_TIMEOUT_MS - 1)
     expect(await Promise.race([smallAssertion, Promise.resolve("pending")])).toBe("pending")
     await vi.advanceTimersByTimeAsync(2)

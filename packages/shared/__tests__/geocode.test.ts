@@ -6,6 +6,7 @@ import {
   mapboxSuggest,
   suggestAddresses,
 } from "../src/geocode.js"
+import type { SuggestOptions } from "../src/geocode.js"
 
 /**
  * Tests for the unified forward geocoder. parseLatLng is pure; photonSuggest, mapboxSuggest and
@@ -294,10 +295,12 @@ describe("suggestAddresses", () => {
   })
 })
 
+type OnError = NonNullable<SuggestOptions["onError"]>
+
 describe("suggestAddresses onError", () => {
   it("reports a Photon outage while still resolving []", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response("down", { status: 503 })))
-    const onError = vi.fn()
+    const onError = vi.fn<OnError>()
     await expect(suggestAddresses("echo park", { onError })).resolves.toEqual([])
     expect(onError).toHaveBeenCalledTimes(1)
     expect(onError.mock.calls[0]?.[1]).toBe("photon")
@@ -313,7 +316,7 @@ describe("suggestAddresses onError", () => {
           : photonResponse([{ lat: 34.0, lng: -118.2, props: { name: "Echo Park" } }]),
       ),
     )
-    const onError = vi.fn()
+    const onError = vi.fn<OnError>()
     const out = await suggestAddresses("echo park", { mapboxToken: "pk.test", onError })
     expect(out[0]?.source).toBe("photon")
     expect(onError.mock.calls.map((call) => call[1])).toEqual(["mapbox"])
@@ -328,7 +331,7 @@ describe("suggestAddresses onError", () => {
         throw Object.assign(new Error("aborted"), { name: "AbortError" })
       }),
     )
-    const onError = vi.fn()
+    const onError = vi.fn<OnError>()
     await expect(suggestAddresses("echo", { signal: controller.signal, onError })).rejects.toThrow()
     expect(onError).not.toHaveBeenCalled()
   })

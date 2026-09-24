@@ -1,5 +1,6 @@
 // The package's vitest runs in plain node, so this installs a minimal fake `window.visualViewport`.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import type * as KeyboardInsetModule from "../useKeyboardInset.web"
 
 type Handler = () => void
 
@@ -18,7 +19,7 @@ function makeViewport(height: number) {
 }
 
 let vv: ReturnType<typeof makeViewport>
-let store: typeof import("../useKeyboardInset.web")
+let store: typeof KeyboardInsetModule
 
 beforeEach(async () => {
   vv = makeViewport(800)

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import type * as DatetimeModule from "../src/datetime.js"
 
-type Datetime = typeof import("../src/datetime.js")
+type Datetime = typeof DatetimeModule
 
 const LA = "America/Los_Angeles"
 const ZONES = [
