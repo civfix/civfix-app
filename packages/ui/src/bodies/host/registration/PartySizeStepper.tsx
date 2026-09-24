@@ -1,20 +1,23 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  MIN_TOUCH_TARGET,
+  useTheme,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
+import { clampPartySize } from "./registrationModel"
 
 export interface PartySizeStepperProps {
   value: number
   max: number
   onChange: (next: number) => void
   disabled?: boolean
-}
-
-export function clampPartySize(value: number, max: number): number {
-  const ceiling = Math.max(1, Math.floor(max))
-  if (!Number.isFinite(value)) return 1
-  return Math.min(ceiling, Math.max(1, Math.floor(value)))
 }
 
 export function PartySizeStepper({ value, max, onChange, disabled = false }: PartySizeStepperProps) {
@@ -82,7 +85,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
   },
   labels: {
     flex: 1,

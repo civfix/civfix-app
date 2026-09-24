@@ -21,7 +21,6 @@ import {
   hostedEventCan,
   hostedEventHasActions,
   hostedEventPhase,
-  hostedEventStage,
   hostedEventStatus,
   impactModel,
   nextDuplicateStart,
@@ -42,6 +41,15 @@ const DAY_MS = 86_400_000
 
 const source = (file: string): string =>
   readFileSync(new URL(file, import.meta.url), "utf8")
+
+const DASHBOARD_PAGE_FILES = [
+  "../../EventDashboardBody.tsx",
+  "../DashboardHeader.tsx",
+  "../HostedEventsSection.tsx",
+  "../useHostedEventNav.ts",
+]
+
+const dashboardNavSource = (): string => source("../useHostedEventNav.ts")
 
 const catalog = (lng: string, ns: string): Record<string, unknown> =>
   JSON.parse(readFileSync(new URL(`../../../../i18n/locales/${lng}/${ns}.json`, import.meta.url), "utf8"))
@@ -433,14 +441,15 @@ describe("dashboard wiring", () => {
   })
 
   it("keeps the dashboard body clear of the feed", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).not.toContain("FeedBody")
-    expect(body).not.toContain("feed/")
-    expect(body).toContain("./dashboard/NextUpCard")
+    for (const file of DASHBOARD_PAGE_FILES) {
+      expect(source(file), file).not.toContain("FeedBody")
+      expect(source(file), file).not.toContain("feed/")
+    }
+    expect(source("../../EventDashboardBody.tsx")).toContain("./dashboard/NextUpCard")
   })
 
   it("routes the row actions at the nav kinds the plan named", () => {
-    const body = source("../../EventDashboardBody.tsx")
+    const body = dashboardNavSource()
     expect(body).toContain('kind: "create-cleanup"')
     expect(body).toContain('kind: "edit-cleanup"')
     expect(body).toContain('kind: "host-announce"')
@@ -449,8 +458,9 @@ describe("dashboard wiring", () => {
   })
 
   it("stops pointing the host at the web console at all", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).not.toContain("ConsoleLinkRow")
+    for (const file of DASHBOARD_PAGE_FILES) {
+      expect(source(file), file).not.toContain("ConsoleLinkRow")
+    }
     expect(source("../../HostModeBody.tsx")).not.toContain("ConsoleLinkRow")
   })
 
@@ -522,32 +532,6 @@ describe("next up", () => {
     expect(hostedEventPhase(row("a", { status: "cancelled" }), now)).toBe("cancelled")
     expect(hostedEventPhase(row("b", { startsAt: "2026-09-10T13:00:00.000Z" }), now)).toBe("live")
     expect(hostedEventPhase(row("c"), now)).toBe("upcoming")
-  })
-
-  it("names the five host-tooling stages off the same window", () => {
-    expect(hostedEventStage(row("a", { status: "cancelled" }), now)).toBe("cancelled")
-    expect(hostedEventStage(row("b"), now)).toBe("upcoming")
-    expect(
-      hostedEventStage(row("c", { startsAt: "2026-09-10T13:00:00.000Z" }), now),
-    ).toBe("soon")
-    expect(
-      hostedEventStage(
-        row("d", { startsAt: "2026-09-10T11:00:00.000Z", endsAt: "2026-09-10T15:00:00.000Z" }),
-        now,
-      ),
-    ).toBe("underway")
-    expect(
-      hostedEventStage(
-        row("e", { startsAt: "2026-09-10T06:00:00.000Z", endsAt: "2026-09-10T11:00:00.000Z" }),
-        now,
-      ),
-    ).toBe("wrapping_up")
-    expect(
-      hostedEventStage(
-        row("f", { startsAt: "2026-09-08T17:00:00.000Z", endsAt: "2026-09-08T21:00:00.000Z" }),
-        now,
-      ),
-    ).toBe("past")
   })
 
   it("finds a LIVE event in the past window, which is where the server puts it", () => {
@@ -728,15 +712,16 @@ describe("portfolio surface", () => {
   })
 
   it("keeps one coral fill on the page, in whichever card is showing", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).not.toContain("<PrimaryButton")
+    for (const file of DASHBOARD_PAGE_FILES) {
+      expect(source(file), file).not.toContain("<PrimaryButton")
+    }
     expect(dashboardSource("NextUpCard.tsx").match(/<PrimaryButton/g)).toHaveLength(1)
     expect(dashboardSource("FirstEventCard.tsx").match(/<PrimaryButton/g)).toHaveLength(1)
   })
 
   it("leaves no bloom selection fill anywhere under the dashboard", () => {
     const files = [
-      "../../EventDashboardBody.tsx",
+      ...DASHBOARD_PAGE_FILES,
       "../NextUpCard.tsx",
       "../ImpactCard.tsx",
       "../FirstEventCard.tsx",
@@ -753,10 +738,13 @@ describe("portfolio surface", () => {
   })
 
   it("keeps the only window switch inside the events card", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body.match(/<SegmentedControl/g)).toHaveLength(1)
-    expect(body).toContain("listHeader")
-    expect(body).not.toContain("SegmentedRow")
+    const page = DASHBOARD_PAGE_FILES.map(source).join("\n")
+    expect(page.match(/<SegmentedControl/g)).toHaveLength(1)
+    expect(page).not.toContain("SegmentedRow")
+    const section = dashboardSource("HostedEventsSection.tsx")
+    expect(section.match(/<SegmentedControl/g)).toHaveLength(1)
+    expect(section).toContain("listHeader")
+    expect(source("../../EventDashboardBody.tsx")).toContain("<HostedEventsSection")
   })
 
   it("drops the tab and range state the page no longer owns", () => {
@@ -769,7 +757,8 @@ describe("portfolio surface", () => {
   it("reads the portfolio through the new all-time model", () => {
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("portfolioKpis(upcoming.data?.pages)")
-    expect(body).toContain("header.summary")
+    expect(body).toContain("kpis={kpis}")
+    expect(dashboardSource("DashboardHeader.tsx")).toContain("header.summary")
     expect(body).toContain('useHostedEventsAnalytics(ANALYTICS_RANGE')
     expect(body).toContain('const ANALYTICS_RANGE = "all"')
     expect(body).toContain("<ImpactCard")
@@ -778,13 +767,13 @@ describe("portfolio surface", () => {
   })
 
   it("demotes create-event to secondary", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).toContain("<SecondaryButton")
+    expect(dashboardSource("DashboardHeader.tsx")).toContain("<SecondaryButton")
   })
 
   it("keeps the team in the shared list card, and leaves donation editing to the org page", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).not.toContain("DonationLinkRow")
+    for (const file of DASHBOARD_PAGE_FILES) {
+      expect(source(file), file).not.toContain("DonationLinkRow")
+    }
     const team = dashboardSource("CollaboratorsSection.tsx")
     expect(team).toContain('variant="list"')
     expect(team).toContain("<ListRow")
@@ -877,13 +866,15 @@ describe("portfolio surface", () => {
   })
 
   it("drops the needs-attention card, and leaves invitations to the profile", () => {
-    const body = source("../../EventDashboardBody.tsx")
-    expect(body).not.toContain("AttentionCard")
-    expect(body).not.toContain("attentionRows")
-    expect(body).not.toContain("host-log-hours")
+    for (const file of DASHBOARD_PAGE_FILES) {
+      const body = source(file)
+      expect(body, file).not.toContain("AttentionCard")
+      expect(body, file).not.toContain("attentionRows")
+      expect(body, file).not.toContain("host-log-hours")
+      expect(body, file).not.toContain("Invite")
+      expect(body, file).not.toContain("invite")
+    }
     expect(existsSync(new URL("../AttentionCard.tsx", import.meta.url))).toBe(false)
-    expect(body).not.toContain("Invite")
-    expect(body).not.toContain("invite")
     expect(existsSync(new URL("../InvitationsCard.tsx", import.meta.url))).toBe(false)
     expect(existsSync(new URL("../InviteRows.tsx", import.meta.url))).toBe(false)
   })
@@ -912,7 +903,8 @@ describe("portfolio surface", () => {
     expect(card).toContain("accessibilityLabel={cardLabel}")
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("onOpen={onOpenEvent}")
-    expect(body).toContain('push({ kind: "cleanup", id: event.id, title: event.title })')
+    expect(body).toContain("const { onCreate, onOpenEvent, onHostTools, onShare } = nav")
+    expect(dashboardNavSource()).toContain('push({ kind: "cleanup", id: event.id, title: event.title })')
   })
 
   it("keeps the staffing and shift lines audible by folding them into the card label", () => {
@@ -932,7 +924,7 @@ describe("portfolio surface", () => {
     expect(source("../dashboardModel.ts")).not.toContain("nextUpCta")
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("onHostTools={onHostTools}")
-    expect(body).toContain("openHostDashboard({ eventId: event.id })")
+    expect(dashboardNavSource()).toContain("openHostDashboard({ eventId: event.id })")
   })
 
   it("shares from an icon button pinned to the top right of the card", () => {
@@ -947,7 +939,7 @@ describe("portfolio surface", () => {
     expect(card).toContain("paddingRight: SHARE_SIZE + t.space[\"2\"]")
     const body = source("../../EventDashboardBody.tsx")
     expect(body).toContain("onShare={onShare}")
-    expect(body).toContain("shareLink({ title: event.title, path: sharePathFor(event) })")
+    expect(dashboardNavSource()).toContain("shareLink({ title: event.title, path: sharePathFor(event) })")
   })
 
   it("reaches the card body, then host tools, then the share icon on a web tab sweep", () => {

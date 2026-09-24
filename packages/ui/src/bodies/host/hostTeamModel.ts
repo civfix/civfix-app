@@ -7,6 +7,14 @@ import type {
 import { MAX_TEAM_INVITES_PER_EVENT, isValidHandle } from "@civfix/shared"
 import { GUEST_EMAIL_MAX, guestEmailValue } from "./registration/guestRsvpModel"
 import { settableRolesOtherThan, type SettableEventMemberRole } from "../../data/eventTeamTiers"
+import {
+  errorKeyFor,
+  hasActions,
+  orderByRankThenName,
+  pendingCount,
+  rankIn,
+  type RosterMemberActions,
+} from "./rosterModel"
 
 export const TEAM_MEMBER_ROLE_ORDER: readonly CleanupMemberRole[] = [
   "organizer",
@@ -19,24 +27,16 @@ export const TEAM_MEMBER_ROLE_ORDER: readonly CleanupMemberRole[] = [
 export const INVITE_IDENTIFIER_MAX = GUEST_EMAIL_MAX
 
 export function teamMemberRank(role: CleanupMemberRole): number {
-  const at = TEAM_MEMBER_ROLE_ORDER.indexOf(role)
-  return at === -1 ? TEAM_MEMBER_ROLE_ORDER.length : at
+  return rankIn(TEAM_MEMBER_ROLE_ORDER, role)
 }
 
 export function orderedTeamMembers(
   members: readonly EventTeamMemberDTO[],
 ): EventTeamMemberDTO[] {
-  return [...members].sort((a, b) => {
-    const byRank = teamMemberRank(a.role) - teamMemberRank(b.role)
-    if (byRank !== 0) return byRank
-    return a.person.name.localeCompare(b.person.name)
-  })
+  return orderByRankThenName(TEAM_MEMBER_ROLE_ORDER, members)
 }
 
-export interface TeamMemberActions {
-  roles: readonly SettableEventMemberRole[]
-  canRemove: boolean
-}
+export type TeamMemberActions = RosterMemberActions<SettableEventMemberRole>
 
 export const NO_TEAM_MEMBER_ACTIONS: TeamMemberActions = { roles: [], canRemove: false }
 
@@ -57,7 +57,7 @@ export function teamMemberActions(input: {
 }
 
 export function teamMemberHasActions(actions: TeamMemberActions): boolean {
-  return actions.roles.length > 0 || actions.canRemove
+  return hasActions(actions)
 }
 
 export function orderedTeamInvites(
@@ -71,7 +71,7 @@ export function orderedTeamInvites(
 }
 
 export function pendingInviteCount(invites: readonly EventTeamInviteDTO[]): number {
-  return invites.filter((invite) => invite.status === "pending").length
+  return pendingCount(invites)
 }
 
 export function inviteQuotaReached(invites: readonly EventTeamInviteDTO[]): boolean {
@@ -99,20 +99,26 @@ export function inviteIdentifierErrorKey(kind: EventTeamInviteIdentifierKind): s
   return kind === "email" ? "invite.email_invalid" : "invite.handle_invalid"
 }
 
+const INVITE_ERROR_KEYS: ReadonlyMap<string, string> = new Map([
+  ["NOT_FOUND", "invite.error_no_account"],
+  ["CONFLICT", "invite.error_conflict"],
+  ["FORBIDDEN", "invite.error_forbidden"],
+  ["RATE_LIMITED", "invite.error_rate_limited"],
+  ["VALIDATION", "invite.error_invalid"],
+])
+
 export function inviteErrorKey(code: string | undefined): string {
-  if (code === "NOT_FOUND") return "invite.error_no_account"
-  if (code === "CONFLICT") return "invite.error_conflict"
-  if (code === "FORBIDDEN") return "invite.error_forbidden"
-  if (code === "RATE_LIMITED") return "invite.error_rate_limited"
-  if (code === "VALIDATION") return "invite.error_invalid"
-  return "invite.error_generic"
+  return errorKeyFor(INVITE_ERROR_KEYS, code, "invite.error_generic")
 }
 
+const TEAM_MANAGE_ERROR_KEYS: ReadonlyMap<string, string> = new Map([
+  ["CONFLICT", "manage.error_conflict"],
+  ["FORBIDDEN", "manage.error_forbidden"],
+  ["NOT_FOUND", "manage.error_gone"],
+])
+
 export function teamManageErrorKey(code: string | undefined): string {
-  if (code === "CONFLICT") return "manage.error_conflict"
-  if (code === "FORBIDDEN") return "manage.error_forbidden"
-  if (code === "NOT_FOUND") return "manage.error_gone"
-  return "manage.error_generic"
+  return errorKeyFor(TEAM_MANAGE_ERROR_KEYS, code, "manage.error_generic")
 }
 
 export function teamDateLabel(iso: string | null | undefined, locale: string): string {

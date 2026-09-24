@@ -1,38 +1,24 @@
-import React, { useCallback, useState } from "react"
+import React from "react"
 import { View, Pressable } from "react-native"
-import { TextInput } from "../../primitives/TextInput"
-import type { EventTeamInviteIdentifierKind, EventTeamRole } from "@civfix/shared"
+import type { EventTeamRole } from "@civfix/shared"
 import {
   focusRingProps,
   makeThemedStyles,
   useTheme,
   webCursor,
   webHover,
-  webInputReset,
   webTransition,
 } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
-import {
-  ModalCardSheet,
-  PrimaryButton,
-  SecondaryButton,
-  SegmentedControl,
-  modalSheetInputFocusedStyle,
-  modalSheetInputStyle,
-  useToast,
-} from "../../primitives"
+import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../../primitives"
 import { useT } from "../../i18n"
 import { useInviteEventTeamMember } from "../../data/hooks/host"
-import { appErrorCode } from "../../data/errorCode"
 import { eventTeamTiers } from "../../data/eventTeamTiers"
-import {
-  INVITE_IDENTIFIER_MAX,
-  inviteErrorKey,
-  inviteIdentifierErrorKey,
-  inviteIdentifierValue,
-} from "./hostTeamModel"
+import { inviteErrorKey, inviteIdentifierErrorKey } from "./hostTeamModel"
+import { InviteIdentifierFields } from "./InviteIdentifierFields"
+import { useInviteForm } from "./useInviteForm"
 
-const IDENTIFIER_KINDS: readonly EventTeamInviteIdentifierKind[] = ["handle", "email"]
+const DEFAULT_INVITE_ROLE: EventTeamRole = "staff"
 
 export interface HostTeamInviteSheetProps {
   visible: boolean
@@ -44,65 +30,32 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("host-team")
-  const toast = useToast()
   const invite = useInviteEventTeamMember(cleanupId)
-
-  const [identifierKind, setIdentifierKind] = useState<EventTeamInviteIdentifierKind>("handle")
-  const [identifier, setIdentifier] = useState("")
-  const [role, setRole] = useState<EventTeamRole>("staff")
-  const [focused, setFocused] = useState(false)
-  const [errorText, setErrorText] = useState<string | null>(null)
-
-  const onClosed = useCallback(() => {
-    setIdentifierKind("handle")
-    setIdentifier("")
-    setRole("staff")
-    setErrorText(null)
-    setFocused(false)
-    if (!invite.isPending) invite.reset()
-  }, [invite])
+  const form = useInviteForm<EventTeamRole>({
+    invite,
+    defaultRole: DEFAULT_INVITE_ROLE,
+    t,
+    identifierErrorKey: inviteIdentifierErrorKey,
+    errorKey: inviteErrorKey,
+    sentMessage: () => t("invite.sent"),
+    onClose,
+  })
+  const { role, setRole } = form
 
   const tiers = eventTeamTiers()
-  const value = inviteIdentifierValue(identifierKind, identifier)
-  const canSubmit = value !== null && !invite.isPending
-
-  const onPickKind = useCallback((kind: EventTeamInviteIdentifierKind) => {
-    setIdentifierKind(kind)
-    setIdentifier("")
-    setErrorText(null)
-  }, [])
-
-  const submit = useCallback(() => {
-    if (invite.isPending) return
-    if (value === null) {
-      setErrorText(t(inviteIdentifierErrorKey(identifierKind)))
-      return
-    }
-    setErrorText(null)
-    invite.mutate(
-      { identifierKind, identifier: value, role },
-      {
-        onSuccess: () => {
-          toast.show(t("invite.sent"), { variant: "success" })
-          onClose()
-        },
-        onError: (err) => setErrorText(t(inviteErrorKey(appErrorCode(err)))),
-      },
-    )
-  }, [identifierKind, invite, onClose, role, t, toast, value])
 
   return (
     <ModalCardSheet
       visible={visible}
       onClose={onClose}
-      onClosed={onClosed}
-      onCommit={submit}
+      onClosed={form.onClosed}
+      onCommit={form.submit}
       headerIcon="UserPlus"
       headerIconColor={th.colors.moss["700"]}
       title={t("invite.title")}
       dismissLabel={t("invite.dismiss_a11y")}
       backdropDismissDisabled={invite.isPending}
-      error={errorText}
+      error={form.errorText}
       actions={
         <>
           <SecondaryButton
@@ -113,42 +66,28 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
           />
           <PrimaryButton
             label={t("invite.send")}
-            onPress={submit}
+            onPress={form.submit}
             loading={invite.isPending}
-            disabled={!canSubmit}
+            disabled={!form.canSubmit}
           />
         </>
       }
     >
-      <Text variant="label">{t("invite.identifier_kind")}</Text>
-      <SegmentedControl
-        label={t("invite.identifier_kind")}
-        options={IDENTIFIER_KINDS.map((kind) => ({
-          key: kind,
-          label: kind === "email" ? t("invite.by_email") : t("invite.by_handle"),
-        }))}
-        selected={identifierKind}
-        onSelect={(next) => onPickKind(next as EventTeamInviteIdentifierKind)}
+      <InviteIdentifierFields
+        labels={{
+          kind: t("invite.identifier_kind"),
+          byEmail: t("invite.by_email"),
+          byHandle: t("invite.by_handle"),
+          email: t("invite.email"),
+          handle: t("invite.handle"),
+        }}
+        identifierKind={form.identifierKind}
+        identifier={form.identifier}
+        onPickKind={form.onPickKind}
+        focused={form.identifierFocused}
+        onFocusChange={form.setIdentifierFocused}
+        onChangeIdentifier={form.setIdentifier}
         disabled={invite.isPending}
-      />
-
-      <Text variant="label">
-        {identifierKind === "email" ? t("invite.email") : t("invite.handle")}
-      </Text>
-      <TextInput
-        value={identifier}
-        onChangeText={(next) => setIdentifier(next.slice(0, INVITE_IDENTIFIER_MAX))}
-        editable={!invite.isPending}
-        maxLength={INVITE_IDENTIFIER_MAX}
-        accessibilityLabel={identifierKind === "email" ? t("invite.email") : t("invite.handle")}
-        placeholderTextColor={th.colors.textSubtle}
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType={identifierKind === "email" ? "email-address" : "default"}
-        textContentType={identifierKind === "email" ? "emailAddress" : "username"}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
       />
 
       <Text variant="label">{t("invite.role")}</Text>
@@ -195,10 +134,6 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  input: {
-    ...modalSheetInputStyle(t),
-    minHeight: 42,
-  },
   tiers: {
     gap: t.space["2"],
   },

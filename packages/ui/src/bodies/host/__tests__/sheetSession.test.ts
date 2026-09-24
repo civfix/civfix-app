@@ -8,6 +8,8 @@ const read = (rel: string): string => code(readFileSync(new URL(rel, import.meta
 const duplicate = read("../dashboard/DuplicateEventSheet.tsx")
 const orgInvite = read("../dashboard/OrgInviteSheet.tsx")
 const teamInvite = read("../HostTeamInviteSheet.tsx")
+const inviteForm = read("../useInviteForm.ts")
+const inviteFields = read("../InviteIdentifierFields.tsx")
 const walkup = read("../HostWalkupSheet.tsx")
 const linked = read("../LinkedReportsSheet.tsx")
 
@@ -27,15 +29,34 @@ describe("the duplicate sheet seeds once per open, not once per parent render", 
 })
 
 describe("form sheets clear themselves after the close animation, not on open", () => {
+  it.each([["HostWalkupSheet", walkup, "walkup"]])(
+    "%s resets in onClosed and leaves an in-flight mutation alone",
+    (_name, src, mutation) => {
+      expect(src).not.toContain("useEffect(")
+      expect(src).not.toContain("}, [visible])")
+      expect(src).toContain("onClosed={onClosed}")
+      expect(src).toContain(`if (!${mutation}.isPending) ${mutation}.reset()`)
+    },
+  )
+
   it.each([
-    ["OrgInviteSheet", orgInvite, "invite"],
-    ["HostTeamInviteSheet", teamInvite, "invite"],
-    ["HostWalkupSheet", walkup, "walkup"],
-  ])("%s resets in onClosed and leaves an in-flight mutation alone", (_name, src, mutation) => {
+    ["OrgInviteSheet", orgInvite],
+    ["HostTeamInviteSheet", teamInvite],
+  ])("%s resets through the shared invite form's onClosed", (_name, src) => {
     expect(src).not.toContain("useEffect(")
     expect(src).not.toContain("}, [visible])")
-    expect(src).toContain("onClosed={onClosed}")
-    expect(src).toContain(`if (!${mutation}.isPending) ${mutation}.reset()`)
+    expect(src).toContain("useInviteForm<")
+    expect(src).toContain("onClosed={form.onClosed}")
+  })
+
+  it("the shared invite form resets in onClosed and leaves an in-flight mutation alone", () => {
+    for (const src of [inviteForm, inviteFields]) {
+      expect(src).not.toContain("useEffect(")
+      expect(src).not.toContain("}, [visible])")
+    }
+    expect(inviteForm).toMatch(
+      /const onClosed = useCallback\(\(\) => \{[\s\S]*?if \(!invite\.isPending\) invite\.reset\(\)/,
+    )
   })
 })
 

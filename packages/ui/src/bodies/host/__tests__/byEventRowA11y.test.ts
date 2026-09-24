@@ -40,7 +40,7 @@ describe("the by-event row's spoken label", () => {
   })
 
   it("is the label EventAnalyticsBody gives each row", () => {
-    const body = code(readFileSync(new URL("../EventAnalyticsBody.tsx", import.meta.url), "utf8"))
+    const body = code(readFileSync(new URL("../analytics/AllEventsMode.tsx", import.meta.url), "utf8"))
     expect(body).toContain("accessibilityLabel={byEventRowA11y(t, row.label, value)}")
     expect(body).not.toMatch(/by_event_a11y[\s\S]{0,120}EMPTY_VALUE/)
   })

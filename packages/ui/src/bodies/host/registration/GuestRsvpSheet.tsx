@@ -20,7 +20,7 @@ import {
 } from "../../../data"
 import { appErrorCode, appErrorFields } from "../../../data/errorCode"
 import { TicketTypePicker } from "./TicketTypePicker"
-import { PartySizeStepper, clampPartySize } from "./PartySizeStepper"
+import { PartySizeStepper } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"
 import { ConsentChecks } from "./ConsentChecks"
 import {
@@ -35,7 +35,8 @@ import {
   visibleQuestions,
   type AnswerMap,
 } from "./questionModel"
-import { selectableTicketTypes } from "./registrationModel"
+import { clampPartySize, sortedTicketTypes } from "./registrationModel"
+import { INPUT_MIN_HEIGHT } from "../hostLayout"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"
 import { SegmentedCodeInput } from "../../../primitives/SegmentedCodeInput"
@@ -108,7 +109,7 @@ export function GuestRsvpSheet({
   const [localErrorKey, setLocalErrorKey] = useState<string | null>(null)
   const [sendingCode, setSendingCode] = useState(false)
 
-  const types = useMemo(() => selectableTicketTypes(ticketTypes), [ticketTypes])
+  const types = useMemo(() => sortedTicketTypes(ticketTypes), [ticketTypes])
   const hasTypes = types.length > 0
   const [chosenTicketTypeId, setTicketTypeId] = useState<string | null>(null)
   const ticketTypeId = effectiveTicketTypeId(types, chosenTicketTypeId)
@@ -629,7 +630,7 @@ export function GuestRsvpSheet({
 const useStyles = makeThemedStyles((t) => ({
   input: {
     ...modalSheetInputStyle(t),
-    minHeight: 42,
+    minHeight: INPUT_MIN_HEIGHT,
   },
   stacked: {
     alignSelf: "stretch",

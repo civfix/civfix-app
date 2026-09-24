@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { carouselPage } from "../analyticsModel"
+import { analyticsPageSource } from "./analyticsPageSource"
 
 const CARD = readFileSync(
   new URL("../dashboard/AnalyticsCarouselCard.tsx", import.meta.url),
@@ -14,7 +15,7 @@ const MEASURE = readFileSync(
   "utf8",
 )
 
-const ANALYTICS_BODY = readFileSync(new URL("../EventAnalyticsBody.tsx", import.meta.url), "utf8")
+const ANALYTICS_BODY = analyticsPageSource()
 
 const constant = (name: string): number => {
   const match = CARD.match(new RegExp(`const ${name} = ([0-9+\\s A-Z_]+)\\n`))
@@ -92,7 +93,7 @@ describe("the whole card is one pressable surface, clipped to its own radius", (
     expect(CARD.match(/state\.pressed \|\| webHover\(state\)/g) ?? []).toHaveLength(2)
     expect(CARD.match(/webHover\(state\)/g) ?? [], "no hover-only branch is left").toHaveLength(2)
     expect(CARD).not.toContain("panelHovered")
-    expect(CARD).toMatch(/panels\.map\(\(panel\) => \(\n\s+<View/)
+    expect(CARD).toMatch(/panels\.map\(\(panel, position\) => \(\n\s+<View/)
   })
 
   it("draws the footer row without a pressed or hover fill", () => {

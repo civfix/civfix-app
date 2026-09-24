@@ -4,16 +4,13 @@ import type { TicketTypeDTO } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
+import { ticketTypeSelectable } from "./registrationModel"
 
 export interface TicketTypePickerProps {
   ticketTypes: readonly TicketTypeDTO[]
   selectedId: string | null
   onSelect: (ticketTypeId: string) => void
   disabled?: boolean
-}
-
-export function ticketTypeSelectable(type: TicketTypeDTO): boolean {
-  return type.salesOpen && !type.soldOut
 }
 
 export function TicketTypePicker({

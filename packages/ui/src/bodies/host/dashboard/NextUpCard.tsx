@@ -17,6 +17,7 @@ import { useEventWhen, useRelativeTime, useT } from "../../../i18n"
 import { boardHasTimedSlots, slotDisplayOrder } from "../../eventSlotsModel"
 import { PhaseDot } from "../PhaseHeader"
 import { ShiftRow } from "../ShiftRow"
+import { relativeUntil } from "../hostTime"
 import { hostedEventWhen, hostedEventWindow } from "./dashboardModel"
 
 const MAX_STRIP_SHIFTS = 3
@@ -74,7 +75,7 @@ export function NextUpCard({
     : t("next_up.starts_in", {
         dow: when.dow,
         time: when.timeWithZone,
-        relative: relative(now, Date.parse(event.startsAt)),
+        relative: relativeUntil(relative, Date.parse(event.startsAt), now),
       })
 
   const cardLabel = [

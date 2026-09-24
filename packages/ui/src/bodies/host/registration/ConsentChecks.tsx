@@ -1,7 +1,15 @@
 import React, { useMemo } from "react"
 import { View, Pressable } from "react-native"
 import { currentVersion } from "@civfix/shared/legal"
-import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  MIN_TOUCH_TARGET,
+  useTheme,
+  webCursor,
+  webHover,
+  webTransition,
+} from "../../../theme"
 import { Text, TextLink, Icon, iconMap } from "../../../typography"
 import { useOpenExternal } from "../../../capabilities"
 import { useT } from "../../../i18n"
@@ -133,7 +141,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["2"],
   },
   row: {
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     flexDirection: "row",
     alignItems: "flex-start",
     gap: t.space["3"],

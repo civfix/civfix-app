@@ -21,11 +21,11 @@ import {
 import { useLocale, useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { FeedNotice } from "../FeedNotice"
 import { RoleChip } from "../RoleChip"
 import { RosterRow, type RosterRowMenu } from "../RosterRow"
 import { appErrorCode } from "../../data/errorCode"
 import { type SettableEventMemberRole } from "../../data/eventTeamTiers"
+import { HostStateNotice } from "./HostStateNotice"
 import { HostTeamInviteSheet } from "./HostTeamInviteSheet"
 import {
   inviteDisplayName,
@@ -260,17 +260,13 @@ export function HostTeamBody({ id }: { id: string }) {
 
   if (cleanup.isError || !cleanup.data) {
     return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-      </View>
+      <HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
     )
   }
 
   if (!canManageTeam) {
     return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
-      </View>
+      <HostStateNotice icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
     )
   }
 
@@ -385,9 +381,6 @@ const useStyles = makeThemedStyles((t) => ({
   scroll: {
     flex: 1,
   },
-  fill: {
-    flex: 1,
-  },
   content: {
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["2"],
@@ -424,7 +417,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 12,
+    paddingVertical: t.space["3"],
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: t.colors.border,
   },

@@ -9,12 +9,11 @@ import type {
 } from "@civfix/shared"
 import { EVENT_ANALYTICS_COMPARISON_MIN_EVENTS } from "@civfix/shared"
 import { hostedEventCan } from "./dashboard/dashboardModel"
+import { DAY_MS } from "./hostTime"
 
 export const SUMMARY_PANELS = ["signups", "checkins", "hours", "impact"] as const
 
 export type SummaryPanelKey = (typeof SUMMARY_PANELS)[number]
-
-export const DAY_MS = 86_400_000
 
 const DAY_BUCKET_KEY = /^\d{4}-\d{2}-\d{2}/
 
@@ -59,22 +58,11 @@ export function rangeSlice(
   })
 }
 
-export function seriesValues(points: readonly SeriesPoint[]): (number | null)[] {
-  return points.map((point) => (point.suppressed ? null : point.value))
-}
-
-export function seriesPoints(points: readonly SeriesPoint[]): { x: number; y: number | null }[] {
-  return points.map((point, index) => ({
-    x: parse(point.day) ?? index,
-    y: point.suppressed ? null : point.value,
-  }))
-}
-
 export function hasSeriesData(points: readonly SeriesPoint[]): boolean {
   return points.some((point) => !point.suppressed && (point.value ?? 0) > 0)
 }
 
-export const CARD_SLOT_ROWS = 4
+const CARD_SLOT_ROWS = 4
 
 export function busiestRows(rows: readonly BreakdownRow[], max = CARD_SLOT_ROWS): BreakdownRow[] {
   if (max <= 0) return []
@@ -154,14 +142,22 @@ export interface AnalyticsPickerOption {
   title: string
 }
 
+function firstById<T extends { id: string }>(items: readonly T[]): T[] {
+  const seen = new Set<string>()
+  const out: T[] = []
+  for (const item of items) {
+    if (seen.has(item.id)) continue
+    seen.add(item.id)
+    out.push(item)
+  }
+  return out
+}
+
 export function pickerOptions(
   upcoming: readonly HostedEventDTO[],
   past: readonly HostedEventDTO[],
 ): AnalyticsPickerOption[] {
-  const seen = new Set<string>()
-  return [...upcoming, ...past]
-    .filter((event) => hostedEventCan(event, "view_analytics"))
-    .filter((event) => (seen.has(event.id) ? false : (seen.add(event.id), true)))
+  return firstById([...upcoming, ...past].filter((event) => hostedEventCan(event, "view_analytics")))
     .sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt))
     .map((event) => ({ id: event.id, title: event.title }))
 }
@@ -240,11 +236,11 @@ export function funnelBars(steps: readonly FunnelStep[]): FunnelBar[] {
   })
 }
 
-export const FUNNEL_SIGNUPS_STEP = "signups"
+const FUNNEL_SIGNUPS_STEP = "signups"
 
-export const FUNNEL_CHECKED_IN_STEP = "checked_in"
+const FUNNEL_CHECKED_IN_STEP = "checked_in"
 
-export function funnelCount(steps: readonly FunnelStep[], step: string): number | null {
+function funnelCount(steps: readonly FunnelStep[], step: string): number | null {
   const found = steps.find((entry) => entry.step === step)
   return found === undefined || found.suppressed ? null : found.value
 }
@@ -264,7 +260,7 @@ export function comparisonVisible(data: GetEventAnalyticsResponse): boolean {
 
 export type ComparisonVerdict = "above" | "typical" | "below" | "unknown"
 
-export const COMPARISON_BAND = 0.1
+const COMPARISON_BAND = 0.1
 
 export function comparisonVerdict(
   value: number | null,

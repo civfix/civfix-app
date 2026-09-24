@@ -1,10 +1,10 @@
-import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../../__tests__/sourceGuards"
+import { analyticsPageSource } from "./analyticsPageSource"
 
 const code = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
-const body = code(readFileSync(new URL("../EventAnalyticsBody.tsx", import.meta.url), "utf8"))
+const body = code(analyticsPageSource())
 
 describe("the analytics event picker", () => {
   it("offers the next page of hosted events instead of stopping at the first", () => {

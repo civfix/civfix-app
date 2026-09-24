@@ -1,5 +1,4 @@
 import React, { useCallback } from "react"
-import { View } from "react-native"
 import { nextEventBoundaryMs, hasEventEnded } from "@civfix/shared/host"
 import { makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
@@ -15,9 +14,9 @@ import {
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { FeedNotice } from "../FeedNotice"
 import { LogHoursEditor } from "../LogHoursEditor"
 import { hostLogHoursGate } from "./hostLogHoursGate"
+import { HostStateNotice } from "./HostStateNotice"
 
 export function HostLogHoursBody({ id }: { id: string }) {
   const styles = useStyles()
@@ -55,37 +54,17 @@ export function HostLogHoursBody({ id }: { id: string }) {
   }
 
   if (gate === "error" || event === null) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-      </View>
-    )
+    return <HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
   }
 
   if (gate === "denied") {
     return (
-      <View style={styles.fill}>
-        <FeedNotice
-          plain
-          icon="Lock"
-          title={t("state.no_access_title")}
-          body={t("state.no_access_body")}
-        />
-      </View>
+      <HostStateNotice icon="Lock" title={t("state.no_access_title")} body={t("state.no_access_body")} />
     )
   }
 
   if (gate === "not-yet") {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice
-          plain
-          icon="Clock"
-          title={t("hours.not_yet_title")}
-          body={t("hours.not_yet_body")}
-        />
-      </View>
-    )
+    return <HostStateNotice icon="Clock" title={t("hours.not_yet_title")} body={t("hours.not_yet_body")} />
   }
 
   return (
@@ -108,9 +87,6 @@ export function HostLogHoursBody({ id }: { id: string }) {
 
 const useStyles = makeThemedStyles((t) => ({
   scroll: {
-    flex: 1,
-  },
-  fill: {
     flex: 1,
   },
   content: {

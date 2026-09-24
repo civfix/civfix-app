@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import React, { useCallback, useState } from "react"
 import {
   Platform,
   Pressable,
@@ -14,7 +14,7 @@ import { Icon, Text, iconMap } from "../../../typography"
 import { IconTile, ListRow, SectionCard, SkeletonBlock, SkeletonGroup } from "../../../primitives"
 import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth } from "../../../charts"
 import { useHostAnalyticsSummary } from "../../../data/hooks/analytics"
-import { EMPTY_VALUE, useLocale, useT } from "../../../i18n"
+import { EMPTY_VALUE, useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { FeedNotice } from "../../FeedNotice"
 import {
@@ -25,10 +25,10 @@ import {
   checkInRingA11y,
   ratePercent,
   summaryImpactRows,
-  weekDayLabel,
   weeklyXLabels,
   type SummaryPanelKey,
 } from "../analyticsModel"
+import { useWeekLabel } from "../useWeekLabel"
 
 const HEADER_HEIGHT = 30
 
@@ -177,12 +177,12 @@ export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
               {...pageSettleProps}
               accessibilityLabel={t("card.carousel_a11y")}
             >
-              {panels.map((panel) => (
+              {panels.map((panel, position) => (
                 <View
                   key={panel}
                   accessible
                   accessibilityLabel={t("card.panel_a11y", {
-                    index: panels.indexOf(panel) + 1,
+                    index: position + 1,
                     total: panels.length,
                     name: t(`card.panel_${panel}`),
                   })}
@@ -266,8 +266,7 @@ function Panel({
 }) {
   const th = useTheme()
   const { t } = useT("host-analytics")
-  const { locale } = useLocale()
-  const weekLabel = useWeekLabel(locale)
+  const weekLabel = useWeekLabel()
 
   if (panel === "signups") {
     const daily = data.signupsDaily
@@ -360,10 +359,6 @@ function Panel({
       />
     </PanelFrame>
   )
-}
-
-function useWeekLabel(locale: string): (day: string) => string {
-  return useMemo(() => weekDayLabel(locale), [locale])
 }
 
 function PanelFrame({

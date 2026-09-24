@@ -64,7 +64,7 @@ describe("the log hours screen", () => {
 describe("host mode's action switch", () => {
   it("names the cancel action instead of routing every unknown key to it", () => {
     const src = read("../HostModeBody.tsx")
-    expect(src).toContain('case "cancel":\n          return () => setCancelling(true)')
+    expect(src).toContain('case "cancel":\n          return () => openSheet("cancel")')
     const actionFor = sliceBetween(src, "const actionFor = useCallback(", "[onAnnounce,")
     expect(actionFor).toContain('case "cancel":')
     expect(actionFor).not.toContain("default:")

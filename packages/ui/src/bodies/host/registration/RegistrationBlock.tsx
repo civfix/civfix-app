@@ -25,7 +25,7 @@ import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { appErrorCode } from "../../../data/errorCode"
 import { TicketTypePicker } from "./TicketTypePicker"
-import { PartySizeStepper, clampPartySize } from "./PartySizeStepper"
+import { PartySizeStepper } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"
 import { ConsentChecks } from "./ConsentChecks"
 import {
@@ -35,6 +35,7 @@ import {
   type ConsentState,
 } from "./consentModel"
 import { WaitlistJoinCard } from "./WaitlistJoinCard"
+import { INPUT_MIN_HEIGHT } from "../hostLayout"
 import {
   answerPayload,
   seedAnswers,
@@ -43,11 +44,12 @@ import {
   type AnswerMap,
 } from "./questionModel"
 import {
+  clampPartySize,
   registerErrorKey,
   registerOutcomeKey,
   registrationSurface,
   resolveTicketTypeId,
-  selectableTicketTypes,
+  sortedTicketTypes,
 } from "./registrationModel"
 
 const NO_QUESTIONS: readonly EventQuestionDTO[] = []
@@ -66,7 +68,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
   const { isAuthenticated, isPending: authPending } = useAuthState()
 
   const now = useNow()
-  const ticketTypes = useMemo(() => selectableTicketTypes(cleanup.ticketTypes), [cleanup.ticketTypes])
+  const ticketTypes = useMemo(() => sortedTicketTypes(cleanup.ticketTypes), [cleanup.ticketTypes])
   const surface = registrationSurface({
     status: cleanup.status,
     ended: hasEventEnded(cleanup, now),
@@ -493,7 +495,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
   },
   input: {
-    minHeight: 42,
+    minHeight: INPUT_MIN_HEIGHT,
     paddingHorizontal: t.space["3"],
     borderRadius: t.radius.md,
     borderWidth: 1.5,

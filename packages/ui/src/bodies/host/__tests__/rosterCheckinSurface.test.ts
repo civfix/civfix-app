@@ -9,6 +9,9 @@ const code = (src: string): string =>
 const list = code(read("../RosterCheckinList.tsx"))
 const block = code(read("../EventRosterBlock.tsx"))
 const checkin = code(read("../HostCheckinBody.tsx"))
+const checkinRoster = code(read("../CheckinRosterSection.tsx"))
+const manualEntry = code(read("../CheckinManualEntry.tsx"))
+const paged = code(read("../RosterPagedList.tsx"))
 const detail = code(read("../../EventDetailBody.tsx"))
 const registration = code(read("../registration/registrationModel.ts"))
 const slotsBlock = code(read("../../EventSlotsBlock.tsx"))
@@ -34,17 +37,21 @@ describe("visibleRosterFilters", () => {
 describe("there is ONE check-in row in the package", () => {
   it("lives in RosterCheckinList and is reached from both host surfaces", () => {
     expect(list).toContain("export const RosterCheckinRow")
-    expect(block).toContain("<RosterCheckinList")
-    expect(checkin).toContain("<RosterCheckinList")
-    expect(block).not.toContain("<Avatar")
-    expect(checkin).not.toContain("<Avatar")
+    expect(paged).toContain("<RosterCheckinList {...list} />")
+    expect(block).toContain("<RosterPagedList")
+    expect(checkinRoster).toContain("<RosterPagedList")
+    expect(checkin).toContain("<CheckinRosterSection")
+    for (const surface of [block, checkin, checkinRoster, paged]) {
+      expect(surface).not.toContain("<Avatar")
+    }
   })
 
   it("takes the seat to check in and the seat to undo from the shared pure helpers", () => {
     expect(list).toContain("export function nextCheckinSeat")
     expect(list).toContain("export function lastCheckedInSeat")
-    expect(block).not.toContain("function nextCheckinSeat")
-    expect(checkin).not.toContain("function nextCheckinSeat")
+    for (const surface of [block, checkin, checkinRoster, paged]) {
+      expect(surface).not.toContain("function nextCheckinSeat")
+    }
   })
 })
 
@@ -53,8 +60,9 @@ describe("both roster surfaces group by slot through the shared model", () => {
     expect(list).toContain("groupRosterBySlot(rows, slots,")
     expect(list).toContain("<SlotGroupHeader")
     expect(list).toContain("rosterListKey(item)")
-    expect(block).not.toContain("groupRosterBySlot")
-    expect(checkin).not.toContain("groupRosterBySlot")
+    for (const surface of [block, checkin, checkinRoster, paged]) {
+      expect(surface).not.toContain("groupRosterBySlot")
+    }
   })
 
   it("omits the empty-slot title, because a paged and filtered roster cannot call a slot empty", () => {
@@ -69,8 +77,9 @@ describe("both roster surfaces group by slot through the shared model", () => {
   it("feeds it the event's own slots and zone, never the device's", () => {
     expect(block).toContain("cleanup.data?.slots ?? NO_SLOTS")
     expect(block).toContain("cleanup.data?.timezone ?? undefined")
-    expect(checkin).toContain("slots={cleanup.data.slots}")
-    expect(checkin).toContain("cleanup.data.timezone ?? undefined")
+    expect(checkin).toContain("<CheckinRosterSection cleanup={cleanup.data}")
+    expect(checkinRoster).toContain("slots={cleanup.slots}")
+    expect(checkinRoster).toContain("cleanup.timezone ?? undefined")
   })
 })
 
@@ -84,35 +93,44 @@ describe("the roster block hides what a slot-only event cannot have", () => {
 
 describe("the check-in screen shows who is still waiting", () => {
   it("asks for the not-checked-in projection with the typed search", () => {
-    expect(checkin).toContain('filter: "not_checked_in"')
-    expect(checkin).toContain("q: rosterQuery")
-    expect(checkin).toContain("useDebouncedValue(rosterSearch, 250)")
-    expect(checkin).toContain("enabled: canCheckIn")
+    expect(checkin).toContain("useCheckinRoster(id, canCheckIn, desk.undo)")
+    expect(checkinRoster).toContain('filter: "not_checked_in"')
+    expect(checkinRoster).toContain("q: rosterQuery")
+    expect(checkinRoster).toContain("useDebouncedValue(rosterSearch, ROSTER_SEARCH_DEBOUNCE_MS)")
+    expect(paged).toContain("export const ROSTER_SEARCH_DEBOUNCE_MS = 250\n")
+    expect(checkinRoster).toContain("enabled: canCheckIn")
   })
 
   it("keeps the scan and manual-code actions ABOVE the list", () => {
-    expect(checkin.indexOf('t("action.scan")')).toBeLessThan(checkin.indexOf('t("roster.title")'))
-    expect(checkin.indexOf('t("manual.submit")')).toBeLessThan(checkin.indexOf('t("roster.title")'))
+    expect(checkin.indexOf('t("action.scan")')).toBeGreaterThan(-1)
+    expect(checkin.indexOf('t("action.scan")')).toBeLessThan(checkin.indexOf("<ManualCodeEntry"))
+    expect(checkin.indexOf("<ManualCodeEntry")).toBeLessThan(checkin.indexOf("<CheckinRosterSection"))
+    expect(manualEntry).toContain('t("manual.submit")')
+    expect(checkinRoster).toContain('t("roster.title")')
   })
 
   it("covers loading, error and the everyone-is-in empty state", () => {
-    expect(checkin).toContain('tRoster("roster.loading")')
-    expect(checkin).toContain('tRoster("roster.error")')
-    expect(checkin).toContain('title={t("roster.empty_title")}')
-    expect(checkin).toContain('body={t("roster.empty_body")}')
+    expect(checkinRoster).toContain('tRoster("roster.loading")')
+    expect(checkinRoster).toContain('tRoster("roster.error")')
+    expect(checkinRoster).toContain('title={t("roster.empty_title")}')
+    expect(checkinRoster).toContain('body={t("roster.empty_body")}')
   })
 
   it("pages the list rather than dropping attendees past the first page", () => {
-    expect(checkin).toContain("hasNextPage ?")
-    expect(checkin).toContain("loadMoreWaiting")
+    expect(checkinRoster).toContain("paging={roster}")
+    expect(paged).toContain("hasNextPage ?")
+    expect(paged).toContain("if (!hasNextPage || isFetchingNextPage) return")
+    expect(paged).toContain("void fetchNextPage()")
   })
 
   it("mounts no scroller of its own inside the screen's ScrollView", () => {
-    const imports = list.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
-    expect(imports).not.toMatch(/\bFlatList\b/)
-    expect(imports).not.toMatch(/\bScrollView\b/)
-    expect(imports).not.toMatch(/\bModal\b/)
-    expect(list).not.toMatch(/useScrollHost/)
+    for (const src of [list, paged]) {
+      const imports = src.match(/^import[\s\S]*?from\s+"[^"]+"$/gm)?.join("\n") ?? ""
+      expect(imports).not.toMatch(/\bFlatList\b/)
+      expect(imports).not.toMatch(/\bScrollView\b/)
+      expect(imports).not.toMatch(/\bModal\b/)
+      expect(src).not.toMatch(/useScrollHost/)
+    }
   })
 })
 

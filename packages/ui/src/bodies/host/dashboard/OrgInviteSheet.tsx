@@ -1,27 +1,12 @@
-import React, { useCallback, useState } from "react"
+import React from "react"
 import { View } from "react-native"
-import { TextInput } from "../../../primitives/TextInput"
-import type { OrgInviteIdentifierKind } from "@civfix/shared"
-import {
-  makeThemedStyles,
-  useTheme,
-  webInputReset,
-} from "../../../theme"
+import { makeThemedStyles, useTheme } from "../../../theme"
 import { Text } from "../../../typography"
-import {
-  FilterChip,
-  ModalCardSheet,
-  PrimaryButton,
-  SecondaryButton,
-  SegmentedControl,
-  modalSheetInputFocusedStyle,
-  modalSheetInputStyle,
-  useToast,
-} from "../../../primitives"
+import { FilterChip, ModalCardSheet, PrimaryButton, SecondaryButton } from "../../../primitives"
 import { useT } from "../../../i18n"
 import { useInviteOrganizationMember } from "../../../data/hooks/orgs"
-import { appErrorCode } from "../../../data/errorCode"
-import { INVITE_IDENTIFIER_MAX, inviteIdentifierValue } from "../hostTeamModel"
+import { InviteIdentifierFields } from "../InviteIdentifierFields"
+import { useInviteForm } from "../useInviteForm"
 import {
   ORG_SETTABLE_ROLES,
   orgInviteErrorKey,
@@ -29,7 +14,7 @@ import {
   type OrgSettableRole,
 } from "./dashboardModel"
 
-const IDENTIFIER_KINDS: readonly OrgInviteIdentifierKind[] = ["handle", "email"]
+const DEFAULT_INVITE_ROLE: OrgSettableRole = "member"
 
 export interface OrgInviteSheetProps {
   visible: boolean
@@ -42,64 +27,30 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
   const th = useTheme()
   const { t } = useT("event-dashboard")
   const { t: tEnums } = useT("enums")
-  const toast = useToast()
   const invite = useInviteOrganizationMember(orgId)
-
-  const [identifierKind, setIdentifierKind] = useState<OrgInviteIdentifierKind>("handle")
-  const [identifier, setIdentifier] = useState("")
-  const [role, setRole] = useState<OrgSettableRole>("member")
-  const [focused, setFocused] = useState(false)
-  const [errorText, setErrorText] = useState<string | null>(null)
-
-  const onClosed = useCallback(() => {
-    setIdentifierKind("handle")
-    setIdentifier("")
-    setRole("member")
-    setErrorText(null)
-    setFocused(false)
-    if (!invite.isPending) invite.reset()
-  }, [invite])
-
-  const value = inviteIdentifierValue(identifierKind, identifier)
-  const canSubmit = value !== null && !invite.isPending
-
-  const onPickKind = useCallback((kind: OrgInviteIdentifierKind) => {
-    setIdentifierKind(kind)
-    setIdentifier("")
-    setErrorText(null)
-  }, [])
-
-  const submit = useCallback(() => {
-    if (invite.isPending) return
-    if (value === null) {
-      setErrorText(t(orgInviteIdentifierErrorKey(identifierKind)))
-      return
-    }
-    setErrorText(null)
-    invite.mutate(
-      { identifierKind, identifier: value, role },
-      {
-        onSuccess: () => {
-          toast.show(t("team.invite_sent"), { variant: "success" })
-          onClose()
-        },
-        onError: (err) => setErrorText(t(orgInviteErrorKey(appErrorCode(err)))),
-      },
-    )
-  }, [identifierKind, invite, onClose, role, t, toast, value])
+  const form = useInviteForm<OrgSettableRole>({
+    invite,
+    defaultRole: DEFAULT_INVITE_ROLE,
+    t,
+    identifierErrorKey: orgInviteIdentifierErrorKey,
+    errorKey: orgInviteErrorKey,
+    sentMessage: () => t("team.invite_sent"),
+    onClose,
+  })
+  const { role, setRole } = form
 
   return (
     <ModalCardSheet
       visible={visible}
       onClose={onClose}
-      onClosed={onClosed}
-      onCommit={submit}
+      onClosed={form.onClosed}
+      onCommit={form.submit}
       headerIcon="UserPlus"
       headerIconColor={th.colors.moss["700"]}
       title={t("team.invite_title")}
       dismissLabel={t("team.invite_dismiss_a11y")}
       backdropDismissDisabled={invite.isPending}
-      error={errorText}
+      error={form.errorText}
       actions={
         <>
           <SecondaryButton
@@ -110,42 +61,28 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
           />
           <PrimaryButton
             label={t("team.invite_send")}
-            onPress={submit}
+            onPress={form.submit}
             loading={invite.isPending}
-            disabled={!canSubmit}
+            disabled={!form.canSubmit}
           />
         </>
       }
     >
-      <Text variant="label">{t("team.invite_identifier_kind")}</Text>
-      <SegmentedControl
-        label={t("team.invite_identifier_kind")}
-        selected={identifierKind}
-        onSelect={(key) => onPickKind(key as OrgInviteIdentifierKind)}
-        options={IDENTIFIER_KINDS.map((kind) => ({
-          key: kind,
-          label: kind === "email" ? t("team.by_email") : t("team.by_handle"),
-        }))}
+      <InviteIdentifierFields
+        labels={{
+          kind: t("team.invite_identifier_kind"),
+          byEmail: t("team.by_email"),
+          byHandle: t("team.by_handle"),
+          email: t("team.email"),
+          handle: t("team.handle"),
+        }}
+        identifierKind={form.identifierKind}
+        identifier={form.identifier}
+        onPickKind={form.onPickKind}
+        focused={form.identifierFocused}
+        onFocusChange={form.setIdentifierFocused}
+        onChangeIdentifier={form.setIdentifier}
         disabled={invite.isPending}
-      />
-
-      <Text variant="label">
-        {identifierKind === "email" ? t("team.email") : t("team.handle")}
-      </Text>
-      <TextInput
-        value={identifier}
-        onChangeText={(next) => setIdentifier(next.slice(0, INVITE_IDENTIFIER_MAX))}
-        editable={!invite.isPending}
-        maxLength={INVITE_IDENTIFIER_MAX}
-        accessibilityLabel={identifierKind === "email" ? t("team.email") : t("team.handle")}
-        placeholderTextColor={th.colors.textSubtle}
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType={identifierKind === "email" ? "email-address" : "default"}
-        textContentType={identifierKind === "email" ? "emailAddress" : "username"}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
       />
 
       <Text variant="label">{t("team.invite_role")}</Text>
@@ -169,10 +106,6 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  input: {
-    ...modalSheetInputStyle(t),
-    minHeight: 42,
-  },
   roles: {
     flexDirection: "row",
     flexWrap: "wrap",

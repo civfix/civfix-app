@@ -7,7 +7,7 @@ import {
   registerErrorKey,
   registerOutcomeKey,
   registrationSurface,
-  selectableTicketTypes,
+  sortedTicketTypes,
 } from "../registration/registrationModel"
 
 const type = (over: Partial<TicketTypeDTO> = {}): TicketTypeDTO => ({
@@ -113,7 +113,7 @@ describe("registrationSurface", () => {
 
 describe("ticket type selection", () => {
   it("orders by the host's sort order", () => {
-    const ordered = selectableTicketTypes([
+    const ordered = sortedTicketTypes([
       type({ id: "b", sortOrder: 2 }),
       type({ id: "a", sortOrder: 1 }),
     ])
