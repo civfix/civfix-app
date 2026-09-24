@@ -147,7 +147,7 @@ export function BodyRouter({ entry, view }: BodyRouterProps) {
       ? VIEW_BODY[entry.view ?? view]
       : DETAIL_BODY[entry.kind]
     : VIEW_BODY[view]
-  // A restored entry can name a body this build no longer has; the old switch rendered nothing for it.
+  // A restored entry can name a body this build no longer has; such an entry renders nothing.
   const render: BodyRenderer | undefined = BODY_RENDERERS[id]
   return <>{render?.(entry)}</>
 }

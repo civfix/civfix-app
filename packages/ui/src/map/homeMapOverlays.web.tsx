@@ -7,21 +7,29 @@ import { applyPinElementTheme, makePinElement } from "./pins/pinElement.web"
 import { useLocationPick } from "./locationPickStore"
 import type { DroppedPin } from "./droppedPinStore"
 import type { MarkerLabelT } from "./markerFocus"
-import { DEFAULT_ZOOM } from "./mapCamera"
+import { DEFAULT_ZOOM, PICK_EASE_MS } from "./mapCamera"
 import { centerLngFor, type OcclusionLeftRef } from "./homeMapCamera.web"
 import type { MapLatLng } from "./types"
 
-const PICK_EASE_MS = 500
-
 type MlMapRef = React.RefObject<MlMap | null>
 
-export function useModeMapControls(
-  mapRef: MlMapRef,
-  mapReady: boolean,
-  mode: LayoutMode,
-  navCtrlRef: React.RefObject<maplibregl.NavigationControl | null>,
-  attribCtrlRef: React.RefObject<maplibregl.AttributionControl | null>,
-): void {
+/** `map.remove()` takes every marker and control with it, so each overlay drops its handles with the map. */
+function useReleaseWithMap(mapReady: boolean, release: () => void): void {
+  React.useEffect(() => {
+    if (!mapReady) return
+    return release
+  }, [mapReady])
+}
+
+export interface ModeMapControlsOptions {
+  mapRef: MlMapRef
+  mapReady: boolean
+  mode: LayoutMode
+}
+
+export function useModeMapControls({ mapRef, mapReady, mode }: ModeMapControlsOptions): void {
+  const navCtrlRef = React.useRef<maplibregl.NavigationControl | null>(null)
+  const attribCtrlRef = React.useRef<maplibregl.AttributionControl | null>(null)
   React.useEffect(() => {
     const map = mapRef.current
     if (!map || !mapReady) return
@@ -50,16 +58,28 @@ export function useModeMapControls(
       map.addControl(attribCtrlRef.current, "bottom-left")
     }
   }, [mapReady, mode])
+  useReleaseWithMap(mapReady, () => {
+    navCtrlRef.current = null
+    attribCtrlRef.current = null
+  })
 }
 
-export function useUserLocationDot(
-  mapRef: MlMapRef,
-  mapReady: boolean,
-  userMarkerRef: React.RefObject<Marker | null>,
-  showUserLocation: boolean,
-  userLocation: MapLatLng | null,
-  t: MarkerLabelT,
-): void {
+export interface UserLocationDotOptions {
+  mapRef: MlMapRef
+  mapReady: boolean
+  showUserLocation: boolean
+  userLocation: MapLatLng | null
+  t: MarkerLabelT
+}
+
+export function useUserLocationDot({
+  mapRef,
+  mapReady,
+  showUserLocation,
+  userLocation,
+  t,
+}: UserLocationDotOptions): void {
+  const userMarkerRef = React.useRef<Marker | null>(null)
   React.useEffect(() => {
     const map = mapRef.current
     if (!map || !mapReady) return
@@ -82,19 +102,32 @@ export function useUserLocationDot(
       userMarkerRef.current.getElement().setAttribute("aria-label", t("a11y.userLocation"))
     }
   }, [mapReady, showUserLocation, userLocation, t])
+  useReleaseWithMap(mapReady, () => {
+    userMarkerRef.current = null
+  })
+}
+
+export interface PickMarkerOptions {
+  mapRef: MlMapRef
+  mapReady: boolean
+  pickActive: boolean
+  mode: LayoutMode
+  themeRef: React.RefObject<Theme>
+  scheme: ColorSchemeName
+  occlusionLeftRef: OcclusionLeftRef
 }
 
 /** The first draft of a pick session brings the camera to it once; later drafts only move the marker. */
-export function usePickMarker(
-  mapRef: MlMapRef,
-  mapReady: boolean,
-  pickMarkerRef: React.RefObject<Marker | null>,
-  pickActive: boolean,
-  mode: LayoutMode,
-  themeRef: React.RefObject<Theme>,
-  scheme: ColorSchemeName,
-  occlusionLeftRef: OcclusionLeftRef,
-): void {
+export function usePickMarker({
+  mapRef,
+  mapReady,
+  pickActive,
+  mode,
+  themeRef,
+  scheme,
+  occlusionLeftRef,
+}: PickMarkerOptions): void {
+  const pickMarkerRef = React.useRef<Marker | null>(null)
   const pickDraft = useLocationPick((s) => s.draft)
   const pickPin = useLocationPick((s) => s.pin)
   const pickStartedRef = React.useRef(false)
@@ -133,17 +166,22 @@ export function usePickMarker(
       applyPinElementTheme(pickMarkerRef.current.getElement(), themeRef.current, pickFill)
     }
   }, [mapReady, pickActive, pickDraft, pickPin, mode, scheme])
+  useReleaseWithMap(mapReady, () => {
+    pickMarkerRef.current = null
+  })
 }
 
-export function useDropPinMarker(
-  mapRef: MlMapRef,
-  mapReady: boolean,
-  dropMarkerRef: React.RefObject<Marker | null>,
-  dropRootRef: React.RefObject<Root | null>,
-  droppedPin: DroppedPin | null,
-  scheme: ColorSchemeName,
-  t: MarkerLabelT,
-): void {
+export interface DropPinMarkerOptions {
+  mapRef: MlMapRef
+  mapReady: boolean
+  droppedPin: DroppedPin | null
+  scheme: ColorSchemeName
+  t: MarkerLabelT
+}
+
+export function useDropPinMarker({ mapRef, mapReady, droppedPin, scheme, t }: DropPinMarkerOptions): void {
+  const dropMarkerRef = React.useRef<Marker | null>(null)
+  const dropRootRef = React.useRef<Root | null>(null)
   React.useEffect(() => {
     const map = mapRef.current
     if (!map || !mapReady) return
@@ -181,4 +219,10 @@ export function useDropPinMarker(
       )
     }
   }, [mapReady, droppedPin, t, scheme])
+  useReleaseWithMap(mapReady, () => {
+    const dropRoot = dropRootRef.current
+    if (dropRoot) queueMicrotask(() => dropRoot.unmount())
+    dropRootRef.current = null
+    dropMarkerRef.current = null
+  })
 }

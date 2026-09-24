@@ -22,9 +22,7 @@ import { MapThemeToggle } from "./MapThemeToggle"
 import { useReportFilterStore } from "./filterStore"
 import { useT } from "../i18n"
 import { HEADER_AVATAR_SIZE, HEADER_GLYPH_SIZE } from "../primitives/headerControls"
-import { MAP_ACTION_SIZE } from "../shell/expandedFramePlan"
-
-export const GLASS_CONTROL_SIZE = MAP_ACTION_SIZE
+import { GLASS_CONTROL_SIZE } from "./mapControlMetrics"
 
 export interface MapControlsProps {
   topInset?: number

@@ -69,6 +69,7 @@ export {
   EXPANDED_MIN_WIDTH,
 } from "./expandedFramePlan"
 export type { ExpandedFrame, ExpandedFrameInput } from "./expandedFramePlan"
+export { shellOcclusionLeft } from "./shellOcclusion"
 export { writeOcclusionLeft, clearOcclusionLeft } from "./occlusionVar"
 export { useSearchBarStore } from "./searchBarStore"
 export type { SearchBarState } from "./searchBarStore"

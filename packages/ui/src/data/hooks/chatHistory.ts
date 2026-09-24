@@ -2,7 +2,14 @@ import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStat
 import { useInfiniteQuery, type QueryClient } from "@tanstack/react-query"
 import type { ChatHistoryResponse, ChatItem, ChatMessageDTO, RoomKind } from "@civfix/shared"
 import type { ApiClient } from "@civfix/shared/client"
-import { applyHistoryCacheOps, patchMessageInPages, prunableFrameIds, type HistoryCacheOp } from "../inbound"
+import {
+  applyHistoryCacheOps,
+  journalFrames,
+  patchMessageInPages,
+  prunableFrameIds,
+  type HistoryCacheOp,
+  type InboundFrame,
+} from "../inbound"
 import { queryKeys } from "../keys"
 import { roomEndpoints, type ChatHistoryData } from "./chatRoom"
 
@@ -171,13 +178,17 @@ export function useChatHistoryCache({
     [queryClient, roomId, roomKind, isHistoryFetchInFlight],
   )
 
+  const journalInbound = useCallback((batch: InboundFrame[]) => {
+    cacheOpsRef.current = journalFrames(cacheOpsRef.current, batch)
+  }, [])
+
   const resetHistoryJournal = useCallback(() => {
     cacheOpsRef.current = []
     roomGenerationRef.current++
   }, [])
 
   return {
-    cacheOpsRef,
+    journalInbound,
     findMessage,
     isHistoryFetchInFlight,
     drainCacheOps,

@@ -1,10 +1,15 @@
-import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from "react"
-import { preserveViewerFields, type ChatItem, type ChatMessageDTO, type RoomKind } from "@civfix/shared"
+import { useEffect, type Dispatch, type SetStateAction } from "react"
+import { preserveViewerFields, type ChatItem, type RoomKind } from "@civfix/shared"
 import { applyUpdatesToWindow } from "../aroundWindow"
 import { frameInRoom, isFatalRoomErrorCode, isSendRejectionErrorCode } from "../inbound"
 import type { ChatConnState, ChatSocketLike } from "../types"
-import { withPresenceChange } from "./chatPresence"
+import type { useChatHistoryCache } from "./chatHistory"
+import type { useChatInbound } from "./chatInbound"
+import type { useChatOutbox } from "./chatOutbox"
+import { withPresenceChange, type useChatPresence } from "./chatPresence"
+import type { useChatReadAck } from "./chatReadAck"
 import type { ChatRoomError } from "./chatRoom"
+import type { useChatTyping } from "./chatTyping"
 
 export interface ChatRoomSocketDeps {
   socket: ChatSocketLike
@@ -15,23 +20,19 @@ export interface ChatRoomSocketDeps {
   setConnection: Dispatch<SetStateAction<ChatConnState>>
   setJoinRejected: Dispatch<SetStateAction<ChatRoomError | null>>
   setTransientError: Dispatch<SetStateAction<ChatRoomError | null>>
-  setOnlineUserIds: Dispatch<SetStateAction<Set<string>>>
   setAroundWindow: Dispatch<SetStateAction<ChatItem[] | null>>
-  patchMessageRef: MutableRefObject<(messageId: string, patch: Partial<ChatMessageDTO>) => void>
-  findMessage: (messageId: string) => ChatMessageDTO | undefined
-  reconcile: (message: ChatMessageDTO, explicitClientId?: string, viewerTruth?: boolean) => void
-  discardPendingInbound: () => void
-  markTyping: (userId: string) => void
-  clearTypingFor: (userId: string) => void
-  failInFlightSends: () => void
-  clearAllSendTimers: () => void
-  resetReadAck: () => void
-  flushPendingReadAck: () => void
+  historyCache: Pick<ReturnType<typeof useChatHistoryCache>, "findMessage" | "patchMessage">
+  inbound: Pick<ReturnType<typeof useChatInbound>, "reconcile" | "discardPendingInbound">
+  typing: Pick<ReturnType<typeof useChatTyping>, "markTyping" | "clearTypingFor">
+  presence: Pick<ReturnType<typeof useChatPresence>, "setOnlineUserIds">
+  outbox: Pick<ReturnType<typeof useChatOutbox>, "failInFlightSends" | "clearAllSendTimers">
+  readAck: Pick<ReturnType<typeof useChatReadAck>, "resetReadAck" | "flushPendingReadAck">
 }
 
 /**
  * Joins the room on the shared socket and routes its frames. Teardown flushes the room's pending read
- * watermark before leaving, so it must stay the first passive effect `useChat` declares.
+ * watermark before leaving, so `useChat` must declare this effect before its reset and drain effects.
+ * The concern objects change identity every render; only their stable members are effect dependencies.
  */
 export function useChatRoomSocket({
   socket,
@@ -42,19 +43,21 @@ export function useChatRoomSocket({
   setConnection,
   setJoinRejected,
   setTransientError,
-  setOnlineUserIds,
   setAroundWindow,
-  patchMessageRef,
-  findMessage,
-  reconcile,
-  discardPendingInbound,
-  markTyping,
-  clearTypingFor,
-  failInFlightSends,
-  clearAllSendTimers,
-  resetReadAck,
-  flushPendingReadAck,
+  historyCache,
+  inbound,
+  typing,
+  presence,
+  outbox,
+  readAck,
 }: ChatRoomSocketDeps): void {
+  const { findMessage, patchMessage } = historyCache
+  const { reconcile, discardPendingInbound } = inbound
+  const { markTyping, clearTypingFor } = typing
+  const { setOnlineUserIds } = presence
+  const { failInFlightSends, clearAllSendTimers } = outbox
+  const { resetReadAck, flushPendingReadAck } = readAck
+
   useEffect(() => {
     if (!enabled) {
       setConnection("closed")
@@ -95,7 +98,7 @@ export function useChatRoomSocket({
           if (frameInRoom(frame, roomId, roomKind)) {
             const local = findMessage(frame.message.id)
             if (local) {
-              patchMessageRef.current(frame.message.id, preserveViewerFields(local, frame.message))
+              patchMessage(frame.message.id, preserveViewerFields(local, frame.message))
             }
           }
           break
@@ -147,7 +150,7 @@ export function useChatRoomSocket({
     markTyping,
     clearTypingFor,
     findMessage,
-    patchMessageRef,
+    patchMessage,
     failInFlightSends,
     clearAllSendTimers,
     resetReadAck,

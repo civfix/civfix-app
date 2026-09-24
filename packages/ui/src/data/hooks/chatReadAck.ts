@@ -49,11 +49,32 @@ export function useChatReadAck({ socket, queryClient, roomId, roomKind, stampRoo
     pendingAckRef.current = null
   }, [])
 
-  return { readAckTimer, lastAckedIdRef, pendingAckRef, sendReadAck, flushPendingReadAck, resetReadAck }
+  const cancelScheduledReadAck = useCallback(() => {
+    if (readAckTimer.current) {
+      clearTimeout(readAckTimer.current)
+      readAckTimer.current = null
+    }
+  }, [])
+
+  const scheduleReadAck = useCallback(
+    (target: PendingReadAck): (() => void) | undefined => {
+      if (lastAckedIdRef.current === target.upToId) return undefined
+      pendingAckRef.current = target
+      if (readAckTimer.current) clearTimeout(readAckTimer.current)
+      readAckTimer.current = setTimeout(() => {
+        readAckTimer.current = null
+        sendReadAck(target.upToId)
+      }, READ_ACK_DEBOUNCE_MS)
+      return cancelScheduledReadAck
+    },
+    [sendReadAck, cancelScheduledReadAck],
+  )
+
+  return { scheduleReadAck, flushPendingReadAck, resetReadAck }
 }
 
 export interface ReadAckDebounceDeps {
-  readAck: ReturnType<typeof useChatReadAck>
+  scheduleReadAck: ReturnType<typeof useChatReadAck>["scheduleReadAck"]
   enabled: boolean
   suppressReadAcks: boolean
   connection: ChatConnState
@@ -64,7 +85,7 @@ export interface ReadAckDebounceDeps {
 
 /** Acks the newest confirmed message once it has stayed newest for the debounce window. */
 export function useDebouncedReadAck({
-  readAck,
+  scheduleReadAck,
   enabled,
   suppressReadAcks,
   connection,
@@ -72,22 +93,8 @@ export function useDebouncedReadAck({
   roomId,
   roomKind,
 }: ReadAckDebounceDeps): void {
-  const { readAckTimer, lastAckedIdRef, pendingAckRef, sendReadAck } = readAck
   useEffect(() => {
     if (!enabled || suppressReadAcks || connection !== "open" || !newestMessageId) return
-    if (lastAckedIdRef.current === newestMessageId) return
-    pendingAckRef.current = { roomId, roomKind, upToId: newestMessageId }
-    if (readAckTimer.current) clearTimeout(readAckTimer.current)
-    readAckTimer.current = setTimeout(() => {
-      readAckTimer.current = null
-      sendReadAck(newestMessageId)
-    }, READ_ACK_DEBOUNCE_MS)
-
-    return () => {
-      if (readAckTimer.current) {
-        clearTimeout(readAckTimer.current)
-        readAckTimer.current = null
-      }
-    }
-  }, [connection, newestMessageId, enabled, suppressReadAcks, roomId, roomKind, sendReadAck])
+    return scheduleReadAck({ roomId, roomKind, upToId: newestMessageId })
+  }, [connection, newestMessageId, enabled, suppressReadAcks, roomId, roomKind, scheduleReadAck])
 }

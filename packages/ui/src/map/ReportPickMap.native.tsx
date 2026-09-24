@@ -42,7 +42,7 @@ import {
   type MapPoint,
 } from "./clusterer"
 import { radiusCircleFeature } from "./radiusCircle"
-import { MARKER_PRESS_GUARD_MS } from "./mapCamera"
+import { MARKER_PRESS_GUARD_MS } from "./markerFocus"
 import {
   REPORT_PICK_FLY_MS,
   REPORT_PICK_MEETING_PIN_OPACITY,

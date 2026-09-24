@@ -1,6 +1,5 @@
 import * as React from "react"
-import maplibregl, { type Map as MlMap, type Marker } from "maplibre-gl"
-import type { Root } from "react-dom/client"
+import maplibregl, { type Map as MlMap } from "maplibre-gl"
 import type { BBox } from "@civfix/shared"
 import { useLayoutMode, useTheme, ThemeProvider, type ColorSchemeName } from "../theme"
 import { useT } from "../i18n"
@@ -76,10 +75,6 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const mapRef = React.useRef<MlMap | null>(null)
   const markersRef = React.useRef<globalThis.Map<string, MarkerEntry>>(new globalThis.Map())
-  const userMarkerRef = React.useRef<Marker | null>(null)
-  const pickMarkerRef = React.useRef<Marker | null>(null)
-  const navCtrlRef = React.useRef<maplibregl.NavigationControl | null>(null)
-  const attribCtrlRef = React.useRef<maplibregl.AttributionControl | null>(null)
   const [mapReady, setMapReady] = React.useState(false)
   const initialCenterRef = React.useRef(initialCenter)
   const mode = useLayoutMode()
@@ -125,8 +120,6 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
   })
 
   const droppedPin = useDroppedPin((s) => s.pin)
-  const dropMarkerRef = React.useRef<Marker | null>(null)
-  const dropRootRef = React.useRef<Root | null>(null)
   const styleSchemeRef = React.useRef<ColorSchemeName | null>(null)
 
   const { index, query } = useClusters(points)
@@ -343,22 +336,14 @@ export const Map = React.forwardRef<MapHandle, MapProps>(function Map(props, ref
       map.remove()
       mapRef.current = null
       disposeMarkers(markers)
-      const dropRoot = dropRootRef.current
-      if (dropRoot) queueMicrotask(() => dropRoot.unmount())
-      dropRootRef.current = null
-      dropMarkerRef.current = null
-      userMarkerRef.current = null
-      pickMarkerRef.current = null
-      navCtrlRef.current = null
-      attribCtrlRef.current = null
       setMapReady(false)
     }
   }, [runner])
 
-  useModeMapControls(mapRef, mapReady, mode, navCtrlRef, attribCtrlRef)
-  useUserLocationDot(mapRef, mapReady, userMarkerRef, showUserLocation, userLocation, t)
-  usePickMarker(mapRef, mapReady, pickMarkerRef, pickActive, mode, themeRef, th.scheme, occlusionLeftRef)
-  useDropPinMarker(mapRef, mapReady, dropMarkerRef, dropRootRef, droppedPin, th.scheme, t)
+  useModeMapControls({ mapRef, mapReady, mode })
+  useUserLocationDot({ mapRef, mapReady, showUserLocation, userLocation, t })
+  usePickMarker({ mapRef, mapReady, pickActive, mode, themeRef, scheme: th.scheme, occlusionLeftRef })
+  useDropPinMarker({ mapRef, mapReady, droppedPin, scheme: th.scheme, t })
 
   React.useEffect(() => {
     const map = mapRef.current

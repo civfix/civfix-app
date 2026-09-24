@@ -38,6 +38,7 @@ import {
   markerNodeIsActive,
   nativeMarkerId,
   targetMarkerA11yLabel,
+  MARKER_PRESS_GUARD_MS,
   type MarkerPressEvent,
 } from "./markerFocus"
 import {
@@ -54,7 +55,6 @@ import {
   CLUSTER_FLY_MS,
   DEFAULT_ZOOM,
   FOCUS_ZOOM,
-  MARKER_PRESS_GUARD_MS,
 } from "./mapCamera"
 import type { MapProps, MapHandle } from "./types"
 

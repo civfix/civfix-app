@@ -70,7 +70,6 @@ export function useTotalUnread(): number {
   return query.data ?? 0
 }
 
-
 export interface UseChatResult {
   items: ChatItem[]
   isLoading: boolean
@@ -141,18 +140,11 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
   const [connection, setConnection] = useState<ChatConnState>(socket.getStatus())
   const [joinRejected, setJoinRejected] = useState<ChatRoomError | null>(null)
   const [transientError, setTransientError] = useState<ChatRoomError | null>(null)
-  const { onlineCount, setOnlineUserIds } = useChatPresence(myUserId)
-  const { typingUserIds, typingTimers, clearTypingState, markTyping, clearTypingFor, sendTyping } =
-    useChatTyping({ socket, roomId, roomKind, stampRoomKind, enabled })
-  const {
-    cacheOpsRef,
-    findMessage,
-    isHistoryFetchInFlight,
-    drainCacheOps,
-    refreshNewestPage,
-    patchMessage,
-    resetHistoryJournal,
-  } = useChatHistoryCache({
+  const presence = useChatPresence(myUserId)
+  const { setOnlineUserIds } = presence
+  const typing = useChatTyping({ socket, roomId, roomKind, stampRoomKind, enabled })
+  const { clearTypingState } = typing
+  const historyCache = useChatHistoryCache({
     api,
     queryClient,
     roomId,
@@ -164,15 +156,8 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     setAroundWindow,
     pruneLiveMessages,
   })
-  const {
-    send,
-    retry,
-    replayOutbox,
-    settleSend,
-    clearAllSendTimers,
-    resetSendTracking,
-    failInFlightSends,
-  } = useChatOutbox({
+  const { findMessage, patchMessage, drainCacheOps, refreshNewestPage, resetHistoryJournal } = historyCache
+  const outboxActions = useChatOutbox({
     socket,
     roomId,
     roomKind,
@@ -186,16 +171,17 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     setTransientError,
     findMessage,
   })
-  const { reconcile, discardPendingInbound } = useChatInbound({
+  const { send, retry, replayOutbox, resetSendTracking } = outboxActions
+  const inbound = useChatInbound({
     queryClient,
     roomId,
     roomKind,
-    cacheOpsRef,
-    isHistoryFetchInFlight,
+    journalInbound: historyCache.journalInbound,
+    isHistoryFetchInFlight: historyCache.isHistoryFetchInFlight,
     setOutbox,
     setLiveMessages,
     pruneLiveMessages,
-    settleSend,
+    settleSend: outboxActions.settleSend,
   })
   const { aroundLoading, fetchAround, clearAround } = useChatAroundWindow({
     api,
@@ -205,7 +191,6 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     setAroundWindow,
   })
   const readAck = useChatReadAck({ socket, queryClient, roomId, roomKind, stampRoomKind })
-  const patchMessageRef = useRef<(messageId: string, patch: Partial<ChatMessageDTO>) => void>(() => {})
   const replayOnReconnectRef = useRef<() => void>(() => {})
   const wasOpenRef = useRef(false)
 
@@ -221,18 +206,13 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     setConnection,
     setJoinRejected,
     setTransientError,
-    setOnlineUserIds,
     setAroundWindow,
-    patchMessageRef,
-    findMessage,
-    reconcile,
-    discardPendingInbound,
-    markTyping,
-    clearTypingFor,
-    failInFlightSends,
-    clearAllSendTimers,
-    resetReadAck: readAck.resetReadAck,
-    flushPendingReadAck: readAck.flushPendingReadAck,
+    historyCache,
+    inbound,
+    typing,
+    presence,
+    outbox: outboxActions,
+    readAck,
   })
 
   useEffect(() => {
@@ -244,9 +224,9 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     setOnlineUserIds(new Set())
     clearTypingState()
     clearAround()
-  }, [roomId, roomKind, clearTypingState])
+  }, [roomId, roomKind, clearTypingState, resetSendTracking, resetHistoryJournal, clearAround])
 
-  useClearTypingTimersOnUnmount(typingTimers)
+  useClearTypingTimersOnUnmount(typing.typingTimers)
 
   // The reconnect effect is keyed on the connection edge alone; the replay reads the outbox, history and
   // senders of the last committed render through this ref instead of re-running on each of them.
@@ -267,16 +247,12 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     wasOpenRef.current = open
   }, [connection])
 
-  useLayoutEffect(() => {
-    patchMessageRef.current = patchMessage
-  }, [patchMessage])
-
   useEffect(() => {
     if (!history.isFetching) drainCacheOps()
   }, [history.isFetching, drainCacheOps])
 
   const { toggleReaction, edit, deleteMessage, setPinned, createPoll, votePoll, closePoll } =
-    useChatMessageActions({ api, roomId, roomKind, findMessage, patchMessage, reconcile })
+    useChatMessageActions({ api, roomId, roomKind, findMessage, patchMessage, reconcile: inbound.reconcile })
 
   const items = useMemo<ChatItem[]>(() => {
     const historyItems: ChatMessageDTO[] = (history.data?.pages ?? [])
@@ -305,7 +281,15 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     return null
   }, [items])
 
-  useDebouncedReadAck({ readAck, enabled, suppressReadAcks, connection, newestMessageId, roomId, roomKind })
+  useDebouncedReadAck({
+    scheduleReadAck: readAck.scheduleReadAck,
+    enabled,
+    suppressReadAcks,
+    connection,
+    newestMessageId,
+    roomId,
+    roomKind,
+  })
 
   const historyForbidden = isErrorCode(history.error, ErrorCode.FORBIDDEN)
   const roomError =
@@ -339,9 +323,9 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     closePoll,
     toggleReaction,
     retry,
-    sendTyping,
-    typingUserIds,
-    onlineCount,
+    sendTyping: typing.sendTyping,
+    typingUserIds: typing.typingUserIds,
+    onlineCount: presence.onlineCount,
     aroundWindow,
     aroundLoading,
     fetchAround,

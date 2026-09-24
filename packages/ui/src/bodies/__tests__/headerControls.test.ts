@@ -7,6 +7,7 @@ import {
   HEADER_CONTROL_SIZE,
   HEADER_GLYPH_SIZE,
 } from "../../primitives/headerControls"
+import { GLASS_CONTROL_SIZE } from "../../map/mapControlMetrics"
 import { MAP_ACTION_SIZE, RAIL_BRAND_GLYPH_EM } from "../../shell/expandedFramePlan"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
@@ -42,6 +43,8 @@ describe("one header-control token set", () => {
   it("keeps the map's compact row optically centred against the glass controls beside it", () => {
     const map = read("../../map/MapHeaderActions.tsx")
     expect(map).toContain("const rowCenterOffset = (GLASS_CONTROL_SIZE - HEADER_CONTROL_SIZE) / 2")
+    expect(map).toContain('import { GLASS_CONTROL_SIZE } from "./mapControlMetrics"')
+    expect(GLASS_CONTROL_SIZE).toBe(MAP_ACTION_SIZE)
     expect(map).toContain('{ top: topInset + space["2"] + rowCenterOffset }')
     expect(MAP_ACTION_SIZE - HEADER_CONTROL_SIZE).toBe(0)
   })

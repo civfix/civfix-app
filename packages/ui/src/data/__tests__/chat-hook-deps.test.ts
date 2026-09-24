@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { expectWrittenInLayoutEffect, sliceBetween } from "../../__tests__/sourceGuards"
+import { expectInSourceOrder, expectWrittenInLayoutEffect, sliceBetween } from "../../__tests__/sourceGuards"
 
 const SRC = readFileSync(new URL("../hooks/chat.ts", import.meta.url), "utf8")
 const OUTBOX = readFileSync(new URL("../hooks/chatOutbox.ts", import.meta.url), "utf8")
@@ -14,7 +14,7 @@ const ACTIONS = readFileSync(new URL("../hooks/chatMessageActions.ts", import.me
 
 describe("useChat reconnect replay", () => {
   it("fires only on the connection edge", () => {
-    const effect = sliceBetween(SRC, 'const open = connection === "open"', "patchMessageRef.current = patchMessage")
+    const effect = sliceBetween(SRC, 'const open = connection === "open"', "if (!history.isFetching) drainCacheOps()")
     expect(effect).toContain("if (open && !wasOpenRef.current) replayOnReconnectRef.current()")
     expect(effect).toContain("}, [connection])")
   })
@@ -26,6 +26,20 @@ describe("useChat reconnect replay", () => {
     expect(replay).toContain("refreshNewestPage()")
     const outboxReplay = sliceBetween(OUTBOX, "const replayOutbox = () => {", "const send = useCallback")
     expect(outboxReplay).toContain("replayableEntries(outbox,")
+  })
+})
+
+describe("useChat effect order", () => {
+  it("declares the socket lifecycle, room reset, typing unmount, reconnect replay, drain and read-ack debounce in that order", () => {
+    expectInSourceOrder(SRC, [
+      "useChatRoomSocket({",
+      "setLiveMessages([])",
+      "useClearTypingTimersOnUnmount(",
+      "replayOnReconnectRef.current = () => {",
+      "if (open && !wasOpenRef.current) replayOnReconnectRef.current()",
+      "if (!history.isFetching) drainCacheOps()",
+      "useDebouncedReadAck({",
+    ])
   })
 })
 

@@ -1,14 +1,7 @@
-import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react"
+import { useCallback, useRef, type Dispatch, type SetStateAction } from "react"
 import type { QueryClient } from "@tanstack/react-query"
 import { effectiveClientId, type ChatMessageDTO, type OutboxEntry, type RoomKind } from "@civfix/shared"
-import {
-  foldInboundBatch,
-  foldInboundIntoPages,
-  journalFrames,
-  prunableFrameIds,
-  type HistoryCacheOp,
-  type InboundFrame,
-} from "../inbound"
+import { foldInboundBatch, foldInboundIntoPages, prunableFrameIds, type InboundFrame } from "../inbound"
 import { queryKeys } from "../keys"
 import { linkLocalChatAttachments } from "../localChatAttachments"
 import type { ChatHistoryData } from "./chatRoom"
@@ -19,7 +12,7 @@ export interface ChatInboundDeps {
   queryClient: QueryClient
   roomId: string
   roomKind: RoomKind
-  cacheOpsRef: MutableRefObject<HistoryCacheOp[]>
+  journalInbound: (batch: InboundFrame[]) => void
   isHistoryFetchInFlight: () => boolean
   setOutbox: Dispatch<SetStateAction<OutboxEntry[]>>
   setLiveMessages: Dispatch<SetStateAction<ChatMessageDTO[]>>
@@ -32,7 +25,7 @@ export function useChatInbound({
   queryClient,
   roomId,
   roomKind,
-  cacheOpsRef,
+  journalInbound,
   isHistoryFetchInFlight,
   setOutbox,
   setLiveMessages,
@@ -49,7 +42,7 @@ export function useChatInbound({
     inboundBuffer.current = []
     setOutbox((prev) => foldInboundBatch(prev, [], batch).outbox)
     if (isHistoryFetchInFlight()) {
-      cacheOpsRef.current = journalFrames(cacheOpsRef.current, batch)
+      journalInbound(batch)
       setLiveMessages((prev) => foldInboundBatch([], prev, batch).liveMessages)
       return
     }
@@ -64,7 +57,7 @@ export function useChatInbound({
     } else {
       setLiveMessages((prev) => foldInboundBatch([], prev, batch).liveMessages)
     }
-  }, [queryClient, roomId, roomKind, isHistoryFetchInFlight, pruneLiveMessages])
+  }, [queryClient, roomId, roomKind, journalInbound, isHistoryFetchInFlight, pruneLiveMessages])
 
   const reconcile = useCallback(
     (message: ChatMessageDTO, explicitClientId?: string, viewerTruth?: boolean) => {

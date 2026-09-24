@@ -10,9 +10,7 @@ import {
   useMapViewport,
   useLayoutMode,
   enabledCategoriesArray,
-  useSidebarStore,
-  clampSidebarWidth,
-  expandedFramePlan,
+  shellOcclusionLeft,
   useAppPromoStore,
   openDropPinMenu,
   dropPinCameraTarget,
@@ -39,19 +37,8 @@ import { readCameraSnapshot, writeCameraSnapshot } from "@/features/map/camera-s
 import { resolvePreciseCenterAfterPrompt, getBrowserPosition } from "@/lib/locate"
 import { useMapRecenterStore } from "@/features/map/map-recenter"
 
-/**
- * The rail and card overlay the map's left edge in landscape. Read at call time, so a caller that has just
- * pushed onto the nav stack sees the card it brought back.
- */
-function shellOcclusionLeft(): number {
-  return expandedFramePlan({
-    view: useNavStore.getState().view,
-    stackLength: useNavStore.getState().stack.length,
-    sidebarWidth: clampSidebarWidth(
-      useSidebarStore.getState().width,
-      typeof window === "undefined" ? 0 : window.innerWidth,
-    ),
-  }).occlusionLeft
+function currentShellOcclusionLeft(): number {
+  return shellOcclusionLeft(typeof window === "undefined" ? 0 : window.innerWidth)
 }
 
 export function HomeMap() {
@@ -273,7 +260,7 @@ export function HomeMap() {
         sheetDetent: useNavStore.getState().snap,
         mode: layoutMode,
         // Read after `openDropPinMenu`, whose push brings the card back in map mode.
-        occlusionLeft: shellOcclusionLeft(),
+        occlusionLeft: currentShellOcclusionLeft(),
       })
       if (viewportBefore) {
         captureDropPinCamera(
@@ -314,7 +301,7 @@ export function HomeMap() {
       onPressBlend={onPressBlend}
       onPressMap={onPressMap}
       onLongPressMap={onLongPressMap}
-      occlusionLeft={shellOcclusionLeft}
+      occlusionLeft={currentShellOcclusionLeft}
     />
   )
 }

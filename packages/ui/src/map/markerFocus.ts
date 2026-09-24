@@ -3,6 +3,12 @@ import type { ClusterNode } from "./clusterer"
 import type { FocusedEntity } from "./mapFocusStore"
 import type { MapFlyToHighlight } from "./mapFlyToStore"
 
+/**
+ * A native marker tap also fires the map's own onPress; a map press arriving within this window after a
+ * marker press is treated as that same tap and dropped.
+ */
+export const MARKER_PRESS_GUARD_MS = 350
+
 export function markerNodeIsActive(
   node: ClusterNode,
   focusedPinId: string | null,

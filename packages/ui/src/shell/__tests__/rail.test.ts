@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { MOTION } from "../../theme/motion"
-import { DOCK_MOUNT_MS, DOCK_MOUNT_SCALE_FROM, DOCK_TAB_GLYPH_SIZE } from "../tabBarLogic"
+import { DOCK_MOUNT_MS, DOCK_MOUNT_SCALE_FROM, DOCK_TAB_GLYPH_SIZE, TAB_ICON_STROKE_WIDTH } from "../tabBarLogic"
 
 const rail = readFileSync(new URL("../Rail.tsx", import.meta.url), "utf8")
 const code = rail.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -64,9 +64,10 @@ describe("system parity: one neutral ink, selection is the lozenge - everywhere,
   it("never tints a glyph with the accent, and draws tab icons at the dock's weight", () => {
     expect(code).not.toContain("colors.accent")
     expect(rail).toContain("color={th.colors.textMuted}")
-    expect(rail).toContain("const RAIL_ICON = DOCK_TAB_GLYPH_SIZE")
+    expect(rail).toContain("size={DOCK_TAB_GLYPH_SIZE}")
     expect(DOCK_TAB_GLYPH_SIZE).toBe(24)
-    expect(rail).toContain("const RAIL_ICON_STROKE = 2.4")
+    expect(rail).toContain("strokeWidth={TAB_ICON_STROKE_WIDTH}")
+    expect(TAB_ICON_STROKE_WIDTH).toBe(2.4)
   })
 
   it("lights the orb with the SAME lozenge tint the tabs use, not a solid fill", () => {

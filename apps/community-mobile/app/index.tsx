@@ -16,9 +16,7 @@ import {
   useMapViewport,
   useReportFilterStore,
   enabledCategoriesArray,
-  useSidebarStore,
-  clampSidebarWidth,
-  expandedFramePlan,
+  shellOcclusionLeft,
   defaultRenderBody,
   openDropPinMenu,
   dropPinCameraTarget,
@@ -448,11 +446,7 @@ export default function MapHomeScreen() {
         topInset: insets.top,
         sheetDetent: useNavStore.getState().snap,
         mode: layoutMode,
-        occlusionLeft: expandedFramePlan({
-          view: useNavStore.getState().view,
-          stackLength: useNavStore.getState().stack.length,
-          sidebarWidth: clampSidebarWidth(useSidebarStore.getState().width, windowWidth),
-        }).occlusionLeft,
+        occlusionLeft: shellOcclusionLeft(windowWidth),
       })
       if (viewportBefore) {
         captureDropPinCamera(

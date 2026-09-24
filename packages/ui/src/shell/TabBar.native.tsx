@@ -92,6 +92,7 @@ const PILL_HEIGHT = selectedPillRect(0, 0).height
 const DOCKED_D = H - DOCK_MORPH_SHRINK
 const FIELD_PAD = space["5"]
 const FIELD_H = space["10"]
+const CLEAR_BUTTON_SIZE = space["10"]
 const FIELD_GUTTER = space["4"]
 const DOCKED_MAG_X = DOCKED_D + G + FIELD_PAD
 
@@ -622,14 +623,14 @@ const useStyles = makeThemedStyles((t) => ({
   },
   clear: {
     position: "absolute",
-    top: H / 2 - FIELD_H / 2,
-    right: (DOCKED_D - FIELD_H) / 2,
-    width: FIELD_H,
-    height: FIELD_H,
+    top: H / 2 - CLEAR_BUTTON_SIZE / 2,
+    right: (DOCKED_D - CLEAR_BUTTON_SIZE) / 2,
+    width: CLEAR_BUTTON_SIZE,
+    height: CLEAR_BUTTON_SIZE,
   },
   clearHit: {
-    width: FIELD_H,
-    height: FIELD_H,
+    width: CLEAR_BUTTON_SIZE,
+    height: CLEAR_BUTTON_SIZE,
     alignItems: "center",
     justifyContent: "center",
   },
