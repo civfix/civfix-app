@@ -221,7 +221,7 @@ describe("toAppError fallbackMessage", () => {
     )
   })
 
-  it("keeps the value's own message and the default fallback when no option is given", () => {
+  it("keeps the value's own message over a fallback, and the default fallback when no option is given", () => {
     expect(toAppError(new Error("offline"), { fallbackMessage: "x" }).message).toBe("offline")
     expect(toAppError("boom").message).toBe("Unknown error")
   })

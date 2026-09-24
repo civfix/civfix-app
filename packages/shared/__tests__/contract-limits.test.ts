@@ -351,3 +351,13 @@ describe("guest registration refusal reasons", () => {
     ])
   })
 })
+
+describe("content report details", () => {
+  it("caps the free-text detail at CONTENT_REPORT_DETAILS_MAX", async () => {
+    const { CONTENT_REPORT_DETAILS_MAX, ReportContentRequestSchema } = await import("../src/index.js")
+    expect(CONTENT_REPORT_DETAILS_MAX).toBe(1000)
+    const base = { subjectType: "post", subjectId: "00000000-0000-4000-8000-000000000001", reason: "spam" }
+    expect(ReportContentRequestSchema.safeParse({ ...base, details: "a".repeat(1000) }).success).toBe(true)
+    expect(ReportContentRequestSchema.safeParse({ ...base, details: "a".repeat(1001) }).success).toBe(false)
+  })
+})

@@ -26,9 +26,6 @@ import { registerViewerScopedDrafts } from "../viewerScope"
 import { useDraftReportStore } from "./draftStore"
 import type { DraftFlags, DraftMedia, DraftReport } from "./draftStore"
 
-// The composed text (typed description plus the flag notes) is what the server measures against
-// MAX_REPORT_DESCRIPTION_LENGTH, not the typed description alone.
-
 const DESCRIPTION_NOTE_SEPARATOR = "\n\n"
 
 function flagNotes(flags: DraftFlags): string {
@@ -50,6 +47,8 @@ export function composeDescription(draft: Pick<DraftReport, "description" | "fla
   return out.length > 0 ? out : undefined
 }
 
+// The composed text (typed description plus the flag notes) is what the server measures against
+// MAX_REPORT_DESCRIPTION_LENGTH, not the typed description alone.
 export function descriptionMaxLength(flags: DraftFlags): number {
   const notes = flagNotes(flags)
   return notes.length > 0

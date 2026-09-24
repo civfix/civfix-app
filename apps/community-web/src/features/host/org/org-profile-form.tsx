@@ -57,7 +57,6 @@ const SECTION_CLASSES =
 const PREFIX_BOX_CLASSES =
   "inline-flex items-center rounded-l-xs border border-r-0 border-console-line bg-console-surface-alt"
 
-
 export interface OrgProfileDraft {
   name: string
   slug: string

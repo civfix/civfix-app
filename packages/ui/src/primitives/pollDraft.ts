@@ -1,5 +1,3 @@
-/** Pure draft model behind PollCreateSheet. */
-
 import { POLL_MAX_OPTIONS, POLL_MIN_OPTIONS, POLL_OPTION_MAX, POLL_QUESTION_MAX } from "@civfix/shared"
 
 /**

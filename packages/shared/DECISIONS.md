@@ -814,9 +814,10 @@ is no analytics SDK, no cookie, no identifier, and no per-person series anywhere
   the last point of the closure's `cumulative` and the backend's `registered` / `cancelled` KPIs are
   all gated on the SAME `totalPublishable`, because they are all the same cut at the end of the same
   chain; a KPI gated only by `suppressCount` would hand back what the series just withheld. The same
-  interval rule gates the total of `arrivalsCurve`. (The `cumulativeSeries` and `hourlySeries`
-  wrappers that also followed it had no consumer and were removed in 0.58.0, §58; their invariant
-  tests now run against `seriesClosure().cumulative`.)
+  interval rule gates the total of `arrivalsCurve`. (`cumulativeSeries`, a wrapper over the closure,
+  and `hourlySeries`, a separate hourly panel, had no consumer and were removed in 0.58.0, §58; the
+  cumulative invariant tests now run against `seriesClosure().cumulative`, and the hourly tests went
+  with the removed code.)
 - **A breakdown yields to the number it partitions; the KPI never yields to the breakdown.**
   `byTicketType`, `byAudience`, `bySlot`, `bySource`, `byEvent` and the broadcast channel columns
   all sum to a number civfix publishes elsewhere (`registered`, `checkedIn`, the page-view total,
@@ -2093,8 +2094,8 @@ number.
 - *Input limits and constants* (`POST_BODY_MAX`, `MAX_EVENT_TITLE`, `EMAIL_MAX_LENGTH`,
   `HTTPS_URL_MAX_LENGTH`, `HANDLE_MAX_LENGTH`, `EVENT_PAGE_BLOCK_LIMITS`, `EMAIL_OTP_CODE_LENGTH`, the
   poll and group caps, and the rest listed in the CHANGELOG) are the numbers the request schemas
-  already enforce, now named and used by the schemas themselves. The ui, web and mobile copies are
-  gone. Field building blocks two schema files share (`schemas/internal-fields.ts`) are deliberately
+  already enforce, now named and used by the schemas themselves. The ui, web and mobile copies the campaign
+  found now import them. Field building blocks two schema files share (`schemas/internal-fields.ts`) are deliberately
   NOT exported: the surface does not grow because two files share a field.
 - *Error helpers* (`isErrorCode`, `appErrorCode`, `appErrorFields`, `byErrorCode`, `errorCopyKey`,
   `ErrorCodeTable`, `toAppError(value, { fallbackMessage })`) give ui, web and mobile one code to copy
@@ -2184,3 +2185,7 @@ this release does not attempt them; each needs its own coordinated PR:
   decision).
 - One timestamp schema: responses mix `z.string()`, `z.string().datetime()` and `ISODateSchema`; move
   them together once the backend is confirmed to always emit ISO.
+- Atomic operator writes asked for by admin (H-03 verify-and-send, H-06 save contacts and extras in one
+  request): new endpoints, backend first.
+- `nextCursor` pagination for `listMyOrganizations` and the event team list (backend H-012): an
+  additive request and response change the backend must implement first.

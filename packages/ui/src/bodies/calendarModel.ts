@@ -1,4 +1,4 @@
-import { MIN_EVENT_DURATION_MINUTES, MS_PER_DAY } from "@civfix/shared"
+import { MIN_EVENT_DURATION_MINUTES, MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/shared"
 import {
   wallClockExistsInZone,
   wallClockInZone,
@@ -21,7 +21,7 @@ export function sameDay(a: Date, b: Date): boolean {
   )
 }
 
-export const PAST_SCHEDULE_GRACE_MS = 60_000
+export const PAST_SCHEDULE_GRACE_MS = MS_PER_MINUTE
 
 export function mergeDateTime(date: Date, time: Date): Date {
   const merged = new Date(date)
@@ -51,17 +51,17 @@ export function isScheduleUntouched(
   const original = new Date(originalIso).getTime()
   if (Number.isNaN(original)) return false
   if (timeZone === undefined) return date.getTime() === original && time.getTime() === original
-  return formInstantMs(date, time, timeZone) === Math.floor(original / 60_000) * 60_000
+  return formInstantMs(date, time, timeZone) === Math.floor(original / MS_PER_MINUTE) * MS_PER_MINUTE
 }
 
-const MIN_EVENT_DURATION_MS = MIN_EVENT_DURATION_MINUTES * 60_000
+const MIN_EVENT_DURATION_MS = MIN_EVENT_DURATION_MINUTES * MS_PER_MINUTE
 
 export const DURATION_CHIP_HOURS = [1, 2, 3, 4] as const
 
 export type DurationChipHours = (typeof DURATION_CHIP_HOURS)[number]
 
 function clockOf(hours: number, minutes: number): number {
-  return hours * 3_600_000 + minutes * 60_000
+  return hours * MS_PER_HOUR + minutes * MS_PER_MINUTE
 }
 
 function clockMs(time: Date): number {
@@ -89,7 +89,7 @@ export function resolveEventEnd(date: Date, start: Date, end: Date): Date {
 export function endTimeAfter(date: Date, start: Date, offsetMs: number): Date {
   const clock = offsetFromClocks(0, clockMs(start) + offsetMs)
   const day = new Date(date)
-  day.setHours(Math.floor(clock / 3_600_000), Math.floor((clock % 3_600_000) / 60_000), 0, 0)
+  day.setHours(Math.floor(clock / MS_PER_HOUR), Math.floor((clock % MS_PER_HOUR) / MS_PER_MINUTE), 0, 0)
   return day
 }
 
@@ -147,7 +147,7 @@ export function durationChipFor(
   if (!date || !start || !end) return null
   const elapsed = eventDurationMs(date, start, end, timeZone)
   if (elapsed <= 0) return null
-  return DURATION_CHIP_HOURS.find((h) => h * 3_600_000 === elapsed) ?? null
+  return DURATION_CHIP_HOURS.find((h) => h * MS_PER_HOUR === elapsed) ?? null
 }
 
 export function formWallClock(date: Date, time: Date): WallClock {

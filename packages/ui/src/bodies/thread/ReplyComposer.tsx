@@ -76,7 +76,6 @@ import { buildOptimisticReply } from "./optimisticReply"
 const SURFACE_PADDING = 16
 /** The two 6pt gaps between the three measured/flexing blocks - the rest of `measuredChrome`. */
 const SURFACE_GAPS = 12
-/** The counter appears in the last 200 of POST_BODY_MAX and reddens in the last 50. */
 const COUNTER_VISIBLE_AT = 200
 const COUNTER_URGENT_AT = 50
 const REPLY_FOCUS_AFTER_SEND = composerFocusAfterSend("thread-reply")

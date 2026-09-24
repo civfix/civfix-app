@@ -10,12 +10,14 @@ import { OkResponseSchema } from "./internal-fields.js"
  * POST /content-reports: a citizen flags a piece of UGC with a reason and optional free-text detail.
  * The subject is identified by (subjectType, subjectId), which the server fans into the moderation queue.
  */
+export const CONTENT_REPORT_DETAILS_MAX = 1000
+
 export const ReportContentRequestSchema = z
   .object({
     subjectType: ContentReportSubjectSchema,
     subjectId: IdSchema,
     reason: ContentReportReasonSchema,
-    details: z.string().trim().max(1000).optional(),
+    details: z.string().trim().max(CONTENT_REPORT_DETAILS_MAX).optional(),
   })
   .strict()
 export type ReportContentRequest = z.infer<typeof ReportContentRequestSchema>

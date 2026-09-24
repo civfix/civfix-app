@@ -27,8 +27,6 @@ import type { LeaderboardEntryDTO } from "../schemas/entities.js"
 import { makeIdFactory } from "./ids.js"
 import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "../time-units.js"
 
-
-
 const FAKE_CAPACITY = 60
 const FAKE_REGISTERED = 42
 const FAKE_WAITLISTED = 7
