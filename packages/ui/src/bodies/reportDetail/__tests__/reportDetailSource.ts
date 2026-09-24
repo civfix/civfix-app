@@ -19,7 +19,3 @@ export function reportDetailSource(): string {
     .map((file) => readFileSync(file, "utf8"))
     .join("\n")
 }
-
-export function reportDetailPart(name: string): string {
-  return readFileSync(join(DETAIL_DIR, name), "utf8")
-}

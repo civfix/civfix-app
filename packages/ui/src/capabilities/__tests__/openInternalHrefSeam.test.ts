@@ -26,7 +26,7 @@ describe("openInternalHref is an OPTIONAL capability, like every other host seam
     const barrel = code(read("../index.ts"))
     expect(barrel).toContain("useOpenInternalHref")
     expect(barrel).toContain("OpenInternalHrefCapability")
-    expect(barrel).toContain("makeFakeOpenInternalHref")
+    expect(barrel).toContain("makeFakeCapabilities")
   })
 })
 

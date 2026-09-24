@@ -13,7 +13,7 @@ type Backfill = (input: {
   fetchNextPageFailed: boolean
 }) => string
 const searchBackfill = (model as unknown as { searchBackfill?: Backfill }).searchBackfill
-const MAX = (model as unknown as { SEARCH_BACKFILL_MAX_PAGES?: number }).SEARCH_BACKFILL_MAX_PAGES
+const MAX = model.SEARCH_BACKFILL_MAX_PAGES
 
 const typing = {
   filtering: true,

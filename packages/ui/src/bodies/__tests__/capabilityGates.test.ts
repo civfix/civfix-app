@@ -82,7 +82,7 @@ describe("the host gates read capabilities, not role strings", () => {
 
 describe("the invite inbox mutations", () => {
   it("invalidate the inbox, the hosted list and the notification feed together", () => {
-    expect(hooks).toContain("export function invalidateMyEventInvites(qc: QueryClient): void {")
+    expect(hooks).toContain("\nfunction invalidateMyEventInvites(qc: QueryClient): void {")
     for (const key of ["myEventInvites", "hostedEventsRoot", "notificationsRoot"]) {
       expect(hooks, `invalidateMyEventInvites misses ${key}`).toMatch(
         new RegExp(`queryKeys\\.${key}`),
