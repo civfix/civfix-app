@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest"
 import {
+  ALL_DETAIL_KINDS,
   ROOT_NAV_SNAPSHOT,
   entryFromPath,
+  pathForEntry,
   type DetailEntry,
   type NavReturn,
   type NavSnapshot,
@@ -423,5 +425,58 @@ describe("web post addresses", () => {
     expect(entryFromWebPath("/post/p1")).toEqual({ kind: "post-thread", id: "p1" })
     expect(entryFromWebPath("/post/p1/thread")).toEqual({ kind: "post-thread", id: "p1" })
     expect(entryFromWebPath("/pin/a")).toEqual(entryFromPath("/pin/a"))
+  })
+})
+
+describe("web post aliases resolve exactly as the pre-table web copy did", () => {
+  const legacyEntryFromWebPath = (path: string | null | undefined): DetailEntry | null => {
+    const parsed = entryFromPath(path)
+    return parsed?.kind === "post" && parsed.id ? { kind: "post-thread", id: parsed.id } : parsed
+  }
+  const legacyWebPathForEntry = (source: DetailEntry): string =>
+    source.kind === "post-thread" && source.id ? `/post/${source.id}` : pathForEntry(source)
+
+  const entries: DetailEntry[] = [
+    ...ALL_DETAIL_KINDS.flatMap((kind): DetailEntry[] => [
+      { kind },
+      { kind, id: "x1" },
+      { kind, id: "" },
+      { kind, id: "x1", roomKind: "dm", slug: "s", geoid: "g", seatId: "t", announcementId: "a" },
+    ]),
+    ...(["map", "search", "report"] as const).map((view): DetailEntry => ({ kind: "view", view })),
+    { kind: "view" },
+  ]
+  const aliasPaths = [
+    "/post/p1",
+    "/post/p1/",
+    "/post/p1/thread",
+    "/post/p1/thread/",
+    "/post/p1/other",
+    "/post/p1?utm=x#top",
+    "/post",
+    "/post/",
+    "/post/_",
+    "/post//",
+    "post/p1",
+    "/compose/quote/p1",
+    "/",
+    "",
+    null,
+    undefined,
+    "/nope",
+  ]
+  const paths = [...aliasPaths, ...entries.map(pathForEntry)]
+
+  it("reads every path to the same entry", () => {
+    for (const path of paths) expect(entryFromWebPath(path), String(path)).toEqual(legacyEntryFromWebPath(path))
+  })
+
+  it("writes every entry to the same address", () => {
+    for (const source of entries) {
+      const written = pathForSnapshot(snapshot({ stack: [source] }))
+      const legacy = source.kind === "drop-pin" ? pathForSnapshot(snapshot()) : legacyWebPathForEntry(source)
+      const exported = legacy.endsWith("/") ? legacy : `${legacy}/`
+      expect(written, JSON.stringify(source)).toBe(exported)
+    }
   })
 })

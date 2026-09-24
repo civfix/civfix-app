@@ -60,7 +60,7 @@ describe("ContentBottomReserve - the one additive content-padding decorator", ()
 
   it("adds the reserve ON TOP of the body's own bottom gutter and leaves horizontal scrollers alone", () => {
     expect(src).toMatch(/if \(horizontal \|\| reserve <= 0\) return contentContainerStyle/)
-    expect(src).toMatch(/return \[contentContainerStyle, \{ paddingBottom: basePad \+ reserve \}\]/)
+    expect(src).toMatch(/return withExtraBottomPadding\(contentContainerStyle, reserve\)/)
   })
 
   it("memoizes the decorated host per base so a page body never remounts on a re-render", () => {

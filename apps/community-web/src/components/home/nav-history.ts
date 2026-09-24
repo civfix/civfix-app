@@ -1,10 +1,11 @@
 import {
   ALL_DETAIL_KINDS,
   ALL_VIEWS,
-  entryFromPath,
+  entryFromPlatformPath,
   entryIdentity,
   pathForEntry,
   pathForView,
+  platformPathForEntry,
   type DetailEntry,
   type DetailKind,
   type NavReturn,
@@ -184,17 +185,12 @@ function exportPath(path: string): string {
 }
 
 export function entryFromWebPath(path: string | null | undefined): DetailEntry | null {
-  const entry = entryFromPath(path)
-  return entry?.kind === "post" && entry.id ? { kind: "post-thread", id: entry.id } : entry
-}
-
-export function webPathForEntry(entry: DetailEntry): string {
-  return entry.kind === "post-thread" && entry.id ? `/post/${entry.id}` : pathForEntry(entry)
+  return entryFromPlatformPath(path, "web")
 }
 
 export function pathForSnapshot(snapshot: NavSnapshot): string {
   const active = snapshot.stack[snapshot.stack.length - 1]
-  if (active && active.kind !== "drop-pin") return exportPath(webPathForEntry(active))
+  if (active && active.kind !== "drop-pin") return exportPath(platformPathForEntry(active, "web"))
   const viewPath = pathForView(snapshot.view)
   if (viewPath) return exportPath(viewPath)
   const listKind = LIST_KIND_FOR_VIEW[snapshot.view]

@@ -1,5 +1,5 @@
 import React, { createContext, forwardRef, useContext, useMemo } from "react"
-import { StyleSheet } from "react-native"
+import { withExtraBottomPadding } from "./bottomPadding"
 import { decorateScrollHost, type ScrollHostValue } from "./ScrollHost"
 
 const ContentBottomReserveContext = createContext(0)
@@ -22,9 +22,7 @@ function makeContentBottomReserveScroll(
     const reserve = useReserve()
     const mergedContentStyle = useMemo(() => {
       if (horizontal || reserve <= 0) return contentContainerStyle
-      const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
-      const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
-      return [contentContainerStyle, { paddingBottom: basePad + reserve }]
+      return withExtraBottomPadding(contentContainerStyle, reserve)
     }, [contentContainerStyle, horizontal, reserve])
     return (
       <Base ref={ref} contentContainerStyle={mergedContentStyle} horizontal={horizontal} {...rest} />

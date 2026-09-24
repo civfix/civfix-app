@@ -14,12 +14,12 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { useNavStore } from "../../nav"
 import type { DetailEntry, View as NavView } from "../../nav"
 import { directionForStackLengths as directionFor } from "../useStackDirection"
-import { shellBodyKey } from "../bodyLayout"
+import { surfaceKey } from "../bodyLayout"
 import { entryDiscriminator } from "../../nav/routes"
 
 /** ExpandedShell.tsx's transitionKey derivation. */
 function transitionKey(active: DetailEntry | null, view: NavView): string {
-  return shellBodyKey(active, `view:${view}`)
+  return surfaceKey(view, active)
 }
 
 function resetExpanded(): void {

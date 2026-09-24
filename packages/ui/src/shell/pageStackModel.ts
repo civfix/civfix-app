@@ -1,9 +1,5 @@
+import { clamp01 } from "../surface/liquidGlass/liquidGlassModel"
 import type { DetailLeadingAffordance } from "./backAffordance"
-
-function unit(value: number): number {
-  "worklet"
-  return value < 0 ? 0 : value > 1 ? 1 : value
-}
 
 export interface PageLayerStyle {
   translateX: number
@@ -52,8 +48,8 @@ export function pageLayerStyle(
   tokens: PageLayerTokens,
 ): PageLayerStyle {
   "worklet"
-  const own = unit(ownProgress)
-  const above = unit(aboveProgress)
+  const own = clamp01(ownProgress)
+  const above = clamp01(aboveProgress)
   return {
     translateX: own * width * tokens.travelRatio + (above - 1) * width * tokens.parallaxRatio,
     opacity: 1 - own * tokens.fadeStrength,

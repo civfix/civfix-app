@@ -3,6 +3,7 @@ import { StyleSheet } from "react-native"
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated"
 import { makeThemedStyles } from "../theme"
 import { searchRevealExitStyle, searchRevealStyle } from "./bodyLayout"
+import { withExtraBottomPadding } from "./bottomPadding"
 import { dockMorphProgress } from "./dockMorphProgress.native"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
 import { PLAIN_SCROLL_HOST, ScrollHostProvider, decorateScrollHost, type ScrollHostValue } from "./ScrollHost"
@@ -24,11 +25,10 @@ function makeDockClearanceScroll(Base: React.ComponentType<any>): React.Componen
     const fallback = useContext(DockClearanceFallbackContext)
     const clearance = horizontal ? 0 : resolveTabBarFootprint(footprint, fallback) + keyboardReserve
 
-    const mergedContentStyle = useMemo(() => {
-      const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
-      const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
-      return [contentContainerStyle, { paddingBottom: basePad + clearance }]
-    }, [contentContainerStyle, clearance])
+    const mergedContentStyle = useMemo(
+      () => withExtraBottomPadding(contentContainerStyle, clearance),
+      [contentContainerStyle, clearance],
+    )
 
     const indicatorInsets = useMemo(
       () => scrollIndicatorInsets ?? { bottom: clearance },

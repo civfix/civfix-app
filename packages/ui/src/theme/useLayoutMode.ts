@@ -2,7 +2,8 @@
 // other window, including a landscape one too narrow for the nav cluster, gets compact. Built on
 // useWindowDimensions, so rotation and resize flip it on both platforms with no platform branch.
 import { useWindowDimensions } from "react-native"
-import { layoutModeFor, type LayoutMode } from "../shell/expandedFramePlan"
+import type { LayoutMode } from "../nav/types"
+import { layoutModeFor } from "../shell/expandedFramePlan"
 
 export type { LayoutMode }
 

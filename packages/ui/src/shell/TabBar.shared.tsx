@@ -8,6 +8,7 @@ import { discardSearchInput } from "../bodies/search/searchRecentStore"
 import { openReportFlow } from "../bodies/composerCreateFlow"
 import { useT } from "../i18n"
 import { useHaptics } from "../capabilities"
+import { DOCK_ORB } from "./expandedFramePlan"
 import {
   DOCK_ORB_GLYPH_SIZE,
   DOCK_TAB_GLYPH_SIZE,
@@ -37,7 +38,6 @@ export const TABS: readonly TabDef[] = TAB_SPECS.map((spec) => ({ ...spec, ...TA
 export const TAB_COUNT = TABS.length
 
 export const BAR_HEIGHT = TAB_BAR_HEIGHT
-export const ORB_SIZE = 58
 export const PILL_INSET = 6
 
 export type TabPressHandler = (tab: TabDef) => void
@@ -185,9 +185,9 @@ export const useTabBarStyles = makeThemedStyles((t) => ({
     backgroundColor: t.glass.button.fill,
   },
   orb: {
-    width: ORB_SIZE,
-    height: ORB_SIZE,
-    borderRadius: ORB_SIZE / 2,
+    width: DOCK_ORB,
+    height: DOCK_ORB,
+    borderRadius: DOCK_ORB / 2,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.glass.button.border,
     alignItems: "center",

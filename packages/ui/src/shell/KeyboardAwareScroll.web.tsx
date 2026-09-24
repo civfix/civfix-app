@@ -13,13 +13,14 @@
  * pinned-footer suppression reads the nearest KeyboardHostReserveScope, so a footer lifting one surface
  * never collapses the reserve of a scroller on a surface pushed over it.
  */
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from "react"
-import { StyleSheet } from "react-native"
+import React, { forwardRef, useEffect, useMemo, useRef } from "react"
 import type { ScrollHostValue } from "./ScrollHost"
+import { withExtraBottomPadding } from "./bottomPadding"
 import { useKeyboardHostReserved } from "./keyboardScrollScope"
 import { KEYBOARD_REVEAL_MARGIN } from "./keyboardInsetModel"
 import { isCoarsePointer } from "./webMedia"
 import { useKeyboardInset } from "./useKeyboardInset.web"
+import { useMergedRef } from "./useMergedRef"
 import { resolveHostFlag, type KeyboardAwareScrollHostOptions } from "./KeyboardAwareScroll.types"
 /** Lets the keyboard open and visualViewport settle before measuring. */
 const SETTLE_MS = 140
@@ -49,14 +50,7 @@ function makeKeyboardAwareScrollView(
     const inset = useKeyboardInset()
     const hostReserved = useKeyboardHostReserved()
 
-    const setRefs = useCallback(
-      (node: any) => {
-        innerRef.current = node
-        if (typeof ref === "function") ref(node)
-        else if (ref) (ref as React.MutableRefObject<any>).current = node
-      },
-      [ref],
-    )
+    const setRefs = useMergedRef(innerRef, ref)
 
     useEffect(() => {
       if (typeof window === "undefined") return
@@ -89,10 +83,8 @@ function makeKeyboardAwareScrollView(
 
     // Additive to the form's own bottom gutter; suppressed when a pinned footer in scope already reserved it.
     const mergedContentStyle = useMemo(() => {
-      const flat = (StyleSheet.flatten(contentContainerStyle) || {}) as { paddingBottom?: number }
-      const basePad = typeof flat.paddingBottom === "number" ? flat.paddingBottom : 0
       const reserve = reserveKeyboardPadding() && !hostReserved ? inset : 0
-      return [contentContainerStyle, { paddingBottom: basePad + reserve }]
+      return withExtraBottomPadding(contentContainerStyle, reserve)
     }, [contentContainerStyle, hostReserved, inset])
 
     return <Base ref={setRefs} contentContainerStyle={mergedContentStyle} {...rest} />

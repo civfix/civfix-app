@@ -31,10 +31,10 @@ describe("the rail's material and geometry", () => {
       "RAIL_CAPSULE_W",
       "RAIL_CAPSULE_H",
       "RAIL_CAPSULE_RADIUS",
-      "RAIL_ORB",
+      "DOCK_ORB",
       "railItemLeft",
     ]) {
-      expect(rail, `${c} must come from expandedFramePlan`).toContain(c)
+      expect(rail, `${c} must come from expandedFramePlan`).toMatch(new RegExp(`\\b${c}\\b`))
     }
     expect(rail).toMatch(/zIndex: 65/)
   })
