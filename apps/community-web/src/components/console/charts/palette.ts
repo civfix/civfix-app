@@ -3,7 +3,7 @@
 import { colorSchemes } from "@civfix/shared/tokens"
 import type { ColorSchemeName } from "@civfix/shared/tokens"
 
-import { useConsoleColorScheme } from "../use-color-scheme"
+import { useColorScheme } from "@/lib/color-scheme"
 
 export interface ChartPalette {
   scheme: ColorSchemeName
@@ -19,7 +19,7 @@ export interface ChartPalette {
   seriesColor: (index: number) => string
 }
 
-export function chartPalette(scheme: ColorSchemeName): ChartPalette {
+function chartPalette(scheme: ColorSchemeName): ChartPalette {
   const c = colorSchemes[scheme]
   const series = [
     c.chipInk.sky,
@@ -50,5 +50,5 @@ export function chartPalette(scheme: ColorSchemeName): ChartPalette {
 }
 
 export function useChartPalette(): ChartPalette {
-  return chartPalette(useConsoleColorScheme())
+  return chartPalette(useColorScheme())
 }

@@ -1,8 +1,5 @@
 "use client"
 
-import type { ReactNode } from "react"
-import { EMPTY_VALUE } from "@civfix/ui/i18n"
-
 import { cn } from "@/lib/utils"
 
 export function CountBadge({
@@ -40,35 +37,5 @@ export function KbdHint({ keys, className }: { keys: string; className?: string 
     >
       {keys}
     </kbd>
-  )
-}
-
-export function MetaDot({ className }: { className?: string }) {
-  return (
-    <span aria-hidden className={cn("mx-1 inline-block text-console-ink-3", className)}>
-      &middot;
-    </span>
-  )
-}
-
-export function MetaLine({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <span
-      className={cn("inline-flex min-w-0 items-center text-token-12 text-console-ink-3", className)}
-    >
-      {children}
-    </span>
-  )
-}
-
-export function SuppressedValue({ label, className }: { label: string; className?: string }) {
-  return (
-    <span
-      className={cn("text-token-13 text-console-ink-3", className)}
-      title={label}
-      aria-label={label}
-    >
-      {EMPTY_VALUE}
-    </span>
   )
 }

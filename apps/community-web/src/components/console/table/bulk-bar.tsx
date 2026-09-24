@@ -37,7 +37,7 @@ export function BulkBar({ count, actions, onClear, className }: BulkBarProps) {
       role="toolbar"
       aria-label={selectedLabel}
       className={cn(
-        "fixed bottom-token-4 left-1/2 z-40 flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-token-2 overflow-x-auto rounded-md border border-console-line bg-console-surface px-token-3 py-token-2 shadow-console-3",
+        "fixed bottom-token-4 left-1/2 z-40 flex max-w-[calc(100vw-theme(spacing.token-8))] -translate-x-1/2 items-center gap-token-2 overflow-x-auto rounded-md border border-console-line bg-console-surface px-token-3 py-token-2 shadow-console-3",
         "animate-in fade-in slide-in-from-bottom-4 duration-d2 ease-out",
         className,
       )}

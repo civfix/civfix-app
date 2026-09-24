@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { cn } from "@/lib/utils"
 
-import { formatCompact, NUM_CLASS } from "./chart-utils"
+import { CHART_LABEL_FONT_SIZE, formatCompact, NUM_CLASS } from "./chart-utils"
 import { useChartPalette } from "./palette"
 
 export interface DonutSegment {
@@ -21,10 +21,15 @@ export interface DonutProps {
   thickness?: number
   centerLabel?: string
   centerValue?: string
-  valueFormat?: (value: number) => string
-  onSegmentPress?: (id: string) => void
   className?: string
 }
+
+const SEGMENT_GAP = 2
+const HOVER_GROWTH = 4
+const CENTER_VALUE_FONT_SIZE = 22
+const VALUE_OFFSET_WITH_LABEL = -2
+const VALUE_OFFSET_ALONE = 4
+const CENTER_LABEL_OFFSET = 16
 
 export function Donut({
   segments,
@@ -33,8 +38,6 @@ export function Donut({
   thickness = 18,
   centerLabel,
   centerValue,
-  valueFormat = formatCompact,
-  onSegmentPress,
   className,
 }: DonutProps) {
   const palette = useChartPalette()
@@ -42,7 +45,7 @@ export function Donut({
   const total = segments.reduce((sum, s) => sum + s.value, 0)
   const radius = (size - thickness) / 2
   const circumference = 2 * Math.PI * radius
-  const gap = segments.length > 1 ? 2 : 0
+  const gap = segments.length > 1 ? SEGMENT_GAP : 0
   let offset = 0
 
   return (
@@ -77,17 +80,13 @@ export function Donut({
                   r={radius}
                   fill="none"
                   stroke={color}
-                  strokeWidth={hovered === segment.id ? thickness + 4 : thickness}
+                  strokeWidth={hovered === segment.id ? thickness + HOVER_GROWTH : thickness}
                   strokeDasharray={`${length} ${circumference - length}`}
                   strokeDashoffset={dashOffset}
                   transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                  className={cn(
-                    "transition-all duration-d2 ease-out motion-reduce:transition-none",
-                    onSegmentPress && "cursor-pointer",
-                  )}
+                  className="transition-all duration-d2 ease-out"
                   onMouseEnter={() => setHovered(segment.id)}
                   onMouseLeave={() => setHovered(null)}
-                  onClick={() => onSegmentPress?.(segment.id)}
                 />
               )
             })
@@ -95,9 +94,9 @@ export function Donut({
         {centerValue ? (
           <text
             x={size / 2}
-            y={size / 2 - (centerLabel ? 2 : -4)}
+            y={size / 2 + (centerLabel ? VALUE_OFFSET_WITH_LABEL : VALUE_OFFSET_ALONE)}
             textAnchor="middle"
-            fontSize={22}
+            fontSize={CENTER_VALUE_FONT_SIZE}
             fontWeight={700}
             fill={palette.strong}
             className={NUM_CLASS}
@@ -108,9 +107,9 @@ export function Donut({
         {centerLabel ? (
           <text
             x={size / 2}
-            y={size / 2 + 16}
+            y={size / 2 + CENTER_LABEL_OFFSET}
             textAnchor="middle"
-            fontSize={11}
+            fontSize={CHART_LABEL_FONT_SIZE}
             fill={palette.label}
           >
             {centerLabel}
@@ -121,37 +120,22 @@ export function Donut({
         {segments.map((segment, i) => {
           const color = segment.color ?? palette.seriesColor(i)
           const pct = total > 0 ? Math.round((segment.value / total) * 100) : 0
-          const row = (
-            <>
-              <span
-                aria-hidden
-                className="h-2 w-2 shrink-0 rounded-pill"
-                style={{ background: color }}
-              />
-              <span className="truncate text-token-13 text-console-ink-2">{segment.label}</span>
-              <span className={cn("ml-auto text-token-13 text-console-ink", NUM_CLASS)}>
-                {valueFormat(segment.value)}
-              </span>
-              <span className={cn("w-9 text-right text-token-12 text-console-ink-3", NUM_CLASS)}>
-                {pct}%
-              </span>
-            </>
-          )
           return (
             <li key={segment.id}>
-              {onSegmentPress ? (
-                <button
-                  type="button"
-                  onClick={() => onSegmentPress(segment.id)}
-                  onMouseEnter={() => setHovered(segment.id)}
-                  onMouseLeave={() => setHovered(null)}
-                  className="flex w-full items-center gap-token-2 rounded-sm px-token-1 py-0.5 text-left hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
-                >
-                  {row}
-                </button>
-              ) : (
-                <span className="flex w-full items-center gap-token-2 px-token-1 py-0.5">{row}</span>
-              )}
+              <span className="flex w-full items-center gap-token-2 px-token-1 py-0.5">
+                <span
+                  aria-hidden
+                  className="h-2 w-2 shrink-0 rounded-pill"
+                  style={{ background: color }}
+                />
+                <span className="truncate text-token-13 text-console-ink-2">{segment.label}</span>
+                <span className={cn("ml-auto text-token-13 text-console-ink", NUM_CLASS)}>
+                  {formatCompact(segment.value)}
+                </span>
+                <span className={cn("w-9 text-right text-token-12 text-console-ink-3", NUM_CLASS)}>
+                  {pct}%
+                </span>
+              </span>
             </li>
           )
         })}

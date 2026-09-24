@@ -21,8 +21,6 @@ export interface HBarRankedProps {
   items: readonly HBarItem[]
   summary: string
   max?: number
-  valueFormat?: (value: number) => string
-  onPress?: (id: string) => void
   className?: string
 }
 
@@ -30,8 +28,6 @@ export function HBarRanked({
   items,
   summary,
   max,
-  valueFormat = formatCompact,
-  onPress,
   className,
 }: HBarRankedProps) {
   const palette = useChartPalette()
@@ -42,8 +38,12 @@ export function HBarRanked({
       {items.map((item) => {
         const pct = Math.min(100, (item.value / scaleMax) * 100)
         const color = item.color ?? palette.hue.sky
-        const body = (
-          <>
+        return (
+          <div
+            key={item.id}
+            role="listitem"
+            className="flex min-h-11 w-full items-center gap-token-3 rounded-sm px-token-2"
+          >
             <span className="flex min-w-0 flex-1 items-baseline gap-token-2">
               <span className="truncate text-token-13 text-console-ink" title={item.label}>
                 {item.label}
@@ -55,7 +55,7 @@ export function HBarRanked({
             <span className="h-2 w-2/5 shrink-0 overflow-hidden rounded-pill bg-console-surface-alt">
               <span
                 aria-hidden
-                className="block h-full rounded-pill transition-[width] duration-d3 ease-out motion-reduce:transition-none"
+                className="block h-full rounded-pill transition-[width] duration-d3 ease-out"
                 style={{ width: `${pct}%`, background: color }}
               />
             </span>
@@ -65,31 +65,9 @@ export function HBarRanked({
                 NUM_CLASS,
               )}
             >
-              {item.valueLabel ?? valueFormat(item.value)}
+              {item.valueLabel ?? formatCompact(item.value)}
             </span>
             {item.trailing}
-          </>
-        )
-        if (onPress) {
-          return (
-            <div key={item.id} role="listitem">
-              <button
-                type="button"
-                onClick={() => onPress(item.id)}
-                className="flex min-h-11 w-full items-center gap-token-3 rounded-sm px-token-2 text-left hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
-              >
-                {body}
-              </button>
-            </div>
-          )
-        }
-        return (
-          <div
-            key={item.id}
-            role="listitem"
-            className="flex min-h-11 w-full items-center gap-token-3 rounded-sm px-token-2"
-          >
-            {body}
           </div>
         )
       })}

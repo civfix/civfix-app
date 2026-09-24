@@ -7,6 +7,7 @@ import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 
 import { useIsNarrow } from "../use-media-query"
+import { Scrim } from "./scrim"
 import { useEscape, useFocusTrap } from "./use-focus-trap"
 
 export interface OverlayProps {
@@ -59,13 +60,7 @@ export function Overlay({
         {open && typeof document !== "undefined"
           ? createPortal(
               <div className="fixed inset-0 z-50">
-                <button
-                  type="button"
-                  aria-hidden
-                  tabIndex={-1}
-                  onClick={onClose}
-                  className="absolute inset-0 bg-console-scrim animate-in fade-in duration-d2"
-                />
+                <Scrim onDismiss={onClose} />
                 <div
                   ref={panelRef}
                   id={id}
@@ -104,7 +99,9 @@ export function Overlay({
           style={{ width }}
           className={cn(
             "absolute z-40 max-h-[min(420px,60vh)] overflow-y-auto rounded-sm border border-console-line bg-console-surface p-token-3 shadow-console-3",
-            side === "bottom" ? "top-[calc(100%+4px)]" : "bottom-[calc(100%+4px)]",
+            side === "bottom"
+              ? "top-[calc(100%+theme(spacing.token-1))]"
+              : "bottom-[calc(100%+theme(spacing.token-1))]",
             align === "start" ? "left-0" : "right-0",
             "animate-in fade-in zoom-in-95 duration-d1 ease-out",
             className,

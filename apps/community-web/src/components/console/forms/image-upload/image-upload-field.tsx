@@ -13,7 +13,7 @@ import {
   acceptDroppedImage,
   pickConsoleImage,
   uploadConsoleImage,
-} from "@/features/host/upload"
+} from "./upload"
 
 import { ConsoleIconButton } from "../../button"
 

@@ -12,7 +12,7 @@ const upload = vi.hoisted(() => ({
   acceptDroppedImage: vi.fn(),
   pickConsoleImage: vi.fn(),
 }))
-vi.mock("@/features/host/upload", () => upload)
+vi.mock("./upload", () => upload)
 
 const camera = vi.hoisted(() => ({ releaseCaptured: vi.fn() }))
 vi.mock("@/lib/web-camera", () => camera)

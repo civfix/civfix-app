@@ -58,10 +58,36 @@ export function LoadingState({
   )
 }
 
+const NEUTRAL_ICON_TONE = "bg-console-surface-alt text-console-ink-3"
+
+function StateHeading({
+  icon: Icon,
+  iconTone,
+  title,
+  titleSize,
+  body,
+}: {
+  icon: LucideIcon
+  iconTone: string
+  title: string
+  titleSize: "text-token-15" | "text-token-16"
+  body?: string
+}) {
+  return (
+    <>
+      <span className={cn("flex h-10 w-10 items-center justify-center rounded-pill", iconTone)}>
+        <Icon aria-hidden className="h-5 w-5" />
+      </span>
+      <p className={`font-display ${titleSize} font-bold text-console-ink`}>{title}</p>
+      {body ? <p className="max-w-sm text-token-13 text-console-ink-3">{body}</p> : null}
+    </>
+  )
+}
+
 export type EmptyTone = "neutral" | "sun" | "moss" | "bloom" | "sky" | "lilac"
 
 const EMPTY_TONE_CLASSES: Record<EmptyTone, string> = {
-  neutral: "bg-console-surface-alt text-console-ink-3",
+  neutral: NEUTRAL_ICON_TONE,
   sun: "bg-console-sun-soft text-console-sun-strong",
   moss: "bg-console-moss-soft text-console-moss-strong",
   bloom: "bg-console-bloom-soft text-console-bloom-strong",
@@ -91,7 +117,6 @@ export function EmptyState({
   className,
 }: EmptyStateProps) {
   const { t } = useT("host-common")
-  const Icon = icon ?? (variant === "filtered" ? SearchX : CircleAlert)
   const resolvedTitle =
     title ?? (variant === "filtered" ? t("state.empty_filtered_title") : t("state.empty_title"))
   const resolvedBody =
@@ -103,18 +128,13 @@ export function EmptyState({
         className,
       )}
     >
-      <span
-        className={cn(
-          "flex h-10 w-10 items-center justify-center rounded-pill",
-          EMPTY_TONE_CLASSES[tone],
-        )}
-      >
-        <Icon aria-hidden className="h-5 w-5" />
-      </span>
-      <p className="font-display text-token-15 font-bold text-console-ink">{resolvedTitle}</p>
-      {resolvedBody ? (
-        <p className="max-w-sm text-token-13 text-console-ink-3">{resolvedBody}</p>
-      ) : null}
+      <StateHeading
+        icon={icon ?? (variant === "filtered" ? SearchX : CircleAlert)}
+        iconTone={EMPTY_TONE_CLASSES[tone]}
+        title={resolvedTitle}
+        titleSize="text-token-15"
+        body={resolvedBody}
+      />
       {variant === "filtered" || cta ? (
         <div className="mt-token-1 flex items-center gap-token-2">
           {variant === "filtered" && onClearFilters ? (
@@ -169,16 +189,28 @@ export function ErrorRegion({
   )
 }
 
-export function NoAccessState({
-  title,
-  body,
-  exitLabel,
-  onExit,
-  className,
-}: {
+interface ExitStateProps {
   title?: string
   body?: string
   exitLabel?: string
+  onExit?: () => void
+  className?: string
+}
+
+function ExitState({
+  icon,
+  title,
+  body,
+  exitLabel,
+  exitVariant,
+  onExit,
+  className,
+}: {
+  icon: LucideIcon
+  title: string
+  body: string
+  exitLabel?: string
+  exitVariant?: "outline"
   onExit?: () => void
   className?: string
 }) {
@@ -190,17 +222,15 @@ export function NoAccessState({
         className,
       )}
     >
-      <span className="flex h-10 w-10 items-center justify-center rounded-pill bg-console-surface-alt text-console-ink-3">
-        <Lock aria-hidden className="h-5 w-5" />
-      </span>
-      <p className="font-display text-token-16 font-bold text-console-ink">
-        {title ?? t("state.no_access_title")}
-      </p>
-      <p className="max-w-sm text-token-13 text-console-ink-3">
-        {body ?? t("state.no_access_body")}
-      </p>
+      <StateHeading
+        icon={icon}
+        iconTone={NEUTRAL_ICON_TONE}
+        title={title}
+        titleSize="text-token-16"
+        body={body}
+      />
       {onExit ? (
-        <ConsoleButton size="sm" onClick={onExit} className="mt-token-1">
+        <ConsoleButton variant={exitVariant} size="sm" onClick={onExit} className="mt-token-1">
           {exitLabel ?? t("action.back_to_events")}
         </ConsoleButton>
       ) : null}
@@ -208,46 +238,32 @@ export function NoAccessState({
   )
 }
 
-export function NotFoundState({
-  title,
-  body,
-  exitLabel,
-  onExit,
-  className,
-}: {
-  title?: string
-  body?: string
-  exitLabel?: string
-  onExit?: () => void
-  className?: string
-}) {
+export function NoAccessState({ title, body, ...rest }: ExitStateProps) {
   const { t } = useT("host-common")
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center gap-token-2 rounded-md border border-console-line bg-console-surface px-token-6 py-token-10 text-center shadow-console-1",
-        className,
-      )}
-    >
-      <span className="flex h-10 w-10 items-center justify-center rounded-pill bg-console-surface-alt text-console-ink-3">
-        <SearchX aria-hidden className="h-5 w-5" />
-      </span>
-      <p className="font-display text-token-16 font-bold text-console-ink">
-        {title ?? t("state.not_found_title")}
-      </p>
-      <p className="max-w-sm text-token-13 text-console-ink-3">
-        {body ?? t("state.not_found_body")}
-      </p>
-      {onExit ? (
-        <ConsoleButton variant="outline" size="sm" onClick={onExit} className="mt-token-1">
-          {exitLabel ?? t("action.back_to_events")}
-        </ConsoleButton>
-      ) : null}
-    </div>
+    <ExitState
+      icon={Lock}
+      title={title ?? t("state.no_access_title")}
+      body={body ?? t("state.no_access_body")}
+      {...rest}
+    />
   )
 }
 
-export function OfflineState({
+export function NotFoundState({ title, body, ...rest }: ExitStateProps) {
+  const { t } = useT("host-common")
+  return (
+    <ExitState
+      icon={SearchX}
+      title={title ?? t("state.not_found_title")}
+      body={body ?? t("state.not_found_body")}
+      exitVariant="outline"
+      {...rest}
+    />
+  )
+}
+
+function OfflineState({
   title,
   body,
   onRetry,
@@ -269,15 +285,13 @@ export function OfflineState({
         className,
       )}
     >
-      <span className="flex h-10 w-10 items-center justify-center rounded-pill bg-console-sun-soft text-console-sun-strong">
-        <WifiOff aria-hidden className="h-5 w-5" />
-      </span>
-      <p className="font-display text-token-15 font-bold text-console-ink">
-        {title ?? t("state.offline_title")}
-      </p>
-      <p className="max-w-sm text-token-13 text-console-ink-3">
-        {body ?? t("state.offline_body")}
-      </p>
+      <StateHeading
+        icon={WifiOff}
+        iconTone="bg-console-sun-soft text-console-sun-strong"
+        title={title ?? t("state.offline_title")}
+        titleSize="text-token-15"
+        body={body ?? t("state.offline_body")}
+      />
       {onRetry ? (
         <ConsoleButton variant="outline" size="sm" onClick={onRetry} className="mt-token-1">
           {retryLabel ?? t("action.retry")}

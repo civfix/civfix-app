@@ -2,9 +2,8 @@
 
 import { useCallback, useSyncExternalStore } from "react"
 
-export const CONSOLE_NARROW_QUERY = "(max-width: 767px)"
-export const CONSOLE_ICON_RAIL_QUERY = "(min-width: 768px) and (max-width: 1023px)"
-export const CONSOLE_FULL_RAIL_QUERY = "(min-width: 1024px)"
+const CONSOLE_NARROW_QUERY = "(max-width: 767px)"
+const CONSOLE_FULL_RAIL_QUERY = "(min-width: 1024px)"
 export const CONSOLE_DRAWER_SHRINK_QUERY = "(min-width: 1440px)"
 
 function canMatchMedia(): boolean {
