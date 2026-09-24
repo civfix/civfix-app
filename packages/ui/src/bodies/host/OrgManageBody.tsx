@@ -31,7 +31,7 @@ import { useOrganization, useUpdateOrganization } from "../../data/hooks/orgs"
 import { useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
-import { appErrorCode } from "../../data/errorCode"
+import { appErrorCode, appErrorFields } from "../../data/errorCode"
 import { RowsSkeleton } from "./HostSkeletons"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
 import { OrgField } from "./OrgField"
@@ -102,7 +102,7 @@ export function OrgManageBody({ slug }: { slug: string }) {
 
   const onError = useCallback(
     (err: unknown) => {
-      toast.show(t(orgManageErrorKey(appErrorCode(err))), { variant: "error" })
+      toast.show(t(orgManageErrorKey(appErrorCode(err), appErrorFields(err))), { variant: "error" })
     },
     [t, toast],
   )

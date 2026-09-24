@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { cleanup, screen, waitFor } from "@testing-library/react"
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { CleanupDTO, EventPageBlock, EventPageDTO } from "@civfix/shared"
 
@@ -8,7 +8,12 @@ vi.mock("@civfix/ui/i18n", async () => {
   return makeI18nMock()
 })
 
-import { renderConsole } from "@/components/console/__testing__/harness"
+import {
+  ConsoleTestHarness,
+  makeTestQueryClient,
+  renderConsole,
+} from "@/components/console/__testing__/harness"
+import { consoleKeys } from "../console-keys"
 import { ConsoleEventProvider } from "../console-context"
 import { PageBuilderScreen } from "./page-builder-screen"
 
@@ -113,5 +118,42 @@ describe("PageBuilderScreen blocks", () => {
       }),
     ).toBeTruthy()
     expect(screen.getByLabelText("block.hosts.name")).toHaveProperty("value", "Rosa")
+  })
+})
+
+describe("PageBuilderScreen server refresh", () => {
+  function renderWithClient(dto: EventPageDTO) {
+    const qc = makeTestQueryClient()
+    const client = { getEventPage: vi.fn().mockResolvedValue(dto) }
+    render(
+      <ConsoleTestHarness options={{ api: client as never }} client={qc}>
+        <ConsoleEventProvider eventId={EVENT_ID} event={EVENT}>
+          <PageBuilderScreen />
+        </ConsoleEventProvider>
+      </ConsoleTestHarness>,
+    )
+    return qc
+  }
+
+  it("shows the refetched page when the host has not edited anything", async () => {
+    const qc = renderWithClient(page({ slug: "river-day" }))
+    const slug = await screen.findByLabelText("slug.label")
+    await waitFor(() => expect(slug).toHaveProperty("value", "river-day"))
+    act(() => {
+      qc.setQueryData(consoleKeys.page(EVENT_ID), page({ slug: "river-day-2026" }))
+    })
+    await waitFor(() => expect(screen.getByLabelText("slug.label")).toHaveProperty("value", "river-day-2026"))
+  })
+
+  it("keeps the host's unsaved edits when the server copy changes underneath them", async () => {
+    const user = userEvent.setup()
+    const qc = renderWithClient(page({ slug: "river-day" }))
+    const slug = await screen.findByLabelText("slug.label")
+    await waitFor(() => expect(slug).toHaveProperty("value", "river-day"))
+    await user.type(slug, "-mine")
+    act(() => {
+      qc.setQueryData(consoleKeys.page(EVENT_ID), page({ slug: "someone-else" }))
+    })
+    expect(screen.getByLabelText("slug.label")).toHaveProperty("value", "river-day-mine")
   })
 })

@@ -9,6 +9,7 @@ import {
 import { useDebouncedValue } from "../../../data/hooks/useDebouncedValue"
 import { useT } from "../../../i18n"
 import { ROSTER_SEARCH_DEBOUNCE_MS } from "../RosterPagedList"
+import { rosterMutationErrorKey } from "../rosterFiltersModel"
 
 type UndoCheckIn = ReturnType<typeof useUndoEventCheckIn>
 
@@ -29,7 +30,7 @@ export function useCheckinRoster(id: string, canCheckIn: boolean, undo: UndoChec
     (seatId: string) => {
       checkIn.mutate(
         { seatId },
-        { onError: () => toast.show(tRoster("roster.error"), { variant: "error" }) },
+        { onError: (err) => toast.show(tRoster(rosterMutationErrorKey(err)), { variant: "error" }) },
       )
     },
     [checkIn, tRoster, toast],
@@ -38,7 +39,7 @@ export function useCheckinRoster(id: string, canCheckIn: boolean, undo: UndoChec
     (seatId: string) => {
       undo.mutate(
         { seatId },
-        { onError: () => toast.show(tRoster("roster.error"), { variant: "error" }) },
+        { onError: (err) => toast.show(tRoster(rosterMutationErrorKey(err)), { variant: "error" }) },
       )
     },
     [tRoster, toast, undo],

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import type { EventQuestionDTO } from "@civfix/shared"
 import { EventQuestionDefSchema } from "@civfix/shared"
 
-import { optionList, toDef, toDefs, toDraft } from "./questions-editor"
+import { optionList, questionDraftsDiffer, toDef, toDefs, toDraft } from "./questions-editor"
 
 const EVENT_ID = "33333333-3333-4333-8333-333333333333"
 const QUESTION_ID = "77777777-7777-4777-8777-777777777777"
@@ -89,5 +89,23 @@ describe("optionList", () => {
       { value: "xl", label: "Small" },
       { value: "xl-2", label: "XL" },
     ])
+  })
+})
+
+describe("questionDraftsDiffer", () => {
+  it("reads drafts built straight from the server list as unedited", () => {
+    const saved = [question(), question({ id: OTHER_ID, kind: "checkbox", options: [], showIf: null })]
+    expect(questionDraftsDiffer(saved.map(toDraft), saved)).toBe(false)
+  })
+
+  it("notices an edited prompt, a reorder and a question added but not yet saved", () => {
+    const other = question({ id: OTHER_ID, kind: "checkbox", options: [], showIf: null })
+    const saved = [question(), other]
+    const drafts = saved.map(toDraft)
+    expect(questionDraftsDiffer([{ ...drafts[0]!, prompt: "Size" }, drafts[1]!], saved)).toBe(true)
+    expect(questionDraftsDiffer([drafts[1]!, drafts[0]!], saved)).toBe(true)
+    expect(questionDraftsDiffer([...drafts, { ...drafts[1]!, key: "q-new", id: undefined }], saved)).toBe(
+      true,
+    )
   })
 })

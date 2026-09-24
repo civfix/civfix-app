@@ -29,7 +29,7 @@ export interface PhaseHeaderProps {
   phase: EventPhase
   title: string
   when: string
-  relative: string
+  relative: string | null
   cta?: PhaseHeaderAction
   secondary?: PhaseHeaderAction
   wide?: boolean
@@ -98,10 +98,14 @@ export function PhaseHeader({
       <View style={styles.phaseRow}>
         <PhaseDot phase={phase} />
         <Text variant="label">{t(`phase.${phase}`)}</Text>
-        <MetaDot />
-        <Text variant="caption" style={styles.relative} numberOfLines={1}>
-          {relative}
-        </Text>
+        {relative !== null ? (
+          <>
+            <MetaDot />
+            <Text variant="caption" style={styles.relative} numberOfLines={1}>
+              {relative}
+            </Text>
+          </>
+        ) : null}
       </View>
       <Text variant="title" numberOfLines={2}>
         {title}

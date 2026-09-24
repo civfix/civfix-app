@@ -1,10 +1,24 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { cleanup, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import type { CleanupDTO } from "@civfix/shared"
+import type * as ExportModule from "@/components/console/export"
 
 vi.mock("@civfix/ui/i18n", async () => {
   const { makeI18nMock } = await import("@/components/console/__testing__/i18n-mock")
   return makeI18nMock()
+})
+
+const downloads = vi.hoisted(() => ({ rows: [] as unknown[][] }))
+
+vi.mock("@/components/console/export", async (importOriginal) => {
+  const actual = await importOriginal<typeof ExportModule>()
+  return {
+    ...actual,
+    downloadCsv: (_name: string, rows: unknown[][]) => {
+      downloads.rows = rows
+    },
+  }
 })
 
 import { renderConsole } from "@/components/console/__testing__/harness"
@@ -104,6 +118,24 @@ describe("AnalyticsScreen", () => {
       series: [],
     })
     await waitFor(() => expect(exportButton).toHaveProperty("disabled", false))
+  })
+
+  it("titles the CSV through a translatable key, not a hard-coded separator", async () => {
+    const user = userEvent.setup()
+    renderAnalytics("messaging", {
+      eventAnalyticsBroadcasts: vi.fn().mockResolvedValue({
+        ...ENVELOPE,
+        broadcastsSent: 0,
+        recipients: 0,
+        unsubscribes: 0,
+        byChannel: [],
+        series: [],
+      }),
+    })
+    const exportButton = screen.getByRole("button", { name: "export_csv" })
+    await waitFor(() => expect(exportButton).toHaveProperty("disabled", false))
+    await user.click(exportButton)
+    expect(downloads.rows[0]).toEqual(["csv.source", "csv.title(event=River day,tab=tab.messaging)"])
   })
 
   it("says why arrival bins are missing when some are suppressed", async () => {

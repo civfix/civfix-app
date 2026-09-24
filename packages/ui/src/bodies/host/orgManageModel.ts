@@ -169,8 +169,19 @@ export function lastAdminSeat(members: readonly OrganizationMemberDTO[]): boolea
   return members.filter((member) => member.role !== "member").length <= 1
 }
 
-export function orgManageErrorKey(code: string | undefined): string {
-  if (code === "ORG_LAST_ADMIN" || code === "CONFLICT") return "manage.error_last_admin"
+const ORG_LAST_ADMIN_FIELD = "userId"
+
+const ORG_LAST_ADMIN_REASON = "ORG_LAST_ADMIN"
+
+// The server refuses to empty the last admin seat as VALIDATION with the reason on `userId`; CONFLICT
+// means other things, such as a taken handle.
+export function orgManageErrorKey(
+  code: string | undefined,
+  fields?: Record<string, string>,
+): string {
+  if (code === "VALIDATION" && fields?.[ORG_LAST_ADMIN_FIELD] === ORG_LAST_ADMIN_REASON) {
+    return "manage.error_last_admin"
+  }
   if (code === "FORBIDDEN") return "manage.error_forbidden"
   if (code === "VALIDATION") return "manage.error_validation"
   if (code === "RATE_LIMITED") return "manage.error_rate_limited"

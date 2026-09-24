@@ -1,7 +1,7 @@
 import type { CleanupDTO } from "@civfix/shared"
 import type { HostStage } from "@civfix/shared/host"
 import type { UseRelativeTime } from "../../i18n"
-import type { HostRowKey } from "./hostSurfaceModel"
+import { relativeLineFor, type HostRowKey } from "./hostSurfaceModel"
 import { relativeUntil } from "./hostTime"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
@@ -72,12 +72,18 @@ export function hostRelativeLine(
   input: HostRelativeInput,
   t: Translate,
   relative: UseRelativeTime["relative"],
-): string {
+): string | null {
   const { stage, now } = input
   if (stage === "cancelled") return t("phase.called_off")
   if (stage === "past" || stage === "wrapping_up") {
-    return t("phase.ended_on", { when: relative(input.endsAt ?? input.scheduledAt, now) })
+    return relativeLineFor(relative(input.endsAt ?? input.scheduledAt, now), (when) =>
+      t("phase.ended_on", { when }),
+    )
   }
-  if (stage === "underway") return t("phase.started", { when: relative(input.scheduledAt, now) })
-  return t("phase.starts", { when: relativeUntil(relative, input.startsAt, now) })
+  if (stage === "underway") {
+    return relativeLineFor(relative(input.scheduledAt, now), (when) => t("phase.started", { when }))
+  }
+  return relativeLineFor(relativeUntil(relative, input.startsAt, now), (when) =>
+    t("phase.starts", { when }),
+  )
 }

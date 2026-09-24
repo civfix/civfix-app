@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
@@ -175,6 +175,13 @@ export function toDefs(drafts: readonly DraftQuestion[]): EventQuestionDef[] {
   return drafts.map((draft, index) => toDef(draft, index, keptIds))
 }
 
+export function questionDraftsDiffer(
+  drafts: readonly DraftQuestion[],
+  questions: readonly EventQuestionDTO[],
+): boolean {
+  return JSON.stringify(toDefs(drafts)) !== JSON.stringify(toDefs(questions.map(toDraft)))
+}
+
 let counter = 0
 
 function newKey(): string {
@@ -200,10 +207,16 @@ export function QuestionsEditor({
   const gate = useGate(questions)
   const [drafts, setDrafts] = useState<DraftQuestion[] | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
+  const [seededFrom, setSeededFrom] = useState<EventQuestionDTO[] | null>(null)
 
-  useEffect(() => {
-    if (questions.data && drafts === null) setDrafts(questions.data.map(toDraft))
-  }, [questions.data, drafts])
+  // A refetch reseeds the drafts only while they still match the list they were seeded from, so a
+  // server change shows up without ever overwriting the host's unsaved edits.
+  if (questions.data && questions.data !== seededFrom) {
+    setSeededFrom(questions.data)
+    if (drafts === null || seededFrom === null || !questionDraftsDiffer(drafts, seededFrom)) {
+      setDrafts(questions.data.map(toDraft))
+    }
+  }
 
   const list = drafts ?? []
 
