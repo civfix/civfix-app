@@ -6,7 +6,8 @@ import {
 } from "./schemas/entities.js"
 import type { LatLngLike } from "./geo.js"
 
-export const ADDRESS_PRECISION_LADDER: readonly AddressPrecision[] = AddressPrecisionSchema.options
+// A copy, so the ranking never aliases the live enum options array.
+export const ADDRESS_PRECISION_LADDER: readonly AddressPrecision[] = [...AddressPrecisionSchema.options]
 
 export const GEOCODE_POINT_KEY_DECIMALS = 5
 
