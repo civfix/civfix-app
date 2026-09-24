@@ -2,12 +2,14 @@ import React from "react"
 import { Pressable } from "react-native"
 import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated"
 import { makeThemedStyles, useReducedMotion, useTheme, webCursor, focusRingProps } from "../theme"
+import type { SettingsToggleProps } from "./SettingsToggle.types"
 import {
-  type SettingsToggleProps,
   trackOffColor,
   KNOB_OFF_X,
   KNOB_ON_X,
-} from "./SettingsToggle.types"
+  SETTINGS_TOGGLE_TRACK,
+  settingsToggleKnob,
+} from "./SettingsToggle.styles"
 
 const SPRING = { damping: 14, stiffness: 220, mass: 0.6 } as const
 
@@ -48,19 +50,9 @@ export function SettingsToggle({
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  track: {
-    width: 40,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: "center",
-    flexShrink: 0,
-  },
+  track: SETTINGS_TOGGLE_TRACK,
   knob: {
-    position: "absolute",
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: t.colors.onAccent,
+    ...settingsToggleKnob(t),
     shadowColor: t.colors.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,

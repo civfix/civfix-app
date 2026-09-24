@@ -24,7 +24,7 @@ export const useMediaPreviewStyles = makeThemedStyles((t) => ({
     left: t.space["2"],
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: t.space["1"],
     paddingHorizontal: t.space["2"],
     paddingVertical: 3,
     borderRadius: t.radius.pill,

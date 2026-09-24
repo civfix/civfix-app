@@ -4,12 +4,9 @@
  * down to clear the top margin, and every top is floored at the margin (bands may overlap on tiny windows).
  */
 
-export interface MenuAnchorRect {
-  x: number
-  y: number
-  width: number
-  height: number
-}
+import type { MenuAnchorRect } from "./menuMotionModel"
+
+export type { MenuAnchorRect }
 
 export interface MenuPlacement {
   bubbleTop: number
@@ -85,4 +82,47 @@ export function resolveBandLeft(
   const rawLeft = alignRight ? anchor.x + anchor.width - width : anchor.x
   const maxLeft = Math.max(edge, screenW - width - edge)
   return Math.min(Math.max(rawLeft, edge), maxLeft)
+}
+
+export interface WebMenuFrameInput {
+  actionCount: number
+  actionRowH: number
+  reactionRowH: number
+  cardPadV: number
+  cardWidth: number
+}
+
+export interface WebMenuFrame {
+  actionsMaxH: number
+  cardH: number
+  position: { top: number; left: number } | null
+}
+
+/** The web card: one column (reactions, then actions) that scrolls its actions before it leaves the window. */
+export function resolveWebMenuFrame(
+  anchor: MenuAnchorRect | null,
+  screen: { width: number; height: number },
+  frame: WebMenuFrameInput,
+  alignRight: boolean,
+): WebMenuFrame {
+  const actionsMaxH = Math.max(
+    frame.actionRowH * 2,
+    screen.height - CONTEXT_MENU_EDGE_MARGIN * 2 - frame.reactionRowH - frame.cardPadV,
+  )
+  const cardH =
+    frame.reactionRowH + Math.min(frame.actionCount * frame.actionRowH, actionsMaxH) + frame.cardPadV
+  if (!anchor) return { actionsMaxH, cardH, position: null }
+  const fitsBelow =
+    anchor.y + anchor.height + CONTEXT_MENU_GAP + cardH <= screen.height - CONTEXT_MENU_EDGE_MARGIN
+  return {
+    actionsMaxH,
+    cardH,
+    position: {
+      top: Math.max(
+        CONTEXT_MENU_EDGE_MARGIN,
+        fitsBelow ? anchor.y + anchor.height + CONTEXT_MENU_GAP : anchor.y - CONTEXT_MENU_GAP - cardH,
+      ),
+      left: resolveBandLeft(anchor, screen.width, frame.cardWidth, alignRight),
+    },
+  }
 }

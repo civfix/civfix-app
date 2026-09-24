@@ -47,6 +47,11 @@ export function suppressedSparkKeys(series: readonly SeriesPoint[]): ReadonlySet
   return new Set(series.filter((point) => point.suppressed).map((point) => point.day))
 }
 
+function sparkBarHeight(known: boolean, ratio: number, height: number): number {
+  if (!known) return SPARK_BAR_MIN_HEIGHT
+  return ratio > 0 ? Math.max(SPARK_BAR_MIN_HEIGHT, ratio * height) : 0
+}
+
 function peakOf(points: readonly SparkPoint[]): number {
   return points.reduce((top, point) => Math.max(top, point.value ?? 0), 0)
 }
@@ -86,11 +91,7 @@ export function sparklineGeometry(
     const centre = slot * index + slot / 2
     const known = point.value !== null
     const ratio = known && peak > 0 ? (point.value ?? 0) / peak : 0
-    const barHeight = known
-      ? ratio > 0
-        ? Math.max(SPARK_BAR_MIN_HEIGHT, ratio * height)
-        : 0
-      : SPARK_BAR_MIN_HEIGHT
+    const barHeight = sparkBarHeight(known, ratio, height)
     const x = centre - barWidth / 2
     const y = height - barHeight
     bars.push({

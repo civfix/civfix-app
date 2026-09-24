@@ -8,7 +8,7 @@ const VIEWBOX = 88
 const CIRCLE_RADIUS = 40
 const CHECK_PATH = "M30 46 L40 56 L60 34"
 const CHECK_LENGTH = 45
-const DRAW_DELAY_MS = 120
+const DRAW_DELAY_MS = motion.dur.d1
 const DRAW_DURATION_MS = 360
 
 export interface SuccessCheckProps {

@@ -2,9 +2,10 @@ import React from "react"
 import { View, Pressable } from "react-native"
 import { avatarGradient, type ReplyToDTO } from "@civfix/shared"
 import { alpha } from "../theme/alpha"
-import { makeThemedStyles, useTheme, webCursorPointer, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, webCursorPointer, focusRingProps, type Theme } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"
+import { QUOTE_ACCENT_LINE, excerptOf } from "./quoteStrip"
 
 export interface ReplyQuoteProps {
   replyTo: ReplyToDTO
@@ -13,19 +14,21 @@ export interface ReplyQuoteProps {
   loading?: boolean
 }
 
+function quoteAccent(replyTo: ReplyToDTO, mine: boolean, th: Theme): string {
+  if (mine) return th.colors.onAccent
+  if (replyTo.from) return avatarGradient(replyTo.from.id)[0]
+  return th.colors.textMuted
+}
+
 export function ReplyQuote({ replyTo, mine, onPress, loading = false }: ReplyQuoteProps) {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("conversation")
   const author = replyTo.from?.displayName ?? t("bubble.reply_unknown_author")
   const deleted = replyTo.deleted === true
-  const excerptBody = replyTo.excerpt.replace(/\s+/g, " ").trim()
+  const excerptBody = excerptOf(replyTo.excerpt)
   const excerpt = deleted ? t("bubble.reply_deleted") : excerptBody || t("bubble.reply_media")
-  const accent = mine
-    ? th.colors.onAccent
-    : replyTo.from
-      ? avatarGradient(replyTo.from.id)[0]
-      : th.colors.textMuted
+  const accent = quoteAccent(replyTo, mine, th)
   const inner = (
     <>
       <View style={[styles.accentLine, { backgroundColor: accent }]} />
@@ -99,22 +102,18 @@ const useStyles = makeThemedStyles((t) => ({
   rootMine: {
     backgroundColor: alpha(t.colors.onAccent, ON_BLOOM_QUOTE_BG_ALPHA),
   },
-  accentLine: {
-    width: 3,
-    alignSelf: "stretch",
-    borderRadius: 1.5,
-  },
+  accentLine: QUOTE_ACCENT_LINE,
   textCol: {
     flex: 1,
     minWidth: 0,
   },
   author: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
   },
   excerpt: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     marginTop: 1,
   },
   excerptTheirs: {

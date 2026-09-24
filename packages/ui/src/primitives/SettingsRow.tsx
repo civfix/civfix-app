@@ -2,13 +2,12 @@ import React from "react"
 import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import { makeThemedStyles, space, useTheme, focusRingProps, webCursor, webHover, webTransition, headingLevel } from "../theme"
 import { Text, Icon, iconMap, type IconName } from "../typography"
-import { SettingsToggle } from "./SettingsToggle"
+import { ToggleRowContent } from "./ToggleRowContent"
+import { IconTile, LIST_DIVIDER_INSET } from "./ListRow"
 
 export const SETTINGS_ROW_MIN_HEIGHT = 56
-const ICON_TILE = 40
 const ROW_PAD_H = space["4"]
 const ROW_GAP = space["3"]
-const DIVIDER_INSET = ROW_PAD_H + ICON_TILE + ROW_GAP
 
 export interface SettingsToggleBinding {
   value: boolean
@@ -68,18 +67,9 @@ function RowContent({
   destructive: boolean
 }) {
   const styles = useStyles()
-  const t = useTheme()
   return (
     <>
-      {icon ? (
-        <View style={[styles.iconTile, destructive ? styles.iconTileDestructive : null]}>
-          <Icon
-            icon={iconMap[icon]}
-            size={18}
-            color={destructive ? t.colors.dangerInk : t.colors.textMuted}
-          />
-        </View>
-      ) : null}
+      {icon ? <IconTile icon={icon} tone={destructive ? "danger" : "neutral"} /> : null}
       <View style={styles.meta}>
         <Text style={[styles.label, destructive ? styles.labelDestructive : null]} numberOfLines={2}>
           {label}
@@ -114,24 +104,15 @@ export function SettingsRow({
   if (toggle) {
     return (
       <View style={styles.row}>
-        <Pressable
-          onPress={() => toggle.onValueChange(!toggle.value)}
-          focusable={false}
-          {...({ tabIndex: -1 } as object)}
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          {...focusRingProps}
-          style={[styles.toggleTextCol, webCursor()]}
-        >
-          <RowContent label={label} icon={icon} sub={sub} destructive={false} />
-        </Pressable>
-        <SettingsToggle
+        <ToggleRowContent
+          label={accessibilityLabel ?? label}
+          hint={sub}
           value={toggle.value}
           onValueChange={toggle.onValueChange}
-          onColor={t.colors.brand.bloom}
-          accessibilityLabel={accessibilityLabel ?? label}
-          accessibilityHint={sub}
-        />
+          columnStyle={styles.toggleTextCol}
+        >
+          <RowContent label={label} icon={icon} sub={sub} destructive={false} />
+        </ToggleRowContent>
       </View>
     )
   }
@@ -201,7 +182,7 @@ const useStyles = makeThemedStyles((t) => ({
   divider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: t.colors.border,
-    marginLeft: DIVIDER_INSET,
+    marginLeft: LIST_DIVIDER_INSET,
   },
   row: {
     flexDirection: "row",
@@ -228,18 +209,6 @@ const useStyles = makeThemedStyles((t) => ({
     minHeight: SETTINGS_ROW_MIN_HEIGHT - 24,
     marginRight: t.space["3"],
   },
-  iconTile: {
-    width: ICON_TILE,
-    height: ICON_TILE,
-    borderRadius: t.radius.md,
-    flexShrink: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.bgAlt,
-  },
-  iconTileDestructive: {
-    backgroundColor: t.colors.dangerWash,
-  },
   meta: {
     flex: 1,
     minWidth: 0,
@@ -254,13 +223,13 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sub: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textSubtle,
     marginTop: 1,
   },
   value: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
     flexShrink: 0,
     maxWidth: 140,

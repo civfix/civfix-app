@@ -129,12 +129,19 @@ describe("report reasons are a radio group", () => {
 })
 
 describe("the toggle label column is not a duplicate screen-reader stop", () => {
-  it.each(["../Toggle.tsx", "../SettingsRow.tsx"])("%s hides the label column and hints the switch", (file) => {
-    const source = code(file)
+  it("the shared toggle row hides its label column and hints the switch", () => {
+    const source = code("../ToggleRowContent.tsx")
     const column = sliceBetween(source, "focusable={false}", "<SettingsToggle")
     expect(column).toContain("accessibilityElementsHidden")
     expect(column).toContain('importantForAccessibility="no-hide-descendants"')
-    expect(source).toMatch(/accessibilityHint=\{(helper|sub)\}/)
+    expect(source).toContain("accessibilityHint={hint}")
+  })
+
+  it.each(["../Toggle.tsx", "../SettingsRow.tsx"])("%s renders the shared toggle row and hints the switch", (file) => {
+    const source = code(file)
+    expect(source).toContain("<ToggleRowContent")
+    expect(source).not.toContain("<SettingsToggle")
+    expect(source).toMatch(/hint=\{(helper|sub)\}/)
   })
 
   it.each(["../SettingsToggle.web.tsx", "../SettingsToggle.native.tsx"])("%s forwards the hint", (file) => {

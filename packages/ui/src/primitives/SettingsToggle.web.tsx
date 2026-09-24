@@ -1,15 +1,17 @@
 import React from "react"
 import { Pressable, View, type ViewStyle } from "react-native"
-import { makeThemedStyles, useReducedMotion, useTheme, webCursor, focusRingProps } from "../theme"
+import { makeThemedStyles, motion, useReducedMotion, useTheme, webCursor, focusRingProps } from "../theme"
 import { alpha } from "../theme/alpha"
+import type { SettingsToggleProps } from "./SettingsToggle.types"
 import {
-  type SettingsToggleProps,
   trackOffColor,
   KNOB_OFF_X,
   KNOB_ON_X,
-} from "./SettingsToggle.types"
+  SETTINGS_TOGGLE_TRACK,
+  settingsToggleKnob,
+} from "./SettingsToggle.styles"
 
-const KNOB_TRANSITION = "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)"
+const KNOB_TRANSITION = `transform ${motion.dur.d2}ms ${motion.ease.spring}`
 
 export function SettingsToggle({
   value,
@@ -48,19 +50,9 @@ export function SettingsToggle({
 }
 
 const useStyles = makeThemedStyles((t) => ({
-  track: {
-    width: 40,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: "center",
-    flexShrink: 0,
-  },
+  track: SETTINGS_TOGGLE_TRACK,
   knob: {
-    position: "absolute",
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: t.colors.onAccent,
+    ...settingsToggleKnob(t),
     boxShadow: `0 2px 4px ${alpha(t.colors.shadowColor, 0.2)}`,
   },
 }))

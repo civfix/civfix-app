@@ -21,7 +21,7 @@ import {
   focusRingProps,
   webScrimProps,
 } from "../theme"
-import { Text, Icon } from "../typography"
+import { Text } from "../typography"
 import type { LucideIcon } from "../typography"
 import { useT } from "../i18n"
 import { useHaptics } from "../capabilities"
@@ -30,9 +30,12 @@ import { menuCardStyle, menuOrigin, menuScrimStyle, useMenuMotion } from "./menu
 import type { AnchorRect } from "./PopoverMenu"
 import { useDeferredOverlayAction } from "./useDeferredOverlayAction"
 import { useModalClosed } from "./useModalClosed"
+import { MenuItemContent } from "./MenuItemContent"
+import { menuRowStyles, menuSurfaceStyle } from "./menuSurface"
 import {
   resolveMenuPlacement,
   resolveBandLeft,
+  resolveWebMenuFrame,
   CONTEXT_MENU_GAP,
   CONTEXT_MENU_EDGE_MARGIN,
 } from "./messageContextMenuLayout"
@@ -72,11 +75,14 @@ export interface MessageContextMenuProps {
 }
 
 const CARD_WIDTH = 240
+const WEB_CARD_WIDTH = 264
 const ACTION_ROW_H = 38
 const CARD_PAD_V = space["1"] * 2
 const REACTION_ROW_H = 48
 const GLYPH_BUTTON = 36
-const GLYPH_GAP = 4
+const GLYPH_GAP = space["1"]
+const BUBBLE_POP_FROM = 0.96
+const BUBBLE_SPRING = { friction: 7, tension: 120 } as const
 
 export function MessageContextMenu({
   visible,
@@ -102,10 +108,10 @@ export function MessageContextMenu({
   const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)
   const onModalDismiss = useModalClosed(rendered, settled)
 
-  const scale = useRef(new Animated.Value(0.96)).current
+  const scale = useRef(new Animated.Value(BUBBLE_POP_FROM)).current
   useEffect(() => {
     if (!rendered) {
-      scale.setValue(0.96)
+      scale.setValue(BUBBLE_POP_FROM)
       return
     }
     if (isWeb) return
@@ -116,8 +122,7 @@ export function MessageContextMenu({
     }
     const springIn = Animated.spring(scale, {
       toValue: 1,
-      friction: 7,
-      tension: 120,
+      ...BUBBLE_SPRING,
       useNativeDriver: motion.useNativeDriver,
     })
     springIn.start()
@@ -139,17 +144,20 @@ export function MessageContextMenu({
         accessibilityLabel={action.label}
         {...focusRingProps}
         style={(state) => [
-          styles.actionRow,
+          styles.row,
           webTransition,
           webCursorPointer,
-          webHover(state) ? styles.actionRowHovered : null,
-          state.pressed ? styles.actionRowPressed : null,
+          webHover(state) ? styles.rowHovered : null,
+          state.pressed ? styles.rowPressed : null,
         ]}
       >
-        <Icon icon={action.icon} size={16} color={color} />
-        <Text variant="body" color={color} numberOfLines={1} style={[styles.actionLabel, webNoSelect]}>
-          {action.label}
-        </Text>
+        <MenuItemContent
+          icon={action.icon}
+          iconSize={16}
+          color={color}
+          label={action.label}
+          labelStyle={styles.rowLabel}
+        />
       </Pressable>
     )
   }
@@ -182,26 +190,18 @@ export function MessageContextMenu({
   }
 
   if (isWeb) {
-    const reactionRowH = showReactions ? REACTION_ROW_H : 0
-    const actionsMaxH = Math.max(
-      ACTION_ROW_H * 2,
-      winH - CONTEXT_MENU_EDGE_MARGIN * 2 - reactionRowH - CARD_PAD_V,
+    const { actionsMaxH, cardH, position: cardPosition } = resolveWebMenuFrame(
+      anchor,
+      { width: winW, height: winH },
+      {
+        actionCount: actions.length,
+        actionRowH: ACTION_ROW_H,
+        reactionRowH: showReactions ? REACTION_ROW_H : 0,
+        cardPadV: CARD_PAD_V,
+        cardWidth: WEB_CARD_WIDTH,
+      },
+      mine,
     )
-    const cardH = reactionRowH + Math.min(actions.length * ACTION_ROW_H, actionsMaxH) + CARD_PAD_V
-    let cardPosition: { top: number; left: number } | null = null
-    if (anchor) {
-      const fitsBelow =
-        anchor.y + anchor.height + CONTEXT_MENU_GAP + cardH <= winH - CONTEXT_MENU_EDGE_MARGIN
-      cardPosition = {
-        top: Math.max(
-          CONTEXT_MENU_EDGE_MARGIN,
-          fitsBelow
-            ? anchor.y + anchor.height + CONTEXT_MENU_GAP
-            : anchor.y - CONTEXT_MENU_GAP - cardH,
-        ),
-        left: resolveBandLeft(anchor, winW, WEB_CARD_WIDTH, mine),
-      }
-    }
     const webOrigin = menuOrigin(
       anchor,
       cardPosition ? { ...cardPosition, width: WEB_CARD_WIDTH, height: cardH } : null,
@@ -373,8 +373,6 @@ export function MessageContextMenu({
   )
 }
 
-const WEB_CARD_WIDTH = 264
-
 const useStyles = makeThemedStyles((t) => ({
   rootAnchored: {
     flex: 1,
@@ -446,7 +444,7 @@ const useStyles = makeThemedStyles((t) => ({
     lineHeight: 28,
   },
   glyphCompact: {
-    fontSize: 16,
+    fontSize: t.fontSize["16"],
     lineHeight: 20,
   },
   glyphHovered: {
@@ -457,13 +455,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   card: {
     width: CARD_WIDTH,
-    paddingVertical: t.space["1"],
-    paddingHorizontal: t.space["1"],
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s3,
+    ...menuSurfaceStyle(t),
   },
   cardCentered: {
     width: "100%",
@@ -485,22 +477,5 @@ const useStyles = makeThemedStyles((t) => ({
     marginVertical: t.space["1"],
     marginHorizontal: t.space["1"],
   },
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-    paddingHorizontal: t.space["2"],
-    paddingVertical: t.space["2"],
-    borderRadius: t.radius.md,
-  },
-  actionRowHovered: {
-    backgroundColor: t.colors.surfaceTint,
-  },
-  actionRowPressed: {
-    backgroundColor: t.colors.surfaceTint,
-    opacity: 0.85,
-  },
-  actionLabel: {
-    flex: 1,
-  },
+  ...menuRowStyles(t, t.space["2"]),
 }))

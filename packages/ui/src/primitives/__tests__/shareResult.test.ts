@@ -1,6 +1,6 @@
 /**
  * Dismissing the browser's share sheet must not fall through to the clipboard copy, which would overwrite
- * the clipboard and make ShareButton flash "Link copied" for a share the user declined.
+ * the clipboard and make the share action report "Link copied" for a share the user declined.
  */
 import { describe, expect, it } from "vitest"
 import { classifyWebShareRejection } from "../shareResult"

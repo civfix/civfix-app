@@ -8,15 +8,17 @@ import {
   webCursorPointer,
   webTransition,
   webHover,
-  webNoSelect,
   focusRingProps,
   webScrimProps,
 } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
+import { iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { useT } from "../i18n"
 import type { AnchorRect } from "./PopoverMenu"
 import { composerAttachRows, type ComposerAttachRowKey } from "./composerAttachRows"
+import { MenuItemContent } from "./MenuItemContent"
+import { menuRowStyles, menuSurfaceStyle } from "./menuSurface"
+import { resolveBandLeft } from "./messageContextMenuLayout"
 
 export interface ComposerAttachSheetProps {
   visible: boolean
@@ -56,12 +58,11 @@ export function ComposerAttachSheet({
 
   const rows = composerAttachRows({ isWeb, canCreatePoll })
 
-  const handlerFor = (key: ComposerAttachRowKey): (() => void) =>
-    key === "photo" ? onPhoto : key === "camera" ? onCamera : onPoll
+  const handlers: Record<ComposerAttachRowKey, () => void> = { photo: onPhoto, camera: onCamera, poll: onPoll }
 
   const pendingActionRef = React.useRef<(() => void) | null>(null)
   const choose = (key: ComposerAttachRowKey) => {
-    const action = handlerFor(key)
+    const action = handlers[key]
     if (Platform.OS === "ios") {
       pendingActionRef.current = action
       onClose()
@@ -93,10 +94,13 @@ export function ComposerAttachSheet({
           state.pressed ? styles.rowPressed : null,
         ]}
       >
-        <Icon icon={iconMap[ROW_ICON[key]]} size={18} color={th.colors.text} />
-        <Text variant="body" color={th.colors.text} numberOfLines={1} style={[styles.rowLabel, webNoSelect]}>
-          {label}
-        </Text>
+        <MenuItemContent
+          icon={iconMap[ROW_ICON[key]]}
+          iconSize={18}
+          color={th.colors.text}
+          label={label}
+          labelStyle={styles.rowLabel}
+        />
       </Pressable>
     )
   }
@@ -104,11 +108,9 @@ export function ComposerAttachSheet({
   if (isWeb) {
     let cardPosition: { bottom: number; left: number } | null = null
     if (anchor) {
-      const rawLeft = anchor.x
-      const maxLeft = Math.max(EDGE_MARGIN, winW - CARD_WIDTH - EDGE_MARGIN)
       cardPosition = {
         bottom: Math.max(EDGE_MARGIN, winH - anchor.y + GAP),
-        left: Math.min(Math.max(rawLeft, EDGE_MARGIN), maxLeft),
+        left: resolveBandLeft(anchor, winW, CARD_WIDTH, false, { edgeMargin: EDGE_MARGIN }),
       }
     }
     return (
@@ -183,13 +185,7 @@ const useStyles = makeThemedStyles((t) => ({
   card: {
     minWidth: CARD_WIDTH,
     maxWidth: 320,
-    paddingVertical: t.space["1"],
-    paddingHorizontal: t.space["1"],
-    borderRadius: t.radius.lg,
-    backgroundColor: t.colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: t.colors.border,
-    ...t.shadows.s3,
+    ...menuSurfaceStyle(t),
   },
   cardCentered: {
     alignSelf: "center",
@@ -206,22 +202,5 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     ...t.shadows.s3,
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-    paddingHorizontal: t.space["3"],
-    paddingVertical: t.space["3"],
-    borderRadius: t.radius.md,
-  },
-  rowHovered: {
-    backgroundColor: t.colors.surfaceTint,
-  },
-  rowPressed: {
-    backgroundColor: t.colors.surfaceTint,
-    opacity: 0.85,
-  },
-  rowLabel: {
-    flex: 1,
-  },
+  ...menuRowStyles(t, t.space["3"]),
 }))

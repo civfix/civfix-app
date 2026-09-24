@@ -1,8 +1,6 @@
 import { Platform, Share } from "react-native"
 import { classifyWebShareRejection, nativeShareResult, type ShareResult } from "./shareResult"
 import { nativeShareContent } from "./shareContent"
-
-export { WEB_ORIGIN, setWebOrigin, webOrigin } from "./externalUrls"
 import { webOrigin } from "./externalUrls"
 
 export function absoluteUrl(path: string): string {
@@ -17,9 +15,6 @@ export function absoluteUrl(path: string): string {
   }
   return webOrigin() + p
 }
-
-export { classifyWebShareRejection } from "./shareResult"
-export type { ShareResult } from "./shareResult"
 
 export interface ShareLinkOptions {
   title: string

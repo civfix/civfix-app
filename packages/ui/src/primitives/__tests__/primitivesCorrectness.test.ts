@@ -10,7 +10,7 @@ import { REPORT_CATEGORY_LABELS, type EventQuestionDTO, type TicketTypeDTO } fro
 import { uploadAttachErrorKey } from "../composerAttachmentId"
 import { postDetailPath } from "../postActionModel"
 import { emptyPollDraft, removeOption, setOption } from "../pollDraft"
-import { answersWithDefaults, effectiveTicketTypeId } from "../guestRsvpModel"
+import { answersWithDefaults, effectiveTicketTypeId } from "../../bodies/host/registration/guestRsvpModel"
 import { qrTicketPath } from "../qrMatrix"
 import { nativeShareResult } from "../shareResult"
 import { CALENDAR_BLOB_REVOKE_MS, saveCalendarFile } from "../calendarFile.web"
@@ -150,7 +150,7 @@ describe("a guest registration always carries a ticket type", () => {
   })
 
   it("derives the sheet's ticket type rather than trusting the state seeded on open", () => {
-    const sheet = code("../GuestRsvpSheet.tsx")
+    const sheet = code("../../bodies/host/registration/GuestRsvpSheet.tsx")
     expect(sheet).toContain("const ticketTypeId = effectiveTicketTypeId(types, chosenTicketTypeId)")
     expect(sheet).not.toContain("setTicketTypeId(defaultTicketTypeId(types))")
   })
@@ -166,7 +166,7 @@ describe("guest answers derive their defaults", () => {
   })
 
   it("no longer mirrors the questions prop into state from an effect", () => {
-    const sheet = code("../GuestRsvpSheet.tsx")
+    const sheet = code("../../bodies/host/registration/GuestRsvpSheet.tsx")
     expect(sheet).not.toContain("seedAnswers")
     expect(sheet).toContain("answersWithDefaults(questions, typedAnswers)")
   })

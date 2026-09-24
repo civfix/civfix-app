@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { avatarColor, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { avatarColor, monogram, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
 import { resolveThreadAvatar } from "../threadAvatarResolve"
 
 function person(over: Partial<PersonDTO> = {}): PersonDTO {
@@ -44,8 +44,9 @@ describe("resolveThreadAvatar", () => {
     // to how the SAME person renders in connections/feed/profile).
     expect(r.seed).toBe("11111111-1111-1111-1111-111111111111")
     expect(r.gradient).toEqual(["#aaaaaa", "#bbbbbb"])
-    // A SINGLE uppercase letter (the first letter of the name), never two-letter initials.
-    expect(r.letter).toBe("A")
+    // Avatar draws monogram(name): a SINGLE uppercase letter (the first letter of the name), never two-letter initials.
+    expect(r.name).toBe("Alex Rivera")
+    expect(monogram(r.name)).toBe("A")
   })
 
   it("uses avatarColor(peer id) when the peer has no server avatar pair - matching the rest of the app", () => {
@@ -58,7 +59,8 @@ describe("resolveThreadAvatar", () => {
     expect(r.isGroup).toBe(false)
     expect(r.photoUrl).toBeNull()
     expect(r.seed).toBe("room-9")
-    expect(r.letter).toBe("S")
+    expect(r.name).toBe("@sam")
+    expect(monogram(r.name)).toBe("S")
   })
 
   it("renders a glyph on a solid room-seeded color for a group/cleanup/report (no gradient, no photo)", () => {

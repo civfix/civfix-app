@@ -2,12 +2,14 @@ import { MOTION } from "../theme/motion"
 
 export const MENU_SCALE_FROM = MOTION.menuScaleFrom
 
-export interface MenuAnchorRect {
+export interface AnchorRect {
   x: number
   y: number
   width: number
   height: number
 }
+
+export type MenuAnchorRect = AnchorRect
 
 export interface MenuCardRect {
   left: number

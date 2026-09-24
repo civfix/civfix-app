@@ -11,6 +11,7 @@ import {
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
+import { excerptOf } from "./quoteStrip"
 
 const BAR_HEIGHT = 40
 const SEGMENT_CAP = 4
@@ -29,7 +30,7 @@ export function PinnedBar({ pins, activeIndex, onTap, onOpenList }: PinnedBarPro
   if (pins.length === 0) return null
   const index = Math.min(Math.max(activeIndex, 0), pins.length - 1)
   const active = pins[index]!
-  const excerptBody = (active.body ?? "").replace(/\s+/g, " ").trim()
+  const excerptBody = excerptOf(active.body ?? "")
   const excerpt = excerptBody || t("bubble.reply_media")
   const segments = Math.min(pins.length, SEGMENT_CAP)
   const highlighted = Math.min(index, segments - 1)
@@ -134,7 +135,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   excerpt: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     color: t.colors.textMuted,
     marginTop: 1,
   },

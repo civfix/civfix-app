@@ -1,11 +1,12 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { a11yState, makeThemedStyles, useTheme, webCursor, webHover, focusRingProps } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
+import { a11yState, makeThemedStyles, webCursor, webHover, focusRingProps } from "../theme"
+import { Text } from "../typography"
 import type { LegalDocumentType } from "@civfix/shared"
 import { currentVersion } from "@civfix/shared/legal"
 import { useOpenExternal } from "../capabilities"
 import { useT } from "../i18n"
+import { CheckboxBox } from "./CheckboxBox"
 import { PRIVACY_URL, TERMS_URL } from "./externalUrls"
 
 export interface AcceptedLegalDocument {
@@ -29,7 +30,6 @@ export function TermsConfirmation({
   onAccept,
 }: TermsConfirmationProps) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("onboarding-terms")
   const openExternal = useOpenExternal()
   const openLegal = React.useCallback(
@@ -62,9 +62,7 @@ export function TermsConfirmation({
           state.pressed ? styles.checkPressed : null,
         ]}
       >
-        <View style={[styles.box, confirmed ? styles.boxChecked : null]}>
-          {confirmed ? <Icon icon={iconMap.Check} size={14} color={th.colors.onAccent} /> : null}
-        </View>
+        <CheckboxBox checked={confirmed} />
         <Text variant="body">{t("label.lead").trim()}</Text>
       </Pressable>
       <Text variant="body" style={styles.links}>
@@ -119,20 +117,6 @@ const useStyles = makeThemedStyles((t) => ({
   },
   checkPressed: {
     opacity: 0.7,
-  },
-  box: {
-    width: 22,
-    height: 22,
-    borderRadius: t.radius.xs,
-    borderWidth: 1.5,
-    borderColor: t.colors.borderStrong,
-    backgroundColor: t.colors.bg,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  boxChecked: {
-    backgroundColor: t.colors.brand.bloom,
-    borderColor: t.colors.brand.bloom,
   },
   links: {
     flexShrink: 1,

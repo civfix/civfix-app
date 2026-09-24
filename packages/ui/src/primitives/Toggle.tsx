@@ -1,8 +1,8 @@
 import React from "react"
-import { View, Pressable } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps, webCursor } from "../theme"
+import { View } from "react-native"
+import { makeThemedStyles } from "../theme"
 import { Text } from "../typography"
-import { SettingsToggle } from "./SettingsToggle"
+import { ToggleRowContent } from "./ToggleRowContent"
 
 export interface ToggleProps {
   label: string
@@ -13,17 +13,14 @@ export interface ToggleProps {
 
 export function Toggle({ label, value, onValueChange, helper }: ToggleProps) {
   const styles = useStyles()
-  const t = useTheme()
   return (
     <View style={styles.row}>
-      <Pressable
-        onPress={() => onValueChange(!value)}
-        focusable={false}
-        {...({ tabIndex: -1 } as object)}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        {...focusRingProps}
-        style={[styles.textCol, webCursor()]}
+      <ToggleRowContent
+        label={label}
+        hint={helper}
+        value={value}
+        onValueChange={onValueChange}
+        columnStyle={styles.textCol}
       >
         <Text variant="bodyStrong">{label}</Text>
         {helper ? (
@@ -31,14 +28,7 @@ export function Toggle({ label, value, onValueChange, helper }: ToggleProps) {
             {helper}
           </Text>
         ) : null}
-      </Pressable>
-      <SettingsToggle
-        value={value}
-        onValueChange={onValueChange}
-        onColor={t.colors.brand.bloom}
-        accessibilityLabel={label}
-        accessibilityHint={helper}
-      />
+      </ToggleRowContent>
     </View>
   )
 }

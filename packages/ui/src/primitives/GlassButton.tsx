@@ -1,9 +1,8 @@
 import React from "react"
-import { View, Pressable, StyleSheet, type ViewStyle } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
 import { makeThemedStyles, useTheme, webCursor, webTransition, webHover, focusRingProps } from "../theme"
 import { BlurSurface } from "../surface"
-import { CountBadge } from "./CountBadge"
-import { HEADER_CONTROL_SIZE } from "../bodies/headerControls"
+import { HEADER_CONTROL_SIZE } from "./headerControls"
 
 const SIZE = HEADER_CONTROL_SIZE
 
@@ -11,35 +10,27 @@ export interface GlassButtonProps {
   onPress: () => void
   children: React.ReactNode
   accessibilityLabel: string
-  accent?: boolean
   active?: boolean
   expanded?: boolean
-  badge?: number
   dot?: boolean
-  style?: ViewStyle
 }
 
 export function GlassButton({
   onPress,
   children,
   accessibilityLabel,
-  accent = false,
   active = false,
   expanded,
-  badge,
   dot = false,
-  style,
 }: GlassButtonProps) {
   const styles = useStyles()
   const t = useTheme()
-  const solidFill = accent
-    ? { backgroundColor: t.colors.brand.bloom, borderColor: t.colors.bloom["300"] }
-    : active
-      ? { backgroundColor: t.glass.active.fill, borderColor: t.glass.active.fill }
-      : null
+  const solidFill = active
+    ? { backgroundColor: t.glass.active.fill, borderColor: t.glass.active.fill }
+    : null
 
   return (
-    <View style={[styles.wrap, style]}>
+    <View style={styles.wrap}>
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
@@ -53,7 +44,6 @@ export function GlassButton({
           webTransition,
           webCursor(),
           t.shadows.s2,
-          accent ? t.shadows.pin : null,
           solidFill,
           webHover(state) ? styles.hovered : null,
           state.pressed ? styles.pressed : null,
@@ -66,13 +56,7 @@ export function GlassButton({
         <View style={styles.inner}>{children}</View>
       </Pressable>
 
-      {badge !== undefined && badge > 0 ? (
-        <View style={[styles.badgeAnchor, styles.noPointer]}>
-          <CountBadge count={badge} size="sm" />
-        </View>
-      ) : dot ? (
-        <View style={[styles.dot, styles.noPointer]} />
-      ) : null}
+      {dot ? <View style={[styles.dot, styles.noPointer]} /> : null}
     </View>
   )
 }
@@ -105,11 +89,6 @@ const useStyles = makeThemedStyles((t) => ({
   pressed: {
     opacity: 0.9,
     transform: [{ scale: 0.94 }],
-  },
-  badgeAnchor: {
-    position: "absolute",
-    top: -3,
-    right: -3,
   },
   dot: {
     position: "absolute",

@@ -1,4 +1,4 @@
-import { avatarColor, monogram, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { avatarColor, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
 
 export type ThreadAvatarPeer = Pick<PersonDTO, "id" | "name" | "avatarUrl" | "avatar">
 
@@ -13,7 +13,6 @@ export interface ResolvedThreadAvatar {
   seed: string
   gradient: readonly [string, string] | null
   color: string
-  letter: string
 }
 
 export function resolveThreadAvatar(thread: ThreadAvatarInput): ResolvedThreadAvatar {
@@ -30,6 +29,5 @@ export function resolveThreadAvatar(thread: ThreadAvatarInput): ResolvedThreadAv
     seed,
     gradient,
     color,
-    letter: monogram(peer?.name ?? thread.title),
   }
 }

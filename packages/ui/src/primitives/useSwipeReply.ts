@@ -11,6 +11,9 @@ import { useHaptics } from "../capabilities"
 import { shouldCaptureSwipe, shouldTriggerReply, swipeProgress, swipeTranslate } from "./swipeReplyModel"
 import { createSwipeStartTracker } from "./swipeStartTracker"
 
+const SETTLE_SPRING = { tension: 120, friction: 12 } as const
+const SETTLE_FADE_MS = 140
+
 export interface SwipeReplyOptions {
   enabled: boolean
   onTrigger: () => void
@@ -39,8 +42,8 @@ export function useSwipeReply({ enabled, onTrigger }: SwipeReplyOptions): SwipeR
     if (!isNative) return null
     const settle = () => {
       // Both values only drive transform and opacity, so the native driver is safe.
-      Animated.spring(translateX, { toValue: 0, useNativeDriver: true, tension: 120, friction: 12 }).start()
-      Animated.timing(progress, { toValue: 0, duration: 140, useNativeDriver: true }).start()
+      Animated.spring(translateX, { toValue: 0, useNativeDriver: true, ...SETTLE_SPRING }).start()
+      Animated.timing(progress, { toValue: 0, duration: SETTLE_FADE_MS, useNativeDriver: true }).start()
     }
     return PanResponder.create({
       onStartShouldSetPanResponder: () => false,

@@ -43,10 +43,6 @@ export function setApiHost(apiUrl: string): void {
   configuredApiHost = host.toLowerCase().replace(/^\/+|\/+$/g, "")
 }
 
-export function apiHost(): string {
-  return configuredApiHost
-}
-
 export function offProductionApiHost(): string {
   return configuredApiHost && configuredApiHost !== PROD_API_HOST ? configuredApiHost : ""
 }
@@ -55,48 +51,11 @@ export const DONATE_URL = "https://reachoutla.org/help"
 
 export const TERMS_URL = `${WEB_ORIGIN}/legal/terms`
 export const PRIVACY_URL = `${WEB_ORIGIN}/legal/privacy`
-export const COOKIES_URL = `${WEB_ORIGIN}/legal/cookies`
-export const SUBPROCESSORS_URL = `${WEB_ORIGIN}/legal/subprocessors`
-
-export function legalUrlFor(type: string): string {
-  switch (type) {
-    case "terms":
-      return TERMS_URL
-    case "privacy":
-      return PRIVACY_URL
-    case "cookies":
-      return COOKIES_URL
-    case "subprocessors":
-      return SUBPROCESSORS_URL
-    default:
-      return `${WEB_ORIGIN}/legal`
-  }
-}
 
 export function managePath(eventId: string): string {
   return `/manage/events/${encodeURIComponent(eventId)}`
 }
 
-export function manageUrl(eventId: string): string {
-  return webOrigin() + managePath(eventId)
-}
-
-export function managePortfolioPath(): string {
-  return "/manage/"
-}
-
-export function manageOrgPath(orgId: string): string {
-  return `/manage/orgs/${encodeURIComponent(orgId)}/overview`
-}
-
-export function manageOrgSettingsPath(orgId: string): string {
-  return `/manage/orgs/${encodeURIComponent(orgId)}/settings`
-}
-
 export function orgPagePath(orgSlug: string): string {
   return `/orgs/${encodeURIComponent(orgSlug)}`
-}
-
-export function signupPagePath(pageSlug: string): string {
-  return `/e/${encodeURIComponent(pageSlug)}`
 }

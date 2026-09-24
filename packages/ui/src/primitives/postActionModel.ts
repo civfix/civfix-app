@@ -1,5 +1,7 @@
 import type { PostCounts, PostViewer } from "@civfix/shared"
+import { space } from "@civfix/shared/tokens"
 import type { MenuAnchorRect } from "./menuMotionModel"
+import { resolveBandLeft } from "./messageContextMenuLayout"
 
 export type PostActionKey = "like" | "repost" | "comment" | "save" | "share"
 
@@ -43,7 +45,7 @@ export function postActionLayout(variant: PostActionVariant): PostActionLayout {
       return {
         keys: TIMELINE_KEYS,
         glyphSize: 18,
-        gap: 4,
+        gap: space["1"],
         justify: "flex-start",
         minHeight: 44,
         showCounts: true,
@@ -66,7 +68,7 @@ export function postActionLayout(variant: PostActionVariant): PostActionLayout {
       return {
         keys: REPLY_KEYS,
         glyphSize: 17,
-        gap: 8,
+        gap: space["2"],
         justify: "flex-start",
         minHeight: 32,
         showCounts: true,
@@ -149,15 +151,9 @@ export interface PostActionMenuLabels {
   quote: string
 }
 
-const DEFAULT_MENU_LABELS: PostActionMenuLabels = {
-  repost: "Repost",
-  undoRepost: "Undo repost",
-  quote: "Quote post",
-}
-
 export function buildPostActionMenuModel(
   reposted: boolean,
-  labels: PostActionMenuLabels = DEFAULT_MENU_LABELS,
+  labels: PostActionMenuLabels,
 ): readonly [{ key: "repost"; label: string }, { key: "quote"; label: string }] {
   return [
     { key: "repost" as const, label: reposted ? labels.undoRepost : labels.repost },
@@ -171,18 +167,14 @@ export function positionPostActionMenu(
   menu: { width: number; height: number },
   align: "left" | "right" = "right",
 ): { left: number; top: number } {
-  const margin = 8
-  const gap = 4
+  const margin = space["2"]
+  const gap = space["1"]
   const below = anchor.y + anchor.height + gap
   const preferredTop = below + menu.height <= viewport.height - margin
     ? below
     : anchor.y - menu.height - gap
-  const preferredLeft = align === "right" ? anchor.x + anchor.width - menu.width : anchor.x
   return {
-    left: Math.min(
-      Math.max(preferredLeft, margin),
-      Math.max(margin, viewport.width - menu.width - margin),
-    ),
+    left: resolveBandLeft(anchor, viewport.width, menu.width, align === "right", { edgeMargin: margin }),
     top: Math.min(
       Math.max(preferredTop, margin),
       Math.max(margin, viewport.height - menu.height - margin),
@@ -190,11 +182,7 @@ export function positionPostActionMenu(
   }
 }
 
-export function buildPostActionMotionModel(reducedMotion: boolean) {
-  return reducedMotion
-    ? { duration: 0, easing: "linear" as const, animated: false }
-    : { duration: 280, easing: "ease-out" as const, animated: true }
-}
+export const POST_ACTION_POP_MS = 280
 
 export function formatPostActionCount(value: number): string {
   const count = Math.max(0, Math.trunc(value))

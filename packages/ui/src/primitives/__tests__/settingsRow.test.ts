@@ -6,6 +6,7 @@ const strip = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
 
 const row = strip(read("../SettingsRow.tsx"))
+const toggleRow = strip(read("../ToggleRowContent.tsx"))
 
 const MIN_TOUCH_TARGET = 44
 const rowMinHeight = Number.parseFloat(
@@ -19,26 +20,33 @@ describe("SettingsRow", () => {
   })
 
   it("renders the SHARED switch seam rather than a second pill implementation", () => {
-    expect(row).toContain('import { SettingsToggle } from "./SettingsToggle"')
-    expect(row).toContain("<SettingsToggle")
+    expect(row).toContain('import { ToggleRowContent } from "./ToggleRowContent"')
+    expect(row).toContain("<ToggleRowContent")
+    expect(toggleRow).toContain('import { SettingsToggle } from "./SettingsToggle"')
+    expect(toggleRow).toContain("<SettingsToggle")
     expect(row).not.toMatch(/KNOB_ON_X|TRACK_OFF/)
   })
 
   it("leaves the toggle row's label column out of the tab order (one row, one stop)", () => {
-    expect(row).toContain("focusable={false}")
-    expect(row).toContain("tabIndex: -1")
+    expect(row).toContain("<ToggleRowContent")
+    expect(toggleRow).toContain("focusable={false}")
+    expect(toggleRow).toContain("tabIndex: -1")
   })
 
   it("gives every focusable stop the coral ring", () => {
     expect(row).toContain(
       'import { makeThemedStyles, space, useTheme, focusRingProps, webCursor, webHover, webTransition, headingLevel } from "../theme"',
     )
-    expect(row.match(/\{\.\.\.focusRingProps\}/g) ?? []).toHaveLength(2)
+    expect(row.match(/\{\.\.\.focusRingProps\}/g) ?? []).toHaveLength(1)
+    expect(toggleRow.match(/\{\.\.\.focusRingProps\}/g) ?? []).toHaveLength(1)
   })
 
   it("colours a destructive row with the danger role, never the brand accent", () => {
     expect(row).toContain("color: t.colors.dangerInk")
-    expect(row).toContain("backgroundColor: t.colors.dangerWash")
+    expect(row).toContain('<IconTile icon={icon} tone={destructive ? "danger" : "neutral"} />')
+    const listRow = strip(read("../ListRow.tsx"))
+    expect(listRow).toMatch(/tileDanger: \{\s*backgroundColor: t\.colors\.dangerWash,/)
+    expect(listRow).toMatch(/case "danger":\s*return t\.colors\.dangerInk/)
     expect(row).not.toMatch(/\bt\.colors\.accent(Text)?\b/)
     expect(row).not.toMatch(/t\.colors\.bloom\[/)
   })
@@ -46,7 +54,7 @@ describe("SettingsRow", () => {
   it("hardcodes no hex, size scale or radius that a token already names", () => {
     expect(row).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
     expect(row).toContain("borderRadius: t.radius.lg")
-    expect(row).toContain("borderRadius: t.radius.md")
+    expect(strip(read("../ListRow.tsx"))).toMatch(/\n {2}tile: \{[^}]*borderRadius: t\.radius\.md/)
   })
 
   it("drops the chevron for a destructive row and for an explicit `chevron={false}`", () => {
@@ -61,8 +69,8 @@ describe("SettingsRow", () => {
 
 describe("SettingsSection", () => {
   it("is ONE card with hairline dividers between rows, inset past the icon column", () => {
-    expect(row).toContain("const DIVIDER_INSET = ROW_PAD_H + ICON_TILE + ROW_GAP")
-    expect(row).toContain("marginLeft: DIVIDER_INSET")
+    expect(row).toContain('import { IconTile, LIST_DIVIDER_INSET } from "./ListRow"')
+    expect(row).toContain("marginLeft: LIST_DIVIDER_INSET")
     expect(row).toContain("height: StyleSheet.hairlineWidth")
     expect(row).toContain("index > 0 ? <View style={styles.divider} /> : null")
   })
@@ -87,7 +95,8 @@ describe("the settings row shares ONE rhythm with ListRow", () => {
   const listTile = Number.parseFloat(/const LIST_TILE = ([0-9.]+)/.exec(listRow)?.[1] ?? "NaN")
 
   it("wears the same 40pt tile the list card's rows do", () => {
-    expect(row).toContain("const ICON_TILE = 40")
+    expect(row).toContain("<IconTile icon={icon}")
+    expect(listRow).toMatch(/\n {2}tile: \{\s*width: LIST_TILE,\s*height: LIST_TILE,/)
     expect(listTile).toBe(40)
   })
 
@@ -102,13 +111,17 @@ describe("the settings row shares ONE rhythm with ListRow", () => {
       listRow,
     )
     expect(listInset).toBe(true)
-    expect(row).toContain("const DIVIDER_INSET = ROW_PAD_H + ICON_TILE + ROW_GAP")
+    expect(row).toContain("marginLeft: LIST_DIVIDER_INSET")
+    expect(row).toContain('const ROW_PAD_H = space["4"]')
     expect(row).toContain('const ROW_GAP = space["3"]')
+    expect(row).toContain("paddingHorizontal: ROW_PAD_H")
+    expect(row).toContain("gap: ROW_GAP")
   })
 
   it("draws its glyph at the 18pt size both rows use", () => {
     expect(row).toContain("size={18}")
     expect(row).not.toContain("size={16}")
+    expect(listRow).toContain("<Icon icon={iconMap[icon]} size={18} color={ink} />")
   })
 })
 
