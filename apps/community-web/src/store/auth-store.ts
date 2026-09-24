@@ -122,6 +122,15 @@ export const useAuthStore = create<AuthState>((set) => ({
 }))
 
 /**
+ * Signed out for certain: no viewer, and no auth snapshot left. A sign-out, a 401 and a live "not signed
+ * in" answer all drop the snapshot; a session check that got no answer (setAnonymous) keeps it, because
+ * the cookie may still be valid.
+ */
+export function isConfirmedSignedOut(state: AuthState): boolean {
+  return state.user === null && readAuthSnapshot() === null
+}
+
+/**
  * Non-hook accessor for the current CSRF token. Used by the API client (which lives outside React)
  * to inject the x-csrf-token header on mutations without subscribing to the store.
  */

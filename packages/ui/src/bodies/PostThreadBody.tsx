@@ -22,6 +22,7 @@ import {
   type ScrollHostListHandle,
 } from "../shell/ScrollHost"
 import { SignInPrompt } from "../primitives/StateView"
+import { useViewerDraftGeneration } from "../viewerScope"
 import { ReplyComposer, type ReplyComposerHandle } from "./thread/ReplyComposer"
 import { ThreadEmptyReplies } from "./thread/ThreadEmptyReplies"
 import { ThreadFocalPost, ThreadFocalSkeleton } from "./thread/ThreadFocalPost"
@@ -90,6 +91,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   const [sentReplies, setSentReplies] = React.useState<PostDTO[]>([])
 
   const composerRef = React.useRef<ReplyComposerHandle | null>(null)
+  const draftGeneration = useViewerDraftGeneration()
   const listRef = React.useRef<ScrollHostListHandle | null>(null)
   const focusComposer = React.useCallback(() => composerRef.current?.focus(), [])
   const onRootLayout = React.useCallback(
@@ -294,6 +296,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
       </ScrollHostProvider>
       {post.data ? (
         <ReplyComposer
+          key={draftGeneration}
           ref={composerRef}
           focalPost={post.data}
           rootHeight={rootHeight}

@@ -320,10 +320,10 @@ through the real Pages routing engine.
    `summary_large_image`, except `summary` for an avatar or logo (a square picture in a large
    card is a blurry crop). `og:url`, `rel=canonical`, `og:image` and the icon links are
    built from the request's ENVIRONMENT origin - `resolveSiteOrigin(request.url)` in
-   `src/lib/site-meta.ts`, which maps an exact known hostname (`PRODUCTION_HOSTNAMES` /
-   `STAGING_HOSTNAMES` in that file) onto that environment's ONE canonical origin
-   (`https://civfix.org` / `https://civfix.dev`), requires https on the default port, and otherwise
-   falls back to `DEFAULT_SITE_URL`. There is no suffix or
+   `src/lib/site-meta.ts`, which maps an exact known hostname onto that environment's ONE canonical
+   origin (`civfix.org` / `www.civfix.org` / `civfix-web.pages.dev` -> `https://civfix.org`;
+   `civfix.dev` / `www.civfix.dev` / `staging.civfix-web.pages.dev` -> `https://civfix.dev`), requires
+   https on the default port, and otherwise falls back to `DEFAULT_SITE_URL`. There is no suffix or
    substring rule, and one environment still has exactly one canonical host, so the alias hostnames
    cannot be indexed as duplicates. It never reads `Host`, `X-Forwarded-Host` or any other client-supplied
    header, so the origin cannot be poisoned into a preview; it exists so a staging card points at

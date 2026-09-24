@@ -82,6 +82,9 @@ import {
 import { postSubmitDestination, resolvePostSubmit } from "./postComposerSubmit"
 import { trackPostComposerMount, type PostComposerExitHost } from "./postComposerExit"
 import {
+  selectPostComposerDraft,
+  selectPostComposerDraftHidden,
+  selectPostComposerDraftOwner,
   selectPostComposerHasPendingMedia,
   usePostComposerStore,
   type PostComposerMedia,
@@ -159,7 +162,12 @@ function useComposerEntrance(): Animated.WithAnimatedValue<ViewStyle> {
   }
 }
 
-export function PostComposer({ mode = "post", targetPostId, onPosted, standalone }: PostComposerProps) {
+export function PostComposer(props: PostComposerProps) {
+  const draftOwner = usePostComposerStore(selectPostComposerDraftOwner)
+  return <PostComposerForOwner key={draftOwner ?? ""} {...props} />
+}
+
+function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalone }: PostComposerProps) {
   const styles = useStyles()
   const th = useTheme()
   const back = useNavStore((state) => state.back)
@@ -186,7 +194,9 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
   const events = useAttendingCleanups()
   const haptics = useHaptics()
   const create = useCreatePost()
-  const draft = usePostComposerStore((state) => state.draft)
+  const draft = usePostComposerStore(selectPostComposerDraft)
+  // The store ignores writes to a hidden draft, so the composer goes read-only instead of eating input.
+  const draftHidden = usePostComposerStore(selectPostComposerDraftHidden)
   const setBody = usePostComposerStore((state) => state.setBody)
   const setMentionedUsers = usePostComposerStore((state) => state.setMentionedUsers)
   const setAttachedEvent = usePostComposerStore((state) => state.setAttachedEvent)
@@ -205,7 +215,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
   const reports = useMyReports()
   const attachments = useComposerAttachments(POST_COMPOSER_MEDIA_CAP)
   const [carriedSnapshot] = useState(() =>
-    snapshotCarriedMedia(usePostComposerStore.getState().draft.media),
+    snapshotCarriedMedia(draft.media),
   )
   const [carriedMedia, setCarriedMedia] = useState<PostComposerMedia[]>(() => carriedSnapshot.carried)
   const [droppedMedia, setDroppedMedia] = useState(() => carriedSnapshot.dropped)
@@ -313,7 +323,8 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
     () => mergePostComposerThumbs(carriedMedia, attachments.attachments),
     [carriedMedia, attachments.attachments],
   )
-  const canAttachMedia = attachments.canAttach && composerMedia.length < POST_COMPOSER_MEDIA_CAP
+  const canAttachMedia =
+    !draftHidden && attachments.canAttach && composerMedia.length < POST_COMPOSER_MEDIA_CAP
   const removeMedia = (id: string) => {
     const carriedIndex = carriedMediaIndex(id)
     if (carriedIndex != null) {
@@ -324,8 +335,8 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
   }
 
   useEffect(() => {
-    setMedia(composerMedia)
-  }, [composerMedia, setMedia])
+    if (!draftHidden) setMedia(composerMedia)
+  }, [composerMedia, draftHidden, setMedia])
   const activeMentions = useMemo(
     () => activePostMentions(draft.body, draft.mentionedUsers),
     [draft.body, draft.mentionedUsers],
@@ -391,7 +402,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
       replyToId: resolution.input.replyToId ?? null,
       threadRootId: resolution.input.replyToId ?? null,
     }
-    const staged = usePostComposerStore.getState().draft
+    const staged = selectPostComposerDraft(usePostComposerStore.getState())
     reset({ mode, targetPostId: targetPostId ?? null })
     create.mutate({ input: resolution.input, optimistic }, {
       onError: () => {
@@ -476,7 +487,8 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
     ;(onBack ?? back)()
   }
 
-  const submitDisabled = !profile || resolution.action !== "submit" || create.isPending
+  const submitDisabled =
+    draftHidden || !profile || resolution.action !== "submit" || create.isPending
 
   const addMediaButton = (
     <Pressable
@@ -517,6 +529,7 @@ export function PostComposer({ mode = "post", targetPostId, onPosted, standalone
             accessibilityLabel={t("input_a11y")}
             value={draft.body}
             onChangeText={setBody}
+            editable={!draftHidden}
             onFocus={() => setBodyFocused(true)}
             onBlur={() => setBodyFocused(false)}
             placeholder={presentation.placeholder}

@@ -98,8 +98,41 @@ function restore(queryClient: QueryClient): void {
   }
 }
 
+function persistedViewerId(): string | null | undefined {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY)
+    if (raw === null) return undefined
+    const userId = (JSON.parse(raw) as { userId?: unknown }).userId
+    return typeof userId === "string" ? userId : null
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * The viewer the in-memory cache may be stamped for: the confirmed user, null for a confirmed signed-out
+ * visitor, or undefined when nothing is confirmed (an optimistic guess, a session check in flight or one
+ * that got no answer, which keeps its auth snapshot) and the stored envelope must be left as it is.
+ */
+function confirmedViewerId(): string | null | undefined {
+  const { status, optimistic, user } = useAuthStore.getState()
+  if (optimistic) return undefined
+  if (status === "authenticated") return user ? user.id : undefined
+  if (status === "anonymous" && readAuthSnapshot() === null) return null
+  return undefined
+}
+
 function persist(queryClient: QueryClient): void {
   if (!hasStorage()) return
+  const userId = confirmedViewerId()
+  if (userId === undefined) return
+  // The viewer just changed: the in-memory cache may still hold the previous viewer's notifications,
+  // threads and reports, and stamping it for the new one would restore it for them on the next load.
+  const storedViewerId = persistedViewerId()
+  if (storedViewerId !== undefined && storedViewerId !== userId) {
+    clearPersistedCache()
+    return
+  }
   try {
     const clientState = dehydrate(queryClient, {
       shouldDehydrateQuery,
@@ -112,7 +145,7 @@ function persist(queryClient: QueryClient): void {
     const envelope: CacheEnvelope = {
       buster: BUSTER,
       timestamp: Date.now(),
-      userId: useAuthStore.getState().user?.id ?? null,
+      userId,
       clientState,
     }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope))

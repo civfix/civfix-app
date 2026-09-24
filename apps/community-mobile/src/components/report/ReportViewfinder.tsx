@@ -33,6 +33,7 @@ import {
   type AppLifecycleState,
 } from "@/lib/cameraSession"
 import { GPS_TIMEOUT_MS, LAST_KNOWN_MAX_AGE_MS, withTimeout } from "@/lib/withTimeout"
+import { locateCapture, type CaptureOrigin } from "@/lib/captureLocation"
 
 type CaptureMode = "photo" | "video"
 
@@ -220,14 +221,12 @@ export function ReportViewfinder({
   }, [clearHardStop, clearTick])
 
   const emitCapture = useCallback(
-    (media: CapturedMedia) => {
+    (media: CapturedMedia, origin: CaptureOrigin) => {
       void (async () => {
-        const fix = await readShutterLocation()
+        const located = await locateCapture(media, origin, readShutterLocation)
         try {
           if (!mountedRef.current) return
-          onCaptured(
-            fix ? { ...media, location: { lat: fix.lat, lng: fix.lng, source: "device" } } : media,
-          )
+          onCaptured(located)
         } finally {
           if (mountedRef.current) setBusy(false)
         }
@@ -250,7 +249,7 @@ export function ReportViewfinder({
         mime: "image/jpeg",
         width: photo.width,
         height: photo.height,
-      })
+      }, "camera")
     } catch {
       setBusy(false)
     }
@@ -277,7 +276,7 @@ export function ReportViewfinder({
           width: video.width,
           height: video.height,
           durationSec: video.duration,
-        })
+        }, "camera")
       },
       onRecordingError: () => {
         if (!mountedRef.current) return
@@ -383,7 +382,7 @@ export function ReportViewfinder({
         ...(asset.width ? { width: asset.width } : {}),
         ...(asset.height ? { height: asset.height } : {}),
         ...(isVideo && asset.duration ? { durationSec: asset.duration / 1000 } : {}),
-      })
+      }, "library")
     } catch {
       setBusy(false)
     }

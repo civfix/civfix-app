@@ -19,9 +19,9 @@ import { useAuthStore } from "@/store/auth-store"
  *  - the safelist EXCLUDES volatile/sensitive queries (map, chat, search, session);
  *  - a buster mismatch and a max-age expiry both discard (and remove) the persisted entry on restore;
  *  - an empty cache on persist REMOVES the key rather than writing an empty envelope (fail-closed);
- *  - user scoping is fail-closed at boot: restore hydrates only when the envelope user id matches the
- *    optimistic auth snapshot, and discards (and removes) on ANY mismatch (different id, or
- *    null-vs-present in either direction);
+ *  - user scoping is fail-closed: only a server-confirmed viewer (or a confirmed signed-out visitor) is
+ *    ever persisted, and restore hydrates only when the envelope user id matches the optimistic auth
+ *    snapshot, discarding (and removing) on ANY mismatch (different id, or null-vs-present either way);
  *  - every path is a no-op when `window` is absent (the static-export build has no window).
  *
  * `shouldDehydrateQuery` is exercised through the public writer rather than imported directly, so the
@@ -74,8 +74,8 @@ let storage: ReturnType<typeof makeStorage>
 beforeEach(() => {
   storage = makeStorage()
   vi.stubGlobal("window", { localStorage: storage })
-  // The persist writer stamps the cache with the currently-authed user (useAuthStore.getState()). Start
-  // each test signed out so persist defaults to userId:null unless a test explicitly sets a session.
+  // The persist writer stamps the cache with the confirmed viewer (null for a signed-out visitor). Start
+  // each test signed out; a test that needs a signed-in envelope signs in explicitly.
   useAuthStore.getState().clear()
 })
 
@@ -101,6 +101,10 @@ function readEnvelope(): Envelope {
 }
 
 describe("installCachePersistence writer", () => {
+  beforeEach(() => {
+    useAuthStore.getState().setSession({ user: USER })
+  })
+
   it("persists only safelisted success queries and excludes map/chat/search/session", () => {
     vi.useFakeTimers()
     const qc = new QueryClient()
@@ -237,6 +241,7 @@ describe("installCachePersistence restore guards", () => {
     const dayMs = 24 * 60 * 60 * 1000
     // Build a valid round-trip envelope, then back-date its timestamp beyond the 24h window.
     vi.useFakeTimers()
+    useAuthStore.getState().setSession({ user: USER })
     const writer = new QueryClient()
     writer.setQueryData(["notifications", 20], { items: [1] })
     const tw = installCachePersistence(writer)
@@ -321,6 +326,96 @@ describe("installCachePersistence restore guards", () => {
 
     // ...but a user is signed in by boot time (snapshot present): null-vs-present is a mismatch.
     writeAuthSnapshot(USER)
+
+    const reader = new QueryClient()
+    const tr = installCachePersistence(reader)
+    expect(reader.getQueryData(["notifications", 20])).toBeUndefined()
+    expect(storage.map.has(STORAGE_KEY)).toBe(false)
+    tr()
+  })
+})
+
+describe("installCachePersistence only persists a server-confirmed viewer", () => {
+  function seedSignedInEnvelope(qc: QueryClient): () => void {
+    vi.useFakeTimers()
+    useAuthStore.getState().setSession({ user: USER })
+    qc.setQueryData(["notifications", 20], { items: ["private"] })
+    const teardown = installCachePersistence(qc)
+    qc.setQueryData(["volunteer", "me"], { totalHours: 12 })
+    vi.advanceTimersByTime(1000)
+    expect(readEnvelope().userId).toBe(USER.id)
+    return teardown
+  }
+
+  it("round-trips a signed-out visitor's cache, stamped for nobody", () => {
+    vi.useFakeTimers()
+    const qc = new QueryClient()
+    qc.setQueryData(["cleanups", "upcoming"], { items: [] })
+    const teardown = installCachePersistence(qc)
+    qc.setQueryData(["cleanups", "upcoming"], { items: ["public"] })
+    vi.advanceTimersByTime(1000)
+    teardown()
+    expect(readEnvelope().userId).toBeNull()
+
+    const reader = new QueryClient()
+    const tr = installCachePersistence(reader)
+    expect(reader.getQueryData(["cleanups", "upcoming"])).toEqual({ items: ["public"] })
+    tr()
+  })
+
+  it("keeps a signed-in warm cache while the session is being re-checked", () => {
+    const qc = new QueryClient()
+    const teardown = seedSignedInEnvelope(qc)
+
+    useAuthStore.getState().setStatus("loading")
+    qc.setQueryData(["notifications", 20], { items: ["private", "newer"] })
+    vi.advanceTimersByTime(1000)
+    expect(readEnvelope().userId).toBe(USER.id)
+    teardown()
+  })
+
+  it("leaves a signed-in envelope alone after a session check that got no answer", () => {
+    const qc = new QueryClient()
+    const teardown = seedSignedInEnvelope(qc)
+    const before = storage.map.get(STORAGE_KEY)
+
+    useAuthStore.getState().setAnonymous()
+    qc.setQueryData(["notifications", 20], { items: ["private", "newer"] })
+    vi.advanceTimersByTime(1000)
+    expect(storage.map.get(STORAGE_KEY)).toBe(before)
+    teardown()
+  })
+
+  it("drops the persisted cache when the session is lost instead of re-stamping it for nobody", () => {
+    const qc = new QueryClient()
+    const teardown = seedSignedInEnvelope(qc)
+
+    // The 401 path: auth is cleared while the in-memory cache still holds the previous viewer's data.
+    useAuthStore.getState().clear()
+    qc.setQueryData(["notifications", 20], { items: ["private", "newer"] })
+    vi.advanceTimersByTime(1000)
+    expect(storage.map.has(STORAGE_KEY)).toBe(false)
+
+    teardown()
+    expect(storage.map.has(STORAGE_KEY)).toBe(false)
+  })
+
+  it("leaves the stored envelope alone while the session is only an optimistic guess", () => {
+    const qc = new QueryClient()
+    const teardown = seedSignedInEnvelope(qc)
+    const before = storage.map.get(STORAGE_KEY)
+
+    useAuthStore.setState({ optimistic: true })
+    qc.setQueryData(["notifications", 20], { items: ["unconfirmed"] })
+    vi.advanceTimersByTime(1000)
+    expect(storage.map.get(STORAGE_KEY)).toBe(before)
+    teardown()
+  })
+
+  it("discards (and removes) a signed-in envelope when no snapshot user is present", () => {
+    const qc = new QueryClient()
+    seedSignedInEnvelope(qc)()
+    useAuthStore.getState().clear()
 
     const reader = new QueryClient()
     const tr = installCachePersistence(reader)

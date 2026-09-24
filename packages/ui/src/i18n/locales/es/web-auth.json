@@ -33,5 +33,9 @@
     "VALIDATION": "Ese código no parece correcto. Revísalo e inténtalo de nuevo.",
     "RATE_LIMITED": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
     "UNAUTHORIZED": "Ese código no es válido o ha vencido. Solicita uno nuevo."
+  },
+  "sign_out_failed": {
+    "message": "No pudimos cerrar tu sesión, así que sigue abierta. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Intentar de nuevo"
   }
 }

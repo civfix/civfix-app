@@ -33,5 +33,9 @@
     "VALIDATION": "That code does not look right. Please check and try again.",
     "RATE_LIMITED": "Too many attempts. Please wait a moment and try again.",
     "UNAUTHORIZED": "That code is invalid or expired. Request a new one."
+  },
+  "sign_out_failed": {
+    "message": "Couldn't sign you out, so you're still signed in. Check your connection and try again.",
+    "retry": "Try again"
   }
 }

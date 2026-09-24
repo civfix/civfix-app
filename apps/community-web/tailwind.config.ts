@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss"
 import { tokens } from "@civfix/shared/tokens"
+import { Z_SESSION_ALERT } from "./src/styles/z-layers"
 
 
 const { color, fontSize, radius, shadow, space } = tokens
@@ -192,6 +193,10 @@ const config: Config = {
         "console-3": "var(--console-shadow-3)",
         "console-4": "var(--console-shadow-4)",
         "console-ring": "var(--console-shadow-ring)",
+      },
+
+      zIndex: {
+        "session-alert": String(Z_SESSION_ALERT),
       },
 
       transitionTimingFunction: {

@@ -81,8 +81,13 @@ export function ClaimView() {
   // Resolve the claim code from the handoff / nudge when not provided in the URL.
   React.useEffect(() => {
     if (claimCode) {
-      // If we also have a report id from the URL or handoff, keep the handoff fresh for retries.
-      if (queryReport) saveClaimHandoff({ reportId: queryReport, claimCode })
+      // A code from the URL is about to be scrubbed from the address bar, so the handoff is the only copy
+      // a reload or a sign-in round trip can read back.
+      if (claimCode === queryCode) {
+        const saved = readClaimHandoff()
+        const reportId = queryReport ?? (saved?.claimCode === claimCode ? saved.reportId : null)
+        saveClaimHandoff({ reportId, claimCode })
+      }
       return
     }
     const handoff = readClaimHandoff()
@@ -105,7 +110,13 @@ export function ClaimView() {
     return () => {
       cancelled = true
     }
-  }, [claimCode, queryReport])
+  }, [claimCode, queryCode, queryReport])
+
+  // Runs after the effects above have taken the code into state and the handoff, which is what a reload
+  // of the cleaned-up address reads.
+  React.useEffect(() => {
+    if (queryCode || queryReport) scrubClaimParamsFromUrl()
+  }, [queryCode, queryReport])
 
   const runClaim = React.useCallback(async () => {
     if (!claimCode) return
@@ -171,6 +182,23 @@ export function ClaimView() {
       )}
     </DetailShell>
   )
+}
+
+/**
+ * The claim code is a bearer capability: whoever holds it can link the report into their account. Keep
+ * it out of the address bar (screenshots, shared links, session history) once the page has captured it.
+ */
+function scrubClaimParamsFromUrl(): void {
+  if (typeof window === "undefined") return
+  const params = new URLSearchParams(window.location.search)
+  params.delete("code")
+  params.delete("report")
+  const search = params.toString()
+  const url = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`
+  // No state object: Next's patched replaceState skips syncing its router for an entry it marked (__NA),
+  // which would leave the old ?code= in the router's URL to be written back on its next navigation. An
+  // unmarked call is adopted, and Next copies its own internals onto the entry itself.
+  window.history.replaceState(null, "", url)
 }
 
 function Intro({
