@@ -1,14 +1,3 @@
-/**
- * Unit tests for `resolveMenuPlacement` (P1 Task 1.4) - the pure vertical-layout core of
- * MessageContextMenu's native variant (reaction row ABOVE the pressed bubble, action card BELOW,
- * flipping above when the card would overflow the bottom edge, and clamped so nothing ever renders
- * off-screen / at a negative top). The component is a thin renderer over this helper (package
- * convention: pure-logic vitest, no React renderer).
- *
- * Also carries the type-level test that the forward-declared `ContextMenuActionKey` union includes
- * every key later phases wire (reply / pin / unpin / retractVote / stopPoll land in P2/P3/P6, but the
- * TYPE ships complete from day one so the menu's shape never changes).
- */
 import { describe, expect, it } from "vitest"
 import {
   resolveMenuPlacement,
@@ -18,7 +7,6 @@ import {
 } from "../messageContextMenuLayout"
 import type { ContextMenuActionKey } from "../MessageContextMenu"
 
-/** A bubble anchor rect (measureInWindow shape); x/width are irrelevant to the vertical solver. */
 function anchor(y: number, height: number) {
   return { x: 24, y, width: 220, height }
 }
@@ -34,7 +22,6 @@ describe("resolveMenuPlacement", () => {
     expect(p.bubbleTop).toBe(120)
     expect(p.reactionsTop).toBe(120 - CONTEXT_MENU_GAP - ROW_H)
     expect(p.menuTop).toBe(120 + 40 + CONTEXT_MENU_GAP)
-    // Stack order: reactions above bubble above menu.
     expect(p.reactionsTop).toBeLessThan(p.bubbleTop)
     expect(p.bubbleTop).toBeLessThan(p.menuTop)
   })
@@ -45,7 +32,6 @@ describe("resolveMenuPlacement", () => {
     expect(p.bubbleTop).toBe(700)
     expect(p.reactionsTop).toBe(700 - CONTEXT_MENU_GAP - ROW_H)
     expect(p.menuTop).toBe(p.reactionsTop - CONTEXT_MENU_GAP - MENU_H)
-    // Flipped stack order: menu above reactions above bubble; menu fully on screen.
     expect(p.menuTop).toBeLessThan(p.reactionsTop)
     expect(p.menuTop).toBeGreaterThanOrEqual(CONTEXT_MENU_EDGE_MARGIN)
     expect(p.menuTop + MENU_H).toBeLessThanOrEqual(SCREEN_H - CONTEXT_MENU_EDGE_MARGIN)

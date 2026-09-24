@@ -1,7 +1,6 @@
-// APP-BUG-060: the tablet drop-pin camera offset by half the card alone (the deprecated sidebarWidth
-// input), leaving the pin west of the visible strip's centre and unshifted in map mode, where only the
-// shell inset occludes. Web already passes the frame plan's occlusionLeft; the home screen imports
-// react-native, so the guard reads the exact camera call.
+// On a tablet the drop-pin camera must offset by the frame plan's occlusion, not half the card alone, or
+// the pin sits west of the visible strip's centre. The home screen imports react-native, so the guard
+// reads the camera call as text.
 import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 import { test } from "node:test"

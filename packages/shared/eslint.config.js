@@ -1,11 +1,9 @@
 import eslint from "@eslint/js"
 import tseslint from "typescript-eslint"
 
-// Stage 0.7 (UI-unification): the @civfix/shared contract must stay framework-free. It must NEVER
-// import or re-export react / react-dom / react-native (or any react-native-* lib) or @civfix/ui
-// (or its subpaths). Those live only in @civfix/ui, which depends ON this package, never the reverse;
-// the backend pins @civfix/shared and must not be able to pull React/RN in through it. The
-// no-restricted-imports rule below (scoped to src) is the lint-time guard for that invariant.
+// The @civfix/shared contract must stay framework-free: never import or re-export react / react-dom /
+// react-native (or any react-native-* lib) or @civfix/ui. @civfix/ui depends ON this package, never the
+// reverse, and the backend pins @civfix/shared and must not be able to pull React/RN in through it.
 const FRAMEWORK_FREE_IMPORTS = {
   "no-restricted-imports": [
     "error",
@@ -56,7 +54,6 @@ export default tseslint.config(
     },
   },
   {
-    // Backend-isolation guard: ban UI/framework imports across the contract source tree.
     files: ["src/**/*.ts", "src/**/*.tsx"],
     rules: FRAMEWORK_FREE_IMPORTS,
   },

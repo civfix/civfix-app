@@ -29,7 +29,7 @@ export function useConsoleErrors(): ConsoleErrorCopy {
   const message = useCallback(
     (err: unknown, overrides?: ErrorOverrides) =>
       errorMessage(err, { ...base, ...(overrides ?? {}) }, { fallback: t("error.generic") }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- base is rebuilt every render from t alone
     [t],
   )
 

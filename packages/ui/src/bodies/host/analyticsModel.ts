@@ -205,6 +205,17 @@ export function checkInRingA11y(
   return rate === null ? t("card.checkins_ring_unknown_a11y") : t("card.checkins_ring_a11y", { rate })
 }
 
+/** The visible empty mark reads as "minus" or nothing, so an unknown count is spoken as a word. */
+export function byEventRowA11y(
+  t: (key: string, options?: Record<string, unknown>) => string,
+  name: string,
+  value: number | null,
+): string {
+  return value === null
+    ? t("page.by_event_unknown_a11y", { name })
+    : t("page.by_event_a11y", { name, value })
+}
+
 export interface FunnelBar {
   step: string
   value: number | null

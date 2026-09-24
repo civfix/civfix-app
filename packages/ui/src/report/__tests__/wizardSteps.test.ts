@@ -280,7 +280,7 @@ describe("wizardHeaderMode", () => {
     }
   })
 
-  it("speaks the tab-root vocabulary at the LANDSCAPE view root, where the rail is now the exit", () => {
+  it("speaks the tab-root vocabulary at the LANDSCAPE view root, where the rail is the exit", () => {
     expect(wizardHeaderMode("expanded", true, true)).toBe("tab-root")
     expect(wizardHeaderMode("expanded", false, true)).toBe("tab-root")
   })
@@ -478,7 +478,7 @@ describe("viewfinderSessionActive", () => {
     expect(viewfinderSessionActive("capture", false, true, true)).toBe(false)
   })
 
-  describe("the Search-overlay sequence (review finding 2)", () => {
+  describe("the Search-overlay sequence", () => {
     it("releases the session the instant Search opens over the Report tab, with every other input unchanged", () => {
       expect(viewfinderSessionActive("capture", true, false, true)).toBe(true)
       expect(viewfinderSessionActive("capture", true, false, false)).toBe(false)

@@ -32,7 +32,7 @@ export const MailMessageDTOSchema = z
     body: z.string(),
     ts: z.string(),
     attachments: z.array(MailAttachmentSchema),
-    // Set when the backend truncated a long mail body. Optional; schema is .strict() so it must be declared.
+    // Set when the backend truncated a long mail body.
     truncated: z.boolean().optional(),
     delivery: MailDeliverySchema.nullable().optional(),
     authVerdict: MailAuthVerdictSchema.nullable().optional(),
@@ -56,7 +56,7 @@ export const MailThreadListItemDTOSchema = z
     status: MailStatusSchema,
     jurisdictionGeoid: z.string().nullable(),
     // The originating report id (the report whose forward started this thread), for the reverse
-    // mail -> report link. Null when the thread has no associated report. Inherited by MailThreadDTO.
+    // mail -> report link. Null when the thread has no associated report.
     reportId: z.string().nullable(),
   })
   .strict()

@@ -42,10 +42,8 @@ export const UserProfileDTOSchema = PersonDTOSchema.extend({
     cleanups: z.number().int().nonnegative(),
   }),
   volunteerHours: z.number().nonnegative().optional(),
-  // Whether this person publishes their volunteer hours. Present on YOUR OWN profile (so the settings
-  // toggle renders without a second call) and, when false, on another user's profile alongside an
-  // ABSENT `volunteerHours` - which is how the UI tells "hidden" apart from "genuinely zero".
-  // Optional so already-built consumers/older servers still parse; absent => treat as true.
+  // Present on the viewer's own profile and, when false, on another user's profile alongside an absent
+  // `volunteerHours`, which is how the UI tells "hidden" apart from "genuinely zero". Absent means true.
   showVolunteerHours: z.boolean().optional(),
   socialLinks: SocialLinksSchema.nullable().optional(),
   blockedByMe: z.boolean().optional(),
@@ -104,9 +102,8 @@ export type HandleAvailableResponse = z.infer<typeof HandleAvailableResponseSche
 
 
 /**
- * GET /users/follow-suggestions — recommended people to follow for the signed-in viewer.
- * Ranked nearby-first (people active in the viewer's area), with community organizers (users who
- * host cleanups/events) ahead of ordinary nearby users; excludes self, already-followed, blocked.
+ * GET /users/follow-suggestions: people to follow for the signed-in viewer, ranked nearby-first with
+ * event hosts ahead of ordinary nearby users. Excludes self, already-followed and blocked users.
  */
 export const FollowSuggestionsRequestSchema = z
   .object({
@@ -154,12 +151,11 @@ export const UpdateSettingsRequestSchema = z
   .object({
     allowDirectMessages: z.boolean().optional(),
     locale: LocaleEnum.optional(),
-    // Whether the public profile publishes volunteer hours. Defaults to true server-side. When false
-    // the public profile omits volunteerHours AND the per-event breakdown, and the user drops out of
-    // the public jurisdiction leaderboard. The OWNER's own profile always shows their hours.
+    // Defaults to true server-side. When false the public profile omits volunteerHours and the
+    // per-event breakdown, and the user drops off the jurisdiction leaderboard; the owner still sees them.
     showVolunteerHours: z.boolean().optional(),
-    // 0.43.0: which organization the profile publishes as the affiliation badge. Must be an org the
-    // user is a member of; null clears the pin and falls back to the earliest membership.
+    // The organization published as the affiliation badge (DECISIONS §34). Must be one the user belongs
+    // to; null falls back to the earliest membership.
     primaryOrganizationId: IdSchema.nullable().optional(),
   })
   .strict()

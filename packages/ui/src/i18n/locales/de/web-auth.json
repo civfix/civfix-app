@@ -3,7 +3,7 @@
   "close": "Schließen",
   "choices": {
     "title": "Willkommen bei civfix",
-    "subtitle": "Events entdecken, Neuigkeiten folgen, Nachbarn schreiben. Kein Passwort — wähle deine Anmeldeoption.",
+    "subtitle": "Events entdecken, Neuigkeiten folgen, Nachbarn schreiben. Kein Passwort. Wähle deine Anmeldeoption.",
     "continue_apple": "Mit Apple fortfahren",
     "continue_google": "Mit Google fortfahren",
     "divider": "ODER",
@@ -19,7 +19,7 @@
   },
   "code": {
     "title": "Posteingang prüfen",
-    "subtitle": "Code gesendet an <0>{{email}}</0> — gültig 5 Min.",
+    "subtitle": "Code gesendet an <0>{{email}}</0>, gültig 5 Min.",
     "group_aria_label": "6-stelliger Bestätigungscode",
     "digit_aria_label": "Ziffer {{position}}",
     "verifying": "Wird geprüft...",

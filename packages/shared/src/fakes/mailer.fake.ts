@@ -10,12 +10,8 @@ export interface CapturedMail {
 }
 
 /**
- * In-memory Mailer that captures every send for assertions.
- *
- * `sendOutbound` records the WHOLE envelope (from/replyTo/messageId/attachments) - this is deliberate:
- * the production OCI adapter historically dropped `from`/`replyTo`, and the only reason that bug was
- * invisible was a fake that discarded them. Capturing the envelope here lets a unit test assert the
- * outreach From + reply token are actually carried, so the regression cannot return silently.
+ * In-memory Mailer that captures every send for assertions. `sendOutbound` records the whole envelope
+ * so a test can assert From and Reply-To are carried.
  */
 export class FakeMailer implements Mailer {
   readonly sent: CapturedMail[] = []

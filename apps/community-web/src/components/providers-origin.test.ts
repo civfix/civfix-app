@@ -1,8 +1,7 @@
 /**
- * APP-BUG-054: the shared link builders (share URLs, chat and civfix link detection) default to the
- * production origin, so civfix.dev built https://civfix.org links and treated its own links as
- * external. The provider module cannot load under vitest (react-native flow sources), so the guard
- * reads the exact module-scope call.
+ * The shared link builders default to the production origin, so without this call civfix.dev would build
+ * https://civfix.org links and treat its own links as external. The provider module cannot load under
+ * vitest (react-native flow sources), so the guard reads the exact module-scope call.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"

@@ -12,28 +12,26 @@
  *     lands in `success` with `data: null`), letting consumers cleanly distinguish "still resolving"
  *     (`isPending`) from "no location" (`data === null`) from "have location" (`data` is a `LatLng`).
  *
- * DEGRADATION ORDER (this used to be device GPS or nothing, which is why Discovery so often had no
- * location at all - and with no location there is no jurisdiction, so its leaderboard and its nearby
- * reports both silently vanished for the whole session):
+ * DEGRADATION ORDER (without a fallback past device GPS there is often no location at all, hence no
+ * jurisdiction, and Discovery's leaderboard and nearby reports silently vanish for the whole session):
  *
  *   1. the injected device fix, capped at {@link DEVICE_FIX_TIMEOUT_MS}. The capability has no timeout of
  *      its own and a first fix can hang for many seconds (worst right after launch / indoors / on a
- *      simulator), and with `retry: false` + an infinite staleTime ONE slow fix was permanent for the
- *      session. The cap is the same 4 s the mobile app's own location hook already applies.
+ *      simulator), and with `retry: false` + an infinite staleTime ONE slow fix would be permanent for
+ *      the session. The cap is the same 4 s the mobile app's own location hook applies.
  *   2. `fetchApproximateLocation()` - the civfix API's own key-less, permissionless, city-accurate
  *      estimate (`GET /geo/approximate`), sharing one cache entry with `useApproximateLocation()` so the
  *      map and every picker resolve it once. This mirrors `resolveApproxCenter`
- *      (bodies/ReportFlowBody.tsx) and AddressSearch's "use my location", i.e. the robust pattern
- *      @civfix/ui already shipped everywhere EXCEPT here. Coarse, and consumers should read it as
- *      "roughly which city", not "which street".
- *   3. whatever point is ALREADY cached under this key - a host that seeded it (the mobile map home
+ *      (bodies/ReportFlowBody.tsx) and AddressSearch's "use my location". Coarse: consumers should read
+ *      it as "roughly which city", not "which street".
+ *   3. whatever point is ALREADY cached under this key: a host that seeded it (the mobile map home
  *      publishes its own resolved point here) must not be overwritten with `null` by a resolve that
  *      merely lost a race.
  *   4. `null`.
  *
  * IT NEVER REQUESTS ANYTHING ITSELF. Every step above goes through the injected capability or a plain
- * network call; this hook adds no permission prompt of its own, deliberately - see civfix-shared 1dc7e41
- * for why an eager `requestForegroundPermissions` on a shared mount path blacks out the report camera.
+ * network call, and this hook adds no permission prompt of its own: an eager
+ * `requestForegroundPermissionsAsync` on a shared mount path blacks out the report camera.
  *
  * This lives apart from feed.ts (which is deliberately capability-free) because it depends on the platform
  * capability seam; feed.ts stays framework-light and just accepts the resolved `near` as a plain argument.

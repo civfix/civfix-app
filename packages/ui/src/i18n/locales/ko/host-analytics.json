@@ -133,6 +133,7 @@
     "by_event_section": "이벤트별",
     "by_event_empty": "이 기간에는 아직 이벤트가 없습니다.",
     "by_event_a11y": "{{name}}, 신청 {{value}}건. 이 이벤트의 분석 열기.",
+    "by_event_unknown_a11y": "{{name}}, 신청 정보 없음. 이 이벤트의 분석 열기.",
     "capacity_line": "{{capacity}}자리 중 {{signups}}자리",
     "sources_caption": "페이지 조회 {{views}}회 중 {{rate}}%가 신청했습니다"
   },
@@ -183,7 +184,7 @@
     "panel_hours": "자원봉사 시간",
     "checkins_caption": "신청 {{registered}}명 중 · 진행한 이벤트 {{count}}개",
     "hours_caption": "자원봉사자 {{volunteers}}명이 기록",
-    "hours_empty": "최근 30일간 기록된 시간이 없습니다 — 호스트 도구에서 기록하세요",
+    "hours_empty": "최근 30일간 기록된 시간이 없습니다. 호스트 도구에서 기록하세요.",
     "hours_bars_a11y": "이벤트별 자원봉사 시간",
     "impact_resolved": "{{n}}건 해결",
     "impact_posts": "내 이벤트 관련 게시물 {{n}}개"

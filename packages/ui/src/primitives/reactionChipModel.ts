@@ -1,28 +1,6 @@
-/**
- * Pure chip-model builder for the in-bubble reaction chips (P1 Task 1.3). Maps a message's
- * `ReactionSummaryDTO[]` onto the ordered list of chips `ReactionChips` renders: zero-count buckets and
- * unknown names are dropped, and the output ALWAYS follows the canonical `REACTION_EMOJIS` order no
- * matter what order the wire delivered. Kept renderer-free so it unit-tests without React (package
- * convention: pure-logic vitest).
- *
- * Also home of REACTION_GLYPH - the reaction NAME -> native Unicode emoji GLYPH map (moved here from
- * the retired ReactionBar). The wire/toggle contract stays the ASCII names (like/heart/...); only the
- * on-screen display is the color emoji.
- */
+/** The wire keeps the ASCII reaction names; only the on-screen display uses the emoji glyph. */
 import { REACTION_EMOJIS, type ReactionEmoji, type ReactionSummaryDTO } from "@civfix/shared"
 
-/**
- * The eight reaction NAMES -> a native Unicode emoji GLYPH each (authored as \u escapes so the source
- * stays ASCII):
- *   - like       -> U+1F44D            thumbs up
- *   - heart      -> U+2764 U+FE0F      red heart (with the emoji-presentation selector)
- *   - celebrate  -> U+1F389            party popper
- *   - support    -> U+1F64F            folded hands
- *   - insightful -> U+1F4A1            light bulb
- *   - concerned  -> U+1F61F            worried face
- *   - laugh      -> U+1F602            face with tears of joy
- *   - sad        -> U+1F622            crying face
- */
 export const REACTION_GLYPH: Record<ReactionEmoji, string> = {
   like: "\u{1F44D}",
   heart: "\u{2764}\u{FE0F}",
@@ -34,7 +12,6 @@ export const REACTION_GLYPH: Record<ReactionEmoji, string> = {
   sad: "\u{1F622}",
 }
 
-/** One rendered chip: a known reaction with a positive count, plus the viewer's own-reaction flag. */
 export interface ReactionChipModel {
   emoji: ReactionEmoji
   glyph: string
@@ -42,10 +19,6 @@ export interface ReactionChipModel {
   mine: boolean
 }
 
-/**
- * Build the chips for one message. Canonical `REACTION_EMOJIS` order; buckets with `count <= 0` or an
- * unrecognized `emoji` name are dropped (defensive against wire drift).
- */
 export function buildReactionChipModel(reactions: readonly ReactionSummaryDTO[]): ReactionChipModel[] {
   const byName = new Map(reactions.map((r) => [r.emoji, r]))
   const chips: ReactionChipModel[] = []

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../../__tests__/sourceGuards"
 
 /**
- * Source-text guards for two composer properties the package's other checks cannot see: it ships no React
+ * Source-text guards for composer properties the package's other checks cannot see: it ships no React
  * renderer, so typecheck, lint and threadModel.test.ts are all blind to them.
  *
  * 1. ONE COMPOSER PER THREAD. The composer replies to the focal post and nothing else - replying to a reply
@@ -12,11 +12,11 @@ import { sliceBetween } from "../../../__tests__/sourceGuards"
  *    under a MOUNTED instance the two would disagree and the previous post's photos would ride along into
  *    the new parent's draft. The web shell can reuse this screen's instance across entries, so the screen
  *    remounts on `id` instead of reconciling - that key IS the invariant.
- * 2. THE POSTED REPLY RELEASES THE FIELD. `onSuccess` used to re-focus the input, so `focused` stayed true,
- *    `replyComposerState` stayed "expanded", and the "Replying to @X" chip plus the soft keyboard both
- *    outlived the reply that was already sent (civfix/issue-tracker#92).
- * 3. THE ATTACHED-REPORT CHIP IS DERIVED, NOT CACHED. An earlier write-only `attachedReport` useState, with
- *    no repopulation path, left the generic "Attach a report" label showing forever after leaving a thread
+ * 2. THE POSTED REPLY RELEASES THE FIELD. If `onSuccess` re-focused the input, `focused` would stay true,
+ *    `replyComposerState` would stay "expanded", and the "Replying to @X" chip plus the soft keyboard would
+ *    both outlive the reply that was already sent.
+ * 3. THE ATTACHED-REPORT CHIP IS DERIVED, NOT CACHED. A write-only `attachedReport` state has no
+ *    repopulation path, so it would show the generic "Attach a report" label forever after leaving a thread
  *    and coming back, while `draft.attachedReportId` (the submitted data) was intact.
  */
 const composer = readFileSync(new URL("../ReplyComposer.tsx", import.meta.url), "utf8")
@@ -67,7 +67,7 @@ describe("attached-report chip", () => {
   })
 })
 
-describe("the reply attach sheet on iOS (APP-BUG-143)", () => {
+describe("the reply attach sheet on iOS", () => {
   const sheet = readFileSync(new URL("../ReplyAttachSheet.tsx", import.meta.url), "utf8")
   const sheetShell = sliceBetween(sheet, "export function ReplyAttachSheet(", "function PickerHeader(")
 

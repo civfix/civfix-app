@@ -407,7 +407,7 @@ if (legalDrift.length > 0) {
   console.error(
     `[cf-pages] ERROR: legal document drift:\n  ${legalDrift.join("\n  ")}\n` +
       `  consent_records.document_sha256 is the evidence that a donor accepted THAT EXACT TEXT ` +
-      `(D13 C.5), and the backend validates consent payloads against @civfix/shared/legal. A page ` +
+      `and the backend validates consent payloads against @civfix/shared/legal. A page ` +
       `whose text moved without its version and hash moving with it makes every consent record ` +
       `written since unverifiable. Run \`node scripts/legal-hashes.mjs\` and update ` +
       `packages/shared/src/legal/documents.ts (version, effectiveAt and sha256 change ` +
@@ -434,8 +434,8 @@ if (legalPlaceholders.length > 0) {
       `  A placeholder hashes no document, so a consent record citing it is unverifiable evidence. ` +
       `Paste the real hashes (printed above, and by \`node scripts/legal-hashes.mjs\`) into ` +
       `packages/shared/src/legal/documents.ts - version, effectiveAt and sha256 move ` +
-      `as ONE edit - and mirror them into the backend seed migration ` +
-      `services/api/drizzle/0151_legal_documents_consents.sql.`,
+      `as ONE edit - and mirror them into the backend legal seed ` +
+      `migration.`,
   )
   process.exit(1)
 }

@@ -255,7 +255,7 @@ export function OrgOverview() {
           </div>
           <div className="flex items-start gap-token-4">
             {org.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
+              // eslint-disable-next-line @next/next/no-img-element -- static export: next/image cannot optimize
               <img
                 src={org.logoUrl}
                 alt=""

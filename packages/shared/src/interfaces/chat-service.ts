@@ -16,14 +16,14 @@ export interface PersistChatInput {
   clientId?: string
   attachments?: unknown[] | null
   mediaUploadIds?: string[]
-  /** Reply threading (P2): id of the message this one replies to. Covers all rooms (cleanup/dm/report) via roomKind. */
+  /** Id of the message this one replies to, in any room kind. */
   replyToId?: string
 }
 
 export interface ChatHistoryPage {
   items: ChatMessageDTO[]
   nextCursor: string | null
-  /** Around-mode only (P2): cursor toward NEWER messages; null/absent in plain before-mode pages. */
+  /** Around-mode only: cursor toward NEWER messages; null/absent in plain before-mode pages. */
   prevCursor?: string | null
 }
 
@@ -37,7 +37,7 @@ export interface ChatService {
     before: string | undefined,
     limit: number,
     viewerUserId?: string | null,
-    /** Around-mode (P2): center the page on this message id; mutually exclusive with `before`. */
+    /** Around-mode: center the page on this message id; mutually exclusive with `before`. */
     around?: string,
   ): Promise<ChatHistoryPage>
   broadcastEvent?(

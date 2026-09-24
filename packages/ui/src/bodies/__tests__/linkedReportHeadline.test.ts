@@ -1,7 +1,6 @@
 /**
- * The list-layout headline. Pins BOTH the picker default (unchanged) and the feed's title headline, which
- * exists because a `LinkedReportRef` carries no `referenceCode` - so every feed post with an attached
- * report used to render "Dump: 550e8400-e29b-41d4-a716-446655440000".
+ * Pins both the picker's reference headline and the feed's title headline: a `LinkedReportRef` carries no
+ * `referenceCode`, so the reference headline would render "Dump: 550e8400-e29b-41d4-a716-446655440000".
  */
 import { describe, expect, it } from "vitest"
 import { linkedReportHeadline } from "../linkedReportHeadline"

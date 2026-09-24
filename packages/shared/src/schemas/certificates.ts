@@ -1,17 +1,13 @@
 import { z } from "zod"
 import { LocaleEnum } from "./auth.js"
 
-/**
- * Service-hours transcript (certificate) contract.
- *
+/*
  * A certificate is a PDF the holder deliberately hands to a verifier (a school registrar, a court
  * clerk). The printed code is the capability: it travels on the paper, so verification confirms only
  * what is already printed there and never hands out the document itself.
  */
 
-// ---- Code format ------------------------------------------------------------------------------
-
-/** Crockford base32 — no `I`, `L`, `O`, `U`, so a hand-typed code off paper is unambiguous. */
+/** Crockford base32 (no `I`, `L`, `O`, `U`), so a hand-typed code off paper is unambiguous. */
 export const CERTIFICATE_CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 export const CERTIFICATE_CODE_LENGTH = 12
 /** Canonical wire form: 12 uppercase Crockford chars, no separators. 32^12 ~= 2^60. */
@@ -21,8 +17,8 @@ export const CERTIFICATE_CODE_RE = /^[0-9A-HJKMNP-TV-Z]{12}$/
 export function normalizeCertificateCode(raw: string): string | null {
   const up = raw.toUpperCase().replace(/[^0-9A-Z]/g, "")
   const fold = (s: string) => s.replace(/[ILO]/g, (c) => (c === "O" ? "0" : "1")).replace(/U/g, "V")
-  // Try the BARE form first, then the CFX-prefixed form. C, F and X are all valid Crockford symbols,
-  // so a genuine code can itself begin with "CFX" — an unconditional prefix strip would corrupt it.
+  // Try the bare form first, then the CFX-prefixed form. C, F and X are all valid Crockford symbols,
+  // so a genuine code can itself begin with "CFX", and an unconditional prefix strip would corrupt it.
   for (const cand of [up, up.startsWith("CFX") ? up.slice(3) : ""]) {
     if (cand.length !== CERTIFICATE_CODE_LENGTH) continue
     const folded = fold(cand)
@@ -56,14 +52,12 @@ export const MAX_CERTIFICATE_ENTRIES = 1000
  */
 export const CERTIFICATE_GET_URL_TTL_SEC = 15 * 60
 
-// ---- Holder-facing DTO ------------------------------------------------------------------------
-
 /** The holder-facing view. `url` is null when the document is not currently downloadable. */
 export const ServiceHoursCertificateDTOSchema = z.object({
-  code: z.string(), // canonical 12-char form
+  code: z.string(),
   status: CertificateStatusSchema.or(z.string()), // tolerant: a future "pending" must not break parsing
   locale: z.string(),
-  issuedAt: z.string(), // ISO-8601
+  issuedAt: z.string(),
   totalHours: z.number().nonnegative(),
   entryCount: z.number().int().nonnegative(),
   periodStart: z.string().nullable().optional(),
@@ -77,9 +71,9 @@ export const ServiceHoursCertificateDTOSchema = z.object({
 export type ServiceHoursCertificateDTO = z.infer<typeof ServiceHoursCertificateDTOSchema>
 
 /**
- * v1 issues over the WHOLE ledger: no geoid / from / to filters and no recipient field. Filters
- * multiply documents against a fingerprint-keyed idempotency and complicate the fingerprint for a v1
- * nobody asked for; `periodStart`/`periodEnd` are the derived min/max of the included rows.
+ * Issues over the whole ledger: no geoid / from / to filters and no recipient field, because filters
+ * multiply documents against the fingerprint-keyed idempotency. `periodStart`/`periodEnd` are the
+ * derived min/max of the included rows.
  */
 export const IssueServiceHoursCertificateRequestSchema = z
   .object({ locale: LocaleEnum.optional() })
@@ -90,7 +84,7 @@ export type IssueServiceHoursCertificateRequest = z.infer<
 
 export const IssueServiceHoursCertificateResponseSchema = z.object({
   certificate: ServiceHoursCertificateDTOSchema,
-  /** true when an existing document was reused rather than freshly rendered (telemetry + tests). */
+  /** True when an existing document was reused rather than freshly rendered. */
   reused: z.boolean().optional(),
 })
 export type IssueServiceHoursCertificateResponse = z.infer<
@@ -103,9 +97,9 @@ export const ListMyCertificatesResponseSchema = z.object({
 export type ListMyCertificatesResponse = z.infer<typeof ListMyCertificatesResponseSchema>
 
 /**
- * `code` is a path param on `POST /me/volunteer-hours/certificates/:code/revoke`, but it is followed
- * by a static segment so the client cannot type-extract it — the request schema carries it and the
- * backend re-merges the path param before parsing (the `logEventHours` merge pattern).
+ * `code` is a path param on `POST /me/volunteer-hours/certificates/:code/revoke`, but a static segment
+ * follows it, so the client cannot type-extract it: the request schema carries it and the backend
+ * merges the path param back in before parsing.
  */
 export const RevokeCertificateRequestSchema = z.object({ code: CertificateCodeSchema }).strict()
 export type RevokeCertificateRequest = z.infer<typeof RevokeCertificateRequestSchema>
@@ -115,13 +109,11 @@ export const RevokeCertificateResponseSchema = z.object({
 })
 export type RevokeCertificateResponse = z.infer<typeof RevokeCertificateResponseSchema>
 
-// ---- Public verification ------------------------------------------------------------------------
-
 export const VerifyCertificateRequestSchema = z.object({ code: CertificateCodeSchema }).strict()
 export type VerifyCertificateRequest = z.infer<typeof VerifyCertificateRequestSchema>
 
 /**
- * PUBLIC projection. Every field here is already printed on the document the verifier is holding.
+ * Public projection. Every field here is already printed on the document the verifier is holding.
  *
  * NEVER add `userId`, an email, the R2 key, the PDF URL, a presigned link, the per-event rows or the
  * stored snapshot. Anyone holding the code already holds the document; turning the code into a

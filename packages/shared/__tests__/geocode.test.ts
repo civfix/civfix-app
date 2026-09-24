@@ -269,7 +269,7 @@ describe("suggestAddresses", () => {
     expect(out[0]?.source).toBe("photon")
   })
 
-  // Regression: an aborted (stale) keystroke used to RESOLVE [] and clobber the newer query's results.
+  // An aborted (stale) keystroke must not RESOLVE [] and clobber the newer query's results.
   it("rejects instead of resolving [] when the caller aborts the Photon call", async () => {
     const controller = new AbortController()
     vi.stubGlobal(

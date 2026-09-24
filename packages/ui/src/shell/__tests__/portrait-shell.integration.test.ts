@@ -27,8 +27,7 @@ describe("portrait frame wiring", () => {
   it.each([
     // [kind, the overlay's keyboardAvoidance]. Only the composer's is true: `post-thread`'s docked reply
     // bar owns the inset itself (useReplyDockInset), and the shell reserving it too double-applied the
-    // keyboard on mobile web. See the regression note in portrait-shell.test.ts. `person` (P8) is a full
-    // PAGE with no docked input at all, so there is nothing for the shell to reserve.
+    // keyboard on mobile web. `person` is a full page with no docked input, so there is nothing to reserve.
     ["composer", true],
     ["post-thread", false],
     ["person", false],
@@ -70,8 +69,6 @@ describe("portrait frame wiring", () => {
   })
 
   it("renders the Report tab as a full-screen base body with the dock above it", () => {
-    // Report is a regular view now: its ReportFlowBody is the base body (no map, no detail overlay),
-    // and the bottom chrome (dock) stays visible above it.
     const shell = portraitShellPlan("report", null)
     const frame = renderPlan("report", null)
 
@@ -86,10 +83,8 @@ describe("portrait frame wiring", () => {
   })
 
   it("presents a scroll detail as a sheet ABOVE a retained composer overlay (no detour through Home)", () => {
-    // THE REPORTED DEFECT: "for hosting events in new post, it should open the pull-up menu directly there
-    // instead of in the home page". The composer keeps its stack entry, so the overlay layer still resolves
-    // to it (topmostFullEntry) while `create-cleanup` presents as the pull-up above it — the home feed
-    // underneath is never revealed.
+    // The composer keeps its stack entry, so the overlay still resolves to it (topmostFullEntry) while
+    // `create-cleanup` presents as the pull-up above it and the home feed is never revealed.
     const composerOnly = renderStackPlan("home", [{ kind: "composer" }])
     const withSheet = renderStackPlan("home", [{ kind: "composer" }, { kind: "create-cleanup" }])
 
@@ -108,15 +103,15 @@ describe("portrait frame wiring", () => {
     expect(withSheet.overlay.keyboardAvoidance).toBe(false)
     expect(withSheet.sheet.visible).toBe(true)
     expect(withSheet.bottomChrome.visible).toBe(false)
-    // LAYER LADDER: CompactShell's own anchor is z 60, so the overlay must sit strictly below it (and still
-    // above AppShell's map controls at 50). A tie here used to be resolved only by sibling order.
+    // CompactShell's anchor is z 60, so the overlay sits strictly below it and above AppShell's map
+    // controls at 50; a tie would be resolved only by sibling order.
     expect(withSheet.overlay.zIndex).toBeLessThan(60)
     expect(withSheet.overlay.zIndex).toBeGreaterThan(50)
     expect(withSheet.bottomChrome.zIndex).toBeGreaterThan(withSheet.overlay.zIndex)
   })
 
-  it("keeps a PERSON page mounted under its own child drill-down - the mechanism P8 depends on", () => {
-    // THE WHOLE REASON `person` is an unbridged FULL body rather than a pushed native screen.
+  it("keeps a PERSON page mounted under its own child drill-down", () => {
+    // Why `person` is an unbridged full body rather than a pushed native screen.
     // PersonDetailBody has five child navigations (pin / cleanup / a nested person / followers /
     // following), every one of them a "scroll" kind. Each must ride as a SHEET over the retained person
     // overlay so Back returns to the profile; if the overlay unmounted here, the child would open over
@@ -176,8 +171,7 @@ describe("portrait frame wiring", () => {
   ])("hides the dock under a $kind detail sheet (the sheet covers it) but keeps the base footprint", (active) => {
     const frame = renderPlan("home", active)
 
-    // Round 4: the detail sheet presents as a modal that covers the dock, so the dock chrome is hidden
-    // while it is up. The base surface behind it still reserves the nonzero chrome footprint.
+    // The base surface behind the modal sheet still reserves the nonzero chrome footprint.
     expect(frame.sheet.visible).toBe(true)
     expect(frame.bottomChrome.visible).toBe(false)
     expect(frame.bottomChrome.footprint).toBe(80)

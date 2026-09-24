@@ -1,5 +1,5 @@
 /**
- * Accessibility and correctness props on the feed / post surfaces that only exist as JSX (PR 4, C13a).
+ * Accessibility and correctness props on the feed / post surfaces that only exist as JSX.
  * These modules import react-native, which this package's node-environment vitest cannot load, so each
  * assertion is scoped to the exact element and prop it guards (the house pattern, see PostCard.test.ts).
  */
@@ -19,7 +19,7 @@ const between = (source: string, from: string, to: string): string => {
   return source.slice(start, end)
 }
 
-describe("the post row is a pointer convenience, not an accessibility element (APP-A11Y-103/104)", () => {
+describe("the post row is a pointer convenience, not an accessibility element", () => {
   const card = code("../PostCard.tsx")
   const row = between(card, "<Pressable\n        onPress={() => openPost(rowPostId)}", "style=")
 
@@ -49,7 +49,7 @@ describe("the post row is a pointer convenience, not an accessibility element (A
   })
 })
 
-describe("the thread reply row follows the same row contract (APP-A11Y-103/104)", () => {
+describe("the thread reply row follows the same row contract", () => {
   const replyRow = code("../thread/ThreadReplyRow.tsx")
   const row = between(replyRow, "<Pressable\n        onPress={openThread}", "style=")
 
@@ -70,7 +70,7 @@ describe("the thread reply row follows the same row contract (APP-A11Y-103/104)"
   })
 })
 
-describe("a repost's comment and quote target the original (APP-BUG-203)", () => {
+describe("a repost's comment and quote target the original", () => {
   const card = code("../PostCard.tsx")
 
   it("routes both through the same target as the row and the menu, falling back when it is deleted", () => {
@@ -84,7 +84,7 @@ describe("a repost's comment and quote target the original (APP-BUG-203)", () =>
   })
 })
 
-describe("loading states have a name (APP-A11Y-107)", () => {
+describe("loading states have a name", () => {
   it("labels the feed's first-load skeletons as one busy progress element", () => {
     const feed = code("../FeedBody.tsx")
     const loading = between(feed, '{state === "loading" ? (', "<FeedSkeleton />")
@@ -102,7 +102,7 @@ describe("loading states have a name (APP-A11Y-107)", () => {
   })
 })
 
-describe("screen titles are headings (APP-A11Y-109)", () => {
+describe("screen titles are headings", () => {
   it("the composer's centered title", () => {
     expect(code("../PostComposer.tsx")).toContain(
       '<Text accessibilityRole="header" style={styles.headerTitle}>{presentation.title}</Text>',
@@ -115,7 +115,7 @@ describe("screen titles are headings (APP-A11Y-109)", () => {
   })
 })
 
-describe("the feed-share caption counter (APP-A11Y-110, APP-BUG-207)", () => {
+describe("the feed-share caption counter", () => {
   const share = code("../FeedShareBlock.tsx")
 
   it("announces the same number it shows, translated", () => {
@@ -132,7 +132,7 @@ describe("the feed-share caption counter (APP-A11Y-110, APP-BUG-207)", () => {
   })
 })
 
-describe("the composer entrance reads the shared reduced-motion hook (APP-BUG-208)", () => {
+describe("the composer entrance reads the shared reduced-motion hook", () => {
   const composer = code("../PostComposer.tsx")
 
   it("has no module cache or swallowed query of its own", () => {
@@ -143,7 +143,7 @@ describe("the composer entrance reads the shared reduced-motion hook (APP-BUG-20
   })
 })
 
-describe("the composer's author row is translated (APP-BUG-209)", () => {
+describe("the composer's author row is translated", () => {
   it("falls back to the catalog's own 'You', never an English literal", () => {
     const composer = code("../PostComposer.tsx")
     expect(composer).not.toContain('"You"')
@@ -151,7 +151,7 @@ describe("the composer's author row is translated (APP-BUG-209)", () => {
   })
 })
 
-describe("composer controls meet the 44pt target (APP-A11Y-111)", () => {
+describe("composer controls meet the 44pt target", () => {
   it("InlineComposer's add-media, close and Post controls", () => {
     const inline = code("../feed/InlineComposer.tsx")
     expect(inline).toContain("const MIN_TOUCH_TARGET = 44")

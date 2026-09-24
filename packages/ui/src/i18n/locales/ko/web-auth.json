@@ -19,7 +19,7 @@
   },
   "code": {
     "title": "받은 편지함을 확인하세요",
-    "subtitle": "<0>{{email}}</0>으로 코드를 보냈어요 — 5분 후 만료",
+    "subtitle": "<0>{{email}}</0>으로 코드를 보냈어요. 5분 후 만료돼요.",
     "group_aria_label": "6자리 인증 코드",
     "digit_aria_label": "{{position}}번째 숫자",
     "verifying": "확인 중...",

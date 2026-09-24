@@ -1,7 +1,3 @@
-/**
- * Unit tests for the New-group wizard's pure step gating + draft normalization (P4 Task 4.7):
- * Next is disabled at 0 selected members; Create is disabled on a blank name; names/descriptions trim.
- */
 import { describe, expect, it } from "vitest"
 import {
   canProceedToIdentity,

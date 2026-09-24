@@ -22,8 +22,8 @@ describe("host-draft exit", () => {
   })
 
   it("clears the draft when backing out onto the report the flow was launched from", () => {
-    // The regression: back() pops the create-cleanup entry, leaving a report detail on top. Reading only
-    // the TOP entry saw kind "report" and kept the draft, which then hijacked the next host flow.
+    // back() pops the create-cleanup entry, leaving a report detail on top. Reading only the TOP entry
+    // would see kind "report" and keep the draft, which would then hijack the next host flow.
     expect(isGenuineHostExit([reportEntry])).toBe(true)
   })
 
@@ -125,8 +125,8 @@ describe("the host form's mount step carries `slots` verbatim", () => {
   })
 
   it("MERGES a new seed report into a live draft without touching its slots", () => {
-    // The regression this guards: re-entering "Host an event" from a different report must link that
-    // report and change nothing else. `begin` no-ops while active, so the typed slots simply survive.
+    // Re-entering "Host an event" from a different report must link that report and change nothing
+    // else. `begin` no-ops while active, so the typed slots simply survive.
     const live = typedForm()
     const { target, begun, toggled } = draftTarget(live)
     const plan = planHostDraftMount({ active: true, value: live }, "report-b", "report-a", typedForm())
@@ -150,9 +150,8 @@ describe("the host form's mount step carries `slots` verbatim", () => {
 })
 
 /**
- * `planHostDraftMount` runs during RENDER, so it must be a pure function of its arguments. A single write
- * from here reaches every subscriber of the draft store mid-render - which is the crash this split fixed:
- * "Cannot update a component (`ReportDetailContent`) while rendering a different component (`HostForm`)".
+ * `planHostDraftMount` runs during RENDER, so it must be a pure function of its arguments: a single write
+ * from here would reach every subscriber of the draft store mid-render, which React refuses.
  */
 describe("planHostDraftMount writes nothing", () => {
   it("touches no store operation on a fresh mount, a merge, or a resume", () => {

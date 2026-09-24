@@ -83,7 +83,6 @@ export function SettingsScreen() {
   const orgs = useMyOrganizations()
   // A suspended org refuses every write, so it cannot be picked; one that is ALREADY linked stays
   // in the list (disabled, with a hint) so the current value is never silently blank.
-  // Typed against the app's @civfix/shared (0.41.0, `suspended`), like org-screen.tsx does.
   const myOrgs: OrganizationDTO[] = orgs.data ?? []
   const linkableOrgs = myOrgs.filter(
     (org) => (org.myRole === "owner" || org.myRole === "admin") && org.suspended !== true,

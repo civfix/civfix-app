@@ -2,22 +2,10 @@ import { z } from "zod"
 import { CursorSchema } from "../common.js"
 
 /**
- * Shared admin / operator DTOs, enums, and label maps.
- *
- * Every admin domain module (auth, home, discovery, reports, events, users, gov, moderation, mail,
- * analytics, ...) builds on the enums + the cursor-list query defined here. Reconciliation note: the
- * design prototype (legacy "PinIt") uses hyphenated status strings (in-progress) and a "cleanup"
- * report category; this contract uses the civfix model. See documents/phase2/00-architecture-decisions
- * section 8 and 01-design-enumeration section 4.
- *
- * The civfix report-status enum (submitted|held|published|acknowledged|in_progress|resolved|rejected)
- * and report-category enum (trash|recycling|graffiti|hazard|encampment|water|other) come from ../common.js and are
- * the canonical taxonomy the admin surfaces reuse directly.
+ * Shared admin / operator enums, label maps and DTO fragments. The admin surfaces reuse the canonical
+ * report-status and report-category enums from ../common.js directly, so the operator and citizen views
+ * never diverge.
  */
-
-// ---------------------------------------------------------------------------
-// Admin list query (cursor-paginated, with filter / sort / search)
-// ---------------------------------------------------------------------------
 
 /**
  * The generic admin list query: a free-text search, a named filter facet, a named sort key, plus
@@ -36,14 +24,9 @@ export const AdminListQuerySchema = z.object({
 })
 export type AdminListQuery = z.infer<typeof AdminListQuerySchema>
 
-// ---------------------------------------------------------------------------
-// Relative + absolute timestamp pair
-// ---------------------------------------------------------------------------
-
 /**
- * The design renders most timestamps as a relative string ("3h ago", "in 2 days") next to an absolute
- * one ("Jun 3, 2026, 4:12 PM"). The server computes both so clients render identically without a
- * date library. `rel` is the short relative label; `abs` the long absolute label.
+ * A relative label ("3h ago", "in 2 days") paired with an absolute one ("Jun 3, 2026, 4:12 PM"). The
+ * server computes both so clients render identically without a date library.
  */
 export const RelAbsTimeSchema = z
   .object({
@@ -53,25 +36,20 @@ export const RelAbsTimeSchema = z
   .strict()
 export type RelAbsTime = z.infer<typeof RelAbsTimeSchema>
 
-/** A flat [lat, lng] map coordinate as the design's markers carry them (`coords: [lat, lng]`). */
+/** A flat `[lat, lng]` map coordinate (latitude first). */
 export const AdminCoordsSchema = z.tuple([z.number(), z.number()])
 export type AdminCoords = z.infer<typeof AdminCoordsSchema>
 
-// ---------------------------------------------------------------------------
-// Admin enums (status / risk / moderation / verification facets)
-// ---------------------------------------------------------------------------
-
 /**
- * The status the operator sees on a report row. This is the civfix report-status enum verbatim (NOT
- * the design's submitted|in-progress|completed): the design buckets map to submitted / in_progress /
- * resolved, with held|published as moderation states and rejected as "removed". Reused from the
- * canonical ReportStatusSchema so the admin surface and the citizen surface never diverge.
+ * The status the operator sees on a report row: the canonical `ReportStatusSchema` verbatim, so the
+ * admin and citizen surfaces never diverge. held|published are moderation states and rejected reads as
+ * "Removed".
  */
 export { ReportStatusSchema as AdminReportStatusSchema } from "../common.js"
 export type { ReportStatus as AdminReportStatus } from "../common.js"
 import type { ReportStatus as AdminReportStatus } from "../common.js"
 
-/** Operator-facing labels for the civfix report statuses (design showed Submitted/In progress/...). */
+/** Operator-facing labels for the civfix report statuses. */
 export const ADMIN_REPORT_STATUS_LABELS = {
   submitted: "Submitted",
   held: "Under review",
@@ -96,10 +74,7 @@ export function canTransitionReportStatus(from: AdminReportStatus, to: AdminRepo
   return ADMIN_REPORT_STATUS_TRANSITIONS[from].includes(to)
 }
 
-/**
- * Cleanup (event) lifecycle. Design EVENT_STATUS = upcoming|in-progress|completed; civfix adds
- * `cancelled` ("Cancel event" -> cancelled) and uses the underscore form `in_progress`.
- */
+/** Cleanup (event) lifecycle. */
 export const EventStatusSchema = z.enum(["upcoming", "in_progress", "completed", "cancelled"])
 export type EventStatus = z.infer<typeof EventStatusSchema>
 
@@ -111,9 +86,8 @@ export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
 }
 
 /**
- * Cleanup discovery-task review state surfaced in the discovery queue (open work vs in-progress vs
- * done). Mirrors the Phase 1 DiscoveryStatus but is named distinctly here for the admin label map (the
- * Phase 1 CleanupStatusSchema in entities.ts is the cleanup-event lifecycle, a different enum).
+ * Discovery-task review state in the discovery queue. Named distinctly from `CleanupStatusSchema` in
+ * entities.ts, which is the cleanup-event lifecycle, a different enum.
  */
 export const DiscoveryReviewStatusSchema = z.enum(["open", "in_progress", "done"])
 export type DiscoveryReviewStatus = z.infer<typeof DiscoveryReviewStatusSchema>
@@ -124,11 +98,7 @@ export const DISCOVERY_REVIEW_STATUS_LABELS: Record<DiscoveryReviewStatus, strin
   done: "Done",
 }
 
-/**
- * Mail thread / delivery status. Design MAIL_STATUS = sent|delivered|opened|replied|auto|
- * needs-action|bounced; the underscore form `needs_action` is used in the model. "opened" depends on
- * open-tracking (optional for a non-profit; kept for completeness).
- */
+/** Mail thread / delivery status. "opened" only appears when open-tracking is on. */
 export const MailStatusSchema = z.enum([
   "sent",
   "delivered",
@@ -172,7 +142,7 @@ export const MAIL_REPLY_PUBLICATION_LABELS: Record<MailReplyPublication, string>
   published: "Published",
 }
 
-/** Account status driving suspend / ban (design USER_STATUS = active|suspended|review, plus banned). */
+/** Account status driving suspend / ban. */
 export const UserStatusSchema = z.enum(["active", "suspended", "review", "banned"])
 export type UserStatus = z.infer<typeof UserStatusSchema>
 
@@ -183,7 +153,7 @@ export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   banned: "Banned",
 }
 
-/** A user's moderation risk band (design risk = low|watch|elevated|high). */
+/** A user's moderation risk band. */
 export const RiskSchema = z.enum(["low", "watch", "elevated", "high"])
 export type Risk = z.infer<typeof RiskSchema>
 
@@ -195,10 +165,9 @@ export const RISK_LABELS: Record<Risk, string> = {
 }
 
 /**
- * What a moderation queue item is about (design kind = image|pattern|appeal|gps|duplicate). image is
- * a held photo, pattern a coordinated-reports cluster, appeal a user appeal, gps a spoof check,
- * duplicate a near-duplicate. `user_report` is a citizen-filed content report (the user-facing "Report"
- * button -> ContentReportSubject/Reason -> the moderation queue). Backend mirrors this exact value list.
+ * What a moderation queue item is about: image is a held photo, pattern a coordinated-reports cluster,
+ * appeal a user appeal, gps a spoof check, duplicate a near-duplicate, and `user_report` a citizen-filed
+ * content report. The backend mirrors this exact value list.
  */
 export const ModerationKindSchema = z.enum([
   "image",
@@ -220,9 +189,9 @@ export const MODERATION_KIND_LABELS: Record<ModerationKind, string> = {
 }
 
 /**
- * What KIND of subject a moderation item (especially a citizen `user_report`) points at - the admin-side
- * mirror of the user-facing ContentReportSubject, plus the legacy report/user/chat subjects the queue
- * already carried. Backend mirrors this exact value list (types.ts + enums.test.ts) - keep them identical.
+ * What KIND of subject a moderation item (especially a citizen `user_report`) points at: the user-facing
+ * ContentReportSubject plus the report/user/chat subjects. The backend mirrors this exact value list
+ * (types.ts + enums.test.ts); keep them identical.
  */
 export const ModerationSubjectTypeSchema = z.enum([
   "report",
@@ -241,15 +210,15 @@ export type ModerationSubjectType = z.infer<typeof ModerationSubjectTypeSchema>
 export const ModerationDestinationKindSchema = z.enum(["report", "event", "user"])
 export type ModerationDestinationKind = z.infer<typeof ModerationDestinationKindSchema>
 
-/** The tone of a single moderation signal cell (design signals[*].tone = ok|warn|bad). */
+/** The tone of a single moderation signal cell. */
 export const ModerationToneSchema = z.enum(["ok", "warn", "bad"])
 export type ModerationTone = z.infer<typeof ModerationToneSchema>
 
-/** Queue priority bands shared by moderation + discovery rows (design priority = low|med|high). */
+/** Queue priority bands shared by moderation + discovery rows. */
 export const PrioritySchema = z.enum(["low", "med", "high"])
 export type Priority = z.infer<typeof PrioritySchema>
 
-/** The three gov-claim verification checks the operator completes (design verified[]/pending[]). */
+/** The three gov-claim verification checks the operator completes. */
 export const GovVerificationCheckSchema = z.enum(["linkedin", "directory", "callback"])
 export type GovVerificationCheck = z.infer<typeof GovVerificationCheckSchema>
 
@@ -259,26 +228,18 @@ export const GOV_VERIFICATION_CHECK_LABELS: Record<GovVerificationCheck, string>
   callback: "Callback",
 }
 
-/** Per-check verification state (design checks.{check}.status = verified|pending). */
 export const GovCheckStatusSchema = z.enum(["verified", "pending"])
 export type GovCheckStatus = z.infer<typeof GovCheckStatusSchema>
 
-/** How a gov applicant reached us (design method = email|cold-outreach -> cold_outreach). */
+/** How a gov applicant reached us. */
 export const GovMethodSchema = z.enum(["email", "cold_outreach"])
 export type GovMethod = z.infer<typeof GovMethodSchema>
 
-/** Lifecycle of a gov provisioning claim (design implies pending -> approved|rejected). */
+/** Lifecycle of a gov provisioning claim: pending, then approved or rejected. */
 export const GovClaimStatusSchema = z.enum(["pending", "approved", "rejected"])
 export type GovClaimStatus = z.infer<typeof GovClaimStatusSchema>
 
-// ---------------------------------------------------------------------------
-// Small shared admin DTO fragments
-// ---------------------------------------------------------------------------
-
-/**
- * A compact actor reference (reporter / organizer / user) shown on report + event detail panels:
- * id, display name, handle, and the join date. Shared so the reports + events detail DTOs define it once.
- */
+/** A compact actor reference (reporter / organizer / user) on report and event detail panels. */
 export const AdminActorRefSchema = z
   .object({
     id: z.string(),

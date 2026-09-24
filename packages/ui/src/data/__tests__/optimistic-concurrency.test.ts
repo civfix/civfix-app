@@ -1,22 +1,12 @@
 /**
- * Regression test: an optimistic mutation's ERROR rollback must undo only ITS OWN patch.
+ * An optimistic mutation's ERROR rollback must undo only its OWN patch. With two toggles in flight on
+ * different items, the interleaving A.onMutate -> B.onMutate -> A.onError must not restore the pre-B
+ * cache: that would wipe B's optimistic patch and leave B rolling back from a state without it.
  *
- * BUG. `optimisticListPatch.onError` used to write the whole pre-mutation `InfiniteData` snapshot back,
- * and `useFollowPerson`'s `also.onError` restored every snapshotted profile / flat-list / connections
- * entry wholesale. With two toggles in flight on DIFFERENT items the interleaving
- *
- *     A.onMutate -> B.onMutate -> A.onError
- *
- * restored the pre-B cache, silently wiping B's optimistic patch (and corrupting B's own rollback path,
- * since B would then "roll back" from a state that no longer contains its patch). posts.ts had already
- * abandoned this shape for a targeted per-item rollback for exactly this reason.
- *
- * FIX. `optimisticListPatch` snapshots only the MATCHED items and re-writes those into the CURRENT cache;
- * `buildFollowMutation` re-applies the target person's pre-tap `{ isFollowing, followers }` through the
- * same id-scoped patch helpers it used going forward, and un-nudges the viewer's `following` stat by the
- * inverse delta instead of restoring a snapshot.
- *
- * Both are driven here through the REAL exported implementations (no hand-reassembled options block).
+ * `optimisticListPatch` therefore re-writes only the items it matched into the CURRENT cache, and
+ * `buildFollowMutation` re-applies the person's pre-tap `{ isFollowing, followers }` through its id-scoped
+ * patch helpers and un-nudges the viewer's `following` stat by the inverse delta. Both are driven through
+ * the real exported implementations.
  */
 import { describe, expect, it } from "vitest"
 import { QueryClient, type InfiniteData } from "@tanstack/react-query"

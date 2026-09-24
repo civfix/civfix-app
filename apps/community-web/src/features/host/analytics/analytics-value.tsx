@@ -4,7 +4,7 @@ import { useT } from "@civfix/ui/i18n"
 
 import { EMPTY_VALUE, useConsoleFormat } from "../format"
 
-/** A bare dash is read aloud as "em dash"; this shows the dash and tells a screen reader "none". */
+/** The mark alone reads as punctuation; hide it and give screen readers the word. */
 export function EmptyValue() {
   const { t } = useT("host-common")
   return (
@@ -28,7 +28,7 @@ export function AnalyticsValue({ value, kind = "count", k = 5 }: AnalyticsValueP
     const label = t("suppressed.explain", { k })
     return (
       <span className="text-console-ink-3" title={label} aria-label={label}>
-        &mdash;
+        {EMPTY_VALUE}
       </span>
     )
   }

@@ -1,18 +1,10 @@
 /**
- * The landscape resize handle is a REAL slider - on the keyboard and to a screen reader, not only under a
- * mouse (shell/ExpandedShell.tsx).
- *
- * WHAT WENT WRONG. `accessibilityRole="adjustable"` maps to `role="slider"` on react-native-web, but the
- * three props that make a slider operable do NOT cross: `accessibilityValue`, `accessibilityActions` and
- * `onAccessibilityAction` are absent from RNW's forwarded-props allow-list, and RNW leaves the View at
- * `tabIndex: -1`. The rendered handle therefore had exactly four attributes (aria-label, role, class,
- * style): a `role="slider"` with no `aria-valuenow/min/max` - an ARIA authoring violation on its own -
- * that no Tab walk could reach and whose increment/decrement actions could never fire. In the only layout
- * that HAS a handle, the card width was mouse-only.
- *
- * Source greps: ExpandedShell imports react-native, which this package's node-environment vitest cannot
- * load, so the wiring is pinned by reading the source (house pattern - see `rail.test.ts`). The BEHAVIOUR
- * the key map commits to is exercised for real against the pure `clampSidebarWidth` below.
+ * The landscape resize handle must be a real slider on the keyboard and to a screen reader, not only
+ * under a mouse. `accessibilityRole="adjustable"` maps to `role="slider"` on react-native-web, but
+ * `accessibilityValue`, `accessibilityActions` and `onAccessibilityAction` are not in RNW's forwarded-props
+ * allow-list and the View stays at `tabIndex: -1`, leaving a slider with no aria values that no Tab walk
+ * reaches. Wiring is pinned by source read (ExpandedShell imports react-native); the key map's behaviour
+ * runs for real against `clampSidebarWidth`.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"

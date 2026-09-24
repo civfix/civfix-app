@@ -4,7 +4,7 @@
  * <ApiProvider value={...}> once - INSIDE its query-client provider so the shared mutation hooks reach
  * the same QueryClient - and shared components read it via the typed hooks below.
  *
- * Mirrors ./capabilities/context.tsx: a nullable context with a throw-if-missing accessor, plus typed
+ * Mirrors ../capabilities/context.tsx: a nullable context with a throw-if-missing accessor, plus typed
  * selector hooks so a body imports exactly the slice it needs (the api client, the auth state, the
  * requireAuth gate, or logout) rather than the whole bundle.
  */
@@ -63,9 +63,7 @@ export function useRequireAuth(): DataContextValue["requireAuth"] {
   return useDataContext().requireAuth
 }
 
-/**
- * Sign the viewer out (host owns any cache teardown).
- */
+/** Sign the viewer out (host owns any cache teardown). */
 export function useLogout(): DataContextValue["logout"] {
   return useDataContext().logout
 }
@@ -81,7 +79,7 @@ export function useOnUserUpdated(): DataContextValue["onUserUpdated"] {
 }
 
 /**
- * The host's OPTIONAL report-create override (slice 7), or `undefined` when the host does not inject one.
+ * The host's OPTIONAL report-create override, or `undefined` when the host does not inject one.
  * The shared report wizard uses it to delegate the IDENTITY-specific create (web's anon/Turnstile/claim
  * path) and falls back to its built-in authed `api.createReport` when this is absent (mobile).
  */

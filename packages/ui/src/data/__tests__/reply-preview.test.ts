@@ -1,6 +1,6 @@
 /**
- * Unit tests for `buildLocalReplyTo` (chat P2, Task 2.6) - the pure optimistic reply-preview builder
- * `useChat.send` uses so a reply's quote strip paints before the server echo lands.
+ * `buildLocalReplyTo` is the pure optimistic reply-preview builder `useChat.send` uses so a reply's quote
+ * strip paints before the server echo lands.
  */
 import { describe, expect, it } from "vitest"
 import type { ChatMessageDTO, PersonDTO } from "@civfix/shared"

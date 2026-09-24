@@ -5,8 +5,8 @@ import { endpoints } from "../src/client/endpoints.js"
 /**
  * The typed client parses 2xx bodies against the endpoint's response schema, so the registry's
  * `.default()` / `.catch()` compatibility rules actually apply when the deployed server is older than
- * the client (this project routinely runs skewed: manual backend deploys, lagging EAS builds). A body
- * that does NOT match still passes through raw — a schema mismatch must degrade, never throw.
+ * the client, which is routine. A body that does NOT match still passes through raw: a schema mismatch
+ * must degrade, never throw.
  */
 
 const UUID = "123e4567-e89b-12d3-a456-426614174000"

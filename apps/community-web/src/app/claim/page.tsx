@@ -3,11 +3,8 @@ import { Suspense } from "react"
 import { ClaimView } from "@/features/claim/claim-view"
 
 /**
- * /claim - link an anonymously-submitted report into a signed-in account.
- *
- * ClaimView reads the claim code from the `code` search param, so it must sit under a Suspense
- * boundary (Next 15 requires useSearchParams consumers to be wrapped for the static export). The
- * fallback is intentionally minimal; the real value prop / linked-report UI renders client-side.
+ * ClaimView reads the claim code with useSearchParams, which Next 15 only allows under a Suspense
+ * boundary in a static export.
  */
 export default function ClaimPage() {
   return (

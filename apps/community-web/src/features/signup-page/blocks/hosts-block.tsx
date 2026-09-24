@@ -15,7 +15,7 @@ export function HostsBlock({ block }: { block: HostsBlockData }) {
       <ul className="signup-hosts">
         {block.entries.map((entry, index) => (
           <li key={`${entry.name}-${index}`}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export" */}
             {entry.avatarUrl ? <img src={entry.avatarUrl} alt="" width={44} height={44} /> : null}
             <span>
               <strong>{entry.name}</strong>

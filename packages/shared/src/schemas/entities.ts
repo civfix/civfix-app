@@ -98,9 +98,9 @@ export const PersonDTOSchema = z.object({
   following: z.number().int().nonnegative(),
   isFollowing: z.boolean(),
   /**
-   * 0.43.0: the person's PRIMARY organization affiliation (DECISIONS §34), rendered as a badge next
-   * to the name. Resolved from `users.primary_organization_id` with a fallback to the earliest
-   * membership; null when the person belongs to no organization. Optional so an older server parses.
+   * The person's primary organization affiliation (DECISIONS §34), rendered as a badge next to the
+   * name. Falls back to the earliest membership; null when the person belongs to no organization.
+   * Optional so an older server parses.
    */
   organization: OrganizationRefDTOSchema.nullable().optional(),
   donationUrl: HttpsUrlSchema.nullable().optional(),
@@ -322,7 +322,7 @@ const OrganizationDTOObjectSchema = z.object({
   volunteerCount: z.number().int().nonnegative().optional(),
   myRole: OrganizationMemberRoleSchema.nullable().optional(),
   donationUrl: HttpsUrlSchema.nullable().optional(),
-  // 0.41.0: an operator-suspended org (DECISIONS §32). Optional so a 0.40.0 server still parses.
+  // An operator-suspended org (DECISIONS §32). Optional so an older server still parses.
   suspended: z.boolean().optional(),
 })
 export type OrganizationDTO = z.infer<typeof OrganizationDTOObjectSchema>
@@ -797,8 +797,8 @@ const PostRefObjectSchema = z.object({
   id: IdSchema,
   author: PersonDTOSchema.nullable(),
   /**
-   * 0.43.0: the organization this post was published AS (DECISIONS §34). When present the client
-   * renders the org as the byline and the author as "via @handle". Null for a personal post.
+   * The organization this post was published as (DECISIONS §34). When present the client renders
+   * the org as the byline and the author as "via @handle". Null for a personal post.
    */
   organization: OrganizationRefDTOSchema.nullable().optional(),
   kind: PostKindSchema,
@@ -833,8 +833,8 @@ const PostDTOObjectSchema = z.object({
   id: IdSchema,
   author: PersonDTOSchema,
   /**
-   * 0.43.0: the organization this post was published AS (DECISIONS §34). When present the client
-   * renders the org as the byline and the author as "via @handle". Null for a personal post.
+   * The organization this post was published as (DECISIONS §34). When present the client renders
+   * the org as the byline and the author as "via @handle". Null for a personal post.
    */
   organization: OrganizationRefDTOSchema.nullable().optional(),
   kind: PostKindSchema,

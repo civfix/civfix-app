@@ -1,7 +1,6 @@
 /**
- * Regression coverage for the primitive correctness fixes of PR 4. Pure models are exercised directly;
- * components that cannot render under plain Node are pinned by narrow source assertions on the exact
- * line that carried the bug.
+ * Pure models are exercised directly; components that cannot render under plain Node are pinned by narrow
+ * source assertions on the exact line that carried the bug.
  */
 import { readFileSync } from "node:fs"
 import React from "react"
@@ -24,7 +23,7 @@ const code = (rel: string): string =>
 
 const EN_ENUMS = JSON.parse(read("../../i18n/locales/en/enums.json")) as { category: Record<string, string> }
 
-describe("APP-BUG-037 CategoryChip localizes its label", () => {
+describe("CategoryChip localizes its label", () => {
   const chip = code("../CategoryChip.tsx")
 
   it("renders the enums catalog, not the English-only contract map", () => {
@@ -46,7 +45,7 @@ describe("APP-BUG-037 CategoryChip localizes its label", () => {
   })
 })
 
-describe("APP-BUG-038 composer attachment errors are catalog keys", () => {
+describe("composer attachment errors are catalog keys", () => {
   const hook = code("../useComposerAttachments.ts")
 
   it("maps the AppError code, never the error's own message", () => {
@@ -71,7 +70,7 @@ describe("APP-BUG-038 composer attachment errors are catalog keys", () => {
   })
 })
 
-describe("APP-BUG-039 a signed-out Like/Repost/Save returns to the post", () => {
+describe("a signed-out Like/Repost/Save returns to the post", () => {
   const bar = code("../PostActionBar.tsx")
 
   it("defaults the sign-in return path to the post detail route, not the map home", () => {
@@ -86,7 +85,7 @@ describe("APP-BUG-039 a signed-out Like/Repost/Save returns to the post", () => 
   })
 })
 
-describe("APP-BUG-040 poll option rows keep their identity across a remove", () => {
+describe("poll option rows keep their identity across a remove", () => {
   it("gives every row a distinct id", () => {
     const draft = setOption(emptyPollDraft(), 1, "B")
     const ids = draft.options.map((o) => o.id)
@@ -110,7 +109,7 @@ describe("APP-BUG-040 poll option rows keep their identity across a remove", () 
   })
 })
 
-describe("APP-BUG-041/042/043 conditional rows keep their own keys", () => {
+describe("conditional rows keep their own keys", () => {
   it("React.Children.toArray keys survive a sibling above them disappearing", () => {
     const keysOf = (children: React.ReactNode) =>
       React.Children.toArray(children)
@@ -138,7 +137,7 @@ describe("APP-BUG-041/042/043 conditional rows keep their own keys", () => {
 const ticket = (id: string, sortOrder: number, open = true): TicketTypeDTO =>
   ({ id, sortOrder, salesOpen: open, soldOut: false, maxPartySize: 1 }) as unknown as TicketTypeDTO
 
-describe("APP-BUG-044 a guest registration always carries a ticket type", () => {
+describe("a guest registration always carries a ticket type", () => {
   it("falls back to the default when the picked type is no longer offered", () => {
     const types = [ticket("a", 0), ticket("b", 1)]
     expect(effectiveTicketTypeId(types, "b")).toBe("b")
@@ -157,7 +156,7 @@ describe("APP-BUG-044 a guest registration always carries a ticket type", () => 
   })
 })
 
-describe("APP-BUG-045 guest answers derive their defaults", () => {
+describe("guest answers derive their defaults", () => {
   const question = (id: string, kind: string): EventQuestionDTO => ({ id, kind }) as unknown as EventQuestionDTO
 
   it("fills every question's default under what the viewer typed", () => {
@@ -173,7 +172,7 @@ describe("APP-BUG-045 guest answers derive their defaults", () => {
   })
 })
 
-describe("APP-BUG-046 sheets reset while rendering the open, not one commit later", () => {
+describe("sheets reset while rendering the open, not one commit later", () => {
   it.each(["../CancelEventSheet.tsx", "../ReportContentSheet.tsx", "../RequestResourcesSheet.tsx", "../PollCreateSheet.tsx"])(
     "%s resets through useResetOnOpen",
     (file) => {
@@ -191,7 +190,7 @@ describe("APP-BUG-046 sheets reset while rendering the open, not one commit late
   })
 })
 
-describe("APP-BUG-047 / APP-A11Y-023 poll result bars", () => {
+describe("poll result bars", () => {
   const bubble = code("../PollBubble.tsx")
 
   it("stops the bar animation when the fractions change or the bubble unmounts", () => {
@@ -204,7 +203,7 @@ describe("APP-BUG-047 / APP-A11Y-023 poll result bars", () => {
   })
 })
 
-describe("APP-BUG-048 an unencodable ticket shows a visible fallback", () => {
+describe("an unencodable ticket shows a visible fallback", () => {
   it("returns null for a value over QR capacity instead of throwing", () => {
     expect(qrTicketPath("x".repeat(5000))).toBeNull()
     expect(qrTicketPath("")).toBeNull()
@@ -221,7 +220,7 @@ describe("APP-BUG-048 an unencodable ticket shows a visible fallback", () => {
   })
 })
 
-describe("APP-BUG-049 social links open through the capability and say when they fail", () => {
+describe("social links open through the capability and say when they fail", () => {
   const row = code("../SocialLinksRow.tsx")
 
   it("never swallows the failure or bypasses the OpenExternal seam", () => {
@@ -232,7 +231,7 @@ describe("APP-BUG-049 social links open through the capability and say when they
   })
 })
 
-describe("APP-BUG-050 web calendar download is not cancelled by an early revoke", () => {
+describe("web calendar download is not cancelled by an early revoke", () => {
   const revoke = vi.fn()
   const click = vi.fn()
 
@@ -262,7 +261,7 @@ describe("APP-BUG-050 web calendar download is not cancelled by an early revoke"
   })
 })
 
-describe("APP-BUG-052 an iOS share sheet the user closed is a cancel", () => {
+describe("an iOS share sheet the user closed is a cancel", () => {
   it("maps dismissedAction to cancelled and anything else to shared", () => {
     expect(nativeShareResult("dismissedAction", "dismissedAction")).toBe("cancelled")
     expect(nativeShareResult("sharedAction", "dismissedAction")).toBe("shared")

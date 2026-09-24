@@ -1,7 +1,7 @@
 /**
- * APP-A11Y-054: these forms render an ErrorSummary, which is an alert and takes focus on submit. A field
- * error that is ALSO role="alert" fires one more assertive announcement per field on the same submit,
- * so every Field in them opts out; the aria-describedby wiring still exposes each message.
+ * These forms render an ErrorSummary, which is an alert and takes focus on submit. A field error that
+ * is ALSO role="alert" fires one more assertive announcement per field on the same submit, so every
+ * Field in them opts out; the aria-describedby wiring still exposes each message.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"

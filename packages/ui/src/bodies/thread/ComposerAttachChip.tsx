@@ -1,10 +1,8 @@
 /**
- * ComposerAttachChip - the 44pt "an event / a report is attached to this reply" chip.
- *
- * The old docked composer stacked a full `LinkedEventCard` / `LinkedReportCard` (72pt+ each, two of them
- * possible) INSIDE a bar that also has to hold a mode strip, the field and the tools row - which is one
- * of the reasons the Reply button ended up off-screen. In a height-budgeted dock the attachment only has
- * to answer "what is attached, and how do I remove it", so it collapses to one line: [glyph][title][x].
+ * A full `LinkedEventCard` / `LinkedReportCard` (72pt+ each, two of them possible) does not fit a
+ * height-budgeted dock that also holds a mode strip, the field and the tools row, and pushes the Reply
+ * button off-screen. The attachment only has to answer "what is attached, and how do I remove it", so it
+ * collapses to one 44pt line: [glyph][title][x].
  *
  * Presentation-only: the composer owns what is attached and what removing it does.
  */
@@ -19,7 +17,6 @@ export interface ComposerAttachChipProps {
   kind: "event" | "report"
   /** The attached thing's title (ellipsized to one line). */
   title: string
-  /** Detach it. */
   onRemove: () => void
 }
 

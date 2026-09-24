@@ -1,17 +1,8 @@
 /**
- * The expanded shell's keyboard contract (shell/shellKeyModel.ts).
- *
- * TWO shortcuts and ONE guard. The guard is the whole point: `/` and Escape are single, unmodified keys,
- * which means they are also ordinary characters and an ordinary text-field cancel. Every branch that lets
- * the shell act while a field has focus is a bug the user meets by typing, so the "a field is focused"
- * case is pinned first and hardest here.
- *
- * The Escape LADDER is split across two owners on purpose (design §3.5 / §4.4): the FIELD owns its own rung
- * while it has focus (`searchFieldEscape` clears, `conversationFieldEscape` drops the reply/edit mode), and
- * the shell owns the pop that follows once focus has left it (`shellKeyAction`). This suite pins every half
- * so the seam between them cannot drift into either a double-action or a dead key - and so the card's three
- * text surfaces (search field, post composer, conversation composer) keep answering Escape with ONE shape:
- * spend the field's own rung, blur, then pop.
+ * `/` and Escape are unmodified keys, so they are also ordinary characters and a text field's cancel;
+ * the "a field is focused" case is pinned first and hardest. Escape is split between the field (its own
+ * rung, then blur) and the shell (the pop once focus has left), and every half is pinned so the seam
+ * cannot drift into a double action or a dead key.
  */
 import { describe, expect, it } from "vitest"
 import {
@@ -23,7 +14,7 @@ import {
 } from "../shellKeyModel"
 import type { ShellKeyInput } from "../shellKeyModel"
 
-/** A shell keystroke with nothing focused, at the home view root. Override one field per assertion. */
+/** Nothing focused, at the home view root. */
 function press(over: Partial<ShellKeyInput> = {}): ShellKeyInput {
   return { key: "/", editable: false, view: "home", stackLength: 0, ...over }
 }
@@ -72,8 +63,7 @@ describe("shellKeyAction: the focused-field guard", () => {
   })
 
   it("yields to an open modal - the top surface owns Escape, and `/` must not navigate behind it", () => {
-    // The auth dialog closes itself on Escape (community-web's auth-modal). Without this the shell would
-    // ALSO pop the stack, so one keystroke would close the dialog AND change the surface behind it.
+    // The auth dialog closes itself on Escape; popping too would also change the surface behind it.
     expect(shellKeyAction(press({ key: "Escape", stackLength: 2, modalOpen: true }))).toBe("none")
     expect(shellKeyAction(press({ key: "/", modalOpen: true }))).toBe("none")
   })
@@ -86,11 +76,8 @@ describe("shellKeyAction: the focused-field guard", () => {
 })
 
 describe("shellKeyAction: the composer's first Escape gives up its own field", () => {
-  // THE GUARD'S FAILURE MODE. The composer auto-focuses its textarea the moment it opens and answers
-  // Escape nowhere, so a whole-guard veto armed itself before the user had touched anything and Escape
-  // could never dismiss the surface AT ALL - Tab-to-X was the only keyboard exit. Verified live: with the
-  // composer open and untouched Escape left it open, and blurring by hand made the very next Escape close
-  // it. So the first press spends itself on the blur and the second reaches the `back` rung.
+  // The composer auto-focuses its textarea and answers Escape nowhere, so a whole-guard veto would mean
+  // Escape could never dismiss it. The first press blurs; the second reaches the `back` rung.
   it("blurs the field on the FIRST Escape, and only for the kinds that opted in", () => {
     expect(
       shellKeyAction(press({ key: "Escape", editable: true, stackLength: 1, activeKind: "composer" })),
@@ -112,7 +99,6 @@ describe("shellKeyAction: the composer's first Escape gives up its own field", (
     expect(
       shellKeyAction(press({ key: "Escape", editable: true, stackLength: 2, activeKind: "create-cleanup" })),
     ).toBe("none")
-    // At a view root there is no active entry at all - `activeKind` defaults to null.
     expect(shellKeyAction(press({ key: "Escape", editable: true, view: "search" }))).toBe("none")
   })
 
@@ -154,8 +140,8 @@ describe("shellKeyAction: Escape pops only a stacked surface", () => {
   })
 
   it("does NOTHING at a view root - there is no dismissal to make in a persistent card", () => {
-    // The landscape card has no dismiss gesture and the rail is the way between views, so an Escape at a
-    // view root has no honest meaning. §3.5 spells this out as the end of the search field's ladder.
+    // The landscape card has no dismiss gesture and the rail moves between views, so Escape at a view
+    // root has no honest meaning.
     expect(shellKeyAction(press({ key: "Escape", stackLength: 0 }))).toBe("none")
     expect(shellKeyAction(press({ key: "Escape", stackLength: 0, view: "search" }))).toBe("none")
   })
@@ -190,8 +176,7 @@ describe("conversationFieldEscape: the chat composer's own half of the ladder", 
   })
 
   it("blurs when there is no mode left, so the shell's NEXT Escape pops the panel", () => {
-    // The rung that was missing: with no mode and no handler the panel and the caret both stayed put, and
-    // the shell could never act because its `editable` guard is armed by the focused textarea itself.
+    // Without this rung the shell could never act: its `editable` guard is armed by the focused textarea.
     expect(conversationFieldEscape(false)).toBe("blur")
   })
 
@@ -201,7 +186,6 @@ describe("conversationFieldEscape: the chat composer's own half of the ladder", 
     // actions. The model therefore keeps vetoing shell Escapes from inside a thread's fields.
     const inThreadField = { key: "Escape", editable: true, stackLength: 1, activeKind: "thread" } as const
     expect(shellKeyAction(press(inThreadField))).toBe("none")
-    // ... and once the field has given itself up, the very next press reaches the pop.
     expect(shellKeyAction(press({ ...inThreadField, editable: false }))).toBe("back")
   })
 })

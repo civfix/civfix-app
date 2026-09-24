@@ -354,7 +354,7 @@ describe("pathForSnapshot", () => {
     expect(pathForSnapshot(snapshot({ stack: [{ kind: "pin", id: "p1" }] }))).toBe("/pin/p1/")
   })
 
-  it("addresses the report wizard, which the old view-only rule flattened to /", () => {
+  it("addresses the report wizard, map and search views by their own paths", () => {
     expect(pathForSnapshot(snapshot({ view: "report" }))).toBe("/report/")
     expect(pathForSnapshot(snapshot({ view: "map" }))).toBe("/map/")
     expect(pathForSnapshot(snapshot({ view: "search" }))).toBe("/search/")

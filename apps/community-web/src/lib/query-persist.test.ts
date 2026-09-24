@@ -12,38 +12,19 @@ import { writeAuthSnapshot } from "@/lib/auth-snapshot"
 import { useAuthStore } from "@/store/auth-store"
 
 /**
- * The persisted query cache lets a warm reload repaint instantly from localStorage and revalidate
- * silently. These tests run in the node env (no jsdom / no real localStorage), so we stub `window` with
- * a Map-backed fake storage (as auth-snapshot.test.ts does) and assert:
- *  - a round-trip: a success query on the safelist is persisted and restored into a fresh client;
- *  - the safelist EXCLUDES volatile/sensitive queries (map, chat, search, session);
- *  - a buster mismatch and a max-age expiry both discard (and remove) the persisted entry on restore;
- *  - an empty cache on persist REMOVES the key rather than writing an empty envelope (fail-closed);
- *  - user scoping is fail-closed: only a server-confirmed viewer (or a confirmed signed-out visitor) is
- *    ever persisted, and restore hydrates only when the envelope user id matches the optimistic auth
- *    snapshot, discarding (and removing) on ANY mismatch (different id, or null-vs-present either way);
- *  - every path is a no-op when `window` is absent (the static-export build has no window).
- *
- * `shouldDehydrateQuery` is exercised through the public writer rather than imported directly, so the
- * test pins observable behavior, not a private function.
+ * The node env has no localStorage, so `window` is stubbed with a Map-backed fake. `shouldDehydrateQuery`
+ * is exercised through the public writer so the tests pin observable behavior, not a private function.
  */
 
-/**
- * Boot a client the way Providers does: restore synchronously, then subscribe the debounced writer
- * (the two halves are separate exports so the writer can be re-subscribed from an effect on remount).
- * Returns the writer's teardown.
- */
+/** Boots a client the way Providers does: restore synchronously, then subscribe the debounced writer. */
 function installCachePersistence(queryClient: QueryClient): () => void {
   restorePersistedCache(queryClient)
   return installCachePersistenceWriter(queryClient)
 }
 
-// Must mirror the live STORAGE_KEY in query-persist.ts. The writer was bumped to v2 (commit 9cc8f26,
-// "discard pre-unification cache") but this test was not updated, so it asserted against the stale v1
-// key and never observed the writer's output. Keep this in lockstep with the source key.
+// Must equal STORAGE_KEY in query-persist.ts, or these tests stop observing the writer's output.
 const STORAGE_KEY = "civfix.query.cache.v2"
 
-/** A valid UserDTO for stamping the persist user / the optimistic snapshot (mirrors auth-snapshot.test). */
 const USER: UserDTO = {
   id: "11111111-1111-4111-8111-111111111111",
   displayName: "Ada Lovelace",
@@ -54,7 +35,6 @@ const USER: UserDTO = {
   createdAt: "2026-01-01T00:00:00.000Z",
 }
 
-/** Minimal Storage stand-in backed by a Map (the subset query-persist touches). */
 function makeStorage() {
   const map = new Map<string, string>()
   return {
@@ -86,7 +66,6 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-/** The persisted envelope shape (for asserting buster/timestamp/userId without re-importing internals). */
 interface Envelope {
   buster: string
   timestamp: number
@@ -121,7 +100,6 @@ describe("installCachePersistence writer", () => {
     qc.setQueryData(["session"], { authenticated: true })
 
     const teardown = installCachePersistence(qc)
-    // A cache mutation schedules the debounced write; advance past the debounce window.
     qc.setQueryData(["notifications", 20], { items: [1, 2] })
     vi.advanceTimersByTime(1000)
 
@@ -131,7 +109,6 @@ describe("installCachePersistence writer", () => {
     expect(persistedKeys).toContain(JSON.stringify(["reports", "mine", 3]))
     expect(persistedKeys).toContain(JSON.stringify(["cleanups", "upcoming"]))
     expect(persistedKeys).toContain(JSON.stringify(["profile", "me"]))
-    // Excluded keys must be absent.
     expect(persistedKeys.some((k) => k.startsWith('["map"'))).toBe(false)
     expect(persistedKeys.some((k) => k.startsWith('["chat"'))).toBe(false)
     expect(persistedKeys.some((k) => k.startsWith('["users"'))).toBe(false)
@@ -186,7 +163,6 @@ describe("installCachePersistence writer", () => {
     vi.advanceTimersByTime(1000)
     teardown()
 
-    // A brand-new client hydrates the persisted state synchronously on install.
     const reader = new QueryClient()
     const teardown2 = installCachePersistence(reader)
     expect(reader.getQueryData(["notifications", 20])).toEqual({ items: ["a", "b", "c"] })

@@ -1,13 +1,8 @@
 /**
- * Unit test for the `message_update` WS frame handling in `useChat` (chat P0, Task 0.4).
- *
- * The hook feeds `frame.message` from a `message_update` frame into the SAME 50ms
- * buffered reconcile as `message` frames: `flushInbound` applies the batch through
- * `foldInboundBatch` (data/inbound.ts) — the hook's ACTUAL fold, imported here rather
- * than replicated — then `mergeChatItems` merges history + live + outbox with
- * last-writer-wins by id. The hook itself needs a React renderer (this package tests
- * pure logic only), so this suite drives the fold at the function level and asserts
- * the refreshed DTO REPLACES the stale copy rather than duplicating it.
+ * `useChat` feeds a `message_update` frame into the same 50ms buffered reconcile as `message` frames,
+ * so the refreshed DTO must REPLACE the stale copy rather than duplicate it. The suite drives the hook's
+ * real fold (`foldInboundBatch`, imported rather than replicated) and `mergeChatItems`, because this
+ * package has no React renderer.
  */
 import { describe, expect, it } from "vitest"
 import { mergeChatItems, type ChatMessageDTO, type OutboxEntry, type PersonDTO } from "@civfix/shared"

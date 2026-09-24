@@ -1,32 +1,16 @@
 "use client"
 
-// THE /landscape VERIFICATION ROUTE (landscape redesign, spec D18 / WS7).
+// Mounts the real shell over a fake backend, signed in by default. The production CORS allowlist excludes
+// localhost, so a locally run web app can never sign in, and this is the only place the populated
+// landscape shell can be seen.
 //
-// Mounts the REAL <AppShell/> - the same composition the product routes render, map and map controls
-// included - over the fake backend in ./landscape-fake-api, signed in by default. It exists because the
-// landscape shell cannot be judged empty: the redesign is about how the card holds a FULL feed beside a
-// live map, and the production CORS allowlist excludes localhost, so a locally-run web app can never sign
-// in to fill it. This route is the only surface where the populated landscape shell can be seen at all.
+// The capability seam is fake too, so camera capture and geolocation are inert here; verify those on the
+// real routes. The QueryClient is fresh rather than the app's, whose persisted cache would blend real rows
+// into the fake ones and write fakes back out to storage.
 //
-// WHAT IS REAL AND WHAT IS FAKE:
-//   - REAL: <AppShell/> (via AppShellFrame - the exact slot wiring home-shell.tsx uses), the shared bodies,
-//     the nav store, the sidebar/width store, the map (CARTO raster basemap over the network).
-//   - FAKE: the data seam (<ApiProvider> = makeFakeDataContext over the canned client + makeFakeChatSocket)
-//     and the platform seam (<CapabilitiesProvider> = makeFakeCapabilities). NOTE the capability swap is a
-//     real difference from the product: camera capture and geolocation are inert here, so the report
-//     wizard's photo step and the map's Locate do nothing. Verify those on the real routes.
-//   - FRESH QueryClient: NOT the app's. The root <Providers/> client restores the PERSISTED cache from a
-//     previous real session, which would blend real rows into the fake ones and, worse, write fakes back
-//     out to storage. A client created here starts cold and is thrown away with the route.
-//
-// URL PARAMS (read from window.location, not next/navigation: this app is output:"export" and
-// useSearchParams would force a Suspense boundary into a client-only dev route for no gain):
-//   ?signedout=1     - render the signed-out experience (no viewer, and gated actions do nothing).
-//   ?path=/cleanups  - seed the nav store from a product path, so every deep link (/map, /search, /report,
-//                      /messages, /pin/post_text, ...) is reachable here without leaving /landscape.
-//
-// The address bar is deliberately NOT synced: `useWebNavAdapter` is not mounted (see AppShellFrame), so
-// in-app navigation never pushes a product path over this one. Reload always comes back to the harness.
+// Params come from window.location because useSearchParams would force a Suspense boundary under
+// output: "export": `?signedout=1` renders the signed-out experience and `?path=/cleanups` seeds the nav
+// store from any product path. The address bar is never synced, so a reload returns to the harness.
 
 import * as React from "react"
 import { QueryClientProvider } from "@tanstack/react-query"
@@ -58,12 +42,8 @@ function searchParams(): URLSearchParams {
 const fakeCapabilities = makeFakeCapabilities()
 
 /**
- * The fake data seam for one mount. Signed in unless `?signedout=1`.
- *
- * `requireAuth` differs per arm on purpose: the shared default RUNS the action (a gallery treats the
- * viewer as able to act), which would let the signed-out arm like and RSVP - the opposite of the state it
- * is there to show. Signed out it is a no-op, which is the honest local stand-in for the product's
- * "open the auth modal" (the real modal drives the real auth store, which this harness does not own).
+ * The shared default `requireAuth` runs the action, which would let the signed-out arm like and RSVP.
+ * Signed out it is a no-op instead: the real auth modal drives an auth store this harness does not own.
  */
 function makeFakeData(signedOut: boolean): DataContextValue {
   return makeFakeDataContext({
@@ -81,9 +61,7 @@ export default function LandscapePreview() {
   const [signedOut] = React.useState(() => searchParams().get("signedout") === "1")
   const [data] = React.useState(() => makeFakeData(signedOut))
 
-  // Seed the nav store from `?path=` before first paint (layout effect, as the product adapter does), so a
-  // deep-linked harness never flashes the home card for a frame. Mount-only: this route owns no URL sync,
-  // so nothing re-seeds afterwards.
+  // A layout effect seeds before first paint, so a deep-linked harness never flashes the home card.
   React.useLayoutEffect(() => {
     useNavStore.getState().seed(entryFromPath(searchParams().get("path")), liveMode())
   }, [])
@@ -92,8 +70,8 @@ export default function LandscapePreview() {
     <QueryClientProvider client={client}>
       <ApiProvider value={data}>
         <CapabilitiesProvider value={fakeCapabilities}>
-          {/* display:contents so the marker adds an anchor for the verification scripts without adding a
-              box to the layout the shell is being measured in. */}
+          {/* display: contents adds an anchor for the verification scripts without adding a box to the
+              layout being measured. */}
           <div data-civfix-fake-shell={signedOut ? "signed-out" : "signed-in"} style={{ display: "contents" }}>
             <AppShellFrame />
           </div>

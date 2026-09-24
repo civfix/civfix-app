@@ -1,29 +1,19 @@
 /**
- * EventSlotsBlock - the ATTENDEE-facing signup-slot board ("Check-in table", "Truck driver", ...). It is
- * the event page's PRIMARY commitment surface: the page no longer asks "are you going?", it asks "where
- * will you help?", so this block sits directly under the event header and its first bloom pill IS the
- * page's primary action. One row per slot; the trailing pill claims, switches or releases.
+ * The attendee-facing signup-slot board, the event page's primary commitment surface: one row per slot,
+ * and the trailing pill claims, switches or releases.
  *
- * MOUNTED BY EventDetailBody, which owns the guest sheet and the members push and hands them in as
- * `onGuestRsvp` / `onViewAll`.
+ * The viewer's slot is a SINGULAR resource (`PUT /cleanups/:id/slot`), so claim, switch and release are
+ * all `useClaimEventSlot(cleanupId)`: `{ slotId }` claims or moves, `{ slotId: null }` releases. Claiming
+ * also auto-RSVPs a non-member in the same server transaction, which is why holding a slot is what "going"
+ * means here.
  *
- * ONE MUTATION, NOT THREE. The viewer's slot is a SINGULAR resource (`PUT /cleanups/:id/slot`), so claim,
- * switch and release are all `useClaimEventSlot(cleanupId)`: `{ slotId }` claims or moves, `{ slotId: null }`
- * releases. There is no separate join call either - claiming auto-RSVPs a non-member in the same server
- * transaction, which is why holding a slot is what "going" means here.
+ * The disclosure is a sibling of the pill, never its parent: react-native-web renders `Pressable` as a
+ * `<button>`, and a nested button is invalid DOM the browser silently re-parents. Ownership comes off the
+ * server's `slot.mine`, never the roster: the roster decides who is LISTED, the DTO decides which row is
+ * YOURS.
  *
- * THE DISCLOSURE IS A SIBLING OF THE PILL, NEVER ITS PARENT. react-native-web renders `Pressable` as a
- * `<button>` and nesting one inside another is invalid DOM the browser silently re-parents - so the row
- * carries two side-by-side targets (tile+text expands, trailing pill commits) rather than one wrapping
- * the other. Every state's ownership comes off the server's `slot.mine` flag via `eventSlotsModel`, never
- * re-derived from the roster: the roster decides who is LISTED, the DTO decides which row is YOURS.
- *
- * THE ROSTER IS READ, NOT FETCHED PER ROW. `useCleanupAttendees` is the same query the page's "Who's
- * going" row already mounts, so expansion issues no request; `groupRosterBySlot` + `claimantsBySlot`
- * bucket it, and `slotPeopleView` applies the follow-only rule with honest counts off `slot.claimed`.
- *
- * No `Modal`, no `FlatList`, no inner `ScrollView` - the expansion grows the card inside the page's
- * existing scroller (see the same constraint on `SlotEditor`).
+ * No `Modal`, `FlatList` or inner `ScrollView`: the expansion grows the card inside the page's existing
+ * scroller (the same constraint as `SlotEditor`).
  */
 import React, { useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, Animated, LayoutAnimation, Platform } from "react-native"
@@ -113,7 +103,6 @@ export interface EventSlotsBlockProps {
   onViewAll: () => void
 }
 
-/** Minimal translator shape (the `t` from `useT`) for the row's copy helpers. */
 type Translate = (key: string, options?: Record<string, unknown>) => string
 
 /**
@@ -366,7 +355,7 @@ function SlotRow({
   /**
    * ANY claim is in flight, so EVERY row's pill is disabled. The viewer's slot is a singular resource:
    * two overlapping PUTs resolve last-RESPONSE-wins, not last-request, so the cache can end up marking a
-   * slot the server does not hold. Disabling only the tapped row left that race one tap wide.
+   * slot the server does not hold. Disabling only the tapped row would leave that race one tap wide.
    */
   busy: boolean
   /** THIS row is the one in flight - the dim and the a11y busy state, so only the tapped pill reacts. */
@@ -443,9 +432,8 @@ function SlotRow({
         accessibilityRole="button"
         accessibilityState={{ busy: pending }}
         accessibilityLabel={t(switching ? "row.switch_a11y" : "row.claim_a11y", { title: slot.title })}
-        // 30pt visual, 44pt effective target: this pill is the row's commitment action and the page's
-        // primary one, so the house 44pt rule is met with slop rather than a taller wrapper, which
-        // would grow every slot row. 7 on each edge takes the 30pt height to 44.
+        // This pill is the row's commitment action and the page's primary one, so the 44pt rule is met
+        // with slop rather than a taller wrapper, which would grow every slot row.
         hitSlop={PILL_HIT_SLOP}
         {...focusRingProps}
         style={({ pressed }) => [
@@ -875,8 +863,6 @@ const useStyles = makeThemedStyles((t) => ({
   block: {
     marginTop: t.space["4"],
   },
-  // The eyebrow row: heading left, the board summary right. The row owns the bottom margin the eyebrow
-  // used to carry, so the spacing above the strip / rows is unchanged.
   head: {
     flexDirection: "row",
     alignItems: "center",
@@ -884,7 +870,6 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["2"],
     marginBottom: t.space["2"],
   },
-  // The shared section-eyebrow recipe (EventDetailBody's `bringHead` / `linkedHead`).
   eyebrow: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyExtraBold,

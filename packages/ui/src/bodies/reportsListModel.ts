@@ -1,13 +1,6 @@
 /**
- * Pure behavior model for ReportsBody ("Your reports"), extracted so it is unit-testable without the RN body.
- */
-
-/**
- * Does a report match the in-list search query? Title + category + address, all case-folded.
- *
- * `categoryLabel` is passed in ALREADY LOCALIZED (the caller resolves `enums:category.*`, the same string the
- * row renders) rather than read from the hardcoded English REPORT_CATEGORY_LABELS map - otherwise a reader of
- * a non-English catalog searching the category name they can actually see on screen matched nothing.
+ * `categoryLabel` arrives already localized (the string the row renders) rather than from the English
+ * REPORT_CATEGORY_LABELS map, so a reader of any catalog can search the category name they see.
  */
 export function matchesReportQuery(
   report: { title?: string | null; addr?: string | null },

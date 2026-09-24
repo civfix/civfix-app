@@ -2,10 +2,9 @@
  * Guards for the ONE thing that keeps a handed-out certificate code revocable: the card seeds its local
  * state from `useMyServiceHoursCertificates()`.
  *
- * Before 0.38.1 the issued certificate existed only in component state written by `issue.mutate`'s
- * `onSuccess`, so switching off the Hours tab (or reloading) dropped the card back to `idle` - no code,
- * no summary, and no REVOKE, which the card's own comment calls the only control over a code already
- * handed to a registrar. The list hook shipped in the same release and had literally no call site.
+ * Without the seed, the issued certificate exists only in component state written by `issue.mutate`'s
+ * `onSuccess`, so switching off the Hours tab (or reloading) drops the card back to `idle`: no code, no
+ * summary, and no REVOKE, the only control over a code already handed to a registrar.
  *
  * Two rules the seed has to keep, both of them invisible to typecheck:
  *   1. It never overwrites a certificate THIS session issued (that one holds a live presigned url; a

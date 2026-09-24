@@ -1,8 +1,3 @@
-/**
- * Unit tests for the New-channel wizard's pure step gating (P5 Task 5.3): the identity step gates on a
- * non-blank name, the visibility step is always satisfiable (carries a default), and Create is allowed
- * with ZERO members (subscribers are optional).
- */
 import { describe, expect, it } from "vitest"
 import {
   canProceedFromChannelIdentity,

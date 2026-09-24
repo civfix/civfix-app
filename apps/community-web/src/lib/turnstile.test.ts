@@ -5,19 +5,14 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import type * as TurnstileModule from "@/lib/turnstile"
 
 /**
- * The Turnstile mint is the anonymous-report / guest-RSVP gate. Two properties are load-bearing and
- * regress silently in production (they cost a "we couldn't verify you're human" dead end, never a crash):
+ * Two properties regress silently in production, as a "we couldn't verify you're human" dead end rather
+ * than a crash: the widget must stay reachable and within its deadline while Cloudflare escalates a
+ * visitor to an interactive challenge, and the script loader must never hang (a <script> that already
+ * fired `load`, or a load with no window.turnstile behind it).
  *
- *  - the widget must be INTERACTIVE-CAPABLE. Cloudflare escalates a share of visitors to a challenge a
- *    human has to answer; a widget that cannot be reached or a deadline that expires mid-challenge
- *    resolves "" and the flow fails closed.
- *  - the script loader must never hang. A <script> tag that already fired `load` before the listener
- *    attached, or a load with no window.turnstile behind it, both used to end in a silent timeout.
- *
- * These tests run in the node env (no DOM), so `window`/`document` are stubbed with the minimal surfaces
- * the module touches: createElement + head/body appendChild + getElementById + element remove/append.
- * The module is re-imported per test (`loadModule`) because the script memo and the mint queue are
- * module state.
+ * The node env has no DOM, so `window`/`document` are stubbed with the minimal surfaces the module
+ * touches, and the module is re-imported per test because the script memo and the mint queue are module
+ * state.
  */
 
 // The sitekey is read at module scope, so it must be set BEFORE the module is imported (without one,

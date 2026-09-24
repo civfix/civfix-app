@@ -1,8 +1,5 @@
 /**
- * ServiceHoursCertificateCard - the "official transcript" export affordance inside the OWN-profile
- * Service Hours section.
- *
- * TWO-PHASE BY NECESSITY, not by taste (C11 / DP D11). "Prepare transcript" issues the document;
+ * Two-phase by necessity, not by taste: "Prepare transcript" issues the document;
  * a SECOND, real press opens it. On web `openExternal.open` is `window.open`, and a `window.open`
  * executed in a promise continuation after an `await` has lost its user-activation token - Chrome and
  * Safari block it silently. The second press restores a genuine gesture, and it costs nothing: it is
@@ -10,13 +7,13 @@
  *
  * The issued certificate lives in LOCAL component state and is never cached: its `url` is a presigned
  * R2 link that lapses in 15 minutes, so a persisted copy would be a link that looks live and is not.
- * Re-issuing is free - the server is idempotent on a fingerprint of the included ledger rows and hands
- * back the SAME code with a fresh URL - which is exactly what the `expired` branch offers.
+ * Re-issuing is free: the server is idempotent on a fingerprint of the included ledger rows and hands
+ * back the SAME code with a fresh URL, which is exactly what the `expired` branch offers.
  *
- * ...BUT IT IS SEEDED FROM THE LIST (0.38.1). Local-only state meant a tab switch or a reload dropped the
- * card back to `idle`: no code, no summary and - the part that mattered - no REVOKE, the only control
- * over a code already handed to a registrar. So `useMyServiceHoursCertificates()` seeds the newest
- * non-revoked row on mount. Those rows carry `url: null` deliberately (the list endpoint presigns
+ * The card is still seeded from the list: local-only state alone would drop it back to `idle` on a tab
+ * switch or a reload, losing the code, the summary and above all REVOKE, the only control over a code
+ * already handed to a registrar. So `useMyServiceHoursCertificates()` seeds the newest non-revoked row
+ * whenever the card holds nothing. Those rows carry `url: null` deliberately (the list endpoint presigns
  * nothing), which `certificateCardState` reads as `expired` - correct, and its "Refresh link" press is
  * the free fingerprint-reuse path. The seed never overwrites a certificate this session issued, and a
  * code revoked here is remembered so the still-warm list cache cannot resurrect it.
@@ -96,7 +93,7 @@ export function ServiceHoursCertificateCard({ totalHours }: ServiceHoursCertific
     )
   }, [myCertificates.data])
 
-  // Seed ONCE, and never over a certificate this session issued: that one still holds a live presigned
+  // Seed only when empty, never over a certificate this session issued: that one still holds a live presigned
   // url, while a listed row carries none (`url: null` -> the card's `expired` state -> "Refresh link").
   useEffect(() => {
     if (!latestLive) return
@@ -130,7 +127,6 @@ export function ServiceHoursCertificateCard({ totalHours }: ServiceHoursCertific
       {
         onSuccess: (res) => {
           setCertificate(res.certificate)
-          // Re-anchor the countdown to the moment the fresh link landed.
           setNow(Date.now())
         },
       },
@@ -222,7 +218,7 @@ export function ServiceHoursCertificateCard({ totalHours }: ServiceHoursCertific
             <Text style={styles.issuedTitle}>{t("transcript.ready")}</Text>
           </View>
 
-          {/* The code row: selectable text with the copy button BESIDE it, never wrapping it. */}
+          {/* The copy button sits BESIDE the code, never wrapping it: no nested Pressable in the sheet. */}
           <View style={styles.codeRow}>
             <Text
               style={[styles.code, webSelectableText]}
@@ -472,7 +468,6 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textSubtle,
   },
 
-  // Outline secondary pill (design family: height 44 / radius.pill / surface / 1.5 borderStrong).
   pill: {
     flexDirection: "row",
     alignItems: "center",

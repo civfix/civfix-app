@@ -88,9 +88,8 @@ echo "Wrote .env for target '${target}' (API ${api_url:-unset, resolved at runti
 
 # Bring node_modules into agreement with the lockfile BEFORE bundling anything. The Xcode archive
 # bundles JS straight out of node_modules, and nothing else in the pipeline notices when that is
-# behind: `pnpm-lock.yaml` can say @civfix/ui 0.51.1 while node_modules still holds 0.50.0, and
-# typecheck + tests go green because they resolve the same stale copy. That is how a "latest" archive
-# silently ships week-old @civfix/ui to TestFlight (hit exactly this on 2026-08-11).
+# behind the lockfile: typecheck and tests go green because they resolve the same stale copy, so the
+# archive would silently ship stale dependencies to TestFlight.
 # --frozen-lockfile so this can only correct node_modules, never quietly re-resolve the lockfile.
 echo "Syncing node_modules to pnpm-lock.yaml..."
 (cd ../.. && pnpm install --frozen-lockfile)

@@ -1,5 +1,5 @@
 /**
- * The decisions around the persistent host-event draft's lifetime, split out of CreateCleanupBody so
+ * The decisions around the persistent host-event draft's lifetime, kept out of CreateCleanupBody so
  * they unit-test without mounting the form (which pulls the map + geocoder in). Type-only imports keep
  * this module RN-free.
  */
@@ -12,9 +12,9 @@ import type { CleanupFormValue } from "./CleanupForm"
  * that will come back to it ("View details" on a linked report, then "Back to your event").
  *
  * Read the nav STACK, not just its top: a forward push leaves the create-cleanup entry on the stack
- * below the new top, while backing out pops it off entirely. The old test - "the top is null or still
- * create-cleanup" - kept the draft on every back-exit that landed on a parent detail (the report the
- * flow was launched from), so a stale draft then hijacked the next "Host an event".
+ * below the new top, while backing out pops it off entirely. Checking only the top would keep the draft
+ * on a back-exit that lands on a parent detail (the report the flow was launched from), and the stale
+ * draft would hijack the next "Host an event".
  */
 export function isGenuineHostExit(stack: readonly DetailEntry[]): boolean {
   return !stack.some((entry) => entry.kind === "create-cleanup")
@@ -75,13 +75,10 @@ export interface HostDraftMountPlan {
  * draft or resumes the live one - merging this mount's seed report into it when the flow was re-entered
  * through a different report - and compute the value that leaves. WRITES NOTHING.
  *
- * WHY IT IS SPLIT FROM THE WRITE. The form ran this step inside a lazy `useState` initializer, i.e. during
- * RENDER, so the store write landed mid-render. Every subscriber of the draft store then got told to
- * update while another component was rendering, and React refuses: "Cannot update a component
- * (`ReportDetailContent`) while rendering a different component (`HostForm`)". The launching report's body
- * is precisely such a subscriber ("Back to your event", "Add to event"), and `shell/PageStack.native`
- * RETAINS it mounted underneath the host page - so the violation fires on every single "Host an event"
- * opened from a report. Planning purely and committing from an effect keeps the first render identical.
+ * Plan in render, write in an effect: a store write during render makes React refuse to update the
+ * store's other subscribers, and the launching report's body is one ("Back to your event", "Add to
+ * event") that `shell/PageStack.native` keeps mounted under the host page. Planning purely keeps the first
+ * render identical.
  *
  * Merging (rather than clearing and starting over) is the whole point: everything the host typed
  * (title, description, bring list, SIGNUP SLOTS, chosen point) survives a "Host an event" tapped from
@@ -179,7 +176,7 @@ export interface HostSeedPointTarget {
  * Overwrite the meeting point of a LIVE host draft with an externally supplied coordinate, keeping every
  * typed field (title / description / bring / date / time / links) intact.
  *
- * WHY THIS EXISTS: `useCleanupDraft.begin()` is a NO-OP while a draft is already active, so the seed
+ * `useCleanupDraft.begin()` is a NO-OP while a draft is already active, so the seed
  * coordinate a mount hands to `emptyCleanupForm()` is silently discarded when the host already has a
  * draft in progress. The long-press flow must still land the pin the user just pressed, so the resumed
  * draft is PATCHED instead of begun.

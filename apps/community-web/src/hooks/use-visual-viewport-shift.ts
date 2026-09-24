@@ -3,17 +3,11 @@
 import * as React from "react"
 
 /**
- * The vertical offset a fixed, layout-viewport-centered dialog needs so it stays centered in the area
- * the soft keyboard leaves VISIBLE on mobile web.
- *
- * A `position:fixed` card is centered in the LAYOUT viewport, which the keyboard does not shrink, so a
- * lower input would sit under it. `window.visualViewport` reports the visible area, and the difference
- * between the two centers is the shift to apply (0 on desktop / with no keyboard). Sub-pixel jitter
- * (|shift| <= 1) is treated as 0 so the card does not twitch. We deliberately do NOT touch the global
- * viewport meta (interactive-widget), which would break the rn-web shell's useKeyboardInset math.
- *
- * `enabled` lets a dialog that is currently closed opt out (and reset to 0) without conditionally
- * calling the hook.
+ * A `position:fixed` dialog is centered in the layout viewport, which the mobile soft keyboard does not
+ * shrink, so a lower input would sit under the keyboard; the shift is the gap between the layout and
+ * visual viewport centers. Sub-pixel jitter is ignored so the card does not twitch. The global viewport
+ * meta (interactive-widget) is deliberately left alone: changing it breaks the rn-web shell's
+ * useKeyboardInset math.
  */
 export function useVisualViewportShift(enabled = true): number {
   const [shift, setShift] = React.useState(0)

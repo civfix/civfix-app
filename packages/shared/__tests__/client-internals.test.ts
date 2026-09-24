@@ -10,7 +10,7 @@ import { ErrorCode } from "../src/types/errors.js"
 
 /**
  * Focused unit tests for the typed client's pure helpers (fillPath / buildQuery / extractParams /
- * parseError) and, end-to-end, the GET path-param de-duplication fix: a key consumed as a PATH param
+ * parseError) and, end-to-end, GET path-param de-duplication: a key consumed as a PATH param
  * must NOT also be serialized into the query string.
  */
 
@@ -182,13 +182,10 @@ describe("createApiClient GET path-param de-duplication", () => {
     const client = createApiClient({ baseURL: "https://api.civfix.test", fetchImpl })
     await client.cleanupMessages({ cleanupId: UUID, limit: 30, before: "cursor-x" })
 
-    // The id must be in the PATH...
     expect(url).toContain(`/cleanups/${UUID}/messages`)
     const qs = url.includes("?") ? url.slice(url.indexOf("?") + 1) : ""
     const params = new URLSearchParams(qs)
-    // ...and NOT duplicated in the query as cleanupId.
     expect(params.has("cleanupId")).toBe(false)
-    // Remaining query fields still serialize.
     expect(params.get("limit")).toBe("30")
     expect(params.get("before")).toBe("cursor-x")
   })
@@ -207,7 +204,6 @@ describe("createApiClient GET path-param de-duplication", () => {
     const qs = url.includes("?") ? url.slice(url.indexOf("?") + 1) : ""
     const params = new URLSearchParams(qs)
     expect(params.has("reportId")).toBe(false)
-    // The non-path query field survives.
     expect(params.get("claimCode")).toBe("code-123")
   })
 

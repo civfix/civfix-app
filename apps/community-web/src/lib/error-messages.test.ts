@@ -3,15 +3,7 @@ import { AppError, ErrorCode } from "@civfix/shared"
 
 import { baselineErrorOverrides, errorMessage, genericErrorMessage } from "@/lib/error-messages"
 
-/**
- * errorMessage() is the shared router behind every surface's friendly error copy. After i18n it no longer
- * surfaces raw server message text (spec §6: errors map by code, not message): each surface passes
- * already-localized `overrides` / `fallback`, and the router only decides which to show. These lock in the
- * resolution order (override -> fallback), that toAppError normalization works on raw thrown values, and
- * that the `web-errors` baseline helpers translate the common codes via the `web-errors` catalog.
- *
- * `t` is faked to echo its key (prefixed) so assertions can see which catalog key was chosen.
- */
+/** `t` is faked to echo its key (prefixed) so assertions can see which catalog key was chosen. */
 const t = (key: string) => `t:${key}`
 
 describe("errorMessage", () => {

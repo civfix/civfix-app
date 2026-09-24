@@ -133,6 +133,7 @@
     "by_event_section": "By event",
     "by_event_empty": "No events in this range yet.",
     "by_event_a11y": "{{name}}, {{value}} sign-ups. Open this event's analytics.",
+    "by_event_unknown_a11y": "{{name}}, sign-ups not available. Open this event's analytics.",
     "capacity_line": "{{signups}} of {{capacity}} spots",
     "sources_caption": "{{rate}}% of {{views}} page views signed up"
   },
@@ -183,7 +184,7 @@
     "panel_hours": "Volunteer hours",
     "checkins_caption": "of {{registered}} sign-ups · {{count}} events held",
     "hours_caption": "logged by {{volunteers}} volunteers",
-    "hours_empty": "No hours logged in the last 30 days — log them from Host tools",
+    "hours_empty": "No hours logged in the last 30 days. Log them from Host tools.",
     "hours_bars_a11y": "Volunteer hours per event",
     "impact_resolved": "{{n}} resolved",
     "impact_posts": "{{n}} posts about your events"

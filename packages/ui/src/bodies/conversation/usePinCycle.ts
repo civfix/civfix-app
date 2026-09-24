@@ -1,6 +1,6 @@
 /**
- * PinnedBar (P3 Task 3.6): cyclic tap-to-jump over the room's pins (pinnedAt DESC). A tap jumps to
- * the ACTIVE pin via the P2 jump flow, THEN advances to the next older pin, wrapping to the newest
+ * PinnedBar's cyclic tap-to-jump over the room's pins (pinnedAt DESC). A tap jumps to the ACTIVE pin
+ * via the jump flow, THEN advances to the next older pin, wrapping to the newest
  * (nextPinIndex). The index clamps rather than resets when an unpin shrinks the list mid-cycle.
  */
 import { useCallback, useState } from "react"

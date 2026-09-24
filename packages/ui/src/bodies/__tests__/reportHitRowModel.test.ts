@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest"
 import { METERS_PER_MILE, reportHitRowModel } from "../reportHitRowModel"
 
-/** Downtown LA — the viewer. */
+/** The viewer, in downtown LA. */
 const HERE = { lat: 34.05, lng: -118.24 }
-/** +0.0058 deg lat = 644.93 m = 0.40 mi from HERE (the spec's "0.4 mi" example). */
+/** +0.0058 deg lat = 644.93 m = 0.40 mi from HERE. */
 const NEAR = { lat: 34.0558, lng: -118.24 }
 /** +0.1 deg lat = 11119.49 m = 6.909 mi from HERE (one-decimal branch). */
 const MID = { lat: 34.15, lng: -118.24 }

@@ -1,6 +1,7 @@
+import { EMPTY_VALUE } from "../i18n/emptyValue"
 import { FALLBACK_LOCALE } from "../i18n/resolveLocale"
 
-export const STAT_VALUE_UNKNOWN = "—"
+export const STAT_VALUE_UNKNOWN = EMPTY_VALUE
 
 export const STAT_TILE_WIDE_AT = 480
 

@@ -13,8 +13,8 @@ name: Deploy mobile (TestFlight)
 # release is deliberately a button, not a v* tag: the app's own version (app.config.js) is not
 # derived from the git tag and a web-only release must not produce a mobile build.
 #
-# The build runs `eas build --local` on this GitHub-hosted Mac through scripts/store-build.sh — the
-# same script a developer runs on a laptop — so CI and manual builds share ONE signing credential
+# The build runs `eas build --local` on this GitHub-hosted Mac through scripts/store-build.sh (the
+# same script a developer runs on a laptop), so CI and manual builds share ONE signing credential
 # store and ONE remote build-number counter (both held by EAS). The upload is a separate step,
 # scripts/store-upload.sh, straight from this runner to App Store Connect with `fastlane pilot
 # upload` and an App Store Connect API key held as secrets: `eas submit` is not used, because its
@@ -24,16 +24,16 @@ name: Deploy mobile (TestFlight)
 # never runs on pull requests.
 #
 # Required repository configuration (Settings -> Secrets and variables -> Actions):
-#   Secrets:  EXPO_TOKEN      — an access token for a robot user in the Expo org that owns the project.
-#             ASC_KEY_ID      — App Store Connect API key: the Key ID (a key made for CI, Developer role).
-#             ASC_ISSUER_ID   — the Issuer ID from the same App Store Connect API page.
-#             ASC_PRIVATE_KEY — the full contents of the downloaded AuthKey_<KEY_ID>.p8 file.
+#   Secrets:  EXPO_TOKEN:      an access token for a robot user in the Expo org that owns the project.
+#             ASC_KEY_ID:      App Store Connect API key: the Key ID (a key made for CI, Developer role).
+#             ASC_ISSUER_ID:   the Issuer ID from the same App Store Connect API page.
+#             ASC_PRIVATE_KEY: the full contents of the downloaded AuthKey_<KEY_ID>.p8 file.
 # Required on EAS (Project credentials, iOS): a distribution certificate + App Store provisioning
 # profile, an App Store Connect API key (Service credentials, which EAS uses to manage that signing
-# material — uploads no longer go through it), and a remote build number initialised
-# with `eas build:version:set -p ios` above the highest build already in App Store Connect — an
-# unset counter is seeded from app.config.js's ios.buildNumber, and a too-low number only fails at
-# upload time, after the whole build.
+# material; the upload does not use it), and a remote build number initialised with
+# `eas build:version:set -p ios` above the highest build already in App Store Connect. An unset
+# counter is seeded from app.config.js's ios.buildNumber, and a too-low number only fails at upload
+# time, after the whole build.
 #
 # The user-facing version (`version` in app.config.js) is the one thing EAS does not increment, and
 # App Store Connect refuses every upload of a version it has already approved. After an App Store

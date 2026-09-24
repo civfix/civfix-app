@@ -6,10 +6,8 @@ import {
 } from "./common.js"
 
 /**
- * User-facing "report this content" flow (POST /content-reports): a citizen flags a piece of UGC (a
- * report, a comment, a chat message, an event, a profile, or a photo) with a reason and optional free-text
- * detail. The subject is identified by (subjectType, subjectId); the server fans this into the moderation
- * queue. Strict - the wire contract for the endpoint registry.
+ * POST /content-reports: a citizen flags a piece of UGC with a reason and optional free-text detail.
+ * The subject is identified by (subjectType, subjectId), which the server fans into the moderation queue.
  */
 export const ReportContentRequestSchema = z
   .object({

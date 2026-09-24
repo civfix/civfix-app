@@ -1,22 +1,15 @@
 /**
- * The shared profile tab bar - ONE control on both profiles (own `ProfileView`, other-person
- * `PersonDetailBody`). The pill track is the existing house vocabulary, lifted from
- * `PersonDetailBody.styles.sectionTabs`, which is also what `ProfileEventsSection` and
- * `CleanupForm.KindSelector` already use.
+ * No tab-swap motion: the swap is a content replace, and a slide here would fight `BodyTransition`.
  *
- * MOTION: none. The tab swap is a content replace, and a slide here would fight `BodyTransition`.
- *
- * `minHeight`, NOT `height`: "Publicaciones" is not the only label that needs a second line of headroom
+ * `minHeight`, not `height`: "Publicaciones" is not the only label that needs a second line of headroom
  * on a 4-up track at 375pt, and a fixed height clips it instead of growing.
  *
- * THE TRACK IS LABELLED because it is not the only tablist on screen: with `events` active, the profile
- * renders `ProfileEventsSection`, which opens its OWN `accessibilityRole="tablist"` (Hosting / Going)
- * directly underneath. Two nested tab groups, one of them unnamed, is what a screen reader announces
- * without `tabs.a11y` here - the inner one has carried `events.section` since it shipped.
+ * The track is labelled because it is not the only tablist on screen: with `events` active,
+ * `ProfileEventsSection` opens its own tablist (Upcoming / Past) directly underneath, labelled
+ * `events.section`. Without `tabs.a11y` a screen reader would announce two nested tab groups, one unnamed.
  *
- * The explicit `aria-selected` beside `accessibilityState` is not belt-and-braces: react-native-web drops
- * `accessibilityState` for the `tab` role, so without it a screen reader on web announces four tabs and
- * none of them selected. Same fix the feed's filter tabs already carry.
+ * react-native-web drops `accessibilityState` for the `tab` role, so the explicit `aria-selected` is
+ * what lets a web screen reader announce which tab is selected.
  */
 import React from "react"
 import { View, Pressable } from "react-native"
@@ -51,7 +44,7 @@ export function ProfileTabBar({ model, onSelect }: ProfileTabBarProps) {
           accessibilityState={{ selected: tab.selected }}
           {...({ "aria-selected": tab.selected } as object)}
           {...focusRingProps}
-          // 34pt of pill + 5pt top/bottom = the 44pt floor, without growing the track. VERTICAL only:
+          // 34pt of pill + 5pt top/bottom reaches the 44pt floor without growing the track. Vertical only:
           // the tabs are `flex: 1` neighbours, so horizontal slop would overlap the next tab's region.
           hitSlop={{ top: 5, bottom: 5 }}
           style={({ pressed }) => [
@@ -85,7 +78,6 @@ const useStyles = makeThemedStyles((t) => ({
     minWidth: 0,
     alignItems: "center",
     justifyContent: "center",
-    // minHeight, not height: locale wrap headroom.
     minHeight: 34,
     paddingVertical: t.space["2"],
     paddingHorizontal: 4,

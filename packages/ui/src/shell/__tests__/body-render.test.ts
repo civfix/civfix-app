@@ -1,22 +1,9 @@
 /**
- * Body-render TOTALITY test (Stage 4 review fix).
- *
- * Guards the class of gap this fix closed: a user-reachable surface (a list `View` or a detail
- * `DetailKind`) silently falling through BodyRouter to the placeholder Stub. It asserts that the pure
- * routing tables (`VIEW_BODY` / `DETAIL_BODY` in ../bodyRoutes) resolve EVERY reachable view + kind to a
- * REAL body (a non-`"stub"` BodyId), with the sole documented exception of the dead `new-msg` kind.
- *
- * WHY THE TABLES, NOT A RENDER: the body components import react-native, whose Flow-typed entry does not
- * load under the package's plain vitest/node setup (no RN renderer / jsdom). So instead of rendering, the
- * routing DECISION was factored into ../bodyRoutes - a pure module naming each target by a `BodyId` tag,
- * importing no RN - and BodyRouter maps that BodyId to the RN component. This test consults the pure
- * tables structurally: it is exactly as strong as a render assertion for "does a real body resolve?" (a
- * non-stub BodyId == BodyRouter renders that real body), while loading with zero RN.
- *
- * The tables are typed `Record<View, BodyId>` / `Record<DetailKind, BodyId>`, so TS already enforces
- * totality at compile time; this test ADDS the runtime guarantee that none of those entries is a stub
- * (TS cannot express "non-stub"), and that the table key sets match the canonical View/DetailKind arrays
- * exactly (so a table that drifts from the union is caught even if a future type change masked it).
+ * Guards a user-reachable view or detail kind silently falling through BodyRouter to the placeholder
+ * Stub. The body components import react-native, which does not load under this package's node vitest, so
+ * the routing decision lives in the pure ../bodyRoutes tables and this test asserts on them: a non-stub
+ * BodyId is exactly what BodyRouter renders as a real body. TS already enforces key totality; this adds
+ * "non-stub" (which TS cannot express) and exact key-set equality with the canonical arrays.
  */
 import { describe, it, expect } from "vitest"
 import { VIEW_BODY, DETAIL_BODY, type BodyId } from "../bodyRoutes"
@@ -25,7 +12,6 @@ import { ALL_VIEWS, ALL_DETAIL_KINDS, DEAD_DETAIL_KINDS } from "../../nav"
 
 const DEAD = new Set<string>(DEAD_DETAIL_KINDS)
 
-/** A BodyId is a "real body" iff it is not the placeholder stub. */
 function isRealBody(id: BodyId): boolean {
   return id !== "stub"
 }
@@ -44,7 +30,7 @@ describe("BodyRouter routing tables are total over every reachable surface", () 
       const id = DETAIL_BODY[kind]
       expect(id, `kind "${kind}" must map to a body`).toBeDefined()
       if (DEAD.has(kind)) {
-        // A dead kind (no producer) is allowed - and expected - to be a stub.
+        // A dead kind (no producer) is expected to be a stub.
         expect(isRealBody(id), `dead kind "${kind}" should be a stub`).toBe(false)
       } else {
         expect(isRealBody(id), `kind "${kind}" resolved to a STUB, not a real body`).toBe(true)
@@ -60,13 +46,13 @@ describe("BodyRouter routing tables are total over every reachable surface", () 
     expect(Object.keys(DETAIL_BODY).sort()).toEqual([...ALL_DETAIL_KINDS].sort())
   })
 
-  it("pinned-messages (P3 Task 3.8) resolves to its OWN body id (the pinnedOnly ConversationBody)", () => {
+  it("pinned-messages resolves to its OWN body id (the pinnedOnly ConversationBody)", () => {
     // The pinned list is a distinct BodyId so BodyRouter can pass pinnedOnly; it must not silently
     // alias the plain "conversation" body (which would render a live thread with a composer).
     expect(DETAIL_BODY["pinned-messages"]).toBe("pinnedMessages")
   })
 
-  it("group-info (P4 Task 4.8) resolves to its OWN body id (GroupInfoBody)", () => {
+  it("group-info resolves to its OWN body id (GroupInfoBody)", () => {
     // The group management surface is a distinct body - it must not alias the roster-only
     // "members" body (no actions/roles there) or the conversation.
     expect(DETAIL_BODY["group-info"]).toBe("groupInfo")
@@ -82,10 +68,9 @@ describe("BodyRouter routing tables are total over every reachable surface", () 
     expect(DETAIL_BODY.saves).toBe("saves")
   })
 
-  it("routes person to its own body, rendered as a FULL page (P8)", () => {
-    // The routing half was always true; the LAYOUT half is the P8 flip and is what this locks. `person`
-    // stopped being a "scroll" pull-up and became a full PAGE on the shell's overlay layer, which is what
-    // gives PersonDetailBody its own 52pt header and lets its child drill-downs ride over it as sheets.
+  it("routes person to its own body, rendered as a FULL page", () => {
+    // As a full page on the overlay layer, PersonDetailBody owns its 52pt header and its child
+    // drill-downs ride over it as sheets.
     expect(DETAIL_BODY.person).toBe("personDetail")
     expect(BODY_LAYOUT.person).toBe("full")
   })

@@ -1,11 +1,6 @@
 /**
- * Filter-store persistence storage - NATIVE seam.
- *
- * Mirrors filterStorage.web.ts but backs the zustand `persist` StateStorage with MMKV (synchronous
- * on-device key/value, the same engine the mobile app already uses for its query cache). MMKV is a native
- * module, so we construct it lazily and tolerate a construction failure (e.g. an `expo export` static eval
- * with no native module) by degrading to an in-memory Map - exactly like the mobile app's own
- * src/lib/mmkv.ts. Metro resolves `./filterStorage` to THIS file on native; web never bundles it.
+ * MMKV is a native module, so construction is tolerated failing (an `expo export` static eval) by
+ * degrading to an in-memory map, as the mobile app's own src/lib/mmkv.ts does.
  */
 import { MMKV } from "react-native-mmkv"
 import type { StateStorage } from "zustand/middleware"
@@ -31,10 +26,9 @@ function memoryStore(): KV {
 
 function createStore(): KV {
   try {
-    // Dedicated instance id so the filter prefs never collide with the app's other MMKV stores.
     return new MMKV({ id: "civfix.ui.filters" })
   } catch {
-    // No native module (static export eval): degrade to a memory store so imports never crash.
+    // No native module during an `expo export` static eval.
     return memoryStore()
   }
 }

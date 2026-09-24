@@ -73,7 +73,6 @@ export function buildQuery(query?: Record<string, unknown>, omitKeys?: ReadonlyS
     if (Array.isArray(value)) {
       for (const v of value) sp.append(key, String(v))
     } else if (typeof value === "object") {
-      // Objects (bbox, near, ...) are JSON-encoded so they survive a query string.
       sp.append(key, JSON.stringify(value))
     } else {
       sp.append(key, String(value))
@@ -144,20 +143,19 @@ export function resetResponseWarnings(): void {
 }
 
 /**
- * Run a 2xx body through the endpoint's response schema so the registry's compatibility rules actually
- * apply on the read path: the `.default()`s and `.catch()`es the DTOs document ("defaults so a server
- * that does not yet supply it, and already-built consumers, still parse") only exist if something
- * parses. Without this the inferred types lie whenever the deployed server is older than the client.
+ * Run a 2xx body through the endpoint's response schema so the DTOs' `.default()`s and `.catch()`es
+ * actually apply on the read path; without this the inferred types lie whenever the deployed server is
+ * older than the client.
  *
- * Never throws: a body that does NOT match the schema is passed through raw (exactly the pre-parsing
- * behavior) after a single console.warn per endpoint, so an unexpected server shape degrades instead of
- * breaking every call. Exported for unit testing.
+ * Never throws: a body that does NOT match the schema is passed through raw after a single console.warn
+ * per endpoint, so an unexpected server shape degrades instead of breaking every call. Exported for unit
+ * testing.
  */
 export function parseResponse<Res>(
   endpoint: EndpointDef<z.ZodTypeAny | null, z.ZodTypeAny>,
   data: unknown,
 ): Res {
-  // No body (204, or an unparsable/empty payload): nothing to validate, keep the legacy passthrough.
+  // No body (204, or an unparsable/empty payload): nothing to validate.
   if (data === undefined) return data as Res
   const parsed = endpoint.response.safeParse(data)
   if (parsed.success) return parsed.data as Res

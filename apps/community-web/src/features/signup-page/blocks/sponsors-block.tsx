@@ -16,7 +16,7 @@ export function SponsorsBlock({ block }: { block: SponsorsBlockData }) {
       <ul className="signup-sponsors">
         {block.entries.map((entry, index) => {
           const label = entry.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
+            // eslint-disable-next-line @next/next/no-img-element -- next/image optimization is unavailable under output: "export"
             <img src={entry.logoUrl} alt={entry.name} />
           ) : (
             <span>{entry.name}</span>

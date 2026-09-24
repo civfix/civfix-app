@@ -1,19 +1,12 @@
 /**
- * useKeyboardAnchor (native seam) — THE canonical keyboard primitive.
+ * useKeyboardAnchor (native seam): the canonical keyboard primitive.
+ *  1. Ownership: a surface only rises for a keyboard it raised, enforced on the UI thread (`enabledSv`).
+ *  2. Timebase: reanimated's iOS notification path estimates progress against a hard-coded 0.48s /
+ *     0.496s; re-parameterising its fitted curves onto the OS-reported duration removes the trail-then-snap.
+ *  3. Rest offset: the surface lands exactly `gap` above the keyboard top.
  *
- * WHAT IT FIXES over the old `keyboard.height`-times-a-flag styles:
- *  1. OWNERSHIP. A surface only rises for a keyboard IT raised. The gate is enforced on the UI thread
- *     (`enabledSv`), not merely in the pure reducer — without that, the continuous mirror below
- *     re-publishes a foreign keyboard's live height the instant `owned` clears and the dock rides up for
- *     every TextField in the app.
- *  2. TIMEBASE. reanimated's iOS notification path estimates the keyboard's progress against a
- *     HARD-CODED 0.48s / 0.496s. The OS reports the real duration on the event; we re-parameterise
- *     reanimated's own fitted curves (see keyboardInsetModel) onto THAT, which kills the trail-then-snap.
- *  3. REST OFFSET. The surface lands exactly `gap` above the keyboard top, because the pt already
- *     between its VISIBLE bottom edge and the window bottom are subtracted.
- *
- * THREADING INVARIANT (frozen, see useKeyboardAnchor.types.ts): `lift` is per-frame on the UI thread;
- * `reserved` is per-transition on the JS thread. Never conflate them.
+ * `lift` is per-frame on the UI thread and `reserved` is per-transition on the JS thread (see
+ * useKeyboardAnchor.types.ts); never conflate them.
  */
 import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
@@ -71,9 +64,9 @@ export function useKeyboardAnchor({
 
   const overlap = useSharedValue(0)
   const owned = useSharedValue(0)
-  /** THE UI-THREAD OWNERSHIP GATE. Without this the continuous mirror below re-publishes a foreign
-   *  keyboard's live height the instant `owned` clears, and the dock rides up for every TextField in
-   *  the app. The pure reducer CANNOT express this — it is a UI-thread invariant. */
+  /** Without this UI-thread gate the continuous mirror re-publishes a foreign keyboard's live height the
+   *  instant `owned` clears, and the dock rides up for every TextField in the app. The pure reducer cannot
+   *  express it. */
   const enabledSv = useSharedValue(enabled ? 1 : 0)
   const systemBarSv = useSharedValue(systemBarInset)
   const restSv = useSharedValue(restOffset)
@@ -94,8 +87,8 @@ export function useKeyboardAnchor({
   const systemBarRef = useRef(systemBarInset)
   const restOffsetRef = useRef(restOffset)
   const gapRef = useRef(gap)
-  // Keyboard events arrive between renders; they read the last COMMITTED geometry through these refs,
-  // which also keeps `apply` and the listeners below stable across layout changes.
+  // Keyboard events arrive between renders, so they read the last committed geometry through refs,
+  // which also keeps `apply` and the listeners stable across layout changes.
   useLayoutEffect(() => {
     winRef.current = windowH
     systemBarRef.current = systemBarInset
@@ -115,36 +108,26 @@ export function useKeyboardAnchor({
     [restingWindowHeight],
   )
 
-  /** The OVERLAP currently reserved (not the derived lift) — replayed into `will-hide` as `reserveHint`
-   *  so the reservation is HELD through the close animation instead of collapsing a frame after blur. */
+  /** An overlap, not a lift: replayed into `will-hide` so the reservation holds through the close. */
   const reserveOverlapRef = useRef(0)
-  /** The TARGET of the close currently travelling, or null when nothing is. TWO jobs, one record:
-   *  it is the `closing` flag `reduceKeyboard` needs to CARRY the reservation through the blur, and it is
-   *  the dedupe key that stops that same blur restarting the will-hide's timing. Set when `apply` starts a
-   *  CLOSING animation; cleared on every landing (duration <= 0) and by any non-closing animation. */
+  /** One record for two jobs, so they can never disagree: the `closing` flag that carries the
+   *  reservation through the blur, and the dedupe key that stops that blur restarting the close. */
   const inFlightCloseRef = useRef<number | null>(null)
-  /** Replay buffer: iOS can deliver keyboardWillShow BEFORE React commits `focused: true`. */
+  /** iOS can deliver keyboardWillShow before React commits `focused: true`. */
   const lastWillShow = useRef<{ overlap: number; duration: number; at: number } | null>(null)
   const [engaged, setEngaged] = useState(false)
   const [reserved, setReserved] = useState(0)
 
-  // (A) CONTINUOUS MIRROR — GATED. reanimated's height is the genuine per-frame system value on
-  //     Android (WindowInsetsAnimationCompat onProgress) and during an iOS INTERACTIVE dismissal (KVO
-  //     on the keyboard view's center, which publishes the LIVE frame). Only the iOS NOTIFICATION path
-  //     is an estimate, and `owned` masks that. `enabledSv` masks a keyboard we do not own — on BOTH
-  //     platforms, which also covers Android where no will* listener is registered.
+  // reanimated's height is the genuine per-frame value on Android (WindowInsetsAnimationCompat) and
+  // during an iOS interactive dismissal; only the iOS notification path is an estimate, and `owned` masks
+  // that. `enabledSv` masks a keyboard we do not own on both platforms.
   useAnimatedReaction(
     () => kb.height.value,
     (h) => {
       if (enabledSv.value === 0) {
-        // `owned` is checked on THIS branch too. Losing ownership while the keyboard is still up runs
-        // reduceKeyboard's ownership/`enabled:false`/`engaged` case, which returns duration =
-        // keyboardHandoffMs — so `apply` sets owned = 1 and starts a withTiming(0) release. A plain
-        // assignment to a shared value CANCELS a running reanimated animation, and this reaction fires on
-        // every frame kb.height moves, so an unconditional `overlap.value = 0` here killed that release on
-        // its very first frame: the surface snapped ~300pt down in one frame and then sat hidden behind
-        // the still-descending keyboard. `apply` clears `owned` on every duration<=0 landing, so the
-        // foreign-keyboard mask this gate exists for is untouched.
+        // Losing ownership with the keyboard up starts an animated withTiming(0) release with owned = 1.
+        // A plain shared-value assignment cancels a running animation and this fires every frame, so an
+        // unconditional reset would snap the surface down behind the still-descending keyboard.
         if (owned.value === 0) overlap.value = 0
         return
       }
@@ -162,10 +145,8 @@ export function useKeyboardAnchor({
     setEngaged(cmd.phase === "engaged")
     reserveOverlapRef.current = cmd.reserveOverlap
     setReserved(keyboardLift(cmd.reserveOverlap, restOffsetRef.current, gapRef.current))
-    // ONE CLOSE, ONE CURVE. The phase + reservation above STILL apply — that is exactly how the mid-close
-    // blur carries the reservation (reduceKeyboard's `closing` branch). Only the ANIMATION command is
-    // dropped, because reanimated would restart the ease-out from the current value and re-accelerate the
-    // dock while the real keyboard is still decelerating on the OS curve.
+    // The phase and reservation above still apply; only the animation is dropped, because reanimated
+    // would restart the ease-out and re-accelerate the dock while the keyboard is still decelerating.
     if (isRedundantClose(cmd, inFlightCloseRef.current)) return
     if (cmd.duration <= 0) {
       inFlightCloseRef.current = null
@@ -182,9 +163,8 @@ export function useKeyboardAnchor({
     })
   }, [overlap, owned])
 
-  // (C) iOS NOTIFICATION TRANSITIONS, re-timed off the OS's OWN reported duration (ms).
-  //     Android is NOT registered for will*: its duration is documented "always 0" and its insets
-  //     animation is already frame-exact through (A).
+  // Android is not registered for will*: its duration is documented as always 0 and its insets
+  // animation is already frame-exact through the mirror above.
   useEffect(() => {
     const subs: { remove(): void }[] = []
     const dur = (e: KeyboardEvent) =>
@@ -243,12 +223,9 @@ export function useKeyboardAnchor({
     return () => subs.forEach((s) => s.remove())
   }, [apply, measuredOverlap])
 
-  // (D) OWNERSHIP CHANGES.
-  //     `enabledRef` is assigned SYNCHRONOUSLY here (not during render) so an in-flight willShow can be
-  //     replayed. `Keyboard.metrics()` returns `_currentlyShowing?.endCoordinates`, which RN assigns ONLY
-  //     in its keyboardDidShow listener — it is UNDEFINED for the whole show animation. Without the
-  //     replay, focusing after a willShow means nothing moves until didShow, then a single-frame 317pt
-  //     teleport. The replay window is generous (600ms) because it is bounded by keyboardMaxMs anyway.
+  // An in-flight willShow is replayed because `Keyboard.metrics()` is undefined for the whole show
+  // animation (RN assigns it only in keyboardDidShow): without the replay, focusing after a willShow moves
+  // nothing until didShow and then teleports the surface in one frame.
   useEffect(() => {
     enabledRef.current = enabled
     enabledSv.value = enabled ? 1 : 0
@@ -272,26 +249,18 @@ export function useKeyboardAnchor({
         enabled,
         liveOverlap: live,
         handoffMs: motion.keyboardHandoffMs,
-        // Derived from the SAME record the dedupe uses, so "carry the reserve" and "do not restart the
-        // travel" can never disagree. Order of record: iOS posts keyboardWillHide (which starts the close
-        // and sets this ref) BEFORE the field's blur re-runs this effect.
+        // iOS posts keyboardWillHide, which sets this ref, before the field's blur re-runs this effect.
         closing: inFlightCloseRef.current !== null,
         reserveHint: reserveOverlapRef.current,
       }),
       !enabled,
     )
-    // NO setTimeout releasing `owned`: `enabledSv` now holds the mirror off, so there is nothing to release.
   }, [apply, enabled, enabledSv, measuredOverlap])
 
   const lift = useDerivedValue(() => keyboardLift(overlap.value, restSv.value, gapSv.value))
   const liftStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -lift.value }] }))
-  // Two deliberate widenings so the seam matches the FROZEN cross-platform contract:
-  //  - `useAnimatedStyle` returns reanimated's opaque AnimatedStyleHandle (4.4.1) / plain style (4.1.7);
-  //    the contract publishes `StyleProp<ViewStyle>` because the web seam returns a plain CSS object.
-  //    Consumers must hand it to an Animated.View (or <KeyboardAnchorView>), never to a plain View.
-  //  - `useDerivedValue` returns a Readonly<SharedValue>; the contract publishes
-  //    `SharedValue<number> | null` so a consumer can compose it into its OWN worklet. Read-only in
-  //    practice — nothing may write to it.
+  // Widened to the cross-platform contract: `liftStyle` must go to an Animated.View (or
+  // <KeyboardAnchorView>), never a plain View, and `lift` is read-only in practice.
   return {
     liftStyle: liftStyle as unknown as StyleProp<ViewStyle>,
     lift: lift as unknown as SharedValue<number>,

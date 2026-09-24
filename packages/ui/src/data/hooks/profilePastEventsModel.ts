@@ -3,12 +3,10 @@
  * state - so they can be unit-tested in this package's node-environment vitest, which cannot render a
  * hook. `useProfilePastEvents` is the thin wiring around them.
  *
- * THE TRAP THIS EXISTS TO CLOSE: react-query's `hasNextPage` answers "is there a page AFTER the ones I
- * already hold", and it is `false` whenever the infinite query holds no pages at all. Deriving the
- * affordance from it directly therefore hid the control for the entire duration of the FIRST fetch (the
- * only fetch most viewers ever trigger), and - because the query is `retry: false` - hid it FOREVER once
- * that first fetch failed, stranding the rest of someone's civic history behind an inert error string.
- * "Exhausted" is a SUCCESSFUL page with no cursor after it, never the absence of pages.
+ * react-query's `hasNextPage` answers "is there a page AFTER the ones I already hold" and is `false`
+ * whenever the infinite query holds no pages. Deriving the control from it would hide it for the whole
+ * FIRST fetch and, because the query is `retry: false`, forever once that fetch failed. "Exhausted" is a
+ * SUCCESSFUL page with no cursor after it, never the absence of pages.
  */
 
 export interface ProfilePastEventsState {

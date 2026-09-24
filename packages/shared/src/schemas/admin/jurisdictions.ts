@@ -7,17 +7,14 @@ import { AdminListQuerySchema } from "./common.js"
 import { DiscoveryContactSchema, PerCategoryCountsSchema } from "./discovery.js"
 
 /**
- * Jurisdiction routing contacts + the jurisdiction directory. "Save & route" (the core discovery
- * action) persists a per-category contact map + default email(s) + a reporting form URL for a GEOID,
- * routes pending pins, and enqueues throttled outreach. The directory lists every jurisdiction's
- * routing posture (org, dept, email/form, method, status, coverage, lastRouted). See enumeration 2.B,
- * endpoints #13/#14/#15.
+ * Jurisdiction routing contacts and the jurisdiction directory. Saving contacts for a GEOID also routes
+ * its pending pins and enqueues throttled outreach.
  */
 
 /**
- * Save routing contacts for a GEOID and route ("Save & route"). `contacts` is the per-category email
- * map (one email per report category, nullable to clear a category). `defaultEmails` are the
- * fallback/all-categories addresses (the legacy contactEmails[]). `formUrl` is the city's reporting
+ * Save routing contacts for a GEOID and route. `contacts` is the per-category email map (one email per
+ * report category, nullable to clear a category). `defaultEmails` are the fallback/all-categories
+ * addresses. `formUrl` is the city's reporting
  * form fallback. At least one contact should be filled for routing; that is enforced server-side.
  */
 export const SaveContactsRequestSchema = z
@@ -59,9 +56,9 @@ export const JurisdictionContactStatusSchema = z.enum(["verified", "pending", "b
 export type JurisdictionContactStatus = z.infer<typeof JurisdictionContactStatusSchema>
 
 /**
- * One jurisdiction-directory row (the "Jurisdictions directory" companion to discovery; design
- * govContacts[*]). `coverage` is a human label of which categories route ("All categories", "Trash,
- * Hazard, Water"). `lastRouted` is when a pin last routed to this contact (nullable if never).
+ * One jurisdiction-directory row. `coverage` is a human label of which categories route ("All
+ * categories", "Trash, Hazard, Water"). `lastRouted` is when a pin last routed to this contact (null if
+ * never).
  */
 export const JurisdictionDirectoryDTOSchema = z
   .object({
@@ -88,7 +85,7 @@ export const JurisdictionDirectoryDTOSchema = z
     // When an operator flagged this jurisdiction for review (ISO/relative string), or null if not flagged.
     flaggedAt: z.string().nullable(),
     // The jurisdiction's discussion @handle (the "@sf" mentionable in a report discussion), or null when
-    // unset. Editable from the directory detail (PATCH handle); seeds the detail's handle field.
+    // unset.
     handle: z.string().nullable(),
     // ISO timestamp of the OLDEST report still waiting on a routing contact in this jurisdiction, or null
     // when nothing is waiting. Backs the "oldest" sort + the "waiting since" age chip in the directory.
@@ -108,9 +105,9 @@ export type JurisdictionDirectoryDTO = z.infer<typeof JurisdictionDirectoryDTOSc
  * page it. `routed` = any contact on file (email or form); `none` = nothing yet (the operator action
  * list); `needs_mapping` = has waiting reports AND no routing contact (the "map these next" worklist).
  * `sort` accepts `population` (default, biggest first), `reports` (most waiting first), `name` (A→Z), or
- * `oldest` (longest-waiting report first). `layer` narrows to one type — `state` | `county` | `place`
- * (city) | `federal` | `tribal` — and combines with `filter` (the two are independent dimensions); omit
- * it for every type.
+ * `oldest` (longest-waiting report first). `layer` narrows to one type: `state`, `county`, `place`
+ * (city), `federal` or `tribal`. It combines with `filter` (the two are independent dimensions); omit it
+ * for every type.
  */
 export const JurisdictionListQuerySchema = AdminListQuerySchema.extend({
   filter: z.enum(["all", "email", "form", "none", "routed", "needs_mapping"]).optional(),
@@ -136,8 +133,8 @@ export type JurisdictionDirectoryFacets = z.infer<typeof JurisdictionDirectoryFa
  * The directory page. `nextCursor` drives infinite scroll (null at the end). `total` is the count of
  * jurisdictions matching the search, type, and active routing filter (so the header shows the real count,
  * not the page size); `facets` backs the routing chip split for the search/type result. Both are optional
- * and only returned on the first page (cursor absent), so a mid-scroll page omits them and a pre-this-change
- * client still parses.
+ * and only returned on the first page (cursor absent), so a mid-scroll page omits them and an older client
+ * still parses.
  */
 export const JurisdictionDirectoryResponseSchema = pageResponse(JurisdictionDirectoryDTOSchema).extend({
   total: z.number().int().nonnegative().optional(),
@@ -145,7 +142,7 @@ export const JurisdictionDirectoryResponseSchema = pageResponse(JurisdictionDire
 })
 export type JurisdictionDirectoryResponse = z.infer<typeof JurisdictionDirectoryResponseSchema>
 
-/** A GeoJSON Polygon/MultiPolygon geometry (passthrough — only `type`/`coordinates` are read clientside). */
+/** A GeoJSON Polygon/MultiPolygon geometry (passthrough; only `type`/`coordinates` are read clientside). */
 export const GeoJsonGeometrySchema = z
   .object({
     type: z.string(),
@@ -176,10 +173,7 @@ export const JurisdictionGeometryResponseSchema = z
   .strict()
 export type JurisdictionGeometryResponse = z.infer<typeof JurisdictionGeometryResponseSchema>
 
-/**
- * Patch a jurisdiction's contact / notes / reporting-form URL ("Fix routing contact" from Mail, and
- * inline edits in the directory). All fields optional; only the provided ones change.
- */
+/** Patch a jurisdiction's contact / notes / reporting-form URL. Only the provided fields change. */
 export const PatchJurisdictionRequestSchema = z
   .object({
     geoid: z.string(),
@@ -187,8 +181,7 @@ export const PatchJurisdictionRequestSchema = z
     defaultEmails: z.array(z.string().email()).optional(),
     formUrl: z.string().url().nullable().optional(),
     notes: z.string().max(2000).optional(),
-    // Flag / unflag this jurisdiction for operator review (the Directory "Flag for review" action).
-    // `flagged: true` stamps flagged_at + stores flagReason; `flagged: false` clears both.
+    // `flagged: true` stamps flagged_at and stores flagReason for operator review; `false` clears both.
     flagged: z.boolean().optional(),
     flagReason: z.string().max(500).optional(),
     // Set / clear the discussion @handle. Normalized + shape-checked by JurisdictionHandleSchema; the

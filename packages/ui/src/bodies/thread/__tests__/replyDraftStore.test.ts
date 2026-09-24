@@ -1,8 +1,6 @@
 /**
- * replyDraftStore - the keyed reply draft.
- *
- * The point of this store is that two threads can NEVER see each other's text (the single global
- * `postComposerStore` could, and did), that an unfinalized upload can never be persisted into a draft
+ * The point of this store is that two threads can NEVER see each other's text (unlike the single global
+ * `postComposerStore`), that an unfinalized upload can never be persisted into a draft
  * that would then hold Reply disabled forever, and that the map cannot grow without bound.
  */
 import { beforeEach, describe, expect, it } from "vitest"

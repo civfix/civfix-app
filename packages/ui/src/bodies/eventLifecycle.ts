@@ -1,10 +1,6 @@
 /**
- * The attendee-facing state machine of the event LIFECYCLE region on the event detail (P2).
- *
- * `now` is INJECTED, so a body can memoize on a ticking `now` and the tests never need fake timers
- * (the `bodies/__tests__` house pattern - profileEventSplit / eventBlendScore). The "is it over"
- * question is NOT answered here: it belongs to the shared clock, and this module only re-exports it
- * so the detail surfaces keep one import site.
+ * The attendee-facing state machine of the event detail's lifecycle region. "Is it over" belongs to the
+ * shared clock; this module only re-exports it so the detail surfaces keep one import site.
  */
 import type { CleanupStatus } from "@civfix/shared"
 
@@ -30,9 +26,6 @@ export type HoursReceiptState =
  * `res.anyLogged ?? false`: an OLDER server (which omits it) degrades to `pending` rather than lying
  * to an uncredited attendee with `not-credited`. That is why this parameter is a plain `boolean` and
  * the `?? false` lives at the call site - the degrade is a wire concern, not a state-machine one.
- *
- * (This supersedes the design doc's earlier "scope self cannot know this - pass false" note, which
- * made `not-credited` unreachable for the exact viewer the copy was written for.)
  *
  * `myHours` must be > 0 to count as credited: a zero-hour row is not a credit, and printing
  * "you were credited 0.0 hours" would be worse than the honest `not-credited` line.

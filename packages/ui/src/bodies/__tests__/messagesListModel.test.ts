@@ -1,7 +1,7 @@
 /**
  * The inbox's client-side filter.
  *
- * There is no `GET /threads?q=` — the inbox's search narrows the threads the infinite query has ALREADY
+ * There is no `GET /threads?q=`: the inbox's search narrows the threads the infinite query has ALREADY
  * loaded, so the two things worth holding are (a) an empty query is not a filter, and (b) what a hit is
  * measured against is the RAW `last`, never the rendered preview.
  */

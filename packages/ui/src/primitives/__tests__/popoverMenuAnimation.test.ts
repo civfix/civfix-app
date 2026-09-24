@@ -229,7 +229,7 @@ describe("AnchoredPopover is the ONE Modal + scrim + anchored-card presentation"
     expect(anchoredPopover).not.toMatch(/backgroundColor: t\.colors\.surface/)
   })
 
-  it("is the presentation for the menus that used to wire their own Modal", () => {
+  it("is the presentation for PopoverMenu and the map theme toggle, neither wiring its own Modal", () => {
     expect(popover).toMatch(/<AnchoredPopover/)
     expect(popover).not.toMatch(/<Modal/)
     expect(mapThemeToggle).toMatch(/<AnchoredPopover/)
@@ -263,7 +263,7 @@ describe("PopoverMenu owns the animation for every menu that uses it", () => {
 })
 
 describe("every dropdown in the package rides the same motion", () => {
-  it("the chat header overflow is the house PopoverMenu now, not a hand-placed card", () => {
+  it("the chat header overflow is the house PopoverMenu, not a hand-placed card", () => {
     expect(convoBar).toMatch(/<PopoverMenu\s/)
     expect(convoBar).toMatch(/const items: PopoverMenuItem\[\]/)
     expect(convoBar).not.toMatch(/styles\.menuBackdrop/)
@@ -295,7 +295,7 @@ describe("every dropdown in the package rides the same motion", () => {
     expect(contextMenu).toMatch(/return \(\) => springIn\.stop\(\)/)
   })
 
-  it("the repost menu is the house PopoverMenu now, so it finally tints the screen behind it", () => {
+  it("the repost menu is the house PopoverMenu, so it tints the screen behind it", () => {
     expect(postActionBar).toMatch(/<PopoverMenu\s/)
     expect(postActionBar).toMatch(/usePopoverAnchor\(openRepostMenuAt\)/)
     expect(postActionBar).toMatch(/anchorRect=\{repostAnchor\}/)
@@ -319,7 +319,7 @@ describe("every dropdown in the package rides the same motion", () => {
     }
   })
 
-  it("callers that used to unmount on close now stay mounted long enough to animate out", () => {
+  it("the inbox menu stays mounted after close long enough to animate out", () => {
     expect(inbox).toMatch(/\{menuEverOpened \? \(\s*<PopoverMenu\s+visible=\{menuOpen\}/)
     expect(inbox).not.toMatch(/\{menuOpen \? \(\s*<PopoverMenu\s+visible\s/)
   })

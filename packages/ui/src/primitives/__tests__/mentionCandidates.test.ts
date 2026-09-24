@@ -1,11 +1,7 @@
 /**
- * Regression coverage for the @-mention filter. The unscoped (global search) list used to render
- * `search.data.results` raw, so react-query's cached page for a SHORTER prefix stayed on screen while the
- * newer query resolved - showing people who no longer matched what the user had typed.
- *
- * The staleness filter must NOT be narrower than the server that produced those rows: GET
- * /users/mention-search matches `handle ILIKE %q%` OR `display_name ILIKE %q%`, so a handle-PREFIX-only
- * local rule silently dropped fresh, correct rows the server matched mid-handle. Hence the two scopes.
+ * The global search list filters too, because react-query keeps the previous prefix's page on screen while
+ * a newer query resolves. That filter must not be narrower than the server's `handle ILIKE %q%` OR
+ * `display_name ILIKE %q%`, hence the two scopes.
  */
 import { describe, expect, it } from "vitest"
 import { matchesMentionPrefix, MENTION_RESULT_LIMIT } from "../mentionCandidates"

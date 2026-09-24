@@ -100,7 +100,7 @@ describe("every Settings > Account editor is a row that opens a modal", () => {
   })
 })
 
-describe("the cross-fading Collapsible the editors used to expand through", () => {
+describe("the cross-fading Collapsible primitive", () => {
   it("is gone from the package, primitive and barrel alike", () => {
     const primitives = readdirSync(new URL("../../primitives/", import.meta.url))
     expect(primitives.filter((name) => name.startsWith("Collapsible"))).toEqual([])
@@ -121,7 +121,7 @@ describe("the profile is display-only - the bio is edited in Settings > Account"
     expect(VIEW).not.toMatch(/bioEdit|bioSave|bioCancel|bioCount|bioBlock|bioActions|bioBtn/)
   })
 
-  it("drops the bio-editing props the host used to pass", () => {
+  it("takes no bio-editing props from the host", () => {
     expect(VIEW).not.toMatch(/editableBio|onSaveBio|bioSaving/)
     expect(BODY).not.toMatch(/editableBio|onSaveBio|bioSaving/)
   })

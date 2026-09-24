@@ -80,7 +80,7 @@ function inviteTokenFromQuery(query: string): string | null {
   return tokenFromParams(hash) ?? tokenFromParams(search)
 }
 
-/** Whether `pathname` is the invite landing page - the one console route addressed by a parameter. */
+/** The invite landing page is the one console route addressed by a parameter. */
 export function isOrgInviteAcceptPath(pathname: string): boolean {
   const parts = segments(pathname)
   return parts.length === 2 && parts[0] === ORG_INVITES_SEGMENT && parts[1] === ORG_INVITE_ACCEPT_SEGMENT
@@ -95,7 +95,7 @@ export function inviteTokenForPath(pathname: string, query: string): string | nu
   return isOrgInviteAcceptPath(pathname) ? inviteTokenFromQuery(query) : null
 }
 
-/** The `query` that puts `token` back into a parse - the fragment form the emailed link uses. */
+/** Fragment form, like the emailed link, so the token never reaches a server. */
 export function inviteTokenQuery(token: string | null): string {
   return token === null ? "" : `#${ORG_INVITE_TOKEN_PARAM}=${encodeURIComponent(token)}`
 }
@@ -178,7 +178,6 @@ export function hrefForRoute(route: ConsoleRoute): string {
         : `${CONSOLE_ROOT}/orgs/${route.orgId}/${route.section}/`
     case "org-invite-accept": {
       const base = `${CONSOLE_ROOT}/${ORG_INVITES_SEGMENT}/${ORG_INVITE_ACCEPT_SEGMENT}/`
-      // Fragment, like the emailed link: the token never reaches a server.
       return `${base}${inviteTokenQuery(route.token)}`
     }
     case "event":

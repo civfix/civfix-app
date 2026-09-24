@@ -1,23 +1,16 @@
 /**
- * Unit tests for the cleanup-RSVP cache reconciliation, exercised against the REAL mutation options the
- * hooks spread into `useMutation` - `joinCleanupMutationOptions` / `claimEventSlotMutationOptions` are
- * imported from `../hooks/cleanups`, never re-implemented here, so these tests fail when the hook wiring
- * regresses (the previous version of this file rebuilt the options by hand and stayed green through real
- * bugs). The hooks themselves only add React context (api client, toast, i18n) around these options, so
- * driving the options' onMutate/onError/onSuccess/onSettled against a real QueryClient covers the whole
- * cache contract the four RSVP surfaces (EventDetailBody, EventsBody, SearchResults, LinkedEventCard)
- * rely on.
+ * Drives the real `joinCleanupMutationOptions` / `claimEventSlotMutationOptions` against a QueryClient
+ * rather than re-implementing them, so a regression in the hook wiring fails here. The hooks only add
+ * React context (api client, toast, i18n) around these options.
  *
- * THE ALIAS CONTRACT UNDER TEST: the detail may be cached under `["cleanup", <uuid>]` OR under a
- * REFERENCE-CODE key like `["cleanup", "EVT-2026-0042"]` - the share path is
- * `/cleanups/${referenceCode ?? id}` and GET /cleanups/:id resolves either - while every mutation is
- * keyed off the DTO's UUID. `cleanupDetailFilters` matches every alias by the cached DTO's own `id`;
- * the regression tests below pin that the optimistic flip, the server reconcile AND the settle
- * invalidation all reach a refcode-keyed entry (the "joining events is broken" symptom), and that the
- * slot-claim write lands on the rendering key instead of seeding a phantom UUID entry.
+ * The event detail may be cached under `["cleanup", <uuid>]` or under a reference-code key such as
+ * `["cleanup", "EVT-2026-0042"]` (the share path is `/cleanups/${referenceCode ?? id}` and the endpoint
+ * resolves either), while every mutation is keyed off the UUID. The optimistic flip, the server
+ * reconcile and the settle invalidation must all reach a refcode-keyed entry, and a slot claim must
+ * write to the rendering key instead of seeding a phantom UUID entry.
  *
- * The mutation var is the CURRENT `joined` (the state BEFORE the tap): true = leaving, matching the
- * call-site convention `join.mutate(cleanup.joined)`.
+ * The mutation var is the CURRENT `joined` (the state before the tap): true means leaving, matching
+ * `join.mutate(cleanup.joined)`.
  */
 import { describe, expect, it } from "vitest"
 import { QueryClient } from "@tanstack/react-query"

@@ -14,7 +14,6 @@ import { create } from "zustand"
  *   - a guest who signs in keeps what they started as a guest (a report begun signed out resumes).
  */
 export interface ViewerScopedDrafts {
-  /** Wipe everything the store holds for the viewer. */
   discard: () => void
   /** Told about every viewer change, transient nulls included, for a store that scopes its own view. */
   onViewer?: (viewerId: string | null) => void

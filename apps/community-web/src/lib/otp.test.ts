@@ -10,11 +10,6 @@ const cellsOf = (code: string): string[] => {
   return cells
 }
 
-/**
- * isOtpComplete is the completion check behind the OTP auto-submit. The original bug was an extra
- * `!code.includes("")` guard, which is ALWAYS false (every string "includes" the empty string), so the
- * verify never fired when typing digit-by-digit. Completion is now "every cell is filled".
- */
 describe("isOtpComplete / otpCode", () => {
   it("is complete only when every cell holds a digit", () => {
     expect(isOtpComplete(cellsOf("123456"))).toBe(true)
@@ -34,12 +29,6 @@ describe("isOtpComplete / otpCode", () => {
   })
 })
 
-/**
- * applyOtpInput drives every cell edit: single-digit typing, multi-digit paste, and the browser
- * autofilling the whole one-time code into the first cell. It must distribute multiple digits across
- * cells (not collapse them to the last one, the autofill bug) and keep each digit in the cell it was
- * typed into (not shift later digits left when a middle cell is cleared).
- */
 describe("applyOtpInput", () => {
   it("sets a single digit and advances focus by one", () => {
     expect(applyOtpInput(emptyOtpCells(LEN), 0, "1")).toEqual({

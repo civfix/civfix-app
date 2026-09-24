@@ -114,7 +114,7 @@ describe("cancelling lives in the danger card and nowhere else", () => {
   })
 })
 
-describe("selection is neutral now", () => {
+describe("selection is neutral", () => {
   it("gives the roster FilterChips instead of a hand-rolled chip row", () => {
     expect(roster).toContain("<FilterChip")
     expect(roster).not.toContain("styles.chipOn")

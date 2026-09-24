@@ -1,5 +1,5 @@
 /**
- * The expanded main-map picker mirrors an external value into its own pick store (APP-BUG-061), so an
+ * The expanded main-map picker mirrors an external value into its own pick store, so an
  * address pick is handed over through the picker's value alone. A caller that also writes the store
  * keeps a second, divergent path to the same pin.
  */

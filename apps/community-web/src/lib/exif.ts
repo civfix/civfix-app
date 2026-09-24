@@ -1,15 +1,8 @@
 /**
- * Dependency-free EXIF GPS reader for JPEG files.
- *
- * The report flow uses this to seed the location pin from a photo's embedded GPS coordinates when
- * present (geomSource: "exif"). It deliberately avoids a third-party EXIF library: we only need the
- * GPS IFD, and a tiny purpose-built parser keeps the static export lean and the no-backend build
- * self-contained.
- *
- * Strategy: walk the JPEG marker segments to find APP1 ("Exif\0\0"), parse the TIFF header to learn
- * byte order, follow IFD0's GPSInfo pointer (tag 0x8825) to the GPS IFD, then read GPSLatitude /
- * GPSLongitude (rationals) and their N/S, E/W reference tags. Anything unexpected -> return null so
- * callers degrade gracefully (fall back to the map center, geomSource: "manual").
+ * A purpose-built parser instead of a third-party EXIF library: only the GPS IFD is needed, and this
+ * keeps the static export lean. Path: JPEG APP1 ("Exif\0\0") -> TIFF header (byte order) -> IFD0's
+ * GPSInfo pointer (tag 0x8825) -> GPS IFD. Anything unexpected returns null so callers fall back to a
+ * manual pin.
  */
 
 export interface ExifGps {

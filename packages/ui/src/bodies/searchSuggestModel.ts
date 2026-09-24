@@ -1,20 +1,19 @@
 /**
- * Pure section-assembly for the RESTING search page (liquid-glass redesign, Task 3): given the raw
- * nearby cleanups, nearby report pins, and follow suggestions, produce the ordered, capped sections
- * the page renders (Suggested people → Events in your area → Reports nearby).
+ * Section order on the resting search page: Suggested people, then Events in your area, then Reports
+ * nearby.
  *
- * Pure + deterministic: the caller passes `now` (never read the clock here) and the resolved viewer
+ * Deterministic: the caller passes `now` (never read the clock here) and the resolved viewer
  * location, so the assembly is unit-testable and stable across a render pass. Ranking reuses
  * `eventBlendScore` (the EventsBody "In your area" blend): server `dist` when present, else a
  * haversine fallback from the viewer location; without a location the blend degrades to soonest-first.
  *
  * Gating rules (design):
- *   - Suggested people is AUTH-GATED (the endpoint is too): signed out ⇒ empty section.
+ *   - Suggested people is AUTH-GATED (the endpoint is too): signed out means an empty section.
  *   - Reports nearby is LOCATION-GATED: proximity is meaningless without a viewer point, so no
- *     location ⇒ empty section (the pins hook returns [] without a point anyway; this makes the
+ *     location means an empty section (the pins hook returns [] without a point anyway; this makes the
  *     invariant explicit and testable).
  *   - Events render with or without a location (the upcoming list is global; the blend degrades).
- *   - The volunteer leaderboard is NEITHER auth- nor location-gated — it is GEOID-GATED. A signed-OUT
+ *   - The volunteer leaderboard is NEITHER auth- nor location-gated; it is GEOID-GATED. A signed-OUT
  *     viewer with a device location sees it (`resolveJurisdiction` is auth-optional); a signed-IN
  *     viewer with no location but logged hours sees it (their top jurisdiction). `leaderboard` is
  *     `[]` whenever `leaderboardGeoid` is null, because a board with no jurisdiction to name is a
@@ -29,19 +28,18 @@ export const SUGGESTED_EVENTS_LIMIT = 4
 export const NEARBY_REPORTS_LIMIT = 4
 /**
  * Ranks 1-3 only. This is a PREVIEW of the full board, not a second copy of it. It is a RENDER limit,
- * not the request's `limit` — see {@link LEADERBOARD_REQUEST_LIMIT} for why those had to come apart.
+ * not the request's `limit` (see {@link LEADERBOARD_REQUEST_LIMIT} for why those had to come apart).
  */
 export const LEADERBOARD_PREVIEW_LIMIT = 3
 
 /**
- * What Discovery actually ASKS the leaderboard route for — deliberately larger than the three rows it
+ * What Discovery actually ASKS the leaderboard route for: deliberately larger than the three rows it
  * renders, and NOT tunable downward.
  *
  * The route only computes `viewerRank` / `viewerHours` when the request's `limit` is at least 25
  * (`LEADERBOARD_EXTRAS_MIN_LIMIT` server-side); below that the two keys are absent from the body
- * altogether. Discovery used to send `limit: 3`, which meant the "you rank #58" row it is built to show
- * could never appear — the response it was reading them off of never carried them. The backend is
- * deployed and that threshold is a server fact, so the client asks for exactly the threshold and slices
+ * altogether, so with a smaller limit the "you rank #58" row Discovery is built to show could never
+ * appear. That threshold is a server fact, so the client asks for exactly the threshold and slices
  * the preview down to {@link LEADERBOARD_PREVIEW_LIMIT} rows itself (`assembleSearchSuggestions` already
  * does that slice). The extra rows cost one page of a route the hook caches for five minutes.
  */
@@ -84,7 +82,7 @@ export function assembleSearchSuggestions<
   people: readonly P[]
   /** Already rank-ordered by the server; this only caps it. */
   leaderboard: readonly L[]
-  /** The resolved jurisdiction, or null when none could be resolved — see the gating note above. */
+  /** The resolved jurisdiction, or null when none could be resolved (see the gating note above). */
   leaderboardGeoid: string | null
   location: LatLng | null
   signedIn: boolean

@@ -1,5 +1,5 @@
 /**
- * Inbound email parsing for the Phase 3 reply-by-email flow. Minimal shape for now.
+ * Inbound email parsing for the reply-by-email flow.
  */
 
 export interface ParsedMailAddress {
@@ -10,7 +10,7 @@ export interface ParsedMailAddress {
 /**
  * A single decoded attachment. Optional fields mirror what a real MIME parser surfaces; `content` is
  * the raw bytes (absent for an attachment too large to buffer). The inbound-mail webhook streams these
- * into R2 - see services/api inbound-mail.routes.ts.
+ * into R2.
  */
 export interface ParsedMailAttachment {
   filename?: string

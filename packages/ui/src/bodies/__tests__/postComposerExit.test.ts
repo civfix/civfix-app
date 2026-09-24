@@ -1,21 +1,11 @@
 /**
- * THE COMPOSER'S TWO LIFETIME BUGS, pinned as one seam because they are one seam.
+ * The create intent's claim (taken at run activation, dropped on deactivation) and the composer's
+ * genuine-exit discard are one seam: the wizard's claim can land before or after the composer's deferred
+ * unmount cleanup evaluates the exit predicate, and both orderings must keep the attachments the run will
+ * hand back.
  *
- *   MISROUTE  - `pendingCreate` was a module-level latch read at report-SUBMIT time with no liveness test,
- *               so one backed-out "+ New report" hijacked every later report in the session into the "New
- *               post" page and hid its "Share to the feed" toggle. The fix is a CLAIM taken at run
- *               activation and dropped on deactivation.
- *   PERSISTENCE - no close path ever cleared the draft, so a selected (or snapshotted) report stayed attached
- *               to the next "New post". The fix is the genuine-exit discard below.
- *
- * They meet in the RACE: on mobile `leaveForCreate("report")` pops `/compose` and selects the report view in
- * the same tick, so the wizard's claim can execute BEFORE the composer's deferred unmount cleanup evaluates
- * the exit predicate. A claim that merely consumed the armed latch would leave the predicate reading "nothing
- * in flight" and discarding the attachments the run is about to hand back. Both orderings are asserted.
- *
- * No renderer here (this package's vitest cannot load react-native), so the two effects that own the seam are
- * SIMULATED against the real stores - `activateReportRun` / `deactivateReportRun` and mount/unmount pairs -
- * and their WIRING is source-pinned at the bottom. Same technique, same reason, as composerCreateFlow.test.
+ * This package's vitest cannot load react-native, so the two effects are simulated against the real stores
+ * and their wiring is source-pinned at the bottom.
  */
 import { beforeEach, describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
@@ -97,9 +87,8 @@ function reportBody() {
   const host: ReportRunExitHost = {
     readView: () => useNavStore.getState().view,
     release: deactivateReportRun,
-    // The REAL store subscription, so the search-detour watch is exercised end to end (a faked one would
-    // pass while the production wiring subscribed to nothing) - counted, so an unsubscribe the module
-    // forgets to call is visible rather than merely harmless-looking.
+    // The real store subscription, so the search-detour watch is exercised end to end; counted, so an
+    // unsubscribe the module forgets to call is visible.
     watchView: (onNavChange) => {
       liveWatches += 1
       const unsubscribe = useNavStore.subscribe(onNavChange)
@@ -168,11 +157,9 @@ describe("isGenuinePostComposerExit", () => {
   })
 
   it("is NOT an exit while a create intent is armed or claimed", () => {
-    // ARMED: "+ New report"/"+ New event" was just tapped and the flow has not picked it up yet.
     expect(isGenuinePostComposerExit({ ...base, pendingCreate: "report" })).toBe(false)
     expect(isGenuinePostComposerExit({ ...base, pendingCreate: "event" })).toBe(false)
-    // CLAIMED: the run is on screen and will hand its result back here. This is the clause the mobile
-    // ordering needs - see the round-trip cases below.
+    // The claimed clause is what the claim-before-cleanup ordering relies on.
     expect(isGenuinePostComposerExit({ ...base, claimedCreate: "report" })).toBe(false)
     expect(isGenuinePostComposerExit({ ...base, claimedCreate: "event" })).toBe(false)
   })
@@ -235,8 +222,8 @@ describe("the composer's genuine-exit discard", () => {
   })
 
   it("drops a SNAPSHOTTED report, which no other sweep can touch", () => {
-    // `shouldClearStaleAttachedReport` returns false unconditionally while a snapshot exists (it is what
-    // keeps a just-created report attached), so the exit discard is the ONLY thing that can clear one.
+    // `shouldClearStaleAttachedReport` returns false while a snapshot exists, so the exit discard is the only
+    // thing that can clear one.
     usePostComposerStore.getState().setAttachedReport(reportRef)
     expect(usePostComposerStore.getState().draft.attachedReport).not.toBeNull()
 
@@ -330,8 +317,8 @@ describe("the composer -> report wizard round trip", () => {
   })
 
   it("KEEPS THE DRAFT when the wizard claims BEFORE the composer's cleanup is evaluated (mobile)", () => {
-    // THE RACE. `leaveForCreate("report")` arms, pops `/compose`, and `selectView("report")` - all in one
-    // tick - and the retained wizard body claims immediately, while the route's unmount cleanup lands later.
+    // Mobile pops `/compose` and selects the report view in one tick; the retained wizard body claims
+    // immediately while the route's unmount cleanup lands later.
     const composer = composerHost()
     stageDraft()
     const unmount = composer.mount()
@@ -365,16 +352,14 @@ describe("the composer -> report wizard round trip", () => {
   })
 
   it("SURVIVES THE WEB BODY SWAP, whose outgoing layer REMOUNTS the composer over the live run", () => {
-    // A MOUNT IS NOT AN ARRIVAL. `BodyTransition.web` caches the outgoing element and re-parents it into its
-    // own keyed layer, so the composer this batch just dismissed mounts AGAIN one commit later - a different
-    // parent and key path, therefore a real React remount - while the wizard it launched already owns the
-    // screen. A mount clear that assumed "no run can be in flight while the composer is arriving" released
-    // that claim, and the outgoing layer's own teardown then discarded the draft it was protecting.
+    // A mount is not an arrival: a web body swap can re-parent the dismissed composer into an outgoing layer,
+    // a real React remount, while the wizard already owns the screen. A mount-time clear must not release
+    // the claim there, or the layer's teardown discards the draft.
     const composer = composerHost()
     stageDraft()
     const mounted = mountComposer(composer)
 
-    // `leaveForCreate("report")`: arm, dismiss this surface, select the wizard - one batched tick.
+    // Arm, dismiss this surface and select the wizard in one batched tick.
     usePostComposerStore.getState().setPendingCreate("report")
     useNavStore.getState().selectView("report")
 
@@ -396,10 +381,9 @@ describe("the composer -> report wizard round trip", () => {
     composer.flush()
 
     expect(claimedAtCommitA).toBe(true)
-    // The claim the outgoing layer's remount used to release. This is the assertion the blocker fails on.
     expect(claimedAtCommitB).toBe(true)
-    // The hand-back is intact - the review step still says "Attach to your post", `useReportSubmit` still
-    // suppresses the wizard's own feed share, and the submit still lands on the waiting draft...
+    // The hand-back is intact: the review step, `useReportSubmit`'s share suppression and the submit's
+    // destination all read this answer...
     expect(fromComposer()).toBe(true)
     // ...with every attachment the round trip is carrying back to it.
     expect(composer.discards()).toBe(0)
@@ -409,9 +393,8 @@ describe("the composer -> report wizard round trip", () => {
   })
 
   it("still drops a LEAKED claim when the composer mounts with the app somewhere else", () => {
-    // The other side of the same gate: the clear's whole purpose is that a claim whose run vanished VETOES
-    // every genuine exit, so the previous post's attachments ride along to the next "New post" forever. Every
-    // case it was added for opens the composer from a view that is not the wizard's.
+    // A claim whose run vanished vetoes every genuine exit, so the previous post's attachments would ride
+    // along to the next "New post"; the mount clear drops it when the app is not on the wizard.
     const composer = composerHost()
     stageDraft()
     usePostComposerStore.getState().setPendingCreate("report")
@@ -457,8 +440,8 @@ describe("the composer -> report wizard round trip", () => {
   })
 
   it("ABANDONING the run drops the claim, so the next report is not hijacked", () => {
-    // THE REPORTED BUG. Arm the intent from the composer, back out of the wizard (the user taps another
-    // tab), then file an unrelated report from the Report tab.
+    // Arm the intent, back out of the wizard to another tab, then file an unrelated report from the Report
+    // tab.
     usePostComposerStore.getState().setPendingCreate("report")
     activateReportRun()
     deactivateReportRun() // tabbed away: the run is over
@@ -467,15 +450,14 @@ describe("the composer -> report wizard round trip", () => {
     activateReportRun()
 
     expect(fromComposer()).toBe(false)
-    // ...so it takes the success-screen path, keeps its "Share to the feed" toggle, and its share is not
-    // suppressed - all three of which read this one answer.
+    // ...so it takes the success-screen path and keeps its "Share to the feed" toggle, both of which read
+    // this one answer.
     expect(usePostComposerStore.getState().claimedCreate).toBeNull()
     expect(usePostComposerStore.getState().draft.pendingCreate).toBeNull()
   })
 
   it("an abandoned run also stops blocking the composer's exit discard", () => {
-    // The other half of the same leak: while the latch stayed armed forever it ALSO vetoed every genuine
-    // exit, so the persistence bug could not be fixed without fixing the misroute.
+    // A latch left armed would also veto every genuine exit.
     const composer = composerHost()
     stageDraft()
     usePostComposerStore.getState().setPendingCreate("report")
@@ -511,14 +493,11 @@ describe("the composer -> report wizard round trip", () => {
 })
 
 /**
- * THE CLAIM'S OTHER EXIT. Only native portrait keeps the wizard mounted across a tab switch (the shell's
- * keep-alive slot), so on every other host the activation effect's `else` branch NEVER RUNS: web with
- * `prefers-reduced-motion: reduce` settles straight onto the new view with no outgoing layer, and the
- * expanded/landscape shell has no slot at all. The body just unmounts - and a claim left behind reproduces
- * the misroute verbatim, because `claimPendingCreate` deliberately KEEPS an existing claim.
+ * Only native portrait keeps the wizard mounted across a tab switch, so on reduced-motion web and the
+ * expanded shell the activation effect's `else` never runs; the body just unmounts, and because
+ * `claimPendingCreate` keeps an existing claim, a leftover one would misroute later reports.
  */
 describe("the report run's deferred deactivation on unmount", () => {
-  /** Arm the composer intent and open the wizard, exactly as `leaveForCreate("report")` does. */
   function launchFromComposer() {
     usePostComposerStore.getState().setPendingCreate("report")
     useNavStore.getState().selectView("report")
@@ -540,7 +519,6 @@ describe("the report run's deferred deactivation on unmount", () => {
   })
 
   it("so the NEXT unrelated report run is not hijacked (the reported bug, web/landscape)", () => {
-    // Repro: New post -> "+ New report" -> Home tab (body unmounts, claim used to stick) -> Report tab.
     const body = reportBody()
     launchFromComposer()
     const cleanup = body.runEffect()
@@ -553,8 +531,7 @@ describe("the report run's deferred deactivation on unmount", () => {
     const next = reportBody()
     next.runEffect()
 
-    // It keeps its "Share to the feed" toggle, its share is not suppressed, and its submit lands on the
-    // wizard's own success screen rather than the "New post" page - all three read this one answer.
+    // Its "Share to the feed" toggle, its share and its success screen all read this one answer.
     expect(fromComposer()).toBe(false)
     expect(usePostComposerStore.getState().draft.pendingCreate).toBeNull()
   })
@@ -595,10 +572,9 @@ describe("the report run's deferred deactivation on unmount", () => {
   })
 
   it("does NOT release on a SEARCH detour, and the returning wizard adopts the same claim", () => {
-    // THE DESIGN DECISION, and it reverses the earlier behaviour. Search is reachable from inside the
-    // wizard and rides as an OVERLAY over it, so a reporter looking something up mid-report has paused the
-    // run, not ended it. Releasing there cost them the hand-back: they came back, submitted, and the report
-    // landed on the wizard's success screen instead of on the half-written post that asked for it.
+    // Search rides as an overlay over the wizard, so a reporter looking something up mid-report has paused
+    // the run, not ended it; releasing there would send the report to the wizard's success screen instead
+    // of the post that asked for it.
     const body = reportBody()
     launchFromComposer()
     const cleanup = body.runEffect()
@@ -613,9 +589,8 @@ describe("the report run's deferred deactivation on unmount", () => {
     // Nothing is mounted to settle the claim, so the departing run left a store watch behind instead.
     expect(reportSearchDetourArmed()).toBe(true)
 
-    // Back to the wizard: the watch stands down and a BRAND NEW body adopts the claim as the same logical
-    // run resuming - `claimPendingCreate` KEEPS an existing claim, which is what makes that possible with
-    // the armed half long since consumed.
+    // Back to the wizard: the watch stands down and a new body adopts the claim as the same logical run,
+    // which works because `claimPendingCreate` keeps an existing claim.
     useNavStore.getState().selectView("report")
     expect(reportSearchDetourArmed()).toBe(false)
     expect(usePostComposerStore.getState().draft.pendingCreate).toBeNull()
@@ -626,10 +601,8 @@ describe("the report run's deferred deactivation on unmount", () => {
   })
 
   it("RELEASES when the detour settles on a third view, with no report body left to notice", () => {
-    // THE LEAK THE EXEMPTION WOULD OTHERWISE OPEN: "+ New report" -> Search -> Home. The body unmounted at
-    // the Search step, so on every host without a keep-alive slot there is nothing mounted to run the
-    // activation effect for "home" - and a claim left behind reproduces the original misroute for the rest
-    // of the session. The departing run's own store watch is what closes it.
+    // Report -> Search -> Home: the body unmounted at the Search step, so on hosts without a keep-alive slot
+    // nothing mounted runs the activation effect for "home". The departing run's store watch closes it.
     const body = reportBody()
     launchFromComposer()
     const cleanup = body.runEffect()
@@ -722,8 +695,8 @@ describe("the report run's deferred deactivation on unmount", () => {
   })
 
   it("does not block the composer's genuine-exit discard once the wizard is gone", () => {
-    // The leaked claim also vetoed every exit discard (`isGenuinePostComposerExit`), so the same leak kept
-    // the previously attached report on the next "New post" forever.
+    // A leaked claim would veto every exit discard (`isGenuinePostComposerExit`) and keep the previously
+    // attached report on the next "New post".
     const composer = composerHost()
     const body = reportBody()
     stageDraft()
@@ -744,10 +717,9 @@ describe("the report run's deferred deactivation on unmount", () => {
 })
 
 /**
- * THE ENTRY-POINT SELF-HEAL vs A RUN THAT IS ALREADY LIVE. `openReportFlow` drops a report intent so an
- * unrelated run cannot inherit it - but two entry points reach it while the wizard is ALREADY the thing on
- * screen (or paused under Search), and there the claim belongs to that run, not to the tap. Settling it from
- * outside kills the round trip with nothing on screen to show that it happened.
+ * `openReportFlow` drops a report intent so an unrelated run cannot inherit it, but two entry points reach it
+ * while the wizard is already on screen (or paused under Search), where the claim belongs to that run.
+ * Settling it from outside would kill the round trip invisibly.
  */
 describe("openReportFlow and a report run that is already live", () => {
   /** Arm the composer intent, open the wizard, and let its run claim - the state both cases start from. */
@@ -773,11 +745,10 @@ describe("openReportFlow and a report run that is already live", () => {
   })
 
   it("leaves the claim ALONE when the Report tab is the way back from a SEARCH detour (web)", () => {
-    // `TabBar.web` does not gate its tabs on `searchActive` the way `TabBar.native` does, and web has no exit
-    // circle (tapping the orb again hits the deselect rule and lands on Home) - so the Report tab is the ONLY
-    // dock route back to a paused wizard, and releasing on the way in defeats the search exemption this seam
-    // added on purpose: the detour watch then sees "report", disarms WITHOUT releasing, and the remounting
-    // wizard has nothing left to adopt.
+    // `TabBar.web` does not gate its tabs on `searchActive` and web has no exit circle, so the Report tab is
+    // the only dock route back to a paused wizard. Releasing on the way in would defeat the search
+    // exemption: the detour watch sees "report", disarms without releasing, and the wizard has nothing to
+    // adopt.
     const body = reportBody()
     liveRunFromComposer()
     const cleanup = body.runEffect()
@@ -796,8 +767,7 @@ describe("openReportFlow and a report run that is already live", () => {
   })
 
   it("STILL self-heals when the tap really does start a fresh run", () => {
-    // Every case the self-heal was added for taps in from somewhere else entirely - home, the map, a profile,
-    // messaging, a `/report` deep link - so none of them is inside the exemption.
+    // A tap from home, the map, a profile, messaging or a `/report` deep link is outside the exemption.
     usePostComposerStore.getState().setPendingCreate("report")
     activateReportRun()
     usePostComposerStore.getState().setPendingCreate("report")
@@ -815,10 +785,8 @@ describe("openReportFlow and a report run that is already live", () => {
 })
 
 /**
- * SOURCE-GREP GUARDS. The rules above are pure; the user-facing fix is the WIRING - which effect claims, what
- * the wizard reads at submit time, what the review step is handed, and that the close paths discard. None of
- * those components can be mounted here, and without these assertions reverting any of them leaves this suite
- * green while both reported defects walk straight back in.
+ * The rules above are pure; which effect claims, what the wizard reads at submit time, what the review step
+ * is handed and that the close paths discard all live in components that cannot be mounted here.
  */
 describe("the wiring (source-pinned)", () => {
   it("PostComposer registers the mount tracker and discards on the header X", () => {
@@ -828,10 +796,9 @@ describe("the wiring (source-pinned)", () => {
     // The host reads BOTH halves of the intent, and reads them at decision time (no captured values).
     expect(source).toMatch(/readIntent: \(\) => \{[\s\S]*?claimedCreate: state\.claimedCreate/)
     expect(source).toMatch(/discard: \(\) => usePostComposerStore\.getState\(\)\.discardAttachments\(\)/)
-    // The deliberate close is deterministic, not left to the net - AND it clears the LOCAL media mirrors
-    // with the store, exactly as the submit `onSuccess` path does. `composerMedia` is derived from
-    // `carriedMedia` + the attachment hook and an effect mirrors it back into the draft, so a store-only
-    // discard is undone the moment a late upload-finalize republishes the hook's list.
+    // The deliberate close also clears the local media mirrors, as the submit `onSuccess` path does: an
+    // effect mirrors `carriedMedia` + the attachment hook back into the draft, so a store-only discard is
+    // undone when a late upload-finalize republishes the hook's list.
     expect(source).toMatch(
       /const closeComposer = \(\) => \{\s*\n\s*usePostComposerStore\.getState\(\)\.discardAttachments\(\)\s*\n\s*attachments\.reset\(\)\s*\n\s*setCarriedMedia\(\[\]\)\s*\n\s*setDroppedMedia\(0\)\s*\n\s*;\(onBack \?\? back\)\(\)/,
     )
@@ -839,40 +806,35 @@ describe("the wiring (source-pinned)", () => {
   })
 
   it("PostComposer drops a stale REPORT create-intent at mount", () => {
-    // The braces to the deferred cleanup's belt: a claim whose run vanished also VETOES the exit discard, so
-    // without this a leak keeps the previous post's attachments alive on every later "New post".
+    // A claim whose run vanished also vetoes the exit discard, so without this a leak keeps the previous
+    // post's attachments alive on every later "New post".
     const source = readSource("../PostComposer.tsx")
     expect(source).toMatch(/useEffect\(clearStaleReportIntentAtComposerMount, \[\]\)/)
     expect(source).toMatch(
       /import \{ clearStaleReportIntentAtComposerMount \} from "\.\/composerCreateFlow"/,
     )
-    // REPORT-scoped, and the helper is where that asymmetry is argued: the EVENT trip keeps this composer
-    // mounted under the host form, so a remount mid-form must not disarm it.
+    // Report-scoped: the event trip keeps this composer mounted under the host form, so a remount mid-form
+    // must not disarm it.
     const flow = readSource("../composerCreateFlow.ts")
     const clear = flow.slice(flow.indexOf("export function clearStaleReportIntentAtComposerMount"))
     expect(clear).toMatch(/dropReportCreateIntent\(\)/)
     expect(clear).not.toMatch(/discardAttachments|setPendingCreate\("event"\)/)
-    // ...and it is LIVENESS-GATED on the shared predicate, not on "the composer is arriving": web's body swap
-    // remounts this surface in BodyTransition's outgoing layer while the wizard already owns the screen.
+    // Gated on the shared liveness predicate, because a web body swap can remount this surface while the
+    // wizard already owns the screen.
     expect(clear).toMatch(/if \(reportRunSurvivesView\(useNavStore\.getState\(\)\.view\)\) return/)
   })
 
   it("the composer no longer launches a create round trip of its own", () => {
-    // The "New report" / "New event" shortcuts are gone from the composer screen - the dock's create bubble
-    // is the only entry point - so this surface never arms an intent and never leaves for a flow. What the
-    // machinery still serves is the OTHER direction: a run started from the bubble that returns here.
+    // The dock's create bubble is the only create entry point, so this surface never arms an intent or
+    // leaves for a flow.
     const source = readSource("../PostComposer.tsx")
     expect(source).not.toMatch(/leaveForCreate|createReport|createEvent/)
     expect(source).not.toMatch(/setPendingCreate/)
   })
 
   it("POPS the composer and PUSHES the new thread for a QUOTE, so the origin entry survives the post", () => {
-    // THE BUG: `onSuccess` used to `openDetail({kind:"post-thread"})`, and `openDetail` REPLACES the whole
-    // stack. "open thread A -> Quote -> Post -> Back" therefore lost thread A and dumped the user on the
-    // view root, because the entry they came from was thrown away with the composer's.
-    // THE FIX: pop the composer FIRST (the host's own dismiss when it has one, else `nav.back()`), then
-    // `push` - which APPENDS, leaving [A, newPost]. When the composer was the stack root the pop empties it
-    // and the push lands [newPost], the same place `openDetail` used to.
+    // `openDetail` replaces the whole stack, so "thread A -> Quote -> Post -> Back" would lose thread A. Popping
+    // the composer first (the host's dismiss, else `nav.back()`) and then pushing leaves [A, newPost].
     const source = readSource("../PostComposer.tsx")
     const success = source.slice(source.indexOf("onSuccess: (post) => {"), source.indexOf("onSettled:"))
     expect(success).toContain('push({ kind: "post-thread", id: post.id })')
@@ -885,13 +847,12 @@ describe("the wiring (source-pinned)", () => {
     expect(popped).toBeGreaterThan(posted)
     expect(pushed).toBeGreaterThan(popped)
     expect(success).toMatch(/if \(onBack\) onBack\(\)\s*\n\s*else back\(\)/)
-    // And nothing in the file subscribes to `openDetail` any more - a stray selector is how this regresses.
+    // A stray `openDetail` selector is how this regresses.
     expect(source).not.toMatch(/state\.openDetail/)
   })
 
   it("a TOP-LEVEL post pops only, and asks the feed to show its new top", () => {
-    // THE BUG (civfix/issue-tracker#106): the push ran for every mode, so "New post -> Post" left the
-    // author reading a thread of one instead of the feed their post is now at the top of.
+    // A top-level post returns the author to the feed their post now tops, not a thread of one.
     expect(postSubmitDestination("post")).toBe("origin")
     expect(postSubmitDestination("quote")).toBe("thread")
     expect(postSubmitDestination("reply")).toBe("thread")
@@ -914,9 +875,8 @@ describe("the wiring (source-pinned)", () => {
   })
 
   it("a scroll-to-top raised while the feed is unmounted is never replayed at its next mount", () => {
-    // THE BUG: `pending` was an unscoped module boolean. Posting from the event-detail composer (or the
-    // report-flow handoff) set it with no FeedBody mounted, and the flag sat true until the reader next
-    // opened the feed - which then jumped to the top of a list they had not asked to move.
+    // Posting from the event-detail composer (or the report-flow handoff) raises a request with no FeedBody
+    // mounted; replaying it at the next mount would jump a list the reader had not asked to move.
     const store = useFeedScrollTopStore
     store.setState({ requestId: 0 })
     store.getState().requestScrollTop()
@@ -935,8 +895,8 @@ describe("the wiring (source-pinned)", () => {
 
   it("ReportFlowBody claims at run ACTIVATION and releases on deactivation", () => {
     const source = readSource("../ReportFlowBody.tsx")
-    // Live nav-store selector subscriptions (narrowed to booleans by the camera-swipe-lag fix), never
-    // mount-time snapshots - the activation edge still fires on the commit the view changes.
+    // Live boolean nav-store selectors, never mount-time snapshots, so the activation edge fires on the
+    // commit the view changes.
     expect(source).toMatch(/const runActive = useNavStore\(\(s\) => s\.view === "report"\)/)
     // The SEARCH exemption is the shared predicate, not a second inline rule: the effect's release branch,
     // the deferred decision and the detour watch have to agree, and re-deriving it here is how they drift.
@@ -957,9 +917,8 @@ describe("the wiring (source-pinned)", () => {
   })
 
   it("the dock's Report tab opens the wizard through openReportFlow, not a bare selectView", () => {
-    // The entry point in the repro. The Report TAB is the wizard's entry again, and `openReportFlow`
-    // self-heals a leaked claim (and a stale armed intent) there, which is the belt to the cleanup's
-    // braces. The rail's Report item renders this same handler, so it inherits the self-heal.
+    // `openReportFlow` self-heals a leaked claim (and a stale armed intent) as a second line behind the
+    // cleanup. The rail's Report item renders this same handler, so it inherits the self-heal.
     const source = readSource("../../shell/TabBar.shared.tsx")
     expect(source).toMatch(/import \{ openReportFlow \} from "\.\.\/bodies\/composerCreateFlow"/)
     expect(source).toMatch(/if \(tab\.id === "report"\) \{[\s\S]*?openReportFlow\(\)/)
@@ -973,7 +932,7 @@ describe("the wiring (source-pinned)", () => {
     expect(source).toMatch(/if \(fromComposer\) \{/)
     expect(source).toMatch(/composer\.releaseClaimedCreate\("report"\)/)
     expect(source).toMatch(/<ReviewStep\s*\n\s*fromComposer=\{fromComposer\}/)
-    // The old submit-time latch read, and the review step's own copy of it, are both gone.
+    // Neither the submit path nor the review step may read the unowned latch.
     expect(source).not.toMatch(/draft\.pendingCreate/)
     expect(source).not.toMatch(/composerPendingReport/)
   })
@@ -983,33 +942,26 @@ describe("the wiring (source-pinned)", () => {
     expect(source).toMatch(/export function useReportSubmit\(options\?: ReportSubmitOptions\)/)
     expect(source).toMatch(/const forComposer = options\?\.forComposer === true/)
     expect(source).toMatch(/^\s*!forComposer &&$/m)
-    // It must not be able to reach the store at all any more.
+    // It must not be able to reach the store at all.
     expect(source).not.toMatch(/usePostComposerStore/)
   })
 
   /**
-   * EVERY report entry point IN THIS PACKAGE, named individually rather than asserted in the abstract - the
-   * previous title claimed "every" while the loop covered two of the four. What is deliberately NOT here:
+   * Every report entry point in this package, named individually. Deliberately not listed:
    *
-   *   - the PostComposer, which used to own the one exception (a bare `selectView` that kept the armed
-   *     intent across the trip). Its "New report" / "New event" shortcuts are gone, so it is now pinned as
-   *     an ABSENCE by the `not.toMatch` below rather than as an entry point.
-   *   - mobile's `/report` deep-link shim (civfix-mobile `app/report/index.tsx`) - a different repo, so it
-   *     cannot be read from here; it imports `openReportFlow` from `@civfix/ui`, which is why the helper is
-   *     re-exported from `bodies/index.ts` (asserted below).
-   *   - web routes, which reach the view through `useNavStore.seed` on a cold start / popstate, where the
+   *   - PostComposer, pinned as an absence by the `not.toMatch` below because it opens no report flow.
+   *   - mobile's `/report` deep-link route, outside this package; it imports `openReportFlow` from
+   *     `@civfix/ui`, which is why the helper is re-exported from `bodies/index.ts` (asserted below).
+   *   - web routes, which reach the view through `useNavStore.seed` on a cold start or popstate, where the
    *     module-level composer draft is brand new and there is nothing to inherit.
-   *   - the landscape RAIL's Report tab (`shell/Rail.tsx`), which is not a second call site: the rail
-   *     renders `useTabBarModel().onTab` from `TabBar.shared` verbatim, so it is already covered by the
-   *     dock's row below. That reuse is the point of `TabBar.shared` owning the handler - see `Rail.tsx`'s
-   *     header. The old `HomeSidebarBody` row is gone with the file: the landscape redesign deleted the web
-   *     sidebar and re-homed its Report CTA onto that same rail tab.
+   *   - the landscape rail's Report tab (`shell/Rail.tsx`), which renders `useTabBarModel().onTab` from
+   *     `TabBar.shared` verbatim and is covered by the dock's row below.
    */
   it("every report entry point in this package goes through openReportFlow", () => {
     const entries = [
       // The map long-press "Report an issue here".
       { file: "../DropPinBody.tsx", from: "./composerCreateFlow" },
-      // The dock's (and, through `useTabBarModel`, the rail's) Report tab - the original repro's entry.
+      // The dock's (and, through `useTabBarModel`, the rail's) Report tab.
       { file: "../../shell/TabBar.shared.tsx", from: "../bodies/composerCreateFlow" },
     ]
     for (const { file, from } of entries) {
@@ -1017,12 +969,12 @@ describe("the wiring (source-pinned)", () => {
       expect(source, file).toContain(`import { openReportFlow } from "${from}"`)
       expect(source, file).not.toMatch(/selectView\("report"\)/)
     }
-    // The landscape rail reaches the wizard through the dock's OWN handler rather than a second copy of
-    // it, which is what keeps the list above complete now that HomeSidebarBody is gone.
+    // The landscape rail reaches the wizard through the dock's own handler rather than a second copy of it,
+    // which keeps the list above complete.
     const rail = readSource("../../shell/Rail.tsx")
     expect(rail).toMatch(/useTabBarModel/)
     expect(rail).not.toMatch(/selectView\("report"\)/)
-    // The former exception is gone with the composer's shortcuts: it opens no report flow at all now.
+    // The composer opens no report flow at all.
     expect(readSource("../PostComposer.tsx")).not.toMatch(/selectView\("report"\)/)
     // And the helper is reachable by the hosts' own entry points (mobile's `/report` shim).
     expect(readSource("../index.ts")).toMatch(/^\s*openReportFlow,$/m)
@@ -1041,10 +993,8 @@ describe("the wiring (source-pinned)", () => {
   })
 
   it("the host form no longer carries an EVENT create-intent at all", () => {
-    // The composer's "+ New event" shortcut is gone, so nothing ever arms `pendingCreate === "event"`:
-    // the host form's exit cleanup, its publish-time composer return and its share-block suppression were
-    // all unreachable and are deleted. Pinned as an absence so the branch cannot creep back without the
-    // shortcut that gives it a meaning. The REPORT half of the latch is still live (openReportFlow above).
+    // Nothing arms `pendingCreate === "event"`, so the host form must not carry an event branch that has no
+    // way to be reached. The report half of the latch is still live (openReportFlow above).
     const source = readSource("../CreateCleanupBody.tsx")
     expect(source).not.toMatch(/pendingCreate|setPendingCreate|usePostComposerStore/)
     const cleanup = source.slice(source.indexOf("if (isGenuineHostExit("))

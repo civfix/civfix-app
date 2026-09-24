@@ -1,5 +1,5 @@
-/* Home Turf Initiative — styled with the civfix.org design tokens.
-   Token values mirror the live civfix.org stylesheet verbatim; keep in sync. */
+/* A standalone static page outside the Next build, so it carries its own copy of the civfix.org
+   design tokens. */
 
 @font-face {
   font-family: HankenGrotesk;
@@ -17,7 +17,6 @@
 }
 
 :root {
-  /* surfaces + ink */
   --paper: #fbf7f0;
   --paper-2: #f4efe6;
   --card: #fff;
@@ -31,7 +30,6 @@
   --border: rgba(26, 23, 20, 0.1);
   --border-strong: rgba(26, 23, 20, 0.16);
 
-  /* brand ramps */
   --bloom: #ff7a6b;
   --bloom-50: #ffede9;
   --bloom-100: #ffd5cd;
@@ -49,7 +47,6 @@
   --sky-600: #3f8dc0;
   --lilac: #9c82de;
 
-  /* type */
   --font-display: HankenGrotesk, ui-sans-serif, system-ui, sans-serif;
   --font-body: HankenGrotesk, ui-sans-serif, system-ui, sans-serif;
   --fs-12: 0.75rem;
@@ -68,7 +65,6 @@
   --lh-base: 1.45;
   --lh-loose: 1.6;
 
-  /* geometry */
   --radius-xs: 6px;
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -87,7 +83,6 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* elevation + focus */
   --shadow-1: 0 1px 0 rgba(26, 23, 20, 0.04), 0 1px 2px rgba(26, 23, 20, 0.05);
   --shadow-2: 0 1px 0 rgba(26, 23, 20, 0.03), 0 2px 4px rgba(26, 23, 20, 0.04),
     0 8px 16px -6px rgba(26, 23, 20, 0.08);
@@ -96,7 +91,6 @@
   --sheen-top: inset 0 1px 0 hsla(0, 0%, 100%, 0.6);
   --ring: 0 0 0 3px hsla(6, 100%, 71%, 0.3);
 
-  /* motion */
   --dur-1: 120ms;
   --dur-2: 200ms;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -121,7 +115,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---- civfix rainbow wordmark (mirrors .cf-logo on civfix.org) ---- */
 .cf-logo {
   font-family: Baloo2_800ExtraBold, var(--font-display);
   font-weight: 800;
@@ -140,7 +133,6 @@ body {
 .cf-logo .s5 { color: #9c82de; }
 .cf-logo .s6 { color: #ff7a6b; }
 
-/* ---- layout ---- */
 .wrap {
   max-width: 700px;
   margin: 0 auto;
@@ -151,7 +143,6 @@ section + section {
   margin-top: var(--space-12);
 }
 
-/* ---- header ---- */
 .powered {
   display: inline-flex;
   align-items: baseline;
@@ -191,9 +182,8 @@ h1 {
   border: 0;
 }
 
-/* ---- Home Turf lockup (design handoff variant 3a) ----
-   Authored at 660x340; every px converted to cqw (1px = 0.1515cqw) so the field scales
-   fluidly with its container. Colors and shadows mirror the handoff verbatim. */
+/* Authored at 660x340; every px is converted to cqw (1px = 0.1515cqw) so the field scales fluidly
+   with its container. */
 .ft-hero {
   container-type: inline-size;
   max-width: 660px;
@@ -456,7 +446,6 @@ p + p {
   margin-top: var(--space-3);
 }
 
-/* ---- photo placeholders (swap the inner span for an <img>) ---- */
 .photo {
   background: var(--paper-2);
   border: 1px dashed var(--ink-4);
@@ -494,7 +483,6 @@ p + p {
   aspect-ratio: 4 / 3;
 }
 
-/* ---- what-we-provide callout ---- */
 .callout {
   background: var(--card);
   border: 1px solid var(--border-soft);
@@ -525,7 +513,6 @@ p + p {
   color: var(--moss-700);
 }
 
-/* ---- form (mirrors .field / .input-label / .input / .btn on civfix.org) ---- */
 .form-card {
   margin-top: var(--space-6);
   background: var(--card-tint);
@@ -666,7 +653,6 @@ textarea.input {
   border: 1px solid var(--bloom-300);
 }
 
-/* ---- footer ---- */
 .footer {
   margin-top: var(--space-16);
   text-align: center;

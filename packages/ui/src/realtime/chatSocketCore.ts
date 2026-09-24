@@ -283,6 +283,7 @@ export class ChatSocketCore implements ChatSocketLike {
     }
 
     socket.onerror = () => {
+      // Every error is followed by a close event, and onclose owns the reconnect.
     }
 
     socket.onclose = () => {

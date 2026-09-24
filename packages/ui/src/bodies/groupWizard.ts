@@ -1,6 +1,6 @@
 /**
- * groupWizard (P4 Task 4.7) - the PURE step-gating + draft normalization behind the New-group wizard
- * (NewGroupBody). RN-free so it unit-tests directly under vitest (like memberSelect / chatPowers).
+ * The step-gating and draft normalization behind the New-group wizard. RN-free so it unit-tests directly
+ * under vitest.
  *
  * The wizard's two steps mirror Telegram's flow:
  *   1. "members"  - pick who to add. Next is gated on at least ONE selected member (a group of just
@@ -16,12 +16,10 @@ export const GROUP_DESCRIPTION_MAX = 500
 
 export type GroupWizardStep = "members" | "identity"
 
-/** Step 1 -> 2 gate: at least one member picked. */
 export function canProceedToIdentity(selectedCount: number): boolean {
   return selectedCount >= 1
 }
 
-/** Step 2 Create gate: the TRIMMED name is non-empty and within the contract cap. */
 export function canCreateGroup(name: string, description = ""): boolean {
   const trimmed = name.trim()
   return (
@@ -31,7 +29,6 @@ export function canCreateGroup(name: string, description = ""): boolean {
   )
 }
 
-/** The normalized create payload fields: trimmed name; trimmed description or ABSENT when blank. */
 export function normalizeGroupDraft(
   name: string,
   description: string,

@@ -1,20 +1,7 @@
 /**
- * ReplyComposer - the thread's docked reply bar, and the reason `PostComposer`'s whole `compact` branch
- * could be DELETED rather than patched.
- *
- * WHAT IT FIXES (all measured on the device, not theorized):
- *  1. THE REPORTED BUG. With the keyboard up, the composer row, the attach pills and the Reply button were
- *     all behind it. `useReplyDockInset()` lifts the surface by exactly the keyboard overlap, once, on
- *     iOS / Android / mobile web - see that file for why it cannot double-apply.
- *  2. THE UNBOUNDED FIELD. `inputCompact` had `minHeight: 86` and NO `maxHeight`, so a long reply pushed
- *     everything below it off-screen. The field is capped by `buildReplyComposerHeightPlan` and scrolls
- *     internally past that.
- *  3. THE WRAPPING TOOLS ROW. `tools` was `flexWrap: "wrap"` over five variable-width controls. The tools
- *     row here holds exactly two fixed-width controls plus a flex spacer and CANNOT wrap at any width in
- *     any locale (375 - 24 padding - 36 circle - 16 gap - ~86 for German "Antworten" still leaves 213pt).
- *  4. THE 284pt INLINE PANEL. Attaching moved into `ReplyAttachSheet`, a modal, costing the bar 0pt.
- *  5. THE IN-FLOW MENTION TRAY. It is absolutely positioned at `bottom: "100%"` and contributes nothing to
- *     layout, so typing "@" no longer inflates the bar.
+ * The thread's docked reply bar. `useReplyDockInset()` lifts it by exactly the keyboard overlap (see that
+ * file for why it cannot double-apply), the field is capped by `buildReplyComposerHeightPlan` and scrolls
+ * internally past that, and attaching lives in the `ReplyAttachSheet` modal so it costs the bar nothing.
  *
  * THREE INDEPENDENT LAYERS keep the Reply pill on screen, and none of them depends on a constant being
  * right: (a) the chrome around the field is MEASURED by two `onLayout` probes, so `REPLY_CHROME_FALLBACK`
@@ -165,9 +152,8 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
 
     const [focused, setFocused] = React.useState(false)
     /**
-     * Does this composer sit in the landscape CARD? Three round-1 polish fixes hang off it (DS-05 focus
-     * ring, DS-06 one left column, DS-14 even inset + a visible hairline), all held to expanded because
-     * the identical bar ships in the portrait thread, which is pinned to its redesign baseline.
+     * Does this composer sit in the landscape CARD? The card needs its own focus ring, left edge, inset and
+     * hairline; they stay expanded-only because the identical bar ships in the portrait thread.
      */
     const inCard = useLayoutMode() === "expanded"
     const [attachOpen, setAttachOpen] = React.useState(false)
@@ -293,8 +279,8 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
     }
 
     const removeMedia = (id: string) => {
-      // Carried thumbs are keyed by POSITION: the same asset picked twice shares a uri, and filtering on
-      // it used to delete both copies at once.
+      // Carried thumbs are keyed by POSITION: the same asset picked twice shares a uri, so filtering on
+      // it would delete both copies at once.
       const index = carriedMediaIndex(id)
       if (index != null) {
         setCarried((current) => current.filter((_item, at) => at !== index))
@@ -331,9 +317,9 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
         event: draft.attachedEvent
           ? { ...draft.attachedEvent, linkedAt: new Date().toISOString() }
           : null,
-        // Built from the picked ROW, exactly as `event` is built from `draft.attachedEvent`. Leaving it
-        // null made an attachment-only reply render as an essentially EMPTY row for the length of the
-        // request, and then pop its card in (shifting the list) when the server DTO replaced it.
+        // Built from the picked ROW, exactly as `event` is built from `draft.attachedEvent`. A null here
+        // would render an attachment-only reply as an essentially EMPTY row for the length of the
+        // request, then pop its card in (shifting the list) when the server DTO replaced it.
         // `attachedReport` is fetched BY `draft.attachedReportId` (see the hook above it is derived
         // from), so the id check is a defensive no-op once the query resolves - it just covers the one
         // render right after a re-aim where the new id's data has not landed yet.
@@ -355,8 +341,8 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
             : null,
         repostOf: null,
         replyToId: targetId,
-        // The server derives `parent.thread_root_id ?? parent.id`. Setting BOTH to the parent id (what the
-        // old composer did) is only correct at depth 1 - and drilling into a reply now makes depth 2 real.
+        // The server derives `parent.thread_root_id ?? parent.id`. Setting BOTH to the parent id is only
+        // correct at depth 1, and drilling into a reply makes depth 2 real.
         threadRootId: focalPost.threadRootId ?? focalPost.id,
       }
       create.mutate(
@@ -405,7 +391,7 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
     const canAttachMedia = attachments.canAttach && media.length < POST_COMPOSER_MEDIA_CAP
     const canAttachAnything = canAttachMedia || draft.attachedEventId == null || draft.attachedReportId == null
 
-    // ---- SIGNED OUT: the whole surface is one sign-in pill. Both thread queries are auth-gated, so a
+    // Signed out, the whole surface is one sign-in pill: both thread queries are auth-gated, so a
     // signed-out reader would otherwise get a permanently disabled grey Reply button on a dead screen.
     if (state === "signed-out") {
       return (
@@ -435,13 +421,9 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
         <View
           style={[
             styles.surface,
-            // DS-14, EXPANDED: the bar's own hairline is `colors.border` on the card's SAND fill, a
-            // one-unit-per-channel difference, so the last reply butted straight into the field with
-            // nothing marking the boundary; §6's on-sand rule is `borderStrong` lightened to 0.45.
             inCard ? styles.surfaceInCard : null,
             {
-              // DS-14, EXPANDED: 12 all round. The field measured 12px to the card's right edge but only
-              // 8 to its bottom, so the composer sat visibly lower in its own gutter than beside it.
+              // EXPANDED: 12 all round, so the field's bottom gap matches its side gap inside the card.
               // `dock.restPad` (0 on a pointer surface) still rides on top wherever a dock overlaps.
               paddingBottom: (inCard ? th.space["3"] : th.space["2"]) + dock.restPad,
               maxHeight: plan.surfaceMax,
@@ -497,11 +479,10 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
               onContentSizeChange={grow.onContentSizeChange}
               onKeyPress={onKeyPress}
               style={[
-                // DS-05: `webInputReset` FIRST (so `styles.input`'s own border/colour still win) - it is
-                // what strips the browser's default blue `outline`, which was painting a saturated
-                // ~#0B57D0 ring on the sand card. `inputFocused` then draws the house coral treatment.
-                // Driven by the field's own focus state, not `focusRingProps`: a text field must show
-                // focus for POINTER focus too, which `:focus-visible` deliberately withholds.
+                // `webInputReset` FIRST (so `styles.input`'s own border/colour still win): it strips the
+                // browser's default blue `outline` on the sand card, and `inputFocused` then draws the
+                // house coral treatment. Driven by the field's own focus state, not `focusRingProps`: a
+                // text field must show focus for POINTER focus too, which `:focus-visible` withholds.
                 inCard ? webInputReset : null,
                 styles.input,
                 { maxHeight: plan.inputMax, height: expanded ? grow.height : 36 },
@@ -543,8 +524,8 @@ export const ReplyComposer = React.forwardRef<ReplyComposerHandle, ReplyComposer
                 </Text>
               ) : null}
 
-              {/* NO flexWrap. Two fixed-width controls + a flex spacer cannot wrap at any width in any
-                  locale - which structurally kills the old bar's 2-and-3-line wrapping bug. */}
+              {/* NO flexWrap: two fixed-width controls + a flex spacer cannot wrap at any width in any
+                  locale, so the bar's height stays predictable. */}
               <View style={styles.toolsRow}>
                 <Pressable
                   ref={plusRef}
@@ -638,12 +619,10 @@ const useStyles = makeThemedStyles((t) => ({
     paddingTop: t.space["2"],
     gap: 6,
   },
-  // DS-14, EXPANDED ONLY. Two changes, both about the bar's edges inside the sand card:
-  //   - the top hairline becomes the on-sand rule §6 names (`borderStrong` lightened to 0.45, 1px flat).
-  //     `colors.border` on `colors.bg` is rgb(236,229,216) on rgb(237,230,216) - literally invisible - so
-  //     on a full thread the last reply ran straight into the field with nothing separating them;
-  //   - the top inset joins the sides at 12 (the bottom is evened at the call site, where `dock.restPad`
-  //     is added), so the field's four gaps to the card finally agree.
+  // EXPANDED ONLY. The top hairline is the on-sand rule (`borderStrong` lightened to 0.45) because
+  // `colors.border` on `colors.bg` is invisible, which would run the last reply straight into the field.
+  // The top inset joins the sides at 12 (the bottom is evened at the call site, where `dock.restPad` is
+  // added), so the field's four gaps to the card agree.
   surfaceInCard: {
     borderTopWidth: 1,
     borderTopColor: wash(t.colors.borderStrong, 0.45, t),
@@ -666,12 +645,9 @@ const useStyles = makeThemedStyles((t) => ({
     flexShrink: 0,
     gap: 6,
   },
-  // DS-06, EXPANDED ONLY. The expanded bar is three stacked rows and they sat on three different left
-  // edges: the "Replying to @x" chip and the +/Reply tools row started at the surface gutter (x~108 at
-  // 1440) while the FIELD started at x~142, inset past the 28pt avatar - so the one row the other two
-  // belong to was the only one indented, and the composer read as three unrelated blocks. Indenting the
-  // two chrome blocks by the avatar gutter (28 avatar + `fieldRow`'s 10 gap) puts all three on the
-  // field's left edge without restructuring the tree - which matters, because the two `onLayout` probes
+  // EXPANDED ONLY. The field is inset past the 28pt avatar, so indenting the two chrome blocks by the
+  // avatar gutter (28 avatar + `fieldRow`'s 10 gap) puts the chip, field and tools row on one left edge.
+  // It is done with a margin rather than by restructuring the tree because the two `onLayout` probes
   // that budget this bar's height measure exactly these blocks.
   chromeInCard: {
     marginLeft: 28 + 10,
@@ -705,9 +681,8 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
     textAlignVertical: "top",
   },
-  // DS-05, EXPANDED ONLY: the house focused-field treatment (`SearchBody.styles.fieldFocused` verbatim) -
-  // the coral `shadow.ring` plus an accent border - replacing Chrome's default blue outline on the single
-  // most-used field of the thread surface.
+  // EXPANDED ONLY: the house focused-field treatment (`SearchBody.styles.fieldFocused` verbatim), in place
+  // of the browser's default blue outline.
   inputFocused:
     Platform.OS === "web"
       ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as unknown as TextStyle)

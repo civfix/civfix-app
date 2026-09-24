@@ -117,7 +117,7 @@ describe("the check-in screen shows who is still waiting", () => {
 })
 
 describe("a member of a NON-ticketed event can still open their ticket", () => {
-  it("offers the row off the registration the backend now creates for every signup", () => {
+  it("offers the row off the registration the backend creates for every signup", () => {
     expect(detail).toContain(
       'useNavStore.getState().push({ kind: "my-ticket", id: cleanup.id, title: cleanup.title })',
     )

@@ -206,7 +206,7 @@ export function previewForReport(
   const description =
     (joinParts([input.title, input.description])
       ? finishDescription([statusLabel, input.title, input.description])
-      : finishDescription([statusLabel ? `${kindLabel} — ${statusLabel}` : kindLabel, cityName])) ||
+      : finishDescription([statusLabel ? `${kindLabel} · ${statusLabel}` : kindLabel, cityName])) ||
     DEFAULT_DESCRIPTION
 
   const image = firstCarouselImage(input.media)

@@ -1,6 +1,6 @@
 /**
- * `dayKey` documents itself as a "YYYY-MM-DD" key; it used to emit an unpadded, 0-based month
- * ("2026-6-24" for July 24) which sorted and parsed a month off. It is still a LOCAL calendar day.
+ * `dayKey` is a zero-padded, 1-based "YYYY-MM-DD" key (an unpadded 0-based month such as "2026-6-24" for
+ * July 24 sorts and parses a month off), and it is a LOCAL calendar day.
  */
 import { describe, expect, it } from "vitest"
 import { dayKey } from "../relativeTime"

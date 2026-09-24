@@ -1,13 +1,6 @@
 /**
- * Unit tests for the expanded (landscape) shell's FRAME PLAN - the ONE place that answers "where does the
- * top nav strip end", "is the card on screen", and "how much of the map is hidden behind it". Pure
- * functions over the nav vocabulary, so vitest drives them directly (house style: backAffordance,
- * dragCollapse, postCardRhythm).
- *
- * WHY the module exists: before it, the card's inset lived in ExpandedShell's private styles, the map
- * camera re-derived the occlusion from a `sidebarWidth` parameter, and the web host's attribution rule
- * hardcoded a stale pixel offset - three copies of one number. Every checkpoint width in the design's
- * table is asserted here so a geometry change cannot pass silently.
+ * Every checkpoint width in the design's table is asserted here so a geometry change cannot pass
+ * silently: the card inset, the map camera's occlusion and the web attribution offset all read this plan.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
@@ -133,7 +126,6 @@ describe("expandedFramePlan: cardVisible", () => {
   })
 
   it("brings the card back as soon as the map opens a detail on top of it", () => {
-    // Pin tap / cluster tap / long-press drop-pin: the stack goes non-empty, the card returns.
     expect(plan({ view: "map", stackLength: 1 }).cardVisible).toBe(true)
     expect(plan({ view: "map", stackLength: 3 }).cardVisible).toBe(true)
   })

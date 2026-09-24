@@ -1,7 +1,7 @@
 /**
- * APP-BUG-296: on reconnect a dropped (offline-failed) message is re-sent, but its bubble kept showing
- * "failed" until the ack. The outbox updater read offlineFailedRef lazily, after dispatch() had already
- * cleared the id, so nothing flipped back to "sending". The ids are now captured before dispatch.
+ * On reconnect an offline-failed message is re-sent, and its bubble must flip back to "sending" at once.
+ * The outbox updater runs lazily, after dispatch() has cleared the id from offlineFailedRef, so the ids
+ * must be captured before dispatch.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"

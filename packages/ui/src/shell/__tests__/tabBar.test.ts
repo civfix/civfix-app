@@ -186,7 +186,7 @@ describe("map-first tab bar model", () => {
     expect(resolvePreviousView("map", "messaging")).toBe("messaging")
   })
 
-  it("seeds prevView from the last-non-search view on a deep-link straight into Search (defect 8)", () => {
+  it("seeds prevView from the last-non-search view on a deep-link straight into Search", () => {
     expect(seedPreviousView("map", "home")).toBe("map")
     expect(seedPreviousView("search", "map")).toBe("map")
     expect(seedPreviousView("search", "home")).toBe("home")
@@ -367,7 +367,7 @@ describe("dockBottomGap on Android: the system nav bar is reserved IN FULL", () 
     }
   })
 
-  it("leaves iOS and web BYTE-IDENTICAL: the default arg reproduces the old formula for every inset", () => {
+  it("leaves iOS and web BYTE-IDENTICAL: the default arg yields max(inset - 12, 8) for every inset", () => {
     for (let inset = 0; inset <= 96; inset++) {
       expect(dockBottomGap(inset)).toBe(Math.max(inset - 12, 8))
       expect(dockBottomGap(inset)).toBe(dockBottomGap(inset, "other"))
@@ -386,7 +386,7 @@ describe("dockBottomGap on Android: the system nav bar is reserved IN FULL", () 
     expect(native.match(/Platform\.OS ===/g)).toHaveLength(1)
   })
 
-  it("keeps the platform signal a PARAMETER — tabBarLogic stays react-native-free", () => {
+  it("keeps the platform signal a PARAMETER: tabBarLogic stays react-native-free", () => {
     const logic = readFileSync(new URL("../tabBarLogic.ts", import.meta.url), "utf8")
     expect(logic).not.toMatch(/from "react-native"/)
     expect(logic).toMatch(/export type DockPlatform = "android" \| "other"/)
@@ -690,7 +690,7 @@ describe("tab-strip drag: gesture callbacks stay UI-thread safe", () => {
 describe("the keyboard-aware scroll seam measures the keyboard instead of trusting the window", () => {
   const seam = () => readFileSync(new URL("../KeyboardAwareScroll.native.tsx", import.meta.url), "utf8")
 
-  it("never reads endCoordinates.screenY — on Android it is the window bottom, not the keyboard top", () => {
+  it("never reads endCoordinates.screenY: on Android it is the window bottom, not the keyboard top", () => {
     expect(seam()).not.toMatch(/screenY/)
   })
 
@@ -779,7 +779,7 @@ describe("useKeyboardReserve is a seam pair, and iOS pays nothing for it", () =>
     )
   })
 
-  it("adds NOTHING of its own on top of the anchor — the safe-area pad is an explicit restOffset", () => {
+  it("adds NOTHING of its own on top of the anchor: the safe-area pad is an explicit restOffset", () => {
     const native = read("../useKeyboardReserve.native.ts")
     expect(native).not.toMatch(/SafeAreaInsetsContext/)
     expect(native).not.toMatch(/reserved \+ /)

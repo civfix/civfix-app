@@ -62,7 +62,7 @@ test("a parked clip WAITS for the session instead of being thrown away", () => {
   assert.equal(startsDeferredRecording(false, true, true), false)
 })
 
-test("Finding 1 - sessionRunning true is NOT proof the audio prop has committed, so the park must still wait", () => {
+test("sessionRunning true is NOT proof the audio prop has committed, so the park must still wait", () => {
   assert.equal(startsDeferredRecording(true, true, false), false)
   assert.equal(startsDeferredRecording(true, true, true), true)
 })
@@ -86,7 +86,7 @@ test("cameraSessionRunning stays the boolean projection of cameraSessionVeto('no
   )
 })
 
-test("Finding 2 - only the TRANSIENT blip waits; every other veto DROPS the park", () => {
+test("only the TRANSIENT blip waits; every other veto DROPS the park", () => {
   const pastGrace = BACKGROUNDED_PARK_GRACE_MS + 1000
   assert.equal(dropsParkedRecording("transient-inactive", pastGrace), false)
   assert.equal(dropsParkedRecording("none", pastGrace), false)
@@ -96,20 +96,20 @@ test("Finding 2 - only the TRANSIENT blip waits; every other veto DROPS the park
   assert.equal(dropsParkedRecording("no-device", pastGrace), true)
 })
 
-test("Finding 2 - the exact reachable sequence: leaving the Report tab drops the park instead of firing minutes later", () => {
+test("the exact reachable sequence: leaving the Report tab drops the park instead of firing minutes later", () => {
   const leftTheTab: CameraSessionInputs = { ...ready, hostActive: false }
   assert.equal(cameraSessionRunning(leftTheTab), false)
   assert.equal(dropsParkedRecording(cameraSessionVeto(leftTheTab), 0), true)
 })
 
-test("Finding 2 - backgrounding the app (not just a transient blip) also drops the park, once the grace has elapsed", () => {
+test("backgrounding the app (not just a transient blip) also drops the park, once the grace has elapsed", () => {
   const backgrounded: CameraSessionInputs = { ...ready, appState: "background" }
   assert.equal(dropsParkedRecording(cameraSessionVeto(backgrounded), BACKGROUNDED_PARK_GRACE_MS), true)
   const transientBlip: CameraSessionInputs = { ...ready, appState: "inactive" }
   assert.equal(dropsParkedRecording(cameraSessionVeto(transientBlip), BACKGROUNDED_PARK_GRACE_MS + 1000), false)
 })
 
-test("Finding B - a park just after the timestamp still waits on 'backgrounded', not an instant drop", () => {
+test("a park just after the timestamp still waits on 'backgrounded', not an instant drop", () => {
   const androidDialogBackground: CameraSessionInputs = { ...ready, appState: "background" }
   const veto = cameraSessionVeto(androidDialogBackground)
   assert.equal(veto, "backgrounded")
@@ -117,7 +117,7 @@ test("Finding B - a park just after the timestamp still waits on 'backgrounded',
   assert.equal(dropsParkedRecording(veto, BACKGROUNDED_PARK_GRACE_MS - 1), false)
 })
 
-test("Finding B - a park well past the grace threshold drops, even without ever having been re-checked before", () => {
+test("a park well past the grace threshold drops, even without ever having been re-checked before", () => {
   assert.equal(dropsParkedRecording("backgrounded", BACKGROUNDED_PARK_GRACE_MS), true)
   assert.equal(dropsParkedRecording("backgrounded", BACKGROUNDED_PARK_GRACE_MS + 60_000), true)
 })
@@ -126,7 +126,7 @@ test("Android permission-dialog race - the grace never starts a recording by its
   assert.equal(startsDeferredRecording(true, false, true), false)
 })
 
-test("Finding B - 'left-surface' drops regardless of elapsed time; the grace never extends to it", () => {
+test("'left-surface' drops regardless of elapsed time; the grace never extends to it", () => {
   const leftTheTab: CameraSessionInputs = { ...ready, hostActive: false }
   const veto = cameraSessionVeto(leftTheTab)
   assert.equal(veto, "left-surface")
@@ -134,34 +134,34 @@ test("Finding B - 'left-surface' drops regardless of elapsed time; the grace nev
   assert.equal(dropsParkedRecording(veto, BACKGROUNDED_PARK_GRACE_MS + 1000), true)
 })
 
-test("Finding B - BACKGROUNDED_PARK_GRACE_MS is a small, deliberate window, not a stand-in for 'no grace'", () => {
+test("BACKGROUNDED_PARK_GRACE_MS is a small, deliberate window, not a stand-in for 'no grace'", () => {
   assert.equal(BACKGROUNDED_PARK_GRACE_MS, 2000)
 })
 
-test("Finding 1 / Finding 3 - a stale park is refused at the START, independent of msSinceParked's exact veto", () => {
+test("a stale park is refused at the START, independent of msSinceParked's exact veto", () => {
   assert.equal(parkIsStale(0), false)
   assert.equal(parkIsStale(BACKGROUNDED_PARK_GRACE_MS - 1), false)
   assert.equal(parkIsStale(BACKGROUNDED_PARK_GRACE_MS), true)
   assert.equal(parkIsStale(BACKGROUNDED_PARK_GRACE_MS + 5 * 60_000), true)
 })
 
-test("Finding 3 - the exact reachable sequence: the app switcher left open for minutes does not protect a stale park", () => {
+test("the exact reachable sequence: the app switcher left open for minutes does not protect a stale park", () => {
   const fiveMinutes = 5 * 60_000
   assert.equal(dropsParkedRecording("transient-inactive", fiveMinutes), false)
   assert.equal(parkIsStale(fiveMinutes), true)
 })
 
-test("Finding 1 - the exact reachable sequence: returning from background minutes later reads veto 'none', which dropsParkedRecording alone would not drop", () => {
+test("the exact reachable sequence: returning from background minutes later reads veto 'none', which dropsParkedRecording alone would not drop", () => {
   const fiveMinutes = 5 * 60_000
   assert.equal(dropsParkedRecording("none", fiveMinutes), false)
   assert.equal(parkIsStale(fiveMinutes), true)
 })
 
-test("Finding 1 / Finding 3 - a genuinely fresh park is never mistaken for stale (no regression on the Android permission-dialog grace)", () => {
+test("a genuinely fresh park is never mistaken for stale, so the Android permission-dialog grace holds", () => {
   assert.equal(parkIsStale(150), false)
 })
 
-test("Finding 3 - MAX_VIDEO_SECONDS is pinned to the design's 10s cap", () => {
+test("MAX_VIDEO_SECONDS is pinned to the design's 10s cap", () => {
   assert.equal(MAX_VIDEO_SECONDS, 10)
 })
 

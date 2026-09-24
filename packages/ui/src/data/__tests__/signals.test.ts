@@ -1,9 +1,8 @@
 /**
  * The realtime channel turns a per-user signal frame into TanStack Query invalidations. This pins the
- * topic -> query-key mapping (the contract between the backend's signal topics and the client caches),
- * which both hosts now share: a `notifications` signal refreshes the bell, a `threads` signal refreshes
- * the inbox family, a `reports` signal refreshes the viewer's reports, and an unknown topic maps to no
- * keys (forward-compat).
+ * topic -> query-key mapping both hosts share (the contract between the backend's signal topics and the
+ * client caches): `notifications` refreshes the bell, `threads` the inbox family, `reports` the viewer's
+ * reports, and an unknown topic maps to no keys so an older client stays safe.
  */
 import { describe, expect, it } from "vitest"
 

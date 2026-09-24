@@ -1,9 +1,8 @@
 import { z } from "zod"
 
 /**
- * System health: per-service status for the HealthPage / MailSystem summary. Degrades gracefully
- * (report what is reachable; Phase 3 services like the VRP/Valhalla router are "not_deployed", the
- * legacy "Video transcoder" is renamed to the media worker). See enumeration 2.J + 4.10, endpoint #7.
+ * System health: per-service status. Degrades gracefully: it reports what is reachable, and a service
+ * that is not running in this deployment reads "not_deployed".
  */
 
 /** A single service health row. `val` is a short metric string (e.g. "p95 142ms", "CPU 38%"). */

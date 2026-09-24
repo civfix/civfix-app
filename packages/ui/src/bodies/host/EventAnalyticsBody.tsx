@@ -47,7 +47,7 @@ import {
 } from "../../data/hooks/host"
 import { useAuthState } from "../../data"
 import { useEventAnalytics, useHostAnalyticsSummary } from "../../data/hooks/analytics"
-import { useLocale, useRelativeTime, useT } from "../../i18n"
+import { EMPTY_VALUE, useLocale, useRelativeTime, useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 import { HeroSkeleton, TilesSkeleton } from "./HostSkeletons"
@@ -57,6 +57,7 @@ import {
   DEFAULT_ALL_EVENTS_PRESET,
   DEFAULT_EVENT_PRESET,
   arrivalXLabels,
+  byEventRowA11y,
   comparisonVerdict,
   comparisonVisible,
   eventRowTarget,
@@ -78,8 +79,6 @@ const BARS_HEIGHT = 96
 
 const RING_SIZE = 96
 
-const DASH = "—"
-
 const MAX_BY_EVENT_ROWS = 12
 
 function summaryRange(preset: AnalyticsRangePreset): AnalyticsRange {
@@ -96,7 +95,7 @@ function breakdownBars(
     label: label ? label(row) : row.label,
     value: row.suppressed ? null : row.value,
     color,
-    valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
+    valueLabel: row.suppressed ? EMPTY_VALUE : String(row.value ?? 0),
   }))
 }
 
@@ -426,10 +425,7 @@ function EventBarRow({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={t("page.by_event_a11y", {
-        name: row.label,
-        value: value === null ? DASH : value,
-      })}
+      accessibilityLabel={byEventRowA11y(t, row.label, value)}
       {...focusRingProps}
       style={(state) => [
         styles.eventRow,
@@ -442,7 +438,7 @@ function EventBarRow({
           {row.label}
         </Text>
         <Text variant="caption" numberOfLines={1}>
-          {value === null ? DASH : String(value)}
+          {value === null ? EMPTY_VALUE : String(value)}
         </Text>
       </View>
       <View style={styles.funnelTrack}>
@@ -639,7 +635,7 @@ function Funnel({ data }: { data: GetEventAnalyticsResponse }) {
             </Text>
             <Text variant="caption" numberOfLines={1}>
               {bar.value === null
-                ? DASH
+                ? EMPTY_VALUE
                 : bar.ofPrevious === null
                   ? String(bar.value)
                   : t("funnel.of_previous", { value: bar.value, rate: bar.ofPrevious })}
@@ -718,7 +714,7 @@ function SlotsSection({ data }: { data: GetEventAnalyticsResponse }) {
         <Text variant="caption">
           {t("page.waitlist_line", {
             joined: data.kpis.waitlisted,
-            rate: waitlist === null ? DASH : `${waitlist}%`,
+            rate: waitlist === null ? EMPTY_VALUE : `${waitlist}%`,
           })}
         </Text>
       ) : null}
@@ -771,7 +767,7 @@ function EventDaySection({ data }: { data: GetEventAnalyticsResponse }) {
           trackColor={th.colors.chartTrack}
           accessibilityLabel={checkInRingA11y(t, rate)}
         >
-          <Text style={styles.ringValue}>{rate === null ? DASH : `${rate}%`}</Text>
+          <Text style={styles.ringValue}>{rate === null ? EMPTY_VALUE : `${rate}%`}</Text>
         </ProgressRing>
         <View style={styles.ringMeta}>
           <Text variant="caption">
@@ -847,13 +843,13 @@ function ComparisonSection({ data }: { data: GetEventAnalyticsResponse }) {
       key: "signups",
       value: signups,
       median: comparison.medians.signups,
-      text: signups === null ? DASH : String(signups),
+      text: signups === null ? EMPTY_VALUE : String(signups),
     },
     {
       key: "check_in_rate",
       value: data.rates.checkIn.value,
       median: comparison.medians.checkInRate,
-      text: ratePercent(data.rates.checkIn) === null ? DASH : `${ratePercent(data.rates.checkIn)}%`,
+      text: ratePercent(data.rates.checkIn) === null ? EMPTY_VALUE : `${ratePercent(data.rates.checkIn)}%`,
     },
     {
       key: "hours_per_volunteer",
@@ -861,7 +857,7 @@ function ComparisonSection({ data }: { data: GetEventAnalyticsResponse }) {
       median: comparison.medians.hoursPerVolunteer,
       text:
         hoursPerVolunteer === null
-          ? DASH
+          ? EMPTY_VALUE
           : t("card.hours_value", { hours: Math.round(hoursPerVolunteer * 10) / 10 }),
     },
   ]

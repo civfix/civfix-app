@@ -1,16 +1,7 @@
 /**
- * The keyboard focus ring's CONTRAST and its opt-in coverage across the shell chrome.
- *
- * The ring is drawn by ONE injected stylesheet rule (`theme/webAffordances.ts`), so its legibility is a
- * single number that either clears WCAG 2.4.11's 3:1 floor on every surface the shell puts behind it or
- * does not. It did not: the shipped `tokens.shadow.ring` is 30%-alpha FILL coral, which composites to
- * 1.32:1 on sand and 1.38:1 on a card. This suite computes the ratios from the literals themselves rather
- * than trusting a comment, so a future "let's soften the ring" edit fails here instead of in a screenshot
- * review six months later.
- *
- * Source greps for the coverage half: `webAffordances`, `MapControls` and `ExpandedShell` all import
- * react-native, which this package's node-environment vitest cannot load, so the opt-ins are pinned by
- * reading the source - the house pattern (see `rail.test.ts`, `searchInboxAffordances.test.ts`).
+ * The ring's contrast is computed from the literals rather than trusted from a comment, so a softened ring
+ * fails here. The opt-in coverage is pinned by reading source, because those modules import react-native,
+ * which this package's node vitest cannot load.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
@@ -24,10 +15,6 @@ const affordancesCode = strip(affordances)
 const themeIndex = read("../schemes.ts")
 const mapControls = strip(read("../../map/MapControls.tsx"))
 const expandedShell = strip(read("../../shell/ExpandedShell.tsx"))
-
-/* --------------------------------------------------------------------------------------------- *
- * Contrast math (WCAG 2.x relative luminance).
- * --------------------------------------------------------------------------------------------- */
 
 type Rgb = readonly [number, number, number]
 
@@ -53,7 +40,7 @@ function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05)
 }
 
-/** Composite `hex` at `alpha` over an opaque backdrop - what an rgba() ring actually paints. */
+/** What an rgba() ring actually paints over an opaque backdrop. */
 function over(hex: string, alpha: number, backdrop: string): string {
   const f = rgb(hex)
   const b = rgb(backdrop)
@@ -64,10 +51,8 @@ function over(hex: string, alpha: number, backdrop: string): string {
   return `#${mix(0)}${mix(1)}${mix(2)}`
 }
 
-/** The two surfaces the ring is mandated to clear: the sand paper and the card. */
 const SAND = tokens.color.neutral.paper
 const CARD = tokens.color.neutral.card
-/** The ring's ink, as the literal `webAffordances` ships. */
 const RING = "#B03A2C"
 const RING_DARK = "#F79185"
 
@@ -75,8 +60,6 @@ describe("the focus ring's ink clears 3:1 on both civfix surfaces", () => {
   it("is the accentText coral, single-sourced with theme.colors.accentText", () => {
     expect(SAND).toBe("#F4EFE6")
     expect(CARD).toBe("#FFFDF8")
-    // The literal in webAffordances cannot import `colors` (theme/index re-exports webAffordances, so the
-    // import would close a module cycle), so the two strings are pinned equal here instead.
     expect(affordancesCode).toContain(`export const FOCUS_RING_COLOR = "${RING}"`)
     expect(themeIndex).toContain(`accentText: "${RING}"`)
   })
@@ -98,7 +81,6 @@ describe("the focus ring's ink clears 3:1 on both civfix surfaces", () => {
   })
 
   it("is a real raise: the token's own 30% fill coral fails both by a factor of three", () => {
-    // This is what shipped before, and why the ring had to change rather than just widen.
     const spec = /^0 0 0 \d+(?:\.\d+)?px\s+rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(tokens.shadow.ring)
     expect(spec).not.toBeNull()
     const parts = spec ?? ["", "0", "0", "0", "1"]
@@ -112,32 +94,27 @@ describe("the focus ring's ink clears 3:1 on both civfix surfaces", () => {
 
 describe("the ring's geometry", () => {
   it("keeps the token's 3px footprint, spending 1px of it as a gap", () => {
-    // `outline-offset` is what keeps the band legible against the CONTROL too: opaque accentText is only
-    // 2.83:1 against the ink-filled orb and 1.96:1 against the coral New post pill, so a zero-offset band
-    // would butt onto a fill it barely separates from. The gap shows the page surface, which the ring
-    // clears by 4.8:1+.
+    // The gap keeps the ring legible against the control too: accentText is under 3:1 on the ink orb.
     expect(contrast(RING, tokens.color.neutral.ink)).toBeLessThan(3)
     expect(affordancesCode).toContain("export const FOCUS_RING_OFFSET = 1")
     expect(affordancesCode).toContain(
       "export const FOCUS_RING_WIDTH = FOCUS_RING_FOOTPRINT - FOCUS_RING_OFFSET",
     )
     expect(affordancesCode).toMatch(/const FOCUS_RING_FOOTPRINT = RING_SPEC \? Number\(RING_SPEC\[1\]\) : 3/)
-    // The footprint is still the token's, so nothing that clips at 3px clips any harder.
     expect(tokens.shadow.ring.startsWith("0 0 0 3px")).toBe(true)
   })
 
-  it("emits the offset into the injected rule rather than the old hard 0", () => {
+  it("emits the offset into the injected rule rather than a hard 0", () => {
     expect(affordancesCode).toContain("outline-offset:${FOCUS_RING_OFFSET}px")
     expect(affordancesCode).not.toContain("outline-offset:0")
-    // The stroke is still >= the 2px minimum thickness WCAG 2.4.13 asks of a focus indicator.
+    // WCAG 2.4.13 asks for a stroke of at least 2px.
     expect(3 - 1).toBeGreaterThanOrEqual(2)
   })
 })
 
 describe("the shell chrome opts in", () => {
   it("MapControls tags the brand pill and BOTH ProfileEntry arms", () => {
-    // Locate / Layers / Activity inherit the ring from GlassButton; these three are the raw Pressables
-    // that were left painting Chrome's blue UA outline beside them.
+    // Locate / Layers / Activity inherit the ring from GlassButton; these three are raw Pressables.
     expect(mapControls).toMatch(/import \{[^}]*\bfocusRingProps\b[^}]*\} from "\.\.\/theme"/)
     expect((mapControls.match(/\{\.\.\.focusRingProps\}/g) ?? []).length).toBe(3)
   })

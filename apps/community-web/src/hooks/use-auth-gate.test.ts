@@ -5,14 +5,9 @@ import { runGatedAction } from "@/hooks/use-auth-gate"
 import { useAuthStore, deriveInitialState, SESSION_SETTLE_TIMEOUT_MS } from "@/store/auth-store"
 
 /**
- * The auth gate's CSRF boot-race deferral (runGatedAction is the non-hook core useAuthGate wraps):
- *  - confirmed-authenticated taps run at once; signed-out taps open the auth modal (the original gate).
- *  - a tap in the OPTIMISTIC boot window (snapshot-authenticated, csrfToken still null) DEFERS until
- *    the session check settles, then runs the action with the live token in the store - it must never
- *    fire the mutation tokenless into the backend's csrfProtect 403.
- *  - hydration answering "signed out" (expired session) falls back to the auth modal.
- *  - a hung /auth/session cannot wedge the tap: past the settle timeout the gate treats the viewer as
- *    signed-out and opens the modal, and a LATE hydration must not replay the action.
+ * A tap in the optimistic boot window (no CSRF token yet) must never fire the mutation tokenless into a
+ * silent 403: it defers until the session check settles, and a hung /auth/session cannot wedge it or
+ * replay it after a late hydration.
  */
 
 const USER: UserDTO = {

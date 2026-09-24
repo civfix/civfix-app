@@ -1,9 +1,6 @@
 /**
- * SearchBodyReveal (web seam) - a no-op.
- *
- * On web, Search is a normal base body (there is no dock morph over a map to sync to), so the reveal
- * overlay renders nothing and the base surface shows the Search body as before. `SEARCH_IS_OVERLAY` is
- * false on web, so PortraitShellFrame's `effectiveBaseView` is identity and the base still renders Search.
+ * A no-op: on web Search is a normal base body with no dock morph to sync to, and `SEARCH_IS_OVERLAY` is
+ * false, so the base surface still renders it.
  */
 import type { ReactElement } from "react"
 import type { SearchBodyRevealProps } from "./SearchBodyReveal.types"

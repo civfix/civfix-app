@@ -134,7 +134,7 @@ describe("previewForReport", () => {
   it("builds an X-style title from the type label and city, and a status-led description", () => {
     const preview = previewForReport(base, ctx)
     expect(preview?.title).toBe("Graffiti in Los Angeles, CA on civfix")
-    expect(preview?.description).toBe("Graffiti — In progress · Los Angeles, CA")
+    expect(preview?.description).toBe("Graffiti · In progress · Los Angeles, CA")
     expect(preview?.type).toBe("article")
     expect(preview?.card).toBe("summary_large_image")
   })

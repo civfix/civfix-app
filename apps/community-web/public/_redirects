@@ -58,11 +58,10 @@
 /leaderboard/*      /leaderboard/_/      200
 /service-record/*   /service-record/_/   200
 
-# 3) Host-platform routes added by the events overhaul. Both are catch-all placeholder shells with
-# NO browse page at out/<route>/index.html, so - like /pin, /groups and /channels - none needs a
-# protective /__spa/ rule (the collision detector in scripts/cf-pages-postbuild.mjs never fires for
-# them, and the new SPA-fallback-completeness gate proves the reverse: every emitted /_/ shell HAS a
-# rule here).
+# 3) Host-platform routes. Both are catch-all placeholder shells with NO browse page at
+# out/<route>/index.html, so (like /pin, /groups and /channels) neither needs a protective /__spa/
+# rule: the collision detector in scripts/cf-pages-postbuild.mjs never fires for them, and its
+# SPA-fallback completeness check proves the reverse (every emitted /_/ shell HAS a rule here).
 #
 #   /manage/*     the host console (src/app/manage/[...path]), event id in the path
 #   /e/*          the public signup page (src/app/e/[...slug]); ALSO routed through

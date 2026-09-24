@@ -1,31 +1,18 @@
 /**
- * glassShaders - SkSL source + RuntimeEffect factory for the liquid-glass dock material.
+ * SkSL source for the liquid-glass dock material. Native-only: it imports @shopify/react-native-skia at
+ * module scope, so only `.native.tsx` seams may import it and web bundlers never resolve Skia.
  *
- * NATIVE-ONLY MODULE: this file imports @shopify/react-native-skia at top level, so it must ONLY be
- * imported from `.native.tsx` seams (LiquidGlassDock.native.tsx). The liquidGlass barrel and the web
- * seam never touch it, so web bundlers never resolve Skia. (tsc still typechecks it via the Skia
- * devDependency - that is intentional.)
- *
- * WHAT THIS DRAWS (and why it is not the whole body): Skia's BackdropFilter cannot sample live RN views
- * (the map), so the frosted BODY of each shape is a real RN view UNDER the canvas (expo-blur + cream
- * fill where blur works, an opaque cream fallback where it does not). This shader draws, at FULL
- * visibility, only the parts the RN rects cannot:
- *   - the liquid NECK: the smin-bridge REGION between the two rects, filled with the SAME cream so the
- *     bridge + rects read as one continuous liquid body (cream is painted ONLY where the union covers
- *     but neither rect does, so it never double-darkens over a rect);
- *   - the ~1px light BORDER ring along the whole union (both rects + the neck meniscus);
- *   - the top SPECULAR / sheen along the union's upward-facing edges.
- *
- * The SDF is the smin union of the LEFT rounded box and the RIGHT rounded box (liquidGlassModel's
- * dockShapes); k swells mid-morph (morphK) so the neck blooms only while the shapes merge. Geometry
- * uniforms come from morphUniforms; color uniforms are parsed from theme.glass.dock via parseRgba.
+ * Skia's BackdropFilter cannot sample live RN views (the map), so each shape's frosted body is a real RN
+ * view under the canvas. This shader draws only what those rects cannot: fill where the union covers but
+ * no rect does (so it never double-darkens a rect), the ~1px border ring along the union, and the top
+ * specular sheen. Geometry uniforms come from `morphUniforms`, colors from `parseRgba`.
  */
 import { Skia, type SkRuntimeEffect } from "@shopify/react-native-skia"
 
 export const LIQUID_GLASS_SKSL = `
 uniform vec4 leftBox;     // left shape rect: x, y, w, h (local pts)
 uniform vec4 rightBox;    // right shape rect: x, y, w, h
-uniform vec4 clearBox;    // trailing ✕ circle rect (parked off-screen unless focused)
+uniform vec4 clearBox;    // trailing dismiss (X) circle rect (parked off-screen unless focused)
 uniform float radius;     // constant corner radius (H/2), clamped per-shape below
 uniform float k;          // smin blend distance (pinned tiny -> hard min union, no neck)
 uniform float sheenCY;    // vertical center of the shapes (local pts, ~H/2)
@@ -52,9 +39,8 @@ float boxSdf(vec2 p, vec4 box) {
   return sdRoundedBox(p - c, b, r);
 }
 
-// The union of the shapes (the liquid contour). The trailing ✕ circle is parked off-screen while
-// unfocused (its box is far to the right), so its smin contribution vanishes there; at focus the G gap
-// keeps it reading as a SEPARATE circle (k=16 at p=1 does not bridge a 12pt gap).
+// The dismiss circle is parked far off-screen while unfocused, so it contributes nothing there. k is
+// pinned to MIN_K (a hard union, no neck), so at focus the gap keeps it a separate circle.
 float sdf(vec2 p) {
   return smin(smin(boxSdf(p, leftBox), boxSdf(p, rightBox), k), boxSdf(p, clearBox), k);
 }
@@ -105,11 +91,9 @@ vec4 material(vec2 p) {
   float sheen = band * clamp(-gn.y, 0.0, 1.0) * unionCov;
   col = mix(col, sheenColor.rgb, sheen * sheenColor.a * 0.55);
 
-  // Interior top-light sheen (round 6): a soft vertical gradient across the WHOLE shape interior,
-  // brightest at the top edge and fading to nothing by the vertical center — the "lit from above" glass
-  // depth the flat RN cream fill lacks. Drawn additively over the cream body (the Skia canvas sits ABOVE
-  // the RN fill rects but BELOW the icons/text children), so it deepens the material without washing it
-  // out. vy: 0 at the shape's top edge, 1 at its bottom.
+  // Interior top light: fades from the top edge to nothing by the vertical center, giving the flat RN
+  // cream fill a "lit from above" depth. The canvas sits above the RN fill rects but below the icons and
+  // text. vy: 0 at the shape's top edge, 1 at its bottom.
   float vy = clamp((p.y - (sheenCY - sheenHalf)) / (2.0 * sheenHalf), 0.0, 1.0);
   float topLight = clamp(1.0 - vy * 2.0, 0.0, 1.0);
   topLight = topLight * topLight;
@@ -117,8 +101,8 @@ vec4 material(vec2 p) {
   col = mix(col, vec3(1.0), interior * 0.32);
   a = max(a, interior * 0.14);
 
-  // ~1px hairline border ring hugging the zero-contour of the union. Tighter feather than before
-  // (smoothstep 0->0.75, was 0->1.2) so the edge reads as a crisp system hairline, not a soft glow.
+  // ~1px hairline hugging the union's zero contour; the tight 0.75 feather keeps it a crisp system
+  // hairline rather than a soft glow.
   float ring = (1.0 - smoothstep(0.0, 0.75, abs(d + 0.5))) * borderColor.a;
   col = mix(col, borderColor.rgb, ring);
   a = max(a, ring);
@@ -143,7 +127,6 @@ vec4 main(vec2 fragCoord) {
 
 let cached: SkRuntimeEffect | null = null
 
-/** Compile (once) and return the liquid-glass material RuntimeEffect. Throws on SkSL errors. */
 export function makeLiquidGlassEffect(): SkRuntimeEffect {
   if (cached) return cached
   const effect = Skia.RuntimeEffect.Make(LIQUID_GLASS_SKSL)

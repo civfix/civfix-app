@@ -98,15 +98,13 @@ export interface ConsoleOrgContext {
   orgId: string
   org: OrganizationDTO
   myRole: OrganizationMemberRole | null
-  /** The single owner: role changes, removals, payments. */
   isOwner: boolean
   /** Admin OR owner: profile, verification, invites. */
   isAdmin: boolean
-  /** Shorthand for isOwner || isAdmin - what the manage-only sections gate on. */
   canManage: boolean
   /**
-   * Operator-suspended (0.41.0 `OrganizationDTO.suspended`): members keep reading, but the backend
-   * refuses every org-scoped write with FORBIDDEN, so the console disables its submit buttons.
+   * Operator-suspended: members keep reading, but the backend refuses every org-scoped write with
+   * FORBIDDEN, so the console disables its submit buttons.
    */
   isSuspended: boolean
 }

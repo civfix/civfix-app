@@ -1,21 +1,19 @@
 /**
- * optimisticPatch / optimisticListPatch - the shared onMutate/onError/onSuccess dance for an
+ * optimisticPatch / optimisticListPatch: the shared onMutate/onError/onSuccess dance for an
  * optimistic toggle with rollback.
  *
  * Both helpers return a `UseMutationOptions` object to spread into `useMutation`. They encode the
  * standard sequence once:
  *   onMutate:  cancelQueries(key) -> snapshot getQueryData(key) -> setQueryData(patch) -> return ctx
- *   onError:   restore the snapshot from ctx (per-ITEM for optimisticListPatch - see its note)
+ *   onError:   restore the snapshot from ctx (per-ITEM for optimisticListPatch, see its note)
  *   onSuccess: optional reconcile with the server response
  *   onSettled: optional invalidate
  *
- * Behavior is identical to the hand-written versions; the helpers only remove the boilerplate. A hook
- * that needs to touch additional caches (e.g. the cleanup detail patching both the browse lists and the
- * nearby list, or the follow toggle patching a profile detail next to the people list) passes an `also`
- * hook set whose callbacks run inside the same onMutate/onError/onSuccess phases, after the primary key
+ * A hook that needs to touch additional caches (e.g. a post toggle patching every list holding the post,
+ * or the follow toggle patching a profile detail next to the people list) passes an `also` hook set whose
+ * callbacks run inside the same onMutate/onError/onSuccess phases, after the primary key
  * is handled. The `also` snapshot it returns from onMutate is carried in the per-call mutation context
- * (NOT a closure), so concurrent mutations on the same hook each roll back their own snapshot - exactly
- * like the hand-written versions that returned the snapshots in context.
+ * (NOT a closure), so concurrent mutations on the same hook each roll back their own snapshot.
  */
 import type {
   QueryClient,
@@ -67,10 +65,10 @@ export interface OptimisticPatchOptions<TData, TVars, TRes, TAlsoCtx = unknown> 
 
 /**
  * Single-entity optimistic toggle. Snapshots one query key, applies `patch`, rolls back on error, and
- * (optionally) reconciles with the server response and/or invalidates. Covers useResolveReport /
- * useUnlistReport and useUpdatePrefs. (useJoinCleanup no longer builds on this: its detail can render
- * under a refcode ALIAS key as well as the UUID, so it hand-rolls the same dance over
- * `cleanupDetailFilters` - see data/hooks/cleanups.ts.)
+ * (optionally) reconciles with the server response and/or invalidates. Used by useResolveReport,
+ * useUnlistReport, useUpdateNotificationPrefs and the post toggles. useJoinCleanup cannot use it: its
+ * detail can render under a refcode ALIAS key as well as the UUID, so it runs the same dance over
+ * `cleanupDetailFilters` (see data/hooks/cleanups.ts).
  */
 export function optimisticPatch<TData, TVars, TRes, TAlsoCtx = unknown>(
   qc: QueryClient,
@@ -150,13 +148,13 @@ function mapInfinitePages<TItem>(
 /**
  * Optimistic per-item toggle across an infinite list cache. Snapshots the matched ITEMS, patches them on
  * every page, rolls those items (and only those) back on error, and (optionally) reconciles + invalidates.
- * Covers useMarkRead and the list half of useFollowPerson (the profile detail rides along via `also`).
+ * Used by the list half of useFollowPerson (the profile detail rides along via `also`).
  *
  * ROLLBACK IS TARGETED, not a whole-list restore. Writing the entire pre-mutation InfiniteData snapshot
  * back on error would wipe any CONCURRENT mutation's optimistic patch on a DIFFERENT item: with two
  * in-flight toggles the ordering A.onMutate -> B.onMutate -> A.onError restores the pre-B list and silently
  * un-does B. So `ctx.previous` carries only the items THIS mutation matched (in page order), and onError
- * re-writes them into the CURRENT cache, leaving every other row - including a concurrent toggle's - alone.
+ * re-writes them into the CURRENT cache, leaving every other row (including a concurrent toggle's) alone.
  * This mirrors the per-item `ToggleAlsoCtx.original` rollback in ./hooks/posts.ts.
  */
 export function optimisticListPatch<TItem, TVars, TRes, TAlsoCtx = unknown>(
@@ -177,7 +175,7 @@ export function optimisticListPatch<TItem, TVars, TRes, TAlsoCtx = unknown>(
       await qc.cancelQueries({ queryKey: key })
       await also?.cancel?.(qc)
       const current = qc.getQueryData<InfiniteData<{ items: TItem[] }>>(key)
-      // Snapshot ONLY the matched items, in page order - the order onError replays them in.
+      // Snapshot ONLY the matched items, in page order: the order onError replays them in.
       const previous = current
         ? current.pages.flatMap((page) => page.items.filter((item) => matches(item, vars)))
         : undefined

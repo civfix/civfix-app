@@ -17,10 +17,8 @@ function cameFromThisSite(): boolean {
 }
 
 /**
- * Shared chrome for the standalone (non-shell) views - today only /claim.
- *
- * A warm paper page with a slim top bar (Back + civfix wordmark) and a centered column. Every other
- * surface now renders inside the shared @civfix/ui AppShell, which supplies its own panel chrome.
+ * Chrome for the standalone pages that render outside the shared AppShell (claim, service record, guest
+ * cancel), which supplies its own panel chrome everywhere else.
  */
 export function DetailShell({
   children,
@@ -29,11 +27,8 @@ export function DetailShell({
   maxWidth = "max-w-xl",
 }: {
   children: React.ReactNode
-  /** Override the default localized "Back" label. */
   backLabel?: string
-  /** Override the default behavior (router.back with a home fallback). */
   onBack?: () => void
-  /** Tailwind max-width class for the content column. */
   maxWidth?: string
 }) {
   const router = useRouter()

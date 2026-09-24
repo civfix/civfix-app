@@ -1,20 +1,14 @@
 name: Deploy web (Cloudflare Pages)
 
 # Builds apps/community-web (static export) and publishes it to the Cloudflare Pages project
-# "civfix-web". TWO environments, selected by the REF this runs on
-# (issue https://github.com/civfix/issue-tracker/issues/108):
+# "civfix-web". The ref this runs on selects the environment:
 #
 #   push to main        -> STAGING    --branch=staging  -> civfix.dev       (api.civfix.dev)
 #   a published v* tag  -> PRODUCTION --branch=main     -> civfix.org       (api.civfix.org)
 #
-# There is no `dev` branch any more: feature branches PR into main, main IS staging, and cutting a
-# release promotes to production.
-#
-# WHY THIS IS A REBUILD AND NOT A BYTE-PROMOTION. The backend's Docker images are built once and the
-# same digests are promoted to prod. A Next static export cannot work that way: every NEXT_PUBLIC_* is
-# INLINED INTO THE BUNDLE at build time, so the staging artifact has api.civfix.dev compiled into it.
-# Production is therefore rebuilt FROM THE RELEASE TAG — the same commit, with
-# production values. Same source, not the same bytes; see civfix-infra/docs/DEPLOY.md §Promotion.
+# Production is a rebuild of the release tag, not a byte-promotion of the staging artifact: every
+# NEXT_PUBLIC_* is inlined into the bundle at build time, so the staging bundle has api.civfix.dev
+# compiled into it. Same source, not the same bytes; see civfix-infra/docs/DEPLOY.md §Promotion.
 #
 # Required repository configuration (Settings -> Secrets and variables -> Actions):
 #   Secrets:   CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
@@ -58,10 +52,9 @@ jobs:
   deploy:
     name: build + publish to Cloudflare Pages
     runs-on: ubuntu-latest
-    # ONE derived value decides everything below. The previous version repeated a three-armed
-    # `github.ref_name == ...` ternary in four separate `env:` expressions, which is how a build once
-    # shipped a test key to civfix.org and a live key to a public preview: four chances to get the same
-    # decision wrong independently, and no check that they agreed. Decide once, here, then assert.
+    # One derived value decides every environment-specific setting below, and a later step asserts the
+    # resolved values agree. Deciding it separately per setting lets one of them pick the wrong
+    # environment (a test key on civfix.org, a live key on a public preview) with nothing to catch it.
     env:
       DEPLOY_ENV: ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || 'staging' }}
     steps:
@@ -83,13 +76,11 @@ jobs:
           fetch-depth: 0
 
       - name: Prove the production ref (tag shape + merged into main + newest release)
-        # THIS IS A BRANCH-PROTECTION CONTROL, not a formality. Without it the only thing standing
-        # between an arbitrary commit and civfix.org is the ability to push a tag.
-        # `main` requires a reviewed PR; tags do not, so a tag on an unreviewed branch would be a
-        # complete bypass straight to production. civfix-backend's deploy.yml carries the same proof;
-        # keep the regex identical to that one and to CIVFIX_RELEASE_TAG_REGEX in civfix-infra.
-        # The newest-release check stops a re-published old release (or a dispatch on an old tag)
-        # from silently rolling civfix.org back; a deliberate web rollback says so with `rollback`.
+        # A branch-protection control: `main` only accepts a squash-merged PR with green CI and tags do
+        # not, so without this a tag on an unmerged branch would go straight to civfix.org. civfix-backend's deploy.yml
+        # carries the same proof; keep the regex identical to that one and to CIVFIX_RELEASE_TAG_REGEX
+        # in civfix-infra. The newest-release check stops a re-published old release (or a dispatch on
+        # an old tag) from silently rolling civfix.org back; a deliberate rollback sets `rollback`.
         if: env.DEPLOY_ENV == 'production'
         env:
           ROLLBACK: ${{ github.event_name == 'workflow_dispatch' && inputs.rollback == true && 'true' || 'false' }}
@@ -131,12 +122,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Restore Turbo + Next.js build cache
-        # THE CACHE KEY IS SCOPED BY ENVIRONMENT, and that is not tidiness. Staging and production now
-        # build the SAME COMMIT with different NEXT_PUBLIC_* values, so a key on the sha alone would let
-        # the production build restore the Next webpack cache the staging build just wrote — and those
-        # values are inlined into the chunks at compile time. Turbo hashes its env inputs and would
-        # rebuild, but `.next/cache` is restored underneath it by this step, so the guarantee has to be
-        # here. Never merge these two caches.
+        # The cache key is scoped by environment. Staging and production build the same commit with
+        # different NEXT_PUBLIC_* values, which are inlined into the chunks at compile time, so a key on
+        # the sha alone would let production restore the Next webpack cache staging just wrote. Turbo
+        # hashes its env inputs, but this step restores `.next/cache` underneath it, so the guarantee
+        # has to be here. Never merge these two caches.
         uses: actions/cache@v4
         with:
           path: |
@@ -172,9 +162,9 @@ jobs:
           emit PAGES_BRANCH "$pages_branch"
 
       - name: Assert the build targets agree
-        # The one check that makes a cross-environment mix-up impossible rather than merely unlikely.
-        # It runs BEFORE the build, so a mismatch costs nothing, and it checks the values that were
-        # actually resolved — not the expressions that were supposed to resolve them.
+        # Makes a cross-environment mix-up impossible rather than merely unlikely. It runs before the
+        # build, so a mismatch costs nothing, and it checks the values actually resolved, not the
+        # expressions that were supposed to resolve them.
         run: |
           set -euo pipefail
           fail() { echo "::error::$*"; exit 1; }
@@ -196,7 +186,7 @@ jobs:
           echo "$DEPLOY_ENV: api=$NEXT_PUBLIC_API_URL site=$NEXT_PUBLIC_SITE_URL pages-branch=$PAGES_BRANCH"
 
       - name: Build static export
-        # NEXT_PUBLIC_* come from $GITHUB_ENV (resolved and asserted above) and are inlined here.
+        # The other NEXT_PUBLIC_* values come from $GITHUB_ENV, resolved and asserted above.
         env:
           NEXT_PUBLIC_CARTO_API_KEY: ${{ vars.NEXT_PUBLIC_CARTO_API_KEY }}
         run: pnpm turbo run build --filter=community-web

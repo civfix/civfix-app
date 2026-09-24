@@ -1,7 +1,6 @@
 /**
- * Unit tests for the PURE group-info roster action matrix (P4 Task 4.8). Exercised as a FULL
- * matrix - every viewer role (owner/admin/member/null/undefined) against every target role, plus
- * the self-row override - so a regression in any single cell fails a named case.
+ * Exercised as a FULL matrix (every viewer role against every target role, plus the self-row override)
+ * so a regression in any single cell fails a named case.
  */
 import { describe, expect, it } from "vitest"
 import { groupMemberActions } from "../groupMemberActions"

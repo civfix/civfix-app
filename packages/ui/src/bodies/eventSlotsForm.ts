@@ -58,7 +58,6 @@ function blankDraft(key: string): SlotDraft {
   return { key, title: "", description: "", capacity: "", startsAt: null, endsAt: null }
 }
 
-/** Append one empty draft. `nextKey` is passed in so the caller owns key generation. */
 export function addSlotDraft(list: readonly SlotDraft[], nextKey: string): SlotDraft[] {
   return [...list, blankDraft(nextKey)]
 }
@@ -189,10 +188,8 @@ export function claimedBySlotId(existing: readonly EventSlotDTO[]): Map<string, 
 /**
  * Every NON-blank draft is error-free (blank drafts are dropped, never submitted).
  *
- * `claimedById` is the EDIT form's claim counts (absent on create, where no slot exists yet). Without it
- * `slotDraftError` cannot produce "capacity-below-claimed" at all, so the card painted a red error line
- * under a Save that stayed enabled - the validation the module documents was decorative. Passing the map
- * here makes the SAME check that paints the line also gate the submit.
+ * `claimedById` is the EDIT form's claim counts (absent on create, where no slot exists yet). Pass it so
+ * the same "capacity-below-claimed" check that paints the card's error line also gates the submit.
  */
 export function slotsValid(
   list: readonly SlotDraft[],

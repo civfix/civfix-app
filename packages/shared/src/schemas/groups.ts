@@ -1,8 +1,7 @@
 /**
- * Chat P4 (Groups): user-created group / channel chat rooms (`chat_groups`). A "group" is a
- * member-writable room; a "channel" is broadcast-style (only owner/admins post — server enforced).
- * Rooms ride the existing unified chat rails via roomKind "group" (history shape, edit/pin/mute,
- * WS frames), so only the group-specific management surface lives here.
+ * User-created group / channel chat rooms. A "group" is member-writable; a "channel" is broadcast-style
+ * (only the owner and admins post, server enforced). Rooms ride the unified chat rails via roomKind
+ * "group" (history shape, edit/pin/mute, WS frames), so only the group management surface lives here.
  */
 import { z } from "zod"
 import { IdSchema, ISODateSchema } from "./common.js"
@@ -21,7 +20,7 @@ export const ChatGroupDTOSchema = z.object({
   visibility: z.enum(["private", "public"]),
   ownerId: IdSchema,
   memberCount: z.number().int(),
-  // The viewer's role in the group; null/omitted = not a member (public groups are viewable pre-join).
+  // Null or omitted means not a member (public groups are viewable before joining).
   myRole: GroupRoleSchema.nullable().optional(),
   muted: z.boolean().default(false),
   createdAt: ISODateSchema,
@@ -51,8 +50,8 @@ export const GetChatGroupRequestSchema = z.object({ id: IdSchema }).strict()
 export type GetChatGroupRequest = z.infer<typeof GetChatGroupRequestSchema>
 
 /**
- * All fields are optional set-only patches: omitted = unchanged. Clearing the description is done
- * by passing an empty string "" (there is no null sentinel on this contract).
+ * Set-only patch: an omitted field is unchanged. Clear the description with an empty string; there is
+ * no null sentinel on this contract.
  */
 export const UpdateChatGroupRequestSchema = z
   .object({
@@ -92,7 +91,7 @@ export const RemoveGroupMemberRequestSchema = z
   .strict()
 export type RemoveGroupMemberRequest = z.infer<typeof RemoveGroupMemberRequestSchema>
 
-// Owner is not an assignable role (exactly one owner, fixed at creation) — hence no "owner" here.
+// Owner is not assignable: there is exactly one owner, fixed at creation.
 export const SetGroupMemberRoleRequestSchema = z
   .object({
     id: IdSchema,

@@ -5,9 +5,8 @@ import de from "../../i18n/locales/de/home-feed.json"
 import ko from "../../i18n/locales/ko/home-feed.json"
 
 /**
- * PostDetailBody + SavedPostsBody used to hard-code English ("Loading saved posts...", "View
- * conversation", ...). They now read the `home-feed` namespace, so every key they ask for has to exist
- * in ALL four shipped locales - a missing one renders the raw key string to the user.
+ * Every `home-feed` key PostDetailBody and SavedPostsBody read must exist in all four shipped locales; a
+ * missing one renders the raw key string to the user.
  */
 const KEYS = [
   ["thread", "loading_post"],

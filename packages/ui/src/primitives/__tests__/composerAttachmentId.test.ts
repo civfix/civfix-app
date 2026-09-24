@@ -1,7 +1,6 @@
 /**
- * Regression coverage for attachment identity: the composer used to key every pending attachment by its
- * local `uri`, so picking the SAME library asset twice produced duplicate React keys, applied one
- * upload's `uploadId` to both rows, and dropped both copies on a single remove.
+ * Keying attachments by local `uri` breaks when the same library asset is picked twice: duplicate React
+ * keys, one upload's `uploadId` applied to both rows, and both copies dropped on a single remove.
  */
 import { describe, expect, it } from "vitest"
 import { nextAttachmentId } from "../composerAttachmentId"

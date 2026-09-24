@@ -4,8 +4,7 @@ import { AdminListQuerySchema } from "./common.js"
 
 /**
  * Recent activity feed: a union of audit_log entries and recent domain events (pin dropped, cleanup
- * claimed, outreach bounced/opened, mod action, gov onboard). The hue is cosmetic. See enumeration
- * 2.A.7 (ActivityFeed), endpoint #6.
+ * claimed, outreach bounced/opened, mod action, gov onboard). The hue is cosmetic.
  */
 
 /** The kinds of activity row the feed renders (drives the leading icon). */

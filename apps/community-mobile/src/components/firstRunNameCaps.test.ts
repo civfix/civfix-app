@@ -1,4 +1,4 @@
-// APP-BUG-251: two 40-char name fields joined by a space can reach 81 chars, past the profile schema's
+// Two 40-char name fields joined by a space can reach 81 chars, past the profile schema's
 // 80-char displayName cap, and the save then fails with generic copy. FirstRunGate imports react-native,
 // which node --test cannot load, so the guard reads the exact caps and the submit gate.
 import assert from "node:assert/strict"

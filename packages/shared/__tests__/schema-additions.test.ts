@@ -341,7 +341,7 @@ describe("event<->report linking contract additions", () => {
     expect(z.object({ linkedEvents: AdminReportDTOSchema.shape.linkedEvents }).parse({}).linkedEvents).toEqual([])
   })
 
-  it("CreateCleanupRequest accepts the old payload and defaults eventKind", () => {
+  it("CreateCleanupRequest defaults eventKind when omitted and accepts it with linkedReportIds", () => {
     const parsed = CreateCleanupRequestSchema.parse({
       title: "Sweep",
       type: "site",
@@ -409,7 +409,7 @@ describe("canonical report type taxonomy", () => {
     expect(WEB_REPORT_TYPE_BY_ID.vegetation.category).toBe("recycling")
   })
 
-  it("CreateReportRequest now REQUIRES a type", () => {
+  it("CreateReportRequest requires a type", () => {
     const base = {
       idempotencyKey: UUID,
       category: "trash",
@@ -446,7 +446,7 @@ describe("chat message reactions", () => {
     )
   })
 
-  it("P1 widens the reaction allowlist to 8 (append-only; laugh + sad accepted, unknowns rejected)", () => {
+  it("widens the reaction allowlist to 8 (append-only; laugh + sad accepted, unknowns rejected)", () => {
     expect(REACTION_EMOJIS).toEqual([
       "like",
       "heart",
@@ -545,7 +545,7 @@ describe("user @-mentions", () => {
   })
 })
 
-describe("0.43.0 additive refinement — affiliation, posting as an org, duplicating an event", () => {
+describe("affiliation, posting as an org, duplicating an event", () => {
   const ISO_43 = "2026-09-01T10:00:00.000Z"
   const ORG_ID = "123e4567-e89b-12d3-a456-426614174009"
   const orgRef = { id: ORG_ID, slug: "reach-out-la", name: "Reach Out LA" }

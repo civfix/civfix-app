@@ -60,9 +60,8 @@ describe("PostOverflowMenu mounts on demand", () => {
   })
 
   it("confirms the delete IN the menu, never in an Alert that outlives it", () => {
-    // A native Alert fired from a PopoverMenu row survives the popover (PopoverMenu closes itself BEFORE
-    // running onPress), so it could sit over a scrolled-away, unmounted row. The confirm is a second menu
-    // step instead - the RosterRow pattern - which cannot outlive the surface that owns it.
+    // A native Alert fired from a PopoverMenu row outlives the popover (it closes before running onPress),
+    // so it could sit over an unmounted row; a second menu step cannot outlive the surface that owns it.
     expect(source).not.toMatch(/\bAlert\b/)
     expect(source).toMatch(/onPress: \(\) => onConfirmingDeleteChange\(true\)/)
     expect(source).toMatch(/key: "confirm-delete"/)

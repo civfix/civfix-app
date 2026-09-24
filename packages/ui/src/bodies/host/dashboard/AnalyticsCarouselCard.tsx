@@ -14,7 +14,7 @@ import { Icon, Text, iconMap } from "../../../typography"
 import { IconTile, ListRow, SectionCard, SkeletonBlock, SkeletonGroup } from "../../../primitives"
 import { AreaLineChart, BarChart, ProgressRing, useMeasuredWidth } from "../../../charts"
 import { useHostAnalyticsSummary } from "../../../data/hooks/analytics"
-import { useLocale, useT } from "../../../i18n"
+import { EMPTY_VALUE, useLocale, useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { FeedNotice } from "../../FeedNotice"
 import {
@@ -62,8 +62,6 @@ const FLAT_SERIES = [
   { x: 0, y: 0 },
   { x: 1, y: 0 },
 ]
-
-const DASH = "—"
 
 const IS_WEB = Platform.OS === "web"
 
@@ -312,7 +310,7 @@ function Panel({
       >
         <RingPanel
           ring={(rate ?? 0) / 100}
-          ringLabel={rate === null ? DASH : `${rate}%`}
+          ringLabel={rate === null ? EMPTY_VALUE : `${rate}%`}
           ringA11y={checkInRingA11y(t, rate)}
           note={ran ? null : t("card.checkins_empty")}
         />
@@ -336,7 +334,7 @@ function Panel({
               label: row.label,
               value: row.suppressed ? null : row.value,
               color: th.colors.accent,
-              valueLabel: row.suppressed ? DASH : String(row.value ?? 0),
+              valueLabel: row.suppressed ? EMPTY_VALUE : String(row.value ?? 0),
             }))}
             width={width}
             horizontal

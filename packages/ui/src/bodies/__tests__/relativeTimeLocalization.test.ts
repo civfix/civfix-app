@@ -172,7 +172,7 @@ describe("clock and focal timestamps follow the app locale, not the device's", (
   })
 })
 
-describe("APP-BUG-228 / APP-BUG-200: clock, focal and distance labels follow the APP locale", () => {
+describe("clock, focal and distance labels follow the APP locale", () => {
   const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
 
   it("formats the distance decimal in the supplied locale", () => {

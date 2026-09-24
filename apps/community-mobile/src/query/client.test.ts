@@ -4,12 +4,12 @@ import { readFileSync } from "node:fs"
 
 const CLIENT = readFileSync(new URL("./client.ts", import.meta.url), "utf8")
 
-test("a returning screen reads the cache instead of refetching (issue #94)", () => {
+test("a returning screen reads the cache instead of refetching", () => {
   assert.match(CLIENT, /staleTime: 5 \* 60_000/)
   assert.match(CLIENT, /refetchOnWindowFocus: false/)
 })
 
-test("the persisted families still catch up on foreground, which staleness alone no longer triggers", () => {
+test("the persisted families refetch on foreground even while fresh, which staleness alone would not trigger", () => {
   assert.match(CLIENT, /setQueryDefaults\(queryKey, \{ refetchOnWindowFocus: "always" \}\)/)
   assert.doesNotMatch(CLIENT, /setQueryDefaults\(queryKey, \{ refetchOnWindowFocus: true \}\)/)
 })

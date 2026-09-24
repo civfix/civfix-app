@@ -348,10 +348,8 @@ export interface ProfilePastEvents {
  * as the ANCHOR it was armed for rather than a boolean, so a different profile, or the same profile whose
  * cursor moved, resets to unarmed with no effect to clean up.
  *
- * Every derivation lives in `profilePastEventsModel` and is unit-tested there - in particular the reason
- * this hook must NOT read `hasNextPage` as "there is more history": it is false before any page exists,
- * which hid the control through the whole first fetch and, since the query is `retry: false`, forever
- * after a failed one.
+ * Every derivation lives in `profilePastEventsModel` and is unit-tested there, including why this hook
+ * must NOT read `hasNextPage` as "there is more history".
  */
 export function useProfilePastEvents(profile: UserProfileDTO | undefined): ProfilePastEvents {
   const anchor = profile?.pastEventsCursor ?? null

@@ -78,10 +78,9 @@ export const GetOrganizationResponseSchema = OrganizationDTOSchema
 export type GetOrganizationResponse = z.infer<typeof GetOrganizationResponseSchema>
 
 /**
- * The org's PUBLIC events list (0.43.0, GET /orgs/by-slug/:slug/events). Keyed by `slug` like
- * `getOrganization`, so the public org page needs no id, and it obeys the same §32 suspension rule
- * (a suspended org 404s for outsiders). Only `visibility: "public"` events are ever returned -
- * this is an anonymous read surface, not the host console's portfolio.
+ * The org's public events list (GET /orgs/by-slug/:slug/events). Keyed by `slug` so the public org
+ * page needs no id, and it obeys the §32 suspension rule (a suspended org 404s for outsiders). Only
+ * `visibility: "public"` events are returned: this is an anonymous read surface.
  */
 export const ListOrganizationEventsRequestSchema = PaginationQuerySchema.extend({
   slug: OrgSlugSchema,
@@ -146,8 +145,8 @@ export const OrganizationInviteStatusSchema = z.enum([
 export type OrganizationInviteStatus = z.infer<typeof OrganizationInviteStatusSchema>
 
 /**
- * A pending org membership invite (0.41.0). Mirrors `EventTeamInviteDTO`: an email invite has
- * `email` and no `user`; a handle invite to an existing account has `user` and no `email`.
+ * A pending org membership invite. An email invite has `email` and no `user`; a handle invite to an
+ * existing account has `user` and no `email`.
  */
 const OrganizationInviteDTOObjectSchema = z.object({
   id: IdSchema,
@@ -168,7 +167,7 @@ const InviteOrganizationMemberResponseObjectSchema = z.object({
   ok: z.literal(true),
   member: OrganizationMemberDTOSchema.nullable(),
   invited: z.boolean(),
-  // 0.41.0: the pending invite record when the identifier did not resolve to an existing member.
+  // The pending invite record when the identifier did not resolve to an existing member.
   invite: OrganizationInviteDTOSchema.nullable().optional(),
 })
 export type InviteOrganizationMemberResponse = z.infer<typeof InviteOrganizationMemberResponseObjectSchema>
@@ -207,8 +206,8 @@ export const AcceptOrganizationInviteRequestSchema = z
 export type AcceptOrganizationInviteRequest = z.infer<typeof AcceptOrganizationInviteRequestSchema>
 
 /**
- * `role` is the accepter's SEATED role, not the invite's: an existing owner who accepts an invite
- * keeps their seat and is reported as `owner`. Invites themselves can only grant admin|member.
+ * `role` is the accepter's seated role, not the invite's: an existing owner who accepts an invite
+ * keeps their seat and is reported as `owner`. Invites themselves can only grant admin or member.
  */
 const AcceptOrganizationInviteResponseObjectSchema = z.object({
   ok: z.literal(true),
@@ -220,11 +219,10 @@ export const AcceptOrganizationInviteResponseSchema: z.ZodType<AcceptOrganizatio
   AcceptOrganizationInviteResponseObjectSchema
 
 /**
- * The INVITEE's view of a pending org invite (0.43.0, DECISIONS §34). Mirrors
- * `PendingEventTeamInviteDTO` (§33): no `email` field - the reader already knows their own address
- * and the only other address it could carry is somebody else's - and `expiresAt` is required so the
- * inbox row can be triaged. `organization` is the badge ref, not the full `OrganizationDTO`: the
- * invitee is not seated yet and has no claim on member counts or the org's own role.
+ * The invitee's view of a pending org invite (DECISIONS §34). No `email` field: the reader already
+ * knows their own address and the only other address it could carry is somebody else's. `expiresAt`
+ * is required so the inbox row can be triaged. `organization` is the badge ref, not the full
+ * `OrganizationDTO`, because the invitee is not seated yet and has no claim on member counts.
  */
 const PendingOrganizationInviteDTOObjectSchema = z.object({
   id: IdSchema,
@@ -246,10 +244,10 @@ export const ListMyOrgInvitesResponseSchema: z.ZodType<ListMyOrgInvitesResponse,
   ListMyOrgInvitesResponseObjectSchema
 
 /**
- * Accept/decline are token-free: the invite is addressed to the session's account, so ownership is
- * `organization_invites.user_id = the viewer` and a capability token handed to the client only to be
- * handed straight back would be a secret in flight for no gain (§33). `acceptOrganizationInvite`
- * ({ token }) stays the path for the emailed link.
+ * Accept/decline are token-free: the invite is addressed to the session's account, so a capability
+ * token handed to the client only to come straight back would be a secret in flight for no gain
+ * (§33). Ownership is `organization_invites.user_id` = the viewer (DECISIONS §33/§34).
+ * `acceptOrganizationInvite` ({ token }) stays the path for the emailed link.
  */
 export const AcceptMyOrgInviteRequestSchema = z.object({ inviteId: IdSchema }).strict()
 export type AcceptMyOrgInviteRequest = z.infer<typeof AcceptMyOrgInviteRequestSchema>

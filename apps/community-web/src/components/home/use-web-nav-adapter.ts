@@ -23,20 +23,15 @@ import {
   type NavHistoryEntry,
 } from "./nav-history"
 
-/**
- * The live layout mode at call time, so the mount seed branches list-kinds correctly. Delegates to the
- * shared `layoutModeFor` (the same rule useLayoutMode() applies: landscape/square AND wide enough for
- * the expanded frame) so the seed matches the surface the store + shell will render.
- */
+/** Read at call time so the mount seed matches the surface the store and shell will render. */
 function liveMode(): "compact" | "expanded" {
   if (typeof window === "undefined") return "compact"
   return layoutModeFor(window.innerWidth, window.innerHeight)
 }
 
 /**
- * Resolve the pathname to seed from. Under output:"export" a fallback-served deep link arrives at the
- * placeholder route ("/pin/_") while window.location holds the real "/pin/<id>"; prefer the live
- * location unless it is itself a placeholder ("/.../_/...").
+ * Under output: "export" a fallback-served deep link renders the placeholder route ("/pin/_") while
+ * window.location holds the real "/pin/<id>", so the live location wins unless it is itself a placeholder.
  */
 function seedPathname(): string {
   if (typeof window === "undefined") return "/"
@@ -44,11 +39,6 @@ function seedPathname(): string {
   return live && live !== "/" && !live.includes("/_/") ? live : "/"
 }
 
-/**
- * Seed (replace) the whole store from a pathname, branching list-kind vs detail by the live mode. The
- * store's `seed` ACTION owns the seeding invariant - this adapter only decides WHICH entry and WHICH
- * layout mode.
- */
 function seedStoreFromPath(pathname: string): void {
   useNavStore.getState().seed(entryFromWebPath(pathname), liveMode())
 }
@@ -271,8 +261,7 @@ export function useWebNavAdapter(): void {
     }
     write("replace", 0, ROOT_NAV_SNAPSHOT, null)
     write("push", 1, live, readNavHistory(window.history.state))
-    // Mount-only: subsequent changes flow through the subscription below / popstate.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only: later changes flow through the store subscription and popstate
   }, [])
 
   React.useEffect(() => {
@@ -343,15 +332,9 @@ export function useWebNavAdapter(): void {
     }
   }, [drive, settle, write])
 
-  // (d) Move focus to the active panel's heading on route change (WCAG 2.4.3). When the store gains a
-  // NEW active detail entry, jump keyboard focus to the panel heading the shared shell marks with
-  // `data-civfix-panel-heading` (+ tabIndex=-1). requestAnimationFrame defers until after the panel has
-  // mounted/rendered. SSR-safe via the window guard (this hook only runs in HomeShell, ssr:false).
-  //
-  // The subscriber fires on EVERY store change, not only nav changes - the list header's search text
-  // lives in the same store (`query`) - so we gate on the active entry actually CHANGING. Without that
-  // gate, every search keystroke with a detail panel open would yank focus out of the search input and
-  // onto the panel heading, making typing impossible.
+  // Focus moves to the new panel's heading on route change (WCAG 2.4.3), after a frame so the panel has
+  // rendered. The subscriber also fires on search keystrokes (`query` lives in the same store), so it
+  // gates on the active entry changing; otherwise typing with a detail panel open would lose focus.
   React.useEffect(() => {
     let prevActive = useNavStore.getState().active
     const unsub = useNavStore.subscribe((state) => {

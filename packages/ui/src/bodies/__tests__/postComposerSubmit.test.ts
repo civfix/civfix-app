@@ -1,8 +1,3 @@
-/**
- * Unit test for `resolvePostSubmit` - the pure post-composer submit reducer (U40). Mirrors the chat
- * composer's `composerSubmit.test.ts`: it exercises the (draft, hasReadyMedia) -> action map without any
- * React / transport, so `PostComposer`'s press handler + Post-button `disabled` prop share one truth.
- */
 import { describe, expect, it } from "vitest"
 import {
   POST_MENTION_CAP,
@@ -11,7 +6,6 @@ import {
   type PostDraft,
 } from "../postComposerSubmit"
 
-/** A blank draft; each test overrides only the fields it cares about. */
 function draft(overrides: Partial<PostDraft> = {}): PostDraft {
   return { body: "", ...overrides }
 }

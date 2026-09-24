@@ -19,7 +19,7 @@
   },
   "code": {
     "title": "Revisa tu bandeja",
-    "subtitle": "Código enviado a <0>{{email}}</0> — vence en 5 min",
+    "subtitle": "Código enviado a <0>{{email}}</0>. Vence en 5 min",
     "group_aria_label": "Código de verificación de 6 dígitos",
     "digit_aria_label": "Dígito {{position}}",
     "verifying": "Verificando...",

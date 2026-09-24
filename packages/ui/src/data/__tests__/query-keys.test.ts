@@ -1,10 +1,8 @@
 /**
- * Cache-key correctness for the CANONICAL key factory (the one both hosts now re-export).
- *
- * Two things are locked in here:
+ * Cache-key correctness for the canonical key factory both hosts re-export:
  *   1. `limit` / discriminator segments that change the SHAPE or SIZE of a cached result are part of the
  *      key, and every `*Root` prefix is an actual prefix of its variants (so one prefix invalidation
- *      reaches them all). These moved over from the web app's deleted local factory test.
+ *      reaches them all).
  *   2. The jurisdiction key is fed ROUNDED coordinates (`roundJurisdictionCoord`), so a dragging pin or a
  *      jittering GPS fix collapses onto ONE cache entry instead of a fresh POST /map/resolve-jurisdiction
  *      per micro-movement.

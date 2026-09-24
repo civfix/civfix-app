@@ -133,6 +133,7 @@
     "by_event_section": "Nach Veranstaltung",
     "by_event_empty": "In diesem Zeitraum gibt es noch keine Veranstaltungen.",
     "by_event_a11y": "{{name}}, {{value}} Anmeldungen. Auswertung dieser Veranstaltung öffnen.",
+    "by_event_unknown_a11y": "{{name}}, Anmeldungen nicht verfügbar. Auswertung dieser Veranstaltung öffnen.",
     "capacity_line": "{{signups}} von {{capacity}} Plätzen",
     "sources_caption": "{{rate}} % von {{views}} Seitenaufrufen haben sich angemeldet"
   },
@@ -183,7 +184,7 @@
     "panel_hours": "Freiwilligenstunden",
     "checkins_caption": "von {{registered}} Anmeldungen · {{count}} Veranstaltungen durchgeführt",
     "hours_caption": "erfasst von {{volunteers}} Freiwilligen",
-    "hours_empty": "Keine Stunden in den letzten 30 Tagen erfasst – trage sie in den Host-Tools ein",
+    "hours_empty": "Keine Stunden in den letzten 30 Tagen erfasst – trage sie in den Host-Tools ein.",
     "hours_bars_a11y": "Freiwilligenstunden pro Veranstaltung",
     "impact_resolved": "{{n}} gelöst",
     "impact_posts": "{{n}} Beiträge über deine Veranstaltungen"

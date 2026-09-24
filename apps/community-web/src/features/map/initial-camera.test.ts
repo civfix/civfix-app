@@ -1,18 +1,8 @@
 /**
- * The home map's initial camera: a resolved centre or no map at all, never a hardcoded point, and never
- * a fly over a deep-linked detail's focus (features/map/home-map.tsx).
- *
- * THE RACE. The centre resolves asynchronously (browser geolocation, else the server's approximate
- * location), so on a COLD deep link to a detail two cameras compete for the same map: the panel's
- * `useMapFocus` easeTo, published as soon as the detail body has coordinates, and this flyTo, which lands
- * whenever the resolve happens to finish. When the fly lands second it drags the map to the viewer's OWN
- * metro with the focused marker thousands of px off-screen, and nothing ever corrects it - focus
- * publishes once.
- *
- * `home-map.tsx` is a client component wired to maplibre, react-query and a dozen zustand stores, and this
- * app's vitest runs in the `node` environment with no DOM - so there is no renderer here to run the effect
- * against. What this pins instead is the ORDERING the fix consists of, plus the invariant the product
- * decision turns on: no map is mounted until a real centre exists, and the US centroid is gone.
+ * The centre resolves asynchronously, so on a cold deep link to a detail the panel's `useMapFocus`
+ * easeTo and this flyTo compete; if the fly lands second it drags the map to the viewer's own metro with
+ * the focused marker off-screen, and focus publishes only once. The app's vitest runs in the `node`
+ * environment with no DOM, so these tests pin the effect's ordering in home-map.tsx source.
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
@@ -146,10 +136,8 @@ describe("the camera adoption effect", () => {
 })
 
 /**
- * The persisted boot camera (features/map/camera-snapshot.ts) - the cold-boot half of the "everything
- * loads twice" fix. Seed the map's FIRST frame from the last-settled camera (so the load-time region
- * fetch is the only one), never fly off it, and write the snapshot back on EVERY settle so the next boot
- * has it.
+ * The first frame is seeded from the last-settled camera, never flown off, and the snapshot is written
+ * back on every settle.
  */
 describe("the persisted boot camera", () => {
   it("reads the snapshot synchronously ONCE at mount (lazy state) and feeds it to the centre model", () => {

@@ -60,7 +60,7 @@ describe("every post surface can be reported", () => {
 })
 
 describe("the overflow button is one primitive with one hit target", () => {
-  it("tells assistive tech it opens a menu and whether that menu is open (APP-A11Y-105)", () => {
+  it("tells assistive tech it opens a menu and whether that menu is open", () => {
     expect(BUTTON).toContain("expanded: boolean")
     expect(BUTTON).toContain("{...a11yState({ expanded })}")
     expect(BUTTON).toContain('const WEB_MENU_TRIGGER_PROPS = IS_WEB ? ({ "aria-haspopup": "menu" } as object) : null')
