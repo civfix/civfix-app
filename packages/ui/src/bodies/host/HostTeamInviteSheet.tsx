@@ -58,6 +58,7 @@ export function HostTeamInviteSheet({ visible, cleanupId, onClose }: HostTeamInv
     setIdentifier("")
     setRole("staff")
     setErrorText(null)
+    setFocused(false)
     if (!invite.isPending) invite.reset()
   }, [invite])
 

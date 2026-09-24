@@ -344,8 +344,11 @@ function HostForm({
     setDraftCommitted(true)
   }, [mountPlan])
   const liveDraft = useCleanupDraft((s) => s.value)
-  const form =
-    (draftCommitted ? liveDraft : mountPlan.value) ?? emptyCleanupForm(seedReportId, seedOrganizationId)
+  const blankForm = useMemo(
+    () => emptyCleanupForm(seedReportId, seedOrganizationId),
+    [seedReportId, seedOrganizationId],
+  )
+  const form = (draftCommitted ? liveDraft : mountPlan.value) ?? blankForm
   const setForm = (next: CleanupFormValue) => useCleanupDraft.getState().patch(next)
 
   useEffect(() => {

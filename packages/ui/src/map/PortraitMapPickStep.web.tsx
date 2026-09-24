@@ -5,6 +5,7 @@ import { makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { AddressSearch, type AddressPick } from "../bodies/AddressSearch"
+import { useResetOnOpen } from "../primitives/useModalClosed"
 import { LocationPicker } from "./LocationPicker"
 import { useLocationPick, type PickDraft } from "./locationPickStore"
 import type { LatLng } from "./LocationPicker.types"
@@ -37,6 +38,7 @@ export function PortraitMapPickStep({
   const mapRegistered = useLocationPick((s) => s.mapRegistered)
   const draft = useLocationPick((s) => s.draft)
   const [localPoint, setLocalPoint] = useState<LatLng | null>(value)
+  useResetOnOpen(live, () => setLocalPoint(value ?? null))
 
   const onConfirmRef = useRef(onConfirm)
   const onCancelRef = useRef(onCancel)
@@ -56,7 +58,6 @@ export function PortraitMapPickStep({
 
   useEffect(() => {
     if (!live) return
-    setLocalPoint(valueRef.current ?? null)
     pointRef.current = valueRef.current ?? null
   }, [live])
 

@@ -52,6 +52,7 @@ export function ReportContentSheet({
   useResetOnOpen(visible, () => {
     setReason(null)
     setDetails("")
+    setFocused(false)
   })
 
   const canSubmit = !pending && reason != null

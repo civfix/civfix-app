@@ -29,6 +29,8 @@ import type { AnchorRect } from "../../primitives/PopoverMenu"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { buildComposerEventRef } from "../postComposerModel"
+import { useDeferredOverlayAction } from "../../primitives/useDeferredOverlayAction"
+import { useModalClosed } from "../../primitives/useModalClosed"
 
 type AttachLevel = "menu" | "events" | "reports"
 
@@ -88,7 +90,8 @@ export function ReplyAttachSheet({
     ? (["photo", "event", "report"] as const)
     : (["photo", "camera", "event", "report"] as const)
 
-  const pendingActionRef = React.useRef<(() => void) | null>(null)
+  const { run, settled } = useDeferredOverlayAction(visible, onClose, undefined)
+  const onModalDismiss = useModalClosed(visible, settled)
   const chooseRow = (key: MenuRowKey) => {
     if (key === "event") {
       setLevel("events")
@@ -98,21 +101,7 @@ export function ReplyAttachSheet({
       setLevel("reports")
       return
     }
-    const action = key === "photo" ? onPhoto : onCamera
-    // iOS cannot present the picker while this modal is still dismissing, so the action waits for
-    // `onDismiss`, which RN only fires while the sheet stays mounted with visible={false}.
-    if (Platform.OS === "ios") {
-      pendingActionRef.current = action
-      onClose()
-      return
-    }
-    onClose()
-    action()
-  }
-  const onModalDismiss = () => {
-    const action = pendingActionRef.current
-    pendingActionRef.current = null
-    if (action) action()
+    run(key === "photo" ? onPhoto : onCamera)
   }
 
   const renderMenuRow = (key: MenuRowKey) => {

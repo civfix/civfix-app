@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -82,17 +83,19 @@ export const ReportPickMap = memo(
     const th = useTheme()
     const haptics = useHaptics()
     const hapticsRef = useRef(haptics)
-    hapticsRef.current = haptics
     const cameraRef = useRef<CameraRef>(null)
     const mapNativeRef = useRef<MapRef>(null)
     const mapReadyRef = useRef(false)
     const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
     const onRegionChangeRef = useRef(onRegionChange)
-    onRegionChangeRef.current = onRegionChange
     const onPressPinRef = useRef(onPressPin)
-    onPressPinRef.current = onPressPin
     const onPressMapRef = useRef(onPressMap)
-    onPressMapRef.current = onPressMap
+    useLayoutEffect(() => {
+      hapticsRef.current = haptics
+      onRegionChangeRef.current = onRegionChange
+      onPressPinRef.current = onPressPin
+      onPressMapRef.current = onPressMap
+    })
     const markerPressedAtRef = useRef(0)
 
     const cartoApiKey = useCartoApiKey()
@@ -123,14 +126,16 @@ export const ReportPickMap = memo(
     const nodesByMarkerRef = useRef<globalThis.Map<string, ClusterNode>>(new globalThis.Map())
 
     const recomputeRef = useRef<() => void>(() => {})
-    recomputeRef.current = () => {
-      const region = lastRegionRef.current
-      if (region) {
-        setNodes(query(region.bbox, region.zoom))
-        return
+    useLayoutEffect(() => {
+      recomputeRef.current = () => {
+        const region = lastRegionRef.current
+        if (region) {
+          setNodes(query(region.bbox, region.zoom))
+          return
+        }
+        if (mapReadyRef.current) setNodes(query(WORLD_BBOX, seedRef.current.zoom))
       }
-      if (mapReadyRef.current) setNodes(query(WORLD_BBOX, seedRef.current.zoom))
-    }
+    })
     const runnerRef = useRef<IdleRunner | null>(null)
     if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => recomputeRef.current())
     const runner = runnerRef.current

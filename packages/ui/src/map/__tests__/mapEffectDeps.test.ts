@@ -90,9 +90,15 @@ describe("PortraitMapPickStep", () => {
   it("web seeds its point on the open edge only, from the committed value", () => {
     const src = read("../PortraitMapPickStep.web.tsx")
     const seed = sliceBetween(src, "if (!live) return\n", "}, [live])")
-    expect(seed).toContain("setLocalPoint(valueRef.current ?? null)")
+    expect(seed).toContain("pointRef.current = valueRef.current ?? null")
     expect(seed).not.toMatch(/\bvalue \?\?/)
     expectWrittenInLayoutEffect(src, "valueRef.current = value")
+  })
+
+  it("web seeds the shown point during the opening render, so a reopen never paints the last session's point", () => {
+    const src = read("../PortraitMapPickStep.web.tsx")
+    expect(src).toContain("useResetOnOpen(live, () => setLocalPoint(value ?? null))")
+    expect(sliceBetween(src, "if (!live) return\n", "}, [live])")).not.toContain("setLocalPoint(")
   })
 
   it("native drop and address handlers list the stable point setter", () => {
@@ -175,6 +181,45 @@ describe("latest-value refs are written after commit, never during render", () =
   it("PortraitMapPickStep.web", () => {
     const component = sliceFrom(read("../PortraitMapPickStep.web.tsx"), "export function PortraitMapPickStep(")
     expectLatestValueRefs(component, { pinRef: "pin", onConfirmRef: "onConfirm", onCancelRef: "onCancel" })
+  })
+
+  it("Map.native", () => {
+    const component = sliceFrom(read("../Map.native.tsx"), "export const Map = memo(")
+    expectLatestValueRefs(component, {
+      userLocationRef: "userLocation",
+      hapticsRef: "haptics",
+      onPressPinRef: "onPressPin",
+      onPressClusterRef: "onPressCluster",
+      onPressCleanupRef: "onPressCleanup",
+      onPressBlendRef: "onPressBlend",
+      onLongPressMapRef: "onLongPressMap",
+      onRegionChangeRef: "onRegionChange",
+      onUserCameraMoveRef: "onUserCameraMove",
+      hitMarkersRef: "hitMarkers",
+      onPressMapRef: "onPressMap",
+    })
+  })
+
+  it("Map.native publishes its recompute closure after commit", () => {
+    const component = sliceFrom(read("../Map.native.tsx"), "export const Map = memo(")
+    expectWrittenInLayoutEffect(component, "recomputeRef.current = () => {")
+    expectNoRenderPhaseRefWrites(component, ["recomputeRef"])
+  })
+
+  it("ReportPickMap.native", () => {
+    const component = sliceFrom(read("../ReportPickMap.native.tsx"), "export const ReportPickMap = memo(")
+    expectLatestValueRefs(component, {
+      hapticsRef: "haptics",
+      onRegionChangeRef: "onRegionChange",
+      onPressPinRef: "onPressPin",
+      onPressMapRef: "onPressMap",
+    })
+  })
+
+  it("ReportPickMap.native publishes its recompute closure after commit", () => {
+    const component = sliceFrom(read("../ReportPickMap.native.tsx"), "export const ReportPickMap = memo(")
+    expectWrittenInLayoutEffect(component, "recomputeRef.current = () => {")
+    expectNoRenderPhaseRefWrites(component, ["recomputeRef"])
   })
 
   it("PortraitMapPickStep.native", () => {

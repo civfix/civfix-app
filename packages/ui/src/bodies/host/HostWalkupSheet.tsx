@@ -48,6 +48,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
     setPartySize(1)
     setErrorText(null)
     setPickedTypeId(null)
+    setFocused(false)
     if (!walkup.isPending) walkup.reset()
   }, [walkup])
 

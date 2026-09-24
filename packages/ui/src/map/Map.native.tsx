@@ -175,21 +175,15 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const mapNativeRef = useRef<MapRef>(null)
   const insets = useSafeAreaInsets()
   const userLocationRef = useRef(userLocation)
-  userLocationRef.current = userLocation
 
   const haptics = useHaptics()
   const hapticsRef = useRef(haptics)
-  hapticsRef.current = haptics
   const onPressPinRef = useRef(onPressPin)
-  onPressPinRef.current = onPressPin
   const onPressClusterRef = useRef(onPressCluster)
-  onPressClusterRef.current = onPressCluster
   const onPressCleanupRef = useRef(onPressCleanup)
-  onPressCleanupRef.current = onPressCleanup
   const onPressBlendRef = useRef(onPressBlend)
-  onPressBlendRef.current = onPressBlend
   const onLongPressMapRef = useRef(onLongPressMap)
-  onLongPressMapRef.current = onLongPressMap
+  const onPressMapRef = useRef(onPressMap)
   const mapSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 })
 
   const { index, query } = useClusters(points)
@@ -198,9 +192,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const nodesByMarkerRef = useRef<globalThis.Map<string, ClusterNode>>(new globalThis.Map())
   const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
   const onRegionChangeRef = useRef(onRegionChange)
-  onRegionChangeRef.current = onRegionChange
   const onUserCameraMoveRef = useRef(onUserCameraMove)
-  onUserCameraMoveRef.current = onUserCameraMove
 
   const initialCenterRef = useRef(initialCenter)
   const initialViewState = useMemo(
@@ -219,14 +211,16 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const [mapLoaded, setMapLoaded] = useState(false)
 
   const recomputeRef = useRef<() => void>(() => {})
-  recomputeRef.current = () => {
-    const region = lastRegionRef.current
-    setNodes(
-      region
-        ? query(region.bbox, region.zoom)
-        : query(WORLD_BBOX, initialViewState.zoom),
-    )
-  }
+  React.useLayoutEffect(() => {
+    recomputeRef.current = () => {
+      const region = lastRegionRef.current
+      setNodes(
+        region
+          ? query(region.bbox, region.zoom)
+          : query(WORLD_BBOX, initialViewState.zoom),
+      )
+    }
+  })
   const runnerRef = useRef<IdleRunner | null>(null)
   if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => recomputeRef.current())
   const runner = runnerRef.current
@@ -254,7 +248,19 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     return markers
   }, [focus, nodes, offMapTarget])
   const hitMarkersRef = useRef(hitMarkers)
-  hitMarkersRef.current = hitMarkers
+  React.useLayoutEffect(() => {
+    userLocationRef.current = userLocation
+    hapticsRef.current = haptics
+    onPressPinRef.current = onPressPin
+    onPressClusterRef.current = onPressCluster
+    onPressCleanupRef.current = onPressCleanup
+    onPressBlendRef.current = onPressBlend
+    onLongPressMapRef.current = onLongPressMap
+    onPressMapRef.current = onPressMap
+    onRegionChangeRef.current = onRegionChange
+    onUserCameraMoveRef.current = onUserCameraMove
+    hitMarkersRef.current = hitMarkers
+  })
 
   useImperativeHandle(
     ref,
@@ -347,8 +353,6 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   }, [flyToRequest, mapLoaded])
 
   const markerPressedAtRef = useRef(0)
-  const onPressMapRef = useRef(onPressMap)
-  onPressMapRef.current = onPressMap
   const handleMapPress = useCallback(
     (_event: NativeSyntheticEvent<PressEvent | PressEventWithFeatures>) => {
       if (Date.now() - markerPressedAtRef.current < MARKER_PRESS_GUARD_MS) return

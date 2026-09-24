@@ -19,6 +19,8 @@ import { composerAttachRows, type ComposerAttachRowKey } from "./composerAttachR
 import { MenuItemContent } from "./MenuItemContent"
 import { menuRowStyles, menuSurfaceStyle } from "./menuSurface"
 import { resolveBandLeft } from "./messageContextMenuLayout"
+import { useDeferredOverlayAction } from "./useDeferredOverlayAction"
+import { useModalClosed } from "./useModalClosed"
 
 export interface ComposerAttachSheetProps {
   visible: boolean
@@ -60,22 +62,9 @@ export function ComposerAttachSheet({
 
   const handlers: Record<ComposerAttachRowKey, () => void> = { photo: onPhoto, camera: onCamera, poll: onPoll }
 
-  const pendingActionRef = React.useRef<(() => void) | null>(null)
-  const choose = (key: ComposerAttachRowKey) => {
-    const action = handlers[key]
-    if (Platform.OS === "ios") {
-      pendingActionRef.current = action
-      onClose()
-      return
-    }
-    onClose()
-    action()
-  }
-  const onModalDismiss = () => {
-    const action = pendingActionRef.current
-    pendingActionRef.current = null
-    if (action) action()
-  }
+  const { run, settled } = useDeferredOverlayAction(visible, onClose, undefined)
+  const onModalDismiss = useModalClosed(visible, settled)
+  const choose = (key: ComposerAttachRowKey) => run(handlers[key])
 
   const renderRow = (key: ComposerAttachRowKey) => {
     const label = t(`attach.${key}`)

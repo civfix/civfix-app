@@ -64,6 +64,12 @@ describe("destructive affordances read as danger, not as the brand accent", () =
     expect(menu).not.toContain('th.colors.bloom["600"]')
   })
 
+  it("colours a destructive message context-menu action with the same danger ink", () => {
+    const menu = strip(read("../MessageContextMenu.tsx"))
+    expect(menu).toContain("action.destructive ? th.colors.dangerInk : th.colors.text")
+    expect(menu).not.toContain('th.colors.bloom["600"]')
+  })
+
   it("keeps a network error neutral instead of coral", () => {
     const notice = strip(read("../../bodies/FeedNotice.tsx"))
     expect(notice).toContain("color={t.colors.textMuted}")
