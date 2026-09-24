@@ -1,7 +1,7 @@
 export const EASE_STANDARD = [0.22, 1, 0.36, 1] as const
 export const EASE_STANDARD_CSS = "cubic-bezier(0.22,1,0.36,1)"
 
-export const EASE_GRAVITY = [0.5, 0, 0.3, 1.35] as const
+const EASE_GRAVITY = [0.5, 0, 0.3, 1.35] as const
 
 export type EaseTuple = readonly [number, number, number, number]
 export interface TimingRecipe {

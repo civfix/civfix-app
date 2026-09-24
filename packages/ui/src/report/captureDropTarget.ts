@@ -5,4 +5,4 @@ export {
   captureDropTargetStyle,
   captureDropActiveStyleFor,
 } from "./captureDropTarget.web"
-export { isDroppableType, type CaptureDropTarget, type DroppedItem } from "./captureDropTarget.shared"
+export type { CaptureDropTarget, DroppedItem } from "./captureDropTarget.shared"

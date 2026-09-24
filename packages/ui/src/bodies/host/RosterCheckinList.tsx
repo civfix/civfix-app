@@ -28,7 +28,7 @@ const CHECK_IN_HIT_SLOP = { top: CHECK_IN_SLOP_Y, bottom: CHECK_IN_SLOP_Y }
 
 const NAME_FALLBACKS = { guest: "", deleted: DELETED_USER_LABEL }
 
-export const RosterCheckinRow = React.memo(function RosterCheckinRow({
+const RosterCheckinRow = React.memo(function RosterCheckinRow({
   row,
   canCheckIn,
   pending,
@@ -130,7 +130,7 @@ export interface RosterRowOptions {
   onUndo: (seatId: string) => void
 }
 
-export function rosterItemRenderer({ timeZone, canCheckIn, pending, onCheckIn, onUndo }: RosterRowOptions) {
+function rosterItemRenderer({ timeZone, canCheckIn, pending, onCheckIn, onUndo }: RosterRowOptions) {
   return function renderRosterItem({ item }: { item: RosterCheckinItem }) {
     if (item.kind === "slot-header") {
       return (

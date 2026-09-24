@@ -11,7 +11,6 @@ export {
   noShadow,
   radius,
   space,
-  lineHeight,
   motion,
   themes,
   themeFor,
@@ -29,11 +28,7 @@ export type {
 export {
   APPEARANCE_PREFERENCES,
   DEFAULT_APPEARANCE_PREFERENCE,
-  DEFAULT_COLOR_SCHEME,
-  colorSchemes,
-  shadowSchemes,
   isAppearancePreference,
-  resolveSchemeName,
   resolveColorScheme,
 } from "./schemes"
 export type {
@@ -108,7 +103,7 @@ export function pinGlow(
 export { categoryColor }
 export type { CategoryColorKey }
 
-export { MOTION, EASE_STANDARD_CSS } from "./motion"
+export { EASE_STANDARD_CSS } from "./motion"
 export {
   PRESSED_OPACITY,
   PRESSED_OPACITY_SUBTLE,
@@ -119,7 +114,7 @@ export {
 export { MIN_TOUCH_TARGET, hitSlopToTarget } from "./touchTarget"
 export type { TimingRecipe, EaseTuple } from "./motion"
 
-export { tint, wash } from "./color"
+export { wash } from "./color"
 
 export const wordmarkColors: readonly string[] = [
   tokens.color.brand.bloom,
@@ -156,7 +151,6 @@ export {
   inputFocusedStyle,
   ROW_A11Y_PROPS,
   WEB_ROW_FOCUS_INSET,
-  FOCUS_RING_FOOTPRINT,
   FOCUS_RING_COLOR,
   FOCUS_RING_OFFSET,
   FOCUS_RING_WIDTH,

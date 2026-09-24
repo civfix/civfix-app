@@ -50,7 +50,7 @@ function syncServerLocale(userId: string, code: SupportedLocale): Promise<void> 
  * Retry a locale settings sync that failed for the now-confirmed user. Runs only on a live-confirmed session
  * (never the optimistic snapshot, which has no CSRF token yet).
  */
-export function reconcileUnsyncedLocale(): Promise<void> {
+function reconcileUnsyncedLocale(): Promise<void> {
   const { status, optimistic, user } = useAuthStore.getState()
   if (status !== "authenticated" || optimistic || !user) return Promise.resolve()
   if (safeGet("local", UNSYNCED_LOCALE_KEY) !== user.id) return Promise.resolve()

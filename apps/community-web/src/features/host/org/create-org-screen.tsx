@@ -14,7 +14,7 @@ import { useConsoleNavigation } from "../console-context"
 import { OrgProfileForm } from "./org-profile-form"
 
 /** The URL flag the overview reads to open with the post-creation "next steps" card expanded. */
-export const ORG_WELCOME_PARAM = { tab: "welcome" } as const
+const ORG_WELCOME_PARAM = { tab: "welcome" } as const
 
 export function CreateOrgScreen() {
   const { t } = useT("host-org")

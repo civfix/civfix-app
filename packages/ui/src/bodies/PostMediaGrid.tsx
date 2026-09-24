@@ -7,11 +7,11 @@ import { focusRingProps, stopPress, webCursor } from "../theme"
 import { useT } from "../i18n"
 import { postMediaA11yLabel } from "./postCardModel"
 
-export function mediaAspect(media: PostDTO["media"][number]): number {
+function mediaAspect(media: PostDTO["media"][number]): number {
   return media.width && media.height ? media.width / media.height : 4 / 3
 }
 
-export function postMediaGridThumbUri(
+function postMediaGridThumbUri(
   media: PostDTO["media"][number],
   split: boolean,
 ): string | null {

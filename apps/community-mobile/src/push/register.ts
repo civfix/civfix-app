@@ -62,7 +62,7 @@ function easProjectId(): string | undefined {
   return undefined
 }
 
-export async function ensureAndroidChannels(): Promise<void> {
+async function ensureAndroidChannels(): Promise<void> {
   if (Platform.OS !== "android") return
   const t = systemT()
   const lightColor = tokens.color.brand.bloom
@@ -101,8 +101,8 @@ export async function ensureAndroidChannels(): Promise<void> {
   }
 }
 
-export const NOTIFICATION_CATEGORY_TICKET = "ticket"
-export const NOTIFICATION_CATEGORY_HOST_BROADCAST = "host_broadcast"
+const NOTIFICATION_CATEGORY_TICKET = "ticket"
+const NOTIFICATION_CATEGORY_HOST_BROADCAST = "host_broadcast"
 
 export async function ensureNotificationCategories(): Promise<void> {
   if (Platform.OS === "web") return

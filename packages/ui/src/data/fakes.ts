@@ -21,7 +21,7 @@ import type {
 import type { AuthState, ChatSocketLike, DataContextValue } from "./types"
 import { applyToggle } from "./hooks/posts"
 
-export const FAKE_APPROXIMATE_LOCATION: GetApproximateLocationResponse = {
+const FAKE_APPROXIMATE_LOCATION: GetApproximateLocationResponse = {
   lat: 34.0522,
   lng: -118.2437,
   radiusKm: 25,
@@ -279,7 +279,7 @@ export interface FakePostApi {
  * into `makeFakeApiClient`'s Proxy so `makeFakeDataContext()` serves the feed / thread / saves / profile
  * bodies believable data with no backend. Each list method returns a single page with `nextCursor: null`.
  */
-export function makeFakePostApi(): FakePostApi {
+function makeFakePostApi(): FakePostApi {
   return {
     homeFeed: async (query) => {
       const filter = query?.filter ?? "all"

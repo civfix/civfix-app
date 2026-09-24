@@ -1,5 +1,5 @@
-export const ALLOWED_IMAGE_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp"] as const
-export const ALLOWED_VIDEO_CONTENT_TYPES = ["video/mp4", "video/quicktime"] as const
+const ALLOWED_IMAGE_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp"] as const
+const ALLOWED_VIDEO_CONTENT_TYPES = ["video/mp4", "video/quicktime"] as const
 
 const JPEG_SOI = [0xff, 0xd8] as const
 const PRESERVED_APP_MARKERS = new Set([0xe0, 0xe2, 0xee])

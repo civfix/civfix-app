@@ -88,6 +88,7 @@
     "test": "vitest run",
     "lint": "eslint . --max-warnings=0",
     "i18n:check": "node scripts/check-i18n-keys.mjs",
+    "i18n:check:resources": "node scripts/check-i18n-resources.mjs",
     "i18n:gen": "node scripts/gen-i18n-resources.mjs",
     "clean": "rimraf dist-types *.tsbuildinfo"
   },
@@ -156,8 +157,6 @@
     "@types/react": "~19.1.0",
     "@types/react-dom": "~19.1.0",
     "@types/supercluster": "^7.1.3",
-    "@typescript-eslint/eslint-plugin": "^8.18.0",
-    "@typescript-eslint/parser": "^8.18.0",
     "eslint": "^9.16.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "expo-blur": "~15.0.8",

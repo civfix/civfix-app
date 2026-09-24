@@ -11,7 +11,7 @@ import type { UserDTO } from "@civfix/shared"
 import { storage } from "@/lib/mmkv"
 import { LOCALE_KEY } from "@/lib/mmkvKeys"
 
-export function readStoredLocale(): SupportedLocale | null {
+function readStoredLocale(): SupportedLocale | null {
   try {
     const raw = storage.getString(LOCALE_KEY)
     if (!raw) return null

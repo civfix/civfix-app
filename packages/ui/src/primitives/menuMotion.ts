@@ -4,7 +4,7 @@ import { motion, type TimingRecipe } from "../theme"
 import { useReducedMotion } from "../theme/useReducedMotion"
 import { MENU_SCALE_FROM, menuOrigin, type MenuOrigin } from "./menuMotionModel"
 
-export { MENU_SCALE_FROM, menuOrigin }
+export { menuOrigin }
 export type { AnchorRect, MenuCardRect, MenuOrigin } from "./menuMotionModel"
 
 declare const process: { env: { NODE_ENV?: string } }
@@ -26,7 +26,7 @@ export interface MenuMotionRecipes {
   exit: TimingRecipe
 }
 
-export const MENU_RECIPES: MenuMotionRecipes = { enter: motion.menuIn, exit: motion.menuOut }
+const MENU_RECIPES: MenuMotionRecipes = { enter: motion.menuIn, exit: motion.menuOut }
 
 export function useMenuMotion({
   visible,

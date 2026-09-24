@@ -2,7 +2,7 @@ import qrcode from "qrcode-generator"
 
 export const QR_QUIET_ZONE = 4
 
-export const QR_ERROR_CORRECTION = "M" as const
+const QR_ERROR_CORRECTION = "M" as const
 
 export interface QrPath {
   path: string

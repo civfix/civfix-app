@@ -9,7 +9,7 @@
  */
 import { Skia, type SkRuntimeEffect } from "@shopify/react-native-skia"
 
-export const LIQUID_GLASS_SKSL = `
+const LIQUID_GLASS_SKSL = `
 uniform vec4 leftBox;     // left shape rect: x, y, w, h (local pts)
 uniform vec4 rightBox;    // right shape rect: x, y, w, h
 uniform vec4 clearBox;    // trailing dismiss (X) circle rect (parked off-screen unless focused)

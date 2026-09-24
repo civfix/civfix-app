@@ -13,7 +13,7 @@ export function readCoarsePointer(): boolean {
 }
 
 /** The static export prerenders with no window; hydration must see the same `false` the markup was built with. */
-export function readCoarsePointerOnServer(): boolean {
+function readCoarsePointerOnServer(): boolean {
   return false
 }
 

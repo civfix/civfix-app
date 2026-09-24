@@ -219,7 +219,7 @@ export function resolveComposerEvent(
   return availableEvent ? buildComposerEventRef(availableEvent) : null
 }
 
-export function buildComposerReportRef(
+function buildComposerReportRef(
   report: Pick<ReportDTO, "id" | "category" | "type" | "status" | "lat" | "lng" | "addr" | "title" | "description" | "media">,
   linkedAt = new Date().toISOString(),
 ): LinkedReportRef {

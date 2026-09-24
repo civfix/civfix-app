@@ -16,7 +16,7 @@ export const CHECKIN_OUTBOX_MAX = 500
 
 const CHECKIN_REPLAY_BATCH = 25
 
-export const CHECKIN_RETRY_BACKOFF_MS: readonly number[] = [0, 5_000, 30_000, 120_000, 600_000]
+const CHECKIN_RETRY_BACKOFF_MS: readonly number[] = [0, 5_000, 30_000, 120_000, 600_000]
 
 export type CheckinOutboxMethod = "scan" | "manual"
 
@@ -202,15 +202,6 @@ const REFUSAL_ORDER: readonly CheckinOutcome[] = (
   Object.keys(REPLAY_OUTCOME_KIND) as CheckinOutcome[]
 ).filter((outcome) => REPLAY_OUTCOME_KIND[outcome] === "refused")
 
-export const EMPTY_REPLAY_REPORT: CheckinReplayReport = {
-  sent: 0,
-  refusals: [],
-  held: 0,
-  forbidden: 0,
-  discarded: 0,
-  retry: 0,
-}
-
 export function summarizeReplay(events: readonly ReplayEvent[]): CheckinReplayReport {
   const refused = new Map<CheckinOutcome, number>()
   let sent = 0
@@ -367,7 +358,7 @@ export function serializeOutbox(state: CheckinOutboxState, ownerId: string): str
   return JSON.stringify({ owner: ownerId, entries: state.entries })
 }
 
-export async function dropLegacyOutbox(persistence: OutboxStore): Promise<void> {
+async function dropLegacyOutbox(persistence: OutboxStore): Promise<void> {
   try {
     await persistence.del(CHECKIN_OUTBOX_KEY)
   } catch {

@@ -91,7 +91,7 @@ function unlessAborted<T>(work: Promise<T>, signal: AbortSignal | undefined): Pr
   })
 }
 
-export function waitForSocketOpen(
+function waitForSocketOpen(
   socket: ChatSocketLike,
   timeoutMs: number,
   signal?: AbortSignal,
@@ -133,7 +133,7 @@ interface AckWaiter {
   extend: (timeoutMs: number) => void
 }
 
-export function ackWaiter(
+function ackWaiter(
   socket: ChatSocketLike,
   clientId: string,
   roomId: string,

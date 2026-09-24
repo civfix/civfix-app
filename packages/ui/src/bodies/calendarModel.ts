@@ -150,7 +150,7 @@ export function durationChipFor(
   return DURATION_CHIP_HOURS.find((h) => h * MS_PER_HOUR === elapsed) ?? null
 }
 
-export function formWallClock(date: Date, time: Date): WallClock {
+function formWallClock(date: Date, time: Date): WallClock {
   return {
     year: date.getFullYear(),
     month: date.getMonth() + 1,

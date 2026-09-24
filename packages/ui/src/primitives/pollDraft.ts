@@ -52,7 +52,7 @@ export function removeOption(draft: PollDraft, idx: number): PollDraft {
   return { ...draft, options: draft.options.filter((_, i) => i !== idx) }
 }
 
-export function optionTexts(draft: PollDraft): string[] {
+function optionTexts(draft: PollDraft): string[] {
   return draft.options.map((o) => o.text)
 }
 

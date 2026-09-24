@@ -81,7 +81,7 @@ function isInfinitePosts(v: unknown): v is InfiniteData<FeedPageDTO> {
  * Patch the target post in EVERY infinite LIST cache under the `["posts"]` prefix (home feed, replies,
  * user posts, saves). Any entry that is not an infinite post list is left untouched.
  */
-export function patchPostInListCaches(
+function patchPostInListCaches(
   qc: QueryClient,
   postId: string,
   patch: (post: PostDTO) => PostDTO,
@@ -134,7 +134,7 @@ export function patchPostCountsInCaches(
 }
 
 /** Find the target post's current value in any list cache under the prefix (for the rollback snapshot). */
-export function findPostInLists(qc: QueryClient, postId: string): PostDTO | undefined {
+function findPostInLists(qc: QueryClient, postId: string): PostDTO | undefined {
   for (const [, data] of qc.getQueriesData<InfiniteData<FeedPageDTO>>({
     queryKey: queryKeys.postsRoot,
   })) {
@@ -148,7 +148,7 @@ export function findPostInLists(qc: QueryClient, postId: string): PostDTO | unde
 }
 
 /** Prepend a post to page 0 of a specific infinite list cache (no-op when the list is not loaded). */
-export function prependToList(qc: QueryClient, key: readonly unknown[], post: PostDTO): void {
+function prependToList(qc: QueryClient, key: readonly unknown[], post: PostDTO): void {
   qc.setQueryData<InfiniteData<FeedPageDTO>>(key, (prev) =>
     isInfinitePosts(prev)
       ? {
@@ -162,7 +162,7 @@ export function prependToList(qc: QueryClient, key: readonly unknown[], post: Po
 }
 
 /** Append a post to the LAST page of a specific infinite list cache (replies are chronological). */
-export function appendToList(qc: QueryClient, key: readonly unknown[], post: PostDTO): void {
+function appendToList(qc: QueryClient, key: readonly unknown[], post: PostDTO): void {
   qc.setQueryData<InfiniteData<FeedPageDTO>>(key, (prev) =>
     isInfinitePosts(prev)
       ? {
@@ -185,7 +185,7 @@ function withoutPost(
 }
 
 /** Remove a post (by id) from every page of a specific infinite list cache. */
-export function removeFromList(qc: QueryClient, key: readonly unknown[], postId: string): void {
+function removeFromList(qc: QueryClient, key: readonly unknown[], postId: string): void {
   qc.setQueryData<InfiniteData<FeedPageDTO>>(key, (prev) => withoutPost(prev, postId))
 }
 
@@ -194,13 +194,13 @@ function removeFromAllLists(qc: QueryClient, postId: string): void {
 }
 
 /** True when a specific infinite list cache already contains the post. */
-export function listHasPost(qc: QueryClient, key: readonly unknown[], postId: string): boolean {
+function listHasPost(qc: QueryClient, key: readonly unknown[], postId: string): boolean {
   const data = qc.getQueryData<InfiniteData<FeedPageDTO>>(key)
   return isInfinitePosts(data) ? data.pages.some((p) => p.items.some((it) => it.id === postId)) : false
 }
 
 /** Replace the optimistic (temp-id) post with the authoritative server post in a specific list cache. */
-export function replaceInList(
+function replaceInList(
   qc: QueryClient,
   key: readonly unknown[],
   tempId: string,

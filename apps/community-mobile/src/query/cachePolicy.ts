@@ -8,7 +8,7 @@ export const WRITE_DEBOUNCE_MS = 1000
 
 export const CACHE_SHAPE_VERSION = "2"
 
-export const PERSIST_KEY_PREFIXES: readonly string[] = [
+const PERSIST_KEY_PREFIXES: readonly string[] = [
   "notifications",
   "threads",
   "cleanups",
@@ -19,9 +19,9 @@ export const PERSIST_KEY_PREFIXES: readonly string[] = [
   "orgs",
 ]
 
-export const PERSISTED_REPORTS_SEGMENT = "mine"
+const PERSISTED_REPORTS_SEGMENT = "mine"
 
-export const PERSISTED_HOST_SEGMENTS: ReadonlySet<string> = new Set([
+const PERSISTED_HOST_SEGMENTS: ReadonlySet<string> = new Set([
   "counters",
   "ticket-types",
   "questions",
