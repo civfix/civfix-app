@@ -50,6 +50,7 @@ export function PollCreateSheet({ visible, pending = false, error, onCreate, onC
     setDraft(emptyPollDraft())
     setAllowMultiple(false)
     setAnonymous(true)
+    setFocusedField(null)
   })
 
   const canSubmit = !pending && canCreatePoll(draft)
