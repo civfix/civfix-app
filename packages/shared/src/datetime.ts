@@ -118,6 +118,44 @@ export const COMMON_TIMEZONES: readonly string[] = [
   "America/Puerto_Rico",
 ]
 
+const MAX_CACHED_FORMATTERS = 64
+
+// Keys come from caller strings (row zones, locale tags) and the zone picker sweeps every IANA zone
+// through zoneShortName, so evicting the oldest entry keeps each cache bounded.
+function remember<V>(cache: Map<string, V>, key: string, value: V): V {
+  if (cache.size >= MAX_CACHED_FORMATTERS) {
+    const oldest = cache.keys().next()
+    if (oldest.done !== true) cache.delete(oldest.value)
+  }
+  cache.set(key, value)
+  return value
+}
+
+const rowFormatters = new Map<string, Intl.DateTimeFormat>()
+const zoneNameFormatters = new Map<string, Intl.DateTimeFormat>()
+
+// Constructing an Intl.DateTimeFormat is one of the costlier built-ins on Hermes, and list rows format
+// on every render. Only a formatter with an explicit locale and zone is cached: one built from the
+// host defaults pins the device zone and language at first use, while getDay/getHours keep following
+// the live device settings. A failed construction throws exactly as `new` does and is never cached.
+function dateTimeFormat(
+  cache: Map<string, Intl.DateTimeFormat>,
+  locale: string | undefined,
+  timeZone: string | undefined,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormat {
+  if (locale === undefined || timeZone === undefined) {
+    return new Intl.DateTimeFormat(
+      locale,
+      timeZone === undefined ? options : { ...options, timeZone },
+    )
+  }
+  const key = JSON.stringify([locale, timeZone, options])
+  const cached = cache.get(key)
+  if (cached !== undefined) return cached
+  return remember(cache, key, new Intl.DateTimeFormat(locale, { ...options, timeZone }))
+}
+
 const zoneFormatters = new Map<string, Intl.DateTimeFormat | null>()
 
 function zoneFormatter(timeZone: string): Intl.DateTimeFormat | null {
@@ -138,8 +176,7 @@ function zoneFormatter(timeZone: string): Intl.DateTimeFormat | null {
   } catch {
     formatter = null
   }
-  zoneFormatters.set(timeZone, formatter)
-  return formatter
+  return remember(zoneFormatters, timeZone, formatter)
 }
 
 function numericPart(parts: readonly Intl.DateTimeFormatPart[], type: string): number {
@@ -230,14 +267,14 @@ export function wallClockExistsInZone(wallClock: WallClock, timeZone: string): b
   return wallClockToInstantMs(wallClock, timeZone) !== null
 }
 
+const ZONE_NAME_OPTIONS: Intl.DateTimeFormatOptions = { timeZoneName: "short" }
+
 export function zoneShortName(instantMs: number, timeZone: string, locale?: string): string {
   const date = new Date(instantMs)
   if (Number.isNaN(date.getTime())) return ""
   try {
-    const parts = new Intl.DateTimeFormat(locale, { timeZone, timeZoneName: "short" }).formatToParts(
-      date,
-    )
-    return parts.find((p) => p.type === "timeZoneName")?.value ?? ""
+    const formatter = dateTimeFormat(zoneNameFormatters, locale, timeZone, ZONE_NAME_OPTIONS)
+    return formatter.formatToParts(date).find((p) => p.type === "timeZoneName")?.value ?? ""
   } catch {
     return ""
   }
@@ -270,6 +307,9 @@ function zonedWallClock(instantMs: number, timeZone: string | undefined): WallCl
  */
 export const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const
 
+const CHIP_MONTH_OPTIONS: Intl.DateTimeFormatOptions = { month: "short" }
+const WHEN_DATE_OPTIONS: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" }
+
 /**
  * `{ day, month }` for an event date chip: a day number over an uppercase short month
  * (e.g. `{ day: "30", month: "MAY" }`), or "--"/"--" for an invalid input. `locale` (a BCP-47 tag)
@@ -285,7 +325,7 @@ export function eventChip(
   const zone = usableZone(timeZone)
   return {
     day: String(zonedWallClock(d.getTime(), zone).day),
-    month: d.toLocaleDateString(locale, { month: "short", timeZone: zone }).toUpperCase(),
+    month: dateTimeFormat(rowFormatters, locale, zone, CHIP_MONTH_OPTIONS).format(d).toUpperCase(),
   }
 }
 
@@ -304,9 +344,11 @@ export function dowLabel(
   return labels[weekdayIndex(d, usableZone(timeZone))] ?? ""
 }
 
+const WEEKDAY_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short" }
+
 function weekdayIndex(date: Date, timeZone: string | undefined): number {
   if (timeZone === undefined) return date.getDay()
-  const short = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone }).format(date)
+  const short = dateTimeFormat(rowFormatters, "en-US", timeZone, WEEKDAY_OPTIONS).format(date)
   const index = WEEKDAYS.indexOf(short as (typeof WEEKDAYS)[number])
   return index === -1 ? date.getDay() : index
 }
@@ -318,22 +360,22 @@ function weekdayIndex(date: Date, timeZone: string | undefined): number {
 export function timeLabel(iso: string, locale?: string, timeZone?: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ""
-  return d.toLocaleTimeString(locale, {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: usableZone(timeZone),
-  })
+  return clockFormatter(locale, timeZone).format(d)
+}
+
+// Equivalent to `toLocaleTimeString(locale, CLOCK_OPTIONS)`, as the month options above are to
+// `toLocaleDateString`: with a field of the required kind present no defaults are added, so the output
+// and the RangeError for a bad locale are the same.
+const CLOCK_OPTIONS: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" }
+
+function clockFormatter(
+  locale: string | undefined,
+  timeZone: string | undefined,
+): Intl.DateTimeFormat {
+  return dateTimeFormat(rowFormatters, locale, usableZone(timeZone), CLOCK_OPTIONS)
 }
 
 const TIME_RANGE_SEPARATOR = " – "
-
-function clockParts(d: Date, locale?: string, timeZone?: string): Intl.DateTimeFormatPart[] {
-  return new Intl.DateTimeFormat(locale, {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: usableZone(timeZone),
-  }).formatToParts(d)
-}
 
 function dayPeriodOf(parts: readonly Intl.DateTimeFormatPart[]): string | null {
   const part = parts.find((p) => p.type === "dayPeriod")
@@ -361,11 +403,12 @@ export function timeRangeLabel(
   const start = new Date(startIso)
   const end = new Date(endIso)
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return ""
-  const startLabel = timeLabel(startIso, locale, timeZone)
-  const endLabel = timeLabel(endIso, locale, timeZone)
-  const startParts = clockParts(start, locale, timeZone)
+  const clock = clockFormatter(locale, timeZone)
+  const startLabel = clock.format(start)
+  const endLabel = clock.format(end)
+  const startParts = clock.formatToParts(start)
   const dayPeriod = dayPeriodOf(startParts)
-  if (dayPeriod !== null && dayPeriod === dayPeriodOf(clockParts(end, locale, timeZone))) {
+  if (dayPeriod !== null && dayPeriod === dayPeriodOf(clock.formatToParts(end))) {
     if (dayPeriodLeadsClock(startParts)) {
       const trimmedEnd = withoutDayPeriod(endLabel, dayPeriod)
       if (trimmedEnd !== "") return `${startLabel}${TIME_RANGE_SEPARATOR}${trimmedEnd}`
@@ -447,7 +490,7 @@ export function eventWhenParts(event: EventWhenInput, opts: EventWhenOptions = {
 
   return {
     dow: dowLabel(event.scheduledAt, weekdays, zone),
-    date: start.toLocaleDateString(locale, { month: "short", day: "numeric", timeZone: zone }),
+    date: dateTimeFormat(rowFormatters, locale, zone, WHEN_DATE_OPTIONS).format(start),
     time: timeLabel(event.scheduledAt, locale, zone),
     range: hasEnd ? spanLabel(event.scheduledAt, endIso, locale, weekdays, zone) : null,
     zone: eventZoneSuffix(start.getTime(), zone, opts.viewerTimeZone, locale),
@@ -463,16 +506,16 @@ export function eventWhenLabel(event: EventWhenInput, opts: EventWhenOptions = {
 
 const dateFormatters = new Map<string, Intl.DateTimeFormat>()
 
-// Constructing an Intl.DateTimeFormat is one of the costlier built-ins on Hermes, and list rows format
-// on every render, so instances are cached per (locale, zone, options). Zones are validated before
-// they reach the key, so the cache is bounded by the IANA set rather than by row data.
+// Unlike `dateTimeFormat`, a malformed locale degrades to en-US so safeDateFormat never throws in a
+// render path, and the fallback is cached under the requested locale so a bad preference fails once.
 function cachedDateFormatter(
   locale: string | undefined,
   options: Intl.DateTimeFormatOptions,
   timeZone: string | undefined,
 ): Intl.DateTimeFormat {
-  const key = `${locale ?? ""}|${timeZone ?? ""}|${JSON.stringify(options)}`
-  const cached = dateFormatters.get(key)
+  const cacheable = locale !== undefined && timeZone !== undefined
+  const key = JSON.stringify([locale, timeZone, options])
+  const cached = cacheable ? dateFormatters.get(key) : undefined
   if (cached !== undefined) return cached
   const zoned = timeZone === undefined ? options : { ...options, timeZone }
   let made: Intl.DateTimeFormat
@@ -481,8 +524,7 @@ function cachedDateFormatter(
   } catch {
     made = new Intl.DateTimeFormat(FORMAT_FALLBACK_LOCALE, zoned)
   }
-  dateFormatters.set(key, made)
-  return made
+  return cacheable ? remember(dateFormatters, key, made) : made
 }
 
 /**
