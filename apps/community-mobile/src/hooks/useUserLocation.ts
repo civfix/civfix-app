@@ -27,7 +27,7 @@ export function useUserLocation(): UserLocationState {
   const readFix = useCallback(async (timeoutMs: number = GPS_TIMEOUT_MS): Promise<LatLng | null> => {
     try {
       const pos =
-        (await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS })) ??
+        (await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS }).catch(() => null)) ??
         (await withTimeout(
           Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
           timeoutMs,

@@ -11,8 +11,9 @@
 # has none of them, and the failure modes are all misleading:
 #
 #   1. android/local.properties   -> gradle dies at configuration time with "SDK location not found".
-#                                    Only `expo run:android` writes it. The default SDK path is the
-#                                    homebrew android-commandlinetools cask, NOT ~/Library/Android/sdk.
+#                                    Only `expo run:android` writes it. The SDK comes from
+#                                    CIVFIX_ANDROID_SDK_DIR, else the Homebrew android-commandlinetools
+#                                    cask under `brew --prefix` (NOT ~/Library/Android/sdk).
 #   2. android/keystore.properties-> without it the release build silently falls back to the DEBUG
 #                                    keystore and Play rejects the upload.
 #   3. app/build.gradle signing   -> the stock template ships `release { signingConfig signingConfigs.debug }`
@@ -23,19 +24,26 @@
 #                                    "A failure occurred while executing KspAAWorkerAction > Metaspace".
 #                                    Metaspace is NOT part of the heap, so raising -Xmx alone does nothing.
 #   5. values-night/colors.xml    -> the opposite problem: a non-clean prebuild PRESERVES this file, so
-#                                    a dark splashscreen_background from an older prebuild survives and
-#                                    Android paints the light-only launch screen dark in dark mode. A
-#                                    clean prebuild writes an empty <resources/> there, which is what
-#                                    deleting the stale file leaves.
+#                                    the dark splashscreen_background written before the light-only
+#                                    launch screen (2026-09-14) survives and Android paints the launch
+#                                    screen dark in dark mode. A clean prebuild writes an empty
+#                                    <resources/> there, which is what deleting the stale file leaves.
 #
 # Build afterwards with JDK 22 (the Gradle 8.14.3 wrapper cannot use the default Temurin 25):
-#   export JAVA_HOME="$(/usr/libexec/java_home -v 22)"
+#   export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-22.jdk/Contents/Home
 #   cd android && ./gradlew --no-daemon :app:assembleRelease :app:bundleRelease
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-sdk_dir="${CIVFIX_ANDROID_SDK_DIR:-/opt/homebrew/share/android-commandlinetools}"
+if [ -n "${CIVFIX_ANDROID_SDK_DIR:-}" ]; then
+  sdk_dir="$CIVFIX_ANDROID_SDK_DIR"
+elif command -v brew >/dev/null 2>&1; then
+  sdk_dir="$(brew --prefix)/share/android-commandlinetools"
+else
+  echo "Set CIVFIX_ANDROID_SDK_DIR to your Android SDK directory (no Homebrew to derive it from)." >&2
+  exit 1
+fi
 keystore_dir="${CIVFIX_KEYSTORE_DIR:-$HOME/civfix-keystore}"
 keystore_file="${CIVFIX_KEYSTORE_FILE:-$keystore_dir/civfix-upload.keystore}"
 password_file="${CIVFIX_KEYSTORE_PASSWORD_FILE:-$keystore_dir/.password.txt}"

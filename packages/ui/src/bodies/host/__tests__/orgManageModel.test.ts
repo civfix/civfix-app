@@ -165,9 +165,15 @@ describe("gating", () => {
 })
 
 describe("error copy", () => {
-  it("names the last-admin refusal however the server spells it", () => {
-    expect(orgManageErrorKey("ORG_LAST_ADMIN")).toBe("manage.error_last_admin")
-    expect(orgManageErrorKey("CONFLICT")).toBe("manage.error_last_admin")
+  it("names the last-admin refusal the way the server sends it: VALIDATION on userId", () => {
+    expect(orgManageErrorKey("VALIDATION", { userId: "ORG_LAST_ADMIN" })).toBe(
+      "manage.error_last_admin",
+    )
+  })
+
+  it("does not read an unrelated CONFLICT, such as a taken handle, as the last-admin refusal", () => {
+    expect(orgManageErrorKey("CONFLICT")).toBe("manage.error_generic")
+    expect(orgManageErrorKey("VALIDATION", { name: "too long" })).toBe("manage.error_validation")
   })
 
   it("falls back once for everything else", () => {
