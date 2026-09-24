@@ -7,7 +7,7 @@ import { api } from "@/lib/api"
 import { queryKeys } from "@/lib/query"
 import { useAuthStore } from "@/store/auth-store"
 import { useCurrentUser, useIsAuthenticated } from "@/hooks/use-auth"
-import { useDebouncedValue } from "@/hooks/use-debounce"
+import { useDebouncedValue } from "@civfix/ui/data"
 
 /** Gates only on an explicit `false`, so a session or server that omits the flag never locks anyone out. */
 export function useFirstRunRequired(): boolean {

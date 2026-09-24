@@ -5,7 +5,7 @@ import { makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
 import { FilterChip, useToast } from "../../primitives"
 import { useT } from "../../i18n"
-import { useDebouncedValue } from "../../data/hooks/useDebouncedValue"
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from "../../data/hooks/useDebouncedValue"
 import {
   rosterRows,
   useCheckInEventSeat,
@@ -13,7 +13,7 @@ import {
   useUndoEventCheckIn,
 } from "../../data/hooks/host"
 import { useCleanup } from "../../data"
-import { ROSTER_SEARCH_DEBOUNCE_MS, RosterPagedList, RosterSearchField } from "./RosterPagedList"
+import { RosterPagedList, RosterSearchField } from "./RosterPagedList"
 import { rosterMutationErrorKey, visibleRosterFilters } from "./rosterFiltersModel"
 
 const NO_SLOTS: readonly EventSlotDTO[] = []
@@ -32,7 +32,7 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
   const [filter, setFilter] = useState<RegistrationRosterFilter>("all")
   const [search, setSearch] = useState("")
   const [searchFocused, setSearchFocused] = useState(false)
-  const q = useDebouncedValue(search, ROSTER_SEARCH_DEBOUNCE_MS)
+  const q = useDebouncedValue(search, SEARCH_DEBOUNCE_MS)
 
   const roster = useHostRoster(cleanupId, { filter, q, enabled })
   const rows = useMemo(() => rosterRows(roster.data?.pages), [roster.data?.pages])

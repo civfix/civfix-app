@@ -6,9 +6,9 @@ import type {
   RegistrationRosterFilter,
   RegistrationRosterSort,
 } from "@civfix/shared"
-import { useApi, HOST_ROSTER_PAGE_SIZE } from "@civfix/ui/data"
+import { useApi, useDebouncedValue, HOST_ROSTER_PAGE_SIZE } from "@civfix/ui/data"
 
-import { useDebouncedValue } from "@/components/console/use-debounced-value"
+const CONSOLE_SEARCH_DEBOUNCE_MS = 300
 
 export interface RosterQueryArgs {
   eventId: string
@@ -21,7 +21,7 @@ export interface RosterQueryArgs {
 
 export function useConsoleRoster(args: RosterQueryArgs) {
   const api = useApi()
-  const q = useDebouncedValue(args.q.trim())
+  const q = useDebouncedValue(args.q.trim(), CONSOLE_SEARCH_DEBOUNCE_MS)
   return useInfiniteQuery<ListEventRegistrationsResponse>({
     queryKey: [
       "host",

@@ -9,8 +9,6 @@ import { useT } from "../../i18n"
 import { INPUT_MIN_HEIGHT } from "./hostLayout"
 import { RosterCheckinList } from "./RosterCheckinList"
 
-export const ROSTER_SEARCH_DEBOUNCE_MS = 250
-
 export interface RosterSearchFieldProps {
   value: string
   onChangeText: (next: string) => void
