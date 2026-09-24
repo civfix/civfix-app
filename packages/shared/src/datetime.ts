@@ -121,7 +121,18 @@ export const COMMON_TIMEZONES: readonly string[] = [
 const MAX_CACHED_FORMATTERS = 64
 
 // Keys come from caller strings (row zones, locale tags) and the zone picker sweeps every IANA zone
-// through zoneShortName, so evicting the oldest entry keeps each cache bounded.
+// through zoneShortName, so each cache is bounded. Eviction is least-recently-used (a hit moves the key
+// to the back of the Map's insertion order): with oldest-first eviction a feed spanning more zones than
+// the cap would cycle every key out before its next use and never hit.
+function recall<V>(cache: Map<string, V>, key: string): V | undefined {
+  const value = cache.get(key)
+  if (value !== undefined) {
+    cache.delete(key)
+    cache.set(key, value)
+  }
+  return value
+}
+
 function remember<V>(cache: Map<string, V>, key: string, value: V): V {
   if (cache.size >= MAX_CACHED_FORMATTERS) {
     const oldest = cache.keys().next()
@@ -151,7 +162,7 @@ function dateTimeFormat(
     )
   }
   const key = JSON.stringify([locale, timeZone, options])
-  const cached = cache.get(key)
+  const cached = recall(cache, key)
   if (cached !== undefined) return cached
   return remember(cache, key, new Intl.DateTimeFormat(locale, { ...options, timeZone }))
 }
@@ -159,7 +170,7 @@ function dateTimeFormat(
 const zoneFormatters = new Map<string, Intl.DateTimeFormat | null>()
 
 function zoneFormatter(timeZone: string): Intl.DateTimeFormat | null {
-  const cached = zoneFormatters.get(timeZone)
+  const cached = recall(zoneFormatters, timeZone)
   if (cached !== undefined) return cached
   let formatter: Intl.DateTimeFormat | null
   try {
@@ -515,7 +526,7 @@ function cachedDateFormatter(
 ): Intl.DateTimeFormat {
   const cacheable = locale !== undefined && timeZone !== undefined
   const key = JSON.stringify([locale, timeZone, options])
-  const cached = cacheable ? dateFormatters.get(key) : undefined
+  const cached = cacheable ? recall(dateFormatters, key) : undefined
   if (cached !== undefined) return cached
   const zoned = timeZone === undefined ? options : { ...options, timeZone }
   let made: Intl.DateTimeFormat

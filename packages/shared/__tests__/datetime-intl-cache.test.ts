@@ -244,6 +244,24 @@ describe("formatter construction", () => {
     expect(zoneNameBuilds()).toBe(1)
     expect(zoneNameBuilds()).toBe(0)
   })
+
+  it("keeps a recently used key when a sweep of other keys forces evictions", async () => {
+    const dt = await freshDatetime()
+    const zones = dt.supportedTimeZones().slice(0, 97)
+    const hot = zones[0] ?? LA
+    const at = Date.parse(INSTANTS[8] ?? "")
+    const hotBuilds = (fn: () => void) =>
+      recordConstructs(fn).filter((args) => args.includes(JSON.stringify(hot))).length
+    expect(zones.length).toBe(97)
+    expect(
+      hotBuilds(() => {
+        for (const zone of zones.slice(0, 64)) dt.zoneShortName(at, zone, "en-US")
+        dt.zoneShortName(at, hot, "en-US")
+        for (const zone of zones.slice(64)) dt.zoneShortName(at, zone, "en-US")
+      }),
+    ).toBe(1)
+    expect(hotBuilds(() => dt.zoneShortName(at, hot, "en-US"))).toBe(0)
+  })
 })
 
 describe("error behaviour is unchanged", () => {
