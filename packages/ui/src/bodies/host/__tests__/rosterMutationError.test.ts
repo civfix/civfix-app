@@ -8,7 +8,7 @@ const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url)
 describe("rosterMutationErrorKey", () => {
   it("names a missing check-in permission, which the server sends as FORBIDDEN", () => {
     expect(rosterMutationErrorKey(AppError.forbidden("nope"))).toBe("roster.error_forbidden")
-    expect(rosterMutationErrorKey({ name: "AppError", code: "FORBIDDEN" })).toBe(
+    expect(rosterMutationErrorKey({ name: "AppError", code: "FORBIDDEN", message: "nope" })).toBe(
       "roster.error_forbidden",
     )
   })
