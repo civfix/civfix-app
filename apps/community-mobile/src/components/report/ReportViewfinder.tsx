@@ -62,7 +62,7 @@ async function readShutterLocation(): Promise<{ lat: number; lng: number } | nul
         Location.PermissionStatus.GRANTED
     }
     if (!granted) return null
-    const last = await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS })
+    const last = await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS }).catch(() => null)
     const pos =
       last ??
       (await withTimeout(

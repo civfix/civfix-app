@@ -74,21 +74,34 @@ export function PageBuilderScreen() {
   const [serverFields, setServerFields] = useState<Record<string, string>>({})
   const [confirmUnpublish, setConfirmUnpublish] = useState(false)
   const [saveAttempted, setSaveAttempted] = useState(false)
-
-  useEffect(() => {
-    if (!page.data || blocks !== null) return
-    setBlocks(withRowKeys(page.data.blocks as EventPageBlock[]))
-    setSlug(page.data.slug ?? "")
-    setAccent(page.data.theme.accent)
-    setNoindex(page.data.seo.noindex)
-    setCover(
-      page.data.coverMediaId && page.data.coverUrl
-        ? { mediaId: page.data.coverMediaId, url: page.data.coverUrl }
-        : null,
-    )
-  }, [page.data, blocks])
+  const [seededFrom, setSeededFrom] = useState<EventPageDTO | null>(null)
 
   const currentSlug = slug ?? ""
+  const list = blocks ?? []
+  const differsFrom = (data: EventPageDTO) =>
+    currentSlug !== (data.slug ?? "") ||
+    (accent ?? "bloom") !== data.theme.accent ||
+    (cover?.mediaId ?? null) !== (data.coverMediaId ?? null) ||
+    (noindex ?? false) !== data.seo.noindex ||
+    blocksDiffer(list, data.blocks as EventPageBlock[])
+
+  // A refetch reseeds the form only while it still matches the copy it was seeded from, so a server
+  // change shows up without ever overwriting the host's unsaved edits.
+  if (page.data && page.data !== seededFrom) {
+    setSeededFrom(page.data)
+    if (seededFrom === null || !differsFrom(seededFrom)) {
+      setBlocks(withRowKeys(page.data.blocks as EventPageBlock[]))
+      setSlug(page.data.slug ?? "")
+      setAccent(page.data.theme.accent)
+      setNoindex(page.data.seo.noindex)
+      setCover(
+        page.data.coverMediaId && page.data.coverUrl
+          ? { mediaId: page.data.coverMediaId, url: page.data.coverUrl }
+          : null,
+      )
+    }
+  }
+
   const slugValid = currentSlug === "" || PageSlugSchema.safeParse(currentSlug).success
 
   useEffect(() => {
@@ -108,17 +121,8 @@ export function PageBuilderScreen() {
     staleTime: 60_000,
   })
 
-  const list = blocks ?? []
-
   const blockErrors = saveAttempted ? blockSaveErrors(list) : {}
-  const dirty =
-    page.data !== undefined &&
-    blocks !== null &&
-    (currentSlug !== (page.data.slug ?? "") ||
-      (accent ?? "bloom") !== page.data.theme.accent ||
-      (cover?.mediaId ?? null) !== (page.data.coverMediaId ?? null) ||
-      (noindex ?? false) !== page.data.seo.noindex ||
-      blocksDiffer(list, page.data.blocks as EventPageBlock[]))
+  const dirty = page.data !== undefined && blocks !== null && differsFrom(page.data)
 
   const save = useMutation({
     mutationFn: (saveBlocks: EventPageBlock[]) =>

@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { MAX_EVENT_REMINDER_OFFSETS } from "@civfix/shared"
-import type { EventVisibility, OrganizationDTO } from "@civfix/shared"
+import type { CleanupDTO, EventVisibility, OrganizationDTO } from "@civfix/shared"
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -34,6 +34,37 @@ const REMINDER_OFFSETS = [60, 180, 1440, 2880, 10080] as const
 interface RegistrationWindow {
   registrationOpensAt: string
   registrationClosesAt: string
+}
+
+interface SettingsDraft {
+  visibility: EventVisibility
+  opensAt: string
+  closesAt: string
+  donationUrl: string
+  reminders: string[]
+  organizationId: string
+}
+
+function settingsDraftFrom(event: CleanupDTO, zone: string): SettingsDraft {
+  return {
+    visibility: event.visibility,
+    opensAt: isoToZonedInput(event.registrationOpensAt, zone),
+    closesAt: isoToZonedInput(event.registrationClosesAt, zone),
+    donationUrl: event.donationUrl ?? "",
+    reminders: (event.reminderOffsetsMinutes ?? []).map(String),
+    organizationId: event.organization?.id ?? "",
+  }
+}
+
+function settingsDraftDiffers(draft: SettingsDraft, saved: SettingsDraft): boolean {
+  return (
+    draft.visibility !== saved.visibility ||
+    draft.opensAt !== saved.opensAt ||
+    draft.closesAt !== saved.closesAt ||
+    draft.donationUrl !== saved.donationUrl ||
+    draft.reminders.join(",") !== saved.reminders.join(",") ||
+    draft.organizationId !== saved.organizationId
+  )
 }
 
 export function SettingsScreen() {
@@ -73,23 +104,24 @@ export function SettingsScreen() {
   const [organizationId, setOrganizationId] = useState("")
   const [fields, setFields] = useState<Record<string, string>>({})
   const [confirmCancel, setConfirmCancel] = useState(false)
-  const [hydrated, setHydrated] = useState(false)
+  const [seededFrom, setSeededFrom] = useState<CleanupDTO | null>(null)
 
-  useEffect(() => {
-    if (!event || hydrated) return
-    setVisibility(event.visibility)
-    const stored = {
-      registrationOpensAt: isoToZonedInput(event.registrationOpensAt, zone),
-      registrationClosesAt: isoToZonedInput(event.registrationClosesAt, zone),
+  // A refetch reseeds the form only while it still matches the event it was seeded from, so a server
+  // change shows up without ever overwriting the host's unsaved edits.
+  if (event && event !== seededFrom) {
+    setSeededFrom(event)
+    const draft = { visibility, opensAt, closesAt, donationUrl, reminders, organizationId }
+    if (seededFrom === null || !settingsDraftDiffers(draft, settingsDraftFrom(seededFrom, zone))) {
+      const next = settingsDraftFrom(event, zone)
+      setVisibility(next.visibility)
+      setOpensAt(next.opensAt)
+      setClosesAt(next.closesAt)
+      setSavedWindow({ registrationOpensAt: next.opensAt, registrationClosesAt: next.closesAt })
+      setDonationUrl(next.donationUrl)
+      setReminders(next.reminders)
+      setOrganizationId(next.organizationId)
     }
-    setOpensAt(stored.registrationOpensAt)
-    setClosesAt(stored.registrationClosesAt)
-    setSavedWindow(stored)
-    setDonationUrl(event.donationUrl ?? "")
-    setReminders((event.reminderOffsetsMinutes ?? []).map(String))
-    setOrganizationId(event.organization?.id ?? "")
-    setHydrated(true)
-  }, [event, hydrated, zone])
+  }
 
   const zoneNames = useInputZoneNames(zone, [opensAt, closesAt], event?.scheduledAt)
   const currentWindow = { registrationOpensAt: opensAt, registrationClosesAt: closesAt }

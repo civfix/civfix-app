@@ -972,7 +972,9 @@ describe("portfolio surface", () => {
   it("keeps the live dot, the started line and the shifts strip inside the card body", () => {
     const card = dashboardSource("NextUpCard.tsx")
     expect(card).toContain("<PhaseDot phase={phase} />")
-    expect(card).toContain('t("next_up.started", { ago: relative(event.startsAt, now) })')
+    expect(card).toContain(
+      'relativeLineFor(relative(event.startsAt, now), (ago) => t("next_up.started", { ago }))',
+    )
     expect(card).toContain("<ShiftRow")
     expect(card).toContain("when.timeWithZone")
   })
