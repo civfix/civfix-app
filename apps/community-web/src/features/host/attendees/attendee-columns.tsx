@@ -1,7 +1,7 @@
 "use client"
 
 import type { EventRegistrationDTO, RegistrationRosterSort } from "@civfix/shared"
-import type { useT } from "@civfix/ui/i18n"
+import type { Translate } from "@civfix/ui/i18n"
 
 import { Chip } from "@/components/console/chips/chip"
 import type { DataTableColumn, SortState } from "@/components/console/table"
@@ -9,8 +9,6 @@ import type { DataTableColumn, SortState } from "@/components/console/table"
 import type { ConsoleFormatters } from "../format"
 import { EmptyValue } from "../analytics/analytics-value"
 import { attendanceOf } from "./roster-filters"
-
-type Translate = ReturnType<typeof useT>["t"]
 
 const SORT_COLUMN: Record<string, RegistrationRosterSort> = {
   name: "name_asc",

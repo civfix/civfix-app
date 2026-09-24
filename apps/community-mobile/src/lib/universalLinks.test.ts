@@ -397,6 +397,22 @@ test("an app-scheme path the route table does not know goes home, never to the r
   }
 })
 
+test("an Object.prototype name as the root misses the route table like any unknown root", () => {
+  for (const prefix of ["https://civfix.org", "civfix://", "civfix:/"]) {
+    const unknownRoot = `${prefix}/definitely-not-a-route`
+    for (const path of ["/constructor/x", "/__proto__"]) {
+      const link = `${prefix}${path}`
+      assert.deepEqual(resolveIncomingPath(link), home, link)
+      assert.deepEqual(resolveIncomingPath(link), resolveIncomingPath(unknownRoot), link)
+      assert.deepEqual(
+        resolveIncomingPath(link, { isDev: true }),
+        resolveIncomingPath(unknownRoot, { isDev: true }),
+        link,
+      )
+    }
+  }
+})
+
 test("dev-client launcher and Metro URLs pass through only in a dev build", () => {
   const launcher = "exp+civfix-community://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
   const lanLauncher = "civfix://expo-development-client/?url=http%3A%2F%2F192.168.1.5%3A8081"

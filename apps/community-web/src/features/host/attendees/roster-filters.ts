@@ -1,5 +1,6 @@
 import type {
   EventRegistrationDTO,
+  ListEventRegistrationsResponse,
   RegistrationRosterFilter,
   RegistrationRosterSort,
 } from "@civfix/shared"
@@ -80,4 +81,14 @@ export function checkInSeatsInRow(
 
 export function rowStillPendingCheckIn(row: EventRegistrationDTO): boolean {
   return row.seats.some((seat) => seat.status === "active" && !seat.checkedInAt)
+}
+
+/**
+ * The server sends the whole-event total with the first page. It stays distinct from the loaded row
+ * count, which a filter or an unfetched next page makes smaller.
+ */
+export function rosterEventTotal(
+  pages: readonly ListEventRegistrationsResponse[] | undefined,
+): number | null {
+  return pages?.[0]?.total ?? null
 }

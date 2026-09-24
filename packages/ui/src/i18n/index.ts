@@ -2,6 +2,7 @@ export { I18nProvider } from "./I18nProvider"
 export type { I18nProviderProps } from "./I18nProvider"
 
 export { useT } from "./useT"
+export type { Translate } from "./useT"
 // Re-exported because react-i18next is a dependency of @civfix/ui, not of the apps.
 export { Trans } from "react-i18next"
 export { useLocale } from "./LocaleContext"

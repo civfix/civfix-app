@@ -7,7 +7,7 @@ import { PRESSED_OPACITY_SUBTLE, type Theme } from "@/theme"
 import { resolveActiveLocale } from "@/lib/locale"
 import { queryClient } from "@/query/client"
 import { purgeQueryCache } from "@/query/mmkvPersister"
-import { useAppearanceTheme } from "@/boot/appearanceTheme"
+import { useAppearanceTheme } from "@/theme/appearanceTheme"
 
 const CRASH_COPY = {
   title: "Something went wrong",

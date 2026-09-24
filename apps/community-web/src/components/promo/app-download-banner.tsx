@@ -4,14 +4,11 @@ import * as React from "react"
 import { useAppPromo, useAppPromoStore } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 
-const BANNER_Z_INDEX = 100
+import { Z_APP_BANNER } from "@/styles/z-layers"
 
 /**
  * The portrait counterpart of the landscape <AppPromoCard/>. Both read one promo store, so dismissing here
  * also removes the side card section (visible when a tablet is rotated).
- *
- * BANNER_Z_INDEX sits above the whole AppShell stack (whose layers cap at 71) and below the modal/gate
- * tier (200) and the boot splash (300), so an auth modal still covers it.
  *
  * The banner overlays the map and pushes only the floating map controls down, through the height it
  * publishes to the promo store. The height is measured rather than hardcoded because the subtitle wraps
@@ -58,7 +55,7 @@ export function AppDownloadBanner() {
         top: 0,
         left: 0,
         right: 0,
-        zIndex: BANNER_Z_INDEX,
+        zIndex: Z_APP_BANNER,
         display: "flex",
         alignItems: "center",
         gap: 10,

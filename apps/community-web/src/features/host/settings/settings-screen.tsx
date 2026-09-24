@@ -7,6 +7,7 @@ import type { CleanupDTO, EventVisibility, OrganizationDTO } from "@civfix/share
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
+import { EMAIL_MAX_LENGTH, HTTPS_URL_MAX_LENGTH } from "@/lib/input-limits"
 import { fieldErrorsFrom } from "@/components/console/query-state"
 import { ConsoleButton } from "@/components/console/button"
 import { Field } from "@/components/console/forms/field"
@@ -30,10 +31,6 @@ import {
 import type { ZonedFieldPatch } from "../format"
 
 const REMINDER_OFFSETS = [60, 180, 1440, 2880, 10080] as const
-
-// The contract's reply-to email and donation link maxima, which it does not export.
-const REPLY_TO_MAX = 254
-const DONATION_URL_MAX = 500
 
 interface RegistrationWindow {
   registrationOpensAt: string
@@ -270,7 +267,7 @@ export function SettingsScreen() {
             <TextInput
               id="settings-reply-to"
               type="email"
-              maxLength={REPLY_TO_MAX}
+              maxLength={EMAIL_MAX_LENGTH}
               value={replyTo}
               placeholder={t("messaging.reply_to_placeholder")}
               onChange={(event) => setReplyTo(event.target.value)}
@@ -358,7 +355,7 @@ export function SettingsScreen() {
             id="settings-donation-url"
             value={donationUrl}
             placeholder="https://"
-            maxLength={DONATION_URL_MAX}
+            maxLength={HTTPS_URL_MAX_LENGTH}
             onChange={(event) => setDonationUrl(event.target.value)}
           />
         </Field>

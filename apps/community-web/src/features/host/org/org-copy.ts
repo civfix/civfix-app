@@ -1,4 +1,4 @@
-export type Translate = (key: string, options?: Record<string, unknown>) => string
+import type { Translate } from "@civfix/ui/i18n"
 
 /**
  * The FORBIDDEN copy for a write against a suspended org. The backend refuses every org-scoped

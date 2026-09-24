@@ -4,7 +4,7 @@ import * as React from "react"
 import { Mail, Loader2 } from "lucide-react"
 import { space } from "@civfix/shared/tokens"
 
-import { Trans, type useT } from "@civfix/ui/i18n"
+import { Trans, type Translate } from "@civfix/ui/i18n"
 
 import { AppleGlyph, GoogleGlyph } from "@/components/auth/provider-glyphs"
 import { otpCode } from "@/lib/otp"
@@ -12,8 +12,6 @@ import { otpCode } from "@/lib/otp"
 import type { OtpEntry } from "./use-otp-entry"
 
 export type AuthStep = "choices" | "email" | "code"
-
-type Translate = ReturnType<typeof useT>["t"]
 
 export function AuthStepHeading({ step, email, t }: { step: AuthStep; email: string; t: Translate }) {
   if (step === "choices") {

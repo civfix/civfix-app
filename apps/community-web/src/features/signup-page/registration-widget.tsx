@@ -5,6 +5,7 @@ import { CircleAlert, Loader2 } from "lucide-react"
 import type { PublicEventPageDTO } from "@civfix/shared"
 
 import { Trans, useT } from "@civfix/ui/i18n"
+import type { Translate } from "@civfix/ui/i18n"
 
 import { TURNSTILE_SITEKEY } from "@/lib/turnstile"
 
@@ -12,8 +13,6 @@ import { QuestionField } from "./registration-question-field"
 import { useRegistrationFlow, type RegistrationFlow } from "./use-registration-flow"
 
 const ERROR_ID = "signup-widget-error"
-
-type Translate = ReturnType<typeof useT>["t"]
 
 interface RegistrationWidgetProps {
   page: PublicEventPageDTO

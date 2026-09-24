@@ -26,7 +26,7 @@ const hueRamp = (hue: string) => ({
 })
 
 const config: Config = {
-  darkMode: "selector",
+  darkMode: ["class"],
   content: [
     "./src/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",

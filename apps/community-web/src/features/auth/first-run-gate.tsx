@@ -16,7 +16,8 @@ import {
   useUpdateProfile,
 } from "@/hooks/use-profile-registration"
 import { errorMessage } from "@/lib/error-messages"
-import { SESSION_ALERT_ATTR } from "@/styles/z-layers"
+import { HANDLE_MAX_LENGTH } from "@/lib/input-limits"
+import { SESSION_ALERT_ATTR, Z_FIRST_RUN_GATE } from "@/styles/z-layers"
 
 export function FirstRunGate() {
   const required = useFirstRunRequired()
@@ -29,12 +30,6 @@ export function FirstRunGate() {
 const DISPLAY_NAME_MAX = 80
 const FIRST_NAME_MAX = 40
 const LAST_NAME_MAX = DISPLAY_NAME_MAX - FIRST_NAME_MAX - 1
-
-// Mirrors HANDLE_REGEX's upper bound.
-const HANDLE_MAX = 20
-
-// Above the app-download banner (100), below the session alert (Z_SESSION_ALERT) and the boot splash.
-const GATE_Z_INDEX = 200
 
 /**
  * Make everything outside `el` inert (unfocusable, hidden from assistive tech) and return the undo.
@@ -117,7 +112,7 @@ function FirstRunForm() {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: GATE_Z_INDEX,
+        zIndex: Z_FIRST_RUN_GATE,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -186,7 +181,7 @@ function FirstRunForm() {
               className="input"
               value={handle}
               onChange={(e) => setHandle(e.target.value.replace(/^@+/, ""))}
-              maxLength={HANDLE_MAX}
+              maxLength={HANDLE_MAX_LENGTH}
               autoComplete="off"
               autoCapitalize="none"
               spellCheck={false}

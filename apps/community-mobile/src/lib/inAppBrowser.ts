@@ -2,7 +2,7 @@ import * as Linking from "expo-linking"
 import * as WebBrowser from "expo-web-browser"
 import { DONATE_BROWSER_MODE } from "@/config"
 import { isExternalUrl } from "@/lib/links"
-import { currentTheme } from "@/boot/appearanceTheme"
+import { currentTheme } from "@/theme/appearanceTheme"
 
 let inAppBrowserOpen = false
 

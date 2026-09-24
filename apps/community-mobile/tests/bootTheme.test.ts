@@ -6,7 +6,7 @@ const layout = readFileSync(new URL("../app/_layout.tsx", import.meta.url), "utf
 const rootStack = readFileSync(new URL("../src/boot/RootStack.tsx", import.meta.url), "utf8")
 const bootBackdrop = readFileSync(new URL("../src/boot/BootBackdrop.tsx", import.meta.url), "utf8")
 const crashScreen = readFileSync(new URL("../src/components/CrashScreen.tsx", import.meta.url), "utf8")
-const appearanceTheme = readFileSync(new URL("../src/boot/appearanceTheme.ts", import.meta.url), "utf8")
+const appearanceTheme = readFileSync(new URL("../src/theme/appearanceTheme.ts", import.meta.url), "utf8")
 const launchThemeModule = readFileSync(
   new URL("../src/boot/launchTheme.ts", import.meta.url),
   "utf8",

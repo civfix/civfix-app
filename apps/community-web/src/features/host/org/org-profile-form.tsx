@@ -21,6 +21,7 @@ import { useApi, useAuthState } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
+import { HTTPS_URL_MAX_LENGTH } from "@/lib/input-limits"
 import { toAppError } from "@/lib/api"
 import { ConsoleButton } from "@/components/console/button"
 import { Field } from "@/components/console/forms/field"
@@ -46,10 +47,8 @@ import {
 } from "./org-slug"
 import type { OrgSlugProblem } from "./org-slug"
 import { suspendedForbiddenCopy } from "./org-copy"
-import type { Translate } from "./org-copy"
+import type { Translate } from "@civfix/ui/i18n"
 
-/** Mirrors the contract's `HttpsUrlSchema` max, so the field stops where the server would refuse. */
-const URL_INPUT_MAX = 500
 /** Mirrors the contract's social handle pattern (`{1,30}`). */
 const SOCIAL_HANDLE_MAX = 30
 /** An E.164 number is at most 15 digits. */
@@ -521,7 +520,7 @@ export function OrgProfileForm({
               type="url"
               inputMode="url"
               placeholder="https://"
-              maxLength={URL_INPUT_MAX}
+              maxLength={HTTPS_URL_MAX_LENGTH}
               value={draft.websiteUrl}
               invalid={Boolean(showError("websiteUrl"))}
               onChange={(event) => patch({ websiteUrl: event.target.value })}
@@ -541,7 +540,7 @@ export function OrgProfileForm({
                 type="url"
                 inputMode="url"
                 placeholder="https://"
-                maxLength={URL_INPUT_MAX}
+                maxLength={HTTPS_URL_MAX_LENGTH}
                 value={draft.donationUrl}
                 invalid={Boolean(showError("donationUrl"))}
                 onChange={(event) => patch({ donationUrl: event.target.value })}

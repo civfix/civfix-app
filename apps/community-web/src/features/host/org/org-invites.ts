@@ -1,6 +1,7 @@
 import type { OrganizationInviteDTO } from "@civfix/shared"
 
 import { notifyConsoleUrlChanged } from "@/components/console/url-state"
+import { EMAIL_MAX_LENGTH } from "@/lib/input-limits"
 
 /**
  * Handles are stored without the "@" people type in front of them, and the backend looks them up
@@ -12,7 +13,7 @@ export function normalizeInviteIdentifier(kind: "handle" | "email", raw: string)
 }
 
 /** The contract's `identifier` max on both the org and the event-team invite requests. */
-export const INVITE_IDENTIFIER_MAX = 254
+export const INVITE_IDENTIFIER_MAX = EMAIL_MAX_LENGTH
 
 /** The backend's `ORG_INVITE_TTL_MS` (14 days) - the copy says it before an invite exists. */
 export const ORG_INVITE_TTL_DAYS = 14

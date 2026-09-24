@@ -15,6 +15,7 @@ import type {
 } from "@civfix/shared"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
+import type { Translate } from "@civfix/ui/i18n"
 
 import { useConsoleUrlState } from "@/components/console/url-state"
 import { useGate } from "@/components/console/query-state"
@@ -99,8 +100,6 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
     </section>
   )
 }
-
-type Translate = ReturnType<typeof useT>["t"]
 
 interface AnalyticsTabData {
   registration: EventAnalyticsRegistrationsResponse | undefined

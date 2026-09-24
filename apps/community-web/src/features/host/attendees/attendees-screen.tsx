@@ -35,6 +35,7 @@ import {
   isRosterFilter,
   isRosterSort,
   isWaitlistProjection,
+  rosterEventTotal,
   rowSupportsRegistrationActions,
 } from "./roster-filters"
 
@@ -62,7 +63,7 @@ export function AttendeesScreen() {
     () => (roster.data?.pages ?? []).flatMap((page) => page.items),
     [roster.data],
   )
-  const eventTotal = roster.data?.pages[0]?.total ?? null
+  const eventTotal = rosterEventTotal(roster.data?.pages)
 
   const selectableIds = useMemo(
     () =>

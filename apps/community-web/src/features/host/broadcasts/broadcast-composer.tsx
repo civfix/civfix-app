@@ -11,7 +11,9 @@ import {
 } from "@civfix/shared"
 import { useApi, useAuthState, useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
+import type { Translate } from "@civfix/ui/i18n"
 
+import { HTTPS_URL_MAX_LENGTH } from "@/lib/input-limits"
 import { fieldErrorsFrom } from "@/components/console/query-state"
 import { ConsoleButton } from "@/components/console/button"
 import { Chip } from "@/components/console/chips/chip"
@@ -52,7 +54,6 @@ import type { AudienceKind, AudienceState, ComposerReadiness, HostChannel } from
 
 /** The server's cap on test sends per broadcast; past it the button stays disabled. */
 const TEST_SEND_CAP = 5
-const MAX_CTA_URL = 500
 
 interface ComposerDraft {
   subject: string
@@ -155,8 +156,6 @@ function broadcastBodyFrom(draft: ComposerDraft): {
     channels: draft.channels,
   }
 }
-
-type Translate = ReturnType<typeof useT>["t"]
 
 function composerSummaryErrors(
   readiness: ComposerReadiness,
@@ -600,7 +599,7 @@ function MessageFields({
             value={draft.ctaUrl}
             disabled={readOnly}
             placeholder="https://"
-            maxLength={MAX_CTA_URL}
+            maxLength={HTTPS_URL_MAX_LENGTH}
             onChange={(event) => patch({ ctaUrl: event.target.value })}
           />
         </Field>

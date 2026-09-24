@@ -7,6 +7,7 @@ import { SAFE_HTTPS_LINK_MAX } from "@civfix/shared"
 import { MARKDOWN_SUBSET_MAX_CHARS } from "@civfix/shared/markdown"
 import { useT } from "@civfix/ui/i18n"
 
+import { EMAIL_MAX_LENGTH } from "@/lib/input-limits"
 import { Field } from "@/components/console/forms/field"
 import { TextInput, TextArea } from "@/components/console/forms/inputs"
 import { ToggleRow } from "@/components/console/forms/toggle-row"
@@ -32,7 +33,6 @@ const HOST_ROLE_MAX = 80
 const FAQ_ITEMS_MAX = 30
 const FAQ_QUESTION_MAX = 200
 const SPONSOR_ENTRIES_MAX = 20
-const EMAIL_MAX = 254
 
 const LINK_PLACEHOLDER = "https://"
 
@@ -499,7 +499,7 @@ function ContactEditor({ block, onChange, errorAt }: KindEditorProps<"contact">)
         error={errorAt("replyTo")}
         type="email"
         value={block.replyTo}
-        maxLength={EMAIL_MAX}
+        maxLength={EMAIL_MAX_LENGTH}
         onChange={(replyTo) => onChange({ replyTo })}
       />
     </BlockFields>

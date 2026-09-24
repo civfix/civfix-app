@@ -6,8 +6,8 @@ const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8"
 
 const FILES = [
   "../app/_layout.tsx",
-  "../src/boot/appearanceTheme.ts",
-  "../src/boot/inAppBrowser.ts",
+  "../src/theme/appearanceTheme.ts",
+  "../src/lib/inAppBrowser.ts",
   "../src/boot/useBootstrap.ts",
   "../src/boot/useLaunchGate.ts",
   "../src/components/CrashScreen.tsx",
