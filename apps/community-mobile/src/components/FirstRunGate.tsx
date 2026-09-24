@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, StyleSheet, ActivityIndicator, Pressable } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { Ionicons } from "@expo/vector-icons"
+import Ionicons from "@expo/vector-icons/Ionicons"
 import { MIN_TOUCH_TARGET, makeThemedStyles, space, useTheme } from "@/theme"
 import {
   AgeConfirmation,

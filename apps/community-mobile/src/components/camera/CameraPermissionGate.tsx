@@ -1,6 +1,6 @@
 import React from "react"
 import { Linking, Pressable, View } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
+import Ionicons from "@expo/vector-icons/Ionicons"
 import { Text, PrimaryButton } from "@civfix/ui"
 import { makeThemedStyles, useTheme } from "@/theme"
 

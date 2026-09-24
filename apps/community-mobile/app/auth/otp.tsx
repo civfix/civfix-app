@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { View, Pressable, useWindowDimensions } from "react-native"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { Ionicons } from "@expo/vector-icons"
+import Ionicons from "@expo/vector-icons/Ionicons"
 import {
   REVIEWER_OTP_CODE_MAX_LENGTH,
   REVIEWER_OTP_CODE_MIN_LENGTH,
