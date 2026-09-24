@@ -1,7 +1,6 @@
 /**
- * Server-provided navigation targets (NotificationDTO.link is typed only as a string) are accepted only
- * as absolute in-app paths, which blocks open redirects and scheme injection (javascript:, data:,
- * https://evil, //evil) should the backend ever reflect user- or content-derived links.
+ * Untrusted navigation targets are accepted only as absolute in-app paths, which blocks open redirects
+ * and scheme injection (javascript:, data:, https://evil, //evil).
  */
 export function isSafeInternalPath(link: string | null | undefined): boolean {
   if (typeof link !== "string") return false

@@ -2,16 +2,11 @@ import { describe, expect, it } from "vitest"
 import type { CleanupDTO, OrganizationDTO, PostDTO, ReportDTO, UserProfileDTO } from "@civfix/shared"
 
 import {
-  clamp,
   defaultPreview,
   documentTitle,
-  escapeHtml,
-  formatEventWhen,
   isManagedLink,
   isManagedMeta,
-  isPublicMediaUrl,
   metaTagsHtml,
-  oneLine,
   previewForEvent,
   previewForOrganization,
   previewForPerson,
@@ -58,31 +53,34 @@ describe("contract shapes", () => {
 
 describe("escaping and clamping", () => {
   it("escapes every html-significant character", () => {
-    expect(escapeHtml(`<script>"x" & 'y'</script>`)).toBe(
-      "&lt;script&gt;&quot;x&quot; &amp; &#39;y&#39;&lt;/script&gt;",
+    const html = metaTagsHtml({ ...defaultPreview(ctx), title: `<script>"x" & 'y'</script>` })
+    expect(html).toContain(
+      '<meta property="og:title" content="&lt;script&gt;&quot;x&quot; &amp; &#39;y&#39;&lt;/script&gt;">',
     )
   })
 
   it("collapses newlines and runs of whitespace into one line", () => {
-    expect(oneLine("a\n\nb\t c   d\r\n")).toBe("a b c d")
+    expect(previewForPerson({ name: "a\n\nb\t c   d\r\n" }, ctx)?.title).toBe("a b c d on civfix")
   })
 
   it("clamps on a word boundary and appends an ellipsis", () => {
-    expect(clamp("the quick brown fox jumps", 12)).toBe("the quick…")
-    expect(clamp("short", 12)).toBe("short")
+    const bio = (text: string) => previewForPerson({ name: "Ada", bio: text }, ctx)?.description
+    expect(bio(`${"a".repeat(190)} bcdefghijklmnop`)).toBe(`${"a".repeat(190)}…`)
+    expect(bio("short")).toBe("short")
   })
 
   it("clamps on code points, so an emoji or a CJK supplementary character is never split", () => {
+    const bio = (text: string) => previewForPerson({ name: "Ada", bio: text }, ctx)?.description
     const emoji = String.fromCodePoint(0x1f600)
-    const clamped = clamp(`${"a".repeat(199)}${emoji}${emoji}`, 200)
+    const clamped = bio(`${"a".repeat(199)}${emoji}${emoji}`)
     expect(clamped).toBe(`${"a".repeat(199)}${emoji}…`)
     expect(clamped).not.toMatch(/[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/)
 
     const han = "漢字".repeat(150)
-    expect(clamp(han, 200)).toBe(`${han.slice(0, 200)}…`)
+    expect(bio(han)).toBe(`${han.slice(0, 200)}…`)
     const rare = String.fromCodePoint(0x20000)
-    expect(clamp(rare.repeat(201), 200)).toBe(`${rare.repeat(200)}…`)
-    expect(clamp(rare.repeat(200), 200)).toBe(rare.repeat(200))
+    expect(bio(rare.repeat(201))).toBe(`${rare.repeat(200)}…`)
+    expect(bio(rare.repeat(200))).toBe(rare.repeat(200))
   })
 
   it("never emits an unescaped tag from user content", () => {
@@ -110,15 +108,18 @@ describe("escaping and clamping", () => {
 })
 
 describe("public media urls", () => {
+  const avatarImage = (avatarUrl: string | null) =>
+    previewForPerson({ name: "Ada", avatarUrl }, ctx)?.image
+
   it("accepts an unsigned https url", () => {
-    expect(isPublicMediaUrl("https://cdn.civfix.org/m/1.jpg")).toBe(true)
+    expect(avatarImage("https://cdn.civfix.org/m/1.jpg")).toBe("https://cdn.civfix.org/m/1.jpg")
   })
 
   it("rejects presigned, http and malformed urls", () => {
-    expect(isPublicMediaUrl("https://r2.example.com/m/1.jpg?X-Amz-Signature=deadbeef")).toBe(false)
-    expect(isPublicMediaUrl("http://cdn.civfix.org/m/1.jpg")).toBe(false)
-    expect(isPublicMediaUrl("not a url")).toBe(false)
-    expect(isPublicMediaUrl(null)).toBe(false)
+    expect(avatarImage("https://r2.example.com/m/1.jpg?X-Amz-Signature=deadbeef")).toBe(BRAND_IMAGE)
+    expect(avatarImage("http://cdn.civfix.org/m/1.jpg")).toBe(BRAND_IMAGE)
+    expect(avatarImage("not a url")).toBe(BRAND_IMAGE)
+    expect(avatarImage(null)).toBe(BRAND_IMAGE)
   })
 })
 
@@ -230,22 +231,26 @@ describe("previewForEvent", () => {
     status: "upcoming",
   }
 
+  const TAGLINE = "A volunteer event on civfix"
+  const when = (scheduledAt: string | null, timezone?: string | null) =>
+    previewForEvent({ ...base, scheduledAt, timezone }, ctx)?.description
+
   it("formats the schedule in the platform time zone", () => {
-    expect(formatEventWhen("2026-09-12T17:00:00.000Z")).toBe("Sat, Sep 12, 10:00 AM PDT")
-    expect(formatEventWhen("nonsense")).toBe("")
-    expect(formatEventWhen(null)).toBe("")
+    expect(when("2026-09-12T17:00:00.000Z")).toBe(`Sat, Sep 12, 10:00 AM PDT · ${TAGLINE}`)
+    expect(when("nonsense")).toBe(TAGLINE)
+    expect(when(null)).toBe(TAGLINE)
   })
 
   it("formats the schedule in the EVENT's zone when the row carries one", () => {
-    expect(formatEventWhen("2026-09-12T17:00:00.000Z", "America/New_York")).toBe(
-      "Sat, Sep 12, 1:00 PM EDT",
+    expect(when("2026-09-12T17:00:00.000Z", "America/New_York")).toBe(
+      `Sat, Sep 12, 1:00 PM EDT · ${TAGLINE}`,
     )
   })
 
   it("falls back to the platform zone for a legacy row or an unusable zone", () => {
-    expect(formatEventWhen("2026-09-12T17:00:00.000Z", null)).toBe("Sat, Sep 12, 10:00 AM PDT")
-    expect(formatEventWhen("2026-09-12T17:00:00.000Z", "Mars/Olympus")).toBe(
-      "Sat, Sep 12, 10:00 AM PDT",
+    expect(when("2026-09-12T17:00:00.000Z", null)).toBe(`Sat, Sep 12, 10:00 AM PDT · ${TAGLINE}`)
+    expect(when("2026-09-12T17:00:00.000Z", "Mars/Olympus")).toBe(
+      `Sat, Sep 12, 10:00 AM PDT · ${TAGLINE}`,
     )
   })
 

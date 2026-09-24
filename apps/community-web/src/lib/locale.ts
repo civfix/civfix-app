@@ -102,7 +102,7 @@ const webLocaleSources: LocaleSources = {
   platformLocale: browserLocaleTag,
 }
 
-export function resolveActiveLocale(userLocale?: string | null): SupportedLocale {
+function resolveActiveLocale(userLocale?: string | null): SupportedLocale {
   return resolveActiveLocaleFrom(webLocaleSources, userLocale)
 }
 

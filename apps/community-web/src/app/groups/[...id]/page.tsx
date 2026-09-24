@@ -1,4 +1,4 @@
-import { GroupsRoute } from "@/features/groups/groups-route"
+import { HomeShell } from "@/components/home/home-shell"
 
 /**
  * output: "export" needs every dynamic segment enumerated at build time, so this emits one placeholder
@@ -12,5 +12,5 @@ export function generateStaticParams(): Array<{ id: string[] }> {
 export const dynamicParams = false
 
 export default function GroupsDetailPage() {
-  return <GroupsRoute />
+  return <HomeShell />
 }

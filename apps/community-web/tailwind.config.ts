@@ -2,7 +2,6 @@ import type { Config } from "tailwindcss"
 import { tokens } from "@civfix/shared/tokens"
 import { Z_SESSION_ALERT } from "./src/styles/z-layers"
 
-
 const { color, fontSize, radius, shadow, space } = tokens
 
 const px = (n: number): string => `${n}px`
@@ -26,14 +25,8 @@ const hueRamp = (hue: string) => ({
   700: schemeVar(`--${hue}-700`),
 })
 
-function fontSizeScale(): Record<string, string> {
-  const out: Record<string, string> = {}
-  for (const [k, v] of Object.entries(fontSize)) out[k] = v
-  return out
-}
-
 const config: Config = {
-  darkMode: ["class"],
+  darkMode: "selector",
   content: [
     "./src/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
@@ -150,7 +143,7 @@ const config: Config = {
       },
 
       fontSize: Object.fromEntries(
-        Object.entries(fontSizeScale()).map(([k, v]) => [`token-${k}`, v]),
+        Object.entries(fontSize).map(([k, v]) => [`token-${k}`, v]),
       ),
 
       lineHeight: {
@@ -210,27 +203,6 @@ const config: Config = {
         d2: ms(tokens.motion.dur.d2),
         d3: ms(tokens.motion.dur.d3),
         d4: ms(tokens.motion.dur.d4),
-      },
-
-      keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-        "sheet-up": {
-          from: { transform: "translateY(100%)" },
-          to: { transform: "translateY(0)" },
-        },
-      },
-
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        "sheet-up": "sheet-up 0.32s cubic-bezier(0.22,1,0.36,1)",
       },
     },
   },
