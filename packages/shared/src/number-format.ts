@@ -1,12 +1,17 @@
-/** Used when a locale tag is malformed, so a bad preference degrades the language, never the render. */
-const FORMAT_FALLBACK_LOCALE = "en-US"
+import { FORMAT_FALLBACK_LOCALE } from "./internal/format-locale.js"
 
 export interface FormatCountOptions {
   /** "12K" instead of "12,400": short labels on dense surfaces (post actions, chart axes). */
   compact?: boolean
 }
 
-const countFormatters = new Map<string, Intl.NumberFormat>()
+interface CountFormatter {
+  format: Intl.NumberFormat
+  /** False on an engine that ignored `notation: "compact"` (read once, not per render). */
+  compactHonoured: boolean
+}
+
+const countFormatters = new Map<string, CountFormatter>()
 
 function makeCountFormatter(locale: string, compact: boolean): Intl.NumberFormat {
   const options: Intl.NumberFormatOptions = compact
@@ -20,11 +25,12 @@ function makeCountFormatter(locale: string, compact: boolean): Intl.NumberFormat
 }
 
 // Intl constructors are costly on Hermes and counts render per feed row, so instances are cached.
-function countFormatter(locale: string, compact: boolean): Intl.NumberFormat {
+function countFormatter(locale: string, compact: boolean): CountFormatter {
   const key = `${locale}|${compact ? "compact" : "whole"}`
   const cached = countFormatters.get(key)
   if (cached !== undefined) return cached
-  const made = makeCountFormatter(locale, compact)
+  const format = makeCountFormatter(locale, compact)
+  const made = { format, compactHonoured: format.resolvedOptions().notation === "compact" }
   countFormatters.set(key, made)
   return made
 }
@@ -58,6 +64,25 @@ function englishCompact(value: number): string {
 export function formatCount(value: number, locale: string, options: FormatCountOptions = {}): string {
   const compact = options.compact === true
   const formatter = countFormatter(locale, compact)
-  if (compact && formatter.resolvedOptions().notation !== "compact") return englishCompact(value)
-  return formatter.format(value)
+  if (compact && !formatter.compactHonoured) return englishCompact(value)
+  return formatter.format.format(value)
+}
+
+const CERTIFICATE_HOURS_MAX_FRACTION_DIGITS = 2
+
+/**
+ * The one hours format for a service-hours certificate, so the printed PDF and the public verify page
+ * can never show a registrar two different totals. The ledger has 0.25h granularity.
+ */
+export function formatCertificateHours(hours: number, locale: string): string {
+  const options: Intl.NumberFormatOptions = {
+    minimumFractionDigits: Number.isInteger(hours) ? 0 : 1,
+    maximumFractionDigits: CERTIFICATE_HOURS_MAX_FRACTION_DIGITS,
+  }
+  try {
+    return new Intl.NumberFormat(locale, options).format(hours)
+  } catch {
+    // An unsupported locale tag must not blank the verdict or the document.
+    return String(hours)
+  }
 }

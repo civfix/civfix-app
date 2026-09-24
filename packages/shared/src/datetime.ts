@@ -1,3 +1,5 @@
+import { FORMAT_FALLBACK_LOCALE } from "./internal/format-locale.js"
+
 /**
  * The compact "ago" label, shared so the server and both clients produce identical text.
  *
@@ -459,9 +461,6 @@ export function eventWhenLabel(event: EventWhenInput, opts: EventWhenOptions = {
   return parts.zone === null ? when : `${when} ${parts.zone}`
 }
 
-/** Used when a locale tag is malformed, so a bad preference degrades the language, never the render. */
-const FORMAT_FALLBACK_LOCALE = "en-US"
-
 const dateFormatters = new Map<string, Intl.DateTimeFormat>()
 
 // Constructing an Intl.DateTimeFormat is one of the costlier built-ins on Hermes, and list rows format
@@ -508,7 +507,7 @@ export function safeDateFormat(
  * whose clock is UTC, so "the viewer's zone" is not available there; civfix launched in Los Angeles
  * and legacy rows predate per-event zones.
  */
-export const DEFAULT_EVENT_TIME_ZONE = "America/Los_Angeles"
+const DEFAULT_EVENT_TIME_ZONE = "America/Los_Angeles"
 
 export type EventInstantStyle = "short" | "long"
 

@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
-  DEFAULT_EVENT_TIME_ZONE,
   datetimeLocalFromIso,
   eventZoneSuffix,
   formatEventInstant,
@@ -73,7 +72,6 @@ describe("formatEventInstant", () => {
   })
 
   it("uses the platform zone for a legacy row or an unusable zone", () => {
-    expect(DEFAULT_EVENT_TIME_ZONE).toBe(LA)
     expect(formatEventInstant(SAT_NOON_UTC_MINUS_7, undefined, "short")).toBe(
       "Sat, Sep 12, 10:00 AM PDT",
     )

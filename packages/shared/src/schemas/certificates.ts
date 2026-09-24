@@ -139,22 +139,3 @@ export const VerifyCertificateResponseSchema = z.object({
   revokedReason: z.string().nullable().optional(),
 })
 export type VerifyCertificateResponse = z.infer<typeof VerifyCertificateResponseSchema>
-
-const CERTIFICATE_HOURS_MAX_FRACTION_DIGITS = 2
-
-/**
- * The one hours format for a service-hours certificate, so the printed PDF and the public verify page
- * can never show a registrar two different totals. The ledger has 0.25h granularity.
- */
-export function formatCertificateHours(hours: number, locale: string): string {
-  const options: Intl.NumberFormatOptions = {
-    minimumFractionDigits: Number.isInteger(hours) ? 0 : 1,
-    maximumFractionDigits: CERTIFICATE_HOURS_MAX_FRACTION_DIGITS,
-  }
-  try {
-    return new Intl.NumberFormat(locale, options).format(hours)
-  } catch {
-    // An unsupported locale tag must not blank the verdict or the document.
-    return String(hours)
-  }
-}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatCertificateHours } from "../src/schemas/certificates.js"
+import { formatCertificateHours } from "../src/number-format.js"
 
 describe("formatCertificateHours", () => {
   it("prints whole hours without decimals and quarter hours with up to two", () => {
