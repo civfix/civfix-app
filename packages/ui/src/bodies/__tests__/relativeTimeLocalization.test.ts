@@ -1,6 +1,8 @@
 import { readFileSync, readdirSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { dayLabel, listTimeAgo, todayKey } from "../relativeTime"
+import { clockTime, dayLabel, distanceLabel, focalTimestamp, listTimeAgo, todayKey } from "../relativeTime"
+import { eventDistanceLabel } from "../eventDistance"
+import { METERS_PER_MILE } from "../reportHitRowModel"
 import { buildRenderItems } from "../conversation/conversationModel"
 import type { ChatItem } from "@civfix/shared"
 
@@ -148,5 +150,42 @@ describe("every list timestamp goes through the localized seam", () => {
     const model = readFileSync(new URL("../postCardModel.ts", import.meta.url), "utf8")
     expect(model).toContain("timeAgo?: (iso: string) => string")
     expect(model).toContain("(options.timeAgo ?? listTimeAgo)(post.createdAt)")
+  })
+})
+
+describe("clock and focal timestamps follow the app locale, not the device's", () => {
+  const afternoon = localIso(2026, 2, 14, 15)
+  const clock = (locale: string) =>
+    new Date(afternoon).toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })
+  const date = (locale: string) =>
+    new Date(afternoon).toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })
+
+  it("formats the chat clock time in the supplied locale", () => {
+    expect(clock("ko-KR")).not.toBe(clock("en-US"))
+    expect(clockTime(afternoon, "ko-KR")).toBe(clock("ko-KR"))
+    expect(clockTime(afternoon, "en-US")).toBe(clock("en-US"))
+  })
+
+  it("formats the thread focal timestamp in the supplied locale", () => {
+    expect(date("de-DE")).not.toBe(date("en-US"))
+    expect(focalTimestamp(afternoon, "de-DE")).toBe(`${clock("de-DE")} · ${date("de-DE")}`)
+  })
+})
+
+describe("APP-BUG-228 / APP-BUG-200: clock, focal and distance labels follow the APP locale", () => {
+  const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
+
+  it("formats the distance decimal in the supplied locale", () => {
+    expect(distanceLabel(0.4, "de")).toBe("0,4 mi")
+    expect(distanceLabel(0.4, "en")).toBe("0.4 mi")
+    expect(distanceLabel(26, "de")).toBe("26 mi")
+    expect(eventDistanceLabel(METERS_PER_MILE, "de")).toBe("1,0 mi")
+  })
+
+  it("hands the app locale to every caller, not the device default", () => {
+    expect(read("../conversation/MessageBubble.tsx")).toContain("clockTime(message.createdAt, locale)")
+    expect(read("../thread/ThreadFocalPost.tsx")).toContain("focalTimestamp(post.createdAt, locale)")
+    expect(read("../EventsBody.tsx")).toContain("eventDistanceLabel(cleanup.dist, locale)")
+    expect(read("../EventDetailBody.tsx")).toContain("eventDistanceLabel(cleanup.dist, locale)")
   })
 })

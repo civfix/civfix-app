@@ -120,9 +120,11 @@ try {
       { stdio: "inherit" },
     )
 
+    // Set exitCode and break rather than exiting here: an exit skips the finally that removes workDir.
     if (!existsSync(outFile)) {
       console.error(`[og] ${outFile} was not written.`)
-      process.exit(1)
+      process.exitCode = 1
+      break
     }
 
     const bytes = statSync(outFile).size
@@ -131,7 +133,8 @@ try {
         `[og] ${target.name} is ${bytes} bytes, over the ${target.maxBytes}-byte budget. WhatsApp ` +
           `drops a preview image above ~300 KB, so simplify the artwork and re-run.`,
       )
-      process.exit(1)
+      process.exitCode = 1
+      break
     }
 
     console.log(

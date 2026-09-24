@@ -14,14 +14,7 @@ import { SegmentedControl } from "@/components/console/forms/segmented-control"
 
 import { consoleKeys } from "../console-keys"
 import { useConsoleFormat } from "../format"
-
-const STATUS_FILTERS: readonly (DeliveryStatus | "all")[] = [
-  "all",
-  "sent",
-  "failed",
-  "suppressed",
-  "pending",
-]
+import { DELIVERY_STATUS_FILTERS } from "./audience"
 
 export interface DeliveryDrawerProps {
   eventId: string
@@ -73,7 +66,7 @@ export function DeliveryDrawer({
           label={t("deliveries.filter")}
           value={status}
           onChange={onStatusChange}
-          options={STATUS_FILTERS.map((value) => ({
+          options={DELIVERY_STATUS_FILTERS.map((value) => ({
             value,
             label: value === "all" ? t("deliveries.all") : t(`delivery_status.${value}`),
           }))}

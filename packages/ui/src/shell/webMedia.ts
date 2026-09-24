@@ -14,6 +14,8 @@
  * should assume.
  */
 
+export const COARSE_POINTER_QUERY = "(pointer: coarse)"
+
 /** True when the OS asks for reduced motion. SSR-safe (no window during prerender => false). */
 export function prefersReducedMotion(): boolean {
   return matches("(prefers-reduced-motion: reduce)")
@@ -26,15 +28,19 @@ export function prefersReducedMotion(): boolean {
  * (mouse/trackpad) has no soft keyboard, so it keeps the smooth animation. SSR-safe => non-touch.
  */
 export function isCoarsePointer(): boolean {
-  return matches("(pointer: coarse)")
+  return matches(COARSE_POINTER_QUERY)
 }
 
-/** One guarded matchMedia probe: no window (SSR), no matchMedia, or a throwing query => false. */
-function matches(query: string): boolean {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false
+/** One guarded matchMedia lookup: no window (SSR), no matchMedia, or a throwing query => null. */
+export function mediaQuery(query: string): MediaQueryList | null {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return null
   try {
-    return window.matchMedia(query).matches
+    return window.matchMedia(query)
   } catch {
-    return false
+    return null
   }
+}
+
+function matches(query: string): boolean {
+  return mediaQuery(query)?.matches ?? false
 }

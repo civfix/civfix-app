@@ -16,6 +16,12 @@ import type { PostComposeInput, PostKind } from "@civfix/shared"
 
 export type PostSubmitDestination = "origin" | "thread"
 
+/**
+ * `PostComposeInputSchema` caps `mentionedUserIds` at 20. A body naming more still publishes; the handles
+ * past the cap stay plain text instead of the whole post failing with the generic submit error.
+ */
+export const POST_MENTION_CAP = 20
+
 export function postSubmitDestination(kind: PostKind): PostSubmitDestination {
   return kind === "post" ? "origin" : "thread"
 }
@@ -77,7 +83,7 @@ export function resolvePostSubmit(draft: PostDraft, hasReadyMedia = false): Post
     ...(draft.eventId ? { eventId: draft.eventId } : {}),
     ...(draft.reportId ? { reportId: draft.reportId } : {}),
     mediaUploadIds: draft.mediaUploadIds ?? [],
-    mentionedUserIds: draft.mentionedUserIds ?? [],
+    mentionedUserIds: [...new Set(draft.mentionedUserIds ?? [])].slice(0, POST_MENTION_CAP),
     ...(draft.organizationId && draft.kind !== "repost"
       ? { organizationId: draft.organizationId }
       : {}),

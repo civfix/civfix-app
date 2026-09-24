@@ -10,7 +10,13 @@ import { useGeolocation } from "../capabilities"
 import { useApi, fetchApproximateLocation } from "../data"
 import { useMapViewport, viewportBias } from "../map/mapViewportStore"
 import { useT } from "../i18n"
-import { buildSuggestRequest } from "./addressSuggestRequest"
+import { announce } from "../announce"
+import {
+  PROXIMITY_FIX_TIMEOUT_MS,
+  addressSearchStatus,
+  buildSuggestRequest,
+  settleWithin,
+} from "./addressSuggestRequest"
 
 const MAP_BIAS_SCALE = 0.6
 
@@ -41,6 +47,7 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
   const [focused, setFocused] = useState(false)
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<GeoSuggestion[]>([])
+  const [failed, setFailed] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const proximityRef = useRef<Promise<LatLng | null> | null>(null)
@@ -48,7 +55,7 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
   const resolveProximity = useCallback((): Promise<LatLng | null> => {
     if (!proximityRef.current) {
       proximityRef.current = (async () => {
-        const pos = geo.isAvailable() ? await geo.getCurrentPosition().catch(() => null) : null
+        const pos = geo.isAvailable() ? await settleWithin(geo.getCurrentPosition(), PROXIMITY_FIX_TIMEOUT_MS) : null
         if (pos) return { lat: pos.latitude, lng: pos.longitude }
         const approximate = await fetchApproximateLocation(api, qc)
         if (approximate) return approximate
@@ -81,6 +88,7 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
   const runSearch = useCallback(
     async (q: string) => {
       const trimmed = q.trim()
+      setFailed(false)
       if (!trimmed) {
         abortRef.current?.abort()
         abortRef.current = null
@@ -103,6 +111,7 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
         ])
         setOpen(true)
         setLoading(false)
+        announce(t("results.count", { count: 1 }))
         return
       }
       abortRef.current?.abort()
@@ -121,8 +130,17 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
         if (ac.signal.aborted) return
         setResults(res.suggestions)
         setOpen(true)
+        announce(
+          res.suggestions.length > 0
+            ? t("results.count", { count: res.suggestions.length })
+            : t("empty.noMatches"),
+        )
       } catch {
-        if (!ac.signal.aborted) setResults([])
+        if (!ac.signal.aborted) {
+          setResults([])
+          setFailed(true)
+          announce(t("error.failed"))
+        }
       } finally {
         if (!ac.signal.aborted) setLoading(false)
       }
@@ -146,6 +164,7 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
       onPick({ name: s.label, lat: s.lat, lng: s.lng })
       onChangeText(s.label)
       setResults([])
+      setFailed(false)
       setLoading(false)
       setOpen(false)
     },
@@ -156,11 +175,12 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
     cancelPending()
     onChangeText("")
     setResults([])
+    setFailed(false)
     setLoading(false)
     setOpen(false)
   }, [cancelPending, onChangeText])
 
-  const showEmpty = open && !loading && results.length === 0 && value.trim().length > 0
+  const status = addressSearchStatus({ open, loading, failed, resultCount: results.length, query: value })
 
   return (
     <View>
@@ -175,6 +195,7 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
           }}
           onBlur={() => setFocused(false)}
           placeholder={t("input.placeholder")}
+          accessibilityLabel={t("input.a11y")}
           placeholderTextColor={th.colors.textSubtle}
           selectionColor={th.colors.brand.bloom}
           autoCorrect={false}
@@ -196,7 +217,7 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
         ) : null}
       </View>
 
-      {open && results.length > 0 ? (
+      {status === "results" ? (
         <View style={styles.results}>
           {results.map((s, i) => (
             <Pressable
@@ -228,7 +249,27 @@ export function AddressSearch({ value, onChangeText, onPick }: AddressSearchProp
             <Text style={styles.attribution}>© Mapbox © OpenStreetMap</Text>
           ) : null}
         </View>
-      ) : showEmpty ? (
+      ) : status === "failed" ? (
+        <View style={styles.results}>
+          <View style={styles.result}>
+            <Icon icon={iconMap.AlertCircle} size={16} color={th.colors.textSubtle} />
+            <View style={styles.resultMeta}>
+              <Text style={styles.resultAddr} numberOfLines={2}>
+                {t("error.failed")}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => void runSearch(value)}
+              accessibilityRole="button"
+              accessibilityLabel={t("error.retry")}
+              {...focusRingProps}
+              style={({ pressed }) => [styles.retry, pressed ? styles.pressed : null]}
+            >
+              <Text style={styles.retryText}>{t("error.retry")}</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : status === "empty" ? (
         <View style={styles.results}>
           <View style={styles.result}>
             <Icon icon={iconMap.Info} size={16} color={th.colors.textSubtle} />
@@ -315,6 +356,16 @@ const useStyles = makeThemedStyles((t) => ({
   },
   pressed: {
     opacity: 0.7,
+  },
+  retry: {
+    minHeight: 44,
+    justifyContent: "center",
+    paddingHorizontal: t.space["2"],
+  },
+  retryText: {
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: 13,
+    color: t.colors.accentText,
   },
   attribution: {
     fontFamily: t.fontFamily.bodyRegular,

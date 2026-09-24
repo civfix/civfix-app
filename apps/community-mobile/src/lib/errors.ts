@@ -51,9 +51,13 @@ export function oauthError(t: Translate, provider: "Apple" | "Google", err: unkn
   return t("mobile-errors:oauth_failed", { provider })
 }
 
-export function errorMessage(err: unknown, fallback: string): string {
-  if (isAppError(err) && err.message && err.message.length < 160) return err.message
-  return fallback
+/**
+ * The server's message text is English-only, so a rejected code reads as the caller's localized
+ * `rejected` copy and every other failure as its localized code copy; raw server text never shows.
+ */
+export function codeRejectionReason(t: Translate, err: unknown, rejected: string): string {
+  if (isUnauthorized(err)) return rejected
+  return friendlyError(t, err)
 }
 
 export function isUnauthorized(err: unknown): boolean {

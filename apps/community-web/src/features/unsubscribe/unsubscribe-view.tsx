@@ -3,6 +3,7 @@
 import * as React from "react"
 
 import { UNSUBSCRIBE_TOKEN_MAX, UNSUBSCRIBE_TOKEN_MIN } from "@civfix/shared"
+import { Trans, useT } from "@civfix/ui/i18n"
 
 import { api } from "@/lib/api"
 
@@ -18,9 +19,13 @@ export function unsubscribeTokenFromSearch(search: string | null | undefined): s
 type Phase = "working" | "done" | "unusable"
 
 export function UnsubscribeView() {
+  const { t } = useT("web-unsubscribe")
   const [phase, setPhase] = React.useState<Phase>("working")
   const started = React.useRef(false)
 
+  // The ref keeps this to one request under StrictMode's effect replay. There is deliberately no
+  // cancel-on-cleanup: the replay's cleanup would drop the only request's answer and leave the page on
+  // "Unsubscribing" forever, and a setState after unmount is a no-op.
   React.useEffect(() => {
     if (started.current) return
     started.current = true
@@ -31,18 +36,10 @@ export function UnsubscribeView() {
       return
     }
 
-    let cancelled = false
     api
       .unsubscribeBroadcasts({ token })
-      .then(() => {
-        if (!cancelled) setPhase("done")
-      })
-      .catch(() => {
-        if (!cancelled) setPhase("unusable")
-      })
-    return () => {
-      cancelled = true
-    }
+      .then(() => setPhase("done"))
+      .catch(() => setPhase("unusable"))
   }, [])
 
   return (
@@ -50,36 +47,31 @@ export function UnsubscribeView() {
       <div className="unsub-shell" aria-live="polite">
         {phase === "working" ? (
           <>
-            <h1>Unsubscribing…</h1>
-            <p>One moment.</p>
+            <h1>{t("working.title")}</h1>
+            <p>{t("working.body")}</p>
           </>
         ) : null}
 
         {phase === "done" ? (
           <>
-            <h1>You&rsquo;re unsubscribed from this event&rsquo;s messages.</h1>
-            <p>
-              You will not get any more updates from the host of this event. You may still receive a
-              notice if the event is cancelled, because that is something you need to know about an
-              event you signed up for.
-            </p>
+            <h1>{t("done.title")}</h1>
+            <p>{t("done.body")}</p>
           </>
         ) : null}
 
         {phase === "unusable" ? (
           <>
-            <h1>We couldn&rsquo;t use this link</h1>
-            <p>
-              This unsubscribe link could not be completed, so we cannot tell you that it worked. Some
-              mail apps shorten or wrap long links; try opening the link from the original email again,
-              or use the button below.
-            </p>
+            <h1>{t("unusable.title")}</h1>
+            <p>{t("unusable.body")}</p>
           </>
         ) : null}
 
         <p>
-          To change what civfix sends you generally, open{" "}
-          <a href="/notifications/prefs">notification settings</a>.
+          <Trans
+            t={t}
+            i18nKey="settings_prompt"
+            components={[<a key="settings" href="/notifications/prefs" />]}
+          />
         </p>
       </div>
     </main>

@@ -14,7 +14,10 @@
     "unlimited": "sin límite",
     "party": "hasta {{max}} por inscripción",
     "empty_title": "Todavía no hay tipos de entrada",
-    "empty_body": "Añade uno para que la gente elija cómo participa. Sin tipos de entrada, el evento usa una confirmación sencilla."
+    "empty_body": "Añade uno para que la gente elija cómo participa. Sin tipos de entrada, el evento usa una confirmación sencilla.",
+    "move_up_named": "Subir {{name}}",
+    "move_down_named": "Bajar {{name}}",
+    "delete_named": "Eliminar {{name}}"
   },
   "drawer": {
     "new_title": "Nuevo tipo de entrada",
@@ -39,7 +42,9 @@
     "maxPartySize": "Plazas por inscripción",
     "salesOpensAt": "Apertura de reservas",
     "salesClosesAt": "Cierre de reservas",
-    "ticketTypeIds": "Orden"
+    "ticketTypeIds": "Orden",
+    "sales_zone_hint": "Las horas de reserva están en la zona horaria del evento ({{zone}}).",
+    "sales_time_not_in_zone": "Esa hora no existe en {{zone}} por el cambio de horario. Elige otra hora."
   },
   "visibility": {
     "public": "Pública",
@@ -78,6 +83,10 @@
     "required": "Obligatoria",
     "ticket_scope": "Preguntar solo para",
     "ticket_all": "Todos los tipos de entrada",
-    "ticket_scope_hint": "Una pregunta limitada a un tipo de entrada solo se hace cuando alguien elige ese tipo, así que nunca se hace si ocultas todos los tipos. Déjala en todos los tipos para preguntarla siempre."
+    "ticket_scope_hint": "Una pregunta limitada a un tipo de entrada solo se hace cuando alguien elige ese tipo, así que nunca se hace si ocultas todos los tipos. Déjala en todos los tipos para preguntarla siempre.",
+    "move_up_named": "Subir {{name}}",
+    "move_down_named": "Bajar {{name}}",
+    "remove_named": "Quitar {{name}}",
+    "untitled": "Pregunta {{n}}"
   }
 }

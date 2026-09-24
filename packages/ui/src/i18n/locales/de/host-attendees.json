@@ -115,5 +115,11 @@
     "partial_other": "{{count}} konnten nicht ausgeführt werden.",
     "export_hint": "Exportieren",
     "export_reason": "Exporte umfassen immer die ganze Veranstaltung, nicht eine Auswahl. Nutze oben die Schaltfläche Exportieren."
+  },
+  "bulk_remove": {
+    "title_one": "{{count}} Anmeldung entfernen?",
+    "title_other": "{{count}} Anmeldungen entfernen?",
+    "body_one": "{{count}} Anmeldung verliert ihre Plätze. Die Person kann sich erneut anmelden, solange die Anmeldung offen ist.",
+    "body_other": "{{count}} Anmeldungen verlieren ihre Plätze. Die Personen können sich erneut anmelden, solange die Anmeldung offen ist."
   }
 }

@@ -1,6 +1,7 @@
 import React from "react"
 import { View } from "react-native"
-import { REPORT_CATEGORY_LABELS, type ReportCategory } from "@civfix/shared"
+import type { ReportCategory } from "@civfix/shared"
+import { useT } from "../i18n"
 import { makeThemedStyles, useTheme, categoryColor, wash } from "../theme"
 import { Text } from "../typography"
 import { CATEGORY_ICONS } from "./category-icons"
@@ -16,11 +17,15 @@ export function CategoryChip({
 }) {
   const styles = useStyles()
   const t = useTheme()
+  const { t: tEnums } = useT("enums")
   const color = categoryColor(category, t.scheme)
   const Glyph = CATEGORY_ICONS[category]
   return (
     <View style={styles.row}>
       <View
+        aria-hidden
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
         style={[
           styles.swatch,
           {
@@ -35,7 +40,7 @@ export function CategoryChip({
       </View>
       {showLabel ? (
         <Text variant="bodyStrong" color={t.colors.text} style={styles.label}>
-          {REPORT_CATEGORY_LABELS[category]}
+          {tEnums(`category.${category}`)}
         </Text>
       ) : null}
     </View>

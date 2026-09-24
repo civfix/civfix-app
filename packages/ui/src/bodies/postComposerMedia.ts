@@ -108,3 +108,17 @@ export function mergePostComposerThumbs(
 ): PendingAttachment[] {
   return [...carried.map((item, index) => toPendingAttachment(item, index)), ...picked].slice(0, cap)
 }
+
+/**
+ * Whether the add-media control may open the picker. The hook only counts its OWN picks against the cap,
+ * so with carried draft media it would accept picks the merge above then slices off, uploading media that
+ * no post ever claims.
+ */
+export function postComposerCanAttach(input: {
+  hookCanAttach: boolean
+  carried: number
+  picked: number
+  cap?: number
+}): boolean {
+  return input.hookCanAttach && input.carried + input.picked < (input.cap ?? POST_COMPOSER_MEDIA_CAP)
+}

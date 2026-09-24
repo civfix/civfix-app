@@ -66,6 +66,22 @@ describe("parseMarkdownSubset blocks", () => {
     ])
   })
 
+  it("drops the continuation lines of a list item cut by the cap", () => {
+    const items = Array.from({ length: MARKDOWN_MAX_LIST_ITEMS }, (_, i) => `- item ${i}`)
+    const src = [...items, "- dropped", "  dropped continuation"].join("\n")
+    const list = first(parseMarkdownSubset(src, { maxChars: 20000 }))
+    if (list.type !== "list") throw new Error("expected a list")
+    expect(list.items).toHaveLength(MARKDOWN_MAX_LIST_ITEMS)
+    const last = list.items[MARKDOWN_MAX_LIST_ITEMS - 1]
+    expect(last && text(last.children)).toBe(`item ${MARKDOWN_MAX_LIST_ITEMS - 1}`)
+  })
+
+  it("still folds continuation lines into a kept list item", () => {
+    const list = first(parseMarkdownSubset("- first\n  more\n- second"))
+    if (list.type !== "list") throw new Error("expected a list")
+    expect(list.items.map((item) => text(item.children))).toEqual(["first more", "second"])
+  })
+
   it("returns an empty AST for empty or non-string input", () => {
     expect(parseMarkdownSubset("")).toEqual([])
     expect(parseMarkdownSubset("   \n\n  ")).toEqual([])

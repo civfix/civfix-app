@@ -24,6 +24,7 @@ import {
   FOCUS_RING_WIDTH,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
+import { MIN_TOUCH_TARGET } from "../typography/TextLink"
 import { FilterChip, FILTER_CHIP_HEIGHT } from "../primitives"
 import { useLocale, useT } from "../i18n"
 import {
@@ -62,6 +63,11 @@ function bumpCapacity(raw: string, delta: 1 | -1): string {
   if (next < 1) return ""
   return String(Math.min(next, MAX_SLOT_CAPACITY))
 }
+
+// The two chevrons stack into one 44pt column, so each spends its slop on its OUTER edge only; slop on
+// the shared edge would overlap its sibling. rn-web drops hitSlop, so the 44pt width lives in the box.
+const MOVE_UP_HIT_SLOP = { top: MIN_TOUCH_TARGET / 4 }
+const MOVE_DOWN_HIT_SLOP = { bottom: MIN_TOUCH_TARGET / 4 }
 
 const WEB_FIELD_RING: TextStyle =
   Platform.OS === "web"
@@ -149,7 +155,7 @@ function SlotCard({
             accessibilityRole="button"
             accessibilityState={{ disabled: !canMoveUp }}
             accessibilityLabel={t("editor.move_up_a11y", { index: position })}
-            hitSlop={4}
+            hitSlop={MOVE_UP_HIT_SLOP}
             {...focusRingProps}
             style={(state) => [
               styles.reorderBtn,
@@ -168,7 +174,7 @@ function SlotCard({
             accessibilityRole="button"
             accessibilityState={{ disabled: !canMoveDown }}
             accessibilityLabel={t("editor.move_down_a11y", { index: position })}
-            hitSlop={4}
+            hitSlop={MOVE_DOWN_HIT_SLOP}
             {...focusRingProps}
             style={(state) => [
               styles.reorderBtn,
@@ -189,22 +195,29 @@ function SlotCard({
           accessibilityState={{ disabled: total === 1 }}
           accessibilityLabel={t("editor.remove_a11y", { index: position })}
           {...(total === 1 ? { accessibilityHint: t("editor.remove_last_hint") } : {})}
-          hitSlop={6}
           {...focusRingProps}
           style={(state) => [
-            styles.removeBtn,
+            styles.discTarget,
             webCursorPointer,
-            webTransition,
             total === 1 ? styles.disabled : null,
-            webHover(state) && total > 1 ? styles.discHovered : null,
             state.pressed && total > 1 ? styles.pressed : null,
           ]}
         >
-          <Icon
-            icon={iconMap.Close}
-            size={14}
-            color={total === 1 ? th.colors.textSubtle : th.colors.textMuted}
-          />
+          {(state) => (
+            <View
+              style={[
+                styles.removeBtn,
+                webTransition,
+                webHover(state) && total > 1 ? styles.discHovered : null,
+              ]}
+            >
+              <Icon
+                icon={iconMap.Close}
+                size={14}
+                color={total === 1 ? th.colors.textSubtle : th.colors.textMuted}
+              />
+            </View>
+          )}
         </Pressable>
       </View>
 
@@ -233,17 +246,18 @@ function SlotCard({
           onPress={() => onPatch(draft.key, { capacity: bumpCapacity(draft.capacity, -1) })}
           accessibilityRole="button"
           accessibilityLabel={t("editor.capacity_less_a11y")}
-          hitSlop={4}
           {...focusRingProps}
           style={(state) => [
-            styles.stepBtn,
+            styles.discTarget,
             webCursorPointer,
-            webTransition,
-            webHover(state) ? styles.discHovered : null,
             state.pressed ? styles.pressed : null,
           ]}
         >
-          <Icon icon={iconMap.Minus} size={14} color={th.colors.textMuted} />
+          {(state) => (
+            <View style={[styles.stepBtn, webTransition, webHover(state) ? styles.discHovered : null]}>
+              <Icon icon={iconMap.Minus} size={14} color={th.colors.textMuted} />
+            </View>
+          )}
         </Pressable>
         <TextInput
           value={draft.capacity}
@@ -252,7 +266,7 @@ function SlotCard({
           placeholder={t("editor.capacity_any")}
           placeholderTextColor={th.colors.textSubtle}
           selectionColor={th.colors.brand.bloom}
-          keyboardType="decimal-pad"
+          keyboardType="number-pad"
           maxLength={3}
           onFocus={() => setFocusedField("capacity")}
           onBlur={() => setFocusedField(null)}
@@ -262,17 +276,18 @@ function SlotCard({
           onPress={() => onPatch(draft.key, { capacity: bumpCapacity(draft.capacity, 1) })}
           accessibilityRole="button"
           accessibilityLabel={t("editor.capacity_more_a11y")}
-          hitSlop={4}
           {...focusRingProps}
           style={(state) => [
-            styles.stepBtn,
+            styles.discTarget,
             webCursorPointer,
-            webTransition,
-            webHover(state) ? styles.discHovered : null,
             state.pressed ? styles.pressed : null,
           ]}
         >
-          <Icon icon={iconMap.Plus} size={14} color={th.colors.textMuted} />
+          {(state) => (
+            <View style={[styles.stepBtn, webTransition, webHover(state) ? styles.discHovered : null]}>
+              <Icon icon={iconMap.Plus} size={14} color={th.colors.textMuted} />
+            </View>
+          )}
         </Pressable>
         {claimed !== undefined && claimed > 0 ? (
           <Text style={styles.claimedCount} numberOfLines={1}>
@@ -321,7 +336,7 @@ function SlotCard({
       </View>
 
       {error ? (
-        <Text style={styles.errorLine}>
+        <Text style={styles.errorLine} accessibilityRole="alert" accessibilityLiveRegion="polite">
           {t(ERROR_KEY[error], {
             max: MAX_SLOT_TITLE,
             count: claimed ?? 0,
@@ -419,6 +434,7 @@ export function SlotEditor({
             key={count}
             label={String(count)}
             selected={false}
+            selection="action"
             disabled={!offeredSplits.includes(count)}
             onPress={() => onSplit(count)}
             accessibilityLabel={t("editor.split_count_a11y", { count })}
@@ -475,6 +491,7 @@ export function SlotEditor({
           <FilterChip
             label={t("editor.suggest_general")}
             selected={false}
+            selection="action"
             onPress={onSuggestGeneral}
             accessibilityLabel={t("editor.suggest_general_a11y")}
           />
@@ -617,11 +634,18 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bloom["50"],
   },
   reorderBtn: {
-    width: 24,
-    height: 24,
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET / 2,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
+    borderRadius: t.radius.pill,
+  },
+  discTarget: {
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
+    borderRadius: MIN_TOUCH_TARGET / 2,
+    alignItems: "center",
+    justifyContent: "center",
   },
   removeBtn: {
     width: 30,

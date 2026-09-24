@@ -50,7 +50,7 @@ export function ReportLinkRow({
       const report = useLinkedReportCards.getState().cards[fetchedId]
       if (!report && query.data) useLinkedReportCards.getState().put([reportToCardData(query.data)])
     }
-  }, [fetchedId])
+  }, [fetchedId, query.data])
 
   const resolved: LinkedReportCardEntry | undefined = known ?? fetched ?? undefined
   const card = useMemo(

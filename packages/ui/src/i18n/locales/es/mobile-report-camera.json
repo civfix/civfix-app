@@ -26,5 +26,10 @@
     "take_photo": "Tomar foto",
     "stop_recording": "Detener grabación",
     "start_recording": "Iniciar grabación"
+  },
+  "error": {
+    "photo": "No se pudo tomar la foto. Inténtalo de nuevo.",
+    "recording": "No se pudo grabar el video. Inténtalo de nuevo.",
+    "library": "No se pudo abrir esa foto o video. Inténtalo de nuevo o elige otro."
   }
 }

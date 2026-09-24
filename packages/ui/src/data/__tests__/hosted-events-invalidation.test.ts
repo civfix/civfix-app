@@ -127,3 +127,14 @@ describe("useMyHostedEvents is never frozen shut", () => {
     expect(fn).not.toContain("refetchOnReconnect: false")
   })
 })
+
+describe("registration changes refresh every event list that shows attendance", () => {
+  it.each([
+    ["useRegisterForEvent", "export function useRegisterForEvent", "export interface CancelRegistrationVars"],
+    ["useCancelEventRegistration", "export function useCancelEventRegistration", "export function useScanEventTicket"],
+  ])("%s invalidates the cleanup lists AND the org-page event lists", (_name, from, to) => {
+    const fn = section(hostSource, from, to)
+    expect(fn).toContain("invalidateCleanupLists(qc)")
+    expect(fn).not.toContain('queryKey: ["cleanups"]')
+  })
+})

@@ -1,7 +1,7 @@
 "use client"
 
 import { ChevronRight, CircleAlert, X } from "lucide-react"
-import { useRef } from "react"
+import { useId, useRef } from "react"
 import type { ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { useT } from "@civfix/ui/i18n"
@@ -56,6 +56,7 @@ export function GuidedSheet({
 }: GuidedSheetProps) {
   const { t } = useT("host-common")
   const panelRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
   useEscape(open, onClose)
   useFocusTrap(panelRef, open)
 
@@ -70,7 +71,7 @@ export function GuidedSheet({
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby={titleId}
         className={cn(
           "relative flex max-h-[85vh] w-full flex-col rounded-t-md border border-b-0 border-console-line bg-console-surface shadow-console-4 sm:max-w-lg sm:rounded-md sm:border-b",
           "animate-in slide-in-from-bottom duration-d3 ease-out",
@@ -78,7 +79,9 @@ export function GuidedSheet({
         )}
       >
         <header className="flex shrink-0 items-center gap-token-2 border-b border-console-line px-token-4 py-token-3">
-          <h3 className="min-w-0 flex-1 truncate font-display text-token-15 font-bold text-console-ink">
+          <h3
+            id={titleId}
+            className="min-w-0 flex-1 truncate font-display text-token-15 font-bold text-console-ink">
             {title}
           </h3>
           {progressLabel ? (

@@ -19,5 +19,9 @@
   "denied": {
     "title": "Only hosts who can manage this event can edit it",
     "body": "Ask the host to update the details, or sign up for a slot from the event page."
+  },
+  "signIn": {
+    "title": "Sign in to edit this event",
+    "body": "Hosts who manage this event can change its details after signing in."
   }
 }

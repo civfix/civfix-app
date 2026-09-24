@@ -30,13 +30,18 @@ export function LinkedReportsSheet({ visible, mode, cleanup, onClose }: LinkedRe
   const saved = useMemo(() => cleanup.linkedReports.map((report) => report.id), [cleanup.linkedReports])
   const linkedPins = useMemo(() => cleanup.linkedReports.map(refToPin), [cleanup.linkedReports])
   const [errorText, setErrorText] = useState<string | null>(null)
+  const [shown, setShown] = useState(visible)
   const readonly = mode === "readonly"
+
+  if (visible !== shown) {
+    setShown(visible)
+    if (visible) setErrorText(null)
+  }
 
   useEffect(() => {
     if (!visible) return
-    setErrorText(null)
     useLinkedReportCards.getState().put(cleanup.linkedReports.map(linkedRefToCardData))
-  }, [visible])
+  }, [visible, cleanup.linkedReports])
 
   const onSave = useCallback(
     (ids: string[]) => {

@@ -17,9 +17,6 @@ const BROWSER_ONLY_ROOTS = new Set([
   "service-record",
   "legal",
   ".well-known",
-  "landscape",
-  "skeleton",
-  "bodies",
   "manage",
   "unsubscribe",
 ])
@@ -154,6 +151,7 @@ function internalPathFor(parts: readonly string[]): string | null {
     case "compose":
       return "/compose"
     case "host":
+      return a === "analytics" ? "/host/analytics" : "/host-event"
     case "host-event":
       return "/host-event"
     case "events":
@@ -161,7 +159,8 @@ function internalPathFor(parts: readonly string[]): string | null {
     case "e":
       return a ? `/cleanups/${a}` : null
     case "orgs":
-      return a ? `/orgs/${a}` : null
+      if (!a) return null
+      return b === "manage" ? `/orgs/${a}/manage` : `/orgs/${a}`
     case "cleanups":
       if (!a) return "/cleanups"
       return cleanupPathFor(a, b, c)
@@ -193,17 +192,19 @@ function internalPathFor(parts: readonly string[]): string | null {
   }
 }
 
-const CLEANUP_CHILDREN = new Set(["edit", "host", "checkin", "team", "hours"])
+const CLEANUP_CHILDREN = new Set(["edit", "host", "checkin", "team", "hours", "analytics"])
+
+const CLEANUP_COLLECTIONS = new Set(["ticket", "announcements"])
 
 function cleanupPathFor(
   id: string,
   sub: string | undefined,
-  seatId: string | undefined,
+  childId: string | undefined,
 ): string {
   if (!sub) return `/cleanups/${id}`
   if (CLEANUP_CHILDREN.has(sub)) return `/cleanups/${id}/${sub}`
-  if (sub === "ticket") {
-    return seatId ? `/cleanups/${id}/ticket/${seatId}` : `/cleanups/${id}/ticket`
+  if (CLEANUP_COLLECTIONS.has(sub)) {
+    return childId ? `/cleanups/${id}/${sub}/${childId}` : `/cleanups/${id}/${sub}`
   }
   return `/cleanups/${id}`
 }

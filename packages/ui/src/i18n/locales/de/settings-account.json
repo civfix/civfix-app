@@ -130,7 +130,10 @@
     "helper": "Wähle, welche Organisation neben deinem Namen erscheint.",
     "automatic": "Automatisch",
     "automatic_sub": "Die zuerst beigetretene Organisation verwenden.",
-    "selected": "Ausgewählt",
     "error": "Deine Organisation konnte nicht gespeichert werden. Versuche es erneut."
+  },
+  "save_error": {
+    "rate_limited": "Zu viele Änderungen hintereinander. Warte kurz und versuche es erneut.",
+    "validation": "Das wurde nicht akzeptiert. Prüfe deine Eingabe und versuche es erneut."
   }
 }

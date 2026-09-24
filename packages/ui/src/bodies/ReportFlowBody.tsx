@@ -9,7 +9,7 @@ import { makeThemedStyles, motion, useTheme, categoryColor, wash, useLayoutMode,
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField, Toggle, KeyboardPinnedFooter, KeyboardPinnedSurface, PrimaryButton, CategoryChip, MediaPreview, SuccessCheck } from "../primitives"
-import { LocationPicker, PortraitMapPickStep, useLocationPick, reportPinTarget } from "../map"
+import { LocationPicker, PortraitMapPickStep, reportPinTarget } from "../map"
 import { PinSvg, glyphForCategory } from "../map"
 import {
   useApi,
@@ -38,7 +38,7 @@ import { useStackDirection } from "../shell/useStackDirection"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
 import { reportAddressPrefill } from "./reportAddressField"
 import { announce } from "../announce"
-import { appErrorCode } from "./errorCode"
+import { appErrorCode, appErrorFields } from "./errorCode"
 import { HEADER_CONTROL_SIZE } from "./headerControls"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedShareBlock, FeedSharePreview } from "./FeedShareBlock"
@@ -47,7 +47,7 @@ import { buildReportPreviewCard, type FeedShareOutcome } from "./feedShare"
 import { useCamera, useGeolocation, useHaptics } from "../capabilities"
 import type { CapturedMedia } from "../capabilities"
 import { REPORT_TYPES, type ReportType } from "../report/reportTypes"
-import { useDraftReportStore, MAX_DRAFT_MEDIA } from "../report/draftStore"
+import { useDraftReportStore, MAX_DRAFT_MEDIA, captureSeedsNewReport } from "../report/draftStore"
 import { usePostComposerStore } from "./postComposerStore"
 import {
   deferReportRunRelease,
@@ -65,6 +65,8 @@ import {
   viewfinderResumeGraceEligible,
   viewfinderSessionActive,
   pickLayerVisible,
+  submitErrorRecovery,
+  type SubmitRecovery,
 } from "../report/wizardSteps"
 import {
   useCaptureDropTarget,
@@ -72,7 +74,16 @@ import {
   captureDropActiveStyleFor,
   type DroppedItem,
 } from "../report/captureDropTarget"
-import { useReportSubmit, useFeedShareRetry, type ReportSubmitOutcome } from "../report/submit"
+import {
+  useReportSubmit,
+  useFeedShareRetry,
+  createSubmitRunSlot,
+  descriptionMaxLength,
+  SubmitRunDiscarded,
+  type ReportSubmitOutcome,
+} from "../report/submit"
+import { routeCardState } from "../report/routeCard"
+import { useViewerDraftGeneration } from "../viewerScope"
 import { useT } from "../i18n"
 import type { TFunction } from "i18next"
 
@@ -82,10 +93,16 @@ const REPORT_RUN_EXIT_HOST: ReportRunExitHost = {
   watchView: (onNavChange) => useNavStore.subscribe(onNavChange),
 }
 
+const TEXT_FIELDS: ReadonlySet<string> = new Set(["title", "description", "addr"])
+
 function submitErrorMessage(err: unknown, t: TFunction): string {
   const code = appErrorCode(err)
+  const fieldKeys = Object.keys(appErrorFields(err) ?? {}).map((key) => key.split(".")[0])
   switch (code) {
     case "VALIDATION":
+      if (fieldKeys.some((key) => key !== undefined && TEXT_FIELDS.has(key))) return t("errors.validation_text")
+      if (fieldKeys.includes("mediaUploadIds")) return t("errors.validation_media")
+      return t("errors.validation")
     case "GPS_IMPLAUSIBLE":
       return t("errors.validation")
     case "RATE_LIMITED":
@@ -105,13 +122,16 @@ function submitErrorMessage(err: unknown, t: TFunction): string {
 function ReportTypeRow({ type, selected, onPress }: { type: ReportType; selected: boolean; onPress: () => void }) {
   const styles = useStyles()
   const th = useTheme()
+  const { t } = useT("report-wizard")
   const color = categoryColor(type.category, th.scheme)
+  const label = t(`enums:reportType.${type.id}`)
+  const sub = t(`types.${type.id}.sub`)
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="radio"
-      accessibilityState={{ selected }}
-      accessibilityLabel={type.label}
+      accessibilityState={{ checked: selected }}
+      accessibilityLabel={t("types.row_a11y", { label, sub })}
       {...focusRingProps}
       style={({ pressed }) => [
         styles.typeRow,
@@ -127,8 +147,8 @@ function ReportTypeRow({ type, selected, onPress }: { type: ReportType; selected
         <PinSvg fill={color} glyph={glyphForCategory(type.category)} size={30} />
       )}
       <View style={styles.typeMeta}>
-        <Text style={styles.typeTitle}>{type.label}</Text>
-        <Text style={styles.typeSub}>{type.sub}</Text>
+        <Text style={styles.typeTitle}>{label}</Text>
+        <Text style={styles.typeSub}>{sub}</Text>
       </View>
       <View style={[styles.check, selected ? { backgroundColor: color, borderColor: color } : null]}>
         {selected ? <Icon icon={iconMap.Check} size={15} color={th.colors.onAccent} /> : null}
@@ -148,26 +168,29 @@ function CaptureStep({ mode }: { mode: LayoutMode }) {
   const addCapture = useDraftReportStore((s) => s.addCapture)
   const removeMedia = useDraftReportStore((s) => s.removeMedia)
   const [busy, setBusy] = useState(false)
+  const busyRef = useRef(false)
   const [hint, setHint] = useState<string | null>(null)
 
   const land = useCallback(
     async (produce: () => Promise<CapturedMedia | null>) => {
-      if (busy) return
+      if (busyRef.current) return
+      busyRef.current = true
       setBusy(true)
       setHint(null)
       try {
         const captured = await produce()
         if (captured) {
-          if (useDraftReportStore.getState().draft.media.length === 0) startFromCapture(captured)
+          if (captureSeedsNewReport(useDraftReportStore.getState().draft)) startFromCapture(captured)
           else addCapture(captured)
         }
       } catch {
         setHint(t("capture.camera_error"))
       } finally {
+        busyRef.current = false
         setBusy(false)
       }
     },
-    [busy, startFromCapture, addCapture, t],
+    [startFromCapture, addCapture, t],
   )
 
   const run = useCallback(
@@ -213,7 +236,9 @@ function CaptureStep({ mode }: { mode: LayoutMode }) {
                 {...focusRingProps}
                 style={({ pressed }) => [styles.captureRemove, pressed ? styles.pressed : null]}
               >
-                <Icon icon={iconMap.Close} size={13} color={th.colors.onScrim} />
+                <View style={styles.captureRemoveDisc}>
+                  <Icon icon={iconMap.Close} size={13} color={th.colors.onScrim} />
+                </View>
               </Pressable>
             </View>
           ))}
@@ -310,17 +335,18 @@ function CaptureStep({ mode }: { mode: LayoutMode }) {
 
 function CategoryStep() {
   const styles = useStyles()
+  const { t } = useT("report-wizard")
   const reportTypeId = useDraftReportStore((s) => s.draft.reportTypeId)
   const setCategory = useDraftReportStore((s) => s.setCategory)
   return (
     <View style={styles.stepBlock}>
-      <View style={styles.typeList}>
+      <View style={styles.typeList} accessibilityRole="radiogroup" accessibilityLabel={t("wizard.category.title")}>
         {REPORT_TYPES.map((type) => (
           <ReportTypeRow
             key={type.id}
             type={type}
             selected={reportTypeId === type.id}
-            onPress={() => setCategory(type.category, type.glyph ? "" : type.label, type.id)}
+            onPress={() => setCategory(type.category, type.glyph ? "" : t(`enums:reportType.${type.id}`), type.id)}
           />
         ))}
       </View>
@@ -350,7 +376,7 @@ function DetailsStep() {
         value={draft.description}
         onChangeText={setDescription}
         multiline
-        maxLength={2000}
+        maxLength={descriptionMaxLength(draft.flags)}
       />
       <View style={styles.toggles}>
         <Toggle
@@ -404,13 +430,22 @@ async function resolveApproxCenter(
   return qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null
 }
 
-function useApproxCenter(enabled: boolean): LatLng | null {
+// `refreshIfNull` is the picker being open: a session-cached null (denied, or offline) is resolved again
+// then, so a permission granted since can place the map. A cached point is never re-resolved or replaced.
+interface ApproxCenter {
+  center: LatLng | null
+  /** The current resolution attempt finished without a point; the pickers then ask for an address. */
+  settled: boolean
+}
+
+function useApproxCenter(enabled: boolean, refreshIfNull: boolean): ApproxCenter {
   const geo = useGeolocation()
   const api = useApi()
   const qc: QueryClient = useQueryClient()
   const [center, setCenter] = useState<LatLng | null>(
     () => qc.getQueryData<LatLng | null>(queryKeys.userLocation) ?? null,
   )
+  const [settledFor, setSettledFor] = useState<boolean | null>(null)
   useEffect(() => {
     if (!enabled || center) return
     const cached = qc.getQueryData<LatLng | null>(queryKeys.userLocation)
@@ -419,26 +454,25 @@ function useApproxCenter(enabled: boolean): LatLng | null {
       return
     }
     let cancelled = false
+    const settle = (c: LatLng | null) => {
+      if (cancelled) return
+      if (c) setCenter(c)
+      else setSettledFor(refreshIfNull)
+    }
     void qc
       .fetchQuery<LatLng | null>({
         queryKey: queryKeys.userLocation,
         queryFn: () => resolveApproxCenter(geo, api, qc),
-        staleTime: Infinity,
+        staleTime: refreshIfNull ? 0 : Infinity,
         gcTime: Infinity,
         retry: false,
       })
-      .then(
-        (c) => {
-          if (!cancelled && c) setCenter(c)
-        },
-        () => {
-        },
-      )
+      .then(settle, () => settle(null))
     return () => {
       cancelled = true
     }
-  }, [geo, api, qc, enabled, center])
-  return center
+  }, [geo, api, qc, enabled, center, refreshIfNull])
+  return { center, settled: enabled && center === null && settledFor === refreshIfNull }
 }
 
 function CompactLocationField({
@@ -524,7 +558,10 @@ function ReviewStep({
   const draft = useDraftReportStore((s) => s.draft)
   const setShareToFeed = useDraftReportStore((s) => s.setShareToFeed)
   const setFeedCaption = useDraftReportStore((s) => s.setFeedCaption)
-  const point = draft.lat != null && draft.lng != null ? { lat: draft.lat, lng: draft.lng } : null
+  const point = useMemo(
+    () => (draft.lat != null && draft.lng != null ? { lat: draft.lat, lng: draft.lng } : null),
+    [draft.lat, draft.lng],
+  )
   const setLocation = useDraftReportStore((s) => s.setLocation)
   const clearLocation = useDraftReportStore((s) => s.clearLocation)
   const setAddress = useDraftReportStore((s) => s.setAddress)
@@ -550,21 +587,18 @@ function ReviewStep({
   const compact = layoutMode === "compact"
   const pickMode = layoutMode === "expanded" ? "main-map" : "standalone"
 
-  const initialCenter = useApproxCenter(true)
+  const initialCenter = useApproxCenter(true, !compact)
 
   const onDropPin = useCallback(
     (lat: number, lng: number) => setLocation(lat, lng, "manual"),
     [setLocation],
   )
   const onPickPlace = useCallback(
-    (place: AddressPick) => {
-      setLocation(place.lat, place.lng, "manual")
-      if (pickMode === "main-map") useLocationPick.getState().setDraft(place.lat, place.lng)
-    },
-    [setLocation, pickMode],
+    (place: AddressPick) => setLocation(place.lat, place.lng, "manual"),
+    [setLocation],
   )
   const jurisdiction = useResolveJurisdiction(point)
-  const jd = jurisdiction.data
+  const route = routeCardState(point !== null, jurisdiction)
   const category = draft.category as ReportCategory | null
   const pin = useMemo(() => reportPinTarget(category), [category])
 
@@ -597,7 +631,7 @@ function ReviewStep({
         ) : (
           <>
             <AddressSearch value={addrQuery} onChangeText={setAddrQuery} onPick={onPickPlace} />
-            <LocationPicker value={point} onChange={onDropPin} onClear={clearLocation} initialCenter={initialCenter ?? undefined} mode={pickMode} pin={pin} />
+            <LocationPicker value={point} onChange={onDropPin} onClear={clearLocation} initialCenter={initialCenter.center ?? undefined} centerSettled={initialCenter.settled} mode={pickMode} pin={pin} />
           </>
         )}
         <TextField
@@ -614,21 +648,31 @@ function ReviewStep({
         </View>
         <View style={styles.routeText}>
           <Text style={styles.routeLabel}>{t("review.route_label")}</Text>
-          {!point ? (
+          {route.kind === "no_point" ? (
             <Text style={styles.routeSub}>{t("review.route_no_point")}</Text>
-          ) : jd?.routable ? (
+          ) : route.kind === "routable" ? (
             <>
-              <Text style={styles.routeName}>{jd.name}</Text>
+              <Text style={styles.routeName}>{route.name}</Text>
               <Text style={styles.routeSub}>{t("review.route_routable")}</Text>
             </>
-          ) : jd ? (
+          ) : route.kind === "new_area" ? (
             <Text style={styles.routeSub}>
-              {t("review.route_new_area", { cityState: jd.cityStateLabel })}
+              {t("review.route_new_area", { cityState: route.cityState })}
             </Text>
-          ) : jurisdiction.data === null ? (
+          ) : route.kind === "uncovered" ? (
             <Text style={styles.routeSub}>
               {t("review.route_uncovered")}
             </Text>
+          ) : route.kind === "unavailable" ? (
+            <View style={styles.routeRetry}>
+              <Text style={styles.routeSub}>{t("review.route_unavailable")}</Text>
+              <PrimaryButton
+                label={t("submit.try_again")}
+                variant="outline"
+                icon={iconMap.RefreshCw}
+                onPress={() => void jurisdiction.refetch()}
+              />
+            </View>
           ) : (
             <Text style={styles.routeSub}>{t("review.route_resolving")}</Text>
           )}
@@ -677,7 +721,13 @@ function FeedShareOutcomeRow({ outcome, share }: { outcome: FeedShareOutcome; sh
   const retryShare = useFeedShareRetry()
   const [state, setState] = useState<FeedShareOutcome>(outcome)
   const [retrying, setRetrying] = useState(false)
-  useEffect(() => setState(outcome), [outcome])
+  const mounted = useRef(true)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
 
   if (state.status === "skipped") return null
 
@@ -737,8 +787,12 @@ function FeedShareOutcomeRow({ outcome, share }: { outcome: FeedShareOutcome; sh
           onPress={() => {
             setRetrying(true)
             void retryShare(retry)
-              .then(setState)
-              .finally(() => setRetrying(false))
+              .then((next) => {
+                if (mounted.current) setState(next)
+              })
+              .finally(() => {
+                if (mounted.current) setRetrying(false)
+              })
           }}
         />
       ) : null}
@@ -749,15 +803,19 @@ function FeedShareOutcomeRow({ outcome, share }: { outcome: FeedShareOutcome; sh
 function SubmitState({
   phase,
   error,
+  retryable,
   result,
   share,
   onRetry,
+  onEdit,
 }: {
   phase: "submitting" | "error" | "done"
   error: string | null
+  retryable: boolean
   result: ReportSubmitOutcome | null
   share: ShareSnapshot | null
   onRetry: () => void
+  onEdit: () => void
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -802,7 +860,16 @@ function SubmitState({
         <Text variant="body" color={th.colors.textMuted} style={styles.stateBody}>
           {error}
         </Text>
-        <PrimaryButton label={t("submit.try_again")} icon={iconMap.RefreshCw} onPress={onRetry} style={styles.stateCta} />
+        <View style={styles.errorActions}>
+          {retryable ? (
+            <PrimaryButton label={t("submit.try_again")} icon={iconMap.RefreshCw} onPress={onRetry} />
+          ) : null}
+          <PrimaryButton
+            label={t("submit.edit_report")}
+            variant={retryable ? "outline" : undefined}
+            onPress={onEdit}
+          />
+        </View>
       </View>
     )
   }
@@ -817,7 +884,9 @@ function SubmitState({
           ? t("submit.success_body_held")
           : t("submit.success_body_live")}
       </Text>
-      {result && share ? <FeedShareOutcomeRow outcome={result.feedShare} share={share} /> : null}
+      {result && share ? (
+        <FeedShareOutcomeRow key={result.reportId} outcome={result.feedShare} share={share} />
+      ) : null}
       {!isAuthenticated ? (
         <Text variant="caption" color={th.colors.textSubtle} style={styles.signedOutHint}>
           {t("share.signed_out_hint")}
@@ -844,6 +913,15 @@ function SubmitState({
   )
 }
 
+type SubmitSettled =
+  | { kind: "done"; result: ReportSubmitOutcome; share: ShareSnapshot }
+  | { kind: "composer" }
+  | { kind: "error"; error: unknown }
+  | { kind: "discarded" }
+
+const submitRuns = createSubmitRunSlot<SubmitSettled>({
+  claimsItself: (settled) => settled.kind === "composer",
+})
 
 export function ReportFlowBody() {
   const styles = useStyles()
@@ -878,10 +956,24 @@ export function ReportFlowBody() {
 
   const [step, setStep] = useState<Step>(() => resumeStep(useDraftReportStore.getState().draft, mode))
   const [viewfinderMountable, setViewfinderMountable] = useState(false)
-  const [submitPhase, setSubmitPhase] = useState<"idle" | "submitting" | "error" | "done">("idle")
+  const [submitPhase, setSubmitPhase] = useState<"idle" | "submitting" | "error" | "done">(() =>
+    submitRuns.unclaimed() ? "submitting" : "idle",
+  )
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitRecovery, setSubmitRecovery] = useState<SubmitRecovery | null>(null)
   const [result, setResult] = useState<ReportSubmitOutcome | null>(null)
   const [shareSnapshot, setShareSnapshot] = useState<ShareSnapshot | null>(null)
+  // A wipe for a new viewer drops the slot's run; a body still on screen must drop what it showed of it too.
+  const draftGeneration = useViewerDraftGeneration()
+  const [submitGeneration, setSubmitGeneration] = useState(draftGeneration)
+  if (submitGeneration !== draftGeneration) {
+    setSubmitGeneration(draftGeneration)
+    setSubmitPhase("idle")
+    setSubmitError(null)
+    setSubmitRecovery(null)
+    setResult(null)
+    setShareSnapshot(null)
+  }
   const scrollRef = useRef<{ scrollTo?: (opts: { y: number; animated?: boolean }) => void } | null>(null)
   const revealShareBlock = useCallback((y: number) => {
     scrollRef.current?.scrollTo?.({ y, animated: true })
@@ -893,10 +985,8 @@ export function ReportFlowBody() {
   const hasLocation = useDraftReportStore((s) => s.draft.lat != null && s.draft.lng != null)
 
   const orphaned = stepOrder.indexOf(step) < 0
-  const activeStep = useMemo(
-    () => (orphaned ? resumeStep(useDraftReportStore.getState().draft, mode) : step),
-    [orphaned, step, mode, hasMedia, hasLocation, reportTypeId, title],
-  )
+  const resumedStep = useDraftReportStore((s) => resumeStep(s.draft, mode))
+  const activeStep = orphaned ? resumedStep : step
   useEffect(() => {
     if (orphaned) setStep(activeStep)
   }, [orphaned, activeStep])
@@ -957,19 +1047,62 @@ export function ReportFlowBody() {
     setStep(stepOrder[stepIndex - 1] as Step)
   }, [stepIndex, stepOrder])
 
-  const runSubmit = useCallback(async () => {
-    setSubmitPhase("submitting")
-    setSubmitError(null)
+  const bodyMounted = useRef(true)
+  useEffect(() => {
+    bodyMounted.current = true
+    return () => {
+      bodyMounted.current = false
+    }
+  }, [])
+
+  const followRun = useCallback(
+    (run: Promise<SubmitSettled>) => {
+      setSubmitPhase("submitting")
+      setSubmitError(null)
+      setSubmitRecovery(null)
+      void run.then((settled) => {
+        if (!bodyMounted.current) return
+        if (!submitRuns.claim(run) || settled.kind === "discarded") {
+          setSubmitPhase("idle")
+          return
+        }
+        if (settled.kind === "composer") {
+          setSubmitPhase("idle")
+          return
+        }
+        if (settled.kind === "error") {
+          setSubmitError(submitErrorMessage(settled.error, t))
+          setSubmitRecovery(
+            submitErrorRecovery(appErrorCode(settled.error), appErrorFields(settled.error), stepOrder),
+          )
+          setSubmitPhase("error")
+          return
+        }
+        setShareSnapshot(settled.share)
+        setResult(settled.result)
+        setSubmitPhase("done")
+      })
+    },
+    [t, stepOrder],
+  )
+
+  useEffect(() => {
+    const pending = submitRuns.unclaimed()
+    if (pending) followRun(pending)
+  }, [followRun])
+
+  const performSubmit = useCallback(async (isCurrent: () => boolean): Promise<SubmitSettled> => {
     try {
-      const res = await submit()
+      const res = await submit(isCurrent)
+      if (!isCurrent()) return { kind: "discarded" }
       const d = useDraftReportStore.getState().draft
-      setShareSnapshot({
+      const share: ShareSnapshot = {
         title: d.title.trim() || t("review.untitled"),
         category: (d.category as ReportCategory | null) ?? null,
         addr: d.addr,
         thumbUrl: d.media[0]?.uri ?? null,
         caption: d.feedCaption,
-      })
+      }
 
       haptics.success()
       if (fromComposer) {
@@ -989,18 +1122,30 @@ export function ReportFlowBody() {
         composer.releaseClaimedCreate("report")
         reset()
         useNavStore.getState().finishReportFlow({ kind: "composer" })
-        return
+        return { kind: "composer" }
       }
 
-      setResult(res)
       reset()
-      setSubmitPhase("done")
+      return { kind: "done", result: res, share }
     } catch (err) {
+      if (err instanceof SubmitRunDiscarded || !isCurrent()) return { kind: "discarded" }
       haptics.error()
-      setSubmitError(submitErrorMessage(err, t))
-      setSubmitPhase("error")
+      return { kind: "error", error: err }
     }
   }, [fromComposer, submit, reset, t, haptics])
+
+  const runSubmit = useCallback(() => {
+    const run = submitRuns.start(performSubmit)
+    if (run) followRun(run)
+  }, [performSubmit, followRun])
+
+  const editAfterFailure = useCallback(() => {
+    const target = submitRecovery?.editStep ?? "review"
+    setSubmitPhase("idle")
+    setSubmitError(null)
+    setSubmitRecovery(null)
+    setStep(target)
+  }, [submitRecovery])
 
   const advanceFromCapture = useCallback(() => {
     setStep(stepAfterCapture(useDraftReportStore.getState().draft, mode, stepOrder))
@@ -1009,7 +1154,7 @@ export function ReportFlowBody() {
   const onNext = useCallback(() => {
     if (!canAdvance) return
     if (isLast) {
-      void runSubmit()
+      runSubmit()
       return
     }
     haptics.selection()
@@ -1035,7 +1180,7 @@ export function ReportFlowBody() {
 
   const onViewfinderCaptured = useCallback((media: CapturedMedia) => {
     const store = useDraftReportStore.getState()
-    if (store.draft.media.length === 0) store.startFromCapture(media)
+    if (captureSeedsNewReport(store.draft)) store.startFromCapture(media)
     else store.addCapture(media)
   }, [])
 
@@ -1047,6 +1192,7 @@ export function ReportFlowBody() {
   const [picking, setPicking] = useState(false)
   const pickCenter = useApproxCenter(
     hasMedia || activeStep === "location" || activeStep === "review" || picking,
+    picking,
   )
   const openPicker = useCallback(() => setPicking(true), [])
   useEffect(() => {
@@ -1086,9 +1232,11 @@ export function ReportFlowBody() {
         <SubmitState
           phase={submitPhase}
           error={submitError}
+          retryable={submitRecovery?.retryable ?? true}
           result={result}
           share={shareSnapshot}
           onRetry={runSubmit}
+          onEdit={editAfterFailure}
         />
       </View>
     )
@@ -1221,7 +1369,8 @@ export function ReportFlowBody() {
         inert={!pickLayerOpen}
         presentation="layer"
         value={pickPoint}
-        initialCenter={pickCenter}
+        initialCenter={pickCenter.center}
+        centerSettled={pickCenter.settled}
         onConfirm={onPickConfirm}
         onCancel={onPickCancel}
         pin={pickPin}
@@ -1400,8 +1549,15 @@ const useStyles = makeThemedStyles((t) => ({
   },
   captureRemove: {
     position: "absolute",
-    top: 4,
-    right: 4,
+    top: 0,
+    right: 0,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  captureRemoveDisc: {
     width: 22,
     height: 22,
     borderRadius: 11,
@@ -1449,6 +1605,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     alignSelf: "flex-start",
     gap: 5,
+    minHeight: 44,
     paddingVertical: 4,
     paddingHorizontal: 6,
   },
@@ -1544,6 +1701,7 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.neutral.card,
   },
   routeText: { flex: 1 },
+  routeRetry: { gap: t.space["2"], alignItems: "flex-start" },
   routeLabel: {
     fontFamily: t.fontFamily.bodyExtraBold,
     fontSize: 10.5,
@@ -1623,7 +1781,12 @@ const useStyles = makeThemedStyles((t) => ({
     lineHeight: 20,
     maxWidth: 300,
   },
-  stateCta: { marginTop: t.space["6"] },
+  errorActions: {
+    marginTop: t.space["6"],
+    width: "100%",
+    maxWidth: 340,
+    gap: t.space["3"],
+  },
   errorIcon: {
     width: 72,
     height: 72,

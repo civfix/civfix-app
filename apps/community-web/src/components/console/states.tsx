@@ -49,11 +49,7 @@ export function LoadingState({
 }) {
   const { t } = useT("host-common")
   return (
-    <div
-      role="status"
-      aria-label={t("state.loading")}
-      className={cn("flex flex-col gap-token-2", className)}
-    >
+    <div role="status" className={cn("flex flex-col gap-token-2", className)}>
       <span className="sr-only">{t("state.loading")}</span>
       {Array.from({ length: count }, (_, index) => (
         <Skeleton key={index} shape={shape} />

@@ -8,7 +8,7 @@ import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { RowsSkeleton } from "./HostSkeletons"
 import { AnnouncementCard } from "./AnnouncementCard"
-import { HOST_HISTORY_ANNOUNCEMENTS } from "./announcementModel"
+import { HOST_HISTORY_ANNOUNCEMENTS, seeAllTotal } from "./announcementModel"
 
 export interface HostAnnouncementsBlockProps {
   cleanupId: string
@@ -19,6 +19,7 @@ export function HostAnnouncementsBlock({ cleanupId }: HostAnnouncementsBlockProp
   const { t } = useT("host-broadcasts")
   const query = useEventAnnouncements(cleanupId)
   const rows = useMemo(() => announcementRows(query.data?.pages), [query.data?.pages])
+  const total = seeAllTotal(rows.length, query.hasNextPage)
 
   const seeAll =
     rows.length > HOST_HISTORY_ANNOUNCEMENTS || query.hasNextPage ? (
@@ -28,7 +29,7 @@ export function HostAnnouncementsBlock({ cleanupId }: HostAnnouncementsBlockProp
         accessibilityLabel={t("announce.see_all_a11y")}
         onPress={() => useNavStore.getState().push({ kind: "announcements", id: cleanupId })}
       >
-        {t("announce.see_all", { total: rows.length })}
+        {total === null ? t("announce.see_all_open") : t("announce.see_all", { total })}
       </TextLink>
     ) : undefined
 

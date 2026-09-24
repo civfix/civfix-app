@@ -4,7 +4,12 @@
  * React / transport, so `PostComposer`'s press handler + Post-button `disabled` prop share one truth.
  */
 import { describe, expect, it } from "vitest"
-import { postSubmitDestination, resolvePostSubmit, type PostDraft } from "../postComposerSubmit"
+import {
+  POST_MENTION_CAP,
+  postSubmitDestination,
+  resolvePostSubmit,
+  type PostDraft,
+} from "../postComposerSubmit"
 
 /** A blank draft; each test overrides only the fields it cares about. */
 function draft(overrides: Partial<PostDraft> = {}): PostDraft {
@@ -89,5 +94,21 @@ describe("postSubmitDestination", () => {
     expect(postSubmitDestination("quote")).toBe("thread")
     expect(postSubmitDestination("reply")).toBe("thread")
     expect(postSubmitDestination("repost")).toBe("thread")
+  })
+})
+
+describe("resolvePostSubmit keeps mentions inside the contract", () => {
+  it("sends at most POST_MENTION_CAP ids, so a busy body still publishes instead of failing validation", () => {
+    const ids = Array.from({ length: 25 }, (_, index) => `user-${index}`)
+    const res = resolvePostSubmit(draft({ body: "hi all", mentionedUserIds: ids }))
+    if (res.action !== "submit") throw new Error("expected submit")
+    expect(POST_MENTION_CAP).toBe(20)
+    expect(res.input.mentionedUserIds).toEqual(ids.slice(0, 20))
+  })
+
+  it("does not spend the cap on duplicates", () => {
+    const res = resolvePostSubmit(draft({ body: "hi", mentionedUserIds: ["a", "a", "b"] }))
+    if (res.action !== "submit") throw new Error("expected submit")
+    expect(res.input.mentionedUserIds).toEqual(["a", "b"])
   })
 })

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import { LINKED_REPORTS_COUNT_AT, NEARBY_PREVIEW, linkedReportsPatch } from "../linkReportsModel"
 import { HOST_ROW_ICONS } from "../host/hostSurfaceModel"
 
@@ -147,7 +148,7 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
   })
 
   it("recomputes the zoom-in state on every region change, not only when it refetches", () => {
-    const region = surface.slice(surface.indexOf("const onRegionChange"), surface.indexOf("const listState"))
+    const region = sliceBetween(surface, "const onRegionChange", "const listState")
     expect(region).toContain("const next = pickerFetchRegion(bbox)")
     expect(region).toContain("setTooWide(next === null)")
     expect(region).toContain("setFetchRegion((loaded) => (next !== null && shouldRefetch(bbox, loaded) ? next : loaded))")
@@ -161,7 +162,8 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
   })
 
   it("starts every event with the default layers instead of the last event's", () => {
-    expect(surface).toMatch(/useEffect\(\(\) => \{\s*useReportPickerFilters\.getState\(\)\.reset\(\)\s*\}, \[\]\)/)
+    // A layout effect: the reset lands before the first paint, so no frame shows the last event's layers.
+    expect(surface).toMatch(/useLayoutEffect\(\(\) => \{\s*useReportPickerFilters\.getState\(\)\.reset\(\)\s*\}, \[\]\)/)
   })
 
   it("a pin tap focuses then toggles; a row tap toggles and eases the map", () => {
@@ -234,7 +236,7 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
   })
 
   it("the full-bleed close button obeys the same busy lock as the backdrop", () => {
-    const closeBtn = modalSheet.slice(modalSheet.indexOf("{fullBleed ? ("), modalSheet.indexOf("iconMap.Close"))
+    const closeBtn = sliceBetween(modalSheet, "{fullBleed ? (", "iconMap.Close")
     expect(closeBtn).toContain("onPress={backdropDismissDisabled ? undefined : onClose}")
     expect(closeBtn).toContain("accessibilityState={{ disabled: backdropDismissDisabled }}")
   })
@@ -247,11 +249,11 @@ describe("the picker surface fetches bounded regions and keeps map and list in s
 
 describe("the form and the wizard are unchanged around the block", () => {
   it("renders the block in the WHERE section, from the pure state helper", () => {
-    const where = form.slice(form.indexOf('shows("where")'), form.indexOf('shows("when")'))
+    const where = sliceBetween(form, 'shows("where")', 'shows("when")')
     expect(where).toContain("<ReportLinkPicker")
     expect(where).toContain("state={linkBlockState({")
     expect(where).toContain("center={value.coords}")
-    const basics = form.slice(form.indexOf('shows("basics")'), form.indexOf('shows("where")'))
+    const basics = sliceBetween(form, 'shows("basics")', 'shows("where")')
     expect(basics).not.toContain("linkedReportIds")
   })
 

@@ -18,11 +18,13 @@
     "video": "동영상",
     "image_unavailable": "이미지를 불러올 수 없어요",
     "video_unavailable": "동영상을 불러올 수 없어요",
-    "remove_attachment": "첨부 파일 삭제"
+    "remove_attachment_n_other": "첨부 파일 {{count}}개 중 {{index}}번째 삭제",
+    "uploading": "업로드 중"
   },
   "verification_code": {
     "label": "인증 코드",
-    "hint": "코드를 입력할 키보드를 열어요"
+    "hint": "코드를 입력할 키보드를 열어요",
+    "progress_other": "{{total}}자리 중 {{count}}자리 입력됨"
   },
   "post_actions": {
     "like": "좋아요",
@@ -37,5 +39,19 @@
   },
   "wizard_step_count": "{{total}}단계 중 {{current}}단계",
   "verified_badge": "인증됨",
-  "org_affiliation": "{{name}} 소속"
+  "org_affiliation": "{{name}} 소속",
+  "attach_error": {
+    "busy": "지금 올리는 첨부 파일의 업로드가 끝날 때까지 기다려 주세요.",
+    "limit_other": "한 번에 최대 {{count}}개까지 첨부할 수 있어요.",
+    "library": "사진 보관함을 열지 못했어요.",
+    "camera": "카메라를 열지 못했어요.",
+    "rejected": "이 파일은 사용할 수 없어요. 다른 사진이나 동영상을 선택해 주세요.",
+    "rate_limited": "업로드가 너무 많아요. 잠시 후 다시 시도해 주세요.",
+    "upload": "첨부 파일을 업로드하지 못했어요."
+  },
+  "stat_unknown": "정보 없음",
+  "qr_ticket": {
+    "unavailable": "QR 코드를 표시할 수 없어요. 대신 아래 코드를 보여 주세요."
+  },
+  "caption_remaining_a11y_other": "{{count}}자 남음"
 }

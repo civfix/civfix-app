@@ -69,6 +69,7 @@
     "revoke_error": "Nachweis konnte nicht zurückgezogen werden. Versuche es erneut.",
     "disabled_hint": "Erfasse zuerst ein paar Freiwilligenstunden.",
     "error_generic": "Nachweis konnte nicht erstellt werden. Versuche es erneut.",
-    "error_rate_limited": "Du kannst alle paar Minuten einen Nachweis erstellen."
+    "error_rate_limited": "Du kannst alle paar Minuten einen Nachweis erstellen.",
+    "copy_error": "Kopieren fehlgeschlagen. Versuche es erneut."
   }
 }

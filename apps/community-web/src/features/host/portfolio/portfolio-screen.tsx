@@ -23,8 +23,9 @@ import type { ConsoleNavItem } from "../layout/nav-items"
 import { useConsoleNavigation } from "../console-context"
 import { consoleKeys } from "../console-keys"
 import { useConsoleFormat, seriesDayLabel } from "../format"
-import { AnalyticsValue, SuppressionNote } from "../analytics/analytics-value"
+import { AnalyticsValue, EmptyValue, SuppressionNote } from "../analytics/analytics-value"
 import {
+  DEFAULT_SUPPRESSION_K,
   seriesHasSuppressedPoints,
   seriesIsChartable,
   seriesValuesForChart,
@@ -94,6 +95,7 @@ export function PortfolioScreen({ notFoundPath }: PortfolioScreenProps) {
   const noOrgs = orgs.isSuccess && (orgs.data?.length ?? 0) === 0
 
   const series = analytics.data?.series ?? []
+  const k = analytics.data?.k ?? DEFAULT_SUPPRESSION_K
   const sparkValues = seriesValuesForChart(series)
   const byEvent = analytics.data?.byEvent
 
@@ -122,21 +124,21 @@ export function PortfolioScreen({ notFoundPath }: PortfolioScreenProps) {
         <div className="grid grid-cols-2 gap-token-3 lg:grid-cols-4">
           <KpiCell
             label={t("kpis.events_hosted")}
-            value={kpis ? format.number(kpis.eventsHosted) : "—"}
+            value={kpis ? format.number(kpis.eventsHosted) : <EmptyValue />}
           />
           <KpiCell
             label={t("kpis.upcoming")}
-            value={kpis ? format.number(kpis.upcomingEvents) : "—"}
+            value={kpis ? format.number(kpis.upcomingEvents) : <EmptyValue />}
           />
           <KpiCell
             label={t("kpis.registrations")}
             sub={t("kpis.this_page")}
-            value={kpis ? format.number(kpis.totalRegistrations) : "—"}
+            value={kpis ? format.number(kpis.totalRegistrations) : <EmptyValue />}
           />
           <KpiCell
             label={t("kpis.checked_in")}
             sub={t("kpis.this_page")}
-            value={kpis ? format.number(kpis.totalCheckedIn) : "—"}
+            value={kpis ? format.number(kpis.totalCheckedIn) : <EmptyValue />}
           />
         </div>
       </section>
@@ -177,13 +179,13 @@ export function PortfolioScreen({ notFoundPath }: PortfolioScreenProps) {
               <div>
                 <dt className="text-token-12 text-console-ink-3">{t("trend.registrations")}</dt>
                 <dd className="text-token-16 font-bold text-console-ink">
-                  <AnalyticsValue value={analytics.data?.totals.registrations ?? null} />
+                  <AnalyticsValue value={analytics.data?.totals.registrations ?? null} k={k} />
                 </dd>
               </div>
               <div>
                 <dt className="text-token-12 text-console-ink-3">{t("trend.unique")}</dt>
                 <dd className="text-token-16 font-bold text-console-ink">
-                  <AnalyticsValue value={analytics.data?.totals.uniqueAttendees ?? null} />
+                  <AnalyticsValue value={analytics.data?.totals.uniqueAttendees ?? null} k={k} />
                 </dd>
               </div>
               <div>
@@ -192,12 +194,13 @@ export function PortfolioScreen({ notFoundPath }: PortfolioScreenProps) {
                   <AnalyticsValue
                     value={analytics.data?.averageCheckInRate.value ?? null}
                     kind="rate"
+                    k={k}
                   />
                 </dd>
               </div>
             </dl>
           </div>
-          {seriesHasSuppressedPoints(series) ? <SuppressionNote /> : null}
+          {seriesHasSuppressedPoints(series) ? <SuppressionNote k={k} /> : null}
           {byEvent && !byEvent.panelSuppressed && byEvent.rows.length > 0 ? (
             <div className="mt-token-4">
               <h3 className="mb-token-2 text-token-12 font-bold uppercase tracking-wider text-console-ink-3">

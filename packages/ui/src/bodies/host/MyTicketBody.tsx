@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { View, ScrollView as RNScrollView } from "react-native"
+import {
+  Platform,
+  View,
+  ScrollView as RNScrollView,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from "react-native"
 import type { MyEventTicketSeat } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
@@ -13,6 +19,7 @@ import { useLocale, useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { AddressRow } from "../AddressRow"
+import { CancelRegistrationSheet } from "./registration/RegistrationBlock"
 import { FeedNotice } from "../FeedNotice"
 import { appErrorCode } from "../errorCode"
 import {
@@ -25,6 +32,8 @@ import {
   ticketSeatOffset,
   ticketWhen,
 } from "./ticketModel"
+
+const WEB_PAGE_SCROLL_THROTTLE_MS = 100
 
 export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
   const styles = useStyles()
@@ -42,6 +51,7 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
   const [page, setPage] = useState(0)
   const [pagerWidth, setPagerWidth] = useState(0)
   const [errorText, setErrorText] = useState<string | null>(null)
+  const [confirmingCancel, setConfirmingCancel] = useState(false)
   const seededSeat = useRef(false)
   const pageRef = useRef(0)
 
@@ -72,6 +82,25 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
     pagerRef.current?.scrollTo({ x: ticketSeatOffset(pageRef.current, pageWidth), animated: false })
   }, [pageWidth, seatId, seats])
 
+  const seatCount = seats.length
+  const onPagerSettled = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) =>
+      goToPage(
+        ticketPageIndex(
+          event.nativeEvent.contentOffset.x,
+          ticketPageWidth(event.nativeEvent.layoutMeasurement.width),
+          seatCount,
+        ),
+      ),
+    [goToPage, seatCount],
+  )
+  // react-native-web never emits momentum events; its onScroll fires on a throttle and once more
+  // when the scroll settles.
+  const pagerSettleProps =
+    Platform.OS === "web"
+      ? { onScroll: onPagerSettled, scrollEventThrottle: WEB_PAGE_SCROLL_THROTTLE_MS }
+      : { onMomentumScrollEnd: onPagerSettled }
+
   const onAddToCalendar = useCallback(async () => {
     if (!ticket) return
     const served = await icsDocument.refetch()
@@ -94,11 +123,14 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
       { registrationId: ticket.registrationId },
       {
         onSuccess: () => {
+          setConfirmingCancel(false)
           toast.show(t("toast.cancelled"), { variant: "success" })
           useNavStore.getState().back()
         },
-        onError: (err) =>
-          setErrorText(appErrorCode(err) === "CONFLICT" ? t("outcome.closed") : t("error.generic")),
+        onError: (err) => {
+          setConfirmingCancel(false)
+          setErrorText(appErrorCode(err) === "CONFLICT" ? t("outcome.closed") : t("error.generic"))
+        },
       },
     )
   }, [cancel, t, ticket, toast])
@@ -170,15 +202,7 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
             pagingEnabled={seats.length > 1}
             showsHorizontalScrollIndicator={false}
             onLayout={(event) => setPagerWidth(event.nativeEvent.layout.width)}
-            onMomentumScrollEnd={(event) =>
-              goToPage(
-                ticketPageIndex(
-                  event.nativeEvent.contentOffset.x,
-                  ticketPageWidth(event.nativeEvent.layoutMeasurement.width),
-                  seats.length,
-                ),
-              )
-            }
+            {...pagerSettleProps}
             style={styles.pager}
           >
             {seats.map((seat, index) => (
@@ -224,12 +248,20 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
         {ticket.canCancel ? (
           <SecondaryButton
             label={t("mine.cancel")}
-            onPress={onCancel}
+            onPress={() => setConfirmingCancel(true)}
             size="sm"
             disabled={cancel.isPending}
           />
         ) : null}
       </View>
+
+      <CancelRegistrationSheet
+        visible={confirmingCancel}
+        waitlisted={waitlisted}
+        pending={cancel.isPending}
+        onConfirm={onCancel}
+        onClose={() => setConfirmingCancel(false)}
+      />
     </ScrollView>
   )
 }

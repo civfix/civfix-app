@@ -129,7 +129,8 @@
     "cancel_edit": "Bearbeiten abbrechen",
     "save_error": "Änderung konnte nicht gespeichert werden. Bitte erneut versuchen.",
     "reply_title": "Antwort an {{name}}",
-    "cancel_reply": "Antwort abbrechen"
+    "cancel_reply": "Antwort abbrechen",
+    "edit_unavailable": "Diese Nachricht ist nicht mehr verfügbar."
   },
   "report": {
     "subject_message": "diese Nachricht",
@@ -148,7 +149,8 @@
     "block": "Blockieren",
     "copied": "Kopiert",
     "dismiss": "Menü schließen",
-    "reactions": "Auf diese Nachricht reagieren"
+    "reactions": "Auf diese Nachricht reagieren",
+    "copy_failed": "Kopieren fehlgeschlagen"
   },
   "pins": {
     "bar_label": "Angeheftete Nachricht",

@@ -161,21 +161,21 @@ export function TicketsScreen() {
               trailing={
                 <>
                   <ConsoleIconButton
-                    label={t("types.move_up")}
+                    label={t("types.move_up_named", { name: type.name })}
                     disabled={index === 0 || reorder.isPending}
                     onClick={() => move(index, -1)}
                   >
                     <ArrowUp aria-hidden className="h-4 w-4" />
                   </ConsoleIconButton>
                   <ConsoleIconButton
-                    label={t("types.move_down")}
+                    label={t("types.move_down_named", { name: type.name })}
                     disabled={index === types.length - 1 || reorder.isPending}
                     onClick={() => move(index, 1)}
                   >
                     <ArrowDown aria-hidden className="h-4 w-4" />
                   </ConsoleIconButton>
                   <ConsoleIconButton
-                    label={t("types.delete")}
+                    label={t("types.delete_named", { name: type.name })}
                     onClick={() => setPendingDelete(type)}
                   >
                     <Trash2 aria-hidden className="h-4 w-4" />
@@ -189,15 +189,18 @@ export function TicketsScreen() {
 
       <QuestionsEditor eventId={eventId} ticketTypes={types} />
 
-      <TicketTypeDrawer
-        eventId={eventId}
-        ticketType={editing}
-        open={drawerOpen}
-        onClose={() => {
-          setDrawerOpen(false)
-          setEditing(null)
-        }}
-      />
+      {drawerOpen ? (
+        <TicketTypeDrawer
+          key={editing?.id ?? "new"}
+          eventId={eventId}
+          ticketType={editing}
+          open
+          onClose={() => {
+            setDrawerOpen(false)
+            setEditing(null)
+          }}
+        />
+      ) : null}
 
       <ConfirmModal
         open={pendingDelete !== null}

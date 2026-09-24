@@ -36,6 +36,14 @@ describe("contrast math", () => {
     expect(() => relativeLuminance("#FFF")).toThrow(RangeError)
     expect(() => contrastRatio("nope", "#FFFFFF")).toThrow(RangeError)
   })
+
+  it("refuses a 6-character value that is only partly hex", () => {
+    expect(() => relativeLuminance("#1G2233")).toThrow(RangeError)
+    expect(() => relativeLuminance("#11223Z")).toThrow(RangeError)
+    expect(() => relativeLuminance("12#3456")).toThrow(RangeError)
+    expect(() => mixWithWhite("#-12233", 0.5)).toThrow(RangeError)
+    expect(relativeLuminance("ffffff")).toBeCloseTo(1, 10)
+  })
 })
 
 describe("chipHuePairs", () => {

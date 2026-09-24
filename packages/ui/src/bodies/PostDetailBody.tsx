@@ -6,7 +6,9 @@ import { usePost } from "../data/hooks/posts"
 import { useT } from "../i18n"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
+import { FeedNotice } from "./FeedNotice"
 import { PostCard } from "./PostCard"
+import { postDetailViewState } from "./feedModel"
 import { ProfileTimelineLane } from "./profile/ProfileTimelineLane"
 import { useSectionStyles } from "./profile/sectionStyles"
 
@@ -16,16 +18,26 @@ export function PostDetailBody({ id }: { id: string }) {
   const { t } = useT("home-feed")
   const { ScrollView } = useScrollHost()
   const query = usePost(id)
-  if (query.isLoading || query.isError || !query.data) {
+  const view = postDetailViewState({ hasId: id.length > 0, hasData: query.data != null, isError: query.isError })
+  if (view !== "ready" || !query.data) {
     return (
       <ScrollView
         style={styles.root}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.state}>
-          {query.isLoading ? t("thread.loading_post") : t("thread.post_error")}
-        </Text>
+        {view === "error" ? (
+          <FeedNotice
+            plain
+            icon="CloudOff"
+            title={t("thread.post_error")}
+            body={t("feed.error_body")}
+            actionLabel={id ? t("thread.retry") : undefined}
+            onAction={id ? () => void query.refetch() : undefined}
+          />
+        ) : (
+          <Text style={styles.state}>{t("thread.loading_post")}</Text>
+        )}
       </ScrollView>
     )
   }

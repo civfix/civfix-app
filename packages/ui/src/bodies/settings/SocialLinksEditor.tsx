@@ -15,6 +15,7 @@ import {
   TextField,
 } from "../../primitives"
 import { useT } from "../../i18n"
+import { profileSaveErrorKey } from "../errorCode"
 import { useEditorStyles } from "./editorStyles"
 
 function normalizeSocialValue(platform: SocialPlatform, raw: string): string {
@@ -87,7 +88,9 @@ export function SocialLinksEditor({ socialLinks, saving, onSave }: SocialLinksEd
     setSubmitError(null)
     void onSave(parsed.data)
       .then(() => setEditing(false))
-      .catch(() => setSubmitError(t("social.error.save")))
+      .catch((err: unknown) =>
+        setSubmitError(t(profileSaveErrorKey(err, "social.error.save", "social.error.invalid"))),
+      )
   }
 
   return (

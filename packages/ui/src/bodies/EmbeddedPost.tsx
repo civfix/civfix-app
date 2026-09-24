@@ -17,6 +17,7 @@ import { OrgAffiliationBadge } from "../primitives/OrgAffiliationBadge"
 import { VerifiedBadge } from "../primitives/VerifiedBadge"
 import { PostMediaGrid } from "./PostMediaGrid"
 import { buildPostIdentity } from "./postCardModel"
+import { embeddedPostA11yLabel } from "./embeddedPostLabel"
 
 export const EMBEDDED_POST_BODY_CLAMP_LINES = 4
 
@@ -87,6 +88,13 @@ export function EmbeddedPost({ post, t, timeAgo, prominent = false, onPress }: E
     return <View style={[styles.card, prominent ? styles.prominent : null]}>{content}</View>
   }
 
+  const label = embeddedPostA11yLabel(t, {
+    prominent,
+    name: identity.name,
+    excerpt: post.excerpt,
+    deleted: post.deleted === true,
+  })
+
   return (
     <Pressable
       onPress={(event) => {
@@ -94,7 +102,7 @@ export function EmbeddedPost({ post, t, timeAgo, prominent = false, onPress }: E
         onPress()
       }}
       accessibilityRole="button"
-      accessibilityLabel={prominent ? t("post_card.open_repost_a11y") : t("post_card.open_quote_a11y")}
+      accessibilityLabel={label}
       {...focusRingProps}
       style={(state) => [
         styles.card,

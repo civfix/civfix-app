@@ -20,7 +20,7 @@ import { Donut, Histogram, KpiCell, StatStrip } from "@/components/console/chart
 
 import { useConsoleEvent } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
-import { useConsoleFormat } from "../format"
+import { EMPTY_VALUE, useConsoleFormat } from "../format"
 import { useConsoleRoster } from "../attendees/use-roster"
 import { attendeeDisplayName, checkableSeatIds } from "../attendees/roster-filters"
 import {
@@ -157,6 +157,7 @@ export function CheckinScreen() {
         setWalkupOpen(false)
         setWalkupName("")
         setWalkupParty(1)
+        setWalkupType("")
         refresh()
       } else {
         toast.toast({ title: t(`walkup.outcome_${res.outcome}`), tone: "danger" })
@@ -306,7 +307,7 @@ export function CheckinScreen() {
               <QRow
                 key={row.id}
                 title={name}
-                sub={`${row.ticketTypeName ?? "—"} · ${format.number(row.seatCount)}`}
+                sub={`${row.ticketTypeName ?? EMPTY_VALUE} · ${format.number(row.seatCount)}`}
                 chips={<Chip kind="attendee-kind" value={row.kind} size="sm" />}
                 trailing={
                   can("check_in") && seats.length > 0 ? (

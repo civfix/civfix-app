@@ -47,7 +47,8 @@
     "no_access_title": "You do not have access",
     "no_access_body": "Ask an organizer to give you the right role.",
     "not_found_title": "Not found",
-    "not_found_body": "This page does not exist, or it has been removed."
+    "not_found_body": "This page does not exist, or it has been removed.",
+    "no_value": "None"
   },
   "hours": {
     "not_yet_title": "This event has not ended yet",
@@ -119,7 +120,10 @@
     "link_prompt": "Paste an https link",
     "link_invalid": "Only https links can be added.",
     "preview": "Preview",
-    "preview_empty": "Your text will appear here."
+    "preview_empty": "Your text will appear here.",
+    "remaining_one": "{{count}} character left",
+    "remaining_other": "{{count}} characters left",
+    "shortcut_ctrl": "Ctrl+{{key}}"
   },
   "upload": {
     "hint": "Drop an image here, or click to choose one.",
@@ -151,5 +155,8 @@
     "title": "The console hit a problem",
     "body": "Nothing you did was lost on the server. Reload this screen to carry on.",
     "retry": "Reload this screen"
+  },
+  "toast": {
+    "region": "Notifications"
   }
 }

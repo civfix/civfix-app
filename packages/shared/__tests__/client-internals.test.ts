@@ -121,6 +121,14 @@ describe("extractParams", () => {
     expect(params).toEqual({ id: "r-1" })
     expect([...consumedKeys]).toEqual(["reportId"])
   })
+
+  it("leaves :id unfilled when several *Id-suffixed keys make the tolerance ambiguous", () => {
+    const input = { messageId: "m-1", cleanupId: "c-1" }
+    const { params, consumedKeys } = extractParams("/cleanups/:id/messages", input)
+    expect(params).toEqual({})
+    expect(consumedKeys.size).toBe(0)
+    expect(() => fillPath("/cleanups/:id/messages", params)).toThrow()
+  })
 })
 
 describe("parseError", () => {

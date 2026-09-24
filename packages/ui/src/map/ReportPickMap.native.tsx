@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -26,7 +27,6 @@ import type { BBox } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text } from "../typography"
-import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { useHaptics } from "../capabilities"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
@@ -37,6 +37,7 @@ import {
   clusterFallbackZoom,
   clusterZoomTarget,
   expansionZoomOfCluster,
+  WORLD_BBOX,
   type ClusterNode,
   type MapClusterIndex,
   type MapPoint,
@@ -77,20 +78,21 @@ export const ReportPickMap = memo(
     } = props
     const styles = useStyles()
     const th = useTheme()
-    const { t } = useT("map-ui")
     const haptics = useHaptics()
     const hapticsRef = useRef(haptics)
-    hapticsRef.current = haptics
     const cameraRef = useRef<CameraRef>(null)
     const mapNativeRef = useRef<MapRef>(null)
     const mapReadyRef = useRef(false)
     const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
     const onRegionChangeRef = useRef(onRegionChange)
-    onRegionChangeRef.current = onRegionChange
     const onPressPinRef = useRef(onPressPin)
-    onPressPinRef.current = onPressPin
     const onPressMapRef = useRef(onPressMap)
-    onPressMapRef.current = onPressMap
+    useLayoutEffect(() => {
+      hapticsRef.current = haptics
+      onRegionChangeRef.current = onRegionChange
+      onPressPinRef.current = onPressPin
+      onPressMapRef.current = onPressMap
+    })
     const markerPressedAtRef = useRef(0)
 
     const cartoApiKey = useCartoApiKey()
@@ -121,11 +123,16 @@ export const ReportPickMap = memo(
     const nodesByMarkerRef = useRef<globalThis.Map<string, ClusterNode>>(new globalThis.Map())
 
     const recomputeRef = useRef<() => void>(() => {})
-    recomputeRef.current = () => {
-      const region = lastRegionRef.current
-      if (!region) return
-      setNodes(query(region.bbox, region.zoom))
-    }
+    useLayoutEffect(() => {
+      recomputeRef.current = () => {
+        const region = lastRegionRef.current
+        if (region) {
+          setNodes(query(region.bbox, region.zoom))
+          return
+        }
+        if (mapReadyRef.current) setNodes(query(WORLD_BBOX, seedRef.current.zoom))
+      }
+    })
     const runnerRef = useRef<IdleRunner | null>(null)
     if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => recomputeRef.current())
     const runner = runnerRef.current
@@ -171,14 +178,17 @@ export const ReportPickMap = memo(
     const handleMapLoad = useCallback(() => {
       mapReadyRef.current = true
       const pending = mapNativeRef.current?.getViewState()
-      if (!pending) return
+      if (!pending) {
+        runner.request()
+        return
+      }
       void pending
         .then((view: ViewState) => {
           const [west, south, east, north] = view.bounds
           commitRegion({ west, south, east, north }, view.zoom)
         })
-        .catch(() => undefined)
-    }, [commitRegion])
+        .catch(() => runner.request())
+    }, [commitRegion, runner])
 
     const handleMapPress = useCallback(() => {
       if (Date.now() - markerPressedAtRef.current < MARKER_PRESS_GUARD_MS) return
@@ -307,7 +317,7 @@ export const ReportPickMap = memo(
           ]}
           pointerEvents="none"
         >
-          {t("a11y.attribution")}
+          {DEFAULT_ATTRIBUTION}
         </Text>
       </View>
     )

@@ -9,6 +9,7 @@
  * the CleanupFormValue TYPE (erased at runtime) to avoid pulling CleanupForm's heavy deps into the store.
  */
 import { create } from "zustand"
+import { randomId } from "../data/randomId"
 import type { CleanupFormValue } from "./CleanupForm"
 import { registerViewerScopedDrafts } from "../viewerScope"
 
@@ -17,10 +18,22 @@ interface CleanupDraftState {
   active: boolean
   /** The full host-form value, or null when no draft is in progress. */
   value: CleanupFormValue | null
+  /**
+   * The create request's idempotency key. The server dedupes per organizer on it, so it must live exactly
+   * as long as this draft: a retry after an ambiguous failure reuses it, and a new draft never inherits it
+   * (a reused key would hand back the previous event instead of creating this one).
+   */
+  idempotencyKey: string | null
   /** Start a draft from `initial`, OR resume the existing one (no-op) when a draft is already active. */
   begin: (initial: CleanupFormValue) => void
   /** Replace the value (the host form's onChange). */
   patch: (value: CleanupFormValue) => void
+  /**
+   * Merge fields into the value as it stands NOW. For writes that land after an await (the cover upload),
+   * where replacing with a value captured before the await would drop everything typed meanwhile. No-op
+   * once the draft is cleared, so a late write cannot resurrect an abandoned draft.
+   */
+  merge: (partial: Partial<CleanupFormValue>) => void
   /** Add/remove a report id in the draft's linkedReportIds (the report detail's Add/Remove). No-op if idle. */
   toggleLinkedReport: (id: string) => void
   /** Whether a report id is currently linked in the draft. */
@@ -34,11 +47,15 @@ interface CleanupDraftState {
 export const useCleanupDraft = create<CleanupDraftState>((set, get) => ({
   active: false,
   value: null,
+  idempotencyKey: null,
 
   begin: (initial) =>
-    set((s) => (s.active ? s : { active: true, value: initial })),
+    set((s) => (s.active ? s : { active: true, value: initial, idempotencyKey: randomId() })),
 
   patch: (value) => set({ value }),
+
+  merge: (partial) =>
+    set((s) => (s.active && s.value ? { value: { ...s.value, ...partial } } : s)),
 
   toggleLinkedReport: (id) =>
     set((s) => {
@@ -52,7 +69,7 @@ export const useCleanupDraft = create<CleanupDraftState>((set, get) => ({
 
   linkedCount: () => get().value?.linkedReportIds.length ?? 0,
 
-  clear: () => set({ active: false, value: null }),
+  clear: () => set({ active: false, value: null, idempotencyKey: null }),
 }))
 
 registerViewerScopedDrafts(useCleanupDraft, { discard: () => useCleanupDraft.getState().clear() })

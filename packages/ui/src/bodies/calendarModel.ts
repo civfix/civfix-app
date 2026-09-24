@@ -186,6 +186,20 @@ export function endTimeAfter(date: Date, start: Date, offsetMs: number): Date {
   return day
 }
 
+/**
+ * The end clock a duration chip sets: `offsetMs` of real time after the start, read in the event's zone so
+ * the chip lands on the window `durationChipFor` measures (on a DST night "2 h" is two real hours, not two
+ * wall-clock ones). A start that does not exist in the zone keeps the wall-clock sum.
+ */
+export function endTimeAfterInZone(date: Date, start: Date, offsetMs: number, timeZone: string): Date {
+  const startMs = formInstantMs(date, start, timeZone)
+  if (startMs === null) return endTimeAfter(date, start, offsetMs)
+  const wall = wallClockInZone(startMs + offsetMs, timeZone)
+  const end = new Date(date)
+  end.setHours(wall.hours, wall.minutes, 0, 0)
+  return end
+}
+
 export function endTimeSelectable(
   date: Date | null,
   start: Date | null,
@@ -204,17 +218,27 @@ export function endTimeSelectable(
   )
 }
 
-export function eventDurationMs(date: Date, start: Date, end: Date): number {
-  return resolveEventEnd(date, start, end).getTime() - mergeDateTime(date, start).getTime()
+/**
+ * Real elapsed time between the start and end clocks. With `timeZone` the clocks are read in the EVENT's
+ * zone, which is where the saved window lives; without it, in the device zone. NaN when either clock does
+ * not exist in that zone (a DST gap).
+ */
+export function eventDurationMs(date: Date, start: Date, end: Date, timeZone?: string): number {
+  if (timeZone === undefined) {
+    return resolveEventEnd(date, start, end).getTime() - mergeDateTime(date, start).getTime()
+  }
+  const window = eventWindowInZone(date, start, end, timeZone)
+  return window?.end ? window.end.getTime() - window.start.getTime() : Number.NaN
 }
 
 export function durationChipFor(
   date: Date | null,
   start: Date | null,
   end: Date | null,
+  timeZone?: string,
 ): DurationChipHours | null {
   if (!date || !start || !end) return null
-  const elapsed = eventDurationMs(date, start, end)
+  const elapsed = eventDurationMs(date, start, end, timeZone)
   if (elapsed <= 0) return null
   return DURATION_CHIP_HOURS.find((h) => h * 3_600_000 === elapsed) ?? null
 }
@@ -328,6 +352,36 @@ export function zoneDisplayName(
   if (long === "") return short === "" ? timeZone : short
   if (short === "" || short === long) return long
   return `${long} (${short})`
+}
+
+export interface ZoneDisplayNameCache {
+  get: (timeZone: string, locale: string, now?: number) => string
+  size: () => number
+}
+
+/**
+ * Zone names for the current day only: a name carries the offset in force (PST vs PDT), which a DST change
+ * moves, so a new day starts a fresh map rather than keeping every earlier day's entries for the app's life.
+ */
+export function makeZoneDisplayNameCache(): ZoneDisplayNameCache {
+  let day: number | null = null
+  const names = new Map<string, string>()
+  return {
+    get(timeZone, locale, now = Date.now()) {
+      const today = Math.floor(now / DAY_MS)
+      if (today !== day) {
+        names.clear()
+        day = today
+      }
+      const key = `${locale}|${timeZone}`
+      const cached = names.get(key)
+      if (cached !== undefined) return cached
+      const name = zoneDisplayName(timeZone, locale, now)
+      names.set(key, name)
+      return name
+    },
+    size: () => names.size,
+  }
 }
 
 export type ScheduleFieldErrorKey = "date_past" | "time_past" | "end_too_soon" | "time_dst_gap"

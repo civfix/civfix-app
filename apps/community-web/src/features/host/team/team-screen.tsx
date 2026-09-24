@@ -29,6 +29,7 @@ import { useConsoleEvent } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
 import { useConsoleFormat } from "../format"
 import { invalidateEvent } from "../console-invalidate"
+import { normalizeInviteIdentifier } from "../org/org-invites"
 
 interface PendingRoleChange {
   userId: string
@@ -62,7 +63,7 @@ export function TeamScreen() {
       api.inviteEventTeamMember({
         id: eventId,
         identifierKind,
-        identifier: identifier.trim(),
+        identifier: normalizeInviteIdentifier(identifierKind, identifier),
         role,
       }),
     onSuccess: () => {

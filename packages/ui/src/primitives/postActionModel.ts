@@ -208,12 +208,17 @@ export function formatPostActionCount(value: number): string {
   return formatUnit(1_000_000_000, "B")
 }
 
+/** The post's own detail route: what Share links to and where a sign-in started here returns. */
+export function postDetailPath(postId: string): string {
+  return `/post/${postId}`
+}
+
 export function buildPostActionModel(
   input: { postId: string; counts: PostCounts; viewer: PostViewer },
   callbacks: PostActionCallbacks = {},
   options?: { omit?: readonly PostActionKey[] },
 ): PostActionModel[] {
-  const sharePath = `/post/${input.postId}`
+  const sharePath = postDetailPath(input.postId)
   const countLabel = (value: number) => value > 0 ? formatPostActionCount(value) : null
   const all: PostActionModel[] = [
     { key: "like", countLabel: countLabel(input.counts.likes), active: input.viewer.liked,

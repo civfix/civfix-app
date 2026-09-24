@@ -31,13 +31,11 @@ import {
 } from "../bodies/host/registration/consentModel"
 import {
   answerPayload,
-  initialAnswers,
   missingRequired,
-  seedAnswers,
   visibleQuestions,
   type AnswerMap,
 } from "../bodies/host/registration/questionModel"
-import { defaultTicketTypeId, selectableTicketTypes } from "../bodies/host/registration/registrationModel"
+import { selectableTicketTypes } from "../bodies/host/registration/registrationModel"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
 import { SegmentedCodeInput } from "./SegmentedCodeInput"
@@ -46,7 +44,9 @@ import {
   GUEST_EMAIL_MAX,
   GUEST_RSVP_CODE_LENGTH,
   GUEST_RSVP_TURNSTILE_ACTION,
+  answersWithDefaults,
   canSubmitGuestForm,
+  effectiveTicketTypeId,
   emptyGuestRsvpForm,
   formatGuestPhone,
   guestAttemptsExhausted,
@@ -55,9 +55,11 @@ import {
   guestRequestErrorKey,
   guestResendReadyAt,
   guestResendSecondsLeft,
+  guestRsvpCommitFor,
   guestSmsUnavailable,
   guestVerifyErrorKey,
   type GuestContactPayload,
+  type GuestRsvpCommit,
   type GuestRsvpFormState,
   type GuestRsvpStep,
 } from "./guestRsvpModel"
@@ -107,9 +109,11 @@ export function GuestRsvpSheet({
 
   const types = useMemo(() => selectableTicketTypes(ticketTypes), [ticketTypes])
   const hasTypes = types.length > 0
-  const [ticketTypeId, setTicketTypeId] = useState<string | null>(null)
+  const [chosenTicketTypeId, setTicketTypeId] = useState<string | null>(null)
+  const ticketTypeId = effectiveTicketTypeId(types, chosenTicketTypeId)
   const [partySize, setPartySize] = useState(1)
-  const [answers, setAnswers] = useState<AnswerMap>({})
+  const [typedAnswers, setAnswers] = useState<AnswerMap>({})
+  const answers = useMemo(() => answersWithDefaults(questions, typedAnswers), [questions, typedAnswers])
   const [consent, setConsent] = useState<ConsentState>(EMPTY_CONSENT)
   const [invalidQuestions, setInvalidQuestions] = useState<ReadonlySet<string>>(() => new Set())
   const selectedType = useMemo(
@@ -138,9 +142,9 @@ export function GuestRsvpSheet({
   const resetAll = useCallback(() => {
     setStep("choice")
     setForm(emptyGuestRsvpForm())
-    setTicketTypeId(defaultTicketTypeId(types))
+    setTicketTypeId(null)
     setPartySize(1)
-    setAnswers(initialAnswers(questions))
+    setAnswers({})
     setConsent(EMPTY_CONSENT)
     setInvalidQuestions(new Set())
     setFocusedField(null)
@@ -153,7 +157,7 @@ export function GuestRsvpSheet({
     settleSend()
     request.reset()
     verify.reset()
-  }, [questions, request, settleSend, types, verify])
+  }, [request, settleSend, verify])
 
   const resetRef = React.useRef(resetAll)
   resetRef.current = resetAll
@@ -161,10 +165,6 @@ export function GuestRsvpSheet({
     resetRef.current()
     return abortSend
   }, [visible, abortSend])
-
-  useEffect(() => {
-    setAnswers((prev) => seedAnswers(prev, questions))
-  }, [questions])
 
   useEffect(() => {
     if (!visible || step !== "code") return
@@ -315,8 +315,14 @@ export function GuestRsvpSheet({
     return null
   })()
 
-  const commit =
-    step === "form" ? submitForm : step === "code" ? (exhausted ? startOver : submitCode) : onClose
+  const commitHandlers: Record<GuestRsvpCommit, () => void> = {
+    submitForm,
+    submitCode,
+    startOver,
+    close: onClose,
+  }
+  const commitKind = guestRsvpCommitFor(step, exhausted)
+  const commit = commitKind === null ? undefined : commitHandlers[commitKind]
 
   const contactLabel =
     sentTo === null

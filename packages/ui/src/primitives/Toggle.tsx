@@ -20,6 +20,8 @@ export function Toggle({ label, value, onValueChange, helper }: ToggleProps) {
         onPress={() => onValueChange(!value)}
         focusable={false}
         {...({ tabIndex: -1 } as object)}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
         {...focusRingProps}
         style={[styles.textCol, webCursor()]}
       >
@@ -35,6 +37,7 @@ export function Toggle({ label, value, onValueChange, helper }: ToggleProps) {
         onValueChange={onValueChange}
         onColor={t.colors.brand.bloom}
         accessibilityLabel={label}
+        accessibilityHint={helper}
       />
     </View>
   )

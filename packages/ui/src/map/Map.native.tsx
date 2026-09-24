@@ -8,7 +8,6 @@ import {
   UserLocation,
   type CameraRef,
   type MapRef,
-  type MarkerEvent,
   type ViewState,
   type ViewStateChangeEvent,
   type PressEvent,
@@ -17,6 +16,7 @@ import {
 import type { StyleSpecification } from "@maplibre/maplibre-gl-style-spec"
 import type { BBox } from "@civfix/shared"
 import { useTheme } from "../theme"
+import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { useHaptics } from "../capabilities"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
@@ -30,7 +30,15 @@ import { useMapViewport } from "./mapViewportStore"
 import { useDroppedPin } from "./droppedPinStore"
 import { useMapFlyTo } from "./mapFlyToStore"
 import { longPressHitsMarker, type LongPressMarker } from "./longPressGate"
-import { activeMarkerIds, flyToTargetOffMap, markerNodeIsActive } from "./markerFocus"
+import {
+  activeMarkerIds,
+  flyToTargetOffMap,
+  markerA11yLabel,
+  markerButtonA11y,
+  markerNodeIsActive,
+  targetMarkerA11yLabel,
+  type MarkerPressEvent,
+} from "./markerFocus"
 import {
   clusterFallbackZoom,
   clusterListReports,
@@ -54,50 +62,62 @@ interface MarkerNodeProps {
   node: ClusterNode
   markerId: string
   active: boolean
-  onPress: (event: NativeSyntheticEvent<MarkerEvent>) => void
+  onPress: (event: MarkerPressEvent) => void
 }
 
 const MarkerNode = memo(function MarkerNode({ node, markerId, active, onPress }: MarkerNodeProps) {
   const lngLat = useMemo<[number, number]>(() => [node.lng, node.lat], [node.lng, node.lat])
+  const { t } = useT("map-ui")
+  const label = markerA11yLabel(node, t)
 
   if (node.type === "cluster") {
     return (
       <Marker id={markerId} lngLat={lngLat} onPress={onPress}>
-        <ClusterBubble
-          count={node.count}
-          tone={clusterToneFor(node.reportCount, node.eventCount)}
-        />
+        <View {...markerButtonA11y(label, markerId, onPress)}>
+          <ClusterBubble
+            count={node.count}
+            tone={clusterToneFor(node.reportCount, node.eventCount)}
+          />
+        </View>
       </Marker>
     )
   }
   if (node.type === "report") {
     return (
       <Marker id={markerId} lngLat={lngLat} anchor="bottom" onPress={onPress}>
-        <TeardropPin category={node.pin.category} active={active} />
+        <View {...markerButtonA11y(label, markerId, onPress)}>
+          <TeardropPin category={node.pin.category} active={active} />
+        </View>
       </Marker>
     )
   }
   if (node.type === "event") {
     return (
       <Marker id={markerId} lngLat={lngLat} anchor="bottom" onPress={onPress}>
-        <EventPin active={active} eventKind={node.event.eventKind} />
+        <View {...markerButtonA11y(label, markerId, onPress)}>
+          <EventPin active={active} eventKind={node.event.eventKind} />
+        </View>
       </Marker>
     )
   }
   return (
     <Marker id={markerId} lngLat={lngLat} anchor="bottom" onPress={onPress}>
-      <BlendPin count={node.reports.length} active={active} eventKind={node.event.eventKind} />
+      <View {...markerButtonA11y(label, markerId, onPress)}>
+        <BlendPin count={node.reports.length} active={active} eventKind={node.event.eventKind} />
+      </View>
     </Marker>
   )
 })
 
 interface TargetMarkerProps {
   target: FocusedEntity
-  onPressPin: (event: NativeSyntheticEvent<MarkerEvent>) => void
-  onPressCleanup: (event: NativeSyntheticEvent<MarkerEvent>) => void
+  onPressPin: (event: MarkerPressEvent) => void
+  onPressCleanup: (event: MarkerPressEvent) => void
 }
 
 function TargetMarker({ target, onPressPin, onPressCleanup }: TargetMarkerProps) {
+  const { t } = useT("map-ui")
+  const label = targetMarkerA11yLabel(target, t)
   if (target.kind === "cleanup") {
     return (
       <Marker
@@ -106,13 +126,17 @@ function TargetMarker({ target, onPressPin, onPressCleanup }: TargetMarkerProps)
         anchor="bottom"
         onPress={onPressCleanup}
       >
-        <EventPin active eventKind={target.eventKind} />
+        <View {...markerButtonA11y(label, `cleanup-${target.id}`, onPressCleanup)}>
+          <EventPin active eventKind={target.eventKind} />
+        </View>
       </Marker>
     )
   }
   return (
     <Marker id={`pin-${target.id}`} lngLat={[target.lng, target.lat]} anchor="bottom" onPress={onPressPin}>
-      <TeardropPin category={target.category} active />
+      <View {...markerButtonA11y(label, `pin-${target.id}`, onPressPin)}>
+        <TeardropPin category={target.category} active />
+      </View>
     </Marker>
   )
 }
@@ -147,21 +171,15 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const mapNativeRef = useRef<MapRef>(null)
   const insets = useSafeAreaInsets()
   const userLocationRef = useRef(userLocation)
-  userLocationRef.current = userLocation
 
   const haptics = useHaptics()
   const hapticsRef = useRef(haptics)
-  hapticsRef.current = haptics
   const onPressPinRef = useRef(onPressPin)
-  onPressPinRef.current = onPressPin
   const onPressClusterRef = useRef(onPressCluster)
-  onPressClusterRef.current = onPressCluster
   const onPressCleanupRef = useRef(onPressCleanup)
-  onPressCleanupRef.current = onPressCleanup
   const onPressBlendRef = useRef(onPressBlend)
-  onPressBlendRef.current = onPressBlend
   const onLongPressMapRef = useRef(onLongPressMap)
-  onLongPressMapRef.current = onLongPressMap
+  const onPressMapRef = useRef(onPressMap)
   const mapSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 })
 
   const { index, query } = useClusters(points)
@@ -170,9 +188,7 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const nodesByMarkerRef = useRef<globalThis.Map<string, ClusterNode>>(new globalThis.Map())
   const lastRegionRef = useRef<{ bbox: BBox; zoom: number } | null>(null)
   const onRegionChangeRef = useRef(onRegionChange)
-  onRegionChangeRef.current = onRegionChange
   const onUserCameraMoveRef = useRef(onUserCameraMove)
-  onUserCameraMoveRef.current = onUserCameraMove
 
   const initialCenterRef = useRef(initialCenter)
   const initialViewState = useMemo(
@@ -191,14 +207,16 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   const [mapLoaded, setMapLoaded] = useState(false)
 
   const recomputeRef = useRef<() => void>(() => {})
-  recomputeRef.current = () => {
-    const region = lastRegionRef.current
-    setNodes(
-      region
-        ? query(region.bbox, region.zoom)
-        : query(WORLD_BBOX, initialViewState.zoom),
-    )
-  }
+  React.useLayoutEffect(() => {
+    recomputeRef.current = () => {
+      const region = lastRegionRef.current
+      setNodes(
+        region
+          ? query(region.bbox, region.zoom)
+          : query(WORLD_BBOX, initialViewState.zoom),
+      )
+    }
+  })
   const runnerRef = useRef<IdleRunner | null>(null)
   if (runnerRef.current === null) runnerRef.current = createIdleRunner(() => recomputeRef.current())
   const runner = runnerRef.current
@@ -226,7 +244,19 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     return markers
   }, [focus, nodes, offMapTarget])
   const hitMarkersRef = useRef(hitMarkers)
-  hitMarkersRef.current = hitMarkers
+  React.useLayoutEffect(() => {
+    userLocationRef.current = userLocation
+    hapticsRef.current = haptics
+    onPressPinRef.current = onPressPin
+    onPressClusterRef.current = onPressCluster
+    onPressCleanupRef.current = onPressCleanup
+    onPressBlendRef.current = onPressBlend
+    onLongPressMapRef.current = onLongPressMap
+    onPressMapRef.current = onPressMap
+    onRegionChangeRef.current = onRegionChange
+    onUserCameraMoveRef.current = onUserCameraMove
+    hitMarkersRef.current = hitMarkers
+  })
 
   useImperativeHandle(
     ref,
@@ -318,8 +348,6 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
   }, [flyToRequest, mapLoaded])
 
   const markerPressedAtRef = useRef(0)
-  const onPressMapRef = useRef(onPressMap)
-  onPressMapRef.current = onPressMap
   const handleMapPress = useCallback(
     (_event: NativeSyntheticEvent<PressEvent | PressEventWithFeatures>) => {
       if (Date.now() - markerPressedAtRef.current < MARKER_PRESS_GUARD_MS) return
@@ -346,14 +374,14 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     handler(lat, lng)
   }, [])
 
-  const handlePressPin = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
+  const handlePressPin = useCallback((event: MarkerPressEvent) => {
     markerPressedAtRef.current = Date.now()
     useMapFlyTo.getState().clear()
     const id = event.nativeEvent.id.slice("pin-".length)
     hapticsRef.current.selection()
     onPressPinRef.current?.(id)
   }, [])
-  const handlePressCluster = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
+  const handlePressCluster = useCallback((event: MarkerPressEvent) => {
     markerPressedAtRef.current = Date.now()
     useMapFlyTo.getState().clear()
     const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
@@ -377,14 +405,14 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
     }
     flyToCluster(clusterFallbackZoom(currentZoom))
   }, [])
-  const handlePressCleanup = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
+  const handlePressCleanup = useCallback((event: MarkerPressEvent) => {
     markerPressedAtRef.current = Date.now()
     useMapFlyTo.getState().clear()
     const id = event.nativeEvent.id.slice("cleanup-".length)
     hapticsRef.current.selection()
     onPressCleanupRef.current?.(id)
   }, [])
-  const handlePressBlend = useCallback((event: NativeSyntheticEvent<MarkerEvent>) => {
+  const handlePressBlend = useCallback((event: MarkerPressEvent) => {
     markerPressedAtRef.current = Date.now()
     useMapFlyTo.getState().clear()
     const node = nodesByMarkerRef.current.get(event.nativeEvent.id)
@@ -430,6 +458,8 @@ export const Map = memo(forwardRef<MapHandle, MapProps>(function Map(props, ref)
       logo={false}
       attributionPosition={{ bottom: insets.bottom + 96, right: 8 }}
       compass={false}
+      touchRotate={false}
+      touchPitch={false}
       onDidFinishLoadingMap={handleMapLoad}
       onRegionWillChange={handleRegionWillChange}
       onRegionDidChange={handleRegion}

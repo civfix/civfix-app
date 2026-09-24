@@ -4,6 +4,11 @@ export const STAT_VALUE_UNKNOWN = "—"
 
 export const STAT_TILE_WIDE_AT = 480
 
+/** What a screen reader hears for a tile. `unknownSpoken` replaces the dash, which reads as "dash" or nothing. */
+export function statTileSpokenLabel(label: string, value: string | null, unknownSpoken: string): string {
+  return `${label}: ${value ?? unknownSpoken}`
+}
+
 export type StatTileColumns = 2 | 4
 
 export function statTileColumns(width: number): StatTileColumns {

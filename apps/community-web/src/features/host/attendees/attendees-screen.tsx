@@ -11,7 +11,11 @@ import type {
 import { useApi, useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
-import { closeConsoleDrawer, useConsoleUrlState } from "@/components/console/url-state"
+import {
+  closeConsoleDrawer,
+  useConsoleUrlState,
+  type ConsoleParamPatch,
+} from "@/components/console/url-state"
 import { useGate } from "@/components/console/query-state"
 import { ConsoleButton } from "@/components/console/button"
 import { EmptyState, StateGate } from "@/components/console/states"
@@ -24,7 +28,8 @@ import { ConfirmModal } from "@/components/console/overlay/confirm-modal"
 
 import { useConsoleEvent, useConsoleNavigation } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
-import { useConsoleFormat } from "../format"
+import { EMPTY_VALUE, useConsoleFormat } from "../format"
+import { EmptyValue } from "../analytics/analytics-value"
 import { ExportMenu } from "../exports/export-menu"
 import { useConsoleRoster } from "./use-roster"
 import { AttendeeDrawer } from "./attendee-drawer"
@@ -54,8 +59,8 @@ export function AttendeesScreen() {
   const qc = useQueryClient()
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
-  const format = useConsoleFormat()
   const { eventId, event, can } = useConsoleEvent()
+  const format = useConsoleFormat(event?.timezone ?? undefined)
   const { go } = useConsoleNavigation()
   const { params, set } = useConsoleUrlState()
 
@@ -90,14 +95,22 @@ export function AttendeesScreen() {
   )
   const selection = useSelection(selectableIds)
 
-  useEffect(() => {
+  const setFilters = (patch: ConsoleParamPatch) => {
     selection.clear()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, sort, search, ticketTypeId])
+    set({ ...patch, cursor: null })
+  }
 
-  const [openId, setOpenId] = useState<string | null>(null)
   const [confirmNoShow, setConfirmNoShow] = useState(false)
-  const openRow = rows.find((row) => row.id === (params.attendee ?? openId)) ?? null
+  const [confirmRemove, setConfirmRemove] = useState(false)
+  // The URL is the only source of the open attendee, so browser Back closes the drawer.
+  const openRow = rows.find((row) => row.id === params.attendee) ?? null
+  // A settled roster without the open row (a filter or a removal dropped it) would otherwise leave
+  // ?attendee behind, and the drawer would pop back open when a later filter brings the row back.
+  const attendeeGone =
+    params.attendee != null && openRow === null && roster.isSuccess && !roster.isFetching
+  useEffect(() => {
+    if (attendeeGone) closeConsoleDrawer(["attendee"])
+  }, [attendeeGone])
 
   const refresh = () => invalidateEvent(qc, eventId)
 
@@ -172,6 +185,7 @@ export function AttendeesScreen() {
         tone: failed > 0 ? "danger" : "success",
       })
       selection.clear()
+      setConfirmRemove(false)
       refresh()
     },
     onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
@@ -187,7 +201,7 @@ export function AttendeesScreen() {
             label: t("filter.search"),
             value: search,
             placeholder: t("filter.search_placeholder"),
-            onChange: (value: string) => set({ q: value === "" ? null : value, cursor: null }),
+            onChange: (value: string) => setFilters({ q: value === "" ? null : value }),
           },
         ]),
     ...((ticketTypes.data?.length ?? 0) > 1
@@ -201,8 +215,7 @@ export function AttendeesScreen() {
               label: type.name,
             })),
             values: ticketTypeId ? [ticketTypeId] : [],
-            onChange: (values: string[]) =>
-              set({ ticket: values[values.length - 1] ?? null, cursor: null }),
+            onChange: (values: string[]) => setFilters({ ticket: values[values.length - 1] ?? null }),
           },
         ]
       : []),
@@ -234,11 +247,11 @@ export function AttendeesScreen() {
       id: "ticketType",
       label: t("column.ticket_type"),
       columnPriority: 1,
-      render: (row) => row.ticketTypeName ?? "—",
+      render: (row) => row.ticketTypeName ?? <EmptyValue />,
     },
     {
       id: "seats",
-      label: waitlistView ? t("column.party") : t("column.seats"),
+      label: waitlistView ? t("drawer.party") : t("column.seats"),
       align: "right",
       render: (row) => format.number(waitlistView ? row.partySize : row.seatCount),
     },
@@ -264,7 +277,7 @@ export function AttendeesScreen() {
       label: t("column.checked_in_at"),
       sortable: !waitlistView,
       columnPriority: 2,
-      render: (row) => (row.checkedInAt ? format.time(row.checkedInAt) : "—"),
+      render: (row) => (row.checkedInAt ? format.time(row.checkedInAt) : <EmptyValue />),
     },
   ]
 
@@ -282,7 +295,7 @@ export function AttendeesScreen() {
         <SavedTabs
           label={t("filter.tabs")}
           activeId={filter}
-          onChange={(id) => set({ status: id === "all" ? null : id, cursor: null })}
+          onChange={(id) => setFilters({ status: id === "all" ? null : id })}
           tabs={ROSTER_FILTERS.map((id) => ({ id, label: t(`filter.${id}`) }))}
         />
         <div className="flex items-center gap-token-2">
@@ -302,7 +315,7 @@ export function AttendeesScreen() {
 
       <FilterBar
         facets={facets}
-        onReset={() => set({ q: null, ticket: null, cursor: null })}
+        onReset={() => setFilters({ q: null, ticket: null })}
       />
 
       <p className="text-token-12 text-console-ink-3">
@@ -330,7 +343,7 @@ export function AttendeesScreen() {
             variant={search !== "" || ticketTypeId !== null ? "filtered" : "none"}
             title={t("empty.title")}
             body={t("empty.body")}
-            onClearFilters={() => set({ q: null, ticket: null, status: null, cursor: null })}
+            onClearFilters={() => setFilters({ q: null, ticket: null, status: null })}
           />
         }
       >
@@ -346,7 +359,7 @@ export function AttendeesScreen() {
             if (!base) return
             const resolved: RegistrationRosterSort =
               base === "registered_at_desc" && next.dir === "asc" ? "registered_at_asc" : base
-            set({ sort: resolved, cursor: null })
+            setFilters({ sort: resolved })
           }}
           selection={waitlistView ? undefined : selection}
           rowSelectLabel={(row) =>
@@ -357,10 +370,7 @@ export function AttendeesScreen() {
               }),
             })
           }
-          onRowPress={waitlistView ? undefined : (row) => {
-            setOpenId(row.id)
-            set({ attendee: row.id }, "push")
-          }}
+          onRowPress={waitlistView ? undefined : (row) => set({ attendee: row.id }, "push")}
           rowPressLabel={(row) =>
             t("table.open_row", {
               name: attendeeDisplayName(row, {
@@ -377,7 +387,7 @@ export function AttendeesScreen() {
                 guest: t("row.guest"),
                 deleted: t("row.deleted_user"),
               })}
-              sub={`${row.ticketTypeName ?? "—"} · ${format.number(waitlistView ? row.partySize : row.seatCount)}`}
+              sub={`${row.ticketTypeName ?? EMPTY_VALUE} · ${format.number(waitlistView ? row.partySize : row.seatCount)}`}
               chips={
                 waitlistView ? (
                   <Chip kind="waitlist-status" value="waiting" size="sm" />
@@ -388,10 +398,7 @@ export function AttendeesScreen() {
               onPress={
                 waitlistView
                   ? undefined
-                  : () => {
-                      setOpenId(row.id)
-                      set({ attendee: row.id }, "push")
-                    }
+                  : () => set({ attendee: row.id }, "push")
               }
             />
           )}
@@ -442,7 +449,7 @@ export function AttendeesScreen() {
                   icon: Trash2,
                   destructive: true,
                   disabled: bulkRemove.isPending,
-                  onPress: () => bulkRemove.mutate({ ids: [...selection.selectedIds] }),
+                  onPress: () => setConfirmRemove(true),
                 },
               ]
             : []),
@@ -472,6 +479,23 @@ export function AttendeesScreen() {
         onConfirm={() => bulkNoShow.mutate([...selection.selectedIds])}
       />
 
+      <ConfirmModal
+        open={confirmRemove}
+        severity="danger"
+        title={t("bulk_remove.title", { count: selection.count })}
+        body={t("bulk_remove.body", { count: selection.count })}
+        reasonField={{ label: t("remove.reason"), required: false }}
+        confirmLabel={t("remove.confirm")}
+        busy={bulkRemove.isPending}
+        onCancel={() => setConfirmRemove(false)}
+        onConfirm={(payload) =>
+          bulkRemove.mutate({
+            ids: [...selection.selectedIds],
+            ...(payload.reason ? { reason: payload.reason } : {}),
+          })
+        }
+      />
+
       <AttendeeDrawer
         key={openRow?.id ?? "none"}
         eventId={eventId}
@@ -481,10 +505,7 @@ export function AttendeesScreen() {
         canManage={can("manage_event")}
         canCheckIn={can("check_in")}
         canManageTickets={can("manage_tickets")}
-        onClose={() => {
-          setOpenId(null)
-          closeConsoleDrawer(["attendee"])
-        }}
+        onClose={() => closeConsoleDrawer(["attendee"])}
       />
     </div>
   )

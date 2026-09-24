@@ -1,4 +1,4 @@
-import type { View } from "../nav"
+import type { Snap, View } from "../nav"
 import { MOTION } from "../theme/motion"
 import {
   DOCK_H,
@@ -231,6 +231,61 @@ export function sheetSnapPoints(windowHeight: number, topReserve: number): [numb
   const full = Math.round(Math.min(SHEET_REF_FULL * scale, maxFull))
   const midStop = Math.max(mid, peek + 1)
   return [peek, midStop, Math.max(full, midStop + 1)]
+}
+
+export const SHEET_SNAP_RANGE = { min: 0, max: 2 } as const
+
+export function stepSheetSnap(current: Snap, delta: number): Snap {
+  return Math.min(Math.max(current + delta, SHEET_SNAP_RANGE.min), SHEET_SNAP_RANGE.max) as Snap
+}
+
+export function sheetSnapForAccessibilityAction(current: Snap, actionName: string): Snap | null {
+  if (actionName === "increment") return stepSheetSnap(current, 1)
+  if (actionName === "decrement") return stepSheetSnap(current, -1)
+  return null
+}
+
+export function sheetSnapForKey(current: Snap, key: string | undefined): Snap | null {
+  switch (key) {
+    case "ArrowUp":
+    case "ArrowRight":
+      return stepSheetSnap(current, 1)
+    case "ArrowDown":
+    case "ArrowLeft":
+      return stepSheetSnap(current, -1)
+    case "Home":
+      return SHEET_SNAP_RANGE.min
+    case "End":
+      return SHEET_SNAP_RANGE.max
+    case "Enter":
+    case " ":
+      return ((current + 1) % (SHEET_SNAP_RANGE.max + 1)) as Snap
+    default:
+      return null
+  }
+}
+
+/**
+ * A slider key is consumed even at a bound (so it never scrolls the page), but only a changed snap is
+ * applied: re-applying peek would run the settle-at-peek collapse again and pop one more detail per press.
+ */
+export function sheetSnapKeyOutcome(
+  current: Snap,
+  key: string | undefined,
+): { consumed: boolean; next: Snap | null } {
+  const next = sheetSnapForKey(current, key)
+  if (next === null) return { consumed: false, next: null }
+  return { consumed: true, next: next === current ? null : next }
+}
+
+const SHEET_SNAP_VALUE_KEYS = [
+  "a11y.sheet_snap.collapsed",
+  "a11y.sheet_snap.half",
+  "a11y.sheet_snap.full",
+] as const satisfies readonly string[]
+
+export function sheetSnapValueKey(snap: Snap): (typeof SHEET_SNAP_VALUE_KEYS)[Snap] {
+  return SHEET_SNAP_VALUE_KEYS[snap]
 }
 
 export function searchRiseTransition({

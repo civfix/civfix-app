@@ -1,6 +1,6 @@
 import React from "react"
 import { View, Pressable } from "react-native"
-import { makeThemedStyles, useTheme, webCursor, webHover, focusRingProps } from "../theme"
+import { a11yState, makeThemedStyles, useTheme, webCursor, webHover, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { LegalDocumentType } from "@civfix/shared"
 import { currentVersion } from "@civfix/shared/legal"
@@ -48,24 +48,26 @@ export function TermsConfirmation({
   }, [confirmed, documents, onAccept, onConfirmedChange])
 
   return (
-    <Pressable
-      onPress={toggle}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: confirmed }}
-      accessibilityLabel={t("a11y.affirmation")}
-      {...focusRingProps}
-      style={(state) => [
-        styles.row,
-        webCursor(),
-        webHover(state) ? styles.rowHovered : null,
-        state.pressed ? styles.rowPressed : null,
-      ]}
-    >
-      <View style={[styles.box, confirmed ? styles.boxChecked : null]}>
-        {confirmed ? <Icon icon={iconMap.Check} size={14} color={th.colors.onAccent} /> : null}
-      </View>
-      <Text variant="body" style={styles.label}>
-        {t("label.lead")}
+    <View style={styles.row}>
+      <Pressable
+        onPress={toggle}
+        accessibilityRole="checkbox"
+        {...a11yState({ checked: confirmed })}
+        accessibilityLabel={t("a11y.affirmation")}
+        {...focusRingProps}
+        style={(state) => [
+          styles.check,
+          webCursor(),
+          webHover(state) ? styles.checkHovered : null,
+          state.pressed ? styles.checkPressed : null,
+        ]}
+      >
+        <View style={[styles.box, confirmed ? styles.boxChecked : null]}>
+          {confirmed ? <Icon icon={iconMap.Check} size={14} color={th.colors.onAccent} /> : null}
+        </View>
+        <Text variant="body">{t("label.lead").trim()}</Text>
+      </Pressable>
+      <Text variant="body" style={styles.links}>
         <Text
           variant="body"
           style={styles.link}
@@ -87,28 +89,36 @@ export function TermsConfirmation({
         </Text>
         {t("label.trailing")}
       </Text>
-    </Pressable>
+    </View>
   )
 }
 
 const useStyles = makeThemedStyles((t) => ({
   row: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
-    gap: t.space["3"],
+    columnGap: t.space["1"],
     backgroundColor: t.colors.surface,
     borderRadius: t.radius.md,
     borderWidth: 1.5,
     borderColor: t.colors.border,
     paddingHorizontal: t.space["4"],
-    paddingVertical: t.space["3"],
+    paddingVertical: t.space["1"],
     minHeight: 52,
   },
-  rowHovered: {
-    borderColor: t.colors.borderStrong,
+  check: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: t.space["3"],
+    minHeight: 44,
+    borderRadius: t.radius.sm,
   },
-  rowPressed: {
-    opacity: 0.92,
+  checkHovered: {
+    opacity: 0.85,
+  },
+  checkPressed: {
+    opacity: 0.7,
   },
   box: {
     width: 22,
@@ -124,8 +134,8 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.brand.bloom,
     borderColor: t.colors.brand.bloom,
   },
-  label: {
-    flex: 1,
+  links: {
+    flexShrink: 1,
   },
   link: {
     color: t.colors.accentText,

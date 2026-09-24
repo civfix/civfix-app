@@ -8,6 +8,7 @@ import {
   TextField,
 } from "../../primitives"
 import { useT } from "../../i18n"
+import { profileSaveErrorKey } from "../errorCode"
 import { useEditorStyles } from "./editorStyles"
 
 export const MAX_DISPLAY_NAME_LENGTH = 80
@@ -44,7 +45,7 @@ export function DisplayNameEditor({ currentName, saving, onSave }: DisplayNameEd
     setSubmitError(null)
     void onSave(trimmed)
       .then(() => setEditing(false))
-      .catch(() => setSubmitError(t("name.error.generic")))
+      .catch((err: unknown) => setSubmitError(t(profileSaveErrorKey(err, "name.error.generic"))))
   }
 
   const hint = (() => {

@@ -1,5 +1,6 @@
 "use client"
 
+import { useId } from "react"
 import { Lock } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -23,6 +24,12 @@ export function ToggleRow({
   lockedReason,
   className,
 }: ToggleRowProps) {
+  const captionId = useId()
+  const reasonId = useId()
+  const showReason = Boolean(locked && lockedReason)
+  const describedBy =
+    [caption ? captionId : null, showReason ? reasonId : null].filter(Boolean).join(" ") ||
+    undefined
   return (
     <div
       className={cn(
@@ -33,16 +40,21 @@ export function ToggleRow({
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-1.5 text-token-14 font-semibold text-console-ink">
           {label}
-          {locked && lockedReason ? (
+          {showReason ? (
             <span title={lockedReason}>
               <Lock aria-hidden className="h-3.5 w-3.5 text-console-ink-3" />
-              <span className="sr-only">{lockedReason}</span>
             </span>
           ) : null}
         </p>
-        {caption ? <p className="mt-0.5 text-token-12 text-console-ink-3">{caption}</p> : null}
-        {locked && lockedReason ? (
-          <p className="mt-0.5 text-token-12 font-medium text-console-ink-3">{lockedReason}</p>
+        {caption ? (
+          <p id={captionId} className="mt-0.5 text-token-12 text-console-ink-3">
+            {caption}
+          </p>
+        ) : null}
+        {showReason ? (
+          <p id={reasonId} className="mt-0.5 text-token-12 font-medium text-console-ink-3">
+            {lockedReason}
+          </p>
         ) : null}
       </div>
       <button
@@ -50,6 +62,7 @@ export function ToggleRow({
         role="switch"
         aria-checked={checked}
         aria-label={label}
+        aria-describedby={describedBy}
         disabled={locked}
         onClick={() => onChange(!checked)}
         className={cn(

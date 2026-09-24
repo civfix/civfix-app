@@ -112,6 +112,7 @@ export function PageStack({
         reduceMotionCache = !!enabled
         if (mounted) setReduceMotion(!!enabled)
       })
+      // A failed probe keeps motion on; the reduceMotionChanged listener below still corrects it.
       .catch(() => {})
     const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => {
       reduceMotionCache = !!enabled
@@ -127,7 +128,6 @@ export function PageStack({
     setLeaving((current) => (current && current.key === key ? null : current))
   }, [])
 
-  const signature = layerKeys.join("|")
   const prevKeysRef = useRef<readonly string[]>(layerKeys)
   const prevEntriesRef = useRef<readonly DetailEntry[]>(entries)
   const prevStackRef = useRef<readonly DetailEntry[]>(stack)
@@ -135,13 +135,14 @@ export function PageStack({
 
   useLayoutEffect(() => {
     const prevKeys = prevKeysRef.current
+    // The snapshot moves only with the layer keys: a re-render that keeps them must neither animate
+    // nor replace the entries the retained leaving layer will render.
+    if (prevKeys.length === layerKeys.length && prevKeys.every((key, i) => key === layerKeys[i])) return
     const prevEntries = prevEntriesRef.current
     const prevStack = prevStackRef.current
     prevKeysRef.current = layerKeys
     prevEntriesRef.current = entries
     prevStackRef.current = stack
-
-    if (prevKeys.length === layerKeys.length && prevKeys.every((key, i) => key === layerKeys[i])) return
 
     const direction =
       layerKeys.length > prevKeys.length
@@ -192,7 +193,7 @@ export function PageStack({
       fade.value = 0
       fade.value = withTiming(1, FADE_CFG)
     }
-  }, [signature])
+  }, [dragging, dropLeaving, entries, exit, fade, front, layerKeys, reduceMotion, stack])
 
   const nestedInNativeStack = useNestedShellHost()
   const leading = detailLeadingAffordance({ stack, mode: "compact", dismissGesture: false })

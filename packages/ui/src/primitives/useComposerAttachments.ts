@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react"
-import { AppError } from "@civfix/shared"
+import { appErrorCode } from "../bodies/errorCode"
 import { useApi } from "../data"
 import { uploadMediaId } from "../data/uploadMedia"
 import { useCamera } from "../capabilities"
 import type { CapturedMedia } from "../capabilities"
-import { nextAttachmentId } from "./composerAttachmentId"
+import { useT } from "../i18n"
+import { nextAttachmentId, uploadAttachErrorKey, type AttachErrorKey } from "./composerAttachmentId"
 
 export interface PendingAttachment {
   id: string
@@ -26,28 +27,34 @@ export interface ComposerAttachments {
   reset: () => void
 }
 
+interface AttachErrorState {
+  key: AttachErrorKey
+  params?: Record<string, number>
+}
+
 export function useComposerAttachments(maxAttachments = 5): ComposerAttachments {
+  const { t } = useT()
   const api = useApi()
   const camera = useCamera()
   const [attachments, setAttachments] = useState<PendingAttachment[]>([])
   const [uploading, setUploading] = useState(false)
-  const [attachError, setAttachError] = useState<string | null>(null)
+  const [attachError, setAttachError] = useState<AttachErrorState | null>(null)
 
   const canAttach = camera.isAvailable() && attachments.length < maxAttachments
   const allUploaded = attachments.every((a) => a.uploadId)
 
   const pickAndUpload = useCallback(
-    async (source: () => Promise<CapturedMedia | null>, openError: string) => {
+    async (source: () => Promise<CapturedMedia | null>, openError: AttachErrorKey) => {
       if (uploading) {
-        setAttachError("Wait for the current attachment to finish uploading.")
+        setAttachError({ key: "busy" })
         return
       }
       if (!camera.isAvailable()) {
-        setAttachError(openError)
+        setAttachError({ key: openError })
         return
       }
       if (attachments.length >= maxAttachments) {
-        setAttachError(`You can attach up to ${maxAttachments} at a time.`)
+        setAttachError({ key: "limit", params: { count: maxAttachments } })
         return
       }
       setAttachError(null)
@@ -55,7 +62,7 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
       try {
         picked = await source()
       } catch {
-        setAttachError(openError)
+        setAttachError({ key: openError })
         return
       }
       if (!picked) return
@@ -67,7 +74,7 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
         setAttachments((prev) => prev.map((a) => (a.id === local.id ? { ...a, uploadId } : a)))
       } catch (err) {
         setAttachments((prev) => prev.filter((a) => a.id !== local.id))
-        setAttachError(err instanceof AppError ? err.message : "That attachment could not be uploaded.")
+        setAttachError({ key: uploadAttachErrorKey(appErrorCode(err)) })
       } finally {
         setUploading(false)
       }
@@ -76,12 +83,12 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
   )
 
   const onAttach = useCallback(
-    () => pickAndUpload(() => camera.pickFromLibrary(), "Could not open the photo library."),
+    () => pickAndUpload(() => camera.pickFromLibrary(), "library"),
     [pickAndUpload, camera],
   )
 
   const onCapture = useCallback(
-    () => pickAndUpload(() => camera.capture({ orientation: "portrait" }), "Could not open the camera."),
+    () => pickAndUpload(() => camera.capture({ orientation: "portrait" }), "camera"),
     [pickAndUpload, camera],
   )
 
@@ -94,5 +101,15 @@ export function useComposerAttachments(maxAttachments = 5): ComposerAttachments 
     setAttachError(null)
   }, [])
 
-  return { attachments, canAttach, uploading, allUploaded, attachError, onAttach, onCapture, removeAttachment, reset }
+  return {
+    attachments,
+    canAttach,
+    uploading,
+    allUploaded,
+    attachError: attachError ? t(`attach_error.${attachError.key}`, attachError.params) : null,
+    onAttach,
+    onCapture,
+    removeAttachment,
+    reset,
+  }
 }

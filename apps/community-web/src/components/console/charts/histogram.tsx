@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils"
 
 import {
   ChartKeyboardTwins,
-  ChartSummary,
   ChartTooltip,
   formatCompact,
   NUM_CLASS,
@@ -51,7 +50,7 @@ export function Histogram({
   const plotW = Math.max(0, width - PAD.left - PAD.right)
   const plotH = height - PAD.top - PAD.bottom
   const maxValue = Math.max(1, ...bins.map((b) => b.count))
-  const ticks = niceTicks(maxValue, 3)
+  const ticks = niceTicks(maxValue, 3, { integer: true })
   const tickMax = ticks[ticks.length - 1] ?? maxValue
   const slot = bins.length > 0 ? plotW / bins.length : 0
   const barW = Math.max(3, slot - 2)
@@ -59,7 +58,6 @@ export function Histogram({
 
   return (
     <div ref={ref} className={cn("relative w-full", className)}>
-      <ChartSummary text={summary} />
       {width > 0 ? (
         <svg
           width={width}
@@ -130,7 +128,7 @@ export function Histogram({
           })}
         </svg>
       ) : (
-        <div style={{ height }} />
+        <div role="img" aria-label={summary} style={{ height }} />
       )}
       <ChartTooltip tip={tip} />
       <ChartKeyboardTwins

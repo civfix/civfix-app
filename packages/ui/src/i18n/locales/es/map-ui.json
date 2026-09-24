@@ -42,16 +42,25 @@
     "open": "Ver tu perfil"
   },
   "a11y": {
-    "attribution": "CARTO / OSM",
     "homeMap": "Mapa de reportes y eventos",
     "picker": "Toca el mapa para colocar el marcador de ubicación, o arrástralo para ajustarlo",
-    "userLocation": "Tu ubicación"
+    "userLocation": "Tu ubicación",
+    "reportPin": "Reporte ({{category}}): {{title}}",
+    "reportPinUntitled": "Reporte ({{category}})",
+    "eventPin": "Evento ({{kind}}): {{title}}",
+    "eventPinUntitled": "Evento ({{kind}})",
+    "blendPin_one": "{{event}}, con {{count}} reporte vinculado",
+    "blendPin_other": "{{event}}, con {{count}} reportes vinculados",
+    "cluster_one": "Grupo de {{count}} marcador",
+    "cluster_other": "Grupo de {{count}} marcadores"
   },
   "hint": {
     "place": "Toca el mapa para colocar el marcador",
     "move": "Toca para mover el marcador",
     "moveMainMap": "Toca el mapa para mover el marcador",
-    "empty": "Aún no hay ubicación seleccionada"
+    "empty": "Aún no hay ubicación seleccionada",
+    "pending": "Buscando tu zona. También puedes buscar una dirección para colocar el marcador.",
+    "search_address": "No pudimos encontrar tu zona. Busca una dirección para colocar el marcador."
   },
   "pickStep": {
     "title": "Establece la ubicación",

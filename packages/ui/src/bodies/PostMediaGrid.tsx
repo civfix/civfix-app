@@ -5,6 +5,7 @@ import type { PostDTO } from "@civfix/shared"
 import { MediaPreview } from "../primitives/MediaPreview"
 import { focusRingProps, stopPress, webCursor } from "../theme"
 import { useT } from "../i18n"
+import { postMediaA11yLabel } from "./postCardModel"
 
 export function mediaAspect(media: PostDTO["media"][number]): number {
   return media.width && media.height ? media.width / media.height : 4 / 3
@@ -27,7 +28,7 @@ export interface PostMediaGridProps {
 
 export function PostMediaGrid({ media, t, radius, maxHeight, onPressItem }: PostMediaGridProps) {
   const { t: ownT } = useT("home-feed")
-  const label = (t ?? ownT)("post_card.media_a11y")
+  const translate = t ?? ownT
   const frame = React.useMemo(
     () =>
       radius == null && maxHeight == null
@@ -44,6 +45,7 @@ export function PostMediaGrid({ media, t, radius, maxHeight, onPressItem }: Post
   return (
     <View style={styles.mediaGrid}>
       {items.map((item, index) => {
+        const label = postMediaA11yLabel(translate, item.kind, index, items.length)
         const preview = (
           <MediaPreview
             uri={item.url}

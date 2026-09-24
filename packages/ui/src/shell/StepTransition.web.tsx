@@ -48,7 +48,7 @@ export function StepTransition({ children, direction, style, transitionKey }: St
       return
     }
     setEntrance({ plan: bodyTransitionPlan(direction, false, BODY_TIMING), flipped: false })
-  }, [transitionKey])
+  }, [direction, transitionKey])
 
   useLayoutEffect(() => {
     if (!entrance || entrance.flipped) return

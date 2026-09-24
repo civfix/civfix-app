@@ -14,6 +14,7 @@ import {
   PLAIN_SCROLL_HOST,
   PrimaryButton,
   SegmentedCodeInput,
+  announce,
   Text,
   TextField,
   makeKeyboardAwareScrollHost,
@@ -22,7 +23,7 @@ import {
 import { useT } from "@civfix/ui/i18n"
 import { ScreenHeader } from "@/components/ui/ScreenHeader"
 import { requestEmailOtp, verifyEmailOtp } from "@/hooks/useAuthFlow"
-import { errorMessage, friendlyError, isRateLimited } from "@/lib/errors"
+import { codeRejectionReason, friendlyError, isRateLimited } from "@/lib/errors"
 import { HOME_HREF, goHome } from "@/lib/goHome"
 import { toResumeHref } from "@/lib/links"
 import {
@@ -87,6 +88,10 @@ export default function OtpScreen() {
   }, [availableAt])
 
   useEffect(() => {
+    if (error) announce(error)
+  }, [error])
+
+  useEffect(() => {
     if (refocusNonce === 0) return
     codeRef.current?.focus()
   }, [refocusNonce])
@@ -117,7 +122,7 @@ export default function OtpScreen() {
           setCode("")
           return
         }
-        const reason = errorMessage(err, t("verify.fallback_reason"))
+        const reason = codeRejectionReason(t, err, t("verify.fallback_reason"))
         const nextAttempts = attempts + 1
         setAttempts(nextAttempts)
         setCode("")

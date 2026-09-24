@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import type { UserDTO } from "@civfix/shared"
 import { adoptViewer, discardViewerDrafts } from "@civfix/ui"
+import { queryKeys } from "@civfix/ui/data"
 import { api } from "@/api/client"
 import {
   SESSION_RESTORE_DEADLINE_MS,
@@ -129,6 +130,25 @@ function dropForeignIdentityState(): void {
   void clearSecureBlobs()
 }
 
+// Caches a guest filled (feeds, post, report and event details, profiles) carry the guest's empty
+// liked, saved, following and registration flags; a sign-in refetches them as the account.
+const VIEWER_DEPENDENT_KEYS: readonly (readonly unknown[])[] = [
+  queryKeys.myReportsRoot,
+  queryKeys.threads,
+  queryKeys.notificationsRoot,
+  queryKeys.profileRoot,
+  queryKeys.postsRoot,
+  queryKeys.postRoot,
+  queryKeys.reportRoot,
+  queryKeys.cleanupRoot,
+  queryKeys.chatRoot,
+  ["volunteer"],
+]
+
+function invalidateViewerDependentQueries(): void {
+  for (const queryKey of VIEWER_DEPENDENT_KEYS) void queryClient.invalidateQueries({ queryKey })
+}
+
 function adoptIdentity(user: UserDTO, set: SetAuthState): void {
   cacheUser(user)
   rememberIdentity(user.id)
@@ -234,6 +254,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (isForeignIdentity(previousIdentity, user.id)) dropForeignIdentityState()
     await setToken(token)
     adoptIdentity(user, set)
+    invalidateViewerDependentQueries()
   },
 
   setUser: (user) => {

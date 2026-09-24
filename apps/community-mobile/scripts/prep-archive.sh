@@ -158,12 +158,6 @@ console.log("  buildNumber   " + (cfg.ios && cfg.ios.buildNumber) + "   (iOS)")
 console.log("  versionCode   " + (cfg.android && cfg.android.versionCode) + "    (Android)")
 console.log("  extra.apiUrl  " + (apiUrl === undefined ? "unset (resolved at runtime from the install source)" : JSON.stringify(apiUrl)))
 console.log("  channel       " + JSON.stringify(cfg.updates && cfg.updates.requestHeaders))
-// What will actually be bundled, read off disk - not what package.json asks for.
-for (const dep of ["@civfix/ui", "@civfix/shared"]) {
-  const want = require("./package.json").dependencies[dep]
-  const got = require(require.resolve(dep + "/package.json")).version
-  console.log(("  " + dep).padEnd(18) + got + "   (package.json wants " + want + ")")
-}
 const expected = process.argv[2]
 if ((apiUrl === undefined ? "" : apiUrl) !== expected) {
   const want = expected === "" ? "no apiUrl at all (the runtime install-source split)" : "the string " + expected
@@ -196,6 +190,6 @@ else
   cat <<EOF
 Ready to build. Nothing has been built.
 
-  cd apps/community-mobile/android && ./gradlew :app:bundleRelease   # JDK 20 - see README
+  cd apps/community-mobile/android && ./gradlew :app:bundleRelease   # JDK 22 - see README
 EOF
 fi

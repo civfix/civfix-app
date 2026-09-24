@@ -15,6 +15,7 @@ import {
   TermsConfirmation,
   Text,
   TextField,
+  announce,
   makeKeyboardAwareScrollHost,
 } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
@@ -23,6 +24,11 @@ import { useAuthStore } from "@/store/authStore"
 import { friendlyError } from "@/lib/errors"
 
 const { ScrollView: FirstRunScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
+
+const DISPLAY_NAME_MAX = 80
+const FIRST_NAME_MAX = 40
+const LAST_NAME_MAX = DISPLAY_NAME_MAX - FIRST_NAME_MAX - 1
+const MIN_TOUCH_TARGET = 44
 
 export function FirstRunGate() {
   const status = useAuthStore((s) => s.status)
@@ -37,7 +43,14 @@ function splitName(displayName: string): { first: string; last: string } {
   return { first: parts[0]!, last: parts.slice(1).join(" ") }
 }
 
-type Availability = { checking: boolean; available: boolean | null; reason: string | null }
+type Availability = {
+  checking: boolean
+  available: boolean | null
+  reason: string | null
+  failed: boolean
+}
+
+const UNCHECKED: Availability = { checking: false, available: null, reason: null, failed: false }
 
 function FirstRunForm() {
   const { t } = useT("mobile-auth-registration")
@@ -52,7 +65,8 @@ function FirstRunForm() {
   const [first, setFirst] = useState(seeded.first)
   const [last, setLast] = useState(seeded.last)
   const [handle, setHandle] = useState("")
-  const [avail, setAvail] = useState<Availability>({ checking: false, available: null, reason: null })
+  const [avail, setAvail] = useState<Availability>(UNCHECKED)
+  const [checkAttempt, setCheckAttempt] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [ageConfirmed, setAgeConfirmed] = useState(false)
@@ -63,28 +77,45 @@ function FirstRunForm() {
   const displayName = `${first.trim()} ${last.trim()}`.trim()
   const available = handleValid && avail.available === true
   const canSubmit =
-    available && displayName.length > 0 && ageConfirmed && termsConfirmed && !submitting
+    available &&
+    displayName.length > 0 &&
+    displayName.length <= DISPLAY_NAME_MAX &&
+    ageConfirmed &&
+    termsConfirmed &&
+    !submitting
 
   useEffect(() => {
     if (!handleValid) {
-      setAvail({ checking: false, available: null, reason: null })
+      setAvail(UNCHECKED)
       return
     }
     let cancelled = false
-    setAvail({ checking: true, available: null, reason: null })
+    setAvail({ ...UNCHECKED, checking: true })
     const t = setTimeout(async () => {
       try {
         const res = await api.checkHandle({ handle: trimmedHandle })
-        if (!cancelled) setAvail({ checking: false, available: res.available, reason: res.reason ?? null })
+        if (!cancelled) {
+          setAvail({ ...UNCHECKED, available: res.available, reason: res.reason ?? null })
+        }
       } catch {
-        if (!cancelled) setAvail({ checking: false, available: null, reason: null })
+        if (!cancelled) setAvail({ ...UNCHECKED, failed: true })
       }
     }, 350)
     return () => {
       cancelled = true
       clearTimeout(t)
     }
-  }, [trimmedHandle, handleValid])
+  }, [trimmedHandle, handleValid, checkAttempt])
+
+  const retryHandleCheck = useCallback(() => setCheckAttempt((n) => n + 1), [])
+
+  useEffect(() => {
+    if (error) announce(error)
+  }, [error])
+
+  useEffect(() => {
+    if (avail.failed) announce(t("handle.check_failed"))
+  }, [avail.failed, t])
 
   const onSubmit = useCallback(async () => {
     if (!canSubmit) return
@@ -95,6 +126,7 @@ function FirstRunForm() {
       setUser(res.user)
     } catch (err) {
       setError(friendlyError(t, err))
+    } finally {
       setSubmitting(false)
     }
   }, [canSubmit, trimmedHandle, displayName, setUser, t])
@@ -126,7 +158,7 @@ function FirstRunForm() {
                   placeholder={t("field.first_name.placeholder")}
                   value={first}
                   onChangeText={setFirst}
-                  maxLength={40}
+                  maxLength={FIRST_NAME_MAX}
                   autoComplete="given-name"
                 />
               </View>
@@ -136,7 +168,7 @@ function FirstRunForm() {
                   placeholder={t("field.last_name.placeholder")}
                   value={last}
                   onChangeText={setLast}
-                  maxLength={40}
+                  maxLength={LAST_NAME_MAX}
                   autoComplete="family-name"
                 />
               </View>
@@ -157,6 +189,8 @@ function FirstRunForm() {
               checking={avail.checking}
               available={available}
               taken={handleValid && avail.available === false}
+              checkFailed={handleValid && avail.failed}
+              onRetry={retryHandleCheck}
             />
 
             {error ? (
@@ -200,12 +234,16 @@ function HandleHint({
   checking,
   available,
   taken,
+  checkFailed,
+  onRetry,
 }: {
   handle: string
   valid: boolean
   checking: boolean
   available: boolean
   taken: boolean
+  checkFailed: boolean
+  onRetry: () => void
 }) {
   const { t } = useT("mobile-auth-registration")
   const th = useTheme()
@@ -223,6 +261,9 @@ function HandleHint({
   } else if (taken) {
     content = t("handle.taken", { handle })
     color = th.colors.brand.bloom
+  } else if (checkFailed) {
+    content = t("handle.check_failed")
+    color = th.colors.dangerInk
   }
   return (
     <View style={styles.hintRow}>
@@ -230,6 +271,17 @@ function HandleHint({
       <Text variant="caption" color={color}>
         {content}
       </Text>
+      {checkFailed && !checking ? (
+        <Pressable
+          onPress={onRetry}
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.retryTarget, pressed ? styles.retryPressed : null]}
+        >
+          <Text variant="caption" color={th.colors.accentText} style={styles.retryText}>
+            {t("handle.retry")}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   )
 }
@@ -266,4 +318,7 @@ const useStyles = makeThemedStyles((t) => ({
   signOut: { alignSelf: "center", marginTop: t.space["3"] },
   signOutPressed: { opacity: 0.6 },
   signOutText: { textAlign: "center" },
+  retryTarget: { minHeight: MIN_TOUCH_TARGET, justifyContent: "center", paddingHorizontal: t.space["2"] },
+  retryText: { fontFamily: t.fontFamily.bodySemiBold },
+  retryPressed: { opacity: 0.6 },
 }))

@@ -1,0 +1,83 @@
+{
+  "state": {
+    "loading_title": "Wird geladen",
+    "loading_body": "Die Seite der Veranstaltung wird geladen.",
+    "not_found_title": "Diese Seite haben wir nicht gefunden",
+    "not_found_body": "Dieser Anmeldelink ist ungültig, oder die Seite wurde entfernt. Finde die Veranstaltung auf <0>civfix</0>.",
+    "offline_title": "Diese Seite konnte nicht geladen werden",
+    "offline_body": "Prüfe deine Verbindung und versuche es erneut.",
+    "retry": "Erneut versuchen"
+  },
+  "calendar": "Zum Kalender hinzufügen",
+  "footer": "Gehostet auf <0>civfix</0> · <1>Nutzungsbedingungen</1> · <2>Datenschutz</2>",
+  "blocks": {
+    "about": "Über die Veranstaltung",
+    "agenda": "Programm",
+    "contact": "Kontakt",
+    "donate": "Diese Arbeit unterstützen",
+    "donate_cta": "Spenden",
+    "donate_hint": "Dieser Link führt zu einer Seite, die nicht von civfix betrieben wird. civfix wickelt niemals Geld ab.",
+    "faq": "Fragen",
+    "hosts": "Wer veranstaltet",
+    "location": "Wo",
+    "open_in_maps": "In Karten öffnen",
+    "sponsors": "Mit Unterstützung von"
+  },
+  "outcome": {
+    "registered": "Du bist angemeldet.",
+    "waitlisted": "Du stehst auf der Warteliste."
+  },
+  "widget": {
+    "cancelled_title": "Diese Veranstaltung wurde abgesagt",
+    "closed_title": "Die Anmeldung ist geschlossen",
+    "not_yet_open_title": "Die Anmeldung ist noch nicht geöffnet",
+    "not_yet_open_body": "Schau kurz vor der Veranstaltung wieder vorbei.",
+    "waitlisted_title": "Du stehst auf der Warteliste",
+    "waitlisted_body": "Wir schicken dir eine E-Mail, wenn ein Platz frei wird."
+  },
+  "errors": {
+    "required": "Bitte beantworte die Pflichtfragen.",
+    "access_code": "Gib den Zugangscode für dieses Ticket ein.",
+    "terms": "Bitte akzeptiere die Bedingungen, um dich anzumelden.",
+    "name": "Gib deinen Namen ein.",
+    "email": "Gib eine E-Mail-Adresse ein, damit der Host dich erreichen kann.",
+    "guest_unavailable": "Die Anmeldung ohne civfix-Konto ist gerade nicht möglich. Melde dich stattdessen mit deinem Konto an.",
+    "bot": "Wir konnten nicht bestätigen, dass du kein Bot bist. Lade die Seite neu und versuche es erneut.",
+    "rate_limited": "Zu viele Versuche. Warte eine Minute und versuche es erneut.",
+    "validation": "Bitte prüfe die Angaben oben und versuche es erneut.",
+    "conflict": "Während du das ausgefüllt hast, hat sich etwas geändert. Lade die Seite neu.",
+    "not_found": "Diese Veranstaltung ist nicht mehr verfügbar.",
+    "generic": "Das hat nicht geklappt. Bitte versuche es erneut."
+  },
+  "code": {
+    "title": "Prüfe deine E-Mails",
+    "sent": "Wir haben einen Code an {{email}} geschickt. Gib ihn ein, um deine Anmeldung abzuschließen.",
+    "label": "Bestätigungscode",
+    "submit": "Anmeldung abschließen",
+    "resend": "Neuen Code senden",
+    "resend_wait_one": "Neuer Code in {{count}} Sekunde möglich",
+    "resend_wait_other": "Neuer Code in {{count}} Sekunden möglich",
+    "change_email": "Andere E-Mail-Adresse verwenden"
+  },
+  "form": {
+    "title_register": "Anmeldung",
+    "title_full": "Diese Veranstaltung ist ausgebucht",
+    "full_none": "Es sind keine Plätze mehr frei.",
+    "full_guest": "Es sind keine Plätze mehr frei. Melde dich mit einem civfix-Konto an, um auf die Warteliste zu kommen. So können wir dich erreichen, wenn ein Platz frei wird.",
+    "full_waitlist": "Trag dich auf die Warteliste ein, dann sagen wir dir Bescheid, wenn ein Platz frei wird.",
+    "ticket_legend": "Ticket",
+    "ticket_sold_out": "Ausgebucht",
+    "party_label": "Wie viele Personen, dich eingeschlossen?",
+    "access_code_label": "Zugangscode",
+    "name_label": "Dein Name",
+    "email_label": "E-Mail-Adresse",
+    "email_hint": "Darüber schickt dir der Host Updates zur Veranstaltung. Sie wird nicht öffentlich angezeigt.",
+    "host_contact": "Der Host darf mich zu künftigen Veranstaltungen kontaktieren, nicht nur zu dieser.",
+    "terms": "Ich stimme den <0>Nutzungsbedingungen</0> und der <1>Datenschutzerklärung</1> zu und weiß, dass der Host meinen Namen und meine Antworten sieht.",
+    "join_waitlist": "Auf die Warteliste",
+    "sold_out": "Ausgebucht",
+    "count_me_in": "Ich bin dabei",
+    "register": "Anmelden",
+    "guest_unavailable_hint": "Die Anmeldung ohne civfix-Konto ist in dieser Version nicht verfügbar. Melde dich mit deinem Konto an."
+  }
+}

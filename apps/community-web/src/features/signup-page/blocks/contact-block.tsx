@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock } from "@civfix/shared"
 
 type ContactBlockData = Extract<EventPageBlock, { kind: "contact" }>
@@ -15,10 +16,11 @@ export function contactMailtoAddress(value: string | null | undefined): string |
 }
 
 export function ContactBlock({ block }: { block: ContactBlockData }) {
+  const { t } = useT("web-signup")
   const email = contactMailtoAddress(block.replyTo)
   return (
     <section className="signup-block">
-      <h2>{block.title ?? "Get in touch"}</h2>
+      <h2>{block.title ?? t("blocks.contact")}</h2>
       {block.body ? <p>{block.body}</p> : null}
       {email ? (
         <p>

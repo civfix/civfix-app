@@ -70,6 +70,7 @@ function deleteTempFile(uri: string): void {
     const file = new File(fileUri(uri))
     if (file.exists) file.delete()
   } catch {
+    // Best-effort cleanup: a temp file that survives is removed by the next session's stale sweep.
   }
 }
 
@@ -88,6 +89,7 @@ function sweepDirectory(directory: Directory, now: number, budget: number): numb
       entry.delete()
       removed += 1
     } catch {
+      // A file the OS reclaimed or still holds open is skipped; the next session retries it.
     }
   }
   return removed
@@ -102,11 +104,13 @@ function sweepStaleMediaTempFiles(): void {
     try {
       removed = sweepDirectory(new Directory(Paths.cache, "ImageManipulator"), now, SWEEP_DELETE_LIMIT)
     } catch {
+      // The sweep is housekeeping; an unreadable directory must never fail the capture that triggered it.
     }
     setTimeout(() => {
       try {
         sweepDirectory(Paths.cache, now, SWEEP_DELETE_LIMIT - removed)
       } catch {
+        // Housekeeping only: an unreadable cache dir must never fail the capture that triggered it.
       }
     }, 0)
   }, SWEEP_DELAY_MS)

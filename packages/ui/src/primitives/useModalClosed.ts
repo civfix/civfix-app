@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Platform } from "react-native"
 
 export const MODAL_EMITS_DISMISS = Platform.OS !== "android"
@@ -19,4 +19,16 @@ export function useModalClosed(shown: boolean, onClosed: (() => void) | undefine
   }, [])
 
   return MODAL_EMITS_DISMISS ? onDismiss : undefined
+}
+
+/**
+ * Runs `reset` during the render in which `visible` turns true. A reset in an effect lands one commit
+ * late, so a reopened sheet would paint the previous draft for a frame first.
+ */
+export function useResetOnOpen(visible: boolean, reset: () => void): void {
+  const [wasVisible, setWasVisible] = useState(visible)
+  if (visible !== wasVisible) {
+    setWasVisible(visible)
+    if (visible) reset()
+  }
 }

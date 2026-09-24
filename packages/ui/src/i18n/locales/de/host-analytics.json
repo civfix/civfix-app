@@ -75,7 +75,6 @@
   },
   "messaging": {
     "totals": "Nachrichten",
-    "active_days": "Tage mit Versand",
     "recipients": "Empfänger*innen",
     "unsubscribes": "Abmeldungen",
     "no_tracking": "civfix erfasst weder Öffnungen noch Klicks, deshalb gibt es hier nichts zu berichten.",
@@ -86,7 +85,8 @@
     "suppressed": "Unterdrückt",
     "over_time": "Versand im Zeitverlauf",
     "over_time_a11y": "Versand pro Tag",
-    "sends": "Sendungen"
+    "sends": "Sendungen",
+    "broadcasts_sent": "Gesendete Rundnachrichten"
   },
   "page": {
     "views": "Seitenaufrufe",
@@ -137,6 +137,7 @@
     "sources_caption": "{{rate}} % von {{views}} Seitenaufrufen haben sich angemeldet"
   },
   "csv": {
+    "title": "{{event}} · {{tab}}",
     "source": "Quelle",
     "reference": "Referenz der Veranstaltung",
     "generated_at": "Erstellt",
@@ -177,6 +178,7 @@
     "impact_caption": "Mit deinen Veranstaltungen verknüpfte Meldungen",
     "impact_donations": "{{n}} Klicks auf den Spendenlink",
     "checkins_ring_a11y": "{{rate}} % der Anmeldungen sind eingecheckt",
+    "checkins_ring_unknown_a11y": "Check-in-Quote nicht verfügbar",
     "window": "Letzte 30 Tage",
     "panel_hours": "Freiwilligenstunden",
     "checkins_caption": "von {{registered}} Anmeldungen · {{count}} Veranstaltungen durchgeführt",
@@ -194,6 +196,8 @@
   },
   "filter": {
     "all_events": "Alle Veranstaltungen",
-    "event_a11y": "Veranstaltung: {{name}}"
+    "event_a11y": "Veranstaltung: {{name}}",
+    "more_events": "Weitere Veranstaltungen anzeigen",
+    "loading_more": "Weitere Veranstaltungen werden geladen…"
   }
 }

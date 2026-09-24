@@ -206,6 +206,7 @@ export function SearchResults({ query: rawQuery }: { query: string }) {
   const selection = selectSearchHits(live, heldRef.current, liveCount, settled)
   if (selection.record) heldRef.current = live
   const hits = selection.hits
+  const showMoreReports = hits === live && reportSearch.hasNextPage
 
   const groups = groupSearchResults(hits)
   const hitCount = groups.reduce((total, group) => total + group.count, 0)
@@ -308,6 +309,28 @@ export function SearchResults({ query: rawQuery }: { query: string }) {
             <>
               <SectionHeader title={t("results.reports")} />
               <View style={styles.group}>{hits.reports.map((report) => <ReportHitRow key={report.id} report={report} viewer={location ?? null} />)}</View>
+              {showMoreReports ? (
+                <Pressable
+                  onPress={() => {
+                    if (!reportSearch.isFetchingNextPage) void reportSearch.fetchNextPage()
+                  }}
+                  disabled={reportSearch.isFetchingNextPage}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("results.load_more_reports")}
+                  accessibilityState={{
+                    disabled: reportSearch.isFetchingNextPage,
+                    busy: reportSearch.isFetchingNextPage,
+                  }}
+                  {...focusRingProps}
+                  style={(state) => [styles.morePill, state.pressed ? styles.pressed : null]}
+                >
+                  <Text style={styles.retryText}>
+                    {reportSearch.isFetchingNextPage
+                      ? t("results.loading_more")
+                      : t("results.load_more_reports")}
+                  </Text>
+                </Pressable>
+              ) : null}
             </>
           ) : null}
           {hits.people.length > 0 ? (
@@ -380,6 +403,17 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "center",
     paddingHorizontal: t.space["3"],
     borderRadius: t.radius.pill,
+    backgroundColor: t.colors.surface,
+  },
+  morePill: {
+    alignSelf: "center",
+    minHeight: 44,
+    justifyContent: "center",
+    marginTop: t.space["2"],
+    paddingHorizontal: t.space["4"],
+    borderRadius: t.radius.pill,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
     backgroundColor: t.colors.surface,
   },
   retryText: { color: t.colors.textMuted, fontFamily: t.fontFamily.bodyBold, fontSize: 13, lineHeight: 18 },

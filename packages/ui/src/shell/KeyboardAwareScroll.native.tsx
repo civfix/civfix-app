@@ -199,8 +199,11 @@ function makeKeyboardAwareScrollable(
       }
     }, [dispatch, horizontal, overlapOfEvent, scopeId])
 
+    const reveals = scrollKeyboardReveals(state)
+    // Re-measure only when the focused field, keyboard height, padding or reveal request moves, never
+    // on every reducer step: each run may scroll the list.
     useEffect(() => {
-      if (!scrollKeyboardReveals(state)) return
+      if (!reveals) return
       if (!pageActiveRef.current || !ownsFocusedInput()) return
       const node = innerRef.current
       const focus = keyboardFocusStore.getState()
@@ -221,7 +224,7 @@ function makeKeyboardAwareScrollable(
           if (delta > 0) adapter.scrollToOffset(node, revealScrollTarget(offsetRef.current, delta))
         })
       })
-    }, [state.focusedScope, state.overlap, state.reserve, state.revealVersion])
+    }, [reveals, state.focusedScope, state.overlap, state.reserve, state.revealVersion])
 
     const mergedContentStyle = useMemo(() => {
       if (horizontal) return contentContainerStyle

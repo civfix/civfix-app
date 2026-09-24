@@ -80,10 +80,10 @@ describe("no client asks a third party where the viewer is", () => {
     for (const rel of [
       "packages/ui/src/bodies/ReportFlowBody.tsx",
       "packages/ui/src/bodies/AddressSearch.tsx",
-      "packages/ui/src/bodies/CreateCleanupBody.tsx",
       "packages/ui/src/data/hooks/location.ts",
     ]) {
       expect(readFileSync(join(repoRoot, rel), "utf8")).toContain("fetchApproximateLocation(api, qc)")
     }
+    expect(readFileSync(join(repoRoot, "packages/ui/src/bodies/CreateCleanupBody.tsx"), "utf8")).toContain("useUserLocation()")
   })
 })

@@ -42,16 +42,25 @@
     "open": "Open your profile"
   },
   "a11y": {
-    "attribution": "CARTO / OSM",
     "homeMap": "Map of reports and events",
     "picker": "Tap the map to place the location pin, or drag the pin to fine-tune",
-    "userLocation": "Your location"
+    "userLocation": "Your location",
+    "reportPin": "{{category}} report: {{title}}",
+    "reportPinUntitled": "{{category}} report",
+    "eventPin": "{{kind}} event: {{title}}",
+    "eventPinUntitled": "{{kind}} event",
+    "blendPin_one": "{{event}}, with {{count}} linked report",
+    "blendPin_other": "{{event}}, with {{count}} linked reports",
+    "cluster_one": "Group of {{count}} pin",
+    "cluster_other": "Group of {{count}} pins"
   },
   "hint": {
     "place": "Tap the map to place the pin",
     "move": "Tap to move the pin",
     "moveMainMap": "Tap the map to move the pin",
-    "empty": "No location set yet"
+    "empty": "No location set yet",
+    "pending": "Finding your area. You can also search for an address to place the pin.",
+    "search_address": "We couldn't find your area. Search for an address to place the pin."
   },
   "pickStep": {
     "title": "Set the location",

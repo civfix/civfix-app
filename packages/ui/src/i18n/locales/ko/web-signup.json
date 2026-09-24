@@ -1,0 +1,82 @@
+{
+  "state": {
+    "loading_title": "불러오는 중",
+    "loading_body": "이벤트 페이지를 가져오는 중이에요.",
+    "not_found_title": "페이지를 찾을 수 없어요",
+    "not_found_body": "올바르지 않은 신청 링크이거나 내려간 페이지예요. <0>civfix</0>에서 이벤트를 찾아보세요.",
+    "offline_title": "이 페이지를 불러오지 못했어요",
+    "offline_body": "연결 상태를 확인하고 다시 시도해 주세요.",
+    "retry": "다시 시도"
+  },
+  "calendar": "캘린더에 추가",
+  "footer": "<0>civfix</0>에서 운영 · <1>이용약관</1> · <2>개인정보 처리방침</2>",
+  "blocks": {
+    "about": "이벤트 소개",
+    "agenda": "일정",
+    "contact": "문의하기",
+    "donate": "이 활동 후원하기",
+    "donate_cta": "기부하기",
+    "donate_hint": "이 링크는 civfix가 운영하지 않는 사이트로 연결돼요. civfix는 기부금을 다루지 않아요.",
+    "faq": "자주 묻는 질문",
+    "hosts": "주최자",
+    "location": "장소",
+    "open_in_maps": "지도에서 열기",
+    "sponsors": "후원"
+  },
+  "outcome": {
+    "registered": "참가 신청이 완료됐어요.",
+    "waitlisted": "대기자 명단에 올랐어요."
+  },
+  "widget": {
+    "cancelled_title": "취소된 이벤트예요",
+    "closed_title": "신청이 마감됐어요",
+    "not_yet_open_title": "아직 신청을 받지 않아요",
+    "not_yet_open_body": "이벤트 날짜가 가까워지면 다시 확인해 주세요.",
+    "waitlisted_title": "대기자 명단에 올랐어요",
+    "waitlisted_body": "자리가 나면 이메일로 알려 드릴게요."
+  },
+  "errors": {
+    "required": "필수 질문에 답해 주세요.",
+    "access_code": "이 티켓의 액세스 코드를 입력해 주세요.",
+    "terms": "신청하려면 약관에 동의해 주세요.",
+    "name": "이름을 입력해 주세요.",
+    "email": "주최자가 연락할 수 있도록 이메일 주소를 입력해 주세요.",
+    "guest_unavailable": "지금은 civfix 계정 없이 신청할 수 없어요. 로그인해서 신청해 주세요.",
+    "bot": "로봇이 아닌지 확인하지 못했어요. 페이지를 새로고침하고 다시 시도해 주세요.",
+    "rate_limited": "시도가 너무 많아요. 1분 정도 기다렸다가 다시 시도해 주세요.",
+    "validation": "위에 입력한 내용을 확인하고 다시 시도해 주세요.",
+    "conflict": "작성하는 동안 내용이 바뀌었어요. 페이지를 새로고침해 주세요.",
+    "not_found": "이 이벤트는 더 이상 볼 수 없어요.",
+    "generic": "완료하지 못했어요. 다시 시도해 주세요."
+  },
+  "code": {
+    "title": "이메일을 확인해 주세요",
+    "sent": "{{email}}(으)로 코드를 보냈어요. 코드를 입력하면 신청이 완료돼요.",
+    "label": "확인 코드",
+    "submit": "신청 완료하기",
+    "resend": "새 코드 받기",
+    "resend_wait_other": "{{count}}초 후에 새 코드를 받을 수 있어요",
+    "change_email": "다른 이메일 사용"
+  },
+  "form": {
+    "title_register": "참가 신청",
+    "title_full": "정원이 찼어요",
+    "full_none": "남은 자리가 없어요.",
+    "full_guest": "남은 자리가 없어요. 자리가 났을 때 연락드릴 수 있도록 civfix 계정으로 로그인한 뒤 대기자 명단에 등록해 주세요.",
+    "full_waitlist": "대기자 명단에 등록하면 자리가 났을 때 알려 드릴게요.",
+    "ticket_legend": "티켓",
+    "ticket_sold_out": "매진",
+    "party_label": "본인을 포함해 몇 명인가요?",
+    "access_code_label": "액세스 코드",
+    "name_label": "이름",
+    "email_label": "이메일 주소",
+    "email_hint": "주최자가 이벤트 소식을 보낼 때 사용해요. 공개되지 않아요.",
+    "host_contact": "이 이벤트뿐 아니라 앞으로 열릴 이벤트에 관해서도 주최자가 연락해도 좋아요.",
+    "terms": "<0>이용약관</0> 및 <1>개인정보 처리방침</1>에 동의하며, 주최자가 내 이름과 답변을 볼 수 있다는 점을 이해해요.",
+    "join_waitlist": "대기자 명단에 등록",
+    "sold_out": "매진",
+    "count_me_in": "참가할게요",
+    "register": "신청하기",
+    "guest_unavailable_hint": "이 버전에서는 civfix 계정 없이 신청할 수 없어요. 로그인해서 신청해 주세요."
+  }
+}

@@ -10,6 +10,7 @@ import {
   SHARE_DM_MAX_RECIPIENTS,
   applyRecipientChange,
   buildSharePlan,
+  clampShareNote,
   composeShareBody,
   dmThreadIdsByPeer,
   recentDmPeers,
@@ -51,16 +52,19 @@ export function useSharePostSession({ visible, target, onClose }: SharePostSessi
   const knownRooms = useMemo(() => dmThreadIdsByPeer(threads.data?.pages), [threads.data])
   const excludeIds = useMemo(() => (user?.id ? [user.id] : EMPTY_EXCLUDE), [user?.id])
 
-  const cancelledRef = useRef(false)
+  // A run answers to the sheet only while it is the live run. Cancelling detaches it, and reopening the
+  // sheet must not re-attach it, so completion is keyed to the run rather than to one shared flag.
+  const runSeq = useRef(0)
+  const liveRun = useRef(0)
+  const sending = useRef(false)
 
   useEffect(() => {
     if (!visible) return
-    cancelledRef.current = false
     setSelected(NO_SELECTION)
     setNoteRaw("")
   }, [visible])
 
-  const setNote = useCallback((next: string) => setNoteRaw(next.slice(0, noteMax)), [noteMax])
+  const setNote = useCallback((next: string) => setNoteRaw(clampShareNote(next, noteMax)), [noteMax])
 
   const onChangeRecipients = useCallback(
     (next: PersonDTO[]) => {
@@ -78,10 +82,13 @@ export function useSharePostSession({ visible, target, onClose }: SharePostSessi
   const canSend = isAuthenticated && selected.length > 0 && !pending
 
   const deliver = async (entries: SharePlanEntry[], body: string): Promise<void> => {
+    if (sending.current) return
+    sending.current = true
+    const runId = ++runSeq.current
+    liveRun.current = runId
     try {
       const summary = await share.send({ entries, body, knownRooms })
-      if (cancelledRef.current) {
-        cancelledRef.current = false
+      if (liveRun.current !== runId) {
         if (summary.sent.length > 0) {
           toast.show(t("toast.sent", { count: summary.sent.length }), { variant: "success" })
         }
@@ -110,12 +117,14 @@ export function useSharePostSession({ visible, target, onClose }: SharePostSessi
       })
     } catch {
       toast.show(t("toast.none_sent"), { variant: "error" })
+    } finally {
+      sending.current = false
     }
   }
 
   const onCancel = useCallback((): void => {
-    if (share.isPending) {
-      cancelledRef.current = true
+    if (sending.current) {
+      liveRun.current = 0
       share.abort()
     }
     onClose()

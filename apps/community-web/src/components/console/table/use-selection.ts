@@ -22,13 +22,14 @@ export function useSelection(orderedIds: readonly string[]): SelectionApi {
   const [cursorId, setCursor] = useState<string | null>(null)
 
   const visible = useMemo(() => new Set(orderedIds), [orderedIds])
-  const visibleSelectedCount = useMemo(() => {
-    let n = 0
-    for (const id of selectedIds) if (visible.has(id)) n += 1
-    return n
+  // A row that left the list after a refetch must not stay counted or reach a bulk action.
+  const visibleSelected = useMemo<ReadonlySet<string>>(() => {
+    const next = new Set<string>()
+    for (const id of selectedIds) if (visible.has(id)) next.add(id)
+    return next.size === selectedIds.size ? selectedIds : next
   }, [selectedIds, visible])
 
-  const allSelected = orderedIds.length > 0 && visibleSelectedCount === orderedIds.length
+  const allSelected = orderedIds.length > 0 && visibleSelected.size === orderedIds.length
 
   const toggle = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -78,11 +79,11 @@ export function useSelection(orderedIds: readonly string[]): SelectionApi {
   )
 
   return {
-    selectedIds,
-    count: selectedIds.size,
+    selectedIds: visibleSelected,
+    count: visibleSelected.size,
     allSelected,
-    someSelected: selectedIds.size > 0 && !allSelected,
-    isSelected: (id) => selectedIds.has(id),
+    someSelected: visibleSelected.size > 0 && !allSelected,
+    isSelected: (id) => visibleSelected.has(id),
     toggle,
     toggleAll,
     selectAll,

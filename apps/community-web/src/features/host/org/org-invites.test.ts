@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { OrganizationInviteDTO } from "@civfix/shared"
 
-import { daysUntil, inviteIsExpired, visibleInvites } from "./org-invites"
+import { daysUntil, inviteIsExpired, normalizeInviteIdentifier, visibleInvites } from "./org-invites"
 
 const NOW = Date.parse("2026-09-08T12:00:00.000Z")
 
@@ -51,5 +51,13 @@ describe("visibleInvites", () => {
       invite({ id: "d", status: "revoked" }),
     ]
     expect(visibleInvites(rows).map((row) => row.id)).toEqual(["a", "b"])
+  })
+})
+
+describe("normalizeInviteIdentifier", () => {
+  it("trims, and drops one pasted @ from a handle only", () => {
+    expect(normalizeInviteIdentifier("handle", "  @rosa ")).toBe("rosa")
+    expect(normalizeInviteIdentifier("handle", "rosa")).toBe("rosa")
+    expect(normalizeInviteIdentifier("email", " rosa@example.org ")).toBe("rosa@example.org")
   })
 })

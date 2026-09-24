@@ -4,3 +4,9 @@
  * user action, and the Turnstile challenge sit higher.
  */
 export const Z_SESSION_ALERT = 250
+
+/**
+ * Marks an element on the session-alert layer. A blocking gate that makes the rest of the page inert
+ * must skip it, or a notice already on screen when the gate opens would lose its retry.
+ */
+export const SESSION_ALERT_ATTR = "data-session-alert"

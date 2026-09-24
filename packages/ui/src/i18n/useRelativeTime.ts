@@ -7,8 +7,7 @@
  * formatter `relative(date, now?)`. It also exposes the localized short `weekdays` array so callers that
  * render `dowLabel(iso, weekdays)` localize the event sub-line too.
  *
- * Empty/missing catalog values fall back to en (config sets returnEmptyString:false), so unauthored
- * locales still produce the English defaults rather than blanks.
+ * Missing catalog keys fall back to en, so an unauthored locale still produces the English defaults.
  */
 import { useCallback, useMemo } from "react"
 import { relativeAgo, WEEKDAYS, type RelativeUnitLabels } from "@civfix/shared"

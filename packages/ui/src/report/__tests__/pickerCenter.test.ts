@@ -36,7 +36,7 @@ describe("cause 1 - the native picker has no neutral-centre fallback left", () =
     // The whole point: "no point is known yet" and "the user is in Kansas" are different facts, and the
     // picker may no longer substitute the second for the first.
     expect(code(picker)).not.toContain("NEUTRAL_CENTER")
-    expect(picker).toContain('import { PICKER_ZOOM, PICKER_HEIGHT, type LatLng, type LocationPickerProps }')
+    expect(picker).toMatch(/import \{[^}]*\bPICKER_ZOOM,\s+PICKER_HEIGHT,[^}]*\} from "\.\/LocationPicker\.types"/)
   })
 
   it("mounts NO map until a real centre exists, and shows a placeholder meanwhile", () => {
@@ -69,9 +69,7 @@ describe("cause 1 - the native picker has no neutral-centre fallback left", () =
 describe("cause 1, web - the maplibre-gl picker is not constructed until a real centre exists", () => {
   it("has no neutral-centre fallback left", () => {
     expect(code(webPicker)).not.toContain("NEUTRAL_CENTER")
-    expect(webPicker).toContain(
-      'import { PICKER_ZOOM, PICKER_HEIGHT, type LatLng, type LocationPickerProps }',
-    )
+    expect(webPicker).toMatch(/import \{[^}]*\bPICKER_ZOOM,\s+PICKER_HEIGHT,[^}]*\} from "\.\/LocationPicker\.types"/)
   })
 
   it("adopts the first real point lazily and freezes it, exactly like the native seam", () => {
@@ -84,7 +82,7 @@ describe("cause 1, web - the maplibre-gl picker is not constructed until a real 
   it("keys map construction on the seed ALONE (its cleanup removes the map)", () => {
     // The dep list is load-bearing in a way the native seam's is not: this effect's cleanup calls
     // `map.remove()`, so widening it to `value` would tear down and rebuild the map on every tap.
-    expect(webPicker).toContain("}, [cameraSeed])")
+    expect(webPicker).toContain("}, [cameraSeed, ensureMarker])")
     expect(webPicker).toContain("if (mapRef.current || !containerRef.current || !cameraSeed) return")
   })
 

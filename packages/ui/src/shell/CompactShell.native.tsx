@@ -71,12 +71,19 @@ import { makeContentBottomReserveScrollHost } from "./ContentBottomReserve"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
 import { makeMinimizeAwareScrollHost } from "./MinimizeAwareScroll.native"
 import { makeSheetHandoffScrollHost } from "./SheetHandoffScroll.native"
-import { resolveBodyLayout } from "./bodyLayout"
+import { resolveBodyLayout, shellBodyKey } from "./bodyLayout"
 import { DETAILS_ARE_FULL_PAGE } from "./detailPresentationPlatform"
 import { BodyTransition } from "./BodyTransition.native"
 import { sheetDismissConfig, sheetMoveConfig } from "./motionConfigs.native"
 import { useStackDirection } from "./useStackDirection"
-import { compactBottomChrome, dockOcclusionFromSheet, sheetSnapPoints } from "./tabBarLogic"
+import {
+  SHEET_SNAP_RANGE,
+  compactBottomChrome,
+  dockOcclusionFromSheet,
+  sheetSnapForAccessibilityAction,
+  sheetSnapPoints,
+  sheetSnapValueKey,
+} from "./tabBarLogic"
 import { sheetDockOcclusion } from "./sheetDockOcclusion.native"
 import type { CompactShellProps } from "./CompactShell.types"
 
@@ -218,6 +225,37 @@ const AnimatedBlur = Animated.createAnimatedComponent(BlurView)
  * gaps (left/right) DO render as insets (the container is full width, not over-drawn horizontally), and
  * the rounded bottom corners now sit on the visible float line. All continuous off the animated values.
  */
+const ADJUST_ACTIONS = [{ name: "increment" }, { name: "decrement" }]
+
+// Its own component so the live snap value re-renders only the handle: a new
+// handleComponent identity would remount it and drop screen-reader focus mid-adjust.
+function SheetGrabHandle({
+  label,
+  onCycle,
+  onAdjust,
+}: {
+  label: string
+  onCycle: () => void
+  onAdjust: (actionName: string) => void
+}) {
+  const styles = useStyles()
+  const { t } = useT("nav")
+  const snap = useNavStore((s) => s.snap)
+  return (
+    <Pressable
+      onPress={onCycle}
+      accessibilityRole="adjustable"
+      accessibilityLabel={label}
+      accessibilityValue={{ ...SHEET_SNAP_RANGE, now: snap, text: t(sheetSnapValueKey(snap)) }}
+      accessibilityActions={ADJUST_ACTIONS}
+      onAccessibilityAction={(e) => onAdjust(e.nativeEvent.actionName)}
+      style={styles.handleArea}
+    >
+      <View style={styles.handleBar} />
+    </Pressable>
+  )
+}
+
 function makeBackground(
   animatedIndex: SharedValue<number>,
   animatedPosition: SharedValue<number>,
@@ -381,7 +419,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   // ----- Body transition (compact-mode parity with the desktop-web slide/cross-fade) -----
   // The SAME identity string the FIX A keyed remount below uses; a change drives the entrance animation
   // in BodyTransition.native (push: slide from the right; pop: from the left; replace: fade).
-  const bodyKey = active ? `${active.kind}:${active.id ?? ""}` : `home:${view}`
+  const bodyKey = shellBodyKey(active, `home:${view}`)
   const direction = useStackDirection(stack.length)
 
   // The index the sheet last REPORTED (via onChange). The sync effect below only fires snapToIndex for
@@ -571,16 +609,11 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
       const next = ((currentIndexRef.current + 1) % 3) as Snap
       setSnap(next)
     }
-    return (
-      <Pressable
-        onPress={cycle}
-        accessibilityRole="adjustable"
-        accessibilityLabel={t("a11y.drag_handle")}
-        style={styles.handleArea}
-      >
-        <View style={styles.handleBar} />
-      </Pressable>
-    )
+    const adjust = (actionName: string) => {
+      const next = sheetSnapForAccessibilityAction(currentIndexRef.current as Snap, actionName)
+      if (next !== null) setSnap(next)
+    }
+    return <SheetGrabHandle label={t("a11y.drag_handle")} onCycle={cycle} onAdjust={adjust} />
   }, [setSnap, t])
 
   // ROUND 5 SCROLL FIX (part 2): the content region's height is OWNED HERE, explicitly — the tallest

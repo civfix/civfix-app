@@ -52,7 +52,9 @@ function useKeepAliveSlotMounted(
     const handle = setTimeout(() => setMounted(true), prewarmDelayMs)
     return () => clearTimeout(handle)
   }, [retained, mounted, prewarmDelayMs])
-  return mounted
+  // The commit where `visible` flips must already mount the slot: the base body
+  // is withheld for a visible slot, so waiting for the effect paints a blank frame.
+  return mounted || visible
 }
 
 export interface PortraitShellProps {

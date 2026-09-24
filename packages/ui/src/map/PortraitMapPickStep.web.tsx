@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { View, StyleSheet } from "react-native"
 import { makeThemedStyles, useTheme } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { AddressSearch, type AddressPick } from "../bodies/AddressSearch"
+import { useResetOnOpen } from "../primitives/useModalClosed"
 import { LocationPicker } from "./LocationPicker"
 import { useLocationPick, type PickDraft } from "./locationPickStore"
 import type { LatLng } from "./LocationPicker.types"
@@ -19,6 +20,7 @@ export function PortraitMapPickStep({
   visible,
   value,
   initialCenter,
+  centerSettled,
   onConfirm,
   onCancel,
   pin,
@@ -31,22 +33,27 @@ export function PortraitMapPickStep({
   const mapRegistered = useLocationPick((s) => s.mapRegistered)
   const draft = useLocationPick((s) => s.draft)
   const [localPoint, setLocalPoint] = useState<LatLng | null>(value)
+  useResetOnOpen(live, () => setLocalPoint(value ?? null))
 
   const onConfirmRef = useRef(onConfirm)
-  onConfirmRef.current = onConfirm
   const onCancelRef = useRef(onCancel)
-  onCancelRef.current = onCancel
+  const pinRef = useRef(pin)
 
   const pointRef = useRef<LatLng | null>(value ?? null)
-  const pinRef = useRef(pin)
-  pinRef.current = pin
+  // The seed below runs on the open edge only, reading whatever value the parent holds at that moment.
+  const valueRef = useRef(value)
+  useLayoutEffect(() => {
+    onConfirmRef.current = onConfirm
+    onCancelRef.current = onCancel
+    pinRef.current = pin
+    valueRef.current = value
+  })
 
   usePickStepSheetSnap(live)
 
   useEffect(() => {
     if (!live) return
-    setLocalPoint(value ?? null)
-    pointRef.current = value ?? null
+    pointRef.current = valueRef.current ?? null
   }, [live])
 
   useEffect(() => {
@@ -90,11 +97,34 @@ export function PortraitMapPickStep({
   }, [mapRegistered, localPoint])
   const cancel = useCallback(() => onCancelRef.current(), [])
 
+  const topBarRef = useRef<View>(null)
+
+  useEffect(() => {
+    if (!live) return
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    // Only a keyboard opener moves focus into the search: on a phone a focused input raises the soft
+    // keyboard over the map the step exists to show.
+    if (opener?.matches(":focus-visible")) {
+      const topBar = topBarRef.current as unknown as HTMLElement | null
+      topBar?.querySelector("input")?.focus()
+    }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return
+      e.preventDefault()
+      onCancelRef.current()
+    }
+    document.addEventListener("keydown", onKeyDown)
+    return () => {
+      document.removeEventListener("keydown", onKeyDown)
+      if (opener?.isConnected) opener.focus()
+    }
+  }, [live])
+
   if (!live || typeof document === "undefined") return null
 
   const chrome = (
     <View style={styles.host} pointerEvents="box-none">
-      <View style={styles.topBar} pointerEvents="auto">
+      <View ref={topBarRef} style={styles.topBar} pointerEvents="auto">
         <View style={styles.titleRow}>
           <Icon icon={iconMap.MapPin} size={16} color={th.colors.brand.bloom} />
           <Text style={styles.title} numberOfLines={1}>
@@ -112,6 +142,7 @@ export function PortraitMapPickStep({
             value={localPoint}
             onChange={onInlineChange}
             initialCenter={initialCenter ?? undefined}
+            centerSettled={centerSettled}
             mode="standalone"
             height={INLINE_PICK_HEIGHT}
             pin={pin}

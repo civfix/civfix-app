@@ -93,9 +93,10 @@ describe("the coral links keep their contrast in EVERY state", () => {
 })
 
 describe("coral TEXT is accentText", () => {
-  it("the landscape link ink clears AA, and portrait's is layered rather than forked away", () => {
-    expect(searchBody).toMatch(/clearLabelExpanded: \{ color: t\.colors\.accentText \}/)
-    expect(searchBody).toContain("expanded ? styles.clearLabelExpanded : null")
+  it("the link ink clears AA in every layout, not only landscape", () => {
+    expect(searchBody).toMatch(/clearLabel: \{\s*color: t\.colors\.accentText,/)
+    expect(searchBody).not.toContain('t.colors.bloom["600"]')
+    expect(searchBody).not.toContain("clearLabelExpanded")
   })
 })
 

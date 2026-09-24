@@ -1,7 +1,7 @@
 "use client"
 
 import { Check, ChevronDown, RotateCcw, X } from "lucide-react"
-import { useState } from "react"
+import { useId, useState } from "react"
 import type { ReactNode } from "react"
 import { useT } from "@civfix/ui/i18n"
 
@@ -127,6 +127,7 @@ export function FilterBar({ facets, onReset, className }: FilterBarProps) {
   const { t } = useT("host-common")
   const rangeSummary = useDateRangeSummary()
   const [openId, setOpenId] = useState<string | null>(null)
+  const panelIdBase = useId()
   const anyActive = facets.some(facetActive)
   const activeChips = facets.flatMap(activeChipsFor)
 
@@ -180,16 +181,20 @@ export function FilterBar({ facets, onReset, className }: FilterBarProps) {
             )
           }
           const open = openId === facet.id
+          const panelId = `${panelIdBase}-${facet.id}`
           return (
             <Overlay
               key={facet.id}
               open={open}
               onClose={() => setOpenId(null)}
               label={facet.label}
+              id={panelId}
               trigger={
                 <button
                   type="button"
                   aria-expanded={open}
+                  aria-haspopup="dialog"
+                  aria-controls={open ? panelId : undefined}
                   onClick={() => setOpenId(open ? null : facet.id)}
                   className={cn(
                     CHIP_BUTTON_BASE,
@@ -262,7 +267,7 @@ export function FilterBar({ facets, onReset, className }: FilterBarProps) {
                 type="button"
                 aria-label={t("filter.remove_chip", { label: chip.label })}
                 onClick={chip.onRemove}
-                className="flex h-5 w-5 items-center justify-center rounded-pill text-console-ink-3 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
+                className="flex h-6 w-6 items-center justify-center rounded-pill text-console-ink-3 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring"
               >
                 <X aria-hidden className="h-3 w-3" />
               </button>

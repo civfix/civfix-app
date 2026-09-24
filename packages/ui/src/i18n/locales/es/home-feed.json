@@ -19,7 +19,9 @@
     "empty_body_after": " para compartir la primera.",
     "caught_up": "Estás al día",
     "new_posts_one": "{{count}} publicación nueva",
-    "new_posts_other": "{{count}} publicaciones nuevas"
+    "new_posts_other": "{{count}} publicaciones nuevas",
+    "loading": "Cargando publicaciones",
+    "load_more_error": "No se pudieron cargar más publicaciones."
   },
   "thread": {
     "title": "Publicación",
@@ -73,8 +75,8 @@
     "deleted_account": "Cuenta eliminada",
     "unavailable": "Esta publicación ya no está disponible.",
     "profile_a11y": "Ver el perfil de {{name}}",
-    "open_repost_a11y": "Abrir la publicación republicada",
-    "open_quote_a11y": "Abrir la publicación citada",
+    "open_repost_a11y": "Abrir la publicación republicada de {{name}}: {{excerpt}}",
+    "open_quote_a11y": "Abrir la publicación citada de {{name}}: {{excerpt}}",
     "share_title": "Publicación de {{name}}",
     "open_thread_a11y": "Abrir la publicación de {{name}}",
     "permalink_a11y": "Publicado hace {{time}}. Abrir esta publicación",
@@ -100,6 +102,8 @@
     },
     "replying_to": "En respuesta a {{handle}}",
     "via": "vía {{author}}",
-    "org_a11y": "Abrir {{name}}"
+    "org_a11y": "Abrir {{name}}",
+    "media_photo_position_a11y": "Foto {{index}} de {{count}}",
+    "media_video_position_a11y": "Video {{index}} de {{count}}"
   }
 }

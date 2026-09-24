@@ -8,6 +8,7 @@ import { selectPostComposerDraft, usePostComposerStore } from "../bodies/postCom
 import { useReplyDraftStore } from "../bodies/thread/replyDraftStore"
 import { useCleanupDraft } from "../bodies/cleanupDraftStore"
 import { useDraftReportStore } from "../report/draftStore"
+import { createSubmitRunSlot } from "../report/submit"
 import {
   adoptViewer,
   discardViewerDrafts,
@@ -191,6 +192,19 @@ describe("viewer-scoped drafts registry", () => {
     expect(registered).toEqual(
       expect.arrayContaining(["useCleanupDraft", "useDraftReportStore", "usePostComposerStore", "useReplyDraftStore"]),
     )
+  })
+
+  it("scopes the in-flight report submission too: the slot registers, and a wipe drops its run", async () => {
+    const slot = createSubmitRunSlot<string>()
+    expect(isViewerScopedDraftStore(slot)).toBe(true)
+    const body = readFileSync(join(SRC, "bodies", "ReportFlowBody.tsx"), "utf8")
+    expect(body).toMatch(/const submitRuns = createSubmitRunSlot<SubmitSettled>\(/)
+
+    adoptViewer("user-a")
+    const run = slot.start(async () => "filed by A")!
+    adoptViewer("user-b")
+    await run
+    expect(slot.unclaimed()).toBeNull()
   })
 
   it("a confirmed sign-out wipes every draft: text, precise location, photos and upload ids", () => {

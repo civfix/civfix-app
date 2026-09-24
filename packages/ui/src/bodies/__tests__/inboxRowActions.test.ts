@@ -26,6 +26,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const strip = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
@@ -73,9 +74,11 @@ describe("the native swipe uses the house gesture primitive", () => {
   it("never claims on touch-down, so a row tap still opens the thread", () => {
     expect(swipeHook).toContain("onStartShouldSetPanResponder: () => false")
     expect(swipeHook).toContain("onPanResponderTerminationRequest: () => false")
-    const at = swipeHook.indexOf("onStartShouldSetPanResponderCapture: (evt) => {")
-    expect(at, "the capture handler no longer exists").toBeGreaterThan(-1)
-    const body = swipeHook.slice(at, swipeHook.indexOf("onMoveShouldSetPanResponderCapture", at))
+    const body = sliceBetween(
+      swipeHook,
+      "onStartShouldSetPanResponderCapture: (evt) => {",
+      "onMoveShouldSetPanResponderCapture",
+    )
     expect(body).toContain("return false")
   })
 
@@ -176,7 +179,8 @@ describe("the destructive third action", () => {
 describe("web gets a hover menu instead, and both platforms get a non-gesture path", () => {
   it("reveals the overflow chip on hover (or while its menu is open) and opens the house PopoverMenu", () => {
     expect(inbox).toContain("const { hovered, hoverProps } = useRowHover()")
-    expect(inbox).toContain("{IS_WEB && (hovered || menuOpen) ? (")
+    expect(inbox).toContain("{IS_WEB ? (")
+    expect(inbox).toContain("rowMenuChipShown(state, hovered || menuOpen, coarsePointer) ? null : styles.menuChipConcealed")
     expect(inbox).toContain("icon={iconMap.Ellipsis}")
     expect(inbox).toContain("<PopoverMenu")
     expect(inbox).toContain("usePopoverAnchor(setAnchorRect)")

@@ -60,7 +60,12 @@ function useNativeInput() {
     const input = ref.current
     if (input === null) return
     input.focus()
-    input.showPicker?.()
+    try {
+      input.showPicker?.()
+    } catch {
+      // showPicker throws without user activation and inside cross-origin frames. Focus has already
+      // landed on the input, which still opens from the keyboard or a direct click.
+    }
   }, [])
   return { ref, open }
 }

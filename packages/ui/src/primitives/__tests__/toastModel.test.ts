@@ -6,6 +6,7 @@ import {
   TOAST_QUIET_MS,
   toastBottomOffset,
   toastDurationMs,
+  toastLiveSemantics,
 } from "../toastModel"
 
 const TOAST_SOURCE = readFileSync(new URL("../Toast.tsx", import.meta.url), "utf8")
@@ -77,11 +78,13 @@ describe("Toast host", () => {
 
   it("announces exactly once: the native announcement OR the web live region, never both", () => {
     expect(TOAST_SOURCE).toContain("AccessibilityInfo.announceForAccessibility(message)")
-    expect(TOAST_SOURCE).toContain(
-      'const LIVE_REGION: "polite" | "none" = Platform.OS === "web" ? "polite" : "none"',
-    )
-    expect(TOAST_SOURCE).toContain("accessibilityLiveRegion={LIVE_REGION}")
-    expect(TOAST_SOURCE).toContain('accessibilityRole="alert"')
+    expect(TOAST_SOURCE).toContain("const live = toastLiveSemantics(entry.item.variant, IS_WEB)")
+    expect(TOAST_SOURCE).toContain("accessibilityLiveRegion={live.liveRegion}")
+    expect(TOAST_SOURCE).toContain("role={live.role}")
+    for (const variant of ["success", "info", "error"] as const) {
+      expect(toastLiveSemantics(variant, false).liveRegion).toBe("none")
+      expect(toastLiveSemantics(variant, true).liveRegion).not.toBe("none")
+    }
   })
 
   it("names the dismiss control by the MESSAGE, keeping the affordance in the hint", () => {

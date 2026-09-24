@@ -8,8 +8,9 @@
  *     one cache entry (mirrors useResolveJurisdiction's rounding idiom).
  *   - The server replies 200 with an EMPTY `cityStateLabel` when the geocoder cannot place the point, so the
  *     queryFn TRIMS + nulls a blank label rather than surfacing whitespace (matches the mobile
- *     `reverseLabel` helper). Errors resolve to `null` (no address) rather than throwing, so a caller cleanly
- *     distinguishes "still resolving" (`isPending`) from "no address" (`data === null`).
+ *     `reverseLabel` helper). Only a not-found resolves to `null`; a network / 429 / 5xx failure rejects so
+ *     it is never cached as a 5-minute-fresh "no address". Callers read `data` through `reverseLabelText`,
+ *     which renders `undefined` (pending or errored) and `null` alike as the coordinates.
  *
  * The exported `reverseLabelText(label, point)` helper folds the user decision (sub-4): show the ADDRESS
  * when one resolves, else fall back to the exact coordinates `lat.toFixed(5), lng.toFixed(5)`. Pure (no
@@ -19,7 +20,10 @@
  * maplibre import. Does NOT edit @civfix/shared (reuses the existing reverseLabel endpoint).
  */
 import { useQuery } from "@tanstack/react-query"
+import type { ApiClient } from "@civfix/shared/client"
 import { useApi } from "../context"
+import { queryKeys } from "../keys"
+import { isAddressNotFound } from "./resolveAddress"
 
 /** A simple lat/lng the reverse-label query reads. */
 export interface ReverseLabelPoint {
@@ -48,9 +52,24 @@ export function reverseLabelText(label: string | null | undefined, point: Revers
   return point ? coordsLabel(point) : ""
 }
 
+/** The geocoder's trimmed label for a point, `null` when it cannot be placed; rethrows any other failure. */
+export async function fetchReverseLabel(
+  api: Pick<ApiClient, "reverseLabel">,
+  point: ReverseLabelPoint,
+): Promise<string | null> {
+  try {
+    const res = await api.reverseLabel({ lat: point.lat, lng: point.lng })
+    const label = res?.cityStateLabel?.trim() ?? ""
+    return label.length > 0 ? label : null
+  } catch (err) {
+    if (isAddressNotFound(err)) return null
+    throw err
+  }
+}
+
 /**
  * POST /map/reverse-label for a point -> the geocoder's label (trimmed; `null` when the point cannot be
- * placed or the request errors). Gated on a present point; retries off so the label paints promptly. Read
+ * placed; an error state on a transient failure). Gated on a present point; retries off so the label paints promptly. Read
  * `data` (`string | null | undefined`) with {@link reverseLabelText} to render the address-or-coords string.
  */
 export function useReverseLabel(point: ReverseLabelPoint | null) {
@@ -58,18 +77,9 @@ export function useReverseLabel(point: ReverseLabelPoint | null) {
   const lat = point ? roundLabelCoord(point.lat) : 0
   const lng = point ? roundLabelCoord(point.lng) : 0
   return useQuery<string | null>({
-    queryKey: ["reverse-label", point ? lat : null, point ? lng : null] as const,
+    queryKey: queryKeys.reverseLabel(point ? lat : null, point ? lng : null),
     enabled: point !== null,
-    queryFn: async () => {
-      try {
-        const res = await api.reverseLabel({ lat: point!.lat, lng: point!.lng })
-        const label = res.cityStateLabel?.trim() ?? ""
-        return label.length > 0 ? label : null
-      } catch {
-        // The geocoder errored / the point is unplaceable: treat as "no address" (coords fallback) not an error.
-        return null
-      }
-    },
+    queryFn: () => fetchReverseLabel(api, point!),
     retry: false,
     staleTime: 5 * 60 * 1000,
   })

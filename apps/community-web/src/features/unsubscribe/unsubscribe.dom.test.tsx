@@ -4,6 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const unsubscribeBroadcasts = vi.fn()
 
+vi.mock("@civfix/ui/i18n", async () => {
+  const { makeI18nMock } = await import("@/components/console/__testing__/i18n-mock")
+  return makeI18nMock()
+})
+
 vi.mock("@/lib/api", () => ({
   api: { unsubscribeBroadcasts: (...args: unknown[]) => unsubscribeBroadcasts(...args) },
 }))
@@ -12,9 +17,9 @@ const { UnsubscribeView, unsubscribeTokenFromSearch } = await import("./unsubscr
 
 const TOKEN = "t".repeat(40)
 
-function renderAt(search: string) {
+function renderAt(search: string, { strict = false } = {}) {
   window.history.replaceState(null, "", `/unsubscribe/${search}`)
-  render(<UnsubscribeView />)
+  render(strict ? <React.StrictMode><UnsubscribeView /></React.StrictMode> : <UnsubscribeView />)
 }
 
 beforeEach(() => {
@@ -40,33 +45,33 @@ describe("unsubscribeTokenFromSearch", () => {
 describe("UnsubscribeView", () => {
   it("confirms ONLY after the server has accepted the request", async () => {
     renderAt(`?t=${TOKEN}`)
-    expect(screen.getByRole("heading").textContent).toMatch(/Unsubscribing/i)
-    expect(await screen.findByText(/You.re unsubscribed from this event.s messages/i)).toBeTruthy()
+    expect(screen.getByRole("heading").textContent).toBe("working.title")
+    expect(await screen.findByText("done.title")).toBeTruthy()
     expect(unsubscribeBroadcasts).toHaveBeenCalledWith({ token: TOKEN })
   })
 
   it("never claims success when the request failed", async () => {
     unsubscribeBroadcasts.mockRejectedValue(new Error("offline"))
     renderAt(`?t=${TOKEN}`)
-    expect(await screen.findByText(/We couldn.t use this link/i)).toBeTruthy()
-    expect(screen.queryByText(/You.re unsubscribed/i)).toBe(null)
+    expect(await screen.findByText("unusable.title")).toBeTruthy()
+    expect(screen.queryByText("done.title")).toBe(null)
   })
 
   it("never claims success when the link carried no usable token", async () => {
     renderAt("?t=short")
-    expect(await screen.findByText(/We couldn.t use this link/i)).toBeTruthy()
+    expect(await screen.findByText("unusable.title")).toBeTruthy()
     expect(unsubscribeBroadcasts).not.toHaveBeenCalled()
   })
 
   it("sends exactly one request", async () => {
     renderAt(`?t=${TOKEN}`)
-    await screen.findByText(/You.re unsubscribed/i)
+    await screen.findByText("done.title")
     expect(unsubscribeBroadcasts).toHaveBeenCalledTimes(1)
   })
 
-  it("says nothing about whether the token was VALID, only whether we could use the link", async () => {
-    renderAt(`?t=${TOKEN}`)
-    await screen.findByText(/You.re unsubscribed/i)
-    expect(document.body.textContent).not.toMatch(/expired|invalid|not found|already/i)
+  it("settles under StrictMode's effect replay instead of hanging on 'Unsubscribing'", async () => {
+    renderAt(`?t=${TOKEN}`, { strict: true })
+    expect(await screen.findByText("done.title")).toBeTruthy()
+    expect(unsubscribeBroadcasts).toHaveBeenCalledTimes(1)
   })
 })

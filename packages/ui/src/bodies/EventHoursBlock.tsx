@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AccessibilityInfo, View, Pressable, StyleSheet, Animated, Easing } from "react-native"
 import { motion, makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
+import { MIN_TOUCH_TARGET } from "../typography/TextLink"
 import { Avatar } from "../primitives"
 import { useAuthState, useCleanupAttendees, useEventHours } from "../data"
 import { useNavStore } from "../nav"
@@ -182,11 +183,10 @@ function HoursSummaryCard({
         </View>
         <Pressable
           onPress={onEdit}
-          hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={t("log_hours.summary_edit_a11y")}
           {...focusRingProps}
-          style={({ pressed }) => [pressed ? styles.pressed : null]}
+          style={({ pressed }) => [styles.editTarget, pressed ? styles.pressed : null]}
         >
           <Text style={styles.editText}>{t("log_hours.summary_edit")}</Text>
         </Pressable>
@@ -339,6 +339,12 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: 12,
     color: t.colors.textMuted,
+  },
+  editTarget: {
+    minWidth: MIN_TOUCH_TARGET,
+    minHeight: MIN_TOUCH_TARGET,
+    alignItems: "center",
+    justifyContent: "center",
   },
   editText: {
     fontFamily: t.fontFamily.bodyBold,

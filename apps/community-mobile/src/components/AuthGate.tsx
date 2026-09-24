@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated"
 import type { OAuthProvider } from "@civfix/shared"
 import { makeThemedStyles, space, useTheme } from "@/theme"
+import { useReducedMotion } from "@civfix/ui/theme"
 import {
   IosKeyboardAvoidingView,
   PLAIN_SCROLL_HOST,
@@ -33,10 +34,12 @@ function WelcomeOptions() {
   const enabled = providers.data ?? ALL_PROVIDERS
 
   const revealed = ready || unreachable
+  const reduceMotion = useReducedMotion() === true
   const fall = useSharedValue(0)
   useEffect(() => {
-    if (revealed) fall.value = withSpring(1, { damping: 13, stiffness: 120, mass: 0.9 })
-  }, [revealed, fall])
+    if (!revealed) return
+    fall.value = reduceMotion ? 1 : withSpring(1, { damping: 13, stiffness: 120, mass: 0.9 })
+  }, [revealed, reduceMotion, fall])
   const style = useAnimatedStyle(() => ({
     opacity: fall.value,
     transform: [{ translateY: (1 - fall.value) * -32 }],

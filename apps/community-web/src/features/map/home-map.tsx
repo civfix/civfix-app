@@ -21,6 +21,8 @@ import {
   // Map long-press -> drop a pin -> pull-up create menu (Area 3).
   openDropPinMenu,
   dropPinCameraTarget,
+  captureDropPinCamera,
+  setDropPinCameraRestorer,
   // The detail-panel focus camera's published target. Read (never written) here, so the one-time initial
   // center cannot fly away from a deep-linked detail - see the effect below.
   useMapFocus,
@@ -320,9 +322,19 @@ export function HomeMap() {
   // Long-press (touch) / right-click (desktop) anywhere on the map: drop a transient coral "+" pin, open
   // the pull-up create menu, and fly the camera so the pin sits in the strip of map the menu leaves visible
   // (ABOVE the sheet in portrait, BESIDE the sidebar in landscape/desktop).
+  React.useEffect(() => {
+    setDropPinCameraRestorer((restoreTarget) => {
+      mapRef.current?.flyTo(restoreTarget.lat, restoreTarget.lng, restoreTarget.zoom)
+    })
+    return () => setDropPinCameraRestorer(null)
+  }, [])
+
   const onLongPressMap = React.useCallback(
     (lat: number, lng: number) => {
       useReportFilterStore.getState().setLayersOpen(false)
+      const viewportBefore = useMapViewport.getState().viewport
+      const navBefore = useNavStore.getState()
+      const menuAlreadyOpen = navBefore.stack.some((entry) => entry.kind === "drop-pin")
       // EVERYTHING BELOW IS GATED ON THE MENU ACTUALLY OPENING. `openDropPinMenu` DECLINES while a creation
       // flow owns the stack (host-an-event / edit / the composer); flying anyway zoomed to z17 and offset
       // the centre with NO pin and NO menu - a camera yank out of nowhere on a map the user had deliberately
@@ -362,6 +374,20 @@ export function HomeMap() {
           ),
         }).occlusionLeft,
       })
+      if (viewportBefore) {
+        captureDropPinCamera(
+          {
+            from: {
+              lat: viewportBefore.center.lat,
+              lng: viewportBefore.center.lng,
+              zoom: viewportBefore.zoom,
+            },
+            flownTo: target,
+            view: navBefore.view,
+          },
+          menuAlreadyOpen,
+        )
+      }
       // NOTE the (lat, lng) argument order: MapHandle.flyTo is LAT-FIRST - the OPPOSITE of the mobile
       // host's queued flyTo(lng, lat).
       mapRef.current?.flyTo(target.lat, target.lng, target.zoom)

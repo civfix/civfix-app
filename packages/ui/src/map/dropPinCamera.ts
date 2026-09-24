@@ -327,13 +327,13 @@ export interface DropPinDismissal {
  *   zoom is floored at `DROP_PIN_ZOOM` (17) and only ever higher, where the term is ~0.005px, as priced
  *   above. There is no zoom at which either comparison can approach the 12px ceiling on curvature alone.
  *
- *   THE LOAD-BEARING PRECONDITION: ZERO BEARING AND ZERO PITCH. `mapViewportStore.ts:13` documents that
- *   rotation is disabled, which is why the bbox midpoint IS the axis-aligned rectangle's true centre - but
- *   it is silent on pitch. With any pitch the reported bbox is the bounding box of a TILTED FRUSTUM's
- *   footprint on the ground plane, i.e. a trapezoid, whose latitude midpoint can sit HUNDREDS of px away
+ *   THE LOAD-BEARING PRECONDITION: ZERO BEARING AND ZERO PITCH. Both map seams disable rotation and pitch
+ *   (`mapViewportStore.ts:13`), which is why the bbox midpoint IS the axis-aligned rectangle's true
+ *   centre. With any pitch the reported bbox is the bounding box of a TILTED FRUSTUM's footprint on the
+ *   ground plane, i.e. a trapezoid, whose latitude midpoint can sit HUNDREDS of px away
  *   from the actual camera centre - not a rounding error, and not bounded by the curvature analysis above
- *   at all. That would break the `flownTo` comparison outright rather than degrade it. Both hosts keep
- *   pitch at 0 today; if that ever changes, this whole tolerance derivation needs re-deriving, not re-tuning.
+ *   at all. That would break the `flownTo` comparison outright rather than degrade it. If either seam ever
+ *   re-enables pitch, this whole tolerance derivation needs re-deriving, not re-tuning.
  *
  *   WHY NOT mapLifecycle's SETTLED_COORDINATE_EPSILON (1e-4 deg). That is a ZOOM-BLIND DEGREE tolerance
  *   sized for the worst case at LOW zoom, where the same curvature term really is degrees-scale; at z17 it

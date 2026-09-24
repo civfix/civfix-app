@@ -81,7 +81,7 @@ export function ConversationComposer({
         />
       ) : null}
       {att.attachError && !disabled ? (
-        <View style={styles.composerAttachError}>
+        <View style={styles.composerAttachError} accessibilityRole="alert">
           <Icon icon={iconMap.AlertCircle} size={13} color={th.colors.bloom["600"]} />
           <Text variant="caption" color={th.colors.bloom["600"]} numberOfLines={2}>
             {att.attachError}

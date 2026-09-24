@@ -47,7 +47,8 @@
     "no_access_title": "No tienes acceso",
     "no_access_body": "Pide a una persona organizadora que te dé el rol adecuado.",
     "not_found_title": "No encontrado",
-    "not_found_body": "Esta página no existe o se ha eliminado."
+    "not_found_body": "Esta página no existe o se ha eliminado.",
+    "no_value": "Ninguno"
   },
   "hours": {
     "not_yet_title": "Este evento aún no ha terminado",
@@ -119,7 +120,10 @@
     "link_prompt": "Pega un enlace https",
     "link_invalid": "Solo se pueden añadir enlaces https.",
     "preview": "Vista previa",
-    "preview_empty": "Tu texto aparecerá aquí."
+    "preview_empty": "Tu texto aparecerá aquí.",
+    "remaining_one": "Queda {{count}} carácter",
+    "remaining_other": "Quedan {{count}} caracteres",
+    "shortcut_ctrl": "Ctrl+{{key}}"
   },
   "upload": {
     "hint": "Arrastra una imagen aquí o haz clic para elegir una.",
@@ -151,5 +155,8 @@
     "title": "La consola tuvo un problema",
     "body": "No se perdió nada en el servidor. Vuelve a cargar esta pantalla para continuar.",
     "retry": "Recargar la pantalla"
+  },
+  "toast": {
+    "region": "Notificaciones"
   }
 }

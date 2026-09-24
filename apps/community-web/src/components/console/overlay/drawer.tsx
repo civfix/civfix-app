@@ -52,7 +52,7 @@ export function Drawer({
   const modal = narrow || !wide
 
   useEscape(open, onClose)
-  useFocusTrap(panelRef, open && modal)
+  useFocusTrap(panelRef, open, modal)
 
   if (!open || typeof document === "undefined") return null
 

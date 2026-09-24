@@ -1,15 +1,17 @@
 "use client"
 
 import * as React from "react"
+import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock } from "@civfix/shared"
 
 type HostsBlockData = Extract<EventPageBlock, { kind: "hosts" }>
 
 export function HostsBlock({ block }: { block: HostsBlockData }) {
+  const { t } = useT("web-signup")
   if (block.entries.length === 0) return null
   return (
     <section className="signup-block">
-      <h2>{block.title ?? "Who's hosting"}</h2>
+      <h2>{block.title ?? t("blocks.hosts")}</h2>
       <ul className="signup-hosts">
         {block.entries.map((entry, index) => (
           <li key={`${entry.name}-${index}`}>

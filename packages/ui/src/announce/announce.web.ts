@@ -1,9 +1,11 @@
 /**
  * announce (web seam) - screen-reader live-region announcements (WCAG 4.1.3 status messages).
  *
- * TWO permanent regions are mounted (one aria-live="polite", one aria-live="assertive") and we write
- * into the matching one, rather than flipping aria-live on a single shared region at announcement time
- * (several AT/browser combos ignore a live-region whose politeness changed in the same task it mutated).
+ * TWO permanent regions (one aria-live="polite", one aria-live="assertive") are mounted when this module
+ * loads, not on the first announcement: some AT/browser pairs ignore the first mutation of a region that
+ * was inserted just before it. We write into the matching one, rather than flipping aria-live on a single
+ * shared region at announcement time (several AT/browser combos ignore a live-region whose politeness
+ * changed in the same task it mutated).
  *
  * Each announcement CLEARS its region synchronously and sets the text in a DEFERRED task, so assistive
  * tech observes two distinct mutations. Without the deferral the clear+set coalesce into one mutation and
@@ -40,6 +42,11 @@ function getOrCreate(priority: Priority): HTMLElement {
   region.style.clip = "rect(0, 0, 0, 0)"
   document.body.appendChild(region)
   return region
+}
+
+if (typeof document !== "undefined" && document.body) {
+  getOrCreate("polite")
+  getOrCreate("assertive")
 }
 
 export const announce: AnnounceFn = (message, opts) => {

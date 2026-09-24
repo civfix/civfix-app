@@ -141,6 +141,32 @@ describe("runGatedAction: optimistic boot window", () => {
     expect(openAuthModal).toHaveBeenCalledTimes(1)
   })
 
+  it("coalesces repeat taps in the window: a double tap replays the action once, not twice", async () => {
+    bootOptimistic()
+    const second = vi.fn()
+    runGatedAction(action, openAuthModal)
+    runGatedAction(second, openAuthModal)
+    useAuthStore.getState().setSession({ user: USER, csrfToken: "csrf-live", roles: ["citizen"] })
+    await flush()
+    expect(action).toHaveBeenCalledTimes(1)
+    expect(second).not.toHaveBeenCalled()
+    expect(openAuthModal).not.toHaveBeenCalled()
+  })
+
+  it("accepts a new deferred tap once the previous one has settled", async () => {
+    vi.useFakeTimers()
+    bootOptimistic()
+    runGatedAction(action, openAuthModal, 50)
+    await vi.advanceTimersByTimeAsync(50)
+    expect(openAuthModal).toHaveBeenCalledTimes(1)
+    bootOptimistic()
+    const next = vi.fn()
+    runGatedAction(next, openAuthModal)
+    useAuthStore.getState().setSession({ user: USER, csrfToken: "csrf-live", roles: ["citizen"] })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
   it("honors a caller-supplied timeout", async () => {
     vi.useFakeTimers()
     bootOptimistic()

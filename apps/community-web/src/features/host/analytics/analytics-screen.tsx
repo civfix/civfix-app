@@ -33,7 +33,7 @@ import type { CsvRow } from "@/components/console/export"
 
 import { useConsoleEvent } from "../console-context"
 import { consoleKeys } from "../console-keys"
-import { useConsoleFormat, seriesDayLabel } from "../format"
+import { EMPTY_VALUE, useConsoleFormat, seriesDayLabel } from "../format"
 import { AnalyticsValue, PanelSuppressed, SuppressionNote } from "./analytics-value"
 import {
   panelIsBlank,
@@ -163,7 +163,7 @@ export function AnalyticsScreen() {
     const generatedAt =
       tabQuery.data?.generatedAt ?? overview.data?.generatedAt ?? new Date().toISOString()
     const head = provenanceRows({
-      title: `${event?.title ?? ""} — ${t(`tab.${tab}`)}`,
+      title: t("csv.title", { event: event?.title ?? "", tab: t(`tab.${tab}`) }),
       reference: event?.referenceCode ?? null,
       generatedAt,
       generatedAtLabel: format.dateTime(generatedAt),
@@ -235,7 +235,12 @@ export function AnalyticsScreen() {
           ) : (
             <p className="text-token-12 text-console-ink-3">{t("range.whole_event")}</p>
           )}
-          <ConsoleButton variant="outline" size="sm" onClick={exportCurrent}>
+          <ConsoleButton
+            variant="outline"
+            size="sm"
+            disabled={!tabQuery.data}
+            onClick={exportCurrent}
+          >
             {t("export_csv")}
           </ConsoleButton>
         </div>
@@ -274,7 +279,7 @@ export function AnalyticsScreen() {
                 stages={overview.data.funnel.map((step, index) => ({
                   id: step.step,
                   label: step.label,
-                  value: step.value === null ? "—" : format.number(step.value),
+                  value: step.value === null ? EMPTY_VALUE : format.number(step.value),
                   tone: index === 0 ? "sky" : index === overview.data!.funnel.length - 1 ? "moss" : "neutral",
                 }))}
               />
@@ -393,6 +398,7 @@ function AttendanceTab({
                   count: point.value as number,
                 }))}
             />
+            {seriesHasSuppressedPoints(data.arrivals) ? <SuppressionNote k={k} /> : null}
           </Card>
           <Card title={t("attendance.rates")}>
             <dl className="grid grid-cols-2 gap-token-4">
@@ -440,6 +446,7 @@ function MessagingTab({
   k: number
 }) {
   const { t } = useT("host-analytics")
+  const { t: te } = useT("enums")
   const format = useConsoleFormat()
   const gate = useGate(query)
   const data = query.data
@@ -450,7 +457,9 @@ function MessagingTab({
           <Card title={t("messaging.totals")}>
             <dl className="grid grid-cols-3 gap-token-4">
               <div>
-                <dt className="text-token-12 text-console-ink-3">{t("messaging.active_days")}</dt>
+                <dt className="text-token-12 text-console-ink-3">
+                  {t("messaging.broadcasts_sent")}
+                </dt>
                 <dd className="text-token-20 font-bold text-console-ink">
                   <AnalyticsValue value={data.broadcastsSent} k={k} />
                 </dd>
@@ -476,7 +485,7 @@ function MessagingTab({
             <StackedBars
               suppressedLabel={t("suppressed.point")}
               summary={t("messaging.by_channel_a11y")}
-              labels={data.byChannel.map((row) => row.channel)}
+              labels={data.byChannel.map((row) => te(`broadcastChannel.${row.channel}`))}
               series={[
                 {
                   id: "sent",
@@ -551,7 +560,7 @@ function PageTab({
               summary={t("page.donation_clicks")}
               size={120}
               centerValue={
-                data.donationClicks === null ? "—" : format.number(data.donationClicks)
+                data.donationClicks === null ? EMPTY_VALUE : format.number(data.donationClicks)
               }
               centerLabel={t("page.donation_clicks")}
               segments={

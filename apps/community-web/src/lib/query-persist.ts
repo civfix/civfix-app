@@ -9,7 +9,9 @@ import { useAuthStore } from "@/store/auth-store"
 const STORAGE_KEY = "civfix.query.cache.v2"
 const LEGACY_STORAGE_KEY = "civfix.query.cache.v1"
 
-const BUSTER: string = process.env.NEXT_PUBLIC_APP_VERSION ?? "v1"
+// A deploy can change DTO shapes, so the persisted cache must not outlive the build that wrote it.
+// next.config.mjs inlines the commit sha; `||` because it resolves to "" when git is unavailable.
+const BUSTER: string = process.env.NEXT_PUBLIC_COMMIT_SHA || "v1"
 
 const MAX_AGE_MS = 24 * 60 * 60 * 1000
 

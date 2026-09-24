@@ -8,7 +8,10 @@ import { makeThemedStyles, useTheme, webInputReset } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"
-import { modalSheetInputFocusedStyle as fieldFocusedStyle } from "../../../primitives/ModalCardSheet"
+import {
+  ModalCardSheet,
+  modalSheetInputFocusedStyle as fieldFocusedStyle,
+} from "../../../primitives/ModalCardSheet"
 import { useToast } from "../../../primitives/toastContext"
 import { useAuthState, useNow, useRequireAuth } from "../../../data"
 import { randomId } from "../../../data/randomId"
@@ -40,10 +43,10 @@ import {
   type AnswerMap,
 } from "./questionModel"
 import {
-  defaultTicketTypeId,
   registerErrorKey,
   registerOutcomeKey,
   registrationSurface,
+  resolveTicketTypeId,
   selectableTicketTypes,
 } from "./registrationModel"
 
@@ -72,7 +75,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
     myRegistration: cleanup.myRegistration,
   })
 
-  const [ticketTypeId, setTicketTypeId] = useState<string | null>(() => defaultTicketTypeId(ticketTypes))
+  const [pickedTypeId, setPickedTypeId] = useState<string | null>(null)
   const [partySize, setPartySize] = useState(1)
   const [accessCode, setAccessCode] = useState("")
   const [answers, setAnswers] = useState<AnswerMap>({})
@@ -81,7 +84,9 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
   const [idempotencyKey, setIdempotencyKey] = useState(() => randomId())
   const [errorText, setErrorText] = useState<string | null>(null)
   const [codeFocused, setCodeFocused] = useState(false)
+  const [confirmingCancel, setConfirmingCancel] = useState(false)
 
+  const ticketTypeId = resolveTicketTypeId(ticketTypes, pickedTypeId)
   const selectedType = useMemo(
     () => ticketTypes.find((type) => type.id === ticketTypeId) ?? null,
     [ticketTypes, ticketTypeId],
@@ -111,7 +116,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
 
   const onSelectType = useCallback(
     (nextId: string) => {
-      setTicketTypeId(nextId)
+      setPickedTypeId(nextId)
       setInvalidQuestions(new Set())
       setErrorText(null)
       const next = ticketTypes.find((type) => type.id === nextId)
@@ -202,8 +207,14 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
     cancel.mutate(
       { registrationId },
       {
-        onSuccess: () => toast.show(t("toast.cancelled"), { variant: "success" }),
-        onError: (err) => setErrorText(t(registerErrorKey(appErrorCode(err)))),
+        onSuccess: () => {
+          setConfirmingCancel(false)
+          toast.show(t("toast.cancelled"), { variant: "success" })
+        },
+        onError: (err) => {
+          setConfirmingCancel(false)
+          setErrorText(t(registerErrorKey(appErrorCode(err))))
+        },
       },
     )
   }, [cancel, cleanup.myRegistration?.id, t, toast])
@@ -248,12 +259,19 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
           {mine?.canCancel === false ? null : (
             <SecondaryButton
               label={t("mine.cancel")}
-              onPress={onCancelSeat}
+              onPress={() => setConfirmingCancel(true)}
               size="sm"
               disabled={cancel.isPending}
             />
           )}
         </View>
+        <CancelRegistrationSheet
+          visible={confirmingCancel}
+          waitlisted={waitlisted}
+          pending={cancel.isPending}
+          onConfirm={onCancelSeat}
+          onClose={() => setConfirmingCancel(false)}
+        />
       </View>
     )
   }
@@ -371,6 +389,68 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
         disabled={selectedType === null}
       />
     </View>
+  )
+}
+
+export interface CancelRegistrationSheetProps {
+  visible: boolean
+  waitlisted: boolean
+  pending: boolean
+  onConfirm: () => void
+  onClose: () => void
+}
+
+export function CancelRegistrationSheet({
+  visible,
+  waitlisted,
+  pending,
+  onConfirm,
+  onClose,
+}: CancelRegistrationSheetProps) {
+  const styles = useStyles()
+  const th = useTheme()
+  const { t } = useT("host-ticket")
+
+  const dismiss = useCallback(() => {
+    if (!pending) onClose()
+  }, [onClose, pending])
+
+  const confirm = useCallback(() => {
+    if (!pending) onConfirm()
+  }, [onConfirm, pending])
+
+  return (
+    <ModalCardSheet
+      visible={visible}
+      onClose={dismiss}
+      onCommit={confirm}
+      headerIcon="Ticket"
+      headerIconColor={th.colors.dangerInk}
+      title={waitlisted ? t("mine.cancel_waitlist_title") : t("mine.cancel_title")}
+      dismissLabel={t("common:dismiss")}
+      backdropDismissDisabled={pending}
+      actions={
+        <>
+          <SecondaryButton
+            label={t("mine.cancel_keep")}
+            size="sm"
+            disabled={pending}
+            onPress={dismiss}
+          />
+          <PrimaryButton
+            label={t("mine.cancel")}
+            variant="destructive"
+            onPress={confirm}
+            loading={pending}
+            disabled={pending}
+          />
+        </>
+      }
+    >
+      <Text style={styles.mineMeta}>
+        {waitlisted ? t("mine.cancel_waitlist_body") : t("mine.cancel_body")}
+      </Text>
+    </ModalCardSheet>
   )
 }
 

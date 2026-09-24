@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from "react"
+import React, { memo, useCallback, useMemo, useRef, useState } from "react"
 import { View, Pressable, Image, Modal, StyleSheet } from "react-native"
 import type { CleanupMemberRole, EventSlotDTO, EventSlotRef, PersonDTO } from "@civfix/shared"
 import { makeThemedStyles, useTheme, headingLevel, focusRingProps, webScrimProps } from "../theme"
@@ -408,8 +408,12 @@ export function MembersBody({
 
   const leaveReportChat = useLeaveReportChat()
   const [leaveOpen, setLeaveOpen] = useState(false)
+  // Claimed synchronously: `isPending` lags a same-frame double activation (double click, key repeat).
+  const leavingRef = useRef(false)
   const canLeave = canLeaveChat(roomKind, report?.chatJoined)
   const onConfirmLeave = useCallback(() => {
+    if (leavingRef.current) return
+    leavingRef.current = true
     leaveReportChat.mutate(id, {
       onSuccess: () => {
         setLeaveOpen(false)
@@ -419,6 +423,9 @@ export function MembersBody({
       onError: () => {
         setLeaveOpen(false)
         onMutationError()
+      },
+      onSettled: () => {
+        leavingRef.current = false
       },
     })
   }, [leaveReportChat, id, onLeftProp, onMutationError])
@@ -505,6 +512,7 @@ export function MembersBody({
       managePending,
       grouped,
       cleanupTimeZone,
+      styles,
     ],
   )
 

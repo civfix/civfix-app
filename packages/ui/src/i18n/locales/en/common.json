@@ -18,11 +18,15 @@
     "video": "Video",
     "image_unavailable": "Image unavailable",
     "video_unavailable": "Video unavailable",
-    "remove_attachment": "Remove attachment"
+    "remove_attachment_n_one": "Remove attachment {{index}} of {{count}}",
+    "remove_attachment_n_other": "Remove attachment {{index}} of {{count}}",
+    "uploading": "Uploading"
   },
   "verification_code": {
     "label": "Verification code",
-    "hint": "Opens the keyboard to enter the code"
+    "hint": "Opens the keyboard to enter the code",
+    "progress_one": "{{count}} of {{total}} digits entered",
+    "progress_other": "{{count}} of {{total}} digits entered"
   },
   "post_actions": {
     "like": "Like",
@@ -37,5 +41,21 @@
   },
   "wizard_step_count": "Step {{current}} of {{total}}",
   "verified_badge": "Verified",
-  "org_affiliation": "Affiliated with {{name}}"
+  "org_affiliation": "Affiliated with {{name}}",
+  "attach_error": {
+    "busy": "Wait for the current attachment to finish uploading.",
+    "limit_one": "You can attach only {{count}} at a time.",
+    "limit_other": "You can attach up to {{count}} at a time.",
+    "library": "Could not open the photo library.",
+    "camera": "Could not open the camera.",
+    "rejected": "That file could not be used. Try a different photo or video.",
+    "rate_limited": "Too many uploads. Wait a moment and try again.",
+    "upload": "That attachment could not be uploaded."
+  },
+  "stat_unknown": "Not available",
+  "qr_ticket": {
+    "unavailable": "The QR code could not be drawn. Show the code below instead."
+  },
+  "caption_remaining_a11y_one": "{{count}} character left",
+  "caption_remaining_a11y_other": "{{count}} characters left"
 }

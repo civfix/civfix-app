@@ -2,11 +2,13 @@ import React, { useMemo } from "react"
 import { View, Pressable } from "react-native"
 import { currentVersion } from "@civfix/shared/legal"
 import { focusRingProps, makeThemedStyles, useTheme, webCursor, webHover, webTransition } from "../../../theme"
-import { Text, Icon, iconMap } from "../../../typography"
+import { Text, TextLink, Icon, iconMap } from "../../../typography"
 import { useOpenExternal } from "../../../capabilities"
 import { useT } from "../../../i18n"
 import { PRIVACY_URL, TERMS_URL } from "../../../primitives/externalUrls"
 import type { ConsentState } from "./consentModel"
+
+const CHECKBOX_SIZE = 20
 
 export interface ConsentChecksProps {
   value: ConsentState
@@ -83,23 +85,21 @@ export function ConsentChecks({
         onToggle={() => onChange({ ...value, terms: !value.terms })}
       >
         {t("consent.terms_lead")}
-        <Text
-          style={styles.link}
-          accessibilityRole="link"
-          onPress={() => openLegal(TERMS_URL)}
-        >
-          {t("consent.terms_link")}
-        </Text>
+        {t("consent.terms_link")}
         {t("consent.terms_conjunction")}
-        <Text
-          style={styles.link}
-          accessibilityRole="link"
-          onPress={() => openLegal(PRIVACY_URL)}
-        >
-          {t("consent.privacy_link")}
-        </Text>
+        {t("consent.privacy_link")}
         {t("consent.terms_trailing")}
       </Row>
+      {/* The links sit outside the checkbox: a checkbox's children are presentational, so screen
+          readers and keyboards cannot reach a link nested inside it. */}
+      <View style={styles.links}>
+        <TextLink variant="caption" standalone onPress={() => openLegal(TERMS_URL)}>
+          {t("consent.terms_link")}
+        </TextLink>
+        <TextLink variant="caption" standalone onPress={() => openLegal(PRIVACY_URL)}>
+          {t("consent.privacy_link")}
+        </TextLink>
+      </View>
 
       {showHostContact ? (
         <Row
@@ -143,8 +143,8 @@ const useStyles = makeThemedStyles((t) => ({
     opacity: 0.92,
   },
   box: {
-    width: 20,
-    height: 20,
+    width: CHECKBOX_SIZE,
+    height: CHECKBOX_SIZE,
     marginTop: 1,
     borderRadius: t.radius.xs,
     borderWidth: 1.5,
@@ -164,9 +164,11 @@ const useStyles = makeThemedStyles((t) => ({
     lineHeight: 18,
     color: t.colors.text,
   },
-  link: {
-    color: t.colors.accentText,
-    textDecorationLine: "underline",
+  links: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    columnGap: t.space["4"],
+    paddingLeft: CHECKBOX_SIZE + t.space["3"],
   },
   version: {
     fontFamily: t.fontFamily.bodyRegular,

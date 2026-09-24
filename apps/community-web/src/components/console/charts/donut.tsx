@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { cn } from "@/lib/utils"
 
-import { ChartSummary, formatCompact, NUM_CLASS } from "./chart-utils"
+import { formatCompact, NUM_CLASS } from "./chart-utils"
 import { useChartPalette } from "./palette"
 
 export interface DonutSegment {
@@ -47,7 +47,6 @@ export function Donut({
 
   return (
     <div className={cn("flex flex-wrap items-center gap-token-5", className)}>
-      <ChartSummary text={summary} />
       <svg
         width={size}
         height={size}

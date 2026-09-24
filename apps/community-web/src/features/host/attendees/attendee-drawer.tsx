@@ -18,7 +18,9 @@ import { useGate } from "@/components/console/query-state"
 import { TimelineList } from "@/components/console/timeline-list"
 
 import { useConsoleErrors } from "../error-copy"
+import { useConsoleEvent } from "../console-context"
 import { useConsoleFormat } from "../format"
+import { EmptyValue } from "../analytics/analytics-value"
 import { attendanceOf, attendeeDisplayName, checkableSeatIds } from "./roster-filters"
 import { invalidateEvent } from "../console-invalidate"
 
@@ -49,7 +51,7 @@ export function AttendeeDrawer({
   const qc = useQueryClient()
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
-  const format = useConsoleFormat()
+  const format = useConsoleFormat(useConsoleEvent().event?.timezone ?? undefined)
 
   const [note, setNote] = useState<string | null>(null)
   const [transferTo, setTransferTo] = useState("")
@@ -88,6 +90,31 @@ export function AttendeeDrawer({
       api.checkInEventSeat({ id: eventId, seatId, method: "manual" }),
     onSuccess: () => {
       toast.toast({ title: t("drawer.checked_in"), tone: "success" })
+      refresh()
+    },
+    onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
+  })
+
+  const checkInAll = useMutation({
+    mutationFn: async (seatIds: readonly string[]) => {
+      let done = 0
+      let failed = 0
+      for (const seatId of seatIds) {
+        try {
+          await api.checkInEventSeat({ id: eventId, seatId, method: "manual" })
+          done += 1
+        } catch {
+          failed += 1
+        }
+      }
+      return { done, failed }
+    },
+    onSuccess: ({ done, failed }) => {
+      toast.toast({
+        title: t("bulk.checked_in", { count: done }),
+        ...(failed > 0 ? { description: t("bulk.partial", { count: failed }) } : {}),
+        tone: failed > 0 ? "danger" : "success",
+      })
       refresh()
     },
     onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
@@ -182,7 +209,7 @@ export function AttendeeDrawer({
             <dl className="flex flex-col gap-token-2 text-token-13">
               <div className="flex justify-between gap-token-2">
                 <dt className="text-console-ink-3">{t("drawer.ticket_type")}</dt>
-                <dd className="text-console-ink">{registration.ticketTypeName ?? "—"}</dd>
+                <dd className="text-console-ink">{registration.ticketTypeName ?? <EmptyValue />}</dd>
               </div>
               <div className="flex justify-between gap-token-2">
                 <dt className="text-console-ink-3">{t("drawer.party")}</dt>
@@ -244,7 +271,7 @@ export function AttendeeDrawer({
                     <ConsoleButton
                       variant="outline"
                       size="sm"
-                      disabled={checkIn.isPending}
+                      disabled={checkIn.isPending || checkInAll.isPending}
                       onClick={() => checkIn.mutate(seat.id)}
                     >
                       {t("drawer.check_in")}
@@ -265,10 +292,8 @@ export function AttendeeDrawer({
                 variant="outline"
                 size="sm"
                 className="mt-token-2"
-                disabled={checkIn.isPending}
-                onClick={() => {
-                  for (const seatId of pendingSeats) checkIn.mutate(seatId)
-                }}
+                disabled={checkIn.isPending || checkInAll.isPending}
+                onClick={() => checkInAll.mutate(pendingSeats)}
               >
                 {t("drawer.check_in_all", { count: pendingSeats.length })}
               </ConsoleButton>
@@ -302,7 +327,7 @@ export function AttendeeDrawer({
                               ? answer.value
                                 ? tc("common.yes")
                                 : tc("common.no")
-                              : (answer.value ?? "—")}
+                              : (answer.value ?? <EmptyValue />)}
                       </dd>
                     </div>
                   ))}

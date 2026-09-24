@@ -121,6 +121,18 @@ export function xToPixels(x: number, xMin: number, xMax: number, width: number):
   return round(((x - xMin) / (xMax - xMin)) * width)
 }
 
+export const AXIS_LABEL_END_FRACTION = 0.85
+
+export type AxisLabelPlacement = { left: number } | { right: 0; textAlign: "right" }
+
+// A label anchored by its left edge near the right end would run past the plot, so the last stretch of
+// the axis anchors by the right edge instead.
+export function axisLabelPlacement(fraction: number, width: number): AxisLabelPlacement {
+  const at = clampFraction(fraction)
+  if (at > AXIS_LABEL_END_FRACTION) return { right: 0, textAlign: "right" }
+  return { left: round(at * Math.max(0, width)) }
+}
+
 export function valueToPixels(value: number, max: number, height: number): number {
   return round(plotY(value, max, height))
 }

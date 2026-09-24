@@ -10,9 +10,13 @@ import { ToggleRow } from "@/components/console/forms/toggle-row"
 import { RichTextEditor } from "@/components/console/forms/rich-text/editor"
 import { ConsoleButton, ConsoleIconButton } from "@/components/console/button"
 
+import { rowKey, withRowKey } from "./blocks"
+import type { BlockIssue } from "./blocks"
+
 export interface BlockEditorProps {
   block: EventPageBlock
   onChange: (patch: Partial<EventPageBlock>) => void
+  errors?: Readonly<Record<string, BlockIssue>>
 }
 
 function ListRow({
@@ -24,13 +28,14 @@ function ListRow({
   onRemove: () => void
   children: React.ReactNode
 }) {
+  const { t } = useT("host-page-builder")
   return (
     <li className="rounded-sm border border-console-line bg-console-surface p-token-3">
       <div className="mb-token-2 flex items-center justify-between gap-token-2">
         <span className="text-token-12 font-bold uppercase tracking-wider text-console-ink-3">
           {label}
         </span>
-        <ConsoleIconButton label={label} onClick={onRemove}>
+        <ConsoleIconButton label={t("block.remove_row", { label })} onClick={onRemove}>
           <Trash2 aria-hidden className="h-4 w-4" />
         </ConsoleIconButton>
       </div>
@@ -39,8 +44,12 @@ function ListRow({
   )
 }
 
-export function BlockEditor({ block, onChange }: BlockEditorProps) {
+export function BlockEditor({ block, onChange, errors = {} }: BlockEditorProps) {
   const { t } = useT("host-page-builder")
+  const errorAt = (path: string): string | undefined => {
+    const issue = errors[path]
+    return issue ? t(`block.error.${issue}`) : undefined
+  }
 
   switch (block.kind) {
     case "hero":
@@ -101,51 +110,71 @@ export function BlockEditor({ block, onChange }: BlockEditorProps) {
           <ul className="flex flex-col gap-token-2">
             {block.items.map((item, index) => (
               <ListRow
-                key={`${block.id}-item-${index}`}
+                key={rowKey(item)}
                 label={t("block.agenda.item", { n: index + 1 })}
                 onRemove={() =>
                   onChange({ items: block.items.filter((_, i) => i !== index) })
                 }
               >
-                <TextInput
-                  aria-label={t("block.agenda.time")}
-                  placeholder={t("block.agenda.time")}
-                  value={item.time ?? ""}
-                  maxLength={40}
-                  onChange={(event) =>
-                    onChange({
-                      items: block.items.map((entry, i) =>
-                        i === index ? { ...entry, time: event.target.value } : entry,
-                      ),
-                    })
-                  }
-                />
-                <TextInput
-                  aria-label={t("block.agenda.item_title")}
-                  placeholder={t("block.agenda.item_title")}
-                  value={item.title}
-                  maxLength={160}
-                  onChange={(event) =>
-                    onChange({
-                      items: block.items.map((entry, i) =>
-                        i === index ? { ...entry, title: event.target.value } : entry,
-                      ),
-                    })
-                  }
-                />
-                <TextArea
-                  aria-label={t("block.agenda.item_description")}
-                  placeholder={t("block.agenda.item_description")}
-                  value={item.description ?? ""}
-                  maxLength={600}
-                  onChange={(event) =>
-                    onChange({
-                      items: block.items.map((entry, i) =>
-                        i === index ? { ...entry, description: event.target.value } : entry,
-                      ),
-                    })
-                  }
-                />
+                <Field
+                  label={t("block.agenda.time")}
+                  htmlFor={`${block.id}-item-${index}-time`}
+                  optional
+                  error={errorAt(`items.${index}.time`)}
+                >
+                  <TextInput
+                    id={`${block.id}-item-${index}-time`}
+                    value={item.time ?? ""}
+                    maxLength={40}
+                    invalid={Boolean(errorAt(`items.${index}.time`))}
+                    onChange={(event) =>
+                      onChange({
+                        items: block.items.map((entry, i) =>
+                          i === index ? { ...entry, time: event.target.value } : entry,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
+                <Field
+                  label={t("block.agenda.item_title")}
+                  htmlFor={`${block.id}-item-${index}-title`}
+                  error={errorAt(`items.${index}.title`)}
+                >
+                  <TextInput
+                    id={`${block.id}-item-${index}-title`}
+                    value={item.title}
+                    maxLength={160}
+                    invalid={Boolean(errorAt(`items.${index}.title`))}
+                    onChange={(event) =>
+                      onChange({
+                        items: block.items.map((entry, i) =>
+                          i === index ? { ...entry, title: event.target.value } : entry,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
+                <Field
+                  label={t("block.agenda.item_description")}
+                  htmlFor={`${block.id}-item-${index}-description`}
+                  optional
+                  error={errorAt(`items.${index}.description`)}
+                >
+                  <TextArea
+                    id={`${block.id}-item-${index}-description`}
+                    value={item.description ?? ""}
+                    maxLength={600}
+                    invalid={Boolean(errorAt(`items.${index}.description`))}
+                    onChange={(event) =>
+                      onChange({
+                        items: block.items.map((entry, i) =>
+                          i === index ? { ...entry, description: event.target.value } : entry,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
               </ListRow>
             ))}
           </ul>
@@ -154,7 +183,9 @@ export function BlockEditor({ block, onChange }: BlockEditorProps) {
             size="sm"
             disabled={block.items.length >= 30}
             onClick={() =>
-              onChange({ items: [...block.items, { title: "", time: null, description: null }] })
+              onChange({
+                items: [...block.items, withRowKey({ title: "", time: null, description: null })],
+              })
             }
           >
             <Plus aria-hidden className="h-4 w-4" />
@@ -177,51 +208,71 @@ export function BlockEditor({ block, onChange }: BlockEditorProps) {
           <ul className="flex flex-col gap-token-2">
             {block.entries.map((entry, index) => (
               <ListRow
-                key={`${block.id}-host-${index}`}
+                key={rowKey(entry)}
                 label={t("block.hosts.entry", { n: index + 1 })}
                 onRemove={() =>
                   onChange({ entries: block.entries.filter((_, i) => i !== index) })
                 }
               >
-                <TextInput
-                  aria-label={t("block.hosts.name")}
-                  placeholder={t("block.hosts.name")}
-                  value={entry.name}
-                  maxLength={120}
-                  onChange={(event) =>
-                    onChange({
-                      entries: block.entries.map((item, i) =>
-                        i === index ? { ...item, name: event.target.value } : item,
-                      ),
-                    })
-                  }
-                />
-                <TextInput
-                  aria-label={t("block.hosts.role")}
-                  placeholder={t("block.hosts.role")}
-                  value={entry.role ?? ""}
-                  maxLength={80}
-                  onChange={(event) =>
-                    onChange({
-                      entries: block.entries.map((item, i) =>
-                        i === index ? { ...item, role: event.target.value } : item,
-                      ),
-                    })
-                  }
-                />
-                <TextArea
-                  aria-label={t("block.hosts.bio")}
-                  placeholder={t("block.hosts.bio")}
-                  value={entry.bio ?? ""}
-                  maxLength={600}
-                  onChange={(event) =>
-                    onChange({
-                      entries: block.entries.map((item, i) =>
-                        i === index ? { ...item, bio: event.target.value } : item,
-                      ),
-                    })
-                  }
-                />
+                <Field
+                  label={t("block.hosts.name")}
+                  htmlFor={`${block.id}-host-${index}-name`}
+                  error={errorAt(`entries.${index}.name`)}
+                >
+                  <TextInput
+                    id={`${block.id}-host-${index}-name`}
+                    value={entry.name}
+                    maxLength={120}
+                    invalid={Boolean(errorAt(`entries.${index}.name`))}
+                    onChange={(event) =>
+                      onChange({
+                        entries: block.entries.map((item, i) =>
+                          i === index ? { ...item, name: event.target.value } : item,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
+                <Field
+                  label={t("block.hosts.role")}
+                  htmlFor={`${block.id}-host-${index}-role`}
+                  optional
+                  error={errorAt(`entries.${index}.role`)}
+                >
+                  <TextInput
+                    id={`${block.id}-host-${index}-role`}
+                    value={entry.role ?? ""}
+                    maxLength={80}
+                    invalid={Boolean(errorAt(`entries.${index}.role`))}
+                    onChange={(event) =>
+                      onChange({
+                        entries: block.entries.map((item, i) =>
+                          i === index ? { ...item, role: event.target.value } : item,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
+                <Field
+                  label={t("block.hosts.bio")}
+                  htmlFor={`${block.id}-host-${index}-bio`}
+                  optional
+                  error={errorAt(`entries.${index}.bio`)}
+                >
+                  <TextArea
+                    id={`${block.id}-host-${index}-bio`}
+                    value={entry.bio ?? ""}
+                    maxLength={600}
+                    invalid={Boolean(errorAt(`entries.${index}.bio`))}
+                    onChange={(event) =>
+                      onChange({
+                        entries: block.entries.map((item, i) =>
+                          i === index ? { ...item, bio: event.target.value } : item,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
               </ListRow>
             ))}
           </ul>
@@ -229,7 +280,7 @@ export function BlockEditor({ block, onChange }: BlockEditorProps) {
             variant="outline"
             size="sm"
             disabled={block.entries.length >= 20}
-            onClick={() => onChange({ entries: [...block.entries, { name: "" }] })}
+            onClick={() => onChange({ entries: [...block.entries, withRowKey({ name: "" })] })}
           >
             <Plus aria-hidden className="h-4 w-4" />
             {t("block.hosts.add")}
@@ -251,36 +302,48 @@ export function BlockEditor({ block, onChange }: BlockEditorProps) {
           <ul className="flex flex-col gap-token-2">
             {block.items.map((item, index) => (
               <ListRow
-                key={`${block.id}-faq-${index}`}
+                key={rowKey(item)}
                 label={t("block.faq.item", { n: index + 1 })}
                 onRemove={() => onChange({ items: block.items.filter((_, i) => i !== index) })}
               >
-                <TextInput
-                  aria-label={t("block.faq.question")}
-                  placeholder={t("block.faq.question")}
-                  value={item.question}
-                  maxLength={200}
-                  onChange={(event) =>
-                    onChange({
-                      items: block.items.map((entry, i) =>
-                        i === index ? { ...entry, question: event.target.value } : entry,
-                      ),
-                    })
-                  }
-                />
-                <TextArea
-                  aria-label={t("block.faq.answer")}
-                  placeholder={t("block.faq.answer")}
-                  value={item.answer}
-                  maxLength={1200}
-                  onChange={(event) =>
-                    onChange({
-                      items: block.items.map((entry, i) =>
-                        i === index ? { ...entry, answer: event.target.value } : entry,
-                      ),
-                    })
-                  }
-                />
+                <Field
+                  label={t("block.faq.question")}
+                  htmlFor={`${block.id}-faq-${index}-question`}
+                  error={errorAt(`items.${index}.question`)}
+                >
+                  <TextInput
+                    id={`${block.id}-faq-${index}-question`}
+                    value={item.question}
+                    maxLength={200}
+                    invalid={Boolean(errorAt(`items.${index}.question`))}
+                    onChange={(event) =>
+                      onChange({
+                        items: block.items.map((entry, i) =>
+                          i === index ? { ...entry, question: event.target.value } : entry,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
+                <Field
+                  label={t("block.faq.answer")}
+                  htmlFor={`${block.id}-faq-${index}-answer`}
+                  error={errorAt(`items.${index}.answer`)}
+                >
+                  <TextArea
+                    id={`${block.id}-faq-${index}-answer`}
+                    value={item.answer}
+                    maxLength={1200}
+                    invalid={Boolean(errorAt(`items.${index}.answer`))}
+                    onChange={(event) =>
+                      onChange({
+                        items: block.items.map((entry, i) =>
+                          i === index ? { ...entry, answer: event.target.value } : entry,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
               </ListRow>
             ))}
           </ul>
@@ -288,7 +351,9 @@ export function BlockEditor({ block, onChange }: BlockEditorProps) {
             variant="outline"
             size="sm"
             disabled={block.items.length >= 30}
-            onClick={() => onChange({ items: [...block.items, { question: "", answer: "" }] })}
+            onClick={() =>
+              onChange({ items: [...block.items, withRowKey({ question: "", answer: "" })] })
+            }
           >
             <Plus aria-hidden className="h-4 w-4" />
             {t("block.faq.add")}
@@ -337,38 +402,52 @@ export function BlockEditor({ block, onChange }: BlockEditorProps) {
           <ul className="flex flex-col gap-token-2">
             {block.entries.map((entry, index) => (
               <ListRow
-                key={`${block.id}-sponsor-${index}`}
+                key={rowKey(entry)}
                 label={t("block.sponsors.entry", { n: index + 1 })}
                 onRemove={() =>
                   onChange({ entries: block.entries.filter((_, i) => i !== index) })
                 }
               >
-                <TextInput
-                  aria-label={t("block.sponsors.name")}
-                  placeholder={t("block.sponsors.name")}
-                  value={entry.name}
-                  maxLength={120}
-                  onChange={(event) =>
-                    onChange({
-                      entries: block.entries.map((item, i) =>
-                        i === index ? { ...item, name: event.target.value } : item,
-                      ),
-                    })
-                  }
-                />
-                <TextInput
-                  aria-label={t("block.sponsors.url")}
-                  placeholder="https://"
-                  value={entry.url ?? ""}
-                  maxLength={500}
-                  onChange={(event) =>
-                    onChange({
-                      entries: block.entries.map((item, i) =>
-                        i === index ? { ...item, url: event.target.value } : item,
-                      ),
-                    })
-                  }
-                />
+                <Field
+                  label={t("block.sponsors.name")}
+                  htmlFor={`${block.id}-sponsor-${index}-name`}
+                  error={errorAt(`entries.${index}.name`)}
+                >
+                  <TextInput
+                    id={`${block.id}-sponsor-${index}-name`}
+                    value={entry.name}
+                    maxLength={120}
+                    invalid={Boolean(errorAt(`entries.${index}.name`))}
+                    onChange={(event) =>
+                      onChange({
+                        entries: block.entries.map((item, i) =>
+                          i === index ? { ...item, name: event.target.value } : item,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
+                <Field
+                  label={t("block.sponsors.url")}
+                  htmlFor={`${block.id}-sponsor-${index}-url`}
+                  optional
+                  error={errorAt(`entries.${index}.url`)}
+                >
+                  <TextInput
+                    id={`${block.id}-sponsor-${index}-url`}
+                    placeholder="https://"
+                    value={entry.url ?? ""}
+                    maxLength={500}
+                    invalid={Boolean(errorAt(`entries.${index}.url`))}
+                    onChange={(event) =>
+                      onChange({
+                        entries: block.entries.map((item, i) =>
+                          i === index ? { ...item, url: event.target.value } : item,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
               </ListRow>
             ))}
           </ul>
@@ -376,7 +455,7 @@ export function BlockEditor({ block, onChange }: BlockEditorProps) {
             variant="outline"
             size="sm"
             disabled={block.entries.length >= 20}
-            onClick={() => onChange({ entries: [...block.entries, { name: "" }] })}
+            onClick={() => onChange({ entries: [...block.entries, withRowKey({ name: "" })] })}
           >
             <Plus aria-hidden className="h-4 w-4" />
             {t("block.sponsors.add")}
@@ -408,9 +487,11 @@ export function BlockEditor({ block, onChange }: BlockEditorProps) {
             htmlFor={`${block.id}-url`}
             optional
             hint={t("block.donate.url_hint")}
+            error={errorAt("url")}
           >
             <TextInput
               id={`${block.id}-url`}
+              invalid={Boolean(errorAt("url"))}
               value={block.url ?? ""}
               placeholder="https://"
               maxLength={500}
@@ -466,9 +547,11 @@ export function BlockEditor({ block, onChange }: BlockEditorProps) {
             htmlFor={`${block.id}-reply`}
             optional
             hint={t("block.contact.reply_to_hint")}
+            error={errorAt("replyTo")}
           >
             <TextInput
               id={`${block.id}-reply`}
+              invalid={Boolean(errorAt("replyTo"))}
               type="email"
               value={block.replyTo ?? ""}
               maxLength={254}

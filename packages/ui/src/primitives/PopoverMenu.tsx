@@ -19,6 +19,7 @@ import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import { useT } from "../i18n"
 import { positionPostActionMenu } from "./postActionModel"
+import { pressPopoverMenuItem } from "./popoverMenuModel"
 import { menuOrigin, useMenuMotion } from "./menuMotion"
 import { AnchoredPopover, useMenuCardSize } from "./AnchoredPopover"
 import { useDeferredOverlayAction } from "./useDeferredOverlayAction"
@@ -31,6 +32,8 @@ export interface PopoverMenuItem {
   icon?: IconName
   destructive?: boolean
   disabled?: boolean
+  /** Run without closing, for a row that changes the menu itself, such as loading more rows into it. */
+  keepOpen?: boolean
   onPress: () => void
 }
 
@@ -93,7 +96,7 @@ export function PopoverMenu({
   const { run, settled } = useDeferredOverlayAction(visible, onClose, onClosed)
   const onModalDismiss = useModalClosed(rendered, settled)
 
-  const handlePress = useCallback((item: PopoverMenuItem) => run(item.onPress), [run])
+  const handlePress = useCallback((item: PopoverMenuItem) => pressPopoverMenuItem(item, run), [run])
 
   const cardSizeOrEstimate = cardSize ?? {
     width: CARD_WIDTH,

@@ -33,5 +33,9 @@
       "unauthorized": "Por favor, inicia sesión de nuevo para vincular este reporte.",
       "fallback": "Algo salió mal al vincular el reporte. Por favor, inténtalo de nuevo."
     }
+  },
+  "lookup_failed": {
+    "title": "No pudimos buscar tu reporte",
+    "body": "No pudimos conectar con civfix para buscar un reporte que reclamar. Revisa tu conexión e inténtalo de nuevo."
   }
 }

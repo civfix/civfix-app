@@ -13,6 +13,7 @@ import type { PostDTO, UserMentionDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import { focusRingProps, makeThemedStyles, useTheme, webInputReset } from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"
+import { useToast } from "../../primitives/Toast"
 import type { MentionCandidate } from "../../primitives"
 import { ComposerThumbs } from "../../primitives/ComposerThumbs"
 import { useComposerAttachments } from "../../primitives/useComposerAttachments"
@@ -27,10 +28,12 @@ import {
   carriedMediaIndex,
   mergePostComposerMedia,
   mergePostComposerThumbs,
+  postComposerCanAttach,
   snapshotCarriedMedia,
 } from "../postComposerMedia"
 import { resolvePostSubmit } from "../postComposerSubmit"
 import {
+  restoreFailedPostSubmit,
   selectPostComposerDraft,
   selectPostComposerDraftOwner,
   usePostComposerStore,
@@ -48,6 +51,7 @@ import {
 } from "./inlineComposerModel"
 
 const AVATAR_SIZE = 40
+const MIN_TOUCH_TARGET = 44
 
 export function InlineComposer() {
   const draftOwner = usePostComposerStore(selectPostComposerDraftOwner)
@@ -65,6 +69,8 @@ function InlineComposerForOwner() {
   const inputRef = useRef<RNTextInput>(null)
   const cardRef = useRef<View>(null)
   const submittingRef = useRef(false)
+  const mountedRef = useRef(true)
+  const toast = useToast()
 
   const body = usePostComposerStore((state) => selectPostComposerDraft(state).body)
   const mentionedUsers = usePostComposerStore((state) => selectPostComposerDraft(state).mentionedUsers)
@@ -106,6 +112,12 @@ function InlineComposerForOwner() {
   useEffect(() => {
     if (draftOrganizationId !== null && postAsOrganizationId === null) setOrganizationId(null)
   }, [draftOrganizationId, postAsOrganizationId, setOrganizationId])
+
+  const canAttachMedia = postComposerCanAttach({
+    hookCanAttach: attachments.canAttach,
+    carried: carriedMedia.length,
+    picked: attachments.attachments.length,
+  })
 
   const mediaUploadIds = useMemo(
     () => composerMedia.flatMap((media) => (media.uploadId ? [media.uploadId] : [])),
@@ -163,12 +175,13 @@ function InlineComposerForOwner() {
     if (open && !ownsDraft) closeComposer()
   }, [open, ownsDraft, closeComposer])
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
       if (deferredBlurRef.current != null) clearTimeout(deferredBlurRef.current)
-    },
-    [],
-  )
+    }
+  }, [])
 
   const onFocus = useCallback(() => {
     pressingOwnControlRef.current = false
@@ -288,25 +301,29 @@ function InlineComposerForOwner() {
     }
     const staged = selectPostComposerDraft(usePostComposerStore.getState())
     usePostComposerStore.getState().reset({ mode: "post", targetPostId: null })
-    create.mutate(
-      { input: resolution.input, optimistic },
-      {
-        onError: () => {
-          haptics.error()
-          usePostComposerStore.getState().restore(staged)
+    create
+      .mutateAsync(
+        { input: resolution.input, optimistic },
+        {
+          onSuccess: () => {
+            haptics.success()
+            attachments.reset()
+            setCarriedMedia([])
+            setDroppedMedia(0)
+            setOpen(false)
+          },
+          onSettled: () => {
+            submittingRef.current = false
+          },
         },
-        onSuccess: () => {
-          haptics.success()
-          attachments.reset()
-          setCarriedMedia([])
-          setDroppedMedia(0)
-          setOpen(false)
-        },
-        onSettled: () => {
-          submittingRef.current = false
-        },
-      },
-    )
+      )
+      .catch(() => {
+        haptics.error()
+        const restored = restoreFailedPostSubmit(staged)
+        if (!mountedRef.current) {
+          toast.show(t(restored ? "submit_error_restored" : "submit_error"), { variant: "error" })
+        }
+      })
   }, [
     activeMentions,
     attachments,
@@ -318,6 +335,8 @@ function InlineComposerForOwner() {
     postAsOrganization,
     profile,
     resolution,
+    t,
+    toast,
   ])
 
   if (!profile) return null
@@ -420,8 +439,8 @@ function InlineComposerForOwner() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t("add_media_a11y")}
-            accessibilityState={{ disabled: !attachments.canAttach }}
-            disabled={!attachments.canAttach}
+            accessibilityState={{ disabled: !canAttachMedia }}
+            disabled={!canAttachMedia}
             onPressIn={holdOwnControl}
             onPressOut={releaseOwnControl}
             onPress={() => void attachments.onAttach()}
@@ -429,16 +448,18 @@ function InlineComposerForOwner() {
             {...focusRingProps}
             style={({ pressed }) => [
               styles.addMedia,
-              !attachments.canAttach ? styles.addMediaDisabled : null,
+              !canAttachMedia ? styles.addMediaDisabled : null,
               pressed ? styles.pressed : null,
             ]}
           >
-            <Icon
-              icon={iconMap.Image}
-              size={18}
-              color={attachments.canAttach ? th.colors.accent : th.colors.textSubtle}
-              strokeWidth={2.2}
-            />
+            <View style={styles.addMediaDisc}>
+              <Icon
+                icon={iconMap.Image}
+                size={18}
+                color={canAttachMedia ? th.colors.accent : th.colors.textSubtle}
+                strokeWidth={2.2}
+              />
+            </View>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -510,6 +531,12 @@ const useStyles = makeThemedStyles((t) => ({
   actions: { flexDirection: "row", alignItems: "center", gap: t.space["2"] },
   actionsSpacer: { flex: 1 },
   addMedia: {
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addMediaDisc: {
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -519,14 +546,14 @@ const useStyles = makeThemedStyles((t) => ({
   },
   addMediaDisabled: { opacity: 0.52 },
   close: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
+    borderRadius: MIN_TOUCH_TARGET / 2,
     alignItems: "center",
     justifyContent: "center",
   },
   postButton: {
-    minHeight: 36,
+    minHeight: MIN_TOUCH_TARGET,
     paddingHorizontal: 16,
     borderRadius: t.radius.pill,
     alignItems: "center",

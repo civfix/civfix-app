@@ -13,6 +13,7 @@ import {
   guestRequestErrorKey,
   guestResendReadyAt,
   guestResendSecondsLeft,
+  guestRsvpCommitFor,
   guestSmsUnavailable,
   guestVerifyErrorKey,
 } from "../guestRsvpModel"
@@ -225,5 +226,25 @@ describe("resend cooldown", () => {
 
   it("treats a negative cooldown as immediately resendable", () => {
     expect(guestResendSecondsLeft(guestResendReadyAt(1_000, -5), 1_000)).toBe(0)
+  })
+})
+
+describe("the web Cmd/Ctrl+Enter commit per step", () => {
+  it("does nothing on the choice step, which has two equal answers and no default", () => {
+    expect(guestRsvpCommitFor("choice", false)).toBeNull()
+    expect(guestRsvpCommitFor("choice", true)).toBeNull()
+  })
+
+  it("submits the form, verifies the code, starts over once attempts run out, and closes on success", () => {
+    expect(guestRsvpCommitFor("form", false)).toBe("submitForm")
+    expect(guestRsvpCommitFor("code", false)).toBe("submitCode")
+    expect(guestRsvpCommitFor("code", true)).toBe("startOver")
+    expect(guestRsvpCommitFor("success", false)).toBe("close")
+  })
+
+  it("is what the sheet hands ModalCardSheet as onCommit", () => {
+    const sheet = readFileSync(new URL("../GuestRsvpSheet.tsx", import.meta.url), "utf8")
+    expect(sheet).toContain("guestRsvpCommitFor(step, exhausted)")
+    expect(sheet).not.toMatch(/\(exhausted \? startOver : submitCode\) : onClose/)
   })
 })

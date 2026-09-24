@@ -80,7 +80,14 @@ const EMPTY_MEDIA: PostDTO["media"] = []
 
 const IS_WEB = Platform.OS === "web"
 
-export const ROW_ROLE = IS_WEB ? "link" : "button"
+/**
+ * The row is a pointer convenience, never an accessibility element: it wraps the name, permalink, mention,
+ * media, action-bar and menu controls. On iOS an accessible Pressable hides all of them from VoiceOver, and
+ * on web a role=link row nests interactive content and renames the post after its label. Keyboard and
+ * screen-reader users open the thread through the timestamp permalink instead. RNW's Pressable always sets
+ * tabIndex=0, so web opts out with an explicit -1 (`focusable={false}` loses to it).
+ */
+export const ROW_A11Y_PROPS: object = IS_WEB ? { tabIndex: -1 } : { accessible: false }
 
 const AVATAR_WEB_PROPS = IS_WEB ? ({ tabIndex: -1, "aria-hidden": true } as object) : null
 
@@ -155,6 +162,7 @@ function MetaRow({
   onOpenPost,
   onOpenMenu,
   menuRef,
+  menuOpen,
 }: {
   model: PostCardModel
   t: TFunction
@@ -163,6 +171,7 @@ function MetaRow({
   onOpenPost: () => void
   onOpenMenu: () => void
   menuRef: React.Ref<RNView>
+  menuOpen: boolean
 }) {
   const styles = useStyles()
   const identity = model.identity
@@ -247,7 +256,7 @@ function MetaRow({
 
       <View style={styles.metaSpacer} />
 
-      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} />
+      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} expanded={menuOpen} />
     </View>
   )
 }
@@ -441,10 +450,13 @@ export const PostCard = React.memo(function PostCard({
   )
   const openAuthor = () => openIdentity(rowIdentity)
 
-  const onComment = React.useCallback(() => openPost(post.id), [openPost, post.id])
+  // A repost's comment and quote belong to the original, like the row tap and the menu. A deleted original
+  // cannot be opened, so those fall back to the wrapper (the server resolves its actions to the original).
+  const actionTargetId = isRepost && embedded && !embedded.deleted ? embedded.id : post.id
+  const onComment = React.useCallback(() => openPost(actionTargetId), [openPost, actionTargetId])
   const onQuote = React.useCallback(
-    () => push({ kind: "composer", composerMode: "quote", targetPostId: post.id }),
-    [push, post.id],
+    () => push({ kind: "composer", composerMode: "quote", targetPostId: actionTargetId }),
+    [push, actionTargetId],
   )
 
   const media = isRepost && embedded ? embedded.media ?? EMPTY_MEDIA : post.media ?? EMPTY_MEDIA
@@ -479,19 +491,14 @@ export const PostCard = React.memo(function PostCard({
       } as object)
     : null
 
-  const rowKeyProps = linkKeyProps(() => openPost(rowPostId))
-
   const pressFill = IS_WEB && layout === "expanded" ? styles.rowFlatPressed : null
 
   return (
     <>
       <Pressable
         onPress={() => openPost(rowPostId)}
-        accessibilityRole={ROW_ROLE}
-        accessibilityLabel={t("post_card.open_thread_a11y", { name: rowIdentity.name })}
-        {...focusRingProps}
+        {...ROW_A11Y_PROPS}
         {...rowHoverProps}
-        {...rowKeyProps}
         style={(state) => [
           isFlat ? styles.rowFlat : styles.rowCard,
           isFlat ? WEB_ROW_FOCUS_INSET : null,
@@ -549,6 +556,7 @@ export const PostCard = React.memo(function PostCard({
                 onOpenPost={() => openPost(embedded.id)}
                 onOpenMenu={openMenu}
                 menuRef={menuTrigger.ref}
+                menuOpen={menuOpen}
               />
             ) : (
               <MetaRow
@@ -559,6 +567,7 @@ export const PostCard = React.memo(function PostCard({
                 onOpenPost={() => openPost(post.id)}
                 onOpenMenu={openMenu}
                 menuRef={menuTrigger.ref}
+                menuOpen={menuOpen}
               />
             )}
 
@@ -701,6 +710,7 @@ function EmbeddedPostMeta({
   onOpenPost,
   onOpenMenu,
   menuRef,
+  menuOpen,
 }: {
   identity: PostIdentity
   createdAt: string
@@ -711,6 +721,7 @@ function EmbeddedPostMeta({
   onOpenPost: () => void
   onOpenMenu: () => void
   menuRef: React.Ref<RNView>
+  menuOpen: boolean
 }) {
   const styles = useStyles()
   const linkable = identity.organization != null || identity.personId != null
@@ -781,7 +792,7 @@ function EmbeddedPostMeta({
 
       <View style={styles.metaSpacer} />
 
-      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} />
+      <PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} expanded={menuOpen} />
     </View>
   )
 }

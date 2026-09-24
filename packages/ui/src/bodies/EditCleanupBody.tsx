@@ -6,13 +6,14 @@ import { makeThemedStyles, useTheme, noShadow, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   EmptyState,
+  SignInPrompt,
   SkeletonBlock,
   SkeletonGroup,
   SkeletonText,
 } from "../primitives"
-import { useCleanup, useUpdateCleanup, useAuthState } from "../data"
+import { useCleanup, useUpdateCleanup, useAuthState, useRequireAuth } from "../data"
 import { cleanupHostStanding, managesEvent } from "../data/hooks/host"
-import { useNavStore } from "../nav"
+import { pathForEntry, useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT, viewerTimeZone } from "../i18n"
 import { appErrorCode } from "./errorCode"
@@ -27,6 +28,7 @@ import { wallClockInZone } from "@civfix/shared/datetime"
 import { CleanupForm, isCleanupFormComplete, type CleanupFormValue } from "./CleanupForm"
 import { composeEventAddress } from "./eventAddressField"
 import { linkedRefToCardData, useLinkedReportCards } from "./linkedReportCards"
+import { useCleanupDraft } from "./cleanupDraftStore"
 import { mustPersistEventEnd, seededEndTime } from "./eventWizard"
 import { eventCoverChanged } from "./eventCoverModel"
 import { buildSlotInputs, slotsFromCleanup } from "./eventSlotsForm"
@@ -86,15 +88,27 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
   const { t: tForm } = useT("event-form")
   const update = useUpdateCleanup()
   const [form, setForm] = useState<CleanupFormValue>(() => formFromCleanup(cleanup))
+  // The cover the form was seeded from. A refetch mid-edit must not turn an untouched cover field into
+  // a change: compared against a newer URL, the seeded null would send a delete of a co-host's cover.
+  const [seededCoverUrl] = useState(() => cleanup.coverUrl ?? null)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const mergeForm = useCallback(
+    (partial: Partial<CleanupFormValue>) => setForm((prev) => ({ ...prev, ...partial })),
+    [],
+  )
 
   const linkedReports = cleanup.linkedReports
-  const linkedReportIds = linkedReports.map((report) => report.id).join(",")
   useEffect(() => {
     useLinkedReportCards.getState().put(linkedReports.map(linkedRefToCardData))
-  }, [linkedReportIds])
+  }, [linkedReports])
 
-  useEffect(() => () => useLinkedReportCards.getState().clear(), [])
+  useEffect(
+    () => () => {
+      // The card cache also backs an in-progress create draft's links; that draft clears it itself.
+      if (!useCleanupDraft.getState().active) useLinkedReportCards.getState().clear()
+    },
+    [],
+  )
 
   const scheduleUntouched =
     form.date != null &&
@@ -150,7 +164,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
         ? { organizationId: form.organizationId }
         : {}),
       ...(form.eventKind === "cleanup" ? { linkedReportIds: form.linkedReportIds } : {}),
-      ...(eventCoverChanged(form, cleanup.coverUrl) ? { coverMediaId: form.coverMediaId } : {}),
+      ...(eventCoverChanged(form, seededCoverUrl) ? { coverMediaId: form.coverMediaId } : {}),
     }
     update.mutate(
       { id: cleanup.id, patch },
@@ -172,6 +186,7 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
     persistEventEnd,
     scheduleUntouched,
     scheduledAt,
+    seededCoverUrl,
     update,
     t,
     tForm,
@@ -187,6 +202,8 @@ function EditForm({ cleanup }: { cleanup: CleanupDTO }) {
       <CleanupForm
         value={form}
         onChange={setForm}
+        onPatch={mergeForm}
+        centerSettled
         initialCenter={form.coords}
         existingSlots={cleanup.slots}
         eventEndUnsaved={cleanup.endsAt == null}
@@ -255,9 +272,24 @@ export function EditCleanupBody({ id }: { id: string }) {
   const th = useTheme()
   const { t } = useT("event-edit")
   const query = useCleanup(id)
-  const { user } = useAuthState()
+  const { user, isAuthenticated, isPending } = useAuthState()
+  const requireAuth = useRequireAuth()
 
-  if (query.isLoading) return <EditCleanupSkeleton />
+  if (isPending || query.isLoading) return <EditCleanupSkeleton />
+  if (!isAuthenticated) {
+    return (
+      <View style={styles.stateFill}>
+        <SignInPrompt
+          icon={iconMap.Lock}
+          tone="neutral"
+          variant="detail"
+          title={t("signIn.title")}
+          body={t("signIn.body")}
+          onSignIn={() => requireAuth(() => {}, { next: pathForEntry({ kind: "edit-cleanup", id }) })}
+        />
+      </View>
+    )
+  }
   if (query.isError || !query.data) {
     return (
       <View style={styles.stateFill}>

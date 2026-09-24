@@ -19,7 +19,9 @@
     "empty_body_after": ", um die erste Neuigkeit zu teilen.",
     "caught_up": "Du bist auf dem neuesten Stand",
     "new_posts_one": "{{count}} neuer Beitrag",
-    "new_posts_other": "{{count}} neue Beiträge"
+    "new_posts_other": "{{count}} neue Beiträge",
+    "loading": "Beiträge werden geladen",
+    "load_more_error": "Weitere Beiträge konnten nicht geladen werden."
   },
   "thread": {
     "title": "Beitrag",
@@ -73,8 +75,8 @@
     "deleted_account": "Gelöschtes Konto",
     "unavailable": "Dieser Beitrag ist nicht mehr verfügbar.",
     "profile_a11y": "Profil von {{name}} ansehen",
-    "open_repost_a11y": "Reposteten Beitrag öffnen",
-    "open_quote_a11y": "Zitierten Beitrag öffnen",
+    "open_repost_a11y": "Reposteten Beitrag von {{name}} öffnen: {{excerpt}}",
+    "open_quote_a11y": "Zitierten Beitrag von {{name}} öffnen: {{excerpt}}",
     "share_title": "Beitrag von {{name}}",
     "open_thread_a11y": "Beitrag von {{name}} öffnen",
     "permalink_a11y": "Vor {{time}} gepostet. Diesen Beitrag öffnen",
@@ -100,6 +102,8 @@
     },
     "replying_to": "Antwort an {{handle}}",
     "via": "von {{author}}",
-    "org_a11y": "{{name}} öffnen"
+    "org_a11y": "{{name}} öffnen",
+    "media_photo_position_a11y": "Foto {{index}} von {{count}}",
+    "media_video_position_a11y": "Video {{index}} von {{count}}"
   }
 }

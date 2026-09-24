@@ -6,6 +6,7 @@ import { haversineMeters } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import type { CleanupDTO } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
+import { eventEndsAtMs } from "@civfix/shared/host"
 import {
   focusRingProps,
   makeThemedStyles,
@@ -17,7 +18,14 @@ import {
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { MetaDot, RsvpPill, EmptyState, OrgAffiliationBadge } from "../primitives"
-import { useCleanups, useJoinCleanup, useAttendingCleanups, useUserLocation, useAuthState } from "../data"
+import {
+  useCleanups,
+  useJoinCleanup,
+  useAttendingCleanups,
+  useUserLocation,
+  useAuthState,
+  useNow,
+} from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useEventWhen, useLocale, useT } from "../i18n"
@@ -56,10 +64,11 @@ const SheetEventCard = React.memo(function SheetEventCard({
   const when = useEventWhen(cleanup)
   const { day, month } = eventChip(cleanup.scheduledAt, locale, when.timeZone)
   const join = useJoinCleanup(cleanup.id)
-  const dist = eventDistanceLabel(cleanup.dist)
+  const dist = eventDistanceLabel(cleanup.dist, locale)
   const where = cleanup.address?.trim()
   const blurb = cleanup.description?.trim()
   const { hovered, hoverProps } = useRowHover()
+  const now = useNow(0, { boundaryAt: eventEndsAtMs(cleanup) })
 
   return (
     <View {...hoverProps} style={[styles.card, webTransition, hovered ? styles.cardHovered : null]}>
@@ -141,7 +150,7 @@ const SheetEventCard = React.memo(function SheetEventCard({
           going={cleanup.joined}
           onToggle={(currentlyGoing) => join.mutate(currentlyGoing)}
           busy={join.isPending}
-          ended={hasEventEnded(cleanup, Date.now())}
+          ended={hasEventEnded(cleanup, now)}
           nextPath={`/cleanups/${cleanup.id}`}
           size="sm"
         />
@@ -172,7 +181,7 @@ export function EventsBody() {
   const { t } = useT("event-list")
   const { FlatList } = useScrollHost()
   const query = useCleanups("upcoming")
-  const all = query.data ?? []
+  const all = useMemo(() => query.data ?? [], [query.data])
   const { isAuthenticated } = useAuthState()
   const attendingQuery = useAttendingCleanups()
   const location = useUserLocation().data ?? null
@@ -238,7 +247,7 @@ export function EventsBody() {
           <SheetEventCard cleanup={item.cleanup} onPress={onOpenEvent} />
         </View>
       ),
-    [onOpenEvent],
+    [onOpenEvent, styles],
   )
 
   return (
@@ -336,11 +345,14 @@ function EventsHeader({
               onPress={() => onChangeQuery("")}
               accessibilityRole="button"
               accessibilityLabel={t("search.clear_a11y")}
-              hitSlop={6}
               {...focusRingProps}
-              style={({ pressed }) => [styles.clearBtn, pressed ? styles.clearBtnPressed : null]}
+              style={styles.clearTarget}
             >
-              <Icon icon={iconMap.Close} size={14} color={th.colors.textSubtle} />
+              {({ pressed }) => (
+                <View style={[styles.clearBtn, pressed ? styles.clearBtnPressed : null]}>
+                  <Icon icon={iconMap.Close} size={14} color={th.colors.textSubtle} />
+                </View>
+              )}
             </Pressable>
           ) : null}
         </View>
@@ -422,7 +434,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   dateMonth: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 9,
+    fontSize: 11,
     letterSpacing: 0.55,
     marginTop: 3,
   },
@@ -489,6 +501,14 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: 14,
     color: t.colors.text,
+  },
+  clearTarget: {
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
+    marginRight: -11,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
   },
   clearBtn: {
     width: 22,

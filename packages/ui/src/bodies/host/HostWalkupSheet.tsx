@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import type { TicketTypeDTO } from "@civfix/shared"
@@ -18,7 +18,7 @@ import { useWalkupRegistration } from "../../data/hooks/host"
 import { appErrorCode } from "../errorCode"
 import { TicketTypePicker } from "./registration/TicketTypePicker"
 import { PartySizeStepper, clampPartySize } from "./registration/PartySizeStepper"
-import { defaultTicketTypeId, registerOutcomeKey, selectableTicketTypes } from "./registration/registrationModel"
+import { registerOutcomeKey, resolveTicketTypeId, selectableTicketTypes } from "./registration/registrationModel"
 
 export interface HostWalkupSheetProps {
   visible: boolean
@@ -36,19 +36,21 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
 
   const types = selectableTicketTypes(ticketTypes)
   const [name, setName] = useState("")
-  const [ticketTypeId, setTicketTypeId] = useState<string | null>(null)
+  const [pickedTypeId, setPickedTypeId] = useState<string | null>(null)
   const [partySize, setPartySize] = useState(1)
   const [focused, setFocused] = useState(false)
   const [errorText, setErrorText] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!visible) return
+  const ticketTypeId = resolveTicketTypeId(types, pickedTypeId)
+
+  const onClosed = useCallback(() => {
     setName("")
     setPartySize(1)
     setErrorText(null)
-    setTicketTypeId(defaultTicketTypeId(types))
-    walkup.reset()
-  }, [visible])
+    setPickedTypeId(null)
+    setFocused(false)
+    if (!walkup.isPending) walkup.reset()
+  }, [walkup])
 
   const selected = types.find((type) => type.id === ticketTypeId) ?? null
   const trimmed = name.trim()
@@ -84,6 +86,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
     <ModalCardSheet
       visible={visible}
       onClose={onClose}
+      onClosed={onClosed}
       onCommit={submit}
       headerIcon="UserPlus"
       headerIconColor={th.colors.moss["700"]}
@@ -129,7 +132,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
           <TicketTypePicker
             ticketTypes={types}
             selectedId={ticketTypeId}
-            onSelect={setTicketTypeId}
+            onSelect={setPickedTypeId}
             disabled={walkup.isPending}
           />
         </View>

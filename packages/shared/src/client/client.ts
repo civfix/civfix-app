@@ -340,9 +340,12 @@ export function extractParams(
       let v = rec[name]
       let sourceKey = name
       // Tolerate the few endpoints whose path says ":id" while the DTO field is "<resource>Id"
-      // (e.g. /anon/reports/:id/status carries { reportId }). Match a single *Id-suffixed key.
+      // (e.g. /anon/reports/:id/status carries { reportId }). Only an unambiguous single *Id-suffixed
+      // key qualifies: with two, key order would pick the resource, so the param stays unfilled and
+      // fillPath refuses the request.
       if ((v === undefined || v === null) && name === "id") {
-        const idKey = Object.keys(rec).find((k) => /Id$/.test(k))
+        const idKeys = Object.keys(rec).filter((k) => /Id$/.test(k))
+        const idKey = idKeys.length === 1 ? idKeys[0] : undefined
         if (idKey) {
           v = rec[idKey]
           sourceKey = idKey

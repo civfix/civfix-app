@@ -34,5 +34,6 @@
   "terms": "Terms of service",
   "privacy_policy": "Privacy policy",
   "source_code": "Source code",
-  "sign_out": "Sign out"
+  "sign_out": "Sign out",
+  "open_error": "Couldn't open that link. Try again."
 }

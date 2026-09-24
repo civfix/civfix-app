@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { sliceBetween, sliceFrom } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (source: string): string =>
@@ -171,7 +172,7 @@ describe("the sheet is a platform seam: a house dialog on web, a slide-up sheet 
 
   it("caps the note so note + link always fit one message frame", () => {
     expect(SESSION).toContain("const noteMax = shareNoteMaxLength(url)")
-    expect(SESSION).toContain("setNoteRaw(next.slice(0, noteMax))")
+    expect(SESSION).toContain("setNoteRaw(clampShareNote(next, noteMax))")
     expect(SHEET).toContain("maxLength={session.noteMax}")
     expect(NATIVE_SHEET).toContain("maxLength={session.noteMax}")
   })
@@ -211,7 +212,7 @@ describe("a send in flight can never seal the sheet", () => {
     expect(SHEET).toContain("onClose={onCancel}")
     expect(NATIVE_SHEET).toContain("onClose={onCancel}")
     expect(SESSION).toMatch(
-      /const onCancel = useCallback\(\(\): void => \{\s*if \(share\.isPending\) \{\s*cancelledRef\.current = true\s*share\.abort\(\)/,
+      /const onCancel = useCallback\(\(\): void => \{\s*if \(sending\.current\) \{\s*liveRun\.current = 0\s*share\.abort\(\)/,
     )
     expect(SHEET).toContain('<SecondaryButton label={t("actions.cancel")} onPress={onCancel} size="sm" />')
   })
@@ -222,7 +223,22 @@ describe("a send in flight can never seal the sheet", () => {
   })
 
   it("stays quiet about a run the viewer cancelled, beyond what actually got through", () => {
-    expect(SESSION).toMatch(/if \(cancelledRef\.current\) \{/)
+    expect(SESSION).toMatch(/if \(liveRun\.current !== runId\) \{\s*if \(summary\.sent\.length > 0\) \{/)
+  })
+
+  it("keys completion to the run, so reopening the sheet cannot re-attach a cancelled one", () => {
+    expect(SESSION).toMatch(/const runId = \+\+runSeq\.current\s*liveRun\.current = runId/)
+    expect(SESSION).not.toContain("cancelledRef")
+    const reopen = sliceBetween(SESSION, "useEffect(() => {\n    if (!visible) return", "}, [visible])")
+    expect(reopen).toContain("setSelected(NO_SELECTION)")
+    expect(reopen).not.toContain("liveRun")
+  })
+
+  it("starts at most one run at a time, whatever fires Send twice before a re-render", () => {
+    expect(SESSION).toMatch(
+      /const deliver = async \(entries: SharePlanEntry\[\], body: string\): Promise<void> => \{\s*if \(sending\.current\) return\s*sending\.current = true/,
+    )
+    expect(SESSION).toMatch(/\} finally \{\s*sending\.current = false\s*\}/)
   })
 })
 
@@ -239,20 +255,20 @@ describe("the DM send path", () => {
   })
 
   it("stops the whole run on any transport failure, and only continues past a server refusal", () => {
-    expect(DELIVERY).toMatch(/if \(!\(await waitForSocketOpen\(deps\.socket, openTimeoutMs\)\)\) \{\s*stopped = true\s*break/)
+    expect(DELIVERY).toMatch(/if \(!\(await waitForSocketOpen\(deps\.socket, openTimeoutMs, deps\.signal\)\)\) \{\s*stopped = true\s*break/)
     expect(DELIVERY).toMatch(/if \(outcome === "dropped"\) \{\s*waiter\.cancel\(\)\s*stopped = true\s*break/)
     expect(DELIVERY).toMatch(/if \(verdict === "rejected"\) \{\s*outcomes\.set\(entry\.clientId, "failed"\)\s*continue/)
     expect(DELIVERY).toMatch(/stopped = true\s*break\s*\}\s*\} finally/)
   })
 
   it("checks the abort flag before resolving a thread and again before writing a frame", () => {
-    const loop = DELIVERY.slice(DELIVERY.indexOf("for (const entry of entries)"))
+    const loop = sliceFrom(DELIVERY, "for (const entry of entries)")
     const checks = loop.match(/if \(aborted\(\)\) \{/g) ?? []
     expect(checks.length).toBeGreaterThanOrEqual(2)
   })
 
   it("bounds the ack wait with the same timeout the conversation composer uses", () => {
-    expect(HOOK).toContain('import { SEND_TIMEOUT_MS } from "../data/hooks/chat"')
+    expect(HOOK).toContain('import { QUEUED_SEND_TIMEOUT_MS, SEND_TIMEOUT_MS } from "../data/hooks/chat"')
     expect(HOOK).toContain("ackTimeoutMs: SEND_TIMEOUT_MS")
   })
 
@@ -261,6 +277,22 @@ describe("the DM send path", () => {
     expect(HOOK).toContain("return known ? Promise.resolve(known) : openDmRoom(api, recipientId)")
     expect(SESSION).toContain("const knownRooms = useMemo(() => dmThreadIdsByPeer(threads.data?.pages)")
     expect(SESSION).toContain("share.send({ entries, body, knownRooms })")
+  })
+
+  it("gives every run its own abort token instead of one flag each send resets", () => {
+    expect(HOOK).toContain("const run = runs.begin()")
+    expect(HOOK).toContain("signal: run.signal")
+    expect(HOOK).toMatch(/\} finally \{\s*runs\.end\(run\)/)
+    expect(HOOK).not.toContain("abortedRef")
+  })
+
+  it("remembers every room a run opened, so a retry does not spend the openDm budget twice", () => {
+    expect(HOOK).toContain("knownRooms?.get(recipientId) ?? openedRooms.current.get(recipientId)")
+    expect(HOOK).toContain("for (const [recipientId, roomId] of resolved) openedRooms.current.set(recipientId, roomId)")
+  })
+
+  it("gives a frame the socket queued the composer's longer ack window", () => {
+    expect(HOOK).toContain("queuedAckTimeoutMs: QUEUED_SEND_TIMEOUT_MS")
   })
 
   it("refreshes the inbox and each posted thread once, not per recipient", () => {
@@ -272,7 +304,7 @@ describe("the DM send path", () => {
 
   it("re-arms the mounted flag on mount, so a dev double-invoke cannot wedge Send", () => {
     expect(HOOK).toMatch(/useEffect\(\(\) => \{\s*alive\.current = true\s*return \(\) => \{\s*alive\.current = false/)
-    expect(HOOK).toContain("if (alive.current) setIsPending(false)")
+    expect(HOOK).toContain("if (alive.current) setIsPending(runs.busy)")
   })
 
   it("reports per-recipient outcomes instead of throwing out of the sheet", () => {

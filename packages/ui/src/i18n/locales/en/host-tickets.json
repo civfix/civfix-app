@@ -14,7 +14,10 @@
     "unlimited": "unlimited",
     "party": "up to {{max}} per registration",
     "empty_title": "No ticket types yet",
-    "empty_body": "Add one so people can choose how they take part. Without ticket types the event uses a simple RSVP."
+    "empty_body": "Add one so people can choose how they take part. Without ticket types the event uses a simple RSVP.",
+    "move_up_named": "Move {{name}} up",
+    "move_down_named": "Move {{name}} down",
+    "delete_named": "Delete {{name}}"
   },
   "drawer": {
     "new_title": "New ticket type",
@@ -39,7 +42,9 @@
     "maxPartySize": "Seats per registration",
     "salesOpensAt": "Sales open",
     "salesClosesAt": "Sales close",
-    "ticketTypeIds": "Order"
+    "ticketTypeIds": "Order",
+    "sales_zone_hint": "Sales times are in the event's time zone ({{zone}}).",
+    "sales_time_not_in_zone": "That time does not exist in {{zone}} because the clocks change. Pick another time."
   },
   "visibility": {
     "public": "Public",
@@ -78,6 +83,10 @@
     "required": "Required",
     "ticket_scope": "Ask only for",
     "ticket_all": "Every ticket type",
-    "ticket_scope_hint": "A question limited to one ticket type is asked only when someone picks that type — so it is never asked if every type is hidden. Leave it on every ticket type to always ask it."
+    "ticket_scope_hint": "A question limited to one ticket type is asked only when someone picks that type — so it is never asked if every type is hidden. Leave it on every ticket type to always ask it.",
+    "move_up_named": "Move {{name}} up",
+    "move_down_named": "Move {{name}} down",
+    "remove_named": "Remove {{name}}",
+    "untitled": "Question {{n}}"
   }
 }

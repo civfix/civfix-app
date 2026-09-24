@@ -41,7 +41,7 @@ export function EventSwitcher({ eventId, section, className }: EventSwitcherProp
         <button
           type="button"
           aria-expanded={open}
-          aria-haspopup="menu"
+          aria-haspopup="dialog"
           onClick={() => setOpen((value) => !value)}
           className={cn(
             "inline-flex h-9 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink-2 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring",

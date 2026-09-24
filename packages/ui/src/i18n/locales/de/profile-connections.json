@@ -2,14 +2,16 @@
   "search": {
     "placeholder": "Nach Name oder @handle suchen",
     "a11y": "Personen nach Name oder Handle suchen",
-    "clear_a11y": "Suche löschen"
+    "clear_a11y": "Suche löschen",
+    "more": "Weitere Personen durchsuchen"
   },
   "row": {
     "open_a11y": "{{name}}, Profil anzeigen"
   },
   "no_matches": {
     "title": "Keine Treffer",
-    "body": "Niemand in dieser Liste stimmt mit \"{{query}}\" überein."
+    "body": "Niemand in dieser Liste stimmt mit \"{{query}}\" überein.",
+    "body_partial": "Unter den bisher geladenen Personen passt niemand zu \"{{query}}\"."
   },
   "error": {
     "title": "Laden fehlgeschlagen",

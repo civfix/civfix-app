@@ -43,6 +43,7 @@ export function usePopScale(active: boolean): Animated.Value {
       .then((enabled) => {
         if (mounted) reduceMotionRef.current = !!enabled
       })
+      // A failed probe keeps the pop on; the reduceMotionChanged listener below still corrects it.
       .catch(() => {})
     const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => {
       reduceMotionRef.current = !!enabled

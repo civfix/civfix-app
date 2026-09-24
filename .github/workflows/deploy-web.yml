@@ -41,6 +41,11 @@ on:
     # reach civfix.org. The regex in the production gate below is the second, independent guard.
     types: [released]
   workflow_dispatch:
+    inputs:
+      rollback:
+        description: "Run on an older v* tag to deliberately put that release back on civfix.org"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -77,13 +82,17 @@ jobs:
           # Full history: the production gate below proves the tag is an ancestor of main.
           fetch-depth: 0
 
-      - name: Prove the production ref (tag shape + merged into main)
+      - name: Prove the production ref (tag shape + merged into main + newest release)
         # THIS IS A BRANCH-PROTECTION CONTROL, not a formality. Without it the only thing standing
         # between an arbitrary commit and civfix.org is the ability to push a tag.
         # `main` requires a reviewed PR; tags do not, so a tag on an unreviewed branch would be a
         # complete bypass straight to production. civfix-backend's deploy.yml carries the same proof;
         # keep the regex identical to that one and to CIVFIX_RELEASE_TAG_REGEX in civfix-infra.
+        # The newest-release check stops a re-published old release (or a dispatch on an old tag)
+        # from silently rolling civfix.org back; a deliberate web rollback says so with `rollback`.
         if: env.DEPLOY_ENV == 'production'
+        env:
+          ROLLBACK: ${{ github.event_name == 'workflow_dispatch' && inputs.rollback == true && 'true' || 'false' }}
         run: |
           set -euo pipefail
           tag="${GITHUB_REF#refs/tags/}"
@@ -93,11 +102,22 @@ jobs:
             echo "::error::Prereleases are excluded by design."
             exit 1
           fi
-          git fetch --quiet --force origin '+refs/heads/main:refs/remotes/origin/main'
+          git fetch --quiet --force --tags origin '+refs/heads/main:refs/remotes/origin/main'
           if ! git merge-base --is-ancestor "$tag" origin/main; then
             echo "::error::tag '$tag' is not merged into main. Production only ships code that went"
             echo "::error::through the staging lane and a reviewed PR. Refusing to deploy."
             exit 1
+          fi
+          # `|| true`: a grep that matches nothing would otherwise end the step here under errexit,
+          # before the comparison below can explain the refusal.
+          newest="$(git tag --list 'v*' --sort=-v:refname --merged origin/main | grep -E "$RELEASE_RE" | head -n 1)" || true
+          if [ "$tag" != "$newest" ]; then
+            if [ "$ROLLBACK" != "true" ]; then
+              echo "::error::'$tag' is not the newest release ('$newest' is). Deploying it would roll civfix.org"
+              echo "::error::back. To do that on purpose, run this workflow on the '$tag' tag with rollback checked."
+              exit 1
+            fi
+            echo "::warning::Deliberate rollback: deploying $tag to civfix.org while $newest is the newest release."
           fi
           echo "$tag is a release tag merged into main"
 

@@ -37,6 +37,7 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
         reduceMotionCache = !!enabled
         if (mounted) reduceMotionRef.current = !!enabled
       })
+      // A failed probe keeps motion on; the reduceMotionChanged listener below still corrects it.
       .catch(() => {})
     const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => {
       reduceMotionCache = !!enabled
@@ -91,7 +92,7 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
       },
       Math.max(plan.duration, plan.fadeDuration) + SETTLE_GUARD_MS,
     )
-  }, [transitionKey])
+  }, [direction, opacity, transitionKey, translateX])
 
   return (
     <Animated.View onLayout={onLayout} style={[styles.host, { opacity, transform: [{ translateX }] }]}>

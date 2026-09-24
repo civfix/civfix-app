@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
+import { sliceFrom } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (source: string): string =>
@@ -38,7 +39,7 @@ describe("every post surface can be reported", () => {
     it(`${name} renders the shared overflow button instead of a local one`, () => {
       expect(source).toMatch(/from "\.\.\/(\.\.\/)?primitives\/PostOverflowButton"/)
       expect(source).toMatch(
-        /<PostOverflowButton\s+label=\{t\("post_card\.more_a11y"\)\}\s+onPress=\{[\w.]+\}\s+buttonRef=\{[\w.]+\}\s*\/>/,
+        /<PostOverflowButton\s+label=\{t\("post_card\.more_a11y"\)\}\s+onPress=\{[\w.]+\}\s+buttonRef=\{[\w.]+\}\s+expanded=\{menuOpen\}\s*\/>/,
       )
       expect(source).not.toContain("iconMap.Ellipsis")
       expect(source).not.toContain("moreButton")
@@ -59,6 +60,13 @@ describe("every post surface can be reported", () => {
 })
 
 describe("the overflow button is one primitive with one hit target", () => {
+  it("tells assistive tech it opens a menu and whether that menu is open (APP-A11Y-105)", () => {
+    expect(BUTTON).toContain("expanded: boolean")
+    expect(BUTTON).toContain("{...a11yState({ expanded })}")
+    expect(BUTTON).toContain('const WEB_MENU_TRIGGER_PROPS = IS_WEB ? ({ "aria-haspopup": "menu" } as object) : null')
+    expect(BUTTON).toContain("{...WEB_MENU_TRIGGER_PROPS}")
+  })
+
   it("is exported from the primitives barrel", () => {
     expect(BARREL).toContain('export { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "./PostOverflowButton"')
     expect(BUTTON).toContain("export const POST_OVERFLOW_ROW_LIFT: ViewStyle = IS_WEB ? { zIndex: 1 } : {}")
@@ -110,7 +118,7 @@ describe("the report row prompts for sign-in instead of going dead", () => {
   it("reports, links and deletes the SUBJECT, never the row's own wrapper id", () => {
     expect(MENU).toContain('{ subjectType: "post", subjectId, reason')
     expect(MENU).toContain("setString(absoluteUrl(subjectPath))")
-    expect(MENU).toContain("del.mutate(subjectId, {")
+    expect(MENU).toContain("deletePost(subjectId)")
     expect(MENU).toContain("viewerId != null && viewerId === subject.authorId")
   })
 
@@ -148,7 +156,7 @@ describe("deleting from a menu leaves the surface consistent", () => {
     expect(keys).toContain('postsRoot: ["posts"] as const')
     expect(keys).toContain('postReplies: (id: string) => ["posts", "replies", id] as const')
     const hooks = code(read("../../data/hooks/posts.ts"))
-    const fromDelete = hooks.slice(hooks.indexOf("export function buildDeleteMutation"))
+    const fromDelete = sliceFrom(hooks, "export function buildDeleteMutation")
     const deleteMutation = fromDelete.slice(0, fromDelete.indexOf("export function", 1))
     expect(deleteMutation).toContain("qc.invalidateQueries({ queryKey: queryKeys.postsRoot })")
   })

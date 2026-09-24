@@ -41,7 +41,8 @@ function InviteActions({
         variant="label"
         standalone
         accessibilityLabel={t("invites.decline_a11y", { title })}
-        onPress={pending ? () => {} : onDecline}
+        disabled={pending}
+        onPress={onDecline}
       >
         {t("invites.decline")}
       </TextLink>

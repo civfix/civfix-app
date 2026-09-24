@@ -1,4 +1,4 @@
-import { useCallback, useSyncExternalStore } from "react"
+import { useCallback, useMemo, useSyncExternalStore } from "react"
 import { useLocale, useRelativeTime } from "../i18n"
 import { listTimeAgo } from "./relativeTime"
 
@@ -41,8 +41,13 @@ export function useListTimeAgo(): (iso: string) => string {
   )
 }
 
+// A fresh function per tick is the whole point: memoized rows receiving it re-render once a minute.
+function formatterForTick(format: (iso: string) => string, _tick: number): (iso: string) => string {
+  return (iso) => format(iso)
+}
+
 export function useTickingListTimeAgo(): (iso: string) => string {
   const format = useListTimeAgo()
   const tick = useListTimeTick()
-  return useCallback((iso: string) => format(iso), [format, tick])
+  return useMemo(() => formatterForTick(format, tick), [format, tick])
 }

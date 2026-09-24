@@ -2,6 +2,15 @@ import type { OrganizationInviteDTO } from "@civfix/shared"
 
 import { notifyConsoleUrlChanged } from "@/components/console/url-state"
 
+/**
+ * Handles are stored without the "@" people type in front of them, and the backend looks them up
+ * verbatim, so a pasted "@rosa" would find nobody.
+ */
+export function normalizeInviteIdentifier(kind: "handle" | "email", raw: string): string {
+  const trimmed = raw.trim()
+  return kind === "handle" ? trimmed.replace(/^@/, "") : trimmed
+}
+
 /** The backend's `ORG_INVITE_TTL_MS` (14 days) - the copy says it before an invite exists. */
 export const ORG_INVITE_TTL_DAYS = 14
 

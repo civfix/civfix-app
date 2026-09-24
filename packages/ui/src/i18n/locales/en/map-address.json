@@ -1,12 +1,21 @@
 {
   "input": {
     "placeholder": "Search an address or paste lat, lng",
-    "clear": "Clear"
+    "clear": "Clear",
+    "a11y": "Search for an address"
   },
   "coordinate": {
     "exact": "Exact coordinates"
   },
   "empty": {
     "noMatches": "No matches. Try a more specific address, or paste \"lat, lng\"."
+  },
+  "results": {
+    "count_one": "1 address found",
+    "count_other": "{{count}} addresses found"
+  },
+  "error": {
+    "failed": "Couldn't load address suggestions.",
+    "retry": "Try again"
   }
 }

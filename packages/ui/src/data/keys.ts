@@ -2,6 +2,7 @@ import type { RoomKind } from "@civfix/shared"
 
 export const queryKeys = {
   session: ["session"] as const,
+  mapReportsRoot: ["map", "reports"] as const,
   mapReports: (bbox: unknown, categories: readonly string[]) =>
     ["map", "reports", bbox, categories] as const,
   nearbyReportPins: (lat: number, lng: number) => ["map", "reports", "picker", lat, lng] as const,
@@ -13,8 +14,10 @@ export const queryKeys = {
   cleanups: (when: string, limit: number) => ["cleanups", when, limit] as const,
   cleanupsNearby: (when: string, limit: number, lat: number, lng: number) =>
     ["cleanups", when, "nearby", lat, lng, limit] as const,
+  cleanupRoot: ["cleanup"] as const,
   cleanup: (id: string) => ["cleanup", id] as const,
   cleanupAttendees: (id: string) => ["cleanup", id, "attendees"] as const,
+  reportRoot: ["report"] as const,
   report: (id: string) => ["report", id] as const,
   reportChatParticipants: (id: string) => ["report", id, "chat-participants"] as const,
   reportSearch: (q: string, categories: readonly string[]) =>
@@ -23,6 +26,7 @@ export const queryKeys = {
   myReports: (limit: number) => ["reports", "mine", limit] as const,
   threads: ["threads"] as const,
   threadsUnread: ["threads", "unread"] as const,
+  chatRoot: ["chat"] as const,
   chatHistory: (roomId: string, roomKind: RoomKind = "cleanup") =>
     ["chat", roomKind, roomId] as const,
   groupInfo: (id: string) => ["group", id] as const,
@@ -45,6 +49,8 @@ export const queryKeys = {
   following: (id: string) => ["connections", "following", id] as const,
   userLocation: ["user-location"] as const,
   approximateLocation: ["geo", "approximate"] as const,
+  reverseLabel: (lat: number | null, lng: number | null) => ["reverse-label", lat, lng] as const,
+  handleAvailable: (handle: string) => ["handle-available", handle] as const,
 
   postsRoot: ["posts"] as const,
   homeFeedRoot: (filter: string) => ["posts", "feed", filter] as const,

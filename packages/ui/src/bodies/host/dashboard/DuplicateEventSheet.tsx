@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import type { HostedEventDTO } from "@civfix/shared"
 import { useTheme } from "../../../theme"
 import { Text } from "../../../typography"
@@ -26,19 +26,28 @@ export function DuplicateEventSheet({ event, onClose }: DuplicateEventSheetProps
   const [date, setDate] = useState<Date | null>(null)
   const [time, setTime] = useState<Date | null>(null)
   const [errorText, setErrorText] = useState<string | null>(null)
+  const [seededFor, setSeededFor] = useState<string | null>(null)
 
   const timeZone = event?.timezone ?? viewerTimeZone()
 
-  useEffect(() => {
-    if (!event) return
-    const seed = wallClockToFormDate(
-      nextDuplicateStart(event.startsAt, event.timezone, new Date()).wallClock,
-    )
-    setDate(seed)
-    setTime(seed)
-    setErrorText(null)
-    duplicate.reset()
-  }, [event])
+  // Seeds once per open, keyed on the event id: callers may rebuild the DTO on every render, and
+  // re-seeding on identity would wipe the host's picks mid-edit.
+  const eventId = event?.id ?? null
+  if (eventId !== seededFor) {
+    setSeededFor(eventId)
+    if (event) {
+      const seed = wallClockToFormDate(
+        nextDuplicateStart(event.startsAt, event.timezone, new Date()).wallClock,
+      )
+      setDate(seed)
+      setTime(seed)
+      setErrorText(null)
+    }
+  }
+
+  const onClosed = useCallback(() => {
+    if (!duplicate.isPending) duplicate.reset()
+  }, [duplicate])
 
   const busy = duplicate.isPending
   const ready = duplicateReady(date, time, timeZone, new Date())
@@ -78,6 +87,7 @@ export function DuplicateEventSheet({ event, onClose }: DuplicateEventSheetProps
     <ModalCardSheet
       visible={event !== null}
       onClose={onClose}
+      onClosed={onClosed}
       onCommit={submit}
       headerIcon="Copy"
       headerIconColor={th.colors.sky["700"]}

@@ -39,7 +39,8 @@
     "a11y": "프로필 섹션"
   },
   "social": {
-    "link_a11y": "{{platform}} 열기"
+    "link_a11y": "{{platform}} 열기",
+    "link_failed": "링크를 열지 못했어요"
   },
   "reports": {
     "section": "내 신고",

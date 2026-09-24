@@ -17,6 +17,7 @@ import { safeExternalHref } from "@/components/console/safe-url"
 import { ConsoleLink } from "../layout/console-link"
 import { useConsoleOrg } from "../console-context"
 import { useConsoleFormat } from "../format"
+import { EmptyValue } from "../analytics/analytics-value"
 import { publicOrgPath } from "./org-slug"
 import { useOrgVerification } from "./verification-screen"
 
@@ -317,7 +318,7 @@ export function OrgOverview() {
                 {t("overview.your_role", { defaultValue: "Your role" })}
               </dt>
               <dd>
-                {org.myRole ? <Chip kind="org-role" value={org.myRole} size="sm" /> : "—"}
+                {org.myRole ? <Chip kind="org-role" value={org.myRole} size="sm" /> : <EmptyValue />}
               </dd>
             </div>
           </dl>

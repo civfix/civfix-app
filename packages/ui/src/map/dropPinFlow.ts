@@ -60,8 +60,8 @@ let unsubscribeDropPin: (() => void) | null = null
 // THE SHARED PACKAGE MUST NOT TOUCH THE CAMERA (dropPinCamera.ts:64-68). It hands the host a CENTRE and
 // the host flies it through its own guarded path - which for civfix-mobile means its screen-local
 // `flyTo(lng, lat, zoom)` (app/index.tsx:267-279 - LNG FIRST), NOT `MapHandle.flyTo(lat, lng, zoom)`
-// (map/types.ts:140 - LAT first). `null` (nobody registered) is the normal state on civfix-web today,
-// where the restore simply no-ops.
+// (map/types.ts:140 - LAT first), while civfix-web's home map registers `MapHandle.flyTo`. With nobody
+// registered (no home map mounted) the restore simply no-ops.
 
 /** How the host flies its own generation-guarded camera back to a centre. */
 export type DropPinCameraRestorer = (target: DropPinCameraTarget) => void
@@ -149,8 +149,8 @@ export function armDropPinCleanup(): void {
     useDroppedPin.getState().clear()
     // THE HOST OWNS THE CAMERA (dropPinCamera.ts:64-68): never maplibre from here, only the callback the
     // host registered, which routes through ITS generation-guarded flyTo. Ordered after the pin clear so
-    // the marker and the camera move on the same frame. No restorer registered (civfix-web today) simply
-    // no-ops - the pin still clears.
+    // the marker and the camera move on the same frame. No restorer registered simply no-ops - the pin
+    // still clears.
     if (restore && snapshot) restoreCamera?.(snapshot.from)
   })
 }

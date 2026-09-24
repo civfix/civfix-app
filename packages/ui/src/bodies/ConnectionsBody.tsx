@@ -6,7 +6,7 @@ import { tokens } from "@civfix/shared/tokens"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, FollowButton, EmptyState, LoadingState, OrgAffiliationBadge, VerifiedBadge } from "../primitives"
-import { useFollowers, useFollowing } from "../data"
+import { useAuthState, useFollowers, useFollowing } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
@@ -14,9 +14,11 @@ import { idKeyExtractor } from "./navHelpers"
 
 const ConnectionRow = memo(function ConnectionRow({
   person,
+  showFollow,
   onOpenPerson,
 }: {
   person: PersonDTO
+  showFollow: boolean
   onOpenPerson: (person: PersonDTO) => void
 }) {
   const styles = useStyles()
@@ -54,12 +56,14 @@ const ConnectionRow = memo(function ConnectionRow({
           ) : null}
         </View>
       </Pressable>
-      <FollowButton
-        personId={person.id}
-        isFollowing={person.isFollowing}
-        nextPath={`/people/${person.handle ?? person.id}`}
-        size="sm"
-      />
+      {showFollow ? (
+        <FollowButton
+          personId={person.id}
+          isFollowing={person.isFollowing}
+          nextPath={`/people/${person.handle ?? person.id}`}
+          size="sm"
+        />
+      ) : null}
     </View>
   )
 })
@@ -96,7 +100,7 @@ function PeopleSearchField({
           onPress={() => onChangeText("")}
           accessibilityRole="button"
           accessibilityLabel={t("search.clear_a11y")}
-          hitSlop={6}
+          hitSlop={CLEAR_BTN_HIT_SLOP}
           {...focusRingProps}
           style={({ pressed }) => [styles.clearBtn, pressed ? styles.clearBtnPressed : null]}
         >
@@ -120,6 +124,7 @@ export function ConnectionsBody({ id, mode }: ConnectionsBodyProps) {
   const followers = useFollowers(mode === "followers" ? id : undefined)
   const following = useFollowing(mode === "following" ? id : undefined)
   const query = mode === "followers" ? followers : following
+  const viewerId = useAuthState().user?.id ?? null
 
   const pages = query.data?.pages
   const items = useMemo(() => (pages ?? []).flatMap((p) => p.items), [pages])
@@ -142,8 +147,14 @@ export function ConnectionsBody({ id, mode }: ConnectionsBodyProps) {
   }, [])
 
   const renderItem = useCallback(
-    ({ item }: { item: PersonDTO }) => <ConnectionRow person={item} onOpenPerson={onOpenPerson} />,
-    [onOpenPerson],
+    ({ item }: { item: PersonDTO }) => (
+      <ConnectionRow
+        person={item}
+        showFollow={!item.deleted && item.id !== viewerId}
+        onOpenPerson={onOpenPerson}
+      />
+    ),
+    [onOpenPerson, viewerId],
   )
 
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = query
@@ -151,6 +162,11 @@ export function ConnectionsBody({ id, mode }: ConnectionsBodyProps) {
     if (filtering) return
     if (hasNextPage && !isFetchingNextPage) void fetchNextPage()
   }, [filtering, hasNextPage, isFetchingNextPage, fetchNextPage])
+  // The filter only sees loaded pages, so while it is on, more pages load on an explicit tap rather
+  // than onEndReached, which would fire repeatedly against a short filtered list and pull everyone.
+  const onSearchMore = useCallback(() => {
+    if (!isFetchingNextPage) void fetchNextPage()
+  }, [isFetchingNextPage, fetchNextPage])
 
   const emptyTitle = t(`empty.${mode}.title`)
   const emptyBody = t(`empty.${mode}.body`)
@@ -173,7 +189,9 @@ export function ConnectionsBody({ id, mode }: ConnectionsBodyProps) {
             variant="detail"
             icon={iconMap.Search}
             title={t("no_matches.title")}
-            body={t("no_matches.body", { query: search.trim() })}
+            body={t(hasNextPage ? "no_matches.body_partial" : "no_matches.body", {
+              query: search.trim(),
+            })}
           />
         ) : query.isLoading ? (
           <LoadingState skeleton="person" rows={8} />
@@ -197,7 +215,23 @@ export function ConnectionsBody({ id, mode }: ConnectionsBodyProps) {
         )
       }
       ListFooterComponent={
-        !filtering && filtered.length > 0 && query.isFetchingNextPage ? (
+        filtering && hasNextPage ? (
+          <Pressable
+            onPress={onSearchMore}
+            disabled={isFetchingNextPage}
+            accessibilityRole="button"
+            accessibilityLabel={t("search.more")}
+            accessibilityState={{ disabled: isFetchingNextPage, busy: isFetchingNextPage }}
+            {...focusRingProps}
+            style={({ pressed }) => [styles.searchMore, pressed ? styles.rowPressed : null]}
+          >
+            {isFetchingNextPage ? (
+              <ActivityIndicator size="small" color={th.colors.textSubtle} />
+            ) : (
+              <Text style={styles.searchMoreText}>{t("search.more")}</Text>
+            )}
+          </Pressable>
+        ) : !filtering && filtered.length > 0 && query.isFetchingNextPage ? (
           <View style={styles.footer}>
             <ActivityIndicator size="small" color={th.colors.textSubtle} />
           </View>
@@ -208,6 +242,8 @@ export function ConnectionsBody({ id, mode }: ConnectionsBodyProps) {
 }
 
 const MIN_TOUCH_TARGET = 44
+const CLEAR_BTN_SIZE = 22
+const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2
 
 const useStyles = makeThemedStyles((t) => ({
   searchField: {
@@ -236,8 +272,8 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
   },
   clearBtn: {
-    width: 22,
-    height: 22,
+    width: CLEAR_BTN_SIZE,
+    height: CLEAR_BTN_SIZE,
     borderRadius: 11,
     backgroundColor: t.colors.bgAlt,
     alignItems: "center",
@@ -300,5 +336,21 @@ const useStyles = makeThemedStyles((t) => ({
   },
   footer: {
     paddingVertical: t.space["4"],
+  },
+  searchMore: {
+    alignSelf: "center",
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: "center",
+    marginVertical: t.space["3"],
+    paddingHorizontal: t.space["4"],
+    borderRadius: t.radius.pill,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.colors.border,
+    backgroundColor: t.colors.surface,
+  },
+  searchMoreText: {
+    fontFamily: t.fontFamily.bodyBold,
+    fontSize: 13,
+    color: t.colors.textMuted,
   },
 }))

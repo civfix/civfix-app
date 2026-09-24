@@ -284,6 +284,7 @@ describe("MembersScreen pending invites", () => {
     })
 
     const section = await screen.findByRole("region", { name: "invites.title" })
+    expect(within(section).getByText("invites.subtitle(days=14)")).toBeTruthy()
     expect(within(section).getByText("rosa@example.org")).toBeTruthy()
     const subs = within(section).getAllByText(/invites\.invited_by\(name=Ada\)/)
     expect(subs.map((node) => node.textContent)).toEqual([

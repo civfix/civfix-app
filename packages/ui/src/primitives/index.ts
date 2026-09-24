@@ -364,7 +364,7 @@ export type {
 } from "./SegmentedControl"
 
 export { FilterChip, FILTER_CHIP_HEIGHT, FILTER_CHIP_MIN_TOUCH_TARGET } from "./FilterChip"
-export type { FilterChipProps } from "./FilterChip"
+export type { FilterChipProps, FilterChipSelection } from "./FilterChip"
 
 export { StatTile, StatTileRow, STAT_TILE_MIN_HEIGHT } from "./StatTile"
 export type { StatTileProps, StatTileRowProps, StatTone } from "./StatTile"

@@ -3,6 +3,7 @@ import { View, Pressable, StyleSheet } from "react-native"
 import type { OrganizationDTO } from "@civfix/shared"
 import {
   focusRingProps,
+  headingLevel,
   makeThemedStyles,
   useLayoutMode,
   useTheme,
@@ -104,8 +105,9 @@ function OrgEventsSection({
         <TextLink
           variant="label"
           standalone
+          disabled={query.isFetchingNextPage}
           onPress={() => {
-            void query.fetchNextPage()
+            if (!query.isFetchingNextPage) void query.fetchNextPage()
           }}
           accessibilityLabel={
             when === "upcoming"
@@ -121,7 +123,7 @@ function OrgEventsSection({
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>
+      <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(2)}>
         {when === "upcoming" ? t("events.upcoming") : t("events.past")}
       </Text>
       {body}

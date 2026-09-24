@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { makeFakeCapabilities, fakeOpenInternalHref } from "../fakes"
+import { makeFakeCapabilities, type FakeOpenExternal, type FakeOpenInternalHref } from "../fakes"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 const code = (source: string): string =>
@@ -26,19 +26,30 @@ describe("openInternalHref is an OPTIONAL capability, like every other host seam
     const barrel = code(read("../index.ts"))
     expect(barrel).toContain("useOpenInternalHref")
     expect(barrel).toContain("OpenInternalHrefCapability")
-    expect(barrel).toContain("fakeOpenInternalHref")
+    expect(barrel).toContain("makeFakeOpenInternalHref")
   })
 })
 
 describe("the fake bundle carries it, so galleries and tests navigate without a host", () => {
   it("registers the fake in makeFakeCapabilities", () => {
-    expect(makeFakeCapabilities().openInternalHref).toBe(fakeOpenInternalHref)
+    expect(makeFakeCapabilities().openInternalHref).toBeDefined()
   })
 
   it("records what it was asked to open and reports success", () => {
-    fakeOpenInternalHref.opened.length = 0
-    expect(fakeOpenInternalHref.open("/pin/r1")).toBe(true)
-    expect(fakeOpenInternalHref.open("/people/jane")).toBe(true)
-    expect(fakeOpenInternalHref.opened).toEqual(["/pin/r1", "/people/jane"])
+    const fake = makeFakeCapabilities().openInternalHref as FakeOpenInternalHref
+    expect(fake.open("/pin/r1")).toBe(true)
+    expect(fake.open("/people/jane")).toBe(true)
+    expect(fake.opened).toEqual(["/pin/r1", "/people/jane"])
+  })
+
+  it("gives every bundle its own recorders, so one gallery or test never sees another's opens", () => {
+    const first = makeFakeCapabilities()
+    const second = makeFakeCapabilities()
+    expect(second.openInternalHref).not.toBe(first.openInternalHref)
+    expect(second.openExternal).not.toBe(first.openExternal)
+    first.openInternalHref?.open("/pin/r1")
+    void first.openExternal?.open("https://civfix.org/")
+    expect((second.openInternalHref as FakeOpenInternalHref).opened).toEqual([])
+    expect((second.openExternal as FakeOpenExternal).opened).toEqual([])
   })
 })

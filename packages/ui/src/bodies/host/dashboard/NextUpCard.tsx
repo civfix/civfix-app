@@ -17,6 +17,7 @@ import { useEventWhen, useRelativeTime, useT } from "../../../i18n"
 import { boardHasTimedSlots, slotDisplayOrder } from "../../eventSlotsModel"
 import { PhaseDot } from "../PhaseHeader"
 import { ShiftRow } from "../ShiftRow"
+import { relativeLineFor } from "../hostSurfaceModel"
 import { hostedEventWhen, hostedEventWindow } from "./dashboardModel"
 
 const MAX_STRIP_SHIFTS = 3
@@ -70,12 +71,10 @@ export function NextUpCard({
       ? t("next_up.signed_up_of", { registered: event.registeredCount, capacity })
       : t("next_up.signed_up", { registered: event.registeredCount })
   const whenLine = underway
-    ? t("next_up.started", { ago: relative(event.startsAt, now) })
-    : t("next_up.starts_in", {
-        dow: when.dow,
-        time: when.timeWithZone,
-        relative: relative(now, Date.parse(event.startsAt)),
-      })
+    ? relativeLineFor(relative(event.startsAt, now), (ago) => t("next_up.started", { ago }))
+    : relativeLineFor(relative(now, Date.parse(event.startsAt)), (rel) =>
+        t("next_up.starts_in", { dow: when.dow, time: when.timeWithZone, relative: rel }),
+      )
 
   const cardLabel = [
     t("events.open_a11y", { title: event.title }),
@@ -116,9 +115,11 @@ export function NextUpCard({
               </Text>
               <View style={styles.whenLine}>
                 {live ? <PhaseDot phase={phase} /> : null}
-                <Text variant="label" numberOfLines={1} style={styles.when}>
-                  {whenLine}
-                </Text>
+                {whenLine !== null ? (
+                  <Text variant="label" numberOfLines={1} style={styles.when}>
+                    {whenLine}
+                  </Text>
+                ) : null}
               </View>
             </View>
           </View>

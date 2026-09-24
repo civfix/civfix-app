@@ -89,7 +89,10 @@
     "error_subject": "Gib einen Betreff ein.",
     "error_body": "Schreibe die Nachricht.",
     "error_audience": "Wähle aus, wer das bekommt.",
-    "error_channels": "Wähle mindestens einen Kanal."
+    "error_channels": "Wähle mindestens einen Kanal.",
+    "save_before_send": "Speichere deine Änderungen, bevor du diese Nachricht sendest, testest oder planst.",
+    "schedule_not_in_zone": "Diese Uhrzeit gibt es in {{zone}} wegen der Zeitumstellung nicht. Wähle eine andere.",
+    "schedule_zone_hint": "Wird zu dieser Uhrzeit in der Zeitzone der Veranstaltung ({{zone}}) gesendet."
   },
   "audience": {
     "all_registered": "Alle Angemeldeten",
@@ -204,6 +207,7 @@
     "error_conflict": "Diese Veranstaltung nimmt keine Ankündigungen mehr an.",
     "error_validation": "Prüfe bitte Titel, Nachricht und Links.",
     "error_held": "Diese Ankündigung wurde zur Prüfung zurückgehalten.",
-    "error_generic": "Deine Ankündigung konnte nicht gesendet werden. Versuche es erneut."
+    "error_generic": "Deine Ankündigung konnte nicht gesendet werden. Versuche es erneut.",
+    "see_all_open": "Alle Ankündigungen"
   }
 }

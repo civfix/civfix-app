@@ -30,7 +30,18 @@ import { ConfirmModal } from "@/components/console/overlay/confirm-modal"
 import { useConsoleEvent } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
 import { consoleKeys } from "../console-keys"
-import { BLOCK_KINDS, THEME_ACCENTS, canAddBlock, emptyBlock, moveBlock, replaceBlock } from "./blocks"
+import {
+  BLOCK_KINDS,
+  THEME_ACCENTS,
+  blockSaveErrors,
+  blocksDiffer,
+  canAddBlock,
+  emptyBlock,
+  moveBlock,
+  normalizeBlocksForSave,
+  replaceBlock,
+  withRowKeys,
+} from "./blocks"
 import { BlockEditor } from "./block-editor"
 import { PagePreview } from "./page-preview"
 import { invalidateEvent } from "../console-invalidate"
@@ -62,21 +73,35 @@ export function PageBuilderScreen() {
   const [debouncedSlug, setDebouncedSlug] = useState("")
   const [serverFields, setServerFields] = useState<Record<string, string>>({})
   const [confirmUnpublish, setConfirmUnpublish] = useState(false)
-
-  useEffect(() => {
-    if (!page.data || blocks !== null) return
-    setBlocks(page.data.blocks as EventPageBlock[])
-    setSlug(page.data.slug ?? "")
-    setAccent(page.data.theme.accent)
-    setNoindex(page.data.seo.noindex)
-    setCover(
-      page.data.coverMediaId && page.data.coverUrl
-        ? { mediaId: page.data.coverMediaId, url: page.data.coverUrl }
-        : null,
-    )
-  }, [page.data, blocks])
+  const [saveAttempted, setSaveAttempted] = useState(false)
+  const [seededFrom, setSeededFrom] = useState<EventPageDTO | null>(null)
 
   const currentSlug = slug ?? ""
+  const list = blocks ?? []
+  const differsFrom = (data: EventPageDTO) =>
+    currentSlug !== (data.slug ?? "") ||
+    (accent ?? "bloom") !== data.theme.accent ||
+    (cover?.mediaId ?? null) !== (data.coverMediaId ?? null) ||
+    (noindex ?? false) !== data.seo.noindex ||
+    blocksDiffer(list, data.blocks as EventPageBlock[])
+
+  // A refetch reseeds the form only while it still matches the copy it was seeded from, so a server
+  // change shows up without ever overwriting the host's unsaved edits.
+  if (page.data && page.data !== seededFrom) {
+    setSeededFrom(page.data)
+    if (seededFrom === null || !differsFrom(seededFrom)) {
+      setBlocks(withRowKeys(page.data.blocks as EventPageBlock[]))
+      setSlug(page.data.slug ?? "")
+      setAccent(page.data.theme.accent)
+      setNoindex(page.data.seo.noindex)
+      setCover(
+        page.data.coverMediaId && page.data.coverUrl
+          ? { mediaId: page.data.coverMediaId, url: page.data.coverUrl }
+          : null,
+      )
+    }
+  }
+
   const slugValid = currentSlug === "" || PageSlugSchema.safeParse(currentSlug).success
 
   useEffect(() => {
@@ -96,20 +121,22 @@ export function PageBuilderScreen() {
     staleTime: 60_000,
   })
 
-  const list = blocks ?? []
+  const blockErrors = saveAttempted ? blockSaveErrors(list) : {}
+  const dirty = page.data !== undefined && blocks !== null && differsFrom(page.data)
 
   const save = useMutation({
-    mutationFn: () =>
+    mutationFn: (saveBlocks: EventPageBlock[]) =>
       api.saveEventPage({
         id: eventId,
         slug: currentSlug === "" ? null : currentSlug,
         theme: { accent: accent ?? "bloom" },
         coverMediaId: cover?.mediaId ?? null,
-        blocks: list,
+        blocks: saveBlocks,
         seo: { noindex: noindex ?? false },
       }),
     onSuccess: (res) => {
       toast.toast({ title: t("saved"), tone: "success" })
+      setSaveAttempted(false)
       setServerFields({})
       qc.setQueryData(consoleKeys.page(eventId), res)
       invalidateEvent(qc, eventId)
@@ -137,6 +164,23 @@ export function PageBuilderScreen() {
     },
   })
 
+  /** Validates first so a blank row or cleared link is shown at its field, not as a failed save. */
+  const saveBlocks = (then?: () => void) => {
+    if (Object.keys(blockSaveErrors(list)).length > 0) {
+      setSaveAttempted(true)
+      toast.toast({ title: t("blocks.fix_errors"), tone: "danger" })
+      return
+    }
+    save.mutate(normalizeBlocksForSave(list), then ? { onSuccess: then } : undefined)
+  }
+
+  // Publishing acts on the SAVED page, so unsaved edits are saved first rather than silently left
+  // out of what goes live.
+  const publishPage = () => {
+    if (dirty) saveBlocks(() => publish.mutate(true))
+    else publish.mutate(true)
+  }
+
   const slugStatus = useMemo(() => {
     if (currentSlug === "") return null
     if (!slugValid) return { tone: "error" as const, message: t("slug.invalid") }
@@ -151,6 +195,9 @@ export function PageBuilderScreen() {
         : t(`slug.reason_${slugCheck.data.reason ?? "taken"}`),
     }
   }, [currentSlug, page.data?.slug, slugCheck.data, slugCheck.isFetching, slugValid, t])
+
+  const blockName = (kind: EventPageBlockKind, index: number) =>
+    t("blocks.item_name", { kind: t(`block.kind.${kind}`), n: index + 1 })
 
   const published = page.data?.status === "published"
   const canPublish = currentSlug !== "" && list.length > 0 && !page.data?.flaggedAt
@@ -182,7 +229,7 @@ export function PageBuilderScreen() {
               variant="outline"
               size="sm"
               disabled={save.isPending}
-              onClick={() => save.mutate()}
+              onClick={() => saveBlocks()}
             >
               {tc("action.save")}
             </ConsoleButton>
@@ -198,9 +245,9 @@ export function PageBuilderScreen() {
             ) : (
               <ConsoleButton
                 size="sm"
-                disabled={publish.isPending || !canPublish}
+                disabled={publish.isPending || save.isPending || !canPublish}
                 title={canPublish ? undefined : t("publish_blocked")}
-                onClick={() => publish.mutate(true)}
+                onClick={publishPage}
               >
                 {t("publish")}
               </ConsoleButton>
@@ -315,21 +362,23 @@ export function PageBuilderScreen() {
                         </span>
                         <span className="min-w-0 flex-1" />
                         <ConsoleIconButton
-                          label={t("blocks.move_up")}
+                          label={t("blocks.move_up_named", { name: blockName(block.kind, index) })}
                           disabled={index === 0}
                           onClick={() => setBlocks(moveBlock(list, index, -1))}
                         >
                           <ArrowUp aria-hidden className="h-4 w-4" />
                         </ConsoleIconButton>
                         <ConsoleIconButton
-                          label={t("blocks.move_down")}
+                          label={t("blocks.move_down_named", {
+                            name: blockName(block.kind, index),
+                          })}
                           disabled={index === list.length - 1}
                           onClick={() => setBlocks(moveBlock(list, index, 1))}
                         >
                           <ArrowDown aria-hidden className="h-4 w-4" />
                         </ConsoleIconButton>
                         <ConsoleIconButton
-                          label={t("blocks.remove")}
+                          label={t("blocks.remove_named", { name: blockName(block.kind, index) })}
                           onClick={() => setBlocks(list.filter((item) => item.id !== block.id))}
                         >
                           <Trash2 aria-hidden className="h-4 w-4" />
@@ -337,6 +386,7 @@ export function PageBuilderScreen() {
                       </div>
                       <BlockEditor
                         block={block}
+                        errors={blockErrors[block.id]}
                         onChange={(patch) => setBlocks(replaceBlock(list, block.id, patch))}
                       />
                     </li>

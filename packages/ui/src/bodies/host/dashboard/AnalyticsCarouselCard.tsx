@@ -22,8 +22,10 @@ import {
   busiestRows,
   carouselPage,
   hasSeriesData,
+  checkInRingA11y,
   ratePercent,
   summaryImpactRows,
+  weekDayLabel,
   weeklyXLabels,
   type SummaryPanelKey,
 } from "../analyticsModel"
@@ -46,6 +48,14 @@ const RING_GUTTER = 12
 
 const DOT_SIZE = 6
 
+const DOT_TARGET = 24
+
+const MIN_TOUCH_TARGET = 44
+
+const DOT_SLOP_Y = (MIN_TOUCH_TARGET - DOT_TARGET) / 2
+
+const DOT_HIT_SLOP = { top: DOT_SLOP_Y, bottom: DOT_SLOP_Y }
+
 const CHEVRON_HIT = 28
 
 const FLAT_SERIES = [
@@ -56,6 +66,8 @@ const FLAT_SERIES = [
 const DASH = "—"
 
 const IS_WEB = Platform.OS === "web"
+
+const WEB_PAGE_SCROLL_THROTTLE_MS = 100
 
 export interface AnalyticsCarouselCardProps {
   orgId: string | null
@@ -73,12 +85,18 @@ export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
   const data = query.data ?? null
   const panels = SUMMARY_PANELS
 
-  const onMomentumScrollEnd = useCallback(
+  const onPageSettled = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       setIndex(carouselPage(event.nativeEvent.contentOffset.x, width, panels.length))
     },
     [panels.length, width],
   )
+
+  // react-native-web never emits momentum events; its onScroll fires on a throttle and once more
+  // when the scroll settles.
+  const pageSettleProps = IS_WEB
+    ? { onScroll: onPageSettled, scrollEventThrottle: WEB_PAGE_SCROLL_THROTTLE_MS }
+    : { onMomentumScrollEnd: onPageSettled }
 
   const goTo = useCallback(
     (next: number) => {
@@ -158,7 +176,7 @@ export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
               disableIntervalMomentum
               decelerationRate="fast"
               showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={onMomentumScrollEnd}
+              {...pageSettleProps}
               accessibilityLabel={t("card.carousel_a11y")}
             >
               {panels.map((panel) => (
@@ -224,10 +242,12 @@ export function AnalyticsCarouselCard({ orgId }: AnalyticsCarouselCardProps) {
                 total: panels.length,
                 name: t(`card.panel_${panel}`),
               })}
-              hitSlop={8}
+              hitSlop={DOT_HIT_SLOP}
               {...focusRingProps}
-              style={[styles.dot, dot === index ? styles.dotOn : null]}
-            />
+              style={styles.dotTarget}
+            >
+              <View style={[styles.dot, dot === index ? styles.dotOn : null]} />
+            </Pressable>
           ))}
         </View>
       </View>
@@ -293,7 +313,7 @@ function Panel({
         <RingPanel
           ring={(rate ?? 0) / 100}
           ringLabel={rate === null ? DASH : `${rate}%`}
-          ringA11y={t("card.checkins_ring_a11y", { rate: rate ?? 0 })}
+          ringA11y={checkInRingA11y(t, rate)}
           note={ran ? null : t("card.checkins_empty")}
         />
       </PanelFrame>
@@ -345,15 +365,7 @@ function Panel({
 }
 
 function useWeekLabel(locale: string): (day: string) => string {
-  return useMemo(() => {
-    let format: Intl.DateTimeFormat
-    try {
-      format = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" })
-    } catch {
-      format = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" })
-    }
-    return (day: string) => format.format(new Date(day))
-  }, [locale])
+  return useMemo(() => weekDayLabel(locale), [locale])
 }
 
 function PanelFrame({
@@ -537,8 +549,13 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: t.space["2"],
-    paddingVertical: t.space["2"],
+  },
+  dotTarget: {
+    width: DOT_TARGET,
+    height: DOT_TARGET,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: DOT_TARGET / 2,
   },
   dot: {
     width: DOT_SIZE,

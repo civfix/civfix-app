@@ -40,7 +40,8 @@ import { hostCapabilities } from "@civfix/shared/host"
 import { appErrorCode } from "../../bodies/errorCode"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
-import { cleanupDetailFilters } from "./cleanups"
+import { listItems } from "../types"
+import { cleanupDetailFilters, invalidateCleanupLists } from "./cleanups"
 
 export const HOST_COUNTERS_POLL_MS = 20_000
 
@@ -187,7 +188,7 @@ export function useEventTicketTypes(id: string | undefined, opts: { enabled?: bo
   return useQuery<TicketTypeDTO[]>({
     queryKey: queryKeys.hostTicketTypes(id ?? "unknown"),
     enabled: !!id && (opts.enabled ?? true),
-    queryFn: async () => (await api.listEventTicketTypes({ id: id as string })).items,
+    queryFn: async () => listItems((await api.listEventTicketTypes({ id: id as string }))?.items),
     retry: false,
   })
 }
@@ -197,7 +198,7 @@ export function useEventQuestions(id: string | undefined, opts: { enabled?: bool
   return useQuery<EventQuestionDTO[]>({
     queryKey: queryKeys.hostQuestions(id ?? "unknown"),
     enabled: !!id && (opts.enabled ?? true),
-    queryFn: async () => (await api.listEventQuestions({ id: id as string })).items,
+    queryFn: async () => listItems((await api.listEventQuestions({ id: id as string }))?.items),
     retry: false,
   })
 }
@@ -296,7 +297,7 @@ export function useRegisterForEvent(id: string) {
       }
       invalidateHostEvent(qc, id)
       void qc.invalidateQueries({ queryKey: queryKeys.myTickets(id) })
-      void qc.invalidateQueries({ queryKey: ["cleanups"] })
+      invalidateCleanupLists(qc)
     },
   })
 }
@@ -315,7 +316,7 @@ export function useCancelEventRegistration(id: string) {
     onSuccess: () => {
       invalidateHostEvent(qc, id)
       void qc.invalidateQueries({ queryKey: queryKeys.myTickets(id) })
-      void qc.invalidateQueries({ queryKey: ["cleanups"] })
+      invalidateCleanupLists(qc)
     },
   })
 }

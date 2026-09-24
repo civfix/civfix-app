@@ -34,6 +34,10 @@ describe("csvString", () => {
     )
   })
 
+  it("leaves numbers and booleans unguarded because they cannot carry a formula", () => {
+    expect(csvString([[-2, -0.5, true]])).toBe("-2,-0.5,true")
+  })
+
   it("leaves an ordinary value untouched", () => {
     expect(csvString([["Ann Rivera", 3]])).toBe("Ann Rivera,3")
   })

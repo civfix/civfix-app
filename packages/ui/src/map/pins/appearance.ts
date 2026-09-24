@@ -6,7 +6,11 @@ import {
   type ColorSchemeName,
 } from "@civfix/shared/tokens"
 import { contrastRatio } from "@civfix/shared/chip-contrast"
+import { basemapPaper } from "../mapStyle"
 import { DROP_PIN_GLYPH, PIN_GLYPHS, glyphForCategory } from "./glyphs"
+
+/** WCAG 1.4.11 non-text contrast: a pin must read against the basemap, a glyph against its pin. */
+export const PIN_NON_TEXT_CONTRAST = 3
 
 export type PinTarget =
   | { kind: "event"; eventKind: EventKind }
@@ -49,16 +53,57 @@ export function clusterToneFor(reportCount: number, eventCount: number): Cluster
   return reportCount <= 0 && eventCount > 0 ? "events" : "reports"
 }
 
+/** Whichever of the scheme's ink or `onAccent` reads better on `fill`, for a glyph, count or check. */
+export function inkOnFill(fill: string, scheme: ColorSchemeName, onAccent: string): string {
+  const key = `${scheme}|${onAccent}|${fill}`
+  const known = inkByFill.get(key)
+  if (known !== undefined) return known
+  const ink = colorSchemes[scheme].neutral.ink
+  const chosen = contrastRatio(ink, fill) >= contrastRatio(onAccent, fill) ? ink : onAccent
+  inkByFill.set(key, chosen)
+  return chosen
+}
+
+// Every rendered pin asks both questions; the fills are the finite token set, so each answer is scored once.
+const inkByFill = new Map<string, string>()
+const outlineByScheme = new Map<ColorSchemeName, string | null>()
+
+function pinFillsOf(scheme: ColorSchemeName): string[] {
+  const { brand, category } = colorSchemes[scheme]
+  return [
+    ...Object.keys(category).map((key) => categoryColor(key, scheme)),
+    cleanupColorFor(scheme),
+    brand.bloom,
+    brand.lilac,
+  ]
+}
+
+/**
+ * The pin body outline for a scheme, or null when every pin fill already clears the basemap on its own.
+ * One outline for all pins in a scheme (not per fill) so the pin family keeps a single silhouette.
+ */
+export function pinOutlineFor(scheme: ColorSchemeName): string | null {
+  if (outlineByScheme.has(scheme)) return outlineByScheme.get(scheme) ?? null
+  const outline = scoreOutline(scheme)
+  outlineByScheme.set(scheme, outline)
+  return outline
+}
+
+function scoreOutline(scheme: ColorSchemeName): string | null {
+  const ground = basemapPaper(scheme)
+  if (pinFillsOf(scheme).every((fill) => contrastRatio(fill, ground) >= PIN_NON_TEXT_CONTRAST)) return null
+  const { ink, paper } = colorSchemes[scheme].neutral
+  return contrastRatio(ink, ground) >= contrastRatio(paper, ground) ? ink : paper
+}
+
 export function clusterBubbleAppearance(
   tone: ClusterTone,
   scheme: ColorSchemeName,
   onAccent: string,
 ): ClusterBubbleAppearance {
-  if (tone !== "events") return { fill: colorSchemes[scheme].brand.bloom, label: onAccent }
-  const fill = pinAppearanceFor(eventPinTarget("cleanup"), scheme).fill
-  const ink = colorSchemes[scheme].neutral.ink
-  return {
-    fill,
-    label: contrastRatio(ink, fill) >= contrastRatio(onAccent, fill) ? ink : onAccent,
-  }
+  const fill =
+    tone === "events"
+      ? pinAppearanceFor(eventPinTarget("cleanup"), scheme).fill
+      : colorSchemes[scheme].brand.bloom
+  return { fill, label: inkOnFill(fill, scheme, onAccent) }
 }

@@ -124,10 +124,18 @@ describe("the carousel measures itself and lets the chart be the panel", () => {
   })
 
   it("reads the active page off the settled offset, not off every scroll frame", () => {
-    expect(CARD).toContain("onMomentumScrollEnd={onMomentumScrollEnd}")
+    expect(CARD).toContain("{...pageSettleProps}")
+    expect(CARD).toContain(": { onMomentumScrollEnd: onPageSettled }")
     expect(CARD).toContain("carouselPage(event.nativeEvent.contentOffset.x, width, panels.length)")
     expect(CARD).not.toContain("onScroll=")
-    expect(CARD).not.toContain("scrollEventThrottle")
+  })
+
+  it("tracks the page on web too, where react-native-web never emits momentum events", () => {
+    expect(CARD).toContain("const pageSettleProps = IS_WEB")
+    expect(CARD).toContain(
+      "? { onScroll: onPageSettled, scrollEventThrottle: WEB_PAGE_SCROLL_THROTTLE_MS }",
+    )
+    expect(constant("WEB_PAGE_SCROLL_THROTTLE_MS")).toBeGreaterThanOrEqual(50)
   })
 
   it("gives the chart the bulk of the panel, at a height a phone can read", () => {
@@ -194,5 +202,22 @@ describe("the chart primitives size themselves from what a parent measured", () 
     expect(ANALYTICS_BODY).toContain("useMeasuredWidth")
     expect(ANALYTICS_BODY.match(/onLayout=\{onLayout\}/g) ?? []).toHaveLength(3)
     expect(ANALYTICS_BODY).not.toContain("chartWidth")
+  })
+})
+
+describe("the page dots are real targets on web, where hitSlop does nothing", () => {
+  it("wraps each 6 px dot in a pressable at least 24 px square", () => {
+    expect(constant("DOT_SIZE")).toBe(6)
+    expect(constant("DOT_TARGET")).toBeGreaterThanOrEqual(24)
+    expect(CARD).toMatch(/dotTarget: \{\n\s+width: DOT_TARGET,\n\s+height: DOT_TARGET,/)
+    expect(CARD).toContain("style={styles.dotTarget}")
+    expect(CARD).toContain("<View style={[styles.dot, dot === index ? styles.dotOn : null]} />")
+  })
+
+  it("still reaches 44 px on native without letting neighbouring dots overlap", () => {
+    expect(constant("MIN_TOUCH_TARGET")).toBe(44)
+    expect(CARD).toContain("const DOT_SLOP_Y = (MIN_TOUCH_TARGET - DOT_TARGET) / 2")
+    expect(CARD).toContain("const DOT_HIT_SLOP = { top: DOT_SLOP_Y, bottom: DOT_SLOP_Y }")
+    expect(CARD).not.toContain("hitSlop={8}")
   })
 })

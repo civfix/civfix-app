@@ -159,7 +159,14 @@ export function ProfileEventsSection({
               accessibilityState={{ selected }}
               {...({ "aria-selected": selected } as object)}
               {...focusRingProps}
-              style={[styles.segBtn, selected ? styles.segBtnOn : null]}
+              // 34pt pill + 5pt top/bottom reaches the 44pt floor; vertical only, since the segments
+              // are flex neighbours and horizontal slop would overlap the other segment.
+              hitSlop={{ top: 5, bottom: 5 }}
+              style={({ pressed }) => [
+                styles.segBtn,
+                selected ? styles.segBtnOn : null,
+                pressed && !selected ? styles.segBtnPressed : null,
+              ]}
             >
               <Text style={[styles.segText, selected ? styles.segTextOn : null]}>
                 {id === "upcoming" ? t("events.tab_upcoming") : t("events.tab_past")}
@@ -261,6 +268,9 @@ const useStyles = makeThemedStyles((t) => ({
   segBtnOn: {
     backgroundColor: t.colors.surface,
     ...t.shadows.s1,
+  },
+  segBtnPressed: {
+    opacity: 0.7,
   },
   segText: {
     fontFamily: t.fontFamily.bodyBold,

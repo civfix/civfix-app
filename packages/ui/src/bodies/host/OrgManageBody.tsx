@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { Pressable, View } from "react-native"
 import type { SocialPlatform } from "@civfix/shared"
 import {
@@ -33,7 +33,7 @@ import { useOrganization, useUpdateOrganization } from "../../data/hooks/orgs"
 import { useT } from "../../i18n"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
-import { appErrorCode } from "../errorCode"
+import { appErrorCode, appErrorFields } from "../errorCode"
 import { RowsSkeleton } from "./HostSkeletons"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
 import {
@@ -56,6 +56,14 @@ import {
 
 const LOGO_SIZE = 96
 
+const GHOST_MIN_HEIGHT = 28
+
+const MIN_TOUCH_TARGET = 44
+
+const GHOST_SLOP_Y = (MIN_TOUCH_TARGET - GHOST_MIN_HEIGHT) / 2
+
+const GHOST_HIT_SLOP = { top: GHOST_SLOP_Y, bottom: GHOST_SLOP_Y }
+
 export function OrgManageBody({ slug }: { slug: string }) {
   const styles = useStyles()
   const th = useTheme()
@@ -77,12 +85,17 @@ export function OrgManageBody({ slug }: { slug: string }) {
   const [uploading, setUploading] = useState(false)
   const [focused, setFocused] = useState<string | null>(null)
   const [showErrors, setShowErrors] = useState<Record<string, boolean>>({})
+  const [seededOrgId, setSeededOrgId] = useState<string | null>(org?.id ?? null)
 
-  useEffect(() => {
+  // Drafts seed once per org: a save of one section, or any refetch, rebuilds `org` and must not
+  // wipe unsaved edits in the other section.
+  const orgId = org?.id ?? null
+  if (orgId !== seededOrgId) {
+    setSeededOrgId(orgId)
     setProfile(initialProfile)
+    setLinks(initialLinks)
     setLogoPreview(null)
-  }, [initialProfile])
-  useEffect(() => setLinks(initialLinks), [initialLinks])
+  }
 
   const profileProblems = profileErrors(profile)
   const linkProblems = linksErrors(links)
@@ -91,7 +104,7 @@ export function OrgManageBody({ slug }: { slug: string }) {
 
   const onError = useCallback(
     (err: unknown) => {
-      toast.show(t(orgManageErrorKey(appErrorCode(err))), { variant: "error" })
+      toast.show(t(orgManageErrorKey(appErrorCode(err), appErrorFields(err))), { variant: "error" })
     },
     [t, toast],
   )
@@ -101,7 +114,11 @@ export function OrgManageBody({ slug }: { slug: string }) {
     setShowErrors((current) => ({ ...current, profile: true }))
     if (Object.keys(profileProblems).length > 0) return
     save.mutate(profilePayload(org.id, profile), {
-      onSuccess: () => toast.show(t("manage.saved"), { variant: "success" }),
+      onSuccess: (updated) => {
+        setProfile(profileDraftFrom(updated))
+        setLogoPreview(null)
+        toast.show(t("manage.saved"), { variant: "success" })
+      },
       onError,
     })
   }, [onError, org, profile, profileProblems, save, t, toast])
@@ -111,7 +128,10 @@ export function OrgManageBody({ slug }: { slug: string }) {
     setShowErrors((current) => ({ ...current, links: true }))
     if (Object.keys(linkProblems).length > 0) return
     save.mutate(linksPayload(org.id, links), {
-      onSuccess: () => toast.show(t("manage.saved"), { variant: "success" }),
+      onSuccess: (updated) => {
+        setLinks(linksDraftFrom(updated))
+        toast.show(t("manage.saved"), { variant: "success" })
+      },
       onError,
     })
   }, [linkProblems, links, onError, org, save, t, toast])
@@ -272,6 +292,7 @@ export function OrgManageBody({ slug }: { slug: string }) {
                   }}
                   accessibilityRole="button"
                   accessibilityLabel={t("manage.logo_remove")}
+                  hitSlop={GHOST_HIT_SLOP}
                   {...focusRingProps}
                   style={(state) => [styles.ghost, webCursor(), state.pressed ? styles.pressed : null]}
                 >
@@ -304,7 +325,10 @@ export function OrgManageBody({ slug }: { slug: string }) {
               <SecondaryButton
                 size="sm"
                 label={t("manage.discard")}
-                onPress={() => setProfile(initialProfile)}
+                onPress={() => {
+                  setProfile(initialProfile)
+                  setLogoPreview(null)
+                }}
                 disabled={save.isPending}
               />
               <PrimaryButton
@@ -408,7 +432,8 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "flex-start",
   },
   ghost: {
-    paddingVertical: 6,
+    minHeight: GHOST_MIN_HEIGHT,
+    justifyContent: "center",
     paddingHorizontal: t.space["2"],
     borderRadius: t.radius.sm,
   },

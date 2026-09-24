@@ -35,6 +35,11 @@ function isConfirmedAuthed(state: AuthState): boolean {
   return state.status === "authenticated" && !state.optimistic
 }
 
+// Callers pass a fresh closure per tap, so there is no key to dedupe by. While one tap is parked,
+// further taps are dropped: replaying both after the settle would fire a toggle twice (like, then
+// unlike) or send a duplicate RSVP, and the window only lasts as long as the session check.
+let deferredTapPending = false
+
 /**
  * Non-hook core of the gate, reading the auth store at CALL time (a tap decides on the state of the
  * world when it happens, not when the component rendered). Extracted so the deferral logic is
@@ -54,7 +59,10 @@ export function runGatedAction(
     // Optimistic window: probably signed in, but the CSRF token has not arrived yet. Defer until the
     // session check settles, then re-decide on the settled state. A timeout resolves with the state
     // still optimistic, which isConfirmedAuthed rejects - the modal, not a tokenless 403.
+    if (deferredTapPending) return
+    deferredTapPending = true
     void waitForSessionSettled(timeoutMs).then((settled) => {
+      deferredTapPending = false
       if (isConfirmedAuthed(settled)) action()
       else openAuthModal()
     })

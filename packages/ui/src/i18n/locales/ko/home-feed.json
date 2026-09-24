@@ -18,7 +18,9 @@
     "empty_body_link": "로그인",
     "empty_body_after": "하고 첫 소식을 공유해 보세요.",
     "caught_up": "모두 확인했어요",
-    "new_posts_other": "새 게시물 {{count}}개"
+    "new_posts_other": "새 게시물 {{count}}개",
+    "loading": "게시물을 불러오는 중",
+    "load_more_error": "게시물을 더 불러오지 못했어요."
   },
   "thread": {
     "title": "게시물",
@@ -69,8 +71,8 @@
     "deleted_account": "삭제된 계정",
     "unavailable": "이 게시물은 더 이상 볼 수 없어요.",
     "profile_a11y": "{{name}}님의 프로필 보기",
-    "open_repost_a11y": "리포스트된 게시물 열기",
-    "open_quote_a11y": "인용된 게시물 열기",
+    "open_repost_a11y": "{{name}}님의 리포스트된 게시물 열기: {{excerpt}}",
+    "open_quote_a11y": "{{name}}님의 인용된 게시물 열기: {{excerpt}}",
     "share_title": "{{name}}님의 게시물",
     "open_thread_a11y": "{{name}}님의 게시물 열기",
     "permalink_a11y": "{{time}} 전에 게시됨. 이 게시물 열기",
@@ -96,6 +98,8 @@
     },
     "replying_to": "{{handle}}님에게 답글",
     "via": "{{author}} 작성",
-    "org_a11y": "{{name}} 열기"
+    "org_a11y": "{{name}} 열기",
+    "media_photo_position_a11y": "사진 {{count}}장 중 {{index}}번째",
+    "media_video_position_a11y": "동영상 {{count}}개 중 {{index}}번째"
   }
 }

@@ -130,7 +130,7 @@ export function MessageContextMenu({
   const handleAction = (action: ContextMenuAction) => run(action.onPress)
 
   const renderActionRow = (action: ContextMenuAction) => {
-    const color = action.destructive ? th.colors.bloom["600"] : th.colors.text
+    const color = action.destructive ? th.colors.dangerInk : th.colors.text
     return (
       <Pressable
         key={action.key}
@@ -236,7 +236,11 @@ export function MessageContextMenu({
           >
             {showReactions ? (
               <>
-                <View style={styles.webReactionRow} accessibilityLabel={t("context_menu.reactions")}>
+                <View
+                  style={styles.webReactionRow}
+                  accessibilityRole="toolbar"
+                  accessibilityLabel={t("context_menu.reactions")}
+                >
                   {REACTION_EMOJIS.map((emoji) => renderGlyph(emoji, true))}
                 </View>
                 <View style={styles.separator} />
@@ -337,6 +341,7 @@ export function MessageContextMenu({
                   { top: bands.reactionsTop, left: reactionsLeft, width: reactionRowW },
                   menuCardStyle(motion, reactionOrigin),
                 ]}
+                accessibilityRole="toolbar"
                 accessibilityLabel={t("context_menu.reactions")}
               >
                 {renderReactionRow()}

@@ -157,6 +157,9 @@ export { useLayoutMode, type LayoutMode } from "./useLayoutMode"
 
 export { useReducedMotion } from "./useReducedMotion"
 
+export { a11yState } from "./a11yState"
+export type { A11yStateProps } from "./a11yState"
+
 export {
   webCursor,
   webCursorPointer,

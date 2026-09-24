@@ -1,20 +1,23 @@
 import * as React from "react"
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type * as ApiModule from "@/lib/api"
+
+const verifyServiceHoursCertificate = vi.fn()
 
 vi.mock("@civfix/ui/i18n", async () => {
   const { makeI18nMock } = await import("@/components/console/__testing__/i18n-mock")
   return makeI18nMock()
 })
+vi.mock("next/navigation", () => ({ useRouter: () => ({ back: () => {}, push: () => {} }) }))
 vi.mock("@/components/detail-shell", () => ({
   DetailShell: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof ApiModule>()),
   api: {
-    verifyServiceHoursCertificate: () => Promise.reject(new TypeError("Failed to fetch")),
+    verifyServiceHoursCertificate: (...args: unknown[]) => verifyServiceHoursCertificate(...args),
   },
 }))
 
@@ -27,8 +30,14 @@ function nextRouterMarked(): boolean {
   return (window.history.state as { __NA?: unknown } | null)?.__NA !== undefined
 }
 
+beforeEach(() => {
+  verifyServiceHoursCertificate.mockReset()
+  verifyServiceHoursCertificate.mockRejectedValue(new TypeError("Failed to fetch"))
+})
+
 afterEach(() => {
   cleanup()
+  window.history.replaceState(null, "", "/")
 })
 
 describe("ServiceRecordView address bar", () => {
@@ -54,5 +63,34 @@ describe("ServiceRecordView address bar", () => {
 
     expect(window.location.pathname).toBe("/service-record/")
     expect(nextRouterMarked()).toBe(false)
+  })
+})
+
+describe("service record fingerprint copy", () => {
+  it("announces the copy confirmation through a live status region outside the labelled button", async () => {
+    verifyServiceHoursCertificate.mockResolvedValue({
+      code: "A1B2C3D4E5F6",
+      status: "valid",
+      holderName: "Ada",
+      issuedAt: "2026-01-01T00:00:00.000Z",
+      totalHours: 3,
+      entryCount: 1,
+      documentSha256: "ab".repeat(32),
+    })
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn(async () => {}) },
+    })
+    window.history.replaceState(null, "", "/service-record/CFX-A1B2-C3D4-E5F6/")
+    await act(async () => {
+      render(<ServiceRecordView />)
+    })
+    const button = screen.getByLabelText("fingerprint_copy_a11y")
+    await act(async () => {
+      fireEvent.click(button)
+    })
+    const status = screen.getByRole("status")
+    expect(status.textContent).toBe("copied")
+    expect(button.contains(status)).toBe(false)
   })
 })

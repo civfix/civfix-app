@@ -36,6 +36,15 @@ export function rowStillPendingCheckIn(row: EventRegistrationDTO): boolean {
   return row.seats.some((seat) => seat.status === "active" && !seat.checkedInAt)
 }
 
+/**
+ * Two roster caches share the ["host", id, "roster"] prefix: the console's
+ * ["host", id, "roster", "console", filter, sort, q, ticket] and the shared data layer's
+ * ["host", id, "roster", filter, q]. The filter sits at a different index in each.
+ */
+function rosterFilterOf(queryKey: readonly unknown[]): unknown {
+  return queryKey[3] === "console" ? queryKey[4] : queryKey[3]
+}
+
 export function markRosterSeatsCheckedIn(
   qc: QueryClient,
   eventId: string,
@@ -46,7 +55,7 @@ export function markRosterSeatsCheckedIn(
   if (seatIds.length === 0) return
   const queries = qc.getQueryCache().findAll({ queryKey: ["host", eventId, "roster"] })
   for (const query of queries) {
-    const dropWhenSettled = query.queryKey[4] === "not_checked_in"
+    const dropWhenSettled = rosterFilterOf(query.queryKey) === "not_checked_in"
     qc.setQueryData<InfiniteRoster>(query.queryKey, (previous) =>
       previous
         ? {

@@ -79,7 +79,11 @@ export function GroupIdentityFields({
           </Pressable>
         ) : null}
       </View>
-      {avatar.attachError ? <Text style={styles.errorText}>{avatar.attachError}</Text> : null}
+      {avatar.attachError ? (
+        <Text style={styles.errorText} accessibilityRole="alert">
+          {avatar.attachError}
+        </Text>
+      ) : null}
 
       <TextField
         label={labels.nameLabel}

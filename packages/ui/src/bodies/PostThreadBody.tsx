@@ -1,7 +1,14 @@
 import React from "react"
 import { Platform, Pressable, StyleSheet, View, type LayoutChangeEvent } from "react-native"
 import type { PostDTO } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme } from "../theme"
+import {
+  focusRingProps,
+  headingLevel,
+  makeThemedStyles,
+  wash,
+  useLayoutMode,
+  useTheme,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   DETAIL_BACK_SIZE,
@@ -49,8 +56,14 @@ const threadKeyExtractor = (item: unknown) => (item as ThreadRow<PostDTO>).key
 
 function ThreadRepliesSkeleton() {
   const styles = useStyles()
+  const { t } = useT("home-feed")
   return (
-    <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <View
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={t("thread.loading_replies")}
+      accessibilityState={{ busy: true }}
+    >
       {[0, 1, 2].map((row) => (
         <View key={row} style={styles.skeletonRow}>
           <View style={styles.skeletonAvatar} />
@@ -232,7 +245,9 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
         <Icon icon={iconMap.ArrowLeft} size={21} color={th.colors.text} />
       </Pressable>
       <View pointerEvents="none" style={styles.headerTitleWrap}>
-        <Text variant="heading">{t("thread.title")}</Text>
+        <Text variant="heading" accessibilityRole="header" {...headingLevel(1)}>
+          {t("thread.title")}
+        </Text>
       </View>
       <View style={styles.headerSpacer} />
     </View>

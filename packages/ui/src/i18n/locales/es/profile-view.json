@@ -40,7 +40,8 @@
     "a11y": "Secciones del perfil"
   },
   "social": {
-    "link_a11y": "Abrir {{platform}}"
+    "link_a11y": "Abrir {{platform}}",
+    "link_failed": "No se pudo abrir ese enlace"
   },
   "reports": {
     "section": "Tus reportes",

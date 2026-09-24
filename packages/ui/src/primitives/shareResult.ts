@@ -24,3 +24,11 @@ export function classifyWebShareRejection(err: unknown): "cancelled" | "failed" 
   const name = (err as { name?: unknown } | null | undefined)?.name
   return name === "AbortError" ? "cancelled" : "failed"
 }
+
+/**
+ * Classify a resolved native `Share.share`. iOS RESOLVES (does not reject) with `dismissedAction` when
+ * the user closes the sheet, which is a cancel, not a share. Android always reports `sharedAction`.
+ */
+export function nativeShareResult(action: string, dismissedAction: string): "shared" | "cancelled" {
+  return action === dismissedAction ? "cancelled" : "shared"
+}

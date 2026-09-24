@@ -22,6 +22,7 @@ import {
 import {
   aasaExcludeOrder,
   isPlaceholderLegalHash,
+  leakedDevRoutes,
   legalDocumentHash,
   missingAasaExcludes,
   spaFallbackGaps,
@@ -32,6 +33,16 @@ const outDir = join(appDir, "out")
 
 if (!existsSync(outDir)) {
   console.error(`[cf-pages] no export found at ${outDir}; run \`next build\` first.`)
+  process.exit(1)
+}
+
+const leakedDev = leakedDevRoutes(readdirSync(outDir))
+if (leakedDev.length > 0) {
+  console.error(
+    `[cf-pages] ERROR: dev-only gallery route(s) reached the export: ${leakedDev.join(", ")}. They ` +
+      `must stay \`page.dev.tsx\` / \`layout.dev.tsx\`, which only \`next dev\` treats as routes ` +
+      `(pageExtensionsFor in apps/community-web/next.config.mjs).`,
+  )
   process.exit(1)
 }
 

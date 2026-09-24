@@ -142,7 +142,7 @@ describe("the repost surfaces wire the guard and the embed they are modelled on"
     expect(metaRows).toHaveLength(2)
     for (const block of metaRows) {
       expect(block).toContain(
-        '<PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} />',
+        '<PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} expanded={menuOpen} />',
       )
     }
     expect(CARD).toMatch(/<EmbeddedPostMeta[\s\S]*?onOpenMenu=\{openMenu\}[\s\S]*?menuRef=\{menuTrigger\.ref\}/)

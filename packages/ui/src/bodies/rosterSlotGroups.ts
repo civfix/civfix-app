@@ -147,3 +147,18 @@ export function rosterListKey(item: RosterListItem): string {
       return `member:${item.person.id}`
   }
 }
+
+/**
+ * A timed slot header's spoken label replaces its children, so it has to carry the count badge too, or a
+ * screen reader never hears how full the slot is. Null for an untimed header, whose children read as-is.
+ */
+export function slotGroupHeaderA11yLabel(
+  t: (key: string, options: Record<string, unknown>) => string,
+  header: { title: string; range: string | null; claimed: number | null; capacity: number | null },
+): string | null {
+  const { title, range, claimed, capacity } = header
+  if (range === null) return null
+  if (claimed === null) return t("roster.window_a11y", { title, range })
+  if (capacity === null) return t("roster.window_count_a11y", { title, range, count: claimed })
+  return t("roster.window_capacity_a11y", { title, range, count: claimed, capacity })
+}

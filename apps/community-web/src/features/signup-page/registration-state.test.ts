@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { EventQuestionDTO, PublicEventPageDTO, PublicPageTicketType } from "@civfix/shared"
 
@@ -8,7 +9,7 @@ import {
   defaultTicketId,
   isSuccessOutcome,
   missingRequired,
-  outcomeMessage,
+  outcomeMessageKey,
   questionVisible,
   questionsFor,
   registrationWindowState,
@@ -236,7 +237,37 @@ describe("party size and outcomes", () => {
       "closed",
       "not_found",
     ] as const
-    for (const outcome of outcomes) expect(outcomeMessage(outcome).length).toBeGreaterThan(0)
+    for (const outcome of outcomes) {
+      expect(outcomeMessageKey(outcome)).toMatch(/^(web-signup|host-ticket):outcome\.[a-z_]+$/)
+    }
+  })
+
+  it("reuses host-ticket refusal copy that exists in the en catalog, so no outcome renders English in every locale", () => {
+    const catalog = JSON.parse(
+      readFileSync(
+        new URL("../../../../../packages/ui/src/i18n/locales/en/host-ticket.json", import.meta.url),
+        "utf8",
+      ),
+    ) as { outcome: Record<string, string> }
+    const refusals = [
+      "already_registered",
+      "full",
+      "party_too_large",
+      "sales_closed",
+      "registration_closed",
+      "ticket_type_not_found",
+      "access_code_required",
+      "access_code_invalid",
+      "answers_invalid",
+      "banned",
+      "closed",
+      "not_found",
+    ] as const
+    for (const outcome of refusals) {
+      const key = outcomeMessageKey(outcome)
+      expect(key).toBe(`host-ticket:outcome.${outcome}`)
+      expect(catalog.outcome[outcome], outcome).toBeTruthy()
+    }
   })
 
   it("treats a replay and an existing registration as success, never as an error", () => {

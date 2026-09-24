@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { focusManager, onlineManager, useQueryClient } from "@tanstack/react-query"
 import { useApi, useAuthState } from "../../data"
 import { invalidateHostEvent } from "../../data/hooks/host"
 import { useSecureStore } from "../../capabilities"
@@ -36,13 +36,35 @@ export function outboxPersistOwner(
   return committedOwnerId !== null && committedOwnerId === currentOwnerId ? committedOwnerId : null
 }
 
+export function bufferedForReload<T>(
+  bufferOwnerId: string | null | undefined,
+  ownerId: string | null,
+  buffered: readonly T[],
+): T[] {
+  return bufferOwnerId === ownerId ? [...buffered] : []
+}
+
+// onlineManager is fed by the browser's online event on web; React Native has no connectivity
+// module yet, so on native only the foreground wake (AppState -> focusManager) fires here.
+export function subscribeOutboxWake(onWake: () => void): () => void {
+  const offFocus = focusManager.subscribe((focused) => {
+    if (focused) onWake()
+  })
+  const offOnline = onlineManager.subscribe((online) => {
+    if (online) onWake()
+  })
+  return () => {
+    offFocus()
+    offOnline()
+  }
+}
+
 export function useCheckinOutbox(cleanupId: string): CheckinOutbox {
   const api = useApi()
   const qc = useQueryClient()
   const store = useSecureStore()
   const ownerId = useAuthState().user?.id ?? null
   const ownerIdRef = useRef(ownerId)
-  ownerIdRef.current = ownerId
   const [state, setState] = useState<CheckinOutboxState>(EMPTY_CHECKIN_OUTBOX)
   const [replaying, setReplaying] = useState(false)
   const [report, setReport] = useState<CheckinReplayReport | null>(null)
@@ -51,6 +73,7 @@ export function useCheckinOutbox(cleanupId: string): CheckinOutbox {
   const inFlight = useRef(false)
   const loaded = useRef(false)
   const buffered = useRef<CheckinOutboxInput[]>([])
+  const bufferOwner = useRef<string | null | undefined>(undefined)
 
   const commit = useCallback(
     (next: CheckinOutboxState) => {
@@ -96,8 +119,19 @@ export function useCheckinOutbox(cleanupId: string): CheckinOutbox {
     }
   }, [api, cleanupId, commit, qc])
 
+  const commitRef = useRef(commit)
+  const replayRef = useRef(replay)
+  useLayoutEffect(() => {
+    ownerIdRef.current = ownerId
+    commitRef.current = commit
+    replayRef.current = replay
+  })
+
+  // Keyed on what selects the stored blob only: `commit`/`replay` change identity with `api`/`qc`,
+  // and a reload for the same owner must keep the scans queued before the first load resolved.
   useEffect(() => {
-    buffered.current = []
+    buffered.current = bufferedForReload(bufferOwner.current, ownerId, buffered.current)
+    bufferOwner.current = ownerId
     if (ownerId === null) {
       loaded.current = true
       stateRef.current = EMPTY_CHECKIN_OUTBOX
@@ -112,17 +146,25 @@ export function useCheckinOutbox(cleanupId: string): CheckinOutbox {
       buffered.current = []
       loaded.current = true
       const merged = mergeQueued(stored, waiting, Date.now())
-      if (waiting.length > 0) commit(merged)
+      if (waiting.length > 0) commitRef.current(merged)
       else {
         stateRef.current = merged
         setState(merged)
       }
-      if (pending(merged, Date.now(), cleanupId) > 0) void replay()
+      if (pending(merged, Date.now(), cleanupId) > 0) void replayRef.current()
     })
     return () => {
       cancelled = true
     }
-  }, [cleanupId, commit, ownerId, replay, store])
+  }, [cleanupId, ownerId, store])
+
+  useEffect(
+    () =>
+      subscribeOutboxWake(() => {
+        if (pending(stateRef.current, Date.now(), cleanupId) > 0) void replayRef.current()
+      }),
+    [cleanupId],
+  )
 
   const queue = useCallback(
     (input: Omit<CheckinOutboxInput, "cleanupId">) => {

@@ -40,7 +40,8 @@
     "a11y": "Profilbereiche"
   },
   "social": {
-    "link_a11y": "{{platform}} öffnen"
+    "link_a11y": "{{platform}} öffnen",
+    "link_failed": "Link konnte nicht geöffnet werden"
   },
   "reports": {
     "section": "Deine Meldungen",

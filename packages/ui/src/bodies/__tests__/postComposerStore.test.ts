@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import type { LinkedEventRef, UserMentionDTO } from "@civfix/shared"
 import {
+  restoreFailedPostSubmit,
   selectPostComposerDraft,
   selectPostComposerDraftHidden,
   selectPostComposerDraftOwner,
@@ -493,6 +494,75 @@ describe("postComposerStore create round trip", () => {
     expect(usePostComposerStore.getState().draft.body).toBe("")
 
     usePostComposerStore.getState().restore(staged)
+    expect(usePostComposerStore.getState().draft).toEqual(staged)
+  })
+})
+
+describe("restoreFailedPostSubmit (the failure half of a submit, run from the mutation promise)", () => {
+  afterEach(() => {
+    usePostComposerStore.getState().discardViewerDraft()
+    usePostComposerStore.getState().adoptViewer(null)
+  })
+
+  const stage = (mode: "post" | "reply" | "quote", targetPostId: string | null, body: string) => {
+    const store = usePostComposerStore.getState()
+    store.setMode(mode)
+    store.setReplyToPostId(mode === "reply" ? targetPostId : null)
+    store.setQuotePostId(mode === "quote" ? targetPostId : null)
+    store.setBody(body)
+    store.setMentionedUsers([maya])
+    const staged = usePostComposerStore.getState().draft
+    usePostComposerStore.getState().reset({ mode, targetPostId })
+    return staged
+  }
+
+  it("puts the text back when nothing touched the cleared slot", () => {
+    const staged = stage("reply", "post-9", "Reply that failed")
+    expect(restoreFailedPostSubmit(staged)).toBe(true)
+    expect(usePostComposerStore.getState().draft).toEqual(staged)
+  })
+
+  it("never overwrites a newer draft the user started while the request was in flight", () => {
+    const staged = stage("post", null, "First post that failed")
+    usePostComposerStore.getState().setBody("A newer thought")
+    expect(restoreFailedPostSubmit(staged)).toBe(false)
+    expect(usePostComposerStore.getState().draft.body).toBe("A newer thought")
+  })
+
+  it("never turns a composer opened for another target into a reply to the failed one", () => {
+    const staged = stage("reply", "post-9", "Reply that failed")
+    usePostComposerStore.getState().reset({ mode: "post", targetPostId: null })
+    expect(restoreFailedPostSubmit(staged)).toBe(false)
+    expect(usePostComposerStore.getState().draft.mode).toBe("post")
+    expect(usePostComposerStore.getState().draft.replyToPostId).toBeNull()
+  })
+
+  it("never hands a failed draft to a different account that signed in while it was in flight", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    const staged = stage("post", null, "Written by a")
+    expect(staged.ownerId).toBe("user-a")
+
+    usePostComposerStore.getState().adoptViewer("user-b")
+    expect(restoreFailedPostSubmit(staged)).toBe(false)
+    expect(selectPostComposerDraft(usePostComposerStore.getState()).body).toBe("")
+    expect(usePostComposerStore.getState().draft.body).toBe("")
+    expect(usePostComposerStore.getState().draft.ownerId).not.toBe("user-a")
+  })
+
+  it("never restores a signed-in author's failed draft while the viewer is unknown", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    const staged = stage("post", null, "Written by a")
+
+    usePostComposerStore.getState().adoptViewer(null)
+    expect(restoreFailedPostSubmit(staged)).toBe(false)
+    expect(usePostComposerStore.getState().draft.body).toBe("")
+  })
+
+  it("restores the failed draft for the author who wrote it", () => {
+    usePostComposerStore.getState().adoptViewer("user-a")
+    const staged = stage("post", null, "Written by a")
+
+    expect(restoreFailedPostSubmit(staged)).toBe(true)
     expect(usePostComposerStore.getState().draft).toEqual(staged)
   })
 })

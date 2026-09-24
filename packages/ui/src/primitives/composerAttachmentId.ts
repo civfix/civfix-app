@@ -14,3 +14,16 @@ export function nextAttachmentId(): string {
   counter += 1
   return `att-${counter}`
 }
+
+/** The `common:attach_error.*` key a composer attachment failure resolves to. */
+export type AttachErrorKey = "busy" | "limit" | "library" | "camera" | "rejected" | "rate_limited" | "upload"
+
+/**
+ * The key for a failed upload, read off the AppError code. The error's own `message` is never shown:
+ * it is English server or client text, not catalog copy.
+ */
+export function uploadAttachErrorKey(code: string | undefined): AttachErrorKey {
+  if (code === "MEDIA_REJECTED") return "rejected"
+  if (code === "RATE_LIMITED") return "rate_limited"
+  return "upload"
+}

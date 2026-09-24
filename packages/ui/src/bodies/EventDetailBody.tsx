@@ -68,7 +68,12 @@ function EventHero({ cleanup }: { cleanup: CleanupDTO }) {
   const cover = cleanup.coverUrl?.trim()
   if (!cover) return null
   return (
-    <View style={[styles.hero, styles.heroCover]}>
+    <View
+      style={[styles.hero, styles.heroCover]}
+      aria-hidden
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
       <Image
         source={{ uri: cover }}
         style={styles.heroImage}
@@ -133,7 +138,7 @@ function LinkedReportsStrip({
   const { t } = useT("event-detail")
   return (
     <View style={styles.subsection}>
-      <Text style={styles.sectionTitle}>
+      <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(3)}>
         {reports.length > LINKED_REPORTS_COUNT_AT
           ? t("linked_reports.heading_count", { count: reports.length })
           : t("linked_reports.heading")}
@@ -220,7 +225,7 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
 
   const where = cleanup.address?.trim()
   const hasPoint = cleanup.lat != null && cleanup.lng != null
-  const dist = eventDistanceLabel(cleanup.dist)
+  const dist = eventDistanceLabel(cleanup.dist, locale)
   const goingCount = cleanup.going
 
   const onMessageCrew = useCallback(() => {
@@ -441,7 +446,9 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
           ) : null}
           {cleanup.bring.length > 0 ? (
             <View style={styles.subsection}>
-              <Text style={styles.sectionTitle}>{t("bring.heading")}</Text>
+              <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(3)}>
+                {t("bring.heading")}
+              </Text>
               {cleanup.bring.map((item, i) => (
                 <View key={`${item}-${i}`} style={styles.bringRow}>
                   <Icon icon={iconMap.Check} size={14} color={th.colors.moss["700"]} />
@@ -457,7 +464,9 @@ function EventDetailContent({ cleanup }: { cleanup: CleanupDTO }) {
       ) : null}
 
       <View style={[styles.section, hostFlush]}>
-        <Text style={styles.sectionTitle}>{t("host.heading")}</Text>
+        <Text style={styles.sectionTitle} accessibilityRole="header" {...headingLevel(3)}>
+          {t("host.heading")}
+        </Text>
         <View style={styles.hostRow}>
           {isOrganizer ? (
             <View style={styles.hostWho}>

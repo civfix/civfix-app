@@ -28,6 +28,7 @@ import {
   applyHistoryCacheOps,
   foldInboundBatch,
   foldInboundIntoPages,
+  frameInRoom,
   isFatalRoomErrorCode,
   isSendRejectionErrorCode,
   journalFrames,
@@ -166,6 +167,13 @@ function isErrorCode(err: unknown, code: ErrorCode): boolean {
   return err instanceof AppError && err.code === code
 }
 
+export function markResending(outbox: OutboxEntry[], clientIds: ReadonlySet<string>): OutboxEntry[] {
+  if (clientIds.size === 0) return outbox
+  return outbox.map((e) =>
+    e.status === "failed" && clientIds.has(e.clientId) ? { ...e, status: "sending" } : e,
+  )
+}
+
 export interface UseChatOptions {
   suppressReadAcks?: boolean
 }
@@ -207,6 +215,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
   const [aroundWindow, setAroundWindow] = useState<ChatItem[] | null>(null)
   const [aroundLoading, setAroundLoading] = useState(false)
   const aroundSeqRef = useRef(0)
+  const roomGenerationRef = useRef(0)
   const aroundCursorsRef = useRef<{ next: string | null; prev: string | null } | null>(null)
   const [connection, setConnection] = useState<ChatConnState>(socket.getStatus())
   const [joinRejected, setJoinRejected] = useState<ChatRoomError | null>(null)
@@ -223,6 +232,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
   const lastAckedIdRef = useRef<string | null>(null)
   const pendingAckRef = useRef<PendingReadAck | null>(null)
   const wasOpenRef = useRef(false)
+  const replayOnReconnectRef = useRef<() => void>(() => {})
   const patchMessageRef = useRef<(messageId: string, patch: Partial<ChatMessageDTO>) => void>(() => {})
   const outboxMentionsRef = useRef<Map<string, string[]>>(new Map())
   const offlineFailedRef = useRef<Set<string>>(new Set())
@@ -409,7 +419,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           }
           break
         case "reaction":
-          if (frame.cleanupId === roomId) {
+          if (frameInRoom(frame, roomId, roomKind)) {
             const local = findMessage(frame.message.id)
             if (local) {
               patchMessageRef.current(frame.message.id, preserveViewerFields(local, frame.message))
@@ -417,10 +427,10 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           }
           break
         case "presence_snapshot":
-          if (frame.cleanupId === roomId) setOnlineUserIds(new Set(frame.userIds))
+          if (frameInRoom(frame, roomId, roomKind)) setOnlineUserIds(new Set(frame.userIds))
           break
         case "presence":
-          if (frame.cleanupId === roomId) {
+          if (frameInRoom(frame, roomId, roomKind)) {
             setOnlineUserIds((prev) => {
               const next = new Set(prev)
               if (frame.state === "join") next.add(frame.userId)
@@ -430,10 +440,10 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           }
           break
         case "typing":
-          if (frame.cleanupId === roomId && frame.userId !== myUserId) markTyping(frame.userId)
+          if (frameInRoom(frame, roomId, roomKind) && frame.userId !== myUserId) markTyping(frame.userId)
           break
         case "error":
-          if (frame.cleanupId === roomId && (frame.roomKind ?? "cleanup") === roomKind) {
+          if (frameInRoom(frame, roomId, roomKind)) {
             if (isFatalRoomErrorCode(frame.code)) {
               socket.markRoomRejected(roomId, roomKind)
               setJoinRejected({ code: frame.code, message: frame.message })
@@ -513,6 +523,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     offlineFailedRef.current.clear()
     coreQueuedRef.current.clear()
     cacheOpsRef.current = []
+    roomGenerationRef.current++
     setTransientError(null)
     setOnlineUserIds(new Set())
     clearTypingState()
@@ -592,6 +603,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
     const key = queryKeys.chatHistory(roomId, roomKind)
     const existing = queryClient.getQueryData<ChatHistoryData>(key)
     if (!existing || existing.pages.length === 0) return
+    const generation = roomGenerationRef.current
     const req = isDm
       ? api.dmMessages({ threadId: roomId, limit: PAGE_SIZE })
       : isReport
@@ -601,6 +613,12 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           : api.cleanupMessages({ cleanupId: roomId, limit: PAGE_SIZE })
     req
       .then((page) => {
+        // After an in-place room switch the journal belongs to the new room; the room left keeps its gap,
+        // so its cached history must refetch when it is opened again.
+        if (roomGenerationRef.current !== generation) {
+          void queryClient.invalidateQueries({ queryKey: key, refetchType: "none" })
+          return
+        }
         const current = queryClient.getQueryData<ChatHistoryData>(key)
         if (!current || current.pages.length === 0) return
         const op: HistoryCacheOp = {
@@ -623,22 +641,19 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
           })
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        void queryClient.invalidateQueries({ queryKey: key, refetchType: "none" })
+      })
   }, [api, canReadHistory, isDm, isReport, isGroup, queryClient, roomId, roomKind, isHistoryFetchInFlight])
 
-  useEffect(() => {
-    const open = connection === "open"
-    if (open && !wasOpenRef.current) {
+  // The reconnect effect is keyed on the connection edge alone; the replay reads the outbox, history and
+  // senders of the last committed render through this ref instead of re-running on each of them.
+  useLayoutEffect(() => {
+    replayOnReconnectRef.current = () => {
       const replay = replayableEntries(outbox, offlineFailedRef.current, coreQueuedRef.current)
-      if (replay.some((e) => e.status === "failed")) {
-        setOutbox((prev) =>
-          prev.map((e) =>
-            e.status === "failed" && offlineFailedRef.current.has(e.clientId)
-              ? { ...e, status: "sending" }
-              : e,
-          ),
-        )
-      }
+      // Captured now: dispatch() below clears offlineFailedRef before this updater runs.
+      const resend = new Set(replay.filter((e) => e.status === "failed").map((e) => e.clientId))
+      if (resend.size > 0) setOutbox((prev) => markResending(prev, resend))
       for (const entry of replay) {
         dispatch(
           entry.clientId,
@@ -656,6 +671,11 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
         refreshNewestPage()
       }
     }
+  })
+
+  useEffect(() => {
+    const open = connection === "open"
+    if (open && !wasOpenRef.current) replayOnReconnectRef.current()
     wasOpenRef.current = open
   }, [connection])
 
@@ -838,7 +858,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
         throw err
       }
     },
-    [isDm, isReport, isGroup, api, roomId, roomKind, findMessage, patchMessage],
+    [isDm, isReport, isGroup, api, roomId, findMessage, patchMessage],
   )
 
   const setPinned = useCallback(
@@ -893,7 +913,7 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
         throw err
       }
     },
-    [api, roomId, roomKind, findMessage, patchMessage],
+    [api, findMessage, patchMessage],
   )
 
   const closePoll = useCallback(
@@ -953,7 +973,8 @@ export function useChat(roomId: string, roomKind: RoomKind = "cleanup", options?
       .flatMap((p) => p.items)
       .filter((m) => m.cleanupId === roomId)
     const live = liveMessages.filter((m) => m.cleanupId === roomId)
-    return restoreLocalChatAttachments(mergeChatItems(historyItems, live, outbox, myUserId))
+    const pending = outbox.filter((e) => e.message.cleanupId === roomId)
+    return restoreLocalChatAttachments(mergeChatItems(historyItems, live, pending, myUserId))
   }, [history.data, liveMessages, outbox, myUserId, roomId])
 
   const pins = useMemo<ChatMessageDTO[]>(() => {

@@ -75,7 +75,6 @@
   },
   "messaging": {
     "totals": "Mensajes",
-    "active_days": "Días con envíos",
     "recipients": "Destinatarios",
     "unsubscribes": "Bajas",
     "no_tracking": "civfix no rastrea aperturas ni clics, así que aquí no hay nada que mostrar.",
@@ -86,7 +85,8 @@
     "suppressed": "Suprimidos",
     "over_time": "Envíos a lo largo del tiempo",
     "over_time_a11y": "Envíos por día",
-    "sends": "Envíos"
+    "sends": "Envíos",
+    "broadcasts_sent": "Mensajes enviados"
   },
   "page": {
     "views": "Visitas a la página",
@@ -137,6 +137,7 @@
     "sources_caption": "El {{rate}} % de {{views}} visitas a la página se inscribió"
   },
   "csv": {
+    "title": "{{event}} · {{tab}}",
     "source": "Fuente",
     "reference": "Referencia del evento",
     "generated_at": "Generado",
@@ -177,6 +178,7 @@
     "impact_caption": "Reportes vinculados a tus eventos",
     "impact_donations": "{{n}} toques en el enlace de donación",
     "checkins_ring_a11y": "{{rate}}% de las inscripciones registraron su entrada",
+    "checkins_ring_unknown_a11y": "Tasa de registro no disponible",
     "window": "Últimos 30 días",
     "panel_hours": "Horas de voluntariado",
     "checkins_caption": "de {{registered}} inscripciones · {{count}} eventos celebrados",
@@ -194,6 +196,8 @@
   },
   "filter": {
     "all_events": "Todos los eventos",
-    "event_a11y": "Evento: {{name}}"
+    "event_a11y": "Evento: {{name}}",
+    "more_events": "Mostrar más eventos",
+    "loading_more": "Cargando más eventos…"
   }
 }

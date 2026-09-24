@@ -277,6 +277,7 @@ function ApplyForm({ orgId, onSubmitted }: { orgId: string; onSubmitted: () => v
         </h2>
         <div className="flex flex-col gap-token-4">
           <Field
+            announceError={false}
             label={t("verification.field_kind", { defaultValue: "Organization type" })}
             hint={
               kind === "nonprofit"
@@ -307,6 +308,7 @@ function ApplyForm({ orgId, onSubmitted }: { orgId: string; onSubmitted: () => v
 
           {kind === "nonprofit" ? (
             <Field
+              announceError={false}
               label={t("verification.field_einNumber", { defaultValue: "EIN" })}
               htmlFor="verification-ein"
               optional
@@ -329,6 +331,7 @@ function ApplyForm({ orgId, onSubmitted }: { orgId: string; onSubmitted: () => v
           ) : null}
 
           <Field
+            announceError={false}
             label={t("verification.field_documents", { defaultValue: "Documents" })}
             optional={kind === "community"}
             hint={t("verification.documents_hint", {
@@ -346,6 +349,7 @@ function ApplyForm({ orgId, onSubmitted }: { orgId: string; onSubmitted: () => v
           </Field>
 
           <Field
+            announceError={false}
             label={t("verification.field_note", { defaultValue: "Note for the reviewer" })}
             htmlFor="verification-note"
             optional

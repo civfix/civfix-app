@@ -19,6 +19,7 @@
     "card_body": "휴대폰에서 문제를 신고하고, 처리 상황을 확인하고, 정화 활동에 참여하세요.",
     "dismiss": "닫기",
     "badge_app_store": "App Store에서 civfix 다운로드",
-    "badge_google_play": "Google Play에서 civfix 받기"
+    "badge_google_play": "Google Play에서 civfix 받기",
+    "open_failed": "스토어를 열지 못했어요. 다시 시도해 주세요."
   }
 }

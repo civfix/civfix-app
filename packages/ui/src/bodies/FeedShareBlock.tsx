@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
+import { View, Pressable, StyleSheet, Animated, Easing, Platform } from "react-native"
 import { TextInput } from "../primitives/TextInput"
 import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { useReducedMotion } from "../theme/useReducedMotion"
+import { useT } from "../i18n"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, Toggle } from "../primitives"
 import { useAuthState, useMyProfile } from "../data"
@@ -116,15 +118,25 @@ export function FeedSharePreview({
 }: FeedSharePreviewProps) {
   const styles = useStyles()
   const t = useTheme()
+  const { t: tc } = useT("common")
+  const reducedMotion = useReducedMotion()
   const [enter] = useState(() => new Animated.Value(0))
   useEffect(() => {
-    Animated.timing(enter, {
+    if (reducedMotion == null) return
+    if (reducedMotion) {
+      enter.stopAnimation()
+      enter.setValue(1)
+      return
+    }
+    const animation = Animated.timing(enter, {
       toValue: 1,
       duration: 180,
       easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    }).start()
-  }, [enter])
+      useNativeDriver: Platform.OS !== "web",
+    })
+    animation.start()
+    return () => animation.stop()
+  }, [enter, reducedMotion])
 
   const readOnly = onChangeCaption === undefined
   const overCap = caption.length >= FEED_CAPTION_MAX
@@ -172,7 +184,7 @@ export function FeedSharePreview({
       {!readOnly && caption.length >= FEED_CAPTION_COUNTER_AT ? (
         <Text
           style={[styles.counter, overCap ? styles.counterMax : null]}
-          accessibilityLabel={`${caption.length} / ${FEED_CAPTION_MAX}`}
+          accessibilityLabel={tc("caption_remaining_a11y", { count: FEED_CAPTION_MAX - caption.length })}
         >
           {FEED_CAPTION_MAX - caption.length}
         </Text>

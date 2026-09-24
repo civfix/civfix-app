@@ -1,12 +1,21 @@
 import { useCallback } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  infiniteQueryOptions,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query"
 import type {
   BlockUserResponse,
   ListBlocksResponse,
   OpenDmResponse,
+  PersonDTO,
   SearchUsersResponse,
   MessageThreadDTO,
 } from "@civfix/shared"
+import type { ApiClient } from "@civfix/shared/client"
 import { useApi } from "../context"
 import { useAuthState, useRequireAuth } from "../context"
 import { queryKeys } from "../keys"
@@ -98,13 +107,26 @@ export function useBlockUser() {
   })
 }
 
+export function listBlocksQueryOptions(api: ApiClient) {
+  return infiniteQueryOptions({
+    queryKey: queryKeys.blocks,
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }): Promise<ListBlocksResponse> =>
+      api.listBlocks(pageParam ? { cursor: pageParam } : {}),
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  })
+}
+
+export function blockedAccountsOf(data: InfiniteData<ListBlocksResponse> | undefined): PersonDTO[] {
+  return (data?.pages ?? []).flatMap((page) => page.blocked)
+}
+
 export function useListBlocks() {
   const api = useApi()
   const { isAuthenticated } = useAuthState()
-  return useQuery<ListBlocksResponse, unknown, ListBlocksResponse>({
-    queryKey: queryKeys.blocks,
+  return useInfiniteQuery({
+    ...listBlocksQueryOptions(api),
     enabled: isAuthenticated,
-    queryFn: () => api.listBlocks({}),
     retry: false,
   })
 }

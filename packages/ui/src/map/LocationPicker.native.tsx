@@ -58,7 +58,13 @@ import { useT } from "../i18n"
 import { useCartoApiKey } from "../data"
 import { rasterMapStyle, DEFAULT_ATTRIBUTION } from "./mapStyle"
 import { PinSvg, pinAppearanceFor } from "./pins"
-import { PICKER_ZOOM, PICKER_HEIGHT, type LatLng, type LocationPickerProps } from "./LocationPicker.types"
+import {
+  PICKER_ZOOM,
+  PICKER_HEIGHT,
+  pickerSurface,
+  type LatLng,
+  type LocationPickerProps,
+} from "./LocationPicker.types"
 
 // MapLibre's Map.onPress passes either event shape; both carry lngLat (the touched coordinate).
 type MapPress = NativeSyntheticEvent<PressEvent> | NativeSyntheticEvent<PressEventWithFeatures>
@@ -67,6 +73,7 @@ export function LocationPicker({
   value,
   onChange,
   initialCenter,
+  centerSettled,
   height = PICKER_HEIGHT,
   interactive = false,
   fullBleed = false,
@@ -77,6 +84,8 @@ export function LocationPicker({
   const th = useTheme()
   const { t } = useT("map-ui")
   const [picked, setPicked] = useState<LatLng | null>(value ?? null)
+  const pickedRef = useRef(picked)
+  pickedRef.current = picked
   const cameraRef = useRef<CameraRef>(null)
   // The map's style-loaded signal + the ONE camera move that may need replaying against it. MapLibre
   // ignores a `flyTo` issued before the map is ready and reports no error, so an un-queued recenter is a
@@ -132,20 +141,20 @@ export function LocationPicker({
       setPicked(null)
       return
     }
-    setPicked((prev) => {
-      if (prev && Math.abs(prev.lat - value.lat) < 1e-6 && Math.abs(prev.lng - value.lng) < 1e-6) {
-        return prev
-      }
-      if (cameraSeed && Math.abs(cameraSeed.lat - value.lat) < 1e-6 && Math.abs(cameraSeed.lng - value.lng) < 1e-6) {
-        return value
-      }
+    const prev = pickedRef.current
+    if (prev && Math.abs(prev.lat - value.lat) < 1e-6 && Math.abs(prev.lng - value.lng) < 1e-6) return
+    const restatesSeed =
+      cameraSeed != null &&
+      Math.abs(cameraSeed.lat - value.lat) < 1e-6 &&
+      Math.abs(cameraSeed.lng - value.lng) < 1e-6
+    if (!restatesSeed) {
       if (mapReadyRef.current) {
         cameraRef.current?.flyTo({ center: [value.lng, value.lat], zoom: PICKER_ZOOM, duration: 400 })
       } else {
         pendingCenterRef.current = value
       }
-      return value
-    })
+    }
+    setPicked(value)
   }, [value, cameraSeed])
 
   const onMapReady = useCallback(() => {
@@ -171,9 +180,16 @@ export function LocationPicker({
   if (!initialViewState) {
     return (
       <View style={fullBleed ? styles.wrapFull : [styles.wrap, { height }]}>
-        <View style={styles.pending}>
-          <ActivityIndicator color={th.colors.textSubtle} />
-        </View>
+        {pickerSurface(cameraSeed, centerSettled) === "search" ? (
+          <View style={styles.pending} accessibilityLiveRegion="polite">
+            <Text style={styles.pendingText}>{t("hint.search_address")}</Text>
+          </View>
+        ) : (
+          <View style={styles.pending} accessibilityRole="progressbar" accessibilityLiveRegion="polite">
+            <ActivityIndicator color={th.colors.textSubtle} />
+            <Text style={styles.pendingText}>{t("hint.pending")}</Text>
+          </View>
+        )}
       </View>
     )
   }
@@ -232,7 +248,7 @@ export function LocationPicker({
         ]}
         pointerEvents="none"
       >
-        {t("a11y.attribution")}
+        {DEFAULT_ATTRIBUTION}
       </Text>
     </View>
   )
@@ -261,6 +277,14 @@ const useStyles = makeThemedStyles((t) => ({
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
+    gap: t.space["2"],
+    paddingHorizontal: t.space["4"],
+  },
+  pendingText: {
+    fontFamily: t.fontFamily.bodySemiBold,
+    fontSize: 12.5,
+    color: t.colors.textSubtle,
+    textAlign: "center",
   },
   map: {
     ...StyleSheet.absoluteFillObject,

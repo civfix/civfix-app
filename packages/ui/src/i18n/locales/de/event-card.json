@@ -6,8 +6,7 @@
     "by_prefix": "von"
   },
   "a11y": {
-    "card_one": "{{title}}, {{count}} Teilnehmer",
-    "card_other": "{{title}}, {{count}} Teilnehmer"
+    "card_detail": "{{title}}. {{when}}. {{location}}. {{going}}. {{organizer}}."
   },
   "linked": {
     "schedule_unavailable": "Termin nicht verfügbar",

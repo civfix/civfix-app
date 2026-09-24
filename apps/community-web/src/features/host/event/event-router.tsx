@@ -87,6 +87,11 @@ const BOTTOM_TAB_ORDER: readonly EventSection[] = [
   "settings",
 ]
 
+/** Overview is the fallback only for someone who may see it; otherwise exit would loop back here. */
+export function noAccessExitRoute(canViewOverview: boolean, eventId: string): ConsoleRoute {
+  return canViewOverview ? { kind: "event", eventId, section: "overview" } : { kind: "portfolio" }
+}
+
 export function EventRouter({ route }: { route: ConsoleRoute }) {
   const { t } = useT("host-event")
   const { t: tc } = useT("host-common")
@@ -178,7 +183,14 @@ export function EventRouter({ route }: { route: ConsoleRoute }) {
           <NoAccessState
             title={t("no_access_title")}
             body={t("no_access_body")}
-            onExit={() => go({ kind: "event", eventId, section: "overview" })}
+            onExit={() =>
+              go(
+                noAccessExitRoute(
+                  hasHostCapability(standing, SECTION_CAPABILITY.overview),
+                  eventId,
+                ),
+              )
+            }
           />
         ) : (
           <ConsoleEventProvider eventId={eventId} event={event}>

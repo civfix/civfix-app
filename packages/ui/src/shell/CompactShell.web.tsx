@@ -5,7 +5,8 @@ import {
   useWindowDimensions,
   type ViewStyle,
 } from "react-native"
-import { makeThemedStyles, space, motion } from "../theme"
+import { makeThemedStyles, space, motion, focusRingProps } from "../theme"
+import { useT } from "../i18n"
 import { BlurSurface } from "../surface"
 import { useNavStore, type DetailEntry, type Snap, type View as NavView } from "../nav"
 import { SearchHeader } from "./SearchHeader.web"
@@ -15,8 +16,15 @@ import { defaultRenderBody } from "./BodyRouter"
 import { ScrollHostProvider, PLAIN_SCROLL_HOST } from "./ScrollHost"
 import { makeKeyboardAwareScrollHost } from "./KeyboardAwareScroll"
 import { cssTransition } from "./motionCss"
-import { compactBottomChrome, sheetSnapPoints } from "./tabBarLogic"
-import { isCoarsePointer } from "./webMedia"
+import { shellBodyKey } from "./bodyLayout"
+import {
+  SHEET_SNAP_RANGE,
+  compactBottomChrome,
+  sheetSnapKeyOutcome,
+  sheetSnapPoints,
+  sheetSnapValueKey,
+} from "./tabBarLogic"
+import { isCoarsePointer, prefersReducedMotion } from "./webMedia"
 import { BodyTransition } from "./BodyTransition.web"
 import { useStackDirection } from "./useStackDirection"
 import type { CompactShellProps } from "./CompactShell.types"
@@ -71,6 +79,7 @@ function WebSheetHeader({
 
 export function CompactShell({ renderBody = defaultRenderBody, closing = false, onClosed }: CompactShellProps) {
   const styles = useStyles()
+  const { t: tNav } = useT("nav")
   const { height: winH } = useWindowDimensions()
 
   useLayoutEffect(() => {
@@ -85,7 +94,7 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   const stack = useNavStore((s) => s.stack)
   const collapseToParent = useNavStore((s) => s.collapseToParent)
 
-  const transitionKey = active ? `${active.kind}:${active.id ?? ""}` : `home:${view}`
+  const transitionKey = shellBodyKey(active, `home:${view}`)
   const direction = useStackDirection(stack.length)
 
   const snapPx = useMemo(() => sheetSnapPoints(winH, space["8"]), [winH])
@@ -160,7 +169,18 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
     [setSnap, collapseToParent],
   )
 
-  const settleTransition = dragging || !snapAnimated ? "none" : SETTLE_TRANSITION
+  const onHandleKeyDown = (event: { key?: string; preventDefault?: () => void }) => {
+    const cur = snapRef.current
+    const outcome = sheetSnapKeyOutcome(cur, event.key)
+    if (!outcome.consumed) return
+    event.preventDefault?.()
+    if (outcome.next === null) return
+    setSnap(outcome.next)
+    if (shouldCollapseOnSettle(outcome.next, cur)) collapseToParent()
+  }
+
+  const settleTransition =
+    dragging || !snapAnimated || prefersReducedMotion() ? "none" : SETTLE_TRANSITION
   const anchorStyle = {
     height,
     bottom: 0,
@@ -186,7 +206,22 @@ export function CompactShell({ renderBody = defaultRenderBody, closing = false, 
   return (
     <View style={[styles.anchor, anchorStyle]}>
       <BlurSurface kind="sheet" style={[styles.card, cardStyle]}>
-        <View style={styles.handleArea} {...panResponder.panHandlers}>
+        <View
+          style={styles.handleArea}
+          {...panResponder.panHandlers}
+          accessibilityRole="adjustable"
+          accessibilityLabel={tNav("a11y.drag_handle")}
+          {...({
+            "aria-valuemin": SHEET_SNAP_RANGE.min,
+            "aria-valuemax": SHEET_SNAP_RANGE.max,
+            "aria-valuenow": snap,
+            "aria-valuetext": tNav(sheetSnapValueKey(snap)),
+            "aria-orientation": "vertical",
+            tabIndex: 0,
+            onKeyDown: onHandleKeyDown,
+          } as object)}
+          {...focusRingProps}
+        >
           <View style={styles.handleBar} />
         </View>
         <View style={styles.contentHost}>

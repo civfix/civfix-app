@@ -7,6 +7,7 @@ import { useT } from "@civfix/ui/i18n"
 import { Button } from "@/components/ui/button"
 import { useLogout } from "@/hooks/use-auth"
 import { useSignOutRetryStore } from "@/store/sign-out-retry-store"
+import { SESSION_ALERT_ATTR } from "@/styles/z-layers"
 
 /**
  * A failed sign-out leaves the session cookie valid, so the user is still signed in. This stays on
@@ -20,16 +21,29 @@ export function SignOutFailureNotice(): React.ReactElement | null {
   const failed = useSignOutRetryStore((s) => s.failed)
   const pending = useSignOutRetryStore((s) => s.pending)
   const dismiss = useSignOutRetryStore((s) => s.dismiss)
+  const retryRef = React.useRef<HTMLButtonElement | null>(null)
+
+  // The first-run gate traps Tab inside its own card, so a notice that only waited to be tabbed to
+  // would be unreachable from the keyboard there. Take focus while shown and hand it back on dismiss.
+  React.useEffect(() => {
+    if (!failed) return
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    retryRef.current?.focus()
+    return () => {
+      if (previous?.isConnected) previous.focus()
+    }
+  }, [failed])
 
   if (!failed || typeof document === "undefined") return null
 
   return createPortal(
     <div
       role="alert"
+      {...{ [SESSION_ALERT_ATTR]: "" }}
       className="fixed inset-x-0 bottom-token-4 z-session-alert mx-auto flex w-[min(460px,calc(100vw-32px))] items-center gap-token-3 rounded-md border border-ink-5 bg-cardflat px-token-4 py-token-3 text-token-14 text-ink shadow-s1"
     >
       <p className="min-w-0 flex-1">{t("sign_out_failed.message")}</p>
-      <Button size="sm" disabled={pending} onClick={() => void logout()}>
+      <Button ref={retryRef} size="sm" disabled={pending} onClick={() => void logout()}>
         {t("sign_out_failed.retry")}
       </Button>
       <Button variant="ghost" size="sm" onClick={dismiss}>

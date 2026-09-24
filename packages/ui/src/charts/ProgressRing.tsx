@@ -28,6 +28,7 @@ export function ProgressRing({
 
   return (
     <View
+      accessible
       accessibilityRole="image"
       accessibilityLabel={accessibilityLabel}
       style={{ width: size, height: size }}

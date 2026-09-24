@@ -20,7 +20,8 @@
     "required_error": "This answer is required.",
     "required_summary": "Please answer the required questions.",
     "loading": "Loading the questions…",
-    "error": "The questions could not be loaded."
+    "error": "The questions could not be loaded.",
+    "required_a11y": "{{prompt}}, required"
   },
   "consent": {
     "terms_lead": "I agree to the ",
@@ -51,7 +52,12 @@
     "seats_other": "{{count}} seats",
     "position": "Waitlist position {{position}}",
     "view_ticket": "View ticket",
-    "cancel": "Cancel registration"
+    "cancel": "Cancel registration",
+    "cancel_title": "Cancel your registration?",
+    "cancel_body": "Your seat is released right away. If the event fills up, registering again puts you on the waitlist.",
+    "cancel_waitlist_title": "Leave the waitlist?",
+    "cancel_waitlist_body": "You lose your place in line. Joining again puts you at the back.",
+    "cancel_keep": "Keep my spot"
   },
   "state": {
     "loading": "Loading your ticket…",

@@ -82,6 +82,9 @@ export function RegistrationQuestions({
       {questions.map((question) => {
         const value = answers[question.id]
         const isInvalid = invalid?.has(question.id) ?? false
+        const promptA11y = question.required
+          ? t("questions.required_a11y", { prompt: question.prompt })
+          : question.prompt
         return (
           <View key={question.id} style={styles.field}>
             {question.kind === "consent" ? null : (
@@ -103,7 +106,7 @@ export function RegistrationQuestions({
                 }
                 placeholder={t("questions.text_placeholder")}
                 placeholderTextColor={th.colors.textSubtle}
-                accessibilityLabel={question.prompt}
+                accessibilityLabel={promptA11y}
                 onFocus={() => setFocusedId(question.id)}
                 onBlur={() => setFocusedId((prev) => (prev === question.id ? null : prev))}
                 style={[
@@ -120,7 +123,7 @@ export function RegistrationQuestions({
               <View
                 style={styles.options}
                 accessibilityRole="radiogroup"
-                accessibilityLabel={question.prompt}
+                accessibilityLabel={promptA11y}
               >
                 {question.options.map((option) => {
                   const selected = value === option.value
@@ -154,7 +157,7 @@ export function RegistrationQuestions({
             ) : null}
 
             {question.kind === "multi_select" ? (
-              <View style={styles.options}>
+              <View style={styles.options} role="group" accessibilityLabel={promptA11y}>
                 {question.options.map((option) => (
                   <CheckRow
                     key={option.value}
@@ -173,7 +176,7 @@ export function RegistrationQuestions({
                 label={question.kind === "consent" ? (question.consentText ?? question.prompt) : question.prompt}
                 checked={value === true}
                 disabled={disabled}
-                a11yLabel={question.prompt}
+                a11yLabel={promptA11y}
                 onToggle={() => onChange(question.id, value !== true)}
               />
             ) : null}

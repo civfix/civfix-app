@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import {
-  AccessibilityInfo,
   Animated,
   Easing,
   LayoutAnimation,
@@ -24,7 +23,9 @@ import {
   useTheme,
   webInputReset,
 } from "../theme"
+import { useReducedMotion } from "../theme/useReducedMotion"
 import { Avatar, MentionAutocomplete } from "../primitives"
+import { useToast } from "../primitives/Toast"
 import type { MentionCandidate } from "../primitives"
 import { ComposerThumbs } from "../primitives/ComposerThumbs"
 import { useComposerAttachments } from "../primitives/useComposerAttachments"
@@ -77,11 +78,13 @@ import {
   carriedMediaIndex,
   mergePostComposerMedia,
   mergePostComposerThumbs,
+  postComposerCanAttach,
   snapshotCarriedMedia,
 } from "./postComposerMedia"
 import { postSubmitDestination, resolvePostSubmit } from "./postComposerSubmit"
 import { trackPostComposerMount, type PostComposerExitHost } from "./postComposerExit"
 import {
+  restoreFailedPostSubmit,
   selectPostComposerDraft,
   selectPostComposerDraftHidden,
   selectPostComposerDraftOwner,
@@ -102,6 +105,8 @@ export interface PostComposerProps {
   standalone?: PostComposerStandaloneHost
 }
 
+const MIN_TOUCH_TARGET = 44
+
 const STANDALONE_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 const EXIT_HOST: PostComposerExitHost = {
@@ -117,41 +122,26 @@ function softenLayoutChange() {
   if (Platform.OS === "ios") LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
 }
 
-let reduceMotionCache = false
-
 function useComposerEntrance(): Animated.WithAnimatedValue<ViewStyle> {
-  const progress = useRef(new Animated.Value(reduceMotionCache ? 1 : 0)).current
+  const reducedMotion = useReducedMotion()
+  const progress = useRef(new Animated.Value(reducedMotion === true ? 1 : 0)).current
 
   useEffect(() => {
-    const settle = () => {
+    if (reducedMotion == null) return
+    if (reducedMotion) {
       progress.stopAnimation()
       progress.setValue(1)
+      return
     }
-    if (reduceMotionCache) {
-      settle()
-    } else {
-      Animated.timing(progress, {
-        toValue: 1,
-        duration: 280,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: Platform.OS !== "web",
-      }).start()
-    }
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((reduceMotion) => {
-        reduceMotionCache = !!reduceMotion
-        if (reduceMotion) settle()
-      })
-      .catch(() => {})
-    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", (reduceMotion) => {
-      reduceMotionCache = !!reduceMotion
-      if (reduceMotion) settle()
+    const animation = Animated.timing(progress, {
+      toValue: 1,
+      duration: 280,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: Platform.OS !== "web",
     })
-    return () => {
-      subscription.remove()
-      progress.stopAnimation()
-    }
-  }, [progress])
+    animation.start()
+    return () => animation.stop()
+  }, [progress, reducedMotion])
 
   return {
     opacity: progress,
@@ -207,7 +197,8 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
   const setReplyToPostId = usePostComposerStore((state) => state.setReplyToPostId)
   const setQuotePostId = usePostComposerStore((state) => state.setQuotePostId)
   const reset = usePostComposerStore((state) => state.reset)
-  const restore = usePostComposerStore((state) => state.restore)
+  const toast = useToast()
+  const mountedRef = useRef(true)
   const hasPendingMedia = usePostComposerStore(selectPostComposerHasPendingMedia)
   const [attachmentPanel, setAttachmentPanel] = useState(initialPostComposerAttachmentPanel)
   const [eventsExpanded, setEventsExpanded] = useState(false)
@@ -234,6 +225,13 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
   useEffect(clearStaleReportIntentAtComposerMount, [])
 
   useEffect(() => trackPostComposerMount(EXIT_HOST), [])
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   const eventItems = useMemo(() => events.data ?? [], [events.data])
   const attachedEvent = useMemo(
@@ -323,8 +321,11 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
     () => mergePostComposerThumbs(carriedMedia, attachments.attachments),
     [carriedMedia, attachments.attachments],
   )
-  const canAttachMedia =
-    !draftHidden && attachments.canAttach && composerMedia.length < POST_COMPOSER_MEDIA_CAP
+  const canAttachMedia = postComposerCanAttach({
+    hookCanAttach: !draftHidden && attachments.canAttach,
+    carried: carriedMedia.length,
+    picked: attachments.attachments.length,
+  })
   const removeMedia = (id: string) => {
     const carriedIndex = carriedMediaIndex(id)
     if (carriedIndex != null) {
@@ -404,11 +405,7 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
     }
     const staged = selectPostComposerDraft(usePostComposerStore.getState())
     reset({ mode, targetPostId: targetPostId ?? null })
-    create.mutate({ input: resolution.input, optimistic }, {
-      onError: () => {
-        haptics.error()
-        restore(staged)
-      },
+    create.mutateAsync({ input: resolution.input, optimistic }, {
       onSuccess: (post) => {
         haptics.success()
         attachments.reset()
@@ -426,6 +423,12 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
       onSettled: () => {
         submittingRef.current = false
       },
+    }).catch(() => {
+      haptics.error()
+      const restored = restoreFailedPostSubmit(staged)
+      if (!mountedRef.current) {
+        toast.show(t(restored ? "submit_error_restored" : "submit_error"), { variant: "error" })
+      }
     })
   }
 
@@ -505,12 +508,14 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
         pressed ? styles.buttonPressed : null,
       ]}
     >
-      <Icon
-        icon={iconMap.Plus}
-        size={18}
-        color={canAttachMedia ? th.colors.accent : th.colors.textSubtle}
-        strokeWidth={2.2}
-      />
+      <View style={styles.addMediaDisc}>
+        <Icon
+          icon={iconMap.Plus}
+          size={18}
+          color={canAttachMedia ? th.colors.accent : th.colors.textSubtle}
+          strokeWidth={2.2}
+        />
+      </View>
     </Pressable>
   )
 
@@ -819,9 +824,9 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
             style={styles.authorOrgLogo}
           />
         ) : (
-          <Avatar name={profile?.name ?? "You"} seed={profile?.id} photoUrl={profile?.avatarUrl} gradient={profile?.avatar ?? null} size={34} />
+          <Avatar name={profile?.name ?? t("post_as.personal")} seed={profile?.id} photoUrl={profile?.avatarUrl} gradient={profile?.avatar ?? null} size={34} />
         )}
-        <Text style={styles.authorName}>{postAsOrganization?.name ?? profile?.name ?? "You"}</Text>
+        <Text style={styles.authorName}>{postAsOrganization?.name ?? profile?.name ?? t("post_as.personal")}</Text>
       </View>
 
       <AuthorAsChips
@@ -860,7 +865,7 @@ function PostComposerForOwner({ mode = "post", targetPostId, onPosted, standalon
           <Icon icon={iconMap.Close} size={17} color={th.colors.text} strokeWidth={2} />
         </Pressable>
         <View pointerEvents="none" style={styles.headerTitleWrap}>
-          <Text style={styles.headerTitle}>{presentation.title}</Text>
+          <Text accessibilityRole="header" style={styles.headerTitle}>{presentation.title}</Text>
         </View>
         <View style={styles.headerSpacer} />
         <Pressable
@@ -911,7 +916,8 @@ const useStyles = makeThemedStyles((t) => ({
   input: { minHeight: 104, padding: t.space["2"], fontFamily: t.fontFamily.bodyRegular, fontSize: 14.5, lineHeight: 21, color: t.colors.text, textAlignVertical: "top" },
   thumbsInCard: { marginHorizontal: t.space["2"], marginTop: t.space["1"] },
   mediaRow: { flexDirection: "row", alignItems: "center" },
-  addMedia: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.surfaceTint, marginLeft: t.space["2"], marginTop: 6, marginBottom: 6 },
+  addMedia: { width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET, alignItems: "center", justifyContent: "center", marginLeft: t.space["1"], marginTop: 2, marginBottom: 2 },
+  addMediaDisc: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.surfaceTint },
   addMediaDisabled: { opacity: 0.52 },
   postButton: { minHeight: 44, paddingHorizontal: 18, borderRadius: t.radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.accent, zIndex: 2 },
   postButtonDisabled: { backgroundColor: t.colors.surfaceTint },

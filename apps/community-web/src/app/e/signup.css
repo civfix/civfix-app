@@ -30,9 +30,11 @@
 }
 
 .signup-shell {
+  /* The full-bleed hero cancels this gutter with a negative margin, so both read the one variable. */
+  --signup-gutter: var(--space-5);
   max-width: 680px;
   margin: 0 auto;
-  padding: 0 var(--space-5) var(--space-16);
+  padding: 0 var(--signup-gutter) var(--space-16);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
@@ -40,7 +42,7 @@
 
 /* ---- Hero ---- */
 .signup-hero {
-  margin: 0 calc(var(--space-5) * -1);
+  margin: 0 calc(var(--signup-gutter) * -1);
 }
 .signup-hero-cover {
   display: block;
@@ -50,7 +52,7 @@
   background: var(--bg-2);
 }
 .signup-hero-body {
-  padding: var(--space-6) var(--space-5) 0;
+  padding: var(--space-6) var(--signup-gutter) 0;
 }
 .signup-hero-org {
   display: flex;
@@ -425,8 +427,7 @@
 
 @media (max-width: 380px) {
   .signup-shell {
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
+    --signup-gutter: var(--space-4);
   }
   .signup-agenda li {
     flex-direction: column;

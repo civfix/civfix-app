@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { BackHandler, Modal, View, StyleSheet } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { space, makeThemedStyles } from "../theme"
@@ -18,6 +18,7 @@ export function PortraitMapPickStep({
   visible,
   value,
   initialCenter,
+  centerSettled,
   onConfirm,
   onCancel,
   pin,
@@ -42,9 +43,11 @@ export function PortraitMapPickStep({
   )
 
   const onConfirmRef = useRef(onConfirm)
-  onConfirmRef.current = onConfirm
   const onCancelRef = useRef(onCancel)
-  onCancelRef.current = onCancel
+  useLayoutEffect(() => {
+    onConfirmRef.current = onConfirm
+    onCancelRef.current = onCancel
+  })
 
   usePickStepSheetSnap(visible && presentation === "modal")
 
@@ -52,9 +55,9 @@ export function PortraitMapPickStep({
 
   const onPickPlace = useCallback(
     (place: AddressPick) => setLocalPoint({ lat: place.lat, lng: place.lng }),
-    [],
+    [setLocalPoint],
   )
-  const onMapDrop = useCallback((lat: number, lng: number) => setLocalPoint({ lat, lng }), [])
+  const onMapDrop = useCallback((lat: number, lng: number) => setLocalPoint({ lat, lng }), [setLocalPoint])
 
   const confirm = useCallback(() => {
     if (!localPoint) return
@@ -83,6 +86,7 @@ export function PortraitMapPickStep({
         value={localPoint}
         onChange={onMapDrop}
         initialCenter={initialCenter ?? undefined}
+        centerSettled={centerSettled}
         mode="standalone"
         interactive
         fullBleed

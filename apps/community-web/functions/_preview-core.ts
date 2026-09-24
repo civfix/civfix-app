@@ -56,6 +56,9 @@ export interface PreviewDeps {
 export const API_TIMEOUT_MS = 1500
 export const PREVIEW_CACHE_TTL_SEC = 300
 export const PREVIEW_NEGATIVE_CACHE_TTL_SEC = 60
+// A timeout, 5xx or 429 says nothing about the entity, so it must not pin the default card on every
+// share for as long as a definite miss does.
+export const PREVIEW_TRANSIENT_CACHE_TTL_SEC = 15
 export const NEGATIVE_CACHE_HEADER = "x-civfix-preview-miss"
 export const CACHE_KEY_ORIGIN = "https://link-preview.civfix.internal"
 
@@ -216,7 +219,9 @@ export function negativeCacheResponse(outcome: "missing" | "transient"): Respons
     status: 200,
     headers: {
       [NEGATIVE_CACHE_HEADER]: outcome,
-      "Cache-Control": `public, max-age=${PREVIEW_NEGATIVE_CACHE_TTL_SEC}`,
+      "Cache-Control": `public, max-age=${
+        outcome === "transient" ? PREVIEW_TRANSIENT_CACHE_TTL_SEC : PREVIEW_NEGATIVE_CACHE_TTL_SEC
+      }`,
     },
   })
 }

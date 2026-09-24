@@ -13,10 +13,12 @@ import type {
   ListReportsSearchResponse,
   JurisdictionDTO,
 } from "@civfix/shared"
+import type { ApiClient } from "@civfix/shared/client"
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 import { optimisticPatch } from "../optimistic"
 import { NEARBY_RADIUS_KM, bboxAround, roundNearbyCoord } from "./nearbyBbox"
+import { isAddressNotFound } from "./resolveAddress"
 
 function coerceMyReportPages(
   data: InfiniteData<ListMyReportsResponse>,
@@ -61,6 +63,20 @@ export function roundJurisdictionCoord(n: number): number {
   return Math.round(n * 100000) / 100000
 }
 
+/** The jurisdiction covering a point, `null` when none does; rethrows a transient failure so it is not cached. */
+export async function fetchJurisdiction(
+  api: Pick<ApiClient, "resolveJurisdiction">,
+  lat: number,
+  lng: number,
+): Promise<JurisdictionDTO | null> {
+  try {
+    return (await api.resolveJurisdiction({ lat, lng })) ?? null
+  } catch (err) {
+    if (isAddressNotFound(err)) return null
+    throw err
+  }
+}
+
 export function useResolveJurisdiction(point: { lat: number; lng: number } | null) {
   const api = useApi()
   const lat = point ? roundJurisdictionCoord(point.lat) : 0
@@ -68,13 +84,7 @@ export function useResolveJurisdiction(point: { lat: number; lng: number } | nul
   return useQuery<JurisdictionDTO | null>({
     queryKey: queryKeys.jurisdiction(lat, lng),
     enabled: point !== null,
-    queryFn: async () => {
-      try {
-        return await api.resolveJurisdiction({ lat, lng })
-      } catch {
-        return null
-      }
-    },
+    queryFn: () => fetchJurisdiction(api, lat, lng),
     retry: false,
     staleTime: 5 * 60 * 1000,
   })
@@ -306,7 +316,7 @@ export function useUnlistReport(id: string) {
         },
         onSuccess: (client, res) => {
           patchReportVisibilityInLists(client, id, res.visibility)
-          void client.invalidateQueries({ queryKey: ["map", "reports"] })
+          void client.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })
         },
       },
     }),

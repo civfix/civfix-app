@@ -1,5 +1,5 @@
 import { Platform, Share } from "react-native"
-import { classifyWebShareRejection, type ShareResult } from "./shareResult"
+import { classifyWebShareRejection, nativeShareResult, type ShareResult } from "./shareResult"
 import { nativeShareContent } from "./shareContent"
 
 export { WEB_ORIGIN, setWebOrigin, webOrigin } from "./externalUrls"
@@ -52,8 +52,10 @@ export async function shareLink(opts: ShareLinkOptions): Promise<ShareResult> {
   }
 
   try {
-    await Share.share(nativeShareContent(Platform.OS, { title: opts.title, message: opts.message, url }))
-    return "shared"
+    const shared = await Share.share(
+      nativeShareContent(Platform.OS, { title: opts.title, message: opts.message, url }),
+    )
+    return nativeShareResult(shared.action, Share.dismissedAction)
   } catch {
     return "unavailable"
   }

@@ -450,3 +450,27 @@ describe("query-persist is SSR-safe (no window)", () => {
     expect(() => clearPersistedCache()).not.toThrow()
   })
 })
+
+describe("cache buster", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.resetModules()
+  })
+
+  it("stamps the envelope with the build's commit sha, so a new deploy discards the old cache", async () => {
+    vi.stubEnv("NEXT_PUBLIC_COMMIT_SHA", "abc1234")
+    vi.resetModules()
+    const fresh = await import("@/lib/query-persist")
+    // The reset registry hands the fresh module its own auth store; the writer persists only for a
+    // confirmed viewer, so confirm a signed-out visitor there.
+    const { useAuthStore: freshAuthStore } = await import("@/store/auth-store")
+    freshAuthStore.getState().clear()
+    vi.useFakeTimers()
+    const qc = new QueryClient()
+    const teardown = fresh.installCachePersistenceWriter(qc)
+    qc.setQueryData(["notifications", 20], { items: [1] })
+    vi.advanceTimersByTime(1000)
+    expect(readEnvelope().buster).toBe("abc1234")
+    teardown()
+  })
+})

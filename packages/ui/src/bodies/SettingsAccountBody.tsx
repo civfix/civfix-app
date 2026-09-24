@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 import { View } from "react-native"
 import type { SocialLinks } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "../theme"
@@ -66,6 +66,9 @@ export function SettingsAccountBody() {
   const toast = useToast()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [avatarUploading, setAvatarUploading] = useState(false)
+  // Guards the whole pick-then-upload run; the visible uploading state only starts once a photo is
+  // chosen, so a second tap while the OS picker is open must not open a second picker.
+  const avatarBusyRef = useRef(false)
 
   const onSaveName = useCallback(
     (displayName: string): Promise<void> => {
@@ -92,12 +95,13 @@ export function SettingsAccountBody() {
   )
 
   const onChangeAvatar = useCallback(() => {
-    if (!profile || avatarUploading) return
+    if (!profile || avatarBusyRef.current) return
+    avatarBusyRef.current = true
     void (async () => {
-      setAvatarUploading(true)
       try {
         const picked = await camera.pickFromLibrary()
         if (!picked || picked.kind !== "image") return
+        setAvatarUploading(true)
         const avatarUploadId = await uploadAvatar(api, camera, picked)
         await updateProfile.mutateAsync({
           handle: profile.handle ?? "",
@@ -107,10 +111,11 @@ export function SettingsAccountBody() {
       } catch (err) {
         toast.show(avatarErrorMessage(err, t), { variant: "error" })
       } finally {
+        avatarBusyRef.current = false
         setAvatarUploading(false)
       }
     })()
-  }, [api, camera, profile, avatarUploading, updateProfile, toast, t])
+  }, [api, camera, profile, updateProfile, toast, t])
 
   const onSaveHandle = useCallback(
     (handle: string): Promise<void> => {
@@ -156,20 +161,16 @@ export function SettingsAccountBody() {
 
   const onRequestData = useCallback(() => {
     if (requestMyData.isPending) return
-    requestMyData.mutate()
-  }, [requestMyData])
-
-  useEffect(() => {
-    if (requestMyData.status === "success") {
-      announce(
-        requestMyData.data?.email
-          ? t("data_export.announce.success_email", { email: requestMyData.data.email })
-          : t("data_export.announce.success"),
-      )
-    } else if (requestMyData.status === "error") {
-      announce(t("data_export.announce.failed"))
-    }
-  }, [requestMyData.status, requestMyData.data, t])
+    requestMyData.mutate(undefined, {
+      onSuccess: (data) =>
+        announce(
+          data?.email
+            ? t("data_export.announce.success_email", { email: data.email })
+            : t("data_export.announce.success"),
+        ),
+      onError: () => announce(t("data_export.announce.failed")),
+    })
+  }, [requestMyData, t])
 
   if (!isAuthenticated && !isPending) {
     return (
@@ -350,6 +351,6 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.moss["700"],
   },
   dataNoteWarnText: {
-    color: t.colors.bloom["700"],
+    color: t.colors.dangerInk,
   },
 }))

@@ -15,7 +15,7 @@ describe("AddressSearch supersede", () => {
   })
 
   it("keeps an aborted in-flight search from clearing the newer search's results or spinner", () => {
-    expect(addressSearch).toContain("if (!ac.signal.aborted) setResults([])")
+    expect(addressSearch).toMatch(/if \(!ac\.signal\.aborted\) \{\s*setResults\(\[\]\)/)
     expect(addressSearch).toContain("if (!ac.signal.aborted) setLoading(false)")
   })
 })

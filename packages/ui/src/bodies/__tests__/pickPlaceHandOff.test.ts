@@ -1,0 +1,17 @@
+/**
+ * The expanded main-map picker mirrors an external value into its own pick store (APP-BUG-061), so an
+ * address pick is handed over through the picker's value alone. A caller that also writes the store
+ * keeps a second, divergent path to the same pin.
+ */
+import { readFileSync } from "node:fs"
+import { describe, expect, it } from "vitest"
+
+const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8")
+
+describe("address picks reach the main-map picker through its value", () => {
+  for (const rel of ["../ReportFlowBody.tsx", "../CleanupForm.tsx"]) {
+    it(`${rel} never writes the pick store itself`, () => {
+      expect(read(rel)).not.toContain("useLocationPick")
+    })
+  }
+})

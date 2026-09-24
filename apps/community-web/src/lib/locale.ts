@@ -56,6 +56,58 @@ function writeStoredLocale(code: SupportedLocale): void {
   }
 }
 
+// Records which user's server locale missed the last PATCH, so the choice is synced on that user's
+// next confirmed session instead of being lost. Scoped by user id: on a shared browser another
+// account's server setting must never be rewritten from this device's stored choice.
+const UNSYNCED_LOCALE_KEY = "civfix.locale.unsynced"
+
+function readUnsyncedUserId(): string | null {
+  if (typeof window === "undefined") return null
+  try {
+    return window.localStorage.getItem(UNSYNCED_LOCALE_KEY)
+  } catch {
+    return null
+  }
+}
+
+function writeUnsyncedUserId(userId: string | null): void {
+  if (typeof window === "undefined") return
+  try {
+    if (userId === null) window.localStorage.removeItem(UNSYNCED_LOCALE_KEY)
+    else window.localStorage.setItem(UNSYNCED_LOCALE_KEY, userId)
+  } catch {
+    // Storage unavailable: nothing can outlive this page load, so there is nothing to retry.
+  }
+}
+
+/** Drops the pending-sync marker when its viewer leaves this browser; it names a user id. */
+export function forgetUnsyncedLocale(): void {
+  writeUnsyncedUserId(null)
+}
+
+function syncServerLocale(userId: string, code: SupportedLocale): Promise<void> {
+  return api.updateSettings({ locale: code }).then(
+    () => writeUnsyncedUserId(null),
+    () => writeUnsyncedUserId(userId),
+  )
+}
+
+/**
+ * Retry a locale PATCH that failed for the now-confirmed user. Runs only on a live-confirmed session
+ * (never the optimistic snapshot, which has no CSRF token yet).
+ */
+export function reconcileUnsyncedLocale(): Promise<void> {
+  const { status, optimistic, user } = useAuthStore.getState()
+  if (status !== "authenticated" || optimistic || !user) return Promise.resolve()
+  if (readUnsyncedUserId() !== user.id) return Promise.resolve()
+  const stored = readStoredLocale()
+  if (stored === null) {
+    writeUnsyncedUserId(null)
+    return Promise.resolve()
+  }
+  return syncServerLocale(user.id, resolveLocale(stored))
+}
+
 /** The first browser-advertised locale tag, preferring the ordered `languages` list. */
 function browserLocaleTag(): string | null {
   if (typeof navigator === "undefined") return null
@@ -95,6 +147,13 @@ export function useResolvedLocale(): {
   // The authed user's server locale (null when signed out). Subscribing keeps the resolved value in sync
   // when a session check arrives and seeds the language on a fresh install.
   const userLocale = useAuthStore((s) => s.user?.locale ?? null)
+  const confirmedUserId = useAuthStore((s) =>
+    s.status === "authenticated" && !s.optimistic ? (s.user?.id ?? null) : null,
+  )
+
+  React.useEffect(() => {
+    if (confirmedUserId !== null) void reconcileUnsyncedLocale()
+  }, [confirmedUserId])
 
   const [locale, setLocaleState] = React.useState<SupportedLocale>(() =>
     resolveActiveLocale(userLocale),
@@ -114,13 +173,12 @@ export function useResolvedLocale(): {
 
     // (b) when authed, make the server the source of truth (server-generated copy + cross-device sync).
     // Mirror the new value into the auth store so the snapshot + other readers stay in lockstep, then
-    // PATCH /me/settings. Failures are non-fatal: the local choice already took effect this session.
+    // PATCH /me/settings. A failure is recorded and retried on this user's next confirmed session;
+    // the local choice already took effect.
     const { status, user, setSession } = useAuthStore.getState()
     if (status === "authenticated" && user) {
       setSession({ user: { ...user, locale: next } })
-      void api.updateSettings({ locale: next }).catch(() => {
-        // Swallow: the UI already switched; the server sync will retry on the next change.
-      })
+      void syncServerLocale(user.id, next)
     }
   }, [])
 

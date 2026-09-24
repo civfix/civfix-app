@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { FlatList as RNFlatList } from "react-native"
 import type { ChatItem } from "@civfix/shared"
 import { useToast } from "../../primitives"
@@ -35,7 +35,9 @@ export function useJumpToMessage({
   const toast = useToast()
 
   const dataRef = useRef<RenderItem[]>(data)
-  dataRef.current = data
+  useLayoutEffect(() => {
+    dataRef.current = data
+  })
   const pendingJumpRef = useRef<string | null>(null)
 
   const [flashMessageId, setFlashMessageId] = useState<string | null>(null)

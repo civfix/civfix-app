@@ -38,7 +38,7 @@
  * covers the home-indicator strip: adding `insets.bottom` on top of a live keyboard inset would reopen a
  * 34pt dead gap (the exact defect the search dock had). So the safe-area pad applies only at rest.
  */
-import { useContext, useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Dimensions, Keyboard, Platform, type KeyboardEvent } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import { keyboardViewportOverlap } from "../../shell/keyboardInsetModel"
@@ -64,7 +64,9 @@ export function useReplyDockInset(): ReplyDockInset {
   const [own, setOwn] = useState(0)
   const restingWindowHeight = useRestingWindowHeight()
   const systemBarInsetRef = useRef(insets?.bottom ?? 0)
-  systemBarInsetRef.current = insets?.bottom ?? 0
+  useLayoutEffect(() => {
+    systemBarInsetRef.current = insets?.bottom ?? 0
+  })
 
   useEffect(() => {
     const overlapOf = (event: KeyboardEvent) =>
@@ -96,7 +98,7 @@ export function useReplyDockInset(): ReplyDockInset {
     return () => {
       for (const sub of subs) sub.remove()
     }
-  }, [])
+  }, [restingWindowHeight])
 
   const inset = Math.max(shell, own)
   const restingSafeArea = Platform.OS === "web" ? 0 : (insets?.bottom ?? 0)

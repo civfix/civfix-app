@@ -43,6 +43,7 @@ import {
   assembleSearchSuggestions,
 } from "./searchSuggestModel"
 import { useRowHover } from "./rowHover"
+import { useListTimeTick } from "./useListTimeAgo"
 import {
   discardSearchInput,
   pendingSearchInput,
@@ -230,7 +231,6 @@ function LinkAction({
   onPress: () => void
 }) {
   const styles = useStyles()
-  const expanded = useLayoutMode() === "expanded"
   return (
     <Pressable
       accessibilityRole="button"
@@ -243,7 +243,6 @@ function LinkAction({
         <Text
           style={[
             styles.clearLabel,
-            expanded ? styles.clearLabelExpanded : null,
             webHover(state) ? styles.linkHovered : null,
           ]}
         >
@@ -289,7 +288,12 @@ function SuggestedPersonCard({ person, expanded }: { person: PersonDTO; expanded
           {person.handle ? `@${person.handle}` : " "}
         </Text>
       </Pressable>
-      <FollowButton personId={person.id} isFollowing={person.isFollowing} nextPath="/" size="sm" />
+      <FollowButton
+        personId={person.id}
+        isFollowing={person.isFollowing}
+        nextPath={`/people/${person.handle ?? person.id}`}
+        size="sm"
+      />
     </View>
   )
 }
@@ -440,7 +444,8 @@ function Discovery({ expanded }: { expanded: boolean }) {
   const leaderboardQuery = useJurisdictionLeaderboard(geo?.geoid, { limit: LEADERBOARD_REQUEST_LIMIT })
   const leaderboardPage = leaderboardQuery.data?.pages[0]
   const showLeaderboard = !!geo && leaderboardQuery.isSuccess
-  const now = useMemo(() => new Date(), [])
+  const tick = useListTimeTick()
+  const now = useMemo(() => new Date(tick), [tick])
   const sections = useMemo(
     () =>
       assembleSearchSuggestions<CleanupDTO, PersonDTO, ReportPinDTO, LeaderboardEntryDTO>({
@@ -677,12 +682,11 @@ const useStyles = makeThemedStyles((t) => ({
   },
   clear: { minHeight: MIN_TOUCH_TARGET, justifyContent: "center", borderRadius: t.radius.xs },
   clearLabel: {
-    color: t.colors.bloom["600"],
+    color: t.colors.accentText,
     fontFamily: t.fontFamily.bodyBold,
     fontSize: 14,
     lineHeight: 19,
   },
-  clearLabelExpanded: { color: t.colors.accentText },
   linkHovered: { textDecorationLine: "underline" },
   recents: {
     borderTopColor: t.colors.border,

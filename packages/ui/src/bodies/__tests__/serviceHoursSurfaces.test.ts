@@ -84,11 +84,23 @@ describe("service-hours profile surfaces", () => {
     expect(body).toContain('t("total.org_chip"')
   })
 
+  it("sends the visibility indicator to the privacy settings that own the switch", () => {
+    const body = code(section)
+    expect(body).toContain('push({ kind: "settings-privacy" })')
+    expect(body).not.toContain('push({ kind: "notification-prefs" })')
+  })
+
+  it("exposes the ledger load-more's in-flight state to assistive tech", () => {
+    expect(code(section)).toContain(
+      "accessibilityState={{ disabled: isFetchingNextPage, busy: isFetchingNextPage }}",
+    )
+  })
+
   it("renders the service-record privacy switch OFF for a never-chosen account", () => {
     // `?? true` here would opt every existing account into the itemised per-event list on deploy day.
     expect(code(privacy)).toContain("user?.showVolunteerHours === true")
     expect(privacy).not.toContain("user?.showVolunteerHours ?? true")
-    expect(privacy).toContain("updatePrivacy.mutate({ showVolunteerHours: next })")
+    expect(privacy).toContain("savePrivacy({ showVolunteerHours: next })")
     // The switch moved OUT of the notification prefs body with the PRIVACY section - it must not
     // survive in both places, or two surfaces write the same tri-state from two different reads.
     expect(code(prefs)).not.toContain("showVolunteerHours")

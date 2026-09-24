@@ -97,3 +97,49 @@ export function pickLayerVisible(
 ): boolean {
   return picking && !coveredByDetail && isReportView
 }
+
+// These refusals come back identical however often the same draft is re-sent, so a bare retry loops.
+const DEFINITIVE_SUBMIT_CODES: ReadonlySet<string> = new Set([
+  "VALIDATION",
+  "GPS_IMPLAUSIBLE",
+  "MEDIA_REJECTED",
+  "NOT_ROUTABLE",
+])
+
+const FIELD_STEPS: Readonly<Record<string, Step>> = {
+  mediaUploadIds: "capture",
+  media: "capture",
+  category: "category",
+  type: "category",
+  title: "details",
+  description: "details",
+  lat: "location",
+  lng: "location",
+  geomSource: "location",
+  addr: "review",
+}
+
+const CODE_STEPS: Readonly<Record<string, Step>> = {
+  MEDIA_REJECTED: "capture",
+  GPS_IMPLAUSIBLE: "location",
+  NOT_ROUTABLE: "location",
+}
+
+export interface SubmitRecovery {
+  retryable: boolean
+  editStep: Step
+}
+
+export function submitErrorRecovery(
+  code: string | undefined,
+  fields: Record<string, string> | undefined,
+  order: readonly Step[],
+): SubmitRecovery {
+  const fieldKeys = Object.keys(fields ?? {}).map((key) => key.split(".")[0] ?? key)
+  const fieldStep = fieldKeys.map((key) => FIELD_STEPS[key]).find((s): s is Step => s !== undefined)
+  const wanted = fieldStep ?? (code !== undefined ? CODE_STEPS[code] : undefined) ?? "review"
+  const editStep = order.includes(wanted) ? wanted : "review"
+  const staleUploads = code === "VALIDATION" && fieldKeys.includes("mediaUploadIds")
+  const retryable = code === undefined || !DEFINITIVE_SUBMIT_CODES.has(code) || staleUploads
+  return { retryable, editStep }
+}

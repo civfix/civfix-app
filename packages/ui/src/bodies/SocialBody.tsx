@@ -5,7 +5,7 @@ import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webInputReset, webTransition, headingLevel } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
-import { Avatar, FollowButton } from "../primitives"
+import { Avatar, FollowButton, SignInPrompt } from "../primitives"
 import {
   useUserSearch,
   normalizeUserSearchTerm,
@@ -13,6 +13,7 @@ import {
   useAuthState,
   useFollowSuggestions,
   useMyHours,
+  useRequireAuth,
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
@@ -114,7 +115,12 @@ const SuggestedPersonRow = memo(function SuggestedPersonRow({
           </Text>
         </View>
       </Pressable>
-      <FollowButton personId={person.id} isFollowing={person.isFollowing} nextPath="/" size="sm" />
+      <FollowButton
+        personId={person.id}
+        isFollowing={person.isFollowing}
+        nextPath={`/people/${person.handle ?? person.id}`}
+        size="sm"
+      />
     </View>
   )
 })
@@ -142,7 +148,8 @@ export function SocialBody() {
   const atViewRoot = useNavStore((s) => s.stack.length === 0)
   const showTitle = layout === "expanded" && atViewRoot
   const { start } = useStartDm()
-  const { user } = useAuthState()
+  const { user, isAuthenticated, isPending: authPending } = useAuthState()
+  const requireAuth = useRequireAuth()
   const viewerId = user?.id ?? null
   const myHours = useMyHours()
   const leaderboardGeoid = resolveDiscoveryGeoid({ myHours: myHours.data?.hours ?? null })?.geoid
@@ -150,7 +157,7 @@ export function SocialBody() {
   const results = search.data?.results ?? []
   const typed = normalizeUserSearchTerm(rawQuery)
   const hasQuery = typed.length > 0
-  const searchPending = search.isLoading || search.term !== typed
+  const searchPending = authPending || search.isLoading || search.term !== typed
   const suggestions = useFollowSuggestions()
   const suggested = suggestions.data ?? []
   const listData: Array<UserSearchResultDTO | PersonDTO> = hasQuery ? results : suggested
@@ -168,7 +175,7 @@ export function SocialBody() {
     (person: UserSearchResultDTO) => {
       start(
         { id: person.id, name: person.displayName, handle: person.handle },
-        "/",
+        `/people/${person.handle}`,
         {
           onResolved: ({ roomId, thread }) =>
             useNavStore.getState().push({
@@ -233,6 +240,14 @@ export function SocialBody() {
               />
             </View>
           )
+        ) : !isAuthenticated && !authPending ? (
+          <SignInPrompt
+            icon={iconMap.AtSign}
+            variant="detail"
+            title={t("empty.signed_out.title")}
+            body={t("empty.signed_out.body")}
+            onSignIn={() => requireAuth(() => {}, { next: "/people" })}
+          />
         ) : searchPending ? (
           <View style={styles.skelList}>
             <RowSkeleton />

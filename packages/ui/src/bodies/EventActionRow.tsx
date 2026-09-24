@@ -72,7 +72,7 @@ export function EventActionRows({ children }: { children: React.ReactNode }) {
   return (
     <View>
       {rows.map((row, index) => (
-        <React.Fragment key={index}>
+        <React.Fragment key={React.isValidElement(row) ? (row.key ?? index) : index}>
           {index > 0 ? <View style={styles.divider} /> : null}
           {row}
         </React.Fragment>

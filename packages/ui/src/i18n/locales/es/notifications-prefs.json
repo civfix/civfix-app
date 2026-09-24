@@ -30,5 +30,6 @@
       "label": "Nuevos seguidores",
       "helper": "Cuando alguien te sigue en civfix."
     }
-  }
+  },
+  "save_error": "No se pudo guardar el cambio. Inténtalo de nuevo."
 }

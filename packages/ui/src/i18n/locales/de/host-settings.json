@@ -9,7 +9,9 @@
     "title": "Anmeldung",
     "visibility": "Wer diese Veranstaltung finden kann",
     "opens": "Anmeldung öffnet",
-    "closes": "Anmeldung schließt"
+    "closes": "Anmeldung schließt",
+    "zone_hint": "Die Zeiten gelten in der Zeitzone der Veranstaltung ({{zone}}).",
+    "time_not_in_zone": "Diese Uhrzeit gibt es in {{zone}} wegen der Zeitumstellung nicht. Wähle eine andere."
   },
   "messaging": {
     "title": "Nachrichten",
@@ -22,7 +24,9 @@
     "offset_10080": "1 Woche vorher",
     "reply_to": "Antwortadresse",
     "reply_to_placeholder": "du@beispiel.org",
-    "reply_to_unverified": "Antworten werden noch nicht an eine Host-Adresse zugestellt; wir speichern das für den Zeitpunkt, an dem die Funktion kommt."
+    "reply_to_unverified": "Antworten werden noch nicht an eine Host-Adresse zugestellt; wir speichern das für den Zeitpunkt, an dem die Funktion kommt.",
+    "reminders_max_one": "Wähle bis zu {{count}}.",
+    "reminders_max_other": "Wähle bis zu {{count}}."
   },
   "donations": {
     "title": "Spenden",

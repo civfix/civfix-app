@@ -156,6 +156,34 @@ export function wheelZoomScale(
   return clampZoomScale(from * Math.exp(-finite(deltaY, 0) * LIGHTBOX_WHEEL_SCALE_PER_PIXEL), maxScale)
 }
 
+export const LIGHTBOX_KEY_ZOOM_STEP = 1.5
+
+export type ZoomKeyAction = "in" | "out" | "reset"
+
+// A modified key belongs to the browser (Ctrl/Cmd with plus or minus is page zoom), never to the viewer.
+export function zoomKeyAction(event: {
+  key: string
+  ctrlKey?: boolean
+  metaKey?: boolean
+  altKey?: boolean
+}): ZoomKeyAction | null {
+  if (event.ctrlKey === true || event.metaKey === true || event.altKey === true) return null
+  if (event.key === "+" || event.key === "=") return "in"
+  if (event.key === "-") return "out"
+  if (event.key === "0") return "reset"
+  return null
+}
+
+export function keyZoomScale(
+  scale: number,
+  direction: "in" | "out",
+  maxScale: number = LIGHTBOX_MAX_SCALE,
+): number {
+  const from = clampZoomScale(scale, maxScale)
+  const next = direction === "in" ? from * LIGHTBOX_KEY_ZOOM_STEP : from / LIGHTBOX_KEY_ZOOM_STEP
+  return clampZoomScale(next, maxScale)
+}
+
 export function travelExceeds(from: ZoomPoint, to: ZoomPoint, threshold: number): boolean {
   "worklet"
   const dx = finite(to.x, 0) - finite(from.x, 0)

@@ -208,6 +208,11 @@ values and publishes it to the Pages production branch `main` (https://civfix.or
 only paths that feed the web build trigger it, so a mobile-only change never redeploys the site; a
 release always deploys.
 
+A production run refuses any tag that is not the newest `vX.Y.Z` release merged into `main`, so
+re-publishing an old release cannot silently roll civfix.org back. To roll the site back on purpose,
+run the workflow manually ("Run workflow") on the older release tag with `rollback` checked; the run
+logs a warning naming both releases.
+
 The Pages config lives in this app, not at the repo root: `apps/community-web/wrangler.jsonc` supplies
 the project name and `pages_build_output_dir: "out"`, and `wrangler` picks up the sibling
 `apps/community-web/functions/` dir relative to its cwd, which is why the workflow's deploy step runs

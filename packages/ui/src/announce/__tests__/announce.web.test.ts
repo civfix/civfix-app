@@ -98,7 +98,7 @@ describe("announce (web)", () => {
     vi.runAllTimers()
     announce("second")
     vi.runAllTimers()
-    expect(doc.children).toHaveLength(1)
+    expect(doc.children).toHaveLength(2)
     expect(region("civfix-aria-live-polite")?.textContent).toBe("second")
   })
 
@@ -112,6 +112,12 @@ describe("announce (web)", () => {
   it("ignores an empty message", () => {
     announce("")
     vi.runAllTimers()
-    expect(doc.children).toHaveLength(0)
+    expect(doc.children.map((c) => c.textContent)).toEqual(["", ""])
+  })
+
+  it("mounts both regions when the module loads, before anything is announced", () => {
+    expect(doc.children.map((c) => c.id)).toEqual(["civfix-aria-live-polite", "civfix-aria-live-assertive"])
+    expect(doc.children.map((c) => c.attrs["aria-live"])).toEqual(["polite", "assertive"])
+    expect(doc.children.map((c) => c.textContent)).toEqual(["", ""])
   })
 })

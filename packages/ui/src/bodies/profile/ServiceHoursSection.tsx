@@ -268,7 +268,7 @@ function VisibilityIndicator() {
   const label = t(`visibility.${state}`)
   return (
     <Pressable
-      onPress={() => useNavStore.getState().push({ kind: "notification-prefs" })}
+      onPress={() => useNavStore.getState().push({ kind: "settings-privacy" })}
       accessibilityRole="button"
       accessibilityLabel={`${label}. ${t("visibility.a11y")}`}
       hitSlop={{ top: 12, bottom: 12, right: 12 }}
@@ -345,6 +345,7 @@ function HoursLedger({
               disabled={isFetchingNextPage}
               accessibilityRole="button"
               accessibilityLabel={t("ledger.load_more_a11y")}
+              accessibilityState={{ disabled: isFetchingNextPage, busy: isFetchingNextPage }}
               {...focusRingProps}
               style={({ pressed }) => [
                 sectionStyles.loadMore,

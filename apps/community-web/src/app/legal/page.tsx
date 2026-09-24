@@ -17,7 +17,7 @@ export default function LegalIndexPage() {
   }, [router])
 
   return (
-    <div className="legal-page" aria-hidden="true">
+    <div className="legal-page">
       <noscript>
         <a href="/legal/terms/">Continue to the Terms of Service</a>
       </noscript>

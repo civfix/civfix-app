@@ -23,7 +23,6 @@ function OptionRow({
   logoUrl,
   selected,
   pending,
-  selectedLabel,
   onSelect,
 }: {
   label: string
@@ -33,7 +32,6 @@ function OptionRow({
   logoUrl?: string | null
   selected: boolean
   pending: boolean
-  selectedLabel: string
   onSelect: () => void
 }) {
   const styles = useStyles()
@@ -73,7 +71,7 @@ function OptionRow({
           </Text>
         ) : null}
       </View>
-      <View style={styles.trailing} accessibilityLabel={selected ? selectedLabel : undefined}>
+      <View style={styles.trailing}>
         {pending ? (
           <ActivityIndicator size="small" color={th.colors.brand.bloom} />
         ) : selected ? (
@@ -123,7 +121,6 @@ export function PrimaryOrganizationPicker({ style }: { style?: StyleProp<ViewSty
           sub={t("affiliation.automatic_sub")}
           selected={current === null}
           pending={pendingId === PRIMARY_ORGANIZATION_AUTOMATIC}
-          selectedLabel={t("affiliation.selected")}
           onSelect={() => onSelect(null)}
         />
         {rows.map((org) => (
@@ -136,7 +133,6 @@ export function PrimaryOrganizationPicker({ style }: { style?: StyleProp<ViewSty
               logoUrl={org.logoUrl ?? null}
               selected={current === org.id}
               pending={pendingId === org.id}
-              selectedLabel={t("affiliation.selected")}
               onSelect={() => onSelect(org.id)}
             />
           </React.Fragment>

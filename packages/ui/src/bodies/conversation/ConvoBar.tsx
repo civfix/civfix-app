@@ -76,12 +76,15 @@ export function ConvoBar({
         <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
       </Pressable>
       {onTitlePress ? (
+        // A pointer shortcut only: the title below is the one control screen readers and Tab reach.
         <Pressable
           onPress={onTitlePress}
-          accessibilityRole="button"
-          accessibilityLabel={titlePressLabel}
+          accessible={false}
+          focusable={false}
+          {...({ tabIndex: -1 } as object)}
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
           hitSlop={6}
-          {...focusRingProps}
           style={({ pressed }) => [styles.avatarTap, pressed ? styles.convoSubPressed : null]}
         >
           <ThreadAvatar thread={avatarThread} size={38} />

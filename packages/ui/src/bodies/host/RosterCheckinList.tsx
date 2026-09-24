@@ -16,6 +16,14 @@ import { useT } from "../../i18n"
 import { SlotGroupHeader } from "../SlotGroupHeader"
 import { groupRosterBySlot, rosterListKey, type RosterListItem } from "../rosterSlotGroups"
 
+const CHECK_IN_MIN_HEIGHT = 32
+
+const MIN_TOUCH_TARGET = 44
+
+const CHECK_IN_SLOP_Y = (MIN_TOUCH_TARGET - CHECK_IN_MIN_HEIGHT) / 2
+
+const CHECK_IN_HIT_SLOP = { top: CHECK_IN_SLOP_Y, bottom: CHECK_IN_SLOP_Y }
+
 export function attendeeName(row: EventRegistrationDTO): string {
   if (row.person?.deleted) return DELETED_USER_LABEL
   return row.person?.name ?? row.guestName ?? ""
@@ -107,6 +115,7 @@ export const RosterCheckinRow = React.memo(function RosterCheckinRow({
           accessibilityRole="button"
           accessibilityState={{ disabled: pending }}
           accessibilityLabel={t("roster.check_in_a11y", { name })}
+          hitSlop={CHECK_IN_HIT_SLOP}
           {...focusRingProps}
           style={(state) => [
             styles.checkInBtn,
@@ -212,7 +221,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: t.space["2"],
   },
   checkInBtn: {
-    minHeight: 32,
+    minHeight: CHECK_IN_MIN_HEIGHT,
     justifyContent: "center",
     paddingHorizontal: t.space["3"],
     borderRadius: t.radius.pill,

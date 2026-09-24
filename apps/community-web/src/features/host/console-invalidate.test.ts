@@ -126,6 +126,19 @@ describe("markRosterSeatsCheckedIn", () => {
     expect(door.pages[0]?.items).toHaveLength(0)
   })
 
+  it("drops a settled row from the shared data layer's door list too", () => {
+    const qc = new QueryClient()
+    const uiDoorKey = ["host", "evt_1", "roster", "not_checked_in", ""]
+    const uiSearchKey = ["host", "evt_1", "roster", "all", "not_checked_in"]
+    qc.setQueryData(uiDoorKey, page([row()], 1))
+    qc.setQueryData(uiSearchKey, page([row()], 1))
+    markRosterSeatsCheckedIn(qc, "evt_1", "reg_1", ["s1", "s2", "s3"], AT)
+    const door = qc.getQueryData(uiDoorKey) as ReturnType<typeof page>
+    expect(door.pages[0]?.items).toHaveLength(0)
+    const search = qc.getQueryData(uiSearchKey) as ReturnType<typeof page>
+    expect(search.pages[0]?.items[0]?.checkedInAt).toBe(AT)
+  })
+
   it("leaves another event's roster untouched", () => {
     const qc = new QueryClient()
     const otherKey = ["host", "evt_2", "roster", "console", "all", "name_asc", "", "all"]

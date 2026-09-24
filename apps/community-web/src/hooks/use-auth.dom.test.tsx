@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { AppError, ErrorCode, type UserDTO } from "@civfix/shared"
 
 import type * as ApiModule from "@/lib/api"
+import { queryKeys } from "@/lib/query"
 
 const logout = vi.fn()
 const session = vi.fn()
@@ -208,5 +209,27 @@ describe("useRefreshSession", () => {
     })
 
     expect(queryClient.getQueryState(["volunteer", "me"])?.isInvalidated).toBe(true)
+  })
+
+  it("invalidates the viewer-flagged post families when the identity changes", async () => {
+    queryClient.setQueryData(queryKeys.post("p1"), { id: "p1", likedByMe: false })
+    queryClient.setQueryData(queryKeys.homeFeed("all", "public"), { items: [] })
+    queryClient.setQueryData(queryKeys.mapReports(null, []), { pins: [] })
+    queryClient.setQueryData(queryKeys.report("r1"), { id: "r1" })
+    queryClient.setQueryData(queryKeys.cleanupAttendees("c1"), { items: [] })
+    queryClient.setQueryData(queryKeys.chatHistory("room", "group"), { messages: [] })
+    session.mockResolvedValue({ authenticated: true, user: USER, csrfToken: "csrf-b", roles: [] })
+    const { result } = renderHook(() => useRefreshSession(), { wrapper })
+
+    await act(async () => {
+      await result.current()
+    })
+
+    expect(queryClient.getQueryState(queryKeys.post("p1"))?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(queryKeys.homeFeed("all", "public"))?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(queryKeys.mapReports(null, []))?.isInvalidated).toBe(false)
+    expect(queryClient.getQueryState(queryKeys.report("r1"))?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(queryKeys.cleanupAttendees("c1"))?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(queryKeys.chatHistory("room", "group"))?.isInvalidated).toBe(true)
   })
 })

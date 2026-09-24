@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, us
 import { View, Pressable, Platform } from "react-native"
 import type { FlatList as RNFlatList, NativeScrollEvent, NativeSyntheticEvent } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
-import type { PersonDTO, ReactionEmoji, RoomKind } from "@civfix/shared"
+import type { PersonDTO, RoomKind } from "@civfix/shared"
 import { space, useLayoutMode, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { ReportContentSheet, PinnedBar, SystemMessageRow, useToast, usePopoverAnchor } from "../primitives"
@@ -27,7 +27,7 @@ import { ConvoBar, ConvoOverflowMenu, BlockConfirmCard } from "./conversation/Co
 import { Bubble, DaySeparator } from "./conversation/MessageBubble"
 import { TypingBubble } from "./conversation/TypingBubble"
 import { ConversationComposer, ChannelPillBar } from "./conversation/ConversationComposer"
-import { buildRenderItems, roomErrorCopy, transientErrorCopyKey, getScrollableNode, senderColor, typingNames, useConvoMeta, type ConvoMeta, type RenderItem } from "./conversation/conversationModel"
+import { buildRenderItems, roomErrorCopy, transientErrorCopyKey, getScrollableNode, senderNameColor, typingNames, useConvoMeta, type ConvoMeta, type RenderItem } from "./conversation/conversationModel"
 import { convoHeaderTargets } from "./conversation/headerTargets"
 import { useComposerMode } from "./conversation/useComposerMode"
 import { canReactIn, canReplyIn, canVoteIn } from "./conversation/liveGates"
@@ -70,8 +70,19 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   const { locale } = useLocale()
   const now = todayKey()
   const chat: UseChatResult = useChat(id, roomKind, pinnedOnly ? SUPPRESS_READ_ACKS : undefined)
+  const {
+    createPoll,
+    votePoll,
+    closePoll,
+    setPinned,
+    clearAround,
+    delete: deleteMessage,
+    toggleReaction,
+  } = chat
   const chatRef = useRef(chat)
-  chatRef.current = chat
+  useLayoutEffect(() => {
+    chatRef.current = chat
+  })
   const [blockTarget, setBlockTarget] = useState<{ id: string; name: string; isDm: boolean } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuRect, setMenuRect] = useState<AnchorRect | null>(null)
@@ -100,7 +111,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
       setPollCreatePending(true)
       setPollCreateError(null)
       try {
-        await chat.createPoll(input)
+        await createPoll(input)
         return true
       } catch {
         setPollCreateError(tPolls("create_error"))
@@ -109,19 +120,19 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
         setPollCreatePending(false)
       }
     },
-    [chat.createPoll, tPolls],
+    [createPoll, tPolls],
   )
   const onVotePoll = useCallback(
     (messageId: string, optionIdxs: number[]) => {
-      void chat.votePoll(messageId, optionIdxs).catch(() => toast.show(tPolls("vote_error"), { variant: "error" }))
+      void votePoll(messageId, optionIdxs).catch(() => toast.show(tPolls("vote_error"), { variant: "error" }))
     },
-    [chat.votePoll, toast, tPolls],
+    [votePoll, toast, tPolls],
   )
   const onStopPoll = useCallback(
     (messageId: string) => {
-      void chat.closePoll(messageId).catch(() => toast.show(tPolls("stop_error"), { variant: "error" }))
+      void closePoll(messageId).catch(() => toast.show(tPolls("stop_error"), { variant: "error" }))
     },
-    [chat.closePoll, toast, tPolls],
+    [closePoll, toast, tPolls],
   )
 
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 }
@@ -313,9 +324,9 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   const typingItem = useMemo<RenderItem | null>(() => {
     if (errorBanner || chat.typingUserIds.length === 0) return null
     const name = isGroup ? typingNames(chat.typingUserIds, memberNames, t) : null
-    const color = senderColor(chat.typingUserIds[0] ?? "")
+    const color = senderNameColor(chat.typingUserIds[0] ?? "", th.scheme)
     return { type: "typing", id: "typing", name, color }
-  }, [errorBanner, chat.typingUserIds, memberNames, isGroup, t])
+  }, [errorBanner, chat.typingUserIds, memberNames, isGroup, t, th.scheme])
 
   const pins = chat.pins
   const pinnedRows = useMemo<RenderItem[]>(() => {
@@ -338,7 +349,9 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
     [pinnedOnly, pinnedRows, windowRows, typingItem, inverted],
   )
   const dataRef = useRef(data)
-  dataRef.current = data
+  useLayoutEffect(() => {
+    dataRef.current = data
+  })
 
   const embedScope = useOwnChatEmbedScope()
   const embedViewport = embedScope.viewport
@@ -360,7 +373,6 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   })
   const { pinIndex, onPinBarTap } = usePinCycle({ pins, roomId: id, roomKind, onJumpToMessage })
 
-  const clearAround = chat.clearAround
   useEffect(() => {
     if (windowState === "dead" && jumpLoadingId === null) clearAround()
   }, [windowState, jumpLoadingId, clearAround])
@@ -373,11 +385,11 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
 
   const onSetPinned = useCallback(
     (messageId: string, pinned: boolean) => {
-      void chat.setPinned(messageId, pinned).catch(() => {
+      void setPinned(messageId, pinned).catch(() => {
         toast.show(t("pins.action_failed"), { variant: "error" })
       })
     },
-    [chat.setPinned, toast, t],
+    [setPinned, toast, t],
   )
 
   const jumpFromPinned = useCallback(
@@ -411,10 +423,10 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   }, [pinnedOnly, jumpToMessageId, onJumpToMessage, id])
 
   const backToLatest = useCallback(() => {
-    chat.clearAround()
+    clearAround()
     setHasNewBelow(false)
     requestAnimationFrame(() => listRef.current?.scrollToOffset({ offset: 0, animated: false }))
-  }, [chat.clearAround])
+  }, [clearAround])
 
   const composer = useComposerMode({
     send: chat.send,
@@ -425,11 +437,11 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
 
   const onDeleteMessage = useCallback(
     (messageId: string) => {
-      void chat.delete(messageId).catch(() => {
+      void deleteMessage(messageId).catch(() => {
         toast.show(t("menu.delete_failed"), { variant: "error" })
       })
     },
-    [chat.delete, toast, t],
+    [deleteMessage, toast, t],
   )
   const onRetry = useCallback((clientId: string) => chatRef.current.retry(clientId), [])
   const onReportMessage = useCallback((messageId: string) => {
@@ -539,10 +551,6 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
       ? t("composer.placeholder_group")
       : t("composer.placeholder_dm", { name: meta.title.replace(/^@/, "").split(" ")[0] ?? "" }).trim()
 
-  const onToggleReaction = useCallback(
-    (messageId: string, emoji: ReactionEmoji) => chat.toggleReaction(messageId, emoji),
-    [chat.toggleReaction],
-  )
   const onOpenPerson = useCallback(
     (target: { id: string; handle?: string | null; deleted?: boolean }) => {
       if (target.deleted) return
@@ -596,7 +604,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
           onReport={onReportMessage}
           onReportPhoto={onReportPhoto}
           onBlock={onBlockAuthor}
-          onToggleReaction={onToggleReaction}
+          onToggleReaction={toggleReaction}
           onOpenPerson={onOpenPerson}
           flash={flashMessageId !== null && item.item.message.id === flashMessageId}
           onJumpToMessage={pinnedOnly ? undefined : onJumpToMessage}
@@ -605,7 +613,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
           onJumpFromPinned={jumpFromPinned}
         />
       ),
-    [onRetry, isGroup, composer.onOpenEdit, composer.onOpenReply, onDeleteMessage, onSetPinned, onVotePoll, onStopPoll, canModeratePoll, onReportMessage, onReportPhoto, onBlockAuthor, canReact, canReply, canVote, canPinHere, canDeleteOthers, onToggleReaction, onOpenPerson, flashMessageId, onJumpToMessage, jumpLoadingId, pinnedOnly, jumpFromPinned],
+    [onRetry, isGroup, composer.onOpenEdit, composer.onOpenReply, onDeleteMessage, onSetPinned, onVotePoll, onStopPoll, canModeratePoll, onReportMessage, onReportPhoto, onBlockAuthor, canReact, canReply, canVote, canPinHere, canDeleteOthers, toggleReaction, onOpenPerson, flashMessageId, onJumpToMessage, jumpLoadingId, pinnedOnly, jumpFromPinned],
   )
 
   const slotBottomStyle = fullScreen
@@ -713,14 +721,14 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
       )}
 
       {pinnedOnly ? null : errorBanner ? (
-        <View style={styles.errorRow}>
+        <View style={styles.errorRow} accessibilityRole="alert">
           <Icon icon={iconMap.AlertCircle} size={15} color={th.colors.bloom["600"]} />
           <Text variant="caption" color={th.colors.bloom["600"]} style={styles.errorText} numberOfLines={2}>
             {errorBanner}
           </Text>
         </View>
       ) : chat.connection !== "open" ? (
-        <View style={styles.offlineRow}>
+        <View style={styles.offlineRow} accessibilityLiveRegion="polite">
           <Icon icon={iconMap.WifiOff} size={13} color={th.colors.textSubtle} />
           <Text variant="caption" color={th.colors.textSubtle} style={styles.offlineText} numberOfLines={2}>
             {chat.connection === "connecting"

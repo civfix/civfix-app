@@ -44,7 +44,7 @@ import { uploadMedia } from "../data/uploadMedia"
 import { useCamera } from "../capabilities"
 import { appErrorCode } from "./errorCode"
 import { eventCoverErrorKey } from "./eventCoverModel"
-import { LocationPicker, PortraitMapPickStep, useLocationPick, eventPinTarget } from "../map"
+import { LocationPicker, PortraitMapPickStep, eventPinTarget } from "../map"
 import { useLocale, useT, viewerTimeZone } from "../i18n"
 import { AddressSearch, type AddressPick } from "./AddressSearch"
 import { AuthorAsChips, authorAsSelection, type AuthorAsOption } from "./AuthorAsChips"
@@ -62,7 +62,7 @@ import { InlineDateTimePicker } from "./InlineDateTimePicker"
 import { ReportLinkPicker } from "./ReportLinkPicker"
 import { linkBlockState } from "./linkReportsModel"
 import { TimezoneField } from "./TimezoneField"
-import { DEFAULT_WIZARD_DURATION_MS, eventDraftWindow } from "./eventWizard"
+import { DEFAULT_WIZARD_DURATION_MS, eventDraftWindow, slotsAfterZoneChange } from "./eventWizard"
 import { SlotEditor } from "./SlotEditor"
 import {
   addSlotDraft,
@@ -214,7 +214,7 @@ function KindSelector({
               key={kind}
               onPress={() => onChange(kind)}
               accessibilityRole="radio"
-              accessibilityState={{ selected: active }}
+              accessibilityState={{ checked: active }}
               accessibilityLabel={t(`enums:eventKind.${kind}`)}
               {...focusRingProps}
               style={(state) => [
@@ -250,11 +250,13 @@ function MeetLocationCompact({
   onConfirmPoint,
   onClear,
   initialCenter,
+  centerSettled,
 }: {
   value: CleanupFormValue
   onConfirmPoint: (lat: number, lng: number) => void
   onClear: () => void
   initialCenter: LatLng | null
+  centerSettled: boolean | undefined
 }) {
   const styles = useStyles()
   const th = useTheme()
@@ -302,7 +304,6 @@ function MeetLocationCompact({
           onPress={onClear}
           accessibilityRole="button"
           accessibilityLabel={tMap("actions.reset")}
-          hitSlop={6}
           {...focusRingProps}
           style={(state) => [
             styles.compactLocClear,
@@ -321,6 +322,7 @@ function MeetLocationCompact({
         visible={picking}
         value={value.coords}
         initialCenter={initialCenter}
+        centerSettled={centerSettled}
         onConfirm={(lat, lng) => {
           onConfirmPoint(lat, lng)
           setPicking(false)
@@ -425,7 +427,9 @@ function MeetAddressField({
 export function CleanupForm({
   value,
   onChange,
+  onPatch,
   initialCenter,
+  centerSettled,
   existingSlots,
   eventEndUnsaved = false,
   scheduleUnchanged = false,
@@ -437,7 +441,11 @@ export function CleanupForm({
 }: {
   value: CleanupFormValue
   onChange: (next: CleanupFormValue) => void
+  /** Merges into the host's CURRENT value; for writes that land after an await. */
+  onPatch: (partial: Partial<CleanupFormValue>) => void
   initialCenter?: LatLng | null
+  /** The host's centre resolution finished with no point, so the pickers offer address search instead of waiting. */
+  centerSettled?: boolean
   existingSlots?: readonly EventSlotDTO[]
   eventEndUnsaved?: boolean
   scheduleUnchanged?: boolean
@@ -480,14 +488,14 @@ export function CleanupForm({
           return
         }
         const uploaded = await uploadMedia({ api, camera, media: picked })
-        patch({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })
+        onPatch({ coverMediaId: uploaded.mediaId, coverPreviewUrl: picked.uri })
       } catch (err) {
         setCoverErrorKey(eventCoverErrorKey(appErrorCode(err)))
       } finally {
         setCoverUploading(false)
       }
     })()
-  }, [api, camera, coverUploading, patch])
+  }, [api, camera, coverUploading, onPatch])
 
   const onRemoveCover = useCallback(() => {
     setCoverErrorKey(null)
@@ -534,12 +542,19 @@ export function CleanupForm({
     [patch, value.date, value.endTime, value.slots, value.time, value.timezone],
   )
 
-  const onPickPlace = useCallback(
-    (place: AddressPick) => {
-      patch({ coords: { lat: place.lat, lng: place.lng } })
-      if (pickMode === "main-map") useLocationPick.getState().setDraft(place.lat, place.lng)
+  const onChangeTimezone = useCallback(
+    (timezone: string) => {
+      patch({
+        timezone,
+        slots: slotsAfterZoneChange(value.slots, value.date, value.time, value.timezone, timezone),
+      })
     },
-    [patch, pickMode],
+    [patch, value.date, value.slots, value.time, value.timezone],
+  )
+
+  const onPickPlace = useCallback(
+    (place: AddressPick) => patch({ coords: { lat: place.lat, lng: place.lng } }),
+    [patch],
   )
 
   const onDropPin = useCallback(
@@ -704,11 +719,12 @@ export function CleanupForm({
                 onConfirmPoint={onDropPin}
                 onClear={() => patch({ coords: null })}
                 initialCenter={initialCenter ?? null}
+                centerSettled={centerSettled}
               />
             ) : (
               <>
                 <AddressSearch value={value.addrQuery} onChangeText={(addrQuery) => patch({ addrQuery })} onPick={onPickPlace} />
-                <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} mode={pickMode} pin={pin} />
+                <LocationPicker value={value.coords} onChange={onDropPin} onClear={() => patch({ coords: null })} initialCenter={initialCenter ?? undefined} centerSettled={centerSettled} mode={pickMode} pin={pin} />
               </>
             )}
             <TextField
@@ -746,7 +762,7 @@ export function CleanupForm({
             onTimeChange={onChangeStartTime}
             onEndTimeChange={(endTime) => patch({ endTime })}
           />
-          <TimezoneField value={value.timezone} onChange={(timezone) => patch({ timezone })} />
+          <TimezoneField value={value.timezone} onChange={onChangeTimezone} />
         </View>
       ) : null}
 
@@ -970,7 +986,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     alignSelf: "flex-start",
     gap: 5,
-    paddingVertical: 4,
+    minHeight: MIN_TOUCH_TARGET,
     paddingHorizontal: 6,
     borderRadius: t.radius.pill,
   },

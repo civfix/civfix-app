@@ -46,13 +46,17 @@ export function useLeaveReportChat() {
   })
 }
 
+export function muteInvalidationKeys(roomKind: RoomKind, roomId: string): readonly (readonly unknown[])[] {
+  return roomKind === "group" ? [queryKeys.threads, queryKeys.groupInfo(roomId)] : [queryKeys.threads]
+}
+
 export function useToggleMute(roomKind: RoomKind, roomId: string) {
   const api = useApi()
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ muted }: { muted: boolean }) => api.toggleConversationMute({ roomKind, roomId, muted }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.threads })
+      for (const queryKey of muteInvalidationKeys(roomKind, roomId)) void qc.invalidateQueries({ queryKey })
     },
   })
 }

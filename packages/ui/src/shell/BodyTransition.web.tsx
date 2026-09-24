@@ -117,6 +117,7 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
   const outDropRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const slotARef = useRef<any>(null)
   const slotBRef = useRef<any>(null)
+  const armedNavRef = useRef(state.nav)
 
   if (state.key !== transitionKey) {
     const instant = prefersReducedMotion()
@@ -143,6 +144,10 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
   }, [children])
 
   useLayoutEffect(() => {
+    // Once per navigation: the flip and settle below change `anim`, and re-running for them would
+    // clear the timers this run just armed.
+    if (state.nav === armedNavRef.current) return
+    armedNavRef.current = state.nav
     clearTimer(fallbackRef)
     clearTimer(outDropRef)
     if (!anim || anim.flipped) return
@@ -169,7 +174,7 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
       fallbackRef.current = null
       setState((cur) => (cur.anim ? { ...cur, anim: null } : cur))
     }, SETTLE_FALLBACK_MS)
-  }, [state.nav])
+  }, [activeSlot, anim, state.nav])
 
   useEffect(() => {
     return () => {

@@ -62,7 +62,11 @@ export function TabBar() {
       <View style={[styles.bar, th.shadows.s3]} onLayout={(e) => setBarW(e.nativeEvent.layout.width)}>
         <BarGlass />
         {barW > 0 ? <View style={[styles.pill, pillStyle]} /> : null}
-        <View style={styles.row}>
+        <View
+          style={styles.row}
+          accessibilityRole="tablist"
+          {...({ "aria-orientation": "horizontal" } as object)}
+        >
           {TABS.map((tab, i) => (
             <TabButton
               key={tab.id}

@@ -10,6 +10,8 @@ import {
 import { makeThemedStyles, useTheme, focusRingProps, headingLevel, webCursor, webTransition, webHover } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
+import { useOpenExternal } from "../capabilities"
+import { useToast } from "../primitives/toastContext"
 import { useAppPromo } from "./useAppPromo"
 import { useAppPromoStore } from "./appPromoStore"
 import { linkKeyProps } from "../bodies/PostCard"
@@ -26,8 +28,20 @@ export function AppPromoCard() {
   const { surface, links, dismiss } = useAppPromo()
   const setCardHeight = useAppPromoStore((s) => s.setCardHeight)
   const { t } = useT("web-common")
+  const openExternal = useOpenExternal()
+  const toast = useToast()
 
   const visible = surface === "card"
+
+  const openStore = React.useCallback(
+    (href: string) => {
+      const opening = openExternal ? openExternal.open(href) : Linking.openURL(href)
+      opening.catch(() => {
+        toast.show(t("app_promo.open_failed"), { variant: "error" })
+      })
+    },
+    [openExternal, toast, t],
+  )
 
   const onLayout = React.useCallback(
     (e: LayoutChangeEvent) => setCardHeight(e.nativeEvent.layout.height),
@@ -71,10 +85,10 @@ export function AppPromoCard() {
         {links.map((link) => (
           <Pressable
             key={link.store}
-            onPress={() => void Linking.openURL(link.href)}
+            onPress={() => openStore(link.href)}
             accessibilityRole="link"
             accessibilityLabel={t(link.labelKey)}
-            {...linkKeyProps(() => void Linking.openURL(link.href))}
+            {...linkKeyProps(() => openStore(link.href))}
             {...focusRingProps}
             style={(state) => [
               styles.badge,

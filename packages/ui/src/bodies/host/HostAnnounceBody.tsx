@@ -13,14 +13,14 @@ import {
 import { Icon, Text, iconMap } from "../../typography"
 import { FilterChip, PrimaryButton, fieldFocusedStyle, useToast } from "../../primitives"
 import { Markdown } from "../../primitives/Markdown"
-import { useCleanup } from "../../data"
+import { useAuthState, useCleanup } from "../../data"
 import { useDebouncedValue } from "../../data/hooks/useDebouncedValue"
 import {
   AUDIENCE_PREVIEW_DEBOUNCE_MS,
   useAudiencePreview,
   useCreateAnnouncement,
 } from "../../data/hooks/announcements"
-import { hasHostCapability } from "../../data/hooks/host"
+import { cleanupHostStanding, hasHostCapability } from "../../data/hooks/host"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
@@ -38,6 +38,14 @@ import {
 } from "./announcementModel"
 
 const AUDIENCE_ICON_SIZE = 16
+
+const TOGGLE_MIN_HEIGHT = 24
+
+const MIN_TOUCH_TARGET = 44
+
+const TOGGLE_SLOP_Y = (MIN_TOUCH_TARGET - TOGGLE_MIN_HEIGHT) / 2
+
+const TOGGLE_HIT_SLOP = { top: TOGGLE_SLOP_Y, bottom: TOGGLE_SLOP_Y }
 
 export function HostAnnounceBody({ id }: { id: string }) {
   const styles = useStyles()
@@ -59,7 +67,8 @@ export function HostAnnounceBody({ id }: { id: string }) {
   const [focusedField, setFocusedField] = useState<"title" | "body" | null>(null)
 
   const slots = cleanup.data?.slots ?? []
-  const canBroadcast = hasHostCapability(cleanup.data, "broadcast")
+  const viewerId = useAuthState().user?.id ?? null
+  const canBroadcast = hasHostCapability(cleanupHostStanding(cleanup.data, viewerId), "broadcast")
   const audience = useMemo(() => audienceFor(audienceKind, slotIds), [audienceKind, slotIds])
   const settled = useDebouncedValue(audience, AUDIENCE_PREVIEW_DEBOUNCE_MS)
   const recipients = useAudiencePreview(id, settled, {
@@ -164,6 +173,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
             accessibilityLabel={
               preview ? t("announce.preview_off_a11y") : t("announce.preview_on_a11y")
             }
+            hitSlop={TOGGLE_HIT_SLOP}
             {...focusRingProps}
             style={(state) => [
               styles.toggle,
@@ -229,7 +239,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
                 onPress={() => setAudienceKind(option)}
                 disabled={create.isPending}
                 accessibilityRole="radio"
-                accessibilityState={{ selected, disabled: create.isPending }}
+                accessibilityState={{ checked: selected, disabled: create.isPending }}
                 accessibilityLabel={tEnums(`broadcastSegment.${option}`)}
                 {...focusRingProps}
                 style={(state) => [
@@ -267,6 +277,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
                   key={slot.id}
                   label={slot.title}
                   selected={slotIds.includes(slot.id)}
+                  selection="multiple"
                   onPress={() => toggleSlot(slot.id)}
                 />
               ))
@@ -352,7 +363,8 @@ const useStyles = makeThemedStyles((t) => ({
     backgroundColor: t.colors.bgAlt,
   },
   toggle: {
-    paddingVertical: 4,
+    minHeight: TOGGLE_MIN_HEIGHT,
+    justifyContent: "center",
     paddingHorizontal: t.space["2"],
     borderRadius: t.radius.sm,
   },

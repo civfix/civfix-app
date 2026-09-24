@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Animated, View, Pressable, StyleSheet } from "react-native"
 import type { PollDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, webCursorPointer, webNoSelect, focusRingProps } from "../theme"
+import { makeThemedStyles, useReducedMotion, useTheme, webCursorPointer, webNoSelect, focusRingProps } from "../theme"
 import { alpha } from "../theme/alpha"
 import { Text, Icon, iconMap } from "../typography"
 import { PrimaryButton } from "./PrimaryButton"
@@ -52,13 +52,22 @@ export function PollBubble({ poll, mine, onVote, disabled = false }: PollBubbleP
   if (barsRef.current.length !== poll.options.length) {
     barsRef.current = poll.options.map((_, i) => new Animated.Value(fractions[i] ?? 0))
   }
+  const reducedMotion = useReducedMotion()
+  const barsStill = reducedMotion !== false
   useEffect(() => {
     if (!showResults) return
-    const anims = barsRef.current.map((v, i) =>
-      Animated.timing(v, { toValue: fractions[i] ?? 0, duration: 300, useNativeDriver: false }),
+    if (barsStill) {
+      barsRef.current.forEach((v, i) => v.setValue(fractions[i] ?? 0))
+      return
+    }
+    const run = Animated.parallel(
+      barsRef.current.map((v, i) =>
+        Animated.timing(v, { toValue: fractions[i] ?? 0, duration: 300, useNativeDriver: false }),
+      ),
     )
-    Animated.parallel(anims).start()
-  }, [showResults, fractions])
+    run.start()
+    return () => run.stop()
+  }, [showResults, fractions, barsStill])
 
   const subtitleColor = mine ? alpha(th.colors.onAccent, ON_BLOOM_SUBTLE_ALPHA) : th.colors.textSubtle
   const questionColor = mine ? th.colors.onAccent : th.colors.text

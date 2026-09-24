@@ -27,7 +27,7 @@ describe("clusterToneFor", () => {
 })
 
 describe("clusterBubbleAppearance", () => {
-  it("keeps the count legible on the bubble in both schemes and both tones", () => {
+  it("keeps the count legible on the bubble in both schemes and both tones (1.4.3 normal text, 4.5:1)", () => {
     for (const scheme of SCHEMES) {
       for (const tone of ["reports", "events"] as const) {
         const { fill, label } = clusterBubbleAppearance(
@@ -35,7 +35,7 @@ describe("clusterBubbleAppearance", () => {
           scheme,
           makeThemeColors(scheme).onAccent,
         )
-        expect(contrast(label, fill), `${tone}/${scheme}`).toBeGreaterThanOrEqual(3)
+        expect(contrast(label, fill), `${tone}/${scheme}`).toBeGreaterThanOrEqual(4.5)
       }
     }
   })
