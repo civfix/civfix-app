@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
-  AppError,
   ErrorCode,
+  appErrorCode,
   mergeChatItems,
   type ChatItem,
   type ChatMessageDTO,
@@ -117,7 +117,7 @@ export interface UseChatResult {
 }
 
 function isErrorCode(err: unknown, code: ErrorCode): boolean {
-  return err instanceof AppError && err.code === code
+  return appErrorCode(err) === code
 }
 
 export interface UseChatOptions {
