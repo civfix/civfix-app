@@ -1,11 +1,13 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs"
-import { createRequire } from "node:module"
+import { existsSync, readdirSync, statSync } from "node:fs"
 import { dirname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
-import { WEB_ORIGIN, resolveIncomingPath, type IncomingLink } from "./universalLinks.ts"
+import { resolveIncomingPath, type IncomingLink } from "./universalLinks.ts"
 import { isExternalUrl, isInternalLink, toInternalHref, toResumeHref } from "./links.ts"
+import { loadNavRoutes } from "../../tests/helpers/navRoutes.ts"
+
+const WEB_ORIGIN = "https://civfix.org"
 
 const internal = (path: string): IncomingLink => ({ type: "internal", path })
 const external = (url: string): IncomingLink => ({ type: "external", url })
@@ -61,6 +63,8 @@ const RECOGNISED: readonly (readonly [string, string])[] = [
   ["/e/beach-day", "/cleanups/beach-day"],
   ["/e/beach-day/anything", "/cleanups/beach-day"],
   ["/orgs/acme", "/orgs/acme"],
+  ["/orgs/acme/manage", "/orgs/acme/manage"],
+  ["/host/analytics", "/host/analytics"],
   ["/cleanups", "/cleanups"],
   ["/cleanups/c1", "/cleanups/c1"],
   ["/cleanups/c1/edit", "/cleanups/c1/edit"],
@@ -71,6 +75,9 @@ const RECOGNISED: readonly (readonly [string, string])[] = [
   ["/cleanups/c1/ticket", "/cleanups/c1/ticket"],
   ["/cleanups/c1/ticket/s1", "/cleanups/c1/ticket/s1"],
   ["/cleanups/c1/ticket/s1/anything", "/cleanups/c1/ticket/s1"],
+  ["/cleanups/c1/announcements", "/cleanups/c1/announcements"],
+  ["/cleanups/c1/announcements/a1", "/cleanups/c1/announcements/a1"],
+  ["/cleanups/c1/analytics", "/cleanups/c1/analytics"],
   ["/cleanups/c1/attendees", "/cleanups/c1"],
   ["/cleanups/c1/announce", "/cleanups/c1"],
   ["/reports", "/reports"],
@@ -91,6 +98,7 @@ const RECOGNISED: readonly (readonly [string, string])[] = [
   ["/settings/privacy", "/settings/privacy"],
   ["/settings/blocked", "/settings/blocked"],
   ["/settings/language", "/settings/language"],
+  ["/settings/appearance", "/settings/appearance"],
   ["/groups/new", "/messages"],
   ["/groups/g1/info", "/groups/g1/info"],
   ["/channels/new", "/messages"],
@@ -112,10 +120,11 @@ const RECOGNISED: readonly (readonly [string, string])[] = [
   ["/cleanups/c1?teamInvite=tok&from=share", "/cleanups/c1?from=share"],
   ["/pin/p1?teamInvite=tok", "/pin/p1"],
   ["/pin/p1?team%49nvite=tok", "/pin/p1"],
-  ["/pin/p1?team+Invite=tok", "/pin/p1?team+Invite=tok"],
-  ["/pin/p1?a=1&&b=2", "/pin/p1?a=1&b=2"],
+  ["/pin/p1?team+Invite=tok", "/pin/p1"],
+  ["/pin/p1?a=1&&b=2", "/pin/p1"],
   ["/pin/p1#comments", "/pin/p1"],
-  ["/pin/p1?x=%zz", "/pin/p1?x=%zz"],
+  ["/pin/p1?x=%zz", "/pin/p1"],
+  ["/reports?tab=saved&x=1", "/reports?tab=saved"],
   ["/pin//p1//", "/pin/p1"],
 ]
 
@@ -133,30 +142,7 @@ test("every in-app path a recognised link resolves to has an expo-router route f
   }
 })
 
-const CURRENTLY_COLLAPSED: readonly (readonly [string, string, string])[] = [
-  ["/cleanups/c1/announcements", "/cleanups/c1", "cleanups/[id]/announcements/index.tsx"],
-  ["/cleanups/c1/announcements/a1", "/cleanups/c1", "cleanups/[id]/announcements/[announcementId].tsx"],
-  ["/cleanups/c1/analytics", "/cleanups/c1", "cleanups/[id]/analytics.tsx"],
-  ["/orgs/acme/manage", "/orgs/acme", "orgs/[slug]/manage.tsx"],
-  ["/host/analytics", "/host-event", "host/analytics.tsx"],
-]
-
-for (const [path, collapsed, routeFile] of CURRENTLY_COLLAPSED) {
-  test(`currently collapses ${path} to ${collapsed} although ${routeFile} exists`, () => {
-    assert.equal(routeFileFor(path), routeFile)
-    for (const raw of forms(path)) {
-      assert.deepEqual(resolveIncomingPath(raw), internal(collapsed), raw)
-    }
-  })
-}
-
-test("currently sends a web /settings/appearance link home although settings/appearance.tsx exists", () => {
-  assert.equal(routeFileFor("/settings/appearance"), "settings/appearance.tsx")
-  assert.deepEqual(resolveIncomingPath(`${WEB_ORIGIN}/settings/appearance`), home)
-  assert.deepEqual(resolveIncomingPath("/settings/appearance"), home)
-})
-
-const WEB_HOME_SCHEME_VERBATIM: readonly string[] = [
+const UNROUTED: readonly string[] = [
   "/map/x",
   "/profile/x",
   "/dashboard/x",
@@ -167,7 +153,6 @@ const WEB_HOME_SCHEME_VERBATIM: readonly string[] = [
   "/leaderboard",
   "/post",
   "/notifications/x",
-  "/settings/appearance",
   "/settings/x",
   "/groups",
   "/groups/g1",
@@ -180,15 +165,16 @@ const WEB_HOME_SCHEME_VERBATIM: readonly string[] = [
   "/scan",
   "/me",
   "/definitely-not-a-route",
+  "/landscape",
+  "/skeleton",
+  "/bodies",
 ]
 
-for (const path of WEB_HOME_SCHEME_VERBATIM) {
-  test(`currently sends a web ${path} link home but hands the scheme link to the router verbatim`, () => {
-    const bare = path.replace(/^\//, "")
-    assert.deepEqual(resolveIncomingPath(`${WEB_ORIGIN}${path}`), home)
-    assert.deepEqual(resolveIncomingPath(path), home)
-    assert.deepEqual(resolveIncomingPath(`civfix://${bare}`), internal(`civfix://${bare}`))
-    assert.deepEqual(resolveIncomingPath(`civfix:${bare}`), internal(`civfix:${bare}`))
+for (const path of UNROUTED) {
+  test(`${path} goes home whether it arrives as a web link, a bare path or either scheme shape`, () => {
+    for (const raw of forms(path)) {
+      assert.deepEqual(resolveIncomingPath(raw), home, raw)
+    }
   })
 }
 
@@ -200,9 +186,6 @@ const BROWSER_ONLY: readonly string[] = [
   "/.well-known/apple-app-site-association",
   "/manage/events/e1",
   "/unsubscribe?t=tok",
-  "/landscape",
-  "/skeleton",
-  "/bodies",
 ]
 
 for (const path of BROWSER_ONLY) {
@@ -244,63 +227,41 @@ test("the site and scheme roots are the map-home", () => {
   }
 })
 
-test("currently hands the auth OTP scheme link, email and resume target included, to the router verbatim", () => {
-  const raw = "civfix://auth/otp?email=a@b.c&next=/pin/x"
-  assert.deepEqual(resolveIncomingPath(raw), internal(raw))
-  assert.deepEqual(
-    resolveIncomingPath("civfix://auth?next=/pin/x"),
-    internal("civfix://auth?next=/pin/x"),
-  )
-})
-
-test("currently strips only the invite token from a verbatim scheme link and keeps its hash", () => {
-  assert.deepEqual(
-    resolveIncomingPath("civfix://auth/otp?email=a@b.c&teamInvite=t#x"),
-    internal("civfix://auth/otp?email=a@b.c#x"),
-  )
-  assert.deepEqual(
-    resolveIncomingPath("civfix://unknown/deep/path?teamInvite=t&x=1"),
-    internal("civfix://unknown/deep/path?x=1"),
-  )
-})
-
-test("currently hands the scanner session, camera capture and appearance scheme links to the router verbatim", () => {
+test("a scheme link outside the route table goes home, whatever query or hash it carries", () => {
   for (const raw of [
+    "civfix://auth/otp?email=a@b.c&next=/pin/x",
+    "civfix://auth?next=/pin/x",
+    "civfix://auth/otp?email=a@b.c&teamInvite=t#x",
+    "civfix://unknown/deep/path?teamInvite=t&x=1",
     "civfix://scan?session=s",
     "civfix://report/camera?captureId=c",
-    "civfix://settings/appearance",
   ]) {
-    assert.deepEqual(resolveIncomingPath(raw), internal(raw))
+    assert.deepEqual(resolveIncomingPath(raw), home, raw)
   }
+  assert.deepEqual(resolveIncomingPath("civfix://settings/appearance"), internal("/settings/appearance"))
 })
 
-test("currently carries composer reply parameters from a link into the compose route", () => {
+test("a link hands the compose route none of the composer's reply parameters", () => {
   for (const raw of [
     "https://civfix.org/compose?mode=reply&targetPostId=p",
     "civfix://compose?mode=reply&targetPostId=p",
   ]) {
-    assert.deepEqual(resolveIncomingPath(raw), internal("/compose?mode=reply&targetPostId=p"))
+    assert.deepEqual(resolveIncomingPath(raw), internal("/compose"))
   }
 })
 
-test("currently carries caller-supplied peer identity parameters into a message room", () => {
+test("a link keeps a message room's kind but drops caller-supplied peer identity", () => {
   for (const raw of [
     "https://civfix.org/messages/abc?roomKind=dm&peerName=X&peerId=Y",
     "civfix://messages/abc?roomKind=dm&peerName=X&peerId=Y",
   ]) {
-    assert.deepEqual(resolveIncomingPath(raw), internal("/messages/abc?roomKind=dm&peerName=X&peerId=Y"))
+    assert.deepEqual(resolveIncomingPath(raw), internal("/messages/abc?roomKind=dm"))
   }
 })
 
-test("currently passes a resume target pointing off-site through as a query parameter", () => {
-  assert.deepEqual(
-    resolveIncomingPath("https://civfix.org/pin/p1?next=https://evil.com"),
-    internal("/pin/p1?next=https://evil.com"),
-  )
-  assert.deepEqual(
-    resolveIncomingPath("civfix://pin/p1?next=//evil.com"),
-    internal("/pin/p1?next=//evil.com"),
-  )
+test("a link drops a resume target instead of passing it through as a query parameter", () => {
+  assert.deepEqual(resolveIncomingPath("https://civfix.org/pin/p1?next=https://evil.com"), internal("/pin/p1"))
+  assert.deepEqual(resolveIncomingPath("civfix://pin/p1?next=//evil.com"), internal("/pin/p1"))
 })
 
 test("currently keeps encoded traversal and encoded slashes inside an id segment", () => {
@@ -325,19 +286,20 @@ test("currently keeps the first id segment and drops any extra segments after a 
   assert.deepEqual(resolveIncomingPath("https://civfix.org/pin/a/b"), internal("/pin/a"))
 })
 
-test("currently hands a scheme link whose root is encoded traversal to the router verbatim", () => {
+test("a scheme link whose root is encoded traversal goes home", () => {
   for (const raw of ["civfix://..%2F..%2Fauth", "civfix://%2e%2e/auth"]) {
-    assert.deepEqual(resolveIncomingPath(raw), internal(raw))
+    assert.deepEqual(resolveIncomingPath(raw), home, raw)
   }
 })
 
-test("currently routes the dev-client launcher and the exp scheme in every build", () => {
+test("the dev-client launcher and the exp scheme reach the router verbatim in a dev build only", () => {
   for (const raw of [
     "civfix://expo-development-client/?url=http://x",
     "exp+civfix-community://expo-development-client/?url=x",
     "exp://192.168.1.2:8081/--/pin/p1",
   ]) {
-    assert.deepEqual(resolveIncomingPath(raw), internal(raw))
+    assert.deepEqual(resolveIncomingPath(raw, { isDev: true }), internal(raw), raw)
+    assert.deepEqual(resolveIncomingPath(raw), home, raw)
   }
 })
 
@@ -378,7 +340,7 @@ test("empty segments collapse on a web or scheme link, but a bare path starting 
 
 test("an uppercase path root is not recognised", () => {
   assert.deepEqual(resolveIncomingPath("https://civfix.org/PIN/p1"), home)
-  assert.deepEqual(resolveIncomingPath("civfix://PIN/p1"), internal("civfix://PIN/p1"))
+  assert.deepEqual(resolveIncomingPath("civfix://PIN/p1"), home)
 })
 
 test("a non-string link is the map-home", () => {
@@ -387,19 +349,7 @@ test("a non-string link is the map-home", () => {
   }
 })
 
-type PathForEntry = (entry: unknown) => string
-
-async function loadNavRoutes(): Promise<{ pathForEntry: PathForEntry }> {
-  const require = createRequire(import.meta.url)
-  const routesPath = join(dirname(require.resolve("@civfix/ui/package.json")), "src", "nav", "routes.ts")
-  const ts = require("typescript")
-  const { outputText } = ts.transpileModule(readFileSync(routesPath, "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-  })
-  return import(`data:text/javascript,${encodeURIComponent(outputText)}`)
-}
-
-const { pathForEntry } = await loadNavRoutes()
+const { pathForEntry } = await loadNavRoutes<{ pathForEntry: (entry: unknown) => string }>()
 
 const ROUND_TRIP: readonly (readonly [Record<string, unknown>, IncomingLink])[] = [
   [{ kind: "view", view: "map" }, internal("/map")],
@@ -452,6 +402,12 @@ const ROUND_TRIP: readonly (readonly [Record<string, unknown>, IncomingLink])[] 
   [{ kind: "composer", composerMode: "quote", targetPostId: "p1" }, internal("/compose")],
   [{ kind: "saves" }, internal("/saves")],
   [{ kind: "drop-pin" }, internal("/map")],
+  [{ kind: "announcements", id: "c1" }, internal("/cleanups/c1/announcements")],
+  [{ kind: "announcement", id: "c1", announcementId: "a1" }, internal("/cleanups/c1/announcements/a1")],
+  [{ kind: "event-analytics", id: "c1" }, internal("/cleanups/c1/analytics")],
+  [{ kind: "host-analytics" }, internal("/host/analytics")],
+  [{ kind: "org-manage", slug: "acme" }, internal("/orgs/acme/manage")],
+  [{ kind: "appearance-settings" }, internal("/settings/appearance")],
 ]
 
 for (const [entry, expected] of ROUND_TRIP) {
@@ -459,23 +415,6 @@ for (const [entry, expected] of ROUND_TRIP) {
     const link = resolveIncomingPath(`${WEB_ORIGIN}${pathForEntry(entry)}`)
     assert.deepEqual(link, expected)
     if (link.type === "internal") assert.notEqual(routeFileFor(link.path), null, link.path)
-  })
-}
-
-const ROUND_TRIP_CURRENTLY_LOSSY: readonly (readonly [Record<string, unknown>, IncomingLink])[] = [
-  [{ kind: "announcements", id: "c1" }, internal("/cleanups/c1")],
-  [{ kind: "announcement", id: "c1", announcementId: "a1" }, internal("/cleanups/c1")],
-  [{ kind: "event-analytics", id: "c1" }, internal("/cleanups/c1")],
-  [{ kind: "host-analytics" }, internal("/host-event")],
-  [{ kind: "org-manage", slug: "acme" }, internal("/orgs/acme")],
-  [{ kind: "appearance-settings" }, home],
-]
-
-for (const [entry, expected] of ROUND_TRIP_CURRENTLY_LOSSY) {
-  test(`currently loses the ${String(entry.kind)} surface when its shared web URL opens the app`, () => {
-    const url = pathForEntry(entry)
-    assert.notEqual(routeFileFor(url), null, url)
-    assert.deepEqual(resolveIncomingPath(`${WEB_ORIGIN}${url}`), expected)
   })
 }
 

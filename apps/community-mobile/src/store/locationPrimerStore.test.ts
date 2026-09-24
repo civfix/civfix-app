@@ -1,20 +1,19 @@
 import { beforeEach, test } from "node:test"
 import assert from "node:assert/strict"
 import { installModuleStubs } from "../../tests/helpers/moduleHooks.ts"
+import type * as LocationPrimerModule from "./locationPrimerStore.ts"
 
 const STUBS = new URL("../../tests/helpers/nativeStubs.ts", import.meta.url)
 installModuleStubs({ "@/lib/mmkv": STUBS })
 
 const { memory, resetStubs } = await import("../../tests/helpers/nativeStubs.ts")
-const { LOCATION_PRIMER_KEY } = await import("../lib/mmkv-keys.ts")
+const { LOCATION_PRIMER_KEY } = await import("../lib/mmkvKeys.ts")
 
 let instance = 0
 
 async function freshStore() {
   instance += 1
-  const module: typeof import("./locationPrimerStore.ts") = await import(
-    `./locationPrimerStore.ts?instance=${instance}`
-  )
+  const module = (await import(`./locationPrimerStore.ts?instance=${instance}`)) as typeof LocationPrimerModule
   return module.useLocationPrimerStore
 }
 

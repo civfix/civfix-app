@@ -2,29 +2,30 @@ import { beforeEach, test } from "node:test"
 import assert from "node:assert/strict"
 import { AppError, ErrorCode } from "@civfix/shared"
 import { installModuleStubs } from "../../tests/helpers/moduleHooks.ts"
+import type * as AuthModule from "./authStore.ts"
 
 const STUBS = new URL("../../tests/helpers/nativeStubs.ts", import.meta.url)
 installModuleStubs({
+  "@civfix/ui": STUBS,
+  "@civfix/ui/data": STUBS,
   "@/api/client": STUBS,
   "@/auth/storage": STUBS,
   "@/lib/mmkv": STUBS,
   "@/lib/nativeSecureStore": STUBS,
   "@/lib/ws": STUBS,
   "@/query/client": STUBS,
-  "@/query/mmkv-persister": STUBS,
+  "@/query/mmkvPersister": STUBS,
 })
 
 const { calls, control, memory, resetStubs } = await import("../../tests/helpers/nativeStubs.ts")
-const { CACHED_USER_KEY, LAST_IDENTITY_KEY } = await import("../lib/mmkv-keys.ts")
+const { CACHED_USER_KEY, LAST_IDENTITY_KEY } = await import("../lib/mmkvKeys.ts")
 const { PUSH_REGISTRATION_KEY } = await import("../lib/pushRegistration.ts")
-
-type AuthModule = typeof import("./authStore.ts")
 
 let instance = 0
 
-async function freshStore(): Promise<AuthModule["useAuthStore"]> {
+async function freshStore(): Promise<typeof AuthModule.useAuthStore> {
   instance += 1
-  const module: AuthModule = await import(`./authStore.ts?instance=${instance}`)
+  const module = (await import(`./authStore.ts?instance=${instance}`)) as typeof AuthModule
   return module.useAuthStore
 }
 
@@ -35,7 +36,26 @@ async function settle(): Promise<void> {
 const USER = { id: "u-1", name: "Ada" }
 const OTHER = { id: "u-2", name: "Grace" }
 
-const TEARDOWN = ["clearPersistedCache", "chatSocket.disconnect", "queryClient.clear", "resumeCachePersistence"]
+const TEARDOWN = [
+  "clearPersistedCache",
+  "chatSocket.disconnect",
+  "queryClient.clear",
+  "discardViewerDrafts",
+  "resumeCachePersistence",
+]
+
+const VIEWER_REFETCH = [
+  "myReportsRoot",
+  "threads",
+  "notificationsRoot",
+  "profileRoot",
+  "postsRoot",
+  "postRoot",
+  "reportRoot",
+  "cleanupRoot",
+  "chatRoot",
+  "volunteer",
+].map((key) => `queryClient.invalidate:${JSON.stringify([key])}`)
 
 function signedInSession(user: object) {
   return async () => ({ authenticated: true, user, guestSmsEnabled: true })
@@ -198,11 +218,11 @@ test("the same account coming back keeps its caches", async () => {
   assert.deepEqual(calls, ["readToken", "api.session"])
 })
 
-test("signing in as another account purges before the token is stored", async () => {
+test("signing in as another account purges before the token is stored, then refetches what the guest cached", async () => {
   memory.set(LAST_IDENTITY_KEY, OTHER.id)
   const store = await freshStore()
   await store.getState().signIn("tok", USER as never)
-  assert.deepEqual(calls, ["purgeQueryCache", "clearSecureBlobs", "setToken:tok"])
+  assert.deepEqual(calls, ["purgeQueryCache", "clearSecureBlobs", "setToken:tok", ...VIEWER_REFETCH])
   assert.equal(store.getState().status, "authed")
   assert.equal(memory.get(LAST_IDENTITY_KEY), USER.id)
 })

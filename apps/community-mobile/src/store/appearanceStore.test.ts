@@ -4,6 +4,7 @@ import { createRequire } from "node:module"
 import { dirname, join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { installModuleStubs } from "../../tests/helpers/moduleHooks.ts"
+import type * as AppearanceModule from "./appearanceStore.ts"
 
 const require = createRequire(import.meta.url)
 const UI_SCHEMES = pathToFileURL(
@@ -13,13 +14,13 @@ const STUBS = new URL("../../tests/helpers/nativeStubs.ts", import.meta.url)
 installModuleStubs({ "@/lib/mmkv": STUBS, "@civfix/ui/theme": UI_SCHEMES })
 
 const { memory, resetStubs } = await import("../../tests/helpers/nativeStubs.ts")
-const { APPEARANCE_KEY } = await import("../lib/mmkv-keys.ts")
+const { APPEARANCE_KEY } = await import("../lib/mmkvKeys.ts")
 
 let instance = 0
 
 async function freshStore() {
   instance += 1
-  const module: typeof import("./appearanceStore.ts") = await import(`./appearanceStore.ts?instance=${instance}`)
+  const module = (await import(`./appearanceStore.ts?instance=${instance}`)) as typeof AppearanceModule
   return module.useAppearanceStore
 }
 

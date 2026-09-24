@@ -47,9 +47,6 @@
       ],
       "project": ["app/**/*.{ts,tsx}", "src/**/*.{ts,tsx}", "tests/**/*.ts", "scripts/*.mjs"],
       "ignoreDependencies": [
-        // Declared but unused; they are being removed in a separate PR. Drop this entry once they are gone.
-        "expo-contacts",
-        "expo-sms",
         // The one-off asset generators in scripts/ ask for these to be installed with --no-save; they
         // are never runtime or CI dependencies.
         "sharp",

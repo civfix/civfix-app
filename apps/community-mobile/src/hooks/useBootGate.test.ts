@@ -4,13 +4,15 @@ import { installModuleStubs } from "../../tests/helpers/moduleHooks.ts"
 
 const STUBS = new URL("../../tests/helpers/nativeStubs.ts", import.meta.url)
 installModuleStubs({
+  "@civfix/ui": STUBS,
+  "@civfix/ui/data": STUBS,
   "@/api/client": STUBS,
   "@/auth/storage": STUBS,
   "@/lib/mmkv": STUBS,
   "@/lib/nativeSecureStore": STUBS,
   "@/lib/ws": STUBS,
   "@/query/client": STUBS,
-  "@/query/mmkv-persister": STUBS,
+  "@/query/mmkvPersister": STUBS,
 })
 
 const { calls, control, resetStubs } = await import("../../tests/helpers/nativeStubs.ts")

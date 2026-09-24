@@ -59,6 +59,10 @@ export const mmkvStateStorage: StateStorage = {
   },
 }
 
+export function tokenGeneration(): number {
+  return 0
+}
+
 export async function readToken(): Promise<TokenRead> {
   calls.push("readToken")
   return control.token
@@ -117,6 +121,20 @@ export const queryClient = {
   clear: (): void => {
     calls.push("queryClient.clear")
   },
+  invalidateQueries: async ({ queryKey }: { queryKey: readonly unknown[] }): Promise<void> => {
+    calls.push(`queryClient.invalidate:${JSON.stringify(queryKey)}`)
+  },
+}
+
+export const queryKeys: Readonly<Record<string, readonly unknown[]>> = new Proxy(
+  {},
+  { get: (_target, name) => [String(name)] },
+)
+
+export function adoptViewer(_viewerId: string | null): void {}
+
+export function discardViewerDrafts(): void {
+  calls.push("discardViewerDrafts")
 }
 
 export function clearPersistedCache(): void {

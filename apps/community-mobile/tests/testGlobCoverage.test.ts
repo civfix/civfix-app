@@ -1,12 +1,12 @@
 import assert from "node:assert/strict"
 import { globSync, readdirSync, readFileSync } from "node:fs"
-import { join, relative, sep } from "node:path"
+import { dirname, join, relative, sep } from "node:path"
 import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 
-const appDir = fileURLToPath(new URL("../", import.meta.url))
-const pkg = JSON.parse(readFileSync(join(appDir, "package.json"), "utf8"))
-const testScript: string = pkg.scripts.test
+const appDir = join(dirname(fileURLToPath(import.meta.url)), "..")
+const pkg = JSON.parse(readFileSync(join(appDir, "package.json"), "utf8")) as { scripts: { test: string } }
+const testScript = pkg.scripts.test
 
 // Gitignored or generated trees never hold tracked tests; ios/ and android/ are prebuild output.
 const UNTRACKED_DIRS = new Set(["node_modules", "ios", "android", "build", "dist", "out", "coverage", "web-build"])

@@ -1,18 +1,19 @@
 import { beforeEach, test } from "node:test"
 import assert from "node:assert/strict"
 import { installModuleStubs } from "../../tests/helpers/moduleHooks.ts"
+import type * as OnboardingModule from "./onboardingStore.ts"
 
 const STUBS = new URL("../../tests/helpers/nativeStubs.ts", import.meta.url)
 installModuleStubs({ "@/lib/mmkv": STUBS })
 
 const { memory, resetStubs } = await import("../../tests/helpers/nativeStubs.ts")
-const { ONBOARDING_KEY } = await import("../lib/mmkv-keys.ts")
+const { ONBOARDING_KEY } = await import("../lib/mmkvKeys.ts")
 
 let instance = 0
 
-async function freshModule(): Promise<typeof import("./onboardingStore.ts")> {
+async function freshModule(): Promise<typeof OnboardingModule> {
   instance += 1
-  return import(`./onboardingStore.ts?instance=${instance}`)
+  return (await import(`./onboardingStore.ts?instance=${instance}`)) as typeof OnboardingModule
 }
 
 function onboarding(store: Awaited<ReturnType<typeof freshModule>>["useOnboardingStore"]) {

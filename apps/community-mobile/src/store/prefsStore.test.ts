@@ -4,6 +4,8 @@ import { installModuleStubs } from "../../tests/helpers/moduleHooks.ts"
 
 const STUBS = new URL("../../tests/helpers/nativeStubs.ts", import.meta.url)
 installModuleStubs({
+  "@civfix/ui": STUBS,
+  "@civfix/ui/data": STUBS,
   "@/api/client": STUBS,
   "@/auth/storage": STUBS,
   "@/lib/locale": STUBS,
@@ -11,11 +13,11 @@ installModuleStubs({
   "@/lib/nativeSecureStore": STUBS,
   "@/lib/ws": STUBS,
   "@/query/client": STUBS,
-  "@/query/mmkv-persister": STUBS,
+  "@/query/mmkvPersister": STUBS,
 })
 
 const { calls, control, memory, resetStubs } = await import("../../tests/helpers/nativeStubs.ts")
-const { CACHED_USER_KEY, LOCALE_KEY } = await import("../lib/mmkv-keys.ts")
+const { CACHED_USER_KEY, LOCALE_KEY } = await import("../lib/mmkvKeys.ts")
 const { useAuthStore } = await import("./authStore.ts")
 const { usePrefsStore } = await import("./prefsStore.ts")
 

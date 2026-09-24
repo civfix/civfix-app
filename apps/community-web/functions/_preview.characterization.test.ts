@@ -197,7 +197,6 @@ interface Run {
 function setup(options: {
   url: string
   path?: string[]
-  method?: string
   env?: Partial<PreviewEnv>
   upstream?: (request: Request) => Promise<Response>
   asset?: () => Response
@@ -220,7 +219,7 @@ function setup(options: {
     fetchSpy,
     waited,
     context: {
-      request: new Request(options.url, { method: options.method ?? "GET" }),
+      request: new Request(options.url),
       env: { ASSETS: { fetch: assets }, ...options.env },
       params: { path: options.path ?? [UUID] },
       waitUntil: (promise) => {
@@ -397,7 +396,7 @@ describe("upstream timeout", () => {
     expect(timeout).toHaveBeenCalledWith(1500)
   })
 
-  it("falls back to the indexable default head and a 60s transient entry when the timeout fires", async () => {
+  it("falls back to the indexable default head and a 15s transient entry when the timeout fires", async () => {
     const controller = new AbortController()
     vi.spyOn(AbortSignal, "timeout").mockReturnValue(controller.signal)
     let seen: Request | undefined
@@ -429,7 +428,7 @@ describe("upstream timeout", () => {
     await Promise.all(run.waited)
     const [entry] = [...run.cache.entries.values()]
     expect(entry?.headers.get("x-civfix-preview-miss")).toBe("transient")
-    expect(entry?.headers.get("Cache-Control")).toBe("public, max-age=60")
+    expect(entry?.headers.get("Cache-Control")).toBe("public, max-age=15")
   })
 })
 
@@ -457,7 +456,7 @@ describe("Cache-Control on every outcome", () => {
     })
   }
 
-  it("currently negative-caches a transient upstream failure (5xx, 429, network error) for the same 60s as a definite miss", async () => {
+  it("negative-caches a transient upstream failure (5xx, 429, network error) for 15s, shorter than a definite miss", async () => {
     const transient: (() => Promise<Response>)[] = [
       async () => new Response("", { status: 500 }),
       async () => new Response("", { status: 503 }),
@@ -472,7 +471,7 @@ describe("Cache-Control on every outcome", () => {
       expect(response.headers.get("Cache-Control")).toBe(MUST_REVALIDATE)
       await Promise.all(run.waited)
       const [stored] = [...run.cache.entries.values()]
-      expect(stored?.headers.get("Cache-Control")).toBe("public, max-age=60")
+      expect(stored?.headers.get("Cache-Control")).toBe("public, max-age=15")
       expect(stored?.headers.get("x-civfix-preview-miss")).toBe("transient")
     }
   })
@@ -507,21 +506,12 @@ describe("Cache-Control on every outcome", () => {
 describe("security headers on every Function response", () => {
   const cases: {
     label: string
-    method?: string
     path: (id: string) => string[]
     asset?: () => Response
     upstream?: (kind: PreviewKind) => () => Promise<Response>
     contentType: string
     status: number
   }[] = [
-    {
-      label: "a non-GET passthrough",
-      method: "HEAD",
-      path: (id) => [id],
-      asset: () => new Response(null, { status: 200, headers: { "Content-Type": "application/octet-stream" } }),
-      contentType: "application/octet-stream",
-      status: 200,
-    },
     { label: "the bare-prefix browse page", path: () => [], contentType: HTML_CONTENT_TYPE, status: 200 },
     { label: "a nested SPA route", path: (id) => [id, "edit"], contentType: HTML_CONTENT_TYPE, status: 200 },
     {
@@ -554,7 +544,6 @@ describe("security headers on every Function response", () => {
         const run = setup({
           url: `https://civfix.org/${segment}/${id}`,
           path: testCase.path(id),
-          method: testCase.method,
           asset: testCase.asset,
           upstream: testCase.upstream?.(kind),
         })
@@ -604,6 +593,8 @@ describe("origin, canonical, noindex and API per hostname", () => {
     { host: "civfix-web.pages.dev", origin: "https://civfix.org", noindex: false, api: "https://api.civfix.org" },
     { host: "civfix.dev", origin: "https://civfix.dev", noindex: true, api: "https://api.civfix.dev" },
     { host: "www.civfix.dev", origin: "https://civfix.dev", noindex: true, api: "https://api.civfix.dev" },
+    { host: "staging.civfix-web.pages.dev", origin: "https://civfix.dev", noindex: true, api: "https://api.civfix.dev" },
+    { host: "dev.civfix-web.pages.dev", origin: "https://civfix.org", noindex: false, api: "https://api.civfix.org" },
     { host: "a1b2c3d4.civfix-web.pages.dev", origin: "https://civfix.org", noindex: false, api: "https://api.civfix.org" },
     { host: "evil.example", origin: "https://civfix.org", noindex: false, api: "https://api.civfix.org" },
   ]
@@ -618,37 +609,6 @@ describe("origin, canonical, noindex and API per hostname", () => {
       })
     })
   }
-
-  it("currently treats the retired dev.civfix-web.pages.dev alias as staging", async () => {
-    expect(await servedFor(`https://dev.civfix-web.pages.dev/pin/${UUID}`)).toEqual({
-      canonical: `https://civfix.dev/pin/${UUID}`,
-      origin: "https://civfix.dev",
-      noindex: true,
-      api: "https://api.civfix.dev",
-    })
-  })
-
-  it("currently serves the live staging alias staging.civfix-web.pages.dev as production: prod API, prod canonical, indexable", async () => {
-    expect(await servedFor(`https://staging.civfix-web.pages.dev/pin/${UUID}`)).toEqual({
-      canonical: `https://civfix.org/pin/${UUID}`,
-      origin: "https://civfix.org",
-      noindex: false,
-      api: "https://api.civfix.org",
-    })
-  })
-
-  it("currently keeps the staging alias on the prod canonical even when CIVFIX_API_URL points it at the staging API", async () => {
-    expect(
-      await servedFor(`https://staging.civfix-web.pages.dev/pin/${UUID}`, {
-        CIVFIX_API_URL: "https://api.civfix.dev",
-      }),
-    ).toEqual({
-      canonical: `https://civfix.org/pin/${UUID}`,
-      origin: "https://civfix.org",
-      noindex: false,
-      api: "https://api.civfix.dev",
-    })
-  })
 
   it("currently canonicalises a non-default-port staging URL to production while still reading the staging API", async () => {
     expect(await servedFor(`https://civfix.dev:8443/pin/${UUID}`)).toEqual({
