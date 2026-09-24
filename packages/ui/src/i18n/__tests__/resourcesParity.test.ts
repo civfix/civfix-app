@@ -1,5 +1,5 @@
 import { readdirSync } from "node:fs"
-import { LocaleEnum } from "@civfix/shared"
+import { SupportedLocaleSchema } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
 import { initialResources, loadCatalog } from "../bundledCatalogs"
 import * as nativeSeam from "../bundledCatalogs.native"
@@ -19,7 +19,7 @@ describe("every locale file is registered in resources.ts", () => {
     expect([...namespaces].sort()).toEqual(namespaceFiles("en"))
   })
 
-  it.each(LocaleEnum.options)("bundles every %s namespace under resources", (lng) => {
+  it.each(SupportedLocaleSchema.options)("bundles every %s namespace under resources", (lng) => {
     const bundled = Object.keys(resources[lng] ?? {}).sort()
     expect(bundled).toEqual(namespaceFiles(lng))
   })
@@ -33,11 +33,11 @@ describe("the web seam bundles English and lazy-loads every other locale", () =>
 
   it("has a chunk loader for every other locale, and nothing else", () => {
     expect(Object.keys(lazyCatalogs).sort()).toEqual(
-      LocaleEnum.options.filter((lng) => lng !== FALLBACK_LOCALE).sort(),
+      SupportedLocaleSchema.options.filter((lng) => lng !== FALLBACK_LOCALE).sort(),
     )
   })
 
-  it.each(LocaleEnum.options)("loads the same %s catalog the static resources carry", async (lng) => {
+  it.each(SupportedLocaleSchema.options)("loads the same %s catalog the static resources carry", async (lng) => {
     expect(await loadCatalog(lng)).toBe(resources[lng])
   })
 })
@@ -45,6 +45,6 @@ describe("the web seam bundles English and lazy-loads every other locale", () =>
 describe("the native seam bundles every locale", () => {
   it("starts with all of them, so mobile never waits on a catalog", () => {
     expect(nativeSeam.initialResources).toBe(resources)
-    expect(Object.keys(nativeSeam.initialResources).sort()).toEqual([...LocaleEnum.options].sort())
+    expect(Object.keys(nativeSeam.initialResources).sort()).toEqual([...SupportedLocaleSchema.options].sort())
   })
 })

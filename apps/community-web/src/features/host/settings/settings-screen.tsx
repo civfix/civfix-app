@@ -2,13 +2,12 @@
 
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { MAX_EVENT_REMINDER_OFFSETS } from "@civfix/shared"
+import { EMAIL_MAX_LENGTH, HTTPS_URL_MAX_LENGTH, MAX_EVENT_REMINDER_OFFSETS } from "@civfix/shared"
 import type { CleanupDTO, EventVisibility, OrganizationDTO } from "@civfix/shared"
 import { datetimeLocalFromIso } from "@civfix/shared/datetime"
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
-import { EMAIL_MAX_LENGTH, HTTPS_URL_MAX_LENGTH } from "@/lib/input-limits"
 import { fieldErrorsFrom } from "@/components/console/query-state"
 import { ConsoleButton } from "@/components/console/button"
 import { Field } from "@/components/console/forms/field"

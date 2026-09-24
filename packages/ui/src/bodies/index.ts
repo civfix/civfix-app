@@ -18,7 +18,6 @@ export { SettingsAccountBody } from "./SettingsAccountBody"
 export { DonationLinkEditor } from "./settings/DonationLinkEditor"
 export type { DonationLinkEditorProps } from "./settings/DonationLinkEditor"
 export {
-  DONATION_LINK_MAX_LENGTH,
   donationLinkDirty,
   donationLinkFieldError,
   normalizeDonationLink,

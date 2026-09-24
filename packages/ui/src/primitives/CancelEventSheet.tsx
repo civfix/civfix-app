@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react"
+import { MAX_EVENT_CANCEL_REASON } from "@civfix/shared"
 import { TextInput } from "./TextInput"
 import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { Text } from "../typography"
@@ -7,8 +8,6 @@ import { SecondaryButton } from "./SecondaryButton"
 import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
 import { useT } from "../i18n"
 import { useResetOnOpen } from "./useModalClosed"
-
-const REASON_MAX = 500
 
 export interface CancelEventSheetProps {
   visible: boolean
@@ -71,10 +70,10 @@ export function CancelEventSheet({
 
       <TextInput
         value={reason}
-        onChangeText={(next) => setReason(next.slice(0, REASON_MAX))}
+        onChangeText={(next) => setReason(next.slice(0, MAX_EVENT_CANCEL_REASON))}
         editable={!pending}
         multiline
-        maxLength={REASON_MAX}
+        maxLength={MAX_EVENT_CANCEL_REASON}
         placeholder={t("reason.placeholder")}
         placeholderTextColor={th.colors.textSubtle}
         accessibilityLabel={t("reason.a11y")}

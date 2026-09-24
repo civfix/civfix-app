@@ -14,9 +14,6 @@ import type { PostComposerMode } from "./postComposerStore"
 
 export type PostComposerAttachmentPanel = "events" | "reports" | null
 
-/** Mirrors `PostComposeInputSchema.body`'s cap, which the contract states as a bare literal. */
-export const POST_BODY_MAX_LENGTH = 2000
-
 export interface PostComposerModel {
   title: string
   submitLabel: string

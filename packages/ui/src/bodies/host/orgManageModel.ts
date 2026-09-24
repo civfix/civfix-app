@@ -7,21 +7,17 @@ import type {
 } from "@civfix/shared"
 import {
   ErrorCode,
+  SOCIAL_HANDLE_MAX_LENGTH,
   SOCIAL_PLATFORMS,
   SafeHttpsLinkSchema,
   SocialLinksSchema,
   UpdateOrganizationRequestSchema,
+  WHATSAPP_NUMBER_MAX_LENGTH,
   byErrorCode,
   type ErrorCodeTable,
 } from "@civfix/shared"
 
 const ORG_COUNTER_AT = 0.9
-
-// Mirrors the length caps in SocialLinksSchema's handle and WhatsApp regexes, which the contract does
-// not export as constants.
-const SOCIAL_HANDLE_MAX = 30
-
-const WHATSAPP_NUMBER_MAX = 15
 
 // UpdateOrganizationRequestSchema requires a uuid id; profile validation only reads the name and
 // description issues, so any well-formed id stands in.
@@ -148,16 +144,8 @@ export function linksErrors(draft: OrgLinksDraft): Record<string, string> {
   return out
 }
 
-export const SOCIAL_PREFIX: Readonly<Record<SocialPlatform, string>> = {
-  facebook: "facebook.com/",
-  instagram: "instagram.com/",
-  tiktok: "tiktok.com/@",
-  x: "x.com/",
-  whatsapp: "+",
-}
-
 export function socialHandleMax(platform: SocialPlatform): number {
-  return platform === "whatsapp" ? WHATSAPP_NUMBER_MAX : SOCIAL_HANDLE_MAX
+  return platform === "whatsapp" ? WHATSAPP_NUMBER_MAX_LENGTH : SOCIAL_HANDLE_MAX_LENGTH
 }
 
 export function counterVisible(length: number, max: number): boolean {

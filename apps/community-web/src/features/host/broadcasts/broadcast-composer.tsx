@@ -5,6 +5,7 @@ import { Eye, Send, Clock, TestTube } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { BroadcastDTO, BroadcastPreviewDTO, BroadcastSegment } from "@civfix/shared"
 import {
+  HTTPS_URL_MAX_LENGTH,
   MAX_BROADCAST_BODY,
   MAX_BROADCAST_CTA_LABEL,
   MAX_BROADCAST_SUBJECT,
@@ -14,7 +15,6 @@ import { useApi, useAuthState, useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 import type { Translate } from "@civfix/ui/i18n"
 
-import { HTTPS_URL_MAX_LENGTH } from "@/lib/input-limits"
 import { fieldErrorsFrom } from "@/components/console/query-state"
 import { ConsoleButton } from "@/components/console/button"
 import { Chip } from "@/components/console/chips/chip"

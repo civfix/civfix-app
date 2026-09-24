@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { POLL_MAX_OPTIONS, POLL_MIN_OPTIONS, POLL_OPTION_MAX, POLL_QUESTION_MAX } from "@civfix/shared"
 import {
   emptyPollDraft,
   setQuestion,
@@ -7,10 +8,6 @@ import {
   normalizeOptions,
   canCreatePoll,
   toCreateInput,
-  POLL_QUESTION_MAX,
-  POLL_OPTION_MAX,
-  POLL_MIN_OPTIONS,
-  POLL_MAX_OPTIONS,
   type PollDraft,
 } from "../pollDraft"
 

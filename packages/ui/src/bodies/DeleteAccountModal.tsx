@@ -6,12 +6,10 @@ import { Text } from "../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../primitives"
 import { MODAL_DISMISS_FOCUS_DELAY_MS } from "./modalFocusDelay"
 import { useRequestEmailCode, useDeleteAccount } from "../data"
-import { ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
+import { EMAIL_OTP_CODE_LENGTH, ErrorCode, errorCopyKey, type ErrorCodeTable } from "@civfix/shared"
 import { useT } from "../i18n"
 
 type TFn = (key: string, opts?: Record<string, unknown>) => string
-
-const EMAIL_OTP_LENGTH = 6
 
 export interface DeleteAccountModalProps {
   visible: boolean
@@ -84,7 +82,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
   }
 
   const confirmDelete = () => {
-    if (code.length !== EMAIL_OTP_LENGTH || del.isPending) return
+    if (code.length !== EMAIL_OTP_CODE_LENGTH || del.isPending) return
     setError(null)
     del.mutate(
       { emailOtp: code },
@@ -130,7 +128,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
               variant="destructive"
               onPress={confirmDelete}
               loading={del.isPending}
-              disabled={code.length !== EMAIL_OTP_LENGTH}
+              disabled={code.length !== EMAIL_OTP_CODE_LENGTH}
               accessibilityLabel={t("a11y.deleteConfirm")}
             />
           </>
@@ -166,13 +164,13 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
           <TextInput
             ref={codeRef}
             value={code}
-            onChangeText={(txt) => setCode(txt.replace(/[^0-9]/g, "").slice(0, EMAIL_OTP_LENGTH))}
+            onChangeText={(txt) => setCode(txt.replace(/[^0-9]/g, "").slice(0, EMAIL_OTP_CODE_LENGTH))}
             editable={!del.isPending}
             keyboardType="number-pad"
             inputMode="numeric"
             textContentType="oneTimeCode"
             autoComplete="one-time-code"
-            maxLength={EMAIL_OTP_LENGTH}
+            maxLength={EMAIL_OTP_CODE_LENGTH}
             placeholder="000000"
             placeholderTextColor={th.colors.textSubtle}
             accessibilityLabel={t("a11y.verificationCode")}

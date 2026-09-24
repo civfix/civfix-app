@@ -6,13 +6,14 @@ import type {
   EventTeamMemberDTO,
 } from "@civfix/shared"
 import {
+  EMAIL_MAX_LENGTH,
   ErrorCode,
   MAX_TEAM_INVITES_PER_EVENT,
   byErrorCode,
   isValidHandle,
   type ErrorCodeTable,
 } from "@civfix/shared"
-import { GUEST_EMAIL_MAX, guestEmailValue } from "./registration/guestRsvpModel"
+import { guestEmailValue } from "./registration/guestRsvpModel"
 import { settableRolesOtherThan, type SettableEventMemberRole } from "../../data/eventTeamTiers"
 import {
   hasActions,
@@ -30,7 +31,7 @@ export const TEAM_MEMBER_ROLE_ORDER: readonly CleanupMemberRole[] = [
   "member",
 ]
 
-export const INVITE_IDENTIFIER_MAX = GUEST_EMAIL_MAX
+export const INVITE_IDENTIFIER_MAX = EMAIL_MAX_LENGTH
 
 export function teamMemberRank(role: CleanupMemberRole): number {
   return rankIn(TEAM_MEMBER_ROLE_ORDER, role)

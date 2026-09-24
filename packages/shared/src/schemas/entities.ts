@@ -7,6 +7,7 @@ import {
   CheckinMethodSchema,
   CleanupMemberRoleSchema,
   EventPageStatusSchema,
+  EMAIL_MAX_LENGTH,
   EventVisibilitySchema,
   HostCapabilitySchema,
   IdSchema,
@@ -33,7 +34,9 @@ import {
 import { MARKDOWN_SUBSET_MAX_CHARS } from "../markdown/parse.js"
 import { isSafeHttpsUrl } from "../markdown/safe-url.js"
 
-export const HttpsUrlSchema = z.string().trim().url().max(500).startsWith("https://")
+export const HTTPS_URL_MAX_LENGTH = 500
+
+export const HttpsUrlSchema = z.string().trim().url().max(HTTPS_URL_MAX_LENGTH).startsWith("https://")
 
 export const AvatarPairSchema = z.tuple([z.string(), z.string()]).nullable().optional()
 
@@ -147,8 +150,19 @@ export const SOCIAL_PLATFORM_LABELS: Record<SocialPlatform, string> = {
   whatsapp: "WhatsApp",
 }
 
-const SocialHandleSchema = z.string().trim().regex(/^[A-Za-z0-9._]{1,30}$/)
-const WhatsAppNumberSchema = z.string().trim().regex(/^[1-9]\d{6,14}$/)
+export const SOCIAL_HANDLE_MAX_LENGTH = 30
+// E.164: at most 15 digits, and the country code never starts with 0.
+export const WHATSAPP_NUMBER_MAX_LENGTH = 15
+const WHATSAPP_NUMBER_MIN_LENGTH = 7
+
+const SocialHandleSchema = z
+  .string()
+  .trim()
+  .regex(new RegExp(`^[A-Za-z0-9._]{1,${SOCIAL_HANDLE_MAX_LENGTH}}$`))
+const WhatsAppNumberSchema = z
+  .string()
+  .trim()
+  .regex(new RegExp(`^[1-9]\\d{${WHATSAPP_NUMBER_MIN_LENGTH - 1},${WHATSAPP_NUMBER_MAX_LENGTH - 1}}$`))
 
 export const SocialLinksSchema = z
   .object({
@@ -160,6 +174,16 @@ export const SocialLinksSchema = z
   })
   .strict()
 export type SocialLinks = z.infer<typeof SocialLinksSchema>
+
+// What a form shows in front of the field so the user types only the handle. Deliberately shorter than
+// socialLinkUrl's link targets: it is display text, not a URL.
+export const SOCIAL_HANDLE_PREFIX: Readonly<Record<SocialPlatform, string>> = {
+  facebook: "facebook.com/",
+  instagram: "instagram.com/",
+  tiktok: "tiktok.com/@",
+  x: "x.com/",
+  whatsapp: "+",
+}
 
 export function socialLinkUrl(platform: SocialPlatform, value: string): string {
   switch (platform) {
@@ -459,7 +483,24 @@ export const SafeHttpsLinkSchema = z
     message: SAFE_HTTPS_LINK_MESSAGE,
   })
 
-export const HostEventEmailSchema = z.string().trim().toLowerCase().email().max(254)
+export const HostEventEmailSchema = z.string().trim().toLowerCase().email().max(EMAIL_MAX_LENGTH)
+
+export const EVENT_PAGE_BLOCK_LIMITS = {
+  title: 160,
+  heroHeadline: 160,
+  heroSubhead: 320,
+  text: 1200,
+  agendaItems: 30,
+  agendaTime: 40,
+  agendaItemTitle: 160,
+  rowDescription: 600,
+  hostEntries: 20,
+  entryName: 120,
+  hostRole: 80,
+  faqItems: 30,
+  faqQuestion: 200,
+  sponsorEntries: 20,
+} as const
 
 const EventPageBlockBaseFields = {
   id: z.string().min(1).max(64),
@@ -467,18 +508,18 @@ const EventPageBlockBaseFields = {
 
 const AgendaItemSchema = z
   .object({
-    time: z.string().max(40).nullable().optional(),
-    title: z.string().min(1).max(160),
-    description: z.string().max(600).nullable().optional(),
+    time: z.string().max(EVENT_PAGE_BLOCK_LIMITS.agendaTime).nullable().optional(),
+    title: z.string().min(1).max(EVENT_PAGE_BLOCK_LIMITS.agendaItemTitle),
+    description: z.string().max(EVENT_PAGE_BLOCK_LIMITS.rowDescription).nullable().optional(),
   })
   .strict()
 
 const PageHostEntrySchema = z
   .object({
     userId: IdSchema.nullable().optional(),
-    name: z.string().min(1).max(120),
-    role: z.string().max(80).nullable().optional(),
-    bio: z.string().max(600).nullable().optional(),
+    name: z.string().min(1).max(EVENT_PAGE_BLOCK_LIMITS.entryName),
+    role: z.string().max(EVENT_PAGE_BLOCK_LIMITS.hostRole).nullable().optional(),
+    bio: z.string().max(EVENT_PAGE_BLOCK_LIMITS.rowDescription).nullable().optional(),
     avatarMediaId: IdSchema.nullable().optional(),
     avatarUrl: PageImageUrlSchema.nullable().optional(),
   })
@@ -486,14 +527,14 @@ const PageHostEntrySchema = z
 
 const FaqItemSchema = z
   .object({
-    question: z.string().min(1).max(200),
-    answer: z.string().min(1).max(1200),
+    question: z.string().min(1).max(EVENT_PAGE_BLOCK_LIMITS.faqQuestion),
+    answer: z.string().min(1).max(EVENT_PAGE_BLOCK_LIMITS.text),
   })
   .strict()
 
 const SponsorEntrySchema = z
   .object({
-    name: z.string().min(1).max(120),
+    name: z.string().min(1).max(EVENT_PAGE_BLOCK_LIMITS.entryName),
     url: SafeHttpsLinkSchema.nullable().optional(),
     logoMediaId: IdSchema.nullable().optional(),
     logoUrl: PageImageUrlSchema.nullable().optional(),
@@ -505,8 +546,8 @@ const EventPageBlockUnionSchema = z.discriminatedUnion("kind", [
     .object({
       ...EventPageBlockBaseFields,
       kind: z.literal("hero"),
-      headline: z.string().max(160).nullable().optional(),
-      subhead: z.string().max(320).nullable().optional(),
+      headline: z.string().max(EVENT_PAGE_BLOCK_LIMITS.heroHeadline).nullable().optional(),
+      subhead: z.string().max(EVENT_PAGE_BLOCK_LIMITS.heroSubhead).nullable().optional(),
       mediaId: IdSchema.nullable().optional(),
       imageUrl: PageImageUrlSchema.nullable().optional(),
     })
@@ -515,7 +556,7 @@ const EventPageBlockUnionSchema = z.discriminatedUnion("kind", [
     .object({
       ...EventPageBlockBaseFields,
       kind: z.literal("about"),
-      title: z.string().max(160).nullable().optional(),
+      title: z.string().max(EVENT_PAGE_BLOCK_LIMITS.title).nullable().optional(),
       body: z.string().max(MARKDOWN_SUBSET_MAX_CHARS),
     })
     .strict(),
@@ -523,32 +564,32 @@ const EventPageBlockUnionSchema = z.discriminatedUnion("kind", [
     .object({
       ...EventPageBlockBaseFields,
       kind: z.literal("agenda"),
-      title: z.string().max(160).nullable().optional(),
-      items: z.array(AgendaItemSchema).max(30).default([]),
+      title: z.string().max(EVENT_PAGE_BLOCK_LIMITS.title).nullable().optional(),
+      items: z.array(AgendaItemSchema).max(EVENT_PAGE_BLOCK_LIMITS.agendaItems).default([]),
     })
     .strict(),
   z
     .object({
       ...EventPageBlockBaseFields,
       kind: z.literal("hosts"),
-      title: z.string().max(160).nullable().optional(),
-      entries: z.array(PageHostEntrySchema).max(20).default([]),
+      title: z.string().max(EVENT_PAGE_BLOCK_LIMITS.title).nullable().optional(),
+      entries: z.array(PageHostEntrySchema).max(EVENT_PAGE_BLOCK_LIMITS.hostEntries).default([]),
     })
     .strict(),
   z
     .object({
       ...EventPageBlockBaseFields,
       kind: z.literal("faq"),
-      title: z.string().max(160).nullable().optional(),
-      items: z.array(FaqItemSchema).max(30).default([]),
+      title: z.string().max(EVENT_PAGE_BLOCK_LIMITS.title).nullable().optional(),
+      items: z.array(FaqItemSchema).max(EVENT_PAGE_BLOCK_LIMITS.faqItems).default([]),
     })
     .strict(),
   z
     .object({
       ...EventPageBlockBaseFields,
       kind: z.literal("location"),
-      title: z.string().max(160).nullable().optional(),
-      note: z.string().max(1200).nullable().optional(),
+      title: z.string().max(EVENT_PAGE_BLOCK_LIMITS.title).nullable().optional(),
+      note: z.string().max(EVENT_PAGE_BLOCK_LIMITS.text).nullable().optional(),
       showMap: z.boolean().default(true),
     })
     .strict(),
@@ -556,16 +597,16 @@ const EventPageBlockUnionSchema = z.discriminatedUnion("kind", [
     .object({
       ...EventPageBlockBaseFields,
       kind: z.literal("sponsors"),
-      title: z.string().max(160).nullable().optional(),
-      entries: z.array(SponsorEntrySchema).max(20).default([]),
+      title: z.string().max(EVENT_PAGE_BLOCK_LIMITS.title).nullable().optional(),
+      entries: z.array(SponsorEntrySchema).max(EVENT_PAGE_BLOCK_LIMITS.sponsorEntries).default([]),
     })
     .strict(),
   z
     .object({
       ...EventPageBlockBaseFields,
       kind: z.literal("donate"),
-      title: z.string().max(160).nullable().optional(),
-      blurb: z.string().max(1200).nullable().optional(),
+      title: z.string().max(EVENT_PAGE_BLOCK_LIMITS.title).nullable().optional(),
+      blurb: z.string().max(EVENT_PAGE_BLOCK_LIMITS.text).nullable().optional(),
       url: SafeHttpsLinkSchema.nullable().optional(),
     })
     .strict(),
@@ -573,16 +614,16 @@ const EventPageBlockUnionSchema = z.discriminatedUnion("kind", [
     .object({
       ...EventPageBlockBaseFields,
       kind: z.literal("registration"),
-      title: z.string().max(160).nullable().optional(),
-      note: z.string().max(1200).nullable().optional(),
+      title: z.string().max(EVENT_PAGE_BLOCK_LIMITS.title).nullable().optional(),
+      note: z.string().max(EVENT_PAGE_BLOCK_LIMITS.text).nullable().optional(),
     })
     .strict(),
   z
     .object({
       ...EventPageBlockBaseFields,
       kind: z.literal("contact"),
-      title: z.string().max(160).nullable().optional(),
-      body: z.string().max(1200).nullable().optional(),
+      title: z.string().max(EVENT_PAGE_BLOCK_LIMITS.title).nullable().optional(),
+      body: z.string().max(EVENT_PAGE_BLOCK_LIMITS.text).nullable().optional(),
       replyTo: HostEventEmailSchema.nullable().optional(),
     })
     .strict(),

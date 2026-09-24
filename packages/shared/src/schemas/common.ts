@@ -231,6 +231,9 @@ export const DELETED_USER_LABEL = "Deleted User"
 
 export const MESSAGE_BODY_MAX = 2000
 
+// RFC 5321 caps a forward-path at 256 octets including the angle brackets.
+export const EMAIL_MAX_LENGTH = 254
+
 export const RoomKindSchema = z.enum(["cleanup", "dm", "report", "group"])
 export type RoomKind = z.infer<typeof RoomKindSchema>
 

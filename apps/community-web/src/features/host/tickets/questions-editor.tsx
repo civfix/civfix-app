@@ -11,9 +11,11 @@ import type {
   EventQuestionOption,
 } from "@civfix/shared"
 import {
+  MAX_CONSENT_TEXT,
   MAX_EVENT_QUESTIONS,
   MAX_QUESTION_HELP,
   MAX_QUESTION_OPTION_LABEL,
+  MAX_QUESTION_OPTION_VALUE,
   MAX_QUESTION_PROMPT,
 } from "@civfix/shared"
 import { useApi, useEventQuestions } from "@civfix/ui/data"
@@ -40,10 +42,6 @@ const KINDS: readonly EventQuestionKind[] = [
   "checkbox",
   "consent",
 ]
-
-// The contract's option-value and consent-text maxima, which it does not export.
-const MAX_OPTION_VALUE = 80
-const MAX_CONSENT_TEXT = 2000
 
 export interface DraftQuestion {
   key: string
@@ -79,11 +77,11 @@ export function toDraft(question: EventQuestionDTO): DraftQuestion {
 }
 
 function uniqueValue(label: string, taken: ReadonlySet<string>): string {
-  const base = label.toLowerCase().slice(0, MAX_OPTION_VALUE)
+  const base = label.toLowerCase().slice(0, MAX_QUESTION_OPTION_VALUE)
   if (!taken.has(base)) return base
   for (let n = 2; ; n += 1) {
     const suffix = `-${n}`
-    const candidate = `${base.slice(0, MAX_OPTION_VALUE - suffix.length)}${suffix}`
+    const candidate = `${base.slice(0, MAX_QUESTION_OPTION_VALUE - suffix.length)}${suffix}`
     if (!taken.has(candidate)) return candidate
   }
 }

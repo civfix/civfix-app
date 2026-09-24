@@ -7,15 +7,10 @@
  *                   yourself is created implicitly by the server adding the creator as owner, but an
  *                   empty invite list is a dead room - the server contract allows it, the UX does not).
  *   2. "identity" - avatar / name / description. Create is gated on a non-blank name within the
- *                   contract's 80-char cap (the description cap is 500; enforced by maxLength + here).
+ *                   contract's name cap (the description cap is enforced by maxLength + here).
  */
-import type { ChatGroupDTO } from "@civfix/shared"
+import { CHAT_GROUP_DESCRIPTION_MAX, CHAT_GROUP_NAME_MAX, type ChatGroupDTO } from "@civfix/shared"
 import type { DetailEntry } from "../nav"
-
-/** Mirrors CreateChatGroupRequestSchema's `name: max(80)` (shared exports no named constant). */
-export const GROUP_NAME_MAX = 80
-/** Mirrors CreateChatGroupRequestSchema's `description: max(500)`. */
-export const GROUP_DESCRIPTION_MAX = 500
 
 export type GroupWizardStep = "members" | "identity"
 
@@ -27,8 +22,8 @@ export function canCreateGroup(name: string, description = ""): boolean {
   const trimmed = name.trim()
   return (
     trimmed.length >= 1 &&
-    trimmed.length <= GROUP_NAME_MAX &&
-    description.trim().length <= GROUP_DESCRIPTION_MAX
+    trimmed.length <= CHAT_GROUP_NAME_MAX &&
+    description.trim().length <= CHAT_GROUP_DESCRIPTION_MAX
   )
 }
 

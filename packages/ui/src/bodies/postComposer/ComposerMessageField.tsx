@@ -1,13 +1,13 @@
 import React, { useState } from "react"
 import { Pressable, useWindowDimensions, View } from "react-native"
 import type { TFunction } from "i18next"
+import { POST_BODY_MAX } from "@civfix/shared"
 import { TextInput } from "../../primitives/TextInput"
 import { focusRingProps, useLayoutMode, useTheme, webInputReset } from "../../theme"
 import { MentionAutocomplete } from "../../primitives"
 import type { MentionCandidate } from "../../primitives"
 import { ComposerThumbs } from "../../primitives/ComposerThumbs"
 import { Icon, iconMap } from "../../typography"
-import { POST_BODY_MAX_LENGTH } from "../postComposerModel"
 import { usePostComposerStyles } from "./postComposerStyles"
 
 /** The body grows with its text up to this share of the window, then scrolls inside itself. */
@@ -62,7 +62,7 @@ export function ComposerMessageField({
             placeholder={placeholder}
             placeholderTextColor={th.colors.textSubtle}
             multiline
-            maxLength={POST_BODY_MAX_LENGTH}
+            maxLength={POST_BODY_MAX}
             autoFocus
             style={[expanded ? webInputReset : null, styles.input, { maxHeight: inputMaxHeight }]}
           />

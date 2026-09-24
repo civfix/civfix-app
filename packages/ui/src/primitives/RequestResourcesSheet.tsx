@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react"
+import { MAX_EVENT_RESOURCES_MESSAGE } from "@civfix/shared"
 import { TextInput } from "./TextInput"
 import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { Text } from "../typography"
@@ -7,8 +8,6 @@ import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
 import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
 import { useResetOnOpen } from "./useModalClosed"
-
-const MESSAGE_MAX = 2000
 
 export interface RequestResourcesSheetProps {
   visible: boolean
@@ -68,10 +67,10 @@ export function RequestResourcesSheet({
 
       <TextInput
         value={message}
-        onChangeText={(next) => setMessage(next.slice(0, MESSAGE_MAX))}
+        onChangeText={(next) => setMessage(next.slice(0, MAX_EVENT_RESOURCES_MESSAGE))}
         editable={!pending}
         multiline
-        maxLength={MESSAGE_MAX}
+        maxLength={MAX_EVENT_RESOURCES_MESSAGE}
         placeholder={t("message_placeholder")}
         placeholderTextColor={th.colors.textSubtle}
         accessibilityLabel={t("message_a11y")}

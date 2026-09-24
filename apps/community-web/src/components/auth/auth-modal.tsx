@@ -4,6 +4,7 @@ import * as React from "react"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 
+import { EMAIL_OTP_CODE_LENGTH } from "@civfix/shared"
 import { useT } from "@civfix/ui/i18n"
 
 import { useFocusTrap } from "@/components/console/overlay/use-focus-trap"
@@ -17,8 +18,6 @@ import { useUiStore } from "@/store/ui-store"
 
 import { AuthStepHeading, ChoicesStep, CodeStep, EmailStep, type AuthStep } from "./auth-modal-steps"
 import { useOtpEntry } from "./use-otp-entry"
-
-const OTP_LENGTH = 6
 
 /**
  * The return target is the current origin, or a same-origin console path allowlisted by oauthReturnPath
@@ -51,7 +50,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
 
   const [step, setStep] = React.useState<AuthStep>("choices")
   const [email, setEmail] = React.useState("")
-  const otp = useOtpEntry(OTP_LENGTH)
+  const otp = useOtpEntry(EMAIL_OTP_CODE_LENGTH)
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [resendAfter, setResendAfter] = React.useState<number>(0)
@@ -222,7 +221,7 @@ export function AuthModal({ oauthReturnPath = null }: AuthModalProps = {}) {
             <CodeStep
               t={t}
               otp={otp}
-              length={OTP_LENGTH}
+              length={EMAIL_OTP_CODE_LENGTH}
               submitting={submitting}
               error={error}
               resendAfter={resendAfter}

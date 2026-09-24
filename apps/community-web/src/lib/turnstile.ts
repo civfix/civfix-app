@@ -1,5 +1,7 @@
 "use client"
 
+import { ANON_REPORT_TURNSTILE_ACTION } from "@civfix/shared/host"
+
 import { Z_TURNSTILE_CHALLENGE } from "@/styles/z-layers"
 
 const SCRIPT_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
@@ -11,9 +13,6 @@ const MINT_TIMEOUT_MS = 20000
 const INTERACTIVE_TIMEOUT_MS = 120000
 
 export const TURNSTILE_SITEKEY: string | undefined = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
-
-export const TURNSTILE_ACTION_ANON_REPORT = "anon-report"
-export const TURNSTILE_ACTION_HOME_TURF = "home-turf"
 
 interface TurnstileApi {
   render: (
@@ -193,7 +192,7 @@ let mintChain: Promise<unknown> = Promise.resolve()
 let pendingMint: { action: string; promise: Promise<string> } | null = null
 
 export function runTurnstile(
-  action: string = TURNSTILE_ACTION_ANON_REPORT,
+  action: string = ANON_REPORT_TURNSTILE_ACTION,
   timeoutMs = MINT_TIMEOUT_MS,
 ): Promise<string> {
   if (typeof window === "undefined" || !TURNSTILE_SITEKEY) return Promise.resolve("")

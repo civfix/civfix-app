@@ -9,7 +9,10 @@ import { RoleSchema } from "../types/roles.js"
  * against it.
  */
 export const LocaleEnum = z.enum(["en", "es", "de", "ko"])
-export type SupportedLocale = z.infer<typeof LocaleEnum>
+// The XxxSchema-convention name. LocaleEnum stays as the same schema: dropping a published name breaks
+// its consumers.
+export const SupportedLocaleSchema = LocaleEnum
+export type SupportedLocale = z.infer<typeof SupportedLocaleSchema>
 
 export const AppleSignInRequestSchema = z
   .object({
@@ -70,11 +73,13 @@ export type EmailOtpRequestResponse = z.infer<typeof EmailOtpRequestResponseSche
 
 export const REVIEWER_OTP_EMAIL = "reviewer@civfix.org"
 
+export const EMAIL_OTP_CODE_LENGTH = 6
+
 export const REVIEWER_OTP_CODE_MIN_LENGTH = 20
 export const REVIEWER_OTP_CODE_MAX_LENGTH = 128
 
 export const OtpCodeSchema = z.union([
-  z.string().regex(/^\d{6}$/),
+  z.string().regex(new RegExp(`^\\d{${EMAIL_OTP_CODE_LENGTH}}$`)),
   z.string().min(REVIEWER_OTP_CODE_MIN_LENGTH).max(REVIEWER_OTP_CODE_MAX_LENGTH),
 ])
 
@@ -109,7 +114,7 @@ export const UserDTOSchema = z.object({
   handleChangeableAt: z.string().datetime().nullable().optional(),
   // Drives client UI language and server-generated copy. `.catch` coerces an out-of-domain value and
   // `.default` fills an absent one, so a server with a newer or missing locale still parses.
-  locale: LocaleEnum.catch("en").default("en"),
+  locale: SupportedLocaleSchema.catch("en").default("en"),
   // Which organization membership is published as the profile affiliation badge (DECISIONS §34); null
   // means the earliest membership. Optional so older servers parse.
   primaryOrganizationId: IdSchema.nullable().optional(),

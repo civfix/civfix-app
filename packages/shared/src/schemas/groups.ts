@@ -38,11 +38,14 @@ export const GroupMemberDTOSchema = z.object({
 })
 export type GroupMemberDTO = z.infer<typeof GroupMemberDTOSchema>
 
+export const CHAT_GROUP_NAME_MAX = 80
+export const CHAT_GROUP_DESCRIPTION_MAX = 500
+
 export const CreateChatGroupRequestSchema = z
   .object({
     kind: GroupKindSchema.default("group"),
-    name: z.string().min(1).max(80),
-    description: z.string().max(500).optional(),
+    name: z.string().min(1).max(CHAT_GROUP_NAME_MAX),
+    description: z.string().max(CHAT_GROUP_DESCRIPTION_MAX).optional(),
     avatarUploadId: IdSchema.optional(),
     visibility: GroupVisibilitySchema.default("private"),
     memberIds: z.array(IdSchema).max(50).default([]),
@@ -60,8 +63,8 @@ export type GetChatGroupRequest = z.infer<typeof GetChatGroupRequestSchema>
 export const UpdateChatGroupRequestSchema = z
   .object({
     id: IdSchema,
-    name: z.string().min(1).max(80).optional(),
-    description: z.string().max(500).optional(),
+    name: z.string().min(1).max(CHAT_GROUP_NAME_MAX).optional(),
+    description: z.string().max(CHAT_GROUP_DESCRIPTION_MAX).optional(),
     avatarUploadId: IdSchema.optional(),
     visibility: GroupVisibilitySchema.optional(),
   })

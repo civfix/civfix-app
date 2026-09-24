@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { MESSAGE_BODY_MAX, type MessageThreadDTO } from "@civfix/shared"
+import { MESSAGE_BODY_MAX, WS_CLIENT_ID_MAX, type MessageThreadDTO } from "@civfix/shared"
 import {
-  SHARE_CLIENT_ID_MAX,
   SHARE_DM_MAX_RECIPIENTS,
   applyRecipientChange,
   buildSharePlan,
@@ -122,7 +121,7 @@ describe("buildSharePlan", () => {
 
   it("clamps a clientId to the 64 characters the socket frame accepts", () => {
     const plan = buildSharePlan([toShareRecipient(person("a"))], () => "z".repeat(200))
-    expect(plan[0]?.clientId).toHaveLength(SHARE_CLIENT_ID_MAX)
+    expect(plan[0]?.clientId).toHaveLength(WS_CLIENT_ID_MAX)
   })
 })
 

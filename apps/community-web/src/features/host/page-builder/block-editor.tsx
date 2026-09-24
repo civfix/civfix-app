@@ -3,11 +3,10 @@
 import type { ComponentType, ReactNode } from "react"
 import { Plus, Trash2 } from "lucide-react"
 import type { EventPageBlock, EventPageBlockKind } from "@civfix/shared"
-import { SAFE_HTTPS_LINK_MAX } from "@civfix/shared"
+import { EMAIL_MAX_LENGTH, EVENT_PAGE_BLOCK_LIMITS, SAFE_HTTPS_LINK_MAX } from "@civfix/shared"
 import { MARKDOWN_SUBSET_MAX_CHARS } from "@civfix/shared/markdown"
 import { useT } from "@civfix/ui/i18n"
 
-import { EMAIL_MAX_LENGTH } from "@/lib/input-limits"
 import { Field } from "@/components/console/forms/field"
 import { TextInput, TextArea } from "@/components/console/forms/inputs"
 import { ToggleRow } from "@/components/console/forms/toggle-row"
@@ -16,23 +15,6 @@ import { ConsoleButton, ConsoleIconButton } from "@/components/console/button"
 
 import { rowKey, withRowKey } from "./blocks"
 import type { BlockIssue } from "./blocks"
-
-// The block schema's maxima (EventPageBlockSchema in the shared contract), which the contract does
-// not export as constants.
-const BLOCK_TITLE_MAX = 160
-const HERO_HEADLINE_MAX = 160
-const HERO_SUBHEAD_MAX = 320
-const BLOCK_TEXT_MAX = 1200
-const AGENDA_ITEMS_MAX = 30
-const AGENDA_TIME_MAX = 40
-const AGENDA_ITEM_TITLE_MAX = 160
-const ROW_DESCRIPTION_MAX = 600
-const HOST_ENTRIES_MAX = 20
-const ENTRY_NAME_MAX = 120
-const HOST_ROLE_MAX = 80
-const FAQ_ITEMS_MAX = 30
-const FAQ_QUESTION_MAX = 200
-const SPONSOR_ENTRIES_MAX = 20
 
 const LINK_PLACEHOLDER = "https://"
 
@@ -121,7 +103,7 @@ function BlockTitleField({
       label={t("block.title")}
       optional
       value={block.title}
-      maxLength={BLOCK_TITLE_MAX}
+      maxLength={EVENT_PAGE_BLOCK_LIMITS.title}
       onChange={(title) => onChange({ title })}
     />
   )
@@ -249,7 +231,7 @@ function HeroEditor({ block, onChange }: KindEditorProps<"hero">) {
         label={t("block.hero.headline")}
         optional
         value={block.headline}
-        maxLength={HERO_HEADLINE_MAX}
+        maxLength={EVENT_PAGE_BLOCK_LIMITS.heroHeadline}
         onChange={(headline) => onChange({ headline })}
       />
       <BlockTextField
@@ -257,7 +239,7 @@ function HeroEditor({ block, onChange }: KindEditorProps<"hero">) {
         label={t("block.hero.subhead")}
         optional
         value={block.subhead}
-        maxLength={HERO_SUBHEAD_MAX}
+        maxLength={EVENT_PAGE_BLOCK_LIMITS.heroSubhead}
         onChange={(subhead) => onChange({ subhead })}
       />
     </BlockFields>
@@ -298,18 +280,22 @@ function AgendaEditor({ block, onChange, errorAt }: KindEditorProps<"agenda">) {
             key: "time",
             label: t("block.agenda.time"),
             optional: true,
-            maxLength: AGENDA_TIME_MAX,
+            maxLength: EVENT_PAGE_BLOCK_LIMITS.agendaTime,
           },
-          { key: "title", label: t("block.agenda.item_title"), maxLength: AGENDA_ITEM_TITLE_MAX },
+          {
+            key: "title",
+            label: t("block.agenda.item_title"),
+            maxLength: EVENT_PAGE_BLOCK_LIMITS.agendaItemTitle,
+          },
           {
             key: "description",
             label: t("block.agenda.item_description"),
             optional: true,
             multiline: true,
-            maxLength: ROW_DESCRIPTION_MAX,
+            maxLength: EVENT_PAGE_BLOCK_LIMITS.rowDescription,
           },
         ]}
-        max={AGENDA_ITEMS_MAX}
+        max={EVENT_PAGE_BLOCK_LIMITS.agendaItems}
         blank={BLANK_AGENDA_ITEM}
         addLabel={t("block.agenda.add")}
       />
@@ -330,17 +316,22 @@ function HostsEditor({ block, onChange, errorAt }: KindEditorProps<"hosts">) {
         errorAt={errorAt}
         rowLabel={(n) => t("block.hosts.entry", { n })}
         fields={[
-          { key: "name", label: t("block.hosts.name"), maxLength: ENTRY_NAME_MAX },
-          { key: "role", label: t("block.hosts.role"), optional: true, maxLength: HOST_ROLE_MAX },
+          { key: "name", label: t("block.hosts.name"), maxLength: EVENT_PAGE_BLOCK_LIMITS.entryName },
+          {
+            key: "role",
+            label: t("block.hosts.role"),
+            optional: true,
+            maxLength: EVENT_PAGE_BLOCK_LIMITS.hostRole,
+          },
           {
             key: "bio",
             label: t("block.hosts.bio"),
             optional: true,
             multiline: true,
-            maxLength: ROW_DESCRIPTION_MAX,
+            maxLength: EVENT_PAGE_BLOCK_LIMITS.rowDescription,
           },
         ]}
-        max={HOST_ENTRIES_MAX}
+        max={EVENT_PAGE_BLOCK_LIMITS.hostEntries}
         blank={BLANK_HOST_ENTRY}
         addLabel={t("block.hosts.add")}
       />
@@ -361,15 +352,15 @@ function FaqEditor({ block, onChange, errorAt }: KindEditorProps<"faq">) {
         errorAt={errorAt}
         rowLabel={(n) => t("block.faq.item", { n })}
         fields={[
-          { key: "question", label: t("block.faq.question"), maxLength: FAQ_QUESTION_MAX },
+          { key: "question", label: t("block.faq.question"), maxLength: EVENT_PAGE_BLOCK_LIMITS.faqQuestion },
           {
             key: "answer",
             label: t("block.faq.answer"),
             multiline: true,
-            maxLength: BLOCK_TEXT_MAX,
+            maxLength: EVENT_PAGE_BLOCK_LIMITS.text,
           },
         ]}
-        max={FAQ_ITEMS_MAX}
+        max={EVENT_PAGE_BLOCK_LIMITS.faqItems}
         blank={BLANK_FAQ_ITEM}
         addLabel={t("block.faq.add")}
       />
@@ -388,7 +379,7 @@ function LocationEditor({ block, onChange }: KindEditorProps<"location">) {
         optional
         multiline
         value={block.note}
-        maxLength={BLOCK_TEXT_MAX}
+        maxLength={EVENT_PAGE_BLOCK_LIMITS.text}
         onChange={(note) => onChange({ note })}
       />
       <ToggleRow
@@ -413,7 +404,7 @@ function SponsorsEditor({ block, onChange, errorAt }: KindEditorProps<"sponsors"
         errorAt={errorAt}
         rowLabel={(n) => t("block.sponsors.entry", { n })}
         fields={[
-          { key: "name", label: t("block.sponsors.name"), maxLength: ENTRY_NAME_MAX },
+          { key: "name", label: t("block.sponsors.name"), maxLength: EVENT_PAGE_BLOCK_LIMITS.entryName },
           {
             key: "url",
             label: t("block.sponsors.url"),
@@ -422,7 +413,7 @@ function SponsorsEditor({ block, onChange, errorAt }: KindEditorProps<"sponsors"
             maxLength: SAFE_HTTPS_LINK_MAX,
           },
         ]}
-        max={SPONSOR_ENTRIES_MAX}
+        max={EVENT_PAGE_BLOCK_LIMITS.sponsorEntries}
         blank={BLANK_SPONSOR_ENTRY}
         addLabel={t("block.sponsors.add")}
       />
@@ -441,7 +432,7 @@ function DonateEditor({ block, onChange, errorAt }: KindEditorProps<"donate">) {
         optional
         multiline
         value={block.blurb}
-        maxLength={BLOCK_TEXT_MAX}
+        maxLength={EVENT_PAGE_BLOCK_LIMITS.text}
         onChange={(blurb) => onChange({ blurb })}
       />
       <BlockTextField
@@ -470,7 +461,7 @@ function RegistrationEditor({ block, onChange }: KindEditorProps<"registration">
         optional
         multiline
         value={block.note}
-        maxLength={BLOCK_TEXT_MAX}
+        maxLength={EVENT_PAGE_BLOCK_LIMITS.text}
         onChange={(note) => onChange({ note })}
       />
     </BlockFields>
@@ -488,7 +479,7 @@ function ContactEditor({ block, onChange, errorAt }: KindEditorProps<"contact">)
         optional
         multiline
         value={block.body}
-        maxLength={BLOCK_TEXT_MAX}
+        maxLength={EVENT_PAGE_BLOCK_LIMITS.text}
         onChange={(body) => onChange({ body })}
       />
       <BlockTextField

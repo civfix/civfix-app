@@ -1,4 +1,5 @@
 import React from "react"
+import { DISPLAY_NAME_MAX_LENGTH } from "@civfix/shared"
 import { Text } from "../../typography"
 import { TextField } from "../../primitives"
 import { useT } from "../../i18n"
@@ -6,8 +7,6 @@ import { profileSaveErrorKey } from "../../data/errorCode"
 import { useEditorStyles } from "./editorStyles"
 import { SettingsEditorSheet } from "./SettingsEditorSheet"
 import { useSheetEditor } from "./useSheetEditor"
-
-const MAX_DISPLAY_NAME_LENGTH = 80
 
 export interface DisplayNameEditorProps {
   currentName: string
@@ -26,7 +25,7 @@ export function DisplayNameEditor({ currentName, saving, onSave }: DisplayNameEd
   const { draft, setDraft, submitError } = editor
 
   const trimmed = draft.trim()
-  const valid = trimmed.length > 0 && trimmed.length <= MAX_DISPLAY_NAME_LENGTH
+  const valid = trimmed.length > 0 && trimmed.length <= DISPLAY_NAME_MAX_LENGTH
   const unchanged = trimmed === currentName.trim()
   const canSave = !saving && valid && !unchanged
 
@@ -60,7 +59,7 @@ export function DisplayNameEditor({ currentName, saving, onSave }: DisplayNameEd
         placeholder={t("name.placeholder")}
         value={draft}
         onChangeText={setDraft}
-        maxLength={MAX_DISPLAY_NAME_LENGTH}
+        maxLength={DISPLAY_NAME_MAX_LENGTH}
         editable={!saving}
         returnKeyType="done"
         onSubmitEditing={save}

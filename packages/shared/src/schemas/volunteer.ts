@@ -133,6 +133,8 @@ export type PublicVolunteerHoursResponse = z.infer<typeof PublicVolunteerHoursRe
 export { LeaderboardEntryDTOSchema, OrgHoursDTOSchema } from "./entities.js"
 export type { LeaderboardEntryDTO, OrgHoursDTO } from "./entities.js"
 
+export const MAX_LEADERBOARD_OFFSET = 500
+
 /**
  * `geoid` consumes the `:geoid` path param, so the route must merge it into the query before parsing
  * (request.query never contains it, and the key is required).
@@ -140,7 +142,7 @@ export type { LeaderboardEntryDTO, OrgHoursDTO } from "./entities.js"
 export const LeaderboardQuerySchema = z.object({
   geoid: z.string().min(1).max(64),
   limit: PageLimitSchema,
-  offset: z.coerce.number().int().nonnegative().max(500).optional(),
+  offset: z.coerce.number().int().nonnegative().max(MAX_LEADERBOARD_OFFSET).optional(),
 })
 export type LeaderboardQuery = z.infer<typeof LeaderboardQuerySchema>
 

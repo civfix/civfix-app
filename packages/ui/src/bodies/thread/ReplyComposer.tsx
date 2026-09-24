@@ -32,6 +32,7 @@ import {
 import { TextInput } from "../../primitives/TextInput"
 import { useQueryClient } from "@tanstack/react-query"
 import type { CleanupDTO, LinkedEventRef, PostDTO, ReportDTO } from "@civfix/shared"
+import { POST_BODY_MAX } from "@civfix/shared"
 import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme, webInputReset, inputFocusedStyle, MIN_TOUCH_TARGET } from "../../theme"
 import { useReducedMotion } from "../../theme/useReducedMotion"
 import { Text, Icon, iconMap } from "../../typography"
@@ -75,8 +76,7 @@ import { buildOptimisticReply } from "./optimisticReply"
 const SURFACE_PADDING = 16
 /** The two 6pt gaps between the three measured/flexing blocks - the rest of `measuredChrome`. */
 const SURFACE_GAPS = 12
-/** The shared `PostComposeInputSchema` cap; the counter appears in the last 200 and reddens in the last 50. */
-const BODY_MAX = 2000
+/** The counter appears in the last 200 of POST_BODY_MAX and reddens in the last 50. */
 const COUNTER_VISIBLE_AT = 200
 const COUNTER_URGENT_AT = 50
 const REPLY_FOCUS_AFTER_SEND = composerFocusAfterSend("thread-reply")
@@ -340,7 +340,7 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
     )
   }
 
-  const remaining = BODY_MAX - draft.body.length
+  const remaining = POST_BODY_MAX - draft.body.length
   const targetHandle = focalPost.author.handle ? normalizeHandle(focalPost.author.handle) : null
   const replyingTo = targetHandle
     ? t("reply.context", { handle: `@${targetHandle}` })
@@ -404,7 +404,7 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
             placeholder={t("reply.placeholder_named")}
             placeholderTextColor={th.colors.textSubtle}
             multiline
-            maxLength={BODY_MAX}
+            maxLength={POST_BODY_MAX}
             onContentSizeChange={grow.onContentSizeChange}
             onKeyPress={onKeyPress}
             style={[

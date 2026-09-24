@@ -5,6 +5,7 @@ import {
   LatLngFields,
   LatLngSchema,
   BBoxSchema,
+  EMAIL_MAX_LENGTH,
   EventVisibilitySchema,
   PaginationQuerySchema,
   MAX_PARTY_SIZE,
@@ -54,6 +55,10 @@ export const MAX_LINKED_REPORTS = 200
 export const MAX_EVENT_ADDRESS_LENGTH = 200
 export const MIN_EVENT_DURATION_MINUTES = 15
 export const MAX_EVENT_DURATION_MINUTES = 1440
+export const MAX_EVENT_TITLE = 120
+export const MAX_EVENT_DESCRIPTION = 2000
+export const MAX_EVENT_CANCEL_REASON = 500
+export const MAX_EVENT_RESOURCES_MESSAGE = 2000
 export { DEFAULT_EVENT_DURATION_MINUTES } from "./event-duration.js"
 
 const EventSlotInputObjectSchema = z
@@ -118,10 +123,10 @@ const HostEventFields = {
 
 export const CreateCleanupRequestSchema = z
   .object({
-    title: z.string().min(1).max(120),
+    title: z.string().min(1).max(MAX_EVENT_TITLE),
     type: CleanupTypeSchema,
     eventKind: EventKindSchema.default("cleanup"),
-    description: z.string().max(2000).optional(),
+    description: z.string().max(MAX_EVENT_DESCRIPTION).optional(),
     ...LatLngFields,
     scheduledAt: ISODateSchema,
     bring: z.array(z.string()).max(MAX_BRING_ITEMS).optional(),
@@ -138,8 +143,8 @@ export type CreateCleanupRequest = z.infer<typeof CreateCleanupRequestSchema>
 export const UpdateCleanupRequestSchema = z
   .object({
     id: IdSchema,
-    title: z.string().min(1).max(120).optional(),
-    description: z.string().max(2000).optional(),
+    title: z.string().min(1).max(MAX_EVENT_TITLE).optional(),
+    description: z.string().max(MAX_EVENT_DESCRIPTION).optional(),
     eventKind: EventKindSchema.optional(),
     type: CleanupTypeSchema.optional(),
     scheduledAt: ISODateSchema.optional(),
@@ -177,7 +182,7 @@ export type DuplicateCleanupRequest = z.infer<typeof DuplicateCleanupRequestSche
 export const CancelCleanupRequestSchema = z
   .object({
     id: IdSchema,
-    reason: z.string().max(500).optional(),
+    reason: z.string().max(MAX_EVENT_CANCEL_REASON).optional(),
   })
   .strict()
 export type CancelCleanupRequest = z.infer<typeof CancelCleanupRequestSchema>
@@ -233,7 +238,7 @@ export type CleanupAttendeesResponse = z.infer<typeof CleanupAttendeesResponseSc
 export const RequestEventResourcesRequestSchema = z
   .object({
     id: IdSchema,
-    message: z.string().min(1).max(2000),
+    message: z.string().min(1).max(MAX_EVENT_RESOURCES_MESSAGE),
   })
   .strict()
 export type RequestEventResourcesRequest = z.infer<typeof RequestEventResourcesRequestSchema>
@@ -284,9 +289,25 @@ export const GuestOtpErrorReason = {
 } as const
 export type GuestOtpErrorReason = (typeof GuestOtpErrorReason)[keyof typeof GuestOtpErrorReason]
 
+export const GUEST_REGISTRATION_ERROR_FIELD = "registration"
+
+export const GuestRegistrationRefusalReason = {
+  soldOut: "sold_out",
+  registrationClosed: "registration_closed",
+  salesClosed: "sales_closed",
+  eventClosed: "event_closed",
+  partyTooLarge: "party_too_large",
+  ticketTypeUnavailable: "ticket_type_unavailable",
+  accessCodeRequired: "access_code_required",
+  accessCodeInvalid: "access_code_invalid",
+  answersInvalid: "answers_invalid",
+} as const
+export type GuestRegistrationRefusalReason =
+  (typeof GuestRegistrationRefusalReason)[keyof typeof GuestRegistrationRefusalReason]
+
 export const GuestPhoneSchema = z.string().regex(/^\+1[2-9]\d{9}$/)
 
-const GuestEmailSchema = z.string().email().max(254).toLowerCase()
+const GuestEmailSchema = z.string().email().max(EMAIL_MAX_LENGTH).toLowerCase()
 
 const GuestContactFields = {
   channel: GuestContactChannelSchema,

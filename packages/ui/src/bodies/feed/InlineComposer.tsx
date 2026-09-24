@@ -7,6 +7,7 @@ import {
   type BlurEvent,
   type TextInput as RNTextInput,
 } from "react-native"
+import { POST_BODY_MAX } from "@civfix/shared"
 import { TextInput } from "../../primitives/TextInput"
 import { focusRingProps, makeThemedStyles, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"
@@ -16,7 +17,7 @@ import { useComposerAttachments } from "../../primitives/useComposerAttachments"
 import { Icon, Text, iconMap } from "../../typography"
 import { useMyProfile } from "../../data"
 import { useT } from "../../i18n"
-import { POST_BODY_MAX_LENGTH, activePostMentions, mergeMention } from "../postComposerModel"
+import { activePostMentions, mergeMention } from "../postComposerModel"
 import {
   POST_COMPOSER_MEDIA_CAP,
   carriedMediaIndex,
@@ -327,7 +328,7 @@ function InlineComposerForOwner() {
             placeholder={model.placeholder}
             placeholderTextColor={th.colors.textSubtle}
             multiline
-            maxLength={POST_BODY_MAX_LENGTH}
+            maxLength={POST_BODY_MAX}
             autoFocus
             style={[webInputReset, styles.input]}
           />

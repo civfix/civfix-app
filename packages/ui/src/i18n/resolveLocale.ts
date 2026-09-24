@@ -1,4 +1,4 @@
-import { LocaleEnum, type SupportedLocale } from "@civfix/shared"
+import { SupportedLocaleSchema, type SupportedLocale } from "@civfix/shared"
 
 export const supportedLocales: ReadonlyArray<{ code: SupportedLocale; nativeName: string }> = [
   { code: "en", nativeName: "English" },
@@ -7,7 +7,7 @@ export const supportedLocales: ReadonlyArray<{ code: SupportedLocale; nativeName
   { code: "ko", nativeName: "한국어" },
 ]
 
-const SUPPORTED = new Set<string>(LocaleEnum.options)
+const SUPPORTED = new Set<string>(SupportedLocaleSchema.options)
 
 export const FALLBACK_LOCALE: SupportedLocale = "en"
 

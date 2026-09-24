@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { AVATAR_PALETTE, ErrorCode, appErrorCode, avatarGradient, type ChatItem, type ChatMessageDTO, type MessageThreadDTO, type PersonDTO, type RoomKind } from "@civfix/shared"
+import { AVATAR_PALETTE, ErrorCode, WsErrorCode, appErrorCode, avatarGradient, type ChatItem, type ChatMessageDTO, type MessageThreadDTO, type PersonDTO, type RoomKind } from "@civfix/shared"
 import type { TFunction } from "i18next"
 import { useT } from "../../i18n"
 import { useThreadForRoom } from "../../data/hooks/chat"
@@ -77,13 +77,13 @@ export function getScrollableNode(
 }
 
 const TRANSIENT_ERROR_COPY_KEYS: Record<string, string> = {
-  RATE_LIMITED: "room_error.rate_limited",
-  BLOCKED: "room_error.blocked",
-  channel_read_only: "room_error.read_only",
-  reply_wrong_room: "room_error.reply_unavailable",
-  reply_deleted_target: "room_error.reply_unavailable",
-  BAD_FRAME: "room_error.send_rejected",
-  VALIDATION: "room_error.send_rejected",
+  [ErrorCode.RATE_LIMITED]: "room_error.rate_limited",
+  [WsErrorCode.BLOCKED]: "room_error.blocked",
+  [WsErrorCode.CHANNEL_READ_ONLY]: "room_error.read_only",
+  [WsErrorCode.REPLY_WRONG_ROOM]: "room_error.reply_unavailable",
+  [WsErrorCode.REPLY_DELETED_TARGET]: "room_error.reply_unavailable",
+  [WsErrorCode.BAD_FRAME]: "room_error.send_rejected",
+  [ErrorCode.VALIDATION]: "room_error.send_rejected",
 }
 
 export function transientErrorCopyKey(code: string): string {

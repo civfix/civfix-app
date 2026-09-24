@@ -5,6 +5,7 @@ import {
   MAX_ORG_DESCRIPTION,
   MAX_ORG_NAME,
   SAFE_HTTPS_LINK_MAX,
+  SOCIAL_HANDLE_PREFIX,
   SOCIAL_PLATFORMS,
   SOCIAL_PLATFORM_LABELS,
 } from "@civfix/shared"
@@ -36,7 +37,6 @@ import { RowsSkeleton } from "./HostSkeletons"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
 import { OrgField } from "./OrgField"
 import {
-  SOCIAL_PREFIX,
   canOpenOrgManage,
   linksDirty,
   linksDraftFrom,
@@ -323,7 +323,7 @@ export function OrgManageBody({ slug }: { slug: string }) {
               onChange={(next) => setLinks((c) => ({ ...c, [platform]: next }))}
               label={SOCIAL_PLATFORM_LABELS[platform]}
               max={socialHandleMax(platform)}
-              prefix={SOCIAL_PREFIX[platform]}
+              prefix={SOCIAL_HANDLE_PREFIX[platform]}
               error={problem("links", `socialLinks.${platform}`)}
             />
           ))}
