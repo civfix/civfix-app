@@ -11,13 +11,16 @@ import { MediaDTOSchema, PersonDTOSchema } from "./entities.js"
 export const GroupRoleSchema = z.enum(["owner", "admin", "member"])
 export type GroupRole = z.infer<typeof GroupRoleSchema>
 
+const GroupKindSchema = z.enum(["group", "channel"])
+const GroupVisibilitySchema = z.enum(["private", "public"])
+
 export const ChatGroupDTOSchema = z.object({
   id: IdSchema,
-  kind: z.enum(["group", "channel"]),
+  kind: GroupKindSchema,
   name: z.string(),
   description: z.string().nullable().optional(),
   avatar: MediaDTOSchema.nullable().optional(),
-  visibility: z.enum(["private", "public"]),
+  visibility: GroupVisibilitySchema,
   ownerId: IdSchema,
   memberCount: z.number().int(),
   // Null or omitted means not a member (public groups are viewable before joining).
@@ -36,11 +39,11 @@ export type GroupMemberDTO = z.infer<typeof GroupMemberDTOSchema>
 
 export const CreateChatGroupRequestSchema = z
   .object({
-    kind: z.enum(["group", "channel"]).default("group"),
+    kind: GroupKindSchema.default("group"),
     name: z.string().min(1).max(80),
     description: z.string().max(500).optional(),
     avatarUploadId: IdSchema.optional(),
-    visibility: z.enum(["private", "public"]).default("private"),
+    visibility: GroupVisibilitySchema.default("private"),
     memberIds: z.array(IdSchema).max(50).default([]),
   })
   .strict()
@@ -59,7 +62,7 @@ export const UpdateChatGroupRequestSchema = z
     name: z.string().min(1).max(80).optional(),
     description: z.string().max(500).optional(),
     avatarUploadId: IdSchema.optional(),
-    visibility: z.enum(["private", "public"]).optional(),
+    visibility: GroupVisibilitySchema.optional(),
   })
   .strict()
 export type UpdateChatGroupRequest = z.infer<typeof UpdateChatGroupRequestSchema>

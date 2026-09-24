@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { IdSchema, PaginationQuerySchema, pageResponse } from "./common.js"
 import { PostCountsSchema, PostDTOSchema, PostKindSchema, type PostDTO } from "./entities.js"
+import { MAX_MENTIONED_USERS } from "./internal-fields.js"
 
 /*
  * PostDTO and PostKind live in ./entities.js so the recursive repost/reply preview cycle stays
@@ -21,7 +22,7 @@ export const PostComposeInputSchema = z
     eventId: IdSchema.optional(), // the server refuses an event the author neither hosts nor attends
     reportId: IdSchema.optional(),
     mediaUploadIds: z.array(IdSchema).max(4).default([]),
-    mentionedUserIds: z.array(IdSchema).max(20).default([]),
+    mentionedUserIds: z.array(IdSchema).max(MAX_MENTIONED_USERS).default([]),
     organizationId: IdSchema.optional(), // post as this organization (DECISIONS §34)
   })
   .strict()

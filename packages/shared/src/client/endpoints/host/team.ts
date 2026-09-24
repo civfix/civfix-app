@@ -1,0 +1,98 @@
+import { def } from "../def.js"
+import {
+  AcceptEventTeamInviteRequestSchema,
+  AcceptEventTeamInviteResponseSchema,
+  AcceptMyEventInviteRequestSchema,
+  AcceptMyEventInviteResponseSchema,
+  DeclineMyEventInviteRequestSchema,
+  DeclineMyEventInviteResponseSchema,
+  InviteEventTeamMemberRequestSchema,
+  InviteEventTeamMemberResponseSchema,
+  ListEventTeamRequestSchema,
+  ListEventTeamResponseSchema,
+  ListMyEventInvitesRequestSchema,
+  ListMyEventInvitesResponseSchema,
+  RevokeEventTeamInviteRequestSchema,
+  RevokeEventTeamInviteResponseSchema,
+} from "../../../schemas/host/team.js"
+import {
+  ListMyHostedEventsRequestSchema,
+  ListMyHostedEventsResponseSchema,
+} from "../../../schemas/host/portfolio.js"
+
+export const hostTeamEndpoints = {
+  listEventTeam: def({
+    method: "GET",
+    path: "/cleanups/:id/team",
+    request: ListEventTeamRequestSchema,
+    response: ListEventTeamResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  inviteEventTeamMember: def({
+    method: "POST",
+    path: "/cleanups/:id/team/invites",
+    request: InviteEventTeamMemberRequestSchema,
+    response: InviteEventTeamMemberResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  revokeEventTeamInvite: def({
+    method: "DELETE",
+    path: "/cleanups/:id/team/invites/:inviteId",
+    request: RevokeEventTeamInviteRequestSchema,
+    response: RevokeEventTeamInviteResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  acceptEventTeamInvite: def({
+    method: "POST",
+    path: "/cleanups/:id/team/invites/accept",
+    request: AcceptEventTeamInviteRequestSchema,
+    response: AcceptEventTeamInviteResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+
+  listMyHostedEvents: def({
+    method: "GET",
+    path: "/me/hosted-events",
+    request: ListMyHostedEventsRequestSchema,
+    response: ListMyHostedEventsResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+
+  listMyEventInvites: def({
+    method: "GET",
+    path: "/me/event-invites",
+    request: ListMyEventInvitesRequestSchema,
+    response: ListMyEventInvitesResponseSchema,
+    auth: "required",
+    csrf: false,
+    version: "v1",
+  }),
+  acceptMyEventInvite: def({
+    method: "POST",
+    path: "/me/event-invites/:inviteId/accept",
+    request: AcceptMyEventInviteRequestSchema,
+    response: AcceptMyEventInviteResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+  declineMyEventInvite: def({
+    method: "POST",
+    path: "/me/event-invites/:inviteId/decline",
+    request: DeclineMyEventInviteRequestSchema,
+    response: DeclineMyEventInviteResponseSchema,
+    auth: "required",
+    csrf: true,
+    version: "v1",
+  }),
+} as const

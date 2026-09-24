@@ -231,6 +231,20 @@ describe("arrivalsCurve", () => {
     )
     expect(() => arrivalsCurve([1], { fromMinutes: 10, toMinutes: 10 })).toThrow(RangeError)
   })
+
+  it("spans two hours before to four hours after in 15-minute buckets unless given integer options", () => {
+    const defaults = arrivalsCurve([])
+    expect(defaults.rows).toHaveLength(24)
+    expect(defaults.rows[0]?.offsetMinutes).toBe(-120)
+    expect(defaults.rows[23]?.offsetMinutes).toBe(225)
+    const ignored = arrivalsCurve([], { bucketMinutes: 0, fromMinutes: 1.5, toMinutes: Number.NaN })
+    expect(ignored.rows.map((r) => r.offsetMinutes)).toEqual(defaults.rows.map((r) => r.offsetMinutes))
+    expect(arrivalsCurve([], { bucketMinutes: -15 }).rows).toHaveLength(24)
+    expect(arrivalsCurve([], { bucketMinutes: 7.5 }).rows).toHaveLength(24)
+    expect(arrivalsCurve([], { fromMinutes: -60, toMinutes: 0, bucketMinutes: 30 }).rows.map((r) => r.offsetMinutes)).toEqual([
+      -60, -30,
+    ])
+  })
 })
 
 describe("bestDayTime", () => {

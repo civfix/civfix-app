@@ -130,6 +130,12 @@ describe("buildIcs", () => {
     expect(rows.some((row) => row.startsWith("DTEND"))).toBe(false)
   })
 
+  it("falls back to sequence 0 for a negative or fractional sequence", () => {
+    for (const sequence of [-1, 1.5, Number.NaN]) {
+      expect(unfold(buildIcs({ ...BASE, sequence }))).toContain("SEQUENCE:0")
+    }
+  })
+
   it("rejects invalid input instead of emitting a broken calendar", () => {
     expect(() => buildIcs({ ...BASE, startsAt: "nope" })).toThrow(RangeError)
     expect(() => buildIcs({ ...BASE, endsAt: "2026-05-15T00:00:00.000Z" })).toThrow(RangeError)

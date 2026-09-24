@@ -1,14 +1,14 @@
 import { z } from "zod"
-import { IdSchema } from "../schemas/common.js"
+import { IdSchema, MESSAGE_BODY_MAX, RoomKindSchema } from "../schemas/common.js"
 import { ChatMessageDTOSchema, ChatMessageKindSchema } from "../schemas/entities.js"
+import { MAX_MENTIONED_USERS } from "../schemas/internal-fields.js"
 
+export { MESSAGE_BODY_MAX, RoomKindSchema } from "../schemas/common.js"
+export type { RoomKind } from "../schemas/common.js"
 
-export const MESSAGE_BODY_MAX = 2000
+const MAX_MESSAGE_MEDIA_UPLOADS = 5
 
 export const EDIT_WINDOW_HOURS = 48
-
-export const RoomKindSchema = z.enum(["cleanup", "dm", "report", "group"])
-export type RoomKind = z.infer<typeof RoomKindSchema>
 
 export const SignalTopicSchema = z.enum([
   "notifications",
@@ -36,8 +36,8 @@ export const WsClientMessageSchema = z.discriminatedUnion("type", [
     clientId: z.string().min(1).max(64),
     body: z.string().max(MESSAGE_BODY_MAX),
     kind: ChatMessageKindSchema.optional(),
-    mentionedUserIds: z.array(IdSchema).max(20).optional(),
-    mediaUploadIds: z.array(IdSchema).max(5).optional(),
+    mentionedUserIds: z.array(IdSchema).max(MAX_MENTIONED_USERS).optional(),
+    mediaUploadIds: z.array(IdSchema).max(MAX_MESSAGE_MEDIA_UPLOADS).optional(),
     replyToId: IdSchema.optional(),
   }),
   z.object({ type: z.literal("typing"), cleanupId: IdSchema, roomKind: RoomKindSchema.optional() }),

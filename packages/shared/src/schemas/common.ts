@@ -234,6 +234,11 @@ export type ContentReportReason = z.infer<typeof ContentReportReasonSchema>
 
 export const DELETED_USER_LABEL = "Deleted User"
 
+export const MESSAGE_BODY_MAX = 2000
+
+export const RoomKindSchema = z.enum(["cleanup", "dm", "report", "group"])
+export type RoomKind = z.infer<typeof RoomKindSchema>
+
 export const DiscoveryStatusSchema = z.enum(["open", "in_progress", "done"])
 export type DiscoveryStatus = z.infer<typeof DiscoveryStatusSchema>
 
@@ -252,6 +257,11 @@ export type OrgVerificationKind = z.infer<typeof OrgVerificationKindSchema>
 
 export const TicketTypeVisibilitySchema = z.enum(["public", "hidden", "access_code"])
 export type TicketTypeVisibility = z.infer<typeof TicketTypeVisibilitySchema>
+
+export const MAX_PARTY_SIZE = 10
+
+export const GUEST_MANAGE_TOKEN_MIN_LENGTH = 20
+export const GUEST_MANAGE_TOKEN_MAX_LENGTH = 128
 
 export const RegistrationStatusSchema = z.enum(["registered", "cancelled", "transferred"])
 export type RegistrationStatus = z.infer<typeof RegistrationStatusSchema>

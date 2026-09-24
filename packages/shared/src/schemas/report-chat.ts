@@ -1,7 +1,6 @@
 import { z } from "zod"
-import { IdSchema } from "./common.js"
+import { IdSchema, RoomKindSchema } from "./common.js"
 import { PersonDTOSchema } from "./entities.js"
-import { RoomKindSchema } from "../types/ws.js"
 
 export const JoinReportChatRequestSchema = z.object({ id: IdSchema }).strict()
 export type JoinReportChatRequest = z.infer<typeof JoinReportChatRequestSchema>

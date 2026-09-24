@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { AppErrorSchema } from "../schemas/common.js"
-import { AppError, ErrorCode } from "../types/errors.js"
+import { AppError, ErrorCode, isAppErrorLike } from "../types/errors.js"
 import {
   endpoints,
   type EndpointDef,
@@ -98,13 +98,12 @@ export async function parseError(res: Response, requestId?: string): Promise<App
   }
   const parsed = AppErrorSchema.safeParse(payload)
   if (parsed.success) {
-    const code = (Object.values(ErrorCode) as string[]).includes(parsed.data.code)
-      ? (parsed.data.code as ErrorCode)
-      : ErrorCode.INTERNAL
-    return new AppError(code, parsed.data.message, {
+    const envelope = parsed.data
+    const code = isAppErrorLike(envelope) ? envelope.code : ErrorCode.INTERNAL
+    return new AppError(code, envelope.message, {
       httpStatus: res.status,
-      ...(parsed.data.fields !== undefined ? { fields: parsed.data.fields } : {}),
-      requestId: parsed.data.requestId ?? requestId,
+      ...(envelope.fields !== undefined ? { fields: envelope.fields } : {}),
+      requestId: envelope.requestId ?? requestId,
     })
   }
   // Fall back to a status-derived code when the body is not our envelope.

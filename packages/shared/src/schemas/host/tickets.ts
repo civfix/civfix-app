@@ -1,6 +1,8 @@
 import { z } from "zod"
-import { IdSchema, ISODateSchema, TicketTypeVisibilitySchema } from "../common.js"
+import { IdSchema, ISODateSchema, MAX_PARTY_SIZE, TicketTypeVisibilitySchema } from "../common.js"
 import { TicketTypeDTOSchema } from "../entities.js"
+import { SortOrderInputSchema } from "../internal-fields.js"
+import { MAX_EVENT_QUESTIONS } from "./questions.js"
 
 
 export { TicketTypeDTOSchema } from "../entities.js"
@@ -12,7 +14,7 @@ export const MAX_TICKET_TYPES_PER_EVENT = 20
 export const MAX_TICKET_TYPE_NAME = 80
 export const MAX_TICKET_TYPE_DESCRIPTION = 600
 export const MAX_TICKET_TYPE_CAPACITY = 100000
-export const MAX_PARTY_SIZE = 10
+export { MAX_PARTY_SIZE } from "../common.js"
 export const ACCESS_CODE_MIN = 4
 export const ACCESS_CODE_MAX = 64
 
@@ -61,9 +63,9 @@ export const CreateEventTicketTypeRequestSchema = z
     visibility: TicketTypeVisibilitySchema.default("public"),
     accessCode: AccessCodeSchema.nullable().optional(),
     maxPartySize: z.number().int().min(1).max(MAX_PARTY_SIZE).default(1),
-    sortOrder: z.number().int().min(0).max(1000).optional(),
+    sortOrder: SortOrderInputSchema,
     waitlistEnabled: z.boolean().default(false),
-    questionIds: z.array(IdSchema).max(20).optional(),
+    questionIds: z.array(IdSchema).max(MAX_EVENT_QUESTIONS).optional(),
   })
   .strict()
   .superRefine(refineSalesWindow)
@@ -84,9 +86,9 @@ export const UpdateEventTicketTypeRequestSchema = z
     visibility: TicketTypeVisibilitySchema.optional(),
     accessCode: AccessCodeSchema.nullable().optional(),
     maxPartySize: z.number().int().min(1).max(MAX_PARTY_SIZE).optional(),
-    sortOrder: z.number().int().min(0).max(1000).optional(),
+    sortOrder: SortOrderInputSchema,
     waitlistEnabled: z.boolean().optional(),
-    questionIds: z.array(IdSchema).max(20).optional(),
+    questionIds: z.array(IdSchema).max(MAX_EVENT_QUESTIONS).optional(),
   })
   .strict()
   .superRefine(refineSalesWindow)

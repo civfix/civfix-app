@@ -1,5 +1,6 @@
 import { httpsUrlAuthority, hostOfAuthority, unsafeHostReason } from "../markdown/safe-url.js"
 import { collapseWhitespace, graphemeLength, truncateGraphemes } from "./graphemes.js"
+import { intOr } from "../internal/numbers.js"
 
 export const BROADCAST_VARS = [
   "first_name",
@@ -101,9 +102,7 @@ export function inspectBroadcastLinks(
   options: BroadcastLinkOptions = {},
 ): BroadcastLinkIssue[] {
   const issues: BroadcastLinkIssue[] = []
-  const maxLinks = Number.isInteger(options.maxLinks) && (options.maxLinks as number) >= 0
-    ? (options.maxLinks as number)
-    : MAX_BROADCAST_LINKS
+  const maxLinks = intOr(options.maxLinks, 0, MAX_BROADCAST_LINKS)
   const allowed = options.allowedHosts?.filter((entry) => entry.trim().length > 0) ?? []
   let count = 0
 

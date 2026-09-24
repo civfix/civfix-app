@@ -1,6 +1,5 @@
 import type { ChatMessageDTO } from "../schemas/entities.js"
 
-
 export type OutboxStatus = "sending" | "failed"
 
 export interface OutboxEntry {
@@ -17,6 +16,9 @@ export interface ChatItem {
 }
 
 export const OUTBOX_MATCH_WINDOW_MS = 60_000
+
+// The placeholder author id an optimistic message carries when the viewer's user id is not known yet.
+const OPTIMISTIC_AUTHOR_ID = "me"
 
 export function effectiveClientId(
   message: ChatMessageDTO,
@@ -41,19 +43,20 @@ export function preserveViewerFields(
   })
 
   let poll = inbound.poll
-  if (inbound.poll && local.poll) {
-    const localPoll = local.poll
-    const options = inbound.poll.options.map((option) => {
+  const inboundPoll = inbound.poll
+  const localPoll = local.poll
+  if (inboundPoll && localPoll) {
+    const options = inboundPoll.options.map((option) => {
       const mine = localPoll.options.find((o) => o.idx === option.idx)?.mine ?? false
       return option.mine === mine ? option : { ...option, mine }
     })
-    const optionsChanged = options.some((o, i) => o !== inbound.poll!.options[i])
+    const optionsChanged = options.some((o, i) => o !== inboundPoll.options[i])
     const myVoteChanged =
-      inbound.poll.myVote.length !== localPoll.myVote.length ||
-      inbound.poll.myVote.some((idx, i) => idx !== localPoll.myVote[i])
+      inboundPoll.myVote.length !== localPoll.myVote.length ||
+      inboundPoll.myVote.some((idx, i) => idx !== localPoll.myVote[i])
     if (optionsChanged || myVoteChanged) {
       changed = true
-      poll = { ...inbound.poll, myVote: [...localPoll.myVote], options }
+      poll = { ...inboundPoll, myVote: [...localPoll.myVote], options }
     }
   }
 
@@ -94,7 +97,7 @@ export function reconcileInbound(
 export function isMine(message: ChatMessageDTO, myUserId: string | null): boolean {
   if (!message.from) return false
   if (myUserId && message.from.id === myUserId) return true
-  return message.from.id === "me"
+  return message.from.id === OPTIMISTIC_AUTHOR_ID
 }
 
 export function reconciledByContent(
