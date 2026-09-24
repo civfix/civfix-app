@@ -11,6 +11,9 @@ export function normalizeInviteIdentifier(kind: "handle" | "email", raw: string)
   return kind === "handle" ? trimmed.replace(/^@/, "") : trimmed
 }
 
+/** The contract's `identifier` max on both the org and the event-team invite requests. */
+export const INVITE_IDENTIFIER_MAX = 254
+
 /** The backend's `ORG_INVITE_TTL_MS` (14 days) - the copy says it before an invite exists. */
 export const ORG_INVITE_TTL_DAYS = 14
 

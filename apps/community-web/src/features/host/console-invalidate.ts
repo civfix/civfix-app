@@ -3,6 +3,9 @@
 import type { QueryClient } from "@tanstack/react-query"
 import type { EventRegistrationDTO, OrganizationDTO } from "@civfix/shared"
 
+import { checkInSeatsInRow, rowStillPendingCheckIn } from "./attendees/roster-filters"
+import { consoleKeys } from "./console-keys"
+
 interface InfiniteRoster {
   pages: { items: EventRegistrationDTO[]; nextCursor: string | null; total?: number }[]
   pageParams: unknown[]
@@ -16,24 +19,6 @@ export function invalidateEvent(qc: QueryClient, eventId: string): void {
 export function invalidateCheckinCounters(qc: QueryClient, eventId: string): void {
   void qc.invalidateQueries({ queryKey: ["host", eventId, "counters"] })
   void qc.invalidateQueries({ queryKey: ["cleanup", eventId] })
-}
-
-export function checkInSeatsInRow(
-  row: EventRegistrationDTO,
-  seatIds: readonly string[],
-  at: string,
-): EventRegistrationDTO {
-  const checked = new Set(seatIds)
-  const seats = row.seats.map((seat) =>
-    checked.has(seat.id) && seat.status === "active" && !seat.checkedInAt
-      ? { ...seat, checkedInAt: at, checkinMethod: "manual" as const }
-      : seat,
-  )
-  return { ...row, seats, checkedInAt: row.checkedInAt ?? at }
-}
-
-export function rowStillPendingCheckIn(row: EventRegistrationDTO): boolean {
-  return row.seats.some((seat) => seat.status === "active" && !seat.checkedInAt)
 }
 
 /**
@@ -90,7 +75,7 @@ export function markRosterSeatsCheckedIn(
 }
 
 export function invalidateOrg(qc: QueryClient, orgId: string): void {
-  void qc.invalidateQueries({ queryKey: ["org-console", orgId] })
+  void qc.invalidateQueries({ queryKey: consoleKeys.org(orgId) })
   void qc.invalidateQueries({ queryKey: ["orgs", "mine"] })
 }
 

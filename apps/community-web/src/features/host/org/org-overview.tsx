@@ -18,8 +18,11 @@ import { ConsoleLink } from "../layout/console-link"
 import { useConsoleOrg } from "../console-context"
 import { useConsoleFormat } from "../format"
 import { EmptyValue } from "../analytics/analytics-value"
-import { publicOrgPath } from "./org-slug"
-import { useOrgVerification } from "./verification-screen"
+import { publicOrgPath, publicOrgUrlLabel } from "./org-slug"
+import { useOrgVerification } from "./use-org-verification"
+
+const QUICK_LINK_CLASS =
+  "inline-flex h-8 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
 
 function hostnameOf(url: string): string {
   try {
@@ -305,7 +308,7 @@ export function OrgOverview() {
             rel="noopener noreferrer"
             className="mt-token-3 inline-flex items-center gap-1 rounded-xs text-token-13 font-semibold text-console-sky-strong underline underline-offset-2 focus-visible:outline-none focus-visible:shadow-console-ring"
           >
-            {`civfix.org${publicOrgPath(org.slug)}`}
+            {publicOrgUrlLabel(org.slug)}
             <ExternalLink aria-hidden className="h-3.5 w-3.5" />
           </a>
           <dl className="mt-token-4 grid grid-cols-2 gap-token-3 text-token-12">
@@ -325,14 +328,14 @@ export function OrgOverview() {
           <div className="mt-token-4 flex flex-wrap gap-token-2">
             <ConsoleLink
               href={hrefForRoute({ kind: "org", orgId, section: "members" })}
-              className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+              className={QUICK_LINK_CLASS}
             >
               <Users aria-hidden className="h-4 w-4" />
               {t("nav.members")}
             </ConsoleLink>
             <ConsoleLink
               href={hrefForRoute({ kind: "org", orgId, section: "events" })}
-              className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink transition-colors duration-d1 hover:bg-console-surface-alt focus-visible:outline-none focus-visible:shadow-console-ring"
+              className={QUICK_LINK_CLASS}
             >
               <CalendarDays aria-hidden className="h-4 w-4" />
               {t("nav.events_section", { defaultValue: "Events" })}

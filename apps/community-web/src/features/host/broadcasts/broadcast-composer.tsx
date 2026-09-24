@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Eye, Send, Clock, TestTube } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type { BroadcastDTO, BroadcastPreviewDTO } from "@civfix/shared"
+import type { BroadcastDTO, BroadcastPreviewDTO, BroadcastSegment } from "@civfix/shared"
 import {
   MAX_BROADCAST_BODY,
   MAX_BROADCAST_CTA_LABEL,
@@ -45,9 +45,14 @@ import {
   broadcastCan,
   composerReadiness,
   composerReady,
+  isHostChannel,
   segmentFrom,
 } from "./audience"
-import type { AudienceKind, AudienceState } from "./audience"
+import type { AudienceKind, AudienceState, ComposerReadiness, HostChannel } from "./audience"
+
+/** The server's cap on test sends per broadcast; past it the button stays disabled. */
+const TEST_SEND_CAP = 5
+const MAX_CTA_URL = 500
 
 interface ComposerDraft {
   subject: string
@@ -57,7 +62,7 @@ interface ComposerDraft {
   audienceKind: AudienceKind
   ticketTypeIds: string[]
   slotIds: string[]
-  channels: string[]
+  channels: HostChannel[]
   scheduledAt: string
 }
 
@@ -84,7 +89,7 @@ function draftFrom(broadcast: BroadcastDTO | null, timeZone: string): ComposerDr
     audienceKind: audience.kind,
     ticketTypeIds: [...audience.ticketTypeIds],
     slotIds: [...audience.slotIds],
-    channels: broadcast.channels.filter((channel) => channel !== "sms"),
+    channels: broadcast.channels.filter(isHostChannel),
     scheduledAt: isoToZonedInput(broadcast.scheduledAt, timeZone),
   }
 }
@@ -94,7 +99,7 @@ function draftFrom(broadcast: BroadcastDTO | null, timeZone: string): ComposerDr
  * says or who gets it blocks them. The schedule time is left out: editing it is how scheduling
  * works, and it is sent with the schedule call itself.
  */
-export function composerContentChanged(draft: ComposerDraft, saved: ComposerDraft): boolean {
+function composerContentChanged(draft: ComposerDraft, saved: ComposerDraft): boolean {
   const content = ({ scheduledAt: _scheduledAt, ...rest }: ComposerDraft) =>
     JSON.stringify({
       ...rest,
@@ -106,7 +111,7 @@ export function composerContentChanged(draft: ComposerDraft, saved: ComposerDraf
 }
 
 /** An untouched time is sent back exactly as stored, so re-scheduling cannot drift. */
-export function scheduleInstant(
+function scheduleInstant(
   draftValue: string,
   saved: { input: string; iso: string | null },
   timeZone: string,
@@ -125,83 +130,79 @@ const FIELD_INPUT_IDS: Readonly<Record<string, string>> = {
 }
 
 /** The input an error-summary link focuses for a request field. */
-export function broadcastFieldInputId(field: string): string {
+function broadcastFieldInputId(field: string): string {
   return FIELD_INPUT_IDS[field] ?? `broadcast-${field}`
+}
+
+function audienceOf(draft: ComposerDraft): AudienceState {
+  return { kind: draft.audienceKind, ticketTypeIds: draft.ticketTypeIds, slotIds: draft.slotIds }
+}
+
+/** The request fields preview and save both send, trimmed the way the server stores them. */
+function broadcastBodyFrom(draft: ComposerDraft): {
+  content: { subject: string; bodyMd: string; ctaLabel?: string; ctaUrl?: string }
+  segment: BroadcastSegment | null
+  channels: HostChannel[]
+} {
+  return {
+    content: {
+      subject: draft.subject.trim(),
+      bodyMd: draft.bodyMd.trim(),
+      ...(draft.ctaLabel.trim() ? { ctaLabel: draft.ctaLabel.trim() } : {}),
+      ...(draft.ctaUrl.trim() ? { ctaUrl: draft.ctaUrl.trim() } : {}),
+    },
+    segment: segmentFrom(audienceOf(draft)),
+    channels: draft.channels,
+  }
+}
+
+type Translate = ReturnType<typeof useT>["t"]
+
+function composerSummaryErrors(
+  readiness: ComposerReadiness,
+  submitCount: number,
+  serverFields: Record<string, string>,
+  t: Translate,
+): { id: string; message: string }[] {
+  const local: [keyof ComposerReadiness, string, string][] = [
+    ["subject", "broadcast-subject", "composer.error_subject"],
+    ["body", "broadcast-body", "composer.error_body"],
+    ["audience", "broadcast-audience", "composer.error_audience"],
+    ["channels", "broadcast-channels", "composer.error_channels"],
+  ]
+  return [
+    ...(submitCount > 0
+      ? local
+          .filter(([check]) => !readiness[check])
+          .map(([, id, key]) => ({ id, message: t(key) }))
+      : []),
+    ...Object.entries(serverFields).map(([key, message]) => ({
+      id: broadcastFieldInputId(key),
+      message,
+    })),
+  ]
 }
 
 export interface BroadcastComposerProps {
   broadcast: BroadcastDTO | null
 }
 
-export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
+function useComposerActions(
+  eventId: string,
+  broadcast: BroadcastDTO | null,
+  draft: ComposerDraft,
+  clear: () => void,
+) {
   const { t } = useT("host-broadcasts")
-  const { t: tc } = useT("host-common")
   const api = useApi()
-  const viewerId = useAuthState().user?.id ?? null
   const qc = useQueryClient()
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
-  const { eventId, event } = useConsoleEvent()
-  const zone = useConsoleInputZone(event?.timezone)
-  const format = useConsoleFormat(zone)
   const { go } = useConsoleNavigation()
 
-  const ticketTypes = useEventTicketTypes(eventId)
-  const slots = event?.slots ?? []
-
-  // The key is versioned because older drafts hold the schedule as a UTC wall clock, not in the
-  // event's zone.
-  const draftKey = consoleDraftKey(`broadcast.v2.${eventId}`, broadcast?.id ?? "new", viewerId)
-  const initial = useMemo(() => draftFrom(broadcast, zone), [broadcast, zone])
-  const { draft, patch, restored, dismissRestored, clear } = useDraft(draftKey, initial)
-
   const [serverFields, setServerFields] = useState<Record<string, string>>({})
-  const [submitCount, setSubmitCount] = useState(0)
   const [confirmSend, setConfirmSend] = useState(false)
   const [testSends, setTestSends] = useState(0)
-
-  const audience: AudienceState = {
-    kind: draft.audienceKind,
-    ticketTypeIds: draft.ticketTypeIds,
-    slotIds: draft.slotIds,
-  }
-  const unsaved = broadcast !== null && composerContentChanged(draft, initial)
-  const readiness = composerReadiness({
-    subject: draft.subject,
-    bodyMd: draft.bodyMd,
-    audience,
-    channels: draft.channels,
-  })
-  const ready = composerReady(readiness)
-  const status = broadcast?.status ?? "draft"
-  const gates = broadcastCan(status)
-
-  const previewFingerprint = JSON.stringify([
-    draft.subject.trim(),
-    draft.bodyMd.trim(),
-    draft.ctaLabel.trim(),
-    draft.ctaUrl.trim(),
-    segmentFrom(audience),
-    [...draft.channels].sort(),
-  ])
-
-  const preview = useQuery<BroadcastPreviewDTO>({
-    queryKey: [...consoleKeys.broadcastPreview(eventId, broadcast?.id ?? "new"), previewFingerprint],
-    enabled: false,
-    gcTime: 0,
-    queryFn: () =>
-      api.previewEventBroadcast({
-        id: eventId,
-        ...(broadcast ? { broadcastId: broadcast.id } : {}),
-        subject: draft.subject.trim(),
-        bodyMd: draft.bodyMd.trim(),
-        ...(draft.ctaLabel.trim() ? { ctaLabel: draft.ctaLabel.trim() } : {}),
-        ...(draft.ctaUrl.trim() ? { ctaUrl: draft.ctaUrl.trim() } : {}),
-        ...(segmentFrom(audience) ? { segment: segmentFrom(audience) as never } : {}),
-        channels: draft.channels as never,
-      }),
-    retry: false,
-  })
 
   useEffect(() => {
     setServerFields({})
@@ -209,16 +210,9 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
 
   const persist = useMutation({
     mutationFn: async (): Promise<BroadcastDTO> => {
-      const segment = segmentFrom(audience)
+      const { content, segment, channels } = broadcastBodyFrom(draft)
       if (!segment) throw new Error("incomplete audience")
-      const body = {
-        subject: draft.subject.trim(),
-        bodyMd: draft.bodyMd.trim(),
-        ...(draft.ctaLabel.trim() ? { ctaLabel: draft.ctaLabel.trim() } : {}),
-        ...(draft.ctaUrl.trim() ? { ctaUrl: draft.ctaUrl.trim() } : {}),
-        segment,
-        channels: draft.channels as never,
-      }
+      const body = { ...content, segment, channels }
       if (broadcast) {
         return api.updateEventBroadcast({ id: eventId, broadcastId: broadcast.id, ...body })
       }
@@ -227,7 +221,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
     onSuccess: (res) => {
       toast.toast({ title: t("composer.saved"), tone: "success" })
       clear()
-      void qc.invalidateQueries({ queryKey: consoleKeys.broadcasts(eventId, "all") })
+      void qc.invalidateQueries({ queryKey: consoleKeys.broadcasts(eventId) })
       qc.setQueryData(consoleKeys.broadcast(eventId, res.id), res)
       go({ kind: "broadcast", eventId, broadcastId: res.id })
     },
@@ -259,7 +253,7 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
       setConfirmSend(false)
       clear()
       qc.setQueryData(consoleKeys.broadcast(eventId, res.id), res)
-      void qc.invalidateQueries({ queryKey: consoleKeys.broadcasts(eventId, "all") })
+      void qc.invalidateQueries({ queryKey: consoleKeys.broadcasts(eventId) })
     },
     onError: (err) => {
       setServerFields(fieldErrorsFrom(err))
@@ -279,13 +273,96 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
       toast.toast({ title: t("composer.scheduled"), tone: "success" })
       clear()
       qc.setQueryData(consoleKeys.broadcast(eventId, res.id), res)
-      void qc.invalidateQueries({ queryKey: consoleKeys.broadcasts(eventId, "all") })
+      void qc.invalidateQueries({ queryKey: consoleKeys.broadcasts(eventId) })
     },
     onError: (err) => {
       setServerFields(fieldErrorsFrom(err))
       toast.toast({ title: errors.message(err), tone: "danger" })
     },
   })
+
+  return {
+    serverFields,
+    setServerFields,
+    confirmSend,
+    setConfirmSend,
+    testCapped: testSends >= TEST_SEND_CAP,
+    persist,
+    testSend,
+    send,
+    schedule,
+  }
+}
+
+export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
+  const { t } = useT("host-broadcasts")
+  const { t: tc } = useT("host-common")
+  const api = useApi()
+  const viewerId = useAuthState().user?.id ?? null
+  const { eventId, event } = useConsoleEvent()
+  const zone = useConsoleInputZone(event.timezone)
+  const format = useConsoleFormat(zone)
+
+  const ticketTypes = useEventTicketTypes(eventId)
+  const slots = event.slots ?? []
+
+  // The key is versioned because older drafts hold the schedule as a UTC wall clock, not in the
+  // event's zone.
+  const draftKey = consoleDraftKey(`broadcast.v2.${eventId}`, broadcast?.id ?? "new", viewerId)
+  const initial = useMemo(() => draftFrom(broadcast, zone), [broadcast, zone])
+  const { draft, patch, restored, dismissRestored, clear } = useDraft(draftKey, initial)
+
+  const [submitCount, setSubmitCount] = useState(0)
+
+  const audience = audienceOf(draft)
+  const unsaved = broadcast !== null && composerContentChanged(draft, initial)
+  const readiness = composerReadiness({
+    subject: draft.subject,
+    bodyMd: draft.bodyMd,
+    audience,
+    channels: draft.channels,
+  })
+  const ready = composerReady(readiness)
+  const status = broadcast?.status ?? "draft"
+  const gates = broadcastCan(status)
+
+  const previewFingerprint = JSON.stringify([
+    draft.subject.trim(),
+    draft.bodyMd.trim(),
+    draft.ctaLabel.trim(),
+    draft.ctaUrl.trim(),
+    segmentFrom(audience),
+    [...draft.channels].sort(),
+  ])
+
+  const preview = useQuery<BroadcastPreviewDTO>({
+    queryKey: [...consoleKeys.broadcastPreview(eventId, broadcast?.id ?? "new"), previewFingerprint],
+    enabled: false,
+    gcTime: 0,
+    queryFn: () => {
+      const { content, segment, channels } = broadcastBodyFrom(draft)
+      return api.previewEventBroadcast({
+        id: eventId,
+        ...(broadcast ? { broadcastId: broadcast.id } : {}),
+        ...content,
+        ...(segment ? { segment } : {}),
+        channels,
+      })
+    },
+    retry: false,
+  })
+
+  const {
+    serverFields,
+    setServerFields,
+    confirmSend,
+    setConfirmSend,
+    testCapped,
+    persist,
+    testSend,
+    send,
+    schedule,
+  } = useComposerActions(eventId, broadcast, draft, clear)
 
   const zoneNames = useInputZoneNames(zone, [draft.scheduledAt], broadcast?.scheduledAt)
   const scheduleNow = () => {
@@ -303,26 +380,8 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
     }
     schedule.mutate(scheduledAt)
   }
-  const testCapped = testSends >= 5
 
-  const summaryErrors = [
-    ...(submitCount > 0 && !readiness.subject
-      ? [{ id: "broadcast-subject", message: t("composer.error_subject") }]
-      : []),
-    ...(submitCount > 0 && !readiness.body
-      ? [{ id: "broadcast-body", message: t("composer.error_body") }]
-      : []),
-    ...(submitCount > 0 && !readiness.audience
-      ? [{ id: "broadcast-audience", message: t("composer.error_audience") }]
-      : []),
-    ...(submitCount > 0 && !readiness.channels
-      ? [{ id: "broadcast-channels", message: t("composer.error_channels") }]
-      : []),
-    ...Object.entries(serverFields).map(([key, message]) => ({
-      id: broadcastFieldInputId(key),
-      message,
-    })),
-  ]
+  const summaryErrors = composerSummaryErrors(readiness, submitCount, serverFields, t)
 
   const readOnly = broadcast !== null && !gates.edit
 
@@ -399,219 +458,45 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
       <ErrorSummary errors={summaryErrors} submitCount={submitCount} />
 
       <div className="grid gap-token-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <div className="flex flex-col gap-token-4">
-          <Field
-            announceError={false}
-            label={t("composer.subject")}
-            htmlFor="broadcast-subject"
-            counter={`${draft.subject.length}/${MAX_BROADCAST_SUBJECT}`}
-            error={serverFields.subject}
-          >
-            <TextInput
-              id="broadcast-subject"
-              value={draft.subject}
-              disabled={readOnly}
-              maxLength={MAX_BROADCAST_SUBJECT}
-              onChange={(event) => patch({ subject: event.target.value })}
-            />
-          </Field>
-
-          <Field
-            announceError={false}
-            label={t("composer.body")}
-            htmlFor="broadcast-body"
-            hint={t("composer.body_hint")}
-            error={serverFields.bodyMd}
-          >
-            <RichTextEditor
-              id="broadcast-body"
-              value={draft.bodyMd}
-              disabled={readOnly}
-              maxChars={MAX_BROADCAST_BODY}
-              invalid={Boolean(serverFields.bodyMd)}
-              onChange={(value) => patch({ bodyMd: value })}
-            />
-          </Field>
-
-          <div className="grid gap-token-3 sm:grid-cols-2">
-            <Field
-              announceError={false}
-              label={t("composer.cta_label")}
-              htmlFor="broadcast-cta-label"
-              optional
-              counter={`${draft.ctaLabel.length}/${MAX_BROADCAST_CTA_LABEL}`}
-            >
-              <TextInput
-                id="broadcast-cta-label"
-                value={draft.ctaLabel}
-                disabled={readOnly}
-                maxLength={MAX_BROADCAST_CTA_LABEL}
-                onChange={(event) => patch({ ctaLabel: event.target.value })}
-              />
-            </Field>
-            <Field
-              announceError={false}
-              label={t("composer.cta_url")}
-              htmlFor="broadcast-cta-url"
-              optional
-              hint={t("composer.cta_url_hint")}
-              error={serverFields.ctaUrl}
-            >
-              <TextInput
-                id="broadcast-cta-url"
-                value={draft.ctaUrl}
-                disabled={readOnly}
-                placeholder="https://"
-                maxLength={500}
-                onChange={(event) => patch({ ctaUrl: event.target.value })}
-              />
-            </Field>
-          </div>
-        </div>
+        <MessageFields
+          draft={draft}
+          patch={patch}
+          readOnly={readOnly}
+          serverFields={serverFields}
+        />
 
         <div className="flex flex-col gap-token-4">
-          <section
-            id="broadcast-audience"
-            className="rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1"
-          >
-            <h2 className="mb-token-3 font-display text-token-16 font-bold text-console-ink">
-              {t("composer.audience")}
-            </h2>
-            <SegmentedControl
-              size="sm"
-              className="flex-wrap"
-              label={t("composer.audience")}
-              value={draft.audienceKind}
-              onChange={(value) => patch({ audienceKind: value })}
-              options={AUDIENCE_KINDS.filter(
-                (kind) =>
-                  (kind !== "ticket_types" || (ticketTypes.data?.length ?? 0) > 0) &&
-                  (kind !== "slots" || slots.length > 0),
-              ).map((kind) => ({ value: kind, label: t(`audience.${kind}`) }))}
-            />
-            {draft.audienceKind === "ticket_types" ? (
-              <ChipMultiSelect
-                className="mt-token-3"
-                label={t("composer.audience_ticket_types")}
-                values={draft.ticketTypeIds}
-                onChange={(values) => patch({ ticketTypeIds: values })}
-                options={(ticketTypes.data ?? []).map((type) => ({
-                  value: type.id,
-                  label: type.name,
-                }))}
-              />
-            ) : null}
-            {draft.audienceKind === "slots" ? (
-              <ChipMultiSelect
-                className="mt-token-3"
-                label={t("composer.audience_slots")}
-                values={draft.slotIds}
-                onChange={(values) => patch({ slotIds: values })}
-                options={slots.map((slot) => ({ value: slot.id, label: slot.title }))}
-              />
-            ) : null}
-            {audienceExcludesGuests(audience) ? (
-              <p className="mt-token-2 text-token-12 text-console-ink-3">
-                {t("composer.slots_members_only")}
-              </p>
-            ) : null}
-          </section>
+          <AudienceSection
+            draft={draft}
+            patch={patch}
+            ticketTypes={ticketTypes.data ?? []}
+            slots={slots}
+          />
 
-          <section
-            id="broadcast-channels"
-            className="rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1"
-          >
-            <h2 className="mb-token-3 font-display text-token-16 font-bold text-console-ink">
-              {t("composer.channels")}
-            </h2>
-            <ChipMultiSelect
-              label={t("composer.channels")}
-              values={draft.channels}
-              onChange={(values) => patch({ channels: values })}
-              options={HOST_CHANNELS.map((channel) => ({
-                value: channel,
-                label: t(`channel.${channel}`),
-              }))}
-            />
-          </section>
+          <ChannelsSection channels={draft.channels} patch={patch} />
 
           {broadcast && gates.schedule ? (
-            <section className="rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1">
-              <h2 className="mb-token-3 font-display text-token-16 font-bold text-console-ink">
-                {t("composer.schedule")}
-              </h2>
-              <Field
-                announceError={false}
-                label={t("composer.schedule_at")}
-                htmlFor="broadcast-schedule"
-                hint={
-                  zoneNames.hint
-                    ? t("composer.schedule_zone_hint", { zone: zoneNames.hint })
-                    : undefined
-                }
-                error={serverFields.scheduledAt}
-              >
-                <TextInput
-                  id="broadcast-schedule"
-                  type="datetime-local"
-                  value={draft.scheduledAt}
-                  onChange={(event) => {
-                    patch({ scheduledAt: event.target.value })
-                    setServerFields(({ scheduledAt: _stale, ...rest }) => rest)
-                  }}
-                />
-              </Field>
-              <ConsoleButton
-                size="sm"
-                variant="outline"
-                className="mt-token-3"
-                disabled={draft.scheduledAt === "" || schedule.isPending || unsaved}
-                onClick={scheduleNow}
-              >
-                <Clock aria-hidden className="h-4 w-4" />
-                {t("composer.schedule_action")}
-              </ConsoleButton>
-              {broadcast.scheduledAt ? (
-                <p className="mt-token-2 text-token-12 text-console-ink-3">
-                  {t("composer.scheduled_for", {
-                    when: format.whenLabel(broadcast.scheduledAt),
-                  })}
-                </p>
-              ) : null}
-            </section>
+            <ScheduleSection
+              broadcast={broadcast}
+              value={draft.scheduledAt}
+              zoneHint={zoneNames.hint}
+              error={serverFields.scheduledAt}
+              disabled={draft.scheduledAt === "" || schedule.isPending || unsaved}
+              whenLabel={format.whenLabel}
+              onChange={(value) => {
+                patch({ scheduledAt: value })
+                setServerFields(({ scheduledAt: _stale, ...rest }) => rest)
+              }}
+              onSchedule={scheduleNow}
+            />
           ) : null}
 
           {preview.data ? (
-            <section
-              aria-live="polite"
-              className="rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1"
-            >
-              <h2 className="mb-token-2 font-display text-token-16 font-bold text-console-ink">
-                {t("composer.preview")}
-              </h2>
-              <p className="mb-token-2 text-token-13 text-console-ink-2">
-                {t("composer.recipients", {
-                  count: format.number(preview.data.recipientCount),
-                })}
-              </p>
-              {preview.data.warnings.length > 0 ? (
-                <ul className="mb-token-2 flex flex-col gap-token-1">
-                  {preview.data.warnings.map((warning) => (
-                    <li key={warning} className="text-token-12 text-console-sun-strong">
-                      {warning}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              <p className="text-token-13 font-semibold text-console-ink">
-                {preview.data.subject}
-              </p>
-              <MarkdownPreview
-                source={draft.bodyMd}
-                maxChars={MAX_BROADCAST_BODY}
-                className="mt-token-2"
-              />
-            </section>
+            <PreviewSection
+              preview={preview.data}
+              bodyMd={draft.bodyMd}
+              recipients={format.number(preview.data.recipientCount)}
+            />
           ) : null}
         </div>
       </div>
@@ -631,5 +516,273 @@ export function BroadcastComposer({ broadcast }: BroadcastComposerProps) {
         onConfirm={() => send.mutate()}
       />
     </div>
+  )
+}
+
+const SECTION_CLASS =
+  "rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1"
+
+type PatchDraft = (patch: Partial<ComposerDraft>) => void
+
+function MessageFields({
+  draft,
+  patch,
+  readOnly,
+  serverFields,
+}: {
+  draft: ComposerDraft
+  patch: PatchDraft
+  readOnly: boolean
+  serverFields: Record<string, string>
+}) {
+  const { t } = useT("host-broadcasts")
+  return (
+    <div className="flex flex-col gap-token-4">
+      <Field
+        announceError={false}
+        label={t("composer.subject")}
+        htmlFor="broadcast-subject"
+        counter={`${draft.subject.length}/${MAX_BROADCAST_SUBJECT}`}
+        error={serverFields.subject}
+      >
+        <TextInput
+          id="broadcast-subject"
+          value={draft.subject}
+          disabled={readOnly}
+          maxLength={MAX_BROADCAST_SUBJECT}
+          onChange={(event) => patch({ subject: event.target.value })}
+        />
+      </Field>
+
+      <Field
+        announceError={false}
+        label={t("composer.body")}
+        htmlFor="broadcast-body"
+        hint={t("composer.body_hint")}
+        error={serverFields.bodyMd}
+      >
+        <RichTextEditor
+          id="broadcast-body"
+          value={draft.bodyMd}
+          disabled={readOnly}
+          maxChars={MAX_BROADCAST_BODY}
+          invalid={Boolean(serverFields.bodyMd)}
+          onChange={(value) => patch({ bodyMd: value })}
+        />
+      </Field>
+
+      <div className="grid gap-token-3 sm:grid-cols-2">
+        <Field
+          announceError={false}
+          label={t("composer.cta_label")}
+          htmlFor="broadcast-cta-label"
+          optional
+          counter={`${draft.ctaLabel.length}/${MAX_BROADCAST_CTA_LABEL}`}
+        >
+          <TextInput
+            id="broadcast-cta-label"
+            value={draft.ctaLabel}
+            disabled={readOnly}
+            maxLength={MAX_BROADCAST_CTA_LABEL}
+            onChange={(event) => patch({ ctaLabel: event.target.value })}
+          />
+        </Field>
+        <Field
+          announceError={false}
+          label={t("composer.cta_url")}
+          htmlFor="broadcast-cta-url"
+          optional
+          hint={t("composer.cta_url_hint")}
+          error={serverFields.ctaUrl}
+        >
+          <TextInput
+            id="broadcast-cta-url"
+            value={draft.ctaUrl}
+            disabled={readOnly}
+            placeholder="https://"
+            maxLength={MAX_CTA_URL}
+            onChange={(event) => patch({ ctaUrl: event.target.value })}
+          />
+        </Field>
+      </div>
+    </div>
+  )
+}
+
+function AudienceSection({
+  draft,
+  patch,
+  ticketTypes,
+  slots,
+}: {
+  draft: ComposerDraft
+  patch: PatchDraft
+  ticketTypes: readonly { id: string; name: string }[]
+  slots: readonly { id: string; title: string }[]
+}) {
+  const { t } = useT("host-broadcasts")
+  return (
+    <section id="broadcast-audience" className={SECTION_CLASS}>
+      <h2 className="mb-token-3 font-display text-token-16 font-bold text-console-ink">
+        {t("composer.audience")}
+      </h2>
+      <SegmentedControl
+        size="sm"
+        className="flex-wrap"
+        label={t("composer.audience")}
+        value={draft.audienceKind}
+        onChange={(value) => patch({ audienceKind: value })}
+        options={AUDIENCE_KINDS.filter(
+          (kind) =>
+            (kind !== "ticket_types" || ticketTypes.length > 0) &&
+            (kind !== "slots" || slots.length > 0),
+        ).map((kind) => ({ value: kind, label: t(`audience.${kind}`) }))}
+      />
+      {draft.audienceKind === "ticket_types" ? (
+        <ChipMultiSelect
+          className="mt-token-3"
+          label={t("composer.audience_ticket_types")}
+          values={draft.ticketTypeIds}
+          onChange={(values) => patch({ ticketTypeIds: values })}
+          options={ticketTypes.map((type) => ({
+            value: type.id,
+            label: type.name,
+          }))}
+        />
+      ) : null}
+      {draft.audienceKind === "slots" ? (
+        <ChipMultiSelect
+          className="mt-token-3"
+          label={t("composer.audience_slots")}
+          values={draft.slotIds}
+          onChange={(values) => patch({ slotIds: values })}
+          options={slots.map((slot) => ({ value: slot.id, label: slot.title }))}
+        />
+      ) : null}
+      {audienceExcludesGuests(audienceOf(draft)) ? (
+        <p className="mt-token-2 text-token-12 text-console-ink-3">
+          {t("composer.slots_members_only")}
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
+function ChannelsSection({
+  channels,
+  patch,
+}: {
+  channels: readonly HostChannel[]
+  patch: PatchDraft
+}) {
+  const { t } = useT("host-broadcasts")
+  return (
+    <section id="broadcast-channels" className={SECTION_CLASS}>
+      <h2 className="mb-token-3 font-display text-token-16 font-bold text-console-ink">
+        {t("composer.channels")}
+      </h2>
+      <ChipMultiSelect
+        label={t("composer.channels")}
+        values={channels}
+        onChange={(values) => patch({ channels: values.filter(isHostChannel) })}
+        options={HOST_CHANNELS.map((channel) => ({
+          value: channel,
+          label: t(`channel.${channel}`),
+        }))}
+      />
+    </section>
+  )
+}
+
+function ScheduleSection({
+  broadcast,
+  value,
+  zoneHint,
+  error,
+  disabled,
+  whenLabel,
+  onChange,
+  onSchedule,
+}: {
+  broadcast: BroadcastDTO
+  value: string
+  zoneHint: string | null
+  error: string | undefined
+  disabled: boolean
+  whenLabel: (iso: string) => string
+  onChange: (value: string) => void
+  onSchedule: () => void
+}) {
+  const { t } = useT("host-broadcasts")
+  return (
+    <section className={SECTION_CLASS}>
+      <h2 className="mb-token-3 font-display text-token-16 font-bold text-console-ink">
+        {t("composer.schedule")}
+      </h2>
+      <Field
+        announceError={false}
+        label={t("composer.schedule_at")}
+        htmlFor="broadcast-schedule"
+        hint={zoneHint ? t("composer.schedule_zone_hint", { zone: zoneHint }) : undefined}
+        error={error}
+      >
+        <TextInput
+          id="broadcast-schedule"
+          type="datetime-local"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      </Field>
+      <ConsoleButton
+        size="sm"
+        variant="outline"
+        className="mt-token-3"
+        disabled={disabled}
+        onClick={onSchedule}
+      >
+        <Clock aria-hidden className="h-4 w-4" />
+        {t("composer.schedule_action")}
+      </ConsoleButton>
+      {broadcast.scheduledAt ? (
+        <p className="mt-token-2 text-token-12 text-console-ink-3">
+          {t("composer.scheduled_for", {
+            when: whenLabel(broadcast.scheduledAt),
+          })}
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
+function PreviewSection({
+  preview,
+  bodyMd,
+  recipients,
+}: {
+  preview: BroadcastPreviewDTO
+  bodyMd: string
+  recipients: string
+}) {
+  const { t } = useT("host-broadcasts")
+  return (
+    <section aria-live="polite" className={SECTION_CLASS}>
+      <h2 className="mb-token-2 font-display text-token-16 font-bold text-console-ink">
+        {t("composer.preview")}
+      </h2>
+      <p className="mb-token-2 text-token-13 text-console-ink-2">
+        {t("composer.recipients", { count: recipients })}
+      </p>
+      {preview.warnings.length > 0 ? (
+        <ul className="mb-token-2 flex flex-col gap-token-1">
+          {preview.warnings.map((warning) => (
+            <li key={warning} className="text-token-12 text-console-sun-strong">
+              {warning}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <p className="text-token-13 font-semibold text-console-ink">{preview.subject}</p>
+      <MarkdownPreview source={bodyMd} maxChars={MAX_BROADCAST_BODY} className="mt-token-2" />
+    </section>
   )
 }

@@ -29,7 +29,7 @@ import { useConsoleEvent } from "../console-context"
 import { useConsoleErrors } from "../error-copy"
 import { useConsoleFormat } from "../format"
 import { invalidateEvent } from "../console-invalidate"
-import { normalizeInviteIdentifier } from "../org/org-invites"
+import { INVITE_IDENTIFIER_MAX, normalizeInviteIdentifier } from "../org/org-invites"
 
 interface PendingRoleChange {
   userId: string
@@ -236,7 +236,7 @@ export function TeamScreen() {
             <TextInput
               id="invite-identifier"
               value={identifier}
-              maxLength={254}
+              maxLength={INVITE_IDENTIFIER_MAX}
               autoComplete="off"
               type={identifierKind === "email" ? "email" : "text"}
               onChange={(event) => setIdentifier(event.target.value)}

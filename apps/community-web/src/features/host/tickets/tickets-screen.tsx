@@ -22,6 +22,7 @@ import { useConsoleFormat } from "../format"
 import { TicketTypeDrawer } from "./ticket-type-drawer"
 import { QuestionsEditor } from "./questions-editor"
 import { invalidateEvent } from "../console-invalidate"
+import { moveItem } from "../list-order"
 
 export function TicketsScreen() {
   const { t } = useT("host-tickets")
@@ -63,12 +64,9 @@ export function TicketsScreen() {
   })
 
   const move = (index: number, delta: number) => {
-    const ids = types.map((type) => type.id)
     const target = index + delta
-    if (target < 0 || target >= ids.length) return
-    const [moved] = ids.splice(index, 1)
-    if (moved) ids.splice(target, 0, moved)
-    reorder.mutate(ids)
+    if (target < 0 || target >= types.length) return
+    reorder.mutate(moveItem(types.map((type) => type.id), index, delta))
   }
 
   return (

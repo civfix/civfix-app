@@ -6,13 +6,10 @@ import {
   attendanceOf,
   attendeeDisplayName,
   checkableSeatIds,
-  checkedInSeatIds,
   isRosterFilter,
   isRosterSort,
   isWaitlistProjection,
-  rosterTotals,
   rowSupportsRegistrationActions,
-  shouldResetCursor,
 } from "./roster-filters"
 
 function seat(over: Partial<EventSeatDTO> = {}): EventSeatDTO {
@@ -83,7 +80,7 @@ describe("roster filters", () => {
     expect(rowSupportsRegistrationActions(row({ status: "cancelled" }), "all")).toBe(false)
   })
 
-  it("splits seats into checkable and already-checked-in", () => {
+  it("offers only active seats not yet checked in", () => {
     const r = row({
       seats: [
         seat({ id: "a" }),
@@ -92,7 +89,6 @@ describe("roster filters", () => {
       ],
     })
     expect(checkableSeatIds(r)).toEqual(["a"])
-    expect(checkedInSeatIds(r)).toEqual(["b"])
   })
 
   it("derives attendance, preferring checked-in over a stale no-show stamp", () => {
@@ -128,19 +124,5 @@ describe("roster filters", () => {
         NAMES,
       ),
     ).toBe("Deleted user")
-  })
-
-  it("restarts pagination whenever the cursor space changes", () => {
-    const base = { filter: "all", sort: "registered_at_desc", q: "", ticket: "all" }
-    expect(shouldResetCursor(base, base)).toBe(false)
-    expect(shouldResetCursor(base, { ...base, sort: "name_asc" })).toBe(true)
-    expect(shouldResetCursor(base, { ...base, filter: "checked_in" })).toBe(true)
-    expect(shouldResetCursor(base, { ...base, q: "ann" })).toBe(true)
-    expect(shouldResetCursor(base, { ...base, ticket: "t1" })).toBe(true)
-  })
-
-  it("keeps the whole-event total distinct from the filtered row count", () => {
-    expect(rosterTotals(12, 87, true)).toEqual({ shown: 12, eventTotal: 87, hasMore: true })
-    expect(rosterTotals(12, undefined, false).eventTotal).toBeNull()
   })
 })

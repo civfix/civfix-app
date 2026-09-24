@@ -48,12 +48,6 @@ export function checkableSeatIds(row: EventRegistrationDTO): string[] {
     .map((seat) => seat.id)
 }
 
-export function checkedInSeatIds(row: EventRegistrationDTO): string[] {
-  return row.seats
-    .filter((seat) => seat.status === "active" && seat.checkedInAt !== null)
-    .map((seat) => seat.id)
-}
-
 export function attendanceOf(
   row: EventRegistrationDTO,
 ): "checked_in" | "not_checked_in" | "no_show" {
@@ -70,22 +64,20 @@ export function attendeeDisplayName(
   return row.guestName ?? fallbacks.guest
 }
 
-export function shouldResetCursor(
-  prev: { filter: string; sort: string; q: string; ticket: string },
-  next: { filter: string; sort: string; q: string; ticket: string },
-): boolean {
-  return (
-    prev.filter !== next.filter ||
-    prev.sort !== next.sort ||
-    prev.q !== next.q ||
-    prev.ticket !== next.ticket
+export function checkInSeatsInRow(
+  row: EventRegistrationDTO,
+  seatIds: readonly string[],
+  at: string,
+): EventRegistrationDTO {
+  const checked = new Set(seatIds)
+  const seats = row.seats.map((seat) =>
+    checked.has(seat.id) && seat.status === "active" && !seat.checkedInAt
+      ? { ...seat, checkedInAt: at, checkinMethod: "manual" as const }
+      : seat,
   )
+  return { ...row, seats, checkedInAt: row.checkedInAt ?? at }
 }
 
-export function rosterTotals(
-  loadedRows: number,
-  eventTotal: number | undefined,
-  hasMore: boolean,
-): { shown: number; eventTotal: number | null; hasMore: boolean } {
-  return { shown: loadedRows, eventTotal: eventTotal ?? null, hasMore }
+export function rowStillPendingCheckIn(row: EventRegistrationDTO): boolean {
+  return row.seats.some((seat) => seat.status === "active" && !seat.checkedInAt)
 }

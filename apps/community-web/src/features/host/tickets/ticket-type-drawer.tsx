@@ -25,6 +25,7 @@ import { useDraft, consoleDraftKey } from "@/components/console/use-draft"
 import { fieldErrorsFrom } from "@/components/console/query-state"
 
 import { useConsoleErrors } from "../error-copy"
+import { firstIssueByPath } from "../form-issues"
 import { invalidateEvent } from "../console-invalidate"
 import { useConsoleEvent } from "../console-context"
 import {
@@ -100,7 +101,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
   const qc = useQueryClient()
   const toast = useConsoleToast()
   const errors = useConsoleErrors()
-  const zone = useConsoleInputZone(useConsoleEvent().event?.timezone)
+  const zone = useConsoleInputZone(useConsoleEvent().event.timezone)
 
   // The key is versioned because older drafts hold sales times as UTC wall clocks, not in the
   // event's zone.
@@ -139,12 +140,7 @@ export function TicketTypeDrawer({ eventId, ticketType, open, onClose }: TicketT
     for (const bound of sales.changed.invalid) {
       out[bound] = t("field.sales_time_not_in_zone", { zone: zoneNames.name })
     }
-    if (parsed.success) return out
-    for (const issue of parsed.error.issues) {
-      const key = String(issue.path[0] ?? "form")
-      if (!out[key]) out[key] = issue.message
-    }
-    return out
+    return parsed.success ? out : firstIssueByPath(parsed.error.issues, "field", out)
   }, [draft, eventId, sales, t, zoneNames.name])
 
   const fieldErrors = { ...localErrors, ...serverFields }

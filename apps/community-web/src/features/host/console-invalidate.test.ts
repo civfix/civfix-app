@@ -2,13 +2,8 @@ import { QueryClient } from "@tanstack/react-query"
 import type { EventRegistrationDTO, EventSeatDTO } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
 
-import {
-  checkInSeatsInRow,
-  invalidateOrg,
-  markRosterSeatsCheckedIn,
-  rowStillPendingCheckIn,
-  upsertMyOrganization,
-} from "./console-invalidate"
+import { checkInSeatsInRow, rowStillPendingCheckIn } from "./attendees/roster-filters"
+import { invalidateOrg, markRosterSeatsCheckedIn, upsertMyOrganization } from "./console-invalidate"
 import { consoleKeys } from "./console-keys"
 
 const AT = "2026-09-06T18:00:00.000Z"

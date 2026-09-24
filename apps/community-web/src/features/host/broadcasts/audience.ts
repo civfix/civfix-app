@@ -1,3 +1,4 @@
+import { MAX_BROADCAST_BODY, MAX_BROADCAST_SUBJECT } from "@civfix/shared"
 import type { BroadcastSegment, DeliveryStatus } from "@civfix/shared"
 
 export type AudienceKind = BroadcastSegment["kind"]
@@ -60,8 +61,12 @@ export function audienceComplete(state: AudienceState): boolean {
 export const HOST_CHANNELS = ["inapp", "push", "email"] as const
 export type HostChannel = (typeof HOST_CHANNELS)[number]
 
+export function isHostChannel(value: string): value is HostChannel {
+  return (HOST_CHANNELS as readonly string[]).includes(value)
+}
+
 export function channelsComplete(channels: readonly string[]): boolean {
-  return channels.length >= 1 && channels.length <= 3
+  return channels.length >= 1 && channels.length <= HOST_CHANNELS.length
 }
 
 export interface ComposerReadiness {
@@ -77,9 +82,11 @@ export function composerReadiness(input: {
   audience: AudienceState
   channels: readonly string[]
 }): ComposerReadiness {
+  const subject = input.subject.trim().length
+  const body = input.bodyMd.trim().length
   return {
-    subject: input.subject.trim().length > 0 && input.subject.trim().length <= 160,
-    body: input.bodyMd.trim().length > 0 && input.bodyMd.trim().length <= 8000,
+    subject: subject > 0 && subject <= MAX_BROADCAST_SUBJECT,
+    body: body > 0 && body <= MAX_BROADCAST_BODY,
     audience: audienceComplete(input.audience),
     channels: channelsComplete(input.channels),
   }
@@ -91,16 +98,16 @@ export function composerReady(readiness: ComposerReadiness): boolean {
 
 export function broadcastCan(
   status: string,
-): { edit: boolean; send: boolean; schedule: boolean; cancel: boolean; delete: boolean } {
+): { edit: boolean; send: boolean; schedule: boolean; cancel: boolean } {
   switch (status) {
     case "draft":
-      return { edit: true, send: true, schedule: true, cancel: false, delete: true }
+      return { edit: true, send: true, schedule: true, cancel: false }
     case "scheduled":
-      return { edit: false, send: true, schedule: true, cancel: true, delete: false }
+      return { edit: false, send: true, schedule: true, cancel: true }
     case "sending":
-      return { edit: false, send: false, schedule: false, cancel: true, delete: false }
+      return { edit: false, send: false, schedule: false, cancel: true }
     default:
-      return { edit: false, send: false, schedule: false, cancel: false, delete: false }
+      return { edit: false, send: false, schedule: false, cancel: false }
   }
 }
 

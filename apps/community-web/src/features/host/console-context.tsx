@@ -61,7 +61,7 @@ export function useConsoleNavigation(): ConsoleNavigation {
 
 export interface ConsoleEventContext {
   eventId: string
-  event: CleanupDTO | null
+  event: CleanupDTO
   can: (capability: HostCapability) => boolean
 }
 
@@ -73,7 +73,7 @@ export function ConsoleEventProvider({
   children,
 }: {
   eventId: string
-  event: CleanupDTO | null
+  event: CleanupDTO
   children: ReactNode
 }) {
   const viewerId = useAuthState().user?.id ?? null
@@ -100,7 +100,6 @@ export interface ConsoleOrgContext {
   myRole: OrganizationMemberRole | null
   isOwner: boolean
   /** Admin OR owner: profile, verification, invites. */
-  isAdmin: boolean
   canManage: boolean
   /**
    * Operator-suspended: members keep reading, but the backend refuses every org-scoped write with
@@ -111,6 +110,13 @@ export interface ConsoleOrgContext {
 
 const OrgContext = createContext<ConsoleOrgContext | null>(null)
 
+export function orgRoleFlags(
+  myRole: OrganizationMemberRole | null | undefined,
+): Pick<ConsoleOrgContext, "isOwner" | "canManage"> {
+  const isOwner = myRole === "owner"
+  return { isOwner, canManage: isOwner || myRole === "admin" }
+}
+
 export function ConsoleOrgProvider({
   org,
   children,
@@ -120,15 +126,11 @@ export function ConsoleOrgProvider({
 }) {
   const value = useMemo<ConsoleOrgContext>(() => {
     const myRole = org.myRole ?? null
-    const isOwner = myRole === "owner"
-    const isAdmin = isOwner || myRole === "admin"
     return {
       orgId: org.id,
       org,
       myRole,
-      isOwner,
-      isAdmin,
-      canManage: isAdmin,
+      ...orgRoleFlags(myRole),
       isSuspended: org.suspended === true,
     }
   }, [org])

@@ -12,6 +12,7 @@ import type {
 } from "@civfix/shared"
 import {
   MAX_EVENT_QUESTIONS,
+  MAX_QUESTION_HELP,
   MAX_QUESTION_OPTION_LABEL,
   MAX_QUESTION_PROMPT,
 } from "@civfix/shared"
@@ -29,6 +30,7 @@ import { useConsoleToast } from "@/components/console/overlay/toast"
 
 import { useConsoleErrors } from "../error-copy"
 import { invalidateEvent } from "../console-invalidate"
+import { moveItem } from "../list-order"
 
 const KINDS: readonly EventQuestionKind[] = [
   "short_text",
@@ -39,7 +41,9 @@ const KINDS: readonly EventQuestionKind[] = [
   "consent",
 ]
 
+// The contract's option-value and consent-text maxima, which it does not export.
 const MAX_OPTION_VALUE = 80
+const MAX_CONSENT_TEXT = 2000
 
 export interface DraftQuestion {
   key: string
@@ -248,14 +252,7 @@ export function QuestionsEditor({
     draft.prompt.trim() || t("questions.untitled", { n: index + 1 })
 
   const move = (index: number, delta: number) =>
-    setDrafts((prev) => {
-      const next = [...(prev ?? [])]
-      const target = index + delta
-      if (target < 0 || target >= next.length) return next
-      const [item] = next.splice(index, 1)
-      if (item) next.splice(target, 0, item)
-      return next
-    })
+    setDrafts((prev) => moveItem(prev ?? [], index, delta))
 
   return (
     <section
@@ -400,7 +397,7 @@ export function QuestionsEditor({
                       id={`q-consent-${draft.key}`}
                       value={draft.consentText}
                       rows={3}
-                      maxLength={2000}
+                      maxLength={MAX_CONSENT_TEXT}
                       onChange={(event) => update(draft.key, { consentText: event.target.value })}
                     />
                   </Field>
@@ -415,7 +412,7 @@ export function QuestionsEditor({
                   <TextInput
                     id={`q-help-${draft.key}`}
                     value={draft.helpText}
-                    maxLength={300}
+                    maxLength={MAX_QUESTION_HELP}
                     onChange={(event) => update(draft.key, { helpText: event.target.value })}
                   />
                 </Field>

@@ -2,8 +2,13 @@
 
 import { useMemo, useState } from "react"
 import { BadgeCheck, Ban, Hourglass, ShieldQuestion } from "lucide-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type { OrgVerificationKind, OrganizationVerificationDTO } from "@civfix/shared"
+import type { LucideIcon } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import type {
+  OrgVerificationKind,
+  OrgVerificationStatus,
+  OrganizationVerificationDTO,
+} from "@civfix/shared"
 import {
   ApplyOrganizationVerificationRequestSchema,
   MAX_ORG_VERIFICATION_DOCUMENTS,
@@ -30,27 +35,66 @@ import { useConsoleErrors } from "../error-copy"
 import { useConsoleFormat } from "../format"
 import { consoleKeys } from "../console-keys"
 import { invalidateOrg } from "../console-invalidate"
-import { suspendedForbiddenCopy } from "./suspended-banner"
+import { firstIssueByPath } from "../form-issues"
+import { suspendedForbiddenCopy } from "./org-copy"
+import { useOrgVerification } from "./use-org-verification"
 
 const KINDS: readonly OrgVerificationKind[] = ["nonprofit", "government", "community"]
+/** Mirrors the contract's unexported `note` max on the apply request. */
 const MAX_NOTE = 1000
-
-/** Accepts "12-3456789" and "123456789"; the contract regex, mirrored so the hint and the check agree. */
-export const EIN_PATTERN = /^\d{2}-?\d{7}$/
+/** "XX-XXXXXXX", the shape `normalizeEin` types into the field. */
+const EIN_INPUT_MAX = 10
 
 export function normalizeEin(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 9)
   return digits.length > 2 ? `${digits.slice(0, 2)}-${digits.slice(2)}` : digits
 }
 
-export function useOrgVerification(orgId: string, enabled = true) {
-  const api = useApi()
-  return useQuery<OrganizationVerificationDTO>({
-    queryKey: consoleKeys.orgVerification(orgId),
-    enabled,
-    queryFn: () => api.getOrganizationVerification({ id: orgId }),
-    retry: false,
-  })
+interface StatusPresentation {
+  icon: LucideIcon
+  tone: string
+  titleKey: string
+  titleDefault: string
+  bodyKey: string
+  bodyDefault: string
+}
+
+const STATUS_PRESENTATION: Record<OrgVerificationStatus, StatusPresentation> = {
+  verified: {
+    icon: BadgeCheck,
+    tone: "bg-console-moss-soft text-console-moss-strong",
+    titleKey: "verification.verified_title",
+    titleDefault: "This organization is verified",
+    bodyKey: "verification.verified_body",
+    bodyDefault: "Your events carry a verified badge people can trust.",
+  },
+  pending: {
+    icon: Hourglass,
+    tone: "bg-console-sun-soft text-console-sun-strong",
+    titleKey: "verification.pending_title",
+    titleDefault: "Application under review",
+    bodyKey: "verification.pending_body",
+    bodyDefault:
+      "We are reviewing your documents. We will notify you as soon as there is a decision - usually within a few business days.",
+  },
+  rejected: {
+    icon: Ban,
+    tone: "bg-console-bloom-soft text-console-bloom-strong",
+    titleKey: "verification.rejected_title",
+    titleDefault: "Application not approved",
+    bodyKey: "verification.rejected_body",
+    bodyDefault:
+      "Review the reason below, fix what is missing, and apply again with updated documents.",
+  },
+  unverified: {
+    icon: ShieldQuestion,
+    tone: "bg-console-surface-alt text-console-ink-3",
+    titleKey: "verification.unverified_title",
+    titleDefault: "Not yet verified",
+    bodyKey: "verification.unverified_body",
+    bodyDefault:
+      "Verification adds a badge to your events. Tell us what kind of organization you are and attach proof.",
+  },
 }
 
 function StatusPanel({
@@ -66,57 +110,16 @@ function StatusPanel({
   const format = useConsoleFormat()
   const { status } = verification
 
-  const Icon =
-    status === "verified"
-      ? BadgeCheck
-      : status === "pending"
-        ? Hourglass
-        : status === "rejected"
-          ? Ban
-          : ShieldQuestion
-  const tone =
-    status === "verified"
-      ? "bg-console-moss-soft text-console-moss-strong"
-      : status === "pending"
-        ? "bg-console-sun-soft text-console-sun-strong"
-        : status === "rejected"
-          ? "bg-console-bloom-soft text-console-bloom-strong"
-          : "bg-console-surface-alt text-console-ink-3"
-
-  const title =
-    status === "verified"
-      ? t("verification.verified_title", { defaultValue: "This organization is verified" })
-      : status === "pending"
-        ? t("verification.pending_title", { defaultValue: "Application under review" })
-        : status === "rejected"
-          ? t("verification.rejected_title", { defaultValue: "Application not approved" })
-          : t("verification.unverified_title", { defaultValue: "Not yet verified" })
-
-  const body =
-    status === "verified"
-      ? t("verification.verified_body", {
-          defaultValue:
-            "Your events carry a verified badge people can trust.",
-        })
-      : status === "pending"
-        ? t("verification.pending_body", {
-            defaultValue:
-              "We are reviewing your documents. We will notify you as soon as there is a decision - usually within a few business days.",
-          })
-        : status === "rejected"
-          ? t("verification.rejected_body", {
-              defaultValue:
-                "Review the reason below, fix what is missing, and apply again with updated documents.",
-            })
-          : t("verification.unverified_body", {
-              defaultValue:
-                "Verification adds a badge to your events. Tell us what kind of organization you are and attach proof.",
-            })
+  // A status newer than this build reads as unverified rather than crashing the panel.
+  const presentation = STATUS_PRESENTATION[status] ?? STATUS_PRESENTATION.unverified
+  const Icon = presentation.icon
+  const title = t(presentation.titleKey, { defaultValue: presentation.titleDefault })
+  const body = t(presentation.bodyKey, { defaultValue: presentation.bodyDefault })
 
   return (
     <section className="rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1">
       <div className="flex items-start gap-token-3">
-        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-pill ${tone}`}>
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-pill ${presentation.tone}`}>
           <Icon aria-hidden className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -200,14 +203,8 @@ function ApplyForm({ orgId, onSubmitted }: { orgId: string; onSubmitted: () => v
   )
 
   const localErrors = useMemo(() => {
-    const out: Record<string, string> = {}
     const parsed = ApplyOrganizationVerificationRequestSchema.safeParse(body)
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const key = String(issue.path[0] ?? "form")
-        if (!out[key]) out[key] = issue.message
-      }
-    }
+    const out = parsed.success ? {} : firstIssueByPath(parsed.error.issues, "field")
     if (out.einNumber) {
       out.einNumber = t("verification.ein_invalid", {
         defaultValue: "Enter the 9-digit EIN as XX-XXXXXXX.",
@@ -321,7 +318,7 @@ function ApplyForm({ orgId, onSubmitted }: { orgId: string; onSubmitted: () => v
                 id="verification-ein"
                 inputMode="numeric"
                 placeholder="12-3456789"
-                maxLength={10}
+                maxLength={EIN_INPUT_MAX}
                 value={ein}
                 invalid={Boolean(showError("einNumber"))}
                 onChange={(event) => setEin(normalizeEin(event.target.value))}

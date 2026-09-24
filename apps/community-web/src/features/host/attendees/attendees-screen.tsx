@@ -1,14 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { Download, Megaphone, Trash2, UserCheck, UserX } from "lucide-react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useMemo } from "react"
+import { Megaphone } from "lucide-react"
 import type {
   EventRegistrationDTO,
   RegistrationRosterFilter,
   RegistrationRosterSort,
 } from "@civfix/shared"
-import { useApi, useEventTicketTypes } from "@civfix/ui/data"
+import { useEventTicketTypes } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
 import {
@@ -19,48 +18,31 @@ import {
 import { useGate } from "@/components/console/query-state"
 import { ConsoleButton } from "@/components/console/button"
 import { EmptyState, StateGate } from "@/components/console/states"
-import { Chip } from "@/components/console/chips/chip"
 import { QRow } from "@/components/console/qrow"
-import { DataTable, useSelection, BulkBar, FilterBar, SavedTabs } from "@/components/console/table"
-import type { DataTableColumn, FilterFacet, SortState } from "@/components/console/table"
-import { useConsoleToast } from "@/components/console/overlay/toast"
-import { ConfirmModal } from "@/components/console/overlay/confirm-modal"
+import { DataTable, useSelection, FilterBar, SavedTabs } from "@/components/console/table"
+import type { FilterFacet } from "@/components/console/table"
 
 import { useConsoleEvent, useConsoleNavigation } from "../console-context"
-import { useConsoleErrors } from "../error-copy"
 import { EMPTY_VALUE, useConsoleFormat } from "../format"
-import { EmptyValue } from "../analytics/analytics-value"
 import { ExportMenu } from "../exports/export-menu"
 import { useConsoleRoster } from "./use-roster"
 import { AttendeeDrawer } from "./attendee-drawer"
-import { invalidateEvent } from "../console-invalidate"
+import { AttendeeBulkActions } from "./attendee-bulk-actions"
+import { AttendanceChip, attendeeColumns, rosterSortFor, rosterSortState } from "./attendee-columns"
 import {
   ROSTER_FILTERS,
-  attendanceOf,
   attendeeDisplayName,
-  checkableSeatIds,
   isRosterFilter,
   isRosterSort,
   isWaitlistProjection,
-  rosterTotals,
   rowSupportsRegistrationActions,
 } from "./roster-filters"
-
-const SORT_COLUMN: Record<string, RegistrationRosterSort> = {
-  name: "name_asc",
-  registeredAt: "registered_at_desc",
-  checkedInAt: "checked_in_at_desc",
-}
 
 export function AttendeesScreen() {
   const { t } = useT("host-attendees")
   const { t: tc } = useT("host-common")
-  const api = useApi()
-  const qc = useQueryClient()
-  const toast = useConsoleToast()
-  const errors = useConsoleErrors()
   const { eventId, event, can } = useConsoleEvent()
-  const format = useConsoleFormat(event?.timezone ?? undefined)
+  const format = useConsoleFormat(event.timezone ?? undefined)
   const { go } = useConsoleNavigation()
   const { params, set } = useConsoleUrlState()
 
@@ -80,11 +62,7 @@ export function AttendeesScreen() {
     () => (roster.data?.pages ?? []).flatMap((page) => page.items),
     [roster.data],
   )
-  const totals = rosterTotals(
-    rows.length,
-    roster.data?.pages[0]?.total,
-    roster.hasNextPage === true,
-  )
+  const eventTotal = roster.data?.pages[0]?.total ?? null
 
   const selectableIds = useMemo(
     () =>
@@ -100,8 +78,6 @@ export function AttendeesScreen() {
     set({ ...patch, cursor: null })
   }
 
-  const [confirmNoShow, setConfirmNoShow] = useState(false)
-  const [confirmRemove, setConfirmRemove] = useState(false)
   // The URL is the only source of the open attendee, so browser Back closes the drawer.
   const openRow = rows.find((row) => row.id === params.attendee) ?? null
   // A settled roster without the open row (a filter or a removal dropped it) would otherwise leave
@@ -111,85 +87,6 @@ export function AttendeesScreen() {
   useEffect(() => {
     if (attendeeGone) closeConsoleDrawer(["attendee"])
   }, [attendeeGone])
-
-  const refresh = () => invalidateEvent(qc, eventId)
-
-  const bulkCheckIn = useMutation({
-    mutationFn: async (ids: readonly string[]) => {
-      const targets = rows.filter((row) => ids.includes(row.id))
-      let done = 0
-      let failed = 0
-      for (const row of targets) {
-        for (const seatId of checkableSeatIds(row)) {
-          try {
-            await api.checkInEventSeat({ id: eventId, seatId, method: "manual" })
-            done += 1
-          } catch {
-            failed += 1
-          }
-        }
-      }
-      return { done, failed }
-    },
-    onSuccess: ({ done, failed }) => {
-      toast.toast({
-        title: t("bulk.checked_in", { count: done }),
-        ...(failed > 0 ? { description: t("bulk.partial", { count: failed }) } : {}),
-        tone: failed > 0 ? "danger" : "success",
-      })
-      selection.clear()
-      refresh()
-    },
-    onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
-  })
-
-  const bulkNoShow = useMutation({
-    mutationFn: (ids: readonly string[]) => {
-      const seatIds = rows
-        .filter((row) => ids.includes(row.id))
-        .flatMap((row) => row.seats.filter((seat) => seat.status === "active").map((s) => s.id))
-      return api.markEventNoShows({ id: eventId, seatIds, all: false })
-    },
-    onSuccess: (res) => {
-      toast.toast({ title: t("bulk.no_show", { count: res.marked }), tone: "success" })
-      selection.clear()
-      setConfirmNoShow(false)
-      refresh()
-    },
-    onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
-  })
-
-  const bulkRemove = useMutation({
-    mutationFn: async (input: { ids: readonly string[]; reason?: string }) => {
-      let done = 0
-      let failed = 0
-      for (const id of input.ids) {
-        try {
-          await api.removeEventRegistration({
-            id: eventId,
-            registrationId: id,
-            ban: false,
-            ...(input.reason ? { reason: input.reason } : {}),
-          })
-          done += 1
-        } catch {
-          failed += 1
-        }
-      }
-      return { done, failed }
-    },
-    onSuccess: ({ done, failed }) => {
-      toast.toast({
-        title: t("bulk.removed", { count: done }),
-        ...(failed > 0 ? { description: t("bulk.partial", { count: failed }) } : {}),
-        tone: failed > 0 ? "danger" : "success",
-      })
-      selection.clear()
-      setConfirmRemove(false)
-      refresh()
-    },
-    onError: (err) => toast.toast({ title: errors.message(err), tone: "danger" }),
-  })
 
   const facets: FilterFacet[] = [
     ...(waitlistView
@@ -221,73 +118,9 @@ export function AttendeesScreen() {
       : []),
   ]
 
-  const columns: DataTableColumn<EventRegistrationDTO>[] = [
-    {
-      id: "name",
-      label: t("column.name"),
-      sortable: !waitlistView,
-      render: (row) => (
-        <span className="flex min-w-0 flex-col">
-          <span className="truncate font-semibold text-console-ink">
-            {attendeeDisplayName(row, { guest: t("row.guest"), deleted: t("row.deleted_user") })}
-          </span>
-          {row.answersPreview ? (
-            <span className="truncate text-token-12 text-console-ink-3">{row.answersPreview}</span>
-          ) : null}
-        </span>
-      ),
-    },
-    {
-      id: "kind",
-      label: t("column.kind"),
-      columnPriority: 2,
-      render: (row) => <Chip kind="attendee-kind" value={row.kind} size="sm" />,
-    },
-    {
-      id: "ticketType",
-      label: t("column.ticket_type"),
-      columnPriority: 1,
-      render: (row) => row.ticketTypeName ?? <EmptyValue />,
-    },
-    {
-      id: "seats",
-      label: waitlistView ? t("drawer.party") : t("column.seats"),
-      align: "right",
-      render: (row) => format.number(waitlistView ? row.partySize : row.seatCount),
-    },
-    {
-      id: "attendance",
-      label: t("column.attendance"),
-      render: (row) =>
-        waitlistView ? (
-          <Chip kind="waitlist-status" value="waiting" size="sm" />
-        ) : (
-          <Chip kind="attendance" value={attendanceOf(row)} size="sm" />
-        ),
-    },
-    {
-      id: "registeredAt",
-      label: t("column.registered_at"),
-      sortable: !waitlistView,
-      columnPriority: 1,
-      render: (row) => format.dateTime(row.registeredAt),
-    },
-    {
-      id: "checkedInAt",
-      label: t("column.checked_in_at"),
-      sortable: !waitlistView,
-      columnPriority: 2,
-      render: (row) => (row.checkedInAt ? format.time(row.checkedInAt) : <EmptyValue />),
-    },
-  ]
-
-  const sortState: SortState | null = waitlistView
-    ? null
-    : sort === "name_asc"
-      ? { columnId: "name", dir: "asc" }
-      : sort === "checked_in_at_desc"
-        ? { columnId: "checkedInAt", dir: "desc" }
-        : { columnId: "registeredAt", dir: sort === "registered_at_asc" ? "asc" : "desc" }
+  const nameFallbacks = { guest: t("row.guest"), deleted: t("row.deleted_user") }
+  const nameOf = (row: EventRegistrationDTO) => attendeeDisplayName(row, nameFallbacks)
+  const columns = attendeeColumns({ t, format, waitlistView, nameOf })
 
   return (
     <div className="flex flex-col gap-token-4">
@@ -309,7 +142,7 @@ export function AttendeesScreen() {
               {t("action.message")}
             </ConsoleButton>
           ) : null}
-          {can("export") ? <ExportMenu eventId={eventId} eventTitle={event?.title ?? ""} /> : null}
+          {can("export") ? <ExportMenu eventId={eventId} eventTitle={event.title ?? ""} /> : null}
         </div>
       </div>
 
@@ -319,9 +152,9 @@ export function AttendeesScreen() {
       />
 
       <p className="text-token-12 text-console-ink-3">
-        {t("summary.shown", { shown: format.number(totals.shown) })}
-        {totals.eventTotal !== null
-          ? ` · ${t("summary.event_total", { total: format.number(totals.eventTotal) })}`
+        {t("summary.shown", { shown: format.number(rows.length) })}
+        {eventTotal !== null
+          ? ` · ${t("summary.event_total", { total: format.number(eventTotal) })}`
           : ""}
       </p>
 
@@ -353,53 +186,23 @@ export function AttendeesScreen() {
           rows={rows}
           rowKey={(row) => row.id}
           loading={roster.isPending}
-          sort={sortState}
+          sort={rosterSortState(sort, waitlistView)}
           onSortChange={(next) => {
-            const base = SORT_COLUMN[next.columnId]
-            if (!base) return
-            const resolved: RegistrationRosterSort =
-              base === "registered_at_desc" && next.dir === "asc" ? "registered_at_asc" : base
-            setFilters({ sort: resolved })
+            const resolved = rosterSortFor(next)
+            if (resolved) setFilters({ sort: resolved })
           }}
           selection={waitlistView ? undefined : selection}
-          rowSelectLabel={(row) =>
-            t("table.select_row", {
-              name: attendeeDisplayName(row, {
-                guest: t("row.guest"),
-                deleted: t("row.deleted_user"),
-              }),
-            })
-          }
+          rowSelectLabel={(row) => t("table.select_row", { name: nameOf(row) })}
           onRowPress={waitlistView ? undefined : (row) => set({ attendee: row.id }, "push")}
-          rowPressLabel={(row) =>
-            t("table.open_row", {
-              name: attendeeDisplayName(row, {
-                guest: t("row.guest"),
-                deleted: t("row.deleted_user"),
-              }),
-            })
-          }
+          rowPressLabel={(row) => t("table.open_row", { name: nameOf(row) })}
           maxColumnPriority={2}
           renderCard={(row) => (
             <QRow
               as="card"
-              title={attendeeDisplayName(row, {
-                guest: t("row.guest"),
-                deleted: t("row.deleted_user"),
-              })}
+              title={nameOf(row)}
               sub={`${row.ticketTypeName ?? EMPTY_VALUE} · ${format.number(waitlistView ? row.partySize : row.seatCount)}`}
-              chips={
-                waitlistView ? (
-                  <Chip kind="waitlist-status" value="waiting" size="sm" />
-                ) : (
-                  <Chip kind="attendance" value={attendanceOf(row)} size="sm" />
-                )
-              }
-              onPress={
-                waitlistView
-                  ? undefined
-                  : () => set({ attendee: row.id }, "push")
-              }
+              chips={<AttendanceChip row={row} waitlistView={waitlistView} />}
+              onPress={waitlistView ? undefined : () => set({ attendee: row.id }, "push")}
             />
           )}
           emptyState={<EmptyState title={t("empty.title")} body={t("empty.body")} />}
@@ -419,82 +222,7 @@ export function AttendeesScreen() {
         ) : null}
       </StateGate>
 
-      <BulkBar
-        count={selection.count}
-        onClear={() => selection.clear()}
-        actions={[
-          ...(can("check_in")
-            ? [
-                {
-                  id: "check-in",
-                  label: t("bulk.check_in"),
-                  icon: UserCheck,
-                  disabled: bulkCheckIn.isPending,
-                  onPress: () => bulkCheckIn.mutate([...selection.selectedIds]),
-                },
-                {
-                  id: "no-show",
-                  label: t("bulk.mark_no_show"),
-                  icon: UserX,
-                  disabled: bulkNoShow.isPending,
-                  onPress: () => setConfirmNoShow(true),
-                },
-              ]
-            : []),
-          ...(can("manage_event")
-            ? [
-                {
-                  id: "remove",
-                  label: t("bulk.remove"),
-                  icon: Trash2,
-                  destructive: true,
-                  disabled: bulkRemove.isPending,
-                  onPress: () => setConfirmRemove(true),
-                },
-              ]
-            : []),
-          ...(can("export")
-            ? [
-                {
-                  id: "export",
-                  label: t("bulk.export_hint"),
-                  icon: Download,
-                  disabled: true,
-                  disabledReason: t("bulk.export_reason"),
-                  onPress: () => undefined,
-                },
-              ]
-            : []),
-        ]}
-      />
-
-      <ConfirmModal
-        open={confirmNoShow}
-        severity="warn"
-        title={t("no_show.title")}
-        body={t("no_show.body", { count: selection.count })}
-        confirmLabel={t("no_show.confirm")}
-        busy={bulkNoShow.isPending}
-        onCancel={() => setConfirmNoShow(false)}
-        onConfirm={() => bulkNoShow.mutate([...selection.selectedIds])}
-      />
-
-      <ConfirmModal
-        open={confirmRemove}
-        severity="danger"
-        title={t("bulk_remove.title", { count: selection.count })}
-        body={t("bulk_remove.body", { count: selection.count })}
-        reasonField={{ label: t("remove.reason"), required: false }}
-        confirmLabel={t("remove.confirm")}
-        busy={bulkRemove.isPending}
-        onCancel={() => setConfirmRemove(false)}
-        onConfirm={(payload) =>
-          bulkRemove.mutate({
-            ids: [...selection.selectedIds],
-            ...(payload.reason ? { reason: payload.reason } : {}),
-          })
-        }
-      />
+      <AttendeeBulkActions eventId={eventId} rows={rows} selection={selection} can={can} />
 
       <AttendeeDrawer
         key={openRow?.id ?? "none"}

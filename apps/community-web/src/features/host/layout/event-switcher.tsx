@@ -1,17 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronsUpDown } from "lucide-react"
 import { useMyHostedEvents, hostedEventRows } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 import { hrefForRoute } from "@/components/console/route"
 import type { EventSection } from "@/components/console/route"
-import { Overlay } from "@/components/console/overlay/overlay"
 import { LoadingState } from "@/components/console/states"
 
 import { ConsoleLink } from "./console-link"
+import { SwitcherOverlay } from "./switcher-overlay"
 
 export interface EventSwitcherProps {
   eventId: string
@@ -31,27 +30,11 @@ export function EventSwitcher({ eventId, section, className }: EventSwitcherProp
       : hrefForRoute({ kind: "event", eventId: id, section: section ?? "overview" })
 
   return (
-    <Overlay
+    <SwitcherOverlay
       open={open}
-      onClose={() => setOpen(false)}
-      align="end"
-      width={320}
+      setOpen={setOpen}
       label={t("switcher.label")}
-      trigger={
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-haspopup="dialog"
-          onClick={() => setOpen((value) => !value)}
-          className={cn(
-            "inline-flex h-9 items-center gap-1.5 rounded-sm border border-console-line bg-console-surface px-token-3 text-token-13 font-semibold text-console-ink-2 transition-colors duration-d1 hover:bg-console-surface-alt hover:text-console-ink focus-visible:outline-none focus-visible:shadow-console-ring",
-            className,
-          )}
-        >
-          {t("switcher.label")}
-          <ChevronsUpDown aria-hidden className="h-3.5 w-3.5" />
-        </button>
-      }
+      className={className}
     >
       {events.isPending ? (
         <LoadingState count={3} />
@@ -79,6 +62,6 @@ export function EventSwitcher({ eventId, section, className }: EventSwitcherProp
           ))}
         </ul>
       )}
-    </Overlay>
+    </SwitcherOverlay>
   )
 }

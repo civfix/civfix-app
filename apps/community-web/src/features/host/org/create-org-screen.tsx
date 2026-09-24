@@ -1,7 +1,5 @@
 "use client"
 
-import { useMemo } from "react"
-import { Building2, CalendarDays, Plus } from "lucide-react"
 import { useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -10,7 +8,8 @@ import { hrefForRoute } from "@/components/console/route"
 import { ConsoleShell } from "../layout/console-shell"
 import { Breadcrumbs } from "../layout/breadcrumbs"
 import { OrgSwitcher } from "../layout/org-switcher"
-import type { ConsoleNavItem } from "../layout/nav-items"
+import { useConsoleHomeNav } from "../layout/home-nav"
+import { MAX_BOTTOM_TABS } from "../layout/nav-items"
 import { useConsoleNavigation } from "../console-context"
 import { OrgProfileForm } from "./org-profile-form"
 
@@ -22,36 +21,15 @@ export function CreateOrgScreen() {
   const { go } = useConsoleNavigation()
   const orgs = useMyOrganizations()
 
-  const navItems = useMemo<ConsoleNavItem[]>(() => {
-    const items: ConsoleNavItem[] = [
-      {
-        id: "portfolio",
-        label: t("nav.events"),
-        icon: CalendarDays,
-        href: hrefForRoute({ kind: "portfolio" }),
-      },
-    ]
-    for (const org of orgs.data ?? []) {
-      items.push({
-        id: `org:${org.id}`,
-        label: org.name,
-        icon: Building2,
-        href: hrefForRoute({ kind: "org", orgId: org.id, section: "overview" }),
-      })
-    }
-    items.push({
-      id: "org-new",
-      label: t("nav.new_org", { defaultValue: "New organization" }),
-      icon: Plus,
-      href: hrefForRoute({ kind: "org-new" }),
-    })
-    return items
-  }, [orgs.data, t])
+  const navItems = useConsoleHomeNav(orgs.data, {
+    portfolio: t("nav.events"),
+    newOrg: t("nav.new_org", { defaultValue: "New organization" }),
+  })
 
   return (
     <ConsoleShell
       navItems={navItems}
-      bottomTabs={navItems.slice(0, 5)}
+      bottomTabs={navItems.slice(0, MAX_BOTTOM_TABS)}
       activeId="org-new"
       title={t("create.title", { defaultValue: "New organization" })}
       subtitle={t("create.subtitle", {

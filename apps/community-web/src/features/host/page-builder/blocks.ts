@@ -49,19 +49,6 @@ export function emptyBlock(kind: EventPageBlockKind): EventPageBlock {
   }
 }
 
-export function moveBlock(
-  blocks: readonly EventPageBlock[],
-  index: number,
-  delta: number,
-): EventPageBlock[] {
-  const next = [...blocks]
-  const target = index + delta
-  if (target < 0 || target >= next.length) return next
-  const [moved] = next.splice(index, 1)
-  if (moved) next.splice(target, 0, moved)
-  return next
-}
-
 export function replaceBlock(
   blocks: readonly EventPageBlock[],
   id: string,

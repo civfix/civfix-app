@@ -8,9 +8,9 @@ describe("consoleKeys.broadcastsRoot", () => {
   it("prefixes the list, the detail and the deliveries, so one invalidation refreshes all", () => {
     const root = consoleKeys.broadcastsRoot(EVENT_ID)
     for (const key of [
-      consoleKeys.broadcasts(EVENT_ID, "all"),
+      consoleKeys.broadcasts(EVENT_ID),
       consoleKeys.broadcast(EVENT_ID, "b1"),
-      consoleKeys.deliveries(EVENT_ID, "b1", "all", "all"),
+      consoleKeys.deliveries(EVENT_ID, "b1", "all"),
     ]) {
       expect(key.slice(0, root.length)).toEqual([...root])
     }

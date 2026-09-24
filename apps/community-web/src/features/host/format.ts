@@ -15,7 +15,6 @@ export interface ConsoleFormatters {
   locale: string
   number: (value: number) => string
   percent: (value: number) => string
-  money: (amountMinor: number, currency?: string) => string
   date: (iso: string, timeZone?: string) => string
   dateTime: (iso: string, timeZone?: string) => string
   time: (iso: string, timeZone?: string) => string
@@ -24,23 +23,8 @@ export interface ConsoleFormatters {
   whenLabel: (iso: string, timeZone?: string) => string
 }
 
-const MINOR_UNITS = 100
-
 /** The visible "no value" mark; JSX should render `EmptyValue`, which also names it for readers. */
 export { EMPTY_VALUE } from "@civfix/ui/i18n"
-
-export function formatMoneyMinor(
-  amountMinor: number,
-  currency: string,
-  locale: string,
-): string {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amountMinor / MINOR_UNITS)
-}
 
 export function useConsoleFormat(timeZone?: string): ConsoleFormatters {
   const { locale } = useLocale()
@@ -60,10 +44,6 @@ export function useConsoleFormat(timeZone?: string): ConsoleFormatters {
   const percent = useCallback(
     (value: number) =>
       new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(value),
-    [locale],
-  )
-  const money = useCallback(
-    (amountMinor: number, currency = "USD") => formatMoneyMinor(amountMinor, currency, locale),
     [locale],
   )
   const date = useCallback(
@@ -120,8 +100,8 @@ export function useConsoleFormat(timeZone?: string): ConsoleFormatters {
   )
 
   return useMemo(
-    () => ({ locale, number, percent, money, date, dateTime, time, dayShort, zoneLabel, whenLabel }),
-    [locale, number, percent, money, date, dateTime, time, dayShort, zoneLabel, whenLabel],
+    () => ({ locale, number, percent, date, dateTime, time, dayShort, zoneLabel, whenLabel }),
+    [locale, number, percent, date, dateTime, time, dayShort, zoneLabel, whenLabel],
   )
 }
 

@@ -22,8 +22,13 @@ import { SegmentedControl } from "@/components/console/forms/segmented-control"
 
 import { useConsoleErrors } from "../error-copy"
 import { invalidateOrg } from "../console-invalidate"
-import { ORG_INVITE_TTL_DAYS, daysUntil, normalizeInviteIdentifier } from "./org-invites"
-import { suspendedForbiddenCopy } from "./suspended-banner"
+import {
+  INVITE_IDENTIFIER_MAX,
+  ORG_INVITE_TTL_DAYS,
+  daysUntil,
+  normalizeInviteIdentifier,
+} from "./org-invites"
+import { suspendedForbiddenCopy } from "./org-copy"
 
 export type InvitableRole = "admin" | "member"
 
@@ -191,7 +196,7 @@ export function InviteMemberDrawer({ orgId, open, onClose, disabled = false }: I
             <TextInput
               id="org-invite-identifier"
               value={identifier}
-              maxLength={254}
+              maxLength={INVITE_IDENTIFIER_MAX}
               autoComplete="off"
               autoCapitalize="none"
               type={identifierKind === "email" ? "email" : "text"}
