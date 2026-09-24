@@ -1,6 +1,6 @@
+import type { RoomKind } from "../schemas/common.js"
 import type { ChatMessageDTO, ChatMessageKind } from "../schemas/entities.js"
 import type { WsServerMessage } from "../types/ws.js"
-
 
 export interface ChatConnection {
   readonly id: string
@@ -9,7 +9,7 @@ export interface ChatConnection {
 
 export interface PersistChatInput {
   cleanupId: string
-  roomKind?: "cleanup" | "dm" | "report" | "group"
+  roomKind?: RoomKind
   userId: string
   body: string
   kind?: ChatMessageKind

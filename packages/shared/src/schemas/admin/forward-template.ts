@@ -11,7 +11,6 @@ import { z } from "zod"
  * into an HTML email body MUST HTML-escape it (the backend's email block builders do).
  */
 
-
 export interface ForwardTemplateVariable {
   token: string
   label: string
@@ -86,7 +85,7 @@ export const FORWARD_TEMPLATE_VARIABLES: readonly ForwardTemplateVariable[] = [
     label: "Photo count",
     description: "The number of photos attached to the report.",
   },
-] as const
+]
 
 export const FORWARD_TEMPLATE_VARIABLE_NAMES: readonly string[] = FORWARD_TEMPLATE_VARIABLES.map((v) =>
   v.token.slice(1, -1),
@@ -153,6 +152,34 @@ function isNameChar(ch: string): boolean {
 
 export const FORWARD_TEMPLATE_MAX_ISSUES = 8
 
+interface ScanStep {
+  issue?: ForwardTemplateIssue
+  next: number
+}
+
+function scanDoubleBraces(template: string, start: number, nameStart: number): ScanStep {
+  const n = template.length
+  let close = nameStart
+  while (close < n && close - nameStart < MAX_TOKEN_NAME && template[close] !== "}" && template[close] !== "{") {
+    close += 1
+  }
+  while (close < n && template[close] === "}") close += 1
+  return { issue: { kind: "double_braces", token: template.slice(start, close), index: start }, next: close }
+}
+
+function scanSingleToken(template: string, start: number, nameStart: number): ScanStep {
+  const n = template.length
+  let end = nameStart
+  while (end < n && end - nameStart < MAX_TOKEN_NAME && isNameChar(template[end] as string)) end += 1
+  if (end === nameStart || end >= n || template[end] !== "}") return { next: nameStart }
+  const token = template.slice(start, end + 1)
+  if (!KNOWN_TOKENS.has(token)) return { issue: { kind: "unknown_token", token, index: start }, next: end + 1 }
+  if (template[end + 1] !== "}") return { next: end + 1 }
+  let extra = end + 1
+  while (extra < n && template[extra] === "}") extra += 1
+  return { issue: { kind: "stray_brace", token: template.slice(start, extra), index: start }, next: extra }
+}
+
 export function forwardTemplateIssues(template: string): ForwardTemplateIssue[] {
   const issues: ForwardTemplateIssue[] = []
   if (template.length > FORWARD_TEMPLATE_BODY_MAX) return issues
@@ -163,39 +190,12 @@ export function forwardTemplateIssues(template: string): ForwardTemplateIssue[] 
       i += 1
       continue
     }
-    let open = i
-    while (open < n && template[open] === "{") open += 1
-    const braces = open - i
-    if (braces >= 2) {
-      let close = open
-      while (close < n && close - open < MAX_TOKEN_NAME && template[close] !== "}" && template[close] !== "{") {
-        close += 1
-      }
-      while (close < n && template[close] === "}") close += 1
-      issues.push({ kind: "double_braces", token: template.slice(i, close), index: i })
-      i = close
-      continue
-    }
-    let end = open
-    while (end < n && end - open < MAX_TOKEN_NAME && isNameChar(template[end] as string)) end += 1
-    if (end === open || end >= n || template[end] !== "}") {
-      i = open
-      continue
-    }
-    const token = template.slice(i, end + 1)
-    if (!KNOWN_TOKENS.has(token)) {
-      issues.push({ kind: "unknown_token", token, index: i })
-      i = end + 1
-      continue
-    }
-    if (template[end + 1] === "}") {
-      let extra = end + 1
-      while (extra < n && template[extra] === "}") extra += 1
-      issues.push({ kind: "stray_brace", token: template.slice(i, extra), index: i })
-      i = extra
-      continue
-    }
-    i = end + 1
+    let nameStart = i
+    while (nameStart < n && template[nameStart] === "{") nameStart += 1
+    const step =
+      nameStart - i >= 2 ? scanDoubleBraces(template, i, nameStart) : scanSingleToken(template, i, nameStart)
+    if (step.issue !== undefined) issues.push(step.issue)
+    i = step.next
   }
   return issues
 }

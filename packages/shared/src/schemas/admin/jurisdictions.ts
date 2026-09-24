@@ -1,9 +1,9 @@
 import { z } from "zod"
 import { ForwardTemplateBodySchema, ForwardTemplateSubjectSchema } from "./forward-template.js"
-import { ReportCategorySchema } from "../common.js"
 import { pageResponse } from "../common.js"
 import { JurisdictionLayerSchema } from "../map.js"
 import { AdminListQuerySchema } from "./common.js"
+import { RoutingContactFields } from "./internal-fields.js"
 import { DiscoveryContactSchema, PerCategoryCountsSchema } from "./discovery.js"
 
 /**
@@ -20,9 +20,7 @@ import { DiscoveryContactSchema, PerCategoryCountsSchema } from "./discovery.js"
 export const SaveContactsRequestSchema = z
   .object({
     geoid: z.string(),
-    contacts: z.record(ReportCategorySchema, z.string().email().nullable()).optional(),
-    defaultEmails: z.array(z.string().email()).optional(),
-    formUrl: z.string().url().nullable().optional(),
+    ...RoutingContactFields,
     forwardSubjectTemplate: ForwardTemplateSubjectSchema.nullable().optional(),
     forwardBodyTemplate: ForwardTemplateBodySchema.nullable().optional(),
   })
@@ -177,9 +175,7 @@ export type JurisdictionGeometryResponse = z.infer<typeof JurisdictionGeometryRe
 export const PatchJurisdictionRequestSchema = z
   .object({
     geoid: z.string(),
-    contacts: z.record(ReportCategorySchema, z.string().email().nullable()).optional(),
-    defaultEmails: z.array(z.string().email()).optional(),
-    formUrl: z.string().url().nullable().optional(),
+    ...RoutingContactFields,
     notes: z.string().max(2000).optional(),
     // `flagged: true` stamps flagged_at and stores flagReason for operator review; `false` clears both.
     flagged: z.boolean().optional(),

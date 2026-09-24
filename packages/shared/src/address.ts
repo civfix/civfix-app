@@ -1,12 +1,12 @@
-import type { AddressPrecision, EventAddressSource, ReportAddressSource } from "./schemas/entities.js"
+import {
+  AddressPrecisionSchema,
+  type AddressPrecision,
+  type EventAddressSource,
+  type ReportAddressSource,
+} from "./schemas/entities.js"
 import type { LatLngLike } from "./geo.js"
 
-export const ADDRESS_PRECISION_LADDER: readonly AddressPrecision[] = [
-  "street",
-  "intersection",
-  "landmark",
-  "locality",
-] as const
+export const ADDRESS_PRECISION_LADDER: readonly AddressPrecision[] = AddressPrecisionSchema.options
 
 export const GEOCODE_POINT_KEY_DECIMALS = 5
 

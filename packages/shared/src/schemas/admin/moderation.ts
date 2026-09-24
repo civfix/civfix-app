@@ -9,6 +9,7 @@ import {
   ModerationToneSchema,
   PrioritySchema,
 } from "./common.js"
+import { AdminMediaRefSchema } from "./internal-fields.js"
 
 /** Moderation queue. An item clears from the queue once an operator acts on it. */
 
@@ -50,14 +51,7 @@ export const ModerationSimilarSchema = z
 export type ModerationSimilar = z.infer<typeof ModerationSimilarSchema>
 
 /** A held media reference shown in the moderation detail (the actual asset, by kind). */
-export const ModerationMediaSchema = z
-  .object({
-    id: z.string(),
-    kind: z.enum(["image", "video"]),
-    url: z.string(),
-    thumbUrl: z.string().nullable().optional(),
-  })
-  .strict()
+export const ModerationMediaSchema = AdminMediaRefSchema
 export type ModerationMedia = z.infer<typeof ModerationMediaSchema>
 
 /**

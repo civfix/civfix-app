@@ -3,6 +3,7 @@ import { ReportCategorySchema } from "../common.js"
 import { pageResponse } from "../common.js"
 import { JurisdictionLayerSchema } from "../map.js"
 import { AdminListQuerySchema, PrioritySchema } from "./common.js"
+import { RoutingContactFields } from "./internal-fields.js"
 
 /**
  * Discovery queue: pins landing where civfix has no routing contact yet. Saving contacts and routing
@@ -140,9 +141,7 @@ export type FlagDiscoveryRequest = z.infer<typeof FlagDiscoveryRequestSchema>
 export const SaveDraftRequestSchema = z
   .object({
     id: z.string(),
-    contacts: z.record(ReportCategorySchema, z.string().email().nullable()).optional(),
-    defaultEmails: z.array(z.string().email()).optional(),
-    formUrl: z.string().url().nullable().optional(),
+    ...RoutingContactFields,
   })
   .strict()
 export type SaveDraftRequest = z.infer<typeof SaveDraftRequestSchema>

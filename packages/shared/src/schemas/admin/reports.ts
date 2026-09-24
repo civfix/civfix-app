@@ -1,10 +1,8 @@
 import { z } from "zod"
-import { ReportCategorySchema } from "../common.js"
-import { IdSchema, pageResponse } from "../common.js"
+import { IdSchema, MESSAGE_BODY_MAX, pageResponse, ReportCategorySchema } from "../common.js"
 import { ChatHistoryResponseSchema, ReportChatHistoryRequestSchema } from "../chat.js"
 import type { ChatHistoryResponse, ReportChatHistoryRequest } from "../chat.js"
 import { ChatMessageDTOSchema, LinkedEventRefSchema } from "../entities.js"
-import { MESSAGE_BODY_MAX } from "../../types/ws.js"
 import {
   AdminActorRefSchema,
   AdminCoordsSchema,
@@ -12,6 +10,7 @@ import {
   AdminListQuerySchema,
   RelAbsTimeSchema,
 } from "./common.js"
+import { AdminMediaRefSchema } from "./internal-fields.js"
 
 /**
  * Admin reports surface. "flagged" is an abuse marker, not a status, and removing a report sets it to
@@ -90,14 +89,7 @@ export const ReportOutreachSchema = z
 export type ReportOutreach = z.infer<typeof ReportOutreachSchema>
 
 /** A media asset on a report (image/video reference; the real media URL, not a placeholder). */
-export const ReportMediaSchema = z
-  .object({
-    id: z.string(),
-    kind: z.enum(["image", "video"]),
-    url: z.string(),
-    thumbUrl: z.string().nullable().optional(),
-  })
-  .strict()
+export const ReportMediaSchema = AdminMediaRefSchema
 export type ReportMedia = z.infer<typeof ReportMediaSchema>
 
 /**
