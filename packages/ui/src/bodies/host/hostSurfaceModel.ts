@@ -10,7 +10,7 @@ import type {
 } from "@civfix/shared"
 import { hasHostCapability, type HostStandingView } from "../../data/hooks/host"
 import type { SparkPoint } from "../../primitives/trendSparklineModel"
-import type { IconName } from "../../typography/icon-map"
+import type { IconName } from "../../typography/iconMap"
 import { linkSheetMode } from "../linkReportsModel"
 
 export const ANNOUNCE_CTA_WINDOW_MS = 48 * 3_600_000

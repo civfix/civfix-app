@@ -6,7 +6,7 @@ import {
   byErrorCode,
   type ErrorCodeTable,
 } from "@civfix/shared"
-import type { IconName } from "../../typography/icon-map"
+import type { IconName } from "../../typography/iconMap"
 
 export const ANNOUNCEMENT_PREVIEW_LINES = 2
 
