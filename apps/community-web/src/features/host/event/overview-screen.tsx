@@ -100,8 +100,12 @@ export function OverviewScreen() {
             <div className="flex flex-wrap items-baseline justify-between gap-token-2">
               <dt className="text-token-13 text-console-ink-3">{t("details.when")}</dt>
               <dd className="text-token-14 font-semibold text-console-ink">
-                {format.dateTime(event?.scheduledAt ?? new Date().toISOString())}
-                {event?.endsAt ? ` – ${format.time(event.endsAt)}` : ""}
+                {event?.endsAt
+                  ? t("details.when_range", {
+                      start: format.dateTime(event.scheduledAt),
+                      end: format.time(event.endsAt),
+                    })
+                  : format.dateTime(event?.scheduledAt ?? new Date().toISOString())}
                 {zoneShort ? ` ${zoneShort}` : ""}
               </dd>
             </div>
@@ -122,12 +126,18 @@ export function OverviewScreen() {
             <div className="flex flex-wrap items-baseline justify-between gap-token-2">
               <dt className="text-token-13 text-console-ink-3">{t("details.registration")}</dt>
               <dd className="text-token-14 text-console-ink-2">
-                {event?.registrationOpensAt
-                  ? format.dateTime(event.registrationOpensAt)
-                  : t("details.registration_open")}
                 {event?.registrationClosesAt
-                  ? ` → ${format.dateTime(event.registrationClosesAt)}`
-                  : ""}
+                  ? event.registrationOpensAt
+                    ? t("details.registration_range", {
+                        opens: format.dateTime(event.registrationOpensAt),
+                        closes: format.dateTime(event.registrationClosesAt),
+                      })
+                    : t("details.registration_open_until", {
+                        closes: format.dateTime(event.registrationClosesAt),
+                      })
+                  : event?.registrationOpensAt
+                    ? format.dateTime(event.registrationOpensAt)
+                    : t("details.registration_open")}
               </dd>
             </div>
             <div className="flex flex-wrap items-baseline justify-between gap-token-2">

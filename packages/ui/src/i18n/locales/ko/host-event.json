@@ -31,11 +31,14 @@
   "details": {
     "title": "행사 정보",
     "when": "일시",
+    "when_range": "{{start}} ~ {{end}}",
     "timezone": "시간대",
     "where": "장소",
     "no_address": "주소가 없습니다",
     "registration": "등록 기간",
     "registration_open": "현재 접수 중",
+    "registration_range": "{{opens}} ~ {{closes}}",
+    "registration_open_until": "현재 접수 중, {{closes}}까지",
     "team": "팀 구성원",
     "organization": "단체"
   },

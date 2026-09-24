@@ -59,7 +59,7 @@
     "title": "Members",
     "joined": "Joined {{when}}",
     "read_only": "Only the owner can change who belongs to this organization.",
-    "subtitle": "Owners manage roles and billing; admins run the profile and events; members see the roster.",
+    "subtitle": "Owners manage roles; admins run the profile and events; members see the roster.",
     "you": "You",
     "empty_title": "No members yet",
     "empty_body": "Invite teammates so they can co-host under this organization."
