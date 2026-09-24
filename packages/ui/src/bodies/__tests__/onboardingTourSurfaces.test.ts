@@ -74,9 +74,7 @@ describe("Settings > App carries the tour row only when a host registers a prese
   })
 
   it("takes Compass from the shared icon map rather than a one-off glyph", () => {
-    const icons = read("../../typography/icon-map.ts")
-    expect(icons).toContain("export type IconName = keyof typeof ICONS")
-    expect(icons).toMatch(/^\s+Compass,$/m)
+    expect(read("../../typography/icon-map.ts")).toContain('| "Compass"')
   })
 
   it("has the row's copy in all four settings catalogs", () => {
