@@ -24,6 +24,7 @@ export const MAX_REPORT_ADDR_LENGTH = 300
 
 export const SortOrderInputSchema = z.number().int().min(0).max(MAX_SORT_ORDER).optional()
 
+// Cleanup and registration requests; report requests validate their key with IdSchema instead.
 export const IdempotencyKeySchema = z
   .string()
   .min(IDEMPOTENCY_KEY_MIN_LENGTH)

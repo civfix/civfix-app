@@ -1,4 +1,7 @@
-export const K_SUPPRESS = 5
+import { ANALYTICS_SUPPRESSION_K } from "../schemas/host/suppression.js"
+
+// One privacy floor: client-side suppression and the analytics schema default must never drift apart.
+export const K_SUPPRESS = ANALYTICS_SUPPRESSION_K
 
 const RATE_PRECISION = 10000
 
