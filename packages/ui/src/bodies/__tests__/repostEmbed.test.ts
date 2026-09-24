@@ -4,6 +4,7 @@ import type { TFunction } from "i18next"
 import type { PersonDTO, PostDTO, PostRefDTO } from "@civfix/shared"
 import {
   buildPostCardModel,
+  buildPostCardView,
   postMenuSubject,
   repostBodyText,
   repostSubjectAuthorId,
@@ -116,11 +117,25 @@ describe("the overflow menu's subject is the post the row actually renders", () 
   })
 
   it("offers no jump to an original that is gone", () => {
+    const view = (post: PostDTO) => buildPostCardView(post, buildPostCardModel(post, t))
+    expect(view(repost(ref())).openableOriginalId).toBe("post-original")
+    expect(view(repost(ref({ deleted: true, body: null, excerpt: "" }))).openableOriginalId).toBeNull()
+    expect(view({ ...repost(ref()), kind: "quote", body: "Worth joining." }).openableOriginalId).toBeNull()
     const card = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
+    expect(card).toContain("(openableOriginalId ? () => openPost(openableOriginalId) : undefined)")
     const focal = readFileSync(new URL("../thread/ThreadFocalPost.tsx", import.meta.url), "utf8")
-    for (const source of [card, focal]) {
-      expect(source).toContain("isRepost && embedded && !embedded.deleted")
-    }
+    expect(focal).toContain("isRepost && embedded && !embedded.deleted")
+  })
+
+  it("routes the row, comment and quote to the live original and falls back to the wrapper", () => {
+    const view = (post: PostDTO) => buildPostCardView(post, buildPostCardModel(post, t))
+    expect(view(repost(ref()))).toMatchObject({ isRepost: true, rowPostId: "post-original", actionTargetId: "post-original" })
+    expect(view(repost(ref({ deleted: true, body: null, excerpt: "" })))).toMatchObject({
+      rowPostId: "post-original",
+      actionTargetId: "post-repost",
+    })
+    const plain: PostDTO = { ...repost(ref()), kind: "post", repostOf: null }
+    expect(view(plain)).toMatchObject({ isRepost: false, rowPostId: "post-repost", actionTargetId: "post-repost" })
   })
 })
 
@@ -136,32 +151,44 @@ describe("the repost surfaces wire the guard and the embed they are modelled on"
   })
 
   it("gives the repost meta row the same overflow button the ordinary row has", () => {
-    const metaRows = CARD.split("function ").filter((block) =>
-      block.startsWith("MetaRow(") || block.startsWith("EmbeddedPostMeta("),
+    const metaRows = CARD.split("function ").filter((block) => block.startsWith("PostMetaRow("))
+    expect(metaRows).toHaveLength(1)
+    expect(metaRows[0]).toContain(
+      '<PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} expanded={menuOpen} />',
     )
-    expect(metaRows).toHaveLength(2)
-    for (const block of metaRows) {
-      expect(block).toContain(
-        '<PostOverflowButton label={t("post_card.more_a11y")} onPress={onOpenMenu} buttonRef={menuRef} expanded={menuOpen} />',
-      )
-    }
-    expect(CARD).toMatch(/<EmbeddedPostMeta[\s\S]*?onOpenMenu=\{openMenu\}[\s\S]*?menuRef=\{menuTrigger\.ref\}/)
+    expect(CARD.split("<PostMetaRow").length - 1).toBe(1)
+    expect(CARD).toMatch(
+      /<PostMetaRow\s+variant=\{isRepost \? "repost" : "own"\}[\s\S]*?onOpenMenu=\{openMenu\}[\s\S]*?menuRef=\{menuTrigger\.ref\}/,
+    )
   })
 
   it("hands the menu the redirected subject and a way back to the original", () => {
     expect(CARD).toContain("const menuSubject = React.useMemo(() => postMenuSubject(post), [post])")
     expect(CARD).toMatch(/<PostOverflowMenu[\s\S]*?subject=\{menuSubject\}/)
     expect(CARD).toMatch(/<PostOverflowMenu[\s\S]*?onOpenOriginal=\{openOriginal\}/)
-    expect(CARD).toContain("isRepost && embedded && !embedded.deleted ? () => openPost(embedded.id) : undefined")
+    expect(CARD).toContain("(openableOriginalId ? () => openPost(openableOriginalId) : undefined)")
     const MENU = src("../PostOverflowMenu.tsx")
     expect(MENU).toContain('label: t("post_card.menu.go_to_original")')
     expect(MENU).toContain("...(onOpenOriginal")
   })
 
   it("renders the original's media, event and report inline instead of gating them out", () => {
-    expect(CARD).toContain("const media = isRepost && embedded ? embedded.media ?? EMPTY_MEDIA : post.media ?? EMPTY_MEDIA")
-    expect(CARD).toContain("const displayEvent = isRepost ? (embedded?.event ?? null) : (post.event ?? null)")
-    expect(CARD).toContain("const displayReport = isRepost ? (embedded?.report ?? null) : (post.report ?? null)")
+    const photo = { id: "m1", kind: "image" as const, url: "https://cdn/1.jpg", status: "ready" as const }
+    const event = { id: "event-1" } as NonNullable<PostRefDTO["event"]>
+    const report = { id: "report-1" } as NonNullable<PostRefDTO["report"]>
+    const shared = repost(ref({ media: [photo], event, report }))
+    const view = buildPostCardView(shared, buildPostCardModel(shared, t))
+    expect(view.media).toEqual([photo])
+    expect(view.displayEvent).toBe(event)
+    expect(view.displayReport).toBe(report)
+
+    const own: PostDTO = { ...shared, kind: "post", repostOf: null, media: [], event: null, report: null }
+    const ownView = buildPostCardView(own, buildPostCardModel(own, t))
+    expect(ownView.media).toEqual([])
+    expect(ownView.displayEvent).toBeNull()
+    expect(ownView.displayReport).toBeNull()
+
+    expect(CARD).toContain("const { isRepost, embedded, media, displayEvent, displayReport } = view")
     expect(CARD).toContain('{t("post_card.unavailable")}')
   })
 })

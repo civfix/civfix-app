@@ -61,8 +61,6 @@ export interface PostComposerState {
   claimedCreate: PostComposerPendingCreate
   setBody: (body: string) => void
   setMentionedUsers: (users: readonly UserMentionDTO[]) => void
-  toggleMention: (user: UserMentionDTO) => void
-  setAttachedEventId: (id: string | null) => void
   setAttachedEvent: (event: LinkedEventRef | null) => void
   setAttachedReportId: (id: string | null) => void
   setAttachedReport: (report: LinkedReportRef | null) => void
@@ -83,10 +81,6 @@ export interface PostComposerState {
    */
   discardAttachments: () => void
   setMedia: (media: readonly PostComposerMedia[]) => void
-  addMedia: (media: PostComposerMedia) => void
-  setMediaUpload: (uri: string, uploadId: string | null, status: PostComposerMediaStatus) => void
-  setMediaStatus: (uri: string, status: PostComposerMediaStatus) => void
-  removeMedia: (uri: string) => void
   setMode: (mode: PostComposerMode) => void
   setOrganizationId: (organizationId: string | null) => void
   setQuotePostId: (id: string | null) => void
@@ -189,28 +183,6 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
   setMentionedUsers: (users) =>
     set(replaceDraft((draft) => ({ ...draft, mentionedUsers: users.map(serializeMention) }))),
 
-  toggleMention: (user) =>
-    set(
-      replaceDraft((draft) => {
-        const mentioned = draft.mentionedUsers
-        return {
-          ...draft,
-          mentionedUsers: mentioned.some((item) => item.id === user.id)
-            ? mentioned.filter((item) => item.id !== user.id)
-            : [...mentioned, serializeMention(user)],
-        }
-      }),
-    ),
-
-  setAttachedEventId: (attachedEventId) =>
-    set(
-      replaceDraft((draft) => ({
-        ...draft,
-        attachedEventId,
-        attachedEvent: draft.attachedEvent?.id === attachedEventId ? draft.attachedEvent : null,
-      })),
-    ),
-
   setAttachedEvent: (event) =>
     set(
       replaceDraft((draft) => ({
@@ -266,32 +238,6 @@ export const usePostComposerStore = create<PostComposerState>((set) => ({
     })),
 
   setMedia: (media) => set(replaceDraft((draft) => ({ ...draft, media: media.map(serializeMedia) }))),
-
-  addMedia: (media) =>
-    set(
-      replaceDraft((draft) => ({
-        ...draft,
-        media: [...draft.media.filter((item) => item.uri !== media.uri), serializeMedia(media)],
-      })),
-    ),
-
-  setMediaUpload: (uri, uploadId, status) =>
-    set(
-      replaceDraft((draft) => ({
-        ...draft,
-        media: draft.media.map((item) => (item.uri === uri ? { ...item, uploadId, status } : item)),
-      })),
-    ),
-
-  setMediaStatus: (uri, status) =>
-    set(
-      replaceDraft((draft) => ({
-        ...draft,
-        media: draft.media.map((item) => (item.uri === uri ? { ...item, status } : item)),
-      })),
-    ),
-
-  removeMedia: (uri) => set(replaceDraft((draft) => ({ ...draft, media: draft.media.filter((item) => item.uri !== uri) }))),
 
   setMode: (mode) => set(replaceRoute((draft) => ({ ...draft, mode }))),
 
@@ -364,27 +310,15 @@ export const selectPostComposerDraftOwner = (state: PostComposerState): string |
 export const selectPostComposerDraftHidden = (state: PostComposerState): boolean =>
   state.draft.ownerId !== null && state.draft.ownerId !== state.viewerId
 
-export const selectPostComposerMentionedUserIds = (state: PostComposerState): string[] =>
-  selectPostComposerDraft(state).mentionedUsers.map((user) => user.id)
-
-export const selectPostComposerMediaUploadIds = (state: PostComposerState): string[] =>
-  selectPostComposerDraft(state).media.flatMap((media) => (media.status === "ready" && media.uploadId ? [media.uploadId] : []))
-
 export const selectPostComposerHasPendingMedia = (state: PostComposerState): boolean =>
   selectPostComposerDraft(state).media.some((media) => media.status === "pending" || media.status === "uploading")
-
-export const selectPostComposerTargetId = (state: PostComposerState): string | null => {
-  if (state.draft.mode === "quote") return state.draft.quotePostId
-  if (state.draft.mode === "reply") return state.draft.replyToPostId
-  return null
-}
 
 /**
  * Whether `draft` is still the cleared slot a submit of `staged` left behind: nothing typed or attached
  * since, and the same mode and target. Anything else means the user moved on, and putting the failed
  * draft back would overwrite newer work or turn their next post into a reply to someone else.
  */
-export function postComposerSlotIsUntouched(draft: PostComposerDraft, staged: PostComposerDraft): boolean {
+function postComposerSlotIsUntouched(draft: PostComposerDraft, staged: PostComposerDraft): boolean {
   return (
     draft.body.trim().length === 0 &&
     draft.mentionedUsers.length === 0 &&

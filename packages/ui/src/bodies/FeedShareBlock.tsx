@@ -9,6 +9,8 @@ import { Avatar, Toggle } from "../primitives"
 import { useAuthState, useMyProfile } from "../data"
 import { FEED_CAPTION_MAX, FEED_CAPTION_COUNTER_AT } from "./feedShare"
 
+const ENTRANCE_MS = 180
+
 export interface FeedShareBlockProps {
   enabled: boolean
   onToggle: (next: boolean) => void
@@ -130,7 +132,7 @@ export function FeedSharePreview({
     }
     const animation = Animated.timing(enter, {
       toValue: 1,
-      duration: 180,
+      duration: ENTRANCE_MS,
       easing: Easing.out(Easing.quad),
       useNativeDriver: Platform.OS !== "web",
     })
@@ -256,7 +258,7 @@ const useStyles = makeThemedStyles((t) => ({
 
   preview: {
     padding: t.space["3"],
-    borderRadius: 20,
+    borderRadius: t.radius.lg,
     backgroundColor: t.colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
@@ -274,7 +276,7 @@ const useStyles = makeThemedStyles((t) => ({
     marginTop: t.space["2"],
     paddingHorizontal: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 21,
     color: t.colors.text,
     minHeight: 44,
@@ -282,7 +284,7 @@ const useStyles = makeThemedStyles((t) => ({
   captionRead: {
     marginTop: t.space["2"],
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 21,
     color: t.colors.text,
   },
@@ -310,7 +312,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "stretch",
     width: "100%",
-    minHeight: 64,
+    minHeight: t.space["16"],
     borderRadius: t.radius.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
@@ -318,7 +320,7 @@ const useStyles = makeThemedStyles((t) => ({
     overflow: "hidden",
   },
   eventGlyph: {
-    width: 64,
+    width: t.space["16"],
     alignSelf: "stretch",
     alignItems: "center",
     justifyContent: "center",
@@ -327,7 +329,7 @@ const useStyles = makeThemedStyles((t) => ({
   eventBody: {
     flex: 1,
     minWidth: 0,
-    gap: 4,
+    gap: t.space["1"],
     paddingHorizontal: t.space["3"],
     paddingVertical: t.space["2"] + 2,
     justifyContent: "center",

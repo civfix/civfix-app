@@ -33,23 +33,22 @@ import { clearsPendingAtOffset, dedupePostsById } from "../data/feedLiveModel"
 import { NewPostsPill } from "./feed/NewPostsPill"
 import { POST_CARD_RHYTHM } from "../primitives/postCardRhythm"
 import {
+  FEED_ROW_ENTER_MS,
+  POST_LIST_END_REACHED_THRESHOLD,
   buildFeedHeaderModel,
-  buildFeedMotionModel,
   createFeedEntranceTracker,
   feedFooterState,
   feedViewState,
   type FeedEntranceTracker,
 } from "./feedModel"
-export {
-  buildFeedHeaderModel,
-  buildFeedMotionModel,
-  createFeedEntranceTracker,
-  feedViewState,
-} from "./feedModel"
+
+const HEADER_ENTER_RISE = 14
+const ROW_ENTER_RISE = 22
+const ROW_ENTER_SCALE_FROM = 0.975
 
 function useFeedEntrance(): Animated.WithAnimatedValue<ViewStyle> {
   const opacity = useRef(new Animated.Value(0)).current
-  const translateY = useRef(new Animated.Value(14)).current
+  const translateY = useRef(new Animated.Value(HEADER_ENTER_RISE)).current
 
   useEffect(() => {
     let mounted = true
@@ -60,17 +59,16 @@ function useFeedEntrance(): Animated.WithAnimatedValue<ViewStyle> {
       translateY.setValue(0)
     }
     const enter = () => {
-      const motion = buildFeedMotionModel(false)
       Animated.parallel([
         Animated.timing(opacity, {
           toValue: 1,
-          duration: motion.duration,
+          duration: FEED_ROW_ENTER_MS,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: Platform.OS !== "web",
         }),
         Animated.timing(translateY, {
           toValue: 0,
-          duration: motion.duration,
+          duration: FEED_ROW_ENTER_MS,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: Platform.OS !== "web",
         }),
@@ -121,12 +119,11 @@ function FeedPostRow({
       progress.setValue(1)
       return
     }
-    const motion = buildFeedMotionModel(false)
     progress.setValue(0)
     Animated.timing(progress, {
       toValue: 1,
       delay: plan.delay,
-      duration: motion.duration,
+      duration: FEED_ROW_ENTER_MS,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: Platform.OS !== "web",
     }).start()
@@ -140,8 +137,8 @@ function FeedPostRow({
       style={{
         opacity: progress,
         transform: [
-          { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [22, 0] }) },
-          { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [0.975, 1] }) },
+          { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [ROW_ENTER_RISE, 0] }) },
+          { scale: progress.interpolate({ inputRange: [0, 1], outputRange: [ROW_ENTER_SCALE_FROM, 1] }) },
         ],
       }}
     >
@@ -361,7 +358,7 @@ export function FeedBody() {
     () => [
       styles.content,
       isExpanded ? styles.contentExpanded : null,
-      promoHeight > 0 ? { paddingBottom: promoHeight + 14 } : null,
+      promoHeight > 0 ? { paddingBottom: promoHeight + PROMO_CLEARANCE } : null,
     ],
     [isExpanded, promoHeight, styles],
   )
@@ -392,7 +389,7 @@ export function FeedBody() {
       ListFooterComponent={footer}
       showsVerticalScrollIndicator={false}
       onEndReached={loadMore}
-      onEndReachedThreshold={0.6}
+      onEndReachedThreshold={POST_LIST_END_REACHED_THRESHOLD}
       onScroll={onListScroll}
       scrollEventThrottle={16}
       refreshControl={refresh}
@@ -411,6 +408,8 @@ export function FeedBody() {
 const IS_WEB = Platform.OS === "web"
 
 const FEED_SCROLL_FADE_HEIGHT = 24
+/** Gap kept between the last row and the floating app-promo card the list pads itself above. */
+const PROMO_CLEARANCE = 14
 const EMPTY_FILL_MIN_HEIGHT = 300
 const webScrollFade = (t: Theme): ViewStyle =>
   IS_WEB
@@ -434,7 +433,7 @@ const useStyles = makeThemedStyles((t) => ({
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: HEADER_CONTROL_SIZE, marginBottom: t.space["3"] },
   heading: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 32, lineHeight: 39, letterSpacing: -0.5, color: t.colors.text },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 9 },
-  list: { gap: POST_SURFACE === "flat" ? 0 : 12 },
+  list: { gap: POST_SURFACE === "flat" ? 0 : t.space["3"] },
   emptyFill: { flexGrow: 1, minHeight: EMPTY_FILL_MIN_HEIGHT },
   skeletonCard: { flexDirection: "row", gap: POST_CARD_RHYTHM.gutterGap, paddingVertical: POST_CARD_RHYTHM.rowPaddingTop },
   skeletonAvatar: { width: POST_CARD_RHYTHM.avatar, height: POST_CARD_RHYTHM.avatar, borderRadius: POST_CARD_RHYTHM.avatar / 2, backgroundColor: t.colors.bgAlt },
@@ -442,8 +441,8 @@ const useStyles = makeThemedStyles((t) => ({
   skeletonLine: { height: 10, borderRadius: 5, backgroundColor: t.colors.bgAlt },
   skeletonLineWide: { width: "88%" },
   skeletonLineShort: { width: "62%" },
-  rowSeparator: { height: 12 },
-  footer: { gap: 12 },
+  rowSeparator: { height: t.space["3"] },
+  footer: { gap: t.space["3"] },
   caughtUp: { alignItems: "center", paddingVertical: t.space["4"] },
   caughtUpText: { fontFamily: t.fontFamily.bodyBold, fontSize: 11.5, lineHeight: 16, color: t.colors.textSubtle },
   bottomPad: { height: t.space["8"] },

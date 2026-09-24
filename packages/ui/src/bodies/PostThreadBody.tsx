@@ -1,5 +1,13 @@
 import React from "react"
-import { Platform, Pressable, StyleSheet, View, type LayoutChangeEvent } from "react-native"
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type FlatListProps,
+  type LayoutChangeEvent,
+  type ListRenderItemInfo,
+} from "react-native"
 import type { PostDTO } from "@civfix/shared"
 import {
   focusRingProps,
@@ -35,24 +43,24 @@ import { ThreadEmptyReplies } from "./thread/ThreadEmptyReplies"
 import { ThreadFocalPost, ThreadFocalSkeleton } from "./thread/ThreadFocalPost"
 import { ThreadReplyRow } from "./thread/ThreadReplyRow"
 import { buildThreadRows, type ThreadRow } from "./thread/threadModel"
+import { keyboardDismissModeFor } from "./keyboardDismissMode"
+import { POST_LIST_END_REACHED_THRESHOLD } from "./feedModel"
 
-const KEYBOARD_DISMISS_MODE: "interactive" | "on-drag" =
-  Platform.OS === "ios" ? "interactive" : "on-drag"
+const KEYBOARD_DISMISS_MODE = keyboardDismissModeFor(Platform.OS)
 
 const THREAD_SCROLL_HOST = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST, {
   ownsFocusedInput: false,
   reserveKeyboardPadding: false,
 })
 
-const ThreadList = React.forwardRef<ScrollHostListHandle, Record<string, unknown>>(function ThreadList(
-  props,
-  ref,
-) {
+type ThreadListProps = FlatListProps<ThreadRow<PostDTO>> & { ref?: React.Ref<ScrollHostListHandle> }
+
+function ThreadList({ ref, ...props }: ThreadListProps) {
   const { FlatList } = useScrollHost()
   return <FlatList ref={ref} {...props} />
-})
+}
 
-const threadKeyExtractor = (item: unknown) => (item as ThreadRow<PostDTO>).key
+const threadKeyExtractor = (item: ThreadRow<PostDTO>) => item.key
 
 function ThreadRepliesSkeleton() {
   const styles = useStyles()
@@ -160,19 +168,16 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
   )
 
   const renderItem = React.useCallback(
-    ({ item }: { item: unknown }) => {
-      const listRow = item as ThreadRow<PostDTO>
-      return (
-        <ThreadReplyRow
-          post={listRow.post}
-          rail={listRow.rail}
-          hairline={listRow.hairline}
-          isOptimistic={listRow.optimistic}
-          onOpenEntry={onOpenEntry}
-          onDeleted={onReplyDeleted}
-        />
-      )
-    },
+    ({ item }: ListRenderItemInfo<ThreadRow<PostDTO>>) => (
+      <ThreadReplyRow
+        post={item.post}
+        rail={item.rail}
+        hairline={item.hairline}
+        isOptimistic={item.optimistic}
+        onOpenEntry={onOpenEntry}
+        onDeleted={onReplyDeleted}
+      />
+    ),
     [onOpenEntry, onReplyDeleted],
   )
 
@@ -301,7 +306,7 @@ function PostThread({ id, onBack, onOpenEntry }: PostThreadBodyProps) {
           ListEmptyComponent={listEmpty}
           ListFooterComponent={listFooter}
           onEndReached={onEndReached}
-          onEndReachedThreshold={0.6}
+          onEndReachedThreshold={POST_LIST_END_REACHED_THRESHOLD}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={KEYBOARD_DISMISS_MODE}
           contentContainerStyle={styles.listContent}
@@ -346,7 +351,7 @@ const useStyles = makeThemedStyles((t) => ({
     gap: 10,
     paddingTop: 14,
     paddingHorizontal: 18,
-    paddingBottom: 12,
+    paddingBottom: t.space["3"],
     borderBottomColor:
       Platform.OS === "web" ? wash(t.colors.borderStrong, 0.45, t) : t.colors.border,
   },
@@ -388,7 +393,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexShrink: 1,
     color: t.colors.textMuted,
     fontFamily: t.fontFamily.bodyMedium,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 19,
   },
   retryPill: {

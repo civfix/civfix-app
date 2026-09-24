@@ -63,7 +63,6 @@
   "post_card": {
     "fix_confirmed": "Behebung bestätigt",
     "repost_attribution": "{{name}} hat repostet",
-    "reported_by": "Gemeldet von {{name}}",
     "cleared_at": "Behoben bei {{title}}",
     "media_before": "VORHER",
     "media_after": "NACHHER",

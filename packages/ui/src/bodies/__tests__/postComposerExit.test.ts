@@ -9,8 +9,9 @@
  */
 import { beforeEach, describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import { reportFlowSource } from "../reportFlow/__tests__/reportFlowSource"
-import type { LinkedReportRef, UserMentionDTO } from "@civfix/shared"
+import type { LinkedEventRef, LinkedReportRef, UserMentionDTO } from "@civfix/shared"
 import type { DetailEntry } from "../../nav"
 import { ALL_VIEWS, useNavStore } from "../../nav"
 import { clearStaleReportIntentAtComposerMount, openReportFlow } from "../composerCreateFlow"
@@ -43,6 +44,18 @@ const reportRef: LinkedReportRef = {
   lng: -118.28,
   addr: "Sunset Blvd",
   thumbUrl: "file:///local-capture.jpg",
+  linkedAt: "2026-07-29T00:00:00.000Z",
+}
+const eventRef: LinkedEventRef = {
+  id: "event-1",
+  title: "Ballona Creek cleanup",
+  eventKind: "cleanup",
+  status: "upcoming",
+  scheduledAt: "2026-08-01T16:00:00.000Z",
+  lat: 33.98,
+  lng: -118.42,
+  going: 12,
+  organizer: { id: "organizer-1", name: "Maya Lopez", followers: 42, following: 7, isFollowing: false },
   linkedAt: "2026-07-29T00:00:00.000Z",
 }
 
@@ -134,10 +147,10 @@ const fromComposer = () => usePostComposerStore.getState().claimedCreate === "re
 function stageDraft() {
   const store = usePostComposerStore.getState()
   store.setBody("Just filed this @mayal")
-  store.toggleMention(maya)
+  store.setMentionedUsers([maya])
   store.setAttachedReport(reportRef)
-  store.setAttachedEventId("event-1")
-  store.addMedia({ uri: "file:///photo.jpg", kind: "image", posterUri: null, uploadId: "u1", status: "ready" })
+  store.setAttachedEvent(eventRef)
+  store.setMedia([{ uri: "file:///photo.jpg", kind: "image", posterUri: null, uploadId: "u1", status: "ready" }])
 }
 
 beforeEach(() => {
@@ -803,7 +816,8 @@ describe("the wiring (source-pinned)", () => {
     expect(source).toMatch(
       /const closeComposer = \(\) => \{\s*\n\s*usePostComposerStore\.getState\(\)\.discardAttachments\(\)\s*\n\s*attachments\.reset\(\)\s*\n\s*setCarriedMedia\(\[\]\)\s*\n\s*setDroppedMedia\(0\)\s*\n\s*;\(onBack \?\? back\)\(\)/,
     )
-    expect(source).toMatch(/onPress=\{closeComposer\}/)
+    expect(source).toMatch(/<ComposerHeader[^>]*?onClose=\{closeComposer\}/)
+    expect(sliceBetween(source, "function ComposerHeader(", "function ComposerAuthorRow(")).toMatch(/accessibilityLabel=\{t\("close_a11y"\)\}\s*onPress=\{onClose\}/)
   })
 
   it("PostComposer drops a stale REPORT create-intent at mount", () => {

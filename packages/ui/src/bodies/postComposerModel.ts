@@ -11,14 +11,10 @@ import type {
 import { splitPostBodyMentions } from "./postCardModel"
 import type { PostComposerMode } from "./postComposerStore"
 
-export type PostComposerPlatform = "ios" | "android" | "web" | "other"
 export type PostComposerAttachmentPanel = "events" | "reports" | null
 
-export interface PostComposerKeyboardPlan {
-  scrollView: {
-    keyboardDismissMode: "interactive" | "on-drag"
-  }
-}
+/** Mirrors `PostComposeInputSchema.body`'s cap, which the contract states as a bare literal. */
+export const POST_BODY_MAX_LENGTH = 2000
 
 export interface PostComposerModel {
   title: string
@@ -59,22 +55,6 @@ export function activePostMentions(
     ),
   )
   return mentions.filter((mention) => present.has(mention.id))
-}
-
-export function buildPostComposerKeyboardPlan({
-  platform,
-}: {
-  platform: PostComposerPlatform
-}): PostComposerKeyboardPlan {
-  return {
-    scrollView: {
-      keyboardDismissMode: platform === "ios" ? "interactive" : "on-drag",
-    },
-  }
-}
-
-export function initialPostComposerAttachmentPanel(): PostComposerAttachmentPanel {
-  return null
 }
 
 export function togglePostComposerAttachmentPanel(
