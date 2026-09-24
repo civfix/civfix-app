@@ -851,7 +851,7 @@ describe("the wiring (source-pinned)", () => {
     // `openDetail` replaces the whole stack, so "thread A -> Quote -> Post -> Back" would lose thread A. Popping
     // the composer first (the host's dismiss, else `nav.back()`) and then pushing leaves [A, newPost].
     const source = surfaceSource("postComposer")
-    const success = source.slice(source.indexOf("onSuccess: (post) => {"), source.indexOf("onSettled:"))
+    const success = sliceBetween(source, "(post, input) => {", "\n      },\n    )")
     expect(success).toContain('push({ kind: "post-thread", id: post.id })')
     expect(success).not.toContain("openDetail")
     // `onPosted` still runs BEFORE the navigation, and the pop still runs before the push.
@@ -872,11 +872,13 @@ describe("the wiring (source-pinned)", () => {
     expect(postSubmitDestination("quote")).toBe("thread")
     expect(postSubmitDestination("reply")).toBe("thread")
     const source = surfaceSource("postComposer")
-    const success = source.slice(source.indexOf("onSuccess: (post) => {"), source.indexOf("onSettled:"))
+    const success = sliceBetween(source, "(post, input) => {", "\n      },\n    )")
     // Keyed off what was SUBMITTED, never the `mode` prop - the two can disagree mid-flight.
     expect(success).toContain(
-      'if (postSubmitDestination(resolution.input.kind) === "thread") push({ kind: "post-thread", id: post.id })',
+      'if (postSubmitDestination(input.kind) === "thread") push({ kind: "post-thread", id: post.id })',
     )
+    const submit = sliceBetween(source, "export function useSubmitPost()", "\n}\n")
+    expect(submit).toMatch(/onSuccess: \(post\) => \{\s*haptics\.success\(\)\s*onPosted\(post, prepared\.input\)/)
     expect(success).toContain("else useFeedScrollTopStore.getState().requestScrollTop()")
     // The feed has a list ref and consumes the request, or the new post lands off-screen for a reader
     // who had scrolled down. The ref is TYPED through the ScrollHost seam - no `as never`.

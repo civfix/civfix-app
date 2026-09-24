@@ -3,7 +3,19 @@
  * `PostComposeInputSchema` requires some content, and media must finalize before submit because the caller
  * can only stamp finalized `mediaUploadIds` into the input.
  */
-import type { PostComposeInput, PostKind } from "@civfix/shared"
+import type {
+  LinkedEventRef,
+  LinkedReportRef,
+  OrganizationDTO,
+  OrganizationRefDTO,
+  PersonDTO,
+  PostComposeInput,
+  PostDTO,
+  PostKind,
+  UserMentionDTO,
+} from "@civfix/shared"
+import type { PostComposerMedia } from "./postComposerStore"
+import { optimisticPostId } from "./thread/threadModel"
 
 export type PostSubmitDestination = "origin" | "thread"
 
@@ -61,4 +73,57 @@ export function resolvePostSubmit(draft: PostDraft, hasReadyMedia = false): Post
       : {}),
   }
   return { action: "submit", input }
+}
+
+export function toPostOrganizationRef(org: OrganizationDTO): OrganizationRefDTO {
+  return {
+    id: org.id,
+    slug: org.slug,
+    name: org.name,
+    logoUrl: org.logoUrl ?? null,
+    verified: org.verifiedStatus === "verified",
+    ...(org.verifiedKind ? { verifiedKind: org.verifiedKind } : {}),
+  }
+}
+
+export interface OptimisticPostArgs {
+  author: PersonDTO
+  kind: PostKind
+  body: string | null
+  now: Date
+  /** Left off the DTO when undefined: only the surfaces that can post as an organization set the key. */
+  organization?: OrganizationRefDTO | null
+  /** Only items with a finalized `uploadId` render; the rest are still uploading. */
+  media?: readonly PostComposerMedia[]
+  mentions?: UserMentionDTO[]
+  event?: LinkedEventRef | null
+  report?: LinkedReportRef | null
+  replyToId?: string | null
+  threadRootId?: string | null
+}
+
+/** The zero-count placeholder a composer writes into the feed and thread caches until the server's post lands. */
+export function buildOptimisticPost(args: OptimisticPostArgs): PostDTO {
+  return {
+    id: optimisticPostId(args.now.getTime()),
+    author: args.author,
+    ...(args.organization !== undefined ? { organization: args.organization } : {}),
+    kind: args.kind,
+    body: args.body,
+    createdAt: args.now.toISOString(),
+    editedAt: null,
+    counts: { likes: 0, reposts: 0, replies: 0, saves: 0 },
+    viewer: { liked: false, reposted: false, saved: false },
+    media: (args.media ?? []).flatMap((item) =>
+      item.uploadId
+        ? [{ id: item.uploadId, kind: item.kind, url: item.uri, thumbUrl: item.posterUri, status: "ready" as const }]
+        : [],
+    ),
+    mentions: args.mentions ?? [],
+    event: args.event ?? null,
+    report: args.report ?? null,
+    repostOf: null,
+    replyToId: args.replyToId ?? null,
+    threadRootId: args.threadRootId ?? null,
+  }
 }

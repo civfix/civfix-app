@@ -18,6 +18,7 @@ import { conversationFieldEscape } from "../../shell/shellKeyModel"
 import { useT } from "../../i18n"
 import { resolveComposerSubmit, type ComposerSubmitMode } from "./composerSubmit"
 import { bodyMentionsHandle } from "./mentionMatch"
+import { MODAL_DISMISS_FOCUS_DELAY_MS } from "../modalFocusDelay"
 import { editErrorCopyKey } from "./conversationModel"
 import { CONTROL, COMPOSER_MAX } from "./styleParts"
 
@@ -182,7 +183,7 @@ export function useComposerMode({
     )
     // Deferred: the context-menu Modal is dismissing right now, and its teardown can swallow a
     // synchronous focus on native - focus once it is gone.
-    setTimeout(() => grow.ref.current?.focus(), 50)
+    setTimeout(() => grow.ref.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
   }, [grow.ref])
 
   // Context-menu "Reply": aim the composer at the quoted message. The draft is untouched - the user
@@ -196,7 +197,7 @@ export function useComposerMode({
     if (mode?.kind === "edit") restoreSavedDraft()
     setComposerMode({ kind: "reply", message })
     // Same deferred focus as edit: the context-menu Modal is tearing down right now.
-    setTimeout(() => grow.ref.current?.focus(), 50)
+    setTimeout(() => grow.ref.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
   }, [restoreSavedDraft, grow.ref])
 
   const onChangeDraft = useCallback(

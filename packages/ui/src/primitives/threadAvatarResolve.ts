@@ -1,4 +1,5 @@
 import { avatarColor, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { threadRoomId } from "../data/threadRoom"
 
 export type ThreadAvatarPeer = Pick<PersonDTO, "id" | "name" | "avatarUrl" | "avatar">
 
@@ -19,7 +20,7 @@ export function resolveThreadAvatar(thread: ThreadAvatarInput): ResolvedThreadAv
   const isGroup = thread.kind === "group" || thread.kind === "cleanup" || thread.kind === "report"
   // A group never shows a peer photo; ignore any peer attached to a non-DM thread.
   const peer = isGroup ? null : thread.peer ?? null
-  const seed = peer?.id ?? thread.refId ?? thread.id
+  const seed = peer?.id ?? threadRoomId(thread)
   const gradient = peer?.avatar ?? null
   const color = gradient?.[0] ?? avatarColor(seed)
   return {

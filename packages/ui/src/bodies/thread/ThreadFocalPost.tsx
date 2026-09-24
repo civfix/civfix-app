@@ -14,7 +14,6 @@ import {
   postActionGlyphInset,
   postActionLayout,
 } from "../../primitives/postActionModel"
-import { useNavStore } from "../../nav/useNavStore"
 import type { DetailEntry } from "../../nav/types"
 import { EmbeddedPost } from "../EmbeddedPost"
 import { LinkedEventCard } from "../LinkedEventCard"
@@ -25,18 +24,15 @@ import { PostOverflowButton } from "../../primitives/PostOverflowButton"
 import {
   buildPostCardModel,
   identityA11yLabel,
-  postMenuSubject,
   repostSubjectAuthorId,
   splitPostBodyMentions,
 } from "../postCardModel"
 import { PostOverflowMenu } from "../PostOverflowMenu"
-import { usePopoverAnchor, type AnchorRect } from "../../primitives/PopoverMenu"
-import { useLightbox } from "../../lightbox"
+import { usePostRowActions } from "../postCardActions"
 import { focalTimestamp } from "../relativeTime"
+import { normalizeHandle } from "../mentionText"
 import { useListTimeAgo } from "../useListTimeAgo"
 import { buildFocalPostStats } from "./threadModel"
-
-const EMPTY_MEDIA: PostDTO["media"] = []
 
 export type ThreadFocalParent = PostDTO | PostRefDTO | null
 
@@ -71,7 +67,7 @@ function ReplyToLine({
     )
   }
   const author = parent.author
-  const handle = author?.handle?.replace(/^@/, "") ?? null
+  const handle = author?.handle ? normalizeHandle(author.handle) : null
   const label = handle
     ? t("thread.replying_to", { handle: `@${handle}` })
     : t("thread.replying_to_name", { name: author?.name ?? t("post_card.deleted_account") })
@@ -102,8 +98,6 @@ export function ThreadFocalPost({
   const th = useTheme()
   const { t } = useT("home-feed")
   const { locale } = useLocale()
-  const push = useNavStore((state) => state.push)
-  const openEntry = onOpenEntry ?? push
   const timeAgo = useListTimeAgo()
   const model = React.useMemo(() => buildPostCardModel(post, t, { timeAgo }), [post, t, timeAgo])
   const stats = React.useMemo(() => buildFocalPostStats(post.counts, t), [post.counts, t])
@@ -111,36 +105,12 @@ export function ThreadFocalPost({
     () => splitPostBodyMentions(post.body ?? "", post.mentions),
     [post.body, post.mentions],
   )
-  const openPerson = React.useCallback(
-    (personId: string) => openEntry({ kind: "person", id: personId }),
-    [openEntry],
-  )
-  const onQuote = React.useCallback(
-    () => openEntry({ kind: "composer", composerMode: "quote", targetPostId: post.id }),
-    [openEntry, post.id],
-  )
   const isFix = model.variant === "fix-confirmed"
   const isRepost = model.variant === "repost" && model.embeddedPost != null
   const identity = model.identity
-  const openActingPerson = React.useCallback(() => {
-    if (identity.personId) openPerson(identity.personId)
-  }, [identity, openPerson])
-  const openIdentity = React.useCallback(() => {
-    if (identity.organization) {
-      openEntry({ kind: "org", slug: identity.organization.slug })
-      return
-    }
-    if (identity.personId) openPerson(identity.personId)
-  }, [identity, openEntry, openPerson])
-  const [menuOpen, setMenuOpen] = React.useState(false)
-  const [menuAnchor, setMenuAnchor] = React.useState<AnchorRect | null>(null)
-  const menuTrigger = usePopoverAnchor(setMenuAnchor)
-  const openMenu = React.useCallback(() => {
-    menuTrigger.measure()
-    setMenuOpen(true)
-  }, [menuTrigger])
-  const closeMenu = React.useCallback(() => setMenuOpen(false), [])
-  const menuSubject = React.useMemo(() => postMenuSubject(post), [post])
+  const { openEntry, openPerson, onQuote, openIdentity, openActingPerson, menu, media, openMedia } =
+    usePostRowActions({ post, identity, onOpenEntry })
+  const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } = menu
   const embedded = model.embeddedPost
   const openOriginal = React.useMemo(
     () =>
@@ -148,21 +118,6 @@ export function ThreadFocalPost({
         ? () => openEntry({ kind: "post-thread", id: embedded.id })
         : undefined,
     [isRepost, embedded, openEntry],
-  )
-  const lightbox = useLightbox()
-  const media = post.media ?? EMPTY_MEDIA
-  const openMedia = React.useCallback(
-    (index: number) => {
-      const items = media.map((item) => ({
-        url: item.url,
-        kind: item.kind,
-        thumbUrl: item.thumbUrl ?? null,
-        width: item.width ?? null,
-        height: item.height ?? null,
-      }))
-      if (items.length > 0) lightbox.open(items, index)
-    },
-    [lightbox, media],
   )
   const timestamp = focalTimestamp(post.createdAt, locale)
   const timestampLine = post.editedAt != null ? `${timestamp} · ${t("thread.edited")}` : timestamp

@@ -19,12 +19,12 @@ import {
   useReportChatParticipants,
   useLeaveReportChat,
   useToggleMute,
-  useThreads,
   useSetMemberRole,
   useRemoveMember,
   useBlockUser,
   useAuthState,
 } from "../data"
+import { useThreadForRoom } from "../data/hooks/chat"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
@@ -309,14 +309,7 @@ export function MembersBody({
   const report = reportQuery.data
   const cleanup = cleanupQuery.data
 
-  const threads = useThreads()
-  const threadRow = useMemo(
-    () =>
-      (threads.data?.pages ?? [])
-        .flatMap((p) => p.items)
-        .find((thr) => (thr.refId ?? thr.id) === id),
-    [threads.data, id],
-  )
+  const threadRow = useThreadForRoom(roomKind, id)
   const muted = threadRow?.muted ?? false
   const toggleMute = useToggleMute(roomKind, id)
   const onToggleMute = useCallback(() => {

@@ -9,7 +9,6 @@ import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
 import { VerifiedBadge } from "../../primitives/VerifiedBadge"
 import { PostActionBar } from "../../primitives/PostActionBar"
 import { postActionGlyphInset, postActionLayout } from "../../primitives/postActionModel"
-import { useNavStore } from "../../nav/useNavStore"
 import type { DetailEntry } from "../../nav/types"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
@@ -18,16 +17,14 @@ import { ROW_A11Y_PROPS, WEB_ROW_FOCUS_INSET } from "../PostCard"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "../../primitives/PostOverflowButton"
 import { PostOverflowMenu } from "../PostOverflowMenu"
+import { usePostRowActions } from "../postCardActions"
 import {
   buildPostIdentity,
   identityA11yLabel,
-  postMenuSubject,
   repostSubjectAuthorId,
   splitPostBodyMentions,
 } from "../postCardModel"
 import { POST_CARD_RHYTHM } from "../../primitives/postCardRhythm"
-import { usePopoverAnchor, type AnchorRect } from "../../primitives/PopoverMenu"
-import { useLightbox } from "../../lightbox"
 import { useRowHover } from "../rowHover"
 import { useListTimeAgo } from "../useListTimeAgo"
 import {
@@ -38,7 +35,6 @@ import {
 } from "./threadModel"
 
 const RHYTHM = POST_CARD_RHYTHM
-const EMPTY_MEDIA: PostDTO["media"] = []
 
 export interface ThreadReplyRowProps {
   post: PostDTO
@@ -60,65 +56,24 @@ export const ThreadReplyRow = React.memo(function ThreadReplyRow({
   const styles = useStyles()
   const { hovered, hoverProps } = useRowHover()
   const { t } = useT("home-feed")
-  const push = useNavStore((state) => state.push)
-  const openEntry = onOpenEntry ?? push
   const segments = React.useMemo(
     () => splitPostBodyMentions(post.body ?? "", post.mentions),
     [post.body, post.mentions],
-  )
-  const openPerson = React.useCallback(
-    (personId: string) => openEntry({ kind: "person", id: personId }),
-    [openEntry],
-  )
-  const openThread = React.useCallback(
-    () => openEntry({ kind: "post-thread", id: post.id }),
-    [openEntry, post.id],
-  )
-  const onQuote = React.useCallback(
-    () => openEntry({ kind: "composer", composerMode: "quote", targetPostId: post.id }),
-    [openEntry, post.id],
   )
   const timeAgo = useListTimeAgo()
   const identity = React.useMemo(
     () => buildPostIdentity(post.author, post.organization, t, t("post_card.deleted_account")),
     [post.author, post.organization, t],
   )
-  const openIdentity = React.useCallback(() => {
-    if (identity.organization) {
-      openEntry({ kind: "org", slug: identity.organization.slug })
-      return
-    }
-    if (identity.personId) openPerson(identity.personId)
-  }, [identity, openEntry, openPerson])
-  const openActingPerson = React.useCallback(() => {
-    if (identity.personId) openPerson(identity.personId)
-  }, [identity, openPerson])
-  const metaTail = `${identity.handleLabel ? `${identity.handleLabel} · ` : ""}${isOptimistic ? t("thread.sending") : timeAgo(post.createdAt)}`
-  const [menuOpen, setMenuOpen] = React.useState(false)
-  const [menuAnchor, setMenuAnchor] = React.useState<AnchorRect | null>(null)
-  const menuTrigger = usePopoverAnchor(setMenuAnchor)
-  const openMenu = React.useCallback(() => {
-    menuTrigger.measure()
-    setMenuOpen(true)
-  }, [menuTrigger])
-  const closeMenu = React.useCallback(() => setMenuOpen(false), [])
-  const menuSubject = React.useMemo(() => postMenuSubject(post), [post])
-  const onMenuDeleted = React.useCallback(() => onDeleted?.(post.id), [onDeleted, post.id])
-  const lightbox = useLightbox()
-  const media = post.media ?? EMPTY_MEDIA
-  const openMedia = React.useCallback(
-    (index: number) => {
-      const items = media.map((item) => ({
-        url: item.url,
-        kind: item.kind,
-        thumbUrl: item.thumbUrl ?? null,
-        width: item.width ?? null,
-        height: item.height ?? null,
-      }))
-      if (items.length > 0) lightbox.open(items, index)
-    },
-    [lightbox, media],
+  const { openEntry, openPerson, onQuote, openIdentity, openActingPerson, menu, media, openMedia } =
+    usePostRowActions({ post, identity, onOpenEntry })
+  const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } = menu
+  const openThread = React.useCallback(
+    () => openEntry({ kind: "post-thread", id: post.id }),
+    [openEntry, post.id],
   )
+  const metaTail = `${identity.handleLabel ? `${identity.handleLabel} · ` : ""}${isOptimistic ? t("thread.sending") : timeAgo(post.createdAt)}`
+  const onMenuDeleted = React.useCallback(() => onDeleted?.(post.id), [onDeleted, post.id])
 
   return (
     <>

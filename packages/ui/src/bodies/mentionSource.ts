@@ -26,6 +26,7 @@
  */
 import type { RoomKind, UserSearchResultDTO } from "@civfix/shared"
 import type { JurisdictionMentionCandidate } from "../primitives/MentionAutocomplete"
+import { normalizeHandle } from "./mentionText"
 
 /** The minimal person shape the source needs (PersonDTO and the attendee rows both satisfy it). */
 export interface MentionPersonInput {
@@ -90,7 +91,7 @@ export function resolveMentionSource(input: MentionSourceInput): MentionSource {
     }
   }
   if (roomKind === "report") {
-    const bare = report?.cityHandle ? report.cityHandle.replace(/^@/, "") : ""
+    const bare = report?.cityHandle ? normalizeHandle(report.cityHandle) : ""
     const reachable = report?.canForwardToCity !== false
     return {
       candidates: null,

@@ -134,9 +134,12 @@ describe("the inline composer rides the full composer's store and submit path", 
   const FEED = readFileSync(new URL("../../FeedBody.tsx", import.meta.url), "utf8")
 
   it("resolves the submit through the one shared brain, not a second copy of the rules", () => {
-    expect(SRC).toContain('import { resolvePostSubmit } from "../postComposerSubmit"')
+    expect(SRC).toMatch(/import \{[^}]*\bresolvePostSubmit\b[^}]*\} from "\.\.\/postComposerSubmit"/)
     expect(SRC).toContain('from "../postComposerStore"')
-    expect(SRC).toContain('import { useCreatePost } from "../../data/hooks/posts"')
+    expect(SRC).toContain('import { useSubmitPost } from "../postComposer/useSubmitPost"')
+    expect(readFileSync(new URL("../../postComposer/useSubmitPost.ts", import.meta.url), "utf8")).toContain(
+      'import { useCreatePost } from "../../data/hooks/posts"',
+    )
     expect(SRC).not.toMatch(/body\.trim\(\)\.length/)
   })
 

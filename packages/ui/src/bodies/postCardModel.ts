@@ -8,6 +8,7 @@ import type {
   PostRefDTO,
   UserMentionDTO,
 } from "@civfix/shared"
+import { escapeRegExp, normalizeHandle } from "./mentionText"
 import { listTimeAgo } from "./relativeTime"
 
 export type PostCardVariant = "post" | "event" | "repost" | "quote" | "reply" | "fix-confirmed"
@@ -39,7 +40,7 @@ export function buildPostIdentity(
   fallbackName: string,
 ): PostIdentity {
   const org = organization ?? null
-  const handle = author?.handle?.replace(/^@/, "").trim() || null
+  const handle = (author?.handle ? normalizeHandle(author.handle).trim() : "") || null
   const personName = author?.name ?? fallbackName
   return {
     organization: org,
@@ -86,10 +87,6 @@ export type PostBodySegment =
   | { kind: "text"; text: string }
   | { kind: "mention"; text: string; userId: string; handle: string }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-}
-
 export function splitPostBodyMentions(
   body: string,
   mentions: readonly UserMentionDTO[] | undefined,
@@ -97,12 +94,12 @@ export function splitPostBodyMentions(
   if (!body) return []
   const byHandle = new Map<string, UserMentionDTO>()
   for (const mention of mentions ?? []) {
-    const handle = mention.handle.replace(/^@/, "").trim()
+    const handle = normalizeHandle(mention.handle).trim()
     if (handle) byHandle.set(handle.toLocaleLowerCase(), mention)
   }
   if (byHandle.size === 0) return [{ kind: "text", text: body }]
   const alternatives = [...byHandle.values()]
-    .map((mention) => mention.handle.replace(/^@/, "").trim()).filter(Boolean)
+    .map((mention) => normalizeHandle(mention.handle).trim()).filter(Boolean)
     .sort((a, b) => b.length - a.length).map(escapeRegExp)
   // Same left boundary as chat's mentionMatch: `bob@maria.com` must not tint (or send) a mention.
   const pattern = new RegExp(`(^|[^\\w@])@(${alternatives.join("|")})(?![\\w])`, "gi")
@@ -116,7 +113,7 @@ export function splitPostBodyMentions(
     const token = body.slice(start, pattern.lastIndex)
     const mention = byHandle.get(matchedHandle.toLocaleLowerCase())
     segments.push(mention
-      ? { kind: "mention", text: token, userId: mention.id, handle: mention.handle.replace(/^@/, "") }
+      ? { kind: "mention", text: token, userId: mention.id, handle: normalizeHandle(mention.handle) }
       : { kind: "text", text: token })
     cursor = pattern.lastIndex
   }
@@ -245,7 +242,7 @@ function replyingToLabel(post: PostDTO, t: TFunction): string | null {
   if (post.kind !== "reply") return null
   const parentAuthor = post.replyTo?.author
   if (!parentAuthor) return null
-  const handle = parentAuthor.handle?.replace(/^@/, "").trim()
+  const handle = parentAuthor.handle ? normalizeHandle(parentAuthor.handle).trim() : ""
   return handle
     ? t("post_card.replying_to", { handle: `@${handle}` })
     : t("post_card.replying_to", { handle: parentAuthor.name })

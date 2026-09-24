@@ -1,8 +1,9 @@
-import { Platform, StyleSheet, type ViewStyle } from "react-native"
-import { tokens } from "@civfix/shared/tokens"
+import { StyleSheet } from "react-native"
 import { MIN_TOUCH_TARGET, makeThemedStyles } from "../../theme"
+import { postComposerStyleParts } from "./postComposerStyleParts"
 
 export const usePostComposerStyles = makeThemedStyles((t) => ({
+  ...postComposerStyleParts(t),
   root: { flex: 1, backgroundColor: t.colors.bg },
   header: { minHeight: 60, paddingHorizontal: t.space["4"], flexDirection: "row", alignItems: "center", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: t.colors.border, position: "relative" },
   closeButton: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.neutral.card, borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border, zIndex: 2 },
@@ -19,20 +20,11 @@ export const usePostComposerStyles = makeThemedStyles((t) => ({
   composeRow: { flexDirection: "row", alignItems: "flex-start", gap: t.space["3"] },
   inputWrap: { flex: 1, minWidth: 0 },
   inputSurface: { paddingHorizontal: t.space["2"], paddingVertical: t.space["1"], borderRadius: 18, backgroundColor: t.colors.neutral.card, borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border },
-  inputSurfaceFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
   input: { minHeight: 104, padding: t.space["2"], fontFamily: t.fontFamily.bodyRegular, fontSize: 14.5, lineHeight: 21, color: t.colors.text, textAlignVertical: "top" },
   thumbsInCard: { marginHorizontal: t.space["2"], marginTop: t.space["1"] },
   mediaRow: { flexDirection: "row", alignItems: "center" },
   addMedia: { width: MIN_TOUCH_TARGET, height: MIN_TOUCH_TARGET, alignItems: "center", justifyContent: "center", marginLeft: t.space["1"], marginTop: 2, marginBottom: 2 },
-  addMediaDisc: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.surfaceTint },
-  addMediaDisabled: { opacity: 0.52 },
   postButton: { minHeight: 44, paddingHorizontal: 18, borderRadius: t.radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: t.colors.accent, zIndex: 2 },
-  postButtonDisabled: { backgroundColor: t.colors.surfaceTint },
-  postButtonText: { color: t.colors.neutral.card, fontFamily: t.fontFamily.bodyExtraBold, fontSize: t.fontSize["14"], lineHeight: 18 },
-  postButtonTextDisabled: { color: t.colors.textSubtle },
   buttonPressed: { opacity: 0.78, transform: [{ scale: 0.94 }] },
   attachDivider: { height: StyleSheet.hairlineWidth, backgroundColor: t.colors.border, marginTop: t.space["1"], marginBottom: t.space["1"] },
   attachArea: { gap: 18, marginTop: t.space["1"] },

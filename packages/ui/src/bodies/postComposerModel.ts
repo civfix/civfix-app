@@ -8,6 +8,7 @@ import type {
   ReportDTO,
   UserMentionDTO,
 } from "@civfix/shared"
+import type { MentionCandidate } from "../primitives/MentionAutocomplete"
 import { splitPostBodyMentions } from "./postCardModel"
 import type { PostComposerMode } from "./postComposerStore"
 
@@ -55,6 +56,19 @@ export function activePostMentions(
     ),
   )
   return mentions.filter((mention) => present.has(mention.id))
+}
+
+/**
+ * The draft's mention list after picking `candidate`, or null when there is nothing to record: a
+ * jurisdiction handle stays plain body text. A re-picked user moves to the end with its fresh names.
+ */
+export function mergeMention(
+  mentioned: readonly UserMentionDTO[],
+  candidate: MentionCandidate,
+): UserMentionDTO[] | null {
+  if (candidate.kind === "jurisdiction") return null
+  const user: UserMentionDTO = { id: candidate.id, handle: candidate.handle, displayName: candidate.displayName }
+  return [...mentioned.filter((item) => item.id !== user.id), user]
 }
 
 export function togglePostComposerAttachmentPanel(

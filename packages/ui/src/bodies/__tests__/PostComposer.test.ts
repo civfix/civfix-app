@@ -11,6 +11,7 @@ import {
   buildComposerQuoteRef,
   buildPostComposerAttachPlan,
   buildPostComposerModel,
+  mergeMention,
   resolveComposerEvent,
   shouldClearStaleAttachedEvent,
   shouldClearStaleAttachedReport,
@@ -339,5 +340,26 @@ describe("buildComposerQuoteRef", () => {
     const ref = buildComposerQuoteRef({ ...post, body: null } as PostDTO)
     expect(ref.excerpt).toBe("")
     expect(ref.body).toBeNull()
+  })
+})
+
+describe("mergeMention", () => {
+  const alex = { id: "u1", handle: "alex", displayName: "Alex" }
+
+  it("records a picked user as a mention DTO, dropping the search row's extra fields", () => {
+    const picked = { ...alex, avatar: null, avatarUrl: "https://cdn/a.jpg" } as unknown as Parameters<typeof mergeMention>[1]
+    expect(mergeMention([], picked)).toEqual([alex])
+  })
+
+  it("moves a re-picked user to the end with its fresh names instead of listing it twice", () => {
+    const bea = { id: "u2", handle: "bea", displayName: "Bea" }
+    const renamed = { ...alex, displayName: "Alex R" } as unknown as Parameters<typeof mergeMention>[1]
+    expect(mergeMention([alex, bea], renamed)).toEqual([bea, { ...alex, displayName: "Alex R" }])
+  })
+
+  it("records nothing for a jurisdiction handle, which stays plain body text", () => {
+    expect(
+      mergeMention([alex], { kind: "jurisdiction", id: "city", handle: "cityofla", displayName: "City of LA" }),
+    ).toBeNull()
   })
 })

@@ -6,6 +6,7 @@ import { queryKeys } from "../data/keys"
 import { QUEUED_SEND_TIMEOUT_MS, SEND_TIMEOUT_MS } from "../data/hooks/chat"
 import { makeShareRuns, runShareToDm, SHARE_SOCKET_OPEN_TIMEOUT_MS } from "./shareDelivery"
 import { summarizeShareRun, type SharePlanEntry, type ShareRunSummary } from "./shareToDm"
+import { threadRoomId } from "../data/threadRoom"
 
 export function newShareClientId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -29,7 +30,7 @@ export interface ShareToDmApi {
 async function openDmRoom(api: ApiClient, userId: string): Promise<string | null> {
   try {
     const { thread } = await api.openDm({ userId })
-    const roomId = thread.refId ?? thread.id
+    const roomId = threadRoomId(thread)
     return roomId.length > 0 ? roomId : null
   } catch {
     return null

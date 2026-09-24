@@ -12,6 +12,7 @@ import { tokens } from "@civfix/shared/tokens"
 import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
 import { Text } from "../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../primitives"
+import { MODAL_DISMISS_FOCUS_DELAY_MS } from "./modalFocusDelay"
 import { useRequestEmailCode, useDeleteAccount } from "../data"
 import { appErrorCode } from "../data/errorCode"
 import { useT } from "../i18n"
@@ -19,7 +20,6 @@ import { useT } from "../i18n"
 type TFn = (key: string, opts?: Record<string, unknown>) => string
 
 const EMAIL_OTP_LENGTH = 6
-const CODE_FOCUS_DELAY_MS = 50
 
 export interface DeleteAccountModalProps {
   visible: boolean
@@ -74,7 +74,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
 
   useEffect(() => {
     if (!visible || codeFocusRequest === 0) return
-    const timer = setTimeout(() => codeRef.current?.focus(), CODE_FOCUS_DELAY_MS)
+    const timer = setTimeout(() => codeRef.current?.focus(), MODAL_DISMISS_FOCUS_DELAY_MS)
     return () => clearTimeout(timer)
   }, [visible, codeFocusRequest])
 

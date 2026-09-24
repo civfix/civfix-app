@@ -6,23 +6,17 @@ import {
   View,
   type BlurEvent,
   type TextInput as RNTextInput,
-  type ViewStyle,
 } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
-import type { PostDTO, UserMentionDTO } from "@civfix/shared"
-import { tokens } from "@civfix/shared/tokens"
 import { focusRingProps, makeThemedStyles, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"
-import { useToast } from "../../primitives/Toast"
 import type { MentionCandidate } from "../../primitives"
 import { ComposerThumbs } from "../../primitives/ComposerThumbs"
 import { useComposerAttachments } from "../../primitives/useComposerAttachments"
 import { Icon, Text, iconMap } from "../../typography"
-import { actableOrganizations, useMyOrganizations, useMyProfile } from "../../data"
-import { useCreatePost } from "../../data/hooks/posts"
+import { useMyProfile } from "../../data"
 import { useT } from "../../i18n"
-import { useHaptics } from "../../capabilities"
-import { POST_BODY_MAX_LENGTH, activePostMentions } from "../postComposerModel"
+import { POST_BODY_MAX_LENGTH, activePostMentions, mergeMention } from "../postComposerModel"
 import {
   POST_COMPOSER_MEDIA_CAP,
   carriedMediaIndex,
@@ -31,16 +25,17 @@ import {
   postComposerCanAttach,
   snapshotCarriedMedia,
 } from "../postComposerMedia"
-import { resolvePostSubmit } from "../postComposerSubmit"
-import { optimisticPostId } from "../thread/threadModel"
+import { buildOptimisticPost, resolvePostSubmit, toPostOrganizationRef } from "../postComposerSubmit"
 import {
-  restoreFailedPostSubmit,
   selectPostComposerDraft,
   selectPostComposerDraftOwner,
   usePostComposerStore,
   type PostComposerMedia,
 } from "../postComposerStore"
-import { AuthorAsChips, authorAsSelection } from "../AuthorAsChips"
+import { AuthorAsChips } from "../AuthorAsChips"
+import { usePostAsOrganization } from "../postComposer/usePostAsOrganization"
+import { useSubmitPost } from "../postComposer/useSubmitPost"
+import { postComposerStyleParts } from "../postComposer/postComposerStyleParts"
 import { useNavStore } from "../../nav"
 import {
   buildInlineComposerModel,
@@ -62,15 +57,11 @@ function InlineComposerForOwner() {
   const styles = useStyles()
   const th = useTheme()
   const { t } = useT("post-composer")
-  const haptics = useHaptics()
   const profile = useMyProfile().data?.profile
-  const create = useCreatePost()
+  const { create, submit: submitPost } = useSubmitPost()
   const attachments = useComposerAttachments(POST_COMPOSER_MEDIA_CAP)
   const inputRef = useRef<RNTextInput>(null)
   const cardRef = useRef<View>(null)
-  const submittingRef = useRef(false)
-  const mountedRef = useRef(true)
-  const toast = useToast()
 
   const body = usePostComposerStore((state) => selectPostComposerDraft(state).body)
   const mentionedUsers = usePostComposerStore((state) => selectPostComposerDraft(state).mentionedUsers)
@@ -81,12 +72,10 @@ function InlineComposerForOwner() {
   const draftOrganizationId = usePostComposerStore((state) => selectPostComposerDraft(state).organizationId)
   const ownsDraft = usePostComposerStore((state) => inlineComposerOwnsDraft(selectPostComposerDraft(state)))
 
-  const myOrgs = useMyOrganizations()
-  const actableOrgs = actableOrganizations(myOrgs.data)
-  const postAsOrganizations = actableOrgs ?? []
-  const postAsOrganizationId = authorAsSelection(draftOrganizationId, actableOrgs)
-  const postAsOrganization =
-    postAsOrganizations.find((org) => org.id === postAsOrganizationId) ?? null
+  const { postAsOrganizations, postAsOrganizationId, postAsOrganization } = usePostAsOrganization(
+    { organizationId: draftOrganizationId },
+    setOrganizationId,
+  )
 
   const [open, setOpen] = useState(false)
   const [bodyFocused, setBodyFocused] = useState(false)
@@ -108,10 +97,6 @@ function InlineComposerForOwner() {
     if (!open) return
     setMedia(composerMedia)
   }, [open, composerMedia, setMedia])
-
-  useEffect(() => {
-    if (draftOrganizationId !== null && postAsOrganizationId === null) setOrganizationId(null)
-  }, [draftOrganizationId, postAsOrganizationId, setOrganizationId])
 
   const canAttachMedia = postComposerCanAttach({
     hookCanAttach: attachments.canAttach,
@@ -175,13 +160,12 @@ function InlineComposerForOwner() {
     if (open && !ownsDraft) closeComposer()
   }, [open, ownsDraft, closeComposer])
 
-  useEffect(() => {
-    mountedRef.current = true
-    return () => {
-      mountedRef.current = false
+  useEffect(
+    () => () => {
       if (deferredBlurRef.current != null) clearTimeout(deferredBlurRef.current)
-    }
-  }, [])
+    },
+    [],
+  )
 
   const onFocus = useCallback(() => {
     pressingOwnControlRef.current = false
@@ -242,102 +226,38 @@ function InlineComposerForOwner() {
   const onMention = useCallback(
     (candidate: MentionCandidate, nextDraft: string) => {
       setBody(nextDraft)
-      if ((candidate as { kind?: string }).kind === "jurisdiction") return
-      const user: UserMentionDTO = {
-        id: candidate.id,
-        handle: candidate.handle,
-        displayName: candidate.displayName,
-      }
-      setMentionedUsers([...mentionedUsers.filter((item) => item.id !== user.id), user])
+      const mentioned = mergeMention(mentionedUsers, candidate)
+      if (mentioned) setMentionedUsers(mentioned)
     },
     [mentionedUsers, setBody, setMentionedUsers],
   )
 
-  const submit = useCallback(() => {
-    if (submittingRef.current) return
-    if (!open || !ownsDraft) return
-    if (!profile || resolution.action !== "submit") return
-    submittingRef.current = true
-    const optimistic: PostDTO = {
-      id: optimisticPostId(Date.now()),
-      author: profile,
-      organization: postAsOrganization
-        ? {
-            id: postAsOrganization.id,
-            slug: postAsOrganization.slug,
-            name: postAsOrganization.name,
-            logoUrl: postAsOrganization.logoUrl ?? null,
-            verified: postAsOrganization.verifiedStatus === "verified",
-            ...(postAsOrganization.verifiedKind
-              ? { verifiedKind: postAsOrganization.verifiedKind }
-              : {}),
-          }
-        : null,
-      kind: resolution.input.kind,
-      body: resolution.input.body ?? null,
-      createdAt: new Date().toISOString(),
-      editedAt: null,
-      counts: { likes: 0, reposts: 0, replies: 0, saves: 0 },
-      viewer: { liked: false, reposted: false, saved: false },
-      media: composerMedia.flatMap((item) =>
-        item.uploadId
-          ? [
-              {
-                id: item.uploadId,
-                kind: item.kind,
-                url: item.uri,
-                thumbUrl: item.posterUri,
-                status: "ready" as const,
-              },
-            ]
-          : [],
-      ),
-      mentions: activeMentions,
-      event: null,
-      report: null,
-      repostOf: null,
-      replyToId: null,
-      threadRootId: null,
-    }
-    const staged = selectPostComposerDraft(usePostComposerStore.getState())
-    usePostComposerStore.getState().reset({ mode: "post", targetPostId: null })
-    create
-      .mutateAsync(
-        { input: resolution.input, optimistic },
-        {
-          onSuccess: () => {
-            haptics.success()
-            attachments.reset()
-            setCarriedMedia([])
-            setDroppedMedia(0)
-            setOpen(false)
-          },
-          onSettled: () => {
-            submittingRef.current = false
-          },
-        },
-      )
-      .catch(() => {
-        haptics.error()
-        const restored = restoreFailedPostSubmit(staged)
-        if (!mountedRef.current) {
-          toast.show(t(restored ? "submit_error_restored" : "submit_error"), { variant: "error" })
+  const submit = () =>
+    submitPost(
+      () => {
+        if (!open || !ownsDraft) return null
+        if (!profile || resolution.action !== "submit") return null
+        return {
+          input: resolution.input,
+          optimistic: buildOptimisticPost({
+            author: profile,
+            organization: postAsOrganization ? toPostOrganizationRef(postAsOrganization) : null,
+            kind: resolution.input.kind,
+            body: resolution.input.body ?? null,
+            now: new Date(),
+            media: composerMedia,
+            mentions: activeMentions,
+          }),
+          resetTo: { mode: "post", targetPostId: null },
         }
-      })
-  }, [
-    activeMentions,
-    attachments,
-    composerMedia,
-    create,
-    haptics,
-    open,
-    ownsDraft,
-    postAsOrganization,
-    profile,
-    resolution,
-    t,
-    toast,
-  ])
+      },
+      () => {
+        attachments.reset()
+        setCarriedMedia([])
+        setDroppedMedia(0)
+        setOpen(false)
+      },
+    )
 
   if (!profile) return null
 
@@ -480,6 +400,7 @@ function InlineComposerForOwner() {
 }
 
 const useStyles = makeThemedStyles((t) => ({
+  ...postComposerStyleParts(t),
   card: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -513,10 +434,6 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["2"],
     paddingVertical: t.space["1"],
   },
-  inputSurfaceFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
   input: {
     minHeight: 72,
     maxHeight: 220,
@@ -536,15 +453,6 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
   },
-  addMediaDisc: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.surfaceTint,
-  },
-  addMediaDisabled: { opacity: 0.52 },
   close: {
     width: MIN_TOUCH_TARGET,
     height: MIN_TOUCH_TARGET,
@@ -560,14 +468,6 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "center",
     backgroundColor: t.colors.accent,
   },
-  postButtonDisabled: { backgroundColor: t.colors.surfaceTint },
-  postButtonText: {
-    color: t.colors.neutral.card,
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: t.fontSize["14"],
-    lineHeight: 18,
-  },
-  postButtonTextDisabled: { color: t.colors.textSubtle },
   error: {
     color: t.colors.accentText,
     fontFamily: t.fontFamily.bodySemiBold,

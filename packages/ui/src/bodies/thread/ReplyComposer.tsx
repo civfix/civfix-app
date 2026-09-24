@@ -33,7 +33,7 @@ import {
 } from "react-native"
 import { TextInput } from "../../primitives/TextInput"
 import { useQueryClient } from "@tanstack/react-query"
-import type { CleanupDTO, LinkedEventRef, PostDTO, ReportDTO, UserMentionDTO } from "@civfix/shared"
+import type { CleanupDTO, LinkedEventRef, PostDTO, ReportDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
 import { focusRingProps, makeThemedStyles, wash, useLayoutMode, useTheme, webInputReset } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
@@ -50,7 +50,7 @@ import { personFromAuthUser } from "../feedShare"
 import { useCreatePost } from "../../data/hooks/posts"
 import { useT } from "../../i18n"
 import { pathForEntry } from "../../nav"
-import { activePostMentions } from "../postComposerModel"
+import { activePostMentions, mergeMention } from "../postComposerModel"
 import {
   POST_COMPOSER_MEDIA_CAP,
   carriedMediaIndex,
@@ -58,6 +58,7 @@ import {
   mergePostComposerThumbs,
 } from "../postComposerMedia"
 import { resolvePostSubmit } from "../postComposerSubmit"
+import { normalizeHandle } from "../mentionText"
 import type { PostComposerMedia } from "../postComposerStore"
 import { ComposerAttachChip } from "./ComposerAttachChip"
 import { ReplyAttachSheet } from "./ReplyAttachSheet"
@@ -271,16 +272,8 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
 
   const onMention = (candidate: MentionCandidate, nextDraft: string) => {
     setBody(targetId, nextDraft)
-    if ((candidate as { kind?: string }).kind === "jurisdiction") return
-    const user: UserMentionDTO = {
-      id: candidate.id,
-      handle: candidate.handle,
-      displayName: candidate.displayName,
-    }
-    setMentionedUsers(targetId, [
-      ...draft.mentionedUsers.filter((item) => item.id !== user.id),
-      user,
-    ])
+    const mentioned = mergeMention(draft.mentionedUsers, candidate)
+    if (mentioned) setMentionedUsers(targetId, mentioned)
   }
 
   const removeMedia = (id: string) => {
@@ -369,7 +362,7 @@ export function ReplyComposer({ focalPost, rootHeight, onPosted, ref }: ReplyCom
   }
 
   const remaining = BODY_MAX - draft.body.length
-  const targetHandle = focalPost.author.handle?.replace(/^@/, "") ?? null
+  const targetHandle = focalPost.author.handle ? normalizeHandle(focalPost.author.handle) : null
   const replyingTo = targetHandle
     ? t("reply.context", { handle: `@${targetHandle}` })
     : t("reply.context", { handle: focalPost.author.name })

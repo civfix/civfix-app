@@ -11,7 +11,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it, vi } from "vitest"
-import { sliceBetween, surfaceSource } from "../../__tests__/sourceGuards"
+import { sliceBetween } from "../../__tests__/sourceGuards"
 import { MutationObserver, QueryClient } from "@tanstack/react-query"
 
 const strip = (source: string): string =>
@@ -53,9 +53,16 @@ describe("deleting from the overflow menu", () => {
 })
 
 describe("a failed post keeps its text after the composer is gone", () => {
+  it("both post composers submit through the one shared submit hook", () => {
+    for (const source of [code("../PostComposer.tsx"), code("../feed/InlineComposer.tsx")]) {
+      expect(source).toContain("const { create, submit: submitPost } = useSubmitPost()")
+      expect(source).not.toMatch(/create\s*\.mutate(Async)?\(/)
+      expect(source).not.toContain("restoreFailedPostSubmit")
+    }
+  })
+
   const composers: Record<string, string> = {
-    "../PostComposer.tsx": strip(surfaceSource("postComposer")),
-    "../feed/InlineComposer.tsx": code("../feed/InlineComposer.tsx"),
+    "../postComposer/useSubmitPost.ts": code("../postComposer/useSubmitPost.ts"),
   }
   for (const [file, source] of Object.entries(composers)) {
     const start = source.indexOf("const staged =")

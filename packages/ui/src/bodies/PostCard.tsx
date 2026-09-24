@@ -37,7 +37,7 @@ import { MediaPreview } from "../primitives/MediaPreview"
 import { PostActionBar } from "../primitives/PostActionBar"
 import { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "../primitives/PostOverflowButton"
 import { useNavStore } from "../nav/useNavStore"
-import { useLightbox } from "../lightbox"
+import { usePostMediaLightbox } from "../lightbox/usePostMediaLightbox"
 import { EmbeddedPost } from "./EmbeddedPost"
 import { LinkedEventCard } from "./LinkedEventCard"
 import { LinkedReportCard } from "./LinkedReportCard"
@@ -45,7 +45,7 @@ import { localReportThumb } from "./localReportThumbs"
 import { POST_CARD_RHYTHM } from "../primitives/postCardRhythm"
 import { PostMediaGrid } from "./PostMediaGrid"
 import { PostOverflowMenu } from "./PostOverflowMenu"
-import { usePopoverAnchor, type AnchorRect } from "../primitives/PopoverMenu"
+import { usePostOverflowMenuState } from "./postCardActions"
 import { useListTimeAgo } from "./useListTimeAgo"
 import {
   POST_BODY_CLAMP_LINES,
@@ -53,7 +53,6 @@ import {
   buildPostCardView,
   buildPostIdentity,
   identityA11yLabel,
-  postMenuSubject,
   repostBodyText,
   repostSubjectAuthorId,
   splitPostBodyMentions,
@@ -483,14 +482,7 @@ export const PostCard = React.memo(function PostCard({
   const { t } = useT("home-feed")
   const layout = useLayoutMode()
   const [expanded, setExpanded] = React.useState(false)
-  const [menuOpen, setMenuOpen] = React.useState(false)
-  const [menuAnchor, setMenuAnchor] = React.useState<AnchorRect | null>(null)
-  const menuTrigger = usePopoverAnchor(setMenuAnchor)
-  const openMenu = React.useCallback(() => {
-    menuTrigger.measure()
-    setMenuOpen(true)
-  }, [menuTrigger])
-  const closeMenu = React.useCallback(() => setMenuOpen(false), [])
+  const { menuOpen, menuAnchor, menuTrigger, openMenu, closeMenu, menuSubject } = usePostOverflowMenuState(post)
   const timeAgo = useListTimeAgo()
   const model = React.useMemo(() => buildPostCardModel(post, t, { timeAgo }), [post, t, timeAgo])
   const view = React.useMemo(() => buildPostCardView(post, model), [post, model])
@@ -513,7 +505,6 @@ export const PostCard = React.memo(function PostCard({
     [onOpenReport, push],
   )
 
-  const menuSubject = React.useMemo(() => postMenuSubject(post), [post])
   const openOriginal = React.useMemo(
     () => (openableOriginalId ? () => openPost(openableOriginalId) : undefined),
     [openableOriginalId, openPost],
@@ -547,20 +538,7 @@ export const PostCard = React.memo(function PostCard({
     [push, actionTargetId],
   )
 
-  const lightbox = useLightbox()
-  const openMedia = React.useCallback(
-    (index: number) => {
-      const items = media.map((item) => ({
-        url: item.url,
-        kind: item.kind,
-        thumbUrl: item.thumbUrl ?? null,
-        width: item.width ?? null,
-        height: item.height ?? null,
-      }))
-      if (items.length > 0) lightbox.open(items, index)
-    },
-    [lightbox, media],
-  )
+  const openMedia = usePostMediaLightbox(media)
 
   const clamp = model.bodyExpandable && !expanded
   const isFlat = surface === "flat"

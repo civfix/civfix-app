@@ -256,7 +256,8 @@ describe("the two mutations", () => {
   })
 
   it("addresses the room the way the rest of the package does", () => {
-    expect(inbox).toContain("const roomId = thread.refId ?? thread.id")
+    expect(inbox).toContain("const roomId = threadRoomId(thread)")
+    expect(inbox).toContain('import { threadRoomId } from "../../data/threadRoom"')
     expect(inbox).toContain("const roomKind = thread.kind")
   })
 })

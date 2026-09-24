@@ -30,6 +30,7 @@ import { threadRowActions, unreadBadgeLabel, type ThreadRowActionKey } from "../
 import { useRowHover } from "../rowHover"
 import { useTickingListTimeAgo } from "../useListTimeAgo"
 import { IS_WEB, ROW_AVATAR, ROW_GAP, ROW_GUTTER } from "./inboxLayout"
+import { threadRoomId } from "../../data/threadRoom"
 
 type TFn = ReturnType<typeof useT>["t"]
 
@@ -126,7 +127,7 @@ export const ThreadRow = React.memo(function ThreadRow({
   const isChannel = thread.channel === true
   const unread = thread.unread > 0
   const muted = thread.muted === true
-  const roomId = thread.refId ?? thread.id
+  const roomId = threadRoomId(thread)
   const roomKind = thread.kind
 
   const muteLabel = muted ? t("row.action.unmute") : t("row.action.mute")

@@ -7,6 +7,7 @@ import {
   type ChatItem,
   type ChatMessageDTO,
   type ListThreadsResponse,
+  type MessageThreadDTO,
   type ReactionEmoji,
   type RoomKind,
 } from "@civfix/shared"
@@ -16,6 +17,7 @@ import { restoreLocalChatAttachments } from "../localChatAttachments"
 import type { ChatConnState } from "../types"
 import { queryKeys } from "../keys"
 import { mergePins } from "../pins"
+import { threadMatchesRoom } from "../threadRoom"
 import { useChatAroundWindow } from "./chatAround"
 import { useChatBuffers } from "./chatBuffers"
 import { useChatHistoryCache, useChatHistoryQuery } from "./chatHistory"
@@ -48,6 +50,18 @@ export function useThreads() {
     retry: false,
     select: selectThreadPages,
   })
+}
+
+/** The viewer's inbox row for one room, from the already-loaded thread pages (no fetch of its own). */
+export function useThreadForRoom(roomKind: RoomKind, roomId: string): MessageThreadDTO | undefined {
+  const threads = useThreads()
+  return useMemo(
+    () =>
+      (threads.data?.pages ?? [])
+        .flatMap((page) => page.items)
+        .find((thread) => threadMatchesRoom(thread, roomKind, roomId)),
+    [threads.data, roomKind, roomId],
+  )
 }
 
 export const UNREAD_BADGE_PAGE_SIZE = 20

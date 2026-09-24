@@ -59,10 +59,11 @@ describe("FeedBody hands the FlatList stable props", () => {
   })
 
   it("keeps the entrance style STABLE, or the header memo below it is dead on arrival", () => {
-    expect(SRC).toContain(
-      "return useMemo(() => ({ opacity, transform: [{ translateY }] }), [opacity, translateY])",
-    )
-    expect(SRC).not.toMatch(/return \{ opacity, transform: \[\{ translateY \}\] \}/)
+    const entrance = read("../useEntranceAnimation.ts")
+    expect(SRC).toContain("const entranceStyle = useEntranceAnimation({")
+    expect(entrance).toMatch(/^ {2}return useMemo\(\(\) => \{/m)
+    expect(entrance).toContain("}, [progress, scale, translateY])")
+    expect(entrance).not.toMatch(/^ {2}return \{/m)
     expect(SRC).toContain(
       "const headerStyle = useMemo(() => [entranceStyle, styles.headerInset], [entranceStyle, styles])",
     )
@@ -221,17 +222,21 @@ describe("ConversationBody surfaces the chat hook's transient error", () => {
 })
 
 describe("the thumbnail contexts spend the 400px rendition, and the lightbox gets real dimensions", () => {
+  const LIGHTBOX_ITEMS = code(read("../../lightbox/lightboxItems.ts"))
+
   it("ReportDetailBody's strip reads thumbUrl for images too, and passes width/height on", () => {
     const SRC = code(read("../reportDetail/ReportGallery.tsx"))
     expect(SRC).toContain("const thumbUri = m.thumbUrl ?? m.url")
     expect(SRC).not.toContain('m.kind === "video" ? (m.thumbUrl ?? m.url) : m.url')
-    expect(SRC).toMatch(/thumbUrl: m\.thumbUrl \?\? null,\s*width: m\.width \?\? null,\s*height: m\.height \?\? null,/)
+    expect(SRC).toContain("const lightboxItems = toLightboxItems(ready)")
+    expect(LIGHTBOX_ITEMS).toMatch(/thumbUrl: item\.thumbUrl \?\? null,\s*width: item\.width \?\? null,\s*height: item\.height \?\? null,/)
   })
 
   it("MessageBubble's 220pt attachment decodes the thumb, and its lightbox keeps full resolution", () => {
     const SRC = code(read("../conversation/BubbleAttachments.tsx"))
     expect(SRC).toContain("thumbUri={m.thumbUrl ?? null}")
-    expect(SRC).toMatch(/thumbUrl: m\.thumbUrl \?\? null,\s*width: m\.width \?\? null,\s*height: m\.height \?\? null,/)
-    expect(SRC).toContain("url: m.url")
+    expect(SRC).toContain("const lightboxItems = toLightboxItems(attachments)")
+    expect(LIGHTBOX_ITEMS).toMatch(/thumbUrl: item\.thumbUrl \?\? null,\s*width: item\.width \?\? null,\s*height: item\.height \?\? null,/)
+    expect(LIGHTBOX_ITEMS).toContain("url: item.url")
   })
 })

@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
-  AccessibilityInfo,
   Animated,
   Easing,
   Platform,
@@ -27,6 +26,7 @@ import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedNotice } from "./FeedNotice"
 import { PostCard } from "./PostCard"
 import { InlineComposer } from "./feed/InlineComposer"
+import { useEntranceAnimation } from "./useEntranceAnimation"
 import { useFeedScrollTopStore } from "./feed/feedScrollStore"
 import { useFeedLiveStore } from "../data/feedLiveStore"
 import { clearsPendingAtOffset } from "../data/feedLiveModel"
@@ -46,57 +46,6 @@ import {
 const HEADER_ENTER_RISE = 14
 const ROW_ENTER_RISE = 22
 const ROW_ENTER_SCALE_FROM = 0.975
-
-function useFeedEntrance(): Animated.WithAnimatedValue<ViewStyle> {
-  const opacity = useRef(new Animated.Value(0)).current
-  const translateY = useRef(new Animated.Value(HEADER_ENTER_RISE)).current
-
-  useEffect(() => {
-    let mounted = true
-    const settle = () => {
-      opacity.stopAnimation()
-      translateY.stopAnimation()
-      opacity.setValue(1)
-      translateY.setValue(0)
-    }
-    const enter = () => {
-      Animated.parallel([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: FEED_ROW_ENTER_MS,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: Platform.OS !== "web",
-        }),
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: FEED_ROW_ENTER_MS,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: Platform.OS !== "web",
-        }),
-      ]).start()
-    }
-
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((reduceMotion) => {
-        if (!mounted) return
-        if (reduceMotion) settle()
-        else enter()
-      })
-      .catch(enter)
-
-    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", (reduceMotion) => {
-      if (reduceMotion) settle()
-    })
-    return () => {
-      mounted = false
-      subscription?.remove()
-      opacity.stopAnimation()
-      translateY.stopAnimation()
-    }
-  }, [opacity, translateY])
-
-  return useMemo(() => ({ opacity, transform: [{ translateY }] }), [opacity, translateY])
-}
 
 function FeedPostRow({
   postId,
@@ -179,7 +128,10 @@ export function FeedBody() {
   const feed = useHomeFeed()
   useFeedRealtime()
   const pendingNewPosts = useFeedLiveStore((s) => s.pendingNewPostIds.length)
-  const entranceStyle = useFeedEntrance()
+  const entranceStyle = useEntranceAnimation({
+    from: { translateY: HEADER_ENTER_RISE },
+    duration: FEED_ROW_ENTER_MS,
+  })
   const [entrance] = useState(createFeedEntranceTracker)
   const reducedMotion = useReducedMotion()
   const { t } = useT("home-feed")

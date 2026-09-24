@@ -5,6 +5,7 @@ import { clampGallerySelection } from "../reportDetail/galleryModel"
 import { matchesReportQuery } from "../reportsListModel"
 import { resumeStep, stepOrderFor } from "../../report/wizardSteps"
 import { reportDetailSource } from "../reportDetail/__tests__/reportDetailSource"
+import { pathForEntry } from "../../nav"
 
 describe("report gallery selection", () => {
   it("keeps the hero, the active thumb and the lightbox index on one item after the list shrinks", () => {
@@ -114,7 +115,8 @@ describe("report detail: share and host-an-event live in the overflow menu", () 
   })
 
   it("keeps each action's behaviour: the same share target, and requireAuth on hosting", () => {
-    expect(SRC).toContain("const sharePath = `/pin/${report.referenceCode ?? report.id}`")
+    expect(SRC).toContain('const sharePath = pathForEntry({ kind: "pin", id: report.referenceCode ?? report.id })')
+    expect(pathForEntry({ kind: "pin", id: "CFX-12" })).toBe("/pin/CFX-12")
     expect(SRC).toMatch(/shareLink\(\{\s*title,\s*path: sharePath,/)
     expect(SRC).toMatch(
       /const onHostEvent = useCallback\(\(\) => \{\s*requireAuth\([\s\S]*?kind: "create-cleanup", reportId: report\.id[\s\S]*?next: "\/host"/,
