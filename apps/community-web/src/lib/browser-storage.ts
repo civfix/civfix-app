@@ -10,6 +10,15 @@ function storageFor(area: BrowserStorageArea): Storage {
   return area === "local" ? window.localStorage : window.sessionStorage
 }
 
+export function storageAvailable(area: BrowserStorageArea): boolean {
+  if (typeof window === "undefined") return false
+  try {
+    return typeof storageFor(area) !== "undefined"
+  } catch {
+    return false
+  }
+}
+
 export function safeGet(area: BrowserStorageArea, key: string): string | null {
   if (typeof window === "undefined") return null
   try {

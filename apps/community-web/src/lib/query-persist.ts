@@ -3,7 +3,7 @@
 import { dehydrate, hydrate, type QueryClient, type Query } from "@tanstack/react-query"
 
 import { readAuthSnapshot } from "@/lib/auth-snapshot"
-import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
+import { safeGet, safeRemove, safeSet, storageAvailable } from "@/lib/browser-storage"
 import { useAuthStore } from "@/store/auth-store"
 
 
@@ -46,12 +46,8 @@ function shouldDehydrateMutation(): boolean {
   return false
 }
 
-function hasStorage(): boolean {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined"
-}
-
 function restore(queryClient: QueryClient): void {
-  if (!hasStorage()) return
+  if (!storageAvailable("local")) return
 
   const raw = safeGet("local", STORAGE_KEY)
   if (raw === null) return
@@ -121,7 +117,7 @@ function confirmedViewerId(): string | null | undefined {
 }
 
 function persist(queryClient: QueryClient): void {
-  if (!hasStorage()) return
+  if (!storageAvailable("local")) return
   const userId = confirmedViewerId()
   if (userId === undefined) return
   // The viewer just changed: the in-memory cache may still hold the previous viewer's notifications,
@@ -152,12 +148,12 @@ function persist(queryClient: QueryClient): void {
 }
 
 export function restorePersistedCache(queryClient: QueryClient): void {
-  if (hasStorage()) safeRemove("local", LEGACY_STORAGE_KEY)
+  if (storageAvailable("local")) safeRemove("local", LEGACY_STORAGE_KEY)
   restore(queryClient)
 }
 
 export function installCachePersistenceWriter(queryClient: QueryClient): () => void {
-  if (!hasStorage()) {
+  if (!storageAvailable("local")) {
     return () => {}
   }
 
@@ -183,11 +179,11 @@ export function installCachePersistenceWriter(queryClient: QueryClient): () => v
 }
 
 export function clearPersistedCache(): void {
-  if (!hasStorage()) return
+  if (!storageAvailable("local")) return
   safeRemove("local", STORAGE_KEY)
 }
 
 export function hasPersistedCache(): boolean {
-  if (!hasStorage()) return false
+  if (!storageAvailable("local")) return false
   return safeGet("local", STORAGE_KEY) !== null
 }

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
+import { safeGet, safeRemove, safeSet, storageAvailable } from "@/lib/browser-storage"
 
 function memoryStorage() {
   const data = new Map<string, string>()
@@ -61,5 +61,18 @@ describe("browser storage never throws", () => {
     expect(safeGet("local", "civfix.locale")).toBeNull()
     expect(() => safeSet("session", "civfix:event-team-invite", "{}")).not.toThrow()
     expect(() => safeRemove("local", "civfix.locale")).not.toThrow()
+  })
+
+  it("reports storage available only when the accessor itself answers", () => {
+    expect(storageAvailable("local")).toBe(false)
+    vi.stubGlobal("window", { localStorage: memoryStorage(), sessionStorage: memoryStorage() })
+    expect(storageAvailable("local")).toBe(true)
+    expect(storageAvailable("session")).toBe(true)
+    vi.stubGlobal("window", {
+      get localStorage(): Storage {
+        return blocked()
+      },
+    })
+    expect(storageAvailable("local")).toBe(false)
   })
 })
