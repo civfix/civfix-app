@@ -5,6 +5,7 @@ const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8"
 const strip = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
 
 const toggle = strip(read("../../primitives/Toggle.tsx"))
+const toggleRow = strip(read("../../primitives/ToggleRowContent.tsx"))
 const settingsToggle = strip(read("../../primitives/SettingsToggle.web.tsx"))
 const locationPicker = strip(read("../../map/LocationPicker.web.tsx"))
 const reportFlow = strip(read("../ReportFlowBody.tsx"))
@@ -17,20 +18,24 @@ const eventDetail = strip(read("../EventDetailBody.tsx"))
 
 describe("Toggle: one row, one tab stop", () => {
   it("takes the label column out of the tab order with BOTH the web and the native prop", () => {
-    expect(toggle).toMatch(/focusable=\{false\}/)
-    expect(toggle).toMatch(/tabIndex: -1/)
+    expect(toggle).toContain("<ToggleRowContent")
+    expect(toggleRow).toMatch(/focusable=\{false\}/)
+    expect(toggleRow).toMatch(/tabIndex: -1/)
   })
 
   it("leaves the switch as the single stop that owns the role, the label and the ring", () => {
     expect(settingsToggle).toContain('accessibilityRole="switch"')
     expect(settingsToggle).toContain("focusRingProps")
-    expect(toggle).toMatch(/accessibilityLabel=\{label\}/)
+    expect(toggle).toMatch(/label=\{label\}/)
+    expect(toggleRow).toMatch(/accessibilityLabel=\{label\}/)
     expect(toggle).not.toMatch(/accessibilityRole/)
+    expect(toggleRow).not.toMatch(/accessibilityRole/)
   })
 
   it("keeps the label column clickable, and ring-tagged so a click cannot paint the UA outline", () => {
-    expect(toggle).toMatch(/onPress=\{\(\) => onValueChange\(!value\)\}/)
-    expect(toggle).toContain("focusRingProps")
+    expect(toggle).toMatch(/onValueChange=\{onValueChange\}/)
+    expect(toggleRow).toMatch(/onPress=\{\(\) => onValueChange\(!value\)\}/)
+    expect(toggleRow).toContain("focusRingProps")
   })
 })
 

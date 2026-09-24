@@ -50,7 +50,7 @@ describe("the profile's five numbers", () => {
   })
 
   it("counts go through the ONE compact formatter the app already has", () => {
-    expect(SOURCE).toContain('import { formatPostActionCount } from "../primitives/PostActionBar"')
+    expect(SOURCE).toContain('import { formatPostActionCount } from "../primitives/postActionModel"')
     expect(SOURCE).toContain("formatPostActionCount(item.value)")
     expect(SOURCE).not.toMatch(/toLocaleString|Intl\.NumberFormat/)
     expect(SOURCE).toContain("accessibilityLabel={`${count} ${label}`}")

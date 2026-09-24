@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from "react-native"
 import type { View as RNView } from "react-native"
 import { focusRingProps, makeThemedStyles, useTheme, webHover, webTransition } from "../theme"
 import { Icon, iconMap, type IconName } from "../typography"
-import { HEADER_CONTROL_RADIUS, HEADER_CONTROL_SIZE, HEADER_GLYPH_SIZE } from "./headerControls"
+import { HEADER_CONTROL_RADIUS, HEADER_CONTROL_SIZE, HEADER_GLYPH_SIZE } from "../primitives/headerControls"
 
 export interface HeaderIconButtonProps {
   icon: IconName

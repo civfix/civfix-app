@@ -9,12 +9,12 @@
  */
 import { space } from "@civfix/shared/tokens"
 import { parentViewForEntry, type DetailEntry, type View } from "../nav"
-import { HEADER_CONTROL_SIZE } from "../bodies/headerControls"
+import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
 
 /** Shared with the card's own left inset. */
 export const NAV_LEFT = 14
 export const NAV_TOP = 14
-/** The portrait dock's height (`theme.glass.dock.height`), laid flat. */
+/** The portrait dock's height (`DOCK_H` in surface/liquidGlass), laid flat. */
 export const NAV_H = 64
 /** The dock's own `DOCK_GAP`. */
 export const NAV_GAP = 12

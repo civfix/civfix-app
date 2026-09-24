@@ -13,7 +13,7 @@ import {
   HEADER_CONTROL_RADIUS,
   HEADER_CONTROL_SIZE,
   HEADER_GLYPH_SIZE,
-} from "./headerControls"
+} from "../primitives/headerControls"
 
 export interface HeaderProfileButtonProps {
   surface?: "glass" | "solid"

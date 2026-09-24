@@ -7,11 +7,8 @@ import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
 import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
 import { VerifiedBadge } from "../../primitives/VerifiedBadge"
-import {
-  PostActionBar,
-  postActionGlyphInset,
-  postActionLayout,
-} from "../../primitives/PostActionBar"
+import { PostActionBar } from "../../primitives/PostActionBar"
+import { postActionGlyphInset, postActionLayout } from "../../primitives/postActionModel"
 import { useNavStore } from "../../nav/useNavStore"
 import type { DetailEntry } from "../../nav/types"
 import { LinkedEventCard } from "../LinkedEventCard"
@@ -28,7 +25,7 @@ import {
   repostSubjectAuthorId,
   splitPostBodyMentions,
 } from "../postCardModel"
-import { POST_CARD_RHYTHM } from "../postCardRhythm"
+import { POST_CARD_RHYTHM } from "../../primitives/postCardRhythm"
 import { usePopoverAnchor, type AnchorRect } from "../../primitives/PopoverMenu"
 import { useLightbox } from "../../lightbox"
 import { useRowHover } from "../rowHover"

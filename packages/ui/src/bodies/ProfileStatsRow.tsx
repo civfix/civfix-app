@@ -4,7 +4,7 @@ import type { UserProfileDTO } from "@civfix/shared"
 import { makeThemedStyles, focusRingProps, webCursor, webNoSelect, webTransition } from "../theme"
 import { Text, TextLink } from "../typography"
 import { useT } from "../i18n"
-import { formatPostActionCount } from "../primitives/PostActionBar"
+import { formatPostActionCount } from "../primitives/postActionModel"
 
 export type ProfileConnectionKey = "followers" | "following"
 
