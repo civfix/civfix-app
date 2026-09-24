@@ -1,10 +1,9 @@
-import { isValidHandle, type HandleAvailableResponse } from "@civfix/shared"
+import { DISPLAY_NAME_MAX_LENGTH, isValidHandle, type HandleAvailableResponse } from "@civfix/shared"
 
-// Mirrors UpdateProfileRequestSchema's displayName max. The two fields plus the joining space must fit,
-// or the server rejects the save with a VALIDATION error the user cannot act on.
-export const DISPLAY_NAME_MAX = 80
+// The two fields plus the joining space must fit the display name cap, or the server rejects the save
+// with a VALIDATION error the user cannot act on.
 export const FIRST_NAME_MAX = 40
-export const LAST_NAME_MAX = DISPLAY_NAME_MAX - FIRST_NAME_MAX - 1
+export const LAST_NAME_MAX = DISPLAY_NAME_MAX_LENGTH - FIRST_NAME_MAX - 1
 
 export function splitName(displayName: string): { first: string; last: string } {
   const parts = displayName.trim().split(/\s+/).filter(Boolean)
@@ -70,7 +69,7 @@ export function firstRunModel(input: FirstRunInput): FirstRunView {
     canSubmit:
       available &&
       displayName.length > 0 &&
-      displayName.length <= DISPLAY_NAME_MAX &&
+      displayName.length <= DISPLAY_NAME_MAX_LENGTH &&
       input.ageConfirmed &&
       input.termsConfirmed &&
       !input.submitting,

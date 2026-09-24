@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { useDraftReportStore, MAX_DRAFT_MEDIA, captureSeedsNewReport } from "../draftStore"
+import { MAX_REPORT_MEDIA } from "@civfix/shared"
+import { useDraftReportStore, captureSeedsNewReport } from "../draftStore"
 import type { CapturedMedia } from "../../capabilities"
 
 /**
@@ -35,11 +36,11 @@ describe("draftStore media", () => {
     expect(useDraftReportStore.getState().draft.idempotencyKey).toBeTruthy()
   })
 
-  it("caps the media list at MAX_DRAFT_MEDIA", () => {
+  it("caps the media list at MAX_REPORT_MEDIA", () => {
     const s = useDraftReportStore.getState()
     s.startFromCapture(cap("0"))
-    for (let i = 1; i < MAX_DRAFT_MEDIA + 3; i++) s.addCapture(cap(String(i)))
-    expect(useDraftReportStore.getState().draft.media.length).toBe(MAX_DRAFT_MEDIA)
+    for (let i = 1; i < MAX_REPORT_MEDIA + 3; i++) s.addCapture(cap(String(i)))
+    expect(useDraftReportStore.getState().draft.media.length).toBe(MAX_REPORT_MEDIA)
   })
 
   it("removeMedia drops one item by uri, keeping the rest in order", () => {
@@ -392,7 +393,7 @@ describe("releasing captures that leave the draft", () => {
   it("releases a capture the media cap turned away", () => {
     const s = useDraftReportStore.getState()
     s.startFromCapture(cap("0"))
-    for (let i = 1; i < MAX_DRAFT_MEDIA; i++) s.addCapture(cap(String(i)))
+    for (let i = 1; i < MAX_REPORT_MEDIA; i++) s.addCapture(cap(String(i)))
     const extra = releasable("blob:extra")
     s.addCapture(extra.media)
     expect(useDraftReportStore.getState().draft.media.map((m) => m.uri)).not.toContain("blob:extra")

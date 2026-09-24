@@ -12,7 +12,11 @@ import {
 
 export const MailAttachmentSchema = z
   .object({
+    // Read endpoints overwrite `key` with the presigned link for older admin builds; `url` carries the
+    // same link under an honest name. It expires MEDIA_GET_URL_TTL_SEC (15 minutes) after the response
+    // is built, so refetch the message instead of caching the link.
     key: z.string(),
+    url: z.string().url().optional(),
     filename: z.string(),
     size: z.number().int().nonnegative(),
   })

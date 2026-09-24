@@ -8,15 +8,19 @@ import { MAX_MENTIONED_USERS, OkResponseSchema } from "./internal-fields.js"
  * contained there.
  */
 
+export const POST_BODY_MAX = 2000
+
 /**
  * Body of POST /posts, which also carries quotes and replies. A pure repost is not this route: it is
- * the toggle POST /posts/:id/repost. A quote requires repostOfId, a reply requires replyToId, every
- * post needs a body, an attachment or media, and organizationId is refused on a repost.
+ * the toggle POST /posts/:id/repost. `kind: "repost"` still parses here because narrowing PostKindSchema
+ * would change the published input type, but the server refuses it with a VALIDATION error; the
+ * organizationId refine below therefore only fires on a request the server would reject anyway. A quote
+ * requires repostOfId, a reply requires replyToId, and every post needs a body, an attachment or media.
  */
 export const PostComposeInputSchema = z
   .object({
     kind: PostKindSchema.default("post"),
-    body: z.string().trim().max(2000).optional(),
+    body: z.string().trim().max(POST_BODY_MAX).optional(),
     replyToId: IdSchema.optional(),
     repostOfId: IdSchema.optional(),
     eventId: IdSchema.optional(), // the server refuses an event the author neither hosts nor attends
@@ -127,9 +131,11 @@ export function parseFeedScoreCursor(cursor: string | null | undefined): FeedSco
   if (typeof cursor !== "string") return null
   const match = FEED_SCORE_CURSOR_RE.exec(cursor.trim())
   if (!match) return null
+  // Post ids are stored lowercase and isAfterFeedScoreCursor compares them as strings, so an uppercase
+  // id from a hand-edited or foreign cursor would order against the wrong rows.
   const parsed = FeedScoreCursorSchema.safeParse({
     score: Number(match[1]),
-    postId: match[2],
+    postId: match[2]?.toLowerCase(),
   })
   return parsed.success ? parsed.data : null
 }

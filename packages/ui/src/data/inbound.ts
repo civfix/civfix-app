@@ -1,5 +1,6 @@
 import {
   ErrorCode,
+  WsErrorCode,
   effectiveClientId,
   preserveViewerFields,
   reconcileInbound,
@@ -239,13 +240,13 @@ export function isFatalRoomErrorCode(code: string): boolean {
 }
 
 const SEND_REJECTION_ERROR_CODES: ReadonlySet<string> = new Set([
-  "BAD_FRAME",
-  "BLOCKED",
+  WsErrorCode.BAD_FRAME,
+  WsErrorCode.BLOCKED,
   ErrorCode.RATE_LIMITED,
   ErrorCode.VALIDATION,
-  "channel_read_only",
-  "reply_wrong_room",
-  "reply_deleted_target",
+  WsErrorCode.CHANNEL_READ_ONLY,
+  WsErrorCode.REPLY_WRONG_ROOM,
+  WsErrorCode.REPLY_DELETED_TARGET,
 ])
 
 export function isSendRejectionErrorCode(code: string): boolean {

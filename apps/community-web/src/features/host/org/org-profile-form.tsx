@@ -8,21 +8,24 @@ import type { OrganizationDTO, SocialLinks, SocialPlatform } from "@civfix/share
 import {
   CreateOrganizationRequestSchema,
   ErrorCode,
+  HTTPS_URL_MAX_LENGTH,
   MAX_ORG_DESCRIPTION,
   MAX_ORG_NAME,
   ORG_SLUG_MAX,
   ORG_SLUG_MIN,
   SafeHttpsLinkSchema,
+  SOCIAL_HANDLE_MAX_LENGTH,
+  SOCIAL_HANDLE_PREFIX,
   SOCIAL_PLATFORMS,
   SOCIAL_PLATFORM_LABELS,
   UpdateOrganizationRequestSchema,
+  WHATSAPP_NUMBER_MAX_LENGTH,
   toAppError,
 } from "@civfix/shared"
 import { useApi, useAuthState } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
-import { HTTPS_URL_MAX_LENGTH } from "@/lib/input-limits"
 import { ConsoleButton } from "@/components/console/button"
 import { Field } from "@/components/console/forms/field"
 import { CONSOLE_INPUT_CLASSES, TextInput, TextArea } from "@/components/console/forms/inputs"
@@ -49,24 +52,10 @@ import type { OrgSlugProblem } from "./org-slug"
 import { suspendedForbiddenCopy } from "./org-copy"
 import type { Translate } from "@civfix/ui/i18n"
 
-/** Mirrors the contract's social handle pattern (`{1,30}`). */
-const SOCIAL_HANDLE_MAX = 30
-/** An E.164 number is at most 15 digits. */
-const WHATSAPP_NUMBER_MAX = 15
-
 const SECTION_CLASSES =
   "rounded-md border border-console-line bg-console-surface p-token-4 shadow-console-1"
 const PREFIX_BOX_CLASSES =
   "inline-flex items-center rounded-l-xs border border-r-0 border-console-line bg-console-surface-alt"
-
-/** What each social field is prefixed with so the host types only the handle. */
-const SOCIAL_PREFIX: Record<SocialPlatform, string> = {
-  facebook: "facebook.com/",
-  instagram: "instagram.com/",
-  tiktok: "tiktok.com/@",
-  x: "x.com/",
-  whatsapp: "+",
-}
 
 export interface OrgProfileDraft {
   name: string
@@ -730,7 +719,7 @@ function SocialLinkField({
       optional
       error={error}
     >
-      <InputPrefix prefix={SOCIAL_PREFIX[platform]} compact>
+      <InputPrefix prefix={SOCIAL_HANDLE_PREFIX[platform]} compact>
         <input
           id={id}
           value={value}
@@ -738,7 +727,7 @@ function SocialLinkField({
           autoCapitalize="none"
           spellCheck={false}
           inputMode={whatsapp ? "tel" : "text"}
-          maxLength={whatsapp ? WHATSAPP_NUMBER_MAX : SOCIAL_HANDLE_MAX}
+          maxLength={whatsapp ? WHATSAPP_NUMBER_MAX_LENGTH : SOCIAL_HANDLE_MAX_LENGTH}
           aria-invalid={error ? true : undefined}
           className={cn(CONSOLE_INPUT_CLASSES, "rounded-l-none", error && "border-console-bloom-strong")}
           onChange={(event) => onChange(event.target.value)}

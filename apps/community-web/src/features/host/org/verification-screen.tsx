@@ -12,6 +12,7 @@ import type {
 import {
   ApplyOrganizationVerificationRequestSchema,
   MAX_ORG_VERIFICATION_DOCUMENTS,
+  MAX_ORG_VERIFICATION_NOTE,
 } from "@civfix/shared"
 import { useApi } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
@@ -40,8 +41,6 @@ import { suspendedForbiddenCopy } from "./org-copy"
 import { useOrgVerification } from "./use-org-verification"
 
 const KINDS: readonly OrgVerificationKind[] = ["nonprofit", "government", "community"]
-/** Mirrors the contract's unexported `note` max on the apply request. */
-const MAX_NOTE = 1000
 /** "XX-XXXXXXX", the shape `normalizeEin` types into the field. */
 const EIN_INPUT_MAX = 10
 
@@ -350,13 +349,13 @@ function ApplyForm({ orgId, onSubmitted }: { orgId: string; onSubmitted: () => v
             label={t("verification.field_note", { defaultValue: "Note for the reviewer" })}
             htmlFor="verification-note"
             optional
-            counter={`${note.length}/${MAX_NOTE}`}
+            counter={`${note.length}/${MAX_ORG_VERIFICATION_NOTE}`}
             error={showError("note")}
           >
             <TextArea
               id="verification-note"
               rows={4}
-              maxLength={MAX_NOTE}
+              maxLength={MAX_ORG_VERIFICATION_NOTE}
               value={note}
               placeholder={t("verification.note_placeholder", {
                 defaultValue: "Anything that helps us match the documents to this organization.",

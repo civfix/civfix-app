@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from "react"
 import { View, Pressable, ScrollView, ActivityIndicator } from "react-native"
+import { MAX_REPORT_MEDIA } from "@civfix/shared"
 import {
   makeThemedStyles,
   useTheme,
@@ -13,7 +14,7 @@ import { Text, Icon, iconMap } from "../../typography"
 import { MediaPreview } from "../../primitives"
 import { useCamera } from "../../capabilities"
 import type { CapturedMedia } from "../../capabilities"
-import { useDraftReportStore, MAX_DRAFT_MEDIA, captureSeedsNewReport } from "../../report/draftStore"
+import { useDraftReportStore, captureSeedsNewReport } from "../../report/draftStore"
 import type { DraftMedia } from "../../report/draftStore"
 import {
   useCaptureDropTarget,
@@ -101,7 +102,7 @@ function CapturedMediaStrip({
   const th = useTheme()
   const { t } = useT("report-wizard")
   const removeMedia = useDraftReportStore((s) => s.removeMedia)
-  const atCap = media.length >= MAX_DRAFT_MEDIA
+  const atCap = media.length >= MAX_REPORT_MEDIA
   return (
     <View style={flowStyles.stepBlock}>
       <Text style={flowStyles.fieldLabel}>{t("capture.label_filled")}</Text>
@@ -162,8 +163,8 @@ function CapturedMediaStrip({
       </View>
       <Text style={styles.captureHint}>
         {atCap
-          ? t("capture.hint_at_cap", { max: MAX_DRAFT_MEDIA })
-          : t("capture.hint_add_more", { count: MAX_DRAFT_MEDIA })}
+          ? t("capture.hint_at_cap", { max: MAX_REPORT_MEDIA })
+          : t("capture.hint_add_more", { count: MAX_REPORT_MEDIA })}
       </Text>
       {hint ? <Text style={styles.hintText}>{hint}</Text> : null}
     </View>

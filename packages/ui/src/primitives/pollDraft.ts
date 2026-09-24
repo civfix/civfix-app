@@ -1,9 +1,4 @@
-/** Pure draft model behind PollCreateSheet. The bounds mirror CreatePollRequest's server limits. */
-
-export const POLL_QUESTION_MAX = 300
-export const POLL_OPTION_MAX = 100
-export const POLL_MIN_OPTIONS = 2
-export const POLL_MAX_OPTIONS = 10
+import { POLL_MAX_OPTIONS, POLL_MIN_OPTIONS, POLL_OPTION_MAX, POLL_QUESTION_MAX } from "@civfix/shared"
 
 /**
  * Rows carry an id because keying or focusing by position would hand a removed row's focus and native

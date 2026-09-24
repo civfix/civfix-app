@@ -5,14 +5,12 @@ import {
   photonSuggest,
   mapboxSuggest,
   suggestAddresses,
-  ipLocate,
 } from "../src/geocode.js"
 
 /**
- * Tests for the unified forward geocoder. parseLatLng is pure; photonSuggest, mapboxSuggest,
- * suggestAddresses, and ipLocate are exercised against a stubbed global fetch so the coordinate
- * short-circuit, the Mapbox->Photon fallback, abort propagation, and the IP lookup are covered without
- * hitting Photon / Mapbox / GeoJS.
+ * Tests for the unified forward geocoder. parseLatLng is pure; photonSuggest, mapboxSuggest and
+ * suggestAddresses are exercised against a stubbed global fetch so the coordinate short-circuit, the
+ * Mapbox->Photon fallback and abort propagation are covered without hitting Photon / Mapbox.
  */
 
 afterEach(() => {
@@ -296,6 +294,46 @@ describe("suggestAddresses", () => {
   })
 })
 
+describe("suggestAddresses onError", () => {
+  it("reports a Photon outage while still resolving []", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("down", { status: 503 })))
+    const onError = vi.fn()
+    await expect(suggestAddresses("echo park", { onError })).resolves.toEqual([])
+    expect(onError).toHaveBeenCalledTimes(1)
+    expect(onError.mock.calls[0]?.[1]).toBe("photon")
+    expect(String(onError.mock.calls[0]?.[0])).toContain("503")
+  })
+
+  it("reports a Mapbox failure it falls back past, then the Photon result wins", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string | URL) =>
+        String(url).includes("mapbox.com")
+          ? new Response("err", { status: 500 })
+          : photonResponse([{ lat: 34.0, lng: -118.2, props: { name: "Echo Park" } }]),
+      ),
+    )
+    const onError = vi.fn()
+    const out = await suggestAddresses("echo park", { mapboxToken: "pk.test", onError })
+    expect(out[0]?.source).toBe("photon")
+    expect(onError.mock.calls.map((call) => call[1])).toEqual(["mapbox"])
+  })
+
+  it("is not called for the caller's own abort", async () => {
+    const controller = new AbortController()
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        controller.abort()
+        throw Object.assign(new Error("aborted"), { name: "AbortError" })
+      }),
+    )
+    const onError = vi.fn()
+    await expect(suggestAddresses("echo", { signal: controller.signal, onError })).rejects.toThrow()
+    expect(onError).not.toHaveBeenCalled()
+  })
+})
+
 describe("suggestion language/country options", () => {
   it("forwards a supported language to Photon and falls back to English for the rest", async () => {
     const urls: string[] = []
@@ -327,20 +365,5 @@ describe("suggestion language/country options", () => {
     expect(first.get("language")).toBe("es")
     expect(first.get("country")).toBe("us")
     expect(new URL(urls[1]!).searchParams.get("country")).toBeNull()
-  })
-})
-
-describe("ipLocate", () => {
-  it("parses lat/lng from GeoJS", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(JSON.stringify({ latitude: "34.05", longitude: "-118.24" }), { status: 200 })),
-    )
-    expect(await ipLocate()).toEqual({ lat: 34.05, lng: -118.24 })
-  })
-
-  it("returns null on failure", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("nope", { status: 500 })))
-    expect(await ipLocate()).toBeNull()
   })
 })

@@ -1,6 +1,7 @@
 import { z } from "zod"
 import {
   CleanupMemberRoleSchema,
+  EMAIL_MAX_LENGTH,
   IdSchema,
   ISODateSchema,
   pageResponse,
@@ -71,7 +72,7 @@ export const InviteEventTeamMemberRequestSchema = z
   .object({
     id: IdSchema,
     identifierKind: EventTeamInviteIdentifierKindSchema,
-    identifier: z.string().trim().min(1).max(254),
+    identifier: z.string().trim().min(1).max(EMAIL_MAX_LENGTH),
     role: EventTeamRoleSchema,
   })
   .strict()

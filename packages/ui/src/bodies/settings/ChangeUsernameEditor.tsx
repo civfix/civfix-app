@@ -1,5 +1,5 @@
 import React from "react"
-import { ErrorCode, errorCopyKey, isValidHandle, type ErrorCodeTable } from "@civfix/shared"
+import { HANDLE_MAX_LENGTH, ErrorCode, errorCopyKey, isValidHandle, type ErrorCodeTable } from "@civfix/shared"
 import { Text } from "../../typography"
 import { SettingsRow, TextField } from "../../primitives"
 import { useHandleAvailability } from "../../data"
@@ -10,8 +10,6 @@ import { SettingsEditorSheet } from "./SettingsEditorSheet"
 import { useSheetEditor } from "./useSheetEditor"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
-
-const HANDLE_MAX_LENGTH = 20
 
 const HANDLE_ERROR_KEYS: ErrorCodeTable<string> = {
   [ErrorCode.RATE_LIMITED]: "handle.error.rate_limited",

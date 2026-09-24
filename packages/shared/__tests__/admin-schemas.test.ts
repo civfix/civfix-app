@@ -39,7 +39,6 @@ import {
   DEFAULT_FORWARD_BODY_TEMPLATE,
   DEFAULT_FORWARD_SUBJECT_TEMPLATE,
   FORWARD_TEMPLATE_SAMPLE_VALUES,
-  FORWARD_TEMPLATE_VARIABLE_NAMES,
   FORWARD_TEMPLATE_VARIABLES,
   PreviewForwardTemplateRequestSchema,
   SetForwardTemplateDefaultRequestSchema,
@@ -300,6 +299,8 @@ describe("discovery schemas", () => {
 })
 
 describe("jurisdictions schemas", () => {
+  const paletteNames = FORWARD_TEMPLATE_VARIABLES.map((v) => v.token.slice(1, -1))
+
   it("SaveContactsRequest takes a per-category email map + form url and rejects a bad category", () => {
     expect(
       SaveContactsRequestSchema.safeParse({
@@ -393,14 +394,12 @@ describe("jurisdictions schemas", () => {
   })
 
   it("the palette never exposes the reporter's identity or an unmodelled department", () => {
-    expect(FORWARD_TEMPLATE_VARIABLE_NAMES).not.toContain("reporterName")
-    expect(FORWARD_TEMPLATE_VARIABLE_NAMES).not.toContain("dept")
+    expect(paletteNames).not.toContain("reporterName")
+    expect(paletteNames).not.toContain("dept")
   })
 
   it("sample values and the built-in defaults cover exactly the palette", () => {
-    expect(Object.keys(FORWARD_TEMPLATE_SAMPLE_VALUES).sort()).toEqual(
-      [...FORWARD_TEMPLATE_VARIABLE_NAMES].sort(),
-    )
+    expect(Object.keys(FORWARD_TEMPLATE_SAMPLE_VALUES).sort()).toEqual([...paletteNames].sort())
     expect(forwardTemplateIssues(DEFAULT_FORWARD_SUBJECT_TEMPLATE)).toEqual([])
     expect(forwardTemplateIssues(DEFAULT_FORWARD_BODY_TEMPLATE)).toEqual([])
     expect(interpolateForwardTemplate(DEFAULT_FORWARD_SUBJECT_TEMPLATE, FORWARD_TEMPLATE_SAMPLE_VALUES)).toBe(

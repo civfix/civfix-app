@@ -1,8 +1,7 @@
-import type { OrganizationInviteDTO } from "@civfix/shared"
+import { EMAIL_MAX_LENGTH, MS_PER_DAY, type OrganizationInviteDTO } from "@civfix/shared"
 
 import { notifyConsoleUrlChanged } from "@/components/console/url-state"
 import { safeGet, safeRemove, safeSet } from "@/lib/browser-storage"
-import { EMAIL_MAX_LENGTH } from "@/lib/input-limits"
 import { replaceUrlInPlace } from "@/lib/replace-url"
 
 /**
@@ -20,8 +19,6 @@ export const INVITE_IDENTIFIER_MAX = EMAIL_MAX_LENGTH
 /** The backend's `ORG_INVITE_TTL_MS` (14 days) - the copy says it before an invite exists. */
 export const ORG_INVITE_TTL_DAYS = 14
 
-const DAY_MS = 24 * 60 * 60 * 1000
-
 /**
  * Whole days until `iso`, rounded up so "expires in 1 day" reads until the moment it expires and
  * never says "0 days" for a still-valid invite. Zero or negative means it has already expired.
@@ -29,7 +26,7 @@ const DAY_MS = 24 * 60 * 60 * 1000
 export function daysUntil(iso: string, now: number = Date.now()): number {
   const at = new Date(iso).getTime()
   if (Number.isNaN(at)) return 0
-  return Math.ceil((at - now) / DAY_MS)
+  return Math.ceil((at - now) / MS_PER_DAY)
 }
 
 /**

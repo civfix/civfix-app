@@ -19,8 +19,9 @@ export const MAX_MENTIONED_USERS = 20
 const MAX_SORT_ORDER = 1000
 const IDEMPOTENCY_KEY_MIN_LENGTH = 8
 const IDEMPOTENCY_KEY_MAX_LENGTH = 128
-const MAX_REPORT_MEDIA_UPLOADS = 5
-
+export const MAX_REPORT_MEDIA = 5
+export const MAX_REPORT_TITLE_LENGTH = 120
+export const MAX_REPORT_DESCRIPTION_LENGTH = 2000
 export const MAX_REPORT_ADDR_LENGTH = 300
 
 // Coerced because list endpoints validate a GET query string, where every value arrives as a string.
@@ -50,8 +51,8 @@ export const ReportContentFields = {
   category: ReportCategorySchema,
   type: ReportTypeSchema,
   // A photo-only report omits the title and reads as the category label.
-  title: z.string().max(120).optional(),
-  description: z.string().max(2000).optional(),
+  title: z.string().max(MAX_REPORT_TITLE_LENGTH).optional(),
+  description: z.string().max(MAX_REPORT_DESCRIPTION_LENGTH).optional(),
   // Display label only; lat/lng stays canonical. Without it the operator console falls back to the
   // jurisdiction.
   addr: z.string().max(MAX_REPORT_ADDR_LENGTH).optional(),
@@ -60,7 +61,7 @@ export const ReportContentFields = {
 } as const
 
 export const ReportMediaAndHoneypotFields = {
-  mediaUploadIds: z.array(IdSchema).max(MAX_REPORT_MEDIA_UPLOADS),
+  mediaUploadIds: z.array(IdSchema).max(MAX_REPORT_MEDIA),
   // Anti-spam honeypot: empty or absent for a legitimate submission.
   honeypot: z.string().optional(),
 } as const

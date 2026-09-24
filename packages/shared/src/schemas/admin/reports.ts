@@ -8,6 +8,7 @@ import {
   AdminCoordsSchema,
   AdminReportStatusSchema,
   AdminListQuerySchema,
+  AdminOkResponseSchema,
   RelAbsTimeSchema,
 } from "./common.js"
 import { AdminMediaRefSchema } from "./internal-fields.js"
@@ -200,6 +201,7 @@ export const FlagReportRequestSchema = z
   .object({
     id: z.string(),
     reason: z.string().max(500).optional(),
+    flagged: z.boolean().optional(),
   })
   .strict()
 export type FlagReportRequest = z.infer<typeof FlagReportRequestSchema>
@@ -263,7 +265,7 @@ export const SetReportVerdictRequestSchema = z
   .strict()
 export type SetReportVerdictRequest = z.infer<typeof SetReportVerdictRequestSchema>
 
-export const SetReportVerdictResponseSchema = z.object({ ok: z.literal(true) }).strict()
+export const SetReportVerdictResponseSchema = AdminOkResponseSchema
 export type SetReportVerdictResponse = z.infer<typeof SetReportVerdictResponseSchema>
 
 export const AdminReportMessagesRequestSchema = ReportChatHistoryRequestSchema

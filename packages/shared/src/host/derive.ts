@@ -1,6 +1,6 @@
 import { intOr } from "../internal/numbers.js"
+import { MS_PER_DAY } from "../time-units.js"
 import { K_SUPPRESS, normalizeK, roundRate, safeCount } from "./counts.js"
-import { suppressRate, type SuppressedRatio } from "./suppress.js"
 
 export const MAX_SERIES_DAYS = 400
 export const MAX_ARRIVAL_BUCKETS = 200
@@ -9,7 +9,6 @@ const DEFAULT_ARRIVAL_BUCKET_MINUTES = 15
 const DEFAULT_ARRIVAL_FROM_MINUTES = -120
 const DEFAULT_ARRIVAL_TO_MINUTES = 240
 
-const DAY_MS = 86400000
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export interface DayRange {
@@ -143,10 +142,6 @@ function utcMsToDay(ms: number): string {
   return `${year}-${month}-${date}`
 }
 
-export function isCalendarDay(day: string): boolean {
-  return Number.isFinite(dayToUtcMs(day))
-}
-
 export function enumerateDays(range: DayRange): string[] {
   const from = dayToUtcMs(range.from)
   const to = dayToUtcMs(range.to)
@@ -154,12 +149,12 @@ export function enumerateDays(range: DayRange): string[] {
     throw new RangeError("enumerateDays expects YYYY-MM-DD calendar days")
   }
   if (to < from) throw new RangeError("enumerateDays expects range.from <= range.to")
-  const span = Math.round((to - from) / DAY_MS) + 1
+  const span = Math.round((to - from) / MS_PER_DAY) + 1
   if (span > MAX_SERIES_DAYS) {
     throw new RangeError(`enumerateDays refuses an unbounded range (${span} days > ${MAX_SERIES_DAYS})`)
   }
   const days: string[] = []
-  for (let i = 0; i < span; i++) days.push(utcMsToDay(from + i * DAY_MS))
+  for (let i = 0; i < span; i++) days.push(utcMsToDay(from + i * MS_PER_DAY))
   return days
 }
 
@@ -304,36 +299,6 @@ export function dailySeries(
   }
 }
 
-export function registrationSeries(
-  points: readonly DayCount[],
-  range: DayRange,
-  options: SuppressOptions = {},
-): DerivedSeriesPanel {
-  return dailySeries(points, range, options)
-}
-
-export function hourlySeries(points: readonly HourCount[], options: SuppressOptions = {}): DerivedHourPanel {
-  const k = normalizeK(options.k)
-  const byHour = new Array<number>(24).fill(0)
-  for (const point of points) {
-    if (!Number.isInteger(point.hour) || point.hour < 0 || point.hour > 23) continue
-    byHour[point.hour] = (byHour[point.hour] ?? 0) + safeCount(point.count)
-  }
-  const total = byHour.reduce((sum, value) => sum + value, 0)
-  const panelSuppressed = total < k
-  const suppressPoints = options.suppressPoints === true
-  const hidden = suppressPoints ? hiddenGroupOf(byHour, k) : { count: 0, mass: 0 }
-  const totalPublishable = !panelSuppressed && groupRevealable(hidden.count, hidden.mass, k)
-  return {
-    panelSuppressed,
-    total: totalPublishable ? total : null,
-    points: byHour.map((value, hour) => {
-      const suppressed = panelSuppressed || (suppressPoints && value < k)
-      return { hour, value: suppressed ? null : value, suppressed }
-    }),
-  }
-}
-
 export function breakdownClosure(
   rows: readonly KeyCount[],
   options: BreakdownOptions = {},
@@ -454,25 +419,4 @@ export function bestDayTime(cells: readonly DayTimeCount[], k: number = K_SUPPRE
   }
   if (best === null || best.value < threshold) return null
   return best
-}
-
-export function repeatAttendanceRate(
-  repeatAttendees: number,
-  totalAttendees: number,
-  k: number = K_SUPPRESS,
-): SuppressedRatio {
-  return suppressRate(repeatAttendees, totalAttendees, k)
-}
-
-export function cumulativeSeries(
-  points: readonly DayCount[],
-  range: DayRange,
-  options: SuppressOptions = {},
-): DerivedSeriesPanel {
-  const closure = seriesClosure(points, range, options)
-  return {
-    panelSuppressed: closure.panelSuppressed,
-    total: closure.totalPublishable ? closure.total : null,
-    points: closure.cumulative,
-  }
 }

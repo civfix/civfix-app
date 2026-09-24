@@ -6,6 +6,7 @@ import {
   PostRefDTOSchema,
 } from "../entities.js"
 import {
+  POST_BODY_MAX,
   PostComposeInputSchema,
   FeedPageDTOSchema,
   HomeFeedQuerySchema,
@@ -80,6 +81,14 @@ describe("PostDTOSchema round-trip", () => {
 })
 
 describe("PostComposeInputSchema refinements", () => {
+  it("caps the body at POST_BODY_MAX characters", () => {
+    expect(POST_BODY_MAX).toBe(2000)
+    expect(PostComposeInputSchema.safeParse({ body: "a".repeat(POST_BODY_MAX) }).success).toBe(true)
+    expect(PostComposeInputSchema.safeParse({ body: "a".repeat(POST_BODY_MAX + 1) }).success).toBe(
+      false,
+    )
+  })
+
   it("passes a text-only post (kind defaults to 'post')", () => {
     const res = PostComposeInputSchema.safeParse({ body: "hello neighbors" })
     expect(res.success).toBe(true)

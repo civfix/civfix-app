@@ -1,4 +1,5 @@
 import React from "react"
+import { HTTPS_URL_MAX_LENGTH } from "@civfix/shared"
 import { Text, TextLink } from "../../typography"
 import { TextField } from "../../primitives"
 import { donationUrlHost, safeDonationUrl } from "../../primitives/donationUrl"
@@ -8,7 +9,6 @@ import { useEditorStyles } from "./editorStyles"
 import { SettingsEditorSheet } from "./SettingsEditorSheet"
 import { useSheetEditor } from "./useSheetEditor"
 import {
-  DONATION_LINK_MAX_LENGTH,
   donationLinkDirty,
   donationLinkFieldError,
   normalizeDonationLink,
@@ -67,7 +67,7 @@ export function DonationLinkEditor({ currentUrl, saving, onSave }: DonationLinkE
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="url"
-        maxLength={DONATION_LINK_MAX_LENGTH}
+        maxLength={HTTPS_URL_MAX_LENGTH}
         editable={!saving}
         accessibilityLabel={t("editor.field_label")}
       />

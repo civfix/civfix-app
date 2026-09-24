@@ -35,7 +35,7 @@ import {
   MAX_PORTFOLIO_TOP_VOLUNTEERS,
 } from "../src/schemas/host/analytics.js"
 import {
-  EventInsightsSchema,
+  GetEventInsightsResponseSchema,
   MAX_INSIGHTS_TOP_VOLUNTEERS,
 } from "../src/schemas/host/insights.js"
 import { NotificationTypeSchema } from "../src/schemas/notifications.js"
@@ -1174,14 +1174,14 @@ describe("hours on the host read models (DECISIONS §39)", () => {
   })
 
   it("defaults EventInsights.topVolunteers to [] and caps it", () => {
-    expect(EventInsightsSchema.parse(insights()).topVolunteers).toEqual([])
-    expect(EventInsightsSchema.parse(insights({ topVolunteers: [volunteer(1)] })).topVolunteers)
+    expect(GetEventInsightsResponseSchema.parse(insights()).topVolunteers).toEqual([])
+    expect(GetEventInsightsResponseSchema.parse(insights({ topVolunteers: [volunteer(1)] })).topVolunteers)
       .toHaveLength(1)
     expect(MAX_INSIGHTS_TOP_VOLUNTEERS).toBe(5)
     const overflow = Array.from({ length: MAX_INSIGHTS_TOP_VOLUNTEERS + 1 }, (_row, i) =>
       volunteer(i + 1),
     )
-    expect(EventInsightsSchema.safeParse(insights({ topVolunteers: overflow })).success).toBe(false)
+    expect(GetEventInsightsResponseSchema.safeParse(insights({ topVolunteers: overflow })).success).toBe(false)
   })
 
   it("keeps the org hours stats optional so a new org never reads zero", () => {

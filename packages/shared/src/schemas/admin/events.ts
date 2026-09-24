@@ -117,10 +117,13 @@ export const SetEventStatusRequestSchema = z
   .strict()
 export type SetEventStatusRequest = z.infer<typeof SetEventStatusRequestSchema>
 
+// `flagged` sets the marker to that value so a retried request cannot undo itself; without it the
+// request toggles, as older admin builds expect.
 export const FlagEventRequestSchema = z
   .object({
     id: z.string(),
     reason: z.string().max(500).optional(),
+    flagged: z.boolean().optional(),
   })
   .strict()
 export type FlagEventRequest = z.infer<typeof FlagEventRequestSchema>

@@ -1,5 +1,6 @@
 import { z } from "zod"
 import {
+  EMAIL_MAX_LENGTH,
   IdSchema,
   ISODateSchema,
   OrganizationMemberRoleSchema,
@@ -37,6 +38,7 @@ export type { OrganizationMemberRole, OrgVerificationKind, OrgVerificationStatus
 export const MAX_ORG_NAME = 120
 export const MAX_ORG_DESCRIPTION = 2000
 export const MAX_ORG_VERIFICATION_DOCUMENTS = 10
+export const MAX_ORG_VERIFICATION_NOTE = 1000
 export const MAX_ORG_INVITES_PER_ORG = 50
 export const ORG_SLUG_MIN = 3
 export const ORG_SLUG_MAX = 40
@@ -130,7 +132,7 @@ export const InviteOrganizationMemberRequestSchema = z
   .object({
     id: IdSchema,
     identifierKind: OrgInviteIdentifierKindSchema,
-    identifier: z.string().trim().min(1).max(254),
+    identifier: z.string().trim().min(1).max(EMAIL_MAX_LENGTH),
     role: OrganizationInviteRoleSchema,
   })
   .strict()
@@ -302,7 +304,7 @@ export const ApplyOrganizationVerificationRequestSchema = z
       .nullable()
       .optional(),
     documents: z.array(OrgVerificationDocumentSchema).max(MAX_ORG_VERIFICATION_DOCUMENTS).default([]),
-    note: z.string().max(1000).nullable().optional(),
+    note: z.string().max(MAX_ORG_VERIFICATION_NOTE).nullable().optional(),
   })
   .strict()
 export type ApplyOrganizationVerificationRequest = z.infer<

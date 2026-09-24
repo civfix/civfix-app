@@ -27,7 +27,12 @@ export type {
   MediaDTO,
 } from "./entities.js"
 
-export { MAX_REPORT_ADDR_LENGTH } from "./internal-fields.js"
+export {
+  MAX_REPORT_ADDR_LENGTH,
+  MAX_REPORT_DESCRIPTION_LENGTH,
+  MAX_REPORT_MEDIA,
+  MAX_REPORT_TITLE_LENGTH,
+} from "./internal-fields.js"
 
 export const CreateReportRequestSchema = z
   .object({
@@ -51,7 +56,8 @@ export type ListReportsInBBoxRequest = z.infer<typeof ListReportsInBBoxRequestSc
 
 export const ListReportsSearchRequestSchema = z
   .object({
-    // Optional so a category-only (or empty) search is valid.
+    // The server matches title and address, not description. Optional so a category-only (or empty)
+    // search is valid.
     q: z.string().trim().max(120).optional(),
     categories: z.array(ReportCategorySchema).optional(),
     types: z.array(ReportTypeSchema).optional(),

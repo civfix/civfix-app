@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, Pressable } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
 import {
+  EMAIL_MAX_LENGTH,
   MAX_GUEST_NAME,
   type EventAnswerValue,
   type EventQuestionDTO,
@@ -43,7 +44,6 @@ import { SecondaryButton } from "../../../primitives/SecondaryButton"
 import { SegmentedCodeInput } from "../../../primitives/SegmentedCodeInput"
 import { ModalCardSheet, modalSheetInputStyle } from "../../../primitives/ModalCardSheet"
 import {
-  GUEST_EMAIL_MAX,
   GUEST_RSVP_CODE_LENGTH,
   GUEST_RSVP_TURNSTILE_ACTION,
   RESEND_COUNTDOWN_TICK_MS,
@@ -510,10 +510,10 @@ export function GuestRsvpSheet({
             <TextInput
               value={form.email}
               onChangeText={(next) =>
-                setForm((prev) => ({ ...prev, email: next.slice(0, GUEST_EMAIL_MAX) }))
+                setForm((prev) => ({ ...prev, email: next.slice(0, EMAIL_MAX_LENGTH) }))
               }
               editable={!sendPending}
-              maxLength={GUEST_EMAIL_MAX}
+              maxLength={EMAIL_MAX_LENGTH}
               placeholder={t("form.email_placeholder")}
               placeholderTextColor={th.colors.textSubtle}
               accessibilityLabel={t("form.email_label")}

@@ -51,13 +51,11 @@ export const HostBroadcastChannelsSchema = z
   .max(3)
   .refine(hostBroadcastChannelsValid, { message: PUSH_REQUIRES_INAPP_MESSAGE })
 
-export const HttpsCtaUrlSchema = HttpsUrlSchema
-
 const BroadcastDraftFields = {
   subject: z.string().trim().min(1).max(MAX_BROADCAST_SUBJECT),
   bodyMd: z.string().trim().min(1).max(MAX_BROADCAST_BODY),
   ctaLabel: z.string().trim().max(MAX_BROADCAST_CTA_LABEL).nullable().optional(),
-  ctaUrl: HttpsCtaUrlSchema.nullable().optional(),
+  ctaUrl: HttpsUrlSchema.nullable().optional(),
   segment: BroadcastSegmentSchema,
   channels: HostBroadcastChannelsSchema,
 } as const

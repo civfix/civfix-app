@@ -7,6 +7,7 @@ import {
   ModerationKindSchema,
   ModerationSubjectTypeSchema,
   ModerationToneSchema,
+  ModerationItemStatusSchema,
   PrioritySchema,
 } from "./common.js"
 import { AdminMediaRefSchema } from "./internal-fields.js"
@@ -113,6 +114,8 @@ export const ModerationItemDTOSchema = ModerationListItemDTOSchema.extend({
   user: ModerationUserSchema,
   similar: z.array(ModerationSimilarSchema),
   media: z.array(ModerationMediaSchema),
+  // The detail endpoint also returns resolved items, which must not offer the decision actions again.
+  status: ModerationItemStatusSchema.optional(),
 }).strict()
 export type ModerationItemDTO = z.infer<typeof ModerationItemDTOSchema>
 

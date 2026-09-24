@@ -25,6 +25,7 @@
  * list.
  */
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { MAX_LEADERBOARD_OFFSET } from "@civfix/shared"
 import type {
   EventHoursEntry,
   EventHoursResponse,
@@ -56,26 +57,21 @@ const LEADERBOARD_STALE_MS = 5 * 60_000
 const LEADERBOARD_GC_MS = 30 * 60_000
 
 /**
- * The deepest `offset` the endpoint ACCEPTS: `LeaderboardQuerySchema.offset` is `.max(500)`, and the
- * route parses that schema strictly, so an offset past it is a 422 rather than an empty page.
+ * MAX_LEADERBOARD_OFFSET is the deepest `offset` the endpoint ACCEPTS: the route parses
+ * `LeaderboardQuerySchema` strictly, so an offset past it is a 422 rather than an empty page.
  *
  * The response's `nextOffset` is computed with no such ceiling, so at a 50-row page size page 11 comes
  * back advertising `nextOffset: 550`; handing that straight back to the query would turn "end of a very
  * long board" into a failed request. The clamp below makes the last accepted page the last page, which
  * is what `hasNextPage` (and therefore LeaderboardBody's `onEndReached`) then reports.
- *
- * The number is duplicated rather than imported because the schema does not export its bound; the unit
- * test asserts it against `LeaderboardQuerySchema` itself so the two cannot drift.
  */
-const LEADERBOARD_MAX_OFFSET = 500
-
 /**
  * The infinite query's `getNextPageParam`, lifted out so it is unit-testable without a query client.
  * `undefined` = end of list. Exported for that test only; it is NOT re-exported from `src/data`.
  */
 export function leaderboardNextOffset(lastPage: LeaderboardResponse): number | undefined {
   const next = lastPage.nextOffset
-  return typeof next === "number" && next <= LEADERBOARD_MAX_OFFSET ? next : undefined
+  return typeof next === "number" && next <= MAX_LEADERBOARD_OFFSET ? next : undefined
 }
 
 /**

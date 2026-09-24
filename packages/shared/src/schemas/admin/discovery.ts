@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { ReportCategorySchema } from "../common.js"
+import { ISODateSchema, ReportCategorySchema } from "../common.js"
 import { pageResponse } from "../common.js"
 import { JurisdictionLayerSchema } from "../map.js"
 import { AdminListQuerySchema, PrioritySchema } from "./common.js"
@@ -93,6 +93,9 @@ export const DiscoveryContactSchema = z
   .object({
     category: ReportCategorySchema,
     email: z.string().email().nullable(),
+    // Set when mail to this address hard-bounced; routing skips it until then. Saving an email for the
+    // category (even the same address) clears it.
+    bouncedAt: ISODateSchema.nullable().optional(),
   })
   .strict()
 export type DiscoveryContact = z.infer<typeof DiscoveryContactSchema>

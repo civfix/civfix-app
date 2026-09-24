@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { MAX_REPORT_MEDIA } from "@civfix/shared"
 import type { CapturedMedia } from "../capabilities"
 import { registerViewerScopedDrafts } from "../viewerScope"
 import { randomId } from "../data/randomId"
@@ -70,8 +71,6 @@ interface DraftReportState {
   setFeedPostId: (postId: string | null) => void
   reset: () => void
 }
-
-export const MAX_DRAFT_MEDIA = 5
 
 const EMPTY_FLAGS: DraftFlags = {
   blockingSidewalk: false,
@@ -254,7 +253,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
       return {
         draft: {
           ...s.draft,
-          media: [...s.draft.media, added].slice(0, MAX_DRAFT_MEDIA),
+          media: [...s.draft.media, added].slice(0, MAX_REPORT_MEDIA),
           ...(becomesLocationSource && media.location
             ? {
                 lat: media.location.lat,
@@ -272,7 +271,7 @@ export const useDraftReportStore = create<DraftReportState>((set, get) => ({
     set((s) => ({
       draft: {
         ...s.draft,
-        media: [...s.draft.media, { id: randomId(), ...media }].slice(0, MAX_DRAFT_MEDIA),
+        media: [...s.draft.media, { id: randomId(), ...media }].slice(0, MAX_REPORT_MEDIA),
       },
     })),
   removeMedia: (idOrUri) =>

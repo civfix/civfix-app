@@ -1,4 +1,4 @@
-import { AppError, ErrorCode, appErrorCode, appErrorFields } from "@civfix/shared"
+import { AppError, ErrorCode, MAX_REPORT_DESCRIPTION_LENGTH, appErrorCode, appErrorFields } from "@civfix/shared"
 import type { ApiClient } from "@civfix/shared/client"
 import type { CreateReportRequest, ReportCategory, ReportType } from "@civfix/shared"
 import { useCallback } from "react"
@@ -26,10 +26,6 @@ import { registerViewerScopedDrafts } from "../viewerScope"
 import { useDraftReportStore } from "./draftStore"
 import type { DraftFlags, DraftMedia, DraftReport } from "./draftStore"
 
-// Mirrors CreateReportRequestSchema's `description` max(2000); the composed text (typed description plus
-// the flag notes) is what the server measures.
-export const REPORT_DESCRIPTION_MAX = 2000
-
 const DESCRIPTION_NOTE_SEPARATOR = "\n\n"
 
 function flagNotes(flags: DraftFlags): string {
@@ -51,11 +47,13 @@ export function composeDescription(draft: Pick<DraftReport, "description" | "fla
   return out.length > 0 ? out : undefined
 }
 
+// The composed text (typed description plus the flag notes) is what the server measures against
+// MAX_REPORT_DESCRIPTION_LENGTH, not the typed description alone.
 export function descriptionMaxLength(flags: DraftFlags): number {
   const notes = flagNotes(flags)
   return notes.length > 0
-    ? REPORT_DESCRIPTION_MAX - DESCRIPTION_NOTE_SEPARATOR.length - notes.length
-    : REPORT_DESCRIPTION_MAX
+    ? MAX_REPORT_DESCRIPTION_LENGTH - DESCRIPTION_NOTE_SEPARATOR.length - notes.length
+    : MAX_REPORT_DESCRIPTION_LENGTH
 }
 
 // The server names only the array, not the id it could not claim (expired, swept, or already bound), so

@@ -109,6 +109,46 @@ describe("assertSafeBroadcastLinks", () => {
     expect(inspectBroadcastLinks("data:text/html;base64,PHNjcmlwdD4=")[0]?.kind).toBe("insecure_scheme")
   })
 
+  it("still flags every dangerous scheme wherever it starts a token and runs into a payload", () => {
+    const schemes = ["javascript", "data", "vbscript", "file", "blob", "jar", "about"]
+    const openers = ["", " ", "\t", "\n", "(", "[", "{", "<", '"', "'", "`", "=", ",", ";", "!", "*", "|", ">", "](", "](<"]
+    const payloads = ["alert(1)", "//evil.example/x", "text/html;base64,PHNjcmlwdD4=", "%0aalert(1)", "blank"]
+    for (const scheme of schemes) {
+      for (const cased of [scheme, scheme.toUpperCase(), scheme[0]!.toUpperCase() + scheme.slice(1)]) {
+        for (const opener of openers) {
+          for (const payload of payloads) {
+            const text = `Tap ${opener}${cased}:${payload}`
+            const flagged = inspectBroadcastLinks(text).some(
+              (i) => i.kind === "insecure_scheme" && i.scheme === scheme,
+            )
+            expect(flagged, text).toBe(true)
+          }
+        }
+      }
+    }
+  })
+
+  it("still flags an executable scheme with whitespace before its payload", () => {
+    for (const text of ["javascript: alert(1)", "javascript:\talert(1)", "see data: text/html,x", "Waiver file: here"]) {
+      expect(inspectBroadcastLinks(text).length, text).toBeGreaterThan(0)
+    }
+  })
+
+  it("does not flag about as prose or a scheme word inside an https path", () => {
+    const prose = [
+      "Questions about: parking.",
+      "Topic: about:",
+      "https://example.org/data:foo",
+      "https://example.org/a.javascript:x",
+      "https://example.org/a-blob:x",
+      "https://example.org/a:jar:x",
+    ]
+    for (const text of prose) {
+      expect(inspectBroadcastLinks(text), text).toEqual([])
+    }
+    expect(inspectBroadcastLinks("Questions about: parking. More about: parking")).toEqual([])
+  })
+
   it("rejects scheme-relative links", () => {
     expect(inspectBroadcastLinks("go to //evil.example/x")[0]?.kind).toBe("scheme_relative")
   })

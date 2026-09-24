@@ -27,7 +27,7 @@ import {
   wholeEventCheckedIn,
   wholeEventSignups,
 } from "../analyticsModel"
-import { DAY_MS } from "../../timeUnits"
+import { MS_PER_DAY } from "@civfix/shared"
 import { breakdownBars, seriesBars } from "../analytics/chartBars"
 import { EMPTY_VALUE } from "../../../i18n/emptyValue"
 
@@ -167,7 +167,7 @@ describe("slicing a series only ever drops points", () => {
   })
 
   it("returns an EMPTY series rather than silently falling back to the whole one", () => {
-    expect(rangeSlice(series, 1, now + 30 * DAY_MS)).toEqual([])
+    expect(rangeSlice(series, 1, now + 30 * MS_PER_DAY)).toEqual([])
   })
 
   it("passes the whole series through when there is no window to apply", () => {

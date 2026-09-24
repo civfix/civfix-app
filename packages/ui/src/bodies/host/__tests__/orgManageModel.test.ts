@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { OrganizationDTO, OrganizationMemberDTO } from "@civfix/shared"
-import { MAX_ORG_DESCRIPTION, MAX_ORG_NAME, SocialLinksSchema } from "@civfix/shared"
+import { MAX_ORG_DESCRIPTION, MAX_ORG_NAME, SOCIAL_HANDLE_PREFIX, SocialLinksSchema } from "@civfix/shared"
 import {
-  SOCIAL_PREFIX,
   canOpenOrgManage,
   counterVisible,
   lastAdminSeat,
@@ -96,7 +95,7 @@ describe("each section PATCHes only its own fields", () => {
   })
 
   it("names a prefix for every platform, so no field asks for a whole URL", () => {
-    expect(Object.keys(SOCIAL_PREFIX).sort()).toEqual(
+    expect(Object.keys(SOCIAL_HANDLE_PREFIX).sort()).toEqual(
       ["facebook", "instagram", "tiktok", "whatsapp", "x"],
     )
   })

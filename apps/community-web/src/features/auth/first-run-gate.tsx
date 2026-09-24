@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Loader2, Check, X } from "lucide-react"
+import { HANDLE_MAX_LENGTH } from "@civfix/shared"
 import { space } from "@civfix/shared/tokens"
 
 import { Avatar, AgeConfirmation, TermsConfirmation } from "@civfix/ui"
@@ -20,7 +21,6 @@ import { useCurrentUser, useLogout } from "@/hooks/use-auth"
 import { useVisualViewportShift } from "@/hooks/use-visual-viewport-shift"
 import { useFirstRunRequired } from "@/hooks/use-profile-registration"
 import { errorMessage } from "@/lib/error-messages"
-import { HANDLE_MAX_LENGTH } from "@/lib/input-limits"
 import { SESSION_ALERT_ATTR, Z_FIRST_RUN_GATE } from "@/styles/z-layers"
 
 export function FirstRunGate() {

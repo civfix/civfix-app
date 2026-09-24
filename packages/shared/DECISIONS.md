@@ -31,19 +31,19 @@ submitted | held | published | acknowledged | in_progress | resolved | rejected
 
 The PinIt web design exposes finer-grained issue types than the mobile report flow. Rather than
 expand the canonical category enum (which drives colors and is shared with mobile), each web issue
-type is a separate, data-driven record in `WEB_REPORT_TYPES` that maps to one canonical category and
-a default city agency. The finalized mapping is:
+type is a separate, data-driven record in `WEB_REPORT_TYPES` that maps to one canonical category.
+The finalized mapping is:
 
-| id             | label                 | canonical category | gov name                           | gov email                 |
-| -------------- | --------------------- | ------------------ | ---------------------------------- | ------------------------- |
-| dump           | Illegal dumping       | trash              | LA Bureau of Sanitation            | sanitation@lacity.gov     |
-| encampment     | Encampment            | encampment         | LA Bureau of Sanitation            | sanitation@lacity.gov     |
-| graffiti       | Graffiti              | graffiti           | Office of Community Beautification | ocb@lacity.gov            |
-| infrastructure | Broken infrastructure | water              | LA Bureau of Street Services       | streetservices@lacity.gov |
-| pavement       | Pavement distress     | hazard             | LA Bureau of Street Services       | streetservices@lacity.gov |
-| vegetation     | Overgrown vegetation  | recycling          | LA Bureau of Street Services       | streetservices@lacity.gov |
-| water          | Water/leak            | water              | LADWP                              | customerservice@ladwp.com |
-| recycling      | Recycling             | recycling          | LA Bureau of Sanitation            | sanitation@lacity.gov     |
+| id             | label                 | canonical category |
+| -------------- | --------------------- | ------------------ |
+| dump           | Illegal dumping       | trash              |
+| encampment     | Encampment            | encampment         |
+| graffiti       | Graffiti              | graffiti           |
+| infrastructure | Broken infrastructure | water              |
+| pavement       | Pavement distress     | hazard             |
+| vegetation     | Overgrown vegetation  | recycling          |
+| water          | Water/leak            | water              |
+| recycling      | Recycling             | recycling          |
 
 The canonical-category column above is what `REPORT_TYPE_TO_CATEGORY` ships today (the table was
 corrected in 0.52.0 to match the code; it previously described `infrastructure -> hazard` and
@@ -51,11 +51,13 @@ corrected in 0.52.0 to match the code; it previously described `infrastructure -
 and "Overgrown vegetation" to its RECYCLING contact is an open product decision - changing it is a
 contract change with a category backfill, like 0.20.0's `encampment` split.
 
-The `gov` addresses are placeholder routing for Phase 1 and represent the Los Angeles default
-fallback only. Real per-jurisdiction routing comes from the `jurisdictions` table resolved from a
-pin's PostGIS-derived GEOID; when a jurisdiction has no saved contact, a discovery task is queued.
-`WEB_REPORT_TYPES` is the single source of truth and is exposed as an array plus a derived lookup
-(`WEB_REPORT_TYPE_BY_ID`) and a helper (`webReportTypeToCategory`) so it is easy to extend.
+A record carries no routing. Until 0.58.0 each entry also held a `gov` name and email (placeholder Los
+Angeles fallback routing from Phase 1), with a `WEB_REPORT_TYPE_BY_ID` lookup and a
+`webReportTypeToCategory` helper beside the array; nothing read any of them, and 0.58.0 removed all
+three together with the `GovTarget` type (§58). Routing comes only from the `jurisdictions` table
+resolved from a pin's PostGIS-derived GEOID; when a jurisdiction has no saved contact, a discovery
+task is queued. `WEB_REPORT_TYPES` is the single source of truth, exposed as the array and its
+`WebReportTypeId` union.
 
 ## 4. Breaking the entity import cycle: schemas/entities.ts
 
@@ -71,9 +73,11 @@ files while keeping the public naming intact.
 
 ## 5. ISODate as a coercing transform
 
-`ISODateSchema` is `z.coerce.date().transform((d) => d.toISOString())`. It accepts Date objects and
-ISO strings on input and always yields an ISO-8601 string. This keeps server ergonomics (pass a Date)
-while guaranteeing a string on the wire. The exported `ISODate` type is `string`.
+`ISODateSchema` is `z.coerce.date().transform((d) => d.toISOString())` behind a `z.preprocess` that
+lets only a string or a Date through. It accepts Date objects and date strings on input and always
+yields an ISO-8601 string. This keeps server ergonomics (pass a Date) while guaranteeing a string on
+the wire. Any other input (a number, a boolean, `null`) is refused rather than coerced, so an epoch
+number or a stray `null` never turns into a 1970 timestamp. The exported `ISODate` type is `string`.
 
 ## 6. Media size limits via superRefine
 
@@ -807,10 +811,13 @@ is no analytics SDK, no cookie, no identifier, and no per-person series anywhere
   revealable, AND the hidden group from the step to the END of the range is revealable - the
   look-ahead is what lets the terminal number be published: it trades an interior step for the
   total whenever both cannot be safe (`[4, 0, 10, 4]` publishes only `18`). `dailySeries.total`,
-  `cumulativeSeries.total` and the backend's `registered` / `cancelled` KPIs are all gated on the
-  SAME `totalPublishable`, because they are all the same cut at the end of the same chain; a KPI
-  gated only by `suppressCount` would hand back what the series just withheld. The same interval
-  rule gates the totals of `hourlySeries` and `arrivalsCurve`.
+  the last point of the closure's `cumulative` and the backend's `registered` / `cancelled` KPIs are
+  all gated on the SAME `totalPublishable`, because they are all the same cut at the end of the same
+  chain; a KPI gated only by `suppressCount` would hand back what the series just withheld. The same
+  interval rule gates the total of `arrivalsCurve`. (`cumulativeSeries`, a wrapper over the closure,
+  and `hourlySeries`, a separate hourly panel, had no consumer and were removed in 0.58.0, §58; the
+  cumulative invariant tests now run against `seriesClosure().cumulative`, and the hourly tests went
+  with the removed code.)
 - **A breakdown yields to the number it partitions; the KPI never yields to the breakdown.**
   `byTicketType`, `byAudience`, `bySlot`, `bySource`, `byEvent` and the broadcast channel columns
   all sum to a number civfix publishes elsewhere (`registered`, `checkedIn`, the page-view total,
@@ -1430,7 +1437,7 @@ This retires the "geographic centre of the contiguous US" (39.8283, -98.5795) fr
 
 Registry count 344 → 345.
 
-**`ipLocate()` and `GEOJS_URL` (`src/geocode.ts`) are deprecated as of 0.47.0.** They called a third party (get.geojs.io) straight from the client for the same "roughly where is this caller" answer this endpoint now gives first-party, and the consumer plane has no callers left: the report flow's location step, the address-search proximity bias, the create-event initial point and `useUserLocation` all resolve through `getApproximateLocation` (the `useApproximateLocation()` hook, or the imperative `fetchApproximateLocation()` in `@civfix/ui/data`, which share one query-cache entry with the map). The export stays in 0.47.0 because that version is already published and a removal is a recorded 0.x minor (§4.2); it is slated for removal in the next minor, whose DECISIONS entry names the delivery set. Nothing in civfix-backend ever imported it.
+**`ipLocate()` (and its internal `GEOJS_URL` endpoint, `src/geocode.ts`) was deprecated in 0.47.0 and removed in 0.58.0 (§58).** It called a third party (get.geojs.io) straight from the client for the same "roughly where is this caller" answer this endpoint gives first-party. The consumer plane had no callers left: the report flow's location step, the address-search proximity bias, the create-event initial point and `useUserLocation` all resolve through `getApproximateLocation` (the `useApproximateLocation()` hook, or the imperative `fetchApproximateLocation()` in `@civfix/ui/data`, which share one query-cache entry with the map). Nothing in civfix-backend, civfix-admin or the gov plane ever imported it. The web and mobile guard tests that fail the build on a reintroduced `ipLocate` import stay.
 
 ## 46. Platform-processed donations removed; a donation link is an external URL (0.48.0)
 
@@ -1802,9 +1809,12 @@ not computed it yet and a client that never reads it both still parse.
 **Registry shape.** The three new endpoints live in a fourth exported group,
 `adminReportChatEndpoints`, spread into `endpoints` alongside `coreEndpoints`, `hostEndpoints` and
 `hostAdminEndpoints`. `coreEndpoints` had reached the TypeScript declaration-serialization ceiling
-(TS7056), so a new group (not a new key on `coreEndpoints`) is how the registry grows from here. The
+(TS7056), so at the time a new group (not a new key on `coreEndpoints`) was how the registry grew. The
 registry is now 324 entries, 104 of them under `/admin`; the backend's
-`test/unit/route-coverage.test.ts` moves to 324.
+`test/unit/route-coverage.test.ts` moves to 324. **Superseded in 0.58.0 (§58):** the registry is split
+into one file per domain under `src/client/endpoints/`, and each group is typed as the intersection of
+those files' `typeof`s, so the declaration never inlines one huge object type. A new endpoint goes into
+its domain's file; the "new group because of TS7056" rule no longer applies.
 
 ## 53. The feed score is a global term plus a viewer term, and every refresh reshuffles (0.54.0)
 
@@ -2032,8 +2042,152 @@ an already published reply is a no-op that writes no second audit row; a thread 
 is refused with CONFLICT because there is nowhere public to publish to.
 
 **Registry.** The two endpoints are a fifth group, `adminInboxEndpoints`, spread into `endpoints` beside
-`adminReportChatEndpoints` for the TS7056 reason §52 gives. The registry moves 331 to 333, 106 of them
-under `/admin`; civfix-backend's `test/unit/route-coverage.test.ts` moves with it. The backend adopts
+`adminReportChatEndpoints` for the TS7056 reason §52 gave (since 0.58.0 both live in per-domain files,
+§58). The registry moves 331 to 333, 106 of them under `/admin`; civfix-backend's `test/unit/route-coverage.test.ts` moves with it. The backend adopts
 0.57.0 for the endpoints and the new fields, and civfix-admin adopts it for the unified Inbox and the
 review action; `services/media-worker` bumps alongside the api and civfix-govt-web with the routine
 propagation. No seam or fake changes.
+
+## 58. Campaign contract cleanup: unused exports removed, limits and shared helpers exported (0.58.0)
+
+The civfix-app cleanup campaign touched `packages/shared` in 36 commits across its PRs 3 to 14. They
+ship as one minor so every registry consumer adopts once. No endpoint is added or removed and no
+path, method, auth or csrf flag moves: the registry stays at 333 entries, and the only shape changes
+are the optional fields listed under the handoff paragraph below.
+
+**Removed: value exports no consumer used (the CLAUDE.md §4.2 0.x removal rule).** Each name below
+was checked on 2026-09-23 and 2026-09-24 against civfix-backend `services/api` and `services/media-worker`,
+civfix-admin `apps/admin`, civfix-govt-web, civfix-govt-shared, civfix-app's ui and apps, the open
+civfix-backend and civfix-admin PRs, and the campaign handoff files. Nothing imported any of them.
+
+| Entry | Removed | Use instead, if anything |
+| --- | --- | --- |
+| root | `comparePrecision` | `ADDRESS_PRECISION_LADDER` order |
+| root, `/client` | `resetResponseWarnings`, `API_VERSIONS`, `LATEST_API_VERSION` | `ApiVersion` / `versionedPath` |
+| root, `/host` | `cumulativeSeries`, `hourlySeries`, `isCalendarDay`, `registrationSeries`, `repeatAttendanceRate` | `seriesClosure`, `dailySeries`, `suppressRate` |
+| root | `FORWARD_TEMPLATE_VARIABLE_NAMES` | `FORWARD_TEMPLATE_VARIABLES` |
+| root | `REPORT_CODE_TO_TYPE` | `REPORT_TYPE_CODE` |
+| root | `WEB_REPORT_TYPE_BY_ID`, `webReportTypeToCategory`, type `GovTarget`, and the `gov` field of `WebReportType` | `WEB_REPORT_TYPES` (§3) |
+| root | `H3CellSchema` (the `H3Cell` type stays, as `string`) | - |
+| root | `EventInsightsSchema` (the `EventInsights` type stays) | `GetEventInsightsResponseSchema` |
+| root | `HttpsCtaUrlSchema` (byte-identical to `HttpsUrlSchema`) | `HttpsUrlSchema` |
+| root | `REPORT_VOLUNTEER_HOURS` | - |
+| root, `/chip-contrast` | `mixWithWhite`, `chipPairPasses` | `contrastRatio` |
+| `/geocode` | `ipLocate` (deprecated since 0.47.0, §45) | `getApproximateLocation` |
+| `/host` | the re-export of `markdown/safe-url` (`isSafeHttpsUrl`, `isSafeMarkdownHref`, `unsafeHostReason`, `hostOfAuthority`, `httpsUrlAuthority`, `SAFE_HTTPS_URL_MAX_CHARS`, `MARKDOWN_MAX_HREF_CHARS`, `SafeHttpsUrlOptions`, `UnsafeHostReason`) | the same names from the root or `/markdown` |
+
+`constantTimeEqual` (`fakes/hmac.ts`) was never reachable from an entry point, so deleting it was not
+a contract change.
+
+**Kept on purpose.** Every inferred `z.infer` type and type alias stays, whatever its use count,
+because the schema and its type are exported side by side (CLAUDE.md §4.1). `DEFAULT_DURATION_MS`
+stays because the backend's insights service imports it (so does open backend PR #99); it goes once
+the backend reads `DEFAULT_EVENT_DURATION_MS`. `DiscoveryReviewStatusSchema` and
+`DISCOVERY_REVIEW_STATUS_LABELS` stay because civfix-admin is adopting them. The web and mobile guard
+tests that refuse an `ipLocate` import stay.
+
+**Why the new modules live in shared.** Everything added is framework-free and replaces copies held
+by the web console, `@civfix/ui` (so web and mobile) or a registry consumer, most of them by more than
+one; one copy is what keeps a client's counter, a server's check and a schema's bound on the same
+number.
+
+- *Input limits and constants* (`POST_BODY_MAX`, `MAX_EVENT_TITLE`, `EMAIL_MAX_LENGTH`,
+  `HTTPS_URL_MAX_LENGTH`, `HANDLE_MAX_LENGTH`, `EVENT_PAGE_BLOCK_LIMITS`, `EMAIL_OTP_CODE_LENGTH`, the
+  poll and group caps, and the rest listed in the CHANGELOG) are the numbers the request schemas
+  already enforce, now named and used by the schemas themselves. The ui, web and mobile copies the campaign
+  found now import them. Field building blocks two schema files share (`schemas/internal-fields.ts`) are deliberately
+  NOT exported: the surface does not grow because two files share a field.
+- *Error helpers* (`isErrorCode`, `appErrorCode`, `appErrorFields`, `byErrorCode`, `errorCopyKey`,
+  `ErrorCodeTable`, `toAppError(value, { fallbackMessage })`) give ui, web and mobile one code to copy
+  mapping. Copy is chosen by code alone; the server's English diagnostic text is never shown.
+  Recognition stays structural (`isAppErrorLike`), because an error from a second copy of the package
+  is never `instanceof` the caller's `AppError`.
+- *Formatters* (`safeDateFormat`, `formatEventInstant`, `eventZoneSuffix`, `datetimeLocalFromIso`,
+  `isoFromDatetimeLocal`, `formatCount`, `formatCertificateHours`) replace the copies in ui, the web
+  console and the web link previews. A malformed locale degrades to `en-US`, never to a blank
+  render, and the date formatters reuse a bounded cache instead of building an `Intl` object per
+  row. `formatCertificateHours` is the one hours format so the printed certificate and the public
+  verify page cannot disagree.
+- *Host models* (`@civfix/shared/host`: ticket codes, check-in result rendering, roster seats,
+  registration questions and ticket types, suppressed analytics views, `weekDayLabel`, the two
+  Turnstile action names) are the rules the web console and the ui host bodies both render. They stay
+  zod-free, like the rest of `/host`, so the console's host bundle does not pull zod in.
+- *Utilities* (`withTimeout`, `DEVICE_FIX_TIMEOUT_MS`, `coordsLabel`, `isUuid`,
+  `stripTrailingSlashes`, the `MS_PER_*` / `SECONDS_PER_*` / `MINUTES_PER_HOUR` units) answer handoff
+  H-018: the backend keeps one copy of each and can adopt these instead. `isUuid` never accepts a
+  value `IdSchema` would refuse. `roundGeocodeCoord` and `GEOCODE_POINT_KEY_DECIMALS` moved from `address.ts` to
+  the zod-free `geo.ts` so the `/geocode` entry stays free of zod; their root exports are unchanged.
+- *Legal* (`/legal`: `sourceLink`, `SOURCE_REPO_URL`) is the AGPL section 13 "Source" link for
+  civfix-app's own surfaces. Anything that is not a commit sha links the repository root, so a bad
+  build value cannot forge the link. civfix-admin links its own repository and does not use it.
+- *WebSocket* (`WsErrorCode`, `WsErrorFrameCode`, `WS_CLIENT_ID_MAX`) names the error frame codes the
+  socket sends beyond `ErrorCode` (the lowercase ones are forwarded `fields.code` subcodes); the
+  frame's `code` stays any string on the wire, so an older client keeps parsing a code added later.
+
+**Additive handoff fields, and the order they are adopted in.** Asked for by the backend and admin
+campaigns: `AnalyticsKpi.key` (an open string; the known values are `AnalyticsKpiKey`) and `.unit`,
+`HomeSummaryResponse.degraded`, `MailAttachment.url`, `ModerationItemDTO.status`,
+`UserMessageItemDTO.removedBy`, `DiscoveryContact.bouncedAt` (responses); `flagged` on
+`FlagEventRequest` / `FlagReportRequest` / `FlagUserRequest` and `idempotencyKey` on
+`CreateWalkupRegistrationRequest` (requests); `excludeOrgId` on `AdminUserListQuery`; plus
+`ADMIN_REPORT_STATUS_BUCKETS`, `GUEST_REGISTRATION_ERROR_FIELD` / `GuestRegistrationRefusalReason`,
+`DISPLAY_NAME_MAX_LENGTH` and the optional `retryCount` / `retryLimit` on `JobHandlerArg`. Every one is
+optional, but the carrying schemas are `.strict()`, which fixes the order:
+
+- A new field on a strict RESPONSE is adopted by every client before the backend emits it. An older
+  client's typed response parse fails on the unknown key, passes the raw body through with one warning
+  and loses the schema's defaults for that call.
+- A new field on a strict REQUEST is IMPLEMENTED by the backend before any client sends it. Accepting
+  it is not enough: a backend that bumps the manifest but still toggles would parse `flagged: true` and
+  unflag an already-flagged item, the retry bug the field exists to fix. An older backend answers
+  VALIDATION.
+- `excludeOrgId` rides a non-strict query, so either order is safe; an older backend strips it and
+  returns the unfiltered page, so admin keeps its client-side filter until the backend filters.
+
+**One module instance per build.** tsup now builds with code splitting: the entry points share chunks
+instead of each re-bundling its imports. Before, `@civfix/shared/client` carried its own copy of the
+schemas and of `AppError`, a Metro bundle shipped both, and `instanceof AppError` failed across
+subpaths. Now a client-thrown `AppError` is `instanceof` the root's. CJS splitting is experimental in
+tsup, so `require` of every exports entry is re-checked after a tsup upgrade. Separately, `AppError`
+sets `new.target.prototype`, so a subclass (`MailSendError`, or a consumer's own) keeps its prototype
+without re-setting it.
+
+**Registry layout.** The registry is one file per domain under `src/client/endpoints/`, composed in
+`endpoints.ts`. Each group is typed as the intersection of its files' `typeof`s, so the declaration no
+longer approaches the TS7056 ceiling; this supersedes §52's "grow by a new group" rule (a new endpoint
+goes into its domain's file). Entries, paths, methods, auth and csrf flags are unchanged; only the
+key order of `Object.keys(endpoints)` moved.
+
+**Delivery set (§4.2, no consumer left behind).** civfix-backend `services/api` and
+`services/media-worker` and civfix-admin `apps/admin` move to `^0.58.0` (range edit and lockfile;
+no code change is required, since none imports a removed name). civfix-govt-web stays on `^0.24.2`
+for tokens only, the open decision CLAUDE.md §4.2 records; nothing it uses was removed. civfix-app's
+web and mobile are workspace consumers and already run this contract.
+
+**Deferred contract decisions.** These requests were not additive-safe or need an owner's call, so
+this release does not attempt them; each needs its own coordinated PR:
+
+- CSRF on `createMediaUpload` / `finalizeMedia` (backend H-001): flip the registry flags once web and
+  admin send the header, then the backend adds `csrfProtect`. A security-posture change.
+- An `oauthNonce` registry entry and the mobile nonce flow (backend H-003): a new entry moves the
+  backend's route-coverage count, so its adoption is not manifest-only.
+- Tightening `SuggestContactRequestSchema` (email 254, formUrl 2048 http/https, geoid 64; backend
+  H-004): a request tightening, not additive.
+- Enum growth: a `DeliveryFailureKind` value, a terminal conflict code, `RegisterOutcome`
+  `slot_full` / `slot_not_found` (backend H-010, H-012). Older clients in the field would fail to parse
+  the new values.
+- `MediaDTO.url` nullable (backend H-013) and the Jobs `enqueue` return type (H-010): both narrow a
+  type every consumer reads.
+- Dropping `.strict()` from response DTOs: 72 of 333 registry responses are strict at the top level,
+  which is what forces the adoption order above.
+- The forward template's hardcoded `https://civfix.org/pin/{reportId}` (staging mail links to
+  production) and its promise of publication for withheld replies: an additive `{reportUrl}` token
+  plus product and counsel wording.
+- Light-scheme category pin contrast: five fills sit under 3:1 on light paper (a design-token
+  decision).
+- One timestamp schema: responses mix `z.string()`, `z.string().datetime()` and `ISODateSchema`; move
+  them together once the backend is confirmed to always emit ISO.
+- Atomic operator writes asked for by admin (H-03 verify-and-send, H-06 save contacts and extras in one
+  request): new endpoints, backend first.
+- `nextCursor` pagination for `listMyOrganizations` and the event team list (backend H-012): an
+  additive request and response change the backend must implement first.

@@ -1,13 +1,11 @@
 import type { CleanupStatus } from "../schemas/entities.js"
 import type { EventPhase } from "../schemas/host/insights.js"
 import { DEFAULT_EVENT_DURATION_MINUTES } from "../schemas/event-duration.js"
+import { MS_PER_HOUR, MS_PER_MINUTE } from "../time-units.js"
 
-const MINUTE_MS = 60_000
-const HOUR_MS = 60 * MINUTE_MS
-
-export const LIVE_LEAD_MS = 2 * HOUR_MS
-export const LIVE_TAIL_MS = 2 * HOUR_MS
-export const DEFAULT_EVENT_DURATION_MS = DEFAULT_EVENT_DURATION_MINUTES * MINUTE_MS
+export const LIVE_LEAD_MS = 2 * MS_PER_HOUR
+export const LIVE_TAIL_MS = 2 * MS_PER_HOUR
+export const DEFAULT_EVENT_DURATION_MS = DEFAULT_EVENT_DURATION_MINUTES * MS_PER_MINUTE
 export const DEFAULT_DURATION_MS = DEFAULT_EVENT_DURATION_MS
 
 export interface EventWindowLike {

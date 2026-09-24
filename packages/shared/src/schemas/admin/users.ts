@@ -1,6 +1,7 @@
 import { z } from "zod"
 import {
   CleanupMemberRoleSchema,
+  CursorSchema,
   ReportCategorySchema,
   ISODateSchema,
   IdSchema,
@@ -15,6 +16,9 @@ import {
   RiskSchema,
   UserStatusSchema,
 } from "./common.js"
+
+export const MessageRemovedBySchema = z.enum(["author", "operator"])
+export type MessageRemovedBy = z.infer<typeof MessageRemovedBySchema>
 
 /**
  * A user list row. `reports`/`cleanups` are derived counts; `removals`/`strikes` come from the
@@ -56,6 +60,9 @@ export type AdminUserListItemDTO = z.infer<typeof AdminUserListItemDTOSchema>
  */
 export const AdminUserListQuerySchema = AdminListQuerySchema.extend({
   filter: z.enum(["all", "active", "suspended", "flagged", "deleted", "banned"]).optional(),
+  // Leaves out the members of this organization server-side, so an add-member picker's page is not
+  // spent on people who are already members.
+  excludeOrgId: IdSchema.optional(),
 })
 export type AdminUserListQuery = z.infer<typeof AdminUserListQuerySchema>
 
@@ -117,7 +124,7 @@ export type GetAdminUserResponse = z.infer<typeof GetAdminUserResponseSchema>
  */
 export const UserSubListQuerySchema = z.object({
   id: z.string(),
-  cursor: z.string().optional(),
+  cursor: CursorSchema.optional(),
   limit: z.coerce.number().int().positive().max(100).optional(),
 })
 export type UserSubListQuery = z.infer<typeof UserSubListQuerySchema>
@@ -164,6 +171,9 @@ export const UserMessageItemDTOSchema = z
     // When the user themselves deleted (tombstoned) this message; null/omitted => not user-deleted.
     // Operators keep full visibility of the original text. Optional so an older server still parses.
     deletedAt: ISODateSchema.nullable().optional(),
+    // Author self-deletion and operator removal both set `deletedAt`; this tells them apart. Null when
+    // the message is live.
+    removedBy: MessageRemovedBySchema.nullable().optional(),
     // `chat` is cleanup/event chat; `group` is a standalone group or channel. They intentionally remain
     // distinct because only cleanup chat has an admin event destination.
     source: z.enum(["chat", "group", "dm", "report"]).optional(),
@@ -181,6 +191,7 @@ export const FlagUserRequestSchema = z
   .object({
     id: z.string(),
     reason: z.string().max(500).optional(),
+    flagged: z.boolean().optional(),
   })
   .strict()
 export type FlagUserRequest = z.infer<typeof FlagUserRequestSchema>

@@ -9,6 +9,7 @@ import { SecondaryButton } from "./SecondaryButton"
 import { Toggle } from "./Toggle"
 import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
 import { useResetOnOpen } from "./useModalClosed"
+import { POLL_MIN_OPTIONS, POLL_OPTION_MAX, POLL_QUESTION_MAX } from "@civfix/shared"
 import {
   emptyPollDraft,
   setQuestion,
@@ -16,9 +17,6 @@ import {
   removeOption,
   canCreatePoll,
   toCreateInput,
-  POLL_QUESTION_MAX,
-  POLL_OPTION_MAX,
-  POLL_MIN_OPTIONS,
   type PollDraft,
 } from "./pollDraft"
 

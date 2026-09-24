@@ -14,7 +14,6 @@ import {
   PublicVolunteerHoursResponseSchema,
   EventHoursQuerySchema,
   EventHoursResponseSchema,
-  REPORT_VOLUNTEER_HOURS,
   VOLUNTEER_HOURS_SOURCES,
   VolunteerHoursSourceSchema,
   MAX_EVENT_HOURS,
@@ -277,13 +276,8 @@ describe("volunteer DTOs", () => {
     expect(MAX_EVENT_HOURS).toBe(24)
   })
 
-  /**
-   * REPORT_VOLUNTEER_HOURS only documents what the historical `source='report'` rows are worth, so its
-   * value is frozen. `"report"` stays in VOLUNTEER_HOURS_SOURCES because old ledger rows, issued
-   * certificate snapshots and older servers still carry it.
-   */
-  it("the retired report auto-award constant is frozen, and its source stays parseable", () => {
-    expect(REPORT_VOLUNTEER_HOURS).toBe(0.1)
+  // Old ledger rows, issued certificate snapshots and older servers still carry "report".
+  it("the retired report source stays parseable", () => {
     expect(VOLUNTEER_HOURS_SOURCES).toContain("report")
     expect(VolunteerHoursSourceSchema.safeParse("report").success).toBe(true)
   })

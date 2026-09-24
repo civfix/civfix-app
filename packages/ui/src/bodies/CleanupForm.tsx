@@ -3,6 +3,8 @@ import { ActivityIndicator, View, Image, Pressable, StyleSheet } from "react-nat
 import {
   EVENT_KIND_VALUES,
   MAX_EVENT_ADDRESS_LENGTH,
+  MAX_EVENT_DESCRIPTION,
+  MAX_EVENT_TITLE,
   MIN_EVENT_DURATION_MINUTES,
   type EventKind,
   type EventSlotDTO,
@@ -64,10 +66,6 @@ import {
 } from "./cleanupFormModel"
 
 const COVER_RATIO = 16 / 9
-
-/** The create and update schemas' caps (`CreateCleanupRequest`), which export no named constant. */
-const EVENT_TITLE_MAX_LENGTH = 120
-const EVENT_DESCRIPTION_MAX_LENGTH = 2000
 
 export type CleanupFormSection = "basics" | "when" | "where" | "extras" | "share"
 
@@ -501,7 +499,7 @@ function BasicsSection({
         placeholder={t("field.titlePlaceholder")}
         value={value.title}
         onChangeText={(title) => patch({ title })}
-        maxLength={EVENT_TITLE_MAX_LENGTH}
+        maxLength={MAX_EVENT_TITLE}
       />
 
       <TextField
@@ -510,7 +508,7 @@ function BasicsSection({
         value={value.description}
         onChangeText={(description) => patch({ description })}
         multiline
-        maxLength={EVENT_DESCRIPTION_MAX_LENGTH}
+        maxLength={MAX_EVENT_DESCRIPTION}
       />
 
       <KindSelector value={value.eventKind} onChange={onChangeKind} />

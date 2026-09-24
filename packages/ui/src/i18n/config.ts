@@ -8,7 +8,7 @@
  */
 import i18next, { type i18n as I18nInstance } from "i18next"
 import { initReactI18next } from "react-i18next"
-import { LocaleEnum, type SupportedLocale } from "@civfix/shared"
+import { SupportedLocaleSchema, type SupportedLocale } from "@civfix/shared"
 import { initialResources } from "./bundledCatalogs"
 import { namespaces } from "./catalogs/namespaces"
 import { FALLBACK_LOCALE } from "./resolveLocale"
@@ -24,7 +24,7 @@ export function createI18n(locale: SupportedLocale = FALLBACK_LOCALE): I18nInsta
   void instance.use(initReactI18next).init({
     lng: locale in initialResources ? locale : FALLBACK_LOCALE,
     fallbackLng: FALLBACK_LOCALE,
-    supportedLngs: LocaleEnum.options,
+    supportedLngs: SupportedLocaleSchema.options,
     ns: namespaces as unknown as string[],
     defaultNS,
     // A copy, because i18next adds loaded catalogs into the object it is given, and that object is a

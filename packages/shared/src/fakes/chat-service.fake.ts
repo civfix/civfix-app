@@ -30,6 +30,11 @@ export class FakeChatService implements ChatService {
   private readonly rooms = new Map<string, Set<ChatConnection>>()
   private readonly messages = new Map<string, ChatMessageDTO[]>()
   private readonly nextId = makeIdFactory(42)
+  private readonly now: () => number
+
+  constructor(now: () => number = () => Date.now()) {
+    this.now = now
+  }
 
   joinRoom(cleanupId: string, conn: ChatConnection, _userId: string): Promise<void> {
     let room = this.rooms.get(cleanupId)
@@ -86,7 +91,7 @@ export class FakeChatService implements ChatService {
       // The fake has no media pipeline, so a media send over the all-fakes dev path echoes back with no
       // attachments.
       attachments: null,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(this.now()).toISOString(),
       editedAt: null,
       reactions: [],
       mentions: [],

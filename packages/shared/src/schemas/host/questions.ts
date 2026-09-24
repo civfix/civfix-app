@@ -13,7 +13,8 @@ export const MAX_QUESTION_OPTIONS = 30
 export const MAX_QUESTION_OPTION_LABEL = 120
 export const MAX_SHORT_TEXT_ANSWER = 200
 export const MAX_LONG_TEXT_ANSWER = 2000
-const MAX_QUESTION_OPTION_VALUE = 80
+export const MAX_QUESTION_OPTION_VALUE = 80
+export const MAX_CONSENT_TEXT = 2000
 
 export const EventQuestionOptionSchema = z
   .object({
@@ -64,7 +65,7 @@ const EventQuestionDefUnionSchema = z.discriminatedUnion("kind", [
     .object({
       ...EventQuestionCommonFields,
       kind: z.literal("consent"),
-      consentText: z.string().trim().min(1).max(2000),
+      consentText: z.string().trim().min(1).max(MAX_CONSENT_TEXT),
     })
     .strict(),
 ])

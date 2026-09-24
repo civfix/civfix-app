@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import Ionicons from "@expo/vector-icons/Ionicons"
 import {
+  EMAIL_OTP_CODE_LENGTH,
   REVIEWER_OTP_CODE_MAX_LENGTH,
   REVIEWER_OTP_CODE_MIN_LENGTH,
   REVIEWER_OTP_EMAIL,
@@ -32,10 +33,9 @@ import { useResendCooldown } from "@/hooks/useResendCooldown"
 const { ScrollView: OtpScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
 
 const MAX_ATTEMPTS = 3
-const CODE_LENGTH = 6
 
 function isCodeIncomplete(code: string, reviewer: boolean): boolean {
-  return reviewer ? code.trim().length < REVIEWER_OTP_CODE_MIN_LENGTH : code.length !== CODE_LENGTH
+  return reviewer ? code.trim().length < REVIEWER_OTP_CODE_MIN_LENGTH : code.length !== EMAIL_OTP_CODE_LENGTH
 }
 
 export default function OtpScreen() {
@@ -194,7 +194,7 @@ export default function OtpScreen() {
                   setError(null)
                   setCode(next)
                 }}
-                length={CODE_LENGTH}
+                length={EMAIL_OTP_CODE_LENGTH}
                 onComplete={onVerify}
                 editable={!locked && !verifying}
               />

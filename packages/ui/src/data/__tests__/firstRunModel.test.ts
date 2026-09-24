@@ -1,8 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { UpdateProfileRequestSchema } from "@civfix/shared"
+import { DISPLAY_NAME_MAX_LENGTH, UpdateProfileRequestSchema } from "@civfix/shared"
 import {
-  DISPLAY_NAME_MAX,
   FIRST_NAME_MAX,
   LAST_NAME_MAX,
   firstRunModel,
@@ -26,17 +25,17 @@ const model = (over: Partial<FirstRunInput> = {}) => firstRunModel({ ...READY, .
 
 describe("first-run name caps", () => {
   it("uses the display-name cap the profile save validates against", () => {
-    expect(DISPLAY_NAME_MAX).toBe(UpdateProfileRequestSchema.shape.displayName.maxLength)
+    expect(DISPLAY_NAME_MAX_LENGTH).toBe(UpdateProfileRequestSchema.shape.displayName.maxLength)
   })
 
   it("fits the first and last name caps plus the joining space inside the display name cap", () => {
-    expect(FIRST_NAME_MAX).toBeLessThan(DISPLAY_NAME_MAX - 1)
-    expect(FIRST_NAME_MAX + 1 + LAST_NAME_MAX).toBe(DISPLAY_NAME_MAX)
+    expect(FIRST_NAME_MAX).toBeLessThan(DISPLAY_NAME_MAX_LENGTH - 1)
+    expect(FIRST_NAME_MAX + 1 + LAST_NAME_MAX).toBe(DISPLAY_NAME_MAX_LENGTH)
   })
 
   it("never lets a seeded name longer than the cap be submitted", () => {
     const view = model({ first: "a".repeat(50), last: "b".repeat(35) })
-    expect(view.displayName.length).toBeGreaterThan(DISPLAY_NAME_MAX)
+    expect(view.displayName.length).toBeGreaterThan(DISPLAY_NAME_MAX_LENGTH)
     expect(view.canSubmit).toBe(false)
     expect(model({ first: "a".repeat(40), last: "b".repeat(39) }).canSubmit).toBe(true)
   })

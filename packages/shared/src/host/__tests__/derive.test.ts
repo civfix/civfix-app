@@ -5,14 +5,29 @@ import {
   arrivalsCurve,
   bestDayTime,
   breakdown,
-  cumulativeSeries,
   dailySeries,
   enumerateDays,
   funnel,
-  hourlySeries,
-  registrationSeries,
-  repeatAttendanceRate,
+  type DayCount,
+  type DayRange,
+  type DerivedSeriesPanel,
+  type SuppressOptions,
 } from "../derive.js"
+
+// The cumulative panel as the backend publishes it: the closure's running totals, and the total only
+// when the closure marks it publishable.
+function cumulativeView(
+  points: readonly DayCount[],
+  range: DayRange,
+  options: SuppressOptions = {},
+): DerivedSeriesPanel {
+  const closure = seriesClosure(points, range, options)
+  return {
+    panelSuppressed: closure.panelSuppressed,
+    total: closure.totalPublishable ? closure.total : null,
+    points: closure.cumulative,
+  }
+}
 
 describe("enumerateDays", () => {
   it("gap-fills an inclusive range across a month boundary", () => {
@@ -91,30 +106,6 @@ describe("dailySeries", () => {
     )
     expect(panel.total).toBe(7)
     expect(panel.points[0]?.value).toBe(7)
-  })
-
-  it("is aliased as registrationSeries and is deterministic", () => {
-    const points = [{ day: "2026-05-04", count: 8 }]
-    expect(registrationSeries(points, range)).toEqual(dailySeries(points, range))
-  })
-})
-
-describe("hourlySeries", () => {
-  it("always returns 24 gap-filled buckets", () => {
-    const panel = hourlySeries([
-      { hour: 9, count: 4 },
-      { hour: 9, count: 3 },
-      { hour: 30, count: 99 },
-    ])
-    expect(panel.points).toHaveLength(24)
-    expect(panel.points[9]?.value).toBe(7)
-    expect(panel.total).toBe(7)
-  })
-
-  it("suppresses the panel under k", () => {
-    const panel = hourlySeries([{ hour: 1, count: 2 }])
-    expect(panel.panelSuppressed).toBe(true)
-    expect(panel.points.every((p) => p.value === null)).toBe(true)
   })
 })
 
@@ -268,18 +259,11 @@ describe("bestDayTime", () => {
   })
 })
 
-describe("repeatAttendanceRate", () => {
-  it("is a rate and never a list", () => {
-    expect(repeatAttendanceRate(3, 12)).toEqual({ suppressed: false, value: 0.25 })
-    expect(repeatAttendanceRate(1, 4)).toEqual({ suppressed: true, value: null })
-  })
-})
-
-describe("cumulativeSeries", () => {
+describe("seriesClosure cumulative view", () => {
   const range = { from: "2026-05-01", to: "2026-05-05" }
 
   it("publishes no step at all once the hidden tail could be pinned by the total", () => {
-    const panel = cumulativeSeries(
+    const panel = cumulativeView(
       [
         { day: "2026-05-01", count: 6 },
         { day: "2026-05-02", count: 2 },
@@ -298,7 +282,7 @@ describe("cumulativeSeries", () => {
   })
 
   it("waits for the hidden group to reach a revealable band, then shows the total again", () => {
-    const panel = cumulativeSeries(
+    const panel = cumulativeView(
       [
         { day: "2026-05-01", count: 10 },
         { day: "2026-05-02", count: 3 },
@@ -312,19 +296,19 @@ describe("cumulativeSeries", () => {
   })
 
   it("suppresses the whole panel below k", () => {
-    const panel = cumulativeSeries([{ day: "2026-05-02", count: 3 }], range)
+    const panel = cumulativeView([{ day: "2026-05-02", count: 3 }], range)
     expect(panel.panelSuppressed).toBe(true)
     expect(panel.total).toBeNull()
     expect(panel.points.every((p) => p.value === null && p.suppressed)).toBe(true)
   })
 
   it("shows a leading run of zeroes without disclosing anything", () => {
-    const panel = cumulativeSeries([{ day: "2026-05-05", count: 9 }], range)
+    const panel = cumulativeView([{ day: "2026-05-05", count: 9 }], range)
     expect(panel.points.map((p) => p.value)).toEqual([0, 0, 0, 0, 9])
   })
 
   it("ignores days outside the range", () => {
-    const panel = cumulativeSeries(
+    const panel = cumulativeView(
       [
         { day: "2026-04-30", count: 100 },
         { day: "2026-05-02", count: 8 },
@@ -347,7 +331,7 @@ describe("complementary suppression across the daily, cumulative and total views
 
   it("leaks the sub-k day through NO combination of the three published views", () => {
     const daily = dailySeries(points, range, { suppressPoints: true })
-    const cumulative = cumulativeSeries(points, range)
+    const cumulative = cumulativeView(points, range)
 
     expect(daily.points.map((p) => p.value)).toEqual([6, null, 7])
     expect(daily.total).toBeNull()
@@ -376,7 +360,7 @@ describe("complementary suppression across the daily, cumulative and total views
       { day: "2026-05-03", count: 7 },
     ]
     const daily = dailySeries(open, range, { suppressPoints: true })
-    const cumulative = cumulativeSeries(open, range)
+    const cumulative = cumulativeView(open, range)
     expect(daily.points.map((p) => p.value)).toEqual([6, 5, 7])
     expect(daily.total).toBe(18)
     expect(cumulative.points.map((p) => p.value)).toEqual([6, 11, 18])
@@ -404,7 +388,7 @@ function publishedOf(values: readonly number[], k = K) {
   const range = rangeOf(values.length)
   const points = countsOf(values)
   const daily = dailySeries(points, range, { suppressPoints: true, k })
-  const cumulative = cumulativeSeries(points, range, { k })
+  const cumulative = cumulativeView(points, range, { k })
   return {
     daily: daily.points.map((p) => p.value),
     dailyTotal: daily.total,

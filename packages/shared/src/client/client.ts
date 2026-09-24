@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { AppErrorSchema } from "../schemas/common.js"
-import { AppError, ErrorCode, isAppErrorLike } from "../types/errors.js"
+import { AppError, ErrorCode, isErrorCode } from "../types/errors.js"
 import {
   endpoints,
   type EndpointDef,
@@ -99,7 +99,7 @@ export async function parseError(res: Response, requestId?: string): Promise<App
   const parsed = AppErrorSchema.safeParse(payload)
   if (parsed.success) {
     const envelope = parsed.data
-    const code = isAppErrorLike(envelope) ? envelope.code : ErrorCode.INTERNAL
+    const code = isErrorCode(envelope.code) ? envelope.code : ErrorCode.INTERNAL
     return new AppError(code, envelope.message, {
       httpStatus: res.status,
       ...(envelope.fields !== undefined ? { fields: envelope.fields } : {}),
@@ -135,11 +135,6 @@ for (const name of Object.keys(endpoints) as EndpointName[]) {
 
 /** Endpoint names already warned about, so a mismatching server logs once instead of per call. */
 const warnedEndpoints = new Set<string>()
-
-/** Reset the once-per-endpoint warning memo. Exported for unit testing only. */
-export function resetResponseWarnings(): void {
-  warnedEndpoints.clear()
-}
 
 /**
  * Run a 2xx body through the endpoint's response schema so the DTOs' `.default()`s and `.catch()`es
@@ -265,8 +260,12 @@ export function createApiClient(opts: CreateApiClientOptions): ApiClient {
     let data: unknown
     try {
       data = await res.json()
-    } catch {
-      data = undefined
+    } catch (err) {
+      if (args.signal?.aborted) throw err
+      throw new AppError(ErrorCode.INTERNAL, `Response body for HTTP ${res.status} is not JSON`, {
+        ...(requestId !== undefined ? { requestId } : {}),
+        cause: err,
+      })
     }
     return parseResponse<Res>(endpoint, data)
   }

@@ -74,6 +74,20 @@ export function canTransitionReportStatus(from: AdminReportStatus, to: AdminRepo
   return ADMIN_REPORT_STATUS_TRANSITIONS[from].includes(to)
 }
 
+export const AdminReportStatusBucketSchema = z.enum(["submitted", "in_progress", "completed"])
+export type AdminReportStatusBucket = z.infer<typeof AdminReportStatusBucketSchema>
+
+// `published` and `held` sit in `submitted`: an authed pin is created published and is still awaiting
+// city action. `rejected` has no bucket because removal soft-deletes the report out of every list, so
+// the backend's list filters and counts and the admin pills must all read this one map.
+export const ADMIN_REPORT_STATUS_BUCKETS: Readonly<
+  Record<AdminReportStatusBucket, readonly AdminReportStatus[]>
+> = {
+  submitted: ["submitted", "held", "published"],
+  in_progress: ["acknowledged", "in_progress"],
+  completed: ["resolved"],
+}
+
 /** Cleanup (event) lifecycle. */
 export const EventStatusSchema = z.enum(["upcoming", "in_progress", "completed", "cancelled"])
 export type EventStatus = z.infer<typeof EventStatusSchema>
@@ -213,6 +227,10 @@ export type ModerationDestinationKind = z.infer<typeof ModerationDestinationKind
 /** The tone of a single moderation signal cell. */
 export const ModerationToneSchema = z.enum(["ok", "warn", "bad"])
 export type ModerationTone = z.infer<typeof ModerationToneSchema>
+
+/** The backend mirrors this exact value list (the `moderation_items.status` CHECK constraint). */
+export const ModerationItemStatusSchema = z.enum(["open", "approved", "removed", "held"])
+export type ModerationItemStatus = z.infer<typeof ModerationItemStatusSchema>
 
 /** Queue priority bands shared by moderation + discovery rows. */
 export const PrioritySchema = z.enum(["low", "med", "high"])

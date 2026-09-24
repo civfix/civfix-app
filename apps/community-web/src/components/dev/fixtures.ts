@@ -11,14 +11,11 @@ import type {
   UserDTO,
   UserProfileDTO,
 } from "@civfix/shared"
-
-export const MINUTE_MS = 60_000
-export const HOUR_MS = 60 * MINUTE_MS
-export const DAY_MS = 24 * HOUR_MS
+import { MS_PER_DAY, MS_PER_HOUR, MS_PER_MINUTE } from "@civfix/shared"
 
 export const isoFromNow = (ms: number): string => new Date(Date.now() + ms).toISOString()
-export const hoursAgo = (h: number): string => isoFromNow(-h * HOUR_MS)
-export const daysAgo = (d: number): string => isoFromNow(-d * DAY_MS)
+export const hoursAgo = (h: number): string => isoFromNow(-h * MS_PER_HOUR)
+export const daysAgo = (d: number): string => isoFromNow(-d * MS_PER_DAY)
 
 export const GALLERY_VIEWER = {
   id: "me",
@@ -139,7 +136,7 @@ function chatMessage(
     },
     body,
     kind: "text",
-    createdAt: isoFromNow(-minsAgo * MINUTE_MS),
+    createdAt: isoFromNow(-minsAgo * MS_PER_MINUTE),
   } as ChatMessageDTO
 }
 

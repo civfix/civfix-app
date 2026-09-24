@@ -1,4 +1,6 @@
 import {
+  EMAIL_MAX_LENGTH,
+  EMAIL_OTP_CODE_LENGTH,
   ErrorCode,
   GUEST_OTP_ERROR_FIELD,
   GUEST_RSVP_TURNSTILE_ACTION,
@@ -32,15 +34,13 @@ export function guestRsvpCommitFor(step: GuestRsvpStep, exhausted: boolean): Gue
   }
 }
 
-export const GUEST_RSVP_CODE_LENGTH = 6
+export const GUEST_RSVP_CODE_LENGTH = EMAIL_OTP_CODE_LENGTH
 
 export { GUEST_RSVP_TURNSTILE_ACTION }
 
 const US_PHONE_E164 = /^\+1[2-9]\d{9}$/
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-export const GUEST_EMAIL_MAX = 254
 
 export interface GuestRsvpFormState {
   name: string
@@ -78,7 +78,7 @@ export function guestPhoneE164(raw: string): string | null {
 
 export function guestEmailValue(raw: string): string | null {
   const value = raw.trim().toLowerCase()
-  if (value.length === 0 || value.length > GUEST_EMAIL_MAX) return null
+  if (value.length === 0 || value.length > EMAIL_MAX_LENGTH) return null
   return EMAIL_SHAPE.test(value) ? value : null
 }
 

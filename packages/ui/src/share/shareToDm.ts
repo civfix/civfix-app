@@ -1,11 +1,9 @@
-import { MESSAGE_BODY_MAX, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
+import { MESSAGE_BODY_MAX, WS_CLIENT_ID_MAX, type MessageThreadDTO, type PersonDTO } from "@civfix/shared"
 import { threadRoomId } from "../data/threadRoom"
 
 export const SHARE_DM_MAX_RECIPIENTS = 10
 
 export const SHARE_DM_RECENT_LIMIT = 20
-
-export const SHARE_CLIENT_ID_MAX = 64
 
 export interface ShareRecipient {
   id: string
@@ -78,7 +76,7 @@ export function buildSharePlan(
     seen.add(recipient.id)
     entries.push({
       recipient,
-      clientId: newClientId(entries.length).slice(0, SHARE_CLIENT_ID_MAX),
+      clientId: newClientId(entries.length).slice(0, WS_CLIENT_ID_MAX),
     })
     if (entries.length === max) break
   }

@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
-import { AppError, ErrorCode, CreateReportRequestSchema } from "@civfix/shared"
+import { AppError, ErrorCode, CreateReportRequestSchema, MAX_REPORT_DESCRIPTION_LENGTH } from "@civfix/shared"
 import { STEP_ORDER_COMPACT, STEP_ORDER_EXPANDED, stepOrderFor, submitErrorRecovery } from "../wizardSteps"
 import {
-  REPORT_DESCRIPTION_MAX,
   composeDescription,
   createSubmitRunSlot,
   descriptionMaxLength,
@@ -89,22 +88,22 @@ describe("stale upload ids are dropped after the server refuses them", () => {
 describe("the description field leaves room for the flag notes", () => {
   it("keeps a full-length description plus both flags inside the contract limit", () => {
     const max = descriptionMaxLength(BOTH_FLAGS)
-    expect(max).toBeLessThan(REPORT_DESCRIPTION_MAX)
+    expect(max).toBeLessThan(MAX_REPORT_DESCRIPTION_LENGTH)
     const composed = composeDescription({ description: "x".repeat(max), flags: BOTH_FLAGS })
-    expect(composed?.length).toBe(REPORT_DESCRIPTION_MAX)
+    expect(composed?.length).toBe(MAX_REPORT_DESCRIPTION_LENGTH)
     expect(CreateReportRequestSchema.shape.description.safeParse(composed).success).toBe(true)
     const over = composeDescription({ description: "x".repeat(max + 1), flags: BOTH_FLAGS })
     expect(CreateReportRequestSchema.shape.description.safeParse(over).success).toBe(false)
   })
 
   it("gives the whole budget back when no flag is on, and matches each single flag exactly", () => {
-    expect(descriptionMaxLength(NO_FLAGS)).toBe(REPORT_DESCRIPTION_MAX)
+    expect(descriptionMaxLength(NO_FLAGS)).toBe(MAX_REPORT_DESCRIPTION_LENGTH)
     for (const flags of [
       { blockingSidewalk: true, safetyHazard: false },
       { blockingSidewalk: false, safetyHazard: true },
     ]) {
       const composed = composeDescription({ description: "x".repeat(descriptionMaxLength(flags)), flags })
-      expect(composed?.length).toBe(REPORT_DESCRIPTION_MAX)
+      expect(composed?.length).toBe(MAX_REPORT_DESCRIPTION_LENGTH)
     }
   })
 })

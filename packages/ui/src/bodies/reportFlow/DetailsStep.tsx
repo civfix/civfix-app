@@ -1,14 +1,12 @@
 import React from "react"
 import { View } from "react-native"
+import { MAX_REPORT_TITLE_LENGTH } from "@civfix/shared"
 import { makeThemedStyles } from "../../theme"
 import { TextField, Toggle } from "../../primitives"
 import { useDraftReportStore } from "../../report/draftStore"
 import { descriptionMaxLength } from "../../report/submit"
 import { useT } from "../../i18n"
 import { useFlowStyles } from "./flowStyles"
-
-// Mirrors CreateReportRequestSchema's `title` max(120).
-const REPORT_TITLE_MAX_LENGTH = 120
 
 export function DetailsStep() {
   const styles = useStyles()
@@ -25,7 +23,7 @@ export function DetailsStep() {
         placeholder={t("details.title_placeholder")}
         value={draft.title}
         onChangeText={setTitle}
-        maxLength={REPORT_TITLE_MAX_LENGTH}
+        maxLength={MAX_REPORT_TITLE_LENGTH}
       />
       <TextField
         label={t("details.description_label")}

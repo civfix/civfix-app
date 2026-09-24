@@ -87,7 +87,11 @@ export interface BroadcastLinkOptions {
 
 const ABSOLUTE_URL = /\b([a-zA-Z][a-zA-Z0-9+.-]*):\/\/[^\s<>"'`)\]}]+/g
 const SCHEME_RELATIVE = /(^|[\s(<[{])(\/\/[^\s<>"'`)\]}]+)/g
-const DANGEROUS_SCHEME = /\b(javascript|data|vbscript|file|blob|jar|about):/gi
+// An executable scheme is refused wherever it starts a token, even with whitespace before its payload
+// (a browser runs "javascript: alert(1)" in an href). Only `about:` keeps a prose allowance ("Questions
+// about: parking"), and a scheme inside an https URL path ("/data:foo") is not a token start.
+const DANGEROUS_SCHEME =
+  /(?<![\w/.:-])(?:(javascript|data|vbscript|file|blob|jar):(?=\s*\S)|(about):(?=\S))/gi
 
 function hostAllowed(host: string, allowed: readonly string[]): boolean {
   return allowed.some((entry) => {
@@ -107,7 +111,7 @@ export function inspectBroadcastLinks(
   let count = 0
 
   for (const match of text.matchAll(DANGEROUS_SCHEME)) {
-    const scheme = (match[1] ?? "").toLowerCase()
+    const scheme = (match[1] ?? match[2] ?? "").toLowerCase()
     issues.push({ kind: "insecure_scheme", url: match[0] ?? "", scheme })
   }
 

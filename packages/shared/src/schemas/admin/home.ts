@@ -67,6 +67,9 @@ export const HomeSummaryResponseSchema = z
     livePins24h: z.number().int().nonnegative(),
     moderationQueue: z.number().int().nonnegative().optional(),
     inboxUnread: z.number().int().nonnegative().optional(),
+    // The top-level keys whose query failed and were filled with zeros, so a tile can render as
+    // unavailable instead of showing a real-looking 0.
+    degraded: z.array(z.string()).optional(),
   })
   .strict()
 export type HomeSummaryResponse = z.infer<typeof HomeSummaryResponseSchema>

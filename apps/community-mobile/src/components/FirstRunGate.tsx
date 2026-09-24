@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { View, StyleSheet, ActivityIndicator, Pressable } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import Ionicons from "@expo/vector-icons/Ionicons"
+import { HANDLE_MAX_LENGTH } from "@civfix/shared"
 import { MIN_TOUCH_TARGET, makeThemedStyles, space, useTheme } from "@/theme"
 import {
   AgeConfirmation,
@@ -31,9 +32,6 @@ import { useAuthStore } from "@/store/authStore"
 import { friendlyError } from "@/lib/errors"
 
 const { ScrollView: FirstRunScrollView } = makeKeyboardAwareScrollHost(PLAIN_SCROLL_HOST)
-
-// The upper bound of the shared HANDLE_REGEX, so the field stops where validation would reject.
-const HANDLE_MAX_LENGTH = 20
 
 export function FirstRunGate() {
   const status = useAuthStore((s) => s.status)

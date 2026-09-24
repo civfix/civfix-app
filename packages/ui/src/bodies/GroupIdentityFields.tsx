@@ -4,7 +4,7 @@ import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { TextField } from "../primitives"
 import type { ComposerAttachments } from "../primitives/useComposerAttachments"
-import { GROUP_NAME_MAX, GROUP_DESCRIPTION_MAX } from "./groupWizard"
+import { CHAT_GROUP_DESCRIPTION_MAX, CHAT_GROUP_NAME_MAX } from "@civfix/shared"
 
 export interface GroupIdentityLabels {
   avatarA11y: string
@@ -90,7 +90,7 @@ export function GroupIdentityFields({
         placeholder={labels.namePlaceholder}
         value={name}
         onChangeText={onChangeName}
-        maxLength={GROUP_NAME_MAX}
+        maxLength={CHAT_GROUP_NAME_MAX}
         containerStyle={isSheet ? styles.fieldSheet : styles.field}
       />
       <TextField
@@ -98,7 +98,7 @@ export function GroupIdentityFields({
         placeholder={labels.descriptionPlaceholder}
         value={description}
         onChangeText={onChangeDescription}
-        maxLength={GROUP_DESCRIPTION_MAX}
+        maxLength={CHAT_GROUP_DESCRIPTION_MAX}
         multiline
         containerStyle={isSheet ? styles.fieldSheet : styles.field}
       />

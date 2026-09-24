@@ -1,5 +1,6 @@
 "use client"
 
+import { stripTrailingSlashes } from "@civfix/shared"
 import { ChatSocketCore, type WsConnection } from "@civfix/ui/realtime"
 
 import { API_BASE_URL } from "@/lib/api"
@@ -16,7 +17,7 @@ import { API_BASE_URL } from "@/lib/api"
 
 export function wsUrlFromApiBase(apiBase: string = API_BASE_URL): string {
   if (typeof window === "undefined") return ""
-  const trimmed = apiBase.replace(/\/+$/, "")
+  const trimmed = stripTrailingSlashes(apiBase)
   let url: URL
   try {
     url = new URL(trimmed, window.location.origin)
@@ -24,7 +25,7 @@ export function wsUrlFromApiBase(apiBase: string = API_BASE_URL): string {
     return ""
   }
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
-  url.pathname = `${url.pathname.replace(/\/+$/, "")}/ws`
+  url.pathname = `${stripTrailingSlashes(url.pathname)}/ws`
   url.search = ""
   url.hash = ""
   return url.toString()

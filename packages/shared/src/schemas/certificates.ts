@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { LocaleEnum } from "./auth.js"
+import { SupportedLocaleSchema } from "./auth.js"
 
 /*
  * A certificate is a PDF the holder deliberately hands to a verifier (a school registrar, a court
@@ -76,7 +76,7 @@ export type ServiceHoursCertificateDTO = z.infer<typeof ServiceHoursCertificateD
  * derived min/max of the included rows.
  */
 export const IssueServiceHoursCertificateRequestSchema = z
-  .object({ locale: LocaleEnum.optional() })
+  .object({ locale: SupportedLocaleSchema.optional() })
   .strict()
 export type IssueServiceHoursCertificateRequest = z.infer<
   typeof IssueServiceHoursCertificateRequestSchema

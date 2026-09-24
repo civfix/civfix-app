@@ -7,7 +7,7 @@ import {
   REPORT_TYPE_VALUES,
   REPORT_TYPE_LABELS,
   REPORT_TYPE_TO_CATEGORY,
-  WEB_REPORT_TYPE_BY_ID,
+  WEB_REPORT_TYPES,
   LatLngFields,
   MediaPurposeSchema,
 } from "../src/schemas/common.js"
@@ -403,10 +403,11 @@ describe("canonical report type taxonomy", () => {
   })
 
   it("WEB_REPORT_TYPES categories agree with REPORT_TYPE_TO_CATEGORY for the overlapping ids", () => {
-    expect(WEB_REPORT_TYPE_BY_ID.infrastructure.category).toBe(REPORT_TYPE_TO_CATEGORY.infrastructure)
-    expect(WEB_REPORT_TYPE_BY_ID.vegetation.category).toBe(REPORT_TYPE_TO_CATEGORY.vegetation)
-    expect(WEB_REPORT_TYPE_BY_ID.infrastructure.category).toBe("water")
-    expect(WEB_REPORT_TYPE_BY_ID.vegetation.category).toBe("recycling")
+    const categoryOf = (id: string) => WEB_REPORT_TYPES.find((t) => t.id === id)?.category
+    expect(categoryOf("infrastructure")).toBe(REPORT_TYPE_TO_CATEGORY.infrastructure)
+    expect(categoryOf("vegetation")).toBe(REPORT_TYPE_TO_CATEGORY.vegetation)
+    expect(categoryOf("infrastructure")).toBe("water")
+    expect(categoryOf("vegetation")).toBe("recycling")
   })
 
   it("CreateReportRequest requires a type", () => {

@@ -121,6 +121,32 @@ describe("buildIcs", () => {
     )
   })
 
+  it("emits URL and mailto values as URIs, without TEXT backslash escaping", () => {
+    const rows = unfold(
+      buildIcs({
+        ...BASE,
+        url: "https://civfix.org/e/creek?a=1,2;b=3",
+        organizer: { email: "ada,lovelace;x@civfix.org" },
+      }),
+    )
+    expect(rows).toContain("URL:https://civfix.org/e/creek?a=1,2;b=3")
+    expect(rows).toContain("ORGANIZER:mailto:ada,lovelace;x@civfix.org")
+  })
+
+  it("drops a URL the safe-https check refuses and an organizer email with control characters", () => {
+    for (const url of [
+      "https://user@civfix.org/x",
+      "https://192.168.0.1/x",
+      "https://xn--80ak6aa92e.com/x",
+      "https://civfix.org/a\u0001b",
+      `https://civfix.org/${"a".repeat(2048)}`,
+    ]) {
+      expect(unfold(buildIcs({ ...BASE, url })).some((row) => row.startsWith("URL:")), url).toBe(false)
+    }
+    const rows = unfold(buildIcs({ ...BASE, organizer: { email: "ada\u0001@civfix.org" } }))
+    expect(rows.some((row) => row.startsWith("ORGANIZER"))).toBe(false)
+  })
+
   it("supports cancellations, sequences and open-ended events", () => {
     const rows = unfold(
       buildIcs({ uid: "x", title: "T", startsAt: BASE.startsAt, status: "CANCELLED", sequence: 3 }),

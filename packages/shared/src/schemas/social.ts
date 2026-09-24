@@ -8,7 +8,7 @@ import {
   HttpsUrlSchema,
   SocialLinksSchema,
 } from "./entities.js"
-import { UserDTOSchema, LocaleEnum } from "./auth.js"
+import { EMAIL_OTP_CODE_LENGTH, UserDTOSchema, SupportedLocaleSchema } from "./auth.js"
 
 
 export { PersonDTOSchema } from "./entities.js"
@@ -67,18 +67,21 @@ export const ProfileEventsResponseSchema = pageResponse(CleanupDTOSchema)
 export type ProfileEventsResponse = z.infer<typeof ProfileEventsResponseSchema>
 
 
-export const HANDLE_REGEX = /^[a-zA-Z0-9_]{3,20}$/
+const HANDLE_MIN_LENGTH = 3
+export const HANDLE_MAX_LENGTH = 20
+export const HANDLE_REGEX = new RegExp(`^[a-zA-Z0-9_]{${HANDLE_MIN_LENGTH},${HANDLE_MAX_LENGTH}}$`)
 export function isValidHandle(handle: string): boolean {
   return HANDLE_REGEX.test(handle.trim())
 }
 export const HandleSchema = z.string().trim().regex(HANDLE_REGEX)
 
 export const MAX_BIO_LENGTH = 500
+export const DISPLAY_NAME_MAX_LENGTH = 80
 
 export const UpdateProfileRequestSchema = z
   .object({
     handle: HandleSchema,
-    displayName: z.string().trim().min(1).max(80),
+    displayName: z.string().trim().min(1).max(DISPLAY_NAME_MAX_LENGTH),
     bio: z.string().trim().max(MAX_BIO_LENGTH).nullable().optional(),
     avatarUploadId: IdSchema.optional(),
     socialLinks: SocialLinksSchema.nullable().optional(),
@@ -151,7 +154,7 @@ export type MentionSearchRequest = z.infer<typeof MentionSearchRequestSchema>
 export const UpdateSettingsRequestSchema = z
   .object({
     allowDirectMessages: z.boolean().optional(),
-    locale: LocaleEnum.optional(),
+    locale: SupportedLocaleSchema.optional(),
     // Defaults to true server-side. When false the public profile omits volunteerHours and the
     // per-event breakdown, and the user drops off the jurisdiction leaderboard; the owner still sees them.
     showVolunteerHours: z.boolean().optional(),
@@ -170,7 +173,7 @@ export type UpdateSettingsResponse = z.infer<typeof UpdateSettingsResponseSchema
 
 export const DeleteAccountRequestSchema = z
   .object({
-    emailOtp: z.string().regex(/^\d{6}$/),
+    emailOtp: z.string().regex(new RegExp(`^\\d{${EMAIL_OTP_CODE_LENGTH}}$`)),
   })
   .strict()
 export type DeleteAccountRequest = z.infer<typeof DeleteAccountRequestSchema>

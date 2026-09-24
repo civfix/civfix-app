@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "./TextInput"
-import type { ContentReportReason } from "@civfix/shared"
+import { CONTENT_REPORT_DETAILS_MAX, type ContentReportReason } from "@civfix/shared"
 import { a11yState, makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
@@ -21,7 +21,6 @@ const REASON_VALUES: ReadonlyArray<ContentReportReason> = [
   "other",
 ]
 
-const DETAILS_MAX = 1000
 
 export interface ReportContentSheetProps {
   visible: boolean
@@ -118,10 +117,10 @@ export function ReportContentSheet({
 
       <TextInput
         value={details}
-        onChangeText={(next) => setDetails(next.slice(0, DETAILS_MAX))}
+        onChangeText={(next) => setDetails(next.slice(0, CONTENT_REPORT_DETAILS_MAX))}
         editable={!pending}
         multiline
-        maxLength={DETAILS_MAX}
+        maxLength={CONTENT_REPORT_DETAILS_MAX}
         placeholder={t("details.placeholder")}
         placeholderTextColor={th.colors.textSubtle}
         accessibilityLabel={t("details.a11y")}

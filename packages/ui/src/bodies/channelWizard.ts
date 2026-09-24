@@ -9,8 +9,9 @@
  *   3. "members"    - an OPTIONAL initial subscriber list. Create never looks at the count: a channel
  *                     with zero subscribers is valid (the owner broadcasts; people join later).
  *
- * Identity fields + caps live in groupWizard (GROUP_NAME_MAX / GROUP_DESCRIPTION_MAX / canCreateGroup /
- * normalizeGroupDraft), so both wizards mirror CreateChatGroupRequestSchema from one place.
+ * Identity fields + caps live in groupWizard (canCreateGroup / normalizeGroupDraft, over the contract's
+ * CHAT_GROUP_NAME_MAX / CHAT_GROUP_DESCRIPTION_MAX), so both wizards mirror CreateChatGroupRequestSchema
+ * from one place.
  */
 import { canCreateGroup } from "./groupWizard"
 
