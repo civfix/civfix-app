@@ -99,14 +99,7 @@
     "optional": "선택 사항",
     "error_summary_title": "저장하기 전에 다음을 수정하세요",
     "draft_restored": "저장하지 않은 초안을 복구했습니다.",
-    "draft_discard": "초안 버리기",
-    "range_7d": "7일",
-    "range_30d": "30일",
-    "range_90d": "90일",
-    "range_all": "전체",
-    "range_custom": "직접 설정",
-    "range_from": "시작",
-    "range_to": "종료"
+    "draft_discard": "초안 버리기"
   },
   "editor": {
     "toolbar": "서식",

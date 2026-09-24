@@ -101,14 +101,7 @@
     "optional": "optional",
     "error_summary_title": "Behebe das vor dem Speichern",
     "draft_restored": "Wir haben deinen nicht gespeicherten Entwurf wiederhergestellt.",
-    "draft_discard": "Verwerfen",
-    "range_7d": "7 Tage",
-    "range_30d": "30 Tage",
-    "range_90d": "90 Tage",
-    "range_all": "Alle",
-    "range_custom": "Eigener Zeitraum",
-    "range_from": "Von",
-    "range_to": "Bis"
+    "draft_discard": "Verwerfen"
   },
   "editor": {
     "toolbar": "Formatierung",

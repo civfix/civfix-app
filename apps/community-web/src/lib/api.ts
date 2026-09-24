@@ -31,30 +31,16 @@ export async function resolveCsrfToken(): Promise<string | undefined> {
   return getCsrfToken()
 }
 
-let cachedClient: ApiClient | null = null
-
-export function getApiClient(): ApiClient {
-  if (cachedClient) return cachedClient
-  cachedClient = createApiClient({
-    baseURL: API_BASE_URL,
-    fetchImpl: resolveFetch(),
-    defaultHeaders: {
-      "x-client": "web",
-    },
-    getCsrfToken: resolveCsrfToken,
-    onUnauthorized: () => {
-      try {
-        useAuthStore.getState().clear()
-      } catch {
-        // The store can be unavailable before hydration.
-      }
-    },
-  })
-  return cachedClient
-}
-
 /** Safe to import on the server: createApiClient performs no I/O until a method is called. */
-export const api: ApiClient = getApiClient()
+export const api: ApiClient = createApiClient({
+  baseURL: API_BASE_URL,
+  fetchImpl: resolveFetch(),
+  defaultHeaders: {
+    "x-client": "web",
+  },
+  getCsrfToken: resolveCsrfToken,
+  onUnauthorized: () => useAuthStore.getState().clear(),
+})
 
 export interface AppErrorLike {
   code: ErrorCode
@@ -100,9 +86,7 @@ export function toAppError(err: unknown): AppError {
   }
 
   if (err instanceof Error) {
-    // web-errors:network_request_failed (i18n default value)
     return new AppError(ErrorCode.INTERNAL, err.message || "Network request failed", { cause: err })
   }
-  // web-errors:unknown_error (i18n default value)
   return new AppError(ErrorCode.INTERNAL, "Unknown error")
 }
