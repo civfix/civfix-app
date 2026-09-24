@@ -1,13 +1,12 @@
 import React, { useState } from "react"
-import { Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native"
-import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../theme"
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native"
+import { focusRingProps, makeThemedStyles, useTheme, webInputReset, hitSlopToTarget, MIN_TOUCH_TARGET, inputFocusedStyle } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { TextInput } from "./TextInput"
 import type { TextInputProps } from "./TextInput.types"
 
 const CLEAR_BTN_SIZE = 22
-const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2
+const CLEAR_BTN_HIT_SLOP = hitSlopToTarget(CLEAR_BTN_SIZE)
 
 /**
  * `box` makes the clear control a real 44pt box, the only target rn-web honours since it drops hitSlop;
@@ -98,10 +97,7 @@ const useStyles = makeThemedStyles((t) => ({
     borderColor: t.colors.border,
     borderRadius: t.radius.md,
   },
-  searchFieldFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
+  searchFieldFocused: inputFocusedStyle(t),
   searchInput: {
     flex: 1,
     minWidth: 0,

@@ -3,6 +3,7 @@ import { View, Pressable, StyleSheet } from "react-native"
 import type { CleanupDTO } from "@civfix/shared"
 import { eventChip } from "@civfix/shared/datetime"
 import { makeThemedStyles, useTheme, focusRingProps } from "../../theme"
+import { hexWithAlpha } from "../../theme/color"
 import { Text } from "../../typography"
 import { MetaDot } from "../../primitives"
 import { DateTile } from "../../primitives/DateBadge"
@@ -10,6 +11,8 @@ import { useEventWhen, useLocale, useT } from "../../i18n"
 import { SectionEyebrow, SubHead } from "./SectionHeadings"
 import { useSectionStyles } from "./sectionStyles"
 import type { ProfileEventSplit, ProfileEventTab } from "./profileEventSplit"
+
+const EVENT_TAG_WASH = 0.1
 
 const EVENT_TABS: readonly ProfileEventTab[] = ["upcoming", "past"]
 
@@ -31,7 +34,7 @@ function EventRow({
   const when = useEventWhen(event)
   const { day, month } = eventChip(event.scheduledAt, locale, when.timeZone)
   const where = event.address?.trim()
-  const tint = `${badgeColor}1A`
+  const tint = hexWithAlpha(badgeColor, EVENT_TAG_WASH)
   const subParts = [when.dow, when.timeWithZone, where].filter((s): s is string => !!s)
   return (
     <Pressable

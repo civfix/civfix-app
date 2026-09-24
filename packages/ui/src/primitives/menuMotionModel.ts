@@ -1,3 +1,4 @@
+import { clamp } from "../math/clamp"
 import { MOTION } from "../theme/motion"
 
 export const MENU_SCALE_FROM = MOTION.menuScaleFrom
@@ -24,10 +25,6 @@ export interface MenuOrigin {
 }
 
 const CENTERED_ORIGIN: MenuOrigin = { originX: 0, originY: 0, translateX: 0, translateY: 0 }
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max)
-}
 
 export function menuOrigin(
   anchor: AnchorRect | null | undefined,

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { expectThemeTouchTarget, surfaceSource } from "../../../__tests__/sourceGuards"
+import { expectThemeHitSlop, surfaceSource } from "../../../__tests__/sourceGuards"
 import { carouselPage } from "../analyticsModel"
 
 const CARD = readFileSync(
@@ -216,8 +216,9 @@ describe("the page dots are real targets on web, where hitSlop does nothing", ()
   })
 
   it("still reaches 44 px on native without letting neighbouring dots overlap", () => {
-    expect(expectThemeTouchTarget(CARD)).toBe(44)
-    expect(CARD).toContain("const DOT_SLOP_Y = (MIN_TOUCH_TARGET - DOT_TARGET) / 2")
+    const slopFor = expectThemeHitSlop(CARD)
+    expect(constant("DOT_TARGET") + 2 * slopFor(constant("DOT_TARGET"))).toBe(44)
+    expect(CARD).toContain("const DOT_SLOP_Y = hitSlopToTarget(DOT_TARGET)")
     expect(CARD).toContain("const DOT_HIT_SLOP = { top: DOT_SLOP_Y, bottom: DOT_SLOP_Y }")
     expect(CARD).not.toContain("hitSlop={8}")
   })

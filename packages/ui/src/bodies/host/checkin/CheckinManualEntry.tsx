@@ -1,8 +1,8 @@
 import React from "react"
 import { View } from "react-native"
 import { TextInput } from "../../../primitives/TextInput"
-import { SecondaryButton, fieldFocusedStyle } from "../../../primitives"
-import { MIN_TOUCH_TARGET, makeThemedStyles, useTheme, webInputReset } from "../../../theme"
+import { SecondaryButton } from "../../../primitives"
+import { MIN_TOUCH_TARGET, makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../../theme"
 import { Text } from "../../../typography"
 import { useT } from "../../../i18n"
 import { TICKET_TOKEN_MAX } from "@civfix/shared"
@@ -44,7 +44,7 @@ export function ManualCodeEntry({
         onSubmitEditing={onSubmit}
         onFocus={() => onFocusChange(true)}
         onBlur={() => onFocusChange(false)}
-        style={[webInputReset, styles.input, focused ? fieldFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
       <SecondaryButton
         label={t("manual.submit")}

@@ -1,15 +1,7 @@
 import { useEffect, useRef, useState } from "react"
-import {
-  View,
-  Pressable,
-  StyleSheet,
-  Platform,
-  type TextInput as RNTextInput,
-  type ViewStyle,
-} from "react-native"
+import { View, Pressable, StyleSheet, type TextInput as RNTextInput } from "react-native"
 import { TextInput } from "../primitives/TextInput"
-import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
 import { Text } from "../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../primitives"
 import { MODAL_DISMISS_FOCUS_DELAY_MS } from "./modalFocusDelay"
@@ -254,10 +246,7 @@ const useStyles = makeThemedStyles((t) => ({
     letterSpacing: 8,
     color: t.colors.text,
   },
-  codeInputFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
+  codeInputFocused: inputFocusedStyle(t),
   resend: {
     alignSelf: "flex-start",
     minHeight: 44,

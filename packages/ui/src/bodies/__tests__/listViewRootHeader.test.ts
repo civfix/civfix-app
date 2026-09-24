@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { surfaceSource } from "../../__tests__/sourceGuards"
+import { expectThemeTouchTarget, surfaceSource } from "../../__tests__/sourceGuards"
 import { tabRootTitleStyle } from "../../shell/detailHeader"
 import { fontFamily } from "../../theme/fontFamily"
 import type { Theme } from "../../theme/themes"
@@ -18,25 +18,18 @@ const reports = strip(read("../ReportsBody.tsx"))
 const events = strip(read("../EventsBody.tsx"))
 const reportFlow = strip(read("../ReportFlowBody.tsx"))
 
-const hasTabRootType = (src: string): boolean =>
-  /fontFamily: (?:theme|t)\.fontFamily\.bodyExtraBold[\s\S]{0,200}?fontSize: 32[\s\S]{0,200}?lineHeight: 39[\s\S]{0,200}?letterSpacing: -0\.5/.test(
-    src,
-  ) ||
-  /fontSize: 32[\s\S]{0,200}?lineHeight: 39[\s\S]{0,200}?letterSpacing: -0\.5[\s\S]{0,200}?fontFamily: (?:theme|t)\.fontFamily\.bodyExtraBold/.test(
-    src,
-  )
+const DETAIL_HEADER_IMPORT = /import \{[^}]*\btabRootTitleStyle\b[^}]*\} from "[./]+\/shell\/detailHeader"/
 
 describe("the tab-root title type is one recipe", () => {
-  it("FeedBody is the reference: Hanken 800, 32/39, tracking -0.5", () => {
-    expect(hasTabRootType(feed)).toBe(true)
-  })
-
   it.each([
-    ["MessagingListBody", inbox],
-    ["SocialBody", people],
-    ["EventsBody", events],
-  ])("%s draws the same 32/800 title at its view root", (_name, src) => {
-    expect(hasTabRootType(src)).toBe(true)
+    ["FeedBody", feed, /heading: tabRootTitleStyle\(t\),/],
+    ["MessagingListBody", inbox, /heading: tabRootTitleStyle\(t\),/],
+    ["SocialBody", people, /title: tabRootTitleStyle\(t\),/],
+    ["EventsBody", events, /rootTitle: tabRootTitleStyle\(t\),/],
+  ])("%s draws the same 32/800 title at its view root", (_name, src, re) => {
+    expect(src).toMatch(DETAIL_HEADER_IMPORT)
+    expect(src).toMatch(re)
+    expect(src).not.toMatch(/fontSize: 32,\s*lineHeight: 39/)
   })
 
   it("tabRootTitleStyle is the same recipe: Hanken 800, 32/39, tracking -0.5", () => {
@@ -58,9 +51,8 @@ describe("the tab-root title type is one recipe", () => {
   })
 
   it("SearchBody layers the recipe over its portrait title instead of forking a second one", () => {
-    expect(search).toMatch(
-      /titleTabRoot: \{\s*fontFamily: t\.fontFamily\.bodyExtraBold,\s*lineHeight: 39,\s*letterSpacing: -0\.5,/,
-    )
+    expect(search).toMatch(DETAIL_HEADER_IMPORT)
+    expect(search).toMatch(/titleTabRoot: tabRootTitleStyle\(t\),/)
     expect(search).toContain("[styles.title, styles.titleTabRoot]")
     expect(search).toMatch(/title: \{[\s\S]{0,160}?fontFamily: t\.fontFamily\.displayBold/)
   })
@@ -118,11 +110,12 @@ describe("a view root and a stacked panel start on the same rule", () => {
   it.each([
     ["SearchBody", search, /paddingTop: 14/],
     ["MessagingListBody", inbox, /contentExpanded: \{ paddingTop: 14 \}/],
-    ["SocialBody", people, /minHeight: 44,\s*marginTop: 14/],
-    ["ReportsBody", reports, /minHeight: 44,\s*marginTop: 14/],
-    ["EventsBody", events, /minHeight: 44,\s*marginTop: 14/],
+    ["SocialBody", people, /minHeight: MIN_TOUCH_TARGET,\s*marginTop: 14/],
+    ["ReportsBody", reports, /minHeight: MIN_TOUCH_TARGET,\s*marginTop: 14/],
+    ["EventsBody", events, /minHeight: MIN_TOUCH_TARGET,\s*marginTop: 14/],
   ])("%s opens its first line 14 below the card edge", (_name, src, re) => {
     expect(src).toMatch(re)
+    if (re.source.includes("MIN_TOUCH_TARGET")) expect(expectThemeTouchTarget(src)).toBe(44)
   })
 })
 

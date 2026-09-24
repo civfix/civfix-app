@@ -1,4 +1,4 @@
-import { clamp01 } from "../surface/liquidGlass/liquidGlassModel"
+import { clamp01 } from "../math/clamp"
 import type { DetailLeadingAffordance } from "./backAffordance"
 
 export interface PageLayerStyle {

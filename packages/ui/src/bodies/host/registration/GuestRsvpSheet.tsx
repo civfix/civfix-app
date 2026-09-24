@@ -16,7 +16,7 @@ import {
   visibleQuestions,
   type AnswerMap,
 } from "@civfix/shared/host"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../../../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
 import {
@@ -41,7 +41,7 @@ import { INPUT_MIN_HEIGHT } from "../hostLayout"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"
 import { SegmentedCodeInput } from "../../../primitives/SegmentedCodeInput"
-import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "../../../primitives/ModalCardSheet"
+import { ModalCardSheet, modalSheetInputStyle } from "../../../primitives/ModalCardSheet"
 import {
   GUEST_EMAIL_MAX,
   GUEST_RSVP_CODE_LENGTH,
@@ -452,7 +452,7 @@ export function GuestRsvpSheet({
             style={[
               webInputReset,
               styles.input,
-              focusedField === "name" ? modalSheetInputFocusedStyle(th) : null,
+              focusedField === "name" ? inputFocusedStyle(th) : null,
             ]}
           />
 
@@ -526,7 +526,7 @@ export function GuestRsvpSheet({
               style={[
                 webInputReset,
                 styles.input,
-                focusedField === "contact" ? modalSheetInputFocusedStyle(th) : null,
+                focusedField === "contact" ? inputFocusedStyle(th) : null,
               ]}
             />
           ) : (
@@ -546,7 +546,7 @@ export function GuestRsvpSheet({
                 style={[
                   webInputReset,
                   styles.input,
-                  focusedField === "contact" ? modalSheetInputFocusedStyle(th) : null,
+                  focusedField === "contact" ? inputFocusedStyle(th) : null,
                 ]}
               />
               <Text variant="caption" color={th.colors.textSubtle}>

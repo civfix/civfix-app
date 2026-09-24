@@ -1,11 +1,7 @@
 import type { Snap, View } from "../nav"
 import { MOTION } from "../theme/motion"
-import {
-  DOCK_H,
-  DOCK_MORPH_SHRINK,
-  DOCK_MORPH_TOP_OFFSET,
-  clamp01,
-} from "../surface/liquidGlass/liquidGlassModel"
+import { clamp01 } from "../math/clamp"
+import { DOCK_H, DOCK_MORPH_SHRINK, DOCK_MORPH_TOP_OFFSET } from "../surface/liquidGlass/liquidGlassModel"
 
 export type TabId = "home" | "map" | "messages" | "report"
 

@@ -2,11 +2,14 @@ import React from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { ReportDTO } from "@civfix/shared"
 import { categoryColor, makeThemedStyles, useTheme, focusRingProps } from "../../theme"
+import { hexWithAlpha } from "../../theme/color"
 import { Text, Icon, iconMap } from "../../typography"
 import { StatusBadge } from "../../primitives"
 import { useT } from "../../i18n"
 import { SectionEyebrow } from "./SectionHeadings"
 import { useSectionStyles } from "./sectionStyles"
+
+const REPORT_ICON_WASH = 0.12
 
 export interface ProfileReports {
   items: ReportDTO[]
@@ -35,7 +38,7 @@ function ProfileReportRow({ report, onPress }: { report: ReportDTO; onPress: () 
       {...focusRingProps}
       style={({ pressed }) => [styles.reportRow, pressed ? styles.reportRowPressed : null]}
     >
-      <View style={[styles.reportIcon, { backgroundColor: `${color}1F` }]}>
+      <View style={[styles.reportIcon, { backgroundColor: hexWithAlpha(color, REPORT_ICON_WASH) }]}>
         <Icon icon={iconMap.MapPin} size={17} color={color} />
       </View>
       <View style={styles.reportMeta}>

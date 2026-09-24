@@ -25,6 +25,9 @@ export type PostSubmitDestination = "origin" | "thread"
  */
 export const POST_MENTION_CAP = 20
 
+/** Mirrors the server's own projection (`r.title ?? "Report"`), so an optimistic card never snaps. */
+export const REPORT_TITLE_FALLBACK = "Report"
+
 export function postSubmitDestination(kind: PostKind): PostSubmitDestination {
   return kind === "post" ? "origin" : "thread"
 }

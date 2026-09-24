@@ -11,8 +11,7 @@ import type {
 import { ErrorCode, appErrorCode } from "@civfix/shared"
 import { mergeDateTime } from "./calendarModel"
 import type { LinkedReportCardData } from "./linkedReportCards"
-import { buildOptimisticPost } from "./postComposerSubmit"
-import { REPORT_TITLE_FALLBACK } from "./thread/optimisticReply"
+import { REPORT_TITLE_FALLBACK, buildOptimisticPost } from "./postComposerSubmit"
 
 export interface FeedShareAuthUser {
   id: string

@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { AccessibilityInfo, View, Pressable, StyleSheet, Animated, Easing } from "react-native"
+import { View, Pressable, StyleSheet, Animated, Easing } from "react-native"
 import { motion, makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
+import { useReducedMotion } from "../theme/useReducedMotion"
 import { Avatar } from "../primitives"
 import { useAuthState, useCleanupAttendees, useEventHours } from "../data"
 import { useNavStore } from "../nav"
@@ -66,46 +67,35 @@ export function EventHoursBlock({
   )
 }
 
+function fadeUpTiming(value: Animated.Value, toValue: number): Animated.CompositeAnimation {
+  return Animated.timing(value, {
+    toValue,
+    duration: motion.fadeUp.duration,
+    easing: Easing.bezier(...motion.fadeUp.easing),
+    useNativeDriver: true,
+  })
+}
+
 function FadeUp({ children }: { children: React.ReactNode }) {
   const opacity = useRef(new Animated.Value(0)).current
   const translateY = useRef(new Animated.Value(motion.fadeUp.distance)).current
+  // Unanswered (null) plays the rise; a later "reduce" answer settles it at once, fade untouched.
+  const reduceMotion = useReducedMotion() === true
 
   useEffect(() => {
-    let mounted = true
-    const timing = (value: Animated.Value, toValue: number) =>
-      Animated.timing(value, {
-        toValue,
-        duration: motion.fadeUp.duration,
-        easing: Easing.bezier(...motion.fadeUp.easing),
-        useNativeDriver: true,
-      })
+    fadeUpTiming(opacity, 1).start()
+    return () => opacity.stopAnimation()
+  }, [opacity])
 
-    const enter = (reduceMotion: boolean) => {
-      if (!mounted) return
-      if (reduceMotion) {
-        translateY.setValue(0)
-        timing(opacity, 1).start()
-        return
-      }
-      Animated.parallel([timing(opacity, 1), timing(translateY, 0)]).start()
-    }
-
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((enabled) => enter(!!enabled))
-      .catch(() => enter(false))
-    const sub = AccessibilityInfo.addEventListener("reduceMotionChanged", (enabled) => {
-      if (!enabled) return
+  useEffect(() => {
+    if (reduceMotion) {
       translateY.stopAnimation()
       translateY.setValue(0)
-    })
-
-    return () => {
-      mounted = false
-      sub?.remove()
-      opacity.stopAnimation()
-      translateY.stopAnimation()
+      return
     }
-  }, [opacity, translateY])
+    fadeUpTiming(translateY, 0).start()
+    return () => translateY.stopAnimation()
+  }, [reduceMotion, translateY])
 
   return (
     <Animated.View style={{ opacity, transform: [{ translateY }] }}>{children}</Animated.View>

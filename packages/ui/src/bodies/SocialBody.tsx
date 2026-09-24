@@ -1,7 +1,7 @@
 import React, { memo, useCallback } from "react"
 import { View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webTransition, headingLevel, MIN_TOUCH_TARGET } from "../theme"
+import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webTransition, headingLevel, hitSlopToTarget, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   Avatar,
@@ -22,6 +22,7 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { useT } from "../i18n"
 import { FeedNotice } from "./FeedNotice"
 import { idKeyExtractor } from "../primitives/listKeys"
@@ -346,8 +347,8 @@ function SearchResultsHeader({ count }: { count: number }) {
 const ICON_BTN_SIZE = 32
 const ROW_GAP = space["3"]
 const ICON_BTN_HIT_SLOP = {
-  top: (MIN_TOUCH_TARGET - ICON_BTN_SIZE) / 2,
-  bottom: (MIN_TOUCH_TARGET - ICON_BTN_SIZE) / 2,
+  top: hitSlopToTarget(ICON_BTN_SIZE),
+  bottom: hitSlopToTarget(ICON_BTN_SIZE),
   left: ROW_GAP,
   right: 0,
 }
@@ -360,17 +361,11 @@ const useStyles = makeThemedStyles((t) => ({
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     marginTop: 14,
     marginBottom: t.space["1"],
   },
-  title: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 32,
-    lineHeight: 39,
-    letterSpacing: -0.5,
-    color: t.colors.text,
-  },
+  title: tabRootTitleStyle(t),
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",

@@ -8,6 +8,7 @@ import { eventEndsAtMs } from "@civfix/shared/host"
 import {
   focusRingProps,
   makeThemedStyles,
+  MIN_TOUCH_TARGET,
   space,
   useLayoutMode,
   useTheme,
@@ -33,6 +34,7 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { useEventWhen, useLocale, useT } from "../i18n"
 import { pushCleanup } from "../nav/verbs"
 import { useRowHover } from "./rowHover"
@@ -344,17 +346,11 @@ const useStyles = makeThemedStyles((t) => ({
   rootTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     marginTop: 14,
     marginBottom: t.space["1"],
   },
-  rootTitle: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 32,
-    lineHeight: 39,
-    letterSpacing: -0.5,
-    color: t.colors.text,
-  },
+  rootTitle: tabRootTitleStyle(t),
 
   sectionHeader: {
     fontFamily: t.fontFamily.bodyBold,

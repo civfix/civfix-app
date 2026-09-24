@@ -13,13 +13,12 @@ import {
   visibleQuestions,
   type AnswerMap,
 } from "@civfix/shared/host"
-import { makeThemedStyles, useTheme, webInputReset } from "../../../theme"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
 import { PrimaryButton } from "../../../primitives/PrimaryButton"
 import { SecondaryButton } from "../../../primitives/SecondaryButton"
 import {
   ModalCardSheet,
-  modalSheetInputFocusedStyle as fieldFocusedStyle,
 } from "../../../primitives/ModalCardSheet"
 import { useToast } from "../../../primitives/toastContext"
 import { joinParts } from "../../../primitives/joinParts"
@@ -340,7 +339,7 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
             accessibilityLabel={t("form.access_code_label")}
             onFocus={() => setCodeFocused(true)}
             onBlur={() => setCodeFocused(false)}
-            style={[webInputReset, styles.input, codeFocused ? fieldFocusedStyle(th) : null]}
+            style={[webInputReset, styles.input, codeFocused ? inputFocusedStyle(th) : null]}
           />
         </View>
       ) : null}

@@ -1,15 +1,15 @@
-import { Platform, StyleSheet, type ViewStyle } from "react-native"
-import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, wash, MIN_TOUCH_TARGET } from "../../theme"
+import { Platform, StyleSheet } from "react-native"
+import { makeThemedStyles, wash, hitSlopToTarget, MIN_TOUCH_TARGET, inputFocusedStyle } from "../../theme"
 import { HEADER_CONTROL_SIZE } from "../../primitives/headerControls"
+import { tabRootTitleStyle } from "../../shell/detailHeader"
 import { SEARCH_RESULT_CARD_LAYOUT } from "./searchResultsModel"
 
 const FIELD_CLEAR_SIZE = 22
 export const FIELD_CLEAR_HIT_SLOP = {
-  top: (MIN_TOUCH_TARGET - FIELD_CLEAR_SIZE) / 2,
-  bottom: (MIN_TOUCH_TARGET - FIELD_CLEAR_SIZE) / 2,
-  left: (MIN_TOUCH_TARGET - FIELD_CLEAR_SIZE) / 2,
-  right: (MIN_TOUCH_TARGET - FIELD_CLEAR_SIZE) / 2,
+  top: hitSlopToTarget(FIELD_CLEAR_SIZE),
+  bottom: hitSlopToTarget(FIELD_CLEAR_SIZE),
+  left: hitSlopToTarget(FIELD_CLEAR_SIZE),
+  right: hitSlopToTarget(FIELD_CLEAR_SIZE),
 }
 
 export const useSearchStyles = makeThemedStyles((t) => ({
@@ -29,7 +29,7 @@ export const useSearchStyles = makeThemedStyles((t) => ({
       ? { borderBottomWidth: 1, borderBottomColor: wash(t.colors.borderStrong, 0.45, t) }
       : { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: t.colors.border }),
   },
-  tabRootRow: { flexDirection: "row", alignItems: "center", minHeight: 44 },
+  tabRootRow: { flexDirection: "row", alignItems: "center", minHeight: MIN_TOUCH_TARGET },
   field: {
     flexDirection: "row",
     alignItems: "center",
@@ -42,10 +42,7 @@ export const useSearchStyles = makeThemedStyles((t) => ({
       ? { borderWidth: 1, borderColor: wash(t.colors.borderStrong, 0.45, t) }
       : { borderWidth: StyleSheet.hairlineWidth, borderColor: t.colors.border }),
   },
-  fieldFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
+  fieldFocused: inputFocusedStyle(t),
   fieldInput: {
     flex: 1,
     minWidth: 0,
@@ -79,11 +76,7 @@ export const useSearchStyles = makeThemedStyles((t) => ({
     lineHeight: 38,
     letterSpacing: -1.1,
   },
-  titleTabRoot: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    lineHeight: 39,
-    letterSpacing: -0.5,
-  },
+  titleTabRoot: tabRootTitleStyle(t),
   sectionHeader: {
     alignItems: "center",
     flexDirection: "row",
@@ -115,7 +108,7 @@ export const useSearchStyles = makeThemedStyles((t) => ({
     borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: t.space["3"],
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
   },
   recentRowHovered: { backgroundColor: t.colors.bgAlt },
   recentIcon: {

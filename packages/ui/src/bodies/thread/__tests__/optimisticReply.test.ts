@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest"
 import type { LinkedEventRef, PersonDTO, ReportDTO } from "@civfix/shared"
 import type { PostComposerMedia } from "../../postComposerStore"
-import { buildOptimisticReply, REPORT_TITLE_FALLBACK, type OptimisticReplyInput } from "../optimisticReply"
+import { buildOptimisticReply, type OptimisticReplyInput } from "../optimisticReply"
+import { REPORT_TITLE_FALLBACK } from "../../postComposerSubmit"
 import { isOptimisticPostId } from "../threadModel"
 
 const NOW = new Date("2026-09-24T10:00:00.000Z")

@@ -1,6 +1,7 @@
 import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react"
 import type { ChatMessageDTO, MediaDTO, OutboxEntry, ReplyToDTO, RoomKind, UserDTO } from "@civfix/shared"
 import { replayableEntries } from "../inbound"
+import { randomId } from "../randomId"
 import { rememberLocalChatAttachments } from "../localChatAttachments"
 import { buildLocalReplyTo } from "../replyPreview"
 import { chatSendOutcome, type ChatSocketLike } from "../types"
@@ -8,13 +9,6 @@ import type { ChatRoomError, ComposerMedia } from "./chatRoom"
 
 export const SEND_TIMEOUT_MS = 12_000
 export const QUEUED_SEND_TIMEOUT_MS = 5 * SEND_TIMEOUT_MS
-
-function newClientId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID()
-  }
-  return `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
-}
 
 function mediaIdsOf(entry: OutboxEntry): string[] {
   return (entry.message.attachments ?? []).map((m) => m.id)
@@ -196,7 +190,7 @@ export function useChatOutbox({
       const mediaList = media ?? []
       if ((!body && mediaList.length === 0) || !enabled) return
       setTransientError(null)
-      const clientId = newClientId()
+      const clientId = randomId()
       let replyTo: ReplyToDTO | undefined
       if (replyToId) {
         const quoted = findMessage(replyToId)

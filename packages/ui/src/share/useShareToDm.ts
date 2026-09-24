@@ -8,13 +8,6 @@ import { makeShareRuns, runShareToDm, SHARE_SOCKET_OPEN_TIMEOUT_MS } from "./sha
 import { summarizeShareRun, type SharePlanEntry, type ShareRunSummary } from "./shareToDm"
 import { threadRoomId } from "../data/threadRoom"
 
-export function newShareClientId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID()
-  }
-  return `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
-}
-
 export interface ShareToDmRun {
   entries: readonly SharePlanEntry[]
   body: string

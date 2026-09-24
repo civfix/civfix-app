@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from "react"
 import { TextInput } from "./TextInput"
-import { makeThemedStyles, useTheme, webInputReset } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { Text } from "../typography"
 import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
-import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
 import { useResetOnOpen } from "./useModalClosed"
 
 const MESSAGE_MAX = 2000
@@ -77,7 +77,7 @@ export function RequestResourcesSheet({
         accessibilityLabel={t("message_a11y")}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
     </ModalCardSheet>
   )

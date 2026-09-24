@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { surfaceSource } from "../../__tests__/sourceGuards"
+import { expectThemeHitSlop, surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
@@ -25,7 +25,8 @@ describe("followers / following list", () => {
     expect(connections).toContain('clearTarget="slop"')
     expect(social).toContain('clearTarget="slop"')
     expect(listSearchField).toContain("hitSlop={CLEAR_BTN_HIT_SLOP}")
-    expect(listSearchField).toContain("const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2")
+    expectThemeHitSlop(listSearchField)
+    expect(listSearchField).toContain("const CLEAR_BTN_HIT_SLOP = hitSlopToTarget(CLEAR_BTN_SIZE)")
     expect(listSearchField).not.toContain("hitSlop={6}")
   })
 })

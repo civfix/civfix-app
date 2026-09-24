@@ -1,6 +1,6 @@
 import React from "react"
 import { Platform, Pressable, StyleSheet, View } from "react-native"
-import { focusRingProps, headingLevel, makeThemedStyles, wash, useLayoutMode, useTheme } from "../theme"
+import { focusRingProps, headingLevel, makeThemedStyles, wash, useLayoutMode, useTheme, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import {
   DETAIL_BACK_SIZE,
@@ -10,7 +10,6 @@ import {
 } from "../shell/detailHeader"
 
 const COMPACT_BACK_ICON_SIZE = 21
-const COMPACT_BACK_TARGET = 44
 const BACK_HIT_SLOP = 6
 
 /**
@@ -93,8 +92,8 @@ const useStyles = makeThemedStyles((t) => ({
     borderBottomColor: t.colors.border,
   },
   headerButton: {
-    width: COMPACT_BACK_TARGET,
-    height: COMPACT_BACK_TARGET,
+    width: MIN_TOUCH_TARGET,
+    height: MIN_TOUCH_TARGET,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: -t.space["3"],
@@ -128,5 +127,5 @@ const useStyles = makeThemedStyles((t) => ({
   headerTitleWrapInset: {
     paddingHorizontal: 52,
   },
-  headerSpacer: { width: COMPACT_BACK_TARGET },
+  headerSpacer: { width: MIN_TOUCH_TARGET },
 }))

@@ -4,11 +4,12 @@
  * platform's one store, expanded gets the side-card section with badges. A desktop visitor is platform
  * "other", which matches no single store, so the banner never appears on desktop.
  */
+import type { LayoutMode } from "../nav"
 import type { AppPlatform } from "./platform"
 
 export interface AppPromoInput {
   mounted: boolean
-  layoutMode: "compact" | "expanded"
+  layoutMode: LayoutMode
   platform: AppPlatform
   dismissed: boolean
   standalone: boolean

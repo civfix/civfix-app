@@ -1,6 +1,5 @@
-import { Platform, StyleSheet, type TextStyle } from "react-native"
-import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles } from "../../theme"
+import { StyleSheet } from "react-native"
+import { makeThemedStyles, inputFocusedStyle } from "../../theme"
 import { COMPOSER_MAX, CONTROL } from "./styleParts"
 
 const CONTROL_RADIUS = CONTROL / 2
@@ -101,10 +100,7 @@ export const useComposerStyles = makeThemedStyles((t) => {
       lineHeight: COMPOSER_LINE,
       color: t.colors.text,
     },
-    inputFocused:
-      Platform.OS === "web"
-        ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as TextStyle)
-        : {},
+    inputFocused: inputFocusedStyle(t, {}),
     sendBtn: roundControl,
     sendBtnActive: {
       backgroundColor: t.colors.brand.bloom,

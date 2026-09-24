@@ -42,6 +42,9 @@ export function slotPeopleView(input: SlotPeopleInput): SlotPeopleView {
   }
 }
 
+/** Faces a collapsed facepile shows. Past three the row is a wall of circles, and the count says the rest. */
+export const FACE_CAP = 3
+
 /** How many first names the collapsed facepile prints before it falls back to a count. */
 export const FACE_NAME_CAP = 2
 

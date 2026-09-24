@@ -15,7 +15,7 @@
  * returned true.
  */
 import { sheetSnapPoints } from "../shell/tabBarLogic"
-import type { Snap, View } from "../nav"
+import type { LayoutMode, Snap, View } from "../nav"
 import type { CameraTarget } from "./types"
 
 /** A floor, not a target: the drop-pin fly never zooms out. */
@@ -56,7 +56,7 @@ export interface DropPinCameraInput {
    * window edge and is user-resizable, and in map mode only the shell inset remains.
    */
   occlusionLeft?: number
-  mode: "compact" | "expanded"
+  mode: LayoutMode
 }
 
 /** A camera centre, not the pin position. */

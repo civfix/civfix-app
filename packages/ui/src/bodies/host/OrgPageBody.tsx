@@ -5,6 +5,7 @@ import {
   focusRingProps,
   headingLevel,
   makeThemedStyles,
+  MIN_TOUCH_TARGET,
   useLayoutMode,
   useTheme,
   webCursor,
@@ -250,8 +251,6 @@ export function OrgPageBody({ slug }: { slug: string }) {
     </ScrollView>
   )
 }
-
-const MIN_TOUCH_TARGET = 44
 
 const SHARE_BUTTON_SIZE = 36
 

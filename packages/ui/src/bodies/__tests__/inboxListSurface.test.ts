@@ -77,10 +77,11 @@ describe("the thread row is flat, not a card", () => {
   })
 
   it("pulls the keyboard ring INSIDE the row, or a full-bleed row clips it at both edges", () => {
-    expect(inbox).toMatch(/const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB/)
-    expect(inbox).toContain("outlineOffset: -(FOCUS_RING_WIDTH + FOCUS_RING_OFFSET)")
+    expect(inbox).toMatch(/import \{[^}]*\bWEB_ROW_FOCUS_INSET\b[^}]*\} from "\.\.\/\.\.\/theme"/)
+    expect(inbox).not.toMatch(/const WEB_ROW_FOCUS_INSET/)
     expect(inbox).toContain("WEB_ROW_FOCUS_INSET,")
-    expect(postCard).toContain("outlineOffset: -RING_FOOTPRINT")
+    expect(postCard).toMatch(/import \{[^}]*\bWEB_ROW_FOCUS_INSET\b[^}]*\} from "\.\.\/theme"/)
+    expect(postCard).toContain("isFlat ? WEB_ROW_FOCUS_INSET : null")
   })
 
   it("resolves the empty-state fill's magic number into a named constant", () => {
@@ -212,9 +213,7 @@ describe("the inbox search field", () => {
     expect(src).toContain("onBlur={() => setFocused(false)}")
     expect(src).toContain("focused ? styles.searchFieldFocused : null")
     expect(src).toContain("accessibilityLabel={clearA11yLabel}")
-    expect(src).toMatch(
-      /searchFieldFocused:\s*Platform\.OS === "web"\s*\?\s*\(\{ boxShadow: tokens\.shadow\.ring, borderColor: t\.colors\.accent \}/,
-    )
+    expect(src).toMatch(/searchFieldFocused: inputFocusedStyle\(t\),/)
   })
 
   it("sits UNDER the title, inside the same inset, and only once there is something to filter", () => {

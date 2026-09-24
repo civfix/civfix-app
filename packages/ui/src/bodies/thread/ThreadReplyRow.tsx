@@ -1,7 +1,16 @@
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { PostDTO } from "@civfix/shared"
-import { focusRingProps, makeThemedStyles, stopPress, wash, webCursor, webTransition } from "../../theme"
+import {
+  focusRingProps,
+  makeThemedStyles,
+  ROW_A11Y_PROPS,
+  stopPress,
+  wash,
+  WEB_ROW_FOCUS_INSET,
+  webCursor,
+  webTransition,
+} from "../../theme"
 import { Text } from "../../typography"
 import { useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
@@ -13,7 +22,6 @@ import type { DetailEntry } from "../../nav/types"
 import { LinkedEventCard } from "../LinkedEventCard"
 import { LinkedReportCard } from "../LinkedReportCard"
 import { localReportThumb } from "../localReportThumbs"
-import { ROW_A11Y_PROPS, WEB_ROW_FOCUS_INSET } from "../PostCard"
 import { PostMediaGrid } from "../PostMediaGrid"
 import { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "../../primitives/PostOverflowButton"
 import { PostOverflowMenu } from "../PostOverflowMenu"

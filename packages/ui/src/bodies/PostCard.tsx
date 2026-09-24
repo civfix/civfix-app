@@ -13,6 +13,8 @@ import type { TFunction } from "i18next"
 import type { PostDTO, PostRefDTO } from "@civfix/shared"
 import {
   POST_SURFACE,
+  ROW_A11Y_PROPS,
+  WEB_ROW_FOCUS_INSET,
   space,
   categoryColor,
   focusRingProps,
@@ -27,7 +29,6 @@ import {
   webTransition,
   type Theme,
 } from "../theme"
-import { tokens } from "@civfix/shared/tokens"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { Avatar } from "../primitives/Avatar"
@@ -82,15 +83,6 @@ const BEFORE_AFTER_MEDIA_ASPECT = 1.1
 const CLEARED_MEDIA_ASPECT = 2.15
 
 const IS_WEB = Platform.OS === "web"
-
-/**
- * The row is a pointer convenience, never an accessibility element: it wraps the name, permalink, mention,
- * media, action-bar and menu controls. On iOS an accessible Pressable hides all of them from VoiceOver, and
- * on web a role=link row nests interactive content and renames the post after its label. Keyboard and
- * screen-reader users open the thread through the timestamp permalink instead. RNW's Pressable always sets
- * tabIndex=0, so web opts out with an explicit -1 (`focusable={false}` loses to it).
- */
-export const ROW_A11Y_PROPS: object = IS_WEB ? { tabIndex: -1 } : { accessible: false }
 
 const AVATAR_WEB_PROPS = IS_WEB ? ({ tabIndex: -1, "aria-hidden": true } as object) : null
 
@@ -701,11 +693,6 @@ export const PostCard = React.memo(function PostCard({
     </>
   )
 })
-
-const RING_FOOTPRINT = Number.parseFloat(/^0 0 0 (\d+(?:\.\d+)?)px/.exec(tokens.shadow.ring)?.[1] ?? "3")
-export const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB
-  ? ({ outlineOffset: -RING_FOOTPRINT } as unknown as ViewStyle)
-  : {}
 
 const META_ROW: ViewStyle = {
   flexDirection: "row",

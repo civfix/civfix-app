@@ -8,6 +8,7 @@
  */
 import { space } from "@civfix/shared/tokens"
 import { postActionGlyphInset, postActionLayout } from "./postActionModel"
+import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
 
 const TIMELINE_ACTIONS = postActionLayout("timeline")
 
@@ -55,7 +56,7 @@ export function postCardGeometry(): PostCardRhythm {
   const gutterGap = space["3"]
   const textGap = space["1"]
   const attachmentGap = space["3"]
-  const overflowTarget = 44
+  const overflowTarget = MIN_TOUCH_TARGET
   const overflowGlyph = 17
   const actionRowTarget = TIMELINE_ACTIONS.target.minHeight
   const actionGlyph = TIMELINE_ACTIONS.glyphSize

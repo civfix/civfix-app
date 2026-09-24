@@ -2,6 +2,7 @@ import type { TFunction } from "i18next"
 import type { LinkedEventRef } from "@civfix/shared"
 import { eventZoneSuffix, safeDateFormat } from "@civfix/shared/datetime"
 import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
+import { FACE_CAP } from "./slotPeopleVisibility"
 
 export interface LinkedEventCardModel {
   title: string
@@ -26,9 +27,6 @@ export interface LinkedEventCardContext {
   showAttendance?: boolean
 }
 
-/** Faces the card's attendee stack shows at most; the going label carries the rest. */
-export const ATTENDEE_FACE_CAP = 3
-
 const REMOVE_VISUAL_SIZE = 24
 
 const LINKED_EVENT_CARD_TARGETS = {
@@ -45,7 +43,7 @@ export function buildLinkedEventCardTargetPlan() {
  * never past the cap.
  */
 export function visibleAttendeeSlots(previewCount: number, going: number): number {
-  return Math.min(ATTENDEE_FACE_CAP, Math.max(previewCount, Math.min(ATTENDEE_FACE_CAP, going)))
+  return Math.min(FACE_CAP, Math.max(previewCount, Math.min(FACE_CAP, going)))
 }
 
 const MONTH_OPTIONS: Intl.DateTimeFormatOptions = { month: "short" }
@@ -68,7 +66,7 @@ export function buildLinkedEventCardModel(
   const valid = !Number.isNaN(date.getTime())
   const going = context.going ?? event.going
   const joined = context.joined ?? false
-  const attendees = context.attendees?.slice(0, ATTENDEE_FACE_CAP) ?? []
+  const attendees = context.attendees?.slice(0, FACE_CAP) ?? []
   const month = valid ? safeDateFormat(event.scheduledAt, locale, MONTH_OPTIONS, timeZone).toUpperCase() : "--"
   const day = valid ? safeDateFormat(event.scheduledAt, locale, DAY_OPTIONS, timeZone) : "--"
   const zone = valid ? eventZoneSuffix(date.getTime(), timeZone, context.viewerTimeZone, locale) : null

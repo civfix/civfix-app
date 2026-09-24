@@ -1,7 +1,6 @@
 import React, { useState } from "react"
-import { View, Pressable, StyleSheet, Platform, type ViewStyle } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
 import { TextInput } from "./TextInput"
-import { tokens } from "@civfix/shared/tokens"
 import {
   makeThemedStyles,
   useTheme,
@@ -10,6 +9,7 @@ import {
   webCursorPointer,
   webTransition,
   webHover,
+  inputFocusedStyle,
 } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
@@ -168,10 +168,7 @@ const useStyles = makeThemedStyles((t) => ({
     paddingHorizontal: t.space["4"],
     minHeight: 52,
   },
-  inputRowFocused:
-    Platform.OS === "web"
-      ? ({ boxShadow: tokens.shadow.ring, borderColor: t.colors.accent } as ViewStyle)
-      : { borderColor: t.colors.accent },
+  inputRowFocused: inputFocusedStyle(t),
   input: {
     flex: 1,
     fontFamily: t.fontFamily.bodyRegular,

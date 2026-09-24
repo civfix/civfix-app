@@ -2,8 +2,7 @@ import React, { useCallback } from "react"
 import { View } from "react-native"
 import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
 import { TextInput } from "../../primitives/TextInput"
-import { fieldFocusedStyle } from "../../primitives"
-import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
 import { TextLink } from "../../typography"
 import { useT } from "../../i18n"
 import { INPUT_MIN_HEIGHT } from "./hostLayout"
@@ -39,7 +38,7 @@ export function RosterSearchField({
       autoCorrect={false}
       onFocus={() => onFocusChange(true)}
       onBlur={() => onFocusChange(false)}
-      style={[webInputReset, styles.search, focused ? fieldFocusedStyle(th) : null]}
+      style={[webInputReset, styles.search, focused ? inputFocusedStyle(th) : null]}
     />
   )
 }

@@ -5,14 +5,16 @@ import { TextInput } from "../../primitives/TextInput"
 import {
   focusRingProps,
   makeThemedStyles,
+  hitSlopToTarget,
   MIN_TOUCH_TARGET,
   useTheme,
   webCursor,
   webHover,
   webInputReset,
+  inputFocusedStyle,
 } from "../../theme"
 import { Icon, Text, iconMap } from "../../typography"
-import { FilterChip, PrimaryButton, fieldFocusedStyle, useToast } from "../../primitives"
+import { FilterChip, PrimaryButton, useToast } from "../../primitives"
 import { Markdown } from "../../primitives/Markdown"
 import { useAuthState, useCleanup } from "../../data"
 import { useDebouncedValue } from "../../data/hooks/useDebouncedValue"
@@ -43,7 +45,7 @@ const TOGGLE_MIN_HEIGHT = 24
 
 const COMPOSER_MIN_HEIGHT = 140
 
-const TOGGLE_SLOP_Y = (MIN_TOUCH_TARGET - TOGGLE_MIN_HEIGHT) / 2
+const TOGGLE_SLOP_Y = hitSlopToTarget(TOGGLE_MIN_HEIGHT)
 
 const TOGGLE_HIT_SLOP = { top: TOGGLE_SLOP_Y, bottom: TOGGLE_SLOP_Y }
 
@@ -150,7 +152,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
           style={[
             webInputReset,
             styles.input,
-            focusedField === "title" ? fieldFocusedStyle(th) : null,
+            focusedField === "title" ? inputFocusedStyle(th) : null,
           ]}
         />
       </View>
@@ -202,7 +204,7 @@ export function HostAnnounceBody({ id }: { id: string }) {
               webInputReset,
               styles.input,
               styles.inputMultiline,
-              focusedField === "body" ? fieldFocusedStyle(th) : null,
+              focusedField === "body" ? inputFocusedStyle(th) : null,
             ]}
           />
         )}

@@ -21,6 +21,7 @@ import { useScrollHost, type ScrollHostListHandle } from "../shell/ScrollHost"
 import { useRefreshControlProps } from "../primitives/useRefreshControlProps"
 import { useAppPromoStore } from "../promo"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { HeaderIconButton } from "./HeaderIconButton"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { FeedNotice } from "./FeedNotice"
@@ -384,7 +385,7 @@ const useStyles = makeThemedStyles((t) => ({
   contentExpanded: { paddingTop: 14 },
   headerInset: { paddingHorizontal: POST_SURFACE === "flat" ? POST_CARD_RHYTHM.rowPaddingH : 0 },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: HEADER_CONTROL_SIZE, marginBottom: t.space["3"] },
-  heading: { fontFamily: t.fontFamily.bodyExtraBold, fontSize: 32, lineHeight: 39, letterSpacing: -0.5, color: t.colors.text },
+  heading: tabRootTitleStyle(t),
   headerActions: { flexDirection: "row", alignItems: "center", gap: 9 },
   list: { gap: POST_SURFACE === "flat" ? 0 : t.space["3"] },
   emptyFill: { flexGrow: 1, minHeight: EMPTY_FILL_MIN_HEIGHT },

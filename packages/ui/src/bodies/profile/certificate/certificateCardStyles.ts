@@ -1,10 +1,10 @@
 import { StyleSheet } from "react-native"
-import { makeThemedStyles, MIN_TOUCH_TARGET } from "../../../theme"
+import { makeThemedStyles, hitSlopToTarget } from "../../../theme"
 
 const CONFIRM_BTN_HEIGHT = 34
 export const CONFIRM_BTN_HIT_SLOP = {
-  top: (MIN_TOUCH_TARGET - CONFIRM_BTN_HEIGHT) / 2,
-  bottom: (MIN_TOUCH_TARGET - CONFIRM_BTN_HEIGHT) / 2,
+  top: hitSlopToTarget(CONFIRM_BTN_HEIGHT),
+  bottom: hitSlopToTarget(CONFIRM_BTN_HEIGHT),
 }
 // The link renders about 25pt tall (12.5px label, 4px padding); 10pt of slop each way reaches 44.
 export const REVOKE_LINK_HIT_SLOP = { top: 10, bottom: 10, left: 8, right: 8 }

@@ -1,9 +1,6 @@
 import type { LinkedEventRef, PersonDTO, PostDTO, ReportDTO, UserMentionDTO } from "@civfix/shared"
 import type { PostComposerMedia } from "../postComposerStore"
-import { buildOptimisticPost } from "../postComposerSubmit"
-
-/** Mirrors the server's own projection (`r.title ?? "Report"`), so the optimistic card never snaps. */
-export const REPORT_TITLE_FALLBACK = "Report"
+import { REPORT_TITLE_FALLBACK, buildOptimisticPost } from "../postComposerSubmit"
 
 export interface OptimisticReplyInput {
   author: PersonDTO

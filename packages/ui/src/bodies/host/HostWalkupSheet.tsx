@@ -4,13 +4,12 @@ import { TextInput } from "../../primitives/TextInput"
 import type { TicketTypeDTO } from "@civfix/shared"
 import { ErrorCode, MAX_ATTENDEE_NAME, appErrorCode } from "@civfix/shared"
 import { clampPartySize, registerOutcomeKey, sortedTicketTypes } from "@civfix/shared/host"
-import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
 import { Text } from "../../typography"
 import {
   ModalCardSheet,
   PrimaryButton,
   SecondaryButton,
-  modalSheetInputFocusedStyle,
   modalSheetInputStyle,
   useToast,
 } from "../../primitives"
@@ -124,7 +123,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
         autoCorrect={false}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
 
       {types.length > 1 ? (

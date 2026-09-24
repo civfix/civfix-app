@@ -116,7 +116,7 @@ export {
   DISABLED_OPACITY,
   DISABLED_OPACITY_FAINT,
 } from "./opacity"
-export { MIN_TOUCH_TARGET } from "./touchTarget"
+export { MIN_TOUCH_TARGET, hitSlopToTarget } from "./touchTarget"
 export type { TimingRecipe, EaseTuple } from "./motion"
 
 export { tint, wash } from "./color"
@@ -153,6 +153,10 @@ export {
   headingLevel,
   stopPress,
   linkKeyProps,
+  inputFocusedStyle,
+  ROW_A11Y_PROPS,
+  WEB_ROW_FOCUS_INSET,
+  FOCUS_RING_FOOTPRINT,
   FOCUS_RING_COLOR,
   FOCUS_RING_OFFSET,
   FOCUS_RING_WIDTH,

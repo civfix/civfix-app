@@ -20,6 +20,7 @@ import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { FeedNotice } from "./FeedNotice"
 import { HEADER_CONTROL_SIZE } from "../primitives/headerControls"
+import { tabRootTitleStyle } from "../shell/detailHeader"
 import { HeaderIconButton } from "./HeaderIconButton"
 import { HeaderProfileButton } from "./HeaderProfileButton"
 import { matchesThreadQuery } from "./messagesListModel"
@@ -286,13 +287,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     gap: 9,
   },
-  heading: {
-    fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 32,
-    lineHeight: 39,
-    letterSpacing: -0.5,
-    color: t.colors.text,
-  },
+  heading: tabRootTitleStyle(t),
   separator: {
     marginLeft: SEPARATOR_INSET,
     height: IS_WEB ? 1 : StyleSheet.hairlineWidth,

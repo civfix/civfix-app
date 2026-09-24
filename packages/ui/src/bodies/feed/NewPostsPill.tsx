@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet } from "react-native"
-import { focusRingProps, makeThemedStyles, motion, useTheme } from "../../theme"
+import { focusRingProps, makeThemedStyles, motion, useTheme, MIN_TOUCH_TARGET } from "../../theme"
 import { useReducedMotion } from "../../theme/useReducedMotion"
 import { Icon, Text, iconMap } from "../../typography"
 import { useT } from "../../i18n"
@@ -10,7 +10,6 @@ const ENTER = motion.fadeUp
 const USE_NATIVE_DRIVER = Platform.OS !== "web"
 const LIVE_REGION: "polite" | "none" = Platform.OS === "web" ? "polite" : "none"
 const ANNOUNCES_NATIVELY = Platform.OS !== "web"
-const MIN_TOUCH_TARGET = 44
 
 export function NewPostsPill({ count, onPress }: { count: number; onPress: () => void }) {
   const styles = useStyles()

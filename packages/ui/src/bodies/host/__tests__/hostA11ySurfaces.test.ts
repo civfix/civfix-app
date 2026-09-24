@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { sliceBetween } from "../../../__tests__/sourceGuards"
-import { MIN_TOUCH_TARGET as THEME_MIN_TOUCH_TARGET } from "../../../theme/touchTarget"
+import { expectThemeHitSlop, sliceBetween } from "../../../__tests__/sourceGuards"
 
 const code = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
@@ -12,11 +11,6 @@ const constant = (src: string, name: string): number => {
   if (!match) throw new Error(`no constant ${name}`)
   return Number(match[1])
 }
-
-const THEME_IMPORT = /import \{[^}]*\bMIN_TOUCH_TARGET\b[^}]*\} from "[./]+\/theme(?:\/touchTarget)?"/
-
-const touchTarget = (src: string): number =>
-  THEME_IMPORT.test(src) ? THEME_MIN_TOUCH_TARGET : constant(src, "MIN_TOUCH_TARGET")
 
 const announce = read("../HostAnnounceBody.tsx")
 const manage = read("../OrgManageBody.tsx")
@@ -42,8 +36,9 @@ describe("small controls reach 44 px on native and at least 24 px on web", () =>
   ])("%s", (_name, src, prefix) => {
     const height = constant(src, `${prefix}_MIN_HEIGHT`)
     expect(height).toBeGreaterThanOrEqual(24)
-    expect(touchTarget(src)).toBe(44)
-    expect(src).toContain(`const ${prefix}_SLOP_Y = (MIN_TOUCH_TARGET - ${prefix}_MIN_HEIGHT) / 2`)
+    const slopFor = expectThemeHitSlop(src)
+    expect(height + 2 * slopFor(height)).toBe(44)
+    expect(src).toContain(`const ${prefix}_SLOP_Y = hitSlopToTarget(${prefix}_MIN_HEIGHT)`)
     expect(src).toContain(`hitSlop={${prefix}_HIT_SLOP}`)
     expect(src).toContain(`minHeight: ${prefix}_MIN_HEIGHT,`)
   })

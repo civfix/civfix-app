@@ -1,8 +1,7 @@
 import React from "react"
 import { View } from "react-native"
-import { makeThemedStyles, MIN_TOUCH_TARGET, useTheme, webInputReset } from "../../theme"
+import { makeThemedStyles, MIN_TOUCH_TARGET, useTheme, webInputReset, inputFocusedStyle } from "../../theme"
 import { Text } from "../../typography"
-import { fieldFocusedStyle } from "../../primitives"
 import { TextInput } from "../../primitives/TextInput"
 import { useT } from "../../i18n"
 import { counterVisible } from "./orgManageModel"
@@ -71,7 +70,7 @@ export function OrgField({
             webInputReset,
             styles.input,
             multiline ? styles.inputMultiline : null,
-            focused ? fieldFocusedStyle(th) : null,
+            focused ? inputFocusedStyle(th) : null,
             error ? styles.inputInvalid : null,
           ]}
         />

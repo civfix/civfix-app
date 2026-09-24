@@ -43,7 +43,20 @@ describe("a field that strips the UA focus ring must draw one of its own", () =>
 })
 
 describe("the focused-field recipe is ONE recipe", () => {
-  const HOUSE = /Platform\.OS === "web"\s*\?\s*\(\{ boxShadow: tokens\.shadow\.ring, borderColor: (?:theme|t)\.colors\.accent \}/
+  const HOUSE = /boxShadow: tokens\.shadow\.ring, borderColor: (?:theme|t)\.colors\.accent/
+
+  it("webAffordances holds the coral border + the ring token, once", () => {
+    const src = strip(read("theme/webAffordances.ts"))
+    expect(src).toContain("export function inputFocusedStyle(")
+    expect(src.match(new RegExp(HOUSE.source, "g")) ?? []).toHaveLength(1)
+  })
+
+  it("no field re-states the recipe", () => {
+    const restated = tsxFiles(SRC)
+      .concat(["bodies/search/searchStyles.ts", "bodies/conversation/composerStyles.ts", "bodies/postComposer/postComposerStyleParts.ts"])
+      .filter((rel) => HOUSE.test(strip(read(rel))))
+    expect(restated).toEqual([])
+  })
 
   it.each([
     ["bodies/AddressSearch.tsx", "fieldFocused"],
@@ -52,11 +65,12 @@ describe("the focused-field recipe is ONE recipe", () => {
     ["bodies/MemberPicker.tsx", "searchWrapFocused"],
     ["bodies/DeleteAccountModal.tsx", "codeInputFocused"],
     ["primitives/BringInput.tsx", "inputRowFocused"],
-    ["primitives/ModalCardSheet.tsx", "modalSheetInputFocusedStyle"],
-  ])("%s's %s is the coral border + the ring token on web", (rel, name) => {
+    ["bodies/thread/ReplyComposer.tsx", "inputFocused"],
+    ["bodies/postComposer/postComposerStyleParts.ts", "inputSurfaceFocused"],
+  ])("%s's %s takes the shared recipe", (rel, name) => {
     const src = strip(read(rel))
-    expect(src).toContain(name)
-    expect(HOUSE.test(src)).toBe(true)
+    expect(src).toMatch(new RegExp(`\\b${name}: inputFocusedStyle\\(t\\),`))
+    expect(src).toMatch(/import \{[^}]*\binputFocusedStyle\b[^}]*\} from "[./]+\/theme"/)
   })
 
   it.each([
@@ -78,7 +92,7 @@ describe("the focused-field recipe is ONE recipe", () => {
       "primitives/RequestResourcesSheet.tsx",
       "primitives/PollCreateSheet.tsx",
     ]) {
-      expect(strip(read(rel))).toContain("modalSheetInputFocusedStyle")
+      expect(strip(read(rel))).toContain("inputFocusedStyle(th)")
     }
   })
 

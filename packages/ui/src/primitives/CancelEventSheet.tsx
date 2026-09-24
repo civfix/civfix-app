@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from "react"
 import { TextInput } from "./TextInput"
-import { makeThemedStyles, useTheme, webInputReset } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, inputFocusedStyle } from "../theme"
 import { Text } from "../typography"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
-import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
 import { useT } from "../i18n"
 import { useResetOnOpen } from "./useModalClosed"
 
@@ -80,7 +80,7 @@ export function CancelEventSheet({
         accessibilityLabel={t("reason.a11y")}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[webInputReset, styles.input, focused ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.input, focused ? inputFocusedStyle(th) : null]}
       />
     </ModalCardSheet>
   )

@@ -23,7 +23,7 @@ import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
 import { FeedNotice } from "./FeedNotice"
 import { RoleChip } from "./RoleChip"
-import { FACE_NAME_CAP, facePileOverflow, type SlotPeopleView } from "./slotPeopleVisibility"
+import { FACE_CAP, FACE_NAME_CAP, facePileOverflow, type SlotPeopleView } from "./slotPeopleVisibility"
 import { slotRemaining, slotWindowRangeLabel, type SlotRowState } from "./eventSlotsModel"
 
 /**
@@ -32,9 +32,6 @@ import { slotRemaining, slotWindowRangeLabel, type SlotRowState } from "./eventS
  * row's own 12pt padding, so no row's slop can reach into its neighbour's.
  */
 const PILL_HIT_SLOP = 7
-
-/** Faces in the collapsed preview. Past three the row is a wall of circles, and the count says the rest. */
-const FACE_CAP = 3
 
 const SLOT_TILE_SIZE = 34
 

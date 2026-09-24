@@ -3,6 +3,7 @@ import { Pressable } from "react-native"
 import {
   a11yState,
   focusRingProps,
+  hitSlopToTarget,
   makeThemedStyles,
   webCursor,
   webHover,
@@ -10,9 +11,8 @@ import {
 } from "../theme"
 import { Text } from "../typography"
 
-export const FILTER_CHIP_MIN_TOUCH_TARGET = 44
 export const FILTER_CHIP_HEIGHT = 34
-const CHIP_HIT_SLOP = (FILTER_CHIP_MIN_TOUCH_TARGET - FILTER_CHIP_HEIGHT) / 2
+const CHIP_HIT_SLOP = hitSlopToTarget(FILTER_CHIP_HEIGHT)
 
 /**
  * What pressing the chip means to assistive tech: one choice of a set ("single", a radio), one of

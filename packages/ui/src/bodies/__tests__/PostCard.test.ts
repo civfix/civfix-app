@@ -543,20 +543,24 @@ describe("PostCard's row fill answers a POINTER, and never a touch", () => {
 
 describe("the flat row's focus ring is drawn INSIDE its own box", () => {
   const SRC = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
+  const AFFORDANCES = readFileSync(new URL("../../theme/webAffordances.ts", import.meta.url), "utf8")
 
   it("insets the ring by its own footprint so the scroller cannot clip it", () => {
     // The row is exactly the width of an `overflow: hidden auto` scroller and the next row's opaque
     // background is a later sibling, so an outside ring lost its left, right AND bottom strokes - the
     // indicator was one coral bar ABOVE the row, i.e. pointing at the row above it.
-    expect(SRC).toContain("outlineOffset: -RING_FOOTPRINT")
-    expect(SRC).toMatch(/RING_FOOTPRINT = Number\.parseFloat\(.*tokens\.shadow\.ring/s)
+    expect(AFFORDANCES).toContain("outlineOffset: -FOCUS_RING_FOOTPRINT")
+    expect(AFFORDANCES).toMatch(/const RING_SPEC = .*\.exec\(tokens\.shadow\.ring\)/)
+    expect(AFFORDANCES).toMatch(/export const FOCUS_RING_FOOTPRINT = RING_SPEC \? Number\(RING_SPEC\[1\]\) : 3/)
   })
 
   it("passes it as a PLAIN style object, which is the only form that wins the cascade", () => {
     // RNW compiles StyleSheet entries into atomic CLASSES (specificity 0,1,0) and the ring rule is
     // `[data-focus-ring]:focus-visible` (0,2,0) - so as a StyleSheet entry the inset silently loses and
     // the ring stays outside. A plain object is written inline, which outranks any stylesheet rule.
-    expect(SRC).toMatch(/const WEB_ROW_FOCUS_INSET: ViewStyle = IS_WEB/)
+    expect(AFFORDANCES).toMatch(/export const WEB_ROW_FOCUS_INSET: ViewStyle = isWeb\n\s*\? \(\{ outlineOffset:/)
+    expect(SRC).toMatch(/import \{[^}]*\bWEB_ROW_FOCUS_INSET\b[^}]*\} from "\.\.\/theme"/)
+    expect(SRC).not.toMatch(/const WEB_ROW_FOCUS_INSET/)
     const rowFlat = sliceBetween(SRC, "rowFlat: {", "rowFlatHovered")
     expect(rowFlat).not.toContain("WEB_ROW_FOCUS_INSET")
     expect(SRC).toContain("isFlat ? WEB_ROW_FOCUS_INSET : null")

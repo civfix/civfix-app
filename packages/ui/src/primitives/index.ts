@@ -4,6 +4,9 @@ export type { BrandProps } from "./Brand"
 export { PrimaryButton } from "./PrimaryButton"
 export type { PrimaryButtonProps, ButtonVariant } from "./PrimaryButton"
 
+export { IconActionButton, ICON_ACTION_SIZE } from "./IconActionButton"
+export type { IconActionButtonProps } from "./IconActionButton"
+
 export { SecondaryButton } from "./SecondaryButton"
 export type { SecondaryButtonProps } from "./SecondaryButton"
 
@@ -214,8 +217,6 @@ export {
   ModalCardSheet,
   useDialogWebKeys,
   modalSheetInputStyle,
-  modalSheetInputFocusedStyle,
-  modalSheetInputFocusedStyle as fieldFocusedStyle,
 } from "./ModalCardSheet"
 export type { ModalCardSheetProps } from "./ModalCardSheet"
 
@@ -303,7 +304,7 @@ export type {
   SegmentedOption,
 } from "./SegmentedControl"
 
-export { FilterChip, FILTER_CHIP_HEIGHT, FILTER_CHIP_MIN_TOUCH_TARGET } from "./FilterChip"
+export { FilterChip, FILTER_CHIP_HEIGHT } from "./FilterChip"
 export type { FilterChipProps, FilterChipSelection } from "./FilterChip"
 
 export { StatTile, StatTileRow, STAT_TILE_MIN_HEIGHT } from "./StatTile"

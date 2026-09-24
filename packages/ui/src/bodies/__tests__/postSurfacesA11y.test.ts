@@ -25,9 +25,10 @@ describe("the post row is a pointer convenience, not an accessibility element", 
   const row = between(card, "<Pressable\n        onPress={() => openPost(rowPostId)}", "style=")
 
   it("opts the row out of the accessibility tree on native and out of the tab order on web", () => {
-    expect(card).toMatch(
-      /export const ROW_A11Y_PROPS: object = IS_WEB \? \{ tabIndex: -1 \} : \{ accessible: false \}/,
+    expect(code("../../theme/webAffordances.ts")).toMatch(
+      /export const ROW_A11Y_PROPS: object = isWeb \? \{ tabIndex: -1 \} : \{ accessible: false \}/,
     )
+    expect(card).toMatch(/import \{[^}]*\bROW_A11Y_PROPS\b[^}]*\} from "\.\.\/theme"/)
     expect(row).toContain("{...ROW_A11Y_PROPS}")
   })
 

@@ -1,13 +1,13 @@
 import React, { useCallback, useState } from "react"
 import { View, Pressable } from "react-native"
 import { TextInput } from "./TextInput"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, inputFocusedStyle } from "../theme"
 import { Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { PrimaryButton } from "./PrimaryButton"
 import { SecondaryButton } from "./SecondaryButton"
 import { Toggle } from "./Toggle"
-import { ModalCardSheet, modalSheetInputStyle, modalSheetInputFocusedStyle } from "./ModalCardSheet"
+import { ModalCardSheet, modalSheetInputStyle } from "./ModalCardSheet"
 import { useResetOnOpen } from "./useModalClosed"
 import {
   emptyPollDraft,
@@ -90,7 +90,7 @@ export function PollCreateSheet({ visible, pending = false, error, onCreate, onC
         accessibilityLabel={t("question_placeholder")}
         onFocus={() => setFocusedField("q")}
         onBlur={() => setFocusedField(null)}
-        style={[webInputReset, styles.questionInput, focusedField === "q" ? modalSheetInputFocusedStyle(th) : null]}
+        style={[webInputReset, styles.questionInput, focusedField === "q" ? inputFocusedStyle(th) : null]}
       />
 
       <View style={styles.options}>
@@ -109,7 +109,7 @@ export function PollCreateSheet({ visible, pending = false, error, onCreate, onC
               style={[
                 webInputReset,
                 styles.optionInput,
-                focusedField === opt.id ? modalSheetInputFocusedStyle(th) : null,
+                focusedField === opt.id ? inputFocusedStyle(th) : null,
               ]}
             />
             {removable ? (

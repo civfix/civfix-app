@@ -12,7 +12,7 @@ import {
   focusRingProps,
   headingLevel,
   makeThemedStyles,
-  MIN_TOUCH_TARGET,
+  hitSlopToTarget,
   webCursor,
 } from "../../theme"
 import { Text } from "../../typography"
@@ -59,7 +59,7 @@ const GHOST_MIN_HEIGHT = 28
 
 const HTTPS_PLACEHOLDER = "https://"
 
-const GHOST_SLOP_Y = (MIN_TOUCH_TARGET - GHOST_MIN_HEIGHT) / 2
+const GHOST_SLOP_Y = hitSlopToTarget(GHOST_MIN_HEIGHT)
 
 const GHOST_HIT_SLOP = { top: GHOST_SLOP_Y, bottom: GHOST_SLOP_Y }
 

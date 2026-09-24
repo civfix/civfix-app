@@ -3,6 +3,7 @@ import { space } from "@civfix/shared/tokens"
 import { FALLBACK_LOCALE } from "../i18n/resolveLocale"
 import type { AnchorRect } from "./menuMotionModel"
 import { resolveBandLeft } from "./messageContextMenuLayout"
+import { MIN_TOUCH_TARGET } from "../theme/touchTarget"
 
 export type PostActionKey = "like" | "repost" | "comment" | "save" | "share"
 
@@ -48,10 +49,10 @@ export function postActionLayout(variant: PostActionVariant): PostActionLayout {
         glyphSize: 18,
         gap: space["1"],
         justify: "flex-start",
-        minHeight: 44,
+        minHeight: MIN_TOUCH_TARGET,
         showCounts: true,
         haloSize: 34,
-        target: { minWidth: 44, minHeight: 44 },
+        target: { minWidth: MIN_TOUCH_TARGET, minHeight: MIN_TOUCH_TARGET },
         trailing: "share",
       }
     case "focal":
@@ -63,7 +64,7 @@ export function postActionLayout(variant: PostActionVariant): PostActionLayout {
         minHeight: 48,
         showCounts: false,
         haloSize: 38,
-        target: { minWidth: 44, minHeight: 44 },
+        target: { minWidth: MIN_TOUCH_TARGET, minHeight: MIN_TOUCH_TARGET },
       }
     case "reply":
       return {
@@ -82,10 +83,10 @@ export function postActionLayout(variant: PostActionVariant): PostActionLayout {
         glyphSize: 19,
         gap: 2,
         justify: "space-between",
-        minHeight: 44,
+        minHeight: MIN_TOUCH_TARGET,
         showCounts: true,
         haloSize: 34,
-        target: { minWidth: 44, minHeight: 44 },
+        target: { minWidth: MIN_TOUCH_TARGET, minHeight: MIN_TOUCH_TARGET },
       }
   }
 }

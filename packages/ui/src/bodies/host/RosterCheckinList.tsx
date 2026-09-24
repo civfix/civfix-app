@@ -4,7 +4,7 @@ import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
 import { DELETED_USER_LABEL } from "@civfix/shared"
 import { attendeeDisplayName, lastCheckedInSeat, nextCheckinSeat } from "@civfix/shared/host"
 import {
-  MIN_TOUCH_TARGET,
+  hitSlopToTarget,
   focusRingProps,
   makeThemedStyles,
   useTheme,
@@ -21,7 +21,7 @@ import { groupRosterBySlot, rosterListKey, type RosterListItem } from "../roster
 
 const CHECK_IN_MIN_HEIGHT = 32
 
-const CHECK_IN_SLOP_Y = (MIN_TOUCH_TARGET - CHECK_IN_MIN_HEIGHT) / 2
+const CHECK_IN_SLOP_Y = hitSlopToTarget(CHECK_IN_MIN_HEIGHT)
 
 const CHECK_IN_HIT_SLOP = { top: CHECK_IN_SLOP_Y, bottom: CHECK_IN_SLOP_Y }
 

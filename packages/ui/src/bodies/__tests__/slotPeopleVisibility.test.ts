@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest"
-import { facePileOverflow, slotPeopleView } from "../slotPeopleVisibility"
+import { FACE_CAP, FACE_NAME_CAP, facePileOverflow, slotPeopleView } from "../slotPeopleVisibility"
+
+describe("the facepile caps", () => {
+  it("shows at most three faces and names fewer people than it shows faces", () => {
+    expect(FACE_CAP).toBe(3)
+    expect(FACE_NAME_CAP).toBeLessThan(FACE_CAP)
+  })
+})
 
 describe("who a viewer sees inside an expanded slot row", () => {
   it("gives a member the full list, with nothing hidden", () => {

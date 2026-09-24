@@ -1,5 +1,6 @@
 import type { TFunction } from "i18next"
 import type { PostCounts, PostDTO } from "@civfix/shared"
+import { clamp } from "../../math/clamp"
 
 
 export const THREAD_HEADER_H = 52
@@ -12,10 +13,6 @@ export const REPLY_INPUT_MAX_CAP = 132
 export const REPLY_TRAY_MIN = 96
 export const REPLY_TRAY_MAX_CAP = 168
 export const REPLY_SURFACE_FRACTION = 0.62
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max)
-}
 
 export interface ReplyComposerHeightPlan {
   available: number
