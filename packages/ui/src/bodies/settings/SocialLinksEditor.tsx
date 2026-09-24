@@ -18,6 +18,8 @@ import { useT } from "../../i18n"
 import { profileSaveErrorKey } from "../../data/errorCode"
 import { useEditorStyles } from "./editorStyles"
 
+const SOCIAL_LINK_MAX_LENGTH = 120
+
 function normalizeSocialValue(platform: SocialPlatform, raw: string): string {
   if (platform === "whatsapp") return raw.replace(/\D/g, "")
   return raw.trim().replace(/^@+/, "").trim()
@@ -138,7 +140,7 @@ export function SocialLinksEditor({ socialLinks, saving, onSave }: SocialLinksEd
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType={platform === "whatsapp" ? "phone-pad" : "default"}
-                maxLength={120}
+                maxLength={SOCIAL_LINK_MAX_LENGTH}
                 editable={!saving}
                 accessibilityLabel={label}
               />

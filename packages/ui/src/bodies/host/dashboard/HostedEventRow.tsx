@@ -2,6 +2,7 @@ import React, { memo, useCallback, useState } from "react"
 import { Image, Pressable, View } from "react-native"
 import type { CleanupMemberRole, HostedEventDTO } from "@civfix/shared"
 import {
+  MIN_TOUCH_TARGET,
   focusRingProps,
   makeThemedStyles,
   useTheme,
@@ -10,6 +11,7 @@ import {
   webTransition,
 } from "../../../theme"
 import { Text, Icon, iconMap } from "../../../typography"
+import type { IconName } from "../../../typography"
 import {
   DateBadge,
   LIST_TILE,
@@ -30,17 +32,24 @@ import {
   hostedEventStatus,
   hostedEventWhen,
   pastRowMeta,
+  type HostedEventActions,
 } from "./dashboardModel"
 
 const CLOSED = "closed"
 
 const ACTION_SIZE = 32
 
-const MIN_TOUCH_TARGET = 44
-
 const ACTION_HIT_SLOP = (MIN_TOUCH_TARGET - ACTION_SIZE) / 2
 
 export type HostedEventWindow = "upcoming" | "past"
+
+interface MenuEntry {
+  flag: keyof HostedEventActions
+  key: string
+  label: string
+  icon: IconName
+  action: (event: HostedEventDTO) => void
+}
 
 type MetaTone = "warn" | "muted"
 
@@ -243,58 +252,46 @@ export const HostedEventRow = memo(function HostedEventRow({
       <RoleChip label={roleLabel(event.myRole)} tone="neutral" />
     ) : null
 
-  const items: PopoverMenuItem[] = [
-    ...(actions.hostTools
-      ? [
-          {
-            key: "host-tools",
-            label: t("events.host_tools"),
-            icon: "Building" as const,
-            onPress: run(onHostTools),
-          },
-        ]
-      : []),
-    ...(actions.chat
-      ? [
-          {
-            key: "chat",
-            label: t("events.open_chat"),
-            icon: "MessageCircle" as const,
-            onPress: run(onOpenChat),
-          },
-        ]
-      : []),
-    ...(actions.announce
-      ? [
-          {
-            key: "announce",
-            label: t("events.announce"),
-            icon: "Megaphone" as const,
-            onPress: run(onAnnounce),
-          },
-        ]
-      : []),
-    ...(actions.duplicate
-      ? [
-          {
-            key: "duplicate",
-            label: t("events.duplicate"),
-            icon: "Copy" as const,
-            onPress: run(onDuplicate),
-          },
-        ]
-      : []),
-    ...(actions.edit
-      ? [
-          {
-            key: "edit",
-            label: t("events.edit"),
-            icon: "Pencil" as const,
-            onPress: run(onEdit),
-          },
-        ]
-      : []),
+  const menuEntries: readonly MenuEntry[] = [
+    {
+      flag: "hostTools",
+      key: "host-tools",
+      label: t("events.host_tools"),
+      icon: "Building",
+      action: onHostTools,
+    },
+    {
+      flag: "chat",
+      key: "chat",
+      label: t("events.open_chat"),
+      icon: "MessageCircle",
+      action: onOpenChat,
+    },
+    {
+      flag: "announce",
+      key: "announce",
+      label: t("events.announce"),
+      icon: "Megaphone",
+      action: onAnnounce,
+    },
+    {
+      flag: "duplicate",
+      key: "duplicate",
+      label: t("events.duplicate"),
+      icon: "Copy",
+      action: onDuplicate,
+    },
+    {
+      flag: "edit",
+      key: "edit",
+      label: t("events.edit"),
+      icon: "Pencil",
+      action: onEdit,
+    },
   ]
+  const items: PopoverMenuItem[] = menuEntries
+    .filter((entry) => actions[entry.flag])
+    .map(({ key, label, icon, action }) => ({ key, label, icon, onPress: run(action) }))
 
   return (
     <>

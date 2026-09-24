@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { OrganizationDTO, OrganizationMemberDTO } from "@civfix/shared"
-import { MAX_ORG_DESCRIPTION, MAX_ORG_NAME } from "@civfix/shared"
+import { MAX_ORG_DESCRIPTION, MAX_ORG_NAME, SocialLinksSchema } from "@civfix/shared"
 import {
   SOCIAL_PREFIX,
   canOpenOrgManage,
@@ -16,6 +16,7 @@ import {
   profileDraftFrom,
   profileErrors,
   profilePayload,
+  socialHandleMax,
   socialLinksFromDraft,
 } from "../orgManageModel"
 
@@ -186,5 +187,18 @@ describe("error copy", () => {
   it("tells a rejected image from a failed upload", () => {
     expect(orgLogoErrorKey("MEDIA_REJECTED")).toBe("manage.logo_rejected")
     expect(orgLogoErrorKey(undefined)).toBe("manage.logo_error")
+  })
+})
+
+describe("social field lengths", () => {
+  it("cap each input at the longest value the contract accepts", () => {
+    expect(socialHandleMax("instagram")).toBe(30)
+    expect(socialHandleMax("whatsapp")).toBe(15)
+    const handle = "a".repeat(socialHandleMax("instagram"))
+    expect(SocialLinksSchema.safeParse({ instagram: handle }).success).toBe(true)
+    expect(SocialLinksSchema.safeParse({ instagram: `${handle}a` }).success).toBe(false)
+    const number = `1${"2".repeat(socialHandleMax("whatsapp") - 1)}`
+    expect(SocialLinksSchema.safeParse({ whatsapp: number }).success).toBe(true)
+    expect(SocialLinksSchema.safeParse({ whatsapp: `${number}2` }).success).toBe(false)
   })
 })

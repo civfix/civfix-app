@@ -17,8 +17,14 @@ import { useT } from "../../i18n"
 import { useWalkupRegistration } from "../../data/hooks/host"
 import { appErrorCode } from "../../data/errorCode"
 import { TicketTypePicker } from "./registration/TicketTypePicker"
-import { PartySizeStepper, clampPartySize } from "./registration/PartySizeStepper"
-import { registerOutcomeKey, resolveTicketTypeId, selectableTicketTypes } from "./registration/registrationModel"
+import { PartySizeStepper } from "./registration/PartySizeStepper"
+import { INPUT_MIN_HEIGHT } from "./hostLayout"
+import {
+  clampPartySize,
+  registerOutcomeKey,
+  resolveTicketTypeId,
+  sortedTicketTypes,
+} from "./registration/registrationModel"
 
 export interface HostWalkupSheetProps {
   visible: boolean
@@ -34,7 +40,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
   const toast = useToast()
   const walkup = useWalkupRegistration(cleanupId)
 
-  const types = selectableTicketTypes(ticketTypes)
+  const types = sortedTicketTypes(ticketTypes)
   const [name, setName] = useState("")
   const [pickedTypeId, setPickedTypeId] = useState<string | null>(null)
   const [partySize, setPartySize] = useState(1)
@@ -153,7 +159,7 @@ export function HostWalkupSheet({ visible, cleanupId, ticketTypes, onClose }: Ho
 const useStyles = makeThemedStyles((t) => ({
   input: {
     ...modalSheetInputStyle(t),
-    minHeight: 42,
+    minHeight: INPUT_MIN_HEIGHT,
   },
   section: {
     gap: t.space["2"],

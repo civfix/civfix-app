@@ -8,20 +8,26 @@ const strip = (src: string): string =>
 const mode = strip(read("../HostModeBody.tsx"))
 const body = strip(read("../HostTeamBody.tsx"))
 const sheet = strip(read("../HostTeamInviteSheet.tsx"))
+const inviteForm = strip(read("../useInviteForm.ts"))
+const identifierFields = strip(read("../InviteIdentifierFields.tsx"))
 const members = strip(read("../../MembersBody.tsx"))
 const detail = strip(read("../../EventDetailBody.tsx"))
 
 describe("host mode reaches the team", () => {
   it("gates the ONE Team row on manage_team, not on a role string", () => {
-    expect(mode).toContain('manageTeam: hasHostCapability(standing, "manage_team")')
+    expect(mode).toContain("hostSurfaceCapabilities(cleanupHostStanding(cleanup.data, viewerId))")
     expect(mode).not.toMatch(/myRole === "(organizer|cohost)"/)
     const model = strip(read("../hostSurfaceModel.ts"))
+    expect(model).toContain('manageTeam: hasHostCapability(standing, "manage_team")')
+    expect(model).not.toMatch(/myRole === "(organizer|cohost)"/)
     expect(model).toContain('if (!cancelled && can.manageTeam) configure.push("team")')
     expect(model).not.toContain("invite_team")
   })
 
   it("builds the standing once from the DTO plus the viewer, so a legacy organizer still passes", () => {
-    expect(mode).toContain("const standing = cleanupHostStanding(cleanup, viewerId)")
+    expect(mode).toContain(
+      "const can = hostSurfaceCapabilities(cleanupHostStanding(cleanup.data, viewerId))",
+    )
     expect(mode).not.toContain('hasHostCapability(cleanup.data, "check_in")')
   })
 
@@ -61,7 +67,8 @@ describe("HostTeamBody wiring", () => {
 
   it("routes every mutation failure through the shared error-code mapping", () => {
     expect(body).toContain("t(teamManageErrorKey(appErrorCode(err)))")
-    expect(sheet).toContain("t(inviteErrorKey(appErrorCode(err)))")
+    expect(sheet).toContain("errorKey: inviteErrorKey,")
+    expect(inviteForm).toContain("t(errorKey(appErrorCode(err)))")
   })
 
   it("orders and gates the rows in the pure model, not inline in the view", () => {
@@ -100,9 +107,11 @@ describe("the invite sheet", () => {
   })
 
   it("validates the identifier client-side before it ever reaches the wire", () => {
-    expect(sheet).toContain("inviteIdentifierValue(identifierKind, identifier)")
-    expect(sheet).toContain("t(inviteIdentifierErrorKey(identifierKind))")
-    expect(sheet).toContain("{ identifierKind, identifier: value, role }")
+    expect(sheet).toContain("useInviteForm<EventTeamRole>(")
+    expect(sheet).toContain("identifierErrorKey: inviteIdentifierErrorKey,")
+    expect(inviteForm).toContain("inviteIdentifierValue(identifierKind, identifier)")
+    expect(inviteForm).toContain("t(identifierErrorKey(identifierKind))")
+    expect(inviteForm).toContain("{ identifierKind, identifier: value, role }")
   })
 
   it("rides the existing modal sheet's keyboard handling rather than adding a second one", () => {
@@ -113,6 +122,10 @@ describe("the invite sheet", () => {
 
   it("offers both identifier kinds as one accessible radio group", () => {
     expect(sheet).toContain('accessibilityRole="radiogroup"')
-    expect(sheet).toContain('const IDENTIFIER_KINDS: readonly EventTeamInviteIdentifierKind[] = ["handle", "email"]')
+    expect(sheet).toContain("<InviteIdentifierFields")
+    expect(identifierFields).toContain(
+      "export type InviteIdentifierKind = EventTeamInviteIdentifierKind | OrgInviteIdentifierKind",
+    )
+    expect(identifierFields).toContain('const IDENTIFIER_KINDS: readonly InviteIdentifierKind[] = ["handle", "email"]')
   })
 })

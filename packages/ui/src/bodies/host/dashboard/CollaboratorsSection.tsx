@@ -3,6 +3,7 @@ import { Pressable, View } from "react-native"
 import type { OrganizationDTO, OrganizationInviteDTO, OrganizationMemberDTO } from "@civfix/shared"
 import { DELETED_USER_LABEL } from "@civfix/shared"
 import {
+  MIN_TOUCH_TARGET,
   focusRingProps,
   makeThemedStyles,
   useTheme,
@@ -61,8 +62,6 @@ const CONFIRM_REMOVE = "confirm-remove"
 const KEBAB_SIZE = 32
 
 const KEBAB_HIT_SLOP = 6
-
-const MORE_ROW_HEIGHT = 44
 
 function MemberRow({
   member,
@@ -127,7 +126,7 @@ function MemberRow({
         ]
       : []),
   ]
-  const hasKebab = orgMemberHasActions(actions) && items.length > 0
+  const hasKebab = orgMemberHasActions(actions)
 
   return (
     <>
@@ -437,7 +436,7 @@ const useStyles = makeThemedStyles((t) => ({
   moreRow: {
     alignItems: "center",
     justifyContent: "center",
-    minHeight: MORE_ROW_HEIGHT,
+    minHeight: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["4"],
   },
 }))

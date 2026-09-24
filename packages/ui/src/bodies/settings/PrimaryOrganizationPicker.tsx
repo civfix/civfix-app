@@ -10,10 +10,22 @@ import {
 import { focusRingProps, makeThemedStyles, useTheme } from "../../theme"
 import { Text, Icon, iconMap } from "../../typography"
 import { Avatar, SettingsSection, useToast } from "../../primitives"
-import { actableOrganizations, useAuthState, useMyOrganizations, useUpdatePrivacySettings } from "../../data"
+import {
+  actableOrganizations,
+  useAuthState,
+  useMyOrganizations,
+  useUpdatePrivacySettings,
+  type PrivacySettingsVars,
+} from "../../data"
 import { useT } from "../../i18n"
 
-export const PRIMARY_ORGANIZATION_AUTOMATIC = "automatic"
+const PRIMARY_ORGANIZATION_AUTOMATIC = "automatic"
+
+function pendingPrimaryOrgId(isPending: boolean, variables: PrivacySettingsVars | undefined): string | null {
+  if (!isPending || typeof variables !== "object" || variables === null) return null
+  if (!("primaryOrganizationId" in variables)) return null
+  return variables.primaryOrganizationId ?? PRIMARY_ORGANIZATION_AUTOMATIC
+}
 
 function OptionRow({
   label,
@@ -91,14 +103,7 @@ export function PrimaryOrganizationPicker({ style }: { style?: StyleProp<ViewSty
   const update = useUpdatePrivacySettings()
   const rows = actableOrganizations(orgs.data) ?? []
   const current = user?.primaryOrganizationId ?? null
-  const inFlight =
-    update.isPending && typeof update.variables === "object" && update.variables !== null
-      ? update.variables
-      : null
-  const pendingId =
-    inFlight && "primaryOrganizationId" in inFlight
-      ? (inFlight.primaryOrganizationId ?? PRIMARY_ORGANIZATION_AUTOMATIC)
-      : null
+  const pendingId = pendingPrimaryOrgId(update.isPending, update.variables)
 
   const onSelect = useCallback(
     (primaryOrganizationId: string | null) => {

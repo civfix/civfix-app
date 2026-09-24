@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (relative: string): string => readFileSync(new URL(relative, import.meta.url), "utf8")
 
@@ -8,7 +9,7 @@ const code = (source: string): string =>
 
 describe("the post composers guard against a double submit", () => {
   const COMPOSERS = {
-    "PostComposer.tsx": code(read("../PostComposer.tsx")),
+    "PostComposer.tsx": code(surfaceSource("postComposer")),
     "thread/ReplyComposer.tsx": code(read("../thread/ReplyComposer.tsx")),
   }
 
@@ -32,7 +33,7 @@ describe("the post composers guard against a double submit", () => {
 })
 
 describe("PostComposer subscribes to the nav store by selector", () => {
-  const source = code(read("../PostComposer.tsx"))
+  const source = code(surfaceSource("postComposer"))
 
   it("takes only back, never the whole store", () => {
     expect(source).toMatch(/const back = useNavStore\(\(state\) => state\.back\)/)

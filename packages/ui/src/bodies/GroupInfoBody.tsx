@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from "react"
-import { View, Pressable, Image, StyleSheet } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
 import type { ChatGroupDTO, GroupMemberDTO, GroupRole, PersonDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps, headingLevel } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import type { IconName } from "../typography"
 import {
@@ -30,6 +30,7 @@ import { absoluteUrl } from "../primitives/share"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { MemberPicker } from "./MemberPicker"
+import { ChatInfoActionRow, ChatInfoHero } from "./ChatInfoParts"
 import { RosterRow, type RosterRowMenu } from "./RosterRow"
 import { GroupIdentityFields } from "./GroupIdentityFields"
 import { groupMemberActions, type GroupMemberActionKey } from "./groupMemberActions"
@@ -129,48 +130,6 @@ const GroupMemberRow = memo(function GroupMemberRow({
     />
   )
 })
-
-function ActionRow({
-  icon,
-  label,
-  a11y,
-  destructive,
-  disabled,
-  onPress,
-}: {
-  icon: IconName
-  label: string
-  a11y?: string
-  destructive?: boolean
-  disabled?: boolean
-  onPress: () => void
-}) {
-  const styles = useStyles()
-  const th = useTheme()
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityLabel={a11y ?? label}
-      {...focusRingProps}
-      style={({ pressed }) => [
-        styles.actionRow,
-        pressed ? styles.rowPressed : null,
-        disabled ? styles.actionDisabled : null,
-      ]}
-    >
-      <Icon
-        icon={iconMap[icon]}
-        size={18}
-        color={destructive ? th.colors.bloom["600"] : th.colors.text}
-      />
-      <Text style={[styles.actionLabel, destructive ? styles.actionLabelDestructive : null]}>
-        {label}
-      </Text>
-    </Pressable>
-  )
-}
 
 function useAddMembersSheet(id: string) {
   const addMembers = useAddGroupMembers()
@@ -566,57 +525,52 @@ export function GroupInfoBody({ id, onBack, onOpenPerson: onOpenPersonProp }: Gr
 
   const header = (
     <View>
-      <View style={styles.hero}>
-        <View style={[styles.heroAvatar, group?.avatar?.url ? styles.heroAvatarFramed : null]}>
-          {group?.avatar?.url ? (
-            <Image source={{ uri: group.avatar.url }} style={styles.heroAvatarImage} resizeMode="cover" />
-          ) : (
-            <Icon icon={iconMap.Users} size={34} color={th.colors.onAccent} />
-          )}
-        </View>
-        <Text style={styles.heroName} numberOfLines={2} accessibilityRole="header" {...headingLevel(2)}>
-          {group?.name ?? ""}
-        </Text>
-        {group?.kind === "channel" ? (
-          <View style={styles.kindBadge}>
-            <Icon icon={iconMap.Megaphone} size={12} color={th.colors.textMuted} />
-            <Text style={styles.kindBadgeText}>{t("kind_channel")}</Text>
-          </View>
-        ) : null}
-        {group?.description ? (
-          <Text style={styles.heroDescription}>{group.description}</Text>
-        ) : null}
-        <Text style={styles.heroMembers}>
-          {isChannel ? t("subscribers", { count: memberCount }) : t("members", { count: memberCount })}
-        </Text>
-        {isOwner && group ? (
-          <View style={styles.visibilityRow}>
-            <Icon
-              icon={iconMap[isPublic ? "Globe" : "Lock"]}
-              size={13}
-              color={th.colors.textSubtle}
-            />
-            <Text style={styles.visibilityText}>
-              {isPublic ? t("visibility_public") : t("visibility_private")}
-            </Text>
-          </View>
-        ) : null}
-      </View>
+      <ChatInfoHero
+        imageUrl={group?.avatar?.url ?? null}
+        glyph="Users"
+        title={group?.name ?? ""}
+        badge={
+          group?.kind === "channel" ? (
+            <View style={styles.kindBadge}>
+              <Icon icon={iconMap.Megaphone} size={12} color={th.colors.textMuted} />
+              <Text style={styles.kindBadgeText}>{t("kind_channel")}</Text>
+            </View>
+          ) : null
+        }
+        subtitle={group?.description ?? null}
+        memberLine={
+          isChannel ? t("subscribers", { count: memberCount }) : t("members", { count: memberCount })
+        }
+        footer={
+          isOwner && group ? (
+            <View style={styles.visibilityRow}>
+              <Icon
+                icon={iconMap[isPublic ? "Globe" : "Lock"]}
+                size={13}
+                color={th.colors.textSubtle}
+              />
+              <Text style={styles.visibilityText}>
+                {isPublic ? t("visibility_public") : t("visibility_private")}
+              </Text>
+            </View>
+          ) : null
+        }
+      />
 
       <View style={styles.actions}>
-        <ActionRow
+        <ChatInfoActionRow
           icon={group?.muted ? "BellOff" : "Bell"}
           label={group?.muted ? t("unmute") : t("mute")}
           disabled={toggleMute.isPending || !group}
           onPress={onToggleMute}
         />
-        {canManage ? <ActionRow icon="UserPlus" label={isChannel ? t("add_subscribers") : t("add_members")} onPress={addSheet.openSheet} /> : null}
-        {canManage ? <ActionRow icon="Pencil" label={t("edit_info")} onPress={editSheet.openSheet} /> : null}
+        {canManage ? <ChatInfoActionRow icon="UserPlus" label={isChannel ? t("add_subscribers") : t("add_members")} onPress={addSheet.openSheet} /> : null}
+        {canManage ? <ChatInfoActionRow icon="Pencil" label={t("edit_info")} onPress={editSheet.openSheet} /> : null}
         {isChannel && isPublic && clipboard ? (
-          <ActionRow icon="Link2" label={t("copy_link")} onPress={onCopyLink} />
+          <ChatInfoActionRow icon="Link2" label={t("copy_link")} onPress={onCopyLink} />
         ) : null}
         {viewerRole === "admin" || viewerRole === "member" ? (
-          <ActionRow
+          <ChatInfoActionRow
             icon="LogOut"
             label={isChannel ? t("leave_channel") : t("leave")}
             destructive
@@ -683,32 +637,6 @@ const useStyles = makeThemedStyles((t) => ({
     flexGrow: 1,
     paddingHorizontal: t.space["4"],
   },
-  hero: {
-    alignItems: "center",
-    paddingTop: t.space["2"],
-    paddingBottom: t.space["4"],
-    gap: t.space["2"],
-  },
-  heroAvatar: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    overflow: "hidden",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: t.colors.brand.moss,
-  },
-  heroAvatarFramed: t.imageFrame,
-  heroAvatarImage: {
-    width: "100%",
-    height: "100%",
-  },
-  heroName: {
-    fontFamily: t.fontFamily.bodyBold,
-    fontSize: 19,
-    color: t.colors.text,
-    textAlign: "center",
-  },
   kindBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -724,17 +652,6 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: 11.5,
     color: t.colors.textMuted,
-  },
-  heroDescription: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["14"],
-    color: t.colors.textMuted,
-    textAlign: "center",
-  },
-  heroMembers: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 12.5,
-    color: t.colors.textSubtle,
   },
   visibilityRow: {
     flexDirection: "row",
@@ -788,23 +705,6 @@ const useStyles = makeThemedStyles((t) => ({
     borderTopColor: t.colors.border,
     paddingVertical: t.space["1"],
   },
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["3"],
-    paddingVertical: t.space["3"],
-  },
-  actionDisabled: {
-    opacity: 0.5,
-  },
-  actionLabel: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["15"],
-    color: t.colors.text,
-  },
-  actionLabelDestructive: {
-    color: t.colors.bloom["600"],
-  },
   sectionLabel: {
     fontFamily: t.fontFamily.bodyBold,
     fontSize: t.fontSize["13"],
@@ -815,9 +715,6 @@ const useStyles = makeThemedStyles((t) => ({
     paddingTop: t.space["3"],
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: t.colors.border,
-  },
-  rowPressed: {
-    opacity: 0.7,
   },
   roleLabel: {
     fontFamily: t.fontFamily.bodySemiBold,

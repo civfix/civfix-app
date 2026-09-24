@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 import { pageBottomReserve } from "../../shell/bodyLayout"
 import type { TFunction } from "i18next"
 import type { CleanupDTO, PostDTO } from "@civfix/shared"
@@ -9,14 +10,14 @@ import {
   buildComposerEventRef,
   buildComposerQuoteRef,
   buildPostComposerAttachPlan,
-  buildPostComposerKeyboardPlan,
   buildPostComposerModel,
-  initialPostComposerAttachmentPanel,
   resolveComposerEvent,
   shouldClearStaleAttachedEvent,
   shouldClearStaleAttachedReport,
   togglePostComposerAttachmentPanel,
+  type PostComposerAttachmentPanel,
 } from "../postComposerModel"
+import { keyboardDismissModeFor } from "../keyboardDismissMode"
 
 const EN: Record<string, string> = {
   "mode.post.title": "New post",
@@ -93,19 +94,17 @@ describe("PostComposer presentation model", () => {
   // The docked reply bar (thread/ReplyComposer) owns its keyboard inset via `useReplyDockInset`, so this
   // plan declares no host inset that native could not honor.
   it("leaves the keyboard plan free of iOS-only scroll insets on every platform", () => {
-    expect(buildPostComposerKeyboardPlan({ platform: "ios" })).toEqual({
-      scrollView: { keyboardDismissMode: "interactive" },
-    })
-    expect(buildPostComposerKeyboardPlan({ platform: "android" })).toEqual({
-      scrollView: { keyboardDismissMode: "on-drag" },
-    })
-    expect(buildPostComposerKeyboardPlan({ platform: "web" })).toEqual({
-      scrollView: { keyboardDismissMode: "on-drag" },
-    })
+    expect(keyboardDismissModeFor("ios")).toBe("interactive")
+    expect(keyboardDismissModeFor("android")).toBe("on-drag")
+    expect(keyboardDismissModeFor("web")).toBe("on-drag")
+    const source = surfaceSource("postComposer")
+    expect(source).toMatch(/^const KEYBOARD_DISMISS_MODE = keyboardDismissModeFor\(Platform\.OS\)$/m)
+    expect(source).toContain("keyboardDismissMode={KEYBOARD_DISMISS_MODE}")
+    expect(source).not.toMatch(/automaticallyAdjustKeyboardInsets|contentInset=/)
   })
 
   it("takes its keyboard-aware host ONLY on the standalone route, and the injected one in the shell", () => {
-    const source = readFileSync(new URL("../PostComposer.tsx", import.meta.url), "utf8")
+    const source = surfaceSource("postComposer")
     expect(source).toMatch(
       /^const STANDALONE_SCROLL_HOST = makeKeyboardAwareScrollHost\(PLAIN_SCROLL_HOST\)$/m,
     )
@@ -119,7 +118,7 @@ describe("PostComposer presentation model", () => {
   })
 
   it("reads standalone-ness from an explicit host prop, never from a nav guess", () => {
-    const source = readFileSync(new URL("../PostComposer.tsx", import.meta.url), "utf8")
+    const source = surfaceSource("postComposer")
     expect(source).toMatch(/export interface PostComposerStandaloneHost \{\s*\n\s*onBack: \(\) => void/)
     expect(source).toMatch(/standalone\?: PostComposerStandaloneHost/)
     expect(source).not.toMatch(/^\s*onBack\?: \(\) => void$/m)
@@ -152,9 +151,10 @@ describe("PostComposer presentation model", () => {
   })
 
   it("keeps the pill panels one-at-a-time via explicit toggles", () => {
-    const initial = initialPostComposerAttachmentPanel()
+    const initial: PostComposerAttachmentPanel = null
+    const source = readFileSync(new URL("../usePostComposerAttach.ts", import.meta.url), "utf8")
 
-    expect(initial).toBeNull()
+    expect(source).toContain("useState<PostComposerAttachmentPanel>(null)")
     expect(togglePostComposerAttachmentPanel(initial, "events")).toBe("events")
     expect(togglePostComposerAttachmentPanel("events", "events")).toBeNull()
     expect(togglePostComposerAttachmentPanel("events", "reports")).toBe("reports")

@@ -20,6 +20,8 @@ import { buildPostIdentity } from "./postCardModel"
 import { embeddedPostA11yLabel } from "./embeddedPostLabel"
 
 export const EMBEDDED_POST_BODY_CLAMP_LINES = 4
+const MEDIA_RADIUS = 12
+const MEDIA_MAX_HEIGHT = 220
 
 export interface EmbeddedPostProps {
   post: PostRefDTO
@@ -79,7 +81,7 @@ export function EmbeddedPost({ post, t, timeAgo, prominent = false, onPress }: E
         {post.deleted ? t("post_card.unavailable") : post.excerpt}
       </Text>
       {post.media.length > 0 && !post.deleted ? (
-        <PostMediaGrid media={post.media} t={t} radius={12} maxHeight={220} />
+        <PostMediaGrid media={post.media} t={t} radius={MEDIA_RADIUS} maxHeight={MEDIA_MAX_HEIGHT} />
       ) : null}
     </>
   )
@@ -151,24 +153,24 @@ const useStyles = makeThemedStyles((t) => ({
   },
   author: {
     flexShrink: 1,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 19,
   },
   handle: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 18,
     color: t.colors.textMuted,
   },
   time: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 18,
     color: t.colors.textMuted,
   },
   body: {
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 19,
   },
   bodyProminent: {

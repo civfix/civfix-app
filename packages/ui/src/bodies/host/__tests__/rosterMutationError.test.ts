@@ -21,7 +21,7 @@ describe("rosterMutationErrorKey", () => {
 })
 
 describe("both roster surfaces toast a failed check-in or undo the same way", () => {
-  it.each(["../EventRosterBlock.tsx", "../HostCheckinBody.tsx"])("%s", (file) => {
+  it.each(["../EventRosterBlock.tsx", "../checkin/useCheckinRoster.ts"])("%s", (file) => {
     const src = read(file)
     expect(src).toMatch(/\(rosterMutationErrorKey\(err\)\)/)
     expect(src).not.toContain('toast.show(tRoster("roster.error")')

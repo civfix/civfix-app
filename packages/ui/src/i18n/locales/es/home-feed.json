@@ -63,7 +63,6 @@
   "post_card": {
     "fix_confirmed": "Arreglo confirmado",
     "repost_attribution": "{{name}} republicó",
-    "reported_by": "Reportado por {{name}}",
     "cleared_at": "Resuelto en {{title}}",
     "media_before": "ANTES",
     "media_after": "DESPUÉS",

@@ -4,6 +4,7 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 import type { PendingAttachment } from "../../primitives/useComposerAttachments"
 import {
   POST_COMPOSER_MEDIA_CAP,
@@ -126,8 +127,11 @@ describe("postComposerCanAttach", () => {
   })
 
   it("is what BOTH composers gate the add-media control on", () => {
-    for (const file of ["../PostComposer.tsx", "../feed/InlineComposer.tsx"]) {
-      const source = readFileSync(new URL(file, import.meta.url), "utf8")
+    const composers: Record<string, string> = {
+      "../PostComposer.tsx": surfaceSource("postComposer"),
+      "../feed/InlineComposer.tsx": readFileSync(new URL("../feed/InlineComposer.tsx", import.meta.url), "utf8"),
+    }
+    for (const [file, source] of Object.entries(composers)) {
       expect(source, file).toMatch(/const canAttachMedia = postComposerCanAttach\(\{/)
       expect(source, file).toContain("disabled={!canAttachMedia}")
       expect(source, file).not.toContain("disabled={!attachments.canAttach}")

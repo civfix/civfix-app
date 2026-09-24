@@ -6,12 +6,17 @@ const strip = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
 
 const body = strip(read("../HostModeBody.tsx"))
+const sheets = strip(read("../HostModeSheets.tsx"))
+const sheetActions = strip(read("../useHostSheetActions.ts"))
+const copy = strip(read("../hostModeCopy.ts"))
 const panels = strip(read("../HostInsightsPanels.tsx"))
 const model = strip(read("../hostSurfaceModel.ts"))
 const roster = strip(read("../EventRosterBlock.tsx"))
 const rosterList = strip(read("../RosterCheckinList.tsx"))
+const rosterPaged = strip(read("../RosterPagedList.tsx"))
 const announce = strip(read("../HostAnnounceBody.tsx"))
 const invite = strip(read("../HostTeamInviteSheet.tsx"))
+const inviteFields = strip(read("../InviteIdentifierFields.tsx"))
 const checkin = strip(read("../HostCheckinBody.tsx"))
 const ticket = strip(read("../MyTicketBody.tsx"))
 const cancelSheet = strip(read("../../../primitives/CancelEventSheet.tsx"))
@@ -26,12 +31,17 @@ const cleanupHooks = strip(read("../../../data/hooks/cleanups.ts"))
 
 const HOST_SOURCES: Record<string, string> = {
   "HostModeBody.tsx": body,
+  "HostModeSheets.tsx": sheets,
+  "useHostSheetActions.ts": sheetActions,
+  "hostModeCopy.ts": copy,
   "HostInsightsPanels.tsx": panels,
   "hostSurfaceModel.ts": model,
   "EventRosterBlock.tsx": roster,
   "RosterCheckinList.tsx": rosterList,
+  "RosterPagedList.tsx": rosterPaged,
   "HostAnnounceBody.tsx": announce,
   "HostTeamInviteSheet.tsx": invite,
+  "InviteIdentifierFields.tsx": inviteFields,
 }
 
 describe("the comms rework", () => {
@@ -66,8 +76,8 @@ describe("the comms rework", () => {
 
 describe("the host surface spends its coral once", () => {
   it("renders exactly one PrimaryButton, and it is the PhaseHeader's CTA", () => {
-    expect(body.match(/<PrimaryButton\b/g) ?? []).toHaveLength(1)
-    expect(body).toContain('variant="destructive"')
+    expect(`${body}\n${sheets}`.match(/<PrimaryButton\b/g) ?? []).toHaveLength(1)
+    expect(sheets).toContain('variant="destructive"')
     expect(strip(read("../PhaseHeader.tsx"))).toContain("<PrimaryButton")
   })
 
@@ -92,13 +102,19 @@ describe("the host surface spends its coral once", () => {
     expect(checkin).toContain("colors.dangerInk")
     expect(ticket).toContain("colors.dangerInk")
     expect(checkin).not.toContain('colors.bloom["700"]')
+    for (const part of ["../checkin/CheckinDeskCards.tsx", "../checkin/CheckinRosterSection.tsx"]) {
+      const src = strip(read(part))
+      expect(src).toContain("colors.dangerInk")
+      expect(src).not.toContain('colors.bloom["700"]')
+    }
     expect(ticket).not.toContain('colors.bloom["700"]')
   })
 })
 
 describe("cancelling lives in the danger card and nowhere else", () => {
   it("reaches CancelEventSheet from the host surface only", () => {
-    expect(body).toContain("<CancelEventSheet")
+    expect(body).toContain("<HostModeSheets")
+    expect(sheets).toContain("<CancelEventSheet")
     expect(detail).not.toContain("<CancelEventSheet")
     expect(detail).not.toContain('t("actions.cancel_event")')
   })
@@ -125,8 +141,10 @@ describe("selection is neutral", () => {
     expect(announce).toContain('accessibilityRole="radio"')
     expect(announce).toContain("useAudiencePreview")
     expect(announce).not.toContain("styles.segmentOn")
-    expect(invite).toContain("<SegmentedControl")
+    expect(invite).toContain("<InviteIdentifierFields")
+    expect(inviteFields).toContain("<SegmentedControl")
     expect(invite).not.toContain("styles.segmentOn")
+    expect(inviteFields).not.toContain("styles.segmentOn")
   })
 })
 
@@ -330,7 +348,7 @@ describe("every t(...) key the surface uses exists in en/host-mode.json", () => 
     return leaf in obj || `${leaf}_one` in obj || `${leaf}_other` in obj
   }
 
-  it.each(["HostModeBody.tsx", "HostInsightsPanels.tsx"])("%s", (name) => {
+  it.each(["HostModeBody.tsx", "HostModeSheets.tsx", "useHostSheetActions.ts", "hostModeCopy.ts", "HostInsightsPanels.tsx"])("%s", (name) => {
     const source = HOST_SOURCES[name] as string
     const keys = [...source.matchAll(/\bt\("([a-z][a-z0-9_]*\.[a-z0-9_.]+)"/g)].map((m) => m[1] ?? "")
     expect(keys.length).toBeGreaterThan(0)

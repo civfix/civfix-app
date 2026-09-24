@@ -9,7 +9,7 @@ import { ComposerModeBar, MentionAutocomplete, ComposerAttachSheet, PollCreateSh
 import type { AnchorRect, PollCreateInput } from "../../primitives"
 import { ComposerThumbs } from "../../primitives/ComposerThumbs"
 import { useT } from "../../i18n"
-import { resolveComposerSubmit } from "../composerSubmit"
+import { resolveComposerSubmit } from "./composerSubmit"
 import type { MentionSource } from "../mentionSource"
 import { senderColor } from "./conversationModel"
 import type { ComposerModeState } from "./useComposerMode"

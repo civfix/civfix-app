@@ -18,6 +18,9 @@ import { useT } from "../i18n"
 
 type TFn = (key: string, opts?: Record<string, unknown>) => string
 
+const EMAIL_OTP_LENGTH = 6
+const CODE_FOCUS_DELAY_MS = 50
+
 export interface DeleteAccountModalProps {
   visible: boolean
   email: string | null | undefined
@@ -71,7 +74,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
 
   useEffect(() => {
     if (!visible || codeFocusRequest === 0) return
-    const timer = setTimeout(() => codeRef.current?.focus(), 50)
+    const timer = setTimeout(() => codeRef.current?.focus(), CODE_FOCUS_DELAY_MS)
     return () => clearTimeout(timer)
   }, [visible, codeFocusRequest])
 
@@ -94,7 +97,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
   }
 
   const confirmDelete = () => {
-    if (code.length !== 6 || del.isPending) return
+    if (code.length !== EMAIL_OTP_LENGTH || del.isPending) return
     setError(null)
     del.mutate(
       { emailOtp: code },
@@ -104,7 +107,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
     )
   }
 
-  const masked = email ?? t("emailFallback")
+  const emailLabel = email ?? t("emailFallback")
 
   const introActions = hasEmail ? (
     <>
@@ -140,7 +143,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
               variant="destructive"
               onPress={confirmDelete}
               loading={del.isPending}
-              disabled={code.length !== 6}
+              disabled={code.length !== EMAIL_OTP_LENGTH}
               accessibilityLabel={t("a11y.deleteConfirm")}
             />
           </>
@@ -160,7 +163,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
         hasEmail ? (
           <Text style={styles.body}>
             {t("intro.sendPre")}
-            <Text style={styles.email}>{masked}</Text>
+            <Text style={styles.email}>{emailLabel}</Text>
             {t("intro.sendPost")}
           </Text>
         ) : (
@@ -170,19 +173,19 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
         <>
           <Text style={styles.body}>
             {t("verify.enterPre")}
-            <Text style={styles.email}>{masked}</Text>
+            <Text style={styles.email}>{emailLabel}</Text>
             {t("verify.enterPost")}
           </Text>
           <TextInput
             ref={codeRef}
             value={code}
-            onChangeText={(txt) => setCode(txt.replace(/[^0-9]/g, "").slice(0, 6))}
+            onChangeText={(txt) => setCode(txt.replace(/[^0-9]/g, "").slice(0, EMAIL_OTP_LENGTH))}
             editable={!del.isPending}
             keyboardType="number-pad"
             inputMode="numeric"
             textContentType="oneTimeCode"
             autoComplete="one-time-code"
-            maxLength={6}
+            maxLength={EMAIL_OTP_LENGTH}
             placeholder="000000"
             placeholderTextColor={th.colors.textSubtle}
             accessibilityLabel={t("a11y.verificationCode")}
@@ -211,7 +214,7 @@ export function DeleteAccountModal({ visible, email, onClose }: DeleteAccountMod
 
 const useStyles = makeThemedStyles((t) => ({
   warnBox: {
-    gap: 4,
+    gap: t.space["1"],
     padding: t.space["3"],
     borderRadius: t.radius.lg,
     backgroundColor: t.colors.bloom["50"],
@@ -220,7 +223,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   warnText: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 18,
     color: t.colors.dangerInk,
   },
@@ -230,7 +233,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   warnSub: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12,
+    fontSize: t.fontSize["12"],
     lineHeight: 16,
     color: t.colors.dangerInk,
   },

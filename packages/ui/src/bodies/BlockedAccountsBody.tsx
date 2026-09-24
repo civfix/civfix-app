@@ -1,14 +1,14 @@
 import React, { memo, useCallback, useMemo, useState } from "react"
 import { ActivityIndicator, View, Pressable, StyleSheet } from "react-native"
 import type { PersonDTO } from "@civfix/shared"
-import { makeThemedStyles, useTheme, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { Text, iconMap } from "../typography"
 import { Avatar, EmptyState, LoadingState, useToast } from "../primitives"
 import { useListBlocks, useUnblockUser } from "../data"
 import { blockedAccountsOf } from "../data/hooks/direct"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
-import { idKeyExtractor } from "./navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 
 const BlockedRow = memo(function BlockedRow({
   person,
@@ -138,7 +138,6 @@ export function BlockedAccountsBody() {
   )
 }
 
-const MIN_TOUCH_TARGET = 44
 const UNBLOCK_HEIGHT = 34
 const UNBLOCK_HIT_SLOP = (MIN_TOUCH_TARGET - UNBLOCK_HEIGHT) / 2
 
@@ -180,7 +179,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   name: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   handle: {
@@ -205,7 +204,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   unblockText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.text,
   },
 }))

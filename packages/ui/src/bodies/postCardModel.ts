@@ -1,5 +1,7 @@
 import type { TFunction } from "i18next"
 import type {
+  LinkedEventRef,
+  LinkedReportRef,
   OrganizationRefDTO,
   PersonDTO,
   PostDTO,
@@ -12,9 +14,6 @@ export type PostCardVariant = "post" | "event" | "repost" | "quote" | "reply" | 
 export type PostFixLayout = "before-after" | "cleared" | null
 
 export interface PostCardModelOptions {
-  neighborhood?: string | null
-  reportedBy?: string | null
-  resolutionLabel?: string | null
   timeAgo?: (iso: string) => string
 }
 
@@ -67,16 +66,13 @@ export function identityA11yLabel(identity: PostIdentity, t: TFunction): string 
 export interface PostCardModel {
   variant: PostCardVariant
   identity: PostIdentity
-  metaLabel: string
   repostAttribution: string | null
   embeddedPost: PostRefDTO | null
   fixLayout: PostFixLayout
   categoryLabel: string | null
-  reportedByLabel: string | null
   resolutionLabel: string | null
   handleLabel: string | null
   timeLabel: string
-  contextLabel: string | null
   bodyExpandable: boolean
   showFixShowcase: boolean
   replyingToLabel: string | null
@@ -175,8 +171,6 @@ export function buildPostCardModel(
     : post.kind === "reply" ? "reply"
     : post.event ? "event" : "post"
   const timeLabel = (options.timeAgo ?? listTimeAgo)(post.createdAt)
-  const contextLabel = options.neighborhood?.trim() || null
-  const metaLabel = [timeLabel, contextLabel].filter(Boolean).join(" · ")
   const identity = buildPostIdentity(
     post.author,
     post.organization,
@@ -196,27 +190,54 @@ export function buildPostCardModel(
   return {
     variant,
     identity,
-    metaLabel,
     repostAttribution: post.kind === "repost"
       ? t("post_card.repost_attribution", { name: post.author.name })
       : null,
     embeddedPost: post.repostOf ?? null,
     fixLayout,
     categoryLabel,
-    reportedByLabel: options.reportedBy?.trim()
-      ? t("post_card.reported_by", { name: options.reportedBy.trim().replace(/[.]+$/, "") })
-      : null,
-    resolutionLabel: isFix
-      ? options.resolutionLabel?.trim()
-        || (post.event ? t("post_card.cleared_at", { title: post.event.title }) : null)
-      : null,
+    resolutionLabel: isFix && post.event ? t("post_card.cleared_at", { title: post.event.title }) : null,
     handleLabel: identity.handleLabel,
     timeLabel,
-    contextLabel,
     bodyExpandable: body.length > BODY_CLAMP_CHARS
       || (body.match(/\n/g)?.length ?? 0) >= POST_BODY_CLAMP_LINES,
     showFixShowcase: isFix && fixLayout !== null,
     replyingToLabel: replyingToLabel(post, t),
+  }
+}
+
+const EMPTY_MEDIA: PostDTO["media"] = []
+
+export interface PostCardView {
+  isRepost: boolean
+  embedded: PostRefDTO | null
+  /** What the row tap opens: a repost opens the original it shows. */
+  rowPostId: string
+  /**
+   * A repost's comment and quote belong to the original, like the row tap and the menu. A deleted original
+   * cannot be opened, so those fall back to the wrapper (the server resolves its actions to the original).
+   */
+  actionTargetId: string
+  /** The original a repost can still jump to; null for an ordinary post or a deleted original. */
+  openableOriginalId: string | null
+  media: PostDTO["media"]
+  displayEvent: LinkedEventRef | null
+  displayReport: LinkedReportRef | null
+}
+
+export function buildPostCardView(post: PostDTO, model: PostCardModel): PostCardView {
+  const embedded = model.embeddedPost
+  const isRepost = model.variant === "repost" && embedded != null
+  const liveOriginal = isRepost && embedded && !embedded.deleted ? embedded : null
+  return {
+    isRepost,
+    embedded,
+    rowPostId: isRepost && embedded ? embedded.id : post.id,
+    actionTargetId: liveOriginal ? liveOriginal.id : post.id,
+    openableOriginalId: liveOriginal ? liveOriginal.id : null,
+    media: isRepost && embedded ? embedded.media ?? EMPTY_MEDIA : post.media ?? EMPTY_MEDIA,
+    displayEvent: isRepost ? (embedded?.event ?? null) : (post.event ?? null),
+    displayReport: isRepost ? (embedded?.report ?? null) : (post.report ?? null),
   }
 }
 

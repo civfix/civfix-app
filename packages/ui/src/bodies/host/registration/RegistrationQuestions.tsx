@@ -16,6 +16,7 @@ import { Text, Icon, iconMap } from "../../../typography"
 import { useT } from "../../../i18n"
 import { modalSheetInputFocusedStyle as fieldFocusedStyle } from "../../../primitives/ModalCardSheet"
 import { type AnswerMap, toggleMultiSelect } from "./questionModel"
+import { INPUT_MIN_HEIGHT } from "../hostLayout"
 
 export interface RegistrationQuestionsProps {
   questions: readonly EventQuestionDTO[]
@@ -214,7 +215,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textSubtle,
   },
   input: {
-    minHeight: 42,
+    minHeight: INPUT_MIN_HEIGHT,
     paddingHorizontal: t.space["3"],
     paddingVertical: t.space["2"],
     borderRadius: t.radius.md,

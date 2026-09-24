@@ -9,7 +9,7 @@ import {
   searchSourcesSettled,
   selectSearchHits,
   type SearchSourceState,
-} from "../searchResultsModel"
+} from "../search/searchResultsModel"
 
 function source(over: Partial<SearchSourceState> = {}): SearchSourceState {
   return { enabled: true, matchesQuery: true, fetching: false, errored: false, ...over }
@@ -251,7 +251,7 @@ describe("a keystroke sequence over a warm cache never regresses to a spinner", 
 })
 
 describe("SearchResults renders one coherent state at a time", () => {
-  const source = readFileSync(new URL("../SearchResults.tsx", import.meta.url), "utf8")
+  const source = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
 
   it("gates every section header on the SETTLED results phase, never on a per-query flag", () => {
     expect(source).toMatch(/\{view\.phase === "results" \? \(/)

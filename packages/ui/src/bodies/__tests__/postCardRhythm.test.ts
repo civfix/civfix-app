@@ -102,8 +102,7 @@ describe("PostCard row rhythm", () => {
 
   /**
    * A negative margin on the shared meta-row style is the absence-of-a-declaration that no rhythm number can
-   * see, and `EmbeddedPostMeta` shares the style without the button, so it would misalign every repost row.
-   * Only the source can show it.
+   * see. Only the source can show it.
    */
   it("lets no negative margin back into the shared meta-row style", () => {
     const block = styleBlock("const META_ROW: ViewStyle =")
@@ -182,7 +181,7 @@ describe("PostCard row rhythm", () => {
   // skeleton list must not add one either.
   it("gives the loading skeleton the same row-to-row rhythm as a loaded row", () => {
     const feed = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
-    expect(feed).toContain("list: { gap: POST_SURFACE === \"flat\" ? 0 : 12 }")
+    expect(feed).toContain('list: { gap: POST_SURFACE === "flat" ? 0 : t.space["3"] }')
     // Skeleton pitch = its own paddingVertical, twice; loaded pitch = the row's top padding, its zero bottom
     // padding and a hairline. They must agree to within a pixel.
     const skeletonPitch = 2 * r.rowPaddingTop

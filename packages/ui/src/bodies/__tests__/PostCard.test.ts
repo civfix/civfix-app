@@ -16,7 +16,6 @@ import {
  */
 const EN: Record<string, string> = {
   "post_card.repost_attribution": "{{name}} reposted",
-  "post_card.reported_by": "Reported by {{name}}",
   "post_card.cleared_at": "Cleared at the {{title}}",
   "post_card.open_thread_a11y": "Open {{name}}'s post",
   "post_card.permalink_a11y": "Posted {{time}} ago. Open this post",
@@ -109,11 +108,10 @@ const resolvedReport = {
 describe("PostCard model", () => {
   it("models an organizer event-promo post and mention body", () => {
     const post = basePost({ event })
-    const model = buildPostCardModel(post, t, { neighborhood: "Playa del Rey" })
+    const model = buildPostCardModel(post, t)
 
     expect(model.variant).toBe("event")
     expect(model.handleLabel).toBe("@friendsofballona")
-    expect(model.metaLabel).toContain("Playa del Rey")
     expect(splitPostBodyMentions(post.body ?? "", post.mentions)).toEqual([
       { kind: "text", text: "Join " },
       { kind: "mention", text: "@maria", userId: "person-2", handle: "maria" },
@@ -165,25 +163,14 @@ describe("PostCard model", () => {
     const model = buildPostCardModel(
       basePost({ report: resolvedReport, media: [media("before"), media("after")] }),
       t,
-      { neighborhood: "Echo Park", reportedBy: "Maria G.", resolutionLabel: "Fixed in 6 days" },
     )
 
     expect(model).toMatchObject({
       variant: "fix-confirmed",
       fixLayout: "before-after",
       categoryLabel: "Pavement distress",
-      reportedByLabel: "Reported by Maria G",
-      resolutionLabel: "Fixed in 6 days",
+      resolutionLabel: null,
     })
-  })
-
-  it("normalizes report attribution for the compact dot-separated fix header", () => {
-    const model = buildPostCardModel(basePost({ report: resolvedReport }), t, {
-      neighborhood: "Echo Park",
-      reportedBy: "Maria G...",
-    })
-
-    expect(model.reportedByLabel).toBe("Reported by Maria G")
   })
 
   it("models a fix-confirmed cleared post linked to an event", () => {
@@ -218,13 +205,11 @@ describe("PostCard model", () => {
     expect(model.showFixShowcase).toBe(false)
   })
 
-  it("splits the meta line into handle, timestamp and context", () => {
-    const model = buildPostCardModel(basePost(), t, { neighborhood: "Playa del Rey" })
+  it("splits the meta line into handle and timestamp", () => {
+    const model = buildPostCardModel(basePost(), t, { timeAgo: () => "2h" })
 
     expect(model.handleLabel).toBe("@friendsofballona")
-    expect(model.contextLabel).toBe("Playa del Rey")
-    // metaLabel stays the joined form for the surfaces that still render one string.
-    expect(model.metaLabel).toBe(`${model.timeLabel} · Playa del Rey`)
+    expect(model.timeLabel).toBe("2h")
   })
 
   it("has a null handle label when the author has no handle", () => {
@@ -512,9 +497,9 @@ describe("PostCard's link-role controls answer the keyboard", () => {
     expect(AFFORDANCES).toContain("export function linkKeyProps")
     expect(SRC).toMatch(/import \{[^}]*\blinkKeyProps,[^}]*\} from "\.\.\/theme"/)
     for (const marker of [
-      "accessibilityLabel={identityA11yLabel(identity, t)}", // MetaRow name
-      'accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}', // MetaRow "via"
-      'accessibilityLabel={t("post_card.permalink_a11y", { time: model.timeLabel })}', // MetaRow timestamp
+      "accessibilityLabel={identityA11yLabel(identity, t)}", // PostMetaRow name
+      'accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}', // PostMetaRow "via"
+      'accessibilityLabel={t("post_card.permalink_a11y", { time: timeLabel })}', // PostMetaRow timestamp
       "accessibilityLabel={model.replyingToLabel}", // the reply's parent link
     ]) {
       expect(pressableWith(marker), `${marker} lost its keyboard activation`).toContain("linkKeyProps(")

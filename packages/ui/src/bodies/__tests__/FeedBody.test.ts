@@ -2,11 +2,12 @@ import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween } from "../../__tests__/sourceGuards"
 import type { TFunction } from "i18next"
+import { tokens } from "@civfix/shared/tokens"
 import {
   FEED_ROW_BATCH_MS,
+  FEED_ROW_ENTER_MS,
   FEED_ROW_STAGGER_MAX_MS,
   FEED_ROW_STAGGER_MS,
-  buildFeedMotionModel,
   buildFeedHeaderModel,
   createFeedEntranceTracker,
   feedFooterState,
@@ -47,12 +48,20 @@ describe("FeedBody feed model", () => {
   })
 
   it("uses a 200ms ease-out transition unless reduced motion is enabled", () => {
-    expect(buildFeedMotionModel(false)).toEqual({ duration: 200, easing: "ease-out", animated: true })
-    expect(buildFeedMotionModel(true)).toEqual({ duration: 0, easing: "linear", animated: false })
+    expect(FEED_ROW_ENTER_MS).toBe(tokens.motion.dur.d2)
+    expect(tokens.motion.dur.d2).toBe(200)
+    expect(readFileSync(new URL("../feedModel.ts", import.meta.url), "utf8")).toContain(
+      "export const FEED_ROW_ENTER_MS = tokens.motion.dur.d2",
+    )
+    const feed = readFileSync(new URL("../FeedBody.tsx", import.meta.url), "utf8")
+    const timings = feed.match(/duration: FEED_ROW_ENTER_MS,\s*\n\s*easing: Easing\.out\(Easing\.cubic\)/g) ?? []
+    expect(timings).toHaveLength(3)
+    expect(feed).toMatch(/if \(reduceMotion\) settle\(\)\s*\n\s*else enter\(\)/)
+    expect(feed).toMatch(/if \(!plan\.animate \|\| reducedMotion\) \{\s*\n\s*progress\.stopAnimation\(\)\s*\n\s*progress\.setValue\(1\)/)
   })
 
   it("assembles a whole batch inside the ~350ms 'this list is here' threshold", () => {
-    expect(FEED_ROW_STAGGER_MAX_MS + buildFeedMotionModel(false).duration).toBeLessThanOrEqual(350)
+    expect(FEED_ROW_STAGGER_MAX_MS + FEED_ROW_ENTER_MS).toBeLessThanOrEqual(350)
   })
 
   it("derives loading, error, empty, and loaded states without hiding loaded posts", () => {
@@ -233,7 +242,7 @@ describe("the new-posts pill overlays the list on every surface", () => {
   })
 
   it("keeps the feed exactly in server rank order, de-duplicated by id only", () => {
-    expect(SRC).toContain("dedupePostsById(feed.data?.pages.flatMap((page) => page.items) ?? [])")
+    expect(SRC).toContain("dedupeById(feed.data?.pages.flatMap((page) => page.items) ?? [])")
     expect(SRC).not.toMatch(/posts\s*\.\s*sort|\.toSorted\(/)
   })
 })

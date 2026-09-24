@@ -8,6 +8,7 @@ const read = (rel: string): string => code(readFileSync(new URL(rel, import.meta
 
 const eventBlock = read("../EventAnnouncementsBlock.tsx")
 const hostBlock = read("../HostAnnouncementsBlock.tsx")
+const previewParts = read("../announcementPreviewParts.tsx")
 
 describe("seeAllTotal", () => {
   it("reports the count once every page has loaded", () => {
@@ -24,9 +25,19 @@ describe("the see-all link", () => {
     ["EventAnnouncementsBlock", eventBlock],
     ["HostAnnouncementsBlock", hostBlock],
   ])("%s drops the number rather than print the loaded page size", (_name, src) => {
-    expect(src).toContain("const total = seeAllTotal(rows.length, query.hasNextPage)")
-    expect(src).toContain('total === null ? t("announce.see_all_open") : t("announce.see_all", { total })')
+    expect(src).toMatch(
+      /<AnnouncementSeeAllLink\s+cleanupId=\{cleanupId\}\s+loaded=\{rows\.length\}\s+hasMore=\{query\.hasNextPage\}\s*\/>/,
+    )
     expect(src).not.toContain("{ total: rows.length }")
+    expect(src).not.toContain('t("announce.see_all"')
+  })
+
+  it("is labelled from seeAllTotal in the one shared link", () => {
+    expect(previewParts).toContain("const total = seeAllTotal(loaded, hasMore)")
+    expect(previewParts).toContain(
+      'total === null ? t("announce.see_all_open") : t("announce.see_all", { total })',
+    )
+    expect(previewParts).not.toContain("{ total: loaded }")
   })
 })
 
@@ -43,7 +54,7 @@ describe("the event page's announcements section", () => {
 
 describe("load-more links ignore taps while a page is already loading", () => {
   it.each([
-    ["EventDashboardBody.tsx", "hosted"],
+    ["dashboard/HostedEventsSection.tsx", "hosted"],
     ["dashboard/CollaboratorsSection.tsx", "membersQuery"],
     ["AnnouncementsBody.tsx", "query"],
     ["OrgPageBody.tsx", "query"],

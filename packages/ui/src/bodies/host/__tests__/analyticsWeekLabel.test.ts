@@ -1,11 +1,13 @@
 import { readFileSync } from "node:fs"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 import { weekDayLabel } from "../analyticsModel"
+import { surfaceSource } from "../../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
 const card = read("../dashboard/AnalyticsCarouselCard.tsx")
-const body = read("../EventAnalyticsBody.tsx")
+const page = surfaceSource("eventAnalytics")
+const hook = read("../useWeekLabel.ts")
 
 describe("weekDayLabel", () => {
   const zone = process.env.TZ
@@ -34,8 +36,11 @@ describe("weekDayLabel", () => {
 
 describe("both analytics surfaces share the one formatter", () => {
   it("builds the weekly axis labels from weekDayLabel, not a local Intl formatter", () => {
-    for (const src of [card, body]) {
-      expect(src).toContain("weekDayLabel(locale)")
+    expect(hook).toContain("weekDayLabel(locale)")
+    expect(hook).not.toContain("new Intl.DateTimeFormat")
+    for (const src of [card, page]) {
+      expect(src).toContain('import { useWeekLabel } from "../useWeekLabel"')
+      expect(src).toContain("useWeekLabel()")
       expect(src).not.toContain("new Intl.DateTimeFormat")
     }
   })

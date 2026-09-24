@@ -9,6 +9,7 @@ import {
   webCursorPointer,
   webHover,
   webTransition,
+  MIN_TOUCH_TARGET,
 } from "../../../theme"
 import { Icon, Text, TextLink, iconMap } from "../../../typography"
 import { DateBadge, MetaDot, Meter, PrimaryButton, SectionCard } from "../../../primitives"
@@ -18,6 +19,7 @@ import { boardHasTimedSlots, slotDisplayOrder } from "../../eventSlotsModel"
 import { PhaseDot } from "../PhaseHeader"
 import { ShiftRow } from "../ShiftRow"
 import { relativeLineFor } from "../hostSurfaceModel"
+import { relativeUntil } from "../hostTime"
 import { hostedEventWhen, hostedEventWindow } from "./dashboardModel"
 
 const MAX_STRIP_SHIFTS = 3
@@ -25,8 +27,6 @@ const MAX_STRIP_SHIFTS = 3
 const MIN_STRIP_SHIFTS = 2
 
 const SHARE_SIZE = 32
-
-const MIN_TOUCH_TARGET = 44
 
 const SHARE_HIT_SLOP = (MIN_TOUCH_TARGET - SHARE_SIZE) / 2
 
@@ -72,7 +72,7 @@ export function NextUpCard({
       : t("next_up.signed_up", { registered: event.registeredCount })
   const whenLine = underway
     ? relativeLineFor(relative(event.startsAt, now), (ago) => t("next_up.started", { ago }))
-    : relativeLineFor(relative(now, Date.parse(event.startsAt)), (rel) =>
+    : relativeLineFor(relativeUntil(relative, Date.parse(event.startsAt), now), (rel) =>
         t("next_up.starts_in", { dow: when.dow, time: when.timeWithZone, relative: rel }),
       )
 

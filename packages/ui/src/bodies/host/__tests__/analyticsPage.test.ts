@@ -1,9 +1,9 @@
-import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import type { HostedEventDTO } from "@civfix/shared"
 import { pickerOptions } from "../analyticsModel"
+import { surfaceSource } from "../../../__tests__/sourceGuards"
 
-const BODY = readFileSync(new URL("../EventAnalyticsBody.tsx", import.meta.url), "utf8")
+const BODY = surfaceSource("eventAnalytics")
 
 function hosted(over: Partial<HostedEventDTO> & { id: string }): HostedEventDTO {
   return {

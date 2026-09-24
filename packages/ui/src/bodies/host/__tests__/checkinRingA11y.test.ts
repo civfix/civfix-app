@@ -17,7 +17,7 @@ describe("the check-in ring's spoken label", () => {
   })
 
   it.each([
-    ["EventAnalyticsBody.tsx", "accessibilityLabel={checkInRingA11y(t, rate)}"],
+    ["analytics/EventDaySection.tsx", "accessibilityLabel={checkInRingA11y(t, rate)}"],
     ["dashboard/AnalyticsCarouselCard.tsx", "ringA11y={checkInRingA11y(t, rate)}"],
   ])("%s labels its ring through the shared wording", (file, wiring) => {
     const src = code(readFileSync(new URL(`../${file}`, import.meta.url), "utf8"))

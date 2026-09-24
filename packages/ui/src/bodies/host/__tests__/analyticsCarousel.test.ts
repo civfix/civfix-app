@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { expectThemeTouchTarget, surfaceSource } from "../../../__tests__/sourceGuards"
 import { carouselPage } from "../analyticsModel"
 
 const CARD = readFileSync(
@@ -14,7 +15,7 @@ const MEASURE = readFileSync(
   "utf8",
 )
 
-const ANALYTICS_BODY = readFileSync(new URL("../EventAnalyticsBody.tsx", import.meta.url), "utf8")
+const ANALYTICS_BODY = surfaceSource("eventAnalytics")
 
 const constant = (name: string): number => {
   const match = CARD.match(new RegExp(`const ${name} = ([0-9+\\s A-Z_]+)\\n`))
@@ -92,7 +93,7 @@ describe("the whole card is one pressable surface, clipped to its own radius", (
     expect(CARD.match(/state\.pressed \|\| webHover\(state\)/g) ?? []).toHaveLength(2)
     expect(CARD.match(/webHover\(state\)/g) ?? [], "no hover-only branch is left").toHaveLength(2)
     expect(CARD).not.toContain("panelHovered")
-    expect(CARD).toMatch(/panels\.map\(\(panel\) => \(\n\s+<View/)
+    expect(CARD).toMatch(/panels\.map\(\(panel, position\) => \(\n\s+<View/)
   })
 
   it("draws the footer row without a pressed or hover fill", () => {
@@ -215,7 +216,7 @@ describe("the page dots are real targets on web, where hitSlop does nothing", ()
   })
 
   it("still reaches 44 px on native without letting neighbouring dots overlap", () => {
-    expect(constant("MIN_TOUCH_TARGET")).toBe(44)
+    expect(expectThemeTouchTarget(CARD)).toBe(44)
     expect(CARD).toContain("const DOT_SLOP_Y = (MIN_TOUCH_TARGET - DOT_TARGET) / 2")
     expect(CARD).toContain("const DOT_HIT_SLOP = { top: DOT_SLOP_Y, bottom: DOT_SLOP_Y }")
     expect(CARD).not.toContain("hitSlop={8}")

@@ -67,7 +67,7 @@ export function ProfileTabBar({ model, onSelect }: ProfileTabBarProps) {
 const useStyles = makeThemedStyles((t) => ({
   track: {
     flexDirection: "row",
-    padding: 4,
+    padding: t.space["1"],
     borderRadius: t.radius.pill,
     backgroundColor: t.colors.bgAlt,
     marginTop: t.space["5"],
@@ -80,7 +80,7 @@ const useStyles = makeThemedStyles((t) => ({
     justifyContent: "center",
     minHeight: 34,
     paddingVertical: t.space["2"],
-    paddingHorizontal: 4,
+    paddingHorizontal: t.space["1"],
     borderRadius: t.radius.pill,
   },
   tabOn: {
@@ -92,7 +92,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   text: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 17,
     color: t.colors.textSubtle,
   },

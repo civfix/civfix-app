@@ -1,8 +1,4 @@
 {
-  "hero": {
-    "share_a11y": "Share profile",
-    "close_a11y": "Close profile"
-  },
   "stats": {
     "following": "Following",
     "followers_one": "Follower",

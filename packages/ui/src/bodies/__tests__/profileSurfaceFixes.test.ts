@@ -1,10 +1,11 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
 describe("another person's profile", () => {
-  const src = read("../PersonDetailBody.tsx")
+  const src = surfaceSource("personDetail")
 
   it("labels past events in the past tense, as the own profile does", () => {
     expect(src).toContain('role={t("profile-view:events.badge_hosted")}')
@@ -50,7 +51,7 @@ describe("notifications list", () => {
 })
 
 describe("service-hours transcript card", () => {
-  const src = read("../profile/ServiceHoursCertificateCard.tsx")
+  const src = surfaceSource("certificateCard")
 
   it("tells the person when copying failed instead of swallowing it", () => {
     expect(src).toContain('.catch(() => toast.show(t("transcript.copy_error"), { variant: "error" }))')

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { SEARCH_RESULT_CARD_LAYOUT, groupSearchResults } from "../searchResultsModel"
+import { SEARCH_RESULT_CARD_LAYOUT, groupSearchResults } from "../search/searchResultsModel"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 describe("SearchResults groups", () => {
   it("orders live results as events, reports, then suggested people", () => {
@@ -28,12 +29,14 @@ describe("SearchResults groups", () => {
   })
 
   it("renders each result as its own rounded card with nine-pixel spacing", () => {
-    expect(SEARCH_RESULT_CARD_LAYOUT).toEqual({
-      gap: 9,
-      radius: 18,
-      individualCards: true,
-      dividedContainer: false,
-    })
+    expect(SEARCH_RESULT_CARD_LAYOUT).toEqual({ gap: 9, radius: 18 })
+    const styles = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
+    const row = styles.match(/\n {2}row: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
+    expect(row).toMatch(/borderRadius: SEARCH_RESULT_CARD_LAYOUT\.radius,/)
+    expect(row).toMatch(/borderWidth: StyleSheet\.hairlineWidth,/)
+    expect(row).toMatch(/backgroundColor: t\.colors\.surface,/)
+    expect(row).not.toMatch(/borderBottomWidth/)
+    expect(styles).toContain("group: { gap: SEARCH_RESULT_CARD_LAYOUT.gap },")
   })
 })
 
@@ -45,8 +48,8 @@ describe("SearchResults groups", () => {
  * call site (a new third call site that forgets `viewer` reds on the length assertion, not just on tsc).
  */
 describe("report hits render through the shared ReportRowView", () => {
-  const searchResults = readFileSync(new URL("../SearchResults.tsx", import.meta.url), "utf8")
-  const searchBody = readFileSync(new URL("../SearchBody.tsx", import.meta.url), "utf8")
+  const searchResults = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
+  const searchBody = surfaceSource("search")
   const reportRow = readFileSync(new URL("../ReportRow.tsx", import.meta.url), "utf8")
 
   it("draws a ReportRowView, not a hand-rolled MapPin circle with a description subtitle", () => {
@@ -83,14 +86,12 @@ describe("report hits render through the shared ReportRowView", () => {
       /webHover\(state\) \? \(card \? styles\.rowCardHovered : styles\.rowHovered\) : null/,
     )
     const rowCard = reportRow.match(/\n {2}rowCard: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
-    // Radius, border and fill all follow `individualCards`, the SAME switch SearchResults' `styles.row`
-    // reads for the person/event/leaderboard hits - so retuning the search-card family cannot leave the
-    // report hit behind as the one hard-coded card in a flat list.
-    expect(rowCard).toMatch(
-      /borderRadius: SEARCH_RESULT_CARD_LAYOUT\.individualCards \? SEARCH_RESULT_CARD_LAYOUT\.radius : 0/,
-    )
-    expect(rowCard).toMatch(/borderWidth: SEARCH_RESULT_CARD_LAYOUT\.individualCards \?/)
-    expect(rowCard).toMatch(/backgroundColor: SEARCH_RESULT_CARD_LAYOUT\.individualCards \?/)
+    // The card reads the SAME radius SearchResults' `styles.row` reads for the person/event/leaderboard
+    // hits, and the same hairline + surface card chrome - so retuning the search-card family cannot leave
+    // the report hit behind as the one hard-coded card in the list.
+    expect(rowCard).toMatch(/borderRadius: SEARCH_RESULT_CARD_LAYOUT\.radius,/)
+    expect(rowCard).toMatch(/borderWidth: StyleSheet\.hairlineWidth,/)
+    expect(rowCard).toMatch(/backgroundColor: t\.colors\.surface,/)
     expect(rowCard).toMatch(/paddingHorizontal: t\.space\["3"\]/)
     // No `overflow` style KEY anywhere in the row (the standing warning in the comments is fine).
     expect(reportRow).not.toMatch(/^\s*overflow:/m)
@@ -100,10 +101,7 @@ describe("report hits render through the shared ReportRowView", () => {
   })
 
   it("threads the viewer location into every ReportHitRow call site", () => {
-    const callSites = [
-      ...searchResults.matchAll(/<ReportHitRow\b[^/]*\/>/g),
-      ...searchBody.matchAll(/<ReportHitRow\b[^/]*\/>/g),
-    ]
+    const callSites = [...searchBody.matchAll(/<ReportHitRow\b[^/]*\/>/g)]
     expect(callSites).toHaveLength(2)
     for (const [tag] of callSites) expect(tag).toMatch(/\bviewer=\{/)
   })
@@ -116,7 +114,7 @@ describe("report hits render through the shared ReportRowView", () => {
  * geometry every other list row in the app uses.
  */
 describe("the leaderboard row lives in its own module", () => {
-  const searchResults = readFileSync(new URL("../SearchResults.tsx", import.meta.url), "utf8")
+  const searchResults = readFileSync(new URL("../search/SearchResults.tsx", import.meta.url), "utf8")
   const leaderboardRow = readFileSync(new URL("../LeaderboardRow.tsx", import.meta.url), "utf8")
   const row = leaderboardRow.match(/\n {2}row: \{([\s\S]*?)\n {2}\},/)?.[1] ?? ""
 

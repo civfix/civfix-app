@@ -286,7 +286,7 @@ describe("the post card byline gives the name the first line and moves the handl
   })
 
   it("matches the other person-led rows in the package, which all stack name over @handle", () => {
-    for (const file of ["../SearchResults.tsx", "../ConnectionsBody.tsx", "../RosterRow.tsx", "../LeaderboardRow.tsx"]) {
+    for (const file of ["../search/SearchResults.tsx", "../ConnectionsBody.tsx", "../RosterRow.tsx", "../LeaderboardRow.tsx"]) {
       const source = code(read(file))
       expect(source).toMatch(/numberOfLines=\{1\}>\s*@\{(person|entry)\.handle\}/)
     }
@@ -304,9 +304,13 @@ describe("a shared post still previews the event or report attached to it", () =
     expect(card).toMatch(/<LinkedReportCard\s+report=\{\{\s*\.\.\.linkedRefToCardData\(reportCard\),/)
     expect(card).toMatch(/thumbUrl: reportCard\.thumbUrl \?\? localReportThumb\(reportCard\.id\),/)
     expect(card).toMatch(/layout="list"\s+headline="title"/)
+    const view = code(read("../postCardModel.ts"))
+    expect(view).toContain("displayEvent: isRepost ? (embedded?.event ?? null) : (post.event ?? null),")
+    expect(view).toContain("displayReport: isRepost ? (embedded?.report ?? null) : (post.report ?? null),")
     const feed = code(read("../PostCard.tsx"))
-    expect(feed).toContain("const displayEvent = isRepost ? (embedded?.event ?? null) : (post.event ?? null)")
-    expect(feed).toContain("const displayReport = isRepost ? (embedded?.report ?? null) : (post.report ?? null)")
+    expect(feed).toContain("const { isRepost, embedded, media, displayEvent, displayReport } = view")
+    expect(feed).toMatch(/<LinkedEventCard\s+event=\{displayEvent\}/)
+    expect(feed).toMatch(/<LinkedReportCard\s+report=\{\{ \.\.\.displayReport,/)
   })
 
   it("hangs the attachment below the body and the photos, never above the byline", () => {

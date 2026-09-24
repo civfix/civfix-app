@@ -43,17 +43,23 @@ export function registrationSurface(input: RegistrationSurfaceInput): Registrati
   }
 }
 
-export function selectableTicketTypes(types: readonly TicketTypeDTO[]): TicketTypeDTO[] {
+export function sortedTicketTypes(types: readonly TicketTypeDTO[]): TicketTypeDTO[] {
   return [...types].sort((a, b) => a.sortOrder - b.sortOrder)
 }
 
-function ticketTypeOpen(type: TicketTypeDTO): boolean {
+export function ticketTypeSelectable(type: TicketTypeDTO): boolean {
   return type.salesOpen && !type.soldOut
 }
 
+export function clampPartySize(value: number, max: number): number {
+  const ceiling = Math.max(1, Math.floor(max))
+  if (!Number.isFinite(value)) return 1
+  return Math.min(ceiling, Math.max(1, Math.floor(value)))
+}
+
 export function defaultTicketTypeId(types: readonly TicketTypeDTO[]): string | null {
-  const sorted = selectableTicketTypes(types)
-  const open = sorted.find(ticketTypeOpen)
+  const sorted = sortedTicketTypes(types)
+  const open = sorted.find(ticketTypeSelectable)
   return (open ?? sorted[0])?.id ?? null
 }
 
@@ -62,7 +68,7 @@ export function resolveTicketTypeId(
   pickedId: string | null,
 ): string | null {
   const picked = types.find((type) => type.id === pickedId)
-  if (picked && (ticketTypeOpen(picked) || !types.some(ticketTypeOpen))) return picked.id
+  if (picked && (ticketTypeSelectable(picked) || !types.some(ticketTypeSelectable))) return picked.id
   return defaultTicketTypeId(types)
 }
 

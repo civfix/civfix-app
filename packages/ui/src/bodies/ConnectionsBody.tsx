@@ -3,14 +3,14 @@ import { View, Pressable, StyleSheet, ActivityIndicator, Platform, type ViewStyl
 import { TextInput } from "../primitives/TextInput"
 import type { PersonDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
-import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../theme"
+import { makeThemedStyles, useTheme, webInputReset, focusRingProps, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, FollowButton, EmptyState, LoadingState, OrgAffiliationBadge, VerifiedBadge } from "../primitives"
 import { useAuthState, useFollowers, useFollowing } from "../data"
 import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
-import { idKeyExtractor } from "./navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 
 const ConnectionRow = memo(function ConnectionRow({
   person,
@@ -241,7 +241,6 @@ export function ConnectionsBody({ id, mode }: ConnectionsBodyProps) {
   )
 }
 
-const MIN_TOUCH_TARGET = 44
 const CLEAR_BTN_SIZE = 22
 const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2
 
@@ -253,7 +252,7 @@ const useStyles = makeThemedStyles((t) => ({
     minHeight: MIN_TOUCH_TARGET,
     marginTop: t.space["2"],
     marginBottom: t.space["2"],
-    paddingHorizontal: 12,
+    paddingHorizontal: t.space["3"],
     backgroundColor: t.colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
@@ -268,7 +267,7 @@ const useStyles = makeThemedStyles((t) => ({
     minWidth: 0,
     padding: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   clearBtn: {
@@ -325,7 +324,7 @@ const useStyles = makeThemedStyles((t) => ({
   name: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   handle: {
@@ -350,7 +349,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   searchMoreText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textMuted,
   },
 }))

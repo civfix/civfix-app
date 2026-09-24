@@ -12,7 +12,17 @@ import {
   UpdateOrganizationRequestSchema,
 } from "@civfix/shared"
 
-export const ORG_COUNTER_AT = 0.9
+const ORG_COUNTER_AT = 0.9
+
+// Mirrors the length caps in SocialLinksSchema's handle and WhatsApp regexes, which the contract does
+// not export as constants.
+const SOCIAL_HANDLE_MAX = 30
+
+const WHATSAPP_NUMBER_MAX = 15
+
+// UpdateOrganizationRequestSchema requires a uuid id; profile validation only reads the name and
+// description issues, so any well-formed id stands in.
+const VALIDATION_PLACEHOLDER_ID = "00000000-0000-4000-8000-000000000000"
 
 export interface OrgProfileDraft {
   name: string
@@ -102,7 +112,7 @@ export function linksDirty(draft: OrgLinksDraft, initial: OrgLinksDraft): boolea
 
 export function profileErrors(draft: OrgProfileDraft): Record<string, string> {
   const parsed = UpdateOrganizationRequestSchema.safeParse({
-    ...profilePayload("00000000-0000-4000-8000-000000000000", draft),
+    ...profilePayload(VALIDATION_PLACEHOLDER_ID, draft),
   })
   const out: Record<string, string> = {}
   if (!parsed.success) {
@@ -141,6 +151,10 @@ export const SOCIAL_PREFIX: Readonly<Record<SocialPlatform, string>> = {
   tiktok: "tiktok.com/@",
   x: "x.com/",
   whatsapp: "+",
+}
+
+export function socialHandleMax(platform: SocialPlatform): number {
+  return platform === "whatsapp" ? WHATSAPP_NUMBER_MAX : SOCIAL_HANDLE_MAX
 }
 
 export function counterVisible(length: number, max: number): boolean {

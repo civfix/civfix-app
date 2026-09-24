@@ -17,12 +17,10 @@
  */
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 const section = readFileSync(new URL("../profile/ServiceHoursSection.tsx", import.meta.url), "utf8")
-const certificate = readFileSync(
-  new URL("../profile/ServiceHoursCertificateCard.tsx", import.meta.url),
-  "utf8",
-)
+const certificate = surfaceSource("certificateCard")
 const notifications = readFileSync(new URL("../NotificationsBody.tsx", import.meta.url), "utf8")
 const privacy = readFileSync(new URL("../SettingsPrivacyBody.tsx", import.meta.url), "utf8")
 const prefs = readFileSync(new URL("../NotificationPrefsBody.tsx", import.meta.url), "utf8")

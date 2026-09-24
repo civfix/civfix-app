@@ -11,6 +11,7 @@ import type {
 import { appErrorCode } from "../data/errorCode"
 import { mergeDateTime } from "./calendarModel"
 import type { LinkedReportCardData } from "./linkedReportCards"
+import { optimisticPostId } from "./thread/threadModel"
 
 export interface FeedShareAuthUser {
   id: string
@@ -153,7 +154,7 @@ export function buildOptimisticFeedSharePost(args: OptimisticFeedSharePostArgs):
   const now = args.now ?? new Date().toISOString()
   const body = args.caption.trim().slice(0, FEED_CAPTION_MAX)
   return {
-    id: `optimistic-${Date.now()}`,
+    id: optimisticPostId(Date.now()),
     author: args.author,
     kind: "post",
     body: body.length > 0 ? body : null,

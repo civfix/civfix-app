@@ -20,14 +20,18 @@ import {
   deriveCleanupStatus,
   eventPhase,
   hostCapabilities,
-  hostStage,
   type EventWindowLike,
-  type HostStage,
 } from "@civfix/shared/host"
 import { addWallClockDays, formInstantMs } from "../../calendarModel"
 import { viewerTimeZone } from "../../../i18n"
-
-const DAY_MS = 86_400_000
+import { DAY_MS } from "../../timeUnits"
+import {
+  errorKeyFor,
+  hasActions,
+  orderByRankThenName,
+  pendingCount,
+  type RosterMemberActions,
+} from "../rosterModel"
 
 export interface DashboardScope {
   orgId: string | null
@@ -67,14 +71,6 @@ export interface HostedEventActions {
   edit: boolean
 }
 
-export const NO_HOSTED_EVENT_ACTIONS: HostedEventActions = {
-  hostTools: false,
-  chat: false,
-  announce: false,
-  duplicate: false,
-  edit: false,
-}
-
 export function hostedEventActions(event: HostedEventDTO, now: Date): HostedEventActions {
   const caps = hostedEventCapabilities(event)
   const manage = caps.has("manage_event")
@@ -98,7 +94,7 @@ export function hostedEventHasActions(actions: HostedEventActions): boolean {
   )
 }
 
-export function orgRoleCan(
+function orgRoleCan(
   role: OrganizationMemberRole | null | undefined,
   capability: HostCapability,
 ): boolean {
@@ -137,10 +133,6 @@ export function hostedEventPhase(event: HostedEventDTO, now: Date): EventPhase {
 
 export function hostedEventStatus(event: HostedEventDTO, now: Date): CleanupStatus {
   return deriveCleanupStatus(hostedEventWindow(event), now.getTime())
-}
-
-export function hostedEventStage(event: HostedEventDTO, now: Date): HostStage {
-  return hostStage(hostedEventWindow(event), now.getTime())
 }
 
 export interface NextUpModel {
@@ -237,7 +229,7 @@ export function sharePathFor(event: HostedEventDTO): string {
 }
 
 export function orgInviteQuotaReached(invites: readonly OrganizationInviteDTO[]): boolean {
-  return pendingOrgInvites(invites).length >= MAX_ORG_INVITES_PER_ORG
+  return pendingCount(invites) >= MAX_ORG_INVITES_PER_ORG
 }
 
 export function pendingOrgInvites(
@@ -246,27 +238,15 @@ export function pendingOrgInvites(
   return invites.filter((invite) => invite.status === "pending")
 }
 
-export const ORG_MEMBER_ROLE_ORDER: readonly OrganizationMemberRole[] = ["owner", "admin", "member"]
-
-export function orgMemberRank(role: OrganizationMemberRole): number {
-  const at = ORG_MEMBER_ROLE_ORDER.indexOf(role)
-  return at === -1 ? ORG_MEMBER_ROLE_ORDER.length : at
-}
+const ORG_MEMBER_ROLE_ORDER: readonly OrganizationMemberRole[] = ["owner", "admin", "member"]
 
 export function orderedOrgMembers(
   members: readonly OrganizationMemberDTO[],
 ): OrganizationMemberDTO[] {
-  return [...members].sort((a, b) => {
-    const byRank = orgMemberRank(a.role) - orgMemberRank(b.role)
-    if (byRank !== 0) return byRank
-    return a.person.name.localeCompare(b.person.name)
-  })
+  return orderByRankThenName(ORG_MEMBER_ROLE_ORDER, members)
 }
 
-export interface OrgMemberActions {
-  roles: readonly OrgSettableRole[]
-  canRemove: boolean
-}
+export type OrgMemberActions = RosterMemberActions<OrgSettableRole>
 
 export type OrgSettableRole = "admin" | "member"
 
@@ -297,7 +277,7 @@ export function orgMemberActions(input: {
 }
 
 export function orgMemberHasActions(actions: OrgMemberActions): boolean {
-  return actions.roles.length > 0 || actions.canRemove
+  return hasActions(actions)
 }
 
 export interface DuplicateStartSeed {
@@ -355,18 +335,24 @@ export function orgInviteIdentifierErrorKey(kind: OrgInviteIdentifierKind): stri
   return kind === "email" ? "team.invite_email_invalid" : "team.invite_handle_invalid"
 }
 
+const ORG_INVITE_ERROR_KEYS: ReadonlyMap<string, string> = new Map([
+  ["NOT_FOUND", "team.invite_error_no_account"],
+  ["CONFLICT", "team.invite_error_conflict"],
+  ["FORBIDDEN", "team.invite_error_forbidden"],
+  ["RATE_LIMITED", "team.invite_error_rate_limited"],
+  ["VALIDATION", "team.invite_error_invalid"],
+])
+
 export function orgInviteErrorKey(code: string | undefined): string {
-  if (code === "NOT_FOUND") return "team.invite_error_no_account"
-  if (code === "CONFLICT") return "team.invite_error_conflict"
-  if (code === "FORBIDDEN") return "team.invite_error_forbidden"
-  if (code === "RATE_LIMITED") return "team.invite_error_rate_limited"
-  if (code === "VALIDATION") return "team.invite_error_invalid"
-  return "team.invite_error_generic"
+  return errorKeyFor(ORG_INVITE_ERROR_KEYS, code, "team.invite_error_generic")
 }
 
+const COLLABORATOR_ERROR_KEYS: ReadonlyMap<string, string> = new Map([
+  ["CONFLICT", "team.error_conflict"],
+  ["FORBIDDEN", "team.error_forbidden"],
+  ["NOT_FOUND", "team.error_gone"],
+])
+
 export function collaboratorErrorKey(code: string | undefined): string {
-  if (code === "CONFLICT") return "team.error_conflict"
-  if (code === "FORBIDDEN") return "team.error_forbidden"
-  if (code === "NOT_FOUND") return "team.error_gone"
-  return "team.error_generic"
+  return errorKeyFor(COLLABORATOR_ERROR_KEYS, code, "team.error_generic")
 }

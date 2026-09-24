@@ -3,6 +3,7 @@ import { View, Pressable, StyleSheet } from "react-native"
 import type { EventRegistrationDTO, EventSlotDTO } from "@civfix/shared"
 import { DELETED_USER_LABEL } from "@civfix/shared"
 import {
+  MIN_TOUCH_TARGET,
   focusRingProps,
   makeThemedStyles,
   useTheme,
@@ -18,13 +19,11 @@ import { groupRosterBySlot, rosterListKey, type RosterListItem } from "../roster
 
 const CHECK_IN_MIN_HEIGHT = 32
 
-const MIN_TOUCH_TARGET = 44
-
 const CHECK_IN_SLOP_Y = (MIN_TOUCH_TARGET - CHECK_IN_MIN_HEIGHT) / 2
 
 const CHECK_IN_HIT_SLOP = { top: CHECK_IN_SLOP_Y, bottom: CHECK_IN_SLOP_Y }
 
-export function attendeeName(row: EventRegistrationDTO): string {
+function attendeeName(row: EventRegistrationDTO): string {
   if (row.person?.deleted) return DELETED_USER_LABEL
   return row.person?.name ?? row.guestName ?? ""
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react"
 import { Animated, Easing, Platform, View } from "react-native"
 import type { EventPhase } from "@civfix/shared"
-import { makeThemedStyles, useReducedMotion, useTheme } from "../../theme"
+import { makeThemedStyles, useReducedMotion, useTheme, type Theme } from "../../theme"
 import { useT } from "../../i18n"
 import { MetaDot } from "../../primitives/MetaDot"
 import { PrimaryButton } from "../../primitives/PrimaryButton"
@@ -67,16 +67,19 @@ export function PhaseDot({ phase }: PhaseDotProps) {
     return () => loop.stop()
   }, [live, pulse, reducedMotion, t.motion])
 
-  const color =
-    phase === "live"
-      ? t.colors.successInk
-      : phase === "upcoming"
-        ? t.colors.sky["500"]
-        : phase === "cancelled"
-          ? t.colors.dangerInk
-          : t.colors.textSubtle
+  return (
+    <Animated.View style={[styles.dot, { backgroundColor: phaseDotColor(t, phase), opacity: pulse }]} />
+  )
+}
 
-  return <Animated.View style={[styles.dot, { backgroundColor: color, opacity: pulse }]} />
+function phaseDotColor(t: Theme, phase: EventPhase): string {
+  const byPhase: Record<EventPhase, string> = {
+    live: t.colors.successInk,
+    upcoming: t.colors.sky["500"],
+    cancelled: t.colors.dangerInk,
+    ended: t.colors.textSubtle,
+  }
+  return byPhase[phase]
 }
 
 export function PhaseHeader({

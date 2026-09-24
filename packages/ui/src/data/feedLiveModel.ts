@@ -11,17 +11,6 @@ export function clearsPendingAtOffset(offsetY: number, pendingCount: number): bo
   return pendingCount > 0 && offsetY <= FEED_TOP_CLEAR_OFFSET
 }
 
-export function dedupePostsById<T extends { id: string }>(items: readonly T[]): readonly T[] {
-  const seen = new Set<string>()
-  const unique: T[] = []
-  for (const item of items) {
-    if (seen.has(item.id)) continue
-    seen.add(item.id)
-    unique.push(item)
-  }
-  return unique.length === items.length ? items : unique
-}
-
 /**
  * iOS and Android have no polite live region for the pill, so native announces explicitly. Only the
  * appearance edge speaks: every later arrival while the pill is up would otherwise interrupt the reader.

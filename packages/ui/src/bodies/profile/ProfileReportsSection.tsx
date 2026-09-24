@@ -145,7 +145,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
+    gap: t.space["1"],
     paddingHorizontal: t.space["3"],
   },
   seeAllReportsText: {

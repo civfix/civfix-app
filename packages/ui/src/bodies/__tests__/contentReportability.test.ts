@@ -70,7 +70,8 @@ describe("the overflow button is one primitive with one hit target", () => {
   it("is exported from the primitives barrel", () => {
     expect(BARREL).toContain('export { POST_OVERFLOW_ROW_LIFT, PostOverflowButton } from "./PostOverflowButton"')
     expect(BUTTON).toContain("export const POST_OVERFLOW_ROW_LIFT: ViewStyle = IS_WEB ? { zIndex: 1 } : {}")
-    expect((SURFACES["PostCard.tsx"] ?? "").split("<View style={[styles.metaRow, POST_OVERFLOW_ROW_LIFT]}>").length).toBe(3)
+    expect((SURFACES["PostCard.tsx"] ?? "").split("<View style={[styles.metaRow, POST_OVERFLOW_ROW_LIFT]}>").length).toBe(2)
+    expect((SURFACES["PostCard.tsx"] ?? "").match(/<PostMetaRow\s+variant=\{isRepost \? "repost" : "own"\}/g)).toHaveLength(1)
     expect(SURFACES["thread/ThreadReplyRow.tsx"] ?? "").toContain("<View style={[styles.metaRow, POST_OVERFLOW_ROW_LIFT]}>")
   })
 

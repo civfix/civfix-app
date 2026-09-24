@@ -23,7 +23,7 @@
  * on a keyboard signal: gating this surface's layout on the keyboard was tried and rejected.
  */
 import type { View } from "../nav"
-import { getSearchBodyMode } from "./searchRecentStore"
+import { getSearchBodyMode } from "./search/searchRecentStore"
 
 export type SearchSurface = "results" | "recents" | "discovery"
 

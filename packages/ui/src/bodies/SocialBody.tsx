@@ -3,7 +3,7 @@ import { View, Pressable, StyleSheet, Platform, type ViewStyle } from "react-nat
 import { TextInput } from "../primitives/TextInput"
 import type { PersonDTO, UserSearchResultDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webInputReset, webTransition, headingLevel } from "../theme"
+import { focusRingProps, makeThemedStyles, space, useTheme, useLayoutMode, webHover, webInputReset, webTransition, headingLevel, MIN_TOUCH_TARGET } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { Avatar, FollowButton, SignInPrompt } from "../primitives"
 import {
@@ -19,7 +19,7 @@ import { useNavStore } from "../nav"
 import { useScrollHost } from "../shell/ScrollHost"
 import { useT } from "../i18n"
 import { FeedNotice } from "./FeedNotice"
-import { idKeyExtractor } from "./navHelpers"
+import { idKeyExtractor } from "../primitives/listKeys"
 import { useRowHover } from "./rowHover"
 import { resolveDiscoveryGeoid } from "./leaderboardGeoid"
 
@@ -393,7 +393,6 @@ function SearchResultsHeader({ count }: { count: number }) {
   )
 }
 
-const MIN_TOUCH_TARGET = 44
 const ICON_BTN_SIZE = 32
 const ROW_GAP = space["3"]
 const ICON_BTN_HIT_SLOP = {
@@ -413,7 +412,7 @@ const useStyles = makeThemedStyles((t) => ({
     minHeight: MIN_TOUCH_TARGET,
     marginTop: t.space["2"],
     marginBottom: t.space["2"],
-    paddingHorizontal: 12,
+    paddingHorizontal: t.space["3"],
     backgroundColor: t.colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: t.colors.border,
@@ -428,7 +427,7 @@ const useStyles = makeThemedStyles((t) => ({
     minWidth: 0,
     padding: 0,
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   clearBtn: {
@@ -487,7 +486,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sectionLink: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.accentText,
   },
   row: {
@@ -535,7 +534,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   name: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   handle: {

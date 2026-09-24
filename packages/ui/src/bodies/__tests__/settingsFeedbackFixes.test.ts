@@ -82,13 +82,18 @@ describe("Settings > Account avatar and data export", () => {
     expect(src).toContain("avatarBusyRef.current = false")
   })
 
+  const dataExport = read("../settings/DataExportSection.tsx")
+
   it("announces the export outcome from the request, so a language switch does not re-announce", () => {
-    expect(src).toMatch(/requestMyData\.mutate\(undefined, \{\s*onSuccess:/)
-    expect(src).not.toContain("[requestMyData.status, requestMyData.data, t]")
+    expect(src).toContain("<DataExportSection requestMyData={requestMyData}")
+    expect(dataExport).toMatch(/requestMyData\.mutate\(undefined, \{\s*onSuccess:/)
+    for (const file of [src, dataExport]) {
+      expect(file).not.toContain("[requestMyData.status, requestMyData.data, t]")
+    }
   })
 
   it("inks the export failure note with the AA danger token", () => {
-    expect(src).toMatch(/dataNoteWarnText: \{\s*color: t\.colors\.dangerInk,/)
+    expect(dataExport).toMatch(/dataNoteWarnText: \{\s*color: t\.colors\.dangerInk,/)
   })
 })
 

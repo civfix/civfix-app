@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
-import { getSearchBodyMode } from "../searchRecentStore"
+import { getSearchBodyMode } from "../search/searchRecentStore"
 import { inlineEmptyHeight } from "../../primitives/stateViewModel"
+import { surfaceSource } from "../../__tests__/sourceGuards"
 
 describe("SearchBody state", () => {
   it("keeps the resting search page for a blank navigation query", () => {
@@ -22,7 +22,7 @@ describe("SearchBody state", () => {
  * field is the deliberate trade, not the bug.
  */
 describe("SearchBody top-anchored recents", () => {
-  const source = readFileSync(new URL("../SearchBody.tsx", import.meta.url), "utf8")
+  const source = surfaceSource("search")
 
   it("top-anchors the recents surface: one unconditional content style, no flex-end", () => {
     // A single content style, applied as a bare style (not an array), so there is no seam for a
@@ -126,7 +126,7 @@ describe("SearchBody top-anchored recents", () => {
  * anyone who "optimises" them back into one.
  */
 describe("Discovery leaderboard asks for the extras threshold, renders the preview", () => {
-  const source = readFileSync(new URL("../SearchBody.tsx", import.meta.url), "utf8")
+  const source = surfaceSource("search")
 
   it("requests LEADERBOARD_REQUEST_LIMIT, never the preview limit", () => {
     expect(source).toContain("useJurisdictionLeaderboard(geo?.geoid, { limit: LEADERBOARD_REQUEST_LIMIT })")
@@ -148,7 +148,7 @@ describe("Discovery leaderboard asks for the extras threshold, renders the previ
  * vanish, while the FULL page shows a "be the first" empty state for the very same geoid.
  */
 describe("Discovery leaderboard survives an empty board", () => {
-  const source = readFileSync(new URL("../SearchBody.tsx", import.meta.url), "utf8")
+  const source = surfaceSource("search")
   const emptyNoticeHeight = inlineEmptyHeight
   const LEGACY_EMPTY_CARD_HEIGHT = { titleOnly: 52, withBody: 94 }
 
@@ -212,10 +212,10 @@ describe("Discovery leaderboard survives an empty board", () => {
  * search page and the host screens drift apart.
  */
 describe("the Discovery leaderboard draws the shared row", () => {
-  const source = readFileSync(new URL("../SearchBody.tsx", import.meta.url), "utf8")
+  const source = surfaceSource("search")
 
   it("imports LeaderboardRow from its own module and renders it for both the list and the you-row", () => {
-    expect(source).toContain('import { LeaderboardRow } from "./LeaderboardRow"')
+    expect(source).toContain('import { LeaderboardRow } from "../LeaderboardRow"')
     expect(source).not.toMatch(/LeaderboardHitRow/)
     expect(source).toContain("<LeaderboardRow key={entry.userId} entry={entry} />")
     expect(source).toContain("<LeaderboardRow key={youEntry.userId} entry={youEntry} you />")

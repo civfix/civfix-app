@@ -11,7 +11,7 @@ import {
 import { TextInput } from "../../primitives/TextInput"
 import type { PostDTO, UserMentionDTO } from "@civfix/shared"
 import { tokens } from "@civfix/shared/tokens"
-import { focusRingProps, makeThemedStyles, useTheme, webInputReset } from "../../theme"
+import { focusRingProps, makeThemedStyles, useTheme, webInputReset, MIN_TOUCH_TARGET } from "../../theme"
 import { Avatar, MentionAutocomplete } from "../../primitives"
 import { useToast } from "../../primitives/Toast"
 import type { MentionCandidate } from "../../primitives"
@@ -22,7 +22,7 @@ import { actableOrganizations, useMyOrganizations, useMyProfile } from "../../da
 import { useCreatePost } from "../../data/hooks/posts"
 import { useT } from "../../i18n"
 import { useHaptics } from "../../capabilities"
-import { activePostMentions } from "../postComposerModel"
+import { POST_BODY_MAX_LENGTH, activePostMentions } from "../postComposerModel"
 import {
   POST_COMPOSER_MEDIA_CAP,
   carriedMediaIndex,
@@ -32,6 +32,7 @@ import {
   snapshotCarriedMedia,
 } from "../postComposerMedia"
 import { resolvePostSubmit } from "../postComposerSubmit"
+import { optimisticPostId } from "../thread/threadModel"
 import {
   restoreFailedPostSubmit,
   selectPostComposerDraft,
@@ -51,7 +52,6 @@ import {
 } from "./inlineComposerModel"
 
 const AVATAR_SIZE = 40
-const MIN_TOUCH_TARGET = 44
 
 export function InlineComposer() {
   const draftOwner = usePostComposerStore(selectPostComposerDraftOwner)
@@ -259,7 +259,7 @@ function InlineComposerForOwner() {
     if (!profile || resolution.action !== "submit") return
     submittingRef.current = true
     const optimistic: PostDTO = {
-      id: `optimistic-${Date.now()}`,
+      id: optimisticPostId(Date.now()),
       author: profile,
       organization: postAsOrganization
         ? {
@@ -407,7 +407,7 @@ function InlineComposerForOwner() {
             placeholder={model.placeholder}
             placeholderTextColor={th.colors.textSubtle}
             multiline
-            maxLength={2000}
+            maxLength={POST_BODY_MAX_LENGTH}
             autoFocus
             style={[webInputReset, styles.input]}
           />
@@ -554,7 +554,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   postButton: {
     minHeight: MIN_TOUCH_TARGET,
-    paddingHorizontal: 16,
+    paddingHorizontal: t.space["4"],
     borderRadius: t.radius.pill,
     alignItems: "center",
     justifyContent: "center",
@@ -564,7 +564,7 @@ const useStyles = makeThemedStyles((t) => ({
   postButtonText: {
     color: t.colors.neutral.card,
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     lineHeight: 18,
   },
   postButtonTextDisabled: { color: t.colors.textSubtle },

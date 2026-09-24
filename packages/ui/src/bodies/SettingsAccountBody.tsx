@@ -1,8 +1,8 @@
 import React, { useCallback, useRef, useState } from "react"
 import { View } from "react-native"
-import type { SocialLinks } from "@civfix/shared"
+import type { SocialLinks, UpdateProfileRequest } from "@civfix/shared"
 import { makeThemedStyles, useTheme } from "../theme"
-import { Text, Icon, iconMap } from "../typography"
+import { iconMap } from "../typography"
 import {
   EmptyState,
   SettingsRow,
@@ -24,31 +24,17 @@ import {
 } from "../data"
 import { useCamera } from "../capabilities"
 import { useScrollHost } from "../shell/ScrollHost"
-import { announce } from "../announce"
 import { useT } from "../i18n"
-import { appErrorCode } from "../data/errorCode"
 import { DeleteAccountModal } from "./DeleteAccountModal"
 import { AvatarSettingRow } from "./settings/AvatarSettingRow"
 import { avatarErrorMessage, uploadAvatar } from "./settings/avatarUpload"
 import { BioEditor } from "./settings/BioEditor"
 import { ChangeUsernameEditor } from "./settings/ChangeUsernameEditor"
+import { DataExportSection } from "./settings/DataExportSection"
 import { DisplayNameEditor } from "./settings/DisplayNameEditor"
 import { DonationLinkEditor } from "./settings/DonationLinkEditor"
 import { PrimaryOrganizationPicker } from "./settings/PrimaryOrganizationPicker"
 import { SocialLinksEditor } from "./settings/SocialLinksEditor"
-
-type Translate = (key: string, options?: Record<string, unknown>) => string
-
-function requestErrorMessage(err: unknown, t: Translate): string {
-  switch (appErrorCode(err)) {
-    case "VALIDATION":
-      return t("data_export.error.no_email")
-    case "RATE_LIMITED":
-      return t("data_export.error.rate_limited")
-    default:
-      return t("data_export.error.generic")
-  }
-}
 
 export function SettingsAccountBody() {
   const styles = useStyles()
@@ -70,28 +56,25 @@ export function SettingsAccountBody() {
   // chosen, so a second tap while the OS picker is open must not open a second picker.
   const avatarBusyRef = useRef(false)
 
-  const onSaveName = useCallback(
-    (displayName: string): Promise<void> => {
+  // Every save re-sends the current handle and display name, which the request requires.
+  const saveProfile = useCallback(
+    (patch: Partial<UpdateProfileRequest>): Promise<void> => {
       if (!profile) return Promise.resolve()
       return updateProfile
-        .mutateAsync({ handle: profile.handle ?? "", displayName })
+        .mutateAsync({ handle: profile.handle ?? "", displayName: profile.name, ...patch })
         .then(() => undefined)
     },
     [profile, updateProfile],
   )
 
+  const onSaveName = useCallback(
+    (displayName: string): Promise<void> => saveProfile({ displayName }),
+    [saveProfile],
+  )
+
   const onSaveBio = useCallback(
-    (bio: string): Promise<void> => {
-      if (!profile) return Promise.resolve()
-      return updateProfile
-        .mutateAsync({
-          handle: profile.handle ?? "",
-          displayName: profile.name,
-          bio: bio.length > 0 ? bio : null,
-        })
-        .then(() => undefined)
-    },
-    [profile, updateProfile],
+    (bio: string): Promise<void> => saveProfile({ bio: bio.length > 0 ? bio : null }),
+    [saveProfile],
   )
 
   const onChangeAvatar = useCallback(() => {
@@ -103,11 +86,7 @@ export function SettingsAccountBody() {
         if (!picked || picked.kind !== "image") return
         setAvatarUploading(true)
         const avatarUploadId = await uploadAvatar(api, camera, picked)
-        await updateProfile.mutateAsync({
-          handle: profile.handle ?? "",
-          displayName: profile.name,
-          avatarUploadId,
-        })
+        await saveProfile({ avatarUploadId })
       } catch (err) {
         toast.show(avatarErrorMessage(err, t), { variant: "error" })
       } finally {
@@ -115,62 +94,23 @@ export function SettingsAccountBody() {
         setAvatarUploading(false)
       }
     })()
-  }, [api, camera, profile, updateProfile, toast, t])
+  }, [api, camera, profile, saveProfile, toast, t])
 
   const onSaveHandle = useCallback(
-    (handle: string): Promise<void> => {
-      if (!profile) return Promise.resolve()
-      return updateProfile
-        .mutateAsync({
-          handle,
-          displayName: profile.name,
-          bio: profile.bio && profile.bio.length > 0 ? profile.bio : null,
-        })
-        .then(() => undefined)
-    },
-    [profile, updateProfile],
+    (handle: string): Promise<void> =>
+      saveProfile({ handle, bio: profile?.bio && profile.bio.length > 0 ? profile.bio : null }),
+    [profile, saveProfile],
   )
 
   const onSaveSocialLinks = useCallback(
-    (socialLinks: SocialLinks): Promise<void> => {
-      if (!profile) return Promise.resolve()
-      return updateProfile
-        .mutateAsync({
-          handle: profile.handle ?? "",
-          displayName: profile.name,
-          socialLinks,
-        })
-        .then(() => undefined)
-    },
-    [profile, updateProfile],
+    (socialLinks: SocialLinks): Promise<void> => saveProfile({ socialLinks }),
+    [saveProfile],
   )
 
   const onSaveDonationUrl = useCallback(
-    (donationUrl: string | null): Promise<void> => {
-      if (!profile) return Promise.resolve()
-      return updateProfile
-        .mutateAsync({
-          handle: profile.handle ?? "",
-          displayName: profile.name,
-          donationUrl,
-        })
-        .then(() => undefined)
-    },
-    [profile, updateProfile],
+    (donationUrl: string | null): Promise<void> => saveProfile({ donationUrl }),
+    [saveProfile],
   )
-
-  const onRequestData = useCallback(() => {
-    if (requestMyData.isPending) return
-    requestMyData.mutate(undefined, {
-      onSuccess: (data) =>
-        announce(
-          data?.email
-            ? t("data_export.announce.success_email", { email: data.email })
-            : t("data_export.announce.success"),
-        ),
-      onError: () => announce(t("data_export.announce.failed")),
-    })
-  }, [requestMyData, t])
 
   if (!isAuthenticated && !isPending) {
     return (
@@ -270,35 +210,7 @@ export function SettingsAccountBody() {
 
       <PrimaryOrganizationPicker style={styles.sectionGap} />
 
-      <SettingsSection label={t("section.data")} style={styles.sectionGap}>
-        <SettingsRow
-          icon="Download"
-          label={requestMyData.isPending ? t("data_export.requesting") : t("data_export.request")}
-          sub={t("data_export.sub")}
-          onPress={onRequestData}
-          disabled={requestMyData.isPending}
-          chevron={false}
-          accessibilityLabel={t("data_export.request_a11y")}
-        />
-      </SettingsSection>
-
-      {requestMyData.isSuccess ? (
-        <View style={styles.dataNote}>
-          <Icon icon={iconMap.CheckCircle2} size={14} color={th.colors.moss["600"]} />
-          <Text style={styles.dataNoteText}>
-            {requestMyData.data?.email
-              ? t("data_export.note.success_email", { email: requestMyData.data.email })
-              : t("data_export.note.success")}
-          </Text>
-        </View>
-      ) : requestMyData.isError ? (
-        <View style={styles.dataNote}>
-          <Icon icon={iconMap.AlertCircle} size={14} color={th.colors.bloom["600"]} />
-          <Text style={[styles.dataNoteText, styles.dataNoteWarnText]}>
-            {requestErrorMessage(requestMyData.error, t)}
-          </Text>
-        </View>
-      ) : null}
+      <DataExportSection requestMyData={requestMyData} style={styles.sectionGap} />
 
       <SettingsSection style={styles.sectionGap}>
         <SettingsRow
@@ -336,21 +248,5 @@ const useStyles = makeThemedStyles((t) => ({
   },
   skeletonLabel: {
     marginBottom: t.space["3"],
-  },
-  dataNote: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 2,
-    marginTop: t.space["2"],
-  },
-  dataNoteText: {
-    flex: 1,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12.5,
-    color: t.colors.moss["700"],
-  },
-  dataNoteWarnText: {
-    color: t.colors.dangerInk,
   },
 }))

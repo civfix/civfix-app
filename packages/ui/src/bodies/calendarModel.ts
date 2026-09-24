@@ -6,6 +6,7 @@ import {
   zoneShortName,
   type WallClock,
 } from "@civfix/shared/datetime"
+import { DAY_MS } from "./timeUnits"
 
 export function startOfDay(d: Date): Date {
   const x = new Date(d)
@@ -55,8 +56,6 @@ export function isScheduleUntouched(
 }
 
 const MIN_EVENT_DURATION_MS = MIN_EVENT_DURATION_MINUTES * 60_000
-
-const DAY_MS = 24 * 3_600_000
 
 export const DURATION_CHIP_HOURS = [1, 2, 3, 4] as const
 

@@ -59,7 +59,6 @@
   "post_card": {
     "fix_confirmed": "해결 확인됨",
     "repost_attribution": "{{name}}님이 리포스트함",
-    "reported_by": "{{name}}님이 신고",
     "cleared_at": "{{title}}에서 해결됨",
     "media_before": "이전",
     "media_after": "이후",

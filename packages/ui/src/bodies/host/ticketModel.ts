@@ -1,4 +1,4 @@
-import type { EventAddressSource, MyEventTicketDTO } from "@civfix/shared"
+import type { EventAddressSource } from "@civfix/shared"
 import { isVerifiedEventAddress } from "@civfix/shared"
 import type { AddressPoint } from "../addressRowModel"
 
@@ -26,7 +26,7 @@ export function ticketWhen(ticket: TicketWhen, locale?: string): string {
   return `${day} · ${time}`
 }
 
-export function ticketWhere(ticket: { address?: string | null | undefined }): string | null {
+function ticketWhere(ticket: { address?: string | null | undefined }): string | null {
   const value = ticket.address?.trim()
   return value && value.length > 0 ? value : null
 }
@@ -53,10 +53,6 @@ export function ticketAddressView(
   const point =
     event.lat != null && event.lng != null ? { lat: event.lat, lng: event.lng } : null
   return { address, point, verified: isVerifiedEventAddress(event.addressSource, address) }
-}
-
-export function ticketSeatCount(ticket: MyEventTicketDTO): number {
-  return ticket.seats.length
 }
 
 const TICKET_CODE_GROUP = 4

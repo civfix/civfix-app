@@ -5,14 +5,10 @@ import {
   selectPostComposerDraft,
   selectPostComposerDraftHidden,
   selectPostComposerDraftOwner,
-  selectPostComposerMediaUploadIds,
-  selectPostComposerMentionedUserIds,
-  selectPostComposerTargetId,
   usePostComposerStore,
 } from "../postComposerStore"
 
 const maya: UserMentionDTO = { id: "maya", handle: "mayal", displayName: "Maya Lopez" }
-const dev: UserMentionDTO = { id: "dev", handle: "devp", displayName: "Dev Patel" }
 const selectedEvent: LinkedEventRef = {
   id: "event-1",
   title: "Neighborhood garden cleanup",
@@ -38,15 +34,15 @@ describe("postComposerStore", () => {
   it("keeps a serializable draft alive outside a composer mount", () => {
     const store = usePostComposerStore.getState()
     store.setBody("Meeting @mayal at the river")
-    store.toggleMention(maya)
-    store.setAttachedEventId("event-1")
+    store.setMentionedUsers([maya])
+    store.setAttachedEvent(selectedEvent)
     store.setAttachedReportId("report-1")
 
     expect(usePostComposerStore.getState().draft).toEqual({
       body: "Meeting @mayal at the river",
       mentionedUsers: [maya],
       attachedEventId: "event-1",
-      attachedEvent: null,
+      attachedEvent: selectedEvent,
       attachedReportId: "report-1",
       attachedReport: null,
       media: [],
@@ -59,16 +55,6 @@ describe("postComposerStore", () => {
     })
   })
 
-  it("toggles mentions by user id and exposes ids for post submission", () => {
-    const store = usePostComposerStore.getState()
-    store.toggleMention(maya)
-    store.toggleMention(dev)
-    store.toggleMention({ ...maya, displayName: "Updated Maya" })
-
-    expect(usePostComposerStore.getState().draft.mentionedUsers).toEqual([dev])
-    expect(selectPostComposerMentionedUserIds(usePostComposerStore.getState())).toEqual(["dev"])
-  })
-
   it("stores the selected event preview with its submission id", () => {
     usePostComposerStore.getState().setAttachedEvent(selectedEvent)
 
@@ -79,30 +65,32 @@ describe("postComposerStore", () => {
   })
 
   it("tracks media upload ids and status without retaining non-serializable upload objects", () => {
-    const store = usePostComposerStore.getState()
-    store.addMedia({
+    const uploading = {
       uri: "file:///cleanup.jpg",
-      kind: "image",
+      kind: "image" as const,
       posterUri: null,
       uploadId: null,
-      status: "uploading",
-    })
-    store.addMedia({
-      uri: "file:///before.mp4",
-      kind: "video",
-      posterUri: "file:///before-poster.jpg",
-      uploadId: "upload-2",
-      status: "ready",
-    })
-    store.setMediaUpload("file:///cleanup.jpg", "upload-1", "ready")
+      status: "uploading" as const,
+      upload: { abort: () => undefined },
+    }
+    usePostComposerStore.getState().setMedia([
+      uploading,
+      {
+        uri: "file:///before.mp4",
+        kind: "video",
+        posterUri: "file:///before-poster.jpg",
+        uploadId: "upload-2",
+        status: "ready",
+      },
+    ])
 
     expect(usePostComposerStore.getState().draft.media).toEqual([
       {
         uri: "file:///cleanup.jpg",
         kind: "image",
         posterUri: null,
-        uploadId: "upload-1",
-        status: "ready",
+        uploadId: null,
+        status: "uploading",
       },
       {
         uri: "file:///before.mp4",
@@ -112,33 +100,29 @@ describe("postComposerStore", () => {
         status: "ready",
       },
     ])
-    expect(selectPostComposerMediaUploadIds(usePostComposerStore.getState())).toEqual(["upload-1", "upload-2"])
-
-    store.removeMedia("file:///cleanup.jpg")
-    expect(usePostComposerStore.getState().draft.media.map((media) => media.uri)).toEqual(["file:///before.mp4"])
   })
 
-  it("keeps quote and reply target ids separate while mode selects the active target", () => {
+  it("keeps quote and reply target ids separate while mode changes", () => {
     const store = usePostComposerStore.getState()
     store.setQuotePostId("post-quote")
     store.setReplyToPostId("post-reply")
 
-    store.setMode("quote")
-    expect(selectPostComposerTargetId(usePostComposerStore.getState())).toBe("post-quote")
-
-    store.setMode("reply")
-    expect(selectPostComposerTargetId(usePostComposerStore.getState())).toBe("post-reply")
-
-    store.setMode("post")
-    expect(selectPostComposerTargetId(usePostComposerStore.getState())).toBeNull()
+    for (const mode of ["quote", "reply", "post"] as const) {
+      store.setMode(mode)
+      expect(usePostComposerStore.getState().draft).toMatchObject({
+        mode,
+        quotePostId: "post-quote",
+        replyToPostId: "post-reply",
+      })
+    }
   })
 
   it("resets every draft field after publishing or discarding", () => {
     const store = usePostComposerStore.getState()
     store.setBody("Ready to publish")
-    store.toggleMention(maya)
-    store.setAttachedEventId("event-1")
-    store.addMedia({ uri: "file:///cleanup.jpg", kind: "image", posterUri: null, uploadId: "upload-1", status: "ready" })
+    store.setMentionedUsers([maya])
+    store.setAttachedEvent(selectedEvent)
+    store.setMedia([{ uri: "file:///cleanup.jpg", kind: "image", posterUri: null, uploadId: "upload-1", status: "ready" }])
     store.setQuotePostId("post-1")
     store.setMode("quote")
 
@@ -187,7 +171,6 @@ describe("postComposerStore", () => {
       pendingCreate: null,
       ownerId: null,
     })
-    expect(selectPostComposerTargetId(usePostComposerStore.getState())).toBe("post-parent")
   })
 
   it("carries the chosen author organization across a reset, and a genuine exit keeps it too", () => {
@@ -214,7 +197,7 @@ describe("postComposerStore", () => {
     const store = usePostComposerStore.getState()
     store.setOrganizationId("org-a")
     store.setBody("Private note from @mayal")
-    store.toggleMention(maya)
+    store.setMentionedUsers([maya])
     store.setAttachedEvent(selectedEvent)
     store.setPendingCreate("report")
     store.claimPendingCreate("report")
@@ -451,10 +434,10 @@ describe("postComposerStore create round trip", () => {
   it("discardAttachments drops attachments, media and intent while keeping body and mentions", () => {
     const store = usePostComposerStore.getState()
     store.setBody("Look at this @mayal")
-    store.toggleMention(maya)
+    store.setMentionedUsers([maya])
     store.setAttachedEvent(selectedEvent)
     store.setAttachedReport(reportRef)
-    store.addMedia({ uri: "file:///cleanup.jpg", kind: "image", posterUri: null, uploadId: "upload-1", status: "ready" })
+    store.setMedia([{ uri: "file:///cleanup.jpg", kind: "image", posterUri: null, uploadId: "upload-1", status: "ready" }])
     store.setMode("reply")
     store.setReplyToPostId("post-parent")
     store.setQuotePostId("post-quoted")

@@ -9,7 +9,7 @@ import {
   PROFILE_TAB_ORDER,
   buildProfileTabsModel,
 } from "../profileTabsModel"
-import { SEARCH_RESULT_CARD_LAYOUT } from "../searchResultsModel"
+import { SEARCH_RESULT_CARD_LAYOUT } from "../search/searchResultsModel"
 
 const repostedEvent = {
   id: "event-riverwalk",
@@ -73,11 +73,6 @@ describe("secondary portrait behavior models", () => {
   })
 
   it("defines individual search cards instead of a divided group surface", () => {
-    expect(SEARCH_RESULT_CARD_LAYOUT).toMatchObject({
-      gap: 9,
-      radius: 18,
-      individualCards: true,
-      dividedContainer: false,
-    })
+    expect(SEARCH_RESULT_CARD_LAYOUT).toEqual({ gap: 9, radius: 18 })
   })
 })

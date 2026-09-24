@@ -11,6 +11,7 @@ import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { FeedNotice } from "../FeedNotice"
 import {
+  announcementByline,
   announcementCounts,
   announcementHeading,
   announcementSentAt,
@@ -66,9 +67,7 @@ export function AnnouncementBody({ id, announcementId }: AnnouncementBodyProps) 
 
   const announcement = query.data
   const heading = announcementHeading(announcement)
-  const org = announcement.authorOrg ?? null
-  const author = announcement.author ?? null
-  const byline = org?.name ?? author?.name ?? t("announce.byline_host")
+  const byline = announcementByline(announcement, t("announce.byline_host"))
   const counts = announcementCounts(announcement)
   const event = cleanup.data
   const eventWhen = event
@@ -91,16 +90,16 @@ export function AnnouncementBody({ id, announcementId }: AnnouncementBodyProps) 
 
       <View style={styles.byline}>
         <Avatar
-          name={byline}
-          seed={org?.id ?? author?.id ?? announcement.id}
-          photoUrl={org?.logoUrl ?? author?.avatarUrl ?? null}
-          gradient={org ? null : (author?.avatar ?? null)}
+          name={byline.name}
+          seed={byline.seed}
+          photoUrl={byline.photoUrl}
+          gradient={byline.gradient}
           size={AVATAR_SIZE}
           decorative
         />
         <View style={styles.bylineMeta}>
           <Text style={styles.bylineName} numberOfLines={1}>
-            {byline}
+            {byline.name}
           </Text>
           <Text variant="caption" numberOfLines={1}>
             {t("announce.sent_when", { when: relative(announcementSentAt(announcement)) })}

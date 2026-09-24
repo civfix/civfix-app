@@ -1,4 +1,5 @@
 import { relativeAgo, EDIT_WINDOW_HOURS, type RelativeUnitLabels } from "@civfix/shared"
+import { HOUR_MS } from "./timeUnits"
 
 export interface ListTimeAgoOptions {
   justNow?: string
@@ -86,5 +87,5 @@ export function dayLabel(iso: string, opts: DayLabelOptions = {}): string {
 export function withinEditWindow(createdAt: string, now: Date = new Date()): boolean {
   const t = new Date(createdAt).getTime()
   if (Number.isNaN(t)) return false
-  return now.getTime() - t < EDIT_WINDOW_HOURS * 3600_000
+  return now.getTime() - t < EDIT_WINDOW_HOURS * HOUR_MS
 }

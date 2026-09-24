@@ -10,7 +10,7 @@ export const HOST_HISTORY_ANNOUNCEMENTS = 3
 
 export const ANNOUNCEMENT_PREVIEW_CHARS = 180
 
-export const ANNOUNCEMENT_BODY_COUNTER_AT = 0.9
+const ANNOUNCEMENT_BODY_COUNTER_AT = 0.9
 
 export const AUDIENCE_OPTIONS = ANNOUNCEMENT_AUDIENCE_KINDS
 
@@ -64,6 +64,27 @@ export function announcementPreview(bodyMd: string): string {
 export function announcementHeading(announcement: AnnouncementDTO): string | null {
   const title = announcement.title?.trim()
   return title && title.length > 0 ? title : null
+}
+
+export interface AnnouncementByline {
+  name: string
+  seed: string
+  photoUrl: string | null
+  gradient: readonly [string, string] | null
+}
+
+export function announcementByline(
+  announcement: AnnouncementDTO,
+  hostLabel: string,
+): AnnouncementByline {
+  const org = announcement.authorOrg ?? null
+  const author = announcement.author ?? null
+  return {
+    name: org?.name ?? author?.name ?? hostLabel,
+    seed: org?.id ?? author?.id ?? announcement.id,
+    photoUrl: org?.logoUrl ?? author?.avatarUrl ?? null,
+    gradient: org ? null : (author?.avatar ?? null),
+  }
 }
 
 export function announcementCounts(announcement: AnnouncementDTO): {

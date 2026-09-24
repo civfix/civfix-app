@@ -30,6 +30,8 @@ const create = code(read("../CreateCleanupBody.tsx"))
 const edit = code(read("../EditCleanupBody.tsx"))
 const detail = code(read("../EventDetailBody.tsx"))
 const hostBody = code(read("../host/HostModeBody.tsx"))
+const hostSheets = code(read("../host/HostModeSheets.tsx"))
+const hostCopy = code(read("../host/hostModeCopy.ts"))
 const hostSheet = code(read("../host/LinkedReportsSheet.tsx"))
 const modalSheet = code(read("../../primitives/ModalCardSheet.tsx"))
 const bodiesIndex = code(read("../index.ts"))
@@ -295,7 +297,8 @@ describe("host tools open the same picker in commit mode", () => {
     expect(HOST_ROW_ICONS.linked_reports).toBe("MapPin")
     expect(hostBody).toContain("HOST_ROW_ICONS[row]")
     expect(hostBody).toContain('case "linked_reports":')
-    expect(hostBody).toContain("<LinkedReportsSheet")
+    expect(hostBody).toContain("<HostModeSheets")
+    expect(hostSheets).toContain("<LinkedReportsSheet")
     expect(hostBody).toContain("linkSheetMode({")
   })
 
@@ -407,6 +410,7 @@ describe("every key these surfaces name exists in en", () => {
     const keys = [
       ...hostSheet.matchAll(/"(linked_reports_sheet\.[a-z0-9_]+)"/g),
       ...hostBody.matchAll(/"(row\.linked_reports[a-z0-9_]*)"/g),
+      ...hostCopy.matchAll(/"(row\.linked_reports[a-z0-9_]*)"/g),
     ].map((m) => m[1] ?? "")
     expect(keys.length).toBeGreaterThan(0)
     expect(keys.filter((key) => !catalogHas(hostMode, key))).toEqual([])

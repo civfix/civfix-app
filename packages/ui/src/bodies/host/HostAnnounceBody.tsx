@@ -5,6 +5,7 @@ import { TextInput } from "../../primitives/TextInput"
 import {
   focusRingProps,
   makeThemedStyles,
+  MIN_TOUCH_TARGET,
   useTheme,
   webCursor,
   webHover,
@@ -24,8 +25,8 @@ import { cleanupHostStanding, hasHostCapability } from "../../data/hooks/host"
 import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { FeedNotice } from "../FeedNotice"
 import { appErrorCode } from "../../data/errorCode"
+import { HostStateNotice } from "./HostStateNotice"
 import {
   AUDIENCE_ICONS,
   AUDIENCE_OPTIONS,
@@ -41,7 +42,7 @@ const AUDIENCE_ICON_SIZE = 16
 
 const TOGGLE_MIN_HEIGHT = 24
 
-const MIN_TOUCH_TARGET = 44
+const COMPOSER_MIN_HEIGHT = 140
 
 const TOGGLE_SLOP_Y = (MIN_TOUCH_TARGET - TOGGLE_MIN_HEIGHT) / 2
 
@@ -110,19 +111,11 @@ export function HostAnnounceBody({ id }: { id: string }) {
   }, [])
 
   if (cleanup.isError) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-      </View>
-    )
+    return <HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
   }
 
   if (cleanup.data && !canBroadcast) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
-      </View>
-    )
+    return <HostStateNotice icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
   }
 
   const count = recipients.data?.recipientCount ?? null
@@ -310,9 +303,6 @@ const useStyles = makeThemedStyles((t) => ({
   scroll: {
     flex: 1,
   },
-  fill: {
-    flex: 1,
-  },
   content: {
     paddingHorizontal: t.space["4"],
     paddingTop: t.space["2"],
@@ -339,7 +329,7 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.textSubtle,
   },
   input: {
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["3"],
     paddingVertical: t.space["2"],
     borderRadius: t.radius.md,
@@ -351,11 +341,11 @@ const useStyles = makeThemedStyles((t) => ({
     color: t.colors.text,
   },
   inputMultiline: {
-    minHeight: 140,
+    minHeight: COMPOSER_MIN_HEIGHT,
     textAlignVertical: "top",
   },
   previewBox: {
-    minHeight: 140,
+    minHeight: COMPOSER_MIN_HEIGHT,
     padding: t.space["3"],
     borderRadius: t.radius.md,
     borderWidth: 1.5,
@@ -383,7 +373,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["2"],
-    minHeight: 44,
+    minHeight: MIN_TOUCH_TARGET,
     paddingHorizontal: t.space["3"],
     borderRadius: t.radius.md,
     borderWidth: 1.5,

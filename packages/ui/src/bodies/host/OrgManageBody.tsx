@@ -4,6 +4,7 @@ import type { SocialPlatform } from "@civfix/shared"
 import {
   MAX_ORG_DESCRIPTION,
   MAX_ORG_NAME,
+  SAFE_HTTPS_LINK_MAX,
   SOCIAL_PLATFORMS,
   SOCIAL_PLATFORM_LABELS,
 } from "@civfix/shared"
@@ -11,21 +12,18 @@ import {
   focusRingProps,
   headingLevel,
   makeThemedStyles,
-  useTheme,
+  MIN_TOUCH_TARGET,
   webCursor,
-  webInputReset,
 } from "../../theme"
 import { Text } from "../../typography"
 import {
   Avatar,
-  fieldFocusedStyle,
   PrimaryButton,
   SecondaryButton,
   SectionCard,
   SkeletonGroup,
   useToast,
 } from "../../primitives"
-import { TextInput } from "../../primitives/TextInput"
 import { useApi } from "../../data/context"
 import { useCamera } from "../../capabilities"
 import { uploadMedia } from "../../data/uploadMedia"
@@ -36,10 +34,10 @@ import { FeedNotice } from "../FeedNotice"
 import { appErrorCode, appErrorFields } from "../../data/errorCode"
 import { RowsSkeleton } from "./HostSkeletons"
 import { CollaboratorsSection } from "./dashboard/CollaboratorsSection"
+import { OrgField } from "./OrgField"
 import {
   SOCIAL_PREFIX,
   canOpenOrgManage,
-  counterVisible,
   linksDirty,
   linksDraftFrom,
   linksErrors,
@@ -50,6 +48,7 @@ import {
   profileDraftFrom,
   profileErrors,
   profilePayload,
+  socialHandleMax,
   type OrgLinksDraft,
   type OrgProfileDraft,
 } from "./orgManageModel"
@@ -58,7 +57,7 @@ const LOGO_SIZE = 96
 
 const GHOST_MIN_HEIGHT = 28
 
-const MIN_TOUCH_TARGET = 44
+const HTTPS_PLACEHOLDER = "https://"
 
 const GHOST_SLOP_Y = (MIN_TOUCH_TARGET - GHOST_MIN_HEIGHT) / 2
 
@@ -66,7 +65,6 @@ const GHOST_HIT_SLOP = { top: GHOST_SLOP_Y, bottom: GHOST_SLOP_Y }
 
 export function OrgManageBody({ slug }: { slug: string }) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("host-org")
   const { ScrollView } = useScrollHost()
   const toast = useToast()
@@ -198,60 +196,12 @@ export function OrgManageBody({ slug }: { slug: string }) {
     return key ? t(key) : undefined
   }
 
-  const field = (
-    id: string,
-    value: string,
-    onChange: (next: string) => void,
-    opts: {
-      label: string
-      max: number
-      error?: string
-      hint?: string
-      multiline?: boolean
-      prefix?: string
-      placeholder?: string
-    },
-  ) => (
-    <View style={styles.field} key={id}>
-      <View style={styles.labelRow}>
-        <Text style={styles.label}>{opts.label}</Text>
-        {counterVisible(value.length, opts.max) ? (
-          <Text variant="caption">{t("manage.counter", { used: value.length, max: opts.max })}</Text>
-        ) : null}
-      </View>
-      <View style={styles.inputRow}>
-        {opts.prefix ? <Text style={styles.prefix}>{opts.prefix}</Text> : null}
-        <TextInput
-          value={value}
-          onChangeText={(next) => onChange(next.slice(0, opts.max))}
-          editable={!save.isPending}
-          maxLength={opts.max}
-          multiline={opts.multiline ?? false}
-          autoCapitalize={opts.prefix ? "none" : "sentences"}
-          autoCorrect={!opts.prefix}
-          accessibilityLabel={opts.label}
-          {...(opts.placeholder ? { placeholder: opts.placeholder } : {})}
-          placeholderTextColor={th.colors.textSubtle}
-          onFocus={() => setFocused(id)}
-          onBlur={() => setFocused(null)}
-          style={[
-            webInputReset,
-            styles.input,
-            opts.multiline ? styles.inputMultiline : null,
-            focused === id ? fieldFocusedStyle(th) : null,
-            opts.error ? styles.inputInvalid : null,
-          ]}
-        />
-      </View>
-      {opts.error ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {opts.error}
-        </Text>
-      ) : opts.hint ? (
-        <Text variant="caption">{opts.hint}</Text>
-      ) : null}
-    </View>
-  )
+  const fieldState = (id: string) => ({
+    id,
+    editable: !save.isPending,
+    focused: focused === id,
+    onFocusChange: setFocused,
+  })
 
   return (
     <ScrollView
@@ -302,23 +252,24 @@ export function OrgManageBody({ slug }: { slug: string }) {
             </View>
           </View>
 
-          {field("name", profile.name, (name) => setProfile((c) => ({ ...c, name })), {
-            label: t("manage.name"),
-            max: MAX_ORG_NAME,
-            ...(problem("profile", "name") ? { error: problem("profile", "name") as string } : {}),
-          })}
+          <OrgField
+            {...fieldState("name")}
+            value={profile.name}
+            onChange={(name) => setProfile((c) => ({ ...c, name }))}
+            label={t("manage.name")}
+            max={MAX_ORG_NAME}
+            error={problem("profile", "name")}
+          />
 
-          {field(
-            "description",
-            profile.description,
-            (description) => setProfile((c) => ({ ...c, description })),
-            {
-              label: t("manage.description"),
-              max: MAX_ORG_DESCRIPTION,
-              multiline: true,
-              hint: t("manage.description_hint"),
-            },
-          )}
+          <OrgField
+            {...fieldState("description")}
+            value={profile.description}
+            onChange={(description) => setProfile((c) => ({ ...c, description }))}
+            label={t("manage.description")}
+            max={MAX_ORG_DESCRIPTION}
+            multiline
+            hint={t("manage.description_hint")}
+          />
 
           {profileChanged ? (
             <View style={styles.saveBar}>
@@ -341,47 +292,41 @@ export function OrgManageBody({ slug }: { slug: string }) {
         </SectionCard>
 
         <SectionCard label={t("manage.links_section")}>
-          {field("websiteUrl", links.websiteUrl, (websiteUrl) => setLinks((c) => ({ ...c, websiteUrl })), {
-            label: t("manage.website"),
-            max: 500,
-            placeholder: "https://",
-            hint: t("manage.https_hint"),
-            ...(problem("links", "websiteUrl")
-              ? { error: problem("links", "websiteUrl") as string }
-              : {}),
-          })}
+          <OrgField
+            {...fieldState("websiteUrl")}
+            value={links.websiteUrl}
+            onChange={(websiteUrl) => setLinks((c) => ({ ...c, websiteUrl }))}
+            label={t("manage.website")}
+            max={SAFE_HTTPS_LINK_MAX}
+            placeholder={HTTPS_PLACEHOLDER}
+            hint={t("manage.https_hint")}
+            error={problem("links", "websiteUrl")}
+          />
 
-          {field(
-            "donationUrl",
-            links.donationUrl,
-            (donationUrl) => setLinks((c) => ({ ...c, donationUrl })),
-            {
-              label: t("form.donationUrl"),
-              max: 500,
-              placeholder: "https://",
-              hint: t("form.donation_hint"),
-              ...(problem("links", "donationUrl")
-                ? { error: problem("links", "donationUrl") as string }
-                : {}),
-            },
-          )}
+          <OrgField
+            {...fieldState("donationUrl")}
+            value={links.donationUrl}
+            onChange={(donationUrl) => setLinks((c) => ({ ...c, donationUrl }))}
+            label={t("form.donationUrl")}
+            max={SAFE_HTTPS_LINK_MAX}
+            placeholder={HTTPS_PLACEHOLDER}
+            hint={t("form.donation_hint")}
+            error={problem("links", "donationUrl")}
+          />
 
           <Text variant="caption">{t("manage.social_hint")}</Text>
-          {SOCIAL_PLATFORMS.map((platform: SocialPlatform) =>
-            field(
-              platform,
-              links[platform],
-              (next) => setLinks((c) => ({ ...c, [platform]: next })),
-              {
-                label: SOCIAL_PLATFORM_LABELS[platform],
-                max: platform === "whatsapp" ? 15 : 30,
-                prefix: SOCIAL_PREFIX[platform],
-                ...(problem("links", `socialLinks.${platform}`)
-                  ? { error: problem("links", `socialLinks.${platform}`) as string }
-                  : {}),
-              },
-            ),
-          )}
+          {SOCIAL_PLATFORMS.map((platform: SocialPlatform) => (
+            <OrgField
+              key={platform}
+              {...fieldState(platform)}
+              value={links[platform]}
+              onChange={(next) => setLinks((c) => ({ ...c, [platform]: next }))}
+              label={SOCIAL_PLATFORM_LABELS[platform]}
+              max={socialHandleMax(platform)}
+              prefix={SOCIAL_PREFIX[platform]}
+              error={problem("links", `socialLinks.${platform}`)}
+            />
+          ))}
 
           {linksChanged ? (
             <View style={styles.saveBar}>
@@ -441,55 +386,6 @@ const useStyles = makeThemedStyles((t) => ({
     opacity: 0.8,
   },
   ghostText: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["12"],
-    color: t.colors.dangerInk,
-  },
-  field: {
-    gap: t.space["1"],
-  },
-  labelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: t.space["2"],
-  },
-  label: {
-    fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: t.fontSize["13"],
-    color: t.colors.text,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: t.space["2"],
-  },
-  prefix: {
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["12"],
-    color: t.colors.textSubtle,
-  },
-  input: {
-    flex: 1,
-    minHeight: 44,
-    paddingHorizontal: t.space["3"],
-    paddingVertical: t.space["2"],
-    borderRadius: t.radius.md,
-    borderWidth: 1.5,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surface,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
-  },
-  inputMultiline: {
-    minHeight: 110,
-    textAlignVertical: "top",
-  },
-  inputInvalid: {
-    borderColor: t.colors.dangerInk,
-  },
-  error: {
     fontFamily: t.fontFamily.bodySemiBold,
     fontSize: t.fontSize["12"],
     color: t.colors.dangerInk,

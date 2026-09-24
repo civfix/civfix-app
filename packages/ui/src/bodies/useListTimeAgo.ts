@@ -2,7 +2,7 @@ import { useCallback, useMemo, useSyncExternalStore } from "react"
 import { useLocale, useRelativeTime } from "../i18n"
 import { listTimeAgo } from "./relativeTime"
 
-export const LIST_TIME_TICK_MS = 60_000
+const LIST_TIME_TICK_MS = 60_000
 
 const tickListeners = new Set<() => void>()
 let tickTimer: ReturnType<typeof setInterval> | null = null

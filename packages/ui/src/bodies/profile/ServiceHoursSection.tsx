@@ -477,7 +477,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   totalValue: {
     fontFamily: t.fontFamily.displayBold,
-    fontSize: 30,
+    fontSize: t.fontSize["30"],
     lineHeight: 34,
     letterSpacing: -0.6,
     color: t.colors.text,
@@ -522,7 +522,7 @@ const useStyles = makeThemedStyles((t) => ({
     alignItems: "center",
     alignSelf: "flex-start",
     gap: 5,
-    paddingVertical: 4,
+    paddingVertical: t.space["1"],
     marginTop: t.space["2"],
   },
   visibilityText: {
@@ -535,7 +535,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 12,
+    paddingVertical: t.space["3"],
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: t.colors.border,
   },
@@ -544,7 +544,7 @@ const useStyles = makeThemedStyles((t) => ({
     flexShrink: 0,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 4,
+    paddingVertical: t.space["1"],
     borderRadius: 9,
     backgroundColor: t.colors.sun["50"],
     borderWidth: StyleSheet.hairlineWidth,
@@ -552,7 +552,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   dateDay: {
     fontFamily: t.fontFamily.displayBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 16,
     color: t.colors.sun["700"],
   },
@@ -568,7 +568,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   rowTitle: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   rowSubRow: {
@@ -591,7 +591,7 @@ const useStyles = makeThemedStyles((t) => ({
   rowHours: {
     flexShrink: 0,
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.accentText,
   },
 

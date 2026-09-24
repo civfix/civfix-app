@@ -1,10 +1,9 @@
 import React, { useCallback, useMemo, useState } from "react"
 import { View } from "react-native"
-import { TextInput } from "../../primitives/TextInput"
 import type { EventSlotDTO, RegistrationRosterFilter } from "@civfix/shared"
-import { makeThemedStyles, useTheme, webInputReset } from "../../theme"
-import { Text, TextLink } from "../../typography"
-import { FilterChip, fieldFocusedStyle, useToast } from "../../primitives"
+import { makeThemedStyles } from "../../theme"
+import { Text } from "../../typography"
+import { FilterChip, useToast } from "../../primitives"
 import { useT } from "../../i18n"
 import { useDebouncedValue } from "../../data/hooks/useDebouncedValue"
 import {
@@ -14,7 +13,7 @@ import {
   useUndoEventCheckIn,
 } from "../../data/hooks/host"
 import { useCleanup } from "../../data"
-import { RosterCheckinList } from "./RosterCheckinList"
+import { ROSTER_SEARCH_DEBOUNCE_MS, RosterPagedList, RosterSearchField } from "./RosterPagedList"
 import { rosterMutationErrorKey, visibleRosterFilters } from "./rosterFiltersModel"
 
 const NO_SLOTS: readonly EventSlotDTO[] = []
@@ -27,14 +26,13 @@ export interface EventRosterBlockProps {
 
 export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true }: EventRosterBlockProps) {
   const styles = useStyles()
-  const th = useTheme()
   const { t } = useT("host-common")
   const toast = useToast()
 
   const [filter, setFilter] = useState<RegistrationRosterFilter>("all")
   const [search, setSearch] = useState("")
   const [searchFocused, setSearchFocused] = useState(false)
-  const q = useDebouncedValue(search, 250)
+  const q = useDebouncedValue(search, ROSTER_SEARCH_DEBOUNCE_MS)
 
   const roster = useHostRoster(cleanupId, { filter, q, enabled })
   const rows = useMemo(() => rosterRows(roster.data?.pages), [roster.data?.pages])
@@ -62,25 +60,15 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
     [onError, undo],
   )
 
-  const { fetchNextPage, hasNextPage, isFetchingNextPage } = roster
-  const loadMore = useCallback(() => {
-    if (!hasNextPage || isFetchingNextPage) return
-    void fetchNextPage()
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
-
   return (
     <View style={styles.block}>
-      <TextInput
+      <RosterSearchField
         value={search}
         onChangeText={setSearch}
         placeholder={t("roster.search_placeholder")}
-        placeholderTextColor={th.colors.textSubtle}
         accessibilityLabel={t("roster.search_a11y")}
-        autoCapitalize="none"
-        autoCorrect={false}
-        onFocus={() => setSearchFocused(true)}
-        onBlur={() => setSearchFocused(false)}
-        style={[webInputReset, styles.search, searchFocused ? fieldFocusedStyle(th) : null]}
+        focused={searchFocused}
+        onFocusChange={setSearchFocused}
       />
 
       <View style={styles.chips} accessibilityRole="radiogroup" accessibilityLabel={t("roster.filter_a11y")}>
@@ -103,30 +91,16 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
       ) : rows.length === 0 ? (
         <Text style={styles.state}>{t("roster.empty")}</Text>
       ) : (
-        <View>
-          <RosterCheckinList
-            rows={rows}
-            slots={slots}
-            timeZone={cleanup.data?.timezone ?? undefined}
-            canCheckIn={canCheckIn}
-            pending={pending}
-            onCheckIn={onCheckIn}
-            onUndo={onUndo}
-          />
-          {hasNextPage ? (
-            <View style={styles.more}>
-              <TextLink
-                variant="label"
-                standalone
-                disabled={isFetchingNextPage}
-                onPress={loadMore}
-                accessibilityLabel={t("roster.load_more_a11y")}
-              >
-                {isFetchingNextPage ? t("roster.loading_more") : t("roster.load_more")}
-              </TextLink>
-            </View>
-          ) : null}
-        </View>
+        <RosterPagedList
+          rows={rows}
+          slots={slots}
+          timeZone={cleanup.data?.timezone ?? undefined}
+          canCheckIn={canCheckIn}
+          pending={pending}
+          onCheckIn={onCheckIn}
+          onUndo={onUndo}
+          paging={roster}
+        />
       )}
     </View>
   )
@@ -135,17 +109,6 @@ export function EventRosterBlock({ cleanupId, canCheckIn = false, enabled = true
 const useStyles = makeThemedStyles((t) => ({
   block: {
     gap: t.space["3"],
-  },
-  search: {
-    minHeight: 42,
-    paddingHorizontal: t.space["3"],
-    borderRadius: t.radius.pill,
-    borderWidth: 1.5,
-    borderColor: t.colors.border,
-    backgroundColor: t.colors.surface,
-    fontFamily: t.fontFamily.bodyRegular,
-    fontSize: t.fontSize["14"],
-    color: t.colors.text,
   },
   chips: {
     flexDirection: "row",
@@ -156,10 +119,6 @@ const useStyles = makeThemedStyles((t) => ({
     fontFamily: t.fontFamily.bodyRegular,
     fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
-    paddingVertical: t.space["2"],
-  },
-  more: {
-    alignSelf: "flex-start",
     paddingVertical: t.space["2"],
   },
 }))

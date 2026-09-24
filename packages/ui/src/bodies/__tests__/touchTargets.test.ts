@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { MIN_TOUCH_TARGET as CANONICAL_MIN_TOUCH_TARGET } from "../../theme/touchTarget"
+import { expectThemeTouchTarget, surfacePart, surfaceSource } from "../../__tests__/sourceGuards"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 
@@ -11,6 +12,9 @@ const num = (source: string, name: string): number => {
   expect(found, `${name} is gone - re-scope the guard, do not delete it`).not.toBeNull()
   return Number.parseFloat(found![1] as string)
 }
+
+const operand = (source: string, name: string): number =>
+  name === "MIN_TOUCH_TARGET" ? expectThemeTouchTarget(source) : num(source, name)
 
 const grown = (
   source: string,
@@ -28,7 +32,7 @@ const grown = (
     if (/^[0-9.]+$/.test(raw)) return Number.parseFloat(raw)
     const expr = /^\(([A-Z_]+) - ([A-Z_]+)\) \/ 2$/.exec(raw)
     expect(expr, `unrecognised slop expression: ${raw}`).not.toBeNull()
-    return (num(source, expr![1] as string) - num(source, expr![2] as string)) / 2
+    return (operand(source, expr![1] as string) - operand(source, expr![2] as string)) / 2
   }
   return size + side(a) + side(b)
 }
@@ -59,7 +63,7 @@ describe("ComposerThumbs: the remove button lives INSIDE the thumb it belongs to
 })
 
 describe("SearchBody: the field clear chip and the link actions clear 44pt", () => {
-  const SRC = read("../SearchBody.tsx")
+  const SRC = surfaceSource("search")
 
   it("grows the clear chip's slop to the shared 44pt target inside the 44pt field", () => {
     const size = num(SRC, "FIELD_CLEAR_SIZE")
@@ -73,7 +77,8 @@ describe("SearchBody: the field clear chip and the link actions clear 44pt", () 
 
   it("gives the text link a 44pt BOX rather than slop its header would clip", () => {
     expect(SRC).toContain("clear: { minHeight: MIN_TOUCH_TARGET, justifyContent: \"center\"")
-    const linkAction = SRC.slice(SRC.indexOf("function LinkAction"), SRC.indexOf("function SuggestedPersonCard"))
+    const linkAction = surfacePart("search", "LinkAction.tsx")
+    expect(linkAction).toContain("export function LinkAction(")
     expect(linkAction, "the box IS the target now - no slop to clip").not.toContain("hitSlop")
   })
 
@@ -94,7 +99,7 @@ describe("SocialBody: the message button and the field clear chip clear 44pt", (
     expect(SRC).toContain("minHeight: MIN_TOUCH_TARGET")
     expect(SRC).toContain("hitSlop={CLEAR_BTN_HIT_SLOP}")
     expect(SRC).toContain("const CLEAR_BTN_HIT_SLOP = (MIN_TOUCH_TARGET - CLEAR_BTN_SIZE) / 2")
-    const slop = (num(SRC, "MIN_TOUCH_TARGET") - size) / 2
+    const slop = (expectThemeTouchTarget(SRC) - size) / 2
     expect(size + slop * 2).toBe(MIN_TOUCH_TARGET)
   })
 
@@ -142,7 +147,7 @@ describe("ProfileStatsRow: the inline counts are targets, not just text", () => 
   const SRC = read("../ProfileStatsRow.tsx")
 
   it("gives the two pressable counts a 44pt BOX, never slop", () => {
-    expect(num(SRC, "MIN_TOUCH_TARGET")).toBe(MIN_TOUCH_TARGET)
+    expect(expectThemeTouchTarget(SRC)).toBe(MIN_TOUCH_TARGET)
     expect(SRC).toMatch(/stat: \{\s*flex: 1,\s*minHeight: MIN_TOUCH_TARGET,/)
     expect(SRC, "slop cannot reach the web target - the box has to").not.toContain("hitSlop")
   })

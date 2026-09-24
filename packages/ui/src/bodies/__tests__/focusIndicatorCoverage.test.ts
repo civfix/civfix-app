@@ -47,7 +47,7 @@ describe("the focused-field recipe is ONE recipe", () => {
 
   it.each([
     ["bodies/AddressSearch.tsx", "fieldFocused"],
-    ["bodies/SearchBody.tsx", "fieldFocused"],
+    ["bodies/search/searchStyles.ts", "fieldFocused"],
     ["bodies/EventsBody.tsx", "searchFieldFocused"],
     ["bodies/SocialBody.tsx", "searchFieldFocused"],
     ["bodies/ReportsBody.tsx", "searchFieldFocused"],
@@ -80,11 +80,19 @@ describe("the focused-field recipe is ONE recipe", () => {
     ["primitives/RequestResourcesSheet.tsx", /useResetOnOpen\(visible, \(\) => \{[^}]*setFocused\(false\)/],
     ["primitives/PollCreateSheet.tsx", /useResetOnOpen\(visible, \(\) => \{[^}]*setFocusedField\(null\)/],
     ["bodies/host/HostWalkupSheet.tsx", /const onClosed = useCallback\(\(\) => \{[^}]*setFocused\(false\)/],
-    ["bodies/host/HostTeamInviteSheet.tsx", /const onClosed = useCallback\(\(\) => \{[^}]*setFocused\(false\)/],
-    ["bodies/host/dashboard/OrgInviteSheet.tsx", /const onClosed = useCallback\(\(\) => \{[^}]*setFocused\(false\)/],
+    ["bodies/host/useInviteForm.ts", /const onClosed = useCallback\(\(\) => \{[^}]*setIdentifierFocused\(false\)/],
   ])("%s clears its focused field on reset, since a field unmounted while focused never reports its blur", (rel, reset) => {
     expect(strip(read(rel))).toMatch(reset)
   })
+
+  it.each(["bodies/host/HostTeamInviteSheet.tsx", "bodies/host/dashboard/OrgInviteSheet.tsx"])(
+    "%s resets through the shared invite form, which clears the focused field",
+    (rel) => {
+      const src = strip(read(rel))
+      expect(src).toContain("useInviteForm")
+      expect(src).toContain("onClosed={form.onClosed}")
+    },
+  )
 
   it("the slot card's BORDERLESS fields take the house ring's own constants", () => {
     const src = strip(read("bodies/SlotEditor.tsx"))
