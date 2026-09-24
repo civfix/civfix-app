@@ -10,7 +10,7 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { sliceBetween, sliceFrom } from "../../../__tests__/sourceGuards"
-import { LeaderboardQuerySchema } from "@civfix/shared"
+import { LeaderboardQuerySchema, MAX_LEADERBOARD_OFFSET } from "@civfix/shared"
 import { leaderboardNextOffset } from "../volunteer"
 
 /**
@@ -71,10 +71,9 @@ describe("hooks/volunteer.ts", () => {
   })
 
   it("pins that clamp to the request schema's own bound, so the two cannot drift", () => {
-    // The bound is duplicated in the hook because the schema does not export it. These two assertions
-    // are the tripwire: move `.max(500)` in either direction and this reds instead of the field.
-    const bound = Number(/const LEADERBOARD_MAX_OFFSET = (\d+)/.exec(volunteerSource)?.[1])
-    expect(Number.isInteger(bound)).toBe(true)
+    const bound = MAX_LEADERBOARD_OFFSET
+    expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: bound })).toBe(bound)
+    expect(leaderboardNextOffset({ geoid: "0644000", entries: [], nextOffset: bound + 1 })).toBeUndefined()
     expect(LeaderboardQuerySchema.safeParse({ geoid: "0644000", offset: bound }).success).toBe(true)
     expect(LeaderboardQuerySchema.safeParse({ geoid: "0644000", offset: bound + 1 }).success).toBe(
       false,

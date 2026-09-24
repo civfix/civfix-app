@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { ANON_REPORT_TURNSTILE_ACTION, HOME_TURF_TURNSTILE_ACTION } from "@civfix/shared/host"
 
 import type * as TurnstileModule from "@/lib/turnstile"
 
@@ -148,10 +149,10 @@ afterEach(() => {
 describe("turnstile action", () => {
   it("tags the report-submit mint with the action the backend verifies", async () => {
     const { rendered } = stubTurnstile((opts) => opts.callback?.("tok"))
-    const { runTurnstile, TURNSTILE_ACTION_ANON_REPORT } = await loadModule()
+    const { runTurnstile } = await loadModule()
 
     await expect(runTurnstile()).resolves.toBe("tok")
-    expect(rendered[0]?.action).toBe(TURNSTILE_ACTION_ANON_REPORT)
+    expect(rendered[0]?.action).toBe(ANON_REPORT_TURNSTILE_ACTION)
   })
 
   it("mints under the action the caller asks for (the guest-RSVP seam)", async () => {
@@ -163,9 +164,8 @@ describe("turnstile action", () => {
   })
 
   it("keeps the static home-turf form on the action its endpoint verifies", async () => {
-    const { TURNSTILE_ACTION_HOME_TURF } = await loadModule()
     const html = readFileSync(new URL("../../public/home-turf/index.html", import.meta.url), "utf8")
-    expect(html).toContain(`var TURNSTILE_ACTION = '${TURNSTILE_ACTION_HOME_TURF}';`)
+    expect(html).toContain(`var TURNSTILE_ACTION = '${HOME_TURF_TURNSTILE_ACTION}';`)
     expect(html).toContain("action: TURNSTILE_ACTION,")
   })
 })
