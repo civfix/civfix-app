@@ -42,7 +42,7 @@ import {
 import { useApi } from "../data/context"
 import { uploadMedia } from "../data/uploadMedia"
 import { useCamera } from "../capabilities"
-import { appErrorCode } from "./errorCode"
+import { appErrorCode } from "../data/errorCode"
 import { eventCoverErrorKey } from "./eventCoverModel"
 import { LocationPicker, PortraitMapPickStep, eventPinTarget } from "../map"
 import { useLocale, useT, viewerTimeZone } from "../i18n"

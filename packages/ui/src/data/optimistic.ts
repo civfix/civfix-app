@@ -9,10 +9,9 @@
  *   onSuccess: optional reconcile with the server response
  *   onSettled: optional invalidate
  *
- * A hook that needs to touch additional caches (e.g. a post toggle patching every list holding the post,
- * or the follow toggle patching a profile detail next to the people list) passes an `also` hook set whose
- * callbacks run inside the same onMutate/onError/onSuccess phases, after the primary key
- * is handled. The `also` snapshot it returns from onMutate is carried in the per-call mutation context
+ * A hook that needs to touch additional caches (e.g. a post toggle patching every list holding the post)
+ * passes an `also` hook set whose callbacks run inside the same onMutate/onError/onSuccess phases, after
+ * the primary key is handled. The `also` snapshot it returns from onMutate is carried in the per-call mutation context
  * (NOT a closure), so concurrent mutations on the same hook each roll back their own snapshot.
  */
 import type {
@@ -148,7 +147,6 @@ function mapInfinitePages<TItem>(
 /**
  * Optimistic per-item toggle across an infinite list cache. Snapshots the matched ITEMS, patches them on
  * every page, rolls those items (and only those) back on error, and (optionally) reconciles + invalidates.
- * Used by the list half of useFollowPerson (the profile detail rides along via `also`).
  *
  * ROLLBACK IS TARGETED, not a whole-list restore. Writing the entire pre-mutation InfiniteData snapshot
  * back on error would wipe any CONCURRENT mutation's optimistic patch on a DIFFERENT item: with two

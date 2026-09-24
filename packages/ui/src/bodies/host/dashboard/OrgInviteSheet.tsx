@@ -20,7 +20,7 @@ import {
 } from "../../../primitives"
 import { useT } from "../../../i18n"
 import { useInviteOrganizationMember } from "../../../data/hooks/orgs"
-import { appErrorCode } from "../../errorCode"
+import { appErrorCode } from "../../../data/errorCode"
 import { INVITE_IDENTIFIER_MAX, inviteIdentifierValue } from "../hostTeamModel"
 import {
   ORG_SETTABLE_ROLES,

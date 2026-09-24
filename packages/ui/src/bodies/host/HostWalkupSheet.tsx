@@ -15,7 +15,7 @@ import {
 } from "../../primitives"
 import { useT } from "../../i18n"
 import { useWalkupRegistration } from "../../data/hooks/host"
-import { appErrorCode } from "../errorCode"
+import { appErrorCode } from "../../data/errorCode"
 import { TicketTypePicker } from "./registration/TicketTypePicker"
 import { PartySizeStepper, clampPartySize } from "./registration/PartySizeStepper"
 import { registerOutcomeKey, resolveTicketTypeId, selectableTicketTypes } from "./registration/registrationModel"

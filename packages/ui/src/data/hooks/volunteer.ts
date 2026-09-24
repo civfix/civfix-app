@@ -24,13 +24,7 @@
  * `["volunteer"]` prefix and must stay off it, so volunteer invalidations do not refetch the certificate
  * list.
  */
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type InfiniteData,
-} from "@tanstack/react-query"
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   EventHoursEntry,
   EventHoursResponse,
@@ -46,6 +40,7 @@ import type {
   RevokeCertificateResponse,
 } from "@civfix/shared"
 import { useApi, useAuthState } from "../context"
+import { coercePages } from "../infinitePages"
 import { queryKeys } from "../keys"
 import { cleanupDetailFilters } from "./cleanups"
 
@@ -89,17 +84,7 @@ export function leaderboardNextOffset(lastPage: LeaderboardResponse): number | u
  * would hand Discovery a fresh pages array on every render, invalidating its `sections` useMemo on a
  * surface that stays resident for the session.
  */
-function selectLeaderboardPages(
-  data: InfiniteData<LeaderboardResponse>,
-): InfiniteData<LeaderboardResponse> {
-  return {
-    ...data,
-    pages: data.pages.map((p) => ({
-      ...p,
-      entries: Array.isArray(p?.entries) ? p.entries.filter((e) => e != null) : [],
-    })),
-  }
-}
+const selectLeaderboardPages = coercePages<LeaderboardResponse>("entries")
 
 export function useMyHours() {
   const api = useApi()

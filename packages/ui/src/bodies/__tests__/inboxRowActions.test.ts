@@ -35,7 +35,7 @@ const inbox = strip(read("../MessagingListBody.tsx"))
 const timeAgoHook = strip(read("../useListTimeAgo.ts"))
 const swipeHook = strip(read("../../primitives/useSwipeActions.ts"))
 const swipeModel = strip(read("../../primitives/swipeActionsModel.ts"))
-const reportChat = strip(read("../../data/hooks/report-chat.ts"))
+const reportChat = strip(read("../../data/hooks/reportChat.ts"))
 const LOCALES = ["en", "es", "de", "ko"] as const
 
 describe("the row's timestamp is client-rendered and ticks", () => {

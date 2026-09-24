@@ -28,6 +28,8 @@ import { queryKeys } from "../keys"
 
 const GROUP_MEMBERS_PAGE_SIZE = 30
 
+const GROUP_INFO_STALE_MS = 30_000
+
 /**
  * Create a group (POST /groups). On success the fresh DTO seeds `groupInfo(id)` (the wizard navigates
  * straight into the new room, so its header/info read warm) and the inbox thread list refreshes (the
@@ -80,7 +82,7 @@ export function useGroupInfo(id: string | undefined) {
     enabled: isAuthenticated && !!id,
     queryFn: () => api.getChatGroup({ id: id ?? "" }),
     retry: false,
-    staleTime: 30_000,
+    staleTime: GROUP_INFO_STALE_MS,
   })
 }
 

@@ -10,6 +10,8 @@ import type {
 import { useApi, useAuthState } from "../context"
 import { queryKeys } from "../keys"
 
+const CHAT_PARTICIPANTS_STALE_MS = 30_000
+
 export function useReportChatParticipants(id: string | undefined) {
   const api = useApi()
   const { isAuthenticated } = useAuthState()
@@ -18,7 +20,7 @@ export function useReportChatParticipants(id: string | undefined) {
     enabled: isAuthenticated && !!id,
     queryFn: () => api.getReportChatParticipants({ id: id ?? "" }),
     retry: false,
-    staleTime: 30_000,
+    staleTime: CHAT_PARTICIPANTS_STALE_MS,
   })
 }
 

@@ -23,8 +23,8 @@ import {
 } from "../../primitives"
 import { useT } from "../../i18n"
 import { useInviteEventTeamMember } from "../../data/hooks/host"
-import { appErrorCode } from "../errorCode"
-import { eventTeamTiers } from "./eventTeamTiers"
+import { appErrorCode } from "../../data/errorCode"
+import { eventTeamTiers } from "../../data/eventTeamTiers"
 import {
   INVITE_IDENTIFIER_MAX,
   inviteErrorKey,

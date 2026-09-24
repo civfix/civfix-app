@@ -45,7 +45,7 @@ import {
 import { useLocale, useRelativeTime, useT, useViewerTimeZone } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
-import { appErrorCode } from "../errorCode"
+import { appErrorCode } from "../../data/errorCode"
 import { FeedNotice } from "../FeedNotice"
 import { DuplicateEventSheet } from "./dashboard/DuplicateEventSheet"
 import { EventRosterBlock } from "./EventRosterBlock"

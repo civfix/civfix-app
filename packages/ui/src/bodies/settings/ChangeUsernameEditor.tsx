@@ -10,7 +10,7 @@ import {
 } from "../../primitives"
 import { useHandleAvailability } from "../../data"
 import { useLocale, useT } from "../../i18n"
-import { appErrorCode } from "../errorCode"
+import { appErrorCode } from "../../data/errorCode"
 import { dayLabel, todayKey, type DayLabelOptions } from "../relativeTime"
 import { useEditorStyles } from "./editorStyles"
 

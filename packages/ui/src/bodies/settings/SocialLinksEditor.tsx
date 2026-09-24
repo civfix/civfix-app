@@ -15,7 +15,7 @@ import {
   TextField,
 } from "../../primitives"
 import { useT } from "../../i18n"
-import { profileSaveErrorKey } from "../errorCode"
+import { profileSaveErrorKey } from "../../data/errorCode"
 import { useEditorStyles } from "./editorStyles"
 
 function normalizeSocialValue(platform: SocialPlatform, raw: string): string {

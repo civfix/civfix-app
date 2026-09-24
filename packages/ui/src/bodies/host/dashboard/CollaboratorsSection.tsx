@@ -37,7 +37,7 @@ import { useT } from "../../../i18n"
 import { useNavStore } from "../../../nav"
 import { FeedNotice } from "../../FeedNotice"
 import { RowsSkeleton } from "../HostSkeletons"
-import { appErrorCode } from "../../errorCode"
+import { appErrorCode } from "../../../data/errorCode"
 import { lastAdminSeat } from "../orgManageModel"
 import { OrgInviteSheet } from "./OrgInviteSheet"
 import {

@@ -37,7 +37,7 @@ import { cleanupHostStanding, hasHostCapability } from "../data/hooks/host"
 import {
   settableRolesOtherThan,
   type SettableEventMemberRole,
-} from "./host/eventTeamTiers"
+} from "../data/eventTeamTiers"
 import { groupRosterBySlot, rosterListKey, type RosterListItem } from "./rosterSlotGroups"
 import { SlotGroupHeader } from "./SlotGroupHeader"
 

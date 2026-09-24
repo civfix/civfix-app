@@ -18,7 +18,7 @@ import {
   type CheckinReplayReport,
   type ReplayAttempt,
 } from "../../data/checkinOutbox"
-import { appErrorCode } from "../errorCode"
+import { appErrorCode } from "../../data/errorCode"
 
 export interface CheckinOutbox {
   pending: number

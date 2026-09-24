@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { appErrorCode } from "../bodies/errorCode"
+import { appErrorCode } from "../data/errorCode"
 import { useApi } from "../data"
 import { uploadMediaId } from "../data/uploadMedia"
 import { useCamera } from "../capabilities"

@@ -218,9 +218,9 @@ describe("the tapped row answers before the theme commit", () => {
 })
 
 describe("the retained native map does not re-serialize its style on every render", () => {
-  it("memoizes the raster style on the scheme, the key and the override", () => {
+  it("memoizes the raster style on the scheme and the key", () => {
     const MAP = read("../../map/Map.native.tsx")
-    expect(MAP).toContain("[mapStyle, cartoApiKey, scheme]")
+    expect(MAP).toContain("[cartoApiKey, scheme]")
     expect(MAP).toMatch(/const resolvedStyle = useMemo\(/)
   })
 })

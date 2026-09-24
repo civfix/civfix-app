@@ -1,7 +1,7 @@
 import type { ApiClient } from "@civfix/shared/client"
 import type { CameraCapability, CapturedMedia } from "../../capabilities"
 import { uploadMediaId } from "../../data/uploadMedia"
-import { appErrorCode } from "../errorCode"
+import { appErrorCode } from "../../data/errorCode"
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 

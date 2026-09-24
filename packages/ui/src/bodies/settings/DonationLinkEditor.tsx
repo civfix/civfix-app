@@ -9,7 +9,7 @@ import {
 } from "../../primitives"
 import { donationUrlHost, safeDonationUrl } from "../../primitives/donationUrl"
 import { useT } from "../../i18n"
-import { profileSaveErrorKey } from "../errorCode"
+import { profileSaveErrorKey } from "../../data/errorCode"
 import { useEditorStyles } from "./editorStyles"
 import {
   DONATION_LINK_MAX_LENGTH,

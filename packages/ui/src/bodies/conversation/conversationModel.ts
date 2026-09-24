@@ -5,7 +5,7 @@ import { useT } from "../../i18n"
 import { useThreads } from "../../data"
 import type { ChatRoomError } from "../../data"
 import { dayKey, dayLabel, type DayLabelOptions } from "../relativeTime"
-import { appErrorCode } from "../errorCode"
+import { appErrorCode } from "../../data/errorCode"
 import { colorSchemes, type ColorSchemeName } from "../../theme/schemes"
 
 export interface ConvoMeta {

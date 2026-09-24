@@ -13,6 +13,8 @@ export const CHECKIN_OUTBOX_TTL_MS = 48 * 60 * 60 * 1000
 
 export const CHECKIN_OUTBOX_MAX = 500
 
+const CHECKIN_REPLAY_BATCH = 25
+
 export const CHECKIN_RETRY_BACKOFF_MS: readonly number[] = [0, 5_000, 30_000, 120_000, 600_000]
 
 export type CheckinOutboxMethod = "scan" | "manual"
@@ -99,7 +101,7 @@ export function dequeueReady(
   now: number,
   scope: OutboxScope = {},
 ): readonly CheckinOutboxEntry[] {
-  const limit = scope.limit ?? 25
+  const limit = scope.limit ?? CHECKIN_REPLAY_BATCH
   const out: CheckinOutboxEntry[] = []
   for (const entry of state.entries) {
     if (out.length >= limit) break

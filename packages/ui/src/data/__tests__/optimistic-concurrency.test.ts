@@ -132,7 +132,7 @@ describe("buildFollowMutation: targeted side-cache rollback", () => {
     const qc = new QueryClient()
     qc.setQueryData<GetProfileResponse>(queryKeys.profile("a"), profileResponse("a", false, 4))
     qc.setQueryData<GetProfileResponse>(queryKeys.profile("b"), profileResponse("b", false, 9))
-    qc.setQueryData<PersonDTO[]>(queryKeys.peopleSearch("x"), [person("a", false, 4), person("b", false, 9)])
+    qc.setQueryData<PersonDTO[]>(queryKeys.followSuggestions, [person("a", false, 4), person("b", false, 9)])
 
     const a = buildFollowMutation(qc, "a", server) as unknown as LooseOptions
     const b = buildFollowMutation(qc, "b", server) as unknown as LooseOptions
@@ -150,7 +150,7 @@ describe("buildFollowMutation: targeted side-cache rollback", () => {
       isFollowing: true,
       followers: 10,
     })
-    const flat = qc.getQueryData<PersonDTO[]>(queryKeys.peopleSearch("x"))!
+    const flat = qc.getQueryData<PersonDTO[]>(queryKeys.followSuggestions)!
     expect(flat.find((p) => p.id === "a")).toMatchObject({ isFollowing: false, followers: 4 })
     expect(flat.find((p) => p.id === "b")).toMatchObject({ isFollowing: true, followers: 10 })
   })

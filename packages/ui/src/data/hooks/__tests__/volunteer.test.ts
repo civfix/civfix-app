@@ -138,7 +138,7 @@ describe("hooks/posts.ts", () => {
   })
 
   it("serves a single post to guests - getPost is auth-optional, so a signed-out detail must load", () => {
-    const fn = sliceBetween(postsSource, "export function usePost(", "function coerceReplyPages")
+    const fn = sliceBetween(postsSource, "export function usePost(", "const coerceReplyPages")
     expect(fn).toContain("enabled: !!id")
     expect(fn).not.toContain("isAuthenticated")
   })

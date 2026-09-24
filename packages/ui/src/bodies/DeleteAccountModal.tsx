@@ -13,7 +13,7 @@ import { makeThemedStyles, useTheme, webInputReset, focusRingProps } from "../th
 import { Text } from "../typography"
 import { ModalCardSheet, PrimaryButton, SecondaryButton } from "../primitives"
 import { useRequestEmailCode, useDeleteAccount } from "../data"
-import { appErrorCode } from "./errorCode"
+import { appErrorCode } from "../data/errorCode"
 import { useT } from "../i18n"
 
 type TFn = (key: string, opts?: Record<string, unknown>) => string

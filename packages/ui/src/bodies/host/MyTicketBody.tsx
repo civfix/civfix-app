@@ -21,7 +21,7 @@ import { useScrollHost } from "../../shell/ScrollHost"
 import { AddressRow } from "../AddressRow"
 import { CancelRegistrationSheet } from "./registration/RegistrationBlock"
 import { FeedNotice } from "../FeedNotice"
-import { appErrorCode } from "../errorCode"
+import { appErrorCode } from "../../data/errorCode"
 import {
   formatTicketCode,
   ticketPageIndex,

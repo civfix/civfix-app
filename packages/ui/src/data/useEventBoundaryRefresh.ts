@@ -22,12 +22,12 @@ export function eventBoundaryCrossed(prev: EventBoundarySnapshot, next: EventBou
 }
 
 export function useEventBoundaryRefresh(
-  window: EventWindowLike | null,
+  eventWindow: EventWindowLike | null,
   now: number,
   cleanupId: string | null | undefined,
 ): void {
   const qc = useQueryClient()
-  const status = window === null ? null : deriveCleanupStatus(window, now)
+  const status = eventWindow === null ? null : deriveCleanupStatus(eventWindow, now)
   const settled = useRef<EventBoundarySnapshot>({ cleanupId, status })
 
   useEffect(() => {

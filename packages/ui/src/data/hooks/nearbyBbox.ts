@@ -1,5 +1,6 @@
 import type { BBox } from "@civfix/shared"
 import type { LatLng } from "@civfix/shared/geocode"
+import { MIN_LNG_COSINE, PIN_SPAN_MAX_DEG, clampLat, clampLng } from "../geoBounds"
 
 export const NEARBY_KEY_PRECISION = 3
 
@@ -7,21 +8,9 @@ export const NEARBY_RADIUS_KM = 2
 
 export const KM_PER_LAT_DEGREE = 111.32
 
-export const MIN_LNG_COSINE = 0.01
-
-export const PIN_SPAN_MAX_DEG = (360 * 8) / 2 ** 13
-
 export function roundNearbyCoord(n: number): number {
   const factor = 10 ** NEARBY_KEY_PRECISION
   return Math.round(n * factor) / factor
-}
-
-export function clampLat(n: number): number {
-  return Math.max(-90, Math.min(90, n))
-}
-
-export function clampLng(n: number): number {
-  return Math.max(-180, Math.min(180, n))
 }
 
 export function pinSpanScale(padLat: number, padLng: number): number {

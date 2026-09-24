@@ -7,30 +7,19 @@ import type {
   ReportPinDTO,
   ReportCategory,
   ReportType,
-  ReportStatus,
-  ReportVisibility,
   ListMyReportsResponse,
   ListReportsSearchResponse,
   JurisdictionDTO,
 } from "@civfix/shared"
 import type { ApiClient } from "@civfix/shared/client"
 import { useApi, useAuthState } from "../context"
+import { coercePages } from "../infinitePages"
 import { queryKeys } from "../keys"
 import { optimisticPatch } from "../optimistic"
 import { NEARBY_RADIUS_KM, bboxAround, roundNearbyCoord } from "./nearbyBbox"
-import { isAddressNotFound } from "./resolveAddress"
+import { GEOCODE_STALE_MS, isAddressNotFound } from "./resolveAddress"
 
-function coerceMyReportPages(
-  data: InfiniteData<ListMyReportsResponse>,
-): InfiniteData<ListMyReportsResponse> {
-  return {
-    ...data,
-    pages: data.pages.map((p) => ({
-      ...p,
-      items: Array.isArray(p?.items) ? p.items.filter((r) => r != null) : [],
-    })),
-  }
-}
+const coerceMyReportPages = coercePages<ListMyReportsResponse>("items")
 
 export function useMyReports(limit = 20) {
   const api = useApi()
@@ -86,11 +75,17 @@ export function useResolveJurisdiction(point: { lat: number; lng: number } | nul
     enabled: point !== null,
     queryFn: () => fetchJurisdiction(api, lat, lng),
     retry: false,
-    staleTime: 5 * 60 * 1000,
+    staleTime: GEOCODE_STALE_MS,
   })
 }
 
 const POINTS_FETCH_ZOOM = 16
+
+const MAP_REPORTS_STALE_MS = 15_000
+
+const NEARBY_PINS_STALE_MS = 60_000
+
+const REPORT_PINS_GC_MS = 5 * 60_000
 
 export interface MapReportsArgs {
   bbox: BBox | null
@@ -111,8 +106,8 @@ export function useMapReports({ bbox, categories, enabled }: MapReportsArgs) {
         ...(cats.length > 0 ? { categories: [...cats] } : {}),
       }),
     placeholderData: (prev) => prev,
-    staleTime: 15_000,
-    gcTime: 5 * 60_000,
+    staleTime: MAP_REPORTS_STALE_MS,
+    gcTime: REPORT_PINS_GC_MS,
     retry: false,
   })
 }
@@ -137,12 +132,12 @@ export function useNearbyReportPins(point: { lat: number; lng: number } | null) 
           south: lat - PICKER_BBOX_PAD_DEG,
           north: lat + PICKER_BBOX_PAD_DEG,
         },
-        zoom: 16,
+        zoom: POINTS_FETCH_ZOOM,
       })
       return Array.isArray(res?.pins) ? res.pins.filter((p) => p != null) : []
     },
     retry: false,
-    staleTime: 60 * 1000,
+    staleTime: NEARBY_PINS_STALE_MS,
   })
 }
 
@@ -164,13 +159,15 @@ export function useNearbyReports(
       return Array.isArray(res?.pins) ? res.pins.filter((p) => p != null) : []
     },
     placeholderData: (prev) => prev,
-    staleTime: 60_000,
-    gcTime: 5 * 60_000,
+    staleTime: NEARBY_PINS_STALE_MS,
+    gcTime: REPORT_PINS_GC_MS,
     retry: false,
   })
 }
 
 const SEARCH_PAGE_SIZE = 30
+
+const REPORT_SEARCH_STALE_MS = 30_000
 
 export function useReportSearch(
   params: {
@@ -185,7 +182,7 @@ export function useReportSearch(
   const categories = params.categories
   const types = params.types
   const query = useInfiniteQuery<ListReportsSearchResponse>({
-    queryKey: [...queryKeys.reportSearch(q, [...(categories ?? [])].sort()), [...(types ?? [])].sort()],
+    queryKey: queryKeys.reportSearch(q, categories, types),
     enabled: options.enabled ?? true,
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
@@ -198,7 +195,7 @@ export function useReportSearch(
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     retry: false,
-    staleTime: 30_000,
+    staleTime: REPORT_SEARCH_STALE_MS,
   })
   const items: ReportPinDTO[] = (query.data?.pages ?? []).flatMap((p) =>
     Array.isArray(p?.items) ? p.items.filter((it): it is ReportPinDTO => it != null) : [],
@@ -218,11 +215,27 @@ export function useReportSearch(
   }
 }
 
-interface ResolveReportAlsoCtx {
+type MyReportRow = ListMyReportsResponse["items"][number]
+
+interface MyReportsListsCtx {
   prevLists?: ReadonlyArray<readonly [readonly unknown[], InfiniteData<ListMyReportsResponse> | undefined]>
 }
 
-function patchReportStatusInLists(qc: QueryClient, id: string, status: ReportStatus): void {
+function snapshotMyReportLists(qc: QueryClient): MyReportsListsCtx {
+  return {
+    prevLists: qc.getQueriesData<InfiniteData<ListMyReportsResponse>>({
+      queryKey: queryKeys.myReportsRoot,
+    }),
+  }
+}
+
+function restoreMyReportLists(qc: QueryClient, ctx: MyReportsListsCtx | undefined): void {
+  if (ctx?.prevLists) {
+    for (const [key, data] of ctx.prevLists) qc.setQueryData(key as unknown[], data)
+  }
+}
+
+function patchMyReportInLists(qc: QueryClient, id: string, patch: Partial<MyReportRow>): void {
   qc.setQueriesData<InfiniteData<ListMyReportsResponse>>(
     { queryKey: queryKeys.myReportsRoot },
     (prev) =>
@@ -231,7 +244,7 @@ function patchReportStatusInLists(qc: QueryClient, id: string, status: ReportSta
             ...prev,
             pages: prev.pages.map((page) => ({
               ...page,
-              items: page.items.map((r) => (r.id === id ? { ...r, status } : r)),
+              items: page.items.map((r) => (r.id === id ? { ...r, ...patch } : r)),
             })),
           }
         : prev,
@@ -243,50 +256,24 @@ export function useResolveReport(id: string) {
   const qc = useQueryClient()
 
   return useMutation(
-    optimisticPatch<ReportDTO, boolean, ReportDTO, ResolveReportAlsoCtx>(qc, {
+    optimisticPatch<ReportDTO, boolean, ReportDTO, MyReportsListsCtx>(qc, {
       key: queryKeys.report(id),
       mutationFn: (resolved) => api.resolveReport({ id, resolved }),
       patch: (prev, resolved) => ({ ...prev, status: resolved ? "resolved" : "published" }),
       reconcile: (_prev, res) => res,
       also: {
         cancel: (client) => client.cancelQueries({ queryKey: queryKeys.myReportsRoot }),
-        onMutate: (client, resolved): ResolveReportAlsoCtx => {
-          const prevLists = client.getQueriesData<InfiniteData<ListMyReportsResponse>>({
-            queryKey: queryKeys.myReportsRoot,
-          })
-          patchReportStatusInLists(client, id, resolved ? "resolved" : "published")
-          return { prevLists }
+        onMutate: (client, resolved): MyReportsListsCtx => {
+          const ctx = snapshotMyReportLists(client)
+          patchMyReportInLists(client, id, { status: resolved ? "resolved" : "published" })
+          return ctx
         },
-        onError: (client, _resolved, ctx) => {
-          if (ctx?.prevLists) {
-            for (const [key, data] of ctx.prevLists) client.setQueryData(key as unknown[], data)
-          }
-        },
+        onError: (client, _resolved, ctx) => restoreMyReportLists(client, ctx),
         onSuccess: (client, res) => {
-          patchReportStatusInLists(client, id, res.status)
+          patchMyReportInLists(client, id, { status: res.status })
         },
       },
     }),
-  )
-}
-
-interface UnlistReportAlsoCtx {
-  prevLists?: ReadonlyArray<readonly [readonly unknown[], InfiniteData<ListMyReportsResponse> | undefined]>
-}
-
-function patchReportVisibilityInLists(qc: QueryClient, id: string, visibility: ReportVisibility): void {
-  qc.setQueriesData<InfiniteData<ListMyReportsResponse>>(
-    { queryKey: queryKeys.myReportsRoot },
-    (prev) =>
-      prev
-        ? {
-            ...prev,
-            pages: prev.pages.map((page) => ({
-              ...page,
-              items: page.items.map((r) => (r.id === id ? { ...r, visibility } : r)),
-            })),
-          }
-        : prev,
   )
 }
 
@@ -295,27 +282,21 @@ export function useUnlistReport(id: string) {
   const qc = useQueryClient()
 
   return useMutation(
-    optimisticPatch<ReportDTO, boolean, ReportDTO, UnlistReportAlsoCtx>(qc, {
+    optimisticPatch<ReportDTO, boolean, ReportDTO, MyReportsListsCtx>(qc, {
       key: queryKeys.report(id),
       mutationFn: (unlisted) => api.unlistReport({ id, unlisted }),
       patch: (prev, unlisted) => ({ ...prev, visibility: unlisted ? "hidden" : "public" }),
       reconcile: (_prev, res) => res,
       also: {
         cancel: (client) => client.cancelQueries({ queryKey: queryKeys.myReportsRoot }),
-        onMutate: (client, unlisted): UnlistReportAlsoCtx => {
-          const prevLists = client.getQueriesData<InfiniteData<ListMyReportsResponse>>({
-            queryKey: queryKeys.myReportsRoot,
-          })
-          patchReportVisibilityInLists(client, id, unlisted ? "hidden" : "public")
-          return { prevLists }
+        onMutate: (client, unlisted): MyReportsListsCtx => {
+          const ctx = snapshotMyReportLists(client)
+          patchMyReportInLists(client, id, { visibility: unlisted ? "hidden" : "public" })
+          return ctx
         },
-        onError: (client, _unlisted, ctx) => {
-          if (ctx?.prevLists) {
-            for (const [key, data] of ctx.prevLists) client.setQueryData(key as unknown[], data)
-          }
-        },
+        onError: (client, _unlisted, ctx) => restoreMyReportLists(client, ctx),
         onSuccess: (client, res) => {
-          patchReportVisibilityInLists(client, id, res.visibility)
+          patchMyReportInLists(client, id, { visibility: res.visibility })
           void client.invalidateQueries({ queryKey: queryKeys.mapReportsRoot })
         },
       },

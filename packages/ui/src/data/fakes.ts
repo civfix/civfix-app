@@ -19,6 +19,7 @@ import type {
   GetApproximateLocationResponse,
 } from "@civfix/shared"
 import type { AuthState, ChatSocketLike, DataContextValue } from "./types"
+import { applyToggle } from "./hooks/posts"
 
 export const FAKE_APPROXIMATE_LOCATION: GetApproximateLocationResponse = {
   lat: 34.0522,
@@ -243,15 +244,7 @@ function toggledSeed(
   field: "liked" | "reposted" | "saved",
   next: boolean,
 ): PostDTO {
-  const base = findSeed(id) ?? POST_TEXT
-  const countKey = field === "liked" ? "likes" : field === "reposted" ? "reposts" : "saves"
-  const delta = next ? 1 : -1
-  return {
-    ...base,
-    id,
-    viewer: { ...base.viewer, [field]: next },
-    counts: { ...base.counts, [countKey]: Math.max(0, base.counts[countKey] + delta) },
-  }
+  return applyToggle({ ...(findSeed(id) ?? POST_TEXT), id }, field, next)
 }
 
 let fakePostSeq = 0

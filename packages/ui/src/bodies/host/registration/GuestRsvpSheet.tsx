@@ -18,7 +18,7 @@ import {
   useGuestRsvpRequest,
   useGuestRsvpVerify,
 } from "../../../data"
-import { appErrorCode, appErrorFields } from "../../errorCode"
+import { appErrorCode, appErrorFields } from "../../../data/errorCode"
 import { TicketTypePicker } from "./TicketTypePicker"
 import { PartySizeStepper, clampPartySize } from "./PartySizeStepper"
 import { RegistrationQuestions } from "./RegistrationQuestions"

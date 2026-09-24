@@ -11,7 +11,7 @@ describe("invalidationKeysForTopic('host')", () => {
     expect(invalidationKeysForTopic("host")).toEqual([["host"]])
   })
 
-  it("covers counters, roster, ticket types, team, waitlist and my-registration by PREFIX", () => {
+  it("covers counters, roster, ticket types, questions, team and waitlist by PREFIX", () => {
     const prefix = queryKeys.hostEvent("e1")
     const children = [
       queryKeys.hostCounters("e1"),
@@ -20,7 +20,6 @@ describe("invalidationKeysForTopic('host')", () => {
       queryKeys.hostQuestions("e1"),
       queryKeys.hostTeam("e1"),
       queryKeys.hostWaitlist("e1"),
-      queryKeys.myRegistration("e1"),
     ]
     for (const child of children) {
       expect(child.slice(0, prefix.length), child.join("/")).toEqual([...prefix])

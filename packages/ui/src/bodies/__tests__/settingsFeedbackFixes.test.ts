@@ -5,7 +5,7 @@ import {
   PROFILE_SAVE_RATE_LIMITED_KEY,
   PROFILE_SAVE_VALIDATION_KEY,
   profileSaveErrorKey,
-} from "../errorCode"
+} from "../../data/errorCode"
 
 const read = (rel: string): string => readFileSync(new URL(rel, import.meta.url), "utf8")
 

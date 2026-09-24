@@ -15,6 +15,8 @@ export const ANNOUNCEMENTS_PAGE_SIZE = 20
 
 export const AUDIENCE_PREVIEW_DEBOUNCE_MS = 400
 
+const AUDIENCE_PREVIEW_STALE_MS = AUDIENCE_PREVIEW_DEBOUNCE_MS
+
 export function audienceKey(audience: AnnouncementAudience): string {
   return audience.kind === "slots" ? `slots:${[...audience.ids].sort().join(",")}` : audience.kind
 }
@@ -102,7 +104,7 @@ export function useAudiencePreview(
         segment: audience,
         channels: [...ANNOUNCEMENT_CHANNELS],
       }),
-    staleTime: AUDIENCE_PREVIEW_DEBOUNCE_MS,
+    staleTime: AUDIENCE_PREVIEW_STALE_MS,
     retry: false,
   })
 }

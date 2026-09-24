@@ -14,7 +14,7 @@ import {
   useUndoEventCheckIn,
 } from "../../data/hooks/host"
 import { useCleanup } from "../../data"
-import { appErrorCode } from "../errorCode"
+import { appErrorCode } from "../../data/errorCode"
 import { RosterCheckinList } from "./RosterCheckinList"
 import { visibleRosterFilters } from "./rosterFiltersModel"
 

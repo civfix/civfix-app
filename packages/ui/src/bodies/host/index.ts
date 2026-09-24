@@ -196,8 +196,8 @@ export {
   eventRoleLabelKey,
   eventTeamTiers,
   settableRolesOtherThan,
-} from "./eventTeamTiers"
-export type { EventTeamTier, SettableEventMemberRole } from "./eventTeamTiers"
+} from "../../data/eventTeamTiers"
+export type { EventTeamTier, SettableEventMemberRole } from "../../data/eventTeamTiers"
 
 export {
   INVITE_IDENTIFIER_MAX,

@@ -43,7 +43,7 @@ import {
 } from "../data"
 import { useNavStore } from "../nav"
 import { useLocale, useT } from "../i18n"
-import { appErrorCode, appErrorFields } from "./errorCode"
+import { appErrorCode, appErrorFields } from "../data/errorCode"
 import { FeedNotice } from "./FeedNotice"
 import { RoleChip } from "./RoleChip"
 import { claimantsBySlot, groupRosterBySlot } from "./rosterSlotGroups"

@@ -8,7 +8,7 @@ import {
   TextField,
 } from "../../primitives"
 import { useT } from "../../i18n"
-import { profileSaveErrorKey } from "../errorCode"
+import { profileSaveErrorKey } from "../../data/errorCode"
 import { useEditorStyles } from "./editorStyles"
 
 export const MAX_DISPLAY_NAME_LENGTH = 80

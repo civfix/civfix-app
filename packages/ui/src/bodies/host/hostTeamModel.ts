@@ -6,7 +6,7 @@ import type {
 } from "@civfix/shared"
 import { MAX_TEAM_INVITES_PER_EVENT, isValidHandle } from "@civfix/shared"
 import { GUEST_EMAIL_MAX, guestEmailValue } from "./registration/guestRsvpModel"
-import { settableRolesOtherThan, type SettableEventMemberRole } from "./eventTeamTiers"
+import { settableRolesOtherThan, type SettableEventMemberRole } from "../../data/eventTeamTiers"
 
 export const TEAM_MEMBER_ROLE_ORDER: readonly CleanupMemberRole[] = [
   "organizer",
