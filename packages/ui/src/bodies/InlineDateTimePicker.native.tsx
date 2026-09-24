@@ -102,7 +102,8 @@ export function TimeFieldRow({
 }: TimeFieldRowProps) {
   const th = useTheme()
   const { locale } = useLocale()
-  const current = value ?? day ?? new Date()
+  const base = day ?? new Date()
+  const current = value ?? timeCarrier(base, base.getHours(), base.getMinutes())
 
   const commit = useCallback(
     (event: DateTimePickerEvent, picked?: Date) => {

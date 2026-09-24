@@ -597,6 +597,7 @@ export function CleanupForm({
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",
+        timeZone: value.timezone,
       }),
     }
   }, [value, locale])

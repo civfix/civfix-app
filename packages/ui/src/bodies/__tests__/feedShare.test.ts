@@ -97,7 +97,7 @@ describe("buildEventPreviewCard", () => {
   const time = new Date("2026-08-01T00:00:00.000Z")
 
   it("returns null until title + date + time all exist", () => {
-    const base = { eventKind: "cleanup" as const, coords: { lat: 1, lng: 2 } }
+    const base = { eventKind: "cleanup" as const, coords: { lat: 1, lng: 2 }, timezone: "UTC" }
     expect(buildEventPreviewCard({ ...base, title: "", date, time }, me)).toBeNull()
     expect(buildEventPreviewCard({ ...base, title: "Beach", date: null, time }, me)).toBeNull()
     expect(buildEventPreviewCard({ ...base, title: "Beach", date, time: null }, me)).toBeNull()
@@ -105,7 +105,7 @@ describe("buildEventPreviewCard", () => {
 
   it("builds a LinkedEventRef once the three fields exist", () => {
     const card = buildEventPreviewCard(
-      { title: " Beach cleanup ", eventKind: "cleanup", coords: { lat: 1, lng: 2 }, date, time },
+      { title: " Beach cleanup ", eventKind: "cleanup", coords: { lat: 1, lng: 2 }, date, time, timezone: "UTC" },
       me,
       "2026-07-25T00:00:00.000Z",
     )

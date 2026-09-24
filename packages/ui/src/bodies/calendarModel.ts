@@ -98,14 +98,16 @@ export function timeSlots(locale: string): TimeSlot[] {
 
 export const PAST_SCHEDULE_GRACE_MS = 60_000
 
+// Probed at instants 12 h either side of local noon, never at a local midnight: in zones whose gap starts at
+// 00:00 (Santiago, Havana, Beirut) midnight itself does not exist and would read the new offset.
 function clockAnchorDay(day: Date): Date {
-  const start = new Date(day)
-  start.setHours(0, 0, 0, 0)
-  const end = new Date(day)
-  end.setHours(23, 59, 0, 0)
-  if (start.getTimezoneOffset() === end.getTimezoneOffset()) return start
-  start.setDate(start.getDate() - 1)
-  return start
+  const noon = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 12)
+  const halfDayMs = 12 * 3_600_000
+  const offsetChanges =
+    new Date(noon.getTime() - halfDayMs).getTimezoneOffset() !==
+    new Date(noon.getTime() + halfDayMs).getTimezoneOffset()
+  if (offsetChanges) noon.setDate(noon.getDate() - 1)
+  return noon
 }
 
 /**
