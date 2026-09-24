@@ -5,12 +5,9 @@ export {
   useGeolocation,
   usePush,
   useSecureStore,
-  usePersistence,
-  useBlurSurface,
   useHaptics,
   useOpenExternal,
   useOpenInternalHref,
-  useContactsInvite,
   useClipboard,
   useCalendarFile,
 } from "./hooks"
@@ -26,7 +23,6 @@ export type {
   HapticsCapability,
   OpenExternalCapability,
   OpenInternalHrefCapability,
-  ContactsInviteAdapter,
   ClipboardCapability,
   CalendarFileCapability,
   CapturedMedia,
@@ -34,17 +30,4 @@ export type {
   GeoPosition,
 } from "./types"
 export { webClipboardCapability } from "./webClipboard"
-export {
-  makeFakeCapabilities,
-  FakeCamera,
-  FakeGeolocation,
-  FakePush,
-  FakeSecureStore,
-  FakePersistence,
-  FakeClipboard,
-  fakeBlurSurface,
-  fakeHaptics,
-  makeFakeOpenExternal,
-  makeFakeOpenInternalHref,
-  FakeContactsInvite,
-} from "./fakes"
+export { makeFakeCapabilities, makeFakeOpenInternalHref } from "./fakes"

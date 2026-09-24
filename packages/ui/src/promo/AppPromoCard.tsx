@@ -7,20 +7,38 @@ import {
   StyleSheet,
   type LayoutChangeEvent,
 } from "react-native"
-import { makeThemedStyles, useTheme, focusRingProps, headingLevel, webCursor, webTransition, webHover } from "../theme"
+import {
+  makeThemedStyles,
+  useTheme,
+  focusRingProps,
+  headingLevel,
+  linkKeyProps,
+  webCursor,
+  webTransition,
+  webHover,
+  HOVERED_OPACITY,
+  PRESSED_OPACITY,
+} from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { useT } from "../i18n"
 import { useOpenExternal } from "../capabilities"
 import { useToast } from "../primitives/toastContext"
 import { useAppPromo } from "./useAppPromo"
 import { useAppPromoStore } from "./appPromoStore"
-import { linkKeyProps } from "../bodies/PostCard"
+import type { AppStore } from "./platform"
 
+// The store badge artwork's own aspect, not a spacing value.
 const BADGE_HEIGHT = 40
-const BADGE_WIDTH: Record<string, number> = {
+const BADGE_WIDTH: Record<AppStore, number> = {
   "app-store": 120,
   "google-play": 135,
 }
+
+const DISMISS_HIT_SLOP = 6
+const DISMISS_ICON_SIZE = 15
+const DISMISS_PRESSED_OPACITY = 0.55
+const TITLE_LETTER_SPACING = -0.15
+const BODY_FONT_SIZE = 12.5
 
 export function AppPromoCard() {
   const styles = useStyles()
@@ -65,7 +83,7 @@ export function AppPromoCard() {
           onPress={dismiss}
           accessibilityRole="button"
           accessibilityLabel={t("app_promo.dismiss")}
-          hitSlop={6}
+          hitSlop={DISMISS_HIT_SLOP}
           {...focusRingProps}
           style={(state) => [
             styles.dismiss,
@@ -75,7 +93,7 @@ export function AppPromoCard() {
             state.pressed ? styles.dismissPressed : null,
           ]}
         >
-          <Icon icon={iconMap.Close} size={15} color={th.colors.textMuted} />
+          <Icon icon={iconMap.Close} size={DISMISS_ICON_SIZE} color={th.colors.textMuted} />
         </Pressable>
       </View>
 
@@ -100,7 +118,7 @@ export function AppPromoCard() {
           >
             <Image
               source={{ uri: link.badgeSrc }}
-              style={{ width: BADGE_WIDTH[link.store] ?? 120, height: BADGE_HEIGHT }}
+              style={{ width: BADGE_WIDTH[link.store], height: BADGE_HEIGHT }}
               resizeMode="contain"
               accessibilityIgnoresInvertColors
             />
@@ -118,8 +136,8 @@ const useStyles = makeThemedStyles((t) => ({
     right: 0,
     bottom: 0,
     paddingTop: 11,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
+    paddingBottom: t.space["3"],
+    paddingHorizontal: t.space["4"],
     backgroundColor: t.colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: t.colors.border,
@@ -137,39 +155,39 @@ const useStyles = makeThemedStyles((t) => ({
   },
   title: {
     fontFamily: t.fontFamily.displayBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
-    letterSpacing: -0.15,
+    letterSpacing: TITLE_LETTER_SPACING,
   },
   dismiss: {
-    width: 32,
-    height: 32,
+    width: t.space["8"],
+    height: t.space["8"],
     alignItems: "center",
     justifyContent: "center",
     borderRadius: t.radius.pill,
   },
   dismissPressed: {
-    opacity: 0.55,
+    opacity: DISMISS_PRESSED_OPACITY,
   },
   hovered: {
-    opacity: 0.85,
+    opacity: HOVERED_OPACITY,
   },
   body: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 12.5,
+    fontSize: BODY_FONT_SIZE,
     color: t.colors.textSubtle,
     marginBottom: 10,
   },
   badges: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
-    paddingBottom: 4,
+    gap: t.space["2"],
+    paddingBottom: t.space["1"],
   },
   badge: {
     borderRadius: t.radius.xs,
   },
   badgePressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
 }))

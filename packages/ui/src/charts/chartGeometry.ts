@@ -17,6 +17,8 @@ export const DEFAULT_BAR_GAP = 2
 
 export const DEFAULT_RING_THICKNESS = 6
 
+export const AXIS_LABEL_HEIGHT = 14
+
 export function clampFraction(value: number): number {
   if (!Number.isFinite(value)) return 0
   return value < 0 ? 0 : value > 1 ? 1 : value

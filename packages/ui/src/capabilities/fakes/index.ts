@@ -6,18 +6,16 @@ import type {
   GeolocationCapability,
   PushCapability,
   SecureStoreCapability,
-  PersistenceCapability,
   BlurSurfaceCapability,
   HapticsCapability,
   OpenExternalCapability,
   OpenInternalHrefCapability,
-  ContactsInviteAdapter,
   ClipboardCapability,
 } from "../types"
 
 // Inline bytes and no location: the fake ships in the web export's dev galleries, where it must never
 // fetch from a third-party host or stand in for a device GPS fix.
-export const FAKE_CAPTURE_URI =
+const FAKE_CAPTURE_URI =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAJCAIAAAC0SDtlAAAAFElEQVR4nGOYtXg1SYhhVMOg0AAAdT0SkOo9AVoAAAAASUVORK5CYII="
 
 export class FakeCamera implements CameraCapability {
@@ -46,7 +44,7 @@ export class FakeCamera implements CameraCapability {
   }
 }
 
-export class FakeGeolocation implements GeolocationCapability {
+class FakeGeolocation implements GeolocationCapability {
   isAvailable(): boolean {
     return false
   }
@@ -61,7 +59,7 @@ export class FakeGeolocation implements GeolocationCapability {
   }
 }
 
-export class FakePush implements PushCapability {
+class FakePush implements PushCapability {
   isAvailable(): boolean {
     return false
   }
@@ -70,7 +68,7 @@ export class FakePush implements PushCapability {
   }
 }
 
-export class FakeSecureStore implements SecureStoreCapability {
+class MapKeyValueStore implements SecureStoreCapability {
   private readonly store = new Map<string, string>()
   get(key: string): Promise<string | null> {
     return Promise.resolve(this.store.has(key) ? (this.store.get(key) as string) : null)
@@ -85,31 +83,16 @@ export class FakeSecureStore implements SecureStoreCapability {
   }
 }
 
-export class FakePersistence implements PersistenceCapability {
-  private readonly store = new Map<string, string>()
-  get(key: string): Promise<string | null> {
-    return Promise.resolve(this.store.has(key) ? (this.store.get(key) as string) : null)
-  }
-  set(key: string, value: string): Promise<void> {
-    this.store.set(key, value)
-    return Promise.resolve()
-  }
-  del(key: string): Promise<void> {
-    this.store.delete(key)
-    return Promise.resolve()
-  }
-}
+const fakeBlurSurface: BlurSurfaceCapability = { supported: false }
 
-export const fakeBlurSurface: BlurSurfaceCapability = { supported: false }
-
-export const fakeHaptics: HapticsCapability = {
+export const NOOP_HAPTICS: HapticsCapability = {
   selection(): void {},
   impactLight(): void {},
   success(): void {},
   error(): void {},
 }
 
-export const FAKE_OPEN_EXTERNAL_LOG_MAX = 50
+const FAKE_OPEN_EXTERNAL_LOG_MAX = 50
 
 function recordOpen(log: string[], url: string): void {
   log.push(url)
@@ -147,21 +130,7 @@ export function makeFakeOpenInternalHref(): FakeOpenInternalHref {
   return fake
 }
 
-export class FakeContactsInvite implements ContactsInviteAdapter {
-  available = true
-  invites: Array<{ message: string; url: string }> = []
-  copied: string[] = []
-  inviteContacts(opts: { message: string; url: string }): Promise<void> {
-    this.invites.push(opts)
-    return Promise.resolve()
-  }
-  copyToClipboard(text: string): Promise<void> {
-    this.copied.push(text)
-    return Promise.resolve()
-  }
-}
-
-export class FakeClipboard implements ClipboardCapability {
+class FakeClipboard implements ClipboardCapability {
   lastCopied: string | null = null
   setString(text: string): Promise<void> {
     this.lastCopied = text
@@ -174,10 +143,10 @@ export function makeFakeCapabilities(): PlatformCapabilities {
     camera: new FakeCamera(),
     geolocation: new FakeGeolocation(),
     push: new FakePush(),
-    secureStore: new FakeSecureStore(),
-    persistence: new FakePersistence(),
+    secureStore: new MapKeyValueStore(),
+    persistence: new MapKeyValueStore(),
     blurSurface: fakeBlurSurface,
-    haptics: fakeHaptics,
+    haptics: NOOP_HAPTICS,
     openExternal: makeFakeOpenExternal(),
     openInternalHref: makeFakeOpenInternalHref(),
     clipboard: new FakeClipboard(),

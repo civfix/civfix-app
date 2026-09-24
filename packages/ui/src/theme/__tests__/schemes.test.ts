@@ -131,8 +131,11 @@ describe("theme color schemes", () => {
     expect(leafPaths(darkGlass).sort()).toEqual(leafPaths(lightGlass).sort())
     expect(lightGlass.active).toEqual({ fill: tokens.color.neutral.ink, icon: tokens.color.neutral.card })
     expect(darkGlass.active).toEqual({ fill: darkColor.neutral.ink, icon: darkColor.neutral.card })
-    expect(darkGlass.dock.height).toBe(lightGlass.dock.height)
-    expect(darkGlass.dock.orbSize).toBe(lightGlass.dock.orbSize)
+    for (const glass of [lightGlass, darkGlass]) {
+      for (const geometry of ["height", "orbSize", "radius"]) {
+        expect(glass.dock, geometry).not.toHaveProperty(geometry)
+      }
+    }
     expect(darkGlass.dock.blurIntensity).toBe(lightGlass.dock.blurIntensity)
   })
 })

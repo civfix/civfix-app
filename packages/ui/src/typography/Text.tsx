@@ -20,19 +20,23 @@ type Variant =
 
 type VariantStyles = Record<Variant, TextStyle>
 
+// Pixel tracking: the token scale (`tokens.tracking`) is in em, which RN's letterSpacing does not accept.
+const DISPLAY_LETTER_SPACING = -0.6
+const TITLE_LETTER_SPACING = -0.3
+
 function makeVariantStyles(t: Theme): VariantStyles {
   return {
     display: {
       fontFamily: t.fontFamily.displayBold,
       fontSize: t.fontSize["30"],
       color: t.colors.text,
-      letterSpacing: -0.6,
+      letterSpacing: DISPLAY_LETTER_SPACING,
     },
     title: {
       fontFamily: t.fontFamily.displaySemiBold,
       fontSize: t.fontSize["20"],
       color: t.colors.text,
-      letterSpacing: -0.3,
+      letterSpacing: TITLE_LETTER_SPACING,
     },
     heading: {
       fontFamily: t.fontFamily.displaySemiBold,
@@ -73,16 +77,9 @@ const VARIANT_STYLES: Record<ColorSchemeName, VariantStyles> = {
 }
 
 function withSelect(styles: VariantStyles): Record<Variant, [TextStyle, TextStyle]> {
-  return {
-    display: [styles.display, webSelectableText],
-    title: [styles.title, webSelectableText],
-    heading: [styles.heading, webSelectableText],
-    body: [styles.body, webSelectableText],
-    bodyStrong: [styles.bodyStrong, webSelectableText],
-    label: [styles.label, webSelectableText],
-    caption: [styles.caption, webSelectableText],
-    mono: [styles.mono, webSelectableText],
-  }
+  return Object.fromEntries(
+    Object.entries(styles).map(([variant, style]) => [variant, [style, webSelectableText]]),
+  ) as Record<Variant, [TextStyle, TextStyle]>
 }
 
 const VARIANT_STYLES_WITH_SELECT: Record<

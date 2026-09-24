@@ -2,7 +2,6 @@ import React, { createContext, useContext, useMemo } from "react"
 import { useColorScheme } from "react-native"
 import { useAppearancePreference } from "./appearance"
 import {
-  DEFAULT_APPEARANCE_PREFERENCE,
   resolveColorScheme,
   type AppearancePreference,
   type ColorSchemeName,
@@ -34,8 +33,4 @@ export function ThemeProvider({ preference, children }: ThemeProviderProps) {
 
 export function useColorSchemeName(): ColorSchemeName {
   return useContext(ThemeContext)?.scheme ?? "light"
-}
-
-export function useThemePreference(): AppearancePreference {
-  return useContext(ThemeContext)?.preference ?? DEFAULT_APPEARANCE_PREFERENCE
 }

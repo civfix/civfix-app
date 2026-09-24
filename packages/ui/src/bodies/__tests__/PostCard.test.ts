@@ -490,6 +490,7 @@ describe("post identity resolves who the card presents as", () => {
  */
 describe("PostCard's link-role controls answer the keyboard", () => {
   const SRC = readFileSync(new URL("../PostCard.tsx", import.meta.url), "utf8")
+  const AFFORDANCES = readFileSync(new URL("../../theme/webAffordances.ts", import.meta.url), "utf8")
 
   /** The JSX props block of the Pressable whose `accessibilityLabel` matches, so a grep is per control. */
   const pressableWith = (marker: string): string => {
@@ -508,7 +509,8 @@ describe("PostCard's link-role controls answer the keyboard", () => {
     // react-native-web activates `role="link"` with neither key (PressResponder.isValidKeyPress accepts
     // Space only for a button-ish element; the keyup handler skips onPress for a link, assuming a real
     // <a href>). The name link is the announced profile affordance because the avatar leaves the tab order.
-    expect(SRC).toContain("export function linkKeyProps")
+    expect(AFFORDANCES).toContain("export function linkKeyProps")
+    expect(SRC).toMatch(/import \{[^}]*\blinkKeyProps,[^}]*\} from "\.\.\/theme"/)
     for (const marker of [
       "accessibilityLabel={identityA11yLabel(identity, t)}", // MetaRow name
       'accessibilityLabel={t("post_card.profile_a11y", { name: identity.personName })}', // MetaRow "via"
@@ -531,7 +533,7 @@ describe("PostCard's link-role controls answer the keyboard", () => {
   })
 
   it("stops Space scrolling the feed under the focused link, and ignores keys from nested controls", () => {
-    const helper = sliceBetween(SRC, "function activateOnLinkKey", "export function linkKeyProps")
+    const helper = sliceBetween(AFFORDANCES, "function activateOnLinkKey", "export function linkKeyProps")
     expect(helper).toContain('e.key !== "Enter"')
     expect(helper).toContain("e.target !== e.currentTarget")
     expect(helper).toContain("e.preventDefault?.()")

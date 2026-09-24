@@ -37,7 +37,6 @@ export interface MorphUniforms {
 
 export const DOCK_H = 64
 export const DOCK_GAP = 12
-export const SQUASH = 2
 /**
  * The morphed shapes slim from DOCK_H to 48 at p=1 (the slim system search bar). They stay top-aligned,
  * so the freed height comes off the bottom of the band.
@@ -73,9 +72,9 @@ export function dockRadius(h: number = 64): number {
  * the search orb in place, so unlike the width swap it does not keep leftW + rightW = T - G. It is a no-op
  * once the morph is underway, and callers pass 0 during Search so the field is never clipped.
  *
- * The worklet defaults are literals (64/12/2) that must equal DOCK_H / DOCK_GAP / SQUASH: reanimated does
- * not capture a module const referenced in a worklet's default parameter list (it throws "Property
- * 'DOCK_H' doesn't exist" on the UI thread).
+ * The worklet defaults are literals (64/12) that must equal DOCK_H / DOCK_GAP: reanimated does not capture
+ * a module const referenced in a worklet's default parameter list (it throws "Property 'DOCK_H' doesn't
+ * exist" on the UI thread).
  */
 export function dockShapes(
   progress: number,
@@ -116,15 +115,11 @@ export function dockShapes(
 }
 
 /**
- * k is pinned to MIN_K at every progress: the system tab-bar to search morph never shows merged blobs, so
- * the smin degenerates to a hard min() union with no neck. It stays above 0 because k=0 divides by zero in
- * smin and the border/specular pass needs a well-defined zero contour.
+ * The smin blend distance, the same at every progress: the system tab-bar to search morph never shows
+ * merged blobs, so the smin degenerates to a hard min() union with no neck. It stays above 0 because k=0
+ * divides by zero in smin and the border/specular pass needs a well-defined zero contour.
  */
 export const MIN_K = 0.01
-export function morphK(_progress: number): number {
-  "worklet"
-  return MIN_K
-}
 
 export function morphUniforms(shapes: DockShapes, radius: number, k: number): MorphUniforms {
   "worklet"

@@ -1,9 +1,11 @@
 import React from "react"
 import { Pressable, type StyleProp, type TextStyle } from "react-native"
-import { focusRingProps, makeThemedStyles, webCursor } from "../theme"
+import { focusRingProps, makeThemedStyles, webCursor, PRESSED_OPACITY } from "../theme"
 import { Text, type AppTextProps } from "./Text"
 
 export const MIN_TOUCH_TARGET = 44
+
+const DISABLED_OPACITY = 0.5
 
 export interface TextLinkProps {
   children: React.ReactNode
@@ -92,9 +94,9 @@ const useStyles = makeThemedStyles((t) => ({
     alignSelf: "flex-start",
   },
   pressed: {
-    opacity: 0.7,
+    opacity: PRESSED_OPACITY,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: DISABLED_OPACITY,
   },
 }))

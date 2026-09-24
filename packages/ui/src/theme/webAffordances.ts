@@ -10,6 +10,7 @@
 import { Platform, type ViewStyle, type TextStyle, type PressableStateCallbackType } from "react-native"
 import { tokens } from "@civfix/shared/tokens"
 import { EASE_STANDARD_CSS } from "./motion"
+import { ACCENT_TEXT } from "./schemes"
 
 const isWeb = Platform.OS === "web"
 
@@ -27,6 +28,28 @@ export function webHover(state: PressableStateCallbackType): boolean {
 export function stopPress(event: unknown): void {
   const candidate = event as { stopPropagation?: () => void } | null | undefined
   if (typeof candidate?.stopPropagation === "function") candidate.stopPropagation()
+}
+
+function activateOnLinkKey(event: unknown, activate: () => void): void {
+  const e = event as {
+    key?: string
+    target?: unknown
+    currentTarget?: unknown
+    preventDefault?: () => void
+  }
+  if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return
+  if (e.target !== e.currentTarget) return
+  e.preventDefault?.()
+  activate()
+}
+
+/**
+ * RNW activates a `role="link"` Pressable with neither Enter nor Space (it expects a real `<a href>`), so
+ * every link-role control spreads this to get both keys back. Null on native.
+ */
+export function linkKeyProps(activate: () => void): object | null {
+  if (!isWeb) return null
+  return { onKeyDown: (event: unknown) => activateOnLinkKey(event, activate) }
 }
 
 /** RN's `CursorValue` is a narrow union while RNW accepts any CSS cursor, so the cursor helpers widen via `unknown`. */
@@ -95,11 +118,11 @@ const FOCUS_RING_FOOTPRINT = RING_SPEC ? Number(RING_SPEC[1]) : 3
  * Search orb and 1.96:1 on the coral New post pill) by spending part of the footprint on the page behind
  * it, and leaves a 2px stroke, the WCAG 2.4.13 minimum thickness.
  */
-export const FOCUS_RING_COLOR = "#B03A2C"
+export const FOCUS_RING_COLOR = ACCENT_TEXT.light
 export const FOCUS_RING_OFFSET = 1
 export const FOCUS_RING_WIDTH = FOCUS_RING_FOOTPRINT - FOCUS_RING_OFFSET
 export const FOCUS_RING_OUTLINE = `${FOCUS_RING_WIDTH}px solid ${FOCUS_RING_COLOR}`
-export const FOCUS_RING_COLOR_DARK = "#F79185"
+export const FOCUS_RING_COLOR_DARK = ACCENT_TEXT.dark
 export const FOCUS_RING_OUTLINE_DARK = `${FOCUS_RING_WIDTH}px solid ${FOCUS_RING_COLOR_DARK}`
 const DARK_ROOT = ":root.dark"
 
@@ -148,6 +171,8 @@ export const webScrimProps: object = isWeb
   ? { role: "none", tabIndex: null, "aria-hidden": true, accessibilityLabel: undefined }
   : {}
 
+export type HeadingLevel = 1 | 2 | 3
+
 /**
  * RNW renders every `accessibilityRole="header"` as a bare `<h1>`, so without a level a wordmark, the page
  * title and a section eyebrow all announce as peers. The ladder (pinned by `headingLevels.test.ts`):
@@ -156,8 +181,8 @@ export const webScrimProps: object = isWeb
  *   2 - a section of that surface, whatever its type size (an eyebrow introduces its section).
  *   3 - a sub-label inside one of those sections.
  * `aria-level` overrides the implicit level without changing the tag or any pixel. RN core does not type
- * `aria-*` props, hence the one cast here; native ignores the prop.
+ * `aria-level`, which is fine for a spread; native ignores the prop.
  */
-export function headingLevel(level: 1 | 2 | 3): object {
+export function headingLevel(level: HeadingLevel): { "aria-level": HeadingLevel } {
   return { "aria-level": level }
 }

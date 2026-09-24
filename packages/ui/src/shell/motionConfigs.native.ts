@@ -23,13 +23,9 @@
  * completes `withTiming` instantly and still invokes the callback, so gorhom's `onClose` fires and the
  * presence gate tears down cleanly.
  */
-import { Easing, type WithTimingConfig } from "react-native-reanimated"
+import type { WithTimingConfig } from "react-native-reanimated"
 import { motion } from "../theme"
-import type { TimingRecipe } from "../theme/motion"
-
-export function timingConfig(r: TimingRecipe): WithTimingConfig {
-  return { duration: r.duration, easing: Easing.bezier(...r.easing) }
-}
+import { timingConfig } from "../theme/motionTiming.native"
 
 export const sheetMoveConfig = (): WithTimingConfig => timingConfig(motion.sheetMove)
 export const sheetDismissConfig = (): WithTimingConfig => timingConfig(motion.sheetDismiss)

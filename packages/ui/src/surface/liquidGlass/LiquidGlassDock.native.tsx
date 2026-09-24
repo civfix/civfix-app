@@ -9,7 +9,7 @@ import {
   DOCK_MORPH_SHRINK,
   dockShapes,
   dockRadius,
-  morphK,
+  MIN_K,
   morphUniforms,
   parseRgba,
   type DockShapes,
@@ -97,7 +97,7 @@ const DockGlassLayers = memo(function DockGlassLayers({
     const sheenHalf = s.left.height / 2
     const sheenCY = s.left.y + sheenHalf
     return {
-      ...morphUniforms(s, dockRadius(), morphK(progress.value)),
+      ...morphUniforms(s, dockRadius(), MIN_K),
       sheenCY,
       sheenHalf,
       ...colorUniforms,
@@ -132,48 +132,39 @@ const DockGlassLayers = memo(function DockGlassLayers({
     [regionW],
   )
 
+  const creamFill = <View style={[clip, styles.creamFill]} />
+  const fallbackFill = <View style={[clip, { backgroundColor: spec.fillFallback }]} />
+  const blurredShape = (blurStyle: typeof leftBlurStyle) => (
+    <>
+      <View style={clip}>
+        <AnimatedBlurView
+          intensity={spec.blurIntensity}
+          tint={blurTint}
+          style={[frozenBlurFrame, blurStyle]}
+        />
+      </View>
+      {creamFill}
+    </>
+  )
+
   return (
     <View style={[StyleSheet.absoluteFill, styles.noPointer]}>
-      {supportsBlur ? (
-        <>
-          <Animated.View style={[styles.shapeFrame, leftStyle, shadowStyle]}>
-            <View style={clip}>
-              <AnimatedBlurView
-                intensity={spec.blurIntensity}
-                tint={blurTint}
-                style={[frozenBlurFrame, leftBlurStyle]}
-              />
-            </View>
-            <View style={[clip, styles.creamFill]} />
-          </Animated.View>
-          <Animated.View style={[styles.shapeFrame, rightStyle, shadowStyle]}>
-            <View style={clip}>
-              <AnimatedBlurView
-                intensity={spec.blurIntensity}
-                tint={blurTint}
-                style={[frozenBlurFrame, rightBlurStyle]}
-              />
-            </View>
-            <View style={[clip, styles.creamFill]} />
-          </Animated.View>
-          <Animated.View style={[styles.clearFrame, shadowStyle, clearStyle]}>
+      <Animated.View style={[styles.shapeFrame, leftStyle, shadowStyle]}>
+        {supportsBlur ? blurredShape(leftBlurStyle) : fallbackFill}
+      </Animated.View>
+      <Animated.View style={[styles.shapeFrame, rightStyle, shadowStyle]}>
+        {supportsBlur ? blurredShape(rightBlurStyle) : fallbackFill}
+      </Animated.View>
+      <Animated.View style={[styles.clearFrame, shadowStyle, clearStyle]}>
+        {supportsBlur ? (
+          <>
             <AnimatedBlurView intensity={spec.blurIntensity} tint={blurTint} style={clip} />
-            <View style={[clip, styles.creamFill]} />
-          </Animated.View>
-        </>
-      ) : (
-        <>
-          <Animated.View style={[styles.shapeFrame, leftStyle, shadowStyle]}>
-            <View style={[clip, { backgroundColor: spec.fillFallback }]} />
-          </Animated.View>
-          <Animated.View style={[styles.shapeFrame, rightStyle, shadowStyle]}>
-            <View style={[clip, { backgroundColor: spec.fillFallback }]} />
-          </Animated.View>
-          <Animated.View style={[styles.clearFrame, shadowStyle, clearStyle]}>
-            <View style={[clip, { backgroundColor: spec.fillFallback }]} />
-          </Animated.View>
-        </>
-      )}
+            {creamFill}
+          </>
+        ) : (
+          fallbackFill
+        )}
+      </Animated.View>
       <Canvas style={[StyleSheet.absoluteFill, styles.noPointer]}>
         <Fill>
           <Shader source={effect} uniforms={uniforms} />

@@ -1,7 +1,6 @@
 {
   "button": {
     "label": "Compartir",
-    "accessibilityLabel": "Compartir esto",
     "copied": "Enlace copiado"
   },
   "sheet": {

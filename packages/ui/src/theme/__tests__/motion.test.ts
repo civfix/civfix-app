@@ -29,6 +29,7 @@ const DISMISSALS: ReadonlyArray<[string, TimingRecipe]> = [
   ["dockMorphOut", MOTION.dockMorphOut],
   ["pagePop", MOTION.pagePop],
   ["pageSwipeSettle", MOTION.pageSwipeSettle],
+  ["zoomSettle", MOTION.zoomSettle],
 ]
 const EXIT_PAIRS: ReadonlyArray<[string, TimingRecipe, TimingRecipe]> = [
   ["sheet", MOTION.sheetDismiss, MOTION.sheetMove],
