@@ -127,7 +127,7 @@ export function MembersScreen() {
             <p className="text-token-12 text-console-ink-3">
               {t("members.subtitle", {
                 defaultValue:
-                  "Owners manage roles and billing; admins run the profile and events; members see the roster.",
+                  "Owners manage roles; admins run the profile and events; members see the roster.",
               })}
             </p>
           </div>

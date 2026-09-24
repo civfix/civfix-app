@@ -14,6 +14,14 @@ import { linkSheetMode } from "../linkReportsModel"
 
 export const ANNOUNCE_CTA_WINDOW_MS = 48 * 3_600_000
 
+// relativeAgo answers "" for a timestamp it cannot parse; phrasing that would leave "Starts in " hanging.
+export function relativeLineFor(
+  relative: string,
+  phrase: (relative: string) => string,
+): string | null {
+  return relative === "" ? null : phrase(relative)
+}
+
 export const ARRIVAL_BUCKET_MINUTES = 15
 
 export const MAX_ARRIVAL_SPARK_BUCKETS = 32

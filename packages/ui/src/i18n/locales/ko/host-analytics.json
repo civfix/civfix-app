@@ -138,6 +138,7 @@
     "sources_caption": "페이지 조회 {{views}}회 중 {{rate}}%가 신청했습니다"
   },
   "csv": {
+    "title": "{{event}} · {{tab}}",
     "source": "출처",
     "reference": "행사 참조 번호",
     "generated_at": "생성 시각",

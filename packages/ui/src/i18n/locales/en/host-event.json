@@ -31,11 +31,14 @@
   "details": {
     "title": "Event details",
     "when": "When",
+    "when_range": "{{start}} to {{end}}",
     "timezone": "Time zone",
     "where": "Where",
     "no_address": "No address set",
     "registration": "Registration window",
     "registration_open": "Open now",
+    "registration_range": "{{opens}} to {{closes}}",
+    "registration_open_until": "Open now until {{closes}}",
     "team": "Team members",
     "organization": "Organization"
   },
