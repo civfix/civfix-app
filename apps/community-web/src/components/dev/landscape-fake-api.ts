@@ -1,4 +1,3 @@
-
 import type { ApiClient } from "@civfix/shared/client"
 import type {
   ChatHistoryResponse,
@@ -26,7 +25,6 @@ import { makeFakeApiClient } from "@civfix/ui/data"
 const iso = (msFromNow: number) => new Date(Date.now() + msFromNow).toISOString()
 const hours = (h: number) => h * 60 * 60 * 1000
 const days = (d: number) => d * 24 * hours(1)
-
 
 function person(id: string, name: string, handle: string, extra: Partial<PersonDTO> = {}): PersonDTO {
   return {
@@ -94,7 +92,6 @@ const SEARCH_RESULTS: SearchUsersResponse = {
   })),
 }
 
-
 function cleanup(
   id: string,
   title: string,
@@ -153,7 +150,6 @@ const ATTENDEES: CleanupAttendeesResponse = {
   going: 8,
   scope: "following",
 }
-
 
 function report(
   id: string,
@@ -216,7 +212,6 @@ function pinsIn(bbox: unknown): ReportClusterResponse["pins"] {
     lng: west + (east - west) * p.at[0],
   }))
 }
-
 
 const THREADS: ListThreadsResponse = {
   items: [
@@ -287,7 +282,6 @@ function chatHistory(args?: Record<string, unknown>): ChatHistoryResponse {
   }
 }
 
-
 const NOTIFICATIONS: ListNotificationsResponse = {
   items: [
     {
@@ -355,7 +349,6 @@ const JURISDICTION: JurisdictionDTO = {
   cityStateLabel: "San Francisco, CA",
   routable: true,
 }
-
 
 const sharedFake = makeFakeApiClient() as unknown as Record<string, unknown>
 

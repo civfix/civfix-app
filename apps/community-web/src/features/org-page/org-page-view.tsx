@@ -14,7 +14,7 @@ import {
 } from "@civfix/ui/social"
 
 import { toAppError } from "@/lib/api"
-import { renderMarkdownNodes } from "@/features/signup-page/markdown-dom"
+import { renderMarkdownNodes } from "@/components/markdown/markdown-dom"
 import { parseMarkdownSubset } from "@civfix/shared/markdown"
 
 import { orgSlugFromPath } from "./org-page-slug"

@@ -1,3 +1,5 @@
+import { readdirSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { PERVASIVE_HEADERS } from "../src/lib/edge-headers"
@@ -16,9 +18,7 @@ import {
   apiBaseFor,
   buildPreview,
   buildUpstreamRequest,
-  cacheTtlSeconds,
   cacheablePayloadResponse,
-  isNegativeCacheEntry,
   isValidPreviewId,
   negativeCacheOutcome,
   negativeCacheResponse,
@@ -76,7 +76,6 @@ interface Harness {
 
 function harness(options: {
   path?: string | string[]
-  method?: string
   url?: string
   env?: Partial<PreviewEnv>
   upstream?: () => Promise<Response>
@@ -97,7 +96,7 @@ function harness(options: {
     waited,
     context: {
       request: new Request(options.url ?? "https://civfix.org/pin/abc", {
-        method: options.method ?? "GET",
+        method: "GET",
         headers: { cookie: "civfix_session=secret", authorization: "Bearer secret" },
       }),
       env: { ASSETS: { fetch: assets }, ...options.env },
@@ -117,23 +116,36 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+describe("the preview handlers", () => {
+  // Pages Functions route only GET to onRequestGet, so a HEAD, POST or OPTIONS falls through to the
+  // static asset and never reaches runPreview.
+  it("only ever preview a GET", async () => {
+    const functionsDir = fileURLToPath(new URL(".", import.meta.url))
+    const handlerDirs = readdirSync(functionsDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+    expect(handlerDirs.length).toBeGreaterThan(0)
+    for (const dir of handlerDirs) {
+      const handler = (await import(`./${dir}/[[path]].ts`)) as Record<string, unknown>
+      expect(Object.keys(handler), dir).toEqual(["onRequestGet"])
+    }
+  })
+})
+
 describe("parsePreviewRoute", () => {
-  it("only ever previews a GET", () => {
-    expect(parsePreviewRoute("report", "HEAD", [UUID])).toEqual({ action: "passthrough" })
-    expect(parsePreviewRoute("report", "POST", [UUID])).toEqual({ action: "passthrough" })
-    expect(parsePreviewRoute("report", "OPTIONS", [UUID])).toEqual({ action: "passthrough" })
-    expect(parsePreviewRoute("report", "get", [UUID])).toEqual({ action: "preview", id: UUID })
+  it("previews a single valid id", () => {
+    expect(parsePreviewRoute("report", [UUID])).toEqual({ action: "preview", id: UUID })
   })
 
   it("serves the browse page for the bare prefix", () => {
-    expect(parsePreviewRoute("report", "GET", undefined)).toEqual({ action: "browse" })
-    expect(parsePreviewRoute("report", "GET", [])).toEqual({ action: "browse" })
-    expect(parsePreviewRoute("report", "GET", [""])).toEqual({ action: "browse" })
+    expect(parsePreviewRoute("report", undefined)).toEqual({ action: "browse" })
+    expect(parsePreviewRoute("report", [])).toEqual({ action: "browse" })
+    expect(parsePreviewRoute("report", [""])).toEqual({ action: "browse" })
   })
 
   it("leaves nested SPA routes such as /pin/<id>/edit untouched", () => {
-    expect(parsePreviewRoute("report", "GET", [UUID, "edit"])).toEqual({ action: "shell" })
-    expect(parsePreviewRoute("report", "GET", [UUID, "chat", "1"])).toEqual({ action: "shell" })
+    expect(parsePreviewRoute("report", [UUID, "edit"])).toEqual({ action: "shell" })
+    expect(parsePreviewRoute("report", [UUID, "chat", "1"])).toEqual({ action: "shell" })
   })
 
   it("accepts exactly the id shapes each kind's API resolves, case intact", () => {
@@ -268,13 +280,13 @@ describe("cache policy", () => {
   })
 
   it("uses a 300s positive and a 60s negative TTL", () => {
-    expect(cacheTtlSeconds(true)).toBe(PREVIEW_CACHE_TTL_SEC)
-    expect(cacheTtlSeconds(false)).toBe(PREVIEW_NEGATIVE_CACHE_TTL_SEC)
+    expect(PREVIEW_CACHE_TTL_SEC).toBe(300)
+    expect(PREVIEW_NEGATIVE_CACHE_TTL_SEC).toBe(60)
     expect(cacheablePayloadResponse("{}").headers.get("Cache-Control")).toBe("public, max-age=300")
     expect(negativeCacheResponse("missing").headers.get("Cache-Control")).toBe("public, max-age=60")
-    expect(isNegativeCacheEntry(negativeCacheResponse("missing"))).toBe(true)
-    expect(isNegativeCacheEntry(negativeCacheResponse("transient"))).toBe(true)
-    expect(isNegativeCacheEntry(cacheablePayloadResponse("{}"))).toBe(false)
+    expect(negativeCacheOutcome(negativeCacheResponse("missing"))).toBe("missing")
+    expect(negativeCacheOutcome(negativeCacheResponse("transient"))).toBe("transient")
+    expect(negativeCacheOutcome(cacheablePayloadResponse("{}"))).toBe(null)
   })
 
   it("noindexes a definite miss anywhere, and everything off the production origin", () => {
@@ -353,15 +365,6 @@ describe("withPervasiveHeaders", () => {
 })
 
 describe("runPreview", () => {
-  it("passes a non-GET straight to the asset server without touching the API", async () => {
-    const h = harness({ method: "POST" })
-    const response = await runPreview(h.context, "report", { rewrite: h.rewrite })
-    expect(h.fetchSpy).not.toHaveBeenCalled()
-    expect(h.rewrite).not.toHaveBeenCalled()
-    expect(h.assets).toHaveBeenCalledWith(h.context.request)
-    expect(response.headers.get("Cache-Control")).toBe("public, max-age=0, must-revalidate")
-  })
-
   it("serves the browse shell for the bare prefix without an API call", async () => {
     const h = harness({ path: [], url: "https://civfix.org/cleanups/" })
     await runPreview(h.context, "event", { rewrite: h.rewrite })

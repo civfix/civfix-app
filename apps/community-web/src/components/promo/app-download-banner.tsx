@@ -4,12 +4,14 @@ import * as React from "react"
 import { useAppPromo, useAppPromoStore } from "@civfix/ui"
 import { useT } from "@civfix/ui/i18n"
 
+const BANNER_Z_INDEX = 100
+
 /**
  * The portrait counterpart of the landscape <AppPromoCard/>. Both read one promo store, so dismissing here
  * also removes the side card section (visible when a tablet is rotated).
  *
- * z-index 100 sits above the whole AppShell stack (whose layers cap at 71) and below the modal/gate tier
- * (200) and the boot splash (300), so an auth modal still covers it.
+ * BANNER_Z_INDEX sits above the whole AppShell stack (whose layers cap at 71) and below the modal/gate
+ * tier (200) and the boot splash (300), so an auth modal still covers it.
  *
  * The banner overlays the map and pushes only the floating map controls down, through the height it
  * publishes to the promo store. The height is measured rather than hardcoded because the subtitle wraps
@@ -56,7 +58,7 @@ export function AppDownloadBanner() {
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 100,
+        zIndex: BANNER_Z_INDEX,
         display: "flex",
         alignItems: "center",
         gap: 10,
@@ -64,7 +66,7 @@ export function AppDownloadBanner() {
         // status bar) but keeps the banner clear of the notch in any edge-to-edge browser chrome.
         padding:
           "calc(8px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) 8px calc(12px + env(safe-area-inset-left, 0px))",
-        background: "var(--card, #fff)",
+        background: "var(--card)",
         borderBottom: "1px solid var(--ink-5)",
         boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
       }}
@@ -100,7 +102,7 @@ export function AppDownloadBanner() {
             fontWeight: 700,
             fontSize: 14,
             lineHeight: 1.2,
-            color: "var(--ink, #1a1714)",
+            color: "var(--ink)",
           }}
         >
           {t("app_promo.banner_title")}

@@ -109,14 +109,13 @@ function SignupDocument({
   )
   const hasHero = page.blocks.some((block) => block.kind === "hero")
   const hasRegistration = page.blocks.some((block) => block.kind === "registration")
-  const ordered = page.blocks
 
   return (
     <main className="signup-page" style={style}>
       <div className="signup-shell">
         {hasHero ? null : <FallbackHero page={page} />}
 
-        {ordered.map((block) => (
+        {page.blocks.map((block) => (
           <BlockRouter
             key={block.id}
             block={block}
@@ -214,7 +213,7 @@ function SignupState({ title, busy, action, children }: SignupStateProps) {
   )
 }
 
-export function pageViewSource(
+function pageViewSource(
   referrer: string | null | undefined,
 ): "direct" | "search" | "social" | "referral" {
   if (!referrer) return "direct"

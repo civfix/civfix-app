@@ -1,6 +1,5 @@
 "use client"
 
-
 import React from "react"
 import { QueryClientProvider } from "@tanstack/react-query"
 import type { ApiClient } from "@civfix/shared/client"
@@ -81,7 +80,6 @@ import {
   pendingForever,
   portfolioOverrides,
 } from "./dashboard-fixtures"
-
 
 const ORGANIZER = {
   id: "p-ann",
@@ -167,7 +165,6 @@ const SEARCH_RESULTS: SearchUsersResponse = {
     { id: "p-mei", handle: "meiwong", displayName: "Mei Wong", avatar: null, avatarUrl: null },
   ],
 }
-
 
 const LINKED_EVENTS = [
   {
@@ -458,7 +455,6 @@ const CLEANUP_DETAIL: CleanupDTO = {
   linkedReports: LINKED_REPORTS,
 } as CleanupDTO
 
-
 const SLOTS: EventSlotDTO[] = [
   {
     id: "s-checkin",
@@ -534,7 +530,6 @@ const DONE_ATTENDED_CLEANUP: CleanupDTO = {
   joined: true,
   slots: [],
 }
-
 
 const THREADS: ListThreadsResponse = {
   items: [
@@ -651,7 +646,6 @@ const HOST_ROSTER: CleanupAttendeesResponse = {
 }
 
 const HOST_ROSTER_IDS = new Set(["e-mine", "e-slots-mine", "e-ready", "e-done", "e-done-new"])
-
 
 const hoursAgo = (h: number) => new Date(Date.now() - h * 60 * 60 * 1000).toISOString()
 const daysAgo = (d: number) => new Date(Date.now() - d * 24 * 60 * 60 * 1000).toISOString()
@@ -1119,7 +1113,6 @@ const dashboardErrorData = makeFakeDataContext({
   auth: DASHBOARD_AUTH,
 })
 
-
 function BodyFrame({
   title,
   height = 620,
@@ -1165,7 +1158,6 @@ function BodyFrame({
       >
         {title}
       </div>
-      { }
       <div style={{ height, display: "flex", flexDirection: "column" }}>{children}</div>
     </section>
   )
@@ -1281,12 +1273,10 @@ export default function BodiesGallery() {
               <SocialBody />
             </BodyFrame>
 
-            { }
             <BodyFrame title="PersonDetailBody (FULL PAGE: own header, Posts default, Hours tab)" height={760}>
               <PersonDetailBody id="p-ann" />
             </BodyFrame>
 
-            { }
             <BodyFrame
               title="PersonDetailBody (DESKTOP WIDTH: the header must show Back only)"
               height={760}
@@ -1295,7 +1285,6 @@ export default function BodiesGallery() {
               <PersonDetailBody id="p-ann" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="ProfileBody (own profile: Posts / Events / Hours tabs)" height={760}>
               <ProfileBody />
             </BodyFrame>
@@ -1317,54 +1306,42 @@ export default function BodiesGallery() {
             </BodyFrame>
 
             <BodyFrame title="EventDetailBody (cleanup detail + Reports we'll handle gallery)" height={820}>
-              { }
               <EventDetailBody id="e1" />
             </BodyFrame>
 
             <BodyFrame title="EventDetailBody (viewer-hosted -> Edit affordance shows)" height={820}>
-              { }
               <EventDetailBody id="e-mine" />
             </BodyFrame>
 
-            { }
-
-            { }
             <BodyFrame title="EventDetailBody (host, started -> underway, no completion affordance)" height={860}>
               <EventDetailBody id="e-ready" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="EventDetailBody (signup slots: open / full / mine)" height={860}>
               <EventDetailBody id="e-slots" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="EventDetailBody (host, DONE, nothing logged -> hours editor)" height={860}>
               <EventDetailBody id="e-done-new" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="EventDetailBody (host, DONE, hours credited -> summary card + Edit)" height={860}>
               <EventDetailBody id="e-done" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="EventDetailBody (attendee, DONE -> credited receipt)" height={820}>
               <EventDetailBody id="e-done-attended" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="MembersBody (per-slot roster, host view)" height={560}>
               <MembersBody id="e-slots-mine" roomKind="cleanup" />
             </BodyFrame>
 
             <BodyFrame title="CreateCleanupBody (host form: kind selector + linked-reports picker)" height={900}>
-              { }
               <CreateCleanupBody />
             </BodyFrame>
 
             <BodyFrame title="EditCleanupBody (host edit screen, prefilled)" height={900}>
-              { }
               <EditCleanupBody id="e-mine" />
             </BodyFrame>
 
@@ -1381,23 +1358,17 @@ export default function BodiesGallery() {
             </BodyFrame>
 
             <BodyFrame title="ConversationBody (crew chat - fake history + composer)" height={640}>
-              { }
               <ConversationBody id="e1" roomKind="cleanup" />
             </BodyFrame>
 
             <BodyFrame title="ConversationBody (direct message - peer header + composer)" height={640}>
-              { }
               <ConversationBody id="dm-ann" roomKind="dm" />
             </BodyFrame>
 
-            { }
-
-            { }
             <BodyFrame title="LeaderboardBody (jurisdiction leaderboard)" height={620}>
               <LeaderboardBody geoid="0644000" />
             </BodyFrame>
 
-            { }
             <BodyFrame title="DiscoveryLeaderboard (search page section, isolated)" height={360}>
               <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
                 <DiscoveryLeaderboard
@@ -1410,26 +1381,22 @@ export default function BodiesGallery() {
               </div>
             </BodyFrame>
 
-            { }
             <BodyFrame title="ServiceHoursSection (variant='own': ledger + transcript card)" height={720}>
               <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
                 <ServiceHoursSection variant="own" totalHours={12.5} />
               </div>
             </BodyFrame>
 
-            { }
             <BodyFrame title="ServiceHoursSection (variant='public': another person's ledger)" height={620}>
               <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
                 <ServiceHoursSection variant="public" userId="p-ann" totalHours={8} />
               </div>
             </BodyFrame>
 
-            { }
             <BodyFrame title="ServiceHoursCertificateCard (idle / preparing / ready / expired / revoked / disabled)" height={700}>
               <CertificateHarness />
             </BodyFrame>
 
-            { }
             <BodyFrame title="ServiceHoursCertificateCard (no openExternal -> degraded copy-the-link)" height={520}>
               <CapabilitiesProvider value={CAPS_WITHOUT_OPEN_EXTERNAL}>
                 <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
@@ -1438,7 +1405,6 @@ export default function BodiesGallery() {
               </CapabilitiesProvider>
             </BodyFrame>
 
-            { }
             <DashboardFrame
               title="EventDashboardBody (portfolio, personal only - no orgs)"
               data={dashboardSoloData}
@@ -1486,7 +1452,6 @@ export default function BodiesGallery() {
               <EventDashboardBody />
             </DashboardFrame>
 
-            { }
             <DashboardFrame title="HostModeBody (phase: upcoming)" height={820}>
               <HostModeBody id={DASHBOARD_EVENT_IDS.upcoming} />
             </DashboardFrame>
@@ -1516,11 +1481,9 @@ export default function BodiesGallery() {
             </DashboardFrame>
 
             <BodyFrame title="ReportFlowBody (report wizard - capture/category/details/review)" height={760}>
-              { }
               <ReportFlowBody />
             </BodyFrame>
 
-            { }
             <BodyFrame title='BodyRouter(view="reports") -> ReportsBody'>
               <div data-router="view-reports" style={{ flex: 1, display: "flex" }}>
                 <BodyRouter entry={null} view="reports" />

@@ -21,9 +21,7 @@ export function SponsorsBlock({ block }: { block: SponsorsBlockData }) {
           ) : (
             <span>{entry.name}</span>
           )
-          const href = entry.url !== null && entry.url !== undefined && isSafeMarkdownHref(entry.url)
-            ? entry.url
-            : null
+          const href = entry.url != null && isSafeMarkdownHref(entry.url) ? entry.url : null
           return (
             <li key={`${entry.name}-${index}`}>
               {href === null ? (

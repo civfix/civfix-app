@@ -3,7 +3,9 @@ import { act, cleanup, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { GUEST_RSVP_TURNSTILE_ACTION } from "@civfix/shared"
-import type { PublicEventPageDTO, PublicPageTicketType } from "@civfix/shared"
+import type { PublicEventPageDTO } from "@civfix/shared"
+
+import { signupPage, ticket } from "./__fixtures__"
 
 const registerForEvent = vi.fn()
 const guestRsvpRequest = vi.fn()
@@ -45,43 +47,8 @@ vi.mock("@/store/auth-store", () => ({
 
 const { RegistrationWidget } = await import("./registration-widget")
 
-function ticket(overrides: Partial<PublicPageTicketType> = {}): PublicPageTicketType {
-  return {
-    id: "t1",
-    name: "General",
-    maxPartySize: 1,
-    soldOut: false,
-    salesOpen: true,
-    waitlistEnabled: false,
-    sortOrder: 0,
-    requiresAccessCode: false,
-    ...overrides,
-  }
-}
-
 function page(overrides: Partial<PublicEventPageDTO> = {}): PublicEventPageDTO {
-  return {
-    slug: "beach-cleanup",
-    status: "published",
-    visibility: "public",
-    noindex: false,
-    theme: { accent: "bloom" },
-    coverUrl: null,
-    blocks: [],
-    seo: { noindex: false },
-    event: {
-      id: "evt_1",
-      title: "Beach cleanup",
-      startsAt: "2099-05-10T17:00:00.000Z",
-      status: "upcoming",
-    },
-    ticketTypes: [ticket()],
-    questions: [],
-    consentVersions: { termsVersion: "2026-09-06", disclosureVersion: "2026-09-06" },
-    waitlistEnabled: false,
-    requiresTurnstile: true,
-    ...overrides,
-  } as PublicEventPageDTO
+  return signupPage("2099-05-10T17:00:00.000Z", { ticketTypes: [ticket()], ...overrides })
 }
 
 function renderWidget(dto: PublicEventPageDTO) {

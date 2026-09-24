@@ -1,6 +1,6 @@
 import { OrgSlugSchema } from "@civfix/shared"
 
-export const ORG_PAGE_SEGMENT = "orgs"
+const ORG_PAGE_SEGMENT = "orgs"
 
 export type OrgSlugSource =
   | { readonly kind: "none" }
@@ -9,7 +9,7 @@ export type OrgSlugSource =
 
 const NONE: OrgSlugSource = { kind: "none" }
 
-export const ORG_MANAGE_SEGMENT = "manage"
+const ORG_MANAGE_SEGMENT = "manage"
 
 export function isOrgManagePath(pathname: string | null | undefined): boolean {
   if (!pathname) return false

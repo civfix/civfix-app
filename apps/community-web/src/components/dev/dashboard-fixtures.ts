@@ -26,7 +26,6 @@ import type {
   PortfolioAnalyticsRange,
 } from "@civfix/shared"
 
-
 const DAY_MS = 86_400_000
 const HOUR_MS = 3_600_000
 const MINUTE_MS = 60_000
@@ -105,7 +104,7 @@ const EVENT_ORGANIZATION: NonNullable<CleanupDTO["organization"]> = {
   donationUrl: "https://bayviewstewards.org/give",
 }
 
-export const DASHBOARD_ORGS: readonly OrganizationDTO[] = [
+const DASHBOARD_ORGS: readonly OrganizationDTO[] = [
   {
     id: "org-bayview",
     slug: "bayview-stewards",
@@ -217,10 +216,6 @@ const ORG_INVITE_LIST: ListOrganizationInvitesResponse = {
     },
   ],
 }
-
-
-
-
 
 const EXTRA_TOP_VOLUNTEERS: readonly LeaderboardEntryDTO[] = [
   {
@@ -456,7 +451,7 @@ export function failing(label: string): FakeEndpoint {
   return () => Promise.reject(new Error(`bodies-gallery dashboard fake: ${label} is down`))
 }
 
-export const DASHBOARD_FAKE_ENDPOINTS: Record<string, FakeEndpoint> = {
+const DASHBOARD_FAKE_ENDPOINTS: Record<string, FakeEndpoint> = {
   hostedEventsAnalytics: async (args) =>
     galleryAnalytics(
       (args as { range?: PortfolioAnalyticsRange } | undefined)?.range ?? "all",
@@ -525,7 +520,7 @@ export function makeDashboardFakeApi(
   ) as ApiClient
 }
 
-export const PORTFOLIO_QUERY_NAMES = [
+const PORTFOLIO_QUERY_NAMES = [
   "hostedEventsAnalytics",
   "listMyHostedEvents",
   "listMyEventInvites",

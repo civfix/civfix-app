@@ -4,7 +4,7 @@ import * as React from "react"
 import { useT } from "@civfix/ui/i18n"
 import type { EventPageBlock } from "@civfix/shared"
 
-import { Markdown } from "../markdown-dom"
+import { Markdown } from "@/components/markdown/markdown-dom"
 
 type AboutBlockData = Extract<EventPageBlock, { kind: "about" }>
 

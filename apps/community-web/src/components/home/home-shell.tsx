@@ -137,6 +137,8 @@ function ShellFrame({ children }: { children: React.ReactNode }) {
   const shell = React.useRef<HTMLDivElement>(null)
   const layoutMode = useLayoutMode()
 
+  // Written after mount, not rendered: the static prerender cannot know the viewport, so a rendered
+  // value would mismatch hydration on every expanded screen.
   React.useEffect(() => {
     shell.current?.setAttribute("data-cf-layout", layoutMode)
   }, [layoutMode])

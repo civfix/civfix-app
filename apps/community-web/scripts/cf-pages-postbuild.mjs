@@ -1,4 +1,3 @@
-
 import {
   existsSync,
   readFileSync,
@@ -36,7 +35,12 @@ if (!existsSync(outDir)) {
   process.exit(1)
 }
 
-const leakedDev = leakedDevRoutes(readdirSync(outDir))
+const outEntries = readdirSync(outDir, { withFileTypes: true })
+const outRouteDirs = outEntries
+  .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))
+  .map((entry) => entry.name)
+
+const leakedDev = leakedDevRoutes(outEntries.map((entry) => entry.name))
 if (leakedDev.length > 0) {
   console.error(
     `[cf-pages] ERROR: dev-only gallery route(s) reached the export: ${leakedDev.join(", ")}. They ` +
@@ -46,9 +50,7 @@ if (leakedDev.length > 0) {
   process.exit(1)
 }
 
-const collisions = readdirSync(outDir, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))
-  .map((entry) => entry.name)
+const collisions = outRouteDirs
   .filter(
     (route) =>
       existsSync(join(outDir, route, "index.html")) &&
@@ -84,9 +86,7 @@ if (unprotected.length > 0) {
 const siteOrigin = normalizeSiteOrigin(process.env.NEXT_PUBLIC_SITE_URL)
 const productionBuild = isProductionOrigin(siteOrigin)
 
-const shellRoutes = readdirSync(outDir, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory() && !entry.name.startsWith("_"))
-  .map((entry) => entry.name)
+const shellRoutes = outRouteDirs
   .filter((route) => existsSync(join(outDir, route, "_", "index.html")))
   .sort()
 
@@ -128,8 +128,9 @@ if (!existsSync(aasaOut)) {
   process.exit(1)
 }
 
+let association
 try {
-  JSON.parse(readFileSync(aasaOut, "utf8"))
+  association = JSON.parse(readFileSync(aasaOut, "utf8"))
 } catch (error) {
   console.error(
     `[cf-pages] ERROR: ${AASA_RELATIVE} is not valid JSON (${error.message}). iOS rejects a ` +
@@ -148,7 +149,6 @@ const REQUIRED_AASA_EXCLUDES = [
   "/unsubscribe*",
 ]
 
-const association = JSON.parse(readFileSync(aasaOut, "utf8"))
 const missingExcludes = missingAasaExcludes(association, REQUIRED_AASA_EXCLUDES)
 
 if (missingExcludes.length > 0) {
@@ -348,12 +348,16 @@ const legalRoutes = existsSync(legalOutDir)
       .sort()
   : []
 
+const legalHtml = new Map(
+  legalRoutes.map((route) => [route, readFileSync(join(legalOutDir, route, "index.html"), "utf8")]),
+)
+
 const legalDrift = []
 const legalPlaceholders = []
 const legalRendered = new Map()
 
 for (const route of legalRoutes) {
-  const html = readFileSync(join(legalOutDir, route, "index.html"), "utf8")
+  const html = legalHtml.get(route)
   const type = /data-legal-doc="([^"]*)"/.exec(html)?.[1] ?? null
   if (type === null) continue
   const hashed = legalDocumentHash(html)
@@ -384,7 +388,7 @@ for (const route of legalRoutes) {
 }
 
 const legalRoutesMissingStamp = legalRoutes.filter((route) => {
-  const html = readFileSync(join(legalOutDir, route, "index.html"), "utf8")
+  const html = legalHtml.get(route)
   return !/data-legal-doc="[^"]+"/.test(html) || legalDocumentHash(html) === null
 })
 

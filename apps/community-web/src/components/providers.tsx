@@ -46,7 +46,7 @@ import { SignOutFailureNotice } from "@/components/auth/sign-out-failure-notice"
 import { BootSplash } from "@/components/boot-splash"
 import { RealtimeChannel } from "@/components/realtime/realtime-channel"
 import { FirstRunGate } from "@/features/auth/first-run-gate"
-import { webOpenInternalHref } from "@/components/home/use-web-nav-adapter"
+import { webOpenInternalHref } from "@/components/home/web-internal-href"
 
 setAppearancePreferenceStore({
   get: () => useAppearanceStore.getState().preference,
