@@ -13,6 +13,22 @@ import { defaultTicketTypeId } from "../bodies/host/registration/registrationMod
 
 export type GuestRsvpStep = "choice" | "form" | "code" | "success"
 
+export type GuestRsvpCommit = "submitForm" | "submitCode" | "startOver" | "close"
+
+/** The choice step has two equal answers and no default, so the commit shortcut must not pick (or dismiss). */
+export function guestRsvpCommitFor(step: GuestRsvpStep, exhausted: boolean): GuestRsvpCommit | null {
+  switch (step) {
+    case "choice":
+      return null
+    case "form":
+      return "submitForm"
+    case "code":
+      return exhausted ? "startOver" : "submitCode"
+    case "success":
+      return "close"
+  }
+}
+
 export const GUEST_RSVP_CODE_LENGTH = 6
 
 export { GUEST_RSVP_TURNSTILE_ACTION }

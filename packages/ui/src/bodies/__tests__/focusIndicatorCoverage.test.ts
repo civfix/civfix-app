@@ -74,6 +74,18 @@ describe("the focused-field recipe is ONE recipe", () => {
     }
   })
 
+  it.each([
+    ["primitives/CancelEventSheet.tsx", /useResetOnOpen\(visible, \(\) => \{[^}]*setFocused\(false\)/],
+    ["primitives/ReportContentSheet.tsx", /useResetOnOpen\(visible, \(\) => \{[^}]*setFocused\(false\)/],
+    ["primitives/RequestResourcesSheet.tsx", /useResetOnOpen\(visible, \(\) => \{[^}]*setFocused\(false\)/],
+    ["primitives/PollCreateSheet.tsx", /useResetOnOpen\(visible, \(\) => \{[^}]*setFocusedField\(null\)/],
+    ["bodies/host/HostWalkupSheet.tsx", /const onClosed = useCallback\(\(\) => \{[^}]*setFocused\(false\)/],
+    ["bodies/host/HostTeamInviteSheet.tsx", /const onClosed = useCallback\(\(\) => \{[^}]*setFocused\(false\)/],
+    ["bodies/host/dashboard/OrgInviteSheet.tsx", /const onClosed = useCallback\(\(\) => \{[^}]*setFocused\(false\)/],
+  ])("%s clears its focused field on reset, since a field unmounted while focused never reports its blur", (rel, reset) => {
+    expect(strip(read(rel))).toMatch(reset)
+  })
+
   it("the slot card's BORDERLESS fields take the house ring's own constants", () => {
     const src = strip(read("bodies/SlotEditor.tsx"))
     expect(src).toMatch(/outlineWidth: FOCUS_RING_WIDTH/)

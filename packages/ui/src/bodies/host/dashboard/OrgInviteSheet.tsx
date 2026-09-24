@@ -56,6 +56,7 @@ export function OrgInviteSheet({ visible, orgId, onClose }: OrgInviteSheetProps)
     setIdentifier("")
     setRole("member")
     setErrorText(null)
+    setFocused(false)
     if (!invite.isPending) invite.reset()
   }, [invite])
 

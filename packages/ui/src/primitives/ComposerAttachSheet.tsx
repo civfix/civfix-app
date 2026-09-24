@@ -17,6 +17,8 @@ import type { IconName } from "../typography"
 import { useT } from "../i18n"
 import type { AnchorRect } from "./PopoverMenu"
 import { composerAttachRows, type ComposerAttachRowKey } from "./composerAttachRows"
+import { useDeferredOverlayAction } from "./useDeferredOverlayAction"
+import { useModalClosed } from "./useModalClosed"
 
 export interface ComposerAttachSheetProps {
   visible: boolean
@@ -59,22 +61,9 @@ export function ComposerAttachSheet({
   const handlerFor = (key: ComposerAttachRowKey): (() => void) =>
     key === "photo" ? onPhoto : key === "camera" ? onCamera : onPoll
 
-  const pendingActionRef = React.useRef<(() => void) | null>(null)
-  const choose = (key: ComposerAttachRowKey) => {
-    const action = handlerFor(key)
-    if (Platform.OS === "ios") {
-      pendingActionRef.current = action
-      onClose()
-      return
-    }
-    onClose()
-    action()
-  }
-  const onModalDismiss = () => {
-    const action = pendingActionRef.current
-    pendingActionRef.current = null
-    if (action) action()
-  }
+  const { run, settled } = useDeferredOverlayAction(visible, onClose, undefined)
+  const onModalDismiss = useModalClosed(visible, settled)
+  const choose = (key: ComposerAttachRowKey) => run(handlerFor(key))
 
   const renderRow = (key: ComposerAttachRowKey) => {
     const label = t(`attach.${key}`)

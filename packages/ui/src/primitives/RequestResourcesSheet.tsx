@@ -33,7 +33,10 @@ export function RequestResourcesSheet({
   const [message, setMessage] = useState("")
   const [focused, setFocused] = useState(false)
 
-  useResetOnOpen(visible, () => setMessage(""))
+  useResetOnOpen(visible, () => {
+    setMessage("")
+    setFocused(false)
+  })
 
   const canSubmit = !pending && message.trim().length > 0
 
