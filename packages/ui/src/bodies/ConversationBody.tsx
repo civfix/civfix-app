@@ -1,17 +1,15 @@
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { View, Pressable, Platform } from "react-native"
-import type { FlatList as RNFlatList, NativeScrollEvent, NativeSyntheticEvent } from "react-native"
+import { View, Pressable } from "react-native"
 import { SafeAreaInsetsContext } from "react-native-safe-area-context"
 import type { PersonDTO, RoomKind } from "@civfix/shared"
-import { space, useLayoutMode, useTheme, focusRingProps } from "../theme"
+import { space, useLayoutMode, useTheme, focusRingProps, type LayoutMode } from "../theme"
 import { Text, Icon, iconMap } from "../typography"
 import { ReportContentSheet, PinnedBar, SystemMessageRow, useToast, usePopoverAnchor } from "../primitives"
-import type { AnchorRect, PollCreateInput } from "../primitives"
+import type { AnchorRect } from "../primitives"
 import { canPinIn, canDeleteOthersIn } from "./chatPowers"
-import { resolveChannelComposerMode, resolveGroupInfoGate, type ChannelComposerMode } from "./channelComposerMode"
+import { resolveChannelComposerMode, resolveGroupInfoGate } from "./channelComposerMode"
 import { resolveMentionSource, type MentionSource } from "./mentionSource"
-import { useChat, useBlockUser, useReportContent, useCleanup, useCleanupAttendees, useAuthState, useReport, useJoinReportChat, useLeaveReportChat, useToggleMute, useGroupInfo, useGroupMembers, useJoinGroup } from "../data"
-import type { ContentReportReason, ContentReportSubject } from "@civfix/shared"
+import { useChat, useCleanup, useCleanupAttendees, useAuthState, useReport, useJoinReportChat, useLeaveReportChat, useToggleMute, useGroupInfo, useGroupMembers, useJoinGroup } from "../data"
 import type { UseChatResult } from "../data"
 import { cleanupHostStanding, hasHostCapability } from "../data/hooks/host"
 import { useNavStore } from "../nav"
@@ -21,27 +19,29 @@ import { useScrollHost } from "../shell/ScrollHost"
 import { useKeyboardVisible } from "../shell/useKeyboardVisible"
 import { useKeyboardReserve } from "../shell/useKeyboardReserve"
 import { DETAIL_BACK_ICON_SIZE } from "../shell/detailHeader"
-import { idKeyExtractor, openPinnedMessages, openGroupInfo, clearThreadJumpParam } from "./navHelpers"
+import { idKeyExtractor, clearThreadJumpParam } from "./navHelpers"
 import { todayKey, withinEditWindow, type DayLabelOptions } from "./relativeTime"
 import { ConvoBar, ConvoOverflowMenu, BlockConfirmCard } from "./conversation/ConvoBar"
 import { Bubble, DaySeparator } from "./conversation/MessageBubble"
 import { TypingBubble } from "./conversation/TypingBubble"
 import { ConversationComposer, ChannelPillBar } from "./conversation/ConversationComposer"
-import { buildRenderItems, roomErrorCopy, transientErrorCopyKey, getScrollableNode, senderNameColor, typingNames, useConvoMeta, type ConvoMeta, type RenderItem } from "./conversation/conversationModel"
+import { buildRenderItems, pinnedRenderRows, roomErrorCopy, transientErrorCopyKey, senderNameColor, typingNames, useConvoMeta, type ConvoMeta, type RenderItem } from "./conversation/conversationModel"
 import { convoHeaderTargets } from "./conversation/headerTargets"
 import { useComposerMode } from "./conversation/useComposerMode"
 import { canReactIn, canReplyIn, canVoteIn } from "./conversation/liveGates"
 import { aroundWindowState } from "./conversation/aroundWindowState"
 import { useJumpToMessage } from "./conversation/useJumpToMessage"
 import { usePinCycle } from "./conversation/usePinCycle"
-import { useConversationStyles } from "./conversation/styles"
+import { useChatMessageActions } from "./conversation/useChatMessageActions"
+import { useConvoReporting } from "./conversation/useConvoReporting"
+import { useConvoNavigation } from "./conversation/useConvoNavigation"
+import { useConvoBlock } from "./conversation/useConvoBlock"
+import { useTranscriptScroll } from "./conversation/useTranscriptScroll"
+import { resolveComposerSlot } from "./conversation/composerSlot"
+import { useTranscriptStyles } from "./conversation/transcriptStyles"
+import { useConvoHeaderStyles } from "./conversation/convoHeaderStyles"
 import { ChatEmbedScopeProvider, useOwnChatEmbedScope } from "./conversation/chatEmbedScope"
 import { viewportWindowKeys } from "./conversation/embedScheduler"
-
-export { Bubble, DaySeparator } from "./conversation/MessageBubble"
-export { TypingBubble } from "./conversation/TypingBubble"
-export { buildRenderItems, senderColor, typingNames } from "./conversation/conversationModel"
-export type { RenderItem } from "./conversation/conversationModel"
 
 export interface ConversationBodyProps {
   id: string
@@ -59,12 +59,102 @@ export interface ConversationBodyProps {
   jumpToMessageId?: string
 }
 
+function PinnedOnlyHeader({ mode, onBack }: { mode: LayoutMode; onBack: () => void }) {
+  const styles = useConvoHeaderStyles()
+  const th = useTheme()
+  const { t } = useT("conversation")
+  return (
+    <View style={styles.convoBar}>
+      <Pressable
+        onPress={onBack}
+        accessibilityRole="button"
+        accessibilityLabel={t("header.back")}
+        hitSlop={8}
+        {...focusRingProps}
+        style={({ pressed }) => [styles.back, pressed ? styles.backPressed : null]}
+      >
+        <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
+      </Pressable>
+      <View style={styles.convoTitles}>
+        <Text
+          style={[styles.convoTitle, mode === "expanded" ? styles.convoTitleExpanded : null]}
+          numberOfLines={1}
+          accessibilityRole="header"
+        >
+          {t("pins.view_title")}
+        </Text>
+      </View>
+    </View>
+  )
+}
+
+function TranscriptEmpty({ pinnedOnly, isGroup }: { pinnedOnly: boolean; isGroup: boolean }) {
+  const styles = useTranscriptStyles()
+  const th = useTheme()
+  const { t } = useT("conversation")
+  if (pinnedOnly) {
+    return (
+      <View style={styles.center}>
+        <View style={[styles.emptyIcon, styles.emptyIconMoss]}>
+          <Icon icon={iconMap.Pin} size={28} color={th.colors.brand.moss} />
+        </View>
+        <Text variant="title" style={styles.emptyTitle}>
+          {t("pins.empty")}
+        </Text>
+      </View>
+    )
+  }
+  return (
+    <View style={styles.center}>
+      <View style={[styles.emptyIcon, styles.emptyIconMoss]}>
+        <Icon icon={iconMap.MessageCircle} size={28} color={th.colors.brand.moss} />
+      </View>
+      <Text variant="title" style={styles.emptyTitle}>
+        {t("list.empty_title")}
+      </Text>
+      <Text variant="body" color={th.colors.textMuted} style={styles.emptyBody}>
+        {isGroup ? t("list.empty_body_group") : t("list.empty_body_dm")}
+      </Text>
+    </View>
+  )
+}
+
+function ConversationStatusRows({
+  errorBanner,
+  connection,
+}: {
+  errorBanner: string | null
+  connection: UseChatResult["connection"]
+}) {
+  const styles = useTranscriptStyles()
+  const th = useTheme()
+  const { t } = useT("conversation")
+  if (errorBanner) {
+    return (
+      <View style={styles.errorRow} accessibilityRole="alert">
+        <Icon icon={iconMap.AlertCircle} size={15} color={th.colors.bloom["600"]} />
+        <Text variant="caption" color={th.colors.bloom["600"]} style={styles.errorText} numberOfLines={2}>
+          {errorBanner}
+        </Text>
+      </View>
+    )
+  }
+  if (connection === "open") return null
+  return (
+    <View style={styles.offlineRow} accessibilityLiveRegion="polite">
+      <Icon icon={iconMap.WifiOff} size={13} color={th.colors.textSubtle} />
+      <Text variant="caption" color={th.colors.textSubtle} style={styles.offlineText} numberOfLines={2}>
+        {connection === "connecting" ? t("connection.reconnecting") : t("connection.offline")}
+      </Text>
+    </View>
+  )
+}
+
 export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBack: onBackProp, onOpenProfile: onOpenProfileProp, onOpenMembers: onOpenMembersProp, onOpenGroupInfo: onOpenGroupInfoProp, onViewReport: onViewReportProp, onOpenPinnedList, pinnedOnly = false, onJumpFromPinned, jumpToMessageId }: ConversationBodyProps) {
-  const styles = useConversationStyles()
+  const styles = useTranscriptStyles()
   const th = useTheme()
   const { FlatList } = useScrollHost()
   const { t } = useT("conversation")
-  const { t: tPolls } = useT("conversation-polls")
   const { t: tDate } = useT("common-datetime")
   const { t: tComposer } = useT("discussion-composer")
   const { locale } = useLocale()
@@ -83,7 +173,6 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   useLayoutEffect(() => {
     chatRef.current = chat
   })
-  const [blockTarget, setBlockTarget] = useState<{ id: string; name: string; isDm: boolean } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuRect, setMenuRect] = useState<AnchorRect | null>(null)
   const { ref: menuAnchorRef, measure: measureMenu } = usePopoverAnchor(
@@ -92,48 +181,12 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
       setMenuOpen(true)
     }, []),
   )
-  const listRef = useRef<RNFlatList<RenderItem> | null>(null)
-  const [isAtBottom, setIsAtBottom] = useState(true)
-  const [hasNewBelow, setHasNewBelow] = useState(false)
-  const savedDistanceRef = useRef<number | null>(null)
-  const [reportTarget, setReportTarget] = useState<{
-    subjectType: ContentReportSubject
-    subjectId: string
-    label: string
-  } | null>(null)
-  const reportContent = useReportContent()
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
+  const { listRef, hasNewBelow, scrollToBottom, backToLatest, onScroll } = useTranscriptScroll(chat.items, clearAround)
+  const { reportTarget, reportContent, onReportMessage, onReportPhoto, closeReport, onSubmitReport } = useConvoReporting()
   const toast = useToast()
-
-  const [pollCreatePending, setPollCreatePending] = useState(false)
-  const [pollCreateError, setPollCreateError] = useState<string | null>(null)
-  const onCreatePoll = useCallback(
-    async (input: PollCreateInput): Promise<boolean> => {
-      setPollCreatePending(true)
-      setPollCreateError(null)
-      try {
-        await createPoll(input)
-        return true
-      } catch {
-        setPollCreateError(tPolls("create_error"))
-        return false
-      } finally {
-        setPollCreatePending(false)
-      }
-    },
-    [createPoll, tPolls],
-  )
-  const onVotePoll = useCallback(
-    (messageId: string, optionIdxs: number[]) => {
-      void votePoll(messageId, optionIdxs).catch(() => toast.show(tPolls("vote_error"), { variant: "error" }))
-    },
-    [votePoll, toast, tPolls],
-  )
-  const onStopPoll = useCallback(
-    (messageId: string) => {
-      void closePoll(messageId).catch(() => toast.show(tPolls("stop_error"), { variant: "error" }))
-    },
-    [closePoll, toast, tPolls],
-  )
+  const { pollCreatePending, pollCreateError, onCreatePoll, onVotePoll, onStopPoll, onSetPinned, onDeleteMessage } =
+    useChatMessageActions({ createPoll, votePoll, closePoll, setPinned, deleteMessage })
 
   const insets = useContext(SafeAreaInsetsContext) ?? { top: 0, bottom: 0, left: 0, right: 0 }
   const keyboardVisible = useKeyboardVisible()
@@ -194,47 +247,29 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   const canDeleteOthers = canDeleteOthersIn(powerSignals) && !chat.liveDisabled
   const canModeratePoll = canDeleteOthers
 
-  const channelMode = resolveChannelComposerMode({
-    isGroupRoom: roomKind === "group",
-    ...(groupInfo.data?.kind ? { groupKind: groupInfo.data.kind } : {}),
-    myRole: groupInfo.data?.myRole ?? null,
-    ...(groupInfo.data?.visibility ? { visibility: groupInfo.data.visibility } : {}),
-  })
-  const composerSlotMode: ChannelComposerMode =
-    roomKind === "group" && !groupInfo.data ? "composer" : channelMode
-  const canCreatePoll = roomKind !== "dm" && composerSlotMode === "composer"
-
   const onBack = useCallback(() => (onBackProp ? onBackProp() : useNavStore.getState().back()), [onBackProp])
 
-  const blockUser = useBlockUser()
-  const confirmBlock = useCallback(() => {
-    const target = blockTarget
-    if (!target) return
-    blockUser.mutate(target.id, {
-      onSuccess: () => {
-        setBlockTarget(null)
-        if (target.isDm) onBack()
-      },
+  const { blockTarget, blockPending, confirmBlock, startBlock, onBlockAuthor, cancelBlock } = useConvoBlock({
+    peerId: meta.peerId,
+    title: meta.title,
+    closeMenu,
+    onBack,
+  })
+  const { openProfile, onMembers, viewReport, onGroupInfo, onOpenPinList, jumpFromPinned, onOpenPerson } =
+    useConvoNavigation({
+      id,
+      roomKind,
+      peer,
+      peerId: meta.peerId,
+      fullScreen,
+      closeMenu,
+      onOpenProfile: onOpenProfileProp,
+      onOpenMembers: onOpenMembersProp,
+      onOpenGroupInfo: onOpenGroupInfoProp,
+      onViewReport: onViewReportProp,
+      onOpenPinnedList,
+      onJumpFromPinned,
     })
-  }, [blockTarget, blockUser, onBack])
-
-  const openProfile = useCallback(() => {
-    setMenuOpen(false)
-    const peerId = meta.peerId
-    if (!peerId) return
-    if (onOpenProfileProp) onOpenProfileProp(peerId)
-    else useNavStore.getState().push({ kind: "person", id: peer && peer.id === peerId ? (peer.handle ?? peerId) : peerId })
-  }, [meta.peerId, onOpenProfileProp, peer])
-  const startBlock = useCallback(() => {
-    setMenuOpen(false)
-    const peerId = meta.peerId
-    if (!peerId) return
-    setBlockTarget({ id: peerId, name: meta.title, isDm: true })
-  }, [meta.peerId, meta.title])
-
-  const onBlockAuthor = useCallback((author: { id: string; name?: string | null }) => {
-    setBlockTarget({ id: author.id, name: author.name ?? t("block_confirm.this_person"), isDm: false })
-  }, [t])
 
   const headerTargets = convoHeaderTargets({
     fullScreen,
@@ -243,22 +278,6 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
     hasOpenGroupInfo: Boolean(onOpenGroupInfoProp),
     hasViewReport: Boolean(onViewReportProp),
   })
-
-  const onMembers = useCallback(() => {
-    if (onOpenMembersProp) onOpenMembersProp()
-    else if (!fullScreen) useNavStore.getState().push({ kind: "members", id, roomKind })
-  }, [onOpenMembersProp, fullScreen, id, roomKind])
-
-  const viewReport = useCallback(() => {
-    setMenuOpen(false)
-    if (onViewReportProp) onViewReportProp()
-    else if (!fullScreen) useNavStore.getState().push({ kind: "pin", id })
-  }, [onViewReportProp, fullScreen, id])
-
-  const onGroupInfo = useCallback(() => {
-    if (onOpenGroupInfoProp) onOpenGroupInfoProp()
-    else if (!fullScreen) openGroupInfo(id)
-  }, [onOpenGroupInfoProp, fullScreen, id])
 
   const toggleMute = useToggleMute(roomKind, id)
   const joinGroup = useJoinGroup()
@@ -306,11 +325,6 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   )
   const windowActive = windowRows !== null
 
-  const scrollToBottom = useCallback(() => {
-    listRef.current?.scrollToOffset({ offset: 0, animated: true })
-    setHasNewBelow(false)
-  }, [])
-
   const memberNames = useMemo(() => {
     const names = new Map<string, string>()
     if (meta.peerId && meta.peerName) names.set(meta.peerId, meta.peerName)
@@ -329,20 +343,10 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   }, [errorBanner, chat.typingUserIds, memberNames, isGroup, t, th.scheme])
 
   const pins = chat.pins
-  const pinnedRows = useMemo<RenderItem[]>(() => {
-    if (!pinnedOnly) return []
-    return pins.map((m) => {
-      const mine = viewerId !== null && m.from?.id === viewerId
-      return {
-        type: "row" as const,
-        id: m.id,
-        item: { message: m, mine, pending: false, failed: false },
-        showName: isGroup && !mine && m.kind !== "system",
-        groupStart: true,
-        groupEnd: true,
-      }
-    })
-  }, [pinnedOnly, pins, viewerId, isGroup])
+  const pinnedRows = useMemo<RenderItem[]>(
+    () => (pinnedOnly ? pinnedRenderRows(pins, viewerId, isGroup) : []),
+    [pinnedOnly, pins, viewerId, isGroup],
+  )
 
   const data = useMemo<RenderItem[]>(
     () => (pinnedOnly ? pinnedRows : (windowRows ?? (typingItem ? [typingItem, ...inverted] : inverted))),
@@ -378,40 +382,6 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
   }, [windowState, jumpLoadingId, clearAround])
 
   const canOpenPinList = headerTargets.pinnedList
-  const onOpenPinList = useCallback(() => {
-    if (onOpenPinnedList) onOpenPinnedList()
-    else if (!fullScreen) openPinnedMessages(id, roomKind)
-  }, [onOpenPinnedList, fullScreen, id, roomKind])
-
-  const onSetPinned = useCallback(
-    (messageId: string, pinned: boolean) => {
-      void setPinned(messageId, pinned).catch(() => {
-        toast.show(t("pins.action_failed"), { variant: "error" })
-      })
-    },
-    [setPinned, toast, t],
-  )
-
-  const jumpFromPinned = useCallback(
-    (messageId: string) => {
-      if (onJumpFromPinned) {
-        onJumpFromPinned(messageId)
-        return
-      }
-      const nav = useNavStore.getState()
-      const stack = nav.stack
-      const below = stack.length >= 2 ? stack[stack.length - 2] : undefined
-      if (below && below.kind === "thread" && below.id === id) {
-        nav.setStack([...stack.slice(0, stack.length - 2), { ...below, jumpToMessageId: messageId }])
-      } else {
-        nav.setStack([
-          ...stack.slice(0, Math.max(0, stack.length - 1)),
-          { kind: "thread", id, roomKind, jumpToMessageId: messageId },
-        ])
-      }
-    },
-    [onJumpFromPinned, id, roomKind],
-  )
 
   const consumedJumpParamRef = useRef<string | null>(null)
   useEffect(() => {
@@ -422,12 +392,6 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
     clearThreadJumpParam(id)
   }, [pinnedOnly, jumpToMessageId, onJumpToMessage, id])
 
-  const backToLatest = useCallback(() => {
-    clearAround()
-    setHasNewBelow(false)
-    requestAnimationFrame(() => listRef.current?.scrollToOffset({ offset: 0, animated: false }))
-  }, [clearAround])
-
   const composer = useComposerMode({
     send: chat.send,
     edit: chat.edit,
@@ -435,47 +399,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
     scrollToBottom,
   })
 
-  const onDeleteMessage = useCallback(
-    (messageId: string) => {
-      void deleteMessage(messageId).catch(() => {
-        toast.show(t("menu.delete_failed"), { variant: "error" })
-      })
-    },
-    [deleteMessage, toast, t],
-  )
   const onRetry = useCallback((clientId: string) => chatRef.current.retry(clientId), [])
-  const onReportMessage = useCallback((messageId: string) => {
-    reportContent.reset()
-    setReportTarget({ subjectType: "message", subjectId: messageId, label: t("report.subject_message") })
-  }, [reportContent, t])
-  const onReportPhoto = useCallback((mediaId: string) => {
-    reportContent.reset()
-    setReportTarget({ subjectType: "photo", subjectId: mediaId, label: t("report.subject_photo") })
-  }, [reportContent, t])
-  const closeReport = useCallback(() => {
-    if (reportContent.isPending) return
-    setReportTarget(null)
-  }, [reportContent.isPending])
-  const onSubmitReport = useCallback(
-    (reason: ContentReportReason, details?: string) => {
-      if (!reportTarget) return
-      reportContent.mutate(
-        {
-          subjectType: reportTarget.subjectType,
-          subjectId: reportTarget.subjectId,
-          reason,
-          ...(details ? { details } : {}),
-        },
-        {
-          onSuccess: () => {
-            setReportTarget(null)
-            toast.show(t("report.submitted"), { variant: "success" })
-          },
-        },
-      )
-    },
-    [reportTarget, reportContent, toast, t],
-  )
 
   const onEndReached = useCallback(() => {
     if (pinnedOnly) return
@@ -484,47 +408,6 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
     if (c.hasMore && !c.isLoadingMore) c.loadOlder()
   }, [pinnedOnly])
 
-  const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const y = e.nativeEvent.contentOffset.y
-    const atBottom = y <= space["10"]
-    setIsAtBottom(atBottom)
-    if (atBottom) setHasNewBelow(false)
-    if (Platform.OS === "web") {
-      const node = getScrollableNode(listRef.current)
-      if (node) savedDistanceRef.current = node.scrollHeight - node.scrollTop
-    }
-  }, [])
-
-  const newestId = useMemo(() => {
-    const last = chat.items[chat.items.length - 1]
-    return last ? { id: last.message.clientId ?? last.message.id, mine: last.mine } : null
-  }, [chat.items])
-  const prevNewestIdRef = useRef<string | null>(null)
-  useEffect(() => {
-    const prev = prevNewestIdRef.current
-    prevNewestIdRef.current = newestId?.id ?? null
-    if (prev === null) return
-    if (newestId && newestId.id !== prev && !newestId.mine && !isAtBottom) {
-      setHasNewBelow(true)
-    }
-  }, [newestId, isAtBottom])
-
-  const oldestId = chat.items.length > 0 ? (chat.items[0]!.message.clientId ?? chat.items[0]!.message.id) : null
-  const prevOldestIdRef = useRef<string | null>(oldestId)
-  useLayoutEffect(() => {
-    if (Platform.OS !== "web") return
-    const prev = prevOldestIdRef.current
-    prevOldestIdRef.current = oldestId
-    if (prev === null || oldestId === null || oldestId === prev) return
-    const saved = savedDistanceRef.current
-    if (saved == null) return
-    const raf = requestAnimationFrame(() => {
-      const node = getScrollableNode(listRef.current)
-      if (node) node.scrollTop = node.scrollHeight - saved
-    })
-    return () => cancelAnimationFrame(raf)
-  }, [oldestId])
-
   const groupInfoGate = resolveGroupInfoGate({
     isGroupRoom: roomKind === "group",
     hasGroupInfo: groupInfo.data != null,
@@ -532,33 +415,40 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
     isError: groupInfo.isError,
     cachedChannel: meta.channel,
   })
-  const composerDisabled = !!errorBanner || showJoinBanner || groupInfoGate !== "open"
   const cityMentionCandidate = mentionSource.extraCandidates[0]
+  const composerSlot = resolveComposerSlot({
+    roomKind,
+    channelMode: resolveChannelComposerMode({
+      isGroupRoom: roomKind === "group",
+      ...(groupInfo.data?.kind ? { groupKind: groupInfo.data.kind } : {}),
+      myRole: groupInfo.data?.myRole ?? null,
+      ...(groupInfo.data?.visibility ? { visibility: groupInfo.data.visibility } : {}),
+    }),
+    hasGroupInfo: groupInfo.data != null,
+    groupInfoGate,
+    hasRoomError: !!errorBanner,
+    showJoinBanner,
+    isReport,
+    isGroup,
+    pinnedOnly,
+    hasCityMention: cityMentionCandidate != null,
+  })
+  const composerSlotMode = composerSlot.mode
+  const composerDisabled = composerSlot.disabled
   const composerNotice =
-    isReport &&
-    composerSlotMode === "composer" &&
-    !pinnedOnly &&
-    !composerDisabled &&
-    cityMentionCandidate
+    composerSlot.showForwardNotice && cityMentionCandidate
       ? tComposer("forward_disclaimer", {
           mention: `@${cityMentionCandidate.handle}`,
           city: report.data?.cityName ?? tComposer("city_fallback"),
         })
       : undefined
-  const composerPlaceholder = errorBanner || groupInfoGate === "blocked"
-    ? t("composer.placeholder_unavailable")
-    : isGroup
-      ? t("composer.placeholder_group")
-      : t("composer.placeholder_dm", { name: meta.title.replace(/^@/, "").split(" ")[0] ?? "" }).trim()
+  const composerPlaceholder =
+    composerSlot.placeholder === "unavailable"
+      ? t("composer.placeholder_unavailable")
+      : composerSlot.placeholder === "group"
+        ? t("composer.placeholder_group")
+        : t("composer.placeholder_dm", { name: meta.title.replace(/^@/, "").split(" ")[0] ?? "" }).trim()
 
-  const onOpenPerson = useCallback(
-    (target: { id: string; handle?: string | null; deleted?: boolean }) => {
-      if (target.deleted) return
-      if (onOpenProfileProp) onOpenProfileProp(target.id)
-      else useNavStore.getState().push({ kind: "person", id: target.handle ?? target.id })
-    },
-    [onOpenProfileProp],
-  )
   const gateSignals = { liveDisabled: chat.liveDisabled, composerDisabled, composerSlotMode, pinnedOnly }
   const canReact = canReactIn(gateSignals)
   const canReply = canReplyIn(gateSignals)
@@ -669,30 +559,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
             viewabilityConfig={EMBED_VIEWABILITY}
             onViewableItemsChanged={onViewableItemsChanged}
             maintainVisibleContentPosition={MAINTAIN_VISIBLE_CONTENT_POSITION}
-            ListEmptyComponent={
-              pinnedOnly ? (
-                <View style={styles.center}>
-                  <View style={styles.emptyIconMoss}>
-                    <Icon icon={iconMap.Pin} size={28} color={th.colors.brand.moss} />
-                  </View>
-                  <Text variant="title" style={styles.emptyTitle}>
-                    {t("pins.empty")}
-                  </Text>
-                </View>
-              ) : (
-                <View style={styles.center}>
-                  <View style={styles.emptyIconMoss}>
-                    <Icon icon={iconMap.MessageCircle} size={28} color={th.colors.brand.moss} />
-                  </View>
-                  <Text variant="title" style={styles.emptyTitle}>
-                    {t("list.empty_title")}
-                  </Text>
-                  <Text variant="body" color={th.colors.textMuted} style={styles.emptyBody}>
-                    {isGroup ? t("list.empty_body_group") : t("list.empty_body_dm")}
-                  </Text>
-                </View>
-              )
-            }
+            ListEmptyComponent={<TranscriptEmpty pinnedOnly={pinnedOnly} isGroup={isGroup} />}
           />
           {pinnedOnly ? null : windowActive ? (
             <Pressable
@@ -720,23 +587,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
         </View>
       )}
 
-      {pinnedOnly ? null : errorBanner ? (
-        <View style={styles.errorRow} accessibilityRole="alert">
-          <Icon icon={iconMap.AlertCircle} size={15} color={th.colors.bloom["600"]} />
-          <Text variant="caption" color={th.colors.bloom["600"]} style={styles.errorText} numberOfLines={2}>
-            {errorBanner}
-          </Text>
-        </View>
-      ) : chat.connection !== "open" ? (
-        <View style={styles.offlineRow} accessibilityLiveRegion="polite">
-          <Icon icon={iconMap.WifiOff} size={13} color={th.colors.textSubtle} />
-          <Text variant="caption" color={th.colors.textSubtle} style={styles.offlineText} numberOfLines={2}>
-            {chat.connection === "connecting"
-              ? t("connection.reconnecting")
-              : t("connection.offline")}
-          </Text>
-        </View>
-      ) : null}
+      {pinnedOnly ? null : <ConversationStatusRows errorBanner={errorBanner} connection={chat.connection} />}
 
       {showJoinBanner && !pinnedOnly ? (
         <View style={styles.joinBanner}>
@@ -775,7 +626,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
           disabled={composerDisabled}
           placeholder={composerPlaceholder}
           mentionSource={mentionSource}
-          canCreatePoll={canCreatePoll}
+          canCreatePoll={composerSlot.canCreatePoll}
           onCreatePoll={onCreatePoll}
           pollCreatePending={pollCreatePending}
           pollCreateError={pollCreateError}
@@ -796,27 +647,7 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
         ]}
       >
         {pinnedOnly ? (
-          <View style={styles.convoBar}>
-            <Pressable
-              onPress={onBack}
-              accessibilityRole="button"
-              accessibilityLabel={t("header.back")}
-              hitSlop={8}
-              {...focusRingProps}
-              style={({ pressed }) => [styles.back, pressed ? styles.backPressed : null]}
-            >
-              <Icon icon={iconMap.ArrowLeft} size={DETAIL_BACK_ICON_SIZE} color={th.colors.text} />
-            </Pressable>
-            <View style={styles.convoTitles}>
-              <Text
-                style={[styles.convoTitle, mode === "expanded" ? styles.convoTitleExpanded : null]}
-                numberOfLines={1}
-                accessibilityRole="header"
-              >
-                {t("pins.view_title")}
-              </Text>
-            </View>
-          </View>
+          <PinnedOnlyHeader mode={mode} onBack={onBack} />
         ) : (
           <ConvoBar
             meta={barMeta}
@@ -846,8 +677,8 @@ export function ConversationBody({ id, roomKind, peer, fullScreen = false, onBac
           <BlockConfirmCard
             name={blockTarget.name}
             isDm={blockTarget.isDm}
-            pending={blockUser.isPending}
-            onCancel={() => setBlockTarget(null)}
+            pending={blockPending}
+            onCancel={cancelBlock}
             onConfirm={confirmBlock}
           />
         ) : null}

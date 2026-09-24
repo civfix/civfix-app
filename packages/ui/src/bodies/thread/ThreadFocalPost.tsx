@@ -2,9 +2,8 @@ import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import type { TFunction } from "i18next"
 import type { PostDTO, PostRefDTO } from "@civfix/shared"
-import { Repeat2 } from "lucide-react-native/icons"
 import { makeThemedStyles, useTheme, categoryColor, focusRingProps, wash } from "../../theme"
-import { Text, Icon } from "../../typography"
+import { Text, Icon, iconMap } from "../../typography"
 import { useLocale, useT } from "../../i18n"
 import { Avatar } from "../../primitives/Avatar"
 import { OrgAffiliationBadge } from "../../primitives/OrgAffiliationBadge"
@@ -174,7 +173,7 @@ export function ThreadFocalPost({
 
       {model.repostAttribution ? (
         <View style={styles.repostAttribution}>
-          <Icon icon={Repeat2} size={15} color={th.colors.textMuted} />
+          <Icon icon={iconMap.Repeat2} size={15} color={th.colors.textMuted} />
           <Text variant="caption" color={th.colors.textMuted} style={styles.repostAttributionText}>
             {model.repostAttribution}
           </Text>
@@ -454,7 +453,7 @@ const useStyles = makeThemedStyles((t) => ({
   authorName: {
     flexShrink: 1,
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 16,
+    fontSize: t.fontSize["16"],
     lineHeight: 21,
     color: t.colors.text,
   },
@@ -485,7 +484,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   resolutionText: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     lineHeight: 17,
     color: t.colors.moss["700"],
   },
@@ -515,7 +514,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   statCount: {
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.text,
   },
   statLabel: {

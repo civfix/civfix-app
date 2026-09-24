@@ -423,7 +423,7 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
     minWidth: 0,
     fontFamily: t.fontFamily.bodyMedium,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 20,
   },
   pickerHeader: {
@@ -444,7 +444,7 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
     minWidth: 0,
     fontFamily: t.fontFamily.bodyExtraBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 20,
     color: t.colors.text,
   },

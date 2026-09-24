@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import type { ChatItem, ChatMessageDTO } from "@civfix/shared"
-import type { RenderItem } from "../ConversationBody"
+import type { RenderItem } from "../conversation/conversationModel"
 import { resolveJump } from "../jumpToMessage"
 
 function chatItem(id: string, clientId?: string): ChatItem {

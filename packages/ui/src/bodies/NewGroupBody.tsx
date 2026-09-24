@@ -181,7 +181,7 @@ const useStyles = makeThemedStyles((t) => ({
     flex: 1,
     minWidth: 0,
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 16,
+    fontSize: t.fontSize["16"],
     color: t.colors.text,
   },
   pickerFill: {

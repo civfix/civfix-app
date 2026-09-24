@@ -66,7 +66,7 @@ export function civfixEntityRef(kind: "report" | "event", id: string): CivfixLin
   return ref(kind, id, path, `${webOrigin()}${path}`)
 }
 
-export function isCivfixLinkHost(origin: string): boolean {
+function isCivfixLinkHost(origin: string): boolean {
   const host = origin.replace(/^https:\/\//i, "").toLowerCase()
   return CIVFIX_LINK_HOSTS.includes(host)
 }

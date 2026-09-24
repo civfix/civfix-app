@@ -13,7 +13,7 @@ import { resolveComposerSubmit } from "../composerSubmit"
 import type { MentionSource } from "../mentionSource"
 import { senderColor } from "./conversationModel"
 import type { ComposerModeState } from "./useComposerMode"
-import { useConversationStyles } from "./styles"
+import { useComposerStyles } from "./composerStyles"
 
 export function ConversationComposer({
   composer,
@@ -38,7 +38,7 @@ export function ConversationComposer({
   notice?: string
   style?: StyleProp<ViewStyle>
 }) {
-  const styles = useConversationStyles()
+  const styles = useComposerStyles()
   const th = useTheme()
   const { t } = useT("conversation")
   const { draft, composerMode, editPending, submitMode, att, grow } = composer
@@ -89,29 +89,9 @@ export function ConversationComposer({
         </View>
       ) : null}
 
-      {composerMode ? (() => {
-        const target = composerMode.message
-        const excerptBody = (target.body ?? "").replace(/\s+/g, " ").trim()
-        if (composerMode.kind === "edit") {
-          return (
-            <ComposerModeBar
-              mode="edit"
-              title={t("composer.edit_title")}
-              excerpt={excerptBody}
-              onCancel={composer.cancelComposerMode}
-            />
-          )
-        }
-        return (
-          <ComposerModeBar
-            mode="reply"
-            title={t("composer.reply_title", { name: target.from?.name ?? t("bubble.reply_unknown_author") })}
-            excerpt={excerptBody || t("bubble.reply_media")}
-            accentColor={target.from ? senderColor(target.from.id) : undefined}
-            onCancel={composer.cancelComposerMode}
-          />
-        )
-      })() : null}
+      {composerMode ? (
+        <ComposerModeStrip composerMode={composerMode} onCancel={composer.cancelComposerMode} />
+      ) : null}
 
       {notice ? (
         <View style={styles.composerNotice}>
@@ -159,8 +139,6 @@ export function ConversationComposer({
           textAlignVertical="center"
           editable={!disabled && !editPending}
           maxLength={MESSAGE_BODY_MAX}
-          onSubmitEditing={composer.onSend}
-          blurOnSubmit={false}
           {...(composer.onComposerKeyPress ? { onKeyPress: composer.onComposerKeyPress } : {})}
           accessibilityLabel={t("composer.input")}
         />
@@ -205,6 +183,30 @@ export function ConversationComposer({
   )
 }
 
+function ComposerModeStrip({
+  composerMode,
+  onCancel,
+}: {
+  composerMode: NonNullable<ComposerModeState["composerMode"]>
+  onCancel: () => void
+}) {
+  const { t } = useT("conversation")
+  const target = composerMode.message
+  const excerptBody = (target.body ?? "").replace(/\s+/g, " ").trim()
+  if (composerMode.kind === "edit") {
+    return <ComposerModeBar mode="edit" title={t("composer.edit_title")} excerpt={excerptBody} onCancel={onCancel} />
+  }
+  return (
+    <ComposerModeBar
+      mode="reply"
+      title={t("composer.reply_title", { name: target.from?.name ?? t("bubble.reply_unknown_author") })}
+      excerpt={excerptBody || t("bubble.reply_media")}
+      accentColor={target.from ? senderColor(target.from.id) : undefined}
+      onCancel={onCancel}
+    />
+  )
+}
+
 export function ChannelPillBar({
   mode,
   muted,
@@ -222,7 +224,7 @@ export function ChannelPillBar({
   joinPending: boolean
   style?: StyleProp<ViewStyle>
 }) {
-  const styles = useConversationStyles()
+  const styles = useComposerStyles()
   const th = useTheme()
   const { t } = useT("conversation")
   return (

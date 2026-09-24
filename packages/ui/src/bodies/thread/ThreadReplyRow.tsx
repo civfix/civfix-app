@@ -371,13 +371,13 @@ const useStyles = makeThemedStyles((t) => ({
   },
   body: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 21,
     color: t.colors.text,
   },
   bodyMention: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     lineHeight: 21,
     color: t.colors.accentText,
   },

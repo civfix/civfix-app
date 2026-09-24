@@ -37,7 +37,7 @@ export function GroupIdentityFields({
   variant = "wizard",
 }: GroupIdentityFieldsProps) {
   const styles = useStyles()
-  const t = useTheme()
+  const th = useTheme()
   const picked = avatar.attachments[0] ?? null
   const isSheet = variant === "sheet"
   const showClear = !!picked && !!labels.avatarClearA11y
@@ -63,7 +63,7 @@ export function GroupIdentityFields({
           ) : fallbackAvatarUrl ? (
             <Image source={{ uri: fallbackAvatarUrl }} style={styles.avatarImage} resizeMode="cover" />
           ) : (
-            <Icon icon={iconMap.Camera} size={isSheet ? 24 : 26} color={t.colors.onAccent} />
+            <Icon icon={iconMap.Camera} size={isSheet ? 24 : 26} color={th.colors.onAccent} />
           )}
         </Pressable>
         {showClear ? (
@@ -75,7 +75,7 @@ export function GroupIdentityFields({
             {...focusRingProps}
             style={({ pressed }) => [styles.avatarClear, pressed ? styles.clearPressed : null]}
           >
-            <Icon icon={iconMap.Close} size={14} color={t.colors.textMuted} />
+            <Icon icon={iconMap.Close} size={14} color={th.colors.textMuted} />
           </Pressable>
         ) : null}
       </View>

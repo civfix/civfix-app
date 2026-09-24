@@ -143,6 +143,10 @@ export function isOptimisticPostId(id: string): boolean {
   return id.startsWith(OPTIMISTIC_PREFIX)
 }
 
+export function optimisticPostId(now: number): string {
+  return `${OPTIMISTIC_PREFIX}${now}`
+}
+
 export interface ThreadRowPost {
   readonly id: string
   readonly replyToId?: string | null

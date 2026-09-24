@@ -19,7 +19,7 @@ import { useT } from "../../i18n"
 import { resolveComposerSubmit, type ComposerSubmitMode } from "../composerSubmit"
 import { bodyMentionsHandle } from "./mentionMatch"
 import { editErrorCopyKey } from "./conversationModel"
-import { CONTROL, COMPOSER_MAX } from "./styles"
+import { CONTROL, COMPOSER_MAX } from "./styleParts"
 
 export type ComposerModeValue = { kind: "edit" | "reply"; message: ChatMessageDTO } | null
 

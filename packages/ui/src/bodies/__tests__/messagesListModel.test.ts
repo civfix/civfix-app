@@ -6,7 +6,7 @@
  * measured against is the RAW `last`, never the rendered preview.
  */
 import { describe, expect, it } from "vitest"
-import { matchesThreadQuery } from "../messagesListModel"
+import { matchesThreadQuery, threadRowActions, unreadBadgeLabel, UNREAD_BADGE_CAP } from "../messagesListModel"
 
 const thread = (title: string, last?: string | null) => ({ title, last })
 
@@ -42,5 +42,50 @@ describe("matchesThreadQuery", () => {
     // active (and a different set of threads in each locale), which is not a search result anyone asked
     // for. The filter reads the DTO, the row reads the copy.
     expect(matchesThreadQuery(thread("Ada Lovelace", "on my way"), "you")).toBe(false)
+  })
+})
+
+describe("unreadBadgeLabel", () => {
+  it("shows the count up to the cap and caps it past that", () => {
+    expect(unreadBadgeLabel(1)).toBe(1)
+    expect(unreadBadgeLabel(UNREAD_BADGE_CAP)).toBe(99)
+    expect(unreadBadgeLabel(UNREAD_BADGE_CAP + 1)).toBe("99+")
+    expect(unreadBadgeLabel(1234)).toBe("99+")
+  })
+})
+
+describe("threadRowActions", () => {
+  const labels = { mute: "Mute", markRead: "Mark read", delete: "Delete", deleteA11y: "Delete conversation" }
+
+  it("offers mark-read ONLY where there is something to clear", () => {
+    expect(threadRowActions({ unread: true, muted: false, labels }).map((a) => a.key)).toEqual([
+      "mute",
+      "markRead",
+      "delete",
+    ])
+    expect(threadRowActions({ unread: false, muted: false, labels }).map((a) => a.key)).toEqual(["mute", "delete"])
+  })
+
+  it("swaps the mute glyph with the muted state", () => {
+    expect(threadRowActions({ unread: false, muted: false, labels })[0]?.icon).toBe("BellOff")
+    expect(threadRowActions({ unread: false, muted: true, labels })[0]?.icon).toBe("Bell")
+  })
+
+  it("makes delete the destructive Trash2 action with its own accessible label", () => {
+    const del = threadRowActions({ unread: true, muted: false, labels }).at(-1)
+    expect(del).toEqual({
+      key: "delete",
+      label: "Delete",
+      a11yLabel: "Delete conversation",
+      icon: "Trash2",
+      tone: "delete",
+      destructive: true,
+    })
+  })
+
+  it("announces mute and mark-read by their visible labels, and nothing else is destructive", () => {
+    const [mute, markRead] = threadRowActions({ unread: true, muted: false, labels })
+    expect(mute).toMatchObject({ a11yLabel: "Mute", tone: "mute", destructive: false })
+    expect(markRead).toMatchObject({ a11yLabel: "Mark read", icon: "CheckCheck", tone: "read", destructive: false })
   })
 })

@@ -401,7 +401,7 @@ export function MembersBody({
     [threads.data, id],
   )
   const muted = threadRow?.muted ?? false
-  const toggleMute = useToggleMute(roomKind === "report" ? "report" : "cleanup", id)
+  const toggleMute = useToggleMute(roomKind, id)
   const onToggleMute = useCallback(() => {
     toggleMute.mutate({ muted: !muted }, { onError: onMutationError })
   }, [toggleMute, muted, onMutationError])
@@ -678,15 +678,11 @@ const useStyles = makeThemedStyles((t) => ({
   list: {
     flex: 1,
   },
-  reportOnly: {
-    paddingHorizontal: t.space["4"],
-    paddingTop: t.space["2"],
-  },
   linkedRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 12,
+    paddingVertical: t.space["3"],
     paddingHorizontal: t.space["3"],
     marginBottom: t.space["3"],
     borderRadius: t.radius.lg,
@@ -725,7 +721,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   heroSubtitle: {
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 14,
+    fontSize: t.fontSize["14"],
     color: t.colors.textMuted,
     textAlign: "center",
   },
@@ -744,14 +740,14 @@ const useStyles = makeThemedStyles((t) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: t.space["3"],
-    paddingVertical: 12,
+    paddingVertical: t.space["3"],
   },
   actionDisabled: {
     opacity: 0.5,
   },
   actionLabel: {
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   actionLabelDestructive: {
@@ -762,7 +758,7 @@ const useStyles = makeThemedStyles((t) => ({
   },
   sectionLabel: {
     fontFamily: t.fontFamily.bodyBold,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
     textTransform: "uppercase",
     letterSpacing: 0.4,
@@ -817,7 +813,7 @@ const useStyles = makeThemedStyles((t) => ({
   linkedLabel: {
     flex: 1,
     fontFamily: t.fontFamily.bodySemiBold,
-    fontSize: 15,
+    fontSize: t.fontSize["15"],
     color: t.colors.text,
   },
   listContent: {
@@ -831,14 +827,14 @@ const useStyles = makeThemedStyles((t) => ({
   },
   chipRow: {
     flexDirection: "row",
-    gap: 4,
+    gap: t.space["1"],
     flexShrink: 1,
     minWidth: 0,
   },
   slotEmpty: {
     paddingVertical: t.space["2"],
     fontFamily: t.fontFamily.bodyRegular,
-    fontSize: 13,
+    fontSize: t.fontSize["13"],
     color: t.colors.textSubtle,
   },
 }))
