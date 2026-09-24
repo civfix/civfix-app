@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { formatCount } from "@civfix/shared"
+import { useLocale } from "@civfix/ui/i18n"
 
 import { ChartFrame, integerYAxis, XLabels, YGrid } from "./chart-frame"
 import type { PlotPadding } from "./chart-frame"
-import { formatCompact, useMeasuredWidth } from "./chart-utils"
+import { useMeasuredWidth } from "./chart-utils"
 import type { TooltipState } from "./chart-utils"
 import { useChartPalette } from "./palette"
 
@@ -36,6 +38,7 @@ export function Histogram({
   className,
 }: HistogramProps) {
   const palette = useChartPalette()
+  const { locale } = useLocale()
   const { ref, width } = useMeasuredWidth<HTMLDivElement>()
   const [tip, setTip] = useState<TooltipState | null>(null)
   const fill = color ?? palette.hue.sky
@@ -78,7 +81,13 @@ export function Histogram({
                 x: x + barW / 2,
                 y,
                 title: bin.label,
-                rows: [{ label: valueLabel, value: formatCompact(bin.count), color: fill }],
+                rows: [
+                  {
+                    label: valueLabel,
+                    value: formatCount(bin.count, locale, { compact: true }),
+                    color: fill,
+                  },
+                ],
               })
             }
             onMouseLeave={() => setTip(null)}

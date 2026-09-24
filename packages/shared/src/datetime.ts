@@ -396,15 +396,21 @@ export interface EventWhenParts {
   zone: string | null
 }
 
-function zoneSuffix(
+/**
+ * The event zone's short name ("EDT") to append to a clock the viewer reads in another offset, or
+ * null when either zone is missing or unusable or both read the same offset at that instant.
+ */
+export function eventZoneSuffix(
   instantMs: number,
-  eventZone: string | undefined,
-  viewerZone: string | undefined,
+  eventZone: string | null | undefined,
+  viewerZone: string | null | undefined,
   locale: string | undefined,
 ): string | null {
-  if (eventZone === undefined || viewerZone === undefined) return null
-  if (sameOffsetAt(instantMs, eventZone, viewerZone)) return null
-  const short = zoneShortName(instantMs, eventZone, locale)
+  const event = usableZone(eventZone)
+  const viewer = usableZone(viewerZone)
+  if (event === undefined || viewer === undefined) return null
+  if (sameOffsetAt(instantMs, event, viewer)) return null
+  const short = zoneShortName(instantMs, event, locale)
   return short === "" ? null : short
 }
 
@@ -442,7 +448,7 @@ export function eventWhenParts(event: EventWhenInput, opts: EventWhenOptions = {
     date: start.toLocaleDateString(locale, { month: "short", day: "numeric", timeZone: zone }),
     time: timeLabel(event.scheduledAt, locale, zone),
     range: hasEnd ? spanLabel(event.scheduledAt, endIso, locale, weekdays, zone) : null,
-    zone: zoneSuffix(start.getTime(), zone, usableZone(opts.viewerTimeZone), locale),
+    zone: eventZoneSuffix(start.getTime(), zone, opts.viewerTimeZone, locale),
   }
 }
 
@@ -451,4 +457,133 @@ export function eventWhenLabel(event: EventWhenInput, opts: EventWhenOptions = {
   if (parts.time === "") return ""
   const when = `${parts.dow}, ${parts.date} · ${parts.range ?? parts.time}`
   return parts.zone === null ? when : `${when} ${parts.zone}`
+}
+
+/** Used when a locale tag is malformed, so a bad preference degrades the language, never the render. */
+const FORMAT_FALLBACK_LOCALE = "en-US"
+
+const dateFormatters = new Map<string, Intl.DateTimeFormat>()
+
+// Constructing an Intl.DateTimeFormat is one of the costlier built-ins on Hermes, and list rows format
+// on every render, so instances are cached per (locale, zone, options). Zones are validated before
+// they reach the key, so the cache is bounded by the IANA set rather than by row data.
+function cachedDateFormatter(
+  locale: string | undefined,
+  options: Intl.DateTimeFormatOptions,
+  timeZone: string | undefined,
+): Intl.DateTimeFormat {
+  const key = `${locale ?? ""}|${timeZone ?? ""}|${JSON.stringify(options)}`
+  const cached = dateFormatters.get(key)
+  if (cached !== undefined) return cached
+  const zoned = timeZone === undefined ? options : { ...options, timeZone }
+  let made: Intl.DateTimeFormat
+  try {
+    made = new Intl.DateTimeFormat(locale, zoned)
+  } catch {
+    made = new Intl.DateTimeFormat(FORMAT_FALLBACK_LOCALE, zoned)
+  }
+  dateFormatters.set(key, made)
+  return made
+}
+
+/**
+ * Formats an instant with `options`, or "" when it is missing or unparseable. An unusable zone is
+ * dropped (the viewer's zone applies) while the locale stays, so one malformed row never flips a
+ * screen to English; a malformed locale falls back to en-US instead of throwing in a render path.
+ */
+export function safeDateFormat(
+  iso: string | null | undefined,
+  locale: string | undefined,
+  options: Intl.DateTimeFormatOptions,
+  timeZone?: string | null,
+): string {
+  if (!iso) return ""
+  const at = Date.parse(iso)
+  if (Number.isNaN(at)) return ""
+  return cachedDateFormatter(locale, options, usableZone(timeZone)).format(at)
+}
+
+/**
+ * The zone an event with no usable zone of its own is shown in. Link previews render on a server
+ * whose clock is UTC, so "the viewer's zone" is not available there; civfix launched in Los Angeles
+ * and legacy rows predate per-event zones.
+ */
+export const DEFAULT_EVENT_TIME_ZONE = "America/Los_Angeles"
+
+export type EventInstantStyle = "short" | "long"
+
+const EVENT_INSTANT_OPTIONS: Readonly<Record<EventInstantStyle, Intl.DateTimeFormatOptions>> = {
+  short: {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  },
+  long: {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  },
+}
+
+/**
+ * One self-contained event instant ("Sat, Sep 12, 10:00 AM PDT"), labelled with its zone so it reads
+ * correctly wherever it is shown. "" for a missing or unparseable instant.
+ */
+export function formatEventInstant(
+  iso: string | null | undefined,
+  timeZone: string | null | undefined,
+  style: EventInstantStyle,
+  locale: string = FORMAT_FALLBACK_LOCALE,
+): string {
+  return safeDateFormat(
+    iso,
+    locale,
+    EVENT_INSTANT_OPTIONS[style],
+    usableZone(timeZone) ?? DEFAULT_EVENT_TIME_ZONE,
+  )
+}
+
+const pad = (value: number, width = 2) => String(value).padStart(width, "0")
+
+/** The `<input type="datetime-local">` value showing `iso` on `timeZone`'s wall clock, or "". */
+export function datetimeLocalFromIso(iso: string | null | undefined, timeZone: string): string {
+  if (!iso) return ""
+  const at = Date.parse(iso)
+  if (Number.isNaN(at)) return ""
+  const wall = wallClockInZone(at, timeZone)
+  const date = `${pad(wall.year, 4)}-${pad(wall.month)}-${pad(wall.day)}`
+  return `${date}T${pad(wall.hours)}:${pad(wall.minutes)}`
+}
+
+export type DatetimeLocalValue =
+  | { kind: "empty" }
+  | { kind: "instant"; iso: string }
+  | { kind: "invalid" }
+
+const DATETIME_LOCAL = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/
+
+/**
+ * `invalid` covers both a malformed value and a wall clock that does not exist in the zone (the
+ * hour skipped by a spring-forward DST change), which the caller must surface as a field error
+ * rather than silently shifting.
+ */
+export function isoFromDatetimeLocal(value: string, timeZone: string): DatetimeLocalValue {
+  if (value === "") return { kind: "empty" }
+  const match = DATETIME_LOCAL.exec(value)
+  if (!match) return { kind: "invalid" }
+  const wall: WallClock = {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+    hours: Number(match[4]),
+    minutes: Number(match[5]),
+  }
+  const at = wallClockToInstantMs(wall, timeZone)
+  return at === null ? { kind: "invalid" } : { kind: "instant", iso: new Date(at).toISOString() }
 }

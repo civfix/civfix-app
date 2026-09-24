@@ -1,5 +1,6 @@
-import type { PostCounts, PostViewer } from "@civfix/shared"
+import { formatCount, type PostCounts, type PostViewer } from "@civfix/shared"
 import { space } from "@civfix/shared/tokens"
+import { FALLBACK_LOCALE } from "../i18n/resolveLocale"
 import type { AnchorRect } from "./menuMotionModel"
 import { resolveBandLeft } from "./messageContextMenuLayout"
 
@@ -184,16 +185,8 @@ export function positionPostActionMenu(
 
 export const POST_ACTION_POP_MS = 280
 
-export function formatPostActionCount(value: number): string {
-  const count = Math.max(0, Math.trunc(value))
-  if (count < 1_000) return String(count)
-  const formatUnit = (divisor: number, suffix: string): string => {
-    const scaled = count / divisor
-    return `${Number(scaled.toFixed(scaled < 10 ? 1 : 0))}${suffix}`
-  }
-  if (count < 1_000_000) return formatUnit(1_000, "K")
-  if (count < 1_000_000_000) return formatUnit(1_000_000, "M")
-  return formatUnit(1_000_000_000, "B")
+export function formatPostActionCount(value: number, locale: string = FALLBACK_LOCALE): string {
+  return formatCount(Math.max(0, Math.trunc(value)), locale, { compact: true })
 }
 
 /** The post's own detail route: what Share links to and where a sign-in started here returns. */

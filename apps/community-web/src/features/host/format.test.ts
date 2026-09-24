@@ -5,39 +5,19 @@ vi.mock("@civfix/ui/i18n", () => ({
   useViewerTimeZone: () => "UTC",
 }))
 
+import { datetimeLocalFromIso } from "@civfix/shared/datetime"
+
 import {
   consoleInputZone,
   inputZoneHintName,
-  isoToZonedInput,
   zoneGenericName,
   zonedFieldPatch,
-  zonedInputToIso,
 } from "./format"
 
 const LA = "America/Los_Angeles"
 const OPENS = "2026-09-12T17:00:00.000Z"
 
-describe("console datetime-local inputs in the event's zone", () => {
-  it("shows a stored instant as the event's wall clock, not the UTC one", () => {
-    expect(isoToZonedInput(OPENS, LA)).toBe("2026-09-12T10:00")
-    expect(isoToZonedInput(OPENS, "Asia/Seoul")).toBe("2026-09-13T02:00")
-    expect(isoToZonedInput(null, LA)).toBe("")
-  })
-
-  it("reads an input back as that zone's instant, so a round trip is exact", () => {
-    expect(zonedInputToIso(isoToZonedInput(OPENS, LA), LA)).toEqual({ kind: "instant", iso: OPENS })
-    expect(zonedInputToIso("2026-12-01T09:30", LA)).toEqual({
-      kind: "instant",
-      iso: "2026-12-01T17:30:00.000Z",
-    })
-    expect(zonedInputToIso("", LA)).toEqual({ kind: "empty" })
-  })
-
-  it("refuses a wall clock skipped by a spring-forward change instead of shifting it", () => {
-    expect(zonedInputToIso("2026-03-08T02:30", LA)).toEqual({ kind: "invalid" })
-    expect(zonedInputToIso("not a date", LA)).toEqual({ kind: "invalid" })
-  })
-
+describe("the zone a console datetime-local input is read in", () => {
   it("falls back to the viewer's zone for a legacy event with no usable zone", () => {
     expect(consoleInputZone(LA, "Europe/Berlin")).toBe(LA)
     expect(consoleInputZone(null, "Europe/Berlin")).toBe("Europe/Berlin")
@@ -46,7 +26,7 @@ describe("console datetime-local inputs in the event's zone", () => {
 })
 
 describe("zonedFieldPatch", () => {
-  const saved = { opensAt: isoToZonedInput(OPENS, LA), closesAt: "" }
+  const saved = { opensAt: datetimeLocalFromIso(OPENS, LA), closesAt: "" }
 
   it("sends nothing for an untouched window, so saving another setting cannot move it", () => {
     expect(zonedFieldPatch(saved, saved, LA)).toEqual({ patch: {}, invalid: [] })

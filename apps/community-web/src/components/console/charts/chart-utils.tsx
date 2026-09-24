@@ -60,14 +60,6 @@ export function niceTicks(
   return ticks
 }
 
-export function formatCompact(value: number): string {
-  if (Math.abs(value) >= 1000) {
-    const scaled = value / 1000
-    return `${Math.abs(scaled) >= 10 ? Math.round(scaled) : scaled.toFixed(1)}k`
-  }
-  return String(Math.round(value))
-}
-
 export function sparseIndices(length: number, target = 6): number[] {
   if (length <= target) return Array.from({ length }, (_, i) => i)
   const step = Math.ceil(length / target)

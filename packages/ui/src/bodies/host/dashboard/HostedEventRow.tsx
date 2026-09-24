@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useState } from "react"
 import { Image, Pressable, View } from "react-native"
 import type { CleanupMemberRole, HostedEventDTO } from "@civfix/shared"
+import { safeDateFormat } from "@civfix/shared/datetime"
 import {
   MIN_TOUCH_TARGET,
   focusRingProps,
@@ -74,20 +75,7 @@ export interface HostedEventRowProps {
   onEdit: (event: HostedEventDTO) => void
 }
 
-function pastDateLabel(iso: string, locale: string, timeZone: string | undefined): string {
-  const at = new Date(iso)
-  if (Number.isNaN(at.getTime())) return ""
-  try {
-    return new Intl.DateTimeFormat(locale, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      ...(timeZone ? { timeZone } : {}),
-    }).format(at)
-  } catch {
-    return iso.slice(0, 10)
-  }
-}
+const PAST_DATE_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" }
 
 function MetaLine({
   parts,
@@ -197,7 +185,7 @@ export const HostedEventRow = memo(function HostedEventRow({
   const metaParts: MetaPart[] =
     eventWindow === "past"
       ? [
-          { key: "when", text: pastDateLabel(event.startsAt, locale, event.timezone ?? undefined) },
+          { key: "when", text: safeDateFormat(event.startsAt, locale, PAST_DATE_OPTIONS, event.timezone) },
           ...(past.cancelled
             ? [{ key: "cancelled", text: t("events.meta_cancelled"), tone: "muted" as const }]
             : []),

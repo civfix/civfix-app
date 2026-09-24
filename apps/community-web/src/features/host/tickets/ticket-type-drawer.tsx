@@ -9,6 +9,7 @@ import {
   MAX_TICKET_TYPE_DESCRIPTION,
   MAX_TICKET_TYPE_NAME,
 } from "@civfix/shared"
+import { datetimeLocalFromIso } from "@civfix/shared/datetime"
 import { useApi, useAuthState } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -29,7 +30,6 @@ import { firstIssueByPath } from "../form-issues"
 import { invalidateEvent } from "../console-invalidate"
 import { useConsoleEvent } from "../console-context"
 import {
-  isoToZonedInput,
   useConsoleInputZone,
   useInputZoneNames,
   zonedFieldPatch,
@@ -65,8 +65,8 @@ function draftFrom(type: TicketTypeDTO | null, timeZone: string): TicketDraft {
     name: type.name,
     description: type.description ?? "",
     capacity: type.capacity === null || type.capacity === undefined ? "" : String(type.capacity),
-    salesOpensAt: isoToZonedInput(type.salesOpensAt, timeZone),
-    salesClosesAt: isoToZonedInput(type.salesClosesAt, timeZone),
+    salesOpensAt: datetimeLocalFromIso(type.salesOpensAt, timeZone),
+    salesClosesAt: datetimeLocalFromIso(type.salesClosesAt, timeZone),
     visibility: type.visibility,
     accessCode: "",
     maxPartySize: type.maxPartySize,

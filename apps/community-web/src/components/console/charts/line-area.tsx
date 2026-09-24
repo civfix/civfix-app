@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { formatCount } from "@civfix/shared"
+import { useLocale } from "@civfix/ui/i18n"
 import type { MouseEvent } from "react"
 
 import { ChartFrame, integerYAxis, PLOT_PAD, XLabels, YGrid } from "./chart-frame"
-import { formatCompact, linePath, useMeasuredWidth, valueRuns } from "./chart-utils"
+import { linePath, useMeasuredWidth, valueRuns } from "./chart-utils"
 import type { TooltipState } from "./chart-utils"
 import { useChartPalette } from "./palette"
 
@@ -40,6 +42,7 @@ export function LineArea({
   className,
 }: LineAreaProps) {
   const palette = useChartPalette()
+  const { locale } = useLocale()
   const { ref, width } = useMeasuredWidth<HTMLDivElement>()
   const [hover, setHover] = useState<number | null>(null)
   const [tip, setTip] = useState<TooltipState | null>(null)
@@ -70,7 +73,7 @@ export function LineArea({
         label: s.label,
         value: s.values[index] === null || s.values[index] === undefined
           ? suppressedLabel
-          : formatCompact(s.values[index] as number),
+          : formatCount(s.values[index] as number, locale, { compact: true }),
         color: s.color ?? palette.seriesColor(si),
       })),
     })

@@ -1,10 +1,12 @@
 "use client"
 
 import type { ReactNode } from "react"
+import { formatCount } from "@civfix/shared"
+import { useLocale } from "@civfix/ui/i18n"
 
 import { cn } from "@/lib/utils"
 
-import { formatCompact, NUM_CLASS } from "./chart-utils"
+import { NUM_CLASS } from "./chart-utils"
 import { useChartPalette } from "./palette"
 
 export interface HBarItem {
@@ -31,6 +33,7 @@ export function HBarRanked({
   className,
 }: HBarRankedProps) {
   const palette = useChartPalette()
+  const { locale } = useLocale()
   const scaleMax = max ?? Math.max(1, ...items.map((item) => item.value))
 
   return (
@@ -65,7 +68,7 @@ export function HBarRanked({
                 NUM_CLASS,
               )}
             >
-              {item.valueLabel ?? formatCompact(item.value)}
+              {item.valueLabel ?? formatCount(item.value, locale, { compact: true })}
             </span>
             {item.trailing}
           </div>

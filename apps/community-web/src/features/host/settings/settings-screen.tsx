@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { MAX_EVENT_REMINDER_OFFSETS } from "@civfix/shared"
 import type { CleanupDTO, EventVisibility, OrganizationDTO } from "@civfix/shared"
+import { datetimeLocalFromIso } from "@civfix/shared/datetime"
 import { useApi, useMyOrganizations } from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
@@ -23,7 +24,6 @@ import { hrefForRoute } from "@/components/console/route"
 import { useConsoleErrors } from "../error-copy"
 import { invalidateEvent } from "../console-invalidate"
 import {
-  isoToZonedInput,
   useConsoleInputZone,
   useInputZoneNames,
   zonedFieldPatch,
@@ -49,8 +49,8 @@ interface SettingsDraft {
 function settingsDraftFrom(event: CleanupDTO, zone: string): SettingsDraft {
   return {
     visibility: event.visibility,
-    opensAt: isoToZonedInput(event.registrationOpensAt, zone),
-    closesAt: isoToZonedInput(event.registrationClosesAt, zone),
+    opensAt: datetimeLocalFromIso(event.registrationOpensAt, zone),
+    closesAt: datetimeLocalFromIso(event.registrationClosesAt, zone),
     donationUrl: event.donationUrl ?? "",
     reminders: (event.reminderOffsetsMinutes ?? []).map(String),
     organizationId: event.organization?.id ?? "",

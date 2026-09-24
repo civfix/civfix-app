@@ -6,7 +6,7 @@ import {
   type ReportStatus,
   type ReportType,
 } from "@civfix/shared"
-import { isValidTimeZone } from "@civfix/shared/datetime"
+import { formatEventInstant } from "@civfix/shared/datetime"
 
 import {
   APPLE_TOUCH_ICON_PATH,
@@ -23,7 +23,6 @@ import {
   SITE_NAME,
 } from "./site-meta"
 
-const EVENT_TIME_ZONE = "America/Los_Angeles"
 
 const TITLE_MAX = 90
 const EVENT_TITLE_MAX = 80
@@ -223,25 +222,6 @@ export function previewForReport(
   }
 }
 
-function formatEventWhen(
-  iso: string | null | undefined,
-  timeZone?: string | null,
-): string {
-  if (!iso) return ""
-  const at = new Date(iso)
-  if (Number.isNaN(at.getTime())) return ""
-  const options: Intl.DateTimeFormatOptions = {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZoneName: "short",
-  }
-  const zone = timeZone && isValidTimeZone(timeZone) ? timeZone : EVENT_TIME_ZONE
-  return new Intl.DateTimeFormat("en-US", { ...options, timeZone: zone }).format(at)
-}
-
 export function previewForEvent(
   input: EventPreviewInput,
   context: PreviewContext,
@@ -250,7 +230,7 @@ export function previewForEvent(
   const title = input.title ? truncateText(input.title, EVENT_TITLE_MAX) : ""
   if (!title) return null
 
-  const when = formatEventWhen(input.scheduledAt, input.timezone)
+  const when = formatEventInstant(input.scheduledAt, input.timezone, "short")
   const cancelled = input.status === "cancelled" ? "Cancelled" : null
   const tagline = `A volunteer event on ${SITE_NAME}`
   const isPublic = isPublicVisibility(input.visibility)
@@ -332,7 +312,7 @@ export function previewForSignupPage(
   if (!title) return null
 
   const isPublic = input.visibility === "public"
-  const when = formatEventWhen(event?.startsAt, event?.timezone)
+  const when = formatEventInstant(event?.startsAt, event?.timezone, "short")
   const cancelled = event?.status === "cancelled" ? "Cancelled" : null
   const host = input.organization?.name ? oneLine(input.organization.name) : ""
   const description =

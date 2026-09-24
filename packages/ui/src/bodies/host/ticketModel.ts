@@ -1,5 +1,6 @@
 import type { EventAddressSource } from "@civfix/shared"
 import { isVerifiedEventAddress } from "@civfix/shared"
+import { safeDateFormat } from "@civfix/shared/datetime"
 import type { AddressPoint } from "../addressRowModel"
 
 interface TicketWhen {
@@ -8,22 +9,17 @@ interface TicketWhen {
   timezone?: string | null | undefined
 }
 
+const TICKET_DAY_OPTIONS: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" }
+const TICKET_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  hour: "numeric",
+  minute: "2-digit",
+  timeZoneName: "short",
+}
+
 export function ticketWhen(ticket: TicketWhen, locale?: string): string {
-  const start = new Date(ticket.startsAt)
-  if (Number.isNaN(start.getTime())) return ""
-  const zone = ticket.timezone ?? undefined
-  const format = (options: Intl.DateTimeFormatOptions): string => {
-    try {
-      return new Intl.DateTimeFormat(locale, { ...options, ...(zone ? { timeZone: zone } : {}) }).format(
-        start,
-      )
-    } catch {
-      return new Intl.DateTimeFormat(locale, options).format(start)
-    }
-  }
-  const day = format({ weekday: "short", month: "short", day: "numeric" })
-  const time = format({ hour: "numeric", minute: "2-digit", timeZoneName: "short" })
-  return `${day} · ${time}`
+  const day = safeDateFormat(ticket.startsAt, locale, TICKET_DAY_OPTIONS, ticket.timezone)
+  if (day === "") return ""
+  return `${day} · ${safeDateFormat(ticket.startsAt, locale, TICKET_TIME_OPTIONS, ticket.timezone)}`
 }
 
 function ticketWhere(ticket: { address?: string | null | undefined }): string | null {

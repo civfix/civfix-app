@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
+import { formatCount } from "@civfix/shared"
 
-import { formatCompact, niceTicks } from "./chart-utils"
+import { niceTicks } from "./chart-utils"
 
 describe("niceTicks", () => {
   it("keeps fractional steps by default", () => {
@@ -23,7 +24,9 @@ describe("niceTicks", () => {
   it("renders every integer-mode label distinctly", () => {
     for (const max of [1, 2, 3]) {
       for (const count of [3, 4]) {
-        const labels = niceTicks(max, count, { integer: true }).map(formatCompact)
+        const labels = niceTicks(max, count, { integer: true }).map((tick) =>
+          formatCount(tick, "en", { compact: true }),
+        )
         expect(new Set(labels).size).toBe(labels.length)
       }
     }
