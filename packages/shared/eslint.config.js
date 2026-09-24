@@ -40,8 +40,6 @@ export default tseslint.config(
       sourceType: "module",
     },
     rules: {
-      // No async work happens in this pure contract package, so this is off.
-      "@typescript-eslint/no-floating-promises": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",

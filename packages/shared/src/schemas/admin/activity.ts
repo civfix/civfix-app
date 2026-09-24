@@ -33,9 +33,7 @@ export const ActivityItemDTOSchema = z
   .strict()
 export type ActivityItemDTO = z.infer<typeof ActivityItemDTOSchema>
 
-export const ActivityListQuerySchema = AdminListQuerySchema.extend({
-  filter: z.string().optional(),
-})
+export const ActivityListQuerySchema = AdminListQuerySchema
 export type ActivityListQuery = z.infer<typeof ActivityListQuerySchema>
 
 export const ActivityListResponseSchema = pageResponse(ActivityItemDTOSchema)
