@@ -134,6 +134,15 @@ describe("assertSafeBroadcastLinks", () => {
     expect(inspectBroadcastLinks(many, { maxLinks: 10 })).toHaveLength(0)
   })
 
+  it("accepts a zero link cap and ignores a negative or fractional one", () => {
+    const one = "https://civfix.org/0"
+    expect(inspectBroadcastLinks(one, { maxLinks: 0 })).toEqual([{ kind: "too_many", count: 1, max: 0 }])
+    const many = Array.from({ length: 6 }, (_, i) => `https://civfix.org/${i}`).join(" ")
+    for (const maxLinks of [-1, 2.5, Number.NaN]) {
+      expect(inspectBroadcastLinks(many, { maxLinks })[0]).toEqual({ kind: "too_many", count: 6, max: 5 })
+    }
+  })
+
   it("enforces an optional host allowlist including subdomains", () => {
     const options = { allowedHosts: ["civfix.org"] }
     expect(inspectBroadcastLinks("https://maps.civfix.org/x", options)).toHaveLength(0)

@@ -1,5 +1,5 @@
 import { avatarGradient } from "../avatar.js"
-import { ANALYTICS_SUPPRESSION_K } from "../schemas/host/analytics.js"
+import { ANALYTICS_SUPPRESSION_K } from "../schemas/host/suppression.js"
 import type {
   BreakdownRow,
   HostedEventsAnalyticsResponse,
@@ -54,6 +54,8 @@ const FAKE_PORTFOLIO_VOLUNTEER_HOURS = [41.5, 33, 27.25] as const
 const FAKE_EVENT_VOLUNTEER_HOURS = [6, 5.5, 4.25] as const
 const FAKE_PORTFOLIO_TOTAL_HOURS = 486.75
 const FAKE_PORTFOLIO_VOLUNTEERS_CREDITED = 96
+const FAKE_PORTFOLIO_REGISTRATIONS = 412
+const FAKE_PORTFOLIO_CHECK_INS = 337
 
 function fakeTopVolunteers(
   nextId: () => string,
@@ -243,7 +245,7 @@ function fakeBroadcasts(
       finishedAt: pending ? null : new Date(reminderAt).toISOString(),
       recipients: 40,
       sent: pending ? 0 : 38,
-      failed: pending ? 0 : 0,
+      failed: 0,
       suppressed: 2,
     },
     {
@@ -327,7 +329,7 @@ export function fakeEventInsights(
   }
 }
 
-const PORTFOLIO_SERIES_DAYS: Readonly<Record<PortfolioAnalyticsRange, number>> = {
+const FAKE_PORTFOLIO_SERIES_POINTS: Readonly<Record<PortfolioAnalyticsRange, number>> = {
   "30d": 30,
   "90d": 60,
   "365d": 90,
@@ -351,17 +353,17 @@ export function fakeHostedEventsAnalytics(
   const now = options.now
   const rng = rngFrom(seed)
   const nextId = makeIdFactory(seed)
-  const days = PORTFOLIO_SERIES_DAYS[range]
+  const points = FAKE_PORTFOLIO_SERIES_POINTS[range]
   const series: SeriesPoint[] = []
-  for (let i = days - 1; i >= 0; i -= 1) {
+  for (let i = points - 1; i >= 0; i -= 1) {
     series.push({
       day: dayKey(now - i * DAY_MS),
       value: Math.round(4 + rng() * 22),
       suppressed: false,
     })
   }
-  const registrations = 412
-  const checkIns = 337
+  const registrations = FAKE_PORTFOLIO_REGISTRATIONS
+  const checkIns = FAKE_PORTFOLIO_CHECK_INS
   const uniqueAttendees = 268
   const rows: BreakdownRow[] = PORTFOLIO_EVENT_TITLES.slice(0, 5).map((label, i) => ({
     key: `top-event-${i + 1}`,
@@ -405,8 +407,8 @@ export function fakeHostPortfolioKpis(): HostPortfolioKpis {
   return {
     eventsHosted: 9,
     upcomingEvents: 3,
-    totalRegistrations: 412,
-    totalCheckedIn: 337,
+    totalRegistrations: FAKE_PORTFOLIO_REGISTRATIONS,
+    totalCheckedIn: FAKE_PORTFOLIO_CHECK_INS,
   }
 }
 

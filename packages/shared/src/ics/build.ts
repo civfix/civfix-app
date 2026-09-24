@@ -1,3 +1,6 @@
+import { isValidTimeZone } from "../datetime.js"
+import { intOr } from "../internal/numbers.js"
+
 export const ICS_PRODID = "-//civfix//civfix events//EN"
 export const ICS_UID_DOMAIN = "civfix.org"
 const FOLD_OCTETS = 75
@@ -35,15 +38,6 @@ function utcStamp(ms: number): string {
     `${pad(d.getUTCFullYear(), 4)}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}` +
     `T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`
   )
-}
-
-function isKnownTimeZone(timezone: string): boolean {
-  try {
-    new Intl.DateTimeFormat("en-US", { timeZone: timezone })
-    return true
-  } catch {
-    return false
-  }
 }
 
 function escapeText(value: string): string {
@@ -103,7 +97,7 @@ export function buildIcs(input: IcsEventInput): string {
   if (title.length === 0) throw new RangeError("buildIcs expects a non-empty title")
 
   const zone = input.timezone?.trim()
-  const displayZone = zone !== undefined && zone.length > 0 && isKnownTimeZone(zone) ? zone : null
+  const displayZone = zone !== undefined && zone.length > 0 && isValidTimeZone(zone) ? zone : null
 
   const lines: string[] = [
     "BEGIN:VCALENDAR",
@@ -150,7 +144,7 @@ export function buildIcs(input: IcsEventInput): string {
     lines.push(`ORGANIZER${cn}:mailto:${escapeText(organizerEmail)}`)
   }
 
-  const sequence = Number.isInteger(input.sequence) && (input.sequence as number) >= 0 ? (input.sequence as number) : 0
+  const sequence = intOr(input.sequence, 0, 0)
   lines.push(`SEQUENCE:${sequence}`)
   lines.push(`STATUS:${input.status ?? "CONFIRMED"}`)
   lines.push("TRANSP:OPAQUE")

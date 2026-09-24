@@ -2,8 +2,9 @@ import { z } from "zod"
 import { BroadcastChannelSchema, IdSchema, ISODateSchema } from "../common.js"
 import { LeaderboardEntryDTOSchema } from "../entities.js"
 
+import { ANALYTICS_SUPPRESSION_K } from "./suppression.js"
 
-export const ANALYTICS_SUPPRESSION_K = 5
+export { ANALYTICS_SUPPRESSION_K }
 export const MAX_PORTFOLIO_TOP_VOLUNTEERS = 5
 
 export const AnalyticsRangeSchema = z.enum(["7d", "30d", "90d", "all"])

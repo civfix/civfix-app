@@ -1,7 +1,13 @@
-import { K_SUPPRESS, suppressRate, type SuppressedRatio } from "./suppress.js"
+import { intOr } from "../internal/numbers.js"
+import { K_SUPPRESS, normalizeK, roundRate, safeCount } from "./counts.js"
+import { suppressRate, type SuppressedRatio } from "./suppress.js"
 
 export const MAX_SERIES_DAYS = 400
 export const MAX_ARRIVAL_BUCKETS = 200
+
+const DEFAULT_ARRIVAL_BUCKET_MINUTES = 15
+const DEFAULT_ARRIVAL_FROM_MINUTES = -120
+const DEFAULT_ARRIVAL_TO_MINUTES = 240
 
 const DAY_MS = 86400000
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/
@@ -117,15 +123,6 @@ export interface ArrivalsCurveOptions extends SuppressOptions {
   bucketMinutes?: number
   fromMinutes?: number
   toMinutes?: number
-}
-
-function normalizeK(k: number | undefined): number {
-  if (k === undefined || !Number.isFinite(k) || k < 1) return K_SUPPRESS
-  return Math.floor(k)
-}
-
-function safeCount(count: number): number {
-  return Number.isFinite(count) && count > 0 ? Math.floor(count) : 0
 }
 
 function dayToUtcMs(day: string): number {
@@ -360,7 +357,7 @@ export function breakdownClosure(
       return {
         key,
         value: suppressed ? null : value,
-        share: suppressed || total === 0 ? null : Math.round((value / total) * 10000) / 10000,
+        share: suppressed || total === 0 ? null : roundRate(value / total),
         suppressed,
       }
     }),
@@ -391,16 +388,12 @@ export function funnel(steps: readonly KeyCount[], options: SuppressOptions = {}
   return {
     panelSuppressed,
     total: panelSuppressed ? null : first,
-    rows: monotonic.map((step) => {
-      const suppressed = panelSuppressed
-      return {
-        key: step.key,
-        value: suppressed ? null : step.count,
-        conversionFromFirst:
-          suppressed || first === 0 ? null : Math.round((step.count / first) * 10000) / 10000,
-        suppressed,
-      }
-    }),
+    rows: monotonic.map((step) => ({
+      key: step.key,
+      value: panelSuppressed ? null : step.count,
+      conversionFromFirst: panelSuppressed || first === 0 ? null : roundRate(step.count / first),
+      suppressed: panelSuppressed,
+    })),
   }
 }
 
@@ -409,11 +402,9 @@ export function arrivalsCurve(
   options: ArrivalsCurveOptions = {},
 ): DerivedPanel<DerivedArrivalBucket> {
   const k = normalizeK(options.k)
-  const bucket = Number.isInteger(options.bucketMinutes) && (options.bucketMinutes ?? 0) > 0
-    ? (options.bucketMinutes as number)
-    : 15
-  const from = Number.isInteger(options.fromMinutes) ? (options.fromMinutes as number) : -120
-  const to = Number.isInteger(options.toMinutes) ? (options.toMinutes as number) : 240
+  const bucket = intOr(options.bucketMinutes, 1, DEFAULT_ARRIVAL_BUCKET_MINUTES)
+  const from = intOr(options.fromMinutes, Number.NEGATIVE_INFINITY, DEFAULT_ARRIVAL_FROM_MINUTES)
+  const to = intOr(options.toMinutes, Number.NEGATIVE_INFINITY, DEFAULT_ARRIVAL_TO_MINUTES)
   if (to <= from) throw new RangeError("arrivalsCurve expects fromMinutes < toMinutes")
   const bucketCount = Math.ceil((to - from) / bucket)
   if (bucketCount > MAX_ARRIVAL_BUCKETS) {

@@ -52,7 +52,7 @@ export const MAX_LINKED_REPORTS = 200
 export const MAX_EVENT_ADDRESS_LENGTH = 200
 export const MIN_EVENT_DURATION_MINUTES = 15
 export const MAX_EVENT_DURATION_MINUTES = 1440
-export const DEFAULT_EVENT_DURATION_MINUTES = 240
+export { DEFAULT_EVENT_DURATION_MINUTES } from "./event-duration.js"
 
 const EventSlotInputObjectSchema = z
   .object({
