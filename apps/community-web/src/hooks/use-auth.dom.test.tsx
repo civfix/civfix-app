@@ -7,13 +7,13 @@ import { AppError, ErrorCode, type UserDTO } from "@civfix/shared"
 import type * as ApiModule from "@/lib/api"
 import { queryKeys } from "@/lib/query"
 
-const logout = vi.fn()
-const session = vi.fn()
+const logout = vi.fn<(options: { signal?: AbortSignal }) => Promise<unknown>>()
+const session = vi.fn<(...args: unknown[]) => unknown>()
 
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof ApiModule>()),
   api: {
-    logout: (...args: unknown[]) => logout(...args),
+    logout: (...args: Parameters<typeof logout>) => logout(...args),
     session: (...args: unknown[]) => session(...args),
   },
 }))
@@ -173,7 +173,7 @@ describe("useLogout", () => {
     useAuthStore.setState({ csrfToken: null, optimistic: true })
     const tokensAtCall: (string | undefined)[] = []
     logout.mockImplementation(async (...args: unknown[]) => {
-      expect(args).toEqual([{ signal: expect.any(AbortSignal) }])
+      expect(args).toEqual([{ signal: expect.any(AbortSignal) as unknown }])
       tokensAtCall.push(await resolveCsrfToken())
       throw new TypeError("Failed to fetch")
     })

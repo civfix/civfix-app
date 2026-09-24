@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type * as ApiModule from "@/lib/api"
 import { AppError, ErrorCode } from "@civfix/shared"
 
-const claimNudge = vi.fn()
+const claimNudge = vi.fn<(...args: unknown[]) => unknown>()
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ back: () => {}, push: () => {} }),

@@ -1,6 +1,6 @@
 import { readdirSync } from "node:fs"
 import { fileURLToPath } from "node:url"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest"
 
 import { PERVASIVE_HEADERS } from "../src/lib/edge-headers"
 import {
@@ -68,9 +68,9 @@ function makeCache(): EdgeCache & { entries: Map<string, Response> } {
 
 interface Harness {
   context: PreviewContextArg
-  rewrite: ReturnType<typeof vi.fn>
-  fetchSpy: ReturnType<typeof vi.fn>
-  assets: ReturnType<typeof vi.fn>
+  rewrite: Mock<(shell: Response, preview: LinkPreview) => Response>
+  fetchSpy: Mock<(input: Request) => Promise<Response>>
+  assets: Mock<PreviewEnv["ASSETS"]["fetch"]>
   waited: Promise<unknown>[]
 }
 
@@ -80,8 +80,8 @@ function harness(options: {
   env?: Partial<PreviewEnv>
   upstream?: () => Promise<Response>
 } = {}): Harness {
-  const assets = vi.fn(async () => shellResponse())
-  const fetchSpy = vi.fn(options.upstream ?? (async () => new Response(JSON.stringify(REPORT_PAYLOAD), { status: 200 })))
+  const assets = vi.fn<PreviewEnv["ASSETS"]["fetch"]>(async () => shellResponse())
+  const fetchSpy = vi.fn<(input: Request) => Promise<Response>>(options.upstream ?? (async () => new Response(JSON.stringify(REPORT_PAYLOAD), { status: 200 })))
   vi.stubGlobal("fetch", fetchSpy)
   const waited: Promise<unknown>[] = []
   const rewrite = vi.fn((shell: Response, preview: LinkPreview) => {

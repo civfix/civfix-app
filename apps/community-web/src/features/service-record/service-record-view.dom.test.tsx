@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type * as ApiModule from "@/lib/api"
 
-const verifyServiceHoursCertificate = vi.fn()
+const verifyServiceHoursCertificate = vi.fn<(...args: unknown[]) => unknown>()
 
 vi.mock("@civfix/ui/i18n", async () => {
   const { makeI18nMock } = await import("@/components/console/__testing__/i18n-mock")

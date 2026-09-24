@@ -122,7 +122,7 @@ describe("VerificationScreen", () => {
         note: "Determination letter attached",
       }),
     )
-    const sent = client.applyOrganizationVerification.mock.calls[0]?.[0]
+    const sent: unknown = client.applyOrganizationVerification.mock.calls[0]?.[0]
     expect(ApplyOrganizationVerificationRequestSchema.safeParse(sent).success).toBe(true)
 
     expect(await screen.findByText("verification.pending_title")).toBeTruthy()

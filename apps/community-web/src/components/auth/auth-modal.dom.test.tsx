@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type * as ApiModule from "@/lib/api"
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 
-const otpRequest = vi.fn()
-const otpVerify = vi.fn()
+const otpRequest = vi.fn<(...args: unknown[]) => unknown>()
+const otpVerify = vi.fn<(...args: unknown[]) => unknown>()
 
 vi.mock("@civfix/ui/i18n", async () => {
   const { makeI18nMock } = await import("@/components/console/__testing__/i18n-mock")

@@ -5,21 +5,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { GUEST_RSVP_TURNSTILE_ACTION } from "@civfix/shared"
 import type { PublicEventPageDTO } from "@civfix/shared"
 
+import type { api } from "@/lib/api"
+
 import { signupPage, ticket } from "./__fixtures__"
 
-const registerForEvent = vi.fn()
-const guestRsvpRequest = vi.fn()
-const guestRsvpVerify = vi.fn()
-const joinEventWaitlist = vi.fn()
-const runTurnstile = vi.fn()
+const registerForEvent = vi.fn<(body: Parameters<typeof api.registerForEvent>[0], ...rest: unknown[]) => unknown>()
+const guestRsvpRequest = vi.fn<(...args: unknown[]) => unknown>()
+const guestRsvpVerify = vi.fn<(body: Parameters<typeof api.guestRsvpVerify>[0], ...rest: unknown[]) => unknown>()
+const joinEventWaitlist = vi.fn<(...args: unknown[]) => unknown>()
+const runTurnstile = vi.fn<(...args: unknown[]) => unknown>()
 
 let authenticated = true
 
 vi.mock("@/lib/api", () => ({
   api: {
-    registerForEvent: (...args: unknown[]) => registerForEvent(...args),
+    registerForEvent: (...args: Parameters<typeof registerForEvent>) => registerForEvent(...args),
     guestRsvpRequest: (...args: unknown[]) => guestRsvpRequest(...args),
-    guestRsvpVerify: (...args: unknown[]) => guestRsvpVerify(...args),
+    guestRsvpVerify: (...args: Parameters<typeof guestRsvpVerify>) => guestRsvpVerify(...args),
     joinEventWaitlist: (...args: unknown[]) => joinEventWaitlist(...args),
   },
   toAppError: (error: unknown) => error,
@@ -106,12 +108,12 @@ describe("member one-tap registration", () => {
     await user.click(screen.getByRole("button", { name: /form\.count_me_in/ }))
     await screen.findByText("web-signup:outcome.registered")
     const body = registerForEvent.mock.calls[0]?.[0]
-    expect(body.consent).toMatchObject({
+    expect(body?.consent).toMatchObject({
       disclosureVersion: "2026-09-06",
       hostContactOptIn: false,
       surface: "web_register",
     })
-    expect(body.idempotencyKey.length).toBeGreaterThan(7)
+    expect(body?.idempotencyKey.length).toBeGreaterThan(7)
   })
 
   it("keeps ONE idempotency key across a repeated tap on the same attempt", async () => {

@@ -75,10 +75,14 @@ describe("useDraft write", () => {
     const { result } = renderHook(() => useDraft(KEY, { title: "" }))
     act(() => result.current.patch({ title: "H" }))
     act(() => result.current.patch({ title: "Hi" }))
-    act(() => vi.advanceTimersByTime(499))
+    act(() => {
+      vi.advanceTimersByTime(499)
+    })
     expect(window.localStorage.getItem(KEY)).toBeNull()
 
-    act(() => vi.advanceTimersByTime(1))
+    act(() => {
+      vi.advanceTimersByTime(1)
+    })
     const envelope = JSON.parse(window.localStorage.getItem(KEY) as string) as Record<string, unknown>
     expect(envelope).toMatchObject({ version: "v1", owner: "viewer-1", value: { title: "Hi" } })
   })
@@ -104,7 +108,9 @@ describe("useDraft write", () => {
     const { result, unmount } = renderHook(() => useDraft(KEY, { title: "" }))
     act(() => result.current.patch({ title: "Hi" }))
     act(() => result.current.clear())
-    act(() => vi.advanceTimersByTime(1000))
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
     unmount()
     expect(window.localStorage.getItem(KEY)).toBeNull()
   })
@@ -118,7 +124,9 @@ describe("useDraft write", () => {
     act(() => result.current.patch({ title: "First" }))
     rerender({ key: other })
     act(() => result.current.patch({ title: "Second" }))
-    act(() => vi.advanceTimersByTime(500))
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
     expect(storedValue(KEY)).toEqual({ title: "First" })
     expect(storedValue(other)).toEqual({ title: "Second" })
   })
