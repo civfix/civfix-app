@@ -46,6 +46,11 @@ export function roundGeocodeCoord(n: number): number {
   return Math.round(n * factor) / factor
 }
 
+/** The exact-coordinate label shown when no address resolves, at the geocode key's precision. */
+export function coordsLabel(point: LatLngLike): string {
+  return `${point.lat.toFixed(GEOCODE_POINT_KEY_DECIMALS)}, ${point.lng.toFixed(GEOCODE_POINT_KEY_DECIMALS)}`
+}
+
 export function geocodePointKey(point: LatLngLike): string {
   return `${roundGeocodeCoord(point.lat).toFixed(GEOCODE_POINT_KEY_DECIMALS)},${roundGeocodeCoord(
     point.lng,

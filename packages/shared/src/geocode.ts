@@ -14,6 +14,7 @@
  * location as the fallback. Everything degrades gracefully - offline you still get pasted coordinates.
  */
 import type { LatLngLike } from "./geo.js"
+import { coordsLabel } from "./address.js"
 
 export type LatLng = LatLngLike
 
@@ -107,7 +108,7 @@ export function parseLatLng(input: string): LatLng | null {
 function coordSuggestion(coord: LatLng): GeoSuggestion {
   return {
     id: `coordinate:${coord.lat},${coord.lng}`,
-    label: `${coord.lat.toFixed(5)}, ${coord.lng.toFixed(5)}`,
+    label: coordsLabel(coord),
     secondary: "Exact coordinates",
     lat: coord.lat,
     lng: coord.lng,

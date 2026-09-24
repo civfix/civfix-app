@@ -1,3 +1,4 @@
+import { coordsLabel } from "@civfix/shared"
 import * as React from "react"
 import maplibregl from "maplibre-gl"
 import { shadowSchemes } from "@civfix/shared/tokens"
@@ -273,7 +274,7 @@ function MainMapLocationPicker({ value, onChange, onClear, pin }: LocationPicker
         </button>
       </div>
       <div style={styles.overlayCoord}>
-        {point ? `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}` : t("hint.empty")}
+        {point ? coordsLabel(point) : t("hint.empty")}
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { DEVICE_FIX_TIMEOUT_MS, withTimeout } from "@civfix/shared"
+import { DEVICE_FIX_TIMEOUT_MS, coordsLabel, withTimeout } from "@civfix/shared"
 import { parseLatLng, type GeoSuggestion, type LatLng } from "@civfix/shared/geocode"
 import { useGeolocation } from "../capabilities"
 import { useApi, fetchApproximateLocation } from "../data"
@@ -92,7 +92,7 @@ export function useAddressSearch({
         setResults([
           {
             id: `coordinate:${coord.lat},${coord.lng}`,
-            label: `${coord.lat.toFixed(5)}, ${coord.lng.toFixed(5)}`,
+            label: coordsLabel(coord),
             secondary: t("coordinate.exact"),
             lat: coord.lat,
             lng: coord.lng,

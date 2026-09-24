@@ -20,6 +20,7 @@
  * maplibre import.
  */
 import { useQuery } from "@tanstack/react-query"
+import { coordsLabel, roundGeocodeCoord } from "@civfix/shared"
 import type { ApiClient } from "@civfix/shared/client"
 import { useApi } from "../context"
 import { queryKeys } from "../keys"
@@ -29,16 +30,6 @@ import { GEOCODE_STALE_MS, isAddressNotFound } from "./resolveAddress"
 export interface ReverseLabelPoint {
   lat: number
   lng: number
-}
-
-/** Round a coordinate for the query key so a sub-100m pin fine-tune reuses one cache entry (~5 decimals). */
-function roundLabelCoord(n: number): number {
-  return Math.round(n * 100000) / 100000
-}
-
-/** The exact-coordinate fallback string (5 decimals) shown when no address resolves. */
-export function coordsLabel(point: ReverseLabelPoint): string {
-  return `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`
 }
 
 /**
@@ -74,8 +65,8 @@ export async function fetchReverseLabel(
  */
 export function useReverseLabel(point: ReverseLabelPoint | null) {
   const api = useApi()
-  const lat = point ? roundLabelCoord(point.lat) : 0
-  const lng = point ? roundLabelCoord(point.lng) : 0
+  const lat = point ? roundGeocodeCoord(point.lat) : 0
+  const lng = point ? roundGeocodeCoord(point.lng) : 0
   return useQuery<string | null>({
     queryKey: queryKeys.reverseLabel(point ? lat : null, point ? lng : null),
     enabled: point !== null,

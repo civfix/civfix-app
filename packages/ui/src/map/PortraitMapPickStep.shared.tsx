@@ -2,6 +2,7 @@
  * The seams differ only in host chrome and middle content; everything else lives here once because the
  * copies had already started to drift.
  */
+import { coordsLabel } from "@civfix/shared"
 import React, { useEffect, useRef, useState } from "react"
 import { View, Pressable, StyleSheet, type StyleProp, type ViewStyle } from "react-native"
 import { webCursorPointer, focusRingProps, makeThemedStyles, useTheme } from "../theme"
@@ -56,7 +57,7 @@ export function PickStepBottomBar({ point, onConfirm, onCancel, style }: PickSte
   return (
     <View style={[pickStepStyles.bar, style]}>
       <Text style={[pickStepStyles.echo, hasPoint ? pickStepStyles.echoCoords : null]} numberOfLines={1}>
-        {hasPoint ? `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}` : t("pickStep.needPin")}
+        {hasPoint ? coordsLabel(point) : t("pickStep.needPin")}
       </Text>
       <View style={pickStepStyles.actions}>
         <Pressable

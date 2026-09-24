@@ -3,7 +3,8 @@
  * resolves, else the exact coordinates to 5 decimals (`coordsLabel`).
  */
 import { describe, expect, it } from "vitest"
-import { coordsLabel, fetchReverseLabel, reverseLabelText } from "../hooks/reverseLabel"
+import { coordsLabel } from "@civfix/shared"
+import { fetchReverseLabel, reverseLabelText } from "../hooks/reverseLabel"
 import { fetchJurisdiction } from "../hooks/reports"
 
 describe("coordsLabel", () => {

@@ -21,7 +21,7 @@ const helpers = suggest as unknown as Helpers
 describe("address search proximity bias never waits on an unanswered permission prompt", () => {
   it("caps the device fix inside AddressSearch at 4 s through the shared never-rejecting cap", () => {
     expect(DEVICE_FIX_TIMEOUT_MS).toBe(4000)
-    expect(addressSearch).toContain('import { DEVICE_FIX_TIMEOUT_MS, withTimeout } from "@civfix/shared"')
+    expect(addressSearch).toMatch(/import \{[^}]*\bDEVICE_FIX_TIMEOUT_MS\b[^}]*\bwithTimeout\b[^}]*\} from "@civfix\/shared"/)
     expect(addressSearch).toContain("withTimeout(geo.getCurrentPosition(), DEVICE_FIX_TIMEOUT_MS)")
   })
 })
