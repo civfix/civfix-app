@@ -5,6 +5,7 @@ import type { BodyTransitionDirection, BodyTransitionProps } from "./BodyTransit
 import { bodyTransitionPlan, translateRatio } from "./bodyTransitionModel"
 import { BODY_TIMING } from "./bodyTransitionTiming"
 import { cssTransitionParts } from "./motionCss"
+import { forceReflow, useFlipPhase } from "./useFlipPhase"
 import { prefersReducedMotion } from "./webMedia"
 
 const IN_DURATION = motion.bodyPush.duration
@@ -77,13 +78,6 @@ function castLayerStyle(
   } as unknown as ViewStyle
 }
 
-type TimerRef = React.MutableRefObject<ReturnType<typeof setTimeout> | null>
-
-function clearTimer(ref: TimerRef): void {
-  if (ref.current) clearTimeout(ref.current)
-  ref.current = null
-}
-
 interface Animation {
   outgoing: React.ReactNode
   outgoingKey: string
@@ -113,11 +107,8 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
   }))
 
   const committedChildRef = useRef<React.ReactNode>(children)
-  const fallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const outDropRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const slotARef = useRef<any>(null)
   const slotBRef = useRef<any>(null)
-  const armedNavRef = useRef(state.nav)
 
   if (state.key !== transitionKey) {
     const instant = prefersReducedMotion()
@@ -143,45 +134,31 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
     committedChildRef.current = children
   }, [children])
 
+  const settle = () => {
+    setState((cur) => (cur.anim ? { ...cur, anim: null } : cur))
+  }
+
+  const phaseNav = anim ? state.nav : null
+  useFlipPhase({
+    pendingNav: anim && !anim.flipped ? state.nav : null,
+    phaseNav,
+    fallbackMs: SETTLE_FALLBACK_MS,
+    reflow: () => {
+      const activeNode = (activeSlot === "a" ? slotARef : slotBRef).current
+      const outgoingNode = (activeSlot === "a" ? slotBRef : slotARef).current
+      forceReflow([activeNode, outgoingNode], true)
+    },
+    flip: () => setState((cur) => (cur.anim && !cur.anim.flipped ? withAnim(cur, { flipped: true }) : cur)),
+    settle,
+  })
+
   useLayoutEffect(() => {
-    // Once per navigation: the flip and settle below change `anim`, and re-running for them would
-    // clear the timers this run just armed.
-    if (state.nav === armedNavRef.current) return
-    armedNavRef.current = state.nav
-    clearTimer(fallbackRef)
-    clearTimer(outDropRef)
-    if (!anim || anim.flipped) return
-    if (typeof window === "undefined") return
-
-    const activeNode = (activeSlot === "a" ? slotARef : slotBRef).current as {
-      offsetHeight?: number
-    } | null
-    const outgoingNode = (activeSlot === "a" ? slotBRef : slotARef).current as {
-      offsetHeight?: number
-    } | null
-    if (typeof activeNode?.offsetHeight === "number") void activeNode.offsetHeight
-    else if (typeof outgoingNode?.offsetHeight === "number") void outgoingNode.offsetHeight
-    else void document.documentElement.offsetHeight
-
-    setState((cur) => (cur.anim && !cur.anim.flipped ? withAnim(cur, { flipped: true }) : cur))
-
-    outDropRef.current = setTimeout(() => {
-      outDropRef.current = null
+    if (phaseNav === null) return
+    const outDrop = setTimeout(() => {
       setState((cur) => (cur.anim && !cur.anim.outDropped ? withAnim(cur, { outDropped: true }) : cur))
     }, OUT_DURATION)
-
-    fallbackRef.current = setTimeout(() => {
-      fallbackRef.current = null
-      setState((cur) => (cur.anim ? { ...cur, anim: null } : cur))
-    }, SETTLE_FALLBACK_MS)
-  }, [activeSlot, anim, state.nav])
-
-  useEffect(() => {
-    return () => {
-      clearTimer(fallbackRef)
-      clearTimer(outDropRef)
-    }
-  }, [])
+    return () => clearTimeout(outDrop)
+  }, [phaseNav])
 
   const phase = anim ? PHASES[anim.direction] : null
   const flipped = !!anim?.flipped
@@ -193,12 +170,6 @@ export function BodyTransition({ children, transitionKey, direction }: BodyTrans
   const activeContent = <Fragment key={state.key}>{children}</Fragment>
   const outgoingContent =
     anim && !anim.outDropped ? <Fragment key={anim.outgoingKey}>{anim.outgoing}</Fragment> : null
-
-  const settle = () => {
-    clearTimer(fallbackRef)
-    clearTimer(outDropRef)
-    setState((cur) => (cur.anim ? { ...cur, anim: null } : cur))
-  }
 
   const onLayerTransitionEnd = (slot: SlotId, event: any) => {
     if (!phase || !flipped) return

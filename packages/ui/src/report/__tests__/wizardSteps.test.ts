@@ -787,6 +787,10 @@ describe("the pick layer's liveness wiring (source-pinned)", () => {
 
 describe("the wizard's STEP transition (source-pinned)", () => {
   const stepNative = readFileSync(
+    new URL("../../shell/useEntranceTransition.native.ts", import.meta.url),
+    "utf8",
+  )
+  const stepNativeSeam = readFileSync(
     new URL("../../shell/StepTransition.native.tsx", import.meta.url),
     "utf8",
   )
@@ -833,6 +837,7 @@ describe("the wizard's STEP transition (source-pinned)", () => {
   })
 
   it("short-circuits the step slide on the platform's reduce-motion signal", () => {
+    expect(stepNativeSeam).toContain("useEntranceTransition(transitionKey, direction)")
     expect(stepNative).toMatch(/useReducedMotion\(\) === true/)
     expect(stepNative).toMatch(/bodyTransitionPlan\(direction, reduceMotionRef\.current, BODY_TIMING\)/)
     expect(stepWeb).toMatch(/if \(prefersReducedMotion\(\)\) \{\s*setEntrance\(null\)/)

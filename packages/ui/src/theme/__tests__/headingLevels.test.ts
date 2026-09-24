@@ -75,6 +75,7 @@ const HEADING_FILES = [
   "bodies/ConversationBody.tsx",
   "bodies/NewGroupBody.tsx",
   "bodies/NewChannelBody.tsx",
+  "bodies/GroupWizardHeader.tsx",
   "promo/AppPromoCard.tsx",
   "shell/ExpandedShell.tsx",
   "shell/DetailBar.tsx",

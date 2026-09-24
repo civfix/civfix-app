@@ -16,6 +16,7 @@ const GROUP_INFO = code(read("../GroupInfoBody.tsx"))
 const MEMBERS = code(read("../MembersBody.tsx"))
 const NEW_GROUP = code(read("../NewGroupBody.tsx"))
 const NEW_CHANNEL = code(read("../NewChannelBody.tsx"))
+const CREATE_AND_OPEN = code(read("../useCreateGroupAndOpen.ts"))
 const INBOX = ["../MessagingListBody.tsx", "../inbox/ThreadRow.tsx"].map((file) => code(read(file))).join("\n")
 const MEMBER_PICKER = code(read("../MemberPicker.tsx"))
 const IDENTITY = code(read("../GroupIdentityFields.tsx"))
@@ -79,13 +80,21 @@ describe("MembersBody renderItem follows the colour scheme", () => {
 
 describe("group and channel mutations claim the submit synchronously", () => {
   const cases: [string, string, string, RegExp][] = [
-    ["NewGroupBody create", NEW_GROUP, "submittingRef", /createGroup\.mutate\(/],
-    ["NewChannelBody create", NEW_CHANNEL, "submittingRef", /createGroup\.mutate\(/],
+    ["useCreateGroupAndOpen create", CREATE_AND_OPEN, "submittingRef", /createGroup\.mutate\(/],
     ["GroupInfoBody add", GROUP_INFO, "addingRef", /addMembers\.mutate\(/],
     ["GroupInfoBody edit", GROUP_INFO, "savingRef", /updateGroup\.mutate\(/],
     ["GroupInfoBody leave", GROUP_INFO, "leavingRef", /removeMember\.mutate\(\s*\{ id, userId: viewerId \}/],
     ["MembersBody leave", MEMBERS, "leavingRef", /leaveReportChat\.mutate\(/],
   ]
+  it.each([
+    ["NewGroupBody", NEW_GROUP],
+    ["NewChannelBody", NEW_CHANNEL],
+  ])("%s creates through the guarded hook, never a bare mutate", (_name, source) => {
+    expect(source).toContain("const { submit, pending, submitError } = useCreateGroupAndOpen()")
+    expect(source).not.toContain("useCreateGroup()")
+    expect(source).not.toMatch(/\.mutate\(/)
+  })
+
   for (const [name, source, ref, mutate] of cases) {
     it(`${name} checks and claims ${ref} before mutating and releases it on settle`, () => {
       const mutateAt = source.search(mutate)

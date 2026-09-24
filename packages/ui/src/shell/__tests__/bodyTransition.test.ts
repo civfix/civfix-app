@@ -211,16 +211,18 @@ describe("BodyTransition.web - one stable React identity per body", () => {
     expect(WEB_SEAM).toContain("const outgoingTransition = phase && flipped ? phase.outgoingTransition")
     expect(WEB_SEAM).toContain("const instant = prefersReducedMotion()")
     expect(WEB_SEAM).toContain("const SETTLE_FALLBACK_MS = IN_DURATION + 60")
-    expect(WEB_SEAM).toMatch(/fallbackRef\.current = setTimeout\([\s\S]*?SETTLE_FALLBACK_MS\)/)
-    expect(WEB_SEAM).toMatch(/outDropRef\.current = setTimeout\([\s\S]*?OUT_DURATION\)/)
+    expect(WEB_SEAM).toContain("fallbackMs: SETTLE_FALLBACK_MS,")
+    expect(WEB_SEAM).toMatch(/const outDrop = setTimeout\([\s\S]*?OUT_DURATION\)/)
+    expect(WEB_SEAM).toContain("return () => clearTimeout(outDrop)")
     expect(WEB_SEAM).toContain("onTransitionEnd")
   })
 
   it("creates an Animation ONLY in the render-phase update that increments nav, which its effect keys on", () => {
     expect(WEB_SEAM.match(/flipped: false,\s*\n?\s*outDropped: false/g)).toHaveLength(1)
     expect(WEB_SEAM).toContain("nav: state.nav + 1")
-    expect(WEB_SEAM).toContain("if (state.nav === armedNavRef.current) return")
-    expect(WEB_SEAM).toContain("}, [activeSlot, anim, state.nav])")
+    expect(WEB_SEAM).toContain("pendingNav: anim && !anim.flipped ? state.nav : null,")
+    expect(WEB_SEAM).toContain("const phaseNav = anim ? state.nav : null")
+    expect(WEB_SEAM).toContain("}, [phaseNav])")
   })
 
   it("leaves the inactive layer inert instead of letting it intercept the pointer", () => {
