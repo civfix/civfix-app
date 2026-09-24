@@ -8,6 +8,8 @@ import type {
 } from "@civfix/shared"
 import { useApi, useDebouncedValue, HOST_ROSTER_PAGE_SIZE } from "@civfix/ui/data"
 
+import { consoleKeys } from "../console-keys"
+
 const CONSOLE_SEARCH_DEBOUNCE_MS = 300
 
 export interface RosterQueryArgs {
@@ -23,16 +25,7 @@ export function useConsoleRoster(args: RosterQueryArgs) {
   const api = useApi()
   const q = useDebouncedValue(args.q.trim(), CONSOLE_SEARCH_DEBOUNCE_MS)
   return useInfiniteQuery<ListEventRegistrationsResponse>({
-    queryKey: [
-      "host",
-      args.eventId,
-      "roster",
-      "console",
-      args.filter,
-      args.sort,
-      q,
-      args.ticketTypeId ?? "all",
-    ],
+    queryKey: consoleKeys.roster(args.eventId, args.filter, args.sort, q, args.ticketTypeId),
     enabled: args.eventId.length > 0 && (args.enabled ?? true),
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>

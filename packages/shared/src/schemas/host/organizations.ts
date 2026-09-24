@@ -8,6 +8,7 @@ import {
   PaginationQuerySchema,
   pageResponse,
 } from "../common.js"
+import { OkResponseSchema } from "../internal-fields.js"
 import {
   CleanupDTOSchema,
   HttpsUrlSchema,
@@ -189,10 +190,9 @@ export const RevokeOrganizationInviteRequestSchema = z
   .strict()
 export type RevokeOrganizationInviteRequest = z.infer<typeof RevokeOrganizationInviteRequestSchema>
 
-const RevokeOrganizationInviteResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type RevokeOrganizationInviteResponse = z.infer<typeof RevokeOrganizationInviteResponseObjectSchema>
+export type RevokeOrganizationInviteResponse = z.infer<typeof OkResponseSchema>
 export const RevokeOrganizationInviteResponseSchema: z.ZodType<RevokeOrganizationInviteResponse, z.ZodTypeDef, unknown> =
-  RevokeOrganizationInviteResponseObjectSchema
+  OkResponseSchema
 
 export const ACCEPT_ORG_INVITE_TOKEN_MIN = 20
 export const ACCEPT_ORG_INVITE_TOKEN_MAX = 128
@@ -258,10 +258,9 @@ export type AcceptMyOrgInviteResponse = AcceptOrganizationInviteResponse
 export const DeclineMyOrgInviteRequestSchema = z.object({ inviteId: IdSchema }).strict()
 export type DeclineMyOrgInviteRequest = z.infer<typeof DeclineMyOrgInviteRequestSchema>
 
-const DeclineMyOrgInviteResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type DeclineMyOrgInviteResponse = z.infer<typeof DeclineMyOrgInviteResponseObjectSchema>
+export type DeclineMyOrgInviteResponse = z.infer<typeof OkResponseSchema>
 export const DeclineMyOrgInviteResponseSchema: z.ZodType<DeclineMyOrgInviteResponse, z.ZodTypeDef, unknown> =
-  DeclineMyOrgInviteResponseObjectSchema
+  OkResponseSchema
 
 export const SetOrganizationMemberRoleRequestSchema = z
   .object({
@@ -274,7 +273,7 @@ export type SetOrganizationMemberRoleRequest = z.infer<
   typeof SetOrganizationMemberRoleRequestSchema
 >
 
-export const SetOrganizationMemberRoleResponseSchema = z.object({ ok: z.literal(true) })
+export const SetOrganizationMemberRoleResponseSchema = OkResponseSchema
 export type SetOrganizationMemberRoleResponse = z.infer<
   typeof SetOrganizationMemberRoleResponseSchema
 >
@@ -284,7 +283,7 @@ export const RemoveOrganizationMemberRequestSchema = z
   .strict()
 export type RemoveOrganizationMemberRequest = z.infer<typeof RemoveOrganizationMemberRequestSchema>
 
-export const RemoveOrganizationMemberResponseSchema = z.object({ ok: z.literal(true) })
+export const RemoveOrganizationMemberResponseSchema = OkResponseSchema
 export type RemoveOrganizationMemberResponse = z.infer<
   typeof RemoveOrganizationMemberResponseSchema
 >

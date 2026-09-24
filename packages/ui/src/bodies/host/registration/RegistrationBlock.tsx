@@ -22,6 +22,7 @@ import {
   modalSheetInputFocusedStyle as fieldFocusedStyle,
 } from "../../../primitives/ModalCardSheet"
 import { useToast } from "../../../primitives/toastContext"
+import { joinParts } from "../../../primitives/joinParts"
 import { useAuthState, useNow, useRequireAuth } from "../../../data"
 import { randomId } from "../../../data/randomId"
 import {
@@ -235,15 +236,13 @@ export function RegistrationBlock({ cleanup, onGuestRegister }: RegistrationBloc
           </Text>
         </View>
         <Text style={styles.mineMeta}>
-          {[
+          {joinParts([
             mine?.ticketTypeName ?? null,
             mine ? t("mine.seats", { count: mine.seatCount }) : null,
             waitlisted && mine?.waitlistPosition != null
               ? t("mine.position", { position: mine.waitlistPosition })
               : null,
-          ]
-            .filter((part): part is string => part !== null)
-            .join(" · ")}
+          ])}
         </Text>
         {errorText ? (
           <Text style={styles.error} accessibilityRole="alert">

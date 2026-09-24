@@ -26,7 +26,7 @@ import { useT } from "../../i18n"
 import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { appErrorCode } from "../../data/errorCode"
-import { HostStateNotice } from "./HostStateNotice"
+import { HostBodyState } from "./HostBodyState"
 import {
   AUDIENCE_ICONS,
   AUDIENCE_OPTIONS,
@@ -111,11 +111,11 @@ export function HostAnnounceBody({ id }: { id: string }) {
   }, [])
 
   if (cleanup.isError) {
-    return <HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
+    return <HostBodyState state="error" t={t} />
   }
 
   if (cleanup.data && !canBroadcast) {
-    return <HostStateNotice icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
+    return <HostBodyState state="denied" t={t} />
   }
 
   const count = recipients.data?.recipientCount ?? null

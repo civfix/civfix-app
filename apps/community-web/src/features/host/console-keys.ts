@@ -17,12 +17,19 @@ export const consoleKeys = {
   analytics: (eventId: string, panel: string, range: string) =>
     ["host", eventId, "analytics", panel, range] as const,
   exports: (eventId: string) => ["host", eventId, "exports"] as const,
+  rosterRoot: (eventId: string) => ["host", eventId, "roster"] as const,
+  roster: (
+    eventId: string,
+    filter: string,
+    sort: string,
+    q: string,
+    ticketTypeId: string | null,
+  ) => ["host", eventId, "roster", "console", filter, sort, q, ticketTypeId ?? "all"] as const,
+  answers: (eventId: string, registrationId: string) =>
+    ["host", eventId, "answers", registrationId] as const,
 
   org: (orgId: string) => ["org-console", orgId] as const,
   orgMembers: (orgId: string) => ["org-console", orgId, "members"] as const,
   orgInvites: (orgId: string) => ["org-console", orgId, "invites"] as const,
   orgVerification: (orgId: string) => ["org-console", orgId, "verification"] as const,
-
-  portfolioAnalytics: (range: string, orgId: string) =>
-    ["hosted-events", "analytics", range, orgId] as const,
 } as const

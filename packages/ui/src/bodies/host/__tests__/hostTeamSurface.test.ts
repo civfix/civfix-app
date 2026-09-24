@@ -8,6 +8,7 @@ const strip = (src: string): string =>
 const mode = strip(read("../HostModeBody.tsx"))
 const body = strip(read("../HostTeamBody.tsx"))
 const sheet = strip(read("../HostTeamInviteSheet.tsx"))
+const bodyState = strip(read("../HostBodyState.tsx"))
 const inviteForm = strip(read("../useInviteForm.ts"))
 const identifierFields = strip(read("../InviteIdentifierFields.tsx"))
 const members = strip(read("../../MembersBody.tsx"))
@@ -46,7 +47,8 @@ describe("HostTeamBody wiring", () => {
     expect(body).toContain("const standing = cleanupHostStanding(cleanup.data, viewerId)")
     expect(body).toContain('const canManageTeam = hasHostCapability(standing, "manage_team")')
     expect(body).toContain("if (!canManageTeam) {")
-    expect(body).toContain('icon="Lock"')
+    expect(body).toContain('<HostBodyState state="denied" t={t} />')
+    expect(bodyState).toContain('icon="Lock"')
   })
 
   it("only asks the server for the team once the viewer may manage it", () => {

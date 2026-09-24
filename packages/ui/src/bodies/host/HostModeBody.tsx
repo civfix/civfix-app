@@ -20,6 +20,7 @@ import {
   STAT_TILE_WIDE_AT,
   type StatTileColumns,
 } from "../../primitives/statTileModel"
+import { cleanupSharePath } from "../../primitives/cleanupSharePath"
 import { managePath } from "../../primitives/externalUrls"
 import { consoleReachable, openConsolePath } from "../../primitives/consoleReach"
 import { useOpenExternal } from "../../capabilities"
@@ -36,7 +37,7 @@ import { HostInsightsPanels } from "./HostInsightsPanels"
 import { HostModeSheets } from "./HostModeSheets"
 import { useHostSheetActions } from "./useHostSheetActions"
 import { useHostSheetsOpen } from "./useHostSheetsOpen"
-import { HostStateNotice } from "./HostStateNotice"
+import { HostBodyState } from "./HostBodyState"
 import { PhaseHeader, type PhaseHeaderAction } from "./PhaseHeader"
 import { linkSheetMode } from "../linkReportsModel"
 import { hostRelativeLine, hostRowSub, hostRowValue, type HostRowCounts } from "./hostModeCopy"
@@ -166,7 +167,7 @@ export function HostModeBody({ id }: { id: string }) {
   const sheetActions = useHostSheetActions(id, closeSheet)
 
   const shareTitle = event?.title ?? ""
-  const sharePath = `/cleanups/${event?.pageSlug ?? event?.referenceCode ?? id}`
+  const sharePath = cleanupSharePath({ pageSlug: event?.pageSlug, referenceCode: event?.referenceCode, id })
 
   const onShare = useCallback(() => {
     void shareLink({ title: shareTitle, path: sharePath }).then((result) => {
@@ -255,11 +256,11 @@ export function HostModeBody({ id }: { id: string }) {
   }
 
   if (cleanup.isError || !event) {
-    return <HostStateNotice icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
+    return <HostBodyState state="error" t={t} />
   }
 
   if (!can.viewRoster && !can.checkIn) {
-    return <HostStateNotice icon="Lock" title={t("state.denied_title")} body={t("state.denied_body")} />
+    return <HostBodyState state="denied" t={t} />
   }
 
   const startsAt = Date.parse(event.scheduledAt)

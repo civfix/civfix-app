@@ -1,4 +1,5 @@
 import type { EventRegistrationDTO, EventSeatDTO } from "@civfix/shared"
+import { RegistrationRosterFilterSchema, RegistrationRosterSortSchema } from "@civfix/shared"
 import { describe, expect, it } from "vitest"
 
 import {
@@ -61,6 +62,11 @@ describe("roster filters", () => {
     expect(isRosterFilter(undefined)).toBe(false)
     expect(isRosterSort("name_asc")).toBe(true)
     expect(isRosterSort("name_desc")).toBe(false)
+  })
+
+  it("covers exactly the contract's filters and sorts", () => {
+    expect([...ROSTER_FILTERS].sort()).toEqual([...RegistrationRosterFilterSchema.options].sort())
+    for (const sort of RegistrationRosterSortSchema.options) expect(isRosterSort(sort)).toBe(true)
   })
 
   it("treats ONLY filter=waitlisted as the waitlist projection", () => {

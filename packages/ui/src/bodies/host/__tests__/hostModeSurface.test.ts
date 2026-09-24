@@ -10,6 +10,7 @@ const sheets = strip(read("../HostModeSheets.tsx"))
 const sheetActions = strip(read("../useHostSheetActions.ts"))
 const copy = strip(read("../hostModeCopy.ts"))
 const panels = strip(read("../HostInsightsPanels.tsx"))
+const bodyState = strip(read("../HostBodyState.tsx"))
 const model = strip(read("../hostSurfaceModel.ts"))
 const roster = strip(read("../EventRosterBlock.tsx"))
 const rosterList = strip(read("../RosterCheckinList.tsx"))
@@ -232,7 +233,8 @@ describe("insights wiring", () => {
     expect(body).toContain("<HeroSkeleton />")
     expect(body).toContain("<TilesSkeleton columns={columns} count={4} />")
     expect(body).toContain('title={t("state.insights_error_title")}')
-    expect(body).toContain('icon="Lock"')
+    expect(body).toContain('<HostBodyState state="denied" t={t} />')
+    expect(bodyState).toContain('icon="Lock"')
   })
 
   it("reads the phase from the server once it arrives, and from the clock until then", () => {

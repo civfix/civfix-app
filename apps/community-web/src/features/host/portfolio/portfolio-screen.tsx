@@ -1,7 +1,6 @@
 "use client"
 
 import { Building2, CalendarDays } from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
 import type { UseQueryResult } from "@tanstack/react-query"
 import { ANALYTICS_SUPPRESSION_K } from "@civfix/shared"
 import type {
@@ -15,7 +14,12 @@ import {
   seriesValuesForChart,
   weekDayLabel,
 } from "@civfix/shared/host"
-import { useApi, useMyHostedEvents, useMyOrganizations, hostedEventRows } from "@civfix/ui/data"
+import {
+  hostedEventRows,
+  useHostedEventsAnalytics,
+  useMyHostedEvents,
+  useMyOrganizations,
+} from "@civfix/ui/data"
 import { useT } from "@civfix/ui/i18n"
 
 import { useConsoleUrlState } from "@/components/console/url-state"
@@ -30,7 +34,6 @@ import { OrgSwitcher } from "../layout/org-switcher"
 import { useConsoleHomeNav } from "../layout/home-nav"
 import { MAX_BOTTOM_TABS } from "../layout/nav-items"
 import { useConsoleNavigation } from "../console-context"
-import { consoleKeys } from "../console-keys"
 import { useConsoleFormat } from "../format"
 import { HOSTED_WHENS, HostedEventRow, isHostedWhen, openEventCreator } from "../hosted-events"
 import { AnalyticsValue, EmptyValue, SuppressionNote } from "../analytics/analytics-value"
@@ -48,7 +51,6 @@ export function PortfolioScreen({ notFoundPath }: PortfolioScreenProps) {
   const { t } = useT("host-portfolio")
   const { t: tc } = useT("host-common")
   const { t: to } = useT("host-org")
-  const api = useApi()
   const { params, set } = useConsoleUrlState()
   const { go } = useConsoleNavigation()
 
@@ -57,15 +59,7 @@ export function PortfolioScreen({ notFoundPath }: PortfolioScreenProps) {
 
   const orgs = useMyOrganizations()
   const events = useMyHostedEvents(when, orgFilter)
-  const analytics = useQuery<HostedEventsAnalyticsResponse>({
-    queryKey: consoleKeys.portfolioAnalytics(PORTFOLIO_ANALYTICS_RANGE, orgFilter ?? "all"),
-    queryFn: () =>
-      api.hostedEventsAnalytics({
-        range: PORTFOLIO_ANALYTICS_RANGE,
-        ...(orgFilter ? { orgId: orgFilter } : {}),
-      }),
-    retry: false,
-  })
+  const analytics = useHostedEventsAnalytics(PORTFOLIO_ANALYTICS_RANGE, orgFilter)
 
   const eventsGate = useGate(events)
   const rows = hostedEventRows(events.data?.pages)

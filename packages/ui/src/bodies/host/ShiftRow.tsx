@@ -5,6 +5,7 @@ import { timeRangeLabel } from "@civfix/shared/datetime"
 import { makeThemedStyles } from "../../theme"
 import { Text } from "../../typography"
 import { Meter } from "../../primitives/Meter"
+import { META_SEPARATOR } from "../../primitives/joinParts"
 import { useLocale, useT } from "../../i18n"
 
 export interface ShiftRowProps {
@@ -21,7 +22,7 @@ export function ShiftRow({ slot, current = false, timeZone }: ShiftRowProps) {
     slot.startsAt == null || slot.endsAt == null
       ? ""
       : timeRangeLabel(slot.startsAt, slot.endsAt, locale, timeZone)
-  const headline = [slot.title, range].filter((part) => part.length > 0).join(" · ")
+  const headline = [slot.title, range].filter((part) => part.length > 0).join(META_SEPARATOR)
   const count =
     slot.capacity == null
       ? t("shifts.signed_up", { count: slot.claimed })

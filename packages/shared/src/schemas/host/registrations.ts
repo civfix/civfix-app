@@ -6,7 +6,7 @@ import {
   PaginationQuerySchema,
 } from "../common.js"
 import { EventAnswerDTOSchema, EventRegistrationDTOSchema } from "../entities.js"
-import { IdempotencyKeySchema } from "../internal-fields.js"
+import { IdempotencyKeySchema, OkResponseSchema } from "../internal-fields.js"
 import { AccessCodeSchema, MAX_PARTY_SIZE } from "./tickets.js"
 import { EventAnswerInputSchema, MAX_EVENT_QUESTIONS } from "./questions.js"
 
@@ -164,10 +164,9 @@ export const RemoveEventRegistrationRequestSchema = z
   .strict()
 export type RemoveEventRegistrationRequest = z.infer<typeof RemoveEventRegistrationRequestSchema>
 
-const RemoveEventRegistrationResponseObjectSchema = z.object({ ok: z.literal(true) })
-export type RemoveEventRegistrationResponse = z.infer<typeof RemoveEventRegistrationResponseObjectSchema>
+export type RemoveEventRegistrationResponse = z.infer<typeof OkResponseSchema>
 export const RemoveEventRegistrationResponseSchema: z.ZodType<RemoveEventRegistrationResponse, z.ZodTypeDef, unknown> =
-  RemoveEventRegistrationResponseObjectSchema
+  OkResponseSchema
 
 export const TransferEventRegistrationRequestSchema = z
   .object({
@@ -216,7 +215,7 @@ export const SetEventRegistrationNoteRequestSchema = z
   .strict()
 export type SetEventRegistrationNoteRequest = z.infer<typeof SetEventRegistrationNoteRequestSchema>
 
-export const SetEventRegistrationNoteResponseSchema = z.object({ ok: z.literal(true) })
+export const SetEventRegistrationNoteResponseSchema = OkResponseSchema
 export type SetEventRegistrationNoteResponse = z.infer<
   typeof SetEventRegistrationNoteResponseSchema
 >

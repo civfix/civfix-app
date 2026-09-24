@@ -4,6 +4,7 @@ import type {
   RegistrationRosterFilter,
   RegistrationRosterSort,
 } from "@civfix/shared"
+import { RegistrationRosterSortSchema } from "@civfix/shared"
 
 export const ROSTER_FILTERS: readonly RegistrationRosterFilter[] = [
   "all",
@@ -17,12 +18,7 @@ export const ROSTER_FILTERS: readonly RegistrationRosterFilter[] = [
   "members",
 ]
 
-export const ROSTER_SORTS: readonly RegistrationRosterSort[] = [
-  "registered_at_desc",
-  "registered_at_asc",
-  "name_asc",
-  "checked_in_at_desc",
-]
+export const ROSTER_SORTS: readonly RegistrationRosterSort[] = RegistrationRosterSortSchema.options
 
 export function isRosterFilter(value: string | undefined): value is RegistrationRosterFilter {
   return value !== undefined && (ROSTER_FILTERS as readonly string[]).includes(value)

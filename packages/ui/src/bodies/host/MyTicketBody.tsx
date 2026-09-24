@@ -21,7 +21,7 @@ import { useNavStore } from "../../nav"
 import { useScrollHost } from "../../shell/ScrollHost"
 import { AddressRow } from "../AddressRow"
 import { CancelRegistrationSheet } from "./registration/RegistrationBlock"
-import { FeedNotice } from "../FeedNotice"
+import { HostBodyState } from "./HostBodyState"
 import { appErrorCode } from "../../data/errorCode"
 import {
   ticketPageIndex,
@@ -136,19 +136,11 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
   }, [cancel, t, ticket, toast])
 
   if (query.isLoading) {
-    return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <Text style={styles.muted}>{t("state.loading")}</Text>
-      </ScrollView>
-    )
+    return <HostBodyState state="loading" t={t} />
   }
 
   if (query.isError || !ticket) {
-    return (
-      <View style={styles.fill}>
-        <FeedNotice plain icon="CloudOff" title={t("state.error_title")} body={t("state.error_body")} />
-      </View>
-    )
+    return <HostBodyState state="error" t={t} />
   }
 
   const waitlisted = ticket.waitlistPosition != null
@@ -268,9 +260,6 @@ export function MyTicketBody({ id, seatId }: { id: string; seatId?: string }) {
 
 const useStyles = makeThemedStyles((t) => ({
   scroll: {
-    flex: 1,
-  },
-  fill: {
     flex: 1,
   },
   content: {

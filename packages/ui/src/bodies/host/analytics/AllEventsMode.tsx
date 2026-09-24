@@ -1,6 +1,7 @@
 import React from "react"
 import { Pressable, View } from "react-native"
-import type { BreakdownRow, HostAnalyticsSummaryResponse } from "@civfix/shared"
+import { MAX_HOST_SUMMARY_EVENT_ROWS, type BreakdownRow, type HostAnalyticsSummaryResponse } from "@civfix/shared"
+import { visibleValue } from "@civfix/shared/host"
 import { focusRingProps, useTheme, webCursor, webHover } from "../../../theme"
 import { Text } from "../../../typography"
 import { SectionCard, StatTile, StatTileRow, statTileColumns } from "../../../primitives"
@@ -11,8 +12,6 @@ import { useWeekLabel } from "../useWeekLabel"
 import { BARS_HEIGHT, useAnalyticsStyles } from "./analyticsStyles"
 import { seriesBars } from "./chartBars"
 import { FractionBar } from "./FractionBar"
-
-const MAX_BY_EVENT_ROWS = 12
 
 export function AllEventsMode({
   data,
@@ -31,7 +30,7 @@ export function AllEventsMode({
   const held = data.eventsHeld
   const checkIn = held.count > 0 ? ratePercent(held.checkInRate) : null
   const daily = data.signupsDaily
-  const rows = data.byEvent.rows.slice(0, MAX_BY_EVENT_ROWS)
+  const rows = data.byEvent.rows.slice(0, MAX_HOST_SUMMARY_EVENT_ROWS)
 
   return (
     <>
@@ -85,7 +84,7 @@ export function AllEventsMode({
               <EventBarRow
                 key={`${index}:${row.key}`}
                 row={row}
-                max={chartMax(rows.map((each) => (each.suppressed ? null : each.value)))}
+                max={chartMax(rows.map(visibleValue))}
                 onPress={() => onPickEvent(row)}
               />
             ))}
@@ -111,7 +110,7 @@ function EventBarRow({
 }) {
   const styles = useAnalyticsStyles()
   const { t } = useT("host-analytics")
-  const value = row.suppressed ? null : row.value
+  const value = visibleValue(row)
   return (
     <Pressable
       onPress={onPress}

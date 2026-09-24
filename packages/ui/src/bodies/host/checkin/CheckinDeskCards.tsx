@@ -7,6 +7,7 @@ import { makeThemedStyles, useTheme, type Theme } from "../../../theme"
 import { Text, Icon, iconMap, type IconName } from "../../../typography"
 import { SecondaryButton, StatTile, StatTileRow } from "../../../primitives"
 import { formatStatValue } from "../../../primitives/statTileModel"
+import { joinParts } from "../../../primitives/joinParts"
 import { useLocale, useT } from "../../../i18n"
 import type { CheckinResultState } from "./useCheckinDesk"
 import { TilesSkeleton } from "../HostSkeletons"
@@ -146,12 +147,10 @@ export function CheckinResultCard({
         <Text style={styles.resultName}>{state.result.attendeeName}</Text>
       ) : null}
       <Text style={styles.resultMeta}>
-        {[
+        {joinParts([
           state.result.ticketTypeName ?? null,
           state.result.partySize != null ? t("result.party", { count: state.result.partySize }) : null,
-        ]
-          .filter((part): part is string => part !== null)
-          .join(" · ")}
+        ])}
       </Text>
       <View style={styles.resultActions}>
         {render.undoable && state.seatId ? (

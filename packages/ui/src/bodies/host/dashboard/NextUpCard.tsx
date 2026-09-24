@@ -14,6 +14,7 @@ import {
 import { Icon, Text, TextLink, iconMap } from "../../../typography"
 import { DateBadge, MetaDot, Meter, PrimaryButton, SectionCard } from "../../../primitives"
 import { LIST_TILE } from "../../../primitives"
+import { joinParts } from "../../../primitives/joinParts"
 import { useEventWhen, useRelativeTime, useT } from "../../../i18n"
 import { boardHasTimedSlots, slotDisplayOrder } from "../../eventSlotsModel"
 import { PhaseDot } from "../PhaseHeader"
@@ -31,6 +32,8 @@ const SHARE_SIZE = 32
 const SHARE_HIT_SLOP = (MIN_TOUCH_TARGET - SHARE_SIZE) / 2
 
 const SHARE_ICON = 18
+
+const A11Y_SENTENCE_SEPARATOR = ". "
 
 export interface NextUpCardProps {
   event: HostedEventDTO
@@ -76,15 +79,16 @@ export function NextUpCard({
         t("next_up.starts_in", { dow: when.dow, time: when.timeWithZone, relative: rel }),
       )
 
-  const cardLabel = [
-    t("events.open_a11y", { title: event.title }),
-    whenLine,
-    seats,
-    event.waitlistCount > 0 ? t("next_up.waiting", { count: event.waitlistCount }) : null,
-    live && liveCheckedIn !== null ? t("next_up.checked_in", { count: liveCheckedIn }) : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join(". ")
+  const cardLabel = joinParts(
+    [
+      t("events.open_a11y", { title: event.title }),
+      whenLine,
+      seats,
+      event.waitlistCount > 0 ? t("next_up.waiting", { count: event.waitlistCount }) : null,
+      live && liveCheckedIn !== null ? t("next_up.checked_in", { count: liveCheckedIn }) : null,
+    ],
+    A11Y_SENTENCE_SEPARATOR,
+  )
 
   const timed = boardHasTimedSlots(slots)
     ? slotDisplayOrder(slots).filter((slot) => !!slot.startsAt && !!slot.endsAt)

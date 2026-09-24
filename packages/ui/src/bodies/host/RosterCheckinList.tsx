@@ -14,6 +14,7 @@ import {
 } from "../../theme"
 import { Text, TextLink, Icon, iconMap } from "../../typography"
 import { Avatar } from "../../primitives"
+import { joinParts } from "../../primitives/joinParts"
 import { useT } from "../../i18n"
 import { SlotGroupHeader } from "../SlotGroupHeader"
 import { groupRosterBySlot, rosterListKey, type RosterListItem } from "../rosterSlotGroups"
@@ -46,16 +47,14 @@ export const RosterCheckinRow = React.memo(function RosterCheckinRow({
   const checkedIn = row.checkedInAt != null
   const nextSeat = nextCheckinSeat(row)
   const undoSeat = lastCheckedInSeat(row)
-  const meta = [
+  const meta = joinParts([
     row.ticketTypeName ?? null,
     row.seatCount > 1 ? t("roster.seats", { count: row.seatCount }) : null,
     row.kind === "guest" ? t("roster.guest") : null,
     row.waitlistPosition != null
       ? t("roster.waitlist_position", { position: row.waitlistPosition })
       : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join(" · ")
+  ])
 
   return (
     <View style={styles.row}>

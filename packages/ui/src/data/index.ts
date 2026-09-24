@@ -131,8 +131,12 @@ export {
   useEventQuestions,
   useEventTicketTypes,
   useHostCounters,
+  useHostTeam,
+  useInviteEventTeamMember,
   useMyHostedEvents,
+  useRevokeEventTeamInvite,
 } from "./hooks/host"
+export { useHostedEventsAnalytics } from "./hooks/dashboard"
 export { actableOrganizations, useMyOrganizations, useOrganization } from "./hooks/orgs"
 export { uploadMedia } from "./uploadMedia"
 export type { UploadProgress } from "./uploadMedia"
